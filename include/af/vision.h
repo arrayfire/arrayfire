@@ -194,8 +194,8 @@ AFAPI void gloh(features& feat, array& desc, const array& in, const unsigned n_l
    \param[in]  train is the array containing the data used as training data
    \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
                indicated here must be of equal length for both query and train arrays)
-   \param[in]  n_dist is the number of smallest distances to return (currently, only 1
-               is supported)
+   \param[in]  n_dist is the number of smallest distances to return (currently, only
+               values <= 256 are supported)
 
    \note Note: This is a special case of the \ref nearestNeighbour function with AF_SHD
     as dist_type
@@ -223,7 +223,7 @@ AFAPI void hammingMatcher(array& idx, array& dist,
    \param[in]  train is the array containing the data used as training data
    \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
                indicated here must be of equal length for both query and train arrays)
-   \param[in]  n_dist is the number of smallest distances to return (currently only 
+   \param[in]  n_dist is the number of smallest distances to return (currently only
                values <= 256 are supported)
    \param[in]  dist_type is the distance computation type. Currently \ref AF_SAD (sum
                of absolute differences), \ref AF_SSD (sum of squared differences), and
@@ -509,8 +509,8 @@ extern "C" {
        \param[in]  train is the array containing the data used as training data
        \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
                    indicated here must be of equal length for both query and train arrays)
-       \param[in]  n_dist is the number of smallest distances to return (currently, only 1
-                   is supported)
+       \param[in]  n_dist is the number of smallest distances to return (currently, only
+                   values <= 256 are supported)
 
        \ingroup cv_func_hamming_matcher
     */
