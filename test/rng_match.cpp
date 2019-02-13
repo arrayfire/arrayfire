@@ -17,6 +17,7 @@
 
 using af::array;
 using af::dim4;
+using af::getAvailableBackends;
 using af::randomEngine;
 using af::randu;
 using af::setBackend;
@@ -35,30 +36,29 @@ struct rng_params {
 class RNGMatch : public ::testing::TestWithParam<rng_params> {
   protected:
     void SetUp() {
+        backends_available = getAvailableBackends() & GetParam().backends[0];
+        backends_available = backends_available && (getAvailableBackends() & GetParam().backends[1]);
 
-      //backends_available = getAvailableBackends()
-      //;
+        if(backends_available) {
+            setBackend(GetParam().backends[0]);
+            randomEngine(GetParam().engine);
+            setSeed(GetParam().seed);
+            array tmp = randu(GetParam().size);
+            void* data = malloc(tmp.bytes());
+            tmp.host(data);
 
-
-        setBackend(GetParam().backends[0]);
-        randomEngine(GetParam().engine);
-        setSeed(GetParam().seed);
-        array tmp = randu(GetParam().size);
-        void* data = malloc(tmp.bytes());
-        tmp.host(data);
-
-        setBackend(GetParam().backends[1]);
-        values[0] = array(GetParam().size);
-        values[0].write(data, values[0].bytes());
-        free(data);
-        randomEngine(GetParam().engine);
-        setSeed(GetParam().seed);
-        values[1] = randu(GetParam().size);
+            setBackend(GetParam().backends[1]);
+            values[0] = array(GetParam().size);
+            values[0].write(data, values[0].bytes());
+            free(data);
+            randomEngine(GetParam().engine);
+            setSeed(GetParam().seed);
+            values[1] = randu(GetParam().size);
+        }
     }
 
     array values[2];
     bool backends_available;
-
 };
 
 std::string engine_name(af::randomEngineType engine) {
@@ -311,5 +311,9 @@ INSTANTIATE_TEST_CASE_P(MersenneCPU_OPENCL,
 
 
 TEST_P(RNGMatch, BackendEquals) {
-  ASSERT_ARRAYS_EQ(values[0], values[1]);
+  if(backends_available) {
+      ASSERT_ARRAYS_EQ(values[0], values[1]);
+  } else {
+      printf("SKIPPED\n");
+  }
 }
