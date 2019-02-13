@@ -102,7 +102,7 @@ double transform<double>(uint *val, int index) {
     return 1.0 - (v * DBL_FACTOR + HALF_DBL_FACTOR);
 }
 
-#define BUFFER_LEN 16
+#define BUFFER_BYTES 64
 #define NUM_BUFFERS 4
 #define ELEMS_PER_ITER 1024
 #define BUF_WRITE_STRIDE 256
@@ -123,49 +123,39 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     uint lo     = seed;
     uint hic    = counter >> 32;
     uint loc    = counter;
-    uint key[2] = {lo, hi};
-    uint ctr[4] = {loc, hic, 0, 0};
 
+    constexpr int BUFFER_LEN = BUFFER_BYTES / sizeof(T);
     array<array<T, BUFFER_LEN>, NUM_BUFFERS> buffers;
-    uint num_iters = divup(elements, ELEMS_PER_ITER);
-    uint bufs_per_stride = BUF_WRITE_STRIDE / BUFFER_LEN;
-    uint first_write_idx = 0;
-    size_t out_idx = 0;
-    size_t cpy_len = 0;
-    for (int iter = 0; iter < num_iters; ++iter) {
-        for (int i = 0; i < bufs_per_stride; ++i) {
+    int num_iters = divup(elements, ELEMS_PER_ITER);
+    int len = num_iters * ELEMS_PER_ITER;
+
+    for (int iter = 0; iter < len; iter += ELEMS_PER_ITER) {
+        for (int i = 0; i < BUF_WRITE_STRIDE; i += BUFFER_LEN) {
             for (int j = 0; j < BUFFER_LEN; ++j) {
                 // first_write_idx is the first of the 4 locations that will
                 // be written to
-                first_write_idx = iter * ELEMS_PER_ITER + i * BUFFER_LEN + j;
-                if (first_write_idx >= elements) { break; }
+                ptrdiff_t first_write_idx = iter + i + j;
 
                 // Recalculate key and ctr to emulate how the CUDA backend
                 // calculates these per thread
-                key[0] = lo;
-                key[1] = hi;
-                ctr[0] = loc + first_write_idx;
-                ctr[1] = hic + (ctr[0] < loc);
-                ctr[2] = (ctr[1] < hic);
-                ctr[3] = 0;
+                uint key[2] = {lo, hi};
+                uint ctr[4] = {loc + (uint)first_write_idx ,hic + (ctr[0] < loc) ,(ctr[1] < hic) ,0 };
                 philox(key, ctr);
 
                 // Use the same ctr array for each of the 4 locations,
                 // but each of the location gets a different ctr value
                 for (int buf_idx = 0; buf_idx < NUM_BUFFERS; ++buf_idx) {
-                    out_idx = first_write_idx + buf_idx * BUF_WRITE_STRIDE;
-                    if (out_idx >= elements) { break; }
                     buffers[buf_idx][j] = transform<T>(ctr, buf_idx);
                 }
             }
             // Buffers are full at this point, so memcpy
             for (int buf_idx = 0; buf_idx < NUM_BUFFERS; ++buf_idx) {
-                out_idx = iter * ELEMS_PER_ITER + buf_idx * BUF_WRITE_STRIDE +
-                          i * BUFFER_LEN;
-                if (out_idx >= elements) { break; }
-                cpy_len = std::min((size_t)BUFFER_LEN, elements - out_idx);
-                memcpy(&out[out_idx], &buffers[buf_idx][0],
-                       cpy_len * sizeof(T));
+                int out_idx = iter + buf_idx * BUF_WRITE_STRIDE + i;
+                if(out_idx < elements) {
+                    size_t cpy_len = std::min((size_t)BUFFER_LEN, elements - out_idx);
+                    memcpy(&out[out_idx], &buffers[buf_idx][0],
+                          cpy_len * sizeof(T));
+                }
             }
         }
     }
