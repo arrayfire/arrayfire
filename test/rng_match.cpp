@@ -7,86 +7,309 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
+
+#include <sstream>
+#include <vector>
 
 using af::array;
 using af::dim4;
 using af::randomEngine;
 using af::randu;
 using af::setBackend;
+using af::setSeed;
+using std::stringstream;
 using std::vector;
 
-template<typename T>
-class Philox : public ::testing::Test {};
+struct rng_params {
+    af::randomEngineType engine;
+    af::Backend backends[2];
+    af::dim4 size;
+    int seed;
+    af_dtype type;
+};
 
-// Test if CPU and GPU randu philox outputs match for the same seed
-// Issue #2429
-// Must run on unified backend
-TEST(Philox, CpuMatchesCuda) {
-    setBackend(AF_BACKEND_CUDA);
+class RNGMatch : public ::testing::TestWithParam<rng_params> {
+  protected:
+    void SetUp() {
 
-    dim4 dims_small(10);
-    dim4 dims_medium(1024);
-    dim4 dims_large(10000);
-    dim4 dims_2D(10, 5);
-    dim4 dims_3D(5, 4, 3);
-    dim4 dims_4D(5, 4, 3, 2);
+      //backends_available = getAvailableBackends()
+      //;
 
-    int seed_small = 12;
-    int seed_medium = 34;
-    int seed_large = 1234;
-    int seed_2D = 4321;
-    int seed_3D = 56;
-    int seed_4D = 78;
 
-    setSeed(seed_small);
-    array cuda_randu_small = randu(dims_small);
-    setSeed(seed_medium);
-    array cuda_randu_medium = randu(dims_medium);
-    setSeed(seed_large);
-    array cuda_randu_large = randu(dims_large);
-    setSeed(seed_2D);
-    array cuda_randu_2D = randu(dims_2D);
-    setSeed(seed_3D);
-    array cuda_randu_3D = randu(dims_3D);
-    setSeed(seed_4D);
-    array cuda_randu_4D = randu(dims_4D);
+        setBackend(GetParam().backends[0]);
+        randomEngine(GetParam().engine);
+        setSeed(GetParam().seed);
+        array tmp = randu(GetParam().size);
+        void* data = malloc(tmp.bytes());
+        tmp.host(data);
 
-    vector<float> h_cuda_randu_small(cuda_randu_small.elements());
-    vector<float> h_cuda_randu_medium(cuda_randu_medium.elements());
-    vector<float> h_cuda_randu_large(cuda_randu_large.elements());
-    vector<float> h_cuda_randu_2D(cuda_randu_2D.elements());
-    vector<float> h_cuda_randu_3D(cuda_randu_3D.elements());
-    vector<float> h_cuda_randu_4D(cuda_randu_4D.elements());
+        setBackend(GetParam().backends[1]);
+        values[0] = array(GetParam().size);
+        values[0].write(data, values[0].bytes());
+        free(data);
+        randomEngine(GetParam().engine);
+        setSeed(GetParam().seed);
+        values[1] = randu(GetParam().size);
+    }
 
-    cuda_randu_small.host(&h_cuda_randu_small.front());
-    cuda_randu_medium.host(&h_cuda_randu_medium.front());
-    cuda_randu_large.host(&h_cuda_randu_large.front());
-    cuda_randu_2D.host(&h_cuda_randu_2D.front());
-    cuda_randu_3D.host(&h_cuda_randu_3D.front());
-    cuda_randu_4D.host(&h_cuda_randu_4D.front());
+    array values[2];
+    bool backends_available;
 
-    setBackend(AF_BACKEND_CPU);
+};
 
-    setSeed(seed_small);
-    array cpu_randu_small = randu(dims_small);
-    setSeed(seed_medium);
-    array cpu_randu_medium = randu(dims_medium);
-    setSeed(seed_large);
-    array cpu_randu_large = randu(dims_large);
-    setSeed(seed_2D);
-    array cpu_randu_2D = randu(dims_2D);
-    setSeed(seed_3D);
-    array cpu_randu_3D = randu(dims_3D);
-    setSeed(seed_4D);
-    array cpu_randu_4D = randu(dims_4D);
+std::string engine_name(af::randomEngineType engine) {
+  switch(engine) {
+      case AF_RANDOM_ENGINE_PHILOX:  return "PHILOX";
+      case AF_RANDOM_ENGINE_THREEFRY:  return "THREEFRY";
+      case AF_RANDOM_ENGINE_MERSENNE:  return "MERSENNE";
+  }
+}
 
-    ASSERT_VEC_ARRAY_EQ(h_cuda_randu_small, dims_small, cpu_randu_small);
-    ASSERT_VEC_ARRAY_EQ(h_cuda_randu_medium, dims_medium, cpu_randu_medium);
-    ASSERT_VEC_ARRAY_EQ(h_cuda_randu_large, dims_large, cpu_randu_large);
-    ASSERT_VEC_ARRAY_EQ(h_cuda_randu_2D, dims_2D, cpu_randu_2D);
-    ASSERT_VEC_ARRAY_EQ(h_cuda_randu_3D, dims_3D, cpu_randu_3D);
-    ASSERT_VEC_ARRAY_EQ(h_cuda_randu_4D, dims_4D, cpu_randu_4D);
+std::string backend_name(af::Backend backend) {
+  switch(backend) {
+  case AF_BACKEND_DEFAULT: return "DEFAULT";
+  case AF_BACKEND_CPU: return "CPU";
+  case AF_BACKEND_CUDA: return "CUDA";
+  case AF_BACKEND_OPENCL: return "OPENCL";
+  }
+}
+
+
+std::string rngmatch_info(const ::testing::TestParamInfo<RNGMatch::ParamType> info) {
+                            stringstream ss;
+                            ss << "size_" << info.param.size[0] << "_" << info.param.size[1]
+                               << "_" << info.param.size[2] << "_" << info.param.size[3]
+                               << "_seed_" << info.param.seed
+                               << "_type_" << info.param.type;
+                            return ss.str();
+}
+
+INSTANTIATE_TEST_CASE_P(PhiloxCPU_CUDA,
+                        RNGMatch,
+                        ::testing::Values(
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10000), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10, 10), 12, f32},
+
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10000), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10, 10), 12, u8},
+
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10000), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10, 10), 12, c64},
+                                            rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10, 10), 12, c64}),
+                                            rngmatch_info);
+
+INSTANTIATE_TEST_CASE_P(MersenneCPU_CUDA,
+                        RNGMatch,
+                        ::testing::Values(
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10000), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10, 10), 12, f32},
+
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10000), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10, 10), 12, u8},
+
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10000), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 10, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(10, 100, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(100, 100, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_CUDA}, dim4(1000, 100, 10, 10), 12, c64}),
+                        rngmatch_info);
+
+INSTANTIATE_TEST_CASE_P(PhiloxCPU_OpenCL,
+                        RNGMatch,
+                        ::testing::Values(
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10000), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10, 10), 12, f32},
+
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10000), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10, 10), 12, u8},
+
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10000), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_PHILOX, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10, 10), 12, c64}
+                                          ),
+                        rngmatch_info);
+
+INSTANTIATE_TEST_CASE_P(MersenneCPU_OPENCL,
+                        RNGMatch,
+                        ::testing::Values(
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10000), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10, 10), 12, f32},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10, 10), 12, f32},
+
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10000), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10, 10), 12, u8},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10, 10), 12, u8},
+
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10000), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 10, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(10, 100, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(100, 100, 10, 10), 12, c64},
+                                          rng_params{AF_RANDOM_ENGINE_MERSENNE, {AF_BACKEND_CPU, AF_BACKEND_OPENCL}, dim4(1000, 100, 10, 10), 12, c64}),
+                        rngmatch_info);
+
+
+TEST_P(RNGMatch, BackendEquals) {
+  ASSERT_ARRAYS_EQ(values[0], values[1]);
 }
