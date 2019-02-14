@@ -109,11 +109,9 @@ double transform<double>(uint *val, int index) {
 
 // This implementation aims to emulate the corresponding method in the CUDA
 // backend, in order to produce the exact same numbers as CUDA.
-// 4 buffers (of size BUFFER_LEN) are used here to temporarily store the
-// generated numbers, and the contents are memcopied to the output when they
-// are full. When each of the 4 buffers are memcopied, however, a stride of
-// BUF_WRITE_STRIDE (256) is applied between each memcpy (emulating the CUDA
-// thread writing to 4 locations with a stride of blockDim.x, which is 256).
+// A stride of BUF_WRITE_STRIDE (256) is applied between each write
+// (emulating the CUDA thread writing to 4 locations with a stride of
+// blockDim.x, which is 256).
 // ELEMS_PER_ITER correspond to elementsPerBlock in the CUDA backend, so each
 // "iter" (iteration) here correspond to a CUDA thread block doing its work.
 // This change was prompted by issue #2429
@@ -134,6 +132,7 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
                 // first_write_idx is the first of the 4 locations that will
                 // be written to
                 ptrdiff_t first_write_idx = iter + i + j;
+                if (first_write_idx >= elements) { break; }
 
                 // Recalculate key and ctr to emulate how the CUDA backend
                 // calculates these per thread
