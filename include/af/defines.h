@@ -27,6 +27,9 @@
     #define __PRETTY_FUNCTION__ __FUNCSIG__
     #define SIZE_T_FRMT_SPECIFIER "%Iu"
     #define AF_DEPRECATED(msg) __declspec(deprecated( msg ))
+    #if _MSC_VER >= 1800
+        #define AF_HAS_VARIADIC_TEMPLATES
+    #endif
 #else
     #define AFAPI   __attribute__((visibility("default")))
     #include <stdbool.h>
@@ -36,7 +39,9 @@
 #else
     #define AF_DEPRECATED(msg) __attribute__((deprecated))
 #endif
-
+    #if __cpp_variadic_templates >= 200704
+        #define AF_HAS_VARIADIC_TEMPLATES
+    #endif
 #endif
 
 // Known 64-bit x86 and ARM architectures use long long
