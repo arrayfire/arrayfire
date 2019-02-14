@@ -125,7 +125,6 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     uint loc    = counter;
 
     constexpr int BUFFER_LEN = BUFFER_BYTES / sizeof(T);
-    array<array<T, BUFFER_LEN>, NUM_BUFFERS> buffers;
     int num_iters = divup(elements, ELEMS_PER_ITER);
     int len = num_iters * ELEMS_PER_ITER;
 
@@ -139,22 +138,19 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
                 // Recalculate key and ctr to emulate how the CUDA backend
                 // calculates these per thread
                 uint key[2] = {lo, hi};
-                uint ctr[4] = {loc + (uint)first_write_idx ,hic + (ctr[0] < loc) ,(ctr[1] < hic) ,0 };
+                uint ctr[4] = {loc + (uint)first_write_idx,
+                               hic + (ctr[0] < loc),
+                               (ctr[1] < hic),
+                               0 };
                 philox(key, ctr);
 
                 // Use the same ctr array for each of the 4 locations,
                 // but each of the location gets a different ctr value
                 for (int buf_idx = 0; buf_idx < NUM_BUFFERS; ++buf_idx) {
-                    buffers[buf_idx][j] = transform<T>(ctr, buf_idx);
-                }
-            }
-            // Buffers are full at this point, so memcpy
-            for (int buf_idx = 0; buf_idx < NUM_BUFFERS; ++buf_idx) {
-                int out_idx = iter + buf_idx * BUF_WRITE_STRIDE + i;
-                if(out_idx < elements) {
-                    size_t cpy_len = std::min((size_t)BUFFER_LEN, elements - out_idx);
-                    memcpy(&out[out_idx], &buffers[buf_idx][0],
-                          cpy_len * sizeof(T));
+                  int out_idx = iter + buf_idx * BUF_WRITE_STRIDE + i + j;
+                  if (out_idx < elements) {
+                      out[out_idx] = transform<T>(ctr, buf_idx);
+                  }
                 }
             }
         }
