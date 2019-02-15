@@ -411,3 +411,19 @@ TEST(JIT, TransposeBuffers) {
         ASSERT_FLOAT_EQ(hc[i], hd[i]);
     }
 }
+
+TEST(JIT, ConstEval7) {
+    const array a = constant(1, 1);
+    const array b = constant(1, 1);
+    const array c = constant(1, 1);
+    const array d = constant(1, 1);
+    const array e = constant(1, 1);
+    const array f = constant(1, 1);
+    const array g = constant(1, 1);
+
+    // I can't think of a good test for this.
+    EXPECT_NO_THROW({
+        eval(a, b, c, d, e, f, g);
+        af::sync();
+      });
+}

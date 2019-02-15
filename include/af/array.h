@@ -1394,6 +1394,59 @@ namespace af
 #endif
     }
 
+#if AF_API_VERSION >= 37
+
+    /// Evaluate an expression (nonblocking).
+    /**
+       \ingroup method_mat
+       @{
+    */
+    inline const array &eval(const array &a) { a.eval(); return a; }
+
+#ifdef AF_HAS_VARIADIC_TEMPLATES
+    template <typename... ARRAYS>
+    inline void eval(ARRAYS... in) {
+        array *arrays[] = {const_cast<array *>(&in)...};
+        eval((int)sizeof...(in), arrays);
+    }
+
+#else
+
+    inline void eval(const array &a, const array &b)
+    {
+        const array *arrays[] = {&a, &b};
+        return eval(2, const_cast<array **>(arrays));
+    }
+
+    inline void eval(const array &a, const array &b, const array &c)
+    {
+        const array *arrays[] = {&a, &b, &c};
+        return eval(3, const_cast<array **>(arrays));
+    }
+
+    inline void eval(const array &a, const array &b, const array &c,
+                     const array &d)
+    {
+        const array *arrays[] = {&a, &b, &c, &d};
+        return eval(4, const_cast<array **>(arrays));
+    }
+
+    inline void eval(const array &a, const array &b, const array &c,
+                     const array &d, const array &e)
+    {
+        const array *arrays[] = {&a, &b, &c, &d, &e};
+        return eval(5, const_cast<array **>(arrays));
+    }
+
+    inline void eval(const array &a, const array &b, const array &c,
+                     const array &d, const array &e, const array &f)
+    {
+        const array *arrays[] = {&a, &b, &c, &d, &e, &f};
+        return eval(6, const_cast<array **>(arrays));
+    }
+#endif  // __cplusplus > 199711L
+#endif
+
 #if AF_API_VERSION >= 34
     ///
     /// Turn the manual eval flag on or off
