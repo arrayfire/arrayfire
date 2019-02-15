@@ -53,7 +53,7 @@ char transform<char>(uint *val, int index) {
 
 template<>
 uchar transform<uchar>(uint *val, int index) {
-    uchar v = val[index >> 2] >> (8 << (index & 3));
+    uchar v = val[index >> 2] >> (index << 3);
     return v;
 }
 
@@ -103,8 +103,6 @@ double transform<double>(uint *val, int index) {
 }
 
 #define BUFFER_BYTES 64
-#define NUM_BUFFERS 4
-#define ELEMS_PER_ITER 1024
 #define BUF_WRITE_STRIDE 256
 
 // This implementation aims to emulate the corresponding method in the CUDA
@@ -123,9 +121,12 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     uint loc    = counter;
 
     constexpr int BUFFER_LEN = BUFFER_BYTES / sizeof(T);
+    constexpr int ELEMS_PER_ITER =
+        BUF_WRITE_STRIDE * 4 * sizeof(uint) / sizeof(T);
     int num_iters = divup(elements, ELEMS_PER_ITER);
     int len = num_iters * ELEMS_PER_ITER;
 
+    constexpr int NUM_BUFFERS = 16 / sizeof(T);
     for (int iter = 0; iter < len; iter += ELEMS_PER_ITER) {
         for (int i = 0; i < BUF_WRITE_STRIDE; i += BUFFER_LEN) {
             for (int j = 0; j < BUFFER_LEN; ++j) {
@@ -146,10 +147,10 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
                 // Use the same ctr array for each of the 4 locations,
                 // but each of the location gets a different ctr value
                 for (int buf_idx = 0; buf_idx < NUM_BUFFERS; ++buf_idx) {
-                  int out_idx = iter + buf_idx * BUF_WRITE_STRIDE + i + j;
-                  if (out_idx < elements) {
-                      out[out_idx] = transform<T>(ctr, buf_idx);
-                  }
+                    int out_idx = iter + buf_idx * BUF_WRITE_STRIDE + i + j;
+                    if (out_idx < elements) {
+                        out[out_idx] = transform<T>(ctr, buf_idx);
+                    }
                 }
             }
         }
