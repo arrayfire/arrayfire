@@ -199,7 +199,6 @@ bool isDoubleSupported(int device) {
 
 void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
     if (getDeviceCount() <= 0) {
-        printf("No CUDA-capable devices detected.\n");
         return;
     }
 
@@ -248,7 +247,7 @@ string getDriverVersion() {
 
 string int_version_to_string(int version) {
     return to_string(version / 1000) + "." +
-            to_string((int)((version % 1000) / 100.));
+           to_string((int)((version % 1000) / 100.));
 }
 
 string getCUDARuntimeVersion() {
@@ -339,17 +338,10 @@ bool DeviceManager::checkGraphicsInteropCapability() {
         cudaError_t err = cudaGLGetDevices(
             &pCudaEnabledDeviceCount, &pCudaGraphicsEnabledDeviceIds,
             getDeviceCount(), cudaGLDeviceListAll);
-        if (err ==
-            63) {  // OS Support Failure - Happens when devices are only Tesla
+        if (err == cudaErrorOperatingSystem) {
+            // OS Support Failure - Happens when devices are in TCC mode or
+            // do not have a display connected
             capable = false;
-            printf(
-                "Warning: No CUDA Device capable of CUDA-OpenGL. CUDA-OpenGL "
-                "Interop will use CPU fallback.\n");
-            printf("Corresponding CUDA Error (%d): %s.\n", err,
-                   cudaGetErrorString(err));
-            printf(
-                "This may happen if all CUDA Devices are in TCC Mode and/or "
-                "not connected to a display.\n");
         }
         cudaGetLastError();  // Reset Errors
     });
@@ -557,7 +549,10 @@ DeviceManager::DeviceManager()
     checkCudaVsDriverVersion();
 
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
-    if (nDevices == 0) throw runtime_error("No CUDA-Capable devices found");
+    AF_TRACE("Found {} CUDA devices", nDevices);
+    if (nDevices == 0) {
+        AF_ERROR("No CUDA capable devices found", AF_ERR_DRIVER);
+    }
     cuDevices.reserve(nDevices);
 
     int cudaRtVer = 0;
@@ -566,14 +561,19 @@ DeviceManager::DeviceManager()
 
     for (int i = 0; i < nDevices; i++) {
         cudaDevice_t dev;
-        cudaGetDeviceProperties(&dev.prop, i);
+        CUDA_CHECK(cudaGetDeviceProperties(&dev.prop, i));
         if (dev.prop.major < getMinSupportedCompute(cudaMajorVer)) {
+            AF_TRACE("Unsuppored device: {}", dev.prop.name);
             continue;
         } else {
             dev.flops = static_cast<size_t>(dev.prop.multiProcessorCount) *
                         compute2cores(dev.prop.major, dev.prop.minor) *
                         dev.prop.clockRate;
             dev.nativeId = i;
+            AF_TRACE(
+                "Found device: {} ({:3.3} GB | ~{} GFLOPs | {} SMs)",
+                dev.prop.name, dev.prop.totalGlobalMem / 1024. / 1024. / 1024.,
+                dev.flops / 1024. / 1024. * 2, dev.prop.multiProcessorCount);
             cuDevices.push_back(dev);
         }
     }
@@ -586,6 +586,7 @@ DeviceManager::DeviceManager()
     for (int i = 0; i < (int)MAX_DEVICES; i++) streams[i] = (cudaStream_t)0;
 
     std::string deviceENV = getEnvVar("AF_CUDA_DEFAULT_DEVICE");
+    AF_TRACE("AF_CUDA_DEFAULT_DEVICE: {}", deviceENV);
     if (deviceENV.empty()) {
         setActiveDevice(0, cuDevices[0].nativeId);
     } else {
@@ -593,13 +594,16 @@ DeviceManager::DeviceManager()
         int def_device = -1;
         s >> def_device;
         if (def_device < 0 || def_device >= nDevices) {
-            printf("WARNING: AF_CUDA_DEFAULT_DEVICE is out of range\n");
-            printf("Setting default device as 0\n");
+            getLogger()->warn(
+                "AF_CUDA_DEFAULT_DEVICE({}) out of range. Setting default "
+                "device to 0.",
+                def_device);
             setActiveDevice(0, cuDevices[0].nativeId);
         } else {
             setActiveDevice(def_device, cuDevices[def_device].nativeId);
         }
     }
+    AF_TRACE("Default device: {}", getActiveDeviceId());
 }
 
 spdlog::logger *DeviceManager::getLogger() { return logger.get(); }
@@ -666,8 +670,8 @@ int DeviceManager::setActiveDevice(int device, int nId) {
         }
         cudaGetLastError();  // Reset error stack
 #ifndef NDEBUG
-        printf(
-            "Warning: Device %d is unavailable. Incrementing to next device \n",
+        getLogger()->warn(
+            "Warning: Device {} is unavailable. Using next available device \n",
             device);
 #endif
         // Comes here is the device is in exclusive mode or
