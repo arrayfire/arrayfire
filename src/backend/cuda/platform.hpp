@@ -62,8 +62,6 @@ size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
 
-spdlog::logger* getLogger();
-
 int setDevice(int device);
 
 void sync(int device);
@@ -109,6 +107,8 @@ class DeviceManager {
 
     static DeviceManager& getInstance();
 
+    spdlog::logger* getLogger();
+
     friend MemoryManager& memoryManager();
 
     friend MemoryManagerPinned& pinnedMemoryManager();
@@ -151,9 +151,11 @@ class DeviceManager {
 
     // Attributes
     std::vector<cudaDevice_t> cuDevices;
+    std::shared_ptr<spdlog::logger> logger;
 
     enum sort_mode { flops = 0, memory = 1, compute = 2, none = 3 };
 
+    void checkCudaVsDriverVersion();
     void sortDevices(sort_mode mode = flops);
 
     int setActiveDevice(int device, int native = -1);
