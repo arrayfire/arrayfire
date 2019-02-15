@@ -278,10 +278,10 @@ make_test(SRC solve_dense.cpp       CXX11 SERIAL)
 make_test(SRC sort.cpp)
 make_test(SRC sort_by_key.cpp)
 make_test(SRC sort_index.cpp)
-make_test(SRC sparse.cpp            SERIAL
-          LIBRARIES mmio)
+make_test(SRC sparse.cpp SERIAL
+    $<$<BOOL:${AF_TEST_WITH_MTX_FILES}>:LIBRARIES mmio>)
 make_test(SRC sparse_arith.cpp
-          LIBRARIES mmio)
+    $<$<BOOL:${AF_TEST_WITH_MTX_FILES}>:LIBRARIES mmio>)
 make_test(SRC sparse_convert.cpp)
 make_test(SRC stdev.cpp)
 make_test(SRC susan.cpp)
