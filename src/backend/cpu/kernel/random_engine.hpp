@@ -16,7 +16,6 @@
 #include <kernel/random_engine_philox.hpp>
 #include <kernel/random_engine_threefry.hpp>
 
-#include <array>
 #include <cstring>
 #include <algorithm>
 
@@ -157,9 +156,7 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     }
 }
 
-#undef BUFFER_LEN
-#undef NUM_BUFFERS
-#undef ELEMS_PER_ITER
+#undef BUFFER_BYTES
 #undef BUF_WRITE_STRIDE
 
 template<typename T>
