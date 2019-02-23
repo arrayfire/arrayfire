@@ -31,7 +31,8 @@ if(AF_BUILD_FORGE)
 
   install(FILES
       $<TARGET_FILE:forge>
-      $<TARGET_SONAME_FILE:forge>
+      $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:forge>>
+      $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:forge>>
       DESTINATION "${AF_INSTALL_LIB_DIR}"
       COMPONENT common_backend_dependencies)
 else(AF_BUILD_FORGE)
