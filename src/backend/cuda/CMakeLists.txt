@@ -530,7 +530,14 @@ if(AF_INSTALL_STANDALONE)
   afcu_collect_libs(cublas)
   afcu_collect_libs(cusolver)
   afcu_collect_libs(cusparse)
-  afcu_collect_libs(nvrtc)
+
+  if(WIN32 AND ${CUDA_VERSION_MAJOR} EQUAL 10 AND ${CUDA_VERSION_MINOR} EQUAL 0)
+    install(FILES       "${dlib_path_prefix}/${PX}nvrtc64_100_0${SX}"
+            DESTINATION ${AF_INSTALL_BIN_DIR}
+            COMPONENT   cuda_dependencies)
+  else()
+    afcu_collect_libs(nvrtc)
+  endif()
 
   if(APPLE)
     afcu_collect_libs(cudart)
