@@ -260,14 +260,14 @@ if(MKL_FOUND)
     set_target_properties(MKL::MKL
       PROPERTIES
         IMPORTED_LOCATION "${MKL_Core_LINK_LIBRARY}"
-        INTERFACE_LINK_LIBRARIES "MKL::ThreadLayer;MKL::Interface;${CMAKE_DL_LIBS};${M_LIB}"
+        INTERFACE_LINK_LIBRARIES "MKL::Interface;MKL::ThreadLayer;${CMAKE_DL_LIBS};${M_LIB}"
         INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR};${MKL_FFTW_INCLUDE_DIR}"
         IMPORTED_NO_SONAME TRUE)
   else()
     set_target_properties(MKL::MKL
       PROPERTIES
         IMPORTED_LOCATION "${MKL_Core_LINK_LIBRARY}"
-        INTERFACE_LINK_LIBRARIES "MKL::ThreadLayer;MKL::Interface;MKL::ThreadingLibrary;${CMAKE_DL_LIBS};${M_LIB}"
+        INTERFACE_LINK_LIBRARIES "MKL::Interface;MKL::ThreadLayer;MKL::ThreadingLibrary;${CMAKE_DL_LIBS};${M_LIB}"
         INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR};${MKL_FFTW_INCLUDE_DIR}"
         IMPORTED_NO_SONAME TRUE)
   endif()
