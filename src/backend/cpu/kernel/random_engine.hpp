@@ -16,8 +16,8 @@
 #include <kernel/random_engine_philox.hpp>
 #include <kernel/random_engine_threefry.hpp>
 
-#include <cstring>
 #include <algorithm>
+#include <cstring>
 
 using std::array;
 using std::memcpy;
@@ -37,98 +37,99 @@ static const double PI_VAL =
 #define DBL_FACTOR ((1.0) / (UINTLMAX + (1.0)))
 #define HALF_DBL_FACTOR ((0.5) * DBL_FACTOR)
 
-template<typename T>
+template <typename T>
 T transform(uint *val, int index) {
     T *oval = (T *)val;
     return oval[index];
 }
 
-template<>
+template <>
 char transform<char>(uint *val, int index) {
     char v = val[index >> 2] >> (8 << (index & 3));
     v      = (v & 0x1) ? 1 : 0;
     return v;
 }
 
-template<>
+template <>
 uchar transform<uchar>(uint *val, int index) {
     uchar v = val[index >> 2] >> (index << 3);
     return v;
 }
 
-template<>
+template <>
 ushort transform<ushort>(uint *val, int index) {
     ushort v = val[index >> 1] >> (16 << (index & 1));
     return v;
 }
 
-template<>
+template <>
 short transform<short>(uint *val, int index) {
     return transform<ushort>(val, index);
 }
 
-template<>
+template <>
 uint transform<uint>(uint *val, int index) {
     return val[index];
 }
 
-template<>
+template <>
 int transform<int>(uint *val, int index) {
     return transform<uint>(val, index);
 }
 
-template<>
+template <>
 uintl transform<uintl>(uint *val, int index) {
     uintl v = (((uintl)val[index << 1]) << 32) | ((uintl)val[(index << 1) + 1]);
     return v;
 }
 
-template<>
+template <>
 intl transform<intl>(uint *val, int index) {
     return transform<uintl>(val, index);
 }
 
 // Generates rationals in [0, 1)
-template<>
+template <>
 float transform<float>(uint *val, int index) {
     return 1.f - (val[index] * FLT_FACTOR + HALF_FLT_FACTOR);
 }
 
 // Generates rationals in [0, 1)
-template<>
+template <>
 double transform<double>(uint *val, int index) {
     uintl v = transform<uintl>(val, index);
     return 1.0 - (v * DBL_FACTOR + HALF_DBL_FACTOR);
 }
 
-#define BUFFER_BYTES 64
-#define BUF_WRITE_STRIDE 256
+#define MAX_RESET_CTR_VAL 64
+#define WRITE_STRIDE 256
 
 // This implementation aims to emulate the corresponding method in the CUDA
 // backend, in order to produce the exact same numbers as CUDA.
-// A stride of BUF_WRITE_STRIDE (256) is applied between each write
+// A stride of WRITE_STRIDE (256) is applied between each write
 // (emulating the CUDA thread writing to 4 locations with a stride of
 // blockDim.x, which is 256).
 // ELEMS_PER_ITER correspond to elementsPerBlock in the CUDA backend, so each
 // "iter" (iteration) here correspond to a CUDA thread block doing its work.
 // This change was prompted by issue #2429
-template<typename T>
+template <typename T>
 void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
-    uint hi     = seed >> 32;
-    uint lo     = seed;
-    uint hic    = counter >> 32;
-    uint loc    = counter;
+    uint hi  = seed >> 32;
+    uint lo  = seed;
+    uint hic = counter >> 32;
+    uint loc = counter;
 
-    constexpr int BUFFER_LEN = BUFFER_BYTES / sizeof(T);
+    constexpr int RESET_CTR = MAX_RESET_CTR_VAL / sizeof(T);
     constexpr int ELEMS_PER_ITER =
-        BUF_WRITE_STRIDE * 4 * sizeof(uint) / sizeof(T);
-    int num_iters = divup(elements, ELEMS_PER_ITER);
-    int len = num_iters * ELEMS_PER_ITER;
+        WRITE_STRIDE * 4 * sizeof(uint) / sizeof(T);
 
-    constexpr int NUM_BUFFERS = 16 / sizeof(T);
+    int num_iters = divup(elements, ELEMS_PER_ITER);
+    int len       = num_iters * ELEMS_PER_ITER;
+
+    constexpr int NUM_WRITES = 16 / sizeof(T);
     for (int iter = 0; iter < len; iter += ELEMS_PER_ITER) {
-        for (int i = 0; i < BUF_WRITE_STRIDE; i += BUFFER_LEN) {
-            for (int j = 0; j < BUFFER_LEN; ++j) {
+        for (int i = 0; i < WRITE_STRIDE; i += RESET_CTR) {
+            for (int j = 0; j < RESET_CTR; ++j) {
                 // first_write_idx is the first of the 4 locations that will
                 // be written to
                 ptrdiff_t first_write_idx = iter + i + j;
@@ -138,15 +139,13 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
                 // calculates these per thread
                 uint key[2] = {lo, hi};
                 uint ctr[4] = {loc + (uint)first_write_idx,
-                               hic + (ctr[0] < loc),
-                               (ctr[1] < hic),
-                               0 };
+                               hic + (ctr[0] < loc), (ctr[1] < hic), 0};
                 philox(key, ctr);
 
                 // Use the same ctr array for each of the 4 locations,
                 // but each of the location gets a different ctr value
-                for (int buf_idx = 0; buf_idx < NUM_BUFFERS; ++buf_idx) {
-                    int out_idx = iter + buf_idx * BUF_WRITE_STRIDE + i + j;
+                for (int buf_idx = 0; buf_idx < NUM_WRITES; ++buf_idx) {
+                    int out_idx = iter + buf_idx * WRITE_STRIDE + i + j;
                     if (out_idx < elements) {
                         out[out_idx] = transform<T>(ctr, buf_idx);
                     }
@@ -156,10 +155,10 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     }
 }
 
-#undef BUFFER_BYTES
-#undef BUF_WRITE_STRIDE
+#undef MAX_RESET_CTR_VAL
+#undef WRITE_STRIDE
 
-template<typename T>
+template <typename T>
 void threefryUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     uint hi     = seed >> 32;
     uint lo     = seed;
@@ -179,7 +178,7 @@ void threefryUniform(T *out, size_t elements, const uintl seed, uintl counter) {
     }
 }
 
-template<typename T>
+template <typename T>
 void boxMullerTransform(T *const out1, T *const out2, const T r1, const T r2) {
     /*
      * The log of a real value x where 0 < x < 1 is negative.
@@ -202,7 +201,7 @@ void boxMullerTransform(uint val[4], float *temp) {
                        transform<float>(val, 3));
 }
 
-template<typename T>
+template <typename T>
 void philoxNormal(T *out, size_t elements, const uintl seed, uintl counter) {
     uint hi     = seed >> 32;
     uint lo     = seed;
@@ -221,7 +220,7 @@ void philoxNormal(T *out, size_t elements, const uintl seed, uintl counter) {
     }
 }
 
-template<typename T>
+template <typename T>
 void threefryNormal(T *out, size_t elements, const uintl seed, uintl counter) {
     uint hi     = seed >> 32;
     uint lo     = seed;
@@ -246,7 +245,7 @@ void threefryNormal(T *out, size_t elements, const uintl seed, uintl counter) {
     }
 }
 
-template<typename T>
+template <typename T>
 void uniformDistributionMT(T *out, size_t elements, uint *const state,
                            const uint *const pos, const uint *const sh1,
                            const uint *const sh2, uint mask,
@@ -271,7 +270,7 @@ void uniformDistributionMT(T *out, size_t elements, uint *const state,
     state_write(state, l_state);
 }
 
-template<typename T>
+template <typename T>
 void normalDistributionMT(T *out, size_t elements, uint *const state,
                           const uint *const pos, const uint *const sh1,
                           const uint *const sh2, uint mask,
@@ -298,7 +297,7 @@ void normalDistributionMT(T *out, size_t elements, uint *const state,
     state_write(state, l_state);
 }
 
-template<typename T>
+template <typename T>
 void uniformDistributionCBRNG(T *out, size_t elements,
                               af_random_engine_type type, const uintl seed,
                               uintl counter) {
@@ -314,7 +313,7 @@ void uniformDistributionCBRNG(T *out, size_t elements,
     }
 }
 
-template<typename T>
+template <typename T>
 void normalDistributionCBRNG(T *out, size_t elements,
                              af_random_engine_type type, const uintl seed,
                              uintl counter) {
