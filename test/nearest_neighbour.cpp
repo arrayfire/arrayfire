@@ -277,34 +277,28 @@ TEST(KNearestNeighbourSSD, small) {
     const int nquery = 3;
     const int nfeat  = 2;
 
-    float query[nquery * nfeat] = {
-        5, 5, 0, 0, 10, 10,
-    };
-
+    float query[nquery * nfeat] = {5, 5, 0, 0, 10, 10};
     float train[ntrain * nfeat] = {0, 0, 3.5, 4, 5, 5, 6, 5, 8, 6.5};
 
     array t(nfeat, ntrain, train);
     array q(nfeat, nquery, query);
     array indices;
-    array distances;
+    array actualDistances;
     const int k = 2;
-    nearestNeighbour(indices, distances, q, t, 0, k, AF_SSD);
+    nearestNeighbour(indices, actualDistances, q, t, 0, k, AF_SSD);
 
-    float expectedDistances[nquery * ntrain] = {
-        (5 - 5) * (5 - 5) + (5 - 5) * (5 - 5),
-        (5 - 6) * (5 - 6) + (5 - 5) * (5 - 5),
+    vector<float> expectedDistances{
+        (5.f - 5.f) * (5.f - 5.f) + (5.f - 5.f) * (5.f - 5.f),
+        (5.f - 6.f) * (5.f - 6.f) + (5.f - 5.f) * (5.f - 5.f),
 
-        (0 - 0) * (0 - 0) + (0 - 0) * (0 - 0),
-        (0 - 3.5) * (0 - 4) + (0 - 3.5) * (0 - 4),
+        (0.f - 0.f) * (0.f - 0.f) + (0.f - 0.f) * (0.f - 0.f),
+        (0.f - 3.5f) * (0.f - 3.5f) + (0.f - 4.f) * (0.f - 4.f),
 
-        (10 - 8) * (10 - 8) + (10 - 6.5) * (10 - 6.5),
-        (10 - 6) * (10 - 5) + (10 - 6) * (10 - 5)};
+        (10.f - 8.f) * (10.f - 8.f) + (10.f - 6.5f) * (10.f - 6.5f),
+        (10.f - 6.f) * (10.f - 6.f) + (10.f - 5.f) * (10.f - 5.f)};
 
-    vector<float> actualDistances(nquery);
-    distances.host(&actualDistances[0]);
-    for (int i = 0; i < nquery; i++) {
-        EXPECT_NEAR(expectedDistances[i], actualDistances[i], 1E-8);
-    }
+    ASSERT_VEC_ARRAY_NEAR(expectedDistances, dim4(nfeat, nquery),
+                          actualDistances, 1E-8);
 }
 
 struct nearest_neighbors_params {
