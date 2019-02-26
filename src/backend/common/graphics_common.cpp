@@ -233,34 +233,36 @@ ForgeModule& forgePlugin() { return detail::forgeManager().plugin(); }
 ForgeManager::ForgeManager() : mPlugin(new ForgeModule()) {}
 
 ForgeManager::~ForgeManager() {
-    /* clear all OpenGL resource objects (images, plots, histograms etc) first
-     * and then delete the windows */
-    for (ImgMapIter iter = mImgMap.begin(); iter != mImgMap.end(); iter++)
-        mPlugin->fg_release_image(iter->second);
+    if (mPlugin->isLoaded()) {
+        /* clear all OpenGL resource objects (images, plots, histograms etc) first
+         * and then delete the windows */
+        for (ImgMapIter iter = mImgMap.begin(); iter != mImgMap.end(); iter++)
+            mPlugin->fg_release_image(iter->second);
 
-    for (PltMapIter iter = mPltMap.begin(); iter != mPltMap.end(); iter++)
-        mPlugin->fg_release_plot(iter->second);
+        for (PltMapIter iter = mPltMap.begin(); iter != mPltMap.end(); iter++)
+            mPlugin->fg_release_plot(iter->second);
 
-    for (HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
-        mPlugin->fg_release_histogram(iter->second);
+        for (HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
+            mPlugin->fg_release_histogram(iter->second);
 
-    for (SfcMapIter iter = mSfcMap.begin(); iter != mSfcMap.end(); iter++)
-        mPlugin->fg_release_surface(iter->second);
+        for (SfcMapIter iter = mSfcMap.begin(); iter != mSfcMap.end(); iter++)
+            mPlugin->fg_release_surface(iter->second);
 
-    for (VcfMapIter iter = mVcfMap.begin(); iter != mVcfMap.end(); iter++)
-        mPlugin->fg_release_vector_field(iter->second);
+        for (VcfMapIter iter = mVcfMap.begin(); iter != mVcfMap.end(); iter++)
+            mPlugin->fg_release_vector_field(iter->second);
 
-    for (ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end();
-         iter++) {
-        for (int i = 0; i < (int)(iter->second).size(); i++) {
-            fg_chart chrt = (iter->second)[i];
-            if (chrt) {
-                mChartAxesOverrideMap.erase((chrt));
-                mPlugin->fg_release_chart(chrt);
+        for (ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end();
+            iter++) {
+            for (int i = 0; i < (int)(iter->second).size(); i++) {
+                fg_chart chrt = (iter->second)[i];
+                if (chrt) {
+                    mChartAxesOverrideMap.erase((chrt));
+                    mPlugin->fg_release_chart(chrt);
+                }
             }
         }
+        mPlugin->fg_release_window(wnd->handle);
     }
-    mPlugin->fg_release_window(wnd->handle);
 }
 
 ForgeModule& ForgeManager::plugin() { return *mPlugin; }
