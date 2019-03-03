@@ -248,7 +248,8 @@ bool& evalFlag() {
 DeviceManager::DeviceManager()
     : queues(MAX_QUEUES)
     , memManager(new MemoryManager())
-    , fgMngr(new graphics::ForgeManager()) {}
+    , fgMngr(new graphics::ForgeManager())
+    {}
 
 MemoryManager& memoryManager() {
     DeviceManager& inst = DeviceManager::getInstance();

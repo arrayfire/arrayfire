@@ -143,9 +143,9 @@ class DeviceManager {
     void operator=(DeviceManager const&) = delete;
 
     // Attributes
-    std::unique_ptr<graphics::ForgeManager> fgMngr;
-    std::unique_ptr<MemoryManager> memManager;
     std::vector<queue> queues;
+    std::unique_ptr<MemoryManager> memManager;
+    std::unique_ptr<graphics::ForgeManager> fgMngr;
     const CPUInfo cinfo;
 };
 }  // namespace cpu

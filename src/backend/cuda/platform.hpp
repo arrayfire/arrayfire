@@ -150,15 +150,16 @@ class DeviceManager {
     void operator=(DeviceManager const&);
 
     // Attributes
-    std::vector<cudaDevice_t> cuDevices;
-    std::shared_ptr<spdlog::logger> logger;
-
     enum sort_mode { flops = 0, memory = 1, compute = 2, none = 3 };
 
     void checkCudaVsDriverVersion();
     void sortDevices(sort_mode mode = flops);
 
     int setActiveDevice(int device, int native = -1);
+
+    std::shared_ptr<spdlog::logger> logger;
+
+    std::vector<cudaDevice_t> cuDevices;
 
     int nDevices;
     cudaStream_t streams[MAX_DEVICES];

@@ -137,7 +137,7 @@ static inline int getMinSupportedCompute(int cudaMajorVer) {
     // Vector of minimum supported compute versions
     // for CUDA toolkit (i+1).* where i is the index
     // of the vector
-    static const std::array<int, 10> minSV{1, 1, 1, 1, 1, 1, 2, 2, 3, 3};
+    static const std::array<int, 10> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3}};
 
     int CVSize = static_cast<int>(minSV.size());
     return (cudaMajorVer > CVSize ? minSV[CVSize - 1]
@@ -198,9 +198,7 @@ bool isDoubleSupported(int device) {
 }
 
 void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
-    if (getDeviceCount() <= 0) {
-        return;
-    }
+    if (getDeviceCount() <= 0) { return; }
 
     cudaDeviceProp dev = getDeviceProp(getActiveDeviceId());
 
@@ -606,10 +604,11 @@ void DeviceManager::checkCudaVsDriverVersion() {
 }
 
 DeviceManager::DeviceManager()
-    : cuDevices(0)
+    : logger(common::loggerFactory("platform"))
+    , cuDevices(0)
     , nDevices(0)
     , fgMngr(new graphics::ForgeManager())
-    , logger(common::loggerFactory("platform")) {
+    {
     checkCudaVsDriverVersion();
 
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
@@ -635,7 +634,7 @@ DeviceManager::DeviceManager()
                         dev.prop.clockRate;
             dev.nativeId = i;
             AF_TRACE(
-                "Found device: {} ({:3.3} GB | ~{} GFLOPs | {} SMs)",
+                "Found device: {} ({:0.3} GB | ~{} GFLOPs | {} SMs)",
                 dev.prop.name, dev.prop.totalGlobalMem / 1024. / 1024. / 1024.,
                 dev.flops / 1024. / 1024. * 2, dev.prop.multiProcessorCount);
             cuDevices.push_back(dev);
