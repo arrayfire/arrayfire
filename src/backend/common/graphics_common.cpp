@@ -261,7 +261,7 @@ ForgeManager::~ForgeManager() {
                 }
             }
         }
-        mPlugin->fg_release_window(wnd->handle);
+        if(wnd) mPlugin->fg_release_window(wnd->handle);
     }
 }
 
