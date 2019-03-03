@@ -17,3 +17,7 @@ target_include_directories(mmio
     )
 
 target_compile_definitions(mmio PUBLIC USE_MTX)
+
+if(WIN32)
+  target_compile_definitions(mmio PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
