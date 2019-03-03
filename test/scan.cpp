@@ -258,7 +258,7 @@ TEST(Scan, ExclusiveSum1D) {
     const int in_size = 80000;
     vector<int> h_in(in_size, 1);
     vector<int> h_gold(in_size, 0);
-    for (int i = 1; i < h_gold.size(); ++i) {
+    for (size_t i = 1; i < h_gold.size(); ++i) {
         h_gold[i] = h_in[i] + h_gold[i - 1];
     }
 
@@ -272,10 +272,10 @@ TEST(Scan, ExclusiveSum2D_Dim0) {
     const int in_size = 80000 * 2;
     vector<int> h_in(in_size, 1);
     vector<int> h_gold(in_size, 0);
-    for (int i = 1; i < h_gold.size() / 2; ++i) {
+    for (size_t i = 1; i < h_gold.size() / 2; ++i) {
         h_gold[i] = h_in[i] + h_gold[i - 1];
     }
-    for (int i = h_gold.size() / 2 + 1; i < h_gold.size(); ++i) {
+    for (size_t i = h_gold.size() / 2 + 1; i < h_gold.size(); ++i) {
         h_gold[i] = h_in[i] + h_gold[i - 1];
     }
 
@@ -290,10 +290,10 @@ TEST(Scan, ExclusiveSum2D_Dim1) {
     const int in_size = 80000 * 2;
     vector<int> h_in(in_size, 1);
     vector<int> h_gold(in_size, 0);
-    for (int i = 1; i < h_gold.size() / 2; ++i) {
+    for (size_t i = 1; i < h_gold.size() / 2; ++i) {
         h_gold[i] = h_in[i] + h_gold[i - 1];
     }
-    for (int i = h_gold.size() / 2 + 1; i < h_gold.size(); ++i) {
+    for (size_t i = h_gold.size() / 2 + 1; i < h_gold.size(); ++i) {
         h_gold[i] = h_in[i] + h_gold[i - 1];
     }
 
@@ -309,10 +309,10 @@ TEST(Scan, ExclusiveSum2D_Dim2) {
     const int in_size = 80000 * 2;
     vector<int> h_in(in_size, 1);
     vector<int> h_gold(in_size, 0);
-    for (int i = 1; i < h_gold.size() / 2; ++i) {
+    for (size_t i = 1; i < h_gold.size() / 2; ++i) {
         h_gold[i] = h_in[i] + h_gold[i - 1];
     }
-    for (int i = h_gold.size() / 2 + 1; i < h_gold.size(); ++i) {
+    for (size_t i = h_gold.size() / 2 + 1; i < h_gold.size(); ++i) {
         h_gold[i] = h_in[i] + h_gold[i - 1];
     }
 
@@ -328,10 +328,10 @@ TEST(Scan, ExclusiveSum2D_Dim3) {
     const int in_size = 80000 * 2;
     vector<int> h_in(in_size, 1);
     vector<int> h_gold(in_size, 0);
-    for (int i = 1; i < h_gold.size() / 2; ++i) {
+    for (size_t i = 1; i < h_gold.size() / 2; ++i) {
         h_gold[i] = h_in[i] + h_gold[i - 1];
     }
-    for (int i = h_gold.size() / 2 + 1; i < h_gold.size(); ++i) {
+    for (size_t i = h_gold.size() / 2 + 1; i < h_gold.size(); ++i) {
         h_gold[i] = h_in[i] + h_gold[i - 1];
     }
 
