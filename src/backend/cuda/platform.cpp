@@ -480,6 +480,7 @@ struct ToolkitDriverVersions {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
+        {10010, 418.39f, 418.96f},
         {10000, 410.48f, 411.31f},
         {9020,  396.37f, 398.26f},
         {9010,  390.46f, 391.29f},
