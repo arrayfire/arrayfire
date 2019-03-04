@@ -34,37 +34,6 @@ void makeContextCurrent(fg_window window);
 double step_round(const double in, const bool dir);
 
 namespace graphics {
-enum Defaults { WIDTH = 1280, HEIGHT = 720 };
-
-static const long long _16BIT = 0x000000000000FFFF;
-static const long long _32BIT = 0x00000000FFFFFFFF;
-static const long long _48BIT = 0x0000FFFFFFFFFFFF;
-
-typedef std::pair<long long, fg_chart> ChartKey_t;
-
-typedef std::map<ChartKey_t, fg_image> ImageMap_t;
-typedef std::map<ChartKey_t, fg_plot> PlotMap_t;
-typedef std::map<ChartKey_t, fg_histogram> HistogramMap_t;
-typedef std::map<ChartKey_t, fg_surface> SurfaceMap_t;
-typedef std::map<ChartKey_t, fg_vector_field> VectorFieldMap_t;
-
-typedef ImageMap_t::iterator ImgMapIter;
-typedef PlotMap_t::iterator PltMapIter;
-typedef HistogramMap_t::iterator HstMapIter;
-typedef SurfaceMap_t::iterator SfcMapIter;
-typedef VectorFieldMap_t::iterator VcfMapIter;
-
-typedef std::vector<fg_chart> ChartVec_t;
-typedef std::map<const fg_window, ChartVec_t> ChartMap_t;
-typedef std::pair<int, int> WindGridDims_t;
-typedef std::map<const fg_window, WindGridDims_t> WindGridMap_t;
-typedef ChartVec_t::iterator ChartVecIter;
-typedef ChartMap_t::iterator ChartMapIter;
-typedef WindGridMap_t::iterator GridMapIter;
-
-// Keeps track of which charts have manually assigned axes limits
-typedef std::map<fg_chart, bool> ChartAxesOverride_t;
-typedef ChartAxesOverride_t::iterator ChartAxesOverrideIter;
 
 /**
  * Only device manager class can create objects of this class.
@@ -79,45 +48,33 @@ typedef ChartAxesOverride_t::iterator ChartAxesOverrideIter;
  *      fg_vector_field
  * */
 class ForgeManager {
-    struct Window {
-        fg_window handle;
-    };
+  public:
+    using WindowGridDims = std::pair<int, int>;
 
-   private:
-    ForgeModule* mPlugin;
-    std::unique_ptr<Window> wnd;
-
-    ImageMap_t mImgMap;
-    PlotMap_t mPltMap;
-    HistogramMap_t mHstMap;
-    SurfaceMap_t mSfcMap;
-    VectorFieldMap_t mVcfMap;
-
-    ChartMap_t mChartMap;
-    WindGridMap_t mWndGridMap;
-    ChartAxesOverride_t mChartAxesOverrideMap;
-
-   public:
     ForgeManager();
     ForgeManager(ForgeManager const&) = delete;
     ForgeManager& operator=(ForgeManager const&) = delete;
     ForgeManager(ForgeManager&&)                 = delete;
     ForgeManager& operator=(ForgeManager&&) = delete;
-    ~ForgeManager();
+
     ForgeModule& plugin();
+
     fg_window getMainWindow();
+
+    fg_window getWindow(const int width, const int height, const char* const title,
+                        const bool invisible=false);
 
     void setWindowChartGrid(const fg_window window, const int r, const int c);
 
-    WindGridDims_t getWindowGrid(const fg_window window);
+    WindowGridDims getWindowGrid(const fg_window window);
 
     fg_chart getChart(const fg_window window, const int r, const int c,
                       const fg_chart_type ctype);
 
     fg_image getImage(int w, int h, fg_channel_format mode, fg_dtype type);
 
-    fg_image getImage(fg_chart chart, int w, int h, fg_channel_format mode,
-                      fg_dtype type);
+    fg_image getImage(fg_chart chart, int w, int h,
+                      fg_channel_format mode, fg_dtype type);
 
     fg_plot getPlot(fg_chart chart, int nPoints, fg_dtype dtype,
                     fg_plot_type ptype, fg_marker_type mtype);
@@ -128,7 +85,67 @@ class ForgeManager {
 
     fg_vector_field getVectorField(fg_chart chart, int nPoints, fg_dtype type);
 
-    bool getChartAxesOverride(fg_chart chart);
-    void setChartAxesOverride(fg_chart chart, bool flag = true);
+    bool getChartAxesOverride(const fg_chart chart);
+    void setChartAxesOverride(const fg_chart chart, bool flag = true);
+
+  private:
+    constexpr static unsigned int WIDTH = 1280;
+    constexpr static unsigned int HEIGHT = 720;
+    constexpr static long long _16BIT = 0x000000000000FFFF;
+    constexpr static long long _32BIT = 0x00000000FFFFFFFF;
+    constexpr static long long _48BIT = 0x0000FFFFFFFFFFFF;
+
+#define DEFINE_WRAPPER_OBJECT(Object, ReleaseFunc)          \
+struct Object {                                             \
+    void* handle;                                           \
+    struct Deleter {                                        \
+        void operator()(Object* pHandle) const {            \
+            if (pHandle) {                                  \
+                forgePlugin().ReleaseFunc(pHandle->handle); \
+            }                                               \
+        }                                                   \
+    };                                                      \
+}
+
+DEFINE_WRAPPER_OBJECT(Window     , fg_release_window      );
+DEFINE_WRAPPER_OBJECT(Image      , fg_release_image       );
+DEFINE_WRAPPER_OBJECT(Chart      , fg_release_chart       );
+DEFINE_WRAPPER_OBJECT(Plot       , fg_release_plot        );
+DEFINE_WRAPPER_OBJECT(Histogram  , fg_release_histogram   );
+DEFINE_WRAPPER_OBJECT(Surface    , fg_release_surface     );
+DEFINE_WRAPPER_OBJECT(VectorField, fg_release_vector_field);
+
+#undef DEFINE_WRAPPER_OBJECT
+
+    using ImagePtr        = std::unique_ptr<Image      , Image::Deleter      >;
+    using ChartPtr        = std::unique_ptr<Chart      , Chart::Deleter      >;
+    using PlotPtr         = std::unique_ptr<Plot       , Plot::Deleter       >;
+    using SurfacePtr      = std::unique_ptr<Surface    , Surface::Deleter    >;
+    using HistogramPtr    = std::unique_ptr<Histogram  , Histogram::Deleter  >;
+    using VectorFieldPtr  = std::unique_ptr<VectorField, VectorField::Deleter>;
+    using ChartList       = std::vector<ChartPtr>;
+    using ChartKey        = std::pair<long long, fg_chart>;
+
+    using ChartMapIterator     = std::map<fg_window, ChartList>::iterator;
+    using WindGridMapIterator  = std::map<fg_window, WindowGridDims>::iterator;
+    using AxesOverrideIterator = std::map<fg_chart, bool>::iterator;
+    using ImageMapIterator     = std::map<ChartKey, ImagePtr>::iterator;
+    using PlotMapIterator      = std::map<ChartKey, PlotPtr>::iterator;
+    using HistogramMapIterator = std::map<ChartKey, HistogramPtr>::iterator;
+    using SurfaceMapIterator   = std::map<ChartKey, SurfacePtr>::iterator;
+    using VecFieldMapIterator  = std::map<ChartKey, VectorFieldPtr>::iterator;
+
+    std::unique_ptr<ForgeModule> mPlugin;
+    std::unique_ptr<Window, Window::Deleter> mMainWindow;
+
+    std::map<fg_window, ChartList     > mChartMap;
+    std::map< ChartKey, ImagePtr      > mImgMap;
+    std::map< ChartKey, PlotPtr       > mPltMap;
+    std::map< ChartKey, HistogramPtr  > mHstMap;
+    std::map< ChartKey, SurfacePtr    > mSfcMap;
+    std::map< ChartKey, VectorFieldPtr> mVcfMap;
+    std::map<fg_window, WindowGridDims> mWndGridMap;
+    std::map< fg_chart, bool          > mChartAxesOverrideMap;
 };
+
 }  // namespace graphics
