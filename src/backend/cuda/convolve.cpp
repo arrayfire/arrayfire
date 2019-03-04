@@ -225,11 +225,10 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<accT> &filter,
 
 template <typename T>
 constexpr void checkTypeSupport() {
-    constexpr bool isValidType = (std::is_same<float, T>::value ||
-                                  std::is_same<double, T>::value ||
-                                  std::is_same<int, T>::value ||
-                                  std::is_same<unsigned char, T>::value);
-    if (!isValidType) {
+    if (!(std::is_same<float, T>::value ||
+          std::is_same<double, T>::value ||
+          std::is_same<int, T>::value ||
+          std::is_same<unsigned char, T>::value)) {
         AF_ERROR("Invalid CuDNN data type:\
                   only f64, f32, s32, u8 are supported", AF_ERR_ARG);
     }
