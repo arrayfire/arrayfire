@@ -12,7 +12,6 @@
 
 #undef _GLIBCXX_USE_INT128
 #include <err_cuda.hpp>
-#include <err_cuda.hpp>
 #include <kernel/reduce.hpp>
 #include <kernel/reduce_by_key.hpp>
 #include <reduce.hpp>

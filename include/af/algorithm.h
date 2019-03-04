@@ -58,9 +58,7 @@ namespace af
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI void sumByKey(array &keys_out, array &vals_out, const array &keys, const array &vals, const int dim=-1);
-#endif
 
-#if AF_API_VERSION >= 37
     /**
        C++ Interface for sum of elements along given dimension by key while replacing nan values
 
@@ -121,9 +119,7 @@ namespace af
 
     */
     AFAPI void productByKey(array &keys_out, array &vals_out, const array &keys, const array &vals, const int dim = -1);
-#endif
 
-#if AF_API_VERSION >= 37
     /**
        C++ Interface for product of elements in an array according to a key while replacing nan values
 
@@ -659,9 +655,7 @@ extern "C" {
        \ingroup reduce_func_sum
     */
     AFAPI af_err af_sum_by_key(af_array *keys_out, af_array *vals_out, const af_array keys, const af_array vals, const int dim);
-#endif
 
-#if AF_API_VERSION >= 37
     /**
        C Interface for sum of elements in an array according to key while replacing nans
 
@@ -719,9 +713,7 @@ extern "C" {
        \ingroup reduce_func_product
     */
     AFAPI af_err af_product_by_key(af_array *keys_out, af_array *vals_out, const af_array keys, const af_array vals, const int dim);
-#endif
 
-#if AF_API_VERSION >= 37
     /**
        C Interface for product of elements in an array according to key while replacing nans
 
