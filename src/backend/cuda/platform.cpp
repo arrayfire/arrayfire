@@ -386,7 +386,7 @@ BlasHandle blasHandle() {
     return *cublasManager(cuda::getActiveDeviceId());
 }
 
-NNHandle nnHandle() {
+CuDNNHandle nnHandle() {
     thread_local std::unique_ptr<cudnnHandle>
         cudnnHandles[DeviceManager::MAX_DEVICES];
     thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];

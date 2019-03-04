@@ -372,10 +372,6 @@ af_err af_convolve2_strided(af_array *out, const af_array signal,
                 output = convolve2Strided<uchar, float>(signal, filter, stride,
                                                         padding, dilation);
                 break;
-            case b8:
-                output = convolve2Strided<char, float>(signal, filter, stride,
-                                                       padding, dilation);
-                break;
             default: TYPE_ERROR(1, signalType);
         }
         std::swap(*out, output);

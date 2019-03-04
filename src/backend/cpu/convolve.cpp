@@ -189,18 +189,13 @@ Array<T> convolve2(Array<T> const &signal, Array<accT> const &filter,
         Array<T> const &signal, Array<accT> const &filter, const dim4 stride, \
         const dim4 padding, const dim4 dilation);
 
-INSTANTIATE(cdouble, cdouble)
-INSTANTIATE(cfloat, cfloat)
 INSTANTIATE(double, double)
 INSTANTIATE(float, float)
 INSTANTIATE(uint, float)
 INSTANTIATE(int, float)
 INSTANTIATE(uchar, float)
-INSTANTIATE(char, float)
 INSTANTIATE(ushort, float)
 INSTANTIATE(short, float)
-INSTANTIATE(uintl, float)
-INSTANTIATE(intl, float)
 #undef INSTANTIATE
 
 template <typename T, typename accT>
@@ -289,17 +284,12 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
         Array<accT> const &original_filter, Array<T> const &convolved_output, \
         const dim4 stride, const dim4 padding, const dim4 dilation);
 
-INSTANTIATE(cdouble, cdouble)
-INSTANTIATE(cfloat, cfloat)
 INSTANTIATE(double, double)
 INSTANTIATE(float, float)
 INSTANTIATE(uint, float)
 INSTANTIATE(int, float)
 INSTANTIATE(uchar, float)
-INSTANTIATE(char, float)
 INSTANTIATE(ushort, float)
 INSTANTIATE(short, float)
-INSTANTIATE(uintl, float)
-INSTANTIATE(intl, float)
 #undef INSTANTIATE
 }

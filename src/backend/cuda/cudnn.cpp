@@ -9,9 +9,9 @@
 
 #include <common/err_common.hpp>
 #include <cudnn.hpp>
-#include <platform.hpp>
 
 namespace cuda {
+
 const char *errorString(cudnnStatus_t err) {
     switch (err) {
         case CUDNN_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
@@ -37,7 +37,8 @@ const char *errorString(cudnnStatus_t err) {
     }
 }
 
-void cudnnHandle::createHandle(NNHandle *handle) {
+void cudnnHandle::createHandle(CuDNNHandle *handle) {
     CUDNN_CHECK(cudnnCreate(handle));
 }
+
 }

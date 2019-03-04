@@ -23,24 +23,14 @@ using af::dim4;
 
 namespace cuda {
 
-/////
-/// cuDNN helper functions
-/////
-template<typename T> cudnnDataType_t getCudnnDataType() { static_assert("no matching cudnnDataType_t"); return CUDNN_DATA_FLOAT; }
+template<typename T> cudnnDataType_t getCudnnDataType() {
+    AF_ERROR("Invalid CuDNN data type", AF_ERR_ARG);
+    return CUDNN_DATA_FLOAT;
+}
 template<> cudnnDataType_t getCudnnDataType<float>() {  return CUDNN_DATA_FLOAT; }
 template<> cudnnDataType_t getCudnnDataType<double>() {  return CUDNN_DATA_DOUBLE; }
 template<> cudnnDataType_t getCudnnDataType<int>() {  return CUDNN_DATA_INT32; }
 template<> cudnnDataType_t getCudnnDataType<unsigned char>() {  return CUDNN_DATA_UINT8; }
-
-template <typename T>
-bool supported_cudnn_type() {
-    af_dtype dtype = ((af_dtype)dtype_traits<T>::af_type);
-    if (std::is_same<float, T>::value || std::is_same<double, T>::value ||
-        std::is_same<int, T>::value || std::is_same<unsigned char, T>::value) {
-        return true;
-    }
-    return false;
-}
 
 template <typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
@@ -143,7 +133,7 @@ template <typename T, typename accT>
 Array<T> convolve2_cudnn(const Array<T> &signal, const Array<accT> &filter,
                          const dim4 stride, const dim4 padding,
                          const dim4 dilation) {
-    cudnnHandle_t cudnn = nnHandle();
+    auto cudnn = nnHandle();
 
     dim4 sDims = signal.dims();
     dim4 fDims = filter.dims();
@@ -233,24 +223,27 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<accT> &filter,
     return cast<T>(out);
 }
 
+template <typename T>
+constexpr void checkTypeSupport() {
+    constexpr bool isValidType = (std::is_same<float, T>::value ||
+                                  std::is_same<double, T>::value ||
+                                  std::is_same<int, T>::value ||
+                                  std::is_same<unsigned char, T>::value);
+    if (!isValidType) {
+        AF_ERROR("Invalid CuDNN data type:\
+                  only f64, f32, s32, u8 are supported", AF_ERR_ARG);
+    }
+}
+
 template <typename T, typename accT>
 Array<T> convolve2(Array<T> const &signal, Array<accT> const &filter,
                    const dim4 stride, const dim4 padding, const dim4 dilation) {
+    checkTypeSupport<accT>();
+
     signal.eval();
     filter.eval();
 
-    const dim4 sDims = signal.dims();
-    const dim4 fDims = filter.dims();
-
-    dim4 tDims = sDims;
-
-    Array<T> out = createEmptyArray<T>(dim4());
-
-    if (supported_cudnn_type<accT>())
-        out =
-            convolve2_cudnn<T, accT>(signal, filter, stride, padding, dilation);
-
-    return out;
+    return convolve2_cudnn<T, accT>(signal, filter, stride, padding, dilation);
 }
 
 #define INSTANTIATE(T, accT)                                                  \
@@ -258,18 +251,13 @@ Array<T> convolve2(Array<T> const &signal, Array<accT> const &filter,
         Array<T> const &signal, Array<accT> const &filter, const dim4 stride, \
         const dim4 padding, const dim4 dilation);
 
-INSTANTIATE(cdouble, cdouble)
-INSTANTIATE(cfloat, cfloat)
 INSTANTIATE(double, double)
 INSTANTIATE(float, float)
 INSTANTIATE(uint, float)
 INSTANTIATE(int, float)
 INSTANTIATE(uchar, float)
-INSTANTIATE(char, float)
 INSTANTIATE(ushort, float)
 INSTANTIATE(short, float)
-INSTANTIATE(uintl, float)
-INSTANTIATE(intl, float)
 #undef INSTANTIATE
 
 template <typename T, typename accT>
@@ -278,7 +266,7 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
                              const Array<accT> &original_filter,
                              const Array<T> &convolved_output, af::dim4 stride,
                              af::dim4 padding, af::dim4 dilation) {
-    cudnnHandle_t cudnn = nnHandle();
+    auto cudnn = nnHandle();
 
     dim4 iDims = incoming_gradient.dims();
     dim4 sDims = original_signal.dims();
@@ -356,7 +344,7 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
                            const Array<accT> &original_filter,
                            const Array<T> &convolved_output, af::dim4 stride,
                            af::dim4 padding, af::dim4 dilation) {
-    cudnnHandle_t cudnn = nnHandle();
+    auto cudnn = nnHandle();
 
     dim4 iDims = incoming_gradient.dims();
     dim4 sDims = original_signal.dims();
@@ -438,17 +426,12 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
         Array<accT> const &original_filter, Array<T> const &convolved_output, \
         const dim4 stride, const dim4 padding, const dim4 dilation);
 
-INSTANTIATE(cdouble, cdouble)
-INSTANTIATE(cfloat, cfloat)
 INSTANTIATE(double, double)
 INSTANTIATE(float, float)
 INSTANTIATE(uint, float)
 INSTANTIATE(int, float)
 INSTANTIATE(uchar, float)
-INSTANTIATE(char, float)
 INSTANTIATE(ushort, float)
 INSTANTIATE(short, float)
-INSTANTIATE(uintl, float)
-INSTANTIATE(intl, float)
 #undef INSTANTIATE
 }
