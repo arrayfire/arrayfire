@@ -626,9 +626,13 @@ dimensions will stay the same as the original image's, but the rotated image's
 portions outside the dashed orange lines will be cropped, and the rest of the
 output image (the area between the solid black and solid orange lines) will be
 filled with zeros. However, if \p crop is false, then the output image's
-dimensions will be bigger (outermost box with dashed black lines) in order to
-accommodate all of the rotated image's data, and the remainder will be filled
-with zeros (the area between the solid orange lines and dashed black lines).
+dimensions will be bigger (at least in this illustration), as represented by
+the outermost box with dashed black lines. This change is necessary to
+accommodate all of the rotated image's data. The remainder of the output
+image will be filled with zeros, as represented by the area between the solid
+orange lines and dashed black lines. Note that the new dimensions in general
+(beyond this illustration) will be greater than or equal the original image's
+dimensions when \p crop is false.
 
 
 \defgroup transform_func_translate translate
