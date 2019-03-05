@@ -600,27 +600,39 @@ af_print(resize(2, in, AF_INTERP_BILINEAR));
 \defgroup transform_func_rotate rotate
 \ingroup transform_mat
 
-Rotate an input image
+\brief Rotate an input image or array
 
-The angle theta is in radians.
+The rotation is done counter-clockwise, with an angle \p theta (in radians),
+using a specified \p method of interpolation to determine the values of the
+output array. Six types of interpolation are currently supported:
 
-Rotating an input image can be done using \ref AF_INTERP_NEAREST,
-\ref AF_INTERP_BILINEAR or \ref AF_INTERP_LOWER interpolations. Nearest
-interpolation will pick the nearest value to the location, whereas bilinear
-interpolation will do a weighted interpolation for calculate the new size.
+- \ref AF_INTERP_NEAREST - nearest value to the location
+- \ref AF_INTERP_BILINEAR - weighted interpolation
+- \ref AF_INTERP_BILINEAR_COSINE - bilinear interpolation with cosine smoothing
+- \ref AF_INTERP_BICUBIC - bicubic interpolation
+- \ref AF_INTERP_BICUBIC_SPLINE - bicubic interpolation with Catmull-Rom splines
+- \ref AF_INTERP_LOWER - floor indexed
 
-This function does not differentiate between images and data. As long as
-the array is defined, it will rotate any type or size of array.
+Since the output image still needs to be an upright box, \p crop determines how
+to bound the output image, given the now-rotated image. The figure below
+illustrates the effect of changing this parameter.
 
-The crop option allows you to choose whether to resize the image.
-If crop is set to false, ie. the entire rotated image will be a part of the
-array and the new array size will be greater than or equal to the input array
-size.
-If crop is set to true, then the new array size is same as the input array
-size and the data that falls outside the boundaries of the array is discarded.
+\image html rotate_illus.png "Effect of \p crop parameter on the output"
 
-Any location of the rotated array that does not map to a location of the input
-array is set to 0.
+Here, the original image is represented by the innermost box with the solid
+black and dashed orange lines, and the (theoretical) rotated image is the box
+with the solid orange lines. If \p crop is true, then the output image's
+dimensions will stay the same as the original image's, but the rotated image's
+portions outside the dashed orange lines will be cropped, and the rest of the
+output image (the area between the solid black and solid orange lines) will be
+filled with zeros. However, if \p crop is false, then the output image's
+dimensions might get bigger (as shown in this illustration), as represented by
+the outermost box with dashed black lines. This change in dimensions is
+necessary to accommodate all of the rotated image's data. The remainder of the
+output image will be filled with zeros, as represented by the area between the
+solid orange lines and dashed black lines. Note that the new dimensions in
+general (beyond this illustration) will be greater than or equal the original
+image's dimensions when \p crop is false.
 
 
 \defgroup transform_func_translate translate
