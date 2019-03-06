@@ -350,21 +350,20 @@ fg_chart ForgeManager::getChart(const fg_window window, const int r,
     return chart->handle;
 }
 
-/// Assumptions of getImage member functions:
-///
-/// The width and height of image needs to fall in the range of [0, 2^16]
-/// for the ForgeManager to correctly retrieve the necessary Forge Image
-/// object. This is an implementation limitation on how big of an image
-/// can be rendered using arrayfire graphics funtionality
-fg_image ForgeManager::getImage(int w, int h,
-                                fg_channel_format mode, fg_dtype type) {
+long long ForgeManager::genImageKey(int w, int h, fg_channel_format mode,
+                                    fg_dtype type) {
     assert(w <= 2ll << 16);
     assert(h <= 2ll << 16);
     long long key = ((w & _16BIT) << 16) | (h & _16BIT);
-    key           = (((key << 16) | mode) << 16) | type;
+    key           = ((((key << 16) | (mode & _16BIT)) << 16) | (type | _16BIT));
+    return key;
+}
 
-    ChartKey keypair = std::make_pair(key, nullptr);
+fg_image ForgeManager::getImage(int w, int h, fg_channel_format mode,
+                                fg_dtype type) {
+    auto key = genImageKey(w, h, mode, type);
 
+    ChartKey keypair      = std::make_pair(key, nullptr);
     ImageMapIterator iter = mImgMap.find(keypair);
 
     if (iter == mImgMap.end()) {
@@ -372,19 +371,14 @@ fg_image ForgeManager::getImage(int w, int h,
         FG_CHECK(mPlugin->fg_create_image(&img, w, h, mode, type));
         mImgMap[keypair] = ImagePtr(new Image({img}));
     }
-
     return mImgMap[keypair]->handle;
 }
 
 fg_image ForgeManager::getImage(fg_chart chart, int w, int h,
                                 fg_channel_format mode, fg_dtype type) {
-    assert(w <= 2ll << 16);
-    assert(h <= 2ll << 16);
-    long long key = ((w & _16BIT) << 16) | (h & _16BIT);
-    key           = (((key << 16) | mode) << 16) | type;
+    auto key = genImageKey(w, h, mode, type);
 
     ChartKey keypair = std::make_pair(key, chart);
-
     ImageMapIterator iter = mImgMap.find(keypair);
 
     if (iter == mImgMap.end()) {
@@ -400,19 +394,15 @@ fg_image ForgeManager::getImage(fg_chart chart, int w, int h,
 
         mImgMap[keypair] = ImagePtr(new Image({img}));
     }
-
     return mImgMap[keypair]->handle;
 }
 
 fg_plot ForgeManager::getPlot(fg_chart chart, int nPoints, fg_dtype dtype,
                               fg_plot_type ptype, fg_marker_type mtype) {
-    long long np  = nPoints;
-    long long key = ((np & _48BIT) << 48);
-    key |= (((((dtype & 0x000F) << 12) | (ptype & 0x000F)) << 8) |
-            (mtype & 0x000F));
+    long long key = (((long long)(nPoints)&_48BIT) << 16);
+    key |= (((dtype & _4BIT) << 12) | ((ptype & _4BIT) << 8) | (mtype & _8BIT));
 
     ChartKey keypair = std::make_pair(key, chart);
-
     PlotMapIterator iter = mPltMap.find(keypair);
 
     if (iter == mPltMap.end()) {
@@ -426,17 +416,14 @@ fg_plot ForgeManager::getPlot(fg_chart chart, int nPoints, fg_dtype dtype,
 
         mPltMap[keypair] = PlotPtr(new Plot({plt}));
     }
-
     return mPltMap[keypair]->handle;
 }
 
 fg_histogram ForgeManager::getHistogram(fg_chart chart, int nBins,
                                         fg_dtype type) {
-    long long bins = nBins;
-    long long key  = ((bins & _48BIT) << 48) | (type & _16BIT);
+    long long key = (((long long)(nBins)&_48BIT) << 16) | (type & _16BIT);
 
     ChartKey keypair = std::make_pair(key, chart);
-
     HistogramMapIterator iter = mHstMap.find(keypair);
 
     if (iter == mHstMap.end()) {
@@ -451,23 +438,16 @@ fg_histogram ForgeManager::getHistogram(fg_chart chart, int nBins,
         FG_CHECK(mPlugin->fg_append_histogram_to_chart(chart, hst));
         mHstMap[keypair] = HistogramPtr(new Histogram({hst}));
     }
-
     return mHstMap[keypair]->handle;
 }
 
 fg_surface ForgeManager::getSurface(fg_chart chart,
                                     int nX, int nY, fg_dtype type) {
-    /* nX * nY needs to fall in the range of [0, 2^48]
-     * for the ForgeManager to correctly retrieve
-     * the necessary Forge Plot object. So, this implementation
-     * is a limitation on how big of an plot graph can be rendered
-     * using arrayfire graphics funtionality */
     long long surfaceSize = nX * (long long)(nY);
     assert(surfaceSize <= 2ll << 48);
-    long long key = ((surfaceSize & _48BIT) << 48) | (type & _16BIT);
+    long long key = ((surfaceSize & _48BIT) << 16) | (type & _16BIT);
 
     ChartKey keypair = std::make_pair(key, chart);
-
     SurfaceMapIterator iter = mSfcMap.find(keypair);
 
     if (iter == mSfcMap.end()) {
@@ -483,17 +463,14 @@ fg_surface ForgeManager::getSurface(fg_chart chart,
         FG_CHECK(mPlugin->fg_append_surface_to_chart(chart, surf));
         mSfcMap[keypair] = SurfacePtr(new Surface({surf}));
     }
-
     return mSfcMap[keypair]->handle;
 }
 
 fg_vector_field ForgeManager::getVectorField(fg_chart chart,
                                              int nPoints, fg_dtype type) {
-    long long np  = nPoints;
-    long long key = ((np & _48BIT) << 48) | (type & _16BIT);
+    long long key = (((long long)(nPoints)&_48BIT) << 16) | (type & _16BIT);
 
     ChartKey keypair = std::make_pair(key, chart);
-
     VecFieldMapIterator iter = mVcfMap.find(keypair);
 
     if (iter == mVcfMap.end()) {
@@ -507,7 +484,6 @@ fg_vector_field ForgeManager::getVectorField(fg_chart chart,
                     vfield));
         mVcfMap[keypair] = VectorFieldPtr(new VectorField({vfield}));
     }
-
     return mVcfMap[keypair]->handle;
 }
 
