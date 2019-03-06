@@ -28,6 +28,7 @@ void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                          const uint blocks_x, const uint blocks_y,
                          const uint threads_x, bool isFinalPass,
                          bool inclusive_scan) {
+    // clang-format off
     auto scanFirst = getKernel("cuda::scan_first", ScanFirstSource,
             {
               TemplateTypename<Ti>(),
@@ -41,6 +42,7 @@ void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
               DefineValue(THREADS_PER_BLOCK)
             }
             );
+    // clang-format on
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
@@ -61,12 +63,14 @@ template<typename To, af_op_t op>
 static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
                                  const uint blocks_x, const uint blocks_y,
                                  const uint threads_x, bool inclusive_scan) {
+    // clang-format off
     auto bcastFirst = getKernel("cuda::scan_first_bcast", ScanFirstSource,
             {
               TemplateTypename<To>(),
               TemplateArg(op)
             }
             );
+    // clang-format on
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
@@ -93,8 +97,8 @@ static void scan_first(Param<To> out, CParam<Ti> in, bool inclusive_scan) {
     uint blocks_y = divup(out.dims[1], threads_y);
 
     if (blocks_x == 1) {
-        scan_first_launcher<Ti, To, op>(out, out, in,
-                blocks_x, blocks_y, threads_x, true, inclusive_scan);
+        scan_first_launcher<Ti, To, op>(out, out, in, blocks_x, blocks_y,
+                                        threads_x, true, inclusive_scan);
 
     } else {
         Param<To> tmp = out;
@@ -108,16 +112,16 @@ static void scan_first(Param<To> out, CParam<Ti> in, bool inclusive_scan) {
         auto tmp_alloc   = memAlloc<To>(tmp_elements);
         tmp.ptr          = tmp_alloc.get();
 
-        scan_first_launcher<Ti, To, op>(out, tmp, in,
-                blocks_x, blocks_y, threads_x, false, inclusive_scan);
+        scan_first_launcher<Ti, To, op>(out, tmp, in, blocks_x, blocks_y,
+                                        threads_x, false, inclusive_scan);
 
         // FIXME: Is there an alternative to the if condition ?
         if (op == af_notzero_t) {
-            scan_first_launcher<To, To, af_add_t>(tmp, tmp, tmp,
-                    1, blocks_y, threads_x, true, true);
+            scan_first_launcher<To, To, af_add_t>(tmp, tmp, tmp, 1, blocks_y,
+                                                  threads_x, true, true);
         } else {
-            scan_first_launcher<To, To, op>(tmp, tmp, tmp, 1,
-                    blocks_y, threads_x, true, true);
+            scan_first_launcher<To, To, op>(tmp, tmp, tmp, 1, blocks_y,
+                                            threads_x, true, true);
         }
 
         bcast_first_launcher<To, op>(out, tmp, blocks_x, blocks_y, threads_x,

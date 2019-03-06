@@ -1114,8 +1114,8 @@ std::vector<Array<T>> buildGaussPyr(Param<T> init_img, const unsigned n_octaves,
                 Array<convAccT> filter = gauss_filter<convAccT>(sig_layers[l]);
 
                 convolve2<T, convAccT>(tmp, tmp_pyr[src_idx], filter, 0, false);
-                convolve2<T, convAccT>(tmp_pyr[idx], CParam<T>(tmp), filter,
-                                       1, false);
+                convolve2<T, convAccT>(tmp_pyr[idx], CParam<T>(tmp), filter, 1,
+                                       false);
 
                 // memFree(tmp.ptr);
             }

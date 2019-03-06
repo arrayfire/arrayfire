@@ -25,10 +25,11 @@ static const int THREADS_X = TILE_DIM;
 static const int THREADS_Y = 256 / TILE_DIM;
 
 template<typename T>
-void transpose(Param<T> out, CParam<T> in,
-               const bool conjugate, const bool is32multiple) {
+void transpose(Param<T> out, CParam<T> in, const bool conjugate,
+               const bool is32multiple) {
     static const std::string source(transpose_cuh, transpose_cuh_len);
 
+    // clang-format off
     auto transpose = getKernel("cuda::transpose", source,
             {
               TemplateTypename<T>(),
@@ -40,6 +41,7 @@ void transpose(Param<T> out, CParam<T> in,
               DefineValue(THREADS_Y)
             }
             );
+    // clang-format on
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

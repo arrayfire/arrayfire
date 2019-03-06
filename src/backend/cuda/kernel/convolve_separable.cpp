@@ -12,7 +12,7 @@ namespace cuda {
 namespace kernel {
 
 #define INSTANTIATE(T, aT) \
-template void convolve2<T, aT>(Param<T>, CParam<T>, CParam<aT>, int, bool);
+    template void convolve2<T, aT>(Param<T>, CParam<T>, CParam<aT>, int, bool);
 
 INSTANTIATE(cdouble, cdouble)
 INSTANTIATE(cfloat, cfloat)
@@ -27,5 +27,5 @@ INSTANTIATE(short, float)
 INSTANTIATE(uintl, float)
 INSTANTIATE(intl, float)
 
-}
-}
+}  // namespace kernel
+}  // namespace cuda

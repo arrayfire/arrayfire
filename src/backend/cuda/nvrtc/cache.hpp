@@ -22,8 +22,8 @@
         CUresult res = fn;                                                \
         if (res == CUDA_SUCCESS) break;                                   \
         char cu_err_msg[1024];                                            \
-        const char *cu_err_name;                                          \
-        const char *cu_err_string;                                        \
+        const char* cu_err_name;                                          \
+        const char* cu_err_string;                                        \
         cuGetErrorName(res, &cu_err_name);                                \
         cuGetErrorString(res, &cu_err_string);                            \
         snprintf(cu_err_msg, sizeof(cu_err_msg), "CU Error %s(%d): %s\n", \
@@ -40,8 +40,8 @@ namespace cuda {
 /// to execution of CUDA C++ kernels compiled at runtime.
 ///
 struct Kernel {
-    CUmodule prog;  ///< CUmodule helps acquire kernel attributes
-    CUfunction ker; ///< CUfuntion is the actual kernel blob to run
+    CUmodule prog;   ///< CUmodule helps acquire kernel attributes
+    CUfunction ker;  ///< CUfuntion is the actual kernel blob to run
 
     ///
     /// \brief Copy data to constant qualified global variable of kernel
@@ -68,22 +68,22 @@ struct Kernel {
     ///
     template<typename... Args>
     void operator()(const EnqueueArgs& qArgs, Args... args) {
-        void *params[] = {reinterpret_cast<void*>(&args)...};
-        for(auto& event: qArgs.mEvents) {
+        void* params[] = {reinterpret_cast<void*>(&args)...};
+        for (auto& event : qArgs.mEvents) {
             CU_CHECK(cuStreamWaitEvent(qArgs.mStream, event, 0));
         }
-        CU_CHECK(cuLaunchKernel(ker, qArgs.mBlocks.x, qArgs.mBlocks.y,
-                    qArgs.mBlocks.z, qArgs.mThreads.x, qArgs.mThreads.y,
-                    qArgs.mThreads.z, qArgs.mSharedMemSize, qArgs.mStream,
-                    params, NULL));
+        CU_CHECK(cuLaunchKernel(
+            ker, qArgs.mBlocks.x, qArgs.mBlocks.y, qArgs.mBlocks.z,
+            qArgs.mThreads.x, qArgs.mThreads.y, qArgs.mThreads.z,
+            qArgs.mSharedMemSize, qArgs.mStream, params, NULL));
     }
 };
 
-//TODO(pradeep): remove this in API and merge JIT and nvrtc caches
+// TODO(pradeep): remove this in API and merge JIT and nvrtc caches
 Kernel buildKernel(const std::string& nameExpr,
                    const std::string& jitSourceString,
-                   const std::vector<std::string>& opts={},
-                   const bool isJIT=false);
+                   const std::vector<std::string>& opts = {},
+                   const bool isJIT                     = false);
 
 template<typename T>
 std::string toString(T value);
@@ -93,9 +93,8 @@ struct TemplateArg {
 
     TemplateArg(std::string str) : _tparam(str) {}
 
-    template <typename T>
-    constexpr TemplateArg(T value) noexcept
-    : _tparam(toString(value)) {}
+    template<typename T>
+    constexpr TemplateArg(T value) noexcept : _tparam(toString(value)) {}
 };
 
 template<typename T>
@@ -105,9 +104,9 @@ struct TemplateTypename {
     }
 };
 
-#define DefineKey(arg) "-D "#arg
-#define DefineValue(arg) "-D "#arg"=" + toString(arg)
-#define DefineKeyValue(key, arg) "-D "#key"=" + toString(arg)
+#define DefineKey(arg) "-D " #arg
+#define DefineValue(arg) "-D " #arg "=" + toString(arg)
+#define DefineKeyValue(key, arg) "-D " #key "=" + toString(arg)
 
 ///
 /// \brief Find/Create-Cache a Kernel that fits the given criteria
@@ -125,10 +124,10 @@ struct TemplateTypename {
 /// instantiation expression of the CUDA kernel during compilation stage. It is
 /// critical that these strings are provided in correct format.
 ///
-/// The paramter \p compileOpts is a list of strings that lets you add definitions
-/// such as `-D<NAME>` or `-D<NAME>=<VALUE>` to the compiler. To enable easy
-/// stringification of variables into their definition equation, three helper
-/// macros are provided: TemplateArg, DefineKey and DefineValue.
+/// The paramter \p compileOpts is a list of strings that lets you add
+/// definitions such as `-D<NAME>` or `-D<NAME>=<VALUE>` to the compiler. To
+/// enable easy stringification of variables into their definition equation,
+/// three helper macros are provided: TemplateArg, DefineKey and DefineValue.
 ///
 /// Example Usage: transpose
 ///
@@ -161,6 +160,6 @@ struct TemplateTypename {
 ///            the kernel compilation.
 ///
 Kernel getKernel(const std::string& nameExpr, const std::string& source,
-                 const std::vector< TemplateArg >& templateArgs,
-                 const std::vector< std::string >& compileOpts={});
-}
+                 const std::vector<TemplateArg>& templateArgs,
+                 const std::vector<std::string>& compileOpts = {});
+}  // namespace cuda

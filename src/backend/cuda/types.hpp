@@ -14,13 +14,13 @@
 #include <complex.hpp>
 using dim_t = long long;
 
-#else //__CUDACC_RTC__
+#else  //__CUDACC_RTC__
 
 #include <cuComplex.h>
 #include <af/traits.hpp>
 
 namespace cuda {
-#endif //__CUDACC_RTC__
+#endif  //__CUDACC_RTC__
 
 using cdouble = cuDoubleComplex;
 using cfloat  = cuFloatComplex;
@@ -110,8 +110,8 @@ SPECIALIZE(long long)
 
 #undef SPECIALIZE
 }  // namespace
-#endif //__CUDACC_RTC__
+#endif  //__CUDACC_RTC__
 
 #ifndef __CUDACC_RTC__
 }  // namespace cuda
-#endif //__CUDACC_RTC__
+#endif  //__CUDACC_RTC__

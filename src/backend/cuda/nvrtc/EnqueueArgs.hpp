@@ -24,13 +24,13 @@ namespace cuda {
 /// required to successfully launch a CUDA kernel.
 ///
 struct EnqueueArgs {
-//TODO(pradeep): this can be easily templated
-//template<typename Queue, typename Event>
-    dim3 mBlocks;                   ///< Number of blocks per grid/kernel-launch
-    dim3 mThreads;                  ///< Number of threads per block
-    CUstream mStream;               ///< CUDA stream to enqueue the kernel on
-    unsigned int mSharedMemSize;    ///< Size(in bytes) of shared memory used
-    std::vector<CUevent> mEvents;   ///< Events to wait for kernel execution
+    // TODO(pradeep): this can be easily templated
+    // template<typename Queue, typename Event>
+    dim3 mBlocks;                  ///< Number of blocks per grid/kernel-launch
+    dim3 mThreads;                 ///< Number of threads per block
+    CUstream mStream;              ///< CUDA stream to enqueue the kernel on
+    unsigned int mSharedMemSize;   ///< Size(in bytes) of shared memory used
+    std::vector<CUevent> mEvents;  ///< Events to wait for kernel execution
 
     ///
     /// \brief EnqueueArgs constructor
@@ -42,14 +42,13 @@ struct EnqueueArgs {
     /// \param[in] events is list of events to wait for kernel execution
     ///
     EnqueueArgs(dim3 blks, dim3 thrds, CUstream stream = 0,
-                const unsigned int sharedMemSize = 0,
-                const std::vector<CUevent> &events = {}) :
-      mBlocks(blks),
-      mThreads(thrds),
-      mStream(stream),
-      mSharedMemSize(sharedMemSize),
-      mEvents(events) {
-    }
+                const unsigned int sharedMemSize   = 0,
+                const std::vector<CUevent> &events = {})
+        : mBlocks(blks)
+        , mThreads(thrds)
+        , mStream(stream)
+        , mSharedMemSize(sharedMemSize)
+        , mEvents(events) {}
 };
 
-}
+}  // namespace cuda

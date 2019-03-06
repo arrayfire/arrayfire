@@ -24,8 +24,8 @@ Array<T> transpose(const Array<T> &in, const bool conjugate) {
 
     Array<T> out = createEmptyArray<T>(outDims);
 
-    const bool is32multiple = inDims[0] % kernel::TILE_DIM == 0 &&
-                              inDims[1] % kernel::TILE_DIM == 0;
+    const bool is32multiple =
+        inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0;
 
     kernel::transpose<T>(out, in, conjugate, is32multiple);
 

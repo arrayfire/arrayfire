@@ -19,7 +19,7 @@ struct SharedMemory {
         return ptr;
     }
 };
-}
+}  // namespace cuda
 
 #else
 

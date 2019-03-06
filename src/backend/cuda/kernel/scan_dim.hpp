@@ -27,6 +27,7 @@ static
 void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                        const uint threads_y, const dim_t blocks_all[4],
                        int dim, bool isFinalPass, bool inclusive_scan) {
+    // clang-format off
     auto scanDim = getKernel("cuda::scan_dim", ScanDimSource,
             {
               TemplateTypename<Ti>(),
@@ -41,6 +42,7 @@ void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
               DefineValue(THREADS_X)
             }
             );
+    // clang-format on
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -54,8 +56,8 @@ void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanDim(qArgs, out, tmp, in, blocks_all[0], blocks_all[1],
-            blocks_all[dim], lim);
+    scanDim(qArgs, out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim],
+            lim);
     POST_LAUNCH_CHECK();
 }
 
@@ -64,6 +66,7 @@ static
 void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
                         const uint threads_y, const dim_t blocks_all[4],
                         int dim, bool inclusive_scan) {
+    // clang-format off
     auto bcastDim = getKernel("cuda::scan_dim_bcast", ScanDimSource,
             {
               TemplateTypename<To>(),
@@ -71,6 +74,7 @@ void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
               TemplateArg(dim)
             }
             );
+    // clang-format on
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -90,8 +94,8 @@ void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
 }
 
 template<typename Ti, typename To, af_op_t op>
-static
-void scan_dim(Param<To> out, CParam<Ti> in, int dim, bool inclusive_scan) {
+static void scan_dim(Param<To> out, CParam<Ti> in, int dim,
+                     bool inclusive_scan) {
     uint threads_y = std::min(THREADS_Y, nextpow2(out.dims[dim]));
     uint threads_x = THREADS_X;
 
@@ -101,8 +105,8 @@ void scan_dim(Param<To> out, CParam<Ti> in, int dim, bool inclusive_scan) {
     blocks_all[dim] = divup(out.dims[dim], threads_y * REPEAT);
 
     if (blocks_all[dim] == 1) {
-        scan_dim_launcher<Ti, To, op>(out, out, in,
-                threads_y, blocks_all, dim, true, inclusive_scan);
+        scan_dim_launcher<Ti, To, op>(out, out, in, threads_y, blocks_all, dim,
+                                      true, inclusive_scan);
     } else {
         Param<To> tmp = out;
 
@@ -115,24 +119,24 @@ void scan_dim(Param<To> out, CParam<Ti> in, int dim, bool inclusive_scan) {
         auto tmp_alloc   = memAlloc<To>(tmp_elements);
         tmp.ptr          = tmp_alloc.get();
 
-        scan_dim_launcher<Ti, To, op>(out, tmp, in,
-                threads_y, blocks_all, dim, false, inclusive_scan);
+        scan_dim_launcher<Ti, To, op>(out, tmp, in, threads_y, blocks_all, dim,
+                                      false, inclusive_scan);
 
         int bdim        = blocks_all[dim];
         blocks_all[dim] = 1;
 
         // FIXME: Is there an alternative to the if condition ?
         if (op == af_notzero_t) {
-            scan_dim_launcher<To, To, af_add_t>(tmp, tmp, tmp,
-                    threads_y, blocks_all, dim, true, true);
+            scan_dim_launcher<To, To, af_add_t>(tmp, tmp, tmp, threads_y,
+                                                blocks_all, dim, true, true);
         } else {
-            scan_dim_launcher<To, To, op>(tmp, tmp, tmp,
-                    threads_y, blocks_all, dim, true, true);
+            scan_dim_launcher<To, To, op>(tmp, tmp, tmp, threads_y, blocks_all,
+                                          dim, true, true);
         }
 
         blocks_all[dim] = bdim;
         bcast_dim_launcher<To, op>(out, tmp, threads_y, blocks_all, dim,
-                                        inclusive_scan);
+                                   inclusive_scan);
     }
 }
 
