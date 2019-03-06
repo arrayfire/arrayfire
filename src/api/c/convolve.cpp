@@ -13,16 +13,11 @@
 #include <convolve.hpp>
 #include <fftconvolve.hpp>
 #include <handle.hpp>
-#include <handle.hpp>
 #include <tile.hpp>
 #include <af/data.h>
-#include <af/data.h>
 #include <af/defines.h>
-#include <af/defines.h>
-#include <af/dim4.hpp>
 #include <af/dim4.hpp>
 #include <af/ml.h>
-#include <af/signal.h>
 #include <af/signal.h>
 
 #include <cstdio>

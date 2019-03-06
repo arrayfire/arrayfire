@@ -137,5 +137,6 @@ void wrap_dim_dilated(Param<T> out, CParam<T> in, const dim_t wx,
         }
     }
 }
-}
-}
+
+} // kernel namespace
+} // cpu namespace

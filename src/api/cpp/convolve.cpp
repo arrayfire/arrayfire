@@ -14,7 +14,6 @@
 #include <af/signal.h>
 #include <algorithm>
 #include "error.hpp"
-#include "error.hpp"
 
 namespace af {
 

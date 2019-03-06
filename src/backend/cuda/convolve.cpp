@@ -13,9 +13,7 @@
 #include <cudnn.hpp>
 #include <err_cuda.hpp>
 #include <kernel/convolve.hpp>
-#include <kernel/convolve.hpp>
 #include <platform.hpp>
-#include <af/dim4.hpp>
 #include <af/dim4.hpp>
 #include <type_traits>
 
@@ -433,4 +431,5 @@ INSTANTIATE(uchar, float)
 INSTANTIATE(ushort, float)
 INSTANTIATE(short, float)
 #undef INSTANTIATE
-}
+
+} //cuda namespace

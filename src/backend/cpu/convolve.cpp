@@ -20,7 +20,6 @@
 #include <transpose.hpp>
 #include <unwrap.hpp>
 #include <wrap.hpp>
-#include <iostream>
 #include <vector>
 
 #include <af/defines.h>
@@ -292,4 +291,5 @@ INSTANTIATE(uchar, float)
 INSTANTIATE(ushort, float)
 INSTANTIATE(short, float)
 #undef INSTANTIATE
-}
+
+} // cpu namespace

@@ -11,7 +11,6 @@
 
 #include <GraphicsResourceManager.hpp>
 #include <cublas.hpp>
-#include <cublas.hpp>
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cudnn.hpp>
