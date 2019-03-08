@@ -232,39 +232,6 @@ ForgeModule& forgePlugin() { return detail::forgeManager().plugin(); }
 
 ForgeManager::ForgeManager() : mPlugin(new ForgeModule()) {}
 
-ForgeManager::~ForgeManager() {
-    if (mPlugin->isLoaded()) {
-        /* clear all OpenGL resource objects (images, plots, histograms etc) first
-         * and then delete the windows */
-        for (ImgMapIter iter = mImgMap.begin(); iter != mImgMap.end(); iter++)
-            mPlugin->fg_release_image(iter->second);
-
-        for (PltMapIter iter = mPltMap.begin(); iter != mPltMap.end(); iter++)
-            mPlugin->fg_release_plot(iter->second);
-
-        for (HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
-            mPlugin->fg_release_histogram(iter->second);
-
-        for (SfcMapIter iter = mSfcMap.begin(); iter != mSfcMap.end(); iter++)
-            mPlugin->fg_release_surface(iter->second);
-
-        for (VcfMapIter iter = mVcfMap.begin(); iter != mVcfMap.end(); iter++)
-            mPlugin->fg_release_vector_field(iter->second);
-
-        for (ChartMapIter iter = mChartMap.begin(); iter != mChartMap.end();
-            iter++) {
-            for (int i = 0; i < (int)(iter->second).size(); i++) {
-                fg_chart chrt = (iter->second)[i];
-                if (chrt) {
-                    mChartAxesOverrideMap.erase((chrt));
-                    mPlugin->fg_release_chart(chrt);
-                }
-            }
-        }
-        if(wnd) mPlugin->fg_release_window(wnd->handle);
-    }
-}
-
 ForgeModule& ForgeManager::plugin() { return *mPlugin; }
 
 fg_window ForgeManager::getMainWindow() {
@@ -289,33 +256,44 @@ fg_window ForgeManager::getMainWindow() {
             if (e != FG_ERR_NONE) {
                 AF_ERROR("Graphics Window creation failed", AF_ERR_INTERNAL);
             }
-            this->mPlugin->fg_make_window_current(w);
             this->setWindowChartGrid(w, 1, 1);
-            this->wnd.reset(new Window({w}));
+            this->mPlugin->fg_make_window_current(w);
+            this->mMainWindow.reset(new Window({w}));
             if (!gladLoadGL()) { AF_ERROR("GL Load Failed", AF_ERR_LOAD_LIB); }
         });
     }
 
-    return wnd->handle;
+    return mMainWindow->handle;
 }
 
-void ForgeManager::setWindowChartGrid(const fg_window window, const int r,
-                                      const int c) {
-    ChartMapIter iter = mChartMap.find(window);
-    GridMapIter gIter = mWndGridMap.find(window);
+fg_window ForgeManager::getWindow(const int w, const int h,
+                                  const char* const title,
+                                  const bool invisible) {
+    fg_window retVal = 0;
+    FG_CHECK(mPlugin->fg_create_window(&retVal, w, h, title,
+                getMainWindow(), invisible));
+    if (retVal == 0) {
+        AF_ERROR("Window creation failed", AF_ERR_INTERNAL);
+    }
+    setWindowChartGrid(retVal, 1, 1);
+    return retVal;
+}
+
+void ForgeManager::setWindowChartGrid(const fg_window window,
+                                      const int r, const int c) {
+    ChartMapIterator iter = mChartMap.find(window);
+    WindGridMapIterator gIter = mWndGridMap.find(window);
 
     if (iter != mChartMap.end()) {
         // ChartVec found. Clear it.
         // This has to be cleared as there is no guarantee that existing
         // chart types(2D/3D) match the future grid requirements
-        for (int i = 0; i < (int)(iter->second).size(); i++) {
-            fg_chart chrt = (iter->second)[i];
-            if (chrt) {
-                mChartAxesOverrideMap.erase(chrt);
-                FG_CHECK(mPlugin->fg_release_chart(chrt));
+        for (const ChartPtr& c: iter->second) {
+            if (c) {
+                mChartAxesOverrideMap.erase(c->handle);
             }
         }
-        (iter->second).clear();
+        (iter->second).clear(); // Clear ChartList
         gIter->second = std::make_pair<int, int>(1, 1);
     }
 
@@ -323,131 +301,109 @@ void ForgeManager::setWindowChartGrid(const fg_window window, const int r,
         mChartMap.erase(window);
         mWndGridMap.erase(window);
     } else {
-        mChartMap[window]   = std::vector<fg_chart>(r * c);
+        mChartMap[window]   = ChartList(r * c);
         mWndGridMap[window] = std::make_pair(r, c);
     }
 }
 
-WindGridDims_t ForgeManager::getWindowGrid(const fg_window window) {
-    GridMapIter gIter = mWndGridMap.find(window);
-
+ForgeManager::WindowGridDims
+ForgeManager::getWindowGrid(const fg_window window) {
+    WindGridMapIterator gIter = mWndGridMap.find(window);
     if (gIter == mWndGridMap.end()) {
         mWndGridMap[window] = std::make_pair(1, 1);
     }
-
     return mWndGridMap[window];
 }
 
 fg_chart ForgeManager::getChart(const fg_window window, const int r,
                                 const int c, const fg_chart_type ctype) {
-    fg_chart chart    = NULL;
-    ChartMapIter iter = mChartMap.find(window);
-    GridMapIter gIter = mWndGridMap.find(window);
+    fg_chart retVal   = NULL;
+    ChartMapIterator iter = mChartMap.find(window);
+    WindGridMapIterator gIter = mWndGridMap.find(window);
 
-    if (iter != mChartMap.end()) {
-        int gRows = std::get<0>(gIter->second);
-        int gCols = std::get<1>(gIter->second);
+    int rows = std::get<0>(gIter->second);
+    int cols = std::get<1>(gIter->second);
 
-        if (c >= gCols || r >= gRows)
-            AF_ERROR("Grid points are out of bounds", AF_ERR_TYPE);
+    if (c >= cols || r >= rows)
+        AF_ERROR("Window Grid points are out of bounds", AF_ERR_TYPE);
 
-        // upgrade to exclusive access to make changes
-        chart = (iter->second)[c * gRows + r];
+    // upgrade to exclusive access to make changes
+    ChartPtr& chart = (iter->second)[c * rows + r];
 
-        if (chart == NULL) {
-            // Chart has not been created
-            FG_CHECK(mPlugin->fg_create_chart(&chart, ctype));
-            (iter->second)[c * gRows + r] = chart;
-            // Set Axes override to false
-            mChartAxesOverrideMap[chart] = false;
-        } else {
-            fg_chart_type chart_type;
-            FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
-            if (chart_type != ctype) {
-                // Existing chart is of incompatible type
-                mChartAxesOverrideMap.erase(chart);
-                FG_CHECK(mPlugin->fg_release_chart(chart));
-                FG_CHECK(mPlugin->fg_create_chart(&chart, ctype));
-                (iter->second)[c * gRows + r] = chart;
-                // Set Axes override to false
-                mChartAxesOverrideMap[chart] = false;
-            }
-        }
+    if (!chart) {
+        fg_chart temp = NULL;
+        FG_CHECK(mPlugin->fg_create_chart(&temp, ctype));
+        chart.reset(new Chart({temp}));
+        mChartAxesOverrideMap[chart->handle] = false;
     } else {
-        // The chart map for this was never created
-        // Which should never happen
+        fg_chart_type chart_type;
+        FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart->handle));
+        if (chart_type != ctype) {
+            // Existing chart is of incompatible type
+            mChartAxesOverrideMap.erase(chart->handle);
+            fg_chart temp = 0;
+            FG_CHECK(mPlugin->fg_create_chart(&temp, ctype));
+            chart.reset(new Chart({temp}));
+            mChartAxesOverrideMap[chart->handle] = false;
+        }
     }
+    return chart->handle;
+}
 
-    return chart;
+long long ForgeManager::genImageKey(int w, int h, fg_channel_format mode,
+                                    fg_dtype type) {
+    assert(w <= 2ll << 16);
+    assert(h <= 2ll << 16);
+    long long key = ((w & _16BIT) << 16) | (h & _16BIT);
+    key           = ((((key << 16) | (mode & _16BIT)) << 16) | (type | _16BIT));
+    return key;
 }
 
 fg_image ForgeManager::getImage(int w, int h, fg_channel_format mode,
                                 fg_dtype type) {
-    /* w, h needs to fall in the range of [0, 2^16]
-     * for the ForgeManager to correctly retrieve
-     * the necessary Forge Image object. So, this implementation
-     * is a limitation on how big of an image can be rendered
-     * using arrayfire graphics funtionality */
-    assert(w <= 2ll << 16);
-    assert(h <= 2ll << 16);
-    long long key = ((w & _16BIT) << 16) | (h & _16BIT);
-    key           = (((key << 16) | mode) << 16) | type;
+    auto key = genImageKey(w, h, mode, type);
 
-    ChartKey_t keypair = std::make_pair(key, nullptr);
-
-    ImgMapIter iter = mImgMap.find(keypair);
+    ChartKey keypair      = std::make_pair(key, nullptr);
+    ImageMapIterator iter = mImgMap.find(keypair);
 
     if (iter == mImgMap.end()) {
         fg_image img = nullptr;
         FG_CHECK(mPlugin->fg_create_image(&img, w, h, mode, type));
-        mImgMap[keypair] = img;
+        mImgMap[keypair] = ImagePtr(new Image({img}));
     }
-
-    return mImgMap[keypair];
+    return mImgMap[keypair]->handle;
 }
 
 fg_image ForgeManager::getImage(fg_chart chart, int w, int h,
                                 fg_channel_format mode, fg_dtype type) {
-    /* w, h needs to fall in the range of [0, 2^16]
-     * for the ForgeManager to correctly retrieve
-     * the necessary Forge Image object. So, this implementation
-     * is a limitation on how big of an image can be rendered
-     * using arrayfire graphics funtionality */
-    assert(w <= 2ll << 16);
-    assert(h <= 2ll << 16);
-    long long key = ((w & _16BIT) << 16) | (h & _16BIT);
-    key           = (((key << 16) | mode) << 16) | type;
+    auto key = genImageKey(w, h, mode, type);
 
-    ChartKey_t keypair = std::make_pair(key, chart);
-
-    ImgMapIter iter = mImgMap.find(keypair);
+    ChartKey keypair = std::make_pair(key, chart);
+    ImageMapIterator iter = mImgMap.find(keypair);
 
     if (iter == mImgMap.end()) {
         fg_chart_type chart_type;
         FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
-        if (chart_type != FG_CHART_2D)
+        if (chart_type != FG_CHART_2D) {
             AF_ERROR("Image can only be added to chart of type FG_CHART_2D",
                      AF_ERR_TYPE);
-
+        }
         fg_image img = nullptr;
         FG_CHECK(mPlugin->fg_create_image(&img, w, h, mode, type));
-        mImgMap[keypair] = img;
-
         FG_CHECK(mPlugin->fg_append_image_to_chart(chart, img));
-    }
 
-    return mImgMap[keypair];
+        mImgMap[keypair] = ImagePtr(new Image({img}));
+    }
+    return mImgMap[keypair]->handle;
 }
 
 fg_plot ForgeManager::getPlot(fg_chart chart, int nPoints, fg_dtype dtype,
                               fg_plot_type ptype, fg_marker_type mtype) {
-    long long key = ((nPoints & _48BIT) << 48);
-    key |= (((((dtype & 0x000F) << 12) | (ptype & 0x000F)) << 8) |
-            (mtype & 0x000F));
+    long long key = (((long long)(nPoints)&_48BIT) << 16);
+    key |= (((dtype & _4BIT) << 12) | ((ptype & _4BIT) << 8) | (mtype & _8BIT));
 
-    ChartKey_t keypair = std::make_pair(key, chart);
-
-    PltMapIter iter = mPltMap.find(keypair);
+    ChartKey keypair = std::make_pair(key, chart);
+    PlotMapIterator iter = mPltMap.find(keypair);
 
     if (iter == mPltMap.end()) {
         fg_chart_type chart_type;
@@ -456,78 +412,66 @@ fg_plot ForgeManager::getPlot(fg_chart chart, int nPoints, fg_dtype dtype,
         fg_plot plt = nullptr;
         FG_CHECK(mPlugin->fg_create_plot(&plt, nPoints, dtype, chart_type,
                                          ptype, mtype));
-        mPltMap[keypair] = plt;
-
         FG_CHECK(mPlugin->fg_append_plot_to_chart(chart, plt));
-    }
 
-    return mPltMap[keypair];
+        mPltMap[keypair] = PlotPtr(new Plot({plt}));
+    }
+    return mPltMap[keypair]->handle;
 }
 
 fg_histogram ForgeManager::getHistogram(fg_chart chart, int nBins,
                                         fg_dtype type) {
-    long long key = ((nBins & _48BIT) << 48) | (type & _16BIT);
+    long long key = (((long long)(nBins)&_48BIT) << 16) | (type & _16BIT);
 
-    ChartKey_t keypair = std::make_pair(key, chart);
-
-    HstMapIter iter = mHstMap.find(keypair);
+    ChartKey keypair = std::make_pair(key, chart);
+    HistogramMapIterator iter = mHstMap.find(keypair);
 
     if (iter == mHstMap.end()) {
         fg_chart_type chart_type;
         FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
-        if (chart_type != FG_CHART_2D)
+        if (chart_type != FG_CHART_2D) {
             AF_ERROR("Histogram can only be added to chart of type FG_CHART_2D",
                      AF_ERR_TYPE);
-
+        }
         fg_histogram hst = nullptr;
         FG_CHECK(mPlugin->fg_create_histogram(&hst, nBins, type));
-        mHstMap[keypair] = hst;
-
         FG_CHECK(mPlugin->fg_append_histogram_to_chart(chart, hst));
+        mHstMap[keypair] = HistogramPtr(new Histogram({hst}));
     }
-
-    return mHstMap[keypair];
+    return mHstMap[keypair]->handle;
 }
 
-fg_surface ForgeManager::getSurface(fg_chart chart, int nX, int nY,
-                                    fg_dtype type) {
-    /* nX * nY needs to fall in the range of [0, 2^48]
-     * for the ForgeManager to correctly retrieve
-     * the necessary Forge Plot object. So, this implementation
-     * is a limitation on how big of an plot graph can be rendered
-     * using arrayfire graphics funtionality */
-    assert((long long)nX * nY <= 2ll << 48);
-    long long key = (((nX * nY) & _48BIT) << 48) | (type & _16BIT);
+fg_surface ForgeManager::getSurface(fg_chart chart,
+                                    int nX, int nY, fg_dtype type) {
+    long long surfaceSize = nX * (long long)(nY);
+    assert(surfaceSize <= 2ll << 48);
+    long long key = ((surfaceSize & _48BIT) << 16) | (type & _16BIT);
 
-    ChartKey_t keypair = std::make_pair(key, chart);
-
-    SfcMapIter iter = mSfcMap.find(keypair);
+    ChartKey keypair = std::make_pair(key, chart);
+    SurfaceMapIterator iter = mSfcMap.find(keypair);
 
     if (iter == mSfcMap.end()) {
         fg_chart_type chart_type;
         FG_CHECK(mPlugin->fg_get_chart_type(&chart_type, chart));
-        if (chart_type != FG_CHART_3D)
+        if (chart_type != FG_CHART_3D) {
             AF_ERROR("Surface can only be added to chart of type FG_CHART_3D",
                      AF_ERR_TYPE);
-
+        }
         fg_surface surf = nullptr;
         FG_CHECK(mPlugin->fg_create_surface(&surf, nX, nY, type,
                                             FG_PLOT_SURFACE, FG_MARKER_NONE));
-        mSfcMap[keypair] = surf;
-
         FG_CHECK(mPlugin->fg_append_surface_to_chart(chart, surf));
+        mSfcMap[keypair] = SurfacePtr(new Surface({surf}));
     }
-
-    return mSfcMap[keypair];
+    return mSfcMap[keypair]->handle;
 }
 
-fg_vector_field ForgeManager::getVectorField(fg_chart chart, int nPoints,
-                                             fg_dtype type) {
-    long long key = (((nPoints)&_48BIT) << 48) | (type & _16BIT);
+fg_vector_field ForgeManager::getVectorField(fg_chart chart,
+                                             int nPoints, fg_dtype type) {
+    long long key = (((long long)(nPoints)&_48BIT) << 16) | (type & _16BIT);
 
-    ChartKey_t keypair = std::make_pair(key, chart);
-
-    VcfMapIter iter = mVcfMap.find(keypair);
+    ChartKey keypair = std::make_pair(key, chart);
+    VecFieldMapIterator iter = mVcfMap.find(keypair);
 
     if (iter == mVcfMap.end()) {
         fg_chart_type chart_type;
@@ -535,25 +479,24 @@ fg_vector_field ForgeManager::getVectorField(fg_chart chart, int nPoints,
 
         fg_vector_field vfield = nullptr;
         FG_CHECK(mPlugin->fg_create_vector_field(&vfield, nPoints, type,
-                                                 chart_type));
-        mVcfMap[keypair] = vfield;
-
-        FG_CHECK(mPlugin->fg_append_vector_field_to_chart(chart, vfield));
+                    chart_type));
+        FG_CHECK(mPlugin->fg_append_vector_field_to_chart(chart,
+                    vfield));
+        mVcfMap[keypair] = VectorFieldPtr(new VectorField({vfield}));
     }
-
-    return mVcfMap[keypair];
+    return mVcfMap[keypair]->handle;
 }
 
-bool ForgeManager::getChartAxesOverride(fg_chart chart) {
-    ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
+bool ForgeManager::getChartAxesOverride(const fg_chart chart) {
+    AxesOverrideIterator iter = mChartAxesOverrideMap.find(chart);
     if (iter == mChartAxesOverrideMap.end()) {
         AF_ERROR("Chart Not Found!", AF_ERR_INTERNAL);
     }
     return mChartAxesOverrideMap[chart];
 }
 
-void ForgeManager::setChartAxesOverride(fg_chart chart, bool flag) {
-    ChartAxesOverrideIter iter = mChartAxesOverrideMap.find(chart);
+void ForgeManager::setChartAxesOverride(const fg_chart chart, bool flag) {
+    AxesOverrideIterator iter = mChartAxesOverrideMap.find(chart);
     if (iter == mChartAxesOverrideMap.end()) {
         AF_ERROR("Chart Not Found!", AF_ERR_INTERNAL);
     }
