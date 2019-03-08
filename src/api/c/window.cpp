@@ -22,20 +22,7 @@ using namespace graphics;
 af_err af_create_window(af_window* out, const int width, const int height,
                         const char* const title) {
     try {
-        ForgeManager& fgMngr = forgeManager();
-        fg_window mainWnd    = fgMngr.getMainWindow();
-
-        if (mainWnd == 0) {
-            AF_ERROR("OpenGL context creation failed", AF_ERR_INTERNAL);
-        }
-
-        fg_window temp = nullptr;
-
-        FG_CHECK(forgePlugin().fg_create_window(&temp, width, height, title,
-                                                mainWnd, false));
-
-        fgMngr.setWindowChartGrid(temp, 1, 1);
-
+        fg_window temp = forgeManager().getWindow(width, height, title, false);
         std::swap(*out, temp);
     }
     CATCHALL;
