@@ -13,6 +13,9 @@ project(ArrayFire-Example-Linear-Algebra
 find_package(ArrayFire)
 
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
+if(UNIX)
+  set(PTHREAD "pthread")
+endif()
 
 if(ArrayFire_CPU_FOUND)
   # Bagging example
@@ -41,7 +44,7 @@ if(ArrayFire_CPU_FOUND)
 
   # Neural Network example
   add_executable(neural_network_cpu neural_network.cpp)
-  target_link_libraries(neural_network_cpu ArrayFire::afcpu)
+  target_link_libraries(neural_network_cpu ${PTHREAD} ArrayFire::afcpu)
 
   # Preceptron example
   add_executable(perceptron_cpu perceptron.cpp)
@@ -76,7 +79,7 @@ if(ArrayFire_CUDA_FOUND)
   target_link_libraries(naive_bayes_cuda ArrayFire::afcuda)
 
   add_executable(neural_network_cuda neural_network.cpp)
-  target_link_libraries(neural_network_cuda ArrayFire::afcuda)
+  target_link_libraries(neural_network_cuda ${PTHREAD} ArrayFire::afcuda)
 
   add_executable(perceptron_cuda perceptron.cpp)
   target_link_libraries(perceptron_cuda ArrayFire::afcuda)
@@ -108,7 +111,7 @@ if(ArrayFire_OpenCL_FOUND)
   target_link_libraries(naive_bayes_opencl ArrayFire::afopencl)
 
   add_executable(neural_network_opencl neural_network.cpp)
-  target_link_libraries(neural_network_opencl ArrayFire::afopencl)
+  target_link_libraries(neural_network_opencl ${PTHREAD} ArrayFire::afopencl)
 
   add_executable(perceptron_opencl perceptron.cpp)
   target_link_libraries(perceptron_opencl ArrayFire::afopencl)

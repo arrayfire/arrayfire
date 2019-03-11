@@ -8,11 +8,13 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <math.h>
 #include <stdio.h>
-#include <af/util.h>
-#include <string>
 #include <vector>
+#include <list>
+#include <string>
+#include <thread>
+#include <af/util.h>
+#include <math.h>
 #include "mnist_common.h"
 
 using namespace af;
@@ -155,14 +157,14 @@ double ann::train(const array &input, const array &target, double alpha,
 
         if (verbose) {
             if ((i + 1) % 10 == 0)
-                printf("Epoch: %4d, Error: %0.4f\n", i + 1, err);
+                printf("Device: %d, Epoch: %4d, Error: %0.4f\n", af::getDevice(), i + 1, err);
         }
     }
     return err;
 }
 
 int ann_demo(bool console, int perc) {
-    printf("** ArrayFire ANN Demo **\n\n");
+    printf("Starting training on device %d ...\n\n", af::getDevice());
 
     array train_images, test_images;
     array train_target, test_target;
@@ -207,6 +209,7 @@ int ann_demo(bool console, int perc) {
     array train_output = network.predict(train_feats);
     array test_output  = network.predict(test_feats);
 
+
     // Benchmark prediction
     af::sync();
     timer::start();
@@ -214,16 +217,14 @@ int ann_demo(bool console, int perc) {
     af::sync();
     double test_time = timer::stop() / 100;
 
-    printf("\nTraining set:\n");
-    printf("Accuracy on training data: %2.2f\n",
-           accuracy(train_output, train_target));
+    printf("\nAccuracy on training data: %2.2f device: %d\n",
+           accuracy(train_output, train_target), af::getDevice());
 
-    printf("\nTest set:\n");
-    printf("Accuracy on testing  data: %2.2f\n",
-           accuracy(test_output, test_target));
+    printf("Accuracy on testing  data: %2.2f device: %d\n",
+           accuracy(test_output , test_target ), af::getDevice());
 
-    printf("\nTraining time: %4.4lf s\n", train_time);
-    printf("Prediction time: %4.4lf s\n\n", test_time);
+    printf("\nTraining time on device %d: %4.4lf s\n", af::getDevice(), train_time);
+    printf("Prediction time on device %d: %4.4lf s\n\n", af::getDevice(), test_time);
 
     if (!console) {
         // Get 20 random test images.
@@ -234,17 +235,48 @@ int ann_demo(bool console, int perc) {
     return 0;
 }
 
-int main(int argc, char **argv) {
+class learner {
+public:
+  void learn(const unsigned d, const bool console, const int perc) {
+    printf("Starting new learner thread on device %d\n", d);
+    af::setDevice(d);
+    af::array r = af::randu(10);
+    ann_demo(console, perc);
+  }
+};
+
+int main(int argc, char** argv)
+{
     int device   = argc > 1 ? atoi(argv[1]) : 0;
     bool console = argc > 2 ? argv[2][0] == '-' : false;
-    int perc     = argc > 3 ? atoi(argv[3]) : 60;
+    int perc     = argc > 3 ? atoi(argv[3]) : 60; // percentage training/test data
+    af::info();
+    const unsigned dc = af::getDeviceCount();
+    printf("** ArrayFire ANN Demo **\n\n");
+    printf("Usage: %s deviceId console percentage\n", argv[0]);
+    printf("- deviceId: either a device id (>= 0). If -1, 1 training will be triggered per device\n");
+    printf("- console: console mode\n");
+    printf("- percentage: percent of training/testing data, default 60% used for training\n");
+    af::info();
 
+    std::list<learner> ls;
+    std::list<std::thread> ts;
     try {
-        af::setDevice(device);
-        af::info();
-        return ann_demo(console, perc);
-
-    } catch (af::exception &ae) { std::cerr << ae.what() << std::endl; }
+        if (device < 0) {
+	    for (unsigned i = 0; i < dc; ++i) {
+              ls.push_back(learner());
+	      ts.push_back(std::thread(&learner::learn, ls.back(), i, console, perc));
+	    }
+        }
+        else {
+            ls.push_back(learner());
+            ts.push_back(std::thread(&learner::learn, ls.back(), device, console, perc));
+        }
+        for (auto& t : ts)
+          t.join();
+    } catch (af::exception &ae) {
+        std::cerr << ae.what() << std::endl;
+    }
 
     return 0;
 }
