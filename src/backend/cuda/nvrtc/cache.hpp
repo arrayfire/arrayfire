@@ -104,6 +104,13 @@ struct TemplateTypename {
     }
 };
 
+template<>
+struct TemplateTypename<long long> {
+    operator TemplateArg() const noexcept {
+        return {"long long"};
+    }
+};
+
 #define DefineKey(arg) "-D " #arg
 #define DefineValue(arg) "-D " #arg "=" + toString(arg)
 #define DefineKeyValue(key, arg) "-D " #key "=" + toString(arg)
