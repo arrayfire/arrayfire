@@ -107,7 +107,7 @@ struct TemplateTypename {
 template<>
 struct TemplateTypename<long long> {
     operator TemplateArg() const noexcept {
-        return {"long long"};
+        return TemplateArg(std::string("long long"));
     }
 };
 
