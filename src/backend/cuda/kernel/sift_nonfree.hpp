@@ -70,6 +70,8 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#pragma once
+
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
@@ -1059,11 +1061,11 @@ Array<T> createInitialImage(CParam<T> img, const float init_sigma,
 
     if (double_input) {
         resize<T, AF_INTERP_BILINEAR>(init_img, img);
-        convolve2<T, convAccT, 0, false>(init_tmp, init_img, filter);
+        convolve2<T, convAccT>(init_tmp, init_img, filter, 0, false);
     } else
-        convolve2<T, convAccT, 0, false>(init_tmp, img, filter);
+        convolve2<T, convAccT>(init_tmp, img, filter, 0, false);
 
-    convolve2<T, convAccT, 1, false>(init_img, CParam<T>(init_tmp), filter);
+    convolve2<T, convAccT>(init_img, CParam<T>(init_tmp), filter, 1, false);
 
     return init_img;
 }
@@ -1111,9 +1113,9 @@ std::vector<Array<T>> buildGaussPyr(Param<T> init_img, const unsigned n_octaves,
                 Array<T> tmp = createEmptyArray<T>(tmp_pyr[src_idx].dims());
                 Array<convAccT> filter = gauss_filter<convAccT>(sig_layers[l]);
 
-                convolve2<T, convAccT, 0, false>(tmp, tmp_pyr[src_idx], filter);
-                convolve2<T, convAccT, 1, false>(tmp_pyr[idx], CParam<T>(tmp),
-                                                 filter);
+                convolve2<T, convAccT>(tmp, tmp_pyr[src_idx], filter, 0, false);
+                convolve2<T, convAccT>(tmp_pyr[idx], CParam<T>(tmp), filter, 1,
+                                       false);
 
                 // memFree(tmp.ptr);
             }
