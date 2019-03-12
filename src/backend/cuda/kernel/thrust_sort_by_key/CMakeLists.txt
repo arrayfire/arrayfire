@@ -33,7 +33,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
       file(RENAME "${CMAKE_CURRENT_BINARY_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl.cu"
           "${CMAKE_CURRENT_BINARY_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl_${SBK_TYPE}_${SBK_INST}.cu")
 
-      cuda_compile(scan_by_key_gen_files
+      cuda_compile(sort_by_key_gen_files
           ${CMAKE_CURRENT_BINARY_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl_${SBK_TYPE}_${SBK_INST}.cu
           ${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key_impl.hpp
           OPTIONS
@@ -42,7 +42,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
             "${platform_flags} ${cuda_cxx_flags} -DAFDLL"
       )
 
-      list(APPEND SORT_OBJ ${scan_by_key_gen_files})
+      list(APPEND SORT_OBJ ${sort_by_key_gen_files})
     endforeach(SBK_INST ${SBK_INSTS})
 endforeach(SBK_TYPE ${SBK_TYPES})
 

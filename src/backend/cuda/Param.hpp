@@ -8,8 +8,13 @@
  ********************************************************/
 
 #pragma once
+
 #include <backend.hpp>
+#include <types.hpp>
+
+#ifndef __CUDACC_RTC__
 #include <af/defines.h>
+#endif
 
 namespace cuda {
 
@@ -29,7 +34,7 @@ class Param {
             strides[i] = istrides[i];
         }
     }
-    size_t elements() const noexcept {
+    __DH__ size_t elements() const noexcept {
         return dims[0] * dims[1] * dims[2] * dims[3];
     }
 };
@@ -65,7 +70,9 @@ class CParam {
         }
     }
 
-    __DH__ ~CParam() {}
+    __DH__ size_t elements() const noexcept {
+        return dims[0] * dims[1] * dims[2] * dims[3];
+    }
 };
 
 }  // namespace cuda

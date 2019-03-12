@@ -22,20 +22,10 @@ template<af_op_t op, typename Ti, typename To>
 Array<To> scan(const Array<Ti>& in, const int dim, bool inclusive_scan) {
     Array<To> out = createEmptyArray<To>(in.dims());
 
-    if (inclusive_scan) {
-        switch (dim) {
-            case 0: kernel::scan_first<Ti, To, op, true>(out, in); break;
-            case 1: kernel::scan_dim<Ti, To, op, 1, true>(out, in); break;
-            case 2: kernel::scan_dim<Ti, To, op, 2, true>(out, in); break;
-            case 3: kernel::scan_dim<Ti, To, op, 3, true>(out, in); break;
-        }
+    if (dim == 0) {
+        kernel::scan_first<Ti, To, op>(out, in, inclusive_scan);
     } else {
-        switch (dim) {
-            case 0: kernel::scan_first<Ti, To, op, false>(out, in); break;
-            case 1: kernel::scan_dim<Ti, To, op, 1, false>(out, in); break;
-            case 2: kernel::scan_dim<Ti, To, op, 2, false>(out, in); break;
-            case 3: kernel::scan_dim<Ti, To, op, 3, false>(out, in); break;
-        }
+        kernel::scan_dim<Ti, To, op>(out, in, dim, inclusive_scan);
     }
 
     return out;

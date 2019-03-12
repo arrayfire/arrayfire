@@ -12,172 +12,38 @@
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
-#include <math.hpp>
 #include <memory.hpp>
-#include <ops.hpp>
+#include <nvrtc/cache.hpp>
+#include <nvrtc_kernel_headers/scan_dim.hpp>
 #include "config.hpp"
 
 namespace cuda {
 namespace kernel {
 
-template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass,
-         uint DIMY, bool inclusive_scan>
-__global__ static void scan_dim_kernel(Param<To> out, Param<To> tmp,
-                                       CParam<Ti> in, uint blocks_x,
-                                       uint blocks_y, uint blocks_dim,
-                                       uint lim) {
-    const int tidx = threadIdx.x;
-    const int tidy = threadIdx.y;
-    const int tid  = tidy * THREADS_X + tidx;
+static const std::string ScanDimSource(scan_dim_cuh, scan_dim_cuh_len);
 
-    const int zid        = blockIdx.x / blocks_x;
-    const int wid        = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
-    const int blockIdx_x = blockIdx.x - (blocks_x)*zid;
-    const int blockIdx_y =
-        (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y)*wid;
-    const int xid = blockIdx_x * blockDim.x + tidx;
-    const int yid = blockIdx_y;  // yid  of output. updated for input later.
-
-    int ids[4] = {xid, yid, zid, wid};
-
-    const Ti *iptr = in.ptr;
-    To *optr       = out.ptr;
-    To *tptr       = tmp.ptr;
-
-    // There is only one element per block for out
-    // There are blockDim.y elements per block for in
-    // Hence increment ids[dim] just after offseting out and before offsetting
-    // in
-    tptr += ids[3] * tmp.strides[3] + ids[2] * tmp.strides[2] +
-            ids[1] * tmp.strides[1] + ids[0];
-    const int blockIdx_dim = ids[dim];
-
-    ids[dim] = ids[dim] * blockDim.y * lim + tidy;
-    optr += ids[3] * out.strides[3] + ids[2] * out.strides[2] +
-            ids[1] * out.strides[1] + ids[0];
-    iptr += ids[3] * in.strides[3] + ids[2] * in.strides[2] +
-            ids[1] * in.strides[1] + ids[0];
-    int id_dim        = ids[dim];
-    const int out_dim = out.dims[dim];
-
-    bool is_valid = (ids[0] < out.dims[0]) && (ids[1] < out.dims[1]) &&
-                    (ids[2] < out.dims[2]) && (ids[3] < out.dims[3]);
-
-    const int ostride_dim = out.strides[dim];
-    const int istride_dim = in.strides[dim];
-
-    __shared__ To s_val[THREADS_X * DIMY * 2];
-    __shared__ To s_tmp[THREADS_X];
-    To *sptr = s_val + tid;
-
-    Transform<Ti, To, op> transform;
-    Binary<To, op> binop;
-
-    const To init = Binary<To, op>::init();
-    To val        = init;
-
-    const bool isLast = (tidy == (DIMY - 1));
-
-    for (int k = 0; k < lim; k++) {
-        if (isLast) s_tmp[tidx] = val;
-
-        bool cond = (is_valid) && (id_dim < out_dim);
-        val       = cond ? transform(*iptr) : init;
-        *sptr     = val;
-        __syncthreads();
-
-        int start = 0;
-#pragma unroll
-        for (int off = 1; off < DIMY; off *= 2) {
-            if (tidy >= off) val = binop(val, sptr[(start - off) * THREADS_X]);
-            start                   = DIMY - start;
-            sptr[start * THREADS_X] = val;
-
-            __syncthreads();
-        }
-
-        val = binop(val, s_tmp[tidx]);
-        if (inclusive_scan) {
-            if (cond) { *optr = val; }
-        } else if (is_valid) {
-            if (id_dim == (out_dim - 1)) {
-                *(optr - (id_dim * ostride_dim)) = init;
-            } else if (id_dim < (out_dim - 1)) {
-                *(optr + ostride_dim) = val;
+template<typename Ti, typename To, af_op_t op>
+static
+void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
+                       const uint threads_y, const dim_t blocks_all[4],
+                       int dim, bool isFinalPass, bool inclusive_scan) {
+    // clang-format off
+    auto scanDim = getKernel("cuda::scan_dim", ScanDimSource,
+            {
+              TemplateTypename<Ti>(),
+              TemplateTypename<To>(),
+              TemplateArg(op),
+              TemplateArg(dim),
+              TemplateArg(isFinalPass),
+              TemplateArg(threads_y),
+              TemplateArg(inclusive_scan)
+            },
+            {
+              DefineValue(THREADS_X)
             }
-        }
-        id_dim += blockDim.y;
-        iptr += blockDim.y * istride_dim;
-        optr += blockDim.y * ostride_dim;
-        __syncthreads();
-    }
+            );
+    // clang-format on
 
-    if (!isFinalPass && is_valid && (blockIdx_dim < tmp.dims[dim]) && isLast) {
-        *tptr = val;
-    }
-}
-
-template<typename To, af_op_t op, int dim>
-__global__ static void bcast_dim_kernel(Param<To> out, CParam<To> tmp,
-                                        uint blocks_x, uint blocks_y,
-                                        uint blocks_dim, uint lim,
-                                        bool inclusive_scan) {
-    const int tidx = threadIdx.x;
-    const int tidy = threadIdx.y;
-
-    const int zid        = blockIdx.x / blocks_x;
-    const int wid        = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
-    const int blockIdx_x = blockIdx.x - (blocks_x)*zid;
-    const int blockIdx_y =
-        (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y)*wid;
-    const int xid = blockIdx_x * blockDim.x + tidx;
-    const int yid = blockIdx_y;  // yid  of output. updated for input later.
-
-    int ids[4] = {xid, yid, zid, wid};
-
-    const To *tptr = tmp.ptr;
-    To *optr       = out.ptr;
-
-    // There is only one element per block for out
-    // There are blockDim.y elements per block for in
-    // Hence increment ids[dim] just after offseting out and before offsetting
-    // in
-    tptr += ids[3] * tmp.strides[3] + ids[2] * tmp.strides[2] +
-            ids[1] * tmp.strides[1] + ids[0];
-    const int blockIdx_dim = ids[dim];
-
-    ids[dim] = ids[dim] * blockDim.y * lim + tidy;
-    optr += ids[3] * out.strides[3] + ids[2] * out.strides[2] +
-            ids[1] * out.strides[1] + ids[0];
-    const int id_dim  = ids[dim];
-    const int out_dim = out.dims[dim];
-
-    // Shift broadcast one step to the right for exclusive scan (#2366)
-    int offset = inclusive_scan ? 0 : out.strides[dim];
-    optr += offset;
-
-    bool is_valid = (ids[0] < out.dims[0]) && (ids[1] < out.dims[1]) &&
-                    (ids[2] < out.dims[2]) && (ids[3] < out.dims[3]);
-
-    if (!is_valid) return;
-    if (blockIdx_dim == 0) return;
-
-    To accum = *(tptr - tmp.strides[dim]);
-
-    Binary<To, op> binop;
-    const int ostride_dim = out.strides[dim];
-
-    for (int k = 0, id = id_dim; is_valid && k < lim && (id < out_dim);
-         k++, id += blockDim.y) {
-        *optr = binop(*optr, accum);
-        optr += blockDim.y * ostride_dim;
-    }
-}
-
-template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass,
-         bool inclusive_scan>
-static void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
-                              const uint threads_y, const dim_t blocks_all[4]) {
     dim3 threads(THREADS_X, threads_y);
 
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
@@ -189,40 +55,27 @@ static void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
 
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
-    switch (threads_y) {
-        case 8:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 8,
-                                         inclusive_scan>),
-                        blocks, threads, out, tmp, in, blocks_all[0],
-                        blocks_all[1], blocks_all[dim], lim);
-            break;
-        case 4:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 4,
-                                         inclusive_scan>),
-                        blocks, threads, out, tmp, in, blocks_all[0],
-                        blocks_all[1], blocks_all[dim], lim);
-            break;
-        case 2:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 2,
-                                         inclusive_scan>),
-                        blocks, threads, out, tmp, in, blocks_all[0],
-                        blocks_all[1], blocks_all[dim], lim);
-            break;
-        case 1:
-            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 1,
-                                         inclusive_scan>),
-                        blocks, threads, out, tmp, in, blocks_all[0],
-                        blocks_all[1], blocks_all[dim], lim);
-            break;
-    }
-
+    EnqueueArgs qArgs(blocks, threads, getActiveStream());
+    scanDim(qArgs, out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim],
+            lim);
     POST_LAUNCH_CHECK();
 }
 
-template<typename To, af_op_t op, int dim>
-static void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
-                               const uint threads_y, const dim_t blocks_all[4],
-                               bool inclusive_scan) {
+template<typename To, af_op_t op>
+static
+void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
+                        const uint threads_y, const dim_t blocks_all[4],
+                        int dim, bool inclusive_scan) {
+    // clang-format off
+    auto bcastDim = getKernel("cuda::scan_dim_bcast", ScanDimSource,
+            {
+              TemplateTypename<To>(),
+              TemplateArg(op),
+              TemplateArg(dim)
+            }
+            );
+    // clang-format on
+
     dim3 threads(THREADS_X, threads_y);
 
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
@@ -234,15 +87,15 @@ static void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
 
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
-    CUDA_LAUNCH((bcast_dim_kernel<To, op, dim>), blocks, threads, out, tmp,
-                blocks_all[0], blocks_all[1], blocks_all[dim], lim,
-                inclusive_scan);
-
+    EnqueueArgs qArgs(blocks, threads, getActiveStream());
+    bcastDim(qArgs, out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim],
+             lim, inclusive_scan);
     POST_LAUNCH_CHECK();
 }
 
-template<typename Ti, typename To, af_op_t op, int dim, bool inclusive_scan>
-static void scan_dim(Param<To> out, CParam<Ti> in) {
+template<typename Ti, typename To, af_op_t op>
+static void scan_dim(Param<To> out, CParam<Ti> in, int dim,
+                     bool inclusive_scan) {
     uint threads_y = std::min(THREADS_Y, nextpow2(out.dims[dim]));
     uint threads_x = THREADS_X;
 
@@ -252,9 +105,8 @@ static void scan_dim(Param<To> out, CParam<Ti> in) {
     blocks_all[dim] = divup(out.dims[dim], threads_y * REPEAT);
 
     if (blocks_all[dim] == 1) {
-        scan_dim_launcher<Ti, To, op, dim, true, inclusive_scan>(
-            out, out, in, threads_y, blocks_all);
-
+        scan_dim_launcher<Ti, To, op>(out, out, in, threads_y, blocks_all, dim,
+                                      true, inclusive_scan);
     } else {
         Param<To> tmp = out;
 
@@ -267,24 +119,24 @@ static void scan_dim(Param<To> out, CParam<Ti> in) {
         auto tmp_alloc   = memAlloc<To>(tmp_elements);
         tmp.ptr          = tmp_alloc.get();
 
-        scan_dim_launcher<Ti, To, op, dim, false, inclusive_scan>(
-            out, tmp, in, threads_y, blocks_all);
+        scan_dim_launcher<Ti, To, op>(out, tmp, in, threads_y, blocks_all, dim,
+                                      false, inclusive_scan);
 
         int bdim        = blocks_all[dim];
         blocks_all[dim] = 1;
 
         // FIXME: Is there an alternative to the if condition ?
         if (op == af_notzero_t) {
-            scan_dim_launcher<To, To, af_add_t, dim, true, true>(
-                tmp, tmp, tmp, threads_y, blocks_all);
+            scan_dim_launcher<To, To, af_add_t>(tmp, tmp, tmp, threads_y,
+                                                blocks_all, dim, true, true);
         } else {
-            scan_dim_launcher<To, To, op, dim, true, true>(
-                tmp, tmp, tmp, threads_y, blocks_all);
+            scan_dim_launcher<To, To, op>(tmp, tmp, tmp, threads_y, blocks_all,
+                                          dim, true, true);
         }
 
         blocks_all[dim] = bdim;
-        bcast_dim_launcher<To, op, dim>(out, tmp, threads_y, blocks_all,
-                                        inclusive_scan);
+        bcast_dim_launcher<To, op>(out, tmp, threads_y, blocks_all, dim,
+                                   inclusive_scan);
     }
 }
 

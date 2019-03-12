@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
@@ -366,8 +368,8 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
             Array<T> lvl_tmp = createEmptyArray<T>(img_pyr[i].dims());
 
             // Separable Gaussian filtering to reduce noise sensitivity
-            convolve2<T, convAccT, 0, false>(lvl_tmp, img_pyr[i], gauss_filter);
-            convolve2<T, convAccT, 1, false>(img_pyr[i], lvl_tmp, gauss_filter);
+            convolve2<T, convAccT>(lvl_tmp, img_pyr[i], gauss_filter, 0, false);
+            convolve2<T, convAccT>(img_pyr[i], lvl_tmp, gauss_filter, 1, false);
         }
 
         float* d_size_lvl = memAlloc<float>(feat_pyr[i]).release();
