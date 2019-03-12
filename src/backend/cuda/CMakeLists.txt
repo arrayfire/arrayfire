@@ -15,7 +15,7 @@ find_cuda_helper_libs(nvrtc-builtins)
 
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
 
-include(CLKernelToH)
+include(FileToString)
 
 if(NOT CUDA_architecture_build_targets)
   cuda_detect_installed_gpus(detected_gpus)
@@ -55,12 +55,45 @@ set(jit_kernel_headers
 
 file(GLOB jit_src "kernel/jit.cuh")
 
-cl_kernel_to_h(
+file_to_string(
     SOURCES ${jit_src}
     VARNAME jit_files
     EXTENSION "hpp"
     OUTPUT_DIR ${jit_kernel_headers}
     TARGETS jit_kernel_targets
+    NAMESPACE "cuda"
+    )
+
+set(nvrtc_src
+  ${CUDA_TOOLKIT_ROOT_DIR}/include/cuComplex.h
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/shared.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve1.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve2.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve3.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve_separable.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim_by_key.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first_by_key.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/where.cuh
+
+  ${PROJECT_SOURCE_DIR}/src/api/c/ops.hpp
+  ${PROJECT_SOURCE_DIR}/src/api/c/optypes.hpp
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/Param.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/math.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/types.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/backend.hpp
+  )
+
+file_to_string(
+    SOURCES ${nvrtc_src}
+    VARNAME nvrtc_files
+    EXTENSION "hpp"
+    OUTPUT_DIR "nvrtc_kernel_headers"
+    TARGETS nvrtc_kernel_targets
     NAMESPACE "cuda"
     )
 
@@ -121,11 +154,7 @@ include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
 
 cuda_add_library(afcuda
-    scan.cu
     sort.hpp
-    scan_by_key.cu
-    kernel/convolve.cu
-    kernel/convolve_separable.cu
 
     all.cu
     anisotropic_diffusion.cu
@@ -195,11 +224,10 @@ cuda_add_library(afcuda
     tile.cu
     topk.cu
     transform.cu
-    transpose.cu
+    transpose.cpp
     transpose_inplace.cu
     triangle.cu
     unwrap.cu
-    where.cu
     wrap.cu
 
     kernel/anisotropic_diffusion.hpp
@@ -210,6 +238,7 @@ cuda_add_library(afcuda
     kernel/canny.hpp
     kernel/config.hpp
     kernel/convolve.hpp
+    kernel/convolve_separable.cpp
     kernel/diagonal.hpp
     kernel/diff.hpp
     kernel/exampleFunction.hpp
@@ -340,7 +369,6 @@ cuda_add_library(afcuda
     lookup.hpp
     lu.hpp
     match_template.hpp
-    math.cpp
     math.hpp
     mean.hpp
     meanshift.hpp
@@ -368,7 +396,9 @@ cuda_add_library(afcuda
     resize.hpp
     rotate.hpp
     scalar.hpp
+    scan.cpp
     scan.hpp
+    scan_by_key.cpp
     scan_by_key.hpp
     select.hpp
     set.hpp
@@ -399,11 +429,14 @@ cuda_add_library(afcuda
     utility.hpp
     vector_field.cpp
     vector_field.hpp
+    where.cpp
     where.hpp
     wrap.hpp
 
     jit/BufferNode.hpp
     jit/kernel_generators.hpp
+
+    nvrtc/cache.cpp
 
     OPTIONS "${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\""
   )
@@ -417,7 +450,8 @@ if(AF_WITH_NONFREE)
   target_compile_definitions(afcuda PRIVATE AF_WITH_NONFREE_SIFT)
 endif()
 
-add_dependencies(afcuda ${jit_kernel_targets})
+add_dependencies(afcuda ${jit_kernel_targets} ${nvrtc_kernel_targets})
+add_dependencies(cuda_scan_by_key ${nvrtc_kernel_targets})
 
 target_include_directories (afcuda
   PUBLIC
@@ -457,6 +491,7 @@ target_link_libraries(afcuda
     ${CUDA_CUFFT_LIBRARIES}
     ${CUDA_cusolver_LIBRARY}
     ${CUDA_cusparse_LIBRARY}
+    ${CMAKE_DL_LIBS}
   )
 
 # If the driver is not found the cuda driver api need to be linked against the

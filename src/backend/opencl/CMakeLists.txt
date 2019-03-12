@@ -19,9 +19,9 @@ file(GLOB kernel_src kernel/*.cl kernel/KParam.hpp)
 set( kernel_headers_dir
     "kernel_headers")
 
-include(CLKernelToH)
+include(FileToString)
 
-cl_kernel_to_h(
+file_to_string(
     SOURCES ${kernel_src}
     VARNAME kernel_files
     EXTENSION "hpp"

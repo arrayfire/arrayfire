@@ -27,7 +27,7 @@ include(CMakeParseArguments)
 
 set(BIN2CPP_PROGRAM "bin2cpp")
 
-function(CL_KERNEL_TO_H)
+function(FILE_TO_STRING)
     cmake_parse_arguments(RTCS "" "VARNAME;EXTENSION;OUTPUT_DIR;TARGETS;NAMESPACE;BINARY;NULLTERM" "SOURCES" ${ARGN})
 
     set(_output_files "")
@@ -69,4 +69,4 @@ function(CL_KERNEL_TO_H)
 
     set("${RTCS_VARNAME}" ${_output_files} PARENT_SCOPE)
     set("${RTCS_TARGETS}" ${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target PARENT_SCOPE)
-endfunction(CL_KERNEL_TO_H)
+endfunction(FILE_TO_STRING)

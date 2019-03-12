@@ -7,113 +7,58 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <Param.hpp>
-#include <backend.hpp>
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
-#include <math.hpp>
+#include <nvrtc/cache.hpp>
+#include <nvrtc_kernel_headers/transpose.hpp>
+
+#include <string>
 
 namespace cuda {
-
 namespace kernel {
 
 static const int TILE_DIM  = 32;
 static const int THREADS_X = TILE_DIM;
 static const int THREADS_Y = 256 / TILE_DIM;
 
-template<typename T, bool conjugate>
-__device__ T doOp(T in) {
-    if (conjugate)
-        return conj(in);
-    else
-        return in;
-}
+template<typename T>
+void transpose(Param<T> out, CParam<T> in, const bool conjugate,
+               const bool is32multiple) {
+    static const std::string source(transpose_cuh, transpose_cuh_len);
 
-// Kernel is going access original data in coaleasced format
-template<typename T, bool conjugate, bool is32Multiple>
-__global__ void transpose(Param<T> out, CParam<T> in, const int blocksPerMatX,
-                          const int blocksPerMatY) {
-    __shared__ T shrdMem[TILE_DIM][TILE_DIM + 1];
-    // create variables to hold output dimensions
-    const int oDim0 = out.dims[0];
-    const int oDim1 = out.dims[1];
-    const int iDim0 = in.dims[0];
-    const int iDim1 = in.dims[1];
+    // clang-format off
+    auto transpose = getKernel("cuda::transpose", source,
+            {
+              TemplateTypename<T>(),
+              TemplateArg(conjugate),
+              TemplateArg(is32multiple)
+            },
+            {
+              DefineValue(TILE_DIM),
+              DefineValue(THREADS_Y)
+            }
+            );
+    // clang-format on
 
-    // calculate strides
-    const int oStride1 = out.strides[1];
-    const int iStride1 = in.strides[1];
-
-    const int lx = threadIdx.x;
-    const int ly = threadIdx.y;
-
-    // batch based block Id
-    const int batchId_x  = blockIdx.x / blocksPerMatX;
-    const int blockIdx_x = (blockIdx.x - batchId_x * blocksPerMatX);
-
-    const int batchId_y = (blockIdx.y + blockIdx.z * gridDim.y) / blocksPerMatY;
-    const int blockIdx_y =
-        (blockIdx.y + blockIdx.z * gridDim.y) - (batchId_y * blocksPerMatY);
-
-    if (batchId_x >= in.dims[2] || batchId_y >= in.dims[3]) return;
-
-    const int x0 = TILE_DIM * blockIdx_x;
-    const int y0 = TILE_DIM * blockIdx_y;
-
-    // calculate global indices
-    int gx = lx + x0;
-    int gy = ly + y0;
-
-    // offset in and out based on batch id
-    in.ptr += batchId_x * in.strides[2] + batchId_y * in.strides[3];
-    out.ptr += batchId_x * out.strides[2] + batchId_y * out.strides[3];
-
-#pragma unroll
-    for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
-        int gy_ = gy + repeat;
-        if (is32Multiple || (gx < iDim0 && gy_ < iDim1))
-            shrdMem[ly + repeat][lx] = in.ptr[gy_ * iStride1 + gx];
-    }
-    __syncthreads();
-
-    gx = lx + y0;
-    gy = ly + x0;
-
-#pragma unroll
-    for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
-        int gy_ = gy + repeat;
-        if (is32Multiple || (gx < oDim0 && gy_ < oDim1))
-            out.ptr[gy_ * oStride1 + gx] =
-                doOp<T, conjugate>(shrdMem[lx][ly + repeat]);
-    }
-}
-
-template<typename T, bool conjugate>
-void transpose(Param<T> out, CParam<T> in) {
-    // dimensions passed to this function should be input dimensions
-    // any necessary transformations and dimension related calculations are
-    // carried out here and inside the kernel
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
     int blk_x = divup(in.dims[0], TILE_DIM);
     int blk_y = divup(in.dims[1], TILE_DIM);
-    // launch batch * blk_x blocks along x dimension
     dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
     const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+        cuda::getDeviceProp(getActiveDeviceId()).maxGridSize[1];
     blocks.z = divup(blocks.y, maxBlocksY);
     blocks.y = divup(blocks.y, blocks.z);
 
-    if (in.dims[0] % TILE_DIM == 0 && in.dims[1] % TILE_DIM == 0) {
-        CUDA_LAUNCH((transpose<T, conjugate, true>), blocks, threads, out, in,
-                    blk_x, blk_y);
-    } else {
-        CUDA_LAUNCH((transpose<T, conjugate, false>), blocks, threads, out, in,
-                    blk_x, blk_y);
-    }
+    EnqueueArgs qArgs(blocks, threads, getActiveStream());
+
+    transpose(qArgs, out, in, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }
-}  // namespace kernel
 
+}  // namespace kernel
 }  // namespace cuda

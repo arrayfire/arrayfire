@@ -41,7 +41,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter,
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    kernel::convolve_nd<T, accT, baseDim, expand>(out, signal, filter, kind);
+    kernel::convolve_nd<T, accT>(out, signal, filter, kind, baseDim, expand);
 
     return out;
 }
@@ -68,8 +68,8 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter,
     Array<T> temp = createEmptyArray<T>(tDims);
     Array<T> out  = createEmptyArray<T>(oDims);
 
-    kernel::convolve2<T, accT, 0, expand>(temp, signal, c_filter);
-    kernel::convolve2<T, accT, 1, expand>(out, temp, r_filter);
+    kernel::convolve2<T, accT>(temp, signal, c_filter, 0, expand);
+    kernel::convolve2<T, accT>(out, temp, r_filter, 1, expand);
 
     return out;
 }

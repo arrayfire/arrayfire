@@ -17,14 +17,12 @@
 #include <math.hpp>
 #include <platform.hpp>
 
-#include <nvrtc.h>
+#include <nvrtc/cache.hpp>
 #include <af/dim4.hpp>
 
-#include <array>
 #include <cstdio>
 #include <functional>
 #include <map>
-#include <memory>
 #include <stdexcept>
 #include <thread>
 #include <vector>
@@ -35,15 +33,10 @@ using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
 
-using std::array;
 using std::hash;
-using std::lock_guard;
 using std::map;
-using std::mutex;
-using std::recursive_mutex;
 using std::string;
 using std::stringstream;
-using std::unique_ptr;
 using std::vector;
 
 static string getFuncName(const vector<Node *> &output_nodes,
@@ -206,135 +199,12 @@ struct Param
     return kerStream.str();
 }
 
-typedef struct {
-    CUmodule prog;
-    CUfunction ker;
-} kc_entry_t;
-
-#define CU_CHECK(fn)                                                      \
-    do {                                                                  \
-        CUresult res = fn;                                                \
-        if (res == CUDA_SUCCESS) break;                                   \
-        char cu_err_msg[1024];                                            \
-        const char *cu_err_name;                                          \
-        const char *cu_err_string;                                        \
-        cuGetErrorName(res, &cu_err_name);                                \
-        cuGetErrorString(res, &cu_err_string);                            \
-        snprintf(cu_err_msg, sizeof(cu_err_msg), "CU Error %s(%d): %s\n", \
-                 cu_err_name, (int)(res), cu_err_string);                 \
-        AF_ERROR(cu_err_msg, AF_ERR_INTERNAL);                            \
-    } while (0)
-
-#ifndef NDEBUG
-#define CU_LINK_CHECK(fn)                                                 \
-    do {                                                                  \
-        CUresult res = fn;                                                \
-        if (res == CUDA_SUCCESS) break;                                   \
-        char cu_err_msg[1024];                                            \
-        const char *cu_err_name;                                          \
-        cuGetErrorName(res, &cu_err_name);                                \
-        snprintf(cu_err_msg, sizeof(cu_err_msg), "CU Error %s(%d): %s\n", \
-                 cu_err_name, (int)(res), linkError);                     \
-        AF_ERROR(cu_err_msg, AF_ERR_INTERNAL);                            \
-    } while (0)
-#else
-#define CU_LINK_CHECK(fn) CU_CHECK(fn)
-#endif
-
-#ifndef NDEBUG
-#define NVRTC_CHECK(fn)                                \
-    do {                                               \
-        nvrtcResult res = fn;                          \
-        if (res == NVRTC_SUCCESS) break;               \
-        size_t logSize;                                \
-        nvrtcGetProgramLogSize(prog, &logSize);        \
-        unique_ptr<char[]> log(new char[logSize + 1]); \
-        char *logptr = log.get();                      \
-        nvrtcGetProgramLog(prog, logptr);              \
-        logptr[logSize] = '\x0';                       \
-        printf("%s\n", logptr);                        \
-        AF_ERROR("NVRTC ERROR", AF_ERR_INTERNAL);      \
-    } while (0)
-#else
-#define NVRTC_CHECK(fn)                                                   \
-    do {                                                                  \
-        nvrtcResult res = fn;                                             \
-        if (res == NVRTC_SUCCESS) break;                                  \
-        char nvrtc_err_msg[1024];                                         \
-        snprintf(nvrtc_err_msg, sizeof(nvrtc_err_msg),                    \
-                 "NVRTC Error(%d): %s\n", res, nvrtcGetErrorString(res)); \
-        AF_ERROR(nvrtc_err_msg, AF_ERR_INTERNAL);                         \
-    } while (0)
-#endif
-
-std::vector<char> compileToPTX(const char *ker_name, string jit_ker) {
-    nvrtcProgram prog;
-    size_t ptx_size;
-    std::vector<char> ptx;
-    NVRTC_CHECK(
-        nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name, 0, NULL, NULL));
-
-    auto dev = getDeviceProp(getActiveDeviceId());
-    array<char, 32> arch;
-    snprintf(arch.data(), arch.size(), "--gpu-architecture=compute_%d%d",
-             dev.major, dev.minor);
-    const char *compiler_options[] = {
-        arch.data(),
-#if !(defined(NDEBUG) || defined(__aarch64__) || defined(__LP64__))
-        "--device-debug",
-        "--generate-line-info"
-#endif
-    };
-    int num_options = std::extent<decltype(compiler_options)>::value;
-    NVRTC_CHECK(nvrtcCompileProgram(prog, num_options, compiler_options));
-
-    NVRTC_CHECK(nvrtcGetPTXSize(prog, &ptx_size));
-    ptx.resize(ptx_size);
-    NVRTC_CHECK(nvrtcGetPTX(prog, ptx.data()));
-    NVRTC_CHECK(nvrtcDestroyProgram(&prog));
-    return ptx;
-}
-
-static kc_entry_t compileKernel(const char *ker_name, string jit_ker) {
-    const size_t linkLogSize    = 1024;
-    char linkInfo[linkLogSize]  = {0};
-    char linkError[linkLogSize] = {0};
-
-    auto ptx = compileToPTX(ker_name, jit_ker);
-
-    CUlinkState linkState;
-    CUjit_option linkOptions[] = {
-        CU_JIT_INFO_LOG_BUFFER, CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES,
-        CU_JIT_ERROR_LOG_BUFFER, CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES,
-        CU_JIT_LOG_VERBOSE};
-
-    void *linkOptionValues[] = {
-        linkInfo, reinterpret_cast<void *>(linkLogSize), linkError,
-        reinterpret_cast<void *>(linkLogSize), reinterpret_cast<void *>(1)};
-
-    CU_LINK_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
-    CU_LINK_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void *)ptx.data(),
-                                ptx.size(), ker_name, 0, NULL, NULL));
-
-    void *cubin = nullptr;
-    size_t cubinSize;
-
-    CUmodule module;
-    CUfunction kernel;
-    CU_LINK_CHECK(cuLinkComplete(linkState, &cubin, &cubinSize));
-    CU_CHECK(cuModuleLoadDataEx(&module, cubin, 0, 0, 0));
-    CU_CHECK(cuModuleGetFunction(&kernel, module, ker_name));
-    CU_LINK_CHECK(cuLinkDestroy(linkState));
-    kc_entry_t entry = {module, kernel};
-    return entry;
-}
-
 static CUfunction getKernel(const vector<Node *> &output_nodes,
                             const vector<int> &output_ids,
                             const vector<const Node *> &full_nodes,
                             const vector<Node_ids> &full_ids,
                             const bool is_linear) {
-    typedef map<string, kc_entry_t> kc_t;
+    typedef map<string, Kernel> kc_t;
 
     thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
 
@@ -343,13 +213,13 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
     int device = getActiveDeviceId();
 
     kc_t::iterator idx = kernelCaches[device].find(funcName);
-    kc_entry_t entry{nullptr, nullptr};
+    Kernel entry{nullptr, nullptr};
 
     if (idx == kernelCaches[device].end()) {
         string jit_ker = getKernelString(funcName, full_nodes, full_ids,
                                          output_ids, is_linear);
         saveKernel(funcName, jit_ker, ".cu");
-        entry          = compileKernel(funcName.c_str(), jit_ker);
+        entry = buildKernel(funcName, jit_ker, {}, true);
         kernelCaches[device][funcName] = entry;
     } else {
         entry = idx->second;

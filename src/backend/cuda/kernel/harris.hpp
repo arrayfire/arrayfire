@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
@@ -223,12 +225,12 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
     iyy_tmp.ptr        = iyy_tmp_alloc.get();
 
     // Convolve second-order derivatives with proper window filter
-    convolve2<T, convAccT, 0, false>(ixx_tmp, CParam<T>(ixx), filter);
-    convolve2<T, convAccT, 1, false>(ixx, CParam<T>(ixx_tmp), filter);
-    convolve2<T, convAccT, 0, false>(ixy_tmp, CParam<T>(ixy), filter);
-    convolve2<T, convAccT, 1, false>(ixy, CParam<T>(ixy_tmp), filter);
-    convolve2<T, convAccT, 0, false>(iyy_tmp, CParam<T>(iyy), filter);
-    convolve2<T, convAccT, 1, false>(iyy, CParam<T>(iyy_tmp), filter);
+    convolve2<T, convAccT>(ixx_tmp, CParam<T>(ixx), filter, 0, false);
+    convolve2<T, convAccT>(ixx, CParam<T>(ixx_tmp), filter, 1, false);
+    convolve2<T, convAccT>(ixy_tmp, CParam<T>(ixy), filter, 0, false);
+    convolve2<T, convAccT>(ixy, CParam<T>(ixy_tmp), filter, 1, false);
+    convolve2<T, convAccT>(iyy_tmp, CParam<T>(iyy), filter, 0, false);
+    convolve2<T, convAccT>(iyy, CParam<T>(iyy_tmp), filter, 1, false);
 
     // Number of corners is not known a priori, limit maximum number of corners
     // according to image dimensions
