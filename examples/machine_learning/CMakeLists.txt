@@ -11,6 +11,7 @@ project(ArrayFire-Example-Linear-Algebra
   LANGUAGES CXX)
 
 find_package(ArrayFire)
+find_package(Threads)
 
 add_definitions("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
@@ -42,8 +43,7 @@ if(ArrayFire_CPU_FOUND)
   # Neural Network example
   add_executable(neural_network_cpu neural_network.cpp)
   set_target_properties(neural_network_cpu PROPERTIES CXX_STANDARD 11)
-  target_link_libraries(neural_network_cpu
-    ArrayFire::afcpu $<$<PLATFORM_ID:Linux>:pthread>)
+  target_link_libraries(neural_network_cpu ArrayFire::afcpu Threads::Threads)
 
   # Preceptron example
   add_executable(perceptron_cpu perceptron.cpp)
@@ -80,7 +80,7 @@ if(ArrayFire_CUDA_FOUND)
   add_executable(neural_network_cuda neural_network.cpp)
   set_target_properties(neural_network_cuda PROPERTIES CXX_STANDARD 11)
   target_link_libraries(neural_network_cuda
-    ArrayFire::afcuda $<$<PLATFORM_ID:Linux>:pthread>)
+    ArrayFire::afcuda  Threads::Threads)
 
   add_executable(perceptron_cuda perceptron.cpp)
   target_link_libraries(perceptron_cuda ArrayFire::afcuda)
@@ -114,7 +114,7 @@ if(ArrayFire_OpenCL_FOUND)
   add_executable(neural_network_opencl neural_network.cpp)
   set_target_properties(neural_network_opencl PROPERTIES CXX_STANDARD 11)
   target_link_libraries(neural_network_opencl
-    ArrayFire::afopencl $<$<PLATFORM_ID:Linux>:pthread>)
+    ArrayFire::afopencl Threads::Threads)
 
   add_executable(perceptron_opencl perceptron.cpp)
   target_link_libraries(perceptron_opencl ArrayFire::afopencl)
