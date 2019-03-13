@@ -37,8 +37,7 @@ inline size_t MemoryManager<T>::getMaxMemorySize(int id) {
     return static_cast<T *>(this)->getMaxMemorySize(id);
 }
 
-template<typename T>
-void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
+void MemoryManager::cleanDeviceMemoryManager(int device) {
     if (this->debug_mode) return;
 
     // This vector is used to store the pointers which will be deleted by
@@ -91,8 +90,8 @@ MemoryManager<T>::MemoryManager(int num_devices, unsigned max_buffers,
     if (!env_var.empty()) this->max_buffers = max(1, stoi(env_var));
 }
 
-template<typename T>
-void MemoryManager<T>::addMemoryManagement(int device) {
+
+void MemoryManager::addMemoryManagement(int device) {
     // If there is a memory manager allocated for this device id, we might
     // as well use it and the buffers allocated for it
     if (static_cast<size_t>(device) < memory.size()) return;
@@ -113,8 +112,8 @@ void MemoryManager<T>::removeMemoryManagement(int device) {
     cleanDeviceMemoryManager(device);
 }
 
-template<typename T>
-void MemoryManager<T>::setMaxMemorySize() {
+
+void MemoryManager::setMaxMemorySize() {
     for (unsigned n = 0; n < memory.size(); n++) {
         // Calls garbage collection when: total_bytes > memsize * 0.75 when
         // memsize < 4GB total_bytes > memsize - 1 GB when memsize >= 4GB If
@@ -179,8 +178,8 @@ void *MemoryManager<T>::alloc(const size_t bytes, bool user_lock) {
     return ptr;
 }
 
-template<typename T>
-size_t MemoryManager<T>::allocated(void *ptr) {
+
+size_t MemoryManager::allocated(void *ptr) {
     if (!ptr) return 0;
     memory_info &current = this->getCurrentMemoryInfo();
     locked_iter iter     = current.locked_map.find((void *)ptr);
@@ -188,8 +187,8 @@ size_t MemoryManager<T>::allocated(void *ptr) {
     return (iter->second).bytes;
 }
 
-template<typename T>
-void MemoryManager<T>::unlock(void *ptr, bool user_unlock) {
+
+void MemoryManager::unlock(void *ptr, bool user_unlock) {
     // Shortcut for empty arrays
     if (!ptr) return;
 
@@ -235,10 +234,6 @@ void MemoryManager<T>::unlock(void *ptr, bool user_unlock) {
     }
 }
 
-template<typename T>
-void MemoryManager<T>::garbageCollect() {
-    cleanDeviceMemoryManager(this->getActiveDeviceId());
-}
 
 template<typename T>
 void MemoryManager<T>::printInfo(const char *msg, const int device) {
@@ -317,8 +312,8 @@ void MemoryManager<T>::userLock(const void *ptr) {
     }
 }
 
-template<typename T>
-void MemoryManager<T>::userUnlock(const void *ptr) {
+
+void MemoryManager::userUnlock(const void *ptr) {
     this->unlock(const_cast<void *>(ptr), true);
 }
 
@@ -334,20 +329,20 @@ bool MemoryManager<T>::isUserLocked(const void *ptr) {
     }
 }
 
-template<typename T>
-size_t MemoryManager<T>::getMemStepSize() {
+
+size_t MemoryManager::getMemStepSize() {
     lock_guard_t lock(this->memory_mutex);
     return this->mem_step_size;
 }
 
-template<typename T>
-size_t MemoryManager<T>::getMaxBytes() {
+
+size_t MemoryManager::getMaxBytes() {
     lock_guard_t lock(this->memory_mutex);
     return this->getCurrentMemoryInfo().max_bytes;
 }
 
-template<typename T>
-unsigned MemoryManager<T>::getMaxBuffers() {
+
+unsigned MemoryManager::getMaxBuffers() {
     return this->max_buffers;
 }
 
@@ -356,8 +351,8 @@ logger *MemoryManager<T>::getLogger() {
     return this->logger.get();
 }
 
-template<typename T>
-void MemoryManager<T>::setMemStepSize(size_t new_step_size) {
+
+void MemoryManager::setMemStepSize(size_t new_step_size) {
     lock_guard_t lock(this->memory_mutex);
     this->mem_step_size = new_step_size;
 }

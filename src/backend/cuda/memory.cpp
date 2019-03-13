@@ -23,9 +23,6 @@
 
 #include <mutex>
 
-template class common::MemoryManager<cuda::MemoryManager>;
-template class common::MemoryManager<cuda::MemoryManagerPinned>;
-
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
 #endif

@@ -40,8 +40,8 @@ class MemoryManager {
         size_t bytes;
     } locked_info;
 
-    using locked_t    = typename std::unordered_map<void *, locked_info>;
-    using locked_iter = typename locked_t::iterator;
+using locked_t    = typename std::unordered_map<void *, locked_info>;
+using free_t    = std::unordered_map<size_t, std::vector<void *> >;
 
     using free_t    = std::unordered_map<size_t, std::vector<void *>>;
     using free_iter = free_t::iterator;
@@ -71,7 +71,7 @@ class MemoryManager {
 
     size_t mem_step_size;
     unsigned max_buffers;
-    std::vector<memory_info> memory;
+    
     std::shared_ptr<spdlog::logger> logger;
     bool debug_mode;
 
@@ -113,7 +113,7 @@ class MemoryManager {
     void unlock(void *ptr, bool user_unlock);
 
     /// Frees all buffers which are not locked by the user or not being used.
-    void garbageCollect();
+    virtual void garbageCollect() = 0;
 
     void printInfo(const char *msg, const int device);
     void bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
@@ -125,8 +125,8 @@ class MemoryManager {
     size_t getMaxBytes();
     unsigned getMaxBuffers();
     void setMemStepSize(size_t new_step_size);
-    inline void *nativeAlloc(const size_t bytes);
-    inline void nativeFree(void *ptr);
+    virtual void *nativeAlloc(const size_t bytes) = 0;
+    virtual void nativeFree(void *ptr) = 0;
     bool checkMemoryLimit();
 
    protected:
@@ -138,6 +138,10 @@ class MemoryManager {
     MemoryManager &operator=(const MemoryManager &other) = delete;
     MemoryManager &operator=(const MemoryManager &&other) = delete;
     mutex_t memory_mutex;
+    // backend-specific
+    std::vector<common::memory::memory_info> memory;
+    // backend-agnostic
+    void cleanDeviceMemoryManager(int device);
 };
 
 }  // namespace common
