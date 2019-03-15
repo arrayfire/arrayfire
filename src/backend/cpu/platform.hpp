@@ -112,7 +112,12 @@ void sync(int device);
 
 bool& evalFlag();
 
-MemoryManager& memoryManager();
+af::MemoryManagerBase& memoryManager();
+
+void setMemoryManagerDevice(std::unique_ptr<af::MemoryManagerBase> ptr);
+
+// (calls setMemoryManagerDevice)
+void setPinnedMemoryManagerDevice(std::unique_ptr<af::MemoryManagerBase> ptr);
 
 graphics::ForgeManager& forgeManager();
 

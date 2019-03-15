@@ -17,14 +17,6 @@
 #include <spdlog/spdlog.h>
 #include <types.hpp>
 
-#ifndef AF_MEM_DEBUG
-#define AF_MEM_DEBUG 0
-#endif
-
-#ifndef AF_CPU_MEM_DEBUG
-#define AF_CPU_MEM_DEBUG 0
-#endif
-
 using common::bytesToString;
 
 using std::function;

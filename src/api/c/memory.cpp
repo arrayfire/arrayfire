@@ -18,6 +18,7 @@
 #include <af/dim4.hpp>
 #include <af/version.h>
 #include <cstring>
+#include <memory>
 
 using namespace detail;
 

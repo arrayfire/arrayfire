@@ -32,6 +32,7 @@ target_sources(c_api_interface
   ${ArrayFire_SOURCE_DIR}/include/af/internal.h
   ${ArrayFire_SOURCE_DIR}/include/af/lapack.h
   ${ArrayFire_SOURCE_DIR}/include/af/macros.h
+  ${ArrayFire_SOURCE_DIR}/include/af/memory.h
   ${ArrayFire_SOURCE_DIR}/include/af/opencl.h
   ${ArrayFire_SOURCE_DIR}/include/af/random.h
   ${ArrayFire_SOURCE_DIR}/include/af/seq.h

@@ -90,6 +90,14 @@ MemoryManager<T>::MemoryManager(int num_devices, unsigned max_buffers,
     if (!env_var.empty()) this->max_buffers = max(1, stoi(env_var));
 }
 
+void MemoryManager::initialize() {
+  this->setMaxMemorySize();
+}
+
+void MemoryManager::shutdown() {
+  garbageCollect();
+}
+
 
 void MemoryManager::addMemoryManagement(int device) {
     // If there is a memory manager allocated for this device id, we might
@@ -112,6 +120,10 @@ void MemoryManager<T>::removeMemoryManagement(int device) {
     cleanDeviceMemoryManager(device);
 }
 
+
+void MemoryManager::garbageCollect() {
+    cleanDeviceMemoryManager(this->getActiveDeviceId());
+}
 
 void MemoryManager::setMaxMemorySize() {
     for (unsigned n = 0; n < memory.size(); n++) {

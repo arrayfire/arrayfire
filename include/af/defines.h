@@ -223,10 +223,27 @@ typedef enum {
     afHost     ///< Host pointer
 } af_source;
 
+// FIXME: should this be 37?
+#if AF_API_VERSION >= 36
+// Denotes the memory manager API used to create a custom
+// memory manager implementation (C-style struct or C++ class)
+typedef enum {
+    AF_C_MEMORY_MANAGER_API,
+    AF_CPP_MEMORY_MANAGER_API
+} af_memory_manager_api_type;
+#endif
+
 #define AF_MAX_DIMS 4
 
 // A handle for an internal array object
 typedef void * af_array;
+
+// FIXME: should this be 37?
+#if AF_API_VERSION >= 36
+
+typedef void * af_memory_manager_handle;
+
+#endif
 
 typedef enum {
     AF_INTERP_NEAREST,         ///< Nearest Interpolation

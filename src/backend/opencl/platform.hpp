@@ -103,9 +103,13 @@ bool& evalFlag();
 
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
-MemoryManager& memoryManager();
+af::MemoryManagerBase& memoryManager();
 
-MemoryManagerPinned& pinnedMemoryManager();
+af::MemoryManagerBase& pinnedMemoryManager();
+
+void setMemoryManagerDevice(std::unique_ptr<af::MemoryManagerBase> ptr);
+
+void setPinnedMemoryManagerDevice(std::unique_ptr<af::MemoryManagerBase> ptr);
 
 graphics::ForgeManager& forgeManager();
 
@@ -125,7 +129,9 @@ kc_entry_t kernelCache(int device, const std::string& key);
 class DeviceManager {
     friend MemoryManager& memoryManager();
 
-    friend MemoryManagerPinned& pinnedMemoryManager();
+    friend void setPinnedMemoryManagerDevice(
+        std::unique_ptr<af::MemoryManagerBase> ptr
+    );
 
     friend graphics::ForgeManager& forgeManager();
 

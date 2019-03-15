@@ -81,9 +81,13 @@ bool& evalFlag();
 
 ///////////////////////// BEGIN Sub-Managers ///////////////////
 //
-MemoryManager& memoryManager();
+af::MemoryManagerBase& memoryManager();
 
-MemoryManagerPinned& pinnedMemoryManager();
+af::MemoryManagerBase& pinnedMemoryManager();
+
+void setMemoryManagerDevice(std::unique_ptr<af::MemoryManagerBase> ptr);
+
+void setPinnedMemoryManagerDevice(std::unique_ptr<af::MemoryManagerBase> ptr);
 
 graphics::ForgeManager& forgeManager();
 

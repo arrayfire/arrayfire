@@ -17,14 +17,6 @@
 
 #include <common/MemoryManagerImpl.hpp>
 
-#ifndef AF_MEM_DEBUG
-#define AF_MEM_DEBUG 0
-#endif
-
-#ifndef AF_OPENCL_MEM_DEBUG
-#define AF_OPENCL_MEM_DEBUG 0
-#endif
-
 using common::bytesToString;
 
 using std::function;
@@ -166,7 +158,7 @@ MemoryManagerPinned::MemoryManagerPinned()
 MemoryManagerPinned::~MemoryManagerPinned() {
     for (int n = 0; n < opencl::getDeviceCount(); n++) {
         opencl::setDevice(n);
-        this->garbageCollect();
+        shutdownMemoryManager();
         auto currIterator = pinnedMaps[n].begin();
         auto endIterator  = pinnedMaps[n].end();
         while (currIterator != endIterator) {

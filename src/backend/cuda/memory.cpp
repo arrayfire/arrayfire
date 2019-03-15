@@ -23,14 +23,6 @@
 
 #include <mutex>
 
-#ifndef AF_MEM_DEBUG
-#define AF_MEM_DEBUG 0
-#endif
-
-#ifndef AF_CUDA_MEM_DEBUG
-#define AF_CUDA_MEM_DEBUG 0
-#endif
-
 using common::bytesToString;
 
 using std::function;

@@ -12,6 +12,7 @@
 #include <common/dispatch.hpp>
 #include <common/err_common.hpp>
 #include <common/util.hpp>
+#include <af/memory.h>
 
 #include <algorithm>
 #include <functional>
@@ -21,6 +22,22 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#ifndef AF_MEM_DEBUG
+#define AF_MEM_DEBUG 0
+#endif
+
+#ifndef AF_CPU_MEM_DEBUG
+#define AF_CPU_MEM_DEBUG 0
+#endif
+
+#ifndef AF_CUDA_MEM_DEBUG
+#define AF_CUDA_MEM_DEBUG 0
+#endif
+
+#ifndef AF_OPENCL_MEM_DEBUG
+#define AF_OPENCL_MEM_DEBUG 0
+#endif
 
 namespace spdlog {
 class logger;
@@ -74,6 +91,7 @@ using free_t    = std::unordered_map<size_t, std::vector<void *> >;
     
     std::shared_ptr<spdlog::logger> logger;
     bool debug_mode;
+    mutex_t memory_mutex;
 
     memory_info &getCurrentMemoryInfo();
 
@@ -87,12 +105,12 @@ using free_t    = std::unordered_map<size_t, std::vector<void *> >;
     // Intended to be used with OpenCL backend, where
     // users are allowed to add external devices(context, device pair)
     // to the list of devices automatically detected by the library
-    void addMemoryManagement(int device);
+    void addMemoryManagement(int device) override;
 
     // Intended to be used with OpenCL backend, where
     // users are allowed to add external devices(context, device pair)
     // to the list of devices automatically detected by the library
-    void removeMemoryManagement(int device);
+    void removeMemoryManagement(int device) override;
 
     void setMaxMemorySize();
 
@@ -102,18 +120,18 @@ using free_t    = std::unordered_map<size_t, std::vector<void *> >;
     /// bytes. If there is already a free buffer available, it will use
     /// that buffer. Otherwise, it will allocate a new buffer using the
     /// nativeAlloc function.
-    void *alloc(const size_t size, bool user_lock);
+    void *alloc(const size_t size, bool user_lock) override;
 
     /// returns the size of the buffer at the pointer allocated by the memory
     /// manager.
-    size_t allocated(void *ptr);
+    size_t allocated(void *ptr) override;
 
     /// Frees or marks the pointer for deletion during the nex garbage
     /// collection event
     void unlock(void *ptr, bool user_unlock);
 
     /// Frees all buffers which are not locked by the user or not being used.
-    virtual void garbageCollect() = 0;
+    void garbageCollect();
 
     void printInfo(const char *msg, const int device);
     void bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
@@ -121,12 +139,10 @@ using free_t    = std::unordered_map<size_t, std::vector<void *> >;
     void userLock(const void *ptr);
     void userUnlock(const void *ptr);
     bool isUserLocked(const void *ptr);
-    size_t getMemStepSize();
-    size_t getMaxBytes();
-    unsigned getMaxBuffers();
-    void setMemStepSize(size_t new_step_size);
-    virtual void *nativeAlloc(const size_t bytes) = 0;
-    virtual void nativeFree(void *ptr) = 0;
+    size_t getMemStepSize() override;
+    size_t getMaxBytes() override;
+    unsigned getMaxBuffers() override;
+    void setMemStepSize(size_t new_step_size) override;
     bool checkMemoryLimit();
 
    protected:
@@ -140,7 +156,7 @@ using free_t    = std::unordered_map<size_t, std::vector<void *> >;
     mutex_t memory_mutex;
     // backend-specific
     std::vector<common::memory::memory_info> memory;
-    // backend-agnostic
+
     void cleanDeviceMemoryManager(int device);
 };
 

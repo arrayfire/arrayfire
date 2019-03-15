@@ -29,6 +29,7 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MatrixAlgebraHandle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManager.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.hpp
