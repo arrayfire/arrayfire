@@ -234,98 +234,31 @@ Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
             //    pressure. Too many bytes is assumed to be half of all bytes
             //    allocated so far.
             //
-            // 2. Too many buffers in a nonlinear kernel cause param space
-            //    overflow. This happens when the number of nodes reaches 50
-            //    (51 including output). Too many buffers can occur in a tree
-            //    of size 25 in the worst case.
-            //
             // TODO: Find better solution than the following emperical solution.
             if (node->getHeight() > 25 || isBufferLimit) {
-                // This is the size of the params that are passed by default
-                constexpr int param_base_size =
-                    sizeof(Param<T>) + (4 * sizeof(uint));
-
-                // This is the maximum size of the params that can be allowed by
-                // CUDA NOTE: This number should have been (4096 -
-                // some_buffer_size) BUT kernels who's kernel sizes come close
-                // to this value are not passing and cuModuleLoadDataEx is
-                // failing with CUDA_ERROR_INVALID_IMAGE(200). 35*sizeof(int)
-                // seems to be the magic number that passes all tests. I have no
-                // idea why this is the case.
-                constexpr int max_param_size =
-                    (4096 - (sizeof(Param<T>) + 35 * sizeof(uint)));
                 Node *n = node.get();
 
-                struct tree_info {
-                    size_t buffer_size;
-                    int num_buffers;
-                    int param_scalar_size;
-                    bool is_linear;
-                };
                 NodeIterator<> end_node;
-                dim4 outdim    = out.dims();
-                tree_info info = accumulate(
-                    NodeIterator<>(n), end_node, tree_info{0, 0, 0, true},
-                    [=](tree_info &prev, const Node &node) {
-                        if (node.isBuffer()) {
-                            const auto &buf_node =
-                                static_cast<const BufferNode<T> &>(node);
-                            prev.buffer_size += buf_node.getBytes();
-                            prev.num_buffers++;
-                            prev.is_linear &=
-                                buf_node.isLinear((dim_t *)outdim.get());
-                        } else {
-                            prev.param_scalar_size += node.getParamBytes();
-                        }
-                        // getBytes returns the size of the data Array. Sub
-                        // arrays will be represented by their parent size.
-                        return prev;
-                    });
-                int param_size = param_base_size + info.param_scalar_size;
-                if (info.is_linear) {
-                    param_size += info.num_buffers * sizeof(T *);
-                } else {
-                    vector<Param<T>> params;
+                dim4 outdim = out.dims();
 
-                    auto bufit = NodeIterator<>(n);
-                    puts("====");
-                    while (bufit != end_node) {
-                        bufit = find_if(bufit, end_node,
-                            [](const Node &nn) { return nn.isBuffer(); });
-                        if (bufit != end_node) {
-                            params.push_back(
-                                static_cast<BufferNode<T> *>(
-                                    &(*bufit))
-                                    ->getParam());
-                            bufit++;
-                        }
-                    }
-                    auto last = unique(begin(params), end(params), equal_shape<T, T>);
-                    param_size += distance(begin(params), last) * sizeof(Param<T>);
-                    int dist = distance(begin(params), last);
-                    puts("=====");
-                    for(int i = 0; i < dist; i++) {
-                        printf(
-                            "%p: [%lld %lld %lld %lld] | [%lld %lld %lld "
-                            "%lld]\n",
-                            params[i].ptr, params[i].dims[0],
-                            params[i].dims[1], params[i].dims[2],
-                            params[i].dims[3], params[i].strides[0],
-                            params[i].strides[1], params[i].strides[2],
-                            params[i].strides[3]);
-                    }
-                    printf("Dist: %ld\n", dist);
-                    printf("param_size: %d\n", param_size);
-                }
+                // Calculate the total bytes allocated by the buffers of this
+                // tree. This is done so that we can make sure that we are
+                // not holding on to too many buffers that can be freed once
+                // this JIT tree is evaluated.
+                size_t buffer_size =
+                    accumulate(NodeIterator<>(n), end_node, size_t(0),
+                               [=](size_t &prev, const Node &node) {
+                                   // getBytes returns the size of the data
+                                   // Array. Sub arrays will be represented by
+                                   // their parent size.
+                                   return prev + node.getBytes();
+                               });
 
                 // TODO: the buffer_size check here is very conservative. It
                 // will trigger an evaluation of the node in most cases. We
                 // should be checking the amount of memory available to guard
                 // this eval
-                if (param_size >= max_param_size ||
-                    info.buffer_size * 2 > lock_bytes) {
-                    out.eval();
-                }
+                if (buffer_size * 2 > lock_bytes) { out.eval(); }
             }
         }
     }

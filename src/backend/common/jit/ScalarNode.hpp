@@ -48,14 +48,9 @@ class ScalarNode : public common::Node {
     }
 
     void genFuncs(std::stringstream& kerStream,
-                  const common::Node_ids& ids) const final {
+                  const common::Node_ids& ids, bool is_linear) const final {
         kerStream << m_type_str << " val" << ids.id << " = scalar" << ids.id
                   << ";\n";
-    }
-
-    // Return the info for the params and the size of the buffers
-    virtual short getParamBytes() const final {
-        return static_cast<short>(sizeof(T));
     }
 };
 

@@ -39,8 +39,8 @@ template<typename T>
 int setKernelArguments(
     int start_id, bool is_linear,
     std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
-    const std::shared_ptr<T>& ptr, const Param<T>& info, const int& param_index) {
-
+    const std::shared_ptr<T>& ptr, const Param<T>& info,
+    const int& param_index) {
     UNUSED(ptr);
     if (is_linear) {
         setArg(start_id, static_cast<const void*>(&info.ptr), sizeof(T*));
@@ -77,14 +77,16 @@ void generateBufferOffsets(std::stringstream& kerStream, int id, bool is_linear,
 }
 
 /// Generates the code to read a buffer and store it in a local variable
-void generateBufferRead(std::stringstream& kerStream, int id,
+void generateBufferRead(std::stringstream& kerStream, int id, bool is_linear,
                         const std::string& type_str) {
-    kerStream << type_str << " val" << id << " = in" << id << "_ptr[offsets["
-              << "in_index" << id << "]];\n";
-
-    //    kerStream << type_str << " val" << id << " = in" << id << "_ptr[idx"
-    //    << id
-    //         << "];\n";
+    if (is_linear) {
+        kerStream << type_str << " val" << id << " = in" << id << "_ptr[idx"
+                  << id << "];\n";
+    } else {
+        kerStream << type_str << " val" << id << " = in" << id
+                  << "_ptr[offsets["
+                  << "in_index" << id << "]];\n";
+    }
 }
 
 void generateShiftNodeOffsets(std::stringstream& kerStream, int id,
@@ -95,6 +97,8 @@ void generateShiftNodeOffsets(std::stringstream& kerStream, int id,
     std::string id_str    = std::string("sh_id_") + std::to_string(id) + "_";
     std::string shift_str = std::string("shift") + std::to_string(id) + "_";
 
+    kerStream << "Param& " << info_str << " = "
+              << "params[in_index" << id << "];\n";
     for (int i = 0; i < 4; i++) {
         kerStream << "int " << id_str << i << " = __circular_mod(id" << i
                   << " + " << shift_str << i << ", " << info_str << ".dims["
@@ -112,7 +116,6 @@ void generateShiftNodeOffsets(std::stringstream& kerStream, int id,
               << "1;\n";
     kerStream << idx_str << " += (" << id_str << "0 < " << info_str
               << ".dims[0]) * " << id_str << "0;\n";
-    kerStream << type_str << " *in" << id << "_ptr = in" << id << ".ptr;\n";
 }
 
 void generateShiftNodeRead(std::stringstream& kerStream, int id,

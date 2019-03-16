@@ -127,7 +127,7 @@ static string getKernelString(const string funcName,
         // Generate input offsets, only needs current id
         node->genOffsets(offsetsStream, ids_curr.id, is_linear);
         // Generate the core function body, needs children ids as well
-        node->genFuncs(opsStream, ids_curr);
+        node->genFuncs(opsStream, ids_curr, is_linear);
     }
 
     for (int i = 0; i < (int)output_ids.size(); i++) {
@@ -221,7 +221,7 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes) {
     }
 
     bool is_linear = true;
-    for (auto node : full_nodes) {
+    for (const auto &node : full_nodes) {
         is_linear &= node->isLinear(outputs[0].info.dims);
     }
 

@@ -31,7 +31,8 @@ void generateParamDeclaration(std::stringstream& kerStream, int id,
 int setKernelArguments(
     int start_id, bool is_linear,
     std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
-    const std::shared_ptr<cl::Buffer>& ptr, const KParam& info) {
+    const std::shared_ptr<cl::Buffer>& ptr, const KParam& info,
+    const int& param_index) {
     setArg(start_id + 0, static_cast<const void*>(&ptr.get()->operator()()),
            sizeof(cl_mem));
     if (is_linear) {
@@ -63,7 +64,7 @@ void generateBufferOffsets(std::stringstream& kerStream, int id, bool is_linear,
 }
 
 /// Generates the code to read a buffer and store it in a local variable
-void generateBufferRead(std::stringstream& kerStream, int id,
+void generateBufferRead(std::stringstream& kerStream, int id, bool is_linear,
                         const std::string& type_str) {
     kerStream << type_str << " val" << id << " = in" << id << "[idx" << id
               << "];\n";

@@ -15,6 +15,7 @@
 
 using af::array;
 using af::constant;
+using af::dim4;
 using af::eval;
 using af::freeHost;
 using af::gforSet;
@@ -123,10 +124,16 @@ TEST(JIT, CPP_Multi_linear) {
     x.host(&hx[0]);
     y.host(&hy[0]);
 
+    vector<int> goldx(num);
+    vector<int> goldy(num);
+
     for (int i = 0; i < num; i++) {
-        ASSERT_EQ((ha[i] + hb[i]), hx[i]);
-        ASSERT_EQ((ha[i] - hb[i]), hy[i]);
+        goldx[i] = ha[i] + hb[i];
+        goldy[i] = ha[i] - hb[i];
     }
+
+    ASSERT_VEC_ARRAY_EQ(goldx, dim4(num), x);
+    ASSERT_VEC_ARRAY_EQ(goldy, dim4(num), y);
 }
 
 TEST(JIT, CPP_strided) {
@@ -425,23 +432,40 @@ TEST(JIT, ConstEval7) {
     EXPECT_NO_THROW({
         eval(a, b, c, d, e, f, g);
         af::sync();
-      });
-
+    });
 }
 
 TEST(JIT, TwoLargeNonLinear) {
-    array a(10, 10);
-    array b(10, 10);
+    int dimsize = 10;
+    array a     = constant(0, dimsize, dimsize);
+    array aa    = constant(0, dimsize, dimsize);
+    array b     = constant(0, dimsize, dimsize);
+    array bb    = constant(0, dimsize, dimsize);
 
-    for (int i = 0; i < 1; i++) {
-        a += tile(randu(10), 1, 10) + randu(10, 10);
+    int val = 0;
+    for (int i = 0; i < 24; i++) {
+        array ones = constant(1, dimsize, dimsize);
+        ones.eval();
+        array twos = constant(2, dimsize);
+        twos.eval();
+
+        a += tile(twos, 1, dimsize) + ones;
+        aa += tile(twos, 1, dimsize) + ones;
+        val += 3;
     }
 
-    for (int i = 0; i < 1; i++) {
-        b += tile(randu(10), 1, 10) + randu(10, 10);
+    for (int i = 0; i < 24; i++) {
+        array ones = constant(1, dimsize, dimsize);
+        ones.eval();
+        array twos = constant(2, dimsize);
+        twos.eval();
+        b += tile(twos, 1, dimsize) + ones;
+        bb += tile(twos, 1, dimsize) + ones;
     }
+    array c  = a + b;
+    array cc = aa + bb;
+    eval(c, cc);
 
-    array c = a + b;
-    c.eval();
-    af::sync();
+    vector<float> gold(a.elements(), val * 2);
+    ASSERT_VEC_ARRAY_EQ(gold, a.dims(), c);
 }

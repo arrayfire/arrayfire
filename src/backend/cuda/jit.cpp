@@ -16,6 +16,7 @@
 #include <common/jit/NodeIterator.hpp>
 #include <copy.hpp>
 #include <jit/BufferNode.hpp>
+#include <jit/ShiftNode.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 
@@ -35,13 +36,21 @@ using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
 using common::NodeIterator;
+using common::requiresGlobalMemoryAccess;
 using cuda::jit::BufferNode;
+using cuda::jit::ShiftNode;
 
 using std::hash;
 using std::map;
 using std::string;
 using std::stringstream;
 using std::vector;
+
+template<typename TL, typename TR>
+bool equal_shape(const Param<TL> &lhs, const Param<TR> &rhs) {
+    return std::equal(lhs.dims, lhs.dims + 4, rhs.dims) &&
+           std::equal(lhs.strides, lhs.strides + 4, rhs.strides);
+}
 
 static string getFuncName(const vector<Node *> &output_nodes,
                           const vector<const Node *> &full_nodes,
@@ -81,7 +90,6 @@ struct Param
   dim_t dims[4];
   dim_t strides[4];
   void *ptr;
-  bool is_linear;
 };
 )JIT";
 
@@ -95,8 +103,9 @@ struct Param
 
     static const char *kernelVoid = "extern \"C\" __global__ void\n";
     static const char *dimParams =
-        "Param* dims, int num_params, uint blocks_x, uint blocks_y, uint "
+        "uint blocks_x, uint blocks_y, uint "
         "blocks_x_total, uint num_odims";
+    static const char *globalParams = "Param* dims, int num_params, ";
 
     static const char *loopStart = R"JIT(
     for (int blockIdx_x = blockIdx.x; blockIdx_x < blocks_x_total; blockIdx_x += gridDim.x) {
@@ -143,7 +152,6 @@ struct Param
         long long idx = outref.strides[3] * id3 +
                         outref.strides[2] * id2 +
                         outref.strides[1] * id1 + id0;
-        //printf("(b: %d %d t: %d,%d):idx %lld\n", blockIdx.x, blockIdx.y, threadIdx.x, threadIdx.y, idx);
 
         for(int i = 0; i < num_params; i++) {
             offsets[i] = (id3 < params[i].dims[3]) * params[i].strides[3] * id3 +
@@ -161,6 +169,8 @@ struct Param
     stringstream outrefstream;
     stringstream paramreadstream;
 
+    outrefstream << "const Param &outref = out" << output_ids[0] << ";\n";
+
     for (int i = 0; i < (int)full_nodes.size(); i++) {
         const auto &node     = full_nodes[i];
         const auto &ids_curr = full_ids[i];
@@ -169,27 +179,26 @@ struct Param
         // Generate input offsets, only needs current id
         node->genOffsets(offsetsStream, ids_curr.id, is_linear);
         // Generate the core function body, needs children ids as well
-        node->genFuncs(opsStream, ids_curr);
+        node->genFuncs(opsStream, ids_curr, is_linear);
     }
-
-    outrefstream << "const Param &outref = params[out_index" << output_ids[0]
-                 << "];\n";
 
     for (int i = 0; i < (int)output_ids.size(); i++) {
         int id = output_ids[i];
         // Generate output parameters
-        // outParamStream << "Param<" << full_nodes[id]->getTypeStr() << "> out"
-        //<< id << ", \n";
+        outParamStream << "Param out" << id << ", \n";
 
-        outParamStream << full_nodes[id]->getTypeStr() << " *out" << id
-                       << "_, int out_index" << id << ",\n";
         // Generate code to write the output
-        outWriteStream << "out" << id << "_[idx] = val" << id << ";\n";
+        outWriteStream << "((" << full_nodes[id]->getTypeStr() << "*)(out" << id
+                       << ".ptr))"
+                       << "[idx] = val" << id << ";\n";
     }
 
+    // TODO(umar): find the ideal size for the offset array. This
+    // size shouldn't be too large I would think. I am sure someone
+    // will find a way to hit this bug waiting to happen.
     paramreadstream << R"JIT(
         extern __shared__ Param params[];
-        long long offsets[32];
+        long long offsets[8];
 
         if (threadIdx.x < num_params) { params[threadIdx.x] = dims[threadIdx.x]; }
         __syncthreads();
@@ -205,11 +214,12 @@ struct Param
     kerStream << "(\n";
     kerStream << inParamStream.str();
     kerStream << outParamStream.str();
+    if (!is_linear) { kerStream << globalParams; }
     kerStream << dimParams;
     kerStream << ")\n";
     kerStream << blockStart;
-    kerStream << paramreadstream.str();
     kerStream << outrefstream.str();
+    if (!is_linear) { kerStream << paramreadstream.str(); }
     kerStream << loopStart;
     if (is_linear) {
         kerStream << linearIndex;
@@ -261,7 +271,6 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
 
     if (num_outputs == 0) return;
 
-    // Use thread local to reuse the memory every time you are here.
     thread_local Node_map_t nodes;
     thread_local vector<const Node *> full_nodes;
     thread_local vector<Node_ids> full_ids;
@@ -283,34 +292,29 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
         NodeIterator<> end_node;
         auto bufit = NodeIterator<>(node);
         while (bufit != end_node) {
-            bufit = find_if(bufit, end_node,
-                            [](const Node &nn) { return nn.isBuffer(); });
+            bufit = find_if(bufit, end_node, requiresGlobalMemoryAccess);
             if (bufit != end_node) {
-                auto bufnode = static_cast<BufferNode<T> *>(&(*bufit));
-                auto param = bufnode->getParam();
+                Param<T> param;
 
-                auto it = find_if(begin(params), end(params), [&param](const Param<T> &p) {
-                    return equal_shape<T, T>(param, p);
-                });
-                if (it == end(params)) {
-                  params.push_back(param);
-                  printf("inserted dist: %zu\n", params.size() - 1);
-                  bufnode->setParamIndex(params.size() - 1);
+                // TODO(umar): This is a hack. We need to clean up this API
+                // so that the if statement is not necessary
+                if (bufit->isBuffer()) {
+                    param = static_cast<BufferNode<T> &>(*bufit).getParam();
                 } else {
-                  printf("dist: %zu\n", distance(begin(params), it));
-                  bufnode->setParamIndex(distance(begin(params), it));
+                    param = static_cast<ShiftNode<T> &>(*bufit).getParam();
+                }
+
+                auto it = find_if(begin(params), end(params),
+                                  [&param](const Param<T> &p) {
+                                      return equal_shape<T, T>(param, p);
+                                  });
+                if (it == end(params)) {
+                    params.push_back(param);
+                    bufit->setParamIndex(params.size() - 1);
+                } else {
+                    bufit->setParamIndex(distance(begin(params), it));
                 }
                 bufit++;
-            }
-            puts("====");
-            for (int i = 0; i < params.size(); i++) {
-                printf(
-                    "%p: [%lld %lld %lld %lld] | [%lld %lld %lld "
-                    "%lld]\n",
-                    params[i].ptr, params[i].dims[0], params[i].dims[1],
-                    params[i].dims[2], params[i].dims[3], params[i].strides[0],
-                    params[i].strides[1], params[i].strides[2],
-                    params[i].strides[3]);
             }
         }
     }
@@ -375,20 +379,23 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
                       });
     }
 
-    int out_param = 0; // TODO(umar): This is incorrect
     for (int i = 0; i < num_outputs; i++) {
-        args.push_back((void *)&outputs[i].ptr);
-        args.push_back((void *)&out_param);
+        args.push_back((void *)&outputs[i]);
     }
 
-    void* ptr = nullptr; // TODO(umar): use memory manager
-    CUDA_CHECK(cudaMalloc(&ptr, params.size() * sizeof(Param<T>)));
-    CUDA_CHECK(cudaMemcpyAsync(ptr, params.data(), params.size() * sizeof(Param<T>),
-                               cudaMemcpyHostToDevice, getActiveStream()));
-
-    args.push_back(&ptr);
+    uptr<uchar> dparam;
+    void *ptr       = nullptr;
     int param_count = params.size();
-    args.push_back((void *)&param_count);
+    if (!is_linear) {
+        dparam = memAlloc<uchar>(params.size() * sizeof(Param<T>));
+        CUDA_CHECK(cudaMemcpyAsync(dparam.get(), params.data(),
+                                   params.size() * sizeof(Param<T>),
+                                   cudaMemcpyHostToDevice, getActiveStream()));
+        ptr = dparam.get();
+        args.push_back(&ptr);
+        args.push_back((void *)&param_count);
+    }
+
     args.push_back((void *)&blocks_x_);
     args.push_back((void *)&blocks_y_);
     args.push_back((void *)&blocks_x_total);
@@ -397,8 +404,6 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     CU_CHECK(cuLaunchKernel(ker, blocks_x, blocks_y, blocks_z, threads_x,
                             threads_y, 1, sizeof(Param<T>) * params.size(),
                             getActiveStream(), args.data(), NULL));
-    CUDA_CHECK(cudaDeviceSynchronize());
-    CUDA_CHECK(cudaFree(ptr));
 
     // Reset the thread local vectors
     nodes.clear();
