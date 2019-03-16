@@ -119,7 +119,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
-INSTANTIATE(void *)
 
 MemoryManager::MemoryManager()
     : common::MemoryManager<cuda::MemoryManager>(
