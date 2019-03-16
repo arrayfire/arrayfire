@@ -221,9 +221,9 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
             optrs[n] = optr + z * oStrides[2] + w * oStrides[3];
         }
 
-        auto d_lptrs = memAlloc<void *>(batchSize);
-        auto d_rptrs = memAlloc<void *>(batchSize);
-        auto d_optrs = memAlloc<void *>(batchSize);
+        auto d_lptrs = memAlloc<uchar>(batchSize);
+        auto d_rptrs = memAlloc<uchar>(batchSize);
+        auto d_optrs = memAlloc<uchar>(batchSize);
 
         size_t bytes = batchSize * sizeof(T **);
         CUDA_CHECK(cudaMemcpyAsync(d_lptrs.get(), lptrs.data(), bytes,
