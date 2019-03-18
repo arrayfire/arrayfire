@@ -238,13 +238,6 @@ typedef enum {
 // A handle for an internal array object
 typedef void * af_array;
 
-// FIXME: should this be 37?
-#if AF_API_VERSION >= 36
-
-typedef void * af_memory_manager_handle;
-
-#endif
-
 typedef enum {
     AF_INTERP_NEAREST,         ///< Nearest Interpolation
     AF_INTERP_LINEAR,          ///< Linear Interpolation

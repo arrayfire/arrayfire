@@ -34,7 +34,7 @@ class TestMemoryManager : public af::MemoryManagerBase
   using Cache = std::unordered_map<void*, int>;
   Cache cache_; // naive cache, for testing
   size_t allocatedBytes_{0};
-  size_t maxMemorySize_{0};
+  size_t maxMemorySize_{MB(1)};
   unsigned maxBuffers_{256};
   // We'll ignore step size/just make sure the API works correctly
   size_t stepSize_{8};
@@ -52,7 +52,6 @@ public:
   void initialize() override
   {
     initialized_ = true;
-    this->setMaxMemorySize();
   }
 
   // Can't be tested directly - will be tested on test shutdown
@@ -60,12 +59,6 @@ public:
     for (auto& entry : cache_) {
       unlock(entry.first, false);
     }
-  }
-
-  void setMaxMemorySize() override
-  {
-    // Set a fake bound, for testing; normally we'd inspect devices
-    maxMemorySize_ = MB(1);
   }
 
   // Used by the OpenCL backend for organizing memory per-device. Ignored
@@ -194,19 +187,12 @@ void af_memory_manager_initialize(af_memory_manager* base_inst)
   inst->garbage_collected = false;
   inst->total_allocated_amt = 0;
   inst->total_buffers_allocated = 0;
-  // call another member function
-  base_inst->af_memory_manager_set_max_memory_size(base_inst);
+  inst->max_bytes = 256;
+  inst->max_buffers = 16;
 }
 
 // noop
 void af_memory_manager_shutdown(af_memory_manager*) {}
-
-void af_memory_manager_set_max_memory_size(af_memory_manager* base_inst)
-{
-  af_memory_manager_impl* inst = (af_memory_manager_impl*)base_inst;
-  inst->max_bytes = 256;
-  inst->max_buffers = 16;
-}
 
 // noop
 void af_memory_manager_add_memory_management(af_memory_manager*, int) {}
@@ -313,8 +299,6 @@ TEST(Memory, CustomMemoryMangerCApi)
   af_memory_manager* manager_base = (af_memory_manager*)manager;
   manager_base->af_memory_manager_initialize = &af_memory_manager_initialize;
   manager_base->af_memory_manager_shutdown = &af_memory_manager_shutdown;
-  manager_base->af_memory_manager_set_max_memory_size =
-    &af_memory_manager_set_max_memory_size;
   manager_base->af_memory_manager_add_memory_management =
     &af_memory_manager_add_memory_management;
   manager_base->af_memory_manager_remove_memory_management =

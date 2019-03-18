@@ -97,6 +97,18 @@
       diff, gradient, etc.
    @}
 
+   @defgroup memory_manager Memory Management
+   @{
+
+      Interfaces for writing custom memory managers.
+
+      @defgroup memory_manager_cpp_api Memory Manager C++ API
+      MemoryManagerBase, setMemoryManager, setPinnedMemoryManager
+
+      @defgroup memory_manager_c_api Memory Manager C API
+      af_memory_manager, af_set_memory_manager, af_set_pinned_memory_manager
+   @}
+
    @defgroup linalg_mat Linear Algebra
    @{
 
