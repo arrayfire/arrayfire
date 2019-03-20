@@ -149,10 +149,10 @@ using gemm_batch_func_def = void (*)(
     template<typename T>    \
     FUNC##_func_def<T> FUNC##_func();
 
-#define BLAS_FUNC(FUNC, TYPE, PREFIX)           \
-    template<>                                  \
-    FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
-        return &cblas_##PREFIX##FUNC;           \
+#define BLAS_FUNC(FUNC, TYPE, PREFIX)                        \
+    template<>                                               \
+    FUNC##_func_def<TYPE> FUNC##_func<TYPE>() {              \
+        return (FUNC##_func_def<TYPE>)&cblas_##PREFIX##FUNC; \
     }
 
 BLAS_FUNC_DEF(gemm)
