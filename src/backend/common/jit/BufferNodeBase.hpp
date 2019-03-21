@@ -80,12 +80,12 @@ class BufferNodeBase : public common::Node {
 
     void genOffsets(std::stringstream &kerStream, int id,
                     bool is_linear) const final {
-        detail::generateBufferOffsets(kerStream, id, is_linear, m_type_str);
+        detail::generateBufferOffsets(kerStream, id, is_linear);
     }
 
-    void genFuncs(std::stringstream &kerStream, const common::Node_ids &ids,
-                  bool is_linear) const final {
-        detail::generateBufferRead(kerStream, ids.id, is_linear, m_type_str);
+    void genFuncs(std::stringstream &kerStream,
+                  const common::Node_ids &ids) const final {
+        detail::generateBufferRead(kerStream, ids.id, m_type_str);
     }
 
     void getInfo(unsigned &len, unsigned &buf_count,

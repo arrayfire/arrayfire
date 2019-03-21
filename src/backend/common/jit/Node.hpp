@@ -87,8 +87,8 @@ class Node {
     /// \param[in/out] kerStream  The string will be written to this stream
     /// \param[in]     ids        The integer id of the node and its children
     /// \param[in]     is_linear  True if the kernel is a linear kernel
-    virtual void genFuncs(std::stringstream &kerStream, const Node_ids &ids,
-                          bool is_linear) const = 0;
+    virtual void genFuncs(std::stringstream &kerStream,
+                          const Node_ids &ids) const = 0;
 
     /// Calls the setArg function on each of the arguments passed into the
     /// kernel
@@ -109,7 +109,7 @@ class Node {
     }
 
     // Sets the index of the Param object stored in global memory. (CUDA ONLY)
-    virtual void setParamIndex(int index) {}
+    virtual void setParamIndex(int index) { UNUSED(index); }
     // Gets the index of the Param object stored in global memory. (CUDA ONLY)
     virtual int getParamIndex() const { return -1; }
 
@@ -141,7 +141,7 @@ class Node {
     virtual ~Node() {}
 };
 
-static bool requiresGlobalMemoryAccess(Node &node) {
+static inline bool requiresGlobalMemoryAccess(Node &node) {
     return node.requiresGlobalMemoryAccess();
 }
 

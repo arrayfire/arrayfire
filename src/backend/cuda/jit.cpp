@@ -179,7 +179,7 @@ struct Param
         // Generate input offsets, only needs current id
         node->genOffsets(offsetsStream, ids_curr.id, is_linear);
         // Generate the core function body, needs children ids as well
-        node->genFuncs(opsStream, ids_curr, is_linear);
+        node->genFuncs(opsStream, ids_curr);
     }
 
     for (int i = 0; i < (int)output_ids.size(); i++) {

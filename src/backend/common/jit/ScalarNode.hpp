@@ -48,7 +48,7 @@ class ScalarNode : public common::Node {
     }
 
     void genFuncs(std::stringstream& kerStream,
-                  const common::Node_ids& ids, bool is_linear) const final {
+                  const common::Node_ids& ids) const final {
         kerStream << m_type_str << " val" << ids.id << " = scalar" << ids.id
                   << ";\n";
     }

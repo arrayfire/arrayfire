@@ -239,7 +239,6 @@ Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
                 Node *n = node.get();
 
                 NodeIterator<> end_node;
-                dim4 outdim = out.dims();
 
                 // Calculate the total bytes allocated by the buffers of this
                 // tree. This is done so that we can make sure that we are

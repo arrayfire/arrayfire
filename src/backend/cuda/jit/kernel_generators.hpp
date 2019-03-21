@@ -22,8 +22,9 @@ namespace cuda {
 namespace {
 
 /// Creates a string that will be used to declare the parameter of kernel
-void generateParamDeclaration(std::stringstream& kerStream, int id,
-                              bool is_linear, const std::string& m_type_str) {
+inline void generateParamDeclaration(std::stringstream& kerStream, int id,
+                                     bool is_linear,
+                                     const std::string& m_type_str) {
     if (is_linear) {
         kerStream << m_type_str << " *in" << id << "_ptr,\n";
     } else {
@@ -36,7 +37,7 @@ void generateParamDeclaration(std::stringstream& kerStream, int id,
 
 /// Calls the setArg function to set the arguments for a kernel call
 template<typename T>
-int setKernelArguments(
+inline int setKernelArguments(
     int start_id, bool is_linear,
     std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
     const std::shared_ptr<T>& ptr, const Param<T>& info,
@@ -53,32 +54,25 @@ int setKernelArguments(
 }
 
 /// Generates the code to calculate the offsets for a buffer
-void generateBufferOffsets(std::stringstream& kerStream, int id, bool is_linear,
-                           const std::string& type_str) {
+inline void generateBufferOffsets(std::stringstream& kerStream, int id,
+                                  bool is_linear) {
     std::string idx_str = std::string("int idx") + std::to_string(id);
 
-    assert(is_linear);
     if (is_linear) {
         kerStream << idx_str << " = idx;\n";
+    } else {
+        kerStream << idx_str << " = offsets[in_index" << id << "];\n";
     }
 }
 
 /// Generates the code to read a buffer and store it in a local variable
-void generateBufferRead(std::stringstream& kerStream, int id, bool is_linear,
-                        const std::string& type_str) {
-    if (is_linear) {
-        kerStream << type_str << " val" << id << " = in" << id << "_ptr[idx"
-                  << id << "];\n";
-    } else {
-        kerStream << type_str << " val" << id << " = in" << id
-                  << "_ptr[offsets["
-                  << "in_index" << id << "]];\n";
-    }
+inline void generateBufferRead(std::stringstream& kerStream, int id,
+                               const std::string& type_str) {
+    kerStream << type_str << " val" << id << " = in" << id << "_ptr[idx" << id
+              << "];\n";
 }
 
-void generateShiftNodeOffsets(std::stringstream& kerStream, int id,
-                              bool is_linear, const std::string& type_str) {
-    UNUSED(is_linear);
+inline void generateShiftNodeOffsets(std::stringstream& kerStream, int id) {
     std::string idx_str   = std::string("idx") + std::to_string(id);
     std::string info_str  = std::string("in") + std::to_string(id);
     std::string id_str    = std::string("sh_id_") + std::to_string(id) + "_";
@@ -105,8 +99,8 @@ void generateShiftNodeOffsets(std::stringstream& kerStream, int id,
               << ".dims[0]) * " << id_str << "0;\n";
 }
 
-void generateShiftNodeRead(std::stringstream& kerStream, int id,
-                           const std::string& type_str) {
+inline void generateShiftNodeRead(std::stringstream& kerStream, int id,
+                                  const std::string& type_str) {
     kerStream << type_str << " val" << id << " = in" << id << "_ptr[idx" << id
               << "];\n";
 }

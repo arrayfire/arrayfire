@@ -52,7 +52,7 @@ class NaryNode : public Node {
     }
 
     void genFuncs(std::stringstream &kerStream,
-                  const common::Node_ids &ids, bool is_linear) const final {
+                  const common::Node_ids &ids) const final {
         kerStream << m_type_str << " val" << ids.id << " = " << m_op_str << "(";
         for (int i = 0; i < m_num_children; i++) {
             if (i > 0) kerStream << ", ";

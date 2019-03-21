@@ -81,12 +81,12 @@ class ShiftNodeBase : public Node {
 
     void genOffsets(std::stringstream &kerStream, int id,
                     bool is_linear) const final {
-        detail::generateShiftNodeOffsets(kerStream, id, is_linear, m_type_str);
+        UNUSED(is_linear);
+        detail::generateShiftNodeOffsets(kerStream, id);
     }
 
-    void genFuncs(std::stringstream &kerStream, const common::Node_ids &ids,
-                  bool is_linear) const final {
-        UNUSED(is_linear);
+    void genFuncs(std::stringstream &kerStream,
+                  const common::Node_ids &ids) const final {
         detail::generateShiftNodeRead(kerStream, ids.id, m_type_str);
     }
 
