@@ -113,53 +113,52 @@ struct Param
     static const char *loopEnd   = "}\n\n";
 
     static const char *blockStart = "{\n\n";
-    static const char *blockEnd   = "\n\n}";
+    static const char *blockEnd   = "\n}\n";
 
     static const char *linearIndex = R"JIT(
-        uint threadId = threadIdx.x;
-        long long idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
-        if (idx >= outref.dims[3] * outref.strides[3]) return;
-        )JIT";
+    uint threadId = threadIdx.x;
+    long long idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
+    if (idx >= outref.dims[3] * outref.strides[3]) return;
+    )JIT";
 
     static const char *generalIndex = R"JIT(
-        long long id0 = 0, id1 = 0, id2 = 0, id3 = 0;
-        long blockIdx_y = blockIdx.z * gridDim.y + blockIdx.y;
-        if (num_odims > 2) {
-            id2 = blockIdx_x / blocks_x;
-            id0 = blockIdx_x - id2 * blocks_x;
-            id0 = threadIdx.x + id0 * blockDim.x;
-            if (num_odims > 3) {
-                id3 = blockIdx_y / blocks_y;
-                id1 = blockIdx_y - id3 * blocks_y;
-                id1 = threadIdx.y + id1 * blockDim.y;
-            } else {
-                id1 = threadIdx.y + blockDim.y * blockIdx_y;
-            }
+    long long id0 = 0, id1 = 0, id2 = 0, id3 = 0;
+    long blockIdx_y = blockIdx.z * gridDim.y + blockIdx.y;
+    if (num_odims > 2) {
+        id2 = blockIdx_x / blocks_x;
+        id0 = blockIdx_x - id2 * blocks_x;
+        id0 = threadIdx.x + id0 * blockDim.x;
+        if (num_odims > 3) {
+            id3 = blockIdx_y / blocks_y;
+            id1 = blockIdx_y - id3 * blocks_y;
+            id1 = threadIdx.y + id1 * blockDim.y;
         } else {
-            id3 = 0;
-            id2 = 0;
             id1 = threadIdx.y + blockDim.y * blockIdx_y;
-            id0 = threadIdx.x + blockDim.x * blockIdx_x;
         }
+    } else {
+        id3 = 0;
+        id2 = 0;
+        id1 = threadIdx.y + blockDim.y * blockIdx_y;
+        id0 = threadIdx.x + blockDim.x * blockIdx_x;
+    }
 
-        bool cond = id0 < outref.dims[0] &&
-                    id1 < outref.dims[1] &&
-                    id2 < outref.dims[2] &&
-                    id3 < outref.dims[3];
+    bool cond = id0 < outref.dims[0] &&
+                id1 < outref.dims[1] &&
+                id2 < outref.dims[2] &&
+                id3 < outref.dims[3];
 
-        if (!cond) { continue; }
+    if (!cond) { continue; }
 
-        long long idx = outref.strides[3] * id3 +
-                        outref.strides[2] * id2 +
-                        outref.strides[1] * id1 + id0;
+    long long idx = outref.strides[3] * id3 +
+                    outref.strides[2] * id2 +
+                    outref.strides[1] * id1 + id0;
 
-        for(int i = 0; i < num_params; i++) {
-            offsets[i] = (id3 < params[i].dims[3]) * params[i].strides[3] * id3 +
-                         (id2 < params[i].dims[2]) * params[i].strides[2] * id2 +
-                         (id1 < params[i].dims[1]) * params[i].strides[1] * id1 +
-                         (id0 < params[i].dims[0]) * id0;
-        }
-        )JIT";
+    if (threadIdx.x < num_params && threadIdx.y == 0) { //(int i = 0; i < num_params; i++) {
+        int i = threadIdx.x;
+        block_offsets[i] = (id3 < params[i].dims[3]) * params[i].strides[3] * id3 +
+                           (id2 < params[i].dims[2]) * params[i].strides[2] * id2;
+    }
+    __syncthreads();)JIT";
 
     stringstream inParamStream;
     stringstream outParamStream;
@@ -193,12 +192,10 @@ struct Param
                        << "[idx] = val" << id << ";\n";
     }
 
-    // TODO(umar): find the ideal size for the offset array. This
-    // size shouldn't be too large I would think. I am sure someone
-    // will find a way to hit this bug waiting to happen.
     paramreadstream << R"JIT(
-        extern __shared__ Param params[];
-        long long offsets[8];
+        extern __shared__ char smem[];
+        Param *params = reinterpret_cast<Param*>(smem);
+        dim_t *block_offsets = reinterpret_cast<dim_t*>(smem+(num_params * sizeof(Param)));
 
         if (threadIdx.x < num_params) { params[threadIdx.x] = dims[threadIdx.x]; }
         __syncthreads();
@@ -402,7 +399,7 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     args.push_back((void *)&num_odims);
 
     CU_CHECK(cuLaunchKernel(ker, blocks_x, blocks_y, blocks_z, threads_x,
-                            threads_y, 1, sizeof(Param<T>) * params.size(),
+                            threads_y, 1, (sizeof(Param<T>) + sizeof(dim_t)) * params.size(),
                             getActiveStream(), args.data(), NULL));
 
     // Reset the thread local vectors

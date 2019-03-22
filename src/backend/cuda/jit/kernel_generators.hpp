@@ -28,8 +28,6 @@ inline void generateParamDeclaration(std::stringstream& kerStream, int id,
     if (is_linear) {
         kerStream << m_type_str << " *in" << id << "_ptr,\n";
     } else {
-        // kerStream << "Param<" << m_type_str << "> in" << id << ",\n";
-
         kerStream << m_type_str << " *in" << id << "_ptr, int in_index" << id
                   << ",\n";
     }
@@ -56,12 +54,20 @@ inline int setKernelArguments(
 /// Generates the code to calculate the offsets for a buffer
 inline void generateBufferOffsets(std::stringstream& kerStream, int id,
                                   bool is_linear) {
-    std::string idx_str = std::string("int idx") + std::to_string(id);
+    std::string idx_str = std::string("\n\t\tint idx") + std::to_string(id);
 
     if (is_linear) {
-        kerStream << idx_str << " = idx;\n";
+        kerStream << idx_str << " = idx;";
     } else {
-        kerStream << idx_str << " = offsets[in_index" << id << "];\n";
+        // clang-format off
+        std::string in_index = "in_index" + std::to_string(id);
+        std::string block_offset = "block_offsets[" + in_index + "]";
+        std::string in_param = "params[" + in_index + "]";
+
+        kerStream << idx_str << " = " << block_offset
+                  << "\n + ((id1 < " << in_param << ".dims[1]) * " << in_param << ".strides[1] * id1)"
+                  << "\n + ((id0 < " << in_param << ".dims[0]) * id0);";
+        // clang-format on
     }
 }
 
