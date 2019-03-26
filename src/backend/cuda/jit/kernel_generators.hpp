@@ -54,7 +54,7 @@ inline int setKernelArguments(
 /// Generates the code to calculate the offsets for a buffer
 inline void generateBufferOffsets(std::stringstream& kerStream, int id,
                                   bool is_linear) {
-    std::string idx_str = std::string("\n\t\tint idx") + std::to_string(id);
+    std::string idx_str = std::string("\n\t\tdim_t idx") + std::to_string(id);
 
     if (is_linear) {
         kerStream << idx_str << " = idx;";

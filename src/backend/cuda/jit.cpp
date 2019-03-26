@@ -15,6 +15,7 @@
 #include <common/jit/Node.hpp>
 #include <common/jit/NodeIterator.hpp>
 #include <copy.hpp>
+#include <debug_cuda.hpp>
 #include <jit/BufferNode.hpp>
 #include <jit/ShiftNode.hpp>
 #include <math.hpp>
@@ -147,18 +148,22 @@ struct Param
                 id2 < outref.dims[2] &&
                 id3 < outref.dims[3];
 
-    if (!cond) { continue; }
-
     long long idx = outref.strides[3] * id3 +
                     outref.strides[2] * id2 +
                     outref.strides[1] * id1 + id0;
+
+    if (cond) {
+
 
     if (threadIdx.x < num_params && threadIdx.y == 0) { //(int i = 0; i < num_params; i++) {
         int i = threadIdx.x;
         block_offsets[i] = (id3 < params[i].dims[3]) * params[i].strides[3] * id3 +
                            (id2 < params[i].dims[2]) * params[i].strides[2] * id2;
     }
-    __syncthreads();)JIT";
+    }
+    __syncthreads();
+    if (cond) {
+    )JIT";
 
     stringstream inParamStream;
     stringstream outParamStream;
@@ -227,6 +232,7 @@ struct Param
     kerStream << opsStream.str();
     kerStream << outWriteStream.str();
     kerStream << loopEnd;
+    if(!is_linear) kerStream << "}";
     kerStream << blockEnd;
 
     return kerStream.str();
@@ -401,6 +407,8 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     CU_CHECK(cuLaunchKernel(ker, blocks_x, blocks_y, blocks_z, threads_x,
                             threads_y, 1, (sizeof(Param<T>) + sizeof(dim_t)) * params.size(),
                             getActiveStream(), args.data(), NULL));
+
+    POST_LAUNCH_CHECK();
 
     // Reset the thread local vectors
     nodes.clear();

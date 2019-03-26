@@ -469,3 +469,44 @@ TEST(JIT, TwoLargeNonLinear) {
     vector<float> gold(a.elements(), val * 2);
     ASSERT_VEC_ARRAY_EQ(gold, a.dims(), c);
 }
+
+TEST(JIT, Indexing) {
+  array a = randu(32, 512);
+  array b = randu(1, 512);
+
+  array c = a(31, af::span) + b;
+
+  c.eval();
+
+  af::sync();
+}
+
+TEST(JIT, ManyConstants) {
+  array res = constant(1, 1);
+  array res2 = tile(res, 1, 10);
+  array res3 = randu(1);
+  array res4 = tile(res3, 1, 10);
+  array res5 = randu(1);
+  array res6 = tile(res5, 1, 10);
+  array res7 = randu(1);
+  array res8 = tile(res7, 1, 10);
+
+  for(int i = 0; i < 196; i++) {
+    res2 = res2 + constant(1, 1, 10);
+  }
+  //for(int i = 0; i < 190; i++) {
+  //res4 = res4 + tile(constant(1, 1), 1, 10);
+  //}
+  //for(int i = 0; i < 190; i++) {
+  //res6 = res6 + tile(constant(1, 1), 1, 10);
+  //}
+  //for(int i = 0; i < 190; i++) {
+  //res8 = res8 + 1.0f;
+  //}
+
+  res2.eval();
+  //eval(res2, res4, res6, res8);
+  af::sync();
+
+
+}
