@@ -260,7 +260,7 @@ int main(int argc, char **argv) {
         "triggered per device\n");
     printf("- console: console mode\n");
     printf(
-        "- percentage: percent of training/testing data, default 60% used for "
+        "- percentage: percent of training/testing data, default 60\% used for "
         "training\n");
     af::info();
 
