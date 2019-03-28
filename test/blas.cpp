@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
@@ -15,6 +16,7 @@
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
 #include <string>
+#include <algorithm>
 
 using af::array;
 using af::cdouble;
@@ -33,12 +35,13 @@ using std::cout;
 using std::endl;
 using std::ostream_iterator;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 template<typename T>
 class MatrixMultiply : public ::testing::Test {};
 
-typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
+typedef ::testing::Types<float, double, cdouble, cfloat> TestTypes;
 TYPED_TEST_CASE(MatrixMultiply, TestTypes);
 
 template<typename T, bool isBVector>
@@ -91,7 +94,7 @@ void MatMulCheck(string TestFile) {
         dim4 dd;
         dim_t* d = dd.get();
         af_get_dims(&d[0], &d[1], &d[2], &d[3], out[i]);
-        ASSERT_VEC_ARRAY_EQ(tests[i], dd, out[i]);
+        ASSERT_VEC_ARRAY_NEAR(tests[i], dd, out[i], 1e-3);
     }
 
     ASSERT_SUCCESS(af_release_array(a));
@@ -318,4 +321,320 @@ TEST(MatrixMultiply, RhsBroadcastBatched) {
             }
         }
     }
+}
+
+float alpha = 1.f;
+float beta = 0.f;
+
+float h_lhs[9] =         {1.f, 4.f, 7.f,
+                          2.f, 5.f, 8.f,
+                          3.f, 6.f, 9.f};
+
+float h_lhs_tall[6] =    {1.f, 3.f, 5.f,
+                          2.f, 4.f, 6.f};
+
+float h_lhs_wide[6] =    {1.f, 4.f,
+                          2.f, 5.f,
+                          3.f, 6.f};
+
+float h_lhs_batch[18] =  {1.f, 4.f, 7.f,
+                          2.f, 5.f, 8.f,
+                          3.f, 6.f, 9.f,
+
+                          8.f, 2.f, 5.f,
+                          3.f, 4.f, 7.f,
+                          1.f, 0.f, 6.f};
+
+float h_rhs[9] =         {9.f, 6.f, 3.f,
+                          8.f, 5.f, 2.f,
+                          7.f, 4.f, 1.f};
+
+float h_rhs_tall[6] =    {9.f, 7.f, 5.f,
+                          8.f, 6.f, 4.f};
+
+float h_rhs_wide[6] =    {9.f, 6.f,
+                          8.f, 5.f,
+                          7.f, 4.f};
+
+float h_gold[9] =        {30.f, 84.f, 138.f,
+                          24.f, 69.f, 114.f,
+                          18.f, 54.f, 90.f};
+
+float h_gold_NN[9] =     {21.f, 51.f, 81.f,
+                          18.f, 44.f, 70.f,
+                          15.f, 37.f, 59.f};
+
+float h_gold_NT[9] =     {25.f, 59.f, 93.f,
+                          19.f, 45.f, 71.f,
+                          13.f, 31.f, 49.f};
+
+float h_gold_TN[4] =     {55.f, 76.f,
+                          46.f, 64.f};
+
+float h_gold_TT[4] =     {68.f, 92.f,
+                          41.f, 56.f};
+
+float h_gold_batch[18] = {30.f, 84.f, 138.f,
+                          24.f, 69.f, 114.f,
+                          18.f, 54.f, 90.f,
+
+                          93.f, 42.f, 105.f,
+                          81.f, 36.f, 87.f,
+                          69.f, 30.f, 69.f};
+
+struct test_params {
+    af_mat_prop opt_lhs;
+    af_mat_prop opt_rhs;
+    float *alpha;
+    float *h_lhs;
+    float *h_rhs;
+    float *h_gold;
+    dim4 lhs_dims;
+    dim4 rhs_dims;
+    dim4 out_dims;
+    float *beta;
+    TestOutputArrayType out_array_type;
+
+    test_params(af_mat_prop optl, af_mat_prop optr,
+                float *a,
+                float *l, float *r, float *g,
+                dim4 ldims, dim4 rdims, dim4 odims,
+                float *b,
+                TestOutputArrayType t)
+        :opt_lhs(optl), opt_rhs(optr),
+         alpha(a),
+         h_lhs(l), h_rhs(r), h_gold(g),
+         lhs_dims(ldims), rhs_dims(rdims), out_dims(odims),
+         beta(b),
+         out_array_type(t) {}
+};
+
+class Gemm : public ::testing::TestWithParam<test_params> {
+   protected:
+    af_array lhs;
+    af_array rhs;
+    af_array gold;
+    af_array out;
+    TestOutputArrayInfo metadata;
+
+    void SetUp() {
+        test_params params = GetParam();
+
+        lhs  = 0;
+        rhs = 0;
+        out = 0;
+        gold = 0;
+
+        ASSERT_SUCCESS(
+            af_create_array(&lhs, params.h_lhs, params.lhs_dims.ndims(), params.lhs_dims.get(), f32));
+        ASSERT_SUCCESS(
+            af_create_array(&rhs, params.h_rhs, params.rhs_dims.ndims(), params.rhs_dims.get(), f32));
+
+        dim_t gold_dim0 = params.opt_lhs == AF_MAT_TRANS ? params.lhs_dims[1] : params.lhs_dims[0];
+        dim_t gold_dim1 = params.opt_rhs == AF_MAT_TRANS ? params.rhs_dims[0] : params.rhs_dims[1];
+        dim_t gold_dim2 = std::max(params.lhs_dims[2], params.rhs_dims[2]);
+        dim_t gold_dim3 = std::max(params.lhs_dims[3], params.rhs_dims[3]);
+        dim4 gold_dims(gold_dim0, gold_dim1, gold_dim2, gold_dim3);
+
+        metadata = TestOutputArrayInfo(params.out_array_type);
+        genTestOutputArray(&out, params.out_dims.ndims(), params.out_dims.get(), f32,
+                           &metadata);
+
+        ASSERT_SUCCESS(af_create_array(&gold, params.h_gold, gold_dims.ndims(),
+                                       gold_dims.get(), f32));
+    }
+
+    void TearDown() {
+        if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
+        if (rhs != 0) { ASSERT_SUCCESS(af_release_array(rhs)); }
+        if (lhs != 0) { ASSERT_SUCCESS(af_release_array(lhs)); }
+    }
+};
+
+void replace_all(std::string& str, const std::string& oldStr,
+                 const std::string& newStr) {
+    std::string::size_type pos = 0u;
+    while ((pos = str.find(oldStr, pos)) != std::string::npos) {
+        str.replace(pos, oldStr.length(), newStr);
+        pos += newStr.length();
+    }
+}
+
+std::string concat_dim4(dim4 d) {
+    std::stringstream ss;
+    ss << d;
+    std::string s = ss.str();
+    replace_all(s, " ", "x");
+    return s;
+}
+
+string out_info(const ::testing::TestParamInfo<Gemm::ParamType> info) {
+    test_params params = info.param;
+
+    stringstream ss;
+    switch (params.out_array_type) {
+    case NULL_ARRAY:
+        ss << "NullOut";
+        break;
+    case FULL_ARRAY:
+        ss << "FullOut";
+        break;
+    case SUB_ARRAY:
+        ss << "SubarrayOut";
+        break;
+    case REORDERED_ARRAY:
+        ss << "ReorderedOut";
+        break;
+    default:
+        ss << "UnknownOutArrayType";
+        break;
+    }
+
+    ss << "_" << concat_dim4(params.lhs_dims) << "_" << concat_dim4(params.rhs_dims);
+
+    ss << "_";
+    ss << (params.opt_lhs == AF_MAT_TRANS ? "T" : "N");
+    ss << (params.opt_rhs == AF_MAT_TRANS ? "T" : "N");
+
+    if (params.lhs_dims[2] > 1 || params.rhs_dims[2] > 1) {
+        ss << "_Batched";
+    }
+
+    return ss.str();
+}
+
+// clang-format off
+INSTANTIATE_TEST_CASE_P(
+    Square, Gemm,
+    ::testing::Values(
+        //          lhs_opts     rhs_opts     alpha  lhs    rhs    gold    lhs_dims    rhs_dims    out_dims    beta  out_array_type
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_lhs, h_rhs, h_gold, dim4(3, 3), dim4(3, 3), dim4(3, 3), &beta, NULL_ARRAY     ),
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_lhs, h_rhs, h_gold, dim4(3, 3), dim4(3, 3), dim4(3, 3), &beta, FULL_ARRAY     ),
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_lhs, h_rhs, h_gold, dim4(3, 3), dim4(3, 3), dim4(3, 3), &beta, SUB_ARRAY      ),
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_lhs, h_rhs, h_gold, dim4(3, 3), dim4(3, 3), dim4(3, 3), &beta, REORDERED_ARRAY)
+        ),
+    out_info
+    );
+// clang-format on
+
+// clang-format off
+INSTANTIATE_TEST_CASE_P(
+    Batched, Gemm,
+    ::testing::Values(
+        //          lhs_opts     rhs_opts     alpha  lhs          rhs    gold          lhs_dims       rhs_dims    out_dims       beta  out_array_type
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_lhs_batch, h_rhs, h_gold_batch, dim4(3, 3, 2), dim4(3, 3), dim4(3, 3, 2), &beta, NULL_ARRAY     ),
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_lhs_batch, h_rhs, h_gold_batch, dim4(3, 3, 2), dim4(3, 3), dim4(3, 3, 2), &beta, FULL_ARRAY     ),
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_lhs_batch, h_rhs, h_gold_batch, dim4(3, 3, 2), dim4(3, 3), dim4(3, 3, 2), &beta, SUB_ARRAY      ),
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_lhs_batch, h_rhs, h_gold_batch, dim4(3, 3, 2), dim4(3, 3), dim4(3, 3, 2), &beta, REORDERED_ARRAY)
+        ),
+    out_info
+    );
+// clang-format on
+
+// clang-format off
+INSTANTIATE_TEST_CASE_P(
+    NonSquare, Gemm,
+    ::testing::Values(
+        //          lhs_opts      rhs_opts      alpha  lhs         rhs         gold       lhs_dims    rhs_dims    out_dims    beta  out_array_type
+        test_params(AF_MAT_NONE,  AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_wide, h_gold_NN, dim4(3, 2), dim4(2, 3), dim4(3, 3), &beta, NULL_ARRAY),
+        test_params(AF_MAT_NONE,  AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_tall, h_gold_NT, dim4(3, 2), dim4(3, 2), dim4(3, 3), &beta, NULL_ARRAY),
+        test_params(AF_MAT_TRANS, AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_tall, h_gold_TN, dim4(3, 2), dim4(3, 2), dim4(2, 2), &beta, NULL_ARRAY),
+        test_params(AF_MAT_TRANS, AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_wide, h_gold_TT, dim4(3, 2), dim4(2, 3), dim4(2, 2), &beta, NULL_ARRAY),
+
+        test_params(AF_MAT_NONE,  AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_wide, h_gold_NN, dim4(3, 2), dim4(2, 3), dim4(3, 3), &beta, FULL_ARRAY),
+        test_params(AF_MAT_NONE,  AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_tall, h_gold_NT, dim4(3, 2), dim4(3, 2), dim4(3, 3), &beta, FULL_ARRAY),
+        test_params(AF_MAT_TRANS, AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_tall, h_gold_TN, dim4(3, 2), dim4(3, 2), dim4(2, 2), &beta, FULL_ARRAY),
+        test_params(AF_MAT_TRANS, AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_wide, h_gold_TT, dim4(3, 2), dim4(2, 3), dim4(2, 2), &beta, FULL_ARRAY),
+
+        test_params(AF_MAT_NONE,  AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_wide, h_gold_NN, dim4(3, 2), dim4(2, 3), dim4(3, 3), &beta, SUB_ARRAY),
+        test_params(AF_MAT_NONE,  AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_tall, h_gold_NT, dim4(3, 2), dim4(3, 2), dim4(3, 3), &beta, SUB_ARRAY),
+        test_params(AF_MAT_TRANS, AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_tall, h_gold_TN, dim4(3, 2), dim4(3, 2), dim4(2, 2), &beta, SUB_ARRAY),
+        test_params(AF_MAT_TRANS, AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_wide, h_gold_TT, dim4(3, 2), dim4(2, 3), dim4(2, 2), &beta, SUB_ARRAY),
+
+        test_params(AF_MAT_NONE,  AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_wide, h_gold_NN, dim4(3, 2), dim4(2, 3), dim4(3, 3), &beta, REORDERED_ARRAY),
+        test_params(AF_MAT_NONE,  AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_tall, h_gold_NT, dim4(3, 2), dim4(3, 2), dim4(3, 3), &beta, REORDERED_ARRAY),
+        test_params(AF_MAT_TRANS, AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_tall, h_gold_TN, dim4(3, 2), dim4(3, 2), dim4(2, 2), &beta, REORDERED_ARRAY),
+        test_params(AF_MAT_TRANS, AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_wide, h_gold_TT, dim4(3, 2), dim4(2, 3), dim4(2, 2), &beta, REORDERED_ARRAY)
+        ),
+    out_info
+    );
+// clang-format on
+
+TEST_P(Gemm, UsePreallocatedOutArray) {
+    test_params params = GetParam();
+    ASSERT_SUCCESS(af_gemm(&out, params.opt_lhs, params.opt_rhs,
+                           params.alpha, lhs, rhs, params.beta));
+
+    ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
+}
+
+TEST(Gemm, DocSnippet) {
+    //! [ex_af_gemm_alloc]
+    af_array A, B;
+
+    dim_t adims[] = {5, 3, 2};
+    dim_t bdims[] = {3, 5, 2};
+    af_constant(&A, 1, 3, adims, f32);
+    af_constant(&B, 1, 3, bdims, f32);
+
+    float alpha = 1.f;
+    float beta  = 0.f;
+
+    // Undefined behavior!
+    // af_array undef;
+    // af_gemm(&undef, AF_MAT_NONE, AF_MAT_NONE, &alpha, a.get(), b.get(), &beta);
+
+    af_array C = 0;
+    af_gemm(&C, AF_MAT_NONE, AF_MAT_NONE, &alpha, A, B, &beta);
+    // C =
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+
+    //! [ex_af_gemm_alloc]
+
+    af_array c1_copy = 0;
+    ASSERT_SUCCESS(af_retain_array(&c1_copy, C));
+    af::array c1(c1_copy);
+    af::array gold1 = af::constant(3, 5, 5, 2, f32);
+    ASSERT_ARRAYS_EQ(gold1, c1);
+
+    //! [ex_af_gemm_overwrite]
+    alpha = 1.f;
+    beta  = 1.f;
+    af_seq first_slice[] = {af_span, af_span, {0., 0., 1.}};
+    af_array Asub, Bsub, Csub;
+    af_index(&Asub, A, 3, first_slice);
+    af_index(&Bsub, B, 3, first_slice);
+    af_index(&Csub, C, 3, first_slice);
+    af_gemm(&Csub, AF_MAT_NONE, AF_MAT_NONE, &alpha, Asub, Bsub, &beta);
+    // C =
+    //  6.   6.   6.   6.   6.
+    //  6.   6.   6.   6.   6.
+    //  6.   6.   6.   6.   6.
+    //  6.   6.   6.   6.   6.
+    //  6.   6.   6.   6.   6.
+    //
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //  3.   3.   3.   3.   3.
+    //! [ex_af_gemm_overwrite]
+
+    af_array c2_copy = 0;
+    ASSERT_SUCCESS(af_retain_array(&c2_copy, C));
+    af::array c2(c2_copy);
+    vector<float> gold2(5*5*2, 3);
+    fill(gold2.begin(), gold2.begin() + (5 * 5), 6);
+
+    ASSERT_VEC_ARRAY_EQ(gold2, dim4(5, 5, 2), c2);
 }

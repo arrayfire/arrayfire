@@ -229,6 +229,76 @@ namespace af
 extern "C" {
 #endif
 
+#if AF_API_VERSION >= 37
+    /**
+        \brief BLAS general matrix multiply (GEMM) of two \ref af_array objects
+
+        \details
+        This provides a general interface to the BLAS level 3 general matrix
+        multiply (GEMM), which is generally defined as:
+
+        \f[
+        C = \alpha * opA(A)opB(B) + \beta * C
+        \f]
+
+        where \f$\alpha\f$ (\p alpha) and \f$\beta\f$ (\p beta) are both scalars;
+        \f$A\f$ and \f$B\f$ are the matrix multiply operands; and \f$opA\f$ and
+        \f$opB\f$ are noop (if \p AF_MAT_NONE) or transpose (if \p AF_MAT_TRANS)
+        operations on \f$A\f$ or \f$B\f$ before the actual GEMM operation. Batched
+        GEMM is supported if at least either \f$A\f$ or \f$B\f$ have more than
+        two dimensions (see \ref af::matmul for more details on broadcasting).
+        However, only one \p alpha and one \p beta can be used for all of the
+        batched matrix operands.
+
+        The \ref af_array that \p out points to can be used both as an input and
+        output. An allocation will be performed if you pass a null \ref af_array
+        handle (i.e. `af_array c = 0;`). If a valid \ref af_array is passed as
+        \f$C\f$, the operation will be performed on that \ref af_array itself. The C
+        \ref af_array must be the correct type and shape; otherwise, an error will
+        be thrown.
+
+        \note Passing an af_array that has not been initialized to the C array
+        is will cause undefined behavior.
+
+        This example demonstrates the usage of the af_gemm function on two
+        matrices. The \f$C\f$ \ref af_array handle is initialized to zero here,
+        so \ref af_gemm will perform an allocation.
+
+        \snippet test/blas.cpp ex_af_gemm_alloc
+
+        The following example shows how you can write to a previously allocated \ref
+        af_array using the \ref af_gemm call. Here we are going to use the \ref
+        af_array s from the previous example and index into the first slice. Only
+        the first slice of the original \f$C\f$ af_array will be modified by this
+        operation.
+
+        \snippet test/blas.cpp ex_af_gemm_overwrite
+
+        \param[in,out] C     Pointer to the output \ref af_array
+
+        \param[in]     opA   Operation to perform on A before the multiplication
+
+        \param[in]     opB   Operation to perform on B before the multiplication
+
+        \param[in]     alpha The alpha value; must be the same type as \p lhs
+                            and \p rhs
+
+        \param[in]     A     Left-hand side operand
+
+        \param[in]     B     Right-hand side operand
+
+        \param[in]     beta  The beta value; must be the same type as \p lhs
+                            and \p rhs
+
+        \return AF_SUCCESS if the operation is successful.
+
+        \ingroup blas_func_matmul
+    */
+    AFAPI af_err af_gemm(af_array *C, const af_mat_prop opA, const af_mat_prop opB,
+                         const void *alpha, const af_array A, const af_array B,
+                         const void *beta);
+#endif
+
     /**
         \brief Matrix multiply of two \ref af_array
 

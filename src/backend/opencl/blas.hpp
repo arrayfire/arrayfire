@@ -15,12 +15,14 @@
 // such as CLBlast or clBLAS.
 
 namespace opencl {
+
 void initBlas();
 void deInitBlas();
 
 template<typename T>
-Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
-                af_mat_prop optRhs);
+void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+          const T *alpha, const Array<T> &lhs, const Array<T> &rhs,
+          const T *beta);
 
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,

@@ -17,7 +17,10 @@
 #include <sparse_handle.hpp>
 #include <af/array.h>
 #include <af/blas.h>
+#include <af/data.h>
 #include <af/defines.h>
+#include <af/dim4.hpp>
+#include <type_util.hpp>
 
 template<typename T>
 static inline af_array sparseMatmul(const af_array lhs, const af_array rhs,
@@ -27,10 +30,14 @@ static inline af_array sparseMatmul(const af_array lhs, const af_array rhs,
 }
 
 template<typename T>
-static inline af_array matmul(const af_array lhs, const af_array rhs,
-                              af_mat_prop optLhs, af_mat_prop optRhs) {
-    return getHandle(
-        detail::matmul<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
+static inline void gemm(af_array *out, af_mat_prop optLhs, af_mat_prop optRhs,
+                        const T* alpha,
+                        const af_array lhs, const af_array rhs,
+                        const T* betas) {
+    detail::gemm<T>(getArray<T>(*out), optLhs, optRhs,
+                    alpha,
+                    getArray<T>(lhs), getArray<T>(rhs),
+                    betas);
 }
 
 template<typename T>
@@ -105,16 +112,15 @@ af_err af_sparse_matmul(af_array *out, const af_array lhs, const af_array rhs,
     return AF_SUCCESS;
 }
 
-af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
-                 const af_mat_prop optLhs, const af_mat_prop optRhs) {
-    using namespace detail;
+af_err af_gemm(af_array *out,
+               const af_mat_prop optLhs, const af_mat_prop optRhs,
+               const void* alpha, const af_array lhs, const af_array rhs,
+               const void* beta) {
+    using namespace detail; // needed for cfloat and cdouble
 
     try {
-        const ArrayInfo &lhsInfo = getInfo(lhs, false, true);
-        const ArrayInfo &rhsInfo = getInfo(rhs, true, true);
-
-        if (lhsInfo.isSparse())
-            return af_sparse_matmul(out, lhs, rhs, optLhs, optRhs);
+        const ArrayInfo &lhsInfo    = getInfo(lhs, false, true);
+        const ArrayInfo &rhsInfo    = getInfo(rhs, true, true);
 
         af_dtype lhs_type = lhsInfo.getType();
         af_dtype rhs_type = rhsInfo.getType();
@@ -131,11 +137,11 @@ af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        dim4 lDims = lhsInfo.dims();
-        dim4 rDims = rhsInfo.dims();
+        af::dim4 lDims = lhsInfo.dims();
+        af::dim4 rDims = rhsInfo.dims();
 
         if (lDims.ndims() > 2 && rDims.ndims() > 2) {
-            DIM_ASSERT(1, lDims.ndims() == rDims.ndims());
+            DIM_ASSERT(3, lDims.ndims() == rDims.ndims());
             if (lDims[2] != rDims[2] && lDims[2] != 1 && rDims[2] != 1) {
                 AF_ERROR("Batch size mismatch along dimension 2", AF_ERR_BATCH);
             }
@@ -145,23 +151,113 @@ af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
         }
 
         TYPE_ASSERT(lhs_type == rhs_type);
-        af_array output = 0;
 
         int aColDim = (optLhs == AF_MAT_NONE) ? 1 : 0;
         int bRowDim = (optRhs == AF_MAT_NONE) ? 0 : 1;
 
         DIM_ASSERT(1, lhsInfo.dims()[aColDim] == rhsInfo.dims()[bRowDim]);
 
-        switch (lhs_type) {
-            case f32: output = matmul<float>(lhs, rhs, optLhs, optRhs); break;
-            case c32: output = matmul<cfloat>(lhs, rhs, optLhs, optRhs); break;
-            case f64: output = matmul<double>(lhs, rhs, optLhs, optRhs); break;
-            case c64: output = matmul<cdouble>(lhs, rhs, optLhs, optRhs); break;
-            default: TYPE_ERROR(1, lhs_type);
+        // Assume that *out is either initialized to null or an actual af_array
+        // Otherwise, this function has undefined behavior
+        af_array output = 0;
+        if (*out) {
+            output = *out;
         }
+        else {
+            const int aRowDim = (optLhs == AF_MAT_NONE) ? 0 : 1;
+            const int bColDim = (optRhs == AF_MAT_NONE) ? 1 : 0;
+            const int M = lDims[aRowDim];
+            const int N = rDims[bColDim];
+            const dim_t d2 = std::max(lDims[2], rDims[2]);
+            const dim_t d3 = std::max(lDims[3], rDims[3]);
+            const af::dim4 oDims = af::dim4(M, N, d2, d3);
+            AF_CHECK(af_create_handle(&output, lhsInfo.ndims(),
+                                      oDims.get(), lhs_type));
+        }
+
+        switch (lhs_type) {
+            case f32: gemm<float>  (&output, optLhs, optRhs,
+                                    static_cast<const float*  >(alpha), lhs, rhs,
+                                    static_cast<const float*  >(beta)); break;
+            case c32: gemm<cfloat> (&output, optLhs, optRhs,
+                                    static_cast<const cfloat* >(alpha), lhs, rhs,
+                                    static_cast<const cfloat* >(beta)); break;
+            case f64: gemm<double> (&output, optLhs, optRhs,
+                                    static_cast<const double* >(alpha), lhs, rhs,
+                                    static_cast<const double* >(beta)); break;
+            case c64: gemm<cdouble>(&output, optLhs, optRhs,
+                                    static_cast<const cdouble*>(alpha), lhs, rhs,
+                                    static_cast<const cdouble*>(beta)); break;
+            default: TYPE_ERROR(3, lhs_type);
+        }
+
         std::swap(*out, output);
     }
     CATCHALL
+    return AF_SUCCESS;
+}
+
+af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
+                 const af_mat_prop optLhs, const af_mat_prop optRhs) {
+    using namespace detail; // needed for cfloat and cdouble
+
+    try {
+
+        const ArrayInfo &lhsInfo = getInfo(lhs, false, true);
+        const ArrayInfo &rhsInfo = getInfo(rhs, true, true);
+
+        if (lhsInfo.isSparse())
+            return af_sparse_matmul(out, lhs, rhs, optLhs, optRhs);
+
+        const int aRowDim = (optLhs == AF_MAT_NONE) ? 0 : 1;
+        const int bColDim = (optRhs == AF_MAT_NONE) ? 1 : 0;
+
+        const af::dim4 lDims = lhsInfo.dims();
+        const af::dim4 rDims = rhsInfo.dims();
+        const int M = lDims[aRowDim];
+        const int N = rDims[bColDim];
+
+        const dim_t d2 = std::max(lDims[2], rDims[2]);
+        const dim_t d3 = std::max(lDims[3], rDims[3]);
+        const af::dim4 oDims = af::dim4(M, N, d2, d3);
+        const int num_batch = oDims[2] * oDims[3];
+
+        af_array gemm_out = 0;
+        AF_CHECK(af_create_handle(&gemm_out, oDims.ndims(), oDims.get(), lhsInfo.getType()));
+
+        af_dtype lhs_type = lhsInfo.getType();
+        switch (lhs_type) {
+            case f32: {
+                    float alpha = 1.f;
+                    float beta  = 0.f;
+                    AF_CHECK(af_gemm(&gemm_out, optLhs, optRhs, &alpha, lhs, rhs, &beta));
+                    break;
+            }
+            case c32: {
+                    cfloat alpha = {1.f, 0.f};
+                    cfloat beta  = {0.f, 0.f};
+
+                    AF_CHECK(af_gemm(&gemm_out, optLhs, optRhs, &alpha, lhs, rhs, &beta));
+                    break;
+            }
+            case f64: {
+                    double alpha = 1.0;
+                    double beta  = 0.0;
+                    AF_CHECK(af_gemm(&gemm_out, optLhs, optRhs, &alpha, lhs, rhs, &beta));
+                    break;
+            }
+            case c64: {
+                    cdouble alpha = {1.0, 0.0};
+                    cdouble beta  = {0.0, 0.0};
+                    AF_CHECK(af_gemm(&gemm_out, optLhs, optRhs, &alpha, lhs, rhs, &beta));
+                    break;
+            }
+            default: TYPE_ERROR(1, lhs_type);
+        }
+
+        std::swap(*out, gemm_out);
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
@@ -205,7 +301,7 @@ af_err af_dot(af_array *out, const af_array lhs, const af_array rhs,
         }
         std::swap(*out, output);
     }
-    CATCHALL
+    CATCHALL;
     return AF_SUCCESS;
 }
 

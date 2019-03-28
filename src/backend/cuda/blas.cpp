@@ -154,28 +154,23 @@ using std::max;
 using std::vector;
 
 template<typename T>
-Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
-                af_mat_prop optRhs) {
-    cublasOperation_t lOpts = toCblasTranspose(optLhs);
-    cublasOperation_t rOpts = toCblasTranspose(optRhs);
+void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+          const T *alpha,
+          const Array<T> &lhs, const Array<T> &rhs,
+          const T *beta) {
+    const cublasOperation_t lOpts = toCblasTranspose(optLhs);
+    const cublasOperation_t rOpts = toCblasTranspose(optRhs);
 
-    int aRowDim = (lOpts == CUBLAS_OP_N) ? 0 : 1;
-    int aColDim = (lOpts == CUBLAS_OP_N) ? 1 : 0;
-    int bColDim = (rOpts == CUBLAS_OP_N) ? 1 : 0;
+    const int aRowDim = (lOpts == CUBLAS_OP_N) ? 0 : 1;
+    const int aColDim = (lOpts == CUBLAS_OP_N) ? 1 : 0;
+    const int bColDim = (rOpts == CUBLAS_OP_N) ? 1 : 0;
 
-    dim4 lDims = lhs.dims();
-    dim4 rDims = rhs.dims();
-    int M      = lDims[aRowDim];
-    int N      = rDims[bColDim];
-    int K      = lDims[aColDim];
-
-    dim_t d2     = std::max(lDims[2], rDims[2]);
-    dim_t d3     = std::max(lDims[3], rDims[3]);
-    dim4 oDims   = dim4(M, N, d2, d3);
-    Array<T> out = createEmptyArray<T>(oDims);
-
-    T alpha = scalar<T>(1);
-    T beta  = scalar<T>(0);
+    const dim4 lDims = lhs.dims();
+    const dim4 rDims = rhs.dims();
+    const int M      = lDims[aRowDim];
+    const int N      = rDims[bColDim];
+    const int K      = lDims[aColDim];
+    const dim4 oDims = out.dims();
 
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
@@ -184,18 +179,18 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
     if (oDims.ndims() <= 2) {
         if (rDims[bColDim] == 1) {
             dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
-            N          = lDims[aColDim];
             CUBLAS_CHECK(gemv_func<T>()(blasHandle(), lOpts, lDims[0], lDims[1],
-                                        &alpha, lhs.get(), lStrides[1],
-                                        rhs.get(), incr, &beta, out.get(), 1));
+                                        alpha, lhs.get(), lStrides[1],
+                                        rhs.get(), incr, beta, out.get(), 1));
         } else {
             CUBLAS_CHECK(gemm_func<T>()(blasHandle(), lOpts, rOpts, M, N, K,
-                                        &alpha, lhs.get(), lStrides[1],
-                                        rhs.get(), rStrides[1], &beta,
-                                        out.get(), oDims[0]));
+                                        alpha, lhs.get(), lStrides[1],
+                                        rhs.get(), rStrides[1], beta,
+                                        out.get(), oStrides[1]));
         }
     } else {
         int batchSize = oDims[2] * oDims[3];
+
         std::vector<const T *> lptrs(batchSize);
         std::vector<const T *> rptrs(batchSize);
         std::vector<T *> optrs(batchSize);
@@ -239,12 +234,10 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
         CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
         CUBLAS_CHECK(gemmBatched_func<T>()(
-            blasHandle(), lOpts, rOpts, M, N, K, &alpha,
+            blasHandle(), lOpts, rOpts, M, N, K, alpha,
             (const T **)d_lptrs.get(), lStrides[1], (const T **)d_rptrs.get(),
-            rStrides[1], &beta, (T **)d_optrs.get(), oStrides[1], batchSize));
+            rStrides[1], beta, (T **)d_optrs.get(), oStrides[1], batchSize));
     }
-
-    return out;
 }
 
 template<typename T>
@@ -278,15 +271,16 @@ void trsm(const Array<T> &lhs, Array<T> &rhs, af_mat_prop trans, bool is_upper,
         lhs.get(), lStrides[1], rhs.get(), rStrides[1]));
 }
 
-#define INSTANTIATE_BLAS(TYPE)                                \
-    template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, \
-                                      const Array<TYPE> &rhs, \
-                                      af_mat_prop optLhs, af_mat_prop optRhs);
+#define INSTANTIATE_GEMM(TYPE)                                                         \
+    template void gemm<TYPE>(Array<TYPE> &out, af_mat_prop optLhs, af_mat_prop optRhs, \
+                             const TYPE *alpha,                       \
+                             const Array<TYPE> &lhs, const Array<TYPE> &rhs,           \
+                             const TYPE *beta);
 
-INSTANTIATE_BLAS(float)
-INSTANTIATE_BLAS(cfloat)
-INSTANTIATE_BLAS(double)
-INSTANTIATE_BLAS(cdouble)
+INSTANTIATE_GEMM(float)
+INSTANTIATE_GEMM(cfloat)
+INSTANTIATE_GEMM(double)
+INSTANTIATE_GEMM(cdouble)
 
 #define INSTANTIATE_DOT(TYPE)                                                  \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs,                     \

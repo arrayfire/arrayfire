@@ -160,7 +160,11 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
                            A.getOffset(), A.strides()[1], &h_tau[0], (*dT)(),
                            tmp.getOffset(), NB, queue, &info);
 
-        B = matmul(A, B, AF_MAT_NONE, AF_MAT_NONE);
+        Array<T> B_new = createEmptyArray<T>(dim4(A.dims()[0], B.dims()[1]));
+        T alpha = scalar<T>(1.0);
+        T beta = scalar<T>(0.0);
+        gemm<T>(B_new, AF_MAT_NONE, AF_MAT_NONE, &alpha, A, B, &beta);
+        B = B_new;
 #endif
     } else if (M > N) {
         // Least squres for this case is solved using the following

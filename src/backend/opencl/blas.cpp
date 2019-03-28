@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <complex>
+#include <vector>
 
 #include <Array.hpp>
 #include <arith.hpp>
@@ -44,12 +45,15 @@ toBlasTranspose(af_mat_prop opt) {
 }
 
 template<typename T>
-Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
-                af_mat_prop optRhs) {
+void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+          const T *alpha,
+          const Array<T> &lhs, const Array<T> &rhs,
+          const T *beta) {
 #if defined(WITH_LINEAR_ALGEBRA)
     if (OpenCLCPUOffload(
             false)) {  // Do not force offload gemm on OSX Intel devices
-        return cpu::matmul(lhs, rhs, optLhs, optRhs);
+        cpu::gemm(out, optLhs, optRhs, alpha,
+                  lhs, rhs, beta);
     }
 #endif
     const auto lOpts = toBlasTranspose(optLhs);
@@ -64,14 +68,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
     const int M      = lDims[aRowDim];
     const int N      = rDims[bColDim];
     const int K      = lDims[aColDim];
-
-    dim_t d2     = std::max(lDims[2], rDims[2]);
-    dim_t d3     = std::max(lDims[3], rDims[3]);
-    dim4 oDims   = af::dim4(M, N, d2, d3);
-    Array<T> out = createEmptyArray<T>(oDims);
-
-    const auto alpha = scalar<T>(1);
-    const auto beta  = scalar<T>(0);
+    const dim4 oDims = out.dims();
 
     const dim4 lStrides = lhs.strides();
     const dim4 rStrides = rhs.strides();
@@ -101,22 +98,20 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
         if (rDims[bColDim] == 1) {
             dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
             gpu_blas_gemv_func<T> gemv;
-            OPENCL_BLAS_CHECK(gemv(lOpts, lDims[0], lDims[1], alpha,
+            OPENCL_BLAS_CHECK(gemv(lOpts, lDims[0], lDims[1], *alpha,
                                    (*lhs.get())(), lOffset, lStrides[1],
-                                   (*rhs.get())(), rOffset, incr, beta,
-                                   (*out.get())(), oOffset, 1, 1, &getQueue()(),
+                                   (*rhs.get())(), rOffset, incr, *beta,
+                                   (*out.get())(), oOffset, oStrides[0], 1, &getQueue()(),
                                    0, nullptr, &event()));
         } else {
             gpu_blas_gemm_func<T> gemm;
-            OPENCL_BLAS_CHECK(gemm(lOpts, rOpts, M, N, K, alpha, (*lhs.get())(),
+            OPENCL_BLAS_CHECK(gemm(lOpts, rOpts, M, N, K, *alpha, (*lhs.get())(),
                                    lOffset, lStrides[1], (*rhs.get())(),
-                                   rOffset, rStrides[1], beta, (*out.get())(),
-                                   oOffset, out.dims()[0], 1, &getQueue()(), 0,
+                                   rOffset, rStrides[1], *beta, (*out.get())(),
+                                   oOffset, oStrides[1], 1, &getQueue()(), 0,
                                    nullptr, &event()));
         }
     }
-
-    return out;
 }
 
 template<typename T>
@@ -129,15 +124,16 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
     return reduce<af_add_t, T, T>(temp, 0, false, 0);
 }
 
-#define INSTANTIATE_BLAS(TYPE)                                \
-    template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, \
-                                      const Array<TYPE> &rhs, \
-                                      af_mat_prop optLhs, af_mat_prop optRhs);
+#define INSTANTIATE_GEMM(TYPE)                                                         \
+    template void gemm<TYPE>(Array<TYPE> &out, af_mat_prop optLhs, af_mat_prop optRhs, \
+                             const TYPE *alpha,                    \
+                             const Array<TYPE> &lhs, const Array<TYPE> &rhs,           \
+                             const TYPE *beta);
 
-INSTANTIATE_BLAS(float)
-INSTANTIATE_BLAS(cfloat)
-INSTANTIATE_BLAS(double)
-INSTANTIATE_BLAS(cdouble)
+INSTANTIATE_GEMM(float)
+INSTANTIATE_GEMM(cfloat)
+INSTANTIATE_GEMM(double)
+INSTANTIATE_GEMM(cdouble)
 
 #define INSTANTIATE_DOT(TYPE)                                                  \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs,                     \

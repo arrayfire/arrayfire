@@ -92,6 +92,21 @@ using scale_type =
                          const typename blas_base<T>::type *, const T>::type;
 
 template<typename T>
+scale_type<T> getOneScalar(const T* const vals) {
+    return vals[0];
+}
+
+template<>
+scale_type<cfloat> getOneScalar(const cfloat* const vals) {
+    return reinterpret_cast<scale_type<cfloat>>(vals);
+}
+
+template<>
+scale_type<cdouble> getOneScalar(const cdouble* const vals) {
+    return reinterpret_cast<scale_type<cdouble>>(vals);
+}
+
+template<typename T>
 using gemm_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const CBLAS_TRANSPOSE, const blasint,
                                const blasint, const blasint, scale_type<T>,
@@ -153,35 +168,29 @@ toCblasTranspose(af_mat_prop opt) {
 }
 
 template<typename T>
-Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
-                af_mat_prop optRhs) {
-    CBLAS_TRANSPOSE lOpts = toCblasTranspose(optLhs);
-    CBLAS_TRANSPOSE rOpts = toCblasTranspose(optRhs);
+void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+          const T *alpha, const Array<T> &lhs, const Array<T> &rhs,
+          const T *beta) {
+    using BT  = typename blas_base<T>::type;
+    using CBT = const typename blas_base<T>::type;
 
-    int aRowDim = (lOpts == CblasNoTrans) ? 0 : 1;
-    int aColDim = (lOpts == CblasNoTrans) ? 1 : 0;
-    int bColDim = (rOpts == CblasNoTrans) ? 1 : 0;
+    const CBLAS_TRANSPOSE lOpts = toCblasTranspose(optLhs);
+    const CBLAS_TRANSPOSE rOpts = toCblasTranspose(optRhs);
 
-    dim4 lDims = lhs.dims();
-    dim4 rDims = rhs.dims();
-    int M      = lDims[aRowDim];
-    int N      = rDims[bColDim];
-    int K      = lDims[aColDim];
-    dim_t d2   = std::max(lDims[2], rDims[2]);
-    dim_t d3   = std::max(lDims[3], rDims[3]);
-    dim4 oDims = af::dim4(M, N, d2, d3);
+    const int aRowDim = (lOpts == CblasNoTrans) ? 0 : 1;
+    const int aColDim = (lOpts == CblasNoTrans) ? 1 : 0;
+    const int bColDim = (rOpts == CblasNoTrans) ? 1 : 0;
 
-    // FIXME: Leaks on errors.
-    Array<T> out = createValueArray<T>(oDims, scalar<T>(0));
-    auto alpha   = getScale<T, 1>();
-    auto beta    = getScale<T, 0>();
+    const dim4 lDims = lhs.dims();
+    const dim4 rDims = rhs.dims();
+    const int M      = lDims[aRowDim];
+    const int N      = rDims[bColDim];
+    const int K      = lDims[aColDim];
+    const dim4 oDims = out.dims();
 
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
     dim4 oStrides = out.strides();
-
-    using BT  = typename blas_base<T>::type;
-    using CBT = const typename blas_base<T>::type;
 
     int batchSize = oDims[2] * oDims[3];
 
@@ -210,28 +219,30 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
 
         if (rDims[bColDim] == 1) {
             dim_t incr = (rOpts == CblasNoTrans) ? rStrides[0] : rStrides[1];
-            N          = lDims[aColDim];
-            gemv_func<T>()(CblasColMajor, lOpts, lDims[0], lDims[1], alpha,
-                           lptr, lStrides[1], rptr, incr, beta, optr, 1);
+            gemv_func<T>()(CblasColMajor, lOpts, lDims[0], lDims[1],
+                           getOneScalar<T>(alpha),
+                           lptr, lStrides[1], rptr, incr,
+                           getOneScalar<T>(beta), optr, 1);
         } else {
-            gemm_func<T>()(CblasColMajor, lOpts, rOpts, M, N, K, alpha, lptr,
-                           lStrides[1], rptr, rStrides[1], beta, optr,
-                           out.dims()[0]);
+            gemm_func<T>()(CblasColMajor, lOpts, rOpts, M, N, K,
+                           getOneScalar<T>(alpha), lptr,
+                           lStrides[1], rptr, rStrides[1],
+                           getOneScalar<T>(beta),
+                           optr, oStrides[1]);
         }
     }
-
-    return out;
 }
 
-#define INSTANTIATE_BLAS(TYPE)                                \
-    template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, \
-                                      const Array<TYPE> &rhs, \
-                                      af_mat_prop optLhs, af_mat_prop optRhs);
+#define INSTANTIATE_GEMM(TYPE)                                                         \
+    template void gemm<TYPE>(Array<TYPE> &out, af_mat_prop optLhs, af_mat_prop optRhs, \
+                             const TYPE *alpha,                       \
+                             const Array<TYPE> &lhs, const Array<TYPE> &rhs,           \
+                             const TYPE *beta);
 
-INSTANTIATE_BLAS(float)
-INSTANTIATE_BLAS(cfloat)
-INSTANTIATE_BLAS(double)
-INSTANTIATE_BLAS(cdouble)
+INSTANTIATE_GEMM(float)
+INSTANTIATE_GEMM(cfloat)
+INSTANTIATE_GEMM(double)
+INSTANTIATE_GEMM(cdouble)
 
 }  // namespace cpu
 }  // namespace opencl
