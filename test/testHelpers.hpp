@@ -1143,6 +1143,15 @@ class TestOutputArrayInfo {
     TestOutputArrayType out_arr_type;
 
    public:
+    TestOutputArrayInfo()
+        : out_arr(0)
+        , out_arr_cpy(0)
+        , out_subarr(0)
+        , out_subarr_ndims(0)
+        , out_arr_type(NULL_ARRAY) {
+        for (uint i = 0; i < 4; ++i) { out_subarr_idxs[i] = af_span; }
+    }
+
     TestOutputArrayInfo(TestOutputArrayType arr_type)
         : out_arr(0)
         , out_arr_cpy(0)

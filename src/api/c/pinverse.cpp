@@ -129,8 +129,14 @@ Array<T> pinverseSvd(const Array<T> &in, const double tol) {
                          0, uT.dims()[2] - 1, 0, uT.dims()[3] - 1);
     }
 
-    Array<T> out = matmul<T>(matmul<T>(v, sPinv, AF_MAT_NONE, AF_MAT_NONE), uT,
-                             AF_MAT_NONE, AF_MAT_NONE);
+    Array<T> vsPinv = createEmptyArray<T>(dim4(v.dims()[0], sPinv.dims()[1], P, Q));
+    Array<T> out    = createEmptyArray<T>(dim4(vsPinv.dims()[0], uT.dims()[1], P, Q));
+
+    T alpha = scalar<T>(1.0);
+    T beta = scalar<T>(0.0);
+
+    gemm<T>(vsPinv, AF_MAT_NONE, AF_MAT_NONE, &alpha, v, sPinv, &beta);
+    gemm<T>(out, AF_MAT_NONE, AF_MAT_NONE, &alpha, vsPinv, uT, &beta);
 
     return out;
 }

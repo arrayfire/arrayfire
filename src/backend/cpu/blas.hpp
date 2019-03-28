@@ -8,14 +8,16 @@
  ********************************************************/
 
 #include <Array.hpp>
-
 #include <af/defines.h>
 
 namespace cpu {
 
 template<typename T>
-Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
-                af_mat_prop optRhs);
+void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+          const T *alpha,
+          const Array<T> &lhs, const Array<T> &rhs,
+          const T *beta);
+
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
              af_mat_prop optRhs);
