@@ -134,6 +134,8 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs,
                            const af::dim4 &odims) {
     BinOp<To, Ti, op> bop;
 
+    if(lhs.getNode()->getHeight() > 25) lhs.eval();
+    if(rhs.getNode()->getHeight() > 25) rhs.eval();
     common::Node_ptr lhs_node = lhs.getNode();
     common::Node_ptr rhs_node = rhs.getNode();
     common::BinaryNode *node =

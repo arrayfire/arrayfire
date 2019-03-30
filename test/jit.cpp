@@ -495,31 +495,24 @@ TEST(JIT, IndexingRow) {
 }
 
 TEST(JIT, ManyConstants) {
-  array res = constant(1, 1);
-  array res2 = tile(res, 1, 10);
-  array res3 = randu(1);
-  array res4 = tile(res3, 1, 10);
-  array res5 = randu(1);
-  array res6 = tile(res5, 1, 10);
-  array res7 = randu(1);
-  array res8 = tile(res7, 1, 10);
+    array res  = constant(1, 1);
+    array res2 = tile(res, 1, 10);
 
-  for(int i = 0; i < 196; i++) {
-    res2 = res2 + constant(1, 1, 10);
-  }
-  //for(int i = 0; i < 190; i++) {
-  //res4 = res4 + tile(constant(1, 1), 1, 10);
-  //}
-  //for(int i = 0; i < 190; i++) {
-  //res6 = res6 + tile(constant(1, 1), 1, 10);
-  //}
-  //for(int i = 0; i < 190; i++) {
-  //res8 = res8 + 1.0f;
-  //}
+    for (int i = 0; i < 300; i++) { res2 = res2 + constant(1, 1, 10); }
 
-  res2.eval();
-  //eval(res2, res4, res6, res8);
-  af::sync();
+    res2.eval();
+    af::sync();
+}
 
+TEST(JIT, IncrementingBinary) {
+    array a = randu(20, 5);
+    array b = randu(20, 1);
+    array c = randu(20, 1);
+    for (int i = 0; i < 500; i++) {
+        b += cos(pow(sin(c * 0.3f), 2) + pow(randu(20, 1) - 3, 2) * 1.1f + 3);
+        a = floor(a + tile(b, 1, 5));
+    }
 
+    a.eval();
+    af::sync();
 }
