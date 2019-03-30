@@ -95,7 +95,7 @@ string join_path(string first, ARGS... args) {
 }
 
 /*flag parameter is not used on windows platform */
-LibHandle openDynLibrary(const af_backend bknd_idx, int flag = RTLD_LAZY) {
+LibHandle openDynLibrary(const af_backend bknd_idx) {
     // The default search path is the colon separated list of paths stored in
     // the environment variables:
     string bkndLibName  = getBkndLibName(bknd_idx);

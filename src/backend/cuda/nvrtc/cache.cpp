@@ -105,7 +105,7 @@ Kernel buildKernel(const string& nameExpr, const string& jit_ker,
             "math.hpp",       "ops.hpp",     "optypes.hpp",
             "Param.hpp",      "shared.hpp",  "types.hpp"};
         constexpr size_t NumHeaders = extent<decltype(includeNames)>::value;
-        static const std::array<string, NumHeaders> sourceStrings = {
+        static const std::array<string, NumHeaders> sourceStrings = {{
             string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
             string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
             string(backend_hpp, backend_hpp_len),
@@ -117,7 +117,8 @@ Kernel buildKernel(const string& nameExpr, const string& jit_ker,
             string(Param_hpp, Param_hpp_len),
             string(shared_hpp, shared_hpp_len),
             string(types_hpp, types_hpp_len),
-        };
+        }};
+
         static const char* headers[] = {
             sourceStrings[0].c_str(), sourceStrings[1].c_str(),
             sourceStrings[2].c_str(), sourceStrings[3].c_str(),
@@ -351,7 +352,7 @@ Kernel getKernel(const string& nameExpr, const string& source,
               [](const TemplateArg& arg) -> string { return arg._tparam; });
 
     string tInstance = nameExpr + "<" + args[0];
-    for (int i = 1; i < args.size(); ++i) { tInstance += ("," + args[i]); }
+    for (size_t i = 1; i < args.size(); ++i) { tInstance += ("," + args[i]); }
     tInstance += ">";
 
     int device    = getActiveDeviceId();
