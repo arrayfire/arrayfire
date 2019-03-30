@@ -470,15 +470,28 @@ TEST(JIT, TwoLargeNonLinear) {
     ASSERT_VEC_ARRAY_EQ(gold, a.dims(), c);
 }
 
-TEST(JIT, Indexing) {
-  array a = randu(32, 512);
-  array b = randu(1, 512);
+TEST(JIT, IndexingColumn) {
+    array a = constant(1, 512, 32);
+    array b = constant(2, 512);
+    a.eval();
+    b.eval();
 
-  array c = a(31, af::span) + b;
+    array c = a(af::span, 31) + b;
 
-  c.eval();
+    vector<float> gold(512, 3.0f);
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(512), c);
+}
 
-  af::sync();
+TEST(JIT, IndexingRow) {
+    array a = constant(1, 32, 512);
+    array b = constant(2, 1, 512);
+    a.eval();
+    b.eval();
+
+    array c = a(31, af::span) + b;
+
+    vector<float> gold(512, 3.0f);
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(1, 512), c);
 }
 
 TEST(JIT, ManyConstants) {

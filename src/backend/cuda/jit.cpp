@@ -118,13 +118,13 @@ struct Param
 
     static const char *linearIndex = R"JIT(
     uint threadId = threadIdx.x;
-    long long idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
-    if (idx >= outref.dims[3] * outref.strides[3]) return;
+    dim_t idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
+    if (idx >= outref.dims[3] * outref.strides[3]) continue;
     )JIT";
 
     static const char *generalIndex = R"JIT(
-    long long id0 = 0, id1 = 0, id2 = 0, id3 = 0;
-    long blockIdx_y = blockIdx.z * gridDim.y + blockIdx.y;
+    dim_t id0 = 0, id1 = 0, id2 = 0, id3 = 0;
+    dim_t blockIdx_y = blockIdx.z * gridDim.y + blockIdx.y;
     if (num_odims > 2) {
         id2 = blockIdx_x / blocks_x;
         id0 = blockIdx_x - id2 * blocks_x;
@@ -148,18 +148,14 @@ struct Param
                 id2 < outref.dims[2] &&
                 id3 < outref.dims[3];
 
-    long long idx = outref.strides[3] * id3 +
-                    outref.strides[2] * id2 +
-                    outref.strides[1] * id1 + id0;
+    dim_t idx = outref.strides[3] * id3 +
+                outref.strides[2] * id2 +
+                outref.strides[1] * id1 + id0;
 
-    if (cond) {
-
-
-    if (threadIdx.x < num_params && threadIdx.y == 0) { //(int i = 0; i < num_params; i++) {
-        int i = threadIdx.x;
-        block_offsets[i] = (id3 < params[i].dims[3]) * params[i].strides[3] * id3 +
-                           (id2 < params[i].dims[2]) * params[i].strides[2] * id2;
-    }
+    if (threadIdx.x < num_params && threadIdx.y == 0) {
+        int tidx = threadIdx.x;
+        block_offsets[tidx] = (id3 < params[tidx].dims[3]) * params[tidx].strides[3] * id3 +
+                              (id2 < params[tidx].dims[2]) * params[tidx].strides[2] * id2;
     }
     __syncthreads();
     if (cond) {
@@ -232,7 +228,7 @@ struct Param
     kerStream << opsStream.str();
     kerStream << outWriteStream.str();
     kerStream << loopEnd;
-    if(!is_linear) kerStream << "}";
+    if (!is_linear) kerStream << "}";
     kerStream << blockEnd;
 
     return kerStream.str();
@@ -387,10 +383,13 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     }
 
     uptr<uchar> dparam;
-    void *ptr       = nullptr;
-    int param_count = params.size();
+    void *ptr         = nullptr;
+    int param_count   = 0;
+    size_t smem_bytes = 0;
     if (!is_linear) {
-        dparam = memAlloc<uchar>(params.size() * sizeof(Param<T>));
+        smem_bytes  = (sizeof(Param<T>) + sizeof(dim_t)) * params.size();
+        param_count = params.size();
+        dparam      = memAlloc<uchar>(params.size() * sizeof(Param<T>));
         CUDA_CHECK(cudaMemcpyAsync(dparam.get(), params.data(),
                                    params.size() * sizeof(Param<T>),
                                    cudaMemcpyHostToDevice, getActiveStream()));
@@ -405,8 +404,8 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     args.push_back((void *)&num_odims);
 
     CU_CHECK(cuLaunchKernel(ker, blocks_x, blocks_y, blocks_z, threads_x,
-                            threads_y, 1, (sizeof(Param<T>) + sizeof(dim_t)) * params.size(),
-                            getActiveStream(), args.data(), NULL));
+                            threads_y, 1, smem_bytes, getActiveStream(),
+                            args.data(), NULL));
 
     POST_LAUNCH_CHECK();
 
