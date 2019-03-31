@@ -247,8 +247,8 @@ Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
 
             bool isBufferLimit =
                 lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers();
-
-            bool isNvidia = getActivePlatform() == AFCL_PLATFORM_NVIDIA;
+            bool isNvidia = getActivePlatform() == AFCL_PLATFORM_NVIDIA ||
+                            getActivePlatform() == AFCL_PLATFORM_APPLE;
             // We eval in the following cases.
             // 1. Too many bytes are locked up by JIT causing memory pressure.
             // Too many bytes is assumed to be half of all bytes allocated so
