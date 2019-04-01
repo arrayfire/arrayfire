@@ -49,8 +49,7 @@ TYPED_TEST_CASE(SortByKey, TestTypes);
 
 template<typename T>
 void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0,
-              const unsigned resultIdx1, bool isSubRef = false,
-              const vector<af_seq>* seqv = NULL) {
+              const unsigned resultIdx1, bool isSubRef = false) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;

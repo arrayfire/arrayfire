@@ -32,7 +32,9 @@ if("${Boost_VERSION}" VERSION_LESS 106100)
   add_dependencies(Boost::boost boost_compute)
 
   set_target_properties(Boost::boost PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR};${source_dir}/include")
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR};${source_dir}/include"
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR};${source_dir}/include"
+    )
 endif()
 
 # NOTE: BOOST_CHRONO_HEADER_ONLY is required for Windows because otherwise it

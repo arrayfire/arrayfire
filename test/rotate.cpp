@@ -44,8 +44,7 @@ TYPED_TEST_CASE(Rotate, TestTypes);
 
 template<typename T>
 void rotateTest(string pTestFile, const unsigned resultIdx, const float angle,
-                const bool crop, bool isSubRef = false,
-                const vector<af_seq>* seqv = NULL) {
+                const bool crop) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
