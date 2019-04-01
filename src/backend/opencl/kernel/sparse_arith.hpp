@@ -259,6 +259,9 @@ static void csrCalcOutNNZ(Param outRowIdx, unsigned &nnzC, const uint M,
                           const uint N, uint nnzA, const Param lrowIdx,
                           const Param lcolIdx, uint nnzB, const Param rrowIdx,
                           const Param rcolIdx) {
+    UNUSED(N);
+    UNUSED(nnzA);
+    UNUSED(nnzB);
     std::string refName = std::string("csr_calc_output_NNZ");
     int device          = getActiveDeviceId();
     kc_entry_t entry    = kernelCache(device, refName);
@@ -307,7 +310,6 @@ void ssArithCSR(Param oVals, Param oColIdx, const Param oRowIdx, const uint M,
     if (entry.prog == 0 && entry.ker == 0) {
         const T iden_val =
             (op == af_mul_t || op == af_div_t ? scalar<T>(1) : scalar<T>(0));
-        ToNumStr<T> toNumStr;
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D OP=" << getOpString<op>() << " -D IDENTITY_VALUE=(T)("

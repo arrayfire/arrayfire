@@ -130,6 +130,7 @@ void sparseArithOpS(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
 static void calcOutNNZ(Param<int> outRowIdx, const uint M, const uint N,
                        CParam<int> lRowIdx, CParam<int> lColIdx,
                        CParam<int> rRowIdx, CParam<int> rColIdx) {
+    UNUSED(N);
     int *orPtr       = outRowIdx.get();
     const int *lrPtr = lRowIdx.get();
     const int *lcPtr = lColIdx.get();
