@@ -30,7 +30,10 @@ foreach(SBK_TYPE ${SBK_TYPES})
         ../../api/c
         ../common
         ../../../include
-        ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR})
+
+    target_include_directories(opencl_sort_by_key_${SBK_TYPE}
+      SYSTEM PRIVATE
         $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:OpenCL::cl2hpp,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>

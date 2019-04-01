@@ -317,7 +317,6 @@ ForgeManager::getWindowGrid(const fg_window window) {
 
 fg_chart ForgeManager::getChart(const fg_window window, const int r,
                                 const int c, const fg_chart_type ctype) {
-    fg_chart retVal   = NULL;
     ChartMapIterator iter = mChartMap.find(window);
     WindGridMapIterator gIter = mWndGridMap.find(window);
 

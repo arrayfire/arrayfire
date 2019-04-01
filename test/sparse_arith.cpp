@@ -69,9 +69,7 @@ typedef enum {
 } af_op_t;
 
 template<af_op_t op>
-struct arith_op {
-    array operator()(array v1, array v2) { return v1; }
-};
+struct arith_op;
 
 template<>
 struct arith_op<af_add_t> {

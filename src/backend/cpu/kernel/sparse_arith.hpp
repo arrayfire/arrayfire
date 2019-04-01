@@ -122,6 +122,5 @@ void sparseArithOpS(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
             vPtr[i] = arith_op<T, op>()(vPtr[i], hPtr[hoff]);
     }
 }
-
 }  // namespace kernel
 }  // namespace cpu

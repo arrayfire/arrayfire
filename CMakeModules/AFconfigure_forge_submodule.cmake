@@ -35,6 +35,7 @@ if(AF_BUILD_FORGE)
       $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:forge>>
       DESTINATION "${AF_INSTALL_LIB_DIR}"
       COMPONENT common_backend_dependencies)
+  set_property(TARGET forge APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
 else(AF_BUILD_FORGE)
   set(FG_VERSION "1.0.0")
   set(FG_VERSION_MAJOR 1)
