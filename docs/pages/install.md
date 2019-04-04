@@ -26,6 +26,27 @@ vendor’s website.
 * [Linux](#Linux)
 * [macOS](#macOS)
 
+Tabulated below are the CUDA toolkits used to generate the binaries
+available for download on our website. The last column are the
+respective minimum required NVIDIA GPU driver versions.
+
+| ArrayFire | CUDA Toolkit | Linux  | Windows   |
+|:---------:|:------------:|:------:|:---------:|
+| 3.0.x     |     7.0      | 346.46 |   347.62  |
+| 3.1-3.x   |     7.5      | 352.31 |   353.66  |
+| 3.4.0     |     7.5      | 352.31 |   353.66  |
+| 3.4.1-2   |     8.0      | 367.48 |   369.30  |
+| 3.5.0     |     8.0      | 375.26 |   376.51  |
+| 3.5.1     |     9.1      | 390.46 |   391.29  |
+| 3.6.0     |     9.1      | 390.46 |   391.29  |
+| 3.6.1     |     9.2      | 396.37 |   398.26  |
+| 3.6.2     |    10.0      | 410.48 |   411.31  |
+
+Prior to ArrayFire 3.6.0, the user had to install CUDA toolkit on their
+own. Since ArrayFire 3.6.0, we started shipping CUDA libraries along with
+ArrayFire binaries. Therefore, the user only needs to ensure the
+availability of required driver.
+
 ## <a name="Windows"></a> Windows
 
 Prior to installing ArrayFire on Windows,
