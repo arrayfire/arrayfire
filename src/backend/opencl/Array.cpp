@@ -260,36 +260,55 @@ Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
             // TODO: Find better solution than the following emperical solution.
             bool isParamLimit = (isNvidia && node->getHeight() > 24);
             if (isParamLimit || isBufferLimit) {
-                // This is the maximum non-linear buffers that are allowed in
-                // the parameter list
-                constexpr int max_nonlinear_buffer_count = 48;
+                // This was added to the base size to make kernels pass. I
+                // picked this number by creating very large kernels and then
+                // increased this number until the test passed. Then I added a
+                // small number and made this nice and even.
+                constexpr size_t nvidia_parameter_magic = 768;
+
+                // This is the base parameter size if the kernel had no
+                // arguments
+                constexpr size_t param_base_size =
+                    sizeof(T *) + sizeof(KParam) + (3 * sizeof(uint)) +
+                    nvidia_parameter_magic;
+
+                // This is the maximum size of the params that can be allowed by
+                // CUDA NOTE: This number should have been (4096 -
+                // some_buffer_size) BUT kernels who's kernel sizes come close
+                // to this value are not passing and cuModuleLoadDataEx is
+                // failing with CUDA_ERROR_INVALID_IMAGE(200). 35*sizeof(int)
+                // seems to be the magic number that passes all tests.
+                constexpr size_t max_param_size =
+                    (4096 - (sizeof(KParam) + 35 * sizeof(uint)));
 
                 Node *n = node.get();
 
                 struct tree_info {
-                    size_t buffer_size;
-                    int num_buffers;
-                    bool is_linear;
+                    size_t total_buffer_size;
+                    size_t num_buffers;
+                    size_t param_scalar_size;
                 };
                 NodeIterator<> it(n);
-                dim4 outdim    = out.dims();
                 tree_info info = accumulate(
-                    it, NodeIterator<>(), tree_info{0, 0, true},
+                    it, NodeIterator<>(), tree_info{0, 0, 0},
                     [=](tree_info &prev, Node &n) {
                         if (n.isBuffer()) {
                             auto &buf_node = static_cast<BufferNode &>(n);
-                            prev.buffer_size += buf_node.getBytes();
+                            prev.total_buffer_size += buf_node.getBytes();
                             prev.num_buffers++;
-                            prev.is_linear &=
-                                buf_node.isLinear((dim_t *)outdim.get());
+                        } else {
+                            prev.param_scalar_size += node->getParamBytes();
                         }
                         // getBytes returns the size of the data Array. Sub
                         // arrays will be represented by their parent size.
                         return prev;
                     });
-                isBufferLimit = 2 * info.buffer_size > lock_bytes;
-                isParamLimit  = isNvidia && !info.is_linear &&
-                               info.num_buffers >= max_nonlinear_buffer_count;
+                isBufferLimit = 2 * info.total_buffer_size > lock_bytes;
+                size_t param_size =
+                    (info.num_buffers * (sizeof(KParam) + sizeof(T *)) +
+                     info.param_scalar_size + param_base_size);
+
+                isParamLimit = isNvidia && param_size >= max_param_size;
 
                 if (isBufferLimit || isParamLimit) { out.eval(); }
             }

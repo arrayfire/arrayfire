@@ -54,8 +54,8 @@ class ScalarNode : public common::Node {
     }
 
     // Return the info for the params and the size of the buffers
-    virtual short getParamBytes() const final {
-        return static_cast<short>(sizeof(T));
+    virtual size_t getParamBytes() const final {
+        return sizeof(T);
     }
 };
 

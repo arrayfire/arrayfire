@@ -422,7 +422,6 @@ TEST(JIT, ConstEval7) {
     const array f = constant(1, 1);
     const array g = constant(1, 1);
 
-    // I can't think of a good test for this.
     EXPECT_NO_THROW({
         eval(a, b, c, d, e, f, g);
         af::sync();
@@ -583,4 +582,25 @@ TEST_P(JIT, Tile) {
         << "Tile operation created a buffer therefore not a JIT node";
 
     ASSERT_VEC_ARRAY_EQ(gold, params.out_dim, out);
+}
+
+/// This test creates a large jit tree with very small buffers. I am
+/// performing random JIT operations on the arrays. In each iteration
+/// I am also creating a new buffer nodes. This test was generated
+/// to address with large parameter sizes in CUDA. See issues #2436
+/// and #2389
+TEST(JIT, LargeJitTree) {
+    dim_t d0 = 30;
+    array a  = randu(d0, 5);
+    array b  = randu(d0, 1);
+    array c  = randu(d0, 1);
+    EXPECT_NO_THROW({
+        for (int i = 0; i < 500; i++) {
+            b += cos(pow(sin(c * 0.3f), 2) + pow(randu(d0, 1) - 3, 2) * 1.1f +
+                     3);
+            a = floor(a + tile(b, 1, 5));
+        }
+        eval(a);
+        af::sync();
+    });
 }
