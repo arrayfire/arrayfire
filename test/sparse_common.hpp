@@ -138,7 +138,7 @@ static void sparseTransposeTester(const int m, const int n, const int k,
 }
 
 template<typename T>
-static void convertCSR(const int M, const int N, const float ratio,
+static void convertCSR(const int M, const int N, const double ratio,
                        int targetDevice = -1) {
     if (targetDevice >= 0) af::setDevice(targetDevice);
 

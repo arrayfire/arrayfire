@@ -99,7 +99,7 @@ class Node {
 
     // Return the size of the parameter in bytes that will be passed to the
     // kernel
-    virtual short getParamBytes() const { return 0; }
+    virtual size_t getParamBytes() const { return 0; }
 
     // Return the size of the size of the buffer node in bytes. Zero otherwise
     virtual size_t getBytes() const { return 0; }
