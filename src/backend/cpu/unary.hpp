@@ -73,11 +73,12 @@ UNARY_OP(lgamma)
 #undef UNARY_OP_FN
 
 template<typename T, af_op_t op>
-Array<T> unaryOp(const Array<T> &in) {
+Array<T> unaryOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
     jit::Node_ptr in_node          = in.getNode();
     jit::UnaryNode<T, T, op> *node = new jit::UnaryNode<T, T, op>(in_node);
 
-    return createNodeArray<T>(in.dims(), jit::Node_ptr(node));
+    if (outDim == dim4(-1, -1, -1, -1)) { outDim = in.dims(); }
+    return createNodeArray<T>(outDim, jit::Node_ptr(node));
 }
 
 #define iszero(a) ((a) == 0)
@@ -96,12 +97,13 @@ CHECK_FN(iszero, iszero)
 #undef iszero
 
 template<typename T, af_op_t op>
-Array<char> checkOp(const Array<T> &in) {
+Array<char> checkOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
     jit::Node_ptr in_node = in.getNode();
     jit::UnaryNode<char, T, op> *node =
         new jit::UnaryNode<char, T, op>(in_node);
 
-    return createNodeArray<char>(in.dims(), jit::Node_ptr(node));
+    if (outDim == dim4(-1, -1, -1, -1)) { outDim = in.dims(); }
+    return createNodeArray<char>(outDim, jit::Node_ptr(node));
 }
 
 }  // namespace cpu

@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <af/arith.h>
@@ -45,7 +46,7 @@ TEST(JIT, CPP_JIT_HASH) {
         array d    = a + b;
         array e    = a + c;
         array f1   = d * e - e;
-        float *hF1 = f1.host<float>();
+        float* hF1 = f1.host<float>();
 
         for (int i = 0; i < num; i++) { ASSERT_EQ(hF1[i], valF1); }
 
@@ -57,7 +58,7 @@ TEST(JIT, CPP_JIT_HASH) {
         array d    = a + b;
         array e    = a + c;
         array f2   = d * e - d;
-        float *hF2 = f2.host<float>();
+        float* hF2 = f2.host<float>();
 
         for (int i = 0; i < num; i++) { ASSERT_EQ(hF2[i], valF2); }
 
@@ -425,5 +426,161 @@ TEST(JIT, ConstEval7) {
     EXPECT_NO_THROW({
         eval(a, b, c, d, e, f, g);
         af::sync();
-      });
+    });
+}
+
+using af::dim4;
+
+struct tile_params {
+    dim4 in_dim;
+    dim4 tile;
+    dim4 out_dim;
+    tile_params(dim4 in, dim4 t, dim4 out)
+        : in_dim(in), tile(t), out_dim(out) {}
+};
+
+std::ostream& operator<<(std::ostream& os, const tile_params& tp) {
+    os << "in_dim: " << tp.in_dim << "; tile parameters: " << tp.tile
+       << "; out_dim " << tp.out_dim << ";";
+    return os;
+}
+
+class JIT : public ::testing::TestWithParam<tile_params> {
+   protected:
+    void SetUp() {
+        tile_params params = GetParam();
+        vector<float> vals(params.in_dim.elements());
+        iota(vals.begin(), vals.end(), 0);
+        in = array(params.in_dim, &vals.front());
+
+        // clang-format off
+        gold.resize(params.out_dim.elements());
+        dim_t tile_dim[4] = {params.tile[0], params.tile[1], params.tile[2],
+                             params.tile[3]};
+
+        dim_t istride[4] = {1,
+                            params.in_dim[0],
+                            params.in_dim[0] * params.in_dim[1],
+                            params.in_dim[0] * params.in_dim[1] * params.in_dim[2]};
+        dim_t ostride[4] = {1,
+                            params.out_dim[0],
+                            params.out_dim[0] * params.out_dim[1],
+                            params.out_dim[0] * params.out_dim[1] * params.out_dim[2]};
+
+        for (int i = 0; i < 4; i++) {
+            if (tile_dim[i] != 1) { istride[i] = 0; }
+        }
+
+        for (int l = 0; l < params.out_dim[3]; l++) {
+            for (int k = 0; k < params.out_dim[2]; k++) {
+                for (int j = 0; j < params.out_dim[1]; j++) {
+                    for (int i = 0; i < params.out_dim[0]; i++) {
+                        gold[l * ostride[3] +
+                            k * ostride[2] +
+                            j * ostride[1] +
+                            i * ostride[0]] = vals[l * istride[3] +
+                                                    k * istride[2] +
+                                                    j * istride[1] +
+                                                    i * istride[0]];
+                    }
+                }
+            }
+        }
+        // clang-format on
+    }
+
+   public:
+    array in;
+    vector<float> gold;
+};
+
+void replace_all(std::string& str, const std::string& oldStr,
+                 const std::string& newStr) {
+    std::string::size_type pos = 0u;
+    while ((pos = str.find(oldStr, pos)) != std::string::npos) {
+        str.replace(pos, oldStr.length(), newStr);
+        pos += newStr.length();
+    }
+}
+
+std::string concat_dim4(dim4 d) {
+    std::stringstream ss;
+    ss << d;
+    std::string s = ss.str();
+    replace_all(s, " ", "_");
+    return s;
+}
+std::string tile_info(const ::testing::TestParamInfo<JIT::ParamType> info) {
+    std::stringstream ss;
+    ss << "in_" << concat_dim4(info.param.in_dim) << "_tile_"
+       << concat_dim4(info.param.tile);
+    return ss.str();
+}
+
+// clang-format off
+INSTANTIATE_TEST_CASE_P(
+                        JitTile, JIT,
+                                                   //  input_dim            tile_dim             output_dim
+                        ::testing::Values(
+                                          tile_params( dim4(10),            dim4(1, 10),         dim4(10, 10)),
+                                          tile_params( dim4(10),            dim4(1, 1, 10),      dim4(10, 1, 10)),
+                                          tile_params( dim4(10),            dim4(1, 1, 1, 10),   dim4(10, 1, 1, 10)),
+                                          tile_params( dim4(1, 10),         dim4(10),            dim4(10, 10)),
+                                          tile_params( dim4(1, 10),         dim4(1, 1, 10),      dim4(1, 10, 10)),
+                                          tile_params( dim4(1, 10),         dim4(1, 1, 1, 10),   dim4(1, 10, 1, 10)),
+
+                                          tile_params( dim4(10, 10),        dim4(1, 1, 10),      dim4(10, 10, 10)),
+                                          tile_params( dim4(10, 10),        dim4(1, 1, 1, 10),   dim4(10, 10, 1, 10)),
+
+                                          tile_params( dim4(1, 1, 10),      dim4(10),            dim4(10, 1, 10)),
+                                          tile_params( dim4(1, 1, 10),      dim4(1, 10),         dim4(1, 10, 10)),
+                                          tile_params( dim4(1, 1, 10),      dim4(1, 1, 1, 10),   dim4(1, 1, 10, 10)),
+
+                                          tile_params( dim4(1, 10, 10),     dim4(10),            dim4(10, 10, 10)),
+                                          tile_params( dim4(10, 1, 10),     dim4(1, 10),         dim4(10, 10, 10)),
+                                          tile_params( dim4(10, 1, 10),     dim4(1, 1, 1, 10),   dim4(10, 1, 10, 10)),
+                                          tile_params( dim4(1, 10, 10),     dim4(1, 1, 1, 10),   dim4(1, 10, 10, 10)),
+                                          tile_params( dim4(10, 10, 10),    dim4(1, 1, 1, 10),   dim4(10, 10, 10, 10)),
+
+                                          tile_params( dim4(1, 1, 1, 10),   dim4(10),            dim4(10, 1, 1, 10)),
+                                          tile_params( dim4(1, 10, 1, 10),  dim4(10),            dim4(10, 10, 1, 10)),
+                                          tile_params( dim4(1, 1, 10, 10),  dim4(10),            dim4(10, 1, 10, 10)),
+                                          tile_params( dim4(1, 10, 10, 10), dim4(10),            dim4(10, 10, 10, 10)),
+
+                                          tile_params( dim4(1, 1, 1, 10),   dim4(1, 10),         dim4(1, 10, 1, 10)),
+                                          tile_params( dim4(10, 1, 1, 10),  dim4(1, 10),         dim4(10, 10, 1, 10)),
+                                          tile_params( dim4(1, 1, 10, 10),  dim4(1, 10),         dim4(1, 10, 10, 10)),
+
+                                          tile_params( dim4(1, 1, 1, 10),   dim4(1, 1, 10),      dim4(1, 1, 10, 10)),
+                                          tile_params( dim4(10, 1, 1, 10),  dim4(1, 1, 10),      dim4(10, 1, 10, 10)),
+                                          tile_params( dim4(1, 10, 1, 10),  dim4(1, 1, 10),      dim4(1, 10, 10, 10)),
+                                          tile_params( dim4(10, 10, 1, 10), dim4(1, 1, 10),      dim4(10, 10, 10, 10))
+                                          ),
+                        tile_info
+                        );
+// clang-format on
+
+TEST_P(JIT, Tile) {
+    tile_params params = GetParam();
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+    size_t alloc_bytes2, alloc_buffers2;
+    size_t lock_bytes2, lock_buffers2;
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    array out = tile(in, params.tile);
+    af::deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2,
+                      &lock_buffers2);
+
+    // Make sure that the dimensions we are testing here are JIT nodes
+    // by checking that no new buffers are created.
+    ASSERT_EQ(alloc_bytes, alloc_bytes2)
+        << "Tile operation created a buffer therefore not a JIT node";
+    ASSERT_EQ(alloc_buffers, alloc_buffers2)
+        << "Tile operation created a buffer therefore not a JIT node";
+    ASSERT_EQ(lock_bytes, lock_bytes2)
+        << "Tile operation created a buffer therefore not a JIT node";
+    ASSERT_EQ(alloc_buffers, alloc_buffers2)
+        << "Tile operation created a buffer therefore not a JIT node";
+
+    ASSERT_VEC_ARRAY_EQ(gold, params.out_dim, out);
 }
