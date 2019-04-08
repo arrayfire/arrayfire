@@ -22,13 +22,19 @@
 
 #include <algorithm>
 #include <array>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 using std::array;
+using std::begin;
+using std::end;
 using std::extent;
+using std::find_if;
+using std::make_pair;
 using std::map;
 using std::pair;
 using std::string;
@@ -89,8 +95,9 @@ void Kernel::setConstant(const char* name, CUdeviceptr src, size_t bytes) {
     CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, getActiveStream()));
 }
 
-Kernel buildKernel(const string& nameExpr, const string& jit_ker,
-                   const vector<string>& opts, const bool isJIT) {
+Kernel buildKernel(const int device, const string& nameExpr,
+                   const string& jit_ker, const vector<string>& opts,
+                   const bool isJIT) {
     const char* ker_name = nameExpr.c_str();
 
     nvrtcProgram prog;
@@ -130,16 +137,10 @@ Kernel buildKernel(const string& nameExpr, const string& jit_ker,
                                        NumHeaders, headers, includeNames));
     }
 
-    auto dev = getDeviceProp(getActiveDeviceId());
+    auto computeFlag = getComputeCapability(device);
     array<char, 32> arch;
-    if (dev.major == 7 && dev.minor > 2) {
-        // FIXME: This conditional can be removed completely
-        // when nvrtc enables >72 as valid compute value for
-        // --gpu-architecture option
-        dev.minor = 2;
-    }
     snprintf(arch.data(), arch.size(), "--gpu-architecture=compute_%d%d",
-             dev.major, dev.minor);
+             computeFlag.first, computeFlag.second);
     vector<const char*> compiler_options = {
         arch.data(),
         "--std=c++11",
@@ -359,7 +360,7 @@ Kernel getKernel(const string& nameExpr, const string& source,
     Kernel kernel = findKernel(device, tInstance);
 
     if (kernel.prog == 0 || kernel.ker == 0) {
-        kernel = buildKernel(tInstance, source, compileOpts);
+        kernel = buildKernel(device, tInstance, source, compileOpts);
         addKernelToCache(device, tInstance, kernel);
     }
 

@@ -219,7 +219,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
         string jit_ker = getKernelString(funcName, full_nodes, full_ids,
                                          output_ids, is_linear);
         saveKernel(funcName, jit_ker, ".cu");
-        entry = buildKernel(funcName, jit_ker, {}, true);
+        entry = buildKernel(device, funcName, jit_ker, {}, true);
         kernelCaches[device][funcName] = entry;
     } else {
         entry = idx->second;
