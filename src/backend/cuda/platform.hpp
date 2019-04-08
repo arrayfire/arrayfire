@@ -72,7 +72,7 @@ bool synchronize_calls();
 
 cudaDeviceProp getDeviceProp(int device);
 
-std::pair<int, int> getComputeCapability();
+std::pair<int, int> getComputeCapability(const int device);
 
 struct cudaDevice_t {
     cudaDeviceProp prop;
@@ -142,7 +142,7 @@ class DeviceManager {
 
     friend cudaDeviceProp getDeviceProp(int device);
 
-    friend std::pair<int, int> getComputeCapability();
+    friend std::pair<int, int> getComputeCapability(const int device);
 
    private:
     DeviceManager();
