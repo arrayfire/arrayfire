@@ -7,16 +7,21 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <cstddef>
+#include <cstdlib>
 
 using namespace af;
 using std::vector;
 
 template<typename T>
 class Array : public ::testing::Test {};
+
+template<typename T>
+using ArrayDeathTest = Array<T>;
 
 typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,
                          int, uint, intl, uintl, short, ushort>
@@ -500,4 +505,38 @@ TEST(Array, ScalarTypeMismatch) {
     array a = constant(1.0, dim4(1), f32);
 
     EXPECT_THROW(a.scalar<int>(), exception);
+}
+
+void deathTest() {
+    info();
+    setDevice(0);
+
+    array A = randu(5, 3, f32);
+
+    array B = sin(A) + 1.5;
+
+    B(seq(0, 2), 1) = B(seq(0, 2), 1) * -1;
+
+    array C = fft(B);
+
+    array c = C.row(end);
+
+    dim4 dims(16, 4, 1, 1);
+    array r = constant(2, dims);
+
+    array S = scan(r, 0, AF_BINARY_MUL);
+
+    float d[] = {1, 2, 3, 4, 5, 6};
+    array D(2, 3, d, afHost);
+
+    D.col(0) = D.col(end);
+
+    array vals, inds;
+    sort(vals, inds, A);
+
+    _exit(0);
+}
+
+TEST(ArrayDeathTest, ProxyMoveAssignmentOperator) {
+    EXPECT_EXIT(deathTest(), ::testing::ExitedWithCode(0), "");
 }
