@@ -1,6 +1,85 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.6.3
+======
+
+Improvements
+------------
+- Graphics are now a runtime dependency instead of a link time dependency \PR{2365}
+- Reduce the CUDA backend binary size using runtime compilation of kernels \PR{2437}
+- Improved batched matrix multiplication on the CPU backend by using Intel MKL's
+  `cblas_Xgemm_batched`\PR{2206}
+- Print JIT kernels to disk or stream using the `AF_JIT_KERNEL_TRACE`
+  environment variable \PR{2404}
+- `void*` pointers are now allowed as arguments to `af::array::write()` \PR{2367}
+- Slightly improve the efficiency of JITed tile operations \PR{2472}
+- Make the random number generation on the CPU backend to be consistent with
+  CUDA and OpenCL \PR{2435}
+- Handled very large JIT tree generations \PR{2484} \PR{2487}
+
+Bug Fixes
+---------
+- Fixed `af::array::array_proxy` move assignment operator \PR{2479}
+- Fixed input array dimensions validation in svdInplace() \PR{2331}
+- Fixed the typedef declaration for window resource handle \PR{2357}.
+- Increase compatibility with GCC 8 \PR{2379}
+- Fixed `af::write` tests \PR{2380}
+- Fixed a bug in broadcast step of 1D exclusive scan \PR{2366}
+- Fixed OpenGL related build errors on OSX \PR{2382}
+- Fixed multiple array evaluation. Performance improvement. \PR{2384}
+- Fixed buffer overflow and expected output of kNN SSD small test \PR{2445}
+- Fixed MKL linking order to enable threaded BLAS \PR{2444}
+- Added validations for forge module plugin availability before calling
+  resource cleanup \PR{2443}
+- Improve compatibility on MSVC toolchain(_MSC_VER > 1914) with the CUDA
+  backend \PR{2443}
+- Fixed BLAS gemm func generators for newest MSVC 19 on VS 2017 \PR{2464}
+- Fix errors on exits when using the cuda backend with unified \PR{2470}
+
+Documentation
+-------------
+- Updated svdInplace() documentation following a bugfix \PR{2331}
+- Fixed a typo in matrix multiplication documentation \PR{2358}
+- Fixed a code snippet demostrating C-API use \PR{2406}
+- Updated hamming matcher implementation limitation \PR{2434}
+- Added illustration for the rotate function \PR{2453}
+
+Misc
+----
+- Use cudaMemcpyAsync instead of cudaMemcpy throughout the codebase \PR{2362}
+- Display a more informative error message if CUDA driver is incomptible
+  \PR{2421} \PR{2448}
+- Changed forge resource managemenet to use smart pointers \PR{2452}
+- Deprecated intl and uintl typedefs in API \PR{2360}
+- Enabled graphics by default for all builds starting with v3.6.3 \PR{2365}
+- Fixed several warnings \PR{2344} \PR{2356} \PR{2361}
+- Refactored initArray() calls to use createEmptyArray(). initArray() is for
+  internal use only by Array class. \PR{2361}
+- Refactored `void*` memory allocations to use unsigned char type \PR{2459}
+- Replaced deprecated MKL API with in-house implementations for sparse
+  to sparse/dense conversions \PR{2312}
+- Reorganized and fixed some internal backend API \PR{2356}
+- Updated compilation order of cuda files to speed up compile time \PR{2368}
+- Removed conditional graphics support builds after enabling runtime
+  loading of graphics dependencies \PR{2365}
+- Marked graphics dependencies as optional in CPack RPM config \PR{2365}
+- Refactored a sparse arithmetic backend API \PR{2379}
+- Fixed const correctness of `af_device_array` API \PR{2396}
+- Update Forge to v1.0.4 \PR{2466}
+- Manage Forge resources from the DeviceManager class \PR{2381}
+- Fixed non-mkl & non-batch blas upstream call arguments \PR{2401}
+- Link MKL with OpenMP instead of TBB by default
+- use clang-format to format source code
+
+Contributions
+-------------
+Special thanks to our contributors:
+[Alessandro Bessi](https://github.com/alessandrobessi)
+[zhihaoy](https://github.com/zhihaoy)
+[Jacob Khan](https://github.com/jacobkahn)
+[William Tambellini](https://github.com/WilliamTambellini)
+
 v3.6.2
 ======
 
