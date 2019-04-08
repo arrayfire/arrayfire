@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <cstddef>
+#include <cstdlib>
 
 using namespace af;
 using std::vector;
@@ -500,4 +501,14 @@ TEST(Array, ScalarTypeMismatch) {
     array a = constant(1.0, dim4(1), f32);
 
     EXPECT_THROW(a.scalar<int>(), exception);
+}
+
+TEST(Array, ProxyMoveAssignmentOperator)
+{
+    testing::FLAGS_gtest_death_test_style="threadsafe";
+    EXPECT_EXIT({
+            array A = randu(5, 3, f32);
+            A.col(0) = A.col(end);
+            _exit(0);
+        }, ::testing::ExitedWithCode(0), "");
 }
