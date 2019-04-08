@@ -68,18 +68,15 @@ void findJitDevCompute(pair<int, int>& prop) {
                 [runtime_cuda_ver](cuNVRTCcompute v) {
                     return runtime_cuda_ver == v.cuda_version;
                 });
-    if (tkit_max_compute == end(Toolkit2Compute)) {
-        // Unidentified Runtime CUDA toolkit version
-        // return default compute flag 30
-        prop = make_pair(3, 0);
-    } else if (prop.first  > tkit_max_compute->major &&
-               prop.second > tkit_max_compute->minor) {
+    if ((tkit_max_compute == end(Toolkit2Compute)) ||
+        (prop.first  > tkit_max_compute->major &&
+         prop.second > tkit_max_compute->minor)) {
         prop = make_pair(tkit_max_compute->major, tkit_max_compute->minor);
     }
 }
 
-pair<int, int> getComputeFlag() {
-    return DeviceManager::getInstance().devJitComputes[getActiveDeviceId()];
+pair<int, int> getComputeCapability(const int device) {
+    return DeviceManager::getInstance().devJitComputes[device];
 }
 
 // pulled from CUTIL from CUDA SDK
@@ -681,7 +678,7 @@ DeviceManager::DeviceManager()
 
     // Initialize all streams to 0.
     // Streams will be created in setActiveDevice()
-    for (int i = 0; i < (int)MAX_DEVICES; i++) {
+    for (size_t i = 0; i < MAX_DEVICES; i++) {
         streams[i] = (cudaStream_t)0;
         if (i < nDevices) {
             auto prop = make_pair(cuDevices[i].prop.major,

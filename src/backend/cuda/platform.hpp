@@ -72,7 +72,7 @@ bool synchronize_calls();
 
 cudaDeviceProp getDeviceProp(int device);
 
-std::pair<int, int> getComputeFlag();
+std::pair<int, int> getComputeCapability();
 
 struct cudaDevice_t {
     cudaDeviceProp prop;
@@ -104,7 +104,7 @@ SparseHandle sparseHandle();
 
 class DeviceManager {
    public:
-    static const unsigned MAX_DEVICES = 16;
+    static const size_t MAX_DEVICES = 16;
 
     static bool checkGraphicsInteropCapability();
 
@@ -142,7 +142,7 @@ class DeviceManager {
 
     friend cudaDeviceProp getDeviceProp(int device);
 
-    friend std::pair<int, int> getComputeFlag();
+    friend std::pair<int, int> getComputeCapability();
 
    private:
     DeviceManager();

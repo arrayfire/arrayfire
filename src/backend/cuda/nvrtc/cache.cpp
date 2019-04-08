@@ -95,8 +95,9 @@ void Kernel::setConstant(const char* name, CUdeviceptr src, size_t bytes) {
     CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, getActiveStream()));
 }
 
-Kernel buildKernel(const string& nameExpr, const string& jit_ker,
-                   const vector<string>& opts, const bool isJIT) {
+Kernel buildKernel(const int device, const string& nameExpr,
+                   const string& jit_ker, const vector<string>& opts,
+                   const bool isJIT) {
     const char* ker_name = nameExpr.c_str();
 
     nvrtcProgram prog;
@@ -136,7 +137,7 @@ Kernel buildKernel(const string& nameExpr, const string& jit_ker,
                                        NumHeaders, headers, includeNames));
     }
 
-    auto computeFlag = getComputeFlag();
+    auto computeFlag = getComputeCapability(device);
     array<char, 32> arch;
     snprintf(arch.data(), arch.size(), "--gpu-architecture=compute_%d%d",
              computeFlag.first, computeFlag.second);
@@ -359,7 +360,7 @@ Kernel getKernel(const string& nameExpr, const string& source,
     Kernel kernel = findKernel(device, tInstance);
 
     if (kernel.prog == 0 || kernel.ker == 0) {
-        kernel = buildKernel(tInstance, source, compileOpts);
+        kernel = buildKernel(device, tInstance, source, compileOpts);
         addKernelToCache(device, tInstance, kernel);
     }
 
