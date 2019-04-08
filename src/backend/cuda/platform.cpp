@@ -42,9 +42,46 @@ using std::to_string;
 
 namespace cuda {
 
-///////////////////////////////////////////////////////////////////////////
-// HELPERS
-///////////////////////////////////////////////////////////////////////////
+void findJitDevCompute(pair<int, int>& prop) {
+    struct cuNVRTCcompute {
+        /// The CUDA Toolkit version returned by cudaRuntimeGetVersion
+        int cuda_version;
+        /// Maximum major compute flag supported by cuda_version
+        int major;
+        /// Maximum minor compute flag supported by cuda_version
+        int minor;
+    };
+    static const cuNVRTCcompute Toolkit2Compute[] = {
+        {10010, 7, 5},
+        {10000, 7, 2},
+        {9020,  7, 2},
+        {9010,  7, 2},
+        {9000,  7, 2},
+        {8000,  5, 3},
+        {7050,  5, 3},
+        {7000,  5, 3}
+    };
+    int runtime_cuda_ver = 0;
+    CUDA_CHECK(cudaRuntimeGetVersion(&runtime_cuda_ver));
+    auto tkit_max_compute =
+        find_if(begin(Toolkit2Compute), end(Toolkit2Compute),
+                [runtime_cuda_ver](cuNVRTCcompute v) {
+                    return runtime_cuda_ver == v.cuda_version;
+                });
+    if (tkit_max_compute == end(Toolkit2Compute)) {
+        // Unidentified Runtime CUDA toolkit version
+        // return default compute flag 30
+        prop = make_pair(3, 0);
+    } else if (prop.first  > tkit_max_compute->major &&
+               prop.second > tkit_max_compute->minor) {
+        prop = make_pair(tkit_max_compute->major, tkit_max_compute->minor);
+    }
+}
+
+pair<int, int> getComputeFlag() {
+    return DeviceManager::getInstance().devJitComputes[getActiveDeviceId()];
+}
+
 // pulled from CUTIL from CUDA SDK
 static inline int compute2cores(int major, int minor) {
     struct {
@@ -144,9 +181,6 @@ static inline int getMinSupportedCompute(int cudaMajorVer) {
                                   : minSV[cudaMajorVer - 1]);
 }
 
-///////////////////////////////////////////////////////////////////////////
-// Wrapper Functions
-///////////////////////////////////////////////////////////////////////////
 int getBackend() { return AF_BACKEND_CUDA; }
 
 string getDeviceInfo(int device) {
@@ -647,7 +681,15 @@ DeviceManager::DeviceManager()
 
     // Initialize all streams to 0.
     // Streams will be created in setActiveDevice()
-    for (int i = 0; i < (int)MAX_DEVICES; i++) streams[i] = (cudaStream_t)0;
+    for (int i = 0; i < (int)MAX_DEVICES; i++) {
+        streams[i] = (cudaStream_t)0;
+        if (i < nDevices) {
+            auto prop = make_pair(cuDevices[i].prop.major,
+                    cuDevices[i].prop.minor);
+            findJitDevCompute(prop);
+            devJitComputes.emplace_back(prop);
+        }
+    }
 
     std::string deviceENV = getEnvVar("AF_CUDA_DEFAULT_DEVICE");
     AF_TRACE("AF_CUDA_DEFAULT_DEVICE: {}", deviceENV);

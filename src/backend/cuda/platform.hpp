@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace spdlog {
@@ -70,6 +71,8 @@ void sync(int device);
 bool synchronize_calls();
 
 cudaDeviceProp getDeviceProp(int device);
+
+std::pair<int, int> getComputeFlag();
 
 struct cudaDevice_t {
     cudaDeviceProp prop;
@@ -139,6 +142,8 @@ class DeviceManager {
 
     friend cudaDeviceProp getDeviceProp(int device);
 
+    friend std::pair<int, int> getComputeFlag();
+
    private:
     DeviceManager();
 
@@ -160,6 +165,7 @@ class DeviceManager {
     std::shared_ptr<spdlog::logger> logger;
 
     std::vector<cudaDevice_t> cuDevices;
+    std::vector<std::pair<int, int>> devJitComputes;
 
     int nDevices;
     cudaStream_t streams[MAX_DEVICES];

@@ -95,49 +95,6 @@ void Kernel::setConstant(const char* name, CUdeviceptr src, size_t bytes) {
     CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, getActiveStream()));
 }
 
-pair<int, int> getComputeFlag() {
-    struct cuNVRTCcompute {
-        /// The CUDA Toolkit version returned by cudaRuntimeGetVersion
-        int cuda_version;
-
-        /// Maximum major compute flag supported by cuda_version
-        int major;
-
-        /// Maximum minor compute flag supported by cuda_version
-        int minor;
-    };
-    static const cuNVRTCcompute Toolkit2Compute[] = {
-        {10010, 7, 5},
-        {10000, 7, 2},
-        {9020,  7, 2},
-        {9010,  7, 2},
-        {9000,  7, 2},
-        {8000,  5, 3},
-        {7050,  5, 3},
-        {7000,  5, 3}
-    };
-    int runtime_cuda_ver = 0;
-    CUDA_CHECK(cudaRuntimeGetVersion(&runtime_cuda_ver));
-    auto tkit_max_compute =
-        find_if(begin(Toolkit2Compute), end(Toolkit2Compute),
-                [runtime_cuda_ver](cuNVRTCcompute v) {
-                    return runtime_cuda_ver == v.cuda_version;
-                });
-    auto dev = cuda::getDeviceProp(cuda::getActiveDeviceId());
-    if (tkit_max_compute == end(Toolkit2Compute)) {
-        // Unidentified Runtime CUDA toolkit version
-        // return default compute flag 30
-        return make_pair(3, 0);
-    } else {
-        if (dev.major > tkit_max_compute->major &&
-            dev.minor > tkit_max_compute->minor) {
-            return make_pair(tkit_max_compute->major, tkit_max_compute->minor);
-        } else {
-            return make_pair(dev.major, dev.minor);
-        }
-    }
-}
-
 Kernel buildKernel(const string& nameExpr, const string& jit_ker,
                    const vector<string>& opts, const bool isJIT) {
     const char* ker_name = nameExpr.c_str();
