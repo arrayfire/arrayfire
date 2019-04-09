@@ -221,11 +221,10 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
             optrs[n] = optr + z * oStrides[2] + w * oStrides[3];
         }
 
-        auto d_lptrs = memAlloc<uchar>(batchSize);
-        auto d_rptrs = memAlloc<uchar>(batchSize);
-        auto d_optrs = memAlloc<uchar>(batchSize);
-
         size_t bytes = batchSize * sizeof(T **);
+        auto d_lptrs = memAlloc<uchar>(bytes);
+        auto d_rptrs = memAlloc<uchar>(bytes);
+        auto d_optrs = memAlloc<uchar>(bytes);
         CUDA_CHECK(cudaMemcpyAsync(d_lptrs.get(), lptrs.data(), bytes,
                                    cudaMemcpyHostToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(d_rptrs.get(), rptrs.data(), bytes,
@@ -233,6 +232,9 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
         CUDA_CHECK(cudaMemcpyAsync(d_optrs.get(), optrs.data(), bytes,
                                    cudaMemcpyHostToDevice, getActiveStream()));
 
+        // Call this before the gemm call so that you don't have to wait for the
+        // computation. Even though it would make more sense to put it
+        // afterwards
         CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
         CUBLAS_CHECK(gemmBatched_func<T>()(
