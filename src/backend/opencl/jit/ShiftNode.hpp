@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,13 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
-#include <common/jit/BufferNodeBase.hpp>
-#include "../Param.hpp"
+#include <common/jit/ShiftNodeBase.hpp>
+#include <jit/BufferNode.hpp>
 
-namespace cuda {
+namespace opencl {
 namespace jit {
-template<typename T>
-using BufferNode = common::BufferNodeBase<std::shared_ptr<T>, Param<T>>;
-}  // namespace jit
-}  // namespace cuda
+  using ShiftNode = common::ShiftNodeBase<BufferNode>;
+} //  namespace jit
+} //  namespace opencl
