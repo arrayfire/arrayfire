@@ -124,7 +124,6 @@ static string getKernelString(const string funcName,
                     id1 < oInfo.dims[1] &&
                     id2 < oInfo.dims[2] &&
                     id3 < oInfo.dims[3];
-        if (!cond) return;
         size_t idx = oInfo.strides[3] * id3 +
                      oInfo.strides[2] * id2 +
                      oInfo.strides[1] * id1 +
@@ -136,6 +135,7 @@ static string getKernelString(const string funcName,
                                   (id2 < params[tidx].dims[2]) * params[tidx].strides[2] * id2;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
+        if (!cond) return;
         )JIT";
 
     stringstream inParamStream;
