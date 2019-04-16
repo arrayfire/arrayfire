@@ -7,16 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel
-void wrap_kernel(__global T *optr, KParam out,
-                 __global T *iptr, KParam in,
-                 const int wx, const int wy,
-                 const int sx, const int sy,
-                 const int px, const int py,
-                 const int nx, const int ny,
-                 int groups_x,
-                 int groups_y)
-{
+__kernel void wrap_kernel(__global T *optr, KParam out, __global T *iptr,
+                          KParam in, const int wx, const int wy, const int sx,
+                          const int sy, const int px, const int py,
+                          const int nx, const int ny, int groups_x,
+                          int groups_y) {
     int idx2 = get_group_id(0) / groups_x;
     int idx3 = get_group_id(1) / groups_y;
 
@@ -27,17 +22,16 @@ void wrap_kernel(__global T *optr, KParam out,
     int oidx1 = get_local_id(1) + get_local_size(1) * groupId_y;
 
     optr += idx2 * out.strides[2] + idx3 * out.strides[3];
-    iptr += idx2 *  in.strides[2] + idx3 *  in.strides[3] + in.offset;
-
+    iptr += idx2 * in.strides[2] + idx3 * in.strides[3] + in.offset;
 
     if (oidx0 >= out.dims[0] || oidx1 >= out.dims[1]) return;
 
     int pidx0 = oidx0 + px;
     int pidx1 = oidx1 + py;
 
-    // The last time a value appears in the unwrapped index is padded_index / stride
-    // Each previous index has the value appear "stride" locations earlier
-    // We work our way back from the last index
+    // The last time a value appears in the unwrapped index is padded_index /
+    // stride Each previous index has the value appear "stride" locations
+    // earlier We work our way back from the last index
 
     const int x_end = min(pidx0 / sx, nx - 1);
     const int y_end = min(pidx1 / sy, ny - 1);
@@ -45,7 +39,7 @@ void wrap_kernel(__global T *optr, KParam out,
     const int x_off = pidx0 - sx * x_end;
     const int y_off = pidx1 - sy * y_end;
 
-    T val = ZERO;
+    T val   = ZERO;
     int idx = 1;
 
     for (int y = y_end, yo = y_off; y >= 0 && yo < wy; yo += sy, y--) {
@@ -53,7 +47,6 @@ void wrap_kernel(__global T *optr, KParam out,
         int dim_end_y = y * nx;
 
         for (int x = x_end, xo = x_off; x >= 0 && xo < wx; xo += sx, x--) {
-
             int win_end = win_end_y + xo;
             int dim_end = dim_end_y + x;
 

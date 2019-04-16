@@ -8,16 +8,14 @@
  ********************************************************/
 
 #if IS_CPLX
-T __cmul(T lhs, T rhs)
-{
+T __cmul(T lhs, T rhs) {
     T out;
     out.x = lhs.x * rhs.x - lhs.y * rhs.y;
     out.y = lhs.x * rhs.y + lhs.y * rhs.x;
     return out;
 }
 
-T __ccmul(T lhs, T rhs)
-{
+T __ccmul(T lhs, T rhs) {
     T out;
     out.x = lhs.x * rhs.x + lhs.y * rhs.y;
     out.y = lhs.x * rhs.y - lhs.y * rhs.x;
@@ -37,8 +35,7 @@ T __ccmul(T lhs, T rhs)
 #define CMUL(a, b) (a) * (b)
 #endif
 
-int binary_search(__global const int *ptr, int len, int val)
-{
+int binary_search(__global const int *ptr, int len, int val) {
     int start = 0;
     int end   = len;
     while (end > start) {
@@ -54,21 +51,17 @@ int binary_search(__global const int *ptr, int len, int val)
     return start;
 }
 
-// Each thread performs Matrix Vector multiplications for ROWS_PER_GROUP rows and (K / THREAD) columns.
-// This generates a local output buffer of size ROWS_PER_THREAD for each thread.
-// The outputs from each thread are added up to generate the final result.
-__kernel void
-cscmv_block(__global T *output,
-            __global const T *values,
-            __global const int *colidx,  // rowidx from csr is colidx in csc
-            __global const int *rowidx,  // colidx from csr is rowidx in csc
-            const int M,                 // K from csr is M in csc
-            const int K,                 // M from csr is K in csc
-            __global const T *rhs,
-            const KParam rinfo,
-            const T alpha,
-            const T beta)
-{
+// Each thread performs Matrix Vector multiplications for ROWS_PER_GROUP rows
+// and (K / THREAD) columns. This generates a local output buffer of size
+// ROWS_PER_THREAD for each thread. The outputs from each thread are added up to
+// generate the final result.
+__kernel void cscmv_block(
+    __global T *output, __global const T *values,
+    __global const int *colidx,  // rowidx from csr is colidx in csc
+    __global const int *rowidx,  // colidx from csr is rowidx in csc
+    const int M,                 // K from csr is M in csc
+    const int K,                 // M from csr is K in csc
+    __global const T *rhs, const KParam rinfo, const T alpha, const T beta) {
     int lid = get_local_id(0);
 
     // Get the row offset for the current group in the uncompressed matrix
@@ -77,22 +70,19 @@ cscmv_block(__global T *output,
     rhs += rinfo.offset;
 
     T l_outvals[ROWS_PER_GROUP];
-    for (int i = 0; i < rowLim; i++) {
-        l_outvals[i] = 0;
-    }
+    for (int i = 0; i < rowLim; i++) { l_outvals[i] = 0; }
 
     for (int colId = lid; colId < K; colId += THREADS) {
-
-        int rowStart = colidx[colId];
-        int rowEnd   = colidx[colId + 1];
+        int rowStart     = colidx[colId];
+        int rowEnd       = colidx[colId + 1];
         int nonZeroCount = rowEnd - rowStart;
 
         // Find the location of the next non zero element after rowOff
-        int rowPos   = binary_search(rowidx + rowStart, nonZeroCount, rowOff);
-        T rhsval = rhs[colId];
+        int rowPos = binary_search(rowidx + rowStart, nonZeroCount, rowOff);
+        T rhsval   = rhs[colId];
 
         // Traversing through nonzero elements in the current chunk
-        for (int id =  rowPos + rowStart; id < rowEnd; id++) {
+        for (int id = rowPos + rowStart; id < rowEnd; id++) {
             int rowId = rowidx[id];
 
             // Exit if moving past current chunk
@@ -108,9 +98,9 @@ cscmv_block(__global T *output,
     // s_output is used to store the final output into local memory
     __local T s_output[ROWS_PER_GROUP];
 
-    // For each row of output, copy registers to local memory, add results, write to output.
+    // For each row of output, copy registers to local memory, add results,
+    // write to output.
     for (int i = 0; i < rowLim; i++) {
-
         // Copying to local memory
         s_outvals[lid] = l_outvals[i];
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -121,10 +111,9 @@ cscmv_block(__global T *output,
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
-        // Store to another local buffer so it can be written in a coalesced manner later
-        if (lid == 0) {
-            s_output[i] = s_outvals[0];
-        }
+        // Store to another local buffer so it can be written in a coalesced
+        // manner later
+        if (lid == 0) { s_output[i] = s_outvals[0]; }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 

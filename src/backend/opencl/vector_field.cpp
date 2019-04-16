@@ -8,9 +8,9 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <GraphicsResourceManager.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
-#include <GraphicsResourceManager.hpp>
 #include <vector_field.hpp>
 
 using af::dim4;
@@ -19,15 +19,14 @@ namespace opencl {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
-                       fg_vector_field vfield)
-{
-    ForgeModule& _ = graphics::forgePlugin();
+                       fg_vector_field vfield) {
+    ForgeModule &_ = graphics::forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
-        const cl::Buffer *d_points      = points.get();
-        const cl::Buffer *d_directions  = directions.get();
-        unsigned pBytes = 0;
-        unsigned dBytes = 0;
+        const cl::Buffer *d_points     = points.get();
+        const cl::Buffer *d_directions = directions.get();
+        unsigned pBytes                = 0;
+        unsigned dBytes                = 0;
         FG_CHECK(_.fg_get_vector_field_vertex_buffer_size(&pBytes, vfield));
         FG_CHECK(_.fg_get_vector_field_direction_buffer_size(&dBytes, vfield));
 
@@ -45,8 +44,10 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_points    , *(res[0].get()), 0, 0, pBytes, NULL, &event);
-        getQueue().enqueueCopyBuffer(*d_directions, *(res[1].get()), 0, 0, dBytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_points, *(res[0].get()), 0, 0, pBytes,
+                                     NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_directions, *(res[1].get()), 0, 0,
+                                     dBytes, NULL, &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 
@@ -64,18 +65,20 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         // Points
         glBindBuffer(GL_ARRAY_BUFFER, buff1);
-        GLubyte* pPtr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        GLubyte *pPtr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (pPtr) {
-            getQueue().enqueueReadBuffer(*points.get(), CL_TRUE, 0, size1, pPtr);
+            getQueue().enqueueReadBuffer(*points.get(), CL_TRUE, 0, size1,
+                                         pPtr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // Directions
         glBindBuffer(GL_ARRAY_BUFFER, buff2);
-        GLubyte* dPtr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        GLubyte *dPtr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (dPtr) {
-            getQueue().enqueueReadBuffer(*directions.get(), CL_TRUE, 0, size2, dPtr);
+            getQueue().enqueueReadBuffer(*directions.get(), CL_TRUE, 0, size2,
+                                         dPtr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -83,9 +86,9 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
     }
 }
 
-#define INSTANTIATE(T)                                                  \
-template void copy_vector_field<T>(const Array<T> &, const Array<T> &,  \
-                                   fg_vector_field);
+#define INSTANTIATE(T)                                                     \
+    template void copy_vector_field<T>(const Array<T> &, const Array<T> &, \
+                                       fg_vector_field);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -95,4 +98,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
-}
+}  // namespace opencl

@@ -9,15 +9,12 @@
 
 #include <kernel/convolve/conv2_impl.hpp>
 
-namespace opencl
-{
+namespace opencl {
 
-namespace kernel
-{
+namespace kernel {
 
 INSTANTIATE(intl, float)
 
 }
 
-}
-
+}  // namespace opencl

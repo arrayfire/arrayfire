@@ -8,9 +8,9 @@
  ********************************************************/
 
 #include <arrayfire.h>
+#include <algorithm>
 #include <cstdio>
 #include <vector>
-#include <algorithm>
 
 using namespace af;
 
@@ -18,13 +18,9 @@ std::vector<float> input(100);
 
 // Generate a random number between 0 and 1
 // return a uniform number in [0,1].
-double unifRand()
-{
-    return rand() / double(RAND_MAX);
-}
+double unifRand() { return rand() / double(RAND_MAX); }
 
-void testBackend()
-{
+void testBackend() {
     af::info();
 
     af::dim4 dims(10, 10, 1, 1);
@@ -36,8 +32,7 @@ void testBackend()
     af_print(B);
 }
 
-int main(int, char **)
-{
+int main(int, char**) {
     std::generate(input.begin(), input.end(), unifRand);
 
     try {

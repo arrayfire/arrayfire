@@ -7,27 +7,26 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
-#include <testHelpers.hpp>
 
-using std::endl;
-using std::string;
-using std::vector;
 using af::array;
 using af::cfloat;
 using af::fft2;
 using af::ifft2;
 using af::moddims;
 using af::randu;
+using std::endl;
+using std::string;
+using std::vector;
 
-TEST(fft2, CPP_4D)
-{
+TEST(fft2, CPP_4D) {
     array a = randu(1024, 1024, 32);
     array b = fft2(a);
 
@@ -45,8 +44,7 @@ TEST(fft2, CPP_4D)
     af_free_host(h_B);
 }
 
-TEST(ifft2, CPP_4D)
-{
+TEST(ifft2, CPP_4D) {
     array a = randu(1024, 1024, 32, c32);
     array b = ifft2(a);
 

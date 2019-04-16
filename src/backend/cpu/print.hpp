@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-namespace cpu
-{
-    // Nothing here
+namespace cpu {
+// Nothing here
 }

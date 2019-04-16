@@ -8,51 +8,49 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <transform.hpp>
+#include <kernel/transform.hpp>
 #include <math.hpp>
 #include <platform.hpp>
-#include <kernel/transform.hpp>
+#include <transform.hpp>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-Array<T> transform(const Array<T> &in, const Array<float> &tf, const af::dim4 &odims,
-                    const af_interp_type method, const bool inverse, const bool perspective)
-{
+Array<T> transform(const Array<T> &in, const Array<float> &tf,
+                   const af::dim4 &odims, const af_interp_type method,
+                   const bool inverse, const bool perspective) {
     in.eval();
     tf.eval();
 
     Array<T> out = createEmptyArray<T>(odims);
 
-    switch(method) {
-    case AF_INTERP_NEAREST:
-    case AF_INTERP_LOWER:
-        getQueue().enqueue(kernel::transform<T, 1>, out, in, tf,
-                           inverse, perspective, method);
-        break;
-    case AF_INTERP_BILINEAR:
-    case AF_INTERP_BILINEAR_COSINE:
-        getQueue().enqueue(kernel::transform<T, 2>, out, in, tf,
-                           inverse, perspective, method);
-        break;
-    case AF_INTERP_BICUBIC:
-    case AF_INTERP_BICUBIC_SPLINE:
-        getQueue().enqueue(kernel::transform<T, 3>, out, in, tf,
-                           inverse, perspective, method);
-        break;
-    default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG); break;
+    switch (method) {
+        case AF_INTERP_NEAREST:
+        case AF_INTERP_LOWER:
+            getQueue().enqueue(kernel::transform<T, 1>, out, in, tf, inverse,
+                               perspective, method);
+            break;
+        case AF_INTERP_BILINEAR:
+        case AF_INTERP_BILINEAR_COSINE:
+            getQueue().enqueue(kernel::transform<T, 2>, out, in, tf, inverse,
+                               perspective, method);
+            break;
+        case AF_INTERP_BICUBIC:
+        case AF_INTERP_BICUBIC_SPLINE:
+            getQueue().enqueue(kernel::transform<T, 3>, out, in, tf, inverse,
+                               perspective, method);
+            break;
+        default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG); break;
     }
 
     return out;
 }
 
-
-#define INSTANTIATE(T)                                                              \
-template Array<T> transform(const Array<T> &in, const Array<float> &tf,             \
-                            const af::dim4 &odims, const af_interp_type method,     \
-                            const bool inverse, const bool perspective);
-
+#define INSTANTIATE(T)                                                      \
+    template Array<T> transform(const Array<T> &in, const Array<float> &tf, \
+                                const af::dim4 &odims,                      \
+                                const af_interp_type method,                \
+                                const bool inverse, const bool perspective);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -67,4 +65,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

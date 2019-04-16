@@ -9,20 +9,19 @@
 
 #include <Array.hpp>
 #include <common/SparseArray.hpp>
-#include <sparse.hpp>
 #include <optypes.hpp>
+#include <sparse.hpp>
 
-namespace opencl
-{
+namespace opencl {
 
 // These two functions cannot be overloaded by return type.
 // So have to give them separate names.
 template<typename T, af_op_t op>
 Array<T> arithOpD(const common::SparseArray<T> &lhs, const Array<T> &rhs,
-                 const bool reverse = false);
+                  const bool reverse = false);
 
 template<typename T, af_op_t op>
-common::SparseArray<T> arithOp(const common::SparseArray<T> &lhs, const Array<T> &rhs,
-                               const bool reverse = false);
+common::SparseArray<T> arithOp(const common::SparseArray<T> &lhs,
+                               const Array<T> &rhs, const bool reverse = false);
 
-}
+}  // namespace opencl

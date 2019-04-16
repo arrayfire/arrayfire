@@ -12,28 +12,20 @@
 #include <common/err_common.hpp>
 #include <cstdio>
 
-namespace common
-{
+namespace common {
 template<typename T, typename H>
-class MatrixAlgebraHandle
-{
-    public:
-        MatrixAlgebraHandle() {
-            static_cast<T*>(this)->createHandle(&handle);
-        }
+class MatrixAlgebraHandle {
+   public:
+    MatrixAlgebraHandle() { static_cast<T*>(this)->createHandle(&handle); }
 
-        ~MatrixAlgebraHandle() {
-            static_cast<T*>(this)->destroyHandle(handle);
-        }
+    ~MatrixAlgebraHandle() { static_cast<T*>(this)->destroyHandle(handle); }
 
-        H get() const {
-            return handle;
-        }
+    H get() const { return handle; }
 
-    private:
-        MatrixAlgebraHandle(MatrixAlgebraHandle const&);
-        void operator=(MatrixAlgebraHandle const&);
+   private:
+    MatrixAlgebraHandle(MatrixAlgebraHandle const&);
+    void operator=(MatrixAlgebraHandle const&);
 
-        H handle;
+    H handle;
 };
-}
+}  // namespace common

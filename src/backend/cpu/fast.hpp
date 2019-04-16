@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-namespace cpu
-{
-template <typename T> class Array;
+namespace cpu {
+template<typename T>
+class Array;
 
 template<typename T>
 unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
@@ -17,4 +17,4 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const bool non_max, const float feature_ratio,
               const unsigned edge);
 
-}
+}  // namespace cpu

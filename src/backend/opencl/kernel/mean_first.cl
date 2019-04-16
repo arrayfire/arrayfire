@@ -7,57 +7,52 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel
-void mean_first_kernel(__global To *oData,
-                          KParam oInfo,
+__kernel void mean_first_kernel(__global To *oData, KParam oInfo,
 #ifdef OUTPUT_WEIGHT
-                          __global Tw *owData,
-                          KParam owInfo,
+                                __global Tw *owData, KParam owInfo,
 #endif
-                          const __global Ti *iData,
-                          KParam iInfo,
+                                const __global Ti *iData, KParam iInfo,
 #ifdef INPUT_WEIGHT
-                          const __global Tw *iwData,
-                          KParam iwInfo,
+                                const __global Tw *iwData, KParam iwInfo,
 #endif
-                          uint groups_x, uint groups_y, uint repeat)
-{
+                                uint groups_x, uint groups_y, uint repeat) {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const uint lid  = lidy * get_local_size(0) + lidx;
 
-    const uint zid = get_group_id(0) / groups_x;
-    const uint wid = get_group_id(1) / groups_y;
-    const uint groupId_x = get_group_id(0) - (groups_x) * zid;
-    const uint groupId_y = get_group_id(1) - (groups_y) * wid;
-    const uint xid = groupId_x * get_local_size(0) * repeat + lidx;
-    const uint yid = groupId_y * get_local_size(1) + lidy;
+    const uint zid       = get_group_id(0) / groups_x;
+    const uint wid       = get_group_id(1) / groups_y;
+    const uint groupId_x = get_group_id(0) - (groups_x)*zid;
+    const uint groupId_y = get_group_id(1) - (groups_y)*wid;
+    const uint xid       = groupId_x * get_local_size(0) * repeat + lidx;
+    const uint yid       = groupId_y * get_local_size(1) + lidy;
 
     iData += wid * iInfo.strides[3] + zid * iInfo.strides[2] +
-        yid * iInfo.strides[1] + iInfo.offset;
+             yid * iInfo.strides[1] + iInfo.offset;
 
 #ifdef INPUT_WEIGHT
     iwData += wid * iwInfo.strides[3] + zid * iwInfo.strides[2] +
-        yid * iwInfo.strides[1] + iwInfo.offset;
+              yid * iwInfo.strides[1] + iwInfo.offset;
 #endif
 
     oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
-        yid * oInfo.strides[1] + oInfo.offset;
+             yid * oInfo.strides[1] + oInfo.offset;
 
 #ifdef OUTPUT_WEIGHT
     owData += wid * owInfo.strides[3] + zid * owInfo.strides[2] +
-        yid * owInfo.strides[1] + owInfo.offset;
+              yid * owInfo.strides[1] + owInfo.offset;
 #endif
 
-    bool cond = (yid < iInfo.dims[1]) && (zid < iInfo.dims[2]) && (wid < iInfo.dims[3]);
+    bool cond =
+        (yid < iInfo.dims[1]) && (zid < iInfo.dims[2]) && (wid < iInfo.dims[3]);
 
     __local To s_val[THREADS_PER_GROUP];
     __local Tw s_wt[THREADS_PER_GROUP];
 
-    int last = (xid + repeat * DIMX);
-    int lim = last > iInfo.dims[0] ? iInfo.dims[0] : last;
+    int last   = (xid + repeat * DIMX);
+    int lim    = last > iInfo.dims[0] ? iInfo.dims[0] : last;
     To out_val = init_To;
-    Tw out_wt = init_Tw;
+    Tw out_wt  = init_Tw;
 
     if (cond && xid < lim) {
         out_val = transform(iData[xid]);
@@ -79,7 +74,7 @@ void mean_first_kernel(__global To *oData,
 #endif
 
     s_val[lid] = out_val;
-    s_wt[lid] = out_wt;
+    s_wt[lid]  = out_wt;
     barrier(CLK_LOCAL_MEM_FENCE);
 
     __local To *s_vptr = s_val + lidy * DIMX;
@@ -87,8 +82,7 @@ void mean_first_kernel(__global To *oData,
 
     if (DIMX == 256) {
         if (lidx < 128) {
-            binOp(&out_val, &out_wt,
-                    s_vptr[lidx + 128], s_wptr[lidx + 128]);
+            binOp(&out_val, &out_wt, s_vptr[lidx + 128], s_wptr[lidx + 128]);
             s_vptr[lidx] = out_val;
             s_wptr[lidx] = out_wt;
         }
@@ -96,64 +90,57 @@ void mean_first_kernel(__global To *oData,
     }
 
     if (DIMX >= 128) {
-        if (lidx <  64) {
-            binOp(&out_val, &out_wt,
-                    s_vptr[lidx +  64], s_wptr[lidx +  64]);
+        if (lidx < 64) {
+            binOp(&out_val, &out_wt, s_vptr[lidx + 64], s_wptr[lidx + 64]);
             s_vptr[lidx] = out_val;
             s_wptr[lidx] = out_wt;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    if (DIMX >=  64) {
-        if (lidx <  32) {
-            binOp(&out_val, &out_wt,
-                    s_vptr[lidx +  32], s_wptr[lidx +  32]);
+    if (DIMX >= 64) {
+        if (lidx < 32) {
+            binOp(&out_val, &out_wt, s_vptr[lidx + 32], s_wptr[lidx + 32]);
             s_vptr[lidx] = out_val;
             s_wptr[lidx] = out_wt;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    if (lidx <  16) {
-        binOp(&out_val, &out_wt,
-                s_vptr[lidx +  16], s_wptr[lidx +  16]);
+    if (lidx < 16) {
+        binOp(&out_val, &out_wt, s_vptr[lidx + 16], s_wptr[lidx + 16]);
         s_vptr[lidx] = out_val;
         s_wptr[lidx] = out_wt;
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (lidx <   8) {
-        binOp(&out_val, &out_wt,
-                s_vptr[lidx +   8], s_wptr[lidx +   8]);
+    if (lidx < 8) {
+        binOp(&out_val, &out_wt, s_vptr[lidx + 8], s_wptr[lidx + 8]);
         s_vptr[lidx] = out_val;
         s_wptr[lidx] = out_wt;
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (lidx <   4) {
-        binOp(&out_val, &out_wt,
-                s_vptr[lidx +   4], s_wptr[lidx +   4]);
+    if (lidx < 4) {
+        binOp(&out_val, &out_wt, s_vptr[lidx + 4], s_wptr[lidx + 4]);
         s_vptr[lidx] = out_val;
         s_wptr[lidx] = out_wt;
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (lidx <   2) {
-        binOp(&out_val, &out_wt,
-                s_vptr[lidx +   2], s_wptr[lidx +   2]);
+    if (lidx < 2) {
+        binOp(&out_val, &out_wt, s_vptr[lidx + 2], s_wptr[lidx + 2]);
         s_vptr[lidx] = out_val;
         s_wptr[lidx] = out_wt;
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (lidx <   1) {
-        binOp(&out_val, &out_wt,
-                s_vptr[lidx +   1], s_wptr[lidx +   1]);
+    if (lidx < 1) {
+        binOp(&out_val, &out_wt, s_vptr[lidx + 1], s_wptr[lidx + 1]);
         s_vptr[lidx] = out_val;
         s_wptr[lidx] = out_wt;
     }

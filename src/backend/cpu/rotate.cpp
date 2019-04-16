@@ -8,47 +8,43 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <rotate.hpp>
+#include <kernel/rotate.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/rotate.hpp>
+#include <rotate.hpp>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
 Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
-                 const af_interp_type method)
-{
+                const af_interp_type method) {
     in.eval();
 
     Array<T> out = createEmptyArray<T>(odims);
 
-    switch(method) {
-    case AF_INTERP_NEAREST:
-    case AF_INTERP_LOWER:
-        getQueue().enqueue(kernel::rotate<T, 1>, out, in, theta, method);
-        break;
-    case AF_INTERP_BILINEAR:
-    case AF_INTERP_BILINEAR_COSINE:
-        getQueue().enqueue(kernel::rotate<T, 2>, out, in, theta, method);
-        break;
-    case AF_INTERP_BICUBIC:
-    case AF_INTERP_BICUBIC_SPLINE:
-        getQueue().enqueue(kernel::rotate<T, 3>, out, in, theta, method);
-        break;
-    default:
-        AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-        break;
+    switch (method) {
+        case AF_INTERP_NEAREST:
+        case AF_INTERP_LOWER:
+            getQueue().enqueue(kernel::rotate<T, 1>, out, in, theta, method);
+            break;
+        case AF_INTERP_BILINEAR:
+        case AF_INTERP_BILINEAR_COSINE:
+            getQueue().enqueue(kernel::rotate<T, 2>, out, in, theta, method);
+            break;
+        case AF_INTERP_BICUBIC:
+        case AF_INTERP_BICUBIC_SPLINE:
+            getQueue().enqueue(kernel::rotate<T, 3>, out, in, theta, method);
+            break;
+        default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG); break;
     }
 
     return out;
 }
 
-
-#define INSTANTIATE(T)                                                              \
-    template Array<T> rotate(const Array<T> &in, const float theta,                 \
-                             const af::dim4 &odims, const af_interp_type method);
+#define INSTANTIATE(T)                                              \
+    template Array<T> rotate(const Array<T> &in, const float theta, \
+                             const af::dim4 &odims,                 \
+                             const af_interp_type method);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -63,4 +59,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

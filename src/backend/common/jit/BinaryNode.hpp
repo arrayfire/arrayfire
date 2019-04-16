@@ -12,15 +12,12 @@
 #include <cmath>
 
 namespace common {
-class BinaryNode : public NaryNode
-{
-  public:
+class BinaryNode : public NaryNode {
+   public:
     BinaryNode(const char *out_type_str, const char *name_str,
-              const char *op_str,
-              common::Node_ptr lhs, common::Node_ptr rhs, int op)
-      : NaryNode(out_type_str, name_str, op_str, 2, {{lhs, rhs}},
-                op, std::max(lhs->getHeight(), rhs->getHeight()) + 1)
-    {
-    }
+               const char *op_str, common::Node_ptr lhs, common::Node_ptr rhs,
+               int op)
+        : NaryNode(out_type_str, name_str, op_str, 2, {{lhs, rhs}}, op,
+                   std::max(lhs->getHeight(), rhs->getHeight()) + 1) {}
 };
-}
+}  // namespace common

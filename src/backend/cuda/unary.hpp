@@ -8,22 +8,22 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <optypes.hpp>
-#include <math.hpp>
 #include <common/jit/UnaryNode.hpp>
+#include <math.hpp>
+#include <optypes.hpp>
 
-namespace cuda
-{
+namespace cuda {
 
 template<af_op_t op>
-static const char *unaryName() { return "__noop"; }
+static const char *unaryName() {
+    return "__noop";
+}
 
-#define UNARY_DECL(OP, FNAME)                   \
-    template<> STATIC_                          \
-    const char *unaryName<af_##OP##_t>()        \
-    {                                           \
-        return FNAME;                           \
-    }                                           \
+#define UNARY_DECL(OP, FNAME)                      \
+    template<>                                     \
+    STATIC_ const char *unaryName<af_##OP##_t>() { \
+        return FNAME;                              \
+    }
 
 #define UNARY_FN(OP) UNARY_DECL(OP, #OP)
 
@@ -74,29 +74,24 @@ UNARY_FN(iszero)
 #undef UNARY_FN
 
 template<typename T, af_op_t op>
-Array<T> unaryOp(const Array<T> &in)
-{
+Array<T> unaryOp(const Array<T> &in) {
     common::Node_ptr in_node = in.getNode();
 
-    common::UnaryNode *node = new common::UnaryNode(getFullName<T>(),
-                                                    shortname<T>(true),
-                                                    unaryName<op>(),
-                                                    in_node, op);
+    common::UnaryNode *node = new common::UnaryNode(
+        getFullName<T>(), shortname<T>(true), unaryName<op>(), in_node, op);
 
     return createNodeArray<T>(in.dims(), common::Node_ptr(node));
 }
 
 template<typename T, af_op_t op>
-Array<char> checkOp(const Array<T> &in)
-{
+Array<char> checkOp(const Array<T> &in) {
     common::Node_ptr in_node = in.getNode();
 
-    common::UnaryNode *node = new common::UnaryNode(getFullName<char>(),
-                                                    shortname<char>(true),
-                                                    unaryName<op>(),
-                                                    in_node, op);
+    common::UnaryNode *node =
+        new common::UnaryNode(getFullName<char>(), shortname<char>(true),
+                              unaryName<op>(), in_node, op);
 
     return createNodeArray<char>(in.dims(), common::Node_ptr(node));
 }
 
-}
+}  // namespace cuda

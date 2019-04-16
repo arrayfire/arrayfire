@@ -8,55 +8,51 @@
  ********************************************************/
 
 #pragma once
+#include <Param.hpp>
+#include <cache.hpp>
+#include <common/dispatch.hpp>
+#include <debug_opencl.hpp>
 #include <kernel_headers/lookup.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-#include <cache.hpp>
-#include <common/dispatch.hpp>
-#include <Param.hpp>
-#include <debug_opencl.hpp>
 
 using cl::Buffer;
-using cl::Program;
+using cl::EnqueueArgs;
 using cl::Kernel;
 using cl::KernelFunctor;
-using cl::EnqueueArgs;
 using cl::NDRange;
+using cl::Program;
 using std::string;
 
-namespace opencl
-{
-namespace kernel
-{
+namespace opencl {
+namespace kernel {
 static const int THREADS_X = 32;
 static const int THREADS_Y = 8;
 
 template<typename in_t, typename idx_t, unsigned dim>
-void lookup(Param out, const Param in, const Param indices)
-{
-    std::string refName = std::string("lookupND_") +
-        std::string(dtype_traits<in_t>::getName()) +
-        std::string(dtype_traits<idx_t>::getName()) +
-        std::to_string(dim);
+void lookup(Param out, const Param in, const Param indices) {
+    std::string refName =
+        std::string("lookupND_") + std::string(dtype_traits<in_t>::getName()) +
+        std::string(dtype_traits<idx_t>::getName()) + std::to_string(dim);
 
-    int device = getActiveDeviceId();
+    int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
 
-    if (entry.prog==0 && entry.ker==0) {
+    if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D in_t=" << dtype_traits<in_t>::getName()
                 << " -D idx_t=" << dtype_traits<idx_t>::getName()
-                << " -D DIM=" <<dim;
+                << " -D DIM=" << dim;
 
         if (std::is_same<in_t, double>::value ||
-                std::is_same<in_t, cdouble>::value ||
-                std::is_same<idx_t, double>::value) {
+            std::is_same<in_t, cdouble>::value ||
+            std::is_same<idx_t, double>::value) {
             options << " -D USE_DOUBLE";
         }
 
         const char* ker_strs[] = {lookup_cl};
-        const int   ker_lens[] = {lookup_cl_len};
+        const int ker_lens[]   = {lookup_cl_len};
         Program prog;
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
         entry.prog = new Program(prog);
@@ -70,14 +66,17 @@ void lookup(Param out, const Param in, const Param indices)
     int blk_x = divup(out.info.dims[0], THREADS_X);
     int blk_y = divup(out.info.dims[1], THREADS_Y);
 
-    NDRange global(blk_x * out.info.dims[2] * THREADS_X, blk_y * out.info.dims[3] * THREADS_Y);
+    NDRange global(blk_x * out.info.dims[2] * THREADS_X,
+                   blk_y * out.info.dims[3] * THREADS_Y);
 
-    auto arrIdxOp = KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer, KParam, int, int>(*entry.ker);
+    auto arrIdxOp =
+        KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer, KParam, int, int>(
+            *entry.ker);
 
-    arrIdxOp(EnqueueArgs(getQueue(), global, local),
-             *out.data, out.info, *in.data, in.info, *indices.data, indices.info, blk_x, blk_y);
+    arrIdxOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+             *in.data, in.info, *indices.data, indices.info, blk_x, blk_y);
 
     CL_DEBUG_FINISH(getQueue());
 }
-}
-}
+}  // namespace kernel
+}  // namespace opencl

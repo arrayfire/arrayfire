@@ -8,36 +8,33 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <err_cuda.hpp>
 #include <iota.hpp>
 #include <kernel/iota.hpp>
 #include <math.hpp>
 #include <stdexcept>
-#include <err_cuda.hpp>
 
-namespace cuda
-{
-    template<typename T>
-    Array<T> iota(const dim4 &dims, const dim4 &tile_dims)
-    {
-        dim4 outdims = dims * tile_dims;
+namespace cuda {
+template<typename T>
+Array<T> iota(const dim4 &dims, const dim4 &tile_dims) {
+    dim4 outdims = dims * tile_dims;
 
-        Array<T> out = createEmptyArray<T>(outdims);
-        kernel::iota<T>(out, dims);
+    Array<T> out = createEmptyArray<T>(outdims);
+    kernel::iota<T>(out, dims);
 
-        return out;
-    }
-
-#define INSTANTIATE(T)                                                          \
-    template Array<T> iota<T>(const af::dim4 &dims, const af::dim4 &tile_dims); \
-
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(intl)
-    INSTANTIATE(uintl)
-    INSTANTIATE(uchar)
-    INSTANTIATE(short)
-    INSTANTIATE(ushort)
+    return out;
 }
 
+#define INSTANTIATE(T) \
+    template Array<T> iota<T>(const af::dim4 &dims, const af::dim4 &tile_dims);
+
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(uchar)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
+}  // namespace cuda

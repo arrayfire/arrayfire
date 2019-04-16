@@ -9,20 +9,18 @@
 
 // The initial label kernel distinguishes between valid (nonzero)
 // pixels and "background" (zero) pixels.
-__kernel
-void initial_label(global    T * equiv_map,
-                   KParam        eInfo,
-                   global char * bin_,
-                   KParam        bInfo)
-{
-    global char *bin = bin_ + bInfo.offset;
-    const int base_x = (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
-    const int base_y = (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
+__kernel void initial_label(global T* equiv_map, KParam eInfo,
+                            global char* bin_, KParam bInfo) {
+    global char* bin = bin_ + bInfo.offset;
+    const int base_x =
+        (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
+    const int base_y =
+        (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
 
-    // If in bounds and a valid pixel, set the initial label.
-    #pragma unroll
+// If in bounds and a valid pixel, set the initial label.
+#pragma unroll
     for (int xb = 0; xb < N_PER_THREAD; ++xb) {
-        #pragma unroll
+#pragma unroll
         for (int yb = 0; yb < N_PER_THREAD; ++yb) {
             const int x = base_x + (xb * get_local_size(0));
             const int y = base_y + (yb * get_local_size(1));
@@ -34,27 +32,26 @@ void initial_label(global    T * equiv_map,
     }
 }
 
-__kernel
-void final_relabel(global       T    * equiv_map,
-                   KParam              eInfo,
-                   global       char * bin_,
-                   KParam              bInfo,
-                   global const T    * d_tmp)
-{
-    global char *bin = bin_ + bInfo.offset;
-    const int base_x = (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
-    const int base_y = (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
+__kernel void final_relabel(global T* equiv_map, KParam eInfo,
+                            global char* bin_, KParam bInfo,
+                            global const T* d_tmp) {
+    global char* bin = bin_ + bInfo.offset;
+    const int base_x =
+        (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
+    const int base_y =
+        (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
 
-    // If in bounds and a valid pixel, set the initial label.
-    #pragma unroll
+// If in bounds and a valid pixel, set the initial label.
+#pragma unroll
     for (int xb = 0; xb < N_PER_THREAD; ++xb) {
-        #pragma unroll
+#pragma unroll
         for (int yb = 0; yb < N_PER_THREAD; ++yb) {
             const int x = base_x + (xb * get_local_size(0));
             const int y = base_y + (yb * get_local_size(1));
             const int n = y * bInfo.dims[0] + x;
             if (x < bInfo.dims[0] && y < bInfo.dims[1]) {
-                equiv_map[n] = (bin[n] > (char)0) ? d_tmp[(int)equiv_map[n]] : (T)0;
+                equiv_map[n] =
+                    (bin[n] > (char)0) ? d_tmp[(int)equiv_map[n]] : (T)0;
             }
         }
     }
@@ -63,8 +60,7 @@ void final_relabel(global       T    * equiv_map,
 // When two labels are equivalent, choose the lower label, but
 // do not choose zero, which indicates invalid.
 //#if T == double
-static inline T relabel(const T a, const T b)
-{
+static inline T relabel(const T a, const T b) {
     T aa = (a == 0) ? LIMIT_MAX : a;
     T bb = (b == 0) ? LIMIT_MAX : b;
     return min(aa, bb);
@@ -79,30 +75,29 @@ static inline T relabel(const T a, const T b)
 // NUM_WARPS = 8; // (Could compute this from block dim)
 // Number of elements to handle per thread in each dimension
 // N_PER_THREAD = 2; // 2x2 per thread = 4 total elems per thread
-__kernel
-void update_equiv(global T*   equiv_map,
-                  KParam      eInfo,
-                  global int* continue_flag)
-{
+__kernel void update_equiv(global T* equiv_map, KParam eInfo,
+                           global int* continue_flag) {
     // Basic coordinates
-    const int base_x = (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
-    const int base_y = (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
+    const int base_x =
+        (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
+    const int base_y =
+        (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
 
     const int width  = eInfo.dims[0];
     const int height = eInfo.dims[1];
 
     // Per element write flags and label, initially 0
-    char      write[N_PER_THREAD * N_PER_THREAD];
-    T    best_label[N_PER_THREAD * N_PER_THREAD];
+    char write[N_PER_THREAD * N_PER_THREAD];
+    T best_label[N_PER_THREAD * N_PER_THREAD];
 
-    #pragma unroll
+#pragma unroll
     for (int i = 0; i < N_PER_THREAD * N_PER_THREAD; ++i) {
         write[i]      = (char)0;
         best_label[i] = (T)0;
     }
 
     // Cached tile of the equivalency map
-    __local T s_tile[N_PER_THREAD*BLOCK_DIM][(N_PER_THREAD*BLOCK_DIM)];
+    __local T s_tile[N_PER_THREAD * BLOCK_DIM][(N_PER_THREAD * BLOCK_DIM)];
 
     // Space to track ballot funcs to track convergence
     __local int s_changed[NUM_WARPS];
@@ -110,7 +105,7 @@ void update_equiv(global T*   equiv_map,
     const int tn = (get_local_id(1) * get_local_size(0)) + get_local_id(0);
 
     const int warpSize = 32;
-    const int warpIdx = tn / warpSize;
+    const int warpIdx  = tn / warpSize;
     s_changed[warpIdx] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -118,22 +113,21 @@ void update_equiv(global T*   equiv_map,
     tid_changed[warpIdx] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    #pragma unroll
+#pragma unroll
     for (int xb = 0; xb < N_PER_THREAD; ++xb) {
-        #pragma unroll
+#pragma unroll
         for (int yb = 0; yb < N_PER_THREAD; ++yb) {
-
             // Indexing variables
-            const int x = base_x + (xb * get_local_size(0));
-            const int y = base_y + (yb * get_local_size(1));
-            const int tx = get_local_id(0) + (xb * get_local_size(0));
-            const int ty = get_local_id(1) + (yb * get_local_size(1));
+            const int x     = base_x + (xb * get_local_size(0));
+            const int y     = base_y + (yb * get_local_size(1));
+            const int tx    = get_local_id(0) + (xb * get_local_size(0));
+            const int ty    = get_local_id(1) + (yb * get_local_size(1));
             const int tid_i = xb * N_PER_THREAD + yb;
-            const int n = y * width + x;
+            const int n     = y * width + x;
 
             // Get the label for this pixel if we're  in bounds
-            const T orig_label = (x < width && y < height) ?
-                equiv_map[n] : (T)0;
+            const T orig_label =
+                (x < width && y < height) ? equiv_map[n] : (T)0;
             s_tile[ty][tx] = orig_label;
 
             // Find the lowest label of the nearest valid pixel
@@ -141,46 +135,45 @@ void update_equiv(global T*   equiv_map,
             best_label[tid_i] = orig_label;
 
             if (orig_label != (T)0) {
-
-                const int south_y = min(y, height-2) + 1;
+                const int south_y = min(y, height - 2) + 1;
                 const int north_y = max(y, 1) - 1;
-                const int east_x = min(x, width-2) + 1;
-                const int west_x = max(x, 1) - 1;
+                const int east_x  = min(x, width - 2) + 1;
+                const int west_x  = max(x, 1) - 1;
 
                 // Check bottom
-                best_label[tid_i] = relabel(best_label[tid_i],
-                        equiv_map[(south_y) * width + x]);
+                best_label[tid_i] =
+                    relabel(best_label[tid_i], equiv_map[(south_y)*width + x]);
 
                 // Check right neighbor
-                best_label[tid_i] = relabel(best_label[tid_i],
-                        equiv_map[y * width + east_x]);
+                best_label[tid_i] =
+                    relabel(best_label[tid_i], equiv_map[y * width + east_x]);
 
                 // Check left neighbor
-                best_label[tid_i] = relabel(best_label[tid_i],
-                        equiv_map[y * width + west_x]);
+                best_label[tid_i] =
+                    relabel(best_label[tid_i], equiv_map[y * width + west_x]);
 
                 // Check top neighbor
-                best_label[tid_i] = relabel(best_label[tid_i],
-                        equiv_map[(north_y) * width + x]);
+                best_label[tid_i] =
+                    relabel(best_label[tid_i], equiv_map[(north_y)*width + x]);
 
 #ifdef FULL_CONN
                 // Check NW corner
-                best_label[tid_i] = relabel(best_label[tid_i],
-                        equiv_map[(north_y) * width + west_x]);
+                best_label[tid_i] = relabel(
+                    best_label[tid_i], equiv_map[(north_y)*width + west_x]);
 
                 // Check NE corner
-                best_label[tid_i] = relabel(best_label[tid_i],
-                        equiv_map[(north_y) * width + east_x]);
+                best_label[tid_i] = relabel(
+                    best_label[tid_i], equiv_map[(north_y)*width + east_x]);
 
                 // Check SW corner
-                best_label[tid_i] = relabel(best_label[tid_i],
-                        equiv_map[(south_y) * width + west_x]);
+                best_label[tid_i] = relabel(
+                    best_label[tid_i], equiv_map[(south_y)*width + west_x]);
 
                 // Check SE corner
-                best_label[tid_i] = relabel(best_label[tid_i],
-                        equiv_map[(south_y) * width + east_x]);
-#endif // if connectivity == 8
-            } // if orig_label != 0
+                best_label[tid_i] = relabel(
+                    best_label[tid_i], equiv_map[(south_y)*width + east_x]);
+#endif         // if connectivity == 8
+            }  // if orig_label != 0
 
             // Process the equivalency list.
             T last_label = orig_label;
@@ -188,13 +181,13 @@ void update_equiv(global T*   equiv_map,
 
             while (best_label[tid_i] != (T)0 && new_label < last_label) {
                 last_label = new_label;
-                new_label = equiv_map[(int)new_label - 1];
+                new_label  = equiv_map[(int)new_label - 1];
             }
 
             if (orig_label != new_label) {
                 tid_changed[warpIdx] = 1;
-                s_tile[ty][tx] = new_label;
-                write[tid_i] = (char)1;
+                s_tile[ty][tx]       = new_label;
+                write[tid_i]         = (char)1;
             }
             best_label[tid_i] = new_label;
         }
@@ -203,70 +196,69 @@ void update_equiv(global T*   equiv_map,
 
     // Determine if any pixel changed
     unsigned int continue_iter = 0;
-    s_changed[warpIdx] = tid_changed[warpIdx];
+    s_changed[warpIdx]         = tid_changed[warpIdx];
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    #pragma unroll
+#pragma unroll
     for (int i = 0; i < NUM_WARPS; i++)
         continue_iter = continue_iter || (s_changed[i] != 0);
 
     // Iterate until no pixel in the tile changes
     while (continue_iter != 0) {
-
         // Reset whether or not this thread's pixels have changed.
         tid_changed[warpIdx] = 0;
 
-        #pragma unroll
+#pragma unroll
         for (int xb = 0; xb < N_PER_THREAD; ++xb) {
-            #pragma unroll
+#pragma unroll
             for (int yb = 0; yb < N_PER_THREAD; ++yb) {
-
                 // Indexing
-                const int tx = get_local_id(0) + (xb * get_local_size(0));
-                const int ty = get_local_id(1) + (yb * get_local_size(1));
+                const int tx    = get_local_id(0) + (xb * get_local_size(0));
+                const int ty    = get_local_id(1) + (yb * get_local_size(1));
                 const int tid_i = xb * N_PER_THREAD + yb;
 
                 T last_label = best_label[tid_i];
 
                 if (best_label[tid_i] != 0) {
-
-                    const int north_y   = max(ty, 1) - 1;
-                    const int south_y   = min(ty, N_PER_THREAD*BLOCK_DIM - 2) + 1;
-                    const int east_x    = min(tx, N_PER_THREAD*BLOCK_DIM - 2) + 1;
-                    const int west_x    = max(tx, 1) - 1;
+                    const int north_y = max(ty, 1) - 1;
+                    const int south_y =
+                        min(ty, N_PER_THREAD * BLOCK_DIM - 2) + 1;
+                    const int east_x =
+                        min(tx, N_PER_THREAD * BLOCK_DIM - 2) + 1;
+                    const int west_x = max(tx, 1) - 1;
 
                     // Check bottom
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                                                s_tile[south_y][tx]);
+                    best_label[tid_i] =
+                        relabel(best_label[tid_i], s_tile[south_y][tx]);
 
                     // Check right neighbor
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                                                s_tile[ty][east_x]);
+                    best_label[tid_i] =
+                        relabel(best_label[tid_i], s_tile[ty][east_x]);
 
                     // Check left neighbor
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                                                s_tile[ty][west_x]);
+                    best_label[tid_i] =
+                        relabel(best_label[tid_i], s_tile[ty][west_x]);
 
                     // Check top neighbor
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                                                s_tile[north_y][tx]);
+                    best_label[tid_i] =
+                        relabel(best_label[tid_i], s_tile[north_y][tx]);
 
 #ifdef FULL_CONN
                     // Check NW corner
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                                                s_tile[north_y][west_x]);
+                    best_label[tid_i] =
+                        relabel(best_label[tid_i], s_tile[north_y][west_x]);
 
                     // Check NE corner
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                                                s_tile[north_y][east_x]);
+                    best_label[tid_i] =
+                        relabel(best_label[tid_i], s_tile[north_y][east_x]);
 
                     // Check SW corner
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                                                s_tile[south_y][west_x]);
+                    best_label[tid_i] =
+                        relabel(best_label[tid_i], s_tile[south_y][west_x]);
 
                     // Check SE corner
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                                                s_tile[south_y][east_x]);
+                    best_label[tid_i] =
+                        relabel(best_label[tid_i], s_tile[south_y][east_x]);
 #endif
                 }
                 // This thread's value changed  this iteration if the
@@ -283,16 +275,16 @@ void update_equiv(global T*   equiv_map,
         s_changed[warpIdx] = tid_changed[warpIdx];
         barrier(CLK_LOCAL_MEM_FENCE);
         continue_iter = 0;
-        #pragma unroll
+#pragma unroll
         for (int i = 0; i < NUM_WARPS; i++)
             continue_iter |= (s_changed[i] != 0);
 
         // If we have to continue iterating, update the tile of the
         // equiv map in shared memory
         if (continue_iter != 0) {
-            #pragma unroll
+#pragma unroll
             for (int xb = 0; xb < N_PER_THREAD; ++xb) {
-                #pragma unroll
+#pragma unroll
                 for (int yb = 0; yb < N_PER_THREAD; ++yb) {
                     const int tx = get_local_id(0) + (xb * get_local_size(0));
                     const int ty = get_local_id(1) + (yb * get_local_size(1));
@@ -303,19 +295,19 @@ void update_equiv(global T*   equiv_map,
             }
             barrier(CLK_LOCAL_MEM_FENCE);
         }
-    } // while (continue_iter)
+    }  // while (continue_iter)
 
-    // Write out equiv_map
-    #pragma unroll
+// Write out equiv_map
+#pragma unroll
     for (int xb = 0; xb < N_PER_THREAD; ++xb) {
-        #pragma unroll
+#pragma unroll
         for (int yb = 0; yb < N_PER_THREAD; ++yb) {
-            const int x = base_x + (xb * get_local_size(0));
-            const int y = base_y + (yb * get_local_size(1));
-            const int n = y * width + x;
+            const int x     = base_x + (xb * get_local_size(0));
+            const int y     = base_y + (yb * get_local_size(1));
+            const int n     = y * width + x;
             const int tid_i = xb * N_PER_THREAD + yb;
             if (x < width && y < height && write[tid_i]) {
-                equiv_map[n]  = best_label[tid_i];
+                equiv_map[n]   = best_label[tid_i];
                 *continue_flag = 1;
             }
         }

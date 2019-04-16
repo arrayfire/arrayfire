@@ -7,28 +7,24 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include "magma_data.h"
 #include "kernel/swapdblk.hpp"
+#include "magma_data.h"
 
-template<typename T> void
-magmablas_swapdblk(magma_int_t n, magma_int_t nb,
-                   cl_mem dA, magma_int_t dA_offset, magma_int_t ldda, magma_int_t inca,
-                   cl_mem dB, magma_int_t dB_offset, magma_int_t lddb, magma_int_t incb,
-                   magma_queue_t queue)
-{
-    opencl::kernel::swapdblk<T>(n, nb,
-                                dA, dA_offset, ldda, inca,
-                                dB, dB_offset, lddb, incb, queue);
+template<typename T>
+void magmablas_swapdblk(magma_int_t n, magma_int_t nb, cl_mem dA,
+                        magma_int_t dA_offset, magma_int_t ldda,
+                        magma_int_t inca, cl_mem dB, magma_int_t dB_offset,
+                        magma_int_t lddb, magma_int_t incb,
+                        magma_queue_t queue) {
+    opencl::kernel::swapdblk<T>(n, nb, dA, dA_offset, ldda, inca, dB, dB_offset,
+                                lddb, incb, queue);
 }
 
-
-#define INSTANTIATE(T)                                                  \
-    template void magmablas_swapdblk<T>(magma_int_t n, magma_int_t nb,  \
-                                        cl_mem dA, magma_int_t dA_offset, \
-                                        magma_int_t ldda, magma_int_t inca, \
-                                        cl_mem dB, magma_int_t dB_offset, \
-                                        magma_int_t lddb, magma_int_t incb, \
-                                        magma_queue_t queue);           \
+#define INSTANTIATE(T)                                                        \
+    template void magmablas_swapdblk<T>(                                      \
+        magma_int_t n, magma_int_t nb, cl_mem dA, magma_int_t dA_offset,      \
+        magma_int_t ldda, magma_int_t inca, cl_mem dB, magma_int_t dB_offset, \
+        magma_int_t lddb, magma_int_t incb, magma_queue_t queue);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

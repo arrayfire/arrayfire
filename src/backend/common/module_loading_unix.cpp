@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/module_loading.hpp>
 #include <common/defines.hpp>
+#include <common/module_loading.hpp>
 
 #include <dlfcn.h>
 
@@ -18,19 +18,17 @@ using std::string;
 namespace common {
 
 void* getFunctionPointer(LibHandle handle, const char* symbolName) {
-  return dlsym(handle, symbolName);
+    return dlsym(handle, symbolName);
 }
 
 LibHandle loadLibrary(const char* library_name) {
     return dlopen(library_name, RTLD_LAZY);
 }
-void unloadLibrary(LibHandle handle) {
-    dlclose(handle);
-}
+void unloadLibrary(LibHandle handle) { dlclose(handle); }
 
 string getErrorMessage() {
     string error_message(dlerror());
     return error_message;
 }
 
-}
+}  // namespace common

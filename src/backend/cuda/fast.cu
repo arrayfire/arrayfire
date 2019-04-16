@@ -7,54 +7,54 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <af/features.h>
 #include <Array.hpp>
 #include <err_cuda.hpp>
 #include <kernel/fast.hpp>
+#include <af/dim4.hpp>
+#include <af/features.h>
 
 using af::dim4;
 using af::features;
 
-namespace cuda
-{
+namespace cuda {
 
 template<typename T>
 unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const Array<T> &in, const float thr, const unsigned arc_length,
-              const bool non_max, const float feature_ratio, const unsigned edge)
-{
+              const bool non_max, const float feature_ratio,
+              const unsigned edge) {
     unsigned nfeat;
     float *d_x_out;
     float *d_y_out;
     float *d_score_out;
 
-    kernel::fast<T>(&nfeat, &d_x_out, &d_y_out, &d_score_out, in,
-                    thr, arc_length, non_max, feature_ratio, edge);
+    kernel::fast<T>(&nfeat, &d_x_out, &d_y_out, &d_score_out, in, thr,
+                    arc_length, non_max, feature_ratio, edge);
 
     if (nfeat > 0) {
         const dim4 out_dims(nfeat);
 
-        x_out = createDeviceDataArray<float>(out_dims, d_x_out);
-        y_out = createDeviceDataArray<float>(out_dims, d_y_out);
+        x_out     = createDeviceDataArray<float>(out_dims, d_x_out);
+        y_out     = createDeviceDataArray<float>(out_dims, d_y_out);
         score_out = createDeviceDataArray<float>(out_dims, d_score_out);
     }
 
     return nfeat;
 }
 
-#define INSTANTIATE(T)                                                                              \
-    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,    \
-                              const Array<T> &in, const float thr, const unsigned arc_length,       \
-                              const bool nonmax, const float feature_ratio, const unsigned edge);
+#define INSTANTIATE(T)                                                        \
+    template unsigned fast<T>(                                                \
+        Array<float> & x_out, Array<float> & y_out, Array<float> & score_out, \
+        const Array<T> &in, const float thr, const unsigned arc_length,       \
+        const bool nonmax, const float feature_ratio, const unsigned edge);
 
-INSTANTIATE(float )
+INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(char  )
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
-INSTANTIATE(uchar )
-INSTANTIATE(short )
+INSTANTIATE(char)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
+INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cuda

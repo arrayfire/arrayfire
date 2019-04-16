@@ -7,31 +7,31 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/defines.h>
-#include <common/err_common.hpp>
 #include <clfft.hpp>
+#include <common/err_common.hpp>
 #include <platform.hpp>
+#include <af/defines.h>
 #include <string>
 
 using std::string;
 
-namespace opencl
-{
-const char * _clfftGetResultString(clfftStatus st)
-{
-    switch (st)
-    {
+namespace opencl {
+const char *_clfftGetResultString(clfftStatus st) {
+    switch (st) {
         case CLFFT_SUCCESS: return "Success";
         case CLFFT_DEVICE_NOT_FOUND: return "Device Not Found";
         case CLFFT_DEVICE_NOT_AVAILABLE: return "Device Not Available";
         case CLFFT_COMPILER_NOT_AVAILABLE: return "Compiler Not Available";
-        case CLFFT_MEM_OBJECT_ALLOCATION_FAILURE: return "Memory Object Allocation Failure";
+        case CLFFT_MEM_OBJECT_ALLOCATION_FAILURE:
+            return "Memory Object Allocation Failure";
         case CLFFT_OUT_OF_RESOURCES: return "Out of Resources";
         case CLFFT_OUT_OF_HOST_MEMORY: return "Out of Host Memory";
-        case CLFFT_PROFILING_INFO_NOT_AVAILABLE: return "Profiling Information Not Available";
+        case CLFFT_PROFILING_INFO_NOT_AVAILABLE:
+            return "Profiling Information Not Available";
         case CLFFT_MEM_COPY_OVERLAP: return "Memory Copy Overlap";
         case CLFFT_IMAGE_FORMAT_MISMATCH: return "Image Format Mismatch";
-        case CLFFT_IMAGE_FORMAT_NOT_SUPPORTED: return "Image Format Not Supported";
+        case CLFFT_IMAGE_FORMAT_NOT_SUPPORTED:
+            return "Image Format Not Supported";
         case CLFFT_BUILD_PROGRAM_FAILURE: return "Build Program Failure";
         case CLFFT_MAP_FAILURE: return "Map Failure";
         case CLFFT_INVALID_VALUE: return "Invalid Value";
@@ -43,15 +43,18 @@ const char * _clfftGetResultString(clfftStatus st)
         case CLFFT_INVALID_COMMAND_QUEUE: return "Invalid Command Queue";
         case CLFFT_INVALID_HOST_PTR: return "Invalid Host Pointer";
         case CLFFT_INVALID_MEM_OBJECT: return "Invalid Memory Object";
-        case CLFFT_INVALID_IMAGE_FORMAT_DESCRIPTOR: return "Invalid Image Format Descriptor";
+        case CLFFT_INVALID_IMAGE_FORMAT_DESCRIPTOR:
+            return "Invalid Image Format Descriptor";
         case CLFFT_INVALID_IMAGE_SIZE: return "Invalid Image Size";
         case CLFFT_INVALID_SAMPLER: return "Invalid Sampler";
         case CLFFT_INVALID_BINARY: return "Invalid Binary";
         case CLFFT_INVALID_BUILD_OPTIONS: return "Invalid Build Options";
         case CLFFT_INVALID_PROGRAM: return "Invalid Program";
-        case CLFFT_INVALID_PROGRAM_EXECUTABLE: return "Invalid Program Executable";
+        case CLFFT_INVALID_PROGRAM_EXECUTABLE:
+            return "Invalid Program Executable";
         case CLFFT_INVALID_KERNEL_NAME: return "Invalid Kernel Name";
-        case CLFFT_INVALID_KERNEL_DEFINITION: return "Invalid Kernel Definition";
+        case CLFFT_INVALID_KERNEL_DEFINITION:
+            return "Invalid Kernel Definition";
         case CLFFT_INVALID_KERNEL: return "Invalid Kernel";
         case CLFFT_INVALID_ARG_INDEX: return "Invalid Argument Index";
         case CLFFT_INVALID_ARG_VALUE: return "Invalid Argument Value";
@@ -70,12 +73,14 @@ const char * _clfftGetResultString(clfftStatus st)
         case CLFFT_INVALID_GLOBAL_WORK_SIZE: return "Invalid Global Work Size";
         case CLFFT_BUGCHECK: return "Bugcheck";
         case CLFFT_NOTIMPLEMENTED: return "Not implemented";
-        case CLFFT_TRANSPOSED_NOTIMPLEMENTED: return "Transpose not implemented for this transformation";
+        case CLFFT_TRANSPOSED_NOTIMPLEMENTED:
+            return "Transpose not implemented for this transformation";
         case CLFFT_FILE_NOT_FOUND: return "File not found";
         case CLFFT_FILE_CREATE_FAILURE: return "File creation failed";
         case CLFFT_VERSION_MISMATCH: return "Version mismatch";
         case CLFFT_INVALID_PLAN: return "Invalid plan";
-        case CLFFT_DEVICE_NO_DOUBLE: return "Device does not support double precision";
+        case CLFFT_DEVICE_NO_DOUBLE:
+            return "Device does not support double precision";
         case CLFFT_DEVICE_MISMATCH: return "Plan device mismatch";
         case CLFFT_ENDSTATUS: return "End status";
     }
@@ -83,12 +88,10 @@ const char * _clfftGetResultString(clfftStatus st)
     return "Unknown error";
 }
 
-SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
-                    clfftDim rank, size_t *clLengths,
-                    size_t *istrides, size_t idist,
-                    size_t *ostrides, size_t odist,
-                    clfftPrecision precision, size_t batch)
-{
+SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout, clfftDim rank,
+                    size_t *clLengths, size_t *istrides, size_t idist,
+                    size_t *ostrides, size_t odist, clfftPrecision precision,
+                    size_t batch) {
     // create the key string
     char key_str_temp[64];
     sprintf(key_str_temp, "%d:%d:%d:", iLayout, oLayout, rank);
@@ -96,13 +99,13 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
     string key_string(key_str_temp);
 
     /* WARNING: DO NOT CHANGE sprintf format specifier */
-    for(int r=0; r<rank; ++r) {
+    for (int r = 0; r < rank; ++r) {
         sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", clLengths[r]);
         key_string.append(std::string(key_str_temp));
     }
 
-    if(istrides!=NULL) {
-        for(int r=0; r<rank; ++r) {
+    if (istrides != NULL) {
+        for (int r = 0; r < rank; ++r) {
             sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", istrides[r]);
             key_string.append(std::string(key_str_temp));
         }
@@ -110,8 +113,8 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
         key_string.append(std::string(key_str_temp));
     }
 
-    if (ostrides!=NULL) {
-        for(int r=0; r<rank; ++r) {
+    if (ostrides != NULL) {
+        for (int r = 0; r < rank; ++r) {
             sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", ostrides[r]);
             key_string.append(std::string(key_str_temp));
         }
@@ -123,16 +126,16 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
     key_string.append(std::string(key_str_temp));
 
     PlanCache &planner = opencl::fftManager();
-    SharedPlan retVal = planner.find(key_string);
+    SharedPlan retVal  = planner.find(key_string);
 
-    if (retVal)
-        return retVal;
+    if (retVal) return retVal;
 
-    PlanType* temp = (PlanType*)malloc(sizeof(PlanType));
+    PlanType *temp = (PlanType *)malloc(sizeof(PlanType));
 
     // getContext() returns object of type Context
     // Context() returns the actual cl_context handle
-    CLFFT_CHECK(clfftCreateDefaultPlan(temp, opencl::getContext()(), rank, clLengths));
+    CLFFT_CHECK(
+        clfftCreateDefaultPlan(temp, opencl::getContext()(), rank, clLengths));
 
     // complex to complex
     if (iLayout == oLayout) {
@@ -153,7 +156,7 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
     // CommandQueue() returns the actual cl_command_queue handle
     CLFFT_CHECK(clfftBakePlan(*temp, 1, &(opencl::getQueue()()), NULL, NULL));
 
-    retVal.reset(temp, [](PlanType* p) {
+    retVal.reset(temp, [](PlanType *p) {
 #ifndef OS_WIN
         // On Windows the resources that are released after the main function
         // have exited cause "Pure Virtual Function Called" errors. It seems
@@ -170,4 +173,4 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout,
 
     return retVal;
 }
-}
+}  // namespace opencl

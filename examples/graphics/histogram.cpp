@@ -8,20 +8,19 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <cstdio>
 #include <math.h>
+#include <cstdio>
 
 using namespace af;
 
-int main(int, char **)
-{
+int main(int, char**) {
     try {
         // Initialize the kernel array just once
         af::info();
         af::Window myWindow(512, 512, "Histogram example using ArrayFire");
         af::Window imgWnd(480, 640, "Input Image");
 
-        array img = loadImage(ASSETS_DIR"/examples/images/arrow.jpg", false);
+        array img = loadImage(ASSETS_DIR "/examples/images/arrow.jpg", false);
         array hist_out = histogram(img, 256, 0, 255);
 
         myWindow.setAxesTitles("Bins", "Frequency");

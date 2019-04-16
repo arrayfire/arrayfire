@@ -8,30 +8,27 @@
  ********************************************************/
 
 #pragma once
+#include <Param.hpp>
+#include <cache.hpp>
+#include <common/dispatch.hpp>
+#include <debug_opencl.hpp>
 #include <kernel_headers/laset_band.hpp>
 #include <program.hpp>
 #include <traits.hpp>
-#include <string>
-#include <cache.hpp>
-#include <common/dispatch.hpp>
-#include <Param.hpp>
-#include <debug_opencl.hpp>
 #include <types.hpp>
-#include <traits.hpp>
+#include <string>
 
 using cl::Buffer;
-using cl::Program;
+using cl::EnqueueArgs;
 using cl::Kernel;
 using cl::KernelFunctor;
-using cl::EnqueueArgs;
 using cl::NDRange;
+using cl::Program;
 using std::string;
 
-namespace opencl
-{
-namespace kernel
-{
-#if 0 // Needs to be enabled when unmqr2 is enabled
+namespace opencl {
+namespace kernel {
+#if 0  // Needs to be enabled when unmqr2 is enabled
 static const int NB = 64;
 template<int num>
 const char *laset_band_name() { return "laset_none"; }
@@ -88,5 +85,5 @@ void laset_band(int m, int  n, int k,
     lasetBandOp(EnqueueArgs(getQueue(), global, local), m, n, offdiag, diag, dA, dA_offset, ldda);
 }
 #endif
-}
-}
+}  // namespace kernel
+}  // namespace opencl

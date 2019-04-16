@@ -7,19 +7,19 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <indexing_common.hpp>
 #include <index.hpp>
+#include <indexing_common.hpp>
 
 #include <Array.hpp>
-#include <af/arith.h>
-#include <af/array.h>
-#include <af/data.h>
-#include <af/index.h>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
 #include <handle.hpp>
 #include <lookup.hpp>
+#include <af/arith.h>
+#include <af/array.h>
+#include <af/data.h>
+#include <af/index.h>
 
 #include <array>
 #include <cassert>
@@ -27,40 +27,36 @@
 #include <vector>
 
 using namespace detail;
-using std::vector;
-using std::swap;
 using std::signbit;
+using std::swap;
+using std::vector;
 
-using common::createSpanIndex;
 using common::convert2Canonical;
+using common::createSpanIndex;
 
 namespace common {
-af_index_t createSpanIndex()
-{
-    static af_index_t s = []{
+af_index_t createSpanIndex() {
+    static af_index_t s = [] {
         af_index_t s;
         s.idx.seq = af_span;
-        s.isSeq = true;
+        s.isSeq   = true;
         s.isBatch = false;
         return s;
     }();
     return s;
 }
 
-af_seq convert2Canonical(const af_seq s, const dim_t len)
-{
+af_seq convert2Canonical(const af_seq s, const dim_t len) {
     double begin = signbit(s.begin) ? (len + s.begin) : s.begin;
-    double end   = signbit(s.end  ) ? (len + s.end)   : s.end;
+    double end   = signbit(s.end) ? (len + s.end) : s.end;
 
     return af_seq{begin, end, s.step};
 }
-}
+}  // namespace common
 
 template<typename T>
-static
-af_array indexBySeqs(const af_array &src,
-                     const vector<af_seq> indicesV)
-{
+static af_array indexBySeqs(const af_array& src,
+                            const vector<af_seq> indicesV) {
     size_t ndims = indicesV.size();
     auto input   = getArray<T>(src);
 
@@ -70,42 +66,41 @@ af_array indexBySeqs(const af_array &src,
         return getHandle(createSubArray(input, indicesV));
 }
 
-af_err af_index(af_array *result, const af_array in,
-                const unsigned ndims, const af_seq* indices)
-{
+af_err af_index(af_array* result, const af_array in, const unsigned ndims,
+                const af_seq* indices) {
     try {
         const ArrayInfo& inInfo = getInfo(in);
-        af_dtype type = inInfo.getType();
-        const dim4& iDims = inInfo.dims();
+        af_dtype type           = inInfo.getType();
+        const dim4& iDims       = inInfo.dims();
 
         vector<af_seq> indices_(ndims, af_span);
-        for (unsigned i=0; i<ndims; ++i) {
+        for (unsigned i = 0; i < ndims; ++i) {
             indices_[i] = convert2Canonical(indices[i], iDims[i]);
 
             ARG_ASSERT(3, (indices_[i].begin >= 0. && indices_[i].end >= 0.));
             if (signbit(indices_[i].step)) {
-              ARG_ASSERT(3, indices_[i].begin >= indices_[i].end);
+                ARG_ASSERT(3, indices_[i].begin >= indices_[i].end);
             } else {
-              ARG_ASSERT(3, indices_[i].begin <= indices_[i].end);
+                ARG_ASSERT(3, indices_[i].begin <= indices_[i].end);
             }
         }
 
         af_array out = 0;
 
-        switch(type) {
-            case f32: out = indexBySeqs<float>   (in, indices_);  break;
-            case c32: out = indexBySeqs<cfloat>  (in, indices_);  break;
-            case f64: out = indexBySeqs<double>  (in, indices_);  break;
-            case c64: out = indexBySeqs<cdouble> (in, indices_);  break;
-            case b8:  out = indexBySeqs<char>    (in, indices_);  break;
-            case s32: out = indexBySeqs<int>     (in, indices_);  break;
-            case u32: out = indexBySeqs<unsigned>(in, indices_);  break;
-            case s16: out = indexBySeqs<short>   (in, indices_);  break;
-            case u16: out = indexBySeqs<ushort>  (in, indices_);  break;
-            case s64: out = indexBySeqs<intl>    (in, indices_);  break;
-            case u64: out = indexBySeqs<uintl>   (in, indices_);  break;
-            case u8:  out = indexBySeqs<uchar>   (in, indices_);  break;
-            default:    TYPE_ERROR(1, type);
+        switch (type) {
+            case f32: out = indexBySeqs<float>(in, indices_); break;
+            case c32: out = indexBySeqs<cfloat>(in, indices_); break;
+            case f64: out = indexBySeqs<double>(in, indices_); break;
+            case c64: out = indexBySeqs<cdouble>(in, indices_); break;
+            case b8: out = indexBySeqs<char>(in, indices_); break;
+            case s32: out = indexBySeqs<int>(in, indices_); break;
+            case u32: out = indexBySeqs<unsigned>(in, indices_); break;
+            case s16: out = indexBySeqs<short>(in, indices_); break;
+            case u16: out = indexBySeqs<ushort>(in, indices_); break;
+            case s64: out = indexBySeqs<intl>(in, indices_); break;
+            case u64: out = indexBySeqs<uintl>(in, indices_); break;
+            case u8: out = indexBySeqs<uchar>(in, indices_); break;
+            default: TYPE_ERROR(1, type);
         }
         swap(*result, out);
     }
@@ -114,39 +109,36 @@ af_err af_index(af_array *result, const af_array in,
 }
 
 template<typename T, typename idx_t>
-inline
-af_array lookup(const af_array& in, const af_array& idx, const unsigned dim)
-{
+inline af_array lookup(const af_array& in, const af_array& idx,
+                       const unsigned dim) {
     return getHandle(lookup(getArray<T>(in), getArray<idx_t>(idx), dim));
 }
 
 template<typename idx_t>
-static
-af_array lookup(const af_array& in, const af_array& idx, const unsigned dim)
-{
+static af_array lookup(const af_array& in, const af_array& idx,
+                       const unsigned dim) {
     const ArrayInfo& inInfo = getInfo(in);
-    af_dtype inType = inInfo.getType();
+    af_dtype inType         = inInfo.getType();
 
-    switch(inType) {
-        case f32: return lookup<float   , idx_t>(in, idx, dim);
-        case c32: return lookup<cfloat  , idx_t>(in, idx, dim);
-        case f64: return lookup<double  , idx_t>(in, idx, dim);
-        case c64: return lookup<cdouble , idx_t>(in, idx, dim);
-        case s32: return lookup<int     , idx_t>(in, idx, dim);
+    switch (inType) {
+        case f32: return lookup<float, idx_t>(in, idx, dim);
+        case c32: return lookup<cfloat, idx_t>(in, idx, dim);
+        case f64: return lookup<double, idx_t>(in, idx, dim);
+        case c64: return lookup<cdouble, idx_t>(in, idx, dim);
+        case s32: return lookup<int, idx_t>(in, idx, dim);
         case u32: return lookup<unsigned, idx_t>(in, idx, dim);
-        case s64: return lookup<intl    , idx_t>(in, idx, dim);
-        case u64: return lookup<uintl   , idx_t>(in, idx, dim);
-        case s16: return lookup<short   , idx_t>(in, idx, dim);
-        case u16: return lookup<ushort  , idx_t>(in, idx, dim);
-        case  u8: return lookup<uchar   , idx_t>(in, idx, dim);
-        case  b8: return lookup<char    , idx_t>(in, idx, dim);
-        default : TYPE_ERROR(1, inType);
+        case s64: return lookup<intl, idx_t>(in, idx, dim);
+        case u64: return lookup<uintl, idx_t>(in, idx, dim);
+        case s16: return lookup<short, idx_t>(in, idx, dim);
+        case u16: return lookup<ushort, idx_t>(in, idx, dim);
+        case u8: return lookup<uchar, idx_t>(in, idx, dim);
+        case b8: return lookup<char, idx_t>(in, idx, dim);
+        default: TYPE_ERROR(1, inType);
     }
 }
 
-af_err af_lookup(af_array *out, const af_array in,
-                 const af_array indices, const unsigned dim)
-{
+af_err af_lookup(af_array* out, const af_array in, const af_array indices,
+                 const unsigned dim) {
     try {
         const ArrayInfo& idxInfo = getInfo(indices);
 
@@ -166,17 +158,17 @@ af_err af_lookup(af_array *out, const af_array in,
 
         af_array output = 0;
 
-        switch(idxType) {
-            case f32: output = lookup<float   >(in, indices, dim); break;
-            case f64: output = lookup<double  >(in, indices, dim); break;
-            case s32: output = lookup<int     >(in, indices, dim); break;
+        switch (idxType) {
+            case f32: output = lookup<float>(in, indices, dim); break;
+            case f64: output = lookup<double>(in, indices, dim); break;
+            case s32: output = lookup<int>(in, indices, dim); break;
             case u32: output = lookup<unsigned>(in, indices, dim); break;
-            case s16: output = lookup<short   >(in, indices, dim); break;
-            case u16: output = lookup<ushort  >(in, indices, dim); break;
-            case s64: output = lookup<intl    >(in, indices, dim); break;
-            case u64: output = lookup<uintl   >(in, indices, dim); break;
-            case  u8: output = lookup<uchar   >(in, indices, dim); break;
-            default : TYPE_ERROR(1, idxType);
+            case s16: output = lookup<short>(in, indices, dim); break;
+            case u16: output = lookup<ushort>(in, indices, dim); break;
+            case s64: output = lookup<intl>(in, indices, dim); break;
+            case u64: output = lookup<uintl>(in, indices, dim); break;
+            case u8: output = lookup<uchar>(in, indices, dim); break;
+            default: TYPE_ERROR(1, idxType);
         }
         std::swap(*out, output);
     }
@@ -188,22 +180,19 @@ af_err af_lookup(af_array *out, const af_array in,
 // expects 4 values which is handled appropriately
 // by the C-API af_index_gen
 template<typename T>
-static inline
-af_array genIndex(const af_array& in,  const af_index_t idxrs[])
-{
+static inline af_array genIndex(const af_array& in, const af_index_t idxrs[]) {
     return getHandle<T>(index<T>(getArray<T>(in), idxrs));
 }
 
-af_err af_index_gen(af_array *out, const af_array in,
-                    const dim_t ndims, const af_index_t* indexs)
-{
+af_err af_index_gen(af_array* out, const af_array in, const dim_t ndims,
+                    const af_index_t* indexs) {
     try {
-        ARG_ASSERT(2, (ndims>0));
+        ARG_ASSERT(2, (ndims > 0));
         ARG_ASSERT(3, (indexs != NULL));
 
-        const ArrayInfo& iInfo  = getInfo(in);
-        const dim4& iDims  = iInfo.dims();
-        af_dtype inType = getInfo(in).getType();
+        const ArrayInfo& iInfo = getInfo(in);
+        const dim4& iDims      = iInfo.dims();
+        af_dtype inType        = getInfo(in).getType();
 
         if (iDims.ndims() <= 0) {
             *out = createHandle(dim4(0), inType);
@@ -228,29 +217,28 @@ af_err af_index_gen(af_array *out, const af_array in,
             }
         }
 
-        if (track==(int)ndims)
-            return af_index(out, in, ndims, seqs.data());
+        if (track == (int)ndims) return af_index(out, in, ndims, seqs.data());
 
         std::array<af_index_t, AF_MAX_DIMS> idxrs;
 
-        for (dim_t i=0; i<AF_MAX_DIMS; ++i) {
-            if (i<ndims) {
+        for (dim_t i = 0; i < AF_MAX_DIMS; ++i) {
+            if (i < ndims) {
                 bool isSeq = indexs[i].isSeq;
                 if (!isSeq) {
                     // check if all af_arrays have atleast one value
                     // to enable indexing along that dimension
                     const ArrayInfo& idxInfo = getInfo(indexs[i].idx.arr);
-                    af_dtype idxType = idxInfo.getType();
+                    af_dtype idxType         = idxInfo.getType();
 
                     ARG_ASSERT(3, (idxType != c32));
                     ARG_ASSERT(3, (idxType != c64));
-                    ARG_ASSERT(3, (idxType != b8 ));
+                    ARG_ASSERT(3, (idxType != b8));
 
-                    idxrs[i] = { { indexs[i].idx.arr },
-                                 isSeq, indexs[i].isBatch };
+                    idxrs[i] = {{indexs[i].idx.arr}, isSeq, indexs[i].isBatch};
                 } else {
                     // copy the af_seq to local variable
-                    af_seq inSeq = convert2Canonical(indexs[i].idx.seq, iDims[i]);
+                    af_seq inSeq =
+                        convert2Canonical(indexs[i].idx.seq, iDims[i]);
                     ARG_ASSERT(3, (inSeq.begin >= 0. || inSeq.end >= 0.));
                     if (signbit(inSeq.step)) {
                         ARG_ASSERT(3, inSeq.begin >= inSeq.end);
@@ -269,19 +257,19 @@ af_err af_index_gen(af_array *out, const af_array in,
         af_index_t* ptr = idxrs.data();
 
         af_array output = 0;
-        switch(inType) {
+        switch (inType) {
             case c64: output = genIndex<cdouble>(in, ptr); break;
-            case f64: output = genIndex<double >(in, ptr); break;
-            case c32: output = genIndex<cfloat >(in, ptr); break;
-            case f32: output = genIndex<float  >(in, ptr); break;
-            case u64: output = genIndex<uintl  >(in, ptr); break;
-            case s64: output = genIndex<intl   >(in, ptr); break;
-            case u32: output = genIndex<uint   >(in, ptr); break;
-            case s32: output = genIndex<int    >(in, ptr); break;
-            case u16: output = genIndex<ushort >(in, ptr); break;
-            case s16: output = genIndex<short  >(in, ptr); break;
-            case  u8: output = genIndex<uchar  >(in, ptr); break;
-            case  b8: output = genIndex<char   >(in, ptr); break;
+            case f64: output = genIndex<double>(in, ptr); break;
+            case c32: output = genIndex<cfloat>(in, ptr); break;
+            case f32: output = genIndex<float>(in, ptr); break;
+            case u64: output = genIndex<uintl>(in, ptr); break;
+            case s64: output = genIndex<intl>(in, ptr); break;
+            case u32: output = genIndex<uint>(in, ptr); break;
+            case s32: output = genIndex<int>(in, ptr); break;
+            case u16: output = genIndex<ushort>(in, ptr); break;
+            case s16: output = genIndex<short>(in, ptr); break;
+            case u8: output = genIndex<uchar>(in, ptr); break;
+            case b8: output = genIndex<char>(in, ptr); break;
             default: TYPE_ERROR(1, inType);
         }
         std::swap(*out, output);
@@ -290,13 +278,11 @@ af_err af_index_gen(af_array *out, const af_array in,
     return AF_SUCCESS;
 }
 
-af_seq af_make_seq(double begin, double end, double step)
-{
+af_seq af_make_seq(double begin, double end, double step) {
     return af_seq{begin, end, step};
 }
 
-af_err af_create_indexers(af_index_t** indexers)
-{
+af_err af_create_indexers(af_index_t** indexers) {
     try {
         af_index_t* out = new af_index_t[AF_MAX_DIMS];
         for (int i = 0; i < AF_MAX_DIMS; ++i) {
@@ -310,9 +296,8 @@ af_err af_create_indexers(af_index_t** indexers)
     return AF_SUCCESS;
 }
 
-af_err af_set_array_indexer(af_index_t* indexer,
-                            const af_array idx, const dim_t dim)
-{
+af_err af_set_array_indexer(af_index_t* indexer, const af_array idx,
+                            const dim_t dim) {
     try {
         ARG_ASSERT(0, (indexer != NULL));
         ARG_ASSERT(1, (idx != NULL));
@@ -324,8 +309,7 @@ af_err af_set_array_indexer(af_index_t* indexer,
 }
 
 af_err af_set_seq_indexer(af_index_t* indexer, const af_seq* idx,
-                          const dim_t dim, const bool is_batch)
-{
+                          const dim_t dim, const bool is_batch) {
     try {
         ARG_ASSERT(0, (indexer != NULL));
         ARG_ASSERT(1, (idx != NULL));
@@ -340,22 +324,20 @@ af_err af_set_seq_indexer(af_index_t* indexer, const af_seq* idx,
 
 af_err af_set_seq_param_indexer(af_index_t* indexer, const double begin,
                                 const double end, const double step,
-                                const dim_t dim, const bool is_batch)
-{
+                                const dim_t dim, const bool is_batch) {
     try {
         ARG_ASSERT(0, (indexer != NULL));
         ARG_ASSERT(4, (dim >= 0 && dim <= 3));
-        af_seq s = af_make_seq(begin, end, step);
+        af_seq s             = af_make_seq(begin, end, step);
         indexer[dim].idx.seq = s;
-        indexer[dim].isSeq = true;
+        indexer[dim].isSeq   = true;
         indexer[dim].isBatch = is_batch;
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_release_indexers(af_index_t* indexers)
-{
+af_err af_release_indexers(af_index_t* indexers) {
     try {
         delete[] indexers;
     }

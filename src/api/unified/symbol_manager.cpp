@@ -20,7 +20,6 @@
 #include <string>
 #include <type_traits>
 
-
 #ifdef OS_WIN
 #include <Windows.h>
 #else
@@ -36,8 +35,7 @@ using std::extent;
 using std::function;
 using std::string;
 
-namespace unified
-{
+namespace unified {
 
 #if defined(OS_WIN)
 static const char* LIB_AF_BKND_PREFIX = "";
@@ -47,24 +45,30 @@ static const char* LIB_AF_BKND_SUFFIX = ".dll";
 #else
 
 #if defined(__APPLE__)
-#  define SO_SUFFIX_HELPER(VER) "." #VER ".dylib"
+#define SO_SUFFIX_HELPER(VER) "." #VER ".dylib"
 #else
-#  define SO_SUFFIX_HELPER(VER) ".so." #VER
+#define SO_SUFFIX_HELPER(VER) ".so." #VER
 #endif
-   static const char* LIB_AF_BKND_PREFIX = "lib";
-#  define PATH_SEPARATOR "/"
+static const char* LIB_AF_BKND_PREFIX = "lib";
+#define PATH_SEPARATOR "/"
 
-#  define GET_SO_SUFFIX(VER) SO_SUFFIX_HELPER(VER)
-   static const char* LIB_AF_BKND_SUFFIX = GET_SO_SUFFIX(AF_VERSION_MAJOR);
+#define GET_SO_SUFFIX(VER) SO_SUFFIX_HELPER(VER)
+static const char* LIB_AF_BKND_SUFFIX = GET_SO_SUFFIX(AF_VERSION_MAJOR);
 #endif
 
 string getBkndLibName(const af_backend backend) {
     string ret;
     switch (backend) {
-        case AF_BACKEND_CUDA: ret = string(LIB_AF_BKND_PREFIX) + "afcuda" + LIB_AF_BKND_SUFFIX; break;
-        case AF_BACKEND_OPENCL: ret = string(LIB_AF_BKND_PREFIX) + "afopencl" + LIB_AF_BKND_SUFFIX; break;
-        case AF_BACKEND_CPU: ret = string(LIB_AF_BKND_PREFIX) + "afcpu" + LIB_AF_BKND_SUFFIX; break;
-        default: assert(1!=1 && "Invalid backend");
+        case AF_BACKEND_CUDA:
+            ret = string(LIB_AF_BKND_PREFIX) + "afcuda" + LIB_AF_BKND_SUFFIX;
+            break;
+        case AF_BACKEND_OPENCL:
+            ret = string(LIB_AF_BKND_PREFIX) + "afopencl" + LIB_AF_BKND_SUFFIX;
+            break;
+        case AF_BACKEND_CPU:
+            ret = string(LIB_AF_BKND_PREFIX) + "afcpu" + LIB_AF_BKND_SUFFIX;
+            break;
+        default: assert(1 != 1 && "Invalid backend");
     }
     return ret;
 }
@@ -74,47 +78,48 @@ string getBackendDirectoryName(const af_backend backend) {
         case AF_BACKEND_CUDA: ret = "cuda"; break;
         case AF_BACKEND_OPENCL: ret = "opencl"; break;
         case AF_BACKEND_CPU: ret = "cpu"; break;
-        default: assert(1!=1 && "Invalid backend");
-      }
+        default: assert(1 != 1 && "Invalid backend");
+    }
     return ret;
 }
 
-string join_path(string first) {
-    return first;
-}
+string join_path(string first) { return first; }
 
 template<typename... ARGS>
 string join_path(string first, ARGS... args) {
-    if(first.empty()) { return join_path(args...); }
-    else              { return first + PATH_SEPARATOR + join_path(args...); }
+    if (first.empty()) {
+        return join_path(args...);
+    } else {
+        return first + PATH_SEPARATOR + join_path(args...);
+    }
 }
 
 /*flag parameter is not used on windows platform */
-LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
-{
+LibHandle openDynLibrary(const af_backend bknd_idx, int flag = RTLD_LAZY) {
     // The default search path is the colon separated list of paths stored in
     // the environment variables:
-    string bkndLibName = getBkndLibName(bknd_idx);
-    string show_flag = getEnvVar("AF_SHOW_LOAD_PATH");
-    bool show_load_path = show_flag=="1";
+    string bkndLibName  = getBkndLibName(bknd_idx);
+    string show_flag    = getEnvVar("AF_SHOW_LOAD_PATH");
+    bool show_load_path = show_flag == "1";
 
     // FIXME(umar): avoid this if at all possible
-    auto getLogger = [&]{ return spdlog::get("unified"); };
+    auto getLogger = [&] { return spdlog::get("unified"); };
 
     string paths[] = {
-        "",  // Default paths
-        ".", // Shared libraries in current directory
+        "",   // Default paths
+        ".",  // Shared libraries in current directory
         // Running from the CMake Build directory
         join_path(".", "src", "backend", getBackendDirectoryName(bknd_idx)),
         // Running from the test directory
         join_path("..", "src", "backend", getBackendDirectoryName(bknd_idx)),
         // Environment variable PATHS
-        join_path(getEnvVar("AF_BUILD_PATH"), "src", "backend", getBackendDirectoryName(bknd_idx)),
+        join_path(getEnvVar("AF_BUILD_PATH"), "src", "backend",
+                  getBackendDirectoryName(bknd_idx)),
         join_path(getEnvVar("AF_PATH"), "lib"),
         join_path(getEnvVar("AF_PATH"), "lib64"),
         getEnvVar("AF_BUILD_LIB_CUSTOM_PATH"),
 
-        // Common install paths
+    // Common install paths
 #if !defined(OS_WIN)
         "/opt/arrayfire-3/lib/",
         "/opt/arrayfire/lib/",
@@ -125,7 +130,7 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
         join_path(getEnvVar("ProgramFiles"), "ArrayFire", "v3", "lib")
 #endif
     };
-    typedef af_err(*func)(int*);
+    typedef af_err (*func)(int*);
 
     LibHandle retVal = nullptr;
     for (size_t i = 0; i < extent<decltype(paths)>::value; i++) {
@@ -133,21 +138,19 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
         if ((retVal = loadLibrary(join_path(paths[i], bkndLibName).c_str()))) {
             AF_TRACE("Found: {}", join_path(paths[i], bkndLibName));
 
-            func count_func = (func)getFunctionPointer(retVal,
-                                                       "af_get_device_count");
-            if(count_func) {
+            func count_func =
+                (func)getFunctionPointer(retVal, "af_get_device_count");
+            if (count_func) {
                 int count = 0;
                 count_func(&count);
                 AF_TRACE("Device Count: {}.", count);
-                if(count == 0) {
+                if (count == 0) {
                     retVal = nullptr;
                     continue;
                 }
             }
 
-            if (show_load_path) {
-                printf("Using %s\n", bkndLibName.c_str());
-            }
+            if (show_load_path) { printf("Using %s\n", bkndLibName.c_str()); }
             break;
         }
     }
@@ -155,84 +158,71 @@ LibHandle openDynLibrary(const af_backend bknd_idx, int flag=RTLD_LAZY)
     return retVal;
 }
 
-void closeDynLibrary(LibHandle handle)
-{
-    unloadLibrary(handle);
-}
+void closeDynLibrary(LibHandle handle) { unloadLibrary(handle); }
 
-AFSymbolManager& AFSymbolManager::getInstance()
-{
+AFSymbolManager& AFSymbolManager::getInstance() {
     thread_local AFSymbolManager symbolManager;
     return symbolManager;
 }
 
-spdlog::logger* AFSymbolManager::getLogger() {
-    return logger.get();
-}
+spdlog::logger* AFSymbolManager::getLogger() { return logger.get(); }
 
 AFSymbolManager::AFSymbolManager()
-    : activeHandle(nullptr), defaultHandle(nullptr), numBackends(0),
-      backendsAvailable(0), logger(loggerFactory("unified"))
-{
+    : activeHandle(nullptr)
+    , defaultHandle(nullptr)
+    , numBackends(0)
+    , backendsAvailable(0)
+    , logger(loggerFactory("unified")) {
     // In order of priority.
-    static const af_backend order[] = { AF_BACKEND_CUDA,
-                                        AF_BACKEND_OPENCL,
-                                        AF_BACKEND_CPU};
+    static const af_backend order[] = {AF_BACKEND_CUDA, AF_BACKEND_OPENCL,
+                                       AF_BACKEND_CPU};
 
-    // Decremeting loop. The last successful backend loaded will be the most prefered one.
-    for(int i = NUM_BACKENDS - 1; i >= 0; i--) {
-        int backend = order[i] >> 1; // 2 4 1 -> 1 2 0
+    // Decremeting loop. The last successful backend loaded will be the most
+    // prefered one.
+    for (int i = NUM_BACKENDS - 1; i >= 0; i--) {
+        int backend          = order[i] >> 1;  // 2 4 1 -> 1 2 0
         bkndHandles[backend] = openDynLibrary(order[i]);
         if (bkndHandles[backend]) {
-            activeHandle = bkndHandles[backend];
+            activeHandle  = bkndHandles[backend];
             activeBackend = (af_backend)order[i];
             numBackends++;
             backendsAvailable += order[i];
         }
     }
-    if(activeBackend) {
-        AF_TRACE("AF_DEFAULT_BACKEND: {}", getBackendDirectoryName(activeBackend));
+    if (activeBackend) {
+        AF_TRACE("AF_DEFAULT_BACKEND: {}",
+                 getBackendDirectoryName(activeBackend));
     }
 
     // Keep a copy of default order handle inorder to use it in ::setBackend
     // when the user passes AF_BACKEND_DEFAULT
-    defaultHandle = activeHandle;
+    defaultHandle  = activeHandle;
     defaultBackend = activeBackend;
 }
 
-AFSymbolManager::~AFSymbolManager()
-{
-    for(int i=0; i<NUM_BACKENDS; ++i) {
-        if (bkndHandles[i]) {
-            closeDynLibrary(bkndHandles[i]);
-        }
+AFSymbolManager::~AFSymbolManager() {
+    for (int i = 0; i < NUM_BACKENDS; ++i) {
+        if (bkndHandles[i]) { closeDynLibrary(bkndHandles[i]); }
     }
 }
 
-unsigned AFSymbolManager::getBackendCount()
-{
-    return numBackends;
-}
+unsigned AFSymbolManager::getBackendCount() { return numBackends; }
 
-int AFSymbolManager::getAvailableBackends()
-{
-    return backendsAvailable;
-}
+int AFSymbolManager::getAvailableBackends() { return backendsAvailable; }
 
-af_err AFSymbolManager::setBackend(af::Backend bknd)
-{
-    if (bknd==AF_BACKEND_DEFAULT) {
+af_err AFSymbolManager::setBackend(af::Backend bknd) {
+    if (bknd == AF_BACKEND_DEFAULT) {
         if (defaultHandle) {
-            activeHandle = defaultHandle;
+            activeHandle  = defaultHandle;
             activeBackend = defaultBackend;
             return AF_SUCCESS;
         } else {
             UNIFIED_ERROR_LOAD_LIB();
         }
     }
-    int idx = bknd >> 1;    // Convert 1, 2, 4 -> 0, 1, 2
-    if(bkndHandles[idx]) {
-        activeHandle = bkndHandles[idx];
+    int idx = bknd >> 1;  // Convert 1, 2, 4 -> 0, 1, 2
+    if (bkndHandles[idx]) {
+        activeHandle  = bkndHandles[idx];
         activeBackend = bknd;
         return AF_SUCCESS;
     } else {
@@ -240,8 +230,7 @@ af_err AFSymbolManager::setBackend(af::Backend bknd)
     }
 }
 
-bool checkArray(af_backend activeBackend, af_array a)
-{
+bool checkArray(af_backend activeBackend, af_array a) {
     // Convert af_array into int to retrieve the backend info.
     // See ArrayInfo.hpp for more
     af_backend backend = (af_backend)0;
@@ -250,17 +239,17 @@ bool checkArray(af_backend activeBackend, af_array a)
     // backend return the expected error rather than AF_ERR_ARR_BKND_MISMATCH
     // Since a = 0, does not have a backend specified, it should be a
     // AF_ERR_ARG instead of AF_ERR_ARR_BKND_MISMATCH
-    if(a == 0) return true;
+    if (a == 0) return true;
 
-    unified::AFSymbolManager::getInstance().call("af_get_backend_id", &backend, a);
+    unified::AFSymbolManager::getInstance().call("af_get_backend_id", &backend,
+                                                 a);
     return backend == activeBackend;
 }
 
-bool checkArrays(af_backend activeBackend)
-{
+bool checkArrays(af_backend activeBackend) {
     UNUSED(activeBackend);
     // Dummy
     return true;
 }
 
-} // namespace unified
+}  // namespace unified

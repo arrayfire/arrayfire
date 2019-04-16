@@ -22,58 +22,56 @@ using std::min;
 using std::partial_sort_copy;
 using std::vector;
 
-namespace cpu
-{
+namespace cpu {
 template<typename T>
 void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
-          const int k, const int dim, const af::topkFunction order)
-{
+          const int k, const int dim, const af::topkFunction order) {
     // The out_dims is of size k along the dimension of the topk operation
     // and the same as the input dimension otherwise.
     dim4 out_dims(1);
     int ndims = in.dims().ndims();
-    for(int i = 0; i < ndims; i++) {
-      if (i == dim) {
-        out_dims[i] = min(k, (int)in.dims()[i]);
-      } else {
-        out_dims[i] = in.dims()[i];
-      }
+    for (int i = 0; i < ndims; i++) {
+        if (i == dim) {
+            out_dims[i] = min(k, (int)in.dims()[i]);
+        } else {
+            out_dims[i] = in.dims()[i];
+        }
     }
 
     auto values  = createEmptyArray<T>(out_dims);
     auto indices = createEmptyArray<unsigned>(out_dims);
 
     auto func = [=](Param<T> values, Param<unsigned> indices, CParam<T> in) {
-        const T* ptr = in.get();
+        const T* ptr   = in.get();
         unsigned* iptr = indices.get();
-        T* vptr = values.get();
+        T* vptr        = values.get();
 
         // Create a linear index
         vector<uint> idx(in.dims().elements());
         iota(begin(idx), end(idx), 0);
 
         int iter = in.dims()[1] * in.dims()[2] * in.dims()[3];
-        for(int i = 0; i < iter; i++) {
+        for (int i = 0; i < iter; i++) {
             auto idx_itr = begin(idx) + i * in.strides()[1];
-            auto kiptr = iptr + k * i;
+            auto kiptr   = iptr + k * i;
 
-            if(order == AF_TOPK_MIN) {
+            if (order == AF_TOPK_MIN) {
                 // Sort the top k values in each column
-                partial_sort_copy(idx_itr , idx_itr + in.strides()[1],
-                                  kiptr , kiptr + k,
-                                  [ptr](const uint lhs, const uint rhs) -> bool {
-                                      return ptr[lhs] < ptr[rhs];
-                                  });
+                partial_sort_copy(
+                    idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
+                    [ptr](const uint lhs, const uint rhs) -> bool {
+                        return ptr[lhs] < ptr[rhs];
+                    });
             } else {
-                partial_sort_copy(idx_itr , idx_itr + in.strides()[1],
-                                  kiptr , kiptr + k,
-                                  [ptr](const uint lhs, const uint rhs) -> bool {
-                                    return ptr[lhs] >= ptr[rhs];
-                                  });
+                partial_sort_copy(
+                    idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
+                    [ptr](const uint lhs, const uint rhs) -> bool {
+                        return ptr[lhs] >= ptr[rhs];
+                    });
             }
 
             auto kvptr = vptr + k * i;
-            for(int j = 0; j < k; j++) {
+            for (int j = 0; j < k; j++) {
                 // Update the value arrays with the original values
                 kvptr[j] = ptr[kiptr[j]];
                 // Convert linear indices back to column indices
@@ -88,13 +86,14 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
     idxs = indices;
 }
 
-#define INSTANTIATE(T)\
-template void topk<T>(Array<T>&, Array<unsigned>&, const Array<T>&, const int, const int, const af::topkFunction);
+#define INSTANTIATE(T)                                                  \
+    template void topk<T>(Array<T>&, Array<unsigned>&, const Array<T>&, \
+                          const int, const int, const af::topkFunction);
 
-INSTANTIATE(float )
+INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
+INSTANTIATE(int)
+INSTANTIATE(uint)
 INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
-}
+}  // namespace cpu

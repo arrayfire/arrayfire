@@ -9,9 +9,9 @@
 
 #include <Array.hpp>
 
-namespace opencl
-{
-    template<typename T>
-    Array<T> unwrap(const Array<T> &in, const dim_t wx, const dim_t wy,
-                    const dim_t sx, const dim_t sy, const dim_t px, const dim_t py, const bool is_column);
+namespace opencl {
+template<typename T>
+Array<T> unwrap(const Array<T> &in, const dim_t wx, const dim_t wy,
+                const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
+                const bool is_column);
 }

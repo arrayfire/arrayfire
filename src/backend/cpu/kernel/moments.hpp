@@ -8,48 +8,45 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <Param.hpp>
-#include <utility.hpp>
 #include <math.hpp>
+#include <utility.hpp>
+#include <af/defines.h>
 
-namespace cpu
-{
-namespace kernel
-{
-
+namespace cpu {
+namespace kernel {
 
 template<typename T>
-void moments(Param<float> output, CParam<T> input, af_moment_type moment)
-{
-    T const * const in       = input.get();
-    af::dim4  const idims    = input.dims();
-    af::dim4  const istrides = input.strides();
-    af::dim4  const ostrides = output.strides();
+void moments(Param<float> output, CParam<T> input, af_moment_type moment) {
+    T const *const in       = input.get();
+    af::dim4 const idims    = input.dims();
+    af::dim4 const istrides = input.strides();
+    af::dim4 const ostrides = output.strides();
 
     float *out = output.get();
 
-    for(dim_t w = 0; w < idims[3]; w++) {
-        for(dim_t z = 0; z < idims[2]; z++) {
+    for (dim_t w = 0; w < idims[3]; w++) {
+        for (dim_t z = 0; z < idims[2]; z++) {
             dim_t out_off = w * ostrides[3] + z * ostrides[2];
-            for(dim_t y = 0; y < idims[1]; y++) {
-                dim_t in_off = y * istrides[1] + z * istrides[2] + w * istrides[3];
-                for(dim_t x = 0; x < idims[0]; x++) {
-                    dim_t m_off=0;
-                    float val = in[in_off + x];
-                    if((moment & AF_MOMENT_M00) > 0) {
+            for (dim_t y = 0; y < idims[1]; y++) {
+                dim_t in_off =
+                    y * istrides[1] + z * istrides[2] + w * istrides[3];
+                for (dim_t x = 0; x < idims[0]; x++) {
+                    dim_t m_off = 0;
+                    float val   = in[in_off + x];
+                    if ((moment & AF_MOMENT_M00) > 0) {
                         out[out_off + m_off] += val;
                         m_off++;
                     }
-                    if((moment & AF_MOMENT_M01) > 0) {
+                    if ((moment & AF_MOMENT_M01) > 0) {
                         out[out_off + m_off] += x * val;
                         m_off++;
                     }
-                    if((moment & AF_MOMENT_M10) > 0) {
+                    if ((moment & AF_MOMENT_M10) > 0) {
                         out[out_off + m_off] += y * val;
                         m_off++;
                     }
-                    if((moment & AF_MOMENT_M11) > 0) {
+                    if ((moment & AF_MOMENT_M11) > 0) {
                         out[out_off + m_off] += x * y * val;
                         m_off++;
                     }
@@ -59,6 +56,5 @@ void moments(Param<float> output, CParam<T> input, af_moment_type moment)
     }
 }
 
-
-}
-}
+}  // namespace kernel
+}  // namespace cpu

@@ -7,17 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <hist_graphics.hpp>
 #include <err_cpu.hpp>
+#include <hist_graphics.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 
 namespace cpu {
 
 template<typename T>
-void copy_histogram(const Array<T> &data, fg_histogram hist)
-{
-    ForgeModule& _ = graphics::forgePlugin();
+void copy_histogram(const Array<T> &data, fg_histogram hist) {
+    ForgeModule &_ = graphics::forgePlugin();
     data.eval();
     getQueue().sync();
 
@@ -33,8 +32,8 @@ void copy_histogram(const Array<T> &data, fg_histogram hist)
     CheckGL("End copy_histogram");
 }
 
-#define INSTANTIATE(T)  \
-template void copy_histogram<T>(const Array<T> &, fg_histogram);
+#define INSTANTIATE(T) \
+    template void copy_histogram<T>(const Array<T> &, fg_histogram);
 
 INSTANTIATE(float)
 INSTANTIATE(int)
@@ -43,4 +42,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

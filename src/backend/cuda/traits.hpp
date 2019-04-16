@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include <af/traits.hpp>
 #include <cuComplex.h>
+#include <af/traits.hpp>
 
 namespace af {
 
@@ -28,6 +28,6 @@ struct dtype_traits<cuDoubleComplex> {
     static const char* getName() { return "cuDoubleComplex"; }
 };
 
-}
+}  // namespace af
 
 using af::dtype_traits;

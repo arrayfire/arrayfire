@@ -7,45 +7,42 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/vision.h>
-#include <handle.hpp>
-#include <common/err_common.hpp>
 #include <backend.hpp>
+#include <common/err_common.hpp>
+#include <handle.hpp>
 #include <nearest_neighbour.hpp>
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/vision.h>
 
 using af::dim4;
 using namespace detail;
 
 template<typename Ti, typename To>
 static void nearest_neighbour(af_array* idx, af_array* dist,
-        const af_array query, const af_array train,
-        const dim_t dist_dim, const uint n_dist,
-        const af_match_type dist_type)
-{
+                              const af_array query, const af_array train,
+                              const dim_t dist_dim, const uint n_dist,
+                              const af_match_type dist_type) {
     Array<uint> oIdxArray = createEmptyArray<uint>(af::dim4());
-    Array<To>  oDistArray = createEmptyArray<To>(af::dim4());
+    Array<To> oDistArray  = createEmptyArray<To>(af::dim4());
 
-    nearest_neighbour<Ti, To>(oIdxArray, oDistArray, getArray<Ti>(query), getArray<Ti>(train),
-                              dist_dim, n_dist, dist_type);
+    nearest_neighbour<Ti, To>(oIdxArray, oDistArray, getArray<Ti>(query),
+                              getArray<Ti>(train), dist_dim, n_dist, dist_type);
 
     *idx  = getHandle<uint>(oIdxArray);
     *dist = getHandle<To>(oDistArray);
 }
 
-af_err af_nearest_neighbour(af_array* idx, af_array* dist,
-        const af_array query, const af_array train,
-        const dim_t dist_dim, const uint n_dist,
-        const af_match_type dist_type)
-{
+af_err af_nearest_neighbour(af_array* idx, af_array* dist, const af_array query,
+                            const af_array train, const dim_t dist_dim,
+                            const uint n_dist, const af_match_type dist_type) {
     try {
         const ArrayInfo& qInfo = getInfo(query);
         const ArrayInfo& tInfo = getInfo(train);
-        af_dtype qType  = qInfo.getType();
-        af_dtype tType  = tInfo.getType();
-        af::dim4 qDims  = qInfo.dims();
-        af::dim4 tDims  = tInfo.dims();
+        af_dtype qType         = qInfo.getType();
+        af_dtype tType         = tInfo.getType();
+        af::dim4 qDims         = qInfo.dims();
+        af::dim4 tDims         = tInfo.dims();
 
         uint train_samples = (dist_dim == 0) ? 1 : 0;
 
@@ -55,34 +52,79 @@ af_err af_nearest_neighbour(af_array* idx, af_array* dist,
         DIM_ASSERT(4, (dist_dim == 0 || dist_dim == 1));
         DIM_ASSERT(5, n_dist > 0 && n_dist <= (uint)tDims[train_samples]);
         ARG_ASSERT(5, n_dist > 0 && n_dist <= 256);
-        ARG_ASSERT(6, dist_type == AF_SAD || dist_type == AF_SSD || dist_type == AF_SHD);
+        ARG_ASSERT(6, dist_type == AF_SAD || dist_type == AF_SSD ||
+                          dist_type == AF_SHD);
         TYPE_ASSERT(qType == tType);
 
         // For Hamming, only u8, u16, u32 and u64 allowed.
         af_array oIdx;
         af_array oDist;
 
-        if(dist_type == AF_SHD) {
-            TYPE_ASSERT(qType == u8 || qType == u16 || qType == u32 || qType == u64);
-            switch(qType) {
-                case u8:  nearest_neighbour<uchar , uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, AF_SHD); break;
-                case u16: nearest_neighbour<ushort, uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, AF_SHD); break;
-                case u32: nearest_neighbour<uint  , uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, AF_SHD); break;
-                case u64: nearest_neighbour<uintl , uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, AF_SHD); break;
-                default : TYPE_ERROR(1, qType);
+        if (dist_type == AF_SHD) {
+            TYPE_ASSERT(qType == u8 || qType == u16 || qType == u32 ||
+                        qType == u64);
+            switch (qType) {
+                case u8:
+                    nearest_neighbour<uchar, uint>(&oIdx, &oDist, query, train,
+                                                   dist_dim, n_dist, AF_SHD);
+                    break;
+                case u16:
+                    nearest_neighbour<ushort, uint>(&oIdx, &oDist, query, train,
+                                                    dist_dim, n_dist, AF_SHD);
+                    break;
+                case u32:
+                    nearest_neighbour<uint, uint>(&oIdx, &oDist, query, train,
+                                                  dist_dim, n_dist, AF_SHD);
+                    break;
+                case u64:
+                    nearest_neighbour<uintl, uint>(&oIdx, &oDist, query, train,
+                                                   dist_dim, n_dist, AF_SHD);
+                    break;
+                default: TYPE_ERROR(1, qType);
             }
         } else {
-            switch(qType) {
-                case f32: nearest_neighbour<float , float >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case f64: nearest_neighbour<double, double>(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case s32: nearest_neighbour<int   , int   >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case u32: nearest_neighbour<uint  , uint  >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case s64: nearest_neighbour<intl  , intl  >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case u64: nearest_neighbour<uintl , uintl >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case s16: nearest_neighbour<short , int   >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case u16: nearest_neighbour<ushort, uint  >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case u8:  nearest_neighbour<uchar , uint  >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                default : TYPE_ERROR(1, qType);
+            switch (qType) {
+                case f32:
+                    nearest_neighbour<float, float>(&oIdx, &oDist, query, train,
+                                                    dist_dim, n_dist,
+                                                    dist_type);
+                    break;
+                case f64:
+                    nearest_neighbour<double, double>(&oIdx, &oDist, query,
+                                                      train, dist_dim, n_dist,
+                                                      dist_type);
+                    break;
+                case s32:
+                    nearest_neighbour<int, int>(&oIdx, &oDist, query, train,
+                                                dist_dim, n_dist, dist_type);
+                    break;
+                case u32:
+                    nearest_neighbour<uint, uint>(&oIdx, &oDist, query, train,
+                                                  dist_dim, n_dist, dist_type);
+                    break;
+                case s64:
+                    nearest_neighbour<intl, intl>(&oIdx, &oDist, query, train,
+                                                  dist_dim, n_dist, dist_type);
+                    break;
+                case u64:
+                    nearest_neighbour<uintl, uintl>(&oIdx, &oDist, query, train,
+                                                    dist_dim, n_dist,
+                                                    dist_type);
+                    break;
+                case s16:
+                    nearest_neighbour<short, int>(&oIdx, &oDist, query, train,
+                                                  dist_dim, n_dist, dist_type);
+                    break;
+                case u16:
+                    nearest_neighbour<ushort, uint>(&oIdx, &oDist, query, train,
+                                                    dist_dim, n_dist,
+                                                    dist_type);
+                    break;
+                case u8:
+                    nearest_neighbour<uchar, uint>(&oIdx, &oDist, query, train,
+                                                   dist_dim, n_dist, dist_type);
+                    break;
+                default: TYPE_ERROR(1, qType);
             }
         }
         std::swap(*idx, oIdx);

@@ -9,39 +9,38 @@
 
 #pragma once
 #include <arrayfire.h>
-#include <af/dim4.hpp>
+#include <testHelpers.hpp>
 #include <af/defines.h>
+#include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <vector>
-#include <iostream>
 #include <complex>
+#include <iostream>
 #include <string>
+#include <vector>
 
-using std::vector;
-using std::string;
+using af::cdouble;
+using af::cfloat;
+using std::abs;
 using std::cout;
 using std::endl;
-using std::abs;
-using af::cfloat;
-using af::cdouble;
+using std::string;
+using std::vector;
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 
-template<typename T> static
-af::array makeSparse(af::array A, int factor)
-{
+template<typename T>
+static af::array makeSparse(af::array A, int factor) {
     A = floor(A * 1000);
     A = A * ((A % factor) == 0) / 1000;
     return A;
 }
 
 template<>
-af::array makeSparse<cfloat>(af::array A, int factor)
-{
+af::array makeSparse<cfloat>(af::array A, int factor) {
     af::array r = real(A);
-    r = floor(r * 1000);
-    r = r * ((r % factor) == 0) / 1000;
+    r           = floor(r * 1000);
+    r           = r * ((r % factor) == 0) / 1000;
 
     af::array i = r / 2;
 
@@ -50,11 +49,10 @@ af::array makeSparse<cfloat>(af::array A, int factor)
 }
 
 template<>
-af::array makeSparse<cdouble>(af::array A, int factor)
-{
+af::array makeSparse<cdouble>(af::array A, int factor) {
     af::array r = real(A);
-    r = floor(r * 1000);
-    r = r * ((r % factor) == 0) / 1000;
+    r           = floor(r * 1000);
+    r           = r * ((r % factor) == 0) / 1000;
 
     af::array i = r / 2;
 
@@ -62,17 +60,15 @@ af::array makeSparse<cdouble>(af::array A, int factor)
     return A;
 }
 
-static double calc_norm(af::array lhs, af::array rhs)
-{
-    return af::max<double>(af::abs(lhs - rhs) / (af::abs(lhs) + af::abs(rhs) + 1E-5));
+static double calc_norm(af::array lhs, af::array rhs) {
+    return af::max<double>(af::abs(lhs - rhs) /
+                           (af::abs(lhs) + af::abs(rhs) + 1E-5));
 }
 
-template<typename T> static
-void sparseTester(const int m, const int n, const int k, int factor, double eps,
-                  int targetDevice=-1)
-{
-    if (targetDevice>=0)
-        af::setDevice(targetDevice);
+template<typename T>
+static void sparseTester(const int m, const int n, const int k, int factor,
+                         double eps, int targetDevice = -1) {
+    if (targetDevice >= 0) af::setDevice(targetDevice);
 
     af::deviceGC();
 
@@ -102,12 +98,11 @@ void sparseTester(const int m, const int n, const int k, int factor, double eps,
     ASSERT_NEAR(0, calc_norm(imag(dRes1), imag(sRes1)), eps);
 }
 
-template<typename T> static
-void sparseTransposeTester(const int m, const int n, const int k, int factor, double eps,
-                           int targetDevice=-1)
-{
-    if (targetDevice>=0)
-        af::setDevice(targetDevice);
+template<typename T>
+static void sparseTransposeTester(const int m, const int n, const int k,
+                                  int factor, double eps,
+                                  int targetDevice = -1) {
+    if (targetDevice >= 0) af::setDevice(targetDevice);
 
     af::deviceGC();
 
@@ -142,11 +137,10 @@ void sparseTransposeTester(const int m, const int n, const int k, int factor, do
     ASSERT_NEAR(0, calc_norm(imag(dRes3), imag(sRes3)), eps);
 }
 
-template<typename T> static
-void convertCSR(const int M, const int N, const float ratio, int targetDevice=-1)
-{
-    if (targetDevice>=0)
-        af::setDevice(targetDevice);
+template<typename T>
+static void convertCSR(const int M, const int N, const float ratio,
+                       int targetDevice = -1) {
+    if (targetDevice >= 0) af::setDevice(targetDevice);
 
     if (noDoubleTests<T>()) return;
 #if 1
@@ -156,7 +150,7 @@ void convertCSR(const int M, const int N, const float ratio, int targetDevice=-1
 #endif
     a = a * (a > ratio);
 
-    af::array s = af::sparse(a, AF_STORAGE_CSR);
+    af::array s  = af::sparse(a, AF_STORAGE_CSR);
     af::array aa = af::dense(s);
 
     ASSERT_EQ(0, af::max<double>(af::abs(a - aa)));
@@ -164,26 +158,26 @@ void convertCSR(const int M, const int N, const float ratio, int targetDevice=-1
 
 // This test essentially verifies that the sparse structures have the correct
 // dimensions and indices using a very basic test
-template<af_storage stype> static
-void createFunction()
-{
+template<af_storage stype>
+static void createFunction() {
     af::array in = af::sparse(af::identity(3, 3), stype);
 
     af::array values = sparseGetValues(in);
     af::array rowIdx = sparseGetRowIdx(in);
     af::array colIdx = sparseGetColIdx(in);
-    dim_t     nNZ    = sparseGetNNZ(in);
+    dim_t nNZ        = sparseGetNNZ(in);
 
     ASSERT_EQ(nNZ, values.elements());
 
     ASSERT_EQ(0, af::max<double>(values - af::constant(1, nNZ)));
-    ASSERT_EQ(0, af::max<int   >(rowIdx - af::range(af::dim4(rowIdx.elements()), 0, s32)));
-    ASSERT_EQ(0, af::max<int   >(colIdx - af::range(af::dim4(colIdx.elements()), 0, s32)));
+    ASSERT_EQ(0, af::max<int>(rowIdx -
+                              af::range(af::dim4(rowIdx.elements()), 0, s32)));
+    ASSERT_EQ(0, af::max<int>(colIdx -
+                              af::range(af::dim4(colIdx.elements()), 0, s32)));
 }
 
-template<typename Ti, typename To> static
-void sparseCastTester(const int m, const int n, int factor)
-{
+template<typename Ti, typename To>
+static void sparseCastTester(const int m, const int n, int factor) {
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
 
@@ -222,10 +216,12 @@ void sparseCastTester(const int m, const int n, int factor)
     ASSERT_EQ(0, af::max<int>(af::abs(iColIdx - oColIdx)));
 
     static const double eps = 1e-6;
-    if(iValues.iscomplex() && !oValues.iscomplex()) {
-        ASSERT_NEAR(0, af::max<double>(af::abs(af::abs(iValues) - oValues)), eps);
-    } else if(!iValues.iscomplex() && oValues.iscomplex()) {
-        ASSERT_NEAR(0, af::max<double>(af::abs(iValues - af::abs(oValues))), eps);
+    if (iValues.iscomplex() && !oValues.iscomplex()) {
+        ASSERT_NEAR(0, af::max<double>(af::abs(af::abs(iValues) - oValues)),
+                    eps);
+    } else if (!iValues.iscomplex() && oValues.iscomplex()) {
+        ASSERT_NEAR(0, af::max<double>(af::abs(iValues - af::abs(oValues))),
+                    eps);
     } else {
         ASSERT_NEAR(0, af::max<double>(af::abs(iValues - oValues)), eps);
     }

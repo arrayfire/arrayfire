@@ -11,23 +11,24 @@
 #include <kernel/anisotropic_diffusion.hpp>
 #include <platform.hpp>
 
-namespace cpu
-{
+namespace cpu {
 template<typename T>
-void anisotropicDiffusion(Array<T>& inout, const float dt,
-                          const float mct, const af::fluxFunction fftype,
-                          const af::diffusionEq eq)
-{
-    if (eq==AF_DIFFUSION_MCDE)
-        getQueue().enqueue(kernel::anisotropicDiffusion<T, true>, inout, dt, mct, fftype);
+void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
+                          const af::fluxFunction fftype,
+                          const af::diffusionEq eq) {
+    if (eq == AF_DIFFUSION_MCDE)
+        getQueue().enqueue(kernel::anisotropicDiffusion<T, true>, inout, dt,
+                           mct, fftype);
     else
-        getQueue().enqueue(kernel::anisotropicDiffusion<T, false>, inout, dt, mct, fftype);
+        getQueue().enqueue(kernel::anisotropicDiffusion<T, false>, inout, dt,
+                           mct, fftype);
 }
 
-#define INSTANTIATE(T)\
-template void anisotropicDiffusion<T>(Array<T> &inout, const float dt, const float mct,\
-                                      const af::fluxFunction fftype, const af::diffusionEq eq);
+#define INSTANTIATE(T)                                     \
+    template void anisotropicDiffusion<T>(                 \
+        Array<T> & inout, const float dt, const float mct, \
+        const af::fluxFunction fftype, const af::diffusionEq eq);
 
 INSTANTIATE(double)
-INSTANTIATE( float)
-}
+INSTANTIATE(float)
+}  // namespace cpu

@@ -7,42 +7,36 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/module_loading.hpp>
 #include <common/defines.hpp>
+#include <common/module_loading.hpp>
 
-#include <string>
 #include <Windows.h>
+#include <string>
 
 using std::string;
 
 namespace common {
 
 void* getFunctionPointer(LibHandle handle, const char* symbolName) {
-  return GetProcAddress(handle, symbolName);
+    return GetProcAddress(handle, symbolName);
 }
 
 LibHandle loadLibrary(const char* library_name) {
     return LoadLibrary(library_name);
 }
 
-void unloadLibrary(LibHandle handle) {
-    FreeLibrary(handle);
-}
+void unloadLibrary(LibHandle handle) { FreeLibrary(handle); }
 
 string getErrorMessage() {
     const char* lpMsgBuf;
     DWORD dw = GetLastError();
 
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                  FORMAT_MESSAGE_FROM_SYSTEM |
-                  FORMAT_MESSAGE_IGNORE_INSERTS,
-                  NULL,
-                  dw,
-                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                  (LPTSTR) &lpMsgBuf,
-                  0, NULL );
+    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                      FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPTSTR)&lpMsgBuf, 0, NULL);
     string error_message(lpMsgBuf);
     return error_message;
 }
 
-}
+}  // namespace common

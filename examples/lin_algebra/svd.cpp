@@ -13,23 +13,22 @@
 
 using namespace af;
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     try {
         // Select a device and display arrayfire info
         int device = argc > 1 ? atoi(argv[1]) : 0;
         af::setDevice(device);
         af::info();
 
-        float h_buffer[] = {1, 4, 2, 5, 3, 6 };  // host array
-        array in(2, 3, h_buffer);                        // copy host data to device
+        float h_buffer[] = {1, 4, 2, 5, 3, 6};  // host array
+        array in(2, 3, h_buffer);               // copy host data to device
 
         array u;
         array s_vec;
         array vt;
         svd(u, s_vec, vt, in);
 
-        array s_mat = diag(s_vec, 0, false);
+        array s_mat    = diag(s_vec, 0, false);
         array in_recon = matmul(u, s_mat, vt(seq(2), span));
 
         af_print(in);

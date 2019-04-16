@@ -7,29 +7,28 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
-#include <af/lapack.h>
-#include <af/defines.h>
-#include <common/err_common.hpp>
-#include <handle.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
-#include <math.hpp>
-#include <lu.hpp>
-#include <diagonal.hpp>
+#include <common/err_common.hpp>
 #include <copy.hpp>
+#include <diagonal.hpp>
+#include <handle.hpp>
+#include <lu.hpp>
+#include <math.hpp>
+#include <af/array.h>
+#include <af/defines.h>
+#include <af/lapack.h>
 
 using af::dim4;
 using namespace detail;
 
 template<typename T>
-T det(const af_array a)
-{
+T det(const af_array a) {
     const Array<T> A = getArray<T>(a);
 
     const int num = A.dims()[0];
 
-    if(num == 0) {
+    if (num == 0) {
         T res = scalar<T>(1.0);
         return res;
     }
@@ -37,7 +36,7 @@ T det(const af_array a)
     std::vector<T> hD(num);
     std::vector<int> hP(num);
 
-    Array<T> D = createEmptyArray<T>(dim4());
+    Array<T> D       = createEmptyArray<T>(dim4());
     Array<int> pivot = createEmptyArray<int>(dim4());
 
     // Free memory as soon as possible
@@ -52,10 +51,10 @@ T det(const af_array a)
     }
 
     bool is_neg = false;
-    T res = scalar<T>(is_neg ? -1 : 1);
+    T res       = scalar<T>(is_neg ? -1 : 1);
     for (int i = 0; i < num; i++) {
         res = res * hD[i];
-        is_neg ^= (hP[i] != (i+1));
+        is_neg ^= (hP[i] != (i + 1));
     }
 
     if (is_neg) res = res * scalar<T>(-1);
@@ -63,11 +62,9 @@ T det(const af_array a)
     return res;
 }
 
-af_err af_det(double *real_val, double *imag_val, const af_array in)
-{
-
+af_err af_det(double *real_val, double *imag_val, const af_array in) {
     try {
-        const ArrayInfo& i_info = getInfo(in);
+        const ArrayInfo &i_info = getInfo(in);
 
         if (i_info.ndims() > 2) {
             AF_ERROR("solve can not be used in batch mode", AF_ERR_BATCH);
@@ -75,9 +72,10 @@ af_err af_det(double *real_val, double *imag_val, const af_array in)
 
         af_dtype type = i_info.getType();
 
-        if(i_info.dims()[0])
-          DIM_ASSERT(1, i_info.dims()[0] == i_info.dims()[1]);      // Only square matrices
-        ARG_ASSERT(1, i_info.isFloating());                       // Only floating and complex types
+        if (i_info.dims()[0])
+            DIM_ASSERT(1, i_info.dims()[0] ==
+                              i_info.dims()[1]);  // Only square matrices
+        ARG_ASSERT(1, i_info.isFloating());  // Only floating and complex types
 
         *real_val = 0;
         *imag_val = 0;
@@ -85,20 +83,20 @@ af_err af_det(double *real_val, double *imag_val, const af_array in)
         cfloat cfval;
         cdouble cdval;
 
-        switch(type) {
-        case f32: *real_val = det<float  >(in);  break;
-        case f64: *real_val = det<double >(in);  break;
-        case c32:
-            cfval = det<cfloat >(in);
-            *real_val = real(cfval);
-            *imag_val = imag(cfval);
-            break;
-        case c64:
-            cdval = det<cdouble>(in);
-            *real_val = real(cdval);
-            *imag_val = imag(cdval);
-            break;
-        default:  TYPE_ERROR(1, type);
+        switch (type) {
+            case f32: *real_val = det<float>(in); break;
+            case f64: *real_val = det<double>(in); break;
+            case c32:
+                cfval     = det<cfloat>(in);
+                *real_val = real(cfval);
+                *imag_val = imag(cfval);
+                break;
+            case c64:
+                cdval     = det<cdouble>(in);
+                *real_val = real(cdval);
+                *imag_val = imag(cdval);
+                break;
+            default: TYPE_ERROR(1, type);
         }
     }
     CATCHALL;

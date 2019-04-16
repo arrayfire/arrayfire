@@ -9,23 +9,19 @@
 
 #pragma once
 #include <Param.hpp>
+#include <ops.hpp>
 
-namespace cpu
-{
-namespace kernel
-{
+namespace cpu {
+namespace kernel {
 
 template<af_op_t op, typename Ti, typename Tk, typename To, int D>
-struct scan_dim_by_key
-{
+struct scan_dim_by_key {
     bool inclusive_scan;
     scan_dim_by_key(bool inclusiveSanKey) : inclusive_scan(inclusiveSanKey) {}
 
-    void operator()(Param<To> out, dim_t outOffset,
-                    CParam<Tk> key, dim_t keyOffset,
-                    CParam<Ti> in, dim_t inOffset,
-                    const int dim) const
-    {
+    void operator()(Param<To> out, dim_t outOffset, CParam<Tk> key,
+                    dim_t keyOffset, CParam<Ti> in, dim_t inOffset,
+                    const int dim) const {
         const dim4 odims    = out.dims();
         const dim4 ostrides = out.strides();
         const dim4 kstrides = key.strides();
@@ -43,19 +39,16 @@ struct scan_dim_by_key
 };
 
 template<af_op_t op, typename Ti, typename Tk, typename To>
-struct scan_dim_by_key<op, Ti, Tk, To, 0>
-{
+struct scan_dim_by_key<op, Ti, Tk, To, 0> {
     bool inclusive_scan;
     scan_dim_by_key(bool inclusiveSanKey) : inclusive_scan(inclusiveSanKey) {}
 
-    void operator()(Param<To> output, dim_t outOffset,
-                    CParam<Tk> keyinput, dim_t keyOffset,
-                    CParam<Ti> input, dim_t inOffset,
-                    const int dim) const
-    {
-        const Ti* in  = input.get()    + inOffset;
+    void operator()(Param<To> output, dim_t outOffset, CParam<Tk> keyinput,
+                    dim_t keyOffset, CParam<Ti> input, dim_t inOffset,
+                    const int dim) const {
+        const Ti* in  = input.get() + inOffset;
         const Tk* key = keyinput.get() + keyOffset;
-              To* out = output.get()   + outOffset;
+        To* out       = output.get() + outOffset;
 
         const dim4 ostrides = output.strides();
         const dim4 kstrides = keyinput.strides();
@@ -74,14 +67,12 @@ struct scan_dim_by_key<op, Ti, Tk, To, 0>
         Tk key_val = key[0];
 
         dim_t k = !inclusive_scan;
-        if (!inclusive_scan) {
-            out[0] = Binary<To, op>::init();
-        }
+        if (!inclusive_scan) { out[0] = Binary<To, op>::init(); }
 
         for (dim_t i = 0; i < idims[dim] - (!inclusive_scan); i++, k++) {
             To in_val = transform(in[i * istride]);
             if (key[k * kstride] != key_val) {
-                out_val = !inclusive_scan? Binary<To, op>::init() : in_val;
+                out_val = !inclusive_scan ? Binary<To, op>::init() : in_val;
                 key_val = key[k * kstride];
             } else {
                 out_val = scan(in_val, out_val);
@@ -91,5 +82,5 @@ struct scan_dim_by_key<op, Ti, Tk, To, 0>
     }
 };
 
-}
-}
+}  // namespace kernel
+}  // namespace cpu

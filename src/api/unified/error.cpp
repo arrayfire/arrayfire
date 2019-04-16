@@ -8,36 +8,34 @@
  ********************************************************/
 
 #include <af/array.h>
-#include <af/exception.h>
 #include <af/device.h>
+#include <af/exception.h>
 #include <algorithm>
 #include "symbol_manager.hpp"
 
-void af_get_last_error(char **str, dim_t *len)
-{
+void af_get_last_error(char **str, dim_t *len) {
     // Set error message from unified backend
     std::string &global_error_string = get_global_error_string();
     dim_t slen = std::min(MAX_ERR_SIZE, (int)global_error_string.size());
 
     // If this is true, the error is coming from the unified backend.
     if (slen != 0) {
-
         if (len && slen == 0) {
             *len = 0;
             *str = NULL;
             return;
         }
 
-        af_alloc_host((void**)str, sizeof(char) * (slen + 1));
+        af_alloc_host((void **)str, sizeof(char) * (slen + 1));
         global_error_string.copy(*str, slen);
 
-        (*str)[slen] = '\0';
+        (*str)[slen]        = '\0';
         global_error_string = std::string("");
 
         if (len) *len = slen;
     } else {
         // If false, the error is coming from active backend.
-        typedef void(*af_func)(char **, dim_t *);
+        typedef void (*af_func)(char **, dim_t *);
         af_func func = (af_func)LOAD_SYMBOL();
         func(str, len);
     }

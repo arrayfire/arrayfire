@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 
-namespace cuda
-{
+namespace cuda {
 
 template<typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity);

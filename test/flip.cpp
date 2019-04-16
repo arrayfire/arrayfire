@@ -8,47 +8,43 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
-#include <af/array.h>
+#include <testHelpers.hpp>
 #include <af/arith.h>
+#include <af/array.h>
 #include <af/data.h>
 #include <af/index.h>
-#include <testHelpers.hpp>
 
 using af::array;
-using af::randu;
 using af::flip;
 using af::freeHost;
 using af::randu;
 using af::seq;
 using af::span;
 
-TEST(FlipTests, Test_flip_1D)
-{
+TEST(FlipTests, Test_flip_1D) {
     const int num = 10000;
-    array in = randu(num);
-    array out = flip(in, 0);
+    array in      = randu(num);
+    array out     = flip(in, 0);
 
-    float *h_in = in.host<float>();
+    float *h_in  = in.host<float>();
     float *h_out = out.host<float>();
 
     for (int i = 0; i < num; i++) {
-        ASSERT_EQ(h_in[num - i - 1], h_out[i])
-            << "at (" << i << ")";
+        ASSERT_EQ(h_in[num - i - 1], h_out[i]) << "at (" << i << ")";
     }
 
     freeHost(h_in);
     freeHost(h_out);
 }
 
-TEST(FlipTests, Test_flip_2D0)
-{
+TEST(FlipTests, Test_flip_2D0) {
     const int nx = 200;
     const int ny = 200;
 
-    array in = randu(nx, ny);
+    array in  = randu(nx, ny);
     array out = flip(in, 0);
 
-    float *h_in = in.host<float>();
+    float *h_in  = in.host<float>();
     float *h_out = out.host<float>();
 
     for (int j = 0; j < ny; j++) {
@@ -56,7 +52,6 @@ TEST(FlipTests, Test_flip_2D0)
         for (int i = 0; i < nx; i++) {
             ASSERT_EQ(h_in[off + nx - 1 - i], h_out[off + i])
                 << "at (" << i << "," << j << ")";
-
         }
     }
 
@@ -64,15 +59,14 @@ TEST(FlipTests, Test_flip_2D0)
     freeHost(h_out);
 }
 
-TEST(FlipTests, Test_flip_2D1)
-{
+TEST(FlipTests, Test_flip_2D1) {
     const int nx = 200;
     const int ny = 200;
 
-    array in = randu(nx, ny);
+    array in  = randu(nx, ny);
     array out = flip(in, 1);
 
-    float *h_in = in.host<float>();
+    float *h_in  = in.host<float>();
     float *h_out = out.host<float>();
 
     for (int j = 0; j < ny; j++) {
@@ -88,47 +82,43 @@ TEST(FlipTests, Test_flip_2D1)
     freeHost(h_out);
 }
 
-
-TEST(FlipTests, Test_flip_1D_index)
-{
+TEST(FlipTests, Test_flip_1D_index) {
     const int num = 10000;
-    const int st = 101;
-    const int en = 5000;
+    const int st  = 101;
+    const int en  = 5000;
 
-    array in = randu(num);
+    array in  = randu(num);
     array tmp = in(seq(st, en));
     array out = flip(tmp, 0);
 
-    float *h_in = in.host<float>();
+    float *h_in  = in.host<float>();
     float *h_out = out.host<float>();
 
     for (int i = st; i <= en; i++) {
-        ASSERT_EQ(h_in[i], h_out[en - i])
-            << "at (" << i << ")";
+        ASSERT_EQ(h_in[i], h_out[en - i]) << "at (" << i << ")";
     }
 
     freeHost(h_in);
     freeHost(h_out);
 }
 
-TEST(FlipTests, Test_flip_2D_index00)
-{
-    const int nx = 200;
-    const int ny = 200;
-    const int st = 21;
-    const int en = 180;
+TEST(FlipTests, Test_flip_2D_index00) {
+    const int nx  = 200;
+    const int ny  = 200;
+    const int st  = 21;
+    const int en  = 180;
     const int nxo = (en - st + 1);
 
-    array in = randu(nx, ny);
+    array in  = randu(nx, ny);
     array tmp = in(seq(st, en), span);
     array out = flip(tmp, 0);
 
-    float *h_in = in.host<float>();
+    float *h_in  = in.host<float>();
     float *h_out = out.host<float>();
 
     for (int j = 0; j < ny; j++) {
-        const int in_off = j * nx;
-        const int out_off =j * nxo;
+        const int in_off  = j * nx;
+        const int out_off = j * nxo;
         for (int i = st; i <= en; i++) {
             ASSERT_EQ(h_in[i + in_off], h_out[en - i + out_off])
                 << "at (" << i << "," << j << ")";
@@ -139,24 +129,23 @@ TEST(FlipTests, Test_flip_2D_index00)
     freeHost(h_out);
 }
 
-TEST(FlipTests, Test_flip_2D_index01)
-{
-    const int nx = 200;
-    const int ny = 200;
-    const int st = 21;
-    const int en = 180;
+TEST(FlipTests, Test_flip_2D_index01) {
+    const int nx  = 200;
+    const int ny  = 200;
+    const int st  = 21;
+    const int en  = 180;
     const int nxo = (en - st + 1);
 
-    array in = randu(nx, ny);
+    array in  = randu(nx, ny);
     array tmp = in(seq(st, en), span);
     array out = flip(tmp, 1);
 
-    float *h_in = in.host<float>();
+    float *h_in  = in.host<float>();
     float *h_out = out.host<float>();
 
     for (int j = 0; j < ny; j++) {
-        const int in_off = (ny - 1 - j) * nx;
-        const int out_off =j * nxo;
+        const int in_off  = (ny - 1 - j) * nx;
+        const int out_off = j * nxo;
         for (int i = st; i <= en; i++) {
             ASSERT_EQ(h_in[i + in_off], h_out[i - st + out_off])
                 << "at (" << i << "," << j << ")";
@@ -167,23 +156,21 @@ TEST(FlipTests, Test_flip_2D_index01)
     freeHost(h_out);
 }
 
-TEST(FlipTests, Test_flip_2D_index10)
-{
+TEST(FlipTests, Test_flip_2D_index10) {
     const int nx = 200;
     const int ny = 200;
     const int st = 21;
     const int en = 180;
 
-    array in = randu(nx, ny);
+    array in  = randu(nx, ny);
     array tmp = in(span, seq(st, en));
     array out = flip(tmp, 0);
 
-    float *h_in = in.host<float>();
+    float *h_in  = in.host<float>();
     float *h_out = out.host<float>();
 
     for (int j = st; j <= en; j++) {
-
-        const int in_off = j * nx;
+        const int in_off  = j * nx;
         const int out_off = (j - st) * nx;
 
         for (int i = 0; i < nx; i++) {
@@ -196,23 +183,21 @@ TEST(FlipTests, Test_flip_2D_index10)
     freeHost(h_out);
 }
 
-TEST(FlipTests, Test_flip_2D_index11)
-{
+TEST(FlipTests, Test_flip_2D_index11) {
     const int nx = 200;
     const int ny = 200;
     const int st = 21;
     const int en = 180;
 
-    array in = randu(nx, ny);
+    array in  = randu(nx, ny);
     array tmp = in(span, seq(st, en));
     array out = flip(tmp, 1);
 
-    float *h_in = in.host<float>();
+    float *h_in  = in.host<float>();
     float *h_out = out.host<float>();
 
     for (int j = st; j <= en; j++) {
-
-        const int in_off = j * nx;
+        const int in_off  = j * nx;
         const int out_off = (en - j) * nx;
 
         for (int i = 0; i < nx; i++) {

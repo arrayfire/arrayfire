@@ -174,25 +174,25 @@
 
     @ingroup magma_zaux3
     ********************************************************************/
-template<typename Ty> magma_int_t
-magma_larfb_gpu(
-    magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    cl_mem dV   , size_t dV_offset,    magma_int_t lddv,
-    cl_mem dT   , size_t dT_offset,    magma_int_t lddt,
-    cl_mem dC   , size_t dC_offset,    magma_int_t lddc,
-    cl_mem dwork, size_t dwork_offset, magma_int_t ldwork,
-    magma_queue_t queue )
-{
-    #define dV(i_,j_)  dV,     (dV_offset    + (i_) + (j_)*lddv)
-    #define dT(i_,j_)  dT,     (dT_offset    + (i_) + (j_)*lddt)
-    #define dC(i_,j_)  dC,     (dC_offset    + (i_) + (j_)*lddc)
-    #define dwork(i_)  dwork,  (dwork_offset + (i_))
+template<typename Ty>
+magma_int_t magma_larfb_gpu(magma_side_t side, magma_trans_t trans,
+                            magma_direct_t direct, magma_storev_t storev,
+                            magma_int_t m, magma_int_t n, magma_int_t k,
+                            cl_mem dV, size_t dV_offset, magma_int_t lddv,
+                            cl_mem dT, size_t dT_offset, magma_int_t lddt,
+                            cl_mem dC, size_t dC_offset, magma_int_t lddc,
+                            cl_mem dwork, size_t dwork_offset,
+                            magma_int_t ldwork, magma_queue_t queue) {
+#define dV(i_, j_) dV, (dV_offset + (i_) + (j_)*lddv)
+#define dT(i_, j_) dT, (dT_offset + (i_) + (j_)*lddt)
+#define dC(i_, j_) dC, (dC_offset + (i_) + (j_)*lddc)
+#define dwork(i_) dwork, (dwork_offset + (i_))
 
     static const Ty c_zero    = magma_zero<Ty>();
     static const Ty c_one     = magma_one<Ty>();
     static const Ty c_neg_one = magma_neg_one<Ty>();
-    static const OPENCL_BLAS_TRANS_T transType = magma_is_real<Ty>() ? OPENCL_BLAS_TRANS : OPENCL_BLAS_CONJ_TRANS;
+    static const OPENCL_BLAS_TRANS_T transType =
+        magma_is_real<Ty>() ? OPENCL_BLAS_TRANS : OPENCL_BLAS_CONJ_TRANS;
 
     /* Check input arguments */
     magma_int_t info = 0;
@@ -202,37 +202,36 @@ magma_larfb_gpu(
         info = -6;
     } else if (k < 0) {
         info = -7;
-    } else if ( ((storev == MagmaColumnwise) && (side == MagmaLeft) && lddv < std::max(1,m)) ||
-                ((storev == MagmaColumnwise) && (side == MagmaRight) && lddv < std::max(1,n)) ||
-                ((storev == MagmaRowwise) && lddv < k) ) {
+    } else if (((storev == MagmaColumnwise) && (side == MagmaLeft) &&
+                lddv < std::max(1, m)) ||
+               ((storev == MagmaColumnwise) && (side == MagmaRight) &&
+                lddv < std::max(1, n)) ||
+               ((storev == MagmaRowwise) && lddv < k)) {
         info = -9;
     } else if (lddt < k) {
         info = -11;
-    } else if (lddc < std::max(1,m)) {
+    } else if (lddc < std::max(1, m)) {
         info = -13;
-    } else if ( ((side == MagmaLeft) && ldwork < std::max(1,n)) ||
-                ((side == MagmaRight) && ldwork < std::max(1,m)) ) {
+    } else if (((side == MagmaLeft) && ldwork < std::max(1, n)) ||
+               ((side == MagmaRight) && ldwork < std::max(1, m))) {
         info = -15;
     }
     if (info != 0) {
-        //magma_xerbla( __func__, -(info) );
+        // magma_xerbla( __func__, -(info) );
         return info;
     }
 
     /* Function Body */
-    if (m <= 0 || n <= 0) {
-        return info;
-    }
+    if (m <= 0 || n <= 0) { return info; }
 
     // opposite of trans
     OPENCL_BLAS_TRANS_T transt;
     OPENCL_BLAS_TRANS_T cltrans;
     if (trans == MagmaNoTrans) {
-        transt = transType;
+        transt  = transType;
         cltrans = OPENCL_BLAS_NO_TRANS;
-    }
-    else {
-        transt = OPENCL_BLAS_NO_TRANS;
+    } else {
+        transt  = OPENCL_BLAS_NO_TRANS;
         cltrans = transType;
     }
 
@@ -248,8 +247,7 @@ magma_larfb_gpu(
     if (storev == MagmaColumnwise) {
         notransV = OPENCL_BLAS_NO_TRANS;
         transV   = transType;
-    }
-    else {
+    } else {
         notransV = transType;
         transV   = OPENCL_BLAS_NO_TRANS;
     }
@@ -259,87 +257,59 @@ magma_larfb_gpu(
 
     cl_event event = NULL;
 
-    if ( side == MagmaLeft ) {
+    if (side == MagmaLeft) {
         // Form H C or H^H C
-        // Comments assume H C. When forming H^H C, T gets transposed via transt.
+        // Comments assume H C. When forming H^H C, T gets transposed via
+        // transt.
 
         // W = C^H V
-        OPENCL_BLAS_CHECK(gpu_blas_gemm(transType, notransV,
-                                        n, k, m,
-                                        c_one,
-                                        dC(0,0),  lddc,
-                                        dV(0,0),  lddv,
-                                        c_zero,
-                                        dwork(0), ldwork,
-                                        1, &queue, 0, nullptr, &event));
+        OPENCL_BLAS_CHECK(gpu_blas_gemm(
+            transType, notransV, n, k, m, c_one, dC(0, 0), lddc, dV(0, 0), lddv,
+            c_zero, dwork(0), ldwork, 1, &queue, 0, nullptr, &event));
 
         // W = W T^H = C^H V T^H
-        OPENCL_BLAS_CHECK(gpu_blas_trmm(OPENCL_BLAS_SIDE_RIGHT,
-                                        uplo, transt, OPENCL_BLAS_NON_UNIT_DIAGONAL,
-                                        n, k,
-                                        c_one,
-                                        dT(0,0) , lddt,
-                                        dwork(0), ldwork,
+        OPENCL_BLAS_CHECK(gpu_blas_trmm(OPENCL_BLAS_SIDE_RIGHT, uplo, transt,
+                                        OPENCL_BLAS_NON_UNIT_DIAGONAL, n, k,
+                                        c_one, dT(0, 0), lddt, dwork(0), ldwork,
                                         1, &queue, 0, nullptr, &event));
-                        // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
-        OPENCL_BLAS_CHECK(gpu_blas_gemm(notransV, transType,
-                                        m, n, k,
-                                        c_neg_one,
-                                        dV(0,0),  lddv,
-                                        dwork(0), ldwork,
-                                        c_one,
-                                        dC(0,0),  lddc,
-                                        1, &queue, 0, nullptr, &event));
-    }
-    else {
+        // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
+        OPENCL_BLAS_CHECK(gpu_blas_gemm(
+            notransV, transType, m, n, k, c_neg_one, dV(0, 0), lddv, dwork(0),
+            ldwork, c_one, dC(0, 0), lddc, 1, &queue, 0, nullptr, &event));
+    } else {
         // Form C H or C H^H
         // Comments assume C H. When forming C H^H, T gets transposed via trans.
 
         // W = C V
-        OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, notransV,
-                                        m, k, n,
-                                        c_one,
-                                        dC(0,0),  lddc,
-                                        dV(0,0),  lddv,
-                                        c_zero,
-                                        dwork(0), ldwork,
-                                        1, &queue, 0, nullptr, &event));
+        OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, notransV, m, k, n,
+                                        c_one, dC(0, 0), lddc, dV(0, 0), lddv,
+                                        c_zero, dwork(0), ldwork, 1, &queue, 0,
+                                        nullptr, &event));
 
         // W = W T = C V T
-        OPENCL_BLAS_CHECK(gpu_blas_trmm(OPENCL_BLAS_SIDE_RIGHT, uplo,
-                                        cltrans,
-                                        OPENCL_BLAS_NON_UNIT_DIAGONAL,
-                                        m, k,
-                                        c_one,
-                                        dT(0,0),  lddt,
-                                        dwork(0), ldwork,
+        OPENCL_BLAS_CHECK(gpu_blas_trmm(OPENCL_BLAS_SIDE_RIGHT, uplo, cltrans,
+                                        OPENCL_BLAS_NON_UNIT_DIAGONAL, m, k,
+                                        c_one, dT(0, 0), lddt, dwork(0), ldwork,
                                         1, &queue, 0, nullptr, &event));
 
         // C = C - W V^H = C - C V T V^H = C (I - V T V^H) = C H
-        OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, transV,
-                                        m, n, k,
-                                        c_neg_one,
-                                        dwork(0), ldwork,
-                                        dV(0,0),  lddv,
-                                        c_one,
-                                        dC(0,0),  lddc,
-                                        1, &queue, 0, nullptr, &event));
+        OPENCL_BLAS_CHECK(gpu_blas_gemm(OPENCL_BLAS_NO_TRANS, transV, m, n, k,
+                                        c_neg_one, dwork(0), ldwork, dV(0, 0),
+                                        lddv, c_one, dC(0, 0), lddc, 1, &queue,
+                                        0, nullptr, &event));
     }
 
     return info;
 } /* magma_zlarfb */
 
-#define INSTANTIATE(T)                                          \
-    template magma_int_t                                        \
-    magma_larfb_gpu<T>(                                         \
-        magma_side_t side, magma_trans_t trans,                 \
-        magma_direct_t direct, magma_storev_t storev,           \
-        magma_int_t m, magma_int_t n, magma_int_t k,            \
-        cl_mem dV   , size_t dV_offset,    magma_int_t lddv,    \
-        cl_mem dT   , size_t dT_offset,    magma_int_t lddt,    \
-        cl_mem dC   , size_t dC_offset,    magma_int_t lddc,    \
-        cl_mem dwork, size_t dwork_offset, magma_int_t ldwork,  \
-        magma_queue_t queue );                                  \
+#define INSTANTIATE(T)                                                      \
+    template magma_int_t magma_larfb_gpu<T>(                                \
+        magma_side_t side, magma_trans_t trans, magma_direct_t direct,      \
+        magma_storev_t storev, magma_int_t m, magma_int_t n, magma_int_t k, \
+        cl_mem dV, size_t dV_offset, magma_int_t lddv, cl_mem dT,           \
+        size_t dT_offset, magma_int_t lddt, cl_mem dC, size_t dC_offset,    \
+        magma_int_t lddc, cl_mem dwork, size_t dwork_offset,                \
+        magma_int_t ldwork, magma_queue_t queue);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

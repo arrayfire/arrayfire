@@ -7,26 +7,27 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <stdio.h>
 #include <arrayfire.h>
+#include <stdio.h>
 #include <af/util.h>
 #include <cstdlib>
 
 using namespace af;
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
     try {
         int device = argc > 1 ? atoi(argv[1]) : 0;
         af::setDevice(device);
         af::info();
 
-        printf("\n=== ArrayFire signed(s32) / unsigned(u32) Integer Example ===\n");
+        printf(
+            "\n=== ArrayFire signed(s32) / unsigned(u32) Integer Example "
+            "===\n");
 
         int h_A[] = {1, 2, 4, -1, 2, 0, 4, 2, 3};
         int h_B[] = {2, 3, -5, 6, 0, 10, -12, 0, 1};
-        array A = array(3, 3, h_A);
-        array B = array(3, 3, h_B);
+        array A   = array(3, 3, h_A);
+        array B   = array(3, 3, h_B);
 
         printf("--\nSub-refencing and Sub-assignment\n");
         af_print(A);
@@ -36,7 +37,7 @@ int main(int argc, char ** argv)
         A(1) = 100;
         af_print(A);
         af_print(B);
-        A(1,span) = B(2,span);
+        A(1, span) = B(2, span);
         af_print(A);
 
         printf("--Bit-wise operations\n");
@@ -56,8 +57,8 @@ int main(int argc, char ** argv)
 
         printf("\n--Flip Vertically / Horizontally\n");
         af_print(A);
-        af_print(flip(A,0));
-        af_print(flip(A,1));
+        af_print(flip(A, 0));
+        af_print(flip(A, 1));
 
         printf("\n--Sum along columns\n");
         af_print(A);

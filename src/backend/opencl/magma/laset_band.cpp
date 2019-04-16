@@ -52,8 +52,8 @@
  **********************************************************************/
 
 #if 0  // Needs to be enabled when unmqr2 is enabled
-#include "magma_data.h"
 #include "kernel/laset_band.hpp"
+#include "magma_data.h"
 
 #include <algorithm>
 
@@ -96,12 +96,10 @@ magmablas_laset_band(magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_
 
 }
 
-#define INSTANTIATE(T)                                  \
-    template void magmablas_laset_band<T>(              \
-        magma_uplo_t uplo,                              \
-        magma_int_t m, magma_int_t n, magma_int_t k,    \
-        T offdiag, T diag,                              \
-        cl_mem dA, size_t dA_offset, magma_int_t ldda,  \
+#define INSTANTIATE(T)                                                    \
+    template void magmablas_laset_band<T>(                                \
+        magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,   \
+        T offdiag, T diag, cl_mem dA, size_t dA_offset, magma_int_t ldda, \
         magma_queue_t queue);                           \
 
 INSTANTIATE(float)

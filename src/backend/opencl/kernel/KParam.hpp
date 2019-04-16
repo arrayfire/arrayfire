@@ -10,8 +10,13 @@
 #ifndef __KPARAM_H
 #define __KPARAM_H
 
-typedef struct
-{
+#ifndef __OPENCL_VERSION__
+// Only define dim_t in host code. dim_t is defined when setting the program
+// options in program.cpp
+#include <af/defines.h>
+#endif
+
+typedef struct {
     dim_t dims[4];
     dim_t strides[4];
     dim_t offset;

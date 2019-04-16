@@ -7,24 +7,23 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #pragma once
-#include <af/dim4.hpp>
 #include <Array.hpp>
+#include <af/dim4.hpp>
 
-namespace cuda
-{
-    template<typename T>
-    void select(Array<T> &out, const Array<char> &cond, const Array<T> &a, const Array<T> &b);
+namespace cuda {
+template<typename T>
+void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
+            const Array<T> &b);
 
-    template<typename T, bool flip>
-    void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a, const double &b);
+template<typename T, bool flip>
+void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
+                   const double &b);
 
-    template<typename T>
-    Array<T> createSelectNode(const Array<char> &cond,
-                              const Array<T> &a, const Array<T> &b,
-                              const af::dim4 &odims);
+template<typename T>
+Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
+                          const Array<T> &b, const af::dim4 &odims);
 
-    template<typename T, bool flip>
-    Array<T> createSelectNode(const Array<char> &cond,
-                              const Array<T> &a, const double &b_val,
-                              const af::dim4 &odims);
-}
+template<typename T, bool flip>
+Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
+                          const double &b_val, const af::dim4 &odims);
+}  // namespace cuda

@@ -11,12 +11,11 @@ typedef struct {
     dim_t dim[4];
 } dims_t;
 
-inType scale(inType value, float factor)
-{
+inType scale(inType value, float factor) {
 #ifdef inType_float2
-    return (inType)(value.s0*factor, value.s1*factor);
+    return (inType)(value.s0 * factor, value.s1 * factor);
 #else
-    return (inType)(value*factor);
+    return (inType)(value * factor);
 #endif
 }
 
@@ -48,27 +47,26 @@ inType scale(inType value, float factor)
 
 #endif
 
-__kernel
-void copy(__global outType * dst,
-          KParam oInfo,
-          __global const inType * src,
-          KParam iInfo,
-          outType default_value,
-          float factor, dims_t trgt,
-          int blk_x, int blk_y)
-{
+__kernel void copy(__global outType *dst, KParam oInfo,
+                   __global const inType *src, KParam iInfo,
+                   outType default_value, float factor, dims_t trgt, int blk_x,
+                   int blk_y) {
     uint lx = get_local_id(0);
     uint ly = get_local_id(1);
 
-    uint gz = get_group_id(0) / blk_x;
-    uint gw = get_group_id(1) / blk_y;
-    uint blockIdx_x = get_group_id(0) - (blk_x) * gz;
-    uint blockIdx_y = get_group_id(1) - (blk_y) * gw;
-    uint gx = blockIdx_x * get_local_size(0) + lx;
-    uint gy = blockIdx_y * get_local_size(1) + ly;
+    uint gz         = get_group_id(0) / blk_x;
+    uint gw         = get_group_id(1) / blk_y;
+    uint blockIdx_x = get_group_id(0) - (blk_x)*gz;
+    uint blockIdx_y = get_group_id(1) - (blk_y)*gw;
+    uint gx         = blockIdx_x * get_local_size(0) + lx;
+    uint gy         = blockIdx_y * get_local_size(1) + ly;
 
-    __global const inType *in = src + (gw * iInfo.strides[3] + gz * iInfo.strides[2] + gy * iInfo.strides[1] + iInfo.offset);
-    __global outType *out     = dst + (gw * oInfo.strides[3] + gz * oInfo.strides[2] + gy * oInfo.strides[1] + oInfo.offset);
+    __global const inType *in =
+        src + (gw * iInfo.strides[3] + gz * iInfo.strides[2] +
+               gy * iInfo.strides[1] + iInfo.offset);
+    __global outType *out =
+        dst + (gw * oInfo.strides[3] + gz * oInfo.strides[2] +
+               gy * oInfo.strides[1] + oInfo.offset);
 
     uint istride0 = iInfo.strides[0];
     uint ostride0 = oInfo.strides[0];
@@ -76,16 +74,16 @@ void copy(__global outType * dst,
     if (gy < oInfo.dims[1] && gz < oInfo.dims[2] && gw < oInfo.dims[3]) {
         int loop_offset = get_local_size(0) * blk_x;
         bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
-        for(int rep=gx; rep<oInfo.dims[0]; rep+=loop_offset) {
-            outType temp  = default_value;
+        for (int rep = gx; rep < oInfo.dims[0]; rep += loop_offset) {
+            outType temp = default_value;
 #if SAME_DIMS
-            temp = CONVERT(scale(in[rep*istride0], factor));
+            temp = CONVERT(scale(in[rep * istride0], factor));
 #else
             if (rep < trgt.dim[0] && cond) {
-                temp = CONVERT(scale(in[rep*istride0], factor));
+                temp = CONVERT(scale(in[rep * istride0], factor));
             }
 #endif
-            out[rep*ostride0] = temp;
+            out[rep * ostride0] = temp;
         }
     }
 }

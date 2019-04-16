@@ -10,8 +10,7 @@
 #pragma once
 #include <complex>
 
-namespace cpu
-{
+namespace cpu {
 using cdouble = std::complex<double>;
 using cfloat  = std::complex<float>;
 using intl    = long long;
@@ -19,4 +18,4 @@ using uint    = unsigned int;
 using uchar   = unsigned char;
 using uintl   = unsigned long long;
 using ushort  = unsigned short;
-}
+}  // namespace cpu

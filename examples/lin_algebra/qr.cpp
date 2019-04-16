@@ -13,10 +13,8 @@
 
 using namespace af;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
     try {
-
         // Select a device and display arrayfire info
         int device = argc > 1 ? atoi(argv[1]) : 0;
         af::setDevice(device);

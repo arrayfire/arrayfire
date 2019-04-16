@@ -9,9 +9,8 @@
 
 #include <Array.hpp>
 
-namespace cpu
-{
+namespace cpu {
 template<typename in_t, typename idx_t>
-Array<in_t> lookup(const Array<in_t> &input,
-                   const Array<idx_t> &indices, const unsigned dim);
+Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
+                   const unsigned dim);
 }

@@ -7,13 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <Array.hpp>
 #include <kernel/topk.hpp>
 #include <topk.hpp>
-#include <Array.hpp>
 #include <af/dim4.hpp>
 
-namespace cuda
-{
+namespace cuda {
 template<typename T>
 void topk(Array<T>& ovals, Array<uint>& oidxs, const Array<T>& ivals,
           const int k, const int dim, const af::topkFunction order) {
@@ -26,14 +25,14 @@ void topk(Array<T>& ovals, Array<uint>& oidxs, const Array<T>& ivals,
     kernel::topk<T>(ovals, oidxs, ivals, k, dim, order);
 }
 
-#define INSTANTIATE(T)\
-template void topk<T>(Array<T>&, Array<uint>&, const Array<T>&, \
-                      const int, const int, const af::topkFunction);
+#define INSTANTIATE(T)                                                         \
+    template void topk<T>(Array<T>&, Array<uint>&, const Array<T>&, const int, \
+                          const int, const af::topkFunction);
 
-INSTANTIATE(float )
+INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
+INSTANTIATE(int)
+INSTANTIATE(uint)
 INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
-}
+}  // namespace cuda

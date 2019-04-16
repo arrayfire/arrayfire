@@ -14,10 +14,8 @@
 // SBK_TYPES:float double int uint intl uintl short ushort char uchar
 // SBK_INSTS:0 1
 
-namespace cuda
-{
-namespace kernel
-{
-    INSTANTIATESBK_INST(SBK_TYPE)
+namespace cuda {
+namespace kernel {
+INSTANTIATESBK_INST(SBK_TYPE)
 }
-}
+}  // namespace cuda

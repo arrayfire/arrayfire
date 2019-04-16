@@ -8,23 +8,22 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <sort_index.hpp>
+#include <copy.hpp>
+#include <kernel/sort_by_key.hpp>
 #include <math.hpp>
-#include <algorithm>
-#include <numeric>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <range.hpp>
-#include <copy.hpp>
 #include <reorder.hpp>
-#include <kernel/sort_by_key.hpp>
+#include <sort_index.hpp>
+#include <algorithm>
+#include <numeric>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in, const uint dim, bool isAscending)
-{
+void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
+                const uint dim, bool isAscending) {
     in.eval();
 
     // okey is values, oval is indices
@@ -32,22 +31,28 @@ void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in, const uin
     oval = range<uint>(in.dims(), dim);
     oval.eval();
 
-    switch(dim) {
-        case 0: getQueue().enqueue(kernel::sort0ByKey<T, uint>, okey, oval, isAscending); break;
+    switch (dim) {
+        case 0:
+            getQueue().enqueue(kernel::sort0ByKey<T, uint>, okey, oval,
+                               isAscending);
+            break;
         case 1:
         case 2:
-        case 3: getQueue().enqueue(kernel::sortByKeyBatched<T, uint>, okey, oval, dim, isAscending); break;
+        case 3:
+            getQueue().enqueue(kernel::sortByKeyBatched<T, uint>, okey, oval,
+                               dim, isAscending);
+            break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }
 
-    if(dim != 0) {
+    if (dim != 0) {
         af::dim4 preorderDims = okey.dims();
         af::dim4 reorderDims(0, 1, 2, 3);
         reorderDims[dim] = 0;
-        preorderDims[0] = okey.dims()[dim];
-        for(int i = 1; i <= (int)dim; i++) {
+        preorderDims[0]  = okey.dims()[dim];
+        for (int i = 1; i <= (int)dim; i++) {
             reorderDims[i - 1] = i;
-            preorderDims[i] = okey.dims()[i - 1];
+            preorderDims[i]    = okey.dims()[i - 1];
         }
 
         okey.setDataDims(preorderDims);
@@ -58,14 +63,15 @@ void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in, const uin
     }
 }
 
-#define INSTANTIATE(T)                                                  \
-    template void sort_index<T>(Array<T> &val, Array<uint> &idx, const Array<T> &in, \
-                                      const uint dim, bool isAscending);
+#define INSTANTIATE(T)                                              \
+    template void sort_index<T>(Array<T> & val, Array<uint> & idx,  \
+                                const Array<T> &in, const uint dim, \
+                                bool isAscending);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
-//INSTANTIATE(cfloat)
-//INSTANTIATE(cdouble)
+// INSTANTIATE(cfloat)
+// INSTANTIATE(cdouble)
 INSTANTIATE(int)
 INSTANTIATE(uint)
 INSTANTIATE(char)
@@ -75,4 +81,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
 
-}
+}  // namespace cpu

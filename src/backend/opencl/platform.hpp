@@ -21,34 +21,35 @@
 #pragma GCC diagnostic pop
 
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
+#include <GraphicsResourceManager.hpp>
 #include <cache.hpp>
 #include <memory.hpp>
-#include <GraphicsResourceManager.hpp>
 
 namespace boost {
-  template<typename T> class shared_ptr;
+template<typename T>
+class shared_ptr;
 
-  namespace compute {
-    class program_cache;
-  }
+namespace compute {
+class program_cache;
 }
+}  // namespace boost
 
 namespace graphics {
-  class ForgeManager;
+class ForgeManager;
 }
 
 // Forward declaration from clFFT.h
 struct clfftSetupData_;
 typedef clfftSetupData_ clfftSetupData;
 
-namespace opencl
-{
+namespace opencl {
 // Forward declaration from clfft.hpp
 class PlanCache;
 
+struct kc_entry_t;
 int getBackend();
 
 std::string getDeviceInfo();
@@ -71,7 +72,7 @@ size_t getHostMemorySize();
 
 cl_device_type getDeviceType();
 
-bool isHostUnifiedMemory(const cl::Device &device);
+bool isHostUnifiedMemory(const cl::Device& device);
 
 bool OpenCLCPUOffload(bool forceOffloadOSX = true);
 
@@ -79,9 +80,9 @@ bool isGLSharingSupported();
 
 bool isDoubleSupported(int device);
 
-void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute);
 
-std::string getPlatformName(const cl::Device &device);
+std::string getPlatformName(const cl::Device& device);
 
 int setDevice(int device);
 
@@ -112,7 +113,8 @@ GraphicsResourceManager& interopManager();
 
 PlanCache& fftManager();
 
-void addKernelToCache(int device, const std::string& key, const kc_entry_t entry);
+void addKernelToCache(int device, const std::string& key,
+                      const kc_entry_t entry);
 
 void removeKernelFromCache(int device, const std::string& key);
 
@@ -120,8 +122,7 @@ kc_entry_t kernelCache(int device, const std::string& key);
 //
 ///////////////////////// END Sub-Managers /////////////////////
 
-class DeviceManager
-{
+class DeviceManager {
     friend MemoryManager& memoryManager();
 
     friend MemoryManagerPinned& pinnedMemoryManager();
@@ -132,7 +133,8 @@ class DeviceManager
 
     friend PlanCache& fftManager();
 
-    friend void addKernelToCache(int device, const std::string& key, const kc_entry_t entry);
+    friend void addKernelToCache(int device, const std::string& key,
+                                 const kc_entry_t entry);
 
     friend void removeKernelFromCache(int device, const std::string& key);
 
@@ -156,11 +158,13 @@ class DeviceManager
 
     friend bool isDoubleSupported(int device);
 
-    friend void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+    friend void devprop(char* d_name, char* d_platform, char* d_toolkit,
+                        char* d_compute);
 
     friend int setDevice(int device);
 
-    friend void addDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
+    friend void addDeviceContext(cl_device_id dev, cl_context cxt,
+                                 cl_command_queue que);
 
     friend void setDeviceContext(cl_device_id dev, cl_context cxt);
 
@@ -170,42 +174,42 @@ class DeviceManager
 
     friend int getActivePlatform();
 
-    public:
-        static const unsigned MAX_DEVICES = 32;
+   public:
+    static const unsigned MAX_DEVICES = 32;
 
-        static DeviceManager& getInstance();
+    static DeviceManager& getInstance();
 
-        ~DeviceManager();
+    ~DeviceManager();
 
-    protected:
-        DeviceManager();
+   protected:
+    DeviceManager();
 
-        // Following two declarations are required to
-        // avoid copying accidental copy/assignment
-        // of instance returned by getInstance to other
-        // variables
-        DeviceManager(DeviceManager const&);
-        void operator=(DeviceManager const&);
-        void markDeviceForInterop(const int device, const void* wHandle);
+    // Following two declarations are required to
+    // avoid copying accidental copy/assignment
+    // of instance returned by getInstance to other
+    // variables
+    DeviceManager(DeviceManager const&);
+    void operator=(DeviceManager const&);
+    void markDeviceForInterop(const int device, const void* wHandle);
 
-    private:
-        // Attributes
-        common::mutex_t deviceMutex;
-        std::vector<cl::Device*>       mDevices;
-        std::vector<cl::Context*>     mContexts;
-        std::vector<cl::CommandQueue*>  mQueues;
-        std::vector<bool>        mIsGLSharingOn;
-        std::vector<int>         mDeviceTypes;
-        std::vector<int>         mPlatforms;
-        unsigned mUserDeviceOffset;
+   private:
+    // Attributes
+    common::mutex_t deviceMutex;
+    std::vector<cl::Device*> mDevices;
+    std::vector<cl::Context*> mContexts;
+    std::vector<cl::CommandQueue*> mQueues;
+    std::vector<bool> mIsGLSharingOn;
+    std::vector<int> mDeviceTypes;
+    std::vector<int> mPlatforms;
+    unsigned mUserDeviceOffset;
 
-        std::unique_ptr<graphics::ForgeManager> fgMngr;
-        std::unique_ptr<MemoryManager> memManager;
-        std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
-        std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
-        std::unique_ptr<clfftSetupData> mFFTSetup;
+    std::unique_ptr<graphics::ForgeManager> fgMngr;
+    std::unique_ptr<MemoryManager> memManager;
+    std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
+    std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+    std::unique_ptr<clfftSetupData> mFFTSetup;
 
-        using BoostProgCache = boost::shared_ptr<boost::compute::program_cache>;
-        std::vector<BoostProgCache*> mBoostProgCacheVector;
+    using BoostProgCache = boost::shared_ptr<boost::compute::program_cache>;
+    std::vector<BoostProgCache*> mBoostProgCacheVector;
 };
-}
+}  // namespace opencl

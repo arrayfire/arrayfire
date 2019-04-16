@@ -11,18 +11,17 @@
 #include <Array.hpp>
 #include <ops.hpp>
 
-namespace cuda
-{
-    template<typename Ti, typename Tw, typename To>
-    To mean(const Array<Ti>& in);
+namespace cuda {
+template<typename Ti, typename Tw, typename To>
+To mean(const Array<Ti>& in);
 
-    template<typename T, typename Tw>
-    T mean(const Array<T>& in, const Array<Tw>& wts);
+template<typename T, typename Tw>
+T mean(const Array<T>& in, const Array<Tw>& wts);
 
-    template<typename Ti, typename Tw, typename To>
-    Array<To> mean(const Array<Ti>& in, const int dim);
+template<typename Ti, typename Tw, typename To>
+Array<To> mean(const Array<Ti>& in, const int dim);
 
-    template<typename T, typename Tw>
-    Array<T> mean(const Array<T>& in, const Array<Tw>& wts, const int dim);
+template<typename T, typename Tw>
+Array<T> mean(const Array<T>& in, const Array<Tw>& wts, const int dim);
 
-}
+}  // namespace cuda

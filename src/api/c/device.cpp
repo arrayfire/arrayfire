@@ -7,92 +7,86 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
-#include <af/device.h>
-#include <af/version.h>
-#include <af/backend.h>
-#include <backend.hpp>
-#include <platform.hpp>
 #include <Array.hpp>
-#include <handle.hpp>
-#include <sparse_handle.hpp>
+#include <backend.hpp>
 #include <common/err_common.hpp>
+#include <handle.hpp>
+#include <platform.hpp>
+#include <sparse_handle.hpp>
+#include <af/backend.h>
+#include <af/device.h>
+#include <af/dim4.hpp>
+#include <af/version.h>
 #include <cstring>
 
 using namespace detail;
 
-af_err af_set_backend(const af_backend bknd)
-{
+af_err af_set_backend(const af_backend bknd) {
     try {
-        ARG_ASSERT(0, bknd==getBackend());
+        ARG_ASSERT(0, bknd == getBackend());
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_get_backend_count(unsigned* num_backends)
-{
+af_err af_get_backend_count(unsigned* num_backends) {
     *num_backends = 1;
     return AF_SUCCESS;
 }
 
-af_err af_get_available_backends(int* result)
-{
+af_err af_get_available_backends(int* result) {
     try {
         *result = getBackend();
-    } CATCHALL;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_get_backend_id(af_backend *result, const af_array in)
-{
+af_err af_get_backend_id(af_backend* result, const af_array in) {
     try {
         ARG_ASSERT(1, in != 0);
         const ArrayInfo& info = getInfo(in, false, false);
-        *result = info.getBackendId();
-    } CATCHALL;
+        *result               = info.getBackendId();
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_get_device_id(int *device, const af_array in)
-{
+af_err af_get_device_id(int* device, const af_array in) {
     try {
         ARG_ASSERT(1, in != 0);
         const ArrayInfo& info = getInfo(in, false, false);
-        *device = info.getDevId();
-    } CATCHALL;
+        *device               = info.getDevId();
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_get_active_backend(af_backend *result)
-{
+af_err af_get_active_backend(af_backend* result) {
     *result = (af_backend)getBackend();
     return AF_SUCCESS;
 }
 
-af_err af_init()
-{
+af_err af_init() {
     try {
         thread_local std::once_flag flag;
-        std::call_once(flag, []() {
-                getDeviceInfo();
-            });
-    } CATCHALL;
+        std::call_once(flag, []() { getDeviceInfo(); });
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_info()
-{
+af_err af_info() {
     try {
         printf("%s", getDeviceInfo().c_str());
-    } CATCHALL;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_info_string(char **str, const bool verbose)
-{
-    UNUSED(verbose); // TODO(umar): Add something useful
+af_err af_info_string(char** str, const bool verbose) {
+    UNUSED(verbose);  // TODO(umar): Add something useful
     try {
         std::string infoStr = getDeviceInfo();
         af_alloc_host((void**)str, sizeof(char) * (infoStr.size() + 1));
@@ -101,117 +95,115 @@ af_err af_info_string(char **str, const bool verbose)
         // str.c_str wont cut it
         infoStr.copy(*str, infoStr.size());
         (*str)[infoStr.size()] = '\0';
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
-{
+af_err af_device_info(char* d_name, char* d_platform, char* d_toolkit,
+                      char* d_compute) {
     try {
         devprop(d_name, d_platform, d_toolkit, d_compute);
-    } CATCHALL;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_get_dbl_support(bool* available, const int device)
-{
+af_err af_get_dbl_support(bool* available, const int device) {
     try {
         *available = isDoubleSupported(device);
-    } CATCHALL;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_get_device_count(int *nDevices)
-{
+af_err af_get_device_count(int* nDevices) {
     try {
         *nDevices = getDeviceCount();
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_get_device(int *device)
-{
+af_err af_get_device(int* device) {
     try {
         *device = getActiveDeviceId();
-    } CATCHALL;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_set_device(const int device)
-{
+af_err af_set_device(const int device) {
     try {
         ARG_ASSERT(0, device >= 0);
         ARG_ASSERT(0, setDevice(device) >= 0);
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_sync(const int device)
-{
+af_err af_sync(const int device) {
     try {
         int dev = device == -1 ? getActiveDeviceId() : device;
         detail::sync(dev);
-    } CATCHALL;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-
 template<typename T>
-static inline void eval(af_array arr)
-{
+static inline void eval(af_array arr) {
     getArray<T>(arr).eval();
     return;
 }
 
 template<typename T>
-static inline void sparseEval(af_array arr)
-{
+static inline void sparseEval(af_array arr) {
     getSparseArray<T>(arr).eval();
     return;
 }
 
-af_err af_eval(af_array arr)
-{
+af_err af_eval(af_array arr) {
     try {
         const ArrayInfo& info = getInfo(arr, false);
-        af_dtype type = info.getType();
+        af_dtype type         = info.getType();
 
-        if(info.isSparse()) {
-            switch(type) {
-                case f32: sparseEval<float  >(arr); break;
-                case f64: sparseEval<double >(arr); break;
-                case c32: sparseEval<cfloat >(arr); break;
+        if (info.isSparse()) {
+            switch (type) {
+                case f32: sparseEval<float>(arr); break;
+                case f64: sparseEval<double>(arr); break;
+                case c32: sparseEval<cfloat>(arr); break;
                 case c64: sparseEval<cdouble>(arr); break;
-                default : TYPE_ERROR(0, type);
+                default: TYPE_ERROR(0, type);
             }
         } else {
             switch (type) {
-                case f32: eval<float  >(arr); break;
-                case f64: eval<double >(arr); break;
-                case c32: eval<cfloat >(arr); break;
+                case f32: eval<float>(arr); break;
+                case f64: eval<double>(arr); break;
+                case c32: eval<cfloat>(arr); break;
                 case c64: eval<cdouble>(arr); break;
-                case s32: eval<int    >(arr); break;
-                case u32: eval<uint   >(arr); break;
-                case u8 : eval<uchar  >(arr); break;
-                case b8 : eval<char   >(arr); break;
-                case s64: eval<intl   >(arr); break;
-                case u64: eval<uintl  >(arr); break;
-                case s16: eval<short  >(arr); break;
-                case u16: eval<ushort >(arr); break;
+                case s32: eval<int>(arr); break;
+                case u32: eval<uint>(arr); break;
+                case u8: eval<uchar>(arr); break;
+                case b8: eval<char>(arr); break;
+                case s64: eval<intl>(arr); break;
+                case u64: eval<uintl>(arr); break;
+                case s16: eval<short>(arr); break;
+                case u16: eval<ushort>(arr); break;
                 default: TYPE_ERROR(0, type);
             }
         }
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
 
 template<typename T>
-static inline void evalMultiple(int num, af_array *arrayPtrs)
-{
+static inline void evalMultiple(int num, af_array* arrayPtrs) {
     Array<T> empty = createEmptyArray<T>(dim4());
     std::vector<Array<T>*> arrays(num, &empty);
 
@@ -223,12 +215,11 @@ static inline void evalMultiple(int num, af_array *arrayPtrs)
     return;
 }
 
-af_err af_eval_multiple(int num, af_array *arrays)
-{
+af_err af_eval_multiple(int num, af_array* arrays) {
     try {
         const ArrayInfo& info = getInfo(arrays[0]);
-        af_dtype type = info.getType();
-        dim4 dims = info.dims();
+        af_dtype type         = info.getType();
+        dim4 dims             = info.dims();
 
         for (int i = 1; i < num; i++) {
             const ArrayInfo& currInfo = getInfo(arrays[i]);
@@ -244,41 +235,40 @@ af_err af_eval_multiple(int num, af_array *arrays)
         }
 
         switch (type) {
-        case f32: evalMultiple<float  >(num, arrays); break;
-        case f64: evalMultiple<double >(num, arrays); break;
-        case c32: evalMultiple<cfloat >(num, arrays); break;
-        case c64: evalMultiple<cdouble>(num, arrays); break;
-        case s32: evalMultiple<int    >(num, arrays); break;
-        case u32: evalMultiple<uint   >(num, arrays); break;
-        case u8 : evalMultiple<uchar  >(num, arrays); break;
-        case b8 : evalMultiple<char   >(num, arrays); break;
-        case s64: evalMultiple<intl   >(num, arrays); break;
-        case u64: evalMultiple<uintl  >(num, arrays); break;
-        case s16: evalMultiple<short  >(num, arrays); break;
-        case u16: evalMultiple<ushort >(num, arrays); break;
-        default:
-            TYPE_ERROR(0, type);
+            case f32: evalMultiple<float>(num, arrays); break;
+            case f64: evalMultiple<double>(num, arrays); break;
+            case c32: evalMultiple<cfloat>(num, arrays); break;
+            case c64: evalMultiple<cdouble>(num, arrays); break;
+            case s32: evalMultiple<int>(num, arrays); break;
+            case u32: evalMultiple<uint>(num, arrays); break;
+            case u8: evalMultiple<uchar>(num, arrays); break;
+            case b8: evalMultiple<char>(num, arrays); break;
+            case s64: evalMultiple<intl>(num, arrays); break;
+            case u64: evalMultiple<uintl>(num, arrays); break;
+            case s16: evalMultiple<short>(num, arrays); break;
+            case u16: evalMultiple<ushort>(num, arrays); break;
+            default: TYPE_ERROR(0, type);
         }
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_set_manual_eval_flag(bool flag)
-{
+af_err af_set_manual_eval_flag(bool flag) {
     try {
         bool& backendFlag = evalFlag();
-        backendFlag = !flag;
-    } CATCHALL;
+        backendFlag       = !flag;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
 
-
-af_err af_get_manual_eval_flag(bool *flag)
-{
+af_err af_get_manual_eval_flag(bool* flag) {
     try {
         bool backendFlag = evalFlag();
-        *flag = !backendFlag;
-    } CATCHALL;
+        *flag            = !backendFlag;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }

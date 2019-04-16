@@ -7,33 +7,31 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <vector>
 #include <iostream>
 #include <string>
-#include <testHelpers.hpp>
+#include <vector>
 
-using std::vector;
-using std::string;
-using std::cout;
-using std::endl;
 using af::array;
 using af::deviceGC;
 using af::deviceMemInfo;
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
 
 const size_t step_bytes = 1024;
 
 // This test should be by itself as it leaks memory intentionally
-TEST(Memory, lock)
-{
-
+TEST(Memory, lock) {
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;
 
-    cleanSlate(); // Clean up everything done so far
+    cleanSlate();  // Clean up everything done so far
 
     const dim_t num = step_bytes / sizeof(float);
 
@@ -42,8 +40,7 @@ TEST(Memory, lock)
     af_array arr = 0;
     ASSERT_SUCCESS(af_create_array(&arr, &in[0], 1, &num, f32));
 
-    deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);
@@ -56,8 +53,7 @@ TEST(Memory, lock)
         a.lock();
 
         // No new memory should be allocated
-        deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                          &lock_bytes, &lock_buffers);
+        deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
 
         ASSERT_EQ(alloc_buffers, 1u);
         ASSERT_EQ(lock_buffers, 1u);
@@ -68,8 +64,7 @@ TEST(Memory, lock)
     // Making sure all unlocked buffers are freed
     deviceGC();
 
-    deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
 
     ASSERT_EQ(alloc_buffers, 1u);
     ASSERT_EQ(lock_buffers, 1u);

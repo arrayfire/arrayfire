@@ -9,16 +9,14 @@
 
 #pragma once
 #include <err_opencl.hpp>
-#include <stdio.h>
 #include <errorcodes.hpp>
+#include <stdio.h>
 
 #ifndef NDEBUG
 #define CL_DEBUG_FINISH(Q) Q.finish()
 #else
-#define CL_DEBUG_FINISH(Q)                      \
-    do {                                        \
-        if(synchronize_calls()) {               \
-            Q.finish();                         \
-        }                                       \
+#define CL_DEBUG_FINISH(Q)                       \
+    do {                                         \
+        if (synchronize_calls()) { Q.finish(); } \
     } while (false);
 #endif

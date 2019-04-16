@@ -52,24 +52,21 @@
  **********************************************************************/
 
 #include "magma.h"
-#include "magma_data.h"
 #include "magma_cpu_lapack.h"
+#include "magma_data.h"
 #include "magma_helper.h"
 #include "magma_sync.h"
 
 #include <algorithm>
 
-template<typename Ty>  magma_int_t
-magma_ungqr_gpu(
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    cl_mem dA, size_t dA_offset, magma_int_t ldda,
-    Ty *tau,
-    cl_mem dT, size_t dT_offset, magma_int_t nb,
-    magma_queue_t queue,
-    magma_int_t *info)
-{
-#define dA(i,j) (dA),  (dA_offset + ((i) + (j)*ldda))
-#define dT(j)   (dT),  (dT_offset + ((j)*nb))
+template<typename Ty>
+magma_int_t magma_ungqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
+                            cl_mem dA, size_t dA_offset, magma_int_t ldda,
+                            Ty *tau, cl_mem dT, size_t dT_offset,
+                            magma_int_t nb, magma_queue_t queue,
+                            magma_int_t *info) {
+#define dA(i, j) (dA), (dA_offset + ((i) + (j)*ldda))
+#define dT(j) (dT), (dT_offset + ((j)*nb))
 
     static const Ty c_zero = magma_zero<Ty>();
     static const Ty c_one  = magma_one<Ty>();
@@ -88,23 +85,21 @@ magma_ungqr_gpu(
         *info = -2;
     } else if ((k < 0) || (k > n)) {
         *info = -3;
-    } else if (ldda < std::max(1,m)) {
+    } else if (ldda < std::max(1, m)) {
         *info = -5;
     }
     if (*info != 0) {
-        //magma_xerbla( __func__, -(*info));
+        // magma_xerbla( __func__, -(*info));
         return *info;
     }
 
-    if (n <= 0) {
-        return *info;
-    }
+    if (n <= 0) { return *info; }
 
     // first kk columns are handled by blocked method.
     // ki is start of 2nd-to-last block
     if ((nb > 1) && (nb < k)) {
         ki = (k - nb - 1) / nb * nb;
-        kk = std::min(k, ki+nb);
+        kk = std::min(k, ki + nb);
     } else {
         ki = 0;
         kk = 0;
@@ -113,8 +108,8 @@ magma_ungqr_gpu(
     // Allocate CPU work space
     // n*nb for zungqr workspace
     // (m - kk)*(n - kk) for last block's panel
-    lwork = n*nb;
-    lpanel = (m - kk)*(n - kk);
+    lwork  = n * nb;
+    lpanel = (m - kk) * (n - kk);
     magma_malloc_cpu<Ty>(&work, lwork + lpanel);
     if (work == NULL) {
         *info = MAGMA_ERR_HOST_ALLOC;
@@ -123,7 +118,7 @@ magma_ungqr_gpu(
     panel = work + lwork;
 
     // Allocate work space on GPU
-    if (MAGMA_SUCCESS != magma_malloc<Ty>(&dV, ldda*nb)) {
+    if (MAGMA_SUCCESS != magma_malloc<Ty>(&dV, ldda * nb)) {
         magma_free_cpu(work);
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
@@ -132,9 +127,9 @@ magma_ungqr_gpu(
     // dT workspace has:
     // 2*std::min(m,n)*nb      for T and R^{-1} matrices from geqrf
     // ((n+31)/32*32)*nb for dW larfb workspace.
-    lddwork = std::min(m,n);
+    lddwork = std::min(m, n);
     cl_mem dW;
-    magma_malloc<Ty>(&dW, (((n+31)/32)*32)*nb);
+    magma_malloc<Ty>(&dW, (((n + 31) / 32) * 32) * nb);
 
     cpu_lapack_ungqr_work_func<Ty> cpu_lapack_ungqr;
 
@@ -143,19 +138,16 @@ magma_ungqr_gpu(
         m_kk = m - kk;
         n_kk = n - kk;
         k_kk = k - kk;
-        magma_getmatrix<Ty>(m_kk, k_kk,
-                            dA(kk, kk), ldda, panel, m_kk, queue);
+        magma_getmatrix<Ty>(m_kk, k_kk, dA(kk, kk), ldda, panel, m_kk, queue);
 
-        LAPACKE_CHECK(cpu_lapack_ungqr(
-                          m_kk, n_kk, k_kk,
-                          panel, m_kk,
-                          &tau[kk], work, lwork));
+        LAPACKE_CHECK(cpu_lapack_ungqr(m_kk, n_kk, k_kk, panel, m_kk, &tau[kk],
+                                       work, lwork));
 
-        magma_setmatrix<Ty>(m_kk, n_kk,
-                            panel, m_kk, dA(kk, kk), ldda, queue);
+        magma_setmatrix<Ty>(m_kk, n_kk, panel, m_kk, dA(kk, kk), ldda, queue);
 
         // Set A(1:kk,kk+1:n) to zero.
-        magmablas_laset<Ty>(MagmaFull, kk, n - kk, c_zero, c_zero, dA(0, kk), ldda, queue);
+        magmablas_laset<Ty>(MagmaFull, kk, n - kk, c_zero, c_zero, dA(0, kk),
+                            ldda, queue);
     }
 
     if (kk > 0) {
@@ -164,25 +156,24 @@ magma_ungqr_gpu(
         // CPU has no computation
 
         for (i = ki; i >= 0; i -= nb) {
-            ib = std::min(nb, k-i);
+            ib = std::min(nb, k - i);
             mi = m - i;
 
             // Copy current panel on the GPU from dA to dV
-            magma_copymatrix<Ty>(mi, ib,
-                                 dA(i,i), ldda,
-                                 dV, 0,   ldda, queue);
+            magma_copymatrix<Ty>(mi, ib, dA(i, i), ldda, dV, 0, ldda, queue);
 
             // set panel to identity
-            magmablas_laset<Ty>(MagmaFull, i,  ib, c_zero, c_zero, dA(0, i), ldda, queue);
-            magmablas_laset<Ty>(MagmaFull, mi, ib, c_zero, c_one,  dA(i, i), ldda, queue);
+            magmablas_laset<Ty>(MagmaFull, i, ib, c_zero, c_zero, dA(0, i),
+                                ldda, queue);
+            magmablas_laset<Ty>(MagmaFull, mi, ib, c_zero, c_one, dA(i, i),
+                                ldda, queue);
 
             if (i < n) {
-
                 // Apply H to A(i:m,i:n) from the left
-                magma_larfb_gpu<Ty>(MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise,
-                                    mi, n-i, ib,
-                                    dV, 0,    ldda, dT(i), nb,
-                                    dA(i, i), ldda, dW, 0, lddwork, queue);
+                magma_larfb_gpu<Ty>(MagmaLeft, MagmaNoTrans, MagmaForward,
+                                    MagmaColumnwise, mi, n - i, ib, dV, 0, ldda,
+                                    dT(i), nb, dA(i, i), ldda, dW, 0, lddwork,
+                                    queue);
             }
         }
     }
@@ -191,17 +182,14 @@ magma_ungqr_gpu(
     magma_free(dW);
     magma_free_cpu(work);
     return *info;
-
 }
 
-#define INSTANTIATE(T)                                                  \
-    template  magma_int_t                                               \
-    magma_ungqr_gpu<T>(magma_int_t m, magma_int_t n, magma_int_t k,     \
-                       cl_mem dA, size_t dA_offset, magma_int_t ldda,   \
-                       T *tau,                                          \
-                       cl_mem dT, size_t dT_offset, magma_int_t nb,     \
-                       magma_queue_t queue,                             \
-                       magma_int_t *info);                              \
+#define INSTANTIATE(T)                                          \
+    template magma_int_t magma_ungqr_gpu<T>(                    \
+        magma_int_t m, magma_int_t n, magma_int_t k, cl_mem dA, \
+        size_t dA_offset, magma_int_t ldda, T * tau, cl_mem dT, \
+        size_t dT_offset, magma_int_t nb, magma_queue_t queue,  \
+        magma_int_t * info);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
