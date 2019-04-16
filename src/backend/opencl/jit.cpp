@@ -10,8 +10,11 @@
 #include <Array.hpp>
 #include <common/dispatch.hpp>
 #include <common/jit/Node.hpp>
+#include <common/jit/NodeIterator.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>
+#include <jit/BufferNode.hpp>
+#include <jit/ShiftNode.hpp>
 #include <kernel_headers/jit.hpp>
 #include <program.hpp>
 #include <af/dim4.hpp>
@@ -24,11 +27,16 @@
 using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
+using common::NodeIterator;
+using common::requiresGlobalMemoryAccess;
+using opencl::jit::BufferNode;
+using opencl::jit::ShiftNode;
 
 using cl::Buffer;
 using cl::EnqueueArgs;
 using cl::Kernel;
 using cl::KernelFunctor;
+using cl::Local;
 using cl::NDRange;
 using cl::NullRange;
 using cl::Program;
@@ -39,6 +47,11 @@ using std::stringstream;
 using std::vector;
 
 namespace opencl {
+
+bool equal_shape(const KParam &lhs, const KParam &rhs) {
+    return std::equal(lhs.dims, lhs.dims + 4, rhs.dims) &&
+           std::equal(lhs.strides, lhs.strides + 4, rhs.strides);
+}
 
 static string getFuncName(const vector<Node *> &output_nodes,
                           const vector<const Node *> &full_nodes,
@@ -69,22 +82,27 @@ static string getKernelString(const string funcName,
                               const vector<int> &output_ids, bool is_linear) {
     // Common OpenCL code
     // This part of the code does not change with the kernel.
-
     static const char *kernelVoid = "__kernel void\n";
+    static const char *nonLinearParams =
+        "__global KParam* dims, int num_params,\n"
+        "__local KParam* params, __local dim_t* block_offsets,\n";
     static const char *dimParams =
         "KParam oInfo, uint groups_0, uint groups_1, uint num_odims";
     static const char *blockStart = "{\n\n";
-    static const char *blockEnd   = "\n\n}";
+    static const char *blockEnd   = "\n}\n";
 
     static const char *linearIndex = R"JIT(
-        uint groupId  = get_group_id(1) * get_num_groups(0) + get_group_id(0);
-        uint threadId = get_local_id(0);
-        int idx = groupId * get_local_size(0) * get_local_size(1) + threadId;
+        size_t groupId  = get_group_id(1) * get_num_groups(0) + get_group_id(0);
+        size_t threadId = get_local_id(0);
+        size_t idx = groupId * get_local_size(0) * get_local_size(1) + threadId;
         if (idx >= oInfo.dims[3] * oInfo.strides[3]) return;
         )JIT";
 
     static const char *generalIndex = R"JIT(
-        uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;
+        if (get_local_id(0) < num_params) {
+            params[get_local_id(0)] = dims[get_local_id(0)];
+        }
+        dim_t id0 = 0, id1 = 0, id2 = 0, id3 = 0;
         if (num_odims > 2) {
             id2 = get_group_id(0) / groups_0;
             id0 = get_group_id(0) - id2 * groups_0;
@@ -107,10 +125,17 @@ static string getKernelString(const string funcName,
                     id2 < oInfo.dims[2] &&
                     id3 < oInfo.dims[3];
         if (!cond) return;
-        int idx = oInfo.strides[3] * id3 +
-                  oInfo.strides[2] * id2 +
-                  oInfo.strides[1] * id1 +
-                  id0 + oInfo.offset;
+        size_t idx = oInfo.strides[3] * id3 +
+                     oInfo.strides[2] * id2 +
+                     oInfo.strides[1] * id1 +
+                     id0 + oInfo.offset;
+
+        if (get_local_id(0) < num_params && get_local_id(1) == 0) {
+            dim_t tidx = get_local_id(0);
+            block_offsets[tidx] = (id3 < params[tidx].dims[3]) * params[tidx].strides[3] * id3 +
+                                  (id2 < params[tidx].dims[2]) * params[tidx].strides[2] * id2;
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
         )JIT";
 
     stringstream inParamStream;
@@ -118,6 +143,8 @@ static string getKernelString(const string funcName,
     stringstream outWriteStream;
     stringstream offsetsStream;
     stringstream opsStream;
+    stringstream outrefstream;
+    outrefstream << "const Param outref = out" << output_ids[0] << ";\n";
 
     for (int i = 0; i < (int)full_nodes.size(); i++) {
         const auto &node     = full_nodes[i];
@@ -146,6 +173,7 @@ static string getKernelString(const string funcName,
     kerStream << "(\n";
     kerStream << inParamStream.str();
     kerStream << outParamStream.str();
+    if (!is_linear) { kerStream << nonLinearParams; }
     kerStream << dimParams;
     kerStream << ")\n";
     kerStream << blockStart;
@@ -215,9 +243,39 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes) {
         full_ids.reserve(1024);
     }
 
+    vector<KParam> params;
     for (auto &node : output_nodes) {
         int id = node->getNodesMap(nodes, full_nodes, full_ids);
         output_ids.push_back(id);
+
+        NodeIterator<> end_node;
+        auto bufit = NodeIterator<>(node);
+        while (bufit != end_node) {
+            bufit = find_if(bufit, end_node, requiresGlobalMemoryAccess);
+            if (bufit != end_node) {
+                KParam param;
+
+                // TODO(umar): This is a hack. We need to clean up this API
+                // so that the if statement is not necessary
+                if (bufit->isBuffer()) {
+                    param = static_cast<BufferNode &>(*bufit).getParam();
+                } else {
+                    param = static_cast<ShiftNode &>(*bufit).getParam();
+                }
+
+                auto it = find_if(begin(params), end(params),
+                                  [&param](const KParam &p) {
+                                      return equal_shape(param, p);
+                                  });
+                if (it == end(params)) {
+                    params.push_back(param);
+                    bufit->setParamIndex(params.size() - 1);
+                } else {
+                    bufit->setParamIndex(distance(begin(params), it));
+                }
+                ++bufit;
+            }
+        }
     }
 
     bool is_linear = true;
@@ -281,6 +339,23 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes) {
     for (auto output : outputs) {
         ker.setArg(nargs, *(output.data));
         ++nargs;
+    }
+
+    size_t smem_bytes = 0;
+    int param_count   = 0;
+    uptr dparam;
+    if (!is_linear) {
+        param_count = params.size();
+        dparam      = memAlloc<uchar>(params.size() * sizeof(KParam));
+
+        getQueue().enqueueWriteBuffer(*(dparam.get()), CL_FALSE, 0,
+                                      params.size() * sizeof(KParam),
+                                      params.data());
+
+        ker.setArg(nargs++, *(dparam.get()));
+        ker.setArg(nargs++, param_count);
+        ker.setArg(nargs++, Local(sizeof(KParam) * params.size()));
+        ker.setArg(nargs++, Local(sizeof(dim_t) * params.size()));
     }
 
     // Set dimensions

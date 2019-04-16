@@ -161,14 +161,21 @@ struct Param
     if (cond) {
     )JIT";
 
+    string paramreads = R"JIT(
+        extern __shared__ char smem[];
+        Param *params = reinterpret_cast<Param*>(smem);
+        dim_t *block_offsets = reinterpret_cast<dim_t*>(smem+(num_params * sizeof(Param)));
+
+        if (threadIdx.x < num_params) { params[threadIdx.x] = dims[threadIdx.x]; }
+        __syncthreads();
+    )JIT";
+
     stringstream inParamStream;
     stringstream outParamStream;
     stringstream outWriteStream;
     stringstream offsetsStream;
     stringstream opsStream;
     stringstream outrefstream;
-    stringstream paramreadstream;
-
     outrefstream << "const Param &outref = out" << output_ids[0] << ";\n";
 
     for (int i = 0; i < (int)full_nodes.size(); i++) {
@@ -193,15 +200,6 @@ struct Param
                        << "[idx] = val" << id << ";\n";
     }
 
-    paramreadstream << R"JIT(
-        extern __shared__ char smem[];
-        Param *params = reinterpret_cast<Param*>(smem);
-        dim_t *block_offsets = reinterpret_cast<dim_t*>(smem+(num_params * sizeof(Param)));
-
-        if (threadIdx.x < num_params) { params[threadIdx.x] = dims[threadIdx.x]; }
-        __syncthreads();
-    )JIT";
-
     // Put various blocks into a single stream
     stringstream kerStream;
     kerStream << typedefStr;
@@ -217,7 +215,7 @@ struct Param
     kerStream << ")\n";
     kerStream << blockStart;
     kerStream << outrefstream.str();
-    if (!is_linear) { kerStream << paramreadstream.str(); }
+    if (!is_linear) { kerStream << paramreads; }
     kerStream << loopStart;
     if (is_linear) {
         kerStream << linearIndex;
