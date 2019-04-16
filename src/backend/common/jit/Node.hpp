@@ -108,9 +108,9 @@ class Node {
         return start_id;
     }
 
-    // Sets the index of the Param object stored in global memory. (CUDA ONLY)
+    // Sets the index of the Param object stored in global memory.
     virtual void setParamIndex(int index) { UNUSED(index); }
-    // Gets the index of the Param object stored in global memory. (CUDA ONLY)
+    // Gets the index of the Param object stored in global memory.
     virtual int getParamIndex() const { return -1; }
 
     virtual void getInfo(unsigned &len, unsigned &buf_count,
@@ -145,6 +145,9 @@ class Node {
     virtual ~Node() {}
 };
 
+// Returns true if the node requires global memory access. This is true
+// for buffer nodes and shift nodes. This implies that the Node needs
+// access to the shape of the object to perform indexing operations
 static inline bool requiresGlobalMemoryAccess(Node &node) {
     return node.requiresGlobalMemoryAccess();
 }

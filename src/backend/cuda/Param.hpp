@@ -25,9 +25,9 @@ class Param {
     dim_t strides[4];
     T *ptr;
 
-    __DH__ Param() : ptr(nullptr) {}
+    __DH__ Param() noexcept : ptr(nullptr) {}
 
-    __DH__ Param(T *iptr, const dim_t *idims, const dim_t *istrides)
+    __DH__ Param(T *iptr, const dim_t *idims, const dim_t *istrides) noexcept
         : dims{idims[0], idims[1], idims[2], idims[3]}
         , strides{istrides[0], istrides[1], istrides[2], istrides[3]}
         , ptr(iptr) {}
@@ -36,19 +36,10 @@ class Param {
         return dims[0] * dims[1] * dims[2] * dims[3];
     }
 
-    Param<T> &operator=(const Param<T> &other) {
-        ptr     = other.ptr;
-        dims[0] = other.dims[0];
-        dims[1] = other.dims[1];
-        dims[2] = other.dims[2];
-        dims[3] = other.dims[3];
-
-        strides[0] = other.strides[0];
-        strides[1] = other.strides[1];
-        strides[2] = other.strides[2];
-        strides[3] = other.strides[3];
-        return *this;
-    }
+    Param(const Param<T> &other) noexcept = default;
+    Param(Param<T> &&other) noexcept = default;
+    Param<T> &operator=(const Param<T> &other) noexcept = default;
+    Param<T> &operator=(Param<T> &&other) noexcept = default;
 };
 
 template<typename T>
@@ -80,5 +71,10 @@ class CParam {
     __DH__ size_t elements() const noexcept {
         return dims[0] * dims[1] * dims[2] * dims[3];
     }
+
+    CParam(const CParam<T> &other) noexcept = default;
+    CParam(CParam<T> &&other) noexcept      = default;
+    CParam<T> &operator=(const CParam<T> &other) noexcept = default;
+    CParam<T> &operator=(CParam<T> &&other) noexcept = default;
 };
 }  // namespace cuda
