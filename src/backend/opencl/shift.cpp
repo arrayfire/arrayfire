@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <common/jit/ShiftNodeBase.hpp>
+#include <opencl/jit/ShiftNode.hpp>
 #include <err_opencl.hpp>
 #include <shift.hpp>
 
@@ -18,7 +18,7 @@
 using af::dim4;
 
 using common::Node_ptr;
-using common::ShiftNodeBase;
+using opencl::jit::ShiftNode;
 using opencl::jit::BufferNode;
 
 using std::array;
@@ -27,7 +27,6 @@ using std::static_pointer_cast;
 using std::string;
 
 namespace opencl {
-using ShiftNode = ShiftNodeBase<BufferNode>;
 
 template<typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4]) {

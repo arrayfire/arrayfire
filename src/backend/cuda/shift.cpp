@@ -11,6 +11,7 @@
 #include <common/jit/ShiftNodeBase.hpp>
 #include <err_cuda.hpp>
 #include <jit/BufferNode.hpp>
+#include <jit/ShiftNode.hpp>
 #include <shift.hpp>
 
 #include <memory>
@@ -21,6 +22,7 @@ using common::Node_ptr;
 using common::ShiftNodeBase;
 
 using cuda::jit::BufferNode;
+using cuda::jit::ShiftNode;
 
 using std::array;
 using std::make_shared;
@@ -28,12 +30,10 @@ using std::static_pointer_cast;
 using std::string;
 
 namespace cuda {
-template<typename T>
-using ShiftNode = ShiftNodeBase<BufferNode<T>>;
 
 template<typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4]) {
-    // Shift should only be the first node in the JIT tree.
+    // Shift should only be the leaf node in the JIT tree.
     // Force input to be evaluated so that in is always a buffer.
     in.eval();
 

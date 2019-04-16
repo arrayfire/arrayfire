@@ -9,8 +9,11 @@
 
 #pragma once
 #include <backend.hpp>
+#include <common/jit/Node.hpp>
 #include <jit/kernel_generators.hpp>
 
+#include <iomanip>
+#include <mutex>
 #include <sstream>
 
 namespace common {
@@ -22,13 +25,17 @@ class BufferNodeBase : public common::Node {
     ParamType m_param;
     unsigned m_bytes;
     std::once_flag m_set_data_flag;
+    int param_index;
     bool m_linear_buffer;
 
    public:
+    using param_type = ParamType;
     BufferNodeBase(const char *type_str, const char *name_str)
         : Node(type_str, name_str, 0, {}) {}
 
     bool isBuffer() const final { return true; }
+
+    bool requiresGlobalMemoryAccess() const final { return true; }
 
     void setData(ParamType param, DataType data, const unsigned bytes,
                  bool is_linear) {
@@ -63,14 +70,17 @@ class BufferNodeBase : public common::Node {
 
     int setArgs(int start_id, bool is_linear,
                 std::function<void(int id, const void *ptr, size_t arg_size)>
-                    setArg) const override {
+                    setArg) const final {
         return detail::setKernelArguments(start_id, is_linear, setArg, m_data,
-                                          m_param);
+                                          m_param, param_index);
     }
+
+    void setParamIndex(int index) final { param_index = index; }
+    int getParamIndex() const final { return param_index; }
 
     void genOffsets(std::stringstream &kerStream, int id,
                     bool is_linear) const final {
-        detail::generateBufferOffsets(kerStream, id, is_linear, m_type_str);
+        detail::generateBufferOffsets(kerStream, id, is_linear);
     }
 
     void genFuncs(std::stringstream &kerStream,
@@ -86,6 +96,7 @@ class BufferNodeBase : public common::Node {
     }
 
     size_t getBytes() const final { return m_bytes; }
+    ParamType &getParam() { return m_param; }
 };
 
 }  // namespace common
