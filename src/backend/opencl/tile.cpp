@@ -8,40 +8,38 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <tile.hpp>
 #include <kernel/tile.hpp>
+#include <tile.hpp>
 #include <stdexcept>
 
-namespace opencl
-{
-    template<typename T>
-    Array<T> tile(const Array<T> &in, const af::dim4 &tileDims)
-    {
-        const af::dim4 iDims = in.dims();
-        af::dim4 oDims = iDims;
-        oDims *= tileDims;
+namespace opencl {
+template<typename T>
+Array<T> tile(const Array<T> &in, const af::dim4 &tileDims) {
+    const af::dim4 iDims = in.dims();
+    af::dim4 oDims       = iDims;
+    oDims *= tileDims;
 
-        Array<T> out = createEmptyArray<T>(oDims);
+    Array<T> out = createEmptyArray<T>(oDims);
 
-        kernel::tile<T>(out, in);
+    kernel::tile<T>(out, in);
 
-        return out;
-    }
-
-#define INSTANTIATE(T)                                                         \
-    template Array<T> tile<T>(const Array<T> &in, const af::dim4 &tileDims);  \
-
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(cfloat)
-    INSTANTIATE(cdouble)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(intl)
-    INSTANTIATE(uintl)
-    INSTANTIATE(uchar)
-    INSTANTIATE(char)
-    INSTANTIATE(short)
-    INSTANTIATE(ushort)
-
+    return out;
 }
+
+#define INSTANTIATE(T) \
+    template Array<T> tile<T>(const Array<T> &in, const af::dim4 &tileDims);
+
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(cdouble)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
+
+}  // namespace opencl

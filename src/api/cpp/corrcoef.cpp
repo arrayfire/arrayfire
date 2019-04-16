@@ -7,20 +7,19 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/statistics.h>
 #include <af/array.h>
+#include <af/statistics.h>
 #include "error.hpp"
 
-namespace af
-{
+namespace af {
 
-#define INSTANTIATE_CORRCOEF(T)                                    \
-    template<> AFAPI T corrcoef(const array& X, const array& Y)    \
-    {                                                              \
-        double real;                                               \
-        AF_THROW(af_corrcoef(&real, NULL, X.get(), Y.get()));      \
-        return (T)real;                                            \
-    }                                                              \
+#define INSTANTIATE_CORRCOEF(T)                               \
+    template<>                                                \
+    AFAPI T corrcoef(const array& X, const array& Y) {        \
+        double real;                                          \
+        AF_THROW(af_corrcoef(&real, NULL, X.get(), Y.get())); \
+        return (T)real;                                       \
+    }
 
 INSTANTIATE_CORRCOEF(float);
 INSTANTIATE_CORRCOEF(double);
@@ -35,4 +34,4 @@ INSTANTIATE_CORRCOEF(unsigned short);
 
 #undef INSTANTIATE_CORRCOEF
 
-}
+}  // namespace af

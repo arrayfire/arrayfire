@@ -7,6 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #pragma once
+#include <af/array.h>
+#include <af/features.h>
+#include <cstddef>
 
 typedef struct {
     size_t n;

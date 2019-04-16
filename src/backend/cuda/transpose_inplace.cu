@@ -7,38 +7,38 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
 #include <Array.hpp>
-#include <transpose.hpp>
 #include <kernel/transpose_inplace.hpp>
+#include <transpose.hpp>
+#include <af/dim4.hpp>
 
 using af::dim4;
 
-namespace cuda
-{
+namespace cuda {
 
 template<typename T>
-void transpose_inplace(Array<T> &in, const bool conjugate)
-{
-    if(conjugate)   { kernel::transpose_inplace<T, true >(in); }
-    else            { kernel::transpose_inplace<T, false>(in); }
+void transpose_inplace(Array<T> &in, const bool conjugate) {
+    if (conjugate) {
+        kernel::transpose_inplace<T, true>(in);
+    } else {
+        kernel::transpose_inplace<T, false>(in);
+    }
 }
 
-#define INSTANTIATE(T)                                                              \
+#define INSTANTIATE(T) \
     template void transpose_inplace(Array<T> &in, const bool conjugate);
 
-INSTANTIATE(float  )
-INSTANTIATE(cfloat )
-INSTANTIATE(double )
+INSTANTIATE(float)
+INSTANTIATE(cfloat)
+INSTANTIATE(double)
 INSTANTIATE(cdouble)
-INSTANTIATE(char   )
-INSTANTIATE(int    )
-INSTANTIATE(uint   )
-INSTANTIATE(uchar  )
-INSTANTIATE(intl   )
-INSTANTIATE(uintl  )
-INSTANTIATE(short  )
-INSTANTIATE(ushort )
+INSTANTIATE(char)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
 
-}
-
+}  // namespace cuda

@@ -8,33 +8,30 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <backend.hpp>
+#include <af/defines.h>
 
-namespace cuda
-{
+namespace cuda {
 
 template<typename T>
-class Param
-{
-public:
+class Param {
+   public:
     T *ptr;
     dim_t dims[4];
     dim_t strides[4];
 
-    __DH__ Param() : ptr(nullptr)
-    {
-    }
+    __DH__ Param() : ptr(nullptr) {}
 
-    __DH__ Param(T *iptr, const dim_t *idims, const dim_t *istrides) :
-        ptr(iptr)
-    {
+    __DH__ Param(T *iptr, const dim_t *idims, const dim_t *istrides)
+        : ptr(iptr) {
         for (int i = 0; i < 4; i++) {
-            dims[i] = idims[i];
+            dims[i]    = idims[i];
             strides[i] = istrides[i];
         }
     }
-    size_t elements() const noexcept { return dims[0] * dims[1] * dims[2] * dims[3]; }
+    size_t elements() const noexcept {
+        return dims[0] * dims[1] * dims[2] * dims[3];
+    }
 };
 
 template<typename T>
@@ -47,26 +44,23 @@ Param<T> flat(Param<T> in) {
 }
 
 template<typename T>
-class CParam
-{
-public:
+class CParam {
+   public:
     const T *ptr;
     dim_t dims[4];
     dim_t strides[4];
 
-    __DH__ CParam(const T *iptr, const dim_t *idims, const dim_t *istrides) :
-        ptr(iptr)
-    {
+    __DH__ CParam(const T *iptr, const dim_t *idims, const dim_t *istrides)
+        : ptr(iptr) {
         for (int i = 0; i < 4; i++) {
-            dims[i] = idims[i];
+            dims[i]    = idims[i];
             strides[i] = istrides[i];
         }
     }
 
-    __DH__ CParam(Param<T> &in) : ptr(in.ptr)
-    {
+    __DH__ CParam(Param<T> &in) : ptr(in.ptr) {
         for (int i = 0; i < 4; i++) {
-            dims[i] = in.dims[i];
+            dims[i]    = in.dims[i];
             strides[i] = in.strides[i];
         }
     }
@@ -74,4 +68,4 @@ public:
     __DH__ ~CParam() {}
 };
 
-}
+}  // namespace cuda

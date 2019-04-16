@@ -8,14 +8,12 @@
  ********************************************************/
 
 #pragma once
-#include "../Param.hpp"
 #include <common/jit/BufferNodeBase.hpp>
+#include "../Param.hpp"
 
-namespace cuda
-{
-namespace jit
-{
-  template<typename T>
-  using BufferNode = common::BufferNodeBase<std::shared_ptr<T>, Param<T>>;
+namespace cuda {
+namespace jit {
+template<typename T>
+using BufferNode = common::BufferNodeBase<std::shared_ptr<T>, Param<T>>;
 }
-}
+}  // namespace cuda

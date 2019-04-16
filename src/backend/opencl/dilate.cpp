@@ -9,16 +9,15 @@
 
 #include "morph_impl.hpp"
 
-namespace opencl
-{
+namespace opencl {
 
-INSTANTIATE(float , true)
+INSTANTIATE(float, true)
 INSTANTIATE(double, true)
-INSTANTIATE(char  , true)
-INSTANTIATE(int   , true)
-INSTANTIATE(uint  , true)
-INSTANTIATE(uchar , true)
-INSTANTIATE(short , true)
+INSTANTIATE(char, true)
+INSTANTIATE(int, true)
+INSTANTIATE(uint, true)
+INSTANTIATE(uchar, true)
+INSTANTIATE(short, true)
 INSTANTIATE(ushort, true)
 
-}
+}  // namespace opencl

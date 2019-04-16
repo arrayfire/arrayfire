@@ -9,42 +9,36 @@
 
 #pragma once
 #include <Param.hpp>
-#include <utility.hpp>
 #include <err_cpu.hpp>
+#include <utility.hpp>
 
-namespace cpu
-{
-namespace kernel
-{
+namespace cpu {
+namespace kernel {
 
 template<typename T>
-T getConjugate(const T &in)
-{
+T getConjugate(const T &in) {
     // For non-complex types return same
     return in;
 }
 
 template<>
-cfloat getConjugate(const cfloat &in)
-{
+cfloat getConjugate(const cfloat &in) {
     return std::conj(in);
 }
 
 template<>
-cdouble getConjugate(const cdouble &in)
-{
+cdouble getConjugate(const cdouble &in) {
     return std::conj(in);
 }
 
 template<typename T, bool conjugate>
-void transpose(Param<T> output, CParam<T> input)
-{
+void transpose(Param<T> output, CParam<T> input) {
     const dim4 odims    = output.dims();
     const dim4 ostrides = output.strides();
     const dim4 istrides = input.strides();
 
-    T * out = output.get();
-    T const * const in = input.get();
+    T *out            = output.get();
+    T const *const in = input.get();
 
     for (dim_t l = 0; l < odims[3]; ++l) {
         for (dim_t k = 0; k < odims[2]; ++k) {
@@ -55,9 +49,9 @@ void transpose(Param<T> output, CParam<T> input)
                 for (dim_t i = 0; i < odims[0]; ++i) {
                     // calculate array indices based on offsets and strides
                     // the helper getIdx takes care of indices
-                    const dim_t inIdx  = getIdx(istrides,j,i,k,l);
-                    const dim_t outIdx = getIdx(ostrides,i,j,k,l);
-                    if(conjugate)
+                    const dim_t inIdx  = getIdx(istrides, j, i, k, l);
+                    const dim_t outIdx = getIdx(ostrides, i, j, k, l);
+                    if (conjugate)
                         out[outIdx] = getConjugate(in[inIdx]);
                     else
                         out[outIdx] = in[inIdx];
@@ -71,18 +65,17 @@ void transpose(Param<T> output, CParam<T> input)
 }
 
 template<typename T>
-void transpose(Param<T> out, CParam<T> in, const bool conjugate)
-{
-    return (conjugate ? transpose<T, true>(out, in) : transpose<T, false>(out, in));
+void transpose(Param<T> out, CParam<T> in, const bool conjugate) {
+    return (conjugate ? transpose<T, true>(out, in)
+                      : transpose<T, false>(out, in));
 }
 
 template<typename T, bool conjugate>
-void transpose_inplace(Param<T> input)
-{
+void transpose_inplace(Param<T> input) {
     const dim4 idims    = input.dims();
     const dim4 istrides = input.strides();
 
-    T * in = input.get();
+    T *in = input.get();
 
     for (dim_t l = 0; l < idims[3]; ++l) {
         for (dim_t k = 0; k < idims[2]; ++k) {
@@ -95,14 +88,13 @@ void transpose_inplace(Param<T> input)
                 for (dim_t i = j + 1; i < idims[0]; ++i) {
                     // calculate array indices based on offsets and strides
                     // the helper getIdx takes care of indices
-                    const dim_t iIdx  = getIdx(istrides,j,i,k,l);
-                    const dim_t oIdx = getIdx(istrides,i,j,k,l);
-                    if(conjugate) {
+                    const dim_t iIdx = getIdx(istrides, j, i, k, l);
+                    const dim_t oIdx = getIdx(istrides, i, j, k, l);
+                    if (conjugate) {
                         in[iIdx] = getConjugate(in[iIdx]);
                         in[oIdx] = getConjugate(in[oIdx]);
                         std::swap(in[iIdx], in[oIdx]);
-                    }
-                    else {
+                    } else {
                         std::swap(in[iIdx], in[oIdx]);
                     }
                 }
@@ -112,10 +104,10 @@ void transpose_inplace(Param<T> input)
 }
 
 template<typename T>
-void transpose_inplace(Param<T> in, const bool conjugate)
-{
-    return (conjugate ? transpose_inplace<T, true >(in) : transpose_inplace<T, false>(in));
+void transpose_inplace(Param<T> in, const bool conjugate) {
+    return (conjugate ? transpose_inplace<T, true>(in)
+                      : transpose_inplace<T, false>(in));
 }
 
-}
-}
+}  // namespace kernel
+}  // namespace cpu

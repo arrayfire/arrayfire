@@ -9,19 +9,15 @@
 
 #pragma once
 #include <Param.hpp>
+#include <ops.hpp>
 
-namespace cpu
-{
-namespace kernel
-{
+namespace cpu {
+namespace kernel {
 
 template<af_op_t op, typename Ti, typename To, int D, bool inclusive_scan>
-struct scan_dim
-{
-    void operator()(Param<To> out, dim_t outOffset,
-                    CParam<Ti> in, dim_t inOffset,
-                    const int dim) const
-    {
+struct scan_dim {
+    void operator()(Param<To> out, dim_t outOffset, CParam<Ti> in,
+                    dim_t inOffset, const int dim) const {
         const dim4 odims    = out.dims();
         const dim4 ostrides = out.strides();
         const dim4 istrides = in.strides();
@@ -37,14 +33,11 @@ struct scan_dim
 };
 
 template<af_op_t op, typename Ti, typename To, bool inclusive_scan>
-struct scan_dim<op, Ti, To, 0, inclusive_scan>
-{
-    void operator()(Param<To> output, dim_t outOffset,
-                    CParam<Ti> input,  dim_t inOffset,
-                    const int dim) const
-    {
+struct scan_dim<op, Ti, To, 0, inclusive_scan> {
+    void operator()(Param<To> output, dim_t outOffset, CParam<Ti> input,
+                    dim_t inOffset, const int dim) const {
         const Ti* in = input.get() + inOffset;
-              To* out= output.get()+ outOffset;
+        To* out      = output.get() + outOffset;
 
         const dim4 ostrides = output.strides();
         const dim4 istrides = input.strides();
@@ -60,10 +53,10 @@ struct scan_dim<op, Ti, To, 0, inclusive_scan>
         To out_val = Binary<To, op>::init();
         for (dim_t i = 0; i < idims[dim]; i++) {
             To in_val = transform(in[i * istride]);
-            out_val = scan(in_val, out_val);
+            out_val   = scan(in_val, out_val);
             if (!inclusive_scan) {
-                //The loop shifts the output index by 1.
-                //The last index wraps around and writes the first element.
+                // The loop shifts the output index by 1.
+                // The last index wraps around and writes the first element.
                 if (i == (idims[dim] - 1)) {
                     out[0] = Binary<To, op>::init();
                 } else {
@@ -76,5 +69,5 @@ struct scan_dim<op, Ti, To, 0, inclusive_scan>
     }
 };
 
-}
-}
+}  // namespace kernel
+}  // namespace cpu

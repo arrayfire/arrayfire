@@ -10,22 +10,23 @@
 #pragma once
 
 #include <common/InteropManager.hpp>
+#include <driver_types.h>
 
 #include <map>
 #include <vector>
 
 namespace cuda {
-class GraphicsResourceManager :
-    public common::InteropManager<GraphicsResourceManager, cudaGraphicsResource_t>
-{
-    public:
-        using ShrdResVector = std::vector< std::shared_ptr<cudaGraphicsResource_t> >;
+class GraphicsResourceManager
+    : public common::InteropManager<GraphicsResourceManager,
+                                    cudaGraphicsResource_t> {
+   public:
+    using ShrdResVector = std::vector<std::shared_ptr<cudaGraphicsResource_t>>;
 
-        GraphicsResourceManager() {}
-        ShrdResVector registerResources(std::vector<uint32_t> resources);
+    GraphicsResourceManager() {}
+    ShrdResVector registerResources(std::vector<uint32_t> resources);
 
-    protected:
-        GraphicsResourceManager(GraphicsResourceManager const&);
-        void operator=(GraphicsResourceManager const&);
+   protected:
+    GraphicsResourceManager(GraphicsResourceManager const&);
+    void operator=(GraphicsResourceManager const&);
 };
-}
+}  // namespace cuda

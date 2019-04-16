@@ -36,37 +36,33 @@ using std::string;
 
 namespace {
 
-    std::string libName(std::string name) {
-        return libraryPrefix + name + librarySuffix;
-    }
+std::string libName(std::string name) {
+    return libraryPrefix + name + librarySuffix;
 }
+}  // namespace
 
 namespace common {
 
-DependencyModule::DependencyModule(const char* plugin_file_name, const char** paths)
+DependencyModule::DependencyModule(const char* plugin_file_name,
+                                   const char** paths)
     : handle(nullptr) {
     // TODO(umar): Implement handling of non-standard paths
     UNUSED(paths);
-    if(plugin_file_name) {
+    if (plugin_file_name) {
         handle = loadLibrary(libName(plugin_file_name).c_str());
     }
 }
 
 DependencyModule::~DependencyModule() {
-    if(handle) {
-        unloadLibrary(handle);
-    }
+    if (handle) { unloadLibrary(handle); }
 }
 
-bool DependencyModule::isLoaded() {
-    return (bool)handle;
-}
+bool DependencyModule::isLoaded() { return (bool)handle; }
 
 bool DependencyModule::symbolsLoaded() {
-    return all_of(begin(functions), end(functions), [](void* ptr){ return ptr != nullptr; });
+    return all_of(begin(functions), end(functions),
+                  [](void* ptr) { return ptr != nullptr; });
 }
 
-string DependencyModule::getErrorMessage() {
-    return common::getErrorMessage();
-}
-}
+string DependencyModule::getErrorMessage() { return common::getErrorMessage(); }
+}  // namespace common

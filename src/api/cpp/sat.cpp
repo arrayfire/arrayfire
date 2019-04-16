@@ -7,18 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/image.h>
 #include <af/array.h>
+#include <af/image.h>
 #include "error.hpp"
 
-namespace af
-{
+namespace af {
 
-array sat(const array& in)
-{
+array sat(const array& in) {
     af_array out = 0;
     AF_THROW(af_sat(&out, in.get()));
     return array(out);
 }
 
-}
+}  // namespace af

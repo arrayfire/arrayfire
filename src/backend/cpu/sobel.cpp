@@ -7,23 +7,21 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/dim4.hpp>
 #include <Array.hpp>
-#include <sobel.hpp>
 #include <convolve.hpp>
+#include <kernel/sobel.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
-#include <kernel/sobel.hpp>
+#include <sobel.hpp>
+#include <af/dim4.hpp>
 
 using af::dim4;
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename Ti, typename To>
-std::pair< Array<To>, Array<To> >
-sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
-{
+std::pair<Array<To>, Array<To>> sobelDerivatives(const Array<Ti> &img,
+                                                 const unsigned &ker_size) {
     UNUSED(ker_size);
     img.eval();
     // ket_size is for future proofing, this argument is not used
@@ -31,23 +29,23 @@ sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
     Array<To> dx = createEmptyArray<To>(img.dims());
     Array<To> dy = createEmptyArray<To>(img.dims());
 
-    getQueue().enqueue(kernel::derivative<Ti, To, true >, dx, img);
+    getQueue().enqueue(kernel::derivative<Ti, To, true>, dx, img);
     getQueue().enqueue(kernel::derivative<Ti, To, false>, dy, img);
 
     return std::make_pair(dx, dy);
 }
 
-#define INSTANTIATE(Ti, To)                                               \
-    template std::pair< Array<To>, Array<To> >                            \
-    sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
+#define INSTANTIATE(Ti, To)                                    \
+    template std::pair<Array<To>, Array<To>> sobelDerivatives( \
+        const Array<Ti> &img, const unsigned &ker_size);
 
-INSTANTIATE(float , float)
+INSTANTIATE(float, float)
 INSTANTIATE(double, double)
-INSTANTIATE(int   , int)
-INSTANTIATE(uint  , int)
-INSTANTIATE(char  , int)
-INSTANTIATE(uchar , int)
-INSTANTIATE(short , int)
+INSTANTIATE(int, int)
+INSTANTIATE(uint, int)
+INSTANTIATE(char, int)
+INSTANTIATE(uchar, int)
+INSTANTIATE(short, int)
 INSTANTIATE(ushort, int)
 
-}
+}  // namespace cpu

@@ -7,21 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel
-void complex_multiply(
-    __global CONVT       *d_out,
-    KParam                oInfo,
-    __global const CONVT *d_in1,
-    KParam                i1Info,
-    __global const CONVT *d_in2,
-    KParam                i2Info,
-    const int        nelem,
-    const int             kind)
-{
+__kernel void complex_multiply(__global CONVT *d_out, KParam oInfo,
+                               __global const CONVT *d_in1, KParam i1Info,
+                               __global const CONVT *d_in2, KParam i2Info,
+                               const int nelem, const int kind) {
     const int t = get_global_id(0);
 
-    if (t >= nelem)
-        return;
+    if (t >= nelem) return;
 
     if (kind == AF_BATCH_NONE || kind == AF_BATCH_SAME) {
         // Complex multiply each signal to equivalent filter
@@ -33,10 +25,9 @@ void complex_multiply(
         CONVT c = d_in2[i2Info.offset + ridx];
         CONVT d = d_in2[i2Info.offset + iidx];
 
-        d_out[oInfo.offset + ridx] = a*c - b*d;
-        d_out[oInfo.offset + iidx] = a*d + b*c;
-    }
-    else if (kind == AF_BATCH_LHS) {
+        d_out[oInfo.offset + ridx] = a * c - b * d;
+        d_out[oInfo.offset + iidx] = a * d + b * c;
+    } else if (kind == AF_BATCH_LHS) {
         // Complex multiply all signals to filter
         const int ridx1 = t * 2;
         const int iidx1 = t * 2 + 1;
@@ -51,10 +42,9 @@ void complex_multiply(
         CONVT c = d_in2[i2Info.offset + ridx2];
         CONVT d = d_in2[i2Info.offset + iidx2];
 
-        d_out[oInfo.offset + ridx1] = a*c - b*d;
-        d_out[oInfo.offset + iidx1] = a*d + b*c;
-    }
-    else if (kind == AF_BATCH_RHS) {
+        d_out[oInfo.offset + ridx1] = a * c - b * d;
+        d_out[oInfo.offset + iidx1] = a * d + b * c;
+    } else if (kind == AF_BATCH_RHS) {
         // Complex multiply signal to all filters
         const int ridx2 = t * 2;
         const int iidx2 = t * 2 + 1;
@@ -69,7 +59,7 @@ void complex_multiply(
         CONVT c = d_in2[i2Info.offset + ridx2];
         CONVT d = d_in2[i2Info.offset + iidx2];
 
-        d_out[oInfo.offset + ridx2] = a*c - b*d;
-        d_out[oInfo.offset + iidx2] = a*d + b*c;
+        d_out[oInfo.offset + ridx2] = a * c - b * d;
+        d_out[oInfo.offset + iidx2] = a * d + b * c;
     }
 }

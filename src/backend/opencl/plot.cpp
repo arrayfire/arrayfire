@@ -8,9 +8,9 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <GraphicsResourceManager.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
-#include <GraphicsResourceManager.hpp>
 #include <plot.hpp>
 
 using af::dim4;
@@ -18,13 +18,12 @@ using af::dim4;
 namespace opencl {
 
 template<typename T>
-void copy_plot(const Array<T> &P, fg_plot plot)
-{
-    ForgeModule& _ = graphics::forgePlugin();
+void copy_plot(const Array<T> &P, fg_plot plot) {
+    ForgeModule &_ = graphics::forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = P.get();
-        unsigned bytes = 0;
+        unsigned bytes        = 0;
         FG_CHECK(_.fg_get_plot_vertex_buffer_size(&bytes, plot));
 
         auto res = interopManager().getPlotResources(plot);
@@ -40,7 +39,8 @@ void copy_plot(const Array<T> &P, fg_plot plot)
 
         getQueue().enqueueAcquireGLObjects(&shared_objects, NULL, &event);
         event.wait();
-        getQueue().enqueueCopyBuffer(*d_P, *(res[0].get()), 0, 0, bytes, NULL, &event);
+        getQueue().enqueueCopyBuffer(*d_P, *(res[0].get()), 0, 0, bytes, NULL,
+                                     &event);
         getQueue().enqueueReleaseGLObjects(&shared_objects, NULL, &event);
         event.wait();
 
@@ -53,7 +53,7 @@ void copy_plot(const Array<T> &P, fg_plot plot)
 
         CheckGL("Begin OpenCL fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        GLubyte *ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
             getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, bytes, ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -63,8 +63,7 @@ void copy_plot(const Array<T> &P, fg_plot plot)
     }
 }
 
-#define INSTANTIATE(T)  \
-template void copy_plot<T>(const Array<T> &, fg_plot);
+#define INSTANTIATE(T) template void copy_plot<T>(const Array<T> &, fg_plot);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -74,4 +73,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
-}
+}  // namespace opencl

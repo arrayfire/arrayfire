@@ -7,43 +7,43 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <stdio.h>
-#include <iostream>
 #include <arrayfire.h>
+#include <stdio.h>
 #include <cmath>
 #include <cstdlib>
+#include <iostream>
 
-#define WIDTH 400 // Width of image
-#define HEIGHT 400 // Width of image
+#define WIDTH 400   // Width of image
+#define HEIGHT 400  // Width of image
 
 using namespace af;
 using std::abs;
 
-array complex_grid(int width, int height, float zoom, float center[2])
-{
-
+array complex_grid(int width, int height, float zoom, float center[2]) {
     // Generate sequences of length width, height
-    array X = (iota(dim4(1, height), dim4(width , 1)) -  (float)height / 2.0) / zoom + center[0];
-    array Y = (iota(dim4(width , 1), dim4(1, height)) -  (float)width  / 2.0) / zoom + center[1];
+    array X =
+        (iota(dim4(1, height), dim4(width, 1)) - (float)height / 2.0) / zoom +
+        center[0];
+    array Y =
+        (iota(dim4(width, 1), dim4(1, height)) - (float)width / 2.0) / zoom +
+        center[1];
 
     // Return the locations as a complex grid
     return complex(X, Y);
 }
 
-array mandelbrot(const array &in, int iter, float maxval)
-{
-    array C = in;
-    array Z = C;
+array mandelbrot(const array &in, int iter, float maxval) {
+    array C   = in;
+    array Z   = C;
     array mag = constant(0, C.dims());
 
     for (int ii = 1; ii < iter; ii++) {
-
         // Do the calculation
         Z = Z * Z + C;
 
         // Get indices where abs(Z) crosses maxval
         array cond = (abs(Z) > maxval).as(f32);
-        mag = af::max(mag, cond * ii);
+        mag        = af::max(mag, cond * ii);
 
         // If abs(Z) cross maxval, turn off those locations
         C = C * (1 - cond);
@@ -58,17 +58,15 @@ array mandelbrot(const array &in, int iter, float maxval)
     return mag / maxval;
 }
 
-array normalize(array a)
-{
+array normalize(array a) {
     float mx = af::max<float>(a);
     float mn = af::min<float>(a);
-    return (a-mn)/(mx-mn);
+    return (a - mn) / (mx - mn);
 }
 
-int main(int argc, char **argv)
-{
-    int device = argc > 1 ? atoi(argv[1]) : 0;
-    int iter = argc > 2 ? atoi(argv[2]) : 100;
+int main(int argc, char **argv) {
+    int device   = argc > 1 ? atoi(argv[1]) : 0;
+    int iter     = argc > 2 ? atoi(argv[2]) : 100;
     bool console = argc > 2 ? argv[2][0] == '-' : false;
     try {
         af::setDevice(device);
@@ -81,18 +79,19 @@ int main(int argc, char **argv)
         // Keep zomming out for each frame
         for (int i = 10; i < 400; i++) {
             int zoom = i * i;
-            if(!(i % 10)) {
-                printf("iteration: %d zoom: %d\n", i, zoom); fflush(stdout);
+            if (!(i % 10)) {
+                printf("iteration: %d zoom: %d\n", i, zoom);
+                fflush(stdout);
             }
 
             // Generate the grid at the current zoom factor
             array c = complex_grid(WIDTH, HEIGHT, zoom, center);
 
-            iter =sqrt(abs(2*sqrt(abs(1-sqrt(5*zoom)))))*100;
+            iter = sqrt(abs(2 * sqrt(abs(1 - sqrt(5 * zoom))))) * 100;
             // Generate the mandelbrot image
             array mag = mandelbrot(c, iter, 1000);
 
-            if(!console) {
+            if (!console) {
                 if (wnd.close()) break;
                 array mag_norm = normalize(mag);
                 wnd.image(mag_norm);

@@ -54,8 +54,8 @@
 #if 0  // Needs hetrd to be enabled
 #include "magma.h"
 #include "magma_blas.h"
-#include "magma_data.h"
 #include "magma_cpu_lapack.h"
+#include "magma_data.h"
 #include "magma_helper.h"
 #include "magma_sync.h"
 
@@ -164,9 +164,9 @@ magma_unmqr2_gpu(
     magma_queue_t queue,
     magma_int_t *info)
 {
-    #define dA(i_,j_) (dA) , ((i_) + (j_)*ldda) + dA_offset
-    #define dC(i_,j_) (dC) , ((i_) + (j_)*lddc) + dC_offset
-    #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
+#define dA(i_, j_) (dA), ((i_) + (j_)*ldda) + dA_offset
+#define dC(i_, j_) (dC), ((i_) + (j_)*lddc) + dC_offset
+#define wA(i_, j_) (wA + (i_) + (j_)*ldwa)
 
     /* Allocate work space on the GPU */
     cl_mem dwork;
@@ -301,18 +301,12 @@ magma_unmqr2_gpu(
     return *info;
 } /* magma_zunmqr */
 
-
-#define INSTANTIATE(Ty)                                 \
-    template magma_int_t                                \
-    magma_unmqr2_gpu<Ty>(                               \
-        magma_side_t side, magma_trans_t trans,         \
-        magma_int_t m, magma_int_t n, magma_int_t k,    \
-        cl_mem dA, size_t dA_offset, magma_int_t ldda,  \
-        Ty    *tau,                                     \
-        cl_mem dC, size_t dC_offset, magma_int_t lddc,  \
-        Ty    *wA, magma_int_t ldwa,                    \
-        magma_queue_t queue,                            \
-        magma_int_t *info);                             \
+#define INSTANTIATE(Ty)                                                       \
+    template magma_int_t magma_unmqr2_gpu<Ty>(                                \
+        magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, \
+        magma_int_t k, cl_mem dA, size_t dA_offset, magma_int_t ldda,         \
+        Ty * tau, cl_mem dC, size_t dC_offset, magma_int_t lddc, Ty * wA,     \
+        magma_int_t ldwa, magma_queue_t queue, magma_int_t * info);                             \
 
 INSTANTIATE(float)
 INSTANTIATE(double)

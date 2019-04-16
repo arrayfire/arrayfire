@@ -10,8 +10,7 @@
 #pragma once
 #include <cstddef>
 
-namespace common
-{
+namespace common {
 
 size_t getHostMemorySize();
 

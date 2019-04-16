@@ -7,83 +7,77 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+#include <algorithm>
+#include <ctime>
 #include <string>
 #include <vector>
-#include <ctime>
-#include <algorithm>
-#include <testHelpers.hpp>
 
-using std::string;
-using std::vector;
 using af::array;
 using af::cfloat;
 using af::corrcoef;
 using af::dim4;
+using std::string;
+using std::vector;
 
 template<typename T>
-class CorrelationCoefficient : public ::testing::Test
-{
-    public:
-        virtual void SetUp() {}
+class CorrelationCoefficient : public ::testing::Test {
+   public:
+    virtual void SetUp() {}
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, intl, uintl, char, uchar> TestTypes;
+typedef ::testing::Types<float, double, int, uint, intl, uintl, char, uchar>
+    TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(CorrelationCoefficient, TestTypes);
 
 template<typename T>
 struct f32HelperType {
-   typedef typename cond_type<is_same_type<T, double>::value,
-                                             double,
-                                             float>::type type;
+    typedef
+        typename cond_type<is_same_type<T, double>::value, double, float>::type
+            type;
 };
 
 template<typename T>
 struct c32HelperType {
-   typedef typename cond_type<is_same_type<T, cfloat>::value,
-                                             cfloat,
-                                             typename f32HelperType<T>::type >::type type;
+    typedef typename cond_type<is_same_type<T, cfloat>::value, cfloat,
+                               typename f32HelperType<T>::type>::type type;
 };
 
 template<typename T>
 struct elseType {
-   typedef typename cond_type< is_same_type<T, uintl>::value ||
-                               is_same_type<T, intl> ::value,
-                                              double,
-                                              T>::type type;
+    typedef typename cond_type<is_same_type<T, uintl>::value ||
+                                   is_same_type<T, intl>::value,
+                               double, T>::type type;
 };
 
 template<typename T>
 struct ccOutType {
-   typedef typename cond_type< is_same_type<T, float>   ::value ||
-                               is_same_type<T, int>     ::value ||
-                               is_same_type<T, uint>    ::value ||
-                               is_same_type<T, uchar>   ::value ||
-                               is_same_type<T, short>   ::value ||
-                               is_same_type<T, ushort>  ::value ||
-                               is_same_type<T, char>    ::value,
-                                              float,
-                              typename elseType<T>::type>::type type;
+    typedef typename cond_type<
+        is_same_type<T, float>::value || is_same_type<T, int>::value ||
+            is_same_type<T, uint>::value || is_same_type<T, uchar>::value ||
+            is_same_type<T, short>::value || is_same_type<T, ushort>::value ||
+            is_same_type<T, char>::value,
+        float, typename elseType<T>::type>::type type;
 };
 
-TYPED_TEST(CorrelationCoefficient, All)
-{
+TYPED_TEST(CorrelationCoefficient, All) {
     typedef typename ccOutType<TypeParam>::type outType;
     if (noDoubleTests<TypeParam>()) return;
     if (noDoubleTests<outType>()) return;
 
-    vector<dim4>          numDims;
-    vector<vector<int> >       in;
-    vector<vector<float> >  tests;
+    vector<dim4> numDims;
+    vector<vector<int> > in;
+    vector<vector<float> > tests;
 
-    readTestsFromFile<int,float>(string(TEST_DIR "/corrcoef/mat_10x10_scalar.test"),
-                                 numDims, in, tests);
+    readTestsFromFile<int, float>(
+        string(TEST_DIR "/corrcoef/mat_10x10_scalar.test"), numDims, in, tests);
 
     vector<TypeParam> input1(in[0].begin(), in[0].end());
     vector<TypeParam> input2(in[1].begin(), in[1].end());

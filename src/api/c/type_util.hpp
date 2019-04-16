@@ -12,22 +12,19 @@
 
 const char *getName(af_dtype type);
 
-//uchar to number converters
+// uchar to number converters
 template<typename T>
-struct ToNum
-{
+struct ToNum {
     inline T operator()(T val) { return val; }
 };
 
 template<>
-struct ToNum<unsigned char>
-{
+struct ToNum<unsigned char> {
     inline int operator()(unsigned char val) { return static_cast<int>(val); }
 };
 
 template<>
-struct ToNum<char>
-{
+struct ToNum<char> {
     inline int operator()(char val) { return static_cast<int>(val); }
 };
 

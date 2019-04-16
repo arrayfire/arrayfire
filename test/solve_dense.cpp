@@ -13,14 +13,11 @@
 
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
-#include "solve_common.hpp"
 #include <thread>
+#include "solve_common.hpp"
 
 template<typename T>
-class Solve : public ::testing::Test
-{
-
-};
+class Solve : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
 TYPED_TEST_CASE(Solve, TestTypes);
@@ -96,9 +93,7 @@ TYPED_TEST(Solve, LeastSquaresOverDeterminedMultipleOfTwoLarge) {
     solveTester<TypeParam>(1536, 1024, 1, eps<TypeParam>());
 }
 
-TYPED_TEST(Solve, LU) {
-    solveLUTester<TypeParam>(100, 10, eps<TypeParam>());
-}
+TYPED_TEST(Solve, LU) { solveLUTester<TypeParam>(100, 10, eps<TypeParam>()); }
 
 TYPED_TEST(Solve, LUMultipleOfTwo) {
     solveLUTester<TypeParam>(96, 64, eps<TypeParam>());
@@ -145,29 +140,33 @@ TYPED_TEST(Solve, TriangleLowerMultipleOfTwoLarge) {
 }
 
 #if !defined(AF_OPENCL)
-int nextTargetDeviceId()
-{
-  static int nextId = 0;
-  return nextId++;
+int nextTargetDeviceId() {
+    static int nextId = 0;
+    return nextId++;
 }
 
-#define SOLVE_LU_TESTS_THREADING(T, eps)                                                                          \
-    tests.emplace_back(solveLUTester<T>, 1000, 100, eps, nextTargetDeviceId()%numDevices);              \
-    tests.emplace_back(solveTriangleTester<T>, 1000, 100, true, eps, nextTargetDeviceId()%numDevices);  \
-    tests.emplace_back(solveTriangleTester<T>, 1000, 100, false, eps, nextTargetDeviceId()%numDevices); \
-    tests.emplace_back(solveTester<T>, 1000, 1000, 100, eps, nextTargetDeviceId()%numDevices);          \
-    tests.emplace_back(solveTester<T>, 800, 1000, 200, eps, nextTargetDeviceId()%numDevices);           \
-    tests.emplace_back(solveTester<T>, 800, 600, 64, eps, nextTargetDeviceId()%numDevices);             \
+#define SOLVE_LU_TESTS_THREADING(T, eps)                              \
+    tests.emplace_back(solveLUTester<T>, 1000, 100, eps,              \
+                       nextTargetDeviceId() % numDevices);            \
+    tests.emplace_back(solveTriangleTester<T>, 1000, 100, true, eps,  \
+                       nextTargetDeviceId() % numDevices);            \
+    tests.emplace_back(solveTriangleTester<T>, 1000, 100, false, eps, \
+                       nextTargetDeviceId() % numDevices);            \
+    tests.emplace_back(solveTester<T>, 1000, 1000, 100, eps,          \
+                       nextTargetDeviceId() % numDevices);            \
+    tests.emplace_back(solveTester<T>, 800, 1000, 200, eps,           \
+                       nextTargetDeviceId() % numDevices);            \
+    tests.emplace_back(solveTester<T>, 800, 600, 64, eps,             \
+                       nextTargetDeviceId() % numDevices);
 
-TEST(Solve, Threading)
-{
-    cleanSlate(); // Clean up everything done so far
+TEST(Solve, Threading) {
+    cleanSlate();  // Clean up everything done so far
 
     vector<std::thread> tests;
 
     int numDevices = 0;
     ASSERT_SUCCESS(af_get_device_count(&numDevices));
-    ASSERT_EQ(true, numDevices>0);
+    ASSERT_EQ(true, numDevices > 0);
 
     SOLVE_LU_TESTS_THREADING(float, 0.01);
     SOLVE_LU_TESTS_THREADING(cfloat, 0.01);
@@ -176,9 +175,8 @@ TEST(Solve, Threading)
         SOLVE_LU_TESTS_THREADING(cdouble, 1E-5);
     }
 
-    for (size_t testId=0; testId<tests.size(); ++testId)
-        if (tests[testId].joinable())
-            tests[testId].join();
+    for (size_t testId = 0; testId < tests.size(); ++testId)
+        if (tests[testId].joinable()) tests[testId].join();
 }
 
 #undef SOLVE_LU_TESTS_THREADING

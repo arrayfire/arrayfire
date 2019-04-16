@@ -7,34 +7,32 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <vector>
 #include <iostream>
 #include <string>
-#include <testHelpers.hpp>
+#include <vector>
 
-using std::vector;
-using std::string;
-using std::endl;
 using af::array;
-using af::cfloat;
 using af::cdouble;
+using af::cfloat;
 using af::dim4;
 using af::identity;
 using af::loadImage;
 using af::max;
 using af::min;
+using std::endl;
+using std::string;
+using std::vector;
 
 template<typename T>
-class Image : public ::testing::Test
-{
-    public:
-        virtual void SetUp() {
-        }
+class Image : public ::testing::Test {
+   public:
+    virtual void SetUp() {}
 };
 
 // create a list of types to be tested
@@ -44,14 +42,13 @@ typedef ::testing::Types<float, double, int> TestTypes;
 TYPED_TEST_CASE(Image, TestTypes);
 
 template<typename T>
-void momentsTest(string pTestFile)
-{
+void momentsTest(string pTestFile) {
     if (noDoubleTests<T>()) return;
 
     vector<dim4> numDims;
 
-    vector<vector<T> >   in;
-    vector<vector<float> >   tests;
+    vector<vector<T> > in;
+    vector<vector<float> > tests;
     readTests<T, float, float>(pTestFile, numDims, in, tests);
 
     array imgArray(numDims.front(), &in.front()[0]);
@@ -59,46 +56,53 @@ void momentsTest(string pTestFile)
     array momentsArray = moments(imgArray, AF_MOMENT_M00);
     vector<float> mData(momentsArray.elements());
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements();++i) {
-        ASSERT_NEAR(tests[0][i], mData[i], 4e-3 * tests[0][i] ) << "at: " << i << endl;
+    for (int i = 0; i < momentsArray.elements(); ++i) {
+        ASSERT_NEAR(tests[0][i], mData[i], 4e-3 * tests[0][i])
+            << "at: " << i << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M01);
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements();++i) {
-        ASSERT_NEAR(tests[1][i], mData[i], 8e-3 * tests[1][i] ) << "at: " << i << endl;
+    for (int i = 0; i < momentsArray.elements(); ++i) {
+        ASSERT_NEAR(tests[1][i], mData[i], 8e-3 * tests[1][i])
+            << "at: " << i << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M10);
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements();++i) {
-        ASSERT_NEAR(tests[2][i], mData[i], 3e-3 * tests[2][i] ) << "at: " << i << endl;
+    for (int i = 0; i < momentsArray.elements(); ++i) {
+        ASSERT_NEAR(tests[2][i], mData[i], 3e-3 * tests[2][i])
+            << "at: " << i << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M11);
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements();++i) {
-        ASSERT_NEAR(tests[3][i], mData[i], 7e-3 * tests[3][i] ) << "at: " << i << endl;
+    for (int i = 0; i < momentsArray.elements(); ++i) {
+        ASSERT_NEAR(tests[3][i], mData[i], 7e-3 * tests[3][i])
+            << "at: " << i << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_FIRST_ORDER);
     mData.resize(momentsArray.elements());
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements()/4;i+=4) {
-        ASSERT_NEAR(tests[0][i], mData[i]  , 1e-3 * tests[0][i] ) << "at: " << i   << endl;
-        ASSERT_NEAR(tests[1][i], mData[i+1], 1e-3 * tests[1][i] ) << "at: " << i+1 << endl;
-        ASSERT_NEAR(tests[2][i], mData[i+2], 1e-3 * tests[2][i] ) << "at: " << i+2 << endl;
-        ASSERT_NEAR(tests[3][i], mData[i+3], 1e-3 * tests[3][i] ) << "at: " << i+3 << endl;
+    for (int i = 0; i < momentsArray.elements() / 4; i += 4) {
+        ASSERT_NEAR(tests[0][i], mData[i], 1e-3 * tests[0][i])
+            << "at: " << i << endl;
+        ASSERT_NEAR(tests[1][i], mData[i + 1], 1e-3 * tests[1][i])
+            << "at: " << i + 1 << endl;
+        ASSERT_NEAR(tests[2][i], mData[i + 2], 1e-3 * tests[2][i])
+            << "at: " << i + 2 << endl;
+        ASSERT_NEAR(tests[3][i], mData[i + 3], 1e-3 * tests[3][i])
+            << "at: " << i + 3 << endl;
     }
 }
 
-void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor)
-{
+void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor) {
     if (noImageIOTests()) return;
     vector<dim4> numDims;
 
-    vector<vector<float> >   in;
-    vector<vector<float> >   tests;
+    vector<vector<float> > in;
+    vector<vector<float> > tests;
     readTests<float, float, float>(pTestFile, numDims, in, tests);
 
     array imgArray = loadImage(pImageFile.c_str(), isColor);
@@ -112,61 +116,67 @@ void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor)
 
     vector<float> mData(momentsArray.elements());
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements();++i) {
-        ASSERT_NEAR(tests[0][i], mData[i], 1e-2 * tests[0][i] ) << "at: " << i << endl;
+    for (int i = 0; i < momentsArray.elements(); ++i) {
+        ASSERT_NEAR(tests[0][i], mData[i], 1e-2 * tests[0][i])
+            << "at: " << i << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M01);
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements();++i) {
-        ASSERT_NEAR(tests[1][i], mData[i], 1e-2 * tests[1][i] ) << "at: " << i << endl;
+    for (int i = 0; i < momentsArray.elements(); ++i) {
+        ASSERT_NEAR(tests[1][i], mData[i], 1e-2 * tests[1][i])
+            << "at: " << i << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M10);
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements();++i) {
-        ASSERT_NEAR(tests[2][i], mData[i], 1e-2 * tests[2][i] ) << "at: " << i << endl;
+    for (int i = 0; i < momentsArray.elements(); ++i) {
+        ASSERT_NEAR(tests[2][i], mData[i], 1e-2 * tests[2][i])
+            << "at: " << i << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_M11);
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements();++i) {
-        ASSERT_NEAR(tests[3][i], mData[i], 1e-2 * tests[3][i] ) << "at: " << i << endl;
+    for (int i = 0; i < momentsArray.elements(); ++i) {
+        ASSERT_NEAR(tests[3][i], mData[i], 1e-2 * tests[3][i])
+            << "at: " << i << endl;
     }
 
     momentsArray = moments(imgArray, AF_MOMENT_FIRST_ORDER);
     mData.resize(momentsArray.elements());
     momentsArray.host(&mData[0]);
-    for(int i=0; i<momentsArray.elements()/4;i+=4) {
-        ASSERT_NEAR(tests[0][i], mData[i]  , 1e-2 * tests[0][i] ) << "at: " << i   << endl;
-        ASSERT_NEAR(tests[1][i], mData[i+1], 1e-2 * tests[1][i] ) << "at: " << i+1 << endl;
-        ASSERT_NEAR(tests[2][i], mData[i+2], 1e-2 * tests[2][i] ) << "at: " << i+2 << endl;
-        ASSERT_NEAR(tests[3][i], mData[i+3], 1e-2 * tests[3][i] ) << "at: " << i+3 << endl;
+    for (int i = 0; i < momentsArray.elements() / 4; i += 4) {
+        ASSERT_NEAR(tests[0][i], mData[i], 1e-2 * tests[0][i])
+            << "at: " << i << endl;
+        ASSERT_NEAR(tests[1][i], mData[i + 1], 1e-2 * tests[1][i])
+            << "at: " << i + 1 << endl;
+        ASSERT_NEAR(tests[2][i], mData[i + 2], 1e-2 * tests[2][i])
+            << "at: " << i + 2 << endl;
+        ASSERT_NEAR(tests[3][i], mData[i + 3], 1e-2 * tests[3][i])
+            << "at: " << i + 3 << endl;
     }
 }
 
-TEST(IMAGE, MomentsImage)
-{
-    momentsOnImageTest(string(TEST_DIR"/moments/gray_seq_16_moments.test"), string(TEST_DIR"/imageio/gray_seq_16.png"), false);
+TEST(IMAGE, MomentsImage) {
+    momentsOnImageTest(string(TEST_DIR "/moments/gray_seq_16_moments.test"),
+                       string(TEST_DIR "/imageio/gray_seq_16.png"), false);
 }
 
-TEST(Image, MomentsImageBatch)
-{
-    momentsTest<float>(string(TEST_DIR"/moments/simple_mat_batch_moments.test"));
+TEST(Image, MomentsImageBatch) {
+    momentsTest<float>(
+        string(TEST_DIR "/moments/simple_mat_batch_moments.test"));
 }
 
-TEST(Image, MomentsBatch2D)
-{
-    momentsOnImageTest(string(TEST_DIR"/moments/color_seq_16_moments.test"), string(TEST_DIR"/imageio/color_seq_16.png"), true);
+TEST(Image, MomentsBatch2D) {
+    momentsOnImageTest(string(TEST_DIR "/moments/color_seq_16_moments.test"),
+                       string(TEST_DIR "/imageio/color_seq_16.png"), true);
 }
 
-TYPED_TEST(Image, MomentsSynthTypes)
-{
-    momentsTest<TypeParam>(string(TEST_DIR"/moments/simple_mat_moments.test"));
+TYPED_TEST(Image, MomentsSynthTypes) {
+    momentsTest<TypeParam>(string(TEST_DIR "/moments/simple_mat_moments.test"));
 }
 
-TEST(Image, Moment_Issue1957)
-{
+TEST(Image, Moment_Issue1957) {
     array A = identity(3, 3, b8);
 
     double m00;

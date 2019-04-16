@@ -10,8 +10,9 @@
 #include <af/defines.h>
 #include <af/vision.h>
 
-af_err af_hamming_matcher(af_array* idx, af_array* dist, const af_array query, const af_array train,
-        const dim_t dist_dim, const unsigned n_dist)
-{
-    return af_nearest_neighbour(idx, dist, query, train, dist_dim, n_dist, AF_SHD);
+af_err af_hamming_matcher(af_array* idx, af_array* dist, const af_array query,
+                          const af_array train, const dim_t dist_dim,
+                          const unsigned n_dist) {
+    return af_nearest_neighbour(idx, dist, query, train, dist_dim, n_dist,
+                                AF_SHD);
 }

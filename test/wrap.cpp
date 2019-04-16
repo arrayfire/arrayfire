@@ -7,17 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
-#include <af/dim4.hpp>
-#include <af/defines.h>
-#include <af/traits.hpp>
-#include <vector>
-#include <iostream>
-#include <complex>
-#include <string>
+#include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <af/traits.hpp>
 #include <algorithm>
+#include <complex>
+#include <iostream>
+#include <string>
+#include <vector>
 
 using af::allTrue;
 using af::array;
@@ -35,52 +35,48 @@ using std::string;
 using std::vector;
 
 template<typename T>
-class Wrap : public ::testing::Test
-{
-    public:
-        virtual void SetUp() {
-        }
+class Wrap : public ::testing::Test {
+   public:
+    virtual void SetUp() {}
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int, intl, uintl, char, unsigned char, short, ushort> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
+                         intl, uintl, char, unsigned char, short, ushort>
+    TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Wrap, TestTypes);
 
 template<typename T>
-inline double get_val(T val)
-{
+inline double get_val(T val) {
     return val;
 }
 
-template<> inline double get_val<cfloat>(cfloat val)
-{
+template<>
+inline double get_val<cfloat>(cfloat val) {
     return abs(val);
 }
 
-template<> inline double get_val<cdouble>(cdouble val)
-{
+template<>
+inline double get_val<cdouble>(cdouble val) {
     return abs(val);
 }
 
-template<> inline double get_val<unsigned char>(unsigned char val)
-{
+template<>
+inline double get_val<unsigned char>(unsigned char val) {
     return ((int)(val)) % 256;
 }
 
-template<> inline double get_val<char>(char val)
-{
+template<>
+inline double get_val<char>(char val) {
     return (val != 0);
 }
 
 template<typename T>
-void wrapTest(const dim_t ix, const dim_t iy,
-              const dim_t wx, const dim_t wy,
-              const dim_t sx, const dim_t sy,
-              const dim_t px, const dim_t py,
-              bool cond)
-{
+void wrapTest(const dim_t ix, const dim_t iy, const dim_t wx, const dim_t wy,
+              const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
+              bool cond) {
     if (noDoubleTests<T>()) return;
 
     const int nc = 1;
@@ -119,7 +115,7 @@ void wrapTest(const dim_t ix, const dim_t iy,
 
     array factor(ix, iy, &h_factor[0]);
 
-    array in_dim = unwrap(in, wx, wy, sx, sy, px, py, cond);
+    array in_dim  = unwrap(in, wx, wy, sx, sy, px, py, cond);
     array res_dim = wrap(in_dim, ix, iy, wx, wy, sx, sy, px, py, cond);
 
     ASSERT_EQ(in.elements(), res_dim.elements());
@@ -133,63 +129,59 @@ void wrapTest(const dim_t ix, const dim_t iy,
 
         for (int y = 0; y < iy; y++) {
             for (int x = 0; x < ix; x++) {
-
                 // FIXME: Use a better test
-                T ival = iptr[y * ix + x];
-                T rval = rptr[y * ix + x];
+                T ival     = iptr[y * ix + x];
+                T rval     = rptr[y * ix + x];
                 int factor = h_factor[y * ix + x];
 
                 if (get_val(ival) == 0) continue;
 
                 ASSERT_NEAR(get_val<T>(ival * factor), get_val<T>(rval), 1E-5)
-                    << "at " << x << "," << y <<  " for cond  == " << cond << endl;
+                    << "at " << x << "," << y << " for cond  == " << cond
+                    << endl;
             }
         }
-
     }
 }
 
-#define WRAP_INIT(desc, ix, iy, wx, wy, sx, sy, px,py)              \
-    TYPED_TEST(Wrap, Col##desc)                                     \
-    {                                                               \
-        wrapTest<TypeParam>(ix, iy, wx, wy, sx, sy, px, py, true ); \
+#define WRAP_INIT(desc, ix, iy, wx, wy, sx, sy, px, py)             \
+    TYPED_TEST(Wrap, Col##desc) {                                   \
+        wrapTest<TypeParam>(ix, iy, wx, wy, sx, sy, px, py, true);  \
     }                                                               \
-    TYPED_TEST(Wrap, Row##desc)                                     \
-    {                                                               \
+    TYPED_TEST(Wrap, Row##desc) {                                   \
         wrapTest<TypeParam>(ix, iy, wx, wy, sx, sy, px, py, false); \
     }
 
-    WRAP_INIT(00, 300, 100,  3,  3,  1,  1,  0,  0);
-    WRAP_INIT(01, 300, 100,  3,  3,  1,  1,  1,  1);
-    WRAP_INIT(03, 300, 100,  3,  3,  2,  2,  0,  0);
-    WRAP_INIT(04, 300, 100,  3,  3,  2,  2,  1,  1);
-    WRAP_INIT(05, 300, 100,  3,  3,  2,  2,  2,  2);
-    WRAP_INIT(06, 300, 100,  3,  3,  3,  3,  0,  0);
-    WRAP_INIT(07, 300, 100,  3,  3,  3,  3,  1,  1);
-    WRAP_INIT(08, 300, 100,  3,  3,  3,  3,  2,  2);
-    WRAP_INIT(09, 300, 100,  4,  4,  1,  1,  0,  0);
-    WRAP_INIT(13, 300, 100,  4,  4,  2,  2,  0,  0);
-    WRAP_INIT(14, 300, 100,  4,  4,  2,  2,  1,  1);
-    WRAP_INIT(15, 300, 100,  4,  4,  2,  2,  2,  2);
-    WRAP_INIT(16, 300, 100,  4,  4,  2,  2,  3,  3);
-    WRAP_INIT(17, 300, 100,  4,  4,  4,  4,  0,  0);
-    WRAP_INIT(18, 300, 100,  4,  4,  4,  4,  1,  1);
-    WRAP_INIT(19, 300, 100,  4,  4,  4,  4,  2,  2);
-    WRAP_INIT(27, 300, 100,  8,  8,  8,  8,  0,  0);
-    WRAP_INIT(28, 300, 100,  8,  8,  8,  8,  7,  7);
-    WRAP_INIT(31, 300, 100, 12, 12, 12, 12,  0,  0);
-    WRAP_INIT(32, 300, 100, 12, 12, 12, 12,  2,  2);
-    WRAP_INIT(35, 300, 100, 16, 16, 16, 16, 15, 15);
-    WRAP_INIT(36, 300, 100, 31, 31,  8,  8, 15, 15);
-    WRAP_INIT(39, 300, 100,  8, 12,  8, 12,  0,  0);
-    WRAP_INIT(40, 300, 100,  8, 12,  8, 12,  7, 11);
-    WRAP_INIT(43, 300, 100, 15, 10, 15, 10,  0,  0);
-    WRAP_INIT(44, 300, 100, 15, 10, 15, 10, 14,  9);
+WRAP_INIT(00, 300, 100, 3, 3, 1, 1, 0, 0);
+WRAP_INIT(01, 300, 100, 3, 3, 1, 1, 1, 1);
+WRAP_INIT(03, 300, 100, 3, 3, 2, 2, 0, 0);
+WRAP_INIT(04, 300, 100, 3, 3, 2, 2, 1, 1);
+WRAP_INIT(05, 300, 100, 3, 3, 2, 2, 2, 2);
+WRAP_INIT(06, 300, 100, 3, 3, 3, 3, 0, 0);
+WRAP_INIT(07, 300, 100, 3, 3, 3, 3, 1, 1);
+WRAP_INIT(08, 300, 100, 3, 3, 3, 3, 2, 2);
+WRAP_INIT(09, 300, 100, 4, 4, 1, 1, 0, 0);
+WRAP_INIT(13, 300, 100, 4, 4, 2, 2, 0, 0);
+WRAP_INIT(14, 300, 100, 4, 4, 2, 2, 1, 1);
+WRAP_INIT(15, 300, 100, 4, 4, 2, 2, 2, 2);
+WRAP_INIT(16, 300, 100, 4, 4, 2, 2, 3, 3);
+WRAP_INIT(17, 300, 100, 4, 4, 4, 4, 0, 0);
+WRAP_INIT(18, 300, 100, 4, 4, 4, 4, 1, 1);
+WRAP_INIT(19, 300, 100, 4, 4, 4, 4, 2, 2);
+WRAP_INIT(27, 300, 100, 8, 8, 8, 8, 0, 0);
+WRAP_INIT(28, 300, 100, 8, 8, 8, 8, 7, 7);
+WRAP_INIT(31, 300, 100, 12, 12, 12, 12, 0, 0);
+WRAP_INIT(32, 300, 100, 12, 12, 12, 12, 2, 2);
+WRAP_INIT(35, 300, 100, 16, 16, 16, 16, 15, 15);
+WRAP_INIT(36, 300, 100, 31, 31, 8, 8, 15, 15);
+WRAP_INIT(39, 300, 100, 8, 12, 8, 12, 0, 0);
+WRAP_INIT(40, 300, 100, 8, 12, 8, 12, 7, 11);
+WRAP_INIT(43, 300, 100, 15, 10, 15, 10, 0, 0);
+WRAP_INIT(44, 300, 100, 15, 10, 15, 10, 14, 9);
 
-TEST(Wrap, MaxDim)
-{
+TEST(Wrap, MaxDim) {
     const size_t largeDim = 65535 + 1;
-    array input = range(5, 5, 1, largeDim);
+    array input           = range(5, 5, 1, largeDim);
 
     const unsigned wx = 5;
     const unsigned wy = 5;
@@ -199,7 +191,7 @@ TEST(Wrap, MaxDim)
     const unsigned py = 0;
 
     array unwrapped = unwrap(input, wx, wy, sx, sy, px, py);
-    array output = wrap(unwrapped, 5, 5, wx, wy, sx, sy, px, py);
+    array output    = wrap(unwrapped, 5, 5, wx, wy, sx, sy, px, py);
 
     ASSERT_ARRAYS_EQ(output, input);
 }
@@ -212,20 +204,18 @@ TEST(Wrap, DocSnippet) {
     //  2.     5.     8.
     //  3.     6.     9.
 
-    array A_unwrapped = unwrap(A,
-                               2, 2,  // window size
-                               2, 2,  // stride (distinct)
-                               1, 1); // padding
+    array A_unwrapped = unwrap(A, 2, 2,  // window size
+                               2, 2,     // stride (distinct)
+                               1, 1);    // padding
     //  0.     0.     0.     5.
     //  0.     0.     4.     6.
     //  0.     2.     0.     8.
     //  1.     3.     7.     9.
 
-    array A_wrapped = wrap(A_unwrapped,
-                           3, 3,  // A's size
-                           2, 2,  // window size
-                           2, 2,  // stride (distinct)
-                           1, 1); // padding
+    array A_wrapped = wrap(A_unwrapped, 3, 3,  // A's size
+                           2, 2,               // window size
+                           2, 2,               // stride (distinct)
+                           1, 1);              // padding
     //  1.     4.     7.
     //  2.     5.     8.
     //  3.     6.     9.
@@ -239,17 +229,15 @@ TEST(Wrap, DocSnippet) {
     //  1.     1.     1.
     //  1.     1.     1.
     //  1.     1.     1.
-    array B_unwrapped = unwrap(B,
-                               2, 2,  // window size
-                               1, 1); // stride (sliding)
+    array B_unwrapped = unwrap(B, 2, 2,  // window size
+                               1, 1);    // stride (sliding)
     //  1.     1.     1.     1.
     //  1.     1.     1.     1.
     //  1.     1.     1.     1.
     //  1.     1.     1.     1.
-    array B_wrapped = wrap(B_unwrapped,
-                           3, 3,  // B's size
-                           2, 2,  // window size
-                           1, 1); // stride (sliding)
+    array B_wrapped = wrap(B_unwrapped, 3, 3,  // B's size
+                           2, 2,               // window size
+                           1, 1);              // stride (sliding)
     //  1.     2.     1.
     //  2.     4.     2.
     //  1.     2.     1.

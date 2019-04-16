@@ -10,34 +10,31 @@
 #pragma once
 #include <Param.hpp>
 
-namespace cpu
-{
-namespace kernel
-{
+namespace cpu {
+namespace kernel {
 
 template<typename T, int dim>
-void range(Param<T> output)
-{
+void range(Param<T> output) {
     T* out = output.get();
 
-    const dim4 dims = output.dims();
+    const dim4 dims    = output.dims();
     const dim4 strides = output.strides();
 
-    for(dim_t w = 0; w < dims[3]; w++) {
+    for (dim_t w = 0; w < dims[3]; w++) {
         dim_t offW = w * strides[3];
-        for(dim_t z = 0; z < dims[2]; z++) {
+        for (dim_t z = 0; z < dims[2]; z++) {
             dim_t offWZ = offW + z * strides[2];
-            for(dim_t y = 0; y < dims[1]; y++) {
+            for (dim_t y = 0; y < dims[1]; y++) {
                 dim_t offWZY = offWZ + y * strides[1];
-                for(dim_t x = 0; x < dims[0]; x++) {
+                for (dim_t x = 0; x < dims[0]; x++) {
                     dim_t id = offWZY + x;
-                    if(dim == 0) {
+                    if (dim == 0) {
                         out[id] = x;
-                    } else if(dim == 1) {
+                    } else if (dim == 1) {
                         out[id] = y;
-                    } else if(dim == 2) {
+                    } else if (dim == 2) {
                         out[id] = z;
-                    } else if(dim == 3) {
+                    } else if (dim == 3) {
                         out[id] = w;
                     }
                 }
@@ -46,6 +43,5 @@ void range(Param<T> output)
     }
 }
 
-}
-}
-
+}  // namespace kernel
+}  // namespace cpu

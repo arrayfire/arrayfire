@@ -8,12 +8,11 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
-#include <af/array.h>
-#include <af/arith.h>
-#include <af/data.h>
 #include <testHelpers.hpp>
+#include <af/arith.h>
+#include <af/array.h>
+#include <af/data.h>
 
-using std::vector;
 using af::array;
 using af::cdouble;
 using af::cfloat;
@@ -23,11 +22,14 @@ using af::dtype_traits;
 using af::exception;
 using af::identity;
 using af::sum;
+using std::vector;
 
 template<typename T>
-class Constant : public ::testing::Test { };
+class Constant : public ::testing::Test {};
 
-typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char, uchar, uintl, intl, short, ushort> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
+                         uchar, uintl, intl, short, ushort>
+    TestTypes;
 TYPED_TEST_CASE(Constant, TestTypes);
 
 template<typename T>
@@ -35,16 +37,14 @@ void ConstantCPPCheck(T value) {
     if (noDoubleTests<T>()) return;
 
     const int num = 1000;
-    T val = value;
-    dtype dty = (dtype) dtype_traits<T>::af_type;
-    array in = constant(val, num, dty);
+    T val         = value;
+    dtype dty     = (dtype)dtype_traits<T>::af_type;
+    array in      = constant(val, num, dty);
 
     vector<T> h_in(num);
     in.host(&h_in.front());
 
-    for (int i = 0; i < num; i++) {
-        ASSERT_EQ(h_in[i], val);
-    }
+    for (int i = 0; i < num; i++) { ASSERT_EQ(h_in[i], val); }
 }
 
 template<typename T>
@@ -53,8 +53,8 @@ void ConstantCCheck(T value) {
 
     const int num = 1000;
     typedef typename dtype_traits<T>::base_type BT;
-    BT val = ::real(value);
-    dtype dty = (dtype) dtype_traits<T>::af_type;
+    BT val    = ::real(value);
+    dtype dty = (dtype)dtype_traits<T>::af_type;
     af_array out;
     dim_t dim[] = {(dim_t)num};
     ASSERT_SUCCESS(af_constant(&out, val, 1, dim, dty));
@@ -62,9 +62,7 @@ void ConstantCCheck(T value) {
     vector<T> h_in(num);
     af_get_data_ptr(&h_in.front(), out);
 
-    for (int i = 0; i < num; i++) {
-        ASSERT_EQ(::real(h_in[i]), val);
-    }
+    for (int i = 0; i < num; i++) { ASSERT_EQ(::real(h_in[i]), val); }
     ASSERT_SUCCESS(af_release_array(out));
 }
 
@@ -72,16 +70,16 @@ template<typename T>
 void IdentityCPPCheck() {
     if (noDoubleTests<T>()) return;
 
-    int num = 1000;
-    dtype dty = (dtype) dtype_traits<T>::af_type;
+    int num   = 1000;
+    dtype dty = (dtype)dtype_traits<T>::af_type;
     array out = identity(num, num, dty);
 
-    vector<T> h_in(num*num);
+    vector<T> h_in(num * num);
     out.host(&h_in.front());
 
     for (int i = 0; i < num; i++) {
         for (int j = 0; j < num; j++) {
-            if(j == i)
+            if (j == i)
                 ASSERT_EQ(h_in[i * num + j], T(1));
             else
                 ASSERT_EQ(h_in[i * num + j], T(0));
@@ -91,18 +89,18 @@ void IdentityCPPCheck() {
     num = 100;
     out = identity(num, num, num, dty);
 
-    h_in.resize(num*num*num);
+    h_in.resize(num * num * num);
     out.host(&h_in.front());
 
     for (int h = 0; h < num; h++) {
-       for (int i = 0; i < num; i++) {
-           for (int j = 0; j < num; j++) {
-               if(j == i)
-                   ASSERT_EQ(h_in[i * num + j], T(1));
-               else
-                   ASSERT_EQ(h_in[i * num + j], T(0));
-           }
-       }
+        for (int i = 0; i < num; i++) {
+            for (int j = 0; j < num; j++) {
+                if (j == i)
+                    ASSERT_EQ(h_in[i * num + j], T(1));
+                else
+                    ASSERT_EQ(h_in[i * num + j], T(0));
+            }
+        }
     }
 }
 
@@ -112,7 +110,7 @@ void IdentityLargeDimCheck() {
 
     const size_t largeDim = 65535 * 8 + 1;
 
-    dtype dty = (dtype) dtype_traits<T>::af_type;
+    dtype dty = (dtype)dtype_traits<T>::af_type;
     array out = identity(largeDim, dty);
     ASSERT_EQ(1.f, sum<float>(out));
 
@@ -131,17 +129,17 @@ void IdentityCCheck() {
     if (noDoubleTests<T>()) return;
 
     static const int num = 1000;
-    dtype dty = (dtype) dtype_traits<T>::af_type;
+    dtype dty            = (dtype)dtype_traits<T>::af_type;
     af_array out;
     dim_t dim[] = {(dim_t)num, (dim_t)num};
     ASSERT_SUCCESS(af_identity(&out, 2, dim, dty));
 
-    vector<T> h_in(num*num);
+    vector<T> h_in(num * num);
     af_get_data_ptr(&h_in.front(), out);
 
     for (int i = 0; i < num; i++) {
         for (int j = 0; j < num; j++) {
-            if(j == i)
+            if (j == i)
                 ASSERT_EQ(h_in[i * num + j], T(1));
             else
                 ASSERT_EQ(h_in[i * num + j], T(0));
@@ -155,43 +153,24 @@ void IdentityCPPError() {
     if (noDoubleTests<T>()) return;
 
     static const int num = 1000;
-    dtype dty = (dtype) dtype_traits<T>::af_type;
+    dtype dty            = (dtype)dtype_traits<T>::af_type;
     try {
         array out = identity(num, 0, 10, dty);
-    }
-    catch(const exception &ex) {
+    } catch (const exception &ex) {
         FAIL() << "Incorrectly thrown 0-length exception";
         return;
     }
     SUCCEED();
 }
 
-TYPED_TEST(Constant, basicCPP)
-{
-    ConstantCPPCheck<TypeParam>(5);
-}
+TYPED_TEST(Constant, basicCPP) { ConstantCPPCheck<TypeParam>(5); }
 
-TYPED_TEST(Constant, basicC)
-{
-    ConstantCCheck<TypeParam>(5);
-}
+TYPED_TEST(Constant, basicC) { ConstantCCheck<TypeParam>(5); }
 
-TYPED_TEST(Constant, IdentityC)
-{
-    IdentityCCheck<TypeParam>();
-}
+TYPED_TEST(Constant, IdentityC) { IdentityCCheck<TypeParam>(); }
 
-TYPED_TEST(Constant, IdentityCPP)
-{
-    IdentityCPPCheck<TypeParam>();
-}
+TYPED_TEST(Constant, IdentityCPP) { IdentityCPPCheck<TypeParam>(); }
 
-TYPED_TEST(Constant, IdentityLargeDim)
-{
-    IdentityLargeDimCheck<TypeParam>();
-}
+TYPED_TEST(Constant, IdentityLargeDim) { IdentityLargeDimCheck<TypeParam>(); }
 
-TYPED_TEST(Constant, IdentityCPPError)
-{
-    IdentityCPPError<TypeParam>();
-}
+TYPED_TEST(Constant, IdentityCPPError) { IdentityCPPError<TypeParam>(); }

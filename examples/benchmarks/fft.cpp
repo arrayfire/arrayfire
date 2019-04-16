@@ -8,22 +8,20 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 #include <cstdlib>
 
 using namespace af;
 
 // create a small wrapper to benchmark
-static array A; // populated before each timing
-static void fn()
-{
+static array A;  // populated before each timing
+static void fn() {
     array B = fft2(A);  // matrix multiply
     B.eval();           // ensure evaluated
 }
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
     try {
         int device = argc > 1 ? atoi(argv[1]) : 0;
         setDevice(device);
@@ -34,16 +32,14 @@ int main(int argc, char ** argv)
             int N = (1 << M);
 
             printf("%4d x %4d: ", N, N);
-            A = randu(N,N);
-            double time = timeit(fn); // time in seconds
+            A             = randu(N, N);
+            double time   = timeit(fn);  // time in seconds
             double gflops = 10.0 * N * N * M / (time * 1e9);
 
             printf(" %4.0f Gflops\n", gflops);
             fflush(stdout);
         }
-    } catch (af::exception& e) {
-        fprintf(stderr, "%s\n", e.what());
-    }
+    } catch (af::exception& e) { fprintf(stderr, "%s\n", e.what()); }
 
     return 0;
 }

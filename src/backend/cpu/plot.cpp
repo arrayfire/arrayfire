@@ -8,10 +8,10 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <plot.hpp>
-#include <err_cpu.hpp>
 #include <common/graphics_common.hpp>
+#include <err_cpu.hpp>
 #include <platform.hpp>
+#include <plot.hpp>
 #include <queue.hpp>
 
 using af::dim4;
@@ -19,9 +19,8 @@ using af::dim4;
 namespace cpu {
 
 template<typename T>
-void copy_plot(const Array<T> &P, fg_plot plot)
-{
-    ForgeModule& _ = graphics::forgePlugin();
+void copy_plot(const Array<T> &P, fg_plot plot) {
+    ForgeModule &_ = graphics::forgePlugin();
     P.eval();
     getQueue().sync();
 
@@ -37,8 +36,7 @@ void copy_plot(const Array<T> &P, fg_plot plot)
     CheckGL("In CopyArrayToVBO");
 }
 
-#define INSTANTIATE(T)  \
-template void copy_plot<T>(const Array<T> &, fg_plot);
+#define INSTANTIATE(T) template void copy_plot<T>(const Array<T> &, fg_plot);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -48,4 +46,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}
+}  // namespace cpu

@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 
-namespace opencl
-{
+namespace opencl {
 
 void setFFTPlanCacheSize(size_t numPlans);
 
@@ -23,4 +22,4 @@ Array<Tc> fft_r2c(const Array<Tr> &in);
 template<typename Tr, typename Tc, int rank>
 Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims);
 
-}
+}  // namespace opencl

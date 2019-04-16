@@ -7,46 +7,45 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
 #include <string>
 #include <vector>
-#include <testHelpers.hpp>
 
-using std::endl;
-using std::vector;
 using af::array;
-using af::cfloat;
 using af::cdouble;
+using af::cfloat;
 using af::dim4;
 using af::dtype_traits;
+using std::endl;
+using std::vector;
 
 template<typename T>
-class Transpose : public ::testing::Test
-{
-    public:
-        virtual void SetUp() {
-        }
+class Transpose : public ::testing::Test {
+   public:
+    virtual void SetUp() {}
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar, short, ushort> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar,
+                         short, ushort>
+    TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Transpose, TestTypes);
 
 template<typename T>
-void transposeip_test(dim4 dims)
-{
-    if (noDoubleTests<T>())
-        return;
+void transposeip_test(dim4 dims) {
+    if (noDoubleTests<T>()) return;
 
     af_array inArray  = 0;
     af_array outArray = 0;
 
-    ASSERT_SUCCESS(af_randu(&inArray, dims.ndims(), dims.get(), (af_dtype) dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_randu(&inArray, dims.ndims(), dims.get(),
+                            (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_SUCCESS(af_transpose(&outArray, inArray, false));
     ASSERT_SUCCESS(af_transpose_inplace(inArray, false));
@@ -58,10 +57,9 @@ void transposeip_test(dim4 dims)
     ASSERT_SUCCESS(af_release_array(outArray));
 }
 
-#define INIT_TEST(Side, D3, D4)                                                     \
-    TYPED_TEST(Transpose, TranposeIP_##Side)                                        \
-    {                                                                               \
-        transposeip_test<TypeParam>(dim4(Side, Side, D3, D4));                      \
+#define INIT_TEST(Side, D3, D4)                                \
+    TYPED_TEST(Transpose, TranposeIP_##Side) {                 \
+        transposeip_test<TypeParam>(dim4(Side, Side, D3, D4)); \
     }
 
 INIT_TEST(10, 1, 1);
@@ -73,13 +71,12 @@ INIT_TEST(25, 2, 2);
 
 ////////////////////////////////////// CPP //////////////////////////////////
 //
-void transposeInPlaceCPPTest()
-{
+void transposeInPlaceCPPTest() {
     if (noDoubleTests<float>()) return;
 
-    dim4 dims(64, 64, 1,1);
+    dim4 dims(64, 64, 1, 1);
 
-    array input = randu(dims);
+    array input  = randu(dims);
     array output = transpose(input);
     transposeInPlace(input);
 

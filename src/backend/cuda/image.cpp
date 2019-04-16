@@ -11,35 +11,34 @@
 // https://gist.github.com/SnopyDogy/a9a22497a893ec86aa3e
 
 #include <Array.hpp>
-#include <image.hpp>
-#include <err_cuda.hpp>
-#include <debug_cuda.hpp>
 #include <GraphicsResourceManager.hpp>
+#include <debug_cuda.hpp>
+#include <err_cuda.hpp>
+#include <image.hpp>
 
 using af::dim4;
 
 namespace cuda {
 
 template<typename T>
-void copy_image(const Array<T> &in, fg_image image)
-{
+void copy_image(const Array<T> &in, fg_image image) {
     auto stream = cuda::getActiveStream();
-    if(DeviceManager::checkGraphicsInteropCapability()) {
+    if (DeviceManager::checkGraphicsInteropCapability()) {
         auto res = interopManager().getImageResources(image);
 
         const T *d_X = in.get();
         size_t bytes = 0;
-        T* d_pixels = NULL;
+        T *d_pixels  = NULL;
         cudaGraphicsMapResources(1, res[0].get(), stream);
-        cudaGraphicsResourceGetMappedPointer((void **)&d_pixels,
-                                             &bytes, *(res[0].get()));
+        cudaGraphicsResourceGetMappedPointer((void **)&d_pixels, &bytes,
+                                             *(res[0].get()));
         cudaMemcpyAsync(d_pixels, d_X, bytes, cudaMemcpyDeviceToDevice, stream);
         cudaGraphicsUnmapResources(1, res[0].get(), stream);
 
         POST_LAUNCH_CHECK();
         CheckGL("After cuda resource copy");
     } else {
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule &_ = graphics::forgePlugin();
         CheckGL("Begin CUDA fallback-resource copy");
         unsigned data_size = 0, buffer = 0;
         FG_CHECK(_.fg_get_image_size(&data_size, image));
@@ -47,7 +46,8 @@ void copy_image(const Array<T> &in, fg_image image)
 
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
         glBufferData(GL_PIXEL_UNPACK_BUFFER, data_size, 0, GL_STREAM_DRAW);
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        GLubyte *ptr =
+            (GLubyte *)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
             CUDA_CHECK(cudaMemcpyAsync(ptr, in.get(), data_size,
                                        cudaMemcpyDeviceToHost, stream));
@@ -59,8 +59,7 @@ void copy_image(const Array<T> &in, fg_image image)
     }
 }
 
-#define INSTANTIATE(T)      \
-template void copy_image<T>(const Array<T> &, fg_image);
+#define INSTANTIATE(T) template void copy_image<T>(const Array<T> &, fg_image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -71,4 +70,4 @@ INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
 
-}
+}  // namespace cuda

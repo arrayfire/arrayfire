@@ -19,4 +19,4 @@ void unloadLibrary(LibHandle handle);
 
 std::string getErrorMessage();
 
-}
+}  // namespace common

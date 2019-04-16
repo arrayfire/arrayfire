@@ -7,19 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/image.h>
 #include <af/array.h>
+#include <af/image.h>
 #include "error.hpp"
 
-namespace af
-{
+namespace af {
 array anisotropicDiffusion(const array& in, const float timestep,
                            const float conductance, const unsigned iterations,
-                           const fluxFunction fftype,
-                           const diffusionEq eq)
-{
+                           const fluxFunction fftype, const diffusionEq eq) {
     af_array out = 0;
-    AF_THROW(af_anisotropic_diffusion(&out, in.get(), timestep, conductance, iterations, fftype, eq));
+    AF_THROW(af_anisotropic_diffusion(&out, in.get(), timestep, conductance,
+                                      iterations, fftype, eq));
     return array(out);
 }
-}
+}  // namespace af

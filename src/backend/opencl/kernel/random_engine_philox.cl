@@ -45,59 +45,63 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *********************************************************/
 
-//Utils
-//Source of these constants :
-//github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/philox.hpp
+// Utils
+// Source of these constants :
+// github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/philox.hpp
 
 #define m4x32_0 0xD2511F53
 #define m4x32_1 0xCD9E8D57
 #define w32_0 0x9E3779B9
 #define w32_1 0xBB67AE85
 
-void mulhilo(const uint a, const uint b, uint * const hi, uint * const lo)
-{
+void mulhilo(const uint a, const uint b, uint *const hi, uint *const lo) {
     *hi = mul_hi(a, b);
-    *lo = a*b;
+    *lo = a * b;
 }
 
-void philoxBump(uint k[2])
-{
+void philoxBump(uint k[2]) {
     k[0] += w32_0;
     k[1] += w32_1;
 }
 
-void philoxRound(const uint k[2], uint c[4])
-{
+void philoxRound(const uint k[2], uint c[4]) {
     uint hi0, lo0, hi1, lo1;
     mulhilo(m4x32_0, c[0], &hi0, &lo0);
     mulhilo(m4x32_1, c[2], &hi1, &lo1);
-    c[0] = hi1^c[1]^k[0];
+    c[0] = hi1 ^ c[1] ^ k[0];
     c[1] = lo1;
-    c[2] = hi0^c[3]^k[1];
+    c[2] = hi0 ^ c[3] ^ k[1];
     c[3] = lo0;
 }
 
-void philox(uint key[2], uint ctr[4])
-{
-    //10 Rounds
-                       philoxRound(key, ctr);
-    philoxBump(key);   philoxRound(key, ctr);
-    philoxBump(key);   philoxRound(key, ctr);
-    philoxBump(key);   philoxRound(key, ctr);
-    philoxBump(key);   philoxRound(key, ctr);
-    philoxBump(key);   philoxRound(key, ctr);
-    philoxBump(key);   philoxRound(key, ctr);
-    philoxBump(key);   philoxRound(key, ctr);
-    philoxBump(key);   philoxRound(key, ctr);
-    philoxBump(key);   philoxRound(key, ctr);
+void philox(uint key[2], uint ctr[4]) {
+    // 10 Rounds
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
+    philoxBump(key);
+    philoxRound(key, ctr);
 }
 
-__kernel void generate(__global T *output, unsigned elements,
-        unsigned hic, unsigned loc, unsigned hi, unsigned lo)
-{
-    unsigned gid = get_group_id(0);
-    unsigned off = get_local_size(0);
-    unsigned index =  gid * ELEMENTS_PER_BLOCK + get_local_id(0);
+__kernel void generate(__global T *output, unsigned elements, unsigned hic,
+                       unsigned loc, unsigned hi, unsigned lo) {
+    unsigned gid   = get_group_id(0);
+    unsigned off   = get_local_size(0);
+    unsigned index = gid * ELEMENTS_PER_BLOCK + get_local_id(0);
 
     uint key[2] = {lo, hi};
     uint ctr[4] = {loc, hic, 0, 0};
@@ -110,7 +114,7 @@ __kernel void generate(__global T *output, unsigned elements,
     if (gid != get_num_groups(0) - 1) {
         WRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3]);
     } else {
-        PARTIAL_WRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3], &elements);
+        PARTIAL_WRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3],
+                      &elements);
     }
 }
-

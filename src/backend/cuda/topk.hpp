@@ -8,8 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
-namespace cuda
-{
+namespace cuda {
 template<typename T>
 void topk(Array<T>& keys, Array<unsigned>& vals, const Array<T>& in,
           const int k, const int dim, const af::topkFunction order);

@@ -8,21 +8,20 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
-#include <af/array.h>
-#include <af/arith.h>
-#include <af/data.h>
 #include <testHelpers.hpp>
+#include <af/arith.h>
+#include <af/array.h>
+#include <af/data.h>
 
-using af::cfloat;
 using af::cdouble;
+using af::cfloat;
 using af::dim4;
 using af::dtype_traits;
 
 const int num = 10;
 
-template <typename Ti, typename To>
-void cast_test()
-{
+template<typename Ti, typename To>
+void cast_test() {
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
 
@@ -37,30 +36,26 @@ void cast_test()
     ASSERT_SUCCESS(err);
 }
 
-#define REAL_TO_TESTS(Ti, To)                   \
-    TEST(CAST_TEST, Test_Real_##Ti##_##To)      \
-    {                                           \
-        cast_test<Ti, To>();                    \
-    }                                           \
+#define REAL_TO_TESTS(Ti, To) \
+    TEST(CAST_TEST, Test_Real_##Ti##_##To) { cast_test<Ti, To>(); }
 
-#define REAL_TEST_INVOKE(Ti)                    \
-    REAL_TO_TESTS(Ti, float);                   \
-    REAL_TO_TESTS(Ti, cfloat);                  \
-    REAL_TO_TESTS(Ti, double);                  \
-    REAL_TO_TESTS(Ti, cdouble);                 \
-    REAL_TO_TESTS(Ti, char);                    \
-    REAL_TO_TESTS(Ti, int);                     \
-    REAL_TO_TESTS(Ti, unsigned);                \
-    REAL_TO_TESTS(Ti, uchar);                   \
-    REAL_TO_TESTS(Ti, intl);                    \
-    REAL_TO_TESTS(Ti, uintl);                   \
-    REAL_TO_TESTS(Ti, short);                   \
-    REAL_TO_TESTS(Ti, ushort);                  \
+#define REAL_TEST_INVOKE(Ti)     \
+    REAL_TO_TESTS(Ti, float);    \
+    REAL_TO_TESTS(Ti, cfloat);   \
+    REAL_TO_TESTS(Ti, double);   \
+    REAL_TO_TESTS(Ti, cdouble);  \
+    REAL_TO_TESTS(Ti, char);     \
+    REAL_TO_TESTS(Ti, int);      \
+    REAL_TO_TESTS(Ti, unsigned); \
+    REAL_TO_TESTS(Ti, uchar);    \
+    REAL_TO_TESTS(Ti, intl);     \
+    REAL_TO_TESTS(Ti, uintl);    \
+    REAL_TO_TESTS(Ti, short);    \
+    REAL_TO_TESTS(Ti, ushort);
 
-#define CPLX_TEST_INVOKE(Ti)                    \
-    REAL_TO_TESTS(Ti, cfloat);                  \
-    REAL_TO_TESTS(Ti, cdouble);                 \
-
+#define CPLX_TEST_INVOKE(Ti)   \
+    REAL_TO_TESTS(Ti, cfloat); \
+    REAL_TO_TESTS(Ti, cdouble);
 
 REAL_TEST_INVOKE(float)
 REAL_TEST_INVOKE(double)
@@ -78,9 +73,8 @@ CPLX_TEST_INVOKE(cdouble)
 // Converting complex to real; expected to fail as this operation is
 // not allowed. Use functions abs, real, image, arg, etc to make the
 // conversion explicit.
-template <typename Ti, typename To>
-void cast_test_complex_real()
-{
+template<typename Ti, typename To>
+void cast_test_complex_real() {
     if (noDoubleTests<Ti>()) return;
     if (noDoubleTests<To>()) return;
 
@@ -95,10 +89,9 @@ void cast_test_complex_real()
 }
 
 #define COMPLEX_REAL_TESTS(Ti, To)                      \
-    TEST(CAST_TEST, Test_Complex_To_Real_##Ti##_##To)   \
-    {                                                   \
+    TEST(CAST_TEST, Test_Complex_To_Real_##Ti##_##To) { \
         cast_test_complex_real<Ti, To>();               \
-    }                                                   \
+    }
 
 COMPLEX_REAL_TESTS(cfloat, float)
 COMPLEX_REAL_TESTS(cfloat, double)

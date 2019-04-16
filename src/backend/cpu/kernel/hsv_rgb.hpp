@@ -1,40 +1,37 @@
 /*******************************************************
-* Copyright (c) 2015, ArrayFire
-* All rights reserved.
-*
-* This file is distributed under 3-clause BSD license.
-* The complete license agreement can be obtained at:
-* http://arrayfire.com/licenses/BSD-3-Clause
-********************************************************/
+ * Copyright (c) 2015, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
 
 #pragma once
 #include <Param.hpp>
 #include <cmath>
 
-namespace cpu
-{
-namespace kernel
-{
+namespace cpu {
+namespace kernel {
 
 template<typename T>
-void hsv2rgb(Param<T> out, CParam<T> in)
-{
+void hsv2rgb(Param<T> out, CParam<T> in) {
     const af::dim4 dims    = in.dims();
     const af::dim4 strides = in.strides();
-    dim_t obStride  = out.strides(3);
-    dim_t coff      = strides[2];
-    dim_t bCount    = dims[3];
+    dim_t obStride         = out.strides(3);
+    dim_t coff             = strides[2];
+    dim_t bCount           = dims[3];
 
-    for(dim_t b=0; b<bCount; ++b) {
+    for (dim_t b = 0; b < bCount; ++b) {
         const T* src = in.get() + b * strides[3];
         T* dst       = out.get() + b * obStride;
 
-        for(dim_t j=0; j<dims[1]; ++j) {
-            dim_t jOff = j*strides[1];
+        for (dim_t j = 0; j < dims[1]; ++j) {
+            dim_t jOff = j * strides[1];
             // j steps along 2nd dimension
-            for(dim_t i=0; i<dims[0]; ++i) {
+            for (dim_t i = 0; i < dims[0]; ++i) {
                 // i steps along 1st dimension
-                dim_t hIdx = i*strides[0] + jOff;
+                dim_t hIdx = i * strides[0] + jOff;
                 dim_t sIdx = hIdx + coff;
                 dim_t vIdx = sIdx + coff;
 
@@ -45,11 +42,11 @@ void hsv2rgb(Param<T> out, CParam<T> in)
                 T R, G, B;
                 R = G = B = 0;
 
-                int   m = (int)(H * 6);
-                T f = H * 6 - m;
-                T p = V * (1 - S);
-                T q = V * (1 - f * S);
-                T t = V * (1 - (1 - f) * S);
+                int m = (int)(H * 6);
+                T f   = H * 6 - m;
+                T p   = V * (1 - S);
+                T q   = V * (1 - f * S);
+                T t   = V * (1 - (1 - f) * S);
 
                 switch (m % 6) {
                     case 0: R = V, G = t, B = p; break;
@@ -69,55 +66,54 @@ void hsv2rgb(Param<T> out, CParam<T> in)
 }
 
 template<typename T>
-void rgb2hsv(Param<T> out, CParam<T> in)
-{
+void rgb2hsv(Param<T> out, CParam<T> in) {
     const af::dim4 dims    = in.dims();
     const af::dim4 strides = in.strides();
     af::dim4 oStrides      = out.strides();
-    dim_t bCount    = dims[3];
+    dim_t bCount           = dims[3];
 
-    for(dim_t b=0; b<bCount; ++b) {
+    for (dim_t b = 0; b < bCount; ++b) {
         const T* src = in.get() + b * strides[3];
         T* dst       = out.get() + b * oStrides[3];
 
-        for(dim_t j=0; j<dims[1]; ++j) {
+        for (dim_t j = 0; j < dims[1]; ++j) {
             // j steps along 2nd dimension
             dim_t oj = j * oStrides[1];
             dim_t ij = j * strides[1];
 
-            for(dim_t i=0; i<dims[0]; ++i) {
+            for (dim_t i = 0; i < dims[0]; ++i) {
                 // i steps along 1st dimension
                 dim_t oIdx0 = i * oStrides[0] + oj;
                 dim_t oIdx1 = oIdx0 + oStrides[2];
                 dim_t oIdx2 = oIdx1 + oStrides[2];
 
-                dim_t iIdx0 = i * strides[0]  + ij;
+                dim_t iIdx0 = i * strides[0] + ij;
                 dim_t iIdx1 = iIdx0 + strides[2];
                 dim_t iIdx2 = iIdx1 + strides[2];
 
-                T R = src[iIdx0];
-                T G = src[iIdx1];
-                T B = src[iIdx2];
-                T Cmax = std::max(std::max(R, G), B);
-                T Cmin = std::min(std::min(R, G), B);
-                T delta= Cmax-Cmin;
+                T R     = src[iIdx0];
+                T G     = src[iIdx1];
+                T B     = src[iIdx2];
+                T Cmax  = std::max(std::max(R, G), B);
+                T Cmin  = std::min(std::min(R, G), B);
+                T delta = Cmax - Cmin;
 
                 T H = 0;
 
-                if (Cmax!=Cmin) {
-                    if (Cmax==R) H = (G-B)/delta + (G<B ? 6 : 0);
-                    if (Cmax==G) H = (B-R)/delta + 2;
-                    if (Cmax==B) H = (R-G)/delta + 4;
+                if (Cmax != Cmin) {
+                    if (Cmax == R) H = (G - B) / delta + (G < B ? 6 : 0);
+                    if (Cmax == G) H = (B - R) / delta + 2;
+                    if (Cmax == B) H = (R - G) / delta + 4;
                     H = H / 6.0f;
                 }
 
                 dst[oIdx0] = H;
-                dst[oIdx1] = (Cmax==0.0f ? 0 : delta/Cmax);
+                dst[oIdx1] = (Cmax == 0.0f ? 0 : delta / Cmax);
                 dst[oIdx2] = Cmax;
             }
         }
     }
 }
 
-}
-}
+}  // namespace kernel
+}  // namespace cpu

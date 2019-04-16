@@ -9,30 +9,29 @@
 
 #pragma once
 #include <arrayfire.h>
-#include <af/dim4.hpp>
 #include <af/defines.h>
+#include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <vector>
-#include <iostream>
 #include <complex>
+#include <iostream>
 #include <string>
+#include <vector>
 
-using std::vector;
-using std::string;
+using af::cdouble;
+using af::cfloat;
+using std::abs;
 using std::cout;
 using std::endl;
-using std::abs;
-using af::cfloat;
-using af::cdouble;
+using std::string;
+using std::vector;
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //
 
 template<typename T>
-void solveTester(const int m, const int n, const int k, double eps, int targetDevice=-1)
-{
-    if (targetDevice>=0)
-        af::setDevice(targetDevice);
+void solveTester(const int m, const int n, const int k, double eps,
+                 int targetDevice = -1) {
+    if (targetDevice >= 0) af::setDevice(targetDevice);
 
     af::deviceGC();
 
@@ -56,15 +55,22 @@ void solveTester(const int m, const int n, const int k, double eps, int targetDe
     af::array B1 = af::matmul(A, X1);
     //! [ex_solve_recon]
 
-    ASSERT_NEAR(0, af::sum<typename af::dtype_traits<T>::base_type>(af::abs(real(B0 - B1))) / (m * k), eps);
-    ASSERT_NEAR(0, af::sum<typename af::dtype_traits<T>::base_type>(af::abs(imag(B0 - B1))) / (m * k), eps);
+    ASSERT_NEAR(0,
+                af::sum<typename af::dtype_traits<T>::base_type>(
+                    af::abs(real(B0 - B1))) /
+                    (m * k),
+                eps);
+    ASSERT_NEAR(0,
+                af::sum<typename af::dtype_traits<T>::base_type>(
+                    af::abs(imag(B0 - B1))) /
+                    (m * k),
+                eps);
 }
 
 template<typename T>
-void solveLUTester(const int n, const int k, double eps, int targetDevice=-1)
-{
-    if (targetDevice>=0)
-        af::setDevice(targetDevice);
+void solveLUTester(const int n, const int k, double eps,
+                   int targetDevice = -1) {
+    if (targetDevice >= 0) af::setDevice(targetDevice);
 
     af::deviceGC();
 
@@ -88,15 +94,22 @@ void solveLUTester(const int n, const int k, double eps, int targetDevice=-1)
 
     af::array B1 = af::matmul(A, X1);
 
-    ASSERT_NEAR(0, af::sum<typename af::dtype_traits<T>::base_type>(af::abs(real(B0 - B1))) / (n * k), eps);
-    ASSERT_NEAR(0, af::sum<typename af::dtype_traits<T>::base_type>(af::abs(imag(B0 - B1))) / (n * k), eps);
+    ASSERT_NEAR(0,
+                af::sum<typename af::dtype_traits<T>::base_type>(
+                    af::abs(real(B0 - B1))) /
+                    (n * k),
+                eps);
+    ASSERT_NEAR(0,
+                af::sum<typename af::dtype_traits<T>::base_type>(
+                    af::abs(imag(B0 - B1))) /
+                    (n * k),
+                eps);
 }
 
 template<typename T>
-void solveTriangleTester(const int n, const int k, bool is_upper, double eps, int targetDevice=-1)
-{
-    if (targetDevice>=0)
-        af::setDevice(targetDevice);
+void solveTriangleTester(const int n, const int k, bool is_upper, double eps,
+                         int targetDevice = -1) {
+    if (targetDevice >= 0) af::setDevice(targetDevice);
 
     af::deviceGC();
 
@@ -134,6 +147,14 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps, in
 
     af::array B1 = af::matmul(AT, X1);
 
-    ASSERT_NEAR(0, af::sum<typename af::dtype_traits<T>::base_type>(af::abs(real(B0 - B1))) / (n * k), eps);
-    ASSERT_NEAR(0, af::sum<typename af::dtype_traits<T>::base_type>(af::abs(imag(B0 - B1))) / (n * k), eps);
+    ASSERT_NEAR(0,
+                af::sum<typename af::dtype_traits<T>::base_type>(
+                    af::abs(real(B0 - B1))) /
+                    (n * k),
+                eps);
+    ASSERT_NEAR(0,
+                af::sum<typename af::dtype_traits<T>::base_type>(
+                    af::abs(imag(B0 - B1))) /
+                    (n * k),
+                eps);
 }

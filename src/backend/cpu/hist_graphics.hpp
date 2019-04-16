@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include <common/graphics_common.hpp>
 #include <Array.hpp>
+#include <common/graphics_common.hpp>
 
 namespace cpu {
 

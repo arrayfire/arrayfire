@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/graphics_common.hpp>
 #include <Array.hpp>
+#include <common/graphics_common.hpp>
 
 namespace opencl {
 

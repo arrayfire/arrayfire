@@ -16,63 +16,62 @@
 #include <copy.hpp>
 #include <types.hpp>
 
-#include <af/dim4.hpp>
-#include <triangle.hpp>
 #include <lapack_helper.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <triangle.hpp>
+#include <af/dim4.hpp>
 
-namespace cpu
-{
-
-template<typename T>
-using potrf_func_def = int (*)(ORDER_TYPE, char,
-                               int,
-                               T*, int);
-
-#define CH_FUNC_DEF( FUNC )                                     \
-template<typename T> FUNC##_func_def<T> FUNC##_func();
-
-
-#define CH_FUNC( FUNC, TYPE, PREFIX )                           \
-template<> FUNC##_func_def<TYPE>     FUNC##_func<TYPE>()        \
-{ return & LAPACK_NAME(PREFIX##FUNC); }
-
-CH_FUNC_DEF( potrf )
-CH_FUNC(potrf , float  , s)
-CH_FUNC(potrf , double , d)
-CH_FUNC(potrf , cfloat , c)
-CH_FUNC(potrf , cdouble, z)
+namespace cpu {
 
 template<typename T>
-Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
-{
+using potrf_func_def = int (*)(ORDER_TYPE, char, int, T *, int);
+
+#define CH_FUNC_DEF(FUNC) \
+    template<typename T>  \
+    FUNC##_func_def<T> FUNC##_func();
+
+#define CH_FUNC(FUNC, TYPE, PREFIX)             \
+    template<>                                  \
+    FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
+        return &LAPACK_NAME(PREFIX##FUNC);      \
+    }
+
+CH_FUNC_DEF(potrf)
+CH_FUNC(potrf, float, s)
+CH_FUNC(potrf, double, d)
+CH_FUNC(potrf, cfloat, c)
+CH_FUNC(potrf, cdouble, z)
+
+template<typename T>
+Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     in.eval();
 
     Array<T> out = copyArray<T>(in);
-    *info = cholesky_inplace(out, is_upper);
+    *info        = cholesky_inplace(out, is_upper);
 
-    if (is_upper) triangle<T, true , false>(out, out);
-    else          triangle<T, false, false>(out, out);
+    if (is_upper)
+        triangle<T, true, false>(out, out);
+    else
+        triangle<T, false, false>(out, out);
 
     return out;
 }
 
 template<typename T>
-int cholesky_inplace(Array<T> &in, const bool is_upper)
-{
+int cholesky_inplace(Array<T> &in, const bool is_upper) {
     in.eval();
 
     dim4 iDims = in.dims();
-    int N = iDims[0];
+    int N      = iDims[0];
 
     char uplo = 'L';
-    if(is_upper)
-        uplo = 'U';
+    if (is_upper) uplo = 'U';
 
-    int info = 0;
-    auto func = [&] (int *info, Param<T> in) {
-        *info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo, N, in.get(), in.strides(1));
+    int info  = 0;
+    auto func = [&](int *info, Param<T> in) {
+        *info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo, N, in.get(),
+                                in.strides(1));
     };
 
     getQueue().enqueue(func, &info, in);
@@ -82,45 +81,42 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     return info;
 }
 
-#define INSTANTIATE_CH(T)                                                                   \
-    template int cholesky_inplace<T>(Array<T> &in, const bool is_upper);                    \
-    template Array<T> cholesky<T>   (int *info, const Array<T> &in, const bool is_upper);   \
-
+#define INSTANTIATE_CH(T)                                                 \
+    template int cholesky_inplace<T>(Array<T> & in, const bool is_upper); \
+    template Array<T> cholesky<T>(int *info, const Array<T> &in,          \
+                                  const bool is_upper);
 
 INSTANTIATE_CH(float)
 INSTANTIATE_CH(cfloat)
 INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 
-}
+}  // namespace cpu
 
 #else  // WITH_LINEAR_ALGEBRA
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
-{
+Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T>
-int cholesky_inplace(Array<T> &in, const bool is_upper)
-{
+int cholesky_inplace(Array<T> &in, const bool is_upper) {
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
-#define INSTANTIATE_CH(T)                                                                   \
-    template int cholesky_inplace<T>(Array<T> &in, const bool is_upper);                    \
-    template Array<T> cholesky<T>   (int *info, const Array<T> &in, const bool is_upper);   \
-
+#define INSTANTIATE_CH(T)                                                 \
+    template int cholesky_inplace<T>(Array<T> & in, const bool is_upper); \
+    template Array<T> cholesky<T>(int *info, const Array<T> &in,          \
+                                  const bool is_upper);
 
 INSTANTIATE_CH(float)
 INSTANTIATE_CH(cfloat)
 INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 
-}
+}  // namespace cpu
 
 #endif  // WITH_LINEAR_ALGEBRA

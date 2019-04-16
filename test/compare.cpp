@@ -8,44 +8,43 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
-#include <af/array.h>
-#include <af/arith.h>
-#include <af/data.h>
 #include <testHelpers.hpp>
+#include <af/arith.h>
+#include <af/array.h>
+#include <af/data.h>
 
-using std::vector;
 using af::array;
 using af::dtype_traits;
 using af::randu;
+using std::vector;
 
 template<typename T>
-class Compare : public ::testing::Test
-{
-};
+class Compare : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, uint, int, intl, uintl, uchar, short, ushort> TestTypes;
+typedef ::testing::Types<float, double, uint, int, intl, uintl, uchar, short,
+                         ushort>
+    TestTypes;
 TYPED_TEST_CASE(Compare, TestTypes);
 
-#define COMPARE(OP, Name)                                       \
-    TYPED_TEST(Compare, Test_##Name)                            \
-    {                                                           \
-        typedef TypeParam T;                                    \
-        if (noDoubleTests<T>()) return;                         \
-        const int num = 1 << 20;                                \
-        af_dtype ty = (af_dtype) dtype_traits<T>::af_type;      \
-        array a = randu(num, ty);                               \
-        array b = randu(num, ty);                               \
-        array c = a OP b;                                       \
-        vector<T> ha(num), hb(num);                             \
-        vector<char> hc(num);                                   \
-        a.host(&ha[0]);                                         \
-        b.host(&hb[0]);                                         \
-        c.host(&hc[0]);                                         \
-        for (int i = 0; i < num; i++) {                         \
-            char res = ha[i] OP hb[i];                          \
-            ASSERT_EQ((int)res, (int)hc[i]);                    \
-        }                                                       \
-    }                                                           \
+#define COMPARE(OP, Name)                                   \
+    TYPED_TEST(Compare, Test_##Name) {                      \
+        typedef TypeParam T;                                \
+        if (noDoubleTests<T>()) return;                     \
+        const int num = 1 << 20;                            \
+        af_dtype ty   = (af_dtype)dtype_traits<T>::af_type; \
+        array a       = randu(num, ty);                     \
+        array b       = randu(num, ty);                     \
+        array c       = a OP b;                             \
+        vector<T> ha(num), hb(num);                         \
+        vector<char> hc(num);                               \
+        a.host(&ha[0]);                                     \
+        b.host(&hb[0]);                                     \
+        c.host(&hc[0]);                                     \
+        for (int i = 0; i < num; i++) {                     \
+            char res = ha[i] OP hb[i];                      \
+            ASSERT_EQ((int)res, (int)hc[i]);                \
+        }                                                   \
+    }
 
 COMPARE(==, eq)
 COMPARE(!=, ne)

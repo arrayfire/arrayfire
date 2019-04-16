@@ -8,23 +8,23 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <gtest/gtest.h>
 #include <vector>
 
-using std::vector;
 using af::array;
 using af::join;
 using af::randu;
 using af::tile;
+using std::vector;
 
-TEST(MatrixManipulation, SNIPPET_matrix_manipulation_tile)
-{
+TEST(MatrixManipulation, SNIPPET_matrix_manipulation_tile) {
     //! [ex_matrix_manipulation_tile]
-    float h[] = {1, 2, 3, 4};
-    array small_arr = array(2, 2, h); // 2x2 matrix
+    float h[]       = {1, 2, 3, 4};
+    array small_arr = array(2, 2, h);  // 2x2 matrix
     af_print(small_arr);
-    array large_arr = tile(small_arr, 2, 3);  // produces 4x6 matrix: (2*2)x(2*3)
+    array large_arr =
+        tile(small_arr, 2, 3);  // produces 4x6 matrix: (2*2)x(2*3)
     af_print(large_arr);
     //! [ex_matrix_manipulation_tile]
 
@@ -36,23 +36,22 @@ TEST(MatrixManipulation, SNIPPET_matrix_manipulation_tile)
 
     unsigned fdim = large_arr.dims(0);
     unsigned sdim = large_arr.dims(1);
-    for(unsigned i = 0; i < sdim; i++) {
-        for(unsigned j = 0; j < fdim; j++) {
-            ASSERT_FLOAT_EQ(h[(i%2) * 2 + (j%2)], h_large_arr[i * fdim + j] );
+    for (unsigned i = 0; i < sdim; i++) {
+        for (unsigned j = 0; j < fdim; j++) {
+            ASSERT_FLOAT_EQ(h[(i % 2) * 2 + (j % 2)],
+                            h_large_arr[i * fdim + j]);
         }
     }
 }
 
-TEST(MatrixManipulation, SNIPPET_matrix_manipulation_join)
-{
-
+TEST(MatrixManipulation, SNIPPET_matrix_manipulation_join) {
     //! [ex_matrix_manipulation_join]
-    float hA[] = { 1, 2, 3, 4, 5, 6 };
-    float hB[] = { 10, 20, 30, 40, 50, 60, 70, 80, 90 };
-    array A = array(3, 2, hA);
-    array B = array(3, 3, hB);
+    float hA[] = {1, 2, 3, 4, 5, 6};
+    float hB[] = {10, 20, 30, 40, 50, 60, 70, 80, 90};
+    array A    = array(3, 2, hA);
+    array B    = array(3, 3, hB);
 
-    af_print(join(1, A, B)); // 3x5 matrix
+    af_print(join(1, A, B));  // 3x5 matrix
     // array result = join(0, A, B); // fail: dimension mismatch
     //! [ex_matrix_manipulation_join]
 
@@ -66,21 +65,20 @@ TEST(MatrixManipulation, SNIPPET_matrix_manipulation_join)
 
     unsigned fdim = out.dims(0);
     unsigned sdim = out.dims(1);
-    for(unsigned i = 0; i < sdim; i++) {
-        for(unsigned j = 0; j < fdim; j++) {
-            if( i < 2 ) {
-                ASSERT_FLOAT_EQ(hA[i * fdim + j], h_out[i * fdim + j]) << "At [" << i << ", " << j << "]";
-            }
-            else {
-                ASSERT_FLOAT_EQ(hB[(i - 2) * fdim + j], h_out[i * fdim + j]) << "At [" << i << ", " << j << "]";
+    for (unsigned i = 0; i < sdim; i++) {
+        for (unsigned j = 0; j < fdim; j++) {
+            if (i < 2) {
+                ASSERT_FLOAT_EQ(hA[i * fdim + j], h_out[i * fdim + j])
+                    << "At [" << i << ", " << j << "]";
+            } else {
+                ASSERT_FLOAT_EQ(hB[(i - 2) * fdim + j], h_out[i * fdim + j])
+                    << "At [" << i << ", " << j << "]";
             }
         }
     }
-
 }
 
-TEST(MatrixManipulation, SNIPPET_matrix_manipulation_mesh)
-{
+TEST(MatrixManipulation, SNIPPET_matrix_manipulation_mesh) {
     //! [ex_matrix_manipulation_mesh]
     float hx[] = {1, 2, 3, 4};
     float hy[] = {5, 6};
@@ -105,27 +103,27 @@ TEST(MatrixManipulation, SNIPPET_matrix_manipulation_mesh)
     vector<float> houty(outy.elements());
     outy.host(&houty.front());
 
-    for(unsigned i = 0; i < houtx.size(); i++) ASSERT_EQ(hx[i%4], houtx[i]) << "At [" << i << "]";
-    for(unsigned i = 0; i < houty.size(); i++) ASSERT_EQ(hy[i>3], houty[i]) << "At [" << i << "]";
+    for (unsigned i = 0; i < houtx.size(); i++)
+        ASSERT_EQ(hx[i % 4], houtx[i]) << "At [" << i << "]";
+    for (unsigned i = 0; i < houty.size(); i++)
+        ASSERT_EQ(hy[i > 3], houty[i]) << "At [" << i << "]";
 }
 
-TEST(MatrixManipulation, SNIPPET_matrix_manipulation_moddims)
-{
+TEST(MatrixManipulation, SNIPPET_matrix_manipulation_moddims) {
     //! [ex_matrix_manipulation_moddims]
     int hA[] = {1, 2, 3, 4, 5, 6};
-    array A = array(3, 2, hA);
+    array A  = array(3, 2, hA);
 
-    af_print(A); // 2x3 matrix
-    af_print(moddims(A, 2, 3)); // 2x3 matrix
-    af_print(moddims(A, 6, 1)); // 6x1 column vector
+    af_print(A);                 // 2x3 matrix
+    af_print(moddims(A, 2, 3));  // 2x3 matrix
+    af_print(moddims(A, 6, 1));  // 6x1 column vector
 
     // moddims(A, 2, 2); // fail: wrong number of elements
     // moddims(A, 8, 8); // fail: wrong number of elements
     //! [ex_matrix_manipulation_moddims]
 }
 
-TEST(MatrixManipulation, SNIPPET_matrix_manipulation_transpose)
-{
+TEST(MatrixManipulation, SNIPPET_matrix_manipulation_transpose) {
     //! [ex_matrix_manipulation_transpose]
     array x = randu(2, 2, f32);
     af_print(x.T());  // transpose (real)

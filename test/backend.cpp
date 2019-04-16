@@ -7,36 +7,34 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/data.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
 #include <string>
 #include <vector>
-#include <testHelpers.hpp>
 
 #include <af/device.h>
 
-using std::string;
-using std::vector;
 using af::dtype_traits;
 using af::getAvailableBackends;
 using af::setBackend;
+using std::string;
+using std::vector;
 
-const char *getActiveBackendString(af_backend active)
-{
-    switch(active) {
-        case AF_BACKEND_CPU   : return "AF_BACKEND_CPU";
-        case AF_BACKEND_CUDA  : return "AF_BACKEND_CUDA";
+const char *getActiveBackendString(af_backend active) {
+    switch (active) {
+        case AF_BACKEND_CPU: return "AF_BACKEND_CPU";
+        case AF_BACKEND_CUDA: return "AF_BACKEND_CUDA";
         case AF_BACKEND_OPENCL: return "AF_BACKEND_OPENCL";
-        default               : return "AF_BACKEND_DEFAULT";
+        default: return "AF_BACKEND_DEFAULT";
     }
 }
 
 template<typename T>
-void testFunction()
-{
+void testFunction() {
     af_info();
 
     af_backend activeBackend = (af_backend)0;
@@ -45,8 +43,9 @@ void testFunction()
     printf("Active Backend Enum = %s\n", getActiveBackendString(activeBackend));
 
     af_array outArray = 0;
-    dim_t dims[] = {32, 32};
-    EXPECT_EQ(AF_SUCCESS, af_randu(&outArray, 2, dims, (af_dtype) dtype_traits<T>::af_type));
+    dim_t dims[]      = {32, 32};
+    EXPECT_EQ(AF_SUCCESS,
+              af_randu(&outArray, 2, dims, (af_dtype)dtype_traits<T>::af_type));
 
     // Verify backends returned by array and by function are the same
     af_backend arrayBackend = (af_backend)0;
@@ -54,13 +53,10 @@ void testFunction()
     EXPECT_EQ(arrayBackend, activeBackend);
 
     // cleanup
-    if(outArray != 0) {
-        ASSERT_SUCCESS(af_release_array(outArray));
-    }
+    if (outArray != 0) { ASSERT_SUCCESS(af_release_array(outArray)); }
 }
 
-void backendTest()
-{
+void backendTest() {
     int backends = getAvailableBackends();
 
     ASSERT_NE(backends, 0);
@@ -72,26 +68,23 @@ void backendTest()
     printf("\nRunning Default Backend...\n");
     testFunction<float>();
 
-    if(cpu) {
+    if (cpu) {
         printf("\nRunning CPU Backend...\n");
         setBackend(AF_BACKEND_CPU);
         testFunction<float>();
     }
 
-    if(cuda) {
+    if (cuda) {
         printf("\nRunning CUDA Backend...\n");
         setBackend(AF_BACKEND_CUDA);
         testFunction<float>();
     }
 
-    if(opencl) {
+    if (opencl) {
         printf("\nRunning OpenCL Backend...\n");
         setBackend(AF_BACKEND_OPENCL);
         testFunction<float>();
     }
 }
 
-TEST(BACKEND_TEST, Basic)
-{
-    backendTest();
-}
+TEST(BACKEND_TEST, Basic) { backendTest(); }

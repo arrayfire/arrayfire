@@ -9,21 +9,19 @@
 
 #pragma once
 
-#include <iostream>
+#include <arrayfire.h>
+#include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <vector>
-#include <algorithm>
-#include <arrayfire.h>
 
-union Data
-{
+union Data {
     unsigned dim;
     char bytes[4];
 };
 
-unsigned char reverse_char(unsigned char b)
-{
+unsigned char reverse_char(unsigned char b) {
     b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
     b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
     b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
@@ -31,8 +29,7 @@ unsigned char reverse_char(unsigned char b)
 }
 
 // http://stackoverflow.com/a/9144870/2192361
-unsigned reverse(unsigned x)
-{
+unsigned reverse(unsigned x) {
     x = ((x >> 1) & 0x55555555u) | ((x & 0x55555555u) << 1);
     x = ((x >> 2) & 0x33333333u) | ((x & 0x33333333u) << 2);
     x = ((x >> 4) & 0x0f0f0f0fu) | ((x & 0x0f0f0f0fu) << 4);
@@ -42,24 +39,22 @@ unsigned reverse(unsigned x)
 }
 
 template<class ty>
-void read_idx(std::vector<dim_t> &dims, std::vector<ty> &data, const char *name)
-{
+void read_idx(std::vector<dim_t> &dims, std::vector<ty> &data,
+              const char *name) {
     std::ifstream f(name, std::ios::in | std::ios::binary);
     if (!f.is_open()) throw std::runtime_error("Unable to open file");
 
     Data d;
     f.read(d.bytes, sizeof(d.bytes));
 
-    if (d.bytes[2] != 8) {
-        throw std::runtime_error("Unsupported data type");
-    }
+    if (d.bytes[2] != 8) { throw std::runtime_error("Unsupported data type"); }
 
-    unsigned numdims = d.bytes[3];
+    unsigned numdims  = d.bytes[3];
     unsigned elemsize = 1;
 
     // Read the dimensions
     size_t elem = 1;
-    dims = std::vector<dim_t>(numdims);
+    dims        = std::vector<dim_t>(numdims);
     for (unsigned i = 0; i < numdims; i++) {
         f.read(d.bytes, sizeof(d.bytes));
 

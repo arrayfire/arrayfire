@@ -15,11 +15,10 @@
 #include <platform.hpp>
 #include <queue.hpp>
 
-namespace cpu
-{
+namespace cpu {
 Array<float> nonMaximumSuppression(const Array<float>& mag,
-                                   const Array<float>& gx, const Array<float>& gy)
-{
+                                   const Array<float>& gx,
+                                   const Array<float>& gy) {
     mag.eval();
     gx.eval();
     gy.eval();
@@ -32,8 +31,8 @@ Array<float> nonMaximumSuppression(const Array<float>& mag,
     return out;
 }
 
-Array<char> edgeTrackingByHysteresis(const Array<char>& strong, const Array<char>& weak)
-{
+Array<char> edgeTrackingByHysteresis(const Array<char>& strong,
+                                     const Array<char>& weak) {
     strong.eval();
     weak.eval();
 
@@ -44,4 +43,4 @@ Array<char> edgeTrackingByHysteresis(const Array<char>& strong, const Array<char
 
     return out;
 }
-}
+}  // namespace cpu

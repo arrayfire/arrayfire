@@ -7,59 +7,62 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <qr.hpp>
 #include <common/err_common.hpp>
+#include <qr.hpp>
 
 #if defined(WITH_LINEAR_ALGEBRA)
-#include <af/dim4.hpp>
-#include <handle.hpp>
-#include <cassert>
 #include <err_cpu.hpp>
-#include <triangle.hpp>
+#include <handle.hpp>
 #include <lapack_helper.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <triangle.hpp>
+#include <af/dim4.hpp>
+#include <cassert>
 
-namespace cpu
-{
-
-template<typename T>
-using geqrf_func_def = int (*)(ORDER_TYPE, int, int, T*, int, T*);
-
-template<typename T>
-using gqr_func_def = int (*)(ORDER_TYPE, int, int, int, T*, int, const T*);
-
-#define QR_FUNC_DEF( FUNC )                                         \
-template<typename T> FUNC##_func_def<T> FUNC##_func();
-
-
-#define QR_FUNC( FUNC, TYPE, PREFIX )                               \
-template<> FUNC##_func_def<TYPE>     FUNC##_func<TYPE>()            \
-{ return & LAPACK_NAME(PREFIX##FUNC); }
-
-QR_FUNC_DEF( geqrf )
-QR_FUNC(geqrf , float  , s)
-QR_FUNC(geqrf , double , d)
-QR_FUNC(geqrf , cfloat , c)
-QR_FUNC(geqrf , cdouble, z)
-
-#define GQR_FUNC_DEF( FUNC )                                         \
-template<typename T> FUNC##_func_def<T> FUNC##_func();
-
-#define GQR_FUNC( FUNC, TYPE, PREFIX )                               \
-template<> FUNC##_func_def<TYPE>     FUNC##_func<TYPE>()             \
-{ return & LAPACK_NAME(PREFIX); }
-
-GQR_FUNC_DEF( gqr )
-GQR_FUNC(gqr , float  , sorgqr)
-GQR_FUNC(gqr , double , dorgqr)
-GQR_FUNC(gqr , cfloat , cungqr)
-GQR_FUNC(gqr , cdouble, zungqr)
+namespace cpu {
 
 template<typename T>
-void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
-{
+using geqrf_func_def = int (*)(ORDER_TYPE, int, int, T *, int, T *);
+
+template<typename T>
+using gqr_func_def = int (*)(ORDER_TYPE, int, int, int, T *, int, const T *);
+
+#define QR_FUNC_DEF(FUNC) \
+    template<typename T>  \
+    FUNC##_func_def<T> FUNC##_func();
+
+#define QR_FUNC(FUNC, TYPE, PREFIX)             \
+    template<>                                  \
+    FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
+        return &LAPACK_NAME(PREFIX##FUNC);      \
+    }
+
+QR_FUNC_DEF(geqrf)
+QR_FUNC(geqrf, float, s)
+QR_FUNC(geqrf, double, d)
+QR_FUNC(geqrf, cfloat, c)
+QR_FUNC(geqrf, cdouble, z)
+
+#define GQR_FUNC_DEF(FUNC) \
+    template<typename T>   \
+    FUNC##_func_def<T> FUNC##_func();
+
+#define GQR_FUNC(FUNC, TYPE, PREFIX)            \
+    template<>                                  \
+    FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
+        return &LAPACK_NAME(PREFIX);            \
+    }
+
+GQR_FUNC_DEF(gqr)
+GQR_FUNC(gqr, float, sorgqr)
+GQR_FUNC(gqr, double, dorgqr)
+GQR_FUNC(gqr, cfloat, cungqr)
+GQR_FUNC(gqr, cdouble, zungqr)
+
+template<typename T>
+void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     q.eval();
     r.eval();
     t.eval();
@@ -79,16 +82,16 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 
     triangle<T, true, false>(r, q);
 
-    auto func = [=] (Param<T> q, Param<T> t, int M, int N) {
-        gqr_func<T>()(AF_LAPACK_COL_MAJOR, M, M, min(M, N), q.get(), q.strides(1), t.get());
+    auto func = [=](Param<T> q, Param<T> t, int M, int N) {
+        gqr_func<T>()(AF_LAPACK_COL_MAJOR, M, M, min(M, N), q.get(),
+                      q.strides(1), t.get());
     };
     q.resetDims(dim4(M, M));
     getQueue().enqueue(func, q, t, M, N);
 }
 
 template<typename T>
-Array<T> qr_inplace(Array<T> &in)
-{
+Array<T> qr_inplace(Array<T> &in) {
     in.eval();
 
     dim4 iDims = in.dims();
@@ -96,47 +99,45 @@ Array<T> qr_inplace(Array<T> &in)
     int N      = iDims[1];
     Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
 
-    auto func = [=] (Param<T> in, Param<T> t, int M, int N) {
-        geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N, in.get(), in.strides(1), t.get());
+    auto func = [=](Param<T> in, Param<T> t, int M, int N) {
+        geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N, in.get(), in.strides(1),
+                        t.get());
     };
     getQueue().enqueue(func, in, t, M, N);
 
     return t;
 }
 
-}
+}  // namespace cpu
 
 #else  // WITH_LINEAR_ALGEBRA
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
-{
+void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T>
-Array<T> qr_inplace(Array<T> &in)
-{
+Array<T> qr_inplace(Array<T> &in) {
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
-}
+}  // namespace cpu
 
 #endif  // WITH_LINEAR_ALGEBRA
 
-namespace cpu
-{
+namespace cpu {
 
-#define INSTANTIATE_QR(T)                                                                           \
-    template Array<T> qr_inplace<T>(Array<T> &in);                                                \
-    template void qr<T>(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in);
+#define INSTANTIATE_QR(T)                                         \
+    template Array<T> qr_inplace<T>(Array<T> & in);               \
+    template void qr<T>(Array<T> & q, Array<T> & r, Array<T> & t, \
+                        const Array<T> &in);
 
 INSTANTIATE_QR(float)
 INSTANTIATE_QR(cfloat)
 INSTANTIATE_QR(double)
 INSTANTIATE_QR(cdouble)
 
-}
+}  // namespace cpu

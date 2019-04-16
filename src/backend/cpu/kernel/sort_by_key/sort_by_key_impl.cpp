@@ -11,10 +11,8 @@
 
 // SBK_TYPES:float double int uint intl uintl short ushort char uchar
 
-namespace cpu
-{
-namespace kernel
-{
-    INSTANTIATE1(TYPE)
+namespace cpu {
+namespace kernel {
+INSTANTIATE1(TYPE)
 }
-}
+}  // namespace cpu

@@ -8,53 +8,51 @@
  ********************************************************/
 
 #pragma once
+#include <Param.hpp>
+#include <cache.hpp>
+#include <common/dispatch.hpp>
+#include <debug_opencl.hpp>
 #include <kernel_headers/iir.hpp>
 #include <program.hpp>
 #include <traits.hpp>
-#include <string>
-#include <cache.hpp>
-#include <common/dispatch.hpp>
-#include <Param.hpp>
-#include <debug_opencl.hpp>
 #include <types.hpp>
+#include <string>
 
+using af::scalar_to_option;
 using cl::Buffer;
-using cl::Program;
+using cl::EnqueueArgs;
 using cl::Kernel;
 using cl::KernelFunctor;
-using cl::EnqueueArgs;
 using cl::NDRange;
+using cl::Program;
 using std::string;
-using af::scalar_to_option;
 
-namespace opencl
-{
-namespace kernel
-{
+namespace opencl {
+namespace kernel {
 template<typename T, bool batch_a>
-void iir(Param y, Param c, Param a)
-{
-    //FIXME: This is a temporary fix. Ideally the local memory should be allocted outside
+void iir(Param y, Param c, Param a) {
+    // FIXME: This is a temporary fix. Ideally the local memory should be
+    // allocted outside
     static const int MAX_A_SIZE = (1024 * sizeof(double)) / sizeof(T);
 
     std::string refName = std::string("iir_kernel_") +
-        std::string(dtype_traits<T>::getName()) + std::to_string(batch_a);
+                          std::string(dtype_traits<T>::getName()) +
+                          std::to_string(batch_a);
 
-    int device = getActiveDeviceId();
+    int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
 
-    if (entry.prog==0 && entry.ker==0) {
+    if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
-        options << " -D MAX_A_SIZE=" << MAX_A_SIZE
-            << " -D BATCH_A=" << batch_a
-            << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")"
-            << " -D T=" << dtype_traits<T>::getName();
+        options << " -D MAX_A_SIZE=" << MAX_A_SIZE << " -D BATCH_A=" << batch_a
+                << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")"
+                << " -D T=" << dtype_traits<T>::getName();
 
         if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
             options << " -D USE_DOUBLE";
 
         const char* ker_strs[] = {iir_cl};
-        const int   ker_lens[] = {iir_cl_len};
+        const int ker_lens[]   = {iir_cl_len};
         Program prog;
         buildProgram(prog, 1, ker_strs, ker_lens, options.str());
         entry.prog = new Program(prog);
@@ -72,16 +70,18 @@ void iir(Param y, Param c, Param a)
     NDRange local(threads, 1);
     NDRange global(groups_x * local[0], groups_y * y.info.dims[3] * local[1]);
 
-    auto iirOp = KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer, KParam, int>(*entry.ker);
+    auto iirOp =
+        KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer, KParam, int>(
+            *entry.ker);
 
     try {
-        iirOp(EnqueueArgs(getQueue(), global, local),
-              *y.data, y.info, *c.data, c.info, *a.data, a.info, groups_y);
-    } catch(cl::Error &clerr) {
+        iirOp(EnqueueArgs(getQueue(), global, local), *y.data, y.info, *c.data,
+              c.info, *a.data, a.info, groups_y);
+    } catch (cl::Error& clerr) {
         AF_ERROR("Size of a too big for this datatype", AF_ERR_SIZE);
     }
 
     CL_DEBUG_FINISH(getQueue());
 }
-}
-}
+}  // namespace kernel
+}  // namespace opencl

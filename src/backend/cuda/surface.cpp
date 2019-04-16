@@ -8,29 +8,28 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <surface.hpp>
-#include <err_cuda.hpp>
-#include <debug_cuda.hpp>
 #include <GraphicsResourceManager.hpp>
+#include <debug_cuda.hpp>
+#include <err_cuda.hpp>
+#include <surface.hpp>
 
 using af::dim4;
 
 namespace cuda {
 
 template<typename T>
-void copy_surface(const Array<T> &P, fg_surface surface)
-{
+void copy_surface(const Array<T> &P, fg_surface surface) {
     auto stream = cuda::getActiveStream();
-    if(DeviceManager::checkGraphicsInteropCapability()) {
+    if (DeviceManager::checkGraphicsInteropCapability()) {
         const T *d_P = P.get();
 
         auto res = interopManager().getSurfaceResources(surface);
 
         size_t bytes = 0;
-        T* d_vbo = NULL;
+        T *d_vbo     = NULL;
         cudaGraphicsMapResources(1, res[0].get(), stream);
-        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo,
-                                             &bytes, *(res[0].get()));
+        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &bytes,
+                                             *(res[0].get()));
         cudaMemcpyAsync(d_vbo, d_P, bytes, cudaMemcpyDeviceToDevice, stream);
         cudaGraphicsUnmapResources(1, res[0].get(), stream);
 
@@ -38,14 +37,14 @@ void copy_surface(const Array<T> &P, fg_surface surface)
 
         POST_LAUNCH_CHECK();
     } else {
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule &_ = graphics::forgePlugin();
         unsigned bytes = 0, buffer = 0;
         FG_CHECK(_.fg_get_surface_vertex_buffer(&buffer, surface));
         FG_CHECK(_.fg_get_surface_vertex_buffer_size(&bytes, surface));
 
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        GLubyte *ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
         if (ptr) {
             CUDA_CHECK(cudaMemcpyAsync(ptr, P.get(), bytes,
                                        cudaMemcpyDeviceToHost, stream));
@@ -57,8 +56,8 @@ void copy_surface(const Array<T> &P, fg_surface surface)
     }
 }
 
-#define INSTANTIATE(T)  \
-template void copy_surface<T>(const Array<T> &, fg_surface);
+#define INSTANTIATE(T) \
+    template void copy_surface<T>(const Array<T> &, fg_surface);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -68,4 +67,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
-}
+}  // namespace cuda

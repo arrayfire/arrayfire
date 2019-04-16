@@ -7,11 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/index.h>
 #include <Array.hpp>
+#include <af/index.h>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[]);

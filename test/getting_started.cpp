@@ -7,48 +7,46 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <gtest/gtest.h>
 #include <arrayfire.h>
-#include <vector>
-#include <complex>
+#include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <complex>
+#include <vector>
 
 using namespace af;
-using std::vector;
 using std::abs;
+using std::vector;
 
-TEST(GettingStarted, SNIPPET_getting_started_gen)
-{
-
+TEST(GettingStarted, SNIPPET_getting_started_gen) {
     //! [ex_getting_started_constructors]
     // Arrays may be created using the array constructor and dimensioned
     // as 1D, 2D, 3D; however, the values in these arrays will be undefined
-    array undefined_1D(100);        // 1D array with 100 elements
-    array undefined_2D(10, 100);    // 2D array of size 10 x 100
-    array undefined_3D(10, 10, 10); // 3D array of size 10 x 10 x 10
+    array undefined_1D(100);         // 1D array with 100 elements
+    array undefined_2D(10, 100);     // 2D array of size 10 x 100
+    array undefined_3D(10, 10, 10);  // 3D array of size 10 x 10 x 10
     //! [ex_getting_started_constructors]
 
     //! [ex_getting_started_gen]
     // Generate an array of size three filled with zeros.
     // If no data type is specified, ArrayFire defaults to f32.
     // The constant function generates the data on the device.
-    array zeros      = constant(0, 3);
+    array zeros = constant(0, 3);
 
     // Generate a 1x4 array of uniformly distributed [0,1] random numbers
     // The randu function generates the data on the device.
-    array rand1      = randu(1, 4);
+    array rand1 = randu(1, 4);
 
     // Generate a 2x2 array (or matrix, if you prefer) of random numbers
     // sampled from a normal distribution.
     // The randn function generates data on the device.
-    array rand2      = randn(2, 2);
+    array rand2 = randn(2, 2);
 
     // Generate a 3x3 identity matrix. The data is generated on the device.
-    array iden       = identity(3, 3);
+    array iden = identity(3, 3);
 
     // Lastly, create a 2x1 array (column vector) of uniformly distributed
     // 32-bit complex numbers (c32 data type):
-    array randcplx   = randu(2, 1, c32);
+    array randcplx = randu(2, 1, c32);
     //! [ex_getting_started_gen]
 
     {
@@ -56,30 +54,33 @@ TEST(GettingStarted, SNIPPET_getting_started_gen)
         output.resize(zeros.elements());
         zeros.host(&output.front());
         ASSERT_EQ(f32, zeros.type());
-        for(dim_t i = 0; i < zeros.elements(); i++) ASSERT_FLOAT_EQ(0, output[i]);
+        for (dim_t i = 0; i < zeros.elements(); i++)
+            ASSERT_FLOAT_EQ(0, output[i]);
     }
 
     if (!noDoubleTests<double>()) {
-        array ones       = constant(1, 3, 2, f64);
+        array ones = constant(1, 3, 2, f64);
         vector<double> output(ones.elements());
         ones.host(&output.front());
         ASSERT_EQ(f64, ones.type());
-        for(dim_t i = 0; i < ones.elements(); i++) ASSERT_FLOAT_EQ(1, output[i]);
+        for (dim_t i = 0; i < ones.elements(); i++)
+            ASSERT_FLOAT_EQ(1, output[i]);
     }
 
     {
         vector<float> output;
         output.resize(iden.elements());
         iden.host(&output.front());
-        for(dim_t i = 0; i < iden.dims(0); i++)
-            for(dim_t j = 0; j < iden.dims(1); j++)
-                if(i == j)  ASSERT_FLOAT_EQ(1, output[i * iden.dims(0) + j]);
-                else        ASSERT_FLOAT_EQ(0, output[i * iden.dims(0) + j]);
+        for (dim_t i = 0; i < iden.dims(0); i++)
+            for (dim_t j = 0; j < iden.dims(1); j++)
+                if (i == j)
+                    ASSERT_FLOAT_EQ(1, output[i * iden.dims(0) + j]);
+                else
+                    ASSERT_FLOAT_EQ(0, output[i * iden.dims(0) + j]);
     }
 }
 
-TEST(GettingStarted, SNIPPET_getting_started_init)
-{
+TEST(GettingStarted, SNIPPET_getting_started_init) {
     //! [ex_getting_started_init]
     // Create a six-element array on the host
     float hA[] = {0, 1, 2, 3, 4, 5};
@@ -96,18 +97,18 @@ TEST(GettingStarted, SNIPPET_getting_started_init)
     // data (stored in {{real, imaginary}, {real, imaginary},  ... } format
     // as found in C's complex.h and C++'s <complex>.
     // Below we create a 3x1 column vector of complex data values:
-    array dB(3, 1, (cfloat*) hA); // 3x1 column vector of complex numbers
+    array dB(3, 1, (cfloat *)hA);  // 3x1 column vector of complex numbers
     af_print(dB);
 
     //! [ex_getting_started_init]
 
     vector<float> out(A.elements());
     A.host(&out.front());
-    for(unsigned int i = 0; i < out.size(); i++) ASSERT_FLOAT_EQ(hA[i], out[i]);
+    for (unsigned int i = 0; i < out.size(); i++)
+        ASSERT_FLOAT_EQ(hA[i], out[i]);
 }
 
-TEST(GettingStarted, SNIPPET_getting_started_print)
-{
+TEST(GettingStarted, SNIPPET_getting_started_print) {
     //! [ex_getting_started_print]
     // Generate two arrays
     array a = randu(2, 2);
@@ -129,24 +130,24 @@ TEST(GettingStarted, SNIPPET_getting_started_print)
     b.host(&outb.front());
     result.host(&out.front());
 
-    for(unsigned i = 0; i < outb.size(); i++) ASSERT_FLOAT_EQ(outa[i] + outb[i] + 0.4, out[i]);
+    for (unsigned i = 0; i < outb.size(); i++)
+        ASSERT_FLOAT_EQ(outa[i] + outb[i] + 0.4, out[i]);
 }
 
-TEST(GettingStarted, SNIPPET_getting_started_dims)
-{
+TEST(GettingStarted, SNIPPET_getting_started_dims) {
     //! [ex_getting_started_dims]
     // Create a 4x5x2 array of uniformly distributed random numbers
-    array a = randu(4,5,2);
+    array a = randu(4, 5, 2);
     // Determine the number of dimensions using the numdims() function:
-    printf("numdims(a)  %d\n",  a.numdims()); // 3
+    printf("numdims(a)  %d\n", a.numdims());  // 3
 
     // We can also find the size of the individual dimentions using either
     // the `dims` function:
-    printf("dims = [%lld %lld]\n", a.dims(0), a.dims(1)); // 4,5
+    printf("dims = [%lld %lld]\n", a.dims(0), a.dims(1));  // 4,5
 
     // Or the elements of a dim4 object:
     dim4 dims = a.dims();
-    printf("dims = [%lld %lld]\n", dims[0], dims[1]); // 4,5
+    printf("dims = [%lld %lld]\n", dims[0], dims[1]);  // 4,5
     //! [ex_getting_started_dims]
 
     //! [ex_getting_started_prop]
@@ -159,11 +160,13 @@ TEST(GettingStarted, SNIPPET_getting_started_dims)
     printf("is complex? %d    is real? %d\n", a.iscomplex(), a.isreal());
 
     // if it is a column or row vector
-    printf("is vector? %d  column? %d  row? %d\n", a.isvector(), a.iscolumn(), a.isrow());
+    printf("is vector? %d  column? %d  row? %d\n", a.isvector(), a.iscolumn(),
+           a.isrow());
 
     // and whether or not the array is empty and how much memory it takes on
     // the device:
-    printf("empty? %d  total elements: %lld  bytes: %zu\n", a.isempty(), a.elements(), a.bytes());
+    printf("empty? %d  total elements: %lld  bytes: %zu\n", a.isempty(),
+           a.elements(), a.bytes());
     //! [ex_getting_started_prop]
 
     ASSERT_EQ(f32, a.type());
@@ -184,8 +187,7 @@ TEST(GettingStarted, SNIPPET_getting_started_dims)
     ASSERT_EQ(5, a.dims(1));
 }
 
-TEST(GettingStarted, SNIPPET_getting_started_arith)
-{
+TEST(GettingStarted, SNIPPET_getting_started_arith) {
     //! [ex_getting_started_arith]
     array R = randu(3, 3);
     af_print(constant(1, 3, 3) + complex(sin(R)));  // will be c32
@@ -202,30 +204,29 @@ TEST(GettingStarted, SNIPPET_getting_started_arith)
     //! [ex_getting_started_arith]
 }
 
-TEST(GettingStarted, SNIPPET_getting_started_dev_ptr)
-{
+TEST(GettingStarted, SNIPPET_getting_started_dev_ptr) {
 #ifdef __CUDACC__
     //! [ex_getting_started_dev_ptr]
-    // Create an array on the host, copy it into an ArrayFire 2x3 ArrayFire array
-    float host_ptr[] = {0,1,2,3,4,5};
+    // Create an array on the host, copy it into an ArrayFire 2x3 ArrayFire
+    // array
+    float host_ptr[] = {0, 1, 2, 3, 4, 5};
     array a(2, 3, host_ptr);
 
     // Create a CUDA device pointer, populate it with data from the host
     float *device_ptr;
-    cudaMalloc((void**)&device_ptr, 6*sizeof(float));
-    cudaMemcpy(device_ptr, host_ptr, 6*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&device_ptr, 6 * sizeof(float));
+    cudaMemcpy(device_ptr, host_ptr, 6 * sizeof(float), cudaMemcpyHostToDevice);
 
     // Convert the CUDA-allocated device memory into an ArrayFire array:
-    array b(2,3, device_ptr, afDevice); // Note: afDevice (default: afHost)
+    array b(2, 3, device_ptr, afDevice);  // Note: afDevice (default: afHost)
     // Note that ArrayFire takes ownership over `device_ptr`, so memory will
     // be freed when `b` id destructed. Do not call cudaFree(device_ptr)!
 
     //! [ex_getting_started_dev_ptr]
-#endif //__CUDACC__
+#endif  //__CUDACC__
 }
 
-TEST(GettingStarted, SNIPPET_getting_started_ptr)
-{
+TEST(GettingStarted, SNIPPET_getting_started_ptr) {
 #ifdef __CUDACC__
     //! [ex_getting_started_ptr]
     // Create an array consisting of 3 random numbers
@@ -239,43 +240,44 @@ TEST(GettingStarted, SNIPPET_getting_started_ptr)
     freeHost(host_a);
 
     // Get access to the device memory for a CUDA kernel
-    float * d_cuda = a.device<float>();    // no need to free this
+    float *d_cuda = a.device<float>();  // no need to free this
     float value;
     cudaMemcpy(&value, d_cuda + 2, sizeof(float), cudaMemcpyDeviceToHost);
     printf("d_cuda[2] = %g\n", value);
-    a.unlock(); // unlock to allow garbage collection if necessary
+    a.unlock();  // unlock to allow garbage collection if necessary
 
     // Because OpenCL uses references rather than pointers, accessing memory
     // is similar, but has a somewhat clunky syntax. For the C-API
-    cl_mem d_opencl = (cl_mem) a.device<float>();
+    cl_mem d_opencl = (cl_mem)a.device<float>();
     // for the C++ API, you can just wrap this object into a cl::Buffer
     // after calling clRetainMemObject.
 
     //! [ex_getting_started_ptr]
-#endif //__CUDACC__
+#endif  //__CUDACC__
 }
 
-
-TEST(GettingStarted, SNIPPET_getting_started_scalar)
-{
+TEST(GettingStarted, SNIPPET_getting_started_scalar) {
     //! [ex_getting_started_scalar]
-    array a = randu(3);
+    array a   = randu(3);
     float val = a.scalar<float>();
     printf("scalar value: %g\n", val);
     //! [ex_getting_started_scalar]
 }
 
-TEST(GettingStarted, SNIPPET_getting_started_bit)
-{
+TEST(GettingStarted, SNIPPET_getting_started_bit) {
     //! [ex_getting_started_bit]
     int h_A[] = {1, 1, 0, 0, 4, 0, 0, 2, 0};
     int h_B[] = {1, 0, 1, 0, 1, 0, 1, 1, 1};
     array A = array(3, 3, h_A), B = array(3, 3, h_B);
-    af_print(A); af_print(B);
+    af_print(A);
+    af_print(B);
 
-    array A_and_B = A & B; af_print(A_and_B);
-    array  A_or_B = A | B; af_print(A_or_B);
-    array A_xor_B = A ^ B; af_print(A_xor_B);
+    array A_and_B = A & B;
+    af_print(A_and_B);
+    array A_or_B = A | B;
+    af_print(A_or_B);
+    array A_xor_B = A ^ B;
+    af_print(A_xor_B);
     //! [ex_getting_started_bit]
 
     vector<int> Andout(A_and_B.elements());
@@ -285,24 +287,23 @@ TEST(GettingStarted, SNIPPET_getting_started_bit)
     A_or_B.host(&Orout.front());
     A_xor_B.host(&Xorout.front());
 
-
-    for(unsigned int i = 0; i < Andout.size(); i++) ASSERT_FLOAT_EQ(h_A[i] & h_B[i], Andout[i]);
-    for(unsigned int i = 0; i < Orout.size(); i++)  ASSERT_FLOAT_EQ(h_A[i] | h_B[i], Orout[i]);
-    for(unsigned int i = 0; i < Xorout.size(); i++) ASSERT_FLOAT_EQ(h_A[i] ^ h_B[i], Xorout[i]);
+    for (unsigned int i = 0; i < Andout.size(); i++)
+        ASSERT_FLOAT_EQ(h_A[i] & h_B[i], Andout[i]);
+    for (unsigned int i = 0; i < Orout.size(); i++)
+        ASSERT_FLOAT_EQ(h_A[i] | h_B[i], Orout[i]);
+    for (unsigned int i = 0; i < Xorout.size(); i++)
+        ASSERT_FLOAT_EQ(h_A[i] ^ h_B[i], Xorout[i]);
 }
 
-
-TEST(GettingStarted, SNIPPET_getting_started_constants)
-{
+TEST(GettingStarted, SNIPPET_getting_started_constants) {
     //! [ex_getting_started_constants]
-    array A = randu(5,5);
+    array A          = randu(5, 5);
     A(where(A > .5)) = NaN;
 
     array x = randu(10e6), y = randu(10e6);
-    double pi_est = 4 * sum<float>(hypot(x,y) < 1) / 10e6;
+    double pi_est = 4 * sum<float>(hypot(x, y) < 1) / 10e6;
     printf("estimation error: %g\n", fabs(Pi - pi_est));
     //! [ex_getting_started_constants]
 
-    ASSERT_LE(fabs(Pi-pi_est), 0.005);
+    ASSERT_LE(fabs(Pi - pi_est), 0.005);
 }
-

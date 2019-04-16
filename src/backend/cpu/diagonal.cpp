@@ -7,27 +7,25 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <kernel/diagonal.hpp>
 #include <diagonal.hpp>
+#include <kernel/diagonal.hpp>
 
 #include <Array.hpp>
+#include <platform.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
-#include <platform.hpp>
 
 #include <algorithm>
 #include <cstdlib>
 
-namespace cpu
-{
+namespace cpu {
 
 template<typename T>
-Array<T> diagCreate(const Array<T> &in, const int num)
-{
+Array<T> diagCreate(const Array<T> &in, const int num) {
     in.eval();
 
-    int size = in.dims()[0] + std::abs(num);
-    int batch = in.dims()[1];
+    int size     = in.dims()[0] + std::abs(num);
+    int batch    = in.dims()[1];
     Array<T> out = createEmptyArray<T>(dim4(size, size, batch));
 
     getQueue().enqueue(kernel::diagCreate<T>, out, in, num);
@@ -36,13 +34,12 @@ Array<T> diagCreate(const Array<T> &in, const int num)
 }
 
 template<typename T>
-Array<T> diagExtract(const Array<T> &in, const int num)
-{
+Array<T> diagExtract(const Array<T> &in, const int num) {
     in.eval();
 
     const dim4 idims = in.dims();
-    dim_t size = std::min(idims[0], idims[1]) - std::abs(num);
-    Array<T> out = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
+    dim_t size       = std::min(idims[0], idims[1]) - std::abs(num);
+    Array<T> out     = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
 
     getQueue().enqueue(kernel::diagExtract<T>, out, in, num);
 
@@ -50,8 +47,8 @@ Array<T> diagExtract(const Array<T> &in, const int num)
 }
 
 #define INSTANTIATE_DIAGONAL(T)                                          \
-    template Array<T>  diagExtract<T>    (const Array<T> &in, const int num); \
-    template Array<T>  diagCreate <T>    (const Array<T> &in, const int num);
+    template Array<T> diagExtract<T>(const Array<T> &in, const int num); \
+    template Array<T> diagCreate<T>(const Array<T> &in, const int num);
 
 INSTANTIATE_DIAGONAL(float)
 INSTANTIATE_DIAGONAL(double)
@@ -66,4 +63,4 @@ INSTANTIATE_DIAGONAL(uchar)
 INSTANTIATE_DIAGONAL(short)
 INSTANTIATE_DIAGONAL(ushort)
 
-}
+}  // namespace cpu
