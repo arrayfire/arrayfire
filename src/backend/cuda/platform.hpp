@@ -109,6 +109,7 @@ class DeviceManager {
     static bool checkGraphicsInteropCapability();
 
     static DeviceManager& getInstance();
+    ~DeviceManager();
 
     spdlog::logger* getLogger();
 
