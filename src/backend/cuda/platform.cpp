@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdio>
+#include <memory>
 #include <mutex>
 #include <sstream>
 #include <stdexcept>
@@ -38,7 +39,6 @@
 #include <vector>
 
 using namespace std;
-using std::to_string;
 
 namespace cuda {
 
@@ -176,6 +176,66 @@ static inline int getMinSupportedCompute(int cudaMajorVer) {
     int CVSize = static_cast<int>(minSV.size());
     return (cudaMajorVer > CVSize ? minSV[CVSize - 1]
                                   : minSV[cudaMajorVer - 1]);
+}
+
+unique_ptr<cublasHandle> &cublasManager(const int deviceId) {
+    thread_local unique_ptr<cublasHandle> handles[DeviceManager::MAX_DEVICES];
+    thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
+
+    call_once(initFlags[deviceId], [&] {
+        handles[deviceId].reset(new cublasHandle());
+        // TODO(pradeep) When multiple streams per device
+        // is added to CUDA backend, move the cublasSetStream
+        // call outside of call_once scope.
+        CUBLAS_CHECK(cublasSetStream(handles[deviceId]->get(),
+                                     cuda::getStream(deviceId)));
+    });
+
+    return handles[deviceId];
+}
+
+unique_ptr<PlanCache> &cufftManager(const int deviceId) {
+    thread_local unique_ptr<PlanCache> caches[DeviceManager::MAX_DEVICES];
+    thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
+    call_once(initFlags[deviceId],
+              [&] { caches[deviceId].reset(new PlanCache()); });
+    return caches[deviceId];
+}
+
+unique_ptr<cusolverDnHandle> &cusolverManager(const int deviceId) {
+    thread_local unique_ptr<cusolverDnHandle>
+        handles[DeviceManager::MAX_DEVICES];
+    thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
+    call_once(initFlags[deviceId], [&] {
+        handles[deviceId].reset(new cusolverDnHandle());
+        // TODO(pradeep) When multiple streams per device
+        // is added to CUDA backend, move the cublasSetStream
+        // call outside of call_once scope.
+        CUSOLVER_CHECK(cusolverDnSetStream(handles[deviceId]->get(),
+                                           cuda::getStream(deviceId)));
+    });
+    // TODO(pradeep) prior to this change, stream was being synced in get solver
+    // handle because of some cusolver bug. Re-enable that if this change
+    // doesn't work and sovler tests fail.
+    // https://gist.github.com/shehzan10/414c3d04a40e7c4a03ed3c2e1b9072e7
+    // cuSolver Streams patch:
+    // CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(deviceId)));
+
+    return handles[deviceId];
+}
+
+unique_ptr<cusparseHandle> &cusparseManager(const int deviceId) {
+    thread_local unique_ptr<cusparseHandle> handles[DeviceManager::MAX_DEVICES];
+    thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
+    call_once(initFlags[deviceId], [&] {
+        handles[deviceId].reset(new cusparseHandle());
+        // TODO(pradeep) When multiple streams per device
+        // is added to CUDA backend, move the cublasSetStream
+        // call outside of call_once scope.
+        CUSPARSE_CHECK(cusparseSetStream(handles[deviceId]->get(),
+                                         cuda::getStream(deviceId)));
+    });
+    return handles[deviceId];
 }
 
 int getBackend() { return AF_BACKEND_CUDA; }
@@ -424,69 +484,19 @@ GraphicsResourceManager &interopManager() {
 }
 
 PlanCache &fftManager() {
-    thread_local PlanCache cufftManagers[DeviceManager::MAX_DEVICES];
-
-    return cufftManagers[getActiveDeviceId()];
+    return *(cufftManager(cuda::getActiveDeviceId()).get());
 }
 
 BlasHandle blasHandle() {
-    thread_local std::unique_ptr<cublasHandle>
-        cublasHandles[DeviceManager::MAX_DEVICES];
-    thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];
-
-    int id = cuda::getActiveDeviceId();
-
-    std::call_once(initFlags[id],
-                   [&] { cublasHandles[id].reset(new cublasHandle()); });
-
-    CUBLAS_CHECK(
-        cublasSetStream(cublasHandles[id].get()->get(), cuda::getStream(id)));
-
-    return cublasHandles[id].get()->get();
+    return cublasManager(cuda::getActiveDeviceId())->get();
 }
 
 SolveHandle solverDnHandle() {
-    thread_local std::unique_ptr<cusolverDnHandle>
-        cusolverHandles[DeviceManager::MAX_DEVICES];
-    thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];
-
-    int id = cuda::getActiveDeviceId();
-
-    std::call_once(initFlags[id],
-                   [&] { cusolverHandles[id].reset(new cusolverDnHandle()); });
-
-    // FIXME
-    // This is not an ideal case. It's just a hack.
-    // The correct way to do is to use
-    // CUSOLVER_CHECK(cusolverDnSetStream(cuda::getStream(cuda::getActiveDeviceId())))
-    // in the class constructor.
-    // However, this is causing a lot of the cusolver functions to fail.
-    // The only way to fix them is to use cudaDeviceSynchronize() and
-    //     cudaStreamSynchronize()
-    // all over the place, but even then some calls like getrs in solve_lu
-    // continue to fail on any stream other than 0.
-    //
-    // cuSolver Streams patch:
-    // https://gist.github.com/shehzan10/414c3d04a40e7c4a03ed3c2e1b9072e7
-    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(id)));
-
-    return cusolverHandles[id].get()->get();
+    return cusolverManager(cuda::getActiveDeviceId())->get();
 }
 
 SparseHandle sparseHandle() {
-    thread_local std::unique_ptr<cusparseHandle>
-        cusparseHandles[DeviceManager::MAX_DEVICES];
-    thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];
-
-    int id = cuda::getActiveDeviceId();
-
-    std::call_once(initFlags[id],
-                   [&] { cusparseHandles[id].reset(new cusparseHandle()); });
-
-    CUSPARSE_CHECK(cusparseSetStream(cusparseHandles[id].get()->get(),
-                                     cuda::getStream(id)));
-
-    return cusparseHandles[id].get()->get();
+    return cusparseManager(cuda::getActiveDeviceId())->get();
 }
 
 /// Struct represents the cuda toolkit version and its associated minimum
@@ -707,6 +717,18 @@ DeviceManager::DeviceManager()
         }
     }
     AF_TRACE("Default device: {}", getActiveDeviceId());
+}
+
+DeviceManager::~DeviceManager() {
+    // Reset unique_ptrs for all cu[BLAS | Sparse | Solver]
+    // handles of all devices
+    for (int i = 0; i < nDevices; ++i) {
+        setDevice(i);
+        cublasManager(i).reset();
+        cufftManager(i).reset();
+        cusolverManager(i).reset();
+        cusparseManager(i).reset();
+    }
 }
 
 spdlog::logger *DeviceManager::getLogger() { return logger.get(); }
