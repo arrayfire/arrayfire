@@ -483,7 +483,7 @@ class AFAPI Window {
         */
         void setAxesTitles(const char * const xtitle = "X-Axis",
                            const char * const ytitle = "Y-Axis",
-                           const char * const ztitle = "Z-Axis");
+                           const char * const ztitle = NULL);
 #endif
         /**
            Setup grid layout for multiview mode in a window
@@ -1062,7 +1062,15 @@ AFAPI af_err af_set_axes_limits_3d(const af_window wind,
 
 #if AF_API_VERSION >= 34
 /**
-   C Interface wrapper for setting axes titles for histogram/plot/surface/vector field
+   C Interface wrapper for setting axes titles for histogram/plot/surface/vector
+   field
+
+   Passing correct value to \p ztitle dictates the right behavior when it comes
+   to setting the axes titles appropriately.  If the user is targeting a two
+   dimensional chart on the window \p wind, then the user needs to pass NULL to
+   \p ztitle so that internal caching mechanism understands this window requires
+   a 2D chart. Any non NULL value passed to \p ztitle will result in ArrayFire
+   thinking the \p wind intends to use a 3D chart.
 
    \param[in] wind is the window handle
    \param[in] xtitle is the name of the x-axis
