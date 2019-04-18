@@ -41,6 +41,7 @@ using std::lock_guard;
 using std::recursive_mutex;
 using std::unique_ptr;
 
+
 namespace cuda {
 void setMemStepSize(size_t step_bytes) {
     memoryManager().setMemStepSize(step_bytes);
@@ -119,6 +120,8 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(void*)
+INSTANTIATE(void const*)
 
 MemoryManager::MemoryManager()
     : common::MemoryManager<cuda::MemoryManager>(
@@ -136,6 +139,7 @@ MemoryManager::~MemoryManager() {
             continue;  // Do not throw any errors while shutting down
         }
     }
+
 }
 
 int MemoryManager::getActiveDeviceId() { return cuda::getActiveDeviceId(); }

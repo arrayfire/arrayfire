@@ -234,8 +234,8 @@ TEST(MatrixMultiply, Batched) {
     const int M  = 512;
     const int K  = 512;
     const int N  = 10;
-    const int D2 = 2;
-    const int D3 = 3;
+    const int D2 = 20;
+    const int D3 = 30;
     for (int d3 = 1; d3 <= D3; d3 *= D3) {
         for (int d2 = 1; d2 <= D2; d2 *= D2) {
             array a = randu(M, K, d2, d3);
@@ -248,7 +248,7 @@ TEST(MatrixMultiply, Batched) {
                     array b_ij = b(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res  = matmul(a_ij, b_ij);
-                    ASSERT_ARRAYS_NEAR(c_ij, res, 2E-4);
+                    ASSERT_ARRAYS_NEAR(c_ij, res, 3E-4);
                 }
             }
         }
@@ -274,8 +274,8 @@ TEST(MatrixMultiply, LhsBroadcastBatched) {
     const int M  = 512;
     const int K  = 512;
     const int N  = 10;
-    const int D2 = 2;
-    const int D3 = 3;
+    const int D2 = 20;
+    const int D3 = 300;
 
     for (int d3 = 1; d3 <= D3; d3 *= D3) {
         for (int d2 = 1; d2 <= D2; d2 *= D2) {
@@ -288,7 +288,7 @@ TEST(MatrixMultiply, LhsBroadcastBatched) {
                     array b_ij = b(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res  = matmul(a, b_ij);
-                    ASSERT_ARRAYS_NEAR(c_ij, res, 2E-4);
+                    ASSERT_ARRAYS_NEAR(c_ij, res, 3E-4);
                 }
             }
         }
@@ -299,8 +299,8 @@ TEST(MatrixMultiply, RhsBroadcastBatched) {
     const int M  = 512;
     const int K  = 512;
     const int N  = 10;
-    const int D2 = 2;
-    const int D3 = 3;
+    const int D2 = 20;
+    const int D3 = 30;
 
     for (int d3 = 1; d3 <= D3; d3 *= D3) {
         for (int d2 = 1; d2 <= D2; d2 *= D2) {
@@ -313,7 +313,7 @@ TEST(MatrixMultiply, RhsBroadcastBatched) {
                     array a_ij = a(span, span, i, j);
                     array c_ij = c(span, span, i, j);
                     array res  = matmul(a_ij, b);
-                    ASSERT_ARRAYS_NEAR(c_ij, res, 2E-4);
+                    ASSERT_ARRAYS_NEAR(c_ij, res, 3E-4);
                 }
             }
         }
