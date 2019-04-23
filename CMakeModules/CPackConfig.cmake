@@ -338,17 +338,7 @@ set(CPACK_DEB_COMPONENT_INSTALL ON)
 #set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE http://www.arrayfire.com)
 
-##
-# RPM package
-##
-set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
-set(CPACK_RPM_PACKAGE_GROUP "Development/Libraries")
-set(CPACK_RPM_PACKAGE_LICENSE "BSD")
-set(CPACK_RPM_PACKAGE_URL "${SITE_URL}")
-if(AF_BUILD_FORGE)
-    set(CPACK_RPM_PACKAGE_SUGGESTS "fontconfig-devel, libX11, libXrandr, libXinerama, libXxf86vm, libXcursor, mesa-libGL-devel")
-endif()
+include(CPackConfig.RPM)
 
 ##
 # Source package

@@ -403,7 +403,7 @@ foreach(backend CPU CUDA OpenCL Unified)
     install(EXPORT ArrayFire${backend}Targets
             NAMESPACE ArrayFire::
             DESTINATION ${AF_INSTALL_CMAKE_DIR}
-            COMPONENT ${lower_backend})
+            COMPONENT ${lower_backend}-cmake)
 
     export( EXPORT ArrayFire${backend}Targets
             NAMESPACE ArrayFire::
