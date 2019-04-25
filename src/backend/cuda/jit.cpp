@@ -102,7 +102,8 @@ struct Param
     // Common CUDA code
     // This part of the code does not change with the kernel.
 
-    static const char *kernelVoid = "extern \"C\" __global__ void\n";
+    static const char *kernelVoid =
+        "extern \"C\" __global__ void __launch_bounds__(128, 8)\n";
     static const char *dimParams =
         "uint blocks_x, uint blocks_y, uint "
         "blocks_x_total, uint num_odims";
@@ -341,7 +342,7 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     }
 
     if (is_linear) {
-        threads_x = 256;
+        threads_x = 128;
         threads_y = 1;
 
         blocks_x_total = divup((outputs[0].dims[0] * outputs[0].dims[1] *
@@ -352,7 +353,7 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
         blocks_x     = divup(blocks_x_total, repeat_x);
     } else {
         threads_x = 32;
-        threads_y = 8;
+        threads_y = 4;
 
         blocks_x_ = divup(outputs[0].dims[0], threads_x);
         blocks_y_ = divup(outputs[0].dims[1], threads_y);
