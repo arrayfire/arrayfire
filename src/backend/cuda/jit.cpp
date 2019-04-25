@@ -152,10 +152,9 @@ struct Param
                 outref.strides[2] * id2 +
                 outref.strides[1] * id1 + id0;
 
-    if (threadIdx.x < num_params && threadIdx.y == 0) {
-        int tidx = threadIdx.x;
-        block_offsets[tidx] = (id3 < params[tidx].dims[3]) * params[tidx].strides[3] * id3 +
-                              (id2 < params[tidx].dims[2]) * params[tidx].strides[2] * id2;
+    if (lidx < num_params) {
+        block_offsets[lidx] = (id3 < params[lidx].dims[3]) * params[lidx].strides[3] * id3 +
+                              (id2 < params[lidx].dims[2]) * params[lidx].strides[2] * id2;
     }
     __syncthreads();
     if (cond) {
@@ -166,7 +165,8 @@ struct Param
         Param *params = reinterpret_cast<Param*>(smem);
         dim_t *block_offsets = reinterpret_cast<dim_t*>(smem+(num_params * sizeof(Param)));
 
-        if (threadIdx.x < num_params) { params[threadIdx.x] = dims[threadIdx.x]; }
+        int lidx = threadIdx.y * blockDim.x + threadIdx.x;
+        if (lidx < num_params) { params[lidx] = dims[lidx]; }
         __syncthreads();
     )JIT";
 

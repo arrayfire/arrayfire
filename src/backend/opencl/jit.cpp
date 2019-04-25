@@ -99,8 +99,9 @@ static string getKernelString(const string funcName,
         )JIT";
 
     static const char *generalIndex = R"JIT(
-        if (get_local_id(0) < num_params) {
-            params[get_local_id(0)] = dims[get_local_id(0)];
+        int lidx = get_local_id(1) * get_local_size(0) + get_local_id(0);
+        if (lidx < num_params) {
+            params[lidx] = dims[lidx];
         }
         dim_t id0 = 0, id1 = 0, id2 = 0, id3 = 0;
         if (num_odims > 2) {
@@ -129,10 +130,9 @@ static string getKernelString(const string funcName,
                      oInfo.strides[1] * id1 +
                      id0 + oInfo.offset;
 
-        if (get_local_id(0) < num_params && get_local_id(1) == 0) {
-            dim_t tidx = get_local_id(0);
-            block_offsets[tidx] = (id3 < params[tidx].dims[3]) * params[tidx].strides[3] * id3 +
-                                  (id2 < params[tidx].dims[2]) * params[tidx].strides[2] * id2;
+        if (lidx < num_params) {
+            block_offsets[lidx] = (id3 < params[lidx].dims[3]) * params[lidx].strides[3] * id3 +
+                                  (id2 < params[lidx].dims[2]) * params[lidx].strides[2] * id2;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
         if (!cond) return;
