@@ -82,6 +82,7 @@ ForgeModule::ForgeModule() : DependencyModule("forge", nullptr) {
         FG_MODULE_FUNCTION_INIT(fg_get_chart_axes_limits);
         FG_MODULE_FUNCTION_INIT(fg_set_chart_axes_limits);
         FG_MODULE_FUNCTION_INIT(fg_set_chart_axes_titles);
+        FG_MODULE_FUNCTION_INIT(fg_set_chart_label_format);
         FG_MODULE_FUNCTION_INIT(fg_append_image_to_chart);
         FG_MODULE_FUNCTION_INIT(fg_append_plot_to_chart);
         FG_MODULE_FUNCTION_INIT(fg_append_histogram_to_chart);

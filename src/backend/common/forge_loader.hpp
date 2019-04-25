@@ -78,6 +78,7 @@ class ForgeModule : public common::DependencyModule {
     MODULE_MEMBER(fg_get_chart_axes_limits);
     MODULE_MEMBER(fg_set_chart_axes_limits);
     MODULE_MEMBER(fg_set_chart_axes_titles);
+    MODULE_MEMBER(fg_set_chart_label_format);
     MODULE_MEMBER(fg_append_image_to_chart);
     MODULE_MEMBER(fg_append_plot_to_chart);
     MODULE_MEMBER(fg_append_histogram_to_chart);

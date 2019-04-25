@@ -221,6 +221,41 @@ af_err af_set_axes_titles(const af_window window, const char* const xtitle,
     return AF_SUCCESS;
 }
 
+af_err af_set_axes_label_format(const af_window window,
+                                const char* const xformat,
+                                const char* const yformat,
+                                const char* const zformat,
+                                const af_cell* const props) {
+    try {
+        if (window == 0) { AF_ERROR("Not a valid window", AF_ERR_INTERNAL); }
+
+        ARG_ASSERT(2, xformat != nullptr);
+        ARG_ASSERT(3, yformat != nullptr);
+        ARG_ASSERT(4, zformat != nullptr);
+
+        ForgeManager& fgMngr = forgeManager();
+
+        fg_chart chart = nullptr;
+
+        fg_chart_type ctype = (zformat ? FG_CHART_3D : FG_CHART_2D);
+
+        if (props->col > -1 && props->row > -1)
+            chart = fgMngr.getChart(window, props->row, props->col, ctype);
+        else
+            chart = fgMngr.getChart(window, 0, 0, ctype);
+
+        if (ctype == FG_CHART_2D) {
+            FG_CHECK(forgePlugin().fg_set_chart_label_format(chart, xformat,
+                                                             yformat, "3.2%f"));
+        } else {
+            FG_CHECK(forgePlugin().fg_set_chart_label_format(chart, xformat,
+                                                             yformat, zformat));
+        }
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_show(const af_window wind) {
     try {
         if (wind == 0) { AF_ERROR("Not a valid window", AF_ERR_INTERNAL); }
