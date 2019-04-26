@@ -15,9 +15,7 @@
 namespace cuda {
 
 template<af_op_t op>
-static const char *unaryName() {
-    return "__noop";
-}
+static const char *unaryName();
 
 #define UNARY_DECL(OP, FNAME)                      \
     template<>                                     \
