@@ -33,6 +33,11 @@ T sigmoid(T in) {
     return 1.0 / (1.0 + std::exp(-in));
 }
 
+template<typename T>
+T rsqrt(T in) {
+    return 1.0/sqrt(in);
+}
+
 #define TEST_REAL(T, func, err, lo, hi)                          \
     TEST(MathTests, Test_##func##_##T) {                         \
         try {                                                    \
@@ -121,6 +126,7 @@ MATH_TESTS_ALL(exp)
 MATH_TESTS_ALL(log)
 MATH_TESTS_REAL(log10)
 MATH_TESTS_REAL(log2)
+MATH_TESTS_REAL(rsqrt)
 
 MATH_TESTS_REAL(sigmoid)
 

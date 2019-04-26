@@ -21,6 +21,11 @@ T sigmoid(T in) {
     return (1.0) / (1 + std::exp(-in));
 }
 
+template<typename T>
+T rsqrt(T in) {
+    return  pow(in, -0.5);
+}
+
 #define UNARY_OP_FN(op, fn)                                               \
     template<typename T>                                                  \
     struct UnOp<T, T, af_##op##_t> {                                      \
@@ -65,6 +70,7 @@ UNARY_OP(log1p)
 UNARY_OP(log2)
 
 UNARY_OP(sqrt)
+UNARY_OP_FN(rsqrt, rsqrt)
 UNARY_OP(cbrt)
 
 UNARY_OP(tgamma)

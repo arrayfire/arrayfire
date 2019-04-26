@@ -127,6 +127,7 @@ UNARY(log1p)
 UNARY(log2)
 
 UNARY(cbrt)
+UNARY(rsqrt)
 
 UNARY(tgamma)
 UNARY(lgamma)

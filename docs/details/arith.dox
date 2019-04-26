@@ -528,6 +528,15 @@ Square root of input arrays
 
 \copydoc arith_real_only
 
+\defgroup arith_func_rsqrt rsqrt
+
+\ingroup explog_mat
+
+The reciprocal or inverse square root of input arrays
+
+\f[ \frac{1}{\sqrt{x}} \f]
+
+\copydoc arith_real_only
 
 \defgroup arith_func_cbrt cbrt
 

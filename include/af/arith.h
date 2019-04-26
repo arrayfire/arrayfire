@@ -502,6 +502,16 @@ namespace af
     /// \ingroup arith_func_sqrt
     AFAPI array sqrt   (const array &in);
 
+#if AF_API_VERSION >= 37
+    /// C++ Interface for reciprocal square root of input
+    ///
+    /// \param[in] in is input
+    /// \return the reciprocal square root of input
+    ///
+    /// \ingroup arith_func_rsqrt
+    AFAPI array rsqrt   (const array &in);
+#endif
+
     /// C++ Interface for cube root of input
     ///
     /// \param[in] in is input
@@ -1324,6 +1334,18 @@ extern "C" {
     */
     AFAPI af_err af_sqrt    (af_array *out, const af_array in);
 
+#if AF_API_VERSION >= 37
+    /**
+      C Interface for reciprocal  square root
+
+      \param[out] out will contain the reciprocal square root of \p in
+      \param[in] in is input
+      \return \ref AF_SUCCESS if the execution completes properly
+
+      \ingroup arith_func_rsqrt
+    */
+    AFAPI af_err af_rsqrt    (af_array *out, const af_array in);
+#endif
     /**
        C Interface for cube root
 
