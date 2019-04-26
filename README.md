@@ -103,9 +103,13 @@ Quick links:
 * [Examples](http://www.arrayfire.org/docs/examples.htm)
 * [Blog](http://arrayfire.com/blog/)
 
-## Language wrappers
+## Language support
 
-ArrayFire has several official and third-party language wrappers.
+ArrayFire has several official and third-party language API`s:
+
+__Native__
+
+* [C++](http://arrayfire.org/docs/gettingstarted.htm#gettingstarted_api_usage)
 
 __Official wrappers__
 
