@@ -20,6 +20,8 @@
 #include <optypes.hpp>
 #include <platform.hpp>
 
+#include <Param.hpp>
+
 #include <algorithm>
 #include <array>
 #include <iterator>
@@ -194,6 +196,17 @@ Kernel buildKernel(const int device, const string& nameExpr,
     if (!isJIT) { NVRTC_CHECK(nvrtcGetLoweredName(prog, ker_name, &name)); }
 
     CU_CHECK(cuModuleGetFunction(&kernel, module, name));
+
+    if (isJIT) {
+        CU_CHECK(cuFuncSetAttribute(
+            kernel, CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES,
+            32 * sizeof(Param<float>) * sizeof(size_t)));
+        CU_CHECK(cuFuncSetAttribute(
+            kernel, CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT, 10));
+        CU_CHECK(cuFuncSetCacheConfig(kernel, CU_FUNC_CACHE_PREFER_L1));
+        CU_CHECK(cuFuncSetSharedMemConfig(
+            kernel, CU_SHARED_MEM_CONFIG_EIGHT_BYTE_BANK_SIZE));
+    }
     Kernel entry = {module, kernel};
 
     CU_LINK_CHECK(cuLinkDestroy(linkState));
