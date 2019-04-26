@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #include <Array.hpp>
 #include <err_cpu.hpp>
 #include <jit/UnaryNode.hpp>
