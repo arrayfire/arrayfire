@@ -56,6 +56,7 @@ UNARY_FN(log10)
 UNARY_FN(log2)
 
 UNARY_FN(sqrt)
+UNARY_FN(rsqrt)
 UNARY_FN(cbrt)
 
 UNARY_FN(trunc)

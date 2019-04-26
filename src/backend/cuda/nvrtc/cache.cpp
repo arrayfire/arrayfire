@@ -310,6 +310,7 @@ string getOpEnumStr(af_op_t val) {
 
         CASE_STMT(af_select_t);
         CASE_STMT(af_not_select_t);
+        CASE_STMT(af_rsqrt_t);
     }
 #undef CASE_STMT
     return retVal;
