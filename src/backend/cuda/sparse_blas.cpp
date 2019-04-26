@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <cuda_runtime.h>
+#include <cusparse.hpp>
 #include <platform.hpp>
 #include <sparse_blas.hpp>
 

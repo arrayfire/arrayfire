@@ -10,10 +10,9 @@
 #pragma once
 #include <common/MatrixAlgebraHandle.hpp>
 #include <common/defines.hpp>
-#include <cublas_v2.h>
+#include <cu_handles.hpp>
 
 namespace cuda {
-typedef cublasHandle_t BlasHandle;
 
 const char* errorString(cublasStatus_t err);
 

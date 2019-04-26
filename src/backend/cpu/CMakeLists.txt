@@ -37,6 +37,8 @@ target_sources(afcpu
     convolve.hpp
     copy.cpp
     copy.hpp
+    device_manager.cpp
+    device_manager.hpp
     diagonal.cpp
     diagonal.hpp
     diff.cpp

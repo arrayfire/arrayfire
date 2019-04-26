@@ -12,10 +12,9 @@
 #include <common/MatrixAlgebraHandle.hpp>
 #include <common/defines.hpp>
 #include <cuda_runtime.h>
-#include <cusolverDn.h>
+#include <cu_handles.hpp>
 
 namespace cuda {
-typedef cusolverDnHandle_t SolveHandle;
 
 const char* errorString(cusolverStatus_t err);
 
@@ -40,4 +39,5 @@ class cusolverDnHandle
 
     void destroyHandle(SolveHandle handle) { cusolverDnDestroy(handle); }
 };
+
 }  // namespace cuda

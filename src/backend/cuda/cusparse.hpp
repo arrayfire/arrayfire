@@ -10,10 +10,9 @@
 #pragma once
 #include <common/MatrixAlgebraHandle.hpp>
 #include <common/defines.hpp>
-#include <cusparse_v2.h>
+#include <cu_handles.hpp>
 
 namespace cuda {
-typedef cusparseHandle_t SparseHandle;
 
 const char* errorString(cusparseStatus_t err);
 

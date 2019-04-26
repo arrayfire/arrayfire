@@ -18,6 +18,7 @@
 #include <common/err_common.hpp>
 #include <complex.hpp>
 #include <copy.hpp>
+#include <cusparse.hpp>
 #include <lookup.hpp>
 #include <math.hpp>
 #include <platform.hpp>

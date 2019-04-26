@@ -16,6 +16,7 @@
 #include <common/jit/NodeIterator.hpp>
 #include <copy.hpp>
 #include <debug_cuda.hpp>
+#include <device_manager.hpp>
 #include <jit/BufferNode.hpp>
 #include <jit/ShiftNode.hpp>
 #include <math.hpp>
