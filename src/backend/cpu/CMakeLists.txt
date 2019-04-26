@@ -349,6 +349,10 @@ if(LAPACK_FOUND OR MKL_FOUND)
       WITH_LINEAR_ALGEBRA)
 endif()
 
+if (AF_BUILD_FORGE)
+  add_dependencies(afcpu forge)
+endif ()
+
 install(TARGETS afcpu
   EXPORT ArrayFireCPUTargets
   COMPONENT cpu

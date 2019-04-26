@@ -523,6 +523,10 @@ if(APPLE)
   target_link_libraries(afcuda PUBLIC -Wl,-rpath,${CUDA_LIBRARIES_PATH})
 endif()
 
+if (AF_BUILD_FORGE)
+  add_dependencies(afcuda forge)
+endif ()
+
 install(TARGETS afcuda
   EXPORT ArrayFireCUDATargets
   COMPONENT cuda
