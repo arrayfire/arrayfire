@@ -16,6 +16,7 @@
 
 using af::array;
 using af::constant;
+using af::dim4;
 using af::eval;
 using af::freeHost;
 using af::gforSet;
@@ -124,10 +125,15 @@ TEST(JIT, CPP_Multi_linear) {
     x.host(&hx[0]);
     y.host(&hy[0]);
 
+    vector<int> goldx(num);
+    vector<int> goldy(num);
     for (int i = 0; i < num; i++) {
-        ASSERT_EQ((ha[i] + hb[i]), hx[i]);
-        ASSERT_EQ((ha[i] - hb[i]), hy[i]);
+        goldx[i] = ha[i] + hb[i];
+        goldy[i] = ha[i] - hb[i];
     }
+
+    ASSERT_VEC_ARRAY_EQ(goldx, dim4(num), x);
+    ASSERT_VEC_ARRAY_EQ(goldy, dim4(num), y);
 }
 
 TEST(JIT, CPP_strided) {
@@ -603,4 +609,84 @@ TEST(JIT, LargeJitTree) {
         eval(a);
         af::sync();
     });
+}
+
+
+TEST(JIT, DISABLED_TwoLargeNonLinear) {
+    int dimsize = 10;
+    array a     = constant(0, dimsize, dimsize);
+    array aa    = constant(0, dimsize, dimsize);
+    array b     = constant(0, dimsize, dimsize);
+    array bb    = constant(0, dimsize, dimsize);
+
+    int val = 0;
+    for (int i = 0; i < 24; i++) {
+        array ones = constant(1, dimsize, dimsize);
+        ones.eval();
+        array twos = constant(2, dimsize);
+        twos.eval();
+
+        a += tile(twos, 1, dimsize) + ones;
+        aa += tile(twos, 1, dimsize) + ones;
+        val += 3;
+    }
+
+    for (int i = 0; i < 24; i++) {
+        array ones = constant(1, dimsize, dimsize);
+        ones.eval();
+        array twos = constant(2, dimsize);
+        twos.eval();
+        b += tile(twos, 1, dimsize) + ones;
+        bb += tile(twos, 1, dimsize) + ones;
+    }
+    array c  = a + b;
+    array cc = aa + bb;
+    eval(c, cc);
+
+    vector<float> gold(a.elements(), val * 2);
+    ASSERT_VEC_ARRAY_EQ(gold, a.dims(), c);
+}
+
+TEST(JIT, IndexingColumn) {
+    array a = constant(1, 512, 32);
+    array b = constant(2, 512);
+    a.eval();
+    b.eval();
+
+    array c = a(af::span, 31) + b;
+
+    vector<float> gold(512, 3.0f);
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(512), c);
+}
+
+TEST(JIT, IndexingRow) {
+    array a = constant(1, 32, 512);
+    array b = constant(2, 1, 512);
+    a.eval();
+    b.eval();
+
+    array c = a(31, af::span) + b;
+
+    vector<float> gold(512, 3.0f);
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(1, 512), c);
+}
+
+TEST(JIT, DISABLED_ManyConstants) {
+    array res  = constant(1, 1);
+    array res2 = tile(res, 1, 10);
+    array res3 = randu(1);
+    array res4 = tile(res3, 1, 10);
+    array res5 = randu(1);
+    array res6 = tile(res5, 1, 10);
+    array res7 = randu(1);
+    array res8 = tile(res7, 1, 10);
+
+    for (int i = 0; i < 80; i++) { res2 = res2 + randu(1, 10); }
+    for (int i = 0; i < 80; i++) { res4 = res4 + tile(randu(1), 1, 10); }
+    for (int i = 0; i < 80; i++) { res6 = res6 + tile(randu(1), 1, 10); }
+    for (int i = 0; i < 80; i++) { res8 = res8 + 1.0f; }
+
+    // This still fails in the current implementation
+    eval(res2, res4, res6);//, res8);
+    af::sync();
 }
