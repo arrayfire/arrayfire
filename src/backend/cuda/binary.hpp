@@ -10,6 +10,7 @@
 #pragma once
 #include <Array.hpp>
 #include <common/jit/BinaryNode.hpp>
+#include <common/jit/NaryNode.hpp>
 #include <math.hpp>
 #include <optypes.hpp>
 #include <af/dim4.hpp>
@@ -132,15 +133,18 @@ struct BinOp<To, Ti, af_hypot_t> {
 template<typename To, typename Ti, af_op_t op>
 Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs,
                            const af::dim4 &odims) {
-    BinOp<To, Ti, op> bop;
+    using common::Node;
+    using common::Node_ptr;
 
-    common::Node_ptr lhs_node = lhs.getNode();
-    common::Node_ptr rhs_node = rhs.getNode();
-    common::BinaryNode *node =
-        new common::BinaryNode(getFullName<To>(), shortname<To>(true),
-                               bop.name(), lhs_node, rhs_node, (int)(op));
+    auto createBinary = [](std::array<Node_ptr, 2> &operands) -> Node_ptr {
+        BinOp<To, Ti, op> bop;
+        return Node_ptr(new common::BinaryNode(
+            getFullName<To>(), shortname<To>(true), bop.name(), operands[0],
+            operands[1], (int)(op)));
+    };
 
-    return createNodeArray<To>(odims, common::Node_ptr(node));
+    Node_ptr out = common::createNaryNode<Ti, 2>(odims, createBinary, {&lhs, &rhs});
+    return createNodeArray<To>(odims, out);
 }
 
 }  // namespace cuda

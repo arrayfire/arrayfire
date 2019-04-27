@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/jit/NaryNode.hpp>
 #include <common/jit/UnaryNode.hpp>
 #include <math.hpp>
 #include <optypes.hpp>
@@ -74,29 +75,33 @@ UNARY_DECL(noop, "__noop")
 
 template<typename T, af_op_t op>
 Array<T> unaryOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
-    common::Node_ptr in_node = in.getNode();
+    using common::Node;
+    using common::Node_ptr;
+    using std::array;
 
-    common::UnaryNode *node = new common::UnaryNode(
-        getFullName<T>(), shortname<T>(true), unaryName<op>(), in_node, op);
+    auto createUnary = [](array<Node_ptr, 1> &operands) {
+        return common::Node_ptr(new common::UnaryNode(
+            getFullName<T>(), shortname<T>(true), unaryName<op>(), operands[0], op));
+    };
 
-    if(outDim == dim4(-1, -1, -1, -1)) {
-        outDim = in.dims();
-    }
-    return createNodeArray<T>(outDim, common::Node_ptr(node));
+    if (outDim == dim4(-1, -1, -1, -1)) { outDim = in.dims(); }
+    Node_ptr out = common::createNaryNode<T, 1>(outDim, createUnary, {&in});
+    return createNodeArray<T>(outDim, out);
 }
 
 template<typename T, af_op_t op>
 Array<char> checkOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
-    common::Node_ptr in_node = in.getNode();
+    using common::Node_ptr;
 
-    common::UnaryNode *node =
-        new common::UnaryNode(getFullName<char>(), shortname<char>(true),
-                              unaryName<op>(), in_node, op);
+    auto createUnary = [](std::array<Node_ptr, 1> &operands) {
+        return Node_ptr(
+            new common::UnaryNode(getFullName<char>(), shortname<char>(true),
+                                  unaryName<op>(), operands[0], op));
+    };
 
-    if(outDim == dim4(-1, -1, -1, -1)) {
-        outDim = in.dims();
-    }
-    return createNodeArray<char>(outDim, common::Node_ptr(node));
+    if (outDim == dim4(-1, -1, -1, -1)) { outDim = in.dims(); }
+    Node_ptr out = common::createNaryNode<T, 1>(outDim, createUnary, {&in});
+    return createNodeArray<char>(outDim, out);
 }
 
 }  // namespace cuda
