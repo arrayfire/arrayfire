@@ -15,5 +15,5 @@ namespace cuda {
 namespace jit {
 template<typename T>
 using BufferNode = common::BufferNodeBase<std::shared_ptr<T>, Param<T>>;
-}  // namespace jit
+}
 }  // namespace cuda

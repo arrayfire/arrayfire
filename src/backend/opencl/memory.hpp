@@ -24,11 +24,9 @@ namespace opencl {
 cl::Buffer *bufferAlloc(const size_t &bytes);
 void bufferFree(cl::Buffer *buf);
 
-using uptr = std::unique_ptr<cl::Buffer, std::function<void(cl::Buffer *)>>;
-
 template<typename T>
-uptr memAlloc(const size_t &elements);
-
+std::unique_ptr<cl::Buffer, std::function<void(cl::Buffer *)>> memAlloc(
+    const size_t &elements);
 void *memAllocUser(const size_t &bytes);
 
 // Need these as 2 separate function and not a default argument
