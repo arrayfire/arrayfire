@@ -9,16 +9,13 @@
 
 #pragma once
 
-#include <common/jit/Node.hpp>
 #include <jit/BufferNode.hpp>
 #include <jit/kernel_generators.hpp>
 
-#include <Param.hpp>
 #include <backend.hpp>
+#include <iomanip>
 
 #include <array>
-#include <functional>
-#include <iomanip>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -43,8 +40,6 @@ class ShiftNodeBase : public Node {
         UNUSED(dims);
         return false;
     }
-
-    bool requiresGlobalMemoryAccess() const final { return true; }
 
     void genKerName(std::stringstream &kerStream,
                     const common::Node_ids &ids) const final {
@@ -72,17 +67,9 @@ class ShiftNodeBase : public Node {
         return curr_id + 4;
     }
 
-    void setParamIndex(int index) final { m_buffer_node->setParamIndex(index); }
-    int getParamIndex() const final { return m_buffer_node->getParamIndex(); }
-
-    typename BufferNode::param_type getParam() {
-        return m_buffer_node->getParam();
-    }
-
     void genOffsets(std::stringstream &kerStream, int id,
                     bool is_linear) const final {
-        UNUSED(is_linear);
-        detail::generateShiftNodeOffsets(kerStream, id);
+        detail::generateShiftNodeOffsets(kerStream, id, is_linear, m_type_str);
     }
 
     void genFuncs(std::stringstream &kerStream,

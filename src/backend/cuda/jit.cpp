@@ -13,16 +13,12 @@
 
 #include <Array.hpp>
 #include <common/jit/Node.hpp>
-#include <common/jit/NodeIterator.hpp>
 #include <copy.hpp>
 #include <debug_cuda.hpp>
 #include <device_manager.hpp>
-#include <jit/BufferNode.hpp>
-#include <jit/ShiftNode.hpp>
 #include <math.hpp>
-#include <platform.hpp>
-
 #include <nvrtc/cache.hpp>
+#include <platform.hpp>
 #include <af/dim4.hpp>
 
 #include <cstdio>
@@ -37,22 +33,12 @@ namespace cuda {
 using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
-using common::NodeIterator;
-using common::requiresGlobalMemoryAccess;
-using cuda::jit::BufferNode;
-using cuda::jit::ShiftNode;
 
 using std::hash;
 using std::map;
 using std::string;
 using std::stringstream;
 using std::vector;
-
-template<typename TL, typename TR>
-bool equal_shape(const Param<TL> &lhs, const Param<TR> &rhs) {
-    return std::equal(lhs.dims, lhs.dims + 4, rhs.dims) &&
-           std::equal(lhs.strides, lhs.strides + 4, rhs.strides);
-}
 
 static string getFuncName(const vector<Node *> &output_nodes,
                           const vector<const Node *> &full_nodes,
@@ -87,11 +73,12 @@ static string getKernelString(const string funcName,
     const std::string includeFileStr(jit_cuh, jit_cuh_len);
 
     const std::string paramTStr = R"JIT(
+template<typename T>
 struct Param
 {
+  T *ptr;
   dim_t dims[4];
   dim_t strides[4];
-  void *ptr;
 };
 )JIT";
 
@@ -105,9 +92,7 @@ struct Param
 
     static const char *kernelVoid = "extern \"C\" __global__ void\n";
     static const char *dimParams =
-        "uint blocks_x, uint blocks_y, uint "
-        "blocks_x_total, uint num_odims";
-    static const char *globalParams = "Param* dims, int num_params, ";
+        "uint blocks_x, uint blocks_y, uint blocks_x_total, uint num_odims";
 
     static const char *loopStart = R"JIT(
     for (int blockIdx_x = blockIdx.x; blockIdx_x < blocks_x_total; blockIdx_x += gridDim.x) {
@@ -115,61 +100,46 @@ struct Param
     static const char *loopEnd   = "}\n\n";
 
     static const char *blockStart = "{\n\n";
-    static const char *blockEnd   = "\n}\n";
+    static const char *blockEnd   = "\n\n}";
 
     static const char *linearIndex = R"JIT(
-    uint threadId = threadIdx.x;
-    dim_t idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
-    if (idx >= outref.dims[3] * outref.strides[3]) continue;
-    )JIT";
+        uint threadId = threadIdx.x;
+        long long idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
+        if (idx >= outref.dims[3] * outref.strides[3]) return;
+        )JIT";
 
     static const char *generalIndex = R"JIT(
-    dim_t id0 = 0, id1 = 0, id2 = 0, id3 = 0;
-    dim_t blockIdx_y = blockIdx.z * gridDim.y + blockIdx.y;
-    if (num_odims > 2) {
-        id2 = blockIdx_x / blocks_x;
-        id0 = blockIdx_x - id2 * blocks_x;
-        id0 = threadIdx.x + id0 * blockDim.x;
-        if (num_odims > 3) {
-            id3 = blockIdx_y / blocks_y;
-            id1 = blockIdx_y - id3 * blocks_y;
-            id1 = threadIdx.y + id1 * blockDim.y;
+        long long id0 = 0, id1 = 0, id2 = 0, id3 = 0;
+        long blockIdx_y = blockIdx.z * gridDim.y + blockIdx.y;
+        if (num_odims > 2) {
+            id2 = blockIdx_x / blocks_x;
+            id0 = blockIdx_x - id2 * blocks_x;
+            id0 = threadIdx.x + id0 * blockDim.x;
+            if (num_odims > 3) {
+                id3 = blockIdx_y / blocks_y;
+                id1 = blockIdx_y - id3 * blocks_y;
+                id1 = threadIdx.y + id1 * blockDim.y;
+            } else {
+                id1 = threadIdx.y + blockDim.y * blockIdx_y;
+            }
         } else {
+            id3 = 0;
+            id2 = 0;
             id1 = threadIdx.y + blockDim.y * blockIdx_y;
+            id0 = threadIdx.x + blockDim.x * blockIdx_x;
         }
-    } else {
-        id3 = 0;
-        id2 = 0;
-        id1 = threadIdx.y + blockDim.y * blockIdx_y;
-        id0 = threadIdx.x + blockDim.x * blockIdx_x;
-    }
 
-    bool cond = id0 < outref.dims[0] &&
-                id1 < outref.dims[1] &&
-                id2 < outref.dims[2] &&
-                id3 < outref.dims[3];
+        bool cond = id0 < outref.dims[0] &&
+                    id1 < outref.dims[1] &&
+                    id2 < outref.dims[2] &&
+                    id3 < outref.dims[3];
 
-    dim_t idx = outref.strides[3] * id3 +
-                outref.strides[2] * id2 +
-                outref.strides[1] * id1 + id0;
+        if (!cond) { continue; }
 
-    if (threadIdx.x < num_params && threadIdx.y == 0) {
-        int tidx = threadIdx.x;
-        block_offsets[tidx] = (id3 < params[tidx].dims[3]) * params[tidx].strides[3] * id3 +
-                              (id2 < params[tidx].dims[2]) * params[tidx].strides[2] * id2;
-    }
-    __syncthreads();
-    if (cond) {
-    )JIT";
-
-    string paramreads = R"JIT(
-        extern __shared__ char smem[];
-        Param *params = reinterpret_cast<Param*>(smem);
-        dim_t *block_offsets = reinterpret_cast<dim_t*>(smem+(num_params * sizeof(Param)));
-
-        if (threadIdx.x < num_params) { params[threadIdx.x] = dims[threadIdx.x]; }
-        __syncthreads();
-    )JIT";
+        long long idx = outref.strides[3] * id3 +
+                        outref.strides[2] * id2 +
+                        outref.strides[1] * id1 + id0;
+        )JIT";
 
     stringstream inParamStream;
     stringstream outParamStream;
@@ -177,7 +147,6 @@ struct Param
     stringstream offsetsStream;
     stringstream opsStream;
     stringstream outrefstream;
-    outrefstream << "const Param &outref = out" << output_ids[0] << ";\n";
 
     for (int i = 0; i < (int)full_nodes.size(); i++) {
         const auto &node     = full_nodes[i];
@@ -190,15 +159,16 @@ struct Param
         node->genFuncs(opsStream, ids_curr);
     }
 
+    outrefstream << "const Param<" << full_nodes[output_ids[0]]->getTypeStr()
+                 << "> &outref = out" << output_ids[0] << ";\n";
+
     for (int i = 0; i < (int)output_ids.size(); i++) {
         int id = output_ids[i];
         // Generate output parameters
-        outParamStream << "Param out" << id << ", \n";
-
+        outParamStream << "Param<" << full_nodes[id]->getTypeStr() << "> out"
+                       << id << ", \n";
         // Generate code to write the output
-        outWriteStream << "((" << full_nodes[id]->getTypeStr() << "*)(out" << id
-                       << ".ptr))"
-                       << "[idx] = val" << id << ";\n";
+        outWriteStream << "out" << id << ".ptr[idx] = val" << id << ";\n";
     }
 
     // Put various blocks into a single stream
@@ -211,12 +181,10 @@ struct Param
     kerStream << "(\n";
     kerStream << inParamStream.str();
     kerStream << outParamStream.str();
-    if (!is_linear) { kerStream << globalParams; }
     kerStream << dimParams;
     kerStream << ")\n";
     kerStream << blockStart;
     kerStream << outrefstream.str();
-    if (!is_linear) { kerStream << paramreads; }
     kerStream << loopStart;
     if (is_linear) {
         kerStream << linearIndex;
@@ -227,7 +195,6 @@ struct Param
     kerStream << opsStream.str();
     kerStream << outWriteStream.str();
     kerStream << loopEnd;
-    if (!is_linear) kerStream << "}";
     kerStream << blockEnd;
 
     return kerStream.str();
@@ -269,6 +236,7 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
 
     if (num_outputs == 0) return;
 
+    // Use thread local to reuse the memory every time you are here.
     thread_local Node_map_t nodes;
     thread_local vector<const Node *> full_nodes;
     thread_local vector<Node_ids> full_ids;
@@ -282,39 +250,9 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
         full_ids.reserve(1024);
     }
 
-    vector<Param<T>> params;
     for (auto &node : output_nodes) {
         int id = node->getNodesMap(nodes, full_nodes, full_ids);
         output_ids.push_back(id);
-
-        NodeIterator<> end_node;
-        auto bufit = NodeIterator<>(node);
-        while (bufit != end_node) {
-            bufit = find_if(bufit, end_node, requiresGlobalMemoryAccess);
-            if (bufit != end_node) {
-                Param<T> param;
-
-                // TODO(umar): This is a hack. We need to clean up this API
-                // so that the if statement is not necessary
-                if (bufit->isBuffer()) {
-                    param = static_cast<BufferNode<T> &>(*bufit).getParam();
-                } else {
-                    param = static_cast<ShiftNode<T> &>(*bufit).getParam();
-                }
-
-                auto it = find_if(begin(params), end(params),
-                                  [&param](const Param<T> &p) {
-                                      return equal_shape<T, T>(param, p);
-                                  });
-                if (it == end(params)) {
-                    params.push_back(param);
-                    bufit->setParamIndex(params.size() - 1);
-                } else {
-                    bufit->setParamIndex(distance(begin(params), it));
-                }
-                bufit++;
-            }
-        }
     }
 
     bool is_linear = true;
@@ -370,6 +308,7 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     }
 
     vector<void *> args;
+
     for (const auto &node : full_nodes) {
         node->setArgs(0, is_linear,
                       [&](int /*id*/, const void *ptr, size_t /*size*/) {
@@ -381,32 +320,14 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
         args.push_back((void *)&outputs[i]);
     }
 
-    uptr<uchar> dparam;
-    void *ptr         = nullptr;
-    int param_count   = 0;
-    size_t smem_bytes = 0;
-    if (!is_linear) {
-        smem_bytes  = (sizeof(Param<T>) + sizeof(dim_t)) * params.size();
-        param_count = params.size();
-        dparam      = memAlloc<uchar>(params.size() * sizeof(Param<T>));
-        CUDA_CHECK(cudaMemcpyAsync(dparam.get(), params.data(),
-                                   params.size() * sizeof(Param<T>),
-                                   cudaMemcpyHostToDevice, getActiveStream()));
-        ptr = dparam.get();
-        args.push_back(&ptr);
-        args.push_back((void *)&param_count);
-    }
-
     args.push_back((void *)&blocks_x_);
     args.push_back((void *)&blocks_y_);
     args.push_back((void *)&blocks_x_total);
     args.push_back((void *)&num_odims);
 
     CU_CHECK(cuLaunchKernel(ker, blocks_x, blocks_y, blocks_z, threads_x,
-                            threads_y, 1, smem_bytes, getActiveStream(),
-                            args.data(), NULL));
-
-    POST_LAUNCH_CHECK();
+                            threads_y, 1, 0, getActiveStream(), args.data(),
+                            NULL));
 
     // Reset the thread local vectors
     nodes.clear();
