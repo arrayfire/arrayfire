@@ -10,6 +10,9 @@
 #pragma once
 #include <common/jit/Node.hpp>
 
+#include <Array.hpp>
+#include <backend.hpp>
+
 #include <array>
 #include <iomanip>
 #include <sstream>
@@ -61,4 +64,29 @@ class NaryNode : public Node {
         kerStream << ");\n";
     }
 };
+
+template<typename Ti, int N, typename FUNC>
+common::Node_ptr createNaryNode(
+    const af::dim4 &odims, FUNC createNode,
+    std::array<const detail::Array<Ti>*, N> &&children) {
+    std::array<common::Node_ptr, N> childNodes;
+    for (int i = 0; i < N; i++) { childNodes[i] = children[i]->getNode(); }
+
+    common::Node_ptr ptr = createNode(childNodes);
+
+    if (detail::passesJitHeuristics<Ti>(ptr.get())) {
+        return ptr;
+    } else {
+        int max_height_index = 0;
+        int max_height       = 0;
+        for (int i = 0; i < N; i++) {
+            if (max_height < childNodes[i]->getHeight()) {
+                max_height_index = i;
+                max_height       = childNodes[i]->getHeight();
+            }
+        }
+        children[max_height_index]->eval();
+        return createNaryNode<Ti, N>(odims, createNode, move(children));
+    }
+}
 }  // namespace common

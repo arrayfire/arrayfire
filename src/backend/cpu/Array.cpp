@@ -217,39 +217,35 @@ Array<T> createEmptyArray(const dim4 &dims) {
 }
 
 template<typename T>
+bool passesJitHeuristics(Node *root_node) {
+    if (!evalFlag()) return true;
+    if (root_node->getHeight() >= (int)getMaxJitSize()) { return false; }
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    deviceMemoryInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+
+    // Check if approaching the memory limit
+    if (lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers()) {
+        NodeIterator<jit::Node> it(root_node);
+        NodeIterator<jit::Node> end_node;
+        size_t bytes = accumulate(it, end_node, size_t(0),
+                                  [=](const size_t prev, const Node &n) {
+                                      // getBytes returns the size of the data
+                                      // Array. Sub arrays will be represented
+                                      // by their parent size.
+                                      return prev + n.getBytes();
+                                  });
+
+        if (2 * bytes > lock_bytes) { return false; }
+    }
+    return true;
+}
+
+template<typename T>
 Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
     Array<T> out = Array<T>(dims, node);
-
-    if (evalFlag()) {
-        if (node->getHeight() >= (int)getMaxJitSize()) {
-            out.eval();
-        } else {
-            size_t alloc_bytes, alloc_buffers;
-            size_t lock_bytes, lock_buffers;
-
-            deviceMemoryInfo(&alloc_bytes, &alloc_buffers, &lock_bytes,
-                             &lock_buffers);
-
-            // Check if approaching the memory limit
-            if (lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers()) {
-                Node *n = node.get();
-
-                NodeIterator<jit::Node> it(n);
-                NodeIterator<jit::Node> end_node;
-                size_t bytes =
-                    accumulate(it, end_node, size_t(0),
-                               [=](const size_t prev, const Node &n) {
-                                   // getBytes returns the size of the data
-                                   // Array. Sub arrays will be represented by
-                                   // their parent size.
-                                   return prev + n.getBytes();
-                               });
-
-                if (2 * bytes > lock_bytes) { out.eval(); }
-            }
-        }
-    }
-
     return out;
 }
 

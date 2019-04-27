@@ -14,6 +14,8 @@
 #include <af/array.h>
 #include <af/data.h>
 
+#include <tuple>
+
 using af::array;
 using af::constant;
 using af::dim4;
@@ -23,6 +25,9 @@ using af::gforSet;
 using af::randn;
 using af::randu;
 using af::seq;
+using std::get;
+using std::to_string;
+using std::tuple;
 using std::vector;
 
 TEST(JIT, CPP_JIT_HASH) {
@@ -117,13 +122,9 @@ TEST(JIT, CPP_Multi_linear) {
 
     vector<int> ha(num);
     vector<int> hb(num);
-    vector<int> hx(num);
-    vector<int> hy(num);
 
     a.host(&ha[0]);
     b.host(&hb[0]);
-    x.host(&hx[0]);
-    y.host(&hy[0]);
 
     vector<int> goldx(num);
     vector<int> goldy(num);
@@ -611,8 +612,7 @@ TEST(JIT, LargeJitTree) {
     });
 }
 
-
-TEST(JIT, DISABLED_TwoLargeNonLinear) {
+TEST(JIT, TwoLargeNonLinear) {
     int dimsize = 10;
     array a     = constant(0, dimsize, dimsize);
     array aa    = constant(0, dimsize, dimsize);
@@ -620,7 +620,7 @@ TEST(JIT, DISABLED_TwoLargeNonLinear) {
     array bb    = constant(0, dimsize, dimsize);
 
     int val = 0;
-    for (int i = 0; i < 24; i++) {
+    for (int i = 0; i < 23; i++) {
         array ones = constant(1, dimsize, dimsize);
         ones.eval();
         array twos = constant(2, dimsize);
@@ -631,7 +631,7 @@ TEST(JIT, DISABLED_TwoLargeNonLinear) {
         val += 3;
     }
 
-    for (int i = 0; i < 24; i++) {
+    for (int i = 0; i < 23; i++) {
         array ones = constant(1, dimsize, dimsize);
         ones.eval();
         array twos = constant(2, dimsize);
@@ -645,6 +645,91 @@ TEST(JIT, DISABLED_TwoLargeNonLinear) {
 
     vector<float> gold(a.elements(), val * 2);
     ASSERT_VEC_ARRAY_EQ(gold, a.dims(), c);
+}
+
+std::string select_info(
+    const ::testing::TestParamInfo<std::tuple<int, int, int> > info) {
+    return "a_" + to_string(get<0>(info.param)) + "_b_" +
+           to_string(get<1>(info.param)) + "_cond_" +
+           to_string(get<2>(info.param));
+}
+
+class JITSelect : public ::testing::TestWithParam<std::tuple<int, int, int> > {
+   protected:
+    void SetUp() {}
+};
+
+// clang-format off
+INSTANTIATE_TEST_CASE_P(
+                        JitSelect, JITSelect,
+                        testing::Combine(
+                                         testing::Range(10, 22),
+                                         testing::Range(10, 22),
+                                         testing::Range(10, 22)),
+                        select_info);
+TEST_P(JITSelect, SelectLargeNonLinear) {
+    int dimsize = 10;
+    array a     = constant(0, dimsize, dimsize);
+    array b     = constant(0, dimsize, dimsize);
+    array cond  = constant(0, dimsize, dimsize);
+
+    int val = 0;
+    for (int i = 0; i < std::get<0>(GetParam()); i++) {
+        array ones = constant(1, dimsize, dimsize);
+        ones.eval();
+        array twos = constant(2, dimsize);
+        twos.eval();
+
+        a += tile(twos, 1, dimsize) + ones;
+        val += 3;
+    }
+
+    for (int i = 0; i < std::get<1>(GetParam()); i++) {
+        array ones = constant(2, dimsize, dimsize);
+        ones.eval();
+        array twos = constant(2, dimsize);
+        twos.eval();
+        b += tile(twos, 1, dimsize) + ones;
+    }
+
+
+    for (int i = 0; i < std::get<2>(GetParam()); i++) {
+        array ones = constant(1, dimsize, dimsize);
+        ones.eval();
+        array twos = constant(2, dimsize);
+        twos.eval();
+        array fives = constant(5, dimsize, dimsize);
+        fives.eval();
+        cond += tile(twos, 1, dimsize) + ones;
+        cond = cond < fives;
+    }
+
+    array c  = select(cond, a, b);
+    c.eval();
+
+    vector<float> gold(a.elements(), val);
+    ASSERT_VEC_ARRAY_EQ(gold, a.dims(), c);
+}
+
+TEST(JIT, AllBuffers) {
+  int buffers = 128;
+  vector<array> arrs(buffers);
+
+  for(int i = 0; i < buffers; i++) {
+    arrs[i] = constant(1, 5);
+    arrs[i].eval();
+  }
+
+  int inc = 2;
+  for(int ii = buffers/2; ii > 2; ii/=2) {
+      for(int i = 0; i < arrs.size(); i += inc) {
+          arrs[i] = arrs[i] + arrs[i + inc/2];
+      }
+      inc *= 2;
+  }
+  arrs[0] = tile(arrs[0], 1, 5) + tile(arrs[64],1, 5);
+  arrs[0].eval();
+  af::sync();
 }
 
 TEST(JIT, IndexingColumn) {
