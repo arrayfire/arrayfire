@@ -12,9 +12,11 @@
 #include <common/MatrixAlgebraHandle.hpp>
 #include <common/defines.hpp>
 #include <cuda_runtime.h>
-#include <cu_handles.hpp>
+#include <cusolverDn.h>
 
 namespace cuda {
+
+using SolveHandle = cusolverDnHandle_t;
 
 const char* errorString(cusolverStatus_t err);
 

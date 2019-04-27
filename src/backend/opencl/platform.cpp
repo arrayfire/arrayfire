@@ -42,12 +42,25 @@
 #include <utility>
 #include <vector>
 
-using namespace std;
-
 using cl::CommandQueue;
 using cl::Context;
 using cl::Device;
 using cl::Platform;
+using std::begin;
+using std::call_once;
+using std::end;
+using std::endl;
+using std::find_if;
+using std::get;
+using std::make_pair;
+using std::map;
+using std::once_flag;
+using std::ostringstream;
+using std::pair;
+using std::ptr_fun;
+using std::string;
+using std::to_string;
+using std::vector;
 
 namespace opencl {
 

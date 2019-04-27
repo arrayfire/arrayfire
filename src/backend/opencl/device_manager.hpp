@@ -18,7 +18,6 @@
 
 // Forward declaration from clFFT.h
 struct clfftSetupData_;
-using clfftSetupData = clfftSetupData_;
 
 namespace opencl {
 
@@ -82,6 +81,8 @@ class DeviceManager {
     ~DeviceManager();
 
    protected:
+    using clfftSetupData = clfftSetupData_;
+
     DeviceManager();
 
     // Following two declarations are required to

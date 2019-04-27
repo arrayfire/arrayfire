@@ -44,7 +44,13 @@
 #include <thread>
 #include <vector>
 
-using namespace std;
+using std::call_once;
+using std::once_flag;
+using std::ostringstream;
+using std::runtime_error;
+using std::string;
+using std::to_string;
+using std::unique_ptr;
 
 namespace cuda {
 

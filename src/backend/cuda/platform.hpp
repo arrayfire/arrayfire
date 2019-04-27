@@ -11,8 +11,20 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <cu_handles.hpp>
 #include <string>
+
+/* Forward declarations of Opaque structure holding
+ * the following library contexts
+ *  * cuBLAS
+ *  * cuSparse
+ *  * cuSolver
+ */
+struct cublasContext;
+typedef struct cublasContext* BlasHandle;
+struct cusparseContext;
+typedef struct cusparseContext* SparseHandle;
+struct cusolverDnContext;
+typedef struct cusolverDnContext* SolveHandle;
 
 namespace spdlog {
 class logger;

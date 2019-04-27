@@ -17,7 +17,12 @@
 #include <cctype>
 #include <sstream>
 
-using namespace std;
+using std::endl;
+using std::not1;
+using std::ostringstream;
+using std::ptr_fun;
+using std::stoi;
+using std::string;
 
 namespace cpu {
 

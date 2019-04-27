@@ -41,7 +41,13 @@
 #include <thread>
 #include <vector>
 
-using namespace std;
+using std::begin;
+using std::end;
+using std::find_if;
+using std::make_pair;
+using std::pair;
+using std::string;
+using std::stringstream;
 
 namespace cuda {
 

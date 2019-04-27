@@ -37,12 +37,16 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 using cl::CommandQueue;
 using cl::Context;
 using cl::Device;
 using cl::Platform;
+using std::begin;
+using std::end;
+using std::find;
+using std::string;
+using std::stringstream;
+using std::vector;
 
 namespace opencl {
 

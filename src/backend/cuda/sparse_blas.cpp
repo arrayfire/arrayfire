@@ -20,8 +20,6 @@
 
 namespace cuda {
 
-using namespace std;
-
 cusparseOperation_t toCusparseTranspose(af_mat_prop opt) {
     cusparseOperation_t out = CUSPARSE_OPERATION_NON_TRANSPOSE;
     switch (opt) {

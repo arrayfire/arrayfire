@@ -14,7 +14,7 @@
 #include <cctype>
 #include <sstream>
 
-using namespace std;
+using std::string;
 
 #ifdef CPUID_CAPABLE
 
@@ -105,18 +105,12 @@ CPUInfo::CPUInfo()
 #else
 
 CPUInfo::CPUInfo()
-    : mVendorId("")
-    , mModelName("")
-    , mNumSMT(0)
-    , mNumCores(0)
-    , mNumLogCpus(0)
-    , mIsHTT(false) {
-    mVendorId   = "Unknown";
-    mModelName  = "Unknown";
-    mNumSMT     = 1;
-    mNumCores   = 1;
-    mNumLogCpus = 1;
-}
+    : mVendorId("Unknown")
+    , mModelName("Unknown")
+    , mNumSMT(1)
+    , mNumCores(1)
+    , mNumLogCpus(1)
+    , mIsHTT(false) {}
 
 #endif
 

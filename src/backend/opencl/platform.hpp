@@ -122,11 +122,16 @@ kc_entry_t kernelCache(int device, const std::string& key);
 static afcl::platform getPlatformEnum(cl::Device dev) {
     std::string pname = getPlatformName(dev);
     if (verify_present(pname, "AMD")) return AFCL_PLATFORM_AMD;
-    if (verify_present(pname, "NVIDIA")) return AFCL_PLATFORM_NVIDIA;
-    if (verify_present(pname, "INTEL")) return AFCL_PLATFORM_INTEL;
-    if (verify_present(pname, "APPLE")) return AFCL_PLATFORM_APPLE;
-    if (verify_present(pname, "BEIGNET")) return AFCL_PLATFORM_BEIGNET;
-    if (verify_present(pname, "POCL")) return AFCL_PLATFORM_POCL;
+    else if (verify_present(pname, "NVIDIA"))
+        return AFCL_PLATFORM_NVIDIA;
+    else if (verify_present(pname, "INTEL"))
+        return AFCL_PLATFORM_INTEL;
+    else if (verify_present(pname, "APPLE"))
+        return AFCL_PLATFORM_APPLE;
+    else if (verify_present(pname, "BEIGNET"))
+        return AFCL_PLATFORM_BEIGNET;
+    else if (verify_present(pname, "POCL"))
+        return AFCL_PLATFORM_POCL;
     return AFCL_PLATFORM_UNKNOWN;
 }
 

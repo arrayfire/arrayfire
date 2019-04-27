@@ -27,7 +27,6 @@
 namespace cuda {
 
 using namespace common;
-using namespace std;
 
 // cusparseStatus_t cusparseZcsr2csc(cusparseHandle_t handle,
 //                                  int m, int n, int nnz,
