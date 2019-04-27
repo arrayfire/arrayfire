@@ -74,11 +74,10 @@ static string getKernelString(const string funcName,
 
     const std::string paramTStr = R"JIT(
 template<typename T>
-struct Param
-{
-  T *ptr;
-  dim_t dims[4];
-  dim_t strides[4];
+struct Param {
+    dim_t dims[4];
+    dim_t strides[4];
+    T *ptr;
 };
 )JIT";
 
