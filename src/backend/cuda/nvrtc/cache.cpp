@@ -75,7 +75,6 @@ using kc_t = map<string, Kernel>;
         char* logptr = log.get();                      \
         nvrtcGetProgramLog(prog, logptr);              \
         logptr[logSize] = '\x0';                       \
-        puts(logptr);                                  \
         AF_ERROR("NVRTC ERROR", AF_ERR_INTERNAL);      \
     } while (0)
 #else

@@ -344,7 +344,6 @@ target_sources(afopencl
 target_sources(afopencl
   PRIVATE
     jit/BufferNode.hpp
-    jit/ShiftNode.hpp
     jit/kernel_generators.hpp
   )
 

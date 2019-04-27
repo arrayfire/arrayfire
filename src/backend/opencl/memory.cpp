@@ -50,11 +50,12 @@ void printMemInfo(const char *msg, const int device) {
 }
 
 template<typename T>
-uptr memAlloc(
+unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements) {
     cl::Buffer *ptr = static_cast<cl::Buffer *>(
         memoryManager().alloc(elements * sizeof(T), false));
-    return uptr(ptr, bufferFree);
+    return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(ptr,
+                                                                bufferFree);
 }
 
 void *memAllocUser(const size_t &bytes) {
