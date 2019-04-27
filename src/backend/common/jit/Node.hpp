@@ -8,9 +8,9 @@
  ********************************************************/
 
 #pragma once
-#include <af/defines.h>
 #include <optypes.hpp>
 #include <platform.hpp>
+#include <af/defines.h>
 
 #include <array>
 #include <functional>
@@ -50,28 +50,46 @@ class Node {
     int getNodesMap(Node_map_t &node_map, std::vector<const Node *> &full_nodes,
                     std::vector<Node_ids> &full_ids) const;
 
+    /// Generates the string that will be used to hash the kernel
     virtual void genKerName(std::stringstream &kerStream,
-                            const Node_ids &ids) const {
-        UNUSED(kerStream);
-        UNUSED(ids);
-    }
+                            const Node_ids &ids) const = 0;
+
+    /// Generates the function parameters for the node.
+    ///
+    /// \param[in/out] kerStream  The string will be written to this stream
+    /// \param[in]     ids        The integer id of the node and its children
+    /// \param[in]     is_linear  True if the kernel is a linear kernel
     virtual void genParams(std::stringstream &kerStream, int id,
                            bool is_linear) const {
         UNUSED(kerStream);
         UNUSED(id);
         UNUSED(is_linear);
     }
+
+    /// Generates the variable that stores the thread's/work-item's offset into
+    /// the memory.
+    ///
+    /// \param[in/out] kerStream  The string will be written to this stream
+    /// \param[in]     ids        The integer id of the node and its children
+    /// \param[in]     is_linear  True if the kernel is a linear kernel
     virtual void genOffsets(std::stringstream &kerStream, int id,
                             bool is_linear) const {
         UNUSED(kerStream);
         UNUSED(id);
         UNUSED(is_linear);
     }
+
+    /// Generates the code for the operation of the node.
+    ///
+    /// Generates the soruce code of the operation that the node needs to
+    /// perform. For example this function will create the string
+    /// "val2 = __add(val1, val2);" for the addition node.
+    ///
+    /// \param[in/out] kerStream  The string will be written to this stream
+    /// \param[in]     ids        The integer id of the node and its children
+    /// \param[in]     is_linear  True if the kernel is a linear kernel
     virtual void genFuncs(std::stringstream &kerStream,
-                          const Node_ids &ids) const {
-        UNUSED(kerStream);
-        UNUSED(ids);
-    }
+                          const Node_ids &ids) const = 0;
 
     /// Calls the setArg function on each of the arguments passed into the
     /// kernel
@@ -104,6 +122,8 @@ class Node {
 
     // Return the size of the size of the buffer node in bytes. Zero otherwise
     virtual size_t getBytes() const { return 0; }
+
+    // Returns true if this node is a Buffer
     virtual bool isBuffer() const { return false; }
     virtual bool isLinear(dim_t dims[4]) const {
         UNUSED(dims);
