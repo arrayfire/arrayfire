@@ -36,8 +36,19 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
         NaryNode(dtype_traits<T>::getName(), shortname<T>(true), "__select", 3,
                  {{cond_node, a_node, b_node}}, (int)af_select_t, height));
 
-    Array<T> out = createNodeArray<T>(odims, node);
-    return out;
+    if (detail::passesJitHeuristics<T>(node.get())) {
+        return createNodeArray<T>(odims, node);
+    } else {
+        if (a_node->getHeight() >
+            max(b_node->getHeight(), cond_node->getHeight())) {
+            a.eval();
+        } else if (b_node->getHeight() > cond_node->getHeight()) {
+            b.eval();
+        } else {
+            cond.eval();
+        }
+        return createSelectNode<T>(cond, a, b, odims);
+    }
 }
 
 template<typename T, bool flip>
@@ -55,8 +66,17 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
         (flip ? "__not_select" : "__select"), 3, {{cond_node, a_node, b_node}},
         (int)(flip ? af_not_select_t : af_select_t), height));
 
-    Array<T> out = createNodeArray<T>(odims, node);
-    return out;
+    if (detail::passesJitHeuristics<T>(node.get())) {
+        return createNodeArray<T>(odims, node);
+    } else {
+        if (a_node->getHeight() >
+            max(b_node->getHeight(), cond_node->getHeight())) {
+            a.eval();
+        } else {
+            cond.eval();
+        }
+        return createSelectNode<T, flip>(cond, a, b_val, odims);
+    }
 }
 
 template<typename T>

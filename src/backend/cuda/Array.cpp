@@ -210,86 +210,85 @@ Node_ptr Array<T>::getNode() const {
     return node;
 }
 
+/// This function should be called after a new JIT node is created. It will
+/// return true if the newly created node will generate a valid kernel. If
+/// false the node will fail to compile or the node and its referenced buffers
+/// are consuming too many resources. If false, the node's child nodes should
+/// be evaluated before continuing.
+///
+/// We eval in the following cases:
+///
+/// 1. Too many bytes are locked up by JIT causing memory
+///    pressure. Too many bytes is assumed to be half of all bytes
+///    allocated so far.
+///
+/// 2. The number of parameters we are passing into the kernel exceeds the
+///    limitation on the platform. For NVIDIA this is 4096 bytes. The
+template<typename T>
+bool passesJitHeuristics(Node *root_node) {
+    if (!evalFlag()) return true;
+    if (root_node->getHeight() >= (int)getMaxJitSize()) { return false; }
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    deviceMemoryInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+
+    bool isBufferLimit =
+        lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers();
+
+    // A lightweight check based on the height of the node. This is an
+    // inexpensive operation and does not traverse the JIT tree.
+    if (root_node->getHeight() > 6 || isBufferLimit) {
+        // The size of the parameters without any extra arguments from the
+        // JIT tree. This includes one output Param object and 4 integers.
+        constexpr size_t base_param_size =
+            sizeof(Param<T>) + (4 * sizeof(uint));
+
+        // This is the maximum size of the params that can be allowed by the
+        // CUDA platform.
+        constexpr size_t max_param_size = 4096 - base_param_size;
+
+        struct tree_info {
+            size_t total_buffer_size;
+            size_t num_buffers;
+            size_t param_scalar_size;
+        };
+        NodeIterator<> end_node;
+        tree_info info =
+            accumulate(NodeIterator<>(root_node), end_node, tree_info{0, 0, 0},
+                       [](tree_info &prev, const Node &node) {
+                           if (node.isBuffer()) {
+                               const auto &buf_node =
+                                   static_cast<const BufferNode<T> &>(node);
+                               // getBytes returns the size of the data Array.
+                               // Sub arrays will be represented by their parent
+                               // size.
+                               prev.total_buffer_size += buf_node.getBytes();
+                               prev.num_buffers++;
+                           } else {
+                               prev.param_scalar_size += node.getParamBytes();
+                           }
+                           return prev;
+                       });
+        size_t param_size =
+            info.num_buffers * sizeof(Param<T>) + info.param_scalar_size;
+
+        // TODO: the buffer_size check here is very conservative. It
+        // will trigger an evaluation of the node in most cases. We
+        // should be checking the amount of memory available to guard
+        // this eval
+        if (param_size >= max_param_size ||
+            info.total_buffer_size * 2 > lock_bytes) {
+            return false;
+        }
+    }
+    return true;
+}
+
 template<typename T>
 Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
     Array<T> out = Array<T>(dims, node);
-
-    if (evalFlag()) {
-        if (node->getHeight() >= (int)getMaxJitSize()) {
-            out.eval();
-        } else {
-            size_t alloc_bytes, alloc_buffers;
-            size_t lock_bytes, lock_buffers;
-
-            deviceMemoryInfo(&alloc_bytes, &alloc_buffers, &lock_bytes,
-                             &lock_buffers);
-
-            bool isBufferLimit =
-                lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers();
-
-            // We eval in the following cases.
-            //
-            // 1. Too many bytes are locked up by JIT causing memory
-            //    pressure. Too many bytes is assumed to be half of all bytes
-            //    allocated so far.
-            //
-            // 2. Too many buffers in a nonlinear kernel cause param space
-            //    overflow. This happens when the number of nodes reaches 50
-            //    (51 including output). Too many buffers can occur in a tree
-            //    of size 25 in the worst case.
-            //
-            // TODO: Find better solution than the following emperical solution.
-            if (node->getHeight() > 25 || isBufferLimit) {
-                // This is the size of the params that are passed by default
-                constexpr size_t param_base_size =
-                    sizeof(Param<T>) + (4 * sizeof(uint));
-
-                // This is the maximum size of the params that can be allowed by
-                // CUDA NOTE: This number should have been (4096 -
-                // some_buffer_size) BUT kernels who's kernel sizes come close
-                // to this value are not passing and cuModuleLoadDataEx is
-                // failing with CUDA_ERROR_INVALID_IMAGE(200). 35*sizeof(int)
-                // seems to be the magic number that passes all tests.
-                constexpr size_t max_param_size =
-                    (4096 - (sizeof(Param<T>) + 35 * sizeof(uint)));
-                Node *n = node.get();
-
-                struct tree_info {
-                    size_t total_buffer_size;
-                    size_t num_buffers;
-                    size_t param_scalar_size;
-                };
-                NodeIterator<> end_node;
-                tree_info info = accumulate(
-                    NodeIterator<>(n), end_node, tree_info{0, 0, 0},
-                    [=](tree_info &prev, const Node &node) {
-                        if (node.isBuffer()) {
-                            const auto &buf_node =
-                                static_cast<const BufferNode<T> &>(node);
-                            prev.total_buffer_size += buf_node.getBytes();
-                            prev.num_buffers++;
-                        } else {
-                            prev.param_scalar_size += node.getParamBytes();
-                        }
-                        // getBytes returns the size of the data Array. Sub
-                        // arrays will be represented by their parent size.
-                        return prev;
-                    });
-                size_t param_size = param_base_size + info.param_scalar_size;
-                param_size += info.num_buffers * sizeof(Param<T>);
-
-                // TODO: the buffer_size check here is very conservative. It
-                // will trigger an evaluation of the node in most cases. We
-                // should be checking the amount of memory available to guard
-                // this eval
-                if (param_size >= max_param_size ||
-                    info.total_buffer_size * 2 > lock_bytes) {
-                    out.eval();
-                }
-            }
-        }
-    }
-
     return out;
 }
 
@@ -421,6 +420,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
     template void writeDeviceDataArray<T>(                                    \
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(std::vector<Array<T> *> arrays);            \
+    template bool passesJitHeuristics<T>(Node * n);                           \
     template void Array<T>::setDataDims(const dim4 &new_dims);
 
 INSTANTIATE(float)

@@ -13,8 +13,12 @@
 #include <scalar.hpp>
 #include <select.hpp>
 
+#include <memory>
+
 using common::NaryNode;
 using common::Node_ptr;
+using std::make_shared;
+using std::max;
 
 namespace cuda {
 template<typename T>
@@ -35,15 +39,25 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     auto cond_node = cond.getNode();
     auto a_node    = a.getNode();
     auto b_node    = b.getNode();
-    int height     = std::max(a_node->getHeight(), b_node->getHeight());
-    height         = std::max(height, cond_node->getHeight()) + 1;
+    int height     = max(a_node->getHeight(), b_node->getHeight());
+    height         = max(height, cond_node->getHeight()) + 1;
+    auto node      = make_shared<NaryNode>(
+        NaryNode(getFullName<T>(), shortname<T>(true), "__select", 3,
+                 {{cond_node, a_node, b_node}}, (int)af_select_t, height));
 
-    NaryNode *node =
-        new NaryNode(getFullName<T>(), shortname<T>(true), "__select", 3,
-                     {{cond_node, a_node, b_node}}, (int)af_select_t, height);
-
-    Array<T> out = createNodeArray<T>(odims, Node_ptr(node));
-    return out;
+    if (detail::passesJitHeuristics<T>(node.get())) {
+        return createNodeArray<T>(odims, node);
+    } else {
+        if (a_node->getHeight() >
+            max(b_node->getHeight(), cond_node->getHeight())) {
+            a.eval();
+        } else if (b_node->getHeight() > cond_node->getHeight()) {
+            b.eval();
+        } else {
+            cond.eval();
+        }
+        return createSelectNode<T>(cond, a, b, odims);
+    }
 }
 
 template<typename T, bool flip>
@@ -53,16 +67,24 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     auto a_node    = a.getNode();
     Array<T> b     = createScalarNode<T>(odims, scalar<T>(b_val));
     auto b_node    = b.getNode();
-    int height     = std::max(a_node->getHeight(), b_node->getHeight());
-    height         = std::max(height, cond_node->getHeight()) + 1;
+    int height     = max(a_node->getHeight(), b_node->getHeight());
+    height         = max(height, cond_node->getHeight()) + 1;
 
-    NaryNode *node = new NaryNode(
+    auto node = make_shared<NaryNode>(NaryNode(
         getFullName<T>(), shortname<T>(true),
-        flip ? "__not_select" : "__select", 3, {{cond_node, a_node, b_node}},
-        (int)(flip ? af_not_select_t : af_select_t), height);
+        (flip ? "__not_select" : "__select"), 3, {{cond_node, a_node, b_node}},
+        (int)(flip ? af_not_select_t : af_select_t), height));
 
-    Array<T> out = createNodeArray<T>(odims, Node_ptr(node));
-    return out;
+    if (detail::passesJitHeuristics<T>(node.get())) {
+        return createNodeArray<T>(odims, node);
+    } else {
+        if(a_node->getHeight() > max(b_node->getHeight(), cond_node->getHeight())) {
+            a.eval();
+        } else {
+            cond.eval();
+        }
+        return createSelectNode<T, flip>(cond, a, b_val, odims);
+    }
 }
 
 #define INSTANTIATE(T)                                                        \
