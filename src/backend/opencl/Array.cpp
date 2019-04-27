@@ -231,91 +231,85 @@ Node_ptr Array<T>::getNode() const {
     return node;
 }
 
+/// This function should be called after a new JIT node is created. It will
+/// return true if the newly created node will generate a valid kernel. If
+/// false the node will fail to compile or the node and its referenced buffers
+/// are consuming too many resources. If false, the node's child nodes should
+/// be evaluated before continuing.
+///
+/// We eval in the following cases:
+///
+/// 1. Too many bytes are locked up by JIT causing memory
+///    pressure. Too many bytes is assumed to be half of all bytes
+///    allocated so far.
+///
+/// 2. The number of parameters we are passing into the kernel exceeds the
+///    limitation on the platform. For NVIDIA this is 4096 bytes. The
+template<typename T>
+bool passesJitHeuristics(Node *root_node) {
+    if (!evalFlag()) return true;
+    if (root_node->getHeight() >= (int)getMaxJitSize()) { return false; }
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    deviceMemoryInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+
+    bool isBufferLimit =
+        lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers();
+    bool isNvidia = getActivePlatform() == AFCL_PLATFORM_NVIDIA ||
+                    getActivePlatform() == AFCL_PLATFORM_APPLE;
+
+    // A lightweight check based on the height of the node. This is an
+    // inexpensive operation and does not traverse the JIT tree.
+    bool isParamLimit = (isNvidia && root_node->getHeight() > 6);
+    if (isParamLimit || isBufferLimit) {
+        // This is the base parameter size if the kernel had no
+        // arguments
+        constexpr size_t base_param_size =
+            sizeof(T *) + sizeof(KParam) + (3 * sizeof(uint));
+
+        // This is the maximum size of the params that can be allowed by the
+        // CUDA platform.
+        constexpr size_t max_param_size = (4096 - base_param_size);
+
+        struct tree_info {
+            size_t total_buffer_size;
+            size_t num_buffers;
+            size_t param_scalar_size;
+        };
+        NodeIterator<> it(root_node);
+        tree_info info =
+            accumulate(it, NodeIterator<>(), tree_info{0, 0, 0},
+                       [](tree_info &prev, Node &n) {
+                           if (n.isBuffer()) {
+                               auto &buf_node = static_cast<BufferNode &>(n);
+                               // getBytes returns the size of the data Array.
+                               // Sub arrays will be represented by their parent
+                               // size.
+                               prev.total_buffer_size += buf_node.getBytes();
+                               prev.num_buffers++;
+                           } else {
+                               prev.param_scalar_size += n.getParamBytes();
+                           }
+                           return prev;
+                       });
+        isBufferLimit = 2 * info.total_buffer_size > lock_bytes;
+
+        size_t param_size = (info.num_buffers * (sizeof(KParam) + sizeof(T *)) +
+                             info.param_scalar_size);
+
+        isParamLimit = isNvidia && param_size >= max_param_size;
+
+        if (isBufferLimit || isParamLimit) { return false; }
+    }
+    return true;
+}
+
 template<typename T>
 Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
     verifyDoubleSupport<T>();
     Array<T> out = Array<T>(dims, node);
-
-    if (evalFlag()) {
-        if (node->getHeight() >= (int)getMaxJitSize()) {
-            out.eval();
-        } else {
-            size_t alloc_bytes, alloc_buffers;
-            size_t lock_bytes, lock_buffers;
-
-            deviceMemoryInfo(&alloc_bytes, &alloc_buffers, &lock_bytes,
-                             &lock_buffers);
-
-            bool isBufferLimit =
-                lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers();
-            bool isNvidia = getActivePlatform() == AFCL_PLATFORM_NVIDIA ||
-                            getActivePlatform() == AFCL_PLATFORM_APPLE;
-            // We eval in the following cases.
-            // 1. Too many bytes are locked up by JIT causing memory pressure.
-            // Too many bytes is assumed to be half of all bytes allocated so
-            // far.
-            // 2. Too many buffers in a nonlinear kernel cause param space
-            // overflow. Too many buffers comes out to be about 48 (49 including
-            // output). Too many buffers can occur in a tree of size 24 in the
-            // worst case scenario. This error only happens on nvidia devices.
-            // TODO: Find better solution than the following emperical solution.
-            bool isParamLimit = (isNvidia && node->getHeight() > 24);
-            if (isParamLimit || isBufferLimit) {
-                // This was added to the base size to make kernels pass. I
-                // picked this number by creating very large kernels and then
-                // increased this number until the test passed. Then I added a
-                // small number and made this nice and even.
-                constexpr size_t nvidia_parameter_magic = 768;
-
-                // This is the base parameter size if the kernel had no
-                // arguments
-                constexpr size_t param_base_size =
-                    sizeof(T *) + sizeof(KParam) + (3 * sizeof(uint)) +
-                    nvidia_parameter_magic;
-
-                // This is the maximum size of the params that can be allowed by
-                // CUDA NOTE: This number should have been (4096 -
-                // some_buffer_size) BUT kernels who's kernel sizes come close
-                // to this value are not passing and cuModuleLoadDataEx is
-                // failing with CUDA_ERROR_INVALID_IMAGE(200). 35*sizeof(int)
-                // seems to be the magic number that passes all tests.
-                constexpr size_t max_param_size =
-                    (4096 - (sizeof(KParam) + 35 * sizeof(uint)));
-
-                Node *n = node.get();
-
-                struct tree_info {
-                    size_t total_buffer_size;
-                    size_t num_buffers;
-                    size_t param_scalar_size;
-                };
-                NodeIterator<> it(n);
-                tree_info info = accumulate(
-                    it, NodeIterator<>(), tree_info{0, 0, 0},
-                    [=](tree_info &prev, Node &n) {
-                        if (n.isBuffer()) {
-                            auto &buf_node = static_cast<BufferNode &>(n);
-                            prev.total_buffer_size += buf_node.getBytes();
-                            prev.num_buffers++;
-                        } else {
-                            prev.param_scalar_size += node->getParamBytes();
-                        }
-                        // getBytes returns the size of the data Array. Sub
-                        // arrays will be represented by their parent size.
-                        return prev;
-                    });
-                isBufferLimit = 2 * info.total_buffer_size > lock_bytes;
-                size_t param_size =
-                    (info.num_buffers * (sizeof(KParam) + sizeof(T *)) +
-                     info.param_scalar_size + param_base_size);
-
-                isParamLimit = isNvidia && param_size >= max_param_size;
-
-                if (isBufferLimit || isParamLimit) { out.eval(); }
-            }
-        }
-    }
-
     return out;
 }
 
@@ -450,6 +444,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
     template void writeDeviceDataArray<T>(                                    \
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(vector<Array<T> *> arrays);                 \
+    template bool passesJitHeuristics<T>(Node * node);                        \
     template void Array<T>::setDataDims(const dim4 &new_dims);
 
 INSTANTIATE(float)
