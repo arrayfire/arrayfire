@@ -13,7 +13,8 @@
 #include <cusparse_v2.h>
 
 namespace cuda {
-typedef cusparseHandle_t SparseHandle;
+
+using SparseHandle = cusparseHandle_t;
 
 const char* errorString(cusparseStatus_t err);
 

@@ -12,6 +12,7 @@
 
 #include <copy.hpp>
 #include <cublas_v2.h>
+#include <cusolverDn.hpp>
 #include <identity.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
