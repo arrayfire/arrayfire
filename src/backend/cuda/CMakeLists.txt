@@ -335,6 +335,8 @@ cuda_add_library(afcuda
     cusolverDn.hpp
     cusparse.cpp
     cusparse.hpp
+    device_manager.cpp
+    device_manager.hpp
     debug_cuda.hpp
     diagonal.hpp
     diff.hpp

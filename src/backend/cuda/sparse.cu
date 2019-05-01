@@ -18,6 +18,7 @@
 #include <common/err_common.hpp>
 #include <complex.hpp>
 #include <copy.hpp>
+#include <cusparse.hpp>
 #include <lookup.hpp>
 #include <math.hpp>
 #include <platform.hpp>
@@ -26,7 +27,6 @@
 namespace cuda {
 
 using namespace common;
-using namespace std;
 
 // cusparseStatus_t cusparseZcsr2csc(cusparseHandle_t handle,
 //                                  int m, int n, int nnz,

@@ -150,7 +150,8 @@ BLAS_FUNC(dot, cdouble, false, Z, u)
 #undef BLAS_FUNC
 #undef BLAS_FUNC_DEF
 
-using namespace std;
+using std::max;
+using std::vector;
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,

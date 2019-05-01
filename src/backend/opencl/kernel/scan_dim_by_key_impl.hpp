@@ -14,6 +14,7 @@
 #include <debug_opencl.hpp>
 #include <kernel_headers/ops.hpp>
 #include <kernel_headers/scan_dim_by_key.hpp>
+#include <memory.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <type_util.hpp>

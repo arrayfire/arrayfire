@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <device_manager.hpp>
 #include <kernel_headers/jit.hpp>
 #include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/Param.hpp>

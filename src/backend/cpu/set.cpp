@@ -21,8 +21,11 @@
 
 namespace cpu {
 
-using namespace std;
 using af::dim4;
+using std::distance;
+using std::set_intersection;
+using std::set_union;
+using std::unique;
 
 template<typename T>
 Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
@@ -39,8 +42,8 @@ Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
     getQueue().sync();
 
     T *ptr     = out.get();
-    T *last    = std::unique(ptr, ptr + in.elements());
-    dim_t dist = (dim_t)std::distance(ptr, last);
+    T *last    = unique(ptr, ptr + in.elements());
+    dim_t dist = (dim_t)distance(ptr, last);
 
     dim4 dims(dist, 1, 1, 1);
     out.resetDims(dims);
@@ -70,11 +73,10 @@ Array<T> setUnion(const Array<T> &first, const Array<T> &second,
     Array<T> out = createEmptyArray<T>(af::dim4(elements));
 
     T *ptr = out.get();
-    T *last =
-        std::set_union(uFirst.get(), uFirst.get() + first_elements,
-                       uSecond.get(), uSecond.get() + second_elements, ptr);
+    T *last = set_union(uFirst.get(), uFirst.get() + first_elements,
+                        uSecond.get(), uSecond.get() + second_elements, ptr);
 
-    dim_t dist = (dim_t)std::distance(ptr, last);
+    dim_t dist = (dim_t)distance(ptr, last);
     dim4 dims(dist, 1, 1, 1);
     out.resetDims(dims);
 
@@ -103,11 +105,11 @@ Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
     Array<T> out = createEmptyArray<T>(af::dim4(elements));
 
     T *ptr  = out.get();
-    T *last = std::set_intersection(uFirst.get(), uFirst.get() + first_elements,
-                                    uSecond.get(),
-                                    uSecond.get() + second_elements, ptr);
+    T *last =
+        set_intersection(uFirst.get(), uFirst.get() + first_elements,
+                         uSecond.get(), uSecond.get() + second_elements, ptr);
 
-    dim_t dist = (dim_t)std::distance(ptr, last);
+    dim_t dist = (dim_t)distance(ptr, last);
     dim4 dims(dist, 1, 1, 1);
     out.resetDims(dims);
 

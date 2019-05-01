@@ -13,6 +13,7 @@
 #include <Array.hpp>
 #include <GraphicsResourceManager.hpp>
 #include <debug_cuda.hpp>
+#include <device_manager.hpp>
 #include <err_cuda.hpp>
 #include <image.hpp>
 

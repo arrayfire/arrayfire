@@ -27,11 +27,11 @@
 namespace opencl {
 
 using namespace common;
-using namespace std;
+using std::numeric_limits;
 
 template<typename T>
 T getInf() {
-    return scalar<T>(std::numeric_limits<T>::infinity());
+    return scalar<T>(numeric_limits<T>::infinity());
 }
 
 template<>

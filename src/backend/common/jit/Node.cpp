@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/defines.hpp>
 #include <common/jit/Node.hpp>
 
 #include <string>
