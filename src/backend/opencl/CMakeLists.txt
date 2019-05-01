@@ -74,6 +74,8 @@ target_sources(afopencl
     copy.hpp
     count.cpp
     debug_opencl.hpp
+    device_manager.cpp
+    device_manager.hpp
     diagonal.cpp
     diagonal.hpp
     diff.cpp

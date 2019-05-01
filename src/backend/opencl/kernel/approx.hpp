@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Param.hpp>
+#include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/approx1.hpp>

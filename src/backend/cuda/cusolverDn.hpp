@@ -15,7 +15,8 @@
 #include <cusolverDn.h>
 
 namespace cuda {
-typedef cusolverDnHandle_t SolveHandle;
+
+using SolveHandle = cusolverDnHandle_t;
 
 const char* errorString(cusolverStatus_t err);
 
@@ -40,4 +41,5 @@ class cusolverDnHandle
 
     void destroyHandle(SolveHandle handle) { cusolverDnDestroy(handle); }
 };
+
 }  // namespace cuda

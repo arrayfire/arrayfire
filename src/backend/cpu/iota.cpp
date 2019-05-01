@@ -14,8 +14,6 @@
 #include <platform.hpp>
 #include <queue.hpp>
 
-using namespace std;
-
 namespace cpu {
 
 template<typename T>

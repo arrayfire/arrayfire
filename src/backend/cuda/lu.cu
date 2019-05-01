@@ -12,6 +12,7 @@
 
 #include <common/err_common.hpp>
 #include <copy.hpp>
+#include <cusolverDn.hpp>
 #include <math.hpp>
 #include <memory.hpp>
 #include <platform.hpp>

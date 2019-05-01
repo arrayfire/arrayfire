@@ -13,7 +13,8 @@
 #include <cublas_v2.h>
 
 namespace cuda {
-typedef cublasHandle_t BlasHandle;
+
+using BlasHandle = cublasHandle_t;
 
 const char* errorString(cublasStatus_t err);
 
