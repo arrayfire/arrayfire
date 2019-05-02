@@ -189,6 +189,13 @@ void Window::setAxesTitles(const char* const xtitle, const char* const ytitle,
     AF_THROW(af_set_axes_titles(get(), xtitle, ytitle, ztitle, &temp));
 }
 
+void Window::setAxesLabelFormat(const char* const xformat,
+                                const char* const yformat,
+                                const char* const zformat) {
+    af_cell temp{_r, _c, NULL, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_set_axes_label_format(get(), xformat, yformat, zformat, &temp));
+}
+
 void Window::show() {
     AF_THROW(af_show(get()));
     _r = -1;

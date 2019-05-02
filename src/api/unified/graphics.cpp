@@ -172,6 +172,13 @@ af_err af_set_axes_titles(const af_window wind, const char* const xtitle,
     return CALL(wind, xtitle, ytitle, ztitle, props);
 }
 
+af_err af_set_axes_label_format(const af_window wind, const char* const xformat,
+                                const char* const yformat,
+                                const char* const zformat,
+                                const af_cell* const props) {
+    return CALL(wind, xformat, yformat, zformat, props);
+}
+
 af_err af_show(const af_window wind) { return CALL(wind); }
 
 af_err af_is_window_closed(bool* out, const af_window wind) {

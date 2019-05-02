@@ -485,6 +485,22 @@ class AFAPI Window {
                            const char * const ytitle = "Y-Axis",
                            const char * const ztitle = NULL);
 #endif
+
+#if AF_API_VERSION >= 37
+        /**
+           Setup the axes label formats for charts
+
+           \param[in] xformat is a printf-style format specifier for x-axis
+           \param[in] yformat is a printf-style format specifier for y-axis
+           \param[in] zformat is a printf-style format specifier for z-axis
+
+           \ingroup gfx_func_window
+        */
+        void setAxesLabelFormat(const char *const xformat = "4.1%f",
+                                const char *const yformat = "4.1%f",
+                                const char *const zformat = NULL);
+#endif
+
         /**
            Setup grid layout for multiview mode in a window
 
@@ -1086,6 +1102,35 @@ AFAPI af_err af_set_axes_titles(const af_window wind,
                                 const char * const ytitle,
                                 const char * const ztitle,
                                 const af_cell* const props);
+#endif
+
+#if AF_API_VERSION >= 37
+/**
+   C Interface wrapper for setting axes labels formats for charts
+
+   Axes labels use printf style format specifiers. Default specifier for the
+   data displayed as labels is `%4.1f`. This function lets the user change this
+   label formatting to whichever format that fits their data range and precision.
+
+   \param[in] wind is the window handle
+   \param[in] xformat is a printf-style format specifier for x-axis
+   \param[in] yformat is a printf-style format specifier for y-axis
+   \param[in] zformat is a printf-style format specifier for z-axis
+   \param[in] props is structure \ref af_cell that has the properties that
+              are used for the current rendering.
+
+   \note \p zformat can be NULL in which case ArrayFire understands that the
+   label formats are meant for a 2D chart corresponding to this \p wind
+   or a specific cell in multi-viewport mode (provided via \p props argument).
+   A non NULL value to \p zformat means the label formats belong to a 3D chart.
+
+   \ingroup gfx_func_window
+*/
+AFAPI af_err af_set_axes_label_format(const af_window wind,
+                                      const char *const xformat,
+                                      const char *const yformat,
+                                      const char *const zformat,
+                                      const af_cell *const props);
 #endif
 
 /**
