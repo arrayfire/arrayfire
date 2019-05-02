@@ -496,9 +496,9 @@ class AFAPI Window {
 
            \ingroup gfx_func_window
         */
-        void setAxesLabelFormat(const char *const xtitle = "4.1%f",
-                                const char *const ytitle = "4.1%f",
-                                const char *const ztitle = NULL);
+        void setAxesLabelFormat(const char *const xformat = "4.1%f",
+                                const char *const yformat = "4.1%f",
+                                const char *const zformat = NULL);
 #endif
 
         /**
