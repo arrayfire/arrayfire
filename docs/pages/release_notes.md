@@ -1,6 +1,14 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.6.4
+======
+
+Bug Fixes
+---------
+- Address a JIT performance regression due to moving kernel arguments to shared memory \PR{2501}
+- Fix the default parameter for setAxisTitle \PR{2491}
+
 v3.6.3
 ======
 
