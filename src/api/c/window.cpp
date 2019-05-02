@@ -231,7 +231,6 @@ af_err af_set_axes_label_format(const af_window window,
 
         ARG_ASSERT(2, xformat != nullptr);
         ARG_ASSERT(3, yformat != nullptr);
-        ARG_ASSERT(4, zformat != nullptr);
 
         ForgeManager& fgMngr = forgeManager();
 
@@ -248,6 +247,7 @@ af_err af_set_axes_label_format(const af_window window,
             FG_CHECK(forgePlugin().fg_set_chart_label_format(chart, xformat,
                                                              yformat, "3.2%f"));
         } else {
+            ARG_ASSERT(4, zformat != nullptr);
             FG_CHECK(forgePlugin().fg_set_chart_label_format(chart, xformat,
                                                              yformat, zformat));
         }
