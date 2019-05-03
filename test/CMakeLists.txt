@@ -23,7 +23,7 @@ if(NOT TARGET gtest)
         CACHE INTERNAL "Required so that the libs Runtime is not set to MT DLL")
   endif()
 
-  add_subdirectory(gtest/googletest EXCLUDE_FROM_ALL)
+  add_subdirectory(gtest EXCLUDE_FROM_ALL)
   set_target_properties(gtest gtest_main
     PROPERTIES
       FOLDER "ExternalProjectTargets/gtest")
