@@ -7,14 +7,14 @@
 
 find_package(Boost)
 
-if("${Boost_VERSION}" VERSION_LESS 106100)
-  set(VER boost-1.61.0)
-  set(MD5 7e1c433b48825d8cb2effa963823aec8)
+if("${Boost_VERSION}" VERSION_LESS 107000)
+  set(VER 1.70.0)
+  set(MD5 e160ec0ff825fc2850ea4614323b1fb5)
   include(ExternalProject)
 
   ExternalProject_Add(
     boost_compute
-    URL       https://github.com/boostorg/compute/archive/${VER}.tar.gz
+    URL       https://github.com/boostorg/compute/archive/boost-${VER}.tar.gz
     URL_MD5   ${MD5}
     INSTALL_COMMAND ""
     CONFIGURE_COMMAND ""
@@ -22,7 +22,11 @@ if("${Boost_VERSION}" VERSION_LESS 106100)
     )
 
   ExternalProject_Get_Property(boost_compute source_dir)
-  message(STATUS "BOOST_COMPUTE: ${source_dir}")
+
+  if(NOT EXISTS ${source_dir}/include)
+      message(WARNING "WARN: Found Boost v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}."
+                      " Required ${VER}. Build will download Boost Compute.")
+  endif()
   make_directory(${source_dir}/include)
 
   if(NOT TARGET Boost::boost)
@@ -37,7 +41,9 @@ if("${Boost_VERSION}" VERSION_LESS 106100)
     )
 endif()
 
-# NOTE: BOOST_CHRONO_HEADER_ONLY is required for Windows because otherwise it
-# will try to link with libboost-chrono.
-set_target_properties(Boost::boost PROPERTIES INTERFACE_COMPILE_DEFINITIONS
-  "BOOST_CHRONO_HEADER_ONLY;BOOST_COMPUTE_THREAD_SAFE;BOOST_COMPUTE_HAVE_THREAD_LOCAL")
+if(TARGET Boost::boost)
+  # NOTE: BOOST_CHRONO_HEADER_ONLY is required for Windows because otherwise it
+  # will try to link with libboost-chrono.
+  set_target_properties(Boost::boost PROPERTIES INTERFACE_COMPILE_DEFINITIONS
+    "BOOST_CHRONO_HEADER_ONLY;BOOST_COMPUTE_THREAD_SAFE;BOOST_COMPUTE_HAVE_THREAD_LOCAL")
+endif()
