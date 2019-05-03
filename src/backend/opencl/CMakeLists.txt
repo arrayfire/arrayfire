@@ -30,6 +30,13 @@ file_to_string(
     NAMESPACE "opencl"
     )
 
+set(opencl_compile_definitions
+        CL_TARGET_OPENCL_VERSION=120
+        CL_HPP_TARGET_OPENCL_VERSION=120
+        CL_HPP_MINIMUM_OPENCL_VERSION=120
+        CL_HPP_ENABLE_EXCEPTIONS
+        CL_USE_DEPRECATED_OPENCL_1_2_APIS)
+
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/sort_by_key/CMakeLists.txt)
 
@@ -397,8 +404,7 @@ set_target_properties(afopencl PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(afopencl
   PRIVATE
-    CL_USE_DEPRECATED_OPENCL_1_2_APIS
-    __CL_ENABLE_EXCEPTIONS
+    ${opencl_compile_definitions}
     AF_OPENCL
   )
 

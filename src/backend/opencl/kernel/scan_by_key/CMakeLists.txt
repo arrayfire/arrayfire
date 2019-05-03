@@ -52,6 +52,7 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
     arrayfire_set_default_cxx_flags(opencl_scan_by_key_${SBK_BINARY_OP})
     target_compile_definitions(opencl_scan_by_key_${SBK_BINARY_OP}
       PRIVATE
+        ${opencl_compile_definitions}
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>
         TYPE=${SBK_BINARY_OP} AFDLL)
     target_sources(opencl_scan_by_key

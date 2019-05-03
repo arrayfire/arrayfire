@@ -51,6 +51,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
 
     target_compile_definitions(opencl_sort_by_key_${SBK_TYPE}
       PRIVATE
+        ${opencl_compile_definitions}
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>
         TYPE=${SBK_TYPE} AFDLL)
     target_sources(opencl_sort_by_key
