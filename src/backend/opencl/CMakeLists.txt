@@ -507,10 +507,6 @@ if(LAPACK_FOUND OR MKL_FOUND)
       WITH_LINEAR_ALGEBRA)
 endif(LAPACK_FOUND OR MKL_FOUND)
 
-if (AF_BUILD_FORGE)
-  add_dependencies(afopencl forge)
-endif ()
-
 install(TARGETS afopencl
   EXPORT ArrayFireOpenCLTargets
   COMPONENT opencl
