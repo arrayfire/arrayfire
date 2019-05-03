@@ -7,7 +7,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 project(ArrayFire
-  VERSION 3.6.3
+  VERSION 3.6.4
   LANGUAGES C CXX )
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
