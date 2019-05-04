@@ -110,7 +110,10 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted = false) {
         dim4 dims  = numDims[0];
         dim4 wdims = numDims[1];
         vector<T> input(in[0].begin(), in[0].end());
-        vector<float> weights(in[1].begin(), in[1].end());
+        vector<float> weights(in[1].size());
+        transform(in[1].begin(), in[1].end(),
+                  weights.begin(),
+                  convert_to<float, int>);
 
         array inArray(dims, &(input.front()));
         array wtsArray(wdims, &(weights.front()));

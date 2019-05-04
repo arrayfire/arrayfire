@@ -80,7 +80,11 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0,
 
     ASSERT_SUCCESS(af_sort_index(&sxArray, &ixArray, inArray, 0, dir));
 
-    vector<T> sxTest(tests[resultIdx0].begin(), tests[resultIdx0].end());
+    vector<T> sxTest(tests[resultIdx0].size());
+    transform(tests[resultIdx0].begin(), tests[resultIdx0].end(),
+              sxTest.begin(),
+              convert_to<T, float>);
+
     ASSERT_VEC_ARRAY_EQ(sxTest, idims, sxArray);
 
 #ifdef AF_OPENCL
@@ -139,7 +143,11 @@ TEST(SortIndex, CPPDim0) {
 
     ASSERT_VEC_ARRAY_EQ(tests[resultIdx0], idims, outValues);
 
-    vector<unsigned> ixTest(tests[resultIdx1].begin(), tests[resultIdx1].end());
+    vector<unsigned> ixTest(tests[resultIdx1].size());
+    transform(tests[resultIdx1].begin(), tests[resultIdx1].end(),
+              ixTest.begin(),
+              convert_to<unsigned, float>);
+
     ASSERT_VEC_ARRAY_EQ(ixTest, idims, outIndices);
 }
 

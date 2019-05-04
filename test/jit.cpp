@@ -456,7 +456,7 @@ class JIT : public ::testing::TestWithParam<tile_params> {
     void SetUp() {
         tile_params params = GetParam();
         vector<float> vals(params.in_dim.elements());
-        iota(vals.begin(), vals.end(), 0);
+        iota(vals.begin(), vals.end(), 0.f);
         in = array(params.in_dim, &vals.front());
 
         // clang-format off

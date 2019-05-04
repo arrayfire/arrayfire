@@ -51,7 +51,10 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef = false,
     readTests<int, int, int>(pTestFile, numDims, data, tests);
     dim4 dims = numDims[0];
 
-    vector<Ti> in(data[0].begin(), data[0].end());
+    vector<Ti> in(data[0].size());
+    transform(data[0].begin(), data[0].end(),
+              in.begin(),
+              convert_to<Ti, int>);
 
     af_array inArray   = 0;
     af_array outArray  = 0;
@@ -217,7 +220,10 @@ void cppReduceTest(string pTestFile) {
     readTests<int, int, int>(pTestFile, numDims, data, tests);
     dim4 dims = numDims[0];
 
-    vector<Ti> in(data[0].begin(), data[0].end());
+    vector<Ti> in(data[0].size());
+    transform(data[0].begin(), data[0].end(),
+              in.begin(),
+              convert_to<Ti, int>);
 
     array input(dims, &in.front());
 
