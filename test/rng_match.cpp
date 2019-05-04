@@ -29,11 +29,9 @@ using std::vector;
 
 enum param { engine, backend, size, seed, type };
 
-using rng_params = std::tuple < af::randomEngineType,
-                                std::pair < af::Backend, af::Backend>,
-                                af::dim4,
-                                int,
-                                af_dtype>;
+using rng_params =
+    std::tuple<af::randomEngineType, std::pair<af::Backend, af::Backend>,
+               af::dim4, int, af_dtype>;
 
 class RNGMatch : public ::testing::TestWithParam<rng_params> {
    protected:
@@ -68,18 +66,20 @@ class RNGMatch : public ::testing::TestWithParam<rng_params> {
 
 std::string engine_name(af::randomEngineType engine) {
     switch (engine) {
-        case AF_RANDOM_ENGINE_PHILOX  : return "PHILOX";
+        case AF_RANDOM_ENGINE_PHILOX: return "PHILOX";
         case AF_RANDOM_ENGINE_THREEFRY: return "THREEFRY";
         case AF_RANDOM_ENGINE_MERSENNE: return "MERSENNE";
+        default: return "UNKNOWN ENGINE";
     }
 }
 
 std::string backend_name(af::Backend backend) {
     switch (backend) {
         case AF_BACKEND_DEFAULT: return "DEFAULT";
-        case AF_BACKEND_CPU    : return "CPU";
-        case AF_BACKEND_CUDA   : return "CUDA";
-        case AF_BACKEND_OPENCL : return "OPENCL";
+        case AF_BACKEND_CPU: return "CPU";
+        case AF_BACKEND_CUDA: return "CUDA";
+        case AF_BACKEND_OPENCL: return "OPENCL";
+        default: return "UNKNOWN BACKEND";
     }
 }
 
@@ -101,25 +101,14 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::Values(AF_RANDOM_ENGINE_PHILOX),
         ::testing::Values(make_pair(AF_BACKEND_CPU, AF_BACKEND_CUDA),
                           make_pair(AF_BACKEND_CPU, AF_BACKEND_OPENCL)),
-        ::testing::Values(dim4(10),
-                          dim4(100),
-                          dim4(1000),
-                          dim4(10000),
-                          dim4(1E5),
-                          dim4(10, 10),
-                          dim4(10, 100),
-                          dim4(100, 100),
-                          dim4(1000, 100),
-                          dim4(10, 10, 10),
-                          dim4(10, 100, 10),
-                          dim4(100, 100, 10),
-                          dim4(1000, 100, 10),
-                          dim4(10, 10, 10, 10),
-                          dim4(10, 100, 10, 10),
-                          dim4(100, 100, 10, 10),
+        ::testing::Values(dim4(10), dim4(100), dim4(1000), dim4(10000),
+                          dim4(1E5), dim4(10, 10), dim4(10, 100),
+                          dim4(100, 100), dim4(1000, 100), dim4(10, 10, 10),
+                          dim4(10, 100, 10), dim4(100, 100, 10),
+                          dim4(1000, 100, 10), dim4(10, 10, 10, 10),
+                          dim4(10, 100, 10, 10), dim4(100, 100, 10, 10),
                           dim4(1000, 100, 10, 10)),
-        ::testing::Values(12),
-        ::testing::Values(f32, f64, c32, c64, u8)),
+        ::testing::Values(12), ::testing::Values(f32, f64, c32, c64, u8)),
     rngmatch_info);
 
 TEST_P(RNGMatch, BackendEquals) {

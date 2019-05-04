@@ -193,12 +193,19 @@ TYPED_TEST(StandardDev, All) {
         string(TEST_DIR "/stdev/mat_10x10_scalar.test"), numDims, in, tests);
 
     dim4 dims = numDims[0];
-    vector<TypeParam> input(in[0].begin(), in[0].end());
+    vector<TypeParam> input(in[0].size());
+    transform(in[0].begin(), in[0].end(),
+              input.begin(),
+              convert_to<TypeParam, int>);
 
     array a(dims, &(input.front()));
     outType b = stdev<outType>(a);
 
-    vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
+    vector<outType> currGoldBar(tests[0].size());
+    transform(tests[0].begin(), tests[0].end(),
+              currGoldBar.begin(),
+              convert_to<outType, float>);
+
     ASSERT_NEAR(::real(currGoldBar[0]), ::real(b), 1.0e-3);
     ASSERT_NEAR(::imag(currGoldBar[0]), ::imag(b), 1.0e-3);
 }

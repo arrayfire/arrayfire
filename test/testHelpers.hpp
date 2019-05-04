@@ -454,6 +454,11 @@ inline bool noLAPACKTests() {
     return ret;
 }
 
+template<typename TO, typename FROM>
+TO convert_to(FROM in) {
+    return TO(in);
+}
+
 // TODO: perform conversion on device for CUDA and OpenCL
 template<typename T>
 af_err conv_image(af_array *out, af_array in) {
