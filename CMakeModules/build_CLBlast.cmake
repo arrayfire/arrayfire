@@ -7,16 +7,44 @@
 
 include(ExternalProject)
 
+find_program(GIT git)
+
 set(prefix ${PROJECT_BINARY_DIR}/third_party/CLBlast)
 set(CLBlast_location ${prefix}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}clblast${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+if(APPLE)
+  # We need this patch on macOS until #PR 356 is merged in the CLBlast repo
+  write_file(clblast.patch
+"diff --git a/src/clpp11.hpp b/src/clpp11.hpp
+index 9446499..786f7db 100644
+--- a/src/clpp11.hpp
++++ b/src/clpp11.hpp
+@@ -358,8 +358,10 @@ class Device {
+
+   // Returns if the Nvidia chip is a Volta or later archicture (sm_70 or higher)
+   bool IsPostNVIDIAVolta() const {
+-    assert(HasExtension(\"cl_nv_device_attribute_query\"));
+-    return GetInfo<cl_uint>(CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV) >= 7;
++    if(HasExtension(\"cl_nv_device_attribute_query\")) {
++      return GetInfo<cl_uint>(CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV) >= 7;
++    }
++    return false;
+   }
+
+   // Retrieves the above extra information (if present)
+")
+
+  set(CLBLAST_PATCH_COMMAND ${GIT} apply ${ArrayFire_BINARY_DIR}/clblast.patch)
+endif()
 
 ExternalProject_Add(
     CLBlast-ext
     GIT_REPOSITORY https://github.com/cnugteren/CLBlast.git
-    GIT_TAG 43e3f27254c4f7e4a0b332f5b88965c53c20bdd1 # v1.4.0 plus CLBlast #295
+    GIT_TAG 1.5.0
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
+    PATCH_COMMAND ${CLBLAST_PATCH_COMMAND}
     BUILD_BYPRODUCTS ${CLBlast_location}
     CONFIGURE_COMMAND ${CMAKE_COMMAND} "-G${CMAKE_GENERATOR}" -Wno-dev <SOURCE_DIR>/
       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
