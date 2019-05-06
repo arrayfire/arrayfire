@@ -193,6 +193,48 @@ typedef enum {
     , AF_ERR_ARR_BKND_MISMATCH    = 503
 #endif
 
+#if AF_API_VERSION >= 39
+    ///
+    /// No active backend
+    ///
+    , AF_ERR_NO_ACTIVE_BKND       = 504
+#endif
+
+#if AF_API_VERSION >= 39
+    ///
+    /// No available devices for this backend
+    ///
+    , AF_ERR_BKND_NO_DEVICE       = 505
+#endif
+
+#if AF_API_VERSION >= 39
+    ///
+    /// Target backend library not available
+    ///
+    , AF_ERR_NO_TGT_BKND_LIB      = 507
+#endif
+
+#if AF_API_VERSION >= 39
+    ///
+    /// Loaded backend library is invalid
+    ///
+    , AF_ERR_BKND_LIB_INVALID     = 508
+#endif
+
+#if AF_API_VERSION >= 39
+    ///
+    /// Backend library list full
+    ///
+    , AF_ERR_BKND_LIB_LIST_FULL   = 509
+#endif
+
+#if AF_API_VERSION >= 39
+    ///
+    /// Backend library index out of bounds
+    ///
+    , AF_ERR_BKND_LIB_IDX_INVALID = 510
+#endif
+
     // 900-999 Errors from upstream libraries and runtimes
 
     ///

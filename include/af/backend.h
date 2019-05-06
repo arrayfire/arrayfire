@@ -24,6 +24,46 @@ extern "C" {
 AFAPI af_err af_set_backend(const af_backend bknd);
 #endif
 
+#if AF_API_VERSION >= 39
+/**
+   Adds a new backend library from an arbitrary path on the file system
+
+   \param[in] lib_path is the path of the custom arrayfire library to
+              be registered
+   \returns   \ref af_err error code
+
+   \ingroup unified_func_addbackendlibrary
+*/
+AFAPI af_err af_add_backend_library(const char *lib_path);
+#endif
+
+#if AF_API_VERSION >= 39
+/**
+   Activates an ArrayFire library located in an arbitrary path for use
+
+   \param[in] lib_idx is the index of a registered custom arrayfire library to
+              be activated for use. Must match the order of when the library
+              was registered
+   \returns   \ref af_err error code
+
+   \ingroup unified_func_setbackendlibrary
+*/
+AFAPI af_err af_set_backend_library(int lib_idx);
+#endif
+
+#if AF_API_VERSION >= 39
+/**
+   Returns true if the unified backend is used to call ArrayFire functions
+
+   \param[out] result reports whether the application is using the unified
+               backend or not
+   \returns    \ref af_err error code
+
+   \ingroup unified_func_checkunifiedbackend
+*/
+AFAPI af_err af_check_unified_backend(bool *result);
+#endif
+
 #if AF_API_VERSION >= 32
 /**
    \param[out] num_backends Number of available backends

@@ -23,14 +23,15 @@
 
 namespace unified {
 
-const int NUM_BACKENDS = 3;
+const int NUM_BACKENDS     = 3;
+const int MAX_BKND_HANDLES = 10;
 
-#define UNIFIED_ERROR_LOAD_LIB()                                       \
+#define UNIFIED_ERROR_LOAD_LIB(AF_ERR)                                 \
     AF_RETURN_ERROR(                                                   \
         "Failed to load dynamic library. "                             \
         "See http://www.arrayfire.com/docs/unifiedbackend.htm "        \
         "for instructions to set up environment for Unified backend.", \
-        AF_ERR_LOAD_LIB)
+        AF_ERR)
 
 static inline int backend_index(af::Backend be) {
     switch (be) {
@@ -55,6 +56,9 @@ class AFSymbolManager {
     af::Backend getDefaultBackend() { return defaultBackend; }
     LibHandle getDefaultHandle() { return defaultHandle; }
 
+    af_err addBackendLibrary(const char* lib_path);
+    af_err setBackendLibrary(int lib_idx);
+
     spdlog::logger* getLogger();
     LibHandle getHandle(int idx) { return bkndHandles[idx]; }
 
@@ -69,10 +73,11 @@ class AFSymbolManager {
     void operator=(AFSymbolManager const&);
 
    private:
-    LibHandle bkndHandles[NUM_BACKENDS]{};
+    LibHandle bkndHandles[MAX_BKND_HANDLES]{};
 
     LibHandle defaultHandle;
     unsigned numBackends;
+    unsigned newCustomHandleIndex;
     int backendsAvailable;
     af_backend defaultBackend;
     std::shared_ptr<spdlog::logger> logger;
@@ -83,6 +88,8 @@ af_err setBackend(af::Backend bknd);
 af::Backend& getActiveBackend();
 
 LibHandle& getActiveHandle();
+
+LibHandle& getPreviousHandle();
 
 namespace {
 bool checkArray(af_backend activeBackend, const af_array a) {
@@ -144,7 +151,8 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
     if (unified::getActiveHandle()) {                                            \
         thread_local af_func func = (af_func)common::getFunctionPointer(         \
             unified::getActiveHandle(), __func__);                               \
-        if (!func) {                                                             \
+        if (!func &&                                                             \
+            unified::getActiveHandle() != unified::getPreviousHandle()) {        \
             AF_RETURN_ERROR(                                                     \
                 "requested symbol name could not be found in loaded library.",   \
                 AF_ERR_LOAD_LIB);                                                \
@@ -156,8 +164,8 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
         }                                                                        \
         return func(__VA_ARGS__);                                                \
     } else {                                                                     \
-        AF_RETURN_ERROR("ArrayFire couldn't locate any backends.",               \
-                        AF_ERR_LOAD_LIB);                                        \
+        AF_RETURN_ERROR("ArrayFire couldn't load active backend",                \
+                        AF_ERR_NO_ACTIVE_BKND);                                  \
     }
 
 #define CALL_NO_PARAMS(FUNCTION) CALL(FUNCTION)

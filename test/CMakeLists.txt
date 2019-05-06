@@ -5,6 +5,21 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+
+set(CPU_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}afcpu${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(CUDA_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}afcuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(OPENCL_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}afopencl${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  set(CPU_LIB_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CPU_LIB_NAME}")
+  set(CUDA_LIB_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CUDA_LIB_NAME}")
+  set(OPENCL_LIB_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${OPENCL_LIB_NAME}")
+else()
+  set(CPU_LIB_PATH "${ArrayFire_BINARY_DIR}/src/backend/cpu/${CPU_LIB_NAME}")
+  set(CUDA_LIB_PATH "${ArrayFire_BINARY_DIR}/src/backend/cuda/${CUDA_LIB_NAME}")
+  set(OPENCL_LIB_PATH "${ArrayFire_BINARY_DIR}/src/backend/opencl/${OPENCL_LIB_NAME}")
+endif()
+
 set(AF_TEST_WITH_MTX_FILES
     ON CACHE BOOL
     "Download and run tests on large matrices form sparse.tamu.edu")
@@ -238,7 +253,12 @@ make_test(SRC array.cpp CXX11)
 make_test(SRC array_death_tests.cpp CXX11 SERIAL)
 make_test(SRC arrayio.cpp)
 make_test(SRC assign.cpp CXX11)
-make_test(SRC backend.cpp CXX11)
+make_test(SRC backend.cpp
+          CXX11
+          DEFINITIONS CPU_LIB_PATH="${CPU_LIB_PATH}"
+                      CUDA_LIB_PATH="${CUDA_LIB_PATH}"
+                      OPENCL_LIB_PATH="${OPENCL_LIB_PATH}"
+                      )
 make_test(SRC basic.cpp)
 make_test(SRC bilateral.cpp)
 make_test(SRC binary.cpp CXX11)

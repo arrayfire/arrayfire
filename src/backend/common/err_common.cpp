@@ -215,6 +215,16 @@ const char *af_err_to_string(const af_err err) {
         case AF_ERR_ARR_BKND_MISMATCH:
             return "There was a mismatch between an array and the current "
                    "backend";
+        case AF_ERR_NO_ACTIVE_BKND: return "No active backend";
+        case AF_ERR_BKND_NO_DEVICE:
+            return "No available devices for this backend";
+        case AF_ERR_NO_TGT_BKND_LIB:
+            return "Target backend library not available";
+        case AF_ERR_BKND_LIB_INVALID:
+            return "Loaded backend library is invalid";
+        case AF_ERR_BKND_LIB_LIST_FULL: return "Backend library list full";
+        case AF_ERR_BKND_LIB_IDX_INVALID:
+            return "Backend library index out of bounds";
         case AF_ERR_INTERNAL: return "Internal error";
         case AF_ERR_UNKNOWN: return "Unknown error";
     }
