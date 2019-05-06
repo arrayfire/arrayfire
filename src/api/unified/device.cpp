@@ -16,6 +16,14 @@ af_err af_set_backend(const af_backend bknd) {
     return unified::AFSymbolManager::getInstance().setBackend(bknd);
 }
 
+af_err af_add_backend_library(const char *lib_path) {
+    return unified::AFSymbolManager::getInstance().addBackendLibrary(lib_path);
+}
+
+af_err af_set_backend_library(int lib_idx) {
+    return unified::AFSymbolManager::getInstance().setBackendLibrary(lib_idx);
+}
+
 af_err af_get_backend_count(unsigned *num_backends) {
     *num_backends = unified::AFSymbolManager::getInstance().getBackendCount();
     return AF_SUCCESS;

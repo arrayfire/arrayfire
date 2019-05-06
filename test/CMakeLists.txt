@@ -5,6 +5,10 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+
+set(BUILD_DIR "${CMAKE_BINARY_DIR}")
+add_definitions("-DBUILD_DIR=\"${BUILD_DIR}\"")
+
 set(AF_TEST_WITH_MTX_FILES
     ON CACHE BOOL
     "Download and run tests on large matrices form sparse.tamu.edu")

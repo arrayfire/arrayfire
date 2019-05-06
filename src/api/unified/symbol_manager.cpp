@@ -20,6 +20,8 @@
 #include <string>
 #include <type_traits>
 
+#include <iostream>
+
 #ifdef OS_WIN
 #include <Windows.h>
 #else
@@ -170,12 +172,17 @@ spdlog::logger* AFSymbolManager::getLogger() { return logger.get(); }
 AFSymbolManager::AFSymbolManager()
     : activeHandle(nullptr)
     , defaultHandle(nullptr)
-    , numBackends(0)
+    , numBackendHandles(0)
     , backendsAvailable(0)
     , logger(loggerFactory("unified")) {
     // In order of priority.
     static const af_backend order[] = {AF_BACKEND_CUDA, AF_BACKEND_OPENCL,
                                        AF_BACKEND_CPU};
+
+    // Initialize bkndHandles to nullptrs
+    for (int i = 0; i < MAX_BKND_HANDLES; ++i) {
+        bkndHandles[i] = nullptr;
+    }
 
     // Decremeting loop. The last successful backend loaded will be the most
     // prefered one.
@@ -185,7 +192,7 @@ AFSymbolManager::AFSymbolManager()
         if (bkndHandles[backend]) {
             activeHandle  = bkndHandles[backend];
             activeBackend = (af_backend)order[i];
-            numBackends++;
+            numBackendHandles++;
             backendsAvailable += order[i];
         }
     }
@@ -201,18 +208,19 @@ AFSymbolManager::AFSymbolManager()
 }
 
 AFSymbolManager::~AFSymbolManager() {
-    for (int i = 0; i < NUM_BACKENDS; ++i) {
+    for (int i = 0; i < MAX_BKND_HANDLES; ++i) {
         if (bkndHandles[i]) { closeDynLibrary(bkndHandles[i]); }
     }
 }
 
-unsigned AFSymbolManager::getBackendCount() { return numBackends; }
+unsigned AFSymbolManager::getBackendCount() { return numBackendHandles; }
 
 int AFSymbolManager::getAvailableBackends() { return backendsAvailable; }
 
 af_err AFSymbolManager::setBackend(af::Backend bknd) {
     if (bknd == AF_BACKEND_DEFAULT) {
         if (defaultHandle) {
+            prevHandle = activeHandle;
             activeHandle  = defaultHandle;
             activeBackend = defaultBackend;
             return AF_SUCCESS;
@@ -222,10 +230,76 @@ af_err AFSymbolManager::setBackend(af::Backend bknd) {
     }
     int idx = bknd >> 1;  // Convert 1, 2, 4 -> 0, 1, 2
     if (bkndHandles[idx]) {
+        prevHandle = activeHandle;
         activeHandle  = bkndHandles[idx];
         activeBackend = bknd;
         return AF_SUCCESS;
     } else {
+        UNIFIED_ERROR_LOAD_LIB();
+    }
+}
+
+af_err AFSymbolManager::addBackendLibrary(const char *lib_path) {
+    if ((numBackendHandles + 1) > MAX_BKND_HANDLES) {
+        // No more space for an additional handle
+        UNIFIED_ERROR_LOAD_LIB();
+    }
+
+    string show_flag    = getEnvVar("AF_SHOW_LOAD_PATH");
+    bool show_load_path = show_flag == "1";
+
+    typedef af_err (*func)(int*);
+    LibHandle handle = nullptr;
+    if ((handle = loadLibrary(lib_path))) {
+        func count_func =
+            (func)getFunctionPointer(handle, "af_get_device_count");
+        if (count_func) {
+            int count = 0;
+            count_func(&count);
+            AF_TRACE("Device Count: {}.", count);
+            if (count == 0) {
+                // No available device for this backend
+                // Or loaded library is invalid (since function can't be found)
+                handle = nullptr;
+                UNIFIED_ERROR_LOAD_LIB();
+            }
+        }
+
+        if (show_load_path) { printf("Using %s\n", lib_path); }
+
+        bkndHandles[numBackendHandles] = handle;
+        numBackendHandles++;
+
+        return AF_SUCCESS;
+    }
+    else {
+        // loadLibrary failed, maybe because path is invalid or another reason
+        UNIFIED_ERROR_LOAD_LIB();
+    }
+}
+
+af_err AFSymbolManager::setBackendLibrary(int lib_idx) {
+    typedef af_err (*func)(af_backend*);
+    int actual_idx = lib_idx + NUM_BACKENDS;
+
+    if (actual_idx >= MAX_BKND_HANDLES) {
+        // lib_idx more than the capacity of bkndHandles
+        UNIFIED_ERROR_LOAD_LIB();
+    }
+
+    if (bkndHandles[actual_idx]) {
+        prevHandle = activeHandle;
+        activeHandle  = bkndHandles[actual_idx];
+        af_backend bknd = (af_backend)0;
+        func get_backend_func =
+            (func)getFunctionPointer(activeHandle, "af_get_active_backend");
+        if (get_backend_func) {
+            get_backend_func(&bknd);
+        }
+        activeBackend = bknd;
+        return AF_SUCCESS;
+    } else {
+        // lib_idx not pointing to a library yet
         UNIFIED_ERROR_LOAD_LIB();
     }
 }

@@ -24,6 +24,14 @@ extern "C" {
 AFAPI af_err af_set_backend(const af_backend bknd);
 #endif
 
+#if AF_API_VERSION >= 36
+    AFAPI af_err af_add_backend_library(const char *lib_path);
+#endif
+
+#if AF_API_VERSION >= 36
+    AFAPI af_err af_set_backend_library(int lib_idx);
+#endif
+
 #if AF_API_VERSION >= 32
 /**
    \param[out] num_backends Number of available backends
@@ -107,6 +115,14 @@ class array;
    \ingroup unified_func_setbackend
  */
 AFAPI void setBackend(const Backend bknd);
+#endif
+
+#if AF_API_VERSION >= 36
+AFAPI void addBackendLibrary(const char *lib_path);
+#endif
+
+#if AF_API_VERSION >= 36
+AFAPI void setBackendLibrary(int lib_idx);
 #endif
 
 #if AF_API_VERSION >= 32

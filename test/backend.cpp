@@ -18,9 +18,17 @@
 
 #include <af/device.h>
 
+using af::array;
+using af::Backend;
 using af::dtype_traits;
+using af::exception;
+using af::getBackendCount;
 using af::getAvailableBackends;
+using af::randu;
 using af::setBackend;
+using af::setBackendLibrary;
+using af::addBackendLibrary;
+using af::transpose;
 using std::string;
 using std::vector;
 
@@ -35,8 +43,6 @@ const char *getActiveBackendString(af_backend active) {
 
 template<typename T>
 void testFunction() {
-    af_info();
-
     af_backend activeBackend = (af_backend)0;
     af_get_active_backend(&activeBackend);
 
@@ -56,35 +62,252 @@ void testFunction() {
     if (outArray != 0) { ASSERT_SUCCESS(af_release_array(outArray)); }
 }
 
-void backendTest() {
-    int backends = getAvailableBackends();
+TEST(BACKEND_TEST, DiffBackends) {
+    EXPECT_EXIT({
+            // START of actual test
 
-    ASSERT_NE(backends, 0);
+            int backends = getAvailableBackends();
 
-    bool cpu    = backends & AF_BACKEND_CPU;
-    bool cuda   = backends & AF_BACKEND_CUDA;
-    bool opencl = backends & AF_BACKEND_OPENCL;
+            ASSERT_NE(backends, 0);
 
-    printf("\nRunning Default Backend...\n");
-    testFunction<float>();
+            bool cpu    = backends & AF_BACKEND_CPU;
+            bool cuda   = backends & AF_BACKEND_CUDA;
+            bool opencl = backends & AF_BACKEND_OPENCL;
 
-    if (cpu) {
-        printf("\nRunning CPU Backend...\n");
-        setBackend(AF_BACKEND_CPU);
-        testFunction<float>();
-    }
+            printf("\nRunning Default Backend...\n");
+            testFunction<float>();
 
-    if (cuda) {
-        printf("\nRunning CUDA Backend...\n");
-        setBackend(AF_BACKEND_CUDA);
-        testFunction<float>();
-    }
+            if (cpu) {
+                printf("\nRunning CPU Backend...\n");
+                setBackend(AF_BACKEND_CPU);
+                testFunction<float>();
+            }
 
-    if (opencl) {
-        printf("\nRunning OpenCL Backend...\n");
-        setBackend(AF_BACKEND_OPENCL);
-        testFunction<float>();
-    }
+            if (cuda) {
+                printf("\nRunning CUDA Backend...\n");
+                setBackend(AF_BACKEND_CUDA);
+                testFunction<float>();
+            }
+
+            if (opencl) {
+                printf("\nRunning OpenCL Backend...\n");
+                setBackend(AF_BACKEND_OPENCL);
+                testFunction<float>();
+            }
+
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
 }
 
-TEST(BACKEND_TEST, Basic) { backendTest(); }
+TEST(BACKEND_TEST, CustomLibPathsDiffBackends) {
+    EXPECT_EXIT({
+            // START of actual test
+
+            int backends = getAvailableBackends();
+
+            ASSERT_NE(backends, 0);
+
+            bool cpu    = backends & AF_BACKEND_CPU;
+            bool cuda   = backends & AF_BACKEND_CUDA;
+            bool opencl = backends & AF_BACKEND_OPENCL;
+
+            printf("\nRunning Default Backend...\n");
+            testFunction<float>();
+
+            if (cpu) {
+                printf("\nRunning CPU Backend...\n");
+                addBackendLibrary(BUILD_DIR "/src/backend/cpu/libafcpu.so");
+                setBackendLibrary(0);
+                testFunction<float>();
+            }
+
+            if (cuda) {
+                printf("\nRunning CUDA Backend...\n");
+                addBackendLibrary(BUILD_DIR "/src/backend/cuda/libafcuda.so");
+                setBackendLibrary(1);
+                testFunction<float>();
+            }
+
+            if (opencl) {
+                printf("\nRunning OpenCL Backend...\n");
+                addBackendLibrary(BUILD_DIR "/src/backend/opencl/libafopencl.so");
+                setBackendLibrary(2);
+                testFunction<float>();
+            }
+
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, UseArrayAfterSwitchingBackends) {
+    EXPECT_EXIT({
+            // START of actual test
+
+            int backends = getAvailableBackends();
+
+            ASSERT_NE(backends, 0);
+
+            bool cpu    = backends & AF_BACKEND_CPU;
+            bool cuda   = backends & AF_BACKEND_CUDA;
+            bool opencl = backends & AF_BACKEND_OPENCL;
+
+            int num_backends = getBackendCount();
+            ASSERT_GT(num_backends, 0);
+            if (num_backends > 1) {
+                Backend backend0 = cpu ? AF_BACKEND_CPU : AF_BACKEND_OPENCL;
+                Backend backend1 = cuda ? AF_BACKEND_CUDA : AF_BACKEND_OPENCL;
+                printf("Using %s and %s\n",
+                       getActiveBackendString(backend0),
+                       getActiveBackendString(backend1));
+
+                setBackend(backend0);
+                array a = randu(3, 2);
+                array at = transpose(a);
+
+                setBackend(backend1);
+                array b = randu(3, 2);
+
+                setBackend(backend0);
+                array att = transpose(at);
+                ASSERT_ARRAYS_EQ(a, att);
+            }
+            else {
+                printf("Only 1 backend available, skipping test\n");
+            }
+
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, UseArrayAfterSwitchingLibraries) {
+    EXPECT_EXIT({
+            // START of actual test
+
+            int backends = getAvailableBackends();
+
+            ASSERT_NE(backends, 0);
+
+            bool cpu    = backends & AF_BACKEND_CPU;
+            bool cuda   = backends & AF_BACKEND_CUDA;
+            bool opencl = backends & AF_BACKEND_OPENCL;
+
+            string cpu_path    = BUILD_DIR "/src/backend/cpu/libafcpu.so";
+            string cuda_path   = BUILD_DIR "/src/backend/cuda/libafcuda.so";
+            string opencl_path = BUILD_DIR "/src/backend/opencl/libafopencl.so";
+
+            int num_backends = getBackendCount();
+            ASSERT_GT(num_backends, 0);
+            if (num_backends > 1) {
+                string lib_path0 = cpu ? cpu_path : opencl_path;
+                string lib_path1 = cuda ? cuda_path : opencl_path;
+                printf("Using %s and %s\n",
+                       lib_path0.c_str(), lib_path1.c_str());
+
+                addBackendLibrary(lib_path0.c_str());
+                addBackendLibrary(lib_path1.c_str());
+
+                setBackendLibrary(0);
+                array a = randu(3, 2);
+                array at = transpose(a);
+
+                setBackendLibrary(1);
+                array b = randu(3, 2);
+
+                setBackendLibrary(0);
+                array att = transpose(at);
+                ASSERT_ARRAYS_EQ(a, att);
+            }
+            else {
+                printf("Only 1 backend available, skipping test\n");
+            }
+
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, InvalidLibPath) {
+    EXPECT_EXIT({
+            // START of actual test
+            ASSERT_THROW(addBackendLibrary("qwerty.so"), exception);
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, LibIdxPointsToNullHandle) {
+    EXPECT_EXIT({
+            // START of actual test
+            ASSERT_THROW(setBackendLibrary(0), exception);
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, LibIdxExceedsMaxHandles) {
+    EXPECT_EXIT({
+            // START of actual test
+            ASSERT_THROW(setBackendLibrary(999), exception);
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
