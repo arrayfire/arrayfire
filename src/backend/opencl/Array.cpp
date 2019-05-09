@@ -256,12 +256,17 @@ bool passesJitHeuristics(Node *root_node) {
 
     bool isBufferLimit =
         lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers();
-    bool isNvidia = getActivePlatform() == AFCL_PLATFORM_NVIDIA ||
-                    getActivePlatform() == AFCL_PLATFORM_APPLE;
+    auto platform = getActivePlatform();
 
-    // A lightweight check based on the height of the node. This is an
-    // inexpensive operation and does not traverse the JIT tree.
-    bool isParamLimit = (isNvidia && root_node->getHeight() > 6);
+    // The Apple platform can have the nvidia card or the AMD card
+    bool isNvidia =
+        platform == AFCL_PLATFORM_NVIDIA || platform == AFCL_PLATFORM_APPLE;
+    bool isAmd =
+        platform == AFCL_PLATFORM_AMD || platform == AFCL_PLATFORM_APPLE;
+
+    // A lightweight check based on the height of the node. This is
+    // an inexpensive operation and does not traverse the JIT tree.
+    bool isParamLimit = (root_node->getHeight() > 6);
     if (isParamLimit || isBufferLimit) {
         // This is the base parameter size if the kernel had no
         // arguments
@@ -270,7 +275,17 @@ bool passesJitHeuristics(Node *root_node) {
 
         // This is the maximum size of the params that can be allowed by the
         // CUDA platform.
-        constexpr size_t max_param_size = (4096 - base_param_size);
+        constexpr size_t max_nvidia_param_size = (4096 - base_param_size);
+        constexpr size_t max_amd_param_size    = (3670 - base_param_size);
+
+        size_t max_param_size = 0;
+        if (isNvidia) {
+            max_param_size = max_nvidia_param_size;
+        } else if (isAmd) {
+            max_param_size = max_amd_param_size;
+        } else {
+            max_param_size = 8192;
+        }
 
         struct tree_info {
             size_t total_buffer_size;
@@ -298,7 +313,7 @@ bool passesJitHeuristics(Node *root_node) {
         size_t param_size = (info.num_buffers * (sizeof(KParam) + sizeof(T *)) +
                              info.param_scalar_size);
 
-        isParamLimit = isNvidia && param_size >= max_param_size;
+        isParamLimit = param_size >= max_param_size;
 
         if (isBufferLimit || isParamLimit) { return false; }
     }
