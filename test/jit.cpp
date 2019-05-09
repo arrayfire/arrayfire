@@ -427,12 +427,19 @@ TEST(JIT, ConstEval7) {
     const array d = constant(1, 1);
     const array e = constant(1, 1);
     const array f = constant(1, 1);
-    const array g = constant(1, 1);
 
+#if (__cpp_variadic_templates >= 200704)
     EXPECT_NO_THROW({
+        const array g = constant(1, 1);
         eval(a, b, c, d, e, f, g);
         af::sync();
     });
+#else
+    EXPECT_NO_THROW({
+        eval(a, b, c, d, e, f);
+        af::sync();
+    });
+#endif
 }
 
 using af::dim4;
