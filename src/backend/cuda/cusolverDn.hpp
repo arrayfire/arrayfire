@@ -9,8 +9,9 @@
 
 #pragma once
 
-#include <common/MatrixAlgebraHandle.hpp>
+#include <common/HandleBase.hpp>
 #include <common/defines.hpp>
+#include <common/err_common.hpp>
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 
@@ -32,14 +33,7 @@ const char* errorString(cusolverStatus_t err);
         }                                                                   \
     } while (0)
 
-class cusolverDnHandle
-    : public common::MatrixAlgebraHandle<cusolverDnHandle, SolveHandle> {
-   public:
-    void createHandle(SolveHandle* handle) {
-        CUSOLVER_CHECK(cusolverDnCreate(handle));
-    }
-
-    void destroyHandle(SolveHandle handle) { cusolverDnDestroy(handle); }
-};
+CREATE_HANDLE(cusolverDnHandle, cusolverDnHandle_t, cusolverDnCreate,
+              cusolverDnDestroy, CUSOLVER_CHECK);
 
 }  // namespace cuda

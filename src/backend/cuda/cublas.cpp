@@ -30,7 +30,4 @@ const char* errorString(cublasStatus_t err) {
     }
 }
 
-void cublasHandle::createHandle(BlasHandle* handle) {
-    CUBLAS_CHECK(cublasCreate(handle));
-}
 }  // namespace cuda

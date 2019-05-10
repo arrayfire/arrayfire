@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <common/MatrixAlgebraHandle.hpp>
+#include <common/HandleBase.hpp>
 #include <common/defines.hpp>
 #include <cublas_v2.h>
 
@@ -30,10 +30,7 @@ const char* errorString(cublasStatus_t err);
         }                                                                   \
     } while (0)
 
-class cublasHandle
-    : public common::MatrixAlgebraHandle<cublasHandle, BlasHandle> {
-   public:
-    void createHandle(BlasHandle* handle);
-    void destroyHandle(BlasHandle handle) { cublasDestroy(handle); }
-};
+CREATE_HANDLE(cublasHandle, cublasHandle_t, cublasCreate, cublasDestroy,
+              CUBLAS_CHECK);
+
 }  // namespace cuda
