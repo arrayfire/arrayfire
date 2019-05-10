@@ -10,9 +10,6 @@
 #include <kernel/sparse.hpp>
 #include <sparse.hpp>
 
-#include <stdexcept>
-#include <string>
-
 #include <arith.hpp>
 #include <cast.hpp>
 #include <common/err_common.hpp>
@@ -23,6 +20,9 @@
 #include <math.hpp>
 #include <platform.hpp>
 #include <where.hpp>
+
+#include <stdexcept>
+#include <string>
 
 namespace cuda {
 

@@ -87,7 +87,7 @@ unique_ptr<cublasHandle>& cublasManager(const int deviceId) {
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
-        CUBLAS_CHECK(cublasSetStream(handles[deviceId]->get(),
+        CUBLAS_CHECK(cublasSetStream(*handles[deviceId],
                                      cuda::getStream(deviceId)));
     });
 
@@ -111,7 +111,7 @@ unique_ptr<cusolverDnHandle>& cusolverManager(const int deviceId) {
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
-        CUSOLVER_CHECK(cusolverDnSetStream(handles[deviceId]->get(),
+        CUSOLVER_CHECK(cusolverDnSetStream(*handles[deviceId],
                                            cuda::getStream(deviceId)));
     });
     // TODO(pradeep) prior to this change, stream was being synced in get solver
@@ -132,7 +132,7 @@ unique_ptr<cusparseHandle>& cusparseManager(const int deviceId) {
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
-        CUSPARSE_CHECK(cusparseSetStream(handles[deviceId]->get(),
+        CUSPARSE_CHECK(cusparseSetStream(*handles[deviceId],
                                          cuda::getStream(deviceId)));
     });
     return handles[deviceId];
@@ -373,15 +373,15 @@ PlanCache &fftManager() {
 }
 
 BlasHandle blasHandle() {
-    return cublasManager(cuda::getActiveDeviceId())->get();
+    return *cublasManager(cuda::getActiveDeviceId());
 }
 
 SolveHandle solverDnHandle() {
-    return cusolverManager(cuda::getActiveDeviceId())->get();
+    return *cusolverManager(cuda::getActiveDeviceId());
 }
 
 SparseHandle sparseHandle() {
-    return cusparseManager(cuda::getActiveDeviceId())->get();
+    return *cusparseManager(cuda::getActiveDeviceId());
 }
 
 void sync(int device) {
