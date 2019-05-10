@@ -351,6 +351,7 @@ cuda_add_library(afcuda
     GraphicsResourceManager.cpp
     GraphicsResourceManager.hpp
     gradient.hpp
+    handle.cpp
     harris.hpp
     hist_graphics.cpp
     hist_graphics.hpp
