@@ -8,13 +8,10 @@
  ********************************************************/
 
 #pragma once
-#include <common/HandleBase.hpp>
 #include <common/defines.hpp>
 #include <cublas_v2.h>
 
 namespace cuda {
-
-using BlasHandle = cublasHandle_t;
 
 const char* errorString(cublasStatus_t err);
 
@@ -24,13 +21,9 @@ const char* errorString(cublasStatus_t err);
         if (_error != CUBLAS_STATUS_SUCCESS) {                              \
             char _err_msg[1024];                                            \
             snprintf(_err_msg, sizeof(_err_msg), "CUBLAS Error (%d): %s\n", \
-                     (int)(_error), errorString(_error));                   \
-                                                                            \
+                     (int)(_error), cuda::errorString(_error));             \
             AF_ERROR(_err_msg, AF_ERR_INTERNAL);                            \
         }                                                                   \
     } while (0)
-
-CREATE_HANDLE(cublasHandle, cublasHandle_t, cublasCreate, cublasDestroy,
-              CUBLAS_CHECK);
 
 }  // namespace cuda

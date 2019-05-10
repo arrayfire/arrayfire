@@ -15,6 +15,7 @@
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
+#include <common/unique_handle.hpp>
 #include <common/util.hpp>
 #include <cublas.hpp>
 #include <cufft.hpp>
@@ -52,6 +53,8 @@ using std::string;
 using std::to_string;
 using std::unique_ptr;
 
+using common::unique_handle;
+
 namespace cuda {
 
 static const std::string get_system(void) {
@@ -78,20 +81,20 @@ static inline int getMinSupportedCompute(int cudaMajorVer) {
                                   : minSV[cudaMajorVer - 1]);
 }
 
-unique_ptr<cublasHandle>& cublasManager(const int deviceId) {
-    thread_local unique_ptr<cublasHandle> handles[DeviceManager::MAX_DEVICES];
+unique_handle<cublasHandle_t>* cublasManager(const int deviceId) {
+    thread_local unique_handle<cublasHandle_t> handles[DeviceManager::MAX_DEVICES];
     thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     call_once(initFlags[deviceId], [&] {
-        handles[deviceId].reset(new cublasHandle());
+        handles[deviceId].create();
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
-        CUBLAS_CHECK(cublasSetStream(*handles[deviceId],
+        CUBLAS_CHECK(cublasSetStream(handles[deviceId],
                                      cuda::getStream(deviceId)));
     });
 
-    return handles[deviceId];
+    return &handles[deviceId];
 }
 
 unique_ptr<PlanCache>& cufftManager(const int deviceId) {
@@ -102,16 +105,16 @@ unique_ptr<PlanCache>& cufftManager(const int deviceId) {
     return caches[deviceId];
 }
 
-unique_ptr<cusolverDnHandle>& cusolverManager(const int deviceId) {
-    thread_local unique_ptr<cusolverDnHandle>
+unique_handle<cusolverDnHandle_t>* cusolverManager(const int deviceId) {
+    thread_local unique_handle<cusolverDnHandle_t>
         handles[DeviceManager::MAX_DEVICES];
     thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
     call_once(initFlags[deviceId], [&] {
-        handles[deviceId].reset(new cusolverDnHandle());
+        handles[deviceId].create();
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
-        CUSOLVER_CHECK(cusolverDnSetStream(*handles[deviceId],
+        CUSOLVER_CHECK(cusolverDnSetStream(handles[deviceId],
                                            cuda::getStream(deviceId)));
     });
     // TODO(pradeep) prior to this change, stream was being synced in get solver
@@ -121,21 +124,21 @@ unique_ptr<cusolverDnHandle>& cusolverManager(const int deviceId) {
     // cuSolver Streams patch:
     // CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(deviceId)));
 
-    return handles[deviceId];
+    return &handles[deviceId];
 }
 
-unique_ptr<cusparseHandle>& cusparseManager(const int deviceId) {
-    thread_local unique_ptr<cusparseHandle> handles[DeviceManager::MAX_DEVICES];
+unique_handle<cusparseHandle_t>* cusparseManager(const int deviceId) {
+    thread_local unique_handle<cusparseHandle_t> handles[DeviceManager::MAX_DEVICES];
     thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
     call_once(initFlags[deviceId], [&] {
-        handles[deviceId].reset(new cusparseHandle());
+        handles[deviceId].create();
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
-        CUSPARSE_CHECK(cusparseSetStream(*handles[deviceId],
+        CUSPARSE_CHECK(cusparseSetStream(handles[deviceId],
                                          cuda::getStream(deviceId)));
     });
-    return handles[deviceId];
+    return &handles[deviceId];
 }
 
 DeviceManager::~DeviceManager() {
@@ -143,10 +146,10 @@ DeviceManager::~DeviceManager() {
     // handles of all devices
     for (int i = 0; i < nDevices; ++i) {
         setDevice(i);
-        cublasManager(i).reset();
+        delete cusolverManager(i);
+        delete cusparseManager(i);
         cufftManager(i).reset();
-        cusolverManager(i).reset();
-        cusparseManager(i).reset();
+        delete cublasManager(i);
     }
 }
 

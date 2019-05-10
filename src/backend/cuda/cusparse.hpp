@@ -8,14 +8,11 @@
  ********************************************************/
 
 #pragma once
-#include <common/HandleBase.hpp>
 #include <common/defines.hpp>
 #include <common/err_common.hpp>
 #include <cusparse_v2.h>
 
 namespace cuda {
-
-using SparseHandle = cusparseHandle_t;
 
 const char* errorString(cusparseStatus_t err);
 
@@ -30,10 +27,4 @@ const char* errorString(cusparseStatus_t err);
             AF_ERROR(_err_msg, AF_ERR_INTERNAL);                              \
         }                                                                     \
     } while (0)
-
-CREATE_HANDLE(cusparseHandle, cusparseHandle_t, cusparseCreate, cusparseDestroy,
-              CUSPARSE_CHECK);
-
-CREATE_HANDLE(cusparseMatDescrHandle, cusparseMatDescr_t,
-              cusparseCreateMatDescr, cusparseDestroyMatDescr, CUSPARSE_CHECK);
 }  // namespace cuda

@@ -16,6 +16,7 @@
 #include <arith.hpp>
 #include <cast.hpp>
 #include <common/err_common.hpp>
+#include <common/unique_handle.hpp>
 #include <complex.hpp>
 #include <copy.hpp>
 #include <cusparse.hpp>
@@ -141,7 +142,8 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     rhs.eval();
     af::storage sfmt = lhs.getStorage();
 
-    cusparseMatDescrHandle desc;
+    common::unique_handle<cusparseMatDescr_t> desc;
+    desc.create();
     const dim4 ldims = lhs.dims();
 
     const int M = ldims[0];

@@ -8,16 +8,9 @@
  ********************************************************/
 
 #pragma once
-
-#include <common/HandleBase.hpp>
-#include <common/defines.hpp>
-#include <common/err_common.hpp>
-#include <cuda_runtime.h>
 #include <cusolverDn.h>
 
 namespace cuda {
-
-using SolveHandle = cusolverDnHandle_t;
 
 const char* errorString(cusolverStatus_t err);
 
@@ -27,13 +20,10 @@ const char* errorString(cusolverStatus_t err);
         if (_error != CUSOLVER_STATUS_SUCCESS) {                            \
             char _err_msg[1024];                                            \
             snprintf(_err_msg, sizeof(_err_msg), "CUBLAS Error (%d): %s\n", \
-                     (int)(_error), errorString(_error));                   \
+                     (int)(_error), cuda::errorString(_error));             \
                                                                             \
             AF_ERROR(_err_msg, AF_ERR_INTERNAL);                            \
         }                                                                   \
     } while (0)
-
-CREATE_HANDLE(cusolverDnHandle, cusolverDnHandle_t, cusolverDnCreate,
-              cusolverDnDestroy, CUSOLVER_CHECK);
 
 }  // namespace cuda
