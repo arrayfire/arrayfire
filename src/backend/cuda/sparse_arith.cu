@@ -141,9 +141,7 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     rhs.eval();
     af::storage sfmt = lhs.getStorage();
 
-    cusparseMatDescr_t desc;
-    cusparseCreateMatDescr(&desc);
-
+    cusparseMatDescrHandle desc;
     const dim4 ldims = lhs.dims();
 
     const int M = ldims[0];
@@ -163,16 +161,18 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     int baseC, nnzC;
     int *nnzcDevHostPtr = &nnzC;
 
-    cusparseXcsrgeamNnz(sparseHandle(), M, N, desc, nnzA, csrRowPtrA,
-                        csrColPtrA, desc, nnzB, csrRowPtrB, csrColPtrB, desc,
-                        csrRowPtrC, nnzcDevHostPtr);
+    CUSPARSE_CHECK(cusparseXcsrgeamNnz(
+        sparseHandle(), M, N, desc, nnzA, csrRowPtrA, csrColPtrA, desc, nnzB,
+        csrRowPtrB, csrColPtrB, desc, csrRowPtrC, nnzcDevHostPtr));
     if (NULL != nnzcDevHostPtr) {
         nnzC = *nnzcDevHostPtr;
     } else {
-        cudaMemcpyAsync(&nnzC, csrRowPtrC + M, sizeof(int),
-                        cudaMemcpyDeviceToHost, cuda::getActiveStream());
-        cudaMemcpyAsync(&baseC, csrRowPtrC, sizeof(int), cudaMemcpyDeviceToHost,
-                        cuda::getActiveStream());
+        CUDA_CHECK(cudaMemcpyAsync(&nnzC, csrRowPtrC + M, sizeof(int),
+                                   cudaMemcpyDeviceToHost,
+                                   cuda::getActiveStream()));
+        CUDA_CHECK(cudaMemcpyAsync(&baseC, csrRowPtrC, sizeof(int),
+                                   cudaMemcpyDeviceToHost,
+                                   cuda::getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         nnzC -= baseC;
     }

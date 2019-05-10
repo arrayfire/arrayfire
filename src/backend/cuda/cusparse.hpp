@@ -33,4 +33,7 @@ const char* errorString(cusparseStatus_t err);
 
 CREATE_HANDLE(cusparseHandle, cusparseHandle_t, cusparseCreate, cusparseDestroy,
               CUSPARSE_CHECK);
+
+CREATE_HANDLE(cusparseMatDescrHandle, cusparseMatDescr_t,
+              cusparseCreateMatDescr, cusparseDestroyMatDescr, CUSPARSE_CHECK);
 }  // namespace cuda
