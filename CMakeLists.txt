@@ -231,6 +231,19 @@ install(DIRECTORY "${ArrayFire_SOURCE_DIR}/LICENSES/"
 foreach(backend CPU CUDA OpenCL Unified)
   string(TOUPPER ${backend} upper_backend)
   string(TOLOWER ${backend} lower_backend)
+  if(${backend} STREQUAL Unified)
+    if(TARGET af)
+      set_target_properties(af
+        PROPERTIES
+          LABELS ${lower_backend})
+    endif()
+  else()
+    if(TARGET af${lower_backend})
+      set_target_properties(af${lower_backend}
+        PROPERTIES
+          LABELS ${lower_backend})
+    endif()
+  endif()
   if(AF_BUILD_${upper_backend})
     install(EXPORT ArrayFire${backend}Targets
             NAMESPACE ArrayFire::

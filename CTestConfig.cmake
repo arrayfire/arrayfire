@@ -6,6 +6,7 @@
 ##   INCLUDE(CTest)
 set(CTEST_PROJECT_NAME "ArrayFire")
 set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
+set(CTEST_LABELS_FOR_SUBPROJECTS cpu cuda opencl unified)
 
 set(CTEST_DROP_METHOD "http")
 set(CTEST_DROP_SITE "ci.arrayfire.org")
