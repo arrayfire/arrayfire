@@ -66,10 +66,10 @@ class unique_handle {
     /// \brief Implicit converter for the handle
     constexpr operator const T &() const noexcept { return handle_; }
 
-    explicit unique_handle(const unique_handle &other) noexcept      = delete;
-    constexpr explicit unique_handle(unique_handle &&other) noexcept = default;
+    unique_handle(const unique_handle &other)      noexcept = delete;
+    constexpr unique_handle(unique_handle &&other) noexcept = default;
 
-    unique_handle &operator=(unique_handle &other) noexcept = delete;
+    unique_handle &operator=(unique_handle &other)  noexcept = delete;
     unique_handle &operator=(unique_handle &&other) noexcept = default;
 
     // Returns true if the \p other unique_handle is the same as this handle
@@ -87,6 +87,16 @@ class unique_handle {
         return handle_ == other;
     }
 };
+
+/// \brief Returns an initialized handle object. The create function on this
+///        object is already called
+template<typename T>
+unique_handle<T> make_handle() {
+    unique_handle<T> h;
+    h.create();
+    return h;
+}
+
 }  // namespace common
 
 /// specializes the handle_creater and handle_deleter functions for a specific
