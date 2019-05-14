@@ -111,7 +111,7 @@ PlanCache &fftManager();
 
 BlasHandle blasHandle();
 
-CuDNNHandle nnHandle();
+cudnnHandle_t nnHandle();
 
 SolveHandle solverDnHandle();
 

@@ -590,6 +590,7 @@ namespace af
     typedef af_var_bias varBias;
     typedef af_iterative_deconv_algo iterativeDeconvAlgo;
     typedef af_inverse_deconv_algo inverseDeconvAlgo;
+    typedef af_conv_gradient_type convGradientType;
 #endif
 }
 

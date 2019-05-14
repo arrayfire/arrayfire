@@ -9,13 +9,10 @@
 
 #pragma once
 
-#include <common/MatrixAlgebraHandle.hpp>
 #include <common/defines.hpp>
 #include <cudnn.h>
 
 namespace cuda {
-
-typedef cudnnHandle_t CuDNNHandle;
 
 const char *errorString(cudnnStatus_t err);
 
@@ -30,12 +27,5 @@ const char *errorString(cudnnStatus_t err);
             AF_ERROR(_err_msg, AF_ERR_INTERNAL);                           \
         }                                                                  \
     } while (0)
-
-class cudnnHandle
-    : public common::MatrixAlgebraHandle<cudnnHandle, CuDNNHandle> {
-   public:
-    void createHandle(CuDNNHandle *handle);
-    void destroyHandle(CuDNNHandle handle) { CUDNN_CHECK(cudnnDestroy(handle)); }
-};
 
 }

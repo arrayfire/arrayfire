@@ -591,7 +591,17 @@ AFAPI array convolve1(const array& signal, const array& filter, const convMode m
 AFAPI array convolve2(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT, const convDomain domain=AF_CONV_AUTO);
 
 /**
-   C++ Interface for convolution on two dimensional signals
+   C++ Interface for 2D convolution
+   This version of convolution is consistent with the machine learning formulation
+   that will spatially convolve a filter on 2-dimensions against a signal.
+   Multiple signals and filters can be batched against each other.
+   Furthermore, the signals and filters can be multi-dimensional however their dimensions must match.
+
+   Example:
+   Filters with dimensions: Wf x Hf x C x Nf
+   Signals with dimensions: Ws x Hs x C x Ns
+
+   Resulting Convolution: Wc x Hc x Ns x Nf
 
    \snippet test/convolve.cpp ex_image_convolve2
 
@@ -604,8 +614,8 @@ AFAPI array convolve2(const array& signal, const array& filter, const convMode m
 
    \ingroup signal_func_convolve2
  */
-AFAPI array convolve2(const array& signal, const array& filter,
-                      const dim4 stride, const dim4 padding, const dim4 dilation);
+AFAPI array convolve2_v2(const array& signal, const array& filter,
+                         const dim4 stride, const dim4 padding, const dim4 dilation);
 
 /**
    C++ Interface for convolution on three dimensional signals
@@ -1399,7 +1409,18 @@ AFAPI af_err af_convolve1(af_array *out, const af_array signal, const af_array f
 AFAPI af_err af_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain);
 
 /**
-   C Interface for convolution on two dimensional signals
+   C Interface for 2D convolution
+
+   This version of convolution is consistent with the machine learning formulation
+   that will spatially convolve a filter on 2-dimensions against a signal.
+   Multiple signals and filters can be batched against each other.
+   Furthermore, the signals and filters can be multi-dimensional however their dimensions must match.
+
+   Example:
+   Filters with dimensions: Wf x Hf x C x Nf
+   Signals with dimensions: Ws x Hs x C x Ns
+
+   Resulting Convolution: Wc x Hc x Ns x Nf
 
    \param[out] out is convolved array
    \param[in]  signal is the input signal
@@ -1416,10 +1437,10 @@ AFAPI af_err af_convolve2(af_array *out, const af_array signal, const af_array f
 
    \ingroup signal_func_convolve2
  */
-AFAPI af_err af_convolve2_strided(af_array *out, const af_array signal, const af_array filter,
-                                  const unsigned stride_dims,   const dim_t *strides,
-                                  const unsigned padding_dims,  const dim_t *paddings,
-                                  const unsigned dilation_dims, const dim_t *dilations);
+AFAPI af_err af_convolve2_v2(af_array *out, const af_array signal, const af_array filter,
+                             const unsigned stride_dims,   const dim_t *strides,
+                             const unsigned padding_dims,  const dim_t *paddings,
+                             const unsigned dilation_dims, const dim_t *dilations);
 
 /**
    C Interface for convolution on three dimensional signals

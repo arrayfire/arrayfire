@@ -10,6 +10,7 @@
 #include <Array.hpp>
 #include <cast.hpp>
 #include <convolve.hpp>
+#include <common/unique_handle.hpp>
 #include <cudnn.hpp>
 #include <err_cuda.hpp>
 #include <kernel/convolve.hpp>
@@ -18,6 +19,7 @@
 #include <type_traits>
 
 using af::dim4;
+using common::make_handle;
 
 namespace cuda {
 
@@ -142,22 +144,19 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<accT> &filter,
     const int w = sDims[0];
 
     // create input descriptor
-    cudnnTensorDescriptor_t input_descriptor;
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&input_descriptor));
+    auto input_descriptor = make_handle<cudnnTensorDescriptor_t>();
     cudnnDataType_t cudnn_dtype = getCudnnDataType<accT>();
     CUDNN_CHECK(cudnnSetTensor4dDescriptor(input_descriptor, CUDNN_TENSOR_NCHW,
                                            cudnn_dtype, n, c, h, w));
 
     // create filter descriptor
-    cudnnFilterDescriptor_t filter_descriptor;
-    CUDNN_CHECK(cudnnCreateFilterDescriptor(&filter_descriptor));
+    auto filter_descriptor = make_handle<cudnnFilterDescriptor_t>();
     CUDNN_CHECK(cudnnSetFilter4dDescriptor(filter_descriptor, cudnn_dtype,
                                            CUDNN_TENSOR_NCHW, fDims[3],
                                            fDims[2], fDims[1], fDims[0]));
 
     // create convolution descriptor
-    cudnnConvolutionDescriptor_t convolution_descriptor;
-    CUDNN_CHECK(cudnnCreateConvolutionDescriptor(&convolution_descriptor));
+    auto convolution_descriptor = make_handle<cudnnConvolutionDescriptor_t>();
 
     CUDNN_CHECK(cudnnSetConvolution2dDescriptor(
         convolution_descriptor, padding[1], padding[0], stride[1], stride[0],
@@ -176,8 +175,7 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<accT> &filter,
     const int h_out = convolved_output_dim[2];
     const int w_out = convolved_output_dim[3];
 
-    cudnnTensorDescriptor_t output_descriptor;
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&output_descriptor));
+    auto output_descriptor = make_handle<cudnnTensorDescriptor_t>();
     CUDNN_CHECK(cudnnSetTensor4dDescriptor(output_descriptor, CUDNN_TENSOR_NCHW,
                                            cudnn_dtype, n_out, c_out, h_out,
                                            w_out));
@@ -211,12 +209,6 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<accT> &filter,
         filter_descriptor, filter.device(), convolution_descriptor,
         convolution_algorithm, (void *)workspace_buffer.get(), workspace_bytes,
         &beta, output_descriptor, out.device()));
-
-    // destroy all descriptors
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(input_descriptor));
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(output_descriptor));
-    CUDNN_CHECK(cudnnDestroyFilterDescriptor(filter_descriptor));
-    CUDNN_CHECK(cudnnDestroyConvolutionDescriptor(convolution_descriptor));
 
     return cast<T>(out);
 }
@@ -269,31 +261,27 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
     dim4 sDims = original_signal.dims();
     dim4 fDims = original_filter.dims();
 
-    // create x descriptor
-    cudnnTensorDescriptor_t x_descriptor;
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&x_descriptor));
+    // create dx descriptor
+    auto x_descriptor = make_handle<cudnnTensorDescriptor_t>();
     cudnnDataType_t cudnn_dtype = getCudnnDataType<accT>();
     CUDNN_CHECK(cudnnSetTensor4dDescriptor(x_descriptor, CUDNN_TENSOR_NCHW,
                                            cudnn_dtype, sDims[3], sDims[2],
                                            sDims[1], sDims[0]));
 
     // create dy descriptor
-    cudnnTensorDescriptor_t dy_descriptor;
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&dy_descriptor));
+    auto dy_descriptor = make_handle<cudnnTensorDescriptor_t>();
     CUDNN_CHECK(cudnnSetTensor4dDescriptor(dy_descriptor, CUDNN_TENSOR_NCHW,
                                            cudnn_dtype, iDims[3], iDims[2],
                                            iDims[1], iDims[0]));
 
     // create convolution descriptor
-    cudnnConvolutionDescriptor_t convolution_descriptor;
-    CUDNN_CHECK(cudnnCreateConvolutionDescriptor(&convolution_descriptor));
+    auto convolution_descriptor = make_handle<cudnnConvolutionDescriptor_t>();
     CUDNN_CHECK(cudnnSetConvolution2dDescriptor(
         convolution_descriptor, padding[1], padding[0], stride[1], stride[0],
         dilation[1], dilation[0], CUDNN_CONVOLUTION, cudnn_dtype));
 
     // create output filter gradient descriptor
-    cudnnFilterDescriptor_t dw_descriptor;
-    CUDNN_CHECK(cudnnCreateFilterDescriptor(&dw_descriptor));
+    auto dw_descriptor = make_handle<cudnnFilterDescriptor_t>();
     CUDNN_CHECK(cudnnSetFilter4dDescriptor(dw_descriptor, cudnn_dtype,
                                            CUDNN_TENSOR_NCHW, fDims[3],
                                            fDims[2], fDims[1], fDims[0]));
@@ -326,12 +314,6 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
         (void *)workspace_buffer.get(), workspace_bytes, &beta, dw_descriptor,
         out.device()));
 
-    // destroy all descriptors
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(x_descriptor));
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(dy_descriptor));
-    CUDNN_CHECK(cudnnDestroyFilterDescriptor(dw_descriptor));
-    CUDNN_CHECK(cudnnDestroyConvolutionDescriptor(convolution_descriptor));
-
     return cast<T>(out);
 }
 
@@ -348,30 +330,26 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
     dim4 fDims = original_filter.dims();
 
     // create x descriptor
-    cudnnTensorDescriptor_t dx_descriptor;
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&dx_descriptor));
+    auto dx_descriptor = make_handle<cudnnTensorDescriptor_t>();
     cudnnDataType_t cudnn_dtype = getCudnnDataType<accT>();
     CUDNN_CHECK(cudnnSetTensor4dDescriptor(dx_descriptor, CUDNN_TENSOR_NCHW,
                                            cudnn_dtype, sDims[3], sDims[2],
                                            sDims[1], sDims[0]));
 
     // create dy descriptor
-    cudnnTensorDescriptor_t dy_descriptor;
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&dy_descriptor));
+    auto dy_descriptor = make_handle<cudnnTensorDescriptor_t>();
     CUDNN_CHECK(cudnnSetTensor4dDescriptor(dy_descriptor, CUDNN_TENSOR_NCHW,
                                            cudnn_dtype, iDims[3], iDims[2],
                                            iDims[1], iDims[0]));
 
     // create output filter gradient descriptor
-    cudnnFilterDescriptor_t w_descriptor;
-    CUDNN_CHECK(cudnnCreateFilterDescriptor(&w_descriptor));
+    auto w_descriptor = make_handle<cudnnFilterDescriptor_t>();
     CUDNN_CHECK(cudnnSetFilter4dDescriptor(w_descriptor, cudnn_dtype,
                                            CUDNN_TENSOR_NCHW, fDims[3],
                                            fDims[2], fDims[1], fDims[0]));
 
     // create convolution descriptor
-    cudnnConvolutionDescriptor_t convolution_descriptor;
-    CUDNN_CHECK(cudnnCreateConvolutionDescriptor(&convolution_descriptor));
+    auto convolution_descriptor = make_handle<cudnnConvolutionDescriptor_t>();
     CUDNN_CHECK(cudnnSetConvolution2dDescriptor(
         convolution_descriptor, padding[1], padding[0], stride[1], stride[0],
         dilation[1], dilation[0], CUDNN_CONVOLUTION, cudnn_dtype));
@@ -403,12 +381,6 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
         convolution_descriptor, bwd_data_convolution_algorithm,
         (void *)workspace_buffer.get(), workspace_bytes, &beta, dx_descriptor,
         out.device()));
-
-    // destroy all descriptors
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(dx_descriptor));
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(dy_descriptor));
-    CUDNN_CHECK(cudnnDestroyFilterDescriptor(w_descriptor));
-    CUDNN_CHECK(cudnnDestroyConvolutionDescriptor(convolution_descriptor));
 
     return cast<T>(out);
 }

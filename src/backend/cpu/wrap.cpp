@@ -68,9 +68,8 @@ Array<T> wrap_dilated(const Array<T> &in, const dim_t ox, const dim_t oy,
     out.eval();
     in.eval();
 
-    const int d = is_column;
     getQueue().enqueue(kernel::wrap_dim_dilated<T>, out, in, wx, wy, sx, sy, px,
-                       py, dx, dy, d);
+                       py, dx, dy, is_column);
 
     return out;
 }
@@ -83,12 +82,8 @@ Array<T> wrap_dilated(const Array<T> &in, const dim_t ox, const dim_t oy,
 
 INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(cfloat)
-INSTANTIATE(cdouble)
 INSTANTIATE(int)
 INSTANTIATE(uint)
-INSTANTIATE(intl)
-INSTANTIATE(uintl)
 INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)

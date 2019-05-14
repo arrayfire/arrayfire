@@ -93,12 +93,8 @@ Array<T> unwrap_dilated(const Array<T> &in, const dim_t wx, const dim_t wy,
 
 INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(cfloat)
-INSTANTIATE(cdouble)
 INSTANTIATE(int)
 INSTANTIATE(uint)
-INSTANTIATE(intl)
-INSTANTIATE(uintl)
 INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)

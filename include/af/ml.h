@@ -19,6 +19,9 @@ class dim4;
 #if AF_API_VERSION >= 37
     /**
         C++ interface for calculating backward pass gradient of 2D convolution
+        This function calculates the gradient with respect to the output
+        of the \ref convolve2_v2() function that uses the machine learning
+        formulation for the dimensions of the signals and filters
 
         \param[in]  incoming_gradient gradients to be distributed in backwards pass
         \param[in]  original_signal input signal to forward pass of convolution
@@ -34,12 +37,12 @@ class dim4;
 
         \ingroup ml_convolution
     */
-    AFAPI array convolve2Gradient(const array& incoming_gradient,
-                                  const array& original_signal,
-                                  const array& original_filter,
-                                  const array& convolved_output,
-                                  const dim4 stride, const dim4 padding, const dim4 dilation,
-                                  af_conv_gradient_type grad_type);
+    AFAPI array convolve2GradientV2(const array& incoming_gradient,
+                                    const array& original_signal,
+                                    const array& original_filter,
+                                    const array& convolved_output,
+                                    const dim4 stride, const dim4 padding, const dim4 dilation,
+                                    convGradientType grad_type);
 
 #endif
 
@@ -52,7 +55,10 @@ extern "C" {
 
 #if AF_API_VERSION >= 37
     /**
-        C++ interface for calculating backward pass gradient of 2D convolution
+        C interface for calculating backward pass gradient of 2D convolution
+        This function calculates the gradient with respect to the output
+        of the \ref convolve2_v2() function that uses the machine learning
+        formulation for the dimensions of the signals and filters
 
         \param[out] out gradient wrt/gradType
         \param[in]  incoming_gradient gradients to be distributed in backwards pass
@@ -72,15 +78,15 @@ extern "C" {
 
         \ingroup ml_convolution
     */
-    AFAPI af_err af_convolve2Gradient(af_array *out,
-                                      const af_array incoming_gradient,
-                                      const af_array original_signal,
-                                      const af_array original_filter,
-                                      const af_array convolved_output,
-                                      const unsigned stride_dims,   const dim_t *strides,
-                                      const unsigned padding_dims,  const dim_t *paddings,
-                                      const unsigned dilation_dims, const dim_t *dilations,
-                                      af_conv_gradient_type grad_type);
+    AFAPI af_err af_convolve2_gradient_v2(af_array *out,
+                                          const af_array incoming_gradient,
+                                          const af_array original_signal,
+                                          const af_array original_filter,
+                                          const af_array convolved_output,
+                                          const unsigned stride_dims,   const dim_t *strides,
+                                          const unsigned padding_dims,  const dim_t *paddings,
+                                          const unsigned dilation_dims, const dim_t *dilations,
+                                          af_conv_gradient_type grad_type);
 #endif
 
 

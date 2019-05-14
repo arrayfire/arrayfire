@@ -312,11 +312,11 @@ inline static af_array convolve2Strided(const af_array &s, const af_array &f,
                                         stride, padding, dilation));
 }
 
-af_err af_convolve2_strided(af_array *out, const af_array signal,
-                            const af_array filter, const unsigned stride_dims,
-                            const dim_t *strides, const unsigned padding_dims,
-                            const dim_t *paddings, const unsigned dilation_dims,
-                            const dim_t *dilations) {
+af_err af_convolve2_v2(af_array *out, const af_array signal,
+                       const af_array filter, const unsigned stride_dims,
+                       const dim_t *strides, const unsigned padding_dims,
+                       const dim_t *paddings, const unsigned dilation_dims,
+                       const dim_t *dilations) {
     try {
         const ArrayInfo &sInfo = getInfo(signal);
         const ArrayInfo &fInfo = getInfo(filter);
@@ -429,15 +429,15 @@ af_array conv2GradCall(const af_array incoming_gradient,
     }
 }
 
-af_err af_convolve2Gradient(af_array *out, const af_array incoming_gradient,
-                            const af_array original_signal,
-                            const af_array original_filter,
-                            const af_array convolved_output,
-                            const unsigned stride_dims, const dim_t *strides,
-                            const unsigned padding_dims, const dim_t *paddings,
-                            const unsigned dilation_dims,
-                            const dim_t *dilations,
-                            af_conv_gradient_type grad_type) {
+af_err af_convolve2_gradient_v2(af_array *out, const af_array incoming_gradient,
+                                const af_array original_signal,
+                                const af_array original_filter,
+                                const af_array convolved_output,
+                                const unsigned stride_dims, const dim_t *strides,
+                                const unsigned padding_dims, const dim_t *paddings,
+                                const unsigned dilation_dims,
+                                const dim_t *dilations,
+                                af_conv_gradient_type grad_type) {
     try {
         const ArrayInfo &iinfo = getInfo(incoming_gradient);
         af::dim4 iDims         = iinfo.dims();

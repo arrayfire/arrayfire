@@ -37,8 +37,4 @@ const char *errorString(cudnnStatus_t err) {
     }
 }
 
-void cudnnHandle::createHandle(CuDNNHandle *handle) {
-    CUDNN_CHECK(cudnnCreate(handle));
-}
-
 }

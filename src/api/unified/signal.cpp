@@ -171,25 +171,25 @@ CONV_HAPI_DEF(af_convolve1)
 CONV_HAPI_DEF(af_convolve2)
 CONV_HAPI_DEF(af_convolve3)
 
-af_err af_convolve2_strided(af_array *out, const af_array signal,
-                            const af_array filter, const unsigned stride_dims,
-                            const dim_t *strides, const unsigned padding_dims,
-                            const dim_t *paddings, const unsigned dilation_dims,
-                            const dim_t *dilations) {
+af_err af_convolve2_v2(af_array *out, const af_array signal,
+                       const af_array filter, const unsigned stride_dims,
+                       const dim_t *strides, const unsigned padding_dims,
+                       const dim_t *paddings, const unsigned dilation_dims,
+                       const dim_t *dilations) {
     CHECK_ARRAYS(signal, filter);
     return CALL(out, signal, filter, stride_dims, strides, padding_dims,
                 paddings, dilation_dims, dilations);
 }
 
-af_err af_convolve2Gradient(af_array *out, const af_array incoming_gradient,
-                            const af_array original_signal,
-                            const af_array original_filter,
-                            const af_array convolved_output,
-                            const unsigned stride_dims, const dim_t *strides,
-                            const unsigned padding_dims, const dim_t *paddings,
-                            const unsigned dilation_dims,
-                            const dim_t *dilations,
-                            af_conv_gradient_type gradType) {
+af_err af_convolve2_gradient_v2(af_array *out, const af_array incoming_gradient,
+                                const af_array original_signal,
+                                const af_array original_filter,
+                                const af_array convolved_output,
+                                const unsigned stride_dims, const dim_t *strides,
+                                const unsigned padding_dims, const dim_t *paddings,
+                                const unsigned dilation_dims,
+                                const dim_t *dilations,
+                                af_conv_gradient_type gradType) {
     CHECK_ARRAYS(incoming_gradient, original_signal, original_filter,
                  convolved_output);
     return CALL(out, incoming_gradient, original_signal, original_filter,

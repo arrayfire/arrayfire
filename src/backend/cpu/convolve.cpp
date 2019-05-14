@@ -12,6 +12,7 @@
 #include <blas.hpp>
 #include <cast.hpp>
 #include <common/defines.hpp>
+#include <common/indexing_helpers.hpp>
 #include <convolve.hpp>
 #include <handle.hpp>
 #include <kernel/convolve.hpp>
@@ -19,13 +20,14 @@
 #include <reorder.hpp>
 #include <transpose.hpp>
 #include <unwrap.hpp>
-#include <wrap.hpp>
 #include <vector>
+#include <wrap.hpp>
 
 #include <af/defines.h>
 #include <af/dim4.hpp>
 
 using af::dim4;
+using common::genFlipIndex;
 using std::vector;
 
 namespace cpu {
@@ -155,12 +157,7 @@ Array<T> convolve2_unwrap(const Array<T> &signal, const Array<accT> &filter,
     unwrapped.modDims(dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
 
     vector<af_seq> flip_index(4);
-    af_seq s      = {(double)(fDims[0] - 1), 0, -1};
-    flip_index[0] = s;
-    s             = {(double)(fDims[1] - 1), 0, -1};
-    flip_index[1] = s;
-    flip_index[2] = af_span;
-    flip_index[3] = af_span;
+    genFlipIndex(flip_index, {1, 1, 0, 0}, fDims); // flip first two dimensions
 
     Array<accT> collapsedFilter = createSubArray(filter, flip_index);
     collapsedFilter.modDims(dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));

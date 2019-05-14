@@ -56,7 +56,7 @@ class unique_handle {
     /// \brief Takes ownership of a previously created handle
     ///
     /// \param[in] handle The handle to manage by this object
-    explicit constexpr unique_handle(T handle) : handle_(handle){};
+    explicit constexpr unique_handle(T handle) noexcept : handle_(handle){};
 
     /// \brief Deletes the handle if created.
     ~unique_handle() noexcept {

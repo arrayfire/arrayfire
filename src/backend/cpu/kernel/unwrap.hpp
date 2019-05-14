@@ -120,9 +120,9 @@ void unwrap_dim_dilated(Param<T> out, CParam<T> in, const dim_t wx,
                              spy >= 0 && spy + (wy * dy) < idims[1]);
 
                 for (dim_t y = 0; y < wy; y++) {
+                    dim_t ypad = spy + y * dy;
                     for (dim_t x = 0; x < wx; x++) {
                         dim_t xpad = spx + x * dx;
-                        dim_t ypad = spy + y * dy;
 
                         dim_t oloc = (y * wx + x);
                         if (d == 0) oloc *= ostrides[1];

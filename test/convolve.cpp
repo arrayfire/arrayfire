@@ -884,8 +884,8 @@ TEST_P(Conv2ConsistencyTest, RandomConvolutions) {
     array filter                = randn(params.filt_sz_);
 
     array out_native = convolve2(signal, filter);
-    array out = convolve2(signal, filter, params.stride_, params.padding_,
-                          params.dilation_);
+    array out = convolve2_v2(signal, filter, params.stride_, params.padding_,
+                             params.dilation_);
 
     ASSERT_ARRAYS_NEAR(out_native, out, 1e-5);
 }
@@ -917,7 +917,7 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
     ASSERT_SUCCESS(
         af_cast(&signal, signal, (af_dtype)dtype_traits<T>::af_type));
 
-    ASSERT_SUCCESS(af_convolve2_strided(
+    ASSERT_SUCCESS(af_convolve2_v2(
         &convolved, signal, filter, stride.ndims(), stride.get(),
         padding.ndims(), padding.get(), dilation.ndims(), dilation.get()));
 
@@ -993,13 +993,13 @@ void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
                                (af_dtype)dtype_traits<T>::af_type));
 
     af_array filter_gradient = 0;
-    ASSERT_SUCCESS(af_convolve2Gradient(
+    ASSERT_SUCCESS(af_convolve2_gradient_v2(
         &filter_gradient, incoming_gradient, signal, filter, convolved,
         stride.ndims(), stride.get(), padding.ndims(), padding.get(),
         dilation.ndims(), dilation.get(), AF_CONV_GRADIENT_FILTER));
 
     af_array data_gradient = 0;
-    ASSERT_SUCCESS(af_convolve2Gradient(
+    ASSERT_SUCCESS(af_convolve2_gradient_v2(
         &data_gradient, incoming_gradient, signal, filter, convolved,
         stride.ndims(), stride.get(), padding.ndims(), padding.get(),
         dilation.ndims(), dilation.get(), AF_CONV_GRADIENT_DATA));
