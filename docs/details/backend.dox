@@ -16,6 +16,60 @@ will return in an exception.
 
 =======================================================================
 
+\defgroup unified_func_addbackendlibrary addBackendLibrary
+
+\brief Register a custom arrayfire library for use
+
+The custom library's path can be anywhere in the local file system, outside
+where the arrayfire libraries are found by default (e.g. `LD_LIBRARY_PATH` in
+Unix and System or User Path in Windows). Use this in tandem with
+\ref setBackendLibrary(). The order of when this was called for a specific
+library determines the index to be used in `setBackendLibrary` in order to
+activate this library. This is useful especially for comparing the results or
+performance between different versions of the arrayfire libraries.
+
+This is a noop when using any one of the standalone CPU, CUDA, or OpenCL backends.
+
+The following is an example of how this can be used:
+\code
+af::addBackendLibrary("/path/to/custom/1/afcpu.so");
+af::addBackendLibrary("/path/to/custom/2/afcpu.so");
+
+af::setBackendLibrary(0); // Activates .../1/afcpu.so
+af::setBackendLibrary(1); // Activates .../2/afcpu.so
+\endcode
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup unified_func_setbackendlibrary setBackendLibrary
+
+\brief Activate a custom arrayfire library for use
+
+Must be used after the custom arrayfire library has been registered through
+\ref addBackendLibrary(). The index to be passed in must be the order of when
+`addBackendLibrary` was called for the target library. This is useful especially
+for comparing the results or performance between different versions of the
+arrayfire libraries.
+
+This is a noop when using any one of the standalone CPU, CUDA, or OpenCL backends.
+
+The following is an example of how this can be used:
+\code
+af::addBackendLibrary("/path/to/custom/1/afcpu.so");
+af::addBackendLibrary("/path/to/custom/2/afcpu.so");
+
+af::setBackendLibrary(0); // Activates .../1/afcpu.so
+af::setBackendLibrary(1); // Activates .../2/afcpu.so
+\endcode
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
 \defgroup unified_func_getbackendcount getBackendCount
 
 \brief Get the number of backends whose libraries were successfully loaded.
