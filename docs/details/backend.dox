@@ -18,13 +18,13 @@ will return in an exception.
 
 \defgroup unified_func_addbackendlibrary addBackendLibrary
 
-\brief Register a custom arrayfire library for use
+\brief Register a custom ArrayFire library for use
 
-The custom library's path can be anywhere in the local file system, outside
-where the arrayfire libraries are found by default (e.g. `LD_LIBRARY_PATH` in
+The custom library's path can be anywhere in the local file system, even outside
+of where the ArrayFire libraries are found by default (e.g. `LD_LIBRARY_PATH` in
 Unix and System or User Path in Windows). Use this in tandem with
 \ref setBackendLibrary(). The order of when this was called for a specific
-library determines the index to be used in `setBackendLibrary` in order to
+library determines the index to be used in \ref setBackendLibrary() in order to
 activate this library. This is useful especially for comparing the results or
 performance between different versions of the arrayfire libraries.
 
@@ -37,6 +37,7 @@ af::addBackendLibrary("/path/to/custom/2/afcpu.so");
 
 af::setBackendLibrary(0); // Activates .../1/afcpu.so
 af::setBackendLibrary(1); // Activates .../2/afcpu.so
+
 \endcode
 
 \ingroup unified_func
