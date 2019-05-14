@@ -172,7 +172,8 @@ spdlog::logger* AFSymbolManager::getLogger() { return logger.get(); }
 AFSymbolManager::AFSymbolManager()
     : activeHandle(nullptr)
     , defaultHandle(nullptr)
-    , numBackendHandles(0)
+    , numBackends(0)
+    , numBackendHandles(NUM_BACKENDS)
     , backendsAvailable(0)
     , logger(loggerFactory("unified")) {
     // In order of priority.
@@ -192,7 +193,7 @@ AFSymbolManager::AFSymbolManager()
         if (bkndHandles[backend]) {
             activeHandle  = bkndHandles[backend];
             activeBackend = (af_backend)order[i];
-            numBackendHandles++;
+            numBackends++;
             backendsAvailable += order[i];
         }
     }
@@ -213,7 +214,7 @@ AFSymbolManager::~AFSymbolManager() {
     }
 }
 
-unsigned AFSymbolManager::getBackendCount() { return numBackendHandles; }
+unsigned AFSymbolManager::getBackendCount() { return numBackends; }
 
 int AFSymbolManager::getAvailableBackends() { return backendsAvailable; }
 

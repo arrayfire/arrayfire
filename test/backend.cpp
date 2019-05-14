@@ -18,19 +18,32 @@
 
 #include <af/device.h>
 
+using af::addBackendLibrary;
 using af::array;
 using af::Backend;
 using af::dtype_traits;
 using af::exception;
-using af::getBackendCount;
 using af::getAvailableBackends;
+using af::getBackendCount;
 using af::randu;
 using af::setBackend;
 using af::setBackendLibrary;
-using af::addBackendLibrary;
 using af::transpose;
 using std::string;
 using std::vector;
+
+#if defined(OS_WIN)
+string library_suffix = ".dll";
+string libraryPrefix = "";
+#elif defined(__APPLE__)
+string library_suffix = ".dylib";
+string libraryPrefix = "lib";
+#elif defined(OS_LNX)
+string library_suffix = ".so";
+string libraryPrefix = "lib";
+#else
+#error "Unsupported platform"
+#endif
 
 const char *getActiveBackendString(af_backend active) {
     switch (active) {
@@ -108,39 +121,18 @@ TEST(BACKEND_TEST, DiffBackends) {
         }, ::testing::ExitedWithCode(0), "Test succeeded");
 }
 
-TEST(BACKEND_TEST, CustomLibPathsDiffBackends) {
+TEST(BACKEND_TEST, SetCustomCpuLibrary) {
     EXPECT_EXIT({
             // START of actual test
 
             int backends = getAvailableBackends();
-
             ASSERT_NE(backends, 0);
 
-            bool cpu    = backends & AF_BACKEND_CPU;
-            bool cuda   = backends & AF_BACKEND_CUDA;
-            bool opencl = backends & AF_BACKEND_OPENCL;
-
-            printf("\nRunning Default Backend...\n");
-            testFunction<float>();
-
-            if (cpu) {
-                printf("\nRunning CPU Backend...\n");
-                addBackendLibrary(BUILD_DIR "/src/backend/cpu/libafcpu.so");
+            if (backends & AF_BACKEND_CPU) {
+                string lib_path =
+                    BUILD_DIR "/src/backend/cpu/libafcpu.3" + library_suffix;
+                addBackendLibrary(lib_path.c_str());
                 setBackendLibrary(0);
-                testFunction<float>();
-            }
-
-            if (cuda) {
-                printf("\nRunning CUDA Backend...\n");
-                addBackendLibrary(BUILD_DIR "/src/backend/cuda/libafcuda.so");
-                setBackendLibrary(1);
-                testFunction<float>();
-            }
-
-            if (opencl) {
-                printf("\nRunning OpenCL Backend...\n");
-                addBackendLibrary(BUILD_DIR "/src/backend/opencl/libafopencl.so");
-                setBackendLibrary(2);
                 testFunction<float>();
             }
 
@@ -155,6 +147,64 @@ TEST(BACKEND_TEST, CustomLibPathsDiffBackends) {
                 exit(0);
             }
         }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, SetCustomCudaLibrary) {
+    EXPECT_EXIT(
+        {
+            // START of actual test
+
+            int backends = getAvailableBackends();
+            ASSERT_NE(backends, 0);
+
+            if (backends & AF_BACKEND_CUDA) {
+                string lib_path =
+                    BUILD_DIR "/src/backend/cuda/libafcuda.3" + library_suffix;
+                addBackendLibrary(lib_path.c_str());
+                setBackendLibrary(0);
+                testFunction<float>();
+            }
+
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            } else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        },
+        ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, SetCustomOpenclLibrary) {
+    EXPECT_EXIT(
+        {
+            // START of actual test
+
+            int backends = getAvailableBackends();
+            ASSERT_NE(backends, 0);
+
+            if (backends & AF_BACKEND_OPENCL) {
+                string lib_path =
+                    BUILD_DIR "/src/backend/opencl/libafopencl.3" + library_suffix;
+                addBackendLibrary(lib_path.c_str());
+                setBackendLibrary(0);
+                testFunction<float>();
+            }
+
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            } else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        },
+        ::testing::ExitedWithCode(0), "Test succeeded");
 }
 
 TEST(BACKEND_TEST, UseArrayAfterSwitchingBackends) {
@@ -218,9 +268,9 @@ TEST(BACKEND_TEST, UseArrayAfterSwitchingLibraries) {
             bool cuda   = backends & AF_BACKEND_CUDA;
             bool opencl = backends & AF_BACKEND_OPENCL;
 
-            string cpu_path    = BUILD_DIR "/src/backend/cpu/libafcpu.so";
-            string cuda_path   = BUILD_DIR "/src/backend/cuda/libafcuda.so";
-            string opencl_path = BUILD_DIR "/src/backend/opencl/libafopencl.so";
+            string cpu_path    = BUILD_DIR "/src/backend/cpu/libafcpu" + library_suffix;
+            string cuda_path   = BUILD_DIR "/src/backend/cuda/libafcuda" + library_suffix;
+            string opencl_path = BUILD_DIR "/src/backend/opencl/libafopencl" + library_suffix;
 
             int num_backends = getBackendCount();
             ASSERT_GT(num_backends, 0);
