@@ -901,13 +901,14 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
 
     readTests<float, float, float>(pTestFile, numDims, in, tests);
 
-    dim4 sDims         = numDims[0];
-    dim4 fDims         = numDims[1];
-    af_array signal    = 0;
-    af_array filter    = 0;
-    af_array convolved = 0;
+    dim4 sDims          = numDims[0];
+    dim4 fDims          = numDims[1];
+    af_array signal_in  = 0;
+    af_array signal     = 0;
+    af_array filter     = 0;
+    af_array convolved  = 0;
 
-    ASSERT_SUCCESS(af_create_array(&signal, &(in[0].front()), sDims.ndims(),
+    ASSERT_SUCCESS(af_create_array(&signal_in, &(in[0].front()), sDims.ndims(),
                                    sDims.get(),
                                    (af_dtype)dtype_traits<float>::af_type));
     ASSERT_SUCCESS(af_create_array(&filter, &(in[1].front()), fDims.ndims(),
@@ -915,7 +916,7 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
                                    (af_dtype)dtype_traits<float>::af_type));
 
     ASSERT_SUCCESS(
-        af_cast(&signal, signal, (af_dtype)dtype_traits<T>::af_type));
+        af_cast(&signal, signal_in, (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_SUCCESS(af_convolve2_v2(
         &convolved, signal, filter, stride.ndims(), stride.get(),
@@ -941,6 +942,7 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
 
     ASSERT_SUCCESS(af_release_array(convolved));
     ASSERT_SUCCESS(af_release_array(signal));
+    ASSERT_SUCCESS(af_release_array(signal_in));
     ASSERT_SUCCESS(af_release_array(filter));
 }
 
