@@ -61,12 +61,12 @@ array convolve2_v2(const array &signal, const array &filter, const dim4 stride,
     return array(out);
 }
 
-array convolve2Gradient(const array &incoming_gradient,
-                        const array &original_signal,
-                        const array &original_filter,
-                        const array &convolved_output, const dim4 stride,
-                        const dim4 padding, const dim4 dilation,
-                        af_conv_gradient_type gradType) {
+array convolve2GradientV2(const array &incoming_gradient,
+                          const array &original_signal,
+                          const array &original_filter,
+                          const array &convolved_output, const dim4 stride,
+                          const dim4 padding, const dim4 dilation,
+                          af_conv_gradient_type gradType) {
     af_array out = 0;
     AF_THROW(af_convolve2_gradient_v2(&out, incoming_gradient.get(),
                                       original_signal.get(), original_filter.get(),
