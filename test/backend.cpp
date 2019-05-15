@@ -34,13 +34,13 @@ using std::vector;
 
 #if defined(OS_WIN)
 string library_suffix = ".dll";
-string libraryPrefix = "";
+string library_prefix = "";
 #elif defined(__APPLE__)
 string library_suffix = ".dylib";
-string libraryPrefix = "lib";
-#elif defined(OS_LNX)
+string library_prefix = "lib";
+#elif defined(__linux__)
 string library_suffix = ".so";
-string libraryPrefix = "lib";
+string library_prefix = "lib";
 #else
 #error "Unsupported platform"
 #endif
@@ -58,8 +58,9 @@ template<typename T>
 void testFunction() {
     af_backend activeBackend = (af_backend)0;
     af_get_active_backend(&activeBackend);
+    af_info();
 
-    printf("Active Backend Enum = %s\n", getActiveBackendString(activeBackend));
+    // printf("Active Backend Enum = %s\n", getActiveBackendString(activeBackend));
 
     af_array outArray = 0;
     dim_t dims[]      = {32, 32};
@@ -130,7 +131,7 @@ TEST(BACKEND_TEST, SetCustomCpuLibrary) {
 
             if (backends & AF_BACKEND_CPU) {
                 string lib_path =
-                    BUILD_DIR "/src/backend/cpu/libafcpu.3" + library_suffix;
+                    BUILD_DIR "/src/backend/cpu/libafcpu" + library_suffix;
                 addBackendLibrary(lib_path.c_str());
                 setBackendLibrary(0);
                 testFunction<float>();
@@ -159,7 +160,7 @@ TEST(BACKEND_TEST, SetCustomCudaLibrary) {
 
             if (backends & AF_BACKEND_CUDA) {
                 string lib_path =
-                    BUILD_DIR "/src/backend/cuda/libafcuda.3" + library_suffix;
+                    BUILD_DIR "/src/backend/cuda/libafcuda" + library_suffix;
                 addBackendLibrary(lib_path.c_str());
                 setBackendLibrary(0);
                 testFunction<float>();
@@ -188,7 +189,7 @@ TEST(BACKEND_TEST, SetCustomOpenclLibrary) {
 
             if (backends & AF_BACKEND_OPENCL) {
                 string lib_path =
-                    BUILD_DIR "/src/backend/opencl/libafopencl.3" + library_suffix;
+                    BUILD_DIR "/src/backend/opencl/libafopencl" + library_suffix;
                 addBackendLibrary(lib_path.c_str());
                 setBackendLibrary(0);
                 testFunction<float>();
