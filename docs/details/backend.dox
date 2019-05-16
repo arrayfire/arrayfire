@@ -18,15 +18,16 @@ will return in an exception.
 
 \defgroup unified_func_addbackendlibrary addBackendLibrary
 
-\brief Register a custom ArrayFire library for use
+\brief Register an ArrayFire library located in an arbitrary path for use
 
 The custom library's path can be anywhere in the local file system, even outside
 of where the ArrayFire libraries are found by default (e.g. `LD_LIBRARY_PATH` in
 Unix and System or User Path in Windows). Use this in tandem with
-\ref setBackendLibrary(). The order of when this was called for a specific
-library determines the index to be used in \ref setBackendLibrary() in order to
-activate this library. This is useful especially for comparing the results or
-performance between different versions of the arrayfire libraries.
+\ref setBackendLibrary(). The order of when this function was called for a
+specific library determines the index to be used in \ref setBackendLibrary() in
+order to activate the desired library. This is useful especially for comparing
+the results or performance between different versions of the ArrayFire
+libraries.
 
 This is a noop when using any one of the standalone CPU, CUDA, or OpenCL backends.
 
@@ -37,7 +38,6 @@ af::addBackendLibrary("/path/to/custom/2/afcpu.so");
 
 af::setBackendLibrary(0); // Activates .../1/afcpu.so
 af::setBackendLibrary(1); // Activates .../2/afcpu.so
-
 \endcode
 
 \ingroup unified_func
@@ -47,11 +47,11 @@ af::setBackendLibrary(1); // Activates .../2/afcpu.so
 
 \defgroup unified_func_setbackendlibrary setBackendLibrary
 
-\brief Activate a custom arrayfire library for use
+\brief Activate an ArrayFire library located in an arbitrary path for use
 
-Must be used after the custom arrayfire library has been registered through
+Must be used after the ArrayFire library has been registered through
 \ref addBackendLibrary(). The index to be passed in must be the order of when
-`addBackendLibrary` was called for the target library. This is useful especially
+\ref addBackendLibrary() was called for the target library. This is useful especially
 for comparing the results or performance between different versions of the
 arrayfire libraries.
 
