@@ -32,6 +32,7 @@ using af::transpose;
 using std::string;
 using std::vector;
 
+// These paths are based on where the CI configuration puts the built libraries
 const string build_dir_str = BUILD_DIR;
 #if defined(_WIN32)
 const string library_suffix = ".dll";
@@ -66,8 +67,6 @@ void testFunction() {
     af_backend activeBackend = (af_backend)0;
     af_get_active_backend(&activeBackend);
     af_info();
-
-    // printf("Active Backend Enum = %s\n", getActiveBackendString(activeBackend));
 
     af_array outArray = 0;
     dim_t dims[]      = {32, 32};

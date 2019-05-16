@@ -20,8 +20,6 @@
 #include <string>
 #include <type_traits>
 
-#include <iostream>
-
 #ifdef OS_WIN
 #include <Windows.h>
 #else
