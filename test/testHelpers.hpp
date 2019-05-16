@@ -955,7 +955,7 @@ template<typename T>
     af_array bb = 0;
     af_retain_array(&bb, b);
     af::array bbb(bb);
-    return assertArrayNear(hA_name, aDimsName, maxAbsDiffName, bName, hA, aDims,
+    return assertArrayNear(hA_name, aDimsName, bName, maxAbsDiffName, hA, aDims,
                            bbb, maxAbsDiff);
 }
 
