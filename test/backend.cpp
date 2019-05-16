@@ -32,15 +32,22 @@ using af::transpose;
 using std::string;
 using std::vector;
 
-#if defined(OS_WIN)
-string library_suffix = ".dll";
-string library_prefix = "";
+const string build_dir_str = BUILD_DIR;
+#if defined(_WIN32)
+const string library_suffix = ".dll";
+const string library_prefix_cpu = "/bin/afcpu";
+const string library_prefix_cuda = "/bin/afcuda";
+const string library_prefix_opencl = "/bin/afopencl";
 #elif defined(__APPLE__)
-string library_suffix = ".dylib";
-string library_prefix = "lib";
+const string library_suffix = ".dylib";
+const string library_prefix_cpu = "/src/backend/cpu/libafcpu";
+const string library_prefix_cuda = "/src/backend/cuda/libafcuda";
+const string library_prefix_opencl = "/src/backend/opencl/libafopencl";
 #elif defined(__linux__)
-string library_suffix = ".so";
-string library_prefix = "lib";
+const string library_suffix = ".so";
+const string library_prefix_cpu = "/src/backend/cpu/libafcpu";
+const string library_prefix_cuda = "/src/backend/cuda/libafcuda";
+const string library_prefix_opencl = "/src/backend/opencl/libafopencl";
 #else
 #error "Unsupported platform"
 #endif
@@ -131,7 +138,7 @@ TEST(BACKEND_TEST, SetCustomCpuLibrary) {
 
             if (backends & AF_BACKEND_CPU) {
                 string lib_path =
-                    BUILD_DIR "/src/backend/cpu/libafcpu" + library_suffix;
+                    build_dir_str + library_prefix_cpu + library_suffix;
                 addBackendLibrary(lib_path.c_str());
                 setBackendLibrary(0);
                 testFunction<float>();
@@ -160,7 +167,7 @@ TEST(BACKEND_TEST, SetCustomCudaLibrary) {
 
             if (backends & AF_BACKEND_CUDA) {
                 string lib_path =
-                    BUILD_DIR "/src/backend/cuda/libafcuda" + library_suffix;
+                    build_dir_str + library_prefix_cuda + library_suffix;
                 addBackendLibrary(lib_path.c_str());
                 setBackendLibrary(0);
                 testFunction<float>();
@@ -189,7 +196,7 @@ TEST(BACKEND_TEST, SetCustomOpenclLibrary) {
 
             if (backends & AF_BACKEND_OPENCL) {
                 string lib_path =
-                    BUILD_DIR "/src/backend/opencl/libafopencl" + library_suffix;
+                    build_dir_str + library_prefix_opencl + library_suffix;
                 addBackendLibrary(lib_path.c_str());
                 setBackendLibrary(0);
                 testFunction<float>();
@@ -269,9 +276,9 @@ TEST(BACKEND_TEST, UseArrayAfterSwitchingLibraries) {
             bool cuda   = backends & AF_BACKEND_CUDA;
             bool opencl = backends & AF_BACKEND_OPENCL;
 
-            string cpu_path    = BUILD_DIR "/src/backend/cpu/libafcpu" + library_suffix;
-            string cuda_path   = BUILD_DIR "/src/backend/cuda/libafcuda" + library_suffix;
-            string opencl_path = BUILD_DIR "/src/backend/opencl/libafopencl" + library_suffix;
+            string cpu_path    = build_dir_str + library_prefix_cpu + library_suffix;
+            string cuda_path   = build_dir_str + library_prefix_cuda + library_suffix;
+            string opencl_path = build_dir_str + library_prefix_opencl + library_suffix;
 
             int num_backends = getBackendCount();
             ASSERT_GT(num_backends, 0);
