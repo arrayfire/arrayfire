@@ -88,7 +88,7 @@ TEST(BACKEND_TEST, DiffBackends) {
 
             int backends = getAvailableBackends();
 
-            ASSERT_NE(backends, 0);
+            EXPECT_NE(backends, 0);
 
             bool cpu    = backends & AF_BACKEND_CPU;
             bool cuda   = backends & AF_BACKEND_CUDA;
@@ -133,7 +133,7 @@ TEST(BACKEND_TEST, SetCustomCpuLibrary) {
             // START of actual test
 
             int backends = getAvailableBackends();
-            ASSERT_NE(backends, 0);
+            EXPECT_NE(backends, 0);
 
             if (backends & AF_BACKEND_CPU) {
                 string lib_path =
@@ -162,7 +162,7 @@ TEST(BACKEND_TEST, SetCustomCudaLibrary) {
             // START of actual test
 
             int backends = getAvailableBackends();
-            ASSERT_NE(backends, 0);
+            EXPECT_NE(backends, 0);
 
             if (backends & AF_BACKEND_CUDA) {
                 string lib_path =
@@ -191,7 +191,7 @@ TEST(BACKEND_TEST, SetCustomOpenclLibrary) {
             // START of actual test
 
             int backends = getAvailableBackends();
-            ASSERT_NE(backends, 0);
+            EXPECT_NE(backends, 0);
 
             if (backends & AF_BACKEND_OPENCL) {
                 string lib_path =
@@ -220,14 +220,14 @@ TEST(BACKEND_TEST, UseArrayAfterSwitchingBackends) {
 
             int backends = getAvailableBackends();
 
-            ASSERT_NE(backends, 0);
+            EXPECT_NE(backends, 0);
 
             bool cpu    = backends & AF_BACKEND_CPU;
             bool cuda   = backends & AF_BACKEND_CUDA;
             bool opencl = backends & AF_BACKEND_OPENCL;
 
             int num_backends = getBackendCount();
-            ASSERT_GT(num_backends, 0);
+            EXPECT_GT(num_backends, 0);
             if (num_backends > 1) {
                 Backend backend0 = cpu ? AF_BACKEND_CPU : AF_BACKEND_OPENCL;
                 Backend backend1 = cuda ? AF_BACKEND_CUDA : AF_BACKEND_OPENCL;
@@ -269,7 +269,7 @@ TEST(BACKEND_TEST, UseArrayAfterSwitchingLibraries) {
 
             int backends = getAvailableBackends();
 
-            ASSERT_NE(backends, 0);
+            EXPECT_NE(backends, 0);
 
             bool cpu    = backends & AF_BACKEND_CPU;
             bool cuda   = backends & AF_BACKEND_CUDA;
@@ -280,7 +280,7 @@ TEST(BACKEND_TEST, UseArrayAfterSwitchingLibraries) {
             string opencl_path = build_dir_str + library_prefix_opencl + library_suffix;
 
             int num_backends = getBackendCount();
-            ASSERT_GT(num_backends, 0);
+            EXPECT_GT(num_backends, 0);
             if (num_backends > 1) {
                 string lib_path0 = cpu ? cpu_path : opencl_path;
                 string lib_path1 = cuda ? cuda_path : opencl_path;
@@ -321,7 +321,7 @@ TEST(BACKEND_TEST, UseArrayAfterSwitchingLibraries) {
 TEST(BACKEND_TEST, InvalidLibPath) {
     EXPECT_EXIT({
             // START of actual test
-            ASSERT_EQ(af_add_backend_library("qwerty.so"), AF_ERR_LOAD_LIB);
+            EXPECT_EQ(AF_ERR_LOAD_LIB, af_add_backend_library("qwerty.so"));
             // END of actual test
 
             if (HasFailure()) {
@@ -338,7 +338,7 @@ TEST(BACKEND_TEST, InvalidLibPath) {
 TEST(BACKEND_TEST, LibIdxPointsToNullHandle) {
     EXPECT_EXIT({
             // START of actual test
-            ASSERT_EQ(af_set_backend_library(0), AF_ERR_LOAD_LIB);
+            EXPECT_EQ(af_set_backend_library(0), AF_ERR_LOAD_LIB);
             // END of actual test
 
             if (HasFailure()) {
@@ -355,7 +355,7 @@ TEST(BACKEND_TEST, LibIdxPointsToNullHandle) {
 TEST(BACKEND_TEST, LibIdxExceedsMaxHandles) {
     EXPECT_EXIT({
             // START of actual test
-            ASSERT_EQ(af_set_backend_library(999), AF_ERR_LOAD_LIB);
+            EXPECT_EQ(AF_ERR_LOAD_LIB, af_set_backend_library(999));
             // END of actual test
 
             if (HasFailure()) {
