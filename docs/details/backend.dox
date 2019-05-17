@@ -16,28 +16,28 @@ will return in an exception.
 
 =======================================================================
 
-\defgroup unified_func_addbackendlibrary addBackendLibrary
+\defgroup unified_func_addbackendlibrary af_add_backend_library
 
 \brief Register an ArrayFire library located in an arbitrary path for use
 
 The custom library's path can be anywhere in the local file system, even outside
-of where the ArrayFire libraries are found by default (e.g. `LD_LIBRARY_PATH` in
-Unix and System or User Path in Windows). Use this in tandem with
-\ref setBackendLibrary(). The order of when this function was called for a
-specific library determines the index to be used in \ref setBackendLibrary() in
-order to activate the desired library. This is useful especially for comparing
-the results or performance between different versions of the ArrayFire
-libraries.
+of where the ArrayFire libraries are found by default (e.g. outside
+`LD_LIBRARY_PATH` in Unix and System or User Path in Windows). Use this in tandem
+with \ref af_set_backend_library(). The order of when this function was called
+for a specific library determines the index to be used in
+\ref af_set_backend_library() in order to activate the desired library. This is
+useful especially for comparing the results or performance between different
+versions of the ArrayFire libraries.
 
 This is a noop when using any one of the standalone CPU, CUDA, or OpenCL backends.
 
 The following is an example of how this can be used:
 \code
-af::addBackendLibrary("/path/to/custom/1/afcpu.so");
-af::addBackendLibrary("/path/to/custom/2/afcpu.so");
+af_add_backend_library("/path/to/custom/1/afcpu.so");
+af_add_backend_library("/path/to/custom/2/afcpu.so");
 
-af::setBackendLibrary(0); // Activates .../1/afcpu.so
-af::setBackendLibrary(1); // Activates .../2/afcpu.so
+af_set_backend_library(0); // Activates .../1/afcpu.so
+af_set_backend_library(1); // Activates .../2/afcpu.so
 \endcode
 
 \ingroup unified_func
@@ -45,13 +45,13 @@ af::setBackendLibrary(1); // Activates .../2/afcpu.so
 
 =======================================================================
 
-\defgroup unified_func_setbackendlibrary setBackendLibrary
+\defgroup unified_func_setbackendlibrary af_set_backend_library
 
 \brief Activate an ArrayFire library located in an arbitrary path for use
 
 Must be used after the ArrayFire library has been registered through
-\ref addBackendLibrary(). The index to be passed in must be the order of when
-\ref addBackendLibrary() was called for the target library. This is useful especially
+\ref af_add_backend_library(). The index to be passed in must be the order of when
+\ref af_add_backend_library() was called for the target library. This is useful especially
 for comparing the results or performance between different versions of the
 arrayfire libraries.
 
@@ -59,11 +59,11 @@ This is a noop when using any one of the standalone CPU, CUDA, or OpenCL backend
 
 The following is an example of how this can be used:
 \code
-af::addBackendLibrary("/path/to/custom/1/afcpu.so");
-af::addBackendLibrary("/path/to/custom/2/afcpu.so");
+af_add_backend_library("/path/to/custom/1/afcpu.so");
+af_add_backend_library("/path/to/custom/2/afcpu.so");
 
-af::setBackendLibrary(0); // Activates .../1/afcpu.so
-af::setBackendLibrary(1); // Activates .../2/afcpu.so
+af_set_backend_library(0); // Activates .../1/afcpu.so
+af_set_backend_library(1); // Activates .../2/afcpu.so
 \endcode
 
 \ingroup unified_func
