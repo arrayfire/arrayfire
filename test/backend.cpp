@@ -82,37 +82,96 @@ void testFunction() {
     if (outArray != 0) { ASSERT_SUCCESS(af_release_array(outArray)); }
 }
 
-TEST(BACKEND_TEST, DiffBackends) {
+TEST(BACKEND_TEST, SetBackendDefault) {
+    EXPECT_EXIT({
+            // START of actual test
+            printf("\nRunning Default Backend...\n");
+            testFunction<float>();
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, SetBackendCpu) {
     EXPECT_EXIT({
             // START of actual test
 
             int backends = getAvailableBackends();
-
             EXPECT_NE(backends, 0);
 
-            bool cpu    = backends & AF_BACKEND_CPU;
-            bool cuda   = backends & AF_BACKEND_CUDA;
-            bool opencl = backends & AF_BACKEND_OPENCL;
-
-            printf("\nRunning Default Backend...\n");
-            testFunction<float>();
-
-            if (cpu) {
+            if (backends & AF_BACKEND_CPU) {
                 printf("\nRunning CPU Backend...\n");
                 setBackend(AF_BACKEND_CPU);
                 testFunction<float>();
             }
+            else {
+                printf("CPU backend not available, skipping test\n");
+            }
 
-            if (cuda) {
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, SetBackendCuda) {
+    EXPECT_EXIT({
+            // START of actual test
+
+            int backends = getAvailableBackends();
+            EXPECT_NE(backends, 0);
+
+            if (backends & AF_BACKEND_CUDA) {
                 printf("\nRunning CUDA Backend...\n");
                 setBackend(AF_BACKEND_CUDA);
                 testFunction<float>();
             }
+            else {
+                printf("CUDA backend not available, skipping test\n");
+            }
 
-            if (opencl) {
+            // END of actual test
+
+            if (HasFailure()) {
+                fprintf(stderr, "Test failed");
+                exit(1);
+            }
+            else {
+                fprintf(stderr, "Test succeeded");
+                exit(0);
+            }
+        }, ::testing::ExitedWithCode(0), "Test succeeded");
+}
+
+TEST(BACKEND_TEST, SetBackendOpencl) {
+    EXPECT_EXIT({
+            // START of actual test
+
+            int backends = getAvailableBackends();
+            EXPECT_NE(backends, 0);
+
+            if (backends & AF_BACKEND_OPENCL) {
                 printf("\nRunning OpenCL Backend...\n");
                 setBackend(AF_BACKEND_OPENCL);
                 testFunction<float>();
+            }
+            else {
+                printf("OpenCL backend not available, skipping test\n");
             }
 
             // END of actual test
@@ -141,6 +200,9 @@ TEST(BACKEND_TEST, SetCustomCpuLibrary) {
                 af_add_backend_library(lib_path.c_str());
                 af_set_backend_library(0);
                 testFunction<float>();
+            }
+            else {
+                printf("CPU backend not available, skipping test\n");
             }
 
             // END of actual test
@@ -171,6 +233,9 @@ TEST(BACKEND_TEST, SetCustomCudaLibrary) {
                 af_set_backend_library(0);
                 testFunction<float>();
             }
+            else {
+                printf("CUDA backend not available, skipping test\n");
+            }
 
             // END of actual test
 
@@ -200,6 +265,9 @@ TEST(BACKEND_TEST, SetCustomOpenclLibrary) {
                 af_add_backend_library(lib_path.c_str());
                 af_set_backend_library(0);
                 testFunction<float>();
+            }
+            else {
+                printf("OpenCL backend not available, skipping test\n");
             }
 
             // END of actual test
