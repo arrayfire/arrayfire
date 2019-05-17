@@ -27,7 +27,8 @@ with \ref af_set_backend_library(). The order of when this function was called
 for a specific library determines the index to be used in
 \ref af_set_backend_library() in order to activate the desired library. This is
 useful especially for comparing the results or performance between different
-versions of the ArrayFire libraries.
+versions of the ArrayFire libraries. Note however that the number of libraries
+that can be registered is limited to 7.
 
 This is a noop when using any one of the standalone CPU, CUDA, or OpenCL backends.
 
