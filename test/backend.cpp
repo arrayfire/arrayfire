@@ -18,7 +18,6 @@
 
 #include <af/device.h>
 
-using af::addBackendLibrary;
 using af::array;
 using af::Backend;
 using af::dtype_traits;
@@ -27,7 +26,6 @@ using af::getAvailableBackends;
 using af::getBackendCount;
 using af::randu;
 using af::setBackend;
-using af::setBackendLibrary;
 using af::transpose;
 using std::string;
 using std::vector;
@@ -138,8 +136,8 @@ TEST(BACKEND_TEST, SetCustomCpuLibrary) {
             if (backends & AF_BACKEND_CPU) {
                 string lib_path =
                     build_dir_str + library_prefix_cpu + library_suffix;
-                addBackendLibrary(lib_path.c_str());
-                setBackendLibrary(0);
+                af_add_backend_library(lib_path.c_str());
+                af_set_backend_library(0);
                 testFunction<float>();
             }
 
@@ -167,8 +165,8 @@ TEST(BACKEND_TEST, SetCustomCudaLibrary) {
             if (backends & AF_BACKEND_CUDA) {
                 string lib_path =
                     build_dir_str + library_prefix_cuda + library_suffix;
-                addBackendLibrary(lib_path.c_str());
-                setBackendLibrary(0);
+                af_add_backend_library(lib_path.c_str());
+                af_set_backend_library(0);
                 testFunction<float>();
             }
 
@@ -196,8 +194,8 @@ TEST(BACKEND_TEST, SetCustomOpenclLibrary) {
             if (backends & AF_BACKEND_OPENCL) {
                 string lib_path =
                     build_dir_str + library_prefix_opencl + library_suffix;
-                addBackendLibrary(lib_path.c_str());
-                setBackendLibrary(0);
+                af_add_backend_library(lib_path.c_str());
+                af_set_backend_library(0);
                 testFunction<float>();
             }
 
@@ -287,17 +285,17 @@ TEST(BACKEND_TEST, UseArrayAfterSwitchingLibraries) {
                 printf("Using %s and %s\n",
                        lib_path0.c_str(), lib_path1.c_str());
 
-                addBackendLibrary(lib_path0.c_str());
-                addBackendLibrary(lib_path1.c_str());
+                af_add_backend_library(lib_path0.c_str());
+                af_add_backend_library(lib_path1.c_str());
 
-                setBackendLibrary(0);
+                af_set_backend_library(0);
                 array a = randu(3, 2);
                 array at = transpose(a);
 
-                setBackendLibrary(1);
+                af_set_backend_library(1);
                 array b = randu(3, 2);
 
-                setBackendLibrary(0);
+                af_set_backend_library(0);
                 array att = transpose(at);
                 ASSERT_ARRAYS_EQ(a, att);
             }
@@ -321,7 +319,7 @@ TEST(BACKEND_TEST, UseArrayAfterSwitchingLibraries) {
 TEST(BACKEND_TEST, InvalidLibPath) {
     EXPECT_EXIT({
             // START of actual test
-            ASSERT_THROW(addBackendLibrary("qwerty.so"), exception);
+            ASSERT_EQ(af_add_backend_library("qwerty.so"), AF_ERR_LOAD_LIB);
             // END of actual test
 
             if (HasFailure()) {
@@ -338,7 +336,7 @@ TEST(BACKEND_TEST, InvalidLibPath) {
 TEST(BACKEND_TEST, LibIdxPointsToNullHandle) {
     EXPECT_EXIT({
             // START of actual test
-            ASSERT_THROW(setBackendLibrary(0), exception);
+            ASSERT_EQ(af_set_backend_library(0), AF_ERR_LOAD_LIB);
             // END of actual test
 
             if (HasFailure()) {
@@ -355,7 +353,7 @@ TEST(BACKEND_TEST, LibIdxPointsToNullHandle) {
 TEST(BACKEND_TEST, LibIdxExceedsMaxHandles) {
     EXPECT_EXIT({
             // START of actual test
-            ASSERT_THROW(setBackendLibrary(999), exception);
+            ASSERT_EQ(af_set_backend_library(999), AF_ERR_LOAD_LIB);
             // END of actual test
 
             if (HasFailure()) {

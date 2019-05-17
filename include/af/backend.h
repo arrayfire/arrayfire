@@ -130,27 +130,6 @@ class array;
 AFAPI void setBackend(const Backend bknd);
 #endif
 
-#if AF_API_VERSION >= 37
-/**
-   \param[in] lib_path is the path of the custom arrayfire library to
-              be registered
-
-   \ingroup unified_func_addbackendlibrary
-*/
-AFAPI void addBackendLibrary(const char *lib_path);
-#endif
-
-#if AF_API_VERSION >= 37
-/**
-   \param[in] lib_idx is the index of a registered custom arrayfire library to
-              be activated for use. Must match the order of when the library
-              was registered
-
-   \ingroup unified_func_setbackendlibrary
-*/
-AFAPI void setBackendLibrary(int lib_idx);
-#endif
-
 #if AF_API_VERSION >= 32
 /**
    \returns Number of available backends
