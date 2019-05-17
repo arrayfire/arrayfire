@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -8,15 +8,17 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <gtest/gtest.h>
-#include <testHelpers.hpp>
+#include <af/backend.h>
 #include <af/data.h>
+#include <af/device.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+
+#include <gtest/gtest.h>
+#include <testHelpers.hpp>
+
 #include <string>
 #include <vector>
-
-#include <af/device.h>
 
 using af::array;
 using af::Backend;
