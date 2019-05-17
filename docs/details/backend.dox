@@ -71,6 +71,18 @@ af_set_backend_library(1); // Activates .../2/afcpu.so
 
 =======================================================================
 
+\defgroup unified_func_checkunifiedbackend af_check_unified_backend
+
+\brief Check if the application uses the unified backend or not
+
+\p result will contain `true` if the unified backend is being used. Otherwise,
+it will contain `false`.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
 \defgroup unified_func_getbackendcount getBackendCount
 
 \brief Get the number of backends whose libraries were successfully loaded.

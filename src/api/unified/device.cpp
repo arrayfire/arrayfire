@@ -24,6 +24,11 @@ af_err af_set_backend_library(int lib_idx) {
     return unified::AFSymbolManager::getInstance().setBackendLibrary(lib_idx);
 }
 
+af_err af_check_unified_backend(bool *result) {
+    *result = true;
+    return AF_SUCCESS;
+}
+
 af_err af_get_backend_count(unsigned *num_backends) {
     *num_backends = unified::AFSymbolManager::getInstance().getBackendCount();
     return AF_SUCCESS;

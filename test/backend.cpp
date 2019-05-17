@@ -177,7 +177,8 @@ TEST(BACKEND_TEST, SetCustomCudaLibrary) {
             if (HasFailure()) {
                 fprintf(stderr, "Test failed");
                 exit(1);
-            } else {
+            }
+            else {
                 fprintf(stderr, "Test succeeded");
                 exit(0);
             }
@@ -206,7 +207,8 @@ TEST(BACKEND_TEST, SetCustomOpenclLibrary) {
             if (HasFailure()) {
                 fprintf(stderr, "Test failed");
                 exit(1);
-            } else {
+            }
+            else {
                 fprintf(stderr, "Test succeeded");
                 exit(0);
             }
@@ -321,7 +323,14 @@ TEST(BACKEND_TEST, UseArrayAfterSwitchingLibraries) {
 TEST(BACKEND_TEST, InvalidLibPath) {
     EXPECT_EXIT({
             // START of actual test
-            EXPECT_EQ(AF_ERR_LOAD_LIB, af_add_backend_library("qwerty.so"));
+            bool is_unified_backend = false;
+            ASSERT_SUCCESS(af_check_unified_backend(&is_unified_backend));
+            if (is_unified_backend) {
+                EXPECT_EQ(AF_ERR_LOAD_LIB, af_add_backend_library("qwerty.so"));
+            }
+            else {
+                ASSERT_SUCCESS(af_add_backend_library("qwerty.so"));
+            }
             // END of actual test
 
             if (HasFailure()) {
@@ -338,14 +347,20 @@ TEST(BACKEND_TEST, InvalidLibPath) {
 TEST(BACKEND_TEST, LibIdxPointsToNullHandle) {
     EXPECT_EXIT({
             // START of actual test
-            EXPECT_EQ(af_set_backend_library(0), AF_ERR_LOAD_LIB);
+            bool is_unified_backend = false;
+            ASSERT_SUCCESS(af_check_unified_backend(&is_unified_backend));
+            if (is_unified_backend) {
+                EXPECT_EQ(AF_ERR_LOAD_LIB, af_set_backend_library(0));
+            }
+            else {
+                ASSERT_SUCCESS(af_set_backend_library(0));
+            }
             // END of actual test
 
             if (HasFailure()) {
                 fprintf(stderr, "Test failed");
                 exit(1);
-            }
-            else {
+            } else {
                 fprintf(stderr, "Test succeeded");
                 exit(0);
             }
@@ -355,7 +370,14 @@ TEST(BACKEND_TEST, LibIdxPointsToNullHandle) {
 TEST(BACKEND_TEST, LibIdxExceedsMaxHandles) {
     EXPECT_EXIT({
             // START of actual test
-            EXPECT_EQ(AF_ERR_LOAD_LIB, af_set_backend_library(999));
+            bool is_unified_backend = false;
+            ASSERT_SUCCESS(af_check_unified_backend(&is_unified_backend));
+            if (is_unified_backend) {
+                EXPECT_EQ(AF_ERR_LOAD_LIB, af_set_backend_library(999));
+            }
+            else {
+                ASSERT_SUCCESS(af_set_backend_library(999));
+            }
             // END of actual test
 
             if (HasFailure()) {
