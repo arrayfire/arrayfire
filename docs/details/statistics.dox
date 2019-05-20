@@ -31,7 +31,7 @@ Find the variance of values in the input
 
 \ingroup basicstats_mat
 
-Find the standar deviation of values in the input
+Find the standard deviation of values in the input
 
 \copydoc batch_detail_stat
 
