@@ -9,7 +9,6 @@
 
 #include <af/array.h>
 #include <af/dim4.hpp>
-#include <af/ml.h>
 #include <af/signal.h>
 #include "symbol_manager.hpp"
 
@@ -179,22 +178,6 @@ af_err af_convolve2_v2(af_array *out, const af_array signal,
     CHECK_ARRAYS(signal, filter);
     return CALL(out, signal, filter, stride_dims, strides, padding_dims,
                 paddings, dilation_dims, dilations);
-}
-
-af_err af_convolve2_gradient_v2(af_array *out, const af_array incoming_gradient,
-                                const af_array original_signal,
-                                const af_array original_filter,
-                                const af_array convolved_output,
-                                const unsigned stride_dims, const dim_t *strides,
-                                const unsigned padding_dims, const dim_t *paddings,
-                                const unsigned dilation_dims,
-                                const dim_t *dilations,
-                                af_conv_gradient_type gradType) {
-    CHECK_ARRAYS(incoming_gradient, original_signal, original_filter,
-                 convolved_output);
-    return CALL(out, incoming_gradient, original_signal, original_filter,
-                convolved_output, stride_dims, strides, padding_dims, paddings,
-                dilation_dims, dilations, gradType);
 }
 
 #define FFT_CONV_HAPI_DEF(af_func)                                   \
