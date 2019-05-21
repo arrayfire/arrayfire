@@ -896,34 +896,29 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
     if (noDoubleTests<T>()) return;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<T> > in;
+    vector<vector<T> > tests;
 
-    readTests<float, float, float>(pTestFile, numDims, in, tests);
+    readTests<T, T, float>(pTestFile, numDims, in, tests);
 
     dim4 sDims          = numDims[0];
     dim4 fDims          = numDims[1];
-    af_array signal_in  = 0;
     af_array signal     = 0;
     af_array filter     = 0;
     af_array convolved  = 0;
 
-    ASSERT_SUCCESS(af_create_array(&signal_in, &(in[0].front()), sDims.ndims(),
+    ASSERT_SUCCESS(af_create_array(&signal, &(in[0].front()), sDims.ndims(),
                                    sDims.get(),
-                                   (af_dtype)dtype_traits<float>::af_type));
+                                   (af_dtype)dtype_traits<T>::af_type));
     ASSERT_SUCCESS(af_create_array(&filter, &(in[1].front()), fDims.ndims(),
                                    fDims.get(),
-                                   (af_dtype)dtype_traits<float>::af_type));
-
-    ASSERT_SUCCESS(
-        af_cast(&signal, signal_in, (af_dtype)dtype_traits<T>::af_type));
+                                   (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_SUCCESS(af_convolve2_v2(
         &convolved, signal, filter, stride.ndims(), stride.get(),
         padding.ndims(), padding.get(), dilation.ndims(), dilation.get()));
 
-    vector<T> currGoldBar;
-    for (auto t : tests[0]) { currGoldBar.push_back((T)t); }
+    vector<T> &currGoldBar = tests[0];
 
     size_t nElems = currGoldBar.size();
 
@@ -936,13 +931,13 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
         (sDims[1] + 2 * padding[1] - (((fDims[1] - 1) * dilation[1]) + 1)) /
             stride[1];
 
+    auto gdim = dim4(expectedDim0, expectedDim1, fDims[3], sDims[3]);
     ASSERT_VEC_ARRAY_NEAR(currGoldBar,
-                          dim4(expectedDim0, expectedDim1, fDims[3], sDims[3]),
+                          gdim,
                           convolved, 1e-4);
 
     ASSERT_SUCCESS(af_release_array(convolved));
     ASSERT_SUCCESS(af_release_array(signal));
-    ASSERT_SUCCESS(af_release_array(signal_in));
     ASSERT_SUCCESS(af_release_array(filter));
 }
 
@@ -953,9 +948,9 @@ void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
 
     vector<dim4> numDims;
     vector<vector<T> > in;
-    vector<vector<float> > tests;
+    vector<vector<T> > tests;
 
-    readTests<T, float, float>(pTestFile, numDims, in, tests);
+    readTests<T, T, float>(pTestFile, numDims, in, tests);
 
     dim4 sDims         = numDims[0];
     dim4 fDims         = numDims[1];
@@ -970,8 +965,7 @@ void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
                                    fDims.get(),
                                    (af_dtype)dtype_traits<T>::af_type));
 
-    vector<T> currGoldBar;
-    for (auto t : tests[0]) currGoldBar.push_back((T)t);
+    vector<T> &currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
 
     dim_t expectedDim0 =
@@ -1006,12 +1000,10 @@ void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
         stride.ndims(), stride.get(), padding.ndims(), padding.get(),
         dilation.ndims(), dilation.get(), AF_CONV_GRADIENT_DATA));
 
-    vector<T> dataGradientGold;
-    for (auto t : tests[1]) dataGradientGold.push_back((T)t);
+    vector<T> &dataGradientGold = tests[1];
     ASSERT_VEC_ARRAY_NEAR(dataGradientGold, sDims, data_gradient, 1e-4);
 
-    vector<T> filterGradientGold;
-    for (auto t : tests[2]) filterGradientGold.push_back((T)t);
+    vector<T> &filterGradientGold = tests[2];
     ASSERT_VEC_ARRAY_NEAR(filterGradientGold, fDims, filter_gradient, 1e-4);
 
     ASSERT_SUCCESS(af_release_array(incoming_gradient));

@@ -304,12 +304,11 @@ af_err af_convolve2(af_array *out, const af_array signal, const af_array filter,
     CATCHALL;
 }
 
-template <typename T, typename accT>
+template <typename T>
 inline static af_array convolve2Strided(const af_array &s, const af_array &f,
                                         const dim4 stride, const dim4 padding,
                                         const dim4 dilation) {
-    return getHandle(convolve2<T, accT>(getArray<T>(s), castArray<accT>(f),
-                                        stride, padding, dilation));
+    return getHandle(convolve2<T>(getArray<T>(s), getArray<T>(f), stride, padding, dilation));
 }
 
 af_err af_convolve2_v2(af_array *out, const af_array signal,
@@ -340,32 +339,12 @@ af_err af_convolve2_v2(af_array *out, const af_array signal,
         af_array output;
         switch (signalType) {
             case f32:
-                output = convolve2Strided<float, float>(signal, filter, stride,
+                output = convolve2Strided<float>(signal, filter, stride,
                                                         padding, dilation);
                 break;
             case f64:
-                output = convolve2Strided<double, double>(
+                output = convolve2Strided<double>(
                     signal, filter, stride, padding, dilation);
-                break;
-            case u32:
-                output = convolve2Strided<uint, float>(signal, filter, stride,
-                                                       padding, dilation);
-                break;
-            case s32:
-                output = convolve2Strided<int, float>(signal, filter, stride,
-                                                      padding, dilation);
-                break;
-            case u16:
-                output = convolve2Strided<ushort, float>(signal, filter, stride,
-                                                         padding, dilation);
-                break;
-            case s16:
-                output = convolve2Strided<short, float>(signal, filter, stride,
-                                                        padding, dilation);
-                break;
-            case u8:
-                output = convolve2Strided<uchar, float>(signal, filter, stride,
-                                                        padding, dilation);
                 break;
             default: TYPE_ERROR(1, signalType);
         }
@@ -413,18 +392,15 @@ af_array conv2GradCall(const af_array incoming_gradient,
                        const af_array convolved_output, af::dim4 stride,
                        af::dim4 padding, af::dim4 dilation,
                        af_conv_gradient_type grad_type) {
-    using accT = typename std::conditional<std::is_same<T, double>::value,
-                                           double, float>::type;
-
     if (grad_type == AF_CONV_GRADIENT_FILTER) {
-        return getHandle(detail::conv2FilterGradient<T, accT>(
+        return getHandle(detail::conv2FilterGradient<T>(
             getArray<T>(incoming_gradient), getArray<T>(original_signal),
-            castArray<accT>(original_filter), getArray<T>(convolved_output),
+            getArray<T>(original_filter), getArray<T>(convolved_output),
             stride, padding, dilation));
     } else {
-        return getHandle(detail::conv2DataGradient<T, accT>(
+        return getHandle(detail::conv2DataGradient<T>(
             getArray<T>(incoming_gradient), getArray<T>(original_signal),
-            castArray<accT>(original_filter), getArray<T>(convolved_output),
+            getArray<T>(original_filter), getArray<T>(convolved_output),
             stride, padding, dilation));
     }
 }
@@ -475,31 +451,6 @@ af_err af_convolve2_gradient_v2(af_array *out, const af_array incoming_gradient,
                 break;
             case f64:
                 output = conv2GradCall<double>(
-                    incoming_gradient, original_signal, original_filter,
-                    convolved_output, stride, padding, dilation, grad_type);
-                break;
-            case s32:
-                output = conv2GradCall<int>(
-                    incoming_gradient, original_signal, original_filter,
-                    convolved_output, stride, padding, dilation, grad_type);
-                break;
-            case u32:
-                output = conv2GradCall<uint>(
-                    incoming_gradient, original_signal, original_filter,
-                    convolved_output, stride, padding, dilation, grad_type);
-                break;
-            case s16:
-                output = conv2GradCall<short>(
-                    incoming_gradient, original_signal, original_filter,
-                    convolved_output, stride, padding, dilation, grad_type);
-                break;
-            case u16:
-                output = conv2GradCall<ushort>(
-                    incoming_gradient, original_signal, original_filter,
-                    convolved_output, stride, padding, dilation, grad_type);
-                break;
-            case u8:
-                output = conv2GradCall<uchar>(
                     incoming_gradient, original_signal, original_filter,
                     convolved_output, stride, padding, dilation, grad_type);
                 break;
