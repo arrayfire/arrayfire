@@ -141,6 +141,7 @@ function(cuda_add_library cuda_target)
 endfunction()
 
 arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
+arrayfire_get_platform_definitions(platform_flags)
 
 if(AF_WITH_NONFREE AND CMAKE_VERSION VERSION_LESS "3.7")
   # This definition is required in addition to the definition below because in
@@ -441,7 +442,7 @@ cuda_add_library(afcuda
 
     nvrtc/cache.cpp
 
-    OPTIONS "${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\""
+    OPTIONS "${platform_flags} ${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\""
   )
 
 arrayfire_set_default_cxx_flags(afcuda)
