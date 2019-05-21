@@ -35,6 +35,8 @@ mark_as_advanced(
     CUDA_LIBRARIES_PATH
     CUDA_architecture_build_targets)
 
+get_target_property(COMMON_INTERFACE_DIRS afcommon_interface INTERFACE_INCLUDE_DIRECTORIES)
+
 cuda_include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -46,8 +48,7 @@ cuda_include_directories(
   ${ArrayFire_SOURCE_DIR}/src/api/c
   ${ArrayFire_SOURCE_DIR}/src/backend
 
-  # NOTE: Space after comma is necessary
-  $<JOIN:$<TARGET_PROPERTY:afcommon_interface,INTERFACE_INCLUDE_DIRECTORIES>, >
+  ${COMMON_INTERFACE_DIRS}
   )
 
 set(jit_kernel_headers
