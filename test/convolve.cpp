@@ -804,3 +804,23 @@ TEST(DISABLED_ConvolveLargeDim3D, CPP) {
     // TODO: fix product by indexing
     // ASSERT_EQ(1.f, product<float>(output));
 }
+
+TEST(Convolve, CuboidBatchLaunchBugFix) {
+    std::string testFile(TEST_DIR "/convolve/conv3d_launch_bug.test");
+
+    vector<dim4> numDims;
+    vector< vector<float> > in;
+    vector< vector<float> > tests;
+
+    readTests<float, float, float>(testFile, numDims, in, tests);
+
+    dim4 sDims        = numDims[0];
+    dim4 fDims        = numDims[1];
+
+    af::array signal(sDims, in[0].data());
+    af::array filter(fDims, in[1].data());
+
+    af::array output = convolve3(signal, filter);
+
+    ASSERT_VEC_ARRAY_NEAR(tests[0], sDims, output, 1.0e-3);
+}
