@@ -121,7 +121,7 @@ void fft_r2c(Param<Tc> out, const af::dim4 oDataDims, CParam<Tr> in,
     plan = transform.create(rank, t_dims, (int)batch, (Tr *)in.get(), in_embed,
                             (int)istrides[0], (int)istrides[rank],
                             (ctype_t *)out.get(), out_embed, (int)ostrides[0],
-                            (int)ostrides[rank], FFTW_ESTIMATE);
+                            (int)ostrides[rank], FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
 
     transform.execute(plan);
     transform.destroy(plan);

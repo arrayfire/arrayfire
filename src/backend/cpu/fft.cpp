@@ -7,10 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <Array.hpp>
+#include <copy.hpp>
 #include <fft.hpp>
 #include <kernel/fft.hpp>
-
-#include <Array.hpp>
 #include <platform.hpp>
 
 #include <af/dim4.hpp>
@@ -44,11 +44,23 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
 
 template<typename Tr, typename Tc, int rank>
 Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
-    in.eval();
-
     Array<Tr> out = createEmptyArray<Tr>(odims);
+
+#ifdef USE_MKL
     getQueue().enqueue(kernel::fft_c2r<Tr, Tc, rank>, out, out.getDataDims(),
                        in, in.getDataDims(), odims);
+#else
+    if (rank > 1 || odims.ndims() > 1) {
+        // FFTW does not have a input preserving algorithm for multidimensional
+        // c2r FFTs
+        Array<Tc> in_ = copyArray<Tc>(in);
+        getQueue().enqueue(kernel::fft_c2r<Tr, Tc, rank>, out, out.getDataDims(),
+                          in_, in.getDataDims(), odims);
+    } else {
+        getQueue().enqueue(kernel::fft_c2r<Tr, Tc, rank>, out, out.getDataDims(),
+                          in, in.getDataDims(), odims);
+    }
+#endif
 
     return out;
 }

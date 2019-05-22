@@ -6,12 +6,15 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -41,6 +44,7 @@ using af::span;
 using std::abs;
 using std::endl;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 TEST(fft, Invalid_Type) {
@@ -682,57 +686,6 @@ TEST(fft3, GFOR) {
     freeHost(h_c);
 }
 
-TEST(fft, InPlace) {
-    array a = randu(1024, 1024, c32);
-    array b = fft(a);
-    fftInPlace(a);
-
-    ASSERT_ARRAYS_EQ(a, b);
-}
-
-TEST(ifft, InPlace) {
-    array a = randu(1024, 1024, c32);
-    array b = ifft(a);
-    ifftInPlace(a);
-
-    vector<cfloat> ha(a.elements());
-    vector<cfloat> hb(b.elements());
-
-    ASSERT_ARRAYS_EQ(a, b);
-}
-
-TEST(fft2, InPlace) {
-    array a = randu(1024, 1024, c32);
-    array b = fft2(a);
-    fft2InPlace(a);
-
-    ASSERT_ARRAYS_EQ(a, b);
-}
-
-TEST(ifft2, InPlace) {
-    array a = randu(1024, 1024, c32);
-    array b = ifft2(a);
-    ifft2InPlace(a);
-
-    ASSERT_ARRAYS_EQ(a, b);
-}
-
-TEST(fft3, InPlace) {
-    array a = randu(32, 32, 32, c32);
-    array b = fft3(a);
-    fft3InPlace(a);
-
-    ASSERT_ARRAYS_EQ(a, b);
-}
-
-TEST(ifft3, InPlace) {
-    array a = randu(32, 32, 32, c32);
-    array b = ifft3(a);
-    ifft3InPlace(a);
-
-    ASSERT_ARRAYS_EQ(a, b);
-}
-
 void fft2InPlaceFunc() {
     array a = randu(1024, 1024, c32);
     array b = fft2(a);
@@ -761,3 +714,204 @@ using af::setDevice;
     } while (0);
 
 TEST(FFT2, MultiGPUInPlaceSquare_CPP) { DEVICE_ITERATE((fft2InPlaceFunc())); }
+
+struct fft_params {
+    dim4 input_dims_;
+    bool is_odd_;
+    double norm_factor_;
+    fft_params(dim4 dim, bool is_odd, double norm_factor)
+        : input_dims_(dim), is_odd_(is_odd), norm_factor_(norm_factor) {}
+};
+
+class FFTBase : public ::testing::TestWithParam<fft_params> {};
+
+class FFTC2R2D : public FFTBase {};
+class FFT2D : public FFTBase {};
+class FFTC2R3D : public FFTBase {};
+class FFT3D : public FFTBase {};
+class FFTC2R : public FFTBase {};
+class FFTND : public FFTBase {};
+
+string to_test_params(const ::testing::TestParamInfo<FFTBase::ParamType> info) {
+    stringstream ss;
+    ss << "d0_" << info.param.input_dims_[0] << "_d1_"
+       << info.param.input_dims_[1] << "_d2_" << info.param.input_dims_[2]
+       << "_d3_" << info.param.input_dims_[3] << "_"
+       << ((info.param.is_odd_) ? string("odd") : string("even")) << "_norm_"
+       << info.param.norm_factor_;
+    string out = ss.str();
+    return out.replace(out.find("."), 1, "_");
+}
+
+INSTANTIATE_TEST_CASE_P(Inputs2D, FFTC2R2D,
+                        ::testing::Values(
+                            fft_params(dim4(513, 512), false, 0.5),
+                            fft_params(dim4(1025, 1024), false, 0.5),
+                            fft_params(dim4(2049, 2048), false, 0.5)
+                            ),
+                        to_test_params);
+
+INSTANTIATE_TEST_CASE_P(
+    Inputs2D, FFT2D,
+    ::testing::Values(fft_params(dim4(512, 512), false, 0.5),
+                      fft_params(dim4(1024, 1024), false, 0.5),
+                      fft_params(dim4(2048, 2048), false, 0.5)),
+    to_test_params);
+
+INSTANTIATE_TEST_CASE_P(
+    Inputs3D, FFTC2R3D,
+    ::testing::Values(fft_params(dim4(512, 512, 3), false, 0.5),
+                      fft_params(dim4(1024, 1024, 3), false, 0.5),
+                      fft_params(dim4(2048, 2048, 3), false, 0.5)),
+    to_test_params);
+
+INSTANTIATE_TEST_CASE_P(Inputs3D, FFT3D,
+                        ::testing::Values(
+                            fft_params(dim4(1024, 1024, 3), true, 0.5),
+                            fft_params(dim4(1024, 1024, 3), false, 0.5)),
+                        to_test_params);
+
+
+INSTANTIATE_TEST_CASE_P(InputsND, FFTND,
+                        ::testing::Values(
+                            fft_params(dim4(512), false, 0.5),
+                            fft_params(dim4(1024), false, 0.5),
+                            fft_params(dim4(1024, 1024), false, 0.5),
+                            fft_params(dim4(1024, 1024, 3), false, 0.5)),
+                        to_test_params);
+
+
+INSTANTIATE_TEST_CASE_P(InputsND, FFTC2R,
+                        ::testing::Values(
+                            fft_params(dim4(513), false, 0.5),
+                            fft_params(dim4(1025), false, 0.5),
+                            fft_params(dim4(1025, 1024), false, 0.5),
+                            fft_params(dim4(1025, 1024, 3), false, 0.5)),
+                        to_test_params);
+
+// Does not work well with CUDA 10.1
+// TEST_P(FFTC2R2D, Complex32ToRealInputsPreserved) {
+//     fft_params params = GetParam();
+//     af::array a       = af::randu(params.input_dims_, c32);
+//     af::array a_copy  = a.copy();
+//     af::array out     = af::fftC2R<2>(a, params.is_odd_, params.norm_factor_);
+//
+//     ASSERT_ARRAYS_EQ(a_copy, a);
+// }
+//
+// TEST_P(FFTC2R2D, Complex64ToRealInputsPreserved) {
+//     fft_params params = GetParam();
+//     af::array a       = af::randu(params.input_dims_, c64);
+//     af::array a_copy  = a.copy();
+//     af::array out     = af::fftC2R<2>(a, params.is_odd_, params.norm_factor_);
+//
+//     ASSERT_ARRAYS_EQ(a_copy, a);
+// }
+
+TEST_P(FFT2D, Real32ToComplexInputsPreserved) {
+    fft_params params = GetParam();
+    af::array a       = af::randu(params.input_dims_, f32);
+    af::array a_copy  = a.copy();
+    af::array out     = af::fftR2C<2>(a, a.dims(), params.norm_factor_);
+
+    ASSERT_ARRAYS_EQ(a_copy, a);
+}
+
+TEST_P(FFT2D, Real64ToComplexInputsPreserved) {
+    fft_params params = GetParam();
+    af::array a       = af::randu(params.input_dims_, f64);
+    af::array a_copy  = a.copy();
+    af::array out     = af::fftR2C<2>(a, a.dims(), params.norm_factor_);
+
+    ASSERT_ARRAYS_EQ(a_copy, a);
+}
+
+TEST_P(FFTC2R, Complex32ToRInputsPreserved) {
+    fft_params params = GetParam();
+    af::array a       = af::randu(params.input_dims_, c32);
+    af::array a_copy  = a.copy();
+    af::array out     = af::fftC2R<1>(a, params.is_odd_, params.norm_factor_);
+
+    ASSERT_ARRAYS_EQ(a_copy, a);
+}
+
+TEST_P(FFTC2R, Complex64ToRInputsPreserved) {
+    fft_params params = GetParam();
+    af::array a       = af::randu(params.input_dims_, c64);
+    af::array a_copy  = a.copy();
+    af::array out     = af::fftC2R<1>(a, params.is_odd_, params.norm_factor_);
+
+    ASSERT_ARRAYS_EQ(a_copy, a);
+}
+
+TEST_P(FFTND, Real32ToComplexInputsPreserved) {
+    fft_params params = GetParam();
+    af::array a       = af::randu(params.input_dims_, f32);
+    af::array a_copy  = a.copy();
+    af::array out     = af::fftR2C<1>(a, a.dims(), params.norm_factor_);
+
+    ASSERT_ARRAYS_EQ(a_copy, a);
+}
+
+TEST_P(FFTND, Real64ToComplexInputsPreserved) {
+    fft_params params = GetParam();
+    af::array a       = af::randu(params.input_dims_, f64);
+    af::array a_copy  = a.copy();
+    af::array out     = af::fftR2C<1>(a, a.dims(), params.norm_factor_);
+
+    ASSERT_ARRAYS_EQ(a_copy, a);
+}
+
+TEST_P(FFTND, InPlaceFFTMatchesOutOfPlace) {
+    fft_params params = GetParam();
+    array a           = randu(params.input_dims_, c32);
+    array b           = fft(a);
+    fftInPlace(a);
+
+    ASSERT_ARRAYS_EQ(a, b);
+}
+
+TEST_P(FFTND, InPlaceIFFTMatchesOutOfPlace) {
+    fft_params params = GetParam();
+    array a           = randu(params.input_dims_, c32);
+    array b           = ifft(a);
+    ifftInPlace(a);
+
+    ASSERT_ARRAYS_EQ(a, b);
+}
+
+TEST_P(FFT2D, InPlaceFFT2MatchesOutOfPlace) {
+    fft_params params = GetParam();
+    array a           = randu(params.input_dims_, c32);
+    array b           = fft2(a);
+    fft2InPlace(a);
+
+    ASSERT_ARRAYS_EQ(a, b);
+}
+
+TEST_P(FFT2D, InPlaceIFFT2MatchesOutOfPlace) {
+    fft_params params = GetParam();
+    array a           = randu(params.input_dims_, c32);
+    array b           = ifft2(a);
+    ifft2InPlace(a);
+
+    ASSERT_ARRAYS_EQ(a, b);
+}
+
+TEST_P(FFT3D, InPlaceFFT3MatchesOutOfPlace) {
+    fft_params params = GetParam();
+    array a           = randu(params.input_dims_, c32);
+    array b           = fft3(a);
+    fft3InPlace(a);
+
+    ASSERT_ARRAYS_EQ(a, b);
+}
+
+TEST_P(FFTC2R3D, InPlaceIFFT3MatchesOutOfPlace) {
+    fft_params params = GetParam();
+    array a           = randu(params.input_dims_, c32);
+    array b           = ifft3(a);
+    ifft3InPlace(a);
+
+    ASSERT_ARRAYS_EQ(a, b);
+}
