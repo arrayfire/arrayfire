@@ -98,9 +98,6 @@ void prepareKernelArgs(conv_kparam_t& params, dim_t oDims[], dim_t fDims[],
                              (params.mThreads.y + 2 * (fDims[1] - 1)) *
                              (params.mThreads.z + 2 * (fDims[2] - 1)) *
                              sizeof(T);
-        // todo: fold into x dimension according to old style
-        params.mBlocks.z = divup(params.mBlocks.y, maxBlocksY);
-        params.mBlocks.y = divup(params.mBlocks.y, params.mBlocks.z);
     }
 }
 
