@@ -128,7 +128,6 @@ int kmeans_demo(int k, bool console) {
     kmeans(means_dbl, clusters_dbl, vec, k * 2);
 
     if (!console) {
-#if 0
         array out_full = moddims(means_full(span, clusters_full, span), img.dims());
         array out_half = moddims(means_half(span, clusters_half, span), img.dims());
         array out_dbl  = moddims(means_dbl (span, clusters_dbl , span), img.dims());
@@ -138,16 +137,16 @@ int kmeans_demo(int k, bool console) {
         sprintf(str_half, "%2d clusters", k/2);
         sprintf(str_dbl , "%2d clusters", k*2);
 
-        fig("color","default");
-        fig("sub",2,2,1); image(img); fig("title","input");
-        fig("sub",2,2,2); image(out_full); fig("title", str_full);
-        fig("sub",2,2,3); image(out_half); fig("title", str_half);
-        fig("sub",2,2,4); image(out_dbl ); fig("title", str_dbl );
-        printf("Hit enter to finish\n");
-        getchar();
-#else
-        printf("Graphics not implemented yet\n");
-#endif
+        af::Window wnd("ArrayFire K-Means Demo");
+        while (!wnd.close()) {
+            wnd.grid(1, 4);
+            wnd(0, 0).image(img, "Input Image");
+            wnd(0, 1).image(out_full, "k");
+            wnd(0, 2).image(out_half, "k / 2");
+            wnd(0, 3).image(out_dbl, "k * 2");
+            wnd.show();
+        }
+
     } else {
         means_full =
             moddims(means_full, means_full.dims(1), means_full.dims(2));
