@@ -12,6 +12,7 @@
 #include <af/util.h>
 #include <cstdlib>
 #include <iostream>
+#include <string>
 
 using namespace af;
 
@@ -132,18 +133,16 @@ int kmeans_demo(int k, bool console) {
         array out_half = moddims(means_half(span, clusters_half, span), img.dims());
         array out_dbl  = moddims(means_dbl (span, clusters_dbl , span), img.dims());
 
-        char str_full[32], str_half[32], str_dbl[32];
-        sprintf(str_full, "%2d clusters", k);
-        sprintf(str_half, "%2d clusters", k/2);
-        sprintf(str_dbl , "%2d clusters", k*2);
-
         af::Window wnd("ArrayFire K-Means Demo");
+        wnd.grid(1, 4);
+        std::string out_full_caption = "k = " + std::to_string(k);
+        std::string out_half_caption = "k = " + std::to_string(k / 2);
+        std::string out_dbl_caption = "k = " + std::to_string(k * 2);
         while (!wnd.close()) {
-            wnd.grid(1, 4);
             wnd(0, 0).image(img, "Input Image");
-            wnd(0, 1).image(out_full, "k");
-            wnd(0, 2).image(out_half, "k / 2");
-            wnd(0, 3).image(out_dbl, "k * 2");
+            wnd(0, 1).image(out_full, out_full_caption.c_str());
+            wnd(0, 2).image(out_half, out_half_caption.c_str());
+            wnd(0, 3).image(out_dbl, out_dbl_caption.c_str());
             wnd.show();
         }
 
