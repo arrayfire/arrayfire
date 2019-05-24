@@ -113,7 +113,7 @@ int kmeans_demo(int k, bool console) {
     printf("** ArrayFire K-Means Demo (k = %d) **\n\n", k);
 
     array img =
-        loadImage(ASSETS_DIR "/examples/images/vegetable-woman.jpg", true) /
+        loadImage(ASSETS_DIR "/examples/images/spider.jpg", true) /
         255;  // [0-255]
 
     int w = img.dims(0), h = img.dims(1), c = img.dims(2);
@@ -133,16 +133,16 @@ int kmeans_demo(int k, bool console) {
         array out_half = moddims(means_half(span, clusters_half, span), img.dims());
         array out_dbl  = moddims(means_dbl (span, clusters_dbl , span), img.dims());
 
-        af::Window wnd("ArrayFire K-Means Demo");
-        wnd.grid(1, 4);
+        af::Window wnd(800, 800, "ArrayFire K-Means Demo");
+        wnd.grid(2, 2);
         std::string out_full_caption = "k = " + std::to_string(k);
         std::string out_half_caption = "k = " + std::to_string(k / 2);
         std::string out_dbl_caption = "k = " + std::to_string(k * 2);
         while (!wnd.close()) {
             wnd(0, 0).image(img, "Input Image");
             wnd(0, 1).image(out_full, out_full_caption.c_str());
-            wnd(0, 2).image(out_half, out_half_caption.c_str());
-            wnd(0, 3).image(out_dbl, out_dbl_caption.c_str());
+            wnd(1, 0).image(out_half, out_half_caption.c_str());
+            wnd(1, 1).image(out_dbl, out_dbl_caption.c_str());
             wnd.show();
         }
 
@@ -164,7 +164,7 @@ int kmeans_demo(int k, bool console) {
 int main(int argc, char **argv) {
     int device   = argc > 1 ? atoi(argv[1]) : 0;
     bool console = argc > 2 ? argv[2][0] == '-' : false;
-    int k        = argc > 3 ? atoi(argv[3]) : 16;
+    int k        = argc > 3 ? atoi(argv[3]) : 8;
 
     try {
         af::setDevice(device);
