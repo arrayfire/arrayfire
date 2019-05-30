@@ -113,7 +113,7 @@ int kmeans_demo(int k, bool console) {
     printf("** ArrayFire K-Means Demo (k = %d) **\n\n", k);
 
     array img =
-        loadImage(ASSETS_DIR "/examples/images/spider.jpg", true) /
+        loadImage(ASSETS_DIR "/examples/images/spider.jpg") /
         255;  // [0-255]
 
     int w = img.dims(0), h = img.dims(1), c = img.dims(2);
