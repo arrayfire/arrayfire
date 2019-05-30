@@ -19,21 +19,8 @@ batch mode convolutions take place.
 - **Identical Batches** - A set of filters applied onto to a set of inputs in one-to-one correspondence.
 - **Non overlapping Batches** - All batched filters are applied to all batched signals. The batch dimension of Signal and Filter **should not** be the same.
 
-
-
-\page signal_func_conv2_batch_desc convolve2
-
-For example, if the signal is two dimensional with m & n as sizes along the 0th & 1st dimensions
-respectively, then the possible batch operations are as follows.
-
-| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode | Explanation |
-|:-----------------------:|:-----------------:|:-----------------:|:----------:|:------------|
-| [m n 1 1] | [m n 1 1] | [m n 1 1] | No Batch  | Output will be a single convolve array |
-| [m n 1 1] | [m n p 1] | [m n p 1] | Filter is Batched | p filters applied to same input |
-| [m n p 1] | [m n 1 1] | [m n p 1] | Signal is Batched | 1 filter applied to p inputs |
-| [m n p 1] | [m n p 1] | [m n p 1] | Identical Batches | p filters applied to p inputs in one-to-one correspondence |
-| [m n p 1] | [m n 1 q] | [m n p q] | Non-overlapping batches | q filters applied to p inputs in to produce p x q results |
-| [m n 1 p] | [m n q 1] | [m n q p] | Non-overlapping batches | q filters applied to p inputs in to produce q x p results |
+Non overlapping batch mode is not supported in spatial mode i.e. if the user passes \ref
+AF_CONV_SPATIAL explicitly to the functions.
 
 
 \page signal_func_fft_desc fft
@@ -58,95 +45,132 @@ factor is calculated internally based on the input data provided.
 \addtogroup arrayfire_func
 @{
 
-\defgroup signal_func_convolve convolve
+\defgroup signal_func_convolve N-Dimensional Convolutions
 \ingroup convolve_mat
 
-\brief Convolution Integral for any dimensional data
+\brief Convolution Integral for any(one through three) dimensional data
 
 \copydoc signal_func_conv_desc
 
-\copydoc signal_func_conv2_batch_desc
+This version of convolution function delegates the call to respective
+1D, 2D or 3D convolution functions internally.
+
+Convolution dimensionality is \f$ \min (sd, fd) \f$ where sd & fd are dimensionality of
+signal and filter respectively. This formulation only decides the dimensionality
+of convolution. Please check the respective convolve (hyperlinked below) function
+documentation to find out the kind of batch operations possible.
+- \ref signal_func_convolve1
+- \ref signal_func_convolve2
+- \ref signal_func_convolve3
+
+Given below are some examples.
+
+| Input Dimensions | Filter Dimensions | Convolve Dimension |
+|:----------------:|:-----------------:|:------------------:|
+| [m n 1 1]        | [m 1 1 1]         |   1D               |
+| [m 1 1 1]        | [m n 1 1]         |   1D               |
+| [m n 1 1]        | [m n 1 1]         |   2D               |
+| [m n 1 1]        | [m n p 1]         |   2D               |
+| [m n 1 p]        | [m n 1 q]         |   3D               |
+| [m n p 1]        | [m n q 1]         |   3D               |
 
 
+\defgroup signal_func_convolve_sep Separable 2D Convolution
+\ingroup convolve_mat
+
+\brief Separable Convolution
+
+Separable Convolution is faster equivalent of the canonical 2D convolution with
+an additional prerequisite that the filter/kernel can be decomposed into two
+separate spatial vectors. A classic example of such separable kernels
+is sobel operator. Given below is decomposition of vertical gradient of sobel operator.
+
+\f$
+\begin{bmatrix}
+-1 & 0 & +1 \\
+-2 & 0 & +2 \\
+-1 & 0 & +1 \\
+\end{bmatrix}
+\f$
+
+can be decomposed into two vectors shown below.
+
+\f$
+\begin{bmatrix}
+1 \\
+2 \\
+1 \\
+\end{bmatrix}
+\f$
+
+\f$
+\begin{bmatrix}
+-1 & 0 & +1 \\
+\end{bmatrix}
+\f$
 
 
-\defgroup signal_func_convolve1 convolve1
+\defgroup signal_func_convolve1 1D Convolutions
 \ingroup convolve_mat
 
 \brief Convolution Integral for one dimensional data
 
 \copydoc signal_func_conv_desc
 
-For example, if the input size is m along 0th dimension, then the possible batch operations are as follows.
+For one dimensional signals(lets say m is size of 0th dimension), below batch operations are possible.
 
-| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode | Explanation |
-|:-----------------------:|:-----------------:|:-----------------:|:----------:|:------------|
-| [m n 1 1] | [m n 1 1] | [m n 1 1] | No Batch  | Output will be a single convolve array |
-| [m n 1 1] | [m n p 1] | [m n p 1] | Filter is Batched | p filters applied to same input |
-| [m n p 1] | [m n 1 1] | [m n p 1] | Signal is Batched | 1 filter applied to p inputs |
-| [m n p 1] | [m n p 1] | [m n p 1] | Identical Batches | p filters applied to p inputs in one-to-one correspondence |
-| [m n p 1] | [m n 1 q] | [m n p q] | Non-overlapping batches | q filters applied to p inputs in to produce p x q results |
-| [m n 1 p] | [m n q 1] | [m n q p] | Non-overlapping batches | q filters applied to p inputs in to produce q x p results |
+| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode              | Description |
+|:-----------------------:|:-----------------:|:-----------------:|:-----------------------:|:------------|
+| [m 1 1 1]               | [m 1 1 1]         | [m 1 1 1]         | No Batch                | Output will be a single convolved array |
+| [m 1 1 1]               | [m n 1 1]         | [m n 1 1]         | Filter is Batched       | n filters applied to same input |
+| [m n 1 1]               | [m 1 1 1]         | [m n 1 1]         | Signal is Batched       | 1 filter applied to n inputs |
+| [m n p q]               | [m n p q]         | [m n p q]         | Identical Batches       | n*p*q filters applied to n*p*q inputs in one-to-one correspondence |
+| [m n 1 1]               | [m 1 p q]         | [m n p q]         | Non-overlapping batches | p*q filters applied to n inputs to produce n x p x q results |
+
+The last entry in the table has more permutations than shown here.
 
 
-\defgroup signal_func_convolve2 convolve2
+
+\defgroup signal_func_convolve2 2D Convolutions
 \ingroup convolve_mat
 
 \brief Convolution Integral for two dimensional data
 
 \copydoc signal_func_conv_desc
 
-\copydoc signal_func_conv2_batch_desc
+For two dimensional signals, the following are the possible batch operations possible.
+Lets say m & n as sizes along the 0th & 1st dimensions respectively and p & q are the
+some integral numbers greater than one.
+
+| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode              | Description |
+|:-----------------------:|:-----------------:|:-----------------:|:-----------------------:|:------------|
+| [m n 1 1]               | [m n 1 1]         | [m n 1 1]         | No Batch                | Output will be a single convolved array |
+| [m n 1 1]               | [m n p 1]         | [m n p 1]         | Filter is Batched       | p filters applied to same input |
+| [m n p 1]               | [m n 1 1]         | [m n p 1]         | Signal is Batched       | 1 filter applied to p inputs |
+| [m n p q]               | [m n p q]         | [m n p q]         | Identical Batches       | p*q filters applied to p*q inputs in one-to-one correspondence |
+| [m n p 1]               | [m n 1 q]         | [m n p q]         | Non-overlapping batches | q filters applied to p inputs in to produce p x q results |
+| [m n 1 p]               | [m n q 1]         | [m n q p]         | Non-overlapping batches | q filters applied to p inputs in to produce q x p results |
 
 
 
-\defgroup signal_func_convolve3 convolve3
+\defgroup signal_func_convolve3 3D Convolutions
 \ingroup convolve_mat
 
 \brief Convolution Integral for three dimensional data
 
 \copydoc signal_func_conv_desc
 
-For example, if the signal is three dimensional with m, n & p sizes along the 0th, 1st & 2nd dimensions
-respectively, then the possible batch operations are as follows.
+For three dimensional inputs with m, n & p sizes along the 0th, 1st & 2nd dimensions
+respectively, given below are the possible batch operations.
 
-| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode | Explanation |
-|:-----------------------:|:-----------------:|:-----------------:|:----------:|:------------|
-| [m n 1 1] | [m n 1 1] | [m n 1 1] | No Batch  | Output will be a single convolve array |
-| [m n 1 1] | [m n p 1] | [m n p 1] | Filter is Batched | p filters applied to same input |
-| [m n p 1] | [m n 1 1] | [m n p 1] | Signal is Batched | 1 filter applied to p inputs |
-| [m n p 1] | [m n p 1] | [m n p 1] | Identical Batches | p filters applied to p inputs in one-to-one correspondence |
-| [m n p 1] | [m n 1 q] | [m n p q] | Non-overlapping batches | q filters applied to p inputs in to produce p x q results |
-| [m n 1 p] | [m n q 1] | [m n q p] | Non-overlapping batches | q filters applied to p inputs in to produce q x p results |
+| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode              | Description |
+|:-----------------------:|:-----------------:|:-----------------:|:-----------------------:|:------------|
+| [m n p 1]               | [a b c 1]         | [m n p 1]         | No Batch                | Output will be a single convolve array |
+| [m n p 1]               | [a b c d]         | [m n p d]         | Filter is Batched       | d filters applied to same input |
+| [m n p q]               | [a b c 1]         | [m n p q]         | Signal is Batched       | 1 filter applied to q inputs |
+| [m n p k]               | [a b c k]         | [m n p k]         | Identical Batches       | k filters applied to k inputs in one-to-one correspondence |
 
-===============================================================================
 
-\defgroup signal_func_fft_convolve fftConvolve
-\ingroup convolve_mat
-
-\brief Convolution using Fast Fourier Transform
-
-\copydoc signal_func_conv_desc
-
-===============================================================================
-
-\defgroup signal_func_fft_convolve2 fftConvolve2
-\ingroup convolve_mat
-
-\brief 2D Convolution using Fast Fourier Transform
-
-\copydoc signal_func_conv_desc
-
-===============================================================================
-
-\defgroup signal_func_fft_convolve3 fftConvolve3
-\ingroup convolve_mat
-
-\brief 3D Convolution using Fast Fourier Transform
-
-\copydoc signal_func_conv_desc
-
-===============================================================================
 
 \defgroup signal_func_fft fft
 \ingroup fft_mat

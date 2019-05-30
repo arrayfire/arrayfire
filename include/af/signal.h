@@ -552,7 +552,7 @@ AFAPI array convolve(const array& signal, const array& filter, const convMode mo
 
    \note Separable convolution only supports two(ONE-to-ONE and MANY-to-ONE) batch modes from the ones described in the detailed description section.
 
-   \ingroup signal_func_convolve
+   \ingroup signal_func_convolve_sep
  */
 AFAPI array convolve(const array& col_filter, const array& row_filter, const array& signal, const convMode mode=AF_CONV_DEFAULT);
 
@@ -615,43 +615,43 @@ AFAPI array convolve3(const array& signal, const array& filter, const convMode m
    \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input)
    \return     the convolved array
 
-   \ingroup signal_func_fft_convolve
+   \ingroup signal_func_convolve
  */
 AFAPI array fftConvolve(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
 /**
-   C++ Interface for convolution on one dimensional signals
+   C++ Interface for convolution on 1D signals using FFT
 
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
    \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input)
    \return     the convolved array
 
-   \ingroup signal_func_fft_convolve1
+   \ingroup signal_func_convolve1
  */
 AFAPI array fftConvolve1(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
 /**
-   C++ Interface for convolution on two dimensional signals
+   C++ Interface for convolution on 2D signals using FFT
 
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
    \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input)
    \return     the convolved array
 
-   \ingroup signal_func_fft_convolve2
+   \ingroup signal_func_convolve2
  */
 AFAPI array fftConvolve2(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
 /**
-   C++ Interface for convolution on three dimensional signals
+   C++ Interface for convolution on 3D signals using FFT
 
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
    \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input)
    \return     the convolved array
 
-   \ingroup signal_func_fftconvolve3
+   \ingroup signal_func_convolve3
  */
 AFAPI array fftConvolve3(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
@@ -1233,12 +1233,12 @@ AFAPI af_err af_convolve3(af_array *out, const af_array signal, const af_array f
    \note Separable convolution only supports two(ONE-to-ONE and MANY-to-ONE) batch modes from the ones described
          in the detailed description section.
 
-   \ingroup signal_func_convolve
+   \ingroup signal_func_convolve_sep
  */
 AFAPI af_err af_convolve2_sep(af_array *out, const af_array col_filter, const af_array row_filter, const af_array signal, const af_conv_mode mode);
 
 /**
-   C Interface for FFT-based convolution on one dimensional signals
+   C Interface for convolution on 1D signals using FFT
 
    \param[out] out is convolved array
    \param[in]  signal is the input signal
@@ -1247,12 +1247,12 @@ AFAPI af_err af_convolve2_sep(af_array *out, const af_array col_filter, const af
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
-   \ingroup signal_func_fft_convolve1
+   \ingroup signal_func_convolve1
  */
 AFAPI af_err af_fft_convolve1(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
 
 /**
-   C Interface for FFT-based convolution on two dimensional signals
+   C Interface for convolution on 2D signals using FFT
 
    \param[out] out is convolved array
    \param[in]  signal is the input signal
@@ -1261,12 +1261,12 @@ AFAPI af_err af_fft_convolve1(af_array *out, const af_array signal, const af_arr
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
-   \ingroup signal_func_fft_convolve2
+   \ingroup signal_func_convolve2
  */
 AFAPI af_err af_fft_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
 
 /**
-   C Interface for FFT-based convolution on three dimensional signals
+   C Interface for convolution on 3D signals using FFT
 
    \param[out] out is convolved array
    \param[in]  signal is the input signal
@@ -1275,7 +1275,7 @@ AFAPI af_err af_fft_convolve2(af_array *out, const af_array signal, const af_arr
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
-   \ingroup signal_func_fft_convolve3
+   \ingroup signal_func_convolve3
  */
 AFAPI af_err af_fft_convolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
 
