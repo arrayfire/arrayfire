@@ -10,6 +10,7 @@
 #include <common/graphics_common.hpp>
 #include <device_manager.hpp>
 #include <af/version.h>
+#include <memory.hpp>
 
 #include <cctype>
 #include <sstream>

@@ -28,8 +28,10 @@ template class common::MemoryManager<opencl::MemoryManagerPinned>;
 #endif
 
 using common::bytesToString;
+using common::MemoryEventPair;
 
 using std::function;
+using std::move;
 using std::unique_ptr;
 
 namespace opencl {
@@ -52,28 +54,38 @@ void printMemInfo(const char *msg, const int device) {
 template<typename T>
 unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements) {
-    cl::Buffer *ptr = static_cast<cl::Buffer *>(
-        memoryManager().alloc(elements * sizeof(T), false));
+    MemoryEventPair me = memoryManager().alloc(elements * sizeof(T), false);
+    if (me.e) me.e.enqueueWait(getQueue()());
+    cl::Buffer *ptr = static_cast<cl::Buffer *>(me.ptr);
     return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(ptr,
                                                                 bufferFree);
 }
 
 void *memAllocUser(const size_t &bytes) {
-    return memoryManager().alloc(bytes, true);
+    MemoryEventPair me = memoryManager().alloc(bytes, true);
+    if (me.e) me.e.enqueueWait(getQueue()());
+    return me.ptr;
 }
 template<typename T>
 void memFree(T *ptr) {
-    return memoryManager().unlock((void *)ptr, false);
+    Event e = make_event(getQueue());
+    return memoryManager().unlock((void *)ptr, move(e), false);
 }
 
-void memFreeUser(void *ptr) { memoryManager().unlock((void *)ptr, true); }
+void memFreeUser(void *ptr) {
+    Event e = make_event(getQueue());
+    memoryManager().unlock((void *)ptr, move(e), true);
+}
 
 cl::Buffer *bufferAlloc(const size_t &bytes) {
-    return (cl::Buffer *)memoryManager().alloc(bytes, false);
+    MemoryEventPair me = memoryManager().alloc(bytes, false);
+    me.e.enqueueWait(getQueue()());
+    return static_cast<cl::Buffer *>(me.ptr);
 }
 
 void bufferFree(cl::Buffer *buf) {
-    return memoryManager().unlock((void *)buf, false);
+    Event e = make_event(getQueue());
+    return memoryManager().unlock((void *)buf, move(e), false);
 }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
@@ -92,12 +104,16 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    return (T *)pinnedMemoryManager().alloc(elements * sizeof(T), false);
+    MemoryEventPair me =
+        pinnedMemoryManager().alloc(elements * sizeof(T), false);
+    me.e.enqueueWait(getQueue()());
+    return static_cast<T *>(me.ptr);
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    return pinnedMemoryManager().unlock((void *)ptr, false);
+    Event e = make_event(getQueue());
+    return pinnedMemoryManager().unlock((void *)ptr, move(e), false);
 }
 
 bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }

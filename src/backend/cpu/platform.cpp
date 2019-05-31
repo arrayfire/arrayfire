@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <device_manager.hpp>
 #include <platform.hpp>

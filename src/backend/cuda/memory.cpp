@@ -9,6 +9,7 @@
 
 #include <memory.hpp>
 
+#include <Event.hpp>
 #include <common/Logger.hpp>
 #include <common/MemoryManagerImpl.hpp>
 #include <common/dispatch.hpp>
@@ -35,11 +36,9 @@ template class common::MemoryManager<cuda::MemoryManagerPinned>;
 #endif
 
 using common::bytesToString;
+using common::MemoryEventPair;
 
-using std::function;
-using std::lock_guard;
-using std::recursive_mutex;
-using std::unique_ptr;
+using std::move;
 
 namespace cuda {
 void setMemStepSize(size_t step_bytes) {
@@ -60,20 +59,30 @@ void printMemInfo(const char *msg, const int device) {
 
 template<typename T>
 uptr<T> memAlloc(const size_t &elements) {
-    size_t size = elements * sizeof(T);
-    return uptr<T>(static_cast<T *>(memoryManager().alloc(size, false)),
-                   memFree<T>);
+    size_t size                = elements * sizeof(T);
+    MemoryEventPair me = memoryManager().alloc(size, false);
+    cudaStream_t stream        = getActiveStream();
+    if (me.e) me.e.enqueueWait(stream);
+    return uptr<T>(static_cast<T *>(me.ptr), memFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
-    return memoryManager().alloc(bytes, true);
-}
-template<typename T>
-void memFree(T *ptr) {
-    memoryManager().unlock((void *)ptr, false);
+    MemoryEventPair me = memoryManager().alloc(bytes, true);
+    cudaStream_t stream        = getActiveStream();
+    if (me.e) me.e.enqueueWait(stream);
+    return me.ptr;
 }
 
-void memFreeUser(void *ptr) { memoryManager().unlock((void *)ptr, true); }
+template<typename T>
+void memFree(T *ptr) {
+    Event e = make_event(getActiveStream());
+    memoryManager().unlock((void *)ptr, move(e), false);
+}
+
+void memFreeUser(void *ptr) {
+    Event e = make_event(getActiveStream());
+    memoryManager().unlock((void *)ptr, move(e), true);
+}
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
 
@@ -91,12 +100,17 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    return (T *)pinnedMemoryManager().alloc(elements * sizeof(T), false);
+    MemoryEventPair me =
+        pinnedMemoryManager().alloc(elements * sizeof(T), false);
+    cudaStream_t stream = getActiveStream();
+    if (me.e) me.e.enqueueWait(stream);
+    return (T *)me.ptr;
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    return pinnedMemoryManager().unlock((void *)ptr, false);
+    Event e = make_event(getActiveStream());
+    return pinnedMemoryManager().unlock((void *)ptr, move(e), false);
 }
 
 bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }

@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <Event.hpp>
+#include <backend.hpp>
 #include <common/dispatch.hpp>
 #include <common/err_common.hpp>
 #include <common/util.hpp>
@@ -29,26 +31,35 @@ namespace common {
 using mutex_t      = std::mutex;
 using lock_guard_t = std::lock_guard<mutex_t>;
 
-const unsigned MAX_BUFFERS = 1000;
-const size_t ONE_GB        = 1 << 30;
+constexpr unsigned MAX_BUFFERS = 1000;
+constexpr size_t ONE_GB        = 1 << 30;
+
+struct MemoryEventPair {
+    void *ptr;
+    detail::Event e;
+    MemoryEventPair(MemoryEventPair &other)  = delete;
+    MemoryEventPair(MemoryEventPair &&other) = default;
+    MemoryEventPair &operator=(MemoryEventPair &&other) = default;
+    MemoryEventPair &operator=(MemoryEventPair &other) = delete;
+};
 
 template<typename T>
 class MemoryManager {
-    typedef struct {
+    struct locked_info {
         bool manager_lock;
         bool user_lock;
         size_t bytes;
-    } locked_info;
+    };
 
     using locked_t    = typename std::unordered_map<void *, locked_info>;
     using locked_iter = typename locked_t::iterator;
 
-    using free_t    = std::unordered_map<size_t, std::vector<void *>>;
-    using free_iter = free_t::iterator;
+    using free_t    = std::unordered_map<size_t, std::vector<MemoryEventPair>>;
+    using free_iter = typename free_t::iterator;
 
     using uptr_t = std::unique_ptr<void, std::function<void(void *)>>;
 
-    typedef struct memory_info {
+    struct memory_info {
         locked_t locked_map;
         free_t free_map;
 
@@ -58,16 +69,20 @@ class MemoryManager {
         size_t total_buffers;
         size_t max_bytes;
 
-        memory_info() {
-            // Calling getMaxMemorySize() here calls the virtual function that
-            // returns 0 Call it from outside the constructor.
-            max_bytes     = ONE_GB;
-            total_bytes   = 0;
-            total_buffers = 0;
-            lock_bytes    = 0;
-            lock_buffers  = 0;
-        }
-    } memory_info;
+        memory_info()
+            // Calling getMaxMemorySize() here calls the virtual function
+            // that returns 0 Call it from outside the constructor.
+            : max_bytes(ONE_GB)
+            , total_bytes(0)
+            , total_buffers(0)
+            , lock_bytes(0)
+            , lock_buffers(0) {}
+
+        memory_info(memory_info &other)  = delete;
+        memory_info(memory_info &&other) = default;
+        memory_info &operator=(memory_info &other) = delete;
+        memory_info &operator=(memory_info &&other) = default;
+    };
 
     size_t mem_step_size;
     unsigned max_buffers;
@@ -102,7 +117,7 @@ class MemoryManager {
     /// bytes. If there is already a free buffer available, it will use
     /// that buffer. Otherwise, it will allocate a new buffer using the
     /// nativeAlloc function.
-    void *alloc(const size_t size, bool user_lock);
+    MemoryEventPair alloc(const size_t size, bool user_lock);
 
     /// returns the size of the buffer at the pointer allocated by the memory
     /// manager.
@@ -110,9 +125,10 @@ class MemoryManager {
 
     /// Frees or marks the pointer for deletion during the nex garbage
     /// collection event
-    void unlock(void *ptr, bool user_unlock);
+    void unlock(void *ptr, detail::Event &&e, bool user_unlock);
 
-    /// Frees all buffers which are not locked by the user or not being used.
+    /// Frees all buffers which are not locked by the user or not being
+    /// used.
     void garbageCollect();
 
     void printInfo(const char *msg, const int device);
