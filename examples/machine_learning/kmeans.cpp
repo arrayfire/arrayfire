@@ -12,6 +12,7 @@
 #include <af/util.h>
 #include <cstdlib>
 #include <iostream>
+#include <string>
 
 using namespace af;
 
@@ -112,7 +113,7 @@ int kmeans_demo(int k, bool console) {
     printf("** ArrayFire K-Means Demo (k = %d) **\n\n", k);
 
     array img =
-        loadImage(ASSETS_DIR "/examples/images/vegetable-woman.jpg", true) /
+        loadImage(ASSETS_DIR "/examples/images/spider.jpg") /
         255;  // [0-255]
 
     int w = img.dims(0), h = img.dims(1), c = img.dims(2);
@@ -128,26 +129,23 @@ int kmeans_demo(int k, bool console) {
     kmeans(means_dbl, clusters_dbl, vec, k * 2);
 
     if (!console) {
-#if 0
         array out_full = moddims(means_full(span, clusters_full, span), img.dims());
         array out_half = moddims(means_half(span, clusters_half, span), img.dims());
         array out_dbl  = moddims(means_dbl (span, clusters_dbl , span), img.dims());
 
-        char str_full[32], str_half[32], str_dbl[32];
-        sprintf(str_full, "%2d clusters", k);
-        sprintf(str_half, "%2d clusters", k/2);
-        sprintf(str_dbl , "%2d clusters", k*2);
+        af::Window wnd(800, 800, "ArrayFire K-Means Demo");
+        wnd.grid(2, 2);
+        std::string out_full_caption = "k = " + std::to_string(k);
+        std::string out_half_caption = "k = " + std::to_string(k / 2);
+        std::string out_dbl_caption = "k = " + std::to_string(k * 2);
+        while (!wnd.close()) {
+            wnd(0, 0).image(img, "Input Image");
+            wnd(0, 1).image(out_full, out_full_caption.c_str());
+            wnd(1, 0).image(out_half, out_half_caption.c_str());
+            wnd(1, 1).image(out_dbl, out_dbl_caption.c_str());
+            wnd.show();
+        }
 
-        fig("color","default");
-        fig("sub",2,2,1); image(img); fig("title","input");
-        fig("sub",2,2,2); image(out_full); fig("title", str_full);
-        fig("sub",2,2,3); image(out_half); fig("title", str_half);
-        fig("sub",2,2,4); image(out_dbl ); fig("title", str_dbl );
-        printf("Hit enter to finish\n");
-        getchar();
-#else
-        printf("Graphics not implemented yet\n");
-#endif
     } else {
         means_full =
             moddims(means_full, means_full.dims(1), means_full.dims(2));
@@ -166,7 +164,7 @@ int kmeans_demo(int k, bool console) {
 int main(int argc, char **argv) {
     int device   = argc > 1 ? atoi(argv[1]) : 0;
     bool console = argc > 2 ? argv[2][0] == '-' : false;
-    int k        = argc > 3 ? atoi(argv[3]) : 16;
+    int k        = argc > 3 ? atoi(argv[3]) : 8;
 
     try {
         af::setDevice(device);
