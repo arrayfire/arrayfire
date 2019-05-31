@@ -6,10 +6,12 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
 #include <Param.hpp>
 #include <common/util.hpp>
-#include <memory.hpp>
+
+#include <algorithm>
 
 // FIXME: Is there a better way to check for std::future not being supported ?
 #if defined(AF_DISABLE_CPU_ASYNC) || \
@@ -37,15 +39,16 @@ class queue_impl {
 
 #else
 
-#include <async_queue.hpp>
+#include <threads/async_queue.hpp>
+#include <threads/event.hpp>
 #define __SYNCHRONOUS_ARCH 0
-typedef async_queue queue_impl;
+using queue_impl = threads::async_queue;
+using event_impl = threads::event;
 
 #endif
 
-#pragma once
-
 namespace cpu {
+  bool checkMemoryLimit();
 
 /// Wraps the async_queue class
 class queue {
@@ -79,10 +82,24 @@ class queue {
         return (!sync_calls) ? aQueue.is_worker() : false;
     }
 
+    friend class queue_event;
    private:
     int count;
     const bool sync_calls;
     queue_impl aQueue;
 };
 
+  class queue_event {
+    event_impl event_;
+  public:
+    queue_event() = default;
+    queue_event(int val) : event_(val) {}
+
+    int create() { return event_.create(); }
+
+    int mark(queue &q) { return event_.mark(q.aQueue); }
+    int wait(queue &q) { return event_.wait(q.aQueue); }
+    int sync() noexcept { return event_.sync(); }
+    operator bool() const noexcept { return event_; }
+  };
 }  // namespace cpu

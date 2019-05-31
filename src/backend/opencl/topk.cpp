@@ -69,7 +69,7 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
         Buffer* ibuf         = indices.get();
         Buffer* vbuf         = values.get();
 
-        Event ev_in, ev_val, ev_ind;
+        cl::Event ev_in, ev_val, ev_ind;
 
         T* ptr     = static_cast<T*>(getQueue().enqueueMapBuffer(
             *in_buf, CL_FALSE, CL_MAP_READ, 0, in.elements() * sizeof(T),
@@ -84,7 +84,7 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
 
         // Create a linear index
         iota(begin(idx), end(idx), 0);
-        Event::waitForEvents({ev_in, ev_ind});
+        cl::Event::waitForEvents({ev_in, ev_ind});
 
         int iter = in.dims()[1] * in.dims()[2] * in.dims()[3];
         for (int i = 0; i < iter; i++) {

@@ -96,6 +96,8 @@ target_sources(afopencl
     err_opencl.hpp
     errorcodes.cpp
     errorcodes.hpp
+    Event.hpp
+    Event.cpp
     exampleFunction.cpp
     exampleFunction.hpp
     fast.cpp

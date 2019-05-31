@@ -174,6 +174,8 @@ cuda_add_library(afcuda
     dilate3d.cu
     erode.cu
     erode3d.cu
+    Event.cpp
+    Event.hpp
     exampleFunction.cu
     fast.cu
     fast_pyramid.cu

@@ -17,6 +17,8 @@
 #include <spdlog/spdlog.h>
 #include <types.hpp>
 
+#include <utility>
+
 template class common::MemoryManager<cpu::MemoryManager>;
 
 #ifndef AF_MEM_DEBUG
@@ -30,6 +32,7 @@ template class common::MemoryManager<cpu::MemoryManager>;
 using common::bytesToString;
 
 using std::function;
+using std::move;
 using std::unique_ptr;
 
 namespace cpu {
@@ -53,22 +56,29 @@ template<typename T>
 unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
     T *ptr = nullptr;
 
-    ptr = (T *)memoryManager().alloc(elements * sizeof(T), false);
+    common::MemoryEventPair me = memoryManager().alloc(elements * sizeof(T), false);
+    if(me.e) me.e.enqueueWait(getQueue());
+    ptr = (T *)me.ptr;
     return unique_ptr<T[], function<void(T *)>>(ptr, memFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
     void *ptr = nullptr;
-    ptr       = memoryManager().alloc(bytes, true);
-    return ptr;
+    common::MemoryEventPair me = memoryManager().alloc(bytes, true);
+    if (me.e) me.e.enqueueWait(getQueue());
+    return me.ptr;
 }
 
 template<typename T>
 void memFree(T *ptr) {
-    return memoryManager().unlock((void *)ptr, false);
+    Event e = make_event(getQueue());
+    return memoryManager().unlock((void *)ptr, move(e), false);
 }
 
-void memFreeUser(void *ptr) { memoryManager().unlock((void *)ptr, true); }
+void memFreeUser(void *ptr) {
+    Event e = make_event(getQueue());
+    memoryManager().unlock((void *)ptr, move(e), true);
+}
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
 
@@ -86,12 +96,15 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    return (T *)memoryManager().alloc(elements * sizeof(T), false);
+    common::MemoryEventPair me = memoryManager().alloc(elements * sizeof(T), false);
+    if (me.e) me.e.enqueueWait(getQueue());
+    return (T*)me.ptr;
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    return memoryManager().unlock((void *)ptr, false);
+    Event e = make_event(getQueue());
+    return memoryManager().unlock((void *)ptr, move(e), false);
 }
 
 bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }

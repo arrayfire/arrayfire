@@ -43,8 +43,8 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
 
     // This vector is used to store the pointers which will be deleted by
     // the memory manager. We are using this to avoid calling free while
-    // the lock is being held becasue the CPU backend calls sync.
-    vector<void *> free_ptrs;
+    // the lock is being held because the CPU backend calls sync.
+    vector<MemoryEventPair> free_ptrs;
     size_t bytes_freed   = 0;
     memory_info &current = memory[device];
     {
@@ -57,7 +57,9 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
             size_t num_ptrs = kv.second.size();
             // Free memory by pushing the last element into the free_ptrs
             // vector which will be freed once outside of the lock
-            for (auto p : kv.second) { free_ptrs.push_back(p); }
+            for (auto &p : kv.second) {
+                free_ptrs.emplace_back(MemoryEventPair{p.ptr, std::move(p.e)});
+            }
             current.total_bytes -= num_ptrs * kv.first;
             bytes_freed += num_ptrs * kv.first;
             current.total_buffers -= num_ptrs;
@@ -68,7 +70,9 @@ void MemoryManager<T>::cleanDeviceMemoryManager(int device) {
     AF_TRACE("GC: Clearing {} buffers {}", free_ptrs.size(),
              bytesToString(bytes_freed));
     // Free memory outside of the lock
-    for (auto ptr : free_ptrs) { this->nativeFree(ptr); }
+    for (auto &ptr : free_ptrs) {
+        this->nativeFree(ptr.ptr);
+    }
 }
 
 template<typename T>
@@ -127,8 +131,8 @@ void MemoryManager<T>::setMaxMemorySize() {
 }
 
 template<typename T>
-void *MemoryManager<T>::alloc(const size_t bytes, bool user_lock) {
-    void *ptr          = nullptr;
+MemoryEventPair MemoryManager<T>::alloc(const size_t bytes, bool user_lock) {
+    MemoryEventPair ptr = {nullptr, detail::Event()};
     size_t alloc_bytes = this->debug_mode
                              ? bytes
                              : (divup(bytes, mem_step_size) * mem_step_size);
@@ -147,31 +151,31 @@ void *MemoryManager<T>::alloc(const size_t bytes, bool user_lock) {
             free_iter iter = current.free_map.find(alloc_bytes);
 
             if (iter != current.free_map.end() && !iter->second.empty()) {
-                ptr = iter->second.back();
+                ptr = std::move(iter->second.back());
                 iter->second.pop_back();
-                current.locked_map[ptr] = info;
+                current.locked_map[ptr.ptr] = info;
                 current.lock_bytes += alloc_bytes;
                 current.lock_buffers++;
             }
         }
 
         // Only comes here if buffer size not found or in debug mode
-        if (ptr == nullptr) {
+        if (ptr.ptr == nullptr) {
             // Perform garbage collection if memory can not be allocated
             try {
-                ptr = this->nativeAlloc(alloc_bytes);
+                ptr.ptr = this->nativeAlloc(alloc_bytes);
             } catch (const AfError &ex) {
                 // If out of memory, run garbage collect and try again
                 if (ex.getError() != AF_ERR_NO_MEM) throw;
                 this->garbageCollect();
-                ptr = this->nativeAlloc(alloc_bytes);
+                ptr.ptr = this->nativeAlloc(alloc_bytes);
             }
 
             lock_guard_t lock(this->memory_mutex);
             // Increment these two only when it succeeds to come here.
             current.total_bytes += alloc_bytes;
             current.total_buffers += 1;
-            current.locked_map[ptr] = info;
+            current.locked_map[ptr.ptr] = info;
             current.lock_bytes += alloc_bytes;
             current.lock_buffers++;
         }
@@ -189,7 +193,7 @@ size_t MemoryManager<T>::allocated(void *ptr) {
 }
 
 template<typename T>
-void MemoryManager<T>::unlock(void *ptr, bool user_unlock) {
+void MemoryManager<T>::unlock(void *ptr, detail::Event &&e, bool user_unlock) {
     // Shortcut for empty arrays
     if (!ptr) return;
 
@@ -215,7 +219,9 @@ void MemoryManager<T>::unlock(void *ptr, bool user_unlock) {
         }
 
         // Return early if either one is locked
-        if ((iter->second).user_lock || (iter->second).manager_lock) return;
+        if ((iter->second).user_lock || (iter->second).manager_lock) {
+            return;
+        }
 
         size_t bytes = iter->second.bytes;
         current.lock_bytes -= iter->second.bytes;
@@ -229,7 +235,7 @@ void MemoryManager<T>::unlock(void *ptr, bool user_unlock) {
                 current.total_bytes -= iter->second.bytes;
             }
         } else {
-            current.free_map[bytes].push_back(ptr);
+            current.free_map[bytes].emplace_back(MemoryEventPair{ptr, std::move(e)});
         }
         current.locked_map.erase(iter);
     }
@@ -282,7 +288,7 @@ void MemoryManager<T>::printInfo(const char *msg, const int device) {
         }
 
         for (auto &ptr : kv.second) {
-            printf("|  %14p  |  %6.f %s | %9s | %9s |\n", ptr, size, unit,
+            printf("|  %14p  |  %6.f %s | %9s | %9s |\n", ptr.ptr, size, unit,
                    status_mngr, status_user);
         }
     }
@@ -319,7 +325,8 @@ void MemoryManager<T>::userLock(const void *ptr) {
 
 template<typename T>
 void MemoryManager<T>::userUnlock(const void *ptr) {
-    this->unlock(const_cast<void *>(ptr), true);
+    detail::Event e;
+    this->unlock(const_cast<void *>(ptr), std::move(e), true);
 }
 
 template<typename T>
