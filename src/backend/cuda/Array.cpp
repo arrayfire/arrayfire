@@ -247,7 +247,7 @@ bool passesJitHeuristics(Node *root_node) {
 
         // This is the maximum size of the params that can be allowed by the
         // CUDA platform.
-        constexpr size_t max_param_size = 4096 - base_param_size;
+        constexpr size_t max_param_size = 4096 - base_param_size - 64;
 
         struct tree_info {
             size_t total_buffer_size;
