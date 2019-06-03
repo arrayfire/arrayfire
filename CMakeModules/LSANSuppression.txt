@@ -1,0 +1,9 @@
+# This is a known leak.
+leak:getKernel
+#leak:libOpenCL
+leak:libnvidia-ptxjitcompile
+leak:tbb::internal::task_stream
+
+# Allocated by Intel's OpenMP implementation during inverse_dense_cpu
+# This is not something we can control in ArrayFire
+leak:kmp_alloc_cpp*::bget
