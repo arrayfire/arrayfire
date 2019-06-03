@@ -121,7 +121,7 @@ void fft_r2c(Param<Tc> out, const af::dim4 oDataDims, CParam<Tr> in,
     plan = transform.create(rank, t_dims, (int)batch, (Tr *)in.get(), in_embed,
                             (int)istrides[0], (int)istrides[rank],
                             (ctype_t *)out.get(), out_embed, (int)ostrides[0],
-                            (int)ostrides[rank], FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+                            (int)ostrides[rank], FFTW_ESTIMATE);
 
     transform.execute(plan);
     transform.destroy(plan);
@@ -149,10 +149,21 @@ void fft_c2r(Param<Tr> out, const af::dim4 oDataDims, CParam<Tc> in,
     int batch = 1;
     for (int i = rank; i < 4; i++) { batch *= odims[i]; }
 
+    // By default, fftw estimate flag is sufficient for most transforms.
+    // However, complex to real transforms modify the input data memory
+    // while performing the transformation. To avoid that, we need to pass
+    // FFTW_PRESERVE_INPUT also. This flag however only works for 1D
+    // transforms and for higher level transformations, a copy of input
+    // data is passed onto the upstream FFTW calls.
+    unsigned int flags = FFTW_ESTIMATE;
+    if (rank == 1) {
+        flags |= FFTW_PRESERVE_INPUT;
+    }
+
     plan = transform.create(rank, t_dims, (int)batch, (ctype_t *)in.get(),
                             in_embed, (int)istrides[0], (int)istrides[rank],
                             (Tr *)out.get(), out_embed, (int)ostrides[0],
-                            (int)ostrides[rank], FFTW_ESTIMATE);
+                            (int)ostrides[rank], flags);
 
     transform.execute(plan);
     transform.destroy(plan);
