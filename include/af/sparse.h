@@ -32,6 +32,8 @@ namespace af
        \param[in] stype is the storage format of the sparse array
        \return \ref af::array for the sparse array
 
+       \snippet test/sparse.cpp ex_sparse_af_arrays
+
        \ingroup sparse_func_create
      */
     AFAPI array sparse(const dim_t nRows, const dim_t nCols,
@@ -60,6 +62,8 @@ namespace af
                   if the arrays are device arrays.
        \return \ref af::array for the sparse array
 
+       \snippet test/sparse.cpp ex_sparse_host_arrays
+
        \ingroup sparse_func_create
      */
     AFAPI array sparse(const dim_t nRows, const dim_t nCols, const dim_t nNZ,
@@ -76,6 +80,8 @@ namespace af
        \param[in] dense is the source dense matrix
        \param[in] stype is the storage format of the sparse array
        \return \ref af::array for the sparse array with the given storage type
+
+       \snippet test/sparse.cpp ex_sparse_from_dense
 
        \ingroup sparse_func_create
      */
@@ -97,6 +103,8 @@ namespace af
     /**
        \param[in] sparse is the source sparse matrix
        \return dense \ref af::array from sparse
+
+       \snippet test/sparse.cpp ex_dense_from_sparse
 
        \ingroup sparse_func_dense
      */
