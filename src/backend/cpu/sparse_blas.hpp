@@ -14,7 +14,7 @@
 namespace cpu {
 
 template<typename T>
-Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
+Array<T> matmul(const common::SparseArray<T>& lhs, const Array<T>& rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs);
 
 }

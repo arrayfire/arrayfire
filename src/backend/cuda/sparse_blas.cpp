@@ -104,7 +104,7 @@ SPARSE_FUNC(csrmv, cdouble, Z)
 #undef SPARSE_FUNC_DEF
 
 template<typename T>
-Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
+Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     UNUSED(optRhs);
     // Similar Operations to GEMM
@@ -157,9 +157,9 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     return out;
 }
 
-#define INSTANTIATE_SPARSE(T)                                           \
-    template Array<T> matmul<T>(const common::SparseArray<T> lhs,       \
-                                const Array<T> rhs, af_mat_prop optLhs, \
+#define INSTANTIATE_SPARSE(T)                                            \
+    template Array<T> matmul<T>(const common::SparseArray<T> &lhs,       \
+                                const Array<T> &rhs, af_mat_prop optLhs, \
                                 af_mat_prop optRhs);
 
 INSTANTIATE_SPARSE(float)

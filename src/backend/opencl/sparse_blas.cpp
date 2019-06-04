@@ -35,7 +35,7 @@ namespace opencl {
 using namespace common;
 
 template<typename T>
-Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhsIn,
+Array<T> matmul(const common::SparseArray<T>& lhs, const Array<T>& rhsIn,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
 #if defined(WITH_LINEAR_ALGEBRA)
     if (OpenCLCPUOffload(
@@ -85,9 +85,9 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhsIn,
     return out;
 }
 
-#define INSTANTIATE_SPARSE(T)                                           \
-    template Array<T> matmul<T>(const common::SparseArray<T> lhs,       \
-                                const Array<T> rhs, af_mat_prop optLhs, \
+#define INSTANTIATE_SPARSE(T)                                            \
+    template Array<T> matmul<T>(const common::SparseArray<T>& lhs,       \
+                                const Array<T>& rhs, af_mat_prop optLhs, \
                                 af_mat_prop optRhs);
 
 INSTANTIATE_SPARSE(float)

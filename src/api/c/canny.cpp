@@ -177,7 +177,7 @@ std::pair<Array<char>, Array<char>> computeCandidates(
 }
 
 template<typename T>
-af_array cannyHelper(const Array<T> in, const float t1,
+af_array cannyHelper(const Array<T>& in, const float t1,
                      const af_canny_threshold ct, const float t2,
                      const unsigned sw, const bool isf) {
     static const vector<float> v{-0.11021f, -0.23691f, -0.30576f, -0.23691f,
