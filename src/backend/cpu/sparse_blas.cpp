@@ -200,7 +200,7 @@ SPARSE_FUNC(mm, cfloat, c)
 SPARSE_FUNC(mm, cdouble, z)
 
 template<typename T>
-Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
+Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     // MKL: CSRMM Does not support optRhs
     UNUSED(optRhs);
@@ -398,7 +398,7 @@ void mtm(Param<T> output, CParam<T> values, CParam<int> rowIdx,
 }
 
 template<typename T>
-Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
+Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     UNUSED(optRhs);
     lhs.eval();
@@ -457,9 +457,9 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
 
 #endif  // #if USE_MKL
 
-#define INSTANTIATE_SPARSE(T)                                           \
-    template Array<T> matmul<T>(const common::SparseArray<T> lhs,       \
-                                const Array<T> rhs, af_mat_prop optLhs, \
+#define INSTANTIATE_SPARSE(T)                                            \
+    template Array<T> matmul<T>(const common::SparseArray<T> &lhs,       \
+                                const Array<T> &rhs, af_mat_prop optLhs, \
                                 af_mat_prop optRhs);
 
 INSTANTIATE_SPARSE(float)
