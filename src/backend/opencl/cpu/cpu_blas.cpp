@@ -113,7 +113,7 @@ using gemv_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
 #define BLAS_FUNC(FUNC, TYPE, PREFIX)           \
     template<>                                  \
     FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
-        return &cblas_##PREFIX##FUNC;           \
+        return (FUNC##_func_def<TYPE>)&cblas_##PREFIX##FUNC; \
     }
 
 BLAS_FUNC_DEF(gemm)
