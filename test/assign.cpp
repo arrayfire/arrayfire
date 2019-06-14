@@ -1019,3 +1019,18 @@ TEST(Assign, ISSUE_1677) {
         FAIL() << "ArrayFire exception: " << ex.what();
     } catch (...) { FAIL() << "Unknown exception thrown"; }
 }
+
+TEST(Index, ISSUE_2533) {
+    int elements = 5 * 10;
+    std::vector<float> gold(elements, 0);
+
+    int assigned_elements = 5 * 6;
+    for (int i = 0; i < assigned_elements; i++) { gold[i] = 1; }
+
+    af::array a = constant(0, 5, 10);
+    af::array b = constant(1, 5, 10);
+
+    a(af::span, af::seq(0, 5)) = b(af::span, af::seq(0, 5));
+
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(5, 10), a);
+}
