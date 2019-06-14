@@ -500,21 +500,16 @@ af::array::array_proxy::array_proxy(const array_proxy &other)
     : impl(new array_proxy_impl(*other.impl->parent_, other.impl->indices_,
                                 other.impl->is_linear_)) {}
 
-#if __cplusplus > 199711L
 af::array::array_proxy::array_proxy(array_proxy &&other) {
    impl = other.impl;
    other.impl = nullptr;
 }
 
 array::array_proxy &af::array::array_proxy::operator=(array_proxy &&other) {
-    if (&other == this)
-        return *this;
-    delete this->impl;
-    impl = other.impl;
-    other.impl = nullptr;
+    array out = other;
+    *this = out;
     return *this;
 }
-#endif
 
 af::array::array_proxy::~array_proxy() { delete impl; }
 
