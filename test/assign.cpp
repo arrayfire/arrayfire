@@ -553,8 +553,8 @@ TEST(ArrayAssign, CPP_ASSIGN_TO_INDEXED) {
 
     array input(10, 2, &in.front(), afHost);
 
-    input(span, 0) =
-        input(span, 1);  // <-- Tests array_proxy to array_proxy assignment
+    // Tests array_proxy to array_proxy assignment
+    input(span, 0) = input(span, 1);
 
     vector<int> out(20);
     input.host(&out.front());
