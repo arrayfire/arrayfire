@@ -28,7 +28,6 @@ set(MKL_THREAD_LAYER "Intel OpenMP" CACHE STRING "The thread layer to choose for
 find_package(CUDA 7.0)
 find_package(OpenCL 1.2)
 find_package(OpenGL)
-find_package(OpenMP)
 find_package(FreeImage)
 find_package(Threads)
 find_package(FFTW)

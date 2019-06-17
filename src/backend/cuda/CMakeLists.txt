@@ -472,15 +472,6 @@ target_include_directories (afcuda
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-if(OpenMP_CXX_FOUND)
-  target_link_libraries(afcuda
-    PRIVATE
-      OpenMP::OpenMP_CXX
-    )
-elseif(NOT APPLE)
-  message(FATAL_ERROR "OpenMP is required to compile CUDA Backend")
-endif()
-
 set_target_properties(afcuda PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_link_libraries(afcuda
