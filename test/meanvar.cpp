@@ -73,6 +73,10 @@ struct meanvar_test {
         std::copy(begin(mean), end(mean), back_inserter(mean_));
         std::copy(begin(variance), end(variance), back_inserter(variance_));
     }
+    meanvar_test()                        = default;
+    meanvar_test(meanvar_test<T> &&other) = default;
+    meanvar_test &operator=(meanvar_test<T> &&other) = default;
+    meanvar_test &operator=(meanvar_test<T> &other) = delete;
 
     meanvar_test(const meanvar_test<T> &other)
         : test_description_(other.test_description_)
@@ -87,16 +91,14 @@ struct meanvar_test {
     }
 
     ~meanvar_test() {
+#ifndef _WIN32
         af_release_array(in_);
         if (weights_) {
             af_release_array(weights_);
             weights_ = 0;
         }
+#endif
     }
-
-    meanvar_test()                        = default;
-    meanvar_test(meanvar_test<T> &&other) = default;
-    meanvar_test &operator=(meanvar_test<T> &&other) = default;
 };
 
 template<typename T>
@@ -105,7 +107,7 @@ af_dtype meanvar_test<T>::af_type = dtype_traits<T>::af_type;
 template<typename T>
 class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T> > {
    public:
-    void meanvar_test_function(meanvar_test<T> &test) {
+    void meanvar_test_function(const meanvar_test<T> &test) {
         af_array mean, var;
 
         // Cast to the expected type
@@ -192,10 +194,10 @@ meanvar_test<T> meanvar_test_gen(string name, int in_index, int weight_index,
         outputs.push_back({249.50, 749.50, 1249.50, 1749.50});
         outputs.push_back(vector<double>(4, 20875));
     }
-    meanvar_test<T> out = meanvar_test<T>(
-        name, inputs[in_index],
-        (weight_index == -1) ? empty : inputs[weight_index], bias, dim,
-        move(outputs[mean_index]), move(outputs[var_index]));
+    meanvar_test<T> out(name, inputs[in_index],
+                        (weight_index == -1) ? empty : inputs[weight_index],
+                        bias, dim, move(outputs[mean_index]),
+                        move(outputs[var_index]));
 
     for (auto input : inputs) { af_release_array(input); }
     return out;
@@ -203,46 +205,34 @@ meanvar_test<T> meanvar_test_gen(string name, int in_index, int weight_index,
 
 template<typename T>
 vector<meanvar_test<T> > small_test_values() {
+    // clang-format off
     return {
-        // |           Name |   in_index | weight_index |                  bias
-        // |  dim | mean_index | var_index |
-        meanvar_test_gen<T>("Sample1Ddim0", 0, -1, AF_VARIANCE_SAMPLE, 0, 0, 1,
-                            MEANVAR_SMALL),
-        meanvar_test_gen<T>("Sample1Ddim1", 1, -1, AF_VARIANCE_SAMPLE, 1, 0, 1,
-                            MEANVAR_SMALL),
-        meanvar_test_gen<T>("Sample2Ddim0", 2, -1, AF_VARIANCE_SAMPLE, 0, 3, 4,
-                            MEANVAR_SMALL),
-        meanvar_test_gen<T>("Sample2Ddim1", 2, -1, AF_VARIANCE_SAMPLE, 1, 6, 7,
-                            MEANVAR_SMALL),
+        //                  |           Name |   in_index | weight_index |                  bias |  dim | mean_index | var_index |
+        meanvar_test_gen<T>(   "Sample1Ddim0",           0,            -1,     AF_VARIANCE_SAMPLE,     0,           0,          1, MEANVAR_SMALL),
+        meanvar_test_gen<T>(   "Sample1Ddim1",           1,            -1,     AF_VARIANCE_SAMPLE,     1,           0,          1, MEANVAR_SMALL),
+        meanvar_test_gen<T>(   "Sample2Ddim0",           2,            -1,     AF_VARIANCE_SAMPLE,     0,           3,          4, MEANVAR_SMALL),
+        meanvar_test_gen<T>(   "Sample2Ddim1",           2,            -1,     AF_VARIANCE_SAMPLE,     1,           6,          7, MEANVAR_SMALL),
 
-        meanvar_test_gen<T>("Population1Ddim0", 0, -1, AF_VARIANCE_POPULATION,
-                            0, 0, 2, MEANVAR_SMALL),
-        meanvar_test_gen<T>("Population1Ddim1", 1, -1, AF_VARIANCE_POPULATION,
-                            1, 0, 2, MEANVAR_SMALL),
-        meanvar_test_gen<T>("Population2Ddim0", 2, -1, AF_VARIANCE_POPULATION,
-                            0, 3, 5, MEANVAR_SMALL),
-        meanvar_test_gen<T>("Population2Ddim1", 2, -1, AF_VARIANCE_POPULATION,
-                            1, 6, 8, MEANVAR_SMALL)};
+        meanvar_test_gen<T>("Population1Ddim0",          0,            -1, AF_VARIANCE_POPULATION,     0,           0,          2, MEANVAR_SMALL),
+        meanvar_test_gen<T>("Population1Ddim1",          1,            -1, AF_VARIANCE_POPULATION,     1,           0,          2, MEANVAR_SMALL),
+        meanvar_test_gen<T>("Population2Ddim0",          2,            -1, AF_VARIANCE_POPULATION,     0,           3,          5, MEANVAR_SMALL),
+        meanvar_test_gen<T>("Population2Ddim1",          2,            -1, AF_VARIANCE_POPULATION,     1,           6,          8, MEANVAR_SMALL)};
+    // clang-format on
 }
 
 template<typename T>
 vector<meanvar_test<T> > large_test_values() {
     return {
-        // |           Name |   in_index | weight_index |                  bias
-        // |  dim | mean_index | var_index |
-        meanvar_test_gen<T>("Sample1Ddim0", 0, -1, AF_VARIANCE_SAMPLE, 0, 0, 1,
-                            MEANVAR_LARGE),
-        meanvar_test_gen<T>("Sample1Ddim1", 1, -1, AF_VARIANCE_SAMPLE, 1, 0, 1,
-                            MEANVAR_LARGE),
-        meanvar_test_gen<T>("Sample1Ddim2", 2, -1, AF_VARIANCE_SAMPLE, 2, 0, 1,
-                            MEANVAR_LARGE),
-        meanvar_test_gen<T>("Sample2Ddim0", 3, -1, AF_VARIANCE_SAMPLE, 0, 2, 3,
-                            MEANVAR_LARGE),
+        // clang-format off
+        //               |           Name |     in_index | weight_index |                  bias |  dim | mean_index | var_index |
+        meanvar_test_gen<T>("Sample1Ddim0",             0,            -1,     AF_VARIANCE_SAMPLE,     0,           0,          1, MEANVAR_LARGE),
+        meanvar_test_gen<T>("Sample1Ddim1",             1,            -1,     AF_VARIANCE_SAMPLE,     1,           0,          1, MEANVAR_LARGE),
+        meanvar_test_gen<T>("Sample1Ddim2",             2,            -1,     AF_VARIANCE_SAMPLE,     2,           0,          1, MEANVAR_LARGE),
+        meanvar_test_gen<T>("Sample2Ddim0",             3,            -1,     AF_VARIANCE_SAMPLE,     0,           2,          3, MEANVAR_LARGE),
         // TODO(umar) Add additional large tests
-        // meanvar_test_gen<T>(    "Sample2Ddim1",           3,            -1,
-        // AF_VARIANCE_SAMPLE,     1,           2,          3, MEANVAR_LARGE),
-        // meanvar_test_gen<T>(    "Sample2Ddim1",           2,            -1,
-        // AF_VARIANCE_SAMPLE,     1,           6,          7, MEANVAR_LARGE),
+        // meanvar_test_gen<T>(    "Sample2Ddim1",           3,            -1, AF_VARIANCE_SAMPLE,     1,           2,          3, MEANVAR_LARGE),
+        // meanvar_test_gen<T>(    "Sample2Ddim1",           2,            -1, AF_VARIANCE_SAMPLE,     1,           6,          7, MEANVAR_LARGE),
+        // clang-format on
     };
 }
 
@@ -260,7 +250,7 @@ vector<meanvar_test<T> > large_test_values() {
         });                                                                   \
                                                                               \
     TEST_P(MeanVar##NAME, Testing) {                                          \
-        meanvar_test<TYPE> test = GetParam();                                 \
+        const meanvar_test<TYPE> &test = GetParam();                          \
         meanvar_test_function(test);                                          \
     }
 
@@ -281,12 +271,12 @@ MEANVAR_TEST(ComplexDouble, af::af_cdouble)
     using MeanVar##NAME = MeanVarTyped<TYPE>;                                 \
     INSTANTIATE_TEST_CASE_P(                                                  \
         Small, MeanVar##NAME, ::testing::ValuesIn(small_test_values<TYPE>()), \
-        [](const ::testing::TestParamInfo<MeanVar##NAME::ParamType> info) {   \
+        [](const ::testing::TestParamInfo<MeanVar##NAME::ParamType> &info) {  \
             return info.param.test_description_;                              \
         });                                                                   \
                                                                               \
     TEST_P(MeanVar##NAME, Testing) {                                          \
-        meanvar_test<TYPE> test = GetParam();                                 \
+        const meanvar_test<TYPE> &test = GetParam();                          \
         meanvar_test_function(test);                                          \
     }
 
