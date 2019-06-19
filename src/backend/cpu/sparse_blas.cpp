@@ -165,15 +165,15 @@ SPARSE_FUNC(create_csr, cdouble, z)
 //                 MKL_INT ldy);
 
 template<typename T>
-using mv_func_def = sparse_status_t (*)(sparse_operation_t, scale_type<T>,
+using mv_func_def = sparse_status_t (*)(const sparse_operation_t, scale_type<T>,
                                         const sparse_matrix_t,
-                                        struct matrix_descr, cptr_type<T>,
+                                        matrix_descr, cptr_type<T>,
                                         scale_type<T>, ptr_type<T>);
 
 template<typename T>
-using mm_func_def = sparse_status_t (*)(sparse_operation_t, scale_type<T>,
+using mm_func_def = sparse_status_t (*)(const sparse_operation_t, scale_type<T>,
                                         const sparse_matrix_t,
-                                        struct matrix_descr, sparse_layout_t,
+                                        matrix_descr, sparse_layout_t,
                                         cptr_type<T>, int, int, scale_type<T>,
                                         ptr_type<T>, int);
 
