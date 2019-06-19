@@ -56,12 +56,12 @@ class queue {
                      getEnvVar("AF_SYNCHRONOUS_CALLS") == "1") {}
 
     template<typename F, typename... Args>
-    void enqueue(const F func, Args... args) {
+    void enqueue(const F func, Args&&... args) {
         count++;
         if (sync_calls) {
-            func(toParam(args)...);
+            func(toParam(std::forward<Args>(args))...);
         } else {
-            aQueue.enqueue(func, toParam(args)...);
+            aQueue.enqueue(func, toParam(std::forward<Args>(args))...);
         }
 #ifndef NDEBUG
         sync();
