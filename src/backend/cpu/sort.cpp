@@ -45,8 +45,6 @@ void sortBatched(Array<T>& val, bool isAscending) {
 
     // Needs to be ascending (true) in order to maintain the indices properly
     sort_by_key<uint, T>(key, val, resKey, resVal, 0, true);
-    val.eval();
-
     val.setDataDims(inDims);  // This is correct only for dim0
 }
 
@@ -62,8 +60,6 @@ void sort0(Array<T>& val, bool isAscending) {
 
 template<typename T>
 Array<T> sort(const Array<T>& in, const unsigned dim, bool isAscending) {
-    in.eval();
-
     Array<T> out = copyArray<T>(in);
     switch (dim) {
         case 0: sort0<T>(out, isAscending); break;

@@ -24,12 +24,9 @@ namespace cpu {
 template<typename T>
 void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
                 const uint dim, bool isAscending) {
-    in.eval();
-
     // okey is values, oval is indices
     okey = copyArray<T>(in);
     oval = range<uint>(in.dims(), dim);
-    oval.eval();
 
     switch (dim) {
         case 0:

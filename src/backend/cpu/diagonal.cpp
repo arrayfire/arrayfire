@@ -22,8 +22,6 @@ namespace cpu {
 
 template<typename T>
 Array<T> diagCreate(const Array<T> &in, const int num) {
-    in.eval();
-
     int size     = in.dims()[0] + std::abs(num);
     int batch    = in.dims()[1];
     Array<T> out = createEmptyArray<T>(dim4(size, size, batch));
@@ -35,8 +33,6 @@ Array<T> diagCreate(const Array<T> &in, const int num) {
 
 template<typename T>
 Array<T> diagExtract(const Array<T> &in, const int num) {
-    in.eval();
-
     const dim4 idims = in.dims();
     dim_t size       = std::min(idims[0], idims[1]) - std::abs(num);
     Array<T> out     = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));

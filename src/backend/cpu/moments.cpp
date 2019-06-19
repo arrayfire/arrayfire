@@ -26,7 +26,6 @@ using af::dim4;
 
 template<typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment) {
-    in.eval();
     dim4 odims, idims = in.dims();
     dim_t moments_dim = bitCount(moment);
 
@@ -36,8 +35,6 @@ Array<float> moments(const Array<T> &in, const af_moment_type moment) {
     odims[3] = idims[3];
 
     Array<float> out = createValueArray<float>(odims, 0.f);
-    out.eval();
-
     getQueue().enqueue(kernel::moments<T>, out, in, moment);
     getQueue().sync();
     return out;

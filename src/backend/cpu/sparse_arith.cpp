@@ -51,9 +51,6 @@ cdouble getInf() {
 template<typename T, af_op_t op>
 Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs,
                   const bool reverse) {
-    lhs.eval();
-    rhs.eval();
-
     Array<T> out  = createEmptyArray<T>(dim4(0));
     Array<T> zero = createValueArray<T>(rhs.dims(), scalar<T>(0));
     switch (op) {
@@ -64,7 +61,6 @@ Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs,
             break;
         default: out = copyArray<T>(rhs);
     }
-    out.eval();
     switch (lhs.getStorage()) {
         case AF_STORAGE_CSR:
             getQueue().enqueue(kernel::sparseArithOpD<T, op, AF_STORAGE_CSR>,
@@ -87,13 +83,9 @@ Array<T> arithOpD(const SparseArray<T> &lhs, const Array<T> &rhs,
 template<typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs,
                        const bool reverse) {
-    lhs.eval();
-    rhs.eval();
-
     SparseArray<T> out = createArrayDataSparseArray<T>(
         lhs.dims(), lhs.getValues(), lhs.getRowIdx(), lhs.getColIdx(),
         lhs.getStorage(), true);
-    out.eval();
     switch (out.getStorage()) {
         case AF_STORAGE_CSR:
             getQueue().enqueue(kernel::sparseArithOpS<T, op, AF_STORAGE_CSR>,
@@ -117,9 +109,6 @@ template<typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     af::storage sfmt = lhs.getStorage();
 
-    lhs.eval();
-    rhs.eval();
-
     const dim4 dims = lhs.dims();
     const uint M    = dims[0];
     const uint N    = dims[1];
@@ -132,7 +121,6 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
 
     uint nnz = rowArr.get()[M];
     auto out = createEmptySparseArray<T>(dims, nnz, sfmt);
-    out.eval();
 
     copyArray(out.getRowIdx(), rowArr);
 

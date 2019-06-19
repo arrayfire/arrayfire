@@ -29,8 +29,6 @@ using std::unique;
 
 template<typename T>
 Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
-    in.eval();
-
     Array<T> out = createEmptyArray<T>(af::dim4());
     if (is_sorted)
         out = copyArray<T>(in);
@@ -53,10 +51,6 @@ Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
 template<typename T>
 Array<T> setUnion(const Array<T> &first, const Array<T> &second,
                   const bool is_unique) {
-    first.eval();
-    second.eval();
-    getQueue().sync();
-
     Array<T> uFirst  = first;
     Array<T> uSecond = second;
 
@@ -86,10 +80,6 @@ Array<T> setUnion(const Array<T> &first, const Array<T> &second,
 template<typename T>
 Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
                       const bool is_unique) {
-    first.eval();
-    second.eval();
-    getQueue().sync();
-
     Array<T> uFirst  = first;
     Array<T> uSecond = second;
 

@@ -23,9 +23,6 @@ namespace cpu {
 template<typename T, typename accT, int baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter,
                   AF_BATCH_KIND kind) {
-    signal.eval();
-    filter.eval();
-
     auto sDims = signal.dims();
     auto fDims = filter.dims();
 
@@ -56,10 +53,6 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter,
 template<typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter,
                    Array<accT> const& r_filter) {
-    signal.eval();
-    c_filter.eval();
-    r_filter.eval();
-
     auto sDims = signal.dims();
     dim4 tDims = sDims;
     dim4 oDims = sDims;

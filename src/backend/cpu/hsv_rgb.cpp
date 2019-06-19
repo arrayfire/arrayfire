@@ -20,8 +20,6 @@ namespace cpu {
 
 template<typename T>
 Array<T> hsv2rgb(const Array<T>& in) {
-    in.eval();
-
     Array<T> out = createEmptyArray<T>(in.dims());
 
     getQueue().enqueue(kernel::hsv2rgb<T>, out, in);
@@ -31,8 +29,6 @@ Array<T> hsv2rgb(const Array<T>& in) {
 
 template<typename T>
 Array<T> rgb2hsv(const Array<T>& in) {
-    in.eval();
-
     Array<T> out = createEmptyArray<T>(in.dims());
 
     getQueue().enqueue(kernel::rgb2hsv<T>, out, in);

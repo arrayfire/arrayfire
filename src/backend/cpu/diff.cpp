@@ -19,8 +19,6 @@ namespace cpu {
 
 template<typename T>
 Array<T> diff1(const Array<T> &in, const int dim) {
-    in.eval();
-
     // Decrement dimension of select dimension
     af::dim4 dims = in.dims();
     dims[dim]--;
@@ -34,8 +32,6 @@ Array<T> diff1(const Array<T> &in, const int dim) {
 
 template<typename T>
 Array<T> diff2(const Array<T> &in, const int dim) {
-    in.eval();
-
     // Decrement dimension of select dimension
     af::dim4 dims = in.dims();
     dims[dim] -= 2;

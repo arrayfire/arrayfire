@@ -59,11 +59,6 @@ SVD_FUNC(gesvd, cdouble, double, z)
 
 template<typename T, typename Tr>
 void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
-    s.eval();
-    u.eval();
-    vt.eval();
-    in.eval();
-
     auto func = [=](Param<Tr> s, Param<T> u, Param<T> vt, Param<T> in) {
         dim4 iDims = in.dims();
         int M      = iDims[0];

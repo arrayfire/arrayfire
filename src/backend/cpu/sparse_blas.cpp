@@ -205,9 +205,6 @@ Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
     // MKL: CSRMM Does not support optRhs
     UNUSED(optRhs);
 
-    lhs.eval();
-    rhs.eval();
-
     // Similar Operations to GEMM
     sparse_operation_t lOpts = toSparseTranspose(optLhs);
 
@@ -225,7 +222,6 @@ Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
     // int K = lDims[lColDim];
 
     Array<T> out = createValueArray<T>(af::dim4(M, N, 1, 1), scalar<T>(0));
-    out.eval();
 
     auto func = [=](Param<T> output, CParam<T> values, CParam<int> rowIdx,
                     CParam<int> colIdx, const dim_t sdim0, const dim_t sdim1,
@@ -401,8 +397,6 @@ template<typename T>
 Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     UNUSED(optRhs);
-    lhs.eval();
-    rhs.eval();
 
     // Similar Operations to GEMM
     sparse_operation_t lOpts = toSparseTranspose(optLhs);
@@ -417,7 +411,6 @@ Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
     int N             = rDims[rColDim];
 
     Array<T> out = createValueArray<T>(af::dim4(M, N, 1, 1), scalar<T>(0));
-    out.eval();
 
     auto func = [=](Param<T> output, CParam<T> values, CParam<int> rowIdx,
                     CParam<int> colIdx, CParam<T> right) {

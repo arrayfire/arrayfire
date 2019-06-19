@@ -29,8 +29,6 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out,
                 const unsigned max_corners, const float min_response,
                 const float sigma, const unsigned filter_len,
                 const float k_thr) {
-    in.eval();
-
     dim4 idims = in.dims();
 
     // Window filter

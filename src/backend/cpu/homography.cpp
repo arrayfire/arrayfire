@@ -179,10 +179,9 @@ int computeHomography(T* H_ptr, const float* rnd_ptr, const float* x_src_ptr,
     float dst_scale = sqrt(2.0f) / sqrt(dst_var);
 
     Array<T> A = createValueArray<T>(af::dim4(9, 9), (T)0);
-    A.eval();
-    getQueue().sync();
     af::dim4 Adims = A.dims();
     T* A_ptr       = A.get();
+    getQueue().sync();
 
     for (unsigned j = 0; j < 4; j++) {
         float srcx = (src_pt_x[j] - x_src_mean) * src_scale;
@@ -359,11 +358,6 @@ int homography(Array<T>& bestH, const Array<float>& x_src,
                const Array<float>& y_dst, const Array<float>& initial,
                const af_homography_type htype, const float inlier_thr,
                const unsigned iterations) {
-    x_src.eval();
-    y_src.eval();
-    x_dst.eval();
-    y_dst.eval();
-
     const af::dim4 idims    = x_src.dims();
     const unsigned nsamples = idims[0];
 

@@ -24,9 +24,6 @@ template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
          dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind) {
-    signal.eval();
-    filter.eval();
-
     const af::dim4 sd = signal.dims();
     const af::dim4 fd = filter.dims();
 

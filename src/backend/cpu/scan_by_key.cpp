@@ -29,9 +29,6 @@ Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
     kernel::scan_dim_by_key<op, Ti, Tk, To, 3> func3(inclusive_scan);
     kernel::scan_dim_by_key<op, Ti, Tk, To, 4> func4(inclusive_scan);
 
-    in.eval();
-    key.eval();
-
     switch (in.ndims()) {
         case 1: getQueue().enqueue(func1, out, 0, key, 0, in, 0, dim); break;
         case 2: getQueue().enqueue(func2, out, 0, key, 0, in, 0, dim); break;

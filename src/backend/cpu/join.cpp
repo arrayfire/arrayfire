@@ -13,13 +13,12 @@
 #include <platform.hpp>
 #include <queue.hpp>
 
+#include <algorithm>
+
 namespace cpu {
 
 template<typename Tx, typename Ty>
 Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
-    first.eval();
-    second.eval();
-
     // All dimensions except join dimension must be equal
     // Compute output dims
     af::dim4 odims;
@@ -43,7 +42,6 @@ Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
 
 template<typename T>
 Array<T> join(const int dim, const std::vector<Array<T>> &inputs) {
-    for (unsigned i = 0; i < inputs.size(); ++i) inputs[i].eval();
     // All dimensions except join dimension must be equal
     // Compute output dims
     af::dim4 odims;
@@ -64,6 +62,11 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs) {
         }
     }
 
+    std::vector<Array<T> *> input_ptrs(inputs.size());
+    std::transform(
+        begin(inputs), end(inputs), begin(input_ptrs),
+        [](const Array<T> &input) { return const_cast<Array<T> *>(&input); });
+    evalMultiple(input_ptrs);
     std::vector<CParam<T>> inputParams(inputs.begin(), inputs.end());
     Array<T> out = createEmptyArray<T>(odims);
 

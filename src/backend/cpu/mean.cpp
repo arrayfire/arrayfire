@@ -25,8 +25,6 @@ using mean_dim_func = std::function<void(
 
 template<typename Ti, typename Tw, typename To>
 Array<To> mean(const Array<Ti> &in, const int dim) {
-    in.eval();
-
     dim4 odims    = in.dims();
     odims[dim]    = 1;
     Array<To> out = createEmptyArray<To>(odims);
@@ -45,9 +43,6 @@ using mean_weighted_dim_func =
 
 template<typename T, typename Tw>
 Array<T> mean(const Array<T> &in, const Array<Tw> &wt, const int dim) {
-    in.eval();
-    wt.eval();
-
     dim4 odims   = in.dims();
     odims[dim]   = 1;
     Array<T> out = createEmptyArray<T>(odims);

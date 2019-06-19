@@ -20,10 +20,6 @@ namespace cpu {
 
 template<typename T>
 void gradient(Array<T> &grad0, Array<T> &grad1, const Array<T> &in) {
-    grad0.eval();
-    grad1.eval();
-    in.eval();
-
     getQueue().enqueue(kernel::gradient<T>, grad0, grad1, in);
 }
 

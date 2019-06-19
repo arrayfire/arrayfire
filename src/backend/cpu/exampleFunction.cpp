@@ -26,14 +26,6 @@ namespace cpu {
 template<typename T>
 Array<T> exampleFunction(const Array<T> &a, const Array<T> &b,
                          const af_someenum_t method) {
-    a.eval();  // All input Arrays should call eval mandatorily
-               // in CPU backend function implementations. Since
-               // the cpu fns are asynchronous launches, any Arrays
-               // that are either views/JIT nodes needs to evaluated
-               // before they are passed onto functions that are
-               // enqueued onto the queues.
-    b.eval();
-
     dim4 outputDims;  // this should be '= in.dims();' in most cases
                       // but would definitely depend on the type of
                       // algorithm you are implementing.

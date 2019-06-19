@@ -63,11 +63,6 @@ GQR_FUNC(gqr, cdouble, zungqr)
 
 template<typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
-    q.eval();
-    r.eval();
-    t.eval();
-    in.eval();
-
     dim4 iDims = in.dims();
     int M      = iDims[0];
     int N      = iDims[1];
@@ -92,8 +87,6 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
 
 template<typename T>
 Array<T> qr_inplace(Array<T> &in) {
-    in.eval();
-
     dim4 iDims = in.dims();
     int M      = iDims[0];
     int N      = iDims[1];
