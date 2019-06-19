@@ -155,12 +155,15 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim,
             case u8:
                 res = reduce<op, uchar, uint>(in, dim, change_nan, nanval);
                 break;
-                // Make sure you are adding only "1" for every non zero value,
-                // even if op == af_add_t
-            case b8:
-                res = reduce<af_notzero_t, char, uint>(in, dim, change_nan,
+            case b8: {
+                if (op == af_mul_t) {
+                    res = reduce<af_and_t, char, char>(in, dim, change_nan,
                                                        nanval);
-                break;
+                } else {
+                    res = reduce<af_notzero_t, char, uint>(in, dim, change_nan,
+                                                           nanval);
+                }
+            } break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, res);
@@ -358,12 +361,15 @@ static af_err reduce_all_promote(double *real_val, double *imag_val,
                 *real_val =
                     (double)reduce_all<op, uchar, uint>(in, change_nan, nanval);
                 break;
-                // Make sure you are adding only "1" for every non zero value,
-                // even if op == af_add_t
-            case b8:
-                *real_val = (double)reduce_all<af_notzero_t, char, uint>(
-                    in, change_nan, nanval);
-                break;
+            case b8: {
+                if (op == af_mul_t) {
+                    *real_val = (double)reduce_all<af_and_t, char, char>(
+                        in, change_nan, nanval);
+                } else {
+                    *real_val = (double)reduce_all<af_notzero_t, char, uint>(
+                        in, change_nan, nanval);
+                }
+            } break;
 
             case c32:
                 cfval = reduce_all<op, cfloat, cfloat>(in);

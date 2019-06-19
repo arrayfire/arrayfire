@@ -685,3 +685,22 @@ TEST(Reduce, AllSmallIndexed) {
     array b       = a(seq(len / 2), span);
     ASSERT_EQ(max<float>(b), len / 2 - 1);
 }
+
+TEST(ProductAll, BoolIn_ISSUE2543_All_Ones) {
+    ASSERT_EQ(true, product<int>(constant(1, 5, 5, b8)) > 0);
+}
+
+TEST(ProductAll, BoolIn_ISSUE2543_Random_Values) {
+    array in = randu(5, 5, b8);
+    vector<char> hostData(25);
+    in.host(hostData.data());
+    unsigned int gold = 1;
+    for (size_t i = 0; i < hostData.size(); ++i) { gold *= hostData[i]; }
+    const unsigned int out = product<unsigned int>(in);
+    ASSERT_EQ(gold, out);
+}
+
+TEST(Product, BoolIn_ISSUE2543) {
+    array A = randu(5, 5, b8);
+    ASSERT_ARRAYS_EQ(allTrue(A), product(A));
+}
