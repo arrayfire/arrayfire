@@ -243,12 +243,8 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
         ASSERT_SUCCESS(af_release_array(inArray));
         ASSERT_SUCCESS(af_release_array(inArray_f32));
 
-        ASSERT_SUCCESS(af_release_array(x));
-        ASSERT_SUCCESS(af_release_array(y));
-        ASSERT_SUCCESS(af_release_array(score));
-        ASSERT_SUCCESS(af_release_array(orientation));
-        ASSERT_SUCCESS(af_release_array(size));
         ASSERT_SUCCESS(af_release_array(desc));
+        ASSERT_SUCCESS(af_release_features(feat));
 
         delete[] outX;
         delete[] outY;
