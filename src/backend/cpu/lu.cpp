@@ -47,11 +47,6 @@ LU_FUNC(getrf, cdouble, z)
 template<typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
         const Array<T> &in) {
-    lower.eval();
-    upper.eval();
-    pivot.eval();
-    in.eval();
-
     dim4 iDims = in.dims();
     int M      = iDims[0];
     int N      = iDims[1];
@@ -70,8 +65,6 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
 
 template<typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
-    in.eval();
-
     dim4 iDims = in.dims();
     Array<int> pivot =
         createEmptyArray<int>(af::dim4(min(iDims[0], iDims[1]), 1, 1, 1));

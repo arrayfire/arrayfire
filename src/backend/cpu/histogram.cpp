@@ -21,12 +21,9 @@ namespace cpu {
 template<typename inType, typename outType, bool isLinear>
 Array<outType> histogram(const Array<inType> &in, const unsigned &nbins,
                          const double &minval, const double &maxval) {
-    in.eval();
-
     const dim4 inDims  = in.dims();
     dim4 outDims       = dim4(nbins, 1, inDims[2], inDims[3]);
     Array<outType> out = createValueArray<outType>(outDims, outType(0));
-    out.eval();
 
     getQueue().enqueue(kernel::histogram<outType, inType, isLinear>, out, in,
                        nbins, minval, maxval);

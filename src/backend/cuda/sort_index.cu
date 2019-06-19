@@ -23,7 +23,6 @@ void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
                 const uint dim, bool isAscending) {
     okey = copyArray<T>(in);
     oval = range<uint>(in.dims(), dim);
-    oval.eval();
 
     switch (dim) {
         case 0: kernel::sort0ByKey<T, uint>(okey, oval, isAscending); break;

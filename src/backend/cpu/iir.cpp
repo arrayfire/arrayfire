@@ -21,10 +21,6 @@ namespace cpu {
 
 template<typename T>
 Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x) {
-    b.eval();
-    a.eval();
-    x.eval();
-
     AF_BATCH_KIND type = x.ndims() == 1 ? AF_BATCH_NONE : AF_BATCH_SAME;
     if (x.ndims() != b.ndims()) {
         type = (x.ndims() < b.ndims()) ? AF_BATCH_RHS : AF_BATCH_LHS;

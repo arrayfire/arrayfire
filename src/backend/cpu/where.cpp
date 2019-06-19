@@ -22,15 +22,13 @@ namespace cpu {
 
 template<typename T>
 Array<uint> where(const Array<T> &in) {
-    in.eval();
-    getQueue().sync();
-
     const dim_t *dims    = in.dims().get();
     const dim_t *strides = in.strides().get();
     static const T zero  = scalar<T>(0);
 
     const T *iptr = in.get();
     auto out_vec  = memAlloc<uint>(in.elements());
+    getQueue().sync();
 
     dim_t count = 0;
     dim_t idx   = 0;

@@ -38,8 +38,6 @@ using common::SparseArray;
 
 template<typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
-    in.eval();
-
     if (stype == AF_STORAGE_CSR) {
         uint nNZ = reduce_all<af_notzero_t, T, uint>(in);
 
@@ -59,7 +57,6 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
         dim_t nNZ = nonZeroIdx.elements();
 
         auto cnst = createValueArray<int>(dim4(nNZ), in.dims()[0]);
-        cnst.eval();
 
         auto rowIdx =
             arithOp<int, af_mod_t>(nonZeroIdx, cnst, nonZeroIdx.dims());
@@ -80,10 +77,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
 
 template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
-    in.eval();
-
     Array<T> dense = createValueArray<T>(in.dims(), scalar<T>(0));
-    dense.eval();
 
     Array<T> values   = in.getValues();
     Array<int> rowIdx = in.getRowIdx();

@@ -904,8 +904,6 @@ unsigned sift_impl(Array<float>& x, Array<float>& y, Array<float>& score,
     using std::function;
     using std::unique_ptr;
     using std::vector;
-    in.eval();
-    getQueue().sync();
     af::dim4 idims = in.dims();
 
     unsigned min_dim = min(idims[0], idims[1]);

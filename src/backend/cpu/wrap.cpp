@@ -24,8 +24,6 @@ Array<T> wrap(const Array<T> &in, const dim_t ox, const dim_t oy,
     af::dim4 odims(ox, oy, idims[2], idims[3]);
 
     Array<T> out = createValueArray<T>(odims, scalar<T>(0));
-    out.eval();
-    in.eval();
 
     if (is_column) {
         getQueue().enqueue(kernel::wrap_dim<T, 1>, out, in, wx, wy, sx, sy, px,

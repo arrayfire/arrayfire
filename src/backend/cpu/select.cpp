@@ -20,19 +20,12 @@ namespace cpu {
 template<typename T>
 void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
             const Array<T> &b) {
-    out.eval();
-    cond.eval();
-    a.eval();
-    b.eval();
     getQueue().enqueue(kernel::select<T>, out, cond, a, b);
 }
 
 template<typename T, bool flip>
 void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
                    const double &b) {
-    out.eval();
-    cond.eval();
-    a.eval();
     getQueue().enqueue(kernel::select_scalar<T, flip>, out, cond, a, b);
 }
 

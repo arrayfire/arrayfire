@@ -43,7 +43,6 @@ void copyData(T *to, const Array<T> &from) {
 
 template<typename T>
 Array<T> copyArray(const Array<T> &A) {
-    A.eval();
     Array<T> out = createEmptyArray<T>(A.dims());
     getQueue().enqueue(kernel::copy<T, T>, out, A);
     return out;
@@ -54,8 +53,6 @@ void copyArray(Array<outType> &out, Array<inType> const &in) {
     static_assert(
         !(is_complex<inType>::value && !is_complex<outType>::value),
         "Cannot copy from complex Array<T> to a non complex Array<T>");
-    out.eval();
-    in.eval();
     getQueue().enqueue(kernel::copy<outType, inType>, out, in);
 }
 

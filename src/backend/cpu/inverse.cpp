@@ -48,8 +48,6 @@ INV_FUNC(getri, cdouble, z)
 
 template<typename T>
 Array<T> inverse(const Array<T> &in) {
-    in.eval();
-
     int M = in.dims()[0];
     int N = in.dims()[1];
 

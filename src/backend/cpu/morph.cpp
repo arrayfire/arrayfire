@@ -22,10 +22,6 @@ namespace cpu {
 template<typename T, bool isDilation>
 Array<T> morph(const Array<T> &in, const Array<T> &mask) {
     af::borderType padType = isDilation ? AF_PAD_ZERO : AF_PAD_CLAMP_TO_EDGE;
-
-    in.eval();
-    mask.eval();
-
     const af::dim4 idims = in.dims();
     const af::dim4 mdims = mask.dims();
 
@@ -48,9 +44,6 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask) {
 
 template<typename T, bool isDilation>
 Array<T> morph3d(const Array<T> &in, const Array<T> &mask) {
-    in.eval();
-    mask.eval();
-
     Array<T> out = createEmptyArray<T>(in.dims());
 
     getQueue().enqueue(kernel::morph3d<T, isDilation>, out, in, mask);

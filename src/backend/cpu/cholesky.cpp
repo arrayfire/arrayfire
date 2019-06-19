@@ -45,8 +45,6 @@ CH_FUNC(potrf, cdouble, z)
 
 template<typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
-    in.eval();
-
     Array<T> out = copyArray<T>(in);
     *info        = cholesky_inplace(out, is_upper);
 
@@ -60,8 +58,6 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
 
 template<typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper) {
-    in.eval();
-
     dim4 iDims = in.dims();
     int N      = iDims[0];
 

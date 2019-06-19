@@ -21,9 +21,6 @@ namespace cpu {
 template<typename Tk, typename Tv>
 void sort_by_key(Array<Tk> &okey, Array<Tv> &oval, const Array<Tk> &ikey,
                  const Array<Tv> &ival, const uint dim, bool isAscending) {
-    ikey.eval();
-    ival.eval();
-
     okey = copyArray<Tk>(ikey);
     oval = copyArray<Tv>(ival);
 

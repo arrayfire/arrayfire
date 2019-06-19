@@ -46,7 +46,6 @@ Array<T> padArrayBorders(const Array<T> &in, const dim4 &lowerBoundPadding,
 
     auto ret = (btype == AF_PAD_ZERO ? createValueArray<T>(oDims, scalar<T>(0))
                                      : createEmptyArray<T>(oDims));
-    ret.eval();
 
     getQueue().enqueue(kernel::padBorders<T>, ret, in, lowerBoundPadding,
                        upperBoundPadding, btype);

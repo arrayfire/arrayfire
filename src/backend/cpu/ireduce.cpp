@@ -26,10 +26,6 @@ using ireduce_dim_func = std::function<void(Param<T>, Param<uint>, const dim_t,
 template<af_op_t op, typename T>
 void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
              const int dim) {
-    out.eval();
-    loc.eval();
-    in.eval();
-
     dim4 odims                                           = in.dims();
     odims[dim]                                           = 1;
     static const ireduce_dim_func<op, T> ireduce_funcs[] = {
@@ -41,7 +37,6 @@ void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
 
 template<af_op_t op, typename T>
 T ireduce_all(unsigned *loc, const Array<T> &in) {
-    in.eval();
     getQueue().sync();
 
     af::dim4 dims    = in.dims();

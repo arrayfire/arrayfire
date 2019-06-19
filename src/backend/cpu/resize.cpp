@@ -23,8 +23,6 @@ Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
     af::dim4 odims(odim0, odim1, idims[2], idims[3]);
     // Create output placeholder
     Array<T> out = createValueArray(odims, (T)0);
-    out.eval();
-    in.eval();
 
     switch (method) {
         case AF_INTERP_NEAREST:

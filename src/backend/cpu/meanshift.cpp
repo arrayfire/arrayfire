@@ -26,8 +26,6 @@ template<typename T>
 Array<T> meanshift(const Array<T> &in, const float &spatialSigma,
                    const float &chromaticSigma, const unsigned &numInterations,
                    const bool &isColor) {
-    in.eval();
-
     Array<T> out = createEmptyArray<T>(in.dims());
 
     if (isColor)

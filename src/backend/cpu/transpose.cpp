@@ -21,8 +21,6 @@ namespace cpu {
 
 template<typename T>
 Array<T> transpose(const Array<T> &in, const bool conjugate) {
-    in.eval();
-
     const dim4 inDims  = in.dims();
     const dim4 outDims = dim4(inDims[1], inDims[0], inDims[2], inDims[3]);
     // create an array with first two dimensions swapped
@@ -35,7 +33,6 @@ Array<T> transpose(const Array<T> &in, const bool conjugate) {
 
 template<typename T>
 void transpose_inplace(Array<T> &in, const bool conjugate) {
-    in.eval();
     getQueue().enqueue(kernel::transpose_inplace<T>, in, conjugate);
 }
 

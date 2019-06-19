@@ -23,15 +23,12 @@ void setFFTPlanCacheSize(size_t numPlans) { UNUSED(numPlans); }
 
 template<typename T, int rank, bool direction>
 void fft_inplace(Array<T> &in) {
-    in.eval();
     getQueue().enqueue(kernel::fft_inplace<T, rank, direction>, in,
                        in.getDataDims());
 }
 
 template<typename Tc, typename Tr, int rank>
 Array<Tc> fft_r2c(const Array<Tr> &in) {
-    in.eval();
-
     dim4 odims    = in.dims();
     odims[0]      = odims[0] / 2 + 1;
     Array<Tc> out = createEmptyArray<Tc>(odims);

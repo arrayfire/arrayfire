@@ -20,8 +20,6 @@ template<typename T>
 Array<T> unwrap(const Array<T> &in, const dim_t wx, const dim_t wy,
                 const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
                 const bool is_column) {
-    in.eval();
-
     af::dim4 idims = in.dims();
     dim_t nx       = (idims[0] + 2 * px - wx) / sx + 1;
     dim_t ny       = (idims[1] + 2 * py - wy) / sy + 1;
