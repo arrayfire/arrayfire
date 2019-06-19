@@ -10,6 +10,7 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
+#include <debug_thrust.hpp>
 #include <err_cuda.hpp>
 #include <handle.hpp>
 #include <iota.hpp>

@@ -10,6 +10,7 @@
 #include <Array.hpp>
 #include <copy.hpp>
 #include <debug_cuda.hpp>
+#include <debug_thrust.hpp>
 #include <set.hpp>
 #include <sort.hpp>
 #include <af/dim4.hpp>

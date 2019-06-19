@@ -9,6 +9,7 @@
 
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
+#include <debug_thrust.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <memory.hpp>

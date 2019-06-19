@@ -340,6 +340,7 @@ cuda_add_library(afcuda
     device_manager.cpp
     device_manager.hpp
     debug_cuda.hpp
+    debug_thrust.hpp
     diagonal.hpp
     diff.hpp
     driver.cpp

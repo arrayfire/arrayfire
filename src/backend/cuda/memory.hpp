@@ -9,10 +9,11 @@
 #pragma once
 
 #include <common/MemoryManager.hpp>
-#include <cstdlib>
 
+#include <cstdlib>
 #include <functional>
 #include <memory>
+
 namespace cuda {
 template<typename T>
 void memFree(T *ptr);
