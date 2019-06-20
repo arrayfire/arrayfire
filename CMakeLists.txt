@@ -10,6 +10,10 @@ project(ArrayFire
   VERSION 3.7.0
   LANGUAGES C CXX )
 
+if(POLICY CMP0073)
+  cmake_policy(SET CMP0073 NEW)
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 include(AFInstallDirs)
 include(CMakeDependentOption)
