@@ -50,10 +50,10 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
           const Array<T> &lhs, const Array<T> &rhs,
           const T *beta) {
 #if defined(WITH_LINEAR_ALGEBRA)
-    if (OpenCLCPUOffload(
-            false)) {  // Do not force offload gemm on OSX Intel devices
-        cpu::gemm(out, optLhs, optRhs, alpha,
-                  lhs, rhs, beta);
+    // Do not force offload gemm on OSX Intel devices
+    if (OpenCLCPUOffload(false)) {
+        cpu::gemm(out, optLhs, optRhs, alpha, lhs, rhs, beta);
+        return;
     }
 #endif
     const auto lOpts = toBlasTranspose(optLhs);
