@@ -19,7 +19,6 @@ installer will populate files in the following sub-directories:
     lib/libforge*               - Visualization library
     lib/libcu*                  - CUDA backend dependencies
     lib/libOpenCL.so            - OpenCL ICD Loader library
-    lib/libglbinding*           - OpenGL graphics dependencies
     share/ArrayFire/cmake/*     - CMake config (find) scripts
     share/ArrayFire/examples/*  - All ArrayFire examples
 

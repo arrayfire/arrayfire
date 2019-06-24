@@ -18,7 +18,6 @@ directory with files in the following sub-directories:
     lib/libaf*                  - CPU, CUDA, and OpenCL libraries (.a, .so)
     lib/libforge*               - Visualization library
     lib/libcu*                  - CUDA backend dependencies
-    lib/libglbinding*           - OpenGL graphics dependencies
     share/ArrayFire/cmake/*     - CMake config scripts
     share/ArrayFire/examples/*  - ArrayFire examples
 

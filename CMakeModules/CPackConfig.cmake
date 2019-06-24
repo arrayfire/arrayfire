@@ -260,7 +260,6 @@ endif ()
 
 get_native_path(zlib_lic_path "${CMAKE_SOURCE_DIR}/LICENSES/zlib-libpng License.txt")
 get_native_path(boost_lic_path "${CMAKE_SOURCE_DIR}/LICENSES/Boost Software License.txt")
-get_native_path(mit_lic_path "${CMAKE_SOURCE_DIR}/LICENSES/MIT License.txt")
 get_native_path(fimg_lic_path "${CMAKE_SOURCE_DIR}/LICENSES/FreeImage Public License.txt")
 get_native_path(apache_lic_path "${CMAKE_SOURCE_DIR}/LICENSES/Apache-2.0.txt")
 get_native_path(sift_lic_path "${CMAKE_SOURCE_DIR}/LICENSES/OpenSIFT License.txt")
@@ -288,7 +287,7 @@ cpack_ifw_configure_component(cmake)
 cpack_ifw_configure_component(documentation)
 cpack_ifw_configure_component(examples)
 cpack_ifw_configure_component(licenses FORCED_INSTALLATION
-  LICENSES "GLFW" ${zlib_lic_path} "glbinding" ${mit_lic_path} "FreeImage" ${fimg_lic_path}
+  LICENSES "GLFW" ${zlib_lic_path} "FreeImage" ${fimg_lic_path}
   "Boost" ${boost_lic_path} "clBLAS, clFFT" ${apache_lic_path} "SIFT" ${sift_lic_path}
   "BSD3" ${bsd3_lic_path} "Intel MKL" ${issl_lic_path}
 )
