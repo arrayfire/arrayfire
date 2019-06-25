@@ -10,30 +10,16 @@
 #include <Array.hpp>
 #include <kernel/rotate.hpp>
 #include <rotate.hpp>
-#include <stdexcept>
+#include <utility.hpp>
 
 namespace cuda {
+
 template<typename T>
 Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
                 const af_interp_type method) {
-    Array<T> out = createEmptyArray<T>(odims);
-
-    switch (method) {
-        case AF_INTERP_NEAREST:
-        case AF_INTERP_LOWER:
-            kernel::rotate<T, 1>(out, in, theta, method);
-            break;
-        case AF_INTERP_BILINEAR:
-        case AF_INTERP_BILINEAR_COSINE:
-            kernel::rotate<T, 2>(out, in, theta, method);
-            break;
-        case AF_INTERP_BICUBIC:
-        case AF_INTERP_BICUBIC_SPLINE:
-            kernel::rotate<T, 3>(out, in, theta, method);
-            break;
-        default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-    }
-
+    Array<T> out      = createEmptyArray<T>(odims);
+    auto interpParams = toInternalEnum(method);
+    kernel::rotate<T>(out, in, theta, interpParams.first, interpParams.second);
     return out;
 }
 

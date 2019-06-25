@@ -11,6 +11,7 @@
 #include <err_cuda.hpp>
 #include <kernel/medfilt.hpp>
 #include <medfilt.hpp>
+#include <utility.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
@@ -26,7 +27,7 @@ Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
 
     Array<T> out = createEmptyArray<T>(dims);
 
-    kernel::medfilt1<T, pad>(out, in, w_wid);
+    kernel::medfilt1<T>(out, in, toInternalEnum(pad), w_wid);
 
     return out;
 }
@@ -40,7 +41,7 @@ Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid) {
 
     Array<T> out = createEmptyArray<T>(dims);
 
-    kernel::medfilt2<T, pad>(out, in, w_len, w_wid);
+    kernel::medfilt2<T>(out, in, toInternalEnum(pad), w_len, w_wid);
 
     return out;
 }

@@ -8,8 +8,12 @@
  ********************************************************/
 
 #pragma once
+
+#include <backend.hpp>
+#include <internal_enums.hpp>
 #include <af/defines.h>
-#include "backend.hpp"
+
+#include <utility>
 
 namespace cuda {
 
@@ -24,5 +28,16 @@ static __DH__ dim_t trimIndex(const int &idx, const dim_t &len) {
     }
     return ret_val;
 }
+
+// TODO(pradeep) think of a better name
+std::pair<InterpolationType, int> toInternalEnum(const af_interp_type p);
+
+BorderType toInternalEnum(const af_border_type p);
+
+MomentType toInternalEnum(const af_moment_type p);
+
+FluxFunction toInternalEnum(const af_flux_function p);
+
+ErrorMetric toInternalEnum(const af_match_type p);
 
 }  // namespace cuda

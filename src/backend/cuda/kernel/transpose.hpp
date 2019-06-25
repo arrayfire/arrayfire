@@ -28,7 +28,6 @@ template<typename T>
 void transpose(Param<T> out, CParam<T> in, const bool conjugate,
                const bool is32multiple) {
     static const std::string source(transpose_cuh, transpose_cuh_len);
-
     // clang-format off
     auto transpose = getKernel("cuda::transpose", source,
             {

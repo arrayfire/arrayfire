@@ -11,6 +11,7 @@
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
 #include <kernel/moments.hpp>
+#include <utility.hpp>
 
 namespace cuda {
 
@@ -36,7 +37,7 @@ Array<float> moments(const Array<T> &in, const af_moment_type moment) {
     Array<float> out = createValueArray<float>(odims, 0.f);
     out.eval();
 
-    kernel::moments<T>(out, in, moment);
+    kernel::moments<T>(out, in, toInternalEnum(moment));
     return out;
 }
 

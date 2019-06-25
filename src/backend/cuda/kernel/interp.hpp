@@ -7,10 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <math_constants.h>
+#include <internal_enums.hpp>
+#include <math.hpp>
 
 namespace cuda {
-namespace kernel {
 
 template<typename T>
 struct itype_t {
@@ -92,14 +92,14 @@ struct Interp1 {};
 template<typename Ty, typename Tp>
 struct Interp1<Ty, Tp, 1> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
-                               Tp x, af_interp_type method, int batch,
+                               Tp x, InterpolationType method, int batch,
                                bool clamp, int xdim = 0, int batch_dim = 1) {
         Ty zero = scalar<Ty>(0);
 
         const int x_lim    = in.dims[xdim];
         const int x_stride = in.strides[xdim];
 
-        int xid   = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+        int xid   = (method == InterpolationType::Lower ? floor(x) : round(x));
         bool cond = xid >= 0 && xid < x_lim;
         if (clamp) xid = max(0, min(xid, x_lim));
 
@@ -117,7 +117,7 @@ struct Interp1<Ty, Tp, 1> {
 template<typename Ty, typename Tp>
 struct Interp1<Ty, Tp, 2> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
-                               Tp x, af_interp_type method, int batch,
+                               Tp x, InterpolationType method, int batch,
                                bool clamp, int xdim = 0, int batch_dim = 1) {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -132,7 +132,7 @@ struct Interp1<Ty, Tp, 2> {
         bool cond[2] = {true, grid_x + 1 < x_lim};
         int offx[2]  = {0, cond[1] ? 1 : 0};
         WT ratio     = off_x;
-        if (method == AF_INTERP_LINEAR_COSINE) {
+        if (method == InterpolationType::LinearCosine) {
             // Smooth the factional part with cosine
             ratio = (1 - cos(ratio * CUDART_PI)) / 2;
         }
@@ -153,7 +153,7 @@ struct Interp1<Ty, Tp, 2> {
 template<typename Ty, typename Tp>
 struct Interp1<Ty, Tp, 3> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
-                               Tp x, af_interp_type method, int batch,
+                               Tp x, InterpolationType method, int batch,
                                bool clamp, int xdim = 0, int batch_dim = 1) {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
@@ -170,7 +170,7 @@ struct Interp1<Ty, Tp, 3> {
         int offx[4]  = {cond[0] ? -1 : 0, 0, cond[2] ? 1 : 0,
                        cond[3] ? 2 : (cond[2] ? 1 : 0)};
 
-        bool spline = method == AF_INTERP_CUBIC_SPLINE;
+        bool spline = method == InterpolationType::CubicSpline;
         Ty zero     = scalar<Ty>(0);
         for (int n = 0; n < batch; n++) {
             int idx_n = idx + n * in.strides[batch_dim];
@@ -191,11 +191,11 @@ struct Interp2 {};
 template<typename Ty, typename Tp>
 struct Interp2<Ty, Tp, 1> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
-                               Tp x, Tp y, af_interp_type method, int batch,
+                               Tp x, Tp y, InterpolationType method, int batch,
                                bool clamp, int xdim = 0, int ydim = 1,
                                int batch_dim = 2) {
-        int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
-        int yid = (method == AF_INTERP_LOWER ? floor(y) : round(y));
+        int xid = (method == InterpolationType::Lower ? floor(x) : round(x));
+        int yid = (method == InterpolationType::Lower ? floor(y) : round(y));
 
         const int x_lim    = in.dims[xdim];
         const int y_lim    = in.dims[ydim];
@@ -226,7 +226,7 @@ struct Interp2<Ty, Tp, 1> {
 template<typename Ty, typename Tp>
 struct Interp2<Ty, Tp, 2> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
-                               Tp x, Tp y, af_interp_type method, int batch,
+                               Tp x, Tp y, InterpolationType method, int batch,
                                bool clamp, int xdim = 0, int ydim = 1,
                                int batch_dim = 2) {
         typedef typename itype_t<Tp>::wtype WT;
@@ -250,8 +250,8 @@ struct Interp2<Ty, Tp, 2> {
         int offy[2]   = {0, condY[1] ? 1 : 0};
 
         WT xratio = off_x, yratio = off_y;
-        if (method == AF_INTERP_LINEAR_COSINE ||
-            method == AF_INTERP_BILINEAR_COSINE) {
+        if (method == InterpolationType::LinearCosine ||
+            method == InterpolationType::BilinearCosine) {
             // Smooth the factional part with cosine
             xratio = (1 - cos(xratio * CUDART_PI)) / 2;
             yratio = (1 - cos(yratio * CUDART_PI)) / 2;
@@ -279,7 +279,7 @@ struct Interp2<Ty, Tp, 2> {
 template<typename Ty, typename Tp>
 struct Interp2<Ty, Tp, 3> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
-                               Tp x, Tp y, af_interp_type method, int batch,
+                               Tp x, Tp y, InterpolationType method, int batch,
                                bool clamp, int xdim = 0, int ydim = 1,
                                int batch_dim = 2) {
         typedef typename itype_t<Tp>::wtype WT;
@@ -309,8 +309,8 @@ struct Interp2<Ty, Tp, 3> {
 
         // for bicubic interpolation, work with 4x4 val at a time
         Ty zero     = scalar<Ty>(0);
-        bool spline = (method == AF_INTERP_CUBIC_SPLINE ||
-                       method == AF_INTERP_BICUBIC_SPLINE);
+        bool spline = (method == InterpolationType::CubicSpline ||
+                       method == InterpolationType::BicubicSpline);
         for (int n = 0; n < batch; n++) {
             int idx_n = idx + n * in.strides[batch_dim];
             VT val[4][4];
@@ -331,5 +331,4 @@ struct Interp2<Ty, Tp, 3> {
     }
 };
 
-}  // namespace kernel
 }  // namespace cuda

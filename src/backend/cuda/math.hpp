@@ -11,8 +11,6 @@
 
 #ifdef __CUDACC_RTC__
 
-#define CUDART_INF_F __int_as_float(0x7f800000)
-#define CUDART_INF __longlong_as_double(0x7ff0000000000000ULL)
 #define STATIC_ inline
 
 #else  //__CUDACC_RTC__
@@ -22,7 +20,6 @@
 
 #ifdef __CUDACC__
 #include <cuda_runtime_api.h>
-#include <math_constants.h>
 #endif  //__CUDACC__
 
 #include <algorithm>
@@ -30,6 +27,7 @@
 
 #endif  //__CUDACC_RTC__
 
+#include <math_constants.h>
 #include "backend.hpp"
 #include "types.hpp"
 

@@ -56,6 +56,30 @@ struct Kernel {
     void setConstant(const char* name, CUdeviceptr src, size_t bytes);
 
     ///
+    /// \brief Copy scalar to device qualified global variable of kernel
+    ///
+    /// This function copies a single value of type T from host variable
+    /// to a global(__device__) variable declared inside the kernel.
+    ///
+    /// \param[in] name is the name of the global variable inside kernel
+    /// \param[in] value is the value of type T
+    ///
+    template<typename T>
+    void setScalar(const char* name, T value);
+
+    ///
+    /// \brief Fetch scalar from device qualified global variable of kernel
+    ///
+    /// This function copies a single value of type T from a global(__device__)
+    /// variable declared inside the kernel to host.
+    ///
+    /// \param[in] name is the name of the global variable inside kernel
+    /// \param[in] value is the value of type T
+    ///
+    template<typename T>
+    void getScalar(T& out, const char* name);
+
+    ///
     /// \brief Enqueue Kernel per queueing criteria forwarding other parameters
     ///
     /// This operator overload enables Kernel object to work as functor that

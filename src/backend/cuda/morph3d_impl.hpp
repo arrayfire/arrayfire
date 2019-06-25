@@ -19,23 +19,12 @@ namespace cuda {
 template<typename T, bool isDilation>
 Array<T> morph3d(const Array<T> &in, const Array<T> &mask) {
     const dim4 mdims = mask.dims();
-
-    if (mdims[0] != mdims[1] || mdims[0] != mdims[2])
+    if (mdims[0] != mdims[1] || mdims[0] != mdims[2]) {
         CUDA_NOT_SUPPORTED("Only cubic masks are supported");
-
-    if (mdims[0] > 7) CUDA_NOT_SUPPORTED("Kernels > 7x7x7 not supported");
-
+    }
+    if (mdims[0] > 7) { CUDA_NOT_SUPPORTED("Kernels > 7x7x7 not supported"); }
     Array<T> out = createEmptyArray<T>(in.dims());
-
-    CUDA_CHECK(cudaMemcpyToSymbolAsync(
-        kernel::cFilter, mask.get(), mdims[0] * mdims[1] * mdims[2] * sizeof(T),
-        0, cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
-
-    if (isDilation)
-        kernel::morph3d<T, true>(out, in, mdims[0]);
-    else
-        kernel::morph3d<T, false>(out, in, mdims[0]);
-
+    kernel::morph3d<T>(out, in, mask, isDilation);
     return out;
 }
 

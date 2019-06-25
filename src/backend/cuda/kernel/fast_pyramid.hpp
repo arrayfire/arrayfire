@@ -72,7 +72,7 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr, std::vector<float*>& d_x_pyr,
                       round(indims[1] / lvl_scl[i]));
 
             img_pyr.push_back(createEmptyArray<T>(dims));
-            resize<T, AF_INTERP_BILINEAR>(img_pyr[i], img_pyr[i - 1]);
+            resize<T, InterpolationType::Bilinear>(img_pyr[i], img_pyr[i - 1]);
         }
     }
 

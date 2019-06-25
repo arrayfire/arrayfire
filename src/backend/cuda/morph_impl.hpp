@@ -19,23 +19,14 @@ namespace cuda {
 template<typename T, bool isDilation>
 Array<T> morph(const Array<T> &in, const Array<T> &mask) {
     const dim4 mdims = mask.dims();
-
-    if (mdims[0] != mdims[1])
+    if (mdims[0] != mdims[1]) {
         CUDA_NOT_SUPPORTED("Rectangular masks are not supported");
-
-    if (mdims[0] > 19) CUDA_NOT_SUPPORTED("Kernels > 19x19 are not supported");
-
+    }
+    if (mdims[0] > 19) {
+        CUDA_NOT_SUPPORTED("Kernels > 19x19 are not supported");
+    }
     Array<T> out = createEmptyArray<T>(in.dims());
-
-    CUDA_CHECK(cudaMemcpyToSymbolAsync(
-        kernel::cFilter, mask.get(), mdims[0] * mdims[1] * sizeof(T), 0,
-        cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
-
-    if (isDilation)
-        kernel::morph<T, true>(out, in, mdims[0]);
-    else
-        kernel::morph<T, false>(out, in, mdims[0]);
-
+    kernel::morph<T>(out, in, mask, isDilation);
     return out;
 }
 

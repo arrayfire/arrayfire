@@ -24,13 +24,13 @@ Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
 
     switch (method) {
         case AF_INTERP_NEAREST:
-            kernel::resize<T, AF_INTERP_NEAREST>(out, in);
+            kernel::resize<T, InterpolationType::Nearest>(out, in);
             break;
         case AF_INTERP_BILINEAR:
-            kernel::resize<T, AF_INTERP_BILINEAR>(out, in);
+            kernel::resize<T, InterpolationType::Bilinear>(out, in);
             break;
         case AF_INTERP_LOWER:
-            kernel::resize<T, AF_INTERP_LOWER>(out, in);
+            kernel::resize<T, InterpolationType::Lower>(out, in);
             break;
         default: break;
     }

@@ -11,6 +11,7 @@
 #include <copy.hpp>
 #include <err_cuda.hpp>
 #include <kernel/pad_array_borders.hpp>
+#include <utility.hpp>
 #include <af/dim4.hpp>
 
 namespace cuda {
@@ -27,7 +28,7 @@ Array<T> padArrayBorders(Array<T> const& in, dim4 const& lowerBoundPadding,
 
     auto ret = createEmptyArray<T>(oDims);
 
-    kernel::padBorders<T>(ret, in, lowerBoundPadding, btype);
+    kernel::padBorders<T>(ret, in, lowerBoundPadding, toInternalEnum(btype));
 
     return ret;
 }

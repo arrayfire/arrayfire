@@ -8,12 +8,16 @@
  ********************************************************/
 
 #include <device_manager.hpp>
+#include <internal_enums.hpp>
 #include <kernel_headers/jit.hpp>
 #include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/Param.hpp>
 #include <nvrtc_kernel_headers/backend.hpp>
 #include <nvrtc_kernel_headers/cuComplex.hpp>
+#include <nvrtc_kernel_headers/internal_enums.hpp>
+#include <nvrtc_kernel_headers/interp.hpp>
 #include <nvrtc_kernel_headers/math.hpp>
+#include <nvrtc_kernel_headers/math_constants.hpp>
 #include <nvrtc_kernel_headers/ops.hpp>
 #include <nvrtc_kernel_headers/optypes.hpp>
 #include <nvrtc_kernel_headers/shared.hpp>
@@ -96,9 +100,29 @@ void Kernel::setConstant(const char* name, CUdeviceptr src, size_t bytes) {
     CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, getActiveStream()));
 }
 
+template<typename T>
+void Kernel::setScalar(const char* name, T value) {
+    CUdeviceptr dst = 0;
+    CU_CHECK(cuModuleGetGlobal(&dst, NULL, prog, name));
+    CU_CHECK(cuMemcpyHtoDAsync(dst, &value, sizeof(T), getActiveStream()));
+    CU_CHECK(cuStreamSynchronize(getActiveStream()));
+}
+
+template<typename T>
+void Kernel::getScalar(T& out, const char* name) {
+    CUdeviceptr src = 0;
+    CU_CHECK(cuModuleGetGlobal(&src, NULL, prog, name));
+    CU_CHECK(cuMemcpyDtoHAsync(&out, src, sizeof(T), getActiveStream()));
+    CU_CHECK(cuStreamSynchronize(getActiveStream()));
+}
+
+template void Kernel::setScalar<int>(const char*, int);
+template void Kernel::getScalar<int>(int&, const char*);
+
 Kernel buildKernel(const int device, const string& nameExpr,
                    const string& jit_ker, const vector<string>& opts,
                    const bool isJIT) {
+    const string afversion("-DAF_API_VERSION=" + toString((int)AF_API_VERSION));
     const char* ker_name = nameExpr.c_str();
 
     nvrtcProgram prog;
@@ -109,31 +133,33 @@ Kernel buildKernel(const int device, const string& nameExpr,
         constexpr static const char* includeNames[] = {
             "math.h",          // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
             "vector_types.h",  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
-            "backend.hpp",    "complex.hpp", "jit.cuh",
-            "math.hpp",       "ops.hpp",     "optypes.hpp",
-            "Param.hpp",      "shared.hpp",  "types.hpp"};
+            "backend.hpp",    "complex.hpp",      "jit.cuh",
+            "math.hpp",       "ops.hpp",          "optypes.hpp",
+            "Param.hpp",      "shared.hpp",       "types.hpp",
+            "interp.hpp",     "math_constants.h", "internal_enums.hpp"};
         constexpr size_t NumHeaders = extent<decltype(includeNames)>::value;
-        static const std::array<string, NumHeaders> sourceStrings = {{
-            string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
-            string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
-            string(backend_hpp, backend_hpp_len),
-            string(cuComplex_h, cuComplex_h_len),
-            string(jit_cuh, jit_cuh_len),
-            string(math_hpp, math_hpp_len),
-            string(ops_hpp, ops_hpp_len),
-            string(optypes_hpp, optypes_hpp_len),
-            string(Param_hpp, Param_hpp_len),
-            string(shared_hpp, shared_hpp_len),
-            string(types_hpp, types_hpp_len),
-        }};
+        static const std::array<string, NumHeaders> sourceStrings = {
+            {string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
+             string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
+             string(backend_hpp, backend_hpp_len),
+             string(cuComplex_h, cuComplex_h_len), string(jit_cuh, jit_cuh_len),
+             string(math_hpp, math_hpp_len), string(ops_hpp, ops_hpp_len),
+             string(optypes_hpp, optypes_hpp_len),
+             string(Param_hpp, Param_hpp_len),
+             string(shared_hpp, shared_hpp_len),
+             string(types_hpp, types_hpp_len),
+             string(interp_hpp, interp_hpp_len),
+             string(math_constants_h, math_constants_h_len),
+             string(internal_enums_hpp, internal_enums_hpp_len)}};
 
         static const char* headers[] = {
-            sourceStrings[0].c_str(), sourceStrings[1].c_str(),
-            sourceStrings[2].c_str(), sourceStrings[3].c_str(),
-            sourceStrings[4].c_str(), sourceStrings[5].c_str(),
-            sourceStrings[6].c_str(), sourceStrings[7].c_str(),
-            sourceStrings[8].c_str(), sourceStrings[9].c_str(),
-            sourceStrings[10].c_str()};
+            sourceStrings[0].c_str(),  sourceStrings[1].c_str(),
+            sourceStrings[2].c_str(),  sourceStrings[3].c_str(),
+            sourceStrings[4].c_str(),  sourceStrings[5].c_str(),
+            sourceStrings[6].c_str(),  sourceStrings[7].c_str(),
+            sourceStrings[8].c_str(),  sourceStrings[9].c_str(),
+            sourceStrings[10].c_str(), sourceStrings[11].c_str(),
+            sourceStrings[12].c_str(), sourceStrings[13].c_str()};
         NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name,
                                        NumHeaders, headers, includeNames));
     }
@@ -153,6 +179,7 @@ Kernel buildKernel(const int device, const string& nameExpr,
     if (!isJIT) {
         for (auto& s : opts) { compiler_options.push_back(&s[0]); }
         compiler_options.push_back("--device-as-default-execution-space");
+        compiler_options.push_back(afversion.c_str());
         NVRTC_CHECK(nvrtcAddNameExpression(prog, ker_name));
     }
 
@@ -343,6 +370,76 @@ string toString(af_op_t val) {
 template<>
 string toString(const char* str) {
     return string(str);
+}
+
+template<>
+string toString(InterpolationType p) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(cuda::InterpolationType::Nearest);
+        CASE_STMT(cuda::InterpolationType::Lower);
+        CASE_STMT(cuda::InterpolationType::Linear);
+        CASE_STMT(cuda::InterpolationType::Bilinear);
+        CASE_STMT(cuda::InterpolationType::Cubic);
+        CASE_STMT(cuda::InterpolationType::LinearCosine);
+        CASE_STMT(cuda::InterpolationType::BilinearCosine);
+        CASE_STMT(cuda::InterpolationType::Bicubic);
+        CASE_STMT(cuda::InterpolationType::CubicSpline);
+        CASE_STMT(cuda::InterpolationType::BicubicSpline);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(BorderType p) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(cuda::BorderType::Zero);
+        CASE_STMT(cuda::BorderType::Symmetric);
+        CASE_STMT(cuda::BorderType::ClampToEdge);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(MomentType p) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(cuda::MomentType::M00);
+        CASE_STMT(cuda::MomentType::M01);
+        CASE_STMT(cuda::MomentType::M10);
+        CASE_STMT(cuda::MomentType::M11);
+        CASE_STMT(cuda::MomentType::FirstOrder);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(ErrorMetric p) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(cuda::ErrorMetric::SAD);
+        CASE_STMT(cuda::ErrorMetric::ZSAD);
+        CASE_STMT(cuda::ErrorMetric::LSAD);
+        CASE_STMT(cuda::ErrorMetric::SSD);
+        CASE_STMT(cuda::ErrorMetric::ZSSD);
+        CASE_STMT(cuda::ErrorMetric::LSSD);
+        CASE_STMT(cuda::ErrorMetric::NCC);
+        CASE_STMT(cuda::ErrorMetric::ZNCC);
+    }
+#undef CASE_STMT
+    return retVal;
 }
 
 Kernel getKernel(const string& nameExpr, const string& source,
