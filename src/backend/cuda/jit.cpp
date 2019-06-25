@@ -15,7 +15,7 @@
 #include <debug_cuda.hpp>
 #include <device_manager.hpp>
 #include <err_cuda.hpp>
-#include <nvrtc_kernel_headers/jit_cuh.hpp>
+#include <kernel_headers/jit_cuh.hpp>
 #include <math.hpp>
 #include <nvrtc/cache.hpp>
 #include <platform.hpp>

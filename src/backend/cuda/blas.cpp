@@ -99,6 +99,7 @@ BLAS_FUNC(gemv, cdouble, Z)
 template<>
 gemv_func_def<common::half> gemv_func<common::half>() {
     assert(1 != 1 && "GEMV for half is not available.");
+    return gemv_func_def<common::half>();
 }
 
 // BLAS_FUNC(gemv, __half, S)  // TODO(umar): Not implemented in CUDA

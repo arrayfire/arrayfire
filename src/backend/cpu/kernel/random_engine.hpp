@@ -161,9 +161,8 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
                 for (size_t buf_idx = 0; buf_idx < NUM_WRITES; ++buf_idx) {
                     size_t out_idx = iter + buf_idx * WRITE_STRIDE + i + j;
                     if (out_idx < elements) {
-                        out[i + j] =
-                            transform<data_t<T>, compute_t<T>>(
-                                ctr, j);
+                        out[out_idx] =
+                            transform<data_t<T>, compute_t<T>>(ctr, buf_idx);
                     }
                 }
             }
@@ -191,17 +190,14 @@ void threefryUniform(T *out, size_t elements, const uintl seed, uintl counter) {
         ctr[1] += (ctr[0] == 0);
         int lim = (reset < (int)(elements - i)) ? reset : (int)(elements - i);
         for (int j = 0; j < lim; ++j) {
-            out[i + j] =
-                transform<data_t<T>, compute_t<T>>(val, j);
+            out[i + j] = transform<data_t<T>, compute_t<T>>(val, j);
         }
     }
 }
 
 template<typename T>
-void boxMullerTransform(data_t<T> *const out1,
-                        data_t<T> *const out2,
-                        const compute_t<T> r1,
-                        const compute_t<T> r2) {
+void boxMullerTransform(data_t<T> *const out1, data_t<T> *const out2,
+                        const compute_t<T> r1, const compute_t<T> r2) {
     /*
      * The log of a real value x where 0 < x < 1 is negative.
      */
@@ -300,8 +296,7 @@ void uniformDistributionMT(T *out, size_t elements, uint *const state,
                  temper_table);
         int lim = (reset < (int)(elements - i)) ? reset : (int)(elements - i);
         for (int j = 0; j < lim; ++j) {
-            out[i + j] =
-                transform<data_t<T>, compute_t<T>>(o, j);
+            out[i + j] = transform<data_t<T>, compute_t<T>>(o, j);
         }
     }
 

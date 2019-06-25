@@ -51,6 +51,18 @@ cuda_include_directories(
   ${COMMON_INTERFACE_DIRS}
   )
 
+file(GLOB jit_src "kernel/jit.cuh")
+
+file_to_string(
+    SOURCES ${jit_src}
+    VARNAME jit_files
+    EXTENSION "hpp"
+    OUTPUT_DIR "kernel_headers"
+    TARGETS jit_kernel_targets
+    NAMESPACE "cuda"
+    WITH_EXTENSION
+    )
+
 set(nvrtc_src
   ${CUDA_TOOLKIT_ROOT_DIR}/include/cuComplex.h
   ${CUDA_INCLUDE_DIRS}/cuda_fp16.h
@@ -62,7 +74,6 @@ set(nvrtc_src
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve2.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve3.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve_separable.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/jit.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim_by_key.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.cuh

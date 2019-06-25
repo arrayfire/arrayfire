@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <device_manager.hpp>
-#include <kernel_headers/jit.hpp>
+#include <kernel_headers/jit_cuh.hpp>
 #include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/Param_hpp.hpp>
 #include <nvrtc_kernel_headers/backend_hpp.hpp>
