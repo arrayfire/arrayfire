@@ -299,7 +299,7 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         } else {
             CUBLAS_CHECK(gemm_dispatch<T>(blasHandle(), lOpts, rOpts, M, N, K,
                                           alpha, lhs, lStrides[1], rhs,
-                                          rStrides[1], beta, out, oDims[0]));
+                                          rStrides[1], beta, out, oStrides[1]));
         }
     } else {
         int batchSize = oDims[2] * oDims[3];
