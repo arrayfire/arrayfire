@@ -60,7 +60,7 @@ template<>
 std::string ToNumStr<common::half>::operator()(common::half val) {
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
-    if (std::isinf(val)) { return val < 0 ? NINF : PINF; }
+    if (common::isinf(val)) { return val < 0 ? NINF : PINF; }
     return std::to_string(val);
 }
 
@@ -69,7 +69,7 @@ template<>
 std::string ToNumStr<common::half>::operator()<float>(float val) {
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
-    if (std::isinf(val)) { return val < 0 ? NINF : PINF; }
+    if (common::isinf(common::half(val))) { return val < 0 ? NINF : PINF; }
     return std::to_string(val);
 }
 

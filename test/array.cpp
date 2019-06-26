@@ -335,6 +335,16 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
             break;
+        case f16:
+            EXPECT_TRUE(one.isfloating());
+            EXPECT_FALSE(one.isdouble());
+            EXPECT_FALSE(one.issingle());
+            EXPECT_TRUE(one.isrealfloating());
+            EXPECT_FALSE(one.isinteger());
+            EXPECT_TRUE(one.isreal());
+            EXPECT_FALSE(one.iscomplex());
+            EXPECT_FALSE(one.isbool());
+            break;
     }
 }
 

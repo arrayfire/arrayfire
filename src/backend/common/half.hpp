@@ -574,13 +574,32 @@ __DH__ inline float half2float(uint16_t value) noexcept {
     std::memcpy(&out, &bits, sizeof(float));
     return out;
 }
-#endif // __CUDACC_RTC__
+#endif  // __CUDACC_RTC__
+
+namespace internal {
+/// Tag type for binary construction.
+struct binary_t {};
+
+/// Tag for binary construction.
+static constexpr binary_t binary;
+}  // namespace internal
 
 class alignas(2) half {
 #if defined(__CUDA_ARCH__)
     __half data_;
 #else
     uint16_t data_;
+#endif
+    /// Constructor.
+    /// \param bits binary representation to set half to
+    CONSTEXPR_DH half(internal::binary_t, uint16_t bits) noexcept
+        : data_(bits) {}
+
+#if !defined(NVCC) && !defined(__CUDACC_RTC__)
+    // NVCC on OSX performs a weird transformation where it removes the std::
+    // namespace and complains that the std:: namespace is not there
+    friend class std::numeric_limits<half>;
+    friend struct std::hash<half>;
 #endif
 
    public:
@@ -637,4 +656,146 @@ class alignas(2) half {
 #ifndef __CUDA_ARCH__
 std::ostream& operator<<(std::ostream& os, const half& val);
 #endif
+
 }  // namespace common
+
+#if !defined(NVCC) && !defined(__CUDACC_RTC__)
+/// Extensions to the C++ standard library.
+namespace std {
+/// Numeric limits for half-precision floats.
+/// Because of the underlying single-precision implementation of many
+/// operations, it inherits some properties from `std::numeric_limits<float>`.
+template<>
+class numeric_limits<common::half> : public numeric_limits<float> {
+   public:
+    /// Supports signed values.
+    static constexpr bool is_signed = true;
+
+    /// Is not exact.
+    static constexpr bool is_exact = false;
+
+    /// Doesn't provide modulo arithmetic.
+    static constexpr bool is_modulo = false;
+
+    /// IEEE conformant.
+    static constexpr bool is_iec559 = true;
+
+    /// Supports infinity.
+    static constexpr bool has_infinity = true;
+
+    /// Supports quiet NaNs.
+    static constexpr bool has_quiet_NaN = true;
+
+    /// Supports subnormal values.
+    static constexpr float_denorm_style has_denorm = denorm_present;
+
+    /// Rounding mode.
+    /// Due to the mix of internal single-precision computations (using the
+    /// rounding mode of the underlying single-precision implementation) with
+    /// the rounding mode of the single-to-half conversions, the actual rounding
+    /// mode might be `std::round_indeterminate` if the default half-precision
+    /// rounding mode doesn't match the single-precision rounding mode.
+    static constexpr float_round_style round_style =
+        std::numeric_limits<float>::round_style;
+
+    /// Significant digits.
+    static constexpr int digits = 11;
+
+    /// Significant decimal digits.
+    static constexpr int digits10 = 3;
+
+    /// Required decimal digits to represent all possible values.
+    static constexpr int max_digits10 = 5;
+
+    /// Number base.
+    static constexpr int radix = 2;
+
+    /// One more than smallest exponent.
+    static constexpr int min_exponent = -13;
+
+    /// Smallest normalized representable power of 10.
+    static constexpr int min_exponent10 = -4;
+
+    /// One more than largest exponent
+    static constexpr int max_exponent = 16;
+
+    /// Largest finitely representable power of 10.
+    static constexpr int max_exponent10 = 4;
+
+    /// Smallest positive normal value.
+    static CONSTEXPR_DH common::half min() noexcept {
+        return common::half(common::internal::binary, 0x0400);
+    }
+
+    /// Smallest finite value.
+    static CONSTEXPR_DH common::half lowest() noexcept {
+        return common::half(common::internal::binary, 0xFBFF);
+    }
+
+    /// Largest finite value.
+    static CONSTEXPR_DH common::half max() noexcept {
+        return common::half(common::internal::binary, 0x7BFF);
+    }
+
+    /// Difference between one and next representable value.
+    static CONSTEXPR_DH common::half epsilon() noexcept {
+        return common::half(common::internal::binary, 0x1400);
+    }
+
+    /// Maximum rounding error.
+    static CONSTEXPR_DH common::half round_error() noexcept {
+        return common::half(
+            common::internal::binary,
+            (round_style == std::round_to_nearest) ? 0x3800 : 0x3C00);
+    }
+
+    /// Positive infinity.
+    static CONSTEXPR_DH common::half infinity() noexcept {
+        return common::half(common::internal::binary, 0x7C00);
+    }
+
+    /// Quiet NaN.
+    static CONSTEXPR_DH common::half quiet_NaN() noexcept {
+        return common::half(common::internal::binary, 0x7FFF);
+    }
+
+    /// Signalling NaN.
+    static CONSTEXPR_DH common::half signaling_NaN() noexcept {
+        return common::half(common::internal::binary, 0x7DFF);
+    }
+
+    /// Smallest positive subnormal value.
+    static CONSTEXPR_DH common::half denorm_min() noexcept {
+        return common::half(common::internal::binary, 0x0001);
+    }
+};
+
+/// Hash function for half-precision floats.
+/// This is only defined if C++11 `std::hash` is supported and enabled.
+template<>
+struct hash<common::half>  //: unary_function<common::half,size_t>
+{
+    /// Type of function argument.
+    typedef common::half argument_type;
+
+    /// Function return type.
+    typedef size_t result_type;
+
+    /// Compute hash function.
+    /// \param arg half to hash
+    /// \return hash value
+    result_type operator()(argument_type arg) const {
+        return std::hash<uint16_t>()(
+            static_cast<unsigned>(arg.data_) &
+            -(*reinterpret_cast<uint16_t*>(&arg.data_) != 0x8000));
+    }
+};
+}  // namespace std
+
+namespace common {
+static bool isinf(::common::half val) noexcept {
+    return val == std::numeric_limits<::common::half>::infinity() ||
+           val == -std::numeric_limits<::common::half>::infinity();
+}
+}  // namespace common
+#endif
