@@ -589,11 +589,11 @@ class alignas(2) half {
     __half data_;
 #else
     uint16_t data_;
-#endif
     /// Constructor.
     /// \param bits binary representation to set half to
     CONSTEXPR_DH half(internal::binary_t, uint16_t bits) noexcept
         : data_(bits) {}
+#endif
 
 #if !defined(NVCC) && !defined(__CUDACC_RTC__)
     // NVCC on OSX performs a weird transformation where it removes the std::
