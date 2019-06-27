@@ -144,7 +144,7 @@ Kernel buildKernel(const int device, const string& nameExpr,
              computeFlag.first, computeFlag.second);
     vector<const char*> compiler_options = {
         arch.data(),
-        "--std=c++11",
+        "--std=c++14",
 #if !(defined(NDEBUG) || defined(__aarch64__) || defined(__LP64__))
         "--device-debug",
         "--generate-line-info"
