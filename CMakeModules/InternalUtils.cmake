@@ -30,7 +30,7 @@ endfunction()
 
 function(arrayfire_get_cuda_cxx_flags cuda_flags)
   if(NOT MSVC)
-    set(flags "-std=c++11 -Xcompiler -fPIC -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden")
+    set(flags "-std=c++14 -Xcompiler -fPIC -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden")
   else()
     set(flags "-Xcompiler /wd4251 -Xcompiler /wd4068 -Xcompiler /wd4275 -Xcompiler /bigobj -Xcompiler /EHsc")
     if(CMAKE_GENERATOR MATCHES "Ninja")
@@ -104,7 +104,7 @@ macro(arrayfire_set_cmake_default_variables)
   set(CMAKE_PREFIX_PATH "${ArrayFire_BINARY_DIR};${CMAKE_PREFIX_PATH}")
   set(BUILD_SHARED_LIBS ON)
 
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_EXTENSIONS OFF)
   set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
