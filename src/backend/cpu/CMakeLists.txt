@@ -206,7 +206,6 @@ target_sources(afcpu
     kernel/dot.hpp
     kernel/exampleFunction.hpp
     kernel/fast.hpp
-    kernel/fft.hpp
     kernel/fftconvolve.hpp
     kernel/gradient.hpp
     kernel/harris.hpp
