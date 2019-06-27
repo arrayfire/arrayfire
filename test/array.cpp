@@ -344,6 +344,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
     }
 }

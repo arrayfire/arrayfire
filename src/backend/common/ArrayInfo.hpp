@@ -139,6 +139,8 @@ class ArrayInfo {
 
     bool isSingle() const;
 
+    bool isHalf() const;
+
     bool isRealFloating() const;
 
     bool isFloating() const;

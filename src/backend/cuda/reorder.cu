@@ -14,6 +14,8 @@
 #include <reorder.hpp>
 #include <stdexcept>
 
+using common::half;
+
 namespace cuda {
 template<typename T>
 Array<T> reorder(const Array<T> &in, const af::dim4 &rdims) {
@@ -43,6 +45,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
-INSTANTIATE(common::half)
+INSTANTIATE(half)
 
 }  // namespace cuda

@@ -16,6 +16,8 @@
 #include <string>
 #include <sstream>
 
+using common::half;
+
 namespace opencl {
 
 template<typename T>
@@ -57,7 +59,7 @@ std::string ToNumStr<cdouble>::operator()(cdouble val) {
 }
 
 template<>
-std::string ToNumStr<common::half>::operator()(common::half val) {
+std::string ToNumStr<half>::operator()(half val) {
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
     if (common::isinf(val)) { return val < 0 ? NINF : PINF; }
@@ -66,10 +68,10 @@ std::string ToNumStr<common::half>::operator()(common::half val) {
 
 template<>
 template<>
-std::string ToNumStr<common::half>::operator()<float>(float val) {
+std::string ToNumStr<half>::operator()<float>(float val) {
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
-    if (common::isinf(common::half(val))) { return val < 0 ? NINF : PINF; }
+    if (common::isinf(half(val))) { return val < 0 ? NINF : PINF; }
     return std::to_string(val);
 }
 
@@ -89,7 +91,7 @@ std::string ToNumStr<common::half>::operator()<float>(float val) {
   INSTANTIATE(uintl);
   INSTANTIATE(uchar);
   INSTANTIATE(char);
-  INSTANTIATE(common::half);
+  INSTANTIATE(half);
 
 #undef INSTANTIATE
 

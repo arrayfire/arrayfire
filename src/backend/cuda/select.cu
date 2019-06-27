@@ -120,6 +120,6 @@ INSTANTIATE(char);
 INSTANTIATE(uchar);
 INSTANTIATE(short);
 INSTANTIATE(ushort);
-INSTANTIATE(common::half);
+INSTANTIATE(half);
 
 }  // namespace cuda

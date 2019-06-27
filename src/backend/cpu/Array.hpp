@@ -162,6 +162,7 @@ class Array {
     INFO_IS_FUNC(isReal)
     INFO_IS_FUNC(isDouble)
     INFO_IS_FUNC(isSingle)
+    INFO_IS_FUNC(isHalf);
     INFO_IS_FUNC(isRealFloating)
     INFO_IS_FUNC(isFloating)
     INFO_IS_FUNC(isInteger)

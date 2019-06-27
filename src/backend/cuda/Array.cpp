@@ -437,6 +437,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
-INSTANTIATE(common::half)
+INSTANTIATE(half)
 
 }  // namespace cuda

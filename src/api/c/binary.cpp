@@ -26,10 +26,9 @@
 
 #include <common/half.hpp>
 
-using common::half;
-
 using namespace detail;
 using af::dim4;
+using common::half;
 
 template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs,

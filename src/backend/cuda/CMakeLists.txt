@@ -456,6 +456,10 @@ cuda_add_library(afcuda
   )
 
 arrayfire_set_default_cxx_flags(afcuda)
+
+# CUDA_NO_HALF prevents the inclusion of the half class in the global namespace
+# which conflicts with the half class in ArrayFire's common namespace. prefer
+# using __half class instead for CUDA
 target_compile_definitions(afcuda PRIVATE AF_CUDA CUDA_NO_HALF)
 
 add_library(ArrayFire::afcuda ALIAS afcuda)

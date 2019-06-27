@@ -37,7 +37,7 @@ af_array createHandle(af::dim4 d, af_dtype dtype) {
         case u64: return createHandle<uintl>(d);
         case s16: return createHandle<short>(d);
         case u16: return createHandle<ushort>(d);
-        case f16: return createHandle<common::half>(d);
+        case f16: return createHandle<half>(d);
         default: TYPE_ERROR(3, dtype);
     }
 }
@@ -58,7 +58,7 @@ af_err af_get_data_ptr(void *data, const af_array arr) {
             case u64: copyData(static_cast<uintl *>(data), arr); break;
             case s16: copyData(static_cast<short *>(data), arr); break;
             case u16: copyData(static_cast<ushort *>(data), arr); break;
-            case f16: copyData(static_cast<common::half *>(data), arr); break;
+            case f16: copyData(static_cast<half *>(data), arr); break;
             default: TYPE_ERROR(1, type);
         }
     }
@@ -119,7 +119,7 @@ af_err af_create_array(af_array *result, const void *const data,
                 break;
             case f16:
                 out = createHandleFromData(
-                    d, static_cast<const common::half *>(data));
+                    d, static_cast<const half *>(data));
                 break;
             default: TYPE_ERROR(4, type);
         }
@@ -186,7 +186,7 @@ af_err af_copy_array(af_array *out, const af_array in) {
                     case u64: res = copyArray<uintl>(in); break;
                     case s16: res = copyArray<short>(in); break;
                     case u16: res = copyArray<ushort>(in); break;
-                    case f16: res = copyArray<common::half>(in); break;
+                    case f16: res = copyArray<half>(in); break;
                     default: TYPE_ERROR(1, type);
                 }
             }
@@ -217,7 +217,7 @@ af_err af_get_data_ref_count(int *use_count, const af_array in) {
             case u64: res = getArray<uintl>(in).useCount(); break;
             case s16: res = getArray<short>(in).useCount(); break;
             case u16: res = getArray<ushort>(in).useCount(); break;
-            case f16: res = getArray<common::half>(in).useCount(); break;
+            case f16: res = getArray<half>(in).useCount(); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*use_count, res);
@@ -253,7 +253,7 @@ af_err af_release_array(af_array arr) {
                 case u64: releaseHandle<uintl>(arr); break;
                 case s16: releaseHandle<short>(arr); break;
                 case u16: releaseHandle<ushort>(arr); break;
-                case f16: releaseHandle<common::half>(arr); break;
+                case f16: releaseHandle<half>(arr); break;
                 default: TYPE_ERROR(0, type);
             }
         }
@@ -289,7 +289,7 @@ af_array retain(const af_array in) {
             case u64: return retainHandle<uintl>(in);
             case s16: return retainHandle<short>(in);
             case u16: return retainHandle<ushort>(in);
-            case f16: return retainHandle<common::half>(in);
+            case f16: return retainHandle<half>(in);
             default: TYPE_ERROR(1, ty);
         }
     }
@@ -359,7 +359,7 @@ af_err af_write_array(af_array arr, const void *data, const size_t bytes,
                 write_array(arr, static_cast<const ushort *>(data), bytes, src);
                 break;
             case f16:
-                write_array(arr, static_cast<const common::half *>(data), bytes,
+                write_array(arr, static_cast<const half *>(data), bytes,
                             src);
                 break;
             default: TYPE_ERROR(4, type);
@@ -431,6 +431,7 @@ INSTANTIATE(af_is_complex, isComplex)
 INSTANTIATE(af_is_real, isReal)
 INSTANTIATE(af_is_double, isDouble)
 INSTANTIATE(af_is_single, isSingle)
+INSTANTIATE(af_is_half, isHalf)
 INSTANTIATE(af_is_realfloating, isRealFloating)
 INSTANTIATE(af_is_floating, isFloating)
 INSTANTIATE(af_is_integer, isInteger)
@@ -493,8 +494,8 @@ af_err af_get_scalar(void *output_value, const af_array arr) {
                                    arr);
                 break;
             case f16:
-                getScalar<common::half>(
-                    static_cast<common::half *>(output_value), arr);
+                getScalar<half>(
+                    static_cast<half *>(output_value), arr);
                 break;
             default: TYPE_ERROR(4, type);
         }

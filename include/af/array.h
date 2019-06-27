@@ -118,6 +118,9 @@ namespace af
             inline bool isreal() const { return !iscomplex(); }
             bool isdouble() const;
             bool issingle() const;
+#if AF_API_VERSION >= 37
+            bool ishalf() const;
+#endif
             bool isrealfloating() const;
             bool isfloating() const;
             bool isinteger() const;
@@ -638,17 +641,24 @@ namespace af
         bool isdouble() const;
 
         /**
-           \brief Returns true if the array type is neither \ref f64 nor \ref c64
+           \brief Returns true if the array type is either \ref f32 nor \ref c32
         */
         bool issingle() const;
 
+#if AF_API_VERSION >= 37
         /**
-           \brief Returns true if the array type is \ref f32 or \ref f64
+           \brief Returns true if the array type is \ref f16
+        */
+        bool ishalf() const;
+#endif
+
+        /**
+           \brief Returns true if the array type is \ref f16 \ref f32 or \ref f64
         */
         bool isrealfloating() const;
 
         /**
-           \brief Returns true if the array type is \ref f32, \ref f64, \ref c32 or \ref c64
+           \brief Returns true if the array type is \ref f16 \ref f32, \ref f64, \ref c32 or \ref c64
         */
         bool isfloating() const;
 
@@ -1702,7 +1712,7 @@ extern "C" {
 
         This is mutually exclusive to \ref af_is_complex
 
-        \param[out] result is true if arr is NOT of type \ref c32 or \ref c64, otherwise false
+        \param[out] result is true if arr is NOT \ref c32 or \ref c64, otherwise false
         \param[in] arr is the input array
 
         \returns error codes
@@ -1729,6 +1739,18 @@ extern "C" {
     */
     AFAPI af_err af_is_single       (bool *result, const af_array arr);
 
+#if AF_API_VERSION >= 37
+    /**
+        \brief Check if an array is 16 bit floating point type
+
+        \param[out] result is true if arr is of type \ref f16 otherwise false
+        \param[in] arr     is the input array
+
+        \returns error codes
+    */
+    AFAPI af_err af_is_half(bool *result, const af_array arr);
+#endif
+
     /**
         \brief Check if an array is real floating point type
 
@@ -1744,7 +1766,8 @@ extern "C" {
 
         This is a combination of \ref af_is_realfloating and \ref af_is_complex
 
-        \param[out] result is true if arr is of type \ref f32, \ref f64, \ref c32 or \ref c64, otherwise false
+        \param[out] result is true if arr is of type \ref f16 \ref f32, \ref
+                           f64, \ref c32 or \ref c64, otherwise false
         \param[in] arr is the input array
 
         \returns error codes

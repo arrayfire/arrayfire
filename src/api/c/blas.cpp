@@ -195,9 +195,9 @@ af_err af_gemm(af_array *out,
                                     static_cast<const cdouble*>(beta)); break;
 #ifndef AF_CPU
             case f16:
-              gemm<common::half>(&output, optLhs, optRhs,
-                                 static_cast<const common::half *>(alpha), lhs, rhs,
-                                 static_cast<const common::half *>(beta)); break;
+              gemm<half>(&output, optLhs, optRhs,
+                                 static_cast<const half *>(alpha), lhs, rhs,
+                                 static_cast<const half *>(beta)); break;
           break;
 #endif
             default: TYPE_ERROR(3, lhs_type);

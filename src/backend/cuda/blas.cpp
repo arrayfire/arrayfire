@@ -97,9 +97,9 @@ BLAS_FUNC(gemv, double, D)
 BLAS_FUNC(gemv, cdouble, Z)
 
 template<>
-gemv_func_def<common::half> gemv_func<common::half>() {
+gemv_func_def<half> gemv_func<half>() {
     assert(1 != 1 && "GEMV for half is not available.");
-    return gemv_func_def<common::half>();
+    return gemv_func_def<half>();
 }
 
 // BLAS_FUNC(gemv, __half, S)  // TODO(umar): Not implemented in CUDA
@@ -200,7 +200,7 @@ cublasGemmAlgo_t selectGEMMAlgorithm<__half>() {
 }
 
 template<typename T>
-cublasStatus_t gemm_dispatch(BlasHandle handle, cublasOperation_t lOpts,
+cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
                              cublasOperation_t rOpts, int M, int N, int K,
                              const T *alpha, const Array<T> &lhs, dim_t lStride,
                              const Array<T> &rhs, dim_t rStride, const T *beta,
@@ -231,7 +231,7 @@ cublasStatus_t gemm_dispatch(BlasHandle handle, cublasOperation_t lOpts,
 }
 
 template<typename T>
-cublasStatus_t gemmBatched_dispatch(BlasHandle handle,
+cublasStatus_t gemmBatchedDispatch(BlasHandle handle,
                                     cublasOperation_t lOpts,
                                     cublasOperation_t rOpts, int M, int N,
                                     int K, const T *alpha, const T **lptrs,
@@ -297,7 +297,7 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
                                         alpha, lhs.get(), lStrides[1],
                                         rhs.get(), incr, beta, out.get(), 1));
         } else {
-            CUBLAS_CHECK(gemm_dispatch<T>(blasHandle(), lOpts, rOpts, M, N, K,
+            CUBLAS_CHECK(gemmDispatch<T>(blasHandle(), lOpts, rOpts, M, N, K,
                                           alpha, lhs, lStrides[1], rhs,
                                           rStrides[1], beta, out, oStrides[1]));
         }
@@ -346,7 +346,7 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
         using Nt = typename common::kernel_type<T>::native;
-        CUBLAS_CHECK(gemmBatched_dispatch(
+        CUBLAS_CHECK(gemmBatchedDispatch(
             blasHandle(), lOpts, rOpts, M, N, K, alpha,
             (const T **)d_lptrs.get(), lStrides[1], (const T **)d_rptrs.get(),
             rStrides[1], beta, (T **)d_optrs.get(), oStrides[1],

@@ -205,7 +205,7 @@ af_err af_eval(af_array arr) {
                 case u64: eval<uintl>(arr); break;
                 case s16: eval<short>(arr); break;
                 case u16: eval<ushort>(arr); break;
-                case f16: eval<common::half>(arr); break;
+                case f16: eval<half>(arr); break;
                 default: TYPE_ERROR(0, type);
             }
         }
@@ -260,7 +260,7 @@ af_err af_eval_multiple(int num, af_array* arrays) {
             case u64: evalMultiple<uintl>(num, arrays); break;
             case s16: evalMultiple<short>(num, arrays); break;
             case u16: evalMultiple<ushort>(num, arrays); break;
-            case f16: evalMultiple<common::half>(num, arrays); break;
+            case f16: evalMultiple<half>(num, arrays); break;
             default: TYPE_ERROR(0, type);
         }
     }

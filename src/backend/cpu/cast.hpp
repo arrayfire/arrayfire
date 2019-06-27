@@ -28,7 +28,7 @@ struct UnOp<To, Ti, af_cast_t> {
 
 /// NOTE(umar): The next specializations have multiple eval functions because
 /// the f16 data type needs to be converted to and from the compute type.
-/// Here we have speciliztions for real numbers as well as the complex
+/// Here, we have specializations for real numbers as well as the complex
 /// numbers
 /// TODO(umar): make a macro to reduce repeat code
 
@@ -65,23 +65,6 @@ struct UnOp<common::half, Ti, af_cast_t> {
 };
 
 template<>
-struct UnOp<std::complex<float>, common::half, af_cast_t> {
-    typedef common::half Ti;
-    typedef std::complex<float> To;
-
-    void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
-        for (int i = 0; i < lim; i++) {
-            float val = in[i];
-            out[i]    = To(val);
-        }
-    }
-
-    void eval(jit::array<To> &out, const jit::array<float> &in, int lim) {
-        for (int i = 0; i < lim; i++) { out[i] = To(in[i]); }
-    }
-};
-
-template<>
 struct UnOp<common::half, std::complex<float>, af_cast_t> {
     typedef common::half To;
     typedef std::complex<float> Ti;
@@ -95,23 +78,6 @@ struct UnOp<common::half, std::complex<float>, af_cast_t> {
 
     void eval(jit::array<float> &out, const jit::array<Ti> &in, int lim) {
         for (int i = 0; i < lim; i++) { out[i] = std::abs(in[i]); }
-    }
-};
-
-template<>
-struct UnOp<std::complex<double>, common::half, af_cast_t> {
-    typedef common::half Ti;
-    typedef std::complex<double> To;
-
-    void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
-        for (int i = 0; i < lim; i++) {
-            float val = in[i];
-            out[i]    = To(val);
-        }
-    }
-
-    void eval(jit::array<To> &out, const jit::array<float> &in, int lim) {
-        for (int i = 0; i < lim; i++) { out[i] = To(in[i]); }
     }
 };
 

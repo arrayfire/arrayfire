@@ -24,9 +24,6 @@
 #include <af/device.h>
 #include <af/dim4.hpp>
 #include <af/util.h>
-#include <complex>
-
-#include <complex>
 
 using af::dim4;
 using common::half;
