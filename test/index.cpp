@@ -1691,3 +1691,178 @@ TEST(Index, ISSUE_2273_Flipped) {
 
     ASSERT_ARRAYS_EQ(input_slice_gold, input_slice);
 }
+
+// clang-format off
+class IndexDocs : public ::testing::Test {
+public:
+  array A;
+
+  void SetUp() {
+    //![index_tutorial_1]
+    float data[] = {0,  1,  2,  3,
+                    4,  5,  6,  7,
+                    8,  9, 10, 11,
+                   12, 13, 14, 15};
+    af::array A(4, 4, data);
+    //![index_tutorial_1]
+    this->A = A;
+  }
+};
+
+TEST_F(IndexDocs, Precondition) {
+  vector<float> gold(4*4);
+  std::iota(gold.begin(), gold.end(), 0.f);
+  ASSERT_VEC_ARRAY_EQ(gold, dim4(4, 4), A);
+}
+
+TEST_F(IndexDocs, FirstElement) {
+    array out =
+    //![index_tutorial_first_element]
+    // Returns an array pointing to the first element
+    A(0, 0); // WARN: avoid doing this. Demo only
+    //![index_tutorial_first_element]
+    vector<float> gold(1, 0.f);
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(1), out);
+}
+
+
+TEST_F(IndexDocs, FifthElement) {
+    array out =
+    //![index_tutorial_fifth_element]
+    // Returns an array pointing to the fifth element
+    A(5);
+    //![index_tutorial_fifth_element]
+    vector<float> gold(1, 5.f);
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(1), out);
+}
+
+TEST_F(IndexDocs, ThirdColumn) {
+    array out =
+    //![index_tutorial_third_column]
+    // Returns an array pointing to the third column
+    A(span, 2);
+    //![index_tutorial_third_column]
+    vector<float> gold{8, 9, 10, 11};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(4), out);
+}
+
+TEST_F(IndexDocs, SecondRow) {
+    array out =
+    //![index_tutorial_second_row]
+    // Returns an array pointing to the second row
+    A(1, span);
+    //![index_tutorial_second_row]
+    vector<float> gold{1, 5, 9, 13};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(1, 4), out);
+}
+
+TEST_F(IndexDocs, FirstTwoColumns) {
+    array out =
+    //![index_tutorial_first_two_columns]
+    // Returns an array pointing to the first two columns
+    A(span, seq(2));
+    //![index_tutorial_first_two_columns]
+    vector<float> gold{0, 1, 2, 3, 4, 5, 6, 7};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(4, 2), out);
+}
+
+TEST_F(IndexDocs, SecondAndFourthRows) {
+    array out =
+    //![index_tutorial_second_and_fourth_rows]
+    // Returns an array pointing to the second and fourth rows
+    A(seq(1, 3, 2), span);
+    //![index_tutorial_second_and_fourth_rows]
+    vector<float> gold{1, 3, 5, 7, 9, 11, 13, 15};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(2, 4), out);
+}
+
+
+TEST_F(IndexDocs, Arrays) {
+    //![index_tutorial_array_indexing]
+    vector<int> hidx = {2, 1, 3};
+    vector<int> hidy = {3, 1, 2};
+    array idx(3, hidx.data());
+    array idy(3, hidy.data());
+
+    array out = A(idx, idy);
+    //![index_tutorial_array_indexing]
+
+    vector<float> gold{
+   14.f,    13.f,    15.f,
+    6.f,     5.f,     7.f,
+   10.f,     9.f,    11.f};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(3, 3), out);
+}
+
+
+TEST_F(IndexDocs, Approx) {
+    //![index_tutorial_approx]
+    vector<float> hidx = {2, 1, 3};
+    vector<float> hidy = {3, 1, 2};
+    array idx(3, hidx.data());
+    array idy(3, hidy.data());
+
+    array out = approx2(A, idx, idy);
+    //![index_tutorial_approx]
+
+    vector<float> gold{14.f, 5.f, 11.f};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(3), out);
+}
+
+TEST_F(IndexDocs, References) {
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    //![index_tutorial_references]
+    array reference = A(span, 1);
+    array reference2 = A(seq(3), 1);
+    array reference3 = A(seq(2), span);
+    //![index_tutorial_references]
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    ASSERT_EQ(0, lock_buffers2 - lock_buffers);
+}
+
+TEST_F(IndexDocs, Copies) {
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    //![index_tutorial_copies]
+    array copy = A(2, span);
+    array copy2 = A(seq(1, 3, 2), span);
+
+
+    int hidx[] = {0, 1, 2};
+    array idx(3, hidx);
+    array copy3 = A(idx, span);
+    //![index_tutorial_copies]
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    ASSERT_EQ(3, lock_buffers2 - lock_buffers);
+}
+
+TEST_F(IndexDocs, Assignment) {
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    //![index_tutorial_assignment]
+    array reference = A(span, 1);
+    array reference2 = A(span, 2);
+    array reference3 = A(span, 2);
+    A(span, 1) = 3;
+
+    af_print(reference);
+    af_print(A);
+
+    //![index_tutorial_assignment]
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    printf("buf %lu\n", lock_buffers2 - lock_buffers);
+}
+// clang-format on
