@@ -8,10 +8,13 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <kernel/reorder.hpp>
 #include <reorder.hpp>
 #include <stdexcept>
+
+using common::half;
 
 namespace cuda {
 template<typename T>
@@ -42,5 +45,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace cuda

@@ -11,10 +11,12 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <err_cpu.hpp>
 #include <kernel/random_engine_mersenne.hpp>
 #include <kernel/random_engine_philox.hpp>
 #include <kernel/random_engine_threefry.hpp>
+#include <types.hpp>
 
 #include <algorithm>
 #include <cstring>
@@ -28,6 +30,11 @@ namespace kernel {
 static const double PI_VAL =
     3.1415926535897932384626433832795028841971693993751058209749445923078164;
 
+// Conversion to half adapted from Random123
+#define USHORTMAX 0xffff
+#define HALF_FACTOR ((1.0f) / (USHORTMAX + (1.0f)))
+#define HALF_HALF_FACTOR ((0.5f) * HALF_FACTOR)
+
 // Conversion to floats adapted from Random123
 #define UINTMAX 0xffffffff
 #define FLT_FACTOR ((1.0f) / (UINTMAX + (1.0f)))
@@ -37,8 +44,8 @@ static const double PI_VAL =
 #define DBL_FACTOR ((1.0) / (UINTLMAX + (1.0)))
 #define HALF_DBL_FACTOR ((0.5) * DBL_FACTOR)
 
-template<typename T>
-T transform(uint *val, int index) {
+template<typename T, typename To = T>
+To transform(uint *val, int index) {
     T *oval = (T *)val;
     return oval[index];
 }
@@ -96,6 +103,13 @@ float transform<float>(uint *val, int index) {
 
 // Generates rationals in [0, 1)
 template<>
+float transform<common::half, float>(uint *val, int index) {
+    ushort v = val[index >> 1] >> (16 << (index & 1));
+    return 1.f - (v * HALF_FACTOR + HALF_HALF_FACTOR);
+}
+
+// Generates rationals in [0, 1)
+template<>
 double transform<double>(uint *val, int index) {
     uintl v = transform<uintl>(val, index);
     return 1.0 - (v * DBL_FACTOR + HALF_DBL_FACTOR);
@@ -147,7 +161,8 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
                 for (size_t buf_idx = 0; buf_idx < NUM_WRITES; ++buf_idx) {
                     size_t out_idx = iter + buf_idx * WRITE_STRIDE + i + j;
                     if (out_idx < elements) {
-                        out[out_idx] = transform<T>(ctr, buf_idx);
+                        out[out_idx] =
+                            transform<data_t<T>, compute_t<T>>(ctr, buf_idx);
                     }
                 }
             }
@@ -174,31 +189,47 @@ void threefryUniform(T *out, size_t elements, const uintl seed, uintl counter) {
         ++ctr[0];
         ctr[1] += (ctr[0] == 0);
         int lim = (reset < (int)(elements - i)) ? reset : (int)(elements - i);
-        for (int j = 0; j < lim; ++j) { out[i + j] = transform<T>(val, j); }
+        for (int j = 0; j < lim; ++j) {
+            out[i + j] = transform<data_t<T>, compute_t<T>>(val, j);
+        }
     }
 }
 
 template<typename T>
-void boxMullerTransform(T *const out1, T *const out2, const T r1, const T r2) {
+void boxMullerTransform(data_t<T> *const out1, data_t<T> *const out2,
+                        const compute_t<T> r1, const compute_t<T> r2) {
     /*
      * The log of a real value x where 0 < x < 1 is negative.
      */
-    T r     = sqrt((T)(-2.0) * log((T)(1.0) - r1));
-    T theta = 2 * (T)PI_VAL * ((T)(1.0) - r2);
-    *out1   = r * sin(theta);
-    *out2   = r * cos(theta);
+    using Tc = compute_t<T>;
+    Tc r     = sqrt((Tc)(-2.0) * log((Tc)(1.0) - r1));
+    Tc theta = 2 * (Tc)PI_VAL * ((Tc)(1.0) - r2);
+    *out1    = r * sin(theta);
+    *out2    = r * cos(theta);
 }
 
 void boxMullerTransform(uint val[4], double *temp) {
-    boxMullerTransform(&temp[0], &temp[1], transform<double>(val, 0),
-                       transform<double>(val, 1));
+    boxMullerTransform<double>(&temp[0], &temp[1], transform<double>(val, 0),
+                               transform<double>(val, 1));
 }
 
 void boxMullerTransform(uint val[4], float *temp) {
-    boxMullerTransform(&temp[0], &temp[1], transform<float>(val, 0),
-                       transform<float>(val, 1));
-    boxMullerTransform(&temp[2], &temp[3], transform<float>(val, 2),
-                       transform<float>(val, 3));
+    boxMullerTransform<float>(&temp[0], &temp[1], transform<float>(val, 0),
+                              transform<float>(val, 1));
+    boxMullerTransform<float>(&temp[2], &temp[3], transform<float>(val, 2),
+                              transform<float>(val, 3));
+}
+
+void boxMullerTransform(uint val[4], common::half *temp) {
+    using common::half;
+    boxMullerTransform<half>(&temp[0], &temp[1], transform<half, float>(val, 0),
+                             transform<half, float>(val, 1));
+    boxMullerTransform<half>(&temp[2], &temp[3], transform<half, float>(val, 2),
+                             transform<half, float>(val, 3));
+    boxMullerTransform<half>(&temp[4], &temp[5], transform<half, float>(val, 4),
+                             transform<half, float>(val, 5));
+    boxMullerTransform<half>(&temp[6], &temp[7], transform<half, float>(val, 6),
+                             transform<half, float>(val, 7));
 }
 
 template<typename T>
@@ -264,7 +295,9 @@ void uniformDistributionMT(T *out, size_t elements, uint *const state,
         mersenne(o, l_state, i, lpos, lsh1, lsh2, mask, recursion_table,
                  temper_table);
         int lim = (reset < (int)(elements - i)) ? reset : (int)(elements - i);
-        for (int j = 0; j < lim; ++j) { out[i + j] = transform<T>(o, j); }
+        for (int j = 0; j < lim; ++j) {
+            out[i + j] = transform<data_t<T>, compute_t<T>>(o, j);
+        }
     }
 
     state_write(state, l_state);

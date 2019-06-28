@@ -15,9 +15,10 @@
 #include <err_cuda.hpp>
 #include <memory.hpp>
 #include <nvrtc/cache.hpp>
-#include <nvrtc_kernel_headers/scan_first_by_key.hpp>
+#include <nvrtc_kernel_headers/scan_first_by_key_cuh.hpp>
 #include <optypes.hpp>
 #include "config.hpp"
+
 
 namespace cuda {
 namespace kernel {

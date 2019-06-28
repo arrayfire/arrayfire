@@ -13,7 +13,7 @@
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
 #include <nvrtc/cache.hpp>
-#include <nvrtc_kernel_headers/transpose.hpp>
+#include <nvrtc_kernel_headers/transpose_cuh.hpp>
 
 #include <string>
 

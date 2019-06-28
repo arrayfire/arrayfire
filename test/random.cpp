@@ -36,7 +36,7 @@ class Random : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, intl,
-                         uintl, unsigned char>
+                         uintl, unsigned char, af_half>
     TestTypes;
 
 // register the type list
@@ -67,7 +67,7 @@ class RandomSeed : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, cfloat, double, cdouble> TestTypesNorm;
+typedef ::testing::Types<float, cfloat, double, cdouble, af_half> TestTypesNorm;
 // register the type list
 TYPED_TEST_CASE(Random_norm, TestTypesNorm);
 
@@ -356,6 +356,7 @@ TYPED_TEST(RandomEngine, mersenneRandomEngineNormal) {
 
 template<typename T>
 void testRandomEngineSeed(randomEngineType type) {
+    SUPPORTED_TYPE_CHECK(T);
     int elem        = 4 * 32 * 1024;
     uintl orig_seed = 0;
     uintl new_seed  = 1;

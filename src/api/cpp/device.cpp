@@ -90,6 +90,12 @@ bool isDoubleAvailable(const int device) {
     return temp;
 }
 
+bool isHalfAvailable(const int device) {
+    bool temp;
+    AF_THROW(af_get_half_support(&temp, device));
+    return temp;
+}
+
 int deviceget() { return getDevice(); }
 
 void sync(int device) { AF_THROW(af_sync(device)); }

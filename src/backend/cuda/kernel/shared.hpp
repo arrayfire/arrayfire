@@ -29,13 +29,7 @@ namespace kernel {
 template<typename T>
 struct SharedMemory {
     // return a pointer to the runtime-sized shared memory array.
-    __device__ T* getPointer() {
-        extern __device__ void
-        Error_UnsupportedType();  // Ensure that we won't compile any
-                                  // un-specialized types
-        Error_UnsupportedType();
-        return (T*)0;
-    }
+    __device__ T* getPointer();
 };
 
 #define SPECIALIZE(T)                         \

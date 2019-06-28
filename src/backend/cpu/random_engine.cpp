@@ -8,9 +8,11 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <kernel/random_engine.hpp>
 #include <af/dim4.hpp>
-#include <cassert>
+
+using common::half;
 
 namespace cpu {
 void initMersenneState(Array<uint> &state, const uintl seed,
@@ -149,9 +151,11 @@ INSTANTIATE_UNIFORM(char)
 INSTANTIATE_UNIFORM(uchar)
 INSTANTIATE_UNIFORM(short)
 INSTANTIATE_UNIFORM(ushort)
+INSTANTIATE_UNIFORM(half)
 
 INSTANTIATE_NORMAL(float)
 INSTANTIATE_NORMAL(double)
+INSTANTIATE_NORMAL(half)
 
 COMPLEX_UNIFORM_DISTRIBUTION(cdouble, double)
 COMPLEX_UNIFORM_DISTRIBUTION(cfloat, float)

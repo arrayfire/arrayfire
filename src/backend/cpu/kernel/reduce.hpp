@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 #include <ops.hpp>
+#include <common/half.hpp>
 
 namespace cpu {
 namespace kernel {
@@ -36,8 +37,8 @@ struct reduce_dim {
 
 template<af_op_t op, typename Ti, typename To>
 struct reduce_dim<op, Ti, To, 0> {
-    Transform<Ti, To, op> transform;
-    Binary<To, op> reduce;
+    Transform<Ti, compute_t<To>, op> transform;
+    Binary<compute_t<To>, op> reduce;
     void operator()(Param<To> out, const dim_t outOffset, CParam<Ti> in,
                     const dim_t inOffset, const int dim, bool change_nan,
                     double nanval) {
@@ -48,14 +49,14 @@ struct reduce_dim<op, Ti, To, 0> {
         Ti const* const inPtr = in.get() + inOffset;
         dim_t stride          = istrides[dim];
 
-        To out_val = Binary<To, op>::init();
+        compute_t<To> out_val = Binary<compute_t<To>, op>::init();
         for (dim_t i = 0; i < idims[dim]; i++) {
-            To in_val = transform(inPtr[i * stride]);
+            compute_t<To> in_val = transform(inPtr[i * stride]);
             if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
             out_val = reduce(in_val, out_val);
         }
 
-        *outPtr = out_val;
+        *outPtr = data_t<To>(out_val);
     }
 };
 

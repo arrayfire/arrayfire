@@ -85,7 +85,7 @@ STATIC_ double minval() {
 
 template<typename T>
 static T scalar(double val) {
-    return (T)(val);
+    return T(val);
 }
 
 template<typename To, typename Ti>

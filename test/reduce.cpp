@@ -6,7 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
@@ -703,4 +703,177 @@ TEST(ProductAll, BoolIn_ISSUE2543_Random_Values) {
 TEST(Product, BoolIn_ISSUE2543) {
     array A = randu(5, 5, b8);
     ASSERT_ARRAYS_EQ(allTrue(A), product(A));
+}
+
+struct reduce_params {
+    double element_value;
+    dim4 arr_dim;
+    dim4 result_dim;
+    int reduce_dim;
+  reduce_params(double ev, dim4 ad, dim4 result_d, int red_dim)
+    : element_value(ev)
+    , arr_dim(ad)
+    , result_dim(result_d)
+    , reduce_dim(red_dim) {}
+};
+
+class ReduceHalf : public ::testing::TestWithParam<reduce_params> {};
+
+INSTANTIATE_TEST_CASE_P(
+    SumFirstNonZeroDim, ReduceHalf,
+    ::testing::Values(
+        reduce_params(1, dim4(10), dim4(1), -1),
+        reduce_params(1, dim4(10, 10), dim4(1, 10), -1),
+        reduce_params(1, dim4(10, 10, 10), dim4(1, 10, 10), -1),
+        reduce_params(1, dim4(10, 10, 10, 10), dim4(1, 10, 10, 10), -1),
+
+        reduce_params(1, dim4(2048), dim4(1), -1),
+        reduce_params(1, dim4(2048, 10), dim4(1, 10), -1),
+        reduce_params(1, dim4(2048, 10, 10), dim4(1, 10, 10), -1),
+        reduce_params(1, dim4(2048, 10, 10, 10), dim4(1, 10, 10, 10), -1),
+
+        reduce_params(1, dim4(2049), dim4(1), -1),
+        reduce_params(1, dim4(2049, 10), dim4(1, 10), -1),
+        reduce_params(1, dim4(2049, 10, 10), dim4(1, 10, 10), -1),
+        reduce_params(1, dim4(2049, 10, 10, 10), dim4(1, 10, 10, 10), -1),
+
+        reduce_params(1, dim4(8192), dim4(1), -1),
+        reduce_params(1, dim4(8192, 10), dim4(1, 10), -1),
+        reduce_params(1, dim4(8192, 10, 10), dim4(1, 10, 10), -1),
+        reduce_params(1, dim4(8192, 10, 10, 10), dim4(1, 10, 10, 10), -1)));
+
+INSTANTIATE_TEST_CASE_P(
+    SumNonZeroDim, ReduceHalf,
+    ::testing::Values(
+        reduce_params(1.25, dim4(10, 10), dim4(10), 1),
+        reduce_params(1.25, dim4(10, 10, 10), dim4(10, 1, 10), 1),
+        reduce_params(1.25, dim4(10, 10, 10, 10), dim4(10, 1, 10, 10), 1),
+
+        reduce_params(1.25, dim4(10, 2048), dim4(10), 1),
+        reduce_params(1.25, dim4(10, 2048, 10), dim4(10, 1, 10), 1),
+        reduce_params(1.25, dim4(10, 2048, 10, 10), dim4(10, 1, 10, 10), 1),
+
+        reduce_params(1.25, dim4(10, 2049), dim4(10), 1),
+        reduce_params(1.25, dim4(10, 2049, 10), dim4(10, 1, 10), 1),
+        reduce_params(1.25, dim4(10, 2049, 10, 10), dim4(10, 1, 10, 10), 1),
+
+        reduce_params(1.25, dim4(10, 8192), dim4(10), 1),
+        reduce_params(1.25, dim4(10, 8192, 10), dim4(10, 1, 10), 1),
+        reduce_params(1.25, dim4(10, 8192, 10, 10), dim4(10, 1, 10, 10), 1),
+
+        reduce_params(1.25, dim4(10, 10, 10), dim4(10, 10, 1), 2),
+        reduce_params(1.25, dim4(10, 10, 10, 10), dim4(10, 10, 1, 10), 2),
+
+        reduce_params(1.25, dim4(10, 10, 2048), dim4(10, 10, 1), 2),
+        reduce_params(1.25, dim4(10, 10, 2048, 10), dim4(10, 10, 1, 10), 2),
+
+        reduce_params(1.25, dim4(10, 10, 2049), dim4(10, 10, 1), 2),
+        reduce_params(1.25, dim4(10, 10, 2049, 10), dim4(10, 10, 1, 10), 2),
+
+        reduce_params(1.25, dim4(10, 10, 8192), dim4(10, 10, 1), 2),
+        reduce_params(1.25, dim4(10, 10, 8192, 10), dim4(10, 10, 1, 10), 2)));
+
+TEST_P(ReduceHalf, Sum) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    reduce_params param = GetParam();
+
+    array arr = constant(param.element_value, param.arr_dim, f16);
+
+    size_t elements = 0;
+    if (param.reduce_dim == -1) {
+        elements = param.arr_dim[0];
+    } else {
+        elements = param.arr_dim[param.reduce_dim];
+    }
+
+    double result_value = param.element_value * elements;
+    array gold = constant(result_value, param.result_dim, f32);
+
+    array result = sum(arr, param.reduce_dim);
+    ASSERT_ARRAYS_EQ(gold, result);
+}
+
+TEST_P(ReduceHalf, Product) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    reduce_params param = GetParam();
+
+    array arr  = constant(param.element_value, param.arr_dim, f16);
+
+    size_t elements = 0;
+    if (param.reduce_dim == -1) {
+        elements = param.arr_dim[0];
+    } else {
+        elements = param.arr_dim[param.reduce_dim];
+    }
+
+    double result_value = pow(param.element_value, elements);
+
+    if(isinf((float)result_value)) {
+        SUCCEED();
+        return;
+    }
+    array gold = constant(result_value, param.result_dim, f32);
+
+    array result = product(arr, param.reduce_dim);
+    ASSERT_ARRAYS_EQ(gold, result);
+}
+
+// TODO(umar): HalfMin
+TEST(ReduceHalf, Min) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    float harr[] = { 1, 2, 3, 4, 5, 6, 7 };
+    array arr(7, harr);
+    arr = arr.as(f16);
+    array out = min(arr);
+
+    array gold = constant(1, 1, f16);
+    ASSERT_ARRAYS_EQ(gold, out);
+}
+
+// TODO(umar): HalfMax
+TEST(ReduceHalf, Max) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    float harr[] = {1, 2, 3, 4, 5, 6, 7};
+    array arr(7, harr);
+    arr       = arr.as(f16);
+    array out = max(arr);
+
+    array gold = constant(7, 1, f16);
+    ASSERT_ARRAYS_EQ(gold, out);
+}
+
+// TODO(umar): HalfCount
+TEST(ReduceHalf, Count) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    float harr[] = {1, 2, 3, 4, 5, 6, 7};
+    array arr(7, harr);
+    arr       = arr.as(f16);
+    array out = count(arr);
+
+    array gold = constant(7, 1, u32);
+    ASSERT_ARRAYS_EQ(gold, out);
+}
+
+// TODO(umar): HalfAnyTrue
+TEST(ReduceHalf, AnyTrue) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    float harr[] = {1, 2, 3, 4, 5, 6, 7};
+    array arr(7, harr);
+    arr       = arr.as(f16);
+    array out = anyTrue(arr);
+
+    array gold = constant(1, 1, b8);
+    ASSERT_ARRAYS_EQ(gold, out);
+}
+
+// TODO(umar): HalfAllTrue
+TEST(ReduceHalf, AllTrue) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    float harr[] = {1, 2, 3, 4, 5, 6, 7};
+    array arr(7, harr);
+    arr       = arr.as(f16);
+    array out = allTrue(arr);
+
+    array gold = constant(1, 1, b8);
+    ASSERT_ARRAYS_EQ(gold, out);
 }

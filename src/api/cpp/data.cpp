@@ -6,13 +6,14 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#include <af/data.h>
 
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/complex.h>
-#include <af/data.h>
 #include <af/defines.h>
 #include <af/gfor.h>
+#include <af/half.h>
 #include <af/traits.hpp>
 #include "error.hpp"
 
@@ -39,6 +40,13 @@ template<>
 struct is_complex<af::cdouble> {
     static const bool value = true;
 };
+
+array constant(af_half val, const dim4 &dims, const dtype type) {
+    af_array res;
+    AF_THROW(af_constant(&res, 0,  //(double)val,
+                         dims.ndims(), dims.get(), type));
+    return array(res);
+}
 
 template<typename T,
          typename = typename enable_if<is_complex<T>::value == false, T>::type>
@@ -126,6 +134,7 @@ CONSTANT(unsigned long long);
 CONSTANT(bool);
 CONSTANT(short);
 CONSTANT(unsigned short);
+CONSTANT(half);
 
 #undef CONSTANT
 

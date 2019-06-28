@@ -26,6 +26,11 @@ static const int THREADS = 256;
 #define PI_VAL \
     3.1415926535897932384626433832795028841971693993751058209749445923078164
 
+// Conversion to half adapted from Random123
+#define USHORTMAX 0xffff
+#define HALF_FACTOR ((1.0f) / (USHORTMAX + (1.0f)))
+#define HALF_HALF_FACTOR ((0.5f) * HALF_FACTOR)
+
 // Conversion to floats adapted from Random123
 #define UINTMAX 0xffffffff
 #define FLT_FACTOR ((1.0f) / (UINTMAX + (1.0f)))
@@ -34,6 +39,13 @@ static const int THREADS = 256;
 #define UINTLMAX 0xffffffffffffffff
 #define DBL_FACTOR ((1.0) / (UINTLMAX + (1.0)))
 #define HALF_DBL_FACTOR ((0.5) * DBL_FACTOR)
+
+// Generates rationals in (0, 1]
+__device__ static compute_t<common::half> getHalf(const uint &num) {
+    ushort v = num;
+    return (compute_t<common::half>)(v * HALF_FACTOR +
+                                     HALF_HALF_FACTOR);
+}
 
 // Generates rationals in (0, 1]
 __device__ static float getFloat(const uint &num) {
@@ -46,20 +58,54 @@ __device__ static double getDouble(const uint &num1, const uint &num2) {
     return (num * DBL_FACTOR + HALF_DBL_FACTOR);
 }
 
+namespace {
+
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 530
+__device__ __half hlog(const __half a) { return 0; }
+__device__ __half hsqrt(const __half a) { return 0; }
+__device__ __half hsin(const __half a) { return 0; }
+__device__ __half hcos(const __half a) { return 0; }
+#endif
+
+#define MATH_FUNC(OP, HALF_OP)         \
+    template<typename T>               \
+    __device__ T OP(T val) {           \
+        return ::OP(val);              \
+    }                                  \
+    template<>                         \
+    __device__ __half OP(__half val) { \
+        return HALF_OP(val);           \
+    }
+
+MATH_FUNC(log, hlog)
+MATH_FUNC(sqrt, hsqrt)
+MATH_FUNC(sin, hsin)
+MATH_FUNC(cos, hcos)
+}  // namespace
+
 template<typename T>
-__device__ static void boxMullerTransform(T *const out1, T *const out2,
-                                          const T &r1, const T &r2) {
+constexpr __device__ T neg_two() {
+    return -2.0;
+}
+
+template<typename T>
+constexpr __device__ T two_pi() {
+    return 2.0 * PI_VAL;
+};
+
+template<typename Td, typename Tc>
+__device__ static void boxMullerTransform(Td *const out1, Td *const out2,
+                                          const Tc &r1, const Tc &r2) {
     /*
      * The log of a real value x where 0 < x < 1 is negative.
      */
-    T r     = sqrt((T)(-2.0) * log(r1));
-    T theta = 2 * (T)PI_VAL * r2;
-    *out1   = r * sin(theta);
-    *out2   = r * cos(theta);
+    Tc r     = sqrt(neg_two<Tc>() * log(r1));
+    Tc theta = two_pi<Tc>() * r2;
+    *out1    = Td(r * sin(theta));
+    *out2    = Td(r * cos(theta));
 }
 
 // Writes without boundary checking
-
 __device__ static void writeOut128Bytes(uchar *out, const uint &index,
                                         const uint &r1, const uint &r2,
                                         const uint &r3, const uint &r4) {
@@ -185,6 +231,19 @@ __device__ static void writeOut128Bytes(cdouble *out, const uint &index,
     out[index].y = 1.0 - getDouble(r3, r4);
 }
 
+__device__ static void writeOut128Bytes(common::half *out, const uint &index,
+                                        const uint &r1, const uint &r2,
+                                        const uint &r3, const uint &r4) {
+    out[index]                  = getHalf(r1);
+    out[index + blockDim.x]     = getHalf(r1 >> 16);
+    out[index + 2 * blockDim.x] = getHalf(r2);
+    out[index + 3 * blockDim.x] = getHalf(r2 >> 16);
+    out[index + 4 * blockDim.x] = getHalf(r3);
+    out[index + 5 * blockDim.x] = getHalf(r3 >> 16);
+    out[index + 6 * blockDim.x] = getHalf(r4);
+    out[index + 7 * blockDim.x] = getHalf(r4 >> 16);
+}
+
 // Normalized writes without boundary checking
 
 __device__ static void boxMullerWriteOut128Bytes(float *out, const uint &index,
@@ -223,6 +282,24 @@ __device__ static void boxMullerWriteOut128Bytes(cdouble *out,
                                                  const uint &r4) {
     boxMullerTransform(&out[index].x, &out[index].y, getDouble(r1, r2),
                        getDouble(r3, r4));
+}
+
+__device__ static void boxMullerWriteOut128Bytes(common::half *out,
+                                                 const uint &index,
+                                                 const uint &r1, const uint &r2,
+                                                 const uint &r3,
+                                                 const uint &r4) {
+    boxMullerTransform(&out[index], &out[index + blockDim.x], getHalf(r1),
+                       getHalf(r1 >> 16));
+    boxMullerTransform(&out[index + 2 * blockDim.x],
+                       &out[index + 3 * blockDim.x], getHalf(r2),
+                       getHalf(r2 >> 16));
+    boxMullerTransform(&out[index + 4 * blockDim.x],
+                       &out[index + 5 * blockDim.x], getHalf(r3),
+                       getHalf(r3 >> 16));
+    boxMullerTransform(&out[index + 6 * blockDim.x],
+                       &out[index + 7 * blockDim.x], getHalf(r4),
+                       getHalf(r4 >> 16));
 }
 
 // Writes with boundary checking
@@ -485,6 +562,66 @@ __device__ static void partialBoxMullerWriteOut128Bytes(
     if (index < elements) {
         out[index].x = n1;
         out[index].y = n2;
+    }
+}
+
+__device__ static void partialWriteOut128Bytes(common::half *out,
+                                               const uint &index,
+                                               const uint &r1, const uint &r2,
+                                               const uint &r3, const uint &r4,
+                                               const uint &elements) {
+    if (index < elements) { out[index] = getHalf(r1); }
+    if (index + blockDim.x < elements) {
+        out[index + blockDim.x] = getHalf(r1 >> 16);
+    }
+    if (index + 2 * blockDim.x < elements) {
+        out[index + 2 * blockDim.x] = getHalf(r2);
+    }
+    if (index + 3 * blockDim.x < elements) {
+        out[index + 3 * blockDim.x] = getHalf(r2 >> 16);
+    }
+    if (index + 4 * blockDim.x < elements) {
+        out[index + 4 * blockDim.x] = getHalf(r3);
+    }
+    if (index + 5 * blockDim.x < elements) {
+        out[index + 5 * blockDim.x] = getHalf(r3 >> 16);
+    }
+    if (index + 6 * blockDim.x < elements) {
+        out[index + 6 * blockDim.x] = getHalf(r4);
+    }
+    if (index + 7 * blockDim.x < elements) {
+        out[index + 7 * blockDim.x] = getHalf(r4 >> 16);
+    }
+}
+
+// Normalized writes with boundary checking
+__device__ static void partialBoxMullerWriteOut128Bytes(
+    common::half *out, const uint &index, const uint &r1, const uint &r2,
+    const uint &r3, const uint &r4, const uint &elements) {
+    common::half n[8];
+    boxMullerTransform(n + 0, n + 1, getHalf(r1), getHalf(r1 >> 16));
+    boxMullerTransform(n + 2, n + 3, getHalf(r2), getHalf(r2 >> 16));
+    boxMullerTransform(n + 4, n + 5, getHalf(r3), getHalf(r3 >> 16));
+    boxMullerTransform(n + 6, n + 7, getHalf(r4), getHalf(r4 >> 16));
+    if (index < elements) { out[index] = n[0]; }
+    if (index + blockDim.x < elements) { out[index + blockDim.x] = n[1]; }
+    if (index + 2 * blockDim.x < elements) {
+        out[index + 2 * blockDim.x] = n[2];
+    }
+    if (index + 3 * blockDim.x < elements) {
+        out[index + 3 * blockDim.x] = n[3];
+    }
+    if (index + 4 * blockDim.x < elements) {
+        out[index + 4 * blockDim.x] = n[4];
+    }
+    if (index + 5 * blockDim.x < elements) {
+        out[index + 5 * blockDim.x] = n[5];
+    }
+    if (index + 6 * blockDim.x < elements) {
+        out[index + 6 * blockDim.x] = n[6];
+    }
+    if (index + 7 * blockDim.x < elements) {
+        out[index + 7 * blockDim.x] = n[7];
     }
 }
 

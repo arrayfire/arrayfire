@@ -191,6 +191,8 @@ const char *af_err_to_string(const af_err err) {
         case AF_ERR_NO_GFX:
             return "Graphics functionality unavailable. "
                    "ArrayFire compiled without Graphics support";
+        case AF_ERR_NO_HALF:
+            return "Half precision floats not supported for this device";
         case AF_ERR_LOAD_LIB: return "Failed to load dynamic library. ";
         case AF_ERR_LOAD_SYM: return "Failed to load symbol";
         case AF_ERR_ARR_BKND_MISMATCH:

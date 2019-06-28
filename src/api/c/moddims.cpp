@@ -9,6 +9,7 @@
 
 #include <backend.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
 #include <handle.hpp>
 #include <af/data.h>
@@ -16,6 +17,7 @@
 #include <af/dim4.hpp>
 
 using af::dim4;
+using common::half;
 using namespace detail;
 
 namespace {
@@ -62,6 +64,7 @@ af_err af_moddims(af_array* out, const af_array in, const unsigned ndims,
             case u64: output = modDims<uintl>(in, newDims); break;
             case s16: output = modDims<short>(in, newDims); break;
             case u16: output = modDims<ushort>(in, newDims); break;
+            case f16: output = modDims<half>(in, newDims); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);

@@ -7,6 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma OPENCL EXTENSION all : enable
+#ifdef cl_khr_fp16
+#else
+#define half short
+#endif
+
 #define __select(cond, a, b) (cond) ? (a) : (b)
 #define __not_select(cond, a, b) (cond) ? (b) : (a)
 #define __circular_mod(a, b) ((a) < (b)) ? (a) : (a - b)

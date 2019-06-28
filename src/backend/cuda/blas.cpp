@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define NVCC
 #include <blas.hpp>
 #include <cublas_v2.h>
 #include <cuda_runtime.h>
@@ -14,14 +15,23 @@
 
 #include <arith.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <complex.hpp>
 #include <cublas.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <reduce.hpp>
+
 #include <cassert>
+#include <functional>
 #include <stdexcept>
 #include <string>
+#include <vector>
+
+using common::half;
+using common::kernel_type;
+using std::is_same;
+using std::vector;
 
 namespace cuda {
 
@@ -37,47 +47,33 @@ cublasOperation_t toCblasTranspose(af_mat_prop opt) {
 }
 
 template<typename T>
-struct gemm_func_def_t {
-    typedef cublasStatus_t (*gemm_func_def)(cublasHandle_t, cublasOperation_t,
-                                            cublasOperation_t, int, int, int,
-                                            const T *, const T *, int,
-                                            const T *, int, const T *, T *,
-                                            int);
-};
+using gemm_func_def = std::function<cublasStatus_t(
+    cublasHandle_t, cublasOperation_t, cublasOperation_t, int, int, int,
+    const T *, const T *, int, const T *, int, const T *, T *, int)>;
 
 template<typename T>
-struct gemmBatched_func_def_t {
-    typedef cublasStatus_t (*gemmBatched_func_def)(
-        cublasHandle_t, cublasOperation_t, cublasOperation_t, int, int, int,
-        const T *, const T **, int, const T **, int, const T *, T **, int, int);
-};
+using gemmBatched_func_def = std::function<cublasStatus_t(
+    cublasHandle_t, cublasOperation_t, cublasOperation_t, int, int, int,
+    const T *, const T **, int, const T **, int, const T *, T **, int, int)>;
 
 template<typename T>
-struct gemv_func_def_t {
-    typedef cublasStatus_t (*gemv_func_def)(cublasHandle_t, cublasOperation_t,
-                                            int, int, const T *, const T *, int,
-                                            const T *, int, const T *, T *,
-                                            int);
-};
+using gemv_func_def = std::function<cublasStatus_t(
+    cublasHandle_t, cublasOperation_t, int, int, const T *, const T *, int,
+    const T *, int, const T *, T *, int)>;
 
 template<typename T>
-struct trsm_func_def_t {
-    typedef cublasStatus_t (*trsm_func_def)(cublasHandle_t, cublasSideMode_t,
-                                            cublasFillMode_t, cublasOperation_t,
-                                            cublasDiagType_t, int, int,
-                                            const T *, const T *, int, T *,
-                                            int);
-};
+using trsm_func_def = std::function<cublasStatus_t(
+    cublasHandle_t, cublasSideMode_t, cublasFillMode_t, cublasOperation_t,
+    cublasDiagType_t, int, int, const T *, const T *, int, T *, int)>;
 
 #define BLAS_FUNC_DEF(FUNC) \
     template<typename T>    \
-    typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func();
+    FUNC##_func_def<T> FUNC##_func();
 
-#define BLAS_FUNC(FUNC, TYPE, PREFIX)                                       \
-    template<>                                                              \
-    typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
-        return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
-               cublas##PREFIX##FUNC;                                        \
+#define BLAS_FUNC(FUNC, TYPE, PREFIX)           \
+    template<>                                  \
+    FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
+        return &cublas##PREFIX##FUNC;           \
     }
 
 BLAS_FUNC_DEF(gemm)
@@ -85,18 +81,28 @@ BLAS_FUNC(gemm, float, S)
 BLAS_FUNC(gemm, cfloat, C)
 BLAS_FUNC(gemm, double, D)
 BLAS_FUNC(gemm, cdouble, Z)
+BLAS_FUNC(gemm, __half, H)
 
 BLAS_FUNC_DEF(gemmBatched)
 BLAS_FUNC(gemmBatched, float, S)
 BLAS_FUNC(gemmBatched, cfloat, C)
 BLAS_FUNC(gemmBatched, double, D)
 BLAS_FUNC(gemmBatched, cdouble, Z)
+BLAS_FUNC(gemmBatched, __half, H)
 
 BLAS_FUNC_DEF(gemv)
 BLAS_FUNC(gemv, float, S)
 BLAS_FUNC(gemv, cfloat, C)
 BLAS_FUNC(gemv, double, D)
 BLAS_FUNC(gemv, cdouble, Z)
+
+template<>
+gemv_func_def<half> gemv_func<half>() {
+    assert(1 != 1 && "GEMV for half is not available.");
+    return gemv_func_def<half>();
+}
+
+// BLAS_FUNC(gemv, __half, S)  // TODO(umar): Not implemented in CUDA
 
 BLAS_FUNC_DEF(trsm)
 BLAS_FUNC(trsm, float, S)
@@ -150,14 +156,116 @@ BLAS_FUNC(dot, cdouble, false, Z, u)
 #undef BLAS_FUNC
 #undef BLAS_FUNC_DEF
 
-using std::max;
-using std::vector;
+template<typename T>
+cudaDataType_t getType();
+
+template<>
+cudaDataType_t getType<float>() {
+    return CUDA_R_32F;
+}
+
+template<>
+cudaDataType_t getType<cfloat>() {
+    return CUDA_C_32F;
+}
+
+template<>
+cudaDataType_t getType<double>() {
+    return CUDA_R_64F;
+}
+
+template<>
+cudaDataType_t getType<cdouble>() {
+    return CUDA_C_64F;
+}
+
+template<>
+cudaDataType_t getType<half>() {
+    return CUDA_R_16F;
+}
 
 template<typename T>
-void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
-          const T *alpha,
-          const Array<T> &lhs, const Array<T> &rhs,
-          const T *beta) {
+cublasGemmAlgo_t selectGEMMAlgorithm() {
+    auto dev              = getDeviceProp(getActiveDeviceId());
+    cublasGemmAlgo_t algo = CUBLAS_GEMM_DEFAULT;
+    return algo;
+}
+
+template<>
+cublasGemmAlgo_t selectGEMMAlgorithm<__half>() {
+    auto dev              = getDeviceProp(getActiveDeviceId());
+    cublasGemmAlgo_t algo = CUBLAS_GEMM_DEFAULT;
+    if (dev.major >= 7) { algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP; }
+    return algo;
+}
+
+template<typename T>
+cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
+                             cublasOperation_t rOpts, int M, int N, int K,
+                             const T *alpha, const Array<T> &lhs, dim_t lStride,
+                             const Array<T> &rhs, dim_t rStride, const T *beta,
+                             Array<T> &out, dim_t oleading) {
+    auto prop = getDeviceProp(getActiveDeviceId());
+    if (prop.major > 3) {
+        return cublasGemmEx(
+            blasHandle(), lOpts, rOpts, M, N, K, alpha, lhs.get(), getType<T>(),
+            lStride, rhs.get(), getType<T>(), rStride, beta, out.get(),
+            getType<T>(), out.strides()[1],
+            getType<T>(),  // Compute type
+
+            // NOTE: When using the CUBLAS_GEMM_DEFAULT_TENSOR_OP algorithm
+            // for the cublasGemm*Ex functions, the performance of the
+            // fp32 numbers seem to increase dramatically. Their numerical
+            // accuracy is also different compared to regular gemm fuctions.
+            // The CUBLAS_GEMM_DEFAULT algorithm selection does not experience
+            // this change. Does this imply that the TENSOR_OP function
+            // performs the computation in fp16 bit even when the compute
+            // type is CUDA_R_32F?
+            selectGEMMAlgorithm<T>());
+    } else {
+        using Nt = typename common::kernel_type<T>::native;
+        return gemm_func<Nt>()(blasHandle(), lOpts, rOpts, M, N, K, (Nt *)alpha,
+                               (Nt *)lhs.get(), lStride, (Nt *)rhs.get(),
+                               rStride, (Nt *)beta, (Nt *)out.get(), oleading);
+    }
+}
+
+template<typename T>
+cublasStatus_t gemmBatchedDispatch(BlasHandle handle,
+                                    cublasOperation_t lOpts,
+                                    cublasOperation_t rOpts, int M, int N,
+                                    int K, const T *alpha, const T **lptrs,
+                                    int lStrides, const T **rptrs, int rStrides,
+                                    const T *beta, T **optrs, int oStrides,
+                                    int batchSize) {
+    auto prop = getDeviceProp(getActiveDeviceId());
+    if (prop.major > 3) {
+        return cublasGemmBatchedEx(
+            blasHandle(), lOpts, rOpts, M, N, K, alpha, (const void **)lptrs,
+            getType<T>(), lStrides, (const void **)rptrs, getType<T>(),
+            rStrides, beta, (void **)optrs, getType<T>(), oStrides, batchSize,
+            getType<T>(),  // Compute type
+            // NOTE: When using the CUBLAS_GEMM_DEFAULT_TENSOR_OP algorithm
+            // for the cublasGemm*Ex functions, the performance of the
+            // fp32 numbers seem to increase dramatically. Their numerical
+            // accuracy is also different compared to regular gemm fuctions.
+            // The CUBLAS_GEMM_DEFAULT algorithm selection does not experience
+            // this change. Does this imply that the TENSOR_OP function
+            // performs the computation in fp16 bit even when the compute
+            // type is CUDA_R_32F?
+            selectGEMMAlgorithm<T>());
+    } else {
+        using Nt = typename common::kernel_type<T>::native;
+        return gemmBatched_func<Nt>()(
+            blasHandle(), lOpts, rOpts, M, N, K, (const Nt *)alpha,
+            (const Nt **)lptrs, lStrides, (const Nt **)rptrs, rStrides,
+            (const Nt *)beta, (Nt **)optrs, oStrides, batchSize);
+    }
+}
+
+template<typename T>
+void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
+          const Array<T> &lhs, const Array<T> &rhs, const T *beta) {
     const cublasOperation_t lOpts = toCblasTranspose(optLhs);
     const cublasOperation_t rOpts = toCblasTranspose(optRhs);
 
@@ -179,21 +287,25 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
     if (oDims.ndims() <= 2) {
         if (rDims[bColDim] == 1) {
             dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
+            if (is_same<T, half>::value) {
+                AF_ERROR(
+                    "GEMV does not support half, Please create an issue on "
+                    "the GitHub repo.",
+                    AF_ERR_NOT_SUPPORTED);
+            }
             CUBLAS_CHECK(gemv_func<T>()(blasHandle(), lOpts, lDims[0], lDims[1],
                                         alpha, lhs.get(), lStrides[1],
                                         rhs.get(), incr, beta, out.get(), 1));
         } else {
-            CUBLAS_CHECK(gemm_func<T>()(blasHandle(), lOpts, rOpts, M, N, K,
-                                        alpha, lhs.get(), lStrides[1],
-                                        rhs.get(), rStrides[1], beta,
-                                        out.get(), oStrides[1]));
+            CUBLAS_CHECK(gemmDispatch<T>(blasHandle(), lOpts, rOpts, M, N, K,
+                                          alpha, lhs, lStrides[1], rhs,
+                                          rStrides[1], beta, out, oStrides[1]));
         }
     } else {
         int batchSize = oDims[2] * oDims[3];
-
-        std::vector<const T *> lptrs(batchSize);
-        std::vector<const T *> rptrs(batchSize);
-        std::vector<T *> optrs(batchSize);
+        vector<const T *> lptrs(batchSize);
+        vector<const T *> rptrs(batchSize);
+        vector<T *> optrs(batchSize);
 
         bool is_l_d2_batched = oDims[2] == lDims[2];
         bool is_l_d3_batched = oDims[3] == lDims[3];
@@ -233,10 +345,12 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
         // afterwards
         CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
-        CUBLAS_CHECK(gemmBatched_func<T>()(
+        using Nt = typename common::kernel_type<T>::native;
+        CUBLAS_CHECK(gemmBatchedDispatch(
             blasHandle(), lOpts, rOpts, M, N, K, alpha,
             (const T **)d_lptrs.get(), lStrides[1], (const T **)d_rptrs.get(),
-            rStrides[1], beta, (T **)d_optrs.get(), oStrides[1], batchSize));
+            rStrides[1], beta, (T **)d_optrs.get(), oStrides[1],
+            batchSize));
     }
 }
 
@@ -271,16 +385,17 @@ void trsm(const Array<T> &lhs, Array<T> &rhs, af_mat_prop trans, bool is_upper,
         lhs.get(), lStrides[1], rhs.get(), rStrides[1]));
 }
 
-#define INSTANTIATE_GEMM(TYPE)                                                         \
-    template void gemm<TYPE>(Array<TYPE> &out, af_mat_prop optLhs, af_mat_prop optRhs, \
-                             const TYPE *alpha,                       \
-                             const Array<TYPE> &lhs, const Array<TYPE> &rhs,           \
+#define INSTANTIATE_GEMM(TYPE)                                               \
+    template void gemm<TYPE>(Array<TYPE> & out, af_mat_prop optLhs,          \
+                             af_mat_prop optRhs, const TYPE *alpha,          \
+                             const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
                              const TYPE *beta);
 
 INSTANTIATE_GEMM(float)
 INSTANTIATE_GEMM(cfloat)
 INSTANTIATE_GEMM(double)
 INSTANTIATE_GEMM(cdouble)
+INSTANTIATE_GEMM(half)
 
 #define INSTANTIATE_DOT(TYPE)                                                  \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs,                     \

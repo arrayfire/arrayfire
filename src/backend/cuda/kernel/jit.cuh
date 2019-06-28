@@ -13,6 +13,8 @@ typedef cuFloatComplex cfloat;
 typedef double2 cuDoubleComplex;
 typedef cuDoubleComplex cdouble;
 
+#include <cuda_fp16.h>
+
 // ----------------------------------------------
 // COMMON OPERATIONS
 // ----------------------------------------------

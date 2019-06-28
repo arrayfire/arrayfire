@@ -38,7 +38,7 @@ __global__ static void reduce_dim_kernel(Param<To> out, CParam<Ti> in,
     const uint blockIdx_x = blockIdx.x - (blocks_x)*zid;
     const uint xid        = blockIdx_x * blockDim.x + tidx;
 
-    __shared__ To s_val[THREADS_X * DIMY];
+    __shared__ compute_t<To> s_val[THREADS_X * DIMY];
 
     const uint wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
     const uint blockIdx_y =
@@ -51,14 +51,16 @@ __global__ static void reduce_dim_kernel(Param<To> out, CParam<Ti> in,
     // There are blockDim.y elements per block for in
     // Hence increment ids[dim] just after offseting out and before offsetting
     // in
-    To *const optr = out.ptr + ids[3] * out.strides[3] +
-                     ids[2] * out.strides[2] + ids[1] * out.strides[1] + ids[0];
+    data_t<To> *const optr = out.ptr + ids[3] * out.strides[3] +
+                             ids[2] * out.strides[2] + ids[1] * out.strides[1] +
+                             ids[0];
 
     const uint blockIdx_dim = ids[dim];
     ids[dim]                = ids[dim] * blockDim.y + tidy;
 
-    const Ti *iptr = in.ptr + ids[3] * in.strides[3] + ids[2] * in.strides[2] +
-                     ids[1] * in.strides[1] + ids[0];
+    const data_t<Ti> *iptr = in.ptr + ids[3] * in.strides[3] +
+                             ids[2] * in.strides[2] + ids[1] * in.strides[1] +
+                             ids[0];
 
     const uint id_dim_in   = ids[dim];
     const uint istride_dim = in.strides[dim];
@@ -68,10 +70,10 @@ __global__ static void reduce_dim_kernel(Param<To> out, CParam<Ti> in,
 
     Transform<Ti, To, op> transform;
     Binary<To, op> reduce;
-    To out_val = Binary<To, op>::init();
+    compute_t<To> out_val = Binary<To, op>::init();
     for (int id = id_dim_in; is_valid && (id < in.dims[dim]);
          id += offset_dim * blockDim.y) {
-        To in_val = transform(*iptr);
+        compute_t<To> in_val = transform(*iptr);
         if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
         out_val = reduce(in_val, out_val);
         iptr    = iptr + offset_dim * blockDim.y * istride_dim;
@@ -79,7 +81,7 @@ __global__ static void reduce_dim_kernel(Param<To> out, CParam<Ti> in,
 
     s_val[tid] = out_val;
 
-    To *s_ptr = s_val + tid;
+    compute_t<To> *s_ptr = s_val + tid;
     __syncthreads();
 
     if (DIMY == 8) {
@@ -196,23 +198,24 @@ __global__ static void reduce_first_kernel(Param<To> out, CParam<Ti> in,
     Binary<To, op> reduce;
     Transform<Ti, To, op> transform;
 
-    __shared__ To s_val[THREADS_PER_BLOCK];
+    __shared__ compute_t<To> s_val[THREADS_PER_BLOCK];
 
     const uint wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
     const uint blockIdx_y =
         (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y)*wid;
     const uint yid = blockIdx_y * blockDim.y + tidy;
 
-    const Ti *const iptr = in.ptr + (wid * in.strides[3] + zid * in.strides[2] +
-                                     yid * in.strides[1]);
+    const data_t<Ti> *const iptr =
+        in.ptr +
+        (wid * in.strides[3] + zid * in.strides[2] + yid * in.strides[1]);
 
     if (yid >= in.dims[1] || zid >= in.dims[2] || wid >= in.dims[3]) return;
 
     int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-    To out_val = Binary<To, op>::init();
+    compute_t<To> out_val = Binary<To, op>::init();
     for (int id = xid; id < lim; id += DIMX) {
-        To in_val = transform(iptr[id]);
+        compute_t<To> in_val = transform(iptr[id]);
         if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
         out_val = reduce(in_val, out_val);
     }
@@ -220,7 +223,7 @@ __global__ static void reduce_first_kernel(Param<To> out, CParam<Ti> in,
     s_val[tid] = out_val;
 
     __syncthreads();
-    To *s_ptr = s_val + tidy * DIMX;
+    compute_t<To> *s_ptr = s_val + tidy * DIMX;
 
     if (DIMX == 256) {
         if (tidx < 128) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + 128]);
@@ -237,15 +240,16 @@ __global__ static void reduce_first_kernel(Param<To> out, CParam<Ti> in,
         __syncthreads();
     }
 
-    typedef cub::WarpReduce<To> WarpReduce;
+    typedef cub::WarpReduce<compute_t<To>> WarpReduce;
     __shared__ typename WarpReduce::TempStorage temp_storage;
 
-    To warp_val = s_ptr[tidx];
-    out_val     = WarpReduce(temp_storage).Reduce(warp_val, reduce);
+    compute_t<To> warp_val = s_ptr[tidx];
+    out_val                = WarpReduce(temp_storage).Reduce(warp_val, reduce);
 
-    To *const optr = out.ptr + (wid * out.strides[3] + zid * out.strides[2] +
-                                yid * out.strides[1]);
-    if (tidx == 0) optr[blockIdx_x] = out_val;
+    data_t<To> *const optr =
+        out.ptr +
+        (wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1]);
+    if (tidx == 0) optr[blockIdx_x] = data_t<To>(out_val);
 }
 
 template<typename Ti, typename To, af_op_t op>
@@ -384,10 +388,10 @@ To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
         Binary<To, op> reduce;
-        To out = Binary<To, op>::init();
+        compute_t<To> out = Binary<To, op>::init();
         for (int i = 0; i < tmp_elements; i++) { out = reduce(out, h_data[i]); }
 
-        return out;
+        return data_t<To>(out);
     } else {
         std::vector<Ti> h_data(in_elements);
         CUDA_CHECK(
@@ -397,16 +401,16 @@ To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
 
         Transform<Ti, To, op> transform;
         Binary<To, op> reduce;
-        To out       = Binary<To, op>::init();
-        To nanval_to = scalar<To>(nanval);
+        compute_t<To> out       = Binary<To, op>::init();
+        compute_t<To> nanval_to = scalar<To>(nanval);
 
         for (int i = 0; i < in_elements; i++) {
-            To in_val = transform(h_data[i]);
+            compute_t<To> in_val = transform(h_data[i]);
             if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval_to;
             out = reduce(out, in_val);
         }
 
-        return out;
+        return data_t<To>(out);
     }
 }
 

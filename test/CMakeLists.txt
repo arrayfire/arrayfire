@@ -102,6 +102,7 @@ function(make_test)
     add_executable(${target} ${mt_args_SRC})
     target_include_directories(${target}
       PRIVATE
+        ${ArrayFire_SOURCE_DIR}/extern/half/include
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
       )
@@ -206,6 +207,7 @@ make_test(SRC getting_started.cpp)
 make_test(SRC gfor.cpp)
 make_test(SRC gradient.cpp)
 make_test(SRC gray_rgb.cpp)
+make_test(SRC half.cpp)
 make_test(SRC hamming.cpp)
 make_test(SRC harris.cpp)
 make_test(SRC histogram.cpp)

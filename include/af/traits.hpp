@@ -14,6 +14,7 @@
 #include <complex>
 #include <af/defines.h>
 #include <af/complex.h>
+#include <af/half.h>
 
 namespace af {
 
@@ -163,6 +164,17 @@ struct dtype_traits<unsigned short> {
 };
 #endif
 
+#if AF_API_VERSION >= 37
+template<>
+struct dtype_traits<half> {
+    enum {
+        af_type = f16 ,
+        ctype = f16
+    };
+    typedef half base_type;
+    static const char* getName() { return "half"; }
+};
+#endif
 }
 
 #endif

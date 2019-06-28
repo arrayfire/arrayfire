@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <common/jit/NaryNode.hpp>
 #include <err_cuda.hpp>
 #include <kernel/select.hpp>
@@ -15,6 +16,7 @@
 
 #include <memory>
 
+using common::half;
 using common::NaryNode;
 using common::Node_ptr;
 using std::make_shared;
@@ -118,4 +120,6 @@ INSTANTIATE(char);
 INSTANTIATE(uchar);
 INSTANTIATE(short);
 INSTANTIATE(ushort);
+INSTANTIATE(half);
+
 }  // namespace cuda

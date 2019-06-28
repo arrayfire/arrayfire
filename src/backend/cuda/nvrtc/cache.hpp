@@ -104,12 +104,21 @@ struct TemplateTypename {
     }
 };
 
-template<>
-struct TemplateTypename<long long> {
-    operator TemplateArg() const noexcept {
-        return TemplateArg(std::string("long long"));
+#define SPECIALIZE(TYPE, NAME)                      \
+    template<>                                      \
+    struct TemplateTypename<TYPE> {                 \
+        operator TemplateArg() const noexcept {     \
+            return TemplateArg(std::string(#NAME)); \
+        }                                           \
     }
-};
+
+SPECIALIZE(unsigned char, cuda::uchar);
+SPECIALIZE(unsigned int, cuda::uint);
+SPECIALIZE(unsigned short, cuda::ushort);
+SPECIALIZE(long long, long long);
+SPECIALIZE(unsigned long long, unsigned long long);
+
+#undef SPECIALIZE
 
 #define DefineKey(arg) "-D " #arg
 #define DefineValue(arg) "-D " #arg "=" + toString(arg)

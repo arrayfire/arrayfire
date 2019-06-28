@@ -8,10 +8,14 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <err_opencl.hpp>
 #include <join.hpp>
 #include <kernel/join.hpp>
+
 #include <stdexcept>
+
+using common::half;
 
 namespace opencl {
 template<int dim>
@@ -159,6 +163,7 @@ INSTANTIATE(short, short)
 INSTANTIATE(ushort, ushort)
 INSTANTIATE(uchar, uchar)
 INSTANTIATE(char, char)
+INSTANTIATE(half, half)
 
 #undef INSTANTIATE
 
@@ -178,6 +183,7 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 INSTANTIATE(char)
+INSTANTIATE(half)
 
 #undef INSTANTIATE
 }  // namespace opencl

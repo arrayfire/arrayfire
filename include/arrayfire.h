@@ -309,6 +309,7 @@
 #include "af/features.h"
 #include "af/gfor.h"
 #include "af/graphics.h"
+#include "af/half.h"
 #include "af/image.h"
 #include "af/index.h"
 #include "af/lapack.h"

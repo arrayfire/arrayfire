@@ -11,6 +11,7 @@
 
 #include <common/Logger.hpp>
 #include <common/MemoryManagerImpl.hpp>
+#include <common/half.hpp>
 #include <err_cpu.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
@@ -30,7 +31,7 @@ template class common::MemoryManager<cpu::MemoryManager>;
 #endif
 
 using common::bytesToString;
-
+using common::half;
 using std::function;
 using std::move;
 using std::unique_ptr;
@@ -128,6 +129,7 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
+INSTANTIATE(half)
 
 MemoryManager::MemoryManager()
     : common::MemoryManager<cpu::MemoryManager>(

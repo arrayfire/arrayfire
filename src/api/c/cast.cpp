@@ -18,9 +18,11 @@
 #include <backend.hpp>
 #include <cast.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 
 using namespace detail;
+using common::half;
 
 static af_array cast(const af_array in, const af_dtype type) {
     const ArrayInfo& info = getInfo(in, false, true);
@@ -49,6 +51,7 @@ static af_array cast(const af_array in, const af_dtype type) {
             case u64: return getHandle(castArray<uintl>(in));
             case s16: return getHandle(castArray<short>(in));
             case u16: return getHandle(castArray<ushort>(in));
+            case f16: return getHandle(castArray<half>(in));
             default: TYPE_ERROR(2, type);
         }
     }
@@ -59,10 +62,11 @@ af_err af_cast(af_array* out, const af_array in, const af_dtype type) {
         const ArrayInfo& info = getInfo(in, false, true);
 
         af_dtype inType = info.getType();
-        if ((inType == c32 || inType == c64) && (type == f32 || type == f64)) {
+        if ((inType == c32 || inType == c64) &&
+            (type == f32 || type == f64 || type == f16)) {
             AF_ERROR(
                 "Casting is not allowed from complex (c32/c64) to real "
-                "(f32/f64) types.\n"
+                "(f16/f32/f64) types.\n"
                 "Use abs, real, imag etc to convert complex to floating type.",
                 AF_ERR_TYPE);
         }

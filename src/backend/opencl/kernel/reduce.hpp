@@ -12,6 +12,7 @@
 #include <Array.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/ops.hpp>
 #include <kernel_headers/reduce_dim.hpp>
@@ -33,6 +34,7 @@ using cl::Kernel;
 using cl::KernelFunctor;
 using cl::NDRange;
 using cl::Program;
+using common::half;
 using std::string;
 using std::unique_ptr;
 
@@ -275,11 +277,11 @@ To reduce_all(Param in, int change_nan, double nanval) {
                                      sizeof(To) * tmp_elements, h_ptr.data());
 
         Binary<To, op> reduce;
-        To out = Binary<To, op>::init();
+        compute_t<To> out = Binary<To, op>::init();
         for (int i = 0; i < (int)tmp_elements; i++) {
             out = reduce(out, h_ptr[i]);
         }
-        return out;
+        return data_t<To>(out);
     } else {
         std::vector<Ti> h_ptr(in_elements);
         getQueue().enqueueReadBuffer(*in.data, CL_TRUE,
@@ -288,8 +290,8 @@ To reduce_all(Param in, int change_nan, double nanval) {
 
         Transform<Ti, To, op> transform;
         Binary<To, op> reduce;
-        To out       = Binary<To, op>::init();
-        To nanval_to = scalar<To>(nanval);
+        compute_t<To> out       = Binary<To, op>::init();
+        compute_t<To> nanval_to = scalar<To>(nanval);
 
         for (int i = 0; i < (int)in_elements; i++) {
             To in_val = transform(h_ptr[i]);
@@ -297,7 +299,7 @@ To reduce_all(Param in, int change_nan, double nanval) {
             out = reduce(out, in_val);
         }
 
-        return out;
+        return data_t<To>(out);
     }
 }
 

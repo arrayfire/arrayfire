@@ -33,9 +33,9 @@ cdouble getConjugate(const cdouble &in) {
 
 template<typename T, bool conjugate>
 void transpose(Param<T> output, CParam<T> input) {
-    const dim4 odims    = output.dims();
-    const dim4 ostrides = output.strides();
-    const dim4 istrides = input.strides();
+    const af::dim4 odims    = output.dims();
+    const af::dim4 ostrides = output.strides();
+    const af::dim4 istrides = input.strides();
 
     T *out            = output.get();
     T const *const in = input.get();
@@ -72,8 +72,8 @@ void transpose(Param<T> out, CParam<T> in, const bool conjugate) {
 
 template<typename T, bool conjugate>
 void transpose_inplace(Param<T> input) {
-    const dim4 idims    = input.dims();
-    const dim4 istrides = input.strides();
+    const af::dim4 idims    = input.dims();
+    const af::dim4 istrides = input.strides();
 
     T *in = input.get();
 

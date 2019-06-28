@@ -13,6 +13,7 @@
 #include <common/Logger.hpp>
 #include <common/MemoryManagerImpl.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <common/util.hpp>
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -37,6 +38,7 @@ template class common::MemoryManager<cuda::MemoryManagerPinned>;
 
 using common::bytesToString;
 using common::MemoryEventPair;
+using common::half;
 
 using std::move;
 
@@ -133,6 +135,7 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 MemoryManager::MemoryManager()
     : common::MemoryManager<cuda::MemoryManager>(

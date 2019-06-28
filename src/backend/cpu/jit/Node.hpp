@@ -9,6 +9,7 @@
 
 #pragma once
 #include <common/defines.hpp>
+#include <common/half.hpp>
 #include <optypes.hpp>
 
 #include <array>
@@ -98,7 +99,7 @@ class Node {
 template<typename T>
 class TNode : public Node {
    public:
-    alignas(16) jit::array<T> m_val;
+    alignas(16) jit::array<compute_t<T>> m_val;
 
    public:
     TNode(T val, const int height,
@@ -110,6 +111,6 @@ class TNode : public Node {
 
 template<typename T>
 using TNode_ptr = std::shared_ptr<TNode<T>>;
-}  // namespace jit
 
+}  // namespace jit
 }  // namespace cpu

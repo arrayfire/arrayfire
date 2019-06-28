@@ -9,6 +9,7 @@
 
 #include <backend.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <ireduce.hpp>
 #include <math.hpp>
@@ -20,6 +21,7 @@
 #include <complex>
 
 using af::dim4;
+using common::half;
 using namespace detail;
 
 template<af_op_t op, typename Ti, typename To>
@@ -58,6 +60,7 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim) {
             case s16: res = reduce<op, short, To>(in, dim); break;
             case b8: res = reduce<op, char, To>(in, dim); break;
             case u8: res = reduce<op, uchar, To>(in, dim); break;
+            case f16: res = reduce<op, half, To>(in, dim); break;
             default: TYPE_ERROR(1, type);
         }
 
@@ -94,6 +97,7 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim) {
             case s16: res = reduce<op, short, short>(in, dim); break;
             case b8: res = reduce<op, char, char>(in, dim); break;
             case u8: res = reduce<op, uchar, uchar>(in, dim); break;
+            case f16: res = reduce<op, half, half>(in, dim); break;
             default: TYPE_ERROR(1, type);
         }
 
@@ -164,6 +168,9 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim,
                                                            nanval);
                 }
             } break;
+            case f16:
+                res = reduce<op, half, float>(in, dim, change_nan, nanval);
+                break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, res);
@@ -468,6 +475,7 @@ static af_err ireduce_common(af_array *val, af_array *idx, const af_array in,
             case s16: ireduce<op, short>(&res, &loc, in, dim); break;
             case b8: ireduce<op, char>(&res, &loc, in, dim); break;
             case u8: ireduce<op, uchar>(&res, &loc, in, dim); break;
+              //case f16: ireduce<op, half>(&res, &loc, in, dim); break;
             default: TYPE_ERROR(1, type);
         }
 

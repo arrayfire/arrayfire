@@ -6,14 +6,16 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#include <copy.hpp>
+#include <kernel/memcopy.hpp>
 
 #include <Array.hpp>
 #include <common/complex.hpp>
-#include <copy.hpp>
+#include <common/half.hpp>
 #include <err_opencl.hpp>
-#include <kernel/memcopy.hpp>
 #include <math.hpp>
 
+using common::half;
 using common::is_complex;
 
 namespace opencl {
@@ -137,6 +139,7 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 #define INSTANTIATE_PAD_ARRAY(SRC_T)                                      \
     template Array<float> padArray<SRC_T, float>(                         \
@@ -210,6 +213,7 @@ INSTANTIATE_PAD_ARRAY(uchar)
 INSTANTIATE_PAD_ARRAY(char)
 INSTANTIATE_PAD_ARRAY(short)
 INSTANTIATE_PAD_ARRAY(ushort)
+INSTANTIATE_PAD_ARRAY(half)
 
 #define INSTANTIATE_PAD_ARRAY_COMPLEX(SRC_T)                              \
     template Array<cfloat> padArray<SRC_T, cfloat>(                       \
@@ -248,4 +252,6 @@ INSTANTIATE_GETSCALAR(intl)
 INSTANTIATE_GETSCALAR(uintl)
 INSTANTIATE_GETSCALAR(short)
 INSTANTIATE_GETSCALAR(ushort)
+INSTANTIATE_GETSCALAR(half)
+
 }  // namespace opencl

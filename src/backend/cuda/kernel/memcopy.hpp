@@ -10,7 +10,9 @@
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_cuda.hpp>
+#include <types.hpp>
 
 #include <algorithm>
 
@@ -86,11 +88,10 @@ void memcopy(T *out, const dim_t *ostrides, const T *in, const dim_t *idims,
     POST_LAUNCH_CHECK();
 }
 
-////////////////////////////// BEGIN - templated help functions for copy_kernel
-///////////////////////////////////
+///////////// BEGIN - templated help functions for copy_kernel /////////////////
 template<typename T>
 __inline__ __device__ static T scale(T value, double factor) {
-    return (T)(value * factor);
+    return (T)(double(value) * factor);
 }
 
 template<>
@@ -106,6 +107,31 @@ __inline__ __device__ cdouble scale<cdouble>(cdouble value, double factor) {
 template<typename inType, typename outType>
 __inline__ __device__ outType convertType(inType value) {
     return (outType)value;
+}
+
+template<>
+__inline__ __device__ char convertType<compute_t<common::half>, char>(
+    compute_t<common::half> value) {
+    return (char)((short)value);
+}
+
+template<>
+__inline__ __device__ compute_t<common::half>
+convertType<char, compute_t<common::half>>(char value) {
+    return compute_t<common::half>(value);
+}
+
+template<>
+__inline__ __device__ cuda::uchar
+convertType<compute_t<common::half>, cuda::uchar>(
+    compute_t<common::half> value) {
+    return (cuda::uchar)((short)value);
+}
+
+template<>
+__inline__ __device__ compute_t<common::half>
+convertType<cuda::uchar, compute_t<common::half>>(cuda::uchar value) {
+    return compute_t<common::half>(value);
 }
 
 template<>
@@ -139,8 +165,9 @@ OTHER_SPECIALIZATIONS(short)
 OTHER_SPECIALIZATIONS(ushort)
 OTHER_SPECIALIZATIONS(uchar)
 OTHER_SPECIALIZATIONS(char)
-////////////////////////////// END - templated help functions for copy_kernel
-/////////////////////////////////////
+OTHER_SPECIALIZATIONS(common::half)
+
+//////////// END - templated help functions for copy_kernel ////////////////////
 
 template<typename inType, typename outType, bool same_dims>
 __global__ static void copy_kernel(Param<outType> dst, CParam<inType> src,

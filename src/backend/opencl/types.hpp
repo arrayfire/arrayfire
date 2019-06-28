@@ -16,11 +16,10 @@
 #include <CL/cl.h>
 #endif
 #pragma GCC diagnostic pop
-#include <type_util.hpp>
-#include <af/traits.hpp>
 
-#include <cmath>
-#include <sstream>
+#include <common/traits.hpp>
+#include <common/kernel_type.hpp>
+
 #include <string>
 
 namespace opencl {
@@ -33,59 +32,16 @@ using uintl   = unsigned long long;
 using ushort  = cl_ushort;
 
 template<typename T>
+using compute_t = typename common::kernel_type<T>::compute;
+
+template<typename T>
+using data_t = typename common::kernel_type<T>::data;
+
+template<typename T>
 struct ToNumStr {
-    inline std::string operator()(T val) {
-        ToNum<T> toNum;
-        return std::to_string(toNum(val));
-    }
-};
-
-template<>
-struct ToNumStr<float> {
-    inline std::string operator()(float val) {
-        static const char *PINF = "+INFINITY";
-        static const char *NINF = "-INFINITY";
-        if (std::isinf(val)) { return val < 0 ? NINF : PINF; }
-        return std::to_string(val);
-    }
-};
-
-template<>
-struct ToNumStr<double> {
-    inline std::string operator()(double val) {
-        static const char *PINF = "+INFINITY";
-        static const char *NINF = "-INFINITY";
-        if (std::isinf(val)) { return val < 0 ? NINF : PINF; }
-        return std::to_string(val);
-    }
-};
-
-template<>
-struct ToNumStr<cfloat> {
-    inline std::string operator()(cfloat val) {
-        ToNumStr<float> realStr;
-        std::stringstream s;
-        s << "{";
-        s << realStr(val.s[0]);
-        s << ",";
-        s << realStr(val.s[1]);
-        s << "}";
-        return s.str();
-    }
-};
-
-template<>
-struct ToNumStr<cdouble> {
-    inline std::string operator()(cdouble val) {
-        ToNumStr<double> realStr;
-        std::stringstream s;
-        s << "{";
-        s << realStr(val.s[0]);
-        s << ",";
-        s << realStr(val.s[1]);
-        s << "}";
-        return s.str();
-    }
+    std::string operator()(T val);
+    template<typename CONVERSION_TYPE>
+    std::string operator()(CONVERSION_TYPE val);
 };
 
 namespace {
@@ -142,12 +98,11 @@ template<>
 inline const char *shortname<ushort>(bool caps) {
     return caps ? "Q" : "q";
 }
+}  // namespace
 
 template<typename T>
 const char *getFullName() {
     return af::dtype_traits<T>::getName();
 }
-
-}  // namespace
 
 }  // namespace opencl

@@ -10,6 +10,7 @@
 #include <Array.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/complex.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
 #include <err_cpu.hpp>
 #include <kernel/copy.hpp>
@@ -22,6 +23,7 @@
 #include <cstdio>
 #include <cstring>
 
+using common::half;
 using common::is_complex;
 
 namespace cpu {
@@ -72,6 +74,7 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 #define INSTANTIATE_COPY_ARRAY(SRC_T)                                 \
     template void copyArray<SRC_T, float>(Array<float> & dst,         \
@@ -109,6 +112,7 @@ INSTANTIATE_COPY_ARRAY(uchar)
 INSTANTIATE_COPY_ARRAY(char)
 INSTANTIATE_COPY_ARRAY(ushort)
 INSTANTIATE_COPY_ARRAY(short)
+INSTANTIATE_COPY_ARRAY(half)
 
 #define INSTANTIATE_COPY_ARRAY_COMPLEX(SRC_T)                        \
     template void copyArray<SRC_T, cfloat>(Array<cfloat> & dst,      \
@@ -140,4 +144,5 @@ INSTANTIATE_GETSCALAR(intl)
 INSTANTIATE_GETSCALAR(uintl)
 INSTANTIATE_GETSCALAR(short)
 INSTANTIATE_GETSCALAR(ushort)
+INSTANTIATE_GETSCALAR(half)
 }  // namespace cpu

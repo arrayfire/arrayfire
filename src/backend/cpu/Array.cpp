@@ -14,6 +14,7 @@
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
 #include <common/jit/NodeIterator.hpp>
+#include <common/traits.hpp>
 #include <copy.hpp>
 #include <jit/BufferNode.hpp>
 #include <jit/Node.hpp>
@@ -23,6 +24,7 @@
 #include <queue.hpp>
 #include <traits.hpp>
 
+#include <common/half.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/seq.h>
@@ -33,18 +35,18 @@
 #include <cstring>
 #include <type_traits>
 
-namespace cpu {
-
-using common::NodeIterator;
-using jit::BufferNode;
-using jit::Node;
-using jit::Node_map_t;
-using jit::Node_ptr;
-
 using af::dim4;
+using common::half;
+using common::NodeIterator;
+using cpu::jit::BufferNode;
+using cpu::jit::Node;
+using cpu::jit::Node_map_t;
+using cpu::jit::Node_ptr;
 using std::copy;
 using std::is_standard_layout;
 using std::vector;
+
+namespace cpu {
 
 template<typename T>
 Node_ptr bufferNodePtr() {
@@ -349,5 +351,6 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace cpu

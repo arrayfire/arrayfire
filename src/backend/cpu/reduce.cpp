@@ -8,16 +8,19 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <kernel/reduce.hpp>
 #include <ops.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <reduce.hpp>
 #include <af/dim4.hpp>
+
 #include <complex>
 #include <functional>
 
 using af::dim4;
+using common::half;
 
 template<>
 struct Binary<cdouble, af_add_t> {
@@ -61,12 +64,12 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
     Transform<Ti, To, op> transform;
     Binary<To, op> reduce;
 
-    To out = Binary<To, op>::init();
+    compute_t<To> out = Binary<To, op>::init();
 
     // Decrement dimension of select dimension
-    af::dim4 dims    = in.dims();
-    af::dim4 strides = in.strides();
-    const Ti *inPtr  = in.get();
+    af::dim4 dims           = in.dims();
+    af::dim4 strides        = in.strides();
+    const data_t<Ti> *inPtr = in.get();
 
     for (dim_t l = 0; l < dims[3]; l++) {
         dim_t off3 = l * strides[3];
@@ -80,7 +83,7 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
                 for (dim_t i = 0; i < dims[0]; i++) {
                     dim_t idx = i + off1 + off2 + off3;
 
-                    To in_val = transform(inPtr[idx]);
+                    compute_t<To> in_val = transform(inPtr[idx]);
                     if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
                     out = reduce(in_val, out);
                 }
@@ -88,7 +91,7 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
         }
     }
 
-    return out;
+    return data_t<To>(out);
 }
 
 #define INSTANTIATE(ROp, Ti, To)                                               \
@@ -110,6 +113,7 @@ INSTANTIATE(af_min_t, char, char)
 INSTANTIATE(af_min_t, uchar, uchar)
 INSTANTIATE(af_min_t, short, short)
 INSTANTIATE(af_min_t, ushort, ushort)
+INSTANTIATE(af_min_t, half, half)
 
 // max
 INSTANTIATE(af_max_t, float, float)
@@ -124,6 +128,7 @@ INSTANTIATE(af_max_t, char, char)
 INSTANTIATE(af_max_t, uchar, uchar)
 INSTANTIATE(af_max_t, short, short)
 INSTANTIATE(af_max_t, ushort, ushort)
+INSTANTIATE(af_max_t, half, half)
 
 // sum
 INSTANTIATE(af_add_t, float, float)
@@ -146,6 +151,8 @@ INSTANTIATE(af_add_t, short, int)
 INSTANTIATE(af_add_t, short, float)
 INSTANTIATE(af_add_t, ushort, uint)
 INSTANTIATE(af_add_t, ushort, float)
+INSTANTIATE(af_add_t, half, half)
+INSTANTIATE(af_add_t, half, float)
 
 // mul
 INSTANTIATE(af_mul_t, float, float)
@@ -160,6 +167,7 @@ INSTANTIATE(af_mul_t, char, int)
 INSTANTIATE(af_mul_t, uchar, uint)
 INSTANTIATE(af_mul_t, short, int)
 INSTANTIATE(af_mul_t, ushort, uint)
+INSTANTIATE(af_mul_t, half, float)
 
 // count
 INSTANTIATE(af_notzero_t, float, uint)
@@ -174,6 +182,7 @@ INSTANTIATE(af_notzero_t, char, uint)
 INSTANTIATE(af_notzero_t, uchar, uint)
 INSTANTIATE(af_notzero_t, short, uint)
 INSTANTIATE(af_notzero_t, ushort, uint)
+INSTANTIATE(af_notzero_t, half, uint)
 
 // anytrue
 INSTANTIATE(af_or_t, float, char)
@@ -188,6 +197,7 @@ INSTANTIATE(af_or_t, char, char)
 INSTANTIATE(af_or_t, uchar, char)
 INSTANTIATE(af_or_t, short, char)
 INSTANTIATE(af_or_t, ushort, char)
+INSTANTIATE(af_or_t, half, char)
 
 // alltrue
 INSTANTIATE(af_and_t, float, char)
@@ -202,5 +212,6 @@ INSTANTIATE(af_and_t, char, char)
 INSTANTIATE(af_and_t, uchar, char)
 INSTANTIATE(af_and_t, short, char)
 INSTANTIATE(af_and_t, ushort, char)
+INSTANTIATE(af_and_t, half, char)
 
 }  // namespace cpu

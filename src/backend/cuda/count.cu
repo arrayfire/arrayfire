@@ -8,6 +8,9 @@
  ********************************************************/
 
 #include "reduce_impl.hpp"
+#include <common/half.hpp>
+
+using common::half;
 
 namespace cuda {
 // count
@@ -23,4 +26,5 @@ INSTANTIATE(af_notzero_t, short, uint)
 INSTANTIATE(af_notzero_t, ushort, uint)
 INSTANTIATE(af_notzero_t, char, uint)
 INSTANTIATE(af_notzero_t, uchar, uint)
+INSTANTIATE(af_notzero_t, half, uint)
 }  // namespace cuda

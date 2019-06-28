@@ -19,6 +19,8 @@
 #include <af/util.h>
 #include "error.hpp"
 
+#include <af/half.h>
+
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -215,6 +217,7 @@ INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
 INSTANTIATE(short)
 INSTANTIATE(unsigned short)
+INSTANTIATE(af_half)
 
 #undef INSTANTIATE
 
@@ -283,6 +286,7 @@ INSTANTIATE(column)
 INSTANTIATE(complex)
 INSTANTIATE(double)
 INSTANTIATE(single)
+INSTANTIATE(half)
 INSTANTIATE(realfloating)
 INSTANTIATE(floating)
 INSTANTIATE(integer)
@@ -551,6 +555,7 @@ MEM_FUNC(bool, iscolumn)
 MEM_FUNC(bool, iscomplex)
 MEM_FUNC(bool, isdouble)
 MEM_FUNC(bool, issingle)
+MEM_FUNC(bool, ishalf)
 MEM_FUNC(bool, isrealfloating)
 MEM_FUNC(bool, isfloating)
 MEM_FUNC(bool, isinteger)

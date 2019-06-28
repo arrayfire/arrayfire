@@ -8,6 +8,9 @@
  ********************************************************/
 
 #include "reduce_impl.hpp"
+#include <common/half.hpp>
+
+using common::half;
 
 namespace opencl {
 // sum
@@ -23,4 +26,5 @@ INSTANTIATE(af_mul_t, char, int)
 INSTANTIATE(af_mul_t, uchar, uint)
 INSTANTIATE(af_mul_t, short, int)
 INSTANTIATE(af_mul_t, ushort, uint)
+INSTANTIATE(af_mul_t, half, float)
 }  // namespace opencl

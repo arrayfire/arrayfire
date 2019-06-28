@@ -76,6 +76,9 @@ bool isGLSharingSupported();
 
 bool isDoubleSupported(int device);
 
+// Returns true if 16-bit precision floats are supported by the device
+bool isHalfSupported(int device);
+
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute);
 
 std::string getPlatformName(const cl::Device& device);

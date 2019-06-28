@@ -18,6 +18,7 @@
 #else  //__CUDACC_RTC__
 
 #include <common/defines.hpp>
+#include <common/half.hpp>
 #include <af/defines.h>
 
 #ifdef __CUDACC__
@@ -29,6 +30,8 @@
 #include <limits>
 
 #endif  //__CUDACC_RTC__
+
+#include <cuda_fp16.h>
 
 #include "backend.hpp"
 #include "types.hpp"
@@ -53,7 +56,36 @@ static inline __DH__ size_t max(size_t lhs, size_t rhs) {
     return lhs > rhs ? lhs : rhs;
 }
 
-#ifndef __CUDA_ARCH__
+#ifdef __CUDA_ARCH__
+template<typename T>
+inline __DH__ T min(T lhs, T rhs) {
+    return ::min(lhs, rhs);
+}
+
+template<typename T>
+inline __DH__ T max(T lhs, T rhs) {
+    return ::max(lhs, rhs);
+}
+
+template<>
+inline __DH__ __half min<__half>(__half lhs, __half rhs) {
+#if __CUDA_ARCH__ >= 530
+    return __hlt(lhs, rhs) ? lhs : rhs;
+#else
+    return (float)lhs < (float)rhs ? lhs : rhs;
+#endif
+}
+
+template<>
+inline __DH__ __half max<__half>(__half lhs, __half rhs) {
+#if __CUDA_ARCH__ >= 530
+    return __hgt(lhs, rhs) ? lhs : rhs;
+#else
+    return (float)lhs > (float)rhs ? lhs : rhs;
+#endif
+}
+
+#else
 template<typename T>
 static inline __DH__ T min(T lhs, T rhs) {
     return std::min(lhs, rhs);
@@ -61,15 +93,6 @@ static inline __DH__ T min(T lhs, T rhs) {
 template<typename T>
 static inline __DH__ T max(T lhs, T rhs) {
     return std::max(lhs, rhs);
-}
-#else
-template<typename T>
-static inline __DH__ T min(T lhs, T rhs) {
-    return ::min(lhs, rhs);
-}
-template<typename T>
-static inline __DH__ T max(T lhs, T rhs) {
-    return ::max(lhs, rhs);
 }
 #endif
 

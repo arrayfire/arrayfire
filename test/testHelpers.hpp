@@ -12,6 +12,7 @@
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/internal.h>
@@ -33,6 +34,16 @@
 #if defined(USE_MTX)
 #include <mmio.h>
 #endif
+
+bool operator==(const af_half &lhs, const af_half &rhs) {
+    return lhs.data_ == rhs.data_;
+}
+
+std::ostream &operator<<(std::ostream &os, const af_half &val) {
+    float out = *reinterpret_cast<const half_float::half *>(&val);
+    os << out;
+    return os;
+}
 
 #define UNUSED(expr) \
     do { (void)(expr); } while (0)
@@ -67,6 +78,7 @@ std::ostream &operator<<(std::ostream &os, af::dtype type) {
         case u64: name = "u64"; break;
         case s16: name = "s16"; break;
         case u16: name = "u16"; break;
+        case f16: name = "f16"; break;
         default: assert(false && "Invalid type");
     }
     return os << name;
@@ -90,6 +102,22 @@ std::string readNextNonEmptyLine(std::ifstream &file) {
         throw std::runtime_error("Non empty lines not found in the file");
     }
     return result;
+}
+
+template<typename To, typename Ti>
+To convert(Ti in) {
+    return static_cast<To>(in);
+}
+
+template<>
+float convert(af::half in) {
+    return static_cast<float>(half_float::half(in.data_));
+}
+
+template<>
+af_half convert(int in) {
+    half_float::half h = half_float::half(in);
+    return *reinterpret_cast<af_half*>(&h);
 }
 
 template<typename inType, typename outType, typename FileElementType>
@@ -119,7 +147,7 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
             FileElementType tmp;
             for (unsigned i = 0; i < nElems; i++) {
                 testFile >> tmp;
-                testInputs[k][i] = static_cast<inType>(tmp);
+                testInputs[k][i] = convert<inType, FileElementType>(tmp);
             }
         }
 
@@ -129,7 +157,7 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
             FileElementType tmp;
             for (unsigned j = 0; j < testSizes[i]; j++) {
                 testFile >> tmp;
-                testOutputs[i][j] = static_cast<outType>(tmp);
+                testOutputs[i][j] = convert<outType, FileElementType>(tmp);
             }
         }
     } else {
@@ -439,8 +467,19 @@ bool noDoubleTests() {
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
 }
 
+template<typename T>
+bool noHalfTests() {
+    af::dtype ty           = (af::dtype)af::dtype_traits<T>::af_type;
+    bool isTypeHalf        = (ty == f16);
+    int dev                = af::getDevice();
+    bool isHalfSupported   = af::isHalfAvailable(dev);
+
+    return ((isTypeHalf && !isHalfSupported) ? true : false);
+}
+
 #define SUPPORTED_TYPE_CHECK(type) \
-    if (noDoubleTests<type>()) return;
+  if (noDoubleTests<type>()) return; \
+  if (noHalfTests<type>()) return
 
 inline bool noImageIOTests() {
     bool ret = !af::isImageIOAvailable();
@@ -536,6 +575,10 @@ void cleanSlate() {
 const af::cfloat &operator+(const af::cfloat &val) { return val; }
 
 const af::cdouble &operator+(const af::cdouble &val) { return val; }
+
+const af_half& operator+(const af_half& val) {
+    return val;
+}
 
 // Calculate a multi-dimensional coordinates' linearized index
 dim_t ravelIdx(af::dim4 coords, af::dim4 strides) {
@@ -837,6 +880,9 @@ template<typename T>
             break;
         case u16:
             return elemWiseEq<unsigned short>(aName, bName, a, b, maxAbsDiff);
+            break;
+        case f16:
+            return elemWiseEq<af::half>(aName, bName, a, b, maxAbsDiff);
             break;
         default:
             return ::testing::AssertionFailure()
