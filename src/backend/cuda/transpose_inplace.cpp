@@ -18,11 +18,10 @@ namespace cuda {
 
 template<typename T>
 void transpose_inplace(Array<T> &in, const bool conjugate) {
-    if (conjugate) {
-        kernel::transpose_inplace<T, true>(in);
-    } else {
-        kernel::transpose_inplace<T, false>(in);
-    }
+    const dim4 inDims = in.dims();
+    const bool is32multiple =
+        inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0;
+    kernel::transpose_inplace<T>(in, conjugate, is32multiple);
 }
 
 #define INSTANTIATE(T) \

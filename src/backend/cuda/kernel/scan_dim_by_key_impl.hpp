@@ -33,7 +33,6 @@ static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                        const int dim, const uint threads_y,
                                        const dim_t blocks_all[4],
                                        bool inclusive_scan) {
-    // clang-format off
     auto scanDimNonFinal = getKernel("cuda::scanbykey_dim_nonfinal",
             ScanDimByKeySource,
             {
@@ -47,7 +46,7 @@ static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
               DefineKeyValue(DIMY, threads_y)
             }
             );
-    // clang-format on
+
     dim3 threads(THREADS_X, threads_y);
 
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
@@ -66,7 +65,6 @@ static void scan_dim_final_launcher(Param<To> out, CParam<Ti> in,
                                     const uint threads_y,
                                     const dim_t blocks_all[4],
                                     bool calculateFlags, bool inclusive_scan) {
-    // clang-format off
     auto scanDimFinal = getKernel("cuda::scanbykey_dim_final",
             ScanDimByKeySource,
             {
@@ -80,7 +78,7 @@ static void scan_dim_final_launcher(Param<To> out, CParam<Ti> in,
               DefineKeyValue(DIMY, threads_y)
             }
             );
-    // clang-format on
+
     dim3 threads(THREADS_X, threads_y);
 
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
@@ -97,16 +95,13 @@ template<typename To, af_op_t op>
 static void bcast_dim_launcher(Param<To> out, CParam<To> tmp, Param<int> tlid,
                                const int dim, const uint threads_y,
                                const dim_t blocks_all[4]) {
-    // clang-format off
     auto bcastDim = getKernel("cuda::scanbykey_dim_bcast", ScanDimByKeySource,
             {
               TemplateTypename<To>(),
               TemplateArg(op)
             }
             );
-    // clang-format on
     dim3 threads(THREADS_X, threads_y);
-
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
 
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));

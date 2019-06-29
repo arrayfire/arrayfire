@@ -21,15 +21,9 @@ template<typename inType, typename outType, af_match_type mType>
 Array<outType> match_template(const Array<inType> &sImg,
                               const Array<inType> &tImg) {
     Array<outType> out = createEmptyArray<outType>(sImg.dims());
-
     bool needMean = mType == AF_ZSAD || mType == AF_LSAD || mType == AF_ZSSD ||
                     mType == AF_LSSD || mType == AF_ZNCC;
-
-    if (needMean)
-        kernel::matchTemplate<inType, outType, mType, true>(out, sImg, tImg);
-    else
-        kernel::matchTemplate<inType, outType, mType, false>(out, sImg, tImg);
-
+    kernel::matchTemplate<inType, outType>(out, sImg, tImg, mType, needMean);
     return out;
 }
 

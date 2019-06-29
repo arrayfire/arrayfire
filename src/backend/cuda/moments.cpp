@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <moments.hpp>
+
 #include <Array.hpp>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>

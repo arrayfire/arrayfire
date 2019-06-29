@@ -64,33 +64,55 @@ file_to_string(
     )
 
 set(nvrtc_src
-  ${CUDA_TOOLKIT_ROOT_DIR}/include/cuComplex.h
   ${CUDA_INCLUDE_DIRS}/cuda_fp16.h
   ${CUDA_INCLUDE_DIRS}/cuda_fp16.hpp
-
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/half.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../common/kernel_type.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve1.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve2.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve3.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve_separable.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim_by_key.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first_by_key.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/shared.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/where.cuh
+  ${CUDA_TOOLKIT_ROOT_DIR}/include/cuComplex.h
+  ${CUDA_TOOLKIT_ROOT_DIR}/include/math_constants.h
 
   ${PROJECT_SOURCE_DIR}/src/api/c/ops.hpp
   ${PROJECT_SOURCE_DIR}/src/api/c/optypes.hpp
   ${PROJECT_SOURCE_DIR}/include/af/defines.h
   ${PROJECT_SOURCE_DIR}/include/af/traits.hpp
+  ${PROJECT_BINARY_DIR}/include/af/version.h
 
   ${CMAKE_CURRENT_SOURCE_DIR}/Param.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/backend.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/interp.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/shared.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/math.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/types.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/backend.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/half.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/kernel_type.hpp
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/anisotropic_diffusion.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/approx1.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/approx2.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/bilateral.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/canny.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve1.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve2.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve3.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve_separable.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/exampleFunction.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/histogram.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/hsv_rgb.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/match_template.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/meanshift.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/medfilt.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/moments.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/morph.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/pad_array_borders.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/resize.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/rotate.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim_by_key.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first_by_key.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sobel.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transform.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose_inplace.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/where.cuh
   )
 
 file_to_string(
@@ -165,32 +187,32 @@ cuda_add_library(afcuda
     sort.hpp
 
     all.cu
-    anisotropic_diffusion.cu
+    anisotropic_diffusion.cpp
     any.cu
-    approx.cu
+    approx.cpp
     assign.cu
-    bilateral.cu
-    canny.cu
+    bilateral.cpp
+    canny.cpp
     cholesky.cu
     copy.cu
     count.cu
     diagonal.cu
     diff.cu
-    dilate.cu
-    dilate3d.cu
-    erode.cu
-    erode3d.cu
+    dilate.cpp
+    dilate3d.cpp
+    erode.cpp
+    erode3d.cpp
     Event.cpp
     Event.hpp
-    exampleFunction.cu
+    exampleFunction.cpp
     fast.cu
     fast_pyramid.cu
     fftconvolve.cu
     gradient.cu
     harris.cu
-    histogram.cu
+    histogram.cpp
     homography.cu
-    hsv_rgb.cu
+    hsv_rgb.cpp
     identity.cu
     iir.cu
     index.cu
@@ -200,28 +222,28 @@ cuda_add_library(afcuda
     join.cu
     lookup.cu
     lu.cu
-    match_template.cu
+    match_template.cpp
     max.cu
     mean.cu
-    meanshift.cu
-    medfilt.cu
+    meanshift.cpp
+    medfilt.cpp
     min.cu
-    moments.cu
+    moments.cpp
     nearest_neighbour.cu
     orb.cu
-    pad_array_borders.cu
+    pad_array_borders.cpp
     product.cu
     qr.cu
     random_engine.cu
     range.cu
     regions.cu
     reorder.cu
-    resize.cu
-    rotate.cu
+    resize.cpp
+    rotate.cpp
     select.cu
     set.cu
     sift.cu
-    sobel.cu
+    sobel.cpp
     solve.cu
     sort.cu
     sort_by_key.cu
@@ -233,9 +255,9 @@ cuda_add_library(afcuda
     svd.cu
     tile.cu
     topk.cu
-    transform.cu
+    transform.cpp
     transpose.cpp
-    transpose_inplace.cu
+    transpose_inplace.cpp
     triangle.cu
     unwrap.cu
     wrap.cu
@@ -440,6 +462,7 @@ cuda_add_library(afcuda
     types.hpp
     unary.hpp
     unwrap.hpp
+    utility.cpp
     utility.hpp
     vector_field.cpp
     vector_field.hpp

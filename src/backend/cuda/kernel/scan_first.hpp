@@ -28,7 +28,6 @@ void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                          const uint blocks_x, const uint blocks_y,
                          const uint threads_x, bool isFinalPass,
                          bool inclusive_scan) {
-    // clang-format off
     auto scanFirst = getKernel("cuda::scan_first", ScanFirstSource,
             {
               TemplateTypename<Ti>(),
@@ -42,7 +41,6 @@ void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
               DefineValue(THREADS_PER_BLOCK)
             }
             );
-    // clang-format on
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
@@ -63,14 +61,12 @@ template<typename To, af_op_t op>
 static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
                                  const uint blocks_x, const uint blocks_y,
                                  const uint threads_x, bool inclusive_scan) {
-    // clang-format off
     auto bcastFirst = getKernel("cuda::scan_first_bcast", ScanFirstSource,
             {
               TemplateTypename<To>(),
               TemplateArg(op)
             }
             );
-    // clang-format on
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);

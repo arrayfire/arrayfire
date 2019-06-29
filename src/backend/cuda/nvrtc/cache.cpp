@@ -7,9 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <nvrtc/cache.hpp>
+
 #include <device_manager.hpp>
 #include <kernel_headers/jit_cuh.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/Param_hpp.hpp>
 #include <nvrtc_kernel_headers/backend_hpp.hpp>
 #include <nvrtc_kernel_headers/cuComplex_h.hpp>
@@ -17,15 +18,20 @@
 #include <nvrtc_kernel_headers/cuda_fp16_hpp.hpp>
 #include <nvrtc_kernel_headers/defines_h.hpp>
 #include <nvrtc_kernel_headers/half_hpp.hpp>
+#include <nvrtc_kernel_headers/interp_hpp.hpp>
 #include <nvrtc_kernel_headers/kernel_type_hpp.hpp>
+#include <nvrtc_kernel_headers/math_constants_h.hpp>
 #include <nvrtc_kernel_headers/math_hpp.hpp>
 #include <nvrtc_kernel_headers/ops_hpp.hpp>
 #include <nvrtc_kernel_headers/optypes_hpp.hpp>
 #include <nvrtc_kernel_headers/shared_hpp.hpp>
 #include <nvrtc_kernel_headers/traits_hpp.hpp>
 #include <nvrtc_kernel_headers/types_hpp.hpp>
+#include <nvrtc_kernel_headers/version_h.hpp>
 #include <optypes.hpp>
 #include <platform.hpp>
+#include <af/defines.h>
+#include <af/version.h>
 
 #include <algorithm>
 #include <array>
@@ -103,6 +109,25 @@ void Kernel::setConstant(const char *name, CUdeviceptr src, size_t bytes) {
     CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, getActiveStream()));
 }
 
+template<typename T>
+void Kernel::setScalar(const char *name, T value) {
+    CUdeviceptr dst = 0;
+    CU_CHECK(cuModuleGetGlobal(&dst, NULL, prog, name));
+    CU_CHECK(cuMemcpyHtoDAsync(dst, &value, sizeof(T), getActiveStream()));
+    CU_CHECK(cuStreamSynchronize(getActiveStream()));
+}
+
+template<typename T>
+void Kernel::getScalar(T &out, const char *name) {
+    CUdeviceptr src = 0;
+    CU_CHECK(cuModuleGetGlobal(&src, NULL, prog, name));
+    CU_CHECK(cuMemcpyDtoHAsync(&out, src, sizeof(T), getActiveStream()));
+    CU_CHECK(cuStreamSynchronize(getActiveStream()));
+}
+
+template void Kernel::setScalar<int>(const char *, int);
+template void Kernel::getScalar<int>(int &, const char *);
+
 Kernel buildKernel(const int device, const string &nameExpr,
                    const string &jit_ker, const vector<string> &opts,
                    const bool isJIT) {
@@ -120,6 +145,8 @@ Kernel buildKernel(const int device, const string &nameExpr,
     } else {
         constexpr static const char *includeNames[] = {
             "math.h",          // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
+            "stdbool.h",       // DUMMY ENTRY TO SATISFY af/defines.h inclusion
+            "stdlib.h",        // DUMMY ENTRY TO SATISFY af/defines.h inclusion
             "vector_types.h",  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
             "backend.hpp",
             "cuComplex.h",
@@ -135,11 +162,17 @@ Kernel buildKernel(const int device, const string &nameExpr,
             "common/half.hpp",
             "common/kernel_type.hpp",
             "af/traits.hpp",
+            "interp.hpp",
+            "math_constants.h",
+            "af/defines.h",
+            "af/version.h",
         };
 
         constexpr size_t NumHeaders = extent<decltype(includeNames)>::value;
         static const std::array<string, NumHeaders> sourceStrings = {{
             string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
+            string(""),  // DUMMY ENTRY TO SATISFY af/defines.h inclusion
+            string(""),  // DUMMY ENTRY TO SATISFY af/defines.h inclusion
             string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
             string(backend_hpp, backend_hpp_len),
             string(cuComplex_h, cuComplex_h_len),
@@ -155,6 +188,10 @@ Kernel buildKernel(const int device, const string &nameExpr,
             string(half_hpp, half_hpp_len),
             string(kernel_type_hpp, kernel_type_hpp_len),
             string(traits_hpp, traits_hpp_len),
+            string(interp_hpp, interp_hpp_len),
+            string(math_constants_h, math_constants_h_len),
+            string(defines_h, defines_h_len),
+            string(version_h, version_h_len),
         }};
 
         static const char *headers[] = {
@@ -166,6 +203,9 @@ Kernel buildKernel(const int device, const string &nameExpr,
             sourceStrings[10].c_str(), sourceStrings[11].c_str(),
             sourceStrings[12].c_str(), sourceStrings[13].c_str(),
             sourceStrings[14].c_str(), sourceStrings[15].c_str(),
+            sourceStrings[16].c_str(), sourceStrings[17].c_str(),
+            sourceStrings[18].c_str(), sourceStrings[19].c_str(),
+            sourceStrings[20].c_str(), sourceStrings[21].c_str(),
         };
         NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name,
                                        NumHeaders, headers, includeNames));
@@ -376,6 +416,80 @@ string toString(af_op_t val) {
 template<>
 string toString(const char *str) {
     return string(str);
+}
+
+template<>
+string toString(af_interp_type p) {
+    const char *retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_INTERP_NEAREST);
+        CASE_STMT(AF_INTERP_LINEAR);
+        CASE_STMT(AF_INTERP_BILINEAR);
+        CASE_STMT(AF_INTERP_CUBIC);
+        CASE_STMT(AF_INTERP_LOWER);
+#if AF_API_VERSION >= 34
+        CASE_STMT(AF_INTERP_LINEAR_COSINE);
+        CASE_STMT(AF_INTERP_BILINEAR_COSINE);
+        CASE_STMT(AF_INTERP_BICUBIC);
+        CASE_STMT(AF_INTERP_CUBIC_SPLINE);
+        CASE_STMT(AF_INTERP_BICUBIC_SPLINE);
+#endif
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(af_border_type p) {
+    const char *retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_PAD_ZERO);
+        CASE_STMT(AF_PAD_SYM);
+        CASE_STMT(AF_PAD_CLAMP_TO_EDGE);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+#if AF_API_VERSION >= 34
+template<>
+string toString(af_moment_type p) {
+    const char *retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_MOMENT_M00);
+        CASE_STMT(AF_MOMENT_M01);
+        CASE_STMT(AF_MOMENT_M10);
+        CASE_STMT(AF_MOMENT_M11);
+        CASE_STMT(AF_MOMENT_FIRST_ORDER);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+#endif  //  AF_API_VERSION
+
+template<>
+string toString(af_match_type p) {
+    const char *retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_SAD);
+        CASE_STMT(AF_ZSAD);
+        CASE_STMT(AF_LSAD);
+        CASE_STMT(AF_SSD);
+        CASE_STMT(AF_ZSSD);
+        CASE_STMT(AF_LSSD);
+        CASE_STMT(AF_NCC);
+        CASE_STMT(AF_ZNCC);
+    }
+#undef CASE_STMT
+    return retVal;
 }
 
 Kernel getKernel(const string &nameExpr, const string &source,

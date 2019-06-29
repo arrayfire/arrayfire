@@ -7,11 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <resize.hpp>
+
 #include <Array.hpp>
 #include <err_cuda.hpp>
 #include <kernel/resize.hpp>
-#include <resize.hpp>
-#include <stdexcept>
 
 namespace cuda {
 template<typename T>
@@ -22,18 +22,7 @@ Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    switch (method) {
-        case AF_INTERP_NEAREST:
-            kernel::resize<T, AF_INTERP_NEAREST>(out, in);
-            break;
-        case AF_INTERP_BILINEAR:
-            kernel::resize<T, AF_INTERP_BILINEAR>(out, in);
-            break;
-        case AF_INTERP_LOWER:
-            kernel::resize<T, AF_INTERP_LOWER>(out, in);
-            break;
-        default: break;
-    }
+    kernel::resize<T>(out, in, method);
 
     return out;
 }

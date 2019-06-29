@@ -106,7 +106,6 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     static const std::string src(convolve1_cuh, convolve1_cuh_len);
 
-    // clang-format off
     auto conv = getKernel("cuda::convolve1", src,
             {
               TemplateTypename<T>(),
@@ -118,7 +117,6 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
               DefineValue(CONV_THREADS)
             }
             );
-    // clang-format on
 
     prepareKernelArgs<T>(p, out.dims, filt.dims, 1);
 
@@ -171,7 +169,6 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
 
     static const std::string src(convolve2_cuh, convolve2_cuh_len);
 
-    // clang-format off
     auto conv = getKernel("cuda::convolve2", src,
             {
               TemplateTypename<T>(),
@@ -187,7 +184,6 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
               DefineValue(CONV2_THREADS_Y)
             }
             );
-    // clang-format on
 
     // FIXME: case where filter array is strided
     conv.setConstant(conv_c_name, reinterpret_cast<CUdeviceptr>(fptr),
@@ -227,7 +223,6 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     static const std::string src(convolve3_cuh, convolve3_cuh_len);
 
-    // clang-format off
     auto conv = getKernel("cuda::convolve3", src,
             {
               TemplateTypename<T>(),
@@ -242,7 +237,6 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
               DefineValue(CONV3_CUBE_Z)
             }
             );
-    // clang-format on
 
     prepareKernelArgs<T>(p, out.dims, filt.dims, 3);
 
@@ -342,7 +336,6 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
 
     static const std::string src(convolve_separable_cuh,
                                  convolve_separable_cuh_len);
-    // clang-format off
     auto conv = getKernel("cuda::convolve2_separable", src,
             {
               TemplateTypename<T>(),
@@ -357,7 +350,6 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
               DefineValue(SCONV_THREADS_Y)
             }
             );
-    // clang-format on
 
     dim3 threads(SCONV_THREADS_X, SCONV_THREADS_Y);
 

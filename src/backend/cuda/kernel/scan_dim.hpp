@@ -27,7 +27,6 @@ static
 void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                        const uint threads_y, const dim_t blocks_all[4],
                        int dim, bool isFinalPass, bool inclusive_scan) {
-    // clang-format off
     auto scanDim = getKernel("cuda::scan_dim", ScanDimSource,
             {
               TemplateTypename<Ti>(),
@@ -42,7 +41,6 @@ void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
               DefineValue(THREADS_X)
             }
             );
-    // clang-format on
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -66,7 +64,6 @@ static
 void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
                         const uint threads_y, const dim_t blocks_all[4],
                         int dim, bool inclusive_scan) {
-    // clang-format off
     auto bcastDim = getKernel("cuda::scan_dim_bcast", ScanDimSource,
             {
               TemplateTypename<To>(),
@@ -74,7 +71,6 @@ void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
               TemplateArg(dim)
             }
             );
-    // clang-format on
 
     dim3 threads(THREADS_X, threads_y);
 

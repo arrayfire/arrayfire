@@ -7,11 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
 #include <copy.hpp>
+
+#include <Array.hpp>
 #include <err_cuda.hpp>
 #include <kernel/pad_array_borders.hpp>
-#include <af/dim4.hpp>
 
 namespace cuda {
 template<typename T>

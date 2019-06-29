@@ -32,7 +32,6 @@ static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                    CParam<Ti> in, CParam<Tk> key,
                                    const uint blocks_x, const uint blocks_y,
                                    const uint threads_x, bool inclusive_scan) {
-    // clang-format off
     auto scanNonFinal = getKernel("cuda::scanbykey_first_nonfinal",
             ScanFirstByKeySource,
             {
@@ -46,7 +45,6 @@ static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
               DefineKeyValue(DIMX, threads_x)
             }
             );
-    // clang-format on
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
@@ -63,7 +61,6 @@ static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
                                 const uint blocks_x, const uint blocks_y,
                                 const uint threads_x, bool calculateFlags,
                                 bool inclusive_scan) {
-    // clang-format off
     auto scanFinal = getKernel("cuda::scanbykey_first_final",
             ScanFirstByKeySource,
             {
@@ -77,7 +74,6 @@ static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
               DefineKeyValue(DIMX, threads_x)
             }
             );
-    // clang-format on
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
@@ -93,7 +89,6 @@ template<typename To, af_op_t op>
 static void bcast_first_launcher(Param<To> out, Param<To> tmp, Param<int> tlid,
                                  const dim_t blocks_x, const dim_t blocks_y,
                                  const uint threads_x) {
-    // clang-format off
     auto bcastFirst = getKernel("cuda::scanbykey_first_bcast",
             ScanFirstByKeySource,
             {
@@ -101,7 +96,6 @@ static void bcast_first_launcher(Param<To> out, Param<To> tmp, Param<int> tlid,
               TemplateArg(op)
             }
             );
-    // clang-format on
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
     uint lim = divup(out.dims[0], (threads_x * blocks_x));

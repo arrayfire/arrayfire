@@ -26,9 +26,8 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins,
     dim4 outDims       = dim4(nbins, 1, dims[2], dims[3]);
     Array<outType> out = createValueArray<outType>(outDims, outType(0));
 
-    kernel::histogram<inType, outType, isLinear>(out, in, nbins, minval,
-                                                 maxval);
-
+    kernel::histogram<inType, outType>(out, in, nbins, minval, maxval,
+                                       isLinear);
     return out;
 }
 

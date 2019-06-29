@@ -11,10 +11,7 @@
 
 #include <backend.hpp>
 #include <types.hpp>
-
-#ifndef __CUDACC_RTC__
 #include <af/defines.h>
-#endif
 
 namespace cuda {
 
