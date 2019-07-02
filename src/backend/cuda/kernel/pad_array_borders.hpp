@@ -30,11 +30,7 @@ void padBorders(Param<T> out, CParam<T> in, dim4 const lBoundPadding,
     static const std::string source(pad_array_borders_cuh,
                                     pad_array_borders_cuh_len);
     auto padBorders = getKernel("cuda::padBorders", source,
-            {
-              TemplateTypename<T>(),
-              TemplateArg(btype)
-            }
-            );
+                                {TemplateTypename<T>(), TemplateArg(btype)});
 
     dim3 threads(kernel::PADB_THREADS_X, kernel::PADB_THREADS_Y);
 

@@ -20,11 +20,11 @@ namespace cuda {
 namespace kernel {
 
 static const int MAX_MORPH_FILTER_LEN = 17;
-static const int THREADS_X = 16;
-static const int THREADS_Y = 16;
-static const int CUBE_X = 8;
-static const int CUBE_Y = 8;
-static const int CUBE_Z = 8;
+static const int THREADS_X            = 16;
+static const int THREADS_Y            = 16;
+static const int CUBE_X               = 8;
+static const int CUBE_Y               = 8;
+static const int CUBE_Z               = 8;
 
 template<typename T>
 void morph(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
@@ -33,16 +33,12 @@ void morph(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
     const int windLen  = mask.dims[0];
     const int SeLength = (windLen <= 10 ? windLen : 0);
 
-    auto morph = getKernel("cuda::morph", source,
-            {
-              TemplateTypename<T>(),
-              TemplateArg(isDilation),
-              TemplateArg(SeLength)
-            },
-            {
-              DefineValue(MAX_MORPH_FILTER_LEN),
-            }
-            );
+    auto morph = getKernel(
+        "cuda::morph", source,
+        {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(SeLength)},
+        {
+            DefineValue(MAX_MORPH_FILTER_LEN),
+        });
 
     morph.setConstant("cFilter", reinterpret_cast<CUdeviceptr>(mask.ptr),
                       mask.dims[0] * mask.dims[1] * sizeof(T));
@@ -71,16 +67,12 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
 
     const int windLen = mask.dims[0];
 
-    auto morph = getKernel("cuda::morph3D", source,
-            {
-              TemplateTypename<T>(),
-              TemplateArg(isDilation),
-              TemplateArg(windLen)
-            },
-            {
-              DefineValue(MAX_MORPH_FILTER_LEN),
-            }
-            );
+    auto morph = getKernel(
+        "cuda::morph3D", source,
+        {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(windLen)},
+        {
+            DefineValue(MAX_MORPH_FILTER_LEN),
+        });
 
     morph.setConstant("cFilter", reinterpret_cast<CUdeviceptr>(mask.ptr),
                       mask.dims[0] * mask.dims[1] * mask.dims[2] * sizeof(T));

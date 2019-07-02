@@ -23,24 +23,16 @@ namespace kernel {
 static const std::string ScanFirstSource(scan_first_cuh, scan_first_cuh_len);
 
 template<typename Ti, typename To, af_op_t op>
-static
-void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
-                         const uint blocks_x, const uint blocks_y,
-                         const uint threads_x, bool isFinalPass,
-                         bool inclusive_scan) {
-    auto scanFirst = getKernel("cuda::scan_first", ScanFirstSource,
-            {
-              TemplateTypename<Ti>(),
-              TemplateTypename<To>(),
-              TemplateArg(op),
-              TemplateArg(isFinalPass),
-              TemplateArg(threads_x),
-              TemplateArg(inclusive_scan)
-            },
-            {
-              DefineValue(THREADS_PER_BLOCK)
-            }
-            );
+static void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
+                                const uint blocks_x, const uint blocks_y,
+                                const uint threads_x, bool isFinalPass,
+                                bool inclusive_scan) {
+    auto scanFirst =
+        getKernel("cuda::scan_first", ScanFirstSource,
+                  {TemplateTypename<Ti>(), TemplateTypename<To>(),
+                   TemplateArg(op), TemplateArg(isFinalPass),
+                   TemplateArg(threads_x), TemplateArg(inclusive_scan)},
+                  {DefineValue(THREADS_PER_BLOCK)});
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
@@ -62,11 +54,7 @@ static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
                                  const uint blocks_x, const uint blocks_y,
                                  const uint threads_x, bool inclusive_scan) {
     auto bcastFirst = getKernel("cuda::scan_first_bcast", ScanFirstSource,
-            {
-              TemplateTypename<To>(),
-              TemplateArg(op)
-            }
-            );
+                                {TemplateTypename<To>(), TemplateArg(op)});
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);

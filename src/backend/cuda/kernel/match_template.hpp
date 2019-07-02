@@ -28,14 +28,10 @@ void matchTemplate(Param<outType> out, CParam<inType> srch,
                    bool needMean) {
     static const std::string source(match_template_cuh, match_template_cuh_len);
 
-    auto match = getKernel("cuda::matchTemplate", source,
-            {
-              TemplateTypename<inType>(),
-              TemplateTypename<outType>(),
-              TemplateArg(mType),
-              TemplateArg(needMean)
-            }
-            );
+    auto match =
+        getKernel("cuda::matchTemplate", source,
+                  {TemplateTypename<inType>(), TemplateTypename<outType>(),
+                   TemplateArg(mType), TemplateArg(needMean)});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

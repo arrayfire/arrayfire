@@ -27,17 +27,11 @@ void histogram(Param<outType> out, CParam<inType> in, int nbins, float minval,
                float maxval, bool isLinear) {
     static const std::string source(histogram_cuh, histogram_cuh_len);
 
-    auto histogram = getKernel("cuda::histogram", source,
-            {
-              TemplateTypename<inType>(),
-              TemplateTypename<outType>(),
-              TemplateArg(isLinear)
-            },
-            {
-              DefineValue(MAX_BINS),
-              DefineValue(THRD_LOAD)
-            }
-            );
+    auto histogram =
+        getKernel("cuda::histogram", source,
+                  {TemplateTypename<inType>(), TemplateTypename<outType>(),
+                   TemplateArg(isLinear)},
+                  {DefineValue(MAX_BINS), DefineValue(THRD_LOAD)});
 
     dim3 threads(kernel::THREADS_X, 1);
 

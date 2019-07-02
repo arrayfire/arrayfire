@@ -106,17 +106,10 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     static const std::string src(convolve1_cuh, convolve1_cuh_len);
 
-    auto conv = getKernel("cuda::convolve1", src,
-            {
-              TemplateTypename<T>(),
-              TemplateTypename<aT>(),
-              TemplateArg(expand)
-            },
-            {
-              DefineValue(MAX_CONV1_FILTER_LEN),
-              DefineValue(CONV_THREADS)
-            }
-            );
+    auto conv = getKernel(
+        "cuda::convolve1", src,
+        {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
+        {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS)});
 
     prepareKernelArgs<T>(p, out.dims, filt.dims, 1);
 
@@ -169,21 +162,12 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
 
     static const std::string src(convolve2_cuh, convolve2_cuh_len);
 
-    auto conv = getKernel("cuda::convolve2", src,
-            {
-              TemplateTypename<T>(),
-              TemplateTypename<aT>(),
-              TemplateArg(expand),
-              TemplateArg(f0),
-              TemplateArg(f1)
-            },
-            {
-              DefineValue(MAX_CONV1_FILTER_LEN),
-              DefineValue(CONV_THREADS),
-              DefineValue(CONV2_THREADS_X),
-              DefineValue(CONV2_THREADS_Y)
-            }
-            );
+    auto conv =
+        getKernel("cuda::convolve2", src,
+                  {TemplateTypename<T>(), TemplateTypename<aT>(),
+                   TemplateArg(expand), TemplateArg(f0), TemplateArg(f1)},
+                  {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
+                   DefineValue(CONV2_THREADS_X), DefineValue(CONV2_THREADS_Y)});
 
     // FIXME: case where filter array is strided
     conv.setConstant(conv_c_name, reinterpret_cast<CUdeviceptr>(fptr),
@@ -223,20 +207,12 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     static const std::string src(convolve3_cuh, convolve3_cuh_len);
 
-    auto conv = getKernel("cuda::convolve3", src,
-            {
-              TemplateTypename<T>(),
-              TemplateTypename<aT>(),
-              TemplateArg(expand)
-            },
-            {
-              DefineValue(MAX_CONV1_FILTER_LEN),
-              DefineValue(CONV_THREADS),
-              DefineValue(CONV3_CUBE_X),
-              DefineValue(CONV3_CUBE_Y),
-              DefineValue(CONV3_CUBE_Z)
-            }
-            );
+    auto conv = getKernel(
+        "cuda::convolve3", src,
+        {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
+        {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
+         DefineValue(CONV3_CUBE_X), DefineValue(CONV3_CUBE_Y),
+         DefineValue(CONV3_CUBE_Z)});
 
     prepareKernelArgs<T>(p, out.dims, filt.dims, 3);
 
@@ -336,20 +312,12 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
 
     static const std::string src(convolve_separable_cuh,
                                  convolve_separable_cuh_len);
-    auto conv = getKernel("cuda::convolve2_separable", src,
-            {
-              TemplateTypename<T>(),
-              TemplateTypename<aT>(),
-              TemplateArg(conv_dim),
-              TemplateArg(expand),
-              TemplateArg(fLen)
-            },
-            {
-              DefineValue(MAX_SCONV_FILTER_LEN),
-              DefineValue(SCONV_THREADS_X),
-              DefineValue(SCONV_THREADS_Y)
-            }
-            );
+    auto conv = getKernel(
+        "cuda::convolve2_separable", src,
+        {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(conv_dim),
+         TemplateArg(expand), TemplateArg(fLen)},
+        {DefineValue(MAX_SCONV_FILTER_LEN), DefineValue(SCONV_THREADS_X),
+         DefineValue(SCONV_THREADS_Y)});
 
     dim3 threads(SCONV_THREADS_X, SCONV_THREADS_Y);
 

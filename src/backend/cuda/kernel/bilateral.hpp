@@ -26,16 +26,10 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
                float c_sigma) {
     static const std::string source(bilateral_cuh, bilateral_cuh_len);
 
-    auto filter = getKernel("cuda::bilateral", source,
-            {
-              TemplateTypename<inType>(),
-              TemplateTypename<outType>()
-            },
-            {
-              DefineValue(THREADS_X),
-              DefineValue(THREADS_Y)
-            }
-            );
+    auto filter =
+        getKernel("cuda::bilateral", source,
+                  {TemplateTypename<inType>(), TemplateTypename<outType>()},
+                  {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

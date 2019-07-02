@@ -30,15 +30,8 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
     static const std::string source(anisotropic_diffusion_cuh,
                                     anisotropic_diffusion_cuh_len);
     auto diffuse = getKernel("cuda::diffUpdate", source,
-            {
-              TemplateTypename<T>(),
-              TemplateArg(isMCDE)
-            },
-            {
-              DefineValue(THREADS_X),
-              DefineValue(THREADS_Y)
-            }
-            );
+                             {TemplateTypename<T>(), TemplateArg(isMCDE)},
+                             {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
     dim3 threads(THREADS_X, THREADS_Y, 1);
 

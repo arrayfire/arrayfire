@@ -30,18 +30,10 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
                        CParam<T> dy) {
     static const std::string source(canny_cuh, canny_cuh_len);
 
-    auto maxSuppress = getKernel("cuda::nonMaxSuppression", source,
-            {
-              TemplateTypename<T>()
-            },
-            {
-              DefineValue(STRONG),
-              DefineValue(WEAK),
-              DefineValue(NOEDGE),
-              DefineValue(THREADS_X),
-              DefineValue(THREADS_Y)
-            }
-            );
+    auto maxSuppress =
+        getKernel("cuda::nonMaxSuppression", source, {TemplateTypename<T>()},
+                  {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
+                   DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
@@ -61,42 +53,18 @@ template<typename T>
 void edgeTrackingHysteresis(Param<T> output, CParam<T> strong, CParam<T> weak) {
     static const std::string source(canny_cuh, canny_cuh_len);
 
-    auto init = getKernel("cuda::initEdgeOut", source,
-            {
-              TemplateTypename<T>()
-            },
-            {
-              DefineValue(STRONG),
-              DefineValue(WEAK),
-              DefineValue(NOEDGE),
-              DefineValue(THREADS_X),
-              DefineValue(THREADS_Y)
-            }
-            );
-    auto trace = getKernel("cuda::edgeTrack", source,
-            {
-              TemplateTypename<T>()
-            },
-            {
-              DefineValue(STRONG),
-              DefineValue(WEAK),
-              DefineValue(NOEDGE),
-              DefineValue(THREADS_X),
-              DefineValue(THREADS_Y)
-            }
-            );
-    auto threshold = getKernel("cuda::suppressLeftOver", source,
-            {
-              TemplateTypename<T>()
-            },
-            {
-              DefineValue(STRONG),
-              DefineValue(WEAK),
-              DefineValue(NOEDGE),
-              DefineValue(THREADS_X),
-              DefineValue(THREADS_Y)
-            }
-            );
+    auto init =
+        getKernel("cuda::initEdgeOut", source, {TemplateTypename<T>()},
+                  {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
+                   DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto trace =
+        getKernel("cuda::edgeTrack", source, {TemplateTypename<T>()},
+                  {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
+                   DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto threshold =
+        getKernel("cuda::suppressLeftOver", source, {TemplateTypename<T>()},
+                  {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
+                   DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

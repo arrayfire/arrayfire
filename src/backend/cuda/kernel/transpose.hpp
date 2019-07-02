@@ -30,16 +30,9 @@ void transpose(Param<T> out, CParam<T> in, const bool conjugate,
     static const std::string source(transpose_cuh, transpose_cuh_len);
 
     auto transpose = getKernel("cuda::transpose", source,
-            {
-              TemplateTypename<T>(),
-              TemplateArg(conjugate),
-              TemplateArg(is32multiple)
-            },
-            {
-              DefineValue(TILE_DIM),
-              DefineValue(THREADS_Y)
-            }
-            );
+                               {TemplateTypename<T>(), TemplateArg(conjugate),
+                                TemplateArg(is32multiple)},
+                               {DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

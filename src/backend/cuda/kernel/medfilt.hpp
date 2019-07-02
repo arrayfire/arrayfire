@@ -21,8 +21,8 @@ namespace kernel {
 
 static const int MAX_MEDFILTER1_LEN = 121;
 static const int MAX_MEDFILTER2_LEN = 15;
-static const int THREADS_X = 16;
-static const int THREADS_Y = 16;
+static const int THREADS_X          = 16;
+static const int THREADS_Y          = 16;
 
 template<typename T>
 void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
@@ -31,17 +31,9 @@ void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
     static const std::string source(medfilt_cuh, medfilt_cuh_len);
 
     auto filter = getKernel("cuda::medfilt2", source,
-            {
-              TemplateTypename<T>(),
-              TemplateArg(pad),
-              TemplateArg(w_len),
-              TemplateArg(w_wid)
-            },
-            {
-              DefineValue(THREADS_X),
-              DefineValue(THREADS_Y)
-            }
-            );
+                            {TemplateTypename<T>(), TemplateArg(pad),
+                             TemplateArg(w_len), TemplateArg(w_wid)},
+                            {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 
@@ -59,13 +51,9 @@ template<typename T>
 void medfilt1(Param<T> out, CParam<T> in, const af::borderType pad, int w_wid) {
     static const std::string source(medfilt_cuh, medfilt_cuh_len);
 
-    auto filter = getKernel("cuda::medfilt1", source,
-            {
-              TemplateTypename<T>(),
-              TemplateArg(pad),
-              TemplateArg(w_wid)
-            }
-            );
+    auto filter = getKernel(
+        "cuda::medfilt1", source,
+        {TemplateTypename<T>(), TemplateArg(pad), TemplateArg(w_wid)});
 
     const dim3 threads(THREADS_X);
 

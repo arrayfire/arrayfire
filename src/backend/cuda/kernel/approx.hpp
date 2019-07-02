@@ -31,13 +31,9 @@ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
              const af::interpType method, const int order) {
     static const std::string source(approx1_cuh, approx1_cuh_len);
 
-    auto approx1 = getKernel("cuda::approx1", source,
-            {
-              TemplateTypename<Ty>(),
-              TemplateTypename<Tp>(),
-              TemplateArg(order)
-            }
-            );
+    auto approx1 = getKernel(
+        "cuda::approx1", source,
+        {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(order)});
 
     dim3 threads(THREADS, 1, 1);
     int blocksPerMat = divup(yo.dims[0], threads.x);
@@ -65,13 +61,9 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
              const af::interpType method, const int order) {
     static const std::string source(approx2_cuh, approx2_cuh_len);
 
-    auto approx2 = getKernel("cuda::approx2", source,
-            {
-              TemplateTypename<Ty>(),
-              TemplateTypename<Tp>(),
-              TemplateArg(order)
-            }
-            );
+    auto approx2 = getKernel(
+        "cuda::approx2", source,
+        {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(order)});
 
     dim3 threads(TX, TY, 1);
     int blocksPerMatX = divup(zo.dims[0], threads.x);
