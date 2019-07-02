@@ -11,6 +11,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <cstdlib>
+#include <string>
 
 using namespace af;
 
@@ -25,11 +26,18 @@ int main(int argc, char** argv) {
     try {
         int device = argc > 1 ? atoi(argv[1]) : 0;
         setDevice(device);
+
+        const std::string dtype(argc > 2 ? argv[2] : "f32");
+        const af_dtype dt = (dtype == "f16" ? f16 : f32);
+
+        if (dt == f16)
+          printf("Device %d isHalfAvailable ? %s\n", device, isHalfAvailable(device) ? "yes" : "no");
+
         info();
 
-        printf("Benchmark N-by-N matrix multiply\n");
+        printf("Benchmark N-by-N matrix multiply at %s \n", dtype.c_str());
         for (int n = 128; n <= 2048; n += 128) {
-            printf("%4d x %4d: ", n, n);
+            printf("%4d x %4d: ", n, n, dt);
             A             = constant(1, n, n);
             double time   = timeit(fn);  // time in seconds
             double gflops = 2.0 * powf(n, 3) / (time * 1e9);

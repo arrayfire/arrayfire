@@ -194,11 +194,9 @@ af_err af_gemm(af_array *out,
                                     static_cast<const cdouble*>(alpha), lhs, rhs,
                                     static_cast<const cdouble*>(beta)); break;
 #ifndef AF_CPU
-            case f16:
-              gemm<half>(&output, optLhs, optRhs,
-                                 static_cast<const half *>(alpha), lhs, rhs,
-                                 static_cast<const half *>(beta)); break;
-          break;
+            case f16: gemm<half>(&output, optLhs, optRhs,
+                                    static_cast<const half *>(alpha), lhs, rhs,
+                                    static_cast<const half *>(beta)); break;
 #endif
             default: TYPE_ERROR(3, lhs_type);
         }
@@ -239,6 +237,14 @@ af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
 
         af_dtype lhs_type = lhsInfo.getType();
         switch (lhs_type) {
+#ifndef AF_CPU
+            case f16: {
+                    static const half alpha(1.0f);
+                    static const half beta(0.0f);
+                    AF_CHECK(af_gemm(&gemm_out, optLhs, optRhs, &alpha, lhs, rhs, &beta));
+                    break;
+            }
+#endif
             case f32: {
                     float alpha = 1.f;
                     float beta  = 0.f;
