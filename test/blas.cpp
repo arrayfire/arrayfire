@@ -13,6 +13,7 @@
 #include <testHelpers.hpp>
 #include <af/blas.h>
 #include <af/defines.h>
+#include <af/half.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
 #include <string>
@@ -382,6 +383,41 @@ float h_gold_batch[18] = {30.f, 84.f, 138.f,
                           93.f, 42.f, 105.f,
                           81.f, 36.f, 87.f,
                           69.f, 30.f, 69.f};
+
+
+TEST(MatrixMultiply, float) {
+    array A32 = array(3, 3, h_lhs);
+    array B32 = array(3, 3, h_rhs);
+    af_array C32 = 0;
+    const float alpha32 = 1.0f;
+    const float beta32 = 0.0f;
+    af_gemm(&C32, AF_MAT_NONE, AF_MAT_NONE, &alpha32, A32.get(), B32.get(), &beta32);
+    array expected32 = array(3, 3, h_gold);
+    ASSERT_ARRAYS_NEAR(expected32, af::array(C32), 0.0001);
+}
+
+#ifndef AF_CPU
+TEST(MatrixMultiply, half) {
+    SUPPORTED_TYPE_CHECK(af_half);
+
+    array A16 = array(3, 3, h_lhs).as(f16);
+    array B16 = array(3, 3, h_rhs).as(f16);
+    array expected16 = array(3, 3, h_gold).as(f16);
+
+    {
+        af_array C16 = 0;
+        const af_half alpha16 = {0x03c00}; // 1.0 : 0 01111 0000000000
+        const af_half beta16 = {0x00000}; //  0.0 : 0 00000 0000000000
+        af_gemm(&C16, AF_MAT_NONE, AF_MAT_NONE, &alpha16, A16.get(), B16.get(), &beta16);
+        af::array C(C16);
+        ASSERT_ARRAYS_NEAR(expected16, C, 0.00001);
+    }
+    {
+        array C16 = matmul(A16, B16);
+        ASSERT_ARRAYS_NEAR(expected16, C16, 0.000001);
+    }
+}
+#endif
 
 struct test_params {
     af_mat_prop opt_lhs;
