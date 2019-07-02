@@ -1715,16 +1715,15 @@ TEST_F(IndexDocs, Precondition) {
   ASSERT_VEC_ARRAY_EQ(gold, dim4(4, 4), A);
 }
 
-TEST_F(IndexDocs, FirstElement) {
+TEST_F(IndexDocs, 2_3Element) {
     array out =
     //![index_tutorial_first_element]
     // Returns an array pointing to the first element
-    A(0, 0); // WARN: avoid doing this. Demo only
+    A(2, 3); // WARN: avoid doing this. Demo only
     //![index_tutorial_first_element]
-    vector<float> gold(1, 0.f);
+    vector<float> gold(1, 14.f);
     ASSERT_VEC_ARRAY_EQ(gold, dim4(1), out);
 }
-
 
 TEST_F(IndexDocs, FifthElement) {
     array out =
@@ -1734,6 +1733,21 @@ TEST_F(IndexDocs, FifthElement) {
     //![index_tutorial_fifth_element]
     vector<float> gold(1, 5.f);
     ASSERT_VEC_ARRAY_EQ(gold, dim4(1), out);
+}
+
+TEST_F(IndexDocs, NegativeIndexing) {
+    //![index_tutorial_negative_indexing]
+    array ref0 = A(2, -1);    // 14 second row last column
+    array ref1 = A(2, end);   // 14 Same as above
+    array ref2 = A(2, -2);    // 10 Second row, second to last(third) column
+    array ref3 = A(2, end-1); // 10 Same as above
+    //![index_tutorial_negative_indexing]
+    vector<float> gold1(1, 14.f);
+    vector<float> gold2(1, 10.f);
+    ASSERT_VEC_ARRAY_EQ(gold1, dim4(1), ref0);
+    ASSERT_VEC_ARRAY_EQ(gold1, dim4(1), ref1);
+    ASSERT_VEC_ARRAY_EQ(gold2, dim4(1), ref2);
+    ASSERT_VEC_ARRAY_EQ(gold2, dim4(1), ref3);
 }
 
 TEST_F(IndexDocs, ThirdColumn) {
@@ -1770,7 +1784,7 @@ TEST_F(IndexDocs, SecondAndFourthRows) {
     array out =
     //![index_tutorial_second_and_fourth_rows]
     // Returns an array pointing to the second and fourth rows
-    A(seq(1, 3, 2), span);
+    A(seq(1, end, 2), span);
     //![index_tutorial_second_and_fourth_rows]
     vector<float> gold{1, 3, 5, 7, 9, 11, 13, 15};
     ASSERT_VEC_ARRAY_EQ(gold, dim4(2, 4), out);
@@ -1807,6 +1821,14 @@ TEST_F(IndexDocs, Approx) {
 
     vector<float> gold{14.f, 5.f, 11.f};
     ASSERT_VEC_ARRAY_EQ(gold, dim4(3), out);
+}
+
+TEST_F(IndexDocs, Boolean) {
+    //![index_tutorial_boolean]
+    array out = A(A < 5);
+    //![index_tutorial_boolean]
+    vector<float> gold = {0, 1, 2, 3, 4};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(5), out);
 }
 
 TEST_F(IndexDocs, References) {
@@ -1849,20 +1871,80 @@ TEST_F(IndexDocs, Assignment) {
     deviceGC();
     size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
     deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+
     //![index_tutorial_assignment]
-    array reference = A(span, 1);
-    array reference2 = A(span, 2);
-    array reference3 = A(span, 2);
-    A(span, 1) = 3;
+    array inputA = constant(3, 10, 10);
+    array inputB = constant(2, 10, 10);
+    array data   = constant(1, 10, 10);
 
-    af_print(reference);
-    af_print(A);
+    // Points to the second column of data. Does not allocate memory
+    array ref = data(span, 1);
 
+    // This call does NOT update data. Memory allocated in matmul
+    ref = matmul(inputA, inputB);
+    // reference does not point to the same memory as the data array
     //![index_tutorial_assignment]
 
     size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
     deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
 
-    printf("buf %lu\n", lock_buffers2 - lock_buffers);
+    vector<float> gold_reference(100, 60);
+    vector<float> gold_data(100, 1);
+    ASSERT_VEC_ARRAY_EQ(gold_reference, dim4(10, 10), ref);
+    ASSERT_VEC_ARRAY_EQ(gold_data, dim4(10, 10), data);
+    ASSERT_EQ(4, lock_buffers2 - lock_buffers);
 }
+
+TEST_F(IndexDocs, AssignmentThirdColumn) {
+    vector<float> gold(A.elements());
+    A.host(gold.data());
+
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    //![index_tutorial_assignment_third_column]
+    array reference = A(span, 2);
+    A(span, 2) = 3.14f;
+    assert(allTrue<bool>(reference != A(span, 2)));
+    //![index_tutorial_assignment_third_column]
+    vector<float> gold_reference(begin(gold) + 8, begin(gold)+12);
+    ASSERT_VEC_ARRAY_EQ(gold_reference, dim4(4), reference);
+    gold[8] = gold[9] = gold[10] = gold[11] = 3.14f;
+    ASSERT_VEC_ARRAY_EQ(gold, A.dims(), A);
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    ASSERT_EQ(1, lock_buffers2 - lock_buffers);
+}
+
+TEST_F(IndexDocs, AssignmentAlloc) {
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    //![index_tutorial_assignment_alloc]
+    {
+        // No allocation performed. ref points to A's memory
+        array ref = A(span, 2);
+    } // ref goes out of scope. No one point's to A's memory
+    A(span, 2) = 3.14f; // No allocation performed.
+    //![index_tutorial_assignment_alloc]
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    ASSERT_EQ(0, lock_buffers2 - lock_buffers);
+}
+
+TEST_F(IndexDocs, AssignmentRaceCondition) {
+    //![index_tutorial_assignment_race_condition]
+    vector<int> hidx = {4, 3, 4, 0};
+    vector<float> hvals = {9.f, 8.f, 7.f, 6.f};
+    array idx(4, hidx.data());
+    array vals(4, hvals.data());
+
+    A(idx) = vals; // nondeterministic. A(4) can be 9 or 7
+    //![index_tutorial_assignment_race_condition]
+}
+
 // clang-format on

@@ -33,7 +33,7 @@ matrix by passing `0,0` into the parenthesis operator of the af::array.
 
 \snippet test/index.cpp index_tutorial_first_element
 
-\f[ A(0, 0) = [ 0 ] \f]
+\f[ A(2, 3) = [ 14 ] \f]
 
 We can also access the array using linear indexing by passing in one value. Here
 we are accessing the fifth element of the array.
@@ -42,16 +42,23 @@ we are accessing the fifth element of the array.
 
 \f[ A(5) = [ 5 ] \f]
 
-Normally you want to avoid accessing individual elements of the array like this
+\note Normally you want to avoid accessing individual elements of the array like this
 for performance reasons.
 
-## af::span and af::seq
+Negative indexing values will index from the end of the array. For example, the
+value negative one and negative two(-2) will return the last and second to last
+element of the array. ArrayFire provides the end alias for this which also
+allows you to index the last element of the array.
 
-You can access regions regions of the array via the af::seq and af::span
-objects. The span objects allows you to select the entire set of elements across
-a particular dimension/axis of an array. For example, we can select the third
-column of the array by passing span as the first agument and 2 as the second
-argument to the parenthesis operator.
+\snippet test/index.cpp index_tutorial_negative_indexing
+
+## Indexing slices and subarrays
+
+You can access regions of the array via the af::seq and af::span objects. The
+span objects allows you to select the entire set of elements across a particular
+dimension/axis of an array. For example, we can select the third column of the
+array by passing span as the first agument and 2 as the second argument to the
+parenthesis operator.
 
 \snippet test/index.cpp index_tutorial_third_column
 
@@ -98,13 +105,13 @@ three constructors for af::seq.
 * af::seq(begin, end) Defines a range between begin and end inclusive
 * af::seq(begin, end, step) defines a range between begin and end striding by step values
 
-You can select the second and forth rows by passing (seq(1, 4, 2), span) to the
-indexing operator.
+You can select the second and forth(last) rows by passing (seq(1, end, 2), span)
+to the indexing operator.
 
 \snippet test/index.cpp index_tutorial_second_and_fourth_rows
 
 \f[
-A(seq(1, 3, 2), span) =
+A(seq(1, end, 2), span) =
 \begin{bmatrix}
      1 & 5 &  9 & 13 \\
      3 & 7 & 11 & 15
@@ -179,10 +186,24 @@ approx2(A,
 \end{bmatrix}
 \f]
 
+Boolean(b8) arrays can be used to index into another array. In this type of
+indexing the non-zero values will be selected by the boolean operation. If we
+want to select all values less than 5, we can pass a boolean expression into
+the parenthesis operator.
+
+\snippet test/index.cpp index_tutorial_boolean
+
+\f[
+out =
+\begin{bmatrix}
+0 \\ 1 \\ 2 \\ 3 \\ 4
+\end{bmatrix}
+\f]
+
 ## References and copies
 
 All ArrayFire indexing functions return af::array(technically its an array_proxy
-class but we will discuss that later** objects. These objects may be new arrays
+class but we will discuss that later) objects. These objects may be new arrays
 or they may reference the original array depending on the type of indexing that
 was performed on them. If an array was indexed using another af::array or it
 was indexed using the af::approx functions, then a new array is created. It does
@@ -190,7 +211,7 @@ not reference the original data.
 
 If an array was indexed using a scalar, af::seq or af::span, then the resulting
 array will reference the original data IF the first dimension is continuous. The
-following indexing approaches will not allocate additional memory.
+following lines will not allocate additional memory.
 
 \snippet test/index.cpp index_tutorial_references
 
@@ -205,13 +226,89 @@ the af::array.
 
 ## Assignment
 
-Even though the new af::array array objects are referencing the original elements,
-any modifications you do to them will allocate additional memory.
+An assignment on an af::array, will update the data of the array with the result
+of the experession on the right hand side of the equal(=) opeartor. Assignments
+will not updated the array was previously refrencing through an indexing
+operation. Here is an example:
 
+\snippet test/index.cpp index_tutorial_assignment
 
-TODO(umar): Subarray assignment does not change original
-TODO(umar): parent assignment does not change subarrays
+The `ref` array is created by indexing into the data array. The initialized
+`ref` array points to the data array and does not allocate memory when it is
+created. After the matmul call, the `ref` array will not be pointing to the data
+array. The matmul call will not update the values of the data array.
 
+You can update the contents of an af::array by assigning with the operator
+parenthesis. For example, if you wanted to change the third column of the
+A array you can do that by assigning to A(span, 2).
+
+\snippet test/index.cpp index_tutorial_assignment_third_column
+
+\f[
+ref =
+\begin{bmatrix}
+     8  \\
+     9  \\
+    10  \\
+    11
+\end{bmatrix}
+A =
+\begin{bmatrix}
+    0 & 4 & 3.14 & 12 \\
+    1 & 5 & 3.14 & 13 \\
+    2 & 6 & 3.14 & 14 \\
+    3 & 7 & 3.14 & 15
+\end{bmatrix}
+\f]
+
+This will update only the array being modified. If there are arrays that
+are referring to this array because of an indexing operation, those values
+will remain unchanged.
+
+Allocation will only be performed if there are other arrays referencing the data
+at the point of assignment. In the previous example, an allocation will be
+performed when assigning to the `A` array because the `ref` array is pointing
+to the original data. Here is another example demonstrating when an allocation
+will occure:
+
+\snippet test/index.cpp index_tutorial_assignment_alloc
+
+In this example, no allocation will take place because when the `ref` object
+is created, it is pointing to `A`'s data. Once it goes out of scope, no data
+points to `A`, therefore when the assignment takes place, the data is modified in
+place instead of being copied to a new address.
+
+You can also assign to arrays using another af::arrays as an indexing array.
+This works in a similar way to the other types of assignment but care must be
+taken to assure that the indexes are unique. Non-unique indexes will result in a
+race condition which will cause non-determinstic values.
+
+\snippet test/index.cpp index_tutorial_assignment_race_condition
+
+\f[
+idx =
+\begin{bmatrix}
+     4  \\
+     3  \\
+     4  \\
+     0
+\end{bmatrix}
+vals =
+\begin{bmatrix}
+     9  \\
+     8  \\
+     7  \\
+     6
+\end{bmatrix}
+\\
+A =
+\begin{bmatrix}
+    6 & 9\ or\ 7 &  8 & 12 \\
+    1 &   5    &  9 & 13 \\
+    2 &   6    & 10 & 14 \\
+    8 &   7    & 11 & 15
+\end{bmatrix}
+\f]
 
 ## Member functions
 
@@ -220,12 +317,9 @@ functions have similar functionallity but may be easier to parse for some.
 
 * [row(i)](\ref af::array::row) or [col(i)](\ref af::array::col) specifying a single row/column
 * [rows(first,last)](\ref af::array::rows) or [cols(first,last)](\ref af::array::cols)
- specifying a span of rows or columns
+ specifying multiple rows or columns
 
-
-# Performance and implementation
-
-TODO(umar): talk about performance
+# Additional examples
 
 See \ref  index_mat for the full listing.
 
