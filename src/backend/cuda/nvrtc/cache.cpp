@@ -429,13 +429,11 @@ string toString(af_interp_type p) {
         CASE_STMT(AF_INTERP_BILINEAR);
         CASE_STMT(AF_INTERP_CUBIC);
         CASE_STMT(AF_INTERP_LOWER);
-#if AF_API_VERSION >= 34
         CASE_STMT(AF_INTERP_LINEAR_COSINE);
         CASE_STMT(AF_INTERP_BILINEAR_COSINE);
         CASE_STMT(AF_INTERP_BICUBIC);
         CASE_STMT(AF_INTERP_CUBIC_SPLINE);
         CASE_STMT(AF_INTERP_BICUBIC_SPLINE);
-#endif
     }
 #undef CASE_STMT
     return retVal;
@@ -455,7 +453,6 @@ string toString(af_border_type p) {
     return retVal;
 }
 
-#if AF_API_VERSION >= 34
 template<>
 string toString(af_moment_type p) {
     const char *retVal = NULL;
@@ -471,7 +468,6 @@ string toString(af_moment_type p) {
 #undef CASE_STMT
     return retVal;
 }
-#endif  //  AF_API_VERSION
 
 template<>
 string toString(af_match_type p) {

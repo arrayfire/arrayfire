@@ -30,7 +30,7 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
                        CParam<T> dy) {
     static const std::string source(canny_cuh, canny_cuh_len);
 
-    auto maxSuppress =
+    auto nonMaxSuppress =
         getKernel("cuda::nonMaxSuppression", source, {TemplateTypename<T>()},
                   {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
                    DefineValue(THREADS_X), DefineValue(THREADS_Y)});
@@ -45,7 +45,7 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
     dim3 blocks(blk_x * magnitude.dims[2], blk_y * magnitude.dims[3]);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    maxSuppress(qArgs, output, magnitude, dx, dy, blk_x, blk_y);
+    nonMaxSuppress(qArgs, output, magnitude, dx, dy, blk_x, blk_y);
     POST_LAUNCH_CHECK();
 }
 
@@ -53,15 +53,15 @@ template<typename T>
 void edgeTrackingHysteresis(Param<T> output, CParam<T> strong, CParam<T> weak) {
     static const std::string source(canny_cuh, canny_cuh_len);
 
-    auto init =
+    auto initEdgeOut =
         getKernel("cuda::initEdgeOut", source, {TemplateTypename<T>()},
                   {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
                    DefineValue(THREADS_X), DefineValue(THREADS_Y)});
-    auto trace =
+    auto edgeTrack =
         getKernel("cuda::edgeTrack", source, {TemplateTypename<T>()},
                   {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
                    DefineValue(THREADS_X), DefineValue(THREADS_Y)});
-    auto threshold =
+    auto suppressLeftOver =
         getKernel("cuda::suppressLeftOver", source, {TemplateTypename<T>()},
                   {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
                    DefineValue(THREADS_X), DefineValue(THREADS_Y)});
@@ -76,18 +76,18 @@ void edgeTrackingHysteresis(Param<T> output, CParam<T> strong, CParam<T> weak) {
     dim3 blocks(blk_x * weak.dims[2], blk_y * weak.dims[3]);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    init(qArgs, output, strong, weak, blk_x, blk_y);
+    initEdgeOut(qArgs, output, strong, weak, blk_x, blk_y);
     POST_LAUNCH_CHECK();
 
     int notFinished = 1;
     while (notFinished) {
         notFinished = 0;
-        trace.setScalar("hasChanged", notFinished);
-        trace(qArgs, output, blk_x, blk_y);
+        edgeTrack.setScalar("hasChanged", notFinished);
+        edgeTrack(qArgs, output, blk_x, blk_y);
         POST_LAUNCH_CHECK();
-        trace.getScalar(notFinished, "hasChanged");
+        edgeTrack.getScalar(notFinished, "hasChanged");
     }
-    threshold(qArgs, output, blk_x, blk_y);
+    suppressLeftOver(qArgs, output, blk_x, blk_y);
     POST_LAUNCH_CHECK();
 }
 }  // namespace kernel

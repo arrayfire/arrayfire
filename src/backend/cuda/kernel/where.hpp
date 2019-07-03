@@ -24,7 +24,7 @@ namespace kernel {
 template<typename T>
 static void where(Param<uint> &out, CParam<T> in) {
     static const std::string src(where_cuh, where_cuh_len);
-    auto whereOp = getKernel("cuda::where", src, {TemplateTypename<T>()});
+    auto where = getKernel("cuda::where", src, {TemplateTypename<T>()});
 
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
@@ -96,7 +96,7 @@ static void where(Param<uint> &out, CParam<T> in) {
     blocks.y = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    whereOp(qArgs, out.ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
+    where(qArgs, out.ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
     POST_LAUNCH_CHECK();
 
     out_alloc.release();

@@ -10,7 +10,6 @@
 #include <Array.hpp>
 #include <anisotropic_diffusion.hpp>
 #include <kernel/anisotropic_diffusion.hpp>
-#include <utility.hpp>
 #include <af/dim4.hpp>
 
 namespace cuda {

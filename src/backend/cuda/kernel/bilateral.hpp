@@ -26,7 +26,7 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
                float c_sigma) {
     static const std::string source(bilateral_cuh, bilateral_cuh_len);
 
-    auto filter =
+    auto bilateral =
         getKernel("cuda::bilateral", source,
                   {TemplateTypename<inType>(), TemplateTypename<outType>()},
                   {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
@@ -57,7 +57,7 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream(), total_shrd_size);
 
-    filter(qArgs, out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
+    bilateral(qArgs, out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }

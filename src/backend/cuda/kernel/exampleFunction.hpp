@@ -31,7 +31,7 @@ template<typename T>  // CUDA kernel wrapper function
 void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t p) {
     static const std::string source(exampleFunction_cuh,
                                     exampleFunction_cuh_len);
-    auto example = getKernel("cuda::exampleFuncKernel", source,
+    auto exampleFunc = getKernel("cuda::exampleFunc", source,
                              {
                                  TemplateTypename<T>(),
                              });
@@ -49,7 +49,7 @@ void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t p) {
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
     // Call the kernel functor retrieved using getKernel
-    example(qArgs, c, a, b, p);
+    exampleFunc(qArgs, c, a, b, p);
 
     POST_LAUNCH_CHECK();  // Macro for post kernel launch checks
                           // these checks are carried  ONLY IN DEBUG mode

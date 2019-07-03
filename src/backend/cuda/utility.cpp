@@ -7,11 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <err_cuda.hpp>
 #include <utility.hpp>
 
-using std::make_pair;
-using std::pair;
+#include <err_cuda.hpp>
 
 namespace cuda {
 

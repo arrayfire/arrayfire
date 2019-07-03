@@ -27,7 +27,7 @@ static void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                                 const uint blocks_x, const uint blocks_y,
                                 const uint threads_x, bool isFinalPass,
                                 bool inclusive_scan) {
-    auto scanFirst =
+    auto scan_first =
         getKernel("cuda::scan_first", ScanFirstSource,
                   {TemplateTypename<Ti>(), TemplateTypename<To>(),
                    TemplateArg(op), TemplateArg(isFinalPass),
@@ -45,7 +45,7 @@ static void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
     uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanFirst(qArgs, out, tmp, in, blocks_x, blocks_y, lim);
+    scan_first(qArgs, out, tmp, in, blocks_x, blocks_y, lim);
     POST_LAUNCH_CHECK();
 }
 
@@ -53,7 +53,7 @@ template<typename To, af_op_t op>
 static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
                                  const uint blocks_x, const uint blocks_y,
                                  const uint threads_x, bool inclusive_scan) {
-    auto bcastFirst = getKernel("cuda::scan_first_bcast", ScanFirstSource,
+    auto scan_first_bcast = getKernel("cuda::scan_first_bcast", ScanFirstSource,
                                 {TemplateTypename<To>(), TemplateArg(op)});
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
@@ -67,7 +67,7 @@ static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
     uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    bcastFirst(qArgs, out, tmp, blocks_x, blocks_y, lim, inclusive_scan);
+    scan_first_bcast(qArgs, out, tmp, blocks_x, blocks_y, lim, inclusive_scan);
     POST_LAUNCH_CHECK();
 }
 

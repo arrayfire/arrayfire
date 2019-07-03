@@ -13,8 +13,8 @@
 namespace cuda {
 
 template<typename T>
-__global__ void exampleFuncKernel(Param<T> c, CParam<T> a, CParam<T> b,
-                                  const af_someenum_t p) {
+__global__ void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b,
+                            const af_someenum_t p) {
     // get current thread global identifiers along required dimensions
     int i = blockDim.x * blockIdx.x + threadIdx.x;
     int j = blockDim.y * blockIdx.y + threadIdx.y;

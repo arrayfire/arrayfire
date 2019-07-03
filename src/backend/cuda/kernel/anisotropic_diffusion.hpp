@@ -29,7 +29,7 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
                           const af::fluxFunction fftype, bool isMCDE) {
     static const std::string source(anisotropic_diffusion_cuh,
                                     anisotropic_diffusion_cuh_len);
-    auto diffuse = getKernel("cuda::diffUpdate", source,
+    auto diffUpdate = getKernel("cuda::diffUpdate", source,
                              {TemplateTypename<T>(), TemplateArg(isMCDE)},
                              {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
@@ -51,7 +51,7 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    diffuse(qArgs, inout, dt, mct, fftype, blkX, blkY);
+    diffUpdate(qArgs, inout, dt, mct, fftype, blkX, blkY);
 
     POST_LAUNCH_CHECK();
 }

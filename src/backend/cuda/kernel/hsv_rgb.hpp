@@ -25,7 +25,7 @@ template<typename T>
 void hsv2rgb_convert(Param<T> out, CParam<T> in, bool isHSV2RGB) {
     static const std::string source(hsv_rgb_cuh, hsv_rgb_cuh_len);
 
-    auto convert = getKernel("cuda::hsvrgbConverter", source,
+    auto hsvrgbConverter = getKernel("cuda::hsvrgbConverter", source,
                              {TemplateTypename<T>(), TemplateArg(isHSV2RGB)});
 
     const dim3 threads(THREADS_X, THREADS_Y);
@@ -43,7 +43,7 @@ void hsv2rgb_convert(Param<T> out, CParam<T> in, bool isHSV2RGB) {
     blocks.y = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    convert(qArgs, out, in, blk_x);
+    hsvrgbConverter(qArgs, out, in, blk_x);
     POST_LAUNCH_CHECK();
 }
 

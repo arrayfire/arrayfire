@@ -27,7 +27,6 @@
 #endif  //__CUDACC_RTC__
 
 #include <backend.hpp>
-#include <common/half.hpp>
 #include <types.hpp>
 #include <af/defines.h>
 

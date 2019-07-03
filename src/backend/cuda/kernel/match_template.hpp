@@ -28,7 +28,7 @@ void matchTemplate(Param<outType> out, CParam<inType> srch,
                    bool needMean) {
     static const std::string source(match_template_cuh, match_template_cuh_len);
 
-    auto match =
+    auto matchTemplate =
         getKernel("cuda::matchTemplate", source,
                   {TemplateTypename<inType>(), TemplateTypename<outType>(),
                    TemplateArg(mType), TemplateArg(needMean)});
@@ -41,7 +41,7 @@ void matchTemplate(Param<outType> out, CParam<inType> srch,
     dim3 blocks(blk_x * srch.dims[2], blk_y * srch.dims[3]);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    match(qArgs, out, srch, tmplt, blk_x, blk_y);
+    matchTemplate(qArgs, out, srch, tmplt, blk_x, blk_y);
     POST_LAUNCH_CHECK();
 }
 

@@ -30,7 +30,7 @@ void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
     UNUSED(w_wid);
     static const std::string source(medfilt_cuh, medfilt_cuh_len);
 
-    auto filter = getKernel("cuda::medfilt2", source,
+    auto medfilt2 = getKernel("cuda::medfilt2", source,
                             {TemplateTypename<T>(), TemplateArg(pad),
                              TemplateArg(w_len), TemplateArg(w_wid)},
                             {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
@@ -43,7 +43,7 @@ void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
     dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    filter(qArgs, out, in, blk_x, blk_y);
+    medfilt2(qArgs, out, in, blk_x, blk_y);
     POST_LAUNCH_CHECK();
 }
 
@@ -51,7 +51,7 @@ template<typename T>
 void medfilt1(Param<T> out, CParam<T> in, const af::borderType pad, int w_wid) {
     static const std::string source(medfilt_cuh, medfilt_cuh_len);
 
-    auto filter = getKernel(
+    auto medfilt1 = getKernel(
         "cuda::medfilt1", source,
         {TemplateTypename<T>(), TemplateArg(pad), TemplateArg(w_wid)});
 
@@ -64,7 +64,7 @@ void medfilt1(Param<T> out, CParam<T> in, const af::borderType pad, int w_wid) {
     const size_t shrdMemBytes = sizeof(T) * (THREADS_X + w_wid - 1);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream(), shrdMemBytes);
-    filter(qArgs, out, in, w_wid, blk_x);
+    medfilt1(qArgs, out, in, w_wid, blk_x);
     POST_LAUNCH_CHECK();
 }
 
