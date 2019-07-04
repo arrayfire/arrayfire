@@ -58,7 +58,7 @@ TEST(GettingStarted, SNIPPET_getting_started_gen) {
             ASSERT_FLOAT_EQ(0, output[i]);
     }
 
-    if (!noDoubleTests<double>()) {
+    if (!noDoubleTests(f64)) {
         array ones = constant(1, 3, 2, f64);
         vector<double> output(ones.elements());
         ones.host(&output.front());
