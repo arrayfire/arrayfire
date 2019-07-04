@@ -457,9 +457,7 @@ struct IsFloatingPoint {
                               is_same_type<long double, T>::value;
 };
 
-template<typename T>
-bool noDoubleTests() {
-    af::dtype ty           = (af::dtype)af::dtype_traits<T>::af_type;
+bool noDoubleTests(af::dtype ty) {
     bool isTypeDouble      = (ty == f64) || (ty == c64);
     int dev                = af::getDevice();
     bool isDoubleSupported = af::isDoubleAvailable(dev);
@@ -467,9 +465,7 @@ bool noDoubleTests() {
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
 }
 
-template<typename T>
-bool noHalfTests() {
-    af::dtype ty           = (af::dtype)af::dtype_traits<T>::af_type;
+bool noHalfTests(af::dtype ty) {
     bool isTypeHalf        = (ty == f16);
     int dev                = af::getDevice();
     bool isHalfSupported   = af::isHalfAvailable(dev);
@@ -477,9 +473,9 @@ bool noHalfTests() {
     return ((isTypeHalf && !isHalfSupported) ? true : false);
 }
 
-#define SUPPORTED_TYPE_CHECK(type) \
-  if (noDoubleTests<type>()) return; \
-  if (noHalfTests<type>()) return
+#define SUPPORTED_TYPE_CHECK(type)                                        \
+    if (noDoubleTests((af_dtype)af::dtype_traits<type>::af_type)) return; \
+    if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type)) return
 
 inline bool noImageIOTests() {
     bool ret = !af::isImageIOAvailable();

@@ -255,8 +255,8 @@ TEST(Threading, MemoryManagement_JIT_Node) {
 template<typename inType, typename outType, bool isInverse>
 void fftTest(int targetDevice, string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0,
              dim_t pad2 = 0) {
-    if (noDoubleTests<inType>()) return;
-    if (noDoubleTests<outType>()) return;
+    SUPPORTED_TYPE_CHECK(inType);
+    SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<inType> > in;
@@ -380,7 +380,7 @@ TEST(Threading, FFT_R2C) {
     INSTANTIATE_TEST_TP(fft2, R2C_Float_Trunc, false, float, cfloat,
                         string(TEST_DIR "/signal/fft2_r2c_trunc.test"), 16, 16);
 
-    if (noDoubleTests<double>()) {
+    if (noDoubleTests(f64)) {
         // Real to complex transforms
         INSTANTIATE_TEST(fft, R2C_Double, false, double, cdouble,
                          string(TEST_DIR "/signal/fft_r2c.test"));
@@ -444,7 +444,7 @@ TEST(Threading, FFT_C2C) {
     INSTANTIATE_TEST(ifft3, C2C_Float, true, cfloat, cfloat,
                      string(TEST_DIR "/signal/ifft3_c2c.test"));
 
-    if (noDoubleTests<double>()) {
+    if (noDoubleTests(f64)) {
         INSTANTIATE_TEST(fft, C2C_Double, false, cdouble, cdouble,
                          string(TEST_DIR "/signal/fft_c2c.test"));
         INSTANTIATE_TEST(fft2, C2C_Double, false, cdouble, cdouble,
@@ -532,7 +532,7 @@ TEST(Threading, FFT_ALL) {
     INSTANTIATE_TEST(ifft3, C2C_Float, true, cfloat, cfloat,
                      string(TEST_DIR "/signal/ifft3_c2c.test"));
 
-    if (noDoubleTests<double>()) {
+    if (noDoubleTests(f64)) {
         INSTANTIATE_TEST(fft, R2C_Double, false, double, cdouble,
                          string(TEST_DIR "/signal/fft_r2c.test"));
         INSTANTIATE_TEST(fft2, R2C_Double, false, double, cdouble,
@@ -577,7 +577,7 @@ TEST(Threading, FFT_ALL) {
 
 template<typename T, bool isBVector>
 void cppMatMulCheck(int targetDevice, string TestFile) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     using std::vector;
     vector<dim4> numDims;
@@ -664,7 +664,7 @@ TEST(Threading, BLAS) {
     TEST_BLAS_FOR_TYPE(float);
     TEST_BLAS_FOR_TYPE(cfloat);
 
-    if (noDoubleTests<double>()) {
+    if (noDoubleTests(f64)) {
         TEST_BLAS_FOR_TYPE(double);
         TEST_BLAS_FOR_TYPE(cdouble);
     }
@@ -698,7 +698,7 @@ TEST(Threading, Sparse) {
 
     SPARSE_TESTS(float, 1E-3);
     SPARSE_TESTS(cfloat, 1E-3);
-    if (noDoubleTests<double>()) {
+    if (noDoubleTests(f64)) {
         SPARSE_TESTS(double, 1E-5);
         SPARSE_TESTS(cdouble, 1E-5);
     }

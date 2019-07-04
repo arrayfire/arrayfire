@@ -170,7 +170,7 @@ TEST(Solve, Threading) {
 
     SOLVE_LU_TESTS_THREADING(float, 0.01);
     SOLVE_LU_TESTS_THREADING(cfloat, 0.01);
-    if (noDoubleTests<double>()) {
+    if (noDoubleTests(f64)) {
         SOLVE_LU_TESTS_THREADING(double, 1E-5);
         SOLVE_LU_TESTS_THREADING(cdouble, 1E-5);
     }
