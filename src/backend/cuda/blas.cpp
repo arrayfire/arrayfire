@@ -192,7 +192,7 @@ cublasGemmAlgo_t selectGEMMAlgorithm() {
 }
 
 template<>
-cublasGemmAlgo_t selectGEMMAlgorithm<__half>() {
+cublasGemmAlgo_t selectGEMMAlgorithm<half>() {
     auto dev              = getDeviceProp(getActiveDeviceId());
     cublasGemmAlgo_t algo = CUBLAS_GEMM_DEFAULT;
     if (dev.major >= 7) { algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP; }
@@ -211,7 +211,7 @@ cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
             blasHandle(), lOpts, rOpts, M, N, K, alpha, lhs.get(), getType<T>(),
             lStride, rhs.get(), getType<T>(), rStride, beta, out.get(),
             getType<T>(), out.strides()[1],
-            getType<T>(),  // Compute type
+            getType<compute_t<T>>(), // Compute type
 
             // NOTE: When using the CUBLAS_GEMM_DEFAULT_TENSOR_OP algorithm
             // for the cublasGemm*Ex functions, the performance of the
@@ -244,7 +244,7 @@ cublasStatus_t gemmBatchedDispatch(BlasHandle handle,
             blasHandle(), lOpts, rOpts, M, N, K, alpha, (const void **)lptrs,
             getType<T>(), lStrides, (const void **)rptrs, getType<T>(),
             rStrides, beta, (void **)optrs, getType<T>(), oStrides, batchSize,
-            getType<T>(),  // Compute type
+            getType<compute_t<T>>(), // compute type
             // NOTE: When using the CUBLAS_GEMM_DEFAULT_TENSOR_OP algorithm
             // for the cublasGemm*Ex functions, the performance of the
             // fp32 numbers seem to increase dramatically. Their numerical
