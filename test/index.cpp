@@ -9,12 +9,13 @@
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <half.hpp>
+#include <testHelpers.hpp>
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
 
-#include <testHelpers.hpp>
 #include <algorithm>
 #include <functional>
 #include <iostream>
@@ -137,7 +138,8 @@ class Indexing1D : public ::testing::Test {
 };
 
 typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned,
-                         unsigned char, intl, uintl, short, ushort>
+                         unsigned char, intl, uintl, short, ushort,
+                         half_float::half>
     AllTypes;
 TYPED_TEST_CASE(Indexing1D, AllTypes);
 
@@ -706,7 +708,7 @@ class lookup : public ::testing::Test {
 };
 
 typedef ::testing::Types<float, double, int, unsigned, unsigned char, short,
-                         ushort, intl, uintl>
+                         ushort, intl, uintl, half_float::half>
     ArrIdxTestTypes;
 TYPED_TEST_CASE(lookup, ArrIdxTestTypes);
 

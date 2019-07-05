@@ -6,15 +6,17 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
-#include <Array.hpp>
-#include <err_cuda.hpp>
-#include <handle.hpp>
 #include <index.hpp>
 #include <kernel/index.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
+#include <err_cuda.hpp>
+#include <handle.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
+using common::half;
 
 namespace cuda {
 
@@ -78,5 +80,6 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
+INSTANTIATE(half)
 
 }  // namespace cuda

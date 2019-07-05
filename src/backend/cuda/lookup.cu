@@ -7,9 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <lookup.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <kernel/lookup.hpp>
-#include <lookup.hpp>
+
+using common::half;
 
 namespace cuda {
 template<typename in_t, typename idx_t>
@@ -61,7 +66,9 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
     template Array<T> lookup<T, uintl>(const Array<T> &, const Array<uintl> &, \
                                        const unsigned);                        \
     template Array<T> lookup<T, uchar>(const Array<T> &, const Array<uchar> &, \
-                                       const unsigned);
+                                       const unsigned);                        \
+    template Array<T> lookup<T, half>(const Array<T> &, const Array<half> &,   \
+                                      const unsigned);
 
 INSTANTIATE(float);
 INSTANTIATE(cfloat);
@@ -75,4 +82,5 @@ INSTANTIATE(uchar);
 INSTANTIATE(char);
 INSTANTIATE(short);
 INSTANTIATE(ushort);
+INSTANTIATE(half);
 }  // namespace cuda

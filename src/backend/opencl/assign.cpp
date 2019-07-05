@@ -7,15 +7,18 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
 #include <assign.hpp>
+#include <kernel/assign.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
 #include <err_opencl.hpp>
 #include <handle.hpp>
-#include <kernel/assign.hpp>
 #include <memory.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
+using common::half;
 
 namespace opencl {
 
@@ -80,5 +83,6 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace opencl

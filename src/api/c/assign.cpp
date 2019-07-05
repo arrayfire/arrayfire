@@ -6,13 +6,14 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#include <assign.hpp>
 
 #include <Array.hpp>
-#include <assign.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/complex.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
 #include <handle.hpp>
 #include <indexing_common.hpp>
@@ -32,6 +33,7 @@ using std::vector;
 
 using common::convert2Canonical;
 using common::createSpanIndex;
+using common::half;
 using common::if_complex;
 using common::if_real;
 
@@ -109,6 +111,7 @@ static if_real<T> assign(Array<T>& out, const vector<af_seq> iv,
         case u16: assign<T, ushort>(out, iv, getArray<ushort>(in)); break;
         case u8: assign<T, uchar>(out, iv, getArray<uchar>(in)); break;
         case b8: assign<T, char>(out, iv, getArray<char>(in)); break;
+        case f16: assign<T, half>(out, iv, getArray<half>(in)); break;
         default: TYPE_ERROR(1, iType); break;
     }
 }
@@ -185,6 +188,7 @@ af_err af_assign_seq(af_array* out, const af_array lhs, const unsigned ndims,
                     case u16: assign(getArray<ushort>(res), inSeqs, rhs); break;
                     case u8: assign(getArray<uchar>(res), inSeqs, rhs); break;
                     case b8: assign(getArray<char>(res), inSeqs, rhs); break;
+                    case f16: assign(getArray<half>(res), inSeqs, rhs); break;
                     default: TYPE_ERROR(1, oType); break;
                 }
             }
@@ -360,6 +364,7 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
                 case u16: genAssign<ushort>(output, ptr, rhs); break;
                 case u8: genAssign<uchar>(output, ptr, rhs); break;
                 case b8: genAssign<char>(output, ptr, rhs); break;
+                case f16: genAssign<half>(output, ptr, rhs); break;
                 default: TYPE_ERROR(1, rhsType);
             }
         } catch (...) {

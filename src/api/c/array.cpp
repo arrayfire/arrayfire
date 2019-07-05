@@ -118,8 +118,7 @@ af_err af_create_array(af_array *result, const void *const data,
                     createHandleFromData(d, static_cast<const ushort *>(data));
                 break;
             case f16:
-                out = createHandleFromData(
-                    d, static_cast<const half *>(data));
+                out = createHandleFromData(d, static_cast<const half *>(data));
                 break;
             default: TYPE_ERROR(4, type);
         }
@@ -359,8 +358,7 @@ af_err af_write_array(af_array arr, const void *data, const size_t bytes,
                 write_array(arr, static_cast<const ushort *>(data), bytes, src);
                 break;
             case f16:
-                write_array(arr, static_cast<const half *>(data), bytes,
-                            src);
+                write_array(arr, static_cast<const half *>(data), bytes, src);
                 break;
             default: TYPE_ERROR(4, type);
         }
@@ -494,8 +492,7 @@ af_err af_get_scalar(void *output_value, const af_array arr) {
                                    arr);
                 break;
             case f16:
-                getScalar<half>(
-                    static_cast<half *>(output_value), arr);
+                getScalar<half>(static_cast<half *>(output_value), arr);
                 break;
             default: TYPE_ERROR(4, type);
         }

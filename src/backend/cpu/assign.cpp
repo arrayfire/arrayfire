@@ -12,6 +12,7 @@
 
 #include <Array.hpp>
 #include <Param.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <platform.hpp>
 #include <types.hpp>
@@ -25,6 +26,7 @@
 #include <vector>
 
 using af::dim4;
+using common::half;
 using std::vector;
 
 namespace cpu {
@@ -68,5 +70,6 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
+INSTANTIATE(half)
 
 }  // namespace cpu

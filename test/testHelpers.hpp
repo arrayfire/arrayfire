@@ -14,6 +14,7 @@
 #include <gtest/gtest.h>
 #include <half.hpp>
 #include <af/array.h>
+#include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/internal.h>
 #include <af/traits.hpp>
@@ -83,6 +84,16 @@ std::ostream &operator<<(std::ostream &os, af::dtype type) {
     }
     return os << name;
 }
+
+namespace af {
+template<>
+struct dtype_traits<half_float::half> {
+    enum { af_type = f16, ctype = f16 };
+    typedef half base_type;
+    static const char *getName() { return "half"; }
+};
+
+}  // namespace af
 
 namespace {
 

@@ -178,6 +178,9 @@ INSTANTIATE(half)
     template Array<char> padArray<SRC_T, char>(                           \
         Array<SRC_T> const &src, dim4 const &dims, char default_value,    \
         double factor);                                                   \
+    template Array<half> padArray<SRC_T, half>(                           \
+        Array<SRC_T> const &src, dim4 const &dims, half default_value,    \
+        double factor);                                                   \
     template void copyArray<SRC_T, float>(Array<float> & dst,             \
                                           Array<SRC_T> const &src);       \
     template void copyArray<SRC_T, double>(Array<double> & dst,           \
@@ -201,6 +204,8 @@ INSTANTIATE(half)
     template void copyArray<SRC_T, uchar>(Array<uchar> & dst,             \
                                           Array<SRC_T> const &src);       \
     template void copyArray<SRC_T, char>(Array<char> & dst,               \
+                                         Array<SRC_T> const &src);        \
+    template void copyArray<SRC_T, half>(Array<half> & dst,               \
                                          Array<SRC_T> const &src);
 
 INSTANTIATE_PAD_ARRAY(float)

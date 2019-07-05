@@ -7,10 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
 #include <kernel/tile.hpp>
-#include <platform.hpp>
 #include <tile.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
+#include <platform.hpp>
+
+using common::half;
 
 namespace cpu {
 
@@ -46,5 +50,6 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace cpu

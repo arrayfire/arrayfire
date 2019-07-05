@@ -7,12 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <arrayfire.h>
+#include <af/data.h>
+
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+
 #include <complex>
 #include <iostream>
 #include <string>
@@ -44,7 +47,8 @@ class Tile : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
-                         intl, uintl, char, unsigned char, short, ushort>
+                         intl, uintl, char, unsigned char, short, ushort,
+                         half_float::half>
     TestTypes;
 
 // register the type list

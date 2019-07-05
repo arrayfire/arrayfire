@@ -100,6 +100,8 @@ INSTANTIATE(half)
     template void copyArray<SRC_T, uchar>(Array<uchar> & dst,         \
                                           Array<SRC_T> const &src);   \
     template void copyArray<SRC_T, char>(Array<char> & dst,           \
+                                         Array<SRC_T> const &src);    \
+    template void copyArray<SRC_T, half>(Array<half> & dst,           \
                                          Array<SRC_T> const &src);
 
 INSTANTIATE_COPY_ARRAY(float)

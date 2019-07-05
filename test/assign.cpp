@@ -12,6 +12,9 @@
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+
+#include <half.hpp>
+
 #include <string>
 #include <vector>
 
@@ -30,6 +33,13 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+
+namespace half_float {
+std::ostream &operator<<(std::ostream &os, half_float::half val) {
+    os << (float)val;
+    return os;
+}
+}  // namespace half_float
 
 template<typename T>
 class ArrayAssign : public ::testing::Test {
@@ -92,7 +102,7 @@ class ArrayAssign : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, cdouble, cfloat, double, int, uint, char, uchar,
-                         intl, uintl, short, ushort>
+                         intl, uintl, short, ushort, half_float::half>
     TestTypes;
 
 // register the type list
@@ -357,7 +367,7 @@ TYPED_TEST(ArrayAssign, AssignRowCPP) {
     SUPPORTED_TYPE_CHECK(TypeParam);
 
     const int dimsize = 10;
-    vector<TypeParam> input(100, 1);
+    vector<TypeParam> input(100, TypeParam(1.0));
     vector<TypeParam> sq(dimsize);
     vector<int> arIdx(2);
     for (int i = 0; i < (int)sq.size(); i++) sq[i] = i;
@@ -408,7 +418,7 @@ TYPED_TEST(ArrayAssign, AssignColumnCPP) {
     SUPPORTED_TYPE_CHECK(TypeParam);
 
     const int dimsize = 10;
-    vector<TypeParam> input(100, 1);
+    vector<TypeParam> input(100, TypeParam(1.0));
     vector<TypeParam> sq(dimsize);
     vector<int> arIdx(2);
     for (int i = 0; i < (int)sq.size(); i++) sq[i] = i;
@@ -458,7 +468,7 @@ TYPED_TEST(ArrayAssign, AssignColumnCPP) {
 TYPED_TEST(ArrayAssign, AssignSliceCPP) {
     SUPPORTED_TYPE_CHECK(TypeParam);
     const int dimsize = 10;
-    vector<TypeParam> input(1000, 1);
+    vector<TypeParam> input(1000, TypeParam(1.0));
     vector<TypeParam> sq(dimsize * dimsize);
     vector<int> arIdx(2);
     for (int i = 0; i < (int)sq.size(); i++) sq[i] = i;

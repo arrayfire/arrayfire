@@ -7,11 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <err_opencl.hpp>
 #include <kernel/lookup.hpp>
 #include <lookup.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
+#include <err_opencl.hpp>
 #include <af/dim4.hpp>
+
+using common::half;
 
 namespace opencl {
 template<typename in_t, typename idx_t>
@@ -53,7 +57,9 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
     template Array<T> lookup<T, uintl>(const Array<T> &, const Array<uintl> &, \
                                        const unsigned);                        \
     template Array<T> lookup<T, uchar>(const Array<T> &, const Array<uchar> &, \
-                                       const unsigned);
+                                       const unsigned);                        \
+    template Array<T> lookup<T, half>(const Array<T> &, const Array<half> &,   \
+                                      const unsigned)
 
 INSTANTIATE(float);
 INSTANTIATE(cfloat);
@@ -67,4 +73,5 @@ INSTANTIATE(uchar);
 INSTANTIATE(char);
 INSTANTIATE(ushort);
 INSTANTIATE(short);
+INSTANTIATE(half);
 }  // namespace opencl

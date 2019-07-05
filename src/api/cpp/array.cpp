@@ -6,20 +6,22 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+
+#include <af/array.h>
+
 #include <af/algorithm.h>
 #include <af/arith.h>
-#include <af/array.h>
 #include <af/blas.h>
 #include <af/data.h>
 #include <af/device.h>
 #include <af/gfor.h>
+#include <af/half.h>
 #include <af/index.h>
 #include <af/internal.h>
 #include <af/traits.hpp>
 #include <af/util.h>
 #include "error.hpp"
-
-#include <af/half.h>
+#include "half.hpp"  //note: NOT common. From extern/half/include/half.hpp
 
 #include <memory>
 #include <stdexcept>
@@ -171,6 +173,13 @@ array::array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, af::dtype ty)
     initEmptyArray(&arr, ty, dim0, dim1, dim2, dim3);
 }
 
+template<>
+struct dtype_traits<half_float::half> {
+    enum { af_type = f16, ctype = f16 };
+    typedef half base_type;
+    static const char *getName() { return "half"; }
+};
+
 #define INSTANTIATE(T)                                                         \
     template<>                                                                 \
     AFAPI array::array(const dim4 &dims, const T *ptr, af::source src)         \
@@ -218,6 +227,7 @@ INSTANTIATE(unsigned long long)
 INSTANTIATE(short)
 INSTANTIATE(unsigned short)
 INSTANTIATE(af_half)
+INSTANTIATE(half_float::half)
 
 #undef INSTANTIATE
 
@@ -505,13 +515,13 @@ af::array::array_proxy::array_proxy(const array_proxy &other)
                                 other.impl->is_linear_)) {}
 
 af::array::array_proxy::array_proxy(array_proxy &&other) {
-   impl = other.impl;
-   other.impl = nullptr;
+    impl       = other.impl;
+    other.impl = nullptr;
 }
 
 array::array_proxy &af::array::array_proxy::operator=(array_proxy &&other) {
     array out = other;
-    *this = out;
+    *this     = out;
     return *this;
 }
 

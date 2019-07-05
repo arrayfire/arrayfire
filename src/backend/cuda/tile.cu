@@ -8,10 +8,13 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <kernel/tile.hpp>
 #include <tile.hpp>
 #include <stdexcept>
+
+using common::half;
 
 namespace cuda {
 template<typename T>
@@ -46,5 +49,6 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace cuda
