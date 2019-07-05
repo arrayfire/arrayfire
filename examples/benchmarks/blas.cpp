@@ -37,8 +37,8 @@ int main(int argc, char** argv) {
 
         printf("Benchmark N-by-N matrix multiply at %s \n", dtype.c_str());
         for (int n = 128; n <= 2048; n += 128) {
-            printf("%4d x %4d: ", n, n, dt);
-            A             = constant(1, n, n);
+            printf("%4d x %4d: ", n, n);
+            A             = constant(1, n, n, dt);
             double time   = timeit(fn);  // time in seconds
             double gflops = 2.0 * powf(n, 3) / (time * 1e9);
             if (gflops > peak) peak = gflops;
