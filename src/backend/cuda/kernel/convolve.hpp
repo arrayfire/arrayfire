@@ -106,19 +106,10 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     static const std::string src(convolve1_cuh, convolve1_cuh_len);
 
-    // clang-format off
-    auto conv = getKernel("cuda::convolve1", src,
-            {
-              TemplateTypename<T>(),
-              TemplateTypename<aT>(),
-              TemplateArg(expand)
-            },
-            {
-              DefineValue(MAX_CONV1_FILTER_LEN),
-              DefineValue(CONV_THREADS)
-            }
-            );
-    // clang-format on
+    auto convolve1 = getKernel(
+        "cuda::convolve1", src,
+        {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
+        {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS)});
 
     prepareKernelArgs<T>(p, out.dims, filt.dims, 1);
 
@@ -135,7 +126,7 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                 const aT* fptr = filt.ptr + (f1Off + f2Off + f3Off);
 
                 // FIXME: case where filter array is strided
-                conv.setConstant(conv_c_name,
+                convolve1.setConstant(conv_c_name,
                                  reinterpret_cast<CUdeviceptr>(fptr),
                                  filterSize);
 
@@ -148,7 +139,7 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
 
                 EnqueueArgs qArgs(p.mBlocks, p.mThreads, getActiveStream(),
                                   p.mSharedSize);
-                conv(qArgs, out, sig, filt.dims[0], p.mBlk_x, p.mBlk_y, p.o[0],
+                convolve1(qArgs, out, sig, filt.dims[0], p.mBlk_x, p.mBlk_y, p.o[0],
                      p.o[1], p.o[2], p.s[0], p.s[1], p.s[2]);
                 POST_LAUNCH_CHECK();
             }
@@ -171,30 +162,19 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
 
     static const std::string src(convolve2_cuh, convolve2_cuh_len);
 
-    // clang-format off
-    auto conv = getKernel("cuda::convolve2", src,
-            {
-              TemplateTypename<T>(),
-              TemplateTypename<aT>(),
-              TemplateArg(expand),
-              TemplateArg(f0),
-              TemplateArg(f1)
-            },
-            {
-              DefineValue(MAX_CONV1_FILTER_LEN),
-              DefineValue(CONV_THREADS),
-              DefineValue(CONV2_THREADS_X),
-              DefineValue(CONV2_THREADS_Y)
-            }
-            );
-    // clang-format on
+    auto convolve2 =
+        getKernel("cuda::convolve2", src,
+                  {TemplateTypename<T>(), TemplateTypename<aT>(),
+                   TemplateArg(expand), TemplateArg(f0), TemplateArg(f1)},
+                  {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
+                   DefineValue(CONV2_THREADS_X), DefineValue(CONV2_THREADS_Y)});
 
     // FIXME: case where filter array is strided
-    conv.setConstant(conv_c_name, reinterpret_cast<CUdeviceptr>(fptr),
+    convolve2.setConstant(conv_c_name, reinterpret_cast<CUdeviceptr>(fptr),
                      f0 * f1 * sizeof(aT));
 
     EnqueueArgs qArgs(p.mBlocks, p.mThreads, getActiveStream());
-    conv(qArgs, out, sig, p.mBlk_x, p.mBlk_y, p.o[1], p.o[2], p.s[1], p.s[2]);
+    convolve2(qArgs, out, sig, p.mBlk_x, p.mBlk_y, p.o[1], p.o[2], p.s[1], p.s[2]);
     POST_LAUNCH_CHECK();
 }
 
@@ -227,22 +207,12 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     static const std::string src(convolve3_cuh, convolve3_cuh_len);
 
-    // clang-format off
-    auto conv = getKernel("cuda::convolve3", src,
-            {
-              TemplateTypename<T>(),
-              TemplateTypename<aT>(),
-              TemplateArg(expand)
-            },
-            {
-              DefineValue(MAX_CONV1_FILTER_LEN),
-              DefineValue(CONV_THREADS),
-              DefineValue(CONV3_CUBE_X),
-              DefineValue(CONV3_CUBE_Y),
-              DefineValue(CONV3_CUBE_Z)
-            }
-            );
-    // clang-format on
+    auto convolve3 = getKernel(
+        "cuda::convolve3", src,
+        {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
+        {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
+         DefineValue(CONV3_CUBE_X), DefineValue(CONV3_CUBE_Y),
+         DefineValue(CONV3_CUBE_Z)});
 
     prepareKernelArgs<T>(p, out.dims, filt.dims, 3);
 
@@ -254,7 +224,7 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
         const aT* fptr = filt.ptr + f3Off;
 
         // FIXME: case where filter array is strided
-        conv.setConstant(conv_c_name, reinterpret_cast<CUdeviceptr>(fptr),
+        convolve3.setConstant(conv_c_name, reinterpret_cast<CUdeviceptr>(fptr),
                          filterSize);
 
         p.o[2] = (p.outHasNoOffset ? 0 : b3);
@@ -262,7 +232,7 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
 
         EnqueueArgs qArgs(p.mBlocks, p.mThreads, getActiveStream(),
                           p.mSharedSize);
-        conv(qArgs, out, sig, filt.dims[0], filt.dims[1], filt.dims[2],
+        convolve3(qArgs, out, sig, filt.dims[0], filt.dims[1], filt.dims[2],
              p.mBlk_x, p.o[2], p.s[2]);
         POST_LAUNCH_CHECK();
     }
@@ -342,22 +312,12 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
 
     static const std::string src(convolve_separable_cuh,
                                  convolve_separable_cuh_len);
-    // clang-format off
-    auto conv = getKernel("cuda::convolve2_separable", src,
-            {
-              TemplateTypename<T>(),
-              TemplateTypename<aT>(),
-              TemplateArg(conv_dim),
-              TemplateArg(expand),
-              TemplateArg(fLen)
-            },
-            {
-              DefineValue(MAX_SCONV_FILTER_LEN),
-              DefineValue(SCONV_THREADS_X),
-              DefineValue(SCONV_THREADS_Y)
-            }
-            );
-    // clang-format on
+    auto convolve2_separable = getKernel(
+        "cuda::convolve2_separable", src,
+        {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(conv_dim),
+         TemplateArg(expand), TemplateArg(fLen)},
+        {DefineValue(MAX_SCONV_FILTER_LEN), DefineValue(SCONV_THREADS_X),
+         DefineValue(SCONV_THREADS_Y)});
 
     dim3 threads(SCONV_THREADS_X, SCONV_THREADS_Y);
 
@@ -367,11 +327,11 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
     dim3 blocks(blk_x * signal.dims[2], blk_y * signal.dims[3]);
 
     // FIXME: case where filter array is strided
-    conv.setConstant(sconv_c_name, reinterpret_cast<CUdeviceptr>(filter.ptr),
+    convolve2_separable.setConstant(sconv_c_name, reinterpret_cast<CUdeviceptr>(filter.ptr),
                      fLen * sizeof(aT));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    conv(qArgs, out, signal, blk_x, blk_y);
+    convolve2_separable(qArgs, out, signal, blk_x, blk_y);
     POST_LAUNCH_CHECK();
 }
 

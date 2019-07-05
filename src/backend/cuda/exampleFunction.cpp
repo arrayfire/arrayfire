@@ -7,19 +7,22 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>  // header with cuda backend specific
-                      // Array class implementation that inherits
-                      // ArrayInfo base class
+// header with cuda backend specific
+// Array class implementation that inherits
+// ArrayInfo base class
+#include <Array.hpp>
 
 #include <exampleFunction.hpp>  // cuda backend function header
 
-#include <err_cuda.hpp>  // error check functions and Macros
-                         // specific to cuda backend
+// error check functions and Macros
+// specific to cuda backend
+#include <err_cuda.hpp>
 
-#include <kernel/exampleFunction.hpp>  // this header under the folder src/cuda/kernel
-          // defines the CUDA kernel and its wrapper
-          // function to which the main computation of your
-          // algorithm should be relayed to
+// this header is under the folder src/cuda/kernel
+// defines the CUDA kernel and its wrapper
+// function to which the main computation of your
+// algorithm should be relayed to
+#include <kernel/exampleFunction.hpp>
 
 using af::dim4;
 

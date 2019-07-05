@@ -19,7 +19,6 @@
 #include <optypes.hpp>
 #include "config.hpp"
 
-
 namespace cuda {
 namespace kernel {
 
@@ -32,28 +31,18 @@ static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                    CParam<Ti> in, CParam<Tk> key,
                                    const uint blocks_x, const uint blocks_y,
                                    const uint threads_x, bool inclusive_scan) {
-    // clang-format off
-    auto scanNonFinal = getKernel("cuda::scanbykey_first_nonfinal",
-            ScanFirstByKeySource,
-            {
-              TemplateTypename<Ti>(),
-              TemplateTypename<Tk>(),
-              TemplateTypename<To>(),
-              TemplateArg(op)
-            },
-            {
-              DefineValue(THREADS_PER_BLOCK),
-              DefineKeyValue(DIMX, threads_x)
-            }
-            );
-    // clang-format on
+    auto scanbykey_first_nonfinal = getKernel(
+        "cuda::scanbykey_first_nonfinal", ScanFirstByKeySource,
+        {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
+         TemplateArg(op)},
+        {DefineValue(THREADS_PER_BLOCK), DefineKeyValue(DIMX, threads_x)});
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
     uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanNonFinal(qArgs, out, tmp, tflg, tlid, in, key, blocks_x, blocks_y, lim,
+    scanbykey_first_nonfinal(qArgs, out, tmp, tflg, tlid, in, key, blocks_x, blocks_y, lim,
                  inclusive_scan);
     POST_LAUNCH_CHECK();
 }
@@ -63,28 +52,18 @@ static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
                                 const uint blocks_x, const uint blocks_y,
                                 const uint threads_x, bool calculateFlags,
                                 bool inclusive_scan) {
-    // clang-format off
-    auto scanFinal = getKernel("cuda::scanbykey_first_final",
-            ScanFirstByKeySource,
-            {
-              TemplateTypename<Ti>(),
-              TemplateTypename<Tk>(),
-              TemplateTypename<To>(),
-              TemplateArg(op)
-            },
-            {
-              DefineValue(THREADS_PER_BLOCK),
-              DefineKeyValue(DIMX, threads_x)
-            }
-            );
-    // clang-format on
+    auto scanbykey_first_final = getKernel(
+        "cuda::scanbykey_first_final", ScanFirstByKeySource,
+        {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
+         TemplateArg(op)},
+        {DefineValue(THREADS_PER_BLOCK), DefineKeyValue(DIMX, threads_x)});
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
     uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanFinal(qArgs, out, in, key, blocks_x, blocks_y, lim, calculateFlags,
+    scanbykey_first_final(qArgs, out, in, key, blocks_x, blocks_y, lim, calculateFlags,
               inclusive_scan);
     POST_LAUNCH_CHECK();
 }
@@ -93,21 +72,15 @@ template<typename To, af_op_t op>
 static void bcast_first_launcher(Param<To> out, Param<To> tmp, Param<int> tlid,
                                  const dim_t blocks_x, const dim_t blocks_y,
                                  const uint threads_x) {
-    // clang-format off
-    auto bcastFirst = getKernel("cuda::scanbykey_first_bcast",
-            ScanFirstByKeySource,
-            {
-              TemplateTypename<To>(),
-              TemplateArg(op)
-            }
-            );
-    // clang-format on
+    auto scanbykey_first_bcast =
+        getKernel("cuda::scanbykey_first_bcast", ScanFirstByKeySource,
+                  {TemplateTypename<To>(), TemplateArg(op)});
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
     uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    bcastFirst(qArgs, out, tmp, tlid, blocks_x, blocks_y, lim);
+    scanbykey_first_bcast(qArgs, out, tmp, tlid, blocks_x, blocks_y, lim);
     POST_LAUNCH_CHECK();
 }
 

@@ -7,10 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <medfilt.hpp>
+
 #include <Array.hpp>
 #include <err_cuda.hpp>
 #include <kernel/medfilt.hpp>
-#include <medfilt.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
@@ -23,10 +24,9 @@ Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
     ARG_ASSERT(2, (w_wid % 2 != 0));
 
     const dim4 dims = in.dims();
+    Array<T> out    = createEmptyArray<T>(dims);
 
-    Array<T> out = createEmptyArray<T>(dims);
-
-    kernel::medfilt1<T, pad>(out, in, w_wid);
+    kernel::medfilt1<T>(out, in, pad, w_wid);
 
     return out;
 }
@@ -37,10 +37,9 @@ Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid) {
     ARG_ASSERT(2, (w_len % 2 != 0));
 
     const dim4 dims = in.dims();
+    Array<T> out    = createEmptyArray<T>(dims);
 
-    Array<T> out = createEmptyArray<T>(dims);
-
-    kernel::medfilt2<T, pad>(out, in, w_len, w_wid);
+    kernel::medfilt2<T>(out, in, pad, w_len, w_wid);
 
     return out;
 }

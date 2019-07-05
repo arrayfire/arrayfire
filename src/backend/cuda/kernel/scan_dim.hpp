@@ -23,26 +23,15 @@ namespace kernel {
 static const std::string ScanDimSource(scan_dim_cuh, scan_dim_cuh_len);
 
 template<typename Ti, typename To, af_op_t op>
-static
-void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
-                       const uint threads_y, const dim_t blocks_all[4],
-                       int dim, bool isFinalPass, bool inclusive_scan) {
-    // clang-format off
-    auto scanDim = getKernel("cuda::scan_dim", ScanDimSource,
-            {
-              TemplateTypename<Ti>(),
-              TemplateTypename<To>(),
-              TemplateArg(op),
-              TemplateArg(dim),
-              TemplateArg(isFinalPass),
-              TemplateArg(threads_y),
-              TemplateArg(inclusive_scan)
-            },
-            {
-              DefineValue(THREADS_X)
-            }
-            );
-    // clang-format on
+static void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
+                              const uint threads_y, const dim_t blocks_all[4],
+                              int dim, bool isFinalPass, bool inclusive_scan) {
+    auto scan_dim =
+        getKernel("cuda::scan_dim", ScanDimSource,
+                  {TemplateTypename<Ti>(), TemplateTypename<To>(),
+                   TemplateArg(op), TemplateArg(dim), TemplateArg(isFinalPass),
+                   TemplateArg(threads_y), TemplateArg(inclusive_scan)},
+                  {DefineValue(THREADS_X)});
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -56,25 +45,18 @@ void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanDim(qArgs, out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim],
+    scan_dim(qArgs, out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim],
             lim);
     POST_LAUNCH_CHECK();
 }
 
 template<typename To, af_op_t op>
-static
-void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
-                        const uint threads_y, const dim_t blocks_all[4],
-                        int dim, bool inclusive_scan) {
-    // clang-format off
-    auto bcastDim = getKernel("cuda::scan_dim_bcast", ScanDimSource,
-            {
-              TemplateTypename<To>(),
-              TemplateArg(op),
-              TemplateArg(dim)
-            }
-            );
-    // clang-format on
+static void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
+                               const uint threads_y, const dim_t blocks_all[4],
+                               int dim, bool inclusive_scan) {
+    auto scan_dim_bcast =
+        getKernel("cuda::scan_dim_bcast", ScanDimSource,
+                  {TemplateTypename<To>(), TemplateArg(op), TemplateArg(dim)});
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -88,7 +70,7 @@ void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    bcastDim(qArgs, out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim],
+    scan_dim_bcast(qArgs, out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim],
              lim, inclusive_scan);
     POST_LAUNCH_CHECK();
 }

@@ -8,8 +8,9 @@
  ********************************************************/
 
 #pragma once
+
+#include <backend.hpp>
 #include <af/defines.h>
-#include "backend.hpp"
 
 namespace cuda {
 
@@ -24,5 +25,7 @@ static __DH__ dim_t trimIndex(const int &idx, const dim_t &len) {
     }
     return ret_val;
 }
+
+int interpOrder(const af_interp_type p) noexcept;
 
 }  // namespace cuda

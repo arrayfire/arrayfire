@@ -19,18 +19,14 @@ Array<float> nonMaximumSuppression(const Array<float>& mag,
                                    const Array<float>& gx,
                                    const Array<float>& gy) {
     Array<float> out = createValueArray<float>(mag.dims(), 0);
-
     kernel::nonMaxSuppression<float>(out, mag, gx, gy);
-
     return out;
 }
 
 Array<char> edgeTrackingByHysteresis(const Array<char>& strong,
                                      const Array<char>& weak) {
     Array<char> out = createValueArray<char>(strong.dims(), 0);
-
     kernel::edgeTrackingHysteresis<char>(out, strong, weak);
-
     return out;
 }
 }  // namespace cuda
