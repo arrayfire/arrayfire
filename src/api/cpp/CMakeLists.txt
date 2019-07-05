@@ -85,8 +85,8 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/ycbcr_rgb.cpp
 )
 
-
 target_include_directories(cpp_api_interface
   INTERFACE
     ${CMAKE_SOURCE_DIR}/src/api/c
+    ${ArrayFire_SOURCE_DIR}/extern/half/include
 )

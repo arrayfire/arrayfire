@@ -6,11 +6,14 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
-#include <Array.hpp>
 #include <kernel/tile.hpp>
 #include <tile.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
 #include <stdexcept>
+
+using common::half;
 
 namespace opencl {
 template<typename T>
@@ -41,5 +44,6 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace opencl

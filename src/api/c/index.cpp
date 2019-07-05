@@ -33,6 +33,7 @@ using std::vector;
 
 using common::convert2Canonical;
 using common::createSpanIndex;
+using common::half;
 
 namespace common {
 af_index_t createSpanIndex() {
@@ -100,6 +101,7 @@ af_err af_index(af_array* result, const af_array in, const unsigned ndims,
             case s64: out = indexBySeqs<intl>(in, indices_); break;
             case u64: out = indexBySeqs<uintl>(in, indices_); break;
             case u8: out = indexBySeqs<uchar>(in, indices_); break;
+            case f16: out = indexBySeqs<half>(in, indices_); break;
             default: TYPE_ERROR(1, type);
         }
         swap(*result, out);
@@ -133,6 +135,7 @@ static af_array lookup(const af_array& in, const af_array& idx,
         case u16: return lookup<ushort, idx_t>(in, idx, dim);
         case u8: return lookup<uchar, idx_t>(in, idx, dim);
         case b8: return lookup<char, idx_t>(in, idx, dim);
+        case f16: return lookup<half, idx_t>(in, idx, dim);
         default: TYPE_ERROR(1, inType);
     }
 }
@@ -168,6 +171,7 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
             case s64: output = lookup<intl>(in, indices, dim); break;
             case u64: output = lookup<uintl>(in, indices, dim); break;
             case u8: output = lookup<uchar>(in, indices, dim); break;
+            case f16: output = lookup<half>(in, indices, dim); break;
             default: TYPE_ERROR(1, idxType);
         }
         std::swap(*out, output);
@@ -270,6 +274,7 @@ af_err af_index_gen(af_array* out, const af_array in, const dim_t ndims,
             case s16: output = genIndex<short>(in, ptr); break;
             case u8: output = genIndex<uchar>(in, ptr); break;
             case b8: output = genIndex<char>(in, ptr); break;
+            case f16: output = genIndex<half>(in, ptr); break;
             default: TYPE_ERROR(1, inType);
         }
         std::swap(*out, output);

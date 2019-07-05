@@ -6,27 +6,126 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 
-#include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
 
-#include <testHelpers.hpp>
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <sstream>
 #include <string>
+#include <tuple>
 #include <vector>
 
 using af::dim4;
 using af::dtype_traits;
 using std::endl;
+using std::get;
 using std::ostream_iterator;
 using std::string;
+using std::stringstream;
 using std::vector;
+
+struct index_test {
+    string filename_;
+    dim4 dims_;
+    index_test(string filename, dim4 dims) : filename_(filename), dims_(dims) {}
+};
+
+using index_params = std::tuple<index_test, af_dtype, af_dtype>;
+
+class IndexGeneralizedLegacy : public ::testing::TestWithParam<index_params> {
+    void SetUp() {
+        index_params params = GetParam();
+        vector<dim4> numDims;
+        vector<vector<float> > in;
+        vector<vector<float> > tests;
+
+        if (noDoubleTests(get<1>(params))) return;
+        if (noHalfTests(get<1>(params))) return;
+
+        if (noDoubleTests(get<2>(params))) return;
+        if (noHalfTests(get<2>(params))) return;
+        readTestsFromFile<float, float>(get<0>(params).filename_, numDims, in,
+                                        tests);
+
+        dim4 dims0 = numDims[0];
+        dim4 dims1 = numDims[1];
+
+        af_array inTmp = 0;
+        ASSERT_SUCCESS(af_create_array(&inTmp, &(in[0].front()), dims0.ndims(),
+                                       dims0.get(), f32));
+
+        ASSERT_SUCCESS(af_cast(&inArray_, inTmp, get<1>(params)));
+
+        af_array idxTmp = 0;
+        ASSERT_SUCCESS(af_create_array(&idxTmp, &(in[1].front()), dims1.ndims(),
+                                       dims1.get(), f32));
+        ASSERT_SUCCESS(af_cast(&idxArray_, idxTmp, get<2>(params)));
+
+        vector<float> hgold = tests[0];
+        af_array goldTmp;
+        af_create_array(&goldTmp, &hgold.front(), get<0>(params).dims_.ndims(),
+                        get<0>(params).dims_.get(), f32);
+        ASSERT_SUCCESS(af_cast(&gold_, goldTmp, get<1>(params)));
+    }
+
+    void TearDown() {
+        if (inArray_) ASSERT_SUCCESS(af_release_array(inArray_));
+        if (idxArray_) ASSERT_SUCCESS(af_release_array(idxArray_));
+    }
+
+   public:
+    IndexGeneralizedLegacy() : gold_(0), inArray_(0), idxArray_(0) {}
+
+    af_array gold_;
+    af_array inArray_;
+    af_array idxArray_;
+};
+
+string testNameGenerator(
+    const ::testing::TestParamInfo<IndexGeneralizedLegacy::ParamType> info) {
+    stringstream ss;
+    ss << "type_" << get<1>(info.param) << "_idx_type_" << get<2>(info.param);
+    return ss.str();
+}
+
+INSTANTIATE_TEST_CASE_P(
+    Legacy, IndexGeneralizedLegacy,
+    ::testing::Combine(
+        ::testing::Values(index_test(
+            string(TEST_DIR "/gen_index/s0_3s0_1s1_2a.test"), dim4(4, 2, 2))),
+        ::testing::Values(f32, f64, c32, c64, u64, s64, u16, s16, u8, b8, f16),
+        ::testing::Values(f32, f64, u64, s64, u16, s16, u8, f16)),
+    testNameGenerator);
+
+TEST_P(IndexGeneralizedLegacy, SSSA) {
+    index_params params = GetParam();
+    if (noDoubleTests(get<1>(params))) return;
+    if (noHalfTests(get<1>(params))) return;
+
+    if (noDoubleTests(get<2>(params))) return;
+    if (noHalfTests(get<2>(params))) return;
+
+    af_array outArray = 0;
+    af_index_t indexes[4];
+    indexes[0].idx.seq = af_make_seq(0, 3, 1);
+    indexes[1].idx.seq = af_make_seq(0, 1, 1);
+    indexes[2].idx.seq = af_make_seq(1, 2, 1);
+    indexes[3].idx.arr = idxArray_;
+    indexes[0].isSeq   = true;
+    indexes[1].isSeq   = true;
+    indexes[2].isSeq   = true;
+    indexes[3].isSeq   = false;
+    ASSERT_SUCCESS(af_index_gen(&outArray, inArray_, 4, indexes));
+    ASSERT_ARRAYS_EQ(gold_, outArray);
+}
 
 void testGeneralIndexOneArray(string pTestFile, const dim_t ndims,
                               af_index_t *indexs, int arrayDim) {
@@ -67,20 +166,6 @@ void testGeneralIndexOneArray(string pTestFile, const dim_t ndims,
     ASSERT_SUCCESS(af_release_array(inArray));
     ASSERT_SUCCESS(af_release_array(idxArray));
     ASSERT_SUCCESS(af_release_array(outArray));
-}
-
-TEST(GeneralIndex, SSSA) {
-    af_index_t indexs[4];
-    indexs[0].idx.seq = af_make_seq(0, 3, 1);
-    indexs[1].idx.seq = af_make_seq(0, 1, 1);
-    indexs[2].idx.seq = af_make_seq(1, 2, 1);
-    indexs[0].isSeq   = true;
-    indexs[1].isSeq   = true;
-    indexs[2].isSeq   = true;
-    indexs[3].isSeq   = false;
-
-    testGeneralIndexOneArray(string(TEST_DIR "/gen_index/s0_3s0_1s1_2a.test"),
-                             4, indexs, 3);
 }
 
 TEST(GeneralIndex, ASSS) {

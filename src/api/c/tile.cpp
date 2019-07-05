@@ -7,18 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <tile.hpp>
+
 #include <arith.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
-#include <tile.hpp>
-
 #include <unary.hpp>
 #include <af/arith.h>
 #include <af/data.h>
 
 using af::dim4;
+using common::half;
 using namespace detail;
 
 template<typename T>
@@ -71,6 +73,7 @@ af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims) {
             case s16: output = tile<short>(in, tileDims); break;
             case u16: output = tile<ushort>(in, tileDims); break;
             case u8: output = tile<uchar>(in, tileDims); break;
+            case f16: output = tile<half>(in, tileDims); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);
