@@ -267,8 +267,9 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
         if (*out != lhs) {
             int count = 0;
             AF_CHECK(af_get_data_ref_count(&count, lhs));
-            if (count > 1)
+            if (count > 1) {
                 AF_CHECK(af_copy_array(&output, lhs));
+	    }
             else
                 output = retain(lhs);
         } else {
