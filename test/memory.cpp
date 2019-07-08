@@ -522,6 +522,31 @@ TEST(Memory, device) {
     ASSERT_EQ(lock_bytes, 0u);
 }
 
+
+TEST(Memory, Assign2D) {
+    size_t alloc_bytes, alloc_buffers;
+    size_t alloc_bytes_after, alloc_buffers_after;
+    size_t lock_bytes, lock_buffers;
+    size_t lock_bytes_after, lock_buffers_after;
+
+    cleanSlate();  // Clean up everything done so far
+    {
+        array a    = af::randu(10, 10, f32);
+        unsigned hb[] = {3, 5, 6, 8, 9};
+        array b(5, hb);
+        array c   = af::randu(5, f32);
+        deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+        a(b) = c;
+    }
+
+    deviceMemInfo(&alloc_bytes_after, &alloc_buffers_after, &lock_bytes_after,
+                  &lock_buffers_after);
+
+    // Check if assigned allocated extra buffers
+    ASSERT_EQ(alloc_buffers, alloc_buffers_after);
+    ASSERT_EQ(alloc_bytes, alloc_bytes_after);
+}
+
 TEST(Memory, unlock) {
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;

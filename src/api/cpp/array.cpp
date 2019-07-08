@@ -471,25 +471,37 @@ array::array_proxy &af::array::array_proxy::operator=(const array &other) {
         }
     }
 
-    af_array par_arr = nullptr;
+    af_array par_arr = 0;
 
+    dim4 parent_dims = impl->parent_->dims();
     if (impl->is_linear_) {
         AF_THROW(af_flat(&par_arr, impl->parent_->get()));
+        // The set call will dereference the impl->parent_ array. We are doing
+        // this because the af_flat call above increases the reference count of the
+        // parent array which triggers a copy operation. This triggers a copy operation
+        // inside the af_assign_gen function below. The parent array will be reverted
+        // to the original array and shape later in the code.
+        af_array empty = 0;
+        impl->parent_->set(empty);
         nd = 1;
     } else {
         par_arr = impl->parent_->get();
     }
 
-    af_array tmp = nullptr;
-    AF_THROW(af_assign_gen(&tmp, par_arr, nd, impl->indices_, other_arr));
+    af_array flat_res = 0;
+    AF_THROW(af_assign_gen(&flat_res, par_arr, nd, impl->indices_, other_arr));
 
-    af_array res = nullptr;
+    af_array res = 0;
+    af_array unflattened = 0;
     if (impl->is_linear_) {
-        AF_THROW(af_moddims(&res, tmp, this_dims.ndims(), this_dims.get()));
+        AF_THROW(af_moddims(&res, flat_res, this_dims.ndims(), this_dims.get()));
+        // Unflatten the af_array and reset the original reference
+        AF_THROW(af_moddims(&unflattened, par_arr, parent_dims.ndims(), parent_dims.get()));
+        impl->parent_->set(unflattened);
         AF_THROW(af_release_array(par_arr));
-        AF_THROW(af_release_array(tmp));
+        AF_THROW(af_release_array(flat_res));
     } else {
-        res = tmp;
+        res = flat_res;
     }
 
     impl->parent_->set(res);
