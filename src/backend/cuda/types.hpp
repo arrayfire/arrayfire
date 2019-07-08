@@ -149,16 +149,13 @@ struct kernel_type<common::half> {
     using data = common::half;
 
 #ifdef __CUDA_ARCH__
-
     // These are the types within a kernel
-
-#if __CUDA_ARCH__ > 530 && __CUDA_ARCH__ != 610
+#if __CUDA_ARCH__ >= 530 && __CUDA_ARCH__ != 610
     using compute = __half;
 #else
     using compute = float;
 #endif
 #else
-
     // outside of a cuda kernel use float
     using compute = float;
 

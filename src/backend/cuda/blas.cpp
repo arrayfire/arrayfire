@@ -185,6 +185,19 @@ cudaDataType_t getType<half>() {
 }
 
 template<typename T>
+cudaDataType_t getComputeType() {
+    return getType<T>();
+}
+
+template<>
+cudaDataType_t getComputeType<half>() {
+    auto dev            = getDeviceProp(getActiveDeviceId());
+    cudaDataType_t algo = getType<half>();
+    if (dev.major == 6 && dev.minor == 1) { algo = CUDA_R_32F; }
+    return algo;
+}
+
+template<typename T>
 cublasGemmAlgo_t selectGEMMAlgorithm() {
     auto dev              = getDeviceProp(getActiveDeviceId());
     cublasGemmAlgo_t algo = CUBLAS_GEMM_DEFAULT;
@@ -199,19 +212,24 @@ cublasGemmAlgo_t selectGEMMAlgorithm<half>() {
     return algo;
 }
 
+template<>
+cublasGemmAlgo_t selectGEMMAlgorithm<__half>() {
+    return selectGEMMAlgorithm<common::half>();
+}
+
 template<typename T>
 cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
-                             cublasOperation_t rOpts, int M, int N, int K,
-                             const T *alpha, const Array<T> &lhs, dim_t lStride,
-                             const Array<T> &rhs, dim_t rStride, const T *beta,
-                             Array<T> &out, dim_t oleading) {
+                            cublasOperation_t rOpts, int M, int N, int K,
+                            const T *alpha, const Array<T> &lhs, dim_t lStride,
+                            const Array<T> &rhs, dim_t rStride, const T *beta,
+                            Array<T> &out, dim_t oleading) {
     auto prop = getDeviceProp(getActiveDeviceId());
     if (prop.major > 3) {
         return cublasGemmEx(
             blasHandle(), lOpts, rOpts, M, N, K, alpha, lhs.get(), getType<T>(),
             lStride, rhs.get(), getType<T>(), rStride, beta, out.get(),
             getType<T>(), out.strides()[1],
-            getType<compute_t<T>>(), // Compute type
+            getComputeType<T>(),  // Compute type
 
             // NOTE: When using the CUBLAS_GEMM_DEFAULT_TENSOR_OP algorithm
             // for the cublasGemm*Ex functions, the performance of the
@@ -231,20 +249,19 @@ cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
 }
 
 template<typename T>
-cublasStatus_t gemmBatchedDispatch(BlasHandle handle,
-                                    cublasOperation_t lOpts,
-                                    cublasOperation_t rOpts, int M, int N,
-                                    int K, const T *alpha, const T **lptrs,
-                                    int lStrides, const T **rptrs, int rStrides,
-                                    const T *beta, T **optrs, int oStrides,
-                                    int batchSize) {
+cublasStatus_t gemmBatchedDispatch(BlasHandle handle, cublasOperation_t lOpts,
+                                   cublasOperation_t rOpts, int M, int N, int K,
+                                   const T *alpha, const T **lptrs,
+                                   int lStrides, const T **rptrs, int rStrides,
+                                   const T *beta, T **optrs, int oStrides,
+                                   int batchSize) {
     auto prop = getDeviceProp(getActiveDeviceId());
     if (prop.major > 3) {
         return cublasGemmBatchedEx(
             blasHandle(), lOpts, rOpts, M, N, K, alpha, (const void **)lptrs,
             getType<T>(), lStrides, (const void **)rptrs, getType<T>(),
             rStrides, beta, (void **)optrs, getType<T>(), oStrides, batchSize,
-            getType<compute_t<T>>(), // compute type
+            getComputeType<T>(),  // compute type
             // NOTE: When using the CUBLAS_GEMM_DEFAULT_TENSOR_OP algorithm
             // for the cublasGemm*Ex functions, the performance of the
             // fp32 numbers seem to increase dramatically. Their numerical
@@ -298,8 +315,8 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
                                         rhs.get(), incr, beta, out.get(), 1));
         } else {
             CUBLAS_CHECK(gemmDispatch<T>(blasHandle(), lOpts, rOpts, M, N, K,
-                                          alpha, lhs, lStrides[1], rhs,
-                                          rStrides[1], beta, out, oStrides[1]));
+                                         alpha, lhs, lStrides[1], rhs,
+                                         rStrides[1], beta, out, oStrides[1]));
         }
     } else {
         int batchSize = oDims[2] * oDims[3];
@@ -349,8 +366,7 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         CUBLAS_CHECK(gemmBatchedDispatch(
             blasHandle(), lOpts, rOpts, M, N, K, alpha,
             (const T **)d_lptrs.get(), lStrides[1], (const T **)d_rptrs.get(),
-            rStrides[1], beta, (T **)d_optrs.get(), oStrides[1],
-            batchSize));
+            rStrides[1], beta, (T **)d_optrs.get(), oStrides[1], batchSize));
     }
 }
 
