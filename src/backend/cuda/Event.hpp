@@ -21,22 +21,21 @@ class CUDARuntimeEventPolicy {
     using ErrorType = CUresult;
 
     static ErrorType createEvent(CUevent *e) noexcept {
-      auto err = cuEventCreate(e, CU_EVENT_DISABLE_TIMING | CU_EVENT_BLOCKING_SYNC);
-        // printf("create %p: error: %s\n", *e, cudaGetErrorName(err));
+        // Creating events with the CU_EVENT_BLOCKING_SYNC flag 
+        // severly impacts the speed if/when creating many arrays
+        auto err = cuEventCreate(e, CU_EVENT_DISABLE_TIMING);
         return err;
     }
 
     static ErrorType markEvent(CUevent *e,
                                QueueType &stream) noexcept {
         auto err = cuEventRecord(*e, stream);
-        // printf("mark   %p: error: %s\n", *e, cudaGetErrorName(err));
         return err;
     }
 
     static ErrorType waitForEvent(CUevent *e,
                                   QueueType &stream) noexcept {
-      auto err = cuStreamWaitEvent(stream, *e, 0);
-        // printf("wait   %p: error: %s\n", *e, cudaGetErrorName(err));
+        auto err = cuStreamWaitEvent(stream, *e, 0);
         return err;
     }
 
@@ -46,7 +45,6 @@ class CUDARuntimeEventPolicy {
 
     static ErrorType destroyEvent(CUevent *e) noexcept {
         auto err = cuEventDestroy(*e);
-        // printf("destroy %p: error: %s\n", *e, cudaGetErrorName(err));
         return err;
     }
 };
