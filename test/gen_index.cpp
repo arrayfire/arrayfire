@@ -63,22 +63,26 @@ class IndexGeneralizedLegacy : public ::testing::TestWithParam<index_params> {
                                        dims0.get(), f32));
 
         ASSERT_SUCCESS(af_cast(&inArray_, inTmp, get<1>(params)));
+        af_release_array(inTmp);
 
         af_array idxTmp = 0;
         ASSERT_SUCCESS(af_create_array(&idxTmp, &(in[1].front()), dims1.ndims(),
                                        dims1.get(), f32));
         ASSERT_SUCCESS(af_cast(&idxArray_, idxTmp, get<2>(params)));
+        af_release_array(idxTmp);
 
         vector<float> hgold = tests[0];
         af_array goldTmp;
         af_create_array(&goldTmp, &hgold.front(), get<0>(params).dims_.ndims(),
                         get<0>(params).dims_.get(), f32);
         ASSERT_SUCCESS(af_cast(&gold_, goldTmp, get<1>(params)));
+        af_release_array(goldTmp);
     }
 
     void TearDown() {
         if (inArray_) ASSERT_SUCCESS(af_release_array(inArray_));
         if (idxArray_) ASSERT_SUCCESS(af_release_array(idxArray_));
+        if (gold_) ASSERT_SUCCESS(af_release_array(gold_));
     }
 
    public:
@@ -125,6 +129,7 @@ TEST_P(IndexGeneralizedLegacy, SSSA) {
     indexes[3].isSeq   = false;
     ASSERT_SUCCESS(af_index_gen(&outArray, inArray_, 4, indexes));
     ASSERT_ARRAYS_EQ(gold_, outArray);
+    af_release_array(outArray);
 }
 
 void testGeneralIndexOneArray(string pTestFile, const dim_t ndims,

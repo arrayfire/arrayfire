@@ -406,8 +406,8 @@ TEST(MatrixMultiply, half) {
 
     {
         af_array C16 = 0;
-        const af_half alpha16 = {0x03c00}; // 1.0 : 0 01111 0000000000
-        const af_half beta16 = {0x00000}; //  0.0 : 0 00000 0000000000
+        const half_float::half alpha16(1.0f);
+        const half_float::half beta16(0.0f);
         af_gemm(&C16, AF_MAT_NONE, AF_MAT_NONE, &alpha16, A16.get(), B16.get(), &beta16);
         af::array C(C16);
         ASSERT_ARRAYS_NEAR(expected16, C, 0.00001);
@@ -672,6 +672,13 @@ TEST(Gemm, DocSnippet) {
     af::array c2(c2_copy);
     vector<float> gold2(5*5*2, 3);
     fill(gold2.begin(), gold2.begin() + (5 * 5), 6);
+
+    af_release_array(A);
+    af_release_array(B);
+    af_release_array(C);
+    af_release_array(Asub);
+    af_release_array(Bsub);
+    af_release_array(Csub);
 
     ASSERT_VEC_ARRAY_EQ(gold2, dim4(5, 5, 2), c2);
 }
