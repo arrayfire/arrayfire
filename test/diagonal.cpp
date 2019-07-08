@@ -9,7 +9,11 @@
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
+
+#include <cmath>
+#include <vector>
 
 using af::array;
 using af::constant;
@@ -22,13 +26,13 @@ using af::seq;
 using af::span;
 using af::sum;
 using std::abs;
-using std::endl;
 using std::vector;
 
 template<typename T>
 class Diagonal : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, int, uint, char, unsigned char>
+typedef ::testing::Types<float, double, int, uint, char, unsigned char,
+                         half_float::half>
     TestTypes;
 TYPED_TEST_CASE(Diagonal, TestTypes);
 
@@ -54,7 +58,7 @@ TYPED_TEST(Diagonal, Create) {
                 }
             }
         }
-    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
+    } catch (const exception& ex) { FAIL() << ex.what(); }
 }
 
 TYPED_TEST(Diagonal, DISABLED_CreateLargeDim) {
@@ -68,7 +72,7 @@ TYPED_TEST(Diagonal, DISABLED_CreateLargeDim) {
 
             ASSERT_EQ(largeDim, sum<float>(out));
         }
-    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
+    } catch (const exception& ex) { FAIL() << ex.what(); }
 }
 
 TYPED_TEST(Diagonal, Extract) {
@@ -89,7 +93,7 @@ TYPED_TEST(Diagonal, Extract) {
                 ASSERT_EQ(input[i * data.dims(0) + i], h_out[i]);
             }
         }
-    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
+    } catch (const exception& ex) { FAIL() << ex.what(); }
 }
 
 TYPED_TEST(Diagonal, ExtractLargeDim) {
@@ -109,7 +113,7 @@ TYPED_TEST(Diagonal, ExtractLargeDim) {
 
         ASSERT_EQ(n * largeDim, sum<float>(out1));
 
-    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
+    } catch (const exception& ex) { FAIL() << ex.what(); }
 }
 
 TYPED_TEST(Diagonal, ExtractRect) {
@@ -135,7 +139,7 @@ TYPED_TEST(Diagonal, ExtractRect) {
                 }
             }
         }
-    } catch (const exception& ex) { FAIL() << ex.what() << endl; }
+    } catch (const exception& ex) { FAIL() << ex.what(); }
 }
 
 TEST(Diagonal, ExtractGFOR) {

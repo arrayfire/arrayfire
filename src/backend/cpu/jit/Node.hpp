@@ -105,7 +105,8 @@ class TNode : public Node {
     TNode(T val, const int height,
           const std::array<Node_ptr, kMaxChildren> children)
         : Node(height, children) {
-        m_val.fill(val);
+        using namespace common;
+        m_val.fill(static_cast<compute_t<T>>(val));
     }
 };
 

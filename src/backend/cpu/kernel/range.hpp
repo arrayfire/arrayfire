@@ -9,6 +9,9 @@
 
 #pragma once
 #include <Param.hpp>
+#include <af/dim4.hpp>
+
+using af::dim4;
 
 namespace cpu {
 namespace kernel {

@@ -34,7 +34,7 @@ __global__ void lookup1D(Param<in_t> out, CParam<in_t> in,
     int en = min(out.dims[vDim], idx + THRD_LOAD * THREADS);
 
     for (int oIdx = idx; oIdx < en; oIdx += THREADS) {
-        int iIdx     = trimIndex(idxPtr[oIdx], in.dims[vDim]);
+        int iIdx     = trimIndex(static_cast<int>(idxPtr[oIdx]), in.dims[vDim]);
         outPtr[oIdx] = inPtr[iIdx];
     }
 }

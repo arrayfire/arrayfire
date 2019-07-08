@@ -34,13 +34,6 @@ using std::endl;
 using std::string;
 using std::vector;
 
-namespace half_float {
-std::ostream &operator<<(std::ostream &os, half_float::half val) {
-    os << (float)val;
-    return os;
-}
-}  // namespace half_float
-
 template<typename T>
 class ArrayAssign : public ::testing::Test {
    public:

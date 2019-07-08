@@ -6,18 +6,20 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#include <ireduce.hpp>
 
 #include <Array.hpp>
-#include <ireduce.hpp>
+#include <common/half.hpp>
 #include <af/dim4.hpp>
-#include <complex>
 
 #undef _GLIBCXX_USE_INT128
 #include <err_cuda.hpp>
 #include <kernel/ireduce.hpp>
+
 #include <complex>
 
 using af::dim4;
+using common::half;
 
 namespace cuda {
 
@@ -50,6 +52,7 @@ INSTANTIATE(af_min_t, short)
 INSTANTIATE(af_min_t, ushort)
 INSTANTIATE(af_min_t, char)
 INSTANTIATE(af_min_t, uchar)
+INSTANTIATE(af_min_t, half)
 
 // max
 INSTANTIATE(af_max_t, float)
@@ -64,4 +67,5 @@ INSTANTIATE(af_max_t, short)
 INSTANTIATE(af_max_t, ushort)
 INSTANTIATE(af_max_t, char)
 INSTANTIATE(af_max_t, uchar)
+INSTANTIATE(af_max_t, half)
 }  // namespace cuda

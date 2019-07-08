@@ -6,13 +6,16 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#include <kernel/triangle.hpp>
+#include <triangle.hpp>
 
 #include <Array.hpp>
-#include <kernel/triangle.hpp>
+#include <common/half.hpp>
 #include <math.hpp>
 #include <platform.hpp>
-#include <triangle.hpp>
 #include <af/dim4.hpp>
+
+using common::half;
 
 namespace cpu {
 
@@ -53,5 +56,6 @@ INSTANTIATE(char)
 INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace cpu

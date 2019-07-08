@@ -949,6 +949,8 @@ INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
 INSTANTIATE(short)
 INSTANTIATE(unsigned short)
+INSTANTIATE(af_half)
+INSTANTIATE(half_float::half)
 
 template<>
 AFAPI void array::write(const void *ptr, const size_t bytes, af::source src) {
@@ -989,6 +991,8 @@ INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
 INSTANTIATE(short)
 INSTANTIATE(unsigned short)
+INSTANTIATE(af_half)
+INSTANTIATE(half_float::half)
 
 #undef INSTANTIATE
 #undef TEMPLATE_MEM_FUNC

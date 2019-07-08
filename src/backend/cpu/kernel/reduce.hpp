@@ -37,7 +37,7 @@ struct reduce_dim {
 
 template<af_op_t op, typename Ti, typename To>
 struct reduce_dim<op, Ti, To, 0> {
-    Transform<Ti, compute_t<To>, op> transform;
+    Transform<data_t<Ti>, compute_t<To>, op> transform;
     Binary<compute_t<To>, op> reduce;
     void operator()(Param<To> out, const dim_t outOffset, CParam<Ti> in,
                     const dim_t inOffset, const int dim, bool change_nan,
@@ -45,8 +45,8 @@ struct reduce_dim<op, Ti, To, 0> {
         const af::dim4 istrides = in.strides();
         const af::dim4 idims    = in.dims();
 
-        To* const outPtr      = out.get() + outOffset;
-        Ti const* const inPtr = in.get() + inOffset;
+        data_t<To> * const outPtr      = out.get() + outOffset;
+        data_t<Ti> const* const inPtr = in.get() + inOffset;
         dim_t stride          = istrides[dim];
 
         compute_t<To> out_val = Binary<compute_t<To>, op>::init();

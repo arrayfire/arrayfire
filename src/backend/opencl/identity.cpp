@@ -6,12 +6,15 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
-#include <Array.hpp>
-#include <debug_opencl.hpp>
 #include <identity.hpp>
 #include <kernel/identity.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
+#include <debug_opencl.hpp>
 #include <af/dim4.hpp>
+
+using common::half;
 
 namespace opencl {
 template<typename T>
@@ -36,5 +39,6 @@ INSTANTIATE_IDENTITY(char)
 INSTANTIATE_IDENTITY(uchar)
 INSTANTIATE_IDENTITY(short)
 INSTANTIATE_IDENTITY(ushort)
+INSTANTIATE_IDENTITY(half)
 
 }  // namespace opencl

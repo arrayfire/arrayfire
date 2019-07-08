@@ -309,8 +309,8 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
     const uint xid = blockIdx_x * blockDim.x * repeat + tidx;
     const uint yid = blockIdx_y * blockDim.y + tidy;
 
-    const T *iptr = in.ptr;
-    T *optr       = out.ptr;
+    const data_t<T> *iptr = in.ptr;
+    data_t<T> *optr       = out.ptr;
 
     iptr += wid * in.strides[3] + zid * in.strides[2] + yid * in.strides[1];
     optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
@@ -324,7 +324,7 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
 
     int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-    T val    = Binary<T, op>::init();
+    compute_t<T> val    = Binary<T, op>::init();
     uint idx = xid;
 
     if (xid < lim) {
@@ -332,9 +332,9 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
         if (!is_first) idx = ilptr[xid];
     }
 
-    MinMaxOp<op, T> Op(val, idx);
+    MinMaxOp<op, compute_t<T>> Op(val, idx);
 
-    __shared__ T s_val[THREADS_PER_BLOCK];
+    __shared__ compute_t<T> s_val[THREADS_PER_BLOCK];
     __shared__ uint s_idx[THREADS_PER_BLOCK];
 
     for (int id = xid + DIMX; id < lim; id += DIMX) {
@@ -345,7 +345,7 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
     s_idx[tid] = Op.m_idx;
     __syncthreads();
 
-    T *s_vptr    = s_val + tidy * DIMX;
+    compute_t<T> *s_vptr    = s_val + tidy * DIMX;
     uint *s_iptr = s_idx + tidy * DIMX;
 
     if (DIMX == 256) {
@@ -375,7 +375,7 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
         __syncthreads();
     }
 
-    warp_reduce<T, op>(s_vptr, s_iptr, tidx);
+    warp_reduce<compute_t<T>, op>(s_vptr, s_iptr, tidx);
 
     if (tidx == 0) {
         optr[blockIdx_x]  = s_vptr[0];

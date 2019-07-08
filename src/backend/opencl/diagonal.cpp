@@ -8,11 +8,14 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <diagonal.hpp>
 #include <err_opencl.hpp>
 #include <kernel/diagonal.hpp>
 #include <math.hpp>
 #include <af/dim4.hpp>
+
+using common::half;
 
 namespace opencl {
 template<typename T>
@@ -53,5 +56,6 @@ INSTANTIATE_DIAGONAL(char)
 INSTANTIATE_DIAGONAL(uchar)
 INSTANTIATE_DIAGONAL(short)
 INSTANTIATE_DIAGONAL(ushort)
+INSTANTIATE_DIAGONAL(half)
 
 }  // namespace opencl

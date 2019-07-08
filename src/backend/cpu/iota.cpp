@@ -6,13 +6,16 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
-#include <Array.hpp>
 #include <iota.hpp>
 #include <kernel/iota.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+
+using common::half;
 
 namespace cpu {
 
@@ -39,5 +42,6 @@ INSTANTIATE(uintl)
 INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 
 }  // namespace cpu

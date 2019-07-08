@@ -247,6 +247,7 @@ static af_err reduce_all_type(double *real, double *imag, const af_array in) {
             case s16: *real = (double)reduce_all<op, short, To>(in); break;
             case b8: *real = (double)reduce_all<op, char, To>(in); break;
             case u8: *real = (double)reduce_all<op, uchar, To>(in); break;
+            case f16: *real = (double)reduce_all<op, half, To>(in); break;
             default: TYPE_ERROR(1, type);
         }
     }
@@ -292,6 +293,9 @@ static af_err reduce_all_common(double *real_val, double *imag_val,
             case b8: *real_val = (double)reduce_all<op, char, char>(in); break;
             case u8:
                 *real_val = (double)reduce_all<op, uchar, uchar>(in);
+                break;
+            case f16:
+                *real_val = (double)reduce_all<op, half, half>(in);
                 break;
 
             case c32:
@@ -391,6 +395,10 @@ static af_err reduce_all_promote(double *real_val, double *imag_val,
                 *real_val = real(cdval);
                 *imag_val = imag(cdval);
                 break;
+            case f16:
+                *real_val = (double)reduce_all<op, half, float>(in, change_nan,
+                                                                nanval);
+                break;
 
             default: TYPE_ERROR(1, type);
         }
@@ -475,7 +483,7 @@ static af_err ireduce_common(af_array *val, af_array *idx, const af_array in,
             case s16: ireduce<op, short>(&res, &loc, in, dim); break;
             case b8: ireduce<op, char>(&res, &loc, in, dim); break;
             case u8: ireduce<op, uchar>(&res, &loc, in, dim); break;
-              //case f16: ireduce<op, half>(&res, &loc, in, dim); break;
+            case f16: ireduce<op, half>(&res, &loc, in, dim); break;
             default: TYPE_ERROR(1, type);
         }
 

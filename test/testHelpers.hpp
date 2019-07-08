@@ -46,6 +46,13 @@ std::ostream &operator<<(std::ostream &os, const af_half &val) {
     return os;
 }
 
+namespace half_float {
+std::ostream &operator<<(std::ostream &os, half_float::half val) {
+    os << (float)val;
+    return os;
+}
+}  // namespace half_float
+
 #define UNUSED(expr) \
     do { (void)(expr); } while (0)
 
@@ -543,7 +550,8 @@ af::array cpu_randu(const af::dim4 dims) {
     bool isTypeCplx = is_same_type<T, af::cfloat>::value ||
                       is_same_type<T, af::cdouble>::value;
     bool isTypeFloat =
-        is_same_type<BT, float>::value || is_same_type<BT, double>::value;
+      is_same_type<BT, float>::value || is_same_type<BT, double>::value ||
+      is_same_type<BT, half_float::half>::value;
 
     size_t elements = (isTypeCplx ? 2 : 1) * dims.elements();
 

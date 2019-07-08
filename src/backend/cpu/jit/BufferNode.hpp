@@ -57,7 +57,7 @@ class BufferNode : public TNode<T> {
         T *in_ptr   = m_ptr + l_off;
         Tc *out_ptr = this->m_val.data();
         for (int i = 0; i < lim; i++) {
-            out_ptr[i] = in_ptr[((x + i) < m_dims[0]) ? (x + i) : 0];
+            out_ptr[i] = static_cast<Tc>(in_ptr[((x + i) < m_dims[0]) ? (x + i) : 0]);
         }
     }
 
@@ -66,7 +66,9 @@ class BufferNode : public TNode<T> {
 
         T *in_ptr   = m_ptr + idx;
         Tc *out_ptr = this->m_val.data();
-        for (int i = 0; i < lim; i++) { out_ptr[i] = in_ptr[i]; }
+        for (int i = 0; i < lim; i++) {
+            out_ptr[i] = static_cast<Tc>(in_ptr[i]);
+        }
     }
 
     void getInfo(unsigned &len, unsigned &buf_count,

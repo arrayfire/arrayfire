@@ -61,10 +61,10 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
     in.eval();
     getQueue().sync();
 
-    Transform<Ti, To, op> transform;
-    Binary<To, op> reduce;
+    Transform<Ti, compute_t<To>, op> transform;
+    Binary<compute_t<To>, op> reduce;
 
-    compute_t<To> out = Binary<To, op>::init();
+    compute_t<To> out = Binary<compute_t<To>, op>::init();
 
     // Decrement dimension of select dimension
     af::dim4 dims           = in.dims();
@@ -83,7 +83,8 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
                 for (dim_t i = 0; i < dims[0]; i++) {
                     dim_t idx = i + off1 + off2 + off3;
 
-                    compute_t<To> in_val = transform(inPtr[idx]);
+                    compute_t<To> in_val =
+                        transform(inPtr[idx]);
                     if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
                     out = reduce(in_val, out);
                 }

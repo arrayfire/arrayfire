@@ -41,7 +41,7 @@ __global__ void iota_kernel(Param<T> out, const int s0, const int s1,
 
     const int ozw = ow * out.strides[3] + oz * out.strides[2];
 
-    T val = (ow % s3) * s2 * s1 * s0;
+    dim_t val = (ow % s3) * s2 * s1 * s0;
     val += (oz % s2) * s1 * s0;
 
     const int incy = blocksPerMatY * blockDim.y;
@@ -49,7 +49,7 @@ __global__ void iota_kernel(Param<T> out, const int s0, const int s1,
 
     for (int oy = yy; oy < out.dims[1]; oy += incy) {
         int oyzw = ozw + oy * out.strides[1];
-        T valY   = val + (oy % s1) * s0;
+        dim_t valY   = val + (oy % s1) * s0;
         for (int ox = xx; ox < out.dims[0]; ox += incx) {
             int oidx = oyzw + ox;
 

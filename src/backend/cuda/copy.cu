@@ -8,17 +8,12 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/complex.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
 #include <cuda_runtime_api.h>
 #include <err_cuda.hpp>
 #include <kernel/memcopy.hpp>
-#include <math.hpp>
-
-#include <Array.hpp>
-#include <common/complex.hpp>
-#include <common/half.hpp>
-#include <cuda_runtime_api.h>
-#include <err_cuda.hpp>
 #include <math.hpp>
 
 using common::half;
@@ -199,7 +194,7 @@ INSTANTIATE(half)
                                          Array<SRC_T> const &src);        \
     template void copyArray<SRC_T, half>(Array<half> & dst,               \
                                          Array<SRC_T> const &src);
-    
+
 INSTANTIATE_PAD_ARRAY(float)
 INSTANTIATE_PAD_ARRAY(double)
 INSTANTIATE_PAD_ARRAY(int)
