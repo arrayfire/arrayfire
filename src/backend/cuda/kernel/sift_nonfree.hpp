@@ -78,6 +78,7 @@
 #include <debug_thrust.hpp>
 #include <memory.hpp>
 #include "shared.hpp"
+#include <af/defines.h>
 
 #include "convolve.hpp"
 #include "resize.hpp"
@@ -1061,7 +1062,7 @@ Array<T> createInitialImage(CParam<T> img, const float init_sigma,
     Array<convAccT> filter = gauss_filter<convAccT>(s);
 
     if (double_input) {
-        resize<T, InterpolationType::Bilinear>(init_img, img);
+        resize<T>(init_img, img, AF_INTERP_BILINEAR);
         convolve2<T, convAccT>(init_tmp, init_img, filter, 0, false);
     } else
         convolve2<T, convAccT>(init_tmp, img, filter, 0, false);
@@ -1108,8 +1109,7 @@ std::vector<Array<T>> buildGaussPyr(Param<T> init_img, const unsigned n_octaves,
                 tmp_pyr.push_back(
                     createEmptyArray<T>({tmp_pyr[src_idx].dims()[0] / 2,
                                          tmp_pyr[src_idx].dims()[1] / 2}));
-                resize<T, InterpolationType::Bilinear>(tmp_pyr[idx],
-                                                       tmp_pyr[src_idx]);
+                resize<T>(tmp_pyr[idx], tmp_pyr[src_idx], AF_INTERP_BILINEAR);
             } else {
                 tmp_pyr.push_back(createEmptyArray<T>(tmp_pyr[src_idx].dims()));
                 Array<T> tmp = createEmptyArray<T>(tmp_pyr[src_idx].dims());
