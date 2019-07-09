@@ -1313,24 +1313,64 @@ TEST(Indexing, SNIPPET_indexing_first) {
     //! [ex_indexing_first]
     array A = array(seq(1, 9), 3, 3);
     af_print(A);
+    // 1.0000 4.0000 7.0000
+    // 2.0000 5.0000 8.0000
+    // 3.0000 6.0000 9.0000
 
-    af_print(A(0));     // first element
+    af_print(A(0));  // first element
+    // 1.0000
+
     af_print(A(0, 1));  // first row, second column
+    // 4.0000
 
-    af_print(A(end));      // last element
-    af_print(A(-1));       // also last element
+    af_print(A(end));  // last element
+    // 9.0000
+
+    af_print(A(-1));   // also last element
+    // 9.0000
+
     af_print(A(end - 1));  // second-to-last element
+    // 8.0000
 
     af_print(A(1, span));      // second row
+    // 2.0000     5.0000     8.0000
+
     af_print(A.row(end));      // last row
+    // 3.0000     6.0000     9.0000
+
     af_print(A.cols(1, end));  // all but first column
+    // 4.0000     7.0000
+    // 5.0000     8.0000
+    // 6.0000     9.0000
 
     float b_host[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     array b(10, 1, b_host);
     af_print(b(seq(3)));
+    // 0.0000
+    // 1.0000
+    // 2.0000
+
     af_print(b(seq(1, 7)));
+    // 1.0000
+    // 2.0000
+    // 3.0000
+    // 4.0000
+    // 5.0000
+    // 6.0000
+    // 7.0000
+
     af_print(b(seq(1, 7, 2)));
+    // 1.0000
+    // 3.0000
+    // 5.0000
+    // 7.0000
+
     af_print(b(seq(0, end, 2)));
+    // 0.0000
+    // 2.0000
+    // 4.0000
+    // 6.0000
+    // 8.0000
     //! [ex_indexing_first]
 
     array lin_first    = A(0);
@@ -1388,20 +1428,46 @@ TEST(Indexing, SNIPPET_indexing_set) {
     //! [ex_indexing_set]
     array A = constant(0, 3, 3);
     af_print(A);
+    // 0.0000     0.0000     0.0000
+    // 0.0000     0.0000     0.0000
+    // 0.0000     0.0000     0.0000
 
     // setting entries to a constant
     A(span) = 4;  // fill entire array
     af_print(A);
+    // 4.0000     4.0000     4.0000
+    // 4.0000     4.0000     4.0000
+    // 4.0000     4.0000     4.0000
 
     A.row(0) = -1;  // first row
     af_print(A);
+    // -1.0000    -1.0000    -1.0000
+    //  4.0000     4.0000     4.0000
+    //  4.0000     4.0000     4.0000
 
     A(seq(3)) = 3.1415;  // first three elements
     af_print(A);
+    // 3.1415    -1.0000    -1.0000
+    // 3.1415     4.0000     4.0000
+    // 3.1415     4.0000     4.0000
 
     // copy in another matrix
     array B  = constant(1, 4, 4, s32);
+    af_print(B);
+    //          1          1          1          1
+    //          1          1          1          1
+    //          1          1          1          1
+    //          1          1          1          1
+
     B.row(0) = randu(1, 4, f32);  // set a row to random values (also upcast)
+
+    // The first rows are zeros because randu returns values from 0.0 - 1.0
+    // and they were converted to the type of B which is s32
+    af_print(B);
+    //          0          0          0          0
+    //          1          1          1          1
+    //          1          1          1          1
+    //          1          1          1          1
     //! [ex_indexing_set]
     // TODO: Confirm the outputs are correct. see #697
 }
@@ -1411,21 +1477,25 @@ TEST(Indexing, SNIPPET_indexing_ref) {
     float h_inds[] = {0, 4, 2, 1};  // zero-based indexing
     array inds(1, 4, h_inds);
     af_print(inds);
+    // 0.0000     4.0000     2.0000     1.0000
 
     array B = randu(1, 4);
     af_print(B);
+    // 0.5471     0.3114     0.5535     0.3800
 
     array c = B(inds);  // get
     af_print(c);
+    // 0.5471     0.3800     0.5535     0.3114
 
     B(inds) = -1;              // set to scalar
     B(inds) = constant(0, 4);  // zero indices
     af_print(B);
+    // 0.0000     0.0000     0.0000     0.0000
     //! [ex_indexing_ref]
     // TODO: Confirm the outputs are correct. see #697
 }
 
-TEST(Indexing, SNIPPET_indexing_copy) {
+TEST(Indexing, IndexingCopy) {
     array A = constant(0, 1, s32);
     af::index s1;
     s1 = af::index(A);

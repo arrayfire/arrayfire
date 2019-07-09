@@ -57,7 +57,7 @@ allows you to index the last element of the array.
 You can access regions of the array via the af::seq and af::span objects. The
 span objects allows you to select the entire set of elements across a particular
 dimension/axis of an array. For example, we can select the third column of the
-array by passing span as the first agument and 2 as the second argument to the
+array by passing span as the first argument and 2 as the second argument to the
 parenthesis operator.
 
 \snippet test/index.cpp index_tutorial_third_column
@@ -82,7 +82,7 @@ You can access the second rows by passing (1, span) to the array
 \f[ A(1, span) = [ 1, 5, 9, 13 ] \f]
 
 You can use the af::seq (short for sequence) object defines a range of values
-when indexing. For example if you wanted to get the first two colums, you would
+when indexing. For example if you wanted to get the first two columns, you would
 access the array by passing span for the first argument and seq(2) as the second
 argument.
 
@@ -120,7 +120,7 @@ A(seq(1, end, 2), span) =
 
 ## Indexing using af::array
 
-You can also index using other af::array objects. ArrayFire performs a cartesian
+You can also index using other af::array objects. ArrayFire performs a Cartesian
 product of the input arrays.
 
 \snippet test/index.cpp index_tutorial_array_indexing
@@ -220,15 +220,15 @@ new memory.
 
 \snippet test/index.cpp index_tutorial_copies
 
-Notice that even though the copy3 array is refrencing continuous memory in the
+Notice that even though the copy3 array is referencing continuous memory in the
 original array, a new array is created because we used an array to index into
 the af::array.
 
 ## Assignment
 
 An assignment on an af::array, will update the data of the array with the result
-of the experession on the right hand side of the equal(=) opeartor. Assignments
-will not updated the array was previously refrencing through an indexing
+of the expression on the right hand side of the equal(=) operator. Assignments
+will not updated the array was previously referencing through an indexing
 operation. Here is an example:
 
 \snippet test/index.cpp index_tutorial_assignment
@@ -269,7 +269,7 @@ Allocation will only be performed if there are other arrays referencing the data
 at the point of assignment. In the previous example, an allocation will be
 performed when assigning to the `A` array because the `ref` array is pointing
 to the original data. Here is another example demonstrating when an allocation
-will occure:
+will occur:
 
 \snippet test/index.cpp index_tutorial_assignment_alloc
 
@@ -281,7 +281,7 @@ place instead of being copied to a new address.
 You can also assign to arrays using another af::arrays as an indexing array.
 This works in a similar way to the other types of assignment but care must be
 taken to assure that the indexes are unique. Non-unique indexes will result in a
-race condition which will cause non-determinstic values.
+race condition which will cause non-deterministic values.
 
 \snippet test/index.cpp index_tutorial_assignment_race_condition
 
@@ -313,7 +313,7 @@ A =
 ## Member functions
 
 There are several member functions which allow you to index into an af::array. These
-functions have similar functionallity but may be easier to parse for some.
+functions have similar functionality but may be easier to parse for some.
 
 * [row(i)](\ref af::array::row) or [col(i)](\ref af::array::col) specifying a single row/column
 * [rows(first,last)](\ref af::array::rows) or [cols(first,last)](\ref af::array::cols)
