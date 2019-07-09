@@ -16,8 +16,7 @@ Lets start by creating a new 4x4 matrix of floating point numbers:
 
 \snippet test/index.cpp index_tutorial_1
 
-The ArrayFire library is column-major so the resulting A array will
-look like this:
+ArrayFire is column-major so the resulting A array will look like this:
 
 \f[
 \begin{bmatrix}
@@ -45,10 +44,10 @@ we are accessing the fifth element of the array.
 \note Normally you want to avoid accessing individual elements of the array like this
 for performance reasons.
 
-Negative indexing values will index from the end of the array. For example, the
-value negative one and negative two(-2) will return the last and second to last
-element of the array. ArrayFire provides the end alias for this which also
-allows you to index the last element of the array.
+Indexing with negative values will access from the end of the array. For example,
+the value negative one and negative two(-2) will return the last and second to
+last element of the array, respectively. ArrayFire provides the `end` alias for
+this which also allows you to index the last element of the array.
 
 \snippet test/index.cpp index_tutorial_negative_indexing
 
@@ -75,16 +74,16 @@ A(span, 2) =
 You can read that as saying that you want all values across the first dimension,
 but only from index 2 of the second dimension.
 
-You can access the second rows by passing (1, span) to the array
+You can access the second row by passing (1, span) to the array
 
 \snippet test/index.cpp index_tutorial_second_row
 
 \f[ A(1, span) = [ 1, 5, 9, 13 ] \f]
 
-You can use the af::seq (short for sequence) object defines a range of values
-when indexing. For example if you wanted to get the first two columns, you would
-access the array by passing span for the first argument and seq(2) as the second
-argument.
+You can use the af::seq (short for sequence) object to define a range when
+indexing. For example, if you want to get the first two columns, you can access
+the array by passing af::span for the first argument and af::seq(2) as the
+second argument.
 
 \snippet test/index.cpp index_tutorial_first_two_columns
 
@@ -98,14 +97,14 @@ A(span, seq(2)) =
 \end{bmatrix}
 \f]
 
-The af::seq object can also be used to define ranges that are not continuous. There are
-three constructors for af::seq.
+There are three constructors for af::seq.
 
 * af::seq(N): Defines a range between 0 and N-1
 * af::seq(begin, end) Defines a range between begin and end inclusive
 * af::seq(begin, end, step) defines a range between begin and end striding by step values
 
-You can select the second and forth(last) rows by passing (seq(1, end, 2), span)
+The last constructor that can help create non-continuous ranges. For example,
+you can select the second and forth(last) rows by passing (seq(1, end, 2), span)
 to the indexing operator.
 
 \snippet test/index.cpp index_tutorial_second_and_fourth_rows
@@ -203,15 +202,20 @@ out =
 ## References and copies
 
 All ArrayFire indexing functions return af::array(technically its an array_proxy
-class but we will discuss that later) objects. These objects may be new arrays
-or they may reference the original array depending on the type of indexing that
-was performed on them. If an array was indexed using another af::array or it
-was indexed using the af::approx functions, then a new array is created. It does
-not reference the original data.
+class) objects. These objects may be new arrays or they may reference the
+original array depending on the type of indexing that was performed on them.
 
-If an array was indexed using a scalar, af::seq or af::span, then the resulting
-array will reference the original data IF the first dimension is continuous. The
-following lines will not allocate additional memory.
+- If an array was indexed using another af::array or it was indexed using the
+af::approx functions, then a new array is created. It does not reference the
+original data.
+- If an array was indexed using a scalar, af::seq or af::span, then
+the resulting array will reference the original data IF the first dimension is
+continuous. The following lines will not allocate additional memory.
+
+\note The new arrays wither references or newly allocated arrays, are
+independent of the original data. Meaning that any changes to the original array
+will not propagate to the references. Likewise, any changes to the reference
+arrays will not modify the original data.
 
 \snippet test/index.cpp index_tutorial_references
 
@@ -226,10 +230,11 @@ the af::array.
 
 ## Assignment
 
-An assignment on an af::array, will update the data of the array with the result
-of the expression on the right hand side of the equal(=) operator. Assignments
-will not updated the array was previously referencing through an indexing
-operation. Here is an example:
+An assignment on an af::array will replace the array with the result of the
+expression on the right hand side of the equal(=) operator. This means that the
+type and shape of the result can be different from the array on the left had
+side of the equal operator. Assignments will not update the array that was
+previously referenced through an indexing operation. Here is an example:
 
 \snippet test/index.cpp index_tutorial_assignment
 
@@ -240,7 +245,7 @@ array. The matmul call will not update the values of the data array.
 
 You can update the contents of an af::array by assigning with the operator
 parenthesis. For example, if you wanted to change the third column of the
-A array you can do that by assigning to A(span, 2).
+`A` array you can do that by assigning to `A(span, 2)`.
 
 \snippet test/index.cpp index_tutorial_assignment_third_column
 
@@ -317,7 +322,9 @@ functions have similar functionality but may be easier to parse for some.
 
 * [row(i)](\ref af::array::row) or [col(i)](\ref af::array::col) specifying a single row/column
 * [rows(first,last)](\ref af::array::rows) or [cols(first,last)](\ref af::array::cols)
- specifying multiple rows or columns
+  specifying multiple rows or columns
+* [slice(i)](\ref af::array::slice) or [slices(first, last)](\ref af::array::slices) to
+  select one or a range of slices
 
 # Additional examples
 
