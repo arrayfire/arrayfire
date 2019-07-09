@@ -1315,24 +1315,64 @@ TEST(Indexing, SNIPPET_indexing_first) {
     //! [ex_indexing_first]
     array A = array(seq(1, 9), 3, 3);
     af_print(A);
+    // 1.0000 4.0000 7.0000
+    // 2.0000 5.0000 8.0000
+    // 3.0000 6.0000 9.0000
 
-    af_print(A(0));     // first element
+    af_print(A(0));  // first element
+    // 1.0000
+
     af_print(A(0, 1));  // first row, second column
+    // 4.0000
 
-    af_print(A(end));      // last element
-    af_print(A(-1));       // also last element
+    af_print(A(end));  // last element
+    // 9.0000
+
+    af_print(A(-1));   // also last element
+    // 9.0000
+
     af_print(A(end - 1));  // second-to-last element
+    // 8.0000
 
     af_print(A(1, span));      // second row
+    // 2.0000     5.0000     8.0000
+
     af_print(A.row(end));      // last row
+    // 3.0000     6.0000     9.0000
+
     af_print(A.cols(1, end));  // all but first column
+    // 4.0000     7.0000
+    // 5.0000     8.0000
+    // 6.0000     9.0000
 
     float b_host[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     array b(10, 1, b_host);
     af_print(b(seq(3)));
+    // 0.0000
+    // 1.0000
+    // 2.0000
+
     af_print(b(seq(1, 7)));
+    // 1.0000
+    // 2.0000
+    // 3.0000
+    // 4.0000
+    // 5.0000
+    // 6.0000
+    // 7.0000
+
     af_print(b(seq(1, 7, 2)));
+    // 1.0000
+    // 3.0000
+    // 5.0000
+    // 7.0000
+
     af_print(b(seq(0, end, 2)));
+    // 0.0000
+    // 2.0000
+    // 4.0000
+    // 6.0000
+    // 8.0000
     //! [ex_indexing_first]
 
     array lin_first    = A(0);
@@ -1390,20 +1430,46 @@ TEST(Indexing, SNIPPET_indexing_set) {
     //! [ex_indexing_set]
     array A = constant(0, 3, 3);
     af_print(A);
+    // 0.0000     0.0000     0.0000
+    // 0.0000     0.0000     0.0000
+    // 0.0000     0.0000     0.0000
 
     // setting entries to a constant
     A(span) = 4;  // fill entire array
     af_print(A);
+    // 4.0000     4.0000     4.0000
+    // 4.0000     4.0000     4.0000
+    // 4.0000     4.0000     4.0000
 
     A.row(0) = -1;  // first row
     af_print(A);
+    // -1.0000    -1.0000    -1.0000
+    //  4.0000     4.0000     4.0000
+    //  4.0000     4.0000     4.0000
 
     A(seq(3)) = 3.1415;  // first three elements
     af_print(A);
+    // 3.1415    -1.0000    -1.0000
+    // 3.1415     4.0000     4.0000
+    // 3.1415     4.0000     4.0000
 
     // copy in another matrix
     array B  = constant(1, 4, 4, s32);
+    af_print(B);
+    //          1          1          1          1
+    //          1          1          1          1
+    //          1          1          1          1
+    //          1          1          1          1
+
     B.row(0) = randu(1, 4, f32);  // set a row to random values (also upcast)
+
+    // The first rows are zeros because randu returns values from 0.0 - 1.0
+    // and they were converted to the type of B which is s32
+    af_print(B);
+    //          0          0          0          0
+    //          1          1          1          1
+    //          1          1          1          1
+    //          1          1          1          1
     //! [ex_indexing_set]
     // TODO: Confirm the outputs are correct. see #697
 }
@@ -1413,21 +1479,25 @@ TEST(Indexing, SNIPPET_indexing_ref) {
     float h_inds[] = {0, 4, 2, 1};  // zero-based indexing
     array inds(1, 4, h_inds);
     af_print(inds);
+    // 0.0000     4.0000     2.0000     1.0000
 
     array B = randu(1, 4);
     af_print(B);
+    // 0.5471     0.3114     0.5535     0.3800
 
     array c = B(inds);  // get
     af_print(c);
+    // 0.5471     0.3800     0.5535     0.3114
 
     B(inds) = -1;              // set to scalar
     B(inds) = constant(0, 4);  // zero indices
     af_print(B);
+    // 0.0000     0.0000     0.0000     0.0000
     //! [ex_indexing_ref]
     // TODO: Confirm the outputs are correct. see #697
 }
 
-TEST(Indexing, SNIPPET_indexing_copy) {
+TEST(Indexing, IndexingCopy) {
     array A = constant(0, 1, s32);
     af::index s1;
     s1 = af::index(A);
@@ -1693,3 +1763,260 @@ TEST(Index, ISSUE_2273_Flipped) {
 
     ASSERT_ARRAYS_EQ(input_slice_gold, input_slice);
 }
+
+// clang-format off
+class IndexDocs : public ::testing::Test {
+public:
+  array A;
+
+  void SetUp() {
+    //![index_tutorial_1]
+    float data[] = {0,  1,  2,  3,
+                    4,  5,  6,  7,
+                    8,  9, 10, 11,
+                   12, 13, 14, 15};
+    af::array A(4, 4, data);
+    //![index_tutorial_1]
+    this->A = A;
+  }
+};
+
+TEST_F(IndexDocs, Precondition) {
+  vector<float> gold(4*4);
+  std::iota(gold.begin(), gold.end(), 0.f);
+  ASSERT_VEC_ARRAY_EQ(gold, dim4(4, 4), A);
+}
+
+TEST_F(IndexDocs, 2_3Element) {
+    array out =
+    //![index_tutorial_first_element]
+    // Returns an array pointing to the first element
+    A(2, 3); // WARN: avoid doing this. Demo only
+    //![index_tutorial_first_element]
+    vector<float> gold(1, 14.f);
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(1), out);
+}
+
+TEST_F(IndexDocs, FifthElement) {
+    array out =
+    //![index_tutorial_fifth_element]
+    // Returns an array pointing to the fifth element
+    A(5);
+    //![index_tutorial_fifth_element]
+    vector<float> gold(1, 5.f);
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(1), out);
+}
+
+TEST_F(IndexDocs, NegativeIndexing) {
+    //![index_tutorial_negative_indexing]
+    array ref0 = A(2, -1);    // 14 second row last column
+    array ref1 = A(2, end);   // 14 Same as above
+    array ref2 = A(2, -2);    // 10 Second row, second to last(third) column
+    array ref3 = A(2, end-1); // 10 Same as above
+    //![index_tutorial_negative_indexing]
+    vector<float> gold1(1, 14.f);
+    vector<float> gold2(1, 10.f);
+    ASSERT_VEC_ARRAY_EQ(gold1, dim4(1), ref0);
+    ASSERT_VEC_ARRAY_EQ(gold1, dim4(1), ref1);
+    ASSERT_VEC_ARRAY_EQ(gold2, dim4(1), ref2);
+    ASSERT_VEC_ARRAY_EQ(gold2, dim4(1), ref3);
+}
+
+TEST_F(IndexDocs, ThirdColumn) {
+    array out =
+    //![index_tutorial_third_column]
+    // Returns an array pointing to the third column
+    A(span, 2);
+    //![index_tutorial_third_column]
+    vector<float> gold{8, 9, 10, 11};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(4), out);
+}
+
+TEST_F(IndexDocs, SecondRow) {
+    array out =
+    //![index_tutorial_second_row]
+    // Returns an array pointing to the second row
+    A(1, span);
+    //![index_tutorial_second_row]
+    vector<float> gold{1, 5, 9, 13};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(1, 4), out);
+}
+
+TEST_F(IndexDocs, FirstTwoColumns) {
+    array out =
+    //![index_tutorial_first_two_columns]
+    // Returns an array pointing to the first two columns
+    A(span, seq(2));
+    //![index_tutorial_first_two_columns]
+    vector<float> gold{0, 1, 2, 3, 4, 5, 6, 7};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(4, 2), out);
+}
+
+TEST_F(IndexDocs, SecondAndFourthRows) {
+    array out =
+    //![index_tutorial_second_and_fourth_rows]
+    // Returns an array pointing to the second and fourth rows
+    A(seq(1, end, 2), span);
+    //![index_tutorial_second_and_fourth_rows]
+    vector<float> gold{1, 3, 5, 7, 9, 11, 13, 15};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(2, 4), out);
+}
+
+
+TEST_F(IndexDocs, Arrays) {
+    //![index_tutorial_array_indexing]
+    vector<int> hidx = {2, 1, 3};
+    vector<int> hidy = {3, 1, 2};
+    array idx(3, hidx.data());
+    array idy(3, hidy.data());
+
+    array out = A(idx, idy);
+    //![index_tutorial_array_indexing]
+
+    vector<float> gold{
+   14.f,    13.f,    15.f,
+    6.f,     5.f,     7.f,
+   10.f,     9.f,    11.f};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(3, 3), out);
+}
+
+
+TEST_F(IndexDocs, Approx) {
+    //![index_tutorial_approx]
+    vector<float> hidx = {2, 1, 3};
+    vector<float> hidy = {3, 1, 2};
+    array idx(3, hidx.data());
+    array idy(3, hidy.data());
+
+    array out = approx2(A, idx, idy);
+    //![index_tutorial_approx]
+
+    vector<float> gold{14.f, 5.f, 11.f};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(3), out);
+}
+
+TEST_F(IndexDocs, Boolean) {
+    //![index_tutorial_boolean]
+    array out = A(A < 5);
+    //![index_tutorial_boolean]
+    vector<float> gold = {0, 1, 2, 3, 4};
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(5), out);
+}
+
+TEST_F(IndexDocs, References) {
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    //![index_tutorial_references]
+    array reference = A(span, 1);
+    array reference2 = A(seq(3), 1);
+    array reference3 = A(seq(2), span);
+    //![index_tutorial_references]
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    ASSERT_EQ(0, lock_buffers2 - lock_buffers);
+}
+
+TEST_F(IndexDocs, Copies) {
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    //![index_tutorial_copies]
+    array copy = A(2, span);
+    array copy2 = A(seq(1, 3, 2), span);
+
+
+    int hidx[] = {0, 1, 2};
+    array idx(3, hidx);
+    array copy3 = A(idx, span);
+    //![index_tutorial_copies]
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    ASSERT_EQ(3, lock_buffers2 - lock_buffers);
+}
+
+TEST_F(IndexDocs, Assignment) {
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+
+    //![index_tutorial_assignment]
+    array inputA = constant(3, 10, 10);
+    array inputB = constant(2, 10, 10);
+    array data   = constant(1, 10, 10);
+
+    // Points to the second column of data. Does not allocate memory
+    array ref = data(span, 1);
+
+    // This call does NOT update data. Memory allocated in matmul
+    ref = matmul(inputA, inputB);
+    // reference does not point to the same memory as the data array
+    //![index_tutorial_assignment]
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    vector<float> gold_reference(100, 60);
+    vector<float> gold_data(100, 1);
+    ASSERT_VEC_ARRAY_EQ(gold_reference, dim4(10, 10), ref);
+    ASSERT_VEC_ARRAY_EQ(gold_data, dim4(10, 10), data);
+    ASSERT_EQ(4, lock_buffers2 - lock_buffers);
+}
+
+TEST_F(IndexDocs, AssignmentThirdColumn) {
+    vector<float> gold(A.elements());
+    A.host(gold.data());
+
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    //![index_tutorial_assignment_third_column]
+    array reference = A(span, 2);
+    A(span, 2) = 3.14f;
+    assert(allTrue<bool>(reference != A(span, 2)));
+    //![index_tutorial_assignment_third_column]
+    vector<float> gold_reference(begin(gold) + 8, begin(gold)+12);
+    ASSERT_VEC_ARRAY_EQ(gold_reference, dim4(4), reference);
+    gold[8] = gold[9] = gold[10] = gold[11] = 3.14f;
+    ASSERT_VEC_ARRAY_EQ(gold, A.dims(), A);
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    ASSERT_EQ(1, lock_buffers2 - lock_buffers);
+}
+
+TEST_F(IndexDocs, AssignmentAlloc) {
+    deviceGC();
+    size_t alloc_bytes, alloc_buffers, lock_bytes, lock_buffers;
+    deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    //![index_tutorial_assignment_alloc]
+    {
+        // No allocation performed. ref points to A's memory
+        array ref = A(span, 2);
+    } // ref goes out of scope. No one point's to A's memory
+    A(span, 2) = 3.14f; // No allocation performed.
+    //![index_tutorial_assignment_alloc]
+
+    size_t alloc_bytes2, alloc_buffers2, lock_bytes2, lock_buffers2;
+    deviceMemInfo(&alloc_bytes2, &alloc_buffers2, &lock_bytes2, &lock_buffers2);
+
+    ASSERT_EQ(0, lock_buffers2 - lock_buffers);
+}
+
+TEST_F(IndexDocs, AssignmentRaceCondition) {
+    //![index_tutorial_assignment_race_condition]
+    vector<int> hidx = {4, 3, 4, 0};
+    vector<float> hvals = {9.f, 8.f, 7.f, 6.f};
+    array idx(4, hidx.data());
+    array vals(4, hvals.data());
+
+    A(idx) = vals; // nondeterministic. A(4) can be 9 or 7
+    //![index_tutorial_assignment_race_condition]
+}
+
+// clang-format on
