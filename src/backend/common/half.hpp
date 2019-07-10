@@ -626,7 +626,13 @@ class alignas(2) half {
     }
 
 #ifndef __CUDACC_RTC__
-    template<typename T>
+    template<typename T,
+        typename std::enable_if_t<std::is_unsigned<T>::value>* = nullptr>
+    CONSTEXPR_DH explicit half(T value) noexcept
+        : data_(int2half<std::round_to_nearest, false>(value)) {}
+
+    template<typename T,
+        typename std::enable_if_t<std::is_signed<T>::value>* = nullptr>
     CONSTEXPR_DH explicit half(T value) noexcept
         : data_((value < 0) ? int2half<std::round_to_nearest, true>(value)
                             : int2half<std::round_to_nearest, false>(value)) {}
