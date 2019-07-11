@@ -193,7 +193,16 @@ template<>
 cudaDataType_t getComputeType<half>() {
     auto dev            = getDeviceProp(getActiveDeviceId());
     cudaDataType_t algo = getType<half>();
-    if (dev.major == 6 && dev.minor == 1) { algo = CUDA_R_32F; }
+    // There is probbaly a bug in nvidia cuda docs and/or drivers: According to
+    // https://docs.nvidia.com/cuda/cublas/index.html#cublas-GemmEx computeType
+    // could be 32F even if A/B inputs are 16F. But CudaCompute 6.1 GPUs (for
+    // example GTX10X0) dont seem to be capbale to compute at f32 when the
+    // inputs are f16: results are inf if trying to do so and cublasGemmEx even
+    // returns OK. At the moment let's comment out : the drawback is just that
+    // the speed of f16 computation on these GPUs is very slow:
+    //
+    // if (dev.major == // 6 && dev.minor == 1) { algo = CUDA_R_32F; }
+
     return algo;
 }
 
