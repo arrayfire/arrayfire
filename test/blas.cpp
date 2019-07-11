@@ -397,6 +397,7 @@ TEST(MatrixMultiply, float) {
 }
 
 #ifndef AF_CPU
+
 TEST(MatrixMultiply, half) {
     SUPPORTED_TYPE_CHECK(af_half);
 
@@ -408,7 +409,7 @@ TEST(MatrixMultiply, half) {
         af_array C16 = 0;
         const half_float::half alpha16(1.0f);
         const half_float::half beta16(0.0f);
-        af_gemm(&C16, AF_MAT_NONE, AF_MAT_NONE, &alpha16, A16.get(), B16.get(), &beta16);
+        ASSERT_SUCCESS(af_gemm(&C16, AF_MAT_NONE, AF_MAT_NONE, &alpha16, A16.get(), B16.get(), &beta16));
         af::array C(C16);
         ASSERT_ARRAYS_NEAR(expected16, C, 0.00001);
     }
@@ -417,6 +418,7 @@ TEST(MatrixMultiply, half) {
         ASSERT_ARRAYS_NEAR(expected16, C16, 0.000001);
     }
 }
+
 #endif
 
 struct test_params {
