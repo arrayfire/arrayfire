@@ -60,7 +60,7 @@ struct MinMaxOp {
     T m_val;
     uint m_idx;
     __host__ __device__ MinMaxOp(T val, uint idx) : m_val(val), m_idx(idx) {
-        if (is_nan(val)) { m_val = Binary<T, op>::init(); }
+        if (is_nan(val)) { m_val = Binary<compute_t<T>, op>::init(); }
     }
 
     __host__ __device__ void operator()(T val, uint idx) {
@@ -324,11 +324,11 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
 
     int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-    compute_t<T> val    = Binary<T, op>::init();
-    uint idx = xid;
+    compute_t<T> val = Binary<compute_t<T>, op>::init();
+    uint idx         = xid;
 
     if (xid < lim) {
-        val = iptr[xid];
+        val = static_cast<compute_t<T>>(iptr[xid]);
         if (!is_first) idx = ilptr[xid];
     }
 
@@ -338,15 +338,15 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
     __shared__ uint s_idx[THREADS_PER_BLOCK];
 
     for (int id = xid + DIMX; id < lim; id += DIMX) {
-        Op(iptr[id], (!is_first) ? ilptr[id] : id);
+        Op(static_cast<compute_t<T>>(iptr[id]), (!is_first) ? ilptr[id] : id);
     }
 
     s_val[tid] = Op.m_val;
     s_idx[tid] = Op.m_idx;
     __syncthreads();
 
-    compute_t<T> *s_vptr    = s_val + tidy * DIMX;
-    uint *s_iptr = s_idx + tidy * DIMX;
+    compute_t<T> *s_vptr = s_val + tidy * DIMX;
+    uint *s_iptr         = s_idx + tidy * DIMX;
 
     if (DIMX == 256) {
         if (tidx < 128) {

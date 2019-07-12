@@ -932,8 +932,10 @@ class alignas(2) half {
     friend CONSTEXPR_DH inline bool isnan(half val) noexcept;
 
     CONSTEXPR_DH common::half operator-() const {
-#if defined(__CUDA_ARCH__)
+#if __CUDA_ARCH__ >= 530
         return common::half(__hneg(data_));
+#elif defined(__CUDA_ARCH__)
+        return common::half(-(__half2float(data_)));
 #else
         return common::half(internal::binary, data_ ^ 0x8000);
 #endif
@@ -943,15 +945,17 @@ class alignas(2) half {
 };
 
 CONSTEXPR_DH static inline bool operator==(common::half lhs, common::half rhs) noexcept {
-#if defined(__CUDA_ARCH__)
+#if __CUDA_ARCH__ >= 530
     return __heq(lhs.data_, rhs.data_);
+#elif defined(__CUDA_ARCH__)
+    return __half2float(lhs.data_) == __half2float(rhs.data_);
 #else
     return (lhs.data_ == rhs.data_ || !((lhs.data_ | rhs.data_) & 0x7FFF)) && !isnan(lhs);
 #endif
 }
 
 CONSTEXPR_DH static inline bool operator!=(common::half lhs, common::half rhs) noexcept {
-#if defined(__CUDA_ARCH__)
+#if __CUDA_ARCH__ >= 530
     return __hne(lhs.data_, rhs.data_);
 #else
     return !(lhs == rhs);
@@ -960,8 +964,10 @@ CONSTEXPR_DH static inline bool operator!=(common::half lhs, common::half rhs) n
 
 CONSTEXPR_DH static inline bool operator<(common::half lhs,
                                     common::half rhs) noexcept {
-#if defined(__CUDA_ARCH__)
-    return __hle(lhs.data_, rhs.data_);
+#if __CUDA_ARCH__ >= 530
+    return __hlt(lhs.data_, rhs.data_);
+#elif defined(__CUDA_ARCH__)
+    return __half2float(lhs.data_) < __half2float(rhs.data_);
 #else
     int xabs = lhs.data_ & 0x7FFF, yabs = rhs.data_ & 0x7FFF;
     return xabs <= 0x7C00 && yabs <= 0x7C00 &&
@@ -971,9 +977,9 @@ CONSTEXPR_DH static inline bool operator<(common::half lhs,
 }
 
 CONSTEXPR_DH static inline bool operator<(common::half lhs,
-                                    float rhs) noexcept {
+                                          float rhs) noexcept {
 #if defined(__CUDA_ARCH__)
-    return static_cast<float>(lhs.data_) < rhs;
+    return __half2float(lhs.data_) < rhs;
 #else
     return static_cast<float>(lhs) < rhs;
 #endif
@@ -1128,8 +1134,10 @@ struct hash<common::half>  //: unary_function<common::half,size_t>
 namespace common {
 CONSTEXPR_DH
 static bool isinf(half val) noexcept {
-#ifdef __CUDA_ARCH__
+#if __CUDA_ARCH__ >= 530
     return __hisinf(val.data_);
+#elif defined(__CUDA_ARCH__)
+    return ::isinf(__half2float(val));
 #else
     return val == std::numeric_limits<half>::infinity() ||
            val == -std::numeric_limits<half>::infinity();
@@ -1138,8 +1146,10 @@ static bool isinf(half val) noexcept {
 
 CONSTEXPR_DH static inline bool isnan(half val) noexcept
 {
-#ifdef __CUDA_ARCH__
+#if __CUDA_ARCH__ >= 530
     return __hisnan(val.data_);
+#elif defined(__CUDA_ARCH__)
+    return ::isnan(__half2float(val));
 #else
     return (val.data_ & 0x7FFF) > 0x7C00;
 #endif

@@ -68,13 +68,13 @@ __global__ static void reduce_dim_kernel(Param<To> out, CParam<Ti> in,
     bool is_valid = (ids[0] < in.dims[0]) && (ids[1] < in.dims[1]) &&
                     (ids[2] < in.dims[2]) && (ids[3] < in.dims[3]);
 
-    Transform<Ti, To, op> transform;
+    Transform<Ti, compute_t<To>, op> transform;
     Binary<compute_t<To>, op> reduce;
-    compute_t<To> out_val = Binary<To, op>::init();
+    compute_t<To> out_val = Binary<compute_t<To>, op>::init();
     for (int id = id_dim_in; is_valid && (id < in.dims[dim]);
          id += offset_dim * blockDim.y) {
         compute_t<To> in_val = transform(*iptr);
-        if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
+        if (change_nan) in_val = !IS_NAN(in_val) ? in_val : compute_t<To>(nanval);
         out_val = reduce(in_val, out_val);
         iptr    = iptr + offset_dim * blockDim.y * istride_dim;
     }
@@ -196,7 +196,7 @@ __global__ static void reduce_first_kernel(Param<To> out, CParam<Ti> in,
     const uint xid        = blockIdx_x * blockDim.x * repeat + tidx;
 
     Binary<compute_t<To>, op> reduce;
-    Transform<Ti, To, op> transform;
+    Transform<Ti, compute_t<To>, op> transform;
 
     __shared__ compute_t<To> s_val[THREADS_PER_BLOCK];
 
@@ -213,10 +213,12 @@ __global__ static void reduce_first_kernel(Param<To> out, CParam<Ti> in,
 
     int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-    compute_t<To> out_val = Binary<To, op>::init();
+    compute_t<To> out_val = Binary<compute_t<To>, op>::init();
     for (int id = xid; id < lim; id += DIMX) {
         compute_t<To> in_val = transform(iptr[id]);
-        if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
+        if (change_nan)
+            in_val =
+                !IS_NAN(in_val) ? in_val : static_cast<compute_t<To>>(nanval);
         out_val = reduce(in_val, out_val);
     }
 
@@ -388,7 +390,7 @@ To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
         Binary<compute_t<To>, op> reduce;
-        compute_t<To> out = Binary<To, op>::init();
+        compute_t<To> out = Binary<compute_t<To>, op>::init();
         for (int i = 0; i < tmp_elements; i++) {
             out = reduce(out, compute_t<To>(h_data[i]));
         }
@@ -404,7 +406,7 @@ To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
         Transform<Ti, compute_t<To>, op> transform;
         Binary<compute_t<To>, op> reduce;
         compute_t<To> out       = Binary<compute_t<To>, op>::init();
-        compute_t<To> nanval_to = scalar<To>(nanval);
+        compute_t<To> nanval_to = scalar<compute_t<To>>(nanval);
 
         for (int i = 0; i < in_elements; i++) {
             compute_t<To> in_val = transform(h_data[i]);
