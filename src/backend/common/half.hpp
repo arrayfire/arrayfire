@@ -18,6 +18,7 @@
 #ifndef __CUDACC_RTC__
 #include <cstring>
 #include <ostream>
+#include <string>
 #include <type_traits>
 
 #include <limits>

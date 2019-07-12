@@ -38,7 +38,7 @@ struct UnOp<To, common::half, af_cast_t> {
 
     void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
         for (int i = 0; i < lim; i++) {
-            float val = in[i];
+            float val = static_cast<float>(in[i]);
             out[i]    = To(val);
         }
     }
@@ -54,7 +54,7 @@ struct UnOp<common::half, Ti, af_cast_t> {
 
     void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) {
         for (int i = 0; i < lim; i++) {
-            float val = in[i];
+            float val = static_cast<float>(in[i]);
             out[i]    = To(val);
         }
     }

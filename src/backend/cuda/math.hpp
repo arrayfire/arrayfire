@@ -234,19 +234,19 @@ __device__ ushort maxval<ushort>() {
 }
 template<>
 __device__ common::half maxval<common::half>() {
-    return common::half(common::internal::binary, 0x7C00);
+    return common::half(65537.f);
 }
 template<>
 __device__ common::half minval<common::half>() {
-    return common::half(common::internal::binary, 0xFC00);
+    return common::half(-65537.f);
 }
 template<>
 __device__ __half maxval<__half>() {
-    return 0x7C00;
+    return __float2half(65537.f);
 }
 template<>
 __device__ __half minval<__half>() {
-    return 0xFC00;
+    return __float2half(-65537.f);
 }
 #endif
 
