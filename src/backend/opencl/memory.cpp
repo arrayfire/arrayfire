@@ -79,7 +79,7 @@ void memFreeUser(void *ptr) {
 
 cl::Buffer *bufferAlloc(const size_t &bytes) {
     MemoryEventPair me = memoryManager().alloc(bytes, false);
-    me.e.enqueueWait(getQueue()());
+    if (me.e) me.e.enqueueWait(getQueue()());
     return static_cast<cl::Buffer *>(me.ptr);
 }
 
@@ -106,7 +106,7 @@ template<typename T>
 T *pinnedAlloc(const size_t &elements) {
     MemoryEventPair me =
         pinnedMemoryManager().alloc(elements * sizeof(T), false);
-    me.e.enqueueWait(getQueue()());
+    if (me.e) me.e.enqueueWait(getQueue()());
     return static_cast<T *>(me.ptr);
 }
 
