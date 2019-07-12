@@ -81,9 +81,9 @@ void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a,
     af::dim4 odims    = out.dims();
     af::dim4 ostrides = out.strides();
 
-    const data_t<T> *aptr    = a.get();
-    data_t<T> *optr          = out.get();
-    const char *cptr = cond.get();
+    const data_t<T> *aptr = a.get();
+    data_t<T> *optr       = out.get();
+    const char *cptr      = cond.get();
 
     bool is_a_same[] = {adims[0] == odims[0], adims[1] == odims[1],
                         adims[2] == odims[2], adims[3] == odims[3]};
@@ -108,7 +108,8 @@ void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a,
 
                 for (int i = 0; i < odims[0]; i++) {
                     bool cval = is_c_same[0] ? cptr[c_off1 + i] : cptr[c_off1];
-                    compute_t<T> aval    = is_a_same[0] ? aptr[a_off1 + i] : aptr[a_off1];
+                    compute_t<T> aval = static_cast<compute_t<T>>(
+                        is_a_same[0] ? aptr[a_off1 + i] : aptr[a_off1]);
                     optr[o_off1 + i] = (flip ^ cval) ? aval : b;
                 }
             }
