@@ -97,6 +97,7 @@ af_err af_flat(af_array* out, const af_array in) {
                 case u64: output = flat<uintl>(in); break;
                 case s16: output = flat<short>(in); break;
                 case u16: output = flat<ushort>(in); break;
+                case f16: output = flat<half>(in); break;
                 default: TYPE_ERROR(1, type);
             }
             std::swap(*out, output);
