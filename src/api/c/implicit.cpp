@@ -42,6 +42,8 @@ af_dtype implicit(const af_dtype lty, const af_dtype rty) {
 
     if ((lty == s16) || (rty == s16)) return s16;
 
+    if ((lty == f16) || (rty == f16)) return f16;
+
     if ((lty == u8) || (rty == u8)) return u8;
 
     if ((lty == b8) && (rty == b8)) return b8;

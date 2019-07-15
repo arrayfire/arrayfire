@@ -37,12 +37,13 @@ Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs,
     return createNodeArray<To>(odims, jit::Node_ptr(node));
 }
 
-#define CPLX_UNARY_FN(op)                                                   \
-    template<typename To, typename Ti>                                      \
-    struct UnOp<To, Ti, af_##op##_t> {                                      \
-        void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) { \
-            for (int i = 0; i < lim; i++) { out[i] = std::op(in[i]); }      \
-        }                                                                   \
+#define CPLX_UNARY_FN(op)                                              \
+    template<typename To, typename Ti>                                 \
+    struct UnOp<To, Ti, af_##op##_t> {                                 \
+        void eval(jit::array<compute_t<To>> &out,                      \
+                  const jit::array<compute_t<Ti>> &in, int lim) {      \
+            for (int i = 0; i < lim; i++) { out[i] = std::op(in[i]); } \
+        }                                                              \
     };
 
 CPLX_UNARY_FN(real)

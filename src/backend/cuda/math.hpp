@@ -54,6 +54,10 @@ static inline __DH__ size_t max(size_t lhs, size_t rhs) {
 }
 
 #ifdef __CUDA_ARCH__
+static inline __device__ __half abs(__half val) {
+    return __short_as_half(__half_as_short(val) & 0x7FFF);
+}
+
 template<typename T>
 inline __DH__ T min(T lhs, T rhs) {
     return ::min(lhs, rhs);

@@ -26,12 +26,13 @@ T rsqrt(T in) {
     return pow(in, -0.5);
 }
 
-#define UNARY_OP_FN(op, fn)                                               \
-    template<typename T>                                                  \
-    struct UnOp<T, T, af_##op##_t> {                                      \
-        void eval(jit::array<T> &out, const jit::array<T> &in, int lim) { \
-            for (int i = 0; i < lim; i++) { out[i] = fn(in[i]); }         \
-        }                                                                 \
+#define UNARY_OP_FN(op, fn)                                       \
+    template<typename T>                                          \
+    struct UnOp<T, T, af_##op##_t> {                              \
+        void eval(jit::array<compute_t<T>> &out,                  \
+                  const jit::array<compute_t<T>> &in, int lim) {  \
+            for (int i = 0; i < lim; i++) { out[i] = fn(in[i]); } \
+        }                                                         \
     };
 
 #define UNARY_OP(op) UNARY_OP_FN(op, std::op)
@@ -81,7 +82,7 @@ UNARY_OP(lgamma)
 
 template<typename T, af_op_t op>
 Array<T> unaryOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
-    using UnaryNode = jit::UnaryNode<compute_t<T>, compute_t<T>, op>;
+    using UnaryNode = jit::UnaryNode<T, T, op>;
 
     jit::Node_ptr in_node = in.getNode();
     UnaryNode *node       = new UnaryNode(in_node);
