@@ -23,6 +23,7 @@
 #include <platform.hpp>
 #include <spdlog/spdlog.h>
 #include <version.hpp>
+#include <cublas_v2.h> // needed for af/cuda.h
 #include <af/cuda.h>
 #include <af/version.h>
 // cuda_gl_interop.h does not include OpenGL headers for ARM
