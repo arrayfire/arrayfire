@@ -10,8 +10,10 @@
 #pragma once
 #include <af/defines.h>
 #include <af/exception.h>
+
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <cublas_v2.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,6 +55,20 @@ AFAPI af_err afcu_get_native_id(int* nativeid, int id);
    \ingroup cuda_mat
  */
 AFAPI af_err afcu_set_native_id(int nativeid);
+#endif
+
+#if AF_API_VERSION >= 37
+/**
+    Sets the cuBLAS math mode for the internal handle
+
+    See the cuBLAS documentation for additional details
+
+    \param[in] mode The cublasMath_t type to set
+    \returns \ref af_err error code
+
+    \ingroup cuda_mat
+*/
+AFAPI af_err afcu_cublasSetMathMode(cublasMath_t mode);
 #endif
 
 #ifdef __cplusplus
