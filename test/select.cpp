@@ -10,6 +10,7 @@
 #define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
 
 #include <af/dim4.hpp>
@@ -42,7 +43,7 @@ template<typename T>
 class Select : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
-                         uchar, char, short, ushort>
+                         uchar, char, short, ushort, half_float::half>
     TestTypes;
 TYPED_TEST_CASE(Select, TestTypes);
 
