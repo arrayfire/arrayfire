@@ -435,3 +435,11 @@ af_err afcu_set_native_id(int nativeid) {
     CATCHALL;
     return AF_SUCCESS;
 }
+
+af_err afcu_cublasSetMathMode(cublasMath_t mode) {
+    try {
+        CUBLAS_CHECK(cublasSetMathMode(cuda::blasHandle(), mode));
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}

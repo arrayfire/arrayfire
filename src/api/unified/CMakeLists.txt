@@ -9,6 +9,7 @@ target_sources(af
     ${CMAKE_CURRENT_SOURCE_DIR}/arith.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/array.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cuda.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/data.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/error.cpp
