@@ -42,7 +42,7 @@ T rsqrt(T in) {
     return T(1.0 / sqrt(in));
 }
 
-#define TEST_REAL(T, func, err, lo, hi)                                     \
+#define MATH_TEST(T, func, err, lo, hi)                                     \
     TEST(MathTests, Test_##func##_##T) {                                    \
         try {                                                               \
             SUPPORTED_TYPE_CHECK(T);                                        \
@@ -54,34 +54,19 @@ T rsqrt(T in) {
             vector<T> h_a(a.elements());                                    \
             a.host(&h_a[0]);                                                \
             for (int i = 0; i < h_a.size(); i++) { h_a[i] = func(h_a[i]); } \
+                                                                            \
             ASSERT_VEC_ARRAY_NEAR(h_a, dim4(h_a.size()), b, err);           \
         } catch (exception & ex) { FAIL() << ex.what(); }                   \
     }
 
-#define TEST_CPLX(T, func, err, lo, hi)                              \
-    TEST(MathTests, Test_##func##_##T) {                             \
-        try {                                                        \
-            SUPPORTED_TYPE_CHECK(T);                                 \
-            af_dtype ty = (af_dtype)dtype_traits<T>::af_type;        \
-            array a     = (hi - lo) * randu(num, ty) + lo + err;     \
-            eval(a);                                                 \
-            array b = func(a);                                       \
-            vector<T> h_a(a.elements());                             \
-            a.host(&h_a[0]);                                         \
-            for (int i = 0; i < num; i++) { h_a[i] = func(h_a[i]); } \
-                                                                     \
-            ASSERT_VEC_ARRAY_NEAR(h_a, dim4(h_a.size()), b, err);    \
-        } catch (exception & ex) { FAIL() << ex.what(); }            \
-    }
-
-#define MATH_TESTS_HALF(func) TEST_REAL(half, func, hlf_err, 0.05f, 0.95f)
-#define MATH_TESTS_FLOAT(func) TEST_REAL(float, func, flt_err, 0.05f, 0.95f)
-#define MATH_TESTS_DOUBLE(func) TEST_REAL(double, func, dbl_err, 0.05, 0.95)
+#define MATH_TESTS_HALF(func) MATH_TEST(half, func, hlf_err, 0.05f, 0.95f)
+#define MATH_TESTS_FLOAT(func) MATH_TEST(float, func, flt_err, 0.05f, 0.95f)
+#define MATH_TESTS_DOUBLE(func) MATH_TEST(double, func, dbl_err, 0.05, 0.95)
 
 #define MATH_TESTS_CFLOAT(func) \
-    TEST_CPLX(complex_float, func, flt_err, 0.05f, 0.95f)
+    MATH_TEST(complex_float, func, flt_err, 0.05f, 0.95f)
 #define MATH_TESTS_CDOUBLE(func) \
-    TEST_CPLX(complex_double, func, dbl_err, 0.05, 0.95)
+    MATH_TEST(complex_double, func, dbl_err, 0.05, 0.95)
 
 #define MATH_TESTS_REAL(func) \
     MATH_TESTS_HALF(func)     \
@@ -97,13 +82,13 @@ T rsqrt(T in) {
     MATH_TESTS_CPLX(func)
 
 #define MATH_TESTS_LIMITS_REAL(func, lo, hi) \
-    TEST_REAL(half, func, flt_err, lo, hi)   \
-    TEST_REAL(float, func, flt_err, lo, hi)  \
-    TEST_REAL(double, func, dbl_err, lo, hi)
+    MATH_TEST(half, func, hlf_err, lo, hi)   \
+    MATH_TEST(float, func, flt_err, lo, hi)  \
+    MATH_TEST(double, func, dbl_err, lo, hi)
 
 #define MATH_TESTS_LIMITS_CPLX(func, lo, hi)        \
-    TEST_CPLX(complex_float, func, flt_err, lo, hi) \
-    TEST_CPLX(complex_double, func, dbl_err, lo, hi)
+    MATH_TEST(complex_float, func, flt_err, lo, hi) \
+    MATH_TEST(complex_double, func, dbl_err, lo, hi)
 
 MATH_TESTS_ALL(sin)
 MATH_TESTS_ALL(cos)
