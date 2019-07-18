@@ -10,6 +10,7 @@
 #pragma once
 #include <math.hpp>
 #include <optypes.hpp>
+#include <types.hpp>
 #include "Node.hpp"
 
 #include <vector>
@@ -17,8 +18,9 @@
 namespace cpu {
 template<typename To, typename Ti, af_op_t op>
 struct UnOp {
-    void eval(jit::array<To> &out, const jit::array<Ti> &in, int lim) const {
-        for (int i = 0; i < lim; i++) { out[i] = To(in[i]); }
+    void eval(jit::array<compute_t<To>> &out,
+              const jit::array<compute_t<Ti>> &in, int lim) const {
+        for (int i = 0; i < lim; i++) { out[i] = in[i]; }
     }
 };
 

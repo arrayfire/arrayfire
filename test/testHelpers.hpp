@@ -89,7 +89,7 @@ namespace af {
 template<>
 struct dtype_traits<half_float::half> {
     enum { af_type = f16, ctype = f16 };
-    typedef half base_type;
+    typedef half_float::half base_type;
     static const char *getName() { return "half"; }
 };
 
@@ -463,7 +463,8 @@ inline double imag<af::cfloat>(af::cfloat val) {
 
 template<class T>
 struct IsFloatingPoint {
-    static const bool value = is_same_type<float, T>::value ||
+    static const bool value = is_same_type<half_float::half, T>::value ||
+                              is_same_type<float, T>::value ||
                               is_same_type<double, T>::value ||
                               is_same_type<long double, T>::value;
 };
@@ -578,6 +579,25 @@ void cleanSlate() {
 
 // Overloading unary + op is needed to make unsigned char values printable
 //  as numbers
+af_half abs(af_half in) {
+    half_float::half in_;
+    memcpy(&in_, &in, sizeof(af_half));
+    half_float::half out_ = abs(in_);
+    af_half out;
+    memcpy(&out, &out_, sizeof(af_half));
+    return out;
+}
+
+af_half operator-(af_half lhs, af_half rhs) {
+    half_float::half lhs_;
+    half_float::half rhs_;
+    memcpy(&lhs_, &lhs, sizeof(af_half));
+    memcpy(&rhs_, &rhs, sizeof(af_half));
+    half_float::half out = lhs_ - rhs_;
+    af_half o;
+    memcpy(&o, &out, sizeof(af_half));
+    return o;
+}
 
 const af::cfloat &operator+(const af::cfloat &val) { return val; }
 
