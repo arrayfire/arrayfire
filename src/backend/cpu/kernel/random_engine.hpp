@@ -65,7 +65,7 @@ uchar transform<uchar>(uint *val, int index) {
 
 template<>
 ushort transform<ushort>(uint *val, int index) {
-    ushort v = val[index >> 1] >> (16 << (index & 1));
+    ushort v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
     return v;
 }
 
@@ -104,7 +104,7 @@ float transform<float>(uint *val, int index) {
 // Generates rationals in [0, 1)
 template<>
 common::half transform<common::half>(uint *val, int index) {
-    ushort v = val[index >> 1] >> (16 << (index & 1));
+    float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
     return static_cast<common::half>(1.f - (v * HALF_FACTOR + HALF_HALF_FACTOR));
 }
 
