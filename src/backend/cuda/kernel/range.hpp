@@ -13,6 +13,8 @@
 #include <err_cuda.hpp>
 #include <math.hpp>
 
+#include <type_traits>
+
 namespace cuda {
 namespace kernel {
 // Kernel Launch Config Values
@@ -45,17 +47,17 @@ __global__ void range_kernel(Param<T> out, const int dim,
 
     const int ozw = ow * out.strides[3] + oz * out.strides[2];
 
-    T valZW = (mul3 * ow) + (mul2 * oz);
+    int valZW = (mul3 * ow) + (mul2 * oz);
 
     const int incy = blocksPerMatY * blockDim.y;
     const int incx = blocksPerMatX * blockDim.x;
 
     for (int oy = yy; oy < out.dims[1]; oy += incy) {
-        T valYZW = valZW + (mul1 * oy);
-        int oyzw = ozw + oy * out.strides[1];
+        compute_t<T> valYZW = valZW + (mul1 * oy);
+        int oyzw     = ozw + oy * out.strides[1];
         for (int ox = xx; ox < out.dims[0]; ox += incx) {
-            int oidx = oyzw + ox;
-            T val    = valYZW + (ox * mul0);
+            int oidx         = oyzw + ox;
+            compute_t<T> val = valYZW + static_cast<compute_t<T>>(ox * mul0);
 
             out.ptr[oidx] = val;
         }

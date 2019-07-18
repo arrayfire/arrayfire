@@ -6,6 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
 #include <Param.hpp>
 #include <backend.hpp>
@@ -106,7 +107,7 @@ __inline__ __device__ cdouble scale<cdouble>(cdouble value, double factor) {
 
 template<typename inType, typename outType>
 __inline__ __device__ outType convertType(inType value) {
-    return (outType)value;
+    return static_cast<outType>(value);
 }
 
 template<>
@@ -147,12 +148,12 @@ __inline__ __device__ cfloat convertType<cdouble, cfloat>(cdouble value) {
 #define OTHER_SPECIALIZATIONS(IN_T)                                        \
     template<>                                                             \
     __inline__ __device__ cfloat convertType<IN_T, cfloat>(IN_T value) {   \
-        return make_cuFloatComplex(value, 0.0f);                           \
+        return make_cuFloatComplex(static_cast<float>(value), 0.0f);       \
     }                                                                      \
                                                                            \
     template<>                                                             \
     __inline__ __device__ cdouble convertType<IN_T, cdouble>(IN_T value) { \
-        return make_cuDoubleComplex(value, 0.0);                           \
+        return make_cuDoubleComplex(static_cast<double>(value), 0.0);      \
     }
 
 OTHER_SPECIALIZATIONS(float)

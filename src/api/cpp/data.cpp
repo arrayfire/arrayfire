@@ -16,6 +16,7 @@
 #include <af/half.h>
 #include <af/traits.hpp>
 #include "error.hpp"
+#include <half.hpp>
 
 #include <type_traits>
 
@@ -135,6 +136,7 @@ CONSTANT(bool);
 CONSTANT(short);
 CONSTANT(unsigned short);
 CONSTANT(half);
+CONSTANT(half_float::half);
 
 #undef CONSTANT
 

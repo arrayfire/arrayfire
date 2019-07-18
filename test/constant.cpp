@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
 #include <af/arith.h>
 #include <af/array.h>
@@ -28,7 +29,7 @@ template<typename T>
 class Constant : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
-                         uchar, uintl, intl, short, ushort>
+                         uchar, uintl, intl, short, ushort, half_float::half>
     TestTypes;
 TYPED_TEST_CASE(Constant, TestTypes);
 
@@ -53,7 +54,7 @@ void ConstantCCheck(T value) {
 
     const int num = 1000;
     typedef typename dtype_traits<T>::base_type BT;
-    BT val    = ::real(value);
+    BT val(::real(value));
     dtype dty = (dtype)dtype_traits<T>::af_type;
     af_array out;
     dim_t dim[] = {(dim_t)num};
@@ -163,9 +164,9 @@ void IdentityCPPError() {
     SUCCEED();
 }
 
-TYPED_TEST(Constant, basicCPP) { ConstantCPPCheck<TypeParam>(5); }
+TYPED_TEST(Constant, basicCPP) { ConstantCPPCheck<TypeParam>(TypeParam(5)); }
 
-TYPED_TEST(Constant, basicC) { ConstantCCheck<TypeParam>(5); }
+TYPED_TEST(Constant, basicC) { ConstantCCheck<TypeParam>(TypeParam(5)); }
 
 TYPED_TEST(Constant, IdentityC) { IdentityCCheck<TypeParam>(); }
 

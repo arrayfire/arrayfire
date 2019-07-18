@@ -9,9 +9,11 @@
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+
 #include <string>
 #include <vector>
 
@@ -43,7 +45,7 @@ class Transpose : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar,
-                         short, ushort>
+                         short, ushort, half_float::half>
     TestTypes;
 
 // register the type list

@@ -47,8 +47,8 @@ void copyElemwise(Param<OutT> dst, CParam<InT> src, OutT default_value,
     af::dim4 src_strides = src.strides();
     af::dim4 dst_strides = dst.strides();
 
-    InT const* const src_ptr = src.get();
-    OutT* dst_ptr            = dst.get();
+    data_t<InT> const* const src_ptr = src.get();
+    data_t<OutT>* dst_ptr            = dst.get();
 
     dim_t trgt_l = std::min(dst_dims[3], src_dims[3]);
     dim_t trgt_k = std::min(dst_dims[2], src_dims[2]);
@@ -71,11 +71,13 @@ void copyElemwise(Param<OutT> dst, CParam<InT> src, OutT default_value,
                 bool isJvalid  = j < trgt_j;
 
                 for (dim_t i = 0; i < dst_dims[0]; ++i) {
-                    OutT temp = default_value;
+                    data_t<OutT> temp = default_value;
                     if (isLvalid && isKvalid && isJvalid && i < trgt_i) {
                         dim_t src_idx =
                             i * src_strides[0] + src_joff + src_koff + src_loff;
-                        temp = OutT(src_ptr[src_idx]) * OutT(factor);
+                        // The conversions here are necessary because the half type does not convert to
+                        // complex automatically
+                        temp = compute_t<OutT>(compute_t<InT>(src_ptr[src_idx])) * compute_t<OutT>(factor);
                     }
                     dim_t dst_idx =
                         i * dst_strides[0] + dst_joff + dst_koff + dst_loff;

@@ -11,12 +11,15 @@
 #include <kernel/diagonal.hpp>
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <platform.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 
 #include <algorithm>
 #include <cstdlib>
+
+using common::half;
 
 namespace cpu {
 
@@ -58,5 +61,6 @@ INSTANTIATE_DIAGONAL(char)
 INSTANTIATE_DIAGONAL(uchar)
 INSTANTIATE_DIAGONAL(short)
 INSTANTIATE_DIAGONAL(ushort)
+INSTANTIATE_DIAGONAL(half)
 
 }  // namespace cpu

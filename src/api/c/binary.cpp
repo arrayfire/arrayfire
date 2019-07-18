@@ -448,6 +448,7 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs,
             case u64: res = logicOp<uintl, op>(lhs, rhs, odims); break;
             case s16: res = logicOp<short, op>(lhs, rhs, odims); break;
             case u16: res = logicOp<ushort, op>(lhs, rhs, odims); break;
+            case f16: res = logicOp<half, op>(lhs, rhs, odims); break;
             default: TYPE_ERROR(0, type);
         }
 

@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <half.hpp>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
@@ -22,7 +23,7 @@ template<typename T>
 class Compare : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, uint, int, intl, uintl, uchar, short,
-                         ushort>
+                         ushort, half_float::half>
     TestTypes;
 TYPED_TEST_CASE(Compare, TestTypes);
 

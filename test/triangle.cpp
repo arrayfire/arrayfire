@@ -10,10 +10,12 @@
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <half.hpp>
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+
 #include <complex>
 #include <iostream>
 #include <string>
@@ -33,7 +35,7 @@ template<typename T>
 class Triangle : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
-                         uchar, uintl, intl, short, ushort>
+                         uchar, uintl, intl, short, ushort, half_float::half>
     TestTypes;
 TYPED_TEST_CASE(Triangle, TestTypes);
 

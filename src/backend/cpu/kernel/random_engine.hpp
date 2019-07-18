@@ -197,13 +197,13 @@ void threefryUniform(T *out, size_t elements, const uintl seed, uintl counter) {
 
 template<typename T>
 void boxMullerTransform(data_t<T> *const out1, data_t<T> *const out2,
-                        const compute_t<T> r1, const compute_t<T> r2) {
+                        const T r1, const T r2) {
     /*
      * The log of a real value x where 0 < x < 1 is negative.
      */
     using Tc = compute_t<T>;
-    Tc r     = sqrt((Tc)(-2.0) * log((Tc)(1.0) - r1));
-    Tc theta = 2 * (Tc)PI_VAL * ((Tc)(1.0) - r2);
+    Tc r     = sqrt((Tc)(-2.0) * log((Tc)(1.0) - static_cast<Tc>(r1)));
+    Tc theta = 2 * (Tc)PI_VAL * ((Tc)(1.0) - static_cast<Tc>(r2));
     *out1    = r * sin(theta);
     *out2    = r * cos(theta);
 }

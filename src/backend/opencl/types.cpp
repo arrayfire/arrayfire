@@ -30,7 +30,7 @@ template<>
 std::string ToNumStr<float>::operator()(float val) {
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
-    if (std::isinf(val)) { return val < 0 ? NINF : PINF; }
+    if (std::isinf(val)) { return val < 0.f ? NINF : PINF; }
     return std::to_string(val);
 }
 
@@ -38,7 +38,7 @@ template<>
 std::string ToNumStr<double>::operator()(double val) {
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
-    if (std::isinf(val)) { return val < 0 ? NINF : PINF; }
+    if (std::isinf(val)) { return val < 0. ? NINF : PINF; }
     return std::to_string(val);
 }
 
@@ -60,10 +60,12 @@ std::string ToNumStr<cdouble>::operator()(cdouble val) {
 
 template<>
 std::string ToNumStr<half>::operator()(half val) {
+    using namespace std;
+    using namespace common;
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
-    if (common::isinf(val)) { return val < 0 ? NINF : PINF; }
-    return std::to_string(val);
+    if (common::isinf(val)) { return val < 0.f ? NINF : PINF; }
+    return to_string(move(val));
 }
 
 template<>
@@ -71,7 +73,7 @@ template<>
 std::string ToNumStr<half>::operator()<float>(float val) {
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
-    if (common::isinf(half(val))) { return val < 0 ? NINF : PINF; }
+    if (common::isinf(half(val))) { return val < 0.f ? NINF : PINF; }
     return std::to_string(val);
 }
 

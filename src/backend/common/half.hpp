@@ -1,3 +1,12 @@
+/*******************************************************
+ * Copyright (c) 2019, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
 #pragma once
 
 #if defined(NVCC) || defined(__CUDACC_RTC__)
@@ -9,9 +18,12 @@
 #ifndef __CUDACC_RTC__
 #include <cstring>
 #include <ostream>
+#include <string>
 #include <type_traits>
 
 #include <limits>
+#else
+using uint16_t = unsigned short;
 #endif
 
 #if AF_COMPILER_CXX_RELAXED_CONSTEXPR
@@ -22,7 +34,14 @@
 
 namespace common {
 
+#if defined(__CUDA_ARCH__)
+using native_half_t = __half;
+#else
+using native_half_t = uint16_t;
+#endif
+
 #ifndef __CUDACC_RTC__
+
 /// Convert integer to half-precision floating point.
 ///
 /// \tparam R rounding mode to use, `std::round_indeterminate` for fastest
@@ -34,7 +53,7 @@ namespace common {
 ///
 /// \return binary representation of half-precision value
 template<std::float_round_style R, bool S, typename T>
-CONSTEXPR_DH uint16_t int2half(T value) noexcept {
+CONSTEXPR_DH native_half_t int2half_impl(T value) noexcept {
     static_assert(std::is_integral<T>::value,
                   "int to half conversion only supports builtin integer types");
     if (S) value = -value;
@@ -69,6 +88,23 @@ CONSTEXPR_DH uint16_t int2half(T value) noexcept {
     return bits;
 }
 
+template<typename T, std::float_round_style R = std::round_to_nearest,
+         typename std::enable_if_t<std::is_integral<T>::value &&
+                                   std::is_signed<T>::value>* = nullptr>
+CONSTEXPR_DH native_half_t int2half(T value) noexcept {
+    uint16_t out;
+    out = (value < 0) ? int2half_impl<R, true, T>(value)
+                      : int2half_impl<R, false, T>(value);
+    return out;
+}
+
+template<typename T, std::float_round_style R = std::round_to_nearest,
+         typename std::enable_if_t<std::is_integral<T>::value &&
+                                   std::is_unsigned<T>::value>* = nullptr>
+CONSTEXPR_DH native_half_t int2half(T value) noexcept {
+    return int2half_impl<R, false, T>(value);
+}
+
 /// Convert IEEE single-precision to half-precision.
 /// Credit for this goes to [Jeroen van der
 /// Zijp](ftp://ftp.fox-toolkit.org/pub/fasthalffloatconversion.pdf).
@@ -77,8 +113,8 @@ CONSTEXPR_DH uint16_t int2half(T value) noexcept {
 ///
 /// \param value single-precision value
 /// \return binary representation of half-precision value
-template<std::float_round_style R = std::numeric_limits<float>::round_style>
-CONSTEXPR_DH uint16_t float2half(float value) noexcept {
+template<std::float_round_style R = std::round_indeterminate>
+CONSTEXPR_DH native_half_t float2half_impl(float value) noexcept {
     uint32_t bits = 0;  // = *reinterpret_cast<uint32*>(&value);
                         // //violating strict aliasing!
     std::memcpy(&bits, &value, sizeof(float));
@@ -205,7 +241,73 @@ CONSTEXPR_DH uint16_t float2half(float value) noexcept {
     return hbits;
 }
 
-__DH__ inline float half2float(uint16_t value) noexcept {
+/// Convert IEEE double-precision to half-precision.
+///
+/// \tparam R rounding mode to use, `std::round_indeterminate` for fastest
+///           rounding
+/// \param value double-precision value
+///
+/// \return binary representation of half-precision value
+template<std::float_round_style R>
+CONSTEXPR_DH native_half_t float2half_impl(double value) {
+    uint64_t bits;  // = *reinterpret_cast<uint64*>(&value);		//violating
+                    // strict aliasing!
+    std::memcpy(&bits, &value, sizeof(double));
+    uint32_t hi = bits >> 32, lo = bits & 0xFFFFFFFF;
+    uint16_t hbits = (hi >> 16) & 0x8000;
+    hi &= 0x7FFFFFFF;
+    int exp = hi >> 20;
+    if (exp == 2047)
+        return hbits | 0x7C00 |
+               (0x3FF & -static_cast<unsigned>((bits & 0xFFFFFFFFFFFFF) != 0));
+    if (exp > 1038) {
+        if (R == std::round_toward_infinity)
+            return hbits | 0x7C00 - (hbits >> 15);
+        if (R == std::round_toward_neg_infinity)
+            return hbits | 0x7BFF + (hbits >> 15);
+        return hbits | 0x7BFF + (R != std::round_toward_zero);
+    }
+    int g, s = lo != 0;
+    if (exp > 1008) {
+        g = (hi >> 9) & 1;
+        s |= (hi & 0x1FF) != 0;
+        hbits |= ((exp - 1008) << 10) | ((hi >> 10) & 0x3FF);
+    } else if (exp > 997) {
+        int i = 1018 - exp;
+        hi    = (hi & 0xFFFFF) | 0x100000;
+        g     = (hi >> i) & 1;
+        s |= (hi & ((1L << i) - 1)) != 0;
+        hbits |= hi >> (i + 1);
+    } else {
+        g = 0;
+        s |= hi != 0;
+    }
+    if (R == std::round_to_nearest)
+#if HALF_ROUND_TIES_TO_EVEN
+        hbits += g & (s | hbits);
+#else
+        hbits += g;
+#endif
+    else if (R == std::round_toward_infinity)
+        hbits += ~(hbits >> 15) & (s | g);
+    else if (R == std::round_toward_neg_infinity)
+        hbits += (hbits >> 15) & (g | s);
+    return hbits;
+}
+
+template<typename T, std::float_round_style R = std::round_to_nearest>
+CONSTEXPR_DH native_half_t float2half(T val) {
+#ifdef __CUDA_ARCH__
+    return __float2half(val);
+#else
+    return float2half_impl<R>(val);
+#endif
+}
+
+CONSTEXPR_DH inline float half2float(native_half_t value) noexcept {
+#ifdef __CUDA_ARCH__
+    return __half2float(value);
+#else
     // return _cvtsh_ss(data.data_);
     uint32_t mantissa_table[2048] = {
         0x00000000, 0x33800000, 0x34000000, 0x34400000, 0x34800000, 0x34A00000,
@@ -578,7 +680,102 @@ __DH__ inline float half2float(uint16_t value) noexcept {
     float out = 0.0f;
     std::memcpy(&out, &bits, sizeof(float));
     return out;
+#endif
 }
+
+/// Convert half-precision floating point to integer.
+///
+/// \tparam R rounding mode to use, `std::round_indeterminate` for fastest
+///           rounding
+/// \tparam E `true` for round to even, `false` for round away from
+///           zero
+/// \tparam T type to convert to (buitlin integer type with at least 16
+///           bits precision, excluding any implicit sign bits) \param value
+///           binary representation of half-precision value \return integral
+///           value
+/// \param value The value to convert to integer
+template<std::float_round_style R, bool E, typename T>
+__DH__ T half2int(native_half_t value) {
+    static_assert(std::is_integral<T>::value,
+                  "half to int conversion only supports builtin integer types");
+    unsigned int e = value & 0x7FFF;
+    if (e >= 0x7C00)
+        return (value & 0x8000) ? std::numeric_limits<T>::min()
+                                : std::numeric_limits<T>::max();
+    if (e < 0x3800) {
+        if (R == std::round_toward_infinity)
+            return T(~(value >> 15) & (e != 0));
+        else if (R == std::round_toward_neg_infinity)
+            return -T(value > 0x8000);
+        return T();
+    }
+    unsigned int m = (value & 0x3FF) | 0x400;
+    e >>= 10;
+    if (e < 25) {
+        if (R == std::round_to_nearest)
+            m += (1 << (24 - e)) - (~(m >> (25 - e)) & E);
+        else if (R == std::round_toward_infinity)
+            m += ((value >> 15) - 1) & ((1 << (25 - e)) - 1U);
+        else if (R == std::round_toward_neg_infinity)
+            m += -(value >> 15) & ((1 << (25 - e)) - 1U);
+        m >>= 25 - e;
+    } else
+        m <<= e - 25;
+    return (value & 0x8000) ? -static_cast<T>(m) : static_cast<T>(m);
+}
+
+#else
+
+template<typename T>
+CONSTEXPR_DH native_half_t float2half(T value) {
+    return __float2half(value);
+}
+
+CONSTEXPR_DH inline float half2float(native_half_t value) noexcept {
+    return __half2float(value);
+}
+
+template<typename T>
+CONSTEXPR_DH native_half_t int2half(T value) noexcept;
+
+template<>
+CONSTEXPR_DH native_half_t int2half(int value) noexcept {
+    return __int2half_rn(value);
+}
+
+template<>
+CONSTEXPR_DH native_half_t int2half(unsigned value) noexcept {
+    return __uint2half_rn(value);
+}
+
+template<>
+CONSTEXPR_DH native_half_t int2half(long long value) noexcept {
+    return __ll2half_rn(value);
+}
+
+template<>
+CONSTEXPR_DH native_half_t int2half(unsigned long long value) noexcept {
+    return __ull2half_rn(value);
+}
+
+template<>
+CONSTEXPR_DH native_half_t int2half(short value) noexcept {
+    return __short2half_rn(value);
+}
+template<>
+CONSTEXPR_DH native_half_t int2half(unsigned short value) noexcept {
+    return __ushort2half_rn(value);
+}
+
+template<>
+CONSTEXPR_DH native_half_t int2half(char value) noexcept {
+    return __ull2half_rn(value);
+}
+template<>
+CONSTEXPR_DH native_half_t int2half(unsigned char value) noexcept {
+    return __ull2half_rn(value);
+}
+
 #endif  // __CUDACC_RTC__
 
 namespace internal {
@@ -589,16 +786,25 @@ struct binary_t {};
 static constexpr binary_t binary;
 }  // namespace internal
 
+class half;
+
+CONSTEXPR_DH static inline bool operator==(common::half lhs,
+                                           common::half rhs) noexcept;
+CONSTEXPR_DH static inline bool operator!=(common::half lhs,
+                                           common::half rhs) noexcept;
+CONSTEXPR_DH static inline bool operator<(common::half lhs,
+                                          common::half rhs) noexcept;
+CONSTEXPR_DH static inline bool operator<(common::half lhs, float rhs) noexcept;
+CONSTEXPR_DH static inline bool isinf(half val) noexcept;
+
+/// Classification implementation.
+/// \param arg value to classify
+/// \retval true if not a number
+/// \retval false else
+CONSTEXPR_DH static inline bool isnan(common::half val) noexcept;
+
 class alignas(2) half {
-#if defined(__CUDA_ARCH__)
-    __half data_;
-#else
-    uint16_t data_;
-    /// Constructor.
-    /// \param bits binary representation to set half to
-    CONSTEXPR_DH half(internal::binary_t, uint16_t bits) noexcept
-        : data_(bits) {}
-#endif
+    native_half_t data_;
 
 #if !defined(NVCC) && !defined(__CUDACC_RTC__)
     // NVCC on OSX performs a weird transformation where it removes the std::
@@ -609,36 +815,25 @@ class alignas(2) half {
 
    public:
     half() = default;
-    CONSTEXPR_DH explicit half(double value) noexcept
-#ifdef __CUDA_ARCH__
-        : data_(__float2half(value)) {
-#else
-        : data_(float2half<std::round_to_nearest>(value)) {
-#endif
+
+    /// Constructor.
+    /// \param bits binary representation to set half to
+    CONSTEXPR_DH half(internal::binary_t, uint16_t bits) noexcept : data_() {
+        memcpy(&data_, &bits, sizeof(uint16_t));
     }
+
+    CONSTEXPR_DH explicit half(double value) noexcept
+        : data_(float2half<double>(value)) {}
 
     CONSTEXPR_DH explicit half(float value) noexcept
-#ifdef __CUDA_ARCH__
-        : data_(__float2half(value)) {
-#else
-        : data_(float2half<std::round_to_nearest>(value)) {
-#endif
-    }
+        : data_(float2half<float>(value)) {}
 
-#ifndef __CUDACC_RTC__
-    template<typename T,
-        typename std::enable_if_t<std::is_unsigned<T>::value>* = nullptr>
-    CONSTEXPR_DH explicit half(T value) noexcept
-        : data_(int2half<std::round_to_nearest, false>(value)) {}
-
-    template<typename T,
-        typename std::enable_if_t<std::is_signed<T>::value>* = nullptr>
-    CONSTEXPR_DH explicit half(T value) noexcept
-        : data_((value < 0) ? int2half<std::round_to_nearest, true>(value)
-                            : int2half<std::round_to_nearest, false>(value)) {}
+#ifndef __CUDA_RTC__
+    template<typename T>
+    CONSTEXPR_DH explicit half(T value) noexcept : data_(int2half<T>(value)) {}
 
     CONSTEXPR_DH half& operator=(const double& value) noexcept {
-        data_ = float2half<std::round_to_nearest>(value);
+        data_ = float2half<double>(value);
         return *this;
     }
 #endif
@@ -651,26 +846,160 @@ class alignas(2) half {
     }
 #endif
 
-    __DH__ operator float() const noexcept {
-#ifdef __CUDA_ARCH__
-        return __half2float(data_);
-#else
+    CONSTEXPR_DH explicit operator float() const noexcept {
         return half2float(data_);
+    }
+
+    CONSTEXPR_DH explicit operator double() const noexcept {
+        // TODO(umar): convert directly to double
+        return half2float(data_);
+    }
+
+    CONSTEXPR_DH explicit operator short() const noexcept {
+#ifdef __CUDA_ARCH__
+        return __half2short_rn(data_);
+#else
+        return half2int<std::round_indeterminate, true, short>(data_);
 #endif
-    };
+    }
+
+    CONSTEXPR_DH explicit operator long long() const noexcept {
+#ifdef __CUDA_ARCH__
+        return __half2ll_rn(data_);
+#else
+        return half2int<std::round_indeterminate, true, long long int>(data_);
+#endif
+    }
+
+    CONSTEXPR_DH explicit operator int() const noexcept {
+#ifdef __CUDA_ARCH__
+        return __half2int_rn(data_);
+#else
+        return half2int<std::round_indeterminate, true, int>(data_);
+#endif
+    }
+
+    CONSTEXPR_DH explicit operator unsigned() const noexcept {
+#ifdef __CUDA_ARCH__
+        return __half2uint_rn(data_);
+#else
+        return half2int<std::round_indeterminate, true, unsigned>(data_);
+#endif
+    }
+
+    CONSTEXPR_DH explicit operator unsigned short() const noexcept {
+#ifdef __CUDA_ARCH__
+        return __half2ushort_rn(data_);
+#else
+        return half2int<std::round_indeterminate, true, unsigned>(data_);
+#endif
+    }
+
+    CONSTEXPR_DH explicit operator unsigned long long() const noexcept {
+#ifdef __CUDA_ARCH__
+        return __half2ull_rn(data_);
+#else
+        return half2int<std::round_indeterminate, true, unsigned>(data_);
+#endif
+    }
+
+    CONSTEXPR_DH explicit operator char() const noexcept {
+#ifdef __CUDA_ARCH__
+        return __half2short_rn(data_);
+#else
+        return half2int<std::round_indeterminate, true, char>(data_);
+#endif
+    }
+
+    CONSTEXPR_DH explicit operator unsigned char() const noexcept {
+#ifdef __CUDA_ARCH__
+        return __half2short_rn(data_);
+#else
+        return half2int<std::round_indeterminate, true, unsigned char>(data_);
+#endif
+    }
 
 #if defined(__CUDA_ARCH__)
     CONSTEXPR_DH operator __half() const noexcept { return data_; };
 #endif
+
+    friend CONSTEXPR_DH bool operator==(half lhs, half rhs) noexcept;
+    friend CONSTEXPR_DH bool operator!=(half lhs, half rhs) noexcept;
+    friend CONSTEXPR_DH bool operator<(common::half lhs,
+                                       common::half rhs) noexcept;
+    friend CONSTEXPR_DH bool operator<(common::half lhs, float rhs) noexcept;
+    friend CONSTEXPR_DH bool isinf(half val) noexcept;
+    friend CONSTEXPR_DH inline bool isnan(half val) noexcept;
+
+    CONSTEXPR_DH common::half operator-() const {
+#if __CUDA_ARCH__ >= 530
+        return common::half(__hneg(data_));
+#elif defined(__CUDA_ARCH__)
+        return common::half(-(__half2float(data_)));
+#else
+        return common::half(internal::binary, data_ ^ 0x8000);
+#endif
+    }
+
+    CONSTEXPR_DH common::half operator+() const { return *this; }
 };
+
+CONSTEXPR_DH static inline bool operator==(common::half lhs,
+                                           common::half rhs) noexcept {
+#if __CUDA_ARCH__ >= 530
+    return __heq(lhs.data_, rhs.data_);
+#elif defined(__CUDA_ARCH__)
+    return __half2float(lhs.data_) == __half2float(rhs.data_);
+#else
+    return (lhs.data_ == rhs.data_ || !((lhs.data_ | rhs.data_) & 0x7FFF)) &&
+           !isnan(lhs);
+#endif
+}
+
+CONSTEXPR_DH static inline bool operator!=(common::half lhs,
+                                           common::half rhs) noexcept {
+#if __CUDA_ARCH__ >= 530
+    return __hne(lhs.data_, rhs.data_);
+#else
+    return !(lhs == rhs);
+#endif
+}
+
+CONSTEXPR_DH static inline bool operator<(common::half lhs,
+                                          common::half rhs) noexcept {
+#if __CUDA_ARCH__ >= 530
+    return __hlt(lhs.data_, rhs.data_);
+#elif defined(__CUDA_ARCH__)
+    return __half2float(lhs.data_) < __half2float(rhs.data_);
+#else
+    int xabs = lhs.data_ & 0x7FFF, yabs = rhs.data_ & 0x7FFF;
+    return xabs <= 0x7C00 && yabs <= 0x7C00 &&
+           (((xabs == lhs.data_) ? xabs : -xabs) <
+            ((yabs == rhs.data_) ? yabs : -yabs));
+#endif
+}
+
+CONSTEXPR_DH static inline bool operator<(common::half lhs,
+                                          float rhs) noexcept {
+#if defined(__CUDA_ARCH__)
+    return __half2float(lhs.data_) < rhs;
+#else
+    return static_cast<float>(lhs) < rhs;
+#endif
+}
 
 #ifndef __CUDA_ARCH__
 std::ostream& operator<<(std::ostream& os, const half& val);
+
+static inline std::string to_string(const half&& val) {
+    return std::to_string(static_cast<float>(val));
+}
 #endif
 
 }  // namespace common
 
 #if !defined(NVCC) && !defined(__CUDACC_RTC__)
+//#endif
 /// Extensions to the C++ standard library.
 namespace std {
 /// Numeric limits for half-precision floats.
@@ -801,12 +1130,31 @@ struct hash<common::half>  //: unary_function<common::half,size_t>
             -(*reinterpret_cast<uint16_t*>(&arg.data_) != 0x8000));
     }
 };
+
 }  // namespace std
+#endif
 
 namespace common {
-static bool isinf(::common::half val) noexcept {
-    return val == std::numeric_limits<::common::half>::infinity() ||
-           val == -std::numeric_limits<::common::half>::infinity();
-}
-}  // namespace common
+CONSTEXPR_DH
+static bool isinf(half val) noexcept {
+#if __CUDA_ARCH__ >= 530
+    return __hisinf(val.data_);
+#elif defined(__CUDA_ARCH__)
+    return ::isinf(__half2float(val));
+#else
+    return val == std::numeric_limits<half>::infinity() ||
+           val == -std::numeric_limits<half>::infinity();
 #endif
+}
+
+CONSTEXPR_DH static inline bool isnan(half val) noexcept {
+#if __CUDA_ARCH__ >= 530
+    return __hisnan(val.data_);
+#elif defined(__CUDA_ARCH__)
+    return ::isnan(__half2float(val));
+#else
+    return (val.data_ & 0x7FFF) > 0x7C00;
+#endif
+}
+
+}  // namespace common

@@ -6,16 +6,19 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
-#include <Array.hpp>
 #include <ireduce.hpp>
 #include <kernel/ireduce.hpp>
+
+#include <Array.hpp>
+#include <common/half.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <af/dim4.hpp>
+
 #include <complex>
 
 using af::dim4;
+using common::half;
 
 namespace cpu {
 
@@ -84,6 +87,7 @@ INSTANTIATE(af_min_t, char)
 INSTANTIATE(af_min_t, uchar)
 INSTANTIATE(af_min_t, short)
 INSTANTIATE(af_min_t, ushort)
+INSTANTIATE(af_min_t, half)
 
 // max
 INSTANTIATE(af_max_t, float)
@@ -98,5 +102,6 @@ INSTANTIATE(af_max_t, char)
 INSTANTIATE(af_max_t, uchar)
 INSTANTIATE(af_max_t, short)
 INSTANTIATE(af_max_t, ushort)
+INSTANTIATE(af_max_t, half)
 
 }  // namespace cpu

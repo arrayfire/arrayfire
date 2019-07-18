@@ -9,6 +9,7 @@
 
 #include <backend.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <transpose.hpp>
 #include <af/arith.h>
@@ -18,6 +19,7 @@
 #include <af/dim4.hpp>
 
 using af::dim4;
+using common::half;
 using namespace detail;
 
 template<typename T>
@@ -63,6 +65,7 @@ af_err af_transpose(af_array* out, af_array in, const bool conjugate) {
             case u64: output = trs<uintl>(in, conjugate); break;
             case s16: output = trs<short>(in, conjugate); break;
             case u16: output = trs<ushort>(in, conjugate); break;
+            case f16: output = trs<half>(in, conjugate); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);
@@ -102,6 +105,7 @@ af_err af_transpose_inplace(af_array in, const bool conjugate) {
             case u64: transpose_inplace<uintl>(in, conjugate); break;
             case s16: transpose_inplace<short>(in, conjugate); break;
             case u16: transpose_inplace<ushort>(in, conjugate); break;
+            case f16: transpose_inplace<half>(in, conjugate); break;
             default: TYPE_ERROR(1, type);
         }
     }

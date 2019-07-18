@@ -10,6 +10,7 @@
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <half.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
@@ -40,13 +41,22 @@ class Range : public ::testing::Test {
     vector<af_seq> subMat0;
 };
 
+template<typename T>
+class RangeMax : public Range<T> {};
+
+// create a list of types to be tested
+typedef ::testing::Types<float, double, int, unsigned int, intl, uintl,
+                         unsigned char, short, ushort, half_float::half>
+    AllTypes;
+
 // create a list of types to be tested
 typedef ::testing::Types<float, double, int, unsigned int, intl, uintl,
                          unsigned char, short, ushort>
-    TestTypes;
+    RegularTypes;
 
 // register the type list
-TYPED_TEST_CASE(Range, TestTypes);
+TYPED_TEST_CASE(Range, AllTypes);
+TYPED_TEST_CASE(RangeMax, RegularTypes);
 
 template<typename T>
 void rangeTest(const uint x, const uint y, const uint z, const uint w,
@@ -69,7 +79,7 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w,
         for (int z = 0; z < (int)idims[2]; z++) {
             for (int y = 0; y < (int)idims[1]; y++) {
                 for (int x = 0; x < (int)idims[0]; x++) {
-                    T val = 0;
+                    T val(0);
                     if (dim == 0) {
                         val = x;
                     } else if (dim == 1) {
@@ -82,7 +92,7 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w,
                     dim_t idx = w * idims[0] * idims[1] * idims[2] +
                                 z * idims[0] * idims[1] + y * idims[0] + x;
 
-                    ASSERT_EQ(val, outData[idx]) << "at: " << idx << endl;
+                    ASSERT_EQ(val, outData[idx]) << "at: " << idx;
                 }
             }
         }
@@ -111,10 +121,13 @@ RANGE_INIT(Range4D1, 10, 12, 5, 2, 1);
 RANGE_INIT(Range4D2, 25, 30, 2, 2, 2);
 RANGE_INIT(Range4D3, 25, 30, 2, 2, 3);
 
-RANGE_INIT(Range1DMaxDim0, 65535 * 32 + 1, 1, 1, 1, 0);
-RANGE_INIT(Range1DMaxDim1, 1, 65535 * 32 + 1, 1, 1, 0);
-RANGE_INIT(Range1DMaxDim2, 1, 1, 65535 * 32 + 1, 1, 0);
-RANGE_INIT(Range1DMaxDim3, 1, 1, 1, 65535 * 32 + 1, 0);
+#define RANGE_MAX_INIT(desc, x, y, z, w, rep) \
+    TYPED_TEST(RangeMax, desc) { rangeTest<TypeParam>(x, y, z, w, rep); }
+
+RANGE_MAX_INIT(Range1DMaxDim0, 65535 * 32 + 1, 1, 1, 1, 0);
+RANGE_MAX_INIT(Range1DMaxDim1, 1, 65535 * 32 + 1, 1, 1, 0);
+RANGE_MAX_INIT(Range1DMaxDim2, 1, 1, 65535 * 32 + 1, 1, 0);
+RANGE_MAX_INIT(Range1DMaxDim3, 1, 1, 1, 65535 * 32 + 1, 0);
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //

@@ -29,17 +29,17 @@ struct BinOp {
 namespace jit {
 
 template<typename To, typename Ti, af_op_t op>
-class BinaryNode : public TNode<To> {
+class BinaryNode : public TNode<compute_t<To>> {
    protected:
-    BinOp<To, Ti, op> m_op;
-    TNode<Ti> *m_lhs, *m_rhs;
+    BinOp<compute_t<To>, compute_t<Ti>, op> m_op;
+    TNode<compute_t<Ti>> *m_lhs, *m_rhs;
 
    public:
     BinaryNode(Node_ptr lhs, Node_ptr rhs)
-        : TNode<To>(To(0), std::max(lhs->getHeight(), rhs->getHeight()) + 1,
+        : TNode<compute_t<To>>(compute_t<To>(0), std::max(lhs->getHeight(), rhs->getHeight()) + 1,
                     {{lhs, rhs}})
-        , m_lhs(reinterpret_cast<TNode<Ti> *>(lhs.get()))
-        , m_rhs(reinterpret_cast<TNode<Ti> *>(rhs.get())) {}
+        , m_lhs(reinterpret_cast<TNode<compute_t<Ti>> *>(lhs.get()))
+        , m_rhs(reinterpret_cast<TNode<compute_t<Ti>> *>(rhs.get())) {}
 
     void calc(int x, int y, int z, int w, int lim) final {
         UNUSED(x);
