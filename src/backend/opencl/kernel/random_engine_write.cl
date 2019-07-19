@@ -363,8 +363,8 @@ void boxMullerWriteOut128Bytes_float(__global float *out,
                                      const uint *const r3,
                                      const uint *const r4) {
     float n1, n2, n3, n4;
-    boxMullerTransform(&n1, &n2, getFloat(r1), getFloat(r2));
-    boxMullerTransform(&n3, &n4, getFloat(r1), getFloat(r2));
+    boxMullerTransform((T*)&n1, (T*)&n2, getFloat(r1), getFloat(r2));
+    boxMullerTransform((T*)&n3, (T*)&n4, getFloat(r1), getFloat(r2));
     out[*index]               = n1;
     out[*index + THREADS]     = n2;
     out[*index + 2 * THREADS] = n3;
@@ -377,8 +377,8 @@ void partialBoxMullerWriteOut128Bytes_float(
     const uint *const r2, const uint *const r3, const uint *const r4,
     const uint *const elements) {
     float n1, n2, n3, n4;
-    boxMullerTransform(&n1, &n2, getFloat(r1), getFloat(r2));
-    boxMullerTransform(&n3, &n4, getFloat(r3), getFloat(r4));
+    boxMullerTransform((T*)&n1, (T*)&n2, getFloat(r1), getFloat(r2));
+    boxMullerTransform((T*)&n3, (T*)&n4, getFloat(r3), getFloat(r4));
     if (*index < *elements) { out[*index] = n1; }
     if (*index + THREADS < *elements) { out[*index + THREADS] = n2; }
     if (*index + 2 * THREADS < *elements) { out[*index + 2 * THREADS] = n3; }
@@ -435,6 +435,81 @@ void partialBoxMullerWriteOut128Bytes_double(
     boxMullerTransform(&n1, &n2, getDouble(r1, r2), getDouble(r3, r4));
     if (*index < *elements) { out[*index] = n1; }
     if (*index + THREADS < *elements) { out[*index + THREADS] = n2; }
+}
+#endif
+#endif
+
+#ifdef USE_HALF
+
+// Conversion to floats adapted from Random123
+#define USHORTMAX 0xffff
+#define HALF_FACTOR ((1.0f) / (USHORTMAX + (1.0f)))
+#define HALF_HALF_FACTOR ((0.5f) * HALF_FACTOR)
+
+// Generates rationals in (0, 1]
+half getHalf(const uint *const num, int index) {
+    float v = num[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
+    return 1.0f - (v * HALF_FACTOR + HALF_HALF_FACTOR);
+}
+
+void writeOut128Bytes_half(__global half *out, const uint *const index,
+                             const uint *const r1, const uint *const r2,
+                             const uint *const r3, const uint *const r4) {
+    out[*index]               = getHalf(r1, 0);
+    out[*index + THREADS]     = getHalf(r1, 1);
+    out[*index + 2 * THREADS] = getHalf(r2, 0);
+    out[*index + 3 * THREADS] = getHalf(r2, 1);
+    out[*index + 4 * THREADS] = getHalf(r3, 0);
+    out[*index + 5 * THREADS] = getHalf(r3, 1);
+    out[*index + 6 * THREADS] = getHalf(r4, 0);
+    out[*index + 7 * THREADS] = getHalf(r4, 1);
+}
+
+void partialWriteOut128Bytes_half(__global half *out,
+                                    const uint *const index,
+                                    const uint *const r1, const uint *const r2,
+                                    const uint *const r3, const uint *const r4,
+                                    const uint *const elements) {
+    if (*index               < *elements) { out[*index              ] = getHalf(r1, 0); }
+    if (*index +     THREADS < *elements) { out[*index +     THREADS] = getHalf(r1, 1); }
+    if (*index + 2 * THREADS < *elements) { out[*index + 2 * THREADS] = getHalf(r2, 0); }
+    if (*index + 3 * THREADS < *elements) { out[*index + 3 * THREADS] = getHalf(r2, 1); }
+    if (*index + 4 * THREADS < *elements) { out[*index + 4 * THREADS] = getHalf(r3, 0); }
+    if (*index + 5 * THREADS < *elements) { out[*index + 5 * THREADS] = getHalf(r3, 1); }
+    if (*index + 6 * THREADS < *elements) { out[*index + 6 * THREADS] = getHalf(r4, 0); }
+    if (*index + 7 * THREADS < *elements) { out[*index + 7 * THREADS] = getHalf(r4, 1); }
+}
+
+#if RAND_DIST == 1
+void boxMullerWriteOut128Bytes_half(
+    __global half *out, const uint *const index, const uint *const r1,
+    const uint *const r2, const uint *const r3, const uint *const r4) {
+    boxMullerTransform(&out[*index], &out[*index + THREADS], getHalf(r1, 0), getHalf(r1, 1));
+    boxMullerTransform(&out[*index + 2 * THREADS], &out[*index + 3 * THREADS], getHalf(r2, 0), getHalf(r2, 1));
+    boxMullerTransform(&out[*index + 4 * THREADS], &out[*index + 5 * THREADS], getHalf(r3, 0), getHalf(r3, 1));
+    boxMullerTransform(&out[*index + 6 * THREADS], &out[*index + 7 * THREADS], getHalf(r4, 0), getHalf(r4, 1));
+}
+
+void partialBoxMullerWriteOut128Bytes_half(
+    __global half *out, const uint *const index, const uint *const r1,
+    const uint *const r2, const uint *const r3, const uint *const r4,
+    const uint *const elements) {
+    half n1, n2;
+    boxMullerTransform(&n1, &n2, getHalf(r1, 0), getHalf(r1, 1));
+    if (*index < *elements) { out[*index] = n1; }
+    if (*index + THREADS < *elements) { out[*index + THREADS] = n2; }
+
+    boxMullerTransform(&n1, &n2, getHalf(r2, 0), getHalf(r2, 1));
+    if (*index + 2 * THREADS < *elements) { out[*index + 2 * THREADS] = n1; }
+    if (*index + 3 * THREADS < *elements) { out[*index + 3 * THREADS] = n2; }
+
+    boxMullerTransform(&n1, &n2, getHalf(r3, 0), getHalf(r3, 1));
+    if (*index + 4 * THREADS < *elements) { out[*index + 4 * THREADS] = n1; }
+    if (*index + 5 * THREADS < *elements) { out[*index + 5 * THREADS] = n2; }
+
+    boxMullerTransform(&n1, &n2, getHalf(r4, 0), getHalf(r4, 1));
+    if (*index + 6 * THREADS < *elements) { out[*index + 6 * THREADS] = n1; }
+    if (*index + 7 * THREADS < *elements) { out[*index + 7 * THREADS] = n2; }
 }
 #endif
 #endif

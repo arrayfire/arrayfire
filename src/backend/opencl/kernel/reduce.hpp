@@ -28,6 +28,9 @@
 #include "config.hpp"
 #include "names.hpp"
 
+namespace opencl {
+namespace kernel {
+
 using cl::Buffer;
 using cl::EnqueueArgs;
 using cl::Kernel;
@@ -37,10 +40,6 @@ using cl::Program;
 using common::half;
 using std::string;
 using std::unique_ptr;
-
-namespace opencl {
-
-namespace kernel {
 
 template<typename Ti, typename To, af_op_t op>
 void reduce_dim_launcher(Param out, Param in, const int dim,
@@ -68,6 +67,10 @@ void reduce_dim_launcher(Param out, Param in, const int dim,
         if (std::is_same<Ti, double>::value ||
             std::is_same<Ti, cdouble>::value) {
             options << " -D USE_DOUBLE";
+        }
+
+        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
+            options << " -D USE_HALF";
         }
 
         const char *ker_strs[] = {ops_cl, reduce_dim_cl};
@@ -164,6 +167,10 @@ void reduce_first_launcher(Param out, Param in, const uint groups_x,
         if (std::is_same<Ti, double>::value ||
             std::is_same<Ti, cdouble>::value) {
             options << " -D USE_DOUBLE";
+        }
+
+        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
+            options << " -D USE_HALF";
         }
 
         const char *ker_strs[] = {ops_cl, reduce_first_cl};

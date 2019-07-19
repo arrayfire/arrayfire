@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/triangle.hpp>
 #include <math.hpp>
@@ -18,15 +19,6 @@
 #include <traits.hpp>
 #include <types.hpp>
 #include <string>
-
-using af::scalar_to_option;
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
 
 namespace opencl {
 namespace kernel {
@@ -42,6 +34,14 @@ void triangle(Param out, const Param in) {
                           std::string(dtype_traits<T>::getName()) +
                           std::to_string(is_upper) +
                           std::to_string(is_unit_diag);
+    using af::scalar_to_option;
+    using cl::Buffer;
+    using cl::EnqueueArgs;
+    using cl::Kernel;
+    using cl::KernelFunctor;
+    using cl::NDRange;
+    using cl::Program;
+    using std::string;
 
     int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
@@ -55,6 +55,8 @@ void triangle(Param out, const Param in) {
                 << " -D ONE=(T)(" << scalar_to_option(scalar<T>(1)) << ")";
         if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
             options << " -D USE_DOUBLE";
+
+        if (std::is_same<T, common::half>::value) options << " -D USE_HALF";
 
         const char* ker_strs[] = {triangle_cl};
         const int ker_lens[]   = {triangle_cl_len};

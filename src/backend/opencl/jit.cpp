@@ -183,7 +183,9 @@ static Kernel getKernel(const vector<Node *> &output_nodes,
         Program prog;
         buildProgram(
             prog, 2, ker_strs, ker_lens,
-            isDoubleSupported(device) ? string(" -D USE_DOUBLE") : string(""));
+            (isDoubleSupported(device) ? string(" -D USE_DOUBLE") : string("")) +
+            (isHalfSupported(device) ? string(" -D USE_HALF") : string(""))
+                     );
 
         entry.prog = new Program(prog);
         entry.ker  = new Kernel(*entry.prog, funcName.c_str());
