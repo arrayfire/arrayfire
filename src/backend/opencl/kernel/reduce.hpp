@@ -28,10 +28,7 @@
 #include "config.hpp"
 #include "names.hpp"
 
-#include <iostream>
-
 namespace opencl {
-
 namespace kernel {
 
 using cl::Buffer;
