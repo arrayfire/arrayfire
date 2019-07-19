@@ -72,10 +72,9 @@ void reduce_dim_launcher(Param out, Param in, const int dim,
             options << " -D USE_DOUBLE";
         }
 
-        if (std::is_same<Ti, half>::value) {
-          options << " -D USE_HALF";
+        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
+            options << " -D USE_HALF";
         }
-        std::cout << options.str() << "\n";
 
         const char *ker_strs[] = {ops_cl, reduce_dim_cl};
         const int ker_lens[]   = {ops_cl_len, reduce_dim_cl_len};
@@ -171,6 +170,10 @@ void reduce_first_launcher(Param out, Param in, const uint groups_x,
         if (std::is_same<Ti, double>::value ||
             std::is_same<Ti, cdouble>::value) {
             options << " -D USE_DOUBLE";
+        }
+
+        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
+            options << " -D USE_HALF";
         }
 
         const char *ker_strs[] = {ops_cl, reduce_first_cl};

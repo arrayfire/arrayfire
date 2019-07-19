@@ -63,6 +63,7 @@ uint transform(Ti in) { return (in != 0); }
 #ifdef MIN_OP
 
 #if CPLX
+#undef IS_NAN
 #define IS_NAN(in) !((in.x) == (in.x)) || !((in.y) == (in.y))
 #endif
 
@@ -83,6 +84,7 @@ T binOp(T lhs, T rhs) { return sabs(lhs) < sabs(rhs) ? lhs : rhs; }
 #ifdef MAX_OP
 
 #if CPLX
+#undef IS_NAN
 #define IS_NAN(in) !((in.x) == (in.x)) || !((in.y) == (in.y))
 #endif
 
