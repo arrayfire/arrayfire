@@ -109,6 +109,9 @@ af_err af_select_scalar_r(af_array* out, const af_array cond, const af_array a,
         af_array res;
 
         switch (ainfo.getType()) {
+            case f16:
+                res = select_scalar<half, false>(cond, a, b, odims);
+                break;
             case f32:
                 res = select_scalar<float, false>(cond, a, b, odims);
                 break;
@@ -171,6 +174,9 @@ af_err af_select_scalar_l(af_array* out, const af_array cond, const double a,
         af_array res;
 
         switch (binfo.getType()) {
+            case f16:
+                res = select_scalar<half, true>(cond, b, a, odims);
+                break;
             case f32:
                 res = select_scalar<float, true>(cond, b, a, odims);
                 break;

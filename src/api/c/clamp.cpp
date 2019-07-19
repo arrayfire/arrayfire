@@ -17,12 +17,14 @@
 #include <af/array.h>
 #include <af/data.h>
 #include <af/defines.h>
+#include <common/half.hpp>
 
 #include <arith.hpp>
 #include <logic.hpp>
 
 using namespace detail;
 using af::dim4;
+using common::half;
 
 template<typename T>
 static inline af_array clampOp(const af_array in, const af_array lo,
@@ -61,6 +63,7 @@ af_err af_clamp(af_array* out, const af_array in, const af_array lo,
             case u64: res = clampOp<uintl>(in, lo, hi, odims); break;
             case s16: res = clampOp<short>(in, lo, hi, odims); break;
             case u16: res = clampOp<ushort>(in, lo, hi, odims); break;
+            case f16: res = clampOp<half>(in, lo, hi, odims); break;
             default: TYPE_ERROR(0, otype);
         }
 

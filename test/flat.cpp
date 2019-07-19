@@ -33,6 +33,18 @@ TEST(FlatTests, Test_flat_1D) {
     ASSERT_ARRAYS_EQ(in, out);
 }
 
+TEST(FlatTests, Test_flat_2D_Half) {
+    if (noHalfTests(f16)) return;
+    const int num = 10;
+    array in      = randu(num, num, f16);
+    array out     = flat(in);
+
+    vector<half_float::half> gold(num*num);
+    in.host(&gold[0]);
+
+    ASSERT_VEC_ARRAY_EQ(gold, dim4(num * num), out);
+}
+
 TEST(FlatTests, Test_flat_2D) {
     const int nx = 200;
     const int ny = 200;
