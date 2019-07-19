@@ -11,19 +11,12 @@
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/range.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
 
 namespace opencl {
 namespace kernel {
@@ -35,6 +28,14 @@ static const int RANGE_TILEY = 32;
 
 template<typename T>
 void range(Param out, const int dim) {
+    using cl::Buffer;
+    using cl::EnqueueArgs;
+    using cl::Kernel;
+    using cl::KernelFunctor;
+    using cl::NDRange;
+    using cl::Program;
+    using std::string;
+
     std::string refName =
         std::string("range_kernel_") + std::string(dtype_traits<T>::getName());
 
@@ -46,6 +47,9 @@ void range(Param out, const int dim) {
         options << " -D T=" << dtype_traits<T>::getName();
         if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
             options << " -D USE_DOUBLE";
+
+        if (std::is_same<T, common::half>::value)
+          options << " -D USE_HALF";
 
         const char* ker_strs[] = {range_cl};
         const int ker_lens[]   = {range_cl_len};

@@ -11,19 +11,12 @@
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/lookup.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
-
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
 
 namespace opencl {
 namespace kernel {
@@ -32,23 +25,38 @@ static const int THREADS_Y = 8;
 
 template<typename in_t, typename idx_t, unsigned dim>
 void lookup(Param out, const Param in, const Param indices) {
+    using cl::Buffer;
+    using cl::EnqueueArgs;
+    using cl::Kernel;
+    using cl::KernelFunctor;
+    using cl::NDRange;
+    using cl::Program;
+    using std::string;
+    using std::is_same;
+    using std::ostringstream;
+    using std::to_string;
+
     std::string refName =
-        std::string("lookupND_") + std::string(dtype_traits<in_t>::getName()) +
-        std::string(dtype_traits<idx_t>::getName()) + std::to_string(dim);
+        string("lookupND_") + string(dtype_traits<in_t>::getName()) +
+        string(dtype_traits<idx_t>::getName()) + to_string(dim);
 
     int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
 
     if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
+        ostringstream options;
         options << " -D in_t=" << dtype_traits<in_t>::getName()
                 << " -D idx_t=" << dtype_traits<idx_t>::getName()
                 << " -D DIM=" << dim;
 
-        if (std::is_same<in_t, double>::value ||
-            std::is_same<in_t, cdouble>::value ||
-            std::is_same<idx_t, double>::value) {
+        if (is_same<in_t, double>::value ||
+            is_same<in_t, cdouble>::value ||
+            is_same<idx_t, double>::value) {
             options << " -D USE_DOUBLE";
+        }
+
+        if (is_same<in_t, common::half>::value) {
+          options << " -D USE_HALF";
         }
 
         const char* ker_strs[] = {lookup_cl};

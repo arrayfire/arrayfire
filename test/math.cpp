@@ -24,7 +24,7 @@ using std::abs;
 using std::endl;
 using std::vector;
 
-const int num        = 10000;
+const int num        = 300;
 const float hlf_err  = 1e-2;
 const float flt_err  = 1e-3;
 const double dbl_err = 1e-10;

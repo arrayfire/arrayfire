@@ -18,14 +18,6 @@
 #include <types.hpp>
 #include <string>
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
-
 namespace opencl {
 namespace kernel {
 static const int TILE_DIM  = 32;
@@ -34,7 +26,15 @@ static const int THREADS_Y = 256 / TILE_DIM;
 
 template<typename T, bool conjugate, bool IS32MULTIPLE>
 void transpose(Param out, const Param in, cl::CommandQueue queue) {
-    std::string refName =
+    using cl::Buffer;
+    using cl::EnqueueArgs;
+    using cl::Kernel;
+    using cl::KernelFunctor;
+    using cl::NDRange;
+    using cl::Program;
+    using std::string;
+
+    string refName =
         std::string("transpose_") + std::string(dtype_traits<T>::getName()) +
         std::to_string(conjugate) + std::to_string(IS32MULTIPLE);
 
@@ -50,6 +50,8 @@ void transpose(Param out, const Param in, cl::CommandQueue queue) {
 
         if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
             options << " -D USE_DOUBLE";
+
+        if (std::is_same<T, common::half>::value) options << " -D USE_HALF";
 
         const char* ker_strs[] = {transpose_cl};
         const int ker_lens[]   = {transpose_cl_len};
