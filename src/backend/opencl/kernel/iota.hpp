@@ -11,20 +11,13 @@
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/iota.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <af/dim4.hpp>
 #include <string>
-
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
 
 namespace opencl {
 namespace kernel {
@@ -36,6 +29,14 @@ static const int TILEY   = 32;
 
 template<typename T>
 void iota(Param out, const af::dim4& sdims) {
+    using cl::Buffer;
+    using cl::EnqueueArgs;
+    using cl::Kernel;
+    using cl::KernelFunctor;
+    using cl::NDRange;
+    using cl::Program;
+    using std::string;
+
     std::string refName =
         std::string("iota_kernel_") + std::string(dtype_traits<T>::getName());
 
@@ -48,6 +49,8 @@ void iota(Param out, const af::dim4& sdims) {
         options << " -D T=" << dtype_traits<T>::getName();
         if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
             options << " -D USE_DOUBLE";
+
+        if (std::is_same<T, common::half>::value) options << " -D USE_HALF";
 
         const char* ker_strs[] = {iota_cl};
         const int ker_lens[]   = {iota_cl_len};
