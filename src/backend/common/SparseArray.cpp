@@ -41,11 +41,9 @@ SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ,
     , stype(_storage)
     , rowIdx(createValueArray<int>(dim4(ROW_LENGTH), 0))
     , colIdx(createValueArray<int>(dim4(COL_LENGTH), 0)) {
-#if __cplusplus > 199711l
     static_assert(offsetof(SparseArrayBase, info) == 0,
                   "SparseArrayBase::info must be the first member variable of "
                   "SparseArrayBase.");
-#endif
 }
 
 SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ, int *const _rowIdx,
@@ -64,11 +62,9 @@ SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ, int *const _rowIdx,
                         ? createDeviceDataArray<int>(dim4(COL_LENGTH), _colIdx)
                         : createValueArray<int>(dim4(COL_LENGTH), 0))
                  : createHostDataArray<int>(dim4(COL_LENGTH), _colIdx)) {
-#if __cplusplus > 199711L
     static_assert(offsetof(SparseArrayBase, info) == 0,
                   "SparseArrayBase::info must be the first member variable of "
                   "SparseArrayBase.");
-#endif
     if (_is_device && _copy_device) {
         writeDeviceDataArray<int>(rowIdx, _rowIdx, ROW_LENGTH * sizeof(int));
         writeDeviceDataArray<int>(colIdx, _colIdx, COL_LENGTH * sizeof(int));
@@ -83,11 +79,9 @@ SparseArrayBase::SparseArrayBase(af::dim4 _dims, const Array<int> &_rowIdx,
     , stype(_storage)
     , rowIdx(_copy ? copyArray<int>(_rowIdx) : _rowIdx)
     , colIdx(_copy ? copyArray<int>(_colIdx) : _colIdx) {
-#if __cplusplus > 199711L
     static_assert(offsetof(SparseArrayBase, info) == 0,
                   "SparseArrayBase::info must be the first member variable of "
                   "SparseArrayBase.");
-#endif
 }
 
 SparseArrayBase::SparseArrayBase(const SparseArrayBase &base, bool copy)
@@ -171,13 +165,11 @@ template<typename T>
 SparseArray<T>::SparseArray(dim4 _dims, dim_t _nNZ, af::storage _storage)
     : base(_dims, _nNZ, _storage, (af_dtype)dtype_traits<T>::af_type)
     , values(createValueArray<T>(dim4(_nNZ), scalar<T>(0))) {
-#if __cplusplus > 199711L
     static_assert(std::is_standard_layout<SparseArray<T>>::value,
                   "SparseArray<T> must be a standard layout type");
     static_assert(offsetof(SparseArray<T>, base) == 0,
                   "SparseArray<T>::base must be the first member variable of "
                   "SparseArray<T>");
-#endif
 }
 
 template<typename T>

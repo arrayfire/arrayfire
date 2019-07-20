@@ -56,13 +56,11 @@ class ArrayInfo {
         , dim_strides(stride)
         , is_sparse(false) {
         setId(id);
-#if __cplusplus > 199711l
         static_assert(
             offsetof(ArrayInfo, devId) == 0,
             "ArrayInfo::devId must be the first member variable of ArrayInfo. \
                    devId is used to encode the backend into the integer. \
                    This is then used in the unified backend to check mismatched arrays.");
-#endif
     }
 
     ArrayInfo(int id, af::dim4 size, dim_t offset_, af::dim4 stride,
@@ -74,21 +72,17 @@ class ArrayInfo {
         , dim_strides(stride)
         , is_sparse(sparse) {
         setId(id);
-#if __cplusplus > 199711l
         static_assert(
             offsetof(ArrayInfo, devId) == 0,
             "ArrayInfo::devId must be the first member variable of ArrayInfo. \
                    devId is used to encode the backend into the integer. \
                    This is then used in the unified backend to check mismatched arrays.");
-#endif
     }
 
-#if __cplusplus > 199711L
     // Copy constructors are deprecated if there is a
     // user-defined destructor in c++11
     ArrayInfo()                       = default;
     ArrayInfo(const ArrayInfo& other) = default;
-#endif
 
     const af_dtype& getType() const { return type; }
 
@@ -153,10 +147,8 @@ class ArrayInfo {
 
     bool isSparse() const;
 };
-#if __cplusplus > 199711l
 static_assert(std::is_standard_layout<ArrayInfo>::value,
               "ArrayInfo must be a standard layout type");
-#endif
 
 af::dim4 toDims(const std::vector<af_seq>& seqs, const af::dim4& parentDims);
 

@@ -27,7 +27,7 @@ using uint16_t = unsigned short;
 #endif
 
 #if AF_COMPILER_CXX_RELAXED_CONSTEXPR
-#define CONSTEXPR_DH AF_CONSTEXPR __DH__
+#define CONSTEXPR_DH constexpr __DH__
 #else
 #define CONSTEXPR_DH __DH__
 #endif
@@ -118,7 +118,7 @@ CONSTEXPR_DH native_half_t float2half_impl(float value) noexcept {
     uint32_t bits = 0;  // = *reinterpret_cast<uint32*>(&value);
                         // //violating strict aliasing!
     std::memcpy(&bits, &value, sizeof(float));
-    static const uint16_t base_table[512] = {
+    constexpr uint16_t base_table[512] = {
         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
         0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
@@ -177,7 +177,7 @@ CONSTEXPR_DH native_half_t float2half_impl(float value) noexcept {
         0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00,
         0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00, 0xFC00};
 
-    static const uint8_t shift_table[512] = {
+    constexpr uint8_t shift_table[512] = {
         24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
         24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
         24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
@@ -653,7 +653,7 @@ CONSTEXPR_DH inline float half2float(native_half_t value) noexcept {
         0x387F0000, 0x387F2000, 0x387F4000, 0x387F6000, 0x387F8000, 0x387FA000,
         0x387FC000, 0x387FE000};
 
-    static const uint32_t exponent_table[64] = {
+    constexpr uint32_t exponent_table[64] = {
         0x00000000, 0x00800000, 0x01000000, 0x01800000, 0x02000000, 0x02800000,
         0x03000000, 0x03800000, 0x04000000, 0x04800000, 0x05000000, 0x05800000,
         0x06000000, 0x06800000, 0x07000000, 0x07800000, 0x08000000, 0x08800000,
@@ -666,7 +666,7 @@ CONSTEXPR_DH inline float half2float(native_half_t value) noexcept {
         0x8B000000, 0x8B800000, 0x8C000000, 0x8C800000, 0x8D000000, 0x8D800000,
         0x8E000000, 0x8E800000, 0x8F000000, 0xC7800000};
 
-    static const uint16_t offset_table[64] = {
+    constexpr uint16_t offset_table[64] = {
         0,    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
         1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
         1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 0,
@@ -695,7 +695,7 @@ CONSTEXPR_DH inline float half2float(native_half_t value) noexcept {
 ///           value
 /// \param value The value to convert to integer
 template<std::float_round_style R, bool E, typename T>
-__DH__ T half2int(native_half_t value) {
+constexpr T half2int(native_half_t value) {
     static_assert(std::is_integral<T>::value,
                   "half to int conversion only supports builtin integer types");
     unsigned int e = value & 0x7FFF;

@@ -209,6 +209,7 @@ install(DIRECTORY include/ DESTINATION ${AF_INSTALL_INC_DIR}
 ## The ArrayFire version file is generated and won't be included above, install
 ## it separately.
 install(FILES ${ArrayFire_BINARY_DIR}/include/af/version.h
+              ${ArrayFire_BINARY_DIR}/include/af/compilers.h
         DESTINATION "${AF_INSTALL_INC_DIR}/af/"
         COMPONENT headers)
 
