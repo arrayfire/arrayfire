@@ -280,7 +280,7 @@ bool passesJitHeuristics(Node *root_node) {
         // This is the maximum size of the params that can be allowed by the
         // CUDA platform.
         constexpr size_t max_nvidia_param_size = (4096 - base_param_size);
-        constexpr size_t max_amd_param_size    = (3670 - base_param_size);
+        constexpr size_t max_amd_param_size    = (3520 - base_param_size);
 
         size_t max_param_size = 0;
         if (isNvidia) {
