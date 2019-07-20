@@ -138,7 +138,7 @@ class AFAPI index {
     ///
     index & operator=(const index& idx0);
 
-#if __cplusplus > 199711L
+#if AF_COMPILER_CXX_RVALUE_REFERENCES
     ///
     /// \brief Move constructor
     ///

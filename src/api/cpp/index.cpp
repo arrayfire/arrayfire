@@ -82,7 +82,6 @@ index &index::operator=(const index &idx0) {
     return *this;
 }
 
-#if __cplusplus > 199711L
 index::index(index &&idx0) {
     impl              = idx0.impl;
     idx0.impl.idx.arr = nullptr;
@@ -93,7 +92,6 @@ index &index::operator=(index &&idx0) {
     idx0.impl.idx.arr = nullptr;
     return *this;
 }
-#endif
 
 static bool operator==(const af_seq &lhs, const af_seq &rhs) {
     return lhs.begin == rhs.begin && lhs.end == rhs.end && lhs.step == rhs.step;

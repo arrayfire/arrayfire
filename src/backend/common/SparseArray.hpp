@@ -117,10 +117,8 @@ class SparseArrayBase {
     /// Returns the storage format of the SparseArray
     af::storage getStorage() const { return stype; }
 };
-#if __cplusplus > 199711L
 static_assert(std::is_standard_layout<SparseArrayBase>::value,
               "SparseArrayBase must be a standard layout type");
-#endif
 
 ////////////////////////////////////////////////////////////////////////////
 // Sparse Array Class

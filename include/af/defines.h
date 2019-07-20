@@ -9,6 +9,10 @@
 
 #pragma once
 
+#ifndef __CUDACC_RTC__
+#include <af/compilers.h>
+#endif
+
 #if defined(_WIN32) || defined(_MSC_VER)
     // http://msdn.microsoft.com/en-us/library/b0084kay(v=VS.80).aspx
     // http://msdn.microsoft.com/en-us/library/3y1sfaz2%28v=VS.80%29.aspx
@@ -39,9 +43,6 @@
 #else
     #define AF_DEPRECATED(msg) __attribute__((deprecated))
 #endif
-    #if __cpp_variadic_templates >= 200704
-        #define AF_HAS_VARIADIC_TEMPLATES
-    #endif
 #endif
 
 // Known 64-bit x86 and ARM architectures use long long

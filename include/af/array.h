@@ -8,13 +8,15 @@
  ********************************************************/
 
 #pragma once
+#include <af/compilers.h>
 #include <af/defines.h>
+#include <af/index.h>
 #include <af/seq.h>
 #include <af/util.h>
-#include <af/index.h>
 
 #ifdef __cplusplus
 #include <af/traits.hpp>
+
 namespace af
 {
 
@@ -49,7 +51,7 @@ namespace af
         public:
             array_proxy(array& par, af_index_t *ssss, bool linear = false);
             array_proxy(const array_proxy &other);
-#if __cplusplus > 199711L
+#if AF_COMPILER_CXX_RVALUE_REFERENCES
             array_proxy(array_proxy &&other);
             array_proxy & operator=(array_proxy &&other);
 #endif
@@ -1413,7 +1415,7 @@ namespace af
     */
     inline const array &eval(const array &a) { a.eval(); return a; }
 
-#ifdef AF_HAS_VARIADIC_TEMPLATES
+#if AF_COMPILER_CXX_VARIADIC_TEMPLATES
     template <typename... ARRAYS>
     inline void eval(ARRAYS... in) {
         array *arrays[] = {const_cast<array *>(&in)...};
@@ -1454,7 +1456,7 @@ namespace af
         const array *arrays[] = {&a, &b, &c, &d, &e, &f};
         return eval(6, const_cast<array **>(arrays));
     }
-#endif  // __cplusplus > 199711L
+#endif // AF_COMPILER_CXX_VARIADIC_TEMPLATES
 #endif
 
 #if AF_API_VERSION >= 34

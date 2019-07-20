@@ -175,10 +175,12 @@ macro(arrayfire_set_cmake_default_variables)
 
   include(WriteCompilerDetectionHeader)
   write_compiler_detection_header(
-          FILE ${ArrayFire_BINARY_DIR}/include/compiler_header.h
+          FILE ${ArrayFire_BINARY_DIR}/include/af/compilers.h
           PREFIX AF
-          COMPILERS MSVC GNU Clang AppleClang Intel
-          FEATURES cxx_constexpr cxx_relaxed_constexpr cxx_alignas cxx_thread_local
+          COMPILERS AppleClang Clang GNU Intel MSVC
+          # NOTE: cxx_attribute_deprecated does not work well with C
+          FEATURES cxx_rvalue_references cxx_noexcept cxx_variadic_templates cxx_alignas cxx_static_assert
+          ALLOW_UNKNOWN_COMPILERS
           #[VERSION <version>]
           #[PROLOG <prolog>]
           #[EPILOG <epilog>]
