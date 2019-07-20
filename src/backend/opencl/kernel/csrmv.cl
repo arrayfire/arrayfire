@@ -101,6 +101,9 @@ __kernel void csrmv_block(__global T *output, __global const T *values,
     int rowNext = get_group_id(0);
     __local int s_rowId;
 
+    // Each thread stores part of the output result
+    __local T s_outval[THREADS];
+
     // Each groups performs multiple "dot" operations
     while (true) {
 #if USE_GREEDY
@@ -119,9 +122,6 @@ __kernel void csrmv_block(__global T *output, __global const T *values,
         rowNext += get_num_groups(0);
 #endif
         if (rowId >= M) return;
-
-        // Each thread stores part of the output result
-        __local T s_outval[THREADS];
 
         int colStart = rowidx[rowId];
         int colEnd   = rowidx[rowId + 1];
