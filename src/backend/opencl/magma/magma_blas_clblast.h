@@ -59,7 +59,9 @@ template <typename T> typename CLBlastType<T>::Type inline toCLBlastConstant(con
 template <> float inline toCLBlastConstant(const float val) { return val; }
 template <> double inline toCLBlastConstant(const double val) { return val; }
 template <> cl_half inline toCLBlastConstant(const common::half val) {
-    return static_cast<cl_half>(static_cast<float>(val));
+    cl_half out;
+    memcpy(&out, &val, sizeof(cl_half));
+    return out;
 }
 template <> std::complex<float> inline toCLBlastConstant(cfloat val) { return {val.s[0], val.s[1]}; }
 template <> std::complex<double> inline toCLBlastConstant(cdouble val) { return {val.s[0], val.s[1]}; }
