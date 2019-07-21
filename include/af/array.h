@@ -1540,6 +1540,8 @@ extern "C" {
 
     /**
        \brief Reduce the reference count of the \ref af_array
+
+       \note Zero initialized af_arrays can be accepted after version 3.7
     */
     AFAPI af_err af_release_array(af_array arr);
 
