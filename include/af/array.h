@@ -169,7 +169,7 @@ namespace af
             @{
         */
         /**
-            Create undimensioned array (no data, undefined size)
+            Create an uninitialized array (no data, undefined size)
 
             \code
             array A, B, C;   // creates three arrays called A, B and C
@@ -177,6 +177,31 @@ namespace af
         */
         array();
 
+#if AF_API_VERSION >= 37
+#if AF_COMPILER_CXX_RVALUE_REFERENCES
+        /**
+            Move constructor
+
+            Moves the \p other af::array into the current af::array. After this
+            operation, the \p other array will not be left uninitialized.
+
+            \param[in] other The array to be moved
+        */
+        array(array &&other) AF_NOEXCEPT;
+
+        /**
+            Move assignment operator
+
+            Moves the array into the current array. After this operation the
+            \p other array is left uninitialized. The previously referenced
+            af_array of the current object is released.
+
+            \param[in] other The array to be moved
+            \returns the reference to the current array
+        */
+        array &operator=(array &&other) AF_NOEXCEPT;
+#endif
+#endif
         /**
             Creates an array from an \ref af_array handle
             \param handle the af_array object.
