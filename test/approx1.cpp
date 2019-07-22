@@ -843,7 +843,7 @@ void testSpclOutArray(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
     TestOutputArrayInfo metadata(out_array_type);
     genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(), f32,
                        &metadata);
-    ASSERT_SUCCESS(af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0));
+    ASSERT_SUCCESS(af_approx1_v2(&out, in, pos, AF_INTERP_LINEAR, 0));
 
     af_array gold = 0;
     ASSERT_SUCCESS(af_create_array(&gold, h_gold, gold_dims.ndims(),

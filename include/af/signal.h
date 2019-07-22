@@ -776,6 +776,9 @@ extern "C" {
 AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
                         const af_interp_type method, const float off_grid);
 
+AFAPI af_err af_approx1_v2(af_array *out, const af_array in, const af_array pos,
+                           const af_interp_type method, const float off_grid);
+
 /**
    C Interface for signals interpolation on two dimensional signals.
 
@@ -839,6 +842,11 @@ AFAPI af_err af_approx1_uniform(af_array *out, const af_array in,
                                 const af_array pos, const int interp_dim,
                                 const double idx_start, const double idx_step,
                                 const af_interp_type method, const float off_grid);
+
+AFAPI af_err af_approx1_uniform_v2(af_array *out, const af_array in,
+                                   const af_array pos, const int interp_dim,
+                                   const double idx_start, const double idx_step,
+                                   const af_interp_type method, const float off_grid);
 
 /**
    C Interface for signals interpolation on two dimensional signals alog specified dimensions.
