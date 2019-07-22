@@ -767,10 +767,6 @@ extern "C" {
    \return        \ref AF_SUCCESS if the interpolation operation is successful,
                   otherwise an appropriate error code is returned.
 
-   \note \p out can either be a null or existing `af_array` object. If it is a
-         sub-array of an existing `af_array`, only the corresponding portion of
-         the `af_array` will be overwritten
-
    \ingroup signal_func_approx1
  */
 AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
@@ -855,10 +851,6 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
                              valid range of indices.
    \return        \ref AF_SUCCESS if the interpolation operation is successful,
                   otherwise an appropriate error code is returned.
-
-   \note \p out can either be a null or existing `af_array` object. If it is a
-         sub-array of an existing `af_array`, only the corresponding portion of
-         the `af_array` will be overwritten
 
    \ingroup signal_func_approx1
  */
