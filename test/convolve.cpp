@@ -893,7 +893,7 @@ TEST_P(Conv2ConsistencyTest, RandomConvolutions) {
 template <typename T>
 void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
                           dim4 dilation) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;
@@ -944,7 +944,7 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
 template <typename T>
 void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
                            dim4 dilation) {
-    if (noDoubleTests<T>()) return;
+    SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
     vector<vector<T> > in;

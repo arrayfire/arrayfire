@@ -9,18 +9,11 @@
 
 #pragma once
 
-#include <GraphicsResourceManager.hpp>
-#include <cublas.hpp>
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <cudnn.hpp>
-#include <cufft.hpp>
-#include <cusolverDn.hpp>
-#include <cusparse.hpp>
-#include <memory.hpp>
 
-#include <memory>
 #include <string>
+#include <utility>
 
 /* Forward declarations of Opaque structure holding
  * the following library contexts
@@ -34,6 +27,8 @@ struct cusparseContext;
 typedef struct cusparseContext* SparseHandle;
 struct cusolverDnContext;
 typedef struct cusolverDnContext* SolveHandle;
+struct cudnnContext;
+typedef struct cudnnContext* cudnnHandle_t;
 
 namespace spdlog {
 class logger;
