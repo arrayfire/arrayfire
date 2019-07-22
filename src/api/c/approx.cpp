@@ -125,19 +125,7 @@ af_err af_approx1_uniform_v2(af_array *yo, const af_array yi, const af_array xo,
                              const int xdim, const double xi_beg,
                              const double xi_step, const af_interp_type method,
                              const float offGrid) {
-    const ArrayInfo &yi_info = getInfo(yi);
-    const ArrayInfo &xo_info = getInfo(xo);
-
-    const dim4 yi_dims = yi_info.dims();
-    const dim4 xo_dims = xo_info.dims();
-
-    dim4 yo_dims  = yi_dims;
-    yo_dims[xdim] = xo_dims[xdim];
-    if (*yo == 0) { *yo = createHandle(yo_dims, yi_info.getType()); }
-
-    DIM_ASSERT(1, getInfo(*yo).dims() == yo_dims);
-
-    return af_approx1_common(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid, false);
+    return af_approx1_common(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid, *yo == 0);
 }
 
 af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
@@ -147,20 +135,7 @@ af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
 
 af_err af_approx1_v2(af_array *yo, const af_array yi, const af_array xo,
                      const af_interp_type method, const float offGrid) {
-    const ArrayInfo &yi_info = getInfo(yi);
-    const ArrayInfo &xo_info = getInfo(xo);
-
-    const dim4 yi_dims = yi_info.dims();
-    const dim4 xo_dims = xo_info.dims();
-    const int xdim = 0;
-
-    dim4 yo_dims  = yi_dims;
-    yo_dims[xdim] = xo_dims[xdim];
-    if (*yo == 0) { *yo = createHandle(yo_dims, yi_info.getType()); }
-
-    DIM_ASSERT(1, getInfo(*yo).dims() == yo_dims);
-
-    return af_approx1_common(yo, yi, xo, xdim, 0.0, 1.0, method, offGrid, false);
+    return af_approx1_common(yo, yi, xo, 0, 0.0, 1.0, method, offGrid, *yo == 0);
 }
 
 af_err af_approx2_uniform(af_array *zo, const af_array zi, const af_array xo,
