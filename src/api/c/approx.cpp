@@ -47,11 +47,10 @@ af_err af_approx1_common(af_array *yo, const af_array yi,
                          const af_array xo, const int xdim,
                          const double xi_beg, const double xi_step,
                          const af_interp_type method, const float offGrid,
-                         const bool allocate_yo)
-{
+                         const bool allocate_yo) {
     try {
-        const ArrayInfo& yi_info = getInfo(yi);
-        const ArrayInfo& xo_info = getInfo(xo);
+        const ArrayInfo &yi_info = getInfo(yi);
+        const ArrayInfo &xo_info = getInfo(xo);
 
         dim4 yi_dims = yi_info.dims();
         dim4 xo_dims = xo_info.dims();
