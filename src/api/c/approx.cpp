@@ -52,8 +52,8 @@ af_err af_approx1_common(af_array *yo, const af_array yi,
         const ArrayInfo &yi_info = getInfo(yi);
         const ArrayInfo &xo_info = getInfo(xo);
 
-        dim4 yi_dims = yi_info.dims();
-        dim4 xo_dims = xo_info.dims();
+        const dim4 yi_dims = yi_info.dims();
+        const dim4 xo_dims = xo_info.dims();
 
         ARG_ASSERT(1, yi_info.isFloating());                        // Only floating and complex types
         ARG_ASSERT(2, xo_info.isRealFloating()) ;                   // Only floating types
