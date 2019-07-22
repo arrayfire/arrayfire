@@ -187,6 +187,16 @@ macro(arrayfire_set_cmake_default_variables)
           )
 endmacro()
 
+macro(set_policies)
+  cmake_parse_arguments(SP "" "TYPE" "POLICIES" ${ARGN})
+  foreach(_policy ${SP_POLICIES})
+    if(POLICY ${_policy})
+      message(STATUS ${_policy} ${SP_TYPE})
+      cmake_policy(SET ${_policy} ${SP_TYPE})
+    endif()
+  endforeach()
+endmacro()
+
 mark_as_advanced(
     pkgcfg_lib_PC_CBLAS_cblas
     pkgcfg_lib_PC_LAPACKE_lapacke

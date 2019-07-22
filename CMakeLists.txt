@@ -10,10 +10,6 @@ project(ArrayFire
   VERSION 3.7.0
   LANGUAGES C CXX )
 
-if(POLICY CMP0073)
-  cmake_policy(SET CMP0073 NEW)
-endif()
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 include(AFInstallDirs)
 include(CMakeDependentOption)
@@ -24,6 +20,10 @@ include(platform)
 include(GetPrerequisites)
 include(CheckCXXCompilerFlag)
 
+set_policies(
+  TYPE NEW
+  POLICIES CMP0073
+           CMP0074)
 arrayfire_set_cmake_default_variables()
 
 #Set Intel OpenMP as default MKL thread layer
