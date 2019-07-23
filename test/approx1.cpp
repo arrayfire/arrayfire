@@ -1043,33 +1043,33 @@ TYPED_TEST(Approx1, UseReorderedOutputArrayUniform) {
 }
 
 TEST(Approx1, NullOutputPtrApprox1) {
-    af_array *out_ptr = 0;
-    af_array in = 0;
-    af_array pos = 0;
+    af_array* out_ptr = 0;
+    af_array in       = 0;
+    af_array pos      = 0;
     ASSERT_EQ(af_approx1(out_ptr, in, pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
 }
 
 TEST(Approx1, NullOutputPtrApprox1Uniform) {
-    af_array *out_ptr = 0;
-    af_array in = 0;
-    af_array pos = 0;
+    af_array* out_ptr = 0;
+    af_array in       = 0;
+    af_array pos      = 0;
     ASSERT_EQ(af_approx1_uniform(out_ptr, in, pos, 0, 0.0, 1.0,
                                  AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
 TEST(Approx1, NullOutputPtrApprox1V2) {
-    af_array *out_ptr = 0;
-    af_array in = 0;
-    af_array pos = 0;
+    af_array* out_ptr = 0;
+    af_array in       = 0;
+    af_array pos      = 0;
     ASSERT_EQ(af_approx1_v2(out_ptr, in, pos, AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
 TEST(Approx1, NullOutputPtrApprox1UniformV2) {
-    af_array *out_ptr = 0;
-    af_array in = 0;
-    af_array pos = 0;
+    af_array* out_ptr = 0;
+    af_array in       = 0;
+    af_array pos      = 0;
     ASSERT_EQ(af_approx1_uniform_v2(out_ptr, in, pos, 0, 0.0, 1.0,
                                     AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
@@ -1077,26 +1077,26 @@ TEST(Approx1, NullOutputPtrApprox1UniformV2) {
 
 TEST(Approx1, NullInputArray) {
     af_array out = 0;
-    af_array in = 0;
+    af_array in  = 0;
     af_array pos = 0;
 
     float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     dim4 pos_dims(5);
-    ASSERT_SUCCESS(af_create_array(&pos, h_pos, pos_dims.ndims(),
-                                   pos_dims.get(), f32));
+    ASSERT_SUCCESS(
+        af_create_array(&pos, h_pos, pos_dims.ndims(), pos_dims.get(), f32));
 
     ASSERT_EQ(af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
 }
 
 TEST(Approx1, NullPosArray) {
     af_array out = 0;
-    af_array in = 0;
+    af_array in  = 0;
     af_array pos = 0;
 
     float h_in[3] = {10.0f, 20.0f, 30.0f};
     dim4 in_dims(3);
-    ASSERT_SUCCESS(af_create_array(&in, h_in, in_dims.ndims(),
-                                   in_dims.get(), f32));
+    ASSERT_SUCCESS(
+        af_create_array(&in, h_in, in_dims.ndims(), in_dims.get(), f32));
 
     ASSERT_EQ(af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
 }
