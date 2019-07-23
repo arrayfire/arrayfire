@@ -772,6 +772,7 @@ extern "C" {
 AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
                         const af_interp_type method, const float off_grid);
 
+#if AF_API_VERSION >= 37
 /**
    C Interface for the version of \ref af_approx1 that accepts a preallocated
    output array
@@ -793,11 +794,14 @@ AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
    \note \p out can either be a null or existing `af_array` object. If it is a
          sub-array of an existing `af_array`, only the corresponding portion of
          the `af_array` will be overwritten
+   \note Passing an `af_array` that has not been initialized to \p out will cause
+         undefined behavior.
 
    \ingroup signal_func_approx1
  */
 AFAPI af_err af_approx1_v2(af_array *out, const af_array in, const af_array pos,
                            const af_interp_type method, const float off_grid);
+#endif
 
 /**
    C Interface for signals interpolation on two dimensional signals.
@@ -885,6 +889,8 @@ AFAPI af_err af_approx1_uniform(af_array *out, const af_array in,
    \note \p out can either be a null or existing `af_array` object. If it is a
          sub-array of an existing `af_array`, only the corresponding portion of
          the `af_array` will be overwritten
+   \note Passing an `af_array` to \p out that has not been initialized will cause
+         undefined behavior.
 
    \ingroup signal_func_approx1
  */

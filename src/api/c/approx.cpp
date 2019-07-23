@@ -124,6 +124,8 @@ af_err af_approx1_uniform_v2(af_array *yo, const af_array yi, const af_array xo,
                              const int xdim, const double xi_beg,
                              const double xi_step, const af_interp_type method,
                              const float offGrid) {
+    // For a "v2" function, assume that the output has already been initialized
+    // either to null or an existing af_array
     return af_approx1_common(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid,
                              *yo == 0);
 }
@@ -135,6 +137,8 @@ af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
 
 af_err af_approx1_v2(af_array *yo, const af_array yi, const af_array xo,
                      const af_interp_type method, const float offGrid) {
+    // For a "v2" function, assume that the output has already been initialized
+    // either to null or an existing af_array
     return af_approx1_common(yo, yi, xo, 0, 0.0, 1.0, method, offGrid,
                              *yo == 0);
 }
