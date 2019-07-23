@@ -853,12 +853,12 @@ void testSpclOutArray(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
     af_array in  = 0;
     af_array pos = 0;
 
-    ASSERT_SUCCESS(
-        af_create_array(&in, &h_in_cast.front(), in_dims.ndims(), in_dims.get(),
-                        (af_dtype)dtype_traits<T>::af_type));
-    ASSERT_SUCCESS(
-        af_create_array(&pos, &h_pos_cast.front(), pos_dims.ndims(), pos_dims.get(),
-                        (af_dtype)dtype_traits<BT>::af_type));
+    ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
+                                   in_dims.get(),
+                                   (af_dtype)dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&pos, &h_pos_cast.front(), pos_dims.ndims(),
+                                   pos_dims.get(),
+                                   (af_dtype)dtype_traits<BT>::af_type));
 
     af_array out = 0;
     TestOutputArrayInfo metadata(out_array_type);
@@ -941,8 +941,8 @@ TYPED_TEST(Approx1, UseReorderedOutputArray) {
 }
 
 template<typename T>
-void testSpclOutArrayUniform(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
-                             float* h_pos, dim4 pos_dims,
+void testSpclOutArrayUniform(float* h_gold, dim4 gold_dims, float* h_in,
+                             dim4 in_dims, float* h_pos, dim4 pos_dims,
                              TestOutputArrayType out_array_type) {
     SUPPORTED_TYPE_CHECK(T);
     typedef typename dtype_traits<T>::base_type BT;
@@ -954,18 +954,19 @@ void testSpclOutArrayUniform(float* h_gold, dim4 gold_dims, float* h_in, dim4 in
     af_array in  = 0;
     af_array pos = 0;
 
-    ASSERT_SUCCESS(
-        af_create_array(&in, &h_in_cast.front(), in_dims.ndims(), in_dims.get(),
-                        (af_dtype)dtype_traits<T>::af_type));
-    ASSERT_SUCCESS(
-        af_create_array(&pos, &h_pos_cast.front(), pos_dims.ndims(), pos_dims.get(),
-                        (af_dtype)dtype_traits<BT>::af_type));
+    ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
+                                   in_dims.get(),
+                                   (af_dtype)dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&pos, &h_pos_cast.front(), pos_dims.ndims(),
+                                   pos_dims.get(),
+                                   (af_dtype)dtype_traits<BT>::af_type));
 
     af_array out = 0;
     TestOutputArrayInfo metadata(out_array_type);
     genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
                        (af_dtype)dtype_traits<T>::af_type, &metadata);
-    ASSERT_SUCCESS(af_approx1_uniform_v2(&out, in, pos, 0, 0.0, 1.0, AF_INTERP_LINEAR, 0.f));
+    ASSERT_SUCCESS(af_approx1_uniform_v2(&out, in, pos, 0, 0.0, 1.0,
+                                         AF_INTERP_LINEAR, 0.f));
 
     af_array gold = 0;
     ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
@@ -990,8 +991,8 @@ TYPED_TEST(Approx1, UseNullOutputArrayUniform) {
     dim4 gold_dims(5);
 
     SCOPED_TRACE("UseNullOutputArray");
-    testSpclOutArrayUniform<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos, pos_dims,
-                                       NULL_ARRAY);
+    testSpclOutArrayUniform<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos,
+                                       pos_dims, NULL_ARRAY);
 }
 
 TYPED_TEST(Approx1, UseFullExistingOutputArrayUniform) {
@@ -1005,8 +1006,8 @@ TYPED_TEST(Approx1, UseFullExistingOutputArrayUniform) {
     dim4 gold_dims(5);
 
     SCOPED_TRACE("UseFullExistingOutputArray");
-    testSpclOutArrayUniform<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos, pos_dims,
-                                       FULL_ARRAY);
+    testSpclOutArrayUniform<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos,
+                                       pos_dims, FULL_ARRAY);
 }
 
 TYPED_TEST(Approx1, UseExistingOutputSubArrayUniform) {
@@ -1020,8 +1021,8 @@ TYPED_TEST(Approx1, UseExistingOutputSubArrayUniform) {
     dim4 gold_subarr_dims(5);
 
     SCOPED_TRACE("UseExistingOutputSubArray");
-    testSpclOutArrayUniform<TypeParam>(h_gold_subarr, gold_subarr_dims, h_in, in_dims, h_pos,
-                                       pos_dims, SUB_ARRAY);
+    testSpclOutArrayUniform<TypeParam>(h_gold_subarr, gold_subarr_dims, h_in,
+                                       in_dims, h_pos, pos_dims, SUB_ARRAY);
 }
 
 TYPED_TEST(Approx1, UseReorderedOutputArrayUniform) {
@@ -1037,6 +1038,6 @@ TYPED_TEST(Approx1, UseReorderedOutputArrayUniform) {
     dim4 gold_dims(5, 3);
 
     SCOPED_TRACE("UseReorderedOutputArray");
-    testSpclOutArrayUniform<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos, pos_dims,
-                                       REORDERED_ARRAY);
+    testSpclOutArrayUniform<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos,
+                                       pos_dims, REORDERED_ARRAY);
 }

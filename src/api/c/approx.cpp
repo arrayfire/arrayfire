@@ -43,11 +43,10 @@ static inline af_array approx2(const af_array zi, const af_array xo,
                                  yi_beg, yi_step, method, offGrid));
 }
 
-af_err af_approx1_common(af_array *yo, const af_array yi,
-                         const af_array xo, const int xdim,
-                         const double xi_beg, const double xi_step,
-                         const af_interp_type method, const float offGrid,
-                         const bool allocate_yo) {
+af_err af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
+                         const int xdim, const double xi_beg,
+                         const double xi_step, const af_interp_type method,
+                         const float offGrid, const bool allocate_yo) {
     try {
         const ArrayInfo &yi_info = getInfo(yi);
         const ArrayInfo &xo_info = getInfo(xo);
@@ -76,7 +75,7 @@ af_err af_approx1_common(af_array *yo, const af_array yi,
                        method == AF_INTERP_LOWER         ||
                        method == AF_INTERP_NEAREST));
 
-        if (yi_dims.ndims() == 0 || xo_dims.ndims() ==  0) {
+        if (yi_dims.ndims() == 0 || xo_dims.ndims() == 0) {
             return af_create_handle(yo, 0, nullptr, yi_info.getType());
         }
 
@@ -113,18 +112,20 @@ af_err af_approx1_common(af_array *yo, const af_array yi,
     return AF_SUCCESS;
 }
 
-af_err af_approx1_uniform(af_array *yo, const af_array yi,
-                          const af_array xo, const int xdim,
-                          const double xi_beg, const double xi_step,
-                          const af_interp_type method, const float offGrid) {
-    return af_approx1_common(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid, true);
+af_err af_approx1_uniform(af_array *yo, const af_array yi, const af_array xo,
+                          const int xdim, const double xi_beg,
+                          const double xi_step, const af_interp_type method,
+                          const float offGrid) {
+    return af_approx1_common(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid,
+                             true);
 }
 
 af_err af_approx1_uniform_v2(af_array *yo, const af_array yi, const af_array xo,
                              const int xdim, const double xi_beg,
                              const double xi_step, const af_interp_type method,
                              const float offGrid) {
-    return af_approx1_common(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid, *yo == 0);
+    return af_approx1_common(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid,
+                             *yo == 0);
 }
 
 af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
@@ -134,7 +135,8 @@ af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
 
 af_err af_approx1_v2(af_array *yo, const af_array yi, const af_array xo,
                      const af_interp_type method, const float offGrid) {
-    return af_approx1_common(yo, yi, xo, 0, 0.0, 1.0, method, offGrid, *yo == 0);
+    return af_approx1_common(yo, yi, xo, 0, 0.0, 1.0, method, offGrid,
+                             *yo == 0);
 }
 
 af_err af_approx2_uniform(af_array *zo, const af_array zi, const af_array xo,
