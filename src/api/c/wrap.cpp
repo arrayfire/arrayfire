@@ -38,6 +38,7 @@ af_err af_wrap_common(af_array* out, const af_array in, const dim_t ox, const di
         const ArrayInfo& info = getInfo(in);
         const af_dtype in_type = info.getType();
         const dim4 in_dims = info.dims();
+        const dim4 out_dims(ox, oy, in_dims[2], in_dims[3]);
 
         ARG_ASSERT(4, wx > 0);
         ARG_ASSERT(5, wy > 0);
@@ -54,8 +55,10 @@ af_err af_wrap_common(af_array* out, const af_array in, const dim_t ox, const di
         DIM_ASSERT(1, num_patches == nx * ny);
 
         if (allocate_out) {
-            *out = createHandle(dim4(ox, oy, in_dims[2], in_dims[3]), in_type);
+            *out = createHandle(out_dims, in_type);
         }
+
+        DIM_ASSERT(1, getInfo(*out).dims() == out_dims);
 
         switch(in_type) {
             case f32: wrap<float  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
