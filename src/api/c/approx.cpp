@@ -57,6 +57,8 @@ af_err af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
 
         const dim4 yi_dims = yi_info.dims();
         const dim4 xo_dims = xo_info.dims();
+        dim4 yo_dims  = yi_dims;
+        yo_dims[xdim] = xo_dims[xdim];
 
         ARG_ASSERT(1, yi_info.isFloating());                        // Only floating and complex types
         ARG_ASSERT(2, xo_info.isRealFloating()) ;                   // Only floating types
@@ -84,12 +86,10 @@ af_err af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
         }
 
         if (allocate_yo) {
-            dim4 yo_dims  = yi_dims;
-            yo_dims[xdim] = xo_dims[xdim];
             *yo = createHandle(yo_dims, yi_info.getType());
-
-            DIM_ASSERT(1, getInfo(*yo).dims() == yo_dims);
         }
+
+        DIM_ASSERT(1, getInfo(*yo).dims() == yo_dims);
 
         switch (yi_info.getType()) {
             case f32:
