@@ -25,19 +25,23 @@ static inline void wrap(af_array *out, const af_array in,
                         const dim_t sx, const dim_t sy,
                         const dim_t px, const dim_t py,
                         const bool is_column) {
-    wrap<T>(getArray<T>(*out), getArray<T>(in), ox, oy, wx, wy, sx, sy, px, py, is_column);
+    wrap<T>(getArray<T>(*out), getArray<T>(in), ox, oy, wx, wy, sx, sy, px, py,
+            is_column);
 }
 
-af_err af_wrap_common(af_array* out, const af_array in, const dim_t ox, const dim_t oy,
-                      const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
-                      const dim_t px, const dim_t py, const bool is_column, bool allocate_out) {
+af_err af_wrap_common(af_array *out, const af_array in,
+                      const dim_t ox, const dim_t oy,
+                      const dim_t wx, const dim_t wy,
+                      const dim_t sx, const dim_t sy,
+                      const dim_t px, const dim_t py,
+                      const bool is_column, bool allocate_out) {
     try {
         ARG_ASSERT(0, out != 0);
         ARG_ASSERT(1, in != 0);
 
-        const ArrayInfo& info = getInfo(in);
+        const ArrayInfo& info  = getInfo(in);
         const af_dtype in_type = info.getType();
-        const dim4 in_dims = info.dims();
+        const dim4 in_dims     = info.dims();
         const dim4 out_dims(ox, oy, in_dims[2], in_dims[3]);
 
         ARG_ASSERT(4, wx > 0);
@@ -54,12 +58,11 @@ af_err af_wrap_common(af_array* out, const af_array in, const dim_t ox, const di
         DIM_ASSERT(1, patch_size == wx * wy);
         DIM_ASSERT(1, num_patches == nx * ny);
 
-        if (allocate_out) {
-            *out = createHandle(out_dims, in_type);
-        }
+        if (allocate_out) { *out = createHandle(out_dims, in_type); }
 
         DIM_ASSERT(1, getInfo(*out).dims() == out_dims);
 
+        // clang-format off
         switch(in_type) {
             case f32: wrap<float  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
             case f64: wrap<double >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
@@ -75,23 +78,32 @@ af_err af_wrap_common(af_array* out, const af_array in, const dim_t ox, const di
             case b8:  wrap<char   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
             default:  TYPE_ERROR(1, in_type);
         }
+        // clang-format on
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_wrap(af_array* out, const af_array in, const dim_t ox, const dim_t oy,
-               const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
-               const dim_t px, const dim_t py, const bool is_column) {
-    return af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column, true);
+af_err af_wrap(af_array* out, const af_array in,
+               const dim_t ox, const dim_t oy,
+               const dim_t wx, const dim_t wy,
+               const dim_t sx, const dim_t sy,
+               const dim_t px, const dim_t py,
+               const bool is_column) {
+    return af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column,
+                          true);
 }
 
-af_err af_wrap_v2(af_array* out, const af_array in, const dim_t ox, const dim_t oy,
-                  const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
-                  const dim_t px, const dim_t py, const bool is_column) {
+af_err af_wrap_v2(af_array* out, const af_array in,
+                  const dim_t ox, const dim_t oy,
+                  const dim_t wx, const dim_t wy,
+                  const dim_t sx, const dim_t sy,
+                  const dim_t px, const dim_t py,
+                  const bool is_column) {
     if (out == 0) return AF_ERR_ARG;
     // Since this is v2, assume that the output has already been initialized
     // either to null or an existing af_array
-    return af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column, *out == 0);
+    return af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column,
+                          *out == 0);
 }

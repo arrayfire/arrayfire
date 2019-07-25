@@ -18,8 +18,7 @@
 
 using common::half;
 
-namespace opencl
-{
+namespace opencl {
 
 template<typename T>
 void wrap(Array<T> &out, const Array<T> &in,

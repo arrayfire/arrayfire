@@ -25,8 +25,7 @@ void wrap(Array<T> &out, const Array<T> &in,
           const dim_t wx, const dim_t wy,
           const dim_t sx, const dim_t sy,
           const dim_t px, const dim_t py,
-          const bool is_column)
-{
+          const bool is_column) {
     evalMultiple<T>(std::vector<Array<T>*>{const_cast<Array<T>*>(&in), &out});
 
     if (is_column) {
@@ -38,14 +37,13 @@ void wrap(Array<T> &out, const Array<T> &in,
     }
 }
 
-
 #define INSTANTIATE(T)                                          \
-    template void wrap<T> (Array<T> &out,  const Array<T> &in,  \
-                           const dim_t ox, const dim_t oy,      \
-                           const dim_t wx, const dim_t wy,      \
-                           const dim_t sx, const dim_t sy,      \
-                           const dim_t px, const dim_t py,      \
-                           const bool is_column);
+    template void wrap<T>(Array<T> & out, const Array<T> &in,   \
+                          const dim_t ox, const dim_t oy,       \
+                          const dim_t wx, const dim_t wy,       \
+                          const dim_t sx, const dim_t sy,       \
+                          const dim_t px, const dim_t py,       \
+                          const bool is_column);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

@@ -195,7 +195,9 @@ static af_err fft_r2c(af_array *out, const af_array in,
                 output =
                     fft_r2c<double, cdouble, rank>(in, norm_factor, npad, pad);
                 break;
-            default: { TYPE_ERROR(1, type); }
+            default: {
+                TYPE_ERROR(1, type);
+            }
         }
         std::swap(*out, output);
     }

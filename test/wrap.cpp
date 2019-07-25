@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #define GTEST_LINKED_AS_SHARED_LIBRARY 1
-#include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
@@ -153,35 +152,34 @@ void wrapTest(const dim_t ix, const dim_t iy, const dim_t wx, const dim_t wy,
         wrapTest<TypeParam>(ix, iy, wx, wy, sx, sy, px, py, false); \
     }
 
-    WRAP_INIT(00, 300, 100,  3,  3,  1,  1,  0,  0);
-    WRAP_INIT(01, 300, 100,  3,  3,  1,  1,  1,  1);
-    WRAP_INIT(03, 300, 100,  3,  3,  2,  2,  0,  0);
-    WRAP_INIT(04, 300, 100,  3,  3,  2,  2,  1,  1);
-    WRAP_INIT(05, 300, 100,  3,  3,  2,  2,  2,  2);
-    WRAP_INIT(06, 300, 100,  3,  3,  3,  3,  0,  0);
-    WRAP_INIT(07, 300, 100,  3,  3,  3,  3,  1,  1);
-    WRAP_INIT(08, 300, 100,  3,  3,  3,  3,  2,  2);
-    WRAP_INIT(09, 300, 100,  4,  4,  1,  1,  0,  0);
-    WRAP_INIT(13, 300, 100,  4,  4,  2,  2,  0,  0);
-    WRAP_INIT(14, 300, 100,  4,  4,  2,  2,  1,  1);
-    WRAP_INIT(15, 300, 100,  4,  4,  2,  2,  2,  2);
-    WRAP_INIT(16, 300, 100,  4,  4,  2,  2,  3,  3);
-    WRAP_INIT(17, 300, 100,  4,  4,  4,  4,  0,  0);
-    WRAP_INIT(18, 300, 100,  4,  4,  4,  4,  1,  1);
-    WRAP_INIT(19, 300, 100,  4,  4,  4,  4,  2,  2);
-    WRAP_INIT(27, 300, 100,  8,  8,  8,  8,  0,  0);
-    WRAP_INIT(28, 300, 100,  8,  8,  8,  8,  7,  7);
-    WRAP_INIT(31, 300, 100, 12, 12, 12, 12,  0,  0);
-    WRAP_INIT(32, 300, 100, 12, 12, 12, 12,  2,  2);
-    WRAP_INIT(35, 300, 100, 16, 16, 16, 16, 15, 15);
-    WRAP_INIT(36, 300, 100, 31, 31,  8,  8, 15, 15);
-    WRAP_INIT(39, 300, 100,  8, 12,  8, 12,  0,  0);
-    WRAP_INIT(40, 300, 100,  8, 12,  8, 12,  7, 11);
-    WRAP_INIT(43, 300, 100, 15, 10, 15, 10,  0,  0);
-    WRAP_INIT(44, 300, 100, 15, 10, 15, 10, 14,  9);
+WRAP_INIT(00, 300, 100, 3, 3, 1, 1, 0, 0);
+WRAP_INIT(01, 300, 100, 3, 3, 1, 1, 1, 1);
+WRAP_INIT(03, 300, 100, 3, 3, 2, 2, 0, 0);
+WRAP_INIT(04, 300, 100, 3, 3, 2, 2, 1, 1);
+WRAP_INIT(05, 300, 100, 3, 3, 2, 2, 2, 2);
+WRAP_INIT(06, 300, 100, 3, 3, 3, 3, 0, 0);
+WRAP_INIT(07, 300, 100, 3, 3, 3, 3, 1, 1);
+WRAP_INIT(08, 300, 100, 3, 3, 3, 3, 2, 2);
+WRAP_INIT(09, 300, 100, 4, 4, 1, 1, 0, 0);
+WRAP_INIT(13, 300, 100, 4, 4, 2, 2, 0, 0);
+WRAP_INIT(14, 300, 100, 4, 4, 2, 2, 1, 1);
+WRAP_INIT(15, 300, 100, 4, 4, 2, 2, 2, 2);
+WRAP_INIT(16, 300, 100, 4, 4, 2, 2, 3, 3);
+WRAP_INIT(17, 300, 100, 4, 4, 4, 4, 0, 0);
+WRAP_INIT(18, 300, 100, 4, 4, 4, 4, 1, 1);
+WRAP_INIT(19, 300, 100, 4, 4, 4, 4, 2, 2);
+WRAP_INIT(27, 300, 100, 8, 8, 8, 8, 0, 0);
+WRAP_INIT(28, 300, 100, 8, 8, 8, 8, 7, 7);
+WRAP_INIT(31, 300, 100, 12, 12, 12, 12, 0, 0);
+WRAP_INIT(32, 300, 100, 12, 12, 12, 12, 2, 2);
+WRAP_INIT(35, 300, 100, 16, 16, 16, 16, 15, 15);
+WRAP_INIT(36, 300, 100, 31, 31, 8, 8, 15, 15);
+WRAP_INIT(39, 300, 100, 8, 12, 8, 12, 0, 0);
+WRAP_INIT(40, 300, 100, 8, 12, 8, 12, 7, 11);
+WRAP_INIT(43, 300, 100, 15, 10, 15, 10, 0, 0);
+WRAP_INIT(44, 300, 100, 15, 10, 15, 10, 14, 9);
 
-TEST(Wrap, MaxDim)
-{
+TEST(Wrap, MaxDim) {
     const size_t largeDim = 65535 + 1;
     array input           = range(5, 5, 1, largeDim);
 
@@ -250,16 +248,14 @@ TEST(Wrap, DocSnippet) {
     ASSERT_ARRAYS_EQ(gold_B_wrapped, B_wrapped);
 }
 
-static void getInput(af_array *data, const dim_t *dims)
-{
+static void getInput(af_array *data, const dim_t *dims) {
     float h_data[16] = { 10, 20, 20, 30,
                          30, 40, 40, 50,
                          30, 40, 40, 50,
                          50, 60, 60, 70 };
     ASSERT_SUCCESS(af_create_array(data, &h_data[0], 2, dims, f32));
 }
-static void getGold(af_array *gold, const dim_t *dims)
-{
+static void getGold(af_array *gold, const dim_t *dims) {
     float h_gold[16]= { 10, 20, 30, 40,
                         20, 30, 40, 50,
                         30, 40, 50, 60,
@@ -273,7 +269,7 @@ class WrapV2 : public ::testing::Test {};
 TYPED_TEST_CASE(WrapV2, TestTypes);
 
 template<typename T>
-void testSpclOutArray(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
+void testSpclOutArray(float *h_gold, dim4 gold_dims, float *h_in, dim4 in_dims,
                       TestOutputArrayType out_array_type) {
     SUPPORTED_TYPE_CHECK(T);
     typedef typename dtype_traits<T>::base_type BT;
@@ -300,11 +296,11 @@ void testSpclOutArray(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
     genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
                        (af_dtype)dtype_traits<T>::af_type, &metadata);
     // Taken from the Wrap.DocSnippet test
-    ASSERT_SUCCESS(af_wrap_v2(&out, in, 3, 3, // output dims
-                              2, 2,           // window size
-                              2, 2,           // stride
-                              1, 1,           // padding
-                              true));         // is_column
+    ASSERT_SUCCESS(af_wrap_v2(&out, in, 3, 3,  // output dims
+                              2, 2,            // window size
+                              2, 2,            // stride
+                              1, 1,            // padding
+                              true));          // is_column
 
     af_array gold = 0;
     ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
@@ -376,9 +372,7 @@ TYPED_TEST(WrapV2, UseReorderedOutputArray) {
                       5.0f, 6.0f, 8.0f, 9.0f};
     dim4 in_dims(4, 4);
 
-    float h_gold[9] = {1.0f, 2.0f, 3.0f,
-                       4.0f, 5.0f, 6.0f,
-                       7.0f, 8.0f, 9.0f};
+    float h_gold[9] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
     dim4 gold_dims(3, 3);
 
     SCOPED_TRACE("UseReorderedOutputArray");
@@ -386,8 +380,8 @@ TYPED_TEST(WrapV2, UseReorderedOutputArray) {
                                 REORDERED_ARRAY);
 }
 
-class WrapSimple : virtual public ::testing::Test  {
-protected:
+class WrapSimple : virtual public ::testing::Test {
+   protected:
     virtual void SetUp() {
         in_dims[0] = 4;
         in_dims[1] = 4;
@@ -397,13 +391,13 @@ protected:
         ::getInput(&in_, &in_dims[0]);
         ::getGold(&gold_, &in_dims[0]);
 
-        win_len = 2;
-        strd_len = 2;
-        pad_len = 0;
+        win_len   = 2;
+        strd_len  = 2;
+        pad_len   = 0;
         is_column = true;
     }
     virtual void TearDown() {
-        if (in_   != 0) af_release_array(in_);
+        if (in_ != 0) af_release_array(in_);
         if (gold_ != 0) af_release_array(gold_);
     }
 
@@ -416,66 +410,61 @@ protected:
     bool is_column;
 };
 
-class ArgDim
-{
-public:
-    ArgDim(dim_t d0, dim_t d1)
-        : dim0(d0), dim1(d1) {}
+class ArgDim {
+   public:
+    ArgDim(dim_t d0, dim_t d1) : dim0(d0), dim1(d1) {}
     void get(dim_t *d0, dim_t *d1);
-private:
+
+   private:
     dim_t dim0;
     dim_t dim1;
 };
-void ArgDim::get(dim_t *d0, dim_t *d1)
-{
+void ArgDim::get(dim_t *d0, dim_t *d1) {
     *d0 = this->dim0;
     *d1 = this->dim1;
 }
 class WindowDims : public ArgDim {
-public:
-    WindowDims()
-        : ArgDim(1, 1) {}
-    WindowDims(dim_t d0, dim_t d1)
-        : ArgDim(d0, d1) {}
+   public:
+    WindowDims() : ArgDim(1, 1) {}
+    WindowDims(dim_t d0, dim_t d1) : ArgDim(d0, d1) {}
 };
 class StrideDims : public ArgDim {
-public:
-    StrideDims()
-        : ArgDim(1, 1) {}
-    StrideDims(dim_t d0, dim_t d1)
-        : ArgDim(d0, d1) {}
+   public:
+    StrideDims() : ArgDim(1, 1) {}
+    StrideDims(dim_t d0, dim_t d1) : ArgDim(d0, d1) {}
 };
 class PadDims : public ArgDim {
-public:
+   public:
     PadDims() : ArgDim(0, 0) {}
-    PadDims(dim_t d0, dim_t d1)
-        : ArgDim(d0, d1){}
+    PadDims(dim_t d0, dim_t d1) : ArgDim(d0, d1) {}
 };
 
 class WrapArgs {
-public:
+   public:
     WindowDims *wc_;
     StrideDims *sc_;
-    PadDims    *pc_;
+    PadDims *pc_;
     bool is_column;
     af_err err;
-    WrapArgs(dim_t win_d0, dim_t win_d1,
-                 dim_t str_d0, dim_t str_d1,
-                 dim_t pad_d0, dim_t pad_d1,
-                 bool is_col, af_err err)
-        : wc_(new WindowDims(win_d0, win_d1)),
-          sc_(new StrideDims(str_d0, str_d1)),
-          pc_(new PadDims(pad_d0, pad_d1)),
-          is_column(is_col), err(err) {}
+    WrapArgs(dim_t win_d0, dim_t win_d1, dim_t str_d0, dim_t str_d1,
+             dim_t pad_d0, dim_t pad_d1, bool is_col, af_err err)
+        : wc_(new WindowDims(win_d0, win_d1))
+        , sc_(new StrideDims(str_d0, str_d1))
+        , pc_(new PadDims(pad_d0, pad_d1))
+        , is_column(is_col)
+        , err(err) {}
     WrapArgs()
-        : wc_(new WindowDims()),
-          sc_(new StrideDims()),
-          pc_(new PadDims()),
-          is_column(true), err(af_err(999)) {}
+        : wc_(new WindowDims())
+        , sc_(new StrideDims())
+        , pc_(new PadDims())
+        , is_column(true)
+        , err(af_err(999)) {}
 };
 
-class WrapAPITest: public WrapSimple, public ::testing::WithParamInterface<WrapArgs> {
-public:
+class WrapAPITest
+    : public WrapSimple
+    , public ::testing::WithParamInterface<WrapArgs> {
+   public:
     virtual void SetUp() {
         in_dims[0] = 4;
         in_dims[1] = 4;
@@ -493,11 +482,10 @@ public:
     af_array in_;
     dim_t in_dims[4];
 };
-TEST_P(WrapAPITest, CheckDifferentWrapArgs)
-{
+TEST_P(WrapAPITest, CheckDifferentWrapArgs) {
     WindowDims *wc = input.wc_;
     StrideDims *sc = input.sc_;
-    PadDims    *pc = input.pc_;
+    PadDims *pc    = input.pc_;
 
     dim_t win_d0, win_d1;
     dim_t str_d0, str_d1;
@@ -507,15 +495,15 @@ TEST_P(WrapAPITest, CheckDifferentWrapArgs)
     pc->get(&pad_d0, &pad_d1);
 
     af_array out_ = 0;
-    af_err err = af_wrap(&out_, in_, in_dims[0], in_dims[1],
-                         win_d0, win_d1, str_d0, str_d1, pad_d0, pad_d1,
-                         input.is_column);
+    af_err err    = af_wrap(&out_, in_, in_dims[0], in_dims[1], win_d0, win_d1,
+                         str_d0, str_d1, pad_d0, pad_d1, input.is_column);
 
     ASSERT_EQ(err, input.err);
     if (out_ != 0) af_release_array(out_);
 }
 
 WrapArgs args[] = {
+    // clang-format off
     //      | win_dim0 | win_dim1 | str_dim0 | str_dim1 | pad_dim0 | pad_dim1 | is_col |    err    |
     WrapArgs(        2,         2,         2,         2,         0,         0,    true,  AF_SUCCESS),
     WrapArgs(        2,         2,         2,         2,         0,         0,   false,  AF_SUCCESS),
@@ -532,7 +520,6 @@ WrapArgs args[] = {
     WrapArgs(        2,         2,         2,         2,        -1,         1,    true,  AF_ERR_SIZE),
     WrapArgs(        2,         2,         2,         2,         1,        -1,    true,  AF_ERR_SIZE),
     WrapArgs(        2,         2,         2,         2,        -1,        -1,    true,  AF_ERR_SIZE),
+    // clang-format on
 };
-INSTANTIATE_TEST_CASE_P(BulkTest,
-                        WrapAPITest,
-                        ::testing::ValuesIn(args));
+INSTANTIATE_TEST_CASE_P(BulkTest, WrapAPITest, ::testing::ValuesIn(args));
