@@ -951,6 +951,16 @@ void testSpclOutArrayUniform(float* h_gold, dim4 gold_dims, float* h_in,
     vector<T> h_in_cast(in_dims.elements());
     vector<BT> h_pos_cast(pos_dims.elements());
 
+    for (int i = 0; i < gold_dims.elements(); ++i) {
+        h_gold_cast[i] = static_cast<T>(h_gold[i]);
+    }
+    for (int i = 0; i < in_dims.elements(); ++i) {
+        h_in_cast[i] = static_cast<T>(h_in[i]);
+    }
+    for (int i = 0; i < pos_dims.elements(); ++i) {
+        h_pos_cast[i] = static_cast<BT>(h_pos[i]);
+    }
+
     af_array in  = 0;
     af_array pos = 0;
 
