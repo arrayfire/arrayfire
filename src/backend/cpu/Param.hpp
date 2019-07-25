@@ -128,6 +128,16 @@ class Array;
 ///
 /// \param[in] val The value to convert to Param<T>
 template<typename T>
+const T &toParam(const T &val) noexcept {
+    return val;
+}
+
+/// \brief Converts Array<T> to Param<T> or CParam<T> based on the constness
+///        of the Array<T> object. If called on anything else, the object is
+///        returned unchanged.
+///
+/// \param[in] val The value to convert to Param<T>
+template<typename T>
 Param<T> toParam(Array<T> &val) noexcept {
     return Param<T>(val.get(), val.dims(), val.strides());
 }
@@ -140,17 +150,6 @@ Param<T> toParam(Array<T> &val) noexcept {
 template<typename T>
 CParam<T> toParam(const Array<T> &val) noexcept {
     return CParam<T>(val.get(), val.dims(), val.strides());
-}
-
-/// \brief Converts Array<T> to Param<T> or CParam<T> based on the constness
-///        of the Array<T> object. If called on anything else, the object is
-///        returned unchanged.
-///
-/// \param[in] val The value to convert to Param<T>
-template<typename T>
-CParam<T> toParam(const Array<T> &val)
-{
-    return val;
 }
 
 }  // namespace cpu
