@@ -924,15 +924,17 @@ TYPED_TEST(Approx1, UseExistingOutputSubArray) {
 }
 
 TYPED_TEST(Approx1, UseReorderedOutputArray) {
-    float h_in[9] = {10.0f, 20.0f, 30.0f, 40.0f, 50.0f,
-                     60.0f, 70.0f, 80.0f, 90.0f};
+    float h_in[9] = {10.0f, 20.0f, 30.0f,
+                     40.0f, 50.0f, 60.0f,
+                     70.0f, 80.0f, 90.0f};
     dim4 in_dims(3, 3);
 
     float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
     dim4 pos_dims(5);
 
-    float h_gold[15] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f, 40.0f, 45.0f, 50.0f,
-                        55.0f, 60.0f, 70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
+    float h_gold[15] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
+                        40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
+                        70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
     dim4 gold_dims(5, 3);
 
     SCOPED_TRACE("UseReorderedOutputArray");
