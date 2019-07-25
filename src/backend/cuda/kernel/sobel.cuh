@@ -12,13 +12,17 @@
 
 namespace cuda {
 
+__device__
+int reflect101(int index, int endIndex) {
+    return abs(endIndex - abs(endIndex - index));
+}
+
 template<typename Ti>
-__device__ Ti load2ShrdMem(const Ti* in, int dim0, int dim1, int gx, int gy,
+__device__ Ti load2ShrdMem(const Ti* in, int d0, int d1, int gx, int gy,
                            int inStride1, int inStride0) {
-    if (gx < 0 || gx >= dim0 || gy < 0 || gy >= dim1)
-        return Ti(0);
-    else
-        return in[gx * inStride0 + gy * inStride1];
+    int idx = reflect101(gx, d0-1) * inStride0 +
+              reflect101(gy, d1-1) * inStride1;
+    return in[idx];
 }
 
 template<typename Ti, typename To>
@@ -73,13 +77,13 @@ __global__ void sobel3x3(Param<To> dx, Param<To> dy, CParam<Ti> in, int nBBS0,
         float NE = shrdMem[_i][j_];
         float SE = shrdMem[i_][j_];
 
-        float t1                       = shrdMem[i][_j];
-        float t2                       = shrdMem[i][j_];
-        dxptr[gy * dx.strides[1] + gx] = (NW + SW - (NE + SE) + 2 * (t1 - t2));
+        float t1  = shrdMem[_i][j];
+        float t2  = shrdMem[i_][j];
+        dxptr[gy * dx.strides[1] + gx] = (SW + SE - (NW + NE) + 2 * (t2 - t1));
 
-        t1                             = shrdMem[_i][j];
-        t2                             = shrdMem[i_][j];
-        dyptr[gy * dy.strides[1] + gx] = (NW + NE - (SW + SE) + 2 * (t1 - t2));
+        t1 = shrdMem[i][_j];
+        t2 = shrdMem[i][j_];
+        dyptr[gy * dy.strides[1] + gx] = (NE + SE - (NW + SW) + 2 * (t2 - t1));
     }
 }
 

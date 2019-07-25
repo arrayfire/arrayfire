@@ -7,12 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-Ti load2LocalMem(global const Ti* in, int dim0, int dim1, int gx, int gy,
+int reflect101(int index, int endIndex) {
+    return abs(endIndex - (int)abs(endIndex - index));
+}
+
+Ti load2LocalMem(global const Ti* in, int d0, int d1, int gx, int gy,
                  int inStride1, int inStride0) {
-    if (gx < 0 || gx >= dim0 || gy < 0 || gy >= dim1)
-        return (Ti)0;
-    else
-        return in[gx * inStride0 + gy * inStride1];
+    int idx = reflect101(gx, d0-1) * inStride0 +
+              reflect101(gy, d1-1) * inStride1;
+    return in[idx];
 }
 
 kernel void sobel3x3(global To* dx, KParam dxInfo, global To* dy, KParam dyInfo,
@@ -63,14 +66,14 @@ kernel void sobel3x3(global To* dx, KParam dxInfo, global To* dy, KParam dyInfo,
         float NE = localMem[_i + shrdLen * j_];
         float SE = localMem[i_ + shrdLen * j_];
 
-        float t1 = localMem[i + shrdLen * _j];
-        float t2 = localMem[i + shrdLen * j_];
+        float t1 = localMem[_i + shrdLen * j];
+        float t2 = localMem[i_ + shrdLen * j];
         dxptr[gy * dxInfo.strides[1] + gx] =
-            (NW + SW - (NE + SE) + 2 * (t1 - t2));
+            (SW + SE - (NW + NE) + 2 * (t2 - t1));
 
-        t1 = localMem[_i + shrdLen * j];
-        t2 = localMem[i_ + shrdLen * j];
+        t1 = localMem[i + shrdLen * _j];
+        t2 = localMem[i + shrdLen * j_];
         dyptr[gy * dyInfo.strides[1] + gx] =
-            (NW + NE - (SW + SE) + 2 * (t1 - t2));
+            (NE + SE - (NW + SW) + 2 * (t2 - t1));
     }
 }
