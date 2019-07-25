@@ -34,9 +34,10 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dxParam,
 
             for (dim_t j = 1; j < dims[1] - 1; ++j, offset += 2) {
                 for (dim_t i = 1; i < dims[0] - 1; ++i, ++offset) {
-                    if (mag[offset] == 0)
+                    T curr = mag[offset];
+                    if (curr == 0) {
                         out[offset] = (T)0;
-                    else {
+                    } else {
                         const float se = mag[offset + dims[0] + 1];
                         const float nw = mag[offset - dims[0] - 1];
                         const float ea = mag[offset + 1];
@@ -52,47 +53,47 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dxParam,
 
                         if (dx >= 0) {
                             if (dy >= 0) {
-                                const bool isTrue = (dx - dy) >= 0;
+                                const bool isDxMagGreater = (dx - dy) >= 0;
 
-                                a1    = isTrue ? ea : so;
-                                a2    = isTrue ? we : no;
+                                a1    = isDxMagGreater ? ea : so;
+                                a2    = isDxMagGreater ? we : no;
                                 b1    = se;
                                 b2    = nw;
-                                alpha = isTrue ? dy / dx : dx / dy;
+                                alpha = isDxMagGreater ? dy / dx : dx / dy;
                             } else {
-                                const bool isTrue = (dx + dy) >= 0;
+                                const bool isDyMagGreater = (dx + dy) >= 0;
 
-                                a1    = isTrue ? ea : no;
-                                a2    = isTrue ? we : so;
+                                a1    = isDyMagGreater ? ea : no;
+                                a2    = isDyMagGreater ? we : so;
                                 b1    = ne;
                                 b2    = sw;
-                                alpha = isTrue ? -dy / dx : dx / -dy;
+                                alpha = isDyMagGreater ? -dy / dx : dx / -dy;
                             }
                         } else {
                             if (dy >= 0) {
-                                const bool isTrue = (dx + dy) >= 0;
+                                const bool isDyMagGreater = (dx + dy) >= 0;
 
-                                a1    = isTrue ? so : we;
-                                a2    = isTrue ? no : ea;
+                                a1    = isDyMagGreater ? so : we;
+                                a2    = isDyMagGreater ? no : ea;
                                 b1    = sw;
                                 b2    = ne;
-                                alpha = isTrue ? -dx / dy : dy / -dx;
+                                alpha = isDyMagGreater ? -dx / dy : dy / -dx;
                             } else {
-                                const bool isTrue = (-dx + dy) >= 0;
+                                const bool isDxMagGreater = (-dx + dy) >= 0;
 
-                                a1    = isTrue ? we : no;
-                                a2    = isTrue ? ea : so;
+                                a1    = isDxMagGreater ? we : no;
+                                a2    = isDxMagGreater ? ea : so;
                                 b1    = nw;
                                 b2    = se;
-                                alpha = isTrue ? -dy / dx : dx / -dy;
+                                alpha = isDxMagGreater ? dy / dx : dx / dy;
                             }
                         }
 
                         float mag1 = (1 - alpha) * a1 + alpha * b1;
                         float mag2 = (1 - alpha) * a2 + alpha * b2;
 
-                        if (mag[offset] > mag1 && mag[offset] > mag2) {
-                            out[offset] = mag[offset];
+                        if (curr > mag1 && curr > mag2) {
+                            out[offset] = curr;
                         } else {
                             out[offset] = (T)0;
                         }
