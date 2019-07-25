@@ -75,6 +75,10 @@ void testSobelDerivatives(string pTestFile) {
     ASSERT_SUCCESS(af_release_array(dyArray));
 }
 
+
+// rectangle test data is generated using opencv
+// border type is set to cv.BORDER_REFLECT_101 in opencv
+
 TYPED_TEST(Sobel, Rectangle) {
     testSobelDerivatives<TypeParam, TypeParam>(
         string(TEST_DIR "/sobel/rectangle.test"));
