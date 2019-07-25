@@ -59,26 +59,32 @@ void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 bool checkMemoryLimit();
 
-class MemoryManager : public common::MemoryManager<opencl::MemoryManager> {
-   public:
-    MemoryManager();
-    ~MemoryManager();
-    int getActiveDeviceId();
-    size_t getMaxMemorySize(int id);
-    void *nativeAlloc(const size_t bytes);
-    void nativeFree(void *ptr);
+class MemoryManager : public common::MemoryManager
+{
+    public:
+        MemoryManager();
+        ~MemoryManager();
+        int getActiveDeviceId() override;
+        size_t getMaxMemorySize(int id) override;
+        void *nativeAlloc(const size_t bytes);
+        void nativeFree(void *ptr);
+        common::memory::memory_info& getCurrentMemoryInfo();
+        void garbageCollect() override;
 };
 
-class MemoryManagerPinned : public common::MemoryManager<MemoryManagerPinned> {
-   public:
-    MemoryManagerPinned();
-    ~MemoryManagerPinned();
-    int getActiveDeviceId();
-    size_t getMaxMemorySize(int id);
-    void *nativeAlloc(const size_t bytes);
-    void nativeFree(void *ptr);
-
-   private:
-    std::vector<std::map<void *, cl::Buffer *>> pinnedMaps;
+class MemoryManagerPinned : public common::MemoryManager
+{
+    public:
+        MemoryManagerPinned();
+        ~MemoryManagerPinned();
+        int getActiveDeviceId() override;
+        size_t getMaxMemorySize(int id) override;
+        void *nativeAlloc(const size_t bytes);
+        void nativeFree(void *ptr);
+        common::memory::memory_info& getCurrentMemoryInfo();
+        void garbageCollect() override;
+    private:
+        std::vector< std::map<void *, cl::Buffer*> > pinnedMaps;
 };
+
 }  // namespace opencl

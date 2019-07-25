@@ -56,27 +56,32 @@ size_t getMemStepSize(void);
 
 bool checkMemoryLimit();
 
-class MemoryManager : public common::MemoryManager<cuda::MemoryManager> {
-   public:
-    MemoryManager();
-    ~MemoryManager();
-    int getActiveDeviceId();
-    size_t getMaxMemorySize(int id);
-    void *nativeAlloc(const size_t bytes);
-    void nativeFree(void *ptr);
+class MemoryManager : public common::MemoryManager {
+    public:
+        MemoryManager();
+        ~MemoryManager();
+        int getActiveDeviceId() override;
+        size_t getMaxMemorySize(int id) override;
+        void *nativeAlloc(const size_t bytes);
+        void nativeFree(void *ptr);
+        common::memory::memory_info& getCurrentMemoryInfo();
+        void garbageCollect() override;
 };
 
 // CUDA Pinned Memory does not depend on device
 // So we pass 1 as numDevices to the constructor so that it creates 1 vector
 // of memory_info
 // When allocating and freeing, it doesn't really matter which device is active
-class MemoryManagerPinned : public common::MemoryManager<MemoryManagerPinned> {
-   public:
-    MemoryManagerPinned();
-    ~MemoryManagerPinned();
-    int getActiveDeviceId();
-    size_t getMaxMemorySize(int id);
-    void *nativeAlloc(const size_t bytes);
-    void nativeFree(void *ptr);
+class MemoryManagerPinned : public common::MemoryManager {
+    public:
+        MemoryManagerPinned();
+        ~MemoryManagerPinned();
+        int getActiveDeviceId() override;
+        size_t getMaxMemorySize(int id) override;
+        void *nativeAlloc(const size_t bytes);
+        void nativeFree(void *ptr);
+        common::memory::memory_info& getCurrentMemoryInfo();
+        void garbageCollect() override;
 };
+
 }  // namespace cuda

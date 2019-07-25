@@ -14,10 +14,7 @@
 
 #include <common/Logger.hpp>
 #include <spdlog/spdlog.h>
-
 #include <common/MemoryManagerImpl.hpp>
-template class common::MemoryManager<opencl::MemoryManager>;
-template class common::MemoryManager<opencl::MemoryManagerPinned>;
 
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
@@ -139,7 +136,7 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 MemoryManager::MemoryManager()
-    : common::MemoryManager<opencl::MemoryManager>(
+    : common::MemoryManager(
           getDeviceCount(), common::MAX_BUFFERS,
           AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG) {
     this->setMaxMemorySize();
@@ -158,8 +155,16 @@ MemoryManager::~MemoryManager() {
 
 int MemoryManager::getActiveDeviceId() { return opencl::getActiveDeviceId(); }
 
+void MemoryManager::garbageCollect() {
+    cleanDeviceMemoryManager(this->getActiveDeviceId());
+}
+
 size_t MemoryManager::getMaxMemorySize(int id) {
     return opencl::getDeviceMemorySize(id);
+}
+
+common::memory::memory_info& MemoryManager::getCurrentMemoryInfo() {
+    return memory[this->getActiveDeviceId()];
 }
 
 void *MemoryManager::nativeAlloc(const size_t bytes) {
@@ -174,7 +179,7 @@ void MemoryManager::nativeFree(void *ptr) {
 }
 
 MemoryManagerPinned::MemoryManagerPinned()
-    : common::MemoryManager<MemoryManagerPinned>(
+    : common::MemoryManager(
           getDeviceCount(), common::MAX_BUFFERS,
           AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG)
     , pinnedMaps(getDeviceCount()) {
@@ -195,6 +200,14 @@ MemoryManagerPinned::~MemoryManagerPinned() {
 
 int MemoryManagerPinned::getActiveDeviceId() {
     return opencl::getActiveDeviceId();
+}
+
+common::memory::memory_info& MemoryManagerPinned::getCurrentMemoryInfo() {
+    return memory[this->getActiveDeviceId()];
+}
+
+void MemoryManagerPinned::garbageCollect() {
+    cleanDeviceMemoryManager(this->getActiveDeviceId());
 }
 
 size_t MemoryManagerPinned::getMaxMemorySize(int id) {

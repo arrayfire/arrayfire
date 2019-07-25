@@ -20,8 +20,6 @@
 
 #include <utility>
 
-template class common::MemoryManager<cpu::MemoryManager>;
-
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
 #endif
@@ -132,7 +130,7 @@ INSTANTIATE(short)
 INSTANTIATE(half)
 
 MemoryManager::MemoryManager()
-    : common::MemoryManager<cpu::MemoryManager>(
+    : common::MemoryManager(
           getDeviceCount(), common::MAX_BUFFERS,
           AF_MEM_DEBUG || AF_CPU_MEM_DEBUG) {
     this->setMaxMemorySize();
@@ -150,6 +148,14 @@ MemoryManager::~MemoryManager() {
 }
 
 int MemoryManager::getActiveDeviceId() { return cpu::getActiveDeviceId(); }
+
+common::memory::memory_info& MemoryManager::getCurrentMemoryInfo() {
+    return memory[this->getActiveDeviceId()];
+}
+
+void MemoryManager::garbageCollect() {
+    cleanDeviceMemoryManager(this->getActiveDeviceId());
+}
 
 size_t MemoryManager::getMaxMemorySize(int id) {
     return cpu::getDeviceMemorySize(id);

@@ -25,9 +25,6 @@
 
 #include <mutex>
 
-template class common::MemoryManager<cuda::MemoryManager>;
-template class common::MemoryManager<cuda::MemoryManagerPinned>;
-
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
 #endif
@@ -138,7 +135,7 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 MemoryManager::MemoryManager()
-    : common::MemoryManager<cuda::MemoryManager>(
+    : common::MemoryManager(
           getDeviceCount(), common::MAX_BUFFERS,
           AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG) {
     this->setMaxMemorySize();
@@ -156,6 +153,14 @@ MemoryManager::~MemoryManager() {
 }
 
 int MemoryManager::getActiveDeviceId() { return cuda::getActiveDeviceId(); }
+
+void MemoryManager::garbageCollect() {
+    cleanDeviceMemoryManager(this->getActiveDeviceId());
+}
+
+common::memory::memory_info& MemoryManager::getCurrentMemoryInfo() {
+    return memory[this->getActiveDeviceId()];
+}
 
 size_t MemoryManager::getMaxMemorySize(int id) {
     return cuda::getDeviceMemorySize(id);
@@ -175,7 +180,7 @@ void MemoryManager::nativeFree(void *ptr) {
 }
 
 MemoryManagerPinned::MemoryManagerPinned()
-    : common::MemoryManager<MemoryManagerPinned>(
+    : common::MemoryManager(
           1, common::MAX_BUFFERS, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG) {
     this->setMaxMemorySize();
 }
@@ -184,6 +189,14 @@ MemoryManagerPinned::~MemoryManagerPinned() { garbageCollect(); }
 
 int MemoryManagerPinned::getActiveDeviceId() {
     return 0;  // pinned uses a single vector
+}
+
+void MemoryManagerPinned::garbageCollect() {
+    cleanDeviceMemoryManager(this->getActiveDeviceId());
+}
+
+common::memory::memory_info& MemoryManagerPinned::getCurrentMemoryInfo() {
+    return memory[this->getActiveDeviceId()];
 }
 
 size_t MemoryManagerPinned::getMaxMemorySize(int id) {
