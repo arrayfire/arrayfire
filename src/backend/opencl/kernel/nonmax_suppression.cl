@@ -75,39 +75,39 @@ __kernel void nonMaxSuppressionKernel(__global T* output, KParam oInfo,
 
             if (dx >= 0) {
                 if (dy >= 0) {
-                    const bool isTrue = (dx - dy) >= 0;
+                    const bool isDxMagGreater = (dx - dy) >= 0;
 
-                    a1    = isTrue ? ea : so;
-                    a2    = isTrue ? we : no;
+                    a1    = isDxMagGreater ? ea : so;
+                    a2    = isDxMagGreater ? we : no;
                     b1    = se;
                     b2    = nw;
-                    alpha = isTrue ? dy / dx : dx / dy;
+                    alpha = isDxMagGreater ? dy / dx : dx / dy;
                 } else {
-                    const bool isTrue = (dx + dy) >= 0;
+                    const bool isDyMagGreater = (dx + dy) >= 0;
 
-                    a1    = isTrue ? ea : no;
-                    a2    = isTrue ? we : so;
+                    a1    = isDyMagGreater ? ea : no;
+                    a2    = isDyMagGreater ? we : so;
                     b1    = ne;
                     b2    = sw;
-                    alpha = isTrue ? -dy / dx : dx / -dy;
+                    alpha = isDyMagGreater ? -dy / dx : dx / -dy;
                 }
             } else {
                 if (dy >= 0) {
-                    const bool isTrue = (dx + dy) >= 0;
+                    const bool isDxMagGreater = (dx + dy) >= 0;
 
-                    a1    = isTrue ? so : we;
-                    a2    = isTrue ? no : ea;
+                    a1    = isDxMagGreater ? so : we;
+                    a2    = isDxMagGreater ? no : ea;
                     b1    = sw;
                     b2    = ne;
-                    alpha = isTrue ? -dx / dy : dy / -dx;
+                    alpha = isDxMagGreater ? -dx / dy : dy / -dx;
                 } else {
-                    const bool isTrue = (-dx + dy) >= 0;
+                    const bool isDyMagGreater = (-dx + dy) >= 0;
 
-                    a1    = isTrue ? we : no;
-                    a2    = isTrue ? ea : so;
+                    a1    = isDyMagGreater ? we : no;
+                    a2    = isDyMagGreater ? ea : so;
                     b1    = nw;
                     b2    = se;
-                    alpha = isTrue ? -dy / dx : dx / -dy;
+                    alpha = isDyMagGreater ? dy / dx : dx / dy;
                 }
             }
 
