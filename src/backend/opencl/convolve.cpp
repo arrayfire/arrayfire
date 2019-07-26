@@ -8,8 +8,6 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <af/defines.h>
-#include <af/dim4.hpp>
 #include <blas.hpp>
 #include <common/indexing_helpers.hpp>
 #include <convolve.hpp>
@@ -19,8 +17,10 @@
 #include <reorder.hpp>
 #include <transpose.hpp>
 #include <unwrap.hpp>
-#include <vector>
 #include <wrap.hpp>
+#include <af/defines.h>
+#include <af/dim4.hpp>
+#include <vector>
 
 using af::dim4;
 using common::flip;
@@ -28,7 +28,7 @@ using std::vector;
 
 namespace opencl {
 
-template <typename T, typename accT, dim_t baseDim, bool expand>
+template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
                   AF_BATCH_KIND kind) {
     const dim4 sDims = signal.dims();
@@ -116,7 +116,7 @@ INSTANTIATE(uintl, float)
 INSTANTIATE(intl, float)
 #undef INSTANTIATE
 
-template <typename T>
+template<typename T>
 Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
                           const dim4 stride, const dim4 padding,
                           const dim4 dilation) {
@@ -124,19 +124,17 @@ Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
     dim4 fDims = filter.dims();
 
     dim_t outputWidth =
-        1 +
-        (sDims[0] + 2 * padding[0] - (((fDims[0] - 1) * dilation[0]) + 1)) /
-            stride[0];
+        1 + (sDims[0] + 2 * padding[0] - (((fDims[0] - 1) * dilation[0]) + 1)) /
+                stride[0];
     dim_t outputHeight =
-        1 +
-        (sDims[1] + 2 * padding[1] - (((fDims[1] - 1) * dilation[1]) + 1)) /
-            stride[1];
+        1 + (sDims[1] + 2 * padding[1] - (((fDims[1] - 1) * dilation[1]) + 1)) /
+                stride[1];
     dim4 oDims = dim4(outputWidth, outputHeight, fDims[3], sDims[3]);
 
-    const bool retCols    = false;
-    Array<T> unwrapped = unwrap_dilated(
-        signal, fDims[0], fDims[1], stride[0], stride[1],
-        padding[0], padding[1], dilation[0], dilation[1], retCols);
+    const bool retCols = false;
+    Array<T> unwrapped =
+        unwrap(signal, fDims[0], fDims[1], stride[0], stride[1], padding[0],
+               padding[1], dilation[0], dilation[1], retCols);
 
     unwrapped  = reorder(unwrapped, dim4(1, 2, 0, 3));
     dim4 uDims = unwrapped.dims();
@@ -156,7 +154,7 @@ Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
     return out;
 }
 
-template <typename T>
+template<typename T>
 Array<T> convolve2(Array<T> const &signal, Array<T> const &filter,
                    const dim4 stride, const dim4 padding, const dim4 dilation) {
     Array<T> out =
@@ -165,16 +163,16 @@ Array<T> convolve2(Array<T> const &signal, Array<T> const &filter,
     return out;
 }
 
-#define INSTANTIATE(T)                                                  \
-    template Array<T> convolve2<T>(                                     \
-        Array<T> const &signal, Array<T> const &filter, const dim4 stride, \
-        const dim4 padding, const dim4 dilation);
+#define INSTANTIATE(T)                                                        \
+    template Array<T> convolve2<T>(Array<T> const &signal,                    \
+                                   Array<T> const &filter, const dim4 stride, \
+                                   const dim4 padding, const dim4 dilation);
 
 INSTANTIATE(double)
 INSTANTIATE(float)
 #undef INSTANTIATE
 
-template <typename T>
+template<typename T>
 Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
                            const Array<T> &original_signal,
                            const Array<T> &original_filter,
@@ -190,7 +188,7 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
     collapsed_filter.modDims(dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
 
     Array<T> collapsed_gradient = incoming_gradient;
-    collapsed_gradient = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
+    collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
     collapsed_gradient.modDims(dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     Array<T> res =
@@ -207,7 +205,7 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
     return res;
 }
 
-template <typename T>
+template<typename T>
 Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
                              const Array<T> &original_signal,
                              const Array<T> &original_filter,
@@ -217,17 +215,17 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
     const dim4 sDims = original_signal.dims();
     const dim4 fDims = original_filter.dims();
 
-    const bool retCols    = false;
-    Array<T> unwrapped = unwrap_dilated(
-        original_signal, fDims[0], fDims[1], stride[0], stride[1],
-        padding[0], padding[1], dilation[0], dilation[1], retCols);
+    const bool retCols = false;
+    Array<T> unwrapped =
+        unwrap(original_signal, fDims[0], fDims[1], stride[0], stride[1],
+               padding[0], padding[1], dilation[0], dilation[1], retCols);
 
     unwrapped  = reorder(unwrapped, dim4(1, 2, 0, 3));
     dim4 uDims = unwrapped.dims();
     unwrapped.modDims(dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
 
     Array<T> collapsed_gradient = incoming_gradient;
-    collapsed_gradient = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
+    collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
     collapsed_gradient.modDims(dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     Array<T> res =
