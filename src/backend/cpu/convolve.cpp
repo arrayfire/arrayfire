@@ -145,9 +145,9 @@ Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
                 stride[1];
 
     const bool retCols = false;
-    Array<T> unwrapped = unwrap(signal, fDims[0], fDims[1], stride[0],
-                                        stride[1], padding[0], padding[1],
-                                        dilation[0], dilation[1], retCols);
+    Array<T> unwrapped =
+        unwrap(signal, fDims[0], fDims[1], stride[0], stride[1], padding[0],
+               padding[1], dilation[0], dilation[1], retCols);
 
     unwrapped  = reorder(unwrapped, dim4(1, 2, 0, 3));
     dim4 uDims = unwrapped.dims();

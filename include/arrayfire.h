@@ -294,8 +294,7 @@
    @defgroup ml Machine Learning
    @{
 
-     Machine learning related functions and forward/backward
-     propagation
+     Machine learning functions
 
      @defgroup ml_pool Pooling operations
      Pool 2D, ND, maxpooling, minpooling, meanpooling
