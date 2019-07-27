@@ -829,25 +829,47 @@ TEST(Approx1, CPPEmptyPosAndInput) {
     ASSERT_TRUE(interp.isempty());
 }
 
+template<typename T>
 void testSpclOutArray(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
                       float* h_pos, dim4 pos_dims,
                       TestOutputArrayType out_array_type) {
+    SUPPORTED_TYPE_CHECK(T);
+    typedef typename dtype_traits<T>::base_type BT;
+
+    vector<T> h_gold_cast(gold_dims.elements());
+    vector<T> h_in_cast(in_dims.elements());
+    vector<BT> h_pos_cast(pos_dims.elements());
+
+    for (int i = 0; i < gold_dims.elements(); ++i) {
+        h_gold_cast[i] = static_cast<T>(h_gold[i]);
+    }
+    for (int i = 0; i < in_dims.elements(); ++i) {
+        h_in_cast[i] = static_cast<T>(h_in[i]);
+    }
+    for (int i = 0; i < pos_dims.elements(); ++i) {
+        h_pos_cast[i] = static_cast<BT>(h_pos[i]);
+    }
+
     af_array in  = 0;
     af_array pos = 0;
-    ASSERT_SUCCESS(
-        af_create_array(&in, h_in, in_dims.ndims(), in_dims.get(), f32));
-    ASSERT_SUCCESS(
-        af_create_array(&pos, h_pos, pos_dims.ndims(), pos_dims.get(), f32));
+
+    ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
+                                   in_dims.get(),
+                                   (af_dtype)dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&pos, &h_pos_cast.front(), pos_dims.ndims(),
+                                   pos_dims.get(),
+                                   (af_dtype)dtype_traits<BT>::af_type));
 
     af_array out = 0;
     TestOutputArrayInfo metadata(out_array_type);
-    genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(), f32,
-                       &metadata);
-    ASSERT_SUCCESS(af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0));
+    genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
+                       (af_dtype)dtype_traits<T>::af_type, &metadata);
+    ASSERT_SUCCESS(af_approx1_v2(&out, in, pos, AF_INTERP_LINEAR, 0));
 
     af_array gold = 0;
-    ASSERT_SUCCESS(af_create_array(&gold, h_gold, gold_dims.ndims(),
-                                   gold_dims.get(), f32));
+    ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
+                                   gold_dims.ndims(), gold_dims.get(),
+                                   (af_dtype)dtype_traits<T>::af_type));
 
     ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
 
@@ -856,7 +878,7 @@ void testSpclOutArray(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
     if (in != 0) { ASSERT_SUCCESS(af_release_array(in)); }
 }
 
-TEST(Approx1, UseNullOutputArray) {
+TYPED_TEST(Approx1, UseNullOutputArray) {
     float h_in[3] = {10.0f, 20.0f, 30.0f};
     dim4 in_dims(3);
 
@@ -867,11 +889,11 @@ TEST(Approx1, UseNullOutputArray) {
     dim4 gold_dims(5);
 
     SCOPED_TRACE("UseNullOutputArray");
-    testSpclOutArray(h_gold, gold_dims, h_in, in_dims, h_pos, pos_dims,
-                     NULL_ARRAY);
+    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos,
+                                pos_dims, NULL_ARRAY);
 }
 
-TEST(Approx1, UseFullExistingOutputArray) {
+TYPED_TEST(Approx1, UseFullExistingOutputArray) {
     float h_in[3] = {10.0f, 20.0f, 30.0f};
     dim4 in_dims(3);
 
@@ -882,11 +904,11 @@ TEST(Approx1, UseFullExistingOutputArray) {
     dim4 gold_dims(5);
 
     SCOPED_TRACE("UseFullExistingOutputArray");
-    testSpclOutArray(h_gold, gold_dims, h_in, in_dims, h_pos, pos_dims,
-                     FULL_ARRAY);
+    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos,
+                                pos_dims, FULL_ARRAY);
 }
 
-TEST(Approx1, UseExistingOutputSubArray) {
+TYPED_TEST(Approx1, UseExistingOutputSubArray) {
     float h_in[3] = {10.0f, 20.0f, 30.0f};
     dim4 in_dims(3);
 
@@ -897,11 +919,125 @@ TEST(Approx1, UseExistingOutputSubArray) {
     dim4 gold_subarr_dims(5);
 
     SCOPED_TRACE("UseExistingOutputSubArray");
-    testSpclOutArray(h_gold_subarr, gold_subarr_dims, h_in, in_dims, h_pos,
-                     pos_dims, SUB_ARRAY);
+    testSpclOutArray<TypeParam>(h_gold_subarr, gold_subarr_dims, h_in, in_dims,
+                                h_pos, pos_dims, SUB_ARRAY);
 }
 
-TEST(Approx1, UseReorderedOutputArray) {
+TYPED_TEST(Approx1, UseReorderedOutputArray) {
+    float h_in[9] = {10.0f, 20.0f, 30.0f,
+                     40.0f, 50.0f, 60.0f,
+                     70.0f, 80.0f, 90.0f};
+    dim4 in_dims(3, 3);
+
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
+    dim4 pos_dims(5);
+
+    float h_gold[15] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
+                        40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
+                        70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
+    dim4 gold_dims(5, 3);
+
+    SCOPED_TRACE("UseReorderedOutputArray");
+    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos,
+                                pos_dims, REORDERED_ARRAY);
+}
+
+template<typename T>
+void testSpclOutArrayUniform(float* h_gold, dim4 gold_dims, float* h_in,
+                             dim4 in_dims, float* h_pos, dim4 pos_dims,
+                             TestOutputArrayType out_array_type) {
+    SUPPORTED_TYPE_CHECK(T);
+    typedef typename dtype_traits<T>::base_type BT;
+
+    vector<T> h_gold_cast(gold_dims.elements());
+    vector<T> h_in_cast(in_dims.elements());
+    vector<BT> h_pos_cast(pos_dims.elements());
+
+    for (int i = 0; i < gold_dims.elements(); ++i) {
+        h_gold_cast[i] = static_cast<T>(h_gold[i]);
+    }
+    for (int i = 0; i < in_dims.elements(); ++i) {
+        h_in_cast[i] = static_cast<T>(h_in[i]);
+    }
+    for (int i = 0; i < pos_dims.elements(); ++i) {
+        h_pos_cast[i] = static_cast<BT>(h_pos[i]);
+    }
+
+    af_array in  = 0;
+    af_array pos = 0;
+
+    ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
+                                   in_dims.get(),
+                                   (af_dtype)dtype_traits<T>::af_type));
+    ASSERT_SUCCESS(af_create_array(&pos, &h_pos_cast.front(), pos_dims.ndims(),
+                                   pos_dims.get(),
+                                   (af_dtype)dtype_traits<BT>::af_type));
+
+    af_array out = 0;
+    TestOutputArrayInfo metadata(out_array_type);
+    genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
+                       (af_dtype)dtype_traits<T>::af_type, &metadata);
+    ASSERT_SUCCESS(af_approx1_uniform_v2(&out, in, pos, 0, 0.0, 1.0,
+                                         AF_INTERP_LINEAR, 0.f));
+
+    af_array gold = 0;
+    ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
+                                   gold_dims.ndims(), gold_dims.get(),
+                                   (af_dtype)dtype_traits<T>::af_type));
+
+    ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
+
+    if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
+    if (pos != 0) { ASSERT_SUCCESS(af_release_array(pos)); }
+    if (in != 0) { ASSERT_SUCCESS(af_release_array(in)); }
+}
+
+TYPED_TEST(Approx1, UseNullOutputArrayUniform) {
+    float h_in[3] = {10.0f, 20.0f, 30.0f};
+    dim4 in_dims(3);
+
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
+    dim4 pos_dims(5);
+
+    float h_gold[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
+    dim4 gold_dims(5);
+
+    SCOPED_TRACE("UseNullOutputArray");
+    testSpclOutArrayUniform<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos,
+                                       pos_dims, NULL_ARRAY);
+}
+
+TYPED_TEST(Approx1, UseFullExistingOutputArrayUniform) {
+    float h_in[3] = {10.0f, 20.0f, 30.0f};
+    dim4 in_dims(3);
+
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
+    dim4 pos_dims(5);
+
+    float h_gold[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
+    dim4 gold_dims(5);
+
+    SCOPED_TRACE("UseFullExistingOutputArray");
+    testSpclOutArrayUniform<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos,
+                                       pos_dims, FULL_ARRAY);
+}
+
+TYPED_TEST(Approx1, UseExistingOutputSubArrayUniform) {
+    float h_in[3] = {10.0f, 20.0f, 30.0f};
+    dim4 in_dims(3);
+
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
+    dim4 pos_dims(5);
+
+    float h_gold_subarr[5] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f};
+    dim4 gold_subarr_dims(5);
+
+    SCOPED_TRACE("UseExistingOutputSubArray");
+    testSpclOutArrayUniform<TypeParam>(h_gold_subarr, gold_subarr_dims, h_in,
+                                       in_dims, h_pos, pos_dims, SUB_ARRAY);
+}
+
+TYPED_TEST(Approx1, UseReorderedOutputArrayUniform) {
     float h_in[9] = {10.0f, 20.0f, 30.0f, 40.0f, 50.0f,
                      60.0f, 70.0f, 80.0f, 90.0f};
     dim4 in_dims(3, 3);
@@ -914,6 +1050,65 @@ TEST(Approx1, UseReorderedOutputArray) {
     dim4 gold_dims(5, 3);
 
     SCOPED_TRACE("UseReorderedOutputArray");
-    testSpclOutArray(h_gold, gold_dims, h_in, in_dims, h_pos, pos_dims,
-                     REORDERED_ARRAY);
+    testSpclOutArrayUniform<TypeParam>(h_gold, gold_dims, h_in, in_dims, h_pos,
+                                       pos_dims, REORDERED_ARRAY);
+}
+
+TEST(Approx1, NullOutputPtrApprox1) {
+    af_array* out_ptr = 0;
+    af_array in       = 0;
+    af_array pos      = 0;
+    ASSERT_EQ(af_approx1(out_ptr, in, pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TEST(Approx1, NullOutputPtrApprox1Uniform) {
+    af_array* out_ptr = 0;
+    af_array in       = 0;
+    af_array pos      = 0;
+    ASSERT_EQ(af_approx1_uniform(out_ptr, in, pos, 0, 0.0, 1.0,
+                                 AF_INTERP_LINEAR, 0.f),
+              AF_ERR_ARG);
+}
+
+TEST(Approx1, NullOutputPtrApprox1V2) {
+    af_array* out_ptr = 0;
+    af_array in       = 0;
+    af_array pos      = 0;
+    ASSERT_EQ(af_approx1_v2(out_ptr, in, pos, AF_INTERP_LINEAR, 0.f),
+              AF_ERR_ARG);
+}
+
+TEST(Approx1, NullOutputPtrApprox1UniformV2) {
+    af_array* out_ptr = 0;
+    af_array in       = 0;
+    af_array pos      = 0;
+    ASSERT_EQ(af_approx1_uniform_v2(out_ptr, in, pos, 0, 0.0, 1.0,
+                                    AF_INTERP_LINEAR, 0.f),
+              AF_ERR_ARG);
+}
+
+TEST(Approx1, NullInputArray) {
+    af_array out = 0;
+    af_array in  = 0;
+    af_array pos = 0;
+
+    float h_pos[5] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
+    dim4 pos_dims(5);
+    ASSERT_SUCCESS(
+        af_create_array(&pos, h_pos, pos_dims.ndims(), pos_dims.get(), f32));
+
+    ASSERT_EQ(af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TEST(Approx1, NullPosArray) {
+    af_array out = 0;
+    af_array in  = 0;
+    af_array pos = 0;
+
+    float h_in[3] = {10.0f, 20.0f, 30.0f};
+    dim4 in_dims(3);
+    ASSERT_SUCCESS(
+        af_create_array(&in, h_in, in_dims.ndims(), in_dims.get(), f32));
+
+    ASSERT_EQ(af_approx1(&out, in, pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
 }
