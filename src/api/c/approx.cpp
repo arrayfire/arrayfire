@@ -32,15 +32,15 @@ inline void approx1(af_array *yo, const af_array yi, const af_array xo,
 }  // namespace
 
 template<typename Ty, typename Tp>
-static inline af_array approx2(const af_array zi, const af_array xo,
-                               const int xdim, const Tp &xi_beg,
-                               const Tp &xi_step, const af_array yo,
-                               const int ydim, const Tp &yi_beg,
-                               const Tp &yi_step, const af_interp_type method,
-                               const float offGrid) {
-    return getHandle(approx2<Ty>(getArray<Ty>(zi), getArray<Tp>(xo), xdim,
-                                 xi_beg, xi_step, getArray<Tp>(yo), ydim,
-                                 yi_beg, yi_step, method, offGrid));
+inline void approx2(af_array *zo, const af_array zi, const af_array xo,
+                          const int xdim, const Tp &xi_beg,
+                          const Tp &xi_step, const af_array yo,
+                          const int ydim, const Tp &yi_beg,
+                          const Tp &yi_step, const af_interp_type method,
+                          const float offGrid) {
+    approx2<Ty>(getArray<Ty>(*zo), getArray<Ty>(zi), getArray<Tp>(xo), xdim,
+                xi_beg, xi_step, getArray<Tp>(yo), ydim,
+                yi_beg, yi_step, method, offGrid);
 }
 
 af_err af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
@@ -89,7 +89,7 @@ af_err af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
             *yo = createHandle(yo_dims, yi_info.getType());
         }
 
-        DIM_ASSERT(1, getInfo(*yo).dims() == yo_dims);
+        DIM_ASSERT(0, getInfo(*yo).dims() == yo_dims);
 
         switch (yi_info.getType()) {
             case f32:
@@ -149,13 +149,18 @@ af_err af_approx1_v2(af_array *yo, const af_array yi, const af_array xo,
                              *yo == 0);
 }
 
-af_err af_approx2_uniform(af_array *zo, const af_array zi, const af_array xo,
-                          const int xdim, const double xi_beg,
-                          const double xi_step, const af_array yo,
-                          const int ydim, const double yi_beg,
-                          const double yi_step, const af_interp_type method,
-                          const float offGrid) {
+af_err af_approx2_common(af_array *zo, const af_array zi, const af_array xo,
+                         const int xdim, const double xi_beg,
+                         const double xi_step, const af_array yo,
+                         const int ydim, const double yi_beg,
+                         const double yi_step, const af_interp_type method,
+                         const float offGrid, bool allocate_zo) {
     try {
+        ARG_ASSERT(0, zo != 0);
+        ARG_ASSERT(1, zi != 0);
+        ARG_ASSERT(2, xo != 0);
+        ARG_ASSERT(6, yo != 0);
+
         const ArrayInfo &zi_info = getInfo(zi);
         const ArrayInfo &xo_info = getInfo(xo);
         const ArrayInfo &yo_info = getInfo(yo);
@@ -193,41 +198,81 @@ af_err af_approx2_uniform(af_array *zo, const af_array zi, const af_array xo,
             return af_create_handle(zo, 0, nullptr, zi_info.getType());
         }
 
-        af_array output;
+        dim4 zo_dims  = zi_info.dims();
+        zo_dims[xdim] = xo_info.dims()[xdim];
+        zo_dims[ydim] = xo_info.dims()[ydim];
+
+        if (allocate_zo) {
+            *zo = createHandle(zo_dims, zi_info.getType());
+        }
+
+        DIM_ASSERT(0, getInfo(*zo).dims() == zo_dims);
 
         switch (zi_info.getType()) {
             case f32:
-                output = approx2<float, float>(zi, xo, xdim, xi_beg, xi_step,
-                                               yo, ydim, yi_beg, yi_step,
-                                               method, offGrid);
+                approx2<float, float>(zo, zi, xo, xdim, xi_beg, xi_step,
+                                      yo, ydim, yi_beg, yi_step,
+                                      method, offGrid);
                 break;
             case f64:
-                output = approx2<double, double>(zi, xo, xdim, xi_beg, xi_step,
-                                                 yo, ydim, yi_beg, yi_step,
-                                                 method, offGrid);
+                approx2<double, double>(zo, zi, xo, xdim, xi_beg, xi_step,
+                                        yo, ydim, yi_beg, yi_step,
+                                        method, offGrid);
                 break;
             case c32:
-                output = approx2<cfloat, float>(zi, xo, xdim, xi_beg, xi_step,
-                                                yo, ydim, yi_beg, yi_step,
-                                                method, offGrid);
+                approx2<cfloat, float>(zo, zi, xo, xdim, xi_beg, xi_step,
+                                       yo, ydim, yi_beg, yi_step,
+                                       method, offGrid);
                 break;
             case c64:
-                output = approx2<cdouble, double>(zi, xo, xdim, xi_beg, xi_step,
-                                                  yo, ydim, yi_beg, yi_step,
-                                                  method, offGrid);
+                approx2<cdouble, double>(zo, zi, xo, xdim, xi_beg, xi_step,
+                                         yo, ydim, yi_beg, yi_step,
+                                         method, offGrid);
                 break;
             default: TYPE_ERROR(1, zi_info.getType());
         }
-        std::swap(*zo, output);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
+af_err af_approx2_uniform(af_array *zo, const af_array zi, const af_array xo,
+                          const int xdim, const double xi_beg,
+                          const double xi_step, const af_array yo,
+                          const int ydim, const double yi_beg,
+                          const double yi_step, const af_interp_type method,
+                          const float offGrid) {
+    return af_approx2_common(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim, yi_beg,
+                             yi_step, method, offGrid, true);
+}
+
+af_err af_approx2_uniform_v2(af_array *zo, const af_array zi, const af_array xo,
+                          const int xdim, const double xi_beg,
+                          const double xi_step, const af_array yo,
+                          const int ydim, const double yi_beg,
+                          const double yi_step, const af_interp_type method,
+                          const float offGrid) {
+    if (zo == 0) return AF_ERR_ARG;
+    // Since this v2, assume that the output has already been initialized
+    // either to null or an existing af_array
+    return af_approx2_common(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim, yi_beg,
+                             yi_step, method, offGrid, *zo == 0);
+}
+
 af_err af_approx2(af_array *zo, const af_array zi, const af_array xo,
                   const af_array yo, const af_interp_type method,
                   const float offGrid) {
-    return af_approx2_uniform(zo, zi, xo, 0, 0.0, 1.0, yo, 1, 0.0, 1.0, method,
-                              offGrid);
+    return af_approx2_common(zo, zi, xo, 0, 0.0, 1.0, yo, 1, 0.0, 1.0, method,
+                             offGrid, true);
+}
+
+af_err af_approx2_v2(af_array *zo, const af_array zi, const af_array xo,
+                  const af_array yo, const af_interp_type method,
+                  const float offGrid) {
+    if (zo == 0) return AF_ERR_ARG;
+    // Since this v2, assume that the output has already been initialized
+    // either to null or an existing af_array
+    return af_approx2_common(zo, zi, xo, 0, 0.0, 1.0, yo, 1, 0.0, 1.0, method,
+                             offGrid, *zo == 0);
 }
