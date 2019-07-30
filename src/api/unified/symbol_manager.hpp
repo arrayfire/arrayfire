@@ -106,7 +106,8 @@ class AFSymbolManager {
 };
 
 // Helper functions to ensure all the input arrays are on the active backend
-bool checkArray(af_backend activeBackend, af_array a);
+bool checkArray(af_backend activeBackend, const af_array a);
+bool checkArray(af_backend activeBackend, const af_array *a);
 bool checkArrays(af_backend activeBackend);
 
 template<typename T, typename... Args>
@@ -116,8 +117,13 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
 
 }  // namespace unified
 
-// Macro to check af_array as inputs. The arguments to this macro should be
-// only input af_arrays. Not outputs or other types.
+/// Checks if the active backend and the af_arrays are the same.
+///
+/// Checks if the active backend and the af_array's backend match. If they do
+/// not match, an error is returned. This macro accepts pointer to af_arrays
+/// and af_arrays. Null pointers to af_arrays are considered acceptable.
+///
+/// \param[in] Any number of af_arrays or pointer to af_arrays
 #define CHECK_ARRAYS(...)                                                     \
     do {                                                                      \
         af_backend backendId =                                                \

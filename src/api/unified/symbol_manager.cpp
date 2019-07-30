@@ -230,7 +230,7 @@ af_err AFSymbolManager::setBackend(af::Backend bknd) {
     }
 }
 
-bool checkArray(af_backend activeBackend, af_array a) {
+bool checkArray(af_backend activeBackend, const af_array a) {
     // Convert af_array into int to retrieve the backend info.
     // See ArrayInfo.hpp for more
     af_backend backend = (af_backend)0;
@@ -244,6 +244,14 @@ bool checkArray(af_backend activeBackend, af_array a) {
     unified::AFSymbolManager::getInstance().call("af_get_backend_id", &backend,
                                                  a);
     return backend == activeBackend;
+}
+
+bool checkArray(af_backend activeBackend, const af_array* a) {
+    if (a) {
+        return checkArray(activeBackend, *a);
+    } else {
+        return true;
+    }
 }
 
 bool checkArrays(af_backend activeBackend) {
