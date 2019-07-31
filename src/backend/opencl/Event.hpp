@@ -8,6 +8,7 @@
  ********************************************************/
 #pragma once
 
+#include <af/event.h>
 #include <common/EventBase.hpp>
 #include <platform.hpp>
 
@@ -44,5 +45,15 @@ using Event = common::EventBase<OpenCLEventPolicy>;
 
 /// \brief Creates a new event and marks it in the queue
 Event make_event(cl::CommandQueue &queue);
+
+af_event make_event_on_active_queue();
+
+void release_event(af_event eventHandle);
+
+void mark_event_on_active_queue(af_event eventHandle);
+
+void enqueue_wait_on_active_queue(af_event eventHandle);
+
+void block(af_event eventHandle);
 
 }  // namespace opencl

@@ -23,6 +23,7 @@ target_sources(c_api_interface
   ${ArrayFire_SOURCE_DIR}/include/af/defines.h
   ${ArrayFire_SOURCE_DIR}/include/af/device.h
   ${ArrayFire_SOURCE_DIR}/include/af/dim4.hpp
+  ${ArrayFire_SOURCE_DIR}/include/af/event.h
   ${ArrayFire_SOURCE_DIR}/include/af/exception.h
   ${ArrayFire_SOURCE_DIR}/include/af/features.h
   ${ArrayFire_SOURCE_DIR}/include/af/gfor.h
@@ -70,6 +71,8 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/diff.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dog.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/events.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/events.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/error.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/exampleFunction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fast.cpp

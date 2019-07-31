@@ -10,6 +10,7 @@
 
 #include <common/EventBase.hpp>
 #include <cuda.h>
+#include <af/event.h>
 #include <cuda_runtime_api.h>
 
 namespace cuda {
@@ -53,5 +54,15 @@ using Event = common::EventBase<CUDARuntimeEventPolicy>;
 
 /// \brief Creates a new event and marks it in the stream
 Event make_event(cudaStream_t stream);
+
+af_event make_event_on_active_queue();
+
+void release_event(af_event eventHandle);
+
+void mark_event_on_active_queue(af_event eventHandle);
+
+void enqueue_wait_on_active_queue(af_event eventHandle);
+
+void block(af_event eventHandle);
 
 }  // namespace cuda
