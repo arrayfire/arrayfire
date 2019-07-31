@@ -830,8 +830,6 @@ class Approx2V2 : public ::testing::Test {
 
         ASSERT_SUCCESS(af_approx2_v2(&out, in, pos1, pos2, AF_INTERP_LINEAR, 0));
         ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
-
-        if (out != 0) { ASSERT_SUCCESS(af_release_array(out)); }
     }
 
     void testSpclOutArrayUniform(TestOutputArrayType out_array_type) {
@@ -845,8 +843,6 @@ class Approx2V2 : public ::testing::Test {
         ASSERT_SUCCESS(af_approx2_uniform_v2(&out, in, pos1, 0, 0.0, 1.0,
                                              pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0));
         ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
-
-        if (out != 0) { ASSERT_SUCCESS(af_release_array(out)); }
     }
 };
 
