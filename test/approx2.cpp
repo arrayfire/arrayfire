@@ -755,140 +755,6 @@ TEST(Approx2, CPPEmptyPosAndInput) {
 }
 
 template<typename T>
-void testSpclOutArray(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
-                      float* h_pos1, dim4 pos1_dims, float* h_pos2, dim4 pos2_dims,
-                      TestOutputArrayType out_array_type) {
-    SUPPORTED_TYPE_CHECK(T);
-    typedef typename dtype_traits<T>::base_type BT;
-
-    vector<T> h_gold_cast(gold_dims.elements());
-    vector<T> h_in_cast(in_dims.elements());
-    vector<BT> h_pos1_cast(pos1_dims.elements());
-    vector<BT> h_pos2_cast(pos2_dims.elements());
-
-    for (int i = 0; i < gold_dims.elements(); ++i) {
-        h_gold_cast[i] = static_cast<T>(h_gold[i]);
-    }
-    for (int i = 0; i < in_dims.elements(); ++i) {
-        h_in_cast[i] = static_cast<T>(h_in[i]);
-    }
-    for (int i = 0; i < pos1_dims.elements(); ++i) {
-        h_pos1_cast[i] = static_cast<BT>(h_pos1[i]);
-    }
-    for (int i = 0; i < pos2_dims.elements(); ++i) {
-        h_pos2_cast[i] = static_cast<BT>(h_pos2[i]);
-    }
-
-    af_array in  = 0;
-    af_array pos1 = 0;
-    af_array pos2 = 0;
-
-    ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
-                                   in_dims.get(),
-                                   (af_dtype)dtype_traits<T>::af_type));
-    ASSERT_SUCCESS(af_create_array(&pos1, &h_pos1_cast.front(), pos1_dims.ndims(),
-                                   pos1_dims.get(),
-                                   (af_dtype)dtype_traits<BT>::af_type));
-    ASSERT_SUCCESS(af_create_array(&pos2, &h_pos2_cast.front(), pos2_dims.ndims(),
-                                   pos2_dims.get(),
-                                   (af_dtype)dtype_traits<BT>::af_type));
-
-    af_array out = 0;
-    TestOutputArrayInfo metadata(out_array_type);
-    genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
-                       (af_dtype)dtype_traits<T>::af_type, &metadata);
-    ASSERT_SUCCESS(af_approx2_v2(&out, in, pos1, pos2, AF_INTERP_LINEAR, 0));
-
-    af_array gold = 0;
-    ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
-                                   gold_dims.ndims(), gold_dims.get(),
-                                   (af_dtype)dtype_traits<T>::af_type));
-
-    ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
-
-    if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
-    if (pos1 != 0) { ASSERT_SUCCESS(af_release_array(pos2)); }
-    if (pos2 != 0) { ASSERT_SUCCESS(af_release_array(pos1)); }
-    if (in != 0) { ASSERT_SUCCESS(af_release_array(in)); }
-}
-
-TYPED_TEST(Approx2, UseNullOutputArray) {
-    float h_in[9] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0};
-    dim4 in_dims(3, 3);
-
-    float h_pos1[4] = {0.5, 1.5, 0.5, 1.5};
-    dim4 pos1_dims(2, 2);
-
-    float h_pos2[4] = {0.5, 0.5, 1.5, 1.5};
-    dim4 pos2_dims(2, 2);
-
-    float h_gold[4] = {1.5, 1.5, 2.5, 2.5};
-    dim4 gold_dims(2, 2);
-
-    SCOPED_TRACE("UseNullOutputArray");
-    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims,
-                                h_pos1, pos1_dims, h_pos2, pos2_dims,
-                                NULL_ARRAY);
-}
-
-TYPED_TEST(Approx2, UseFullExistingOutputArray) {
-    float h_in[9] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0};
-    dim4 in_dims(3, 3);
-
-    float h_pos1[4] = {0.5, 1.5, 0.5, 1.5};
-    dim4 pos1_dims(2, 2);
-
-    float h_pos2[4] = {0.5, 0.5, 1.5, 1.5};
-    dim4 pos2_dims(2, 2);
-
-    float h_gold[4] = {1.5, 1.5, 2.5, 2.5};
-    dim4 gold_dims(2, 2);
-
-    SCOPED_TRACE("UseFullExistingOutputArray");
-    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims,
-                                h_pos1, pos1_dims, h_pos2, pos2_dims,
-                                FULL_ARRAY);
-}
-
-TYPED_TEST(Approx2, UseExistingOutputSubArray) {
-    float h_in[9] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0};
-    dim4 in_dims(3, 3);
-
-    float h_pos1[4] = {0.5, 1.5, 0.5, 1.5};
-    dim4 pos1_dims(2, 2);
-
-    float h_pos2[4] = {0.5, 0.5, 1.5, 1.5};
-    dim4 pos2_dims(2, 2);
-
-    float h_gold[4] = {1.5, 1.5, 2.5, 2.5};
-    dim4 gold_dims(2, 2);
-
-    SCOPED_TRACE("UseExistingOutputSubArray");
-    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims,
-                                h_pos1, pos1_dims, h_pos2, pos2_dims,
-                                SUB_ARRAY);
-}
-
-TYPED_TEST(Approx2, UseReorderedOutputArray) {
-    float h_in[9] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0};
-    dim4 in_dims(3, 3);
-
-    float h_pos1[4] = {0.5, 1.5, 0.5, 1.5};
-    dim4 pos1_dims(2, 2);
-
-    float h_pos2[4] = {0.5, 0.5, 1.5, 1.5};
-    dim4 pos2_dims(2, 2);
-
-    float h_gold[4] = {1.5, 1.5, 2.5, 2.5};
-    dim4 gold_dims(2, 2);
-
-    SCOPED_TRACE("UseReorderedOutputArray");
-    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims,
-                                h_pos1, pos1_dims, h_pos2, pos2_dims,
-                                REORDERED_ARRAY);
-}
-
-template<typename T>
 class Approx2V2 : public ::testing::Test {
    protected:
     typedef typename dtype_traits<T>::base_type BT;
@@ -967,6 +833,21 @@ class Approx2V2 : public ::testing::Test {
 
         if (out != 0) { ASSERT_SUCCESS(af_release_array(out)); }
     }
+
+    void testSpclOutArrayUniform(TestOutputArrayType out_array_type) {
+        SUPPORTED_TYPE_CHECK(T);
+
+        af_array out = 0;
+        TestOutputArrayInfo metadata(out_array_type);
+        genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
+                           (af_dtype)dtype_traits<T>::af_type, &metadata);
+
+        ASSERT_SUCCESS(af_approx2_uniform_v2(&out, in, pos1, 0, 0.0, 1.0,
+                                             pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0));
+        ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
+
+        if (out != 0) { ASSERT_SUCCESS(af_release_array(out)); }
+    }
 };
 
 TYPED_TEST_CASE(Approx2V2, TestTypes);
@@ -989,4 +870,122 @@ TYPED_TEST(Approx2V2, UseExistingOutputSubArray) {
 TYPED_TEST(Approx2V2, UseReorderedOutputArray) {
     SCOPED_TRACE("UseReorderedOutputArray");
     this->testSpclOutArray(REORDERED_ARRAY);
+}
+
+TYPED_TEST(Approx2V2, UniformUseNullOutputArray) {
+    SCOPED_TRACE("UniformUseNullOutputArray");
+    this->testSpclOutArrayUniform(NULL_ARRAY);
+}
+
+TYPED_TEST(Approx2V2, UniformUseFullExistingOutputArray) {
+    SCOPED_TRACE("UniformUseFullExistingOutputArray");
+    this->testSpclOutArrayUniform(FULL_ARRAY);
+}
+
+TYPED_TEST(Approx2V2, UniformUseExistingOutputSubArray) {
+    SCOPED_TRACE("UniformUseExistingOutputSubArray");
+    this->testSpclOutArrayUniform(SUB_ARRAY);
+}
+
+TYPED_TEST(Approx2V2, UniformUseReorderedOutputArray) {
+    SCOPED_TRACE("UniformUseReorderedOutputArray");
+    this->testSpclOutArrayUniform(REORDERED_ARRAY);
+}
+
+template<typename T>
+class Approx2NullArgs : public Approx2V2<T> {
+   protected:
+    typedef typename Approx2V2<T>::BT BT;
+
+    af_array out;
+
+    Approx2NullArgs() : Approx2V2<T>(), out(0) {}
+    void SetUp() { Approx2V2<T>::SetUp(); }
+    void TearDown() { Approx2V2<T>::TearDown(); }
+};
+
+TYPED_TEST_CASE(Approx2NullArgs, float);
+
+TYPED_TEST(Approx2NullArgs, NullOutputPtr) {
+    af_array* out_ptr = 0;
+    ASSERT_EQ(af_approx2(out_ptr, this->in, this->pos1, this->pos2, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, NullInputArray) {
+    ASSERT_EQ(af_approx2(&this->out, 0, this->pos1, this->pos2, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, NullPos1Array) {
+    ASSERT_EQ(af_approx2(&this->out, this->in, 0, this->pos2, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, NullPos2Array) {
+    ASSERT_EQ(af_approx2(&this->out, this->in, this->pos1, 0, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, V2NullOutputPtr) {
+    af_array* out_ptr = 0;
+    ASSERT_EQ(af_approx2_v2(out_ptr, this->in, this->pos1, this->pos2, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, V2NullInputArray) {
+    ASSERT_EQ(af_approx2_v2(&this->out, 0, this->pos1, this->pos2, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, V2NullPos1Array) {
+    ASSERT_EQ(af_approx2_v2(&this->out, this->in, 0, this->pos2, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, V2NullPos2Array) {
+    ASSERT_EQ(af_approx2_v2(&this->out, this->in, this->pos1, 0, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, UniformNullOutputPtr) {
+    af_array* out_ptr  = 0;
+    ASSERT_EQ(af_approx2_uniform(out_ptr, this->in, this->pos1, 0, 0.0, 1.0,
+                                    this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+              AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, UniformNullInputArray) {
+    ASSERT_EQ(af_approx2_uniform(&this->out, 0, this->pos1, 0, 0.0, 1.0,
+                                    this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+              AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, UniformNullPos1Array) {
+    ASSERT_EQ(af_approx2_uniform(&this->out, 0, 0, 0, 0.0, 1.0,
+                                    this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+              AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, UniformNullPos2Array) {
+    ASSERT_EQ(af_approx2_uniform(&this->out, 0, 0, 0, 0.0, 1.0,
+                                    0, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+              AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, V2UniformNullOutputPtr) {
+    af_array* out_ptr  = 0;
+    ASSERT_EQ(af_approx2_uniform_v2(out_ptr, this->in, this->pos1, 0, 0.0, 1.0,
+                                    this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+              AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, V2UniformNullInputArray) {
+    ASSERT_EQ(af_approx2_uniform_v2(&this->out, 0, this->pos1, 0, 0.0, 1.0,
+                                    this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+              AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, V2UniformNullPos1Array) {
+    ASSERT_EQ(af_approx2_uniform_v2(&this->out, 0, 0, 0, 0.0, 1.0,
+                                    this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+              AF_ERR_ARG);
+}
+
+TYPED_TEST(Approx2NullArgs, V2UniformNullPos2Array) {
+    ASSERT_EQ(af_approx2_uniform_v2(&this->out, 0, 0, 0, 0.0, 1.0,
+                                    0, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+              AF_ERR_ARG);
 }
