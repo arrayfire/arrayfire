@@ -939,25 +939,25 @@ TYPED_TEST(Approx2NullArgs, V2NullPos2Array) {
 TYPED_TEST(Approx2NullArgs, UniformNullOutputPtr) {
     af_array* out_ptr  = 0;
     ASSERT_EQ(af_approx2_uniform(out_ptr, this->in, this->pos1, 0, 0.0, 1.0,
-                                    this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+                                 this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx2NullArgs, UniformNullInputArray) {
     ASSERT_EQ(af_approx2_uniform(&this->out, 0, this->pos1, 0, 0.0, 1.0,
-                                    this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+                                 this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx2NullArgs, UniformNullPos1Array) {
-    ASSERT_EQ(af_approx2_uniform(&this->out, 0, 0, 0, 0.0, 1.0,
-                                    this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+    ASSERT_EQ(af_approx2_uniform(&this->out, this->in, 0, 0, 0.0, 1.0,
+                                 this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx2NullArgs, UniformNullPos2Array) {
-    ASSERT_EQ(af_approx2_uniform(&this->out, 0, 0, 0, 0.0, 1.0,
-                                    0, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
+    ASSERT_EQ(af_approx2_uniform(&this->out, this->in, this->pos1, 0, 0.0, 1.0,
+                                 0, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
 
@@ -975,13 +975,13 @@ TYPED_TEST(Approx2NullArgs, V2UniformNullInputArray) {
 }
 
 TYPED_TEST(Approx2NullArgs, V2UniformNullPos1Array) {
-    ASSERT_EQ(af_approx2_uniform_v2(&this->out, 0, 0, 0, 0.0, 1.0,
+    ASSERT_EQ(af_approx2_uniform_v2(&this->out, this->in, 0, 0, 0.0, 1.0,
                                     this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx2NullArgs, V2UniformNullPos2Array) {
-    ASSERT_EQ(af_approx2_uniform_v2(&this->out, 0, 0, 0, 0.0, 1.0,
+    ASSERT_EQ(af_approx2_uniform_v2(&this->out, this->in, this->pos1, 0, 0.0, 1.0,
                                     0, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
