@@ -759,6 +759,11 @@ class Approx2V2 : public ::testing::Test {
    protected:
     typedef typename dtype_traits<T>::base_type BT;
 
+    static const int h_gold_size = 4;
+    static const int h_in_size = 9;
+    static const int h_pos1_size = 4;
+    static const int h_pos2_size = 4;
+
     vector<T> h_gold_cast;
     vector<T> h_in_cast;
     vector<BT> h_pos1_cast;
@@ -775,14 +780,15 @@ class Approx2V2 : public ::testing::Test {
     af_array pos2;
 
     Approx2V2()
-        : h_gold_cast(4), h_in_cast(9), h_pos1_cast(4), h_pos2_cast(4),
-          gold_dims(2, 2), in_dims(3, 3), pos1_dims(2, 2), pos2_dims(2, 2),
-          gold(0), in(0), pos1(0), pos2(0)
+        : h_gold_cast(h_gold_size), h_in_cast(h_in_size)
+        , h_pos1_cast(h_pos1_size), h_pos2_cast(h_pos2_size)
+        , gold_dims(2, 2), in_dims(3, 3), pos1_dims(2, 2), pos2_dims(2, 2)
+        , gold(0), in(0), pos1(0), pos2(0)
     {
-        float h_gold[4] = {1.5, 1.5, 2.5, 2.5};
-        float h_in[9] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0};
-        float h_pos1[4] = {0.5, 1.5, 0.5, 1.5};
-        float h_pos2[4] = {0.5, 0.5, 1.5, 1.5};
+        float h_gold[h_gold_size] = {1.5, 1.5, 2.5, 2.5};
+        float h_in[h_in_size] = {1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0};
+        float h_pos1[h_pos1_size] = {0.5, 1.5, 0.5, 1.5};
+        float h_pos2[h_pos2_size] = {0.5, 0.5, 1.5, 1.5};
 
         for (int i = 0; i < gold_dims.elements(); ++i) {
             h_gold_cast[i] = static_cast<T>(h_gold[i]);
