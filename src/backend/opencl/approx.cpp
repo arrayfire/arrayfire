@@ -39,10 +39,11 @@ void approx1(Array<Ty> &yo, const Array<Ty> &yi, const Array<Tp> &xo,
 }
 
 template<typename Ty, typename Tp>
-void approx2(Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo, const int xdim,
-             const Tp &xi_beg, const Tp &xi_step, const Array<Tp> &yo,
-             const int ydim, const Tp &yi_beg, const Tp &yi_step,
-             const af_interp_type method, const float offGrid) {
+void approx2(Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo,
+             const int xdim, const Tp &xi_beg, const Tp &xi_step,
+             const Array<Tp> &yo, const int ydim, const Tp &yi_beg,
+             const Tp &yi_step, const af_interp_type method,
+             const float offGrid) {
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
@@ -67,16 +68,16 @@ void approx2(Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo, const int 
     }
 }
 
-#define INSTANTIATE(Ty, Tp)                                             \
-    template void approx1<Ty, Tp>(                                      \
-        Array<Ty> &yo, const Array<Ty> &yi, const Array<Tp> &xo,        \
-        const int xdim, const Tp &xi_beg, const Tp &xi_step,            \
-        const af_interp_type method, const float offGrid);              \
-    template void approx2<Ty, Tp>(                                      \
-        Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo, const int xdim, \
-        const Tp &xi_beg, const Tp &xi_step, const Array<Tp> &yo,       \
-        const int ydim, const Tp &yi_beg, const Tp &yi_step,            \
-        const af_interp_type method, const float offGrid);
+#define INSTANTIATE(Ty, Tp)                                       \
+    template void approx1<Ty, Tp>(                                \
+        Array<Ty> & yo, const Array<Ty> &yi, const Array<Tp> &xo, \
+        const int xdim, const Tp &xi_beg, const Tp &xi_step,      \
+        const af_interp_type method, const float offGrid);        \
+    template void approx2<Ty, Tp>(                                \
+        Array<Ty> & zo, const Array<Ty> &zi, const Array<Tp> &xo, \
+        const int xdim, const Tp &xi_beg, const Tp &xi_step,      \
+        const Array<Tp> &yo, const int ydim, const Tp &yi_beg,    \
+        const Tp &yi_step, const af_interp_type method, const float offGrid);
 
 INSTANTIATE(float, float)
 INSTANTIATE(double, double)

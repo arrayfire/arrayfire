@@ -835,8 +835,8 @@ class Approx1V2 : public ::testing::Test {
     typedef typename dtype_traits<T>::base_type BT;
 
     static const int h_gold_size = 15;
-    static const int h_in_size = 9;
-    static const int h_pos_size = 5;
+    static const int h_in_size   = 9;
+    static const int h_pos_size  = 5;
 
     vector<T> h_gold_cast;
     vector<T> h_in_cast;
@@ -851,19 +851,24 @@ class Approx1V2 : public ::testing::Test {
     af_array pos;
 
     Approx1V2()
-        : h_gold_cast(h_gold_size), h_in_cast(h_in_size), h_pos_cast(h_pos_size)
-        , gold_dims(5, 3), in_dims(3, 3), pos_dims(5)
-        , gold(0), in(0), pos(0)
-    {
+        : h_gold_cast(h_gold_size)
+        , h_in_cast(h_in_size)
+        , h_pos_cast(h_pos_size)
+        , gold_dims(5, 3)
+        , in_dims(3, 3)
+        , pos_dims(5)
+        , gold(0)
+        , in(0)
+        , pos(0) {
         float h_gold[h_gold_size] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
                                      40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
                                      70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
 
-        float h_in[h_in_size] = {10.0f, 20.0f, 30.0f,
-                                 40.0f, 50.0f, 60.0f,
-                                 70.0f, 80.0f, 90.0f};
+        float h_in[h_in_size]     = {10.0f, 20.0f, 30.0f,
+                                     40.0f, 50.0f, 60.0f,
+                                     70.0f, 80.0f, 90.0f};
 
-        float h_pos[h_pos_size] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
+        float h_pos[h_pos_size]   = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
 
         for (int i = 0; i < gold_dims.elements(); ++i) {
             h_gold_cast[i] = static_cast<T>(h_gold[i]);
@@ -883,14 +888,14 @@ class Approx1V2 : public ::testing::Test {
         ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
                                        in_dims.get(),
                                        (af_dtype)dtype_traits<T>::af_type));
-        ASSERT_SUCCESS(af_create_array(&pos, &h_pos_cast.front(), pos_dims.ndims(),
-                                       pos_dims.get(),
+        ASSERT_SUCCESS(af_create_array(&pos, &h_pos_cast.front(),
+                                       pos_dims.ndims(), pos_dims.get(),
                                        (af_dtype)dtype_traits<BT>::af_type));
     }
 
     void TearDown() {
-        if (pos != 0) { ASSERT_SUCCESS(af_release_array(pos)); }
-        if (in != 0) { ASSERT_SUCCESS(af_release_array(in)); }
+        if (pos != 0)  { ASSERT_SUCCESS(af_release_array(pos)); }
+        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
         if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
     }
 
@@ -978,32 +983,39 @@ TYPED_TEST_CASE(Approx1NullArgs, float);
 
 TYPED_TEST(Approx1NullArgs, NullOutputPtr) {
     af_array* out_ptr = 0;
-    ASSERT_EQ(af_approx1(out_ptr, this->in, this->pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+    ASSERT_EQ(af_approx1(out_ptr, this->in, this->pos, AF_INTERP_LINEAR, 0.f),
+              AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx1NullArgs, NullInputArray) {
-    ASSERT_EQ(af_approx1(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+    ASSERT_EQ(af_approx1(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f),
+              AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx1NullArgs, NullPosArray) {
-    ASSERT_EQ(af_approx1(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+    ASSERT_EQ(af_approx1(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f),
+              AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx1NullArgs, V2NullOutputPtr) {
     af_array* out_ptr = 0;
-    ASSERT_EQ(af_approx1_v2(out_ptr, this->in, this->pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+    ASSERT_EQ(
+        af_approx1_v2(out_ptr, this->in, this->pos, AF_INTERP_LINEAR, 0.f),
+        AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx1NullArgs, V2NullInputArray) {
-    ASSERT_EQ(af_approx1_v2(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+    ASSERT_EQ(af_approx1_v2(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f),
+              AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx1NullArgs, V2NullPosArray) {
-    ASSERT_EQ(af_approx1_v2(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f), AF_ERR_ARG);
+    ASSERT_EQ(af_approx1_v2(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f),
+              AF_ERR_ARG);
 }
 
 TYPED_TEST(Approx1NullArgs, UniformNullOutputPtr) {
-    af_array* out_ptr  = 0;
+    af_array* out_ptr = 0;
     ASSERT_EQ(af_approx1_uniform(out_ptr, this->in, this->pos, 0, 0.0, 1.0,
                                  AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
@@ -1022,7 +1034,7 @@ TYPED_TEST(Approx1NullArgs, UniformNullPosArray) {
 }
 
 TYPED_TEST(Approx1NullArgs, V2UniformNullOutputPtr) {
-    af_array* out_ptr  = 0;
+    af_array* out_ptr = 0;
     ASSERT_EQ(af_approx1_uniform_v2(out_ptr, this->in, this->pos, 0, 0.0, 1.0,
                                     AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);

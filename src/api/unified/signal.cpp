@@ -31,8 +31,8 @@ af_err af_approx2(af_array *zo, const af_array zi, const af_array xo,
 }
 
 af_err af_approx2_v2(af_array *zo, const af_array zi, const af_array xo,
-                  const af_array yo, const af_interp_type method,
-                  const float offGrid) {
+                     const af_array yo, const af_interp_type method,
+                     const float offGrid) {
     CHECK_ARRAYS(zo, zi, xo, yo);
     return CALL(zo, zi, xo, yo, method, offGrid);
 }
@@ -65,11 +65,11 @@ af_err af_approx2_uniform(af_array *zo, const af_array zi, const af_array xo,
 }
 
 af_err af_approx2_uniform_v2(af_array *zo, const af_array zi, const af_array xo,
-                          const int xdim, const double xi_beg,
-                          const double xi_step, const af_array yo,
-                          const int ydim, const double yi_beg,
-                          const double yi_step, const af_interp_type method,
-                          const float offGrid) {
+                             const int xdim, const double xi_beg,
+                             const double xi_step, const af_array yo,
+                             const int ydim, const double yi_beg,
+                             const double yi_step, const af_interp_type method,
+                             const float offGrid) {
     CHECK_ARRAYS(zo, zi, xo, yo);
     return CALL(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim, yi_beg, yi_step,
                 method, offGrid);
