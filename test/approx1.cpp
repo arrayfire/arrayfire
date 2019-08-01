@@ -834,10 +834,6 @@ class Approx1V2 : public ::testing::Test {
    protected:
     typedef typename dtype_traits<T>::base_type BT;
 
-    static const int h_gold_size = 15;
-    static const int h_in_size   = 9;
-    static const int h_pos_size  = 5;
-
     vector<T> h_gold_cast;
     vector<T> h_in_cast;
     vector<BT> h_pos_cast;
@@ -851,37 +847,45 @@ class Approx1V2 : public ::testing::Test {
     af_array pos;
 
     Approx1V2()
-        : h_gold_cast(h_gold_size)
-        , h_in_cast(h_in_size)
-        , h_pos_cast(h_pos_size)
-        , gold_dims(5, 3)
-        , in_dims(3, 3)
-        , pos_dims(5)
-        , gold(0)
+        : gold(0)
         , in(0)
-        , pos(0) {
-        float h_gold[h_gold_size] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
-                                     40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
-                                     70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
+        , pos(0) {}
 
-        float h_in[h_in_size]     = {10.0f, 20.0f, 30.0f,
-                                     40.0f, 50.0f, 60.0f,
-                                     70.0f, 80.0f, 90.0f};
+    void SetUp() {}
 
-        float h_pos[h_pos_size]   = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
-
-        for (int i = 0; i < gold_dims.elements(); ++i) {
-            h_gold_cast[i] = static_cast<T>(h_gold[i]);
-        }
-        for (int i = 0; i < in_dims.elements(); ++i) {
-            h_in_cast[i] = static_cast<T>(h_in[i]);
-        }
-        for (int i = 0; i < pos_dims.elements(); ++i) {
-            h_pos_cast[i] = static_cast<BT>(h_pos[i]);
-        }
+    void ReleaseArrays() {
+        if (pos != 0)  { ASSERT_SUCCESS(af_release_array(pos)); }
+        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
+        if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
     }
 
-    void SetUp() {
+    void TearDown() {
+        ReleaseArrays();
+    }
+
+    void UploadTestData(float *h_gold, dim4 gold_dims,
+                        float *h_in, dim4 in_dims,
+                        float *h_pos, dim4 pos_dims) {
+        ReleaseArrays();
+
+        gold = 0;
+        in = 0;
+        pos = 0;
+
+        this->gold_dims = gold_dims;
+        this->in_dims = in_dims;
+        this->pos_dims = pos_dims;
+
+        for (int i = 0; i < gold_dims.elements(); ++i) {
+            h_gold_cast.push_back(static_cast<T>(h_gold[i]));
+        }
+        for (int i = 0; i < in_dims.elements(); ++i) {
+            h_in_cast.push_back(static_cast<T>(h_in[i]));
+        }
+        for (int i = 0; i < pos_dims.elements(); ++i) {
+            h_pos_cast.push_back(static_cast<BT>(h_pos[i]));
+        }
+
         ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
                                        gold_dims.ndims(), gold_dims.get(),
                                        (af_dtype)dtype_traits<T>::af_type));
@@ -891,12 +895,6 @@ class Approx1V2 : public ::testing::Test {
         ASSERT_SUCCESS(af_create_array(&pos, &h_pos_cast.front(),
                                        pos_dims.ndims(), pos_dims.get(),
                                        (af_dtype)dtype_traits<BT>::af_type));
-    }
-
-    void TearDown() {
-        if (pos != 0)  { ASSERT_SUCCESS(af_release_array(pos)); }
-        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
-        if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
     }
 
     void testSpclOutArray(TestOutputArrayType out_array_type) {
@@ -927,126 +925,202 @@ class Approx1V2 : public ::testing::Test {
 
 TYPED_TEST_CASE(Approx1V2, TestTypes);
 
+struct SimpleTestData {
+    static const int h_gold_size = 15;
+    static const int h_in_size   = 9;
+    static const int h_pos_size  = 5;
+
+    vector<float> h_gold;
+    vector<float> h_in;
+    vector<float> h_pos;
+
+    dim4 gold_dims;
+    dim4 in_dims;
+    dim4 pos_dims;
+
+    SimpleTestData()
+        : h_gold(h_gold_size)
+        , h_in(h_in_size)
+        , h_pos(h_pos_size)
+        , gold_dims(5, 3)
+        , in_dims(3, 3)
+        , pos_dims(5) {
+        float gold_arr[h_gold_size] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
+                                       40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
+                                       70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
+
+        float in_arr[h_in_size]     = {10.0f, 20.0f, 30.0f,
+                                       40.0f, 50.0f, 60.0f,
+                                       70.0f, 80.0f, 90.0f};
+
+        float pos_arr[h_pos_size]   = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
+
+        h_gold.assign(gold_arr, gold_arr + h_gold_size);
+        h_in.assign(in_arr, in_arr + h_in_size);
+        h_pos.assign(pos_arr, pos_arr + h_pos_size);
+    }
+};
+
 TYPED_TEST(Approx1V2, UseNullOutputArray) {
-    SCOPED_TRACE("UseNullOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos.front(), data.pos_dims);
     this->testSpclOutArray(NULL_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UseFullExistingOutputArray) {
-    SCOPED_TRACE("UseFullExistingOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos.front(), data.pos_dims);
     this->testSpclOutArray(FULL_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UseExistingOutputSubArray) {
-    SCOPED_TRACE("UseExistingOutputSubArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos.front(), data.pos_dims);
     this->testSpclOutArray(SUB_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UseReorderedOutputArray) {
-    SCOPED_TRACE("UseReorderedOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos.front(), data.pos_dims);
     this->testSpclOutArray(REORDERED_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UniformUseNullOutputArray) {
-    SCOPED_TRACE("UniformUseNullOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos.front(), data.pos_dims);
     this->testSpclOutArrayUniform(NULL_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UniformUseFullExistingOutputArray) {
-    SCOPED_TRACE("UniformUseFullExistingOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos.front(), data.pos_dims);
     this->testSpclOutArrayUniform(FULL_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UniformUseExistingOutputSubArray) {
-    SCOPED_TRACE("UniformUseExistingOutputSubArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos.front(), data.pos_dims);
     this->testSpclOutArrayUniform(SUB_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UniformUseReorderedOutputArray) {
-    SCOPED_TRACE("UniformUseReorderedOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos.front(), data.pos_dims);
     this->testSpclOutArrayUniform(REORDERED_ARRAY);
 }
 
-template<typename T>
-class Approx1NullArgs : public Approx1V2<T> {
+class Approx1NullArgs : public ::testing::Test {
    protected:
-    typedef typename Approx1V2<T>::BT BT;
-
     af_array out;
+    af_array in;
+    af_array pos;
 
-    Approx1NullArgs() : Approx1V2<T>(), out(0) {}
-    void SetUp() { Approx1V2<T>::SetUp(); }
-    void TearDown() { Approx1V2<T>::TearDown(); }
+    Approx1NullArgs()
+        : out(0)
+        , in(0)
+        , pos(0) {}
+
+    void SetUp() {
+        SimpleTestData data;
+
+        ASSERT_SUCCESS(af_create_array(&in, &data.h_in.front(),
+                                       data.in_dims.ndims(),
+                                       data.in_dims.get(),
+                                       f32));
+        ASSERT_SUCCESS(af_create_array(&pos, &data.h_pos.front(),
+                                       data.pos_dims.ndims(),
+                                       data.pos_dims.get(),
+                                       f32));
+    }
+
+    void TearDown() {
+        if (pos != 0)  { ASSERT_SUCCESS(af_release_array(pos)); }
+        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
+    }
 };
 
-TYPED_TEST_CASE(Approx1NullArgs, float);
-
-TYPED_TEST(Approx1NullArgs, NullOutputPtr) {
+TEST_F(Approx1NullArgs, NullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(af_approx1(out_ptr, this->in, this->pos, AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, NullInputArray) {
+TEST_F(Approx1NullArgs, NullInputArray) {
     ASSERT_EQ(af_approx1(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, NullPosArray) {
+TEST_F(Approx1NullArgs, NullPosArray) {
     ASSERT_EQ(af_approx1(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, V2NullOutputPtr) {
+TEST_F(Approx1NullArgs, V2NullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(
         af_approx1_v2(out_ptr, this->in, this->pos, AF_INTERP_LINEAR, 0.f),
         AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, V2NullInputArray) {
+TEST_F(Approx1NullArgs, V2NullInputArray) {
     ASSERT_EQ(af_approx1_v2(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, V2NullPosArray) {
+TEST_F(Approx1NullArgs, V2NullPosArray) {
     ASSERT_EQ(af_approx1_v2(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, UniformNullOutputPtr) {
+TEST_F(Approx1NullArgs, UniformNullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(af_approx1_uniform(out_ptr, this->in, this->pos, 0, 0.0, 1.0,
                                  AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, UniformNullInputArray) {
+TEST_F(Approx1NullArgs, UniformNullInputArray) {
     ASSERT_EQ(af_approx1_uniform(&this->out, 0, this->pos, 0, 0.0, 1.0,
                                  AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, UniformNullPosArray) {
+TEST_F(Approx1NullArgs, UniformNullPosArray) {
     ASSERT_EQ(af_approx1_uniform(&this->out, this->in, 0, 0, 0.0, 1.0,
                                  AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, V2UniformNullOutputPtr) {
+TEST_F(Approx1NullArgs, V2UniformNullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(af_approx1_uniform_v2(out_ptr, this->in, this->pos, 0, 0.0, 1.0,
                                     AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, V2UniformNullInputArray) {
+TEST_F(Approx1NullArgs, V2UniformNullInputArray) {
     ASSERT_EQ(af_approx1_uniform_v2(&this->out, 0, this->pos, 0, 0.0, 1.0,
                                     AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx1NullArgs, V2UniformNullPosArray) {
+TEST_F(Approx1NullArgs, V2UniformNullPosArray) {
     ASSERT_EQ(af_approx1_uniform_v2(&this->out, this->in, 0, 0, 0.0, 1.0,
                                     AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
