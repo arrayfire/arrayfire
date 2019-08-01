@@ -759,11 +759,6 @@ class Approx2V2 : public ::testing::Test {
    protected:
     typedef typename dtype_traits<T>::base_type BT;
 
-    static const int h_gold_size = 4;
-    static const int h_in_size   = 9;
-    static const int h_pos1_size = 4;
-    static const int h_pos2_size = 4;
-
     vector<T> h_gold_cast;
     vector<T> h_in_cast;
     vector<BT> h_pos1_cast;
@@ -780,46 +775,53 @@ class Approx2V2 : public ::testing::Test {
     af_array pos2;
 
     Approx2V2()
-        : h_gold_cast(h_gold_size)
-        , h_in_cast(h_in_size)
-        , h_pos1_cast(h_pos1_size)
-        , h_pos2_cast(h_pos2_size)
-        , gold_dims(2, 2)
-        , in_dims(3, 3)
-        , pos1_dims(2, 2)
-        , pos2_dims(2, 2)
-        , gold(0)
+        : gold(0)
         , in(0)
         , pos1(0)
-        , pos2(0) {
-        float h_gold[h_gold_size] = {1.5, 1.5,
-                                     2.5, 2.5};
+        , pos2(0) {}
 
-        float h_in[h_in_size]     = {1.0, 1.0, 1.0,
-                                     2.0, 2.0, 2.0,
-                                     3.0, 3.0, 3.0};
+    void SetUp() {}
 
-        float h_pos1[h_pos1_size] = {0.5, 1.5,
-                                     0.5, 1.5};
-
-        float h_pos2[h_pos2_size] = {0.5, 0.5,
-                                     1.5, 1.5};
-
-        for (int i = 0; i < gold_dims.elements(); ++i) {
-            h_gold_cast[i] = static_cast<T>(h_gold[i]);
-        }
-        for (int i = 0; i < in_dims.elements(); ++i) {
-            h_in_cast[i] = static_cast<T>(h_in[i]);
-        }
-        for (int i = 0; i < pos1_dims.elements(); ++i) {
-            h_pos1_cast[i] = static_cast<BT>(h_pos1[i]);
-        }
-        for (int i = 0; i < pos2_dims.elements(); ++i) {
-            h_pos2_cast[i] = static_cast<BT>(h_pos2[i]);
-        }
+    void ReleaseArrays() {
+        if (pos2 != 0) { ASSERT_SUCCESS(af_release_array(pos2)); }
+        if (pos1 != 0) { ASSERT_SUCCESS(af_release_array(pos1)); }
+        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
+        if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
     }
 
-    void SetUp() {
+    void TearDown() {
+        ReleaseArrays();
+    }
+
+    void UploadTestData(float *h_gold, dim4 gold_dims,
+                        float *h_in, dim4 in_dims,
+                        float *h_pos1, dim4 pos1_dims,
+                        float *h_pos2, dim4 pos2_dims) {
+        ReleaseArrays();
+
+        gold = 0;
+        in = 0;
+        pos1 = 0;
+        pos2 = 0;
+
+        this->gold_dims = gold_dims;
+        this->in_dims = in_dims;
+        this->pos1_dims = pos1_dims;
+        this->pos2_dims = pos2_dims;
+
+        for (int i = 0; i < gold_dims.elements(); ++i) {
+            h_gold_cast.push_back(static_cast<T>(h_gold[i]));
+        }
+        for (int i = 0; i < in_dims.elements(); ++i) {
+            h_in_cast.push_back(static_cast<T>(h_in[i]));
+        }
+        for (int i = 0; i < pos1_dims.elements(); ++i) {
+            h_pos1_cast.push_back(static_cast<BT>(h_pos1[i]));
+        }
+        for (int i = 0; i < pos2_dims.elements(); ++i) {
+            h_pos2_cast.push_back(static_cast<BT>(h_pos2[i]));
+        }
+
         ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
                                        gold_dims.ndims(), gold_dims.get(),
                                        (af_dtype)dtype_traits<T>::af_type));
@@ -832,13 +834,6 @@ class Approx2V2 : public ::testing::Test {
         ASSERT_SUCCESS(af_create_array(&pos2, &h_pos2_cast.front(),
                                        pos2_dims.ndims(), pos2_dims.get(),
                                        (af_dtype)dtype_traits<BT>::af_type));
-    }
-
-    void TearDown() {
-        if (pos2 != 0) { ASSERT_SUCCESS(af_release_array(pos2)); }
-        if (pos1 != 0) { ASSERT_SUCCESS(af_release_array(pos1)); }
-        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
-        if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
     }
 
     void testSpclOutArray(TestOutputArrayType out_array_type) {
@@ -868,138 +863,238 @@ class Approx2V2 : public ::testing::Test {
     }
 };
 
+
 TYPED_TEST_CASE(Approx2V2, TestTypes);
 
+struct SimpleTestData {
+    static const int h_gold_size = 4;
+    static const int h_in_size   = 9;
+    static const int h_pos1_size = 4;
+    static const int h_pos2_size = 4;
+
+    vector<float> h_gold;
+    vector<float> h_in;
+    vector<float> h_pos1;
+    vector<float> h_pos2;
+
+    dim4 gold_dims;
+    dim4 in_dims;
+    dim4 pos1_dims;
+    dim4 pos2_dims;
+
+    SimpleTestData()
+        : h_gold(h_gold_size)
+        , h_in(h_in_size)
+        , h_pos1(h_pos1_size)
+        , h_pos2(h_pos2_size)
+        , gold_dims(2, 2)
+        , in_dims(3, 3)
+        , pos1_dims(2, 2)
+        , pos2_dims(2, 2) {
+        float gold_arr[h_gold_size] = {1.5, 1.5,
+                                       2.5, 2.5};
+
+        float in_arr[h_in_size]     = {1.0, 1.0, 1.0,
+                                       2.0, 2.0, 2.0,
+                                       3.0, 3.0, 3.0};
+
+        float pos1_arr[h_pos1_size] = {0.5, 1.5,
+                                       0.5, 1.5};
+
+        float pos2_arr[h_pos2_size] = {0.5, 0.5,
+                                       1.5, 1.5};
+
+        h_gold.assign(gold_arr, gold_arr + h_gold_size);
+        h_in.assign(in_arr, in_arr + h_in_size);
+        h_pos1.assign(pos1_arr, pos1_arr + h_pos1_size);
+        h_pos2.assign(pos2_arr, pos2_arr + h_pos2_size);
+    }
+};
+
 TYPED_TEST(Approx2V2, UseNullOutputArray) {
-    SCOPED_TRACE("UseNullOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos1.front(), data.pos1_dims,
+                         &data.h_pos2.front(), data.pos2_dims);
     this->testSpclOutArray(NULL_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UseFullExistingOutputArray) {
-    SCOPED_TRACE("UseFullExistingOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos1.front(), data.pos1_dims,
+                         &data.h_pos2.front(), data.pos2_dims);
     this->testSpclOutArray(FULL_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UseExistingOutputSubArray) {
-    SCOPED_TRACE("UseExistingOutputSubArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos1.front(), data.pos1_dims,
+                         &data.h_pos2.front(), data.pos2_dims);
     this->testSpclOutArray(SUB_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UseReorderedOutputArray) {
-    SCOPED_TRACE("UseReorderedOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos1.front(), data.pos1_dims,
+                         &data.h_pos2.front(), data.pos2_dims);
     this->testSpclOutArray(REORDERED_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UniformUseNullOutputArray) {
-    SCOPED_TRACE("UniformUseNullOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos1.front(), data.pos1_dims,
+                         &data.h_pos2.front(), data.pos2_dims);
     this->testSpclOutArrayUniform(NULL_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UniformUseFullExistingOutputArray) {
-    SCOPED_TRACE("UniformUseFullExistingOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos1.front(), data.pos1_dims,
+                         &data.h_pos2.front(), data.pos2_dims);
     this->testSpclOutArrayUniform(FULL_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UniformUseExistingOutputSubArray) {
-    SCOPED_TRACE("UniformUseExistingOutputSubArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos1.front(), data.pos1_dims,
+                         &data.h_pos2.front(), data.pos2_dims);
     this->testSpclOutArrayUniform(SUB_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UniformUseReorderedOutputArray) {
-    SCOPED_TRACE("UniformUseReorderedOutputArray");
+    SimpleTestData data;
+    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
+                         &data.h_in.front(), data.in_dims,
+                         &data.h_pos1.front(), data.pos1_dims,
+                         &data.h_pos2.front(), data.pos2_dims);
     this->testSpclOutArrayUniform(REORDERED_ARRAY);
 }
 
-template<typename T>
-class Approx2NullArgs : public Approx2V2<T> {
+class Approx2NullArgs : public ::testing::Test {
    protected:
-    typedef typename Approx2V2<T>::BT BT;
-
     af_array out;
+    af_array in;
+    af_array pos1;
+    af_array pos2;
 
-    Approx2NullArgs() : Approx2V2<T>(), out(0) {}
-    void SetUp() { Approx2V2<T>::SetUp(); }
-    void TearDown() { Approx2V2<T>::TearDown(); }
+    Approx2NullArgs()
+        : out(0)
+        , in(0)
+        , pos1(0)
+        , pos2(0) {}
+
+    void SetUp() {
+        SimpleTestData data;
+        ASSERT_SUCCESS(af_create_array(&in, &data.h_in.front(),
+                                       data.in_dims.ndims(),
+                                       data.in_dims.get(),
+                                       f32));
+        ASSERT_SUCCESS(af_create_array(&pos1, &data.h_pos1.front(),
+                                       data.pos1_dims.ndims(),
+                                       data.pos1_dims.get(),
+                                       f32));
+        ASSERT_SUCCESS(af_create_array(&pos2, &data.h_pos2.front(),
+                                       data.pos2_dims.ndims(),
+                                       data.pos2_dims.get(),
+                                       f32));
+    }
+
+    void TearDown() {
+        if (pos2 != 0)  { ASSERT_SUCCESS(af_release_array(pos2)); }
+        if (pos1 != 0)  { ASSERT_SUCCESS(af_release_array(pos1)); }
+        if (in != 0)    { ASSERT_SUCCESS(af_release_array(in)); }
+    }
 };
 
-TYPED_TEST_CASE(Approx2NullArgs, float);
-
-TYPED_TEST(Approx2NullArgs, NullOutputPtr) {
+TEST_F(Approx2NullArgs, NullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(af_approx2(out_ptr, this->in, this->pos1, this->pos2,
                          AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, NullInputArray) {
+TEST_F(Approx2NullArgs, NullInputArray) {
     ASSERT_EQ(af_approx2(&this->out, 0, this->pos1, this->pos2,
                          AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, NullPos1Array) {
+TEST_F(Approx2NullArgs, NullPos1Array) {
     ASSERT_EQ(
         af_approx2(&this->out, this->in, 0, this->pos2, AF_INTERP_LINEAR, 0.f),
         AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, NullPos2Array) {
+TEST_F(Approx2NullArgs, NullPos2Array) {
     ASSERT_EQ(
         af_approx2(&this->out, this->in, this->pos1, 0, AF_INTERP_LINEAR, 0.f),
         AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, V2NullOutputPtr) {
+TEST_F(Approx2NullArgs, V2NullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(af_approx2_v2(out_ptr, this->in, this->pos1, this->pos2,
                             AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, V2NullInputArray) {
+TEST_F(Approx2NullArgs, V2NullInputArray) {
     ASSERT_EQ(af_approx2_v2(&this->out, 0, this->pos1, this->pos2,
                             AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, V2NullPos1Array) {
+TEST_F(Approx2NullArgs, V2NullPos1Array) {
     ASSERT_EQ(af_approx2_v2(&this->out, this->in, 0, this->pos2,
                             AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, V2NullPos2Array) {
+TEST_F(Approx2NullArgs, V2NullPos2Array) {
     ASSERT_EQ(af_approx2_v2(&this->out, this->in, this->pos1, 0,
                             AF_INTERP_LINEAR, 0.f),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, UniformNullOutputPtr) {
+TEST_F(Approx2NullArgs, UniformNullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(af_approx2_uniform(out_ptr, this->in, this->pos1, 0, 0.0, 1.0,
                                  this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, UniformNullInputArray) {
+TEST_F(Approx2NullArgs, UniformNullInputArray) {
     ASSERT_EQ(af_approx2_uniform(&this->out, 0, this->pos1, 0, 0.0, 1.0,
                                  this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, UniformNullPos1Array) {
+TEST_F(Approx2NullArgs, UniformNullPos1Array) {
     ASSERT_EQ(af_approx2_uniform(&this->out, this->in, 0, 0, 0.0, 1.0,
                                  this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, UniformNullPos2Array) {
+TEST_F(Approx2NullArgs, UniformNullPos2Array) {
     ASSERT_EQ(af_approx2_uniform(&this->out, this->in, this->pos1, 0, 0.0, 1.0,
                                  0, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, V2UniformNullOutputPtr) {
+TEST_F(Approx2NullArgs, V2UniformNullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(
         af_approx2_uniform_v2(out_ptr, this->in, this->pos1, 0, 0.0, 1.0,
@@ -1007,21 +1102,21 @@ TYPED_TEST(Approx2NullArgs, V2UniformNullOutputPtr) {
         AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, V2UniformNullInputArray) {
+TEST_F(Approx2NullArgs, V2UniformNullInputArray) {
     ASSERT_EQ(
         af_approx2_uniform_v2(&this->out, 0, this->pos1, 0, 0.0, 1.0,
                               this->pos2, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
         AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, V2UniformNullPos1Array) {
+TEST_F(Approx2NullArgs, V2UniformNullPos1Array) {
     ASSERT_EQ(
         af_approx2_uniform_v2(&this->out, this->in, 0, 0, 0.0, 1.0, this->pos2,
                               1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
         AF_ERR_ARG);
 }
 
-TYPED_TEST(Approx2NullArgs, V2UniformNullPos2Array) {
+TEST_F(Approx2NullArgs, V2UniformNullPos2Array) {
     ASSERT_EQ(af_approx2_uniform_v2(&this->out, this->in, this->pos1, 0, 0.0,
                                     1.0, 0, 1, 0.0, 1.0, AF_INTERP_LINEAR, 0),
               AF_ERR_ARG);
