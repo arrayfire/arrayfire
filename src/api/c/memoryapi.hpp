@@ -9,16 +9,15 @@
 
 #pragma once
 
-#include <af/defines.h>
+#include <af/event.h>
+#include <af/memory.h>
 
-typedef void* af_event;
+typedef struct {
+  void *ptr;
+  af_event event;
+} af_memory_event_pair_t;
 
-AFAPI af_err af_create_event(af_event* eventHandle);
+af_memory_event_pair_t getMemoryEventPair(const af_memory_event_pair pair);
 
-AFAPI af_err af_release_event(const af_event eventHandle);
-
-AFAPI af_err af_mark_event(const af_event eventHandle);
-
-AFAPI af_err af_enqueue_wait_event(const af_event eventHandle);
-
-AFAPI af_err af_block_event(const af_event eventHandle);
+af_memory_event_pair
+getMemoryEventPairHandle(const af_memory_event_pair_t pairHandle);

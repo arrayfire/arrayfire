@@ -54,29 +54,43 @@ void printMemInfo(const char *msg, const int device) {
 template<typename T>
 unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
     T *ptr = nullptr;
+    af_memory_event_pair pair = memoryManager().alloc(elements * sizeof(T), false);
 
-    common::MemoryEventPair me = memoryManager().alloc(elements * sizeof(T), false);
-    if(me.e) me.e.enqueueWait(getQueue());
-    ptr = (T *)me.ptr;
+    af_event event;
+    af_memory_event_pair_get_event(pair, &event);
+    Event* e = getEvent(event).event;
+    if (e) e->enqueueWait(getQueue());
+
+    void *inPtr;
+    af_memory_event_pair_get_ptr(pair, &inPtr);
+    ptr = (T *)inPtr;
     return unique_ptr<T[], function<void(T *)>>(ptr, memFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
-    void *ptr = nullptr;
-    common::MemoryEventPair me = memoryManager().alloc(bytes, true);
-    if (me.e) me.e.enqueueWait(getQueue());
-    return me.ptr;
+    af_memory_event_pair pair = memoryManager().alloc(bytes, true);
+
+    af_event event;
+    af_memory_event_pair_get_event(pair, &event);
+    Event* e = getEvent(event).event;
+    if (e) e->enqueueWait(getQueue());
+
+    void *ptr;
+    af_memory_event_pair_get_ptr(pair, &ptr);
+    return ptr;
 }
 
 template<typename T>
 void memFree(T *ptr) {
-    Event e = make_event(getQueue());
-    return memoryManager().unlock((void *)ptr, move(e), false);
+    af_event event;
+    af_create_event(&event);
+    return memoryManager().unlock((void *)ptr, event, false);
 }
 
 void memFreeUser(void *ptr) {
-    Event e = make_event(getQueue());
-    memoryManager().unlock((void *)ptr, move(e), true);
+    af_event event;
+    af_create_event(&event);
+    memoryManager().unlock((void *)ptr, event, true);
 }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
@@ -95,15 +109,23 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    common::MemoryEventPair me = memoryManager().alloc(elements * sizeof(T), false);
-    if (me.e) me.e.enqueueWait(getQueue());
-    return (T*)me.ptr;
+    af_memory_event_pair pair = memoryManager().alloc(elements * sizeof(T), false);
+    
+    af_event event;
+    af_memory_event_pair_get_event(pair, &event);
+    Event* e = getEvent(event).event;
+    if (e) e->enqueueWait(getQueue());
+    
+    void *ptr;
+    af_memory_event_pair_get_ptr(pair, &ptr);    
+    return (T*)ptr;
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    Event e = make_event(getQueue());
-    return memoryManager().unlock((void *)ptr, move(e), false);
+    af_event event;
+    af_create_event(&event);  
+    return memoryManager().unlock((void *)ptr, event, false);
 }
 
 bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }

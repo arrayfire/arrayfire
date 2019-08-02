@@ -11,6 +11,9 @@
 
 #include <Event.hpp>
 #include <backend.hpp>
+#include <memoryapi.hpp>
+#include <events.hpp>
+#include <af/memory.h>
 #include <common/dispatch.hpp>
 #include <common/err_common.hpp>
 #include <common/util.hpp>
@@ -34,15 +37,6 @@ using lock_guard_t = std::lock_guard<mutex_t>;
 constexpr unsigned MAX_BUFFERS = 1000;
 constexpr size_t ONE_GB = 1 << 30;
 
-struct MemoryEventPair {
-  void *ptr;
-  detail::Event e;
-  MemoryEventPair(MemoryEventPair &other) = delete;
-  MemoryEventPair(MemoryEventPair &&other) = default;
-  MemoryEventPair &operator=(MemoryEventPair &&other) = default;
-  MemoryEventPair &operator=(MemoryEventPair &other) = delete;
-};
-
 namespace memory {
 
 struct locked_info {
@@ -54,7 +48,7 @@ struct locked_info {
 using locked_t = typename std::unordered_map<void *, memory::locked_info>;
 using locked_iter = typename locked_t::iterator;
 
-using free_t = std::unordered_map<size_t, std::vector<MemoryEventPair>>;
+using free_t = std::unordered_map<size_t, std::vector<af_memory_event_pair>>;
 using free_iter = typename free_t::iterator;
 
 using uptr_t = std::unique_ptr<void, std::function<void(void *)>>;
@@ -117,7 +111,7 @@ public:
   /// bytes. If there is already a free buffer available, it will use
   /// that buffer. Otherwise, it will allocate a new buffer using the
   /// nativeAlloc function.
-  MemoryEventPair alloc(const size_t size, bool user_lock);
+  af_memory_event_pair alloc(const size_t size, bool user_lock);
 
   /// returns the size of the buffer at the pointer allocated by the memory
   /// manager.
@@ -125,7 +119,7 @@ public:
 
   /// Frees or marks the pointer for deletion during the nex garbage
   /// collection event
-  void unlock(void *ptr, detail::Event &&e, bool user_unlock);
+  void unlock(void *ptr, af_event e, bool user_unlock);
 
   /// Frees all buffers which are not locked by the user or not being
   /// used.
