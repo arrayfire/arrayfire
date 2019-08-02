@@ -25,85 +25,85 @@ using namespace detail;
 
 using common::half;
 
-af_memory_event_pair_t getMemoryEventPair(const af_memory_event_pair pairHandle) {
+af_memory_event_pair_t getMemoryEventPair(
+    const af_memory_event_pair pairHandle) {
     return *(af_memory_event_pair_t *)pairHandle;
 }
 
-af_memory_event_pair
-getMemoryEventPairHandle(const af_memory_event_pair_t pair) {
-  af_memory_event_pair_t *pairHandle = new af_memory_event_pair_t;
-  *pairHandle = pair;
-  return (af_memory_event_pair)pairHandle;
+af_memory_event_pair getMemoryEventPairHandle(
+    const af_memory_event_pair_t pair) {
+    af_memory_event_pair_t *pairHandle = new af_memory_event_pair_t;
+    *pairHandle                        = pair;
+    return (af_memory_event_pair)pairHandle;
 }
 
-af_err af_create_memory_event_pair(
-    af_memory_event_pair* pairHandle,
-    void* ptr,
-    af_event event) {
-  try {
-      af_memory_event_pair_t pair;
-      pair.ptr = ptr;
-      pair.event = event;
-      *pairHandle = getMemoryEventPairHandle(pair);
-  }
-  CATCHALL;
+af_err af_create_memory_event_pair(af_memory_event_pair *pairHandle, void *ptr,
+                                   af_event event) {
+    try {
+        af_memory_event_pair_t pair;
+        pair.ptr    = ptr;
+        pair.event  = event;
+        *pairHandle = getMemoryEventPairHandle(pair);
+    }
+    CATCHALL;
 
-  return AF_SUCCESS;
+    return AF_SUCCESS;
 }
 
 af_err af_release_memory_event_pair(af_memory_event_pair pairHandle) {
-  try {
-      af_memory_event_pair_t pair = *(af_memory_event_pair_t *)pairHandle;
-      /// NB: deleting a memory event pair does NOT free the associated memory and
-      /// does NOT delete the associated event.
-      delete (af_memory_event_pair_t *)pairHandle;
-  }
-  CATCHALL;
+    try {
+        af_memory_event_pair_t pair = *(af_memory_event_pair_t *)pairHandle;
+        /// NB: deleting a memory event pair does NOT free the associated memory
+        /// and does NOT delete the associated event.
+        delete (af_memory_event_pair_t *)pairHandle;
+    }
+    CATCHALL;
 
-  return AF_SUCCESS;
+    return AF_SUCCESS;
 }
 
-af_err af_memory_event_pair_set_ptr(af_memory_event_pair pairHandle, void* ptr) {
-  try {
-      af_memory_event_pair_t* pair = (af_memory_event_pair_t *)pairHandle;
-      pair->ptr = ptr;
-  }
-  CATCHALL;
+af_err af_memory_event_pair_set_ptr(af_memory_event_pair pairHandle,
+                                    void *ptr) {
+    try {
+        af_memory_event_pair_t *pair = (af_memory_event_pair_t *)pairHandle;
+        pair->ptr                    = ptr;
+    }
+    CATCHALL;
 
-  return AF_SUCCESS;
+    return AF_SUCCESS;
 }
 
-af_err af_memory_event_pair_set_event(af_memory_event_pair pairHandle, af_event event) {
-  try {
-      af_memory_event_pair_t* pair = (af_memory_event_pair_t *)pairHandle;
-      pair->event = event;
-  }
-  CATCHALL;
+af_err af_memory_event_pair_set_event(af_memory_event_pair pairHandle,
+                                      af_event event) {
+    try {
+        af_memory_event_pair_t *pair = (af_memory_event_pair_t *)pairHandle;
+        pair->event                  = event;
+    }
+    CATCHALL;
 
-  return AF_SUCCESS;
+    return AF_SUCCESS;
 }
 
-af_err af_memory_event_pair_get_ptr(af_memory_event_pair pairHandle, void** ptr) {
-  try {
-      af_memory_event_pair_t pair = getMemoryEventPair(pairHandle);
-      *ptr = pair.ptr;
-  }
-  CATCHALL;
+af_err af_memory_event_pair_get_ptr(void **ptr,
+                                    af_memory_event_pair pairHandle) {
+    try {
+        af_memory_event_pair_t pair = getMemoryEventPair(pairHandle);
+        *ptr                        = pair.ptr;
+    }
+    CATCHALL;
 
-  return AF_SUCCESS;
+    return AF_SUCCESS;
 }
 
+af_err af_memory_event_pair_get_event(af_event *event,
+                                      af_memory_event_pair pairHandle) {
+    try {
+        af_memory_event_pair_t pair = getMemoryEventPair(pairHandle);
+        *event                      = pair.event;
+    }
+    CATCHALL;
 
-af_err af_memory_event_pair_get_event(
-    af_memory_event_pair pairHandle,
-    af_event* event) {
-  try {
-      af_memory_event_pair_t pair = getMemoryEventPair(pairHandle);
-      *event = pair.event;
-  }
-  CATCHALL;
-
-  return AF_SUCCESS;
+    return AF_SUCCESS;
 }
 
 af_err af_device_array(af_array *arr, void *data, const unsigned ndims,
@@ -175,7 +175,7 @@ af_err af_get_device_ptr(void **data, const af_array arr) {
         af_dtype type = getInfo(arr).getType();
 
         switch (type) {
-                // FIXME: Perform copy if memory not continuous
+            // FIXME: Perform copy if memory not continuous
             case f32: *data = getDevicePtr(getArray<float>(arr)); break;
             case f64: *data = getDevicePtr(getArray<double>(arr)); break;
             case c32: *data = getDevicePtr(getArray<cfloat>(arr)); break;

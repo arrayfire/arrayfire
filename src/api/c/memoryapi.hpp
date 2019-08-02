@@ -13,11 +13,11 @@
 #include <af/memory.h>
 
 typedef struct {
-  void *ptr;
-  af_event event;
+    void *ptr;
+    af_event event;
 } af_memory_event_pair_t;
 
 af_memory_event_pair_t getMemoryEventPair(const af_memory_event_pair pair);
 
-af_memory_event_pair
-getMemoryEventPairHandle(const af_memory_event_pair_t pairHandle);
+af_memory_event_pair getMemoryEventPairHandle(
+    const af_memory_event_pair_t pairHandle);

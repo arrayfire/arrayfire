@@ -9,13 +9,13 @@
 
 #pragma once
 
-#include <backend.hpp>
 #include <Event.hpp>
+#include <backend.hpp>
 #include <af/event.h>
 
 typedef struct {
-  /// Underlying EventBase<T>
-  detail::Event *event;
+    /// Underlying EventBase<T>
+    detail::Event *event;
 } af_event_t;
 
 af_event getEventHandle(const af_event_t event);

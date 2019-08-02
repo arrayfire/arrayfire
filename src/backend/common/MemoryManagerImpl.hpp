@@ -57,12 +57,12 @@ void MemoryManager::cleanDeviceMemoryManager(int device) {
     // Free memory outside of the lock
     for (auto &pair : free_ptrs) {
         void* toFree;
-        af_memory_event_pair_get_ptr(pair, &toFree);
+        af_memory_event_pair_get_ptr(&toFree, pair);
         this->nativeFree(toFree);
         // Release the af_event and the memory event pair
         // since memory has been freed
         af_event event;
-        af_memory_event_pair_get_event(pair, &event);
+        af_memory_event_pair_get_event(&event, pair);
         af_release_event(event);
         af_release_memory_event_pair(pair);
     }
@@ -145,7 +145,7 @@ af_memory_event_pair MemoryManager::alloc(const size_t bytes, bool user_lock) {
                 pair = std::move(iter->second.back());
                 iter->second.pop_back();
                 void* cur;
-                af_memory_event_pair_get_ptr(pair, &cur);
+                af_memory_event_pair_get_ptr(&cur, pair);
                 current.locked_map[cur] = info;
                 current.lock_bytes += alloc_bytes;
                 current.lock_buffers++;
@@ -154,7 +154,7 @@ af_memory_event_pair MemoryManager::alloc(const size_t bytes, bool user_lock) {
 
         // Only comes here if buffer size not found or in debug mode
         void* ptr;
-        af_memory_event_pair_get_ptr(pair, &ptr);
+        af_memory_event_pair_get_ptr(&ptr, pair);
         if (ptr == nullptr) {
             // Perform garbage collection if memory can not be allocated
             try {
@@ -169,7 +169,7 @@ af_memory_event_pair MemoryManager::alloc(const size_t bytes, bool user_lock) {
             lock_guard_t lock(this->memory_mutex);
             // Increment these two only when it succeeds to come here.
             void* lockedPtr;
-            af_memory_event_pair_get_ptr(pair, &lockedPtr);
+            af_memory_event_pair_get_ptr(&lockedPtr, pair);
             current.total_bytes += alloc_bytes;
             current.total_buffers += 1;
             current.locked_map[lockedPtr] = info;
@@ -280,7 +280,7 @@ void MemoryManager::printInfo(const char *msg, const int device) {
 
         for (auto &pair : kv.second) {
             void *ptr;
-            af_memory_event_pair_get_ptr(pair, &ptr);
+            af_memory_event_pair_get_ptr(&ptr, pair);
             printf("|  %14p  |  %6.f %s | %9s | %9s |\n", ptr, size, unit,
                    status_mngr, status_user);
         }

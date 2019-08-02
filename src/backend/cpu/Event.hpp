@@ -9,12 +9,8 @@
 #pragma once
 
 #include <queue.hpp>
-
 #include <common/EventBase.hpp>
 #include <af/event.h>
-
-#include <atomic>
-#include <thread>
 
 namespace cpu {
 
@@ -47,13 +43,13 @@ using Event = common::EventBase<CPUEventPolicy>;
 /// \brief Creates a new event and marks it in the queue
 Event make_event(cpu::queue &queue);
 
-af_event make_event_on_active_queue();
+af_event makeEventOnActiveQueue();
 
-void release_event(af_event eventHandle);
+void releaseEvent(af_event eventHandle);
 
-void mark_event_on_active_queue(af_event eventHandle);
+void markEventOnActiveQueue(af_event eventHandle);
 
-void enqueue_wait_on_active_queue(af_event eventHandle);
+void enqueueWaitOnActiveQueue(af_event eventHandle);
 
 void block(af_event eventHandle);
 

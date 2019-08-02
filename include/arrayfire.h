@@ -317,7 +317,6 @@
 #include "af/complex.h"
 #include "af/data.h"
 #include "af/device.h"
-#include "af/event.h"
 #include "af/exception.h"
 #include "af/features.h"
 #include "af/gfor.h"

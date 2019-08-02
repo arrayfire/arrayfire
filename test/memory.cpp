@@ -11,7 +11,9 @@
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
+#include <af/event.h>
 #include <af/internal.h>
+#include <af/memory.h>
 #include <af/traits.hpp>
 #include <iostream>
 #include <vector>
@@ -522,7 +524,6 @@ TEST(Memory, device) {
     ASSERT_EQ(lock_bytes, 0u);
 }
 
-
 TEST(Memory, Assign2D) {
     size_t alloc_bytes, alloc_buffers;
     size_t alloc_bytes_after, alloc_buffers_after;
@@ -531,10 +532,10 @@ TEST(Memory, Assign2D) {
 
     cleanSlate();  // Clean up everything done so far
     {
-        array a    = af::randu(10, 10, f32);
+        array a       = af::randu(10, 10, f32);
         unsigned hb[] = {3, 5, 6, 8, 9};
         array b(5, hb);
-        array c   = af::randu(5, f32);
+        array c = af::randu(5, f32);
         deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
         a(b) = c;
     }
@@ -626,4 +627,47 @@ TEST(Memory, IndexedDevice) {
             ASSERT_EQ(in1[(offy + y) * nx + offx + x], in2[y * nxo + x]);
         }
     }
+}
+
+TEST(MemoryEventPair, SimpleCreateRelease) {
+    af_event event;
+    ASSERT_SUCCESS(af_create_event(&event));
+    af_memory_event_pair pair;
+    ASSERT_SUCCESS(af_create_memory_event_pair(&pair, NULL, event));
+
+    ASSERT_SUCCESS(af_release_memory_event_pair(pair));
+    ASSERT_SUCCESS(af_release_event(event));
+}
+
+TEST(MemoryEventPair, EventAndPtrAttributes) {
+    af_event event;
+    ASSERT_SUCCESS(af_create_event(&event));
+    void *ptr;
+    af_memory_event_pair pair;
+    ASSERT_SUCCESS(af_create_memory_event_pair(&pair, ptr, event));
+    af_event anEvent;
+    ASSERT_SUCCESS(af_memory_event_pair_get_event(&anEvent, pair));
+    ASSERT_EQ(event, anEvent);
+    void *somePtr;
+    ASSERT_SUCCESS(af_memory_event_pair_get_ptr(&somePtr, pair));
+    ASSERT_EQ(ptr, somePtr);
+
+    af_event anotherEvent;
+    ASSERT_SUCCESS(af_create_event(&anotherEvent));
+    ASSERT_SUCCESS(af_memory_event_pair_set_event(pair, anotherEvent));
+    af_event yetAnotherEvent;
+    ASSERT_SUCCESS(af_memory_event_pair_get_event(&yetAnotherEvent, pair));
+    ASSERT_NE(yetAnotherEvent, event);
+    ASSERT_EQ(yetAnotherEvent, anotherEvent);
+
+    void *anotherPtr;
+    ASSERT_SUCCESS(af_memory_event_pair_set_ptr(pair, anotherPtr));
+    void *yetAnotherPtr;
+    ASSERT_SUCCESS(af_memory_event_pair_get_ptr(&yetAnotherPtr, pair));
+    ASSERT_NE(yetAnotherPtr, ptr);
+    ASSERT_EQ(yetAnotherPtr, anotherPtr);
+
+    ASSERT_SUCCESS(af_release_memory_event_pair(pair));
+    ASSERT_SUCCESS(af_release_event(event));
+    ASSERT_SUCCESS(af_release_event(anotherEvent));
 }

@@ -54,15 +54,16 @@ void printMemInfo(const char *msg, const int device) {
 template<typename T>
 unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
     T *ptr = nullptr;
-    af_memory_event_pair pair = memoryManager().alloc(elements * sizeof(T), false);
+    af_memory_event_pair pair =
+        memoryManager().alloc(elements * sizeof(T), false);
 
     af_event event;
-    af_memory_event_pair_get_event(pair, &event);
-    Event* e = getEvent(event).event;
+    af_memory_event_pair_get_event(&event, pair);
+    Event *e = getEvent(event).event;
     if (e) e->enqueueWait(getQueue());
 
     void *inPtr;
-    af_memory_event_pair_get_ptr(pair, &inPtr);
+    af_memory_event_pair_get_ptr(&inPtr, pair);
     ptr = (T *)inPtr;
     return unique_ptr<T[], function<void(T *)>>(ptr, memFree<T>);
 }
@@ -71,12 +72,12 @@ void *memAllocUser(const size_t &bytes) {
     af_memory_event_pair pair = memoryManager().alloc(bytes, true);
 
     af_event event;
-    af_memory_event_pair_get_event(pair, &event);
-    Event* e = getEvent(event).event;
+    af_memory_event_pair_get_event(&event, pair);
+    Event *e = getEvent(event).event;
     if (e) e->enqueueWait(getQueue());
 
     void *ptr;
-    af_memory_event_pair_get_ptr(pair, &ptr);
+    af_memory_event_pair_get_ptr(&ptr, pair);
     return ptr;
 }
 
@@ -109,22 +110,23 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    af_memory_event_pair pair = memoryManager().alloc(elements * sizeof(T), false);
-    
+    af_memory_event_pair pair =
+        memoryManager().alloc(elements * sizeof(T), false);
+
     af_event event;
-    af_memory_event_pair_get_event(pair, &event);
-    Event* e = getEvent(event).event;
+    af_memory_event_pair_get_event(&event, pair);
+    Event *e = getEvent(event).event;
     if (e) e->enqueueWait(getQueue());
-    
+
     void *ptr;
-    af_memory_event_pair_get_ptr(pair, &ptr);    
-    return (T*)ptr;
+    af_memory_event_pair_get_ptr(&ptr, pair);
+    return (T *)ptr;
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
     af_event event;
-    af_create_event(&event);  
+    af_create_event(&event);
     return memoryManager().unlock((void *)ptr, event, false);
 }
 
@@ -152,9 +154,8 @@ INSTANTIATE(short)
 INSTANTIATE(half)
 
 MemoryManager::MemoryManager()
-    : common::MemoryManager(
-          getDeviceCount(), common::MAX_BUFFERS,
-          AF_MEM_DEBUG || AF_CPU_MEM_DEBUG) {
+    : common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                            AF_MEM_DEBUG || AF_CPU_MEM_DEBUG) {
     this->setMaxMemorySize();
 }
 
@@ -171,7 +172,7 @@ MemoryManager::~MemoryManager() {
 
 int MemoryManager::getActiveDeviceId() { return cpu::getActiveDeviceId(); }
 
-common::memory::memory_info& MemoryManager::getCurrentMemoryInfo() {
+common::memory::memory_info &MemoryManager::getCurrentMemoryInfo() {
     return memory[this->getActiveDeviceId()];
 }
 

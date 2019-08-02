@@ -10,8 +10,8 @@
 
 #include <common/EventBase.hpp>
 #include <cuda.h>
-#include <af/event.h>
 #include <cuda_runtime_api.h>
+#include <af/event.h>
 
 namespace cuda {
 
@@ -22,20 +22,18 @@ class CUDARuntimeEventPolicy {
     using ErrorType = CUresult;
 
     static ErrorType createEvent(CUevent *e) noexcept {
-        // Creating events with the CU_EVENT_BLOCKING_SYNC flag 
+        // Creating events with the CU_EVENT_BLOCKING_SYNC flag
         // severly impacts the speed if/when creating many arrays
         auto err = cuEventCreate(e, CU_EVENT_DISABLE_TIMING);
         return err;
     }
 
-    static ErrorType markEvent(CUevent *e,
-                               QueueType &stream) noexcept {
+    static ErrorType markEvent(CUevent *e, QueueType &stream) noexcept {
         auto err = cuEventRecord(*e, stream);
         return err;
     }
 
-    static ErrorType waitForEvent(CUevent *e,
-                                  QueueType &stream) noexcept {
+    static ErrorType waitForEvent(CUevent *e, QueueType &stream) noexcept {
         auto err = cuStreamWaitEvent(stream, *e, 0);
         return err;
     }
@@ -55,13 +53,13 @@ using Event = common::EventBase<CUDARuntimeEventPolicy>;
 /// \brief Creates a new event and marks it in the stream
 Event make_event(cudaStream_t stream);
 
-af_event make_event_on_active_queue();
+af_event makeEventOnActiveQueue();
 
-void release_event(af_event eventHandle);
+void releaseEvent(af_event eventHandle);
 
-void mark_event_on_active_queue(af_event eventHandle);
+void markEventOnActiveQueue(af_event eventHandle);
 
-void enqueue_wait_on_active_queue(af_event eventHandle);
+void enqueueWaitOnActiveQueue(af_event eventHandle);
 
 void block(af_event eventHandle);
 

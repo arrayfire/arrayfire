@@ -57,31 +57,32 @@ void printMemInfo(const char *msg, const int device) {
 
 template<typename T>
 uptr<T> memAlloc(const size_t &elements) {
-    size_t size                = elements * sizeof(T);
-    af_memory_event_pair pair = memoryManager().alloc(elements * sizeof(T), false);
-    
+    size_t size = elements * sizeof(T);
+    af_memory_event_pair pair =
+        memoryManager().alloc(elements * sizeof(T), false);
+
     af_event event;
-    af_memory_event_pair_get_event(pair, &event);
-    Event* e = getEvent(event).event;
-    cudaStream_t stream        = getActiveStream();
+    af_memory_event_pair_get_event(&event, pair);
+    Event *e            = getEvent(event).event;
+    cudaStream_t stream = getActiveStream();
     if (e) e->enqueueWait(stream);
-    
+
     void *ptr;
-    af_memory_event_pair_get_ptr(pair, &ptr);
+    af_memory_event_pair_get_ptr(&ptr, pair);
     return uptr<T>(static_cast<T *>(ptr), memFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
     af_memory_event_pair pair = memoryManager().alloc(bytes, true);
-    
+
     af_event event;
-    af_memory_event_pair_get_event(pair, &event);
-    Event* e = getEvent(event).event;
-    cudaStream_t stream        = getActiveStream();
+    af_memory_event_pair_get_event(&event, pair);
+    Event *e            = getEvent(event).event;
+    cudaStream_t stream = getActiveStream();
     if (e) e->enqueueWait(stream);
-    
+
     void *ptr;
-    af_memory_event_pair_get_ptr(pair, &ptr);
+    af_memory_event_pair_get_ptr(&ptr, pair);
     return ptr;
 }
 
@@ -114,23 +115,24 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    af_memory_event_pair pair = memoryManager().alloc(elements * sizeof(T), false);
-      
+    af_memory_event_pair pair =
+        memoryManager().alloc(elements * sizeof(T), false);
+
     af_event event;
-    af_memory_event_pair_get_event(pair, &event);
-    Event* e = getEvent(event).event;
+    af_memory_event_pair_get_event(&event, pair);
+    Event *e            = getEvent(event).event;
     cudaStream_t stream = getActiveStream();
     if (e) e->enqueueWait(stream);
-    
+
     void *ptr;
-    af_memory_event_pair_get_ptr(pair, &ptr);
-    return (T*)ptr;
+    af_memory_event_pair_get_ptr(&ptr, pair);
+    return (T *)ptr;
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
     af_event event;
-    af_create_event(&event);  
+    af_create_event(&event);
     return pinnedMemoryManager().unlock((void *)ptr, event, false);
 }
 
@@ -157,9 +159,8 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 MemoryManager::MemoryManager()
-    : common::MemoryManager(
-          getDeviceCount(), common::MAX_BUFFERS,
-          AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG) {
+    : common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                            AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG) {
     this->setMaxMemorySize();
 }
 
@@ -180,7 +181,7 @@ void MemoryManager::garbageCollect() {
     cleanDeviceMemoryManager(this->getActiveDeviceId());
 }
 
-common::memory::memory_info& MemoryManager::getCurrentMemoryInfo() {
+common::memory::memory_info &MemoryManager::getCurrentMemoryInfo() {
     return memory[this->getActiveDeviceId()];
 }
 
@@ -202,8 +203,8 @@ void MemoryManager::nativeFree(void *ptr) {
 }
 
 MemoryManagerPinned::MemoryManagerPinned()
-    : common::MemoryManager(
-          1, common::MAX_BUFFERS, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG) {
+    : common::MemoryManager(1, common::MAX_BUFFERS,
+                            AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG) {
     this->setMaxMemorySize();
 }
 
@@ -217,7 +218,7 @@ void MemoryManagerPinned::garbageCollect() {
     cleanDeviceMemoryManager(this->getActiveDeviceId());
 }
 
-common::memory::memory_info& MemoryManagerPinned::getCurrentMemoryInfo() {
+common::memory::memory_info &MemoryManagerPinned::getCurrentMemoryInfo() {
     return memory[this->getActiveDeviceId()];
 }
 
