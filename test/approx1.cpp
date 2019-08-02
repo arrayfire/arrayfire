@@ -863,9 +863,9 @@ class Approx1V2 : public ::testing::Test {
         ReleaseArrays();
     }
 
-    void UploadTestData(float *h_gold, dim4 gold_dims,
-                        float *h_in, dim4 in_dims,
-                        float *h_pos, dim4 pos_dims) {
+    void setTestData(float *h_gold, dim4 gold_dims,
+                     float *h_in, dim4 in_dims,
+                     float *h_pos, dim4 pos_dims) {
         ReleaseArrays();
 
         gold = 0;
@@ -897,6 +897,12 @@ class Approx1V2 : public ::testing::Test {
                                        (af_dtype)dtype_traits<BT>::af_type));
     }
 
+    void setTestData(TestData *data) {
+        setTestData(data->getGoldArr(), data->getGoldDims(),
+                    data->getInArr(), data->getInDims(),
+                    data->getMiscArrs(0), data->getMiscDims(0));
+    }
+
     void testSpclOutArray(TestOutputArrayType out_array_type) {
         SUPPORTED_TYPE_CHECK(T);
 
@@ -925,103 +931,82 @@ class Approx1V2 : public ::testing::Test {
 
 TYPED_TEST_CASE(Approx1V2, TestTypes);
 
-struct SimpleTestData {
-    static const int h_gold_size = 15;
-    static const int h_in_size   = 9;
-    static const int h_pos_size  = 5;
-
-    vector<float> h_gold;
-    vector<float> h_in;
+class SimpleTestData : public TestData {
     vector<float> h_pos;
-
-    dim4 gold_dims;
-    dim4 in_dims;
     dim4 pos_dims;
 
-    SimpleTestData()
-        : h_gold(h_gold_size)
-        , h_in(h_in_size)
-        , h_pos(h_pos_size)
-        , gold_dims(5, 3)
-        , in_dims(3, 3)
-        , pos_dims(5) {
+   public:
+    SimpleTestData() {
+        gold_dims = dim4(5, 3);
+        int h_gold_size = gold_dims.elements();
         float gold_arr[h_gold_size] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
                                        40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
                                        70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
 
+        in_dims = dim4(3, 3);
+        int h_in_size = in_dims.elements();
         float in_arr[h_in_size]     = {10.0f, 20.0f, 30.0f,
                                        40.0f, 50.0f, 60.0f,
                                        70.0f, 80.0f, 90.0f};
 
+        pos_dims = dim4(5);
+        int h_pos_size = pos_dims.elements();
         float pos_arr[h_pos_size]   = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
 
         h_gold.assign(gold_arr, gold_arr + h_gold_size);
         h_in.assign(in_arr, in_arr + h_in_size);
         h_pos.assign(pos_arr, pos_arr + h_pos_size);
+
+        h_misc_arrs.push_back(&h_pos.front());
+        misc_dims.push_back(pos_dims);
     }
 };
 
 TYPED_TEST(Approx1V2, UseNullOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos.front(), data.pos_dims);
+    this->setTestData(&data);
     this->testSpclOutArray(NULL_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UseFullExistingOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos.front(), data.pos_dims);
+    this->setTestData(&data);
     this->testSpclOutArray(FULL_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UseExistingOutputSubArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos.front(), data.pos_dims);
+    this->setTestData(&data);
     this->testSpclOutArray(SUB_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UseReorderedOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos.front(), data.pos_dims);
+    this->setTestData(&data);
     this->testSpclOutArray(REORDERED_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UniformUseNullOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos.front(), data.pos_dims);
+    this->setTestData(&data);
     this->testSpclOutArrayUniform(NULL_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UniformUseFullExistingOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos.front(), data.pos_dims);
+    this->setTestData(&data);
     this->testSpclOutArrayUniform(FULL_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UniformUseExistingOutputSubArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos.front(), data.pos_dims);
+    this->setTestData(&data);
     this->testSpclOutArrayUniform(SUB_ARRAY);
 }
 
 TYPED_TEST(Approx1V2, UniformUseReorderedOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos.front(), data.pos_dims);
+    this->setTestData(&data);
     this->testSpclOutArrayUniform(REORDERED_ARRAY);
 }
 
@@ -1039,13 +1024,13 @@ class Approx1NullArgs : public ::testing::Test {
     void SetUp() {
         SimpleTestData data;
 
-        ASSERT_SUCCESS(af_create_array(&in, &data.h_in.front(),
-                                       data.in_dims.ndims(),
-                                       data.in_dims.get(),
+        ASSERT_SUCCESS(af_create_array(&in, data.getInArr(),
+                                       data.getInDims().ndims(),
+                                       data.getInDims().get(),
                                        f32));
-        ASSERT_SUCCESS(af_create_array(&pos, &data.h_pos.front(),
-                                       data.pos_dims.ndims(),
-                                       data.pos_dims.get(),
+        ASSERT_SUCCESS(af_create_array(&pos, data.getMiscArrs(0),
+                                       data.getMiscDims(0).ndims(),
+                                       data.getMiscDims(0).get(),
                                        f32));
     }
 

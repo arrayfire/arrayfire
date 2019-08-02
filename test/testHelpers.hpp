@@ -1417,4 +1417,40 @@ void genTestOutputArray(af_array *out_ptr, const unsigned ndims,
     return testWriteToOutputArray(aName, bName, a, b, metadata);
 }
 
+class TestData {
+   protected:
+    std::vector<float> h_gold;
+    std::vector<float> h_in;
+    std::vector<float*> h_misc_arrs;
+
+    af::dim4 gold_dims;
+    af::dim4 in_dims;
+    std::vector<af::dim4> misc_dims;
+
+   public:
+    float *getGoldArr() {
+        return &h_gold.front();
+    }
+    float *getInArr() {
+        return &h_in.front();
+    }
+    float *getMiscArrs(int i) {
+        return h_misc_arrs.at(i);
+    }
+    af::dim4 getGoldDims() {
+        return gold_dims;
+    }
+    af::dim4 getInDims() {
+        return in_dims;
+    }
+    af::dim4 getMiscDims(int i) {
+        return misc_dims.at(i);
+    }
+
+    // Make TestData an abstract class to prevent it from being used directly
+    virtual ~TestData() = 0;
+};
+
+TestData::~TestData() {}
+
 #pragma GCC diagnostic pop

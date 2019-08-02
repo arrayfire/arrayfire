@@ -793,10 +793,10 @@ class Approx2V2 : public ::testing::Test {
         ReleaseArrays();
     }
 
-    void UploadTestData(float *h_gold, dim4 gold_dims,
-                        float *h_in, dim4 in_dims,
-                        float *h_pos1, dim4 pos1_dims,
-                        float *h_pos2, dim4 pos2_dims) {
+    void setTestData(float *h_gold, dim4 gold_dims,
+                     float *h_in, dim4 in_dims,
+                     float *h_pos1, dim4 pos1_dims,
+                     float *h_pos2, dim4 pos2_dims) {
         ReleaseArrays();
 
         gold = 0;
@@ -836,6 +836,13 @@ class Approx2V2 : public ::testing::Test {
                                        (af_dtype)dtype_traits<BT>::af_type));
     }
 
+    void setTestData(TestData *data) {
+        setTestData(data->getGoldArr(), data->getGoldDims(),
+                    data->getInArr(), data->getInDims(),
+                    data->getMiscArrs(0), data->getMiscDims(0),
+                    data->getMiscArrs(1), data->getMiscDims(1));
+    }
+
     void testSpclOutArray(TestOutputArrayType out_array_type) {
         SUPPORTED_TYPE_CHECK(T);
 
@@ -866,41 +873,33 @@ class Approx2V2 : public ::testing::Test {
 
 TYPED_TEST_CASE(Approx2V2, TestTypes);
 
-struct SimpleTestData {
-    static const int h_gold_size = 4;
-    static const int h_in_size   = 9;
-    static const int h_pos1_size = 4;
-    static const int h_pos2_size = 4;
-
-    vector<float> h_gold;
-    vector<float> h_in;
+class SimpleTestData : public TestData {
     vector<float> h_pos1;
     vector<float> h_pos2;
 
-    dim4 gold_dims;
-    dim4 in_dims;
     dim4 pos1_dims;
     dim4 pos2_dims;
 
-    SimpleTestData()
-        : h_gold(h_gold_size)
-        , h_in(h_in_size)
-        , h_pos1(h_pos1_size)
-        , h_pos2(h_pos2_size)
-        , gold_dims(2, 2)
-        , in_dims(3, 3)
-        , pos1_dims(2, 2)
-        , pos2_dims(2, 2) {
+   public:
+    SimpleTestData() {
+        gold_dims = dim4(2, 2);
+        int h_gold_size = gold_dims.elements();
         float gold_arr[h_gold_size] = {1.5, 1.5,
                                        2.5, 2.5};
 
+        in_dims = dim4(3, 3);
+        int h_in_size = in_dims.elements();
         float in_arr[h_in_size]     = {1.0, 1.0, 1.0,
                                        2.0, 2.0, 2.0,
                                        3.0, 3.0, 3.0};
 
+        pos1_dims = dim4(2, 2);
+        int h_pos1_size = pos1_dims.elements();
         float pos1_arr[h_pos1_size] = {0.5, 1.5,
                                        0.5, 1.5};
 
+        pos2_dims = dim4(2, 2);
+        int h_pos2_size = pos2_dims.elements();
         float pos2_arr[h_pos2_size] = {0.5, 0.5,
                                        1.5, 1.5};
 
@@ -908,78 +907,59 @@ struct SimpleTestData {
         h_in.assign(in_arr, in_arr + h_in_size);
         h_pos1.assign(pos1_arr, pos1_arr + h_pos1_size);
         h_pos2.assign(pos2_arr, pos2_arr + h_pos2_size);
+
+        h_misc_arrs.push_back(&h_pos1.front());
+        h_misc_arrs.push_back(&h_pos2.front());
+        misc_dims.push_back(pos1_dims);
+        misc_dims.push_back(pos2_dims);
     }
 };
 
 TYPED_TEST(Approx2V2, UseNullOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos1.front(), data.pos1_dims,
-                         &data.h_pos2.front(), data.pos2_dims);
+    this->setTestData(&data);
     this->testSpclOutArray(NULL_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UseFullExistingOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos1.front(), data.pos1_dims,
-                         &data.h_pos2.front(), data.pos2_dims);
+    this->setTestData(&data);
     this->testSpclOutArray(FULL_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UseExistingOutputSubArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos1.front(), data.pos1_dims,
-                         &data.h_pos2.front(), data.pos2_dims);
+    this->setTestData(&data);
     this->testSpclOutArray(SUB_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UseReorderedOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos1.front(), data.pos1_dims,
-                         &data.h_pos2.front(), data.pos2_dims);
+    this->setTestData(&data);
     this->testSpclOutArray(REORDERED_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UniformUseNullOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos1.front(), data.pos1_dims,
-                         &data.h_pos2.front(), data.pos2_dims);
+    this->setTestData(&data);
     this->testSpclOutArrayUniform(NULL_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UniformUseFullExistingOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos1.front(), data.pos1_dims,
-                         &data.h_pos2.front(), data.pos2_dims);
+    this->setTestData(&data);
     this->testSpclOutArrayUniform(FULL_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UniformUseExistingOutputSubArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos1.front(), data.pos1_dims,
-                         &data.h_pos2.front(), data.pos2_dims);
+    this->setTestData(&data);
     this->testSpclOutArrayUniform(SUB_ARRAY);
 }
 
 TYPED_TEST(Approx2V2, UniformUseReorderedOutputArray) {
     SimpleTestData data;
-    this->UploadTestData(&data.h_gold.front(), data.gold_dims,
-                         &data.h_in.front(), data.in_dims,
-                         &data.h_pos1.front(), data.pos1_dims,
-                         &data.h_pos2.front(), data.pos2_dims);
+    this->setTestData(&data);
     this->testSpclOutArrayUniform(REORDERED_ARRAY);
 }
 
@@ -998,17 +978,17 @@ class Approx2NullArgs : public ::testing::Test {
 
     void SetUp() {
         SimpleTestData data;
-        ASSERT_SUCCESS(af_create_array(&in, &data.h_in.front(),
-                                       data.in_dims.ndims(),
-                                       data.in_dims.get(),
+        ASSERT_SUCCESS(af_create_array(&in, data.getInArr(),
+                                       data.getInDims().ndims(),
+                                       data.getInDims().get(),
                                        f32));
-        ASSERT_SUCCESS(af_create_array(&pos1, &data.h_pos1.front(),
-                                       data.pos1_dims.ndims(),
-                                       data.pos1_dims.get(),
+        ASSERT_SUCCESS(af_create_array(&pos1, data.getMiscArrs(0),
+                                       data.getMiscDims(0).ndims(),
+                                       data.getMiscDims(0).get(),
                                        f32));
-        ASSERT_SUCCESS(af_create_array(&pos2, &data.h_pos2.front(),
-                                       data.pos2_dims.ndims(),
-                                       data.pos2_dims.get(),
+        ASSERT_SUCCESS(af_create_array(&pos2, data.getMiscArrs(1),
+                                       data.getMiscDims(1).ndims(),
+                                       data.getMiscDims(1).get(),
                                        f32));
     }
 
