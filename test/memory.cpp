@@ -631,17 +631,19 @@ TEST(Memory, IndexedDevice) {
 
 TEST(MemoryEventPair, SimpleCreateRelease) {
     af_event event;
-    ASSERT_SUCCESS(af_create_event(&event));
+    ASSERT_SUCCESS(af_create_event_handle(&event));
+    ASSERT_SUCCESS(af_create_event_on_active_queue(event));
     af_memory_event_pair pair;
-    ASSERT_SUCCESS(af_create_memory_event_pair(&pair, NULL, event));
-
-    ASSERT_SUCCESS(af_release_memory_event_pair(pair));
+    void *ptr;
+    ASSERT_SUCCESS(af_create_memory_event_pair(&pair, ptr, event));
     ASSERT_SUCCESS(af_release_event(event));
+    ASSERT_SUCCESS(af_release_memory_event_pair(pair));
 }
 
 TEST(MemoryEventPair, EventAndPtrAttributes) {
     af_event event;
-    ASSERT_SUCCESS(af_create_event(&event));
+    ASSERT_SUCCESS(af_create_event_handle(&event));
+    ASSERT_SUCCESS(af_create_event_on_active_queue(event));
     void *ptr;
     af_memory_event_pair pair;
     ASSERT_SUCCESS(af_create_memory_event_pair(&pair, ptr, event));
@@ -653,7 +655,8 @@ TEST(MemoryEventPair, EventAndPtrAttributes) {
     ASSERT_EQ(ptr, somePtr);
 
     af_event anotherEvent;
-    ASSERT_SUCCESS(af_create_event(&anotherEvent));
+    ASSERT_SUCCESS(af_create_event_handle(&anotherEvent));
+    ASSERT_SUCCESS(af_create_event_on_active_queue(anotherEvent));
     ASSERT_SUCCESS(af_memory_event_pair_set_event(pair, anotherEvent));
     af_event yetAnotherEvent;
     ASSERT_SUCCESS(af_memory_event_pair_get_event(&yetAnotherEvent, pair));

@@ -12,12 +12,11 @@
 #include <af/event.h>
 #include <af/memory.h>
 
-typedef struct {
+struct MemoryEventPair {
     void *ptr;
     af_event event;
-} af_memory_event_pair_t;
+};
 
-af_memory_event_pair_t getMemoryEventPair(const af_memory_event_pair pair);
+MemoryEventPair &getMemoryEventPair(const af_memory_event_pair pair);
 
-af_memory_event_pair getMemoryEventPairHandle(
-    const af_memory_event_pair_t pairHandle);
+af_memory_event_pair getMemoryEventPairHandle(MemoryEventPair &pairHandle);

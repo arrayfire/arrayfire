@@ -16,19 +16,25 @@
 
 using namespace detail;
 
-af_event_t getEvent(const af_event eventHandle) {
-    return *(af_event_t *)eventHandle;
+Event &getEvent(const af_event eventHandle) {
+    Event &event = *(Event *)eventHandle;
+    return event;
 }
 
-af_event getEventHandle(const af_event_t event) {
-    af_event_t *eventHandle = new af_event_t;
-    *eventHandle            = event;
-    return (af_event)eventHandle;
-}
+af_event getEventHandle(const Event &event) { return (af_event)&event; }
 
-af_err af_create_event(af_event *eventHandle) {
+af_err af_create_event_handle(af_event *eventHandle) {
     try {
-        *eventHandle = makeEventOnActiveQueue();
+        *eventHandle = createEventHandle();
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_create_event_on_active_queue(af_event eventHandle) {
+    try {
+        createEventOnActiveQueue(eventHandle);
     }
     CATCHALL;
 

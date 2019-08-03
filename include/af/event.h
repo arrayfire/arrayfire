@@ -11,13 +11,17 @@
 
 #include <af/defines.h>
 
+#if AF_API_VERSION >= 37
+
 typedef void* af_event;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-AFAPI af_err af_create_event(af_event* eventHandle);
+AFAPI af_err af_create_event_handle(af_event* eventHandle);
+
+AFAPI af_err af_create_event_on_active_queue(af_event eventHandle);
 
 AFAPI af_err af_release_event(const af_event eventHandle);
 
@@ -29,4 +33,6 @@ AFAPI af_err af_block_event(const af_event eventHandle);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

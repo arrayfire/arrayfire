@@ -46,7 +46,9 @@ using Event = common::EventBase<OpenCLEventPolicy>;
 /// \brief Creates a new event and marks it in the queue
 Event make_event(cl::CommandQueue &queue);
 
-af_event makeEventOnActiveQueue();
+af_event createEventHandle();
+
+void createEventOnActiveQueue(af_event eventHandle);
 
 void releaseEvent(af_event eventHandle);
 

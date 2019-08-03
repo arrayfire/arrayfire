@@ -8,8 +8,8 @@
  ********************************************************/
 #pragma once
 
-#include <queue.hpp>
 #include <common/EventBase.hpp>
+#include <queue.hpp>
 #include <af/event.h>
 
 namespace cpu {
@@ -43,7 +43,9 @@ using Event = common::EventBase<CPUEventPolicy>;
 /// \brief Creates a new event and marks it in the queue
 Event make_event(cpu::queue &queue);
 
-af_event makeEventOnActiveQueue();
+af_event createEventHandle();
+
+void createEventOnActiveQueue(af_event eventHandle);
 
 void releaseEvent(af_event eventHandle);
 

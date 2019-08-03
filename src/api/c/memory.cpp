@@ -19,31 +19,26 @@
 #include <af/dim4.hpp>
 #include <af/memory.h>
 #include <af/version.h>
-#include <cstring>
 
 using namespace detail;
 
 using common::half;
 
-af_memory_event_pair_t getMemoryEventPair(
-    const af_memory_event_pair pairHandle) {
-    return *(af_memory_event_pair_t *)pairHandle;
+MemoryEventPair &getMemoryEventPair(const af_memory_event_pair pairHandle) {
+    return *(MemoryEventPair *)pairHandle;
 }
 
-af_memory_event_pair getMemoryEventPairHandle(
-    const af_memory_event_pair_t pair) {
-    af_memory_event_pair_t *pairHandle = new af_memory_event_pair_t;
-    *pairHandle                        = pair;
+af_memory_event_pair getMemoryEventPairHandle(MemoryEventPair &pair) {
+    MemoryEventPair *pairHandle;
+    pairHandle = &pair;
     return (af_memory_event_pair)pairHandle;
 }
 
 af_err af_create_memory_event_pair(af_memory_event_pair *pairHandle, void *ptr,
                                    af_event event) {
     try {
-        af_memory_event_pair_t pair;
-        pair.ptr    = ptr;
-        pair.event  = event;
-        *pairHandle = getMemoryEventPairHandle(pair);
+        MemoryEventPair *pair = new MemoryEventPair({ptr, event});
+        *pairHandle           = getMemoryEventPairHandle(*pair);
     }
     CATCHALL;
 
@@ -52,10 +47,9 @@ af_err af_create_memory_event_pair(af_memory_event_pair *pairHandle, void *ptr,
 
 af_err af_release_memory_event_pair(af_memory_event_pair pairHandle) {
     try {
-        af_memory_event_pair_t pair = *(af_memory_event_pair_t *)pairHandle;
         /// NB: deleting a memory event pair does NOT free the associated memory
         /// and does NOT delete the associated event.
-        delete (af_memory_event_pair_t *)pairHandle;
+        delete (MemoryEventPair *)pairHandle;
     }
     CATCHALL;
 
@@ -65,8 +59,8 @@ af_err af_release_memory_event_pair(af_memory_event_pair pairHandle) {
 af_err af_memory_event_pair_set_ptr(af_memory_event_pair pairHandle,
                                     void *ptr) {
     try {
-        af_memory_event_pair_t *pair = (af_memory_event_pair_t *)pairHandle;
-        pair->ptr                    = ptr;
+        MemoryEventPair *pair = (MemoryEventPair *)pairHandle;
+        pair->ptr             = ptr;
     }
     CATCHALL;
 
@@ -76,8 +70,8 @@ af_err af_memory_event_pair_set_ptr(af_memory_event_pair pairHandle,
 af_err af_memory_event_pair_set_event(af_memory_event_pair pairHandle,
                                       af_event event) {
     try {
-        af_memory_event_pair_t *pair = (af_memory_event_pair_t *)pairHandle;
-        pair->event                  = event;
+        MemoryEventPair *pair = (MemoryEventPair *)pairHandle;
+        pair->event           = event;
     }
     CATCHALL;
 
@@ -87,8 +81,8 @@ af_err af_memory_event_pair_set_event(af_memory_event_pair pairHandle,
 af_err af_memory_event_pair_get_ptr(void **ptr,
                                     af_memory_event_pair pairHandle) {
     try {
-        af_memory_event_pair_t pair = getMemoryEventPair(pairHandle);
-        *ptr                        = pair.ptr;
+        MemoryEventPair &pair = getMemoryEventPair(pairHandle);
+        *ptr                  = pair.ptr;
     }
     CATCHALL;
 
@@ -98,8 +92,8 @@ af_err af_memory_event_pair_get_ptr(void **ptr,
 af_err af_memory_event_pair_get_event(af_event *event,
                                       af_memory_event_pair pairHandle) {
     try {
-        af_memory_event_pair_t pair = getMemoryEventPair(pairHandle);
-        *event                      = pair.event;
+        MemoryEventPair &pair = getMemoryEventPair(pairHandle);
+        *event                = pair.event;
     }
     CATCHALL;
 

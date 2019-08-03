@@ -63,12 +63,14 @@ uptr<T> memAlloc(const size_t &elements) {
 
     af_event event;
     af_memory_event_pair_get_event(&event, pair);
-    Event *e            = getEvent(event).event;
+    Event &e            = getEvent(event);
     cudaStream_t stream = getActiveStream();
-    if (e) e->enqueueWait(stream);
+    if (e) e.enqueueWait(stream);
 
     void *ptr;
     af_memory_event_pair_get_ptr(&ptr, pair);
+    af_release_event(event);
+    af_release_memory_event_pair(pair);
     return uptr<T>(static_cast<T *>(ptr), memFree<T>);
 }
 
@@ -77,25 +79,29 @@ void *memAllocUser(const size_t &bytes) {
 
     af_event event;
     af_memory_event_pair_get_event(&event, pair);
-    Event *e            = getEvent(event).event;
+    Event &e            = getEvent(event);
     cudaStream_t stream = getActiveStream();
-    if (e) e->enqueueWait(stream);
+    if (e) e.enqueueWait(stream);
 
     void *ptr;
     af_memory_event_pair_get_ptr(&ptr, pair);
+    af_release_event(event);
+    af_release_memory_event_pair(pair);
     return ptr;
 }
 
 template<typename T>
 void memFree(T *ptr) {
     af_event event;
-    af_create_event(&event);
+    af_create_event_handle(&event);
+    af_create_event_on_active_queue(event);
     memoryManager().unlock((void *)ptr, event, false);
 }
 
 void memFreeUser(void *ptr) {
     af_event event;
-    af_create_event(&event);
+    af_create_event_handle(&event);
+    af_create_event_on_active_queue(event);
     memoryManager().unlock((void *)ptr, event, true);
 }
 
@@ -117,22 +123,23 @@ template<typename T>
 T *pinnedAlloc(const size_t &elements) {
     af_memory_event_pair pair =
         memoryManager().alloc(elements * sizeof(T), false);
-
     af_event event;
     af_memory_event_pair_get_event(&event, pair);
-    Event *e            = getEvent(event).event;
+    Event &e            = getEvent(event);
     cudaStream_t stream = getActiveStream();
-    if (e) e->enqueueWait(stream);
-
+    if (e) e.enqueueWait(stream);
     void *ptr;
     af_memory_event_pair_get_ptr(&ptr, pair);
+    af_release_event(event);
+    af_release_memory_event_pair(pair);
     return (T *)ptr;
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
     af_event event;
-    af_create_event(&event);
+    af_create_event_handle(&event);
+    af_create_event_on_active_queue(event);
     return pinnedMemoryManager().unlock((void *)ptr, event, false);
 }
 

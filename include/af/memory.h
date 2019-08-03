@@ -12,6 +12,8 @@
 #include <af/defines.h>
 #include <af/event.h>
 
+#if AF_API_VERSION >= 37
+
 typedef void* af_memory_event_pair;
 
 #ifdef __cplusplus
@@ -38,4 +40,6 @@ af_memory_event_pair_get_event(af_event* event, af_memory_event_pair pair);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

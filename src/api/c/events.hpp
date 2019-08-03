@@ -13,11 +13,8 @@
 #include <backend.hpp>
 #include <af/event.h>
 
-typedef struct {
-    /// Underlying EventBase<T>
-    detail::Event *event;
-} af_event_t;
+using Event = detail::Event;
 
-af_event getEventHandle(const af_event_t event);
+af_event getEventHandle(const Event& event);
 
-af_event_t getEvent(const af_event eventHandle);
+Event& getEvent(const af_event eventHandle);
