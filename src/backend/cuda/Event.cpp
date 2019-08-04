@@ -23,18 +23,17 @@ Event make_event(cudaStream_t queue) {
     return e;
 }
 
-af_event createEventHandle() {
+af_event createEvent() {
     Event* e   = new Event();
-    Event& ref = *e;
-    return getEventHandle(ref);
-}
-
-void createEventOnActiveQueue(af_event eventHandle) {
-    Event& event = getEvent(eventHandle);
+    Event& event = *e;
+    // Default CUDA stream needs to be initialized to use the CUDA driver Ctx
+    getActiveStream();
     if (event.create() != CUDA_SUCCESS) {
-        AF_ERROR("Could not create event on active stream", AF_ERR_RUNTIME);
+        AF_ERROR("Could not create event", AF_ERR_RUNTIME);
     }
+    af_event eventHandle = getEventHandle(event);
     markEventOnActiveQueue(eventHandle);
+    return eventHandle;
 }
 
 void releaseEvent(af_event eventHandle) { delete (Event*)eventHandle; }

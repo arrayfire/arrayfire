@@ -43,9 +43,7 @@ using Event = common::EventBase<CPUEventPolicy>;
 /// \brief Creates a new event and marks it in the queue
 Event make_event(cpu::queue &queue);
 
-af_event createEventHandle();
-
-void createEventOnActiveQueue(af_event eventHandle);
+af_event createEvent();
 
 void releaseEvent(af_event eventHandle);
 

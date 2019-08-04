@@ -10,8 +10,8 @@
 #include <events.hpp>
 
 #include <Event.hpp>
-#include <backend.hpp>
 #include <common/err_common.hpp>
+#include <af/device.h>
 #include <af/event.h>
 
 using namespace detail;
@@ -23,18 +23,10 @@ Event &getEvent(const af_event eventHandle) {
 
 af_event getEventHandle(const Event &event) { return (af_event)&event; }
 
-af_err af_create_event_handle(af_event *eventHandle) {
+af_err af_create_event(af_event *eventHandle) {
     try {
-        *eventHandle = createEventHandle();
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}
-
-af_err af_create_event_on_active_queue(af_event eventHandle) {
-    try {
-        createEventOnActiveQueue(eventHandle);
+        AF_CHECK(af_init());
+        *eventHandle = createEvent();
     }
     CATCHALL;
 

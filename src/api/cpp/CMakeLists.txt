@@ -23,6 +23,7 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/diff.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dog.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/exampleFunction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/exception.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fast.cpp
@@ -49,6 +50,7 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/meanshift.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/median.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/morph.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/nearest_neighbour.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/orb.cpp

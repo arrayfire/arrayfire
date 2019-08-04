@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <events.hpp>
 #include <af/event.h>
 #include <af/memory.h>
 

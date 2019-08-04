@@ -22,18 +22,17 @@ Event make_event(cl::CommandQueue& queue) {
     return e;
 }
 
-af_event createEventHandle() {
-    Event* e   = new Event();
-    Event& ref = *e;
-    return getEventHandle(ref);
-}
-
-void createEventOnActiveQueue(af_event eventHandle) {
-    Event& event = getEvent(eventHandle);
+af_event createEvent() {
+    Event* e     = new Event();
+    Event& event = *e;
+    // Ensure the default CL command queue is initialized
+    getQueue()();
     if (event.create() != CL_SUCCESS) {
-        AF_ERROR("Could not create event on active stream", AF_ERR_RUNTIME);
+        AF_ERROR("Could not create event", AF_ERR_RUNTIME);
     }
+    af_event eventHandle = getEventHandle(event);
     markEventOnActiveQueue(eventHandle);
+    return eventHandle;
 }
 
 void releaseEvent(af_event eventHandle) { delete (Event*)eventHandle; }

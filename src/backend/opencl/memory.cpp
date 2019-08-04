@@ -50,45 +50,37 @@ void printMemInfo(const char *msg, const int device) {
 template<typename T>
 unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements) {
-    af_memory_event_pair pair =
-        memoryManager().alloc(elements * sizeof(T), false);
-    af_event event;
-    af_memory_event_pair_get_event(&event, pair);
-    Event &e = getEvent(event);
+    memory_event_pair pair =
+        memory_event_pair(memoryManager().alloc(elements * sizeof(T), false));
+    event ev = event(pair.getEvent());
+    Event &e = getEvent(ev.get());
     if (e) e.enqueueWait(getQueue()());
-    void *inPtr;
-    af_memory_event_pair_get_ptr(&inPtr, pair);
-    cl::Buffer *ptr = static_cast<cl::Buffer *>(inPtr);
+    cl::Buffer *ptr = static_cast<cl::Buffer *>(pair.getPtr());
     return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(ptr,
                                                                 bufferFree);
 }
 
 void *memAllocUser(const size_t &bytes) {
-    af_memory_event_pair pair = memoryManager().alloc(bytes, true);
-    af_event event;
-    af_memory_event_pair_get_event(&event, pair);
-    Event &e = getEvent(event);
+    memory_event_pair pair =
+        memory_event_pair(memoryManager().alloc(bytes, true));
+    event ev = event(pair.getEvent());
+    Event &e = getEvent(ev.get());
     if (e) e.enqueueWait(getQueue()());
-    void *ptr;
-    af_memory_event_pair_get_ptr(&ptr, pair);
-    af_release_event(event);
-    af_release_memory_event_pair(pair);
-    return ptr;
+    return pair.getPtr();
 }
 
 template<typename T>
 void memFree(T *ptr) {
-    af_event event;
-    af_create_event_handle(&event);
-    af_create_event_on_active_queue(event);
-    return memoryManager().unlock((void *)ptr, event, false);
+    event e = event();
+    e.unlock();
+
+    return memoryManager().unlock((void *)ptr, e.get(), false);
 }
 
 void memFreeUser(void *ptr) {
-    af_event event;
-    af_create_event_handle(&event);
-    af_create_event_on_active_queue(event);
-    memoryManager().unlock((void *)ptr, event, true);
+    event e = event();
+    e.unlock();
+    memoryManager().unlock((void *)ptr, e.get(), true);
 }
 
 cl::Buffer *bufferAlloc(const size_t &bytes) {
@@ -105,10 +97,9 @@ cl::Buffer *bufferAlloc(const size_t &bytes) {
 }
 
 void bufferFree(cl::Buffer *buf) {
-    af_event event;
-    af_create_event_handle(&event);
-    af_create_event_on_active_queue(event);
-    return memoryManager().unlock((void *)buf, event, false);
+    event e = event();
+    e.unlock();
+    return memoryManager().unlock((void *)buf, e.get(), false);
 }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
@@ -127,25 +118,19 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    af_memory_event_pair pair =
-        memoryManager().alloc(elements * sizeof(T), false);
-    af_event event;
-    af_memory_event_pair_get_event(&event, pair);
-    Event &e = getEvent(event);
+    memory_event_pair pair =
+        memory_event_pair(memoryManager().alloc(elements * sizeof(T), false));
+    event ev = event(pair.getEvent());
+    Event &e = getEvent(ev.get());
     if (e) e.enqueueWait(getQueue()());
-    void *ptr;
-    af_memory_event_pair_get_ptr(&ptr, pair);
-    af_release_event(event);
-    af_release_memory_event_pair(pair);
-    return static_cast<T *>(ptr);
+    return static_cast<T *>(pair.getPtr());
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    af_event event;
-    af_create_event_handle(&event);
-    af_create_event_on_active_queue(event);
-    return pinnedMemoryManager().unlock((void *)ptr, event, false);
+    event e = event();
+    e.unlock();
+    return pinnedMemoryManager().unlock((void *)ptr, e.get(), false);
 }
 
 bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }

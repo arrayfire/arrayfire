@@ -14,19 +14,15 @@
 
 TEST(EventTests, SimpleCreateRelease) {
     af_event event;
-    ASSERT_SUCCESS(af_create_event_handle(&event));
-    ASSERT_SUCCESS(af_create_event_on_active_queue(&event));
+    ASSERT_SUCCESS(af_create_event(&event));
     ASSERT_SUCCESS(af_release_event(event));
 }
 
 TEST(EventTests, MarkEnqueueAndBlock) {
     af_event event;
-    ASSERT_SUCCESS(af_create_event_handle(&event));
-    ASSERT_SUCCESS(af_create_event_on_active_queue(&event));
-
+    ASSERT_SUCCESS(af_create_event(&event));
     ASSERT_SUCCESS(af_mark_event(event));
     ASSERT_SUCCESS(af_enqueue_wait_event(event));
     ASSERT_SUCCESS(af_block_event(event));
-
     ASSERT_SUCCESS(af_release_event(event));
 }

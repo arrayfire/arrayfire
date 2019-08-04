@@ -10,12 +10,14 @@
 #include <Event.hpp>
 #include <common/Logger.hpp>
 #include <common/MemoryManager.hpp>
-#include <memoryapi.hpp>
 #include <af/event.h>
+#include <af/memory.h>
 
 #include <string>
 #include <vector>
 
+using af::event;
+using af::memory_event_pair;
 using std::max;
 using std::stoi;
 using std::string;
@@ -56,11 +58,10 @@ void MemoryManager::cleanDeviceMemoryManager(int device) {
              bytesToString(bytes_freed));
     // Free memory outside of the lock
     for (auto &pair : free_ptrs) {
-        this->nativeFree(getMemoryEventPair(pair).ptr);
-        // Release the af_event and the memory event pair
-        // since memory has been freed
-        af_release_event(getMemoryEventPair(pair).event);
-        af_release_memory_event_pair(pair);
+        memory_event_pair tmpPair(pair);
+        this->nativeFree(tmpPair.getPtr());
+        // Event and memory event pair freed once out of scope
+        event(tmpPair.getEvent());
     }
 }
 
@@ -115,10 +116,8 @@ void MemoryManager::setMaxMemorySize() {
 }
 
 af_memory_event_pair MemoryManager::alloc(const size_t bytes, bool user_lock) {
-    af_event event;
-    af_create_event_handle(&event);
-    af_memory_event_pair pair;
-    af_create_memory_event_pair(&pair, nullptr, event);
+    event e = event();
+    memory_event_pair pairObj(nullptr, e.get());
     size_t alloc_bytes = this->debug_mode
                              ? bytes
                              : (divup(bytes, mem_step_size) * mem_step_size);
@@ -137,41 +136,44 @@ af_memory_event_pair MemoryManager::alloc(const size_t bytes, bool user_lock) {
             memory::free_iter iter = current.free_map.find(alloc_bytes);
 
             if (iter != current.free_map.end() && !iter->second.empty()) {
-                af_release_event(getMemoryEventPair(pair).event);
-                af_release_memory_event_pair(pair);
-                pair = iter->second.back();
+                pairObj = memory_event_pair(iter->second.back());
+                e       = event(pairObj.getEvent());
                 iter->second.pop_back();
-                current.locked_map[getMemoryEventPair(pair).ptr] = info;
+                current.locked_map[pairObj.getPtr()] = info;
                 current.lock_bytes += alloc_bytes;
                 current.lock_buffers++;
             }
         }
 
-        void *ptr = getMemoryEventPair(pair).ptr;
+        void *ptr = pairObj.getPtr();
+        // void *ptr = getMemoryEventPair(pairPtr).ptr;
+        // void *ptr = getMemoryEventPair(pair).ptr;
         // Only comes here if buffer size not found or in debug mode
         if (ptr == nullptr) {
             // Perform garbage collection if memory can not be allocated
             try {
-                af_memory_event_pair_set_ptr(pair,
-                                             this->nativeAlloc(alloc_bytes));
+                pairObj = memory_event_pair(this->nativeAlloc(alloc_bytes),
+                                            pairObj.getEvent());
             } catch (const AfError &ex) {
                 // If out of memory, run garbage collect and try again
                 if (ex.getError() != AF_ERR_NO_MEM) throw;
                 this->garbageCollect();
-                af_memory_event_pair_set_ptr(pair,
-                                             this->nativeAlloc(alloc_bytes));
+                pairObj = memory_event_pair(this->nativeAlloc(alloc_bytes),
+                                            pairObj.getEvent());
             }
 
             lock_guard_t lock(this->memory_mutex);
             // Increment these two only when it succeeds to come here.
             current.total_bytes += alloc_bytes;
             current.total_buffers += 1;
-            current.locked_map[getMemoryEventPair(pair).ptr] = info;
+            current.locked_map[pairObj.getPtr()] = info;
             current.lock_bytes += alloc_bytes;
             current.lock_buffers++;
         }
     }
-    return pair;
+    e.unlock();
+    pairObj.unlock();
+    return pairObj.get();
 }
 
 size_t MemoryManager::allocated(void *ptr) {
@@ -182,12 +184,10 @@ size_t MemoryManager::allocated(void *ptr) {
     return (iter->second).bytes;
 }
 
-void MemoryManager::unlock(void *ptr, af_event e, bool user_unlock) {
+void MemoryManager::unlock(void *ptr, af_event eventHandle, bool user_unlock) {
+    event e = event(eventHandle);
     // Shortcut for empty arrays
-    if (!ptr) {
-        af_release_event(e);
-        return;
-    }
+    if (!ptr) { return; }
 
     // Frees the pointer outside the lock.
     memory::uptr_t freed_ptr(nullptr, [this](void *p) { this->nativeFree(p); });
@@ -201,7 +201,6 @@ void MemoryManager::unlock(void *ptr, af_event e, bool user_unlock) {
         if (iter == current.locked_map.end()) {
             // Probably came from user, just free it
             freed_ptr.reset(ptr);
-            af_release_event(e);
             return;
         }
 
@@ -212,10 +211,7 @@ void MemoryManager::unlock(void *ptr, af_event e, bool user_unlock) {
         }
 
         // Return early if either one is locked
-        if ((iter->second).user_lock || (iter->second).manager_lock) {
-            af_release_event(e);
-            return;
-        }
+        if ((iter->second).user_lock || (iter->second).manager_lock) { return; }
 
         size_t bytes = iter->second.bytes;
         current.lock_bytes -= iter->second.bytes;
@@ -228,11 +224,11 @@ void MemoryManager::unlock(void *ptr, af_event e, bool user_unlock) {
                 current.total_buffers--;
                 current.total_bytes -= iter->second.bytes;
             }
-            af_release_event(e);
         } else {
-            af_memory_event_pair pair;
-            af_create_memory_event_pair(&pair, ptr, e);
-            current.free_map[bytes].emplace_back(pair);
+            e.unlock();
+            memory_event_pair pair = memory_event_pair(ptr, e.get());
+            pair.unlock();
+            current.free_map[bytes].emplace_back(pair.get());
         }
         current.locked_map.erase(iter);
     }
@@ -315,9 +311,9 @@ void MemoryManager::userLock(const void *ptr) {
 }
 
 void MemoryManager::userUnlock(const void *ptr) {
-    af_event event;
-    af_create_event_handle(&event);
-    this->unlock(const_cast<void *>(ptr), event, true);
+    event e = event();
+    e.unlock();
+    this->unlock(const_cast<void *>(ptr), e.get(), true);
 }
 
 bool MemoryManager::isUserLocked(const void *ptr) {
