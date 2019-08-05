@@ -932,25 +932,26 @@ class Approx1V2 : public ::testing::Test {
 TYPED_TEST_CASE(Approx1V2, TestTypes);
 
 class SimpleTestData : public TestData {
+    static const int h_gold_size = 15;
+    static const int h_in_size   = 9;
+    static const int h_pos_size = 5;
+
     vector<float> h_pos;
     dim4 pos_dims;
 
    public:
     SimpleTestData() {
         gold_dims = dim4(5, 3);
-        int h_gold_size = gold_dims.elements();
         float gold_arr[h_gold_size] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
                                        40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
                                        70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
 
         in_dims = dim4(3, 3);
-        int h_in_size = in_dims.elements();
         float in_arr[h_in_size]     = {10.0f, 20.0f, 30.0f,
                                        40.0f, 50.0f, 60.0f,
                                        70.0f, 80.0f, 90.0f};
 
         pos_dims = dim4(5);
-        int h_pos_size = pos_dims.elements();
         float pos_arr[h_pos_size]   = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
 
         h_gold.assign(gold_arr, gold_arr + h_gold_size);
