@@ -29,9 +29,10 @@ af_event createEvent() {
     // Ensure that the default queue is initialized
     getQueue();
     if (event.create() != 0) {
+        delete e;  // don't leak the event if creation fails
         AF_ERROR("Could not create event", AF_ERR_RUNTIME);
     }
-    af_event eventHandle = getEventHandle(event);
+    af_event eventHandle = getHandle(event);
     markEventOnActiveQueue(eventHandle);
     return eventHandle;
 }

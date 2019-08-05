@@ -13,12 +13,14 @@ target_sources(af
     ${CMAKE_CURRENT_SOURCE_DIR}/data.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/error.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/features.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/graphics.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/image.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/index.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/internal.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lapack.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ml.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/random.cpp

@@ -15,46 +15,42 @@
 
 namespace af {
 
-memory_event_pair::memory_event_pair(void* ptr, af_event event) {
-    AF_CHECK(af_create_memory_event_pair(&p_, ptr, event));
+buffer_info::buffer_info(void* ptr, af_event event) {
+    AF_CHECK(af_create_buffer_info(&p_, ptr, event));
 }
 
-memory_event_pair::memory_event_pair(af_memory_event_pair p) : p_(p) {}
+buffer_info::buffer_info(af_buffer_info p) : p_(p) {}
 
-memory_event_pair::memory_event_pair(memory_event_pair&& other) : p_(nullptr) {
+buffer_info::buffer_info(buffer_info&& other) : p_(nullptr) {
     *this = std::move(other);
 }
 
-memory_event_pair& memory_event_pair::operator=(memory_event_pair&& other) {
-    af_release_memory_event_pair(this->p_);
+buffer_info& buffer_info::operator=(buffer_info&& other) {
+    af_release_buffer_info(this->p_);
     other.unlock();
     this->p_ = other.p_;
     return *this;
 }
 
-memory_event_pair::~memory_event_pair() {
+buffer_info::~buffer_info() {
     // No throw dtor
-    if (!preserve_) { af_release_memory_event_pair(p_); }
+    if (!preserve_) { af_release_buffer_info(p_); }
 }
 
-void memory_event_pair::unlock() { preserve_ = true; }
+void buffer_info::unlock() { preserve_ = true; }
 
-void* memory_event_pair::getPtr() const {
+void* buffer_info::getPtr() const {
     void* ptr;
-    AF_CHECK(af_memory_event_pair_get_ptr(&ptr, p_));
+    AF_CHECK(af_buffer_info_get_ptr(&ptr, p_));
     return ptr;
 }
 
-void memory_event_pair::setPtr(void* ptr) const {
-    AF_CHECK(af_memory_event_pair_set_ptr(p_, ptr));
-}
-
-af_event memory_event_pair::getEvent() const {
+af_event buffer_info::getEvent() const {
     af_event e;
-    AF_CHECK(af_memory_event_pair_get_event(&e, p_));
+    AF_CHECK(af_buffer_info_get_event(&e, p_));
     return e;
 }
 
-af_memory_event_pair memory_event_pair::get() const { return p_; }
+af_buffer_info buffer_info::get() const { return p_; }
 
 }  // namespace af

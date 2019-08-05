@@ -29,9 +29,10 @@ af_event createEvent() {
     // Default CUDA stream needs to be initialized to use the CUDA driver Ctx
     getActiveStream();
     if (event.create() != CUDA_SUCCESS) {
+        delete e;  // don't leak the event if creation fails
         AF_ERROR("Could not create event", AF_ERR_RUNTIME);
     }
-    af_event eventHandle = getEventHandle(event);
+    af_event eventHandle = getHandle(event);
     markEventOnActiveQueue(eventHandle);
     return eventHandle;
 }

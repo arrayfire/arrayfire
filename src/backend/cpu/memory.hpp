@@ -53,17 +53,16 @@ void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 bool checkMemoryLimit();
 
-class MemoryManager : public common::MemoryManager
-{
-    public:
-        MemoryManager();
-        ~MemoryManager();
-        int getActiveDeviceId() override;
-        size_t getMaxMemorySize(int id) override;
-        void *nativeAlloc(const size_t bytes);
-        void nativeFree(void *ptr);
-        common::memory::memory_info& getCurrentMemoryInfo();
-        void garbageCollect() override;
+class MemoryManager : public common::MemoryManager {
+   public:
+    MemoryManager();
+    ~MemoryManager();
+    int getActiveDeviceId() override;
+    size_t getMaxMemorySize(int id) override;
+    void *nativeAlloc(const size_t bytes) override;
+    void nativeFree(void *ptr) override;
+    common::memory::memory_info &getCurrentMemoryInfo() override;
+    void garbageCollect() override;
 };
 
 }  // namespace cpu

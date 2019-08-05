@@ -15,6 +15,6 @@
 
 using Event = detail::Event;
 
-af_event getEventHandle(const Event& event);
+af_event getHandle(const Event& event);
 
 Event& getEvent(const af_event eventHandle);

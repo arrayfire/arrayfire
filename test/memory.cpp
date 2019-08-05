@@ -629,45 +629,28 @@ TEST(Memory, IndexedDevice) {
     }
 }
 
-TEST(MemoryEventPair, SimpleCreateRelease) {
+TEST(BufferInfo, SimpleCreateRelease) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
-    af_memory_event_pair pair;
+    af_buffer_info pair;
     void *ptr;
-    ASSERT_SUCCESS(af_create_memory_event_pair(&pair, ptr, event));
+    ASSERT_SUCCESS(af_create_buffer_info(&pair, ptr, event));
     ASSERT_SUCCESS(af_release_event(event));
-    ASSERT_SUCCESS(af_release_memory_event_pair(pair));
+    ASSERT_SUCCESS(af_release_buffer_info(pair));
 }
 
-TEST(MemoryEventPair, EventAndPtrAttributes) {
+TEST(BufferInfo, EventAndPtrAttributes) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
     void *ptr;
-    af_memory_event_pair pair;
-    ASSERT_SUCCESS(af_create_memory_event_pair(&pair, ptr, event));
+    af_buffer_info pair;
+    ASSERT_SUCCESS(af_create_buffer_info(&pair, ptr, event));
     af_event anEvent;
-    ASSERT_SUCCESS(af_memory_event_pair_get_event(&anEvent, pair));
+    ASSERT_SUCCESS(af_buffer_info_get_event(&anEvent, pair));
     ASSERT_EQ(event, anEvent);
     void *somePtr;
-    ASSERT_SUCCESS(af_memory_event_pair_get_ptr(&somePtr, pair));
+    ASSERT_SUCCESS(af_buffer_info_get_ptr(&somePtr, pair));
     ASSERT_EQ(ptr, somePtr);
-
-    af_event anotherEvent;
-    ASSERT_SUCCESS(af_create_event(&anotherEvent));
-    ASSERT_SUCCESS(af_memory_event_pair_set_event(pair, anotherEvent));
-    af_event yetAnotherEvent;
-    ASSERT_SUCCESS(af_memory_event_pair_get_event(&yetAnotherEvent, pair));
-    ASSERT_NE(yetAnotherEvent, event);
-    ASSERT_EQ(yetAnotherEvent, anotherEvent);
-
-    void *anotherPtr;
-    ASSERT_SUCCESS(af_memory_event_pair_set_ptr(pair, anotherPtr));
-    void *yetAnotherPtr;
-    ASSERT_SUCCESS(af_memory_event_pair_get_ptr(&yetAnotherPtr, pair));
-    ASSERT_NE(yetAnotherPtr, ptr);
-    ASSERT_EQ(yetAnotherPtr, anotherPtr);
-
-    ASSERT_SUCCESS(af_release_memory_event_pair(pair));
+    ASSERT_SUCCESS(af_release_buffer_info(pair));
     ASSERT_SUCCESS(af_release_event(event));
-    ASSERT_SUCCESS(af_release_event(anotherEvent));
 }

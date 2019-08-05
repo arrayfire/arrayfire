@@ -50,8 +50,8 @@ void printMemInfo(const char *msg, const int device) {
 template<typename T>
 unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements) {
-    memory_event_pair pair =
-        memory_event_pair(memoryManager().alloc(elements * sizeof(T), false));
+    buffer_info pair =
+        buffer_info(memoryManager().alloc(elements * sizeof(T), false));
     event ev = event(pair.getEvent());
     Event &e = getEvent(ev.get());
     if (e) e.enqueueWait(getQueue()());
@@ -61,39 +61,28 @@ unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
 }
 
 void *memAllocUser(const size_t &bytes) {
-    memory_event_pair pair =
-        memory_event_pair(memoryManager().alloc(bytes, true));
-    event ev = event(pair.getEvent());
-    Event &e = getEvent(ev.get());
+    buffer_info pair = buffer_info(memoryManager().alloc(bytes, true));
+    event ev         = event(pair.getEvent());
+    Event &e         = getEvent(ev.get());
     if (e) e.enqueueWait(getQueue()());
     return pair.getPtr();
 }
 
 template<typename T>
 void memFree(T *ptr) {
-    event e = event();
-    e.unlock();
-
-    return memoryManager().unlock((void *)ptr, e.get(), false);
+    return memoryManager().unlock((void *)ptr, createEvent(), false);
 }
 
 void memFreeUser(void *ptr) {
-    event e = event();
-    e.unlock();
-    memoryManager().unlock((void *)ptr, e.get(), true);
+    memoryManager().unlock((void *)ptr, createEvent(), true);
 }
 
 cl::Buffer *bufferAlloc(const size_t &bytes) {
-    af_memory_event_pair pair = memoryManager().alloc(bytes, false);
-    af_event event;
-    af_memory_event_pair_get_event(&event, pair);
-    Event &e = getEvent(event);
+    buffer_info pair = buffer_info(memoryManager().alloc(bytes, false));
+    event ev         = event(pair.getEvent());
+    Event &e         = getEvent(ev.get());
     if (e) e.enqueueWait(getQueue()());
-    void *ptr;
-    af_memory_event_pair_get_ptr(&ptr, pair);
-    af_release_event(event);
-    af_release_memory_event_pair(pair);
-    return static_cast<cl::Buffer *>(ptr);
+    return static_cast<cl::Buffer *>(pair.getPtr());
 }
 
 void bufferFree(cl::Buffer *buf) {
@@ -118,8 +107,8 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    memory_event_pair pair =
-        memory_event_pair(memoryManager().alloc(elements * sizeof(T), false));
+    buffer_info pair =
+        buffer_info(memoryManager().alloc(elements * sizeof(T), false));
     event ev = event(pair.getEvent());
     Event &e = getEvent(ev.get());
     if (e) e.enqueueWait(getQueue()());
@@ -128,9 +117,7 @@ T *pinnedAlloc(const size_t &elements) {
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    event e = event();
-    e.unlock();
-    return pinnedMemoryManager().unlock((void *)ptr, e.get(), false);
+    pinnedMemoryManager().unlock((void *)ptr, createEvent(), false);
 }
 
 bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }

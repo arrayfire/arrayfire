@@ -28,9 +28,10 @@ af_event createEvent() {
     // Ensure the default CL command queue is initialized
     getQueue()();
     if (event.create() != CL_SUCCESS) {
+        delete e;  // don't leak the event if creation fails
         AF_ERROR("Could not create event", AF_ERR_RUNTIME);
     }
-    af_event eventHandle = getEventHandle(event);
+    af_event eventHandle = getHandle(event);
     markEventOnActiveQueue(eventHandle);
     return eventHandle;
 }

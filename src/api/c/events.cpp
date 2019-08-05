@@ -21,7 +21,7 @@ Event &getEvent(const af_event eventHandle) {
     return event;
 }
 
-af_event getEventHandle(const Event &event) { return (af_event)&event; }
+af_event getHandle(const Event &event) { return (af_event)&event; }
 
 af_err af_create_event(af_event *eventHandle) {
     try {

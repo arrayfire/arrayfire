@@ -13,11 +13,11 @@
 #include <af/event.h>
 #include <af/memory.h>
 
-struct MemoryEventPair {
+struct BufferInfo {
     void *ptr;
     af_event event;
 };
 
-MemoryEventPair &getMemoryEventPair(const af_memory_event_pair pair);
+BufferInfo &getBufferInfo(const af_buffer_info pair);
 
-af_memory_event_pair getMemoryEventPairHandle(MemoryEventPair &pairHandle);
+af_buffer_info getHandle(BufferInfo &pairHandle);

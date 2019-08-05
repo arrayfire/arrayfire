@@ -16,8 +16,8 @@
 #include <string>
 #include <vector>
 
+using af::buffer_info;
 using af::event;
-using af::memory_event_pair;
 using std::max;
 using std::stoi;
 using std::string;
@@ -33,7 +33,7 @@ void MemoryManager::cleanDeviceMemoryManager(int device) {
     // This vector is used to store the pointers which will be deleted by
     // the memory manager. We are using this to avoid calling free while
     // the lock is being held because the CPU backend calls sync.
-    vector<af_memory_event_pair> free_ptrs;
+    vector<af_buffer_info> free_ptrs;
     size_t bytes_freed           = 0;
     memory::memory_info &current = memory[device];
     {
@@ -58,7 +58,7 @@ void MemoryManager::cleanDeviceMemoryManager(int device) {
              bytesToString(bytes_freed));
     // Free memory outside of the lock
     for (auto &pair : free_ptrs) {
-        memory_event_pair tmpPair(pair);
+        buffer_info tmpPair(pair);
         this->nativeFree(tmpPair.getPtr());
         // Event and memory event pair freed once out of scope
         event(tmpPair.getEvent());
@@ -115,9 +115,9 @@ void MemoryManager::setMaxMemorySize() {
     }
 }
 
-af_memory_event_pair MemoryManager::alloc(const size_t bytes, bool user_lock) {
+af_buffer_info MemoryManager::alloc(const size_t bytes, bool user_lock) {
     event e = event();
-    memory_event_pair pairObj(nullptr, e.get());
+    buffer_info pairObj(nullptr, e.get());
     size_t alloc_bytes = this->debug_mode
                              ? bytes
                              : (divup(bytes, mem_step_size) * mem_step_size);
@@ -136,7 +136,7 @@ af_memory_event_pair MemoryManager::alloc(const size_t bytes, bool user_lock) {
             memory::free_iter iter = current.free_map.find(alloc_bytes);
 
             if (iter != current.free_map.end() && !iter->second.empty()) {
-                pairObj = memory_event_pair(iter->second.back());
+                pairObj = buffer_info(iter->second.back());
                 e       = event(pairObj.getEvent());
                 iter->second.pop_back();
                 current.locked_map[pairObj.getPtr()] = info;
@@ -146,20 +146,20 @@ af_memory_event_pair MemoryManager::alloc(const size_t bytes, bool user_lock) {
         }
 
         void *ptr = pairObj.getPtr();
-        // void *ptr = getMemoryEventPair(pairPtr).ptr;
-        // void *ptr = getMemoryEventPair(pair).ptr;
+        // void *ptr = getBufferInfo(pairPtr).ptr;
+        // void *ptr = getBufferInfo(pair).ptr;
         // Only comes here if buffer size not found or in debug mode
         if (ptr == nullptr) {
             // Perform garbage collection if memory can not be allocated
             try {
-                pairObj = memory_event_pair(this->nativeAlloc(alloc_bytes),
-                                            pairObj.getEvent());
+                pairObj = buffer_info(this->nativeAlloc(alloc_bytes),
+                                      pairObj.getEvent());
             } catch (const AfError &ex) {
                 // If out of memory, run garbage collect and try again
                 if (ex.getError() != AF_ERR_NO_MEM) throw;
                 this->garbageCollect();
-                pairObj = memory_event_pair(this->nativeAlloc(alloc_bytes),
-                                            pairObj.getEvent());
+                pairObj = buffer_info(this->nativeAlloc(alloc_bytes),
+                                      pairObj.getEvent());
             }
 
             lock_guard_t lock(this->memory_mutex);
@@ -226,7 +226,7 @@ void MemoryManager::unlock(void *ptr, af_event eventHandle, bool user_unlock) {
             }
         } else {
             e.unlock();
-            memory_event_pair pair = memory_event_pair(ptr, e.get());
+            buffer_info pair = buffer_info(ptr, e.get());
             pair.unlock();
             current.free_map[bytes].emplace_back(pair.get());
         }
@@ -276,7 +276,7 @@ void MemoryManager::printInfo(const char *msg, const int device) {
 
         for (auto &pair : kv.second) {
             printf("|  %14p  |  %6.f %s | %9s | %9s |\n",
-                   getMemoryEventPair(pair).ptr, size, unit, status_mngr,
+                   getBufferInfo(pair).ptr, size, unit, status_mngr,
                    status_user);
         }
     }

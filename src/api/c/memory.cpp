@@ -24,76 +24,52 @@ using namespace detail;
 
 using common::half;
 
-MemoryEventPair &getMemoryEventPair(const af_memory_event_pair pairHandle) {
-    return *(MemoryEventPair *)pairHandle;
+BufferInfo &getBufferInfo(const af_buffer_info pairHandle) {
+    return *(BufferInfo *)pairHandle;
 }
 
-af_memory_event_pair getMemoryEventPairHandle(MemoryEventPair &pair) {
-    MemoryEventPair *pairHandle;
+af_buffer_info getHandle(BufferInfo &pair) {
+    BufferInfo *pairHandle;
     pairHandle = &pair;
-    return (af_memory_event_pair)pairHandle;
+    return (af_buffer_info)pairHandle;
 }
 
-af_err af_create_memory_event_pair(af_memory_event_pair *pairHandle, void *ptr,
-                                   af_event event) {
+af_err af_create_buffer_info(af_buffer_info *pairHandle, void *ptr,
+                             af_event event) {
     try {
-        MemoryEventPair *pair = new MemoryEventPair({ptr, event});
-        *pairHandle           = getMemoryEventPairHandle(*pair);
+        BufferInfo *pair = new BufferInfo({ptr, event});
+        *pairHandle      = getHandle(*pair);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_release_memory_event_pair(af_memory_event_pair pairHandle) {
+af_err af_release_buffer_info(af_buffer_info pairHandle) {
     try {
         /// NB: deleting a memory event pair does NOT free the associated memory
         /// and does NOT delete the associated event.
-        delete (MemoryEventPair *)pairHandle;
+        delete (BufferInfo *)pairHandle;
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_memory_event_pair_set_ptr(af_memory_event_pair pairHandle,
-                                    void *ptr) {
+af_err af_buffer_info_get_ptr(void **ptr, af_buffer_info pairHandle) {
     try {
-        MemoryEventPair *pair = (MemoryEventPair *)pairHandle;
-        pair->ptr             = ptr;
+        BufferInfo &pair = getBufferInfo(pairHandle);
+        *ptr             = pair.ptr;
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_memory_event_pair_set_event(af_memory_event_pair pairHandle,
-                                      af_event event) {
+af_err af_buffer_info_get_event(af_event *event, af_buffer_info pairHandle) {
     try {
-        MemoryEventPair *pair = (MemoryEventPair *)pairHandle;
-        pair->event           = event;
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}
-
-af_err af_memory_event_pair_get_ptr(void **ptr,
-                                    af_memory_event_pair pairHandle) {
-    try {
-        MemoryEventPair &pair = getMemoryEventPair(pairHandle);
-        *ptr                  = pair.ptr;
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}
-
-af_err af_memory_event_pair_get_event(af_event *event,
-                                      af_memory_event_pair pairHandle) {
-    try {
-        MemoryEventPair &pair = getMemoryEventPair(pairHandle);
-        *event                = pair.event;
+        BufferInfo &pair = getBufferInfo(pairHandle);
+        *event           = pair.event;
     }
     CATCHALL;
 

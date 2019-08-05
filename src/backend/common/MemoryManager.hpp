@@ -48,7 +48,7 @@ struct locked_info {
 using locked_t    = typename std::unordered_map<void *, memory::locked_info>;
 using locked_iter = typename locked_t::iterator;
 
-using free_t    = std::unordered_map<size_t, std::vector<af_memory_event_pair>>;
+using free_t    = std::unordered_map<size_t, std::vector<af_buffer_info>>;
 using free_iter = typename free_t::iterator;
 
 using uptr_t = std::unique_ptr<void, std::function<void(void *)>>;
@@ -111,7 +111,7 @@ class MemoryManager {
     /// bytes. If there is already a free buffer available, it will use
     /// that buffer. Otherwise, it will allocate a new buffer using the
     /// nativeAlloc function.
-    af_memory_event_pair alloc(const size_t size, bool user_lock);
+    af_buffer_info alloc(const size_t size, bool user_lock);
 
     /// returns the size of the buffer at the pointer allocated by the memory
     /// manager.

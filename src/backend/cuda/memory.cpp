@@ -58,8 +58,8 @@ void printMemInfo(const char *msg, const int device) {
 template<typename T>
 uptr<T> memAlloc(const size_t &elements) {
     size_t size = elements * sizeof(T);
-    memory_event_pair pair =
-        memory_event_pair(memoryManager().alloc(elements * sizeof(T), false));
+    buffer_info pair =
+        buffer_info(memoryManager().alloc(elements * sizeof(T), false));
     event ev            = event(pair.getEvent());
     Event &e            = getEvent(ev.get());
     cudaStream_t stream = getActiveStream();
@@ -68,8 +68,7 @@ uptr<T> memAlloc(const size_t &elements) {
 }
 
 void *memAllocUser(const size_t &bytes) {
-    memory_event_pair pair =
-        memory_event_pair(memoryManager().alloc(bytes, true));
+    buffer_info pair    = buffer_info(memoryManager().alloc(bytes, true));
     event ev            = event(pair.getEvent());
     Event &e            = getEvent(ev.get());
     cudaStream_t stream = getActiveStream();
@@ -79,15 +78,11 @@ void *memAllocUser(const size_t &bytes) {
 
 template<typename T>
 void memFree(T *ptr) {
-    event e = event();
-    e.unlock();
-    memoryManager().unlock((void *)ptr, e.get(), false);
+    memoryManager().unlock((void *)ptr, createEvent(), false);
 }
 
 void memFreeUser(void *ptr) {
-    event e = event();
-    e.unlock();
-    memoryManager().unlock((void *)ptr, e.get(), true);
+    memoryManager().unlock((void *)ptr, createEvent(), true);
 }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
@@ -106,8 +101,8 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    memory_event_pair pair =
-        memory_event_pair(memoryManager().alloc(elements * sizeof(T), false));
+    buffer_info pair =
+        buffer_info(memoryManager().alloc(elements * sizeof(T), false));
     event ev            = event(pair.getEvent());
     Event &e            = getEvent(ev.get());
     cudaStream_t stream = getActiveStream();
@@ -117,9 +112,7 @@ T *pinnedAlloc(const size_t &elements) {
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    event e = event();
-    e.unlock();
-    return pinnedMemoryManager().unlock((void *)ptr, e.get(), false);
+    pinnedMemoryManager().unlock((void *)ptr, createEvent(), false);
 }
 
 bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }

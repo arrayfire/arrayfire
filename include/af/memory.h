@@ -14,32 +14,32 @@
 
 #if AF_API_VERSION >= 37
 
-typedef void* af_memory_event_pair;
+typedef void* af_buffer_info;
 
 #ifdef __cplusplus
 namespace af {
 
-/// A simple RAII wrapper for af_memory_event_pair
-class memory_event_pair {
-    af_memory_event_pair p_;
+/// A simple RAII wrapper for af_buffer_info
+class buffer_info {
+    af_buffer_info p_;
     bool preserve_ = false;  // Preserve the event after wrapper deletion
    public:
-    memory_event_pair(af_memory_event_pair p);
-    memory_event_pair(void* ptr, af_event event);
-    ~memory_event_pair();
+    buffer_info(af_buffer_info p);
+    buffer_info(void* ptr, af_event event);
+    ~buffer_info();
 #if AF_COMPILER_CXX_RVALUE_REFERENCES
-    memory_event_pair(memory_event_pair&& other);
-    memory_event_pair& operator=(memory_event_pair&& other);
+    buffer_info(buffer_info&& other);
+    buffer_info& operator=(buffer_info&& other);
 #endif
     void unlock();
     void* getPtr() const;
     void setPtr(void* ptr) const;
     af_event getEvent() const;
-    af_memory_event_pair get() const;
+    af_buffer_info get() const;
 
    private:
-    memory_event_pair& operator=(const memory_event_pair& other);
-    memory_event_pair(const memory_event_pair& other);
+    buffer_info& operator=(const buffer_info& other);
+    buffer_info(const buffer_info& other);
 };
 
 }  // namespace af
@@ -49,21 +49,14 @@ class memory_event_pair {
 extern "C" {
 #endif
 
-AFAPI af_err af_create_memory_event_pair(af_memory_event_pair* pair, void* ptr,
-                                         af_event event);
+AFAPI af_err af_create_buffer_info(af_buffer_info* pair, void* ptr,
+                                   af_event event);
 
-AFAPI af_err af_release_memory_event_pair(af_memory_event_pair pair);
+AFAPI af_err af_release_buffer_info(af_buffer_info pair);
 
-AFAPI af_err af_memory_event_pair_set_ptr(af_memory_event_pair pair, void* ptr);
+AFAPI af_err af_buffer_info_get_ptr(void** ptr, af_buffer_info pair);
 
-AFAPI af_err af_memory_event_pair_set_event(af_memory_event_pair pairHandle,
-                                            af_event event);
-
-AFAPI af_err af_memory_event_pair_get_ptr(void** ptr,
-                                          af_memory_event_pair pair);
-
-AFAPI af_err af_memory_event_pair_get_event(af_event* event,
-                                            af_memory_event_pair pair);
+AFAPI af_err af_buffer_info_get_event(af_event* event, af_buffer_info pair);
 
 #ifdef __cplusplus
 }
