@@ -24,7 +24,7 @@ Event make_event(cudaStream_t queue) {
 }
 
 af_event createEvent() {
-    Event* e   = new Event();
+    Event* e     = new Event();
     Event& event = *e;
     // Default CUDA stream needs to be initialized to use the CUDA driver Ctx
     getActiveStream();

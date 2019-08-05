@@ -24,7 +24,6 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/ArrayInfo.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/EventImpl.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FFTPlanCache.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HandleBase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp

@@ -18,8 +18,6 @@
 #include <spdlog/spdlog.h>
 #include <types.hpp>
 
-#include <iostream>
-
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
 #endif
