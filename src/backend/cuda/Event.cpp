@@ -17,7 +17,7 @@
 
 namespace cuda {
 /// \brief Creates a new event and marks it in the queue
-Event make_event(cudaStream_t queue) {
+Event makeEvent(cudaStream_t queue) {
     Event e;
     if (e.create() == CUDA_SUCCESS) { e.mark(queue); }
     return e;

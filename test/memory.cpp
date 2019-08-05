@@ -642,7 +642,7 @@ TEST(BufferInfo, SimpleCreateRelease) {
 TEST(BufferInfo, EventAndPtrAttributes) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
-    void *ptr;
+    void *ptr = (void *)new char;
     af_buffer_info pair;
     ASSERT_SUCCESS(af_create_buffer_info(&pair, ptr, event));
     af_event anEvent;
@@ -653,4 +653,5 @@ TEST(BufferInfo, EventAndPtrAttributes) {
     ASSERT_EQ(ptr, somePtr);
     ASSERT_SUCCESS(af_release_buffer_info(pair));
     ASSERT_SUCCESS(af_release_event(event));
+    delete (char *)ptr;
 }

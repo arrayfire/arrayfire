@@ -44,7 +44,7 @@ class OpenCLEventPolicy {
 using Event = common::EventBase<OpenCLEventPolicy>;
 
 /// \brief Creates a new event and marks it in the queue
-Event make_event(cl::CommandQueue &queue);
+Event makeEvent(cl::CommandQueue &queue);
 
 af_event createEvent();
 

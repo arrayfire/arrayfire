@@ -16,7 +16,7 @@
 
 namespace opencl {
 /// \brief Creates a new event and marks it in the queue
-Event make_event(cl::CommandQueue& queue) {
+Event makeEvent(cl::CommandQueue& queue) {
     Event e;
     if (e.create() == CL_SUCCESS) { e.mark(queue()); }
     return e;

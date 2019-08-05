@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -22,7 +22,7 @@ namespace af {
 /// A simple RAII wrapper for af_buffer_info
 class buffer_info {
     af_buffer_info p_;
-    bool preserve_ = false;  // Preserve the event after wrapper deletion
+    bool preserve_;  // Preserve the event after wrapper deletion
    public:
     buffer_info(af_buffer_info p);
     buffer_info(void* ptr, af_event event);
@@ -60,6 +60,6 @@ AFAPI af_err af_buffer_info_get_event(af_event* event, af_buffer_info pair);
 
 #ifdef __cplusplus
 }
-#endif
+#endif  // __cplusplus
 
-#endif
+#endif  // AF_API_VERSION >= 37

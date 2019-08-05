@@ -41,7 +41,7 @@ class CPUEventPolicy {
 using Event = common::EventBase<CPUEventPolicy>;
 
 /// \brief Creates a new event and marks it in the queue
-Event make_event(cpu::queue &queue);
+Event makeEvent(cpu::queue &queue);
 
 af_event createEvent();
 

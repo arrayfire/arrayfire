@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,12 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <memoryapi.hpp>
+
 #include <Array.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <handle.hpp>
-#include <memoryapi.hpp>
 #include <platform.hpp>
 #include <af/backend.h>
 #include <af/device.h>

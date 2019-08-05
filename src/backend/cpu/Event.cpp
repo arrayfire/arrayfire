@@ -17,7 +17,7 @@
 
 namespace cpu {
 /// \brief Creates a new event and marks it in the queue
-Event make_event(cpu::queue& queue) {
+Event makeEvent(cpu::queue& queue) {
     Event e;
     if (0 == e.create()) { e.mark(queue); }
     return e;

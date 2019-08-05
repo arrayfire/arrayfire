@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -21,7 +21,7 @@ namespace af {
 /// A simple RAII wrapper for af_event
 class AFAPI event {
     af_event e_;
-    bool preserve_ = false;  // Preserve the event after wrapper deletion
+    bool preserve_;  // Preserve the event after wrapper deletion
    public:
     event(af_event e);
 #if AF_COMPILER_CXX_RVALUE_REFERENCES
@@ -57,6 +57,6 @@ AFAPI af_err af_block_event(const af_event eventHandle);
 
 #ifdef __cplusplus
 }
-#endif
+#endif  // __cplusplus
 
-#endif
+#endif  // AF_API_VERSION >= 37
