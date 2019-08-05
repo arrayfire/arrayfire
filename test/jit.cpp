@@ -619,18 +619,18 @@ TEST(JIT, LargeJitTree) {
     });
 }
 
-TEST(JIT, TwoLargeNonLinear) {
+void testTwoLargeNonLinear(const af_dtype dt) {
     int dimsize = 10;
-    array a     = constant(0, dimsize, dimsize);
-    array aa    = constant(0, dimsize, dimsize);
-    array b     = constant(0, dimsize, dimsize);
-    array bb    = constant(0, dimsize, dimsize);
+    array a     = constant(0, dimsize, dimsize, dt);
+    array aa    = constant(0, dimsize, dimsize, dt);
+    array b     = constant(0, dimsize, dimsize, dt);
+    array bb    = constant(0, dimsize, dimsize, dt);
 
     int val = 0;
     for (int i = 0; i < 23; i++) {
-        array ones = constant(1, dimsize, dimsize);
+        array ones = constant(1, dimsize, dimsize, dt);
         ones.eval();
-        array twos = constant(2, dimsize);
+        array twos = constant(2, dimsize, dt);
         twos.eval();
 
         a += tile(twos, 1, dimsize) + ones;
@@ -639,9 +639,9 @@ TEST(JIT, TwoLargeNonLinear) {
     }
 
     for (int i = 0; i < 23; i++) {
-        array ones = constant(1, dimsize, dimsize);
+        array ones = constant(1, dimsize, dimsize, dt);
         ones.eval();
-        array twos = constant(2, dimsize);
+        array twos = constant(2, dimsize, dt);
         twos.eval();
         b += tile(twos, 1, dimsize) + ones;
         bb += tile(twos, 1, dimsize) + ones;
@@ -651,7 +651,16 @@ TEST(JIT, TwoLargeNonLinear) {
     eval(c, cc);
 
     vector<float> gold(a.elements(), val * 2);
-    ASSERT_VEC_ARRAY_EQ(gold, a.dims(), c);
+    ASSERT_VEC_ARRAY_EQ(gold, a.dims(), c.as(f32));
+}
+
+TEST(JIT, TwoLargeNonLinear) {
+  testTwoLargeNonLinear(f32);
+}
+
+TEST(JIT, TwoLargeNonLinearHalf) {
+  if (noHalfTests(f16)) return;
+  testTwoLargeNonLinear(f16);
 }
 
 std::string select_info(
