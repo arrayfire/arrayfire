@@ -14,7 +14,7 @@ af_err af_create_buffer_info(af_buffer_info* pair, void* ptr, af_event event) {
     return CALL(pair, ptr, event);
 }
 
-af_err af_release_buffer_info(af_buffer_info pair) { return CALL(pair); }
+af_err af_delete_buffer_info(af_buffer_info pair) { return CALL(pair); }
 
 af_err af_buffer_info_get_ptr(void** ptr, af_buffer_info pair) {
     return CALL(ptr, pair);
@@ -30,4 +30,12 @@ af_err af_buffer_info_set_ptr(af_buffer_info pair, void* ptr) {
 
 af_err af_buffer_info_set_event(af_buffer_info pair, af_event event) {
     return CALL(pair, event);
+}
+
+af_err af_unlock_buffer_info_event(af_event* event, af_buffer_info buf) {
+    return CALL(event, buf);
+}
+
+af_err af_unlock_buffer_info_ptr(void** ptr, af_buffer_info buf) {
+    return CALL(ptr, buf);
 }

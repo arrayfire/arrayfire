@@ -22,7 +22,7 @@ buffer_info::buffer_info(af_buffer_info p) : p_(p) {}
 buffer_info::buffer_info(buffer_info&& other) : p_(other.p_) { other.p_ = 0; }
 
 buffer_info& buffer_info::operator=(buffer_info&& other) {
-    af_release_buffer_info(this->p_);
+    af_delete_buffer_info(this->p_);
     this->p_ = other.p_;
     other.p_ = 0;
     return *this;
@@ -30,7 +30,7 @@ buffer_info& buffer_info::operator=(buffer_info&& other) {
 
 buffer_info::~buffer_info() {
     // No throw dtor
-    af_release_buffer_info(p_);
+    af_delete_buffer_info(p_);
 }
 
 void* buffer_info::getPtr() const {
@@ -51,6 +51,22 @@ void buffer_info::setPtr(void* ptr) {
 
 void buffer_info::setEvent(af_event event) {
     AF_CHECK(af_buffer_info_set_event(p_, event));
+}
+
+af_event buffer_info::unlockEvent() {
+    af_event event;
+    AF_CHECK(af_unlock_buffer_info_event(&event, p_));
+    // Zero out the event
+    AF_CHECK(af_buffer_info_set_event(p_, 0));
+    return event;
+}
+
+void* buffer_info::unlockPtr() {
+    void* ptr;
+    AF_CHECK(af_unlock_buffer_info_ptr(&ptr, p_));
+    // Zero out the ptr
+    AF_CHECK(af_buffer_info_set_ptr(p_, 0));
+    return ptr;
 }
 
 af_buffer_info buffer_info::get() const { return p_; }

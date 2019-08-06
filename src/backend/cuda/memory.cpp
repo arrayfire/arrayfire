@@ -57,27 +57,25 @@ void printMemInfo(const char *msg, const int device) {
 
 template<typename T>
 uptr<T> memAlloc(const size_t &elements) {
-    size_t size            = elements * sizeof(T);
-    af_buffer_info pair    = memoryManager().alloc(elements * sizeof(T), false);
-    BufferInfo &bufferInfo = getBufferInfo(pair);
-    detail::Event &e       = getEvent(bufferInfo.event);
-    cudaStream_t stream    = getActiveStream();
+    size_t size         = elements * sizeof(T);
+    af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false);
+    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
-    void *ptr = bufferInfo.ptr;
-    af_release_event(bufferInfo.event);
-    af_release_buffer_info(pair);
+    void *ptr;
+    af_unlock_buffer_info_ptr(&ptr, pair);
+    af_delete_buffer_info(pair);
     return uptr<T>(static_cast<T *>(ptr), memFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
-    af_buffer_info pair    = memoryManager().alloc(bytes, true);
-    BufferInfo &bufferInfo = getBufferInfo(pair);
-    detail::Event &e       = getEvent(bufferInfo.event);
-    cudaStream_t stream    = getActiveStream();
+    af_buffer_info pair = memoryManager().alloc(bytes, true);
+    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
-    void *ptr = bufferInfo.ptr;
-    af_release_event(bufferInfo.event);
-    af_release_buffer_info(pair);
+    void *ptr;
+    af_unlock_buffer_info_ptr(&ptr, pair);
+    af_delete_buffer_info(pair);
     return ptr;
 }
 
@@ -106,14 +104,13 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    af_buffer_info pair    = memoryManager().alloc(elements * sizeof(T), false);
-    BufferInfo &bufferInfo = getBufferInfo(pair);
-    detail::Event &e       = getEvent(bufferInfo.event);
-    cudaStream_t stream    = getActiveStream();
+    af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false);
+    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
-    void *ptr = bufferInfo.ptr;
-    af_release_event(bufferInfo.event);
-    af_release_buffer_info(pair);
+    void *ptr;
+    af_unlock_buffer_info_ptr(&ptr, pair);
+    af_delete_buffer_info(pair);
     return (T *)ptr;
 }
 

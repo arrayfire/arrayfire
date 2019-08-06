@@ -27,6 +27,7 @@ using af::cdouble;
 using af::cfloat;
 using af::deviceGC;
 using af::deviceMemInfo;
+using af::dtype;
 using af::dtype_traits;
 using af::randu;
 using af::seq;
@@ -632,20 +633,50 @@ TEST(Memory, IndexedDevice) {
     }
 }
 
-TEST(BufferInfo, SimpleCreateRelease) {
+TEST(BufferInfo, SimpleCreateDelete) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
     af_buffer_info pair;
-    void *ptr;
+
+    void *ptr = af::alloc(1, dtype::f32);
     ASSERT_SUCCESS(af_create_buffer_info(&pair, ptr, event));
+    ASSERT_SUCCESS(af_delete_buffer_info(pair));
+}
+
+TEST(BufferInfo, Unlock) {
+    af_event event;
+    ASSERT_SUCCESS(af_create_event(&event));
+    af_buffer_info pair;
+    void *ptr = af::alloc(1, dtype::f32);
+    ASSERT_SUCCESS(af_create_buffer_info(&pair, ptr, event));
+
+    void *curPtr;
+    ASSERT_SUCCESS(af_unlock_buffer_info_ptr(&curPtr, pair));
+    ASSERT_EQ(curPtr, ptr);
+    void *zeroPtr;
+    ASSERT_SUCCESS(af_buffer_info_get_ptr(&zeroPtr, pair));
+    ASSERT_EQ(zeroPtr, nullptr);
+    ASSERT_SUCCESS(af_unlock_buffer_info_ptr(&zeroPtr, pair));
+    ASSERT_EQ(zeroPtr, nullptr);
+
+    af_event curEvent;
+    ASSERT_SUCCESS(af_unlock_buffer_info_event(&curEvent, pair));
+    ASSERT_EQ(curEvent, event);
+    void *zeroEvent;
+    ASSERT_SUCCESS(af_buffer_info_get_ptr(&zeroEvent, pair));
+    ASSERT_EQ(zeroEvent, nullptr);
+    ASSERT_SUCCESS(af_unlock_buffer_info_ptr(&zeroEvent, pair));
+    ASSERT_EQ(zeroEvent, nullptr);
+
+    ASSERT_SUCCESS(af_delete_buffer_info(pair));
     ASSERT_SUCCESS(af_release_event(event));
-    ASSERT_SUCCESS(af_release_buffer_info(pair));
+    af::free(ptr);
 }
 
 TEST(BufferInfo, EventAndPtrAttributes) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
-    void *ptr = (void *)new char;
+    void *ptr = af::alloc(1, dtype::f32);
     af_buffer_info pair;
     ASSERT_SUCCESS(af_create_buffer_info(&pair, ptr, event));
     af_event anEvent;
@@ -663,29 +694,28 @@ TEST(BufferInfo, EventAndPtrAttributes) {
     ASSERT_NE(yetAnotherEvent, event);
     ASSERT_EQ(yetAnotherEvent, anotherEvent);
 
-    void *anotherPtr;
+    void *anotherPtr = af::alloc(1, dtype::f32);
     ASSERT_SUCCESS(af_buffer_info_set_ptr(pair, anotherPtr));
     void *yetAnotherPtr;
     ASSERT_SUCCESS(af_buffer_info_get_ptr(&yetAnotherPtr, pair));
     ASSERT_NE(yetAnotherPtr, ptr);
     ASSERT_EQ(yetAnotherPtr, anotherPtr);
 
-    ASSERT_SUCCESS(af_release_buffer_info(pair));
+    ASSERT_SUCCESS(af_delete_buffer_info(pair));
     ASSERT_SUCCESS(af_release_event(event));
-    ASSERT_SUCCESS(af_release_event(anotherEvent));
-    delete (char *)ptr;
+    af::free(ptr);
 }
 
 TEST(BufferInfo, BufferInfoCreateMove) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
-    void *ptr = (void *)new char;
+    void *ptr = af::alloc(1, dtype::f32);
     std::unique_ptr<buffer_info> bufferInfo;
     bufferInfo.reset(new buffer_info(ptr, event));
     ASSERT_EQ(bufferInfo->getEvent(), event);
     ASSERT_EQ(bufferInfo->getPtr(), ptr);
 
-    void *anotherPtr = (void *)new char;
+    void *anotherPtr = af::alloc(1, dtype::f32);
     bufferInfo->setPtr(anotherPtr);
     ASSERT_EQ(bufferInfo->getPtr(), anotherPtr);
 
@@ -699,7 +729,21 @@ TEST(BufferInfo, BufferInfoCreateMove) {
     ASSERT_EQ(anotherBufferInfo->getEvent(), anotherEvent);
 
     af_release_event(event);
-    af_release_event(anotherEvent);
-    delete (char *)ptr;
-    delete (char *)anotherPtr;
+    af::free(ptr);
+}
+
+TEST(BufferInfo, UnlockCpp) {
+    af_event event;
+    ASSERT_SUCCESS(af_create_event(&event));
+    void *ptr = af::alloc(1, dtype::f32);
+    std::unique_ptr<buffer_info> bufferInfo;
+    bufferInfo.reset(new buffer_info(ptr, event));
+
+    void *anotherPtr = bufferInfo->unlockPtr();
+    ASSERT_EQ(ptr, anotherPtr);
+    af_event anotherEvent = bufferInfo->unlockEvent();
+    ASSERT_EQ(event, anotherEvent);
+
+    ASSERT_SUCCESS(af_release_event(anotherEvent));
+    af::free(ptr);
 }

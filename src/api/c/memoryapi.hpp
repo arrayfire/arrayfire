@@ -21,3 +21,5 @@ struct BufferInfo {
 BufferInfo &getBufferInfo(const af_buffer_info pair);
 
 af_buffer_info getHandle(BufferInfo &pairHandle);
+
+detail::Event &getEventFromBufferInfoHandle(const af_buffer_info handle);

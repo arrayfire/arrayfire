@@ -29,27 +29,36 @@ BufferInfo &getBufferInfo(const af_buffer_info handle) {
     return *(BufferInfo *)handle;
 }
 
-af_buffer_info getHandle(BufferInfo &pair) {
+af_buffer_info getHandle(BufferInfo &buf) {
     BufferInfo *handle;
-    handle = &pair;
+    handle = &buf;
     return (af_buffer_info)handle;
+}
+
+detail::Event &getEventFromBufferInfoHandle(const af_buffer_info handle) {
+    return getEvent(getBufferInfo(handle).event);
 }
 
 af_err af_create_buffer_info(af_buffer_info *handle, void *ptr,
                              af_event event) {
     try {
-        BufferInfo *pair = new BufferInfo({ptr, event});
-        *handle          = getHandle(*pair);
+        BufferInfo *buf = new BufferInfo({ptr, event});
+        *handle         = getHandle(*buf);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_release_buffer_info(af_buffer_info handle) {
+af_err af_delete_buffer_info(af_buffer_info handle) {
     try {
-        /// NB: deleting a memory event pair does NOT free the associated memory
-        /// and does NOT delete the associated event.
+        /// NB: deleting a memory event buf does frees the associated memory
+        /// and deletes the associated event. Use unlock functions to free
+        /// resources individually
+        BufferInfo &buf = getBufferInfo(handle);
+        af_release_event(buf.event);
+        if (buf.ptr) { af_free_device(buf.ptr); }
+
         delete (BufferInfo *)handle;
     }
     CATCHALL;
@@ -59,8 +68,8 @@ af_err af_release_buffer_info(af_buffer_info handle) {
 
 af_err af_buffer_info_get_ptr(void **ptr, af_buffer_info handle) {
     try {
-        BufferInfo &pair = getBufferInfo(handle);
-        *ptr             = pair.ptr;
+        BufferInfo &buf = getBufferInfo(handle);
+        *ptr            = buf.ptr;
     }
     CATCHALL;
 
@@ -69,8 +78,8 @@ af_err af_buffer_info_get_ptr(void **ptr, af_buffer_info handle) {
 
 af_err af_buffer_info_get_event(af_event *event, af_buffer_info handle) {
     try {
-        BufferInfo &pair = getBufferInfo(handle);
-        *event           = pair.event;
+        BufferInfo &buf = getBufferInfo(handle);
+        *event          = buf.event;
     }
     CATCHALL;
 
@@ -79,8 +88,8 @@ af_err af_buffer_info_get_event(af_event *event, af_buffer_info handle) {
 
 af_err af_buffer_info_set_ptr(af_buffer_info handle, void *ptr) {
     try {
-        BufferInfo &pair = getBufferInfo(handle);
-        pair.ptr         = ptr;
+        BufferInfo &buf = getBufferInfo(handle);
+        buf.ptr         = ptr;
     }
     CATCHALL;
 
@@ -89,8 +98,30 @@ af_err af_buffer_info_set_ptr(af_buffer_info handle, void *ptr) {
 
 af_err af_buffer_info_set_event(af_buffer_info handle, af_event event) {
     try {
-        BufferInfo &pair = getBufferInfo(handle);
-        pair.event       = event;
+        BufferInfo &buf = getBufferInfo(handle);
+        buf.event       = event;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_unlock_buffer_info_event(af_event *event, af_buffer_info handle) {
+    try {
+        af_buffer_info_get_event(event, handle);
+        BufferInfo &buf = getBufferInfo(handle);
+        buf.event       = 0;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_unlock_buffer_info_ptr(void **ptr, af_buffer_info handle) {
+    try {
+        af_buffer_info_get_ptr(ptr, handle);
+        BufferInfo &buf = getBufferInfo(handle);
+        buf.ptr         = 0;
     }
     CATCHALL;
 

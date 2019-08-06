@@ -58,11 +58,11 @@ void MemoryManager::cleanDeviceMemoryManager(int device) {
              bytesToString(bytes_freed));
     // Free memory outside of the lock
     for (auto &pair : free_ptrs) {
-        this->nativeFree(getBufferInfo(pair).ptr);
+        void *ptr;
+        af_unlock_buffer_info_ptr(&ptr, pair);
+        this->nativeFree(ptr);
         // Release resources
-        af_event e = getBufferInfo(pair).event;
-        af_release_event(e);
-        af_release_buffer_info(pair);
+        af_delete_buffer_info(pair);
     }
 }
 
@@ -139,9 +139,8 @@ af_buffer_info MemoryManager::alloc(const size_t bytes, bool user_lock) {
             memory::free_iter iter = current.free_map.find(alloc_bytes);
 
             if (iter != current.free_map.end() && !iter->second.empty()) {
-                // Release existing buffer info
-                af_release_event(event);
-                af_release_buffer_info(bufferInfo);
+                // Release existing buffer info and underlying event
+                af_delete_buffer_info(bufferInfo);
                 // Set to existing in from free map
                 bufferInfo = iter->second.back();
                 af_buffer_info_get_event(&event, bufferInfo);
