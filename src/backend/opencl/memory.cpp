@@ -16,6 +16,8 @@
 #include <common/MemoryManagerImpl.hpp>
 #include <spdlog/spdlog.h>
 
+#include <utility>
+
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
 #endif
@@ -51,7 +53,7 @@ template<typename T>
 unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements) {
     af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false);
-    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue()());
     void *rawPtr;
     af_unlock_buffer_info_ptr(&rawPtr, pair);
@@ -63,7 +65,7 @@ unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
 
 void *memAllocUser(const size_t &bytes) {
     af_buffer_info pair = memoryManager().alloc(bytes, true);
-    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue()());
     void *ptr;
     af_unlock_buffer_info_ptr(&ptr, pair);
@@ -83,7 +85,7 @@ void memFreeUser(void *ptr) {
 
 cl::Buffer *bufferAlloc(const size_t &bytes) {
     af_buffer_info pair = memoryManager().alloc(bytes, false);
-    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue()());
     void *ptr;
     af_unlock_buffer_info_ptr(&ptr, pair);
@@ -113,7 +115,7 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
     af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false);
-    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue()());
     void *ptr;
     af_unlock_buffer_info_ptr(&ptr, pair);

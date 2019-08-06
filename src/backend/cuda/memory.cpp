@@ -24,6 +24,7 @@
 #include <types.hpp>
 
 #include <mutex>
+#include <utility>
 
 #ifndef AF_MEM_DEBUG
 #define AF_MEM_DEBUG 0
@@ -59,7 +60,7 @@ template<typename T>
 uptr<T> memAlloc(const size_t &elements) {
     size_t size         = elements * sizeof(T);
     af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false);
-    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
     void *ptr;
@@ -70,7 +71,7 @@ uptr<T> memAlloc(const size_t &elements) {
 
 void *memAllocUser(const size_t &bytes) {
     af_buffer_info pair = memoryManager().alloc(bytes, true);
-    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
     void *ptr;
@@ -105,7 +106,7 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
     af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false);
-    detail::Event &e    = getEventFromBufferInfoHandle(pair);
+    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
     void *ptr;
