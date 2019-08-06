@@ -265,120 +265,128 @@ static void getGold(af_array *gold, const dim_t *dims) {
 }
 
 template<typename T>
-class WrapV2 : public ::testing::Test {};
+class WrapV2 : public ::testing::Test {
+   protected:
+    vector<T> h_gold_cast;
+    vector<T> h_in_cast;
+
+    dim4 gold_dims;
+    dim4 in_dims;
+
+    af_array gold;
+    af_array in;
+
+    WrapV2()
+        : gold(0)
+        , in(0) {}
+
+    void SetUp() {}
+
+    void setTestData(float *h_gold, dim4 gold_dims,
+                     float *h_in, dim4 in_dims) {
+        releaseArrays();
+
+        gold = 0;
+        in = 0;
+
+        this->gold_dims = gold_dims;
+        this->in_dims = in_dims;
+
+        for (int i = 0; i < gold_dims.elements(); ++i) {
+            h_gold_cast.push_back(static_cast<T>(h_gold[i]));
+        }
+        for (int i = 0; i < in_dims.elements(); ++i) {
+            h_in_cast.push_back(static_cast<T>(h_in[i]));
+        }
+
+        ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
+                                       gold_dims.ndims(), gold_dims.get(),
+                                       (af_dtype)dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
+                                       in_dims.get(),
+                                       (af_dtype)dtype_traits<T>::af_type));
+    }
+
+    void setTestData(TestData *data) {
+        setTestData(data->getGoldArr(), data->getGoldDims(),
+                    data->getInArr(), data->getInDims());
+    }
+
+    void testSpclOutArray(TestOutputArrayType out_array_type) {
+        SUPPORTED_TYPE_CHECK(T);
+
+        af_array out = 0;
+        TestOutputArrayInfo metadata(out_array_type);
+        genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
+                           (af_dtype)dtype_traits<T>::af_type, &metadata);
+
+        // Taken from the Wrap.DocSnippet test
+        ASSERT_SUCCESS(af_wrap_v2(&out, in, 3, 3,  // output dims
+                                  2, 2,            // window size
+                                  2, 2,            // stride
+                                  1, 1,            // padding
+                                  true));          // is_column
+
+        ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
+    }
+
+    void releaseArrays() {
+        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
+        if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
+    }
+
+    void TearDown() {
+        releaseArrays();
+    }
+};
 
 TYPED_TEST_CASE(WrapV2, TestTypes);
 
-template<typename T>
-void testSpclOutArray(float *h_gold, dim4 gold_dims, float *h_in, dim4 in_dims,
-                      TestOutputArrayType out_array_type) {
-    SUPPORTED_TYPE_CHECK(T);
-    typedef typename dtype_traits<T>::base_type BT;
+class SimpleTestData : public TestData {
+    static const int h_in_size = 16;
+    static const int h_gold_size = 9;
 
-    vector<T> h_gold_cast(gold_dims.elements());
-    vector<T> h_in_cast(in_dims.elements());
+    public:
+    SimpleTestData() {
+        // Taken from Wrap.DocSnippet test
+        in_dims = dim4(4, 4);
+        float in_arr[h_in_size] = {0.0f, 0.0f, 0.0f, 1.0f,
+                                   0.0f, 0.0f, 2.0f, 3.0f,
+                                   0.0f, 4.0f, 0.0f, 7.0f,
+                                   5.0f, 6.0f, 8.0f, 9.0f};
 
-    for (int i = 0; i < gold_dims.elements(); ++i) {
-        h_gold_cast[i] = static_cast<T>(h_gold[i]);
+        gold_dims = dim4(3, 3);
+        float gold_arr[h_gold_size] = {1.0f, 2.0f, 3.0f,
+                                       4.0f, 5.0f, 6.0f,
+                                       7.0f, 8.0f, 9.0f};
+
+        h_in.assign(in_arr, in_arr + h_in_size);
+        h_gold.assign(gold_arr, gold_arr + h_gold_size);
     }
-    for (int i = 0; i < in_dims.elements(); ++i) {
-        h_in_cast[i] = static_cast<T>(h_in[i]);
-    }
-
-    af_array in  = 0;
-    af_array pos = 0;
-
-    ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
-                                   in_dims.get(),
-                                   (af_dtype)dtype_traits<T>::af_type));
-
-    af_array out = 0;
-    TestOutputArrayInfo metadata(out_array_type);
-    genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
-                       (af_dtype)dtype_traits<T>::af_type, &metadata);
-    // Taken from the Wrap.DocSnippet test
-    ASSERT_SUCCESS(af_wrap_v2(&out, in, 3, 3,  // output dims
-                              2, 2,            // window size
-                              2, 2,            // stride
-                              1, 1,            // padding
-                              true));          // is_column
-
-    af_array gold = 0;
-    ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
-                                   gold_dims.ndims(), gold_dims.get(),
-                                   (af_dtype)dtype_traits<T>::af_type));
-
-    ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
-
-    if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
-    if (in != 0) { ASSERT_SUCCESS(af_release_array(in)); }
-}
+};
 
 TYPED_TEST(WrapV2, UseNullOutputArray) {
-    // Taken from Wrap.DocSnippet test
-    float h_in[16] = {0.0f, 0.0f, 0.0f, 1.0f,
-                      0.0f, 0.0f, 2.0f, 3.0f,
-                      0.0f, 4.0f, 0.0f, 7.0f,
-                      5.0f, 6.0f, 8.0f, 9.0f};
-    dim4 in_dims(4, 4);
-
-    float h_gold[9] = {1.0f, 2.0f, 3.0f,
-                       4.0f, 5.0f, 6.0f,
-                       7.0f, 8.0f, 9.0f};
-    dim4 gold_dims(3, 3);
-
-    SCOPED_TRACE("UseNullOutputArray");
-    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims, NULL_ARRAY);
+    SimpleTestData data;
+    this->setTestData(&data);
+    this->testSpclOutArray(NULL_ARRAY);
 }
 
 TYPED_TEST(WrapV2, UseFullExistingOutputArray) {
-    // Taken from Wrap.DocSnippet test
-    float h_in[16] = {0.0f, 0.0f, 0.0f, 1.0f,
-                      0.0f, 0.0f, 2.0f, 3.0f,
-                      0.0f, 4.0f, 0.0f, 7.0f,
-                      5.0f, 6.0f, 8.0f, 9.0f};
-    dim4 in_dims(4, 4);
-
-    float h_gold[9] = {1.0f, 2.0f, 3.0f,
-                       4.0f, 5.0f, 6.0f,
-                       7.0f, 8.0f, 9.0f};
-    dim4 gold_dims(3, 3);
-
-    SCOPED_TRACE("UseFullExistingOutputArray");
-    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims, FULL_ARRAY);
+    SimpleTestData data;
+    this->setTestData(&data);
+    this->testSpclOutArray(FULL_ARRAY);
 }
 
 TYPED_TEST(WrapV2, UseExistingOutputSubArray) {
-    // Taken from Wrap.DocSnippet test
-    float h_in[16] = {0.0f, 0.0f, 0.0f, 1.0f,
-                      0.0f, 0.0f, 2.0f, 3.0f,
-                      0.0f, 4.0f, 0.0f, 7.0f,
-                      5.0f, 6.0f, 8.0f, 9.0f};
-    dim4 in_dims(4, 4);
-
-    float h_gold[9] = {1.0f, 2.0f, 3.0f,
-                       4.0f, 5.0f, 6.0f,
-                       7.0f, 8.0f, 9.0f};
-    dim4 gold_dims(3, 3);
-
-    SCOPED_TRACE("UseExistingOutputSubArray");
-    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims, SUB_ARRAY);
+    SimpleTestData data;
+    this->setTestData(&data);
+    this->testSpclOutArray(SUB_ARRAY);
 }
 
 TYPED_TEST(WrapV2, UseReorderedOutputArray) {
-    // Taken from Wrap.DocSnippet test
-    float h_in[16] = {0.0f, 0.0f, 0.0f, 1.0f,
-                      0.0f, 0.0f, 2.0f, 3.0f,
-                      0.0f, 4.0f, 0.0f, 7.0f,
-                      5.0f, 6.0f, 8.0f, 9.0f};
-    dim4 in_dims(4, 4);
-
-    float h_gold[9] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
-    dim4 gold_dims(3, 3);
-
-    SCOPED_TRACE("UseReorderedOutputArray");
-    testSpclOutArray<TypeParam>(h_gold, gold_dims, h_in, in_dims,
-                                REORDERED_ARRAY);
+    SimpleTestData data;
+    this->setTestData(&data);
+    this->testSpclOutArray(REORDERED_ARRAY);
 }
 
 class WrapSimple : virtual public ::testing::Test {
@@ -410,6 +418,50 @@ class WrapSimple : virtual public ::testing::Test {
     dim_t pad_len;
     bool is_column;
 };
+
+TEST_F(WrapSimple, NullOutputPtr) {
+    af_array* out_ptr = 0;
+    ASSERT_EQ(af_wrap(out_ptr, this->in_,
+                      4, 4,  // output dims
+                      2, 2,  // window size
+                      2, 2,  // stride
+                      0, 0,  // padding
+                      true), // is_column
+              AF_ERR_ARG);
+}
+
+TEST_F(WrapSimple, NullInputArray) {
+    af_array out = 0;
+    ASSERT_EQ(af_wrap(&out, 0,
+                      4, 4,  // output dims
+                      2, 2,  // window size
+                      2, 2,  // stride
+                      0, 0,  // padding
+                      true), // is_column
+              AF_ERR_ARG);
+}
+
+TEST_F(WrapSimple, V2NullOutputPtr) {
+    af_array* out_ptr = 0;
+    ASSERT_EQ(af_wrap_v2(out_ptr, this->in_,
+                         4, 4,  // output dims
+                         2, 2,  // window size
+                         2, 2,  // stride
+                         0, 0,  // padding
+                         true), // is_column
+              AF_ERR_ARG);
+}
+
+TEST_F(WrapSimple, V2NullInputArray) {
+    af_array out = 0;
+    ASSERT_EQ(af_wrap_v2(&out, 0,
+                         4, 4,  // output dims
+                         2, 2,  // window size
+                         2, 2,  // stride
+                         0, 0,  // padding
+                         true), // is_column
+              AF_ERR_ARG);
+}
 
 class ArgDim {
    public:
@@ -483,6 +535,7 @@ class WrapAPITest
     af_array in_;
     dim_t in_dims[4];
 };
+
 TEST_P(WrapAPITest, CheckDifferentWrapArgs) {
     WindowDims *wc = input.wc_;
     StrideDims *sc = input.sc_;
@@ -497,7 +550,7 @@ TEST_P(WrapAPITest, CheckDifferentWrapArgs) {
 
     af_array out_ = 0;
     af_err err    = af_wrap(&out_, in_, in_dims[0], in_dims[1], win_d0, win_d1,
-                         str_d0, str_d1, pad_d0, pad_d1, input.is_column);
+                            str_d0, str_d1, pad_d0, pad_d1, input.is_column);
 
     ASSERT_EQ(err, input.err);
     if (out_ != 0) af_release_array(out_);
