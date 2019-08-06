@@ -19,7 +19,7 @@ class OpenCLEventPolicy {
     using QueueType = cl_command_queue;
     using ErrorType = cl_int;
 
-    static cl_int createEvent(cl_event *e) noexcept {
+    static cl_int createAndMarkEvent(cl_event *e) noexcept {
         // Events are created when you mark them
         return CL_SUCCESS;
     }
@@ -55,5 +55,7 @@ void markEventOnActiveQueue(af_event eventHandle);
 void enqueueWaitOnActiveQueue(af_event eventHandle);
 
 void block(af_event eventHandle);
+
+af_event createAndMarkEvent();
 
 }  // namespace opencl

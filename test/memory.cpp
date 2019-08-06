@@ -16,10 +16,13 @@
 #include <af/memory.h>
 #include <af/traits.hpp>
 #include <iostream>
+#include <memory>
+#include <utility>
 #include <vector>
 
 using af::alloc;
 using af::array;
+using af::buffer_info;
 using af::cdouble;
 using af::cfloat;
 using af::deviceGC;
@@ -651,7 +654,52 @@ TEST(BufferInfo, EventAndPtrAttributes) {
     void *somePtr;
     ASSERT_SUCCESS(af_buffer_info_get_ptr(&somePtr, pair));
     ASSERT_EQ(ptr, somePtr);
+
+    af_event anotherEvent;
+    ASSERT_SUCCESS(af_create_event(&anotherEvent));
+    ASSERT_SUCCESS(af_buffer_info_set_event(pair, anotherEvent));
+    af_event yetAnotherEvent;
+    ASSERT_SUCCESS(af_buffer_info_get_event(&yetAnotherEvent, pair));
+    ASSERT_NE(yetAnotherEvent, event);
+    ASSERT_EQ(yetAnotherEvent, anotherEvent);
+
+    void *anotherPtr;
+    ASSERT_SUCCESS(af_buffer_info_set_ptr(pair, anotherPtr));
+    void *yetAnotherPtr;
+    ASSERT_SUCCESS(af_buffer_info_get_ptr(&yetAnotherPtr, pair));
+    ASSERT_NE(yetAnotherPtr, ptr);
+    ASSERT_EQ(yetAnotherPtr, anotherPtr);
+
     ASSERT_SUCCESS(af_release_buffer_info(pair));
     ASSERT_SUCCESS(af_release_event(event));
+    ASSERT_SUCCESS(af_release_event(anotherEvent));
     delete (char *)ptr;
+}
+
+TEST(BufferInfo, BufferInfoCreateMove) {
+    af_event event;
+    ASSERT_SUCCESS(af_create_event(&event));
+    void *ptr = (void *)new char;
+    std::unique_ptr<buffer_info> bufferInfo;
+    bufferInfo.reset(new buffer_info(ptr, event));
+    ASSERT_EQ(bufferInfo->getEvent(), event);
+    ASSERT_EQ(bufferInfo->getPtr(), ptr);
+
+    void *anotherPtr = (void *)new char;
+    bufferInfo->setPtr(anotherPtr);
+    ASSERT_EQ(bufferInfo->getPtr(), anotherPtr);
+
+    af_event anotherEvent;
+    ASSERT_SUCCESS(af_create_event(&anotherEvent));
+    bufferInfo->setEvent(anotherEvent);
+    ASSERT_EQ(bufferInfo->getEvent(), anotherEvent);
+
+    auto anotherBufferInfo = std::move(bufferInfo);
+    ASSERT_EQ(anotherBufferInfo->getPtr(), anotherPtr);
+    ASSERT_EQ(anotherBufferInfo->getEvent(), anotherEvent);
+
+    af_release_event(event);
+    af_release_event(anotherEvent);
+    delete (char *)ptr;
+    delete (char *)anotherPtr;
 }

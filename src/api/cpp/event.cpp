@@ -10,33 +10,32 @@
 #include <af/event.h>
 #include "error.hpp"
 
-#include <utility>
-
 namespace af {
 
-event::event() {
-    preserve_ = false;
-    AF_THROW(af_create_event(&e_));
-}
+event::event() { AF_THROW(af_create_event(&e_)); }
 
 event::event(af_event e) : e_(e) {}
 
 event::~event() {
     // No dtor throw
-    if (!preserve_) { af_release_event(e_); }
+    af_release_event(e_);
 }
 
-event::event(event&& other) : e_(nullptr) { *this = std::move(other); }
+event::event(event&& other) : e_(other.e_) { other.e_ = 0; }
 
 event& event::operator=(event&& other) {
     af_release_event(this->e_);
-    other.unlock();
     this->e_ = other.e_;
+    other.e_ = 0;
     return *this;
 }
 
-void event::unlock() { preserve_ = true; }
-
 af_event event::get() const { return e_; }
+
+void event::mark() { AF_THROW(af_mark_event(e_)); }
+
+void event::enqueue() { AF_THROW(af_enqueue_wait_event(e_)); }
+
+void event::block() { AF_THROW(af_block_event(e_)); }
 
 }  // namespace af

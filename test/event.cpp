@@ -12,6 +12,13 @@
 #include <testHelpers.hpp>
 #include <af/event.h>
 
+#include <memory>
+#include <utility>
+
+#include <iostream>
+
+using af::event;
+
 TEST(EventTests, SimpleCreateRelease) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
@@ -25,4 +32,23 @@ TEST(EventTests, MarkEnqueueAndBlock) {
     ASSERT_SUCCESS(af_enqueue_wait_event(event));
     ASSERT_SUCCESS(af_block_event(event));
     ASSERT_SUCCESS(af_release_event(event));
+}
+
+TEST(EventTests, EventCreateAndMove) {
+    af_event eventHandle;
+    ASSERT_SUCCESS(af_create_event(&eventHandle));
+
+    std::unique_ptr<event> e;
+    e.reset(new event(eventHandle));
+    e->mark();
+    ASSERT_EQ(eventHandle, e->get());
+
+    auto otherEvent = std::move(e);
+    ASSERT_EQ(otherEvent->get(), eventHandle);
+
+    std::unique_ptr<event> f;
+    f.reset(new event());
+    af_event fE       = f->get();
+    auto anotherEvent = std::move(f);
+    ASSERT_EQ(fE, anotherEvent->get());
 }

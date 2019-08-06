@@ -21,7 +21,7 @@ namespace af {
 /// A simple RAII wrapper for af_event
 class AFAPI event {
     af_event e_;
-    bool preserve_;  // Preserve the event after wrapper deletion
+
    public:
     event(af_event e);
 #if AF_COMPILER_CXX_RVALUE_REFERENCES
@@ -30,8 +30,10 @@ class AFAPI event {
 #endif
     event();
     ~event();
-    void unlock();
     af_event get() const;
+    void mark();
+    void enqueue();
+    void block();
 
    private:
     event& operator=(const event& other);

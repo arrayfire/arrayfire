@@ -23,3 +23,11 @@ af_err af_buffer_info_get_ptr(void** ptr, af_buffer_info pair) {
 af_err af_buffer_info_get_event(af_event* event, af_buffer_info pair) {
     return CALL(event, pair);
 }
+
+af_err af_buffer_info_set_ptr(af_buffer_info pair, void* ptr) {
+    return CALL(pair, ptr);
+}
+
+af_err af_buffer_info_set_event(af_buffer_info pair, af_event event) {
+    return CALL(pair, event);
+}

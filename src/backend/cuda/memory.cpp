@@ -57,32 +57,37 @@ void printMemInfo(const char *msg, const int device) {
 
 template<typename T>
 uptr<T> memAlloc(const size_t &elements) {
-    size_t size = elements * sizeof(T);
-    buffer_info pair =
-        buffer_info(memoryManager().alloc(elements * sizeof(T), false));
-    event ev            = event(pair.getEvent());
-    Event &e            = getEvent(ev.get());
-    cudaStream_t stream = getActiveStream();
+    size_t size            = elements * sizeof(T);
+    af_buffer_info pair    = memoryManager().alloc(elements * sizeof(T), false);
+    BufferInfo &bufferInfo = getBufferInfo(pair);
+    detail::Event &e       = getEvent(bufferInfo.event);
+    cudaStream_t stream    = getActiveStream();
     if (e) e.enqueueWait(stream);
-    return uptr<T>(static_cast<T *>(pair.getPtr()), memFree<T>);
+    void *ptr = bufferInfo.ptr;
+    af_release_event(bufferInfo.event);
+    af_release_buffer_info(pair);
+    return uptr<T>(static_cast<T *>(ptr), memFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
-    buffer_info pair    = buffer_info(memoryManager().alloc(bytes, true));
-    event ev            = event(pair.getEvent());
-    Event &e            = getEvent(ev.get());
-    cudaStream_t stream = getActiveStream();
+    af_buffer_info pair    = memoryManager().alloc(bytes, true);
+    BufferInfo &bufferInfo = getBufferInfo(pair);
+    detail::Event &e       = getEvent(bufferInfo.event);
+    cudaStream_t stream    = getActiveStream();
     if (e) e.enqueueWait(stream);
-    return pair.getPtr();
+    void *ptr = bufferInfo.ptr;
+    af_release_event(bufferInfo.event);
+    af_release_buffer_info(pair);
+    return ptr;
 }
 
 template<typename T>
 void memFree(T *ptr) {
-    memoryManager().unlock((void *)ptr, createEvent(), false);
+    memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(), false);
 }
 
 void memFreeUser(void *ptr) {
-    memoryManager().unlock((void *)ptr, createEvent(), true);
+    memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(), true);
 }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
@@ -95,24 +100,27 @@ bool isLocked(const void *ptr) {
 
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes, size_t *lock_buffers) {
-    memoryManager().bufferInfo(alloc_bytes, alloc_buffers, lock_bytes,
-                               lock_buffers);
+    memoryManager().usageInfo(alloc_bytes, alloc_buffers, lock_bytes,
+                              lock_buffers);
 }
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    buffer_info pair =
-        buffer_info(memoryManager().alloc(elements * sizeof(T), false));
-    event ev            = event(pair.getEvent());
-    Event &e            = getEvent(ev.get());
-    cudaStream_t stream = getActiveStream();
+    af_buffer_info pair    = memoryManager().alloc(elements * sizeof(T), false);
+    BufferInfo &bufferInfo = getBufferInfo(pair);
+    detail::Event &e       = getEvent(bufferInfo.event);
+    cudaStream_t stream    = getActiveStream();
     if (e) e.enqueueWait(stream);
-    return (T *)pair.getPtr();
+    void *ptr = bufferInfo.ptr;
+    af_release_event(bufferInfo.event);
+    af_release_buffer_info(pair);
+    return (T *)ptr;
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    pinnedMemoryManager().unlock((void *)ptr, createEvent(), false);
+    pinnedMemoryManager().unlock((void *)ptr, detail::createAndMarkEvent(),
+                                 false);
 }
 
 bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }

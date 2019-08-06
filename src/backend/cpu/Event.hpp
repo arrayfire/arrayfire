@@ -20,7 +20,9 @@ class CPUEventPolicy {
     using QueueType = queue;
     using ErrorType = int;
 
-    static int createEvent(queue_event *e) noexcept { return e->create(); }
+    static int createAndMarkEvent(queue_event *e) noexcept {
+        return e->create();
+    }
 
     static int markEvent(queue_event *e, cpu::queue &stream) noexcept {
         return e->mark(stream);
@@ -52,5 +54,7 @@ void markEventOnActiveQueue(af_event eventHandle);
 void enqueueWaitOnActiveQueue(af_event eventHandle);
 
 void block(af_event eventHandle);
+
+af_event createAndMarkEvent();
 
 }  // namespace cpu

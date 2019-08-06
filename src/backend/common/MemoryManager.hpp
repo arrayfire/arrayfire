@@ -126,8 +126,8 @@ class MemoryManager {
     virtual void garbageCollect() = 0;
 
     void printInfo(const char *msg, const int device);
-    void bufferInfo(size_t *alloc_bytes, size_t *alloc_buffers,
-                    size_t *lock_bytes, size_t *lock_buffers);
+    void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                   size_t *lock_bytes, size_t *lock_buffers);
     void userLock(const void *ptr);
     void userUnlock(const void *ptr);
     bool isUserLocked(const void *ptr);

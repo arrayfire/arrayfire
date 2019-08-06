@@ -16,53 +16,53 @@
 
 using namespace detail;
 
-Event &getEvent(const af_event eventHandle) {
-    Event &event = *(Event *)eventHandle;
+Event &getEvent(const af_event handle) {
+    Event &event = *(Event *)handle;
     return event;
 }
 
 af_event getHandle(const Event &event) { return (af_event)&event; }
 
-af_err af_create_event(af_event *eventHandle) {
+af_err af_create_event(af_event *handle) {
     try {
         AF_CHECK(af_init());
-        *eventHandle = createEvent();
+        *handle = createEvent();
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_release_event(const af_event eventHandle) {
+af_err af_release_event(const af_event handle) {
     try {
-        releaseEvent(eventHandle);
+        releaseEvent(handle);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_mark_event(const af_event eventHandle) {
+af_err af_mark_event(const af_event handle) {
     try {
-        markEventOnActiveQueue(eventHandle);
+        markEventOnActiveQueue(handle);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_enqueue_wait_event(const af_event eventHandle) {
+af_err af_enqueue_wait_event(const af_event handle) {
     try {
-        enqueueWaitOnActiveQueue(eventHandle);
+        enqueueWaitOnActiveQueue(handle);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_block_event(const af_event eventHandle) {
+af_err af_block_event(const af_event handle) {
     try {
-        block(eventHandle);
+        block(handle);
     }
     CATCHALL;
 

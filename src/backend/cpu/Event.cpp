@@ -15,6 +15,8 @@
 #include <queue.hpp>
 #include <af/event.h>
 
+#include <memory>
+
 namespace cpu {
 /// \brief Creates a new event and marks it in the queue
 Event makeEvent(cpu::queue& queue) {
@@ -24,17 +26,15 @@ Event makeEvent(cpu::queue& queue) {
 }
 
 af_event createEvent() {
-    Event* e     = new Event();
-    Event& event = *e;
+    std::unique_ptr<Event> e;
+    e.reset(new Event());
     // Ensure that the default queue is initialized
     getQueue();
-    if (event.create() != 0) {
-        delete e;  // don't leak the event if creation fails
+    if (e->create() != 0) {
         AF_ERROR("Could not create event", AF_ERR_RUNTIME);
     }
-    af_event eventHandle = getHandle(event);
-    markEventOnActiveQueue(eventHandle);
-    return eventHandle;
+    Event& ref = *e.release();
+    return getHandle(ref);
 }
 
 void releaseEvent(af_event eventHandle) { delete (Event*)eventHandle; }
@@ -61,6 +61,12 @@ void block(af_event eventHandle) {
     if (event.block() != 0) {
         AF_ERROR("Could not block on active queue for event", AF_ERR_RUNTIME);
     }
+}
+
+af_event createAndMarkEvent() {
+    af_event handle = createEvent();
+    markEventOnActiveQueue(handle);
+    return handle;
 }
 
 }  // namespace cpu

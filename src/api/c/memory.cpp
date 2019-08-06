@@ -25,41 +25,41 @@ using namespace detail;
 
 using common::half;
 
-BufferInfo &getBufferInfo(const af_buffer_info pairHandle) {
-    return *(BufferInfo *)pairHandle;
+BufferInfo &getBufferInfo(const af_buffer_info handle) {
+    return *(BufferInfo *)handle;
 }
 
 af_buffer_info getHandle(BufferInfo &pair) {
-    BufferInfo *pairHandle;
-    pairHandle = &pair;
-    return (af_buffer_info)pairHandle;
+    BufferInfo *handle;
+    handle = &pair;
+    return (af_buffer_info)handle;
 }
 
-af_err af_create_buffer_info(af_buffer_info *pairHandle, void *ptr,
+af_err af_create_buffer_info(af_buffer_info *handle, void *ptr,
                              af_event event) {
     try {
         BufferInfo *pair = new BufferInfo({ptr, event});
-        *pairHandle      = getHandle(*pair);
+        *handle          = getHandle(*pair);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_release_buffer_info(af_buffer_info pairHandle) {
+af_err af_release_buffer_info(af_buffer_info handle) {
     try {
         /// NB: deleting a memory event pair does NOT free the associated memory
         /// and does NOT delete the associated event.
-        delete (BufferInfo *)pairHandle;
+        delete (BufferInfo *)handle;
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_buffer_info_get_ptr(void **ptr, af_buffer_info pairHandle) {
+af_err af_buffer_info_get_ptr(void **ptr, af_buffer_info handle) {
     try {
-        BufferInfo &pair = getBufferInfo(pairHandle);
+        BufferInfo &pair = getBufferInfo(handle);
         *ptr             = pair.ptr;
     }
     CATCHALL;
@@ -67,10 +67,30 @@ af_err af_buffer_info_get_ptr(void **ptr, af_buffer_info pairHandle) {
     return AF_SUCCESS;
 }
 
-af_err af_buffer_info_get_event(af_event *event, af_buffer_info pairHandle) {
+af_err af_buffer_info_get_event(af_event *event, af_buffer_info handle) {
     try {
-        BufferInfo &pair = getBufferInfo(pairHandle);
+        BufferInfo &pair = getBufferInfo(handle);
         *event           = pair.event;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_buffer_info_set_ptr(af_buffer_info handle, void *ptr) {
+    try {
+        BufferInfo &pair = getBufferInfo(handle);
+        pair.ptr         = ptr;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_buffer_info_set_event(af_buffer_info handle, af_event event) {
+    try {
+        BufferInfo &pair = getBufferInfo(handle);
+        pair.event       = event;
     }
     CATCHALL;
 

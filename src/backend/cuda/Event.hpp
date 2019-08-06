@@ -21,7 +21,7 @@ class CUDARuntimeEventPolicy {
     using QueueType = CUstream;
     using ErrorType = CUresult;
 
-    static ErrorType createEvent(CUevent *e) noexcept {
+    static ErrorType createAndMarkEvent(CUevent *e) noexcept {
         // Creating events with the CU_EVENT_BLOCKING_SYNC flag
         // severly impacts the speed if/when creating many arrays
         auto err = cuEventCreate(e, CU_EVENT_DISABLE_TIMING);
@@ -62,5 +62,7 @@ void markEventOnActiveQueue(af_event eventHandle);
 void enqueueWaitOnActiveQueue(af_event eventHandle);
 
 void block(af_event eventHandle);
+
+af_event createAndMarkEvent();
 
 }  // namespace cuda

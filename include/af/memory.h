@@ -20,9 +20,9 @@ typedef void* af_buffer_info;
 namespace af {
 
 /// A simple RAII wrapper for af_buffer_info
-class buffer_info {
+class AFAPI buffer_info {
     af_buffer_info p_;
-    bool preserve_;  // Preserve the event after wrapper deletion
+
    public:
     buffer_info(af_buffer_info p);
     buffer_info(void* ptr, af_event event);
@@ -31,10 +31,10 @@ class buffer_info {
     buffer_info(buffer_info&& other);
     buffer_info& operator=(buffer_info&& other);
 #endif
-    void unlock();
     void* getPtr() const;
-    void setPtr(void* ptr) const;
+    void setPtr(void* ptr);
     af_event getEvent() const;
+    void setEvent(af_event event);
     af_buffer_info get() const;
 
    private:
@@ -57,6 +57,10 @@ AFAPI af_err af_release_buffer_info(af_buffer_info pair);
 AFAPI af_err af_buffer_info_get_ptr(void** ptr, af_buffer_info pair);
 
 AFAPI af_err af_buffer_info_get_event(af_event* event, af_buffer_info pair);
+
+AFAPI af_err af_buffer_info_set_ptr(af_buffer_info handle, void* ptr);
+
+AFAPI af_err af_buffer_info_set_event(af_buffer_info handle, af_event event);
 
 #ifdef __cplusplus
 }
