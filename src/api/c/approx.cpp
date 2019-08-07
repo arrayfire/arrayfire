@@ -46,7 +46,7 @@ void af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
                        const int xdim, const double xi_beg,
                        const double xi_step, const af_interp_type method,
                        const float offGrid, const bool allocate_yo) {
-    ARG_ASSERT(0, yo != 0); // *yo (the af_array) can be null, but not yo
+    ARG_ASSERT(0, yo != 0);  // *yo (the af_array) can be null, but not yo
     ARG_ASSERT(1, yi != 0);
     ARG_ASSERT(2, xo != 0);
 
@@ -94,16 +94,16 @@ void af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
                                   offGrid);
             break;
         case f64:
-            approx1<double, double>(yo, yi, xo, xdim, xi_beg, xi_step,
-                                    method, offGrid);
+            approx1<double, double>(yo, yi, xo, xdim, xi_beg, xi_step, method,
+                                    offGrid);
             break;
         case c32:
-            approx1<cfloat, float>(yo, yi, xo, xdim, xi_beg, xi_step,
-                                   method, offGrid);
+            approx1<cfloat, float>(yo, yi, xo, xdim, xi_beg, xi_step, method,
+                                   offGrid);
             break;
         case c64:
-            approx1<cdouble, double>(yo, yi, xo, xdim, xi_beg, xi_step,
-                                     method, offGrid);
+            approx1<cdouble, double>(yo, yi, xo, xdim, xi_beg, xi_step, method,
+                                     offGrid);
             break;
         default: TYPE_ERROR(1, yi_info.getType());
     }
@@ -116,7 +116,8 @@ af_err af_approx1_uniform(af_array *yo, const af_array yi, const af_array xo,
     try {
         af_approx1_common(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid,
                           true);
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
@@ -126,10 +127,11 @@ af_err af_approx1_uniform_v2(af_array *yo, const af_array yi, const af_array xo,
                              const double xi_step, const af_interp_type method,
                              const float offGrid) {
     try {
-        ARG_ASSERT(0, yo != 0); // need to dereference yo in next call
+        ARG_ASSERT(0, yo != 0);  // need to dereference yo in next call
         af_approx1_common(yo, yi, xo, xdim, xi_beg, xi_step, method, offGrid,
                           *yo == 0);
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
@@ -138,7 +140,8 @@ af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
                   const af_interp_type method, const float offGrid) {
     try {
         af_approx1_common(yo, yi, xo, 0, 0.0, 1.0, method, offGrid, true);
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
@@ -146,20 +149,21 @@ af_err af_approx1(af_array *yo, const af_array yi, const af_array xo,
 af_err af_approx1_v2(af_array *yo, const af_array yi, const af_array xo,
                      const af_interp_type method, const float offGrid) {
     try {
-        ARG_ASSERT(0, yo != 0); // need to dereference yo in next call
+        ARG_ASSERT(0, yo != 0);  // need to dereference yo in next call
         af_approx1_common(yo, yi, xo, 0, 0.0, 1.0, method, offGrid, *yo == 0);
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
 
 void af_approx2_common(af_array *zo, const af_array zi, const af_array xo,
                        const int xdim, const double xi_beg,
-                       const double xi_step, const af_array yo,
-                       const int ydim, const double yi_beg,
-                       const double yi_step, const af_interp_type method,
-                       const float offGrid, bool allocate_zo) {
-    ARG_ASSERT(0, zo != 0); // *zo (the af_array) can be null, but not zo
+                       const double xi_step, const af_array yo, const int ydim,
+                       const double yi_beg, const double yi_step,
+                       const af_interp_type method, const float offGrid,
+                       bool allocate_zo) {
+    ARG_ASSERT(0, zo != 0);  // *zo (the af_array) can be null, but not zo
     ARG_ASSERT(1, zi != 0);
     ARG_ASSERT(2, xo != 0);
     ARG_ASSERT(6, yo != 0);
@@ -188,13 +192,11 @@ void af_approx2_common(af_array *zo, const af_array zi, const af_array xo,
     // POS should either be (x, y, 1, 1) or (x, y, zi_dims[2], zi_dims[3])
     if (xo_dims[xdim] * xo_dims[ydim] != xo_dims.elements()) {
         for (int i = 0; i < 4; i++) {
-            if (xdim != i && ydim != i)
-                DIM_ASSERT(2, xo_dims[i] == zi_dims[i]);
+            if (xdim != i && ydim != i) DIM_ASSERT(2, xo_dims[i] == zi_dims[i]);
         }
     }
 
-    if (zi_dims.ndims() == 0 || xo_dims.ndims() == 0 ||
-        yo_dims.ndims() == 0) {
+    if (zi_dims.ndims() == 0 || xo_dims.ndims() == 0 || yo_dims.ndims() == 0) {
         af_create_handle(zo, 0, nullptr, zi_info.getType());
         return;
     }
@@ -209,21 +211,20 @@ void af_approx2_common(af_array *zo, const af_array zi, const af_array xo,
 
     switch (zi_info.getType()) {
         case f32:
-            approx2<float, float>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
-                                  ydim, yi_beg, yi_step, method, offGrid);
+            approx2<float, float>(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim,
+                                  yi_beg, yi_step, method, offGrid);
             break;
         case f64:
-            approx2<double, double>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
-                                    ydim, yi_beg, yi_step, method, offGrid);
+            approx2<double, double>(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim,
+                                    yi_beg, yi_step, method, offGrid);
             break;
         case c32:
-            approx2<cfloat, float>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
-                                   ydim, yi_beg, yi_step, method, offGrid);
+            approx2<cfloat, float>(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim,
+                                   yi_beg, yi_step, method, offGrid);
             break;
         case c64:
             approx2<cdouble, double>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
-                                     ydim, yi_beg, yi_step, method,
-                                     offGrid);
+                                     ydim, yi_beg, yi_step, method, offGrid);
             break;
         default: TYPE_ERROR(1, zi_info.getType());
     }
@@ -238,7 +239,8 @@ af_err af_approx2_uniform(af_array *zo, const af_array zi, const af_array xo,
     try {
         af_approx2_common(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim, yi_beg,
                           yi_step, method, offGrid, true);
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
@@ -250,10 +252,11 @@ af_err af_approx2_uniform_v2(af_array *zo, const af_array zi, const af_array xo,
                              const double yi_step, const af_interp_type method,
                              const float offGrid) {
     try {
-        ARG_ASSERT(0, zo != 0); // need to dereference zo in next call
+        ARG_ASSERT(0, zo != 0);  // need to dereference zo in next call
         af_approx2_common(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim, yi_beg,
                           yi_step, method, offGrid, *zo == 0);
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
@@ -264,7 +267,8 @@ af_err af_approx2(af_array *zo, const af_array zi, const af_array xo,
     try {
         af_approx2_common(zo, zi, xo, 0, 0.0, 1.0, yo, 1, 0.0, 1.0, method,
                           offGrid, true);
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }
@@ -273,10 +277,11 @@ af_err af_approx2_v2(af_array *zo, const af_array zi, const af_array xo,
                      const af_array yo, const af_interp_type method,
                      const float offGrid) {
     try {
-        ARG_ASSERT(0, zo != 0); // need to dereference zo in next call
+        ARG_ASSERT(0, zo != 0);  // need to dereference zo in next call
         af_approx2_common(zo, zi, xo, 0, 0.0, 1.0, yo, 1, 0.0, 1.0, method,
                           offGrid, *zo == 0);
-    } CATCHALL;
+    }
+    CATCHALL;
 
     return AF_SUCCESS;
 }

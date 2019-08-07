@@ -846,35 +846,29 @@ class Approx1V2 : public ::testing::Test {
     af_array in;
     af_array pos;
 
-    Approx1V2()
-        : gold(0)
-        , in(0)
-        , pos(0) {}
+    Approx1V2() : gold(0), in(0), pos(0) {}
 
     void SetUp() {}
 
-    void ReleaseArrays() {
+    void releaseArrays() {
         if (pos != 0)  { ASSERT_SUCCESS(af_release_array(pos)); }
         if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
         if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
     }
 
-    void TearDown() {
-        ReleaseArrays();
-    }
+    void TearDown() { releaseArrays(); }
 
-    void setTestData(float *h_gold, dim4 gold_dims,
-                     float *h_in, dim4 in_dims,
-                     float *h_pos, dim4 pos_dims) {
-        ReleaseArrays();
+    void setTestData(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
+                     float* h_pos, dim4 pos_dims) {
+        releaseArrays();
 
         gold = 0;
-        in = 0;
-        pos = 0;
+        in   = 0;
+        pos  = 0;
 
         this->gold_dims = gold_dims;
-        this->in_dims = in_dims;
-        this->pos_dims = pos_dims;
+        this->in_dims   = in_dims;
+        this->pos_dims  = pos_dims;
 
         for (int i = 0; i < gold_dims.elements(); ++i) {
             h_gold_cast.push_back(static_cast<T>(h_gold[i]));
@@ -939,10 +933,7 @@ class SimpleTestData {
     dim4 in_dims;
     dim4 pos_dims;
 
-    SimpleTestData()
-        : gold_dims(5, 3)
-        , in_dims(3, 3)
-        , pos_dims(5) {
+    SimpleTestData() : gold_dims(5, 3), in_dims(3, 3), pos_dims(5) {
         float gold_arr[h_gold_size] = {10.0f, 15.0f, 20.0f, 25.0f, 30.0f,
                                        40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
                                        70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
@@ -961,12 +952,12 @@ class SimpleTestData {
 
 template<typename T>
 class Approx1V2Simple : public Approx1V2<T> {
-protected:
+   protected:
     void SetUp() {
         SimpleTestData data;
         this->setTestData(&data.h_gold.front(), data.gold_dims,
-                          &data.h_in.front(), data.in_dims,
-                          &data.h_pos.front(), data.pos_dims);
+                          &data.h_in.front(), data.in_dims, &data.h_pos.front(),
+                          data.pos_dims);
     }
 };
 
@@ -1010,22 +1001,17 @@ class Approx1NullArgs : public ::testing::Test {
     af_array in;
     af_array pos;
 
-    Approx1NullArgs()
-        : out(0)
-        , in(0)
-        , pos(0) {}
+    Approx1NullArgs() : out(0), in(0), pos(0) {}
 
     void SetUp() {
         SimpleTestData data;
 
         ASSERT_SUCCESS(af_create_array(&in, &data.h_in.front(),
-                                       data.in_dims.ndims(),
-                                       data.in_dims.get(),
+                                       data.in_dims.ndims(), data.in_dims.get(),
                                        f32));
         ASSERT_SUCCESS(af_create_array(&pos, &data.h_pos.front(),
                                        data.pos_dims.ndims(),
-                                       data.pos_dims.get(),
-                                       f32));
+                                       data.pos_dims.get(), f32));
     }
 
     void TearDown() {
@@ -1036,71 +1022,66 @@ class Approx1NullArgs : public ::testing::Test {
 
 TEST_F(Approx1NullArgs, NullOutputPtr) {
     af_array* out_ptr = 0;
-    ASSERT_EQ(af_approx1(out_ptr, this->in, this->pos, AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG,
+              af_approx1(out_ptr, this->in, this->pos, AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, NullInputArray) {
-    ASSERT_EQ(af_approx1(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG,
+              af_approx1(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, NullPosArray) {
-    ASSERT_EQ(af_approx1(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG,
+              af_approx1(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, V2NullOutputPtr) {
     af_array* out_ptr = 0;
-    ASSERT_EQ(
-        af_approx1_v2(out_ptr, this->in, this->pos, AF_INTERP_LINEAR, 0.f),
-        AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG, af_approx1_v2(out_ptr, this->in, this->pos,
+                                        AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, V2NullInputArray) {
-    ASSERT_EQ(af_approx1_v2(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG,
+              af_approx1_v2(&this->out, 0, this->pos, AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, V2NullPosArray) {
-    ASSERT_EQ(af_approx1_v2(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG,
+              af_approx1_v2(&this->out, this->in, 0, AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, UniformNullOutputPtr) {
     af_array* out_ptr = 0;
-    ASSERT_EQ(af_approx1_uniform(out_ptr, this->in, this->pos, 0, 0.0, 1.0,
-                                 AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG, af_approx1_uniform(out_ptr, this->in, this->pos, 0,
+                                             0.0, 1.0, AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, UniformNullInputArray) {
-    ASSERT_EQ(af_approx1_uniform(&this->out, 0, this->pos, 0, 0.0, 1.0,
-                                 AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG, af_approx1_uniform(&this->out, 0, this->pos, 0, 0.0,
+                                             1.0, AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, UniformNullPosArray) {
-    ASSERT_EQ(af_approx1_uniform(&this->out, this->in, 0, 0, 0.0, 1.0,
-                                 AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG, af_approx1_uniform(&this->out, this->in, 0, 0, 0.0,
+                                             1.0, AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, V2UniformNullOutputPtr) {
     af_array* out_ptr = 0;
-    ASSERT_EQ(af_approx1_uniform_v2(out_ptr, this->in, this->pos, 0, 0.0, 1.0,
-                                    AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG,
+              af_approx1_uniform_v2(out_ptr, this->in, this->pos, 0, 0.0, 1.0,
+                                    AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, V2UniformNullInputArray) {
-    ASSERT_EQ(af_approx1_uniform_v2(&this->out, 0, this->pos, 0, 0.0, 1.0,
-                                    AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG,
+              af_approx1_uniform_v2(&this->out, 0, this->pos, 0, 0.0, 1.0,
+                                    AF_INTERP_LINEAR, 0.f));
 }
 
 TEST_F(Approx1NullArgs, V2UniformNullPosArray) {
-    ASSERT_EQ(af_approx1_uniform_v2(&this->out, this->in, 0, 0, 0.0, 1.0,
-                                    AF_INTERP_LINEAR, 0.f),
-              AF_ERR_ARG);
+    ASSERT_EQ(AF_ERR_ARG, af_approx1_uniform_v2(&this->out, this->in, 0, 0, 0.0,
+                                                1.0, AF_INTERP_LINEAR, 0.f));
 }
