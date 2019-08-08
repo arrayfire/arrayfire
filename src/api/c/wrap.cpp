@@ -35,54 +35,49 @@ af_err af_wrap_common(af_array *out, const af_array in,
                       const dim_t sx, const dim_t sy,
                       const dim_t px, const dim_t py,
                       const bool is_column, bool allocate_out) {
-    try {
-        ARG_ASSERT(0, out != 0);
-        ARG_ASSERT(1, in != 0);
+    ARG_ASSERT(0, out != 0);  // *out (the af_array) can be null, but not out
+    ARG_ASSERT(1, in != 0);
 
-        const ArrayInfo& info  = getInfo(in);
-        const af_dtype in_type = info.getType();
-        const dim4 in_dims     = info.dims();
-        const dim4 out_dims(ox, oy, in_dims[2], in_dims[3]);
+    const ArrayInfo& info  = getInfo(in);
+    const af_dtype in_type = info.getType();
+    const dim4 in_dims     = info.dims();
+    const dim4 out_dims(ox, oy, in_dims[2], in_dims[3]);
 
-        ARG_ASSERT(4, wx > 0);
-        ARG_ASSERT(5, wy > 0);
-        ARG_ASSERT(6, sx > 0);
-        ARG_ASSERT(7, sy > 0);
+    ARG_ASSERT(4, wx > 0);
+    ARG_ASSERT(5, wy > 0);
+    ARG_ASSERT(6, sx > 0);
+    ARG_ASSERT(7, sy > 0);
 
-        const dim_t nx = (ox + 2 * px - wx) / sx + 1;
-        const dim_t ny = (oy + 2 * py - wy) / sy + 1;
+    const dim_t nx = (ox + 2 * px - wx) / sx + 1;
+    const dim_t ny = (oy + 2 * py - wy) / sy + 1;
 
-        const dim_t patch_size  = is_column ? in_dims[0] : in_dims[1];
-        const dim_t num_patches = is_column ? in_dims[1] : in_dims[0];
+    const dim_t patch_size  = is_column ? in_dims[0] : in_dims[1];
+    const dim_t num_patches = is_column ? in_dims[1] : in_dims[0];
 
-        DIM_ASSERT(1, patch_size == wx * wy);
-        DIM_ASSERT(1, num_patches == nx * ny);
+    DIM_ASSERT(1, patch_size == wx * wy);
+    DIM_ASSERT(1, num_patches == nx * ny);
 
-        if (allocate_out) { *out = createHandle(out_dims, in_type); }
+    if (allocate_out) { *out = createHandle(out_dims, in_type); }
 
-        DIM_ASSERT(1, getInfo(*out).dims() == out_dims);
+    DIM_ASSERT(1, getInfo(*out).dims() == out_dims);
 
-        // clang-format off
-        switch(in_type) {
-            case f32: wrap<float  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case f64: wrap<double >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case c32: wrap<cfloat >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case c64: wrap<cdouble>(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case s32: wrap<int    >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case u32: wrap<uint   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case s64: wrap<intl   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case u64: wrap<uintl  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case s16: wrap<short  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case u16: wrap<ushort >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case u8:  wrap<uchar  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            case b8:  wrap<char   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-            default:  TYPE_ERROR(1, in_type);
-        }
-        // clang-format on
+    // clang-format off
+    switch(in_type) {
+        case f32: wrap<float  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case f64: wrap<double >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case c32: wrap<cfloat >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case c64: wrap<cdouble>(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case s32: wrap<int    >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case u32: wrap<uint   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case s64: wrap<intl   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case u64: wrap<uintl  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case s16: wrap<short  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case u16: wrap<ushort >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case u8:  wrap<uchar  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case b8:  wrap<char   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        default:  TYPE_ERROR(1, in_type);
     }
-    CATCHALL;
-
-    return AF_SUCCESS;
+    // clang-format on
 }
 
 af_err af_wrap(af_array* out, const af_array in,
@@ -91,8 +86,13 @@ af_err af_wrap(af_array* out, const af_array in,
                const dim_t sx, const dim_t sy,
                const dim_t px, const dim_t py,
                const bool is_column) {
-    return af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column,
-                          true);
+    try {
+        return af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py,
+                              is_column, true);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
 }
 
 af_err af_wrap_v2(af_array* out, const af_array in,
@@ -101,9 +101,12 @@ af_err af_wrap_v2(af_array* out, const af_array in,
                   const dim_t sx, const dim_t sy,
                   const dim_t px, const dim_t py,
                   const bool is_column) {
-    if (out == 0) return AF_ERR_ARG;
-    // Since this is v2, assume that the output has already been initialized
-    // either to null or an existing af_array
-    return af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column,
-                          *out == 0);
+    try {
+        ARG_ASSERT(0, out != 0); // need to dereference out in next call
+        return af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py,
+                              is_column, *out == 0);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
 }
