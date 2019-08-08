@@ -264,30 +264,52 @@ static void getGold(af_array *gold, const dim_t *dims) {
     ASSERT_SUCCESS(af_create_array(gold, &h_gold[0], 2, dims, f32));
 }
 
+class WrapCommon : virtual public ::testing::Test {
+protected:
+    WrapCommon()
+        : in_(0)
+        , gold_(0)
+        , in_dims(4, 4)
+        , gold_dims(4, 4)
+        , win_len(2)
+        , strd_len(2)
+        , pad_len(0)
+        , is_column(true) {}
+
+    virtual void SetUp() {
+        ::getInput(&in_, &in_dims[0]);
+        ::getGold(&gold_, &in_dims[0]);
+    }
+
+    virtual void TearDown() {
+        if (in_ != 0) af_release_array(in_);
+        if (gold_ != 0) af_release_array(gold_);
+    }
+
+    af_array in_;
+    af_array gold_;
+    dim4 in_dims;
+    dim4 gold_dims;
+    dim_t win_len;
+    dim_t strd_len;
+    dim_t pad_len;
+    bool is_column;
+};
+
 template<typename T>
-class WrapV2 : public ::testing::Test {
+class WrapV2 : public WrapCommon {
    protected:
     vector<T> h_gold_cast;
     vector<T> h_in_cast;
 
-    dim4 gold_dims;
-    dim4 in_dims;
-
-    af_array gold;
-    af_array in;
-
-    WrapV2()
-        : gold(0)
-        , in(0) {}
-
-    void SetUp() {}
+    WrapV2() {}
 
     void setTestData(float *h_gold, dim4 gold_dims,
                      float *h_in, dim4 in_dims) {
         releaseArrays();
 
-        gold = 0;
-        in = 0;
+        this->gold_ = 0;
+        this->in_ = 0;
 
         this->gold_dims = gold_dims;
         this->in_dims = in_dims;
@@ -299,17 +321,12 @@ class WrapV2 : public ::testing::Test {
             h_in_cast.push_back(static_cast<T>(h_in[i]));
         }
 
-        ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
+        ASSERT_SUCCESS(af_create_array(&this->gold_, &h_gold_cast.front(),
                                        gold_dims.ndims(), gold_dims.get(),
                                        (af_dtype)dtype_traits<T>::af_type));
-        ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
+        ASSERT_SUCCESS(af_create_array(&this->in_, &h_in_cast.front(), in_dims.ndims(),
                                        in_dims.get(),
                                        (af_dtype)dtype_traits<T>::af_type));
-    }
-
-    void setTestData(TestData *data) {
-        setTestData(data->getGoldArr(), data->getGoldDims(),
-                    data->getInArr(), data->getInDims());
     }
 
     void testSpclOutArray(TestOutputArrayType out_array_type) {
@@ -317,109 +334,71 @@ class WrapV2 : public ::testing::Test {
 
         af_array out = 0;
         TestOutputArrayInfo metadata(out_array_type);
-        genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
+        genTestOutputArray(&out, this->gold_dims.ndims(), this->gold_dims.get(),
                            (af_dtype)dtype_traits<T>::af_type, &metadata);
 
         // Taken from the Wrap.DocSnippet test
-        ASSERT_SUCCESS(af_wrap_v2(&out, in, 3, 3,  // output dims
-                                  2, 2,            // window size
-                                  2, 2,            // stride
-                                  1, 1,            // padding
-                                  true));          // is_column
+        ASSERT_SUCCESS(af_wrap_v2(&out, this->in_,
+                                  4, 4,   // output dims
+                                  2, 2,   // window size
+                                  2, 2,   // stride
+                                  0, 0,   // padding
+                                  true)); // is_column
 
-        ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
+        ASSERT_SPECIAL_ARRAYS_EQ(this->gold_, out, &metadata);
     }
 
     void releaseArrays() {
-        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
-        if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
-    }
-
-    void TearDown() {
-        releaseArrays();
+        if (this->in_ != 0)   { ASSERT_SUCCESS(af_release_array(this->in_)); }
+        if (this->gold_ != 0) { ASSERT_SUCCESS(af_release_array(this->gold_)); }
     }
 };
 
 TYPED_TEST_CASE(WrapV2, TestTypes);
 
-class SimpleTestData : public TestData {
-    static const int h_in_size = 16;
-    static const int h_gold_size = 9;
+template<typename T>
+class WrapV2Simple : public WrapV2<T> {
+   protected:
+    void SetUp() {
+        this->releaseArrays();
+        this->in_ = 0;
+        this->gold_ = 0;
 
-    public:
-    SimpleTestData() {
-        // Taken from Wrap.DocSnippet test
-        in_dims = dim4(4, 4);
-        float in_arr[h_in_size] = {0.0f, 0.0f, 0.0f, 1.0f,
-                                   0.0f, 0.0f, 2.0f, 3.0f,
-                                   0.0f, 4.0f, 0.0f, 7.0f,
-                                   5.0f, 6.0f, 8.0f, 9.0f};
+        af_array tmp_in = 0;
+        af_array tmp_gold = 0;
 
-        gold_dims = dim4(3, 3);
-        float gold_arr[h_gold_size] = {1.0f, 2.0f, 3.0f,
-                                       4.0f, 5.0f, 6.0f,
-                                       7.0f, 8.0f, 9.0f};
+        ::getInput(&tmp_in, this->in_dims.get());
+        ::getGold(&tmp_gold, this->gold_dims.get());
 
-        h_in.assign(in_arr, in_arr + h_in_size);
-        h_gold.assign(gold_arr, gold_arr + h_gold_size);
+        ASSERT_SUCCESS(af_cast(&this->in_, tmp_in, (af_dtype)dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_cast(&this->gold_, tmp_gold, (af_dtype)dtype_traits<T>::af_type));
+
+        ASSERT_SUCCESS(af_release_array(tmp_in));
+        ASSERT_SUCCESS(af_release_array(tmp_gold));
     }
 };
 
-TYPED_TEST(WrapV2, UseNullOutputArray) {
-    SimpleTestData data;
-    this->setTestData(&data);
+TYPED_TEST_CASE(WrapV2Simple, TestTypes);
+
+TYPED_TEST(WrapV2Simple, UseNullOutputArray) {
     this->testSpclOutArray(NULL_ARRAY);
 }
 
-TYPED_TEST(WrapV2, UseFullExistingOutputArray) {
-    SimpleTestData data;
-    this->setTestData(&data);
+TYPED_TEST(WrapV2Simple, UseFullExistingOutputArray) {
     this->testSpclOutArray(FULL_ARRAY);
 }
 
-TYPED_TEST(WrapV2, UseExistingOutputSubArray) {
-    SimpleTestData data;
-    this->setTestData(&data);
+TYPED_TEST(WrapV2Simple, UseExistingOutputSubArray) {
     this->testSpclOutArray(SUB_ARRAY);
 }
 
-TYPED_TEST(WrapV2, UseReorderedOutputArray) {
-    SimpleTestData data;
-    this->setTestData(&data);
+TYPED_TEST(WrapV2Simple, UseReorderedOutputArray) {
     this->testSpclOutArray(REORDERED_ARRAY);
 }
 
-class WrapSimple : virtual public ::testing::Test {
-   protected:
-    virtual void SetUp() {
-        in_dims[0] = 4;
-        in_dims[1] = 4;
-        in_dims[2] = 1;
-        in_dims[3] = 1;
+class WrapNullArgs : public WrapCommon {};
 
-        ::getInput(&in_, &in_dims[0]);
-        ::getGold(&gold_, &in_dims[0]);
-
-        win_len   = 2;
-        strd_len  = 2;
-        pad_len   = 0;
-        is_column = true;
-    }
-    virtual void TearDown() {
-        if (in_ != 0) af_release_array(in_);
-        if (gold_ != 0) af_release_array(gold_);
-    }
-
-    af_array in_;
-    af_array gold_;
-    dim_t in_dims[4];
-    dim_t win_len;
-    dim_t strd_len;
-    dim_t pad_len;
-    bool is_column;
-};
-
-TEST_F(WrapSimple, NullOutputPtr) {
+TEST_F(WrapNullArgs, NullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(af_wrap(out_ptr, this->in_,
                       4, 4,  // output dims
@@ -430,7 +409,7 @@ TEST_F(WrapSimple, NullOutputPtr) {
               AF_ERR_ARG);
 }
 
-TEST_F(WrapSimple, NullInputArray) {
+TEST_F(WrapNullArgs, NullInputArray) {
     af_array out = 0;
     ASSERT_EQ(af_wrap(&out, 0,
                       4, 4,  // output dims
@@ -441,7 +420,7 @@ TEST_F(WrapSimple, NullInputArray) {
               AF_ERR_ARG);
 }
 
-TEST_F(WrapSimple, V2NullOutputPtr) {
+TEST_F(WrapNullArgs, V2NullOutputPtr) {
     af_array* out_ptr = 0;
     ASSERT_EQ(af_wrap_v2(out_ptr, this->in_,
                          4, 4,  // output dims
@@ -452,7 +431,7 @@ TEST_F(WrapSimple, V2NullOutputPtr) {
               AF_ERR_ARG);
 }
 
-TEST_F(WrapSimple, V2NullInputArray) {
+TEST_F(WrapNullArgs, V2NullInputArray) {
     af_array out = 0;
     ASSERT_EQ(af_wrap_v2(&out, 0,
                          4, 4,  // output dims
@@ -515,7 +494,7 @@ class WrapArgs {
 };
 
 class WrapAPITest
-    : public WrapSimple
+    : public WrapCommon
     , public ::testing::WithParamInterface<WrapArgs> {
    public:
     virtual void SetUp() {
