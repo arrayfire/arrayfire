@@ -442,69 +442,57 @@ TEST_F(WrapNullArgs, V2NullInputArray) {
               AF_ERR_ARG);
 }
 
-class ArgDim {
-   public:
+struct ArgDim {
     ArgDim(dim_t d0, dim_t d1) : dim0(d0), dim1(d1) {}
     void get(dim_t *d0, dim_t *d1);
 
-   private:
     dim_t dim0;
     dim_t dim1;
 };
-void ArgDim::get(dim_t *d0, dim_t *d1) {
-    *d0 = this->dim0;
-    *d1 = this->dim1;
-}
-class WindowDims : public ArgDim {
-   public:
+
+struct WindowDims : public ArgDim {
     WindowDims() : ArgDim(1, 1) {}
     WindowDims(dim_t d0, dim_t d1) : ArgDim(d0, d1) {}
 };
-class StrideDims : public ArgDim {
-   public:
+
+struct StrideDims : public ArgDim {
     StrideDims() : ArgDim(1, 1) {}
     StrideDims(dim_t d0, dim_t d1) : ArgDim(d0, d1) {}
 };
-class PadDims : public ArgDim {
-   public:
+
+struct PadDims : public ArgDim {
     PadDims() : ArgDim(0, 0) {}
     PadDims(dim_t d0, dim_t d1) : ArgDim(d0, d1) {}
 };
 
 class WrapArgs {
    public:
-    WindowDims *wc_;
-    StrideDims *sc_;
-    PadDims *pc_;
+    WindowDims wc_;
+    StrideDims sc_;
+    PadDims pc_;
     bool is_column;
     af_err err;
+
+    WrapArgs() : wc_(), sc_(), pc_(), is_column(true), err(af_err(999)) {}
+
     WrapArgs(dim_t win_d0, dim_t win_d1, dim_t str_d0, dim_t str_d1,
              dim_t pad_d0, dim_t pad_d1, bool is_col, af_err err)
-        : wc_(new WindowDims(win_d0, win_d1))
-        , sc_(new StrideDims(str_d0, str_d1))
-        , pc_(new PadDims(pad_d0, pad_d1))
+        : wc_(win_d0, win_d1)
+        , sc_(str_d0, str_d1)
+        , pc_(pad_d0, pad_d1)
         , is_column(is_col)
         , err(err) {}
-    WrapArgs()
-        : wc_(new WindowDims())
-        , sc_(new StrideDims())
-        , pc_(new PadDims())
-        , is_column(true)
-        , err(af_err(999)) {}
 };
 
 class WrapAPITest
     : public WrapCommon
     , public ::testing::WithParamInterface<WrapArgs> {
    public:
-    virtual void SetUp() {
-        in_dims[0] = 4;
-        in_dims[1] = 4;
-        in_dims[2] = 1;
-        in_dims[3] = 1;
+    WrapAPITest() : input(), in_(0), in_dims(4, 4, 1, 1) {}
 
+    virtual void SetUp() {
         input = GetParam();
-        ::getInput(&in_, &in_dims[0]);
+        ::getInput(&in_, in_dims.get());
     }
     virtual void TearDown() {
         if (in_ != 0) af_release_array(in_);
@@ -512,24 +500,20 @@ class WrapAPITest
 
     WrapArgs input;
     af_array in_;
-    dim_t in_dims[4];
+    dim4 in_dims;
 };
 
 TEST_P(WrapAPITest, CheckDifferentWrapArgs) {
-    WindowDims *wc = input.wc_;
-    StrideDims *sc = input.sc_;
-    PadDims *pc    = input.pc_;
-
-    dim_t win_d0, win_d1;
-    dim_t str_d0, str_d1;
-    dim_t pad_d0, pad_d1;
-    wc->get(&win_d0, &win_d1);
-    sc->get(&str_d0, &str_d1);
-    pc->get(&pad_d0, &pad_d1);
+    dim_t win_d0 = input.wc_.dim0;
+    dim_t win_d1 = input.wc_.dim1;
+    dim_t str_d0 = input.sc_.dim0;
+    dim_t str_d1 = input.sc_.dim1;
+    dim_t pad_d0 = input.pc_.dim0;
+    dim_t pad_d1 = input.pc_.dim1;
 
     af_array out_ = 0;
     af_err err    = af_wrap(&out_, in_, in_dims[0], in_dims[1], win_d0, win_d1,
-                            str_d0, str_d1, pad_d0, pad_d1, input.is_column);
+                         str_d0, str_d1, pad_d0, pad_d1, input.is_column);
 
     ASSERT_EQ(err, input.err);
     if (out_ != 0) af_release_array(out_);
@@ -555,4 +539,5 @@ WrapArgs args[] = {
     WrapArgs(        2,         2,         2,         2,        -1,        -1,    true,  AF_ERR_SIZE),
     // clang-format on
 };
+
 INSTANTIATE_TEST_CASE_P(BulkTest, WrapAPITest, ::testing::ValuesIn(args));
