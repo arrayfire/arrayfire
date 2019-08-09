@@ -19,6 +19,7 @@
 using af::array;
 using af::dim4;
 using af::loadImage;
+using af::dtype_traits;
 using std::abs;
 using std::endl;
 using std::string;
@@ -263,60 +264,223 @@ TEST(Transform, CPP) {
     }
 }
 
-TEST(Transform, UseNullInitialOutput)
+TEST(Transform, DISABLED_UseNullInitialOutput)
 {
-  af_array scene_array = 0;
-  af_array gold_array = 0;
+    af_array scene_array = 0;
+    af_array gold_array = 0;
 
-  string in = "/home/miguel/work/af/arrayfire/test/data/transform/tux_scene.png";
-  string gold = "/home/miguel/work/af/arrayfire/test/data/transform/tux_scene_nearest.png";
+    string in = TEST_DIR "/transform/tux_scene.png";
+    string gold = TEST_DIR "/transform/tux_scene_nearest.png";
 
-  ASSERT_SUCCESS(af_load_image(&scene_array, in.c_str(), false));
-  ASSERT_SUCCESS(af_load_image(&gold_array, gold.c_str(), false));
+    ASSERT_SUCCESS(af_load_image(&scene_array, in.c_str(), false));
+    ASSERT_SUCCESS(af_load_image(&gold_array, gold.c_str(), false));
 
-  float hA[] = { 7.4543, 0.3170, 0.0006, -0.0844, 7.6983, 0.0010, 892.3555, -4530.7397, 3.990313053131104 };
-  dim4 h_dims(3, 3, 1, 1);
-  af_array h_array = 0;
-  ASSERT_SUCCESS(af_create_array(&h_array, hA, h_dims.ndims(), h_dims.get(), f32));
+    float hA[] = { 7.4543, 0.3170, 0.0006, -0.0844, 7.6983, 0.0010, 892.3555, -4530.7397, 3.990313053131104 };
+    dim4 h_dims(3, 3, 1, 1);
+    af_array h_array = 0;
+    ASSERT_SUCCESS(af_create_array(&h_array, hA, h_dims.ndims(), h_dims.get(), f32));
 
-  dim_t odim0 = 506;
-  dim_t odim1 = 376;
-  af_array out = 0;
-  ASSERT_SUCCESS(af_transform(&out,
-                              scene_array, h_array, odim0, odim1,
-                              AF_INTERP_NEAREST, true));
+    dim_t odim0 = 506;
+    dim_t odim1 = 376;
+    af_array out = 0;
+    ASSERT_SUCCESS(af_transform(&out,
+                                scene_array, h_array, odim0, odim1,
+                                AF_INTERP_NEAREST, true));
 
-  // Get gold data
-  dim_t goldEl = 0;
-  ASSERT_SUCCESS(af_get_elements(&goldEl, gold_array));
-  vector<float> gold_data(goldEl);
-  ASSERT_SUCCESS(af_get_data_ptr((void*)&gold_data.front(), gold_array));
+    // Get gold data
+    dim_t goldEl = 0;
+    ASSERT_SUCCESS(af_get_elements(&goldEl, gold_array));
+    vector<float> gold_data(goldEl);
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&gold_data.front(), gold_array));
 
-  // Get result
-  dim_t outEl = 0;
-  ASSERT_SUCCESS(af_get_elements(&outEl, out));
-  vector<float> out_data(outEl);
-  ASSERT_SUCCESS(af_get_data_ptr((void*)&out_data.front(), out));
+    // Get result
+    dim_t outEl = 0;
+    ASSERT_SUCCESS(af_get_elements(&outEl, out));
+    vector<float> out_data(outEl);
+    ASSERT_SUCCESS(af_get_data_ptr((void*)&out_data.front(), out));
 
-  const float thr = 1.1f;
+    const float thr = 1.1f;
 
-  // Maximum number of wrong pixels must be <= 0.01% of number of elements,
-  // this metric is necessary due to rounding errors between different
-  // backends for AF_INTERP_NEAREST and AF_INTERP_LOWER
-  const size_t maxErr = goldEl * 0.0001f;
-  size_t err = 0;
+    // Maximum number of wrong pixels must be <= 0.01% of number of elements,
+    // this metric is necessary due to rounding errors between different
+    // backends for AF_INTERP_NEAREST and AF_INTERP_LOWER
+    const size_t maxErr = goldEl * 0.0001f;
+    size_t err = 0;
 
-  for (dim_t elIter = 0; elIter < goldEl; elIter++) {
-      err += fabs((float)floor(out_data[elIter]) - (float)floor(gold_data[elIter])) > thr;
-      if (err > maxErr) {
-          ASSERT_LE(err, maxErr) << "at: " << elIter << endl;
-      }
-  }
+    for (dim_t elIter = 0; elIter < goldEl; elIter++) {
+        err += fabs((float)floor(out_data[elIter]) - (float)floor(gold_data[elIter])) > thr;
+        if (err > maxErr) {
+            ASSERT_LE(err, maxErr) << "at: " << elIter << endl;
+        }
+    }
 
-  if (out != 0) af_release_array(out);
-  if (scene_array != 0) af_release_array(scene_array);
-  if (gold_array != 0)  af_release_array(gold_array);
-  if (h_array != 0)  af_release_array(h_array);
+    if (out != 0) af_release_array(out);
+    if (scene_array != 0) af_release_array(scene_array);
+    if (gold_array != 0)  af_release_array(gold_array);
+    if (h_array != 0)  af_release_array(h_array);
+}
+
+template<typename T>
+void assertSpclArraysTransform(
+    std::string gold_name, std::string result_name, std::string metadataName,
+    const af_array gold, const af_array out, TestOutputArrayInfo *metadata) {
+
+    // In the case of NULL_ARRAY, the output array starts out as null.
+    // After the af_* function is called, it shouldn't be null anymore
+    if (metadata->getOutputArrayType() == NULL_ARRAY) {
+        if (out == 0) {
+            ASSERT_TRUE(out != 0) << "Output af_array " << result_name
+                                  << " is null";
+        }
+        metadata->setOutput(out);
+    }
+    // For every other case, must check if the af_array generated by
+    // genTestOutputArray was used by the af_* function as its output array
+    else {
+        if (metadata->getOutput() != out) {
+            ASSERT_TRUE(metadata->getOutput() != out)
+                << "af_array POINTER MISMATCH:\n"
+                << "  Actual: " << out << "\n"
+                << "Expected: " << metadata->getOutput();
+        }
+    }
+
+    af_array out_ = 0;
+    af_array gold_ = 0;
+
+    if (metadata->getOutputArrayType() == SUB_ARRAY) {
+        // There are two full arrays. One will be injected with the gold
+        // subarray, the other should have already been injected with the af_*
+        // function's output. Then we compare the two full arrays
+        af_array gold_full_array = metadata->getFullOutputCopy();
+        af_assign_seq(&gold_full_array, gold_full_array,
+                      metadata->getSubArrayNumDims(),
+                      metadata->getSubArrayIdxs(), gold);
+
+        gold_ = metadata->getFullOutputCopy();
+        out_ = metadata->getFullOutput();
+    } else {
+        gold_ = gold;
+        out_ = out;
+    }
+
+    // Get gold data
+    dim_t goldEl = 0;
+    af_get_elements(&goldEl, gold_);
+    vector<T> goldData(goldEl);
+    af_get_data_ptr((void*)&goldData.front(), gold_);
+
+    // Get result
+    dim_t outEl = 0;
+    af_get_elements(&outEl, out_);
+    vector<T> outData(outEl);
+    af_get_data_ptr((void*)&outData.front(), out_);
+
+    const float thr = 1.1f;
+
+    // Maximum number of wrong pixels must be <= 0.01% of number of elements,
+    // this metric is necessary due to rounding errors between different
+    // backends for AF_INTERP_NEAREST and AF_INTERP_LOWER
+    const size_t maxErr = goldEl * 0.0001f;
+    size_t err          = 0;
+
+    for (dim_t elIter = 0; elIter < goldEl; elIter++) {
+        err += fabs((float)floor(outData[elIter]) -
+                    (float)floor(goldData[elIter])) > thr;
+        if (err > maxErr) {
+            ASSERT_LE(err, maxErr) << "at: " << elIter << endl;
+        }
+    }
+}
+
+template<typename T>
+void testSpclOutArray(TestOutputArrayType out_array_type) {
+    string pTestFile = TEST_DIR "/transform/tux_nearest.test";
+    string pHomographyFile = TEST_DIR "/transform/tux_tmat.test";
+    af_interp_type method = AF_INTERP_NEAREST;
+    bool invert = false;
+
+    SUPPORTED_TYPE_CHECK(T);
+    if (noImageIOTests()) return;
+
+    vector<dim4> inNumDims;
+    vector<string> inFiles;
+    vector<dim_t> goldNumDims;
+    vector<string> goldFiles;
+
+    readImageTests(pTestFile, inNumDims, inFiles, goldNumDims, goldFiles);
+
+    inFiles[0].insert(0, string(TEST_DIR "/transform/"));
+    inFiles[1].insert(0, string(TEST_DIR "/transform/"));
+    goldFiles[0].insert(0, string(TEST_DIR "/transform/"));
+
+    dim4 objDims = inNumDims[0];
+
+    vector<dim4> HNumDims;
+    vector<vector<float> > HIn;
+    vector<vector<float> > HTests;
+    readTests<float, float, float>(pHomographyFile, HNumDims, HIn, HTests);
+
+    dim4 HDims = HNumDims[0];
+
+    af_array sceneArray_f32 = 0;
+    af_array goldArray_f32  = 0;
+    af_array outArray_f32   = 0;
+    af_array sceneArray     = 0;
+    af_array goldArray      = 0;
+    af_array outArray       = 0;
+    af_array HArray         = 0;
+
+    ASSERT_SUCCESS(af_load_image(&sceneArray_f32, inFiles[1].c_str(), false));
+    ASSERT_SUCCESS(af_load_image(&goldArray_f32, goldFiles[0].c_str(), false));
+
+    ASSERT_SUCCESS(conv_image<T>(&sceneArray, sceneArray_f32));
+    ASSERT_SUCCESS(conv_image<T>(&goldArray, goldArray_f32));
+
+    ASSERT_SUCCESS(af_create_array(&HArray, &(HIn[0].front()), HDims.ndims(),
+                                   HDims.get(), f32));
+
+    dim4 gold_dims;
+    ASSERT_SUCCESS(af_get_dims(&gold_dims[0], &gold_dims[1], &gold_dims[2], &gold_dims[3],
+                               goldArray));
+
+    TestOutputArrayInfo metadata(out_array_type);
+    genTestOutputArray(&outArray, gold_dims.ndims(), gold_dims.get(),
+                       (af_dtype)dtype_traits<T>::af_type, &metadata);
+    ASSERT_SUCCESS(af_transform(&outArray, sceneArray, HArray, objDims[0],
+                                objDims[1], method, invert));
+
+    assertSpclArraysTransform<T>("goldArray", "outArray", "metadata",
+                                 goldArray, outArray, &metadata);
+
+    if (sceneArray_f32 != 0) af_release_array(sceneArray_f32);
+    if (goldArray_f32 != 0) af_release_array(goldArray_f32);
+    if (outArray_f32 != 0) af_release_array(outArray_f32);
+    if (sceneArray != 0) af_release_array(sceneArray);
+    if (goldArray != 0) af_release_array(goldArray);
+    if (outArray != 0) af_release_array(outArray);
+    if (HArray != 0) af_release_array(HArray);
+}
+
+template<typename T>
+class TransformV2 : public Transform<T> {};
+
+TYPED_TEST_CASE(TransformV2, TestTypes);
+
+TYPED_TEST(TransformV2, UseNullOutputArray) {
+    testSpclOutArray<TypeParam>(NULL_ARRAY);
+}
+
+TYPED_TEST(TransformV2, UseFullExistingOutputArray) {
+    testSpclOutArray<TypeParam>(FULL_ARRAY);
+}
+
+TYPED_TEST(TransformV2, UseExistingOutputSubArray) {
+    testSpclOutArray<TypeParam>(SUB_ARRAY);
+}
+
+TYPED_TEST(TransformV2, UseReorderedOutputArray) {
+    testSpclOutArray<TypeParam>(REORDERED_ARRAY);
 }
 
 // This tests batching of different forms

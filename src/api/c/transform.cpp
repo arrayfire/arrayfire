@@ -22,7 +22,7 @@ template<typename T>
 static inline void transform(af_array *out, const af_array in, const af_array tf, const dim4 &odims,
                              const af_interp_type method, const bool inverse, const bool perspective)
 {
-    transform<T>(getWritableArray<T>(*out), getArray<T>(in), getArray<float>(tf), odims, method, inverse, perspective);
+    transform<T>(getArray<T>(*out), getArray<T>(in), getArray<float>(tf), odims, method, inverse, perspective);
 }
 
 AF_BATCH_KIND getTransformBatchKind(const dim4 &iDims, const dim4 &tDims) {
@@ -132,9 +132,8 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         }
 
         const dim4 odims(o0, o1, o2, o3);
-        if (*out == 0) {
-            *out = createHandle(odims, itype);
-        }
+        if (*out == 0) { *out = createHandle(odims, itype); }
+
         switch(itype) {
             case f32: transform<float  >(out, in, tf, odims, method, inverse, perspective);  break;
             case f64: transform<double >(out, in, tf, odims, method, inverse, perspective);  break;
@@ -150,7 +149,6 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
             case b8:  transform<char   >(out, in, tf, odims, method, inverse, perspective);  break;
             default:  TYPE_ERROR(1, itype);
         }
->>>>>>> Modified backend transform() to accept output arg
     }
     CATCHALL;
 
