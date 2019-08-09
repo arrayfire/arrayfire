@@ -21,48 +21,75 @@ using namespace detail;
 using common::half;
 using common::SparseArrayBase;
 
-af_array createHandle(af::dim4 d, af_dtype dtype) {
+af_array createHandle(const af::dim4 &d, af_dtype dtype) {
     using namespace detail;
 
+    // clang-format off
     switch (dtype) {
-        case f32: return createHandle<float>(d);
-        case c32: return createHandle<cfloat>(d);
-        case f64: return createHandle<double>(d);
+        case f32: return createHandle<float  >(d);
+        case c32: return createHandle<cfloat >(d);
+        case f64: return createHandle<double >(d);
         case c64: return createHandle<cdouble>(d);
-        case b8: return createHandle<char>(d);
-        case s32: return createHandle<int>(d);
-        case u32: return createHandle<uint>(d);
-        case u8: return createHandle<uchar>(d);
-        case s64: return createHandle<intl>(d);
-        case u64: return createHandle<uintl>(d);
-        case s16: return createHandle<short>(d);
-        case u16: return createHandle<ushort>(d);
-        case f16: return createHandle<half>(d);
+        case b8:  return createHandle<char   >(d);
+        case s32: return createHandle<int    >(d);
+        case u32: return createHandle<uint   >(d);
+        case u8:  return createHandle<uchar  >(d);
+        case s64: return createHandle<intl   >(d);
+        case u64: return createHandle<uintl  >(d);
+        case s16: return createHandle<short  >(d);
+        case u16: return createHandle<ushort >(d);
+        case f16: return createHandle<half   >(d);
         default: TYPE_ERROR(3, dtype);
     }
+    // clang-format on
+}
+
+af_array createHandleFromValue(const af::dim4 &d, double val, af_dtype dtype) {
+    using namespace detail;
+
+    // clang-format off
+    switch (dtype) {
+        case f32: return createHandleFromValue<float  >(d, val);
+        case c32: return createHandleFromValue<cfloat >(d, val);
+        case f64: return createHandleFromValue<double >(d, val);
+        case c64: return createHandleFromValue<cdouble>(d, val);
+        case b8:  return createHandleFromValue<char   >(d, val);
+        case s32: return createHandleFromValue<int    >(d, val);
+        case u32: return createHandleFromValue<uint   >(d, val);
+        case u8:  return createHandleFromValue<uchar  >(d, val);
+        case s64: return createHandleFromValue<intl   >(d, val);
+        case u64: return createHandleFromValue<uintl  >(d, val);
+        case s16: return createHandleFromValue<short  >(d, val);
+        case u16: return createHandleFromValue<ushort >(d, val);
+        case f16: return createHandleFromValue<half   >(d, val);
+        default: TYPE_ERROR(3, dtype);
+    }
+    // clang-format on
 }
 
 af_err af_get_data_ptr(void *data, const af_array arr) {
     try {
         af_dtype type = getInfo(arr).getType();
+        // clang-format off
         switch (type) {
-            case f32: copyData(static_cast<float *>(data), arr); break;
-            case c32: copyData(static_cast<cfloat *>(data), arr); break;
-            case f64: copyData(static_cast<double *>(data), arr); break;
-            case c64: copyData(static_cast<cdouble *>(data), arr); break;
-            case b8: copyData(static_cast<char *>(data), arr); break;
-            case s32: copyData(static_cast<int *>(data), arr); break;
-            case u32: copyData(static_cast<unsigned *>(data), arr); break;
-            case u8: copyData(static_cast<uchar *>(data), arr); break;
-            case s64: copyData(static_cast<intl *>(data), arr); break;
-            case u64: copyData(static_cast<uintl *>(data), arr); break;
-            case s16: copyData(static_cast<short *>(data), arr); break;
-            case u16: copyData(static_cast<ushort *>(data), arr); break;
-            case f16: copyData(static_cast<half *>(data), arr); break;
+            case f32: copyData(static_cast<float*   >(data), arr); break;
+            case c32: copyData(static_cast<cfloat*  >(data), arr); break;
+            case f64: copyData(static_cast<double*  >(data), arr); break;
+            case c64: copyData(static_cast<cdouble* >(data), arr); break;
+            case b8:  copyData(static_cast<char*    >(data), arr); break;
+            case s32: copyData(static_cast<int*     >(data), arr); break;
+            case u32: copyData(static_cast<unsigned*>(data), arr); break;
+            case u8:  copyData(static_cast<uchar*   >(data), arr); break;
+            case s64: copyData(static_cast<intl*    >(data), arr); break;
+            case u64: copyData(static_cast<uintl*   >(data), arr); break;
+            case s16: copyData(static_cast<short*   >(data), arr); break;
+            case u16: copyData(static_cast<ushort*  >(data), arr); break;
+            case f16: copyData(static_cast<half*    >(data), arr); break;
             default: TYPE_ERROR(1, type);
         }
+        // clang-format on
     }
-    CATCHALL
+    CATCHALL;
     return AF_SUCCESS;
 }
 

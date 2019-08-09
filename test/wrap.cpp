@@ -265,7 +265,7 @@ static void getGold(af_array *gold, const dim_t *dims) {
 }
 
 class WrapCommon : virtual public ::testing::Test {
-protected:
+   protected:
     WrapCommon()
         : in_(0)
         , gold_(0)
@@ -304,15 +304,14 @@ class WrapV2 : public WrapCommon {
 
     WrapV2() {}
 
-    void setTestData(float *h_gold, dim4 gold_dims,
-                     float *h_in, dim4 in_dims) {
+    void setTestData(float *h_gold, dim4 gold_dims, float *h_in, dim4 in_dims) {
         releaseArrays();
 
         this->gold_ = 0;
-        this->in_ = 0;
+        this->in_   = 0;
 
         this->gold_dims = gold_dims;
-        this->in_dims = in_dims;
+        this->in_dims   = in_dims;
 
         for (int i = 0; i < gold_dims.elements(); ++i) {
             h_gold_cast.push_back(static_cast<T>(h_gold[i]));
@@ -324,8 +323,8 @@ class WrapV2 : public WrapCommon {
         ASSERT_SUCCESS(af_create_array(&this->gold_, &h_gold_cast.front(),
                                        gold_dims.ndims(), gold_dims.get(),
                                        (af_dtype)dtype_traits<T>::af_type));
-        ASSERT_SUCCESS(af_create_array(&this->in_, &h_in_cast.front(), in_dims.ndims(),
-                                       in_dims.get(),
+        ASSERT_SUCCESS(af_create_array(&this->in_, &h_in_cast.front(),
+                                       in_dims.ndims(), in_dims.get(),
                                        (af_dtype)dtype_traits<T>::af_type));
     }
 
@@ -334,8 +333,15 @@ class WrapV2 : public WrapCommon {
 
         af_array out = 0;
         TestOutputArrayInfo metadata(out_array_type);
-        genTestOutputArray(&out, this->gold_dims.ndims(), this->gold_dims.get(),
-                           (af_dtype)dtype_traits<T>::af_type, &metadata);
+        if (out_array_type == NULL_ARRAY) {
+            genTestOutputArray(&out, this->gold_dims.ndims(),
+                               this->gold_dims.get(),
+                               (af_dtype)dtype_traits<T>::af_type, &metadata);
+        } else {
+            genTestOutputArray(&out, 0.0, this->gold_dims.ndims(),
+                               this->gold_dims.get(),
+                               (af_dtype)dtype_traits<T>::af_type, &metadata);
+        }
 
         // Taken from the Wrap.DocSnippet test
         ASSERT_SUCCESS(af_wrap_v2(&out, this->in_,
@@ -361,17 +367,18 @@ class WrapV2Simple : public WrapV2<T> {
    protected:
     void SetUp() {
         this->releaseArrays();
-        this->in_ = 0;
+        this->in_   = 0;
         this->gold_ = 0;
 
-        af_array tmp_in = 0;
+        af_array tmp_in   = 0;
         af_array tmp_gold = 0;
 
         ::getInput(&tmp_in, this->in_dims.get());
         ::getGold(&tmp_gold, this->gold_dims.get());
 
-        ASSERT_SUCCESS(af_cast(&this->in_, tmp_in, (af_dtype)dtype_traits<T>::af_type));
-        ASSERT_SUCCESS(af_cast(&this->gold_, tmp_gold, (af_dtype)dtype_traits<T>::af_type));
+        af_dtype dtype = (af_dtype)dtype_traits<T>::af_type;
+        ASSERT_SUCCESS(af_cast(&this->in_, tmp_in, dtype));
+        ASSERT_SUCCESS(af_cast(&this->gold_, tmp_gold, dtype));
 
         ASSERT_SUCCESS(af_release_array(tmp_in));
         ASSERT_SUCCESS(af_release_array(tmp_gold));

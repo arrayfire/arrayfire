@@ -57,9 +57,10 @@ af_err af_wrap_common(af_array *out, const af_array in,
     DIM_ASSERT(1, patch_size == wx * wy);
     DIM_ASSERT(1, num_patches == nx * ny);
 
-    if (allocate_out) { *out = createHandle(out_dims, in_type); }
+    if (allocate_out) { *out = createHandleFromValue(out_dims, 0.0, in_type); }
 
-    DIM_ASSERT(1, getInfo(*out).dims() == out_dims);
+    // The out pointer can be passed in to the function by the user
+    DIM_ASSERT(0, getInfo(*out).dims() == out_dims);
 
     // clang-format off
     switch(in_type) {
@@ -102,7 +103,7 @@ af_err af_wrap_v2(af_array* out, const af_array in,
                   const dim_t px, const dim_t py,
                   const bool is_column) {
     try {
-        ARG_ASSERT(0, out != 0); // need to dereference out in next call
+        ARG_ASSERT(0, out != 0);  // need to dereference out in next call
         return af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py,
                               is_column, *out == 0);
     }
