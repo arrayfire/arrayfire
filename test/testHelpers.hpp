@@ -1253,7 +1253,8 @@ class TestOutputArrayInfo {
 
     void init(const unsigned ndims, const dim_t *const dims, const af_dtype ty,
               const af_seq *const subarr_idxs) {
-        ASSERT_SUCCESS(af_randu(&out_arr, ndims, dims, ty));
+        init(ndims, dims, ty);
+
         ASSERT_SUCCESS(af_copy_array(&out_arr_cpy, out_arr));
         for (uint i = 0; i < ndims; ++i) {
             out_subarr_idxs[i] = subarr_idxs[i];
@@ -1283,20 +1284,7 @@ class TestOutputArrayInfo {
 
     void init(double val, const unsigned ndims, const dim_t *const dims,
               const af_dtype ty, const af_seq *const subarr_idxs) {
-        switch (ty) {
-            case c32:
-            case c64:
-                af_constant_complex(&out_arr, val, 0.0, ndims, dims, ty);
-                break;
-            case s64:
-                af_constant_long(&out_arr, static_cast<intl>(val), ndims, dims);
-                break;
-            case u64:
-                af_constant_ulong(&out_arr, static_cast<uintl>(val), ndims,
-                                  dims);
-                break;
-            default: af_constant(&out_arr, val, ndims, dims, ty); break;
-        }
+        init(val, ndims, dims, ty);
 
         ASSERT_SUCCESS(af_copy_array(&out_arr_cpy, out_arr));
         for (uint i = 0; i < ndims; ++i) {
