@@ -45,11 +45,9 @@ TYPED_TEST_CASE(Transform, TestTypes);
 TYPED_TEST_CASE(TransformInt, TestTypesInt);
 
 template<typename T>
-void transformTest(string pTestFile, string pHomographyFile,
-                   const af_interp_type method, const bool invert) {
-    SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
-
+void genTestData(af_array *gold, af_array *in, af_array *transform,
+                 dim_t *odim0, dim_t *odim1,
+                 string pTestFile, string pHomographyFile) {
     vector<dim4> inNumDims;
     vector<string> inFiles;
     vector<dim_t> goldNumDims;
@@ -72,10 +70,8 @@ void transformTest(string pTestFile, string pHomographyFile,
 
     af_array sceneArray_f32 = 0;
     af_array goldArray_f32  = 0;
-    af_array outArray_f32   = 0;
     af_array sceneArray     = 0;
     af_array goldArray      = 0;
-    af_array outArray       = 0;
     af_array HArray         = 0;
 
     ASSERT_SUCCESS(af_load_image(&sceneArray_f32, inFiles[1].c_str(), false));
@@ -87,8 +83,35 @@ void transformTest(string pTestFile, string pHomographyFile,
     ASSERT_SUCCESS(af_create_array(&HArray, &(HIn[0].front()), HDims.ndims(),
                                    HDims.get(), f32));
 
-    ASSERT_SUCCESS(af_transform(&outArray, sceneArray, HArray, objDims[0],
-                                objDims[1], method, invert));
+    *gold = goldArray;
+    *in = sceneArray;
+    *transform = HArray;
+    *odim0 = objDims[0];
+    *odim1 = objDims[1];
+
+    if (goldArray_f32 != 0) af_release_array(goldArray_f32);
+    if (sceneArray_f32 != 0) af_release_array(sceneArray_f32);
+}
+
+template<typename T>
+void transformTest(string pTestFile, string pHomographyFile,
+                   const af_interp_type method, const bool invert) {
+    SUPPORTED_TYPE_CHECK(T);
+    if (noImageIOTests()) return;
+
+    af_array sceneArray = 0;
+    af_array goldArray  = 0;
+    af_array outArray   = 0;
+    af_array HArray     = 0;
+
+    dim_t odim0 = 0;
+    dim_t odim1 = 0;
+
+    genTestData<T>(&goldArray, &sceneArray, &HArray, &odim0, &odim1,
+                   pTestFile, pHomographyFile);
+
+    ASSERT_SUCCESS(af_transform(&outArray, sceneArray, HArray, odim0,
+                                odim1, method, invert));
 
     // Get gold data
     dim_t goldEl = 0;
@@ -118,13 +141,10 @@ void transformTest(string pTestFile, string pHomographyFile,
         }
     }
 
-    if (sceneArray_f32 != 0) af_release_array(sceneArray_f32);
-    if (goldArray_f32 != 0) af_release_array(goldArray_f32);
-    if (outArray_f32 != 0) af_release_array(outArray_f32);
-    if (sceneArray != 0) af_release_array(sceneArray);
-    if (goldArray != 0) af_release_array(goldArray);
-    if (outArray != 0) af_release_array(outArray);
-    if (HArray != 0) af_release_array(HArray);
+    if (HArray != 0) { af_release_array(HArray); }
+    if (outArray != 0) { af_release_array(outArray); }
+    if (goldArray != 0) { af_release_array(goldArray); }
+    if (sceneArray != 0) { af_release_array(sceneArray); }
 }
 
 TYPED_TEST(Transform, PerspectiveNearest) {
@@ -321,16 +341,14 @@ TEST(Transform, DISABLED_UseNullInitialOutput)
 }
 
 template<typename T>
-void assertSpclArraysTransform(
-    std::string gold_name, std::string result_name, std::string metadataName,
-    const af_array gold, const af_array out, TestOutputArrayInfo *metadata) {
+void assertSpclArraysTransform(const af_array gold, const af_array out,
+                               TestOutputArrayInfo *metadata) {
 
     // In the case of NULL_ARRAY, the output array starts out as null.
     // After the af_* function is called, it shouldn't be null anymore
     if (metadata->getOutputArrayType() == NULL_ARRAY) {
         if (out == 0) {
-            ASSERT_TRUE(out != 0) << "Output af_array " << result_name
-                                  << " is null";
+            ASSERT_TRUE(out != 0) << "Output af_array is null";
         }
         metadata->setOutput(out);
     }
@@ -395,50 +413,24 @@ void assertSpclArraysTransform(
 
 template<typename T>
 void testSpclOutArray(TestOutputArrayType out_array_type) {
+    SUPPORTED_TYPE_CHECK(T);
+    if (noImageIOTests()) return;
+
     string pTestFile = TEST_DIR "/transform/tux_nearest.test";
     string pHomographyFile = TEST_DIR "/transform/tux_tmat.test";
     af_interp_type method = AF_INTERP_NEAREST;
     bool invert = false;
 
-    SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    af_array sceneArray = 0;
+    af_array goldArray  = 0;
+    af_array outArray   = 0;
+    af_array HArray     = 0;
 
-    vector<dim4> inNumDims;
-    vector<string> inFiles;
-    vector<dim_t> goldNumDims;
-    vector<string> goldFiles;
+    dim_t odim0 = 0;
+    dim_t odim1 = 0;
 
-    readImageTests(pTestFile, inNumDims, inFiles, goldNumDims, goldFiles);
-
-    inFiles[0].insert(0, string(TEST_DIR "/transform/"));
-    inFiles[1].insert(0, string(TEST_DIR "/transform/"));
-    goldFiles[0].insert(0, string(TEST_DIR "/transform/"));
-
-    dim4 objDims = inNumDims[0];
-
-    vector<dim4> HNumDims;
-    vector<vector<float> > HIn;
-    vector<vector<float> > HTests;
-    readTests<float, float, float>(pHomographyFile, HNumDims, HIn, HTests);
-
-    dim4 HDims = HNumDims[0];
-
-    af_array sceneArray_f32 = 0;
-    af_array goldArray_f32  = 0;
-    af_array outArray_f32   = 0;
-    af_array sceneArray     = 0;
-    af_array goldArray      = 0;
-    af_array outArray       = 0;
-    af_array HArray         = 0;
-
-    ASSERT_SUCCESS(af_load_image(&sceneArray_f32, inFiles[1].c_str(), false));
-    ASSERT_SUCCESS(af_load_image(&goldArray_f32, goldFiles[0].c_str(), false));
-
-    ASSERT_SUCCESS(conv_image<T>(&sceneArray, sceneArray_f32));
-    ASSERT_SUCCESS(conv_image<T>(&goldArray, goldArray_f32));
-
-    ASSERT_SUCCESS(af_create_array(&HArray, &(HIn[0].front()), HDims.ndims(),
-                                   HDims.get(), f32));
+    genTestData<T>(&goldArray, &sceneArray, &HArray, &odim0, &odim1,
+                   pTestFile, pHomographyFile);
 
     dim4 gold_dims;
     ASSERT_SUCCESS(af_get_dims(&gold_dims[0], &gold_dims[1], &gold_dims[2], &gold_dims[3],
@@ -447,19 +439,15 @@ void testSpclOutArray(TestOutputArrayType out_array_type) {
     TestOutputArrayInfo metadata(out_array_type);
     genTestOutputArray(&outArray, gold_dims.ndims(), gold_dims.get(),
                        (af_dtype)dtype_traits<T>::af_type, &metadata);
-    ASSERT_SUCCESS(af_transform(&outArray, sceneArray, HArray, objDims[0],
-                                objDims[1], method, invert));
+    ASSERT_SUCCESS(af_transform(&outArray, sceneArray, HArray, odim0,
+                                odim1, method, invert));
 
-    assertSpclArraysTransform<T>("goldArray", "outArray", "metadata",
-                                 goldArray, outArray, &metadata);
+    assertSpclArraysTransform<T>(goldArray, outArray, &metadata);
 
-    if (sceneArray_f32 != 0) af_release_array(sceneArray_f32);
-    if (goldArray_f32 != 0) af_release_array(goldArray_f32);
-    if (outArray_f32 != 0) af_release_array(outArray_f32);
-    if (sceneArray != 0) af_release_array(sceneArray);
-    if (goldArray != 0) af_release_array(goldArray);
-    if (outArray != 0) af_release_array(outArray);
-    if (HArray != 0) af_release_array(HArray);
+    if (HArray != 0) { af_release_array(HArray); }
+    if (outArray != 0) { af_release_array(outArray); }
+    if (goldArray != 0) { af_release_array(goldArray); }
+    if (sceneArray != 0) { af_release_array(sceneArray); }
 }
 
 template<typename T>
