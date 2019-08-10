@@ -989,6 +989,28 @@ extern "C" {
                               const dim_t odim0, const dim_t odim1,
                               const af_interp_type method, const bool inverse);
 
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for the version of \ref af_transform that accepts a
+       preallocated output array
+
+       \param[out] out will contain the transformed image
+       \param[in] in is input image
+       \param[in] transform is transformation matrix
+       \param[in] odim0 is the first output dimension
+       \param[in] odim1 is the second output dimension
+       \param[in] method is the interpolation type (Nearest by default)
+       \param[in] inverse if true applies inverse transform, if false applies forward transoform
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup transform_func_transform
+    */
+    AFAPI af_err af_transform_v2(af_array *out, const af_array in, const af_array transform,
+                                 const dim_t odim0, const dim_t odim1,
+                                 const af_interp_type method, const bool inverse);
+#endif
+
 #if AF_API_VERSION >= 33
     /**
        C Interface for transforming an image
