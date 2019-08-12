@@ -225,68 +225,11 @@ TYPED_TEST(TransformInt, PerspectiveLowerInvert) {
         true);
 }
 
-///////////////////////////////////// CPP ////////////////////////////////
-//
-TEST(Transform, CPP) {
-    if (noImageIOTests()) return;
-
-    vector<dim4> inDims;
-    vector<string> inFiles;
-    vector<dim_t> goldDim;
-    vector<string> goldFiles;
-
-    vector<dim4> HDims;
-    vector<vector<float> > HIn;
-    vector<vector<float> > HTests;
-    readTests<float, float, float>(TEST_DIR "/transform/tux_tmat.test", HDims,
-                                   HIn, HTests);
-
-    readImageTests(string(TEST_DIR "/transform/tux_nearest.test"), inDims,
-                   inFiles, goldDim, goldFiles);
-
-    inFiles[0].insert(0, string(TEST_DIR "/transform/"));
-    inFiles[1].insert(0, string(TEST_DIR "/transform/"));
-
-    goldFiles[0].insert(0, string(TEST_DIR "/transform/"));
-
-    array H  = array(HDims[0][0], HDims[0][1], &(HIn[0].front()));
-    array IH = array(HDims[0][0], HDims[0][1], &(HIn[0].front()));
-
-    array scene_img = loadImage(inFiles[1].c_str(), false);
-
-    array gold_img = loadImage(goldFiles[0].c_str(), false);
-
-    array out_img = transform(scene_img, IH, inDims[0][0], inDims[0][1],
-                              AF_INTERP_NEAREST, false);
-
-    dim4 outDims  = out_img.dims();
-    dim4 goldDims = gold_img.dims();
-
-    vector<float> h_out_img(outDims[0] * outDims[1]);
-    out_img.host(&h_out_img.front());
-    vector<float> h_gold_img(goldDims[0] * goldDims[1]);
-    gold_img.host(&h_gold_img.front());
-
-    const dim_t n   = gold_img.elements();
-    const float thr = 1.0f;
-
-    // Maximum number of wrong pixels must be <= 0.01% of number of elements,
-    // this metric is necessary due to rounding errors between different
-    // backends for AF_INTERP_NEAREST and AF_INTERP_LOWER
-    const size_t maxErr = n * 0.0001f;
-    size_t err          = 0;
-
-    for (dim_t elIter = 0; elIter < n; elIter++) {
-        err += fabs((int)h_out_img[elIter] - h_gold_img[elIter]) > thr;
-        if (err > maxErr) {
-            ASSERT_LE(err, maxErr) << "at: " << elIter << endl;
-        }
-    }
-}
-
 template<typename T>
 class TransformV2 : public Transform<T> {
 protected:
+    typedef typename dtype_traits<T>::base_type BT;
+
     af_array gold;
     af_array in;
     af_array transform;
@@ -313,15 +256,50 @@ protected:
         if (transform != 0) { ASSERT_SUCCESS(af_release_array(transform)); }
         if (in != 0)        { ASSERT_SUCCESS(af_release_array(in)); }
         if (gold != 0)      { ASSERT_SUCCESS(af_release_array(gold)); }
+
+        gold = 0;
+        in   = 0;
+        transform  = 0;
+
     }
 
     void TearDown() { releaseArrays(); }
 
+    void setTestData(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
+                     float* h_transform, dim4 transform_dims) {
+        releaseArrays();
+
+        this->gold_dims = gold_dims;
+        this->in_dims   = in_dims;
+        this->transform_dims  = transform_dims;
+
+        vector<T> h_gold_cast;
+        vector<T> h_in_cast;
+        vector<BT> h_transform_cast;
+
+        for (int i = 0; i < gold_dims.elements(); ++i) {
+            h_gold_cast.push_back(static_cast<T>(h_gold[i]));
+        }
+        for (int i = 0; i < in_dims.elements(); ++i) {
+            h_in_cast.push_back(static_cast<T>(h_in[i]));
+        }
+        for (int i = 0; i < transform_dims.elements(); ++i) {
+            h_transform_cast.push_back(static_cast<BT>(h_transform[i]));
+        }
+
+        ASSERT_SUCCESS(af_create_array(&gold, &h_gold_cast.front(),
+                                       gold_dims.ndims(), gold_dims.get(),
+                                       (af_dtype)dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
+                                       in_dims.get(),
+                                       (af_dtype)dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&transform, &h_transform_cast.front(),
+                                       transform_dims.ndims(), transform_dims.get(),
+                                       (af_dtype)dtype_traits<BT>::af_type));
+    }
+
     void setTestData(string pTestFile, string pHomographyFile) {
         releaseArrays();
-        gold = 0;
-        in = 0;
-        transform = 0;
 
         genTestData<T>(&gold, &in, &transform, &odim0, &odim1,
                        pTestFile, pHomographyFile);
@@ -424,10 +402,10 @@ template<typename T>
 class TransformV2TuxNearest : public TransformV2<T> {
 protected:
     void SetUp() {
-        this->setInterpType(AF_INTERP_NEAREST);
-        this->setInvertFlag(false);
         this->setTestData(string(TEST_DIR "/transform/tux_nearest.test"),
                           string(TEST_DIR "/transform/tux_tmat.test"));
+        this->setInterpType(AF_INTERP_NEAREST);
+        this->setInvertFlag(false);
     }
 };
 
@@ -447,6 +425,65 @@ TYPED_TEST(TransformV2TuxNearest, UseExistingOutputSubArray) {
 
 TYPED_TEST(TransformV2TuxNearest, UseReorderedOutputArray) {
     this->testSpclOutArray(REORDERED_ARRAY);
+}
+
+///////////////////////////////////// CPP ////////////////////////////////
+//
+TEST(Transform, CPP) {
+    if (noImageIOTests()) return;
+
+    vector<dim4> inDims;
+    vector<string> inFiles;
+    vector<dim_t> goldDim;
+    vector<string> goldFiles;
+
+    vector<dim4> HDims;
+    vector<vector<float> > HIn;
+    vector<vector<float> > HTests;
+    readTests<float, float, float>(TEST_DIR "/transform/tux_tmat.test", HDims,
+                                   HIn, HTests);
+
+    readImageTests(string(TEST_DIR "/transform/tux_nearest.test"), inDims,
+                   inFiles, goldDim, goldFiles);
+
+    inFiles[0].insert(0, string(TEST_DIR "/transform/"));
+    inFiles[1].insert(0, string(TEST_DIR "/transform/"));
+
+    goldFiles[0].insert(0, string(TEST_DIR "/transform/"));
+
+    array H  = array(HDims[0][0], HDims[0][1], &(HIn[0].front()));
+    array IH = array(HDims[0][0], HDims[0][1], &(HIn[0].front()));
+
+    array scene_img = loadImage(inFiles[1].c_str(), false);
+
+    array gold_img = loadImage(goldFiles[0].c_str(), false);
+
+    array out_img = transform(scene_img, IH, inDims[0][0], inDims[0][1],
+                              AF_INTERP_NEAREST, false);
+
+    dim4 outDims  = out_img.dims();
+    dim4 goldDims = gold_img.dims();
+
+    vector<float> h_out_img(outDims[0] * outDims[1]);
+    out_img.host(&h_out_img.front());
+    vector<float> h_gold_img(goldDims[0] * goldDims[1]);
+    gold_img.host(&h_gold_img.front());
+
+    const dim_t n   = gold_img.elements();
+    const float thr = 1.0f;
+
+    // Maximum number of wrong pixels must be <= 0.01% of number of elements,
+    // this metric is necessary due to rounding errors between different
+    // backends for AF_INTERP_NEAREST and AF_INTERP_LOWER
+    const size_t maxErr = n * 0.0001f;
+    size_t err          = 0;
+
+    for (dim_t elIter = 0; elIter < n; elIter++) {
+        err += fabs((int)h_out_img[elIter] - h_gold_img[elIter]) > thr;
+        if (err > maxErr) {
+            ASSERT_LE(err, maxErr) << "at: " << elIter << endl;
+        }
+    }
 }
 
 // This tests batching of different forms
