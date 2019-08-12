@@ -439,8 +439,8 @@ void testSpclOutArray(TestOutputArrayType out_array_type) {
     TestOutputArrayInfo metadata(out_array_type);
     genTestOutputArray(&outArray, gold_dims.ndims(), gold_dims.get(),
                        (af_dtype)dtype_traits<T>::af_type, &metadata);
-    ASSERT_SUCCESS(af_transform(&outArray, sceneArray, HArray, odim0,
-                                odim1, method, invert));
+    ASSERT_SUCCESS(af_transform_v2(&outArray, sceneArray, HArray, odim0,
+                                   odim1, method, invert));
 
     assertSpclArraysTransform<T>(goldArray, outArray, &metadata);
 
