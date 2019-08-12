@@ -973,14 +973,15 @@ extern "C" {
     /**
        C Interface for transforming an image
 
-       \param[out] out will contain the transformed image
-       \param[in] in is input image
-       \param[in] transform is transformation matrix
-       \param[in] odim0 is the first output dimension
-       \param[in] odim1 is the second output dimension
-       \param[in] method is the interpolation type (Nearest by default)
-       \param[in] inverse if true applies inverse transform, if false applies forward transoform
-       \return     \ref AF_SUCCESS if the color transformation is successful,
+       \param[out] out       will contain the transformed image
+       \param[in]  in        is input image
+       \param[in]  transform is transformation matrix
+       \param[in]  odim0     is the first output dimension
+       \param[in]  odim1     is the second output dimension
+       \param[in]  method    is the interpolation type (Nearest by default)
+       \param[in]  inverse   if true applies inverse transform, if false applies forward transoform
+
+       \return \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
 
        \ingroup transform_func_transform
@@ -994,15 +995,22 @@ extern "C" {
        C Interface for the version of \ref af_transform that accepts a
        preallocated output array
 
-       \param[out] out will contain the transformed image
-       \param[in] in is input image
-       \param[in] transform is transformation matrix
-       \param[in] odim0 is the first output dimension
-       \param[in] odim1 is the second output dimension
-       \param[in] method is the interpolation type (Nearest by default)
-       \param[in] inverse if true applies inverse transform, if false applies forward transoform
-       \return     \ref AF_SUCCESS if the color transformation is successful,
+       \param[out] out       will contain the transformed image
+       \param[in]  in        is input image
+       \param[in]  transform is transformation matrix
+       \param[in]  odim0     is the first output dimension
+       \param[in]  odim1     is the second output dimension
+       \param[in]  method    is the interpolation type (Nearest by default)
+       \param[in]  inverse   if true applies inverse transform, if false applies forward transoform
+
+       \return \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
+
+       \note \p out can either be a null or existing `af_array` object. If it is a
+             sub-array of an existing `af_array`, only the corresponding portion of
+             the `af_array` will be overwritten
+       \note Passing an `af_array` that has not been initialized to \p out will
+             cause undefined behavior.
 
        \ingroup transform_func_transform
     */
