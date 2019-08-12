@@ -169,7 +169,8 @@ af_err af_transform_v2(af_array *out, const af_array in, const af_array tf,
                        const af_interp_type method, const bool inverse) {
     try {
         ARG_ASSERT(0, out != 0);  // need to dereference out in next call
-        af_transform_common(out, in, tf, odim0, odim1, method, inverse, true);
+        af_transform_common(out, in, tf, odim0, odim1, method, inverse,
+                            *out == 0);
     }
     CATCHALL;
 
