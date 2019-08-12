@@ -19,10 +19,12 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline void transform(af_array *out, const af_array in, const af_array tf, const dim4 &odims,
-                             const af_interp_type method, const bool inverse, const bool perspective)
-{
-    transform<T>(getArray<T>(*out), getArray<T>(in), getArray<float>(tf), odims, method, inverse, perspective);
+static inline void transform(af_array *out, const af_array in,
+                             const af_array tf, const dim4 &odims,
+                             const af_interp_type method, const bool inverse,
+                             const bool perspective) {
+    transform<T>(getArray<T>(*out), getArray<T>(in), getArray<float>(tf), odims,
+                 method, inverse, perspective);
 }
 
 AF_BATCH_KIND getTransformBatchKind(const dim4 &iDims, const dim4 &tDims) {
@@ -58,18 +60,17 @@ void af_transform_common(af_array *out, const af_array in, const af_array tf,
     const ArrayInfo &t_info = getInfo(tf);
     const ArrayInfo &i_info = getInfo(in);
 
-    const dim4 idims = i_info.dims();
-    const dim4 tdims = t_info.dims();
+    const dim4 idims     = i_info.dims();
+    const dim4 tdims     = t_info.dims();
     const af_dtype itype = i_info.getType();
 
     // Assert type and interpolation
     ARG_ASSERT(2, t_info.getType() == f32);
-    ARG_ASSERT(5, method == AF_INTERP_NEAREST ||
-               method == AF_INTERP_BILINEAR ||
-               method == AF_INTERP_BILINEAR_COSINE ||
-               method == AF_INTERP_BICUBIC ||
-               method == AF_INTERP_BICUBIC_SPLINE ||
-               method == AF_INTERP_LOWER);
+    ARG_ASSERT(5, method == AF_INTERP_NEAREST || method == AF_INTERP_BILINEAR ||
+                      method == AF_INTERP_BILINEAR_COSINE ||
+                      method == AF_INTERP_BICUBIC ||
+                      method == AF_INTERP_BICUBIC_SPLINE ||
+                      method == AF_INTERP_LOWER);
 
     // Assert dimesions
     // Image can be 2D or higher
@@ -107,28 +108,28 @@ void af_transform_common(af_array *out, const af_array in, const af_array tf,
         o1 = idims[1];
     }
 
-    switch(getTransformBatchKind(idims, tdims)) {
-    case AF_BATCH_NONE:     // Both are exactly 2D
-    case AF_BATCH_LHS:      // Image is 3/4D, transform is 2D
-    case AF_BATCH_SAME:     // Both are 3/4D and have the same dims
-        o2 = idims[2];
-        o3 = idims[3];
-        break;
-    case AF_BATCH_RHS:      // Image is 2D, transform is 3/4D
-        o2 = tdims[2];
-        o3 = tdims[3];
-        break;
-    case AF_BATCH_DIFF:  // Both are 3/4D, but have different dims
-        o2 = idims[2] == 1 ? tdims[2] : idims[2];
-        o3 = idims[3] == 1 ? tdims[3] : idims[3];
-        break;
-    case AF_BATCH_UNSUPPORTED:
-    default:
-        AF_ERROR(
-            "Unsupported combination of batching parameters in "
-            "transform",
-            AF_ERR_NOT_SUPPORTED);
-        break;
+    switch (getTransformBatchKind(idims, tdims)) {
+        case AF_BATCH_NONE:  // Both are exactly 2D
+        case AF_BATCH_LHS:   // Image is 3/4D, transform is 2D
+        case AF_BATCH_SAME:  // Both are 3/4D and have the same dims
+            o2 = idims[2];
+            o3 = idims[3];
+            break;
+        case AF_BATCH_RHS:  // Image is 2D, transform is 3/4D
+            o2 = tdims[2];
+            o3 = tdims[3];
+            break;
+        case AF_BATCH_DIFF:  // Both are 3/4D, but have different dims
+            o2 = idims[2] == 1 ? tdims[2] : idims[2];
+            o3 = idims[3] == 1 ? tdims[3] : idims[3];
+            break;
+        case AF_BATCH_UNSUPPORTED:
+        default:
+            AF_ERROR(
+                "Unsupported combination of batching parameters in "
+                "transform",
+                AF_ERR_NOT_SUPPORTED);
+            break;
     }
 
     const dim4 odims(o0, o1, o2, o3);
@@ -202,8 +203,8 @@ af_err af_scale(af_array *out, const af_array in, const float scale0,
                 const float scale1, const dim_t odim0, const dim_t odim1,
                 const af_interp_type method) {
     try {
-        const ArrayInfo& i_info = getInfo(in);
-        dim4 idims = i_info.dims();
+        const ArrayInfo &i_info = getInfo(in);
+        dim4 idims              = i_info.dims();
 
         dim_t _odim0 = odim0, _odim1 = odim1;
         float sx, sy;

@@ -18,8 +18,8 @@
 
 using af::array;
 using af::dim4;
-using af::loadImage;
 using af::dtype_traits;
+using af::loadImage;
 using std::abs;
 using std::endl;
 using std::string;
@@ -46,8 +46,8 @@ TYPED_TEST_CASE(TransformInt, TestTypesInt);
 
 template<typename T>
 void genTestData(af_array *gold, af_array *in, af_array *transform,
-                 dim_t *odim0, dim_t *odim1,
-                 string pTestFile, string pHomographyFile) {
+                 dim_t *odim0, dim_t *odim1, string pTestFile,
+                 string pHomographyFile) {
     vector<dim4> inNumDims;
     vector<string> inFiles;
     vector<dim_t> goldNumDims;
@@ -83,11 +83,11 @@ void genTestData(af_array *gold, af_array *in, af_array *transform,
     ASSERT_SUCCESS(af_create_array(&HArray, &(HIn[0].front()), HDims.ndims(),
                                    HDims.get(), f32));
 
-    *gold = goldArray;
-    *in = sceneArray;
+    *gold      = goldArray;
+    *in        = sceneArray;
     *transform = HArray;
-    *odim0 = objDims[0];
-    *odim1 = objDims[1];
+    *odim0     = objDims[0];
+    *odim1     = objDims[1];
 
     if (goldArray_f32 != 0) af_release_array(goldArray_f32);
     if (sceneArray_f32 != 0) af_release_array(sceneArray_f32);
@@ -107,23 +107,23 @@ void transformTest(string pTestFile, string pHomographyFile,
     dim_t odim0 = 0;
     dim_t odim1 = 0;
 
-    genTestData<T>(&goldArray, &sceneArray, &HArray, &odim0, &odim1,
-                   pTestFile, pHomographyFile);
+    genTestData<T>(&goldArray, &sceneArray, &HArray, &odim0, &odim1, pTestFile,
+                   pHomographyFile);
 
-    ASSERT_SUCCESS(af_transform(&outArray, sceneArray, HArray, odim0,
-                                odim1, method, invert));
+    ASSERT_SUCCESS(af_transform(&outArray, sceneArray, HArray, odim0, odim1,
+                                method, invert));
 
     // Get gold data
     dim_t goldEl = 0;
     ASSERT_SUCCESS(af_get_elements(&goldEl, goldArray));
     vector<T> goldData(goldEl);
-    ASSERT_SUCCESS(af_get_data_ptr((void*)&goldData.front(), goldArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void *)&goldData.front(), goldArray));
 
     // Get result
     dim_t outEl = 0;
     ASSERT_SUCCESS(af_get_elements(&outEl, outArray));
     vector<T> outData(outEl);
-    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), outArray));
+    ASSERT_SUCCESS(af_get_data_ptr((void *)&outData.front(), outArray));
 
     const float thr = 1.1f;
 
@@ -227,7 +227,7 @@ TYPED_TEST(TransformInt, PerspectiveLowerInvert) {
 
 template<typename T>
 class TransformV2 : public Transform<T> {
-protected:
+   protected:
     typedef typename dtype_traits<T>::base_type BT;
 
     af_array gold;
@@ -244,8 +244,14 @@ protected:
     af_interp_type method;
     bool invert;
 
-    TransformV2() : gold(0), in(0), transform(0), odim0(0), odim1(0),
-                    method(AF_INTERP_NEAREST), invert(false) {}
+    TransformV2()
+        : gold(0)
+        , in(0)
+        , transform(0)
+        , odim0(0)
+        , odim1(0)
+        , method(AF_INTERP_NEAREST)
+        , invert(false) {}
 
     void setInterpType(af_interp_type m) { method = m; }
     void setInvertFlag(bool i) { invert = i; }
@@ -254,24 +260,23 @@ protected:
 
     void releaseArrays() {
         if (transform != 0) { ASSERT_SUCCESS(af_release_array(transform)); }
-        if (in != 0)        { ASSERT_SUCCESS(af_release_array(in)); }
-        if (gold != 0)      { ASSERT_SUCCESS(af_release_array(gold)); }
+        if (in != 0) { ASSERT_SUCCESS(af_release_array(in)); }
+        if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
 
-        gold = 0;
-        in   = 0;
-        transform  = 0;
-
+        gold      = 0;
+        in        = 0;
+        transform = 0;
     }
 
     void TearDown() { releaseArrays(); }
 
-    void setTestData(float* h_gold, dim4 gold_dims, float* h_in, dim4 in_dims,
-                     float* h_transform, dim4 transform_dims) {
+    void setTestData(float *h_gold, dim4 gold_dims, float *h_in, dim4 in_dims,
+                     float *h_transform, dim4 transform_dims) {
         releaseArrays();
 
-        this->gold_dims = gold_dims;
-        this->in_dims   = in_dims;
-        this->transform_dims  = transform_dims;
+        this->gold_dims      = gold_dims;
+        this->in_dims        = in_dims;
+        this->transform_dims = transform_dims;
 
         vector<T> h_gold_cast;
         vector<T> h_in_cast;
@@ -293,22 +298,23 @@ protected:
         ASSERT_SUCCESS(af_create_array(&in, &h_in_cast.front(), in_dims.ndims(),
                                        in_dims.get(),
                                        (af_dtype)dtype_traits<T>::af_type));
-        ASSERT_SUCCESS(af_create_array(&transform, &h_transform_cast.front(),
-                                       transform_dims.ndims(), transform_dims.get(),
-                                       (af_dtype)dtype_traits<BT>::af_type));
+        ASSERT_SUCCESS(af_create_array(
+            &transform, &h_transform_cast.front(), transform_dims.ndims(),
+            transform_dims.get(), (af_dtype)dtype_traits<BT>::af_type));
     }
 
     void setTestData(string pTestFile, string pHomographyFile) {
         releaseArrays();
 
-        genTestData<T>(&gold, &in, &transform, &odim0, &odim1,
-                       pTestFile, pHomographyFile);
+        genTestData<T>(&gold, &in, &transform, &odim0, &odim1, pTestFile,
+                       pHomographyFile);
 
-        ASSERT_SUCCESS(af_get_dims(&gold_dims[0], &gold_dims[1], &gold_dims[2], &gold_dims[3],
-                                   gold));
-        ASSERT_SUCCESS(af_get_dims(&in_dims[0], &in_dims[1], &in_dims[2], &in_dims[3],
-                                   in));
-        ASSERT_SUCCESS(af_get_dims(&transform_dims[0], &transform_dims[1], &transform_dims[2], &transform_dims[3],
+        ASSERT_SUCCESS(af_get_dims(&gold_dims[0], &gold_dims[1], &gold_dims[2],
+                                   &gold_dims[3], gold));
+        ASSERT_SUCCESS(af_get_dims(&in_dims[0], &in_dims[1], &in_dims[2],
+                                   &in_dims[3], in));
+        ASSERT_SUCCESS(af_get_dims(&transform_dims[0], &transform_dims[1],
+                                   &transform_dims[2], &transform_dims[3],
                                    transform));
     }
 
@@ -333,42 +339,42 @@ protected:
             }
         }
 
-        af_array out_ = 0;
+        af_array out_  = 0;
         af_array gold_ = 0;
 
         if (metadata->getOutputArrayType() == SUB_ARRAY) {
             // There are two full arrays. One will be injected with the gold
-            // subarray, the other should have already been injected with the af_*
-            // function's output. Then we compare the two full arrays
+            // subarray, the other should have already been injected with the
+            // af_* function's output. Then we compare the two full arrays
             af_array gold_full_array = metadata->getFullOutputCopy();
             af_assign_seq(&gold_full_array, gold_full_array,
                           metadata->getSubArrayNumDims(),
                           metadata->getSubArrayIdxs(), gold);
 
             gold_ = metadata->getFullOutputCopy();
-            out_ = metadata->getFullOutput();
+            out_  = metadata->getFullOutput();
         } else {
             gold_ = gold;
-            out_ = out;
+            out_  = out;
         }
 
         // Get gold data
         dim_t goldEl = 0;
         af_get_elements(&goldEl, gold_);
         vector<T> goldData(goldEl);
-        af_get_data_ptr((void*)&goldData.front(), gold_);
+        af_get_data_ptr((void *)&goldData.front(), gold_);
 
         // Get result
         dim_t outEl = 0;
         af_get_elements(&outEl, out_);
         vector<T> outData(outEl);
-        af_get_data_ptr((void*)&outData.front(), out_);
+        af_get_data_ptr((void *)&outData.front(), out_);
 
         const float thr = 1.1f;
 
-        // Maximum number of wrong pixels must be <= 0.01% of number of elements,
-        // this metric is necessary due to rounding errors between different
-        // backends for AF_INTERP_NEAREST and AF_INTERP_LOWER
+        // Maximum number of wrong pixels must be <= 0.01% of number of
+        // elements, this metric is necessary due to rounding errors between
+        // different backends for AF_INTERP_NEAREST and AF_INTERP_LOWER
         const size_t maxErr = goldEl * 0.0001f;
         size_t err          = 0;
 
@@ -389,8 +395,8 @@ protected:
         TestOutputArrayInfo metadata(out_array_type);
         genTestOutputArray(&out, gold_dims.ndims(), gold_dims.get(),
                            (af_dtype)dtype_traits<T>::af_type, &metadata);
-        ASSERT_SUCCESS(af_transform_v2(&out, in, transform, odim0,
-                                       odim1, method, invert));
+        ASSERT_SUCCESS(
+            af_transform_v2(&out, in, transform, odim0, odim1, method, invert));
 
         assertSpclArraysTransform(gold, out, &metadata);
     }
@@ -400,7 +406,7 @@ TYPED_TEST_CASE(TransformV2, TestTypes);
 
 template<typename T>
 class TransformV2TuxNearest : public TransformV2<T> {
-protected:
+   protected:
     void SetUp() {
         this->setTestData(string(TEST_DIR "/transform/tux_nearest.test"),
                           string(TEST_DIR "/transform/tux_tmat.test"));
@@ -560,7 +566,7 @@ TEST(TransformBatching, CPP) {
     for (int i = 0; i < (int)gold.size(); i++) {
         // Get result
         vector<float> outData(out[i].elements());
-        out[i].host((void*)&outData.front());
+        out[i].host((void *)&outData.front());
 
         for (int iter = 0; iter < (int)gold[i].size(); iter++) {
             ASSERT_EQ(gold[i][iter], outData[iter])
