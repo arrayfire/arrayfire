@@ -592,29 +592,29 @@ AFAPI array convolve2(const array& signal, const array& filter, const convMode m
 
 /**
    C++ Interface for 2D convolution
-   This version of convolution is consistent with the machine learning formulation
-   that will spatially convolve a filter on 2-dimensions against a signal.
-   Multiple signals and filters can be batched against each other.
-   Furthermore, the signals and filters can be multi-dimensional however their dimensions must match.
+
+   This version of convolution is consistent with the machine learning
+   formulation that will spatially convolve a filter on 2-dimensions against a
+   signal. Multiple signals and filters can be batched against each other.
+   Furthermore, the signals and filters can be multi-dimensional however their
+   dimensions must match.
 
    Example:
-   Filters with dimensions: Wf x Hf x C x Nf
-   Signals with dimensions: Ws x Hs x C x Ns
+   Signals with dimensions: d0 x d1 x d2 x Ns
+   Filters with dimensions: d0 x d1 x d2 x Nf
 
-   Resulting Convolution: Wc x Hc x Ns x Nf
+   Resulting Convolution: d0 x d1 x Ns x Nf
 
-   \snippet test/convolve.cpp ex_image_convolve2
-
-   \param[in]  signal is the input signal
-   \param[in]  filter is the filter that will be used for the convolution operation
-   \param[in]  stride specifies the filter strides along each dimension
-   \param[in]  padding specifies the padding along each dimension
+   \param[in]  signal   is the input signal
+   \param[in]  filter   is the filter that will be used for the convolution operation
+   \param[in]  stride   specifies the filter strides along each dimension
+   \param[in]  padding  specifies the padding along each dimension
    \param[in]  dilation specifies the amount to dilate the filter before convolution
-   \return     the convolved array
+   \return              the convolved array
 
    \ingroup signal_func_convolve2
  */
-AFAPI array convolve2_v2(const array& signal, const array& filter,
+AFAPI array convolve2_nn(const array& signal, const array& filter,
                          const dim4 stride, const dim4 padding, const dim4 dilation);
 
 /**
@@ -1411,16 +1411,17 @@ AFAPI af_err af_convolve2(af_array *out, const af_array signal, const af_array f
 /**
    C Interface for 2D convolution
 
-   This version of convolution is consistent with the machine learning formulation
-   that will spatially convolve a filter on 2-dimensions against a signal.
-   Multiple signals and filters can be batched against each other.
-   Furthermore, the signals and filters can be multi-dimensional however their dimensions must match.
+   This version of convolution is consistent with the machine learning
+   formulation that will spatially convolve a filter on 2-dimensions against a
+   signal. Multiple signals and filters can be batched against each other.
+   Furthermore, the signals and filters can be multi-dimensional however their
+   dimensions must match.
 
    Example:
-   Filters with dimensions: Wf x Hf x C x Nf
-   Signals with dimensions: Ws x Hs x C x Ns
+   Signals with dimensions: d0 x d1 x d2 x Ns
+   Filters with dimensions: d0 x d1 x d2 x Nf
 
-   Resulting Convolution: Wc x Hc x Ns x Nf
+   Resulting Convolution: d0 x d1 x Ns x Nf
 
    \param[out] out is convolved array
    \param[in]  signal is the input signal
@@ -1437,7 +1438,7 @@ AFAPI af_err af_convolve2(af_array *out, const af_array signal, const af_array f
 
    \ingroup signal_func_convolve2
  */
-AFAPI af_err af_convolve2_v2(af_array *out, const af_array signal, const af_array filter,
+AFAPI af_err af_convolve2_nn(af_array *out, const af_array signal, const af_array filter,
                              const unsigned stride_dims,   const dim_t *strides,
                              const unsigned padding_dims,  const dim_t *paddings,
                              const unsigned dilation_dims, const dim_t *dilations);

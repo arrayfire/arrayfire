@@ -10,7 +10,7 @@
 #include <af/array.h>
 #include "symbol_manager.hpp"
 
-af_err af_convolve2_gradient_v2(af_array *out, const af_array incoming_gradient,
+af_err af_convolve2_gradient_nn(af_array *out, const af_array incoming_gradient,
                                 const af_array original_signal,
                                 const af_array original_filter,
                                 const af_array convolved_output,

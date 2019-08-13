@@ -20,14 +20,14 @@ class dim4;
     /**
         C++ interface for calculating backward pass gradient of 2D convolution
         This function calculates the gradient with respect to the output
-        of the \ref convolve2_v2() function that uses the machine learning
+        of the \ref convolve2_nn() function that uses the machine learning
         formulation for the dimensions of the signals and filters
 
         \param[in]  incoming_gradient gradients to be distributed in backwards pass
         \param[in]  original_signal input signal to forward pass of convolution
-                    assumed structure of input is ( W x H x C x N )
+                    assumed structure of input is ( d0 x d1 x d2 x N )
         \param[in]  original_filter input filter to forward pass of convolution
-                    assumed structure of input is ( W x H x C x N )
+                    assumed structure of input is ( d0 x d1 x d2 x N )
         \param[in]  convolved_output output from forward pass of convolution
         \param[in]  stride specifies strides along each dimension for original convolution
         \param[in]  padding specifies padding width along each dimension for original convolution
@@ -37,7 +37,7 @@ class dim4;
 
         \ingroup ml_convolution
     */
-    AFAPI array convolve2GradientV2(const array& incoming_gradient,
+    AFAPI array convolve2GradientNN(const array& incoming_gradient,
                                     const array& original_signal,
                                     const array& original_filter,
                                     const array& convolved_output,
@@ -57,15 +57,15 @@ extern "C" {
     /**
         C interface for calculating backward pass gradient of 2D convolution
         This function calculates the gradient with respect to the output
-        of the \ref convolve2_v2() function that uses the machine learning
+        of the \ref convolve2_nn() function that uses the machine learning
         formulation for the dimensions of the signals and filters
 
         \param[out] out gradient wrt/gradType
         \param[in]  incoming_gradient gradients to be distributed in backwards pass
         \param[in]  original_signal input signal to forward pass of convolution
-                    assumed structure of input is ( W x H x C x N )
+                    assumed structure of input is ( d0 x d1 x d2 x N )
         \param[in]  original_filter input filter to forward pass of convolution
-                    assumed structure of input is ( W x H x C x N )
+                    assumed structure of input is ( d0 x d1 x d2 x N )
         \param[in]  convolved_output output from forward pass of convolution
         \param[in]  stride_dims specifies number of stride dimensions
         \param[in]  strides array of stride values
@@ -78,7 +78,7 @@ extern "C" {
 
         \ingroup ml_convolution
     */
-    AFAPI af_err af_convolve2_gradient_v2(af_array *out,
+    AFAPI af_err af_convolve2_gradient_nn(af_array *out,
                                           const af_array incoming_gradient,
                                           const af_array original_signal,
                                           const af_array original_filter,

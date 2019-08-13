@@ -25,14 +25,14 @@
 using af::dim4;
 using namespace detail;
 
-template <typename T, typename accT, dim_t baseDim, bool expand>
+template<typename T, typename accT, dim_t baseDim, bool expand>
 inline static af_array convolve(const af_array &s, const af_array &f,
                                 AF_BATCH_KIND kind) {
     return getHandle(convolve<T, accT, baseDim, expand>(
         getArray<T>(s), castArray<accT>(f), kind));
 }
 
-template <typename T, typename accT, bool expand>
+template<typename T, typename accT, bool expand>
 inline static af_array convolve2(const af_array &s, const af_array &c_f,
                                  const af_array &r_f) {
     const Array<accT> colFilter = castArray<accT>(c_f);
@@ -57,7 +57,7 @@ inline static af_array convolve2(const af_array &s, const af_array &c_f,
         convolve2<T, accT, expand>(getArray<T>(s), colFilter, rowFilter));
 }
 
-template <dim_t baseDim>
+template<dim_t baseDim>
 AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
     dim_t sn = sDims.ndims();
     dim_t fn = fDims.ndims();
@@ -82,7 +82,7 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
         return AF_BATCH_UNSUPPORTED;
 }
 
-template <dim_t baseDim, bool expand>
+template<dim_t baseDim, bool expand>
 af_err convolve(af_array *out, const af_array signal, const af_array filter) {
     try {
         const ArrayInfo &sInfo = getInfo(signal);
@@ -161,7 +161,7 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter) {
     return AF_SUCCESS;
 }
 
-template <bool expand>
+template<bool expand>
 af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter,
                      const af_array signal) {
     try {
@@ -233,7 +233,7 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter,
     return AF_SUCCESS;
 }
 
-template <int baseDim>
+template<int baseDim>
 bool isFreqDomain(const af_array &signal, const af_array filter,
                   af_conv_domain domain) {
     if (domain == AF_CONV_FREQ) return true;
@@ -304,14 +304,15 @@ af_err af_convolve2(af_array *out, const af_array signal, const af_array filter,
     CATCHALL;
 }
 
-template <typename T>
+template<typename T>
 inline static af_array convolve2Strided(const af_array &s, const af_array &f,
                                         const dim4 stride, const dim4 padding,
                                         const dim4 dilation) {
-    return getHandle(convolve2<T>(getArray<T>(s), getArray<T>(f), stride, padding, dilation));
+    return getHandle(convolve2<T>(getArray<T>(s), getArray<T>(f), stride,
+                                  padding, dilation));
 }
 
-af_err af_convolve2_v2(af_array *out, const af_array signal,
+af_err af_convolve2_nn(af_array *out, const af_array signal,
                        const af_array filter, const unsigned stride_dims,
                        const dim_t *strides, const unsigned padding_dims,
                        const dim_t *paddings, const unsigned dilation_dims,
@@ -340,11 +341,11 @@ af_err af_convolve2_v2(af_array *out, const af_array signal,
         switch (signalType) {
             case f32:
                 output = convolve2Strided<float>(signal, filter, stride,
-                                                        padding, dilation);
+                                                 padding, dilation);
                 break;
             case f64:
-                output = convolve2Strided<double>(
-                    signal, filter, stride, padding, dilation);
+                output = convolve2Strided<double>(signal, filter, stride,
+                                                  padding, dilation);
                 break;
             default: TYPE_ERROR(1, signalType);
         }
@@ -385,7 +386,7 @@ af_err af_convolve2_sep(af_array *out, const af_array signal,
     CATCHALL;
 }
 
-template <typename T>
+template<typename T>
 af_array conv2GradCall(const af_array incoming_gradient,
                        const af_array original_signal,
                        const af_array original_filter,
@@ -395,25 +396,23 @@ af_array conv2GradCall(const af_array incoming_gradient,
     if (grad_type == AF_CONV_GRADIENT_FILTER) {
         return getHandle(detail::conv2FilterGradient<T>(
             getArray<T>(incoming_gradient), getArray<T>(original_signal),
-            getArray<T>(original_filter), getArray<T>(convolved_output),
-            stride, padding, dilation));
+            getArray<T>(original_filter), getArray<T>(convolved_output), stride,
+            padding, dilation));
     } else {
         return getHandle(detail::conv2DataGradient<T>(
             getArray<T>(incoming_gradient), getArray<T>(original_signal),
-            getArray<T>(original_filter), getArray<T>(convolved_output),
-            stride, padding, dilation));
+            getArray<T>(original_filter), getArray<T>(convolved_output), stride,
+            padding, dilation));
     }
 }
 
-af_err af_convolve2_gradient_v2(af_array *out, const af_array incoming_gradient,
-                                const af_array original_signal,
-                                const af_array original_filter,
-                                const af_array convolved_output,
-                                const unsigned stride_dims, const dim_t *strides,
-                                const unsigned padding_dims, const dim_t *paddings,
-                                const unsigned dilation_dims,
-                                const dim_t *dilations,
-                                af_conv_gradient_type grad_type) {
+af_err af_convolve2_gradient_nn(
+    af_array *out, const af_array incoming_gradient,
+    const af_array original_signal, const af_array original_filter,
+    const af_array convolved_output, const unsigned stride_dims,
+    const dim_t *strides, const unsigned padding_dims, const dim_t *paddings,
+    const unsigned dilation_dims, const dim_t *dilations,
+    af_conv_gradient_type grad_type) {
     try {
         const ArrayInfo &iinfo = getInfo(incoming_gradient);
         af::dim4 iDims         = iinfo.dims();

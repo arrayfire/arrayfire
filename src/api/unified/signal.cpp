@@ -170,7 +170,7 @@ CONV_HAPI_DEF(af_convolve1)
 CONV_HAPI_DEF(af_convolve2)
 CONV_HAPI_DEF(af_convolve3)
 
-af_err af_convolve2_v2(af_array *out, const af_array signal,
+af_err af_convolve2_nn(af_array *out, const af_array signal,
                        const af_array filter, const unsigned stride_dims,
                        const dim_t *strides, const unsigned padding_dims,
                        const dim_t *paddings, const unsigned dilation_dims,

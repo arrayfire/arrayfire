@@ -304,8 +304,6 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
     return out;
 }
 
-
-
 template <typename T>
 Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
                            const Array<T> &original_signal,
