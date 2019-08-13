@@ -61,7 +61,7 @@ array convolve2_nn(const array &signal, const array &filter, const dim4 stride,
     return array(out);
 }
 
-array convolve2GradientV2(const array &incoming_gradient,
+array convolve2GradientNN(const array &incoming_gradient,
                           const array &original_signal,
                           const array &original_filter,
                           const array &convolved_output, const dim4 stride,

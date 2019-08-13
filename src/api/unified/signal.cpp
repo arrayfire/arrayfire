@@ -180,6 +180,20 @@ af_err af_convolve2_nn(af_array *out, const af_array signal,
                 paddings, dilation_dims, dilations);
 }
 
+af_err af_convolve2_gradient_nn(
+    af_array *out, const af_array incoming_gradient,
+    const af_array original_signal, const af_array original_filter,
+    const af_array convolved_output, const unsigned stride_dims,
+    const dim_t *strides, const unsigned padding_dims, const dim_t *paddings,
+    const unsigned dilation_dims, const dim_t *dilations,
+    af_conv_gradient_type grad_type) {
+
+    CHECK_ARRAYS(incoming_gradient, original_signal, original_filter, convolved_output);
+    return CALL(out, incoming_gradient, original_signal, original_filter, convolved_output,
+                stride_dims, strides, padding_dims, paddings, dilation_dims, dilations, grad_type);
+
+}
+
 #define FFT_CONV_HAPI_DEF(af_func)                                   \
     af_err af_func(af_array *out, const af_array signal,             \
                    const af_array filter, const af_conv_mode mode) { \
