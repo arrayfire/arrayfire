@@ -91,7 +91,7 @@ template<typename T>
 void destroyArray(Array<T> *A);
 
 template<typename T>
-bool passesJitHeuristics(jit::Node *node);
+kJITHeuristics passesJitHeuristics(jit::Node *node);
 
 template<typename T>
 void *getDevicePtr(const Array<T> &arr) {

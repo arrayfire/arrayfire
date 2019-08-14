@@ -49,6 +49,13 @@ typedef enum {
     AF_BATCH_DIFF,             /* signal and filter have different batch size */
 } AF_BATCH_KIND;
 
+enum class kJITHeuristics {
+    PASS               = 0, /* no eval necessary */
+    TREE_HEIGHT        = 1, /* eval due to jit tree height */
+    KERNEL_PARAM_SIZE  = 2, /* eval due to many kernel parameters */
+    MEM_PRESSURE       = 3  /* eval due to memory pressure */
+};
+
 #ifdef OS_WIN
 #include <Windows.h>
 using LibHandle = HMODULE;

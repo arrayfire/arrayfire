@@ -8,10 +8,11 @@
  ********************************************************/
 
 #pragma once
-#include <common/jit/Node.hpp>
 
 #include <Array.hpp>
 #include <backend.hpp>
+#include <common/defines.hpp>
+#include <common/jit/Node.hpp>
 
 #include <array>
 #include <iomanip>
@@ -74,19 +75,30 @@ common::Node_ptr createNaryNode(
 
     common::Node_ptr ptr = createNode(childNodes);
 
-    if (detail::passesJitHeuristics<Ti>(ptr.get())) {
-        return ptr;
-    } else {
-        int max_height_index = 0;
-        int max_height       = 0;
-        for (int i = 0; i < N; i++) {
-            if (max_height < childNodes[i]->getHeight()) {
-                max_height_index = i;
-                max_height       = childNodes[i]->getHeight();
-            }
+    switch(static_cast<kJITHeuristics>(detail::passesJitHeuristics<Ti>(ptr.get()))) {
+        case kJITHeuristics::PASS: {
+            return ptr;
         }
-        children[max_height_index]->eval();
-        return createNaryNode<Ti, N>(odims, createNode, move(children));
+        case kJITHeuristics::TREE_HEIGHT:
+        case kJITHeuristics::KERNEL_PARAM_SIZE: {
+            int max_height_index = 0;
+            int max_height       = 0;
+            for (int i = 0; i < N; i++) {
+                if (max_height < childNodes[i]->getHeight()) {
+                    max_height_index = i;
+                    max_height       = childNodes[i]->getHeight();
+                }
+            }
+
+            children[max_height_index]->eval();
+            return createNaryNode<Ti, N>(odims, createNode, move(children));
+        }
+        case kJITHeuristics::MEM_PRESSURE: {
+            for (auto &c : children) { c->eval(); } //TODO: use evalMultiple()
+            return ptr;
+        }
     }
+    assert("MISSING HEURISTIC EVALUATION" && 1 == 0);
+    return ptr;
 }
 }  // namespace common

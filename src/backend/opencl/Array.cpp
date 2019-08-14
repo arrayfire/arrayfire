@@ -249,9 +249,9 @@ Node_ptr Array<T>::getNode() const {
 /// 2. The number of parameters we are passing into the kernel exceeds the
 ///    limitation on the platform. For NVIDIA this is 4096 bytes. The
 template<typename T>
-bool passesJitHeuristics(Node *root_node) {
-    if (!evalFlag()) return true;
-    if (root_node->getHeight() >= (int)getMaxJitSize()) { return false; }
+kJITHeuristics passesJitHeuristics(Node *root_node) {
+    if (!evalFlag()) { return kJITHeuristics::PASS; }
+    if (root_node->getHeight() >= (int)getMaxJitSize()) { return kJITHeuristics::TREE_HEIGHT; }
 
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;
@@ -319,9 +319,14 @@ bool passesJitHeuristics(Node *root_node) {
 
         isParamLimit = param_size >= max_param_size;
 
-        if (isBufferLimit || isParamLimit) { return false; }
+        if (isParamLimit) {
+            return kJITHeuristics::KERNEL_PARAM_SIZE;
+        }
+        if (isBufferLimit) {
+            return kJITHeuristics::MEM_PRESSURE;
+        }
     }
-    return true;
+    return kJITHeuristics::PASS;
 }
 
 template<typename T>
@@ -462,7 +467,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
     template void writeDeviceDataArray<T>(                                    \
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(vector<Array<T> *> arrays);                 \
-    template bool passesJitHeuristics<T>(Node * node);                        \
+    template kJITHeuristics passesJitHeuristics<T>(Node * node);              \
     template void Array<T>::setDataDims(const dim4 &new_dims);
 
 INSTANTIATE(float)

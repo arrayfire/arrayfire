@@ -219,9 +219,9 @@ Array<T> createEmptyArray(const dim4 &dims) {
 }
 
 template<typename T>
-bool passesJitHeuristics(Node *root_node) {
-    if (!evalFlag()) return true;
-    if (root_node->getHeight() >= (int)getMaxJitSize()) { return false; }
+kJITHeuristics passesJitHeuristics(Node *root_node) {
+    if (!evalFlag()) return kJITHeuristics::PASS;
+    if (root_node->getHeight() >= (int)getMaxJitSize()) { return kJITHeuristics::TREE_HEIGHT; }
 
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;
@@ -240,9 +240,9 @@ bool passesJitHeuristics(Node *root_node) {
                                       return prev + n.getBytes();
                                   });
 
-        if (2 * bytes > lock_bytes) { return false; }
+        if (2 * bytes > lock_bytes) { return kJITHeuristics::MEM_PRESSURE; }
     }
-    return true;
+    return kJITHeuristics::PASS;
 }
 
 template<typename T>
