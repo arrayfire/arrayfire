@@ -43,7 +43,7 @@ If your kernels can share the ArrayFire CUDA stream, you should:
 1. Include the 'af/afcuda.h' header in your source code
 2. Use ArrayFire as normal
 3. Ensure any JIT kernels have executed using `af::eval()`
-4. Obtain device pointers from ArrayFire array objects using
+4. Obtain device pointers from ArrayFire array objects using `array::device()`
 5. Determine ArrayFire's CUDA stream
 6. Set arguments and run your kernel in ArrayFire's stream
 7. Return control of af::array memory to ArrayFire
@@ -94,7 +94,7 @@ int main() {
     // ... resume ArrayFire operations
     af_print(x);
 
-    // Because the device pointers, d_x and d_y, were returned to ArrayFire's
+    // Because the device pointer `d_x` was returned to ArrayFire's
     // control by the unlock function, there is no need to free them using
     // cudaFree()
 
