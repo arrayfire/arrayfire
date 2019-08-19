@@ -19,9 +19,9 @@ code. ArrayFire provides several functions to ease this process including:
 | Function              | Purpose                                             |
 |-----------------------|-----------------------------------------------------|
 | af::array(...)        | Construct an ArrayFire array from cl_mem references or cl::Buffer objects |
-| af::array.device()    | Obtain a pointer to the cl_mem reference (implies lock()) |
+| af::array.device()    | Obtain a pointer to the cl_mem reference (implies `lock()`) |
 | af::array.lock()      | Removes ArrayFire's control of a cl_mem buffer            |
-| af::array.unlock()    | Restore's ArrayFire's control over a cl_mem buffer        |
+| af::array.unlock()    | Restores ArrayFire's control over a cl_mem buffer         |
 | afcl::getPlatform()   | Get ArrayFire's current cl_platform                       |
 | af::getDevice()       | Get the current ArrayFire Device ID                       |
 | afcl::getDeviceId()   | Get ArrayFire's current cl_device_id                      |

@@ -19,9 +19,9 @@ code. ArrayFire provides several functions to ease this process including:
 | Function              | Purpose                                             |
 |-----------------------|-----------------------------------------------------|
 | af::array(...)        | Construct an ArrayFire Array from device memory     |
-| af::array.device()    | Obtain a pointer to the device memory (implies lock() |
+| af::array.device()    | Obtain a pointer to the device memory (implies `lock()`) |
 | af::array.lock()      | Removes ArrayFire's control of a device memory pointer |
-| af::array.unlock()    | Restore's ArrayFire's control over a device memory pointer |
+| af::array.unlock()    | Restores ArrayFire's control over a device memory pointer |
 | af::getDevice()       | Gets the current ArrayFire device ID                |
 | af::setDevice()       | Switches ArrayFire to the specified device          |
 | afcu::getNativeId()   | Converts an ArrayFire device ID to a CUDA device ID |
