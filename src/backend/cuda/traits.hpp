@@ -11,6 +11,7 @@
 
 #include <common/traits.hpp>
 #include <cuComplex.h>
+#include <cuda_fp16.h>
 
 namespace af {
 
@@ -26,6 +27,13 @@ struct dtype_traits<cuDoubleComplex> {
     enum { af_type = c64 };
     typedef double base_type;
     static const char* getName() { return "cuDoubleComplex"; }
+};
+
+template<>
+struct dtype_traits<__half> {
+    enum { af_type = f16 };
+    typedef __half base_type;
+    static const char* getName() { return "__half"; }
 };
 
 }  // namespace af

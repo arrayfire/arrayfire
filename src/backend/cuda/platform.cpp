@@ -21,13 +21,14 @@
 #include <cufft.hpp>
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
-#include <driver.h>
 #include <device_manager.hpp>
+#include <driver.h>
 #include <err_cuda.hpp>
 #include <memory.hpp>
 #include <spdlog/spdlog.h>
 #include <version.hpp>
 #include <af/cuda.h>
+#include <af/device.h>
 #include <af/version.h>
 // cuda_gl_interop.h does not include OpenGL headers for ARM
 #include <common/graphics_common.hpp>
@@ -442,4 +443,13 @@ af_err afcu_cublasSetMathMode(cublasMath_t mode) {
     }
     CATCHALL;
     return AF_SUCCESS;
+}
+
+namespace af {
+  template<>
+  __half* array::device<__half>() const {
+    void *ptr = NULL;
+    af_get_device_ptr(&ptr, get());
+    return (__half *)ptr;
+  }
 }
