@@ -47,7 +47,7 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
         NaryNode(getFullName<T>(), shortname<T>(true), "__select", 3,
                  {{cond_node, a_node, b_node}}, (int)af_select_t, height));
 
-    if (detail::passesJitHeuristics<T>(node.get()) == kJITHeuristics::PASS) {
+    if (detail::passesJitHeuristics<T>(node.get()) == kJITHeuristics::Pass) {
         return createNodeArray<T>(odims, node);
     } else {
         if (a_node->getHeight() >
@@ -77,7 +77,7 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
         (flip ? "__not_select" : "__select"), 3, {{cond_node, a_node, b_node}},
         (int)(flip ? af_not_select_t : af_select_t), height));
 
-    if (detail::passesJitHeuristics<T>(node.get()) == kJITHeuristics::PASS) {
+    if (detail::passesJitHeuristics<T>(node.get()) == kJITHeuristics::Pass) {
         return createNodeArray<T>(odims, node);
     } else {
         if(a_node->getHeight() > max(b_node->getHeight(), cond_node->getHeight())) {

@@ -76,11 +76,11 @@ common::Node_ptr createNaryNode(
     common::Node_ptr ptr = createNode(childNodes);
 
     switch(static_cast<kJITHeuristics>(detail::passesJitHeuristics<Ti>(ptr.get()))) {
-        case kJITHeuristics::PASS: {
+        case kJITHeuristics::Pass: {
             return ptr;
         }
-        case kJITHeuristics::TREE_HEIGHT:
-        case kJITHeuristics::KERNEL_PARAM_SIZE: {
+        case kJITHeuristics::TreeHeight:
+        case kJITHeuristics::KernelParameterSize: {
             int max_height_index = 0;
             int max_height       = 0;
             for (int i = 0; i < N; i++) {
@@ -93,7 +93,7 @@ common::Node_ptr createNaryNode(
             children[max_height_index]->eval();
             return createNaryNode<Ti, N>(odims, createNode, move(children));
         }
-        case kJITHeuristics::MEM_PRESSURE: {
+        case kJITHeuristics::MemoryPressure: {
             for (auto &c : children) { c->eval(); } //TODO: use evalMultiple()
             return ptr;
         }

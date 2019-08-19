@@ -228,8 +228,8 @@ Node_ptr Array<T>::getNode() const {
 ///    limitation on the platform. For NVIDIA this is 4096 bytes. The
 template<typename T>
 kJITHeuristics passesJitHeuristics(Node *root_node) {
-    if (!evalFlag()) { return kJITHeuristics::PASS; }
-    if (root_node->getHeight() >= (int)getMaxJitSize()) { return kJITHeuristics::TREE_HEIGHT; }
+    if (!evalFlag()) { return kJITHeuristics::Pass; }
+    if (root_node->getHeight() >= (int)getMaxJitSize()) { return kJITHeuristics::TreeHeight; }
 
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;
@@ -281,13 +281,13 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
         // should be checking the amount of memory available to guard
         // this eval
         if (param_size >= max_param_size) {
-            return kJITHeuristics::KERNEL_PARAM_SIZE;
+            return kJITHeuristics::KernelParameterSize;
         }
         if (info.total_buffer_size * 2 > lock_bytes) {
-            return kJITHeuristics::MEM_PRESSURE;
+            return kJITHeuristics::MemoryPressure;
         }
     }
-    return kJITHeuristics::PASS;
+    return kJITHeuristics::Pass;
 }
 
 template<typename T>
