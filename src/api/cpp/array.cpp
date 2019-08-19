@@ -23,6 +23,12 @@
 #include "error.hpp"
 #include "half.hpp"  //note: NOT common. From extern/half/include/half.hpp
 
+#ifdef AF_CUDA
+// NOTE: Adding ifdef here to avoid copying code constructor in the cuda backend
+#include <traits.hpp>
+#include <cuda_fp16.h>
+#endif
+
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -237,6 +243,9 @@ INSTANTIATE(short)
 INSTANTIATE(unsigned short)
 INSTANTIATE(af_half)
 INSTANTIATE(half_float::half)
+#ifdef AF_CUDA
+INSTANTIATE(__half);
+#endif
 
 #undef INSTANTIATE
 

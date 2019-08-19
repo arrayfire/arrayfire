@@ -10,6 +10,7 @@
 #include <Array.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
@@ -20,6 +21,8 @@
 #include <cstring>
 
 using namespace detail;
+
+using common::half;
 
 af_err af_device_array(af_array *arr, void *data, const unsigned ndims,
                        const dim_t *const dims, const af_dtype type) {
@@ -72,6 +75,9 @@ af_err af_device_array(af_array *arr, void *data, const unsigned ndims,
             case b8:
                 res = getHandle(createDeviceDataArray<char>(d, data));
                 break;
+            case f16:
+                res = getHandle(createDeviceDataArray<half>(d, data));
+                break;
             default: TYPE_ERROR(4, type);
         }
 
@@ -100,6 +106,7 @@ af_err af_get_device_ptr(void **data, const af_array arr) {
             case u16: *data = getDevicePtr(getArray<ushort>(arr)); break;
             case u8: *data = getDevicePtr(getArray<uchar>(arr)); break;
             case b8: *data = getDevicePtr(getArray<char>(arr)); break;
+            case f16: *data = getDevicePtr(getArray<half>(arr)); break;
 
             default: TYPE_ERROR(4, type);
         }
@@ -136,6 +143,7 @@ af_err af_lock_array(const af_array arr) {
             case u16: lockArray<ushort>(arr); break;
             case u8: lockArray<uchar>(arr); break;
             case b8: lockArray<char>(arr); break;
+            case f16: lockArray<half>(arr); break;
             default: TYPE_ERROR(4, type);
         }
     }
@@ -169,6 +177,7 @@ af_err af_is_locked_array(bool *res, const af_array arr) {
             case u16: *res = checkUserLock<ushort>(arr); break;
             case u8: *res = checkUserLock<uchar>(arr); break;
             case b8: *res = checkUserLock<char>(arr); break;
+            case f16: *res = checkUserLock<half>(arr); break;
             default: TYPE_ERROR(4, type);
         }
     }
@@ -204,6 +213,7 @@ af_err af_unlock_array(const af_array arr) {
             case u16: unlockArray<ushort>(arr); break;
             case u8: unlockArray<uchar>(arr); break;
             case b8: unlockArray<char>(arr); break;
+            case f16: unlockArray<half>(arr); break;
             default: TYPE_ERROR(4, type);
         }
     }
