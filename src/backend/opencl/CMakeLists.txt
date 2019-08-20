@@ -516,6 +516,8 @@ if(LAPACK_FOUND OR MKL_FOUND)
       WITH_LINEAR_ALGEBRA)
 endif(LAPACK_FOUND OR MKL_FOUND)
 
+af_split_debug_info(afopencl)
+
 install(TARGETS afopencl
   EXPORT ArrayFireOpenCLTargets
   COMPONENT opencl
