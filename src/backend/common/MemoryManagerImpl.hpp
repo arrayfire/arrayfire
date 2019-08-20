@@ -253,7 +253,7 @@ void MemoryManager<T>::printInfo(const char *msg, const int device) {
     printf("%s\n", msg);
     printf(
         "---------------------------------------------------------\n"
-        "|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |\n"
+        "|  DEVICE POINTER  |    SIZE    |  AF LOCK  | USER LOCK |\n"
         "---------------------------------------------------------\n");
 
     lock_guard_t lock(this->memory_mutex);
