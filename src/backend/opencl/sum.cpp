@@ -34,5 +34,6 @@ INSTANTIATE(af_add_t, short, int)
 INSTANTIATE(af_add_t, short, float)
 INSTANTIATE(af_add_t, ushort, uint)
 INSTANTIATE(af_add_t, ushort, float)
+INSTANTIATE(af_add_t, half, half)
 INSTANTIATE(af_add_t, half, float)
 }  // namespace opencl

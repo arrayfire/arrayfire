@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include "math.hpp"
+#include <common/half.hpp>
 
 namespace opencl {
 bool operator==(cfloat a, cfloat b) {
@@ -22,6 +23,10 @@ bool operator!=(cdouble a, cdouble b) { return !(a == b); }
 cfloat operator+(cfloat a, cfloat b) {
     cfloat res = {{a.s[0] + b.s[0], a.s[1] + b.s[1]}};
     return res;
+}
+
+common::half operator+(common::half a, common::half b) noexcept {
+    return common::half(static_cast<float>(a) + static_cast<float>(b));
 }
 
 cdouble operator+(cdouble a, cdouble b) {

@@ -9,7 +9,6 @@
 
 #pragma once
 #include <backend.hpp>
-#include <common/half.hpp>
 #include <math.hpp>
 
 #ifndef __DH__

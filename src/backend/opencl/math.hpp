@@ -145,6 +145,7 @@ cdouble operator+(cdouble a, cdouble b);
 cdouble operator+(cdouble a);
 cfloat operator*(cfloat a, cfloat b);
 cdouble operator*(cdouble a, cdouble b);
+common::half operator+(common::half lhs, common::half rhs) noexcept;
 }  // namespace opencl
 
 #if defined(__GNUC__) || defined(__GNUG__)

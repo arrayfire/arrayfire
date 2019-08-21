@@ -166,5 +166,6 @@ INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)
 INSTANTIATE_DOT(cfloat)
 INSTANTIATE_DOT(cdouble)
+INSTANTIATE_DOT(half)
 
 }  // namespace opencl

@@ -431,6 +431,7 @@ INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)
 INSTANTIATE_DOT(cfloat)
 INSTANTIATE_DOT(cdouble)
+INSTANTIATE_DOT(half)
 
 #define INSTANTIATE_TRSM(TYPE)                                               \
     template void trsm<TYPE>(const Array<TYPE> &lhs, Array<TYPE> &rhs,       \

@@ -12,6 +12,7 @@
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+#include <half.hpp>
 #include <complex>
 #include <string>
 #include <vector>
@@ -40,12 +41,19 @@ class DotC : public ::testing::Test {
 };
 
 // create lists of types to be tested
+#ifdef AF_CPU
 typedef ::testing::Types<float, double> TestTypesF;
+#else
+typedef ::testing::Types<half_float::half, float, double> TestTypesF;
+#endif
 typedef ::testing::Types<cfloat, cdouble> TestTypesC;
 
 // register the type list
 TYPED_TEST_CASE(DotF, TestTypesF);
 TYPED_TEST_CASE(DotC, TestTypesC);
+
+bool isinf(af::af_cfloat val) { return isinf(val.real) || isinf(val.imag); }
+bool isinf(af::af_cdouble val) { return isinf(val.real) || isinf(val.imag); }
 
 template<typename T>
 void dotTest(string pTestFile, const int resultIdx,
@@ -81,9 +89,11 @@ void dotTest(string pTestFile, const int resultIdx,
 
     ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), out));
 
-    for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(abs(goldData[elIter]), abs(outData[elIter]), 0.03)
-            << "at: " << elIter << endl;
+    if(false == (isinf(outData.front()) && isinf(goldData[0]))) {
+        for (size_t elIter = 0; elIter < nElems; ++elIter) {
+            ASSERT_NEAR(abs(goldData[elIter]), abs(outData[elIter]), 0.03)
+                << "at: " << elIter << endl;
+        }
     }
 
     ASSERT_SUCCESS(af_release_array(a));
@@ -138,7 +148,9 @@ void dotAllTest(string pTestFile, const int resultIdx,
 
     vector<T> goldData = tests[resultIdx];
 
-    compare<T>(rval, ival, goldData[0]);
+    if(false == (isinf(rval) && isinf(goldData[0]))) {
+        compare<T>(rval, ival, goldData[0]);
+    }
 
     ASSERT_SUCCESS(af_release_array(a));
     ASSERT_SUCCESS(af_release_array(b));
