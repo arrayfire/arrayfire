@@ -203,7 +203,9 @@ namespace af
 #endif
 #endif
         /**
-            Creates an array from an \ref af_array handle
+            Creates an array from an \ref af_array handle. Does not increment 
+            a reference counter: the array assumes it has ownership of the 
+            handle.
             \param handle the af_array object.
          */
         explicit
