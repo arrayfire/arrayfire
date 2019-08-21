@@ -205,7 +205,8 @@ namespace af
         /**
             Creates an array from an \ref af_array handle. Does not increment 
             a reference counter: the array assumes it has ownership of the 
-            handle.
+            handle. To share the array between multiple objects, use this 
+            in conjunction with \ref af_retain_array.
             \param handle the af_array object.
          */
         explicit
@@ -1573,7 +1574,9 @@ extern "C" {
     AFAPI af_err af_release_array(af_array arr);
 
     /**
-       Increments an \ref af_array reference count
+       Increments an \ref af_array reference count. The `out` pointer
+       need not be retained in situations where the reference count
+       is the only effect needed.
     */
     AFAPI af_err af_retain_array(af_array *out, const af_array in);
 
