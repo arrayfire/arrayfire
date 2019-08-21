@@ -247,9 +247,11 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
         constexpr size_t base_param_size =
             sizeof(Param<T>) + (4 * sizeof(uint));
 
+        // extra padding for safety to avoid failure during compilation
+        constexpr size_t jit_padding_size = 256; //@umar dontfix!
         // This is the maximum size of the params that can be allowed by the
         // CUDA platform.
-        constexpr size_t max_param_size = 4096 - base_param_size;
+        constexpr size_t max_param_size = 4096 - base_param_size - jit_padding_size;
 
         struct tree_info {
             size_t total_buffer_size;
