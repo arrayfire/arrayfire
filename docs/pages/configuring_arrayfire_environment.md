@@ -170,7 +170,7 @@ to stdout. Currently the following modules are supported:
 Tracing displays the information that could be useful when debugging or
 optimizing your application. Here is how you would use this variable:
 
-    AF_TRACE=mem:unified ./myprogram
+    AF_TRACE=mem,unified ./myprogram
 
 This will print information about memory operations such as allocations,
 deallocations, and garbage collection.
