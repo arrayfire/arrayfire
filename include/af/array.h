@@ -572,7 +572,7 @@ namespace af
         af_array get() const;
 
         /**
-           get the number of elements in array
+           Get the number of elements in array. This is the product of the array's dimensions.
         */
         dim_t elements() const;
 
@@ -1631,7 +1631,8 @@ extern "C" {
         @{
     */
     /**
-        \brief Gets the number of elements in an array.
+        \brief Gets the number of elements in an array. This is the product
+        of the array's dimensions.
 
         \param[out] elems is the output that contains number of elements of \p arr
         \param[in] arr is the input array
