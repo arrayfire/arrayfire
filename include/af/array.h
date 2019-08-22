@@ -572,7 +572,7 @@ namespace af
         af_array get() const;
 
         /**
-           Get the number of elements in array. This is the product of the array's dimensions.
+           Get the total number of elements across all dimensions of the array
         */
         dim_t elements() const;
 
