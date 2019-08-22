@@ -363,17 +363,28 @@ extern "C" {
                                     size_t *lock_bytes, size_t *lock_buffers);
 
 #if AF_API_VERSION >= 33
-    ///
-    /// Prints buffer details from the ArrayFire Device Manager
-    //
-    /// \param [in] msg A message to print before the table
-    /// \param [in] device_id print the memory info of the specified device.
-    ///  -1 signifies active device.
-    ///
-    /// return AF_SUCCESS if successful
-    ///
-    /// \ingroup device_func_mem
-    ///
+    /**
+       Prints buffer details from the ArrayFire Device Manager.
+
+       The result is a table with several columns:
+
+        * POINTER:   The hex address of the array's device or pinned-memory
+                     pointer (depending on the backend)
+        * SIZE:      Human-readable size of the array
+        * AF LOCK:   Indicates whether ArrayFire is using this chunk of memory.
+                     If not, the chunk is ready for reuse.
+        * USER LOCK: If set, ArrayFire is prevented from freeing this memory.
+                     The chunk is not ready for re-use even if all ArrayFire's
+                     references to it go out of scope.
+
+       \param [in] msg A message to print before the table
+       \param [in] device_id print the memory info of the specified device.
+       -1 signifies active device.
+      
+       \returns AF_SUCCESS if successful
+      
+       \ingroup device_func_mem
+    */
     AFAPI af_err af_print_mem_info(const char *msg, const int device_id);
 #endif
 
