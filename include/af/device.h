@@ -369,7 +369,7 @@ extern "C" {
        The result is a table with several columns:
 
         * POINTER:   The hex address of the array's device or pinned-memory
-                     pointer (depending on the backend)
+                     pointer
         * SIZE:      Human-readable size of the array
         * AF LOCK:   Indicates whether ArrayFire is using this chunk of memory.
                      If not, the chunk is ready for reuse.
