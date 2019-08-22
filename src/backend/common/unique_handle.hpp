@@ -67,10 +67,16 @@ class unique_handle {
     constexpr operator const T &() const noexcept { return handle_; }
 
     unique_handle(const unique_handle &other)      noexcept = delete;
-    constexpr unique_handle(unique_handle &&other) noexcept = default;
+    constexpr unique_handle(unique_handle &&other) noexcept
+      : handle_(other.handle_) {
+      other.handle_ = 0;
+    }
 
     unique_handle &operator=(unique_handle &other)  noexcept = delete;
-    unique_handle &operator=(unique_handle &&other) noexcept = default;
+    unique_handle &operator=(unique_handle &&other) noexcept {
+        handle_ = other.handle_;
+        other.handle_ = 0;
+    }
 
     // Returns true if the \p other unique_handle is the same as this handle
     constexpr bool operator==(unique_handle &other) const noexcept {
