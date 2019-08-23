@@ -1631,8 +1631,7 @@ extern "C" {
         @{
     */
     /**
-        \brief Gets the number of elements in an array. This is the product
-        of the array's dimensions.
+        \brief Get the total number of elements across all dimensions of the array
 
         \param[out] elems is the output that contains number of elements of \p arr
         \param[in] arr is the input array
