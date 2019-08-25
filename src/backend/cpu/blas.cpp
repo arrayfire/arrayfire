@@ -15,9 +15,12 @@
 
 #include <Array.hpp>
 #include <Param.hpp>
+#include <cast.hpp>
 #include <common/blas_headers.hpp>
 #include <common/complex.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
+#include <copy.hpp>
 #include <kernel/dot.hpp>
 #include <platform.hpp>
 #include <types.hpp>
@@ -30,20 +33,18 @@
 #include <type_traits>
 #include <vector>
 
-using std::vector;
-
-namespace cpu {
-
 using af::dtype_traits;
-
+using common::half;
+using common::is_complex;
 using std::add_const;
 using std::add_pointer;
 using std::conditional;
 using std::enable_if;
 using std::is_floating_point;
 using std::remove_const;
+using std::vector;
 
-using common::is_complex;
+namespace cpu {
 
 // clang-format off
 // Some implementations of BLAS require void* for complex pointers while others
@@ -333,6 +334,18 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
         }
     };
     getQueue().enqueue(func, out, lhs, rhs);
+}
+
+template<>
+void gemm<half>(Array<half> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+                const half *alpha, const Array<half> &lhs,
+                const Array<half> &rhs, const half *beta) {
+    Array<float> outArr     = createValueArray<float>(out.dims(), 0);
+    const float float_alpha = static_cast<float>(*alpha);
+    const float float_beta  = static_cast<float>(*beta);
+    gemm<float>(outArr, optLhs, optRhs, &float_alpha, cast<float>(lhs),
+                cast<float>(rhs), &float_beta);
+    copyArray(out, outArr);
 }
 
 template<typename T>

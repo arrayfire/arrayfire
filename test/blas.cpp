@@ -396,8 +396,6 @@ TEST(MatrixMultiply, float) {
     ASSERT_ARRAYS_NEAR(expected32, af::array(C32), 0.0001);
 }
 
-#ifndef AF_CPU
-
 TEST(MatrixMultiply, half) {
     SUPPORTED_TYPE_CHECK(af_half);
 
@@ -418,8 +416,6 @@ TEST(MatrixMultiply, half) {
         ASSERT_ARRAYS_NEAR(expected16, C16, 0.000001);
     }
 }
-
-#endif
 
 struct test_params {
     af_mat_prop opt_lhs;
