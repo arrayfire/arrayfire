@@ -193,11 +193,9 @@ af_err af_gemm(af_array *out,
             case c64: gemm<cdouble>(&output, optLhs, optRhs,
                                     static_cast<const cdouble*>(alpha), lhs, rhs,
                                     static_cast<const cdouble*>(beta)); break;
-#ifndef AF_CPU
             case f16: gemm<half>(&output, optLhs, optRhs,
                                     static_cast<const half *>(alpha), lhs, rhs,
                                     static_cast<const half *>(beta)); break;
-#endif
             default: TYPE_ERROR(3, lhs_type);
         }
 
@@ -237,14 +235,12 @@ af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
 
         af_dtype lhs_type = lhsInfo.getType();
         switch (lhs_type) {
-#ifndef AF_CPU
             case f16: {
                     static const half alpha(1.0f);
                     static const half beta(0.0f);
                     AF_CHECK(af_gemm(&gemm_out, optLhs, optRhs, &alpha, lhs, rhs, &beta));
                     break;
             }
-#endif
             case f32: {
                     float alpha = 1.f;
                     float beta  = 0.f;
@@ -311,9 +307,7 @@ af_err af_dot(af_array *out, const af_array lhs, const af_array rhs,
         af_array output = 0;
 
         switch (lhs_type) {
-#ifndef AF_CPU
             case f16: output = dot<half>(lhs, rhs, optLhs, optRhs); break;
-#endif
             case f32: output = dot<float>(lhs, rhs, optLhs, optRhs); break;
             case c32: output = dot<cfloat>(lhs, rhs, optLhs, optRhs); break;
             case f64: output = dot<double>(lhs, rhs, optLhs, optRhs); break;
@@ -350,9 +344,7 @@ af_err af_dot_all(double *rval, double *ival, const af_array lhs,
         af_dtype lhs_type = lhsInfo.getType();
 
         switch (lhs_type) {
-#ifndef AF_CPU
             case f16: *rval = static_cast<double>(dotAll<half>(out)); break;
-#endif
             case f32: *rval = dotAll<float>(out); break;
             case f64: *rval = dotAll<double>(out); break;
             case c32: {
