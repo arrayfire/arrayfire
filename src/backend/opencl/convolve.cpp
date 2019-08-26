@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <blas.hpp>
+#include <common/half.hpp>
 #include <common/indexing_helpers.hpp>
 #include <convolve.hpp>
 #include <err_opencl.hpp>
@@ -24,6 +25,7 @@
 
 using af::dim4;
 using common::flip;
+using common::half;
 using std::vector;
 
 namespace opencl {
@@ -170,6 +172,7 @@ Array<T> convolve2(Array<T> const &signal, Array<T> const &filter,
 
 INSTANTIATE(double)
 INSTANTIATE(float)
+INSTANTIATE(half)
 #undef INSTANTIATE
 
 template<typename T>
@@ -247,6 +250,7 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
 
 INSTANTIATE(double)
 INSTANTIATE(float)
+INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace opencl

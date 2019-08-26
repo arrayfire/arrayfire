@@ -9,10 +9,13 @@
 
 #include <Array.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <kernel/wrap.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <wrap.hpp>
+
+using common::half;
 
 namespace cpu {
 
@@ -88,6 +91,7 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace cpu

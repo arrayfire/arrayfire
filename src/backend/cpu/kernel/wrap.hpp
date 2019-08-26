@@ -94,12 +94,12 @@ void wrap_dim_dilated(Param<T> out, CParam<T> in, const dim_t wx,
         for (dim_t z = 0; z < idims[2]; z++) {
             dim_t cIn      = w * istrides[3] + z * istrides[2];
             dim_t cOut     = w * ostrides[3] + z * ostrides[2];
-            const T *iptr_ = inPtr + cIn;
-            T *optr        = outPtr + cOut;
+            const data_t<T> *iptr_ = inPtr + cIn;
+            data_t<T> *optr        = outPtr + cOut;
 
             for (dim_t col = 0; col < idims[d]; col++) {
                 // Offset output ptr
-                const T *iptr = iptr_ + col * istrides[d];
+                const data_t<T> *iptr = iptr_ + col * istrides[d];
 
                 // Calculate input window index
                 dim_t winy = (col / nx);
@@ -129,7 +129,7 @@ void wrap_dim_dilated(Param<T> out, CParam<T> in, const dim_t wx,
                             dim_t oloc =
                                 (ypad * ostrides[1] + xpad * ostrides[0]);
                             // FIXME: When using threads, atomize this
-                            optr[oloc] += iptr[iloc];
+                            optr[oloc] = static_cast<compute_t<T>>(optr[oloc]) + static_cast<compute_t<T>>(iptr[iloc]);
                         }
                     }
                 }

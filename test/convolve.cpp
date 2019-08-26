@@ -895,6 +895,18 @@ TEST_P(Conv2ConsistencyTest, RandomConvolutions) {
 }
 
 template<typename T>
+float tolerance();
+
+template<>
+float tolerance<float>() { return 1e-4; }
+
+template<>
+float tolerance<double>() { return 1e-4; }
+
+template<>
+float tolerance<half_float::half>() { return 3e-2; }
+
+template<typename T>
 void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
                           dim4 dilation) {
     SUPPORTED_TYPE_CHECK(T);
@@ -934,7 +946,7 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
                 stride[1];
 
     auto gdim = dim4(expectedDim0, expectedDim1, fDims[3], sDims[3]);
-    ASSERT_VEC_ARRAY_NEAR(currGoldBar, gdim, convolved, 1e-4);
+    ASSERT_VEC_ARRAY_NEAR(currGoldBar, gdim, convolved, tolerance<T>());
 
     ASSERT_SUCCESS(af_release_array(convolved));
     ASSERT_SUCCESS(af_release_array(signal));
@@ -999,10 +1011,10 @@ void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
         dilation.ndims(), dilation.get(), AF_CONV_GRADIENT_DATA));
 
     vector<T> &dataGradientGold = tests[1];
-    ASSERT_VEC_ARRAY_NEAR(dataGradientGold, sDims, data_gradient, 1e-4);
+    ASSERT_VEC_ARRAY_NEAR(dataGradientGold, sDims, data_gradient, tolerance<T>());
 
     vector<T> &filterGradientGold = tests[2];
-    ASSERT_VEC_ARRAY_NEAR(filterGradientGold, fDims, filter_gradient, 1e-4);
+    ASSERT_VEC_ARRAY_NEAR(filterGradientGold, fDims, filter_gradient, tolerance<T>());
 
     ASSERT_SUCCESS(af_release_array(incoming_gradient));
     ASSERT_SUCCESS(af_release_array(convolved));
@@ -1018,7 +1030,7 @@ class ConvolveStrided : public ::testing::Test {
     virtual void SetUp() {}
 };
 // create a list of types to be tested
-typedef ::testing::Types<float, double>
+typedef ::testing::Types<float, double, half_float::half>
     TestTypesStrided;  // TODO: integral types??
 
 // register the type list

@@ -10,10 +10,12 @@
 #include <backend.hpp>
 #include <cast.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <convolve.hpp>
 #include <fftconvolve.hpp>
 #include <handle.hpp>
 #include <tile.hpp>
+
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -23,6 +25,7 @@
 #include <cstdio>
 
 using af::dim4;
+using common::half;
 using namespace detail;
 
 template<typename T, typename accT, dim_t baseDim, bool expand>
@@ -347,6 +350,10 @@ af_err af_convolve2_nn(af_array *out, const af_array signal,
                 output = convolve2Strided<double>(signal, filter, stride,
                                                   padding, dilation);
                 break;
+            case f16:
+                output = convolve2Strided<half>(signal, filter, stride, padding,
+                                                dilation);
+                break;
             default: TYPE_ERROR(1, signalType);
         }
         std::swap(*out, output);
@@ -450,6 +457,11 @@ af_err af_convolve2_gradient_nn(
                 break;
             case f64:
                 output = conv2GradCall<double>(
+                    incoming_gradient, original_signal, original_filter,
+                    convolved_output, stride, padding, dilation, grad_type);
+                break;
+            case f16:
+                output = conv2GradCall<half>(
                     incoming_gradient, original_signal, original_filter,
                     convolved_output, stride, padding, dilation, grad_type);
                 break;

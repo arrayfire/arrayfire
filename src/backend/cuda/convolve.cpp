@@ -9,8 +9,9 @@
 
 #include <Array.hpp>
 #include <cast.hpp>
-#include <convolve.hpp>
+#include <common/half.hpp>
 #include <common/unique_handle.hpp>
+#include <convolve.hpp>
 #include <cudnn.hpp>
 #include <err_cuda.hpp>
 #include <kernel/convolve.hpp>
@@ -19,21 +20,39 @@
 #include <type_traits>
 
 using af::dim4;
+using common::half;
 using common::make_handle;
 using common::unique_handle;
+using std::conditional;
+using std::is_same;
 
 namespace cuda {
 
-template<typename T> cudnnDataType_t getCudnnDataType() {
-    AF_ERROR("Invalid CuDNN data type", AF_ERR_ARG);
+template<typename T>
+cudnnDataType_t getCudnnDataType();
+
+template<>
+cudnnDataType_t getCudnnDataType<float>() {
     return CUDNN_DATA_FLOAT;
 }
-template<> cudnnDataType_t getCudnnDataType<float>() {  return CUDNN_DATA_FLOAT; }
-template<> cudnnDataType_t getCudnnDataType<double>() {  return CUDNN_DATA_DOUBLE; }
-template<> cudnnDataType_t getCudnnDataType<int>() {  return CUDNN_DATA_INT32; }
-template<> cudnnDataType_t getCudnnDataType<unsigned char>() {  return CUDNN_DATA_UINT8; }
+template<>
+cudnnDataType_t getCudnnDataType<double>() {
+    return CUDNN_DATA_DOUBLE;
+}
+template<>
+cudnnDataType_t getCudnnDataType<int>() {
+    return CUDNN_DATA_INT32;
+}
+template<>
+cudnnDataType_t getCudnnDataType<unsigned char>() {
+    return CUDNN_DATA_UINT8;
+}
+template<>
+cudnnDataType_t getCudnnDataType<half>() {
+    return CUDNN_DATA_HALF;
+}
 
-template <typename T, typename accT, dim_t baseDim, bool expand>
+template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
                   AF_BATCH_KIND kind) {
     const dim4 sDims = signal.dims();
@@ -62,29 +81,33 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
     return out;
 }
 
-void cudnnSet(cudnnTensorDescriptor_t desc, cudnnDataType_t cudnn_dtype, dim4 dims) {
-    CUDNN_CHECK(cudnnSetTensor4dDescriptor(desc, CUDNN_TENSOR_NCHW,
-                                           cudnn_dtype, dims[3], dims[2],
-                                           dims[1], dims[0]));
+void cudnnSet(cudnnTensorDescriptor_t desc, cudnnDataType_t cudnn_dtype,
+              dim4 dims) {
+    CUDNN_CHECK(cudnnSetTensor4dDescriptor(desc, CUDNN_TENSOR_NCHW, cudnn_dtype,
+                                           dims[3], dims[2], dims[1], dims[0]));
 }
 
-void cudnnSet(cudnnFilterDescriptor_t desc, cudnnDataType_t cudnn_dtype, dim4 dims) {
-    CUDNN_CHECK(cudnnSetFilter4dDescriptor(desc, cudnn_dtype,
-                                           CUDNN_TENSOR_NCHW, dims[3],
-                                           dims[2], dims[1], dims[0]));
+void cudnnSet(cudnnFilterDescriptor_t desc, cudnnDataType_t cudnn_dtype,
+              dim4 dims) {
+    CUDNN_CHECK(cudnnSetFilter4dDescriptor(desc, cudnn_dtype, CUDNN_TENSOR_NCHW,
+                                           dims[3], dims[2], dims[1], dims[0]));
 }
 
 template<typename Desc, typename T>
 unique_handle<Desc> toCudnn(Array<T> arr) {
     dim4 dims = arr.dims();
 
-    auto descriptor = make_handle<Desc>();
+    auto descriptor             = make_handle<Desc>();
     cudnnDataType_t cudnn_dtype = getCudnnDataType<T>();
     cudnnSet(descriptor, cudnn_dtype, dims);
     return descriptor;
 }
 
-template <typename T, typename accT, bool expand>
+template<typename T>
+using scale_type =
+    typename conditional<is_same<T, double>::value, double, float>::type;
+
+template<typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const &signal, Array<accT> const &c_filter,
                    Array<accT> const &r_filter) {
     const dim4 cfDims = c_filter.dims();
@@ -152,7 +175,7 @@ INSTANTIATE(uintl, float)
 INSTANTIATE(intl, float)
 #undef INSTANTIATE
 
-template <typename T>
+template<typename T>
 Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
                          const dim4 stride, const dim4 padding,
                          const dim4 dilation) {
@@ -167,8 +190,8 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
     const int w = sDims[0];
 
     cudnnDataType_t cudnn_dtype = getCudnnDataType<T>();
-    auto input_descriptor = toCudnn<cudnnTensorDescriptor_t>(signal);
-    auto filter_descriptor = toCudnn<cudnnFilterDescriptor_t>(filter);
+    auto input_descriptor       = toCudnn<cudnnTensorDescriptor_t>(signal);
+    auto filter_descriptor      = toCudnn<cudnnFilterDescriptor_t>(filter);
 
     // create convolution descriptor
     auto convolution_descriptor = make_handle<cudnnConvolutionDescriptor_t>();
@@ -213,41 +236,43 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
     auto workspace_buffer = memAlloc<char>(workspace_bytes);
 
     // perform convolution
-    T alpha = scalar<T>(1.0);
-    T beta  = scalar<T>(0.0);
+    scale_type<T> alpha = scalar<scale_type<T>>(1.0);
+    scale_type<T> beta  = scalar<scale_type<T>>(0.0);
     CUDNN_CHECK(cudnnConvolutionForward(
-        cudnn, &alpha, input_descriptor, signal.device(),
-        filter_descriptor, filter.device(), convolution_descriptor,
-        convolution_algorithm, (void *)workspace_buffer.get(), workspace_bytes,
-        &beta, output_descriptor, out.device()));
+        cudnn, &alpha, input_descriptor, signal.device(), filter_descriptor,
+        filter.device(), convolution_descriptor, convolution_algorithm,
+        (void *)workspace_buffer.get(), workspace_bytes, &beta,
+        output_descriptor, out.device()));
 
     return out;
 }
 
-template <typename T>
+template<typename T>
 constexpr void checkTypeSupport() {
-    static_assert (std::is_same<float, T>::value ||
-                   std::is_same<double, T>::value,
-      "Invalid CuDNN data type: only f64, f32 are supported");
+    static_assert(std::is_same<float, T>::value ||
+                      std::is_same<double, T>::value ||
+                      std::is_same<half, T>::value,
+                  "Invalid CuDNN data type: only f64, f32, f16 are supported");
 }
 
-template <typename T>
+template<typename T>
 Array<T> convolve2(Array<T> const &signal, Array<T> const &filter,
                    const dim4 stride, const dim4 padding, const dim4 dilation) {
     checkTypeSupport<T>();
     return convolve2_cudnn<T>(signal, filter, stride, padding, dilation);
 }
 
-#define INSTANTIATE(T)                                                  \
-    template Array<T> convolve2<T>(                                     \
-        Array<T> const &signal, Array<T> const &filter, const dim4 stride, \
-        const dim4 padding, const dim4 dilation);
+#define INSTANTIATE(T)                                                        \
+    template Array<T> convolve2<T>(Array<T> const &signal,                    \
+                                   Array<T> const &filter, const dim4 stride, \
+                                   const dim4 padding, const dim4 dilation);
 
 INSTANTIATE(double)
 INSTANTIATE(float)
+INSTANTIATE(half)
 #undef INSTANTIATE
 
-template <typename T>
+template<typename T>
 Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
                              const Array<T> &original_signal,
                              const Array<T> &original_filter,
@@ -261,7 +286,7 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
 
     // create dx descriptor
     cudnnDataType_t cudnn_dtype = getCudnnDataType<T>();
-    auto x_descriptor = toCudnn<cudnnTensorDescriptor_t>(original_signal);
+    auto x_descriptor  = toCudnn<cudnnTensorDescriptor_t>(original_signal);
     auto dy_descriptor = toCudnn<cudnnTensorDescriptor_t>(incoming_gradient);
 
     // create convolution descriptor
@@ -286,25 +311,23 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
         cudnn, x_descriptor, dy_descriptor, convolution_descriptor,
         dw_descriptor, bwd_filt_convolution_algorithm, &workspace_bytes));
     // prepare output array and scratch space
-    dim4 odims(fDims[0], fDims[1], fDims[2], fDims[3]);
-    Array<T> out = createEmptyArray<T>(odims);
+    Array<T> out = createEmptyArray<T>(fDims);
 
     auto workspace_buffer = memAlloc<char>(workspace_bytes);
 
     // perform convolution
-    T alpha = scalar<T>(1.0);
-    T beta  = scalar<T>(0.0);
+    scale_type<T> alpha = scalar<scale_type<T>>(1.0);
+    scale_type<T> beta  = scalar<scale_type<T>>(0.0);
     CUDNN_CHECK(cudnnConvolutionBackwardFilter(
-        cudnn, &alpha, x_descriptor, original_signal.device(),
-        dy_descriptor, incoming_gradient.device(),
-        convolution_descriptor, bwd_filt_convolution_algorithm,
-        (void *)workspace_buffer.get(), workspace_bytes, &beta, dw_descriptor,
-        out.device()));
+        cudnn, &alpha, x_descriptor, original_signal.device(), dy_descriptor,
+        incoming_gradient.device(), convolution_descriptor,
+        bwd_filt_convolution_algorithm, (void *)workspace_buffer.get(),
+        workspace_bytes, &beta, dw_descriptor, out.device()));
 
     return out;
 }
 
-template <typename T>
+template<typename T>
 Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
                            const Array<T> &original_signal,
                            const Array<T> &original_filter,
@@ -335,7 +358,7 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
         dilation[1], dilation[0], CUDNN_CONVOLUTION, cudnn_dtype));
 
     cudnnConvolutionBwdDataAlgo_t bwd_data_convolution_algorithm;
-    if (dilation[0] == 1 && dilation[1] == 1) {
+    if ((dilation[0] == 1 && dilation[1] == 1) || is_same<T, half>::value) {
         bwd_data_convolution_algorithm = CUDNN_CONVOLUTION_BWD_DATA_ALGO_1;
     } else {
         bwd_data_convolution_algorithm = CUDNN_CONVOLUTION_BWD_DATA_ALGO_0;
@@ -353,30 +376,31 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
     auto workspace_buffer = memAlloc<char>(workspace_bytes);
 
     // perform convolution
-    T alpha = scalar<T>(1.0);
-    T beta  = scalar<T>(0.0);
+    scale_type<T> alpha = scalar<scale_type<T>>(1.0);
+    scale_type<T> beta  = scalar<scale_type<T>>(0.0);
 
-    CUDNN_CHECK(cudnnConvolutionBackwardData(cudnn, &alpha, w_descriptor,
-        original_filter.get(), dy_descriptor, incoming_gradient.get(),
-        convolution_descriptor, bwd_data_convolution_algorithm,
-        (void *)workspace_buffer.get(), workspace_bytes, &beta, dx_descriptor,
-        out.device()));
+    CUDNN_CHECK(cudnnConvolutionBackwardData(
+        cudnn, &alpha, w_descriptor, original_filter.get(), dy_descriptor,
+        incoming_gradient.get(), convolution_descriptor,
+        bwd_data_convolution_algorithm, (void *)workspace_buffer.get(),
+        workspace_bytes, &beta, dx_descriptor, out.device()));
 
     return out;
 }
 
-#define INSTANTIATE(T)                                                  \
-    template Array<T> conv2DataGradient<T>(                          \
-        Array<T> const &incoming_gradient, Array<T> const &original_signal,   \
-        Array<T> const &original_filter, Array<T> const &convolved_output, \
-        const dim4 stride, const dim4 padding, const dim4 dilation);          \
-    template Array<T> conv2FilterGradient<T>(                        \
-        Array<T> const &incoming_gradient, Array<T> const &original_signal,   \
-        Array<T> const &original_filter, Array<T> const &convolved_output, \
+#define INSTANTIATE(T)                                                      \
+    template Array<T> conv2DataGradient<T>(                                 \
+        Array<T> const &incoming_gradient, Array<T> const &original_signal, \
+        Array<T> const &original_filter, Array<T> const &convolved_output,  \
+        const dim4 stride, const dim4 padding, const dim4 dilation);        \
+    template Array<T> conv2FilterGradient<T>(                               \
+        Array<T> const &incoming_gradient, Array<T> const &original_signal, \
+        Array<T> const &original_filter, Array<T> const &convolved_output,  \
         const dim4 stride, const dim4 padding, const dim4 dilation);
 
 INSTANTIATE(double)
 INSTANTIATE(float)
+INSTANTIATE(half)
 #undef INSTANTIATE
 
-} //cuda namespace
+}  // namespace cuda

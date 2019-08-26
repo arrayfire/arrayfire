@@ -21,6 +21,7 @@
 #include <cufft.hpp>
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
+#include <cudnn.hpp>
 #include <device_manager.hpp>
 #include <driver.h>
 #include <err_cuda.hpp>

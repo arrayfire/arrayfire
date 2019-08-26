@@ -9,9 +9,12 @@
 
 #include <Array.hpp>
 #include <err_opencl.hpp>
+#include <common/half.hpp>
 #include <kernel/unwrap.hpp>
 #include <unwrap.hpp>
 #include <stdexcept>
+
+using common::half;
 
 namespace opencl {
 
@@ -53,6 +56,7 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace opencl
