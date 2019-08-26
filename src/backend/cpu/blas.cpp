@@ -368,6 +368,13 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
     return out;
 }
 
+template<>
+Array<half> dot<half>(const Array<half> &lhs, const Array<half> &rhs, af_mat_prop optLhs,
+                      af_mat_prop optRhs) {
+    Array<float> out = dot(cast<float>(lhs), cast<float>(rhs), optLhs, optRhs);
+    return cast<half>(out);
+}
+
 #undef BT
 #undef REINTEPRET_CAST
 
