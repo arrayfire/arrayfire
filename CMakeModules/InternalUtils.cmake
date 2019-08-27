@@ -30,20 +30,20 @@ endfunction()
 
 function(arrayfire_get_cuda_cxx_flags cuda_flags)
   if(NOT MSVC)
-    set(flags "-std=c++14 --expt-relaxed-constexpr -Xcompiler -fPIC -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden")
+    set(flags -std=c++14 --expt-relaxed-constexpr -Xcompiler -fPIC -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden)
   else()
-    set(flags "-Xcompiler /wd4251 -Xcompiler /wd4068 -Xcompiler /wd4275 -Xcompiler /bigobj -Xcompiler /EHsc")
+    set(flags -Xcompiler /wd4251 -Xcompiler /wd4068 -Xcompiler /wd4275 -Xcompiler /bigobj -Xcompiler /EHsc)
     if(CMAKE_GENERATOR MATCHES "Ninja")
-      set(flags "${flags} -Xcompiler /FS")
+      set(flags ${flags} -Xcompiler /FS)
     endif()
   endif()
 
   if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
       CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0" AND
       ${CUDA_VERSION_MAJOR} LESS 8)
-    set(flags "${flags} -D_FORCE_INLINES -D_MWAITXINTRIN_H_INCLUDED")
+    set(flags ${flags} -D_FORCE_INLINES -D_MWAITXINTRIN_H_INCLUDED)
   endif()
-  set(${cuda_flags} "${flags}" PARENT_SCOPE)
+  set(${cuda_flags} ${flags} PARENT_SCOPE)
 endfunction()
 
 include(CheckCXXCompilerFlag)

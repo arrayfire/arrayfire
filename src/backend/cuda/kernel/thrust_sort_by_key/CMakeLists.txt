@@ -17,9 +17,6 @@ foreach(STR ${FILESTRINGS})
     endif()
 endforeach()
 
-arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
-arrayfire_get_platform_definitions(platform_flags)
-
 foreach(SBK_TYPE ${SBK_TYPES})
     foreach(SBK_INST ${SBK_INSTS})
 
