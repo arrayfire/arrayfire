@@ -85,12 +85,6 @@ Array<T> wrap_dilated(const Array<T> &in, const dim_t ox, const dim_t oy,
 
 INSTANTIATE(float)
 INSTANTIATE(double)
-INSTANTIATE(int)
-INSTANTIATE(uint)
-INSTANTIATE(uchar)
-INSTANTIATE(char)
-INSTANTIATE(short)
-INSTANTIATE(ushort)
 INSTANTIATE(half)
 #undef INSTANTIATE
 
