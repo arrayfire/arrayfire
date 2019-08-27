@@ -603,7 +603,7 @@ AFAPI array convolve2(const array& signal, const array& filter, const convMode m
    Signals with dimensions: d0 x d1 x d2 x Ns
    Filters with dimensions: d0 x d1 x d2 x Nf
 
-   Resulting Convolution: d0 x d1 x Ns x Nf
+   Resulting Convolution: d0 x d1 x Nf x Ns
 
    \param[in]  signal   is the input signal
    \param[in]  filter   is the filter that will be used for the convolution operation
@@ -1421,7 +1421,7 @@ AFAPI af_err af_convolve2(af_array *out, const af_array signal, const af_array f
    Signals with dimensions: d0 x d1 x d2 x Ns
    Filters with dimensions: d0 x d1 x d2 x Nf
 
-   Resulting Convolution: d0 x d1 x Ns x Nf
+   Resulting Convolution: d0 x d1 x Nf x Ns
 
    \param[out] out is convolved array
    \param[in]  signal is the input signal

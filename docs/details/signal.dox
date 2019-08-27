@@ -162,7 +162,7 @@ functions can perform a 2D convolution on 3D signal and filters.
 | [m n 1 1]                 | [m n p 1]           | [m n p 1]           | *Invalid d2 must be same* | N/A                                                       |
 | [m n p 1]                 | [m n 1 1]           | [m n p 1]           | *Invalid Batch*           | N/A                                                       |
 | [m n p 1]                 | [m n p 1]           | [m n 1 1]           | No Batch                  | 3D Signal and 3D filter convoled to 2D result             |
-| [m n p qs]                | [m n p qf]          | [m n qs qf]         | Batch qs * qf             | qs signals and qf filsters to create qs * qf results      |
+| [m n p qs]                | [m n p qf]          | [m n qf qs]         | Batch qs * qf             | qs signals and qf filsters to create qs * qf results      |
 
 \defgroup signal_func_convolve3 3D Convolutions
 \ingroup convolve_mat
