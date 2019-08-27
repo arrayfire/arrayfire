@@ -173,18 +173,24 @@ macro(arrayfire_set_cmake_default_variables)
     set(CMAKE_INSTALL_RPATH "/opt/arrayfire/lib")
   endif()
 
-  include(WriteCompilerDetectionHeader)
-  write_compiler_detection_header(
-          FILE ${ArrayFire_BINARY_DIR}/include/af/compilers.h
-          PREFIX AF
-          COMPILERS AppleClang Clang GNU Intel MSVC
-          # NOTE: cxx_attribute_deprecated does not work well with C
-          FEATURES cxx_rvalue_references cxx_noexcept cxx_variadic_templates cxx_alignas cxx_static_assert
-          ALLOW_UNKNOWN_COMPILERS
-          #[VERSION <version>]
-          #[PROLOG <prolog>]
-          #[EPILOG <epilog>]
-          )
+  # This code is used to generate the compilers.h file in CMakeModules. Not all
+  # features of this modules are supported in the versions of CMake we wish to
+  # support so we are directly including the files here
+  # include(WriteCompilerDetectionHeader)
+  # write_compiler_detection_header(
+  #         FILE ${ArrayFire_BINARY_DIR}/include/af/compilers.h
+  #         PREFIX AF
+  #         COMPILERS AppleClang Clang GNU Intel MSVC
+  #         # NOTE: cxx_attribute_deprecated does not work well with C
+  #         FEATURES cxx_rvalue_references cxx_noexcept cxx_variadic_templates cxx_alignas cxx_static_assert
+  #         ALLOW_UNKNOWN_COMPILERS
+  #         #[VERSION <version>]
+  #         #[PROLOG <prolog>]
+  #         #[EPILOG <epilog>]
+  #         )
+  configure_file(
+    ${CMAKE_MODULE_PATH}/compilers.h
+    ${ArrayFire_BINARY_DIR}/include/af/compilers.h)
 endmacro()
 
 macro(set_policies)
