@@ -16,9 +16,6 @@ endforeach()
 
 cuda_add_cuda_include_once()
 
-arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
-arrayfire_get_platform_definitions(platform_flags)
-
 foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
     # When using cuda_compile with older versions of FindCUDA. The generated targets
     # have the same names as the source file. Since we are using the same file for
