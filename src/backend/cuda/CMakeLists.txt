@@ -510,6 +510,12 @@ target_include_directories (afcuda
 
 set_target_properties(afcuda PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+# Remove cublas_device library which is no longer included with the cuda
+# toolkit. Fixes issues with older CMake versions
+if(DEFINED CUDA_cublas_device_LIBRARY AND NOT CUDA_cublas_device_LIBRARY)
+  list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES ${CUDA_cublas_device_LIBRARY})
+endif()
+
 target_link_libraries(afcuda
   PRIVATE
     c_api_interface
