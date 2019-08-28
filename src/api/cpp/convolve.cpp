@@ -52,8 +52,8 @@ array convolve2(const array &signal, const array &filter, const convMode mode,
     return array(out);
 }
 
-array convolve2_nn(const array &signal, const array &filter, const dim4 stride,
-                   const dim4 padding, const dim4 dilation) {
+array convolve2NN(const array &signal, const array &filter, const dim4 stride,
+                  const dim4 padding, const dim4 dilation) {
     af_array out = 0;
     AF_THROW(af_convolve2_nn(
         &out, signal.get(), filter.get(), stride.ndims(), stride.get(),

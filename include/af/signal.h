@@ -614,8 +614,8 @@ AFAPI array convolve2(const array& signal, const array& filter, const convMode m
 
    \ingroup signal_func_convolve2
  */
-AFAPI array convolve2_nn(const array& signal, const array& filter,
-                         const dim4 stride, const dim4 padding, const dim4 dilation);
+AFAPI array convolve2NN(const array& signal, const array& filter,
+                        const dim4 stride, const dim4 padding, const dim4 dilation);
 
 /**
    C++ Interface for convolution on three dimensional signals

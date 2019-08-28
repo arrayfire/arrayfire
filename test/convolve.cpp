@@ -888,7 +888,7 @@ TEST_P(Conv2ConsistencyTest, RandomConvolutions) {
     array filter                = randn(params.filt_sz_);
 
     array out_native = convolve2(signal, filter);
-    array out = convolve2_nn(signal, filter, params.stride_, params.padding_,
+    array out = convolve2NN(signal, filter, params.stride_, params.padding_,
                              params.dilation_);
 
     ASSERT_ARRAYS_NEAR(out_native, out, 1e-5);
