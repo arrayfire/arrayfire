@@ -1072,5 +1072,42 @@ explicitly.
 
 =======================================================================
 
+\defgroup image_func_confidence_cc Confidence Connected Components
+\ingroup connected_comps_mat
+
+\brief Segment image based on similar pixel characteristics
+
+This filter is similar to \ref regions() (connected components) with additional
+criteria for segmentation. In \ref regions(), all connected (\ref af_connectivity)
+pixels connected are considered to be a single component. In this
+variation of connected components, pixels having similar pixel statistics
+of the neighborhoods around a given set of seed points are grouped together.
+
+The parameter \p radius determines the size of neighborhood around a seed point.
+
+Mean (\f$ \mu \f$) and Variance (\f$ \sigma^2 \f$) are the pixel statistics that
+are computed across all neighborhoods around the given set of seed points. The
+pixels which are connected to seed points and lie in the confidence interval
+ (\f$ [\mu - \alpha * \sigma, \mu + \alpha * \sigma] \f$ where \f$ \alpha \f$
+is the parameter \p multiplier) are grouped. \p multiplier can be used to
+control the width of the confidence interval.
+
+This filter follows an iterative approach for fine tuning the segmentation.
+An initial segmenetation followed by a finite number (\p iter) of segmentations
+are performed. The user provided parameter \p iter is only a request and the
+algorithm can prempt the execution if \f$ \sigma^2 \f$ approaches zero. The
+initial segmentation uses the mean and variance calculated from the neighborhoods
+of all the seed points. For subsequent segmentations, all pixels in the previous
+segmentation are used to re-calculate the mean and variance (as opposed to using
+the pixels in the neighborhood of the seed point).
+
+Given below is a sample output for segmenting three different regions of a
+donut using single seed.
+
+<img src="ccc_sample_output.png" align="center" alt="Confidence Connected Components Example"
+width="60%" height="60%"/>
+
+
+
 @}
 */

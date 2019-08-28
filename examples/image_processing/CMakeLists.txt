@@ -27,6 +27,11 @@ if(ArrayFire_CPU_FOUND)
   add_executable(brain_segmentation_cpu brain_segmentation.cpp)
   target_link_libraries(brain_segmentation_cpu ArrayFire::afcpu)
 
+  # Confidence Connected Components example
+  add_executable(confidence_connected_components_cpu
+      confidence_connected_components.cpp)
+  target_link_libraries(confidence_connected_components_cpu ArrayFire::afcpu)
+
   # Edge detection example
   add_executable(edge_cpu edge.cpp)
   target_link_libraries(edge_cpu ArrayFire::afcpu)
@@ -74,6 +79,10 @@ if(ArrayFire_CUDA_FOUND)
   add_executable(brain_segmentation_cuda brain_segmentation.cpp)
   target_link_libraries(brain_segmentation_cuda ArrayFire::afcuda)
 
+  add_executable(confidence_connected_components_cuda
+      confidence_connected_components.cpp)
+  target_link_libraries(confidence_connected_components_cuda ArrayFire::afcuda)
+
   add_executable(edge_cuda edge.cpp)
   target_link_libraries(edge_cuda ArrayFire::afcuda)
 
@@ -113,6 +122,10 @@ if(ArrayFire_OpenCL_FOUND)
 
   add_executable(brain_segmentation_opencl brain_segmentation.cpp)
   target_link_libraries(brain_segmentation_opencl ArrayFire::afopencl)
+
+  add_executable(confidence_connected_components_opencl
+      confidence_connected_components.cpp)
+  target_link_libraries(confidence_connected_components_opencl ArrayFire::afopencl)
 
   add_executable(edge_opencl edge.cpp)
   target_link_libraries(edge_opencl ArrayFire::afopencl)

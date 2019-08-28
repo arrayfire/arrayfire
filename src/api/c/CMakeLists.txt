@@ -63,6 +63,7 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/clamp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/colorspace.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/complex.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/confidence_connected.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/convolve.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/corrcoef.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/covariance.cpp
@@ -100,6 +101,7 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/imageio2.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/implicit.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/implicit.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/imgproc_common.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/index.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/internal.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/inverse.cpp

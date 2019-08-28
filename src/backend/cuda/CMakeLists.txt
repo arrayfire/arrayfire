@@ -108,6 +108,7 @@ set(nvrtc_src
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve3.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve_separable.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/exampleFunction.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/flood_fill.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/histogram.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/hsv_rgb.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/match_template.cuh
@@ -298,6 +299,7 @@ cuda_add_library(afcuda
     kernel/fast_lut.hpp
     kernel/fast_pyramid.hpp
     kernel/fftconvolve.hpp
+    kernel/flood_fill.hpp
     kernel/gradient.hpp
     kernel/harris.hpp
     kernel/histogram.hpp
@@ -403,6 +405,8 @@ cuda_add_library(afcuda
     fft.cpp
     fft.hpp
     fftconvolve.hpp
+    flood_fill.cpp
+    flood_fill.hpp
     GraphicsResourceManager.cpp
     GraphicsResourceManager.hpp
     gradient.hpp

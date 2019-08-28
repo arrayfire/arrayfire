@@ -106,6 +106,8 @@ target_sources(afopencl
     fft.hpp
     fftconvolve.cpp
     fftconvolve.hpp
+    flood_fill.cpp
+    flood_fill.hpp
     GraphicsResourceManager.cpp
     GraphicsResourceManager.hpp
     gradient.cpp
@@ -273,6 +275,7 @@ target_sources(afopencl
     kernel/exampleFunction.hpp
     kernel/fast.hpp
     kernel/fftconvolve.hpp
+    kernel/flood_fill.hpp
     kernel/gradient.hpp
     kernel/harris.hpp
     kernel/histogram.hpp

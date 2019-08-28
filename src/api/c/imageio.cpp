@@ -269,6 +269,7 @@ af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
 
         const int fi_bpc = fi_bpp / fi_color;
         if (fi_bpc != 8 && fi_bpc != 16 && fi_bpc != 32) {
+            printf("fi_bpc %d\n", fi_bpc);
             AF_ERROR("FreeImage Error: Bits per channel not supported",
                      AF_ERR_NOT_SUPPORTED);
         }
