@@ -123,7 +123,7 @@ class MemoryManager {
     /// manager.
     size_t allocated(void *ptr);
 
-    /// Frees or marks the pointer for deletion during the nex garbage
+    /// Frees or marks the pointer for deletion during the next garbage
     /// collection event
     void unlock(void *ptr, detail::Event &&e, bool user_unlock);
 

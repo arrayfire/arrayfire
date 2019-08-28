@@ -1583,7 +1583,7 @@ extern "C" {
        \ingroup method_mat
        @{
 
-       Get the use count of `af_array`
+       Get the reference count of \ref af_array
     */
     AFAPI af_err af_get_data_ref_count(int *use_count, const af_array in);
 #endif
