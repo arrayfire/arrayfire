@@ -119,13 +119,13 @@ can be decomposed into two vectors shown below.
 
 For one dimensional signals(lets say m is size of 0th dimension), below batch operations are possible.
 
-| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode              | Description |
-|:-----------------------:|:-----------------:|:-----------------:|:-----------------------:|:------------|
-| [m 1 1 1]               | [m 1 1 1]         | [m 1 1 1]         | No Batch                | Output will be a single convolved array |
-| [m 1 1 1]               | [m n 1 1]         | [m n 1 1]         | Filter is Batched       | n filters applied to same input |
-| [m n 1 1]               | [m 1 1 1]         | [m n 1 1]         | Signal is Batched       | 1 filter applied to n inputs |
-| [m n p q]               | [m n p q]         | [m n p q]         | Identical Batches       | n*p*q filters applied to n*p*q inputs in one-to-one correspondence |
-| [m n 1 1]               | [m 1 p q]         | [m n p q]         | Non-overlapping batches | p*q filters applied to n inputs to produce n x p x q results |
+| Input Signal Dimensions   | Filter Dimensions   | Output Dimensions   | Batch Mode                | Description                                                        |
+| :-----------------------: | :-----------------: | :-----------------: | :-----------------------: | :----------------------------------------------------------------- |
+| [m 1 1 1]                 | [m 1 1 1]           | [m 1 1 1]           | No Batch                  | Output will be a single convolved array                            |
+| [m 1 1 1]                 | [m n 1 1]           | [m n 1 1]           | Filter is Batched         | n filters applied to same input                                    |
+| [m n 1 1]                 | [m 1 1 1]           | [m n 1 1]           | Signal is Batched         | 1 filter applied to n inputs                                       |
+| [m n p q]                 | [m n p q]           | [m n p q]           | Identical Batches         | n*p*q filters applied to n*p*q inputs in one-to-one correspondence |
+| [m n 1 1]                 | [m 1 p q]           | [m n p q]           | Non-overlapping batches   | p*q filters applied to n inputs to produce n x p x q results       |
 
 The last entry in the table has more permutations than shown here.
 
@@ -138,20 +138,31 @@ The last entry in the table has more permutations than shown here.
 
 \copydoc signal_func_conv_desc
 
-For two dimensional signals, the following are the possible batch operations possible.
-Lets say m & n as sizes along the 0th & 1st dimensions respectively and p & q are the
-some integral numbers greater than one.
+For two dimensional signals, the following are the possible batch operations
+possible. Lets say m & n as sizes along the 0th & 1st dimensions respectively
+and p & q are the some integral numbers greater than one.
 
-| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode              | Description |
-|:-----------------------:|:-----------------:|:-----------------:|:-----------------------:|:------------|
-| [m n 1 1]               | [m n 1 1]         | [m n 1 1]         | No Batch                | Output will be a single convolved array |
-| [m n 1 1]               | [m n p 1]         | [m n p 1]         | Filter is Batched       | p filters applied to same input |
-| [m n p 1]               | [m n 1 1]         | [m n p 1]         | Signal is Batched       | 1 filter applied to p inputs |
-| [m n p q]               | [m n p q]         | [m n p q]         | Identical Batches       | p*q filters applied to p*q inputs in one-to-one correspondence |
-| [m n p 1]               | [m n 1 q]         | [m n p q]         | Non-overlapping batches | q filters applied to p inputs in to produce p x q results |
-| [m n 1 p]               | [m n q 1]         | [m n q p]         | Non-overlapping batches | q filters applied to p inputs in to produce q x p results |
+| Input Signal Dimensions   | Filter Dimensions   | Output Dimensions   | Batch Mode                | Description                                                    |
+| :-----------------------: | :-----------------: | :-----------------: | :-----------------------: | :------------------------------------------------------------- |
+| [m n 1 1]                 | [m n 1 1]           | [m n 1 1]           | No Batch                  | Output will be a single convolved array                        |
+| [m n 1 1]                 | [m n p 1]           | [m n p 1]           | Filter is Batched         | p filters applied to same input                                |
+| [m n p 1]                 | [m n 1 1]           | [m n p 1]           | Signal is Batched         | 1 filter applied to p inputs                                   |
+| [m n p q]                 | [m n p q]           | [m n p q]           | Identical Batches         | p*q filters applied to p*q inputs in one-to-one correspondence |
+| [m n p 1]                 | [m n 1 q]           | [m n p q]           | Non-overlapping batches   | q filters applied to p inputs in to produce p x q results      |
+| [m n 1 p]                 | [m n q 1]           | [m n q p]           | Non-overlapping batches   | q filters applied to p inputs in to produce q x p results      |
 
+* Batching behavior of convolve2_nn functions
 
+Batching behavior in the new convolutions functions have changed. These
+functions can perform a 2D convolution on 3D signal and filters.
+
+| Input Signal Dimensions   | Filter Dimensions   | Output Dimensions   | Batch Mode                | Description                                               |
+| :-----------------------: | :-----------------: | :-----------------: | :-----------------------: | :-------------------------------------------------------- |
+| [m n 1 1]                 | [m n 1 1]           | [m n 1 1]           | No Batch                  | Output will be a single convolved array                   |
+| [m n 1 1]                 | [m n p 1]           | [m n p 1]           | *Invalid d2 must be same* | N/A                                                       |
+| [m n p 1]                 | [m n 1 1]           | [m n p 1]           | *Invalid Batch*           | N/A                                                       |
+| [m n p 1]                 | [m n p 1]           | [m n 1 1]           | No Batch                  | 3D Signal and 3D filter convoled to 2D result             |
+| [m n p qs]                | [m n p qf]          | [m n qf qs]         | Batch qs * qf             | qs signals and qf filsters to create qs * qf results      |
 
 \defgroup signal_func_convolve3 3D Convolutions
 \ingroup convolve_mat
@@ -163,12 +174,12 @@ some integral numbers greater than one.
 For three dimensional inputs with m, n & p sizes along the 0th, 1st & 2nd dimensions
 respectively, given below are the possible batch operations.
 
-| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode              | Description |
-|:-----------------------:|:-----------------:|:-----------------:|:-----------------------:|:------------|
-| [m n p 1]               | [a b c 1]         | [m n p 1]         | No Batch                | Output will be a single convolve array |
-| [m n p 1]               | [a b c d]         | [m n p d]         | Filter is Batched       | d filters applied to same input |
-| [m n p q]               | [a b c 1]         | [m n p q]         | Signal is Batched       | 1 filter applied to q inputs |
-| [m n p k]               | [a b c k]         | [m n p k]         | Identical Batches       | k filters applied to k inputs in one-to-one correspondence |
+| Input Signal Dimensions   | Filter Dimensions   | Output Dimensions   | Batch Mode                | Description                                                |
+| :-----------------------: | :-----------------: | :-----------------: | :-----------------------: | :------------                                              |
+| [m n p 1]                 | [a b c 1]           | [m n p 1]           | No Batch                  | Output will be a single convolve array                     |
+| [m n p 1]                 | [a b c d]           | [m n p d]           | Filter is Batched         | d filters applied to same input                            |
+| [m n p q]                 | [a b c 1]           | [m n p q]           | Signal is Batched         | 1 filter applied to q inputs                               |
+| [m n p k]                 | [a b c k]           | [m n p k]           | Identical Batches         | k filters applied to k inputs in one-to-one correspondence |
 
 
 

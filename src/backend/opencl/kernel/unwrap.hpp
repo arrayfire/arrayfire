@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include <Array.hpp>
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
@@ -16,7 +17,6 @@
 #include <math.hpp>
 #include <program.hpp>
 #include <traits.hpp>
-#include <type_util.hpp>
 #include <map>
 #include <mutex>
 #include <string>
@@ -32,10 +32,12 @@ using std::string;
 
 namespace opencl {
 namespace kernel {
+
 template<typename T>
 void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
             const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
-            const dim_t nx, const bool is_column) {
+            const dim_t dx, const dim_t dy, const dim_t nx,
+            const bool is_column) {
     std::string ref_name = std::string("unwrap_") +
                            std::string(dtype_traits<T>::getName()) +
                            std::string("_") + std::to_string(is_column);
@@ -47,7 +49,7 @@ void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
     if (entry.prog == 0 && entry.ker == 0) {
         ToNumStr<T> toNumStr;
         std::ostringstream options;
-        options << " -D is_column=" << is_column
+        options << " -D IS_COLUMN=" << is_column
                 << " -D ZERO=" << toNumStr(scalar<T>(0))
                 << " -D T=" << dtype_traits<T>::getName();
 
@@ -87,12 +89,14 @@ void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
     auto unwrapOp =
         KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
                       const int, const int, const int, const int, const int,
-                      const int, const int, const int>(*entry.ker);
+                      const int, const int, const int, const int, const int>(
+            *entry.ker);
 
     unwrapOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-             *in.data, in.info, wx, wy, sx, sy, px, py, nx, reps);
+             *in.data, in.info, wx, wy, sx, sy, px, py, dx, dy, nx, reps);
 
     CL_DEBUG_FINISH(getQueue());
 }
+
 }  // namespace kernel
 }  // namespace opencl

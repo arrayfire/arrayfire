@@ -11,7 +11,9 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+
 #include <string>
+#include <utility>
 
 /* Forward declarations of Opaque structure holding
  * the following library contexts
@@ -25,6 +27,8 @@ struct cusparseContext;
 typedef struct cusparseContext* SparseHandle;
 struct cusolverDnContext;
 typedef struct cusolverDnContext* SolveHandle;
+struct cudnnContext;
+typedef struct cudnnContext* cudnnHandle_t;
 
 namespace spdlog {
 class logger;
@@ -88,19 +92,21 @@ cudaDeviceProp getDeviceProp(int device);
 
 std::pair<int, int> getComputeCapability(const int device);
 
-bool& evalFlag();
+bool &evalFlag();
 
 MemoryManager& memoryManager();
 
-MemoryManagerPinned& pinnedMemoryManager();
+MemoryManagerPinned &pinnedMemoryManager();
 
-graphics::ForgeManager& forgeManager();
+graphics::ForgeManager &forgeManager();
 
-GraphicsResourceManager& interopManager();
+GraphicsResourceManager &interopManager();
 
-PlanCache& fftManager();
+PlanCache &fftManager();
 
 BlasHandle blasHandle();
+
+cudnnHandle_t nnHandle();
 
 SolveHandle solverDnHandle();
 

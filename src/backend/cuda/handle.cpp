@@ -9,6 +9,7 @@
 
 #include <common/unique_handle.hpp>
 #include <cublas.hpp>
+#include <cudnn.hpp>
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
 #include <cufft.hpp>
@@ -19,5 +20,10 @@ CREATE_HANDLE(cusparseHandle_t, cusparseCreate, cusparseDestroy);
 CREATE_HANDLE(cublasHandle_t, cublasCreate, cublasDestroy);
 CREATE_HANDLE(cusolverDnHandle_t, cusolverDnCreate, cusolverDnDestroy);
 CREATE_HANDLE(cufftHandle, cufftCreate, cufftDestroy);
+CREATE_HANDLE(cudnnHandle_t, cudnnCreate, cudnnDestroy);
+CREATE_HANDLE(cudnnTensorDescriptor_t, cudnnCreateTensorDescriptor, cudnnDestroyTensorDescriptor);
+CREATE_HANDLE(cudnnFilterDescriptor_t, cudnnCreateFilterDescriptor, cudnnDestroyFilterDescriptor);
+CREATE_HANDLE(cudnnConvolutionDescriptor_t, cudnnCreateConvolutionDescriptor, cudnnDestroyConvolutionDescriptor);
+
 
 // clang-format on
