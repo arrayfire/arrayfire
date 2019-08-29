@@ -2,23 +2,7 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="mainpage" visible="yes" title="" />
-    <tab type="usergroup" visible="yes" title="Tutorials">
-      <tab type="user" url="\ref installing" visible="yes" title="Installation"/>
-      <tab type="user" url="\ref using_on_linux" visible="yes" title="Using on Linux"/>
-      <tab type="user" url="\ref using_on_windows" visible="yes" title="Using on Windows"/>
-      <tab type="user" url="\ref using_on_osx" visible="yes" title="Using on OSX"/>
-      <tab type="user" url="\ref gettingstarted" visible="yes" title="Getting Started"/>
-      <tab type="user" url="\ref vectorization" visible="yes" title="Introduction to Vectorization"/>
-      <tab type="user" url="\ref matrixmanipulation" visible="yes" title="Array and Matrix Manipulation"/>
-      <tab type="user" url="\ref interop_cuda" visible="yes" title="CUDA Interoperability"/>
-      <tab type="user" url="\ref interop_opencl" visible="yes" title="OpenCL Interoperability"/>
-      <tab type="user" url="\ref unifiedbackend" visible="yes" title="Unified Backend"/>
-      <tab type="user" url="\ref forge_visualization" visible="yes" title="Forge Visualization"/>
-      <tab type="user" url="\ref indexing" visible="yes" title="Indexing"/>
-      <tab type="user" url="\ref timing" visible="yes" title="Timing ArrayFire"/>
-      <tab type="user" url="\ref configuring_environment" visible="yes" title="Configuring ArrayFire Environment"/>
-      <tab type="usergroup" url="\ref page_gfor" visible="yes" title="GFOR Usage"/>
-    </tab>
+    <tab type="user" url="\ref tutorials" visible="yes" title="Tutorials"/>
     <tab type="modules" visible="yes" title="Functions" intro="Documentation grouped according to category:"/>
     <tab type="user" url="\ref releasenotes" visible="yes" title="Release Notes"/>
     <tab type="examples" visible="yes" title="" intro=""/>
