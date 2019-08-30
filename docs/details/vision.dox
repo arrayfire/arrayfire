@@ -133,20 +133,45 @@ equal to the number of features contained in the query array.
 \defgroup cv_func_nearest_neighbour nearestNeighbour
 \ingroup featmatcher_mat
 
-\brief Nearest Neighbour
+\brief Determine the nearest neighbouring points to a given set of points
 
-Calculates nearest distances between two 2-dimensional arrays containing
-features based on the type of distance computation chosen. Currently, \ref
-AF_SAD (sum of absolute differences), \ref AF_SSD (sum of squared differences)
-and \ref AF_SHD (hamming distance) are supported.
-One of the arrays containing the training data and the other the
-query data. One of the dimensions of the both arrays must be equal among them,
-identifying the length of each feature. The other dimension indicates the
-total number of features in each of the training and query arrays. Two
-1-dimensional arrays are created as results, one containg the smallest N
-distances of the query array and another containing the indices of these
-distances in the training array. The resulting 1-dimensional arrays have length
-equal to the number of features contained in the query array.
+Calculate which points in the \p train array are closest to each point in the \p
+query array, with the distance metric specified by \p dist_type: \ref AF_SAD
+(sum of absolute differences), \ref AF_SSD (sum of squared differences), or \ref
+AF_SHD (hamming distance). The number of results is specified by \p n_dist, and
+the results are sorted from nearest to farthest (with the first result being the
+nearest) to the query points. The results are listed in two output arrays: \p
+idx, which are the nearest neighbouring points' indices in the list of points in
+the \p train array, and \p dist, which are their corresponding distances to each
+query point. Both of the output arrays' shape is \p n_dist \f$\times\f$ the
+number of queries.
+
+Depending on the layout of the \p train and \p query arrays, \p dist_dim must be
+specified in order to correctly calculate the distances. \p dist_dim is the
+dimension in which the coordinates of a point is described in the array (and
+therefore determines the appropriate numbers in the array to use in the distance
+calculation). It is set to 0 by default, which requires that each point in the
+input arrays must be described along dim0, and the set of points must be listed
+along dim1. If it is set to 1, however, then the input arrays must have the
+points laid out the other way (described along dim1, listed along dim0).
+
+A simple example is given below for 1 query. Note that 3 nearest neighbors are
+queried for (\p n_dist is 3), and that the results in \p idx and \p dist are
+listed along dim0.
+
+\snippet test/nearest_neighbour.cpp ex_nearest_1
+
+A slightly more complicated example is given below. There are 2 query points,
+and the points both in \p train and \p query are in 3-dimensional space (each
+point is described along dim0, the points are listed along dim1). Note that the
+corresponding result for each query point is located on each column (along dim1)
+of \p idx and \p dist.
+
+\snippet test/nearest_neighbour.cpp ex_nearest_2
+
+Note that it does not make sense for the \p train and \p query array shapes to
+have a third and fourth dimension. Thus, this function requires that both input
+arrays have at most two dimensions.
 
 =======================================================================
 
