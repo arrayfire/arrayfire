@@ -213,23 +213,27 @@ AFAPI void hammingMatcher(array& idx, array& dist,
 
    \param[out] idx       is an array of MxN size, where M is \p n_dist and N is
                          the number of queries. The value at position i,j is the
-                         \p train points list index with the ith smallest
-                         distance to the jth \p query point.
+                         index of the point in \p train along dim1 (if \p
+                         dist_dim is 0) or along dim 0 (if \p dist_dim is 1),
+                         with the ith smallest distance to the jth \p query
+                         point.
    \param[out] dist      is an array of MxN size, where M is \p n_dist and N is
                          the number of queries. The value at position i,j is the
-                         distance of the ith nearest point in \p train to the
-                         jth \p query point. This distance is computed according
-                         on the \p dist_type chosen.
+                         distance from the jth query point to the point in \p
+                         train referred to by \p idx(i,j). This distance is
+                         computed according to the \p dist_type chosen.
    \param[in]  query     is the array containing the points to be queried. The
                          points must be described along dim0 and listed along
-                         dim1 (vice versa if \p dist_dim is 1)
+                         dim1 if \p dist_dim is 0, or vice versa if \p dist_dim
+                         is 1.
    \param[in]  train     is the array containing the points used as training
                          data. The points must be described along dim0 and
-                         listed along dim1 (vice versa if \p dist_dim is 1)
-   \param[in]  dist_dim  indicates the dimension along which each point is
-                         described in \p query and \p train (the dimension
-                         specified here must be the same for both \p query and
-                         \p train arrays)
+                         listed along dim1 if \p dist_dim is 0, or vice versa if
+                         \p dist_dim is 1.
+   \param[in]  dist_dim  indicates the dimension that the distance computation
+                         will use to determine a point's coordinates. The \p
+                         train and \p query arrays must both use this dimension
+                         for describing a point's coordinates
    \param[in]  n_dist    is the number of nearest neighbour points to return
                          (currently only values <= 256 are supported)
    \param[in]  dist_type is the distance computation type. Currently \ref
@@ -528,28 +532,32 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
 /**
-   C interface wrapper for determining the nearest neighbouring points to a
+   C++ interface wrapper for determining the nearest neighbouring points to a
    given set of points
 
    \param[out] idx       is an array of MxN size, where M is \p n_dist and N is
                          the number of queries. The value at position i,j is the
-                         \p train points list index with the ith smallest
-                         distance to the jth \p query point.
+                         index of the point in \p train along dim1 (if \p
+                         dist_dim is 0) or along dim 0 (if \p dist_dim is 1),
+                         with the ith smallest distance to the jth \p query
+                         point.
    \param[out] dist      is an array of MxN size, where M is \p n_dist and N is
                          the number of queries. The value at position i,j is the
-                         distance of the ith nearest point in \p train to the
-                         jth \p query point. This distance is computed according
-                         on the \p dist_type chosen.
+                         distance from the jth query point to the point in \p
+                         train referred to by \p idx(i,j). This distance is
+                         computed according to the \p dist_type chosen.
    \param[in]  query     is the array containing the points to be queried. The
                          points must be described along dim0 and listed along
-                         dim1 (vice versa if \p dist_dim is 1)
+                         dim1 if \p dist_dim is 0, or vice versa if \p dist_dim
+                         is 1.
    \param[in]  train     is the array containing the points used as training
                          data. The points must be described along dim0 and
-                         listed along dim1 (vice versa if \p dist_dim is 1)
-   \param[in]  dist_dim  indicates the dimension along which each point is
-                         described in \p query and \p train (the dimension
-                         specified here must be the same for both \p query and
-                         \p train arrays)
+                         listed along dim1 if \p dist_dim is 0, or vice versa if
+                         \p dist_dim is 1.
+   \param[in]  dist_dim  indicates the dimension that the distance computation
+                         will use to determine a point's coordinates. The \p
+                         train and \p query arrays must both use this dimension
+                         for describing a point's coordinates
    \param[in]  n_dist    is the number of nearest neighbour points to return
                          (currently only values <= 256 are supported)
    \param[in]  dist_type is the distance computation type. Currently \ref

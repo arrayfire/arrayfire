@@ -512,7 +512,7 @@ TEST(NearestNeighbour, DocSnippet1) {
 
     float h_query = 1.25f;
     array query(dim4(1), &h_query);
-    //  1.5
+    //  1.25
 
     array idx;
     array dist;
