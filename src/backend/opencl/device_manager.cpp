@@ -159,7 +159,7 @@ static inline bool compare_default(const Device* ldev, const Device* rdev) {
     // Sort based on memory
     auto l_mem = ldev->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
     auto r_mem = rdev->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
-    return l_mem >= r_mem;
+    return l_mem > r_mem;
 }
 
 DeviceManager::DeviceManager()

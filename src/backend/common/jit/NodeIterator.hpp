@@ -31,7 +31,7 @@ class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
 
     /// Copies the children of the \p n Node to the end of the tree vector
     void copy_children_to_end(Node* n) {
-        for (int i = 0; n->m_children[i] != nullptr && i < Node::kMaxChildren;
+        for (int i = 0; i < Node::kMaxChildren && n->m_children[i] != nullptr;
              i++) {
             auto ptr = n->m_children[i].get();
             if (find(begin(tree), end(tree), ptr) == end(tree)) {
