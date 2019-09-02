@@ -434,6 +434,7 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
         devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.push_back(false);
+        devMngr.mDeviceTypes.push_back(tDevice->getInfo<CL_DEVICE_TYPE>());
         nDevices = devMngr.mDevices.size() - 1;
 
         // cache the boost program_cache object, clean up done on program exit
