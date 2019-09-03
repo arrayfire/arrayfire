@@ -31,3 +31,9 @@ void af_get_last_error(char **str, dim_t *len) {
 
     if (len) *len = slen;
 }
+
+af_err af_set_enable_stacktrace(int is_enabled) {
+    common::is_stacktrace_enabled() = is_enabled;
+
+    return AF_SUCCESS;
+}

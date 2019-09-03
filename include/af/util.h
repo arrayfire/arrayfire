@@ -278,6 +278,15 @@ extern "C" {
     AFAPI af_err af_get_size_of(size_t *size, af_dtype type);
 #endif
 
+#if AF_API_VERSION >= 37
+    /// Enable(default) or disable error messages that display the stacktrace.
+    ///
+    /// \param[in] is_enabled If zero stacktraces are not shown with the error
+    ///                       messages
+    /// \returns Always returns AF_SUCCESS
+    AFAPI af_err af_set_enable_stacktrace(int is_enabled);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
