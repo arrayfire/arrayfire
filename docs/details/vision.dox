@@ -137,17 +137,16 @@ equal to the number of features contained in the query array.
 
 In this function, a "point" is simply a geometric point's coordinates in an
 n-dimensional space. The coordinates are described along dim0 (much like a
-traditional column vector). The \p train and \p query arrays then, are each
-expected to be a list of such coordinates, enumerated along dim1 (the usage of
+traditional column vector). The \p train and \p query arrays are each expected
+to be a list of such coordinates, enumerated along dim1 (however, the usage of
 dim0 and dim1 here can also be switched, as explained later).
 
-This function then calculates which points in the \p train array are nearest to
-each point in the \p query array, based on the distance metric specified by \p
+This function calculates which points in the \p train array are nearest to each
+point in the \p query array, based on the distance metric specified by \p
 dist_type: \ref AF_SAD (sum of absolute differences), \ref AF_SSD (sum of
-squared differences), or \ref AF_SHD (hamming distance).
-
-The number of nearest neighboring points returned is specified by \p n_dist,
-and the results are described in two output arrays:
+squared differences, the default option), or \ref AF_SHD (hamming distance). The
+resulting \p n_dist nearest neighboring points are described in two output
+arrays:
 - \p idx:  contains the index of each result that corresponds to the point in
            \p train
 - \p dist: contains the distance from the query point to the result's
@@ -163,10 +162,10 @@ n_dist \f$\times\f$ the number of queries.
 For illustration, a simple example is given below for 1 query in 1-dimensional
 space. There are 6 points in \p train, and 3 of the nearest neighbors are
 queried for (\p n_dist is 3), so there are 3 elements in the result set for this
-single query, enumerated along dim0. In the results, \p idx describes that the 3
-points closest to 1.25 are, from nearest to farthest: point 0 in \p train (1.)
-with an SSD distance (as described in \p dist) of 0.0625 from the query, point 1
-(2.) with a distance of 0.5625, and point 2 (3.) with a distance of 3.0625.
+single query, enumerated along dim0. In the results, \p idx and \p dist contain
+the 3 points closest to 1.25, ordered from nearest to farthest: point 0 in \p
+train (1.) with an SSD distance of 0.0625 from the query, point 1 (2.) with a
+distance of 0.5625, and point 2 (3.) with a distance of 3.0625.
 
 \snippet test/nearest_neighbour.cpp ex_nearest_1
 
@@ -174,12 +173,12 @@ A slightly more complicated example is given below. There are 2 \p query points
 and 6 \p train points, and they are in 3-dimensional space (each point's
 coordinates are described along dim0, the list of points is enumerated along
 dim1). Note that in the output arrays \p idx and \p dist, there are 2 result
-sets now, one for each query. The result sets located on the first columns in
-the output arrays correspond to the first query (the first column in \p query),
-and that the result sets on the second columns of the output arrays correspond
-to the second query (second column in \p query). Thus, for example, the second
-query point is (7.5, 9., 1.), and the point closest to it in \p train is point
-3, which is (8., 9., 1.), which has a SSD distance of 0.25 from the query point.
+sets now, one for each query. The result set located on the the first column of
+\p idx and \p dist correspond to the first query (the first column in \p query),
+and the result set on the second column of \p idx and \p dist correspond to the
+second query (second column in \p query). Thus, for example, the second query
+point is (7.5, 9., 1.), and the point closest to it in \p train is point 3,
+which is (8., 9., 1.), which has a SSD distance of 0.25 from the query point.
 
 \snippet test/nearest_neighbour.cpp ex_nearest_2
 
@@ -190,13 +189,14 @@ computed based on the coordinates given along dim0, and hence `dist_dim` is 0 by
 default. However, if the data layout of the input arrays are transposed (the
 coordinates are described along dim1, and the list is enumerated along dim0),
 `dist_dim` must be set to 1, because the distance will be computed based on the
-coordinates given along dim1.
+coordinates given along dim1. In either case, the data layout of the output
+arrays stays the same.
 
 Note that it does not make sense for the \p train and \p query array shapes to
 have a third and fourth dimension, because a 2-dimensional array is sufficient
 to describe a list of points, no matter how long the list is or how many
-dimensions in space do the points span. Thus, this function requires both input
-arrays to be at most 2-dimensional.
+dimensions in space do the points span. Therefore, this function requires both
+input arrays to be at most 2-dimensional.
 
 =======================================================================
 
