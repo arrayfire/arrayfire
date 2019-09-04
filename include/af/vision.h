@@ -211,17 +211,18 @@ AFAPI void hammingMatcher(array& idx, array& dist,
    C++ interface wrapper for determining the nearest neighbouring points to a
    given set of points
 
-   \param[out] idx       is an array of MxN size, where M is \p n_dist and N is
-                         the number of queries. The value at position i,j is the
-                         index of the point in \p train along dim1 (if \p
-                         dist_dim is 0) or along dim 0 (if \p dist_dim is 1),
-                         with the ith smallest distance to the jth \p query
-                         point.
-   \param[out] dist      is an array of MxN size, where M is \p n_dist and N is
-                         the number of queries. The value at position i,j is the
-                         distance from the jth query point to the point in \p
-                         train referred to by \p idx(i,j). This distance is
-                         computed according to the \p dist_type chosen.
+   \param[out] idx       is an array of \f$M \times N\f$ size, where \f$M\f$ is
+                         \p n_dist and \f$N\f$ is the number of queries. The
+                         value at position \f$i,j\f$ is the index of the point
+                         in \p train along dim1 (if \p dist_dim is 0) or along
+                         dim 0 (if \p dist_dim is 1), with the \f$ith\f$
+                         smallest distance to the \f$jth\f$ \p query point.
+   \param[out] dist      is an array of \f$M \times N\f$ size, where \f$M\f$ is
+                         \p n_dist and \f$N\f$ is the number of queries. The
+                         value at position \f$i,j\f$ is the distance from the
+                         \f$jth\f$ query point to the point in \p train referred
+                         to by \p idx(\f$i,j\f$). This distance is computed
+                         according to the \p dist_type chosen.
    \param[in]  query     is the array containing the points to be queried. The
                          points must be described along dim0 and listed along
                          dim1 if \p dist_dim is 0, or vice versa if \p dist_dim
@@ -535,17 +536,18 @@ extern "C" {
    C++ interface wrapper for determining the nearest neighbouring points to a
    given set of points
 
-   \param[out] idx       is an array of MxN size, where M is \p n_dist and N is
-                         the number of queries. The value at position i,j is the
-                         index of the point in \p train along dim1 (if \p
-                         dist_dim is 0) or along dim 0 (if \p dist_dim is 1),
-                         with the ith smallest distance to the jth \p query
-                         point.
-   \param[out] dist      is an array of MxN size, where M is \p n_dist and N is
-                         the number of queries. The value at position i,j is the
-                         distance from the jth query point to the point in \p
-                         train referred to by \p idx(i,j). This distance is
-                         computed according to the \p dist_type chosen.
+   \param[out] idx       is an array of \f$M \times N\f$ size, where \f$M\f$ is
+                         \p n_dist and \f$N\f$ is the number of queries. The
+                         value at position \f$i,j\f$ is the index of the point
+                         in \p train along dim1 (if \p dist_dim is 0) or along
+                         dim 0 (if \p dist_dim is 1), with the \f$ith\f$
+                         smallest distance to the \f$jth\f$ \p query point.
+   \param[out] dist      is an array of \f$M \times N\f$ size, where \f$M\f$ is
+                         \p n_dist and \f$N\f$ is the number of queries. The
+                         value at position \f$i,j\f$ is the distance from the
+                         \f$jth\f$ query point to the point in \p train referred
+                         to by \p idx(\f$i,j\f$). This distance is computed
+                         according to the \p dist_type chosen.
    \param[in]  query     is the array containing the points to be queried. The
                          points must be described along dim0 and listed along
                          dim1 if \p dist_dim is 0, or vice versa if \p dist_dim
