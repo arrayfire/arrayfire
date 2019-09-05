@@ -14,4 +14,5 @@
 * [Indexing](\ref indexing)
 * [Timing ArrayFire](\ref timing)
 * [Configuring ArrayFire Environment](\ref configuring_environment)
+* [Debugging ArrayFire Code](\ref debugging)
 * [GFOR Usage](\ref page_gfor)
