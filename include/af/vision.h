@@ -208,26 +208,39 @@ AFAPI void hammingMatcher(array& idx, array& dist,
 
 #if AF_API_VERSION >= 31
 /**
-   C++ Interface wrapper for Nearest Neighbour
+   C++ interface wrapper for determining the nearest neighbouring points to a
+   given set of points
 
-   \param[out] idx is an array of MxN size, where M is equal to the number of query
-               features and N is equal to n_dist. The value at position IxJ indicates
-               the index of the Jth smallest distance to the Ith query value in the
-               train data array.
-               the index of the Ith smallest distance of the Mth query.
-   \param[out] dist is an array of MxN size, where M is equal to the number of query
-               features and N is equal to n_dist. The value at position IxJ indicates
-               the distance of the Jth smallest distance to the Ith query value in the
-               train data array based on the dist_type chosen.
-   \param[in]  query is the array containing the data to be queried
-   \param[in]  train is the array containing the data used as training data
-   \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
-               indicated here must be of equal length for both query and train arrays)
-   \param[in]  n_dist is the number of smallest distances to return (currently only
-               values <= 256 are supported)
-   \param[in]  dist_type is the distance computation type. Currently \ref AF_SAD (sum
-               of absolute differences), \ref AF_SSD (sum of squared differences), and
-               \ref AF_SHD (hamming distances) are supported.
+   \param[out] idx       is an array of \f$M \times N\f$ size, where \f$M\f$ is
+                         \p n_dist and \f$N\f$ is the number of queries. The
+                         value at position \f$i,j\f$ is the index of the point
+                         in \p train along dim1 (if \p dist_dim is 0) or along
+                         dim 0 (if \p dist_dim is 1), with the \f$ith\f$
+                         smallest distance to the \f$jth\f$ \p query point.
+   \param[out] dist      is an array of \f$M \times N\f$ size, where \f$M\f$ is
+                         \p n_dist and \f$N\f$ is the number of queries. The
+                         value at position \f$i,j\f$ is the distance from the
+                         \f$jth\f$ query point to the point in \p train referred
+                         to by \p idx(\f$i,j\f$). This distance is computed
+                         according to the \p dist_type chosen.
+   \param[in]  query     is the array containing the points to be queried. The
+                         points must be described along dim0 and listed along
+                         dim1 if \p dist_dim is 0, or vice versa if \p dist_dim
+                         is 1.
+   \param[in]  train     is the array containing the points used as training
+                         data. The points must be described along dim0 and
+                         listed along dim1 if \p dist_dim is 0, or vice versa if
+                         \p dist_dim is 1.
+   \param[in]  dist_dim  indicates the dimension that the distance computation
+                         will use to determine a point's coordinates. The \p
+                         train and \p query arrays must both use this dimension
+                         for describing a point's coordinates
+   \param[in]  n_dist    is the number of nearest neighbour points to return
+                         (currently only values <= 256 are supported)
+   \param[in]  dist_type is the distance computation type. Currently \ref
+                         AF_SAD (sum of absolute differences), \ref AF_SSD (sum
+                         of squared differences), and \ref AF_SHD (hamming
+                         distances) are supported.
 
    \ingroup cv_func_nearest_neighbour
  */
@@ -519,34 +532,47 @@ extern "C" {
                                     const dim_t dist_dim, const unsigned n_dist);
 
 #if AF_API_VERSION >= 31
-    /**
-        C Interface wrapper for Nearest Neighbour
+/**
+   C++ interface wrapper for determining the nearest neighbouring points to a
+   given set of points
 
-        \param[out] idx is an array of MxN size, where M is equal to the number of query
-                    features and N is equal to n_dist. The value at position IxJ indicates
-                    the index of the Jth smallest distance to the Ith query value in the
-                    train data array.
-                    the index of the Ith smallest distance of the Mth query.
-        \param[out] dist is an array of MxN size, where M is equal to the number of query
-                    features and N is equal to n_dist. The value at position IxJ indicates
-                    the distance of the Jth smallest distance to the Ith query value in the
-                    train data array based on the dist_type chosen.
-        \param[in]  query is the array containing the data to be queried
-        \param[in]  train is the array containing the data used as training data
-        \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
-                    indicated here must be of equal length for both query and train arrays)
-        \param[in]  n_dist is the number of smallest distances to return (currently, only
-                    values <= 256 are supported)
-        \param[in]  dist_type is the distance computation type. Currently \ref AF_SAD (sum
-                    of absolute differences), \ref AF_SSD (sum of squared differences), and
-                    \ref AF_SHD (hamming distances) are supported.
+   \param[out] idx       is an array of \f$M \times N\f$ size, where \f$M\f$ is
+                         \p n_dist and \f$N\f$ is the number of queries. The
+                         value at position \f$i,j\f$ is the index of the point
+                         in \p train along dim1 (if \p dist_dim is 0) or along
+                         dim 0 (if \p dist_dim is 1), with the \f$ith\f$
+                         smallest distance to the \f$jth\f$ \p query point.
+   \param[out] dist      is an array of \f$M \times N\f$ size, where \f$M\f$ is
+                         \p n_dist and \f$N\f$ is the number of queries. The
+                         value at position \f$i,j\f$ is the distance from the
+                         \f$jth\f$ query point to the point in \p train referred
+                         to by \p idx(\f$i,j\f$). This distance is computed
+                         according to the \p dist_type chosen.
+   \param[in]  query     is the array containing the points to be queried. The
+                         points must be described along dim0 and listed along
+                         dim1 if \p dist_dim is 0, or vice versa if \p dist_dim
+                         is 1.
+   \param[in]  train     is the array containing the points used as training
+                         data. The points must be described along dim0 and
+                         listed along dim1 if \p dist_dim is 0, or vice versa if
+                         \p dist_dim is 1.
+   \param[in]  dist_dim  indicates the dimension that the distance computation
+                         will use to determine a point's coordinates. The \p
+                         train and \p query arrays must both use this dimension
+                         for describing a point's coordinates
+   \param[in]  n_dist    is the number of nearest neighbour points to return
+                         (currently only values <= 256 are supported)
+   \param[in]  dist_type is the distance computation type. Currently \ref
+                         AF_SAD (sum of absolute differences), \ref AF_SSD (sum
+                         of squared differences), and \ref AF_SHD (hamming
+                         distances) are supported.
 
-        \ingroup cv_func_nearest_neighbour
-    */
-    AFAPI af_err af_nearest_neighbour(af_array* idx, af_array* dist,
-                                      const af_array query, const af_array train,
-                                      const dim_t dist_dim, const unsigned n_dist,
-                                      const af_match_type dist_type);
+   \ingroup cv_func_nearest_neighbour
+ */
+AFAPI af_err af_nearest_neighbour(af_array* idx, af_array* dist,
+                                  const af_array query, const af_array train,
+                                  const dim_t dist_dim, const unsigned n_dist,
+                                  const af_match_type dist_type);
 #endif
 
     /**

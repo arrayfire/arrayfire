@@ -133,20 +133,65 @@ equal to the number of features contained in the query array.
 \defgroup cv_func_nearest_neighbour nearestNeighbour
 \ingroup featmatcher_mat
 
-\brief Nearest Neighbour
+\brief Determine the nearest neighbouring points to a given set of points
 
-Calculates nearest distances between two 2-dimensional arrays containing
-features based on the type of distance computation chosen. Currently, \ref
-AF_SAD (sum of absolute differences), \ref AF_SSD (sum of squared differences)
-and \ref AF_SHD (hamming distance) are supported.
-One of the arrays containing the training data and the other the
-query data. One of the dimensions of the both arrays must be equal among them,
-identifying the length of each feature. The other dimension indicates the
-total number of features in each of the training and query arrays. Two
-1-dimensional arrays are created as results, one containg the smallest N
-distances of the query array and another containing the indices of these
-distances in the training array. The resulting 1-dimensional arrays have length
-equal to the number of features contained in the query array.
+A "point" is simply a geometric point's coordinates in an n-dimensional space,
+which can be specified along the dimension specified by `dist_dim` (can be 0 or
+1). A list of such points can be enumerated along the dimension other than the
+one specified by `dist_dim` (excluding dim2 and dim3). By default, `dist_dim` is
+0, so a point's coordinates in this case must be specified along dim0, and the
+list of points must be enumerated along dim1. Consequently, if `dist_dim` is 1,
+then a point's coordinates must be specified along dim1, and the list must be
+enumerated along dim0.
+
+The arrays \p train and \p query are both a list of points, and one must have
+the same data layout as the other. This function calculates which points in the
+\p train are nearest to each point in \p query, based on the distance metric
+specified by \p dist_type: \ref AF_SAD (sum of absolute differences), \ref
+AF_SSD (sum of squared differences, the default option), or \ref AF_SHD (hamming
+distance). The resulting \p n_dist nearest neighboring points are described in
+two output arrays:
+- \p idx:  contains the index of each result that corresponds to the point in
+           \p train
+- \p dist: contains the distance from the query point to the result's
+           corresponding point in \p train
+
+In both the output arrays \p idx and \p dist, the nearest neighbor results for a
+single query are enumerated along dim0, in which the \f$ith\f$ result is the
+\f$ith\f$ nearest point to the query point. The result set for each query point
+is placed along dim1 (columns) of \p idx and \p dist, in the order that the
+queries appear in \p query. Therefore, the output arrays will have a shape of \p
+n_dist \f$\times\f$ the number of queries (regardless of the data layout of the
+input arrays, or the value of `dist_dim`).
+
+For illustration, a simple example is given below for 1 query in 1-dimensional
+space. There are 6 points in \p train, and 3 nearest neighbors are queried for
+(\p n_dist is 3), so there are 3 elements in the results for this single query,
+enumerated along dim0. The results \p idx and \p dist contain the 3 points
+closest to 1.25, ordered from nearest to farthest: point 0 in \p train (1.) with
+an SSD distance of 0.0625 from the query, point 1 (2.) with a distance of
+0.5625, and point 2 (3.) with a distance of 3.0625.
+
+\snippet test/nearest_neighbour.cpp ex_nearest_1
+
+A slightly more complicated example is given below. There are 2 \p query points
+and 6 \p train points, and they are in 3-dimensional space (each point's
+coordinates are specified along dim0, and the list of points is enumerated along
+dim1). Note that in the output arrays \p idx and \p dist, there are 2 sets of
+results now, one for each query. The result set located on the the first column
+of \p idx and \p dist correspond to the first query (the first column in \p
+query), and the result set on the second column of \p idx and \p dist correspond
+to the second query (second column in \p query). Thus, for example, the second
+query point is (7.5, 9., 1.), and the point closest to it in \p train is point
+3, which is (8., 9., 1.), which has a SSD distance of 0.25 from the query point.
+
+\snippet test/nearest_neighbour.cpp ex_nearest_2
+
+Note that it does not make sense for the \p train and \p query array shapes to
+have a third and fourth dimension, because a 2-dimensional array is sufficient
+to describe a list of points, no matter how long the list is or how many
+dimensions in space do the points span. Therefore, this function requires both
+input arrays to be at most 2-dimensional.
 
 =======================================================================
 
