@@ -67,14 +67,15 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
 
     if (sn == baseDim && fn == baseDim)
         return AF_BATCH_NONE;
-    else if (sn == baseDim && (fn > baseDim && fn <= 4))
+    else if (sn == baseDim && (fn > baseDim && fn <= AF_MAX_DIMS))
         return AF_BATCH_RHS;
-    else if ((sn > baseDim && sn <= 4) && fn == baseDim)
+    else if ((sn > baseDim && sn <= AF_MAX_DIMS) && fn == baseDim)
         return AF_BATCH_LHS;
-    else if ((sn > baseDim && sn <= 4) && (fn > baseDim && fn <= 4)) {
+    else if ((sn > baseDim && sn <= AF_MAX_DIMS) &&
+             (fn > baseDim && fn <= AF_MAX_DIMS)) {
         bool doesDimensionsMatch = true;
         bool isInterleaved       = true;
-        for (dim_t i = baseDim; i < 4; i++) {
+        for (dim_t i = baseDim; i < AF_MAX_DIMS; i++) {
             doesDimensionsMatch &= (sDims[i] == fDims[i]);
             isInterleaved &=
                 (sDims[i] == 1 || fDims[i] == 1 || sDims[i] == fDims[i]);
