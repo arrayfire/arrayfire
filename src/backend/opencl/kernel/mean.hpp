@@ -458,15 +458,14 @@ template<typename Ti, typename Tw, typename To>
 To mean_all(Param in) {
     int in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
+    bool is_linear = (in.info.strides[0] == 1);
+    for (int k = 1; k < 4; k++) {
+        is_linear &= (in.info.strides[k] ==
+                (in.info.strides[k - 1] * in.info.dims[k - 1]));
+    }
 
     // FIXME: Use better heuristics to get to the optimum number
-    if (in_elements > 4096) {
-        bool is_linear = (in.info.strides[0] == 1);
-        for (int k = 1; k < 4; k++) {
-            is_linear &= (in.info.strides[k] ==
-                          (in.info.strides[k - 1] * in.info.dims[k - 1]));
-        }
-
+    if (in_elements > 4096 || !is_linear) {
         if (is_linear) {
             in.info.dims[0] = in_elements;
             for (int k = 1; k < 4; k++) {
@@ -482,10 +481,12 @@ To mean_all(Param in) {
         uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
         uint groups_y = divup(in.info.dims[1], threads_y);
 
-        Array<To> tmpOut = createEmptyArray<To>(groups_x);
-        Array<Tw> tmpCt  = createEmptyArray<Tw>(groups_x);
-        Param iWt;
+        dim4 outDims(groups_x, in.info.dims[1],
+                     in.info.dims[2], in.info.dims[3]);
+        Array<To> tmpOut = createEmptyArray<To>(outDims);
+        Array<Tw> tmpCt  = createEmptyArray<Tw>(outDims);
 
+        Param iWt;
         mean_first_launcher<Ti, Tw, To>(tmpOut, tmpCt, in, iWt, threads_x,
                                         groups_x, groups_y);
 
