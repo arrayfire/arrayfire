@@ -7,7 +7,7 @@
 
 find_package(Boost)
 
-if("${Boost_VERSION}" VERSION_LESS 107000)
+if("${Boost_VERSION_STRING}" VERSION_LESS 1.70.0)
   set(VER 1.70.0)
   set(MD5 e160ec0ff825fc2850ea4614323b1fb5)
   include(ExternalProject)
