@@ -507,15 +507,14 @@ template<typename Ti, typename Tw, typename To>
 To mean_all(CParam<Ti> in) {
     using std::unique_ptr;
     int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
+    bool is_linear = (in.strides[0] == 1);
+    for (int k = 1; k < 4; k++) {
+        is_linear &=
+            (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
+    }
 
     // FIXME: Use better heuristics to get to the optimum number
-    if (in_elements > 4096) {
-        bool is_linear = (in.strides[0] == 1);
-        for (int k = 1; k < 4; k++) {
-            is_linear &=
-                (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
-        }
-
+    if (in_elements > 4096 || !is_linear) {
         if (is_linear) {
             in.dims[0] = in_elements;
             for (int k = 1; k < 4; k++) {
@@ -531,12 +530,12 @@ To mean_all(CParam<Ti> in) {
         uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
         uint blocks_y = divup(in.dims[1], threads_y);
 
-        Param<Tw> iwt;
-        Array<To> tmpOut = createEmptyArray<To>(
-            {blocks_x, in.dims[1], in.dims[2], in.dims[3]});
-        Array<Tw> tmpCt = createEmptyArray<Tw>(
-            {blocks_x, in.dims[1], in.dims[2], in.dims[3]});
+        dim4 outDims(blocks_x, in.dims[1], in.dims[2], in.dims[3]);
 
+        Array<To> tmpOut = createEmptyArray<To>(outDims);
+        Array<Tw> tmpCt  = createEmptyArray<Tw>(outDims);
+
+        Param<Tw> iwt;
         mean_first_launcher<Ti, Tw, To>(tmpOut, tmpCt, in, iwt, blocks_x,
                                         blocks_y, threads_x);
 

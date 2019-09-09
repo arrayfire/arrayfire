@@ -318,3 +318,18 @@ TEST(Mean, Issue2093) {
 
     ASSERT_NEAR(outVal, expected, 0.001);
 }
+
+TEST(MeanAll, SubArray) {
+    //Fixes Issue 2636
+    using af::span;
+    using af::mean;
+    using af::sum;
+
+    const dim4 inDims(10, 10, 10, 10);
+
+    array in  = randu(inDims);
+    array sub = in(0, span, span, span);
+
+    size_t nElems = sub.elements();
+    ASSERT_FLOAT_EQ(mean<float>(sub), sum<float>(sub)/nElems);
+}
