@@ -38,11 +38,17 @@ namespace graphics {
 class ForgeManager;
 }
 
+namespace common {
+namespace memory {
+class MemoryManagerBase;
+}
+}  // namespace common
+
+using common::memory::MemoryManagerBase;
+
 namespace cuda {
 
 class GraphicsResourceManager;
-class MemoryManager;
-class MemoryManagerPinned;
 class PlanCache;
 
 int getBackend();
@@ -94,9 +100,9 @@ std::pair<int, int> getComputeCapability(const int device);
 
 bool &evalFlag();
 
-MemoryManager& memoryManager();
+MemoryManagerBase& memoryManager();
 
-MemoryManagerPinned &pinnedMemoryManager();
+MemoryManagerBase& pinnedMemoryManager();
 
 graphics::ForgeManager &forgeManager();
 

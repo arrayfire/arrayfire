@@ -56,6 +56,7 @@ using std::to_string;
 using std::unique_ptr;
 
 using common::unique_handle;
+using common::memory::MemoryManagerBase;
 
 namespace cuda {
 
@@ -356,23 +357,41 @@ cudaDeviceProp getDeviceProp(int device) {
     return DeviceManager::getInstance().cuDevices[0].prop;
 }
 
-MemoryManager &memoryManager() {
-    static std::once_flag flag;
-
-    DeviceManager &inst = DeviceManager::getInstance();
-
-    std::call_once(flag, [&]() { inst.memManager.reset(new MemoryManager()); });
-
-    return *(inst.memManager.get());
-}
-
-MemoryManagerPinned &pinnedMemoryManager() {
+MemoryManagerBase &memoryManager() {
     static std::once_flag flag;
 
     DeviceManager &inst = DeviceManager::getInstance();
 
     std::call_once(flag, [&]() {
-        inst.pinnedMemManager.reset(new MemoryManagerPinned());
+        // By default, create an instance of the default memory manager
+        inst.memManager.reset(
+            new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                      AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
+        // Set the memory manager's device memory manager
+        std::unique_ptr<cuda::MemoryManager> deviceMemoryManager;
+        deviceMemoryManager.reset(new cuda::MemoryManager());
+        inst.memManager->setBackendMemoryClient(std::move(deviceMemoryManager));
+        inst.memManager->initialize();
+    });
+
+    return *(inst.memManager.get());
+}
+
+MemoryManagerBase &pinnedMemoryManager() {
+    static std::once_flag flag;
+
+    DeviceManager &inst = DeviceManager::getInstance();
+
+    std::call_once(flag, [&]() {
+        // By default, create an instance of the default memory manager
+        inst.memManager.reset(
+            new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                      AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
+        // Set the memory manager's device memory manager
+        std::unique_ptr<cuda::MemoryManagerPinned> deviceMemoryManager;
+        deviceMemoryManager.reset(new cuda::MemoryManagerPinned());
+        inst.memManager->setBackendMemoryClient(std::move(deviceMemoryManager));
+        inst.memManager->initialize();
     });
 
     return *(inst.pinnedMemManager.get());

@@ -11,7 +11,6 @@
 
 #include <Event.hpp>
 #include <backend.hpp>
-#include <common/Logger.hpp>
 #include <common/dispatch.hpp>
 #include <common/err_common.hpp>
 #include <common/util.hpp>
@@ -99,10 +98,10 @@ class MemoryManagerBase {
     virtual void addMemoryManagement(int device)    = 0;
     virtual void removeMemoryManagement(int device) = 0;
 
-    int getActiveDeviceId() { bmc_->getActiveDeviceId(); }
-    size_t getMaxMemorySize(int id) { bmc_->getMaxMemorySize(id); }
-    void *nativeAlloc(const size_t bytes) { bmc_->nativeAlloc(bytes); }
-    void *nativeFree(void *ptr) { bmc_->nativeFree(ptr); }
+    int getActiveDeviceId() { return bmc_->getActiveDeviceId(); }
+    size_t getMaxMemorySize(int id) { return bmc_->getMaxMemorySize(id); }
+    void *nativeAlloc(const size_t bytes) { return bmc_->nativeAlloc(bytes); }
+    void nativeFree(void *ptr) { bmc_->nativeFree(ptr); }
     virtual spdlog::logger *getLogger() final { return bmc_->getLogger(); }
     virtual void setBackendMemoryClient(
         std::unique_ptr<BackendMemoryClient> bmc) {
