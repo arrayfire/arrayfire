@@ -23,3 +23,9 @@ BufferInfo &getBufferInfo(const af_buffer_info pair);
 af_buffer_info getHandle(BufferInfo &pairHandle);
 
 detail::Event &getEventFromBufferInfoHandle(const af_buffer_info handle);
+
+struct MemoryManager {};
+
+MemoryManager &getMemoryManager(const af_memory_manager manager);
+
+af_memory_manager getHandle(MemoryManager &manager);

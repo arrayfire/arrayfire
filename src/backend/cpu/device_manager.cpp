@@ -9,12 +9,13 @@
 
 #include <common/graphics_common.hpp>
 #include <device_manager.hpp>
-#include <af/version.h>
 #include <memory.hpp>
+#include <af/version.h>
 
 #include <cctype>
 #include <sstream>
 
+using common::memory::MemoryManagerBase;
 using std::string;
 
 #ifdef CPUID_CAPABLE
@@ -118,9 +119,11 @@ CPUInfo::CPUInfo()
 namespace cpu {
 
 DeviceManager::DeviceManager()
-    : queues(MAX_QUEUES)
-    , memManager(new MemoryManager())
-    , fgMngr(new graphics::ForgeManager()) {}
+    : queues(MAX_QUEUES), fgMngr(new graphics::ForgeManager()) {
+    std::unique_ptr<MemoryManager> deviceMemoryManager;
+    deviceMemoryManager.reset(new MemoryManager());
+    memManager = std::move(deviceMemoryManager);
+}
 
 DeviceManager& DeviceManager::getInstance() {
     static DeviceManager* my_instance = new DeviceManager();
@@ -128,5 +131,12 @@ DeviceManager& DeviceManager::getInstance() {
 }
 
 CPUInfo DeviceManager::getCPUInfo() const { return cinfo; }
+
+void DeviceManager::setMemoryManager(std::unique_ptr<MemoryManagerBase> ptr) {
+    // Get the current memory manager to prevent deadlock if it hasn't been
+    // initialized yet
+    memoryManager();
+    memManager = std::move(ptr);
+}
 
 }  // namespace cpu

@@ -9,10 +9,13 @@
 
 #pragma once
 
+#include <common/MemoryManager.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <memory>
 #include <string>
+
+using common::memory::MemoryManagerBase;
 
 #if defined(AF_WITH_CPUID) &&                                       \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || \
@@ -89,17 +92,21 @@ class DeviceManager {
     static const bool IS_DOUBLE_SUPPORTED = true;
 
     // TODO(umar): Half is not supported for BLAS and FFT on x86_64
-    static const bool IS_HALF_SUPPORTED   = true;
+    static const bool IS_HALF_SUPPORTED = true;
 
     static DeviceManager& getInstance();
 
     friend queue& getQueue(int device);
 
-    friend MemoryManager& memoryManager();
+    friend MemoryManagerBase& memoryManager();
+
+    friend void setMemoryManager(std::unique_ptr<MemoryManagerBase> base);
 
     friend graphics::ForgeManager& forgeManager();
 
     CPUInfo getCPUInfo() const;
+
+    void setMemoryManager(std::unique_ptr<MemoryManagerBase> ptr);
 
    private:
     DeviceManager();
@@ -112,9 +119,9 @@ class DeviceManager {
 
     // Attributes
     std::vector<queue> queues;
-    std::unique_ptr<MemoryManager> memManager;
     std::unique_ptr<graphics::ForgeManager> fgMngr;
     const CPUInfo cinfo;
+    std::unique_ptr<MemoryManagerBase> memManager;
 };
 
 }  // namespace cpu

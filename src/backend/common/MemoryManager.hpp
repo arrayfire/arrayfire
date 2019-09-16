@@ -39,6 +39,43 @@ constexpr size_t ONE_GB        = 1 << 30;
 
 namespace memory {
 
+/******************** Memory manager interface *******************/
+
+class MemoryManagerBase {
+   public:
+    virtual af_buffer_info alloc(const size_t size, bool user_lock)  = 0;
+    virtual size_t allocated(void *ptr)                              = 0;
+    virtual void unlock(void *ptr, af_event e, bool user_unlock)     = 0;
+    virtual void garbageCollect()                                    = 0;
+    virtual void printInfo(const char *msg, const int device)        = 0;
+    virtual void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                           size_t *lock_bytes, size_t *lock_buffers) = 0;
+    virtual void userLock(const void *ptr)                           = 0;
+    virtual void userUnlock(const void *ptr)                         = 0;
+    virtual bool isUserLocked(const void *ptr)                       = 0;
+    virtual size_t getMemStepSize()                                  = 0;
+    virtual size_t getMaxBytes()                                     = 0;
+    virtual unsigned getMaxBuffers()                                 = 0;
+    virtual void setMemStepSize(size_t new_step_size)                = 0;
+    virtual void *nativeAlloc(const size_t bytes)                    = 0;
+    virtual void nativeFree(void *ptr)                               = 0;
+    virtual bool checkMemoryLimit()                                  = 0;
+
+    /// Backend-specific functions
+    // OpenCL
+
+    virtual void addMemoryManagement(int device) = 0;
+
+    virtual void removeMemoryManagement(int device) = 0;
+
+    // A backend-specific memory manager, containing backend-specific methods
+    // that call native memory manipulation functions in a device API.
+    // We need to wrap these since they are opaquely called by the memory
+    // manager.
+};
+
+/******************** Default memory manager implementation *******************/
+
 struct locked_info {
     bool manager_lock;
     bool user_lock;
@@ -80,7 +117,7 @@ struct memory_info {
 
 }  // namespace memory
 
-class MemoryManager {
+class MemoryManager : public memory::MemoryManagerBase {
     size_t mem_step_size;
     unsigned max_buffers;
     std::shared_ptr<spdlog::logger> logger;
@@ -96,12 +133,12 @@ class MemoryManager {
     // Intended to be used with OpenCL backend, where
     // users are allowed to add external devices(context, device pair)
     // to the list of devices automatically detected by the library
-    void addMemoryManagement(int device);
+    void addMemoryManagement(int device) override;
 
     // Intended to be used with OpenCL backend, where
     // users are allowed to add external devices(context, device pair)
     // to the list of devices automatically detected by the library
-    void removeMemoryManagement(int device);
+    void removeMemoryManagement(int device) override;
 
     void setMaxMemorySize();
 
@@ -111,33 +148,33 @@ class MemoryManager {
     /// bytes. If there is already a free buffer available, it will use
     /// that buffer. Otherwise, it will allocate a new buffer using the
     /// nativeAlloc function.
-    af_buffer_info alloc(const size_t size, bool user_lock);
+    af_buffer_info alloc(const size_t size, bool user_lock) override;
 
     /// returns the size of the buffer at the pointer allocated by the memory
     /// manager.
-    size_t allocated(void *ptr);
+    size_t allocated(void *ptr) override;
 
     /// Frees or marks the pointer for deletion during the nex garbage
     /// collection event
-    void unlock(void *ptr, af_event e, bool user_unlock);
+    void unlock(void *ptr, af_event e, bool user_unlock) override;
 
     /// Frees all buffers which are not locked by the user or not being
     /// used.
     virtual void garbageCollect() = 0;
 
-    void printInfo(const char *msg, const int device);
+    void printInfo(const char *msg, const int device) override;
     void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
-                   size_t *lock_bytes, size_t *lock_buffers);
-    void userLock(const void *ptr);
-    void userUnlock(const void *ptr);
-    bool isUserLocked(const void *ptr);
-    size_t getMemStepSize();
-    size_t getMaxBytes();
-    unsigned getMaxBuffers();
-    void setMemStepSize(size_t new_step_size);
+                   size_t *lock_bytes, size_t *lock_buffers) override;
+    void userLock(const void *ptr) override;
+    void userUnlock(const void *ptr) override;
+    bool isUserLocked(const void *ptr) override;
+    size_t getMemStepSize() override;
+    size_t getMaxBytes() override;
+    unsigned getMaxBuffers() override;
+    void setMemStepSize(size_t new_step_size) override;
     virtual void *nativeAlloc(const size_t bytes) = 0;
     virtual void nativeFree(void *ptr)            = 0;
-    bool checkMemoryLimit();
+    bool checkMemoryLimit() override;
 
    protected:
     spdlog::logger *getLogger();

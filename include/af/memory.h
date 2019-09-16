@@ -16,6 +16,8 @@
 
 typedef void* af_buffer_info;
 
+typedef void* af_memory_manager;
+
 #ifdef __cplusplus
 namespace af {
 

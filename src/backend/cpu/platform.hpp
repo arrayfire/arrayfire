@@ -16,9 +16,15 @@ namespace graphics {
 class ForgeManager;
 }
 
-namespace cpu {
+namespace common {
+namespace memory {
+class MemoryManagerBase;
+}
+}  // namespace common
 
-class MemoryManager;
+using common::memory::MemoryManagerBase;
+
+namespace cpu {
 
 int getBackend();
 
@@ -48,7 +54,7 @@ void sync(int device);
 
 bool& evalFlag();
 
-MemoryManager& memoryManager();
+MemoryManagerBase& memoryManager();
 
 graphics::ForgeManager& forgeManager();
 

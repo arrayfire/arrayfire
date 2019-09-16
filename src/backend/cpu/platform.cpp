@@ -18,6 +18,7 @@
 #include <cctype>
 #include <sstream>
 
+using common::memory::MemoryManagerBase;
 using std::endl;
 using std::not1;
 using std::ostringstream;
@@ -149,7 +150,7 @@ bool& evalFlag() {
     return flag;
 }
 
-MemoryManager& memoryManager() {
+MemoryManagerBase& memoryManager() {
     DeviceManager& inst = DeviceManager::getInstance();
     return *(inst.memManager);
 }

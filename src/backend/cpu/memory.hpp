@@ -61,7 +61,7 @@ class MemoryManager : public common::MemoryManager {
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;
     void nativeFree(void *ptr) override;
-    common::memory::memory_info &getCurrentMemoryInfo() override;
+    common::memory::memory_info &getCurrentMemoryInfo();
     void garbageCollect() override;
 };
 
