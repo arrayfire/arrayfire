@@ -27,6 +27,10 @@ using spdlog::logger;
 
 namespace common {
 
+memory::memory_info &MemoryManager::getCurrentMemoryInfo() {
+    return memory[this->getActiveDeviceId()];
+}
+
 void MemoryManager::cleanDeviceMemoryManager(int device) {
     if (this->debug_mode) return;
 
@@ -70,7 +74,6 @@ MemoryManager::MemoryManager(int num_devices, unsigned max_buffers, bool debug)
     : mem_step_size(1024)
     , max_buffers(max_buffers)
     , memory(num_devices)
-    , logger(loggerFactory("mem"))
     , debug_mode(debug) {
     // Check for environment variables
 
@@ -83,6 +86,10 @@ MemoryManager::MemoryManager(int num_devices, unsigned max_buffers, bool debug)
     env_var = getEnvVar("AF_MAX_BUFFERS");
     if (!env_var.empty()) this->max_buffers = max(1, stoi(env_var));
 }
+
+void MemoryManager::initialize() { this->setMaxMemorySize(); }
+
+void MemoryManager::shutdown() { garbageCollect(); }
 
 void MemoryManager::addMemoryManagement(int device) {
     // If there is a memory manager allocated for this device id, we might
@@ -241,6 +248,10 @@ void MemoryManager::unlock(void *ptr, af_event eventHandle, bool user_unlock) {
     }
 }
 
+void MemoryManager::garbageCollect() {
+    cleanDeviceMemoryManager(this->getActiveDeviceId());
+}
+
 void MemoryManager::printInfo(const char *msg, const int device) {
     const memory::memory_info &current = this->getCurrentMemoryInfo();
 
@@ -343,8 +354,6 @@ size_t MemoryManager::getMaxBytes() {
 }
 
 unsigned MemoryManager::getMaxBuffers() { return this->max_buffers; }
-
-logger *MemoryManager::getLogger() { return this->logger.get(); }
 
 void MemoryManager::setMemStepSize(size_t new_step_size) {
     lock_guard_t lock(this->memory_mutex);

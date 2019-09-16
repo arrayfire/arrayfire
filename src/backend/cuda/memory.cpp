@@ -166,10 +166,6 @@ void MemoryManager::garbageCollect() {
     cleanDeviceMemoryManager(this->getActiveDeviceId());
 }
 
-common::memory::memory_info &MemoryManager::getCurrentMemoryInfo() {
-    return memory[this->getActiveDeviceId()];
-}
-
 size_t MemoryManager::getMaxMemorySize(int id) {
     return cuda::getDeviceMemorySize(id);
 }
@@ -201,10 +197,6 @@ int MemoryManagerPinned::getActiveDeviceId() {
 
 void MemoryManagerPinned::garbageCollect() {
     cleanDeviceMemoryManager(this->getActiveDeviceId());
-}
-
-common::memory::memory_info &MemoryManagerPinned::getCurrentMemoryInfo() {
-    return memory[this->getActiveDeviceId()];
 }
 
 size_t MemoryManagerPinned::getMaxMemorySize(int id) {

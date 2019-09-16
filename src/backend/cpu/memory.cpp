@@ -20,14 +20,6 @@
 
 #include <utility>
 
-#ifndef AF_MEM_DEBUG
-#define AF_MEM_DEBUG 0
-#endif
-
-#ifndef AF_CPU_MEM_DEBUG
-#define AF_CPU_MEM_DEBUG 0
-#endif
-
 using common::bytesToString;
 using common::half;
 using std::function;
@@ -46,6 +38,8 @@ size_t getMaxBytes() { return memoryManager().getMaxBytes(); }
 unsigned getMaxBuffers() { return memoryManager().getMaxBuffers(); }
 
 void garbageCollect() { memoryManager().garbageCollect(); }
+
+void shutdownMemoryManager() { memoryManager().shutdown(); }
 
 void printMemInfo(const char *msg, const int device) {
     memoryManager().printInfo(msg, device);
@@ -135,17 +129,13 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 INSTANTIATE(half)
 
-MemoryManager::MemoryManager()
-    : common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                            AF_MEM_DEBUG || AF_CPU_MEM_DEBUG) {
-    this->setMaxMemorySize();
-}
+MemoryManager::MemoryManager() { logger = common::loggerFactory("mem"); }
 
 MemoryManager::~MemoryManager() {
     for (int n = 0; n < cpu::getDeviceCount(); n++) {
         try {
             cpu::setDevice(n);
-            garbageCollect();
+            shutdownMemoryManager();
         } catch (AfError err) {
             continue;  // Do not throw any errors while shutting down
         }
@@ -153,14 +143,6 @@ MemoryManager::~MemoryManager() {
 }
 
 int MemoryManager::getActiveDeviceId() { return cpu::getActiveDeviceId(); }
-
-common::memory::memory_info &MemoryManager::getCurrentMemoryInfo() {
-    return memory[this->getActiveDeviceId()];
-}
-
-void MemoryManager::garbageCollect() {
-    cleanDeviceMemoryManager(this->getActiveDeviceId());
-}
 
 size_t MemoryManager::getMaxMemorySize(int id) {
     return cpu::getDeviceMemorySize(id);

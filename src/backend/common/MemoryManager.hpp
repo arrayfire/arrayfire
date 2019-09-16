@@ -11,6 +11,7 @@
 
 #include <Event.hpp>
 #include <backend.hpp>
+#include <common/Logger.hpp>
 #include <common/dispatch.hpp>
 #include <common/err_common.hpp>
 #include <common/util.hpp>
@@ -27,6 +28,10 @@
 #include <unordered_map>
 #include <vector>
 
+#ifndef AF_MEM_DEBUG
+#define AF_MEM_DEBUG 0
+#endif
+
 namespace spdlog {
 class logger;
 }
@@ -39,10 +44,40 @@ constexpr size_t ONE_GB        = 1 << 30;
 
 namespace memory {
 
+/******************** Backend memory client interface *******************/
+
+/**
+ * An interface that provides backend-specific memory management functions,
+ * typically calling a dedicated backend-specific native API. Stored, wrapped,
+ * and called by a MemoryManagerBase, from which calls to its interface are
+ * delegated.
+ */
+class BackendMemoryClient {
+   public:
+    BackendMemoryClient()                         = default;
+    virtual ~BackendMemoryClient()                = default;
+    virtual int getActiveDeviceId()               = 0;
+    virtual size_t getMaxMemorySize(int id)       = 0;
+    virtual void *nativeAlloc(const size_t bytes) = 0;
+    virtual void nativeFree(void *ptr)            = 0;
+    virtual spdlog::logger *getLogger() final { return this->logger.get(); }
+
+   protected:
+    std::shared_ptr<spdlog::logger> logger;
+};
+
 /******************** Memory manager interface *******************/
 
+/**
+ * A base interface for a memory manager which is exposed to AF internals.
+ * External, both the default AF memory manager implementation and custom memory
+ * manager implementations are wrapped in a derived implementation of this
+ * interface.
+ */
 class MemoryManagerBase {
    public:
+    virtual void initialize()                                        = 0;
+    virtual void shutdown()                                          = 0;
     virtual af_buffer_info alloc(const size_t size, bool user_lock)  = 0;
     virtual size_t allocated(void *ptr)                              = 0;
     virtual void unlock(void *ptr, af_event e, bool user_unlock)     = 0;
@@ -57,21 +92,29 @@ class MemoryManagerBase {
     virtual size_t getMaxBytes()                                     = 0;
     virtual unsigned getMaxBuffers()                                 = 0;
     virtual void setMemStepSize(size_t new_step_size)                = 0;
-    virtual void *nativeAlloc(const size_t bytes)                    = 0;
-    virtual void nativeFree(void *ptr)                               = 0;
     virtual bool checkMemoryLimit()                                  = 0;
 
     /// Backend-specific functions
     // OpenCL
-
-    virtual void addMemoryManagement(int device) = 0;
-
+    virtual void addMemoryManagement(int device)    = 0;
     virtual void removeMemoryManagement(int device) = 0;
 
-    // A backend-specific memory manager, containing backend-specific methods
-    // that call native memory manipulation functions in a device API.
-    // We need to wrap these since they are opaquely called by the memory
-    // manager.
+    int getActiveDeviceId() { bmc_->getActiveDeviceId(); }
+    size_t getMaxMemorySize(int id) { bmc_->getMaxMemorySize(id); }
+    void *nativeAlloc(const size_t bytes) { bmc_->nativeAlloc(bytes); }
+    void *nativeFree(void *ptr) { bmc_->nativeFree(ptr); }
+    virtual spdlog::logger *getLogger() final { return bmc_->getLogger(); }
+    virtual void setBackendMemoryClient(
+        std::unique_ptr<BackendMemoryClient> bmc) {
+        bmc_ = std::move(bmc);
+    }
+
+   private:
+    // A backend-specific memory manager, containing backend-specific
+    // methods that call native memory manipulation functions in a device
+    // API. We need to wrap these since they are opaquely called by the
+    // memory manager.
+    std::unique_ptr<BackendMemoryClient> bmc_;
 };
 
 /******************** Default memory manager implementation *******************/
@@ -120,15 +163,19 @@ struct memory_info {
 class MemoryManager : public memory::MemoryManagerBase {
     size_t mem_step_size;
     unsigned max_buffers;
-    std::shared_ptr<spdlog::logger> logger;
+
     bool debug_mode;
 
-    virtual memory::memory_info &getCurrentMemoryInfo() = 0;
-    virtual int getActiveDeviceId()                     = 0;
-    virtual size_t getMaxMemorySize(int id)             = 0;
+    memory::memory_info &getCurrentMemoryInfo();
 
    public:
     MemoryManager(int num_devices, unsigned max_buffers, bool debug);
+
+    // Initializes the memory manager
+    virtual void initialize() override;
+
+    // Shuts down the memory manager
+    virtual void shutdown() override;
 
     // Intended to be used with OpenCL backend, where
     // users are allowed to add external devices(context, device pair)
@@ -160,7 +207,7 @@ class MemoryManager : public memory::MemoryManagerBase {
 
     /// Frees all buffers which are not locked by the user or not being
     /// used.
-    virtual void garbageCollect() = 0;
+    void garbageCollect() override;
 
     void printInfo(const char *msg, const int device) override;
     void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
@@ -172,12 +219,9 @@ class MemoryManager : public memory::MemoryManagerBase {
     size_t getMaxBytes() override;
     unsigned getMaxBuffers() override;
     void setMemStepSize(size_t new_step_size) override;
-    virtual void *nativeAlloc(const size_t bytes) = 0;
-    virtual void nativeFree(void *ptr)            = 0;
     bool checkMemoryLimit() override;
 
    protected:
-    spdlog::logger *getLogger();
     MemoryManager()                            = delete;
     ~MemoryManager()                           = default;
     MemoryManager(const MemoryManager &other)  = delete;

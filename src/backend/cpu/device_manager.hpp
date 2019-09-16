@@ -17,6 +17,10 @@
 
 using common::memory::MemoryManagerBase;
 
+#ifndef AF_CPU_MEM_DEBUG
+#define AF_CPU_MEM_DEBUG 0
+#endif
+
 #if defined(AF_WITH_CPUID) &&                                       \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || \
      defined(_M_IX86) || defined(_WIN64))
