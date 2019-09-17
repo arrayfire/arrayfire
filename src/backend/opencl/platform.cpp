@@ -62,6 +62,8 @@ using std::string;
 using std::to_string;
 using std::vector;
 
+using common::memory::MemoryManagerBase;
+
 namespace opencl {
 
 static const string get_system(void) {
@@ -522,7 +524,7 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx) {
 
         if (deleteIdx < (int)devId.first) {
             device_id_t newVals = make_pair(devId.first - 1, devId.second - 1);
-            devId = newVals;
+            devId               = newVals;
         }
     }
 }
@@ -536,7 +538,7 @@ unsigned getMaxJitSize() {
 #if defined(OS_MAC)
     const int MAX_JIT_LEN = 50;
 #else
-    const int MAX_JIT_LEN       = 100;
+    const int MAX_JIT_LEN = 100;
 #endif
 
     thread_local int length = 0;
@@ -556,23 +558,42 @@ bool& evalFlag() {
     return flag;
 }
 
-MemoryManager& memoryManager() {
+MemoryManagerBase& memoryManager() {
     static once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    call_once(flag, [&] { inst.memManager.reset(new MemoryManager()); });
+    std::call_once(flag, [&]() {
+        // By default, create an instance of the default memory manager
+        inst.memManager.reset(
+            new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                      AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+        // Set the memory manager's device memory manager
+        std::unique_ptr<opencl::MemoryManager> deviceMemoryManager;
+        deviceMemoryManager.reset(new opencl::MemoryManager());
+        inst.memManager->setBackendMemoryClient(std::move(deviceMemoryManager));
+        inst.memManager->initialize();
+    });
 
     return *(inst.memManager.get());
 }
 
-MemoryManagerPinned& pinnedMemoryManager() {
+MemoryManagerBase& pinnedMemoryManager() {
     static once_flag flag;
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    call_once(flag,
-              [&] { inst.pinnedMemManager.reset(new MemoryManagerPinned()); });
+    std::call_once(flag, [&]() {
+        // By default, create an instance of the default memory manager
+        inst.memManager.reset(
+            new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                      AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+        // Set the memory manager's device memory manager
+        std::unique_ptr<opencl::MemoryManagerPinned> deviceMemoryManager;
+        deviceMemoryManager.reset(new opencl::MemoryManagerPinned());
+        inst.memManager->setBackendMemoryClient(std::move(deviceMemoryManager));
+        inst.memManager->initialize();
+    });
 
     return *(inst.pinnedMemManager.get());
 }

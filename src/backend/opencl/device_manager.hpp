@@ -16,15 +16,21 @@
 #include <common/MemoryManager.hpp>
 #include <platform.hpp>
 
+using common::memory::MemoryManagerBase;
+
+#ifndef AF_OPENCL_MEM_DEBUG
+#define AF_OPENCL_MEM_DEBUG 0
+#endif
+
 // Forward declaration from clFFT.h
 struct clfftSetupData_;
 
 namespace opencl {
 
 class DeviceManager {
-    friend MemoryManager& memoryManager();
+    friend MemoryManagerBase& memoryManager();
 
-    friend MemoryManagerPinned& pinnedMemoryManager();
+    friend MemoryManagerBase& pinnedMemoryManager();
 
     friend graphics::ForgeManager& forgeManager();
 
@@ -107,8 +113,8 @@ class DeviceManager {
     unsigned mUserDeviceOffset;
 
     std::unique_ptr<graphics::ForgeManager> fgMngr;
-    std::unique_ptr<MemoryManager> memManager;
-    std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
+    std::unique_ptr<MemoryManagerBase> memManager;
+    std::unique_ptr<MemoryManagerBase> pinnedMemManager;
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
     std::unique_ptr<clfftSetupData> mFFTSetup;
 

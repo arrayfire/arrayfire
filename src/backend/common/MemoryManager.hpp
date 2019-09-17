@@ -43,8 +43,6 @@ constexpr size_t ONE_GB        = 1 << 30;
 
 namespace memory {
 
-/******************** Backend memory client interface *******************/
-
 /**
  * An interface that provides backend-specific memory management functions,
  * typically calling a dedicated backend-specific native API. Stored, wrapped,
@@ -65,13 +63,11 @@ class BackendMemoryClient {
     std::shared_ptr<spdlog::logger> logger;
 };
 
-/******************** Memory manager interface *******************/
-
 /**
- * A base interface for a memory manager which is exposed to AF internals.
- * External, both the default AF memory manager implementation and custom memory
- * manager implementations are wrapped in a derived implementation of this
- * interface.
+ * A internal base interface for a memory manager which is exposed to AF
+ * internals. External, both the default AF memory manager implementation and
+ * custom memory manager implementations are wrapped in a derived implementation
+ * of this interface.
  */
 class MemoryManagerBase {
    public:

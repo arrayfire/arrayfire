@@ -33,14 +33,20 @@ namespace graphics {
 class ForgeManager;
 }
 
+namespace common {
+namespace memory {
+class MemoryManagerBase;
+}
+}  // namespace common
+
+using common::memory::MemoryManagerBase;
+
 namespace opencl {
 
 // Forward declarations
 class GraphicsResourceManager;
 struct kc_entry_t;  // kernel cache entry
-class MemoryManager;
-class MemoryManagerPinned;
-class PlanCache;  // clfft
+class PlanCache;    // clfft
 
 static inline bool verify_present(std::string pname, const char* ref) {
     return pname.find(ref) != std::string::npos;
@@ -101,9 +107,9 @@ int getActivePlatform();
 
 bool& evalFlag();
 
-MemoryManager& memoryManager();
+MemoryManagerBase& memoryManager();
 
-MemoryManagerPinned& pinnedMemoryManager();
+MemoryManagerBase& pinnedMemoryManager();
 
 graphics::ForgeManager& forgeManager();
 
@@ -120,7 +126,8 @@ kc_entry_t kernelCache(int device, const std::string& key);
 
 static afcl::platform getPlatformEnum(cl::Device dev) {
     std::string pname = getPlatformName(dev);
-    if (verify_present(pname, "AMD")) return AFCL_PLATFORM_AMD;
+    if (verify_present(pname, "AMD"))
+        return AFCL_PLATFORM_AMD;
     else if (verify_present(pname, "NVIDIA"))
         return AFCL_PLATFORM_NVIDIA;
     else if (verify_present(pname, "INTEL"))

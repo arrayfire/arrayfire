@@ -16,6 +16,8 @@
 #include <memory>
 #include <vector>
 
+using common::memory::BackendMemoryClient;
+
 namespace cl {
 class Buffer;  // Forward declaration of cl::Buffer from CL/cl2.hpp
 }
@@ -51,6 +53,7 @@ unsigned getMaxBuffers();
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes, size_t *lock_buffers);
 void garbageCollect();
+void shutdownMemoryManager();
 void pinnedGarbageCollect();
 
 void printMemInfo(const char *msg, const int device);
@@ -59,7 +62,7 @@ void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 bool checkMemoryLimit();
 
-class MemoryManager : public common::MemoryManager {
+class MemoryManager : public BackendMemoryClient {
    public:
     MemoryManager();
     ~MemoryManager();
@@ -67,11 +70,9 @@ class MemoryManager : public common::MemoryManager {
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;
     void nativeFree(void *ptr) override;
-    common::memory::memory_info &getCurrentMemoryInfo() override;
-    void garbageCollect() override;
 };
 
-class MemoryManagerPinned : public common::MemoryManager {
+class MemoryManagerPinned : public BackendMemoryClient {
    public:
     MemoryManagerPinned();
     ~MemoryManagerPinned();
@@ -79,8 +80,6 @@ class MemoryManagerPinned : public common::MemoryManager {
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;
     void nativeFree(void *ptr) override;
-    common::memory::memory_info &getCurrentMemoryInfo() override;
-    void garbageCollect() override;
 
    private:
     std::vector<std::map<void *, cl::Buffer *>> pinnedMaps;
