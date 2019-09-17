@@ -299,6 +299,17 @@ DeviceManager& DeviceManager::getInstance() {
     return *my_instance;
 }
 
+void DeviceManager::setMemoryManager(
+    std::unique_ptr<MemoryManagerBase> newMgr) {
+    // Set the backend memory manager for this new manager to register native
+    // functions correctly
+    std::unique_ptr<opencl::NativeMemoryInterface> deviceMemoryManager;
+    deviceMemoryManager.reset(new opencl::NativeMemoryInterface());
+    newMgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
+    newMgr->initialize();
+    memManager = std::move(newMgr);
+}
+
 DeviceManager::~DeviceManager() {
     for (int i = 0; i < getDeviceCount(); ++i) {
         delete gfxManagers[i].release();

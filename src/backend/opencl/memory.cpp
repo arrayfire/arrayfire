@@ -145,9 +145,11 @@ INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-MemoryManager::MemoryManager() { logger = common::loggerFactory("mem"); }
+NativeMemoryInterface::NativeMemoryInterface() {
+    logger = common::loggerFactory("mem");
+}
 
-MemoryManager::~MemoryManager() {
+NativeMemoryInterface::~NativeMemoryInterface() {
     for (int n = 0; n < opencl::getDeviceCount(); n++) {
         try {
             opencl::setDevice(n);
@@ -158,28 +160,30 @@ MemoryManager::~MemoryManager() {
     }
 }
 
-int MemoryManager::getActiveDeviceId() { return opencl::getActiveDeviceId(); }
+int NativeMemoryInterface::getActiveDeviceId() {
+    return opencl::getActiveDeviceId();
+}
 
-size_t MemoryManager::getMaxMemorySize(int id) {
+size_t NativeMemoryInterface::getMaxMemorySize(int id) {
     return opencl::getDeviceMemorySize(id);
 }
 
-void *MemoryManager::nativeAlloc(const size_t bytes) {
+void *NativeMemoryInterface::nativeAlloc(const size_t bytes) {
     auto ptr = (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
     AF_TRACE("nativeAlloc: {} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
-void MemoryManager::nativeFree(void *ptr) {
+void NativeMemoryInterface::nativeFree(void *ptr) {
     AF_TRACE("nativeFree:          {}", ptr);
     delete (cl::Buffer *)ptr;
 }
 
-MemoryManagerPinned::MemoryManagerPinned() {
+NativeMemoryInterfacePinned::NativeMemoryInterfacePinned() {
     logger = common::loggerFactory("mem");
 }
 
-MemoryManagerPinned::~MemoryManagerPinned() {
+NativeMemoryInterfacePinned::~NativeMemoryInterfacePinned() {
     for (int n = 0; n < opencl::getDeviceCount(); n++) {
         opencl::setDevice(n);
         shutdownMemoryManager();
@@ -191,15 +195,15 @@ MemoryManagerPinned::~MemoryManagerPinned() {
     }
 }
 
-int MemoryManagerPinned::getActiveDeviceId() {
+int NativeMemoryInterfacePinned::getActiveDeviceId() {
     return opencl::getActiveDeviceId();
 }
 
-size_t MemoryManagerPinned::getMaxMemorySize(int id) {
+size_t NativeMemoryInterfacePinned::getMaxMemorySize(int id) {
     return opencl::getDeviceMemorySize(id);
 }
 
-void *MemoryManagerPinned::nativeAlloc(const size_t bytes) {
+void *NativeMemoryInterfacePinned::nativeAlloc(const size_t bytes) {
     void *ptr = NULL;
     cl::Buffer *buf =
         new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
@@ -210,7 +214,7 @@ void *MemoryManagerPinned::nativeAlloc(const size_t bytes) {
     return ptr;
 }
 
-void MemoryManagerPinned::nativeFree(void *ptr) {
+void NativeMemoryInterfacePinned::nativeFree(void *ptr) {
     AF_TRACE("Pinned::nativeFree:          {}", ptr);
     int n     = opencl::getActiveDeviceId();
     auto map  = pinnedMaps[n];

@@ -16,6 +16,7 @@
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
+#include <cublas_v2.h>  // needed for af/cuda.h
 #include <device_manager.hpp>
 #include <driver.h>
 #include <err_cuda.hpp>
@@ -23,7 +24,6 @@
 #include <platform.hpp>
 #include <spdlog/spdlog.h>
 #include <version.hpp>
-#include <cublas_v2.h> // needed for af/cuda.h
 #include <af/cuda.h>
 #include <af/version.h>
 // cuda_gl_interop.h does not include OpenGL headers for ARM
@@ -52,7 +52,7 @@ using std::stringstream;
 
 namespace cuda {
 
-void findJitDevCompute(pair<int, int>& prop) {
+void findJitDevCompute(pair<int, int> &prop) {
     struct cuNVRTCcompute {
         /// The CUDA Toolkit version returned by cudaRuntimeGetVersion
         int cuda_version;
@@ -62,15 +62,8 @@ void findJitDevCompute(pair<int, int>& prop) {
         int minor;
     };
     static const cuNVRTCcompute Toolkit2Compute[] = {
-        {10010, 7, 5},
-        {10000, 7, 2},
-        {9020,  7, 2},
-        {9010,  7, 2},
-        {9000,  7, 2},
-        {8000,  5, 3},
-        {7050,  5, 3},
-        {7000,  5, 3}
-    };
+        {10010, 7, 5}, {10000, 7, 2}, {9020, 7, 2}, {9010, 7, 2},
+        {9000, 7, 2},  {8000, 5, 3},  {7050, 5, 3}, {7000, 5, 3}};
     int runtime_cuda_ver = 0;
     CUDA_CHECK(cudaRuntimeGetVersion(&runtime_cuda_ver));
     auto tkit_max_compute =
@@ -79,7 +72,7 @@ void findJitDevCompute(pair<int, int>& prop) {
                     return runtime_cuda_ver == v.cuda_version;
                 });
     if ((tkit_max_compute == end(Toolkit2Compute)) ||
-        (prop.first  > tkit_max_compute->major &&
+        (prop.first > tkit_max_compute->major &&
          prop.second > tkit_max_compute->minor)) {
         prop = make_pair(tkit_max_compute->major, tkit_max_compute->minor);
     }
@@ -202,6 +195,17 @@ DeviceManager &DeviceManager::getInstance() {
     return *my_instance;
 }
 
+void DeviceManager::setMemoryManager(
+    std::unique_ptr<MemoryManagerBase> newMgr) {
+    // Set the backend memory manager for this new manager to register native
+    // functions correctly
+    std::unique_ptr<cuda::NativeMemoryInterface> deviceMemoryManager;
+    deviceMemoryManager.reset(new cuda::NativeMemoryInterface());
+    newMgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
+    newMgr->initialize();
+    memManager = std::move(newMgr);
+}
+
 /// Struct represents the cuda toolkit version and its associated minimum
 /// required driver versions.
 struct ToolkitDriverVersions {
@@ -282,8 +286,7 @@ void debugRuntimeCheck(int runtime_version, int driver_version) {
             "request on the ArrayFire repository to update the "
             "CudaToDriverVersion variable with this version of the CUDA "
             "Toolkit.\n";
-        fprintf(stderr, err_msg,
-                int_version_to_string(driver_version).c_str());
+        fprintf(stderr, err_msg, int_version_to_string(driver_version).c_str());
     }
 #endif
 }
@@ -352,8 +355,7 @@ DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , cuDevices(0)
     , nDevices(0)
-    , fgMngr(new graphics::ForgeManager())
-    {
+    , fgMngr(new graphics::ForgeManager()) {
     checkCudaVsDriverVersion();
 
     CUDA_CHECK(cudaGetDeviceCount(&nDevices));
@@ -394,8 +396,8 @@ DeviceManager::DeviceManager()
     for (size_t i = 0; i < MAX_DEVICES; i++) {
         streams[i] = (cudaStream_t)0;
         if (i < nDevices) {
-            auto prop = make_pair(cuDevices[i].prop.major,
-                    cuDevices[i].prop.minor);
+            auto prop =
+                make_pair(cuDevices[i].prop.major, cuDevices[i].prop.minor);
             findJitDevCompute(prop);
             devJitComputes.emplace_back(prop);
         }

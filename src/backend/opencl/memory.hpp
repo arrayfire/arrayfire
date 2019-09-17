@@ -16,8 +16,6 @@
 #include <memory>
 #include <vector>
 
-using common::memory::BackendMemoryClient;
-
 namespace cl {
 class Buffer;  // Forward declaration of cl::Buffer from CL/cl2.hpp
 }
@@ -62,20 +60,21 @@ void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 bool checkMemoryLimit();
 
-class MemoryManager : public BackendMemoryClient {
+class NativeMemoryInterface : public common::memory::NativeMemoryInterface {
    public:
-    MemoryManager();
-    ~MemoryManager();
+    NativeMemoryInterface();
+    ~NativeMemoryInterface();
     int getActiveDeviceId() override;
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;
     void nativeFree(void *ptr) override;
 };
 
-class MemoryManagerPinned : public BackendMemoryClient {
+class NativeMemoryInterfacePinned
+    : public common::memory::NativeMemoryInterface {
    public:
-    MemoryManagerPinned();
-    ~MemoryManagerPinned();
+    NativeMemoryInterfacePinned();
+    ~NativeMemoryInterfacePinned();
     int getActiveDeviceId() override;
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;

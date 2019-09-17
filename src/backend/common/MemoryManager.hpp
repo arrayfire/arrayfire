@@ -49,10 +49,10 @@ namespace memory {
  * and called by a MemoryManagerBase, from which calls to its interface are
  * delegated.
  */
-class BackendMemoryClient {
+class NativeMemoryInterface {
    public:
-    BackendMemoryClient()                         = default;
-    virtual ~BackendMemoryClient()                = default;
+    NativeMemoryInterface()                       = default;
+    virtual ~NativeMemoryInterface()              = default;
     virtual int getActiveDeviceId()               = 0;
     virtual size_t getMaxMemorySize(int id)       = 0;
     virtual void *nativeAlloc(const size_t bytes) = 0;
@@ -94,14 +94,14 @@ class MemoryManagerBase {
     virtual void addMemoryManagement(int device)    = 0;
     virtual void removeMemoryManagement(int device) = 0;
 
-    int getActiveDeviceId() { return bmc_->getActiveDeviceId(); }
-    size_t getMaxMemorySize(int id) { return bmc_->getMaxMemorySize(id); }
-    void *nativeAlloc(const size_t bytes) { return bmc_->nativeAlloc(bytes); }
-    void nativeFree(void *ptr) { bmc_->nativeFree(ptr); }
-    virtual spdlog::logger *getLogger() final { return bmc_->getLogger(); }
-    virtual void setBackendMemoryClient(
-        std::unique_ptr<BackendMemoryClient> bmc) {
-        bmc_ = std::move(bmc);
+    int getActiveDeviceId() { return nmi_->getActiveDeviceId(); }
+    size_t getMaxMemorySize(int id) { return nmi_->getMaxMemorySize(id); }
+    void *nativeAlloc(const size_t bytes) { return nmi_->nativeAlloc(bytes); }
+    void nativeFree(void *ptr) { nmi_->nativeFree(ptr); }
+    virtual spdlog::logger *getLogger() final { return nmi_->getLogger(); }
+    virtual void setNativeMemoryInterface(
+        std::unique_ptr<NativeMemoryInterface> nmi) {
+        nmi_ = std::move(nmi);
     }
 
    private:
@@ -109,7 +109,7 @@ class MemoryManagerBase {
     // methods that call native memory manipulation functions in a device
     // API. We need to wrap these since they are opaquely called by the
     // memory manager.
-    std::unique_ptr<BackendMemoryClient> bmc_;
+    std::unique_ptr<NativeMemoryInterface> nmi_;
 };
 
 /******************** Default memory manager implementation *******************/

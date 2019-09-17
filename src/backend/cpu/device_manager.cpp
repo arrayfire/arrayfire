@@ -125,9 +125,9 @@ DeviceManager::DeviceManager()
                                            AF_MEM_DEBUG || AF_CPU_MEM_DEBUG))
     , fgMngr(new graphics::ForgeManager()) {
     // Use the default ArrayFire memory manager
-    std::unique_ptr<cpu::MemoryManager> deviceMemoryManager;
-    deviceMemoryManager.reset(new cpu::MemoryManager());
-    memManager->setBackendMemoryClient(std::move(deviceMemoryManager));
+    std::unique_ptr<cpu::NativeMemoryInterface> deviceMemoryManager;
+    deviceMemoryManager.reset(new cpu::NativeMemoryInterface());
+    memManager->setNativeMemoryInterface(std::move(deviceMemoryManager));
     memManager->initialize();
 }
 
@@ -140,14 +140,11 @@ CPUInfo DeviceManager::getCPUInfo() const { return cinfo; }
 
 void DeviceManager::setMemoryManager(
     std::unique_ptr<MemoryManagerBase> newMgr) {
-    // Get the current memory manager to prevent deadlock if it hasn't been
-    // initialized yet
-    memoryManager();
     // Set the backend memory manager for this new manager to register native
     // functions correctly
-    std::unique_ptr<cpu::MemoryManager> deviceMemoryManager;
-    deviceMemoryManager.reset(new cpu::MemoryManager());
-    newMgr->setBackendMemoryClient(std::move(deviceMemoryManager));
+    std::unique_ptr<cpu::NativeMemoryInterface> deviceMemoryManager;
+    deviceMemoryManager.reset(new cpu::NativeMemoryInterface());
+    newMgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
     newMgr->initialize();
     memManager = std::move(newMgr);
 }

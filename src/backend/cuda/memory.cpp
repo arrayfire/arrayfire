@@ -137,9 +137,11 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(half)
 
-MemoryManager::MemoryManager() { logger = common::loggerFactory("mem"); }
+NativeMemoryInterface::NativeMemoryInterface() {
+    logger = common::loggerFactory("mem");
+}
 
-MemoryManager::~MemoryManager() {
+NativeMemoryInterface::~NativeMemoryInterface() {
     for (int n = 0; n < cuda::getDeviceCount(); n++) {
         try {
             cuda::setDevice(n);
@@ -150,48 +152,52 @@ MemoryManager::~MemoryManager() {
     }
 }
 
-int MemoryManager::getActiveDeviceId() { return cuda::getActiveDeviceId(); }
+int NativeMemoryInterface::getActiveDeviceId() {
+    return cuda::getActiveDeviceId();
+}
 
-size_t MemoryManager::getMaxMemorySize(int id) {
+size_t NativeMemoryInterface::getMaxMemorySize(int id) {
     return cuda::getDeviceMemorySize(id);
 }
 
-void *MemoryManager::nativeAlloc(const size_t bytes) {
+void *NativeMemoryInterface::nativeAlloc(const size_t bytes) {
     void *ptr = NULL;
     CUDA_CHECK(cudaMalloc(&ptr, bytes));
     AF_TRACE("nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
-void MemoryManager::nativeFree(void *ptr) {
+void NativeMemoryInterface::nativeFree(void *ptr) {
     AF_TRACE("nativeFree:          {}", ptr);
     cudaError_t err = cudaFree(ptr);
     if (err != cudaErrorCudartUnloading) { CUDA_CHECK(err); }
 }
 
-MemoryManagerPinned::MemoryManagerPinned() {
+NativeMemoryInterfacePinned::NativeMemoryInterfacePinned() {
     logger = common::loggerFactory("mem");
 }
 
-MemoryManagerPinned::~MemoryManagerPinned() { garbageCollect(); }
+NativeMemoryInterfacePinned::~NativeMemoryInterfacePinned() {
+    garbageCollect();
+}
 
-int MemoryManagerPinned::getActiveDeviceId() {
+int NativeMemoryInterfacePinned::getActiveDeviceId() {
     return 0;  // pinned uses a single vector
 }
 
-size_t MemoryManagerPinned::getMaxMemorySize(int id) {
+size_t NativeMemoryInterfacePinned::getMaxMemorySize(int id) {
     UNUSED(id);
     return cuda::getHostMemorySize();
 }
 
-void *MemoryManagerPinned::nativeAlloc(const size_t bytes) {
+void *NativeMemoryInterfacePinned::nativeAlloc(const size_t bytes) {
     void *ptr;
     CUDA_CHECK(cudaMallocHost(&ptr, bytes));
     AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
-void MemoryManagerPinned::nativeFree(void *ptr) {
+void NativeMemoryInterfacePinned::nativeFree(void *ptr) {
     AF_TRACE("Pinned::nativeFree:          {}", ptr);
     cudaError_t err = cudaFreeHost(ptr);
     if (err != cudaErrorCudartUnloading) { CUDA_CHECK(err); }

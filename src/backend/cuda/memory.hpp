@@ -14,8 +14,6 @@
 #include <functional>
 #include <memory>
 
-using common::memory::BackendMemoryClient;
-
 namespace cuda {
 template<typename T>
 void memFree(T *ptr);
@@ -59,10 +57,10 @@ size_t getMemStepSize(void);
 
 bool checkMemoryLimit();
 
-class MemoryManager : public BackendMemoryClient {
+class NativeMemoryInterface : public common::memory::NativeMemoryInterface {
    public:
-    MemoryManager();
-    ~MemoryManager();
+    NativeMemoryInterface();
+    ~NativeMemoryInterface();
     int getActiveDeviceId() override;
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;
@@ -73,10 +71,11 @@ class MemoryManager : public BackendMemoryClient {
 // So we pass 1 as numDevices to the constructor so that it creates 1 vector
 // of memory_info
 // When allocating and freeing, it doesn't really matter which device is active
-class MemoryManagerPinned : public BackendMemoryClient {
+class NativeMemoryInterfacePinned
+    : public common::memory::NativeMemoryInterface {
    public:
-    MemoryManagerPinned();
-    ~MemoryManagerPinned();
+    NativeMemoryInterfacePinned();
+    ~NativeMemoryInterfacePinned();
     int getActiveDeviceId() override;
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;

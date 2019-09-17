@@ -129,9 +129,11 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 INSTANTIATE(half)
 
-MemoryManager::MemoryManager() { logger = common::loggerFactory("mem"); }
+NativeMemoryInterface::NativeMemoryInterface() {
+    logger = common::loggerFactory("mem");
+}
 
-MemoryManager::~MemoryManager() {
+NativeMemoryInterface::~NativeMemoryInterface() {
     for (int n = 0; n < cpu::getDeviceCount(); n++) {
         try {
             cpu::setDevice(n);
@@ -142,20 +144,22 @@ MemoryManager::~MemoryManager() {
     }
 }
 
-int MemoryManager::getActiveDeviceId() { return cpu::getActiveDeviceId(); }
+int NativeMemoryInterface::getActiveDeviceId() {
+    return cpu::getActiveDeviceId();
+}
 
-size_t MemoryManager::getMaxMemorySize(int id) {
+size_t NativeMemoryInterface::getMaxMemorySize(int id) {
     return cpu::getDeviceMemorySize(id);
 }
 
-void *MemoryManager::nativeAlloc(const size_t bytes) {
+void *NativeMemoryInterface::nativeAlloc(const size_t bytes) {
     void *ptr = malloc(bytes);
     AF_TRACE("nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     if (!ptr) AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM);
     return ptr;
 }
 
-void MemoryManager::nativeFree(void *ptr) {
+void NativeMemoryInterface::nativeFree(void *ptr) {
     AF_TRACE("nativeFree: {: >8} {}", " ", ptr);
     // Make sure this pointer is not being used on the queue before freeing the
     // memory.
