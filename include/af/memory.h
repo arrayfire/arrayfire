@@ -12,6 +12,8 @@
 #include <af/defines.h>
 #include <af/event.h>
 
+#include <stddef.h>
+
 #if AF_API_VERSION >= 37
 
 typedef void* af_buffer_info;
@@ -47,11 +49,11 @@ class AFAPI buffer_info {
 };
 
 }  // namespace af
-#endif
+#endif  // __cplusplus
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif  // __cplusplus
 
 AFAPI af_err af_create_buffer_info(af_buffer_info* buf, void* ptr,
                                    af_event event);
@@ -98,6 +100,133 @@ AFAPI af_err af_unlock_buffer_info_event(af_event* event, af_buffer_info buf);
 /// param[in] buf The target \ref af_buffer_info object
 /// \returns AF_SUCCESS
 AFAPI af_err af_unlock_buffer_info_ptr(void** ptr, af_buffer_info buf);
+
+////////////////////////////////////////////////////////////////////////////////
+// Memory Manager API
+////////////////////////////////////////////////////////////////////////////////
+
+typedef void (*af_memory_manager_initialize_fn)(af_memory_manager);
+
+typedef void (*af_memory_manager_shutdown_fn)(af_memory_manager);
+
+typedef af_buffer_info (*af_memory_manager_alloc_fn)(af_memory_manager, size_t,
+                                                     bool);
+
+typedef size_t (*af_memory_manager_allocated_fn)(af_memory_manager, void*);
+
+typedef void (*af_memory_manager_unlock_fn)(af_memory_manager, void*, af_event,
+                                            int);
+
+typedef void (*af_memory_manager_garbage_collect_fn)(af_memory_manager);
+
+typedef void (*af_memory_manager_print_info_fn)(af_memory_manager, char*, int);
+
+typedef void (*af_memory_manager_usage_info_fn)(af_memory_manager, size_t*,
+                                                size_t*, size_t*, size_t*);
+
+typedef void (*af_memory_manager_user_lock_fn)(af_memory_manager, void*);
+
+typedef void (*af_memory_manager_user_unlock_fn)(af_memory_manager, void*);
+
+typedef int (*af_memory_manager_is_user_locked_fn)(af_memory_manager, void*);
+
+typedef size_t (*af_memory_manager_get_mem_step_size_fn)(af_memory_manager);
+
+typedef size_t (*af_memory_manager_get_max_bytes_fn)(af_memory_manager);
+
+typedef unsigned (*af_memory_manager_get_max_buffers_fn)(af_memory_manager);
+
+typedef void (*af_memory_manager_set_mem_step_size_fn)(af_memory_manager,
+                                                       size_t);
+
+typedef int (*af_memory_manager_check_memory_limit)(af_memory_manager);
+
+typedef void (*af_memory_manager_add_memory_management)(af_memory_manager, int);
+
+typedef void (*af_memory_manager_remove_memory_management)(af_memory_manager,
+                                                           int);
+
+/// \brief Creates a handle to an af_memory_manager
+///
+/// Creates a blank af_memory_manager with no attached function pointers.
+///
+/// param[out] out \ref af_memory_manager
+/// \returns AF_SUCCESS
+AFAPI af_err af_create_memory_manager(af_memory_manager* out);
+
+/// \brief Sets the internal AF memory manager to use the given \ref
+/// af_memory_manager
+///
+/// Creates a blank af_memory_manager with no attached function pointers.
+///
+/// param[in] handle the \ref af_memory_manager handle to be destroyed
+/// \returns AF_SUCCESS
+AFAPI af_err af_release_memory_manager(af_memory_manager handle);
+
+/// \brief Creates a handle to an af_memory_manager
+///
+/// Registers the given memory manager as the AF memory manager - if the default
+/// memory manager is current, destroys it and frees resources; if another
+/// memory manager is set, does NOT destroy its handle or free associated memory
+/// - this must be done manually.
+///
+/// param[out] out \ref af_memory_manager
+/// \returns AF_SUCCESS
+AFAPI af_err af_set_memory_manager(af_memory_manager mgr);
+
+AFAPI af_err af_memory_manager_set_initialize_fn(
+    af_memory_manager handle, af_memory_manager_initialize_fn fn);
+AFAPI af_err af_memory_manager_set_shutdown_fn(
+    af_memory_manager handle, af_memory_manager_shutdown_fn fn);
+AFAPI af_err af_memory_manager_set_alloc_fn(af_memory_manager handle,
+                                            af_memory_manager_alloc_fn fn);
+
+AFAPI af_err af_memory_manager_set_allocated_fn(
+    af_memory_manager handle, af_memory_manager_allocated_fn fn);
+AFAPI af_err af_memory_manager_set_unlock_fn(af_memory_manager handle,
+                                             af_memory_manager_unlock_fn fn);
+
+AFAPI af_err af_memory_manager_set_garbage_collect_fn(
+    af_memory_manager handle, af_memory_manager_garbage_collect_fn fn);
+AFAPI af_err af_memory_manager_set_print_info_fn(
+    af_memory_manager handle, af_memory_manager_print_info_fn fn);
+AFAPI af_err af_memory_manager_set_usage_info_fn(
+    af_memory_manager handle, af_memory_manager_usage_info_fn fn);
+
+AFAPI af_err af_memory_manager_set_user_lock_fn(
+    af_memory_manager handle, af_memory_manager_user_lock_fn fn);
+AFAPI af_err af_memory_manager_set_user_unlock_fn(
+    af_memory_manager handle, af_memory_manager_user_unlock_fn fn);
+AFAPI af_err af_memory_manager_set_is_user_locked_fn(
+    af_memory_manager handle, af_memory_manager_is_user_locked_fn fn);
+AFAPI af_err af_memory_manager_set_get_mem_step_size_fn(
+    af_memory_manager handle, af_memory_manager_get_mem_step_size_fn fn);
+AFAPI af_err af_memory_manager_set_get_max_bytes_fn(
+    af_memory_manager handle, af_memory_manager_get_max_bytes_fn fn);
+AFAPI af_err af_memory_manager_set_get_max_buffers_fn(
+    af_memory_manager handle, af_memory_manager_get_max_buffers_fn fn);
+AFAPI af_err af_memory_manager_set_set_mem_step_size_fn(
+    af_memory_manager handle, af_memory_manager_set_mem_step_size_fn fn);
+
+AFAPI af_err af_memory_manager_set_check_memory_limit(
+    af_memory_manager handle, af_memory_manager_check_memory_limit fn);
+AFAPI af_err af_memory_manager_set_add_memory_management(
+    af_memory_manager handle, af_memory_manager_add_memory_management fn);
+AFAPI af_err af_memory_manager_set_remove_memory_management(
+    af_memory_manager handle, af_memory_manager_remove_memory_management fn);
+
+////////////////////////////////////////////////////////////////////////////////
+// Native memory interface functions
+AFAPI af_err af_memory_manager_get_active_device_id(af_memory_manager handle,
+                                                    int* id);
+
+AFAPI af_err af_memory_manager_native_alloc(af_memory_manager handle,
+                                            void** ptr, size_t size);
+
+AFAPI af_err af_memory_manager_native_free(af_memory_manager handle, void* ptr);
+
+AFAPI af_err af_memory_manager_get_max_memory_size(af_memory_manager handle,
+                                                   size_t* size, int id);
 
 #ifdef __cplusplus
 }

@@ -10,6 +10,7 @@
 #include <Event.hpp>
 #include <common/Logger.hpp>
 #include <common/MemoryManager.hpp>
+#include <memoryapi.hpp>
 #include <af/event.h>
 #include <af/memory.h>
 

@@ -15,7 +15,6 @@
 #include <common/err_common.hpp>
 #include <common/util.hpp>
 #include <events.hpp>
-#include <memoryapi.hpp>
 #include <af/memory.h>
 
 #include <algorithm>
@@ -65,7 +64,7 @@ class NativeMemoryInterface {
 
 /**
  * A internal base interface for a memory manager which is exposed to AF
- * internals. External, both the default AF memory manager implementation and
+ * internals. Externally, both the default AF memory manager implementation and
  * custom memory manager implementations are wrapped in a derived implementation
  * of this interface.
  */

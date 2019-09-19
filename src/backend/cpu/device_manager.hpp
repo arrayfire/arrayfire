@@ -106,9 +106,13 @@ class DeviceManager {
 
     friend void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
 
+    friend void resetMemoryManager();
+
     friend graphics::ForgeManager& forgeManager();
 
     void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+
+    void resetMemoryManager();
 
     CPUInfo getCPUInfo() const;
 

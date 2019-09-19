@@ -56,6 +56,10 @@ bool& evalFlag();
 
 MemoryManagerBase& memoryManager();
 
+void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+
+void resetMemoryManager();
+
 graphics::ForgeManager& forgeManager();
 
 }  // namespace cpu

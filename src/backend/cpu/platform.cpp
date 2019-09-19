@@ -155,6 +155,14 @@ MemoryManagerBase& memoryManager() {
     return *(inst.memManager);
 }
 
+void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManager(std::move(mgr));
+}
+
+void resetMemoryManager() {
+    return DeviceManager::getInstance().resetMemoryManager();
+}
+
 graphics::ForgeManager& forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }
