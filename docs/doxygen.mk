@@ -240,12 +240,22 @@ ALIASES                = "support{1}=<DIV class=\"support\">\1</DIV>" \
                          "jit=<IMG src=\"jit.png\" alt=\"JIT Support\" />" \
                          "democode{1}=\htmlonly \n <pre class=\"cpp afw\"> <code class=\"cpp\"> \1 </code> </pre> \n \endhtmlonly" \
                          "imagegroup{1}=<DIV CLASS=\"image_group\"> \1 </DIV>" \
-                         "smallimage{2}=\htmlonly <div class=\"scaled\"><img src=\"\1\" alt=\"\2\"><div class=\"caption\">\2</div></div> \endhtmlonly" \
+                         "smallimage{2}=\htmlonly <div class=\"scaled\"><img src=\"\1\" alt=\"\2\"></div> \endhtmlonly" \
                          "funcgroups{3}=\ingroup \3 \n @{ \n \defgroup \1 \2 \n @{ \n" \
                          "funcgroups{4}=\ingroup \3 \4 \n @{ \n \defgroup \1 \2 \n @{ \n" \
                          "funcgroups{5}=\ingroup \3 \4 \5 \n @{ \n \defgroup \1 \2 \n @{ \n" \
                          "funcgroups{6}=\ingroup \3 \4 \5 \6 \n @{ \n \defgroup \1 \2 \n @{ \n" \
                          "endfuncgroups=@} \n @}"
+
+# Now add special commands for math equations. All of the following commands
+# are only expected to be used inside math mode
+ALIASES += "dims{4}=\f$ [\1 \ \2 \ \3 \ \4] \f$"
+ALIASES += "shape_eq{5}=\f$ \underset{[\2 \ \3 \ \4 \ \5]}{\1} \f$"
+ALIASES += "shape_t{5}=\underset{[\2 \ \3 \ \4 \ \5]}{\1}"
+ALIASES += "convolve_eq{2}=\f$ \1 \ast \2 \f$"
+ALIASES += "convolve_t{2}=\1 \ast \2"
+ALIASES += "set_eq{2}=\f$ \left\\{ \1 \ \Bigg\vert \ \2 \right\\} \f$"
+ALIASES += "set_t{2}=\left\\\{ \1 \ \Bigg\vert \ \2 \right\\\}"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"

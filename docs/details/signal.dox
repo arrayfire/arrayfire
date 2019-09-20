@@ -10,17 +10,18 @@ if a and b are the coefficients.
 Another way to think about it is that the filter kernel is centered on each pixel in a,
 and the output for that pixel or data point is the sum of the products.
 
-Depending on the dimensions of the input signal and the filter signal, any one of the following
+Depending on the size of the signal and the filter, any one of the following
 batch mode convolutions take place.
 
 - **No Batch**   - Single filter applied to single input.
 - **Filter is Batched**  - Many filters applied on same input
 - **Signal is Batched**  - Single filter applied to a set of inputs.
 - **Identical Batches** - A set of filters applied onto to a set of inputs in one-to-one correspondence.
-- **Non overlapping Batches** - All batched filters are applied to all batched signals. The batch dimension of Signal and Filter **should not** be the same.
+- **Non overlapping Batches** - All batched filters are applied to all batched signals. The batch
+  axis of Signal and Filter **should not** be the same.
 
-Non overlapping batch mode is not supported in spatial mode i.e. if the user passes \ref
-AF_CONV_SPATIAL explicitly to the functions.
+\note All non-overlapping(interleaved) convolutions default to frequency domain
+      \ref AF_CONV_FREQ irrespective of the provided convolution mode argument.
 
 
 \page signal_func_fft_desc fft
@@ -56,23 +57,32 @@ This version of convolution function delegates the call to respective
 1D, 2D or 3D convolution functions internally.
 
 Convolution dimensionality is \f$ \min (sd, fd) \f$ where sd & fd are dimensionality of
-signal and filter respectively. This formulation only decides the dimensionality
-of convolution. Please check the respective convolve (hyperlinked below) function
-documentation to find out the kind of batch operations possible.
+signal and filter respectively.  This formulation only decides the dimensionality of convolution.
+
+Given below are some examples on how convolution dimensionality is computed.
+
+| Signal Size    | Filter Size    | Input Rank | Filter Rank | Convolve Dimensionality   |
+|:--------------:|:--------------:|:----------:|:-----------:|:-------------------------:|
+| \dims{m,n,1,1} | \dims{m,1,1,1} |     2      |      1      |   \f$ min(2, 1) => \f$ 1D |
+| \dims{m,1,1,1} | \dims{m,n,1,1} |     1      |      2      |   \f$ min(1, 2) => \f$ 1D |
+| \dims{m,n,1,1} | \dims{m,n,1,1} |     2      |      2      |   \f$ min(2, 2) => \f$ 2D |
+| \dims{m,n,1,1} | \dims{m,n,p,1} |     2      |      3      |   \f$ min(2, 3) => \f$ 2D |
+| \dims{m,n,1,p} | \dims{m,n,1,q} |     4      |      4      |   3D |
+| \dims{m,n,p,1} | \dims{m,n,q,1} |     3      |      3      |   \f$ min(3, 3) => \f$ 3D |
+
+\note In the cases similar to the fifth row of the above table,
+      signal and filter are of rank 4, the function delegates the
+      operation to three dimensional convolution \ref signal_func_convolve3
+
+If the operation you intend to perform doesn't align with what this
+function does, please check the rank specific convolve functions (hyperlinked below)
+documentation to find out more.
+
 - \ref signal_func_convolve1
 - \ref signal_func_convolve2
 - \ref signal_func_convolve3
 
-Given below are some examples.
 
-| Input Dimensions | Filter Dimensions | Convolve Dimension |
-|:----------------:|:-----------------:|:------------------:|
-| [m n 1 1]        | [m 1 1 1]         |   1D               |
-| [m 1 1 1]        | [m n 1 1]         |   1D               |
-| [m n 1 1]        | [m n 1 1]         |   2D               |
-| [m n 1 1]        | [m n p 1]         |   2D               |
-| [m n 1 p]        | [m n 1 q]         |   3D               |
-| [m n p 1]        | [m n q 1]         |   3D               |
 
 
 \defgroup signal_func_convolve_sep Separable 2D Convolution
@@ -117,17 +127,24 @@ can be decomposed into two vectors shown below.
 
 \copydoc signal_func_conv_desc
 
-For one dimensional signals(lets say m is size of 0th dimension), below batch operations are possible.
+For one dimensional signals (lets say m is size of 0th axis), below batch operations are possible.
 
-| Input Signal Dimensions   | Filter Dimensions   | Output Dimensions   | Batch Mode                | Description                                                        |
-| :-----------------------: | :-----------------: | :-----------------: | :-----------------------: | :----------------------------------------------------------------- |
-| [m 1 1 1]                 | [m 1 1 1]           | [m 1 1 1]           | No Batch                  | Output will be a single convolved array                            |
-| [m 1 1 1]                 | [m n 1 1]           | [m n 1 1]           | Filter is Batched         | n filters applied to same input                                    |
-| [m n 1 1]                 | [m 1 1 1]           | [m n 1 1]           | Signal is Batched         | 1 filter applied to n inputs                                       |
-| [m n p q]                 | [m n p q]           | [m n p q]           | Identical Batches         | n*p*q filters applied to n*p*q inputs in one-to-one correspondence |
-| [m n 1 1]                 | [m 1 p q]           | [m n p q]           | Non-overlapping batches   | p*q filters applied to n inputs to produce n x p x q results       |
+| Signal Size    | Filter Size    | Output Size    | Batch Mode               | Description                                                        |
+| :------------: | :------------: | :------------: | :----------------------: | :----------------------------------------------------------------- |
+| \dims{m,1,1,1} | \dims{m,1,1,1} | \dims{m,1,1,1} | No Batch                 | Output will be a single convolved array                            |
+| \dims{m,1,1,1} | \dims{m,n,1,1} | \dims{m,n,1,1} | Filter is Batched        | n filters applied to same input                                    |
+| \dims{m,n,1,1} | \dims{m,1,1,1} | \dims{m,n,1,1} | Signal is Batched        | 1 filter applied to n inputs                                       |
+| \dims{m,n,p,q} | \dims{m,n,p,q} | \dims{m,n,p,q} | Identical Batches        | n*p*q filters applied to n*p*q inputs in one-to-one correspondence |
+| \dims{m,n,1,1} | \dims{m,1,p,q} | \dims{m,n,p,q} | Non-overlapping batches  | p*q filters applied to n inputs to produce n x p x q results       |
 
-The last entry in the table has more permutations than shown here.
+There are various other permutations of signal and filter sizes that fall under
+the category of non-overlapping batch mode that are not listed in the above
+table. For any signal and filter size combination to fall under the
+non-overlapping batch mode, they should satisfy one of the following conditions.
+- Signal and filter size along a given batch axis (\f$ > 1 \f$) should be same.
+- Either signal size or filter size along a given batch axis (\f$ > 1 \f$) should be equal to one.
+
+\note For the above tabular illustrations, we assumed \ref af_conv_mode is \ref AF_CONV_DEFAULT.
 
 
 
@@ -138,31 +155,140 @@ The last entry in the table has more permutations than shown here.
 
 \copydoc signal_func_conv_desc
 
-For two dimensional signals, the following are the possible batch operations
-possible. Lets say m & n as sizes along the 0th & 1st dimensions respectively
-and p & q are the some integral numbers greater than one.
+A detailed explanation of each batch mode for 2D convolutions is provided below.
+Given below are definitions of variables and constants that are used to
+facilitate easy illustration of the operations.
 
-| Input Signal Dimensions   | Filter Dimensions   | Output Dimensions   | Batch Mode                | Description                                                    |
-| :-----------------------: | :-----------------: | :-----------------: | :-----------------------: | :------------------------------------------------------------- |
-| [m n 1 1]                 | [m n 1 1]           | [m n 1 1]           | No Batch                  | Output will be a single convolved array                        |
-| [m n 1 1]                 | [m n p 1]           | [m n p 1]           | Filter is Batched         | p filters applied to same input                                |
-| [m n p 1]                 | [m n 1 1]           | [m n p 1]           | Signal is Batched         | 1 filter applied to p inputs                                   |
-| [m n p q]                 | [m n p q]           | [m n p q]           | Identical Batches         | p*q filters applied to p*q inputs in one-to-one correspondence |
-| [m n p 1]                 | [m n 1 q]           | [m n p q]           | Non-overlapping batches   | q filters applied to p inputs in to produce p x q results      |
-| [m n 1 p]                 | [m n q 1]           | [m n q p]           | Non-overlapping batches   | q filters applied to p inputs in to produce q x p results      |
+- \f$[M\quad N]\f$, \f$[A\quad B]\f$ are signal, filter sizes along
+  \f$0^{th}\f$ & \f$1^{st}\f$ axes respectively.
+- \f$P\f$ and \f$Q\f$ are two constants, integers greater than one.
+- \f$ p \f$ is an integer variable with range \f$ \ 0 \leq p < P \f$.
+- \f$ q \f$ is an integer variable with range \f$ \ 0 \leq q < Q \f$.
+- O, S and F are notations for Output, Signal and Filter respectively.
 
-* Batching behavior of convolve2_nn functions
+We have also used images to showcase some examples which follow the
+below notation.
 
-Batching behavior in the new convolutions functions have changed. These
-functions can perform a 2D convolution on 3D signal and filters.
+- Each blue line is a two dimensional matrix.
+- Each orange line indicates a full 2d convolution operation.
+- Suffix of each letter indicates indices along \f$ 3^{rd}\f$ and \f$ 4^{th}\f$
+  axes in the order of appearance from left to right in the suffix.
+- O, S and F are notations for Output, Signal and Filter respectively.
 
-| Input Signal Dimensions   | Filter Dimensions   | Output Dimensions   | Batch Mode                | Description                                               |
-| :-----------------------: | :-----------------: | :-----------------: | :-----------------------: | :-------------------------------------------------------- |
-| [m n 1 1]                 | [m n 1 1]           | [m n 1 1]           | No Batch                  | Output will be a single convolved array                   |
-| [m n 1 1]                 | [m n p 1]           | [m n p 1]           | *Invalid d2 must be same* | N/A                                                       |
-| [m n p 1]                 | [m n 1 1]           | [m n p 1]           | *Invalid Batch*           | N/A                                                       |
-| [m n p 1]                 | [m n p 1]           | [m n 1 1]           | No Batch                  | 3D Signal and 3D filter convoled to 2D result             |
-| [m n p qs]                | [m n p qf]          | [m n qf qs]         | Batch qs * qf             | qs signals and qf filsters to create qs * qf results      |
+### No Batch
+
+Given below is an example of no batch mode.
+
+\image html "conv_docs_images/basic.png" "Single 2d convolution with 2d filter"
+
+For input size \dims{M,N,1,1} and filter size \dims{A,B,1,1}, the following set-builder
+notation gives a formal definition of all convolutions performed in this mode.
+
+\shape_eq{O,M,N,1,1} = \convolve_eq{\shape_t{S,M,N,1,1},\shape_t{F,A,B,1,1}}
+
+
+### Batched Filter
+
+Given below is an example of filter batch mode.
+
+\image html "conv_docs_images/filter.png" "Single signal convolved with many filters independently"
+
+For input size \dims{M,N,1,1} and filter size \dims{A,B,P,1}, the following set-builder
+notation gives a formal definition of all convolutions performed in this mode.
+
+\shape_eq{O,M,N,P,1} = \set_eq{\convolve_t{\shape_t{S,M,N,1,1},\shape_t{f,A,B,p,1}}, \forall \shape_t{f,A,B,p,1} \in \shape_t{F,A,B,P,1}}
+
+
+### Batched Signal
+
+Given below is an example of signal batch mode.
+
+\image html "conv_docs_images/signal.png" "Single filter convolved with many signals independently"
+
+For input size \dims{M,N,P,1} and filter size \dims{A,B,1,1}, the following set-builder
+notation gives a formal definition of all convolutions performed in this mode.
+
+\shape_eq{O,M,N,P,1} = \set_eq{\convolve_t{\shape_t{s,M,N,p,1},\shape_t{F,A,B,1,1}}, \forall \shape_t{s,M,N,p,1} \in \shape_t{S,M,N,P,1}}
+
+
+### Identical Batch Sizes
+
+Given below is an example of identical batch mode.
+
+\image html "conv_docs_images/identical.png" "Many signals convolved with many filters in one-on-one manner"
+
+For input size \dims{M,N,P,Q} and filter size \dims{A,B,P,Q}, the following set-builder
+notation gives a formal definition of all convolutions performed in this mode.
+
+\shape_eq{O,M,N,P,Q} = \set_eq{\convolve_t{\shape_t{s,M,N,p,q},\shape_t{f,A,B,p,q}}, \forall \shape_t{s,M,N,p,q} \in \shape_t{S,M,N,P,Q} \land \forall \shape_t{f,M,N,p,q} \in \shape_t{F,M,N,P,Q}}
+
+
+### Non-overlapping Batches
+
+Four different kinds of signal and filter size combinations are handled in this batch mode. Each one
+of them are explained in respective sections below.
+
+#### Combination 1
+
+For input size \dims{M,N,P,1} and filter size \dims{A,B,1,Q}, the following set-builder
+notation gives a formal definition of all convolutions performed in this mode.
+
+\shape_eq{O,M,N,P,Q} = \set_eq{\set_t{\convolve_t{\shape_t{s,M,N,p,1},\shape_t{f,A,B,1,q}}, \forall \shape_t{s,M,N,p,1} \in \shape_t{S,M,N,P,1}}, \forall \shape_t{f,A,B,1,q} \in \shape_t{F,A,B,1,Q}}
+
+Given below is an example of this batch mode.
+
+\image html "conv_docs_images/non-overlapping_1.png"
+
+#### Combination 2
+
+For input size \dims{M,N,P,1} and filter size \dims{A,B,P,Q}, the following set-builder
+notation gives a formal definition of all convolutions performed in this mode.
+
+\shape_eq{O,M,N,P,Q} = \set_eq{\set_t{\convolve_t{\shape_t{s,M,N,p,1},\shape_t{f,A,B,p,q}}, \forall \shape_t{f,A,B,p,q} \in \shape_t{F,A,B,P,Q}}, \forall \shape_t{s,M,N,p,1} \in \shape_t{S,M,N,P,1}}
+
+Given below is an example of this batch mode.
+
+\image html "conv_docs_images/non-overlapping_2.png"
+
+#### Combination 3
+
+For input size \dims{M,N,1,P} and filter size \dims{A,B,Q,1}, the following set-builder
+notation gives a formal definition of all convolutions performed in this mode.
+
+\shape_eq{O,M,N,Q,P} = \set_eq{\set_t{\convolve_t{\shape_t{s,M,N,1,p},\shape_t{f,A,B,q,1}}, \forall \shape_t{s,M,N,1,p} \in \shape_t{S,M,N,1,P}}, \forall \shape_t{f,A,B,q,1} \in \shape_t{F,A,B,Q,1}}
+
+Given below is an example of this batch mode.
+
+\image html "conv_docs_images/non-overlapping_3.png"
+
+#### Combination 4
+
+For input size \dims{M,N,P,Q} and filter size \dims{A,B,P,1}, the following set-builder
+notation gives a formal definition of all convolutions performed in this mode.
+
+\shape_eq{O,M,N,P,Q} = \set_eq{\set_t{\convolve_t{\shape_t{s,M,N,p,q},\shape_t{f,A,B,p,1}}, \forall \shape_t{s,M,N,p,q} \in \shape_t{S,M,N,P,Q}}, \forall \shape_t{f,A,B,p,1} \in \shape_t{F,A,B,P,1}}
+
+Given below is an example of this batch mode.
+
+\image html "conv_docs_images/non-overlapping_4.png"
+
+
+The batching behavior of convolve2NN functions(\ref af_convolve2_nn() and
+\ref convolve2NN() ) is different from convolve2. The new functions can perform 2D
+convolution on 3D signals and filters in a way that is more aligned with
+convolutional neural networks.
+
+| Signal Size         | Filter Size         | Output Size         | Batch Mode     | Description                                         |
+| :-----------------: | :-----------------: | :-----------------: | :------------: | :-------------------------------------------------- |
+| \dims{M, N, 1, 1}   | \dims{M, N, 1, 1}   | \dims{M, N, 1, 1}   | No Batch       | Output will be a single convolved array             |
+| \dims{M, N, 1, 1}   | \dims{M, N, P, 1}   | \dims{M, N, P, 1}   | *Invalid*      | Size along second axis should be same               |
+| \dims{M, N, P, 1}   | \dims{M, N, 1, 1}   | \dims{M, N, P, 1}   | *Invalid*      | Size along second axis should be same               |
+| \dims{M, N, P, 1}   | \dims{M, N, P, 1}   | \dims{M, N, 1, 1}   | No Batch       | 3D Signal and 3D filter convoled to 2D result       |
+| \dims{M, N, P, Qs}  | \dims{M, N, P, Qf}  | \dims{M, N, Qf, Qs} | Batch Qs * Qf  | Qs signals and Qf filters to create Qs * Qf results |
+
+\note For the above tabular illustrations, we will assume \ref af_conv_mode is \ref AF_CONV_DEFAULT.
+
+
 
 \defgroup signal_func_convolve3 3D Convolutions
 \ingroup convolve_mat
@@ -171,15 +297,17 @@ functions can perform a 2D convolution on 3D signal and filters.
 
 \copydoc signal_func_conv_desc
 
-For three dimensional inputs with m, n & p sizes along the 0th, 1st & 2nd dimensions
+For three dimensional inputs with m, n & p sizes along the 0th, 1st & 2nd axes
 respectively, given below are the possible batch operations.
 
-| Input Signal Dimensions   | Filter Dimensions   | Output Dimensions   | Batch Mode                | Description                                                |
-| :-----------------------: | :-----------------: | :-----------------: | :-----------------------: | :------------                                              |
-| [m n p 1]                 | [a b c 1]           | [m n p 1]           | No Batch                  | Output will be a single convolve array                     |
-| [m n p 1]                 | [a b c d]           | [m n p d]           | Filter is Batched         | d filters applied to same input                            |
-| [m n p q]                 | [a b c 1]           | [m n p q]           | Signal is Batched         | 1 filter applied to q inputs                               |
-| [m n p k]                 | [a b c k]           | [m n p k]           | Identical Batches         | k filters applied to k inputs in one-to-one correspondence |
+| Signal Size        | Filter Size        | Output Size        | Batch Mode         | Description                                                |
+| :----------------: | :----------------: | :----------------: | :----------------: |:-----------------------------------------------------------|
+| \dims{m, n, p, 1}  | \dims{a, b, c, 1}  | \dims{m, n, p, 1}  | No Batch           | Output will be a single convolve array                     |
+| \dims{m, n, p, 1}  | \dims{a, b, c, d}  | \dims{m, n, p, d}  | Filter is Batched  | d filters applied to same input                            |
+| \dims{m, n, p, q}  | \dims{a, b, c, 1}  | \dims{m, n, p, q}  | Signal is Batched  | 1 filter applied to q inputs                               |
+| \dims{m, n, p, k}  | \dims{a, b, c, k}  | \dims{m, n, p, k}  | Identical Batches  | k filters applied to k inputs in one-to-one correspondence |
+
+\note For the above tabular illustrations, we assumed \ref af_conv_mode is \ref AF_CONV_DEFAULT.
 
 
 
