@@ -20,7 +20,7 @@ class dim4;
     /**
         C++ interface for calculating backward pass gradient of 2D convolution
         This function calculates the gradient with respect to the output
-        of the \ref convolve2_nn() function that uses the machine learning
+        of the \ref convolve2NN() function that uses the machine learning
         formulation for the dimensions of the signals and filters
 
         \param[in]  incoming_gradient gradients to be distributed in backwards pass
@@ -57,7 +57,7 @@ extern "C" {
     /**
         C interface for calculating backward pass gradient of 2D convolution
         This function calculates the gradient with respect to the output
-        of the \ref convolve2_nn() function that uses the machine learning
+        of the \ref convolve2NN() function that uses the machine learning
         formulation for the dimensions of the signals and filters
 
         \param[out] out gradient wrt/gradType
