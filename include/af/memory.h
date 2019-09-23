@@ -172,12 +172,12 @@ AFAPI af_err af_release_memory_manager(af_memory_manager handle);
 ///
 /// param[out] out \ref af_memory_manager
 /// \returns AF_SUCCESS
-AFAPI af_err af_set_memory_manager(af_memory_manager mgr);
+AFAPI af_err af_set_memory_manager(af_memory_manager handle);
 
-AFAPI af_err af_memory_manager_get_payload(af_memory_manager mgr,
+AFAPI af_err af_memory_manager_get_payload(af_memory_manager handle,
                                            void** payload);
 
-AFAPI af_err af_memory_manager_set_payload(af_memory_manager mgr,
+AFAPI af_err af_memory_manager_set_payload(af_memory_manager handle,
                                            void* payload);
 
 AFAPI af_err af_memory_manager_set_initialize_fn(
