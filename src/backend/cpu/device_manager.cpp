@@ -139,15 +139,15 @@ DeviceManager& DeviceManager::getInstance() {
 CPUInfo DeviceManager::getCPUInfo() const { return cinfo; }
 
 void DeviceManager::resetMemoryManager() {
-    // Destroys the existing memory manager, but does not release the
-    // corresponding handle, if there was one
-    memManager.reset(
-        new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                                  AF_MEM_DEBUG || AF_CPU_MEM_DEBUG));
+    std::unique_ptr<MemoryManagerBase> mgr;
+    mgr.reset(new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                        AF_MEM_DEBUG || AF_CPU_MEM_DEBUG));
     std::unique_ptr<cpu::NativeMemoryInterface> deviceMemoryManager;
     deviceMemoryManager.reset(new cpu::NativeMemoryInterface());
-    memManager->setNativeMemoryInterface(std::move(deviceMemoryManager));
-    memManager->initialize();
+    mgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
+    mgr->initialize();
+
+    setMemoryManager(std::move(mgr));
 }
 
 void DeviceManager::setMemoryManager(

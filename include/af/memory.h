@@ -110,12 +110,12 @@ typedef void (*af_memory_manager_initialize_fn)(af_memory_manager);
 typedef void (*af_memory_manager_shutdown_fn)(af_memory_manager);
 
 typedef af_buffer_info (*af_memory_manager_alloc_fn)(af_memory_manager, size_t,
-                                                     bool);
+                                                     /* bool */ int);
 
 typedef size_t (*af_memory_manager_allocated_fn)(af_memory_manager, void*);
 
 typedef void (*af_memory_manager_unlock_fn)(af_memory_manager, void*, af_event,
-                                            int);
+                                            /* bool */ int);
 
 typedef void (*af_memory_manager_garbage_collect_fn)(af_memory_manager);
 
@@ -174,6 +174,12 @@ AFAPI af_err af_release_memory_manager(af_memory_manager handle);
 /// \returns AF_SUCCESS
 AFAPI af_err af_set_memory_manager(af_memory_manager mgr);
 
+AFAPI af_err af_memory_manager_get_payload(af_memory_manager mgr,
+                                           void** payload);
+
+AFAPI af_err af_memory_manager_set_payload(af_memory_manager mgr,
+                                           void* payload);
+
 AFAPI af_err af_memory_manager_set_initialize_fn(
     af_memory_manager handle, af_memory_manager_initialize_fn fn);
 AFAPI af_err af_memory_manager_set_shutdown_fn(
@@ -208,11 +214,11 @@ AFAPI af_err af_memory_manager_set_get_max_buffers_fn(
 AFAPI af_err af_memory_manager_set_set_mem_step_size_fn(
     af_memory_manager handle, af_memory_manager_set_mem_step_size_fn fn);
 
-AFAPI af_err af_memory_manager_set_check_memory_limit(
+AFAPI af_err af_memory_manager_set_check_memory_limit_fn(
     af_memory_manager handle, af_memory_manager_check_memory_limit fn);
-AFAPI af_err af_memory_manager_set_add_memory_management(
+AFAPI af_err af_memory_manager_set_add_memory_management_fn(
     af_memory_manager handle, af_memory_manager_add_memory_management fn);
-AFAPI af_err af_memory_manager_set_remove_memory_management(
+AFAPI af_err af_memory_manager_set_remove_memory_management_fn(
     af_memory_manager handle, af_memory_manager_remove_memory_management fn);
 
 ////////////////////////////////////////////////////////////////////////////////

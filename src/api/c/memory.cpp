@@ -450,6 +450,7 @@ af_err af_create_memory_manager(af_memory_manager *manager) {
 
 af_err af_release_memory_manager(af_memory_manager handle) {
     try {
+        detail::resetMemoryManager();
         delete (MemoryManager *)handle;
     }
     CATCHALL;
@@ -467,6 +468,26 @@ af_err af_set_memory_manager(af_memory_manager mgr) {
 
         // Calls shutdown() on the existing memory manager
         detail::setMemoryManager(std::move(newManager));
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_get_payload(af_memory_manager handle, void **payload) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        *payload               = manager.payload;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_payload(af_memory_manager handle, void *payload) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.payload        = payload;
     }
     CATCHALL;
 
@@ -683,7 +704,7 @@ af_err af_memory_manager_set_set_mem_step_size_fn(
     return AF_SUCCESS;
 }
 
-af_err af_memory_manager_set_check_memory_limit(
+af_err af_memory_manager_set_check_memory_limit_fn(
     af_memory_manager handle, af_memory_manager_check_memory_limit fn) {
     try {
         MemoryManager &manager        = getMemoryManager(handle);
@@ -694,7 +715,7 @@ af_err af_memory_manager_set_check_memory_limit(
     return AF_SUCCESS;
 }
 
-af_err af_memory_manager_set_add_memory_management(
+af_err af_memory_manager_set_add_memory_management_fn(
     af_memory_manager handle, af_memory_manager_add_memory_management fn) {
     try {
         MemoryManager &manager           = getMemoryManager(handle);
@@ -705,7 +726,7 @@ af_err af_memory_manager_set_add_memory_management(
     return AF_SUCCESS;
 }
 
-af_err af_memory_manager_set_remove_memory_management(
+af_err af_memory_manager_set_remove_memory_management_fn(
     af_memory_manager handle, af_memory_manager_remove_memory_management fn) {
     try {
         MemoryManager &manager              = getMemoryManager(handle);

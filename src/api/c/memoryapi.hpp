@@ -54,6 +54,9 @@ struct MemoryManager {
     af_memory_manager_check_memory_limit check_memory_limit_fn;
     af_memory_manager_add_memory_management add_memory_management_fn;
     af_memory_manager_remove_memory_management remove_memory_management_fn;
+    // A generic payload on which data can be stored on the af_memory_manager
+    // and is accessible from the handle
+    void *payload;
 };
 
 MemoryManager &getMemoryManager(const af_memory_manager manager);
