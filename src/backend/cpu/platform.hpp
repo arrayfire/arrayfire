@@ -60,6 +60,11 @@ void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
 
 void resetMemoryManager();
 
+// Pinned memory not supported
+void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+void resetMemoryManagerPinned();
+
 graphics::ForgeManager& forgeManager();
 
 }  // namespace cpu

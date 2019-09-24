@@ -601,6 +601,22 @@ MemoryManagerBase& pinnedMemoryManager() {
     return *(inst.pinnedMemManager.get());
 }
 
+void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManager(std::move(mgr));
+}
+
+void resetMemoryManager() {
+    return DeviceManager::getInstance().resetMemoryManager();
+}
+
+void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManagerPinned(std::move(mgr));
+}
+
+void resetMemoryManagerPinned() {
+    return DeviceManager::getInstance().resetMemoryManagerPinned();
+}
+
 graphics::ForgeManager& forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }

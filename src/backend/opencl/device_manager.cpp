@@ -301,6 +301,8 @@ DeviceManager& DeviceManager::getInstance() {
 
 void DeviceManager::setMemoryManager(
     std::unique_ptr<MemoryManagerBase> newMgr) {
+    // If an existing memory manager exists, shutdown()
+    if (memManager) { memManager->shutdown(); }
     // Set the backend memory manager for this new manager to register native
     // functions correctly
     std::unique_ptr<opencl::NativeMemoryInterface> deviceMemoryManager;
@@ -308,6 +310,43 @@ void DeviceManager::setMemoryManager(
     newMgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
     newMgr->initialize();
     memManager = std::move(newMgr);
+}
+
+void DeviceManager::resetMemoryManager() {
+    std::unique_ptr<MemoryManagerBase> mgr;
+    mgr.reset(new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                        AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+    std::unique_ptr<opencl::NativeMemoryInterface> deviceMemoryManager;
+    deviceMemoryManager.reset(new opencl::NativeMemoryInterface());
+    mgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
+    mgr->initialize();
+
+    setMemoryManager(std::move(mgr));
+}
+
+void DeviceManager::setMemoryManagerPinned(
+    std::unique_ptr<MemoryManagerBase> newMgr) {
+    // If an existing memory manager exists, shutdown()
+    if (pinnedMemManager) { pinnedMemManager->shutdown(); }
+    // Set the backend memory manager for this new manager to register native
+    // functions correctly
+    std::unique_ptr<opencl::NativeMemoryInterfacePinned> deviceMemoryManager;
+    deviceMemoryManager.reset(new opencl::NativeMemoryInterfacePinned());
+    newMgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
+    newMgr->initialize();
+    pinnedMemManager = std::move(newMgr);
+}
+
+void DeviceManager::resetMemoryManagerPinned() {
+    std::unique_ptr<MemoryManagerBase> mgr;
+    mgr.reset(new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                        AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+    std::unique_ptr<opencl::NativeMemoryInterfacePinned> deviceMemoryManager;
+    deviceMemoryManager.reset(new opencl::NativeMemoryInterfacePinned());
+    mgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
+    mgr->initialize();
+
+    setMemoryManagerPinned(std::move(mgr));
 }
 
 DeviceManager::~DeviceManager() {

@@ -163,4 +163,15 @@ void DeviceManager::setMemoryManager(
     memManager = std::move(newMgr);
 }
 
+void DeviceManager::setMemoryManagerPinned(
+    std::unique_ptr<MemoryManagerBase> newMgr) {
+    AF_ERROR("Using pinned memory with CPU is not supported",
+             AF_ERR_NOT_SUPPORTED);
+}
+
+void DeviceManager::resetMemoryManagerPinned() {
+    // This is a NOOP - we should never set a pinned memory manager in the first
+    // place for the CPU backend
+}
+
 }  // namespace cpu

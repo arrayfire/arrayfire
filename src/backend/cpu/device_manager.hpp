@@ -108,6 +108,15 @@ class DeviceManager {
 
     friend void resetMemoryManager();
 
+    // Pinned memory not supported in CPU
+    friend void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+    void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+    friend void resetMemoryManagerPinned();
+
+    void resetMemoryManagerPinned();
+
     friend graphics::ForgeManager& forgeManager();
 
     void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);

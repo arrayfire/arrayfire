@@ -12,6 +12,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -104,7 +105,15 @@ MemoryManagerBase& memoryManager();
 
 MemoryManagerBase& pinnedMemoryManager();
 
-graphics::ForgeManager &forgeManager();
+void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+
+void resetMemoryManager();
+
+void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+void resetMemoryManagerPinned();
+
+graphics::ForgeManager& forgeManager();
 
 GraphicsResourceManager &interopManager();
 

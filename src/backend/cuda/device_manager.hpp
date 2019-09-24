@@ -50,7 +50,19 @@ class DeviceManager {
 
     void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
 
+    friend void resetMemoryManager();
+
+    void resetMemoryManager();
+
     friend MemoryManagerBase& pinnedMemoryManager();
+
+    friend void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+    void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+    friend void resetMemoryManagerPinned();
+
+    void resetMemoryManagerPinned();
 
     friend graphics::ForgeManager& forgeManager();
 

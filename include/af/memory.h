@@ -163,6 +163,8 @@ AFAPI af_err af_create_memory_manager(af_memory_manager* out);
 /// \returns AF_SUCCESS
 AFAPI af_err af_release_memory_manager(af_memory_manager handle);
 
+AFAPI af_err af_release_memory_manager_pinned(af_memory_manager handle);
+
 /// \brief Creates a handle to an af_memory_manager
 ///
 /// Registers the given memory manager as the AF memory manager - if the default
@@ -173,6 +175,8 @@ AFAPI af_err af_release_memory_manager(af_memory_manager handle);
 /// param[out] out \ref af_memory_manager
 /// \returns AF_SUCCESS
 AFAPI af_err af_set_memory_manager(af_memory_manager handle);
+
+AFAPI af_err af_set_memory_manager_pinned(af_memory_manager handle);
 
 AFAPI af_err af_memory_manager_get_payload(af_memory_manager handle,
                                            void** payload);

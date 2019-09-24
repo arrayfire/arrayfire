@@ -18,6 +18,7 @@
 #pragma GCC diagnostic pop
 
 #include <af/opencl.h>
+#include <memory>
 #include <string>
 
 namespace boost {
@@ -109,7 +110,15 @@ bool& evalFlag();
 
 MemoryManagerBase& memoryManager();
 
+void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+
+void resetMemoryManager();
+
 MemoryManagerBase& pinnedMemoryManager();
+
+void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+void resetMemoryManagerPinned();
 
 graphics::ForgeManager& forgeManager();
 

@@ -474,6 +474,32 @@ af_err af_set_memory_manager(af_memory_manager mgr) {
     return AF_SUCCESS;
 }
 
+af_err af_release_memory_manager_pinned(af_memory_manager handle) {
+    try {
+        detail::resetMemoryManagerPinned();
+        delete (MemoryManager *)handle;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_set_memory_manager_pinned(af_memory_manager mgr) {
+    try {
+        // NB: does NOT free if a non-default implementation is set as the
+        // current memory manager - the user is responsible for freeing any
+        // controlled memory
+        std::unique_ptr<MemoryManagerFunctionWrapper> newManager;
+        newManager.reset(new MemoryManagerFunctionWrapper(mgr));
+
+        // Calls shutdown() on the existing memory manager
+        detail::setMemoryManagerPinned(std::move(newManager));
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 af_err af_memory_manager_get_payload(af_memory_manager handle, void **payload) {
     try {
         MemoryManager &manager = getMemoryManager(handle);
