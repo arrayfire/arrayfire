@@ -954,8 +954,7 @@ TEST(MemoryManagerApi, E2ETest) {
     af_create_memory_manager(&manager);
 
     // Set payload_fn
-    std::unique_ptr<E2ETestPayload> payload;
-    payload.reset(new E2ETestPayload());
+    std::unique_ptr<E2ETestPayload> payload(new E2ETestPayload());
     af_memory_manager_set_payload(manager, payload.get());
 
     auto initialize_fn = [](af_memory_manager) {};
@@ -1035,4 +1034,87 @@ TEST(MemoryManagerApi, E2ETest) {
 
     ASSERT_EQ(payload->table.size(), 0);
     af_release_memory_manager(manager);
+}
+
+TEST(MemoryManagerApi, E2ETestCpp) {
+    auto memory_manager = af::memory_manager();
+
+    // Set payload_fn
+    std::unique_ptr<E2ETestPayload> payload(new E2ETestPayload());
+    memory_manager.setPayload(payload.get());
+
+    auto initialize_fn = [](af_memory_manager) {};
+    auto shutdown_fn   = [](af_memory_manager) {};
+    memory_manager.registerInitialize(initialize_fn);
+    memory_manager.registerShutdown(shutdown_fn);
+
+    // alloc
+    memory_manager.registerAlloc(alloc_fn);
+    memory_manager.registerAllocated(allocated_fn);
+    memory_manager.registerUnlock(unlock_fn);
+    // utils
+    memory_manager.registerGarbageCollect(garbage_collect_fn);
+    memory_manager.registerPrintInfo(print_info_fn);
+    memory_manager.registerUsageInfo(usage_info_fn);
+    // user lock/unlock
+    memory_manager.registerUserLock(user_lock_fn);
+    memory_manager.registerUserUnlock(user_unlock_fn);
+    memory_manager.registerIsUserLocked(is_user_locked_fn);
+    // limits and step size
+    memory_manager.registerGetMemStepSize(get_mem_step_size_fn);
+    memory_manager.registerGetMaxBytes(get_max_bytes_fn);
+    memory_manager.registerGetMaxBuffers(get_max_buffers_fn);
+    memory_manager.registerSetMemStepSize(set_mem_step_size_fn);
+    memory_manager.registerCheckMemoryLimit(check_memory_limit_fn);
+    // ocl
+    memory_manager.registerAddMemoryManagement(add_memory_management_fn);
+    memory_manager.registerRemoveMemoryManagement(remove_memory_management_fn);
+
+    af_set_memory_manager(memory_manager.get());
+    {
+        size_t aSize = 8;
+
+        void *a = af::alloc(8, af::dtype::f32);
+        ASSERT_EQ(payload->table.size(), 1);
+        ASSERT_EQ(payload->table[a], aSize * sizeof(float));
+
+        auto b = af::randu({2, 2});
+
+        // Usage info
+        size_t allocBytes, allocBuffers, lockBytes, lockBuffers;
+        af::deviceMemInfo(&allocBytes, &allocBuffers, &lockBytes, &lockBuffers);
+        ASSERT_EQ(allocBytes, aSize * sizeof(float) + b.bytes());
+        ASSERT_EQ(allocBuffers, 2);
+        ASSERT_EQ(lockBytes, aSize * sizeof(float) + b.bytes());
+        ASSERT_EQ(lockBuffers, 2);
+
+        af::free(a);
+
+        af::deviceMemInfo(&allocBytes, &allocBuffers, &lockBytes, &lockBuffers);
+        ASSERT_EQ(allocBytes, aSize * sizeof(float) + b.bytes());
+        ASSERT_EQ(allocBuffers, 2);
+        ASSERT_EQ(lockBytes, b.bytes());
+        ASSERT_EQ(lockBuffers, 1);
+
+        ASSERT_EQ(payload->table.size(), 2);
+    }
+
+    // gc
+    af::deviceGC();
+    ASSERT_EQ(payload->table.size(), 0);
+
+    // printInfo
+    std::string printInfoMsg = "testPrintInfo";
+    int printInfoDeviceId    = 0;
+    af::printMemInfo(printInfoMsg.c_str(), printInfoDeviceId);
+    ASSERT_EQ(printInfoMsg, payload->printInfoStringArg);
+    ASSERT_EQ(printInfoDeviceId, payload->printInfoDevice);
+
+    // step size
+    size_t stepSizeTest = 64;
+    af::setMemStepSize(stepSizeTest);
+    ASSERT_EQ(af::getMemStepSize(), stepSizeTest);
+    ASSERT_EQ(stepSizeTest, payload->memStepSize);
+
+    ASSERT_EQ(payload->table.size(), 0);
 }
