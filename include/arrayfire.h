@@ -97,6 +97,23 @@
       diff, gradient, etc.
    @}
 
+   @defgroup memory_manager Memory Management
+   @{
+      Interfaces for writing custom memory managers.
+
+      @defgroup memory_manager_cpp_api Memory Manager C++ API
+      memory_manager
+
+      @defgroup memory_manager_c_api Memory Manager C API
+      af_memory_manager, af_create_memory_manager, af_release_memory_manager
+      af_memory_manager_get_payload, af_memory_manager_set_payload
+
+      @defgroup memory_manager_manipulation_api Memory Manager manipulation API
+      af_set_memory_manager, af_set_memory_manager_pinned
+      af_unset_memory_manager, af_unset_memory_manager_pinned
+   @}
+
+
    @defgroup linalg_mat Linear Algebra
    @{
 
@@ -117,11 +134,12 @@
      @defgroup lapack_helper LAPACK Helper functions
 
      @defgroup sparse_func Sparse functions
-        \brief Functions to create and handle sparse arrays and matrix operations
+        \brief Functions to create and handle sparse arrays and matrix
+operations
 
         Sparse array in ArrayFire use the same \ref af::array (or \ref af_array)
-        handle as normal. Internally, this handle is used to maintain a structure
-        of the sparse array (components listed below).
+        handle as normal. Internally, this handle is used to maintain a
+structure of the sparse array (components listed below).
 
         Description     | Data Type
         ----------------|-------------------
@@ -145,11 +163,11 @@
         function.  This function will return true for a sparse array and false
         for a regular \ref af::array.
 
-        The valid operations on sparse arrays are \ref af::matmul (sparse-dense).
-        When calling matmul for sparse matrices, the sparse array is required to
-        be the left hand side matrix and can be used with transposing options.
-        The dense matrix on the right hand side cannot be used with any transpose
-        options.
+        The valid operations on sparse arrays are \ref af::matmul
+(sparse-dense). When calling matmul for sparse matrices, the sparse array is
+required to be the left hand side matrix and can be used with transposing
+options. The dense matrix on the right hand side cannot be used with any
+transpose options.
 
         Most functions cannot use sparse arrays and will throw an error with
         \ref AF_ERR_ARG if a sparse array is given as input.
@@ -258,7 +276,8 @@
 
      Functions to work with arrayfire's internal data structure.
 
-     Note: The behavior of these functions is not promised to be consistent across versions.
+     Note: The behavior of these functions is not promised to be consistent
+across versions.
 
    @}
 
@@ -269,26 +288,29 @@
 
      @defgroup opencl_mat OpenCL specific functions
 
-        \brief Accessing ArrayFire's context, queue, and share data with other OpenCL code.
+        \brief Accessing ArrayFire's context, queue, and share data with other
+OpenCL code.
 
-        If your software is using ArrayFire's OpenCL backend, you can also write custom
-        kernels and do custom memory operations using native OpenCL commands. The functions
-        contained in the \p afcl namespace provide methods to get the context, queue, and
-        device(s) that ArrayFire is using as well as convert `cl_mem` handles to
-        \ref af::array objects.
+        If your software is using ArrayFire's OpenCL backend, you can also write
+custom kernels and do custom memory operations using native OpenCL commands. The
+functions contained in the \p afcl namespace provide methods to get the context,
+queue, and device(s) that ArrayFire is using as well as convert `cl_mem` handles
+to \ref af::array objects.
 
-        Please note: the \ref af::array constructors are not thread safe. You may create and
-        upload data to `cl_mem` objects from separate threads, but the thread which
-        instantiated ArrayFire must do the `cl_mem` to \ref af::array conversion.
+        Please note: the \ref af::array constructors are not thread safe. You
+may create and upload data to `cl_mem` objects from separate threads, but the
+thread which instantiated ArrayFire must do the `cl_mem` to \ref af::array
+conversion.
 
      @defgroup cuda_mat CUDA specific functions
 
-        \brief Accessing ArrayFire's stream, and native device id with other CUDA code.
+        \brief Accessing ArrayFire's stream, and native device id with other
+CUDA code.
 
-        If your software is using ArrayFire's CUDA backend, you can also write custom
-        kernels and do custom memory operations using native CUDA commands. The functions
-        contained in the \p afcu namespace provide methods to get the stream and native
-        device id that ArrayFire is using.
+        If your software is using ArrayFire's CUDA backend, you can also write
+custom kernels and do custom memory operations using native CUDA commands. The
+functions contained in the \p afcu namespace provide methods to get the stream
+and native device id that ArrayFire is using.
    @}
 
    @defgroup ml Machine Learning
@@ -307,14 +329,14 @@
 
 */
 
-#include "af/compatible.h"
 #include "af/algorithm.h"
 #include "af/arith.h"
 #include "af/array.h"
 #include "af/backend.h"
 #include "af/blas.h"
-#include "af/constants.h"
+#include "af/compatible.h"
 #include "af/complex.h"
+#include "af/constants.h"
 #include "af/data.h"
 #include "af/device.h"
 #include "af/exception.h"

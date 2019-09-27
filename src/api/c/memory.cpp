@@ -450,7 +450,9 @@ af_err af_create_memory_manager(af_memory_manager *manager) {
 
 af_err af_release_memory_manager(af_memory_manager handle) {
     try {
-        detail::resetMemoryManager();
+        // NB: does NOT reset the internal memory manager to be the default:
+        // af_unset_memory_manager_pinned must be used to fully-reset with a new
+        // AF default memory manager
         delete (MemoryManager *)handle;
     }
     CATCHALL;
@@ -474,10 +476,9 @@ af_err af_set_memory_manager(af_memory_manager mgr) {
     return AF_SUCCESS;
 }
 
-af_err af_release_memory_manager_pinned(af_memory_manager handle) {
+af_err af_unset_memory_manager() {
     try {
-        detail::resetMemoryManagerPinned();
-        delete (MemoryManager *)handle;
+        detail::resetMemoryManager();
     }
     CATCHALL;
 
@@ -494,6 +495,15 @@ af_err af_set_memory_manager_pinned(af_memory_manager mgr) {
 
         // Calls shutdown() on the existing memory manager
         detail::setMemoryManagerPinned(std::move(newManager));
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_unset_memory_manager_pinned() {
+    try {
+        detail::resetMemoryManagerPinned();
     }
     CATCHALL;
 

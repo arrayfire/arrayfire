@@ -301,10 +301,9 @@ DeviceManager& DeviceManager::getInstance() {
 
 void DeviceManager::setMemoryManager(
     std::unique_ptr<MemoryManagerBase> newMgr) {
-    // If an existing memory manager exists, shutdown()
-    if (memManager) { memManager->shutdown(); }
     // Set the backend memory manager for this new manager to register native
-    // functions correctly
+    // functions correctly. NB: does NOT free memory allocated with the existing
+    // memory manager or shut down the existing manager.
     std::unique_ptr<opencl::NativeMemoryInterface> deviceMemoryManager;
     deviceMemoryManager.reset(new opencl::NativeMemoryInterface());
     newMgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
@@ -313,6 +312,9 @@ void DeviceManager::setMemoryManager(
 }
 
 void DeviceManager::resetMemoryManager() {
+    // If an existing memory manager exists, shutdown()
+    if (memManager) { memManager->shutdown(); }
+    // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr;
     mgr.reset(new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                         AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
@@ -326,10 +328,9 @@ void DeviceManager::resetMemoryManager() {
 
 void DeviceManager::setMemoryManagerPinned(
     std::unique_ptr<MemoryManagerBase> newMgr) {
-    // If an existing memory manager exists, shutdown()
-    if (pinnedMemManager) { pinnedMemManager->shutdown(); }
-    // Set the backend memory manager for this new manager to register native
-    // functions correctly
+    // Set the backend pinned memory manager for this new manager to register
+    // native functions correctly. NB: does NOT free memory allocated with the
+    // existing memory manager or shut down the existing manager.
     std::unique_ptr<opencl::NativeMemoryInterfacePinned> deviceMemoryManager;
     deviceMemoryManager.reset(new opencl::NativeMemoryInterfacePinned());
     newMgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
@@ -338,6 +339,9 @@ void DeviceManager::setMemoryManagerPinned(
 }
 
 void DeviceManager::resetMemoryManagerPinned() {
+    // If an existing memory manager exists, shutdown()
+    if (pinnedMemManager) { pinnedMemManager->shutdown(); }
+    // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr;
     mgr.reset(new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                         AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));

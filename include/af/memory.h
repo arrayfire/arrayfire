@@ -146,37 +146,70 @@ typedef void (*af_memory_manager_add_memory_management)(af_memory_manager, int);
 typedef void (*af_memory_manager_remove_memory_management)(af_memory_manager,
                                                            int);
 
-/// \brief Creates a handle to an af_memory_manager
+/// \brief Creates an \ref af_memory_manager handle
 ///
 /// Creates a blank af_memory_manager with no attached function pointers.
 ///
-/// param[out] out \ref af_memory_manager
+/// param[in] out \ref af_memory_manager
 /// \returns AF_SUCCESS
 AFAPI af_err af_create_memory_manager(af_memory_manager* out);
 
-/// \brief Sets the internal AF memory manager to use the given \ref
-/// af_memory_manager
+/// \brief Destroys an \ref af_memory_manager handle.
 ///
-/// Creates a blank af_memory_manager with no attached function pointers.
+/// Destroys a memory manager handle, does NOT call the
+/// af_memory_manager_shutdown_fn associated with the af_memory_manager.
 ///
 /// param[in] handle the \ref af_memory_manager handle to be destroyed
 /// \returns AF_SUCCESS
 AFAPI af_err af_release_memory_manager(af_memory_manager handle);
 
-AFAPI af_err af_release_memory_manager_pinned(af_memory_manager handle);
-
-/// \brief Creates a handle to an af_memory_manager
+/// \brief Sets an af_memory_manager to be the default memory manager for
+/// non-pinned memory allocations in ArrayFire.
 ///
-/// Registers the given memory manager as the AF memory manager - if the default
-/// memory manager is current, destroys it and frees resources; if another
-/// memory manager is set, does NOT destroy its handle or free associated memory
-/// - this must be done manually.
+/// Registers the given memory manager as the AF memory manager non-pinned
+/// memory allocations - does NOT shut down or release the existing memory
+/// manager or free any associated memory.
 ///
-/// param[out] out \ref af_memory_manager
+/// param[in] in \ref af_memory_manager
 /// \returns AF_SUCCESS
 AFAPI af_err af_set_memory_manager(af_memory_manager handle);
 
+/// \brief Sets an af_memory_manager to be the default memory manager for
+/// pinned memory allocations in ArrayFire.
+///
+/// Registers the given memory manager as the AF memory manager for pinned
+/// memory allocations - does NOT shut down or release the existing memory
+/// manager or free any associated memory.
+///
+/// param[in] in \ref af_memory_manager
+/// \returns AF_SUCCESS
 AFAPI af_err af_set_memory_manager_pinned(af_memory_manager handle);
+
+/// \brief Reset the memory manager being used in ArrayFire to the default
+/// memory manager, shutting down the existing memory manager.
+///
+/// Calls the associated af_memory_manager_shutdown_fn on
+/// the existing memory manager. If the default memory manager is set,
+/// ALL associated memory will be freed on shutdown. Custom behavior that
+/// does not free all memory can be defined for a custom memory manager
+/// as per the specific implementation of its associated
+/// af_memory_manager_shutdown_fn.
+///
+/// \returns AF_SUCCESS
+AFAPI af_err af_unset_memory_manager();
+
+/// \brief Reset the pinned memory manager being used in ArrayFire to the
+/// default memory manager, shutting down the existing pinned memory manager.
+///
+/// Calls the associated af_memory_manager_shutdown_fn on
+/// the existing pinned memory manager. If the default memory manager is set,
+/// ALL associated pinned memory will be freed on shutdown. Custom behavior that
+/// does not free all pinned memory can be defined for a custom memory manager
+/// as per the specific implementation of its associated
+/// af_memory_manager_shutdown_fn.
+///
+/// \returns AF_SUCCESS
+AFAPI af_err af_unset_memory_manager_pinned();
 
 AFAPI af_err af_memory_manager_get_payload(af_memory_manager handle,
                                            void** payload);
@@ -298,8 +331,7 @@ class AFAPI memory_manager {
 
     void setPayload(void* payload);
     void* getPayload() const;
-
-};  // namespace af
+};
 
 }  // namespace af
 #endif  // __cplusplus
