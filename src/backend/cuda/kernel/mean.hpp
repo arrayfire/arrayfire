@@ -10,7 +10,9 @@
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
+#include <cuda_fp16.hpp>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
@@ -24,17 +26,26 @@
 using std::vector;
 
 namespace cuda {
+
+__host__ __device__ auto operator*(float lhs, __half rhs) -> __half {
+    return __float2half(lhs * __half2float(rhs));
+}
+
+__device__ auto operator/(__half lhs, float rhs) -> __half {
+    return __float2half(__half2float(lhs) / rhs);
+}
+
 namespace kernel {
 
 template<typename To, typename Tw>
 __device__ __host__ void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
-    if (((*l_wt) != 0) || (r_wt != 0)) {
+    if (((*l_wt) != (Tw)0) || (r_wt != (Tw)0)) {
         Tw l_scale = (*l_wt);
         (*l_wt) += r_wt;
         l_scale = l_scale / (*l_wt);
 
         Tw r_scale = r_wt / (*l_wt);
-        (*lhs)     = (l_scale * (*lhs)) + (r_scale * rhs);
+        (*lhs)     = (l_scale * *lhs) + (r_scale * rhs);
     }
 }
 
@@ -85,10 +96,10 @@ __global__ static void mean_dim_kernel(Param<To> out, Param<Tw> owt,
     bool is_valid = (ids[0] < in.dims[0]) && (ids[1] < in.dims[1]) &&
                     (ids[2] < in.dims[2]) && (ids[3] < in.dims[3]);
 
-    Transform<Ti, To, af_add_t> transform;
+    Transform<Ti, compute_t<To>, af_add_t> transform;
 
-    To val    = Binary<To, af_add_t>::init();
-    Tw weight = Binary<Tw, af_add_t>::init();
+    compute_t<To> val    = Binary<compute_t<To>, af_add_t>::init();
+    compute_t<Tw> weight = Binary<compute_t<Tw>, af_add_t>::init();
 
     if (is_valid && id_dim_in < in.dims[dim]) {
         val = transform(*iptr);
@@ -101,27 +112,27 @@ __global__ static void mean_dim_kernel(Param<To> out, Param<Tw> owt,
 
     const uint id_dim_in_start = id_dim_in + offset_dim * blockDim.y;
 
-    __shared__ To s_val[THREADS_X * DIMY];
-    __shared__ Tw s_idx[THREADS_X * DIMY];
+    __shared__ compute_t<To> s_val[THREADS_X * DIMY];
+    __shared__ compute_t<Tw> s_idx[THREADS_X * DIMY];
 
     for (int id = id_dim_in_start; is_valid && (id < in.dims[dim]);
          id += offset_dim * blockDim.y) {
         iptr = iptr + offset_dim * blockDim.y * istride_dim;
         if (iwptr != NULL) {
             iwptr = iwptr + offset_dim * blockDim.y * istride_dim;
-            stable_mean(&val, &weight, transform(*iptr), *iwptr);
+            stable_mean(&val, &weight, transform(*iptr), compute_t<Tw>(*iwptr));
         } else {
             // Faster version of stable_mean when iwptr is NULL
-            val    = val + (transform(*iptr) - val) / (weight + 1);
-            weight = weight + 1;
+            val    = val + (transform(*iptr) - val) / (weight + (Tw)1);
+            weight = weight + (Tw)1;
         }
     }
 
     s_val[tid] = val;
     s_idx[tid] = weight;
 
-    To *s_vptr = s_val + tid;
-    Tw *s_iptr = s_idx + tid;
+    compute_t<To> *s_vptr = s_val + tid;
+    compute_t<Tw> *s_iptr = s_idx + tid;
     __syncthreads();
 
     if (DIMY == 8) {
@@ -271,10 +282,10 @@ __global__ static void mean_first_kernel(Param<To> out, Param<Tw> owt,
 
     int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-    Transform<Ti, To, af_add_t> transform;
+    Transform<Ti, compute_t<To>, af_add_t> transform;
 
-    To val    = Binary<To, af_add_t>::init();
-    Tw weight = Binary<Tw, af_add_t>::init();
+    compute_t<To> val    = Binary<compute_t<To>, af_add_t>::init();
+    compute_t<Tw> weight = Binary<compute_t<Tw>, af_add_t>::init();
 
     if (xid < lim) {
         val = transform(iptr[xid]);
@@ -285,18 +296,19 @@ __global__ static void mean_first_kernel(Param<To> out, Param<Tw> owt,
         }
     }
 
-    __shared__ To s_val[THREADS_PER_BLOCK];
-    __shared__ Tw s_idx[THREADS_PER_BLOCK];
+    __shared__ compute_t<To> s_val[THREADS_PER_BLOCK];
+    __shared__ compute_t<Tw> s_idx[THREADS_PER_BLOCK];
 
     if (iwptr != NULL) {
         for (int id = xid + DIMX; id < lim; id += DIMX) {
-            stable_mean(&val, &weight, transform(iptr[id]), iwptr[id]);
+            stable_mean(&val, &weight, transform(iptr[id]),
+                        compute_t<Tw>(iwptr[id]));
         }
     } else {
         for (int id = xid + DIMX; id < lim; id += DIMX) {
             // Faster version of stable_mean when iwptr is NULL
-            val    = val + (transform(iptr[id]) - val) / (weight + 1);
-            weight = weight + 1;
+            val    = val + (transform(iptr[id]) - val) / (weight + (Tw)1);
+            weight = weight + (Tw)1;
         }
     }
 
@@ -304,8 +316,8 @@ __global__ static void mean_first_kernel(Param<To> out, Param<Tw> owt,
     s_idx[tid] = weight;
     __syncthreads();
 
-    To *s_vptr = s_val + tidy * DIMX;
-    Tw *s_iptr = s_idx + tidy * DIMX;
+    compute_t<To> *s_vptr = s_val + tidy * DIMX;
+    compute_t<Tw> *s_iptr = s_idx + tidy * DIMX;
 
     if (DIMX == 256) {
         if (tidx < 128) {
@@ -331,7 +343,7 @@ __global__ static void mean_first_kernel(Param<To> out, Param<Tw> owt,
         __syncthreads();
     }
 
-    warp_reduce<To, Tw>(s_vptr, s_iptr, tidx);
+    warp_reduce<compute_t<To>, compute_t<Tw>>(s_vptr, s_iptr, tidx);
 
     if (tidx == 0) {
         optr[blockIdx_x] = s_vptr[0];
@@ -465,19 +477,26 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
         vector<T> h_ptr(tmp_elements);
         vector<Tw> h_wptr(tmp_elements);
 
-        copyData<T>(h_ptr.data(), tmpOut);
-        copyData<Tw>(h_wptr.data(), tmpWt);
+        CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.get(),
+                                   tmp_elements * sizeof(T),
+                                   cudaMemcpyDeviceToHost,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(h_wptr.data(), tmpWt.get(),
+                                   tmp_elements * sizeof(Tw),
+                                   cudaMemcpyDeviceToHost,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
         CUDA_CHECK(
             cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
-        T val     = h_ptr[0];
-        Tw weight = h_wptr[0];
+        compute_t<T> val     = static_cast <compute_t<T>>(h_ptr[0]);
+        compute_t<Tw> weight = static_cast <compute_t<Tw>>(h_wptr[0]);
 
         for (int i = 1; i < tmp_elements; i++) {
-            stable_mean(&val, &weight, h_ptr[i], h_wptr[i]);
+            stable_mean(&val, &weight, compute_t<T>(h_ptr[i]),
+                        compute_t<Tw>(h_wptr[i]));
         }
 
-        return val;
+        return static_cast<T>(val);
     } else {
         vector<T> h_ptr(in_elements);
         vector<Tw> h_wptr(in_elements);
@@ -493,13 +512,14 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
         CUDA_CHECK(
             cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
-        T val     = h_ptr[0];
-        Tw weight = h_wptr[0];
+        compute_t<T> val     = static_cast<compute_t<T>>(h_ptr[0]);
+        compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_wptr[0]);
         for (int i = 1; i < in_elements; i++) {
-            stable_mean(&val, &weight, h_ptr[i], h_wptr[i]);
+            stable_mean(&val, &weight, compute_t<T>(h_ptr[i]),
+                        compute_t<Tw>(h_wptr[i]));
         }
 
-        return val;
+        return static_cast<T>(val);
     }
 }
 
@@ -507,10 +527,9 @@ template<typename Ti, typename Tw, typename To>
 To mean_all(CParam<Ti> in) {
     using std::unique_ptr;
     int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
-    bool is_linear = (in.strides[0] == 1);
+    bool is_linear  = (in.strides[0] == 1);
     for (int k = 1; k < 4; k++) {
-        is_linear &=
-            (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
+        is_linear &= (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
     }
 
     // FIXME: Use better heuristics to get to the optimum number
@@ -543,19 +562,26 @@ To mean_all(CParam<Ti> in) {
         vector<To> h_ptr(tmp_elements);
         vector<Tw> h_cptr(tmp_elements);
 
-        copyData<To>(h_ptr.data(), tmpOut);
-        copyData<Tw>(h_cptr.data(), tmpCt);
+        CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.get(),
+                                   tmp_elements * sizeof(To),
+                                   cudaMemcpyDeviceToHost,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(h_cptr.data(), tmpCt.get(),
+                                   tmp_elements * sizeof(Tw),
+                                   cudaMemcpyDeviceToHost,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
         CUDA_CHECK(
             cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
-        To val    = h_ptr[0];
-        Tw weight = h_cptr[0];
+        compute_t<To> val    = static_cast<compute_t<To>>(h_ptr[0]);
+        compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_cptr[0]);
 
         for (int i = 1; i < tmp_elements; i++) {
-            stable_mean(&val, &weight, h_ptr[i], h_cptr[i]);
+            stable_mean(&val, &weight, compute_t<To>(h_ptr[i]),
+                        compute_t<Tw>(h_cptr[i]));
         }
 
-        return val;
+        return static_cast<To>(val);
     } else {
         vector<Ti> h_ptr(in_elements);
 
@@ -566,16 +592,16 @@ To mean_all(CParam<Ti> in) {
         CUDA_CHECK(
             cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
-        Transform<Ti, To, af_add_t> transform;
-        Tw count = (Tw)1;
+        Transform<Ti, compute_t<To>, af_add_t> transform;
+        compute_t<Tw> count = static_cast<compute_t<Tw>>(1);
 
-        To val    = transform(h_ptr[0]);
-        Tw weight = count;
+        compute_t<To> val    = transform(h_ptr[0]);
+        compute_t<Tw> weight = count;
         for (int i = 1; i < in_elements; i++) {
             stable_mean(&val, &weight, transform(h_ptr[i]), count);
         }
 
-        return val;
+        return static_cast<To>(val);
     }
 }
 

@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/mean_dim.hpp>
 #include <kernel_headers/mean_first.hpp>
@@ -33,6 +34,7 @@ using cl::Kernel;
 using cl::KernelFunctor;
 using cl::NDRange;
 using cl::Program;
+using common::half;
 using std::string;
 using std::vector;
 
@@ -145,6 +147,10 @@ void mean_dim_launcher(Param out, Param owt, Param in, Param inWeight,
             std::is_same<Ti, cdouble>::value ||
             std::is_same<To, double>::value) {
             options << " -D USE_DOUBLE";
+        }
+
+        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
+            options << " -D USE_HALF";
         }
 
         const char *ker_strs[] = {mean_ops_cl, mean_dim_cl};
@@ -270,6 +276,10 @@ void mean_first_launcher(Param out, Param owt, Param in, Param inWeight,
             std::is_same<Ti, cdouble>::value ||
             std::is_same<To, double>::value) {
             options << " -D USE_DOUBLE";
+        }
+
+        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
+            options << " -D USE_HALF";
         }
 
         const char *ker_strs[] = {mean_ops_cl, mean_first_cl};
@@ -429,13 +439,14 @@ T mean_all_weighted(Param in, Param inWeight) {
                                      sizeof(Tw) * tmpWeight.elements(),
                                      h_wptr.data());
 
-        MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
+        compute_t<T> initial = h_ptr[0];
+        compute_t<Tw> w      = h_wptr[0];
+        MeanOp<compute_t<T>, compute_t<Tw>> Op(initial, w);
         for (int i = 1; i < (int)tmpOut.elements(); i++) {
-            Op(h_ptr[i], h_wptr[i]);
+            Op(compute_t<T>(h_ptr[i]), compute_t<Tw>(h_wptr[i]));
         }
 
-        return Op.runningMean;
-
+        return static_cast<T>(Op.runningMean);
     } else {
         vector<T> h_ptr(in_elements);
         vector<Tw> h_wptr(in_elements);
@@ -447,10 +458,14 @@ T mean_all_weighted(Param in, Param inWeight) {
                                      sizeof(Tw) * inWeight.info.offset,
                                      sizeof(Tw) * in_elements, h_wptr.data());
 
-        MeanOp<T, Tw> Op(h_ptr[0], h_wptr[0]);
-        for (int i = 1; i < (int)in_elements; i++) { Op(h_ptr[i], h_wptr[i]); }
+        compute_t<T> initial = h_ptr[0];
+        compute_t<Tw> w      = h_wptr[0];
+        MeanOp<compute_t<T>, compute_t<Tw>> Op(initial, w);
+        for (int i = 1; i < (int)in_elements; i++) {
+            Op(compute_t<T>(h_ptr[i]), compute_t<Tw>(h_wptr[i]));
+        }
 
-        return Op.runningMean;
+        return static_cast<T>(Op.runningMean);
     }
 }
 
@@ -461,7 +476,7 @@ To mean_all(Param in) {
     bool is_linear = (in.info.strides[0] == 1);
     for (int k = 1; k < 4; k++) {
         is_linear &= (in.info.strides[k] ==
-                (in.info.strides[k - 1] * in.info.dims[k - 1]));
+                      (in.info.strides[k - 1] * in.info.dims[k - 1]));
     }
 
     // FIXME: Use better heuristics to get to the optimum number
@@ -481,8 +496,8 @@ To mean_all(Param in) {
         uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
         uint groups_y = divup(in.info.dims[1], threads_y);
 
-        dim4 outDims(groups_x, in.info.dims[1],
-                     in.info.dims[2], in.info.dims[3]);
+        dim4 outDims(groups_x, in.info.dims[1], in.info.dims[2],
+                     in.info.dims[3]);
         Array<To> tmpOut = createEmptyArray<To>(outDims);
         Array<Tw> tmpCt  = createEmptyArray<Tw>(outDims);
 
@@ -500,10 +515,14 @@ To mean_all(Param in) {
                                      sizeof(Tw) * tmpCt.elements(),
                                      h_cptr.data());
 
-        MeanOp<To, Tw> Op(h_ptr[0], h_cptr[0]);
-        for (int i = 1; i < (int)h_ptr.size(); i++) { Op(h_ptr[i], h_cptr[i]); }
+        compute_t<To> initial = h_ptr[0];
+        compute_t<Tw> w       = h_cptr[0];
+        MeanOp<compute_t<To>, compute_t<Tw>> Op(initial, w);
+        for (int i = 1; i < (int)h_ptr.size(); i++) {
+            Op(compute_t<To>(h_ptr[i]), compute_t<Tw>(h_cptr[i]));
+        }
 
-        return Op.runningMean;
+        return static_cast<To>(Op.runningMean);
     } else {
         vector<Ti> h_ptr(in_elements);
 
@@ -512,14 +531,15 @@ To mean_all(Param in) {
                                      sizeof(Ti) * in_elements, h_ptr.data());
 
         // TODO : MeanOp with (Tw)1
-        Transform<Ti, To, af_add_t> transform;
-        Transform<uint, Tw, af_add_t> transform_weight;
-        MeanOp<To, Tw> Op(transform(h_ptr[0]), transform_weight(1));
+        Transform<Ti, compute_t<To>, af_add_t> transform;
+        Transform<uint, compute_t<Tw>, af_add_t> transform_weight;
+        MeanOp<compute_t<To>, compute_t<Tw>> Op(transform(h_ptr[0]),
+                                                transform_weight(1));
         for (int i = 1; i < (int)in_elements; i++) {
             Op(transform(h_ptr[i]), transform_weight(1));
         }
 
-        return Op.runningMean;
+        return static_cast<To>(Op.runningMean);
     }
 }
 }  // namespace kernel

@@ -9,14 +9,17 @@
 
 #include <Array.hpp>
 #include <af/dim4.hpp>
-
+#include <common/half.hpp>
 #include <err_opencl.hpp>
 #include <kernel/mean.hpp>
 #include <mean.hpp>
+
 #include <complex>
 
 using af::dim4;
+using common::half;
 using std::swap;
+
 namespace opencl {
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti>& in) {
@@ -62,6 +65,8 @@ INSTANTIATE(uchar, float, float);
 INSTANTIATE(char, float, float);
 INSTANTIATE(cfloat, float, cfloat);
 INSTANTIATE(cdouble, double, cdouble);
+INSTANTIATE(half, float, half);
+INSTANTIATE(half, float, float);
 
 #define INSTANTIATE_WGT(T, Tw)                                              \
     template T mean<T, Tw>(const Array<T>& in, const Array<Tw>& wts);       \
@@ -72,5 +77,6 @@ INSTANTIATE_WGT(double, double);
 INSTANTIATE_WGT(float, float);
 INSTANTIATE_WGT(cfloat, float);
 INSTANTIATE_WGT(cdouble, double);
+INSTANTIATE_WGT(half, float);
 
 }  // namespace opencl

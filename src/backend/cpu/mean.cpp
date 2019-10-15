@@ -12,10 +12,14 @@
 #include <mean.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
+#include <types.hpp>
 #include <af/dim4.hpp>
 #include <complex>
 
+#include <common/half.hpp>
+
 using af::dim4;
+using common::half;
 
 namespace cpu {
 
@@ -58,6 +62,7 @@ Array<T> mean(const Array<T> &in, const Array<Tw> &wt, const int dim) {
 
 template<typename T, typename Tw>
 T mean(const Array<T> &in, const Array<Tw> &wt) {
+    using MeanOpT = kernel::MeanOp<compute_t<T>, compute_t<T>, compute_t<Tw>>;
     in.eval();
     wt.eval();
     getQueue().sync();
@@ -67,7 +72,9 @@ T mean(const Array<T> &in, const Array<Tw> &wt) {
     const T *inPtr   = in.get();
     const Tw *wtPtr  = wt.get();
 
-    kernel::MeanOp<T, T, Tw> Op(inPtr[0], wtPtr[0]);
+    compute_t<T> i  = inPtr[0];
+    compute_t<Tw> w = wtPtr[0];
+    MeanOpT Op(i, w);
 
     for (dim_t l = 0; l < dims[3]; l++) {
         dim_t off3 = l * strides[3];
@@ -80,17 +87,18 @@ T mean(const Array<T> &in, const Array<Tw> &wt) {
 
                 for (dim_t i = 0; i < dims[0]; i++) {
                     dim_t idx = i + off1 + off2 + off3;
-                    Op(inPtr[idx], wtPtr[idx]);
+                    Op(compute_t<T>(inPtr[idx]), compute_t<Tw>(wtPtr[idx]));
                 }
             }
         }
     }
 
-    return Op.runningMean;
+    return T(Op.runningMean);
 }
 
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti> &in) {
+    using MeanOpT = kernel::MeanOp<compute_t<Ti>, compute_t<To>, compute_t<Tw>>;
     in.eval();
     getQueue().sync();
 
@@ -98,7 +106,7 @@ To mean(const Array<Ti> &in) {
     af::dim4 strides = in.strides();
     const Ti *inPtr  = in.get();
 
-    kernel::MeanOp<Ti, To, Tw> Op(0, 0);
+    MeanOpT Op(0, 0);
 
     for (dim_t l = 0; l < dims[3]; l++) {
         dim_t off3 = l * strides[3];
@@ -111,13 +119,13 @@ To mean(const Array<Ti> &in) {
 
                 for (dim_t i = 0; i < dims[0]; i++) {
                     dim_t idx = i + off1 + off2 + off3;
-                    Op(inPtr[idx], 1);
+                    Op(compute_t<Ti>(inPtr[idx]), 1);
                 }
             }
         }
     }
 
-    return Op.runningMean;
+    return To(Op.runningMean);
 }
 
 #define INSTANTIATE(Ti, Tw, To)                        \
@@ -136,6 +144,8 @@ INSTANTIATE(uchar, float, float);
 INSTANTIATE(char, float, float);
 INSTANTIATE(cfloat, float, cfloat);
 INSTANTIATE(cdouble, double, cdouble);
+INSTANTIATE(half, float, half);
+INSTANTIATE(half, float, float);
 
 #define INSTANTIATE_WGT(T, Tw)                                              \
     template T mean<T, Tw>(const Array<T> &in, const Array<Tw> &wts);       \
@@ -146,5 +156,6 @@ INSTANTIATE_WGT(double, double);
 INSTANTIATE_WGT(float, float);
 INSTANTIATE_WGT(cfloat, float);
 INSTANTIATE_WGT(cdouble, double);
+INSTANTIATE_WGT(half, float);
 
 }  // namespace cpu
