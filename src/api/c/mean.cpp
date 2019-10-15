@@ -11,6 +11,7 @@
 #include <backend.hpp>
 #include <cast.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <math.hpp>
 #include <mean.hpp>
@@ -20,6 +21,8 @@
 #include <af/statistics.h>
 
 #include "stats.h"
+
+using common::half;
 
 using namespace detail;
 
@@ -69,6 +72,7 @@ af_err af_mean(af_array *out, const af_array in, const dim_t dim) {
             case b8: output = mean<char, float>(in, dim); break;
             case c32: output = mean<cfloat, cfloat>(in, dim); break;
             case c64: output = mean<cdouble, cdouble>(in, dim); break;
+            case f16: output = mean<half, half>(in, dim); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);
@@ -121,6 +125,7 @@ af_err af_mean_weighted(af_array *out, const af_array in,
             case b8: output = mean<float>(in, w, dim); break;
             case c32: output = mean<cfloat>(in, w, dim); break;
             case c64: output = mean<cdouble>(in, w, dim); break;
+            case f16: output = mean<half>(in, w, dim); break;
             default: TYPE_ERROR(1, iType);
         }
 
@@ -146,6 +151,7 @@ af_err af_mean_all(double *realVal, double *imagVal, const af_array in) {
             case u16: *realVal = mean<ushort, float>(in); break;
             case u8: *realVal = mean<uchar, float>(in); break;
             case b8: *realVal = mean<char, float>(in); break;
+            case f16: *realVal = mean<common::half, float>(in); break;
             case c32: {
                 cfloat tmp = mean<cfloat, cfloat>(in);
                 *realVal   = real(tmp);
@@ -188,6 +194,7 @@ af_err af_mean_all_weighted(double *realVal, double *imagVal, const af_array in,
             case u16: *realVal = mean<float>(in, weights); break;
             case u8: *realVal = mean<float>(in, weights); break;
             case b8: *realVal = mean<float>(in, weights); break;
+            case f16: *realVal = mean<float>(in, weights); break;
             case c32: {
                 cfloat tmp = mean<cfloat>(in, weights);
                 *realVal   = real(tmp);

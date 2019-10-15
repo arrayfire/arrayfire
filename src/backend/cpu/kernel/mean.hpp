@@ -71,9 +71,10 @@ struct mean_weighted_dim<T, Tw, 0> {
 
         dim_t istride = istrides[dim];
         dim_t wstride = wstrides[dim];
-        MeanOp<T, T, Tw> Op(0, 0);
+        MeanOp<compute_t<T>, compute_t<T>, compute_t<Tw>> Op(0, 0);
         for (dim_t i = 0; i < idims[dim]; i++) {
-            Op(in[inOffset + i * istride], wt[wtOffset + i * wstride]);
+            Op(compute_t<T>(in[inOffset + i * istride]),
+               compute_t<Tw>(wt[wtOffset + i * wstride]));
         }
 
         out[outOffset] = Op.runningMean;
@@ -108,9 +109,10 @@ struct mean_dim<Ti, Tw, To, 0> {
         To* out            = output.get();
 
         dim_t istride = istrides[dim];
-        MeanOp<Ti, To, Tw> Op(0, 0);
-        for (dim_t i = 0; i < idims[dim]; i++) {
-            Op(in[inOffset + i * istride], 1);
+        dim_t end     = inOffset + idims[dim] * istride;
+        MeanOp<compute_t<Ti>, compute_t<To>, compute_t<Tw>> Op(0, 0);
+        for (dim_t i = inOffset; i < end; i += istride) {
+            Op(compute_t<Ti>(in[i]), 1);
         }
 
         out[outOffset] = Op.runningMean;
