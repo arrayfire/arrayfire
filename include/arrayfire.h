@@ -164,10 +164,10 @@ structure of the sparse array (components listed below).
         for a regular \ref af::array.
 
         The valid operations on sparse arrays are \ref af::matmul
-(sparse-dense). When calling matmul for sparse matrices, the sparse array is
-required to be the left hand side matrix and can be used with transposing
-options. The dense matrix on the right hand side cannot be used with any
-transpose options.
+        (sparse-dense). When calling matmul for sparse matrices, the sparse
+        array is required to be the left hand side matrix and can be used with
+        transposing options. The dense matrix on the right hand side cannot be
+        used with any transpose options.
 
         Most functions cannot use sparse arrays and will throw an error with
         \ref AF_ERR_ARG if a sparse array is given as input.
