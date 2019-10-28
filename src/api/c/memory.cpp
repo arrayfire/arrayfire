@@ -11,7 +11,7 @@
 
 #include <Array.hpp>
 #include <backend.hpp>
-#include <common/MemoryManager.hpp>
+#include <memory_manager.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <handle.hpp>

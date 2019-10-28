@@ -13,7 +13,7 @@
 #include <types.hpp>
 
 #include <common/Logger.hpp>
-#include <common/MemoryManagerImpl.hpp>
+#include <memory_manager_impl.hpp>
 #include <spdlog/spdlog.h>
 
 #include <utility>

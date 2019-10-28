@@ -10,9 +10,9 @@
 #include <memory.hpp>
 
 #include <common/Logger.hpp>
-#include <common/MemoryManagerImpl.hpp>
 #include <common/half.hpp>
 #include <err_cpu.hpp>
+#include <memory_manager_impl.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <spdlog/spdlog.h>

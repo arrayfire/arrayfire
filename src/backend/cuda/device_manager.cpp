@@ -211,7 +211,7 @@ void DeviceManager::resetMemoryManager() {
     if (memManager) { memManager->shutdown(); }
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
-        new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+        new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                   AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
     std::unique_ptr<cuda::Allocator> deviceMemoryManager(new cuda::Allocator());
     mgr->setAllocator(std::move(deviceMemoryManager));
@@ -235,7 +235,7 @@ void DeviceManager::resetMemoryManagerPinned() {
     if (pinnedMemManager) { pinnedMemManager->shutdown(); }
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
-        new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+        new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                   AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
     std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(
         new cuda::AllocatorPinned());

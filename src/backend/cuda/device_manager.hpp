@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <common/MemoryManager.hpp>
+#include <memory_manager.hpp>
 #include <platform.hpp>
 
 #include <memory>

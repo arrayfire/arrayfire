@@ -111,6 +111,7 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/median.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/memoryapi.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/memory_manager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moddims.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/morph.cpp

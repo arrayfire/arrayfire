@@ -120,7 +120,7 @@ namespace cpu {
 
 DeviceManager::DeviceManager()
     : queues(MAX_QUEUES)
-    , memManager(new common::MemoryManager(getDeviceCount(),
+    , memManager(new common::DefaultMemoryManager(getDeviceCount(),
                                            common::MAX_BUFFERS,
                                            AF_MEM_DEBUG || AF_CPU_MEM_DEBUG))
     , fgMngr(new graphics::ForgeManager()) {
@@ -142,7 +142,7 @@ void DeviceManager::resetMemoryManager() {
     if (memManager) { memManager->shutdown(); }
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
-        new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+        new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                   AF_MEM_DEBUG || AF_CPU_MEM_DEBUG));
     std::unique_ptr<cpu::Allocator> deviceMemoryManager(new cpu::Allocator());
     mgr->setAllocator(std::move(deviceMemoryManager));

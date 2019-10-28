@@ -11,7 +11,6 @@
 
 #include <Event.hpp>
 #include <common/Logger.hpp>
-#include <common/MemoryManagerImpl.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/util.hpp>
@@ -19,6 +18,7 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <err_cuda.hpp>
+#include <memory_manager_impl.hpp>
 #include <platform.hpp>
 #include <spdlog/spdlog.h>
 #include <types.hpp>

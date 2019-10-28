@@ -316,7 +316,7 @@ void DeviceManager::resetMemoryManager() {
     if (memManager) { memManager->shutdown(); }
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
-        new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+        new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                   AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
     std::unique_ptr<opencl::Allocator> deviceMemoryManager(
         new opencl::Allocator());
@@ -341,7 +341,7 @@ void DeviceManager::resetMemoryManagerPinned() {
     if (pinnedMemManager) { pinnedMemManager->shutdown(); }
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
-        new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+        new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                   AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
     std::unique_ptr<opencl::AllocatorPinned> deviceMemoryManager(
         new opencl::AllocatorPinned());

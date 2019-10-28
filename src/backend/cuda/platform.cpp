@@ -365,7 +365,7 @@ MemoryManagerBase &memoryManager() {
     std::call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
         inst.memManager.reset(
-            new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+            new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                       AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
         // Set the memory manager's device memory manager
         std::unique_ptr<cuda::Allocator> deviceMemoryManager(
@@ -386,7 +386,7 @@ MemoryManagerBase &pinnedMemoryManager() {
     std::call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
         inst.memManager.reset(
-            new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+            new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                       AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
         // Set the memory manager's device memory manager
         std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(

@@ -9,11 +9,10 @@
 
 #include <Event.hpp>
 #include <common/Logger.hpp>
-#include <common/MemoryManager.hpp>
+#include <memory_manager.hpp>
 #include <memoryapi.hpp>
 #include <af/event.h>
 #include <af/memory.h>
-
 #include <string>
 #include <vector>
 
@@ -28,11 +27,11 @@ using spdlog::logger;
 
 namespace common {
 
-memory::memory_info &MemoryManager::getCurrentMemoryInfo() {
+memory::memory_info &DefaultMemoryManager::getCurrentMemoryInfo() {
     return memory[this->getActiveDeviceId()];
 }
 
-void MemoryManager::cleanDeviceMemoryManager(int device) {
+void DefaultMemoryManager::cleanDeviceMemoryManager(int device) {
     if (this->debug_mode) return;
 
     // This vector is used to store the pointers which will be deleted by
@@ -71,7 +70,8 @@ void MemoryManager::cleanDeviceMemoryManager(int device) {
     }
 }
 
-MemoryManager::MemoryManager(int num_devices, unsigned max_buffers, bool debug)
+DefaultMemoryManager::DefaultMemoryManager(int num_devices,
+                                           unsigned max_buffers, bool debug)
     : mem_step_size(1024)
     , max_buffers(max_buffers)
     , memory(num_devices)
@@ -88,11 +88,11 @@ MemoryManager::MemoryManager(int num_devices, unsigned max_buffers, bool debug)
     if (!env_var.empty()) this->max_buffers = max(1, stoi(env_var));
 }
 
-void MemoryManager::initialize() { this->setMaxMemorySize(); }
+void DefaultMemoryManager::initialize() { this->setMaxMemorySize(); }
 
-void MemoryManager::shutdown() { garbageCollect(); }
+void DefaultMemoryManager::shutdown() { garbageCollect(); }
 
-void MemoryManager::addMemoryManagement(int device) {
+void DefaultMemoryManager::addMemoryManagement(int device) {
     // If there is a memory manager allocated for this device id, we might
     // as well use it and the buffers allocated for it
     if (static_cast<size_t>(device) < memory.size()) return;
@@ -103,7 +103,7 @@ void MemoryManager::addMemoryManagement(int device) {
     memory.resize(memory.size() + device + 1);
 }
 
-void MemoryManager::removeMemoryManagement(int device) {
+void DefaultMemoryManager::removeMemoryManagement(int device) {
     if ((size_t)device >= memory.size())
         AF_ERROR("No matching device found", AF_ERR_ARG);
 
@@ -112,7 +112,7 @@ void MemoryManager::removeMemoryManagement(int device) {
     cleanDeviceMemoryManager(device);
 }
 
-void MemoryManager::setMaxMemorySize() {
+void DefaultMemoryManager::setMaxMemorySize() {
     for (unsigned n = 0; n < memory.size(); n++) {
         // Calls garbage collection when: total_bytes > memsize * 0.75 when
         // memsize < 4GB total_bytes > memsize - 1 GB when memsize >= 4GB If
@@ -124,7 +124,7 @@ void MemoryManager::setMaxMemorySize() {
     }
 }
 
-af_buffer_info MemoryManager::alloc(const size_t bytes, bool user_lock) {
+af_buffer_info DefaultMemoryManager::alloc(const size_t bytes, bool user_lock) {
     af_event event;
     af_create_event(&event);
     af_mark_event(event);
@@ -189,7 +189,7 @@ af_buffer_info MemoryManager::alloc(const size_t bytes, bool user_lock) {
     return bufferInfo;
 }
 
-size_t MemoryManager::allocated(void *ptr) {
+size_t DefaultMemoryManager::allocated(void *ptr) {
     if (!ptr) return 0;
     memory::memory_info &current = this->getCurrentMemoryInfo();
     memory::locked_iter iter     = current.locked_map.find((void *)ptr);
@@ -197,7 +197,8 @@ size_t MemoryManager::allocated(void *ptr) {
     return (iter->second).bytes;
 }
 
-void MemoryManager::unlock(void *ptr, af_event eventHandle, bool user_unlock) {
+void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
+                                  bool user_unlock) {
     // Shortcut for empty arrays
     if (!ptr) {
         af_release_event(eventHandle);
@@ -253,11 +254,11 @@ void MemoryManager::unlock(void *ptr, af_event eventHandle, bool user_unlock) {
     }
 }
 
-void MemoryManager::garbageCollect() {
+void DefaultMemoryManager::garbageCollect() {
     cleanDeviceMemoryManager(this->getActiveDeviceId());
 }
 
-void MemoryManager::printInfo(const char *msg, const int device) {
+void DefaultMemoryManager::printInfo(const char *msg, const int device) {
     const memory::memory_info &current = this->getCurrentMemoryInfo();
 
     printf("%s\n", msg);
@@ -308,8 +309,8 @@ void MemoryManager::printInfo(const char *msg, const int device) {
     printf("---------------------------------------------------------\n");
 }
 
-void MemoryManager::usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
-                              size_t *lock_bytes, size_t *lock_buffers) {
+void DefaultMemoryManager::usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                                     size_t *lock_bytes, size_t *lock_buffers) {
     const memory::memory_info &current = this->getCurrentMemoryInfo();
     lock_guard_t lock(this->memory_mutex);
     if (alloc_bytes) *alloc_bytes = current.total_bytes;
@@ -318,7 +319,7 @@ void MemoryManager::usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
     if (lock_buffers) *lock_buffers = current.lock_buffers;
 }
 
-void MemoryManager::userLock(const void *ptr) {
+void DefaultMemoryManager::userLock(const void *ptr) {
     memory::memory_info &current = this->getCurrentMemoryInfo();
 
     lock_guard_t lock(this->memory_mutex);
@@ -334,14 +335,14 @@ void MemoryManager::userLock(const void *ptr) {
     }
 }
 
-void MemoryManager::userUnlock(const void *ptr) {
+void DefaultMemoryManager::userUnlock(const void *ptr) {
     af_event event;
     af_create_event(&event);
     af_mark_event(event);
     this->unlock(const_cast<void *>(ptr), event, true);
 }
 
-bool MemoryManager::isUserLocked(const void *ptr) {
+bool DefaultMemoryManager::isUserLocked(const void *ptr) {
     memory::memory_info &current = this->getCurrentMemoryInfo();
     lock_guard_t lock(this->memory_mutex);
     memory::locked_iter iter = current.locked_map.find(const_cast<void *>(ptr));
@@ -352,24 +353,24 @@ bool MemoryManager::isUserLocked(const void *ptr) {
     }
 }
 
-size_t MemoryManager::getMemStepSize() {
+size_t DefaultMemoryManager::getMemStepSize() {
     lock_guard_t lock(this->memory_mutex);
     return this->mem_step_size;
 }
 
-size_t MemoryManager::getMaxBytes() {
+size_t DefaultMemoryManager::getMaxBytes() {
     lock_guard_t lock(this->memory_mutex);
     return this->getCurrentMemoryInfo().max_bytes;
 }
 
-unsigned MemoryManager::getMaxBuffers() { return this->max_buffers; }
+unsigned DefaultMemoryManager::getMaxBuffers() { return this->max_buffers; }
 
-void MemoryManager::setMemStepSize(size_t new_step_size) {
+void DefaultMemoryManager::setMemStepSize(size_t new_step_size) {
     lock_guard_t lock(this->memory_mutex);
     this->mem_step_size = new_step_size;
 }
 
-bool MemoryManager::checkMemoryLimit() {
+bool DefaultMemoryManager::checkMemoryLimit() {
     const memory::memory_info &current = this->getCurrentMemoryInfo();
     return current.lock_bytes >= current.max_bytes ||
            current.total_buffers >= this->max_buffers;

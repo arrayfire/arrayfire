@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include <common/MemoryManager.hpp>
+#include <memory_manager.hpp>
 #include <platform.hpp>
 
 using common::memory::MemoryManagerBase;

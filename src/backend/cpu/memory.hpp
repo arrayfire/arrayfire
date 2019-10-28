@@ -8,7 +8,7 @@
  ********************************************************/
 #pragma once
 
-#include <common/MemoryManager.hpp>
+#include <memory_manager.hpp>
 #include <af/defines.h>
 
 #include <functional>

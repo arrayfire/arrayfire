@@ -50,8 +50,8 @@ namespace memory {
  */
 class AllocatorInterface {
    public:
-    AllocatorInterface()                       = default;
-    virtual ~AllocatorInterface()              = default;
+    AllocatorInterface()                          = default;
+    virtual ~AllocatorInterface()                 = default;
     virtual int getActiveDeviceId()               = 0;
     virtual size_t getMaxMemorySize(int id)       = 0;
     virtual void *nativeAlloc(const size_t bytes) = 0;
@@ -98,8 +98,7 @@ class MemoryManagerBase {
     void *nativeAlloc(const size_t bytes) { return nmi_->nativeAlloc(bytes); }
     void nativeFree(void *ptr) { nmi_->nativeFree(ptr); }
     virtual spdlog::logger *getLogger() final { return nmi_->getLogger(); }
-    virtual void setAllocator(
-        std::unique_ptr<AllocatorInterface> nmi) {
+    virtual void setAllocator(std::unique_ptr<AllocatorInterface> nmi) {
         nmi_ = std::move(nmi);
     }
 
@@ -154,7 +153,7 @@ struct memory_info {
 
 }  // namespace memory
 
-class MemoryManager : public memory::MemoryManagerBase {
+class DefaultMemoryManager : public memory::MemoryManagerBase {
     size_t mem_step_size;
     unsigned max_buffers;
 
@@ -163,7 +162,7 @@ class MemoryManager : public memory::MemoryManagerBase {
     memory::memory_info &getCurrentMemoryInfo();
 
    public:
-    MemoryManager(int num_devices, unsigned max_buffers, bool debug);
+    DefaultMemoryManager(int num_devices, unsigned max_buffers, bool debug);
 
     // Initializes the memory manager
     virtual void initialize() override;
@@ -216,12 +215,13 @@ class MemoryManager : public memory::MemoryManagerBase {
     bool checkMemoryLimit() override;
 
    protected:
-    MemoryManager()                            = delete;
-    ~MemoryManager()                           = default;
-    MemoryManager(const MemoryManager &other)  = delete;
-    MemoryManager(const MemoryManager &&other) = delete;
-    MemoryManager &operator=(const MemoryManager &other) = delete;
-    MemoryManager &operator=(const MemoryManager &&other) = delete;
+    DefaultMemoryManager()                                   = delete;
+    ~DefaultMemoryManager()                                  = default;
+    DefaultMemoryManager(const DefaultMemoryManager &other)  = delete;
+    DefaultMemoryManager(const DefaultMemoryManager &&other) = delete;
+    DefaultMemoryManager &operator=(const DefaultMemoryManager &other) = delete;
+    DefaultMemoryManager &operator=(const DefaultMemoryManager &&other) =
+        delete;
     mutex_t memory_mutex;
     // backend-specific
     std::vector<common::memory::memory_info> memory;
