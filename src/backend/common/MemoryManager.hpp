@@ -48,10 +48,10 @@ namespace memory {
  * and called by a MemoryManagerBase, from which calls to its interface are
  * delegated.
  */
-class NativeMemoryInterface {
+class AllocatorInterface {
    public:
-    NativeMemoryInterface()                       = default;
-    virtual ~NativeMemoryInterface()              = default;
+    AllocatorInterface()                       = default;
+    virtual ~AllocatorInterface()              = default;
     virtual int getActiveDeviceId()               = 0;
     virtual size_t getMaxMemorySize(int id)       = 0;
     virtual void *nativeAlloc(const size_t bytes) = 0;
@@ -98,8 +98,8 @@ class MemoryManagerBase {
     void *nativeAlloc(const size_t bytes) { return nmi_->nativeAlloc(bytes); }
     void nativeFree(void *ptr) { nmi_->nativeFree(ptr); }
     virtual spdlog::logger *getLogger() final { return nmi_->getLogger(); }
-    virtual void setNativeMemoryInterface(
-        std::unique_ptr<NativeMemoryInterface> nmi) {
+    virtual void setAllocator(
+        std::unique_ptr<AllocatorInterface> nmi) {
         nmi_ = std::move(nmi);
     }
 
@@ -108,7 +108,7 @@ class MemoryManagerBase {
     // methods that call native memory manipulation functions in a device
     // API. We need to wrap these since they are opaquely called by the
     // memory manager.
-    std::unique_ptr<NativeMemoryInterface> nmi_;
+    std::unique_ptr<AllocatorInterface> nmi_;
 };
 
 /******************** Default memory manager implementation *******************/

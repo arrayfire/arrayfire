@@ -438,8 +438,7 @@ af_memory_manager getHandle(MemoryManager &manager) {
 af_err af_create_memory_manager(af_memory_manager *manager) {
     try {
         AF_CHECK(af_init());
-        std::unique_ptr<MemoryManager> m;
-        m.reset(new MemoryManager());
+        std::unique_ptr<MemoryManager> m(new MemoryManager());
         MemoryManager &ref = *m.release();
         *manager           = getHandle(ref);
     }
@@ -465,8 +464,8 @@ af_err af_set_memory_manager(af_memory_manager mgr) {
         // NB: does NOT free if a non-default implementation is set as the
         // current memory manager - the user is responsible for freeing any
         // controlled memory
-        std::unique_ptr<MemoryManagerFunctionWrapper> newManager;
-        newManager.reset(new MemoryManagerFunctionWrapper(mgr));
+        std::unique_ptr<MemoryManagerFunctionWrapper> newManager(
+            new MemoryManagerFunctionWrapper(mgr));
 
         // Calls shutdown() on the existing memory manager
         detail::setMemoryManager(std::move(newManager));
@@ -490,8 +489,8 @@ af_err af_set_memory_manager_pinned(af_memory_manager mgr) {
         // NB: does NOT free if a non-default implementation is set as the
         // current memory manager - the user is responsible for freeing any
         // controlled memory
-        std::unique_ptr<MemoryManagerFunctionWrapper> newManager;
-        newManager.reset(new MemoryManagerFunctionWrapper(mgr));
+        std::unique_ptr<MemoryManagerFunctionWrapper> newManager(
+            new MemoryManagerFunctionWrapper(mgr));
 
         // Calls shutdown() on the existing memory manager
         detail::setMemoryManagerPinned(std::move(newManager));

@@ -26,10 +26,10 @@ Event makeEvent(cudaStream_t queue) {
 }
 
 af_event createEvent() {
-    std::unique_ptr<Event> e;
-    e.reset(new Event());
-    // Default CUDA stream needs to be initialized to use the CUDA driver Ctx
+    // Default CUDA stream needs to be initialized to use the CUDA driver
+    // Ctx
     getActiveStream();
+    std::unique_ptr<Event> e(new Event());
     if (e->create() != CUDA_SUCCESS) {
         AF_ERROR("Could not create event", AF_ERR_RUNTIME);
     }

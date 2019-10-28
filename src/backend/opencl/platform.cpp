@@ -569,9 +569,9 @@ MemoryManagerBase& memoryManager() {
             new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                       AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
         // Set the memory manager's device memory manager
-        std::unique_ptr<opencl::NativeMemoryInterface> deviceMemoryManager;
-        deviceMemoryManager.reset(new opencl::NativeMemoryInterface());
-        inst.memManager->setNativeMemoryInterface(
+        std::unique_ptr<opencl::Allocator> deviceMemoryManager;
+        deviceMemoryManager.reset(new opencl::Allocator());
+        inst.memManager->setAllocator(
             std::move(deviceMemoryManager));
         inst.memManager->initialize();
     });
@@ -590,10 +590,10 @@ MemoryManagerBase& pinnedMemoryManager() {
             new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                       AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
         // Set the memory manager's device memory manager
-        std::unique_ptr<opencl::NativeMemoryInterfacePinned>
+        std::unique_ptr<opencl::AllocatorPinned>
             deviceMemoryManager;
-        deviceMemoryManager.reset(new opencl::NativeMemoryInterfacePinned());
-        inst.memManager->setNativeMemoryInterface(
+        deviceMemoryManager.reset(new opencl::AllocatorPinned());
+        inst.memManager->setAllocator(
             std::move(deviceMemoryManager));
         inst.memManager->initialize();
     });

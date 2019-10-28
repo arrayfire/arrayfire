@@ -60,21 +60,20 @@ void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 bool checkMemoryLimit();
 
-class NativeMemoryInterface : public common::memory::NativeMemoryInterface {
+class Allocator : public common::memory::AllocatorInterface {
    public:
-    NativeMemoryInterface();
-    ~NativeMemoryInterface();
+    Allocator();
+    ~Allocator();
     int getActiveDeviceId() override;
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;
     void nativeFree(void *ptr) override;
 };
 
-class NativeMemoryInterfacePinned
-    : public common::memory::NativeMemoryInterface {
+class AllocatorPinned : public common::memory::AllocatorInterface {
    public:
-    NativeMemoryInterfacePinned();
-    ~NativeMemoryInterfacePinned();
+    AllocatorPinned();
+    ~AllocatorPinned();
     int getActiveDeviceId() override;
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;

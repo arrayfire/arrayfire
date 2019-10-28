@@ -368,9 +368,9 @@ MemoryManagerBase &memoryManager() {
             new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                       AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
         // Set the memory manager's device memory manager
-        std::unique_ptr<cuda::NativeMemoryInterface> deviceMemoryManager;
-        deviceMemoryManager.reset(new cuda::NativeMemoryInterface());
-        inst.memManager->setNativeMemoryInterface(
+        std::unique_ptr<cuda::Allocator> deviceMemoryManager(
+            new cuda::Allocator());
+        inst.memManager->setAllocator(
             std::move(deviceMemoryManager));
         inst.memManager->initialize();
     });
@@ -389,9 +389,9 @@ MemoryManagerBase &pinnedMemoryManager() {
             new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
                                       AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
         // Set the memory manager's device memory manager
-        std::unique_ptr<cuda::NativeMemoryInterfacePinned> deviceMemoryManager;
-        deviceMemoryManager.reset(new cuda::NativeMemoryInterfacePinned());
-        inst.memManager->setNativeMemoryInterface(
+        std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(
+            new cuda::AllocatorPinned());
+        inst.memManager->setAllocator(
             std::move(deviceMemoryManager));
         inst.memManager->initialize();
     });

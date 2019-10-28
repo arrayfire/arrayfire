@@ -790,6 +790,7 @@ TEST(MemoryManagerApi, InitializeShutdown) {
     af_memory_manager_set_shutdown_fn(manager, shutdown_fn);
 
     af_set_memory_manager(manager);
+    af_unset_memory_manager();
     af_release_memory_manager(manager);
     ASSERT_TRUE(payload->initializeCalled);
     ASSERT_TRUE(payload->shutdownCalled);

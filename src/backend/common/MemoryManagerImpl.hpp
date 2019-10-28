@@ -125,10 +125,11 @@ void MemoryManager::setMaxMemorySize() {
 }
 
 af_buffer_info MemoryManager::alloc(const size_t bytes, bool user_lock) {
-    af_event event = detail::createAndMarkEvent();
+    af_event event;
+    af_create_event(&event);
+    af_mark_event(event);
     af_buffer_info bufferInfo;
     af_create_buffer_info(&bufferInfo, nullptr, event);
-    // buffer_info pairObj(nullptr, e.get());
     size_t alloc_bytes = this->debug_mode
                              ? bytes
                              : (divup(bytes, mem_step_size) * mem_step_size);
@@ -153,13 +154,16 @@ af_buffer_info MemoryManager::alloc(const size_t bytes, bool user_lock) {
                 bufferInfo = iter->second.back();
                 af_buffer_info_get_event(&event, bufferInfo);
                 iter->second.pop_back();
-                current.locked_map[getBufferInfo(bufferInfo).ptr] = info;
+                void *ptrM;
+                af_buffer_info_get_ptr(&ptrM, bufferInfo);
+                current.locked_map[ptrM] = info;
                 current.lock_bytes += alloc_bytes;
                 current.lock_buffers++;
             }
         }
 
-        void *ptr = getBufferInfo(bufferInfo).ptr;
+        void *ptr;
+        af_buffer_info_get_ptr(&ptr, bufferInfo);
         // Only comes here if buffer size not found or in debug mode
         if (ptr == nullptr) {
             // Perform garbage collection if memory can not be allocated
@@ -294,9 +298,10 @@ void MemoryManager::printInfo(const char *msg, const int device) {
         }
 
         for (auto &pair : kv.second) {
-            printf("|  %14p  |  %6.f %s | %9s | %9s |\n",
-                   getBufferInfo(pair).ptr, size, unit, status_mngr,
-                   status_user);
+            void *ptr;
+            af_buffer_info_get_ptr(&ptr, pair);
+            printf("|  %14p  |  %6.f %s | %9s | %9s |\n", ptr, size, unit,
+                   status_mngr, status_user);
         }
     }
 
@@ -330,7 +335,10 @@ void MemoryManager::userLock(const void *ptr) {
 }
 
 void MemoryManager::userUnlock(const void *ptr) {
-    this->unlock(const_cast<void *>(ptr), detail::createAndMarkEvent(), true);
+    af_event event;
+    af_create_event(&event);
+    af_mark_event(event);
+    this->unlock(const_cast<void *>(ptr), event, true);
 }
 
 bool MemoryManager::isUserLocked(const void *ptr) {

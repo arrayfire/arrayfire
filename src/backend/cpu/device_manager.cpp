@@ -125,9 +125,8 @@ DeviceManager::DeviceManager()
                                            AF_MEM_DEBUG || AF_CPU_MEM_DEBUG))
     , fgMngr(new graphics::ForgeManager()) {
     // Use the default ArrayFire memory manager
-    std::unique_ptr<cpu::NativeMemoryInterface> deviceMemoryManager;
-    deviceMemoryManager.reset(new cpu::NativeMemoryInterface());
-    memManager->setNativeMemoryInterface(std::move(deviceMemoryManager));
+    std::unique_ptr<cpu::Allocator> deviceMemoryManager(new cpu::Allocator());
+    memManager->setAllocator(std::move(deviceMemoryManager));
     memManager->initialize();
 }
 
@@ -142,14 +141,11 @@ void DeviceManager::resetMemoryManager() {
     // If an existing memory manager exists, shutdown()
     if (memManager) { memManager->shutdown(); }
     // Replace with default memory manager
-    std::unique_ptr<MemoryManagerBase> mgr;
-    mgr.reset(new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                                        AF_MEM_DEBUG || AF_CPU_MEM_DEBUG));
-    std::unique_ptr<cpu::NativeMemoryInterface> deviceMemoryManager;
-    deviceMemoryManager.reset(new cpu::NativeMemoryInterface());
-    mgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
-    mgr->initialize();
-
+    std::unique_ptr<MemoryManagerBase> mgr(
+        new common::MemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                  AF_MEM_DEBUG || AF_CPU_MEM_DEBUG));
+    std::unique_ptr<cpu::Allocator> deviceMemoryManager(new cpu::Allocator());
+    mgr->setAllocator(std::move(deviceMemoryManager));
     setMemoryManager(std::move(mgr));
 }
 
@@ -158,9 +154,8 @@ void DeviceManager::setMemoryManager(
     // Set the backend memory manager for this new manager to register native
     // functions correctly. NB: does NOT free memory allocated with the existing
     // memory manager or shut down the existing manager.
-    std::unique_ptr<cpu::NativeMemoryInterface> deviceMemoryManager;
-    deviceMemoryManager.reset(new cpu::NativeMemoryInterface());
-    newMgr->setNativeMemoryInterface(std::move(deviceMemoryManager));
+    std::unique_ptr<cpu::Allocator> deviceMemoryManager(new cpu::Allocator());
+    newMgr->setAllocator(std::move(deviceMemoryManager));
     newMgr->initialize();
     memManager = std::move(newMgr);
 }
