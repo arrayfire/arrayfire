@@ -836,10 +836,8 @@ int is_user_locked_fn(af_memory_manager manager, void *ptr) {
 
 void unlock_fn(af_memory_manager manager, void *ptr, af_event event,
                int userLock) {
-    if (!ptr) {
-        af_release_event(event);
-        return;
-    }
+    af_release_event(event);
+    if (!ptr) { return; }
 
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
 
