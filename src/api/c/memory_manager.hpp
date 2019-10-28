@@ -70,6 +70,7 @@ class AllocatorInterface {
  */
 class MemoryManagerBase {
    public:
+    virtual ~MemoryManagerBase()                                     = default;
     virtual void initialize()                                        = 0;
     virtual void shutdown()                                          = 0;
     virtual af_buffer_info alloc(const size_t size, bool user_lock)  = 0;
