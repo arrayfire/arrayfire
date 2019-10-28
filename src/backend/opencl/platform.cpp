@@ -565,14 +565,13 @@ MemoryManagerBase& memoryManager() {
 
     std::call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.memManager.reset(
-            new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                                      AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+        inst.memManager.reset(new common::DefaultMemoryManager(
+            getDeviceCount(), common::MAX_BUFFERS,
+            AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
         // Set the memory manager's device memory manager
         std::unique_ptr<opencl::Allocator> deviceMemoryManager;
         deviceMemoryManager.reset(new opencl::Allocator());
-        inst.memManager->setAllocator(
-            std::move(deviceMemoryManager));
+        inst.memManager->setAllocator(std::move(deviceMemoryManager));
         inst.memManager->initialize();
     });
 
@@ -586,16 +585,14 @@ MemoryManagerBase& pinnedMemoryManager() {
 
     std::call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.memManager.reset(
-            new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                                      AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+        inst.pinnedMemManager.reset(new common::DefaultMemoryManager(
+            getDeviceCount(), common::MAX_BUFFERS,
+            AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
         // Set the memory manager's device memory manager
-        std::unique_ptr<opencl::AllocatorPinned>
-            deviceMemoryManager;
+        std::unique_ptr<opencl::AllocatorPinned> deviceMemoryManager;
         deviceMemoryManager.reset(new opencl::AllocatorPinned());
-        inst.memManager->setAllocator(
-            std::move(deviceMemoryManager));
-        inst.memManager->initialize();
+        inst.pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
+        inst.pinnedMemManager->initialize();
     });
 
     return *(inst.pinnedMemManager.get());

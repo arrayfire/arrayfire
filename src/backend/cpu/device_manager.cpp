@@ -120,9 +120,9 @@ namespace cpu {
 
 DeviceManager::DeviceManager()
     : queues(MAX_QUEUES)
-    , memManager(new common::DefaultMemoryManager(getDeviceCount(),
-                                           common::MAX_BUFFERS,
-                                           AF_MEM_DEBUG || AF_CPU_MEM_DEBUG))
+    , memManager(new common::DefaultMemoryManager(
+          getDeviceCount(), common::MAX_BUFFERS,
+          AF_MEM_DEBUG || AF_CPU_MEM_DEBUG))
     , fgMngr(new graphics::ForgeManager()) {
     // Use the default ArrayFire memory manager
     std::unique_ptr<cpu::Allocator> deviceMemoryManager(new cpu::Allocator());
@@ -143,7 +143,7 @@ void DeviceManager::resetMemoryManager() {
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
         new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                                  AF_MEM_DEBUG || AF_CPU_MEM_DEBUG));
+                                         AF_MEM_DEBUG || AF_CPU_MEM_DEBUG));
     std::unique_ptr<cpu::Allocator> deviceMemoryManager(new cpu::Allocator());
     mgr->setAllocator(std::move(deviceMemoryManager));
     setMemoryManager(std::move(mgr));
@@ -168,7 +168,8 @@ void DeviceManager::setMemoryManagerPinned(
 
 void DeviceManager::resetMemoryManagerPinned() {
     // This is a NOOP - we should never set a pinned memory manager in the first
-    // place for the CPU backend
+    // place for the CPU backend, but don't throw in case backend-agnostic
+    // functions that operate on all memory managers need to call this
 }
 
 }  // namespace cpu

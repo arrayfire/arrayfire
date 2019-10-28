@@ -99,7 +99,8 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false);
+    af_buffer_info pair =
+        pinnedMemoryManager().alloc(elements * sizeof(T), false);
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);

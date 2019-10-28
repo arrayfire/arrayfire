@@ -108,8 +108,9 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false);
-    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
+    af_buffer_info pair =
+        pinnedMemoryManager().alloc(elements * sizeof(T), false);
+    detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue()());
     void *ptr;
     af_unlock_buffer_info_ptr(&ptr, pair);
@@ -175,7 +176,9 @@ void Allocator::nativeFree(void *ptr) {
     delete (cl::Buffer *)ptr;
 }
 
-AllocatorPinned::AllocatorPinned() { logger = common::loggerFactory("mem"); }
+AllocatorPinned::AllocatorPinned() : pinnedMaps(opencl::getDeviceCount()) {
+    logger = common::loggerFactory("mem");
+}
 
 AllocatorPinned::~AllocatorPinned() {
     for (int n = 0; n < opencl::getDeviceCount(); n++) {
