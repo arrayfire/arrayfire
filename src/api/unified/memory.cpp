@@ -52,9 +52,9 @@ af_err af_set_memory_manager_pinned(af_memory_manager handle) {
     return CALL(handle);
 }
 
-af_err af_unset_memory_manager() { return CALL(); }
+af_err af_unset_memory_manager() { return CALL_NO_PARAMS(); }
 
-af_err af_unset_memory_manager_pinned() { return CALL(); }
+af_err af_unset_memory_manager_pinned() { return CALL_NO_PARAMS(); }
 
 af_err af_memory_manager_get_payload(af_memory_manager handle, void** payload) {
     return CALL(handle, payload);

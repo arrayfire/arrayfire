@@ -51,7 +51,6 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/meanshift.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/median.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/morph.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/nearest_neighbour.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/orb.cpp
