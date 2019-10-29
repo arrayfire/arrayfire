@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -17,6 +17,14 @@
 
 using namespace af;
 using std::vector;
+
+std::string toStr(const dtype dt) { 
+    switch(dt) {
+        case f32: return "f32";
+        case f16: return "f16";
+        default: return std::to_string(dt);
+    }
+}
 
 float accuracy(const array &predicted, const array &target) {
     array val, plabels, tlabels;
@@ -37,6 +45,7 @@ double error(const array &out, const array &pred) {
 class ann {
    private:
     int num_layers;
+    dtype datatype;
     vector<array> weights;
 
     // Add bias input to the output from previous layer
@@ -49,12 +58,12 @@ class ann {
 
    public:
     // Create a network with given parameters
-    ann(vector<int> layers, double range = 0.05);
+    ann(vector<int> layers, double range, dtype dt = f32);
 
     // Output after single pass of forward propagation
     array predict(const array &input);
 
-    // Method to trian the neural net
+    // Method to train the neural net
     double train(const array &input, const array &target, double alpha = 1.0,
                  int max_epochs = 300, int batch_size = 100,
                  double maxerr = 1.0, bool verbose = false);
@@ -62,7 +71,7 @@ class ann {
 
 array ann::add_bias(const array &in) {
     // Bias input is added on top of given input
-    return join(1, constant(1, in.dims(0), 1), in);
+    return join(1, constant(1, in.dims(0), 1, datatype), in);
 }
 
 vector<array> ann::forward_propagate(const array &input) {
@@ -84,6 +93,7 @@ void ann::back_propagate(const vector<array> signal, const array &target,
     // Get error for output layer
     array out = signal[num_layers - 1];
     array err = (out - target);
+
     int m     = target.dims(0);
 
     for (int i = num_layers - 2; i >= 0; i--) {
@@ -91,11 +101,13 @@ void ann::back_propagate(const vector<array> signal, const array &target,
         array delta = (deriv(out) * err).T();
 
         // Adjust weights
-        array grad = -(alpha * matmul(delta, in)) / m;
+        array tg = alpha * matmul(delta, in);
+        array grad = -(tg) / m;
         weights[i] += grad.T();
 
         // Input to current layer is output of previous
         out = signal[i];
+
         err = matmulTT(delta, weights[i]);
 
         // Remove the error of bias and propagate backward
@@ -103,11 +115,14 @@ void ann::back_propagate(const vector<array> signal, const array &target,
     }
 }
 
-ann::ann(vector<int> layers, double range)
-    : num_layers(layers.size()), weights(layers.size() - 1) {
-    // Generate uniformly distributed random numbers between [-range/2,range/2]
+
+ann::ann(vector<int> layers, double range, dtype dt)
+    : num_layers(layers.size()), weights(layers.size() - 1), datatype(dt) {
+    std::cout << "Initializing weights using a random uniformly distribution between " << -range/2 << " and " << range/2 << " at precision " << toStr(datatype) << std::endl;
     for (int i = 0; i < num_layers - 1; i++) {
         weights[i] = range * randu(layers[i] + 1, layers[i + 1]) - range / 2;
+        if (datatype != f32)
+            weights[i] = weights[i].as(datatype);
     }
 }
 
@@ -121,7 +136,7 @@ double ann::train(const array &input, const array &target, double alpha,
                   int max_epochs, int batch_size, double maxerr, bool verbose) {
     const int num_samples = input.dims(0);
     const int num_batches = num_samples / batch_size;
-
+    
     double err = 0;
 
     // Training the entire network
@@ -161,7 +176,7 @@ double ann::train(const array &input, const array &target, double alpha,
     return err;
 }
 
-int ann_demo(bool console, int perc) {
+int ann_demo(bool console, int perc, const dtype dt) {
     printf("** ArrayFire ANN Demo **\n\n");
 
     array train_images, test_images;
@@ -172,6 +187,11 @@ int ann_demo(bool console, int perc) {
     float frac = (float)(perc) / 100.0;
     setup_mnist<true>(&num_classes, &num_train, &num_test, train_images,
                       test_images, train_target, test_target, frac);
+    if (dt != f32) {
+        train_images = train_images.as(dt);
+        test_images = test_images.as(dt);
+        train_target = train_target.as(dt);
+    }
 
     int feature_size = train_images.elements() / num_train;
 
@@ -189,8 +209,8 @@ int ann_demo(bool console, int perc) {
     layers.push_back(50);
     layers.push_back(num_classes);
 
-    // Create network
-    ann network(layers);
+    // Create network: architecture, range, datatype
+    ann network(layers, 0.05, dt);
 
     // Train network
     timer::start();
@@ -235,15 +255,32 @@ int ann_demo(bool console, int perc) {
 }
 
 int main(int argc, char **argv) {
+    // usage:  neural_network_xxx (device) (console on/off) (percentage training/test set) (f32|f16)
     int device   = argc > 1 ? atoi(argv[1]) : 0;
     bool console = argc > 2 ? argv[2][0] == '-' : false;
     int perc     = argc > 3 ? atoi(argv[3]) : 60;
+	if (perc < 0 || perc > 100) {
+        std::cerr << "Bad perc arg: " << perc << std::endl;
+        return EXIT_FAILURE;
+    }
+    std::string dts = argc > 4 ? argv[4] : "f32";
+    dtype dt = f32;
+    if (dts == "f16") 
+        dt = f16;
+    else if (dts != "f32") {
+        std::cerr << "Unsupported datatype " << dts << ". Supported: f32 or f16" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    if (dts == "f16" && !af::isHalfAvailable(device)) {
+        std::cerr << "Half not available for device " << device << std::endl;
+        return EXIT_FAILURE;
+    }
 
     try {
         af::setDevice(device);
         af::info();
-        return ann_demo(console, perc);
-
+        return ann_demo(console, perc, dt);
     } catch (af::exception &ae) { std::cerr << ae.what() << std::endl; }
 
     return 0;
