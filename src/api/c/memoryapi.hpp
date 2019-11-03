@@ -72,7 +72,7 @@ class MemoryManagerFunctionWrapper : public common::memory::MemoryManagerBase {
 
    public:
     MemoryManagerFunctionWrapper(af_memory_manager handle) : handle_(handle) {}
-
+    ~MemoryManagerFunctionWrapper() {}
     void initialize() override;
     void shutdown() override;
     af_buffer_info alloc(const size_t size, bool user_lock);

@@ -50,8 +50,9 @@ namespace memory {
  */
 class AllocatorInterface {
    public:
-    AllocatorInterface()                          = default;
-    virtual ~AllocatorInterface()                 = default;
+    AllocatorInterface() = default;
+    virtual ~AllocatorInterface() {}
+    virtual void shutdown()                       = 0;
     virtual int getActiveDeviceId()               = 0;
     virtual size_t getMaxMemorySize(int id)       = 0;
     virtual void *nativeAlloc(const size_t bytes) = 0;
@@ -70,7 +71,15 @@ class AllocatorInterface {
  */
 class MemoryManagerBase {
    public:
-    virtual ~MemoryManagerBase()                                     = default;
+    MemoryManagerBase()        = default;
+    MemoryManagerBase &operator=(const MemoryManagerBase &) = delete;
+    MemoryManagerBase(const MemoryManagerBase &)            = delete;
+    virtual ~MemoryManagerBase() {}
+    // Shuts down the allocator interface which calls shutdown on the subclassed
+    // memory manager with device-specific context
+    virtual void shutdownAllocator() {
+        if (nmi_) nmi_->shutdown();
+    }
     virtual void initialize()                                        = 0;
     virtual void shutdown()                                          = 0;
     virtual af_buffer_info alloc(const size_t size, bool user_lock)  = 0;
@@ -216,13 +225,13 @@ class DefaultMemoryManager : public memory::MemoryManagerBase {
     bool checkMemoryLimit() override;
 
    protected:
-    DefaultMemoryManager()                                   = delete;
-    ~DefaultMemoryManager()                                  = default;
-    DefaultMemoryManager(const DefaultMemoryManager &other)  = delete;
-    DefaultMemoryManager(const DefaultMemoryManager &&other) = delete;
+    DefaultMemoryManager()                                  = delete;
+    ~DefaultMemoryManager()                                 = default;
+    DefaultMemoryManager(const DefaultMemoryManager &other) = delete;
+    // DefaultMemoryManager(const DefaultMemoryManager &&other) = default;
     DefaultMemoryManager &operator=(const DefaultMemoryManager &other) = delete;
-    DefaultMemoryManager &operator=(const DefaultMemoryManager &&other) =
-        delete;
+    // DefaultMemoryManager &operator=(const DefaultMemoryManager &&other) =
+    //     default;
     mutex_t memory_mutex;
     // backend-specific
     std::vector<common::memory::memory_info> memory;

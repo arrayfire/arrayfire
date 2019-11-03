@@ -197,32 +197,32 @@ DeviceManager &DeviceManager::getInstance() {
 
 void DeviceManager::setMemoryManager(
     std::unique_ptr<MemoryManagerBase> newMgr) {
-    // Set the backend memory manager for this new manager to register native
-    // functions correctly. NB: does NOT free memory allocated with the existing
-    // memory manager or shut down the existing manager.
+    std::lock_guard<std::mutex> l(mutex);
+    // Calls shutdown() on the existing memory manager.
+    memManager->shutdownAllocator();
     memManager = std::move(newMgr);
+    // Set the backend memory manager for this new manager to register native
+    // functions correctly.
     std::unique_ptr<cuda::Allocator> deviceMemoryManager(new cuda::Allocator());
     memManager->setAllocator(std::move(deviceMemoryManager));
     memManager->initialize();
 }
 
 void DeviceManager::resetMemoryManager() {
-    // If an existing memory manager exists, shutdown()
-    if (memManager) { memManager->shutdown(); }
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
         new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                                  AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
-    std::unique_ptr<cuda::Allocator> deviceMemoryManager(new cuda::Allocator());
-    mgr->setAllocator(std::move(deviceMemoryManager));
+                                         AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
     setMemoryManager(std::move(mgr));
 }
 
 void DeviceManager::setMemoryManagerPinned(
     std::unique_ptr<MemoryManagerBase> newMgr) {
-    // Set the backend pinned memory manager for this new manager to register
-    // native functions correctly. NB: does NOT free memory allocated with the
-    // existing memory manager or shut down the existing manager.
+    std::lock_guard<std::mutex> l(mutex);
+    // Calls shutdown() on the existing memory manager.
+    pinnedMemManager->shutdownAllocator();
+    // Set the backend memory manager for this new manager to register native
+    // functions correctly.
     pinnedMemManager = std::move(newMgr);
     std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(
         new cuda::AllocatorPinned());
@@ -231,15 +231,10 @@ void DeviceManager::setMemoryManagerPinned(
 }
 
 void DeviceManager::resetMemoryManagerPinned() {
-    // If an existing memory manager exists, shutdown()
-    if (pinnedMemManager) { pinnedMemManager->shutdown(); }
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
         new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                                  AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
-    std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(
-        new cuda::AllocatorPinned());
-    mgr->setAllocator(std::move(deviceMemoryManager));
+                                         AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
     setMemoryManagerPinned(std::move(mgr));
 }
 

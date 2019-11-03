@@ -131,7 +131,7 @@ INSTANTIATE(half)
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
-Allocator::~Allocator() {
+void Allocator::shutdown() {
     for (int n = 0; n < cpu::getDeviceCount(); n++) {
         try {
             cpu::setDevice(n);

@@ -39,6 +39,8 @@ void garbageCollect() { memoryManager().garbageCollect(); }
 
 void shutdownMemoryManager() { memoryManager().shutdown(); }
 
+void shutdownPinnedMemoryManager() { pinnedMemoryManager().shutdown(); }
+
 void printMemInfo(const char *msg, const int device) {
     memoryManager().printInfo(msg, device);
 }
@@ -148,7 +150,7 @@ INSTANTIATE(ushort)
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
-Allocator::~Allocator() {
+void Allocator::shutdown() {
     for (int n = 0; n < opencl::getDeviceCount(); n++) {
         try {
             opencl::setDevice(n);
@@ -180,10 +182,10 @@ AllocatorPinned::AllocatorPinned() : pinnedMaps(opencl::getDeviceCount()) {
     logger = common::loggerFactory("mem");
 }
 
-AllocatorPinned::~AllocatorPinned() {
+void AllocatorPinned::shutdown() {
     for (int n = 0; n < opencl::getDeviceCount(); n++) {
         opencl::setDevice(n);
-        shutdownMemoryManager();
+        shutdownPinnedMemoryManager();
         auto currIterator = pinnedMaps[n].begin();
         auto endIterator  = pinnedMaps[n].end();
         while (currIterator != endIterator) {

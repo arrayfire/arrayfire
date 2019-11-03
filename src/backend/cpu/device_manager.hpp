@@ -13,6 +13,7 @@
 #include <platform.hpp>
 #include <queue.hpp>
 #include <memory>
+#include <mutex>
 #include <string>
 
 using common::memory::MemoryManagerBase;
@@ -139,6 +140,7 @@ class DeviceManager {
     std::unique_ptr<graphics::ForgeManager> fgMngr;
     const CPUInfo cinfo;
     std::unique_ptr<MemoryManagerBase> memManager;
+    std::mutex mutex;
 };
 
 }  // namespace cpu

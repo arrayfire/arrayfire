@@ -13,6 +13,7 @@
 #include <platform.hpp>
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -125,6 +126,8 @@ class DeviceManager {
     std::unique_ptr<MemoryManagerBase> pinnedMemManager;
 
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+
+    std::mutex mutex;
 };
 
 }  // namespace cuda

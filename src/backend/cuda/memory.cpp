@@ -46,6 +46,8 @@ void garbageCollect() { memoryManager().garbageCollect(); }
 
 void shutdownMemoryManager() { memoryManager().shutdown(); }
 
+void shutdownPinnedMemoryManager() { pinnedMemoryManager().shutdown(); }
+
 void printMemInfo(const char *msg, const int device) {
     memoryManager().printInfo(msg, device);
 }
@@ -140,12 +142,10 @@ INSTANTIATE(half)
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
-Allocator::~Allocator() {
+void Allocator::shutdown() {
     for (int n = 0; n < cuda::getDeviceCount(); n++) {
         try {
             cuda::setDevice(n);
-            // TODO: figure out something reasonable to do here. The destruction
-            // order is very weird and bad and needs to be fixed
             shutdownMemoryManager();
         } catch (AfError err) {
             continue;  // Do not throw any errors while shutting down
@@ -174,7 +174,7 @@ void Allocator::nativeFree(void *ptr) {
 
 AllocatorPinned::AllocatorPinned() { logger = common::loggerFactory("mem"); }
 
-AllocatorPinned::~AllocatorPinned() { garbageCollect(); }
+void AllocatorPinned::shutdown() { shutdownPinnedMemoryManager(); }
 
 int AllocatorPinned::getActiveDeviceId() {
     return 0;  // pinned uses a single vector

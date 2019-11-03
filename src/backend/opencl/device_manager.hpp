@@ -10,6 +10,7 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -133,6 +134,7 @@ class DeviceManager {
     std::unique_ptr<MemoryManagerBase> pinnedMemManager;
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
     std::unique_ptr<clfftSetupData> mFFTSetup;
+    std::mutex mutex;
 
     using BoostProgCache = boost::shared_ptr<boost::compute::program_cache>;
     std::vector<BoostProgCache*> mBoostProgCacheVector;

@@ -358,13 +358,10 @@ af_err af_release_memory_manager(af_memory_manager handle) {
 
 af_err af_set_memory_manager(af_memory_manager mgr) {
     try {
-        // NB: does NOT free if a non-default implementation is set as the
-        // current memory manager - the user is responsible for freeing any
-        // controlled memory
         std::unique_ptr<MemoryManagerFunctionWrapper> newManager(
             new MemoryManagerFunctionWrapper(mgr));
-
-        // Calls shutdown() on the existing memory manager
+        // Calls shutdown() on the existing memory manager, but does not free
+        // the associated handle, if there is one
         detail::setMemoryManager(std::move(newManager));
     }
     CATCHALL;

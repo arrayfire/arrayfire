@@ -301,51 +301,45 @@ DeviceManager& DeviceManager::getInstance() {
 
 void DeviceManager::setMemoryManager(
     std::unique_ptr<MemoryManagerBase> newMgr) {
+    std::lock_guard<std::mutex> l(mutex);
+    // Calls shutdown() on the existing memory manager.
+    memManager->shutdownAllocator();
+    memManager = std::move(newMgr);
     // Set the backend memory manager for this new manager to register native
-    // functions correctly. NB: does NOT free memory allocated with the existing
-    // memory manager or shut down the existing manager.
+    // functions correctly.
     std::unique_ptr<opencl::Allocator> deviceMemoryManager(
         new opencl::Allocator());
-    newMgr->setAllocator(std::move(deviceMemoryManager));
-    newMgr->initialize();
-    memManager = std::move(newMgr);
+    memManager->setAllocator(std::move(deviceMemoryManager));
+    memManager->initialize();
 }
 
 void DeviceManager::resetMemoryManager() {
-    // If an existing memory manager exists, shutdown()
-    if (memManager) { memManager->shutdown(); }
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
         new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                                  AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
-    std::unique_ptr<opencl::Allocator> deviceMemoryManager(
-        new opencl::Allocator());
-    mgr->setAllocator(std::move(deviceMemoryManager));
+                                         AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
     setMemoryManager(std::move(mgr));
 }
 
 void DeviceManager::setMemoryManagerPinned(
     std::unique_ptr<MemoryManagerBase> newMgr) {
+    std::lock_guard<std::mutex> l(mutex);
+    // Calls shutdown() on the existing memory manager.
+    pinnedMemManager->shutdownAllocator();
+    pinnedMemManager = std::move(newMgr);
     // Set the backend pinned memory manager for this new manager to register
-    // native functions correctly. NB: does NOT free memory allocated with the
-    // existing memory manager or shut down the existing manager.
+    // native functions correctly.
     std::unique_ptr<opencl::AllocatorPinned> deviceMemoryManager(
         new opencl::AllocatorPinned());
-    newMgr->setAllocator(std::move(deviceMemoryManager));
-    newMgr->initialize();
-    pinnedMemManager = std::move(newMgr);
+    pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
+    pinnedMemManager->initialize();
 }
 
 void DeviceManager::resetMemoryManagerPinned() {
-    // If an existing memory manager exists, shutdown()
-    if (pinnedMemManager) { pinnedMemManager->shutdown(); }
     // Replace with default memory manager
     std::unique_ptr<MemoryManagerBase> mgr(
         new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
-                                  AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
-    std::unique_ptr<opencl::AllocatorPinned> deviceMemoryManager(
-        new opencl::AllocatorPinned());
-    mgr->setAllocator(std::move(deviceMemoryManager));
+                                         AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
     setMemoryManagerPinned(std::move(mgr));
 }
 

@@ -15,7 +15,6 @@
 #include <af/internal.h>
 #include <af/memory.h>
 #include <af/traits.hpp>
-#include <iostream>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -712,8 +711,7 @@ TEST(BufferInfo, BufferInfoCreateMove) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
     void *ptr = af::alloc(1, dtype::f32);
-    std::unique_ptr<buffer_info> bufferInfo;
-    bufferInfo.reset(new buffer_info(ptr, event));
+    std::unique_ptr<buffer_info> bufferInfo(new buffer_info(ptr, event));
     ASSERT_EQ(bufferInfo->getEvent(), event);
     ASSERT_EQ(bufferInfo->getPtr(), ptr);
 
@@ -738,8 +736,7 @@ TEST(BufferInfo, UnlockCpp) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
     void *ptr = af::alloc(1, dtype::f32);
-    std::unique_ptr<buffer_info> bufferInfo;
-    bufferInfo.reset(new buffer_info(ptr, event));
+    std::unique_ptr<buffer_info> bufferInfo(new buffer_info(ptr, event));
 
     void *anotherPtr = bufferInfo->unlockPtr();
     ASSERT_EQ(ptr, anotherPtr);
@@ -759,50 +756,13 @@ T *getMemoryManagerPayload(af_memory_manager manager) {
     return (T *)payloadPtr;
 }
 
-struct InitializeShutdownPayload {
-    bool initializeCalled = false;
-    bool shutdownCalled   = false;
-};
-
-}  // namespace
-
-TEST(MemoryManagerApi, InitializeShutdown) {
-    af_memory_manager manager;
-    af_create_memory_manager(&manager);
-
-    // Set payload
-    std::unique_ptr<InitializeShutdownPayload> payload;
-    payload.reset(new InitializeShutdownPayload());
-    af_memory_manager_set_payload(manager, payload.get());
-
-    auto initialize_fn = [](af_memory_manager manager) {
-        auto *payload =
-            getMemoryManagerPayload<InitializeShutdownPayload>(manager);
-        payload->initializeCalled = true;
-    };
-    af_memory_manager_set_initialize_fn(manager, initialize_fn);
-
-    auto shutdown_fn = [](af_memory_manager manager) {
-        auto *payload =
-            getMemoryManagerPayload<InitializeShutdownPayload>(manager);
-        payload->shutdownCalled = true;
-    };
-    af_memory_manager_set_shutdown_fn(manager, shutdown_fn);
-
-    af_set_memory_manager(manager);
-    af_unset_memory_manager();
-    af_release_memory_manager(manager);
-    ASSERT_TRUE(payload->initializeCalled);
-    ASSERT_TRUE(payload->shutdownCalled);
-}
-
-namespace {
-
 /**
- * Below is an extremely basic memory manager with a basic
- * caching mechanism for testing purposes. It is not thread safe or optimized.
+ * An extremely basic memory manager with a basic caching mechanism for testing
+ * purposes. It is not thread safe or optimized.
  */
 struct E2ETestPayload {
+    int initializeCalledTimes = 0;
+    int shutdownCalledTimes   = 0;
     std::unordered_map<void *, size_t> table;
     std::unordered_set<void *> locked;
     size_t totalBytes{0};
@@ -956,9 +916,17 @@ TEST(MemoryManagerApi, E2ETest) {
     std::unique_ptr<E2ETestPayload> payload(new E2ETestPayload());
     af_memory_manager_set_payload(manager, payload.get());
 
-    auto initialize_fn = [](af_memory_manager) {};
-    auto shutdown_fn   = [](af_memory_manager) {};
+    auto initialize_fn = [](af_memory_manager manager) {
+        auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
+        payload->initializeCalledTimes++;
+    };
     af_memory_manager_set_initialize_fn(manager, initialize_fn);
+
+    auto shutdown_fn = [](af_memory_manager manager) {
+        auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
+        payload->shutdownCalledTimes++;
+        throw std::logic_error("DELETE ME");
+    };
     af_memory_manager_set_shutdown_fn(manager, shutdown_fn);
 
     // alloc
@@ -1032,5 +1000,8 @@ TEST(MemoryManagerApi, E2ETest) {
     ASSERT_EQ(stepSizeTest, payload->memStepSize);
 
     ASSERT_EQ(payload->table.size(), 0);
+    af_unset_memory_manager();
     af_release_memory_manager(manager);
+    ASSERT_EQ(payload->initializeCalledTimes, 1);
+    ASSERT_EQ(payload->shutdownCalledTimes, 1);
 }

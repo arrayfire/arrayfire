@@ -63,7 +63,8 @@ bool checkMemoryLimit();
 class Allocator : public common::memory::AllocatorInterface {
    public:
     Allocator();
-    ~Allocator();
+    ~Allocator() = default;
+    void shutdown() override;
     int getActiveDeviceId() override;
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;
@@ -73,7 +74,8 @@ class Allocator : public common::memory::AllocatorInterface {
 class AllocatorPinned : public common::memory::AllocatorInterface {
    public:
     AllocatorPinned();
-    ~AllocatorPinned();
+    ~AllocatorPinned() = default;
+    void shutdown() override;
     int getActiveDeviceId() override;
     size_t getMaxMemorySize(int id) override;
     void *nativeAlloc(const size_t bytes) override;
