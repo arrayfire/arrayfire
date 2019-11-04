@@ -21,6 +21,10 @@ find_path(CUDA_cudnn_INCLUDE_DIR
     DOC "Path to CUDNN include directory.")
 mark_as_advanced(CUDA_cudnn_INCLUDE_DIR)
 
+if(CUDA_cudnn_INCLUDE_DIR-NOTFOUND)
+    message(FATAL_ERROR "cuDNN framework required for CUDA backend.")
+endif()
+
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
 
 include(FileToString)
