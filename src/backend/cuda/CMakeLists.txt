@@ -13,6 +13,13 @@ dependency_check(CUDA_FOUND "CUDA not found.")
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
 find_cuda_helper_libs(cudnn)
+get_filename_component(__found_cudnn_root ${CUDA_cudnn_LIBRARY} PATH)
+find_path(CUDA_cudnn_INCLUDE_DIR
+    NAMES cudnn.h
+    HINTS ${__found_cudnn_root} ${CUDNN_ROOT_DIR} ${CUDA_TOOLKIT_INCLUDE}
+    PATH_SUFFIXES include
+    DOC "Path to CUDNN include directory.")
+mark_as_advanced(CUDA_cudnn_INCLUDE_DIR)
 
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
 
@@ -507,6 +514,7 @@ target_include_directories (afcuda
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${CUDA_INCLUDE_DIRS}
+    ${CUDA_cudnn_INCLUDE_DIR}
     ${ArrayFire_SOURCE_DIR}/src/api/c
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
