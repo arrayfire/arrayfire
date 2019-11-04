@@ -42,11 +42,11 @@ Build from source by following instructions on our
 ## Examples
 
 The following examples are simplified versions of
-[`helloworld.cpp`](https://github.com/arrayfire/arrayfire/tree/devel/examples/helloworld/helloworld.cpp)
+[`helloworld.cpp`](https://github.com/arrayfire/arrayfire/blob/master/examples/helloworld/helloworld.cpp)
 and
-[`conway_pretty.cpp`](https://github.com/arrayfire/arrayfire/tree/devel/examples/graphics/conway_pretty.cpp),
+[`conway_pretty.cpp`](https://github.com/arrayfire/arrayfire/blob/master/examples/graphics/conway_pretty.cpp),
 respectively. For more code examples, visit the
-[`examples/`](https://github.com/arrayfire/arrayfire/tree/devel/examples)
+[`examples/`](https://github.com/arrayfire/arrayfire/blob/master/examples/)
 directory.
 
 #### Hello, world!
