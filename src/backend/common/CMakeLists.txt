@@ -76,7 +76,7 @@ target_include_directories(afcommon_interface
     ${ArrayFire_SOURCE_DIR}/src/backend
     ${ArrayFire_BINARY_DIR}
   SYSTEM INTERFACE
-    ${OPENGL_INCLUDE_DIR}
+    $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>
     ${ArrayFire_SOURCE_DIR}/extern/forge/include
     ${ArrayFire_BINARY_DIR}/extern/forge/include
   )
