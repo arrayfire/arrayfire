@@ -143,7 +143,7 @@ Logical not of an input
 
 \defgroup arith_func_neg neg
 
-\ingroup logic_mat
+\ingroup numeric_mat
 
 Negative of an input
 
