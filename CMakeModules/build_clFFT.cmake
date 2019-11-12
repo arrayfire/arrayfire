@@ -18,6 +18,12 @@ ELSE()
     SET(byproducts BUILD_BYPRODUCTS ${clFFT_location})
 ENDIF()
 
+if(WIN32)
+  set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
+else(WIN32)
+  set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
+endif(WIN32)
+
 ExternalProject_Add(
     clFFT-ext
     GIT_REPOSITORY https://github.com/arrayfire/clFFT.git
@@ -25,7 +31,8 @@ ExternalProject_Add(
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} "-G${CMAKE_GENERATOR}" -Wno-dev <SOURCE_DIR>/src
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${extproj_gen_opts}
+      -Wno-dev <SOURCE_DIR>/src
       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
       "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -w -fPIC"
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
