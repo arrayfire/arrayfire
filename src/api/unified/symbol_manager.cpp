@@ -26,10 +26,10 @@
 #include <dlfcn.h>
 #endif
 
+using common::getErrorMessage;
 using common::getFunctionPointer;
 using common::loadLibrary;
 using common::loggerFactory;
-using common::unloadLibrary;
 
 using std::extent;
 using std::function;
@@ -105,8 +105,10 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
     // FIXME(umar): avoid this if at all possible
     auto getLogger = [&] { return spdlog::get("unified"); };
 
-    string paths[] = {
-        "",   // Default paths
+    string pathPrefixes[] = {
+        "",   // empty prefix i.e. just the library name will enable search in
+              // system default paths such as LD_LIBRARY_PATH, Program
+              // Files(Windows) etc.
         ".",  // Shared libraries in current directory
         // Running from the CMake Build directory
         join_path(".", "src", "backend", getBackendDirectoryName(bknd_idx)),
@@ -133,10 +135,11 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
     typedef af_err (*func)(int*);
 
     LibHandle retVal = nullptr;
-    for (size_t i = 0; i < extent<decltype(paths)>::value; i++) {
-        AF_TRACE("Attempting: {}", paths[i]);
-        if ((retVal = loadLibrary(join_path(paths[i], bkndLibName).c_str()))) {
-            AF_TRACE("Found: {}", join_path(paths[i], bkndLibName));
+    for (size_t i = 0; i < extent<decltype(pathPrefixes)>::value; i++) {
+        AF_TRACE("Attempting: {}", pathPrefixes[i]);
+        if ((retVal = loadLibrary(
+                 join_path(pathPrefixes[i], bkndLibName).c_str()))) {
+            AF_TRACE("Found: {}", join_path(pathPrefixes[i], bkndLibName));
 
             func count_func =
                 (func)getFunctionPointer(retVal, "af_get_device_count");
@@ -152,13 +155,12 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
 
             if (show_load_path) { printf("Using %s\n", bkndLibName.c_str()); }
             break;
+        } else {
+            AF_TRACE("Failed to load {}", getErrorMessage());
         }
     }
-
     return retVal;
 }
-
-void closeDynLibrary(LibHandle handle) { unloadLibrary(handle); }
 
 AFSymbolManager& AFSymbolManager::getInstance() {
     thread_local AFSymbolManager symbolManager;
@@ -202,7 +204,7 @@ AFSymbolManager::AFSymbolManager()
 
 AFSymbolManager::~AFSymbolManager() {
     for (int i = 0; i < NUM_BACKENDS; ++i) {
-        if (bkndHandles[i]) { closeDynLibrary(bkndHandles[i]); }
+        if (bkndHandles[i]) { common::unloadLibrary(bkndHandles[i]); }
     }
 }
 

@@ -27,8 +27,14 @@ LibHandle loadLibrary(const char* library_name) {
 void unloadLibrary(LibHandle handle) { dlclose(handle); }
 
 string getErrorMessage() {
-    string error_message(dlerror());
-    return error_message;
+    char* errMsg = dlerror();
+    if (errMsg) {
+        return string(errMsg);
+    } else {
+        // constructing std::basic_string from NULL/0 address is
+        // invalid and has undefined behavior
+        return string("No Error");
+    }
 }
 
 }  // namespace common
