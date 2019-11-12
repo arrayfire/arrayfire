@@ -12,6 +12,12 @@ set(clBLAS_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clBLAS${C
 
 find_package(OpenCL)
 
+if(WIN32)
+  set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
+else(WIN32)
+  set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
+endif(WIN32)
+
 ExternalProject_Add(
     clBLAS-ext
     GIT_REPOSITORY https://github.com/arrayfire/clBLAS.git
@@ -21,7 +27,8 @@ ExternalProject_Add(
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
     DOWNLOAD_NO_PROGRESS 1
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} "-G${CMAKE_GENERATOR}" -Wno-dev <SOURCE_DIR>/src
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${extproj_gen_opts}
+      -Wno-dev <SOURCE_DIR>/src
       -DCMAKE_CXX_FLAGS:STRING="-fPIC"
       -DCMAKE_C_FLAGS:STRING="-fPIC"
       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}

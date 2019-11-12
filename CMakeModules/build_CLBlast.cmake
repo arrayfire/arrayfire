@@ -37,6 +37,12 @@ index 9446499..786f7db 100644
   set(CLBLAST_PATCH_COMMAND ${GIT} apply ${ArrayFire_BINARY_DIR}/clblast.patch)
 endif()
 
+if(WIN32)
+  set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
+else(WIN32)
+  set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
+endif(WIN32)
+
 ExternalProject_Add(
     CLBlast-ext
     GIT_REPOSITORY https://github.com/cnugteren/CLBlast.git
@@ -46,7 +52,8 @@ ExternalProject_Add(
     UPDATE_COMMAND ""
     PATCH_COMMAND ${CLBLAST_PATCH_COMMAND}
     BUILD_BYPRODUCTS ${CLBlast_location}
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} "-G${CMAKE_GENERATOR}" -Wno-dev <SOURCE_DIR>/
+    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${extproj_gen_opts}
+      -Wno-dev <SOURCE_DIR>
       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
       "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -w -fPIC"
       -DOVERRIDE_MSVC_FLAGS_TO_MT:BOOL=OFF
