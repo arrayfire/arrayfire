@@ -148,6 +148,8 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
                 count_func(&count);
                 AF_TRACE("Device Count: {}.", count);
                 if (count == 0) {
+                    AF_TRACE("Skipping: No devices found for {}",
+                             bkndLibName);
                     retVal = nullptr;
                     continue;
                 }
