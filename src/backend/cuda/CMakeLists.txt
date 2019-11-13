@@ -18,9 +18,9 @@ if(NOT OPENGL_FOUND)
   # create a dummy gl.h header to satisfy cuda_gl_interop.h requirement
   # all opengl functionality is made available via glad third party code
   # that is built along with arrayfire code base.
-  set(dummy_gl_root "${PROJECT_BINARY_DIR}/include/GL")
+  set(dummy_gl_root "${ArrayFire_BINARY_DIR}/include/GL")
   if(APPLE)
-    set(dummy_gl_root "${PROJECT_BINARY_DIR}/include/OpenGL")
+    set(dummy_gl_root "${ArrayFire_BINARY_DIR}/include/OpenGL")
   endif()
   file(WRITE "${dummy_gl_root}/gl.h" "// Dummy file to satisy cuda_gl_interop")
 endif()
