@@ -136,7 +136,7 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
 
     LibHandle retVal = nullptr;
     for (size_t i = 0; i < extent<decltype(pathPrefixes)>::value; i++) {
-        AF_TRACE("Attempting: {}", pathPrefixes[i]);
+        AF_TRACE("Attempting: {}", (pathPrefixes[i].empty() ? "Default System Paths" : pathPrefixes[i]));
         if ((retVal = loadLibrary(
                  join_path(pathPrefixes[i], bkndLibName).c_str()))) {
             AF_TRACE("Found: {}", join_path(pathPrefixes[i], bkndLibName));
