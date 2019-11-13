@@ -8,18 +8,20 @@
 include(InternalUtils)
 include(select_compute_arch)
 
+set(AF_CUDNN_ROOT_DIR "" CACHE PATH "cuDNN installation root path")
+
 dependency_check(CUDA_FOUND "CUDA not found.")
 
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
 find_cuda_helper_libs(cudnn)
-get_filename_component(__found_cudnn_root ${CUDA_cudnn_LIBRARY} PATH)
+get_filename_component(found_cudnn_root ${CUDA_cudnn_LIBRARY} PATH)
 find_path(CUDA_cudnn_INCLUDE_DIR
     NAMES cudnn.h
-    HINTS ${__found_cudnn_root} ${CUDNN_ROOT_DIR} ${CUDA_TOOLKIT_INCLUDE}
+    HINTS ${found_cudnn_root} ${AF_CUDNN_ROOT_DIR} ${CUDA_TOOLKIT_INCLUDE}
     PATH_SUFFIXES include
     DOC "Path to CUDNN include directory.")
-mark_as_advanced(CUDA_cudnn_INCLUDE_DIR)
+mark_as_advanced(CUDA_cudnn_INCLUDE_DIR AF_CUDNN_ROOT_DIR)
 
 if(CUDA_cudnn_INCLUDE_DIR-NOTFOUND)
     message(FATAL_ERROR "cuDNN framework required for CUDA backend.")
