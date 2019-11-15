@@ -4,24 +4,24 @@
 if (NOT WIN32)
   include(CMakeFindBinUtils)
   if (NOT APPLE AND NOT CMAKE_OBJCOPY)
-    message(WARNING "'objcopy' tool not found; debug information will not be split.")
+    message("'objcopy' tool not found; debug information will not be split.")
   elseif (NOT CMAKE_STRIP)
-    message(WARNING "'strip' tool not found; debug information will not be split.")
+    message("'strip' tool not found; debug information will not be split.")
   elseif (APPLE)
     # TODO(pradeep) debug info splits on OSX are disabled
     # this section of elseif will be removed when Apple support is added
-    message(WARNING "Debug information is not split on OSX")
+    message("Debug information is not split on OSX")
   endif ()
 endif (NOT WIN32)
 
-function(af_split_debug_info _target)
+function(af_split_debug_info _target _destination_dir)
   set(SPLIT_TOOL_EXISTS ON)
   if (WIN32)
     set(SPLIT_TOOL_EXISTS OFF)
     if (MSVC)
       install(FILES
         $<TARGET_PDB_FILE:${_target}>
-        DESTINATION ${AF_INSTALL_LIB_DIR}
+        DESTINATION ${_destination_dir}
         COMPONENT "${_target}_debug_symbols"
         )
     endif()
@@ -83,7 +83,7 @@ function(af_split_debug_info _target)
 
     install(FILES
       ${SPLIT_DEBUG_TARGET}
-      DESTINATION ${AF_INSTALL_LIB_DIR}
+      DESTINATION ${_destination_dir}
       COMPONENT "${OUTPUT_NAME_FULL}_debug_symbols"
       )
 
