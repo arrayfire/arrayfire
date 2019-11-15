@@ -537,7 +537,7 @@ target_link_libraries(afcuda
     ${CUDA_CUFFT_LIBRARIES}
     ${CUDA_cusolver_LIBRARY}
     ${CUDA_cusparse_LIBRARY}
-    nvidia::cuDNN
+    cuDNN::cuDNN
     ${CMAKE_DL_LIBS}
   )
 

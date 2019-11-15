@@ -1,7 +1,17 @@
 # Fetched the original content of this file from
-# https://github.com/soumith/cudnn.torch/blob/master/cmake/FindcuDNN.cmake
-# which is distributed under the OSI-approved BSD 3-Clause License.
-
+# https://github.com/soumith/cudnn.torch
+#
+# Original Copyright:
+# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
+# file Copyright.txt or https://cmake.org/licensing for details.
+#
+# Copyright (c) 2017, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
+#
 # FindcuDNN
 # -------
 #
@@ -13,7 +23,7 @@
 # Usage
 # -----
 # add_exectuable(helloworld main.cpp)
-# target_link_libraries(helloworld PRIVATE nvidia::cuDNN)
+# target_link_libraries(helloworld PRIVATE cuDNN::cuDNN)
 #
 # Note: It is recommended to avoid using variables set by the find module.
 #
@@ -90,7 +100,7 @@ if(cuDNN_INCLUDE_DIRS)
       ${CMAKE_INSTALL_PREFIX}
     PATH_SUFFIXES lib lib64 bin lib/x64 bin/x64
     DOC "cuDNN link library." )
-	
+
   if(WIN32 AND cuDNN_LINK_LIBRARY)
     find_file(cuDNN_DLL_LIBRARY
     NAMES cudnn64_${cudnn_ver_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
@@ -112,9 +122,9 @@ find_package_handle_standard_args(cuDNN
 mark_as_advanced(cuDNN_LINK_LIBRARY cuDNN_INCLUDE_DIRS cuDNN_DLL_LIBRARY)
 
 if(cuDNN_FOUND)
-  add_library(nvidia::cuDNN SHARED IMPORTED)
+  add_library(cuDNN::cuDNN SHARED IMPORTED)
   if(WIN32)
-    set_target_properties(nvidia::cuDNN
+    set_target_properties(cuDNN::cuDNN
       PROPERTIES
       IMPORTED_LINK_INTERFACE_LANGUAGE "C"
       INTERFACE_INCLUDE_DIRECTORIES "${cuDNN_INCLUDE_DIRS}"
@@ -122,7 +132,7 @@ if(cuDNN_FOUND)
       IMPORTED_IMPLIB "${cuDNN_LINK_LIBRARY}"
     )
   else(WIN32)
-    set_target_properties(nvidia::cuDNN
+    set_target_properties(cuDNN::cuDNN
       PROPERTIES
       IMPORTED_LINK_INTERFACE_LANGUAGE "C"
       INTERFACE_INCLUDE_DIRECTORIES "${cuDNN_INCLUDE_DIRS}"
