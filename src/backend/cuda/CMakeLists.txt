@@ -12,6 +12,9 @@ dependency_check(CUDA_FOUND "CUDA not found.")
 
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
+if(NOT cuDNN_FOUND)
+  message(FATAL_ERROR "Atleast cuDNN version 7.3 is required, please install.")
+endif()
 
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
 
