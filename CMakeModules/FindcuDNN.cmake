@@ -17,6 +17,9 @@
 #
 # Find cuDNN library
 #
+# This module creates imported target cuDNN::cuDNN upon successfull
+# lookup of cuDNN headers and libraries.
+#
 # Valiables that affect result:
 # <VERSION>, <REQUIRED>, <QUIET>: as usual
 #
@@ -42,13 +45,11 @@
 #   If false, do not try to use cuDNN.
 # ``cuDNN_VERSION``
 #   Version of the cuDNN library we looked for
-#
-# NOTE: ALWAYS call find_package(cuDNN ...) after find_package(CUDA)
-#       as this find module uses from cache variables set by find
-#       CUDA module
 
 find_package(PkgConfig)
 pkg_check_modules(PC_CUDNN QUIET cuDNN)
+
+find_package(CUDA QUIET)
 
 find_path(cuDNN_INCLUDE_DIRS
   NAMES cudnn.h
