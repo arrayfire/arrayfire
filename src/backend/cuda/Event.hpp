@@ -21,7 +21,7 @@ class CUDARuntimeEventPolicy {
     using ErrorType = CUresult;
 
     static ErrorType createEvent(CUevent *e) noexcept {
-        // Creating events with the CU_EVENT_BLOCKING_SYNC flag 
+        // Creating events with the CU_EVENT_BLOCKING_SYNC flag
         // severly impacts the speed if/when creating many arrays
         auto err = cuEventCreate(e, CU_EVENT_DISABLE_TIMING);
         return err;

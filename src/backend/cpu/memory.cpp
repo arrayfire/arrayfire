@@ -9,6 +9,7 @@
 
 #include <memory.hpp>
 
+#include <common/defaults.hpp>
 #include <common/Logger.hpp>
 #include <common/MemoryManagerImpl.hpp>
 #include <common/half.hpp>
@@ -31,6 +32,7 @@ template class common::MemoryManager<cpu::MemoryManager>;
 #endif
 
 using common::bytesToString;
+using common::getEventsEnabledFlag;
 using common::half;
 using std::function;
 using std::move;
@@ -72,12 +74,14 @@ void *memAllocUser(const size_t &bytes) {
 
 template<typename T>
 void memFree(T *ptr) {
-    Event e = make_event(getQueue());
+    Event e;
+    if (getEventsEnabledFlag()) { e = make_event(getQueue()); }
     return memoryManager().unlock((void *)ptr, move(e), false);
 }
 
 void memFreeUser(void *ptr) {
-    Event e = make_event(getQueue());
+    Event e;
+    if (getEventsEnabledFlag()) { e = make_event(getQueue()); }
     memoryManager().unlock((void *)ptr, move(e), true);
 }
 
@@ -104,7 +108,8 @@ T *pinnedAlloc(const size_t &elements) {
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    Event e = make_event(getQueue());
+    Event e;
+    if (getEventsEnabledFlag()) { e = make_event(getQueue()); }
     return memoryManager().unlock((void *)ptr, move(e), false);
 }
 

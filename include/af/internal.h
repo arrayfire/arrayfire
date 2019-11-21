@@ -187,6 +187,23 @@ extern "C"
     AFAPI af_err af_get_allocated_bytes(size_t *bytes, const af_array arr);
 #endif
 
+#if AF_API_VERSION >= 37
+    /**
+       Enables and disables(default) the use of events in the memory manager
+       for synchronization. Enabling events incurrs a performance penilty
+       but allows you to use streams(not currently supported).
+
+       \note The default for this variable may change in future versions of
+             ArrayFire
+
+       \param[in] enabled If true, events will be used in the memory manager
+       \returns AF_SUCCESS
+
+       \ingroup internal_func_eventsbasedmemorymanager
+    */
+    AFAPI af_err af_set_use_events_based_memory_manager(int enable);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

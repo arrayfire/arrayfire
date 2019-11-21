@@ -13,9 +13,10 @@
 #include <types.hpp>
 
 #include <common/Logger.hpp>
+#include <common/MemoryManagerImpl.hpp>
+#include <common/defaults.hpp>
 #include <spdlog/spdlog.h>
 
-#include <common/MemoryManagerImpl.hpp>
 template class common::MemoryManager<opencl::MemoryManager>;
 template class common::MemoryManager<opencl::MemoryManagerPinned>;
 
@@ -28,6 +29,7 @@ template class common::MemoryManager<opencl::MemoryManagerPinned>;
 #endif
 
 using common::bytesToString;
+using common::getEventsEnabledFlag;
 using common::MemoryEventPair;
 
 using std::function;
@@ -68,12 +70,14 @@ void *memAllocUser(const size_t &bytes) {
 }
 template<typename T>
 void memFree(T *ptr) {
-    Event e = make_event(getQueue());
+    Event e;
+    if (getEventsEnabledFlag()) { e = make_event(getQueue()); }
     return memoryManager().unlock((void *)ptr, move(e), false);
 }
 
 void memFreeUser(void *ptr) {
-    Event e = make_event(getQueue());
+    Event e;
+    if (getEventsEnabledFlag()) { e = make_event(getQueue()); }
     memoryManager().unlock((void *)ptr, move(e), true);
 }
 
@@ -112,7 +116,8 @@ T *pinnedAlloc(const size_t &elements) {
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    Event e = make_event(getQueue());
+    Event e;
+    if (getEventsEnabledFlag()) { e = make_event(getQueue()); }
     return pinnedMemoryManager().unlock((void *)ptr, move(e), false);
 }
 

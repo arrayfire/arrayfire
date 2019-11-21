@@ -48,3 +48,7 @@ af_err af_get_allocated_bytes(size_t *bytes, const af_array arr) {
     CHECK_ARRAYS(arr);
     return CALL(bytes, arr);
 }
+
+af_err af_set_use_events_based_memory_manager(int enable) {
+    return CALL(enable);
+}

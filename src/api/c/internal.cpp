@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <backend.hpp>
+#include <common/defaults.hpp>
 #include <common/err_common.hpp>
 #include <handle.hpp>
 #include <platform.hpp>
@@ -22,6 +23,7 @@ using af::dim4;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createStridedArray;
+using common::getEventsEnabledFlag;
 using detail::intl;
 using detail::uchar;
 using detail::uint;
@@ -223,5 +225,13 @@ af_err af_get_allocated_bytes(size_t *bytes, const af_array arr) {
         std::swap(*bytes, res);
     }
     CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_set_use_events_based_memory_manager(int enable) {
+    if (enable == 0)
+        getEventsEnabledFlag() = 0;
+    else
+        getEventsEnabledFlag() = 1;
     return AF_SUCCESS;
 }

@@ -37,6 +37,8 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/cblas.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/complex.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/constants.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/defaults.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/defaults.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/defines.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dim4.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.cpp

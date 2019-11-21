@@ -144,3 +144,8 @@ TEST(Internal, Allocated) {
 
     ASSERT_EQ(d.allocated(), a_allocated);
 }
+
+TEST(Internal, DisableEvents) {
+    ASSERT_SUCCESS(af_set_use_events_based_memory_manager(1));
+    ASSERT_SUCCESS(af_set_use_events_based_memory_manager(0));
+}

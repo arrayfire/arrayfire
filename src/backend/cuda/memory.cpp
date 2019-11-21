@@ -12,6 +12,7 @@
 #include <Event.hpp>
 #include <common/Logger.hpp>
 #include <common/MemoryManagerImpl.hpp>
+#include <common/defaults.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/util.hpp>
@@ -37,8 +38,9 @@ template class common::MemoryManager<cuda::MemoryManagerPinned>;
 #endif
 
 using common::bytesToString;
-using common::MemoryEventPair;
+using common::getEventsEnabledFlag;
 using common::half;
+using common::MemoryEventPair;
 
 using std::move;
 
@@ -77,12 +79,14 @@ void *memAllocUser(const size_t &bytes) {
 
 template<typename T>
 void memFree(T *ptr) {
-    Event e = make_event(getActiveStream());
+    Event e;
+    if (getEventsEnabledFlag()) { e = make_event(getActiveStream()); }
     memoryManager().unlock((void *)ptr, move(e), false);
 }
 
 void memFreeUser(void *ptr) {
-    Event e = make_event(getActiveStream());
+    Event e;
+    if (getEventsEnabledFlag()) { e = make_event(getActiveStream()); }
     memoryManager().unlock((void *)ptr, move(e), true);
 }
 
@@ -111,7 +115,8 @@ T *pinnedAlloc(const size_t &elements) {
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    Event e = make_event(getActiveStream());
+    Event e;
+    if (getEventsEnabledFlag()) { e = make_event(getActiveStream()); }
     return pinnedMemoryManager().unlock((void *)ptr, move(e), false);
 }
 
