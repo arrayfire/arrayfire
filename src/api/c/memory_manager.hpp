@@ -85,7 +85,7 @@ class MemoryManagerBase {
     virtual af_buffer_info alloc(const size_t size, bool user_lock)  = 0;
     virtual size_t allocated(void *ptr)                              = 0;
     virtual void unlock(void *ptr, af_event e, bool user_unlock)     = 0;
-    virtual void garbageCollect()                                    = 0;
+    virtual void signalMemoryCleanup()                               = 0;
     virtual void printInfo(const char *msg, const int device)        = 0;
     virtual void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                            size_t *lock_bytes, size_t *lock_buffers) = 0;
@@ -210,7 +210,7 @@ class DefaultMemoryManager : public memory::MemoryManagerBase {
 
     /// Frees all buffers which are not locked by the user or not being
     /// used.
-    void garbageCollect() override;
+    void signalMemoryCleanup() override;
 
     void printInfo(const char *msg, const int device) override;
     void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,

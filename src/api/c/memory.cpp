@@ -287,7 +287,7 @@ af_err af_print_mem_info(const char *msg, const int device_id) {
 
 af_err af_device_gc() {
     try {
-        garbageCollect();
+        signalMemoryCleanup();
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -523,11 +523,11 @@ af_err af_memory_manager_set_unlock_fn(af_memory_manager handle,
     return AF_SUCCESS;
 }
 
-af_err af_memory_manager_set_garbage_collect_fn(
-    af_memory_manager handle, af_memory_manager_garbage_collect_fn fn) {
+af_err af_memory_manager_set_signal_memory_cleanup_fn(
+    af_memory_manager handle, af_memory_manager_signal_memory_cleanup_fn fn) {
     try {
-        MemoryManager &manager     = getMemoryManager(handle);
-        manager.garbage_collect_fn = fn;
+        MemoryManager &manager           = getMemoryManager(handle);
+        manager.signal_memory_cleanup_fn = fn;
     }
     CATCHALL;
 
@@ -589,17 +589,6 @@ af_err af_memory_manager_set_is_user_locked_fn(
     return AF_SUCCESS;
 }
 
-af_err af_memory_manager_set_get_mem_step_size_fn(
-    af_memory_manager handle, af_memory_manager_get_mem_step_size_fn fn) {
-    try {
-        MemoryManager &manager       = getMemoryManager(handle);
-        manager.get_mem_step_size_fn = fn;
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}
-
 af_err af_memory_manager_set_get_max_bytes_fn(
     af_memory_manager handle, af_memory_manager_get_max_bytes_fn fn) {
     try {
@@ -616,17 +605,6 @@ af_err af_memory_manager_set_get_max_buffers_fn(
     try {
         MemoryManager &manager     = getMemoryManager(handle);
         manager.get_max_buffers_fn = fn;
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}
-
-af_err af_memory_manager_set_set_mem_step_size_fn(
-    af_memory_manager handle, af_memory_manager_set_mem_step_size_fn fn) {
-    try {
-        MemoryManager &manager       = getMemoryManager(handle);
-        manager.set_mem_step_size_fn = fn;
     }
     CATCHALL;
 
@@ -670,35 +648,58 @@ af_err af_memory_manager_set_remove_memory_management_fn(
 // Memory Manager wrapper implementations
 
 void MemoryManagerFunctionWrapper::initialize() {
-    getMemoryManager(handle_).initialize_fn(handle_);
+    AF_CHECK(getMemoryManager(handle_).initialize_fn(handle_));
 }
 
 void MemoryManagerFunctionWrapper::shutdown() {
-    getMemoryManager(handle_).shutdown_fn(handle_);
+    AF_CHECK(getMemoryManager(handle_).shutdown_fn(handle_));
 }
 
 af_buffer_info MemoryManagerFunctionWrapper::alloc(const size_t size,
                                                    bool user_lock) {
-    return getMemoryManager(handle_).alloc_fn(handle_, size, (int)user_lock);
+    af_buffer_info bufferInfo;
+    AF_CHECK(getMemoryManager(handle_).alloc_fn(handle_, &bufferInfo, size,
+                                                (int)user_lock));
+    return bufferInfo;
 }
 
 size_t MemoryManagerFunctionWrapper::allocated(void *ptr) {
-    return getMemoryManager(handle_).allocated_fn(handle_, ptr);
+    size_t out;
+    AF_CHECK(getMemoryManager(handle_).allocated_fn(handle_, &out, ptr));
+    return out;
 }
 
 void MemoryManagerFunctionWrapper::unlock(void *ptr, af_event e,
                                           bool user_unlock) {
-    getMemoryManager(handle_).unlock_fn(handle_, ptr, e, (int)user_unlock);
+    AF_CHECK(
+        getMemoryManager(handle_).unlock_fn(handle_, ptr, e, (int)user_unlock));
 }
 
-void MemoryManagerFunctionWrapper::garbageCollect() {
-    getMemoryManager(handle_).garbage_collect_fn(handle_);
+void MemoryManagerFunctionWrapper::signalMemoryCleanup() {
+    AF_CHECK(getMemoryManager(handle_).signal_memory_cleanup_fn(handle_));
 }
 
 void MemoryManagerFunctionWrapper::printInfo(const char *msg,
                                              const int device) {
-    getMemoryManager(handle_).print_info_fn(handle_, const_cast<char *>(msg),
-                                            device);
+    AF_CHECK(getMemoryManager(handle_).print_info_fn(
+        handle_, const_cast<char *>(msg), device));
+}
+
+void MemoryManagerFunctionWrapper::userLock(const void *ptr) {
+    AF_CHECK(getMemoryManager(handle_).user_lock_fn(handle_,
+                                                    const_cast<void *>(ptr)));
+}
+
+void MemoryManagerFunctionWrapper::userUnlock(const void *ptr) {
+    AF_CHECK(getMemoryManager(handle_).user_unlock_fn(handle_,
+                                                      const_cast<void *>(ptr)));
+}
+
+bool MemoryManagerFunctionWrapper::isUserLocked(const void *ptr) {
+    int out;
+    AF_CHECK(getMemoryManager(handle_).is_user_locked_fn(
+        handle_, &out, const_cast<void *>(ptr)));
+    return !!out;
 }
 
 void MemoryManagerFunctionWrapper::usageInfo(size_t *alloc_bytes,
@@ -709,23 +710,6 @@ void MemoryManagerFunctionWrapper::usageInfo(size_t *alloc_bytes,
                                             lock_bytes, lock_buffers);
 }
 
-void MemoryManagerFunctionWrapper::userLock(const void *ptr) {
-    getMemoryManager(handle_).user_lock_fn(handle_, const_cast<void *>(ptr));
-}
-
-void MemoryManagerFunctionWrapper::userUnlock(const void *ptr) {
-    getMemoryManager(handle_).user_unlock_fn(handle_, const_cast<void *>(ptr));
-}
-
-bool MemoryManagerFunctionWrapper::isUserLocked(const void *ptr) {
-    return getMemoryManager(handle_).is_user_locked_fn(handle_,
-                                                       const_cast<void *>(ptr));
-}
-
-size_t MemoryManagerFunctionWrapper::getMemStepSize() {
-    return getMemoryManager(handle_).get_mem_step_size_fn(handle_);
-}
-
 size_t MemoryManagerFunctionWrapper::getMaxBytes() {
     return getMemoryManager(handle_).get_max_bytes_fn(handle_);
 }
@@ -734,12 +718,25 @@ unsigned MemoryManagerFunctionWrapper::getMaxBuffers() {
     return getMemoryManager(handle_).get_max_buffers_fn(handle_);
 }
 
-void MemoryManagerFunctionWrapper::setMemStepSize(size_t new_step_size) {
-    getMemoryManager(handle_).set_mem_step_size_fn(handle_, new_step_size);
-}
-
 bool MemoryManagerFunctionWrapper::checkMemoryLimit() {
     return getMemoryManager(handle_).check_memory_limit_fn(handle_);
+}
+
+size_t MemoryManagerFunctionWrapper::getMemStepSize() {
+    // Not implemented in the public memory manager API, but for backward
+    // compatibility reasons, needs to be in the common memory manager interface
+    // so that it can be used with the default memory manager. Call into the
+    // backend implementation so the exception can be properly propagated
+    AF_ERROR("Memory step size API not implemented for custom memory manager",
+             AF_ERR_NOT_SUPPORTED);
+}
+
+void MemoryManagerFunctionWrapper::setMemStepSize(size_t new_step_size) {
+    // Not implemented in the public memory manager API, but for backward
+    // compatibility reasons, needs to be in the common memory manager interface
+    // so that it can be used with the default memory manager.
+    AF_ERROR("Memory step size API not implemented for custom memory manager ",
+             AF_ERR_NOT_SUPPORTED);
 }
 
 void MemoryManagerFunctionWrapper::addMemoryManagement(int device) {

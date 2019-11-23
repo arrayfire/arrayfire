@@ -105,39 +105,39 @@ AFAPI af_err af_unlock_buffer_info_ptr(void** ptr, af_buffer_info buf);
 // Memory Manager API
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef void (*af_memory_manager_initialize_fn)(af_memory_manager);
+typedef af_err (*af_memory_manager_initialize_fn)(af_memory_manager);
 
-typedef void (*af_memory_manager_shutdown_fn)(af_memory_manager);
+typedef af_err (*af_memory_manager_shutdown_fn)(af_memory_manager);
 
-typedef af_buffer_info (*af_memory_manager_alloc_fn)(af_memory_manager, size_t,
-                                                     /* bool */ int);
+typedef af_err (*af_memory_manager_alloc_fn)(af_memory_manager, af_buffer_info*,
+                                             size_t,
+                                             /* bool */ int);
 
-typedef size_t (*af_memory_manager_allocated_fn)(af_memory_manager, void*);
+typedef af_err (*af_memory_manager_allocated_fn)(af_memory_manager, size_t*,
+                                                 void*);
 
-typedef void (*af_memory_manager_unlock_fn)(af_memory_manager, void*, af_event,
-                                            /* bool */ int);
+typedef af_err (*af_memory_manager_unlock_fn)(af_memory_manager, void*,
+                                              af_event,
+                                              /* bool */ int);
 
-typedef void (*af_memory_manager_garbage_collect_fn)(af_memory_manager);
+typedef af_err (*af_memory_manager_signal_memory_cleanup_fn)(af_memory_manager);
 
-typedef void (*af_memory_manager_print_info_fn)(af_memory_manager, char*, int);
+typedef af_err (*af_memory_manager_print_info_fn)(af_memory_manager, char*,
+                                                  int);
+
+typedef af_err (*af_memory_manager_user_lock_fn)(af_memory_manager, void*);
+
+typedef af_err (*af_memory_manager_user_unlock_fn)(af_memory_manager, void*);
+
+typedef af_err (*af_memory_manager_is_user_locked_fn)(af_memory_manager, int*,
+                                                      void*);
 
 typedef void (*af_memory_manager_usage_info_fn)(af_memory_manager, size_t*,
                                                 size_t*, size_t*, size_t*);
 
-typedef void (*af_memory_manager_user_lock_fn)(af_memory_manager, void*);
-
-typedef void (*af_memory_manager_user_unlock_fn)(af_memory_manager, void*);
-
-typedef int (*af_memory_manager_is_user_locked_fn)(af_memory_manager, void*);
-
-typedef size_t (*af_memory_manager_get_mem_step_size_fn)(af_memory_manager);
-
 typedef size_t (*af_memory_manager_get_max_bytes_fn)(af_memory_manager);
 
 typedef unsigned (*af_memory_manager_get_max_buffers_fn)(af_memory_manager);
-
-typedef void (*af_memory_manager_set_mem_step_size_fn)(af_memory_manager,
-                                                       size_t);
 
 typedef int (*af_memory_manager_check_memory_limit)(af_memory_manager);
 
@@ -229,8 +229,8 @@ AFAPI af_err af_memory_manager_set_allocated_fn(
 AFAPI af_err af_memory_manager_set_unlock_fn(af_memory_manager handle,
                                              af_memory_manager_unlock_fn fn);
 
-AFAPI af_err af_memory_manager_set_garbage_collect_fn(
-    af_memory_manager handle, af_memory_manager_garbage_collect_fn fn);
+AFAPI af_err af_memory_manager_set_signal_memory_cleanup_fn(
+    af_memory_manager handle, af_memory_manager_signal_memory_cleanup_fn fn);
 AFAPI af_err af_memory_manager_set_print_info_fn(
     af_memory_manager handle, af_memory_manager_print_info_fn fn);
 AFAPI af_err af_memory_manager_set_usage_info_fn(
@@ -242,14 +242,10 @@ AFAPI af_err af_memory_manager_set_user_unlock_fn(
     af_memory_manager handle, af_memory_manager_user_unlock_fn fn);
 AFAPI af_err af_memory_manager_set_is_user_locked_fn(
     af_memory_manager handle, af_memory_manager_is_user_locked_fn fn);
-AFAPI af_err af_memory_manager_set_get_mem_step_size_fn(
-    af_memory_manager handle, af_memory_manager_get_mem_step_size_fn fn);
 AFAPI af_err af_memory_manager_set_get_max_bytes_fn(
     af_memory_manager handle, af_memory_manager_get_max_bytes_fn fn);
 AFAPI af_err af_memory_manager_set_get_max_buffers_fn(
     af_memory_manager handle, af_memory_manager_get_max_buffers_fn fn);
-AFAPI af_err af_memory_manager_set_set_mem_step_size_fn(
-    af_memory_manager handle, af_memory_manager_set_mem_step_size_fn fn);
 
 AFAPI af_err af_memory_manager_set_check_memory_limit_fn(
     af_memory_manager handle, af_memory_manager_check_memory_limit fn);

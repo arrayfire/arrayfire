@@ -90,7 +90,7 @@ DefaultMemoryManager::DefaultMemoryManager(int num_devices,
 
 void DefaultMemoryManager::initialize() { this->setMaxMemorySize(); }
 
-void DefaultMemoryManager::shutdown() { garbageCollect(); }
+void DefaultMemoryManager::shutdown() { signalMemoryCleanup(); }
 
 void DefaultMemoryManager::addMemoryManagement(int device) {
     // If there is a memory manager allocated for this device id, we might
@@ -142,7 +142,7 @@ af_buffer_info DefaultMemoryManager::alloc(const size_t bytes, bool user_lock) {
         if (!this->debug_mode) {
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (this->checkMemoryLimit()) { this->garbageCollect(); }
+            if (this->checkMemoryLimit()) { this->signalMemoryCleanup(); }
 
             lock_guard_t lock(this->memory_mutex);
             memory::free_iter iter = current.free_map.find(alloc_bytes);
@@ -173,7 +173,7 @@ af_buffer_info DefaultMemoryManager::alloc(const size_t bytes, bool user_lock) {
             } catch (const AfError &ex) {
                 // If out of memory, run garbage collect and try again
                 if (ex.getError() != AF_ERR_NO_MEM) throw;
-                this->garbageCollect();
+                this->signalMemoryCleanup();
                 ptr = this->nativeAlloc(alloc_bytes);
                 af_buffer_info_set_ptr(bufferInfo, ptr);
             }
@@ -254,7 +254,7 @@ void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
     }
 }
 
-void DefaultMemoryManager::garbageCollect() {
+void DefaultMemoryManager::signalMemoryCleanup() {
     cleanDeviceMemoryManager(this->getActiveDeviceId());
 }
 
@@ -375,4 +375,5 @@ bool DefaultMemoryManager::checkMemoryLimit() {
     return current.lock_bytes >= current.max_bytes ||
            current.total_buffers >= this->max_buffers;
 }
+
 }  // namespace common

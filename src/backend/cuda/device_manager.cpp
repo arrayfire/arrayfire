@@ -198,8 +198,12 @@ DeviceManager &DeviceManager::getInstance() {
 void DeviceManager::setMemoryManager(
     std::unique_ptr<MemoryManagerBase> newMgr) {
     std::lock_guard<std::mutex> l(mutex);
+    // It's possible we're setting a memory manager and the default memory
+    // manager still hasn't been initialized, so initialize it anyways so we
+    // don't inadvertently reset to it when we first call memoryManager()
+    memoryManager();
     // Calls shutdown() on the existing memory manager.
-    memManager->shutdownAllocator();
+    if (memManager) { memManager->shutdownAllocator(); }
     memManager = std::move(newMgr);
     // Set the backend memory manager for this new manager to register native
     // functions correctly.
@@ -219,8 +223,13 @@ void DeviceManager::resetMemoryManager() {
 void DeviceManager::setMemoryManagerPinned(
     std::unique_ptr<MemoryManagerBase> newMgr) {
     std::lock_guard<std::mutex> l(mutex);
+    // It's possible we're setting a pinned memory manager and the default
+    // memory manager still hasn't been initialized, so initialize it anyways so
+    // we don't inadvertently reset to it when we first call
+    // pinnedMemoryManager()
+    pinnedMemoryManager();
     // Calls shutdown() on the existing memory manager.
-    pinnedMemManager->shutdownAllocator();
+    if (pinnedMemoryManager) { pinnedMemManager->shutdownAllocator(); }
     // Set the backend memory manager for this new manager to register native
     // functions correctly.
     pinnedMemManager = std::move(newMgr);

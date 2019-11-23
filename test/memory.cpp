@@ -246,7 +246,7 @@ TEST(Memory, LargeLoop) {
         // Verify that new buffers are being allocated
         deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
 
-        // Limit to 10 to check before garbage collection
+        // Limit to 10 to check before memory cleanup
         if (i < 10) {
             ASSERT_EQ(alloc_buffers, (size_t)(i + 2));  // i is zero based
             ASSERT_EQ(lock_buffers, 2u);
@@ -761,14 +761,13 @@ T *getMemoryManagerPayload(af_memory_manager manager) {
  * purposes. It is not thread safe or optimized.
  */
 struct E2ETestPayload {
-    int initializeCalledTimes = 0;
-    int shutdownCalledTimes   = 0;
+    int initializeCalledTimes{0};
+    int shutdownCalledTimes{0};
     std::unordered_map<void *, size_t> table;
     std::unordered_set<void *> locked;
     size_t totalBytes{0};
     size_t totalBuffers{0};
     size_t lockedBytes{0};
-    size_t memStepSize{8};
 
     size_t maxBuffers{64};
     size_t maxBytes{1024};
@@ -777,32 +776,40 @@ struct E2ETestPayload {
     int printInfoDevice{-1};
 };
 
-size_t allocated_fn(af_memory_manager manager, void *ptr) {
-    return getMemoryManagerPayload<E2ETestPayload>(manager)->table[ptr];
+af_err allocated_fn(af_memory_manager manager, size_t *out, void *ptr) {
+    auto &table = getMemoryManagerPayload<E2ETestPayload>(manager)->table;
+    if (table.find(ptr) == table.end()) {
+        *out = 0;
+    } else {
+        *out = table[ptr];
+    }
+    return AF_SUCCESS;
 }
 
-void user_lock_fn(af_memory_manager manager, void *ptr) {
+af_err user_lock_fn(af_memory_manager manager, void *ptr) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
     if (payload->locked.find(ptr) == payload->locked.end()) {
         payload->locked.insert(ptr);
         payload->lockedBytes += payload->table[ptr];
     }
+    return AF_SUCCESS;
 }
 
-int is_user_locked_fn(af_memory_manager manager, void *ptr) {
+af_err is_user_locked_fn(af_memory_manager manager, int *out, void *ptr) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
-    return payload->locked.find(ptr) != payload->locked.end();
+    *out          = payload->locked.find(ptr) != payload->locked.end();
+    return AF_SUCCESS;
 }
 
-void unlock_fn(af_memory_manager manager, void *ptr, af_event event,
-               int userLock) {
+af_err unlock_fn(af_memory_manager manager, void *ptr, af_event event,
+                 int userLock) {
     af_release_event(event);
-    if (!ptr) { return; }
+    if (!ptr) { return AF_SUCCESS; }
 
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
 
     if (payload->table.find(ptr) == payload->table.end()) {
-        return;  // fast path
+        return AF_SUCCESS;  // fast path
     }
 
     // For testing, treat user-allocated and AF-allocated memory identically
@@ -810,23 +817,27 @@ void unlock_fn(af_memory_manager manager, void *ptr, af_event event,
         payload->locked.erase(ptr);
         payload->lockedBytes -= payload->table[ptr];
     }
+    return AF_SUCCESS;
 }
 
-void user_unlock_fn(af_memory_manager manager, void *ptr) {
+af_err user_unlock_fn(af_memory_manager manager, void *ptr) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
     af_event event;
     af_create_event(&event);
     af_mark_event(event);
-    unlock_fn(manager, ptr, event, /* user */ 1);
+    af_err err = unlock_fn(manager, ptr, event, /* user */ 1);
     payload->lockedBytes -= payload->table[ptr];
+    return err;
 }
 
-void garbage_collect_fn(af_memory_manager manager) {
+af_err signal_memory_cleanup_fn(af_memory_manager manager) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
     // Free unlocked memory
     std::vector<void *> freed;
     for (auto &entry : payload->table) {
-        if (!is_user_locked_fn(manager, entry.first)) {
+        int isUserLocked;
+        is_user_locked_fn(manager, &isUserLocked, entry.first);
+        if (!isUserLocked) {
             void *ptr = entry.first;
             af_memory_manager_native_free(manager, ptr);
             payload->totalBytes -= payload->table[entry.first];
@@ -834,12 +845,14 @@ void garbage_collect_fn(af_memory_manager manager) {
         }
     }
     for (auto ptr : freed) { payload->table.erase(ptr); }
+    return AF_SUCCESS;
 }
 
-void print_info_fn(af_memory_manager manager, char *c, int b) {
+af_err print_info_fn(af_memory_manager manager, char *c, int b) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
     payload->printInfoStringArg = std::string(c);
     payload->printInfoDevice    = b;
+    return AF_SUCCESS;
 }
 
 void usage_info_fn(af_memory_manager manager, size_t *alloc_bytes,
@@ -852,10 +865,6 @@ void usage_info_fn(af_memory_manager manager, size_t *alloc_bytes,
     *lock_buffers  = payload->locked.size();
 }
 
-size_t get_mem_step_size_fn(af_memory_manager manager) {
-    return getMemoryManagerPayload<E2ETestPayload>(manager)->memStepSize;
-}
-
 size_t get_max_bytes_fn(af_memory_manager manager) {
     return getMemoryManagerPayload<E2ETestPayload>(manager)->maxBytes;
 }
@@ -864,18 +873,14 @@ unsigned get_max_buffers_fn(af_memory_manager manager) {
     return getMemoryManagerPayload<E2ETestPayload>(manager)->maxBuffers;
 }
 
-void set_mem_step_size_fn(af_memory_manager manager, size_t step) {
-    getMemoryManagerPayload<E2ETestPayload>(manager)->memStepSize = step;
-}
-
 int check_memory_limit_fn(af_memory_manager manager) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
     return payload->totalBytes < get_max_bytes_fn(manager) &&
            payload->totalBuffers < get_max_buffers_fn(manager);
 }
 
-af_buffer_info alloc_fn(af_memory_manager manager, size_t size,
-                        /* bool */ int userLock) {
+af_err alloc_fn(af_memory_manager manager, af_buffer_info *out, size_t size,
+                /* bool */ int userLock) {
     af_event event;
     af_create_event(&event);
     af_mark_event(event);
@@ -883,7 +888,9 @@ af_buffer_info alloc_fn(af_memory_manager manager, size_t size,
     af_create_buffer_info(&bufferInfo, nullptr, event);
 
     if (size > 0) {
-        if (check_memory_limit_fn(manager)) { garbage_collect_fn(manager); }
+        if (check_memory_limit_fn(manager)) {
+            signal_memory_cleanup_fn(manager);
+        }
 
         void *piece;
         af_memory_manager_native_alloc(manager, &piece, size);
@@ -899,7 +906,8 @@ af_buffer_info alloc_fn(af_memory_manager manager, size_t size,
         payload->lockedBytes += size;
     }
 
-    return bufferInfo;
+    *out = bufferInfo;
+    return AF_SUCCESS;
 }
 
 void add_memory_management_fn(af_memory_manager manager, int id) {}
@@ -919,13 +927,15 @@ TEST(MemoryManagerApi, E2ETest) {
     auto initialize_fn = [](af_memory_manager manager) {
         auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
         payload->initializeCalledTimes++;
+        return AF_SUCCESS;
     };
     af_memory_manager_set_initialize_fn(manager, initialize_fn);
 
     auto shutdown_fn = [](af_memory_manager manager) {
         auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
+        std::cout << "shutdown called " << std::endl;
         payload->shutdownCalledTimes++;
-        throw std::logic_error("DELETE ME");
+        return AF_SUCCESS;
     };
     af_memory_manager_set_shutdown_fn(manager, shutdown_fn);
 
@@ -934,18 +944,17 @@ TEST(MemoryManagerApi, E2ETest) {
     af_memory_manager_set_allocated_fn(manager, allocated_fn);
     af_memory_manager_set_unlock_fn(manager, unlock_fn);
     // utils
-    af_memory_manager_set_garbage_collect_fn(manager, garbage_collect_fn);
+    af_memory_manager_set_signal_memory_cleanup_fn(manager,
+                                                   signal_memory_cleanup_fn);
     af_memory_manager_set_print_info_fn(manager, print_info_fn);
     af_memory_manager_set_usage_info_fn(manager, usage_info_fn);
     // user lock/unlock
     af_memory_manager_set_user_lock_fn(manager, user_lock_fn);
     af_memory_manager_set_user_unlock_fn(manager, user_unlock_fn);
     af_memory_manager_set_is_user_locked_fn(manager, is_user_locked_fn);
-    // limits and step size
-    af_memory_manager_set_get_mem_step_size_fn(manager, get_mem_step_size_fn);
+    // limits
     af_memory_manager_set_get_max_bytes_fn(manager, get_max_bytes_fn);
     af_memory_manager_set_get_max_buffers_fn(manager, get_max_buffers_fn);
-    af_memory_manager_set_set_mem_step_size_fn(manager, set_mem_step_size_fn);
     af_memory_manager_set_check_memory_limit_fn(manager, check_memory_limit_fn);
     // ocl
     af_memory_manager_set_add_memory_management_fn(manager,
@@ -993,15 +1002,13 @@ TEST(MemoryManagerApi, E2ETest) {
     ASSERT_EQ(printInfoMsg, payload->printInfoStringArg);
     ASSERT_EQ(printInfoDeviceId, payload->printInfoDevice);
 
-    // step size
-    size_t stepSizeTest = 64;
-    af::setMemStepSize(stepSizeTest);
-    ASSERT_EQ(af::getMemStepSize(), stepSizeTest);
-    ASSERT_EQ(stepSizeTest, payload->memStepSize);
+    // step size (throws with a custom memory manager)
+    ASSERT_THROW(af::setMemStepSize(500), af::exception);
+    ASSERT_THROW(af::getMemStepSize(), af::exception);
 
     ASSERT_EQ(payload->table.size(), 0);
     af_unset_memory_manager();
     af_release_memory_manager(manager);
     ASSERT_EQ(payload->initializeCalledTimes, 1);
-    ASSERT_EQ(payload->shutdownCalledTimes, 1);
+    ASSERT_EQ(payload->shutdownCalledTimes, af::getDeviceCount());
 }

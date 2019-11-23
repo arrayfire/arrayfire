@@ -89,8 +89,8 @@ af_err af_memory_manager_set_unlock_fn(af_memory_manager handle,
     return CALL(handle, fn);
 }
 
-af_err af_memory_manager_set_garbage_collect_fn(
-    af_memory_manager handle, af_memory_manager_garbage_collect_fn fn) {
+af_err af_memory_manager_set_signal_memory_cleanup_fn(
+    af_memory_manager handle, af_memory_manager_signal_memory_cleanup_fn fn) {
     return CALL(handle, fn);
 }
 
@@ -118,11 +118,6 @@ af_err af_memory_manager_set_is_user_locked_fn(
     return CALL(handle, fn);
 }
 
-af_err af_memory_manager_set_get_mem_step_size_fn(
-    af_memory_manager handle, af_memory_manager_get_mem_step_size_fn fn) {
-    return CALL(handle, fn);
-}
-
 af_err af_memory_manager_set_get_max_bytes_fn(
     af_memory_manager handle, af_memory_manager_get_max_bytes_fn fn) {
     return CALL(handle, fn);
@@ -130,11 +125,6 @@ af_err af_memory_manager_set_get_max_bytes_fn(
 
 af_err af_memory_manager_set_get_max_buffers_fn(
     af_memory_manager handle, af_memory_manager_get_max_buffers_fn fn) {
-    return CALL(handle, fn);
-}
-
-af_err af_memory_manager_set_set_mem_step_size_fn(
-    af_memory_manager handle, af_memory_manager_set_mem_step_size_fn fn) {
     return CALL(handle, fn);
 }
 

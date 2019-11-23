@@ -37,7 +37,7 @@ size_t getMaxBytes() { return memoryManager().getMaxBytes(); }
 
 unsigned getMaxBuffers() { return memoryManager().getMaxBuffers(); }
 
-void garbageCollect() { memoryManager().garbageCollect(); }
+void signalMemoryCleanup() { memoryManager().signalMemoryCleanup(); }
 
 void shutdownMemoryManager() { memoryManager().shutdown(); }
 

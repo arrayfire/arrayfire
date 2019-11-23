@@ -41,17 +41,15 @@ struct MemoryManager {
     af_memory_manager_alloc_fn alloc_fn;
     af_memory_manager_allocated_fn allocated_fn;
     af_memory_manager_unlock_fn unlock_fn;
-    af_memory_manager_garbage_collect_fn garbage_collect_fn;
     af_memory_manager_print_info_fn print_info_fn;
     af_memory_manager_usage_info_fn usage_info_fn;
     af_memory_manager_user_lock_fn user_lock_fn;
     af_memory_manager_user_unlock_fn user_unlock_fn;
     af_memory_manager_is_user_locked_fn is_user_locked_fn;
-    af_memory_manager_get_mem_step_size_fn get_mem_step_size_fn;
     af_memory_manager_get_max_bytes_fn get_max_bytes_fn;
     af_memory_manager_get_max_buffers_fn get_max_buffers_fn;
-    af_memory_manager_set_mem_step_size_fn set_mem_step_size_fn;
     af_memory_manager_check_memory_limit check_memory_limit_fn;
+    af_memory_manager_signal_memory_cleanup_fn signal_memory_cleanup_fn;
     af_memory_manager_add_memory_management add_memory_management_fn;
     af_memory_manager_remove_memory_management remove_memory_management_fn;
     // A generic payload on which data can be stored on the af_memory_manager
@@ -75,22 +73,22 @@ class MemoryManagerFunctionWrapper : public common::memory::MemoryManagerBase {
     ~MemoryManagerFunctionWrapper() {}
     void initialize() override;
     void shutdown() override;
-    af_buffer_info alloc(const size_t size, bool user_lock);
-    size_t allocated(void *ptr);
-    void unlock(void *ptr, af_event e, bool user_unlock);
-    void garbageCollect();
-    void printInfo(const char *msg, const int device);
+    af_buffer_info alloc(const size_t size, bool user_lock) override;
+    size_t allocated(void *ptr) override;
+    void unlock(void *ptr, af_event e, bool user_unlock) override;
+    void signalMemoryCleanup() override;
+    void printInfo(const char *msg, const int device) override;
     void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
-                   size_t *lock_bytes, size_t *lock_buffers);
-    void userLock(const void *ptr);
-    void userUnlock(const void *ptr);
-    bool isUserLocked(const void *ptr);
-    size_t getMemStepSize();
-    size_t getMaxBytes();
-    unsigned getMaxBuffers();
-    void setMemStepSize(size_t new_step_size);
-    bool checkMemoryLimit();
+                   size_t *lock_bytes, size_t *lock_buffers) override;
+    void userLock(const void *ptr) override;
+    void userUnlock(const void *ptr) override;
+    bool isUserLocked(const void *ptr) override;
+    size_t getMemStepSize() override;
+    size_t getMaxBytes() override;
+    unsigned getMaxBuffers() override;
+    void setMemStepSize(size_t new_step_size) override;
+    bool checkMemoryLimit() override;
 
-    void addMemoryManagement(int device);
-    void removeMemoryManagement(int device);
+    void addMemoryManagement(int device) override;
+    void removeMemoryManagement(int device) override;
 };
