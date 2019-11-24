@@ -111,48 +111,54 @@ static string platformMap(string& platStr) {
     }
 }
 
-string getDeviceInfo() {
-    DeviceManager& devMngr = DeviceManager::getInstance();
-
-    vector<cl::Device*> devices;
-    {
-        common::lock_guard_t lock(devMngr.deviceMutex);
-        devices = devMngr.mDevices;
-    }
-
+string getDeviceInfo() noexcept {
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION << " (OpenCL, " << get_system()
          << ", build " << AF_REVISION << ")\n";
 
-    unsigned nDevices = 0;
-    for (auto device : devices) {
-        const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
+    vector<cl::Device*> devices;
+    try {
+        DeviceManager& devMngr = DeviceManager::getInstance();
 
-        string dstr      = device->getInfo<CL_DEVICE_NAME>();
-        bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
+        common::lock_guard_t lock(devMngr.deviceMutex);
+        devices = devMngr.mDevices;
 
-        string id = (show_braces ? string("[") : "-") + to_string(nDevices) +
-                    (show_braces ? string("]") : "-");
+        unsigned nDevices = 0;
+        for (auto device : devices) {
+            const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
 
-        size_t msize = device->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
-        info << id << " " << getPlatformName(*device) << ": " << ltrim(dstr)
-             << ", " << msize / 1048576 << " MB";
+            string dstr      = device->getInfo<CL_DEVICE_NAME>();
+            bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
+
+            string id = (show_braces ? string("[") : "-") +
+                        to_string(nDevices) + (show_braces ? string("]") : "-");
+
+            size_t msize = device->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>();
+            info << id << " " << getPlatformName(*device) << ": " << ltrim(dstr)
+                 << ", " << msize / 1048576 << " MB";
 #ifndef NDEBUG
-        info << " -- ";
-        string devVersion = device->getInfo<CL_DEVICE_VERSION>();
-        string driVersion = device->getInfo<CL_DRIVER_VERSION>();
-        info << devVersion;
-        info << " -- Device driver " << driVersion;
-        info << " -- FP64 Support: "
-             << (device->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() > 0
-                     ? "True"
-                     : "False");
-        info << " -- Unified Memory ("
-             << (isHostUnifiedMemory(*device) ? "True" : "False") << ")";
+            info << " -- ";
+            string devVersion = device->getInfo<CL_DEVICE_VERSION>();
+            string driVersion = device->getInfo<CL_DRIVER_VERSION>();
+            info << devVersion;
+            info << " -- Device driver " << driVersion;
+            info
+                << " -- FP64 Support: "
+                << (device->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() >
+                            0
+                        ? "True"
+                        : "False");
+            info << " -- Unified Memory ("
+                 << (isHostUnifiedMemory(*device) ? "True" : "False") << ")";
 #endif
-        info << endl;
+            info << endl;
 
-        nDevices++;
+            nDevices++;
+        }
+    } catch (const AfError& err) {
+        info << "No platforms found.\n";
+        // Don't throw an exception here. Info should pass even if the system
+        // doesn't have the correct drivers installed.
     }
     return info.str();
 }
@@ -177,13 +183,16 @@ void setActiveContext(int device) {
     tlocalActiveDeviceId() = make_pair(device, device);
 }
 
-int getDeviceCount() {
+int getDeviceCount() noexcept try {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     common::lock_guard_t lock(devMngr.deviceMutex);
-
     return devMngr.mQueues.size();
-}
+} catch (const AfError& err) {
+    // If device manager threw an error then return 0 because no platforms
+    // were found
+    return 0;
+ }
 
 int getActiveDeviceId() {
     // Second element is the queue id, which is

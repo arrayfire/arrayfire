@@ -187,7 +187,7 @@ DeviceManager::~DeviceManager() {
 
 int getBackend() { return AF_BACKEND_CUDA; }
 
-string getDeviceInfo(int device) {
+string getDeviceInfo(int device) noexcept {
     cudaDeviceProp dev = getDeviceProp(device);
 
     size_t mem_gpu_total = dev.totalGlobalMem;
@@ -209,7 +209,7 @@ string getDeviceInfo(int device) {
     return info;
 }
 
-string getDeviceInfo() {
+string getDeviceInfo() noexcept {
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION << " (CUDA, " << get_system()
          << ", build " << AF_REVISION << ")" << std::endl;
@@ -218,10 +218,10 @@ string getDeviceInfo() {
     return info.str();
 }
 
-string getPlatformInfo() {
+string getPlatformInfo() noexcept {
     string driverVersion    = getDriverVersion();
     std::string cudaRuntime = getCUDARuntimeVersion();
-    string platform         = "Platform: CUDA Toolkit " + cudaRuntime;
+    string platform         = "Platform: CUDA Runtime " + cudaRuntime;
     if (!driverVersion.empty()) {
         platform.append(", Driver: ");
         platform.append(driverVersion);
@@ -269,15 +269,13 @@ void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
 }
 
 string getDriverVersion() {
-    char driverVersion[1024] = {
-        " ",
-    };
+    char driverVersion[1024] = {" "};
     int x = nvDriverVersion(driverVersion, sizeof(driverVersion));
     if (x != 1) {
 // Windows, OSX, Tegra Need a new way to fetch driver
 #if !defined(OS_WIN) && !defined(OS_MAC) && !defined(__arm__) && \
     !defined(__aarch64__)
-        throw runtime_error("Invalid driver");
+        return "N/A";
 #endif
         int driver = 0;
         CUDA_CHECK(cudaDriverGetVersion(&driver));
@@ -287,10 +285,13 @@ string getDriverVersion() {
     }
 }
 
-string getCUDARuntimeVersion() {
+string getCUDARuntimeVersion() noexcept {
     int runtime = 0;
-    CUDA_CHECK(cudaRuntimeGetVersion(&runtime));
-    return int_version_to_string(runtime);
+    if (cudaSuccess == cudaRuntimeGetVersion(&runtime)) {
+        return int_version_to_string(runtime);
+    } else {
+        return int_version_to_string(CUDA_VERSION);
+    }
 }
 
 unsigned getMaxJitSize() {
@@ -315,7 +316,11 @@ int &tlocalActiveDeviceId() {
     return activeDeviceId;
 }
 
-int getDeviceCount() { return DeviceManager::getInstance().nDevices; }
+int getDeviceCount() {
+    int count = 0;
+    if (cudaGetDeviceCount(&count)) { return 0; }
+    else { return count; }
+}
 
 int getActiveDeviceId() { return tlocalActiveDeviceId(); }
 

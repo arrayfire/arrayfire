@@ -59,9 +59,9 @@ static inline bool verify_present(std::string pname, const char* ref) {
 
 int getBackend();
 
-std::string getDeviceInfo();
+std::string getDeviceInfo() noexcept;
 
-int getDeviceCount();
+int getDeviceCount() noexcept;
 
 int getActiveDeviceId();
 

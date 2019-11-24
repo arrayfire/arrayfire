@@ -170,7 +170,18 @@ DeviceManager::DeviceManager()
     , fgMngr(new graphics::ForgeManager())
     , mFFTSetup(new clfftSetupData) {
     vector<Platform> platforms;
-    Platform::get(&platforms);
+    try {
+        Platform::get(&platforms);
+    } catch (const cl::Error& err) {
+        if (err.err() == CL_PLATFORM_NOT_FOUND_KHR) {
+            AF_ERROR(
+                "No OpenCL platforms found on this system. Ensure you have "
+                "installed the device driver as well as the OpenCL runtime and "
+                "ICD from your device vendor. You can use the clinfo utility "
+                "to debug OpenCL installation issues.",
+                AF_ERR_RUNTIME);
+        }
+    }
 
     // This is all we need because the sort takes care of the order of devices
 #ifdef OS_MAC
