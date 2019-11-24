@@ -70,15 +70,15 @@ class DeviceManager {
 
     friend GraphicsResourceManager& interopManager();
 
-    friend std::string getDeviceInfo(int device);
+    friend std::string getDeviceInfo(int device) noexcept;
 
-    friend std::string getPlatformInfo();
+    friend std::string getPlatformInfo() noexcept;
 
     friend std::string getDriverVersion();
 
-    friend std::string getCUDARuntimeVersion();
+    friend std::string getCUDARuntimeVersion() noexcept;
 
-    friend std::string getDeviceInfo();
+    friend std::string getDeviceInfo() noexcept;
 
     friend int getDeviceCount();
 
@@ -107,6 +107,8 @@ class DeviceManager {
     // Attributes
     enum sort_mode { flops = 0, memory = 1, compute = 2, none = 3 };
 
+    // Checks if the Graphics driver is capable of running the CUDA toolkit
+    // version that ArrayFire was compiled against
     void checkCudaVsDriverVersion();
     void sortDevices(sort_mode mode = flops);
 

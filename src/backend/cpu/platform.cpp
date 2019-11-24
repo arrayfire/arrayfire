@@ -54,7 +54,7 @@ static inline string& ltrim(string& s) {
 
 int getBackend() { return AF_BACKEND_CPU; }
 
-string getDeviceInfo() {
+string getDeviceInfo() noexcept {
     const CPUInfo cinfo = DeviceManager::getInstance().getCPUInfo();
 
     ostringstream info;

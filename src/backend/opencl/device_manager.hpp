@@ -61,9 +61,9 @@ class DeviceManager {
 
     friend kc_entry_t kernelCache(int device, const std::string& key);
 
-    friend std::string getDeviceInfo();
+    friend std::string getDeviceInfo() noexcept;
 
-    friend int getDeviceCount();
+    friend int getDeviceCount() noexcept;
 
     friend int getDeviceIdFromNativeId(cl_device_id id);
 

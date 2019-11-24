@@ -21,6 +21,7 @@
 #include <af/version.h>
 
 #include <cstring>
+#include <string>
 
 using namespace detail;
 using common::half;
@@ -158,7 +159,23 @@ af_err af_get_device(int* device) {
 af_err af_set_device(const int device) {
     try {
         ARG_ASSERT(0, device >= 0);
-        ARG_ASSERT(0, setDevice(device) >= 0);
+        if (setDevice(device) < 0) {
+            int ndevices = getDeviceCount();
+            if (ndevices == 0) {
+                AF_ERROR(
+                    "No devices were found on this system. Ensure "
+                    "you have installed the device driver as well as the "
+                    "necessary runtime libraries for your platform.",
+                    AF_ERR_RUNTIME);
+            } else {
+                char buf[512];
+                char err_msg[] =
+                    "The device index of %d is out of range. Use a value "
+                    "between 0 and %d.";
+                snprintf(buf, 512, err_msg, device, ndevices - 1);
+                AF_ERROR(buf, AF_ERR_ARG);
+            }
+        }
     }
     CATCHALL;
 

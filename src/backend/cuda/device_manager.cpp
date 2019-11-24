@@ -473,35 +473,52 @@ DeviceManager::DeviceManager()
     , cuDevices(0)
     , nDevices(0)
     , fgMngr(new graphics::ForgeManager()) {
-    checkCudaVsDriverVersion();
+    try {
+        checkCudaVsDriverVersion();
 
-    CUDA_CHECK(cudaGetDeviceCount(&nDevices));
-    AF_TRACE("Found {} CUDA devices", nDevices);
-    if (nDevices == 0) {
-        AF_ERROR("No CUDA capable devices found", AF_ERR_DRIVER);
-    }
-    cuDevices.reserve(nDevices);
+        CUDA_CHECK(cudaGetDeviceCount(&nDevices));
+        AF_TRACE("Found {} CUDA devices", nDevices);
+        if (nDevices == 0) {
+            AF_ERROR("No CUDA capable devices found", AF_ERR_DRIVER);
+            return;
+        }
+        cuDevices.reserve(nDevices);
 
-    int cudaRtVer = 0;
-    CUDA_CHECK(cudaRuntimeGetVersion(&cudaRtVer));
-    int cudaMajorVer = cudaRtVer / 1000;
+        int cudaRtVer = 0;
+        CUDA_CHECK(cudaRuntimeGetVersion(&cudaRtVer));
+        int cudaMajorVer = cudaRtVer / 1000;
 
-    for (int i = 0; i < nDevices; i++) {
-        cudaDevice_t dev;
-        CUDA_CHECK(cudaGetDeviceProperties(&dev.prop, i));
-        if (dev.prop.major < getMinSupportedCompute(cudaMajorVer)) {
-            AF_TRACE("Unsuppored device: {}", dev.prop.name);
-            continue;
+        for (int i = 0; i < nDevices; i++) {
+            cudaDevice_t dev;
+            CUDA_CHECK(cudaGetDeviceProperties(&dev.prop, i));
+            if (dev.prop.major < getMinSupportedCompute(cudaMajorVer)) {
+                AF_TRACE("Unsuppored device: {}", dev.prop.name);
+                continue;
+            } else {
+                dev.flops = static_cast<size_t>(dev.prop.multiProcessorCount) *
+                            compute2cores(dev.prop.major, dev.prop.minor) *
+                            dev.prop.clockRate;
+                dev.nativeId = i;
+                AF_TRACE("Found device: {} ({:0.3} GB | ~{} GFLOPs | {} SMs)",
+                         dev.prop.name,
+                         dev.prop.totalGlobalMem / 1024. / 1024. / 1024.,
+                         dev.flops / 1024. / 1024. * 2,
+                         dev.prop.multiProcessorCount);
+                cuDevices.push_back(dev);
+            }
+        }
+    } catch (const AfError &err) {
+        // If one of the CUDA functions threw an exception. catch it and wrap it
+        // into a more informative ArrayFire exception.
+        if (err.getError() == AF_ERR_INTERNAL) {
+            AF_ERROR(
+                "Error initializing CUDA runtime. Check your CUDA device is "
+                "visible to the OS and you have installed the correct driver. "
+                "Try running the nvidia-smi utility to debug any driver "
+                "issues.",
+                AF_ERR_RUNTIME);
         } else {
-            dev.flops = static_cast<size_t>(dev.prop.multiProcessorCount) *
-                        compute2cores(dev.prop.major, dev.prop.minor) *
-                        dev.prop.clockRate;
-            dev.nativeId = i;
-            AF_TRACE(
-                "Found device: {} ({:0.3} GB | ~{} GFLOPs | {} SMs)",
-                dev.prop.name, dev.prop.totalGlobalMem / 1024. / 1024. / 1024.,
-                dev.flops / 1024. / 1024. * 2, dev.prop.multiProcessorCount);
-            cuDevices.push_back(dev);
+            throw;
         }
     }
     nDevices = cuDevices.size();

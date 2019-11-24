@@ -54,14 +54,16 @@ class PlanCache;
 
 int getBackend();
 
-std::string getDeviceInfo();
-std::string getDeviceInfo(int device);
+std::string getDeviceInfo() noexcept;
+std::string getDeviceInfo(int device) noexcept;
 
-std::string getPlatformInfo();
+std::string getPlatformInfo() noexcept;
 
 std::string getDriverVersion();
 
-std::string getCUDARuntimeVersion();
+// Returns the cuda runtime version as a string for the current build. If no
+// runtime is found or an error occured, the string "N/A" is returned
+std::string getCUDARuntimeVersion() noexcept;
 
 // Returns true if double is supported by the device
 bool isDoubleSupported(int device);
