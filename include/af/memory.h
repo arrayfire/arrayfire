@@ -132,14 +132,11 @@ typedef af_err (*af_memory_manager_user_unlock_fn)(af_memory_manager, void*);
 typedef af_err (*af_memory_manager_is_user_locked_fn)(af_memory_manager, int*,
                                                       void*);
 
-typedef void (*af_memory_manager_usage_info_fn)(af_memory_manager, size_t*,
-                                                size_t*, size_t*, size_t*);
+typedef af_err (*af_memory_manager_get_memory_pressure_fn)(af_memory_manager,
+                                                           float*);
 
-typedef size_t (*af_memory_manager_get_max_bytes_fn)(af_memory_manager);
-
-typedef unsigned (*af_memory_manager_get_max_buffers_fn)(af_memory_manager);
-
-typedef int (*af_memory_manager_check_memory_limit)(af_memory_manager);
+typedef af_err (*af_memory_manager_jit_tree_exceeds_memory_pressure_fn)(
+    af_memory_manager, int*, size_t);
 
 typedef void (*af_memory_manager_add_memory_management)(af_memory_manager, int);
 
@@ -233,8 +230,6 @@ AFAPI af_err af_memory_manager_set_signal_memory_cleanup_fn(
     af_memory_manager handle, af_memory_manager_signal_memory_cleanup_fn fn);
 AFAPI af_err af_memory_manager_set_print_info_fn(
     af_memory_manager handle, af_memory_manager_print_info_fn fn);
-AFAPI af_err af_memory_manager_set_usage_info_fn(
-    af_memory_manager handle, af_memory_manager_usage_info_fn fn);
 
 AFAPI af_err af_memory_manager_set_user_lock_fn(
     af_memory_manager handle, af_memory_manager_user_lock_fn fn);
@@ -242,13 +237,13 @@ AFAPI af_err af_memory_manager_set_user_unlock_fn(
     af_memory_manager handle, af_memory_manager_user_unlock_fn fn);
 AFAPI af_err af_memory_manager_set_is_user_locked_fn(
     af_memory_manager handle, af_memory_manager_is_user_locked_fn fn);
-AFAPI af_err af_memory_manager_set_get_max_bytes_fn(
-    af_memory_manager handle, af_memory_manager_get_max_bytes_fn fn);
-AFAPI af_err af_memory_manager_set_get_max_buffers_fn(
-    af_memory_manager handle, af_memory_manager_get_max_buffers_fn fn);
 
-AFAPI af_err af_memory_manager_set_check_memory_limit_fn(
-    af_memory_manager handle, af_memory_manager_check_memory_limit fn);
+AFAPI af_err af_memory_manager_set_get_memory_pressure_fn(
+    af_memory_manager handle, af_memory_manager_get_memory_pressure_fn fn);
+AFAPI af_err af_memory_manager_set_jit_tree_exceeds_memory_pressure_fn(
+    af_memory_manager handle,
+    af_memory_manager_jit_tree_exceeds_memory_pressure_fn fn);
+
 AFAPI af_err af_memory_manager_set_add_memory_management_fn(
     af_memory_manager handle, af_memory_manager_add_memory_management fn);
 AFAPI af_err af_memory_manager_set_remove_memory_management_fn(
@@ -266,6 +261,12 @@ AFAPI af_err af_memory_manager_native_free(af_memory_manager handle, void* ptr);
 
 AFAPI af_err af_memory_manager_get_max_memory_size(af_memory_manager handle,
                                                    size_t* size, int id);
+
+AFAPI af_err af_memory_manager_get_memory_pressure_threshold(
+    af_memory_manager handle, float* value);
+
+AFAPI af_err af_memory_manager_set_memory_pressure_threshold(
+    af_memory_manager handle, float value);
 
 #ifdef __cplusplus
 }

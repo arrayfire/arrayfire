@@ -465,6 +465,26 @@ af_err af_memory_manager_get_max_memory_size(af_memory_manager handle,
     return AF_SUCCESS;
 }
 
+af_err af_memory_manager_get_memory_pressure_threshold(af_memory_manager handle,
+                                                       float *value) {
+    try {
+        memoryManager().getMemoryPressureThreshold();
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_memory_pressure_threshold(af_memory_manager handle,
+                                                       float value) {
+    try {
+        memoryManager().setMemoryPressureThreshold(value);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Function setters
 
@@ -545,17 +565,6 @@ af_err af_memory_manager_set_print_info_fn(af_memory_manager handle,
     return AF_SUCCESS;
 }
 
-af_err af_memory_manager_set_usage_info_fn(af_memory_manager handle,
-                                           af_memory_manager_usage_info_fn fn) {
-    try {
-        MemoryManager &manager = getMemoryManager(handle);
-        manager.usage_info_fn  = fn;
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}
-
 af_err af_memory_manager_set_user_lock_fn(af_memory_manager handle,
                                           af_memory_manager_user_lock_fn fn) {
     try {
@@ -589,33 +598,23 @@ af_err af_memory_manager_set_is_user_locked_fn(
     return AF_SUCCESS;
 }
 
-af_err af_memory_manager_set_get_max_bytes_fn(
-    af_memory_manager handle, af_memory_manager_get_max_bytes_fn fn) {
+af_err af_memory_manager_set_get_memory_pressure_fn(
+    af_memory_manager handle, af_memory_manager_get_memory_pressure_fn fn) {
     try {
-        MemoryManager &manager   = getMemoryManager(handle);
-        manager.get_max_bytes_fn = fn;
+        MemoryManager &manager         = getMemoryManager(handle);
+        manager.get_memory_pressure_fn = fn;
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_memory_manager_set_get_max_buffers_fn(
-    af_memory_manager handle, af_memory_manager_get_max_buffers_fn fn) {
+af_err af_memory_manager_set_jit_tree_exceeds_memory_pressure_fn(
+    af_memory_manager handle,
+    af_memory_manager_jit_tree_exceeds_memory_pressure_fn fn) {
     try {
-        MemoryManager &manager     = getMemoryManager(handle);
-        manager.get_max_buffers_fn = fn;
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}
-
-af_err af_memory_manager_set_check_memory_limit_fn(
-    af_memory_manager handle, af_memory_manager_check_memory_limit fn) {
-    try {
-        MemoryManager &manager        = getMemoryManager(handle);
-        manager.check_memory_limit_fn = fn;
+        MemoryManager &manager                      = getMemoryManager(handle);
+        manager.jit_tree_exceeds_memory_pressure_fn = fn;
     }
     CATCHALL;
 
@@ -706,20 +705,27 @@ void MemoryManagerFunctionWrapper::usageInfo(size_t *alloc_bytes,
                                              size_t *alloc_buffers,
                                              size_t *lock_bytes,
                                              size_t *lock_buffers) {
-    getMemoryManager(handle_).usage_info_fn(handle_, alloc_bytes, alloc_buffers,
-                                            lock_bytes, lock_buffers);
+    // Not implemented in the public memory manager API, but for backward
+    // compatibility reasons, needs to be in the common memory manager interface
+    // so that it can be used with the default memory manager. Called from
+    // deviceMemoryInfo from a backend - throws so as to properly propagate
+    AF_ERROR(
+        "Device memory info/usage info not supported "
+        "for custom memory manager",
+        AF_ERR_NOT_SUPPORTED);
 }
 
-size_t MemoryManagerFunctionWrapper::getMaxBytes() {
-    return getMemoryManager(handle_).get_max_bytes_fn(handle_);
+float MemoryManagerFunctionWrapper::getMemoryPressure() {
+    float out;
+    AF_CHECK(getMemoryManager(handle_).get_memory_pressure_fn(handle_, &out));
+    return out;
 }
 
-unsigned MemoryManagerFunctionWrapper::getMaxBuffers() {
-    return getMemoryManager(handle_).get_max_buffers_fn(handle_);
-}
-
-bool MemoryManagerFunctionWrapper::checkMemoryLimit() {
-    return getMemoryManager(handle_).check_memory_limit_fn(handle_);
+bool MemoryManagerFunctionWrapper::jitTreeExceedsMemoryPressure(size_t bytes) {
+    int out;
+    AF_CHECK(getMemoryManager(handle_).jit_tree_exceeds_memory_pressure_fn(
+        handle_, &out, bytes));
+    return !!out;
 }
 
 size_t MemoryManagerFunctionWrapper::getMemStepSize() {

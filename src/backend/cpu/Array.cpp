@@ -221,15 +221,12 @@ Array<T> createEmptyArray(const dim4 &dims) {
 template<typename T>
 kJITHeuristics passesJitHeuristics(Node *root_node) {
     if (!evalFlag()) return kJITHeuristics::Pass;
-    if (root_node->getHeight() >= (int)getMaxJitSize()) { return kJITHeuristics::TreeHeight; }
-
-    size_t alloc_bytes, alloc_buffers;
-    size_t lock_bytes, lock_buffers;
-
-    deviceMemoryInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
+    if (root_node->getHeight() >= (int)getMaxJitSize()) {
+        return kJITHeuristics::TreeHeight;
+    }
 
     // Check if approaching the memory limit
-    if (lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers()) {
+    if (getMemoryPressure() >= getMemoryPressureThreshold()) {
         NodeIterator<jit::Node> it(root_node);
         NodeIterator<jit::Node> end_node;
         size_t bytes = accumulate(it, end_node, size_t(0),
@@ -240,7 +237,9 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
                                       return prev + n.getBytes();
                                   });
 
-        if (2 * bytes > lock_bytes) { return kJITHeuristics::MemoryPressure; }
+        if (jitTreeExceedsMemoryPressure(bytes)) {
+            return kJITHeuristics::MemoryPressure;
+        }
     }
     return kJITHeuristics::Pass;
 }

@@ -93,10 +93,7 @@ class MemoryManagerBase {
     virtual void userUnlock(const void *ptr)                         = 0;
     virtual bool isUserLocked(const void *ptr)                       = 0;
     virtual size_t getMemStepSize()                                  = 0;
-    virtual size_t getMaxBytes()                                     = 0;
-    virtual unsigned getMaxBuffers()                                 = 0;
     virtual void setMemStepSize(size_t new_step_size)                = 0;
-    virtual bool checkMemoryLimit()                                  = 0;
 
     /// Backend-specific functions
     // OpenCL
@@ -112,7 +109,20 @@ class MemoryManagerBase {
         nmi_ = std::move(nmi);
     }
 
+    // Memory pressure functions
+    void setMemoryPressureThreshold(float pressure) {
+        memoryPressureThreshold_ = pressure;
+    }
+    float getMemoryPressureThreshold() const {
+        return memoryPressureThreshold_;
+    }
+    virtual float getMemoryPressure()                       = 0;
+    virtual bool jitTreeExceedsMemoryPressure(size_t bytes) = 0;
+
    private:
+    // A threshold at or above which JIT evaluations will be triggered due to
+    // memory pressure. Settable via a call to setMemoryPressureThreshold
+    float memoryPressureThreshold_{1.0};
     // A backend-specific memory manager, containing backend-specific
     // methods that call native memory manipulation functions in a device
     // API. We need to wrap these since they are opaquely called by the
@@ -214,15 +224,14 @@ class DefaultMemoryManager : public memory::MemoryManagerBase {
 
     void printInfo(const char *msg, const int device) override;
     void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
-                   size_t *lock_bytes, size_t *lock_buffers) override;
+                   size_t *lock_bytes, size_t *lock_buffers);
     void userLock(const void *ptr) override;
     void userUnlock(const void *ptr) override;
     bool isUserLocked(const void *ptr) override;
     size_t getMemStepSize() override;
-    size_t getMaxBytes() override;
-    unsigned getMaxBuffers() override;
     void setMemStepSize(size_t new_step_size) override;
-    bool checkMemoryLimit() override;
+    float getMemoryPressure() override;
+    bool jitTreeExceedsMemoryPressure(size_t bytes) override;
 
    protected:
     DefaultMemoryManager()                                  = delete;

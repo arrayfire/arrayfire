@@ -124,6 +124,23 @@ void DefaultMemoryManager::setMaxMemorySize() {
     }
 }
 
+float DefaultMemoryManager::getMemoryPressure() {
+    lock_guard_t lock(this->memory_mutex);
+    memory::memory_info &current = this->getCurrentMemoryInfo();
+    if (current.lock_bytes > current.max_bytes ||
+        current.lock_buffers > max_buffers) {
+        return 1.0;
+    } else {
+        return 0.0;
+    }
+}
+
+bool DefaultMemoryManager::jitTreeExceedsMemoryPressure(size_t bytes) {
+    lock_guard_t lock(this->memory_mutex);
+    memory::memory_info &current = this->getCurrentMemoryInfo();
+    return 2 * bytes > current.lock_bytes;
+}
+
 af_buffer_info DefaultMemoryManager::alloc(const size_t bytes, bool user_lock) {
     af_event event;
     af_create_event(&event);
@@ -142,7 +159,9 @@ af_buffer_info DefaultMemoryManager::alloc(const size_t bytes, bool user_lock) {
         if (!this->debug_mode) {
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (this->checkMemoryLimit()) { this->signalMemoryCleanup(); }
+            if (getMemoryPressure() > getMemoryPressureThreshold()) {
+                this->signalMemoryCleanup();
+            }
 
             lock_guard_t lock(this->memory_mutex);
             memory::free_iter iter = current.free_map.find(alloc_bytes);
@@ -358,22 +377,9 @@ size_t DefaultMemoryManager::getMemStepSize() {
     return this->mem_step_size;
 }
 
-size_t DefaultMemoryManager::getMaxBytes() {
-    lock_guard_t lock(this->memory_mutex);
-    return this->getCurrentMemoryInfo().max_bytes;
-}
-
-unsigned DefaultMemoryManager::getMaxBuffers() { return this->max_buffers; }
-
 void DefaultMemoryManager::setMemStepSize(size_t new_step_size) {
     lock_guard_t lock(this->memory_mutex);
     this->mem_step_size = new_step_size;
-}
-
-bool DefaultMemoryManager::checkMemoryLimit() {
-    const memory::memory_info &current = this->getCurrentMemoryInfo();
-    return current.lock_bytes >= current.max_bytes ||
-           current.total_buffers >= this->max_buffers;
 }
 
 }  // namespace common

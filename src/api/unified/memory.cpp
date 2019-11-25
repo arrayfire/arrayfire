@@ -98,10 +98,6 @@ af_err af_memory_manager_set_print_info_fn(af_memory_manager handle,
                                            af_memory_manager_print_info_fn fn) {
     return CALL(handle, fn);
 }
-af_err af_memory_manager_set_usage_info_fn(af_memory_manager handle,
-                                           af_memory_manager_usage_info_fn fn) {
-    return CALL(handle, fn);
-}
 
 af_err af_memory_manager_set_user_lock_fn(af_memory_manager handle,
                                           af_memory_manager_user_lock_fn fn) {
@@ -118,18 +114,14 @@ af_err af_memory_manager_set_is_user_locked_fn(
     return CALL(handle, fn);
 }
 
-af_err af_memory_manager_set_get_max_bytes_fn(
-    af_memory_manager handle, af_memory_manager_get_max_bytes_fn fn) {
+af_err af_memory_manager_set_get_memory_pressure_fn(
+    af_memory_manager handle, af_memory_manager_get_memory_pressure_fn fn) {
     return CALL(handle, fn);
 }
 
-af_err af_memory_manager_set_get_max_buffers_fn(
-    af_memory_manager handle, af_memory_manager_get_max_buffers_fn fn) {
-    return CALL(handle, fn);
-}
-
-af_err af_memory_manager_set_check_memory_limit_fn(
-    af_memory_manager handle, af_memory_manager_check_memory_limit fn) {
+af_err af_memory_manager_set_jit_tree_exceeds_memory_pressure_fn(
+    af_memory_manager handle,
+    af_memory_manager_jit_tree_exceeds_memory_pressure_fn fn) {
     return CALL(handle, fn);
 }
 
@@ -160,4 +152,14 @@ af_err af_memory_manager_native_free(af_memory_manager handle, void* ptr) {
 af_err af_memory_manager_get_max_memory_size(af_memory_manager handle,
                                              size_t* size, int id) {
     return CALL(handle, size, id);
+}
+
+af_err af_memory_manager_get_memory_pressure_threshold(af_memory_manager handle,
+                                                       float* value) {
+    return CALL(handle, value);
+}
+
+af_err af_memory_manager_set_memory_pressure_threshold(af_memory_manager handle,
+                                                       float value) {
+    return CALL(handle, value);
 }

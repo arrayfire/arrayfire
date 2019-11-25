@@ -42,16 +42,15 @@ struct MemoryManager {
     af_memory_manager_allocated_fn allocated_fn;
     af_memory_manager_unlock_fn unlock_fn;
     af_memory_manager_print_info_fn print_info_fn;
-    af_memory_manager_usage_info_fn usage_info_fn;
     af_memory_manager_user_lock_fn user_lock_fn;
     af_memory_manager_user_unlock_fn user_unlock_fn;
     af_memory_manager_is_user_locked_fn is_user_locked_fn;
-    af_memory_manager_get_max_bytes_fn get_max_bytes_fn;
-    af_memory_manager_get_max_buffers_fn get_max_buffers_fn;
-    af_memory_manager_check_memory_limit check_memory_limit_fn;
+    af_memory_manager_get_memory_pressure_fn get_memory_pressure_fn;
     af_memory_manager_signal_memory_cleanup_fn signal_memory_cleanup_fn;
     af_memory_manager_add_memory_management add_memory_management_fn;
     af_memory_manager_remove_memory_management remove_memory_management_fn;
+    af_memory_manager_jit_tree_exceeds_memory_pressure_fn
+        jit_tree_exceeds_memory_pressure_fn;
     // A generic payload on which data can be stored on the af_memory_manager
     // and is accessible from the handle
     void *payload;
@@ -84,10 +83,9 @@ class MemoryManagerFunctionWrapper : public common::memory::MemoryManagerBase {
     void userUnlock(const void *ptr) override;
     bool isUserLocked(const void *ptr) override;
     size_t getMemStepSize() override;
-    size_t getMaxBytes() override;
-    unsigned getMaxBuffers() override;
     void setMemStepSize(size_t new_step_size) override;
-    bool checkMemoryLimit() override;
+    float getMemoryPressure() override;
+    bool jitTreeExceedsMemoryPressure(size_t bytes) override;
 
     void addMemoryManagement(int device) override;
     void removeMemoryManagement(int device) override;

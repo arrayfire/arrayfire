@@ -45,9 +45,6 @@ T *pinnedAlloc(const size_t &elements);
 template<typename T>
 void pinnedFree(T *ptr);
 
-size_t getMaxBytes();
-unsigned getMaxBuffers();
-
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes, size_t *lock_buffers);
 void signalMemoryCleanup();
@@ -56,9 +53,11 @@ void pinnedGarbageCollect();
 
 void printMemInfo(const char *msg, const int device);
 
+float getMemoryPressure();
+float getMemoryPressureThreshold();
+bool jitTreeExceedsMemoryPressure(size_t bytes);
 void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
-bool checkMemoryLimit();
 
 class Allocator : public common::memory::AllocatorInterface {
    public:

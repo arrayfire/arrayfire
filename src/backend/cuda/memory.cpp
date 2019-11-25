@@ -32,15 +32,20 @@ using common::half;
 using std::move;
 
 namespace cuda {
+float getMemoryPressure() { memoryManager().getMemoryPressure(); }
+float getMemoryPressureThreshold() {
+    memoryManager().getMemoryPressureThreshold();
+}
+
+bool jitTreeExceedsMemoryPressure(size_t bytes) {
+    memoryManager().jitTreeExceedsMemoryPressure(bytes);
+}
+
 void setMemStepSize(size_t step_bytes) {
     memoryManager().setMemStepSize(step_bytes);
 }
 
 size_t getMemStepSize(void) { return memoryManager().getMemStepSize(); }
-
-size_t getMaxBytes() { return memoryManager().getMaxBytes(); }
-
-unsigned getMaxBuffers() { return memoryManager().getMaxBuffers(); }
 
 void signalMemoryCleanup() { memoryManager().signalMemoryCleanup(); }
 
@@ -117,8 +122,6 @@ void pinnedFree(T *ptr) {
     pinnedMemoryManager().unlock((void *)ptr, detail::createAndMarkEvent(),
                                  false);
 }
-
-bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }
 
 #define INSTANTIATE(T)                                 \
     template uptr<T> memAlloc(const size_t &elements); \

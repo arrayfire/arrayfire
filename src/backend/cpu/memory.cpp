@@ -27,15 +27,20 @@ using std::move;
 using std::unique_ptr;
 
 namespace cpu {
+float getMemoryPressure() { memoryManager().getMemoryPressure(); }
+float getMemoryPressureThreshold() {
+    memoryManager().getMemoryPressureThreshold();
+}
+
+bool jitTreeExceedsMemoryPressure(size_t bytes) {
+    memoryManager().jitTreeExceedsMemoryPressure(bytes);
+}
+
 void setMemStepSize(size_t step_bytes) {
     memoryManager().setMemStepSize(step_bytes);
 }
 
 size_t getMemStepSize(void) { return memoryManager().getMemStepSize(); }
-
-size_t getMaxBytes() { return memoryManager().getMaxBytes(); }
-
-unsigned getMaxBuffers() { return memoryManager().getMaxBuffers(); }
 
 void signalMemoryCleanup() { memoryManager().signalMemoryCleanup(); }
 
@@ -105,8 +110,6 @@ template<typename T>
 void pinnedFree(T *ptr) {
     memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(), false);
 }
-
-bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }
 
 #define INSTANTIATE(T)                                                \
     template std::unique_ptr<T[], std::function<void(T *)>> memAlloc( \

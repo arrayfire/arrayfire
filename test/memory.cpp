@@ -855,28 +855,22 @@ af_err print_info_fn(af_memory_manager manager, char *c, int b) {
     return AF_SUCCESS;
 }
 
-void usage_info_fn(af_memory_manager manager, size_t *alloc_bytes,
-                   size_t *alloc_buffers, size_t *lock_bytes,
-                   size_t *lock_buffers) {
-    auto *payload  = getMemoryManagerPayload<E2ETestPayload>(manager);
-    *alloc_bytes   = payload->totalBytes;
-    *alloc_buffers = payload->totalBuffers;
-    *lock_bytes    = payload->lockedBytes;
-    *lock_buffers  = payload->locked.size();
-}
-
-size_t get_max_bytes_fn(af_memory_manager manager) {
-    return getMemoryManagerPayload<E2ETestPayload>(manager)->maxBytes;
-}
-
-unsigned get_max_buffers_fn(af_memory_manager manager) {
-    return getMemoryManagerPayload<E2ETestPayload>(manager)->maxBuffers;
-}
-
-int check_memory_limit_fn(af_memory_manager manager) {
+af_err get_memory_pressure_fn(af_memory_manager manager, float *out) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
-    return payload->totalBytes < get_max_bytes_fn(manager) &&
-           payload->totalBuffers < get_max_buffers_fn(manager);
+    if (payload->totalBytes > payload->maxBytes ||
+        payload->totalBuffers > payload->maxBuffers) {
+        *out = 1.0;
+    } else {
+        *out = 0.0;
+    }
+    return AF_SUCCESS;
+}
+
+af_err jit_tree_exceeds_memory_pressure_fn(af_memory_manager manager, int *out,
+                                           size_t bytes) {
+    auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
+    *out          = 2 * bytes > payload->totalBytes;
+    return AF_SUCCESS;
 }
 
 af_err alloc_fn(af_memory_manager manager, af_buffer_info *out, size_t size,
@@ -888,9 +882,11 @@ af_err alloc_fn(af_memory_manager manager, af_buffer_info *out, size_t size,
     af_create_buffer_info(&bufferInfo, nullptr, event);
 
     if (size > 0) {
-        if (check_memory_limit_fn(manager)) {
-            signal_memory_cleanup_fn(manager);
-        }
+        float pressure;
+        get_memory_pressure_fn(manager, &pressure);
+        float threshold;
+        af_memory_manager_get_memory_pressure_threshold(manager, &threshold);
+        if (pressure > threshold) { signal_memory_cleanup_fn(manager); }
 
         void *piece;
         af_memory_manager_native_alloc(manager, &piece, size);
@@ -933,7 +929,6 @@ TEST(MemoryManagerApi, E2ETest) {
 
     auto shutdown_fn = [](af_memory_manager manager) {
         auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
-        std::cout << "shutdown called " << std::endl;
         payload->shutdownCalledTimes++;
         return AF_SUCCESS;
     };
@@ -947,15 +942,15 @@ TEST(MemoryManagerApi, E2ETest) {
     af_memory_manager_set_signal_memory_cleanup_fn(manager,
                                                    signal_memory_cleanup_fn);
     af_memory_manager_set_print_info_fn(manager, print_info_fn);
-    af_memory_manager_set_usage_info_fn(manager, usage_info_fn);
     // user lock/unlock
     af_memory_manager_set_user_lock_fn(manager, user_lock_fn);
     af_memory_manager_set_user_unlock_fn(manager, user_unlock_fn);
     af_memory_manager_set_is_user_locked_fn(manager, is_user_locked_fn);
-    // limits
-    af_memory_manager_set_get_max_bytes_fn(manager, get_max_bytes_fn);
-    af_memory_manager_set_get_max_buffers_fn(manager, get_max_buffers_fn);
-    af_memory_manager_set_check_memory_limit_fn(manager, check_memory_limit_fn);
+    // memory pressure
+    af_memory_manager_set_get_memory_pressure_fn(manager,
+                                                 get_memory_pressure_fn);
+    af_memory_manager_set_jit_tree_exceeds_memory_pressure_fn(
+        manager, jit_tree_exceeds_memory_pressure_fn);
     // ocl
     af_memory_manager_set_add_memory_management_fn(manager,
                                                    add_memory_management_fn);
@@ -972,23 +967,17 @@ TEST(MemoryManagerApi, E2ETest) {
 
         auto b = af::randu({2, 2});
 
-        // Usage info
-        size_t allocBytes, allocBuffers, lockBytes, lockBuffers;
-        af::deviceMemInfo(&allocBytes, &allocBuffers, &lockBytes, &lockBuffers);
-        ASSERT_EQ(allocBytes, aSize * sizeof(float) + b.bytes());
-        ASSERT_EQ(allocBuffers, 2);
-        ASSERT_EQ(lockBytes, aSize * sizeof(float) + b.bytes());
-        ASSERT_EQ(lockBuffers, 2);
+        ASSERT_EQ(payload->totalBytes, aSize * sizeof(float) + b.bytes());
+        ASSERT_EQ(payload->totalBuffers, 2);
+        ASSERT_EQ(payload->lockedBytes, aSize * sizeof(float) + b.bytes());
+        ASSERT_EQ(payload->locked.size(), 2);
 
         af::free(a);
 
-        af::deviceMemInfo(&allocBytes, &allocBuffers, &lockBytes, &lockBuffers);
-        ASSERT_EQ(allocBytes, aSize * sizeof(float) + b.bytes());
-        ASSERT_EQ(allocBuffers, 2);
-        ASSERT_EQ(lockBytes, b.bytes());
-        ASSERT_EQ(lockBuffers, 1);
-
-        ASSERT_EQ(payload->table.size(), 2);
+        ASSERT_EQ(payload->totalBytes, aSize * sizeof(float) + b.bytes());
+        ASSERT_EQ(payload->totalBuffers, 2);
+        ASSERT_EQ(payload->lockedBytes, b.bytes());
+        ASSERT_EQ(payload->locked.size(), 1);
     }
 
     // gc
