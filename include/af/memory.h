@@ -111,7 +111,9 @@ typedef af_err (*af_memory_manager_shutdown_fn)(af_memory_manager);
 
 typedef af_err (*af_memory_manager_alloc_fn)(af_memory_manager, af_buffer_info*,
                                              size_t,
-                                             /* bool */ int);
+                                             /* bool */ int, const unsigned,
+                                             const dim_t* const,
+                                             const unsigned);
 
 typedef af_err (*af_memory_manager_allocated_fn)(af_memory_manager, size_t*,
                                                  void*);

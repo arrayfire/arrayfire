@@ -28,6 +28,7 @@ using af::cdouble;
 using af::cfloat;
 using af::deviceGC;
 using af::deviceMemInfo;
+using af::dim4;
 using af::dtype;
 using af::dtype_traits;
 using af::randu;
@@ -768,6 +769,9 @@ struct E2ETestPayload {
     size_t totalBytes{0};
     size_t totalBuffers{0};
     size_t lockedBytes{0};
+    unsigned lastNdims;
+    dim4 lastDims;
+    unsigned lastElementSize;
 
     size_t maxBuffers{64};
     size_t maxBytes{1024};
@@ -874,7 +878,8 @@ af_err jit_tree_exceeds_memory_pressure_fn(af_memory_manager manager, int *out,
 }
 
 af_err alloc_fn(af_memory_manager manager, af_buffer_info *out, size_t size,
-                /* bool */ int userLock) {
+                /* bool */ int userLock, const unsigned ndims,
+                const dim_t *const dims, const unsigned element_size) {
     af_event event;
     af_create_event(&event);
     af_mark_event(event);
@@ -900,6 +905,10 @@ af_err alloc_fn(af_memory_manager manager, af_buffer_info *out, size_t size,
         // Simple implementation: treat user and AF allocations the same
         payload->locked.insert(piece);
         payload->lockedBytes += size;
+
+        payload->lastNdims       = ndims;
+        payload->lastDims        = dim4(ndims, dims);
+        payload->lastElementSize = element_size;
     }
 
     *out = bufferInfo;
@@ -961,16 +970,33 @@ TEST(MemoryManagerApi, E2ETest) {
     {
         size_t aSize = 8;
 
-        void *a = af::alloc(8, af::dtype::f32);
+        void *a = af::alloc(aSize, af::dtype::f32);
         ASSERT_EQ(payload->table.size(), 1);
         ASSERT_EQ(payload->table[a], aSize * sizeof(float));
+        ASSERT_EQ(payload->lastNdims, 1);
+        ASSERT_EQ(payload->lastDims, af::dim4(aSize * sizeof(float)));
+        ASSERT_EQ(payload->lastElementSize, 1);
 
-        auto b = af::randu({2, 2});
+        dim_t bDim = 2;
+        auto b     = af::randu({bDim, bDim});
 
         ASSERT_EQ(payload->totalBytes, aSize * sizeof(float) + b.bytes());
         ASSERT_EQ(payload->totalBuffers, 2);
         ASSERT_EQ(payload->lockedBytes, aSize * sizeof(float) + b.bytes());
         ASSERT_EQ(payload->locked.size(), 2);
+        ASSERT_EQ(payload->lastNdims, 1);
+        // Some backends might alloc by number of bytes (OpenCL), others alloc
+        // by elements (CPU, CUDA)
+        if (payload->lastElementSize != 1) {
+            // alloced as floats
+            ASSERT_EQ(payload->lastDims, af::dim4(bDim * b.numdims()));
+            ASSERT_EQ(payload->lastElementSize, sizeof(float));
+        } else {
+            // alloced as bytes
+            ASSERT_EQ(payload->lastDims,
+                      af::dim4(bDim * b.numdims() * sizeof(float)));
+            ASSERT_EQ(payload->lastElementSize, 1);
+        }
 
         af::free(a);
 

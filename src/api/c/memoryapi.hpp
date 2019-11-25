@@ -72,7 +72,9 @@ class MemoryManagerFunctionWrapper : public common::memory::MemoryManagerBase {
     ~MemoryManagerFunctionWrapper() {}
     void initialize() override;
     void shutdown() override;
-    af_buffer_info alloc(const size_t size, bool user_lock) override;
+    af_buffer_info alloc(const size_t size, bool user_lock,
+                         const unsigned ndims, const dim_t *const dims,
+                         const unsigned element_size) override;
     size_t allocated(void *ptr) override;
     void unlock(void *ptr, af_event e, bool user_unlock) override;
     void signalMemoryCleanup() override;

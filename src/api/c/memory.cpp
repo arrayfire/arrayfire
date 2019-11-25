@@ -654,11 +654,12 @@ void MemoryManagerFunctionWrapper::shutdown() {
     AF_CHECK(getMemoryManager(handle_).shutdown_fn(handle_));
 }
 
-af_buffer_info MemoryManagerFunctionWrapper::alloc(const size_t size,
-                                                   bool user_lock) {
+af_buffer_info MemoryManagerFunctionWrapper::alloc(
+    const size_t size, bool user_lock, const unsigned ndims,
+    const dim_t *const dims, const unsigned element_size) {
     af_buffer_info bufferInfo;
-    AF_CHECK(getMemoryManager(handle_).alloc_fn(handle_, &bufferInfo, size,
-                                                (int)user_lock));
+    AF_CHECK(getMemoryManager(handle_).alloc_fn(
+        handle_, &bufferInfo, size, (int)user_lock, ndims, dims, element_size));
     return bufferInfo;
 }
 

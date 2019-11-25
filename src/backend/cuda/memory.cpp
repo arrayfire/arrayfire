@@ -22,23 +22,25 @@
 #include <platform.hpp>
 #include <spdlog/spdlog.h>
 #include <types.hpp>
+#include <af/dim4.hpp>
 
 #include <mutex>
 #include <utility>
 
+using af::dim4;
 using common::bytesToString;
 using common::half;
 
 using std::move;
 
 namespace cuda {
-float getMemoryPressure() { memoryManager().getMemoryPressure(); }
+float getMemoryPressure() { return memoryManager().getMemoryPressure(); }
 float getMemoryPressureThreshold() {
-    memoryManager().getMemoryPressureThreshold();
+    return memoryManager().getMemoryPressureThreshold();
 }
 
 bool jitTreeExceedsMemoryPressure(size_t bytes) {
-    memoryManager().jitTreeExceedsMemoryPressure(bytes);
+    return memoryManager().jitTreeExceedsMemoryPressure(bytes);
 }
 
 void setMemStepSize(size_t step_bytes) {
@@ -59,8 +61,11 @@ void printMemInfo(const char *msg, const int device) {
 
 template<typename T>
 uptr<T> memAlloc(const size_t &elements) {
+    // TODO: make memAlloc aware of array shapes
+    dim4 dims(elements);
     size_t size         = elements * sizeof(T);
-    af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false);
+    af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false, 1,
+                                                dims.get(), sizeof(T));
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
@@ -71,7 +76,8 @@ uptr<T> memAlloc(const size_t &elements) {
 }
 
 void *memAllocUser(const size_t &bytes) {
-    af_buffer_info pair = memoryManager().alloc(bytes, true);
+    dim4 dims(bytes);
+    af_buffer_info pair = memoryManager().alloc(bytes, true, 1, dims.get(), 1);
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
@@ -106,8 +112,10 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    af_buffer_info pair =
-        pinnedMemoryManager().alloc(elements * sizeof(T), false);
+    // TODO: make pinnedAlloc aware of array shapes
+    dim4 dims(elements);
+    af_buffer_info pair = pinnedMemoryManager().alloc(
+        elements * sizeof(T), false, 1, dims.get(), sizeof(T));
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
