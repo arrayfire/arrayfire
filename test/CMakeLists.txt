@@ -1,18 +1,29 @@
-# Copyright (c) 2017, ArrayFire
+# Copyright (c) 2019, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+cmake_minimum_required(VERSION 3.0)
+cmake_policy(VERSION 3.5)
+project(ArrayFire-Tests VERSION 3.7.0 LANGUAGES CXX)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+
 set(AF_TEST_WITH_MTX_FILES
     ON CACHE BOOL
     "Download and run tests on large matrices form sparse.tamu.edu")
+set(AF_TEST_ONLY
+    OFF CACHE BOOL
+    "Build and run tests using existing ArrayFire binaries")
+mark_as_advanced(AF_TEST_ONLY)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 if (AF_TEST_WITH_MTX_FILES)
   include(download_sparse_datasets)
 endif ()
+
+find_package(ArrayFire REQUIRED)
 
 if(NOT TARGET gtest)
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
@@ -54,21 +65,21 @@ else(${AF_USE_RELATIVE_TEST_DIR})  # Not using relative test data directory
     set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
 endif(${AF_USE_RELATIVE_TEST_DIR})
 
-if(AF_BUILD_CPU)
+if(ArrayFire_CPU_FOUND)
   list(APPEND enabled_backends "cpu")
-endif(AF_BUILD_CPU)
+endif()
 
-if(AF_BUILD_CUDA)
+if(ArrayFire_CUDA_FOUND)
   list(APPEND enabled_backends "cuda")
-endif(AF_BUILD_CUDA)
+endif()
 
-if(AF_BUILD_OPENCL)
+if(ArrayFire_OpenCL_FOUND)
   list(APPEND enabled_backends "opencl")
-endif(AF_BUILD_OPENCL)
+endif()
 
-if(AF_BUILD_UNIFIED)
+if(ArrayFire_Unified_FOUND)
   list(APPEND enabled_backends "unified")
-endif(AF_BUILD_UNIFIED)
+endif()
 
 include(CMakeParseArguments)
 
@@ -100,6 +111,7 @@ function(make_test)
     endif()
     set(target "test_${src_name}_${backend}")
     add_executable(${target} ${mt_args_SRC})
+
     target_include_directories(${target}
       PRIVATE
         ${ArrayFire_SOURCE_DIR}/extern/half/include
@@ -114,14 +126,9 @@ function(make_test)
       )
 
     if(${backend} STREQUAL "unified")
-      target_link_libraries(${target}
-        PRIVATE
-          af)
+      target_link_libraries(${target} PRIVATE ArrayFire::af)
     else()
-      target_link_libraries(${target}
-        PRIVATE
-          af${backend}
-          )
+      target_link_libraries(${target} PRIVATE ArrayFire::af${backend})
     endif()
 
     if(${mt_args_CXX11})
@@ -149,6 +156,7 @@ function(make_test)
       target_compile_definitions(${target}
         PRIVATE
           WIN32_LEAN_AND_MEAN
+          VC_EXTRALEAN
           NOMINMAX)
     endif()
 
@@ -313,12 +321,12 @@ if(AF_TEST_WITH_MTX_FILES)
 endif()
 
 add_executable(print_info print_info.cpp)
-if(AF_BUILD_UNIFIED)
+if(ArrayFire_Unified_FOUND)
   target_link_libraries(print_info ArrayFire::af)
-elseif(AF_BUILD_OPENCL)
+elseif(ArrayFire_OpenCL_FOUND)
   target_link_libraries(print_info ArrayFire::afopencl)
-elseif(AF_BUILD_CUDA)
+elseif(ArrayFire_CUDA_FOUND)
   target_link_libraries(print_info ArrayFire::afcuda)
-elseif(AF_BUILD_CPU)
+elseif(ArrayFire_CPU_FOUND)
   target_link_libraries(print_info ArrayFire::afcpu)
 endif()

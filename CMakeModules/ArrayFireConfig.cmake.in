@@ -118,7 +118,9 @@ foreach(backend Unified CPU OpenCL CUDA)
   # If this project is built as part of the ArrayFire project, make sure the
   # backends are only enabled if the backend is selected to be built even if
   # the Binary exists.
-  if(DEFINED AF_BUILD_${upperbackend} AND NOT AF_BUILD_${upperbackend})
+  if(DEFINED AF_BUILD_${upperbackend} AND
+     NOT AF_BUILD_${upperbackend} AND
+     NOT AF_TEST_ONLY)
     set(ArrayFire_${backend}_FOUND OFF)
   endif()
 endforeach()
