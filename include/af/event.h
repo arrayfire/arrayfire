@@ -18,7 +18,9 @@ typedef void* af_event;
 #ifdef __cplusplus
 namespace af {
 
-/// A simple RAII wrapper for af_event
+/**
+    C++ RAII interface for manipulating events
+*/
 class AFAPI event {
     af_event e_;
 
@@ -30,9 +32,13 @@ class AFAPI event {
 #endif
     event();
     ~event();
+
     af_event get() const;
+
     void mark();
+
     void enqueue();
+
     void block();
 
    private:
@@ -47,14 +53,55 @@ class AFAPI event {
 extern "C" {
 #endif
 
+/**
+   \brief Create a new \ref af_event handle
+
+   \param[in] eventHandle the input event handle
+
+   \ingroup event_api
+*/
 AFAPI af_err af_create_event(af_event* eventHandle);
 
+/**
+   \brief Release the \ref af_event handle
+
+   \param[in] eventHandle the input event handle
+
+   \ingroup event_api
+*/
 AFAPI af_err af_release_event(const af_event eventHandle);
 
+/**
+   marks the \ref af_event on the active computation stream. If the \ref
+   af_event is enqueued/wated on later, any operations that are currently
+   enqueued on the event stream will be completed before any events that are
+   enqueued after the call to enqueue
+
+   \param[in] eventHandle the input event handle
+
+   \ingroup event_api
+*/
 AFAPI af_err af_mark_event(const af_event eventHandle);
 
+/**
+   enqueues the \ref af_event and all enqueued events on the active stream.
+   All operations enqueued after a call to enqueue will not be executed
+   until operations on the stream when mark was called are complete
+
+   \param[in] eventHandle the input event handle
+
+   \ingroup event_api
+*/
 AFAPI af_err af_enqueue_wait_event(const af_event eventHandle);
 
+/**
+   blocks the calling thread on events until all events on the computation
+   stream before mark was called are complete
+
+   \param[in] eventHandle the input event handle
+
+   \ingroup event_api
+*/
 AFAPI af_err af_block_event(const af_event eventHandle);
 
 #ifdef __cplusplus

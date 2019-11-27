@@ -48,7 +48,6 @@ cuda_include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/cub
   ${ArrayFire_SOURCE_DIR}/src/api/c
   ${ArrayFire_SOURCE_DIR}/src/backend
-/public/apps/cudnn/v7.3/cuda/include
   ${COMMON_INTERFACE_DIRS}
   )
 
@@ -512,7 +511,6 @@ target_include_directories (afcuda
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${CMAKE_CURRENT_SOURCE_DIR}/jit
     ${CMAKE_CURRENT_BINARY_DIR}
-    /public/apps/cudnn/v7.3/cuda/include
 )
 
 set_target_properties(afcuda PROPERTIES POSITION_INDEPENDENT_CODE ON)

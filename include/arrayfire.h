@@ -99,20 +99,34 @@
 
    @defgroup memory_manager Memory Management
    @{
-      Interfaces for writing custom memory managers.
 
-      @defgroup memory_manager_cpp_api Memory Manager C++ API
-      memory_manager
+      \brief Interfaces for writing custom memory managers.
 
-      @defgroup memory_manager_c_api Memory Manager C API
-      af_memory_manager, af_create_memory_manager, af_release_memory_manager
-      af_memory_manager_get_payload, af_memory_manager_set_payload
+      @defgroup buffer_info Buffer Info
+      \brief An interface for managing information about memory (pointers and
+\ref af_event)
 
-      @defgroup memory_manager_manipulation_api Memory Manager manipulation API
-      af_set_memory_manager, af_set_memory_manager_pinned
-      af_unset_memory_manager, af_unset_memory_manager_pinned
+      @defgroup native_memory_interface Native Memory Interface
+      \brief Native alloc, native free, get device id, etc.
+
+      @defgroup memory_manager_utils Memory Manager Utils
+      \brief Set and unset memory managers, set and get manager payloads,
+function setters
+
+      @defgroup memory_manager_api Memory Manager API
+      \brief Functions for defining custom memory managers
+
    @}
 
+   @defgroup event Events
+   @{
+
+      \brief Managing ArrayFire Events which allows manipulation of operations
+on computation queues.
+
+      @defgroup event_api Event API
+      af_create_event, af_mark_event, etc.
+   @}
 
    @defgroup linalg_mat Linear Algebra
    @{
