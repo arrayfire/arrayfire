@@ -329,7 +329,7 @@ typedef af_err (*af_memory_manager_jit_tree_exceeds_memory_pressure_fn)(
 
    \ingroup memory_manager_api
 */
-typedef void (*af_memory_manager_add_memory_management)(
+typedef void (*af_memory_manager_add_memory_management_fn)(
     af_memory_manager handle, int id);
 
 /**
@@ -341,8 +341,8 @@ typedef void (*af_memory_manager_add_memory_management)(
 
     \ingroup memory_manager_api
 */
-typedef void (*af_memory_manager_remove_memory_management)(af_memory_manager,
-                                                           int id);
+typedef void (*af_memory_manager_remove_memory_management_fn)(af_memory_manager,
+                                                              int id);
 
 /**
    \brief Creates an \ref af_memory_manager handle
@@ -601,30 +601,30 @@ AFAPI af_err af_memory_manager_set_jit_tree_exceeds_memory_pressure_fn(
     af_memory_manager_jit_tree_exceeds_memory_pressure_fn fn);
 
 /**
-   \brief Sets an \ref af_memory_manager_add_memory_management for a memory
+   \brief Sets an \ref af_memory_manager_add_memory_management_fn for a memory
    manager
 
    \param[in] handle the \ref af_memory_manager handle
-   \param[in] fn the \ref af_memory_manager_add_memory_management to set
+   \param[in] fn the \ref af_memory_manager_add_memory_management_fn to set
 
    \returns AF_SUCCESS
    \ingroup memory_manager_utils
 */
 AFAPI af_err af_memory_manager_set_add_memory_management_fn(
-    af_memory_manager handle, af_memory_manager_add_memory_management fn);
+    af_memory_manager handle, af_memory_manager_add_memory_management_fn fn);
 
 /**
-   \brief Sets an \ref af_memory_manager_remove_memory_management for a memory
-   manager
+   \brief Sets an \ref af_memory_manager_remove_memory_management_fn for a
+   memory manager
 
    \param[in] handle the \ref af_memory_manager handle
-   \param[in] fn the \ref af_memory_manager_remove_memory_management to set
+   \param[in] fn the \ref af_memory_manager_remove_memory_management_fn to set
 
    \returns AF_SUCCESS
    \ingroup memory_manager_utils
 */
 AFAPI af_err af_memory_manager_set_remove_memory_management_fn(
-    af_memory_manager handle, af_memory_manager_remove_memory_management fn);
+    af_memory_manager handle, af_memory_manager_remove_memory_management_fn fn);
 
 ////////////////// Native memory interface functions
 

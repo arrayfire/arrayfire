@@ -47,8 +47,8 @@ struct MemoryManager {
     af_memory_manager_is_user_locked_fn is_user_locked_fn;
     af_memory_manager_get_memory_pressure_fn get_memory_pressure_fn;
     af_memory_manager_signal_memory_cleanup_fn signal_memory_cleanup_fn;
-    af_memory_manager_add_memory_management add_memory_management_fn;
-    af_memory_manager_remove_memory_management remove_memory_management_fn;
+    af_memory_manager_add_memory_management_fn add_memory_management_fn;
+    af_memory_manager_remove_memory_management_fn remove_memory_management_fn;
     af_memory_manager_jit_tree_exceeds_memory_pressure_fn
         jit_tree_exceeds_memory_pressure_fn;
     // A generic payload on which data can be stored on the af_memory_manager

@@ -102,6 +102,47 @@
 
       \brief Interfaces for writing custom memory managers.
 
+      Create and set a custom memory manager by first defining the relevant
+closures for each required function, for example:
+
+      \code{.cpp}
+      af_err initialize(af_memory_manager manager) {
+          void* myPayload = malloc(sizeof(MyPayload_t));
+          af_memory_manager_set_payload(manager, myPayload);
+          // ...
+      }
+
+      af_err allocated(af_memory_manager handle, size_t* size, void* ptr) {
+          void* myPayload;
+          af_memory_manager_get_payload(manager, &myPayload);
+          // ...
+      }
+      \endcode
+
+      Create an \ref af_memory_manager and attach relevant closures:
+
+      \code{.cpp}
+      af_memory_manager manager;
+      af_create_memory_manager(&manager);
+
+      af_memory_manager_set_initialize_fn(manager, initialize);
+
+      // ...
+       \endcode
+
+      Set the memory manager to be active, which shuts down the existing memory
+manager:
+
+      \code{.cpp}
+      af_set_memory_manager(manager);
+      \endcode
+
+      Unset to re-create and reset an instance of the default memory manager:
+
+      \code{.cpp}
+      af_unset_memory_manager();
+      \endcode
+
       @defgroup buffer_info Buffer Info
       \brief An interface for managing information about memory (pointers and
 \ref af_event)
@@ -123,6 +164,8 @@ function setters
 
       \brief Managing ArrayFire Events which allows manipulation of operations
 on computation queues.
+
+
 
       @defgroup event_api Event API
       af_create_event, af_mark_event, etc.

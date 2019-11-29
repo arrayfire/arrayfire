@@ -126,12 +126,12 @@ af_err af_memory_manager_set_jit_tree_exceeds_memory_pressure_fn(
 }
 
 af_err af_memory_manager_set_add_memory_management_fn(
-    af_memory_manager handle, af_memory_manager_add_memory_management fn) {
+    af_memory_manager handle, af_memory_manager_add_memory_management_fn fn) {
     return CALL(handle, fn);
 }
 
 af_err af_memory_manager_set_remove_memory_management_fn(
-    af_memory_manager handle, af_memory_manager_remove_memory_management fn) {
+    af_memory_manager handle, af_memory_manager_remove_memory_management_fn fn) {
     return CALL(handle, fn);
 }
 
