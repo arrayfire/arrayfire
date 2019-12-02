@@ -429,8 +429,10 @@ af_err af_memory_manager_set_payload(af_memory_manager handle, void *payload) {
 af_err af_memory_manager_get_active_device_id(af_memory_manager handle,
                                               int *id) {
     try {
-        *id = memoryManager().getActiveDeviceId();
+        MemoryManager &manager = getMemoryManager(handle);
+        *id                    = manager.wrapper->getActiveDeviceId();
     }
+
     CATCHALL;
 
     return AF_SUCCESS;
@@ -439,7 +441,8 @@ af_err af_memory_manager_get_active_device_id(af_memory_manager handle,
 af_err af_memory_manager_native_alloc(af_memory_manager handle, void **ptr,
                                       size_t size) {
     try {
-        *ptr = memoryManager().nativeAlloc(size);
+        MemoryManager &manager = getMemoryManager(handle);
+        *ptr                   = manager.wrapper->nativeAlloc(size);
     }
     CATCHALL;
 
@@ -448,7 +451,8 @@ af_err af_memory_manager_native_alloc(af_memory_manager handle, void **ptr,
 
 af_err af_memory_manager_native_free(af_memory_manager handle, void *ptr) {
     try {
-        memoryManager().nativeFree(ptr);
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.wrapper->nativeFree(ptr);
     }
     CATCHALL;
 
@@ -458,7 +462,8 @@ af_err af_memory_manager_native_free(af_memory_manager handle, void *ptr) {
 af_err af_memory_manager_get_max_memory_size(af_memory_manager handle,
                                              size_t *size, int id) {
     try {
-        *size = memoryManager().getMaxMemorySize(id);
+        MemoryManager &manager = getMemoryManager(handle);
+        *size                  = manager.wrapper->getMaxMemorySize(id);
     }
     CATCHALL;
 
@@ -468,7 +473,8 @@ af_err af_memory_manager_get_max_memory_size(af_memory_manager handle,
 af_err af_memory_manager_get_memory_pressure_threshold(af_memory_manager handle,
                                                        float *value) {
     try {
-        memoryManager().getMemoryPressureThreshold();
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.wrapper->getMemoryPressureThreshold();
     }
     CATCHALL;
 
@@ -478,7 +484,8 @@ af_err af_memory_manager_get_memory_pressure_threshold(af_memory_manager handle,
 af_err af_memory_manager_set_memory_pressure_threshold(af_memory_manager handle,
                                                        float value) {
     try {
-        memoryManager().setMemoryPressureThreshold(value);
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.wrapper->setMemoryPressureThreshold(value);
     }
     CATCHALL;
 
@@ -633,7 +640,8 @@ af_err af_memory_manager_set_add_memory_management_fn(
 }
 
 af_err af_memory_manager_set_remove_memory_management_fn(
-    af_memory_manager handle, af_memory_manager_remove_memory_management_fn fn) {
+    af_memory_manager handle,
+    af_memory_manager_remove_memory_management_fn fn) {
     try {
         MemoryManager &manager              = getMemoryManager(handle);
         manager.remove_memory_management_fn = fn;
@@ -645,6 +653,18 @@ af_err af_memory_manager_set_remove_memory_management_fn(
 
 ////////////////////////////////////////////////////////////////////////////////
 // Memory Manager wrapper implementations
+
+MemoryManagerFunctionWrapper::MemoryManagerFunctionWrapper(
+    af_memory_manager handle)
+    : handle_(handle) {
+    MemoryManager &manager = getMemoryManager(handle_);
+    manager.wrapper        = this;
+}
+
+MemoryManagerFunctionWrapper::~MemoryManagerFunctionWrapper() {
+    MemoryManager &manager = getMemoryManager(handle_);
+    manager.wrapper        = 0;
+}
 
 void MemoryManagerFunctionWrapper::initialize() {
     AF_CHECK(getMemoryManager(handle_).initialize_fn(handle_));
