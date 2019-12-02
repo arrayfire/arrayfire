@@ -141,9 +141,12 @@ bool DefaultMemoryManager::jitTreeExceedsMemoryPressure(size_t bytes) {
     return 2 * bytes > current.lock_bytes;
 }
 
-af_buffer_info DefaultMemoryManager::alloc(const size_t bytes, bool user_lock,
-                                           const unsigned, const dim_t *const,
-                                           const unsigned) {
+af_buffer_info DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
+                                           dim_t *dims,
+                                           const unsigned element_size) {
+    size_t bytes = element_size;
+    for (unsigned i = 0; i < ndims; ++i) { bytes *= dims[i]; }
+
     af_event event;
     af_create_event(&event);
     af_mark_event(event);

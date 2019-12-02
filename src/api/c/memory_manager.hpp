@@ -80,22 +80,21 @@ class MemoryManagerBase {
     virtual void shutdownAllocator() {
         if (nmi_) nmi_->shutdown();
     }
-    virtual void initialize()                                        = 0;
-    virtual void shutdown()                                          = 0;
-    virtual af_buffer_info alloc(const size_t size, bool user_lock,
-                                 const unsigned ndims, const dim_t *const dims,
-                                 const unsigned element_size)        = 0;
-    virtual size_t allocated(void *ptr)                              = 0;
-    virtual void unlock(void *ptr, af_event e, bool user_unlock)     = 0;
-    virtual void signalMemoryCleanup()                               = 0;
-    virtual void printInfo(const char *msg, const int device)        = 0;
+    virtual void initialize()                                              = 0;
+    virtual void shutdown()                                                = 0;
+    virtual af_buffer_info alloc(bool user_lock, const unsigned ndims,
+                                 dim_t *dims, const unsigned element_size) = 0;
+    virtual size_t allocated(void *ptr)                                    = 0;
+    virtual void unlock(void *ptr, af_event e, bool user_unlock)           = 0;
+    virtual void signalMemoryCleanup()                                     = 0;
+    virtual void printInfo(const char *msg, const int device)              = 0;
     virtual void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
-                           size_t *lock_bytes, size_t *lock_buffers) = 0;
-    virtual void userLock(const void *ptr)                           = 0;
-    virtual void userUnlock(const void *ptr)                         = 0;
-    virtual bool isUserLocked(const void *ptr)                       = 0;
-    virtual size_t getMemStepSize()                                  = 0;
-    virtual void setMemStepSize(size_t new_step_size)                = 0;
+                           size_t *lock_bytes, size_t *lock_buffers)       = 0;
+    virtual void userLock(const void *ptr)                                 = 0;
+    virtual void userUnlock(const void *ptr)                               = 0;
+    virtual bool isUserLocked(const void *ptr)                             = 0;
+    virtual size_t getMemStepSize()                                        = 0;
+    virtual void setMemStepSize(size_t new_step_size)                      = 0;
 
     /// Backend-specific functions
     // OpenCL
@@ -210,8 +209,7 @@ class DefaultMemoryManager : public memory::MemoryManagerBase {
     /// bytes. If there is already a free buffer available, it will use
     /// that buffer. Otherwise, it will allocate a new buffer using the
     /// nativeAlloc function.
-    af_buffer_info alloc(const size_t size, bool user_lock,
-                         const unsigned ndims, const dim_t *const dims,
+    af_buffer_info alloc(bool user_lock, const unsigned ndims, dim_t *dims,
                          const unsigned element_size) override;
 
     /// returns the size of the buffer at the pointer allocated by the memory

@@ -63,9 +63,9 @@ template<typename T>
 uptr<T> memAlloc(const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
-    size_t size         = elements * sizeof(T);
-    af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false, 1,
-                                                dims.get(), sizeof(T));
+    size_t size = elements * sizeof(T);
+    af_buffer_info pair =
+        memoryManager().alloc(false, 1, dims.get(), sizeof(T));
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
@@ -77,7 +77,7 @@ uptr<T> memAlloc(const size_t &elements) {
 
 void *memAllocUser(const size_t &bytes) {
     dim4 dims(bytes);
-    af_buffer_info pair = memoryManager().alloc(bytes, true, 1, dims.get(), 1);
+    af_buffer_info pair = memoryManager().alloc(true, 1, dims.get(), 1);
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
@@ -114,8 +114,8 @@ template<typename T>
 T *pinnedAlloc(const size_t &elements) {
     // TODO: make pinnedAlloc aware of array shapes
     dim4 dims(elements);
-    af_buffer_info pair = pinnedMemoryManager().alloc(
-        elements * sizeof(T), false, 1, dims.get(), sizeof(T));
+    af_buffer_info pair =
+        pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);

@@ -877,14 +877,17 @@ af_err jit_tree_exceeds_memory_pressure_fn(af_memory_manager manager, int *out,
     return AF_SUCCESS;
 }
 
-af_err alloc_fn(af_memory_manager manager, af_buffer_info *out, size_t size,
-                /* bool */ int userLock, const unsigned ndims,
-                const dim_t *const dims, const unsigned element_size) {
+af_err alloc_fn(af_memory_manager manager, af_buffer_info *out,
+                /* bool */ int userLock, const unsigned ndims, dim_t *dims,
+                const unsigned element_size) {
     af_event event;
     af_create_event(&event);
     af_mark_event(event);
     af_buffer_info bufferInfo;
     af_create_buffer_info(&bufferInfo, nullptr, event);
+
+    size_t size = element_size;
+    for (unsigned i = 0; i < ndims; ++i) { size *= dims[i]; }
 
     if (size > 0) {
         float pressure;

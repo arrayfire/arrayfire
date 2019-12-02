@@ -188,18 +188,20 @@ typedef af_err (*af_memory_manager_shutdown_fn)(af_memory_manager handle);
    memory should have a user lock associated with it
    \param[in] ndims the number of dimensions associated with the allocated
    memory. This value is currently always 1
-   \param[in] dims a \ref dim_t containing the dimensions of the allocation by
-   number of elements
+   \param[in,out] dims a \ref dim_t containing the dimensions of the allocation
+   by number of elements. After the function returns, the pointer contains the
+   shape of the allocated tensor
    \param[in] element_size the number of bytes per element of allocated memory
 
    \returns AF_SUCCESS
 
    \ingroup memory_manager_api
 */
-typedef af_err (*af_memory_manager_alloc_fn)(
-    af_memory_manager handle, af_buffer_info* buffer_info, size_t bytes,
-    /* bool */ int user_lock, const unsigned ndims, const dim_t* const dims,
-    const unsigned element_size);
+typedef af_err (*af_memory_manager_alloc_fn)(af_memory_manager handle,
+                                             af_buffer_info* buffer_info,
+                                             /* bool */ int user_lock,
+                                             const unsigned ndims, dim_t* dims,
+                                             const unsigned element_size);
 
 /**
    \brief Checks the amount of allocated memory for a pointer

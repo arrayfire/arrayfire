@@ -56,9 +56,9 @@ template<typename T>
 unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
-    af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false, 1,
-                                                dims.get(), sizeof(T));
-    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
+    af_buffer_info pair =
+        memoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue());
     void *ptr;
     af_unlock_buffer_info_ptr(&ptr, pair);
@@ -68,7 +68,7 @@ unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
 
 void *memAllocUser(const size_t &bytes) {
     dim4 dims(bytes);
-    af_buffer_info pair = memoryManager().alloc(bytes, true, 1, dims.get(), 1);
+    af_buffer_info pair = memoryManager().alloc(true, 1, dims.get(), 1);
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue());
     void *ptr;
@@ -105,9 +105,9 @@ template<typename T>
 T *pinnedAlloc(const size_t &elements) {
     // TODO: make pinnedAlloc aware of array shapes
     dim4 dims(elements);
-    af_buffer_info pair = memoryManager().alloc(elements * sizeof(T), false, 1,
-                                                dims.get(), sizeof(T));
-    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
+    af_buffer_info pair =
+        memoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue());
     void *ptr;
     af_unlock_buffer_info_ptr(&ptr, pair);
