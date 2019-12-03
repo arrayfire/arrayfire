@@ -18,13 +18,13 @@ event::event(af_event e) : e_(e) {}
 
 event::~event() {
     // No dtor throw
-    af_release_event(e_);
+    af_delete_event(e_);
 }
 
 event::event(event&& other) : e_(other.e_) { other.e_ = 0; }
 
 event& event::operator=(event&& other) {
-    af_release_event(this->e_);
+    af_delete_event(this->e_);
     this->e_ = other.e_;
     other.e_ = 0;
     return *this;
@@ -36,6 +36,6 @@ void event::mark() { AF_THROW(af_mark_event(e_)); }
 
 void event::enqueue() { AF_THROW(af_enqueue_wait_event(e_)); }
 
-void event::block() { AF_THROW(af_block_event(e_)); }
+void event::block() const { AF_THROW(af_block_event(e_)); }
 
 }  // namespace af

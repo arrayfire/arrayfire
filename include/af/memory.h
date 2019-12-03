@@ -178,7 +178,7 @@ typedef af_err (*af_memory_manager_initialize_fn)(af_memory_manager handle);
 typedef af_err (*af_memory_manager_shutdown_fn)(af_memory_manager handle);
 
 /**
-   \brief Called when memory is to be allocated by ArrayFire
+   \brief Function pointer that will be called by ArrayFire to allocate memory.
 
    \param[in] handle a pointer to the active \ref af_memory_manager handle
    \param[out] buffer_info a pointer to a \ref af_buffer_info containing the
@@ -247,7 +247,12 @@ typedef af_err (*af_memory_manager_signal_memory_cleanup_fn)(
     af_memory_manager handle);
 
 /**
-   \brief Populates memory information into a passed buffer
+   \brief Populates a character array with human readable information about the
+   current state of the memory manager.
+
+   Prints useful information about the memory manger and its state. No format is
+   enforced and can include any information that could be useful to the user.
+   This function is only called by \ref af_print_mem_info.
 
    \param[in] handle a pointer to the active \ref af_memory_manager handle
    \param[out] a buffer to which a message will be populated
@@ -312,9 +317,22 @@ typedef af_err (*af_memory_manager_get_memory_pressure_fn)(af_memory_manager,
    \brief Called to query if additions to the JIT tree would exert too much
    memory pressure
 
+   The ArrayFire JIT compiler will call this function to determine if the number
+   of bytes referenced by the buffers in the JIT tree are causing too much
+   memory pressure on the system.
+
+   If the memory manager decides that the pressure is too great, the JIT tree
+   will be evaluated and this COULD result in some buffers being freed if they
+   are not referenced by other af_arrays. If the memory pressure is not too
+   great the JIT tree may not be evaluated and could continue to get bigger.
+
+   The default memory manager will trigger an evaluation if the buffers in the
+   JIT tree account for half of all buffers allocated.
+
    \param[in] handle a pointer to the active \ref af_memory_manager handle
    \param[out] out a truthy value if too much memory pressure is exerted
-   \param[in] size the size of the allocation required for the new JIT nodes
+   \param[in] size the total number of bytes allocated by all the buffer nodes
+   in the current JIT tree
    \returns AF_SUCCESS
 
    \ingroup memory_manager_api
@@ -442,7 +460,11 @@ AFAPI af_err af_memory_manager_get_payload(af_memory_manager handle,
                                            void** payload);
 
 /**
-   \brief Gets the payload ptr from an \ref af_memory_manager
+   \brief Sets the payload ptr from an \ref af_memory_manager
+
+   A payload can be any user defined memory associated with the memory manager
+   and can be used to track state of the memory manager. It is not used directly
+   by ArrayFire.
 
    \param[in] handle the \ref af_memory_manager handle
    \param[out] payload pointer to the payload pointer
@@ -646,7 +668,9 @@ AFAPI af_err af_memory_manager_get_active_device_id(af_memory_manager handle,
    \brief Allocates memory with a native memory function for the active backend
 
    \param[in] handle the \ref af_memory_manager handle
-   \param[out] ptr the pointer to free
+   \param[out] ptr the pointer to the allocated buffer (for the CUDA and CPU
+   backends). For the OpenCL backend, this is a pointer to a cl::Buffer, which
+   can be cast accordingly
    \param[in] size the size of the pointer allocation
 
    \returns AF_SUCCESS

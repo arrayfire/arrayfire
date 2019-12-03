@@ -33,7 +33,7 @@ af_err af_create_event(af_event *handle) {
     return AF_SUCCESS;
 }
 
-af_err af_release_event(const af_event handle) {
+af_err af_delete_event(af_event handle) {
     try {
         releaseEvent(handle);
     }

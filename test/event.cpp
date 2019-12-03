@@ -22,7 +22,7 @@ using af::event;
 TEST(EventTests, SimpleCreateRelease) {
     af_event event;
     ASSERT_SUCCESS(af_create_event(&event));
-    ASSERT_SUCCESS(af_release_event(event));
+    ASSERT_SUCCESS(af_delete_event(event));
 }
 
 TEST(EventTests, MarkEnqueueAndBlock) {
@@ -31,7 +31,7 @@ TEST(EventTests, MarkEnqueueAndBlock) {
     ASSERT_SUCCESS(af_mark_event(event));
     ASSERT_SUCCESS(af_enqueue_wait_event(event));
     ASSERT_SUCCESS(af_block_event(event));
-    ASSERT_SUCCESS(af_release_event(event));
+    ASSERT_SUCCESS(af_delete_event(event));
 }
 
 TEST(EventTests, EventCreateAndMove) {

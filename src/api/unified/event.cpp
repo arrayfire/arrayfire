@@ -12,7 +12,7 @@
 
 af_err af_create_event(af_event* eventHandle) { return CALL(eventHandle); }
 
-af_err af_release_event(const af_event eventHandle) {
+af_err af_delete_event(af_event eventHandle) {
     return CALL(eventHandle);
 }
 

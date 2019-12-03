@@ -719,7 +719,7 @@ bool MemoryManagerFunctionWrapper::isUserLocked(const void *ptr) {
     int out;
     AF_CHECK(getMemoryManager(handle_).is_user_locked_fn(
         handle_, &out, const_cast<void *>(ptr)));
-    return !!out;
+    return (bool)out;
 }
 
 void MemoryManagerFunctionWrapper::usageInfo(size_t *alloc_bytes,
@@ -746,7 +746,7 @@ bool MemoryManagerFunctionWrapper::jitTreeExceedsMemoryPressure(size_t bytes) {
     int out;
     AF_CHECK(getMemoryManager(handle_).jit_tree_exceeds_memory_pressure_fn(
         handle_, &out, bytes));
-    return !!out;
+    return (bool)out;
 }
 
 size_t MemoryManagerFunctionWrapper::getMemStepSize() {

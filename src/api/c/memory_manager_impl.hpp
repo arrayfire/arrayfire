@@ -225,7 +225,7 @@ void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
                                   bool user_unlock) {
     // Shortcut for empty arrays
     if (!ptr) {
-        af_release_event(eventHandle);
+        af_delete_event(eventHandle);
         return;
     }
 
@@ -241,7 +241,7 @@ void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
         if (iter == current.locked_map.end()) {
             // Probably came from user, just free it
             freed_ptr.reset(ptr);
-            af_release_event(eventHandle);
+            af_delete_event(eventHandle);
             return;
         }
 
@@ -253,7 +253,7 @@ void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
 
         // Return early if either one is locked
         if ((iter->second).user_lock || (iter->second).manager_lock) {
-            af_release_event(eventHandle);
+            af_delete_event(eventHandle);
             return;
         }
 
@@ -268,7 +268,7 @@ void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
                 current.total_buffers--;
                 current.total_bytes -= iter->second.bytes;
             }
-            af_release_event(eventHandle);
+            af_delete_event(eventHandle);
         } else {
             af_buffer_info info;
             af_create_buffer_info(&info, ptr, eventHandle);

@@ -671,7 +671,7 @@ TEST(BufferInfo, Unlock) {
     ASSERT_EQ(zeroEvent, nullptr);
 
     ASSERT_SUCCESS(af_delete_buffer_info(pair));
-    ASSERT_SUCCESS(af_release_event(event));
+    ASSERT_SUCCESS(af_delete_event(event));
     af::free(ptr);
 }
 
@@ -704,7 +704,7 @@ TEST(BufferInfo, EventAndPtrAttributes) {
     ASSERT_EQ(yetAnotherPtr, anotherPtr);
 
     ASSERT_SUCCESS(af_delete_buffer_info(pair));
-    ASSERT_SUCCESS(af_release_event(event));
+    ASSERT_SUCCESS(af_delete_event(event));
     af::free(ptr);
 }
 
@@ -729,7 +729,7 @@ TEST(BufferInfo, BufferInfoCreateMove) {
     ASSERT_EQ(anotherBufferInfo->getPtr(), anotherPtr);
     ASSERT_EQ(anotherBufferInfo->getEvent(), anotherEvent);
 
-    af_release_event(event);
+    af_delete_event(event);
     af::free(ptr);
 }
 
@@ -744,7 +744,7 @@ TEST(BufferInfo, UnlockCpp) {
     af_event anotherEvent = bufferInfo->unlockEvent();
     ASSERT_EQ(event, anotherEvent);
 
-    ASSERT_SUCCESS(af_release_event(anotherEvent));
+    ASSERT_SUCCESS(af_delete_event(anotherEvent));
     af::free(ptr);
 }
 
@@ -807,7 +807,7 @@ af_err is_user_locked_fn(af_memory_manager manager, int *out, void *ptr) {
 
 af_err unlock_fn(af_memory_manager manager, void *ptr, af_event event,
                  int userLock) {
-    af_release_event(event);
+    af_delete_event(event);
     if (!ptr) { return AF_SUCCESS; }
 
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);

@@ -46,7 +46,7 @@ af_err af_delete_buffer_info(af_buffer_info handle) {
         /// and deletes the associated event. Use unlock functions to free
         /// resources individually
         BufferInfo &buf = getBufferInfo(handle);
-        af_release_event(buf.event);
+        af_delete_event(buf.event);
         if (buf.ptr) { af_free_device(buf.ptr); }
 
         delete (BufferInfo *)handle;

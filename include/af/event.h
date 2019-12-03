@@ -39,7 +39,7 @@ class AFAPI event {
 
     void enqueue();
 
-    void block();
+    void block() const;
 
    private:
     event& operator=(const event& other);
@@ -69,11 +69,11 @@ AFAPI af_err af_create_event(af_event* eventHandle);
 
    \ingroup event_api
 */
-AFAPI af_err af_release_event(const af_event eventHandle);
+AFAPI af_err af_delete_event(af_event eventHandle);
 
 /**
    marks the \ref af_event on the active computation stream. If the \ref
-   af_event is enqueued/wated on later, any operations that are currently
+   af_event is enqueued/waited on later, any operations that are currently
    enqueued on the event stream will be completed before any events that are
    enqueued after the call to enqueue
 
