@@ -58,7 +58,7 @@ bool jitTreeExceedsMemoryPressure(size_t bytes);
 void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 
-class Allocator : public common::memory::AllocatorInterface {
+class Allocator final : public common::memory::AllocatorInterface {
    public:
     Allocator();
     ~Allocator() = default;

@@ -173,7 +173,7 @@ struct memory_info {
 
 }  // namespace memory
 
-class DefaultMemoryManager : public memory::MemoryManagerBase {
+class DefaultMemoryManager final : public memory::MemoryManagerBase {
     size_t mem_step_size;
     unsigned max_buffers;
 
