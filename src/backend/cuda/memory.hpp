@@ -73,7 +73,7 @@ class Allocator final : public common::memory::AllocatorInterface {
 // So we pass 1 as numDevices to the constructor so that it creates 1 vector
 // of memory_info
 // When allocating and freeing, it doesn't really matter which device is active
-class AllocatorPinned : public common::memory::AllocatorInterface {
+class AllocatorPinned final : public common::memory::AllocatorInterface {
    public:
     AllocatorPinned();
     ~AllocatorPinned() = default;

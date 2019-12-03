@@ -70,7 +70,7 @@ class Allocator final : public common::memory::AllocatorInterface {
     void nativeFree(void *ptr) override;
 };
 
-class AllocatorPinned : public common::memory::AllocatorInterface {
+class AllocatorPinned final : public common::memory::AllocatorInterface {
    public:
     AllocatorPinned();
     ~AllocatorPinned() = default;

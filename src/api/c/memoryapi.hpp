@@ -38,7 +38,7 @@ detail::Event &getEventFromBufferInfoHandle(const af_buffer_info handle);
  * An internal wrapper around an af_memory_manager which calls function pointers
  * on a af_memory_manager via calls to a MemoryManagerBase
  */
-class MemoryManagerFunctionWrapper : public common::memory::MemoryManagerBase {
+class MemoryManagerFunctionWrapper final : public common::memory::MemoryManagerBase {
     af_memory_manager handle_;
 
    public:
