@@ -9,6 +9,7 @@
 
 #include <Param.hpp>
 #include <math.hpp>
+#include <utility.hpp>
 
 namespace  cuda {
 
@@ -17,15 +18,14 @@ __device__
 int idxByndEdge(const int i, const int lb, const int len) {
     uint retVal;
     switch (BType) {
-        case AF_PAD_SYM:
-            retVal =
-                ((i < lb || i >= (lb + len)) ? ((len - 1) - ((i - lb) % len))
-                                             : i - lb);
-            break;
+        case AF_PAD_SYM: retVal = trimIndex(i-lb, len); break;
         case AF_PAD_CLAMP_TO_EDGE: retVal = clamp(i - lb, 0, len - 1); break;
-        default:  // AF_PAD_ZERO
-            retVal = 0;
-            break;
+        case AF_PAD_PERIODIC: {
+            int rem   = (i - lb) % len;
+            bool cond = rem < 0;
+            retVal    = cond * (rem + len) + (1 - cond) * rem;
+        } break;
+        default: retVal = 0; break; // AF_PAD_ZERO
     }
     return retVal;
 }

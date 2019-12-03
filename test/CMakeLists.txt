@@ -252,6 +252,7 @@ if(OpenCL_FOUND)
 endif()
 
 make_test(SRC orb.cpp)
+make_test(SRC pad_borders.cpp CXX11)
 make_test(SRC pinverse.cpp)
 make_test(SRC qr_dense.cpp SERIAL)
 make_test(SRC random.cpp)

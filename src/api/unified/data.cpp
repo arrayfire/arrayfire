@@ -141,3 +141,10 @@ af_err af_replace_scalar(af_array a, const af_array cond, const double b) {
     CHECK_ARRAYS(a, cond);
       CALL(af_replace_scalar, a, cond, b);
 }
+
+af_err af_pad(af_array *out, const af_array in, const unsigned b_ndims,
+              const dim_t *const b_dims, const unsigned e_ndims,
+              const dim_t *const e_dims, const af_border_type ptype) {
+    CHECK_ARRAYS(in);
+    return CALL(out, in, b_ndims, b_dims, e_ndims, e_dims, ptype);
+}

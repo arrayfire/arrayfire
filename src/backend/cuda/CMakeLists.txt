@@ -93,6 +93,7 @@ set(nvrtc_src
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/interp.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/shared.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/math.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/utility.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/types.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/half.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/kernel_type.hpp

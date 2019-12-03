@@ -427,3 +427,57 @@ af_err af_upper(af_array *out, const af_array in, bool is_unit_diag) {
     CATCHALL
     return AF_SUCCESS;
 }
+
+template<typename T>
+inline af_array pad(const af_array in, const dim4 &lPad, const dim4 &uPad,
+                    const af::borderType ptype) {
+    return getHandle(padArrayBorders<T>(getArray<T>(in), lPad, uPad, ptype));
+}
+
+af_err af_pad(af_array *out, const af_array in, const unsigned begin_ndims,
+              const dim_t *const begin_dims, const unsigned end_ndims,
+              const dim_t *const end_dims, const af_border_type pad_type) {
+    try {
+        DIM_ASSERT(2, begin_ndims > 0 && begin_ndims <= 4);
+        DIM_ASSERT(4, end_ndims > 0 && end_ndims <= 4);
+        ARG_ASSERT(3, begin_dims != NULL);
+        ARG_ASSERT(5, end_dims != NULL);
+        ARG_ASSERT(6, (pad_type >= AF_PAD_ZERO && pad_type <= AF_PAD_PERIODIC));
+        for (unsigned i = 0; i < begin_ndims; i++) {
+            DIM_ASSERT(3, begin_dims[i] >= 0);
+        }
+        for (unsigned i = 0; i < end_ndims; i++) {
+            DIM_ASSERT(5, end_dims[i] >= 0);
+        }
+
+        dim4 lPad(begin_ndims, begin_dims);
+        dim4 uPad(end_ndims, end_dims);
+        for (unsigned i = begin_ndims; i < AF_MAX_DIMS; i++) { lPad[i] = 0; }
+        for (unsigned i = end_ndims; i < AF_MAX_DIMS; i++) { uPad[i] = 0; }
+
+        const ArrayInfo &info = getInfo(in);
+        af_dtype type         = info.getType();
+
+        if (info.ndims() == 0) { return af_retain_array(out, in); }
+
+        af_array res = 0;
+        switch (type) {
+            case f32: res = pad<float>(in, lPad, uPad, pad_type); break;
+            case f64: res = pad<double>(in, lPad, uPad, pad_type); break;
+            case c32: res = pad<cfloat>(in, lPad, uPad, pad_type); break;
+            case c64: res = pad<cdouble>(in, lPad, uPad, pad_type); break;
+            case s32: res = pad<int>(in, lPad, uPad, pad_type); break;
+            case u32: res = pad<uint>(in, lPad, uPad, pad_type); break;
+            case s64: res = pad<intl>(in, lPad, uPad, pad_type); break;
+            case u64: res = pad<uintl>(in, lPad, uPad, pad_type); break;
+            case s16: res = pad<short>(in, lPad, uPad, pad_type); break;
+            case u16: res = pad<ushort>(in, lPad, uPad, pad_type); break;
+            case u8: res = pad<uchar>(in, lPad, uPad, pad_type); break;
+            case b8: res = pad<char>(in, lPad, uPad, pad_type); break;
+            case f16: res = pad<half>(in, lPad, uPad, pad_type); break;
+        }
+        std::swap(*out, res);
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}

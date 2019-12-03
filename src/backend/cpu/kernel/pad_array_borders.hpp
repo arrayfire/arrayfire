@@ -8,9 +8,12 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
+#include <utility.hpp>
 
 #include <algorithm>
+#include <cstdlib>
 
 namespace cpu {
 namespace kernel {
@@ -19,14 +22,15 @@ static inline dim_t idxByndEdge(const dim_t i, const dim_t lb, const dim_t len,
                                 const af::borderType btype) {
     dim_t retVal;
     switch (btype) {
-        case AF_PAD_SYM:
-            retVal =
-                ((i < lb || i >= (lb + len)) ? ((len - 1) - ((i - lb) % len))
-                                             : i - lb);
-            break;
+        case AF_PAD_SYM: retVal = trimIndex(i - lb, len); break;
         case AF_PAD_CLAMP_TO_EDGE:
             retVal = std::max(dim_t(0), std::min(i - lb, len - 1));
             break;
+        case AF_PAD_PERIODIC: {
+            dim_t rem = (i - lb) % len;
+            bool cond = rem < 0;
+            retVal    = cond * (rem + len) + (1 - cond) * rem;
+        } break;
         default: retVal = 0; break;
     }
     return retVal;
@@ -118,7 +122,7 @@ void padBorders(Param<T> out, CParam<T> in, const dim4 lBoundPadSize,
                                                          iDims[0], btype);
 
                     dst[oLOff + oKOff + oJOff + oIOff] =
-                        src[iLOff + iKOff + iJOff + iIOff];
+                       src[iLOff + iKOff + iJOff + iIOff];
 
                 }  // first dimension loop
             }      // second dimension loop

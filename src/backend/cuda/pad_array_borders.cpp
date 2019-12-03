@@ -10,6 +10,7 @@
 #include <copy.hpp>
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <kernel/pad_array_borders.hpp>
 
@@ -48,4 +49,5 @@ INSTANTIATE_PAD_ARRAY_BORDERS(uchar)
 INSTANTIATE_PAD_ARRAY_BORDERS(char)
 INSTANTIATE_PAD_ARRAY_BORDERS(ushort)
 INSTANTIATE_PAD_ARRAY_BORDERS(short)
+INSTANTIATE_PAD_ARRAY_BORDERS(common::half)
 }  // namespace cuda

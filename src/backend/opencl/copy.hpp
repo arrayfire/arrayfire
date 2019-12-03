@@ -46,6 +46,9 @@ Array<T> padArrayBorders(Array<T> const &in, dim4 const &lowerBoundPadding,
             kernel::padBorders<T, AF_PAD_CLAMP_TO_EDGE>(ret, in,
                                                         lowerBoundPadding);
             break;
+        case AF_PAD_PERIODIC:
+            kernel::padBorders<T, AF_PAD_PERIODIC>(ret, in, lowerBoundPadding);
+            break;
         default:
             kernel::padBorders<T, AF_PAD_ZERO>(ret, in, lowerBoundPadding);
             break;

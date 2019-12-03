@@ -307,4 +307,16 @@ void replace(array &a, const array &cond, const array &b) {
 void replace(array &a, const array &cond, const double &b) {
     AF_THROW(af_replace_scalar(a.get(), cond.get(), b));
 }
+
+array pad(const array &in, const dim4 &beginPadding, const dim4 &endPadding,
+          const borderType padFillType) {
+    af_array out = 0;
+    // FIXME(pradeep) Cannot use dim4::ndims() since that will
+    //               always return 0 if any one of dimensions
+    //               has no padding completely
+    AF_THROW(af_pad(&out, in.get(), 4, beginPadding.get(), 4, endPadding.get(),
+                    padFillType));
+    return array(out);
+}
+
 }  // namespace af
