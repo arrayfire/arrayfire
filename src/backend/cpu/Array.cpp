@@ -13,6 +13,7 @@
 #include <Param.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
 #include <common/traits.hpp>
 #include <copy.hpp>
@@ -24,7 +25,6 @@
 #include <queue.hpp>
 #include <traits.hpp>
 
-#include <common/half.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/seq.h>

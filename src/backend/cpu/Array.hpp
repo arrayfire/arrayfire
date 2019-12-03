@@ -14,7 +14,6 @@
 #include <jit/Node.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
-#include <queue.hpp>
 
 #include <af/defines.h>
 #include <af/dim4.hpp>

@@ -9,12 +9,11 @@
 
 #pragma once
 
-#include <Event.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
 #include <common/err_common.hpp>
 #include <common/util.hpp>
-#include <events.hpp>
+#include <af/event.h>
 #include <af/memory.h>
 
 #include <algorithm>

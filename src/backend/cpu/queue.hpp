@@ -10,6 +10,7 @@
 
 #include <Param.hpp>
 #include <common/util.hpp>
+#include <memory.hpp>
 
 #include <algorithm>
 
