@@ -60,9 +60,10 @@ unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
         memoryManager().alloc(false, 1, dims.get(), sizeof(T));
     detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue());
-    void *ptr;
-    af_unlock_buffer_info_ptr(&ptr, pair);
-    af_delete_buffer_info(pair);
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
     return unique_ptr<T[], function<void(T *)>>((T *)ptr, memFree<T>);
 }
 
@@ -71,9 +72,10 @@ void *memAllocUser(const size_t &bytes) {
     af_buffer_info pair = memoryManager().alloc(true, 1, dims.get(), 1);
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue());
-    void *ptr;
-    af_unlock_buffer_info_ptr(&ptr, pair);
-    af_delete_buffer_info(pair);
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
     return ptr;
 }
 
@@ -109,9 +111,10 @@ T *pinnedAlloc(const size_t &elements) {
         memoryManager().alloc(false, 1, dims.get(), sizeof(T));
     detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue());
-    void *ptr;
-    af_unlock_buffer_info_ptr(&ptr, pair);
-    af_delete_buffer_info(pair);
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
     return (T *)ptr;
 }
 

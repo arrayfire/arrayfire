@@ -61,10 +61,11 @@ unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
         memoryManager().alloc(false, 1, dims.get(), sizeof(T));
     detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue()());
-    void *rawPtr;
-    af_unlock_buffer_info_ptr(&rawPtr, pair);
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *rawPtr     = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
     cl::Buffer *ptr = static_cast<cl::Buffer *>(rawPtr);
-    af_delete_buffer_info(pair);
     return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(ptr,
                                                                 bufferFree);
 }
@@ -74,9 +75,10 @@ void *memAllocUser(const size_t &bytes) {
     af_buffer_info pair = memoryManager().alloc(true, 1, dims.get(), 1);
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue()());
-    void *ptr;
-    af_unlock_buffer_info_ptr(&ptr, pair);
-    af_delete_buffer_info(pair);
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
     return ptr;
 }
 
@@ -95,9 +97,10 @@ cl::Buffer *bufferAlloc(const size_t &bytes) {
     af_buffer_info pair = memoryManager().alloc(false, 1, dims.get(), 1);
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     if (e) e.enqueueWait(getQueue()());
-    void *ptr;
-    af_unlock_buffer_info_ptr(&ptr, pair);
-    af_delete_buffer_info(pair);
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
     return static_cast<cl::Buffer *>(ptr);
 }
 

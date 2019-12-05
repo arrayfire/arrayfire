@@ -262,7 +262,7 @@ typedef af_err (*af_memory_manager_signal_memory_cleanup_fn)(
    \ingroup memory_manager_api
 */
 typedef af_err (*af_memory_manager_print_info_fn)(af_memory_manager handle,
-                                                  char*, int);
+                                                  char* buffer, int id);
 
 /**
    \brief Called to lock a buffer as user-owned memory

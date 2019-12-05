@@ -69,9 +69,10 @@ uptr<T> memAlloc(const size_t &elements) {
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
-    void *ptr;
-    af_unlock_buffer_info_ptr(&ptr, pair);
-    af_delete_buffer_info(pair);
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
     return uptr<T>(static_cast<T *>(ptr), memFree<T>);
 }
 
@@ -81,9 +82,10 @@ void *memAllocUser(const size_t &bytes) {
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
-    void *ptr;
-    af_unlock_buffer_info_ptr(&ptr, pair);
-    af_delete_buffer_info(pair);
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
     return ptr;
 }
 
@@ -119,9 +121,10 @@ T *pinnedAlloc(const size_t &elements) {
     detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
     cudaStream_t stream = getActiveStream();
     if (e) e.enqueueWait(stream);
-    void *ptr;
-    af_unlock_buffer_info_ptr(&ptr, pair);
-    af_delete_buffer_info(pair);
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
     return (T *)ptr;
 }
 

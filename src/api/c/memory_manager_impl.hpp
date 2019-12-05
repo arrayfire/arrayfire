@@ -62,11 +62,12 @@ void DefaultMemoryManager::cleanDeviceMemoryManager(int device) {
              bytesToString(bytes_freed));
     // Free memory outside of the lock
     for (auto &pair : free_ptrs) {
-        void *ptr;
-        af_unlock_buffer_info_ptr(&ptr, pair);
+        auto *bufferInfo = (BufferInfo *)pair;
+        void *ptr        = bufferInfo->ptr;
         this->nativeFree(ptr);
         // Release resources
-        af_delete_buffer_info(pair);
+        delete (detail::Event *)bufferInfo->event;
+        delete bufferInfo;
     }
 }
 
@@ -147,11 +148,10 @@ af_buffer_info DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
     size_t bytes = element_size;
     for (unsigned i = 0; i < ndims; ++i) { bytes *= dims[i]; }
 
-    af_event event;
-    af_create_event(&event);
-    af_mark_event(event);
-    af_buffer_info bufferInfo;
-    af_create_buffer_info(&bufferInfo, nullptr, event);
+    auto *event        = new detail::Event();
+    auto *bufferInfo   = new BufferInfo();
+    bufferInfo->ptr    = nullptr;
+    bufferInfo->event  = getHandle(*event);
     size_t alloc_bytes = this->debug_mode
                              ? bytes
                              : (divup(bytes, mem_step_size) * mem_step_size);
@@ -172,34 +172,33 @@ af_buffer_info DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
             memory::free_iter iter = current.free_map.find(alloc_bytes);
 
             if (iter != current.free_map.end() && !iter->second.empty()) {
-                // Release existing buffer info and underlying event
-                af_delete_buffer_info(bufferInfo);
+                // Delete existing buffer info and underlying event
+                delete event;
+                delete bufferInfo;
                 // Set to existing in from free map
-                bufferInfo = iter->second.back();
-                af_buffer_info_get_event(&event, bufferInfo);
+                bufferInfo = (BufferInfo *)iter->second.back();
+                event      = (detail::Event *)bufferInfo->event;
                 iter->second.pop_back();
-                void *ptrM;
-                af_buffer_info_get_ptr(&ptrM, bufferInfo);
+                void *ptrM               = bufferInfo->ptr;
                 current.locked_map[ptrM] = info;
                 current.lock_bytes += alloc_bytes;
                 current.lock_buffers++;
             }
         }
 
-        void *ptr;
-        af_buffer_info_get_ptr(&ptr, bufferInfo);
+        void *ptr = bufferInfo->ptr;
         // Only comes here if buffer size not found or in debug mode
         if (ptr == nullptr) {
             // Perform garbage collection if memory can not be allocated
             try {
-                ptr = this->nativeAlloc(alloc_bytes);
-                af_buffer_info_set_ptr(bufferInfo, ptr);
+                ptr             = this->nativeAlloc(alloc_bytes);
+                bufferInfo->ptr = ptr;
             } catch (const AfError &ex) {
                 // If out of memory, run garbage collect and try again
                 if (ex.getError() != AF_ERR_NO_MEM) throw;
                 this->signalMemoryCleanup();
-                ptr = this->nativeAlloc(alloc_bytes);
-                af_buffer_info_set_ptr(bufferInfo, ptr);
+                ptr             = this->nativeAlloc(alloc_bytes);
+                bufferInfo->ptr = ptr;
             }
             lock_guard_t lock(this->memory_mutex);
             // Increment these two only when it succeeds to come here.
@@ -210,7 +209,7 @@ af_buffer_info DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
             current.lock_buffers++;
         }
     }
-    return bufferInfo;
+    return (af_buffer_info)bufferInfo;
 }
 
 size_t DefaultMemoryManager::allocated(void *ptr) {
@@ -225,7 +224,7 @@ void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
                                   bool user_unlock) {
     // Shortcut for empty arrays
     if (!ptr) {
-        af_delete_event(eventHandle);
+        delete (detail::Event *)eventHandle;
         return;
     }
 
@@ -241,7 +240,7 @@ void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
         if (iter == current.locked_map.end()) {
             // Probably came from user, just free it
             freed_ptr.reset(ptr);
-            af_delete_event(eventHandle);
+            delete (detail::Event *)eventHandle;
             return;
         }
 
@@ -253,7 +252,7 @@ void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
 
         // Return early if either one is locked
         if ((iter->second).user_lock || (iter->second).manager_lock) {
-            af_delete_event(eventHandle);
+            delete (detail::Event *)eventHandle;
             return;
         }
 
@@ -268,11 +267,12 @@ void DefaultMemoryManager::unlock(void *ptr, af_event eventHandle,
                 current.total_buffers--;
                 current.total_bytes -= iter->second.bytes;
             }
-            af_delete_event(eventHandle);
+            delete (detail::Event *)eventHandle;
         } else {
-            af_buffer_info info;
-            af_create_buffer_info(&info, ptr, eventHandle);
-            current.free_map[bytes].emplace_back(info);
+            auto *info  = new BufferInfo();
+            info->ptr   = ptr;
+            info->event = eventHandle;
+            current.free_map[bytes].emplace_back((af_buffer_info)info);
         }
         current.locked_map.erase(iter);
     }
@@ -323,8 +323,7 @@ void DefaultMemoryManager::printInfo(const char *msg, const int device) {
         }
 
         for (auto &pair : kv.second) {
-            void *ptr;
-            af_buffer_info_get_ptr(&ptr, pair);
+            void *ptr = ((BufferInfo *)pair)->ptr;
             printf("|  %14p  |  %6.f %s | %9s | %9s |\n", ptr, size, unit,
                    status_mngr, status_user);
         }
@@ -360,10 +359,8 @@ void DefaultMemoryManager::userLock(const void *ptr) {
 }
 
 void DefaultMemoryManager::userUnlock(const void *ptr) {
-    af_event event;
-    af_create_event(&event);
-    af_mark_event(event);
-    this->unlock(const_cast<void *>(ptr), event, true);
+    auto *e = new detail::Event();
+    this->unlock(const_cast<void *>(ptr), getHandle(*e), true);
 }
 
 bool DefaultMemoryManager::isUserLocked(const void *ptr) {
