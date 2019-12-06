@@ -19,6 +19,7 @@ include(build_cl2hpp)
 include(platform)
 include(GetPrerequisites)
 include(CheckCXXCompilerFlag)
+include(SplitDebugInfo)
 
 set_policies(
   TYPE NEW

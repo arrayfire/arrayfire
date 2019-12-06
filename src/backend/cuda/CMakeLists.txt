@@ -573,6 +573,8 @@ if(APPLE)
   target_link_libraries(afcuda PUBLIC -Wl,-rpath,${CUDA_LIBRARIES_PATH})
 endif()
 
+af_split_debug_info(afcuda ${AF_INSTALL_LIB_DIR})
+
 install(TARGETS afcuda
   EXPORT ArrayFireCUDATargets
   COMPONENT cuda

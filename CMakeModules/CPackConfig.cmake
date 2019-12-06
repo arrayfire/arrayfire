@@ -166,12 +166,37 @@ cpack_add_component(opencl_dependencies
   DESCRIPTION "Libraries required by the OpenCL backend."
   GROUP opencl_backend
   INSTALL_TYPES All Development Runtime)
-  
+if (NOT APPLE) #TODO(pradeep) Remove check after OSX support addition
+  cpack_add_component(afopencl_debug_symbols
+    DISPLAY_NAME "OpenCL Backend Debug Symbols"
+    DESCRIPTION "File containing debug symbols for afopencl dll/so/dylib file"
+    GROUP opencl_backend
+    DISABLED
+    INSTALL_TYPES Development)
+endif ()
+
 cpack_add_component(cuda_dependencies
   DISPLAY_NAME "CUDA Dependencies"
   DESCRIPTION "CUDA runtime and libraries required by the CUDA backend."
   GROUP cuda_backend
   INSTALL_TYPES All Development Runtime)
+if (NOT APPLE) #TODO(pradeep) Remove check after OSX support addition
+  cpack_add_component(afcuda_debug_symbols
+    DISPLAY_NAME "CUDA Backend Debug Symbols"
+    DESCRIPTION "File containing debug symbols for afcuda dll/so/dylib file"
+    GROUP cuda_backend
+    DISABLED
+    INSTALL_TYPES Development)
+endif ()
+
+if (NOT APPLE) #TODO(pradeep) Remove check after OSX support addition
+  cpack_add_component(afcpu_debug_symbols
+    DISPLAY_NAME "CPU Backend Debug Symbols"
+    DESCRIPTION "File containing debug symbols for afcpu dll/so/dylib file"
+    GROUP cpu_backend
+    DISABLED
+    INSTALL_TYPES Development)
+endif ()
 
 cpack_add_component(cuda
   DISPLAY_NAME "CUDA Backend"
@@ -206,11 +231,20 @@ cpack_add_component(opencl
   DEPENDS ${ocl_deps_comps}
   INSTALL_TYPES All Development Runtime)
 
+if (NOT APPLE) #TODO(pradeep) Remove check after OSX support addition
+  cpack_add_component(af_debug_symbols
+    DISPLAY_NAME "Unified Backend Debug Symbols"
+    DESCRIPTION "File containing debug symbols for af dll/so/dylib file"
+    GROUP backends
+    DISABLED
+    INSTALL_TYPES Development)
+endif ()
 cpack_add_component(unified
   DISPLAY_NAME "Unified Backend"
   DESCRIPTION "The Unified backend allows you to choose between any of the installed backends (CUDA, OpenCL, or CPU) at runtime."
   GROUP backends
   INSTALL_TYPES All Development Runtime)
+
 cpack_add_component(headers
   DISPLAY_NAME "C/C++ Headers"
   DESCRIPTION "Headers for the ArrayFire libraries."

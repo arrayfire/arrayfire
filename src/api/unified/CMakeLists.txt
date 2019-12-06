@@ -103,6 +103,8 @@ install(TARGETS af
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
   )
 
+af_split_debug_info(af ${AF_INSTALL_LIB_DIR})
+
 # install(TARGETS af EXPORT AF DESTINATION "${AF_INSTALL_LIB_DIR}"
 #   COMPONENT libraries)
 #

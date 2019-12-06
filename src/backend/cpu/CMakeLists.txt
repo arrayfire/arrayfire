@@ -351,6 +351,8 @@ if(LAPACK_FOUND OR MKL_FOUND)
       WITH_LINEAR_ALGEBRA)
 endif()
 
+af_split_debug_info(afcpu ${AF_INSTALL_LIB_DIR})
+
 install(TARGETS afcpu
   EXPORT ArrayFireCPUTargets
   COMPONENT cpu
