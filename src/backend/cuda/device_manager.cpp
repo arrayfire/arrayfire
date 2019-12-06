@@ -65,10 +65,10 @@ void checkAndSetDevMaxCompute(pair<int, int> &prop) {
         int minor;
     };
     static const cuNVRTCcompute Toolkit2MinCompute[] = {
-        {10010, 3, 0}, {10000, 3, 0}, {9020, 3, 0}, {9010, 3, 0},
+        {10020, 3, 0}, {10010, 3, 0}, {10000, 3, 0}, {9020, 3, 0}, {9010, 3, 0},
         {9000, 3, 0},  {8000, 2, 0},  {7050, 2, 0}, {7000, 2, 0}};
     static const cuNVRTCcompute Toolkit2MaxCompute[] = {
-        {10010, 7, 5}, {10000, 7, 2}, {9020, 7, 2}, {9010, 7, 2},
+        {10020, 7, 5}, {10010, 7, 5}, {10000, 7, 2}, {9020, 7, 2}, {9010, 7, 2},
         {9000, 7, 2},  {8000, 5, 3},  {7050, 5, 3}, {7000, 5, 3}};
 
     int rtCudaVer = 0;
@@ -289,6 +289,7 @@ struct ToolkitDriverVersions {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
+        {10020, 440.33f, 441.22f},
         {10010, 418.39f, 418.96f},
         {10000, 410.48f, 411.31f},
         {9020,  396.37f, 398.26f},
