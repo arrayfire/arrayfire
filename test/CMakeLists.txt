@@ -5,6 +5,21 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+
+set(CPU_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}afcpu${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(CUDA_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}afcuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(OPENCL_LIB_NAME "${CMAKE_SHARED_LIBRARY_PREFIX}afopencl${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  set(CPU_LIB_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CPU_LIB_NAME}")
+  set(CUDA_LIB_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CUDA_LIB_NAME}")
+  set(OPENCL_LIB_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${OPENCL_LIB_NAME}")
+else()
+  set(CPU_LIB_PATH "${ArrayFire_BINARY_DIR}/${CPU_BACKEND_SOURCE_DIR}/${CPU_LIB_NAME}")
+  set(CUDA_LIB_PATH "${ArrayFire_BINARY_DIR}/${CUDA_BACKEND_SOURCE_DIR}/${CUDA_LIB_NAME}")
+  set(OPENCL_LIB_PATH "${ArrayFire_BINARY_DIR}/${OPENCL_BACKEND_SOURCE_DIR}/${OPENCL_LIB_NAME}")
+endif()
+
 set(AF_TEST_WITH_MTX_FILES
     ON CACHE BOOL
     "Download and run tests on large matrices form sparse.tamu.edu")
@@ -170,8 +185,12 @@ make_test(SRC approx1.cpp)
 make_test(SRC approx2.cpp)
 make_test(SRC array.cpp CXX11)
 make_test(SRC arrayio.cpp)
-make_test(SRC assign.cpp CXX11)
-make_test(SRC backend.cpp)
+make_test(SRC assign.cpp)
+make_test(SRC backend.cpp
+          DEFINITIONS CPU_LIB_PATH="${CPU_LIB_PATH}"
+                      CUDA_LIB_PATH="${CUDA_LIB_PATH}"
+                      OPENCL_LIB_PATH="${OPENCL_LIB_PATH}"
+                      )
 make_test(SRC basic.cpp)
 make_test(SRC basic_c.c)
 make_test(SRC bilateral.cpp)

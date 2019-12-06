@@ -23,13 +23,14 @@
 namespace unified {
 
 const int NUM_BACKENDS = 3;
+const int MAX_BKND_HANDLES = 10;
 
-#define UNIFIED_ERROR_LOAD_LIB()                                       \
+#define UNIFIED_ERROR_LOAD_LIB(AF_ERR)                            \
     AF_RETURN_ERROR(                                                   \
         "Failed to load dynamic library. "                             \
         "See http://www.arrayfire.com/docs/unifiedbackend.htm "        \
         "for instructions to set up environment for Unified backend.", \
-        AF_ERR_LOAD_LIB)
+        AF_ERR)
 
 static inline int backend_index(af::Backend be) {
     switch (be) {
@@ -50,14 +51,16 @@ class AFSymbolManager {
 
     int getAvailableBackends();
 
-    af_err setBackend(af::Backend bnkd);
+    af_err setBackend(af::Backend bknd);
+    af_err addBackendLibrary(const char *lib_path);
+    af_err setBackendLibrary(int lib_idx);
 
     af::Backend getActiveBackend() { return activeBackend; }
 
     template<typename... CalleeArgs>
     af_err call(const char* symbolName, CalleeArgs... args) {
         typedef af_err (*af_func)(CalleeArgs...);
-        if (!activeHandle) { UNIFIED_ERROR_LOAD_LIB(); }
+        if (!activeHandle) { UNIFIED_ERROR_LOAD_LIB(AF_ERR_NO_ACTIVE_BKND); }
         thread_local std::array<std::unordered_map<const char*, af_func>,
                                 NUM_BACKENDS>
             funcHandles;
@@ -65,7 +68,9 @@ class AFSymbolManager {
         int index           = backend_index(getActiveBackend());
         af_func& funcHandle = funcHandles[index][symbolName];
 
-        if (!funcHandle) {
+        if (!funcHandle ||
+            activeHandle != prevHandle) { // Load funcHandle also if backend is
+                                          // the same but library will be changed
             AF_TRACE("Loading: {}", symbolName);
             funcHandle =
                 (af_func)common::getFunctionPointer(activeHandle, symbolName);
@@ -94,11 +99,12 @@ class AFSymbolManager {
     void operator=(AFSymbolManager const&);
 
    private:
-    LibHandle bkndHandles[NUM_BACKENDS];
-
+    LibHandle bkndHandles[MAX_BKND_HANDLES];
     LibHandle activeHandle;
+    LibHandle prevHandle;
     LibHandle defaultHandle;
     unsigned numBackends;
+    unsigned newCustomHandleIndex;
     int backendsAvailable;
     af_backend activeBackend;
     af_backend defaultBackend;

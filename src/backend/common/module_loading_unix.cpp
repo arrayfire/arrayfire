@@ -24,6 +24,7 @@ void* getFunctionPointer(LibHandle handle, const char* symbolName) {
 LibHandle loadLibrary(const char* library_name) {
     return dlopen(library_name, RTLD_LAZY);
 }
+
 void unloadLibrary(LibHandle handle) { dlclose(handle); }
 
 string getErrorMessage() {
