@@ -26,9 +26,9 @@
 #include <version.hpp>
 #include <af/cuda.h>
 #include <af/version.h>
-// cuda_gl_interop.h does not include OpenGL headers for ARM
 #include <common/graphics_common.hpp>
-#define __gl_h_  // FIXME Hack to avoid gl.h inclusion by cuda_gl_interop.h
+// cuda_gl_interop.h does not include OpenGL headers for ARM
+// __gl_h_ should be defined by glad.h inclusion
 #include <cuda_gl_interop.h>
 
 #include <algorithm>

@@ -16,6 +16,17 @@ if(NOT cuDNN_FOUND)
   message(FATAL_ERROR "Atleast cuDNN version 7.3 is required, please install.")
 endif()
 
+if(NOT OPENGL_FOUND)
+  # create a dummy gl.h header to satisfy cuda_gl_interop.h requirement
+  # all opengl functionality is made available via glad third party code
+  # that is built along with arrayfire code base.
+  set(dummy_gl_root "${ArrayFire_BINARY_DIR}/include/GL")
+  if(APPLE)
+    set(dummy_gl_root "${ArrayFire_BINARY_DIR}/include/OpenGL")
+  endif()
+  file(WRITE "${dummy_gl_root}/gl.h" "// Dummy file to satisy cuda_gl_interop")
+endif()
+
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
 
 include(FileToString)
@@ -536,7 +547,6 @@ target_link_libraries(afcuda
     afcommon_interface
     cuda_scan_by_key
     cuda_thrust_sort_by_key
-    ${CUDA_LIBRARIES}
     ${CUDA_nvrtc_LIBRARY}
     ${CUDA_CUBLAS_LIBRARIES}
     ${CUDA_CUFFT_LIBRARIES}

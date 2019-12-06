@@ -447,8 +447,7 @@ if(AF_WITH_NONFREE)
 endif()
 
 if(APPLE)
-  target_link_libraries(afopencl
-    PRIVATE OpenGL::GL)
+  target_link_libraries(afopencl PRIVATE OpenGL::GL)
 endif()
 
 if(LAPACK_FOUND OR MKL_FOUND)

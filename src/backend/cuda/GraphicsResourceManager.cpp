@@ -7,14 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
-// cuda_gl_interop.h does not include OpenGL headers for ARM
-#include <common/graphics_common.hpp>
-#define __gl_h_  // FIXME Hack to avoid gl.h inclusion by cuda_gl_interop.h
 #include <GraphicsResourceManager.hpp>
+
+#include <common/graphics_common.hpp>
+// cuda_gl_interop.h does not include OpenGL headers for ARM
+// __gl_h_ should be defined by glad.h inclusion
 #include <cuda_gl_interop.h>
 #include <err_cuda.hpp>
 #include <platform.hpp>
