@@ -12,7 +12,9 @@ dependency_check(CUDA_FOUND "CUDA not found.")
 
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
-find_cuda_helper_libs(cudnn)
+if(NOT cuDNN_FOUND)
+  message(FATAL_ERROR "Atleast cuDNN version 7.3 is required, please install.")
+endif()
 
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
 
@@ -540,7 +542,7 @@ target_link_libraries(afcuda
     ${CUDA_CUFFT_LIBRARIES}
     ${CUDA_cusolver_LIBRARY}
     ${CUDA_cusparse_LIBRARY}
-    ${CUDA_cudnn_LIBRARY}
+    cuDNN::cuDNN
     ${CMAKE_DL_LIBS}
   )
 

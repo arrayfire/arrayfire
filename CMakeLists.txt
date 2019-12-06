@@ -30,6 +30,7 @@ arrayfire_set_cmake_default_variables()
 set(MKL_THREAD_LAYER "Intel OpenMP" CACHE STRING "The thread layer to choose for MKL")
 
 find_package(CUDA 7.0)
+find_package(cuDNN 7.3)
 find_package(OpenCL 1.2)
 find_package(OpenGL)
 find_package(FreeImage)
