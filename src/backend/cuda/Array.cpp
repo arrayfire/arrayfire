@@ -229,29 +229,25 @@ Node_ptr Array<T>::getNode() const {
 template<typename T>
 kJITHeuristics passesJitHeuristics(Node *root_node) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
-    if (root_node->getHeight() >= (int)getMaxJitSize()) { return kJITHeuristics::TreeHeight; }
-
-    size_t alloc_bytes, alloc_buffers;
-    size_t lock_bytes, lock_buffers;
-
-    deviceMemoryInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
-
-    bool isBufferLimit =
-        lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers();
+    if (root_node->getHeight() >= (int)getMaxJitSize()) {
+        return kJITHeuristics::TreeHeight;
+    }
 
     // A lightweight check based on the height of the node. This is an
     // inexpensive operation and does not traverse the JIT tree.
-    if (root_node->getHeight() > 6 || isBufferLimit) {
+    if (root_node->getHeight() > 6 ||
+        getMemoryPressure() > getMemoryPressureThreshold()) {
         // The size of the parameters without any extra arguments from the
         // JIT tree. This includes one output Param object and 4 integers.
         constexpr size_t base_param_size =
             sizeof(Param<T>) + (4 * sizeof(uint));
 
         // extra padding for safety to avoid failure during compilation
-        constexpr size_t jit_padding_size = 256; //@umar dontfix!
+        constexpr size_t jit_padding_size = 256;  //@umar dontfix!
         // This is the maximum size of the params that can be allowed by the
         // CUDA platform.
-        constexpr size_t max_param_size = 4096 - base_param_size - jit_padding_size;
+        constexpr size_t max_param_size =
+            4096 - base_param_size - jit_padding_size;
 
         struct tree_info {
             size_t total_buffer_size;
@@ -285,7 +281,7 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
         if (param_size >= max_param_size) {
             return kJITHeuristics::KernelParameterSize;
         }
-        if (info.total_buffer_size * 2 > lock_bytes) {
+        if (jitTreeExceedsMemoryPressure(info.total_buffer_size)) {
             return kJITHeuristics::MemoryPressure;
         }
     }

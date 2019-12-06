@@ -10,11 +10,18 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
-#include <common/MemoryManager.hpp>
+#include <memory_manager.hpp>
 #include <platform.hpp>
+
+using common::memory::MemoryManagerBase;
+
+#ifndef AF_OPENCL_MEM_DEBUG
+#define AF_OPENCL_MEM_DEBUG 0
+#endif
 
 // Forward declaration from clFFT.h
 struct clfftSetupData_;
@@ -22,9 +29,25 @@ struct clfftSetupData_;
 namespace opencl {
 
 class DeviceManager {
-    friend MemoryManager& memoryManager();
+    friend MemoryManagerBase& memoryManager();
 
-    friend MemoryManagerPinned& pinnedMemoryManager();
+    friend void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+
+    void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+
+    friend void resetMemoryManager();
+
+    void resetMemoryManager();
+
+    friend MemoryManagerBase& pinnedMemoryManager();
+
+    friend void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+    void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+    friend void resetMemoryManagerPinned();
+
+    void resetMemoryManagerPinned();
 
     friend graphics::ForgeManager& forgeManager();
 
@@ -107,10 +130,11 @@ class DeviceManager {
     unsigned mUserDeviceOffset;
 
     std::unique_ptr<graphics::ForgeManager> fgMngr;
-    std::unique_ptr<MemoryManager> memManager;
-    std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
+    std::unique_ptr<MemoryManagerBase> memManager;
+    std::unique_ptr<MemoryManagerBase> pinnedMemManager;
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
     std::unique_ptr<clfftSetupData> mFFTSetup;
+    std::mutex mutex;
 
     using BoostProgCache = boost::shared_ptr<boost::compute::program_cache>;
     std::vector<BoostProgCache*> mBoostProgCacheVector;

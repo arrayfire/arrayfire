@@ -8,14 +8,13 @@
  ********************************************************/
 #pragma once
 
-#include <common/MemoryManager.hpp>
+#include <memory_manager.hpp>
 #include <af/defines.h>
 
 #include <functional>
 #include <memory>
 
 namespace cpu {
-
 template<typename T>
 using uptr = std::unique_ptr<T[], std::function<void(T[])>>;
 
@@ -39,27 +38,29 @@ T *pinnedAlloc(const size_t &elements);
 template<typename T>
 void pinnedFree(T *ptr);
 
-size_t getMaxBytes();
-unsigned getMaxBuffers();
-
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes, size_t *lock_buffers);
-void garbageCollect();
+void signalMemoryCleanup();
+void shutdownMemoryManager();
 void pinnedGarbageCollect();
 
 void printMemInfo(const char *msg, const int device);
 
+float getMemoryPressure();
+float getMemoryPressureThreshold();
+bool jitTreeExceedsMemoryPressure(size_t bytes);
 void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
-bool checkMemoryLimit();
 
-class MemoryManager : public common::MemoryManager<cpu::MemoryManager> {
+class Allocator final : public common::memory::AllocatorInterface {
    public:
-    MemoryManager();
-    ~MemoryManager();
-    int getActiveDeviceId();
-    size_t getMaxMemorySize(int id);
-    void *nativeAlloc(const size_t bytes);
-    void nativeFree(void *ptr);
+    Allocator();
+    ~Allocator() = default;
+    void shutdown() override;
+    int getActiveDeviceId() override;
+    size_t getMaxMemorySize(int id) override;
+    void *nativeAlloc(const size_t bytes) override;
+    void nativeFree(void *ptr) override;
 };
+
 }  // namespace cpu

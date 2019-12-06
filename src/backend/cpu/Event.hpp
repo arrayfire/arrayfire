@@ -8,12 +8,9 @@
  ********************************************************/
 #pragma once
 
-#include <queue.hpp>
-
 #include <common/EventBase.hpp>
-
-#include <atomic>
-#include <thread>
+#include <queue.hpp>
+#include <af/event.h>
 
 namespace cpu {
 
@@ -23,7 +20,9 @@ class CPUEventPolicy {
     using QueueType = queue;
     using ErrorType = int;
 
-    static int createEvent(queue_event *e) noexcept { return e->create(); }
+    static int createAndMarkEvent(queue_event *e) noexcept {
+        return e->create();
+    }
 
     static int markEvent(queue_event *e, cpu::queue &stream) noexcept {
         return e->mark(stream);
@@ -44,6 +43,18 @@ class CPUEventPolicy {
 using Event = common::EventBase<CPUEventPolicy>;
 
 /// \brief Creates a new event and marks it in the queue
-Event make_event(cpu::queue &queue);
+Event makeEvent(cpu::queue &queue);
+
+af_event createEvent();
+
+void releaseEvent(af_event eventHandle);
+
+void markEventOnActiveQueue(af_event eventHandle);
+
+void enqueueWaitOnActiveQueue(af_event eventHandle);
+
+void block(af_event eventHandle);
+
+af_event createAndMarkEvent();
 
 }  // namespace cpu

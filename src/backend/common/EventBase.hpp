@@ -10,6 +10,7 @@
 #include <utility>
 
 namespace common {
+
 template<typename NativeEventPolicy>
 class EventBase {
     using QueueType = typename NativeEventPolicy::QueueType;
@@ -39,7 +40,9 @@ class EventBase {
     }
 
     /// \brief Creates the event object by calling the native create API
-    ErrorType create() noexcept { return NativeEventPolicy::createEvent(&e_); }
+    ErrorType create() noexcept {
+        return NativeEventPolicy::createAndMarkEvent(&e_);
+    }
 
     /// \brief Adds the event on the queue. Once this point on the program
     ///        is executed, the event is marked complete.
@@ -62,9 +65,7 @@ class EventBase {
 
     /// \brief This function will block the calling thread until the event has
     ///        completed
-    ErrorType block() const noexcept {
-        return NativeEventPolicy::syncForEvent();
-    }
+    ErrorType block() noexcept { return NativeEventPolicy::syncForEvent(&e_); }
 
     /// \brief Returns true if the event is a valid event.
     constexpr operator bool() const { return e_; }

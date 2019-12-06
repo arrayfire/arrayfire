@@ -10,6 +10,7 @@
 
 #include <Param.hpp>
 #include <common/util.hpp>
+#include <memory.hpp>
 
 #include <algorithm>
 
@@ -48,7 +49,6 @@ using event_impl = threads::event;
 #endif
 
 namespace cpu {
-  bool checkMemoryLimit();
 
 /// Wraps the async_queue class
 class queue {
@@ -59,7 +59,7 @@ class queue {
                      getEnvVar("AF_SYNCHRONOUS_CALLS") == "1") {}
 
     template<typename F, typename... Args>
-    void enqueue(const F func, Args&&... args) {
+    void enqueue(const F func, Args &&... args) {
         count++;
         if (sync_calls) {
             func(toParam(std::forward<Args>(args))...);
@@ -69,7 +69,9 @@ class queue {
 #ifndef NDEBUG
         sync();
 #else
-        if (checkMemoryLimit() || count >= 25) { sync(); }
+        if (getMemoryPressure() > getMemoryPressureThreshold() || count >= 25) {
+            sync();
+        }
 #endif
     }
 
@@ -83,15 +85,17 @@ class queue {
     }
 
     friend class queue_event;
+
    private:
     int count;
     const bool sync_calls;
     queue_impl aQueue;
 };
 
-  class queue_event {
+class queue_event {
     event_impl event_;
-  public:
+
+   public:
     queue_event() = default;
     queue_event(int val) : event_(val) {}
 
@@ -101,5 +105,5 @@ class queue {
     int wait(queue &q) { return event_.wait(q.aQueue); }
     int sync() noexcept { return event_.sync(); }
     operator bool() const noexcept { return event_; }
-  };
+};
 }  // namespace cpu

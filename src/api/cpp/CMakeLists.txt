@@ -11,6 +11,7 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/bilateral.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/binary.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/buffer_info.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/canny.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/clamp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/colorspace.cpp
@@ -23,6 +24,7 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/diff.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dog.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/exampleFunction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/exception.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fast.cpp

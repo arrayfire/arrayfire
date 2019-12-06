@@ -23,6 +23,7 @@ target_sources(c_api_interface
   ${ArrayFire_SOURCE_DIR}/include/af/defines.h
   ${ArrayFire_SOURCE_DIR}/include/af/device.h
   ${ArrayFire_SOURCE_DIR}/include/af/dim4.hpp
+  ${ArrayFire_SOURCE_DIR}/include/af/event.h
   ${ArrayFire_SOURCE_DIR}/include/af/exception.h
   ${ArrayFire_SOURCE_DIR}/include/af/features.h
   ${ArrayFire_SOURCE_DIR}/include/af/gfor.h
@@ -33,6 +34,7 @@ target_sources(c_api_interface
   ${ArrayFire_SOURCE_DIR}/include/af/lapack.h
   ${ArrayFire_SOURCE_DIR}/include/af/macros.h
   ${ArrayFire_SOURCE_DIR}/include/af/ml.h
+  ${ArrayFire_SOURCE_DIR}/include/af/memory.h
   ${ArrayFire_SOURCE_DIR}/include/af/opencl.h
   ${ArrayFire_SOURCE_DIR}/include/af/random.h
   ${ArrayFire_SOURCE_DIR}/include/af/seq.h
@@ -55,6 +57,7 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/bilateral.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/binary.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/buffer_info.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/canny.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cast.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cholesky.cpp
@@ -70,6 +73,8 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/diff.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dog.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/events.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/events.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/error.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/exampleFunction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fast.cpp
@@ -106,6 +111,8 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/meanshift.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/median.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/memory.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/memoryapi.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/memory_manager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moddims.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/morph.cpp

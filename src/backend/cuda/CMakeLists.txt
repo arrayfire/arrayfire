@@ -48,7 +48,6 @@ cuda_include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/cub
   ${ArrayFire_SOURCE_DIR}/src/api/c
   ${ArrayFire_SOURCE_DIR}/src/backend
-
   ${COMMON_INTERFACE_DIRS}
   )
 
@@ -515,6 +514,12 @@ target_include_directories (afcuda
 )
 
 set_target_properties(afcuda PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+# Remove cublas_device library which is no longer included with the cuda
+# toolkit. Fixes issues with older CMake versions
+if(DEFINED CUDA_cublas_device_LIBRARY AND NOT CUDA_cublas_device_LIBRARY)
+  list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES ${CUDA_cublas_device_LIBRARY})
+endif()
 
 # Remove cublas_device library which is no longer included with the cuda
 # toolkit. Fixes issues with older CMake versions

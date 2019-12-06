@@ -11,8 +11,8 @@
 
 #include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
-#include <common/util.hpp>
 #include <common/traits.hpp>
+#include <common/util.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>
 #include <jit/BufferNode.hpp>
@@ -123,7 +123,8 @@ Array<T>::Array(Param &tmp, bool owner_)
            dim4(tmp.info.strides[0], tmp.info.strides[1], tmp.info.strides[2],
                 tmp.info.strides[3]),
            (af_dtype)dtype_traits<T>::af_type)
-    , data(tmp.data, owner_ ? bufferFree : [](Buffer *) {})
+    , data(
+          tmp.data, owner_ ? bufferFree : [](Buffer *) {})
     , data_dims(dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2],
                      tmp.info.dims[3]))
     , node(bufferNodePtr<T>())
@@ -251,16 +252,12 @@ Node_ptr Array<T>::getNode() const {
 template<typename T>
 kJITHeuristics passesJitHeuristics(Node *root_node) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
-    if (root_node->getHeight() >= (int)getMaxJitSize()) { return kJITHeuristics::TreeHeight; }
+    if (root_node->getHeight() >= (int)getMaxJitSize()) {
+        return kJITHeuristics::TreeHeight;
+    }
 
-    size_t alloc_bytes, alloc_buffers;
-    size_t lock_bytes, lock_buffers;
-
-    deviceMemoryInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
-
-    bool isBufferLimit =
-        lock_bytes > getMaxBytes() || lock_buffers > getMaxBuffers();
-    auto platform = getActivePlatform();
+    bool isBufferLimit = getMemoryPressure() > getMemoryPressureThreshold();
+    auto platform      = getActivePlatform();
 
     // The Apple platform can have the nvidia card or the AMD card
     bool isNvidia =
@@ -312,19 +309,15 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
                            }
                            return prev;
                        });
-        isBufferLimit = 2 * info.total_buffer_size > lock_bytes;
+        isBufferLimit = jitTreeExceedsMemoryPressure(info.total_buffer_size);
 
         size_t param_size = (info.num_buffers * (sizeof(KParam) + sizeof(T *)) +
                              info.param_scalar_size);
 
         isParamLimit = param_size >= max_param_size;
 
-        if (isParamLimit) {
-            return kJITHeuristics::KernelParameterSize;
-        }
-        if (isBufferLimit) {
-            return kJITHeuristics::MemoryPressure;
-        }
+        if (isParamLimit) { return kJITHeuristics::KernelParameterSize; }
+        if (isBufferLimit) { return kJITHeuristics::MemoryPressure; }
     }
     return kJITHeuristics::Pass;
 }

@@ -97,6 +97,81 @@
       diff, gradient, etc.
    @}
 
+   @defgroup memory_manager Memory Management
+   @{
+
+      \brief Interfaces for writing custom memory managers.
+
+      Create and set a custom memory manager by first defining the relevant
+closures for each required function, for example:
+
+      \code{.cpp}
+      af_err my_initialize(af_memory_manager manager) {
+          void* myPayload = malloc(sizeof(MyPayload_t));
+          af_memory_manager_set_payload(manager, myPayload);
+          // ...
+      }
+
+      af_err my_allocated(af_memory_manager handle, size_t* size, void* ptr) {
+          void* myPayload;
+          af_memory_manager_get_payload(manager, &myPayload);
+          // ...
+      }
+      \endcode
+
+      Create an \ref af_memory_manager and attach relevant closures:
+
+      \code{.cpp}
+      af_memory_manager manager;
+      af_create_memory_manager(&manager);
+
+      af_memory_manager_set_initialize_fn(manager, my_initialize);
+      af_memory_manager_set_allocated_fn(manager, my_allocated);
+
+      // ...
+       \endcode
+
+      Set the memory manager to be active, which shuts down the existing memory
+manager:
+
+      \code{.cpp}
+      af_set_memory_manager(manager);
+      \endcode
+
+      Unset to re-create and reset an instance of the default memory manager:
+
+      \code{.cpp}
+      af_unset_memory_manager();
+      \endcode
+
+      @defgroup buffer_info Buffer Info
+      \brief An interface for managing information about memory (pointers and
+\ref af_event)
+
+      @defgroup native_memory_interface Native Memory Interface
+      \brief Native alloc, native free, get device id, etc.
+
+      @defgroup memory_manager_utils Memory Manager Utils
+      \brief Set and unset memory managers, set and get manager payloads,
+function setters
+
+      @defgroup memory_manager_api Memory Manager API
+      \brief Functions for defining custom memory managers
+
+   @}
+
+   @defgroup event Events
+   @{
+
+      \brief Managing ArrayFire Events which allows manipulation of operations
+on computation queues.
+
+
+
+      @defgroup event_api Event API
+      af_create_event, af_mark_event, etc.
+   @}
+
    @defgroup linalg_mat Linear Algebra
    @{
 
@@ -313,10 +388,11 @@
 #include "af/array.h"
 #include "af/backend.h"
 #include "af/blas.h"
-#include "af/constants.h"
 #include "af/complex.h"
+#include "af/constants.h"
 #include "af/data.h"
 #include "af/device.h"
+#include "af/event.h"
 #include "af/exception.h"
 #include "af/features.h"
 #include "af/gfor.h"
@@ -325,6 +401,7 @@
 #include "af/image.h"
 #include "af/index.h"
 #include "af/lapack.h"
+#include "af/memory.h"
 #include "af/ml.h"
 #include "af/random.h"
 #include "af/seq.h"

@@ -9,12 +9,20 @@
 
 #pragma once
 
+#include <memory_manager.hpp>
 #include <platform.hpp>
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 #include <vector>
+
+using common::memory::MemoryManagerBase;
+
+#ifndef AF_CUDA_MEM_DEBUG
+#define AF_CUDA_MEM_DEBUG 0
+#endif
 
 namespace cuda {
 
@@ -37,9 +45,25 @@ class DeviceManager {
 
     spdlog::logger* getLogger();
 
-    friend MemoryManager& memoryManager();
+    friend MemoryManagerBase& memoryManager();
 
-    friend MemoryManagerPinned& pinnedMemoryManager();
+    friend void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+
+    void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+
+    friend void resetMemoryManager();
+
+    void resetMemoryManager();
+
+    friend MemoryManagerBase& pinnedMemoryManager();
+
+    friend void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+    void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+    friend void resetMemoryManagerPinned();
+
+    void resetMemoryManagerPinned();
 
     friend graphics::ForgeManager& forgeManager();
 
@@ -97,11 +121,13 @@ class DeviceManager {
 
     std::unique_ptr<graphics::ForgeManager> fgMngr;
 
-    std::unique_ptr<MemoryManager> memManager;
+    std::unique_ptr<MemoryManagerBase> memManager;
 
-    std::unique_ptr<MemoryManagerPinned> pinnedMemManager;
+    std::unique_ptr<MemoryManagerBase> pinnedMemManager;
 
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
+
+    std::mutex mutex;
 };
 
 }  // namespace cuda

@@ -11,41 +11,42 @@
 #include <memory.hpp>
 #include <platform.hpp>
 #include <types.hpp>
+#include <af/dim4.hpp>
 
 #include <common/Logger.hpp>
+#include <memory_manager_impl.hpp>
 #include <spdlog/spdlog.h>
 
-#include <common/MemoryManagerImpl.hpp>
-template class common::MemoryManager<opencl::MemoryManager>;
-template class common::MemoryManager<opencl::MemoryManagerPinned>;
-
-#ifndef AF_MEM_DEBUG
-#define AF_MEM_DEBUG 0
-#endif
-
-#ifndef AF_OPENCL_MEM_DEBUG
-#define AF_OPENCL_MEM_DEBUG 0
-#endif
+#include <utility>
 
 using common::bytesToString;
-using common::MemoryEventPair;
 
+using af::dim4;
 using std::function;
 using std::move;
 using std::unique_ptr;
 
 namespace opencl {
+float getMemoryPressure() { return memoryManager().getMemoryPressure(); }
+float getMemoryPressureThreshold() {
+    return memoryManager().getMemoryPressureThreshold();
+}
+
+bool jitTreeExceedsMemoryPressure(size_t bytes) {
+    return memoryManager().jitTreeExceedsMemoryPressure(bytes);
+}
+
 void setMemStepSize(size_t step_bytes) {
     memoryManager().setMemStepSize(step_bytes);
 }
 
 size_t getMemStepSize(void) { return memoryManager().getMemStepSize(); }
 
-size_t getMaxBytes() { return memoryManager().getMaxBytes(); }
+void signalMemoryCleanup() { memoryManager().signalMemoryCleanup(); }
 
-unsigned getMaxBuffers() { return memoryManager().getMaxBuffers(); }
+void shutdownMemoryManager() { memoryManager().shutdown(); }
 
-void garbageCollect() { memoryManager().garbageCollect(); }
+void shutdownPinnedMemoryManager() { pinnedMemoryManager().shutdown(); }
 
 void printMemInfo(const char *msg, const int device) {
     memoryManager().printInfo(msg, device);
@@ -54,38 +55,58 @@ void printMemInfo(const char *msg, const int device) {
 template<typename T>
 unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements) {
-    MemoryEventPair me = memoryManager().alloc(elements * sizeof(T), false);
-    if (me.e) me.e.enqueueWait(getQueue()());
-    cl::Buffer *ptr = static_cast<cl::Buffer *>(me.ptr);
+    // TODO: make memAlloc aware of array shapes
+    dim4 dims(elements);
+    af_buffer_info pair =
+        memoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
+    if (e) e.enqueueWait(getQueue()());
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *rawPtr     = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
+    cl::Buffer *ptr = static_cast<cl::Buffer *>(rawPtr);
     return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(ptr,
                                                                 bufferFree);
 }
 
 void *memAllocUser(const size_t &bytes) {
-    MemoryEventPair me = memoryManager().alloc(bytes, true);
-    if (me.e) me.e.enqueueWait(getQueue()());
-    return me.ptr;
+    dim4 dims(bytes);
+    af_buffer_info pair = memoryManager().alloc(true, 1, dims.get(), 1);
+    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
+    if (e) e.enqueueWait(getQueue()());
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
+    return ptr;
 }
+
 template<typename T>
 void memFree(T *ptr) {
-    Event e = make_event(getQueue());
-    return memoryManager().unlock((void *)ptr, move(e), false);
+    return memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(),
+                                  false);
 }
 
 void memFreeUser(void *ptr) {
-    Event e = make_event(getQueue());
-    memoryManager().unlock((void *)ptr, move(e), true);
+    memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(), true);
 }
 
 cl::Buffer *bufferAlloc(const size_t &bytes) {
-    MemoryEventPair me = memoryManager().alloc(bytes, false);
-    if (me.e) me.e.enqueueWait(getQueue()());
-    return static_cast<cl::Buffer *>(me.ptr);
+    dim4 dims(bytes);
+    af_buffer_info pair = memoryManager().alloc(false, 1, dims.get(), 1);
+    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
+    if (e) e.enqueueWait(getQueue()());
+    auto *bufferInfo = (BufferInfo *)pair;
+    void *ptr        = bufferInfo->ptr;
+    delete (detail::Event *)bufferInfo->event;
+    delete bufferInfo;
+    return static_cast<cl::Buffer *>(ptr);
 }
 
 void bufferFree(cl::Buffer *buf) {
-    Event e = make_event(getQueue());
-    return memoryManager().unlock((void *)buf, move(e), false);
+    return memoryManager().unlock((void *)buf, detail::createAndMarkEvent(),
+                                  false);
 }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
@@ -98,25 +119,29 @@ bool isLocked(const void *ptr) {
 
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes, size_t *lock_buffers) {
-    memoryManager().bufferInfo(alloc_bytes, alloc_buffers, lock_bytes,
-                               lock_buffers);
+    memoryManager().usageInfo(alloc_bytes, alloc_buffers, lock_bytes,
+                              lock_buffers);
 }
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    MemoryEventPair me =
-        pinnedMemoryManager().alloc(elements * sizeof(T), false);
-    if (me.e) me.e.enqueueWait(getQueue()());
-    return static_cast<T *>(me.ptr);
+    // TODO: make pinnedAlloc aware of array shapes
+    dim4 dims(elements);
+    af_buffer_info pair =
+        pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
+    if (e) e.enqueueWait(getQueue()());
+    void *ptr;
+    af_unlock_buffer_info_ptr(&ptr, pair);
+    af_delete_buffer_info(pair);
+    return static_cast<T *>(ptr);
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    Event e = make_event(getQueue());
-    return pinnedMemoryManager().unlock((void *)ptr, move(e), false);
+    pinnedMemoryManager().unlock((void *)ptr, detail::createAndMarkEvent(),
+                                 false);
 }
-
-bool checkMemoryLimit() { return memoryManager().checkMemoryLimit(); }
 
 #define INSTANTIATE(T)                                                         \
     template unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc<T>( \
@@ -138,53 +163,44 @@ INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-MemoryManager::MemoryManager()
-    : common::MemoryManager<opencl::MemoryManager>(
-          getDeviceCount(), common::MAX_BUFFERS,
-          AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG) {
-    this->setMaxMemorySize();
-}
+Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
-MemoryManager::~MemoryManager() {
+void Allocator::shutdown() {
     for (int n = 0; n < opencl::getDeviceCount(); n++) {
         try {
             opencl::setDevice(n);
-            this->garbageCollect();
+            shutdownMemoryManager();
         } catch (AfError err) {
             continue;  // Do not throw any errors while shutting down
         }
     }
 }
 
-int MemoryManager::getActiveDeviceId() { return opencl::getActiveDeviceId(); }
+int Allocator::getActiveDeviceId() { return opencl::getActiveDeviceId(); }
 
-size_t MemoryManager::getMaxMemorySize(int id) {
+size_t Allocator::getMaxMemorySize(int id) {
     return opencl::getDeviceMemorySize(id);
 }
 
-void *MemoryManager::nativeAlloc(const size_t bytes) {
+void *Allocator::nativeAlloc(const size_t bytes) {
     auto ptr = (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
     AF_TRACE("nativeAlloc: {} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
-void MemoryManager::nativeFree(void *ptr) {
+void Allocator::nativeFree(void *ptr) {
     AF_TRACE("nativeFree:          {}", ptr);
     delete (cl::Buffer *)ptr;
 }
 
-MemoryManagerPinned::MemoryManagerPinned()
-    : common::MemoryManager<MemoryManagerPinned>(
-          getDeviceCount(), common::MAX_BUFFERS,
-          AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG)
-    , pinnedMaps(getDeviceCount()) {
-    this->setMaxMemorySize();
+AllocatorPinned::AllocatorPinned() : pinnedMaps(opencl::getDeviceCount()) {
+    logger = common::loggerFactory("mem");
 }
 
-MemoryManagerPinned::~MemoryManagerPinned() {
+void AllocatorPinned::shutdown() {
     for (int n = 0; n < opencl::getDeviceCount(); n++) {
         opencl::setDevice(n);
-        this->garbageCollect();
+        shutdownPinnedMemoryManager();
         auto currIterator = pinnedMaps[n].begin();
         auto endIterator  = pinnedMaps[n].end();
         while (currIterator != endIterator) {
@@ -193,15 +209,13 @@ MemoryManagerPinned::~MemoryManagerPinned() {
     }
 }
 
-int MemoryManagerPinned::getActiveDeviceId() {
-    return opencl::getActiveDeviceId();
-}
+int AllocatorPinned::getActiveDeviceId() { return opencl::getActiveDeviceId(); }
 
-size_t MemoryManagerPinned::getMaxMemorySize(int id) {
+size_t AllocatorPinned::getMaxMemorySize(int id) {
     return opencl::getDeviceMemorySize(id);
 }
 
-void *MemoryManagerPinned::nativeAlloc(const size_t bytes) {
+void *AllocatorPinned::nativeAlloc(const size_t bytes) {
     void *ptr = NULL;
     cl::Buffer *buf =
         new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
@@ -212,7 +226,7 @@ void *MemoryManagerPinned::nativeAlloc(const size_t bytes) {
     return ptr;
 }
 
-void MemoryManagerPinned::nativeFree(void *ptr) {
+void AllocatorPinned::nativeFree(void *ptr) {
     AF_TRACE("Pinned::nativeFree:          {}", ptr);
     int n     = opencl::getActiveDeviceId();
     auto map  = pinnedMaps[n];

@@ -56,6 +56,7 @@ using std::to_string;
 using std::unique_ptr;
 
 using common::unique_handle;
+using common::memory::MemoryManagerBase;
 
 namespace cuda {
 
@@ -356,26 +357,60 @@ cudaDeviceProp getDeviceProp(int device) {
     return DeviceManager::getInstance().cuDevices[0].prop;
 }
 
-MemoryManager &memoryManager() {
-    static std::once_flag flag;
-
-    DeviceManager &inst = DeviceManager::getInstance();
-
-    std::call_once(flag, [&]() { inst.memManager.reset(new MemoryManager()); });
-
-    return *(inst.memManager.get());
-}
-
-MemoryManagerPinned &pinnedMemoryManager() {
+MemoryManagerBase &memoryManager() {
     static std::once_flag flag;
 
     DeviceManager &inst = DeviceManager::getInstance();
 
     std::call_once(flag, [&]() {
-        inst.pinnedMemManager.reset(new MemoryManagerPinned());
+        // By default, create an instance of the default memory manager
+        inst.memManager.reset(new common::DefaultMemoryManager(
+            getDeviceCount(), common::MAX_BUFFERS,
+            AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
+        // Set the memory manager's device memory manager
+        std::unique_ptr<cuda::Allocator> deviceMemoryManager(
+            new cuda::Allocator());
+        inst.memManager->setAllocator(std::move(deviceMemoryManager));
+        inst.memManager->initialize();
+    });
+
+    return *(inst.memManager.get());
+}
+
+MemoryManagerBase &pinnedMemoryManager() {
+    static std::once_flag flag;
+
+    DeviceManager &inst = DeviceManager::getInstance();
+
+    std::call_once(flag, [&]() {
+        // By default, create an instance of the default memory manager
+        inst.pinnedMemManager.reset(new common::DefaultMemoryManager(
+            getDeviceCount(), common::MAX_BUFFERS,
+            AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
+        // Set the memory manager's device memory manager
+        std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(
+            new cuda::AllocatorPinned());
+        inst.pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
+        inst.pinnedMemManager->initialize();
     });
 
     return *(inst.pinnedMemManager.get());
+}
+
+void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManager(std::move(mgr));
+}
+
+void resetMemoryManager() {
+    return DeviceManager::getInstance().resetMemoryManager();
+}
+
+void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManagerPinned(std::move(mgr));
+}
+
+void resetMemoryManagerPinned() {
+    return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
 graphics::ForgeManager &forgeManager() {

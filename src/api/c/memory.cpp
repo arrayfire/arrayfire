@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,18 +7,22 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <memoryapi.hpp>
+
 #include <Array.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <handle.hpp>
-#include <memory.hpp>
+#include <memory_manager.hpp>
 #include <platform.hpp>
 #include <af/backend.h>
 #include <af/device.h>
 #include <af/dim4.hpp>
+#include <af/memory.h>
 #include <af/version.h>
-#include <cstring>
+
+#include <utility>
 
 using namespace detail;
 
@@ -93,7 +97,7 @@ af_err af_get_device_ptr(void **data, const af_array arr) {
         af_dtype type = getInfo(arr).getType();
 
         switch (type) {
-                // FIXME: Perform copy if memory not continuous
+            // FIXME: Perform copy if memory not continuous
             case f32: *data = getDevicePtr(getArray<float>(arr)); break;
             case f64: *data = getDevicePtr(getArray<double>(arr)); break;
             case c32: *data = getDevicePtr(getArray<cfloat>(arr)); break;
@@ -283,7 +287,7 @@ af_err af_print_mem_info(const char *msg, const int device_id) {
 
 af_err af_device_gc() {
     try {
-        garbageCollect();
+        signalMemoryCleanup();
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -312,4 +316,460 @@ af_err af_get_mem_step_size(size_t *step_bytes) {
     }
     CATCHALL;
     return AF_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Memory Manager API
+////////////////////////////////////////////////////////////////////////////////
+
+MemoryManager &getMemoryManager(const af_memory_manager handle) {
+    return *(MemoryManager *)handle;
+}
+
+af_memory_manager getHandle(MemoryManager &manager) {
+    MemoryManager *handle;
+    handle = &manager;
+    return (af_memory_manager)handle;
+}
+
+af_err af_create_memory_manager(af_memory_manager *manager) {
+    try {
+        AF_CHECK(af_init());
+        std::unique_ptr<MemoryManager> m(new MemoryManager());
+        *manager = getHandle(*m);
+        m.release();
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_release_memory_manager(af_memory_manager handle) {
+    try {
+        // NB: does NOT reset the internal memory manager to be the default:
+        // af_unset_memory_manager_pinned must be used to fully-reset with a new
+        // AF default memory manager
+        delete (MemoryManager *)handle;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_set_memory_manager(af_memory_manager mgr) {
+    try {
+        std::unique_ptr<MemoryManagerFunctionWrapper> newManager(
+            new MemoryManagerFunctionWrapper(mgr));
+        // Calls shutdown() on the existing memory manager, but does not free
+        // the associated handle, if there is one
+        detail::setMemoryManager(std::move(newManager));
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_unset_memory_manager() {
+    try {
+        detail::resetMemoryManager();
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_set_memory_manager_pinned(af_memory_manager mgr) {
+    try {
+        // NB: does NOT free if a non-default implementation is set as the
+        // current memory manager - the user is responsible for freeing any
+        // controlled memory
+        std::unique_ptr<MemoryManagerFunctionWrapper> newManager(
+            new MemoryManagerFunctionWrapper(mgr));
+
+        // Calls shutdown() on the existing memory manager
+        detail::setMemoryManagerPinned(std::move(newManager));
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_unset_memory_manager_pinned() {
+    try {
+        detail::resetMemoryManagerPinned();
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_get_payload(af_memory_manager handle, void **payload) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        *payload               = manager.payload;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_payload(af_memory_manager handle, void *payload) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.payload        = payload;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Native memory interface wrapper implementations
+
+af_err af_memory_manager_get_active_device_id(af_memory_manager handle,
+                                              int *id) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        *id                    = manager.wrapper->getActiveDeviceId();
+    }
+
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_native_alloc(af_memory_manager handle, void **ptr,
+                                      size_t size) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        *ptr                   = manager.wrapper->nativeAlloc(size);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_native_free(af_memory_manager handle, void *ptr) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.wrapper->nativeFree(ptr);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_get_max_memory_size(af_memory_manager handle,
+                                             size_t *size, int id) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        *size                  = manager.wrapper->getMaxMemorySize(id);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_get_memory_pressure_threshold(af_memory_manager handle,
+                                                       float *value) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.wrapper->getMemoryPressureThreshold();
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_memory_pressure_threshold(af_memory_manager handle,
+                                                       float value) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.wrapper->setMemoryPressureThreshold(value);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Function setters
+
+af_err af_memory_manager_set_initialize_fn(af_memory_manager handle,
+                                           af_memory_manager_initialize_fn fn) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.initialize_fn  = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_shutdown_fn(af_memory_manager handle,
+                                         af_memory_manager_shutdown_fn fn) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.shutdown_fn    = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_alloc_fn(af_memory_manager handle,
+                                      af_memory_manager_alloc_fn fn) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.alloc_fn       = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_allocated_fn(af_memory_manager handle,
+                                          af_memory_manager_allocated_fn fn) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.allocated_fn   = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_unlock_fn(af_memory_manager handle,
+                                       af_memory_manager_unlock_fn fn) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.unlock_fn      = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_signal_memory_cleanup_fn(
+    af_memory_manager handle, af_memory_manager_signal_memory_cleanup_fn fn) {
+    try {
+        MemoryManager &manager           = getMemoryManager(handle);
+        manager.signal_memory_cleanup_fn = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_print_info_fn(af_memory_manager handle,
+                                           af_memory_manager_print_info_fn fn) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.print_info_fn  = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_user_lock_fn(af_memory_manager handle,
+                                          af_memory_manager_user_lock_fn fn) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.user_lock_fn   = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_user_unlock_fn(
+    af_memory_manager handle, af_memory_manager_user_unlock_fn fn) {
+    try {
+        MemoryManager &manager = getMemoryManager(handle);
+        manager.user_unlock_fn = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_is_user_locked_fn(
+    af_memory_manager handle, af_memory_manager_is_user_locked_fn fn) {
+    try {
+        MemoryManager &manager    = getMemoryManager(handle);
+        manager.is_user_locked_fn = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_get_memory_pressure_fn(
+    af_memory_manager handle, af_memory_manager_get_memory_pressure_fn fn) {
+    try {
+        MemoryManager &manager         = getMemoryManager(handle);
+        manager.get_memory_pressure_fn = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_jit_tree_exceeds_memory_pressure_fn(
+    af_memory_manager handle,
+    af_memory_manager_jit_tree_exceeds_memory_pressure_fn fn) {
+    try {
+        MemoryManager &manager                      = getMemoryManager(handle);
+        manager.jit_tree_exceeds_memory_pressure_fn = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_add_memory_management_fn(
+    af_memory_manager handle, af_memory_manager_add_memory_management_fn fn) {
+    try {
+        MemoryManager &manager           = getMemoryManager(handle);
+        manager.add_memory_management_fn = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_memory_manager_set_remove_memory_management_fn(
+    af_memory_manager handle,
+    af_memory_manager_remove_memory_management_fn fn) {
+    try {
+        MemoryManager &manager              = getMemoryManager(handle);
+        manager.remove_memory_management_fn = fn;
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Memory Manager wrapper implementations
+
+MemoryManagerFunctionWrapper::MemoryManagerFunctionWrapper(
+    af_memory_manager handle)
+    : handle_(handle) {
+    MemoryManager &manager = getMemoryManager(handle_);
+    manager.wrapper        = this;
+}
+
+MemoryManagerFunctionWrapper::~MemoryManagerFunctionWrapper() {
+    MemoryManager &manager = getMemoryManager(handle_);
+    manager.wrapper        = 0;
+}
+
+void MemoryManagerFunctionWrapper::initialize() {
+    AF_CHECK(getMemoryManager(handle_).initialize_fn(handle_));
+}
+
+void MemoryManagerFunctionWrapper::shutdown() {
+    AF_CHECK(getMemoryManager(handle_).shutdown_fn(handle_));
+}
+
+af_buffer_info MemoryManagerFunctionWrapper::alloc(
+    bool user_lock, const unsigned ndims, dim_t *dims,
+    const unsigned element_size) {
+    af_buffer_info bufferInfo;
+    AF_CHECK(getMemoryManager(handle_).alloc_fn(
+        handle_, &bufferInfo, (int)user_lock, ndims, dims, element_size));
+    return bufferInfo;
+}
+
+size_t MemoryManagerFunctionWrapper::allocated(void *ptr) {
+    size_t out;
+    AF_CHECK(getMemoryManager(handle_).allocated_fn(handle_, &out, ptr));
+    return out;
+}
+
+void MemoryManagerFunctionWrapper::unlock(void *ptr, af_event e,
+                                          bool user_unlock) {
+    AF_CHECK(
+        getMemoryManager(handle_).unlock_fn(handle_, ptr, e, (int)user_unlock));
+}
+
+void MemoryManagerFunctionWrapper::signalMemoryCleanup() {
+    AF_CHECK(getMemoryManager(handle_).signal_memory_cleanup_fn(handle_));
+}
+
+void MemoryManagerFunctionWrapper::printInfo(const char *msg,
+                                             const int device) {
+    AF_CHECK(getMemoryManager(handle_).print_info_fn(
+        handle_, const_cast<char *>(msg), device));
+}
+
+void MemoryManagerFunctionWrapper::userLock(const void *ptr) {
+    AF_CHECK(getMemoryManager(handle_).user_lock_fn(handle_,
+                                                    const_cast<void *>(ptr)));
+}
+
+void MemoryManagerFunctionWrapper::userUnlock(const void *ptr) {
+    AF_CHECK(getMemoryManager(handle_).user_unlock_fn(handle_,
+                                                      const_cast<void *>(ptr)));
+}
+
+bool MemoryManagerFunctionWrapper::isUserLocked(const void *ptr) {
+    int out;
+    AF_CHECK(getMemoryManager(handle_).is_user_locked_fn(
+        handle_, &out, const_cast<void *>(ptr)));
+    return (bool)out;
+}
+
+void MemoryManagerFunctionWrapper::usageInfo(size_t *alloc_bytes,
+                                             size_t *alloc_buffers,
+                                             size_t *lock_bytes,
+                                             size_t *lock_buffers) {
+    // Not implemented in the public memory manager API, but for backward
+    // compatibility reasons, needs to be in the common memory manager interface
+    // so that it can be used with the default memory manager. Called from
+    // deviceMemoryInfo from a backend - throws so as to properly propagate
+    AF_ERROR(
+        "Device memory info/usage info not supported "
+        "for custom memory manager",
+        AF_ERR_NOT_SUPPORTED);
+}
+
+float MemoryManagerFunctionWrapper::getMemoryPressure() {
+    float out;
+    AF_CHECK(getMemoryManager(handle_).get_memory_pressure_fn(handle_, &out));
+    return out;
+}
+
+bool MemoryManagerFunctionWrapper::jitTreeExceedsMemoryPressure(size_t bytes) {
+    int out;
+    AF_CHECK(getMemoryManager(handle_).jit_tree_exceeds_memory_pressure_fn(
+        handle_, &out, bytes));
+    return (bool)out;
+}
+
+size_t MemoryManagerFunctionWrapper::getMemStepSize() {
+    // Not implemented in the public memory manager API, but for backward
+    // compatibility reasons, needs to be in the common memory manager interface
+    // so that it can be used with the default memory manager. Call into the
+    // backend implementation so the exception can be properly propagated
+    AF_ERROR("Memory step size API not implemented for custom memory manager",
+             AF_ERR_NOT_SUPPORTED);
+}
+
+void MemoryManagerFunctionWrapper::setMemStepSize(size_t new_step_size) {
+    // Not implemented in the public memory manager API, but for backward
+    // compatibility reasons, needs to be in the common memory manager interface
+    // so that it can be used with the default memory manager.
+    AF_ERROR("Memory step size API not implemented for custom memory manager ",
+             AF_ERR_NOT_SUPPORTED);
+}
+
+void MemoryManagerFunctionWrapper::addMemoryManagement(int device) {
+    getMemoryManager(handle_).add_memory_management_fn(handle_, device);
+}
+
+void MemoryManagerFunctionWrapper::removeMemoryManagement(int device) {
+    getMemoryManager(handle_).remove_memory_management_fn(handle_, device);
 }

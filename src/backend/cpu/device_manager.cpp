@@ -9,12 +9,13 @@
 
 #include <common/graphics_common.hpp>
 #include <device_manager.hpp>
-#include <af/version.h>
 #include <memory.hpp>
+#include <af/version.h>
 
 #include <cctype>
 #include <sstream>
 
+using common::memory::MemoryManagerBase;
 using std::string;
 
 #ifdef CPUID_CAPABLE
@@ -119,8 +120,15 @@ namespace cpu {
 
 DeviceManager::DeviceManager()
     : queues(MAX_QUEUES)
-    , memManager(new MemoryManager())
-    , fgMngr(new graphics::ForgeManager()) {}
+    , memManager(new common::DefaultMemoryManager(
+          getDeviceCount(), common::MAX_BUFFERS,
+          AF_MEM_DEBUG || AF_CPU_MEM_DEBUG))
+    , fgMngr(new graphics::ForgeManager()) {
+    // Use the default ArrayFire memory manager
+    std::unique_ptr<cpu::Allocator> deviceMemoryManager(new cpu::Allocator());
+    memManager->setAllocator(std::move(deviceMemoryManager));
+    memManager->initialize();
+}
 
 DeviceManager& DeviceManager::getInstance() {
     static DeviceManager* my_instance = new DeviceManager();
@@ -128,5 +136,42 @@ DeviceManager& DeviceManager::getInstance() {
 }
 
 CPUInfo DeviceManager::getCPUInfo() const { return cinfo; }
+
+void DeviceManager::resetMemoryManager() {
+    // Replace with default memory manager
+    std::unique_ptr<MemoryManagerBase> mgr(
+        new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                         AF_MEM_DEBUG || AF_CPU_MEM_DEBUG));
+    setMemoryManager(std::move(mgr));
+}
+
+void DeviceManager::setMemoryManager(
+    std::unique_ptr<MemoryManagerBase> newMgr) {
+    std::lock_guard<std::mutex> l(mutex);
+    // It's possible we're setting a memory manager and the default memory
+    // manager still hasn't been initialized, so initialize it anyways so we
+    // don't inadvertently reset to it when we first call memoryManager()
+    memoryManager();
+    // Calls shutdown() on the existing memory manager
+    if (memManager) { memManager->shutdownAllocator(); }
+    memManager = std::move(newMgr);
+    // Set the backend memory manager for this new manager to register native
+    // functions correctly.
+    std::unique_ptr<cpu::Allocator> deviceMemoryManager(new cpu::Allocator());
+    memManager->setAllocator(std::move(deviceMemoryManager));
+    memManager->initialize();
+}
+
+void DeviceManager::setMemoryManagerPinned(
+    std::unique_ptr<MemoryManagerBase> newMgr) {
+    AF_ERROR("Using pinned memory with CPU is not supported",
+             AF_ERR_NOT_SUPPORTED);
+}
+
+void DeviceManager::resetMemoryManagerPinned() {
+    // This is a NOOP - we should never set a pinned memory manager in the first
+    // place for the CPU backend, but don't throw in case backend-agnostic
+    // functions that operate on all memory managers need to call this
+}
 
 }  // namespace cpu

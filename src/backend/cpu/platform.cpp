@@ -18,6 +18,7 @@
 #include <cctype>
 #include <sstream>
 
+using common::memory::MemoryManagerBase;
 using std::endl;
 using std::not1;
 using std::ostringstream;
@@ -149,9 +150,25 @@ bool& evalFlag() {
     return flag;
 }
 
-MemoryManager& memoryManager() {
+MemoryManagerBase& memoryManager() {
     DeviceManager& inst = DeviceManager::getInstance();
     return *(inst.memManager);
+}
+
+void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManager(std::move(mgr));
+}
+
+void resetMemoryManager() {
+    return DeviceManager::getInstance().resetMemoryManager();
+}
+
+void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManagerPinned(std::move(mgr));
+}
+
+void resetMemoryManagerPinned() {
+    return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
 graphics::ForgeManager& forgeManager() {

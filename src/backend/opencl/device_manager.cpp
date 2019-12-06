@@ -299,6 +299,59 @@ DeviceManager& DeviceManager::getInstance() {
     return *my_instance;
 }
 
+void DeviceManager::setMemoryManager(
+    std::unique_ptr<MemoryManagerBase> newMgr) {
+    std::lock_guard<std::mutex> l(mutex);
+    // It's possible we're setting a memory manager and the default memory
+    // manager still hasn't been initialized, so initialize it anyways so we
+    // don't inadvertently reset to it when we first call memoryManager()
+    memoryManager();
+    // Calls shutdown() on the existing memory manager.
+    if (memManager) { memManager->shutdownAllocator(); }
+    memManager = std::move(newMgr);
+    // Set the backend memory manager for this new manager to register native
+    // functions correctly.
+    std::unique_ptr<opencl::Allocator> deviceMemoryManager(
+        new opencl::Allocator());
+    memManager->setAllocator(std::move(deviceMemoryManager));
+    memManager->initialize();
+}
+
+void DeviceManager::resetMemoryManager() {
+    // Replace with default memory manager
+    std::unique_ptr<MemoryManagerBase> mgr(
+        new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                         AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+    setMemoryManager(std::move(mgr));
+}
+
+void DeviceManager::setMemoryManagerPinned(
+    std::unique_ptr<MemoryManagerBase> newMgr) {
+    std::lock_guard<std::mutex> l(mutex);
+    // It's possible we're setting a pinned memory manager and the default
+    // memory manager still hasn't been initialized, so initialize it anyways so
+    // we don't inadvertently reset to it when we first call
+    // pinnedMemoryManager()
+    pinnedMemoryManager();
+    // Calls shutdown() on the existing memory manager.
+    pinnedMemManager->shutdownAllocator();
+    pinnedMemManager = std::move(newMgr);
+    // Set the backend pinned memory manager for this new manager to register
+    // native functions correctly.
+    std::unique_ptr<opencl::AllocatorPinned> deviceMemoryManager(
+        new opencl::AllocatorPinned());
+    pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
+    pinnedMemManager->initialize();
+}
+
+void DeviceManager::resetMemoryManagerPinned() {
+    // Replace with default memory manager
+    std::unique_ptr<MemoryManagerBase> mgr(
+        new common::DefaultMemoryManager(getDeviceCount(), common::MAX_BUFFERS,
+                                         AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+    setMemoryManagerPinned(std::move(mgr));
+}
+
 DeviceManager::~DeviceManager() {
     for (int i = 0; i < getDeviceCount(); ++i) {
         delete gfxManagers[i].release();

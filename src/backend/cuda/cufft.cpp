@@ -104,7 +104,7 @@ SharedPlan findPlan(int rank, int *n, int *inembed, int istride, int idist,
 
     // If plan creation fails, clean up the memory we hold on to and try again
     if (res != CUFFT_SUCCESS) {
-        cuda::garbageCollect();
+        cuda::signalMemoryCleanup();
         CUFFT_CHECK(cufftPlanMany(temp, rank, n, inembed, istride, idist,
                                   onembed, ostride, odist, type, batch));
     }

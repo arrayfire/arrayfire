@@ -25,8 +25,8 @@
 
 #ifdef AF_CUDA
 // NOTE: Adding ifdef here to avoid copying code constructor in the cuda backend
-#include <traits.hpp>
 #include <cuda_fp16.h>
+#include <traits.hpp>
 #endif
 
 #include <memory>
@@ -160,7 +160,7 @@ array::array() : arr(nullptr) { initEmptyArray(&arr, f32, 0, 1, 1, 1); }
 
 array::array(array &&other) noexcept : arr(other.arr) { other.arr = 0; }
 
-array &array::operator=(array &&other)  noexcept {
+array &array::operator=(array &&other) noexcept {
     af_release_array(arr);
     arr       = other.arr;
     other.arr = 0;

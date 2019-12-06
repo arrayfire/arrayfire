@@ -16,9 +16,15 @@ namespace graphics {
 class ForgeManager;
 }
 
-namespace cpu {
+namespace common {
+namespace memory {
+class MemoryManagerBase;
+}
+}  // namespace common
 
-class MemoryManager;
+using common::memory::MemoryManagerBase;
+
+namespace cpu {
 
 int getBackend();
 
@@ -48,7 +54,16 @@ void sync(int device);
 
 bool& evalFlag();
 
-MemoryManager& memoryManager();
+MemoryManagerBase& memoryManager();
+
+void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+
+void resetMemoryManager();
+
+// Pinned memory not supported
+void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+
+void resetMemoryManagerPinned();
 
 graphics::ForgeManager& forgeManager();
 
