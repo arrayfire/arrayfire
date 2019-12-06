@@ -48,35 +48,53 @@ using std::begin;
 using std::end;
 using std::find_if;
 using std::make_pair;
+using std::min_element;
 using std::pair;
 using std::string;
 using std::stringstream;
 
 namespace cuda {
 
-void findJitDevCompute(pair<int, int> &prop) {
+void checkAndSetDevMaxCompute(pair<int, int> &prop) {
     struct cuNVRTCcompute {
         /// The CUDA Toolkit version returned by cudaRuntimeGetVersion
-        int cuda_version;
-        /// Maximum major compute flag supported by cuda_version
+        int cudaVersion;
+        /// Maximum major compute flag supported by cudaVersion
         int major;
-        /// Maximum minor compute flag supported by cuda_version
+        /// Maximum minor compute flag supported by cudaVersion
         int minor;
     };
-    static const cuNVRTCcompute Toolkit2Compute[] = {
+    static const cuNVRTCcompute Toolkit2MinCompute[] = {
+        {10010, 3, 0}, {10000, 3, 0}, {9020, 3, 0}, {9010, 3, 0},
+        {9000, 3, 0},  {8000, 2, 0},  {7050, 2, 0}, {7000, 2, 0}};
+    static const cuNVRTCcompute Toolkit2MaxCompute[] = {
         {10010, 7, 5}, {10000, 7, 2}, {9020, 7, 2}, {9010, 7, 2},
         {9000, 7, 2},  {8000, 5, 3},  {7050, 5, 3}, {7000, 5, 3}};
-    int runtime_cuda_ver = 0;
-    CUDA_CHECK(cudaRuntimeGetVersion(&runtime_cuda_ver));
-    auto tkit_max_compute =
-        find_if(begin(Toolkit2Compute), end(Toolkit2Compute),
-                [runtime_cuda_ver](cuNVRTCcompute v) {
-                    return runtime_cuda_ver == v.cuda_version;
-                });
-    if ((tkit_max_compute == end(Toolkit2Compute)) ||
-        (prop.first > tkit_max_compute->major &&
-         prop.second > tkit_max_compute->minor)) {
-        prop = make_pair(tkit_max_compute->major, tkit_max_compute->minor);
+
+    int rtCudaVer = 0;
+    CUDA_CHECK(cudaRuntimeGetVersion(&rtCudaVer));
+    auto tkitMaxCompute = find_if(
+        begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
+        [rtCudaVer](cuNVRTCcompute v) { return rtCudaVer == v.cudaVersion; });
+    if (tkitMaxCompute != end(Toolkit2MaxCompute)) {
+        if (prop.first > tkitMaxCompute->major &&
+            prop.second > tkitMaxCompute->minor) {
+            prop = make_pair(tkitMaxCompute->major, tkitMaxCompute->minor);
+        }
+        // I don't think CUDA runtime picks up devices that has lesser
+        // compute capability than it supports. So no need to check and throw
+    } else {
+        // Runtime CUDA toolkit entry not found
+        // Choose minimum supported compute version for the cuda-toolkit version
+        // that is closest to the runtime cuda version
+        auto distComp = [rtCudaVer](cuNVRTCcompute a, cuNVRTCcompute b) {
+            int aD = rtCudaVer - a.cudaVersion;
+            int bD = rtCudaVer - b.cudaVersion;
+            return (aD < bD);
+        };
+        auto closestToolkit = min_element(begin(Toolkit2MinCompute),
+                                          end(Toolkit2MinCompute), distComp);
+        prop = make_pair(closestToolkit->major, closestToolkit->minor);
     }
 }
 
@@ -441,7 +459,7 @@ DeviceManager::DeviceManager()
         if (i < nDevices) {
             auto prop =
                 make_pair(cuDevices[i].prop.major, cuDevices[i].prop.minor);
-            findJitDevCompute(prop);
+            checkAndSetDevMaxCompute(prop);
             devJitComputes.emplace_back(prop);
         }
     }
