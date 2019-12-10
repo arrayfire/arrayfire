@@ -15,6 +15,7 @@
 #include <af/internal.h>
 #include <af/memory.h>
 #include <af/traits.hpp>
+
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -23,7 +24,6 @@
 
 using af::alloc;
 using af::array;
-using af::buffer_info;
 using af::cdouble;
 using af::cfloat;
 using af::deviceGC;
@@ -635,119 +635,6 @@ TEST(Memory, IndexedDevice) {
     }
 }
 
-TEST(BufferInfo, SimpleCreateDelete) {
-    af_event event;
-    ASSERT_SUCCESS(af_create_event(&event));
-    af_buffer_info pair;
-
-    void *ptr = af::alloc(1, dtype::f32);
-    ASSERT_SUCCESS(af_create_buffer_info(&pair, ptr, event));
-    ASSERT_SUCCESS(af_delete_buffer_info(pair));
-}
-
-TEST(BufferInfo, Unlock) {
-    af_event event;
-    ASSERT_SUCCESS(af_create_event(&event));
-    af_buffer_info pair;
-    void *ptr = af::alloc(1, dtype::f32);
-    ASSERT_SUCCESS(af_create_buffer_info(&pair, ptr, event));
-
-    void *curPtr;
-    ASSERT_SUCCESS(af_unlock_buffer_info_ptr(&curPtr, pair));
-    ASSERT_EQ(curPtr, ptr);
-    void *zeroPtr;
-    ASSERT_SUCCESS(af_buffer_info_get_ptr(&zeroPtr, pair));
-    ASSERT_EQ(zeroPtr, nullptr);
-    ASSERT_SUCCESS(af_unlock_buffer_info_ptr(&zeroPtr, pair));
-    ASSERT_EQ(zeroPtr, nullptr);
-
-    af_event curEvent;
-    ASSERT_SUCCESS(af_unlock_buffer_info_event(&curEvent, pair));
-    ASSERT_EQ(curEvent, event);
-    void *zeroEvent;
-    ASSERT_SUCCESS(af_buffer_info_get_ptr(&zeroEvent, pair));
-    ASSERT_EQ(zeroEvent, nullptr);
-    ASSERT_SUCCESS(af_unlock_buffer_info_ptr(&zeroEvent, pair));
-    ASSERT_EQ(zeroEvent, nullptr);
-
-    ASSERT_SUCCESS(af_delete_buffer_info(pair));
-    ASSERT_SUCCESS(af_delete_event(event));
-    af::free(ptr);
-}
-
-TEST(BufferInfo, EventAndPtrAttributes) {
-    af_event event;
-    ASSERT_SUCCESS(af_create_event(&event));
-    void *ptr = af::alloc(1, dtype::f32);
-    af_buffer_info pair;
-    ASSERT_SUCCESS(af_create_buffer_info(&pair, ptr, event));
-    af_event anEvent;
-    ASSERT_SUCCESS(af_buffer_info_get_event(&anEvent, pair));
-    ASSERT_EQ(event, anEvent);
-    void *somePtr;
-    ASSERT_SUCCESS(af_buffer_info_get_ptr(&somePtr, pair));
-    ASSERT_EQ(ptr, somePtr);
-
-    af_event anotherEvent;
-    ASSERT_SUCCESS(af_create_event(&anotherEvent));
-    ASSERT_SUCCESS(af_buffer_info_set_event(pair, anotherEvent));
-    af_event yetAnotherEvent;
-    ASSERT_SUCCESS(af_buffer_info_get_event(&yetAnotherEvent, pair));
-    ASSERT_NE(yetAnotherEvent, event);
-    ASSERT_EQ(yetAnotherEvent, anotherEvent);
-
-    void *anotherPtr = af::alloc(1, dtype::f32);
-    ASSERT_SUCCESS(af_buffer_info_set_ptr(pair, anotherPtr));
-    void *yetAnotherPtr;
-    ASSERT_SUCCESS(af_buffer_info_get_ptr(&yetAnotherPtr, pair));
-    ASSERT_NE(yetAnotherPtr, ptr);
-    ASSERT_EQ(yetAnotherPtr, anotherPtr);
-
-    ASSERT_SUCCESS(af_delete_buffer_info(pair));
-    ASSERT_SUCCESS(af_delete_event(event));
-    af::free(ptr);
-}
-
-TEST(BufferInfo, BufferInfoCreateMove) {
-    af_event event;
-    ASSERT_SUCCESS(af_create_event(&event));
-    void *ptr = af::alloc(1, dtype::f32);
-    std::unique_ptr<buffer_info> bufferInfo(new buffer_info(ptr, event));
-    ASSERT_EQ(bufferInfo->getEvent(), event);
-    ASSERT_EQ(bufferInfo->getPtr(), ptr);
-
-    void *anotherPtr = af::alloc(1, dtype::f32);
-    bufferInfo->setPtr(anotherPtr);
-    ASSERT_EQ(bufferInfo->getPtr(), anotherPtr);
-
-    af_event anotherEvent;
-    ASSERT_SUCCESS(af_create_event(&anotherEvent));
-    bufferInfo->setEvent(anotherEvent);
-    ASSERT_EQ(bufferInfo->getEvent(), anotherEvent);
-
-    auto anotherBufferInfo = std::move(bufferInfo);
-    ASSERT_EQ(anotherBufferInfo->getPtr(), anotherPtr);
-    ASSERT_EQ(anotherBufferInfo->getEvent(), anotherEvent);
-
-    af_delete_event(event);
-    af::free(ptr);
-}
-
-TEST(BufferInfo, UnlockCpp) {
-    af_event event;
-    ASSERT_SUCCESS(af_create_event(&event));
-    void *ptr = af::alloc(1, dtype::f32);
-    std::unique_ptr<buffer_info> bufferInfo(new buffer_info(ptr, event));
-
-    void *anotherPtr = bufferInfo->unlockPtr();
-    ASSERT_EQ(ptr, anotherPtr);
-    af_event anotherEvent = bufferInfo->unlockEvent();
-    ASSERT_EQ(event, anotherEvent);
-
-    ASSERT_SUCCESS(af_delete_event(anotherEvent));
-    af::free(ptr);
-}
-
 namespace {
 
 template<typename T>
@@ -805,9 +692,7 @@ af_err is_user_locked_fn(af_memory_manager manager, int *out, void *ptr) {
     return AF_SUCCESS;
 }
 
-af_err unlock_fn(af_memory_manager manager, void *ptr, af_event event,
-                 int userLock) {
-    af_delete_event(event);
+af_err unlock_fn(af_memory_manager manager, void *ptr, int userLock) {
     if (!ptr) { return AF_SUCCESS; }
 
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
@@ -829,7 +714,7 @@ af_err user_unlock_fn(af_memory_manager manager, void *ptr) {
     af_event event;
     af_create_event(&event);
     af_mark_event(event);
-    af_err err = unlock_fn(manager, ptr, event, /* user */ 1);
+    af_err err = unlock_fn(manager, ptr, /* user */ 1);
     payload->lockedBytes -= payload->table[ptr];
     return err;
 }
@@ -877,15 +762,9 @@ af_err jit_tree_exceeds_memory_pressure_fn(af_memory_manager manager, int *out,
     return AF_SUCCESS;
 }
 
-af_err alloc_fn(af_memory_manager manager, af_buffer_info *out,
+af_err alloc_fn(af_memory_manager manager, void **ptr,
                 /* bool */ int userLock, const unsigned ndims, dim_t *dims,
                 const unsigned element_size) {
-    af_event event;
-    af_create_event(&event);
-    af_mark_event(event);
-    af_buffer_info bufferInfo;
-    af_create_buffer_info(&bufferInfo, nullptr, event);
-
     size_t size = element_size;
     for (unsigned i = 0; i < ndims; ++i) { size *= dims[i]; }
 
@@ -896,17 +775,15 @@ af_err alloc_fn(af_memory_manager manager, af_buffer_info *out,
         af_memory_manager_get_memory_pressure_threshold(manager, &threshold);
         if (pressure > threshold) { signal_memory_cleanup_fn(manager); }
 
-        void *piece;
-        af_memory_manager_native_alloc(manager, &piece, size);
-        af_buffer_info_set_ptr(bufferInfo, piece);
+        af_memory_manager_native_alloc(manager, ptr, size);
 
-        auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
-        payload->table[piece] = size;
+        auto *payload        = getMemoryManagerPayload<E2ETestPayload>(manager);
+        payload->table[*ptr] = size;
         payload->totalBytes += size;
         payload->totalBuffers++;
 
         // Simple implementation: treat user and AF allocations the same
-        payload->locked.insert(piece);
+        payload->locked.insert(*ptr);
         payload->lockedBytes += size;
 
         payload->lastNdims       = ndims;
@@ -914,7 +791,6 @@ af_err alloc_fn(af_memory_manager manager, af_buffer_info *out,
         payload->lastElementSize = element_size;
     }
 
-    *out = bufferInfo;
     return AF_SUCCESS;
 }
 
@@ -975,6 +851,7 @@ TEST(MemoryManagerApi, E2ETest) {
 
         void *a = af::alloc(aSize, af::dtype::f32);
         ASSERT_EQ(payload->table.size(), 1);
+
         ASSERT_EQ(payload->table[a], aSize * sizeof(float));
         ASSERT_EQ(payload->lastNdims, 1);
         ASSERT_EQ(payload->lastDims, af::dim4(aSize * sizeof(float)));
@@ -988,18 +865,8 @@ TEST(MemoryManagerApi, E2ETest) {
         ASSERT_EQ(payload->lockedBytes, aSize * sizeof(float) + b.bytes());
         ASSERT_EQ(payload->locked.size(), 2);
         ASSERT_EQ(payload->lastNdims, 1);
-        // Some backends might alloc by number of bytes (OpenCL), others alloc
-        // by elements (CPU, CUDA)
-        if (payload->lastElementSize != 1) {
-            // alloced as floats
-            ASSERT_EQ(payload->lastDims, af::dim4(bDim * b.numdims()));
-            ASSERT_EQ(payload->lastElementSize, sizeof(float));
-        } else {
-            // alloced as bytes
-            ASSERT_EQ(payload->lastDims,
-                      af::dim4(bDim * b.numdims() * sizeof(float)));
-            ASSERT_EQ(payload->lastElementSize, 1);
-        }
+        ASSERT_EQ(payload->lastDims, af::dim4(bDim * b.numdims()));
+        ASSERT_EQ(payload->lastElementSize, sizeof(float));
 
         af::free(a);
 

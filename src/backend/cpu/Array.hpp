@@ -11,6 +11,7 @@
 #pragma once
 #include <Param.hpp>
 #include <common/ArrayInfo.hpp>
+#include <common/MemoryManagerBase.hpp>
 #include <jit/Node.hpp>
 #include <memory.hpp>
 #include <platform.hpp>

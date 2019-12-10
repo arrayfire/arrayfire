@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -38,17 +38,16 @@ TEST(EventTests, EventCreateAndMove) {
     af_event eventHandle;
     ASSERT_SUCCESS(af_create_event(&eventHandle));
 
-    std::unique_ptr<event> e;
-    e.reset(new event(eventHandle));
-    e->mark();
-    ASSERT_EQ(eventHandle, e->get());
+    event e(eventHandle);
+    e.mark();
+    ASSERT_EQ(eventHandle, e.get());
 
     auto otherEvent = std::move(e);
-    ASSERT_EQ(otherEvent->get(), eventHandle);
+    ASSERT_EQ(otherEvent.get(), eventHandle);
 
-    std::unique_ptr<event> f;
-    f.reset(new event());
-    af_event fE       = f->get();
-    auto anotherEvent = std::move(f);
-    ASSERT_EQ(fE, anotherEvent->get());
+    event f;
+    af_event fE       = f.get();
+    event anotherEvent = std::move(f);
+    ASSERT_EQ(fE, anotherEvent.get());
+    af::sync();
 }

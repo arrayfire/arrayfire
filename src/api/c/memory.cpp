@@ -13,8 +13,8 @@
 #include <backend.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
+#include <events.hpp>
 #include <handle.hpp>
-#include <memory_manager.hpp>
 #include <platform.hpp>
 #include <af/backend.h>
 #include <af/device.h>
@@ -27,6 +27,7 @@
 using namespace detail;
 
 using common::half;
+using std::move;
 
 af_err af_device_array(af_array *arr, void *data, const unsigned ndims,
                        const dim_t *const dims, const af_dtype type) {
@@ -674,13 +675,14 @@ void MemoryManagerFunctionWrapper::shutdown() {
     AF_CHECK(getMemoryManager(handle_).shutdown_fn(handle_));
 }
 
-af_buffer_info MemoryManagerFunctionWrapper::alloc(
-    bool user_lock, const unsigned ndims, dim_t *dims,
-    const unsigned element_size) {
-    af_buffer_info bufferInfo;
-    AF_CHECK(getMemoryManager(handle_).alloc_fn(
-        handle_, &bufferInfo, (int)user_lock, ndims, dims, element_size));
-    return bufferInfo;
+void *MemoryManagerFunctionWrapper::alloc(bool user_lock, const unsigned ndims,
+                                          dim_t *dims,
+                                          const unsigned element_size) {
+    void *ptr;
+    AF_CHECK(getMemoryManager(handle_).alloc_fn(handle_, &ptr, (int)user_lock,
+                                                ndims, dims, element_size));
+
+    return ptr;
 }
 
 size_t MemoryManagerFunctionWrapper::allocated(void *ptr) {
@@ -689,10 +691,9 @@ size_t MemoryManagerFunctionWrapper::allocated(void *ptr) {
     return out;
 }
 
-void MemoryManagerFunctionWrapper::unlock(void *ptr, af_event e,
-                                          bool user_unlock) {
+void MemoryManagerFunctionWrapper::unlock(void *ptr, bool user_unlock) {
     AF_CHECK(
-        getMemoryManager(handle_).unlock_fn(handle_, ptr, e, (int)user_unlock));
+        getMemoryManager(handle_).unlock_fn(handle_, ptr, (int)user_unlock));
 }
 
 void MemoryManagerFunctionWrapper::signalMemoryCleanup() {

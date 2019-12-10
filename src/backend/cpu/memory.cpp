@@ -9,10 +9,10 @@
 
 #include <memory.hpp>
 
+#include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/half.hpp>
 #include <err_cpu.hpp>
-#include <memory_manager_impl.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <spdlog/spdlog.h>
@@ -56,37 +56,23 @@ template<typename T>
 unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
-    af_buffer_info pair =
-        memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
-    if (e) e.enqueueWait(getQueue());
-    auto *bufferInfo = (BufferInfo *)pair;
-    void *ptr        = bufferInfo->ptr;
-    delete (detail::Event *)bufferInfo->event;
-    delete bufferInfo;
+    void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
     return unique_ptr<T[], function<void(T *)>>((T *)ptr, memFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
     dim4 dims(bytes);
-    af_buffer_info pair = memoryManager().alloc(true, 1, dims.get(), 1);
-    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
-    if (e) e.enqueueWait(getQueue());
-    auto *bufferInfo = (BufferInfo *)pair;
-    void *ptr        = bufferInfo->ptr;
-    delete (detail::Event *)bufferInfo->event;
-    delete bufferInfo;
+    void *ptr = memoryManager().alloc(true, 1, dims.get(), 1);
     return ptr;
 }
 
 template<typename T>
 void memFree(T *ptr) {
-    return memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(),
-                                  false);
+    return memoryManager().unlock((void *)ptr, false);
 }
 
 void memFreeUser(void *ptr) {
-    memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(), true);
+    memoryManager().unlock(ptr, true);
 }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
@@ -107,20 +93,13 @@ template<typename T>
 T *pinnedAlloc(const size_t &elements) {
     // TODO: make pinnedAlloc aware of array shapes
     dim4 dims(elements);
-    af_buffer_info pair =
-        memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
-    if (e) e.enqueueWait(getQueue());
-    auto *bufferInfo = (BufferInfo *)pair;
-    void *ptr        = bufferInfo->ptr;
-    delete (detail::Event *)bufferInfo->event;
-    delete bufferInfo;
+    void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
     return (T *)ptr;
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(), false);
+    memoryManager().unlock((void *)ptr, false);
 }
 
 #define INSTANTIATE(T)                                                \

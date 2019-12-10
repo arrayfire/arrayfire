@@ -16,12 +16,18 @@
 
 using namespace detail;
 
-Event &getEvent(const af_event handle) {
-    Event &event = *(Event *)handle;
+Event &getEvent(af_event &handle) {
+    Event &event = *static_cast<Event *>(handle);
     return event;
 }
 
-af_event getHandle(const Event &event) { return (af_event)&event; }
+const Event &getEvent(const af_event &handle) {
+    const Event &event = *static_cast<const Event *>(handle);
+    return event;
+}
+
+af_event getHandle(Event &event) { return static_cast<af_event>(&event); }
+
 
 af_err af_create_event(af_event *handle) {
     try {
@@ -35,7 +41,7 @@ af_err af_create_event(af_event *handle) {
 
 af_err af_delete_event(af_event handle) {
     try {
-        releaseEvent(handle);
+        delete &getEvent(handle);
     }
     CATCHALL;
 

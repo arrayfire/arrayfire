@@ -144,10 +144,6 @@ manager:
       af_unset_memory_manager();
       \endcode
 
-      @defgroup buffer_info Buffer Info
-      \brief An interface for managing information about memory (pointers and
-\ref af_event)
-
       @defgroup native_memory_interface Native Memory Interface
       \brief Native alloc, native free, get device id, etc.
 

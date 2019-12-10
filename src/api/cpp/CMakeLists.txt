@@ -11,7 +11,6 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/bilateral.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/binary.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/buffer_info.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/canny.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/clamp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/colorspace.cpp

@@ -47,8 +47,6 @@ Event makeEvent(cpu::queue &queue);
 
 af_event createEvent();
 
-void releaseEvent(af_event eventHandle);
-
 void markEventOnActiveQueue(af_event eventHandle);
 
 void enqueueWaitOnActiveQueue(af_event eventHandle);

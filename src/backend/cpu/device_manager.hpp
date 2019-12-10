@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <memory_manager.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <memory>

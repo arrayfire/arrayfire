@@ -8,7 +8,7 @@
  ********************************************************/
 #pragma once
 
-#include <memory_manager.hpp>
+#include <common/AllocatorInterface.hpp>
 
 #include <cstdlib>
 #include <functional>

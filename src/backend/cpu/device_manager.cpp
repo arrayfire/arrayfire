@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/DefaultMemoryManager.hpp>
+#include <common/err_common.hpp>
 #include <common/graphics_common.hpp>
 #include <device_manager.hpp>
 #include <memory.hpp>

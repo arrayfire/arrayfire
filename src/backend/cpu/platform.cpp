@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/MemoryManagerBase.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <device_manager.hpp>
@@ -16,6 +17,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <memory>
 #include <sstream>
 
 using common::memory::MemoryManagerBase;
@@ -25,6 +27,7 @@ using std::ostringstream;
 using std::ptr_fun;
 using std::stoi;
 using std::string;
+using std::unique_ptr;
 
 namespace cpu {
 
@@ -155,7 +158,7 @@ MemoryManagerBase& memoryManager() {
     return *(inst.memManager);
 }
 
-void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr) {
+void setMemoryManager(unique_ptr<MemoryManagerBase> mgr) {
     return DeviceManager::getInstance().setMemoryManager(std::move(mgr));
 }
 

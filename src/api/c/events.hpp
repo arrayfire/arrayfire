@@ -13,6 +13,7 @@
 #include <backend.hpp>
 #include <af/event.h>
 
-af_event getHandle(const detail::Event& event);
+af_event getHandle(detail::Event& event);
 
-detail::Event& getEvent(const af_event eventHandle);
+detail::Event& getEvent(af_event &eventHandle);
+const detail::Event& getEvent(const af_event &eventHandle);

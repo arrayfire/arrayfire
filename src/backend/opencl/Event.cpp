@@ -36,8 +36,6 @@ af_event createEvent() {
     return getHandle(ref);
 }
 
-void releaseEvent(af_event eventHandle) { delete (Event*)eventHandle; }
-
 void markEventOnActiveQueue(af_event eventHandle) {
     Event& event = getEvent(eventHandle);
     // Use the currently-active stream
