@@ -9,6 +9,8 @@
 
 #include <cholesky.hpp>
 
+#include <common/err_common.hpp>
+
 #if defined(WITH_LINEAR_ALGEBRA)
 
 #include <Array.hpp>
