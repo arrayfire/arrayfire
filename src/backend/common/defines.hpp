@@ -10,6 +10,7 @@
 #pragma once
 
 #include <string>
+#include <mutex>
 
 inline std::string clipFilePath(std::string path, std::string str) {
     try {
@@ -69,3 +70,12 @@ using LibHandle = void*;
 #else
 #error "Unsupported platform"
 #endif
+
+#ifndef AF_MEM_DEBUG
+#define AF_MEM_DEBUG 0
+#endif
+
+namespace common {
+using mutex_t      = std::mutex;
+using lock_guard_t = std::lock_guard<mutex_t>;
+}

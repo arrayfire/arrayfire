@@ -98,7 +98,6 @@ common::Node_ptr createNaryNode(
             return ptr;
         }
     }
-    assert("MISSING HEURISTIC EVALUATION" && 1 == 0);
     return ptr;
 }
 }  // namespace common

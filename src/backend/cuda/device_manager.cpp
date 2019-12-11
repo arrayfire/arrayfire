@@ -12,7 +12,9 @@
 #endif
 
 #include <GraphicsResourceManager.hpp>
+#include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
+#include <common/MemoryManagerBase.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>

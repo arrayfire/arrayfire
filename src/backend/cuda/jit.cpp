@@ -11,6 +11,7 @@
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/jit/Node.hpp>
+#include <common/util.hpp>
 #include <copy.hpp>
 #include <debug_cuda.hpp>
 #include <device_manager.hpp>

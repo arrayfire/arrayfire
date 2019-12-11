@@ -9,13 +9,12 @@
 
 #pragma once
 
+#include <platform.hpp>
+
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
-
-#include <memory_manager.hpp>
-#include <platform.hpp>
 
 using common::memory::MemoryManagerBase;
 
@@ -120,7 +119,7 @@ class DeviceManager {
 
    private:
     // Attributes
-    common::mutex_t deviceMutex;
+    std::mutex deviceMutex;
     std::vector<cl::Device*> mDevices;
     std::vector<cl::Context*> mContexts;
     std::vector<cl::CommandQueue*> mQueues;

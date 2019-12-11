@@ -7,15 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/Logger.hpp>
+#include <common/MemoryManagerBase.hpp>
 #include <err_opencl.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+#include <spdlog/spdlog.h>
 #include <types.hpp>
 #include <af/dim4.hpp>
-
-#include <common/Logger.hpp>
-#include <memory_manager_impl.hpp>
-#include <spdlog/spdlog.h>
 
 #include <utility>
 
@@ -57,56 +56,33 @@ unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
-    af_buffer_info pair =
-        memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
-    if (e) e.enqueueWait(getQueue()());
-    auto *bufferInfo = (BufferInfo *)pair;
-    void *rawPtr     = bufferInfo->ptr;
-    delete (detail::Event *)bufferInfo->event;
-    delete bufferInfo;
-    cl::Buffer *ptr = static_cast<cl::Buffer *>(rawPtr);
-    return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(ptr,
+    void *ptr       = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    cl::Buffer *buf = static_cast<cl::Buffer *>(ptr);
+    return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(buf,
                                                                 bufferFree);
 }
 
 void *memAllocUser(const size_t &bytes) {
     dim4 dims(bytes);
-    af_buffer_info pair = memoryManager().alloc(true, 1, dims.get(), 1);
-    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
-    if (e) e.enqueueWait(getQueue()());
-    auto *bufferInfo = (BufferInfo *)pair;
-    void *ptr        = bufferInfo->ptr;
-    delete (detail::Event *)bufferInfo->event;
-    delete bufferInfo;
+    void *ptr = memoryManager().alloc(true, 1, dims.get(), 1);
     return ptr;
 }
 
 template<typename T>
 void memFree(T *ptr) {
-    return memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(),
-                                  false);
+    return memoryManager().unlock((void *)ptr, false);
 }
 
-void memFreeUser(void *ptr) {
-    memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(), true);
-}
+void memFreeUser(void *ptr) { memoryManager().unlock((void *)ptr, true); }
 
 cl::Buffer *bufferAlloc(const size_t &bytes) {
     dim4 dims(bytes);
-    af_buffer_info pair = memoryManager().alloc(false, 1, dims.get(), 1);
-    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
-    if (e) e.enqueueWait(getQueue()());
-    auto *bufferInfo = (BufferInfo *)pair;
-    void *ptr        = bufferInfo->ptr;
-    delete (detail::Event *)bufferInfo->event;
-    delete bufferInfo;
+    void *ptr = memoryManager().alloc(false, 1, dims.get(), 1);
     return static_cast<cl::Buffer *>(ptr);
 }
 
 void bufferFree(cl::Buffer *buf) {
-    return memoryManager().unlock((void *)buf, detail::createAndMarkEvent(),
-                                  false);
+    return memoryManager().unlock((void *)buf, false);
 }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
@@ -127,20 +103,13 @@ template<typename T>
 T *pinnedAlloc(const size_t &elements) {
     // TODO: make pinnedAlloc aware of array shapes
     dim4 dims(elements);
-    af_buffer_info pair =
-        pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    detail::Event e = std::move(getEventFromBufferInfoHandle(pair));
-    if (e) e.enqueueWait(getQueue()());
-    void *ptr;
-    af_unlock_buffer_info_ptr(&ptr, pair);
-    af_delete_buffer_info(pair);
+    void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
     return static_cast<T *>(ptr);
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    pinnedMemoryManager().unlock((void *)ptr, detail::createAndMarkEvent(),
-                                 false);
+    pinnedMemoryManager().unlock((void *)ptr, false);
 }
 
 #define INSTANTIATE(T)                                                         \
@@ -162,6 +131,7 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(common::half)
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 

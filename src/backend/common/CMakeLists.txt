@@ -20,8 +20,11 @@ target_sources(afcommon_interface
 
 target_sources(afcommon_interface
   INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/AllocatorInterface.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ArrayInfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ArrayInfo.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DefaultMemoryManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DefaultMemoryManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/FFTPlanCache.hpp
@@ -29,6 +32,7 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManagerBase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.hpp

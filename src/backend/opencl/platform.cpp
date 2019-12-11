@@ -16,6 +16,7 @@
 #include <cache.hpp>
 #include <clfft.hpp>
 #include <common/host_memory.hpp>
+#include <common/DefaultMemoryManager.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>
 #include <err_opencl.hpp>

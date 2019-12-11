@@ -12,8 +12,10 @@
 #endif
 
 #include <GraphicsResourceManager.hpp>
+#include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
+#include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
 #include <common/unique_handle.hpp>
 #include <common/util.hpp>
@@ -31,7 +33,6 @@
 #include <af/cuda.h>
 #include <af/device.h>
 #include <af/version.h>
-#include <common/graphics_common.hpp>
 
 #include <algorithm>
 #include <array>

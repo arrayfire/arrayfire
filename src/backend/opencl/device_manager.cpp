@@ -14,6 +14,7 @@
 #include <GraphicsResourceManager.hpp>
 #include <blas.hpp>
 #include <clfft.hpp>
+#include <common/DefaultMemoryManager.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>

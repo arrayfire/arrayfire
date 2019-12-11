@@ -100,8 +100,7 @@ int deviceget() { return getDevice(); }
 
 void sync(int device) { AF_THROW(af_sync(device)); }
 
-///////////////////////////////////////////////////////////////////////////
-// Alloc and free host, pinned, zero copy
+// Alloc device memory
 void *alloc(const size_t elements, const af::dtype type) {
     void *ptr;
     AF_THROW(af_alloc_device(&ptr, elements * size_of(type)));
@@ -109,6 +108,7 @@ void *alloc(const size_t elements, const af::dtype type) {
     return ptr;
 }
 
+// Alloc pinned memory
 void *pinned(const size_t elements, const af::dtype type) {
     void *ptr;
     AF_THROW(af_alloc_pinned(&ptr, elements * size_of(type)));

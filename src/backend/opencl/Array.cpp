@@ -51,7 +51,7 @@ template<typename T>
 Array<T>::Array(dim4 dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
-    , data(bufferAlloc(info.elements() * sizeof(T)), bufferFree)
+    , data(memAlloc<T>(info.elements()).release(), bufferFree)
     , data_dims(dims)
     , node(bufferNodePtr<T>())
     , ready(true)
@@ -71,7 +71,7 @@ template<typename T>
 Array<T>::Array(dim4 dims, const T *const in_data)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
-    , data(bufferAlloc(info.elements() * sizeof(T)), bufferFree)
+    , data(memAlloc<T>(info.elements()).release(), bufferFree)
     , data_dims(dims)
     , node(bufferNodePtr<T>())
     , ready(true)
@@ -89,7 +89,7 @@ template<typename T>
 Array<T>::Array(dim4 dims, cl_mem mem, size_t src_offset, bool copy)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
-    , data(copy ? bufferAlloc(info.elements() * sizeof(T)) : new Buffer(mem),
+    , data(copy ? memAlloc<T>(info.elements()).release() : new Buffer(mem),
            bufferFree)
     , data_dims(dims)
     , node(bufferNodePtr<T>())
@@ -137,7 +137,7 @@ Array<T>::Array(dim4 dims, dim4 strides, dim_t offset_, const T *const in_data,
     : info(getActiveDeviceId(), dims, offset_, strides,
            (af_dtype)dtype_traits<T>::af_type)
     , data(is_device ? (new Buffer((cl_mem)in_data))
-                     : (bufferAlloc(info.total() * sizeof(T))),
+                     : (memAlloc<T>(info.elements()).release()),
            bufferFree)
     , data_dims(dims)
     , node(bufferNodePtr<T>())
@@ -154,7 +154,7 @@ void Array<T>::eval() {
     if (isReady()) return;
 
     this->setId(getActiveDeviceId());
-    data = Buffer_ptr(bufferAlloc(elements() * sizeof(T)), bufferFree);
+    data = Buffer_ptr(memAlloc<T>(info.elements()).release(), bufferFree);
 
     // Do not replace this with cast operator
     KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
@@ -196,7 +196,7 @@ void evalMultiple(vector<Array<T> *> arrays) {
         array->ready = true;
         array->setId(getActiveDeviceId());
         array->data =
-            Buffer_ptr(bufferAlloc(info.elements() * sizeof(T)), bufferFree);
+            Buffer_ptr(memAlloc<T>(info.elements()).release(), bufferFree);
 
         // Do not replace this with cast operator
         KParam kInfo = {

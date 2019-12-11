@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <copy.hpp>
+#include <common/err_common.hpp>
 #include <kernel/sort_by_key.hpp>
 #include <math.hpp>
 #include <platform.hpp>
@@ -16,6 +17,7 @@
 #include <range.hpp>
 #include <reorder.hpp>
 #include <sort_index.hpp>
+
 #include <algorithm>
 #include <numeric>
 

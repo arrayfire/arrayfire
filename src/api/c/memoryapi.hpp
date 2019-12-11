@@ -9,26 +9,10 @@
 
 #pragma once
 
-#include <memory_manager.hpp>
+#include <common/MemoryManagerBase.hpp>
 
-#include <events.hpp>
-#include <af/event.h>
 #include <af/memory.h>
 
-////////////////////////////////////////////////////////////////////////////////
-// Buffer Info
-////////////////////////////////////////////////////////////////////////////////
-
-struct BufferInfo {
-    void *ptr;
-    af_event event;
-};
-
-BufferInfo &getBufferInfo(const af_buffer_info pair);
-
-af_buffer_info getHandle(BufferInfo &pairHandle);
-
-detail::Event &getEventFromBufferInfoHandle(const af_buffer_info handle);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Memory Manager API
@@ -46,10 +30,10 @@ class MemoryManagerFunctionWrapper final : public common::memory::MemoryManagerB
     ~MemoryManagerFunctionWrapper();
     void initialize() override;
     void shutdown() override;
-    af_buffer_info alloc(bool user_lock, const unsigned ndims, dim_t *dims,
-                         const unsigned element_size) override;
+    void* alloc(bool user_lock, const unsigned ndims, dim_t *dims,
+                const unsigned element_size) override;
     size_t allocated(void *ptr) override;
-    void unlock(void *ptr, af_event e, bool user_unlock) override;
+    void unlock(void *ptr, bool user_unlock) override;
     void signalMemoryCleanup() override;
     void printInfo(const char *msg, const int device) override;
     void usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,

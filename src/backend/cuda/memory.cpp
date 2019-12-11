@@ -11,6 +11,7 @@
 
 #include <Event.hpp>
 #include <common/Logger.hpp>
+#include <common/MemoryManagerBase.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/util.hpp>
@@ -18,7 +19,6 @@
 #include <cuda_runtime.h>
 #include <cuda_runtime_api.h>
 #include <err_cuda.hpp>
-#include <memory_manager_impl.hpp>
 #include <platform.hpp>
 #include <spdlog/spdlog.h>
 #include <types.hpp>
@@ -64,39 +64,22 @@ uptr<T> memAlloc(const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
     size_t size = elements * sizeof(T);
-    af_buffer_info pair =
-        memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
-    cudaStream_t stream = getActiveStream();
-    if (e) e.enqueueWait(stream);
-    auto *bufferInfo = (BufferInfo *)pair;
-    void *ptr        = bufferInfo->ptr;
-    delete (detail::Event *)bufferInfo->event;
-    delete bufferInfo;
+    void *ptr   = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
     return uptr<T>(static_cast<T *>(ptr), memFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
     dim4 dims(bytes);
-    af_buffer_info pair = memoryManager().alloc(true, 1, dims.get(), 1);
-    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
-    cudaStream_t stream = getActiveStream();
-    if (e) e.enqueueWait(stream);
-    auto *bufferInfo = (BufferInfo *)pair;
-    void *ptr        = bufferInfo->ptr;
-    delete (detail::Event *)bufferInfo->event;
-    delete bufferInfo;
+    void *ptr = memoryManager().alloc(true, 1, dims.get(), 1);
     return ptr;
 }
 
 template<typename T>
 void memFree(T *ptr) {
-    memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(), false);
+    memoryManager().unlock((void *)ptr, false);
 }
 
-void memFreeUser(void *ptr) {
-    memoryManager().unlock((void *)ptr, detail::createAndMarkEvent(), true);
-}
+void memFreeUser(void *ptr) { memoryManager().unlock((void *)ptr, true); }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
 
@@ -116,22 +99,13 @@ template<typename T>
 T *pinnedAlloc(const size_t &elements) {
     // TODO: make pinnedAlloc aware of array shapes
     dim4 dims(elements);
-    af_buffer_info pair =
-        pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    detail::Event e     = std::move(getEventFromBufferInfoHandle(pair));
-    cudaStream_t stream = getActiveStream();
-    if (e) e.enqueueWait(stream);
-    auto *bufferInfo = (BufferInfo *)pair;
-    void *ptr        = bufferInfo->ptr;
-    delete (detail::Event *)bufferInfo->event;
-    delete bufferInfo;
-    return (T *)ptr;
+    void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    return static_cast<T *>(ptr);
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    pinnedMemoryManager().unlock((void *)ptr, detail::createAndMarkEvent(),
-                                 false);
+    pinnedMemoryManager().unlock((void *)ptr, false);
 }
 
 #define INSTANTIATE(T)                                 \

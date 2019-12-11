@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
+#include <common/MemoryManagerBase.hpp>
 #include <common/jit/Node.hpp>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -18,8 +19,9 @@
 #include <traits.hpp>
 #include <types.hpp>
 #include <af/dim4.hpp>
-#include <vector>
 #include "traits.hpp"
+
+#include <vector>
 
 namespace cuda {
 using af::dim4;
