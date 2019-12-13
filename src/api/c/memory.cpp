@@ -15,6 +15,7 @@
 #include <common/half.hpp>
 #include <events.hpp>
 #include <handle.hpp>
+#include <memory.hpp>
 #include <platform.hpp>
 #include <af/backend.h>
 #include <af/device.h>
