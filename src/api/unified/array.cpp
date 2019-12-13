@@ -39,16 +39,16 @@ af_err af_get_data_ptr(void *data, const af_array arr) {
 }
 
 af_err af_release_array(af_array arr) {
-    af_backend curr =
-        unified::AFSymbolManager::getInstance().getActiveBackend();
+    auto& sm = unified::AFSymbolManager::getInstance();
+    af_backend curr = sm.getActiveBackend();
     af_backend other = curr;
 
     af_err err = af_get_backend_id(&other, arr);
     if (err != AF_SUCCESS) return err;
 
-    unified::AFSymbolManager::getInstance().setBackend(other);
+    sm.setBackend(other);
     err = CALL(arr);
-    unified::AFSymbolManager::getInstance().setBackend(curr);
+    sm.setBackend(curr);
     return err;
 }
 
