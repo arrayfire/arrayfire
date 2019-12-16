@@ -20,6 +20,9 @@
 #include <traits.hpp>
 #include "config.hpp"
 
+#include <algorithm>
+#include <string>
+
 namespace cuda {
 namespace kernel {
 

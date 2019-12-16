@@ -18,11 +18,11 @@ ELSE()
     SET(byproducts BUILD_BYPRODUCTS ${clFFT_location})
 ENDIF()
 
-if(WIN32)
+if(WIN32 AND NOT CMAKE_GENERATOR MATCHES "Ninja")
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
-else(WIN32)
+else()
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
-endif(WIN32)
+endif()
 
 ExternalProject_Add(
     clFFT-ext

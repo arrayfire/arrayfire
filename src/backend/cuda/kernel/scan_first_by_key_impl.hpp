@@ -19,6 +19,8 @@
 #include <optypes.hpp>
 #include "config.hpp"
 
+#include <algorithm>
+
 namespace cuda {
 namespace kernel {
 
