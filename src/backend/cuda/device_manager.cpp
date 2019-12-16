@@ -48,13 +48,13 @@ using std::begin;
 using std::end;
 using std::find_if;
 using std::make_pair;
-using std::min_element;
 using std::pair;
 using std::string;
 using std::stringstream;
 
 namespace cuda {
 
+/// Check for compatible compute version based on runtime cuda toolkit version
 void checkAndSetDevMaxCompute(pair<int, int> &prop) {
     struct cuNVRTCcompute {
         /// The CUDA Toolkit version returned by cudaRuntimeGetVersion
@@ -64,37 +64,52 @@ void checkAndSetDevMaxCompute(pair<int, int> &prop) {
         /// Maximum minor compute flag supported by cudaVersion
         int minor;
     };
-    static const cuNVRTCcompute Toolkit2MinCompute[] = {
-        {10020, 3, 0}, {10010, 3, 0}, {10000, 3, 0}, {9020, 3, 0}, {9010, 3, 0},
-        {9000, 3, 0},  {8000, 2, 0},  {7050, 2, 0}, {7000, 2, 0}};
     static const cuNVRTCcompute Toolkit2MaxCompute[] = {
         {10020, 7, 5}, {10010, 7, 5}, {10000, 7, 2}, {9020, 7, 2}, {9010, 7, 2},
         {9000, 7, 2},  {8000, 5, 3},  {7050, 5, 3}, {7000, 5, 3}};
 
+    auto originalCompute = prop;
     int rtCudaVer = 0;
     CUDA_CHECK(cudaRuntimeGetVersion(&rtCudaVer));
     auto tkitMaxCompute = find_if(
         begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
         [rtCudaVer](cuNVRTCcompute v) { return rtCudaVer == v.cudaVersion; });
-    if (tkitMaxCompute != end(Toolkit2MaxCompute)) {
-        if (prop.first > tkitMaxCompute->major &&
-            prop.second > tkitMaxCompute->minor) {
-            prop = make_pair(tkitMaxCompute->major, tkitMaxCompute->minor);
-        }
-        // I don't think CUDA runtime picks up devices that has lesser
-        // compute capability than it supports. So no need to check and throw
-    } else {
-        // Runtime CUDA toolkit entry not found
-        // Choose minimum supported compute version for the cuda-toolkit version
-        // that is closest to the runtime cuda version
-        auto distComp = [rtCudaVer](cuNVRTCcompute a, cuNVRTCcompute b) {
-            int aD = rtCudaVer - a.cudaVersion;
-            int bD = rtCudaVer - b.cudaVersion;
-            return (aD < bD);
-        };
-        auto closestToolkit = min_element(begin(Toolkit2MinCompute),
-                                          end(Toolkit2MinCompute), distComp);
-        prop = make_pair(closestToolkit->major, closestToolkit->minor);
+
+    // If runtime cuda version is found in toolkit array
+    // check for max possible compute for that cuda version
+    if (tkitMaxCompute != end(Toolkit2MaxCompute) &&
+        prop.first > tkitMaxCompute->major) {
+        prop = make_pair(tkitMaxCompute->major, tkitMaxCompute->minor);
+#ifndef NDEBUG
+        char errMsg[] =
+            "Current device compute version (%d.%d) exceeds supported maximum "
+            "cuda runtime compute version (%d.%d). Using %d.%d.";
+        fprintf(stderr, errMsg, originalCompute.first, originalCompute.second,
+                prop.first, prop.second, prop.first, prop.second);
+#endif
+    } else if (prop.first > Toolkit2MaxCompute[0].major) {
+        // If runtime cuda version is NOT found in toolkit array
+        // use the top most toolkit max compute
+        prop =
+            make_pair(Toolkit2MaxCompute[0].major, Toolkit2MaxCompute[0].minor);
+#ifndef NDEBUG
+        char errMsg[] =
+            "Runtime cuda version not found in toolkit info array."
+            "Current device compute version (%d.%d) exceeds supported maximum "
+            "runtime cuda compute version (%d.%d) of latest known cuda toolkit."
+            "Using %d.%d.";
+        fprintf(stderr, errMsg, originalCompute.first, originalCompute.second,
+                prop.first, prop.second, prop.first, prop.second);
+#endif
+    } else if (prop.first < 3) {
+        // all compute versions prior to Kepler, we don't support
+        // don't change the prop.
+#ifndef NDEBUG
+        char errMsg[] =
+            "Current device compute version (%d.%d) lower than the"
+            "minimum compute version ArrayFire supports.";
+        fprintf(stderr, errMsg, originalCompute.first, originalCompute.second);
+#endif
     }
 }
 
