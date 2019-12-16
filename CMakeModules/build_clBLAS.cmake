@@ -12,11 +12,11 @@ set(clBLAS_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clBLAS${C
 
 find_package(OpenCL)
 
-if(WIN32)
+if(WIN32 AND NOT CMAKE_GENERATOR MATCHES "Ninja")
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
-else(WIN32)
+else()
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
-endif(WIN32)
+endif()
 
 ExternalProject_Add(
     clBLAS-ext
