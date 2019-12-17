@@ -282,27 +282,29 @@ void scanbykey_first_bcast(Param<To> out, Param<To> tmp, Param<int> tlid,
     const int xid        = blockIdx_x * blockDim.x * lim + tidx;
     const int yid        = blockIdx_y * blockDim.y + tidy;
 
-    if (blockIdx_x == 0) return;
+    if (blockIdx_x != 0) {
+        bool cond = (yid < out.dims[1]) && (zid < out.dims[2]) &&
+                    (wid < out.dims[3]);
+        if (cond) {
+            To *optr        = out.ptr;
+            const To *tptr  = tmp.ptr;
+            const int *iptr = tlid.ptr;
 
-    bool cond =
-        (yid < out.dims[1]) && (zid < out.dims[2]) && (wid < out.dims[3]);
-    if (!cond) return;
+            optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
+            tptr += wid * tmp.strides[3] + zid * tmp.strides[2] + yid * tmp.strides[1];
+            iptr +=
+                wid * tlid.strides[3] + zid * tlid.strides[2] + yid * tlid.strides[1];
 
-    To *optr        = out.ptr;
-    const To *tptr  = tmp.ptr;
-    const int *iptr = tlid.ptr;
+            Binary<To, op> binop;
+            int boundary = iptr[blockIdx_x];
+            To accum     = tptr[blockIdx_x - 1];
 
-    optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
-    tptr += wid * tmp.strides[3] + zid * tmp.strides[2] + yid * tmp.strides[1];
-    iptr +=
-        wid * tlid.strides[3] + zid * tlid.strides[2] + yid * tlid.strides[1];
-
-    Binary<To, op> binop;
-    int boundary = iptr[blockIdx_x];
-    To accum     = tptr[blockIdx_x - 1];
-
-    for (int k = 0, id = xid; k < lim && id < boundary; k++, id += blockDim.x) {
-        optr[id] = binop(accum, optr[id]);
+            for (int k = 0, id = xid;
+                 k < lim && id < out.dims[0] && id < boundary;
+                 k++, id += blockDim.x) {
+                optr[id] = binop(accum, optr[id]);
+            }
+        }
     }
 }
 

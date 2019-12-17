@@ -218,3 +218,21 @@ TEST(ScanByKey, Test_Scan_By_key_Simple_1) {
     scanByKeyTest<int, int, AF_BINARY_ADD, false>(
         dims, scanDim, nodeLengths, keyStart, keyEnd, dataStart, dataEnd, 1e-5);
 }
+
+TEST(ScanByKey, FixOverflowWrite) {
+    const int SIZE = 41000;
+    vector<int> keys(SIZE, 0);
+    vector<float> vals(SIZE, 1.0f);
+
+    array someVals = array(SIZE, vals.data());
+    array keysAF = array(SIZE, s32);
+    array valsAF = array(SIZE, vals.data());
+
+    keysAF = array(SIZE, keys.data());
+
+    float prior = valsAF(0).scalar<float>();
+
+    array result = af::scanByKey(keysAF, someVals, 0, AF_BINARY_ADD, true);
+
+    ASSERT_EQ(prior, valsAF(0).scalar<float>());
+}
