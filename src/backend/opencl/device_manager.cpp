@@ -15,6 +15,7 @@
 #include <blas.hpp>
 #include <clfft.hpp>
 #include <common/DefaultMemoryManager.hpp>
+#include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
@@ -164,7 +165,8 @@ static inline bool compare_default(const Device* ldev, const Device* rdev) {
 }
 
 DeviceManager::DeviceManager()
-    : mUserDeviceOffset(0)
+    : logger(common::loggerFactory("platform"))
+    , mUserDeviceOffset(0)
     , fgMngr(new graphics::ForgeManager())
     , mFFTSetup(new clfftSetupData) {
     vector<Platform> platforms;
@@ -187,6 +189,8 @@ DeviceManager::DeviceManager()
         DEVICE_TYPES = CL_DEVICE_TYPE_ACCELERATOR;
     }
 
+    AF_TRACE("Found {} OpenCL platforms", platforms.size());
+
     // Iterate through platforms, get all available devices and store them
     for (auto& platform : platforms) {
         vector<Device> current_devices;
@@ -196,14 +200,20 @@ DeviceManager::DeviceManager()
         } catch (const cl::Error& err) {
             if (err.err() != CL_DEVICE_NOT_FOUND) { throw; }
         }
+        AF_TRACE("Found {} devices on platform {}", current_devices.size(),
+                 platform.getInfo<CL_PLATFORM_NAME>());
         for (auto dev : current_devices) {
             mDevices.push_back(new Device(dev));
+            AF_TRACE("Found device {} on platform {}",
+                     dev.getInfo<CL_DEVICE_NAME>(),
+                     platform.getInfo<CL_PLATFORM_NAME>());
         }
     }
 
     int nDevices = mDevices.size();
+    AF_TRACE("Found {} OpenCL devices", nDevices);
 
-    if (nDevices == 0) AF_ERROR("No OpenCL devices found", AF_ERR_RUNTIME);
+    if (nDevices == 0) { AF_ERROR("No OpenCL devices found", AF_ERR_RUNTIME); }
 
     // Sort OpenCL devices based on default criteria
     stable_sort(mDevices.begin(), mDevices.end(), compare_default);
@@ -231,8 +241,10 @@ DeviceManager::DeviceManager()
         int def_device = -1;
         s >> def_device;
         if (def_device < 0 || def_device >= (int)nDevices) {
-            printf("WARNING: AF_OPENCL_DEFAULT_DEVICE is out of range\n");
-            printf("Setting default device as 0\n");
+            AF_TRACE(
+                "AF_OPENCL_DEFAULT_DEVICE ({}) \
+                   is out of range, Setting default device to 0",
+                def_device);
         } else {
             setActiveContext(def_device);
             default_device_set = true;
@@ -257,10 +269,10 @@ DeviceManager::DeviceManager()
             }
         }
         if (!default_device_set) {
-            printf(
-                "WARNING: AF_OPENCL_DEFAULT_DEVICE_TYPE=%s is not available\n",
-                deviceENV.c_str());
-            printf("Using default device as 0\n");
+            AF_TRACE(
+                "AF_OPENCL_DEFAULT_DEVICE_TYPE={} \
+                   is not available, Using default device as 0",
+                deviceENV);
         }
     }
 
@@ -293,7 +305,10 @@ DeviceManager::DeviceManager()
         BoostProgCache currCache = compute::program_cache::get_global_cache(c);
         mBoostProgCacheVector.emplace_back(new BoostProgCache(currCache));
     }
+    AF_TRACE("Default device: {}", getActiveDeviceId());
 }
+
+spdlog::logger* DeviceManager::getLogger() { return logger.get(); }
 
 DeviceManager& DeviceManager::getInstance() {
     static DeviceManager* my_instance = new DeviceManager();
@@ -394,6 +409,7 @@ void DeviceManager::markDeviceForInterop(const int device,
     try {
         if (device >= (int)mQueues.size() ||
             device >= (int)DeviceManager::MAX_DEVICES) {
+            AF_TRACE("Invalid device (}) passed for CL-GL Interop", device);
             throw cl::Error(CL_INVALID_DEVICE,
                             "Invalid device passed for CL-GL Interop");
         } else {

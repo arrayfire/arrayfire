@@ -164,7 +164,9 @@ list of modules to trace. If enabled, ArrayFire will print relevant information
 to stdout. Currently the following modules are supported:
 
 - all: All trace outputs
+- jit: Logs kernel fetch & respective compile options and any errors.
 - mem: Memory management allocation, free and garbage collection information
+- platform: Device management information
 - unified: Unified backend dynamic loading information
 
 Tracing displays the information that could be useful when debugging or
@@ -175,6 +177,10 @@ optimizing your application. Here is how you would use this variable:
 This will print information about memory operations such as allocations,
 deallocations, and garbage collection.
 
+All trace statements printed to the console have a suffix with the following
+pattern.
+
+**[category][Seconds since Epoch][Thread Id][source file relative path] <Message>**
 
 AF_MAX_BUFFERS {#af_max_buffers}
 -------------------------------------------------------------------------

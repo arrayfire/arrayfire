@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/Logger.hpp>
 #include <common/dispatch.hpp>
 #include <common/jit/Node.hpp>
 #include <copy.hpp>
@@ -17,6 +18,7 @@
 #include <af/dim4.hpp>
 #include <af/opencl.h>
 
+#include <chrono>
 #include <functional>
 #include <stdexcept>
 #include <vector>
@@ -37,6 +39,14 @@ using std::hash;
 using std::string;
 using std::stringstream;
 using std::vector;
+using std::chrono::duration_cast;
+using std::chrono::high_resolution_clock;
+using std::chrono::milliseconds;
+
+spdlog::logger *getLogger() {
+    static std::shared_ptr<spdlog::logger> logger(common::loggerFactory("jit"));
+    return logger.get();
+}
 
 namespace opencl {
 
@@ -181,16 +191,22 @@ static Kernel getKernel(const vector<Node *> &output_nodes,
         const int ker_lens[]   = {jit_cl_len, (int)jit_ker.size()};
 
         Program prog;
-        buildProgram(
-            prog, 2, ker_strs, ker_lens,
-            (isDoubleSupported(device) ? string(" -D USE_DOUBLE") : string("")) +
-            (isHalfSupported(device) ? string(" -D USE_HALF") : string(""))
-                     );
+        string options =
+            (isDoubleSupported(device) ? string(" -D USE_DOUBLE")
+                                       : string("")) +
+            (isHalfSupported(device) ? string(" -D USE_HALF") : string(""));
+        auto compileBegin = high_resolution_clock::now();
+        buildProgram(prog, 2, ker_strs, ker_lens, options);
+        auto compileEnd = high_resolution_clock::now();
 
         entry.prog = new Program(prog);
         entry.ker  = new Kernel(*entry.prog, funcName.c_str());
 
         addKernelToCache(device, funcName, entry);
+
+        AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", funcName,
+                 duration_cast<milliseconds>(compileEnd - compileBegin).count(),
+                 options, getDevice(device).getInfo<CL_DEVICE_NAME>());
     }
 
     return *entry.ker;

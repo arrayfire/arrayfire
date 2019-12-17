@@ -18,6 +18,7 @@
 #include <array>
 #include <cstdlib>
 #include <memory>
+#include <mutex>
 #include <string>
 
 using std::array;
@@ -29,20 +30,22 @@ using std::to_string;
 using spdlog::get;
 using spdlog::logger;
 using spdlog::stdout_logger_mt;
-using spdlog::level::trace;
 
 namespace common {
+
 shared_ptr<logger> loggerFactory(string name) {
     shared_ptr<logger> logger;
     if (!(logger = get(name))) {
         logger = stdout_logger_mt(name);
-        logger->set_pattern("[%n][%t] %v");
+        logger->set_pattern("[%n][%E][%t] %v");
 
         // Log mode
         string env_var = getEnvVar("AF_TRACE");
         if (env_var.find("all") != string::npos ||
             env_var.find(name) != string::npos) {
-            logger->set_level(trace);
+            logger->set_level(spdlog::level::trace);
+        } else {
+            logger->set_level(spdlog::level::off);
         }
     }
     return logger;

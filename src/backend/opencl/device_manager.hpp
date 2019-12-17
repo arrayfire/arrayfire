@@ -104,6 +104,8 @@ class DeviceManager {
 
     ~DeviceManager();
 
+    spdlog::logger* getLogger();
+
    protected:
     using clfftSetupData = clfftSetupData_;
 
@@ -119,6 +121,7 @@ class DeviceManager {
 
    private:
     // Attributes
+    std::shared_ptr<spdlog::logger> logger;
     std::mutex deviceMutex;
     std::vector<cl::Device*> mDevices;
     std::vector<cl::Context*> mContexts;

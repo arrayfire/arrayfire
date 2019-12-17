@@ -30,6 +30,10 @@ class program_cache;
 }
 }  // namespace boost
 
+namespace spdlog {
+class logger;
+}
+
 namespace graphics {
 class ForgeManager;
 }

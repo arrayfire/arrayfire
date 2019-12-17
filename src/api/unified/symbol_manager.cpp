@@ -135,6 +135,7 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
     typedef af_err (*func)(int*);
 
     LibHandle retVal = nullptr;
+
     for (size_t i = 0; i < extent<decltype(pathPrefixes)>::value; i++) {
         AF_TRACE("Attempting: {}",
                  (pathPrefixes[i].empty() ? "Default System Paths"
