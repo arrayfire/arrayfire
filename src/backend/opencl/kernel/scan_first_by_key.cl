@@ -269,7 +269,6 @@ __kernel void bcast_first_kernel(__global To *oData, KParam oInfo,
                                  uint groups_x, uint groups_y, uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
-    const int lid  = lidy * get_local_size(0) + lidx;
 
     const int zid       = get_group_id(0) / groups_x;
     const int wid       = get_group_id(1) / groups_y;
@@ -295,7 +294,8 @@ __kernel void bcast_first_kernel(__global To *oData, KParam oInfo,
             int boundary = tiData[groupId_x];
             To accum     = tData[groupId_x - 1];
 
-            for (int k = 0, id = xid; k < lim && id < boundary;
+            for (int k = 0, id = xid;
+                 k < lim && id < oInfo.dims[0] && id < boundary;
                  k++, id += DIMX) {
                 oData[id] = binOp(accum, oData[id]);
             }

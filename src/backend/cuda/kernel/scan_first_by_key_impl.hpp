@@ -99,24 +99,20 @@ void scan_first_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key,
     if (blocks_x == 1) {
         scan_final_launcher<Ti, Tk, To, op>(out, in, key, blocks_x, blocks_y,
                                             threads_x, true, inclusive_scan);
-
     } else {
-        Param<To> tmp = out;
         Param<char> tmpflg;
         Param<int> tmpid;
-
-        tmp.dims[0]       = blocks_x;
-        tmpflg.dims[0]    = blocks_x;
-        tmpid.dims[0]     = blocks_x;
-        tmp.strides[0]    = 1;
-        tmpflg.strides[0] = 1;
-        tmpid.strides[0]  = 1;
-        for (int k = 1; k < 4; k++) {
-            tmpflg.dims[k]    = out.dims[k];
-            tmpid.dims[k]     = out.dims[k];
-            tmp.strides[k]    = tmp.strides[k - 1] * tmp.dims[k - 1];
-            tmpflg.strides[k] = tmpflg.strides[k - 1] * tmpflg.dims[k - 1];
-            tmpid.strides[k]  = tmpid.strides[k - 1] * tmpid.dims[k - 1];
+        Param<To> tmp  = out;
+        tmp.dims[0]    = blocks_x;
+        tmp.strides[0] = 1;
+        for (int k = 1; k < AF_MAX_DIMS; k++) {
+            tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
+        }
+        for (int k = 0; k < AF_MAX_DIMS; k++) {
+            tmpflg.dims[k]    = tmp.dims[k];
+            tmpflg.strides[k] = tmp.strides[k];
+            tmpid.dims[k]     = tmp.dims[k];
+            tmpid.strides[k]  = tmp.strides[k];
         }
 
         int tmp_elements  = tmp.strides[3] * tmp.dims[3];
