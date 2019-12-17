@@ -11,6 +11,8 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
+
 #include <spdlog/spdlog.h>
 
 namespace common {

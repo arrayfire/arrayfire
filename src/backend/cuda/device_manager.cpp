@@ -326,7 +326,8 @@ static const ToolkitDriverVersions
 /// \param[in] driver_version   The version integer returned by
 ///                             cudaDriverGetVersion
 /// \note: only works in debug builds
-void debugRuntimeCheck(int runtime_version, int driver_version) {
+void debugRuntimeCheck(spdlog::logger *logger, int runtime_version,
+                       int driver_version) {
 #ifndef NDEBUG
     auto runtime_it =
         find_if(begin(CudaToDriverVersion), end(CudaToDriverVersion),
@@ -339,31 +340,35 @@ void debugRuntimeCheck(int runtime_version, int driver_version) {
                     return driver_version == ver.version;
                 });
 
+    auto getLogger = [&logger]() -> spdlog::logger * { return logger; };
+
     // If the runtime version is not part of the CudaToDriverVersion array,
     // display a message in the trace. Do not throw an error unless this is
     // a debug build
     if (runtime_it == end(CudaToDriverVersion)) {
         char buf[1024];
         char err_msg[] =
-            "WARNING: CUDA runtime version(%s) not recognized. Please "
+            "CUDA runtime version(%s) not recognized. Please "
             "create an issue or a pull request on the ArrayFire repository to "
             "update the CudaToDriverVersion variable with this version of "
             "the CUDA Toolkit.\n";
         snprintf(buf, 1024, err_msg,
                  int_version_to_string(runtime_version).c_str());
-        fprintf(stderr, err_msg,
-                int_version_to_string(runtime_version).c_str());
+        AF_TRACE("{}", buf);
         AF_ERROR(buf, AF_ERR_RUNTIME);
     }
 
     if (driver_it == end(CudaToDriverVersion)) {
+        char buf[1024];
         char err_msg[] =
-            "WARNING: CUDA driver version(%s) not part of the "
+            "CUDA driver version(%s) not part of the "
             "CudaToDriverVersion array. Please create an issue or a pull "
             "request on the ArrayFire repository to update the "
             "CudaToDriverVersion variable with this version of the CUDA "
             "Toolkit.\n";
-        fprintf(stderr, err_msg, int_version_to_string(driver_version).c_str());
+        snprintf(buf, 1024, err_msg,
+                 int_version_to_string(driver_version).c_str());
+        AF_TRACE("{}", buf);
     }
 #endif
 }
@@ -381,7 +386,7 @@ void DeviceManager::checkCudaVsDriverVersion() {
     AF_TRACE("CUDA supported by the GPU Driver {} ArrayFire CUDA Runtime {}",
              int_version_to_string(driver), int_version_to_string(runtime));
 
-    debugRuntimeCheck(runtime, driver);
+    debugRuntimeCheck(getLogger(), runtime, driver);
 
     if (runtime > driver) {
         string msg =

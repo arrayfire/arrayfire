@@ -9,6 +9,7 @@
 
 #include <nvrtc/cache.hpp>
 
+#include <common/Logger.hpp>
 #include <device_manager.hpp>
 #include <kernel_headers/jit_cuh.hpp>
 #include <nvrtc_kernel_headers/Param_hpp.hpp>
@@ -36,14 +37,20 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <iterator>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <type_traits>
 #include <utility>
 
 using std::array;
+using std::accumulate;
+using std::chrono::duration_cast;
+using std::chrono::high_resolution_clock;
+using std::chrono::milliseconds;
 using std::begin;
 using std::end;
 using std::extent;
@@ -57,39 +64,45 @@ using std::transform;
 using std::unique_ptr;
 using std::vector;
 
+spdlog::logger* getLogger() {
+    static std::shared_ptr<spdlog::logger> logger(common::loggerFactory("jit"));
+    return logger.get();
+}
+
 namespace cuda {
 
 using kc_t = map<string, Kernel>;
 
 #ifdef NDEBUG
-#define CU_LINK_CHECK(fn)                                                 \
-    do {                                                                  \
-        CUresult res = fn;                                                \
-        if (res == CUDA_SUCCESS) break;                                   \
-        char cu_err_msg[1024];                                            \
-        const char *cu_err_name;                                          \
-        cuGetErrorName(res, &cu_err_name);                                \
-        snprintf(cu_err_msg, sizeof(cu_err_msg), "CU Error %s(%d): %s\n", \
-                 cu_err_name, (int)(res), linkError);                     \
-        AF_ERROR(cu_err_msg, AF_ERR_INTERNAL);                            \
+#define CU_LINK_CHECK(fn)                                                    \
+    do {                                                                     \
+        CUresult res = fn;                                                   \
+        if (res == CUDA_SUCCESS) break;                                      \
+        char cu_err_msg[1024];                                               \
+        const char *cu_err_name;                                             \
+        cuGetErrorName(res, &cu_err_name);                                   \
+        snprintf(cu_err_msg, sizeof(cu_err_msg), "CU Error %s(%d): %s\n",    \
+                 cu_err_name, (int)(res), linkError);                        \
+        AF_TRACE("Driver API Call: {}\nError Message: {}", #fn, cu_err_msg); \
+        AF_ERROR(cu_err_msg, AF_ERR_INTERNAL);                               \
     } while (0)
 #else
 #define CU_LINK_CHECK(fn) CU_CHECK(fn)
 #endif
 
 #ifndef NDEBUG
-#define NVRTC_CHECK(fn)                                \
-    do {                                               \
-        nvrtcResult res = fn;                          \
-        if (res == NVRTC_SUCCESS) break;               \
-        size_t logSize;                                \
-        nvrtcGetProgramLogSize(prog, &logSize);        \
-        unique_ptr<char[]> log(new char[logSize + 1]); \
-        char *logptr = log.get();                      \
-        nvrtcGetProgramLog(prog, logptr);              \
-        logptr[logSize] = '\x0';                       \
-        puts(logptr);                                  \
-        AF_ERROR("NVRTC ERROR", AF_ERR_INTERNAL);      \
+#define NVRTC_CHECK(fn)                                                 \
+    do {                                                                \
+        nvrtcResult res = fn;                                           \
+        if (res == NVRTC_SUCCESS) break;                                \
+        size_t logSize;                                                 \
+        nvrtcGetProgramLogSize(prog, &logSize);                         \
+        unique_ptr<char[]> log(new char[logSize + 1]);                  \
+        char *logptr = log.get();                                       \
+        nvrtcGetProgramLog(prog, logptr);                               \
+        logptr[logSize] = '\x0';                                        \
+        AF_TRACE("NVRTC API Call: {}\nError Message: {}", #fn, logptr); \
+        AF_ERROR("NVRTC ERROR", AF_ERR_INTERNAL);                       \
     } while (0)
 #else
 #define NVRTC_CHECK(fn)                                                   \
@@ -99,6 +112,7 @@ using kc_t = map<string, Kernel>;
         char nvrtc_err_msg[1024];                                         \
         snprintf(nvrtc_err_msg, sizeof(nvrtc_err_msg),                    \
                  "NVRTC Error(%d): %s\n", res, nvrtcGetErrorString(res)); \
+        AF_TRACE("NVRTC Error Message: {}", nvrtc_err_msg);               \
         AF_ERROR(nvrtc_err_msg, AF_ERR_INTERNAL);                         \
     } while (0)
 #endif
@@ -233,8 +247,11 @@ Kernel buildKernel(const int device, const string &nameExpr,
         NVRTC_CHECK(nvrtcAddNameExpression(prog, ker_name));
     }
 
+    auto compile = high_resolution_clock::now();
     NVRTC_CHECK(nvrtcCompileProgram(prog, compiler_options.size(),
                                     compiler_options.data()));
+
+    auto compile_end = high_resolution_clock::now();
     size_t ptx_size;
     vector<char> ptx;
     NVRTC_CHECK(nvrtcGetPTXSize(prog, &ptx_size));
@@ -255,7 +272,10 @@ Kernel buildKernel(const int device, const string &nameExpr,
         linkInfo, reinterpret_cast<void *>(linkLogSize), linkError,
         reinterpret_cast<void *>(linkLogSize), reinterpret_cast<void *>(1)};
 
+    auto link = high_resolution_clock::now();
     CU_LINK_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
+
+    // cuLinkAddData accounts for most of the time spent linking
     CU_LINK_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void *)ptx.data(),
                                 ptx.size(), ker_name, 0, NULL, NULL));
 
@@ -266,6 +286,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
     CUfunction kernel;
     CU_LINK_CHECK(cuLinkComplete(linkState, &cubin, &cubinSize));
     CU_CHECK(cuModuleLoadDataEx(&module, cubin, 0, 0, 0));
+    auto link_end = high_resolution_clock::now();
 
     const char *name = ker_name;
     if (!isJIT) { NVRTC_CHECK(nvrtcGetLoweredName(prog, ker_name, &name)); }
@@ -275,6 +296,22 @@ Kernel buildKernel(const int device, const string &nameExpr,
 
     CU_LINK_CHECK(cuLinkDestroy(linkState));
     NVRTC_CHECK(nvrtcDestroyProgram(&prog));
+
+    // skip --std=c++14 because it will stay the same. It doesn't
+    // provide useful information
+    auto listOpts = [](vector<const char *> &in) {
+        return accumulate(
+            begin(in) + 2, end(in), string(in[0]),
+            [](const string &lhs, const string &rhs) {
+                return lhs + ", " + rhs;
+            });
+    };
+
+    AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, link:{:>4} ms, {{ {} }}, {} }}}}",
+             nameExpr,
+             duration_cast<milliseconds>(compile_end - compile).count(),
+             duration_cast<milliseconds>(link_end - link).count(),
+             listOpts(compiler_options), getDeviceProp(device).name);
 
     return entry;
 }
