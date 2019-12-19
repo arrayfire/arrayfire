@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include "symbol_manager.hpp"
 #include <af/backend.h>
+#include "symbol_manager.hpp"
 
 #define AF_DEFINE_CUDA_TYPES
 #include <af/cuda.h>
@@ -16,37 +16,27 @@
 af_err afcu_get_stream(cudaStream_t* stream, int id) {
     af_backend backend;
     af_get_active_backend(&backend);
-    if(backend == AF_BACKEND_CUDA) {
-        return CALL(stream, id);
-    }
+    if (backend == AF_BACKEND_CUDA) { CALL(afcu_get_stream, stream, id); }
     return AF_ERR_NOT_SUPPORTED;
 }
 
 af_err afcu_get_native_id(int* nativeid, int id) {
     af_backend backend;
     af_get_active_backend(&backend);
-    if(backend == AF_BACKEND_CUDA) {
-        return CALL(nativeid, id);
-    }
+    if (backend == AF_BACKEND_CUDA) { CALL(afcu_get_native_id, nativeid, id); }
     return AF_ERR_NOT_SUPPORTED;
 }
-
 
 af_err afcu_set_native_id(int nativeid) {
     af_backend backend;
     af_get_active_backend(&backend);
-    if(backend == AF_BACKEND_CUDA) {
-        return CALL(nativeid);
-    }
+    if (backend == AF_BACKEND_CUDA) { CALL(afcu_set_native_id, nativeid); }
     return AF_ERR_NOT_SUPPORTED;
 }
-
 
 af_err afcu_cublasSetMathMode(cublasMath_t mode) {
     af_backend backend;
     af_get_active_backend(&backend);
-    if(backend == AF_BACKEND_CUDA) {
-        return CALL(mode);
-    }
+    if (backend == AF_BACKEND_CUDA) { CALL(afcu_cublasSetMathMode, mode); }
     return AF_ERR_NOT_SUPPORTED;
 }

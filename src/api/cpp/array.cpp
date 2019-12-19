@@ -29,6 +29,11 @@
 #include <traits.hpp>
 #endif
 
+#ifdef AF_UNIFIED
+#include <symbol_manager.hpp>
+#include <af/backend.h>
+#endif
+
 #include <memory>
 #include <stdexcept>
 #include <vector>
@@ -99,28 +104,33 @@ dim4 getDims(const af_array arr) {
     return dim4(d0, d1, d2, d3);
 }
 
-void initEmptyArray(af_array *arr, af::dtype ty, dim_t d0, dim_t d1 = 1,
-                    dim_t d2 = 1, dim_t d3 = 1) {
+af_array initEmptyArray(af::dtype ty, dim_t d0, dim_t d1 = 1, dim_t d2 = 1,
+                        dim_t d3 = 1) {
+    af_array arr;
     dim_t my_dims[] = {d0, d1, d2, d3};
-    AF_THROW(af_create_handle(arr, AF_MAX_DIMS, my_dims, ty));
+    AF_THROW(af_create_handle(&arr, AF_MAX_DIMS, my_dims, ty));
+    return arr;
 }
 
-void initDataArray(af_array *arr, const void *ptr, af::dtype ty, af::source src,
-                   dim_t d0, dim_t d1 = 1, dim_t d2 = 1, dim_t d3 = 1) {
+af_array initDataArray(const void *ptr, int ty, af::source src, dim_t d0,
+                       dim_t d1 = 1, dim_t d2 = 1, dim_t d3 = 1) {
     dim_t my_dims[] = {d0, d1, d2, d3};
+    af_array arr;
     switch (src) {
         case afHost:
-            AF_THROW(af_create_array(arr, ptr, AF_MAX_DIMS, my_dims, ty));
+            AF_THROW(af_create_array(&arr, ptr, AF_MAX_DIMS, my_dims,
+                                     static_cast<af_dtype>(ty)));
             break;
         case afDevice:
-            AF_THROW(af_device_array(arr, const_cast<void *>(ptr), AF_MAX_DIMS,
-                                     my_dims, ty));
+            AF_THROW(af_device_array(&arr, const_cast<void *>(ptr), AF_MAX_DIMS,
+                                     my_dims, static_cast<af_dtype>(ty)));
             break;
         default:
             AF_THROW_ERR(
                 "Can not create array from the requested source pointer",
                 AF_ERR_ARG);
     }
+    return arr;
 }
 }  // namespace
 
@@ -156,7 +166,7 @@ struct array::array_proxy::array_proxy_impl {
 
 array::array(const af_array handle) : arr(handle) {}
 
-array::array() : arr(nullptr) { initEmptyArray(&arr, f32, 0, 1, 1, 1); }
+array::array() : arr(initEmptyArray(f32, 0, 1, 1, 1)) {}
 
 array::array(array &&other) noexcept : arr(other.arr) { other.arr = 0; }
 
@@ -167,26 +177,19 @@ array &array::operator=(array &&other) noexcept {
     return *this;
 }
 
-array::array(const dim4 &dims, af::dtype ty) : arr(nullptr) {
-    initEmptyArray(&arr, ty, dims[0], dims[1], dims[2], dims[3]);
-}
+array::array(const dim4 &dims, af::dtype ty)
+    : arr(initEmptyArray(ty, dims[0], dims[1], dims[2], dims[3])) {}
 
-array::array(dim_t dim0, af::dtype ty) : arr(nullptr) {
-    initEmptyArray(&arr, ty, dim0);
-}
+array::array(dim_t dim0, af::dtype ty) : arr(initEmptyArray(ty, dim0)) {}
 
-array::array(dim_t dim0, dim_t dim1, af::dtype ty) : arr(nullptr) {
-    initEmptyArray(&arr, ty, dim0, dim1);
-}
+array::array(dim_t dim0, dim_t dim1, af::dtype ty)
+    : arr(initEmptyArray(ty, dim0, dim1)) {}
 
-array::array(dim_t dim0, dim_t dim1, dim_t dim2, af::dtype ty) : arr(nullptr) {
-    initEmptyArray(&arr, ty, dim0, dim1, dim2);
-}
+array::array(dim_t dim0, dim_t dim1, dim_t dim2, af::dtype ty)
+    : arr(initEmptyArray(ty, dim0, dim1, dim2)) {}
 
 array::array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, af::dtype ty)
-    : arr(nullptr) {
-    initEmptyArray(&arr, ty, dim0, dim1, dim2, dim3);
-}
+    : arr(initEmptyArray(ty, dim0, dim1, dim2, dim3)) {}
 
 template<>
 struct dtype_traits<half_float::half> {
@@ -198,36 +201,25 @@ struct dtype_traits<half_float::half> {
 #define INSTANTIATE(T)                                                         \
     template<>                                                                 \
     AFAPI array::array(const dim4 &dims, const T *ptr, af::source src)         \
-        : arr(nullptr) {                                                       \
-        af::dtype ty = static_cast<af::dtype>(dtype_traits<T>::af_type);       \
-        initDataArray(&arr, ptr, ty, src, dims[0], dims[1], dims[2], dims[3]); \
-    }                                                                          \
+        : arr(initDataArray(ptr, dtype_traits<T>::af_type, src, dims[0],       \
+                            dims[1], dims[2], dims[3])) {}                     \
     template<>                                                                 \
     AFAPI array::array(dim_t dim0, const T *ptr, af::source src)               \
-        : arr(nullptr) {                                                       \
-        af::dtype ty = static_cast<af::dtype>(dtype_traits<T>::af_type);       \
-        initDataArray(&arr, ptr, ty, src, dim0);                               \
-    }                                                                          \
+        : arr(initDataArray(ptr, dtype_traits<T>::af_type, src, dim0)) {}      \
     template<>                                                                 \
     AFAPI array::array(dim_t dim0, dim_t dim1, const T *ptr, af::source src)   \
-        : arr(nullptr) {                                                       \
-        af::dtype ty = static_cast<af::dtype>(dtype_traits<T>::af_type);       \
-        initDataArray(&arr, ptr, ty, src, dim0, dim1);                         \
+        : arr(initDataArray(ptr, dtype_traits<T>::af_type, src, dim0, dim1)) { \
     }                                                                          \
     template<>                                                                 \
     AFAPI array::array(dim_t dim0, dim_t dim1, dim_t dim2, const T *ptr,       \
                        af::source src)                                         \
-        : arr(nullptr) {                                                       \
-        af::dtype ty = static_cast<af::dtype>(dtype_traits<T>::af_type);       \
-        initDataArray(&arr, ptr, ty, src, dim0, dim1, dim2);                   \
-    }                                                                          \
+        : arr(initDataArray(ptr, dtype_traits<T>::af_type, src, dim0, dim1,    \
+                            dim2)) {}                                          \
     template<>                                                                 \
     AFAPI array::array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,         \
                        const T *ptr, af::source src)                           \
-        : arr(nullptr) {                                                       \
-        af::dtype ty = static_cast<af::dtype>(dtype_traits<T>::af_type);       \
-        initDataArray(&arr, ptr, ty, src, dim0, dim1, dim2, dim3);             \
-    }
+        : arr(initDataArray(ptr, dtype_traits<T>::af_type, src, dim0, dim1,    \
+                            dim2, dim3)) {}
 
 INSTANTIATE(cdouble)
 INSTANTIATE(cfloat)
@@ -250,9 +242,50 @@ INSTANTIATE(__half);
 #undef INSTANTIATE
 
 array::~array() {
-    af_array tmp = get();
+#ifdef AF_UNIFIED
+    using af_release_array_ptr =
+        std::add_pointer<decltype(af_release_array)>::type;
+    static auto &instance = unified::AFSymbolManager::getInstance();
+
+    if (get()) {
+        af_backend backend = instance.getActiveBackend();
+        af_err err         = af_get_backend_id(&backend, get());
+        if (!err) {
+            switch (backend) {
+                case AF_BACKEND_CPU: {
+                    static auto cpu_handle = instance.getHandle();
+                    static af_release_array_ptr func =
+                        reinterpret_cast<af_release_array_ptr>(
+                            common::getFunctionPointer(cpu_handle,
+                                                       "af_release_array"));
+                    func(get());
+                    break;
+                }
+                case AF_BACKEND_OPENCL: {
+                    static auto opencl_handle = instance.getHandle();
+                    static af_release_array_ptr func =
+                        reinterpret_cast<af_release_array_ptr>(
+                            common::getFunctionPointer(opencl_handle,
+                                                       "af_release_array"));
+                    func(get());
+                    break;
+                }
+                case AF_BACKEND_CUDA: {
+                    static auto cuda_handle = instance.getHandle();
+                    static af_release_array_ptr func =
+                        reinterpret_cast<af_release_array_ptr>(
+                            common::getFunctionPointer(cuda_handle,
+                                                       "af_release_array"));
+                    func(get());
+                    break;
+                }
+            }
+        }
+    }
+#else
     // THOU SHALL NOT THROW IN DESTRUCTORS
-    af_release_array(tmp);
+    if (af_array arr = get()) af_release_array(arr);
+#endif
 }
 
 af::dtype array::type() const {

@@ -136,7 +136,9 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
 
     LibHandle retVal = nullptr;
     for (size_t i = 0; i < extent<decltype(pathPrefixes)>::value; i++) {
-        AF_TRACE("Attempting: {}", (pathPrefixes[i].empty() ? "Default System Paths" : pathPrefixes[i]));
+        AF_TRACE("Attempting: {}",
+                 (pathPrefixes[i].empty() ? "Default System Paths"
+                                          : pathPrefixes[i]));
         if ((retVal = loadLibrary(
                  join_path(pathPrefixes[i], bkndLibName).c_str()))) {
             AF_TRACE("Found: {}", join_path(pathPrefixes[i], bkndLibName));
@@ -148,8 +150,7 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
                 count_func(&count);
                 AF_TRACE("Device Count: {}.", count);
                 if (count == 0) {
-                    AF_TRACE("Skipping: No devices found for {}",
-                             bkndLibName);
+                    AF_TRACE("Skipping: No devices found for {}", bkndLibName);
                     retVal = nullptr;
                     continue;
                 }
@@ -232,36 +233,6 @@ af_err AFSymbolManager::setBackend(af::Backend bknd) {
     } else {
         UNIFIED_ERROR_LOAD_LIB();
     }
-}
-
-bool checkArray(af_backend activeBackend, const af_array a) {
-    // Convert af_array into int to retrieve the backend info.
-    // See ArrayInfo.hpp for more
-    af_backend backend = (af_backend)0;
-
-    // This condition is required so that the invalid args tests for unified
-    // backend return the expected error rather than AF_ERR_ARR_BKND_MISMATCH
-    // Since a = 0, does not have a backend specified, it should be a
-    // AF_ERR_ARG instead of AF_ERR_ARR_BKND_MISMATCH
-    if (a == 0) return true;
-
-    unified::AFSymbolManager::getInstance().call("af_get_backend_id", &backend,
-                                                 a);
-    return backend == activeBackend;
-}
-
-bool checkArray(af_backend activeBackend, const af_array* a) {
-    if (a) {
-        return checkArray(activeBackend, *a);
-    } else {
-        return true;
-    }
-}
-
-bool checkArrays(af_backend activeBackend) {
-    UNUSED(activeBackend);
-    // Dummy
-    return true;
 }
 
 }  // namespace unified
