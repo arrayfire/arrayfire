@@ -54,29 +54,62 @@ using std::stringstream;
 
 namespace cuda {
 
-void findJitDevCompute(pair<int, int> &prop) {
+/// Check for compatible compute version based on runtime cuda toolkit version
+void checkAndSetDevMaxCompute(pair<int, int> &prop) {
     struct cuNVRTCcompute {
         /// The CUDA Toolkit version returned by cudaRuntimeGetVersion
-        int cuda_version;
-        /// Maximum major compute flag supported by cuda_version
+        int cudaVersion;
+        /// Maximum major compute flag supported by cudaVersion
         int major;
-        /// Maximum minor compute flag supported by cuda_version
+        /// Maximum minor compute flag supported by cudaVersion
         int minor;
     };
-    static const cuNVRTCcompute Toolkit2Compute[] = {
-        {10010, 7, 5}, {10000, 7, 2}, {9020, 7, 2}, {9010, 7, 2},
+    static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+        {10020, 7, 5}, {10010, 7, 5}, {10000, 7, 2}, {9020, 7, 2}, {9010, 7, 2},
         {9000, 7, 2},  {8000, 5, 3},  {7050, 5, 3}, {7000, 5, 3}};
-    int runtime_cuda_ver = 0;
-    CUDA_CHECK(cudaRuntimeGetVersion(&runtime_cuda_ver));
-    auto tkit_max_compute =
-        find_if(begin(Toolkit2Compute), end(Toolkit2Compute),
-                [runtime_cuda_ver](cuNVRTCcompute v) {
-                    return runtime_cuda_ver == v.cuda_version;
-                });
-    if ((tkit_max_compute == end(Toolkit2Compute)) ||
-        (prop.first > tkit_max_compute->major &&
-         prop.second > tkit_max_compute->minor)) {
-        prop = make_pair(tkit_max_compute->major, tkit_max_compute->minor);
+
+    auto originalCompute = prop;
+    int rtCudaVer = 0;
+    CUDA_CHECK(cudaRuntimeGetVersion(&rtCudaVer));
+    auto tkitMaxCompute = find_if(
+        begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
+        [rtCudaVer](cuNVRTCcompute v) { return rtCudaVer == v.cudaVersion; });
+
+    // If runtime cuda version is found in toolkit array
+    // check for max possible compute for that cuda version
+    if (tkitMaxCompute != end(Toolkit2MaxCompute) &&
+        prop.first > tkitMaxCompute->major) {
+        prop = make_pair(tkitMaxCompute->major, tkitMaxCompute->minor);
+#ifndef NDEBUG
+        char errMsg[] =
+            "Current device compute version (%d.%d) exceeds supported maximum "
+            "cuda runtime compute version (%d.%d). Using %d.%d.";
+        fprintf(stderr, errMsg, originalCompute.first, originalCompute.second,
+                prop.first, prop.second, prop.first, prop.second);
+#endif
+    } else if (prop.first > Toolkit2MaxCompute[0].major) {
+        // If runtime cuda version is NOT found in toolkit array
+        // use the top most toolkit max compute
+        prop =
+            make_pair(Toolkit2MaxCompute[0].major, Toolkit2MaxCompute[0].minor);
+#ifndef NDEBUG
+        char errMsg[] =
+            "Runtime cuda version not found in toolkit info array."
+            "Current device compute version (%d.%d) exceeds supported maximum "
+            "runtime cuda compute version (%d.%d) of latest known cuda toolkit."
+            "Using %d.%d.";
+        fprintf(stderr, errMsg, originalCompute.first, originalCompute.second,
+                prop.first, prop.second, prop.first, prop.second);
+#endif
+    } else if (prop.first < 3) {
+        // all compute versions prior to Kepler, we don't support
+        // don't change the prop.
+#ifndef NDEBUG
+        char errMsg[] =
+            "Current device compute version (%d.%d) lower than the"
+            "minimum compute version ArrayFire supports.";
+        fprintf(stderr, errMsg, originalCompute.first, originalCompute.second);
+#endif
     }
 }
 
@@ -271,6 +304,7 @@ struct ToolkitDriverVersions {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
+        {10020, 440.33f, 441.22f},
         {10010, 418.39f, 418.96f},
         {10000, 410.48f, 411.31f},
         {9020,  396.37f, 398.26f},
@@ -441,7 +475,7 @@ DeviceManager::DeviceManager()
         if (i < nDevices) {
             auto prop =
                 make_pair(cuDevices[i].prop.major, cuDevices[i].prop.minor);
-            findJitDevCompute(prop);
+            checkAndSetDevMaxCompute(prop);
             devJitComputes.emplace_back(prop);
         }
     }
