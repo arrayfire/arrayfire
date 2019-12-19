@@ -10,6 +10,7 @@
 #include <Array.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <platform.hpp>
 #include <af/device.h>
@@ -19,6 +20,7 @@
 #include <cstring>
 
 using af::dim4;
+using common::half;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createStridedArray;
@@ -103,6 +105,10 @@ af_err af_create_strided_array(af_array *arr, const void *data,
                 res = getHandle(createStridedArray<uchar>(
                     dims, strides, offset, (uchar *)data, isdev));
                 break;
+            case f16:
+                res = getHandle(createStridedArray<half>(
+                    dims, strides, offset, (half *)data, isdev));
+                break;
             default: TYPE_ERROR(6, ty);
         }
 
@@ -153,6 +159,7 @@ af_err af_get_raw_ptr(void **ptr, const af_array arr) {
             case s16: res = (void *)getRawPtr(getArray<short>(arr)); break;
             case b8: res = (void *)getRawPtr(getArray<char>(arr)); break;
             case u8: res = (void *)getRawPtr(getArray<uchar>(arr)); break;
+            case f16: res = (void *)getRawPtr(getArray<half>(arr)); break;
             default: TYPE_ERROR(6, ty);
         }
 
@@ -189,6 +196,7 @@ af_err af_is_owner(bool *result, const af_array arr) {
             case s16: res = (void *)getArray<short>(arr).isOwner(); break;
             case b8: res = (void *)getArray<char>(arr).isOwner(); break;
             case u8: res = (void *)getArray<uchar>(arr).isOwner(); break;
+            case f16: res = (void *)getArray<half>(arr).isOwner(); break;
             default: TYPE_ERROR(6, ty);
         }
 
@@ -217,6 +225,7 @@ af_err af_get_allocated_bytes(size_t *bytes, const af_array arr) {
             case s16: res = getArray<short>(arr).getAllocatedBytes(); break;
             case b8: res = getArray<char>(arr).getAllocatedBytes(); break;
             case u8: res = getArray<uchar>(arr).getAllocatedBytes(); break;
+            case f16: res = getArray<half>(arr).getAllocatedBytes(); break;
             default: TYPE_ERROR(6, ty);
         }
 
