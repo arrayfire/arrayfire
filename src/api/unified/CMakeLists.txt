@@ -57,6 +57,8 @@ else()
       ${ArrayFire_SOURCE_DIR}/src/backend/common/module_loading_unix.cpp)
 endif()
 
+target_compile_definitions(af PRIVATE AF_UNIFIED)
+
 target_include_directories(af
   PUBLIC
     $<BUILD_INTERFACE:${ArrayFire_SOURCE_DIR}/include>
@@ -64,6 +66,7 @@ target_include_directories(af
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${ArrayFire_SOURCE_DIR}/src/api/c
+    ${ArrayFire_SOURCE_DIR}/src/api/unified
     $<TARGET_PROPERTY:afcommon_interface,INTERFACE_INCLUDE_DIRECTORIES>
     ${CMAKE_BINARY_DIR}
   )
