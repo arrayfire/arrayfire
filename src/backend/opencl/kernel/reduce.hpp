@@ -283,10 +283,10 @@ To reduce_all(Param in, int change_nan, double nanval) {
         getQueue().enqueueReadBuffer(*tmp.get(), CL_TRUE, 0,
                                      sizeof(To) * tmp_elements, h_ptr.data());
 
-        Binary<To, op> reduce;
+        Binary<compute_t<To>, op> reduce;
         compute_t<To> out = Binary<To, op>::init();
         for (int i = 0; i < (int)tmp_elements; i++) {
-            out = reduce(out, h_ptr[i]);
+            out = reduce(out, compute_t<To>(h_ptr[i]));
         }
         return data_t<To>(out);
     } else {
@@ -295,15 +295,15 @@ To reduce_all(Param in, int change_nan, double nanval) {
                                      sizeof(Ti) * in.info.offset,
                                      sizeof(Ti) * in_elements, h_ptr.data());
 
-        Transform<Ti, To, op> transform;
-        Binary<To, op> reduce;
-        compute_t<To> out       = Binary<To, op>::init();
-        compute_t<To> nanval_to = scalar<To>(nanval);
+        Transform<Ti, compute_t<To>, op> transform;
+        Binary<compute_t<To>, op> reduce;
+        compute_t<To> out       = Binary<compute_t<To>, op>::init();
+        compute_t<To> nanval_to = scalar<compute_t<To>>(nanval);
 
         for (int i = 0; i < (int)in_elements; i++) {
-            To in_val = transform(h_ptr[i]);
+            compute_t<To> in_val = transform(h_ptr[i]);
             if (change_nan) in_val = IS_NAN(in_val) ? nanval_to : in_val;
-            out = reduce(out, in_val);
+            out = reduce(out, compute_t<To>(in_val));
         }
 
         return data_t<To>(out);

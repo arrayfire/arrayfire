@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <err_opencl.hpp>
 #include <index.hpp>
 #include <sort.hpp>
@@ -20,6 +21,7 @@
 
 using cl::Buffer;
 using cl::Event;
+using common::half;
 
 using std::iota;
 using std::min;
@@ -96,13 +98,13 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
                 partial_sort_copy(
                     idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
                     [ptr](const uint lhs, const uint rhs) -> bool {
-                        return ptr[lhs] < ptr[rhs];
+                        return compute_t<T>(ptr[lhs]) < compute_t<T>(ptr[rhs]);
                     });
             } else {
                 partial_sort_copy(
                     idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
                     [ptr](const uint lhs, const uint rhs) -> bool {
-                        return ptr[lhs] >= ptr[rhs];
+                        return compute_t<T>(ptr[lhs]) >= compute_t<T>(ptr[rhs]);
                     });
             }
             ev_val.wait();
@@ -143,4 +145,5 @@ INSTANTIATE(int)
 INSTANTIATE(uint)
 INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
+INSTANTIATE(half)
 }  // namespace opencl

@@ -98,20 +98,3 @@ std::string ToNumStr<half>::operator()<float>(float val) {
 #undef INSTANTIATE
 
 }  // namespace opencl
-
-namespace common {
-template<typename T>
-class kernel_type;
-}
-
-namespace common {
-template<>
-struct kernel_type<common::half> {
-    using data = common::half;
-
-    using compute = cl_half;
-
-    // These are the types within a kernel
-    using native = cl_half;
-};
-}

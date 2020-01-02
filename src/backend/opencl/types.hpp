@@ -17,10 +17,24 @@
 #endif
 #pragma GCC diagnostic pop
 
-#include <common/traits.hpp>
 #include <common/kernel_type.hpp>
+#include <common/traits.hpp>
 
 #include <string>
+
+namespace common {
+/// This is a CPU based half which need to be converted into floats before they
+/// are used
+template<>
+struct kernel_type<common::half> {
+    using data = common::half;
+
+    // These are the types within a kernel
+    using native = float;
+
+    using compute = float;
+};
+}  // namespace common
 
 namespace opencl {
 using cdouble = cl_double2;

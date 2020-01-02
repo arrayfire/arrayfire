@@ -18,10 +18,14 @@ namespace kernel {
 using std::conditional;
 using std::is_same;
 
+template<typename T>
+using htype_t =
+    typename conditional<is_same<T, common::half>::value, cl_half, T>::type;
+
 // If type is cdouble, return std::complex<double>, else return T
 template<typename T>
 using ztype_t = typename conditional<is_same<T, cdouble>::value,
-                                     std::complex<double>, T>::type;
+                                     std::complex<double>, htype_t<T>>::type;
 
 // If type is cfloat, return std::complex<float>, else return ztype_t
 template<typename T>

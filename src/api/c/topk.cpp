@@ -13,10 +13,12 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <topk.hpp>
 
 using namespace detail;
+using common::half;
 
 namespace {
 
@@ -77,6 +79,7 @@ af_err af_topk(af_array *values, af_array *indices, const af_array in,
             case f64: topk<double>(values, indices, in, k, rdim, ord); break;
             case u32: topk<uint>(values, indices, in, k, rdim, ord); break;
             case s32: topk<int>(values, indices, in, k, rdim, ord); break;
+            case f16: topk<half>(values, indices, in, k, rdim, ord); break;
             default: TYPE_ERROR(1, type);
         }
     }

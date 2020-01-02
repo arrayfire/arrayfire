@@ -11,6 +11,7 @@
 #include <Array.hpp>
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_opencl.hpp>
 #include <iota.hpp>
 #include <kernel/sort_by_key.hpp>
@@ -44,6 +45,7 @@ using cl::Kernel;
 using cl::KernelFunctor;
 using cl::NDRange;
 using cl::Program;
+using common::half;
 using std::string;
 
 template<typename Tk, typename Tv, bool isAscending>
@@ -256,7 +258,9 @@ void sort0ByKey(Param pKey, Param pVal, bool isAscending) {
     INSTANTIATE(Tk, char)    \
     INSTANTIATE(Tk, uchar)   \
     INSTANTIATE(Tk, intl)    \
-    INSTANTIATE(Tk, uintl)
+    INSTANTIATE(Tk, uintl)   \
+    INSTANTIATE(Tk, half)
+
 }  // namespace kernel
 }  // namespace opencl
 

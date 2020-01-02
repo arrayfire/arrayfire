@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <index.hpp>
 #include <sort.hpp>
 #include <sort_index.hpp>
@@ -17,6 +18,7 @@
 #include <numeric>
 #include <vector>
 
+using common::half;
 using std::iota;
 using std::min;
 using std::partial_sort_copy;
@@ -60,13 +62,13 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
                 partial_sort_copy(
                     idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
                     [ptr](const uint lhs, const uint rhs) -> bool {
-                        return ptr[lhs] < ptr[rhs];
+                        return compute_t<T>(ptr[lhs]) < compute_t<T>(ptr[rhs]);
                     });
             } else {
                 partial_sort_copy(
                     idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
                     [ptr](const uint lhs, const uint rhs) -> bool {
-                        return ptr[lhs] >= ptr[rhs];
+                        return compute_t<T>(ptr[lhs]) >= compute_t<T>(ptr[rhs]);
                     });
             }
 
@@ -96,4 +98,5 @@ INSTANTIATE(int)
 INSTANTIATE(uint)
 INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
+INSTANTIATE(half)
 }  // namespace cpu

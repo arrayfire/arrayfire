@@ -242,11 +242,11 @@ __device__ common::half minval<common::half>() {
 }
 template<>
 __device__ __half maxval<__half>() {
-    return __float2half(65537.f);
+    return __float2half(CUDART_INF);
 }
 template<>
 __device__ __half minval<__half>() {
-    return __float2half(-65537.f);
+    return __float2half(-CUDART_INF);
 }
 #endif
 

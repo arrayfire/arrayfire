@@ -16,6 +16,7 @@
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
 #include <math.hpp>
+#include <types.hpp>
 
 #include <limits>
 
@@ -31,9 +32,9 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
                                    CParam<T> ivals, CParam<uint> iidxs,
                                    const int k, const af::topkFunction order,
                                    uint numLaunchBlocksY) {
-    using ValueType = uint;
-    using BlockRadixSortT =
-        BlockRadixSort<T, TOPK_THRDS_PER_BLK, TOPK_IDX_THRD_LOAD, ValueType>;
+    using ValueType       = uint;
+    using BlockRadixSortT = BlockRadixSort<compute_t<T>, TOPK_THRDS_PER_BLK,
+                                           TOPK_IDX_THRD_LOAD, ValueType>;
 
     __shared__ typename BlockRadixSortT::TempStorage smem;
 
@@ -56,7 +57,7 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
     uint* ires = oidxs.ptr + by * oidxs.strides[1] + bz * oidxs.strides[2] +
                  bw * oidxs.strides[3];
 
-    T keys[TOPK_IDX_THRD_LOAD];
+    compute_t<T> keys[TOPK_IDX_THRD_LOAD];
     ValueType vals[TOPK_IDX_THRD_LOAD];
 
     for (uint li = 0, i = gx; li < TOPK_IDX_THRD_LOAD; i += gxStride, li++) {
@@ -64,7 +65,8 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
             keys[li] = kdata[i];
             vals[li] = (READ_INDEX) ? idata[i] : i;
         } else {
-            keys[li] = (order == AF_TOPK_MAX) ? minval<T>() : maxval<T>();
+            keys[li] = (order == AF_TOPK_MAX) ? minval<compute_t<T>>()
+                                              : maxval<compute_t<T>>();
             vals[li] = maxval<ValueType>();
         }
     }
