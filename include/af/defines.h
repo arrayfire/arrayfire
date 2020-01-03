@@ -280,7 +280,7 @@ typedef enum {
   AF_PAD_CLAMP_TO_EDGE,
 
   ///
-  /// Out of bound values are clamped to the edge
+  /// Out of bound values are mapped to range of the dimension in cyclic fashion
   ///
   AF_PAD_PERIODIC
 } af_border_type;

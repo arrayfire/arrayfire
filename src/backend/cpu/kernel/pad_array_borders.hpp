@@ -13,7 +13,6 @@
 #include <utility.hpp>
 
 #include <algorithm>
-#include <cstdlib>
 
 namespace cpu {
 namespace kernel {
