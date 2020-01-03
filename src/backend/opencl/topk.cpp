@@ -13,6 +13,7 @@
 #include <index.hpp>
 #include <sort.hpp>
 #include <sort_index.hpp>
+#include <types.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -127,8 +128,7 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
     } else {
         auto values  = createEmptyArray<T>(in.dims());
         auto indices = createEmptyArray<unsigned>(in.dims());
-        sort_index(values, indices, in, dim,
-                   (order == AF_TOPK_MIN ? true : false));
+        sort_index(values, indices, in, dim, order == AF_TOPK_MIN);
         auto indVec = indexForTopK(k);
         vals        = index<T>(values, indVec.data());
         idxs        = index<unsigned>(indices, indVec.data());

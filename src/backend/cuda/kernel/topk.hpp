@@ -46,8 +46,8 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
     const uint gxStride = blockDim.x * gridDim.x;
     const uint elements = ivals.dims[0];
 
-    const T* kdata = ivals.ptr + by * ivals.strides[1] + bz * ivals.strides[2] +
-                     bw * ivals.strides[3];
+    const data_t<T>* kdata = ivals.ptr + by * ivals.strides[1] +
+                             bz * ivals.strides[2] + bw * ivals.strides[3];
 
     const ValueType* idata = iidxs.ptr + by * iidxs.strides[1] +
                              bz * iidxs.strides[2] + bw * iidxs.strides[3];
@@ -62,7 +62,7 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
 
     for (uint li = 0, i = gx; li < TOPK_IDX_THRD_LOAD; i += gxStride, li++) {
         if (i < elements) {
-            keys[li] = kdata[i];
+            keys[li] = static_cast<compute_t<T>>(kdata[i]);
             vals[li] = (READ_INDEX) ? idata[i] : i;
         } else {
             keys[li] = (order == AF_TOPK_MAX) ? minval<compute_t<T>>()
