@@ -264,25 +264,25 @@ typedef enum {
 } af_interp_type;
 
 typedef enum {
-  ///
-  /// Out of bound values are 0
-  ///
-  AF_PAD_ZERO = 0,
+    ///
+    /// Out of bound values are 0
+    ///
+    AF_PAD_ZERO = 0,
 
-  ///
-  /// Out of bound values are symmetric over the edge
-  ///
-  AF_PAD_SYM,
+    ///
+    /// Out of bound values are symmetric over the edge
+    ///
+    AF_PAD_SYM,
 
-  ///
-  /// Out of bound values are clamped to the edge
-  ///
-  AF_PAD_CLAMP_TO_EDGE,
+    ///
+    /// Out of bound values are clamped to the edge
+    ///
+    AF_PAD_CLAMP_TO_EDGE,
 
-  ///
-  /// Out of bound values are mapped to range of the dimension in cyclic fashion
-  ///
-  AF_PAD_PERIODIC
+    ///
+    /// Out of bound values are mapped to range of the dimension in cyclic fashion
+    ///
+    AF_PAD_PERIODIC
 } af_border_type;
 
 typedef enum {
