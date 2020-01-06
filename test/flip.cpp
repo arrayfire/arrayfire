@@ -21,13 +21,13 @@ using af::randu;
 using af::seq;
 using af::span;
 
-TEST(FlipTests, Test_flip_1D) {
+void Test_flip_1D(const af::dtype dt) {
     const int num = 10000;
-    array in      = randu(num);
+    array in      = randu(num, dt);
     array out     = flip(in, 0);
 
-    float *h_in  = in.host<float>();
-    float *h_out = out.host<float>();
+    float *h_in  = in.as(f32).host<float>();
+    float *h_out = out.as(f32).host<float>();
 
     for (int i = 0; i < num; i++) {
         ASSERT_EQ(h_in[num - i - 1], h_out[i]) << "at (" << i << ")";
@@ -35,6 +35,13 @@ TEST(FlipTests, Test_flip_1D) {
 
     freeHost(h_in);
     freeHost(h_out);
+}
+
+TEST(FlipTests, Test_flip_1D_f32) {
+  Test_flip_1D(f32);
+}
+TEST(FlipTests, Test_flip_1D_f16) {
+  Test_flip_1D(f16);
 }
 
 TEST(FlipTests, Test_flip_2D0) {
