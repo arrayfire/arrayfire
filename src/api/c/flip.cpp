@@ -11,17 +11,22 @@
 #include <vector>
 
 #include <Array.hpp>
+#include <optypes.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
-#include <handle.hpp>
+#include <common/half.hpp>
 #include <lookup.hpp>
+#include <af/defines.h>
 #include <af/array.h>
+#include <af/arith.h>
 #include <af/data.h>
 #include <af/index.h>
 #include <af/seq.h>
+#include <handle.hpp>
 
 using namespace detail;
+using common::half;
 using std::swap;
 using std::vector;
 
@@ -56,6 +61,7 @@ af_err af_flip(af_array *result, const af_array in, const unsigned dim) {
         af_dtype in_type = in_info.getType();
 
         switch (in_type) {
+            case f16: out = flipArray<half>(in, dim); break;
             case f32: out = flipArray<float>(in, dim); break;
             case c32: out = flipArray<cfloat>(in, dim); break;
             case f64: out = flipArray<double>(in, dim); break;
