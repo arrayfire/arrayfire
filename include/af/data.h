@@ -432,18 +432,12 @@ namespace af
     AFAPI array pad(const array &in, const dim4 &beginPadding,
                     const dim4 &endPadding, const borderType padFillType);
 #endif
-
-    /**
-      @}
-    */
 }
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
     /**
         \param[out] arr is the generated array of given type
         \param[in] val is the value of each element in the generated array
@@ -490,9 +484,6 @@ extern "C" {
     */
 
     AFAPI af_err af_constant_ulong(af_array *arr, const unsigned long long val, const unsigned ndims, const dim_t * const dims);
-    /**
-       @}
-    */
 
     /**
         \param[out] out is the generated array
@@ -660,9 +651,6 @@ extern "C" {
         \ingroup data_func_upper
     */
     AFAPI af_err af_upper(af_array *out, const af_array in, bool is_unit_diag);
-    /**
-      @}
-    */
 
 #if AF_API_VERSION >= 31
     /**

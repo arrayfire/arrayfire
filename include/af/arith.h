@@ -67,14 +67,13 @@ namespace af
 #if AF_API_VERSION >= 34
     /// \copydoc clamp(const array&, const array&, const array&)
     AFAPI array clamp(const array &in, const double lo, const array &hi);
-    /// @}
 #endif
 
 #if AF_API_VERSION >= 34
     /// \copydoc clamp(const array&, const array&, const array&)
     AFAPI array clamp(const array &in, const double lo, const double hi);
-    /// @}
 #endif
+    /// @}
 
     /// \ingroup arith_func_rem
     /// @{

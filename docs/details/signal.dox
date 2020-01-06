@@ -179,7 +179,7 @@ below notation.
 
 Given below is an example of no batch mode.
 
-\image html "conv_docs_images/basic.png" "Single 2d convolution with 2d filter"
+\image html "basic.png" "Single 2d convolution with 2d filter"
 
 For input size \dims{M,N,1,1} and filter size \dims{A,B,1,1}, the following set-builder
 notation gives a formal definition of all convolutions performed in this mode.
@@ -191,7 +191,7 @@ notation gives a formal definition of all convolutions performed in this mode.
 
 Given below is an example of filter batch mode.
 
-\image html "conv_docs_images/filter.png" "Single signal convolved with many filters independently"
+\image html "filter.png" "Single signal convolved with many filters independently"
 
 For input size \dims{M,N,1,1} and filter size \dims{A,B,P,1}, the following set-builder
 notation gives a formal definition of all convolutions performed in this mode.
@@ -203,7 +203,7 @@ notation gives a formal definition of all convolutions performed in this mode.
 
 Given below is an example of signal batch mode.
 
-\image html "conv_docs_images/signal.png" "Single filter convolved with many signals independently"
+\image html "signal.png" "Single filter convolved with many signals independently"
 
 For input size \dims{M,N,P,1} and filter size \dims{A,B,1,1}, the following set-builder
 notation gives a formal definition of all convolutions performed in this mode.
@@ -215,7 +215,7 @@ notation gives a formal definition of all convolutions performed in this mode.
 
 Given below is an example of identical batch mode.
 
-\image html "conv_docs_images/identical.png" "Many signals convolved with many filters in one-on-one manner"
+\image html "identical.png" "Many signals convolved with many filters in one-on-one manner"
 
 For input size \dims{M,N,P,Q} and filter size \dims{A,B,P,Q}, the following set-builder
 notation gives a formal definition of all convolutions performed in this mode.
@@ -237,7 +237,7 @@ notation gives a formal definition of all convolutions performed in this mode.
 
 Given below is an example of this batch mode.
 
-\image html "conv_docs_images/non-overlapping_1.png"
+\image html "non-overlapping_1.png"
 
 #### Combination 2
 
@@ -248,7 +248,7 @@ notation gives a formal definition of all convolutions performed in this mode.
 
 Given below is an example of this batch mode.
 
-\image html "conv_docs_images/non-overlapping_2.png"
+\image html "non-overlapping_2.png"
 
 #### Combination 3
 
@@ -259,7 +259,7 @@ notation gives a formal definition of all convolutions performed in this mode.
 
 Given below is an example of this batch mode.
 
-\image html "conv_docs_images/non-overlapping_3.png"
+\image html "non-overlapping_3.png"
 
 #### Combination 4
 
@@ -270,7 +270,7 @@ notation gives a formal definition of all convolutions performed in this mode.
 
 Given below is an example of this batch mode.
 
-\image html "conv_docs_images/non-overlapping_4.png"
+\image html "non-overlapping_4.png"
 
 
 The batching behavior of convolve2NN functions(\ref af_convolve2_nn() and
