@@ -158,8 +158,6 @@ namespace af
         \note optLhs = AF_MAT_CONJ and optRhs = AF_MAT_NONE will run conjugate dot operation.
         \note This function is not supported in GFOR
 
-        \returns out = dot(lhs, rhs)
-
         \ingroup blas_func_dot
     */
     AFAPI array dot   (const array &lhs, const array &rhs,
@@ -189,8 +187,6 @@ namespace af
         \note optLhs and optRhs can only be one of \ref AF_MAT_NONE or \ref AF_MAT_CONJ
         \note optLhs = AF_MAT_CONJ and optRhs = AF_MAT_NONE will run conjugate dot operation.
         \note This function is not supported in GFOR
-
-        \returns out = dot(lhs, rhs)
 
         \ingroup blas_func_dot
     */

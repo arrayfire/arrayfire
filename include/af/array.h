@@ -203,9 +203,9 @@ namespace af
 #endif
 #endif
         /**
-            Creates an array from an \ref af_array handle. Does not increment 
-            a reference counter: the array assumes ownership of the handle. To 
-            share the array between multiple objects, use this in conjunction 
+            Creates an array from an \ref af_array handle. Does not increment
+            a reference counter: the array assumes ownership of the handle. To
+            share the array between multiple objects, use this in conjunction
             with \ref af_retain_array.
             \param handle the af_array object.
          */
@@ -516,7 +516,6 @@ namespace af
 
            \param[in] input
            \param[in] dims total number of elements must not change.
-           \return same underlying array data with different dimensions
         */
         array(const array& input, const dim4& dims);
 
@@ -549,7 +548,6 @@ namespace af
            \param[in] dim1 second dimension
            \param[in] dim2 third dimension
            \param[in] dim3 fourth dimension
-           \return same underlying array data with different dimensions
         */
         array(  const array& input,
                 const dim_t dim0, const dim_t dim1 = 1,
@@ -928,7 +926,7 @@ namespace af
         ASSIGN_(OP)                                                                       \
           array& OP(const short  &val);              /**< \copydoc OP##(const array &) */ \
           array& OP(const unsigned short &val);
- 
+
 #else
 #define ASSIGN(OP) ASSIGN_(OP)
 #endif
@@ -1604,9 +1602,6 @@ extern "C" {
        Evaluate multiple arrays together
     */
     AFAPI af_err af_eval_multiple(const int num, af_array *arrays);
-    /**
-      @}
-    */
 #endif
 
 #if AF_API_VERSION >= 34
@@ -1614,9 +1609,6 @@ extern "C" {
        Turn the manual eval flag on or off
     */
     AFAPI af_err af_set_manual_eval_flag(bool flag);
-    /**
-      @}
-    */
 #endif
 
 #if AF_API_VERSION >= 34
@@ -1624,10 +1616,10 @@ extern "C" {
        Get the manual eval flag
     */
     AFAPI af_err af_get_manual_eval_flag(bool *flag);
+#endif
     /**
       @}
     */
-#endif
 
     /**
         \ingroup method_mat
