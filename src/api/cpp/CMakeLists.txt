@@ -47,6 +47,7 @@ target_sources(cpp_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/lapack.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/matchTemplate.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/mean.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/meanvar.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/meanshift.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/median.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
