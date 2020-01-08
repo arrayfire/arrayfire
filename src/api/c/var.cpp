@@ -177,7 +177,7 @@ af_err af_var(af_array* out, const af_array in, const bool isbiased,
 
         af_array no_weights = 0;
         af_var_bias bias =
-            (isbiased) ? AF_VARIANCE_POPULATION : AF_VARIANCE_SAMPLE;
+            (isbiased) ? AF_VARIANCE_SAMPLE: AF_VARIANCE_POPULATION;
         switch (type) {
             case f32:
                 output = var_<float, float>(in, no_weights, bias, dim);
