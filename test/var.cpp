@@ -116,11 +116,11 @@ TYPED_TEST(Var, DimCPPSmall) {
     for (size_t i = 0; i < in.size(); i++) {
         array input(numDims[i], &in[i].front(), afHost);
 
-        array bout  = var(input, false);
-        array nbout = var(input, true);
+        array bout  = var(input, true);
+        array nbout = var(input, false);
 
-        array bout1  = var(input, false, 1);
-        array nbout1 = var(input, true, 1);
+        array bout1  = var(input, true, 1);
+        array nbout1 = var(input, false, 1);
 
         vector<vector<outType> > h_out(4);
 
