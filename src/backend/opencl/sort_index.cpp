@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>
 #include <kernel/sort_by_key.hpp>
@@ -16,6 +17,8 @@
 #include <reorder.hpp>
 #include <sort_index.hpp>
 #include <stdexcept>
+
+using common::half;
 
 namespace opencl {
 template<typename T>
@@ -71,5 +74,6 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
+INSTANTIATE(half)
 
 }  // namespace opencl

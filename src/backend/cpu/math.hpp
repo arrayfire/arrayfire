@@ -64,7 +64,7 @@ STATIC_ T maxval() {
 }
 template<typename T>
 STATIC_ T minval() {
-    return std::numeric_limits<T>::min();
+    return std::numeric_limits<T>::lowest();
 }
 template<>
 STATIC_ float maxval() {

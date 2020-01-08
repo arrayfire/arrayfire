@@ -9,6 +9,7 @@
 #define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
 
 #include <algorithm>
@@ -21,6 +22,7 @@
 #include <random>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 using af::array;
@@ -29,6 +31,7 @@ using af::dtype_traits;
 using af::iota;
 using af::topk;
 using af::topkFunction;
+using half_float::half;
 
 using std::iota;
 using std::make_pair;
@@ -45,13 +48,34 @@ using std::vector;
 template<typename T>
 class TopK : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, int, uint> TestTypes;
+typedef ::testing::Types<float, double, int, uint, half_float::half> TestTypes;
 
 TYPED_TEST_CASE(TopK, TestTypes);
 
 template<typename T>
+void increment_next(T& val,
+                    typename std::enable_if<std::is_floating_point<T>::value,
+                                            int>::type t = 0) {
+    val = std::nextafterf(val, std::numeric_limits<T>::max());
+}
+
+template<typename T>
+void increment_next(
+    T& val,
+    typename std::enable_if<std::is_integral<T>::value, int>::type t = 0) {
+    ++val;
+}
+
+void increment_next(half_float::half& val) {
+    half_float::half tmp = (half_float::half)half_float::nextafter(
+        val, std::numeric_limits<half_float::half>::max());
+    val = tmp;
+}
+
+template<typename T>
 void topkTest(const int ndims, const dim_t* dims, const unsigned k,
               const int dim, const af_topk_function order) {
+    SUPPORTED_TYPE_CHECK(T);
     af_dtype dtype = (af_dtype)dtype_traits<T>::af_type;
 
     af_array input, output, outindex;
@@ -68,7 +92,11 @@ void topkTest(const int ndims, const dim_t* dims, const unsigned k,
     size_t bSize  = dims[dim];
 
     vector<T> inData(ielems);
-    iota(begin(inData), end(inData), 0);
+    T val{std::numeric_limits<T>::lowest()};
+    generate(begin(inData), end(inData), [&]() {
+        increment_next(val);
+        return val;
+    });
 
     random_device rnd_device;
     mt19937 g(rnd_device());
@@ -132,43 +160,58 @@ void topkTest(const int ndims, const dim_t* dims, const unsigned k,
     ASSERT_SUCCESS(af_release_array(outindex));
 }
 
+int type_max(af_dtype type) {
+    switch (type) {
+        case f16: return 63000;
+        default: return 100000;
+    }
+}
+
 TYPED_TEST(TopK, Max1D0) {
-    dim_t dims[4] = {100000, 1, 1, 1};
+    af_dtype t    = (af_dtype)dtype_traits<TypeParam>::af_type;
+    dim_t dims[4] = {type_max(t), 1, 1, 1};
     topkTest<TypeParam>(1, dims, 5, 0, AF_TOPK_MAX);
 }
 
 TYPED_TEST(TopK, Max2D0) {
-    dim_t dims[4] = {10000, 10, 1, 1};
+    af_dtype t    = (af_dtype)dtype_traits<TypeParam>::af_type;
+    dim_t dims[4] = {type_max(t) / 10, 10, 1, 1};
     topkTest<TypeParam>(2, dims, 3, 0, AF_TOPK_MAX);
 }
 
 TYPED_TEST(TopK, Max3D0) {
-    dim_t dims[4] = {10000, 10, 10, 1};
+    af_dtype t    = (af_dtype)dtype_traits<TypeParam>::af_type;
+    dim_t dims[4] = {type_max(t) / 100, 10, 10, 1};
     topkTest<TypeParam>(2, dims, 5, 0, AF_TOPK_MAX);
 }
 
 TYPED_TEST(TopK, Max4D0) {
-    dim_t dims[4] = {10000, 10, 10, 10};
+    af_dtype t    = (af_dtype)dtype_traits<TypeParam>::af_type;
+    dim_t dims[4] = {type_max(t) / 1000, 10, 10, 10};
     topkTest<TypeParam>(2, dims, 5, 0, AF_TOPK_MAX);
 }
 
-TYPED_TEST(TopK, MIN1D0) {
-    dim_t dims[4] = {100000, 1, 1, 1};
+TYPED_TEST(TopK, Min1D0) {
+    af_dtype t    = (af_dtype)dtype_traits<TypeParam>::af_type;
+    dim_t dims[4] = {type_max(t), 1, 1, 1};
     topkTest<TypeParam>(1, dims, 5, 0, AF_TOPK_MIN);
 }
 
-TYPED_TEST(TopK, MIN2D0) {
-    dim_t dims[4] = {10000, 10, 1, 1};
+TYPED_TEST(TopK, Min2D0) {
+    af_dtype t    = (af_dtype)dtype_traits<TypeParam>::af_type;
+    dim_t dims[4] = {type_max(t) / 10, 10, 1, 1};
     topkTest<TypeParam>(2, dims, 3, 0, AF_TOPK_MIN);
 }
 
-TYPED_TEST(TopK, MIN3D0) {
-    dim_t dims[4] = {10000, 10, 10, 1};
+TYPED_TEST(TopK, Min3D0) {
+    af_dtype t    = (af_dtype)dtype_traits<TypeParam>::af_type;
+    dim_t dims[4] = {type_max(t) / 100, 10, 10, 1};
     topkTest<TypeParam>(2, dims, 5, 0, AF_TOPK_MIN);
 }
 
-TYPED_TEST(TopK, MIN4D0) {
-    dim_t dims[4] = {10000, 10, 10, 10};
+TYPED_TEST(TopK, Min4D0) {
+    af_dtype t    = (af_dtype)dtype_traits<TypeParam>::af_type;
+    dim_t dims[4] = {type_max(t) / 1000, 10, 10, 10};
     topkTest<TypeParam>(2, dims, 5, 0, AF_TOPK_MIN);
 }
 

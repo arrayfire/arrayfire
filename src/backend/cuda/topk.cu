@@ -8,9 +8,12 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <kernel/topk.hpp>
 #include <topk.hpp>
 #include <af/dim4.hpp>
+
+using common::half;
 
 namespace cuda {
 template<typename T>
@@ -35,4 +38,5 @@ INSTANTIATE(int)
 INSTANTIATE(uint)
 INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
+INSTANTIATE(half)
 }  // namespace cuda
