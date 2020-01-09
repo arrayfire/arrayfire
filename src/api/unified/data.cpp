@@ -146,5 +146,5 @@ af_err af_pad(af_array *out, const af_array in, const unsigned b_ndims,
               const dim_t *const b_dims, const unsigned e_ndims,
               const dim_t *const e_dims, const af_border_type ptype) {
     CHECK_ARRAYS(in);
-    return CALL(out, in, b_ndims, b_dims, e_ndims, e_dims, ptype);
+    CALL(af_pad, out, in, b_ndims, b_dims, e_ndims, e_dims, ptype);
 }
