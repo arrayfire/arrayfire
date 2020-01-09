@@ -143,13 +143,13 @@ class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T> > {
 
         // Cast to the expected type
         af_array in_tmp = 0;
-        AF_SUCCESS(af_retain_array(&in_tmp, test.in_));
+        ASSERT_SUCCESS(af_retain_array(&in_tmp, test.in_));
         array in(in_tmp);
         in = in.as((af_dtype)dtype_traits<T>::af_type);
 
         af_array weights_tmp = test.weights_;
         if (weights_tmp) {
-            AF_SUCCESS(af_retain_array(&weights_tmp, weights_tmp));
+            ASSERT_SUCCESS(af_retain_array(&weights_tmp, weights_tmp));
         }
         array weights(weights_tmp);
         meanvar(mean, var, in, weights, test.bias_, test.dim_);
