@@ -284,7 +284,7 @@ To reduce_all(Param in, int change_nan, double nanval) {
                                      sizeof(To) * tmp_elements, h_ptr.data());
 
         Binary<compute_t<To>, op> reduce;
-        compute_t<To> out = Binary<To, op>::init();
+        compute_t<To> out = Binary<compute_t<To>, op>::init();
         for (int i = 0; i < (int)tmp_elements; i++) {
             out = reduce(out, compute_t<To>(h_ptr[i]));
         }
