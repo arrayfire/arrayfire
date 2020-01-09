@@ -27,6 +27,7 @@
 #include <nvrtc_kernel_headers/shared_hpp.hpp>
 #include <nvrtc_kernel_headers/traits_hpp.hpp>
 #include <nvrtc_kernel_headers/types_hpp.hpp>
+#include <nvrtc_kernel_headers/utility_hpp.hpp>
 #include <nvrtc_kernel_headers/version_h.hpp>
 #include <optypes.hpp>
 #include <platform.hpp>
@@ -166,6 +167,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
             "math_constants.h",
             "af/defines.h",
             "af/version.h",
+            "utility.hpp",
         };
 
         constexpr size_t NumHeaders = extent<decltype(includeNames)>::value;
@@ -192,6 +194,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
             string(math_constants_h, math_constants_h_len),
             string(defines_h, defines_h_len),
             string(version_h, version_h_len),
+            string(utility_hpp, utility_hpp_len),
         }};
 
         static const char *headers[] = {
@@ -206,6 +209,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
             sourceStrings[16].c_str(), sourceStrings[17].c_str(),
             sourceStrings[18].c_str(), sourceStrings[19].c_str(),
             sourceStrings[20].c_str(), sourceStrings[21].c_str(),
+            sourceStrings[22].c_str(),
         };
         NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name,
                                        NumHeaders, headers, includeNames));
@@ -448,6 +452,7 @@ string toString(af_border_type p) {
         CASE_STMT(AF_PAD_ZERO);
         CASE_STMT(AF_PAD_SYM);
         CASE_STMT(AF_PAD_CLAMP_TO_EDGE);
+        CASE_STMT(AF_PAD_PERIODIC);
     }
 #undef CASE_STMT
     return retVal;

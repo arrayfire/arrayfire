@@ -416,6 +416,23 @@ namespace af
     AFAPI void replace(array &a, const array  &cond, const double &b);
 #endif
 
+#if AF_API_VERSION >= 37
+    /**
+       \param[in] in is the input array to be padded
+       \param[in] beginPadding informs the number of elements to be
+                  padded at beginning of each dimension
+       \param[in] endPadding informs the number of elements to be
+                  padded at end of each dimension
+       \param[in] padFillType is indicates what values should fill padded region
+
+       \return the padded array
+
+       \ingroup data_func_pad
+    */
+    AFAPI array pad(const array &in, const dim4 &beginPadding,
+                    const dim4 &endPadding, const borderType padFillType);
+#endif
+
     /**
       @}
     */
@@ -707,6 +724,25 @@ extern "C" {
        \ingroup data_func_replace
     */
     AFAPI af_err af_replace_scalar(af_array a, const af_array cond, const double b);
+#endif
+
+#if AF_API_VERSION >= 37
+    /**
+       \param[out] out is the padded array
+       \param[in] in is the input array to be padded
+       \param[in] b_ndims is size of \p l_dims array
+       \param[in] b_dims array contains padding size at beginning of each
+       dimension \param[in] e_ndims is size of \p u_dims array \param[in] e_dims
+       array contains padding sizes at end of each dimension \param[in]
+       pad_fill_type is indicates what values should fill padded region
+
+       \ingroup data_func_pad
+    */
+    AFAPI af_err af_pad(af_array *out, const af_array in,
+                        const unsigned begin_ndims,
+                        const dim_t *const begin_dims, const unsigned end_ndims,
+                        const dim_t *const end_dims,
+                        const af_border_type pad_fill_type);
 #endif
 
 #ifdef __cplusplus

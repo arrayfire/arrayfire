@@ -13,6 +13,17 @@ The array created has the same value at all locations
 
 =======================================================================
 
+\defgroup data_func_pad Padding
+
+\brief Pad an array
+
+Pad the input array using a constant or values from input along border
+
+\ingroup data_mat
+\ingroup arrayfire_func
+
+=======================================================================
+
 \defgroup data_func_identity identity
 
 \brief Create an identity array with diagonal values 1

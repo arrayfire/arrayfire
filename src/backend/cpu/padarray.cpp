@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <copy.hpp>
 #include <err_cpu.hpp>
 #include <kernel/copy.hpp>
@@ -101,6 +102,7 @@ INSTANTIATE_PAD_ARRAY(uchar)
 INSTANTIATE_PAD_ARRAY(char)
 INSTANTIATE_PAD_ARRAY(ushort)
 INSTANTIATE_PAD_ARRAY(short)
+INSTANTIATE_PAD_ARRAY(common::half)
 
 #define INSTANTIATE_PAD_ARRAY_COMPLEX(SRC_T)                              \
     template Array<cfloat> padArray<SRC_T, cfloat>(                       \

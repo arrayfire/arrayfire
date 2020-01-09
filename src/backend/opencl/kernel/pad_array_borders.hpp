@@ -44,6 +44,7 @@ void padBorders(Param out, const Param in, dim4 const& lBPadding) {
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D AF_BORDER_TYPE=" << BType
                 << " -D AF_PAD_SYM=" << AF_PAD_SYM
+                << " -D AF_PAD_PERIODIC=" << AF_PAD_PERIODIC
                 << " -D AF_PAD_CLAMP_TO_EDGE=" << AF_PAD_CLAMP_TO_EDGE;
         if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
             options << " -D USE_DOUBLE";
