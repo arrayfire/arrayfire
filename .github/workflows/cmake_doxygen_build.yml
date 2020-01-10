@@ -1,0 +1,52 @@
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+name: Doxygen
+
+env:
+    NINJA_VER: 1.9.0
+    DOXYGEN_VER: 1.8.17
+
+jobs:
+    build_documentation:
+        name: Build Documentation
+        runs-on: ubuntu-18.04
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@master
+
+            - name: Download Ninja
+              id: ninja
+              run: |
+                  wget --quiet "https://github.com/ninja-build/ninja/releases/download/v${NINJA_VER}/ninja-linux.zip"
+                  unzip ./ninja-linux.zip
+                  chmod +x ninja
+                  ${GITHUB_WORKSPACE}/ninja --version
+
+            - name: Install Doxygen
+              run: |
+                  wget --quiet http://doxygen.nl/files/doxygen-${DOXYGEN_VER}.linux.bin.tar.gz
+                  mkdir doxygen
+                  tar -xf doxygen-${DOXYGEN_VER}.linux.bin.tar.gz -C doxygen --strip 1
+
+            - name: Configure
+              run: |
+                  git submodule update --init --recursive
+                  mkdir build && cd build
+                  cmake -G Ninja \
+                      -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
+                      -DAF_BUILD_CPU:BOOL=OFF -DAF_BUILD_CUDA:BOOL=OFF \
+                      -DAF_BUILD_OPENCL:BOOL=OFF -DAF_BUILD_UNIFIED:BOOL=OFF \
+                      -DAF_BUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF \
+                      -DDOXYGEN_EXECUTABLE:FILEPATH=${GITHUB_WORKSPACE}/doxygen/bin/doxygen \
+                      ..
+
+            - name: Build
+              run: |
+                  cd ${GITHUB_WORKSPACE}/build
+                  cmake --build . --target docs
