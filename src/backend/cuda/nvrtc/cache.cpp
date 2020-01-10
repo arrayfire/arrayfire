@@ -493,6 +493,19 @@ string toString(af_match_type p) {
     return retVal;
 }
 
+template<>
+string toString(af_flux_function p) {
+    const char *retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_FLUX_QUADRATIC);
+        CASE_STMT(AF_FLUX_EXPONENTIAL);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
 Kernel getKernel(const string &nameExpr, const string &source,
                  const vector<TemplateArg> &targs,
                  const vector<string> &compileOpts) {

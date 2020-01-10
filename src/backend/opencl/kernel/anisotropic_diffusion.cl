@@ -16,10 +16,10 @@ int gIndex(const int x, const int y, const int dim0, const int dim1,
 
 float quadratic(const float value) { return 1.0f / (1.0f + value); }
 
-float computeGradientBasedUpdate(const float mct, const float C, const float S,
-                                 const float N, const float W, const float E,
-                                 const float SE, const float SW, const float NE,
-                                 const float NW, const int FLUX_FN) {
+float gradientUpdate(const float mct, const float C, const float S,
+                     const float N, const float W, const float E,
+                     const float SE, const float SW, const float NE,
+                     const float NW) {
     float delta = 0;
 
     float dx, dy, df, db, cx, cxd;
@@ -61,11 +61,10 @@ float computeGradientBasedUpdate(const float mct, const float C, const float S,
     return delta;
 }
 
-float computeCurvatureBasedUpdate(const float mct, const float C, const float S,
-                                  const float N, const float W, const float E,
-                                  const float SE, const float SW,
-                                  const float NE, const float NW,
-                                  const int FLUX_FN) {
+float curvatureUpdate(const float mct, const float C, const float S,
+                      const float N, const float W, const float E,
+                      const float SE, const float SW,
+                      const float NE, const float NW) {
     float delta     = 0;
     float prop_grad = 0;
 
@@ -120,54 +119,57 @@ float computeCurvatureBasedUpdate(const float mct, const float C, const float S,
 }
 
 kernel void diffUpdate(global T* inout, KParam info, const float dt,
-                       const float mct, const int FLUX_FN, unsigned blkX,
-                       unsigned blkY) {
-    // Beware of the integer value of FLUX_FN
-
+                       const float mct, unsigned blkX, unsigned blkY) {
     local T localMem[SHRD_MEM_HEIGHT][SHRD_MEM_WIDTH];
+
+    const int l0 = info.dims[0];
+    const int l1 = info.dims[1];
+    const int s0 = info.strides[0];
+    const int s1 = info.strides[1];
 
     const int lx = get_local_id(0);
     const int ly = get_local_id(1);
 
-    const unsigned b2 = get_group_id(0) / blkX;
-    const unsigned b3 = get_group_id(1) / blkY;
+    const int b2 = get_group_id(0) / blkX;
+    const int b3 = get_group_id(1) / blkY;
 
     const int gx = get_local_size(0) * (get_group_id(0) - b2 * blkX) + lx;
-    const int gy = get_local_size(1) * (get_group_id(1) - b3 * blkY) + ly;
+          int gy = get_local_size(1) * (get_group_id(1) - b3 * blkY) + ly;
 
     global T* img =
         inout + (b3 * info.strides[3] + b2 * info.strides[2]) + info.offset;
 
-    for (int b = ly, gy2 = gy; b < SHRD_MEM_HEIGHT;
+    for (int b = ly, gy2 = gy - 1; b < SHRD_MEM_HEIGHT;
          b += get_local_size(1), gy2 += get_local_size(1)) {
-        for (int a = lx, gx2 = gx; a < SHRD_MEM_WIDTH;
+        for (int a = lx, gx2 = gx - 1; a < SHRD_MEM_WIDTH;
              a += get_local_size(0), gx2 += get_local_size(0)) {
-            int idx = gIndex(gx2 - 1, gy2 - 1, info.dims[0], info.dims[1],
-                             info.strides[0], info.strides[1]);
-            localMem[b][a] = img[idx];
+            localMem[b][a] = img[ gIndex(gx2, gy2, l0, l1, s0, s1) ];
         }
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (gx < info.dims[0] && gy < info.dims[1]) {
-        int i       = lx + 1;
-        int j       = ly + 1;
+    int i       = lx + 1;
+    int j       = ly + 1;
+
+#pragma unroll
+    for (int ld = 0; ld < YDIM_LOAD;
+            ++ld, j+= get_local_size(1), gy += get_local_size(1)) {
         float C     = localMem[j][i];
         float delta = 0;
-
 #if IS_MCDE == 1
-        delta = computeCurvatureBasedUpdate(
+        delta = curvatureUpdate(
             mct, C, localMem[j][i + 1], localMem[j][i - 1], localMem[j - 1][i],
             localMem[j + 1][i], localMem[j + 1][i + 1], localMem[j - 1][i + 1],
-            localMem[j + 1][i - 1], localMem[j - 1][i - 1], FLUX_FN);
+            localMem[j + 1][i - 1], localMem[j - 1][i - 1]);
 #else
-        delta = computeGradientBasedUpdate(
+        delta = gradientUpdate(
             mct, C, localMem[j][i + 1], localMem[j][i - 1], localMem[j - 1][i],
             localMem[j + 1][i], localMem[j + 1][i + 1], localMem[j - 1][i + 1],
-            localMem[j + 1][i - 1], localMem[j - 1][i - 1], FLUX_FN);
+            localMem[j + 1][i - 1], localMem[j - 1][i - 1]);
 #endif
-
-        img[gx * info.strides[0] + gy * info.strides[1]] = (T)(C + delta * dt);
+        if (gx < l0 && gy < l1) {
+            img[gx * s0 + gy * s1] = (T)(C + delta * dt);
+        }
     }
 }

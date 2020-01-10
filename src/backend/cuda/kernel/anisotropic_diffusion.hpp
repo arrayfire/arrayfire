@@ -21,8 +21,9 @@
 namespace cuda {
 namespace kernel {
 
-static const int THREADS_X = 32;
-static const int THREADS_Y = 8;
+constexpr int THREADS_X = 32;
+constexpr int THREADS_Y = 8;
+constexpr int YDIM_LOAD = 2 * THREADS_X / THREADS_Y;
 
 template<typename T>
 void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
@@ -30,13 +31,13 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
     static const std::string source(anisotropic_diffusion_cuh,
                                     anisotropic_diffusion_cuh_len);
     auto diffUpdate = getKernel("cuda::diffUpdate", source,
-                             {TemplateTypename<T>(), TemplateArg(isMCDE)},
-                             {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+                             {TemplateTypename<T>(), TemplateArg(fftype), TemplateArg(isMCDE)},
+                             {DefineValue(THREADS_X), DefineValue(THREADS_Y), DefineValue(YDIM_LOAD)});
 
     dim3 threads(THREADS_X, THREADS_Y, 1);
 
     int blkX = divup(inout.dims[0], threads.x);
-    int blkY = divup(inout.dims[1], threads.y);
+    int blkY = divup(inout.dims[1], threads.y * YDIM_LOAD);
 
     dim3 blocks(blkX * inout.dims[2], blkY * inout.dims[3], 1);
 
@@ -51,7 +52,7 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    diffUpdate(qArgs, inout, dt, mct, fftype, blkX, blkY);
+    diffUpdate(qArgs, inout, dt, mct, blkX, blkY);
 
     POST_LAUNCH_CHECK();
 }
