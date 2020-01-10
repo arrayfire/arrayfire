@@ -718,11 +718,13 @@ extern "C" {
     /**
        \param[out] out is the padded array
        \param[in] in is the input array to be padded
-       \param[in] b_ndims is size of \p l_dims array
-       \param[in] b_dims array contains padding size at beginning of each
-       dimension \param[in] e_ndims is size of \p u_dims array \param[in] e_dims
-       array contains padding sizes at end of each dimension \param[in]
-       pad_fill_type is indicates what values should fill padded region
+       \param[in] begin_ndims is size of \p l_dims array
+       \param[in] begin_dims array contains padding size at beginning of each
+                  dimension
+       \param[in] end_ndims is size of \p u_dims array
+       \param[in] end_dims array contains padding sizes at end of each dimension
+       \param[in] pad_fill_type is indicates what values should fill
+                  padded region
 
        \ingroup data_func_pad
     */
