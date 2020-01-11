@@ -1,0 +1,86 @@
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+name: CPU Backend
+
+env:
+    NINJA_VER: 1.9.0
+
+jobs:
+    build_cpu:
+        name: Linux
+        runs-on: ubuntu-18.04
+        strategy:
+            fail-fast: false
+            matrix:
+                blas_backend: [Atlas, MKL, OpenBLAS]
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@master
+
+            - name: Checkout Submodules
+              shell: bash
+              run: git submodule update --init --recursive
+
+            - name: Download Ninja
+              run: |
+                  wget --quiet "https://github.com/ninja-build/ninja/releases/download/v${NINJA_VER}/ninja-linux.zip"
+                  unzip ./ninja-linux.zip
+                  chmod +x ninja
+                  ${GITHUB_WORKSPACE}/ninja --version
+
+            - name: Install Common Dependencies
+              run: |
+                  sudo apt-get install -y libfreeimage-dev \
+                                          libglfw3-dev \
+                                          libboost-dev \
+                                          libfftw3-dev \
+                                          liblapacke-dev
+
+            - name: Install Atlas
+              if: matrix.blas_backend == 'Atlas'
+              run: sudo apt-get install -y libatlas-base-dev
+
+            - name: Install MKL
+              if: matrix.blas_backend == 'MKL'
+              run: |
+                  wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+                  sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+                  sudo sh -c 'echo deb https://apt.repos.intel.com/mkl all main > /etc/apt/sources.list.d/intel-mkl.list'
+                  sudo apt-get -qq update
+                  sudo apt-get install -y intel-mkl-64bit-2020.0-088
+
+            - name: Install OpenBLAS
+              if: matrix.blas_backend == 'OpenBLAS'
+              run: sudo apt-get install -y libopenblas-dev
+
+            - name: CMake Configure
+              env:
+                  USE_MKL: ${{ matrix.blas_backend == 'MKL' }}
+                  BLAS_BACKEND: ${{ matrix.blas_backend }}
+              run: |
+                  ref=$(echo ${GITHUB_REF} | awk '/refs\/pull\/[0-9]+\/merge/{print $0}')
+                  prnum=$(echo $ref | awk '{split($0, a, "/"); print a[3]}')
+                  branch=$(git rev-parse --abbrev-ref HEAD)
+                  buildname=$(if [ -z "$prnum" ]; then echo "$branch"; else echo "PR-$prnum"; fi)
+                  buildname="$buildname-cpu-$BLAS_BACKEND"
+                  mkdir build && cd build
+                  cmake -G Ninja \
+                      -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
+                      -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
+                      -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
+                      -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=OFF \
+                      -DAF_BUILD_FORGE:BOOL=ON \
+                      -DUSE_CPU_MKL:BOOL=$USE_MKL \
+                      -DBUILDNAME:STRING=${buildname} \
+                      ..
+
+            - name: Build and Test
+              run: |
+                  cd ${GITHUB_WORKSPACE}/build
+                  ctest -D Experimental -T Test -T Submit -R cpu -j2
