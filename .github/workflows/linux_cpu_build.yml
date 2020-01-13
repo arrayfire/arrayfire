@@ -71,13 +71,15 @@ jobs:
                       -DAF_BUILD_FORGE:BOOL=ON \
                       -DUSE_CPU_MKL:BOOL=$USE_MKL \
                       ..
+                  ctest -D Experimental -T Submit
 
             - name: Build
               run: |
                   cd ${GITHUB_WORKSPACE}/build
                   cmake --build . -- -j2
+                  ctest -D Experimental -T Submit
 
             - name: Run Tests
               run: |
                   cd ${GITHUB_WORKSPACE}/build
-                  ctest -j2 -R cpu
+                  ctest -D Experimental -T Submit -j2 -R cpu
