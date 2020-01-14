@@ -9,6 +9,8 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
+#include <common/traits.hpp>
 #include <handle.hpp>
 #include <implicit.hpp>
 #include <optypes.hpp>
@@ -20,6 +22,7 @@
 #include <select.hpp>
 
 using namespace detail;
+using common::half;
 using af::dim4;
 
 template<typename T>
@@ -52,6 +55,7 @@ af_err af_replace(af_array a, const af_array cond, const af_array b) {
         }
 
         switch (ainfo.getType()) {
+            case f16: replace<half>(a, cond, b); break;
             case f32: replace<float>(a, cond, b); break;
             case f64: replace<double>(a, cond, b); break;
             case c32: replace<cfloat>(a, cond, b); break;
@@ -91,6 +95,7 @@ af_err af_replace_scalar(af_array a, const af_array cond, const double b) {
         for (int i = 0; i < 4; i++) { DIM_ASSERT(1, cdims[i] == adims[i]); }
 
         switch (ainfo.getType()) {
+            case f16: replace_scalar<half>(a, cond, b); break;
             case f32: replace_scalar<float>(a, cond, b); break;
             case f64: replace_scalar<double>(a, cond, b); break;
             case c32: replace_scalar<cfloat>(a, cond, b); break;
