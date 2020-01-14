@@ -139,14 +139,19 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
     using af_func                  = std::add_pointer<decltype(FUNCTION)>::type; \
     thread_local auto& instance    = unified::AFSymbolManager::getInstance();    \
     thread_local af_backend index_ = instance.getActiveBackend();                \
-    thread_local af_func func =                                                  \
-        (af_func)common::getFunctionPointer(instance.getHandle(), __func__);     \
-    if (index_ != instance.getActiveBackend()) {                                 \
-        index_ = instance.getActiveBackend();                                    \
-        func   = (af_func)common::getFunctionPointer(instance.getHandle(),       \
-                                                   __func__);                    \
-    }                                                                            \
-    return func(__VA_ARGS__);
+    if (instance.getHandle()) {                                                  \
+        thread_local af_func func = (af_func)common::getFunctionPointer(         \
+            instance.getHandle(), __func__);                                     \
+        if (index_ != instance.getActiveBackend()) {                             \
+            index_ = instance.getActiveBackend();                                \
+            func   = (af_func)common::getFunctionPointer(instance.getHandle(),   \
+                                                         __func__);              \
+        }                                                                        \
+        return func(__VA_ARGS__);                                                \
+    } else {                                                                     \
+        AF_RETURN_ERROR("ArrayFire couldn't locate any backends.",               \
+                        AF_ERR_LOAD_LIB);                                        \
+    }
 
 #define CALL_NO_PARAMS(FUNCTION) CALL(FUNCTION)
 
