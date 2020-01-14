@@ -173,6 +173,8 @@ const char *af_err_to_string(const af_err err) {
         case AF_ERR_TYPE: return "Function does not support this data type";
         case AF_ERR_DIFF_TYPE: return "Input types are not the same";
         case AF_ERR_BATCH: return "Invalid batch configuration";
+        case AF_ERR_DEVICE:
+            return "Input does not belong to the current device.";
         case AF_ERR_NOT_SUPPORTED: return "Function not supported";
         case AF_ERR_NOT_CONFIGURED: return "Function not configured to build";
         case AF_ERR_NONFREE:
