@@ -93,12 +93,13 @@ const string &DimensionError::getExpectedCondition() const { return expected; }
 
 int DimensionError::getArgIndex() const { return argIndex; }
 
-void print_error(const string &msg) {
+af_err set_global_error_string(const string &msg, af_err err) {
     std::string perr = getEnvVar("AF_PRINT_ERRORS");
     if (!perr.empty()) {
         if (perr != "0") fprintf(stderr, "%s\n", msg.c_str());
     }
     get_global_error_string() = msg;
+    return err;
 }
 
 af_err processException() {
@@ -113,53 +114,44 @@ af_err processException() {
            << "Invalid dimension for argument " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
-        print_error(ss.str());
-        err = AF_ERR_SIZE;
+        err = set_global_error_string(ss.str(), AF_ERR_SIZE);
     } catch (const ArgumentError &ex) {
         ss << "In function " << ex.getFunctionName() << "\n"
            << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << "Invalid argument at index " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
-        print_error(ss.str());
-        err = AF_ERR_ARG;
+        err = set_global_error_string(ss.str(), AF_ERR_ARG);
     } catch (const SupportError &ex) {
         ss << ex.getFunctionName() << " not supported for "
            << ex.getBackendName() << " backend\n";
 
-        print_error(ss.str());
-        err = AF_ERR_NOT_SUPPORTED;
+        err = set_global_error_string(ss.str(), AF_ERR_NOT_SUPPORTED);
     } catch (const TypeError &ex) {
         ss << "In function " << ex.getFunctionName() << "\n"
            << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << "Invalid type for argument " << ex.getArgIndex() << "\n";
 
-        print_error(ss.str());
-        err = AF_ERR_TYPE;
+        err = set_global_error_string(ss.str(), AF_ERR_TYPE);
     } catch (const AfError &ex) {
         ss << "In function " << ex.getFunctionName() << "\n"
            << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << ex.what() << "\n";
 
-        print_error(ss.str());
-        err = ex.getError();
+        err = set_global_error_string(ss.str(), ex.getError());
 #ifdef AF_OPENCL
     } catch (const cl::Error &ex) {
         char opencl_err_msg[1024];
         snprintf(opencl_err_msg, sizeof(opencl_err_msg),
                  "OpenCL Error (%d): %s when calling %s", ex.err(),
                  getErrorMessage(ex.err()).c_str(), ex.what());
-        print_error(opencl_err_msg);
         if (ex.err() == CL_MEM_OBJECT_ALLOCATION_FAILURE) {
-            err = AF_ERR_NO_MEM;
+            err = set_global_error_string(opencl_err_msg, AF_ERR_NO_MEM);
         } else {
-            err = AF_ERR_INTERNAL;
+            err = set_global_error_string(opencl_err_msg, AF_ERR_INTERNAL);
         }
 #endif
-    } catch (...) {
-        print_error(ss.str());
-        err = AF_ERR_UNKNOWN;
-    }
+    } catch (...) { err = set_global_error_string(ss.str(), AF_ERR_UNKNOWN); }
 
     return err;
 }
@@ -199,7 +191,8 @@ const char *af_err_to_string(const af_err err) {
             return "There was a mismatch between an array and the current "
                    "backend";
         case AF_ERR_INTERNAL: return "Internal error";
-        case AF_ERR_UNKNOWN:
-        default: return "Unknown error";
+        case AF_ERR_UNKNOWN: return "Unknown error";
     }
+    return "Unknown error. Please open an issue and add this error code to the "
+           "case in af_err_to_string.";
 }
