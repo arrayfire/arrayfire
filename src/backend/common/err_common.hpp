@@ -109,7 +109,7 @@ class DimensionError : public AfError {
 
 af_err processException();
 
-void print_error(const std::string& msg);
+af_err set_global_error_string(const std::string& msg, af_err err = AF_ERR_UNKNOWN);
 
 #define DIM_ASSERT(INDEX, COND)                                        \
     do {                                                               \
@@ -139,16 +139,13 @@ void print_error(const std::string& msg);
                       ERR_TYPE);                                           \
     } while (0)
 
-#define AF_RETURN_ERROR(MSG, ERR_TYPE)                                       \
-    do {                                                                     \
-        AfError err(__PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, MSG,     \
-                    ERR_TYPE);                                               \
-        std::stringstream s;                                                 \
-        s << "Error in " << err.getFunctionName() << "\n"                    \
-          << "In file " << err.getFileName() << ":" << err.getLine() << "\n" \
-          << err.what() << "\n";                                             \
-        print_error(s.str());                                                \
-        return ERR_TYPE;                                                     \
+#define AF_RETURN_ERROR(MSG, ERR_TYPE)                                \
+    do {                                                              \
+        std::stringstream s;                                          \
+        s << "Error in " << __PRETTY_FUNCTION__ << "\n"               \
+          << "In file " << __AF_FILENAME__ << ":" << __LINE__ << ": " \
+          << MSG;                                                     \
+        return set_global_error_string(s.str(), ERR_TYPE);            \
     } while (0)
 
 #define TYPE_ASSERT(COND)                                       \
