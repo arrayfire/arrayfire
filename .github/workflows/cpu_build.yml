@@ -21,7 +21,9 @@ jobs:
                 os: [ubuntu-18.04, macos-latest]
                 exclude:
                     - os: macos-latest
-                      blas_backend: [Atlas, MKL]
+                      blas_backend: Atlas
+                    - os: macos-latest
+                      blas_backend: MKL
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
