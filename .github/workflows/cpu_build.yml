@@ -13,12 +13,15 @@ env:
 
 jobs:
     build_cpu:
-        name: Linux
-        runs-on: ubuntu-18.04
+        runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
             matrix:
                 blas_backend: [Atlas, MKL, OpenBLAS]
+                os: [ubuntu-18.04, macos-latest]
+                exclude:
+                    - os: macos-latest
+                      blas_backend: [Atlas, MKL]
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
@@ -28,13 +31,22 @@ jobs:
               run: git submodule update --init --recursive
 
             - name: Download Ninja
+              env:
+                  OS_NAME: ${{ matrix.os }}
               run: |
-                  wget --quiet "https://github.com/ninja-build/ninja/releases/download/v${NINJA_VER}/ninja-linux.zip"
-                  unzip ./ninja-linux.zip
+                  os_suffix=$(if [ $OS_NAME == 'macos-latest' ]; then echo "mac"; else echo "linux"; fi)
+                  wget --quiet "https://github.com/ninja-build/ninja/releases/download/v${NINJA_VER}/ninja-${os_suffix}.zip"
+                  unzip ./ninja-${os_suffix}.zip
                   chmod +x ninja
                   ${GITHUB_WORKSPACE}/ninja --version
 
-            - name: Install Common Dependencies
+            - name: Install Common Dependencies for Macos
+              if: matrix.os == 'macos-latest'
+              run: |
+                  brew install fontconfig glfw freeimage boost fftw lapack openblas
+
+            - name: Install Common Dependencies for Ubuntu
+              if: matrix.os == 'ubuntu-18.04'
               run: |
                   sudo apt-get install -y libfreeimage-dev \
                                           libglfw3-dev \
@@ -42,12 +54,12 @@ jobs:
                                           libfftw3-dev \
                                           liblapacke-dev
 
-            - name: Install Atlas
-              if: matrix.blas_backend == 'Atlas'
+            - name: Install Atlas for Ubuntu
+              if: matrix.os == 'ubuntu-18.04' && matrix.blas_backend == 'Atlas'
               run: sudo apt-get install -y libatlas-base-dev
 
-            - name: Install MKL
-              if: matrix.blas_backend == 'MKL'
+            - name: Install MKL for Ubuntu
+              if: matrix.os == 'ubuntu-18.04' && matrix.blas_backend == 'MKL'
               run: |
                   wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
                   sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
@@ -55,8 +67,8 @@ jobs:
                   sudo apt-get -qq update
                   sudo apt-get install -y intel-mkl-64bit-2020.0-088
 
-            - name: Install OpenBLAS
-              if: matrix.blas_backend == 'OpenBLAS'
+            - name: Install OpenBLAS for Ubuntu
+              if: matrix.os == 'ubuntu-18.04' && matrix.blas_backend == 'OpenBLAS'
               run: sudo apt-get install -y libopenblas-dev
 
             - name: CMake Configure
