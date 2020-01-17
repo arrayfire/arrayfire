@@ -10,6 +10,7 @@
 #define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
 #include <cstddef>
 #include <cstdlib>
@@ -24,7 +25,7 @@ template<typename T>
 using ArrayDeathTest = Array<T>;
 
 typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,
-                         int, uint, intl, uintl, short, ushort>
+                         int, uint, intl, uintl, short, ushort, half_float::half>
     TestTypes;
 
 TYPED_TEST_CASE(Array, TestTypes);
@@ -127,7 +128,7 @@ TYPED_TEST(Array, ConstructorHostPointer1D) {
 
     dtype type    = (dtype)dtype_traits<TypeParam>::af_type;
     size_t nelems = 10;
-    vector<TypeParam> data(nelems, 4);
+    vector<TypeParam> data(nelems, TypeParam(4));
     array a(nelems, &data.front(), afHost);
     EXPECT_EQ(1u, a.numdims());
     EXPECT_EQ(dim_t(nelems), a.dims(0));
@@ -149,7 +150,7 @@ TYPED_TEST(Array, ConstructorHostPointer2D) {
     size_t ndims    = 2;
     size_t dim_size = 10;
     size_t nelems   = dim_size * dim_size;
-    vector<TypeParam> data(nelems, 4);
+    vector<TypeParam> data(nelems, TypeParam(4));
     array a(dim_size, dim_size, &data.front(), afHost);
     EXPECT_EQ(ndims, a.numdims());
     EXPECT_EQ(dim_t(dim_size), a.dims(0));
@@ -171,7 +172,7 @@ TYPED_TEST(Array, ConstructorHostPointer3D) {
     size_t ndims    = 3;
     size_t dim_size = 10;
     size_t nelems   = dim_size * dim_size * dim_size;
-    vector<TypeParam> data(nelems, 4);
+    vector<TypeParam> data(nelems, TypeParam(4));
     array a(dim_size, dim_size, dim_size, &data.front(), afHost);
     EXPECT_EQ(ndims, a.numdims());
     EXPECT_EQ(dim_t(dim_size), a.dims(0));
@@ -193,7 +194,7 @@ TYPED_TEST(Array, ConstructorHostPointer4D) {
     size_t ndims    = 4;
     size_t dim_size = 10;
     size_t nelems   = dim_size * dim_size * dim_size * dim_size;
-    vector<TypeParam> data(nelems, 4);
+    vector<TypeParam> data(nelems, TypeParam(4));
     array a(dim_size, dim_size, dim_size, dim_size, &data.front(), afHost);
     EXPECT_EQ(ndims, a.numdims());
     EXPECT_EQ(dim_t(dim_size), a.dims(0));
@@ -223,6 +224,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
 
         case f64:
@@ -234,6 +236,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case c32:
             EXPECT_TRUE(one.isfloating());
@@ -244,6 +247,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_FALSE(one.isreal());
             EXPECT_TRUE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case c64:
             EXPECT_TRUE(one.isfloating());
@@ -254,6 +258,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_FALSE(one.isreal());
             EXPECT_TRUE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case s32:
             EXPECT_FALSE(one.isfloating());
@@ -264,6 +269,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case u32:
             EXPECT_FALSE(one.isfloating());
@@ -274,6 +280,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case s16:
             EXPECT_FALSE(one.isfloating());
@@ -284,6 +291,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case u16:
             EXPECT_FALSE(one.isfloating());
@@ -294,6 +302,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case u8:
             EXPECT_FALSE(one.isfloating());
@@ -304,6 +313,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case b8:
             EXPECT_FALSE(one.isfloating());
@@ -314,6 +324,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_TRUE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case s64:
             EXPECT_FALSE(one.isfloating());
@@ -324,6 +335,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case u64:
             EXPECT_FALSE(one.isfloating());
@@ -334,6 +346,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
+            EXPECT_FALSE(one.ishalf());
             break;
         case f16:
             EXPECT_TRUE(one.isfloating());
@@ -344,7 +357,7 @@ TYPED_TEST(Array, TypeAttributes) {
             EXPECT_TRUE(one.isreal());
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
-            EXPECT_FALSE(one.ishalf());
+            EXPECT_TRUE(one.ishalf());
             break;
     }
 }
