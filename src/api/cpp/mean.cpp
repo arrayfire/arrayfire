@@ -15,7 +15,6 @@
 #include "error.hpp"
 #include "half.hpp"
 #ifdef AF_CUDA
-// NOTE: Adding ifdef here to avoid copying code constructor in the cuda backend
 #include <cuda_fp16.h>
 #include <traits.hpp>
 #endif
@@ -35,25 +34,12 @@ array mean(const array& in, const array& weights, const dim_t dim) {
     return array(temp);
 }
 
-template<typename To, typename T>
-To cast(T in) {
-    return static_cast<To>(in);
-}
-
-template<>
-af_half cast<af_half, double>(double in) {
-    half_float::half tmp = static_cast<half_float::half>(in);
-    af_half out;
-    memcpy(&out, &tmp, sizeof(af_half));
-    return out;
-}
-
 #define INSTANTIATE_MEAN(T)                                                  \
     template<>                                                               \
     AFAPI T mean(const array& in) {                                          \
         double ret_val;                                                      \
         AF_THROW(af_mean_all(&ret_val, NULL, in.get()));                     \
-        return cast<T>(ret_val);                                      \
+        return cast<T>(ret_val);                                             \
     }                                                                        \
     template<>                                                               \
     AFAPI T mean(const array& in, const array& wts) {                        \
@@ -101,7 +87,7 @@ INSTANTIATE_MEAN(unsigned long long);
 INSTANTIATE_MEAN(short);
 INSTANTIATE_MEAN(unsigned short);
 INSTANTIATE_MEAN(af_half);
-INSTANTIATE_MEAN(half_float::half); // Add support for public API
+INSTANTIATE_MEAN(half_float::half);  // Add support for public API
 #ifdef AF_CUDA
 INSTANTIATE_MEAN(__half);
 #endif

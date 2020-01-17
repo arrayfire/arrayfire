@@ -11,6 +11,7 @@
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 
+#include <half.hpp>
 #include <testHelpers.hpp>
 
 #include <iterator>
@@ -70,8 +71,8 @@ struct meanvar_test {
         if (weights) { af_retain_array(&weights_, weights); }
         mean_.reserve(mean.size());
         variance_.reserve(variance.size());
-        std::copy(begin(mean), end(mean), back_inserter(mean_));
-        std::copy(begin(variance), end(variance), back_inserter(variance_));
+        for (auto &v : mean) mean_.push_back((outType<T>)v);
+        for (auto &v : variance) variance_.push_back((outType<T>)v);
     }
     meanvar_test()                        = default;
     meanvar_test(meanvar_test<T> &&other) = default;
@@ -108,11 +109,12 @@ template<typename T>
 class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T> > {
    public:
     void meanvar_test_function(const meanvar_test<T> &test) {
+        SUPPORTED_TYPE_CHECK(T);
         af_array mean, var;
 
         // Cast to the expected type
         af_array in = 0;
-        af_cast(&in, test.in_, (af_dtype)dtype_traits<T>::af_type);
+        ASSERT_SUCCESS(af_cast(&in, test.in_, (af_dtype)dtype_traits<T>::af_type));
 
         EXPECT_EQ(AF_SUCCESS, af_meanvar(&mean, &var, in, test.weights_,
                                          test.bias_, test.dim_));
@@ -124,8 +126,11 @@ class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T> > {
         af_get_dims(&outDim[0], &outDim[1], &outDim[2], &outDim[3], in);
         outDim[test.dim_] = 1;
 
-        if (is_same_type<float, outType<T> >::value ||
-            is_same_type<cfloat, outType<T> >::value) {
+        if (is_same_type<half_float::half, outType<T> >::value) {
+            ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 1.f);
+            ASSERT_VEC_ARRAY_NEAR(test.variance_, outDim, var, 0.5f);
+        } else if (is_same_type<float, outType<T> >::value ||
+                   is_same_type<cfloat, outType<T> >::value) {
             ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 0.001f);
             ASSERT_VEC_ARRAY_NEAR(test.variance_, outDim, var, 0.2f);
         } else {
@@ -139,6 +144,7 @@ class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T> > {
     }
 
     void meanvar_cpp_test_function(const meanvar_test<T> &test) {
+        SUPPORTED_TYPE_CHECK(T);
         array mean, var;
 
         // Cast to the expected type
@@ -160,8 +166,11 @@ class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T> > {
         dim4 outDim       = in.dims();
         outDim[test.dim_] = 1;
 
-        if (is_same_type<float, outType<T> >::value ||
-            is_same_type<cfloat, outType<T> >::value) {
+        if (is_same_type<half_float::half, outType<T> >::value) {
+            ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 1.f);
+            ASSERT_VEC_ARRAY_NEAR(test.variance_, outDim, var, 0.5f);
+        } else if (is_same_type<float, outType<T> >::value ||
+                   is_same_type<cfloat, outType<T> >::value) {
             ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 0.001f);
             ASSERT_VEC_ARRAY_NEAR(test.variance_, outDim, var, 0.2f);
         } else {
@@ -302,6 +311,22 @@ MEANVAR_TEST(ComplexFloat, af::af_cfloat)
 MEANVAR_TEST(ComplexDouble, af::af_cdouble)
 
 #undef MEANVAR_TEST
+
+using MeanVarHalf = MeanVarTyped<half_float::half>;
+INSTANTIATE_TEST_CASE_P(
+    Small, MeanVarHalf,
+    ::testing::ValuesIn(small_test_values<half_float::half>()),
+    [](const ::testing::TestParamInfo<MeanVarHalf::ParamType> info) {
+        return info.param.test_description_;
+    });
+TEST_P(MeanVarHalf, Testing) {
+    const meanvar_test<half_float::half> &test = GetParam();
+    meanvar_test_function(test);
+}
+TEST_P(MeanVarHalf, TestingCPP) {
+    const meanvar_test<half_float::half> &test = GetParam();
+    meanvar_cpp_test_function(test);
+}
 
 #define MEANVAR_TEST(NAME, TYPE)                                              \
     using MeanVar##NAME = MeanVarTyped<TYPE>;                                 \

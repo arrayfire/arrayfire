@@ -8,6 +8,10 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
+#include <af/half.h>
+#include "half.hpp"
+
+#include <cstring>
 
 namespace af {
 
@@ -25,4 +29,19 @@ static inline dim_t getFNSD(const int dim, af::dim4 dims) {
     return fNSD;
 }
 
+namespace {
+// casts from one type to another. Needed for af_half conversions specialization
+template<typename To, typename T>
+To cast(T in) {
+    return static_cast<To>(in);
+}
+
+template<>
+af_half cast<af_half, double>(double in) {
+    half_float::half tmp = static_cast<half_float::half>(in);
+    af_half out;
+    memcpy(&out, &tmp, sizeof(af_half));
+    return out;
+}
+}  // namespace
 }  // namespace af

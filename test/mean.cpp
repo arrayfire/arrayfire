@@ -213,6 +213,12 @@ void meanAllTest(half_float::half const_value, dim4 dims) {
     half output = mean<half>(a);
     af_half output2 = mean<af_half>(a);
 
+    // make sure output2 and output are binary equals. This is necessary
+    // because af_half is not a complete type
+    half output2_copy;
+    memcpy(&output2_copy, &output2, sizeof(af_half));
+    ASSERT_EQ(output, output2_copy);
+
     ASSERT_NEAR(output, gold, 1.0e-3);
 }
 

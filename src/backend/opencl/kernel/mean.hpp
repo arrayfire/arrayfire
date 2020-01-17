@@ -439,8 +439,8 @@ T mean_all_weighted(Param in, Param inWeight) {
                                      sizeof(Tw) * tmpWeight.elements(),
                                      h_wptr.data());
 
-        compute_t<T> initial = h_ptr[0];
-        compute_t<Tw> w      = h_wptr[0];
+        compute_t<T> initial = static_cast<compute_t<T>>(h_ptr[0]);
+        compute_t<Tw> w       = static_cast<compute_t<Tw>>(h_wptr[0]);
         MeanOp<compute_t<T>, compute_t<Tw>> Op(initial, w);
         for (int i = 1; i < (int)tmpOut.elements(); i++) {
             Op(compute_t<T>(h_ptr[i]), compute_t<Tw>(h_wptr[i]));
@@ -458,8 +458,8 @@ T mean_all_weighted(Param in, Param inWeight) {
                                      sizeof(Tw) * inWeight.info.offset,
                                      sizeof(Tw) * in_elements, h_wptr.data());
 
-        compute_t<T> initial = h_ptr[0];
-        compute_t<Tw> w      = h_wptr[0];
+        compute_t<T> initial = static_cast<compute_t<T>>(h_ptr[0]);
+        compute_t<Tw> w      = static_cast<compute_t<Tw>>(h_wptr[0]);
         MeanOp<compute_t<T>, compute_t<Tw>> Op(initial, w);
         for (int i = 1; i < (int)in_elements; i++) {
             Op(compute_t<T>(h_ptr[i]), compute_t<Tw>(h_wptr[i]));
@@ -515,8 +515,8 @@ To mean_all(Param in) {
                                      sizeof(Tw) * tmpCt.elements(),
                                      h_cptr.data());
 
-        compute_t<To> initial = h_ptr[0];
-        compute_t<Tw> w       = h_cptr[0];
+        compute_t<To> initial = static_cast<compute_t<To>>(h_ptr[0]);
+        compute_t<Tw> w       = static_cast<compute_t<Tw>>(h_cptr[0]);
         MeanOp<compute_t<To>, compute_t<Tw>> Op(initial, w);
         for (int i = 1; i < (int)h_ptr.size(); i++) {
             Op(compute_t<To>(h_ptr[i]), compute_t<Tw>(h_cptr[i]));

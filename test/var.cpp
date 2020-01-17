@@ -26,7 +26,7 @@ template<typename T>
 class Var : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, uintl, intl,
-                         char, uchar, short, ushort>
+                         char, uchar, short, ushort, half_float::half>
     TestTypes;
 TYPED_TEST_CASE(Var, TestTypes);
 
@@ -90,18 +90,22 @@ void testCPPVar(T const_value, dim4 dims) {
     ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 }
 
-TYPED_TEST(Var, AllCPPSmall) { testCPPVar<TypeParam>(2, dim4(10, 10, 1, 1)); }
+TYPED_TEST(Var, AllCPPSmall) {
+    testCPPVar<TypeParam>(TypeParam(2), dim4(10, 10, 1, 1));
+}
 
 TYPED_TEST(Var, AllCPPMedium) {
-    testCPPVar<TypeParam>(2, dim4(100, 100, 1, 1));
+    testCPPVar<TypeParam>(TypeParam(2), dim4(100, 100, 1, 1));
 }
 
 TYPED_TEST(Var, AllCPPLarge) {
-    testCPPVar<TypeParam>(2, dim4(1000, 1000, 1, 1));
+    testCPPVar<TypeParam>(TypeParam(2), dim4(1000, 1000, 1, 1));
 }
 
 TYPED_TEST(Var, DimCPPSmall) {
     typedef typename varOutType<TypeParam>::type outType;
+    float tol = 0.001f;
+    if ((af_dtype)af::dtype_traits<TypeParam>::af_type == f16) { tol = 0.6f; }
 
     SUPPORTED_TYPE_CHECK(TypeParam);
     SUPPORTED_TYPE_CHECK(outType);
@@ -134,19 +138,10 @@ TYPED_TEST(Var, DimCPPSmall) {
         bout1.host(&h_out[2].front());
         nbout1.host(&h_out[3].front());
 
-        for (size_t j = 0; j < tests.size(); j++) {
-            for (size_t jj = 0; jj < tests[j].size(); jj++) {
-                // NOTE: will work for all types
-                if (is_same_type<float, outType>::value ||
-                    is_same_type<cfloat, outType>::value) {
-                    ASSERT_FLOAT_EQ(real(h_out[j][jj]), real(tests[j][jj]));
-                    ASSERT_FLOAT_EQ(imag(h_out[j][jj]), imag(tests[j][jj]));
-                } else {
-                    ASSERT_DOUBLE_EQ(real(h_out[j][jj]), real(tests[j][jj]));
-                    ASSERT_DOUBLE_EQ(imag(h_out[j][jj]), imag(tests[j][jj]));
-                }
-            }
-        }
+        ASSERT_VEC_ARRAY_NEAR(tests[0], bout.dims(), bout, tol);
+        ASSERT_VEC_ARRAY_NEAR(tests[1], nbout.dims(), nbout, tol);
+        ASSERT_VEC_ARRAY_NEAR(tests[2], bout1.dims(), bout1, tol);
+        ASSERT_VEC_ARRAY_NEAR(tests[3], nbout1.dims(), nbout1, tol);
     }
 }
 
