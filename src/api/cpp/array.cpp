@@ -861,6 +861,11 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type) {
         return array_type;
     }
 
+    // If the array is f16 then avoid upcasting to float or double
+    if ((scalar_type == f64 || scalar_type == f32) && (array_type == f16)) {
+        return f16;
+    }
+
     // Default to single precision by default when multiplying with scalar
     if ((scalar_type == f64 || scalar_type == c64) &&
         (array_type != f64 && array_type != c64)) {
