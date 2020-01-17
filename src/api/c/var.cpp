@@ -11,6 +11,7 @@
 #include <backend.hpp>
 #include <cast.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <math.hpp>
 #include <mean.hpp>
@@ -26,6 +27,7 @@
 
 using namespace detail;
 
+using common::half;
 using std::ignore;
 using std::make_tuple;
 using std::tie;
@@ -215,6 +217,9 @@ af_err af_var(af_array* out, const af_array in, const bool isbiased,
             case c64:
                 output = var_<cdouble, cdouble>(in, no_weights, bias, dim);
                 break;
+            case f16:
+                output = var_<half, half>(in, no_weights, bias, dim);
+                break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);
@@ -281,6 +286,10 @@ af_err af_var_weighted(af_array* out, const af_array in, const af_array weights,
                 output =
                     var_<char, float>(in, weights, AF_VARIANCE_POPULATION, dim);
                 break;
+            case f16:
+                output =
+                    var_<half, float>(in, weights, AF_VARIANCE_POPULATION, dim);
+                break;
             case c32:
                 output = var_<cfloat, cfloat>(in, weights,
                                               AF_VARIANCE_POPULATION, dim);
@@ -313,6 +322,7 @@ af_err af_var_all(double* realVal, double* imagVal, const af_array in,
             case u64: *realVal = varAll<uintl, double>(in, isbiased); break;
             case u8: *realVal = varAll<uchar, float>(in, isbiased); break;
             case b8: *realVal = varAll<char, float>(in, isbiased); break;
+            case f16: *realVal = varAll<half, float>(in, isbiased); break;
             case c32: {
                 cfloat tmp = varAll<cfloat, cfloat>(in, isbiased);
                 *realVal   = real(tmp);
@@ -355,6 +365,7 @@ af_err af_var_all_weighted(double* realVal, double* imagVal, const af_array in,
             case u64: *realVal = varAll<uintl, double>(in, weights); break;
             case u8: *realVal = varAll<uchar, float>(in, weights); break;
             case b8: *realVal = varAll<char, float>(in, weights); break;
+            case f16: *realVal = varAll<half, float>(in, weights); break;
             case c32: {
                 cfloat tmp = varAll<cfloat, cfloat>(in, weights);
                 *realVal   = real(tmp);
@@ -429,6 +440,10 @@ af_err af_meanvar(af_array* mean, af_array* var, const af_array in,
             case c64:
                 tie(*mean, *var) =
                     meanvar<cdouble, cdouble>(in, weights, bias, dim);
+                break;
+            case f16:
+                tie(*mean, *var) =
+                    meanvar<half, half>(in, weights, bias, dim);
                 break;
             default: TYPE_ERROR(1, iType);
         }

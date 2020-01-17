@@ -12,6 +12,11 @@
 #include <af/statistics.h>
 #include "common.hpp"
 #include "error.hpp"
+#include "half.hpp"
+#ifdef AF_CUDA
+#include <cuda_fp16.h>
+#include <traits.hpp>
+#endif
 
 namespace af {
 
@@ -33,7 +38,7 @@ array var(const array& in, const array& weights, const dim_t dim) {
     AFAPI T var(const array& in, const bool isbiased) {                    \
         double ret_val;                                                    \
         AF_THROW(af_var_all(&ret_val, NULL, in.get(), isbiased));          \
-        return (T)ret_val;                                                 \
+        return cast<T>(ret_val);                                           \
     }                                                                      \
                                                                            \
     template<>                                                             \
@@ -41,7 +46,7 @@ array var(const array& in, const array& weights, const dim_t dim) {
         double ret_val;                                                    \
         AF_THROW(                                                          \
             af_var_all_weighted(&ret_val, NULL, in.get(), weights.get())); \
-        return (T)ret_val;                                                 \
+        return cast<T>(ret_val);                                           \
     }
 
 template<>
@@ -82,6 +87,11 @@ INSTANTIATE_VAR(short);
 INSTANTIATE_VAR(unsigned short);
 INSTANTIATE_VAR(char);
 INSTANTIATE_VAR(unsigned char);
+INSTANTIATE_VAR(af_half);
+INSTANTIATE_VAR(half_float::half);
+#ifdef AF_CUDA
+INSTANTIATE_VAR(__half);
+#endif
 
 #undef INSTANTIATE_VAR
 
