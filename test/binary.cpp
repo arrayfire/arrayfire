@@ -388,6 +388,128 @@ INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestInt,
 INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestShort,
                         testing::Range<short>(-180, 0, 50));
 
+struct result_type_param {
+    af_dtype result_;
+    af_dtype lhs_;
+    af_dtype rhs_;
+
+    result_type_param(af_dtype type) : result_(type), lhs_(type), rhs_(type) {}
+    result_type_param(af_dtype result, af_dtype lhs, af_dtype rhs)
+        : result_(result), lhs_(lhs), rhs_(rhs) {}
+};
+
+ostream &operator<<(ostream &os, const result_type_param &p) {
+    os << "{lhs_ = " << p.lhs_ << " rhs_ = " << p.rhs_
+       << " result_ = " << p.result_ << "}";
+    return os;
+}
+
+class ResultType : public testing::TestWithParam<result_type_param> {
+   protected:
+    af::array lhs;
+    af::array rhs;
+    af_dtype gold;
+    bool skip;
+
+    void SetUp() {
+        result_type_param params = GetParam();
+        gold                     = params.result_;
+        skip = false;
+        if (noHalfTests(params.result_) || noHalfTests(params.lhs_) ||
+            noHalfTests(params.rhs_)) {
+            skip = true;
+            return;
+        }
+        lhs                      = af::array(10, params.lhs_);
+        rhs                      = af::array(10, params.rhs_);
+    }
+};
+
+std::string print_types(
+    const ::testing::TestParamInfo<ResultType::ParamType> info) {
+    stringstream ss;
+    ss << "lhs_" << info.param.lhs_ << "_rhs_" << info.param.rhs_ << "_result_"
+       << info.param.result_;
+    return ss.str();
+}
+
+INSTANTIATE_TEST_CASE_P(
+    SameTypes, ResultType,
+    // clang-format off
+    ::testing::Values(result_type_param(f32),
+                      result_type_param(f64),
+                      result_type_param(c32),
+                      result_type_param(c64),
+                      result_type_param(b8),
+                      result_type_param(s32),
+                      result_type_param(u32),
+                      result_type_param(u8),
+                      result_type_param(s64),
+                      result_type_param(u64),
+                      result_type_param(s16),
+                      result_type_param(u16),
+                      result_type_param(f16)),
+    // clang-format on
+    print_types);
+
+INSTANTIATE_TEST_CASE_P(
+    Float, ResultType,
+    // clang-format off
+    ::testing::Values(result_type_param(f32),
+                      result_type_param(f64, f64, f32),
+                      result_type_param(c32, c32, f32),
+                      result_type_param(c64, c64, f32),
+                      result_type_param(f32, b8, f32),
+                      result_type_param(f32, s32, f32),
+                      result_type_param(f32, u32, f32),
+                      result_type_param(f32, u8, f32),
+                      result_type_param(f32, s64, f32),
+                      result_type_param(f32, u64, f32),
+                      result_type_param(f32, s16, f32),
+                      result_type_param(f32, u16, f32),
+                      result_type_param(f32, f16, f32)),
+    // clang-format on
+    print_types);
+
+INSTANTIATE_TEST_CASE_P(
+    Double, ResultType,
+    ::testing::Values(
+        // clang-format off
+                      result_type_param(f64, f32, f64),
+                      result_type_param(f64, f64, f64),
+                      result_type_param(c64, c32, f64),
+                      result_type_param(c64, c64, f64),
+                      result_type_param(f64, b8,  f64),
+                      result_type_param(f64, s32, f64),
+                      result_type_param(f64, u32, f64),
+                      result_type_param(f64, u8,  f64),
+                      result_type_param(f64, s64, f64),
+                      result_type_param(f64, u64, f64),
+                      result_type_param(f64, s16, f64),
+                      result_type_param(f64, u16, f64),
+                      result_type_param(f64, f16, f64)),
+    // clang-format on
+    print_types);
+
+// clang-format off
+TEST_P(ResultType, Addition)       {
+    if (skip) return;
+    ASSERT_EQ(gold, (lhs + rhs).type());
+}
+TEST_P(ResultType, Subtraction)    {
+    if (skip) return;
+    ASSERT_EQ(gold, (lhs - rhs).type());
+}
+TEST_P(ResultType, Multiplication) {
+    if (skip) return;
+    ASSERT_EQ(gold, (lhs * rhs).type());
+}
+TEST_P(ResultType, Division)       {
+    if (skip) return;
+    ASSERT_EQ(gold, (lhs / rhs).type());
+}
+// clang-format on
+
 template<typename T>
 class ResultTypeScalar : public ::testing::Test {
 protected:
