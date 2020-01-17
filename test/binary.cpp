@@ -9,6 +9,7 @@
 
 #define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
 #include <af/arith.h>
 #include <af/array.h>
@@ -386,3 +387,53 @@ INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestInt,
                         testing::Range<int>(-46340, 0, 10e3));
 INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestShort,
                         testing::Range<short>(-180, 0, 50));
+
+template<typename T>
+class ResultTypeScalar : public ::testing::Test {
+protected:
+    T scalar;
+    void SetUp() {
+      scalar = T(1);
+    }
+};
+
+typedef ::testing::Types<float, double, unsigned int, int, short,
+                         unsigned short, char, unsigned char, half_float::half>
+    TestTypes;
+TYPED_TEST_CASE(ResultTypeScalar, TestTypes);
+
+TYPED_TEST(ResultTypeScalar, HalfAddition) {
+    SUPPORTED_TYPE_CHECK(half_float::half);
+    ASSERT_EQ(f16, (af::array(10, f16) + this->scalar).type());
+}
+
+TYPED_TEST(ResultTypeScalar, HalfSubtraction) {
+    SUPPORTED_TYPE_CHECK(half_float::half);
+    ASSERT_EQ(f16, (af::array(10, f16) - this->scalar).type());
+}
+
+TYPED_TEST(ResultTypeScalar, HalfMultiplication) {
+    SUPPORTED_TYPE_CHECK(half_float::half);
+    ASSERT_EQ(f16, (af::array(10, f16) * this->scalar).type());
+}
+
+TYPED_TEST(ResultTypeScalar, HalfDivision) {
+    SUPPORTED_TYPE_CHECK(half_float::half);
+    ASSERT_EQ(f16, (af::array(10, f16) / this->scalar).type());
+}
+
+TYPED_TEST(ResultTypeScalar, FloatAddition) {
+    ASSERT_EQ(f32, (af::array(10, f32) + this->scalar).type());
+}
+
+TYPED_TEST(ResultTypeScalar, FloatSubtraction) {
+    ASSERT_EQ(f32, (af::array(10, f32) - this->scalar).type());
+}
+
+TYPED_TEST(ResultTypeScalar, FloatMultiplication) {
+    ASSERT_EQ(f32, (af::array(10, f32) * this->scalar).type());
+}
+
+TYPED_TEST(ResultTypeScalar, FloatDivision) {
+    ASSERT_EQ(f32, (af::array(10, f32) / this->scalar).type());
+}
