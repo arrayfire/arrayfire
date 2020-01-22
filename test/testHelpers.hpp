@@ -494,7 +494,7 @@ bool noHalfTests(af::dtype ty) {
 
 #define SUPPORTED_TYPE_CHECK(type)                                        \
     if (noDoubleTests((af_dtype)af::dtype_traits<type>::af_type)) return; \
-    if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type)) return
+    if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type)) return;
 
 inline bool noImageIOTests() {
     bool ret = !af::isImageIOAvailable();
