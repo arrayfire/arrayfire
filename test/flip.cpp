@@ -37,11 +37,12 @@ void Test_flip_1D(const af::dtype dt) {
     freeHost(h_out);
 }
 
-TEST(FlipTests, Test_flip_1D_f32) {
-  Test_flip_1D(f32);
-}
+TEST(FlipTests, Test_flip_1D_f32) { Test_flip_1D(f32); }
+
 TEST(FlipTests, Test_flip_1D_f16) {
-  Test_flip_1D(f16);
+    SUPPORTED_TYPE_CHECK(half_float::half);
+
+    Test_flip_1D(f16);
 }
 
 TEST(FlipTests, Test_flip_2D0) {
