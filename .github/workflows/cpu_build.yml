@@ -8,13 +8,12 @@ on:
 
 name: ci
 
-env:
-    NINJA_VER: 1.9.0
-
 jobs:
     build_cpu:
         name: CPU
         runs-on: ${{ matrix.os }}
+        env:
+          NINJA_VER: 1.9.0
         strategy:
             fail-fast: false
             matrix:
@@ -51,6 +50,7 @@ jobs:
             - name: Install Common Dependencies for Ubuntu
               if: matrix.os == 'ubuntu-18.04'
               run: |
+                  sudo apt-get -qq update
                   sudo apt-get install -y libfreeimage-dev \
                                           libglfw3-dev \
                                           libboost-dev \
