@@ -78,8 +78,7 @@ __kernel void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0,
     // Offset input and output pointers to second pixel of second coloumn/row
     // to skip the border
     __global T* oPtr = output +
-                       (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) +
-                       oInfo.strides[1] + 1;
+                       (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
     // pull image to local memory
 #pragma unroll
@@ -88,11 +87,8 @@ __kernel void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0,
 #pragma unroll
         for (int a = lx, gx2 = gx; a < SHRD_MEM_WIDTH;
              a += get_local_size(0), gx2 += get_local_size(0)) {
-            int x = gx2 - 1;
-            int y = gy2 - 1;
-            if (x >= 0 && x < oInfo.dims[0] && y >= 0 && y < oInfo.dims[1])
-                outMem[b][a] =
-                    oPtr[x * oInfo.strides[0] + y * oInfo.strides[1]];
+            if (gx2 >= 0 && gx2 < oInfo.dims[0] && gy2 >= 0 && gy2 < oInfo.dims[1] - 1)
+                outMem[b][a] = oPtr[gx2 * oInfo.strides[0] + gy2 * oInfo.strides[1]];
             else
                 outMem[b][a] = NOEDGE;
         }
@@ -191,7 +187,7 @@ __kernel void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0,
 
     // Update output with shared memory result
     if (gx < (oInfo.dims[0] - 2) && gy < (oInfo.dims[1] - 2))
-        oPtr[gx * oInfo.strides[0] + gy * oInfo.strides[1]] = outMem[j][i];
+        oPtr[(gx * oInfo.strides[0] + gy * oInfo.strides[1]) + oInfo.strides[1] + 1] = outMem[j][i];
 }
 #endif
 

@@ -47,8 +47,7 @@ void nonMaxSuppression(Param<float> output, CParam<T> in, CParam<T> dx,
     // Offset input and output pointers to second pixel of second coloumn/row
     // to skip the border
     const T* mag = (const T*)in.ptr +
-                   (b2 * in.strides[2] + b3 * in.strides[3]) + in.strides[1] +
-                   1;
+                   (b2 * in.strides[2] + b3 * in.strides[3]);
     const T* dX = (const T*)dx.ptr + (b2 * dx.strides[2] + b3 * dx.strides[3]) +
                   dx.strides[1] + 1;
     const T* dY = (const T*)dy.ptr + (b2 * dy.strides[2] + b3 * dy.strides[3]) +
@@ -59,13 +58,13 @@ void nonMaxSuppression(Param<float> output, CParam<T> in, CParam<T> dx,
 
     // pull image to shared memory
 #pragma unroll
-    for (int b = ly, gy2 = gy; b < SHRD_MEM_HEIGHT;
+    for (int b = ly, gy2 = gy; b < SHRD_MEM_HEIGHT && gy2 < in.dims[1];
          b += blockDim.y, gy2 += blockDim.y)
 #pragma unroll
-        for (int a = lx, gx2 = gx; a < SHRD_MEM_WIDTH;
+        for (int a = lx, gx2 = gx; a < SHRD_MEM_WIDTH && gx2 < in.dims[0];
              a += blockDim.x, gx2 += blockDim.x)
             shrdMem[b][a] =
-                mag[lIdx(gx2 - 1, gy2 - 1, in.strides[0], in.strides[1])];
+                mag[lIdx(gx2, gy2, in.strides[0], in.strides[1])];
 
     int i = lx + 1;
     int j = ly + 1;
@@ -200,8 +199,7 @@ void edgeTrack(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
 
     // Offset input and output pointers to second pixel of second coloumn/row
     // to skip the border
-    T* oPtr = output.ptr + (b2 * output.strides[2] + b3 * output.strides[3]) +
-              output.strides[1] + 1;
+    T* oPtr = output.ptr + (b2 * output.strides[2] + b3 * output.strides[3]);
 
     // pull image to shared memory
 #pragma unroll
@@ -210,8 +208,8 @@ void edgeTrack(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
 #pragma unroll
         for (int a = lx, gx2 = gx; a < SHRD_MEM_WIDTH;
              a += blockDim.x, gx2 += blockDim.x) {
-            int x = gx2 - 1;
-            int y = gy2 - 1;
+            int x = gx2;
+            int y = gy2;
             if (x >= 0 && x < output.dims[0] && y >= 0 && y < output.dims[1])
                 outMem[b][a] =
                     oPtr[lIdx(x, y, output.strides[0], output.strides[1])];
@@ -294,7 +292,7 @@ void edgeTrack(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
 
     // Update output with shared memory result
     if (gx < (output.dims[0] - 2) && gy < (output.dims[1] - 2))
-        oPtr[lIdx(gx, gy, output.strides[0], output.strides[1])] = outMem[j][i];
+        oPtr[lIdx(gx, gy, output.strides[0], output.strides[1]) + output.strides[1] + 1] = outMem[j][i];
 }
 
 template<typename T>
