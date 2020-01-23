@@ -32,8 +32,8 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dxParam,
 
             offset = dims[0] + 1;
 
-            for (dim_t j = 1; j < dims[1] - 1; ++j, offset += 2) {
-                for (dim_t i = 1; i < dims[0] - 1; ++i, ++offset) {
+            for (dim_t j = 2; j < dims[1]; ++j, offset += 2) {
+                for (dim_t i = 2; i < dims[0]; ++i, ++offset) {
                     T curr = mag[offset];
                     if (curr == 0) {
                         out[offset] = (T)0;
@@ -89,8 +89,8 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dxParam,
                             }
                         }
 
-                        float mag1 = (1 - alpha) * a1 + alpha * b1;
-                        float mag2 = (1 - alpha) * a2 + alpha * b2;
+                        float mag1 = (1.0f - alpha) * a1 + alpha * b1;
+                        float mag2 = (1.0f - alpha) * a2 + alpha * b2;
 
                         if (curr > mag1 && curr > mag2) {
                             out[offset] = curr;
