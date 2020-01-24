@@ -8,8 +8,9 @@
  ********************************************************/
 
 #pragma once
+
+#include <cl2hpp.hpp>
 #include <kernel/KParam.hpp>
-#include <platform.hpp>
 
 namespace opencl {
 

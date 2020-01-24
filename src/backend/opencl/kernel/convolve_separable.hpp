@@ -8,10 +8,10 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 
 namespace opencl {
-
 namespace kernel {
 
 // below shared MAX_*_LEN's are calculated based on
@@ -23,5 +23,4 @@ template<typename T, typename accT, int cDim, bool expand>
 void convSep(Param out, const Param sig, const Param filt);
 
 }  // namespace kernel
-
 }  // namespace opencl

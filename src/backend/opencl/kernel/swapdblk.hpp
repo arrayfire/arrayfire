@@ -8,9 +8,11 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/err_common.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/swapdblk.hpp>
 #include <program.hpp>
