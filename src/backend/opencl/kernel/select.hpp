@@ -8,15 +8,18 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/select.hpp>
 #include <math.hpp>
+#include <platform.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <types.hpp>
+
 #include <string>
 
 using cl::Buffer;

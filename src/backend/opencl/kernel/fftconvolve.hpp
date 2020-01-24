@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <backend.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
@@ -17,6 +19,7 @@
 #include <kernel_headers/fftconvolve_reorder.hpp>
 #include <memory.hpp>
 #include <program.hpp>
+#include <traits.hpp>
 #include <af/defines.h>
 
 using cl::Buffer;

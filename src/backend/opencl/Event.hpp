@@ -8,9 +8,9 @@
  ********************************************************/
 #pragma once
 
-#include <common/EventBase.hpp>
-#include <platform.hpp>
 #include <af/event.h>
+#include <cl2hpp.hpp>
+#include <common/EventBase.hpp>
 
 namespace opencl {
 class OpenCLEventPolicy {

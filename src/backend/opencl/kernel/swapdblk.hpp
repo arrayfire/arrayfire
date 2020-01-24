@@ -12,6 +12,7 @@
 #include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
+#include <err_opencl.hpp>
 #include <kernel_headers/swapdblk.hpp>
 #include <program.hpp>
 #include <traits.hpp>

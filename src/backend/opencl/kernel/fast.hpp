@@ -14,7 +14,9 @@
 #include <kernel_headers/fast.hpp>
 #include <memory.hpp>
 #include <program.hpp>
+#include <traits.hpp>
 #include <af/defines.h>
+
 #include <map>
 
 using cl::Buffer;

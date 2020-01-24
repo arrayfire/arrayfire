@@ -8,16 +8,18 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/laset.hpp>
+#include <magma_types.h>
+#include <platform.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <types.hpp>
 #include <string>
-#include <magma_types.h>
 
 using cl::Buffer;
 using cl::EnqueueArgs;

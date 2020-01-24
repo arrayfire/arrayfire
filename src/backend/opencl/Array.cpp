@@ -19,6 +19,7 @@
 #include <memory.hpp>
 #include <platform.hpp>
 #include <scalar.hpp>
+#include <traits.hpp>
 #include <af/dim4.hpp>
 #include <af/opencl.h>
 
@@ -323,6 +324,15 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
 }
 
 template<typename T>
+void *getDevicePtr(const Array<T> &arr) {
+    const cl::Buffer *buf = arr.device();
+    if (!buf) return NULL;
+    memLock((T *)buf);
+    cl_mem mem = (*buf)();
+    return (void *)mem;
+}
+
+template<typename T>
 Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
     verifyTypeSupport<T>();
     Array<T> out = Array<T>(dims, node);
@@ -435,6 +445,15 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
     if (node->isBuffer()) { node = bufferNodePtr<T>(); }
 }
 
+template<typename T>
+size_t Array<T>::getAllocatedBytes() const {
+    if (!isReady()) return 0;
+    size_t bytes = memoryManager().allocated(data.get());
+    // External device poitner
+    if (bytes == 0 && data.get()) { return data_dims.elements() * sizeof(T); }
+    return bytes;
+}
+
 #define INSTANTIATE(T)                                                        \
     template Array<T> createHostDataArray<T>(const dim4 &dims,                \
                                              const T *const data);            \
@@ -461,7 +480,9 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(vector<Array<T> *> arrays);                 \
     template kJITHeuristics passesJitHeuristics<T>(Node * node);              \
-    template void Array<T>::setDataDims(const dim4 &new_dims);
+    template void *getDevicePtr<T>(const Array<T> &arr);                      \
+    template void Array<T>::setDataDims(const dim4 &new_dims);                \
+    template size_t Array<T>::getAllocatedBytes() const;
 
 INSTANTIATE(float)
 INSTANTIATE(double)

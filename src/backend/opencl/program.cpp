@@ -7,10 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <cl2hpp.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/KParam.hpp>
+#include <platform.hpp>
 #include <program.hpp>
 #include <traits.hpp>
+#include <types.hpp>
 
 using cl::Buffer;
 using cl::EnqueueArgs;

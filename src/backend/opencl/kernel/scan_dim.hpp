@@ -8,20 +8,24 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/ops.hpp>
 #include <kernel_headers/scan_dim.hpp>
+#include <memory.hpp>
+#include <platform.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <type_util.hpp>
+#include "config.hpp"
+#include "names.hpp"
+
 #include <map>
 #include <mutex>
 #include <string>
-#include "config.hpp"
-#include "names.hpp"
 
 using cl::Buffer;
 using cl::EnqueueArgs;

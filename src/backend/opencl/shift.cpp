@@ -11,6 +11,7 @@
 #include <common/jit/ShiftNodeBase.hpp>
 #include <err_opencl.hpp>
 #include <shift.hpp>
+#include <traits.hpp>
 
 #include <memory>
 #include <stdexcept>

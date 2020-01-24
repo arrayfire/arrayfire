@@ -7,14 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
-#include <err_opencl.hpp>
 #include <kernel_headers/nearest_neighbour.hpp>
 #include <math.hpp>
-#include <memory.hpp>
+#include <platform.hpp>
 #include <program.hpp>
+#include <traits.hpp>
 #include <af/defines.h>
 
 using cl::Buffer;

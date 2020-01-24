@@ -10,9 +10,11 @@
 #if defined(WITH_LINEAR_ALGEBRA)
 #include <common/blas_headers.hpp>
 #include <common/complex.hpp>
+#include <common/err_common.hpp>
 #include <cpu/cpu_blas.hpp>
 #include <cpu/cpu_helper.hpp>
 #include <math.hpp>
+#include <traits.hpp>
 
 using common::is_complex;
 

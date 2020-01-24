@@ -8,15 +8,16 @@
  ********************************************************/
 
 #pragma once
+
 #include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
-#include <err_opencl.hpp>
 #include <kernel_headers/regions.hpp>
 #include <math.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 #include <program.hpp>
-#include <stdio.h>
+#include <traits.hpp>
 #include <af/defines.h>
 
 #pragma GCC diagnostic push
@@ -32,6 +33,8 @@
 #include <boost/compute/lambda/placeholders.hpp>
 
 #pragma GCC diagnostic pop
+
+#include <cstdio>
 
 using cl::Buffer;
 using cl::EnqueueArgs;

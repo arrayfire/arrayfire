@@ -8,11 +8,10 @@
  ********************************************************/
 
 /// This file contains platform independent utility functions
+#pragma once
 
 #include <iosfwd>
 #include <string>
-
-#pragma once
 
 std::string getEnvVar(const std::string &key);
 

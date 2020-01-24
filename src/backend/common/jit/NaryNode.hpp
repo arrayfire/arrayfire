@@ -15,6 +15,7 @@
 #include <common/jit/Node.hpp>
 
 #include <array>
+#include <cassert>
 #include <iomanip>
 #include <sstream>
 #include <string>

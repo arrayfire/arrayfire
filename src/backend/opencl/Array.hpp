@@ -8,17 +8,14 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/jit/Node.hpp>
 #include <common/MemoryManagerBase.hpp>
-#include <err_opencl.hpp>
-#include <memory.hpp>
-#include <platform.hpp>
-#include <traits.hpp>
-#include <types.hpp>
 #include <af/dim4.hpp>
+
 #include <memory>
 
 namespace opencl {
@@ -97,13 +94,7 @@ template<typename T>
 kJITHeuristics passesJitHeuristics(common::Node *node);
 
 template<typename T>
-void *getDevicePtr(const Array<T> &arr) {
-    const cl::Buffer *buf = arr.device();
-    if (!buf) return NULL;
-    memLock((T *)buf);
-    cl_mem mem = (*buf)();
-    return (void *)mem;
-}
+void *getDevicePtr(const Array<T> &arr);
 
 template<typename T>
 void *getRawPtr(const Array<T> &arr) {
@@ -213,15 +204,7 @@ class Array {
 
     void setDataDims(const dim4 &new_dims);
 
-    size_t getAllocatedBytes() const {
-        if (!isReady()) return 0;
-        size_t bytes = memoryManager().allocated(data.get());
-        // External device poitner
-        if (bytes == 0 && data.get()) {
-            return data_dims.elements() * sizeof(T);
-        }
-        return bytes;
-    }
+    size_t getAllocatedBytes() const;
 
     operator Param() const {
         KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},

@@ -8,8 +8,8 @@
  ********************************************************/
 
 #pragma once
+
 #include <common/util.hpp>
-#include <platform.hpp>
 
 #include <cstdio>
 #include <string>

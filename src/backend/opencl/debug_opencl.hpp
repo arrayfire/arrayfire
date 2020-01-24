@@ -8,9 +8,10 @@
  ********************************************************/
 
 #pragma once
-#include <err_opencl.hpp>
-#include <errorcodes.hpp>
-#include <stdio.h>
+
+// - Include platform.hpp where this macro is used
+//   for functions synchronize_calls()
+// - Include cl2hpp.hpp for cl::CommandQueue::finish() method
 
 #ifndef NDEBUG
 #define CL_DEBUG_FINISH(Q) Q.finish()

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/complex.hpp>
@@ -19,10 +20,13 @@
 #include <kernel_headers/sparse_arith_csr.hpp>
 #include <kernel_headers/ssarith_calc_out_nnz.hpp>
 #include <math.hpp>
+#include <memory.hpp>
+#include <platform.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <type_util.hpp>
 #include <types.hpp>
+
 #include <map>
 #include <mutex>
 #include <string>

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <err_opencl.hpp>
 #include <kernel/transform.hpp>
 #include <transform.hpp>
 #include <af/dim4.hpp>

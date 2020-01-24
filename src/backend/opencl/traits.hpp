@@ -12,6 +12,7 @@
 #include <common/defines.hpp>
 #include <common/traits.hpp>
 #include <types.hpp>
+
 #include <sstream>
 #include <string>
 

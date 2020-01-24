@@ -15,7 +15,6 @@
 #if defined(WITH_LINEAR_ALGEBRA)
 #include <cpu/cpu_cholesky.hpp>
 #include <magma/magma.h>
-#include <platform.hpp>
 #include <triangle.hpp>
 
 namespace opencl {
