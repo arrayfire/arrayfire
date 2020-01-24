@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/reorder_cuh.hpp>
 
 #include <string>
@@ -29,7 +29,8 @@ void reorder(Param<T> out, CParam<T> in, const dim_t *rdims) {
 
     static const std::string source(reorder_cuh, reorder_cuh_len);
 
-    auto reorder = getKernel("cuda::reorder", source, {TemplateTypename<T>()});
+    auto reorder =
+        common::findKernel("cuda::reorder", {source}, {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 

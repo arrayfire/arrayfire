@@ -9,8 +9,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/approx1_cuh.hpp>
 #include <nvrtc_kernel_headers/approx2_cuh.hpp>
 #include <af/defines.h>
@@ -31,8 +31,8 @@ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
              const af::interpType method, const int order) {
     static const std::string source(approx1_cuh, approx1_cuh_len);
 
-    auto approx1 = getKernel(
-        "cuda::approx1", source,
+    auto approx1 = common::findKernel(
+        "cuda::approx1", {source},
         {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(order)});
 
     dim3 threads(THREADS, 1, 1);
@@ -61,8 +61,8 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
              const af::interpType method, const int order) {
     static const std::string source(approx2_cuh, approx2_cuh_len);
 
-    auto approx2 = getKernel(
-        "cuda::approx2", source,
+    auto approx2 = common::findKernel(
+        "cuda::approx2", {source},
         {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(order)});
 
     dim3 threads(TX, TY, 1);

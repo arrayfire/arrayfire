@@ -9,8 +9,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/medfilt_cuh.hpp>
 #include <af/defines.h>
 
@@ -30,10 +30,11 @@ void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
     UNUSED(w_wid);
     static const std::string source(medfilt_cuh, medfilt_cuh_len);
 
-    auto medfilt2 = getKernel("cuda::medfilt2", source,
-                              {TemplateTypename<T>(), TemplateArg(pad),
-                               TemplateArg(w_len), TemplateArg(w_wid)},
-                              {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto medfilt2 =
+        common::findKernel("cuda::medfilt2", {source},
+                           {TemplateTypename<T>(), TemplateArg(pad),
+                            TemplateArg(w_len), TemplateArg(w_wid)},
+                           {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 
@@ -51,8 +52,8 @@ template<typename T>
 void medfilt1(Param<T> out, CParam<T> in, const af::borderType pad, int w_wid) {
     static const std::string source(medfilt_cuh, medfilt_cuh_len);
 
-    auto medfilt1 = getKernel(
-        "cuda::medfilt1", source,
+    auto medfilt1 = common::findKernel(
+        "cuda::medfilt1", {source},
         {TemplateTypename<T>(), TemplateArg(pad), TemplateArg(w_wid)});
 
     const dim3 threads(THREADS_X);

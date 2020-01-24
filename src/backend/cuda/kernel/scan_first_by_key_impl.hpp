@@ -11,10 +11,10 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
 #include <kernel/config.hpp>
 #include <memory.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/scan_first_by_key_cuh.hpp>
 #include <optypes.hpp>
 
@@ -36,8 +36,8 @@ static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                    CParam<Ti> in, CParam<Tk> key,
                                    const uint blocks_x, const uint blocks_y,
                                    const uint threads_x, bool inclusive_scan) {
-    auto scanbykey_first_nonfinal = getKernel(
-        "cuda::scanbykey_first_nonfinal", sbkFirstSource(),
+    auto scanbykey_first_nonfinal = common::findKernel(
+        "cuda::scanbykey_first_nonfinal", {sbkFirstSource()},
         {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
          TemplateArg(op)},
         {DefineValue(THREADS_PER_BLOCK), DefineKeyValue(DIMX, threads_x)});
@@ -57,8 +57,8 @@ static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
                                 const uint blocks_x, const uint blocks_y,
                                 const uint threads_x, bool calculateFlags,
                                 bool inclusive_scan) {
-    auto scanbykey_first_final = getKernel(
-        "cuda::scanbykey_first_final", sbkFirstSource(),
+    auto scanbykey_first_final = common::findKernel(
+        "cuda::scanbykey_first_final", {sbkFirstSource()},
         {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
          TemplateArg(op)},
         {DefineValue(THREADS_PER_BLOCK), DefineKeyValue(DIMX, threads_x)});
@@ -78,8 +78,8 @@ static void bcast_first_launcher(Param<To> out, Param<To> tmp, Param<int> tlid,
                                  const dim_t blocks_x, const dim_t blocks_y,
                                  const uint threads_x) {
     auto scanbykey_first_bcast =
-        getKernel("cuda::scanbykey_first_bcast", sbkFirstSource(),
-                  {TemplateTypename<To>(), TemplateArg(op)});
+        common::findKernel("cuda::scanbykey_first_bcast", {sbkFirstSource()},
+                           {TemplateTypename<To>(), TemplateArg(op)});
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
     uint lim = divup(out.dims[0], (threads_x * blocks_x));

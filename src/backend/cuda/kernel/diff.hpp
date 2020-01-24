@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/diff_cuh.hpp>
 
 #include <string>
@@ -28,8 +28,8 @@ void diff(Param<T> out, CParam<T> in, const int indims, const unsigned dim,
 
     static const std::string src(diff_cuh, diff_cuh_len);
 
-    auto diff = getKernel(
-        "cuda::diff", src,
+    auto diff = common::findKernel(
+        "cuda::diff", {src},
         {TemplateTypename<T>(), TemplateArg(dim), TemplateArg(isDiff2)});
 
     dim3 threads(TX, TY, 1);

@@ -11,9 +11,9 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
 #include <math.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/select_cuh.hpp>
 
 #include <string>
@@ -36,8 +36,9 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
     bool is_same = true;
     for (int i = 0; i < 4; i++) { is_same &= (a.dims[i] == b.dims[i]); }
 
-    auto select = getKernel("cuda::select", selectSource(),
-                            {TemplateTypename<T>(), TemplateArg(is_same)});
+    auto select =
+        common::findKernel("cuda::select", {selectSource()},
+                           {TemplateTypename<T>(), TemplateArg(is_same)});
 
     dim3 threads(DIMX, DIMY);
 
@@ -65,8 +66,9 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
 template<typename T>
 void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b,
                    int ndims, bool flip) {
-    auto selectScalar = getKernel("cuda::selectScalar", selectSource(),
-                                  {TemplateTypename<T>(), TemplateArg(flip)});
+    auto selectScalar =
+        common::findKernel("cuda::selectScalar", {selectSource()},
+                           {TemplateTypename<T>(), TemplateArg(flip)});
 
     dim3 threads(DIMX, DIMY);
 

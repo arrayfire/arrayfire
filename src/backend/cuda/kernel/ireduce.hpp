@@ -11,10 +11,10 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
 #include <memory.hpp>
 #include <minmax_op.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/ireduce_cuh.hpp>
 #include "config.hpp"
 
@@ -42,11 +42,11 @@ void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
     blocks.z = divup(blocks.y, maxBlocksY);
     blocks.y = divup(blocks.y, blocks.z);
 
-    auto ireduceDim =
-        getKernel("cuda::ireduceDim", ireduceSource(),
-                  {TemplateTypename<T>(), TemplateArg(op), TemplateArg(dim),
-                   TemplateArg(is_first), TemplateArg(threads_y)},
-                  {DefineValue(THREADS_X)});
+    auto ireduceDim = common::findKernel(
+        "cuda::ireduceDim", {ireduceSource()},
+        {TemplateTypename<T>(), TemplateArg(op), TemplateArg(dim),
+         TemplateArg(is_first), TemplateArg(threads_y)},
+        {DefineValue(THREADS_X)});
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -110,10 +110,10 @@ void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
 
     // threads_x can take values 32, 64, 128, 256
     auto ireduceFirst =
-        getKernel("cuda::ireduceFirst", ireduceSource(),
-                  {TemplateTypename<T>(), TemplateArg(op),
-                   TemplateArg(is_first), TemplateArg(threads_x)},
-                  {DefineValue(THREADS_PER_BLOCK)});
+        common::findKernel("cuda::ireduceFirst", {ireduceSource()},
+                           {TemplateTypename<T>(), TemplateArg(op),
+                            TemplateArg(is_first), TemplateArg(threads_x)},
+                           {DefineValue(THREADS_PER_BLOCK)});
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 

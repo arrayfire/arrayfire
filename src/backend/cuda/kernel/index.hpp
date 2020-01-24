@@ -12,8 +12,8 @@
 #include <Param.hpp>
 #include <assign_kernel_param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/index_cuh.hpp>
 
 #include <string>
@@ -28,7 +28,8 @@ void index(Param<T> out, CParam<T> in, const IndexKernelParam& p) {
 
     static const std::string source(index_cuh, index_cuh_len);
 
-    auto index = getKernel("cuda::index", source, {TemplateTypename<T>()});
+    auto index =
+        common::findKernel("cuda::index", {source}, {TemplateTypename<T>()});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

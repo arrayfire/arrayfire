@@ -8,9 +8,12 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <Kernel.hpp>
+#include <common/compile_kernel.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/jit/Node.hpp>
+#include <common/kernel_cache.hpp>
 #include <common/util.hpp>
 #include <copy.hpp>
 #include <debug_cuda.hpp>
@@ -18,7 +21,6 @@
 #include <err_cuda.hpp>
 #include <kernel_headers/jit_cuh.hpp>
 #include <math.hpp>
-#include <nvrtc/cache.hpp>
 #include <platform.hpp>
 #include <af/dim4.hpp>
 
@@ -28,6 +30,7 @@
 #include <thread>
 #include <vector>
 
+using common::compileKernel;
 using common::half;
 using common::Node;
 using common::Node_ids;
@@ -217,18 +220,20 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
         string jit_ker = getKernelString(funcName, full_nodes, full_ids,
                                          output_ids, is_linear);
 #ifdef AF_CACHE_KERNELS_TO_DISK
-        entry = loadKernel(device, funcName, jit_ker);
+        entry = common::loadKernel(device, funcName, {jit_ker});
 #endif
-        if (entry.prog == nullptr || entry.ker == nullptr) {
+        if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
             saveKernel(funcName, jit_ker, ".cu");
-            entry = buildKernel(device, funcName, jit_ker, {}, true);
+            // second argument, funcName, is important.
+            // From jit, first argument can be null as it is not used for CUDA
+            entry = compileKernel("", funcName, {jit_ker}, {}, true);
         }
         kernelCaches[device][funcName] = entry;
     } else {
         entry = idx->second;
     }
 
-    return entry.ker;
+    return entry.getKernel();
 }
 
 template<typename T>

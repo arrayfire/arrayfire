@@ -11,9 +11,9 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
 #include <kernel/config.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/unwrap_cuh.hpp>
 
 #include <string>
@@ -27,8 +27,9 @@ void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
             const int dx, const int dy, const int nx, const bool is_column) {
     static const std::string source(unwrap_cuh, unwrap_cuh_len);
 
-    auto unwrap = getKernel("cuda::unwrap", source,
-                            {TemplateTypename<T>(), TemplateArg(is_column)});
+    auto unwrap =
+        common::findKernel("cuda::unwrap", {source},
+                           {TemplateTypename<T>(), TemplateArg(is_column)});
 
     dim3 threads, blocks;
     int reps;

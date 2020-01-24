@@ -17,9 +17,9 @@
 
 #include <platform.hpp>
 
-#define CL_DEBUG_FINISH(Q)                       \
-    do {                                         \
-        if (synchronize_calls()) { Q.finish(); } \
+#define CL_DEBUG_FINISH(Q)                               \
+    do {                                                 \
+        if (opencl::synchronize_calls()) { Q.finish(); } \
     } while (false);
 
 #endif

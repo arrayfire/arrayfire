@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/lu_split_cuh.hpp>
 
 #include <string>
@@ -32,8 +32,8 @@ void lu_split(Param<T> lower, Param<T> upper, Param<T> in) {
     const bool sameDims =
         lower.dims[0] == in.dims[0] && lower.dims[1] == in.dims[1];
 
-    auto luSplit = getKernel("cuda::luSplit", src,
-                             {TemplateTypename<T>(), TemplateArg(sameDims)});
+    auto luSplit = common::findKernel(
+        "cuda::luSplit", {src}, {TemplateTypename<T>(), TemplateArg(sameDims)});
 
     dim3 threads(TX, TY, 1);
 
