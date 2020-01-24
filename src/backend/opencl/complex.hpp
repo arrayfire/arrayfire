@@ -11,6 +11,7 @@
 #include <binary.hpp>
 #include <common/jit/UnaryNode.hpp>
 #include <optypes.hpp>
+#include <traits.hpp>
 #include <af/dim4.hpp>
 
 namespace opencl {
