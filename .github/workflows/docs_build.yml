@@ -6,16 +6,15 @@ on:
     branches:
     - master
 
-name: Doxygen
-
-env:
-    NINJA_VER: 1.9.0
-    DOXYGEN_VER: 1.8.17
+name: ci
 
 jobs:
     build_documentation:
-        name: Build Documentation
+        name: Documentation
         runs-on: ubuntu-18.04
+        env:
+            NINJA_VER: 1.9.0
+            DOXYGEN_VER: 1.8.17
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
