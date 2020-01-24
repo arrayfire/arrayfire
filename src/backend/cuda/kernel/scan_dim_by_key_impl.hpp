@@ -11,10 +11,10 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
 #include <kernel/config.hpp>
 #include <memory.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/scan_dim_by_key_cuh.hpp>
 #include <optypes.hpp>
 #include <traits.hpp>
@@ -37,11 +37,11 @@ static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                        const int dim, const uint threads_y,
                                        const dim_t blocks_all[4],
                                        bool inclusive_scan) {
-    auto scanbykey_dim_nonfinal =
-        getKernel("cuda::scanbykey_dim_nonfinal", sbkDimSource(),
-                  {TemplateTypename<Ti>(), TemplateTypename<Tk>(),
-                   TemplateTypename<To>(), TemplateArg(op)},
-                  {DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
+    auto scanbykey_dim_nonfinal = common::findKernel(
+        "cuda::scanbykey_dim_nonfinal", {sbkDimSource()},
+        {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
+         TemplateArg(op)},
+        {DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -61,11 +61,11 @@ static void scan_dim_final_launcher(Param<To> out, CParam<Ti> in,
                                     const uint threads_y,
                                     const dim_t blocks_all[4],
                                     bool calculateFlags, bool inclusive_scan) {
-    auto scanbykey_dim_final =
-        getKernel("cuda::scanbykey_dim_final", sbkDimSource(),
-                  {TemplateTypename<Ti>(), TemplateTypename<Tk>(),
-                   TemplateTypename<To>(), TemplateArg(op)},
-                  {DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
+    auto scanbykey_dim_final = common::findKernel(
+        "cuda::scanbykey_dim_final", {sbkDimSource()},
+        {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
+         TemplateArg(op)},
+        {DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -84,8 +84,8 @@ static void bcast_dim_launcher(Param<To> out, CParam<To> tmp, Param<int> tlid,
                                const int dim, const uint threads_y,
                                const dim_t blocks_all[4]) {
     auto scanbykey_dim_bcast =
-        getKernel("cuda::scanbykey_dim_bcast", sbkDimSource(),
-                  {TemplateTypename<To>(), TemplateArg(op)});
+        common::findKernel("cuda::scanbykey_dim_bcast", {sbkDimSource()},
+                           {TemplateTypename<To>(), TemplateArg(op)});
     dim3 threads(THREADS_X, threads_y);
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
 

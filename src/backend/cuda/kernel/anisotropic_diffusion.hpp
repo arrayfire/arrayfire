@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/anisotropic_diffusion_cuh.hpp>
 #include <af/defines.h>
 
@@ -30,8 +30,8 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
                           const af::fluxFunction fftype, bool isMCDE) {
     static const std::string source(anisotropic_diffusion_cuh,
                                     anisotropic_diffusion_cuh_len);
-    auto diffUpdate = getKernel(
-        "cuda::diffUpdate", source,
+    auto diffUpdate = common::findKernel(
+        "cuda::diffUpdate", {source},
         {TemplateTypename<T>(), TemplateArg(fftype), TemplateArg(isMCDE)},
         {DefineValue(THREADS_X), DefineValue(THREADS_Y),
          DefineValue(YDIM_LOAD)});

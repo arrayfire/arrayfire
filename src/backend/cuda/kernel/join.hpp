@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/join_cuh.hpp>
 
 #include <string>
@@ -29,7 +29,8 @@ void join(Param<T> out, CParam<T> X, const af::dim4 &offset, int dim) {
 
     static const std::string source(join_cuh, join_cuh_len);
 
-    auto join = getKernel("cuda::join", source, {TemplateTypename<T>()});
+    auto join =
+        common::findKernel("cuda::join", {source}, {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 

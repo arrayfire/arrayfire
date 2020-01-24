@@ -9,8 +9,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/resize_cuh.hpp>
 #include <af/defines.h>
 
@@ -27,8 +27,8 @@ template<typename T>
 void resize(Param<T> out, CParam<T> in, af_interp_type method) {
     static const std::string source(resize_cuh, resize_cuh_len);
 
-    auto resize = getKernel("cuda::resize", source,
-                            {TemplateTypename<T>(), TemplateArg(method)});
+    auto resize = common::findKernel(
+        "cuda::resize", {source}, {TemplateTypename<T>(), TemplateArg(method)});
 
     dim3 threads(TX, TY, 1);
     dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));

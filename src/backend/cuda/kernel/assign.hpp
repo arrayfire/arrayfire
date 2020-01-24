@@ -10,8 +10,8 @@
 #include <Param.hpp>
 #include <assign_kernel_param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/assign_cuh.hpp>
 
 #include <string>
@@ -26,7 +26,8 @@ void assign(Param<T> out, CParam<T> in, const AssignKernelParam& p) {
 
     static const std::string src(assign_cuh, assign_cuh_len);
 
-    auto assignKer = getKernel("cuda::assign", src, {TemplateTypename<T>()});
+    auto assignKer =
+        common::findKernel("cuda::assign", {src}, {TemplateTypename<T>()});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

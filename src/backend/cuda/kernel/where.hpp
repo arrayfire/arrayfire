@@ -10,10 +10,10 @@
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
 #include <memory.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/where_cuh.hpp>
 #include "config.hpp"
 #include "scan_first.hpp"
@@ -24,7 +24,8 @@ namespace kernel {
 template<typename T>
 static void where(Param<uint> &out, CParam<T> in) {
     static const std::string src(where_cuh, where_cuh_len);
-    auto where = getKernel("cuda::where", src, {TemplateTypename<T>()});
+    auto where =
+        common::findKernel("cuda::where", {src}, {TemplateTypename<T>()});
 
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_BLOCK);

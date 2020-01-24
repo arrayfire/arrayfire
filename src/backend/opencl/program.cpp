@@ -16,6 +16,7 @@
 #include <traits.hpp>
 #include <types.hpp>
 
+#include <sstream>
 #include <string>
 
 using cl::Buffer;
@@ -23,15 +24,33 @@ using cl::EnqueueArgs;
 using cl::Kernel;
 using cl::NDRange;
 using cl::Program;
+using std::ostringstream;
 using std::string;
 
 namespace opencl {
 
+const static std::string DEFAULT_MACROS_STR(
+    "\n\
+                                           #ifdef USE_DOUBLE\n\
+                                           #pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
+                                           #endif\n                     \
+                                           #ifdef USE_HALF\n\
+                                           #pragma OPENCL EXTENSION cl_khr_fp16 : enable\n\
+                                           #else\n                     \
+                                           #define half short\n          \
+                                           #endif\n                      \
+                                           #ifndef M_PI\n               \
+                                           #define M_PI 3.1415926535897932384626433832795028841971693993751058209749445923078164\n \
+                                           #endif\n                     \
+                                           ");
+
+// TODO(pradeep) remove this version after porting to new cache interface
 void buildProgram(cl::Program &prog, const char *ker_str, const int ker_len,
                   const std::string &options) {
     buildProgram(prog, 1, &ker_str, &ker_len, options);
 }
 
+// TODO(pradeep) remove this version after porting to new cache interface
 void buildProgram(cl::Program &prog, const int num_files, const char **ker_strs,
                   const int *ker_lens, const std::string &options) {
     try {
@@ -75,4 +94,38 @@ void buildProgram(cl::Program &prog, const int num_files, const char **ker_strs,
         throw;
     }
 }
+
+cl::Program buildProgram(const std::vector<std::string> &kernelSources,
+                         const std::vector<std::string> &compileOpts) {
+    cl::Program retVal;
+    try {
+        static const std::string defaults =
+            std::string(" -D dim_t=") +
+            std::string(dtype_traits<dim_t>::getName());
+
+        auto device = getDevice();
+
+        const std::string cl_std =
+            std::string(" -cl-std=CL") +
+            device.getInfo<CL_DEVICE_OPENCL_C_VERSION>().substr(9, 3);
+
+        Program::Sources sources;
+        sources.emplace_back(DEFAULT_MACROS_STR);
+        sources.emplace_back(KParam_hpp, KParam_hpp_len);
+
+        for (auto ksrc : kernelSources) { sources.emplace_back(ksrc); }
+
+        retVal = cl::Program(getContext(), sources);
+
+        ostringstream options;
+        for (auto &opt : compileOpts) { options << opt; }
+
+        retVal.build({device}, (cl_std + defaults + options.str()).c_str());
+    } catch (...) {
+        SHOW_BUILD_INFO(retVal);
+        throw;
+    }
+    return retVal;
+}
+
 }  // namespace opencl

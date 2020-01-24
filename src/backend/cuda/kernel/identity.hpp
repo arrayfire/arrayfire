@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/identity_cuh.hpp>
 
 #include <string>
@@ -25,7 +25,7 @@ void identity(Param<T> out) {
     static const std::string source(identity_cuh, identity_cuh_len);
 
     auto identity =
-        getKernel("cuda::identity", source, {TemplateTypename<T>()});
+        common::findKernel("cuda::identity", {source}, {TemplateTypename<T>()});
 
     dim3 threads(32, 8);
     int blocks_x = divup(out.dims[0], threads.x);

@@ -9,8 +9,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/histogram_cuh.hpp>
 
 #include <string>
@@ -28,10 +28,10 @@ void histogram(Param<outType> out, CParam<inType> in, int nbins, float minval,
     static const std::string source(histogram_cuh, histogram_cuh_len);
 
     auto histogram =
-        getKernel("cuda::histogram", source,
-                  {TemplateTypename<inType>(), TemplateTypename<outType>(),
-                   TemplateArg(isLinear)},
-                  {DefineValue(MAX_BINS), DefineValue(THRD_LOAD)});
+        common::findKernel("cuda::histogram", {source},
+                           {TemplateTypename<inType>(),
+                            TemplateTypename<outType>(), TemplateArg(isLinear)},
+                           {DefineValue(MAX_BINS), DefineValue(THRD_LOAD)});
 
     dim3 threads(kernel::THREADS_X, 1);
 
