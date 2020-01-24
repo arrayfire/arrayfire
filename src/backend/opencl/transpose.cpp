@@ -24,19 +24,11 @@ Array<T> transpose(const Array<T> &in, const bool conjugate) {
     dim4 outDims      = dim4(inDims[1], inDims[0], inDims[2], inDims[3]);
     Array<T> out      = createEmptyArray<T>(outDims);
 
-    if (conjugate) {
-        if (inDims[0] % kernel::TILE_DIM == 0 &&
-            inDims[1] % kernel::TILE_DIM == 0)
-            kernel::transpose<T, true, true>(out, in, getQueue());
-        else
-            kernel::transpose<T, true, false>(out, in, getQueue());
-    } else {
-        if (inDims[0] % kernel::TILE_DIM == 0 &&
-            inDims[1] % kernel::TILE_DIM == 0)
-            kernel::transpose<T, false, true>(out, in, getQueue());
-        else
-            kernel::transpose<T, false, false>(out, in, getQueue());
-    }
+    const bool is32multiple =
+        inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0;
+
+    kernel::transpose<T>(out, in, getQueue(), conjugate, is32multiple);
+
     return out;
 }
 

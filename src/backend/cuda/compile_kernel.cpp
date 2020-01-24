@@ -7,9 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <nvrtc/cache.hpp>
+#include <common/kernel_cache.hpp>
 
-#include <common/Logger.hpp>
+#include <common/defines.hpp>
+#include <common/err_common.hpp>
 #include <device_manager.hpp>
 #include <kernel_headers/jit_cuh.hpp>
 #include <nvrtc_kernel_headers/Param_hpp.hpp>
@@ -28,81 +29,51 @@
 #include <nvrtc_kernel_headers/shared_hpp.hpp>
 #include <nvrtc_kernel_headers/traits_hpp.hpp>
 #include <nvrtc_kernel_headers/types_hpp.hpp>
-#include <nvrtc_kernel_headers/utility_hpp.hpp>
 #include <nvrtc_kernel_headers/version_h.hpp>
-#include <optypes.hpp>
-#include <platform.hpp>
-#include <af/defines.h>
-#include <af/version.h>
 
-#include <algorithm>
 #include <array>
-#include <chrono>
-#include <iterator>
-#include <map>
 #include <memory>
-#include <numeric>
 #include <string>
 #include <type_traits>
-#include <utility>
+#include <vector>
+
+using namespace cuda;
 
 using std::array;
-using std::accumulate;
-using std::chrono::duration_cast;
-using std::chrono::high_resolution_clock;
-using std::chrono::milliseconds;
-using std::begin;
-using std::end;
 using std::extent;
-using std::find_if;
-using std::make_pair;
-using std::map;
-using std::pair;
 using std::string;
-using std::to_string;
-using std::transform;
 using std::unique_ptr;
 using std::vector;
 
-spdlog::logger* getLogger() {
-    static std::shared_ptr<spdlog::logger> logger(common::loggerFactory("jit"));
-    return logger.get();
-}
-
-namespace cuda {
-
-using kc_t = map<string, Kernel>;
-
 #ifdef NDEBUG
-#define CU_LINK_CHECK(fn)                                                    \
-    do {                                                                     \
-        CUresult res = fn;                                                   \
-        if (res == CUDA_SUCCESS) break;                                      \
-        char cu_err_msg[1024];                                               \
-        const char *cu_err_name;                                             \
-        cuGetErrorName(res, &cu_err_name);                                   \
-        snprintf(cu_err_msg, sizeof(cu_err_msg), "CU Error %s(%d): %s\n",    \
-                 cu_err_name, (int)(res), linkError);                        \
-        AF_TRACE("Driver API Call: {}\nError Message: {}", #fn, cu_err_msg); \
-        AF_ERROR(cu_err_msg, AF_ERR_INTERNAL);                               \
+#define CU_LINK_CHECK(fn)                                                 \
+    do {                                                                  \
+        CUresult res = fn;                                                \
+        if (res == CUDA_SUCCESS) break;                                   \
+        char cu_err_msg[1024];                                            \
+        const char *cu_err_name;                                          \
+        cuGetErrorName(res, &cu_err_name);                                \
+        snprintf(cu_err_msg, sizeof(cu_err_msg), "CU Error %s(%d): %s\n", \
+                 cu_err_name, (int)(res), linkError);                     \
+        AF_ERROR(cu_err_msg, AF_ERR_INTERNAL);                            \
     } while (0)
 #else
 #define CU_LINK_CHECK(fn) CU_CHECK(fn)
 #endif
 
 #ifndef NDEBUG
-#define NVRTC_CHECK(fn)                                                 \
-    do {                                                                \
-        nvrtcResult res = fn;                                           \
-        if (res == NVRTC_SUCCESS) break;                                \
-        size_t logSize;                                                 \
-        nvrtcGetProgramLogSize(prog, &logSize);                         \
-        unique_ptr<char[]> log(new char[logSize + 1]);                  \
-        char *logptr = log.get();                                       \
-        nvrtcGetProgramLog(prog, logptr);                               \
-        logptr[logSize] = '\x0';                                        \
-        AF_TRACE("NVRTC API Call: {}\nError Message: {}", #fn, logptr); \
-        AF_ERROR("NVRTC ERROR", AF_ERR_INTERNAL);                       \
+#define NVRTC_CHECK(fn)                                \
+    do {                                               \
+        nvrtcResult res = fn;                          \
+        if (res == NVRTC_SUCCESS) break;               \
+        size_t logSize;                                \
+        nvrtcGetProgramLogSize(prog, &logSize);        \
+        unique_ptr<char[]> log(new char[logSize + 1]); \
+        char *logptr = log.get();                      \
+        nvrtcGetProgramLog(prog, logptr);              \
+        logptr[logSize] = '\x0';                       \
+        puts(logptr);                                  \
+        AF_ERROR("NVRTC ERROR", AF_ERR_INTERNAL);      \
     } while (0)
 #else
 #define NVRTC_CHECK(fn)                                                   \
@@ -112,40 +83,44 @@ using kc_t = map<string, Kernel>;
         char nvrtc_err_msg[1024];                                         \
         snprintf(nvrtc_err_msg, sizeof(nvrtc_err_msg),                    \
                  "NVRTC Error(%d): %s\n", res, nvrtcGetErrorString(res)); \
-        AF_TRACE("NVRTC Error Message: {}", nvrtc_err_msg);               \
         AF_ERROR(nvrtc_err_msg, AF_ERR_INTERNAL);                         \
     } while (0)
 #endif
 
-void Kernel::setConstant(const char *name, CUdeviceptr src, size_t bytes) {
-    CUdeviceptr dst = 0;
-    size_t size     = 0;
-    CU_CHECK(cuModuleGetGlobal(&dst, &size, prog, name));
-    CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, getActiveStream()));
+namespace common {
+
+detail::DevPtrType Kernel::get(const char *name) {
+    detail::DevPtrType out = 0;
+    size_t size            = 0;
+    CU_CHECK(cuModuleGetGlobal(&out, &size, prog, name));
+    return out;
+}
+
+void Kernel::copyToReadOnly(detail::DevPtrType dst, detail::DevPtrType src,
+                            size_t bytes) {
+    CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, cuda::getActiveStream()));
 }
 
 template<typename T>
-void Kernel::setScalar(const char *name, T value) {
-    CUdeviceptr dst = 0;
-    CU_CHECK(cuModuleGetGlobal(&dst, NULL, prog, name));
-    CU_CHECK(cuMemcpyHtoDAsync(dst, &value, sizeof(T), getActiveStream()));
-    CU_CHECK(cuStreamSynchronize(getActiveStream()));
+void Kernel::setScalar(detail::DevPtrType dst, T value) {
+    CU_CHECK(
+        cuMemcpyHtoDAsync(dst, &value, sizeof(T), cuda::getActiveStream()));
+    CU_CHECK(cuStreamSynchronize(cuda::getActiveStream()));
 }
 
 template<typename T>
-void Kernel::getScalar(T &out, const char *name) {
-    CUdeviceptr src = 0;
-    CU_CHECK(cuModuleGetGlobal(&src, NULL, prog, name));
-    CU_CHECK(cuMemcpyDtoHAsync(&out, src, sizeof(T), getActiveStream()));
-    CU_CHECK(cuStreamSynchronize(getActiveStream()));
+void Kernel::getScalar(T &out, detail::DevPtrType src) {
+    CU_CHECK(cuMemcpyDtoHAsync(&out, src, sizeof(T), cuda::getActiveStream()));
+    CU_CHECK(cuStreamSynchronize(cuda::getActiveStream()));
 }
 
-template void Kernel::setScalar<int>(const char *, int);
-template void Kernel::getScalar<int>(int &, const char *);
+template void Kernel::setScalar<int>(detail::DevPtrType, int);
+template void Kernel::getScalar<int>(int &, detail::DevPtrType);
 
-Kernel buildKernel(const int device, const string &nameExpr,
-                   const string &jit_ker, const vector<string> &opts,
-                   const bool isJIT) {
+void compileKernel(Kernel &out, const string &kernelName,
+                   const string &nameExpr, const vector<string> &sources,
+                   const vector<string> &opts, const bool isJIT) {
+    auto &jit_ker        = sources[0];
     const char *ker_name = nameExpr.c_str();
 
     nvrtcProgram prog;
@@ -181,7 +156,6 @@ Kernel buildKernel(const int device, const string &nameExpr,
             "math_constants.h",
             "af/defines.h",
             "af/version.h",
-            "utility.hpp",
         };
 
         constexpr size_t NumHeaders = extent<decltype(includeNames)>::value;
@@ -208,7 +182,6 @@ Kernel buildKernel(const int device, const string &nameExpr,
             string(math_constants_h, math_constants_h_len),
             string(defines_h, defines_h_len),
             string(version_h, version_h_len),
-            string(utility_hpp, utility_hpp_len),
         }};
 
         static const char *headers[] = {
@@ -223,13 +196,12 @@ Kernel buildKernel(const int device, const string &nameExpr,
             sourceStrings[16].c_str(), sourceStrings[17].c_str(),
             sourceStrings[18].c_str(), sourceStrings[19].c_str(),
             sourceStrings[20].c_str(), sourceStrings[21].c_str(),
-            sourceStrings[22].c_str(),
         };
         NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name,
                                        NumHeaders, headers, includeNames));
     }
 
-    auto computeFlag = getComputeCapability(device);
+    auto computeFlag = cuda::getComputeCapability(cuda::getActiveDeviceId());
     array<char, 32> arch;
     snprintf(arch.data(), arch.size(), "--gpu-architecture=compute_%d%d",
              computeFlag.first, computeFlag.second);
@@ -247,11 +219,8 @@ Kernel buildKernel(const int device, const string &nameExpr,
         NVRTC_CHECK(nvrtcAddNameExpression(prog, ker_name));
     }
 
-    auto compile = high_resolution_clock::now();
     NVRTC_CHECK(nvrtcCompileProgram(prog, compiler_options.size(),
                                     compiler_options.data()));
-
-    auto compile_end = high_resolution_clock::now();
     size_t ptx_size;
     vector<char> ptx;
     NVRTC_CHECK(nvrtcGetPTXSize(prog, &ptx_size));
@@ -272,10 +241,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
         linkInfo, reinterpret_cast<void *>(linkLogSize), linkError,
         reinterpret_cast<void *>(linkLogSize), reinterpret_cast<void *>(1)};
 
-    auto link = high_resolution_clock::now();
     CU_LINK_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
-
-    // cuLinkAddData accounts for most of the time spent linking
     CU_LINK_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void *)ptx.data(),
                                 ptx.size(), ker_name, 0, NULL, NULL));
 
@@ -286,75 +252,15 @@ Kernel buildKernel(const int device, const string &nameExpr,
     CUfunction kernel;
     CU_LINK_CHECK(cuLinkComplete(linkState, &cubin, &cubinSize));
     CU_CHECK(cuModuleLoadDataEx(&module, cubin, 0, 0, 0));
-    auto link_end = high_resolution_clock::now();
 
     const char *name = ker_name;
     if (!isJIT) { NVRTC_CHECK(nvrtcGetLoweredName(prog, ker_name, &name)); }
 
     CU_CHECK(cuModuleGetFunction(&kernel, module, name));
-    Kernel entry = {module, kernel};
+    out = {module, kernel};
 
     CU_LINK_CHECK(cuLinkDestroy(linkState));
     NVRTC_CHECK(nvrtcDestroyProgram(&prog));
-
-    // skip --std=c++14 because it will stay the same. It doesn't
-    // provide useful information
-    auto listOpts = [](vector<const char *> &in) {
-        return accumulate(
-            begin(in) + 2, end(in), string(in[0]),
-            [](const string &lhs, const string &rhs) {
-                return lhs + ", " + rhs;
-            });
-    };
-
-    AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, link:{:>4} ms, {{ {} }}, {} }}}}",
-             nameExpr,
-             duration_cast<milliseconds>(compile_end - compile).count(),
-             duration_cast<milliseconds>(link_end - link).count(),
-             listOpts(compiler_options), getDeviceProp(device).name);
-
-    return entry;
 }
 
-kc_t &getCache(int device) {
-    thread_local kc_t caches[DeviceManager::MAX_DEVICES];
-    return caches[device];
-}
-
-Kernel findKernel(int device, const string nameExpr) {
-    kc_t &cache = getCache(device);
-
-    kc_t::iterator iter = cache.find(nameExpr);
-
-    return (iter == cache.end() ? Kernel{0, 0} : iter->second);
-}
-
-void addKernelToCache(int device, const string nameExpr, Kernel entry) {
-    getCache(device).emplace(nameExpr, entry);
-}
-
-Kernel getKernel(const string &nameExpr, const string &source,
-                 const vector<TemplateArg> &targs,
-                 const vector<string> &compileOpts) {
-    vector<string> args;
-    args.reserve(targs.size());
-
-    transform(targs.begin(), targs.end(), std::back_inserter(args),
-              [](const TemplateArg &arg) -> string { return arg._tparam; });
-
-    string tInstance = nameExpr + "<" + args[0];
-    for (size_t i = 1; i < args.size(); ++i) { tInstance += ("," + args[i]); }
-    tInstance += ">";
-
-    int device    = getActiveDeviceId();
-    Kernel kernel = findKernel(device, tInstance);
-
-    if (kernel.prog == 0 || kernel.ker == 0) {
-        kernel = buildKernel(device, tInstance, source, compileOpts);
-        addKernelToCache(device, tInstance, kernel);
-    }
-
-    return kernel;
-}
-
-}  // namespace cuda
+}  // namespace common

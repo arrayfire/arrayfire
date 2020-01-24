@@ -14,8 +14,6 @@
 #include <string>
 #include <vector>
 
-//#include <common/MemoryManagerBase.hpp>
-
 #ifndef AF_OPENCL_MEM_DEBUG
 #define AF_OPENCL_MEM_DEBUG 0
 #endif
@@ -51,6 +49,8 @@ namespace memory {
 class MemoryManagerBase;
 }
 } //arrayfire internal namespace
+
+using common::memory::MemoryManagerBase;
 
 namespace opencl {
 

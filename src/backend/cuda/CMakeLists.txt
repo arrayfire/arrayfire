@@ -376,6 +376,7 @@ cuda_add_library(afcuda
     cast.hpp
     cholesky.hpp
     complex.hpp
+    compile_kernel.cpp
     convolve.cpp
     convolve.hpp
     copy.hpp
@@ -423,6 +424,7 @@ cuda_add_library(afcuda
     ireduce.hpp
     jit.cpp
     join.hpp
+    kernel_enqueuer.hpp
     logic.hpp
     lookup.hpp
     lu.hpp

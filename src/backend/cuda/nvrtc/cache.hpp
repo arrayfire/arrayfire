@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <common/kernel_util.hpp>
 #include <err_cuda.hpp>
 #include <nvrtc/EnqueueArgs.hpp>
 #include <traits.hpp>
@@ -108,45 +109,6 @@ Kernel buildKernel(const int device, const std::string& nameExpr,
                    const std::string& jitSourceString,
                    const std::vector<std::string>& opts = {},
                    const bool isJIT = false);
-
-template<typename T>
-std::string toString(T value);
-
-struct TemplateArg {
-    std::string _tparam;
-
-    TemplateArg(std::string str) : _tparam(str) {}
-
-    template<typename T>
-    constexpr TemplateArg(T value) noexcept : _tparam(toString(value)) {}
-};
-
-template<typename T>
-struct TemplateTypename {
-    operator TemplateArg() const noexcept {
-        return {std::string(dtype_traits<T>::getName())};
-    }
-};
-
-#define SPECIALIZE(TYPE, NAME)                      \
-    template<>                                      \
-    struct TemplateTypename<TYPE> {                 \
-        operator TemplateArg() const noexcept {     \
-            return TemplateArg(std::string(#NAME)); \
-        }                                           \
-    }
-
-SPECIALIZE(unsigned char, cuda::uchar);
-SPECIALIZE(unsigned int, cuda::uint);
-SPECIALIZE(unsigned short, cuda::ushort);
-SPECIALIZE(long long, long long);
-SPECIALIZE(unsigned long long, unsigned long long);
-
-#undef SPECIALIZE
-
-#define DefineKey(arg) "-D " #arg
-#define DefineValue(arg) "-D " #arg "=" + toString(arg)
-#define DefineKeyValue(key, arg) "-D " #key "=" + toString(arg)
 
 ///
 /// \brief Find/Create-Cache a Kernel that fits the given criteria

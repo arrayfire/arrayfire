@@ -85,15 +85,9 @@ void magmablas_transpose(magma_int_t m, magma_int_t n, cl_mem dA,
     using namespace opencl;
 
     cl::CommandQueue q(queue, true);
-    if (m % 32 == 0 && n % 32 == 0) {
-        kernel::transpose<T, false, true>(
-            makeParam(dAT, dAT_offset, odims, ostrides),
-            makeParam(dA, dA_offset, idims, istrides), q);
-    } else {
-        kernel::transpose<T, false, false>(
-            makeParam(dAT, dAT_offset, odims, ostrides),
-            makeParam(dA, dA_offset, idims, istrides), q);
-    }
+    kernel::transpose<T>(makeParam(dAT, dAT_offset, odims, ostrides),
+                         makeParam(dA, dA_offset, idims, istrides), q, false,
+                         m % 32 == 0 && n % 32 == 0);
 }
 
 #define INSTANTIATE(T)                                                      \

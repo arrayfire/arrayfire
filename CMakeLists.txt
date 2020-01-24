@@ -57,6 +57,7 @@ option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
 option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
 
 option(AF_INSTALL_STANDALONE "Build installers that include all dependencies" OFF)
+option(AF_ENABLE_DEV_WARNINGS "Enable developer warnings such as attribute based" OFF)
 
 cmake_dependent_option(AF_WITH_RELATIVE_TEST_DIR "Use relative paths for the test data directory(For continious integration(CI) purposes only)" OFF
   "BUILD_TESTING" OFF)
@@ -84,6 +85,7 @@ af_deprecate(USE_CPUID             AF_WITH_CPUID)
 mark_as_advanced(
   AF_BUILD_FRAMEWORK
   AF_INSTALL_STANDALONE
+  AF_ENABLE_DEV_WARNINGS
   AF_WITH_CPUID
   CUDA_HOST_COMPILER
   CUDA_USE_STATIC_CUDA_RUNTIME

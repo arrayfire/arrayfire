@@ -52,7 +52,11 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/half.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/kernel_cache.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/kernel_cache.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel_type.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/kernel_util.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/kernel_util.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.hpp
@@ -66,6 +70,10 @@ if(WIN32)
   target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_windows.cpp)
 else()
   target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_unix.cpp)
+endif()
+
+if(AF_ENABLE_DEV_WARNINGS)
+  target_compile_definitions(afcommon_interface INTERFACE AF_WITH_DEV_WARNINGS)
 endif()
 
 target_link_libraries(afcommon_interface

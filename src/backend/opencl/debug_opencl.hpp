@@ -9,15 +9,13 @@
 
 #pragma once
 
-// - Include platform.hpp where this macro is used
-//   for functions synchronize_calls()
-// - Include cl2hpp.hpp for cl::CommandQueue::finish() method
+#include <platform.hpp>
 
 #ifndef NDEBUG
 #define CL_DEBUG_FINISH(Q) Q.finish()
 #else
-#define CL_DEBUG_FINISH(Q)                       \
-    do {                                         \
-        if (synchronize_calls()) { Q.finish(); } \
+#define CL_DEBUG_FINISH(Q)                               \
+    do {                                                 \
+        if (opencl::synchronize_calls()) { Q.finish(); } \
     } while (false);
 #endif

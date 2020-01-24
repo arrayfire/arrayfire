@@ -73,6 +73,7 @@ target_sources(afopencl
     cholesky.hpp
     clfft.cpp
     clfft.hpp
+    compile_kernel.cpp
     complex.hpp
     convolve.cpp
     convolve.hpp
