@@ -9,23 +9,53 @@
 
 #pragma once
 
-#include <platform.hpp>
-
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
 
-using common::memory::MemoryManagerBase;
-
 #ifndef AF_OPENCL_MEM_DEBUG
 #define AF_OPENCL_MEM_DEBUG 0
 #endif
 
-// Forward declaration from clFFT.h
+// Forward declarations
 struct clfftSetupData_;
 
+namespace cl {
+class CommandQueue;
+class Context;
+class Device;
+}  // namespace cl
+
+namespace boost {
+template<typename T>
+class shared_ptr;
+
+namespace compute {
+class program_cache;
+}
+}  // namespace boost
+
+namespace spdlog {
+class logger;
+}
+
+namespace graphics {
+class ForgeManager;
+}
+
+namespace common {
+namespace memory {
+class MemoryManagerBase;
+}
+}  // namespace common
+
 namespace opencl {
+
+// opencl namespace forward declarations
+class GraphicsResourceManager;
+struct kc_entry_t;  // kernel cache entry
+class PlanCache;    // clfft
 
 class DeviceManager {
     friend MemoryManagerBase& memoryManager();

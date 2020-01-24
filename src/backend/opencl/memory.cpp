@@ -9,6 +9,7 @@
 
 #include <common/Logger.hpp>
 #include <common/MemoryManagerBase.hpp>
+#include <common/half.hpp>
 #include <err_opencl.hpp>
 #include <memory.hpp>
 #include <platform.hpp>

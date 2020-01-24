@@ -8,8 +8,8 @@
  ********************************************************/
 #pragma once
 
+#include <cl2hpp.hpp>
 #include <common/EventBase.hpp>
-#include <platform.hpp>
 #include <af/event.h>
 
 namespace opencl {

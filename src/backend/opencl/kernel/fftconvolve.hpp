@@ -19,6 +19,7 @@
 #include <kernel_headers/fftconvolve_reorder.hpp>
 #include <memory.hpp>
 #include <program.hpp>
+#include <traits.hpp>
 #include <types.hpp>
 #include <af/defines.h>
 

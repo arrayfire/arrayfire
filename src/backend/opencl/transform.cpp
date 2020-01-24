@@ -7,10 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <kernel/transform.hpp>
 #include <transform.hpp>
+
+#include <err_opencl.hpp>
+#include <kernel/transform.hpp>
 #include <af/dim4.hpp>
+
 #include <stdexcept>
 
 namespace opencl {

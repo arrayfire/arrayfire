@@ -8,14 +8,17 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/range.hpp>
+#include <platform.hpp>
 #include <program.hpp>
 #include <traits.hpp>
+
 #include <string>
 
 namespace opencl {

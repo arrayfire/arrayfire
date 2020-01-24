@@ -16,6 +16,7 @@
 #include <debug_opencl.hpp>
 #include <kernel/names.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <map>
