@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/fftconvolve_cuh.hpp>
 
 #include <string>
@@ -31,11 +31,11 @@ template<typename convT, typename T>
 void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                     CParam<T> sig, CParam<T> filter) {
     auto packData =
-        getKernel("cuda::packData", fftConvSource(),
-                  {TemplateTypename<convT>(), TemplateTypename<T>()});
+        common::findKernel("cuda::packData", {fftConvSource()},
+                           {TemplateTypename<convT>(), TemplateTypename<T>()});
     auto padArray =
-        getKernel("cuda::padArray", fftConvSource(),
-                  {TemplateTypename<convT>(), TemplateTypename<T>()});
+        common::findKernel("cuda::padArray", {fftConvSource()},
+                           {TemplateTypename<convT>(), TemplateTypename<T>()});
 
     dim_t *sd = sig.dims;
 
@@ -74,8 +74,9 @@ void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
 template<typename T, typename convT>
 void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                            AF_BATCH_KIND kind) {
-    auto cplxMul = getKernel("cuda::complexMultiply", fftConvSource(),
-                             {TemplateTypename<convT>(), TemplateArg(kind)});
+    auto cplxMul =
+        common::findKernel("cuda::complexMultiply", {fftConvSource()},
+                           {TemplateTypename<convT>(), TemplateArg(kind)});
 
     int sig_packed_elem    = 1;
     int filter_packed_elem = 1;
@@ -107,9 +108,9 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
     constexpr bool RoundResult = std::is_integral<T>::value;
 
     auto reorderOut =
-        getKernel("cuda::reorderOutput", fftConvSource(),
-                  {TemplateTypename<T>(), TemplateTypename<convT>(),
-                   TemplateArg(expand), TemplateArg(RoundResult)});
+        common::findKernel("cuda::reorderOutput", {fftConvSource()},
+                           {TemplateTypename<T>(), TemplateTypename<convT>(),
+                            TemplateArg(expand), TemplateArg(RoundResult)});
 
     dim_t *sd    = sig.dims;
     int fftScale = 1;

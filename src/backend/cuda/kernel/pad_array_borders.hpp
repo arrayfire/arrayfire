@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/pad_array_borders_cuh.hpp>
 #include <af/defines.h>
 
@@ -29,8 +29,9 @@ void padBorders(Param<T> out, CParam<T> in, dim4 const lBoundPadding,
                 const af::borderType btype) {
     static const std::string source(pad_array_borders_cuh,
                                     pad_array_borders_cuh_len);
-    auto padBorders = getKernel("cuda::padBorders", source,
-                                {TemplateTypename<T>(), TemplateArg(btype)});
+    auto padBorders =
+        common::findKernel("cuda::padBorders", {source},
+                           {TemplateTypename<T>(), TemplateArg(btype)});
 
     dim3 threads(kernel::PADB_THREADS_X, kernel::PADB_THREADS_Y);
 

@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/transform_cuh.hpp>
 #include <af/defines.h>
 
@@ -33,8 +33,8 @@ void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
                const bool perspective, const af::interpType method, int order) {
     static const std::string src(transform_cuh, transform_cuh_len);
 
-    auto transform = getKernel(
-        "cuda::transform", src,
+    auto transform = common::findKernel(
+        "cuda::transform", {src},
         {TemplateTypename<T>(), TemplateArg(inverse), TemplateArg(order)});
 
     const unsigned int nImg2  = in.dims[2];
@@ -44,8 +44,9 @@ void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
     const unsigned int tf_len = (perspective) ? 9 : 6;
 
     // Copy transform to constant memory.
-    transform.setConstant("c_tmat", reinterpret_cast<CUdeviceptr>(tf.ptr),
-                          nTfs2 * nTfs3 * tf_len * sizeof(float));
+    auto constPtr = transform.get("c_tmat");
+    transform.copyToReadOnly(constPtr, reinterpret_cast<CUdeviceptr>(tf.ptr),
+                             nTfs2 * nTfs3 * tf_len * sizeof(float));
 
     dim3 threads(TX, TY, 1);
     dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));

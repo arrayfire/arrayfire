@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/iota_cuh.hpp>
 #include <af/dim4.hpp>
 
@@ -30,7 +30,8 @@ void iota(Param<T> out, const af::dim4 &sdims) {
 
     static const std::string source(iota_cuh, iota_cuh_len);
 
-    auto iota = getKernel("cuda::iota", source, {TemplateTypename<T>()});
+    auto iota =
+        common::findKernel("cuda::iota", {source}, {TemplateTypename<T>()});
 
     dim3 threads(IOTA_TX, IOTA_TY, 1);
 

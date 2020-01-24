@@ -9,8 +9,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/match_template_cuh.hpp>
 #include <af/defines.h>
 
@@ -28,10 +28,10 @@ void matchTemplate(Param<outType> out, CParam<inType> srch,
                    bool needMean) {
     static const std::string source(match_template_cuh, match_template_cuh_len);
 
-    auto matchTemplate =
-        getKernel("cuda::matchTemplate", source,
-                  {TemplateTypename<inType>(), TemplateTypename<outType>(),
-                   TemplateArg(mType), TemplateArg(needMean)});
+    auto matchTemplate = common::findKernel(
+        "cuda::matchTemplate", {source},
+        {TemplateTypename<inType>(), TemplateTypename<outType>(),
+         TemplateArg(mType), TemplateArg(needMean)});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

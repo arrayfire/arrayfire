@@ -12,9 +12,9 @@
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
 #include <dims_param.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/copy_cuh.hpp>
 #include <nvrtc_kernel_headers/memcopy_cuh.hpp>
 
@@ -31,7 +31,8 @@ template<typename T>
 void memcopy(Param<T> out, CParam<T> in, const dim_t ndims) {
     static const std::string src(memcopy_cuh, memcopy_cuh_len);
 
-    auto memCopy = getKernel("cuda::memcopy", src, {TemplateTypename<T>()});
+    auto memCopy =
+        common::findKernel("cuda::memcopy", {src}, {TemplateTypename<T>()});
 
     dim3 threads(DIMX, DIMY);
 
@@ -90,10 +91,10 @@ void copy(Param<outType> dst, CParam<inType> src, int ndims,
         ((src.dims[0] == dst.dims[0]) && (src.dims[1] == dst.dims[1]) &&
          (src.dims[2] == dst.dims[2]) && (src.dims[3] == dst.dims[3]));
 
-    auto copy =
-        getKernel("cuda::copy", source,
-                  {TemplateTypename<inType>(), TemplateTypename<outType>(),
-                   TemplateArg(same_dims)});
+    auto copy = common::findKernel(
+        "cuda::copy", {source},
+        {TemplateTypename<inType>(), TemplateTypename<outType>(),
+         TemplateArg(same_dims)});
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 

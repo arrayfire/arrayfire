@@ -47,6 +47,8 @@ target_sources(afopencl
   PRIVATE
     Array.cpp
     Array.hpp
+    Kernel.cpp
+    Kernel.hpp
     Param.cpp
     Param.hpp
     all.cpp
@@ -73,6 +75,7 @@ target_sources(afopencl
     cholesky.hpp
     clfft.cpp
     clfft.hpp
+    compile_kernel.cpp
     complex.hpp
     convolve.cpp
     convolve.hpp
@@ -87,10 +90,6 @@ target_sources(afopencl
     diagonal.hpp
     diff.cpp
     diff.hpp
-    dilate.cpp
-    dilate3d.cpp
-    erode.cpp
-    erode3d.cpp
     err_clblas.hpp
     err_clblast.hpp
     err_opencl.hpp
@@ -160,9 +159,8 @@ target_sources(afopencl
     min.cpp
     moments.cpp
     moments.hpp
+    morph.cpp
     morph.hpp
-    morph3d_impl.hpp
-    morph_impl.hpp
     nearest_neighbour.cpp
     nearest_neighbour.hpp
     orb.cpp

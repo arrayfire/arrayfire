@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/transpose_cuh.hpp>
 
 #include <string>
@@ -29,10 +29,11 @@ void transpose(Param<T> out, CParam<T> in, const bool conjugate,
                const bool is32multiple) {
     static const std::string source(transpose_cuh, transpose_cuh_len);
 
-    auto transpose = getKernel("cuda::transpose", source,
-                               {TemplateTypename<T>(), TemplateArg(conjugate),
-                                TemplateArg(is32multiple)},
-                               {DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
+    auto transpose =
+        common::findKernel("cuda::transpose", {source},
+                           {TemplateTypename<T>(), TemplateArg(conjugate),
+                            TemplateArg(is32multiple)},
+                           {DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

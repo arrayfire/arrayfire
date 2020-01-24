@@ -9,8 +9,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/meanshift_cuh.hpp>
 
 #include <string>
@@ -29,12 +29,12 @@ void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
                                       float>::type AccType;
     static const std::string source(meanshift_cuh, meanshift_cuh_len);
 
-    auto meanshift =
-        getKernel("cuda::meanshift", source,
-                  {
-                      TemplateTypename<AccType>(), TemplateTypename<T>(),
-                      TemplateArg((IsColor ? 3 : 1))  // channels
-                  });
+    auto meanshift = common::findKernel(
+        "cuda::meanshift", {source},
+        {
+            TemplateTypename<AccType>(), TemplateTypename<T>(),
+            TemplateArg((IsColor ? 3 : 1))  // channels
+        });
 
     static dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

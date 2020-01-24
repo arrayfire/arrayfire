@@ -11,9 +11,9 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
 #include <kernel/config.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/wrap_cuh.hpp>
 
 #include <string>
@@ -26,8 +26,9 @@ void wrap(Param<T> out, CParam<T> in, const int wx, const int wy, const int sx,
           const int sy, const int px, const int py, const bool is_column) {
     static const std::string source(wrap_cuh, wrap_cuh_len);
 
-    auto wrap = getKernel("cuda::wrap", source,
-                          {TemplateTypename<T>(), TemplateArg(is_column)});
+    auto wrap =
+        common::findKernel("cuda::wrap", {source},
+                           {TemplateTypename<T>(), TemplateArg(is_column)});
 
     int nx = (out.dims[0] + 2 * px - wx) / sx + 1;
     int ny = (out.dims[1] + 2 * py - wy) / sy + 1;
@@ -56,8 +57,9 @@ void wrap_dilated(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
                   const bool is_column) {
     static const std::string source(wrap_cuh, wrap_cuh_len);
 
-    auto wrap = getKernel("cuda::wrap_dilated", source,
-                          {TemplateTypename<T>(), TemplateArg(is_column)});
+    auto wrap =
+        common::findKernel("cuda::wrap_dilated", {source},
+                           {TemplateTypename<T>(), TemplateArg(is_column)});
 
     int nx = 1 + (out.dims[0] + 2 * px - (((wx - 1) * dx) + 1)) / sx;
     int ny = 1 + (out.dims[1] + 2 * py - (((wy - 1) * dy) + 1)) / sy;
