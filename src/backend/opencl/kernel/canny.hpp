@@ -213,9 +213,9 @@ void edgeTrackingHysteresis(Param output, const Param strong,
     int notFinished        = 1;
     cl::Buffer *d_continue = bufferAlloc(sizeof(int));
 
-    while (notFinished) {
+    while (notFinished > 0) {
         notFinished = 0;
-        getQueue().enqueueWriteBuffer(*d_continue, CL_TRUE, 0, sizeof(int),
+        getQueue().enqueueWriteBuffer(*d_continue, CL_FALSE, 0, sizeof(int),
                                       &notFinished);
 
         edgeTraceOp(EnqueueArgs(getQueue(), global, threads), *output.data,
