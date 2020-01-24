@@ -9,8 +9,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/bilateral_cuh.hpp>
 
 #include <string>
@@ -26,10 +26,10 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
                float c_sigma) {
     static const std::string source(bilateral_cuh, bilateral_cuh_len);
 
-    auto bilateral =
-        getKernel("cuda::bilateral", source,
-                  {TemplateTypename<inType>(), TemplateTypename<outType>()},
-                  {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto bilateral = common::findKernel(
+        "cuda::bilateral", {source},
+        {TemplateTypename<inType>(), TemplateTypename<outType>()},
+        {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

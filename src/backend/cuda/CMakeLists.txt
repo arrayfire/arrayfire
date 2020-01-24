@@ -322,6 +322,7 @@ endif()
 cuda_add_library(afcuda
     ${thrust_sort_sources}
 
+    EnqueueArgs.hpp
     all.cu
     anisotropic_diffusion.cpp
     any.cu
@@ -329,10 +330,6 @@ cuda_add_library(afcuda
     bilateral.cpp
     canny.cpp
     count.cu
-    dilate.cpp
-    dilate3d.cpp
-    erode.cpp
-    erode3d.cpp
     Event.cpp
     Event.hpp
     exampleFunction.cpp
@@ -450,6 +447,8 @@ cuda_add_library(afcuda
 
     Array.cpp
     Array.hpp
+    Kernel.cpp
+    Kernel.hpp
     LookupTable1D.hpp
     Param.hpp
     ThrustAllocator.cuh
@@ -469,6 +468,7 @@ cuda_add_library(afcuda
     cholesky.cpp
     cholesky.hpp
     complex.hpp
+    compile_kernel.cpp
     convolve.cpp
     convolve.hpp
     convolveNN.cpp
@@ -542,9 +542,8 @@ cuda_add_library(afcuda
     memory.hpp
     minmax_op.hpp
     moments.hpp
+    morph.cpp
     morph.hpp
-    morph3d_impl.hpp
-    morph_impl.hpp
     nearest_neighbour.hpp
     orb.hpp
     platform.cpp
@@ -613,8 +612,6 @@ cuda_add_library(afcuda
 
     jit/BufferNode.hpp
     jit/kernel_generators.hpp
-
-    nvrtc/cache.cpp
 
     ${scan_by_key_sources}
 

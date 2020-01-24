@@ -30,14 +30,19 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/FFTPlanCache.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/HandleBase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/InteropManager.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/KernelInterface.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Logger.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManagerBase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/TemplateArg.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/TemplateArg.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/TemplateTypename.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas_headers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cblas.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/compile_kernel.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/complex.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/constants.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/defines.hpp
@@ -53,6 +58,8 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/internal_enums.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/kernel_cache.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/kernel_cache.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel_type.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
@@ -67,6 +74,10 @@ if(WIN32)
   target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_windows.cpp)
 else()
   target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_unix.cpp)
+endif()
+
+if(AF_ENABLE_DEV_WARNINGS)
+  target_compile_definitions(afcommon_interface INTERFACE AF_WITH_DEV_WARNINGS)
 endif()
 
 target_link_libraries(afcommon_interface

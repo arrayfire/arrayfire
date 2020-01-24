@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/diagonal_cuh.hpp>
 
 #include <string>
@@ -24,8 +24,8 @@ template<typename T>
 void diagCreate(Param<T> out, CParam<T> in, int num) {
     static const std::string src(diagonal_cuh, diagonal_cuh_len);
 
-    auto genDiagMat =
-        getKernel("cuda::createDiagonalMat", src, {TemplateTypename<T>()});
+    auto genDiagMat = common::findKernel("cuda::createDiagonalMat", {src},
+                                         {TemplateTypename<T>()});
 
     dim3 threads(32, 8);
     int blocks_x = divup(out.dims[0], threads.x);
@@ -51,8 +51,8 @@ template<typename T>
 void diagExtract(Param<T> out, CParam<T> in, int num) {
     static const std::string src(diagonal_cuh, diagonal_cuh_len);
 
-    auto extractDiag =
-        getKernel("cuda::extractDiagonal", src, {TemplateTypename<T>()});
+    auto extractDiag = common::findKernel("cuda::extractDiagonal", {src},
+                                          {TemplateTypename<T>()});
 
     dim3 threads(256, 1);
     int blocks_x = divup(out.dims[0], threads.x);

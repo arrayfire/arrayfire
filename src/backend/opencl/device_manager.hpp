@@ -50,6 +50,8 @@ class MemoryManagerBase;
 }
 }  // namespace common
 
+using common::memory::MemoryManagerBase;
+
 namespace opencl {
 
 // opencl namespace forward declarations

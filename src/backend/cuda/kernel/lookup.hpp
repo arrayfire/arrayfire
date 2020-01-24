@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/lookup_cuh.hpp>
 
 #include <string>
@@ -46,10 +46,10 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
 
         dim3 blocks(blks, 1);
 
-        auto lookup1d =
-            getKernel("cuda::lookup1D", src,
-                      {TemplateTypename<in_t>(), TemplateTypename<idx_t>()},
-                      {DefineValue(THREADS), DefineValue(THRD_LOAD)});
+        auto lookup1d = common::findKernel(
+            "cuda::lookup1D", {src},
+            {TemplateTypename<in_t>(), TemplateTypename<idx_t>()},
+            {DefineValue(THREADS), DefineValue(THRD_LOAD)});
 
         EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -68,9 +68,9 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
         blocks.y = divup(blocks.y, blocks.z);
 
         auto lookupnd =
-            getKernel("cuda::lookupND", src,
-                      {TemplateTypename<in_t>(), TemplateTypename<idx_t>(),
-                       TemplateArg(dim)});
+            common::findKernel("cuda::lookupND", {src},
+                               {TemplateTypename<in_t>(),
+                                TemplateTypename<idx_t>(), TemplateArg(dim)});
         EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
         lookupnd(qArgs, out, in, indices, blks_x, blks_y);

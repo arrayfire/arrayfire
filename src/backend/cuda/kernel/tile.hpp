@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/tile_cuh.hpp>
 
 namespace cuda {
@@ -27,7 +27,8 @@ void tile(Param<T> out, CParam<T> in) {
 
     static const std::string source(tile_cuh, tile_cuh_len);
 
-    auto tile = getKernel("cuda::tile", source, {TemplateTypename<T>()});
+    auto tile =
+        common::findKernel("cuda::tile", {source}, {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 

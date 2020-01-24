@@ -9,10 +9,12 @@
 
 #pragma once
 
+#include <cl2hpp.hpp>
 #include <common/util.hpp>
 
 #include <cstdio>
 #include <string>
+#include <vector>
 
 #define SHOW_DEBUG_BUILD_INFO(PROG)                                       \
     do {                                                                  \
@@ -32,21 +34,30 @@
 #define SHOW_BUILD_INFO(PROG)                                              \
     do {                                                                   \
         std::string info = getEnvVar("AF_OPENCL_SHOW_BUILD_INFO");         \
-        if (!info.empty() && info != "0") { SHOW_DEBUG_BUILD_INFO(prog); } \
+        if (!info.empty() && info != "0") { SHOW_DEBUG_BUILD_INFO(PROG); } \
     } while (0)
 
 #else
 #define SHOW_BUILD_INFO(PROG) SHOW_DEBUG_BUILD_INFO(PROG)
 #endif
 
-namespace cl {
-class Program;
-}
-
 namespace opencl {
+
+#if defined(AF_WITH_DEV_WARNINGS)
+// TODO(pradeep) remove this version after porting to new cache interface
+[[deprecated("use cl::Program buildProgram(vector<string>&, vector<string>&)")]]
+#endif
 void buildProgram(cl::Program &prog, const char *ker_str, const int ker_len,
                   const std::string &options);
 
+#if defined(AF_WITH_DEV_WARNINGS)
+// TODO(pradeep) remove this version after porting to new cache interface
+[[deprecated("use cl::Program buildProgram(vector<string>&, vector<string>&)")]]
+#endif
 void buildProgram(cl::Program &prog, const int num_files, const char **ker_str,
                   const int *ker_len, const std::string &options);
+
+cl::Program buildProgram(const std::vector<std::string> &kernelSources,
+                         const std::vector<std::string> &options);
+
 }  // namespace opencl

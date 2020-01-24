@@ -39,16 +39,17 @@ using detail::uint;
 using detail::unaryOp;
 using detail::ushort;
 
-template<typename T, bool isDilation>
-static inline af_array morph(const af_array &in, const af_array &mask) {
-    const Array<T> input   = getArray<T>(in);
+template<typename T>
+af_array morph(const af_array &in, const af_array &mask, bool isDilation) {
+    const Array<T> &input  = getArray<T>(in);
     const Array<T> &filter = castArray<T>(mask);
-    Array<T> out           = morph<T, isDilation>(input, filter);
+    Array<T> out           = morph<T>(input, filter, isDilation);
     return getHandle(out);
 }
 
-template<bool isDilation>
-static inline af_array morph(const af_array &input, const af_array &mask) {
+template<>
+af_array morph<char>(const af_array &input, const af_array &mask,
+                     const bool isDilation) {
     using detail::fftconvolve;
 
 #if defined(AF_CPU)
@@ -67,7 +68,9 @@ static inline af_array morph(const af_array &input, const af_array &mask) {
     const dim4 &seDims    = se.dims();
 
     if (seDims[0] <= fftMethodThreshold) {
-        return morph<char, isDilation>(input, mask);
+        auto out =
+            morph(getArray<char>(input), castArray<char>(mask), isDilation);
+        return getHandle(out);
     }
 
     DIM_ASSERT(2, (seDims[0] == seDims[1]));
@@ -103,16 +106,17 @@ static inline af_array morph(const af_array &input, const af_array &mask) {
     }
 }
 
-template<typename T, bool isDilation>
-static inline af_array morph3d(const af_array &in, const af_array &mask) {
-    const Array<T> input   = getArray<T>(in);
+template<typename T>
+static inline af_array morph3d(const af_array &in, const af_array &mask,
+                               bool isDilation) {
+    const Array<T> &input  = getArray<T>(in);
     const Array<T> &filter = castArray<T>(mask);
-    Array<T> out           = morph3d<T, isDilation>(input, filter);
+    Array<T> out           = morph3d<T>(input, filter, isDilation);
     return getHandle(out);
 }
 
-template<bool isDilation>
-static af_err morph(af_array *out, const af_array &in, const af_array &mask) {
+af_err morph(af_array *out, const af_array &in, const af_array &mask,
+             bool isDilation) {
     try {
         const ArrayInfo &info  = getInfo(in);
         const ArrayInfo &mInfo = getInfo(mask);
@@ -127,14 +131,14 @@ static af_err morph(af_array *out, const af_array &in, const af_array &mask) {
         af_array output;
         af_dtype type = info.getType();
         switch (type) {
-            case f32: output = morph<float, isDilation>(in, mask); break;
-            case f64: output = morph<double, isDilation>(in, mask); break;
-            case b8: output = morph<isDilation>(in, mask); break;
-            case s32: output = morph<int, isDilation>(in, mask); break;
-            case u32: output = morph<uint, isDilation>(in, mask); break;
-            case s16: output = morph<short, isDilation>(in, mask); break;
-            case u16: output = morph<ushort, isDilation>(in, mask); break;
-            case u8: output = morph<uchar, isDilation>(in, mask); break;
+            case f32: output = morph<float>(in, mask, isDilation); break;
+            case f64: output = morph<double>(in, mask, isDilation); break;
+            case b8: output = morph<char>(in, mask, isDilation); break;
+            case s32: output = morph<int>(in, mask, isDilation); break;
+            case u32: output = morph<uint>(in, mask, isDilation); break;
+            case s16: output = morph<short>(in, mask, isDilation); break;
+            case u16: output = morph<ushort>(in, mask, isDilation); break;
+            case u8: output = morph<uchar>(in, mask, isDilation); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);
@@ -144,8 +148,8 @@ static af_err morph(af_array *out, const af_array &in, const af_array &mask) {
     return AF_SUCCESS;
 }
 
-template<bool isDilation>
-static af_err morph3d(af_array *out, const af_array &in, const af_array &mask) {
+af_err morph3d(af_array *out, const af_array &in, const af_array &mask,
+               bool isDilation) {
     try {
         const ArrayInfo &info  = getInfo(in);
         const ArrayInfo &mInfo = getInfo(mask);
@@ -160,14 +164,14 @@ static af_err morph3d(af_array *out, const af_array &in, const af_array &mask) {
         af_array output;
         af_dtype type = info.getType();
         switch (type) {
-            case f32: output = morph3d<float, isDilation>(in, mask); break;
-            case f64: output = morph3d<double, isDilation>(in, mask); break;
-            case b8: output = morph3d<char, isDilation>(in, mask); break;
-            case s32: output = morph3d<int, isDilation>(in, mask); break;
-            case u32: output = morph3d<uint, isDilation>(in, mask); break;
-            case s16: output = morph3d<short, isDilation>(in, mask); break;
-            case u16: output = morph3d<ushort, isDilation>(in, mask); break;
-            case u8: output = morph3d<uchar, isDilation>(in, mask); break;
+            case f32: output = morph3d<float>(in, mask, isDilation); break;
+            case f64: output = morph3d<double>(in, mask, isDilation); break;
+            case b8: output = morph3d<char>(in, mask, isDilation); break;
+            case s32: output = morph3d<int>(in, mask, isDilation); break;
+            case u32: output = morph3d<uint>(in, mask, isDilation); break;
+            case s16: output = morph3d<short>(in, mask, isDilation); break;
+            case u16: output = morph3d<ushort>(in, mask, isDilation); break;
+            case u8: output = morph3d<uchar>(in, mask, isDilation); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);
@@ -176,18 +180,19 @@ static af_err morph3d(af_array *out, const af_array &in, const af_array &mask) {
 
     return AF_SUCCESS;
 }
+
 af_err af_dilate(af_array *out, const af_array in, const af_array mask) {
-    return morph<true>(out, in, mask);
+    return morph(out, in, mask, true);
 }
 
 af_err af_erode(af_array *out, const af_array in, const af_array mask) {
-    return morph<false>(out, in, mask);
+    return morph(out, in, mask, false);
 }
 
 af_err af_dilate3(af_array *out, const af_array in, const af_array mask) {
-    return morph3d<true>(out, in, mask);
+    return morph3d(out, in, mask, true);
 }
 
 af_err af_erode3(af_array *out, const af_array in, const af_array mask) {
-    return morph3d<false>(out, in, mask);
+    return morph3d(out, in, mask, false);
 }

@@ -11,8 +11,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/rotate_cuh.hpp>
 #include <af/defines.h>
 
@@ -36,8 +36,8 @@ void rotate(Param<T> out, CParam<T> in, const float theta,
             const af::interpType method, const int order) {
     static const std::string source(rotate_cuh, rotate_cuh_len);
 
-    auto rotate = getKernel("cuda::rotate", source,
-                            {TemplateTypename<T>(), TemplateArg(order)});
+    auto rotate = common::findKernel(
+        "cuda::rotate", {source}, {TemplateTypename<T>(), TemplateArg(order)});
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;

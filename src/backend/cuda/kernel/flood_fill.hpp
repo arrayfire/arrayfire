@@ -12,8 +12,8 @@
 #include <Param.hpp>
 #include <common/defines.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/flood_fill_cuh.hpp>
 
 #include <string>
@@ -49,13 +49,13 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
         CUDA_NOT_SUPPORTED(errMessage);
     }
 
-    auto initSeeds =
-        getKernel("cuda::initSeeds", source, {TemplateTypename<T>()});
+    auto initSeeds = common::findKernel("cuda::initSeeds", {source},
+                                        {TemplateTypename<T>()});
     auto floodStep =
-        getKernel("cuda::floodStep", source, {TemplateTypename<T>()},
-                  {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
-    auto finalizeOutput =
-        getKernel("cuda::finalizeOutput", source, {TemplateTypename<T>()});
+        common::findKernel("cuda::floodStep", {source}, {TemplateTypename<T>()},
+                           {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto finalizeOutput = common::findKernel("cuda::finalizeOutput", {source},
+                                             {TemplateTypename<T>()});
 
     EnqueueArgs qArgs(dim3(divup(seedsx.elements(), THREADS)), dim3(THREADS),
                       getActiveStream());
@@ -67,12 +67,14 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
                 divup(image.dims[1], threads.y));
     EnqueueArgs fQArgs(blocks, threads, getActiveStream());
 
+    auto continueFlagPtr = floodStep.get("doAnotherLaunch");
+
     for (int doAnotherLaunch = 1; doAnotherLaunch > 0;) {
         doAnotherLaunch = 0;
-        floodStep.setScalar("doAnotherLaunch", doAnotherLaunch);
+        floodStep.setScalar(continueFlagPtr, doAnotherLaunch);
         floodStep(fQArgs, out, image, lowValue, highValue);
         POST_LAUNCH_CHECK();
-        floodStep.getScalar(doAnotherLaunch, "doAnotherLaunch");
+        doAnotherLaunch = floodStep.getScalar(continueFlagPtr);
     }
     finalizeOutput(fQArgs, out, newValue);
     POST_LAUNCH_CHECK();
