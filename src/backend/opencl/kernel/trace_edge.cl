@@ -61,7 +61,7 @@ __kernel void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0,
     // strong and weak images are binary(char) images thus,
     // occupying only (16+2)*(16+2) = 324 bytes per shared memory tile
     __local int outMem[SHRD_MEM_HEIGHT][SHRD_MEM_WIDTH];
-    __local int predicates[TOTAL_NUM_THREADS];
+    __local bool predicates[TOTAL_NUM_THREADS];
 
     // local thread indices
     const int lx = get_local_id(0);
@@ -82,12 +82,12 @@ __kernel void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0,
 
     // pull image to local memory
 #pragma unroll
-    for (int b = ly, gy2 = gy; b < SHRD_MEM_HEIGHT;
+    for (int b = ly, gy2 = gy-1; b < SHRD_MEM_HEIGHT;
          b += get_local_size(1), gy2 += get_local_size(1)) {
 #pragma unroll
-        for (int a = lx, gx2 = gx; a < SHRD_MEM_WIDTH;
+        for (int a = lx, gx2 = gx-1; a < SHRD_MEM_WIDTH;
              a += get_local_size(0), gx2 += get_local_size(0)) {
-            if (gx2 >= 0 && gx2 < oInfo.dims[0] && gy2 >= 0 && gy2 < oInfo.dims[1] - 1)
+            if (gx2 >= 0 && gx2 < oInfo.dims[0] && gy2 >= 0 && gy2 < oInfo.dims[1])
                 outMem[b][a] = oPtr[gx2 * oInfo.strides[0] + gy2 * oInfo.strides[1]];
             else
                 outMem[b][a] = NOEDGE;
@@ -99,57 +99,56 @@ __kernel void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0,
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    int tid = get_local_id(0) + get_local_size(0) * get_local_id(1);
+    int tid = lx + get_local_size(0) * ly;
 
-    int continueIter = 1;
+    bool continueIter = 1;
 
+    int mycounter = 0;
     while (continueIter) {
-        int cu = outMem[j][i];
-        int nw = outMem[j - 1][i - 1];
-        int no = outMem[j - 1][i];
-        int ne = outMem[j - 1][i + 1];
-        int ea = outMem[j][i + 1];
-        int se = outMem[j + 1][i + 1];
-        int so = outMem[j + 1][i];
-        int sw = outMem[j + 1][i - 1];
-        int we = outMem[j][i - 1];
+        int nw ,no ,ne ,we ,ea ,sw ,so ,se;
 
-        bool hasStrongNeighbour =
-            nw == STRONG || no == STRONG || ne == STRONG || ea == STRONG ||
-            se == STRONG || so == STRONG || sw == STRONG || we == STRONG;
+        if(outMem[j][i] == WEAK) {
+            nw = outMem[j - 1][i - 1];
+            no = outMem[j - 1][i];
+            ne = outMem[j - 1][i + 1];
+            we = outMem[j    ][i - 1];
+            ea = outMem[j    ][i + 1];
+            sw = outMem[j + 1][i - 1];
+            so = outMem[j + 1][i];
+            se = outMem[j + 1][i + 1];
 
-        if (cu == WEAK && hasStrongNeighbour) outMem[j][i] = STRONG;
+            bool hasStrongNeighbour =
+                nw == STRONG || no == STRONG || ne == STRONG || ea == STRONG ||
+                se == STRONG || so == STRONG || sw == STRONG || we == STRONG;
+
+            if (hasStrongNeighbour) outMem[j][i] = STRONG;
+        }
 
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        cu = outMem[j][i];
 
-        bool _nw =
-            outMem[j - 1][i - 1] == WEAK && VALID_BLOCK_IDX(j - 1, i - 1);
-        bool _no = outMem[j - 1][i] == WEAK && VALID_BLOCK_IDX(j - 1, i);
-        bool _ne =
-            outMem[j - 1][i + 1] == WEAK && VALID_BLOCK_IDX(j - 1, i + 1);
-        bool _ea = outMem[j][i + 1] == WEAK && VALID_BLOCK_IDX(j, i + 1);
-        bool _se =
-            outMem[j + 1][i + 1] == WEAK && VALID_BLOCK_IDX(j + 1, i + 1);
-        bool _so = outMem[j + 1][i] == WEAK && VALID_BLOCK_IDX(j + 1, i);
-        bool _sw =
-            outMem[j + 1][i - 1] == WEAK && VALID_BLOCK_IDX(j + 1, i - 1);
-        bool _we = outMem[j][i - 1] == WEAK && VALID_BLOCK_IDX(j, i - 1);
+        predicates[tid] = false;
+        if(outMem[j][i] == STRONG) {
+            nw = outMem[j - 1][i - 1] == WEAK && VALID_BLOCK_IDX(j - 1, i - 1);
+            no = outMem[j - 1][i    ] == WEAK && VALID_BLOCK_IDX(j - 1, i);
+            ne = outMem[j - 1][i + 1] == WEAK && VALID_BLOCK_IDX(j - 1, i + 1);
+            we = outMem[j    ][i - 1] == WEAK && VALID_BLOCK_IDX(j, i - 1);
+            ea = outMem[j    ][i + 1] == WEAK && VALID_BLOCK_IDX(j, i + 1);
+            sw = outMem[j + 1][i - 1] == WEAK && VALID_BLOCK_IDX(j + 1, i - 1);
+            so = outMem[j + 1][i    ] == WEAK && VALID_BLOCK_IDX(j + 1, i);
+            se = outMem[j + 1][i + 1] == WEAK && VALID_BLOCK_IDX(j + 1, i + 1);
 
-        bool hasWeakNeighbour =
-            _nw || _no || _ne || _ea || _se || _so || _sw || _we;
+            bool hasWeakNeighbour = nw || no || ne || ea || se || so || sw || we;
 
-        // Following Block is equivalent of __syncthreads_or in CUDA
-        predicates[tid] = cu == STRONG && hasWeakNeighbour;
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        for (int nt = TOTAL_NUM_THREADS / 2; nt > 0; nt >>= 1) {
-            if (tid < nt)
-                predicates[tid] = predicates[tid] || predicates[tid + nt];
-            barrier(CLK_LOCAL_MEM_FENCE);
+            predicates[tid] = hasWeakNeighbour;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
+
+        // Following Block is equivalent of __syncthreads_or in CUDA
+        for (int nt = TOTAL_NUM_THREADS / 2; nt > 0; nt >>= 1) {
+            if (tid < nt) { predicates[tid] = predicates[tid] || predicates[tid + nt]; }
+            barrier(CLK_LOCAL_MEM_FENCE);
+        }
 
         continueIter = predicates[0];
     };
@@ -183,11 +182,11 @@ __kernel void edgeTrackKernel(__global T* output, KParam oInfo, unsigned nBBS0,
 
     continueIter = predicates[0];
 
-    if (continueIter > 0 && lx == 0 && ly == 0) atomic_add(hasChanged, 1);
+    if (continueIter && lx == 0 && ly == 0) atomic_inc(hasChanged);
 
     // Update output with shared memory result
-    if (gx < (oInfo.dims[0] - 2) && gy < (oInfo.dims[1] - 2))
-        oPtr[(gx * oInfo.strides[0] + gy * oInfo.strides[1]) + oInfo.strides[1] + 1] = outMem[j][i];
+    if (gx < (oInfo.dims[0] - 1) && gy < (oInfo.dims[1] - 1))
+        oPtr[(gx * oInfo.strides[0] + gy * oInfo.strides[1])] = outMem[j][i];
 }
 #endif
 

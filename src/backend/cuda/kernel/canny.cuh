@@ -226,47 +226,46 @@ void edgeTrack(Param<T> output, unsigned nBBS0, unsigned nBBS1) {
     int continueIter = 1;
 
     while (continueIter) {
-        int cu = outMem[j][i];
-        int nw = outMem[j - 1][i - 1];
-        int no = outMem[j - 1][i];
-        int ne = outMem[j - 1][i + 1];
-        int ea = outMem[j][i + 1];
-        int se = outMem[j + 1][i + 1];
-        int so = outMem[j + 1][i];
-        int sw = outMem[j + 1][i - 1];
-        int we = outMem[j][i - 1];
+
+      int nw ,no ,ne ,we ,ea ,sw ,so ,se;
+
+      if(outMem[j][i] == WEAK) {
+        nw = outMem[j - 1][i - 1];
+        no = outMem[j - 1][i];
+        ne = outMem[j - 1][i + 1];
+        we = outMem[j    ][i - 1];
+        ea = outMem[j    ][i + 1];
+        sw = outMem[j + 1][i - 1];
+        so = outMem[j + 1][i];
+        se = outMem[j + 1][i + 1];
 
         bool hasStrongNeighbour =
             nw == STRONG || no == STRONG || ne == STRONG || ea == STRONG ||
             se == STRONG || so == STRONG || sw == STRONG || we == STRONG;
 
-        if (cu == WEAK && hasStrongNeighbour) outMem[j][i] = STRONG;
+        if (hasStrongNeighbour) outMem[j][i] = STRONG;
+      }
 
         __syncthreads();
 
         // Check if there are any STRONG pixels with weak neighbours.
         // This search however ignores 1-pixel border encompassing the
         // shared memory tile region.
+        bool hasWeakNeighbour = false;
+        if(outMem[j][i] == STRONG) {
+          nw = outMem[j - 1][i - 1] == WEAK && VALID_BLOCK_IDX(j - 1, i - 1);
+          no = outMem[j - 1][i    ] == WEAK && VALID_BLOCK_IDX(j - 1, i);
+          ne = outMem[j - 1][i + 1] == WEAK && VALID_BLOCK_IDX(j - 1, i + 1);
+          we = outMem[j    ][i - 1] == WEAK && VALID_BLOCK_IDX(j, i - 1);
+          ea = outMem[j    ][i + 1] == WEAK && VALID_BLOCK_IDX(j, i + 1);
+          sw = outMem[j + 1][i - 1] == WEAK && VALID_BLOCK_IDX(j + 1, i - 1);
+          so = outMem[j + 1][i    ] == WEAK && VALID_BLOCK_IDX(j + 1, i);
+          se = outMem[j + 1][i + 1] == WEAK && VALID_BLOCK_IDX(j + 1, i + 1);
 
-        cu = outMem[j][i];
+          hasWeakNeighbour = nw || no || ne || ea || se || so || sw || we;
+        }
 
-        bool _nw =
-            outMem[j - 1][i - 1] == WEAK && VALID_BLOCK_IDX(j - 1, i - 1);
-        bool _no = outMem[j - 1][i] == WEAK && VALID_BLOCK_IDX(j - 1, i);
-        bool _ne =
-            outMem[j - 1][i + 1] == WEAK && VALID_BLOCK_IDX(j - 1, i + 1);
-        bool _ea = outMem[j][i + 1] == WEAK && VALID_BLOCK_IDX(j, i + 1);
-        bool _se =
-            outMem[j + 1][i + 1] == WEAK && VALID_BLOCK_IDX(j + 1, i + 1);
-        bool _so = outMem[j + 1][i] == WEAK && VALID_BLOCK_IDX(j + 1, i);
-        bool _sw =
-            outMem[j + 1][i - 1] == WEAK && VALID_BLOCK_IDX(j + 1, i - 1);
-        bool _we = outMem[j][i - 1] == WEAK && VALID_BLOCK_IDX(j, i - 1);
-
-        bool hasWeakNeighbour =
-            _nw || _no || _ne || _ea || _se || _so || _sw || _we;
-
-        continueIter = __syncthreads_or(cu == STRONG && hasWeakNeighbour);
+        continueIter = __syncthreads_or(hasWeakNeighbour);
     };
 
     // Check if any 1-pixel border ring
