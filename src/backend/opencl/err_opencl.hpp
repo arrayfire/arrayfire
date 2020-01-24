@@ -8,12 +8,8 @@
  ********************************************************/
 
 #pragma once
+
 #include <common/err_common.hpp>
-#include <common/half.hpp>
-#include <errorcodes.hpp>
-#include <platform.hpp>
-#include <types.hpp>
-#include <cstdio>
 
 #define OPENCL_NOT_SUPPORTED(message)                                      \
     do {                                                                   \

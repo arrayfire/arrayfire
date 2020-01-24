@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+
 #include <af/defines.h>
 
 #include <kernel_headers/convolve.hpp>

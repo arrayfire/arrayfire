@@ -9,21 +9,13 @@
 
 #pragma once
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#if __GNUC__ >= 8
-#pragma GCC diagnostic ignored "-Wcatch-value="
-#endif
-#include <CL/cl2.hpp>
-#pragma GCC diagnostic pop
-
+#include <cl2hpp.hpp>
 #include <af/opencl.h>
+
 #include <memory>
 #include <string>
 
+// Forward declarations
 namespace boost {
 template<typename T>
 class shared_ptr;

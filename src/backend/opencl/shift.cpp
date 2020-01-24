@@ -7,20 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <common/jit/ShiftNodeBase.hpp>
-#include <err_opencl.hpp>
 #include <shift.hpp>
 
-#include <memory>
-#include <stdexcept>
+#include <common/jit/ShiftNodeBase.hpp>
+#include <err_opencl.hpp>
+#include <traits.hpp>
 
 using af::dim4;
-
 using common::Node_ptr;
 using common::ShiftNodeBase;
 using opencl::jit::BufferNode;
-
 using std::array;
 using std::make_shared;
 using std::static_pointer_cast;

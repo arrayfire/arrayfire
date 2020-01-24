@@ -13,6 +13,7 @@
 #include <err_opencl.hpp>
 #include <math.hpp>
 #include <optypes.hpp>
+#include <traits.hpp>
 #include <types.hpp>
 #include <af/dim4.hpp>
 #include <complex>
