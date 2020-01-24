@@ -218,10 +218,6 @@ cuda_add_library(afcuda
     count.cu
     diagonal.cu
     diff.cu
-    dilate.cpp
-    dilate3d.cpp
-    erode.cpp
-    erode3d.cpp
     Event.cpp
     Event.hpp
     exampleFunction.cpp
@@ -436,9 +432,8 @@ cuda_add_library(afcuda
     memory.cpp
     memory.hpp
     moments.hpp
+    morph.cpp
     morph.hpp
-    morph3d_impl.hpp
-    morph_impl.hpp
     nearest_neighbour.hpp
     orb.hpp
     platform.cpp

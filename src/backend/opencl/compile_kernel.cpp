@@ -31,16 +31,12 @@ void Kernel::copyToReadOnly(detail::DevPtrType dst, detail::DevPtrType src,
 
 template<typename T>
 void Kernel::setScalar(detail::DevPtrType dst, T value) {
-    // CU_CHECK(cuMemcpyHtoDAsync(dst, &value, sizeof(T),
-    // cuda::getActiveStream()));
-    // CU_CHECK(cuStreamSynchronize(cuda::getActiveStream()));
+    opencl::getQueue().enqueueWriteBuffer(*dst, CL_TRUE, 0, sizeof(T), &value);
 }
 
 template<typename T>
 void Kernel::getScalar(T &out, detail::DevPtrType src) {
-    // CU_CHECK(cuMemcpyDtoHAsync(&out, src, sizeof(T),
-    // cuda::getActiveStream()));
-    // CU_CHECK(cuStreamSynchronize(cuda::getActiveStream()));
+    opencl::getQueue().enqueueReadBuffer(*src, CL_TRUE, 0, sizeof(T), &out);
 }
 
 template void Kernel::setScalar<int>(detail::DevPtrType, int);

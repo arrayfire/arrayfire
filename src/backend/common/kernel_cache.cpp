@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if !defined(AF_CPU)
+
 #include <common/kernel_cache.hpp>
 
 #include <device_manager.hpp>
@@ -68,3 +70,5 @@ Kernel findKernel(const string& kernelName, const vector<string>& sources,
 }
 
 }  // namespace common
+
+#endif

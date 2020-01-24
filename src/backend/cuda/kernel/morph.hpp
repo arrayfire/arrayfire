@@ -9,8 +9,8 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
-#include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/morph_cuh.hpp>
 
 #include <limits>
@@ -33,15 +33,16 @@ void morph(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
     const int windLen  = mask.dims[0];
     const int SeLength = (windLen <= 10 ? windLen : 0);
 
-    auto morph = getKernel(
-        "cuda::morph", source,
+    auto morph = common::findKernel(
+        "cuda::morph", {source},
         {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(SeLength)},
         {
             DefineValue(MAX_MORPH_FILTER_LEN),
         });
 
-    morph.setConstant("cFilter", reinterpret_cast<CUdeviceptr>(mask.ptr),
-                      mask.dims[0] * mask.dims[1] * sizeof(T));
+    morph.copyToReadOnly(morph.get("cFilter"),
+                         reinterpret_cast<CUdeviceptr>(mask.ptr),
+                         mask.dims[0] * mask.dims[1] * sizeof(T));
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
@@ -67,15 +68,20 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
 
     const int windLen = mask.dims[0];
 
-    auto morph3D = getKernel(
-        "cuda::morph3D", source,
+    if (windLen > 7) {
+        CUDA_NOT_SUPPORTED("Morph 3D does not support kernels larger than 7.");
+    }
+
+    auto morph3D = common::findKernel(
+        "cuda::morph3D", {source},
         {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(windLen)},
         {
             DefineValue(MAX_MORPH_FILTER_LEN),
         });
 
-    morph3D.setConstant("cFilter", reinterpret_cast<CUdeviceptr>(mask.ptr),
-                      mask.dims[0] * mask.dims[1] * mask.dims[2] * sizeof(T));
+    morph3D.copyToReadOnly(
+        morph3D.get("cFilter"), reinterpret_cast<CUdeviceptr>(mask.ptr),
+        mask.dims[0] * mask.dims[1] * mask.dims[2] * sizeof(T));
 
     dim3 threads(kernel::CUBE_X, kernel::CUBE_Y, kernel::CUBE_Z);
 
@@ -92,11 +98,7 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
                    (kernel::CUBE_Z + padding) * sizeof(T);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream(), shrdSize);
-    if (windLen <= 7) {
-        morph3D(qArgs, out, in, blk_x);
-    } else {
-        CUDA_NOT_SUPPORTED("Morph 3D does not support kernels larger than 7.");
-    }
+    morph3D(qArgs, out, in, blk_x);
     POST_LAUNCH_CHECK();
 }
 

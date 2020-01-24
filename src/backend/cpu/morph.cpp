@@ -19,8 +19,8 @@
 using af::dim4;
 
 namespace cpu {
-template<typename T, bool isDilation>
-Array<T> morph(const Array<T> &in, const Array<T> &mask) {
+template<typename T>
+Array<T> morph(const Array<T> &in, const Array<T> &mask, bool isDilation) {
     af::borderType padType = isDilation ? AF_PAD_ZERO : AF_PAD_CLAMP_TO_EDGE;
     const af::dim4 idims = in.dims();
     const af::dim4 mdims = mask.dims();
@@ -33,7 +33,11 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask) {
     auto out = createEmptyArray<T>(odims);
     auto inp = padArrayBorders(in, lpad, upad, padType);
 
-    getQueue().enqueue(kernel::morph<T, isDilation>, out, inp, mask);
+    if (isDilation) {
+        getQueue().enqueue(kernel::morph<T, true>, out, inp, mask);
+    } else {
+        getQueue().enqueue(kernel::morph<T, false>, out, inp, mask);
+    }
 
     std::vector<af_seq> idxs(4, af_span);
     idxs[0] = af_seq{double(lpad[0]), double(lpad[0] + idims[0] - 1), 1.0};
@@ -42,24 +46,20 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask) {
     return createSubArray(out, idxs);
 }
 
-template<typename T, bool isDilation>
-Array<T> morph3d(const Array<T> &in, const Array<T> &mask) {
+template<typename T>
+Array<T> morph3d(const Array<T> &in, const Array<T> &mask, bool isDilation) {
     Array<T> out = createEmptyArray<T>(in.dims());
-
-    getQueue().enqueue(kernel::morph3d<T, isDilation>, out, in, mask);
-
+    if (isDilation) {
+        getQueue().enqueue(kernel::morph3d<T, true>, out, in, mask);
+    } else {
+        getQueue().enqueue(kernel::morph3d<T, false>, out, in, mask);
+    }
     return out;
 }
 
-#define INSTANTIATE(T)                                        \
-    template Array<T> morph<T, true>(const Array<T> &in,      \
-                                     const Array<T> &mask);   \
-    template Array<T> morph<T, false>(const Array<T> &in,     \
-                                      const Array<T> &mask);  \
-    template Array<T> morph3d<T, true>(const Array<T> &in,    \
-                                       const Array<T> &mask); \
-    template Array<T> morph3d<T, false>(const Array<T> &in,   \
-                                        const Array<T> &mask);
+#define INSTANTIATE(T)                                                    \
+    template Array<T> morph<T>(const Array<T> &, const Array<T> &, bool); \
+    template Array<T> morph3d<T>(const Array<T> &, const Array<T> &, bool);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

@@ -9,6 +9,8 @@
 
 #pragma once
 
+#if !defined(AF_CPU)
+
 #include <backend.hpp>
 #include <common/kernel_util.hpp>
 #include <kernel_enqueuer.hpp>
@@ -142,3 +144,5 @@ Kernel findKernel(const std::string& kernelName,
                   const std::vector<std::string>& compileOpts = {});
 
 }  // namespace common
+
+#endif

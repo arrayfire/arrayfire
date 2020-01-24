@@ -40,8 +40,8 @@ static const int CUBE_X = 8;
 static const int CUBE_Y = 8;
 static const int CUBE_Z = 4;
 
-template<typename T, bool isDilation, int SeLength = 0>
-void morph(Param out, const Param in, const Param mask, int windLen = 0) {
+template<typename T>
+void morph(Param out, const Param in, const Param mask, bool isDilation) {
     ToNumStr<T> toNumStr;
     constexpr bool TypeIsDouble =
         (std::is_same<T, double>::value || std::is_same<T, cdouble>::value);
@@ -49,6 +49,9 @@ void morph(Param out, const Param in, const Param mask, int windLen = 0) {
         isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
 
     static const std::string src(morph_cl, morph_cl_len);
+
+    const int windLen  = mask.info.dims[0];
+    const int SeLength = (windLen <= 10 ? windLen : 0);
 
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
@@ -65,8 +68,6 @@ void morph(Param out, const Param in, const Param mask, int windLen = 0) {
     if (TypeIsDouble) { compileOpts.emplace_back(DefineKey(USE_DOUBLE)); }
 
     auto morphOp = common::findKernel("morph", {src}, tmpltArgs, compileOpts);
-
-    windLen = (SeLength > 0 ? SeLength : windLen);
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -94,8 +95,8 @@ void morph(Param out, const Param in, const Param mask, int windLen = 0) {
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, bool isDilation, int SeLength>
-void morph3d(Param out, const Param in, const Param mask) {
+template<typename T>
+void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
     ToNumStr<T> toNumStr;
     constexpr bool TypeIsDouble =
         (std::is_same<T, double>::value || std::is_same<T, cdouble>::value);
@@ -103,6 +104,8 @@ void morph3d(Param out, const Param in, const Param mask) {
         isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
 
     static const std::string src(morph_cl, morph_cl_len);
+
+    const int SeLength = mask.info.dims[0];
 
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),

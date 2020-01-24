@@ -8,14 +8,14 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/nonmax_suppression.hpp>
 #include <kernel_headers/trace_edge.hpp>
 #include <memory.hpp>
-#include <program.hpp>
 #include <traits.hpp>
 #include <type_util.hpp>
 
@@ -35,33 +35,19 @@ static const int THREADS_Y = 16;
 template<typename T>
 void nonMaxSuppression(Param output, const Param magnitude, const Param dx,
                        const Param dy) {
-    std::string refName = std::string("non_max_suppression_") +
-                          std::string(dtype_traits<T>::getName());
+    constexpr bool TypeIsDouble =
+        (std::is_same<T, double>::value || std::is_same<T, cdouble>::value);
+    static const std::string src(nonmax_suppression_cl,
+                                 nonmax_suppression_cl_len);
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(SHRD_MEM_HEIGHT, THREADS_X + 2),
+        DefineKeyValue(SHRD_MEM_WIDTH, THREADS_Y + 2),
+    };
+    if (TypeIsDouble) { compileOpts.emplace_back(DefineKey(USE_DOUBLE)); }
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
-
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D SHRD_MEM_HEIGHT=" << (THREADS_X + 2)
-                << " -D SHRD_MEM_WIDTH=" << (THREADS_Y + 2)
-                << " -D NON_MAX_SUPPRESSION";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
-
-        const char *ker_strs[] = {nonmax_suppression_cl};
-        const int ker_lens[]   = {nonmax_suppression_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "nonMaxSuppressionKernel");
-        addKernelToCache(device, refName, entry);
-    }
-
-    auto nonMaxOp =
-        KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
-                      const Buffer, const KParam, const Buffer, const KParam,
-                      const unsigned, const unsigned>(*entry.ker);
+    auto nonMaxOp = common::findKernel("nonMaxSuppressionKernel", {src},
+                                       {TemplateTypename<T>()}, compileOpts);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y, 1);
 
@@ -76,36 +62,23 @@ void nonMaxSuppression(Param output, const Param magnitude, const Param dx,
     nonMaxOp(EnqueueArgs(getQueue(), global, threads), *output.data,
              output.info, *magnitude.data, magnitude.info, *dx.data, dx.info,
              *dy.data, dy.info, blk_x, blk_y);
-
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename T>
 void initEdgeOut(Param output, const Param strong, const Param weak) {
-    std::string refName =
-        std::string("init_edge_out_") + std::string(dtype_traits<T>::getName());
+    constexpr bool TypeIsDouble =
+        (std::is_same<T, double>::value || std::is_same<T, cdouble>::value);
+    static const std::string src(trace_edge_cl, trace_edge_cl_len);
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKey(INIT_EDGE_OUT),
+    };
+    if (TypeIsDouble) { compileOpts.emplace_back(DefineKey(USE_DOUBLE)); }
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D INIT_EDGE_OUT";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
-
-        const char *ker_strs[] = {trace_edge_cl};
-        const int ker_lens[]   = {trace_edge_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "initEdgeOutKernel");
-        addKernelToCache(device, refName, entry);
-    }
-
-    auto initOp = KernelFunctor<Buffer, const KParam, const Buffer,
-                                const KParam, const Buffer, const KParam,
-                                const unsigned, const unsigned>(*entry.ker);
+    auto initOp = common::findKernel("initEdgeOutKernel", {src},
+                                     {TemplateTypename<T>()}, compileOpts);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y, 1);
 
@@ -125,31 +98,18 @@ void initEdgeOut(Param output, const Param strong, const Param weak) {
 
 template<typename T>
 void suppressLeftOver(Param output) {
-    std::string refName = std::string("suppress_left_over_") +
-                          std::string(dtype_traits<T>::getName());
+    constexpr bool TypeIsDouble =
+        (std::is_same<T, double>::value || std::is_same<T, cdouble>::value);
+    static const std::string src(trace_edge_cl, trace_edge_cl_len);
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKey(SUPPRESS_LEFT_OVER),
+    };
+    if (TypeIsDouble) { compileOpts.emplace_back(DefineKey(USE_DOUBLE)); }
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D SUPPRESS_LEFT_OVER";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
-
-        const char *ker_strs[] = {trace_edge_cl};
-        const int ker_lens[]   = {trace_edge_cl_len};
-
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "suppressLeftOverKernel");
-        addKernelToCache(device, refName, entry);
-    }
-
-    auto finalOp =
-        KernelFunctor<Buffer, const KParam, const unsigned, const unsigned>(
-            *entry.ker);
+    auto finalOp = common::findKernel("suppressLeftOverKernel", {src},
+                                      {TemplateTypename<T>()}, compileOpts);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y, 1);
 
@@ -163,37 +123,27 @@ void suppressLeftOver(Param output) {
 
     finalOp(EnqueueArgs(getQueue(), global, threads), *output.data, output.info,
             blk_x, blk_y);
-
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename T>
 void edgeTrackingHysteresis(Param output, const Param strong,
                             const Param weak) {
-    std::string refName =
-        std::string("edge_track_") + std::string(dtype_traits<T>::getName());
+    constexpr bool TypeIsDouble =
+        (std::is_same<T, double>::value || std::is_same<T, cdouble>::value);
+    static const std::string src(trace_edge_cl, trace_edge_cl_len);
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKey(EDGE_TRACER),
+        DefineKeyValue(SHRD_MEM_HEIGHT, THREADS_X + 2),
+        DefineKeyValue(SHRD_MEM_WIDTH, THREADS_Y + 2),
+        DefineKeyValue(TOTAL_NUM_THREADS, THREADS_X * THREADS_Y),
+    };
+    if (TypeIsDouble) { compileOpts.emplace_back(DefineKey(USE_DOUBLE)); }
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D SHRD_MEM_HEIGHT=" << (THREADS_X + 2)
-                << " -D SHRD_MEM_WIDTH=" << (THREADS_Y + 2)
-                << " -D TOTAL_NUM_THREADS=" << (THREADS_X * THREADS_Y)
-                << " -D EDGE_TRACER";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
-
-        const char *ker_strs[] = {trace_edge_cl};
-        const int ker_lens[]   = {trace_edge_cl_len};
-
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "edgeTrackKernel");
-        addKernelToCache(device, refName, entry);
-    }
+    auto edgeTraceOp = common::findKernel("edgeTrackKernel", {src},
+                                          {TemplateTypename<T>()}, compileOpts);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y);
 
@@ -205,29 +155,19 @@ void edgeTrackingHysteresis(Param output, const Param strong,
     NDRange global(blk_x * weak.info.dims[2] * threads[0],
                    blk_y * weak.info.dims[3] * threads[1], 1);
 
-    auto edgeTraceOp = KernelFunctor<Buffer, const KParam, const unsigned,
-                                     const unsigned, Buffer>(*entry.ker);
-
     initEdgeOut<T>(output, strong, weak);
 
-    int notFinished        = 1;
-    cl::Buffer *d_continue = bufferAlloc(sizeof(int));
+    int notFinished = 1;
+    auto dContinue  = memAlloc<T>(sizeof(int));
 
     while (notFinished) {
         notFinished = 0;
-        getQueue().enqueueWriteBuffer(*d_continue, CL_TRUE, 0, sizeof(int),
-                                      &notFinished);
-
+        edgeTraceOp.setScalar(dContinue.get(), notFinished);
         edgeTraceOp(EnqueueArgs(getQueue(), global, threads), *output.data,
-                    output.info, blk_x, blk_y, *d_continue);
+                    output.info, blk_x, blk_y, *dContinue);
         CL_DEBUG_FINISH(getQueue());
-
-        getQueue().enqueueReadBuffer(*d_continue, CL_TRUE, 0, sizeof(int),
-                                     &notFinished);
+        edgeTraceOp.getScalar(notFinished, dContinue.get());
     }
-
-    bufferFree(d_continue);
-
     suppressLeftOver<T>(output);
 }
 }  // namespace kernel
