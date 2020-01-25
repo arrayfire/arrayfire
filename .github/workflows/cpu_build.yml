@@ -83,6 +83,7 @@ jobs:
                   prnum=$(echo $ref | awk '{split($0, a, "/"); print a[3]}')
                   branch=$(git rev-parse --abbrev-ref HEAD)
                   buildname=$(if [ -z "$prnum" ]; then echo "$branch"; else echo "PR-$prnum"; fi)
+                  dashboard=$(if [ -z "$prnum" ]; then echo "Continuous"; else echo "Experimental"; fi)
                   buildname="$buildname-cpu-$BLAS_BACKEND"
                   mkdir build && cd build
                   cmake -G Ninja \
@@ -94,8 +95,9 @@ jobs:
                       -DUSE_CPU_MKL:BOOL=$USE_MKL \
                       -DBUILDNAME:STRING=${buildname} \
                       ..
+                  echo "::set-env name=CTEST_DASHBOARD::${dashboard}"
 
             - name: Build and Test
               run: |
                   cd ${GITHUB_WORKSPACE}/build
-                  ctest -D Experimental -T Test -T Submit -R cpu -j2
+                  ctest -D ${CTEST_DASHBOARD} -T Test -T Submit -R cpu -j2
