@@ -62,7 +62,7 @@ double eps();
 
 template<>
 double eps<float>() {
-    return 0.01f;
+    return 0.01;
 }
 
 template<>
@@ -72,7 +72,7 @@ double eps<double>() {
 
 template<>
 double eps<cfloat>() {
-    return 0.01f;
+    return 0.015;
 }
 
 template<>
