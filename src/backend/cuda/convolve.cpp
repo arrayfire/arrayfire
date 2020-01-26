@@ -39,14 +39,21 @@ template<>
 cudnnDataType_t getCudnnDataType<double>() {
     return CUDNN_DATA_DOUBLE;
 }
+
+#if CUDNN_VERSION >= 6000
 template<>
 cudnnDataType_t getCudnnDataType<int>() {
     return CUDNN_DATA_INT32;
 }
+
+#if CUDNN_VERSION >= 7100
 template<>
 cudnnDataType_t getCudnnDataType<unsigned char>() {
     return CUDNN_DATA_UINT8;
 }
+#endif
+#endif
+
 template<>
 cudnnDataType_t getCudnnDataType<half>() {
     return CUDNN_DATA_HALF;
@@ -83,14 +90,16 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
 
 void cudnnSet(cudnnTensorDescriptor_t desc, cudnnDataType_t cudnn_dtype,
               dim4 dims) {
-    CUDNN_CHECK(cudnnSetTensor4dDescriptor(desc, CUDNN_TENSOR_NCHW, cudnn_dtype,
-                                           dims[3], dims[2], dims[1], dims[0]));
+    CUDNN_CHECK(cuda::cudnnSetTensor4dDescriptor(desc, CUDNN_TENSOR_NCHW,
+                                                 cudnn_dtype, dims[3], dims[2],
+                                                 dims[1], dims[0]));
 }
 
 void cudnnSet(cudnnFilterDescriptor_t desc, cudnnDataType_t cudnn_dtype,
               dim4 dims) {
-    CUDNN_CHECK(cudnnSetFilter4dDescriptor(desc, cudnn_dtype, CUDNN_TENSOR_NCHW,
-                                           dims[3], dims[2], dims[1], dims[0]));
+    CUDNN_CHECK(cuda::cudnnSetFilter4dDescriptor(desc, cudnn_dtype,
+                                                 CUDNN_TENSOR_NCHW, dims[3],
+                                                 dims[2], dims[1], dims[0]));
 }
 
 template<typename Desc, typename T>
@@ -179,7 +188,7 @@ template<typename T>
 Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
                          const dim4 stride, const dim4 padding,
                          const dim4 dilation) {
-    auto cudnn = nnHandle();
+    cudnnHandle_t cudnn = nnHandle();
 
     dim4 sDims = signal.dims();
     dim4 fDims = filter.dims();
@@ -195,14 +204,15 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
 
     // create convolution descriptor
     auto convolution_descriptor = make_handle<cudnnConvolutionDescriptor_t>();
-    CUDNN_CHECK(cudnnSetConvolution2dDescriptor(
+
+    CUDNN_CHECK(cuda::cudnnSetConvolution2dDescriptor(
         convolution_descriptor, padding[1], padding[0], stride[1], stride[0],
         dilation[1], dilation[0], CUDNN_CONVOLUTION, cudnn_dtype));
 
     // get output dimensions
     const int tensorDims = 4;
     int convolved_output_dim[tensorDims];
-    CUDNN_CHECK(cudnnGetConvolutionNdForwardOutputDim(
+    CUDNN_CHECK(cuda::cudnnGetConvolutionNdForwardOutputDim(
         convolution_descriptor, input_descriptor, filter_descriptor, tensorDims,
         convolved_output_dim));
 
@@ -222,14 +232,14 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
     const int memory_limit =
         0;  // TODO: set to remaining space in memory manager?
     cudnnConvolutionFwdAlgo_t convolution_algorithm;
-    CUDNN_CHECK(cudnnGetConvolutionForwardAlgorithm(
+    CUDNN_CHECK(cuda::cudnnGetConvolutionForwardAlgorithm(
         cudnn, input_descriptor, filter_descriptor, convolution_descriptor,
         output_descriptor, CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, memory_limit,
         &convolution_algorithm));
 
     // figure out scratch space memory requirements
     size_t workspace_bytes;
-    CUDNN_CHECK(cudnnGetConvolutionForwardWorkspaceSize(
+    CUDNN_CHECK(cuda::cudnnGetConvolutionForwardWorkspaceSize(
         cudnn, input_descriptor, filter_descriptor, convolution_descriptor,
         output_descriptor, convolution_algorithm, &workspace_bytes));
 
@@ -238,7 +248,7 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
     // perform convolution
     scale_type<T> alpha = scalar<scale_type<T>>(1.0);
     scale_type<T> beta  = scalar<scale_type<T>>(0.0);
-    CUDNN_CHECK(cudnnConvolutionForward(
+    CUDNN_CHECK(cuda::cudnnConvolutionForward(
         cudnn, &alpha, input_descriptor, signal.device(), filter_descriptor,
         filter.device(), convolution_descriptor, convolution_algorithm,
         (void *)workspace_buffer.get(), workspace_bytes, &beta,
@@ -291,7 +301,7 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
 
     // create convolution descriptor
     auto convolution_descriptor = make_handle<cudnnConvolutionDescriptor_t>();
-    CUDNN_CHECK(cudnnSetConvolution2dDescriptor(
+    CUDNN_CHECK(cuda::cudnnSetConvolution2dDescriptor(
         convolution_descriptor, padding[1], padding[0], stride[1], stride[0],
         dilation[1], dilation[0], CUDNN_CONVOLUTION, cudnn_dtype));
 
@@ -300,14 +310,14 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
 
     // determine algorithm to use
     cudnnConvolutionBwdFilterAlgo_t bwd_filt_convolution_algorithm;
-    CUDNN_CHECK(cudnnGetConvolutionBackwardFilterAlgorithm(
+    CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardFilterAlgorithm(
         cudnn, x_descriptor, dy_descriptor, convolution_descriptor,
         dw_descriptor, CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, 0,
         &bwd_filt_convolution_algorithm));
 
     // figure out scratch space memory requirements
     size_t workspace_bytes;
-    CUDNN_CHECK(cudnnGetConvolutionBackwardFilterWorkspaceSize(
+    CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardFilterWorkspaceSize(
         cudnn, x_descriptor, dy_descriptor, convolution_descriptor,
         dw_descriptor, bwd_filt_convolution_algorithm, &workspace_bytes));
     // prepare output array and scratch space
@@ -318,7 +328,7 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
     // perform convolution
     scale_type<T> alpha = scalar<scale_type<T>>(1.0);
     scale_type<T> beta  = scalar<scale_type<T>>(0.0);
-    CUDNN_CHECK(cudnnConvolutionBackwardFilter(
+    CUDNN_CHECK(cuda::cudnnConvolutionBackwardFilter(
         cudnn, &alpha, x_descriptor, original_signal.device(), dy_descriptor,
         incoming_gradient.device(), convolution_descriptor,
         bwd_filt_convolution_algorithm, (void *)workspace_buffer.get(),
@@ -347,13 +357,15 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
 
     // create output filter gradient descriptor
     auto w_descriptor = make_handle<cudnnFilterDescriptor_t>();
-    CUDNN_CHECK(cudnnSetFilter4dDescriptor(w_descriptor, cudnn_dtype,
-                                           CUDNN_TENSOR_NCHW, fDims[3],
-                                           fDims[2], fDims[1], fDims[0]));
+
+    CUDNN_CHECK(cuda::cudnnSetFilter4dDescriptor(w_descriptor, cudnn_dtype,
+                                                 CUDNN_TENSOR_NCHW, fDims[3],
+                                                 fDims[2], fDims[1], fDims[0]));
 
     // create convolution descriptor
     auto convolution_descriptor = make_handle<cudnnConvolutionDescriptor_t>();
-    CUDNN_CHECK(cudnnSetConvolution2dDescriptor(
+
+    CUDNN_CHECK(cuda::cudnnSetConvolution2dDescriptor(
         convolution_descriptor, padding[1], padding[0], stride[1], stride[0],
         dilation[1], dilation[0], CUDNN_CONVOLUTION, cudnn_dtype));
 
@@ -366,7 +378,7 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
 
     // figure out scratch space memory requirements
     size_t workspace_bytes;
-    CUDNN_CHECK(cudnnGetConvolutionBackwardDataWorkspaceSize(
+    CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardDataWorkspaceSize(
         cudnn, w_descriptor, dy_descriptor, convolution_descriptor,
         dx_descriptor, bwd_data_convolution_algorithm, &workspace_bytes));
 
@@ -379,7 +391,7 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
     scale_type<T> alpha = scalar<scale_type<T>>(1.0);
     scale_type<T> beta  = scalar<scale_type<T>>(0.0);
 
-    CUDNN_CHECK(cudnnConvolutionBackwardData(
+    CUDNN_CHECK(cuda::cudnnConvolutionBackwardData(
         cudnn, &alpha, w_descriptor, original_filter.get(), dy_descriptor,
         incoming_gradient.get(), convolution_descriptor,
         bwd_data_convolution_algorithm, (void *)workspace_buffer.get(),

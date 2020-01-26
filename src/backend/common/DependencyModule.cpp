@@ -47,7 +47,7 @@ namespace common {
 
 DependencyModule::DependencyModule(const char* plugin_file_name,
                                    const char** paths)
-    : handle(nullptr), logger(loggerFactory("platform")) {
+    : handle(nullptr), logger(common::loggerFactory("platform")) {
     // TODO(umar): Implement handling of non-standard paths
     UNUSED(paths);
     if (plugin_file_name) {
@@ -66,7 +66,6 @@ DependencyModule::DependencyModule(const vector<string> plugin_base_file_name,
                                    const vector<string> suffixes,
                                    const vector<string> paths)
     : handle(nullptr), logger(common::loggerFactory("platform")) {
-    UNUSED(paths);
     for (const string& base_name : plugin_base_file_name) {
         for (const string& path : paths) {
             for (const string& suffix : suffixes) {

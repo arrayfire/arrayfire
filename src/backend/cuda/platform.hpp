@@ -59,7 +59,6 @@ std::string getDeviceInfo(int device);
 
 std::string getPlatformInfo();
 
-std::string int_version_to_string(int version);
 std::string getDriverVersion();
 
 std::string getCUDARuntimeVersion();

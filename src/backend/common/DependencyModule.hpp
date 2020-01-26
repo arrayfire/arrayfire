@@ -8,15 +8,18 @@
  ********************************************************/
 
 #pragma once
+#include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/module_loading.hpp>
-#include <common/Logger.hpp>
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+namespace spdlog {
+class logger;
+}
 namespace common {
 
 /// Allows you to create classes which dynamically load dependencies at runtime
@@ -50,7 +53,7 @@ class DependencyModule {
     /// Returns true if the module was successfully loaded
     bool isLoaded();
 
-    /// Returns true if the module was successfully loaded
+    /// Returns true if all of the symbols for the module were loaded
     bool symbolsLoaded();
 
     /// Returns the last error message that occurred because of loading the
@@ -66,5 +69,5 @@ class DependencyModule {
 #define MODULE_MEMBER(NAME) decltype(&::NAME) NAME
 
 /// Dynamically loads the function pointer at runtime
-#define MODULE_FUNCTION_INIT(NAME) \
-    NAME = module.getSymbol<decltype(&::NAME)>(#NAME)
+#define MODULE_FUNCTION_INIT(NAME)                     \
+    NAME = module.getSymbol<decltype(&::NAME)>(#NAME);
