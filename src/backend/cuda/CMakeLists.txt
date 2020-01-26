@@ -12,9 +12,6 @@ dependency_check(CUDA_FOUND "CUDA not found.")
 
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
-if(NOT cuDNN_FOUND)
-  message(FATAL_ERROR "Atleast cuDNN version 7.3 is required, please install.")
-endif()
 
 if(NOT OPENGL_FOUND)
   # create a dummy gl.h header to satisfy cuda_gl_interop.h requirement
@@ -383,6 +380,8 @@ cuda_add_library(afcuda
     cublas.hpp
     cudnn.cpp
     cudnn.hpp
+    cudnnModule.cpp
+    cudnnModule.hpp
     cufft.cpp
     cufft.hpp
     cusolverDn.cpp
@@ -525,6 +524,7 @@ target_include_directories (afcuda
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${CMAKE_CURRENT_SOURCE_DIR}/jit
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${cuDNN_INCLUDE_DIRS}
 )
 
 set_target_properties(afcuda PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -553,7 +553,6 @@ target_link_libraries(afcuda
     ${CUDA_CUFFT_LIBRARIES}
     ${CUDA_cusolver_LIBRARY}
     ${CUDA_cusparse_LIBRARY}
-    cuDNN::cuDNN
     ${CMAKE_DL_LIBS}
   )
 

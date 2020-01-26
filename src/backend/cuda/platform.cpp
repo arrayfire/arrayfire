@@ -21,6 +21,7 @@
 #include <common/util.hpp>
 #include <cublas.hpp>
 #include <cudnn.hpp>
+#include <cudnnModule.hpp>
 #include <cufft.hpp>
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
@@ -104,13 +105,26 @@ unique_handle<cudnnHandle_t> *nnManager(const int deviceId) {
         cudnnHandles[DeviceManager::MAX_DEVICES];
     thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];
 
-    std::call_once(initFlags[deviceId],
-                   [&] { cudnnHandles[deviceId].create(); });
+    auto *handle        = &cudnnHandles[deviceId];
+    cudnnStatus_t error = CUDNN_STATUS_SUCCESS;
+    std::call_once(initFlags[deviceId], [deviceId, handle, &error] {
+        auto getLogger = [&] { return spdlog::get("platform"); };
+        AF_TRACE("Initializing cuDNN");
+        error = static_cast<cudnnStatus_t>(handle->create());
 
-    CUDNN_CHECK(
-        cudnnSetStream(cudnnHandles[deviceId], cuda::getStream(deviceId)));
+        // Not throwing an AF_ERROR here because we are in a lambda that could
+        // be executing on another thread;
+        if (!(*handle)) getLogger()->error("Error initalizing cuDNN");
+    });
+    if (error) {
+        string error_msg = fmt::format("Error initializing cuDNN({}): {}.",
+                                       error, errorString(error));
+        AF_ERROR(error_msg, AF_ERR_RUNTIME);
+    }
+    CUDNN_CHECK(getCudnnPlugin().cudnnSetStream(cudnnHandles[deviceId],
+                                                cuda::getStream(deviceId)));
 
-    return &cudnnHandles[deviceId];
+    return handle;
 }
 
 unique_ptr<PlanCache> &cufftManager(const int deviceId) {
@@ -273,11 +287,6 @@ string getDriverVersion() {
     }
 }
 
-string int_version_to_string(int version) {
-    return to_string(version / 1000) + "." +
-           to_string((int)((version % 1000) / 10.));
-}
-
 string getCUDARuntimeVersion() {
     int runtime = 0;
     CUDA_CHECK(cudaRuntimeGetVersion(&runtime));
@@ -435,7 +444,21 @@ PlanCache &fftManager() {
 
 BlasHandle blasHandle() { return *cublasManager(cuda::getActiveDeviceId()); }
 
-cudnnHandle_t nnHandle() { return *nnManager(cuda::getActiveDeviceId()); }
+cudnnHandle_t nnHandle() {
+    // Keep the getCudnnPlugin call here because module loading can throw an
+    // exception the first time its called. We want to avoid that because the
+    // unique handle object is marked noexcept and could terminate. if the
+    // module is not loaded correctly
+    static cudnnModule keep_me_to_avoid_exceptions_exceptions =
+        getCudnnPlugin();
+    static unique_handle<cudnnHandle_t> *handle =
+        nnManager(cuda::getActiveDeviceId());
+    if (*handle)
+        return *handle;
+    else {
+        AF_ERROR("Error Initializing cuDNN\n", AF_ERR_RUNTIME);
+    }
+}
 
 SolveHandle solverDnHandle() {
     return *cusolverManager(cuda::getActiveDeviceId());

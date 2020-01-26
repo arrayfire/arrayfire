@@ -16,6 +16,7 @@
 #include <common/Logger.hpp>
 #include <common/MemoryManagerBase.hpp>
 #include <common/defines.hpp>
+#include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <cublas_v2.h>  // needed for af/cuda.h
@@ -28,7 +29,6 @@
 #include <version.hpp>
 #include <af/cuda.h>
 #include <af/version.h>
-#include <common/graphics_common.hpp>
 // cuda_gl_interop.h does not include OpenGL headers for ARM
 // __gl_h_ should be defined by glad.h inclusion
 #include <cuda_gl_interop.h>
@@ -54,22 +54,57 @@ using std::stringstream;
 
 namespace cuda {
 
+struct cuNVRTCcompute {
+    /// The CUDA Toolkit version returned by cudaRuntimeGetVersion
+    int cudaVersion;
+    /// Maximum major compute flag supported by cudaVersion
+    int major;
+    /// Maximum minor compute flag supported by cudaVersion
+    int minor;
+};
+
+// clang-format off
+static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+    {10020, 7, 5},
+    {10010, 7, 5},
+    {10000, 7, 2},
+    {9020, 7, 2},
+    {9010, 7, 2},
+    {9000, 7, 2},
+    {8000, 5, 3},
+    {7050, 5, 3},
+    {7000, 5, 3}};
+// clang-format on
+
+bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
+    auto rt = find_if(
+        begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
+        [runtime](cuNVRTCcompute c) { return c.cudaVersion == runtime; });
+    if (rt == end(Toolkit2MaxCompute)) {
+        spdlog::get("platform")
+            ->warn(
+                "CUDA runtime version({}) not recognized. Please "
+                "create an issue or a pull request on the ArrayFire repository "
+                "to update the Toolkit2MaxCompute array with this version of "
+                "the CUDA Runtime. Continuing assuming everything is okay.",
+                int_version_to_string(runtime));
+        return true;
+    }
+
+    if (rt->major >= compute.first) {
+        if (rt->major == compute.first)
+            return rt->minor >= compute.second;
+        else
+            return true;
+    } else {
+        return false;
+    }
+}
+
 /// Check for compatible compute version based on runtime cuda toolkit version
 void checkAndSetDevMaxCompute(pair<int, int> &prop) {
-    struct cuNVRTCcompute {
-        /// The CUDA Toolkit version returned by cudaRuntimeGetVersion
-        int cudaVersion;
-        /// Maximum major compute flag supported by cudaVersion
-        int major;
-        /// Maximum minor compute flag supported by cudaVersion
-        int minor;
-    };
-    static const cuNVRTCcompute Toolkit2MaxCompute[] = {
-        {10020, 7, 5}, {10010, 7, 5}, {10000, 7, 2}, {9020, 7, 2}, {9010, 7, 2},
-        {9000, 7, 2},  {8000, 5, 3},  {7050, 5, 3}, {7000, 5, 3}};
-
     auto originalCompute = prop;
-    int rtCudaVer = 0;
+    int rtCudaVer        = 0;
     CUDA_CHECK(cudaRuntimeGetVersion(&rtCudaVer));
     auto tkitMaxCompute = find_if(
         begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
@@ -383,7 +418,7 @@ void DeviceManager::checkCudaVsDriverVersion() {
     CUDA_CHECK(cudaDriverGetVersion(&driver));
     CUDA_CHECK(cudaRuntimeGetVersion(&runtime));
 
-    AF_TRACE("CUDA supported by the GPU Driver {} ArrayFire CUDA Runtime {}",
+    AF_TRACE("CUDA Driver supports up to CUDA {} ArrayFire CUDA Runtime {}",
              int_version_to_string(driver), int_version_to_string(runtime));
 
     debugRuntimeCheck(getLogger(), runtime, driver);
@@ -503,7 +538,8 @@ DeviceManager::DeviceManager()
             setActiveDevice(def_device, cuDevices[def_device].nativeId);
         }
     }
-    AF_TRACE("Default device: {}", getActiveDeviceId());
+    AF_TRACE("Default device: {}({})", getActiveDeviceId(),
+             cuDevices[getActiveDeviceId()].prop.name);
 }
 
 spdlog::logger *DeviceManager::getLogger() { return logger.get(); }

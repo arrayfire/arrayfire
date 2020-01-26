@@ -33,6 +33,8 @@ struct cudaDevice_t {
 
 int& tlocalActiveDeviceId();
 
+bool checkDeviceWithRuntime(int runtime, std::pair<int, int> compute);
+
 class DeviceManager {
    public:
     static const size_t MAX_DEVICES = 16;
