@@ -100,4 +100,4 @@ jobs:
             - name: Build and Test
               run: |
                   cd ${GITHUB_WORKSPACE}/build
-                  ctest -D ${CTEST_DASHBOARD} -T Test -T Submit -R cpu -j2
+                  ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -R cpu -j2
