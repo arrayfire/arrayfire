@@ -27,7 +27,7 @@ void handle_deleter(T handle) noexcept;
 /// \param[in] handle the handle that will be initialzed by the create function
 /// \note This function will need to be specialized for each type of handle
 template<typename T>
-void handle_creator(T *handle) noexcept;
+int handle_creator(T *handle) noexcept;
 
 /// \brief A generic class to manage basic RAII lifetimes for C handles
 ///
@@ -49,8 +49,13 @@ class unique_handle {
     /// Default constructor. Initializes the handle to zero. Does not call the
     /// create function
     constexpr unique_handle() noexcept : handle_(0) {}
-    void create() {
-        if (!handle_) handle_creator(&handle_);
+    int create() {
+        if (!handle_) {
+            int error = handle_creator(&handle_);
+            if (error) { handle_ = 0; }
+            return error;
+        }
+        return 0;
     }
 
     /// \brief Takes ownership of a previously created handle
@@ -66,15 +71,15 @@ class unique_handle {
     /// \brief Implicit converter for the handle
     constexpr operator const T &() const noexcept { return handle_; }
 
-    unique_handle(const unique_handle &other)      noexcept = delete;
+    unique_handle(const unique_handle &other) noexcept = delete;
     constexpr unique_handle(unique_handle &&other) noexcept
-      : handle_(other.handle_) {
-      other.handle_ = 0;
+        : handle_(other.handle_) {
+        other.handle_ = 0;
     }
 
-    unique_handle &operator=(unique_handle &other)  noexcept = delete;
+    unique_handle &operator=(unique_handle &other) noexcept = delete;
     unique_handle &operator=(unique_handle &&other) noexcept {
-        handle_ = other.handle_;
+        handle_       = other.handle_;
         other.handle_ = 0;
     }
 
@@ -92,6 +97,9 @@ class unique_handle {
     constexpr bool operator==(T other) const noexcept {
         return handle_ == other;
     }
+
+    // Returns true if the handle was initialized correctly
+    constexpr operator bool() { return handle_ != 0; }
 };
 
 /// \brief Returns an initialized handle object. The create function on this
@@ -113,14 +121,14 @@ unique_handle<T> make_handle() {
 /// \param[in] DESTROY The destroy function for the handle
 /// \note Do not add this macro to another namespace, The macro provides a
 ///       namespace for the functions.
-#define CREATE_HANDLE(HANDLE, CREATE, DESTROY)              \
-    namespace common {                                      \
-    template<>                                              \
-    void handle_deleter<HANDLE>(HANDLE handle) noexcept {   \
-        DESTROY(handle);                                    \
-    }                                                       \
-    template<>                                              \
-    void handle_creator<HANDLE>(HANDLE * handle) noexcept { \
-        CREATE(handle);                                     \
-    }                                                       \
+#define CREATE_HANDLE(HANDLE, CREATE, DESTROY)             \
+    namespace common {                                     \
+    template<>                                             \
+    void handle_deleter<HANDLE>(HANDLE handle) noexcept {  \
+        DESTROY(handle);                                   \
+    }                                                      \
+    template<>                                             \
+    int handle_creator<HANDLE>(HANDLE * handle) noexcept { \
+        return CREATE(handle);                             \
+    }                                                      \
     }  // namespace common
