@@ -180,8 +180,8 @@ __global__ void final_boundary_reduce_dim(int *reduced_block_sizes,
             // vals.strides[dim_ordering[2]] + bidy *
             // vals.strides[dim_ordering[1]] + tidx * vals.strides[dim];
             const int tid                   = tidx;
-            compute_t<To> v0                = vals.ptr[tid];
-            compute_t<To> v1                = vals.ptr[tid + 1];
+            compute_t<To> v0                = compute_t<To>(vals.ptr[tid]);
+            compute_t<To> v1                = compute_t<To>(vals.ptr[tid + 1]);
             vals.ptr[tid + 1]               = reduce(v0, v1);
             reduced_block_sizes[blockIdx.x] = blockDim.x - 1;
         } else {
@@ -365,11 +365,11 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
 
     if (threadIdx.x == 0) { reducedBlockSize = 0; }
     if (threadIdx.x < nWarps * maxResPerWarp)
-        warpReduceValsSmemFinal[threadIdx.x] = scalar<To>(0);
+        warpReduceValsSmemFinal[threadIdx.x] = scalar<compute_t<To>>(0);
     __syncthreads();
 
     Binary<compute_t<To>, op> reduce;
-    Transform<data_t<Ti>, compute_t<To>, op> transform;
+    Transform<compute_t<Ti>, compute_t<To>, op> transform;
 
     // load keys and values to threads
     compute_t<Tk> k;
@@ -379,8 +379,8 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
                         bidy * vals.strides[1] +
                         tidx;  // index for batched inputs
         k = keys.ptr[tidx];
-        v = transform(vals.ptr[tid]);
-        if (change_nan) v = IS_NAN(v) ? nanval : v;
+        v = transform(compute_t<Ti>(vals.ptr[tid]));
+        if (change_nan) v = IS_NAN(v) ? compute_t<To>(nanval) : v;
     } else {
         v = Binary<compute_t<To>, op>::init();
     }
@@ -422,19 +422,16 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         compute_t<To> uval =
             shfl_down_sync(shflmask, v,
                            1);  // shfls data from neighboring threads
-        v = reduce(
-            v, (update_key
-                    ? uval
-                    : Binary<compute_t<To>, op>::init()));  // update if thread
-                                                            // requires it
-
+        compute_t<To> init = Binary<compute_t<To>, op>::init();
+        v = reduce(v, (update_key ? uval : init));  // update if thread
+                                                    // requires it
         eq_check = (unique_id == shfl_down_sync(0xFFFFFFFF, unique_id, 2));
         update_key =
             eq_check && (laneid < 30) && update_key && ((tidx + 2) < n);
         shflmask = ballot_sync(0xFFFFFFFF, update_key);
         shflmask |= (shflmask << 2);
         uval = shfl_down_sync(shflmask, v, 2);
-        v    = reduce(v, (update_key ? uval : Binary<To, op>::init()));
+        v    = reduce(v, (update_key ? uval : init));
 
         eq_check = (unique_id == shfl_down_sync(0xFFFFFFFF, unique_id, 4));
         update_key =
@@ -442,7 +439,7 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         shflmask = ballot_sync(0xFFFFFFFF, update_key);
         shflmask |= (shflmask << 4);
         uval = shfl_down_sync(shflmask, v, 4);
-        v    = reduce(v, (update_key ? uval : Binary<To, op>::init()));
+        v    = reduce(v, (update_key ? uval : init));
 
         eq_check = (unique_id == shfl_down_sync(0xFFFFFFFF, unique_id, 8));
         update_key =
@@ -450,7 +447,7 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         shflmask = ballot_sync(0xFFFFFFFF, update_key);
         shflmask |= (shflmask << 8);
         uval = shfl_down_sync(shflmask, v, 8);
-        v    = reduce(v, (update_key ? uval : Binary<To, op>::init()));
+        v    = reduce(v, (update_key ? uval : init));
 
         eq_check = (unique_id == shfl_down_sync(0xFFFFFFFF, unique_id, 16));
         update_key =
@@ -458,7 +455,7 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         shflmask = ballot_sync(0xFFFFFFFF, update_key);
         shflmask |= (shflmask << 16);
         uval = shfl_down_sync(shflmask, v, 16);
-        v    = reduce(v, (update_key ? uval : Binary<To, op>::init()));
+        v    = reduce(v, (update_key ? uval : init));
     }
 
     const int warpid = threadIdx.x / 32;
@@ -590,10 +587,11 @@ __global__ static void reduce_blocks_dim_by_key(
     __shared__ Tk warpReduceKeys[nWarps][maxResPerWarp];  // reduced key
                                                           // segments for each
                                                           // warp
-    __shared__ To warpReduceVals[nWarps][maxResPerWarp];  // reduced values for
-                                                          // each warp
-                                                          // corresponding to
-                                                          // each key segment
+    __shared__ compute_t<To> warpReduceVals[nWarps]
+                                           [maxResPerWarp];  // reduced values
+                                                             // for each warp
+                                                             // corresponding to
+                                                             // each key segment
 
     // space to hold left/right-most keys of each reduced warp to check if
     // reduction should happen accros boundaries
@@ -602,16 +600,18 @@ __global__ static void reduce_blocks_dim_by_key(
 
     // space to hold right-most values of each reduced warp to check if
     // reduction should happen accros boundaries
-    __shared__ To warpReduceRightBoundaryVals[nWarps];
+    __shared__ compute_t<To> warpReduceRightBoundaryVals[nWarps];
 
     // space to compact and finalize all reductions within block
     __shared__ Tk warpReduceKeysSmemFinal[nWarps * maxResPerWarp];
-    __shared__ To warpReduceValsSmemFinal[nWarps * maxResPerWarp];
+    __shared__ compute_t<To> warpReduceValsSmemFinal[nWarps * maxResPerWarp];
 
     //
     // will hold final number of reduced elements in block
     __shared__ int reducedBlockSize;
     __shared__ int dim_ordering[4];
+
+    compute_t<To> init = Binary<compute_t<To>, op>::init();
 
     if (threadIdx.x == 0) {
         reducedBlockSize = 0;
@@ -622,11 +622,11 @@ __global__ static void reduce_blocks_dim_by_key(
         }
     }
     if (threadIdx.x < nWarps * maxResPerWarp)
-        warpReduceValsSmemFinal[threadIdx.x] = Binary<To, op>::init();
+        warpReduceValsSmemFinal[threadIdx.x] = init;
     __syncthreads();
 
     Binary<compute_t<To>, op> reduce;
-    Transform<Ti, compute_t<To>, op> transform;
+    Transform<compute_t<Ti>, compute_t<To>, op> transform;
 
     // load keys and values to threads
     Tk k;
@@ -638,10 +638,10 @@ __global__ static void reduce_blocks_dim_by_key(
                         tidx * vals.strides[dim];  // index for batched inputs
 
         k = keys.ptr[tidx];
-        v = transform(vals.ptr[tid]);
-        if (change_nan) v = IS_NAN(v) ? nanval : v;
+        v = transform(compute_t<Ti>(vals.ptr[tid]));
+        if (change_nan) v = IS_NAN(v) ? compute_t<To>(nanval) : v;
     } else {
-        v = Binary<compute_t<To>, op>::init();
+        v = init;
     }
 
     Tk eq_check = (k != shfl_up_sync(0xFFFFFFFF, k, 1));
@@ -681,11 +681,8 @@ __global__ static void reduce_blocks_dim_by_key(
         compute_t<To> uval =
             shfl_down_sync(shflmask, v,
                            1);  // shfls data from neighboring threads
-        v = reduce(
-            v, (update_key
-                    ? uval
-                    : Binary<compute_t<To>, op>::init()));  // update if thread
-                                                            // requires it
+        v = reduce(v, (update_key ? uval : init));  // update if thread
+                                                    // requires it
 
         eq_check = (unique_id == shfl_down_sync(0xFFFFFFFF, unique_id, 2));
         update_key =
@@ -693,7 +690,7 @@ __global__ static void reduce_blocks_dim_by_key(
         shflmask = ballot_sync(0xFFFFFFFF, update_key);
         shflmask |= (shflmask << 2);
         uval = shfl_down_sync(shflmask, v, 2);
-        v    = reduce(v, (update_key ? uval : Binary<To, op>::init()));
+        v    = reduce(v, (update_key ? uval : init));
 
         eq_check = (unique_id == shfl_down_sync(0xFFFFFFFF, unique_id, 4));
         update_key =
@@ -701,7 +698,7 @@ __global__ static void reduce_blocks_dim_by_key(
         shflmask = ballot_sync(0xFFFFFFFF, update_key);
         shflmask |= (shflmask << 4);
         uval = shfl_down_sync(shflmask, v, 4);
-        v    = reduce(v, (update_key ? uval : Binary<To, op>::init()));
+        v    = reduce(v, (update_key ? uval : init));
 
         eq_check = (unique_id == shfl_down_sync(0xFFFFFFFF, unique_id, 8));
         update_key =
@@ -709,7 +706,7 @@ __global__ static void reduce_blocks_dim_by_key(
         shflmask = ballot_sync(0xFFFFFFFF, update_key);
         shflmask |= (shflmask << 8);
         uval = shfl_down_sync(shflmask, v, 8);
-        v    = reduce(v, (update_key ? uval : Binary<To, op>::init()));
+        v    = reduce(v, (update_key ? uval : init));
 
         eq_check = (unique_id == shfl_down_sync(0xFFFFFFFF, unique_id, 16));
         update_key =
@@ -717,7 +714,7 @@ __global__ static void reduce_blocks_dim_by_key(
         shflmask = ballot_sync(0xFFFFFFFF, update_key);
         shflmask |= (shflmask << 16);
         uval = shfl_down_sync(shflmask, v, 16);
-        v    = reduce(v, (update_key ? uval : Binary<To, op>::init()));
+        v    = reduce(v, (update_key ? uval : init));
     }
 
     const int warpid = threadIdx.x / 32;
