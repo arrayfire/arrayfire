@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <common/DependencyModule.hpp>
+#include <common/Logger.hpp>
 #include <common/module_loading.hpp>
 #include <algorithm>
 #include <string>
@@ -33,6 +34,7 @@ static const char* libraryPrefix = "lib";
 #endif
 
 using std::string;
+using std::vector;
 
 namespace {
 
@@ -45,12 +47,40 @@ namespace common {
 
 DependencyModule::DependencyModule(const char* plugin_file_name,
                                    const char** paths)
-    : handle(nullptr) {
+    : handle(nullptr), logger(loggerFactory("platform")) {
     // TODO(umar): Implement handling of non-standard paths
     UNUSED(paths);
     if (plugin_file_name) {
-        handle = loadLibrary(libName(plugin_file_name).c_str());
+        string filename = libName(plugin_file_name);
+        AF_TRACE("Attempting to load: {}", filename);
+        handle = loadLibrary(filename.c_str());
+        if (handle) {
+            AF_TRACE("Found: {}", filename);
+        } else {
+            AF_TRACE("Unable to open {}", plugin_file_name);
+        }
     }
+}
+
+DependencyModule::DependencyModule(const vector<string> plugin_base_file_name,
+                                   const vector<string> suffixes,
+                                   const vector<string> paths)
+    : handle(nullptr), logger(common::loggerFactory("platform")) {
+    UNUSED(paths);
+    for (const string& base_name : plugin_base_file_name) {
+        for (const string& path : paths) {
+            for (const string& suffix : suffixes) {
+                string filename = libName(base_name + suffix);
+                AF_TRACE("Attempting to load: {}", filename);
+                handle = loadLibrary(filename.c_str());
+                if (handle) {
+                    AF_TRACE("Found: {}", filename);
+                    return;
+                }
+            }
+        }
+    }
+    AF_TRACE("Unable to open {}", plugin_base_file_name[0]);
 }
 
 DependencyModule::~DependencyModule() {
@@ -65,4 +95,7 @@ bool DependencyModule::symbolsLoaded() {
 }
 
 string DependencyModule::getErrorMessage() { return common::getErrorMessage(); }
+
+spdlog::logger* DependencyModule::getLogger() { return logger.get(); }
+
 }  // namespace common
