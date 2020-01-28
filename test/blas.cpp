@@ -31,6 +31,9 @@ using af::max;
 using af::randu;
 using af::setDevice;
 using af::span;
+using af::constant;
+using af::dot;
+using af::transpose;
 using std::copy;
 using std::cout;
 using std::endl;
@@ -328,6 +331,12 @@ TEST(MatrixMultiply, RhsBroadcastBatched) {
 float alpha = 1.f;
 float beta = 0.f;
 
+float h_gold_gemv[4] = {5, 5, 5, 5};
+float h_half_ones[20] = {1.f, 1.f, 1.f, 1.f, 1.f,
+                         1.f, 1.f, 1.f, 1.f, 1.f,
+                         1.f, 1.f, 1.f, 1.f, 1.f,
+                         1.f, 1.f, 1.f, 1.f, 1.f};
+
 float h_lhs[9] =         {1.f, 4.f, 7.f,
                           2.f, 5.f, 8.f,
                           3.f, 6.f, 9.f};
@@ -576,6 +585,11 @@ INSTANTIATE_TEST_CASE_P(
         test_params(AF_MAT_TRANS, AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_tall, h_gold_TN, dim4(3, 2), dim4(3, 2), dim4(2, 2), &beta, NULL_ARRAY),
         test_params(AF_MAT_TRANS, AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_wide, h_gold_TT, dim4(3, 2), dim4(2, 3), dim4(2, 2), &beta, NULL_ARRAY),
 
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_half_ones, h_half_ones, h_gold_gemv, dim4(4, 5), dim4(5, 1), dim4(4, 1), &beta, NULL_ARRAY),
+        test_params(AF_MAT_NONE, AF_MAT_NONE, &alpha, h_half_ones, h_half_ones, h_gold_gemv, dim4(1, 5), dim4(5, 1), dim4(1, 1), &beta, NULL_ARRAY),
+        test_params(AF_MAT_NONE, AF_MAT_TRANS, &alpha, h_half_ones, h_half_ones, h_gold_gemv, dim4(4, 5), dim4(1, 5), dim4(4, 1), &beta, NULL_ARRAY),
+        test_params(AF_MAT_TRANS, AF_MAT_NONE, &alpha, h_half_ones, h_half_ones, h_gold_gemv, dim4(5, 4), dim4(5, 1), dim4(4, 1), &beta, NULL_ARRAY),
+
         test_params(AF_MAT_NONE,  AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_wide, h_gold_NN, dim4(3, 2), dim4(2, 3), dim4(3, 3), &beta, FULL_ARRAY),
         test_params(AF_MAT_NONE,  AF_MAT_TRANS, &alpha, h_lhs_tall, h_rhs_tall, h_gold_NT, dim4(3, 2), dim4(3, 2), dim4(3, 3), &beta, FULL_ARRAY),
         test_params(AF_MAT_TRANS, AF_MAT_NONE,  &alpha, h_lhs_tall, h_rhs_tall, h_gold_TN, dim4(3, 2), dim4(3, 2), dim4(2, 2), &beta, FULL_ARRAY),
@@ -679,4 +693,24 @@ TEST(Gemm, DocSnippet) {
     af_release_array(Csub);
 
     ASSERT_VEC_ARRAY_EQ(gold2, dim4(5, 5, 2), c2);
+}
+
+TEST(Gemv, HalfScalarProduct) {
+    SUPPORTED_TYPE_CHECK(half_float::half);
+
+    const unsigned int sizeValue = 5;
+    array gold = constant(sizeValue, 4, 1, f16);
+    {
+        array a     = constant(1, 4, sizeValue, f16);
+        array b     = constant(1, sizeValue, 1, f16);
+        array mmRes = matmul(a, b);
+        ASSERT_ARRAYS_EQ(mmRes, gold);
+    }
+    {
+        array a     = constant(1, 1, sizeValue, f16);
+        array b     = constant(1, sizeValue, 1, f16);
+        array mmRes = matmul(a, b);
+        array dotRes = dot(transpose(a), b);
+        ASSERT_ARRAYS_EQ(mmRes, dotRes);
+    }
 }

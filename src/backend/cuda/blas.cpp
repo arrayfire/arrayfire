@@ -14,13 +14,17 @@
 #include <platform.hpp>
 
 #include <arith.hpp>
+#include <cast.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <complex.hpp>
+#include <copy.hpp>
 #include <cublas.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <reduce.hpp>
+#include <tile.hpp>
+#include <transpose.hpp>
 
 #include <cassert>
 #include <functional>
@@ -57,11 +61,6 @@ using gemmBatched_func_def = std::function<cublasStatus_t(
     const T *, const T **, int, const T **, int, const T *, T **, int, int)>;
 
 template<typename T>
-using gemv_func_def = std::function<cublasStatus_t(
-    cublasHandle_t, cublasOperation_t, int, int, const T *, const T *, int,
-    const T *, int, const T *, T *, int)>;
-
-template<typename T>
 using trsm_func_def = std::function<cublasStatus_t(
     cublasHandle_t, cublasSideMode_t, cublasFillMode_t, cublasOperation_t,
     cublasDiagType_t, int, int, const T *, const T *, int, T *, int)>;
@@ -89,20 +88,6 @@ BLAS_FUNC(gemmBatched, cfloat, C)
 BLAS_FUNC(gemmBatched, double, D)
 BLAS_FUNC(gemmBatched, cdouble, Z)
 BLAS_FUNC(gemmBatched, __half, H)
-
-BLAS_FUNC_DEF(gemv)
-BLAS_FUNC(gemv, float, S)
-BLAS_FUNC(gemv, cfloat, C)
-BLAS_FUNC(gemv, double, D)
-BLAS_FUNC(gemv, cdouble, Z)
-
-template<>
-gemv_func_def<half> gemv_func<half>() {
-    assert(1 != 1 && "GEMV for half is not available.");
-    return gemv_func_def<half>();
-}
-
-// BLAS_FUNC(gemv, __half, S)  // TODO(umar): Not implemented in CUDA
 
 BLAS_FUNC_DEF(trsm)
 BLAS_FUNC(trsm, float, S)
@@ -311,22 +296,9 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     dim4 oStrides = out.strides();
 
     if (oDims.ndims() <= 2) {
-        if (rDims[bColDim] == 1) {
-            dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
-            if (is_same<T, half>::value) {
-                AF_ERROR(
-                    "GEMV does not support half, Please create an issue on "
-                    "the GitHub repo.",
-                    AF_ERR_NOT_SUPPORTED);
-            }
-            CUBLAS_CHECK(gemv_func<T>()(blasHandle(), lOpts, lDims[0], lDims[1],
-                                        alpha, lhs.get(), lStrides[1],
-                                        rhs.get(), incr, beta, out.get(), 1));
-        } else {
-            CUBLAS_CHECK(gemmDispatch<T>(blasHandle(), lOpts, rOpts, M, N, K,
-                                         alpha, lhs, lStrides[1], rhs,
-                                         rStrides[1], beta, out, oStrides[1]));
-        }
+        CUBLAS_CHECK(gemmDispatch<T>(blasHandle(), lOpts, rOpts, M, N, K,
+                                     alpha, lhs, lStrides[1], rhs,
+                                     rStrides[1], beta, out, oStrides[1]));
     } else {
         int batchSize = oDims[2] * oDims[3];
         vector<const T *> lptrs(batchSize);
@@ -382,10 +354,9 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
              af_mat_prop optRhs) {
-    const Array<T> lhs_ = (optLhs == AF_MAT_NONE ? lhs : conj<T>(lhs));
-    const Array<T> rhs_ = (optRhs == AF_MAT_NONE ? rhs : conj<T>(rhs));
-
-    const Array<T> temp = arithOp<T, af_mul_t>(lhs_, rhs_, lhs_.dims());
+    auto lhs_ = (optLhs == AF_MAT_NONE ? lhs : conj<T>(lhs));
+    auto rhs_ = (optRhs == AF_MAT_NONE ? rhs : conj<T>(rhs));
+    auto temp = arithOp<T, af_mul_t>(lhs_, rhs_, lhs_.dims());
     return reduce<af_add_t, T, T>(temp, 0, false, 0);
 }
 
