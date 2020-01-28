@@ -10,7 +10,10 @@
 #pragma once
 #include <common/defines.hpp>
 #include <common/module_loading.hpp>
+#include <common/Logger.hpp>
 
+#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -24,11 +27,16 @@ namespace common {
 /// we use in ArrayFire
 class DependencyModule {
     LibHandle handle;
+    std::shared_ptr<spdlog::logger> logger;
     std::vector<void*> functions;
 
    public:
     DependencyModule(const char* plugin_file_name,
                      const char** paths = nullptr);
+
+    DependencyModule(const std::vector<std::string> plugin_base_file_name,
+                     const std::vector<std::string> suffixes,
+                     const std::vector<std::string> paths);
 
     ~DependencyModule();
 
@@ -48,6 +56,8 @@ class DependencyModule {
     /// Returns the last error message that occurred because of loading the
     /// library
     std::string getErrorMessage();
+
+    spdlog::logger* getLogger();
 };
 
 }  // namespace common
