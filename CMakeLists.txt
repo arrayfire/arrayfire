@@ -100,7 +100,10 @@ mark_as_advanced(
   CUDA_USE_STATIC_CUDA_RUNTIME
   CUDA_rt_LIBRARY
   SPDLOG_BUILD_EXAMPLES
-  SPDLOG_BUILD_TESTING)
+  SPDLOG_BUILD_TESTING
+  ADDR2LINE_PROGRAM
+  Backtrace_LIBRARY
+  )
 
 #Configure forge submodule
 #forge is included in ALL target if AF_BUILD_FORGE is ON

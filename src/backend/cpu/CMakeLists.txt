@@ -334,7 +334,6 @@ else()
       FFTW::FFTW
       FFTW::FFTWF
       Threads::Threads
-      Boost::boost
     )
   if(LAPACK_FOUND)
     target_link_libraries(afcpu
