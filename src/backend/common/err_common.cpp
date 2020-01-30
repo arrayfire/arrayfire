@@ -161,7 +161,6 @@ af_err processException() {
                  "OpenCL Error (%d): %s when calling %s", ex.err(),
                  getErrorMessage(ex.err()).c_str(), ex.what());
 
-        if (is_stacktrace_enabled()) ss << ex.getStacktrace();
         if (ex.err() == CL_MEM_OBJECT_ALLOCATION_FAILURE) {
             err = set_global_error_string(opencl_err_msg, AF_ERR_NO_MEM);
         } else {

@@ -555,6 +555,7 @@ target_link_libraries(afcuda
     ${CUDA_cusparse_LIBRARY}
     cuDNN::cuDNN
     ${CMAKE_DL_LIBS}
+    Boost::boost
   )
 
 # If the driver is not found the cuda driver api need to be linked against the
