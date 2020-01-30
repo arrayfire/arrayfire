@@ -206,25 +206,6 @@ foreach(backend ${built_backends})
     target_compile_definitions(${backend}
       PRIVATE AF_WITH_LOGGING)
   endif()
-
-  # NOTE: Basic and Windows options do not requre flags or libraries for
-  #       backtraces
-  if(AF_STACKTRACE_TYPE STREQUAL "libbacktrace")
-    target_link_libraries(${backend}
-      PRIVATE ${Backtrace_LIBRARY})
-    target_compile_definitions(${backend}
-      PRIVATE
-      BOOST_STACKTRACE_USE_BACKTRACE)
-  elseif(AF_STACKTRACE_TYPE STREQUAL "addr2line")
-    target_compile_definitions(${backend}
-      PRIVATE
-      BOOST_STACKTRACE_USE_ADDR2LINE)
-  elseif(AF_STACKTRACE_TYPE STREQUAL "None")
-    target_compile_definitions(${backend}
-      PRIVATE
-      BOOST_STACKTRACE_USE_NOOP)
-  endif()
-
 endforeach()
 
 if(AF_BUILD_FRAMEWORK)
