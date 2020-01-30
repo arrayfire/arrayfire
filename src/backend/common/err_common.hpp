@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <boost/stacktrace.hpp>
 #include <common/defines.hpp>
 #include <af/defines.h>
 
@@ -23,18 +24,22 @@ class AfError : public std::logic_error {
     std::string fileName;
     int lineNumber;
     af_err error;
+    boost::stacktrace::stacktrace st_;
     AfError();
 
    public:
     AfError(const char* const func, const char* const file, const int line,
-            const char* const message, af_err err);
+            const char* const message, af_err err,
+            boost::stacktrace::stacktrace st);
 
     AfError(std::string func, std::string file, const int line,
-            std::string message, af_err err);
+            std::string message, af_err err, boost::stacktrace::stacktrace st);
 
     const std::string& getFunctionName() const;
 
     const std::string& getFileName() const;
+
+    const boost::stacktrace::stacktrace& getStacktrace() const { return st_; };
 
     int getLine() const;
 
@@ -51,7 +56,8 @@ class TypeError : public AfError {
 
    public:
     TypeError(const char* const func, const char* const file, const int line,
-              const int index, const af_dtype type);
+              const int index, const af_dtype type,
+              const boost::stacktrace::stacktrace st);
 
     const std::string& getTypeName() const;
 
@@ -68,7 +74,8 @@ class ArgumentError : public AfError {
    public:
     ArgumentError(const char* const func, const char* const file,
                   const int line, const int index,
-                  const char* const expectString);
+                  const char* const expectString,
+                  const boost::stacktrace::stacktrace st);
 
     const std::string& getExpectedCondition() const;
 
@@ -83,7 +90,8 @@ class SupportError : public AfError {
 
    public:
     SupportError(const char* const func, const char* const file, const int line,
-                 const char* const back);
+                 const char* const back,
+                 const boost::stacktrace::stacktrace st);
 
     ~SupportError() throw() {}
 
@@ -98,7 +106,8 @@ class DimensionError : public AfError {
    public:
     DimensionError(const char* const func, const char* const file,
                    const int line, const int index,
-                   const char* const expectString);
+                   const char* const expectString,
+                   const boost::stacktrace::stacktrace st);
 
     const std::string& getExpectedCondition() const;
 
@@ -109,13 +118,15 @@ class DimensionError : public AfError {
 
 af_err processException();
 
-af_err set_global_error_string(const std::string& msg, af_err err = AF_ERR_UNKNOWN);
+af_err set_global_error_string(const std::string& msg,
+                               af_err err = AF_ERR_UNKNOWN);
 
 #define DIM_ASSERT(INDEX, COND)                                        \
     do {                                                               \
         if ((COND) == false) {                                         \
             throw DimensionError(__PRETTY_FUNCTION__, __AF_FILENAME__, \
-                                 __LINE__, INDEX, #COND);              \
+                                 __LINE__, INDEX, #COND,               \
+                                 boost::stacktrace::stacktrace());     \
         }                                                              \
     } while (0)
 
@@ -123,29 +134,31 @@ af_err set_global_error_string(const std::string& msg, af_err err = AF_ERR_UNKNO
     do {                                                              \
         if ((COND) == false) {                                        \
             throw ArgumentError(__PRETTY_FUNCTION__, __AF_FILENAME__, \
-                                __LINE__, INDEX, #COND);              \
+                                __LINE__, INDEX, #COND,               \
+                                boost::stacktrace::stacktrace());     \
         }                                                             \
     } while (0)
 
 #define TYPE_ERROR(INDEX, type)                                                \
     do {                                                                       \
         throw TypeError(__PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, INDEX, \
-                        type);                                                 \
+                        type, boost::stacktrace::stacktrace());                \
     } while (0)
 
 #define AF_ERROR(MSG, ERR_TYPE)                                            \
     do {                                                                   \
         throw AfError(__PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, MSG, \
-                      ERR_TYPE);                                           \
+                      ERR_TYPE, boost::stacktrace::stacktrace());          \
     } while (0)
 
-#define AF_RETURN_ERROR(MSG, ERR_TYPE)                                \
-    do {                                                              \
-        std::stringstream s;                                          \
-        s << "Error in " << __PRETTY_FUNCTION__ << "\n"               \
-          << "In file " << __AF_FILENAME__ << ":" << __LINE__ << ": " \
-          << MSG;                                                     \
-        return set_global_error_string(s.str(), ERR_TYPE);            \
+#define AF_RETURN_ERROR(MSG, ERR_TYPE)                                       \
+    do {                                                                     \
+        std::stringstream s;                                                 \
+        s << "Error in " << __PRETTY_FUNCTION__ << "\n"                      \
+          << "In file " << __AF_FILENAME__ << ":" << __LINE__ << ": " << MSG \
+          << "\n"                                                            \
+          << boost::stacktrace::stacktrace();                                \
+        return set_global_error_string(s.str(), ERR_TYPE);                   \
     } while (0)
 
 #define TYPE_ASSERT(COND)                                       \
@@ -167,8 +180,14 @@ af_err set_global_error_string(const std::string& msg, af_err err = AF_ERR_UNKNO
         af_err __err = fn;                                                  \
         if (__err == AF_SUCCESS) break;                                     \
         throw AfError(__PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, "\n", \
-                      __err);                                               \
+                      __err, boost::stacktrace::stacktrace());              \
     } while (0)
 
 static const int MAX_ERR_SIZE = 1024;
 std::string& get_global_error_string();
+
+namespace common {
+
+bool& is_stacktrace_enabled();
+
+}  // namespace common

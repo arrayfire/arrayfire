@@ -71,6 +71,7 @@ endif()
 target_link_libraries(afcommon_interface
   INTERFACE
     spdlog
+    Boost::boost
     af_glad_interface
     ${CMAKE_DL_LIBS})
 

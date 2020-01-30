@@ -24,7 +24,9 @@ include(SplitDebugInfo)
 set_policies(
   TYPE NEW
   POLICIES CMP0073
-           CMP0074)
+           CMP0074
+           CMP0077
+           CMP0079)
 arrayfire_set_cmake_default_variables()
 
 #Set Intel OpenMP as default MKL thread layer
@@ -55,6 +57,15 @@ option(AF_BUILD_FORGE
 
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
 option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
+option(AF_WITH_STACKTRACE  "Add stacktraces to the error messages." ON)
+
+if(WIN32)
+  set(AF_STACKTRACE_TYPE "Windbg" CACHE STRING "The type of backtrace features. Windbg(simple), None")
+  set_property(CACHE AF_STACKTRACE_TYPE PROPERTY STRINGS "Windbg" "None")
+else()
+  set(AF_STACKTRACE_TYPE "Basic" CACHE STRING "The type of backtrace features. Basic(simple), libbacktrace(fancy), addr2line(fancy), None")
+  set_property(CACHE AF_STACKTRACE_TYPE PROPERTY STRINGS "Basic" "libbacktrace" "addr2line" "None")
+endif()
 
 option(AF_INSTALL_STANDALONE "Build installers that include all dependencies" OFF)
 
@@ -89,7 +100,10 @@ mark_as_advanced(
   CUDA_USE_STATIC_CUDA_RUNTIME
   CUDA_rt_LIBRARY
   SPDLOG_BUILD_EXAMPLES
-  SPDLOG_BUILD_TESTING)
+  SPDLOG_BUILD_TESTING
+  ADDR2LINE_PROGRAM
+  Backtrace_LIBRARY
+  )
 
 #Configure forge submodule
 #forge is included in ALL target if AF_BUILD_FORGE is ON
@@ -139,7 +153,7 @@ if(NOT LAPACK_FOUND)
     endif()
 endif()
 
-set(SPDLOG_BUILD_TESTING OFF)
+set(SPDLOG_BUILD_TESTING OFF CACHE INTERNAL "Disable testing in spdlog")
 add_subdirectory(extern/spdlog EXCLUDE_FROM_ALL)
 add_subdirectory(extern/glad)
 add_subdirectory(src/backend/common)
@@ -179,6 +193,12 @@ if(UNIX AND NOT APPLE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set_target_properties(${built_backends} PROPERTIES
                         LINK_FLAGS "-Wl,--no-as-needed")
 endif()
+
+
+find_library(Backtrace_LIBRARY backtrace
+  DOC "libbacktrace.so file for more informative stacktraces. https://github.com/ianlancetaylor/libbacktrace")
+find_program(ADDR2LINE_PROGRAM addr2line
+  DOC "The path to the addr2line program for informative stacktraces")
 
 foreach(backend ${built_backends})
   target_compile_definitions(${backend} PRIVATE AFDLL)

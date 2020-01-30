@@ -421,7 +421,6 @@ target_link_libraries(afopencl
     clFFT::clFFT
     opencl_scan_by_key
     opencl_sort_by_key
-    Boost::boost
     Threads::Threads
     )
 

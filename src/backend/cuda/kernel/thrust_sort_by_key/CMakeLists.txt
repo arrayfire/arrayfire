@@ -34,6 +34,8 @@ foreach(SBK_TYPE ${SBK_TYPES})
           ${CMAKE_CURRENT_BINARY_DIR}/kernel/thrust_sort_by_key/thrust_sort_by_key_impl_${SBK_TYPE}_${SBK_INST}.cu
           ${CMAKE_CURRENT_SOURCE_DIR}/kernel/thrust_sort_by_key_impl.hpp
           OPTIONS
+            -I$<JOIN:$<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>, -I>
+            -D$<JOIN:$<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>, -D>
             -DSBK_TYPE=${SBK_TYPE}
             -DINSTANTIATESBK_INST=INSTANTIATE${SBK_INST}
             "${platform_flags} ${cuda_cxx_flags} -DAFDLL"

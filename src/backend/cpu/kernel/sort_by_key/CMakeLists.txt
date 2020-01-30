@@ -22,7 +22,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
     )
   set_target_properties(cpu_sort_by_key_${SBK_TYPE}
     PROPERTIES
-      COMPILE_DEFINITIONS "TYPE=${SBK_TYPE};AFDLL"
+      COMPILE_DEFINITIONS "TYPE=${SBK_TYPE};AFDLL;$<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>"
       FOLDER "Generated Targets")
 
   arrayfire_set_default_cxx_flags(cpu_sort_by_key_${SBK_TYPE})
@@ -34,6 +34,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
       ../../api/c
       ${ArrayFire_SOURCE_DIR}/include
       ${ArrayFire_BINARY_DIR}/include
+      $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
     PRIVATE
       ../common
       ..
