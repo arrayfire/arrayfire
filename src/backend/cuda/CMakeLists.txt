@@ -606,9 +606,17 @@ endif ()
 
 macro(afcu_collect_libs libname)
   if (WIN32)
-    install(FILES       "${dlib_path_prefix}/${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}${SX}"
-            DESTINATION ${AF_INSTALL_BIN_DIR}
-            COMPONENT   cuda_dependencies)
+    find_file(CUDA_${libname}_LIBRARY_DLL
+      NAMES
+        "${PX}${libname}64_${CUDA_VERSION_MAJOR}${SX}"
+        "${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}${SX}"
+        "${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}_0${SX}"
+      PATHS ${dlib_path_prefix}
+    )
+    mark_as_advanced(CUDA_${libname}_LIBRARY_DLL)
+    install(FILES "${CUDA_${libname}_LIBRARY_DLL}"
+      DESTINATION ${AF_INSTALL_BIN_DIR}
+      COMPONENT cuda_dependencies)
   elseif (APPLE)
     get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
     install(FILES       "${outpath}"
@@ -629,14 +637,7 @@ if(AF_INSTALL_STANDALONE)
   afcu_collect_libs(cublas)
   afcu_collect_libs(cusolver)
   afcu_collect_libs(cusparse)
-
-  if(WIN32 AND ${CUDA_VERSION_MAJOR} EQUAL 10 AND ${CUDA_VERSION_MINOR} EQUAL 0)
-    install(FILES       "${dlib_path_prefix}/${PX}nvrtc64_100_0${SX}"
-            DESTINATION ${AF_INSTALL_BIN_DIR}
-            COMPONENT   cuda_dependencies)
-  else()
-    afcu_collect_libs(nvrtc)
-  endif()
+  afcu_collect_libs(nvrtc)
 
   if(APPLE)
     afcu_collect_libs(cudart)
