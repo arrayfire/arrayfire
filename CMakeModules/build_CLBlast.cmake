@@ -43,6 +43,12 @@ else()
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
 endif()
 
+if("${CMAKE_BUILD_TYPE}" MATCHES "Release|RelWithDebInfo")
+  set(extproj_build_type "Release")
+else()
+  set(extproj_build_type ${CMAKE_BUILD_TYPE})
+endif()
+
 ExternalProject_Add(
     CLBlast-ext
     GIT_REPOSITORY https://github.com/cnugteren/CLBlast.git
@@ -59,7 +65,7 @@ ExternalProject_Add(
       -DOVERRIDE_MSVC_FLAGS_TO_MT:BOOL=OFF
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
-      -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+      -DCMAKE_BUILD_TYPE:STRING=${extproj_build_type}
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
       -DCMAKE_INSTALL_LIBDIR:PATH=lib
       -DBUILD_SHARED_LIBS:BOOL=OFF
