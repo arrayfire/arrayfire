@@ -7,6 +7,9 @@
 
 find_package(Boost)
 
+set(Boost_MIN_VER 107000)
+set(Boost_MIN_VER_STR "1.70")
+
 if(NOT
   ((Boost_VERSION VERSION_GREATER Boost_MIN_VER OR
     Boost_VERSION VERSION_EQUAL Boost_MIN_VER) OR
