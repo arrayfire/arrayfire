@@ -18,6 +18,12 @@ else()
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
 endif()
 
+if("${CMAKE_BUILD_TYPE}" MATCHES "Release|RelWithDebInfo")
+  set(extproj_build_type "Release")
+else()
+  set(extproj_build_type ${CMAKE_BUILD_TYPE})
+endif()
+
 ExternalProject_Add(
     clBLAS-ext
     GIT_REPOSITORY https://github.com/arrayfire/clBLAS.git
@@ -31,7 +37,7 @@ ExternalProject_Add(
       -Wno-dev <SOURCE_DIR>/src
       -DCMAKE_CXX_FLAGS:STRING="-fPIC"
       -DCMAKE_C_FLAGS:STRING="-fPIC"
-      -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+      -DCMAKE_BUILD_TYPE:STRING=${extproj_build_type}
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
       -DBUILD_SHARED_LIBS:BOOL=OFF
       -DBUILD_CLIENT:BOOL=OFF

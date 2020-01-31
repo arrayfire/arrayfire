@@ -24,6 +24,12 @@ else()
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
 endif()
 
+if("${CMAKE_BUILD_TYPE}" MATCHES "Release|RelWithDebInfo")
+  set(extproj_build_type "Release")
+else()
+  set(extproj_build_type ${CMAKE_BUILD_TYPE})
+endif()
+
 ExternalProject_Add(
     clFFT-ext
     GIT_REPOSITORY https://github.com/arrayfire/clFFT.git
@@ -37,7 +43,7 @@ ExternalProject_Add(
       "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -w -fPIC"
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
-      -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+      -DCMAKE_BUILD_TYPE:STRING=${extproj_build_type}
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
       -DBUILD_SHARED_LIBS:BOOL=OFF
       -DBUILD_EXAMPLES:BOOL=OFF

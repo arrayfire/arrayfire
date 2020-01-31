@@ -6,11 +6,12 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.5)
-project(ArrayFire
-  VERSION 3.7.0
-  LANGUAGES C CXX )
+
+project(ArrayFire VERSION 3.7.0 LANGUAGES C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+
+include(AFBuildConfigurations)
 include(AFInstallDirs)
 include(CMakeDependentOption)
 include(InternalUtils)
