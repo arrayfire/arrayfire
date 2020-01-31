@@ -146,7 +146,7 @@ cpack_add_component_group(opencl_backend
 
 set(PACKAGE_MKL_DEPS OFF)
 
-if ((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL)
+if ((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::Shared)
   set(PACKAGE_MKL_DEPS ON)
   cpack_add_component(mkl_dependencies
     DISPLAY_NAME "Intel MKL"
