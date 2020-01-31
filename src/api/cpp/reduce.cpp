@@ -39,7 +39,7 @@ void sumByKey(array &keys_out, array &vals_out, const array &keys,
               const array &vals, const int dim, const double nanval) {
     af_array okeys, ovals;
     AF_THROW(
-        af_sum_nan_by_key(&okeys, &ovals, keys.get(), vals.get(), dim, nanval));
+        af_sum_by_key_nan(&okeys, &ovals, keys.get(), vals.get(), dim, nanval));
     keys_out = array(okeys);
     vals_out = array(ovals);
 }
@@ -68,7 +68,7 @@ void productByKey(array &keys_out, array &vals_out, const array &keys,
 void productByKey(array &keys_out, array &vals_out, const array &keys,
                   const array &vals, const int dim, const double nanval) {
     af_array okeys, ovals;
-    AF_THROW(af_product_nan_by_key(&okeys, &ovals, keys.get(), vals.get(), dim,
+    AF_THROW(af_product_by_key_nan(&okeys, &ovals, keys.get(), vals.get(), dim,
                                    nanval));
     keys_out = array(okeys);
     vals_out = array(ovals);
@@ -188,7 +188,7 @@ void max(array &val, array &idx, const array &in, const int dim) {
     INSTANTIATE_CPLX(fnC, fnCPP, af_cdouble, double)
 
 #define INSTANTIATE_REAL(fnC, fnCPP, T)                   \
-    template <>                                           \
+    template<>                                            \
     AFAPI T fnCPP(const array &in) {                      \
         double rval, ival;                                \
         AF_THROW(af_##fnC##_all(&rval, &ival, in.get())); \
@@ -196,7 +196,7 @@ void max(array &val, array &idx, const array &in, const int dim) {
     }
 
 #define INSTANTIATE_CPLX(fnC, fnCPP, T, Tr)               \
-    template <>                                           \
+    template<>                                            \
     AFAPI T fnCPP(const array &in) {                      \
         double rval, ival;                                \
         AF_THROW(af_##fnC##_all(&rval, &ival, in.get())); \
@@ -219,7 +219,7 @@ INSTANTIATE_REAL(any_true, anyTrue, bool);
 #undef INSTANTIATE_CPLX
 
 #define INSTANTIATE_REAL(fnC, fnCPP, T)                           \
-    template <>                                                   \
+    template<>                                                    \
     AFAPI T fnCPP(const array &in, const double nanval) {         \
         double rval, ival;                                        \
         AF_THROW(af_##fnC##_all(&rval, &ival, in.get(), nanval)); \
@@ -227,7 +227,7 @@ INSTANTIATE_REAL(any_true, anyTrue, bool);
     }
 
 #define INSTANTIATE_CPLX(fnC, fnCPP, T, Tr)                       \
-    template <>                                                   \
+    template<>                                                    \
     AFAPI T fnCPP(const array &in, const double nanval) {         \
         double rval, ival;                                        \
         AF_THROW(af_##fnC##_all(&rval, &ival, in.get(), nanval)); \
@@ -243,7 +243,7 @@ INSTANTIATE(product_nan, product)
 #undef INSTANTIATE
 
 #define INSTANTIATE_COMPAT(fnCPP, fnCompat, T) \
-    template <>                                \
+    template<>                                 \
     AFAPI T fnCompat(const array &in) {        \
         return fnCPP<T>(in);                   \
     }
@@ -275,7 +275,7 @@ INSTANTIATE_COMPAT(anyTrue, anytrue, bool)
 #undef INSTANTIATE_COMPAT
 
 #define INSTANTIATE_REAL(fn, T)                                \
-    template <>                                                \
+    template<>                                                 \
     AFAPI void fn(T *val, unsigned *idx, const array &in) {    \
         double rval, ival;                                     \
         AF_THROW(af_i##fn##_all(&rval, &ival, idx, in.get())); \
@@ -283,7 +283,7 @@ INSTANTIATE_COMPAT(anyTrue, anytrue, bool)
     }
 
 #define INSTANTIATE_CPLX(fn, T, Tr)                            \
-    template <>                                                \
+    template<>                                                 \
     AFAPI void fn(T *val, unsigned *idx, const array &in) {    \
         double rval, ival;                                     \
         AF_THROW(af_i##fn##_all(&rval, &ival, idx, in.get())); \

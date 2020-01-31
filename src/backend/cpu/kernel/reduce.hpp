@@ -9,13 +9,13 @@
 
 #pragma once
 #include <Param.hpp>
-#include <ops.hpp>
 #include <common/half.hpp>
+#include <ops.hpp>
 
 namespace cpu {
 namespace kernel {
 
-template <af_op_t op, typename Ti, typename To, int D>
+template<af_op_t op, typename Ti, typename To, int D>
 struct reduce_dim {
     void operator()(Param<To> out, const dim_t outOffset, CParam<Ti> in,
                     const dim_t inOffset, const int dim, bool change_nan,
@@ -35,7 +35,7 @@ struct reduce_dim {
     }
 };
 
-template <af_op_t op, typename Ti, typename To>
+template<af_op_t op, typename Ti, typename To>
 struct reduce_dim<op, Ti, To, 0> {
     Transform<data_t<Ti>, compute_t<To>, op> transform;
     Binary<compute_t<To>, op> reduce;
@@ -45,22 +45,22 @@ struct reduce_dim<op, Ti, To, 0> {
         const af::dim4 istrides = in.strides();
         const af::dim4 idims    = in.dims();
 
-        data_t<To> * const outPtr      = out.get() + outOffset;
-        data_t<Ti> const* const inPtr = in.get() + inOffset;
-        dim_t stride          = istrides[dim];
+        data_t<To> *const outPtr      = out.get() + outOffset;
+        data_t<Ti> const *const inPtr = in.get() + inOffset;
+        dim_t stride                  = istrides[dim];
 
         compute_t<To> out_val = Binary<compute_t<To>, op>::init();
         for (dim_t i = 0; i < idims[dim]; i++) {
             compute_t<To> in_val = transform(inPtr[i * stride]);
             if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
-            out_val                = reduce(in_val, out_val);
+            out_val = reduce(in_val, out_val);
         }
 
         *outPtr = data_t<To>(out_val);
     }
 };
 
-template <typename Tk>
+template<typename Tk>
 void n_reduced_keys(Param<Tk> okeys, CParam<Tk> keys, int *n_reduced) {
     const af::dim4 kstrides = keys.strides();
     const af::dim4 kdims    = keys.dims();
@@ -85,7 +85,7 @@ void n_reduced_keys(Param<Tk> okeys, CParam<Tk> keys, int *n_reduced) {
     *n_reduced = nkeys + 1;
 }
 
-template <af_op_t op, typename Ti, typename Tk, typename To, int D>
+template<af_op_t op, typename Ti, typename Tk, typename To, int D>
 struct reduce_dim_by_key {
     void operator()(Param<To> ovals, const dim_t ovOffset, CParam<Tk> keys,
                     CParam<Ti> vals, const dim_t vOffset, int *n_reduced,
@@ -110,7 +110,7 @@ struct reduce_dim_by_key {
     }
 };
 
-template <af_op_t op, typename Ti, typename Tk, typename To>
+template<af_op_t op, typename Ti, typename Tk, typename To>
 struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
     Transform<data_t<Ti>, compute_t<To>, op> transform;
     Binary<compute_t<To>, op> reduce;
@@ -130,7 +130,7 @@ struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
         data_t<Ti> const *const inValsPtr = vals.get();
         data_t<To> *const outValsPtr      = ovals.get();
 
-        int keyidx     = 0;
+        int keyidx                = 0;
         compute_t<Tk> current_key = compute_t<Tk>(inKeysPtr[0]);
         compute_t<To> out_val     = reduce.init();
 
@@ -138,13 +138,14 @@ struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
         dim_t ostride = ovstrides[dim];
 
         for (dim_t i = 0; i < vdims[dim]; i++) {
-            dim_t off = vOffset;
+            dim_t off            = vOffset;
             compute_t<Tk> keyval = inKeysPtr[i];
 
             if (keyval == current_key) {
-                compute_t<To> in_val = transform(inValsPtr[vOffset + (i * istride)]);
+                compute_t<To> in_val =
+                    transform(inValsPtr[vOffset + (i * istride)]);
                 if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
-                out_val                = reduce(in_val, out_val);
+                out_val = reduce(in_val, out_val);
 
             } else {
                 outValsPtr[ovOffset + (keyidx * ostride)] = out_val;
@@ -160,5 +161,5 @@ struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
         }
     }
 };
-}
-}
+}  // namespace kernel
+}  // namespace cpu

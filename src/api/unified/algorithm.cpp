@@ -67,8 +67,8 @@ ALGO_HAPI_DEF(af_product_nan)
         CALL(af_func_nan, keys_out, vals_out, keys, vals, dim, nanval);  \
     }
 
-ALGO_HAPI_DEF_BYKEY(af_sum_nan_by_key)
-ALGO_HAPI_DEF_BYKEY(af_product_nan_by_key)
+ALGO_HAPI_DEF_BYKEY(af_sum_by_key_nan)
+ALGO_HAPI_DEF_BYKEY(af_product_by_key_nan)
 
 #undef ALGO_HAPI_DEF_BYKEY
 

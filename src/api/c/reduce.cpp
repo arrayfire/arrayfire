@@ -268,8 +268,7 @@ static af_err reduce_by_key_common(af_array *keys_out, af_array *vals_out,
                 reduce_key<op, uchar, uchar>(keys_out, vals_out, keys, vals,
                                              dim);
             case f16:
-                reduce_key<op, half, half>(keys_out, vals_out, keys, vals,
-                                           dim);
+                reduce_key<op, half, half>(keys_out, vals_out, keys, vals, dim);
                 break;
             default: TYPE_ERROR(1, type);
         }
@@ -417,8 +416,8 @@ static af_err reduce_promote_by_key(af_array *keys_out, af_array *vals_out,
                     keys_out, vals_out, keys, vals, dim, change_nan, nanval);
                 break;
             case f16:
-                reduce_key<op, half, float>(
-                    keys_out, vals_out, keys, vals, dim, change_nan, nanval);
+                reduce_key<op, half, float>(keys_out, vals_out, keys, vals, dim,
+                                            change_nan, nanval);
                 break;
             default: TYPE_ERROR(3, type);
         }
@@ -488,14 +487,14 @@ af_err af_product_by_key(af_array *keys_out, af_array *vals_out,
     return reduce_promote_by_key<af_mul_t>(keys_out, vals_out, keys, vals, dim);
 }
 
-af_err af_sum_nan_by_key(af_array *keys_out, af_array *vals_out,
+af_err af_sum_by_key_nan(af_array *keys_out, af_array *vals_out,
                          const af_array keys, const af_array vals,
                          const int dim, const double nanval) {
     return reduce_promote_by_key<af_add_t>(keys_out, vals_out, keys, vals, dim,
                                            true, nanval);
 }
 
-af_err af_product_nan_by_key(af_array *keys_out, af_array *vals_out,
+af_err af_product_by_key_nan(af_array *keys_out, af_array *vals_out,
                              const af_array keys, const af_array vals,
                              const int dim, const double nanval) {
     return reduce_promote_by_key<af_mul_t>(keys_out, vals_out, keys, vals, dim,
