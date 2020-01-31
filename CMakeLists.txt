@@ -292,7 +292,7 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
               DESTINATION ${AF_INSTALL_CMAKE_DIR}
               COMPONENT cmake)
 
-if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL AND AF_INSTALL_STANDALONE)
+if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::Shared AND AF_INSTALL_STANDALONE)
   if(TARGET MKL::ThreadingLibrary)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>
@@ -308,7 +308,7 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::MKL AND AF_INSTALL_STANDALONE
   endif()
 
   install(FILES
-    $<TARGET_FILE:MKL::MKL>
+    $<TARGET_FILE:MKL::Shared>
     $<TARGET_FILE:MKL::ThreadLayer>
     ${MKL_RUNTIME_KERNEL_LIBRARIES}
 

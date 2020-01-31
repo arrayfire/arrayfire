@@ -287,37 +287,21 @@ target_include_directories(afcpu
     ${CBLAS_INCLUDE_DIR}
   )
 
-# TODO(umar) Find a better way to determine BLAS selection
-if(USE_CPU_MKL)
-  dependency_check(MKL_FOUND "MKL not found")
-  target_compile_definitions(afcpu PRIVATE USE_MKL)
-
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
-    (CMAKE_CXX_COMPILER_ID STREQUAL "Intel" AND (UNIX AND NOT APPLE)))
-    # MKL requires multiple passes when linking with the static libs. This can be
-    # done in CMake using LINK_INTERFACE_MULTIPLICITY but that will require
-    # changine the way FindCBLAS works. This can also be done using the
-    # --start-group and --end-group linker around the libraries in the linking
-    # step.
-    #
-    # TODO(umar): Change the way CBLAS libraries are found and linked
-    set(CBLAS_LIBRARIES -Wl,--start-group ${CBLAS_LIBRARIES} -Wl,--end-group)
-  endif()
-endif()
-
 target_compile_definitions(afcpu
   PRIVATE
     AF_CPU
   )
 
 if(USE_CPU_MKL)
+  dependency_check(MKL_Shared_FOUND "MKL not found")
+  target_compile_definitions(afcpu PRIVATE USE_MKL)
   target_link_libraries(afcpu
     PRIVATE
       c_api_interface
       cpp_api_interface
       afcommon_interface
       cpu_sort_by_key
-      MKL::MKL
+      MKL::Shared
       Threads::Threads
     )
 else()
@@ -345,7 +329,7 @@ else()
   endif()
 endif()
 
-if(LAPACK_FOUND OR MKL_FOUND)
+if(LAPACK_FOUND OR MKL_Shared_FOUND)
   target_compile_definitions(afcpu
     PRIVATE
       WITH_LINEAR_ALGEBRA)

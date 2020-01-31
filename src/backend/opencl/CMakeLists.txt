@@ -449,7 +449,7 @@ if(APPLE)
   target_link_libraries(afopencl PRIVATE OpenGL::GL)
 endif()
 
-if(LAPACK_FOUND OR MKL_FOUND)
+if(LAPACK_FOUND OR MKL_Shared_FOUND)
   target_sources(afopencl
     PRIVATE
       magma/gebrd.cpp
@@ -484,12 +484,12 @@ if(LAPACK_FOUND OR MKL_FOUND)
       )
 
   if(USE_OPENCL_MKL)
-    dependency_check(MKL_FOUND "MKL not found")
+    dependency_check(MKL_Shared_FOUND "MKL not found")
     target_compile_definitions(afopencl PRIVATE USE_MKL)
 
     target_link_libraries(afopencl
       PRIVATE
-        MKL::MKL)
+        MKL::Shared)
   else()
     dependency_check(OpenCL_FOUND "OpenCL not found.")
 
@@ -512,7 +512,7 @@ if(LAPACK_FOUND OR MKL_FOUND)
     afopencl
     PRIVATE
       WITH_LINEAR_ALGEBRA)
-endif(LAPACK_FOUND OR MKL_FOUND)
+endif(LAPACK_FOUND OR MKL_Shared_FOUND)
 
 af_split_debug_info(afopencl ${AF_INSTALL_LIB_DIR})
 
