@@ -88,7 +88,6 @@ jobs:
                   mkdir build && cd build
                   cmake -G Ninja \
                       -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
-                      -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=ON \
                       -DAF_BUILD_FORGE:BOOL=ON \
