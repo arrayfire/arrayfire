@@ -7,7 +7,11 @@
 
 set(CTEST_CUSTOM_ERROR_POST_CONTEXT 50)
 set(CTEST_CUSTOM_ERROR_PRE_CONTEXT 50)
-set(CTEST_CUSTOM_POST_TEST ./test/print_info)
+if(WIN32)
+  set(CTEST_CUSTOM_POST_TEST ./bin/print_info.exe)
+else()
+  set(CTEST_CUSTOM_POST_TEST ./test/print_info)
+endif()
 
 list(APPEND CTEST_CUSTOM_COVERAGE_EXCLUDE
   "test"
