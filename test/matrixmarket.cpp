@@ -12,18 +12,18 @@
 
 TEST(Sparse, ReadRealMTXFile) {
     af::array out;
-    std::string file(TEST_DIR "/matrixmarket/HB/bcsstm02/bcsstm02.mtx");
+    std::string file(MTX_TEST_DIR "HB/bcsstm02/bcsstm02.mtx");
     ASSERT_TRUE(mtxReadSparseMatrix(out, file.c_str()));
 }
 
 TEST(Sparse, ReadComplexMTXFile) {
     af::array out;
-    std::string file(TEST_DIR "/matrixmarket/HB/young4c/young4c.mtx");
+    std::string file(MTX_TEST_DIR "HB/young4c/young4c.mtx");
     ASSERT_TRUE(mtxReadSparseMatrix(out, file.c_str()));
 }
 
 TEST(Sparse, FailIntegerMTXRead) {
     af::array out;
-    std::string file(TEST_DIR "/matrixmarket/JGD_Kocay/Trec4/Trec4.mtx");
+    std::string file(MTX_TEST_DIR "JGD_Kocay/Trec4/Trec4.mtx");
     ASSERT_FALSE(mtxReadSparseMatrix(out, file.c_str()));
 }

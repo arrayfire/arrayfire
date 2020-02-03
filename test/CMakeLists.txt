@@ -87,7 +87,7 @@ include(CMakeParseArguments)
 # 'BACKENDS'    Backends to target for this test. If not set then the test will
 #               compiled againat all backends
 function(make_test)
-  set(options CXX11 SERIAL)
+  set(options CXX11 SERIAL USE_MMIO)
   set(single_args SRC)
   set(multi_args LIBRARIES DEFINITIONS BACKENDS)
   cmake_parse_arguments(mt_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
@@ -141,6 +141,14 @@ function(make_test)
         AF_$<UPPER_CASE:${backend}>
         ${mt_args_DEFINITIONS}
       )
+    if(AF_TEST_WITH_MTX_FILES AND ${mt_args_USE_MMIO})
+      target_link_libraries(${target} PRIVATE mmio)
+      add_dependencies(${target} mtxDownloads)
+      target_compile_definitions(${target}
+        PRIVATE
+          MTX_TEST_DIR="${CMAKE_CURRENT_BINARY_DIR}/matrixmarket/"
+        )
+    endif()
     if(WIN32)
       target_compile_options(${target}
         PRIVATE
@@ -284,10 +292,8 @@ make_test(SRC solve_dense.cpp       CXX11 SERIAL)
 make_test(SRC sort.cpp)
 make_test(SRC sort_by_key.cpp)
 make_test(SRC sort_index.cpp)
-make_test(SRC sparse.cpp SERIAL
-    $<$<BOOL:${AF_TEST_WITH_MTX_FILES}>:LIBRARIES mmio>)
-make_test(SRC sparse_arith.cpp
-    $<$<BOOL:${AF_TEST_WITH_MTX_FILES}>:LIBRARIES mmio>)
+make_test(SRC sparse.cpp SERIAL)
+make_test(SRC sparse_arith.cpp      USE_MMIO)
 make_test(SRC sparse_convert.cpp)
 make_test(SRC stdev.cpp)
 make_test(SRC susan.cpp)
@@ -309,7 +315,7 @@ make_test(SRC write.cpp)
 make_test(SRC ycbcr_rgb.cpp)
 
 if(AF_TEST_WITH_MTX_FILES)
-    make_test(SRC matrixmarket.cpp LIBRARIES mmio)
+  make_test(SRC matrixmarket.cpp USE_MMIO)
 endif()
 
 add_executable(print_info print_info.cpp)
