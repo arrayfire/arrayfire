@@ -26,6 +26,23 @@ u16, u8, b8         | u32
 
 \copydoc batch_detail_algo
 
+\defgroup reduce_func_sum_by_key sumByKey
+
+\ingroup reduce_mat
+
+Finds the sum of an input array across a set of same consecutive keys.
+
+\snippet test/reduce.cpp ex_reduce_sum_by_key
+
+This table defines the return value types for the corresponding input types
+
+Input Type          | Output Type
+--------------------|---------------------
+f32, f64, c32, c64  | same as input
+s32, u32, s64, u64  | same as input
+s16                 | s32
+u16, u8, b8         | u32
+
 
 
 \defgroup reduce_func_product product

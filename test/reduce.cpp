@@ -1441,3 +1441,27 @@ TEST(ReduceHalf, AllTrue) {
     array gold = constant(1, 1, b8);
     ASSERT_ARRAYS_EQ(gold, out);
 }
+
+// Documentation Snippets
+
+TEST(Reduce, SNIPPET_sum_by_key) {
+    vector<int> gold_keys = {0, 1, 0};
+    vector<float> gold_vals = {6, 15, 24};
+
+    //! [ex_reduce_sum_by_key]
+    int hkeys[]   = {0, 0, 0, 1, 1, 1, 0, 0, 0};
+    float hvals[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    array keys(9, hkeys);
+    array vals(9, hvals);
+
+    array okeys, ovals;
+    sumByKey(okeys, ovals, keys, vals);
+
+    // okeys = {0, 1, 0};
+    // ovals = {6, 15, 24};
+    //! [ex_reduce_sum_by_key]
+
+    ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
+    ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(3), ovals);
+}

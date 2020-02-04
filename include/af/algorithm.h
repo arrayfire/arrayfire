@@ -54,7 +54,7 @@ namespace af
        \param[in] vals is the array containing the values to be reduced
        \param[in] dim The dimension along which the add operation occurs
 
-       \ingroup reduce_func_sum
+       \ingroup reduce_func_sum_by_key
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
@@ -73,8 +73,7 @@ namespace af
        \param[in]  dim      The dimension along which the add operation occurs
        \param[in]  nanval   The value that will replace the NaNs in \p vals
 
-       \ingroup reduce_func_sum
-
+       \ingroup reduce_func_sum_by_key
     */
     AFAPI void sumByKey(array &keys_out, array &vals_out,
                         const array &keys, const array &vals,
@@ -105,7 +104,6 @@ namespace af
        \return    result of product all values along dimension \p dim
 
        \ingroup reduce_func_product
-
     */
     AFAPI array product(const array &in, const int dim, const double nanval);
 #endif
@@ -124,7 +122,6 @@ namespace af
        \ingroup reduce_func_product
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
-
     */
     AFAPI void productByKey(array &keys_out, array &vals_out,
                             const array &keys, const array &vals,
