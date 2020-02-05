@@ -61,7 +61,7 @@ struct reduce_dim<op, Ti, To, 0> {
 };
 
 template<typename Tk>
-void n_reduced_keys(Param<Tk> okeys, CParam<Tk> keys, int *n_reduced) {
+void n_reduced_keys(Param<Tk> okeys, int *n_reduced, CParam<Tk> keys) {
     const af::dim4 kstrides = keys.strides();
     const af::dim4 kdims    = keys.dims();
 

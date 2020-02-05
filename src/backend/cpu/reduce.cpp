@@ -71,8 +71,8 @@ void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
 
     int n_reduced;
     Array<Tk> fullsz_okeys = createEmptyArray<Tk>(okdims);
-    getQueue().enqueue(kernel::n_reduced_keys<Tk>, fullsz_okeys, keys,
-                       &n_reduced);
+    getQueue().enqueue(kernel::n_reduced_keys<Tk>, fullsz_okeys, &n_reduced,
+                       keys);
     getQueue().sync();
 
     okdims[0]   = n_reduced;

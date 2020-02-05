@@ -329,6 +329,7 @@ cuda_add_library(afcuda
     kernel/random_engine_threefry.hpp
     kernel/range.hpp
     kernel/reduce.hpp
+    kernel/reduce_by_key.hpp
     kernel/regions.hpp
     kernel/reorder.hpp
     kernel/resize.hpp
@@ -341,6 +342,7 @@ cuda_add_library(afcuda
     kernel/scan_first_by_key_impl.hpp
     kernel/select.hpp
     kernel/shared.hpp
+    kernel/shfl_intrinsics.hpp
     kernel/sift_nonfree.hpp
     kernel/sobel.hpp
     kernel/sort.hpp
