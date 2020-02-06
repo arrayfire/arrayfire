@@ -20,7 +20,8 @@ function(af_split_debug_info _target _destination_dir)
     set(SPLIT_TOOL_EXISTS OFF)
     if (MSVC)
       install(FILES
-        $<TARGET_PDB_FILE:${_target}>
+        $<$<CONFIG:Debug>:$<TARGET_PDB_FILE:${_target}>>
+        $<$<CONFIG:RelWithDebInfo>:$<TARGET_PDB_FILE:${_target}>>
         DESTINATION ${_destination_dir}
         COMPONENT "${_target}_debug_symbols"
         )
