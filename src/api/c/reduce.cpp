@@ -120,7 +120,7 @@ static af_err reduce_by_key_type(af_array *keys_out, af_array *vals_out,
         af_dtype type            = in_info.getType();
 
         ARG_ASSERT(2, kinfo.isVector());
-        ARG_ASSERT(2, in_info.dims()[dim] == kinfo.dims()[0]);
+        ARG_ASSERT(2, in_info.dims()[dim] == kinfo.elements());
 
         switch (type) {
             case f32:

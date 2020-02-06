@@ -141,9 +141,9 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
             !needs_another_reduction_host) {
             dim3 blocks(numBlocksD0, odims[dim_ordering[1]],
                         odims[dim_ordering[2]] * odims[dim_ordering[3]]);
-            CUDA_LAUNCH((kernel::final_boundary_reduce_dim<Tk, To, op>), blocks,
+            CUDA_LAUNCH((kernel::final_boundary_reduce<Tk, To, op>), blocks,
                         numThreads, reduced_block_sizes.get(), t_reduced_keys,
-                        t_reduced_vals, n_reduced_host, dim, folded_dim_sz);
+                        t_reduced_vals, n_reduced_host);
             POST_LAUNCH_CHECK();
 
             cub::DeviceScan::InclusiveSum(
