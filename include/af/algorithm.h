@@ -119,7 +119,7 @@ namespace af
        \param[in]  vals     The array containing the values to be reduced
        \param[in]  dim      The dimension along which the product operation occurs
 
-       \ingroup reduce_func_product
+       \ingroup reduce_func_product_by_key
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
@@ -140,7 +140,7 @@ namespace af
        \param[in] dim The dimension along which the product operation occurs
        \param[in] nanval  The value that will replace the NaNs in \p vals
 
-       \ingroup reduce_func_product
+       \ingroup reduce_func_product_by_key
 
     */
     AFAPI void productByKey(array &keys_out, array &vals_out,
@@ -172,7 +172,7 @@ namespace af
        \param[in] vals is the array containing the values to be reduced
        \param[in] dim The dimension along which the min operation occurs
 
-       \ingroup reduce_func_min
+       \ingroup reduce_func_min_by_key
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
        \note NaN values are ignored
@@ -206,7 +206,7 @@ namespace af
        \param[in] vals is the array containing the values to be reduced
        \param[in] dim The dimension along which the max operation occurs
 
-       \ingroup reduce_func_max
+       \ingroup reduce_func_max_by_key
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
        \note NaN values are ignored
@@ -240,7 +240,7 @@ namespace af
        \param[in] vals is the array containing the values to be reduced
        \param[in] dim The dimension along which the all true operation occurs
 
-       \ingroup reduce_func_all_true
+       \ingroup reduce_func_alltrue_by_key
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
        \note NaN values are ignored
@@ -274,7 +274,7 @@ namespace af
        \param[in] vals is the array containing the values to be reduced
        \param[in] dim The dimension along which the any true operation occurs
 
-       \ingroup reduce_func_any_true
+       \ingroup reduce_func_anytrue_by_key
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
        \note NaN values are ignored
@@ -308,7 +308,7 @@ namespace af
        \param[in] vals is the array containing the values to be reduced
        \param[in] dim The dimension along which the count operation occurs
 
-       \ingroup reduce_func_count
+       \ingroup reduce_func_count_by_key
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
        \note NaN values are treated as non zero.
@@ -683,7 +683,7 @@ extern "C" {
        \param[in] dim The dimension along which the add operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_sum
+       \ingroup reduce_func_sum_by_key
     */
     AFAPI af_err af_sum_by_key(af_array *keys_out, af_array *vals_out,
                                const af_array keys, const af_array vals, const int dim);
@@ -704,7 +704,7 @@ extern "C" {
 
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_sum
+       \ingroup reduce_func_sum_by_key
     */
     AFAPI af_err af_sum_by_key_nan(af_array *keys_out, af_array *vals_out,
                                    const af_array keys, const af_array vals,
@@ -750,7 +750,7 @@ extern "C" {
        \param[in] dim The dimension along which the product operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_product
+       \ingroup reduce_func_product_by_key
     */
     AFAPI af_err af_product_by_key(af_array *keys_out, af_array *vals_out,
                                    const af_array keys, const af_array vals, const int dim);
@@ -769,7 +769,7 @@ extern "C" {
        \param[in] nanval  The value that will replace the NaNs in \p vals
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_product
+       \ingroup reduce_func_product_by_key
     */
     AFAPI af_err af_product_by_key_nan(af_array *keys_out, af_array *vals_out,
                                        const af_array keys, const af_array vals,
@@ -799,7 +799,7 @@ extern "C" {
        \param[in] dim The dimension along which the minimum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_min
+       \ingroup reduce_func_min_by_key
     */
     AFAPI af_err af_min_by_key(af_array *keys_out, af_array *vals_out,
                                const af_array keys, const af_array vals,
@@ -831,7 +831,7 @@ extern "C" {
        \param[in] dim The dimension along which the maximum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_max
+       \ingroup reduce_func_max_by_key
     */
     AFAPI af_err af_max_by_key(af_array *keys_out, af_array *vals_out,
                                const af_array keys, const af_array vals,
@@ -862,7 +862,7 @@ extern "C" {
        \param[in] dim The dimension along which the "and" operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_all_true
+       \ingroup reduce_func_alltrue_by_key
     */
     AFAPI af_err af_all_true_by_key(af_array *keys_out, af_array *vals_out,
                                     const af_array keys, const af_array vals,
@@ -893,7 +893,7 @@ extern "C" {
        \param[in] dim The dimension along which the "or" operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_any_true
+       \ingroup reduce_func_anytrue_by_key
     */
     AFAPI af_err af_any_true_by_key(af_array *keys_out, af_array *vals_out,
                                     const af_array keys, const af_array vals,
@@ -924,7 +924,7 @@ extern "C" {
        \param[in] dim The dimension along which the non-zero values are counted
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_count
+       \ingroup reduce_func_count_by_key
     */
     AFAPI af_err af_count_by_key(af_array *keys_out, af_array *vals_out,
                                  const af_array keys, const af_array vals,
