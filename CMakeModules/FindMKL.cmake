@@ -36,9 +36,8 @@
 #
 # ``MKL::Static``
 #   Target used to define and link all MKL libraries required by Intel's Link
-#   Line Advisor. This usually the only thing you need to link against unless
-#   you want to link against the single dynamic library version of MKL
-#   (libmkl_rt.so)
+#   Line Advisor for a static build. This will still link the threading libraries
+#   using dynamic linking as advised by the Intel Link Advisor
 #
 #  Optional:
 #
@@ -180,8 +179,6 @@ endif()
 #    MKL::${NAME}_STATIC
 #
 # Output Variables
-#    MKL_INCLUDE_DIR:                Include directory for MKL
-#    MKL_FFTW_INCLUDE_DIR:           Include directory for the MKL FFTW interface
 #    MKL_${NAME}_LINK_LIBRARY:        on Unix: *.so on Windows *.lib
 #    MKL_${NAME}_STATIC_LINK_LIBRARY: on Unix: *.a  on Windows *.lib
 #    MKL_${NAME}_DLL_LIBRARY:         on Unix: ""   on Windows *.dll
@@ -195,7 +192,11 @@ function(find_mkl_library)
   add_library(MKL::${mkl_args_NAME}        SHARED IMPORTED)
   add_library(MKL::${mkl_args_NAME}_STATIC STATIC IMPORTED)
 
-  string(REGEX REPLACE ":" ";" ENV_LIBRARY_PATHS "$ENV{LIBRARY_PATH}")
+  if(WIN32)
+    set(ENV_LIBRARY_PATHS "$ENV{LIB}")
+  else()
+    string(REGEX REPLACE ":" ";" ENV_LIBRARY_PATHS "$ENV{LIBRARY_PATH}")
+  endif()
 
   if(NOT (WIN32 AND mkl_args_DLL_ONLY))
     find_library(MKL_${mkl_args_NAME}_LINK_LIBRARY
@@ -332,7 +333,7 @@ set(MKL_RUNTIME_KERNEL_LIBRARIES "${MKL_RUNTIME_KERNEL_LIBRARIES_TMP}" CACHE STR
 mark_as_advanced(MKL_RUNTIME_KERNEL_LIBRARIES)
 
 find_package_handle_standard_args(MKL_Shared
-  FAIL_MESSAGE "Source the compilervars.sh or mklvars.sh scripts included with your installation of MKL. Looking in MKLROOT and LIBRARY_PATHS environment variables"
+  FAIL_MESSAGE "Could NOT find MKL: Source the compilervars.sh or mklvars.sh scripts included with your installation of MKL. This script searches for the libraries in MKLROOT, LIBRARY_PATHS(Linux), and LIB(Windows) environment variables"
   VERSION_VAR  MKL_VERSION_STRING
   REQUIRED_VARS MKL_INCLUDE_DIR
                 MKL_Core_LINK_LIBRARY
@@ -341,7 +342,7 @@ find_package_handle_standard_args(MKL_Shared
                 MKL_ThreadingLibrary_LINK_LIBRARY)
 
 find_package_handle_standard_args(MKL_Static
-  FAIL_MESSAGE "Source the compilervars.sh or mklvars.sh scripts included with your installation of MKL. Looking in MKLROOT and LIBRARY_PATHS environment variables"
+  FAIL_MESSAGE "Could NOT find MKL: Source the compilervars.sh or mklvars.sh scripts included with your installation of MKL. This script searches for the libraries in MKLROOT, LIBRARY_PATHS(Linux), and LIB(Windows) environment variables"
   VERSION_VAR   MKL_VERSION_STRING
   REQUIRED_VARS MKL_INCLUDE_DIR
                 MKL_Core_STATIC_LINK_LIBRARY
