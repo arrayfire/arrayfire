@@ -37,7 +37,7 @@ index 9446499..786f7db 100644
   set(CLBLAST_PATCH_COMMAND ${GIT} apply ${ArrayFire_BINARY_DIR}/clblast.patch)
 endif()
 
-if(WIN32 AND NOT CMAKE_GENERATOR MATCHES "Ninja")
+if(WIN32 AND CMAKE_GENERATOR_PLATFORM AND NOT CMAKE_GENERATOR MATCHES "Ninja")
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
 else()
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
