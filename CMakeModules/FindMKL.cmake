@@ -64,12 +64,15 @@
 
 include(CheckTypeSize)
 include(FindPackageHandleStandardArgs)
+find_package(OpenMP QUIET)
 
 check_type_size("int" INT_SIZE
   BUILTIN_TYPES_ONLY LANGUAGE C)
 
 set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
 set_property(CACHE MKL_THREAD_LAYER PROPERTY STRINGS "TBB" "GNU OpenMP" "Intel OpenMP" "Sequential")
+
+message(STATUS "MKL: Thread Layer(${MKL_THREAD_LAYER}) Interface(${INT_SIZE}-byte Integer)")
 
 if(NOT MKL_THREAD_LAYER STREQUAL MKL_THREAD_LAYER_LAST)
   unset(MKL::ThreadLayer CACHE)
@@ -151,7 +154,6 @@ if(MKL_FFTW_INCLUDE_DIR)
   mark_as_advanced(MKL_FFTW_INCLUDE_DIR)
 endif()
 
-
 if(WIN32)
   if(${MSVC_VERSION} GREATER_EQUAL 1900)
     set(msvc_dir "vc_mt")
@@ -160,6 +162,15 @@ if(WIN32)
   else()
     message(WARNING "MKL: MS Version not supported for MKL")
   endif()
+endif()
+
+
+if(WIN32)
+  set(ENV_LIBRARY_PATHS "$ENV{LIB}")
+  message(VERBOSE "MKL environment variable(LIB): ${ENV_LIBRARY_PATHS}")
+else()
+  string(REGEX REPLACE ":" ";" ENV_LIBRARY_PATHS "$ENV{LIBRARY_PATH}")
+  message(VERBOSE "MKL environment variable(LIBRARY_PATH): ${ENV_LIBRARY_PATHS}")
 endif()
 
 # Finds and creates libraries for MKL with the MKL:: prefix
@@ -192,12 +203,6 @@ function(find_mkl_library)
   add_library(MKL::${mkl_args_NAME}        SHARED IMPORTED)
   add_library(MKL::${mkl_args_NAME}_STATIC STATIC IMPORTED)
 
-  if(WIN32)
-    set(ENV_LIBRARY_PATHS "$ENV{LIB}")
-  else()
-    string(REGEX REPLACE ":" ";" ENV_LIBRARY_PATHS "$ENV{LIBRARY_PATH}")
-  endif()
-
   if(NOT (WIN32 AND mkl_args_DLL_ONLY))
     find_library(MKL_${mkl_args_NAME}_LINK_LIBRARY
       NAMES
@@ -220,6 +225,7 @@ function(find_mkl_library)
         intel64
         intel64/gcc4.7)
     if(MKL_${mkl_args_NAME}_LINK_LIBRARY)
+      message(VERBOSE "MKL_${mkl_args_NAME}_LINK_LIBRARY: ${MKL_${mkl_args_NAME}_LINK_LIBRARY}")
       mark_as_advanced(MKL_${mkl_args_NAME}_LINK_LIBRARY)
     endif()
   endif()
@@ -246,6 +252,7 @@ function(find_mkl_library)
         IntelSWTools/compilers_and_libraries/windows/tbb/lib/intel64/${msvc_dir}
         )
       if(MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY)
+        message(VERBOSE "MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY: ${MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY}")
         mark_as_advanced(MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY)
       endif()
     endif()
@@ -296,10 +303,14 @@ if(MKL_THREAD_LAYER STREQUAL "Intel OpenMP")
 elseif(MKL_THREAD_LAYER STREQUAL "GNU OpenMP")
   find_package(OpenMP REQUIRED)
   find_mkl_library(NAME ThreadLayer LIBRARY_NAME mkl_gnu_thread SEARCH_STATIC)
+  set(MKL_ThreadingLibrary_LINK_LIBRARY ${OpenMP_gomp_LIBRARY})
+  if(MKL_ThreadingLibrary_LINK_LIBRARY)
+    mark_as_advanced(MKL_${mkl_args_NAME}_LINK_LIBRARY)
+  endif()
   add_library(MKL::ThreadingLibrary SHARED IMPORTED)
   set_target_properties(MKL::ThreadingLibrary
     PROPERTIES
-      IMPORTED_LOCATION "${OpenMP_gomp_LIBRARY}"
+      IMPORTED_LOCATION "${MKL_ThreadingLibrary_LINK_LIBRARY}"
       INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_CXX)
 elseif(MKL_THREAD_LAYER STREQUAL "TBB")
   find_mkl_library(NAME ThreadLayer LIBRARY_NAME mkl_tbb_thread SEARCH_STATIC)
