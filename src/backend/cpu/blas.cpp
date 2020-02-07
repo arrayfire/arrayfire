@@ -123,13 +123,11 @@ struct scale_type {
                                                 const typename blas_base<T>::type *,
                                                 const typename conditional<batched,  const T*, const T>::type>::type;
 
-    api_type getScale() const;
+    api_type getScale() const {
+		return val;
+	}
 };
 
-template<typename T, bool batched>
-typename scale_type<T, batched>::api_type scale_type<T, batched>::getScale() const {
-    return val;
-}
 
 #define INSTANTIATE_BATCHED(TYPE)                                                    \
 template<>                                                                           \
