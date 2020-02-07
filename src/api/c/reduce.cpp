@@ -31,6 +31,42 @@ static inline af_array reduce(const af_array in, const int dim,
         reduce<op, Ti, To>(getArray<Ti>(in), dim, change_nan, nanval));
 }
 
+template<af_op_t op, typename Ti, typename Tk, typename To>
+static inline void reduce_by_key(af_array *keys_out, af_array *vals_out,
+                                 const af_array keys, const af_array vals,
+                                 const int dim, bool change_nan,
+                                 double nanval) {
+    Array<Tk> oKeyArray = createEmptyArray<Tk>(dim4());
+    Array<To> oValArray = createEmptyArray<To>(dim4());
+
+    reduce_by_key<op, Ti, Tk, To>(oKeyArray, oValArray, getArray<Tk>(keys),
+                                  getArray<Ti>(vals), dim, change_nan, nanval);
+
+    *keys_out = getHandle(oKeyArray);
+    *vals_out = getHandle(oValArray);
+}
+
+template<af_op_t op, typename Ti, typename To>
+static inline void reduce_key(af_array *keys_out, af_array *vals_out,
+                              const af_array keys, const af_array vals,
+                              const int dim, bool change_nan = false,
+                              double nanval = 0.0) {
+    const ArrayInfo &key_info = getInfo(keys);
+    af_dtype type             = key_info.getType();
+
+    switch (type) {
+        case s32:
+            reduce_by_key<op, Ti, int, To>(keys_out, vals_out, keys, vals, dim,
+                                           change_nan, nanval);
+            break;
+        case u32:
+            reduce_by_key<op, Ti, uint, To>(keys_out, vals_out, keys, vals, dim,
+                                            change_nan, nanval);
+            break;
+        default: TYPE_ERROR(2, type);
+    }
+}
+
 template<af_op_t op, typename To>
 static af_err reduce_type(af_array *out, const af_array in, const int dim) {
     try {
@@ -65,6 +101,70 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim) {
         }
 
         std::swap(*out, res);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+template<af_op_t op, typename To>
+static af_err reduce_by_key_type(af_array *keys_out, af_array *vals_out,
+                                 const af_array keys, const af_array vals,
+                                 const int dim) {
+    try {
+        ARG_ASSERT(4, dim >= 0);
+        ARG_ASSERT(4, dim < 4);
+
+        const ArrayInfo &kinfo   = getInfo(keys);
+        const ArrayInfo &in_info = getInfo(vals);
+        af_dtype type            = in_info.getType();
+
+        ARG_ASSERT(2, kinfo.isVector());
+        ARG_ASSERT(2, in_info.dims()[dim] == kinfo.elements());
+
+        switch (type) {
+            case f32:
+                reduce_key<op, float, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case f64:
+                reduce_key<op, double, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case c32:
+                reduce_key<op, cfloat, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case c64:
+                reduce_key<op, cdouble, To>(keys_out, vals_out, keys, vals,
+                                            dim);
+                break;
+            case u32:
+                reduce_key<op, uint, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case s32:
+                reduce_key<op, int, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case u64:
+                reduce_key<op, uintl, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case s64:
+                reduce_key<op, intl, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case u16:
+                reduce_key<op, ushort, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case s16:
+                reduce_key<op, short, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case b8:
+                reduce_key<op, char, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case u8:
+                reduce_key<op, uchar, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case f16:
+                reduce_key<op, half, To>(keys_out, vals_out, keys, vals, dim);
+                break;
+            default: TYPE_ERROR(3, type);
+        }
     }
     CATCHALL;
 
@@ -109,8 +209,78 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim) {
 }
 
 template<af_op_t op>
+static af_err reduce_by_key_common(af_array *keys_out, af_array *vals_out,
+                                   const af_array keys, const af_array vals,
+                                   const int dim) {
+    try {
+        ARG_ASSERT(4, dim >= 0);
+        ARG_ASSERT(4, dim < 4);
+
+        const ArrayInfo &kinfo   = getInfo(keys);
+        const ArrayInfo &in_info = getInfo(vals);
+        af_dtype type            = in_info.getType();
+
+        ARG_ASSERT(2, kinfo.isVector());
+        ARG_ASSERT(2, in_info.dims()[dim] == kinfo.dims()[0]);
+
+        switch (type) {
+            case f32:
+                reduce_key<op, float, float>(keys_out, vals_out, keys, vals,
+                                             dim);
+                break;
+            case f64:
+                reduce_key<op, double, double>(keys_out, vals_out, keys, vals,
+                                               dim);
+                break;
+            case c32:
+                reduce_key<op, cfloat, cfloat>(keys_out, vals_out, keys, vals,
+                                               dim);
+                break;
+            case c64:
+                reduce_key<op, cdouble, cdouble>(keys_out, vals_out, keys, vals,
+                                                 dim);
+                break;
+            case u32:
+                reduce_key<op, uint, uint>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case s32:
+                reduce_key<op, int, int>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case u64:
+                reduce_key<op, uintl, uintl>(keys_out, vals_out, keys, vals,
+                                             dim);
+                break;
+            case s64:
+                reduce_key<op, intl, intl>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case u16:
+                reduce_key<op, ushort, ushort>(keys_out, vals_out, keys, vals,
+                                               dim);
+                break;
+            case s16:
+                reduce_key<op, short, short>(keys_out, vals_out, keys, vals,
+                                             dim);
+                break;
+            case b8:
+                reduce_key<op, char, char>(keys_out, vals_out, keys, vals, dim);
+                break;
+            case u8:
+                reduce_key<op, uchar, uchar>(keys_out, vals_out, keys, vals,
+                                             dim);
+            case f16:
+                reduce_key<op, half, half>(keys_out, vals_out, keys, vals, dim);
+                break;
+            default: TYPE_ERROR(1, type);
+        }
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+template<af_op_t op>
 static af_err reduce_promote(af_array *out, const af_array in, const int dim,
-                             bool change_nan = false, double nanval = 0) {
+                             bool change_nan = false, double nanval = 0.0) {
     try {
         ARG_ASSERT(2, dim >= 0);
         ARG_ASSERT(2, dim < 4);
@@ -180,6 +350,83 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim,
     return AF_SUCCESS;
 }
 
+template<af_op_t op>
+static af_err reduce_promote_by_key(af_array *keys_out, af_array *vals_out,
+                                    const af_array keys, const af_array vals,
+                                    const int dim, bool change_nan = false,
+                                    double nanval = 0.0) {
+    try {
+        ARG_ASSERT(4, dim >= 0);
+        ARG_ASSERT(4, dim < 4);
+
+        const ArrayInfo &kinfo   = getInfo(keys);
+        const ArrayInfo &in_info = getInfo(vals);
+        af_dtype type            = in_info.getType();
+
+        ARG_ASSERT(2, kinfo.isVector());
+        ARG_ASSERT(2, in_info.dims()[dim] == kinfo.dims()[0]);
+
+        switch (type) {
+            case f32:
+                reduce_key<op, float, float>(keys_out, vals_out, keys, vals,
+                                             dim, change_nan, nanval);
+                break;
+            case f64:
+                reduce_key<op, double, double>(keys_out, vals_out, keys, vals,
+                                               dim, change_nan, nanval);
+                break;
+            case c32:
+                reduce_key<op, cfloat, cfloat>(keys_out, vals_out, keys, vals,
+                                               dim, change_nan, nanval);
+                break;
+            case c64:
+                reduce_key<op, cdouble, cdouble>(keys_out, vals_out, keys, vals,
+                                                 dim, change_nan, nanval);
+                break;
+            case u32:
+                reduce_key<op, uint, uint>(keys_out, vals_out, keys, vals, dim,
+                                           change_nan, nanval);
+                break;
+            case s32:
+                reduce_key<op, int, int>(keys_out, vals_out, keys, vals, dim,
+                                         change_nan, nanval);
+                break;
+            case u64:
+                reduce_key<op, uintl, uintl>(keys_out, vals_out, keys, vals,
+                                             dim, change_nan, nanval);
+                break;
+            case s64:
+                reduce_key<op, intl, intl>(keys_out, vals_out, keys, vals, dim,
+                                           change_nan, nanval);
+                break;
+            case u16:
+                reduce_key<op, ushort, uint>(keys_out, vals_out, keys, vals,
+                                             dim, change_nan, nanval);
+                break;
+            case s16:
+                reduce_key<op, short, int>(keys_out, vals_out, keys, vals, dim,
+                                           change_nan, nanval);
+                break;
+            case u8:
+                reduce_key<op, uchar, uint>(keys_out, vals_out, keys, vals, dim,
+                                            change_nan, nanval);
+                break;
+            case b8:
+                reduce_key<af_notzero_t, char, uint>(
+                    keys_out, vals_out, keys, vals, dim, change_nan, nanval);
+                break;
+            case f16:
+                reduce_key<op, half, float>(keys_out, vals_out, keys, vals, dim,
+                                            change_nan, nanval);
+                break;
+            default: TYPE_ERROR(3, type);
+        }
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 af_err af_min(af_array *out, const af_array in, const int dim) {
     return reduce_common<af_min_t>(out, in, dim);
 }
@@ -216,6 +463,63 @@ af_err af_all_true(af_array *out, const af_array in, const int dim) {
 
 af_err af_any_true(af_array *out, const af_array in, const int dim) {
     return reduce_type<af_or_t, char>(out, in, dim);
+}
+
+// by key versions
+af_err af_min_by_key(af_array *keys_out, af_array *vals_out,
+                     const af_array keys, const af_array vals, const int dim) {
+    return reduce_by_key_common<af_min_t>(keys_out, vals_out, keys, vals, dim);
+}
+
+af_err af_max_by_key(af_array *keys_out, af_array *vals_out,
+                     const af_array keys, const af_array vals, const int dim) {
+    return reduce_by_key_common<af_max_t>(keys_out, vals_out, keys, vals, dim);
+}
+
+af_err af_sum_by_key(af_array *keys_out, af_array *vals_out,
+                     const af_array keys, const af_array vals, const int dim) {
+    return reduce_promote_by_key<af_add_t>(keys_out, vals_out, keys, vals, dim);
+}
+
+af_err af_product_by_key(af_array *keys_out, af_array *vals_out,
+                         const af_array keys, const af_array vals,
+                         const int dim) {
+    return reduce_promote_by_key<af_mul_t>(keys_out, vals_out, keys, vals, dim);
+}
+
+af_err af_sum_by_key_nan(af_array *keys_out, af_array *vals_out,
+                         const af_array keys, const af_array vals,
+                         const int dim, const double nanval) {
+    return reduce_promote_by_key<af_add_t>(keys_out, vals_out, keys, vals, dim,
+                                           true, nanval);
+}
+
+af_err af_product_by_key_nan(af_array *keys_out, af_array *vals_out,
+                             const af_array keys, const af_array vals,
+                             const int dim, const double nanval) {
+    return reduce_promote_by_key<af_mul_t>(keys_out, vals_out, keys, vals, dim,
+                                           true, nanval);
+}
+
+af_err af_count_by_key(af_array *keys_out, af_array *vals_out,
+                       const af_array keys, const af_array vals,
+                       const int dim) {
+    return reduce_by_key_type<af_notzero_t, uint>(keys_out, vals_out, keys,
+                                                  vals, dim);
+}
+
+af_err af_all_true_by_key(af_array *keys_out, af_array *vals_out,
+                          const af_array keys, const af_array vals,
+                          const int dim) {
+    return reduce_by_key_type<af_and_t, char>(keys_out, vals_out, keys, vals,
+                                              dim);
+}
+
+af_err af_any_true_by_key(af_array *keys_out, af_array *vals_out,
+                          const af_array keys, const af_array vals,
+                          const int dim) {
+    return reduce_by_key_type<af_or_t, char>(keys_out, vals_out, keys, vals,
+                                             dim);
 }
 
 template<af_op_t op, typename Ti, typename To>
@@ -294,9 +598,7 @@ static af_err reduce_all_common(double *real_val, double *imag_val,
             case u8:
                 *real_val = (double)reduce_all<op, uchar, uchar>(in);
                 break;
-            case f16:
-                *real_val = (double)reduce_all<op, half, half>(in);
-                break;
+            case f16: *real_val = (double)reduce_all<op, half, half>(in); break;
 
             case c32:
                 cfval = reduce_all<op, cfloat, cfloat>(in);
@@ -381,7 +683,6 @@ static af_err reduce_all_promote(double *real_val, double *imag_val,
                         in, change_nan, nanval);
                 }
             } break;
-
             case c32:
                 cfval = reduce_all<op, cfloat, cfloat>(in);
                 ARG_ASSERT(1, imag_val != NULL);
@@ -396,8 +697,8 @@ static af_err reduce_all_promote(double *real_val, double *imag_val,
                 *imag_val = imag(cdval);
                 break;
             case f16:
-                *real_val = (double)reduce_all<op, half, float>(in, change_nan,
-                                                                nanval);
+                *real_val =
+                    (double)reduce_all<op, half, float>(in, change_nan, nanval);
                 break;
 
             default: TYPE_ERROR(1, type);

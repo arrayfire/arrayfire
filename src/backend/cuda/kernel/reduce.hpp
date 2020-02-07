@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
@@ -25,6 +26,7 @@ using std::unique_ptr;
 
 namespace cuda {
 namespace kernel {
+
 template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
 __global__ static void reduce_dim_kernel(Param<To> out, CParam<Ti> in,
                                          uint blocks_x, uint blocks_y,
@@ -74,7 +76,8 @@ __global__ static void reduce_dim_kernel(Param<To> out, CParam<Ti> in,
     for (int id = id_dim_in; is_valid && (id < in.dims[dim]);
          id += offset_dim * blockDim.y) {
         compute_t<To> in_val = transform(*iptr);
-        if (change_nan) in_val = !IS_NAN(in_val) ? in_val : compute_t<To>(nanval);
+        if (change_nan)
+            in_val = !IS_NAN(in_val) ? in_val : compute_t<To>(nanval);
         out_val = reduce(in_val, out_val);
         iptr    = iptr + offset_dim * blockDim.y * istride_dim;
     }
@@ -358,7 +361,6 @@ To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
                 in.strides[k] = in_elements;
             }
         }
-
         uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
         threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
         uint threads_y = THREADS_PER_BLOCK / threads_x;

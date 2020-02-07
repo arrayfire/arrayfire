@@ -30,6 +30,23 @@ ALGO_HAPI_DEF(af_diff2)
 
 #undef ALGO_HAPI_DEF
 
+#define ALGO_HAPI_DEF_BYKEY(af_func)                                          \
+    af_err af_func(af_array *keys_out, af_array *vals_out,                    \
+                   const af_array keys, const af_array vals, const int dim) { \
+        CHECK_ARRAYS(keys, vals);                                             \
+        CALL(af_func, keys_out, vals_out, keys, vals, dim);              \
+    }
+
+ALGO_HAPI_DEF_BYKEY(af_sum_by_key)
+ALGO_HAPI_DEF_BYKEY(af_product_by_key)
+ALGO_HAPI_DEF_BYKEY(af_min_by_key)
+ALGO_HAPI_DEF_BYKEY(af_max_by_key)
+ALGO_HAPI_DEF_BYKEY(af_all_true_by_key)
+ALGO_HAPI_DEF_BYKEY(af_any_true_by_key)
+ALGO_HAPI_DEF_BYKEY(af_count_by_key)
+
+#undef ALGO_HAPI_DEF_BYKEY
+
 #define ALGO_HAPI_DEF(af_func_nan)                                      \
     af_err af_func_nan(af_array *out, const af_array in, const int dim, \
                        const double nanval) {                           \
@@ -41,6 +58,19 @@ ALGO_HAPI_DEF(af_sum_nan)
 ALGO_HAPI_DEF(af_product_nan)
 
 #undef ALGO_HAPI_DEF
+
+#define ALGO_HAPI_DEF_BYKEY(af_func_nan)                         \
+    af_err af_func_nan(af_array *keys_out, af_array *vals_out,   \
+                       const af_array keys, const af_array vals, \
+                       const int dim, const double nanval) {     \
+        CHECK_ARRAYS(keys, vals);                                \
+        CALL(af_func_nan, keys_out, vals_out, keys, vals, dim, nanval);  \
+    }
+
+ALGO_HAPI_DEF_BYKEY(af_sum_by_key_nan)
+ALGO_HAPI_DEF_BYKEY(af_product_by_key_nan)
+
+#undef ALGO_HAPI_DEF_BYKEY
 
 #define ALGO_HAPI_DEF(af_func_all)                                      \
     af_err af_func_all(double *real, double *imag, const af_array in) { \

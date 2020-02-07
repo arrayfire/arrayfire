@@ -34,7 +34,7 @@ namespace af
 
        \param[in] in is the input array
        \param[in] dim The dimension along which the add operation occurs
-       \param[in] nanval Replace nans with the value passed to this function
+       \param[in]  nanval   The value that will replace the NaNs in \p in
        \return    result of sum all values along dimension \p dim
 
        \ingroup reduce_func_sum
@@ -43,11 +43,48 @@ namespace af
     AFAPI array sum(const array &in, const int dim, const double nanval);
 #endif
 
+#if AF_API_VERSION >= 37
+    /**
+       C++ Interface for sum of elements along given dimension by key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the sum of all values in \p vals along
+                            \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the add operation occurs
+
+       \ingroup reduce_func_sum_by_key
+
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+    */
+    AFAPI void sumByKey(array &keys_out, array &vals_out,
+                        const array &keys, const array &vals,
+                        const int dim=-1);
+
+    /**
+       C++ Interface for sum of elements along given dimension by key while replacing nan values
+
+       \param[out] keys_out Will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out Will contain the sum of all values in \p vals along
+                            \p dim according to \p keys
+       \param[in]  keys     Is the key array
+       \param[in]  vals     Is the array containing the values to be reduced
+       \param[in]  dim      The dimension along which the add operation occurs
+       \param[in]  nanval   The value that will replace the NaNs in \p vals
+
+       \ingroup reduce_func_sum_by_key
+    */
+    AFAPI void sumByKey(array &keys_out, array &vals_out,
+                        const array &keys, const array &vals,
+                        const int dim, const double nanval);
+#endif
+
     /**
        C++ Interface for product of elements in an array
 
-       \param[in] in is the input array
-       \param[in] dim The dimension along which the multiply operation occurs
+       \param[in] in     The input array
+       \param[in] dim    The dimension along which the multiply operation occurs
        \return    result of product all values along dimension \p dim
 
        \ingroup reduce_func_product
@@ -58,17 +95,57 @@ namespace af
 
 #if AF_API_VERSION >= 31
     /**
-       C++ Interface for product of elements in an array while replacing nan values
+       C++ Interface for product of elements in an array while replacing nan
+       values
 
-       \param[in] in is the input array
-       \param[in] dim The dimension along which the add operation occurs
-       \param[in] nanval Replace nans with the value passed to this function
+       \param[in] in      The input array
+       \param[in] dim     The dimension along which the multiply operation occurs
+       \param[in] nanval  The value that will replace the NaNs in \p in
        \return    result of product all values along dimension \p dim
 
        \ingroup reduce_func_product
-
     */
     AFAPI array product(const array &in, const int dim, const double nanval);
+#endif
+
+#if AF_API_VERSION >= 37
+    /**
+       C++ Interface for product of elements in an array according to a key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the product of all values in \p vals
+                            along \p dim according to \p keys
+       \param[in]  keys     The key array
+       \param[in]  vals     The array containing the values to be reduced
+       \param[in]  dim      The dimension along which the product operation occurs
+
+       \ingroup reduce_func_product_by_key
+
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+    */
+    AFAPI void productByKey(array &keys_out, array &vals_out,
+                            const array &keys, const array &vals,
+                            const int dim = -1);
+
+    /**
+       C++ Interface for product of elements in an array according to a key
+       while replacing nan values
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p
+                            dim
+       \param[out] vals_out will contain the product of all values in \p
+                            vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the product operation occurs
+       \param[in] nanval  The value that will replace the NaNs in \p vals
+
+       \ingroup reduce_func_product_by_key
+
+    */
+    AFAPI void productByKey(array &keys_out, array &vals_out,
+                            const array &keys, const array &vals,
+                            const int dim, const double nanval);
 #endif
 
     /**
@@ -85,6 +162,26 @@ namespace af
     */
     AFAPI array min(const array &in, const int dim = -1);
 
+#if AF_API_VERSION >= 37
+    /**
+       C++ Interface for minimum values in an array according to a key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the minimum of all values in \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the min operation occurs
+
+       \ingroup reduce_func_min_by_key
+
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are ignored
+    */
+    AFAPI void minByKey(array &keys_out, array &vals_out,
+                        const array &keys, const array &vals,
+                        const int dim = -1);
+#endif
+
     /**
        C++ Interface for maximum values in an array
 
@@ -98,6 +195,26 @@ namespace af
        \note NaN values are ignored
     */
     AFAPI array max(const array &in, const int dim = -1);
+
+#if AF_API_VERSION >= 37
+    /**
+       C++ Interface for maximum values in an array according to a key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the maximum of all values in \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the max operation occurs
+
+       \ingroup reduce_func_max_by_key
+
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are ignored
+    */
+    AFAPI void maxByKey(array &keys_out, array &vals_out,
+                        const array &keys, const array &vals,
+                        const int dim = -1);
+#endif
 
     /**
        C++ Interface for checking all true values in an array
@@ -113,6 +230,26 @@ namespace af
     */
     AFAPI array allTrue(const array &in, const int dim = -1);
 
+#if AF_API_VERSION >= 37
+    /**
+       C++ Interface for checking all true values in an array according to a key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the reduced and of all values in \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the all true operation occurs
+
+       \ingroup reduce_func_alltrue_by_key
+
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are ignored
+    */
+    AFAPI void allTrueByKey(array &keys_out, array &vals_out,
+                            const array &keys, const array &vals,
+                            const int dim = -1);
+#endif
+
     /**
        C++ Interface for checking any true values in an array
 
@@ -126,6 +263,26 @@ namespace af
        \note NaN values are ignored
     */
     AFAPI array anyTrue(const array &in, const int dim = -1);
+
+#if AF_API_VERSION >= 37
+    /**
+       C++ Interface for checking any true values in an array according to a key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the reduced or of all values in \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the any true operation occurs
+
+       \ingroup reduce_func_anytrue_by_key
+
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are ignored
+    */
+    AFAPI void anyTrueByKey(array &keys_out, array &vals_out,
+                            const array &keys, const array &vals,
+                            const int dim = -1);
+#endif
 
     /**
        C++ Interface for counting non-zero values in an array
@@ -141,6 +298,26 @@ namespace af
     */
     AFAPI array count(const array &in, const int dim = -1);
 
+#if AF_API_VERSION >= 37
+    /**
+       C++ Interface for counting non-zero values in an array according to a key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the count of all values in \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the count operation occurs
+
+       \ingroup reduce_func_count_by_key
+
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are treated as non zero.
+    */
+    AFAPI void countByKey(array &keys_out, array &vals_out,
+                          const array &keys, const array &vals,
+                          const int dim = -1);
+#endif
+
     /**
        C++ Interface for sum of all elements in an array
 
@@ -153,10 +330,11 @@ namespace af
 
 #if AF_API_VERSION >= 31
     /**
-       C++ Interface for sum of all elements in an array while replacing nan values
+       C++ Interface for sum of all elements in an array while replacing nan
+       values
 
        \param[in] in is the input array
-       \param[in] nanval  Replace nans with the value passed to this function
+       \param[in] nanval  The value that will replace the NaNs in \p in
        \return    the sum of all values of \p in
 
        \ingroup reduce_func_sum
@@ -176,16 +354,18 @@ namespace af
 
 #if AF_API_VERSION >= 31
     /**
-       C++ Interface for product of all elements in an array while replacing nan values
+       C++ Interface for product of all elements in an array while replacing nan
+       values
 
        \param[in] in is the input array
-       \param[in] nanval  Replace nans with the value passed to this function
+       \param[in] nanval  The value that will replace the NaNs in \p in
        \return    the product of all values of \p in
 
        \ingroup reduce_func_product
     */
     template<typename T> T product(const array &in, double nanval);
 #endif
+
 
     /**
        C++ Interface for getting minimum value of an array
@@ -328,7 +508,8 @@ namespace af
 
        \ingroup scan_func_scan
     */
-    AFAPI array scan(const array &in, const int dim = 0, binaryOp op = AF_BINARY_ADD, bool inclusive_scan = true);
+    AFAPI array scan(const array &in, const int dim = 0,
+                     binaryOp op = AF_BINARY_ADD, bool inclusive_scan = true);
 
     /**
        C++ Interface generalized scan by key of an array
@@ -342,7 +523,8 @@ namespace af
 
        \ingroup scan_func_scanbykey
     */
-    AFAPI array scanByKey(const array &key, const array& in, const int dim = 0, binaryOp op = AF_BINARY_ADD, bool inclusive_scan = true);
+    AFAPI array scanByKey(const array &key, const array& in, const int dim = 0,
+                          binaryOp op = AF_BINARY_ADD, bool inclusive_scan = true);
 #endif
 
     /**
@@ -387,7 +569,8 @@ namespace af
 
        \ingroup sort_func_sort
     */
-    AFAPI array sort(const array &in, const unsigned dim = 0, const bool isAscending = true);
+    AFAPI array sort(const array &in, const unsigned dim = 0,
+                     const bool isAscending = true);
 
     /**
        C++ Interface for sorting an array and getting original indices
@@ -414,8 +597,9 @@ namespace af
 
        \ingroup sort_func_sort_keys
     */
-    AFAPI void  sort(array &out_keys, array &out_values, const array &keys, const array &values,
-                     const unsigned dim = 0, const bool isAscending = true);
+    AFAPI void  sort(array &out_keys, array &out_values, const array &keys,
+                     const array &values, const unsigned dim = 0,
+                     const bool isAscending = true);
 
     /**
        C++ Interface for getting unique values
@@ -438,7 +622,8 @@ namespace af
 
        \ingroup set_func_union
     */
-    AFAPI array setUnion(const array &first, const array &second, const bool is_unique=false);
+    AFAPI array setUnion(const array &first, const array &second,
+                         const bool is_unique=false);
 
     /**
        C++ Interface for finding the intersection of two arrays
@@ -450,7 +635,8 @@ namespace af
 
        \ingroup set_func_intersect
     */
-    AFAPI array setIntersect(const array &first, const array &second, const bool is_unique=false);
+    AFAPI array setIntersect(const array &first, const array &second,
+                             const bool is_unique=false);
 }
 #endif
 
@@ -477,12 +663,52 @@ extern "C" {
        \param[out] out will contain the sum of all values in \p in along \p dim
        \param[in] in is the input array
        \param[in] dim The dimension along which the add operation occurs
-       \param[in] nanval Replace nans with the value passed to this function
+       \param[in] nanval  The value that will replace the NaNs in \p in
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_sum
     */
-    AFAPI af_err af_sum_nan(af_array *out, const af_array in, const int dim, const double nanval);
+    AFAPI af_err af_sum_nan(af_array *out, const af_array in,
+                            const int dim, const double nanval);
+#endif
+
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for sum of elements in an array according to key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the sum of all values in \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the add operation occurs
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_sum_by_key
+    */
+    AFAPI af_err af_sum_by_key(af_array *keys_out, af_array *vals_out,
+                               const af_array keys, const af_array vals, const int dim);
+
+    /**
+       C Interface for sum of elements in an array according to key while
+       replacing nans
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p
+                            dim
+       \param[out] vals_out will contain the sum of all values in \p vals
+                            along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the add operation occurs
+       \param[in] nanval  The value that will replace the NaNs in \p vals
+
+
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_sum_by_key
+    */
+    AFAPI af_err af_sum_by_key_nan(af_array *keys_out, af_array *vals_out,
+                                   const af_array keys, const af_array vals,
+                                   const int dim, const double nanval);
 #endif
 
     /**
@@ -501,15 +727,53 @@ extern "C" {
     /**
        C Interface for product of elements in an array while replacing nans
 
-       \param[out] out will contain the product of all values in \p in along \p dim
-       \param[in] in is the input array
-       \param[in] dim The dimension along which the add operation occurs
-       \param[in] nanval Replace nans with the value passed to this function
+       \param[out] out will contain the product of all values in \p in along \p
+                       dim
+       \param[in] in   is the input array
+       \param[in] dim  The dimension along which the product operation occurs
+       \param[in] nanval  The value that will replace the NaNs in \p in
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_product
     */
     AFAPI af_err af_product_nan(af_array *out, const af_array in, const int dim, const double nanval);
+#endif
+
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for product of elements in an array according to key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the product of all values in \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the product operation occurs
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_product_by_key
+    */
+    AFAPI af_err af_product_by_key(af_array *keys_out, af_array *vals_out,
+                                   const af_array keys, const af_array vals, const int dim);
+
+    /**
+       C Interface for product of elements in an array according to key while
+       replacing nans
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p
+                            dim
+       \param[out] vals_out will contain the product of all values in \p
+                            vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the product operation occurs
+       \param[in] nanval  The value that will replace the NaNs in \p vals
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_product_by_key
+    */
+    AFAPI af_err af_product_by_key_nan(af_array *keys_out, af_array *vals_out,
+                                       const af_array keys, const af_array vals,
+                                       const int dim, const double nanval);
 #endif
 
     /**
@@ -524,6 +788,24 @@ extern "C" {
     */
     AFAPI af_err af_min(af_array *out, const af_array in, const int dim);
 
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for minimum values in an array according to key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the minimum of all values in \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the minimum value is extracted
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_min_by_key
+    */
+    AFAPI af_err af_min_by_key(af_array *keys_out, af_array *vals_out,
+                               const af_array keys, const af_array vals,
+                               const int dim);
+#endif
+
     /**
        C Interface for maximum values in an array
 
@@ -535,6 +817,26 @@ extern "C" {
        \ingroup reduce_func_max
     */
     AFAPI af_err af_max(af_array *out, const af_array in, const int dim);
+
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for maximum values in an array according to key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p
+                            dim
+       \param[out] vals_out will contain the maximum of all values in \p
+                            vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the maximum value is extracted
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_max_by_key
+    */
+    AFAPI af_err af_max_by_key(af_array *keys_out, af_array *vals_out,
+                               const af_array keys, const af_array vals,
+                               const int dim);
+#endif
 
     /**
        C Interface for checking all true values in an array
@@ -548,6 +850,25 @@ extern "C" {
     */
     AFAPI af_err af_all_true(af_array *out, const af_array in, const int dim);
 
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for checking all true values in an array according to key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the the reduced and of all values in
+                            \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the "and" operation occurs
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_alltrue_by_key
+    */
+    AFAPI af_err af_all_true_by_key(af_array *keys_out, af_array *vals_out,
+                                    const af_array keys, const af_array vals,
+                                    const int dim);
+#endif
+
     /**
        C Interface for checking any true values in an array
 
@@ -559,6 +880,25 @@ extern "C" {
        \ingroup reduce_func_any_true
     */
     AFAPI af_err af_any_true(af_array *out, const af_array in, const int dim);
+
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for checking any true values in an array according to key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the reduced or of all values in
+                            \p vals along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the "or" operation occurs
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_anytrue_by_key
+    */
+    AFAPI af_err af_any_true_by_key(af_array *keys_out, af_array *vals_out,
+                                    const af_array keys, const af_array vals,
+                                    const int dim);
+#endif
 
     /**
        C Interface for counting non-zero values in an array
@@ -572,11 +912,32 @@ extern "C" {
     */
     AFAPI af_err af_count(af_array *out, const af_array in, const int dim);
 
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for counting non-zero values in an array according to key
+
+       \param[out] keys_out will contain the reduced keys in \p vals along \p dim
+       \param[out] vals_out will contain the count of all values in \p vals
+                            along \p dim according to \p keys
+       \param[in] keys is the key array
+       \param[in] vals is the array containing the values to be reduced
+       \param[in] dim The dimension along which the non-zero values are counted
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_count_by_key
+    */
+    AFAPI af_err af_count_by_key(af_array *keys_out, af_array *vals_out,
+                                 const af_array keys, const af_array vals,
+                                 const int dim);
+#endif
+
     /**
        C Interface for sum of all elements in an array
 
-       \param[out] real will contain the real part of adding all elements in input \p in
-       \param[out] imag will contain the imaginary part of adding all elements in input \p in
+       \param[out] real will contain the real part of adding all elements in
+                        input \p in
+       \param[out] imag will contain the imaginary part of adding all elements
+                        in input \p in
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -590,8 +951,10 @@ extern "C" {
     /**
        C Interface for sum of all elements in an array while replacing nans
 
-       \param[out] real will contain the real part of adding all elements in input \p in
-       \param[out] imag will contain the imaginary part of adding all elements in input \p in
+       \param[out] real will contain the real part of adding all elements in
+                        input \p in
+       \param[out] imag will contain the imaginary part of adding all elements
+                        in input \p in
        \param[in] in is the input array
        \param[in] nanval is the value which replaces nan
        \return \ref AF_SUCCESS if the execution completes properly
@@ -600,7 +963,8 @@ extern "C" {
 
        \ingroup reduce_func_sum
     */
-    AFAPI af_err af_sum_nan_all(double *real, double *imag, const af_array in, const double nanval);
+    AFAPI af_err af_sum_nan_all(double *real, double *imag,
+                                const af_array in, const double nanval);
 #endif
 
     /**
@@ -621,17 +985,20 @@ extern "C" {
     /**
        C Interface for product of all elements in an array while replacing nans
 
-       \param[out] real will contain the real part of adding all elements in input \p in
-       \param[out] imag will contain the imaginary part of adding all elements in input \p in
-       \param[in] in is the input array
-       \param[in] nanval is the value which replaces nan
+       \param[out] real   will contain the real part of multiplication of all
+                          elements in input \p in
+       \param[out] imag   will contain the imaginary part of multiplication of
+                          all elements in input \p in
+       \param[in]  in     is the input array
+       \param[in]  nanval is the value which replaces nan
        \return \ref AF_SUCCESS if the execution completes properly
 
        \note \p imag is always set to 0 when \p in is real
 
        \ingroup reduce_func_product
     */
-    AFAPI af_err af_product_nan_all(double *real, double *imag, const af_array in, const double nanval);
+    AFAPI af_err af_product_nan_all(double *real, double *imag,
+                                    const af_array in, const double nanval);
 #endif
 
     /**
@@ -715,7 +1082,8 @@ extern "C" {
 
        \ingroup reduce_func_min
     */
-    AFAPI af_err af_imin(af_array *out, af_array *idx, const af_array in, const int dim);
+    AFAPI af_err af_imin(af_array *out, af_array *idx, const af_array in,
+                         const int dim);
 
     /**
        C Interface for getting maximum values and their locations in an array
@@ -728,7 +1096,8 @@ extern "C" {
 
        \ingroup reduce_func_max
     */
-    AFAPI af_err af_imax(af_array *out, af_array *idx, const af_array in, const int dim);
+    AFAPI af_err af_imax(af_array *out, af_array *idx, const af_array in,
+                         const int dim);
 
     /**
        C Interface for getting minimum value and its location from the entire array
@@ -743,7 +1112,8 @@ extern "C" {
 
        \ingroup reduce_func_min
     */
-    AFAPI af_err af_imin_all(double *real, double *imag, unsigned *idx, const af_array in);
+    AFAPI af_err af_imin_all(double *real, double *imag, unsigned *idx,
+                             const af_array in);
 
     /**
        C Interface for getting maximum value and it's location from the entire array
@@ -785,7 +1155,8 @@ extern "C" {
 
        \ingroup scan_func_scan
     */
-    AFAPI af_err af_scan(af_array *out, const af_array in, const int dim, af_binary_op op, bool inclusive_scan);
+    AFAPI af_err af_scan(af_array *out, const af_array in, const int dim,
+                         af_binary_op op, bool inclusive_scan);
 
     /**
        C Interface generalized scan by key of an array
@@ -800,7 +1171,10 @@ extern "C" {
 
        \ingroup scan_func_scanbykey
     */
-    AFAPI af_err af_scan_by_key(af_array *out, const af_array key, const af_array in, const int dim, af_binary_op op, bool inclusive_scan);
+    AFAPI af_err af_scan_by_key(af_array *out, const af_array key,
+                                const af_array in, const int dim,
+                                af_binary_op op, bool inclusive_scan);
+
 #endif
 
     /**
@@ -849,7 +1223,8 @@ extern "C" {
 
        \ingroup sort_func_sort
     */
-    AFAPI af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool isAscending);
+    AFAPI af_err af_sort(af_array *out, const af_array in, const unsigned dim,
+                         const bool isAscending);
 
     /**
        C Interface for sorting an array and getting original indices
@@ -905,7 +1280,8 @@ extern "C" {
 
        \ingroup set_func_union
     */
-    AFAPI af_err af_set_union(af_array *out, const af_array first, const af_array second, const bool is_unique);
+    AFAPI af_err af_set_union(af_array *out, const af_array first,
+                              const af_array second, const bool is_unique);
 
     /**
        C Interface for finding the intersection of two arrays
@@ -918,7 +1294,8 @@ extern "C" {
 
        \ingroup set_func_intersect
     */
-    AFAPI af_err af_set_intersect(af_array *out, const af_array first, const af_array second, const bool is_unique);
+    AFAPI af_err af_set_intersect(af_array *out, const af_array first,
+                                  const af_array second, const bool is_unique);
 
 #ifdef __cplusplus
 }
