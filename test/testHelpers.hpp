@@ -1253,7 +1253,39 @@ class TestOutputArrayInfo {
 
     void init(const unsigned ndims, const dim_t *const dims, const af_dtype ty,
               const af_seq *const subarr_idxs) {
-        ASSERT_SUCCESS(af_randu(&out_arr, ndims, dims, ty));
+        init(ndims, dims, ty);
+
+        ASSERT_SUCCESS(af_copy_array(&out_arr_cpy, out_arr));
+        for (uint i = 0; i < ndims; ++i) {
+            out_subarr_idxs[i] = subarr_idxs[i];
+        }
+        out_subarr_ndims = ndims;
+
+        ASSERT_SUCCESS(af_index(&out_subarr, out_arr, ndims, subarr_idxs));
+    }
+
+    void init(double val, const unsigned ndims, const dim_t *const dims,
+              const af_dtype ty) {
+        switch (ty) {
+            case c32:
+            case c64:
+                af_constant_complex(&out_arr, val, 0.0, ndims, dims, ty);
+                break;
+            case s64:
+                af_constant_long(&out_arr, static_cast<intl>(val), ndims, dims);
+                break;
+            case u64:
+                af_constant_ulong(&out_arr, static_cast<uintl>(val), ndims,
+                                  dims);
+                break;
+            default: af_constant(&out_arr, val, ndims, dims, ty); break;
+        }
+    }
+
+    void init(double val, const unsigned ndims, const dim_t *const dims,
+              const af_dtype ty, const af_seq *const subarr_idxs) {
+        init(val, ndims, dims, ty);
+
         ASSERT_SUCCESS(af_copy_array(&out_arr_cpy, out_arr));
         for (uint i = 0; i < ndims; ++i) {
             out_subarr_idxs[i] = subarr_idxs[i];
@@ -1290,6 +1322,12 @@ void genRegularArray(TestOutputArrayInfo *metadata, const unsigned ndims,
     metadata->init(ndims, dims, ty);
 }
 
+void genRegularArray(TestOutputArrayInfo *metadata, double val,
+                     const unsigned ndims, const dim_t *const dims,
+                     const af_dtype ty) {
+    metadata->init(val, ndims, dims, ty);
+}
+
 // Generates a large, random array, and extracts a subarray for the af_*
 // function to use. testWriteToOutputArray expects that the large array that it
 // receives is equal to the same large array with the gold array injected on the
@@ -1315,6 +1353,30 @@ void genSubArray(TestOutputArrayInfo *metadata, const unsigned ndims,
     }
 
     metadata->init(ndims, full_arr_dims, ty, &subarr_idxs[0]);
+}
+
+void genSubArray(TestOutputArrayInfo *metadata, double val,
+                 const unsigned ndims, const dim_t *const dims,
+                 const af_dtype ty) {
+    const dim_t pad_size = 2;
+
+    // The large array is padded on both sides of each dimension
+    // Padding is only applied if the dimension is used, i.e. if dims[i] > 1
+    dim_t full_arr_dims[4] = {dims[0], dims[1], dims[2], dims[3]};
+    for (uint i = 0; i < ndims; ++i) {
+        full_arr_dims[i] = dims[i] + 2 * pad_size;
+    }
+
+    // Calculate index of sub-array. These will be used also by
+    // testWriteToOutputArray so that the gold sub array will be placed in the
+    // same location. Currently, this location is the center of the large array
+    af_seq subarr_idxs[4] = {af_span, af_span, af_span, af_span};
+    for (uint i = 0; i < ndims; ++i) {
+        af_seq idx     = {pad_size, pad_size + dims[i] - 1.0, 1.0};
+        subarr_idxs[i] = idx;
+    }
+
+    metadata->init(val, ndims, full_arr_dims, ty, &subarr_idxs[0]);
 }
 
 // Generates a reordered array. testWriteToOutputArray expects that this array
@@ -1346,6 +1408,32 @@ void genReorderedArray(TestOutputArrayInfo *metadata, const unsigned ndims,
     metadata->setOutput(reordered);
 }
 
+void genReorderedArray(TestOutputArrayInfo *metadata, double val,
+                       const unsigned ndims, const dim_t *const dims,
+                       const af_dtype ty) {
+    // The rest of this function assumes that dims has 4 elements. Just in case
+    // dims has < 4 elements, use another dims array that is filled with 1s
+    dim_t all_dims[4] = {1, 1, 1, 1};
+    for (uint i = 0; i < ndims; ++i) { all_dims[i] = dims[i]; }
+
+    // This reorder combination will not move data around, but will simply
+    // call modDims and modStrides (see src/api/c/reorder.cpp).
+    // The output will be checked if it is still correct even with the
+    // modified dims and strides "hack" with no data movement
+    uint reorder_idxs[4] = {0, 2, 1, 3};
+
+    // Shape the output array such that the reordered output array will have
+    // the correct dimensions that the test asks for (i.e. must match dims arg)
+    dim_t init_dims[4] = {all_dims[0], all_dims[1], all_dims[2], all_dims[3]};
+    for (uint i = 0; i < 4; ++i) { init_dims[i] = all_dims[reorder_idxs[i]]; }
+    metadata->init(val, 4, init_dims, ty);
+
+    af_array reordered = 0;
+    ASSERT_SUCCESS(af_reorder(&reordered, metadata->getOutput(),
+                              reorder_idxs[0], reorder_idxs[1], reorder_idxs[2],
+                              reorder_idxs[3]));
+    metadata->setOutput(reordered);
+}
 // Partner function of testWriteToOutputArray. This generates the "special"
 // array that testWriteToOutputArray will use to check if the af_* function
 // correctly uses an existing array as its output
@@ -1357,6 +1445,20 @@ void genTestOutputArray(af_array *out_ptr, const unsigned ndims,
         case SUB_ARRAY: genSubArray(metadata, ndims, dims, ty); break;
         case REORDERED_ARRAY:
             genReorderedArray(metadata, ndims, dims, ty);
+            break;
+        default: break;
+    }
+    *out_ptr = metadata->getOutput();
+}
+
+void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
+                        const dim_t *const dims, const af_dtype ty,
+                        TestOutputArrayInfo *metadata) {
+    switch (metadata->getOutputArrayType()) {
+        case FULL_ARRAY: genRegularArray(metadata, val, ndims, dims, ty); break;
+        case SUB_ARRAY: genSubArray(metadata, val, ndims, dims, ty); break;
+        case REORDERED_ARRAY:
+            genReorderedArray(metadata, val, ndims, dims, ty);
             break;
         default: break;
     }

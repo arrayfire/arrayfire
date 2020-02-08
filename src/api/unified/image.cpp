@@ -218,7 +218,13 @@ af_err af_wrap(af_array *out, const af_array in, const dim_t ox, const dim_t oy,
                const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
                const dim_t px, const dim_t py, const bool is_column) {
     CHECK_ARRAYS(in);
-      CALL(af_wrap, out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);
+      CALL(af_wrap, out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);}
+
+af_err af_wrap_v2(af_array *out, const af_array in, const dim_t ox, const dim_t oy,
+                  const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
+                  const dim_t px, const dim_t py, const bool is_column) {
+    CHECK_ARRAYS(out, in);
+    return CALL(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);
 }
 
 af_err af_sat(af_array *out, const af_array in) {

@@ -1458,6 +1458,52 @@ extern "C" {
                          const bool is_column);
 #endif
 
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for the version of \ref af_wrap that accepts a
+       preallocated output array
+
+       \param[out] out is an array with the input's columns (or rows) reshaped as
+                   patches
+       \param[in]  in is the input array
+       \param[in]  ox is the output's dimension 0 size
+       \param[in]  oy is the output's dimension 1 size
+       \param[in]  wx is the window size along dimension 0
+       \param[in]  wy is the window size along dimension 1
+       \param[in]  sx is the stride along dimension 0
+       \param[in]  sy is the stride along dimension 1
+       \param[in]  px is the padding along dimension 0
+       \param[in]  py is the padding along dimension 1
+       \param[in]  is_column determines whether an output patch is formed from a
+                   column (if true) or a row (if false)
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note Wrap is typically used to recompose an unwrapped image. If this is the
+             case, use the same parameters that were used in \ref unwrap(). Also
+             use the original image size (before unwrap) for \p ox and \p oy.
+       \note The window/patch size, \p wx \f$\times\f$ \p wy, must equal
+             `input.dims(0)` (or `input.dims(1)` if \p is_column is false).
+       \note \p sx and \p sy must be at least 1
+       \note \p px and \p py must be between [0, wx) and [0, wy), respectively
+       \note The number of patches, `input.dims(1)` (or `input.dims(0)` if
+             \p is_column is false), must equal \f$nx \times\ ny\f$, where
+             \f$\displaystyle nx = \frac{ox + 2px - wx}{sx} + 1\f$ and
+             \f$\displaystyle ny = \frac{oy + 2py - wy}{sy} + 1\f$
+       \note Batched wrap can be performed on multiple 2D slices at once if \p in
+             is three or four-dimensional
+
+       \ingroup image_func_wrap
+    */
+    AFAPI af_err af_wrap_v2(af_array *out,
+                            const af_array in,
+                            const dim_t ox, const dim_t oy,
+                            const dim_t wx, const dim_t wy,
+                            const dim_t sx, const dim_t sy,
+                            const dim_t px, const dim_t py,
+                            const bool is_column);
+#endif
+
 #if AF_API_VERSION >= 31
     /**
        C Interface wrapper for summed area tables

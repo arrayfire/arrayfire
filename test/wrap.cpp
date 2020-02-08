@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
@@ -247,3 +248,303 @@ TEST(Wrap, DocSnippet) {
     array gold_B_wrapped(dim4(3, 3), gold_hB_wrapped);
     ASSERT_ARRAYS_EQ(gold_B_wrapped, B_wrapped);
 }
+
+static void getInput(af_array *data, const dim_t *dims) {
+    float h_data[16] = { 10, 20, 20, 30,
+                         30, 40, 40, 50,
+                         30, 40, 40, 50,
+                         50, 60, 60, 70 };
+    ASSERT_SUCCESS(af_create_array(data, &h_data[0], 2, dims, f32));
+}
+static void getGold(af_array *gold, const dim_t *dims) {
+    float h_gold[16]= { 10, 20, 30, 40,
+                        20, 30, 40, 50,
+                        30, 40, 50, 60,
+                        40, 50, 60, 70 };
+    ASSERT_SUCCESS(af_create_array(gold, &h_gold[0], 2, dims, f32));
+}
+
+class WrapCommon : virtual public ::testing::Test {
+   protected:
+    WrapCommon()
+        : in_(0)
+        , gold_(0)
+        , in_dims(4, 4)
+        , gold_dims(4, 4)
+        , win_len(2)
+        , strd_len(2)
+        , pad_len(0)
+        , is_column(true) {}
+
+    virtual void SetUp() {
+        ::getInput(&in_, &in_dims[0]);
+        ::getGold(&gold_, &in_dims[0]);
+    }
+
+    virtual void TearDown() {
+        if (in_ != 0) af_release_array(in_);
+        if (gold_ != 0) af_release_array(gold_);
+    }
+
+    af_array in_;
+    af_array gold_;
+    dim4 in_dims;
+    dim4 gold_dims;
+    dim_t win_len;
+    dim_t strd_len;
+    dim_t pad_len;
+    bool is_column;
+};
+
+template<typename T>
+class WrapV2 : public WrapCommon {
+   protected:
+    vector<T> h_gold_cast;
+    vector<T> h_in_cast;
+
+    WrapV2() {}
+
+    void setTestData(float *h_gold, dim4 gold_dims, float *h_in, dim4 in_dims) {
+        releaseArrays();
+
+        this->gold_ = 0;
+        this->in_   = 0;
+
+        this->gold_dims = gold_dims;
+        this->in_dims   = in_dims;
+
+        for (int i = 0; i < gold_dims.elements(); ++i) {
+            h_gold_cast.push_back(static_cast<T>(h_gold[i]));
+        }
+        for (int i = 0; i < in_dims.elements(); ++i) {
+            h_in_cast.push_back(static_cast<T>(h_in[i]));
+        }
+
+        ASSERT_SUCCESS(af_create_array(&this->gold_, &h_gold_cast.front(),
+                                       gold_dims.ndims(), gold_dims.get(),
+                                       (af_dtype)dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(af_create_array(&this->in_, &h_in_cast.front(),
+                                       in_dims.ndims(), in_dims.get(),
+                                       (af_dtype)dtype_traits<T>::af_type));
+    }
+
+    void testSpclOutArray(TestOutputArrayType out_array_type) {
+        SUPPORTED_TYPE_CHECK(T);
+
+        af_array out = 0;
+        TestOutputArrayInfo metadata(out_array_type);
+        if (out_array_type == NULL_ARRAY) {
+            genTestOutputArray(&out, this->gold_dims.ndims(),
+                               this->gold_dims.get(),
+                               (af_dtype)dtype_traits<T>::af_type, &metadata);
+        } else {
+            genTestOutputArray(&out, 0.0, this->gold_dims.ndims(),
+                               this->gold_dims.get(),
+                               (af_dtype)dtype_traits<T>::af_type, &metadata);
+        }
+
+        // Taken from the Wrap.DocSnippet test
+        ASSERT_SUCCESS(af_wrap_v2(&out, this->in_,
+                                  4, 4,   // output dims
+                                  2, 2,   // window size
+                                  2, 2,   // stride
+                                  0, 0,   // padding
+                                  true)); // is_column
+
+        ASSERT_SPECIAL_ARRAYS_EQ(this->gold_, out, &metadata);
+    }
+
+    void releaseArrays() {
+        if (this->in_ != 0)   { ASSERT_SUCCESS(af_release_array(this->in_)); }
+        if (this->gold_ != 0) { ASSERT_SUCCESS(af_release_array(this->gold_)); }
+    }
+};
+
+TYPED_TEST_CASE(WrapV2, TestTypes);
+
+template<typename T>
+class WrapV2Simple : public WrapV2<T> {
+   protected:
+    void SetUp() {
+        this->releaseArrays();
+        this->in_   = 0;
+        this->gold_ = 0;
+
+        af_array tmp_in   = 0;
+        af_array tmp_gold = 0;
+
+        ::getInput(&tmp_in, this->in_dims.get());
+        ::getGold(&tmp_gold, this->gold_dims.get());
+
+        af_dtype dtype = (af_dtype)dtype_traits<T>::af_type;
+        ASSERT_SUCCESS(af_cast(&this->in_, tmp_in, dtype));
+        ASSERT_SUCCESS(af_cast(&this->gold_, tmp_gold, dtype));
+
+        ASSERT_SUCCESS(af_release_array(tmp_in));
+        ASSERT_SUCCESS(af_release_array(tmp_gold));
+    }
+};
+
+TYPED_TEST_CASE(WrapV2Simple, TestTypes);
+
+TYPED_TEST(WrapV2Simple, UseNullOutputArray) {
+    this->testSpclOutArray(NULL_ARRAY);
+}
+
+TYPED_TEST(WrapV2Simple, UseFullExistingOutputArray) {
+    this->testSpclOutArray(FULL_ARRAY);
+}
+
+TYPED_TEST(WrapV2Simple, UseExistingOutputSubArray) {
+    this->testSpclOutArray(SUB_ARRAY);
+}
+
+TYPED_TEST(WrapV2Simple, UseReorderedOutputArray) {
+    this->testSpclOutArray(REORDERED_ARRAY);
+}
+
+class WrapNullArgs : public WrapCommon {};
+
+TEST_F(WrapNullArgs, NullOutputPtr) {
+    af_array* out_ptr = 0;
+    ASSERT_EQ(af_wrap(out_ptr, this->in_,
+                      4, 4,  // output dims
+                      2, 2,  // window size
+                      2, 2,  // stride
+                      0, 0,  // padding
+                      true), // is_column
+              AF_ERR_ARG);
+}
+
+TEST_F(WrapNullArgs, NullInputArray) {
+    af_array out = 0;
+    ASSERT_EQ(af_wrap(&out, 0,
+                      4, 4,  // output dims
+                      2, 2,  // window size
+                      2, 2,  // stride
+                      0, 0,  // padding
+                      true), // is_column
+              AF_ERR_ARG);
+}
+
+TEST_F(WrapNullArgs, V2NullOutputPtr) {
+    af_array* out_ptr = 0;
+    ASSERT_EQ(af_wrap_v2(out_ptr, this->in_,
+                         4, 4,  // output dims
+                         2, 2,  // window size
+                         2, 2,  // stride
+                         0, 0,  // padding
+                         true), // is_column
+              AF_ERR_ARG);
+}
+
+TEST_F(WrapNullArgs, V2NullInputArray) {
+    af_array out = 0;
+    ASSERT_EQ(af_wrap_v2(&out, 0,
+                         4, 4,  // output dims
+                         2, 2,  // window size
+                         2, 2,  // stride
+                         0, 0,  // padding
+                         true), // is_column
+              AF_ERR_ARG);
+}
+
+struct ArgDim {
+    ArgDim(dim_t d0, dim_t d1) : dim0(d0), dim1(d1) {}
+    void get(dim_t *d0, dim_t *d1);
+
+    dim_t dim0;
+    dim_t dim1;
+};
+
+struct WindowDims : public ArgDim {
+    WindowDims() : ArgDim(1, 1) {}
+    WindowDims(dim_t d0, dim_t d1) : ArgDim(d0, d1) {}
+};
+
+struct StrideDims : public ArgDim {
+    StrideDims() : ArgDim(1, 1) {}
+    StrideDims(dim_t d0, dim_t d1) : ArgDim(d0, d1) {}
+};
+
+struct PadDims : public ArgDim {
+    PadDims() : ArgDim(0, 0) {}
+    PadDims(dim_t d0, dim_t d1) : ArgDim(d0, d1) {}
+};
+
+class WrapArgs {
+   public:
+    WindowDims wc_;
+    StrideDims sc_;
+    PadDims pc_;
+    bool is_column;
+    af_err err;
+
+    WrapArgs() : wc_(), sc_(), pc_(), is_column(true), err(af_err(999)) {}
+
+    WrapArgs(dim_t win_d0, dim_t win_d1, dim_t str_d0, dim_t str_d1,
+             dim_t pad_d0, dim_t pad_d1, bool is_col, af_err err)
+        : wc_(win_d0, win_d1)
+        , sc_(str_d0, str_d1)
+        , pc_(pad_d0, pad_d1)
+        , is_column(is_col)
+        , err(err) {}
+};
+
+class WrapAPITest
+    : public WrapCommon
+    , public ::testing::WithParamInterface<WrapArgs> {
+   public:
+    WrapAPITest() : input(), in_(0), in_dims(4, 4, 1, 1) {}
+
+    virtual void SetUp() {
+        input = GetParam();
+        ::getInput(&in_, in_dims.get());
+    }
+    virtual void TearDown() {
+        if (in_ != 0) af_release_array(in_);
+    }
+
+    WrapArgs input;
+    af_array in_;
+    dim4 in_dims;
+};
+
+TEST_P(WrapAPITest, CheckDifferentWrapArgs) {
+    dim_t win_d0 = input.wc_.dim0;
+    dim_t win_d1 = input.wc_.dim1;
+    dim_t str_d0 = input.sc_.dim0;
+    dim_t str_d1 = input.sc_.dim1;
+    dim_t pad_d0 = input.pc_.dim0;
+    dim_t pad_d1 = input.pc_.dim1;
+
+    af_array out_ = 0;
+    af_err err    = af_wrap(&out_, in_, in_dims[0], in_dims[1], win_d0, win_d1,
+                         str_d0, str_d1, pad_d0, pad_d1, input.is_column);
+
+    ASSERT_EQ(err, input.err);
+    if (out_ != 0) af_release_array(out_);
+}
+
+WrapArgs args[] = {
+    // clang-format off
+    //      | win_dim0 | win_dim1 | str_dim0 | str_dim1 | pad_dim0 | pad_dim1 | is_col |    err    |
+    WrapArgs(        2,         2,         2,         2,         0,         0,    true,  AF_SUCCESS),
+    WrapArgs(        2,         2,         2,         2,         0,         0,   false,  AF_SUCCESS),
+
+    WrapArgs(       -1,         2,         2,         2,         0,         0,    true,  AF_ERR_ARG),
+    WrapArgs(        2,        -1,         2,         2,         0,         0,    true,  AF_ERR_ARG),
+    WrapArgs(       -1,        -1,         2,         2,         0,         0,    true,  AF_ERR_ARG),
+
+    WrapArgs(        2,         2,        -1,         2,         0,         0,    true,  AF_ERR_ARG),
+    WrapArgs(        2,         2,         2,        -1,         0,         0,    true,  AF_ERR_ARG),
+    WrapArgs(        2,         2,        -1,        -1,         0,         0,    true,  AF_ERR_ARG),
+
+    WrapArgs(        2,         2,         2,         2,         1,         1,    true,  AF_ERR_SIZE),
+    WrapArgs(        2,         2,         2,         2,        -1,         1,    true,  AF_ERR_SIZE),
+    WrapArgs(        2,         2,         2,         2,         1,        -1,    true,  AF_ERR_SIZE),
+    WrapArgs(        2,         2,         2,         2,        -1,        -1,    true,  AF_ERR_SIZE),
+    // clang-format on
+};
+
+INSTANTIATE_TEST_CASE_P(BulkTest, WrapAPITest, ::testing::ValuesIn(args));

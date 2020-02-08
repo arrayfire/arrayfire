@@ -28,7 +28,9 @@ af_array retain(const af_array in);
 
 af::dim4 verifyDims(const unsigned ndims, const dim_t *const dims);
 
-af_array createHandle(af::dim4 d, af_dtype dtype);
+af_array createHandle(const af::dim4 &d, af_dtype dtype);
+
+af_array createHandleFromValue(const af::dim4 &d, double val, af_dtype dtype);
 
 namespace {
 
@@ -124,17 +126,17 @@ af_array retainHandle(const af_array in) {
 }
 
 template<typename T>
-af_array createHandle(af::dim4 d) {
+af_array createHandle(const af::dim4 &d) {
     return getHandle(detail::createEmptyArray<T>(d));
 }
 
 template<typename T>
-af_array createHandleFromValue(af::dim4 d, double val) {
+af_array createHandleFromValue(const af::dim4 &d, double val) {
     return getHandle(detail::createValueArray<T>(d, detail::scalar<T>(val)));
 }
 
 template<typename T>
-af_array createHandleFromData(af::dim4 d, const T *const data) {
+af_array createHandleFromData(const af::dim4 &d, const T *const data) {
     return getHandle(detail::createHostDataArray<T>(d, data));
 }
 

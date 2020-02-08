@@ -10,6 +10,10 @@
 #pragma once
 #include <Param.hpp>
 #include <err_cpu.hpp>
+#include <ParamIterator.hpp>
+#include <math.hpp>
+
+#include <algorithm>
 
 namespace cpu {
 namespace kernel {

@@ -18,22 +18,22 @@
 namespace cuda {
 
 template<typename T>
-Array<T> wrap(const Array<T> &in, const dim_t ox, const dim_t oy,
-              const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
-              const dim_t px, const dim_t py, const bool is_column) {
-    af::dim4 idims = in.dims();
-    af::dim4 odims(ox, oy, idims[2], idims[3]);
-    Array<T> out = createValueArray<T>(odims, scalar<T>(0));
-
+void wrap(Array<T> &out, const Array<T> &in,
+          const dim_t ox, const dim_t oy,
+          const dim_t wx, const dim_t wy,
+          const dim_t sx, const dim_t sy,
+          const dim_t px, const dim_t py,
+          const bool is_column) {
     kernel::wrap<T>(out, in, wx, wy, sx, sy, px, py, is_column);
-    return out;
 }
 
-#define INSTANTIATE(T)                                                        \
-    template Array<T> wrap<T>(const Array<T> &in, const dim_t ox,             \
-                              const dim_t oy, const dim_t wx, const dim_t wy, \
-                              const dim_t sx, const dim_t sy, const dim_t px, \
-                              const dim_t py, const bool is_column);
+#define INSTANTIATE(T)                                          \
+    template void wrap<T> (Array<T> &out,  const Array<T> &in,  \
+                           const dim_t ox, const dim_t oy,      \
+                           const dim_t wx, const dim_t wy,      \
+                           const dim_t sx, const dim_t sy,      \
+                           const dim_t px, const dim_t py,      \
+                           const bool is_column);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
