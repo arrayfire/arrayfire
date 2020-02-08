@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2019, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -10,14 +10,12 @@
 #pragma once
 
 #include <Array.hpp>
-#include <binary.hpp>
-#include <optypes.hpp>
-#include <af/dim4.hpp>
+#include <af/defines.h>
 
 namespace opencl {
-template<typename T, af_op_t op>
-Array<T> arithOp(const Array<T> &lhs, const Array<T> &rhs,
-                 const af::dim4 &odims) {
-    return createBinaryNode<T, T, op>(lhs, rhs, odims);
-}
+template<typename T>
+Array<T> floodFill(const Array<T>& image, const Array<uint>& seedsX,
+                   const Array<uint>& seedsY, const T newValue,
+                   const T lowValue, const T highValue,
+                   const af::connectivity nlookup = AF_CONNECTIVITY_8);
 }  // namespace opencl

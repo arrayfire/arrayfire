@@ -274,3 +274,12 @@ af_err af_inverse_deconv(af_array *out, const af_array in, const af_array psf,
     CHECK_ARRAYS(in, psf);
       CALL(af_inverse_deconv, out, in, psf, gamma, algo);
 }
+
+af_err af_confidence_cc(af_array *out, const af_array in, const af_array seedx,
+                        const af_array seedy, const unsigned radius,
+                        const unsigned multiplier, const int iter,
+                        const double segmented_value) {
+    CHECK_ARRAYS(in, seedx, seedy);
+    CALL(af_confidence_cc, out, in, seedx, seedy, radius, multiplier, iter,
+         segmented_value);
+}

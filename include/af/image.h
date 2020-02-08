@@ -797,6 +797,78 @@ AFAPI array iterativeDeconv(const array& in, const array& ker,
  */
 AFAPI array inverseDeconv(const array& in, const array& psf,
                           const float gamma, const inverseDeconvAlgo algo);
+
+/**
+   C++ Interface for confidence connected components
+
+   \param[in] in is the input image, expects non-integral (float/double)
+              typed af_array
+   \param[in] seeds is an af::array of x & y coordinates of the seed points
+              with coordinate values along columns of this af::array i.e. they
+              are not stored in interleaved fashion.
+   \param[in] radius is the neighborhood region to be considered around
+              each seed point
+   \param[in] multiplier controls the threshold range computed from
+              the mean and variance of seed point neighborhoods
+   \param[in] iter is number of iterations
+   \param[in] segmentedValue is the value to which output array valid
+              pixels are set to.
+   \return out is the output af_array having the connected components
+
+   \ingroup image_func_confidence_cc
+*/
+AFAPI array confidenceCC(const array &in, const array &seeds,
+                         const unsigned radius,
+                         const unsigned multiplier, const int iter,
+                         const double segmentedValue);
+
+/**
+   C++ Interface for confidence connected components
+
+   \param[in] in is the input image, expects non-integral (float/double)
+              typed af_array
+   \param[in] seedx is an af::array of x coordinates of the seed points
+   \param[in] seedy is an af::array of y coordinates of the seed points
+   \param[in] radius is the neighborhood region to be considered around
+              each seed point
+   \param[in] multiplier controls the threshold range computed from
+              the mean and variance of seed point neighborhoods
+   \param[in] iter is number of iterations
+   \param[in] segmentedValue is the value to which output array valid
+              pixels are set to.
+   \return out is the output af_array having the connected components
+
+   \ingroup image_func_confidence_cc
+*/
+AFAPI array confidenceCC(const array &in, const array &seedx,
+                         const array &seedy, const unsigned radius,
+                         const unsigned multiplier, const int iter,
+                         const double segmentedValue);
+
+/**
+   C++ Interface for confidence connected components
+
+   \param[in] in is the input image, expects non-integral (float/double)
+              typed af_array
+   \param[in] num_seeds is the total number of seeds
+   \param[in] seedx is an array of x coordinates of the seed points
+   \param[in] seedy is an array of y coordinates of the seed points
+   \param[in] radius is the neighborhood region to be considered around
+              each seed point
+   \param[in] multiplier controls the threshold range computed from
+              the mean and variance of seed point neighborhoods
+   \param[in] iter is number of iterations
+   \param[in] segmentedValue is the value to which output array valid
+              pixels are set to.
+   \return out is the output af_array having the connected components
+
+   \ingroup image_func_confidence_cc
+*/
+AFAPI array confidenceCC(const array &in, const size_t num_seeds,
+                         const unsigned *seedx, const unsigned *seedy,
+                         const unsigned radius, const unsigned multiplier,
+                         const int iter, const double segmentedValue);
+
 #endif
 }
 #endif
@@ -1689,6 +1761,33 @@ extern "C" {
     AFAPI af_err af_inverse_deconv(af_array* out, const af_array in,
                                    const af_array psf, const float gamma,
                                    const af_inverse_deconv_algo algo);
+
+    /**
+       C Interface for confidence connected components
+
+       \param[out] out is the output af_array having the connected components
+       \param[in] in is the input image, expects non-integral (float/double)
+                  typed af_array
+       \param[in] seedx is an af_array of x coordinates of the seed points
+       \param[in] seedy is an af_array of y coordinates of the seed points
+       \param[in] radius is the neighborhood region to be considered around
+                  each seed point
+       \param[in] multiplier controls the threshold range computed from
+                  the mean and variance of seed point neighborhoods
+       \param[in] iter is number of iterations
+       \param[in] segmented_value is the value to which output array valid
+                  pixels are set to.
+       \return \ref AF_SUCCESS if the execution is successful, otherwise an
+       appropriate error code is returned.
+
+       \ingroup image_func_confidence_cc
+    */
+    AFAPI af_err af_confidence_cc(af_array *out, const af_array in,
+                                  const af_array seedx, const af_array seedy,
+                                  const unsigned radius,
+                                  const unsigned multiplier, const int iter,
+                                  const double segmented_value);
+
 #endif
 
 #ifdef __cplusplus
