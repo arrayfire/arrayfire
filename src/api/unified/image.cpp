@@ -66,6 +66,13 @@ af_err af_transform(af_array *out, const af_array in, const af_array transform,
       CALL(af_transform, out, in, transform, odim0, odim1, method, inverse);
 }
 
+af_err af_transform_v2(af_array *out, const af_array in, const af_array transform,
+                       const dim_t odim0, const dim_t odim1,
+                       const af_interp_type method, const bool inverse) {
+    CHECK_ARRAYS(out, in, transform);
+    return CALL(out, in, transform, odim0, odim1, method, inverse);
+}
+
 af_err af_transform_coordinates(af_array *out, const af_array tf,
                                 const float d0, const float d1) {
     CHECK_ARRAYS(tf);

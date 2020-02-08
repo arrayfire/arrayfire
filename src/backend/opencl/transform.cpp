@@ -14,12 +14,11 @@
 #include <stdexcept>
 
 namespace opencl {
-template<typename T>
-Array<T> transform(const Array<T> &in, const Array<float> &tf,
-                   const af::dim4 &odims, const af_interp_type method,
-                   const bool inverse, const bool perspective) {
-    Array<T> out = createEmptyArray<T>(odims);
 
+template<typename T>
+void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
+               const dim4 &odims, const af_interp_type method,
+               const bool inverse, const bool perspective) {
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
@@ -35,14 +34,13 @@ Array<T> transform(const Array<T> &in, const Array<float> &tf,
             break;
         default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
     }
-    return out;
 }
 
-#define INSTANTIATE(T)                                                      \
-    template Array<T> transform(const Array<T> &in, const Array<float> &tf, \
-                                const af::dim4 &odims,                      \
-                                const af_interp_type method,                \
-                                const bool inverse, const bool perspective);
+#define INSTANTIATE(T)                                                       \
+    template void transform(Array<T> &out, const Array<T> &in,               \
+                            const Array<float> &tf, const dim4 &odims,       \
+                            const af_interp_type method, const bool inverse, \
+                            const bool perspective);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -56,4 +54,5 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+
 }  // namespace opencl

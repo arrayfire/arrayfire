@@ -13,21 +13,20 @@
 #include <utility.hpp>
 
 namespace cuda {
+
 template<typename T>
-Array<T> transform(const Array<T> &in, const Array<float> &tf,
-                   const af::dim4 &odims, const af::interpType method,
-                   const bool inverse, const bool perspective) {
-    Array<T> out = createEmptyArray<T>(odims);
+void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
+               const af::dim4 &odims, const af::interpType method,
+               const bool inverse, const bool perspective) {
     kernel::transform<T>(out, in, tf, inverse, perspective, method,
                          interpOrder(method));
-    return out;
 }
 
-#define INSTANTIATE(T)                                                      \
-    template Array<T> transform(const Array<T> &in, const Array<float> &tf, \
-                                const af::dim4 &odims,                      \
-                                const af_interp_type method,                \
-                                const bool inverse, const bool perspective);
+#define INSTANTIATE(T)                                                       \
+    template void transform(Array<T> &out, const Array<T> &in,               \
+                            const Array<float> &tf, const af::dim4 &odims,   \
+                            const af_interp_type method, const bool inverse, \
+                            const bool perspective);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -41,4 +40,5 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+
 }  // namespace cuda
