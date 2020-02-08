@@ -54,6 +54,8 @@ target_sources(afcpu
     fft.hpp
     fftconvolve.cpp
     fftconvolve.hpp
+    flood_fill.hpp
+    flood_fill.cpp
     gradient.cpp
     gradient.hpp
     harris.cpp
@@ -207,6 +209,7 @@ target_sources(afcpu
     kernel/exampleFunction.hpp
     kernel/fast.hpp
     kernel/fftconvolve.hpp
+    kernel/flood_fill.hpp
     kernel/gradient.hpp
     kernel/harris.hpp
     kernel/histogram.hpp
