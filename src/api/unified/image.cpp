@@ -70,7 +70,7 @@ af_err af_transform_v2(af_array *out, const af_array in, const af_array transfor
                        const dim_t odim0, const dim_t odim1,
                        const af_interp_type method, const bool inverse) {
     CHECK_ARRAYS(out, in, transform);
-    return CALL(out, in, transform, odim0, odim1, method, inverse);
+    CALL(af_transform_v2, out, in, transform, odim0, odim1, method, inverse);
 }
 
 af_err af_transform_coordinates(af_array *out, const af_array tf,
@@ -224,7 +224,7 @@ af_err af_wrap_v2(af_array *out, const af_array in, const dim_t ox, const dim_t 
                   const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
                   const dim_t px, const dim_t py, const bool is_column) {
     CHECK_ARRAYS(out, in);
-    return CALL(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);
+    CALL(af_wrap_v2, out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);
 }
 
 af_err af_sat(af_array *out, const af_array in) {
