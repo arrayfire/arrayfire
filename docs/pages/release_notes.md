@@ -10,11 +10,12 @@ Major Updates
 - Added the ability to customize the memory manager(Thanks jacobkahn and flashlight) \PR{2461}
 - Added 16-bit floating point support for several functions \PR{2413} \PR{2587} \PR{2585} \PR{2587} \PR{2583}
 - Added sumByKey, productByKey, minByKey, maxByKey, allTrueByKey, anyTrueByKey, countByKey \PR{2254}
+- Added confidence connected components \PR{2748}
 - Added neural network based convolution and gradient functions \PR{2359}
 - Added a padding function \PR{2682}
 - Added pinverse for pseudo inverse \PR{2279}
 - Added support for uniform ranges in approx1 and approx2 functions. \PR{2297}
-- Added support to write to preallocated arrays for some functions \PR{2599} \PR{2481}
+- Added support to write to preallocated arrays for some functions \PR{2599} \PR{2481} \PR{2328} \PR{2327}
 - Added meanvar function \PR{2258}
 - Add support for sparse-sparse arithmetic support
 - Added rsqrt function for reciprocal square root
@@ -22,8 +23,8 @@ Major Updates
 - Added a function to set the cuBLAS math mode for the CUDA backend \PR{2584}
 - Separate debug symbols into separate files \PR{2535}
 - Print stacktraces on errors \PR{2632}
-- Support move constructor for af::array
-- Expose events in the public API
+- Support move constructor for af::array \PR{2595}
+- Expose events in the public API \PR{2461}
 - Add setAxesLabelFormat to format labels on graphs \PR{2495}
 
 Improvements
