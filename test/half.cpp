@@ -86,3 +86,57 @@ TEST(Half, arith) {
 
     ASSERT_ARRAYS_EQ(gold, result);
 }
+
+TEST(Half, isInf) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    half_float::half hinf = std::numeric_limits<half_float::half>::infinity();
+
+    vector<half_float::half> input(2, half_float::half(0));
+    input[0] = hinf;
+
+    array infarr(2, &input.front());
+
+    array res = isInf(infarr);
+
+    vector<char> hgold(2, 0);
+    hgold[0] = 1;
+    array gold(2, &hgold.front());
+
+    ASSERT_ARRAYS_EQ(gold, res);
+}
+
+TEST(Half, isNan) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    half_float::half hnan = std::numeric_limits<half_float::half>::quiet_NaN();
+
+    vector<half_float::half> input(2, half_float::half(0));
+    input[0] = hnan;
+
+    array nanarr(2, &input.front());
+
+    array res = isNaN(nanarr);
+
+    vector<char> hgold(2, 0);
+    hgold[0] = 1;
+    array gold(2, &hgold.front());
+
+    ASSERT_ARRAYS_EQ(gold, res);
+}
+
+TEST(Half, isZero) {
+    SUPPORTED_TYPE_CHECK(af_half);
+    half_float::half hzero(0.f);
+
+    vector<half_float::half> input(2, half_float::half(1));
+    input[0] = hzero;
+
+    array nanarr(2, &input.front());
+
+    array res = iszero(nanarr);
+
+    vector<char> hgold(2, 0);
+    hgold[0] = 1;
+    array gold(2, &hgold.front());
+
+    ASSERT_ARRAYS_EQ(gold, res);
+}

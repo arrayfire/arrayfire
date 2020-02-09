@@ -96,7 +96,8 @@ Array<T> unaryOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
 #define CHECK_FN(name, op)                                                   \
     template<typename T>                                                     \
     struct UnOp<char, T, af_##name##_t> {                                    \
-        void eval(jit::array<char> &out, const jit::array<T> &in, int lim) { \
+        void eval(jit::array<char> &out, const jit::array<compute_t<T>> &in, \
+                  int lim) {                                                 \
             for (int i = 0; i < lim; i++) { out[i] = op(in[i]); }            \
         }                                                                    \
     };
