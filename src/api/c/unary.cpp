@@ -671,6 +671,7 @@ static af_err af_check(af_array *out, const af_array in) {
         af_dtype type = implicit(in_type, f32);
 
         switch (type) {
+            case f16: res = checkOp<half, op>(in); break;
             case f32: res = checkOp<float, op>(in); break;
             case f64: res = checkOp<double, op>(in); break;
             case c32: res = checkOpCplx<cfloat, float, op>(in); break;
