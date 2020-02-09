@@ -9,8 +9,8 @@
 
 #pragma once
 #include <Array.hpp>
-#include <common/jit/UnaryNode.hpp>
 #include <common/half.hpp>
+#include <common/jit/UnaryNode.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <optypes.hpp>
@@ -72,6 +72,13 @@ struct CastOp<cfloat, cfloat> {
 template<>
 struct CastOp<cdouble, cdouble> {
     const char *name() { return "__convert_z2z"; }
+};
+
+// Casting from half to unsigned char causes compilation issues. First convert
+// to short then to half
+template<>
+struct CastOp<unsigned char, common::half> {
+    const char *name() { return "(short)"; }
 };
 
 #undef CAST_FN

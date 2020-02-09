@@ -53,9 +53,7 @@ INSTANTIATE_TEST_CASE_P(FromF16, HalfConvert,
                                           convert_params(f16, f64, 10),
                                           convert_params(f16, s32, 10),
                                           convert_params(f16, u32, 10),
-                                          // causes compilation failures with
-                                          // nvrtc
-                                          // convert_params(f16, u8, 10),
+                                          convert_params(f16, u8, 10),
                                           convert_params(f16, s64, 10),
                                           convert_params(f16, u64, 10),
                                           convert_params(f16, s16, 10),
