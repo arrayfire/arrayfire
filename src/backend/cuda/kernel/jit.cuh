@@ -71,7 +71,6 @@ typedef cuDoubleComplex cdouble;
 
 #define __convert_char(val) (char)((val) != 0)
 #define frem(lhs, rhs) remainder((lhs), (rhs))
-#define iszero(a) ((a) == 0)
 
 // ----------------------------------------------
 // COMPLEX FLOAT OPERATIONS
@@ -193,6 +192,37 @@ __device__ cdouble __cmin(cdouble lhs, cdouble rhs) {
 __device__ cdouble __cmax(cdouble lhs, cdouble rhs) {
     return __cabs(lhs) > __cabs(rhs) ? lhs : rhs;
 }
+
+template<typename T>
+__device__
+int iszero(T a) {
+  return a == T(0);
+}
+
+template<typename T>
+__device__
+int __isinf(const T in) {
+    return isinf(in);
+}
+
+template<>
+__device__
+int __isinf<__half>(const __half in) {
+    return __hisinf(in);
+}
+
+template<typename T>
+__device__
+int __isnan(const T in) {
+    return isnan(in);
+}
+
+template<>
+__device__
+int __isnan<__half>(const __half in) {
+    return __hisnan(in);
+}
+
 #define __cand(lhs, rhs) __cabs(lhs) && __cabs(rhs)
 #define __cor(lhs, rhs) __cabs(lhs) || __cabs(rhs)
 #define __ceq(lhs, rhs) (((lhs).x == (rhs).x) && ((lhs).y == (rhs).y))

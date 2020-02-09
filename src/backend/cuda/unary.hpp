@@ -66,8 +66,8 @@ UNARY_FN(signbit)
 UNARY_FN(ceil)
 UNARY_FN(floor)
 
-UNARY_FN(isinf)
-UNARY_FN(isnan)
+UNARY_DECL(isinf, "__isinf")
+UNARY_DECL(isnan, "__isnan")
 UNARY_FN(iszero)
 UNARY_DECL(noop, "__noop")
 
