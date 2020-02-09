@@ -194,33 +194,41 @@ __device__ cdouble __cmax(cdouble lhs, cdouble rhs) {
 }
 
 template<typename T>
-__device__
+static __device__ __inline__
 int iszero(T a) {
   return a == T(0);
 }
 
 template<typename T>
-__device__
+static __device__ __inline__
 int __isinf(const T in) {
     return isinf(in);
 }
 
 template<>
-__device__
+__device__ __inline__
 int __isinf<__half>(const __half in) {
+#if __CUDA_ARCH__ >= 530
     return __hisinf(in);
+#else
+    return ::isinf(__half2float(in));
+#endif
 }
 
 template<typename T>
-__device__
+static __device__ __inline__
 int __isnan(const T in) {
     return isnan(in);
 }
 
 template<>
-__device__
+__device__ __inline__
 int __isnan<__half>(const __half in) {
+#if __CUDA_ARCH__ >= 530
     return __hisnan(in);
+#else
+    return ::isnan(__half2float(in));
+#endif
 }
 
 #define __cand(lhs, rhs) __cabs(lhs) && __cabs(rhs)
