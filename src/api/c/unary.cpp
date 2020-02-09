@@ -669,10 +669,12 @@ static af_err af_check(af_array *out, const af_array in) {
 
         // Convert all inputs to floats / doubles / complex
         af_dtype type = implicit(in_type, f32);
+        if(in_type == f16) type = f16;
 
         switch (type) {
             case f32: res = checkOp<float, op>(in); break;
             case f64: res = checkOp<double, op>(in); break;
+            case f16: res = checkOp<half, op>(in); break;
             case c32: res = checkOpCplx<cfloat, float, op>(in); break;
             case c64: res = checkOpCplx<cdouble, double, op>(in); break;
             default: TYPE_ERROR(1, in_type); break;
