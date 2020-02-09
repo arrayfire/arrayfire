@@ -1,6 +1,212 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.7.0
+======
+
+Major Updates
+-------------
+
+- Added the ability to customize the memory manager(Thanks jacobkahn and flashlight) \PR{2461}
+- Added 16-bit floating point support for several functions \PR{2413} \PR{2587} \PR{2585} \PR{2587} \PR{2583}
+- Added sumByKey, productByKey, minByKey, maxByKey, allTrueByKey, anyTrueByKey, countByKey \PR{2254}
+- Added confidence connected components \PR{2748}
+- Added neural network based convolution and gradient functions \PR{2359}
+- Added a padding function \PR{2682}
+- Added pinverse for pseudo inverse \PR{2279}
+- Added support for uniform ranges in approx1 and approx2 functions. \PR{2297}
+- Added support to write to preallocated arrays for some functions \PR{2599} \PR{2481} \PR{2328} \PR{2327}
+- Added meanvar function \PR{2258}
+- Add support for sparse-sparse arithmetic support
+- Added rsqrt function for reciprocal square root
+- Added a lower level af_gemm function for general matrix multiplication \PR{2481}
+- Added a function to set the cuBLAS math mode for the CUDA backend \PR{2584}
+- Separate debug symbols into separate files \PR{2535}
+- Print stacktraces on errors \PR{2632}
+- Support move constructor for af::array \PR{2595}
+- Expose events in the public API \PR{2461}
+- Add setAxesLabelFormat to format labels on graphs \PR{2495}
+
+Improvements
+------------
+
+- Better error messages for systems with driver or device incompatibilities \PR{2678} \PR{2448}
+- Optimized unified backend function calls
+- Optimized anisotropic smoothing \PR{2713}
+- Optimized canny filter for CUDA and OpenCL
+- Better MKL search script
+- Better logging of different submodules in ArrayFire \PR{2670} \PR{2669}
+- Improve documentation \PR{2665} \PR{2620} \PR{2615} \PR{2639} \PR{2628} \PR{2633} \PR{2622} \PR{2617} \PR{2558} \PR{2326} \PR{2515}
+- Optimized af::array assignment \PR{2575}
+- Update the k-means example to display the result \PR{2521}
+
+
+Fixes
+-----
+
+- Fix multi-config generators
+- Fix access errors in canny
+- Fix segfault in the unified backend if no backends are available
+- Fix access errors in scan-by-key
+- Fix sobel operator
+- Fix an issue with the random number generator and s16
+- Fix issue with boolean product reduction
+- Fix array_proxy move constructor
+- Fix convolve3 launch configuration
+- Fix an issue where the fft function modified the input array \PR{2520}
+
+Contributions
+-------------
+Special thanks to our contributors:
+[Jacob Khan](https://github.com/jacobkahn)
+[William Tambellini](https://github.com/WilliamTambellini)
+[Alexey Kuleshevich](https://github.com/lehins)
+[Richard Barnes](https://github.com/r-barnes)
+[Gaika](https://github.com/gaika)
+[ShalokShalom](https://github.com/ShalokShalom)
+
+
+v3.6.4
+======
+
+Bug Fixes
+---------
+- Address a JIT performance regression due to moving kernel arguments to shared memory \PR{2501}
+- Fix the default parameter for setAxisTitle \PR{2491}
+
+v3.6.3
+======
+
+Improvements
+------------
+- Graphics are now a runtime dependency instead of a link time dependency \PR{2365}
+- Reduce the CUDA backend binary size using runtime compilation of kernels \PR{2437}
+- Improved batched matrix multiplication on the CPU backend by using Intel MKL's
+  `cblas_Xgemm_batched`\PR{2206}
+- Print JIT kernels to disk or stream using the `AF_JIT_KERNEL_TRACE`
+  environment variable \PR{2404}
+- `void*` pointers are now allowed as arguments to `af::array::write()` \PR{2367}
+- Slightly improve the efficiency of JITed tile operations \PR{2472}
+- Make the random number generation on the CPU backend to be consistent with
+  CUDA and OpenCL \PR{2435}
+- Handled very large JIT tree generations \PR{2484} \PR{2487}
+
+Bug Fixes
+---------
+- Fixed `af::array::array_proxy` move assignment operator \PR{2479}
+- Fixed input array dimensions validation in svdInplace() \PR{2331}
+- Fixed the typedef declaration for window resource handle \PR{2357}.
+- Increase compatibility with GCC 8 \PR{2379}
+- Fixed `af::write` tests \PR{2380}
+- Fixed a bug in broadcast step of 1D exclusive scan \PR{2366}
+- Fixed OpenGL related build errors on OSX \PR{2382}
+- Fixed multiple array evaluation. Performance improvement. \PR{2384}
+- Fixed buffer overflow and expected output of kNN SSD small test \PR{2445}
+- Fixed MKL linking order to enable threaded BLAS \PR{2444}
+- Added validations for forge module plugin availability before calling
+  resource cleanup \PR{2443}
+- Improve compatibility on MSVC toolchain(_MSC_VER > 1914) with the CUDA
+  backend \PR{2443}
+- Fixed BLAS gemm func generators for newest MSVC 19 on VS 2017 \PR{2464}
+- Fix errors on exits when using the cuda backend with unified \PR{2470}
+
+Documentation
+-------------
+- Updated svdInplace() documentation following a bugfix \PR{2331}
+- Fixed a typo in matrix multiplication documentation \PR{2358}
+- Fixed a code snippet demostrating C-API use \PR{2406}
+- Updated hamming matcher implementation limitation \PR{2434}
+- Added illustration for the rotate function \PR{2453}
+
+Misc
+----
+- Use cudaMemcpyAsync instead of cudaMemcpy throughout the codebase \PR{2362}
+- Display a more informative error message if CUDA driver is incomptible
+  \PR{2421} \PR{2448}
+- Changed forge resource managemenet to use smart pointers \PR{2452}
+- Deprecated intl and uintl typedefs in API \PR{2360}
+- Enabled graphics by default for all builds starting with v3.6.3 \PR{2365}
+- Fixed several warnings \PR{2344} \PR{2356} \PR{2361}
+- Refactored initArray() calls to use createEmptyArray(). initArray() is for
+  internal use only by Array class. \PR{2361}
+- Refactored `void*` memory allocations to use unsigned char type \PR{2459}
+- Replaced deprecated MKL API with in-house implementations for sparse
+  to sparse/dense conversions \PR{2312}
+- Reorganized and fixed some internal backend API \PR{2356}
+- Updated compilation order of cuda files to speed up compile time \PR{2368}
+- Removed conditional graphics support builds after enabling runtime
+  loading of graphics dependencies \PR{2365}
+- Marked graphics dependencies as optional in CPack RPM config \PR{2365}
+- Refactored a sparse arithmetic backend API \PR{2379}
+- Fixed const correctness of `af_device_array` API \PR{2396}
+- Update Forge to v1.0.4 \PR{2466}
+- Manage Forge resources from the DeviceManager class \PR{2381}
+- Fixed non-mkl & non-batch blas upstream call arguments \PR{2401}
+- Link MKL with OpenMP instead of TBB by default
+- use clang-format to format source code
+
+Contributions
+-------------
+Special thanks to our contributors:
+[Alessandro Bessi](https://github.com/alessandrobessi)
+[zhihaoy](https://github.com/zhihaoy)
+[Jacob Khan](https://github.com/jacobkahn)
+[William Tambellini](https://github.com/WilliamTambellini)
+
+v3.6.2
+======
+
+Features
+--------
+- Added support for batching on the `cond` argument in select() \PR{2243}
+- Added support for broadcasting batched matmul() \PR{2315}
+- Added support for multiple nearest neighbors in nearestNeighbour() \PR{2280}
+- Added support for clamp-to-edge padding as an `af_border_type` option \PR{2333}
+
+Improvements
+------------
+- Improved performance of morphological operations \PR{2238}
+- Fixed linking errors when compiling without Freeimage/Graphics \PR{2248}
+- Improved the usage of ArrayFire as a CMake subproject \PR{2290}
+- Enabled configuration of custom library path for loading dynamic backend
+  libraries \PR{2302}
+
+Bug Fixes
+---------
+- Fixed LAPACK definitions and linking errors \PR{2239}
+- Fixed overflow in dim4::ndims() \PR{2289}
+- Fixed pow() precision for integral types \PR{2305}
+- Fixed issues with tile() with a large repeat dimension \PR{2307}
+- Fixed svd() sub-array output on OpenCL \PR{2279}
+- Fixed grid-based indexing calculation in histogram() \PR{2230}
+- Fixed bug in indexing when used after reorder \PR{2311}
+- Fixed errors when exiting on Windows when using
+  [CLBlast](https://github.com/CNugteren/CLBlast) \PR{2222}
+- Fixed fallthrough error in medfilt1 \PR{2349}
+
+Documentation
+-------------
+- Improved unwrap() documentation \PR{2301}
+- Improved wrap() documentation \PR{2320}
+- Improved accum() documentation \PR{2298}
+- Improved tile() documentation \PR{2293}
+- Clarified approx1() and approx2() indexing in documentation \PR{2287}
+- Updated examples of [select()](@ref data_func_select) in detailed documentation
+  \PR{2277}
+- Updated lookup() examples \PR{2288}
+- Updated set operations' documentation \PR{2299}
+
+Misc
+----
+- `af*` libraries and dependencies directory changed to `lib64` \PR{2186}
+- Added new arrayfire ASSERT utility functions \PR{2249} \PR{2256} \PR{2257} \PR{2263}
+- Improved error messages in JIT \PR{2309}
+
+Contributions
+-------------
+Special thanks to our contributors: [Jacob Kahn](https://github.com/jacobkahn),
+[Vardan Akopian](https://github.com/vakopian)  
+
 v3.6.1
 ======
 
