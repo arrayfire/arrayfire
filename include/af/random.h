@@ -15,6 +15,7 @@
 ///
 /// This handle is used to reference the internal random engine object.
 ///
+/// \ingroup random_mat
 typedef void * af_random_engine;
 
 #ifdef __cplusplus
@@ -23,127 +24,96 @@ namespace af
     class array;
     class dim4;
 #if AF_API_VERSION >= 34
+    /// \brief Random Number Generation Engine Class
     ///
-    /// \brief A random number generator class
+    /// The \ref af::randomEngine class is used to set the type and seed of
+    /// random number generation engine based on \ref af::randomEngineType.
+    ///
+    /// \ingroup arrayfire_class
     /// \ingroup random_mat
-    ///
-    class AFAPI randomEngine
-    {
-        private:
-            ///
-            /// \brief Handle to the interal random engine object
-            ///
-            /// \ingroup random_engine_class
-            ///
-            af_random_engine engine;
-        public:
-            /**
-                This function creates a \ref af::randomEngine object with a
-                \ref af::randomEngineType and a seed.
+    class AFAPI randomEngine {
+    private:
+      ///
+      /// \brief Handle to the interal random engine object
+      af_random_engine engine;
 
-                \code
-                randomEngine r(AF_RANDOM_ENGINE_DEFAULT, 1);   // creates random engine of default type with seed = 1
-                \endcode
+    public:
+      /**
+          This function creates a \ref af::randomEngine object with a
+          \ref af::randomEngineType and a seed.
 
-                \ingroup random_engine_func_constructor
-            */
-            explicit
-            randomEngine(randomEngineType typeIn = AF_RANDOM_ENGINE_DEFAULT, unsigned long long seedIn = 0);
+          \code
+          // creates random engine of default type with seed = 1
+          randomEngine r(AF_RANDOM_ENGINE_DEFAULT, 1);
+         \endcode
+      */
+      explicit randomEngine(randomEngineType typeIn = AF_RANDOM_ENGINE_DEFAULT,
+                            unsigned long long seedIn = 0);
 
-            /**
-                Copy constructor for \ref af::randomEngine.
+      /**
+          Copy constructor for \ref af::randomEngine.
 
-                \param in The input random engine object
+          \param[in] in The input random engine object
+      */
+      randomEngine(const randomEngine &in);
 
-                \ingroup random_engine_func_constructor
-            */
-            randomEngine(const randomEngine& in);
+      /**
+          Creates a copy of the random engine object from a \ref
+          af_random_engine handle.
 
-            /**
-                Creates a copy of the random engine object from a \ref af_random_engine handle.
+          \param[in] engine The input random engine object
+      */
+      randomEngine(af_random_engine engine);
 
-                \param engine The input random engine object
+      /**
+          \brief Destructor for \ref af::randomEngine
+      */
+      ~randomEngine();
 
-                \ingroup random_engine_func_constructor
-            */
-            randomEngine(af_random_engine engine);
+      /**
+          \brief Assigns the internal state of randome engine
 
-            /**
-                \defgroup random_engine_destructor ~randomEngine
+          \param[in] in The object to be assigned to the random engine
 
-                \brief Destructor for \ref af::randomEngine
+          \returns the reference to this
+      */
+      randomEngine &operator=(const randomEngine &in);
 
-                \ingroup random_engine_class
-            */
-            ~randomEngine();
+      /**
+          \brief Sets the random type of the random engine
 
-            /**
-                \defgroup random_engine_operator_eq operator=
+          \param[in] type The type of the random number generator
+      */
+      void setType(const randomEngineType type);
 
-                \brief Assigns the internal state of randome engine
+      /**
+          \brief Return the random type of the random engine
 
-                \param[in] in The object to be assigned to the random engine
+          \returns the \ref af::randomEngineType associated with random engine
+      */
+      randomEngineType getType(void);
 
-                \returns the reference to this
+      /**
+          \brief Sets the seed of the random engine
 
-                \ingroup random_engine_class
-            */
-            randomEngine& operator= (const randomEngine& in);
+          \param[in] seed The initializing seed of the random number generator
+      */
+      void setSeed(const unsigned long long seed);
 
-            /**
-                \defgroup random_engine_set_type setType
+      /**
+          \brief Returns the seed of the random engine
 
-                \brief Sets the random type of the random engine
+          \returns the seed associated with random engine
+      */
+      unsigned long long getSeed(void) const;
 
-                \param[in] type The type of the random number generator
+      /**
+          \brief Returns the af_random_engine handle of this object
 
-                \ingroup random_engine_class
-            */
-            void setType(const randomEngineType type);
-
-            /**
-                \defgroup random_engine_get_type getType
-
-                \brief Return the random type of the random engine
-
-                \returns the \ref af::randomEngineType associated with random engine
-
-                \ingroup random_engine_class
-            */
-            randomEngineType getType(void);
-
-            /**
-                \defgroup random_engine_set_seed setSeed
-
-                \brief Sets the seed of the random engine
-
-                \param[in] seed The initializing seed of the random number generator
-
-                \ingroup random_engine_class
-            */
-            void setSeed(const unsigned long long seed);
-
-            /**
-                \defgroup random_engine_get_seed getSeed
-
-                \brief Returns the seed of the random engine
-
-                \returns the seed associated with random engine
-
-                \ingroup random_engine_class
-            */
-            unsigned long long getSeed(void) const;
-
-            /**
-                \defgroup random_engine_get_handle get
-
-                \brief Returns the internal state of the random engine
-
-                \returns the handle to the internal state associated with random engine
-
-                \ingroup random_engine_class
-            */
-            af_random_engine get(void) const;
+          \returns the handle to the af_random_engine associated with this
+                   random engine
+      */
+      af_random_engine get(void) const;
     };
 #endif
 
@@ -295,7 +265,7 @@ namespace af
     /**
         \param[in] rtype The type of the random number generator
 
-        \ingroup random_func_set_type
+        \ingroup random_func_set_default_engine
     */
     AFAPI void setDefaultRandomEngineType(randomEngineType rtype);
 #endif
@@ -310,15 +280,17 @@ namespace af
 #endif
 
     /**
-        \param[in] seed A 64 bit unsigned integer
+        \brief Sets the seed of the default random number generator
 
+        \param[in] seed A 64 bit unsigned integer
         \ingroup random_func_set_seed
     */
     AFAPI void setSeed(const unsigned long long seed);
 
     /**
-        \returns seed A 64 bit unsigned integer
+        \brief Gets the seed of the default random number generator
 
+        \returns seed A 64 bit unsigned integer
         \ingroup random_func_get_seed
     */
     AFAPI unsigned long long getSeed();
@@ -340,9 +312,11 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup random_engine_func_constructor
+       \ingroup random_func_random_engine
     */
-    AFAPI af_err af_create_random_engine(af_random_engine *engine, af_random_engine_type rtype, unsigned long long seed);
+    AFAPI af_err af_create_random_engine(af_random_engine *engine,
+                                         af_random_engine_type rtype,
+                                         unsigned long long seed);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -354,9 +328,10 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup random_engine_func_constructor
+       \ingroup random_func_random_engine
     */
-    AFAPI af_err af_retain_random_engine(af_random_engine *out, const af_random_engine engine);
+    AFAPI af_err af_retain_random_engine(af_random_engine *out,
+                                         const af_random_engine engine);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -368,9 +343,10 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup random_engine_set_type
+       \ingroup random_func_random_engine
     */
-    AFAPI af_err af_random_engine_set_type(af_random_engine *engine, const af_random_engine_type rtype);
+    AFAPI af_err af_random_engine_set_type(af_random_engine *engine,
+                                           const af_random_engine_type rtype);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -382,18 +358,22 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup random_engine_get_type
+       \ingroup random_func_random_engine
     */
-    AFAPI af_err af_random_engine_get_type(af_random_engine_type *rtype, const af_random_engine engine);
+    AFAPI af_err af_random_engine_get_type(af_random_engine_type *rtype,
+                                           const af_random_engine engine);
 #endif
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for creating an array of uniform numbers using a random engine
+       C Interface for creating an array of uniform numbers using a random
+       engine
 
        \param[out]  out The pointer to the returned object.
-       \param[in]   ndims The number of dimensions read from the \p dims parameter
-       \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
+       \param[in]   ndims The number of dimensions read from the \p dims
+                    parameter
+       \param[in]   dims A C pointer with \p ndims elements. Each value
+                    represents the size of that dimension
        \param[in]   type The type of the \ref af_array object
        \param[in]   engine The random engine object
 
@@ -401,7 +381,9 @@ extern "C" {
 
        \ingroup random_func_randu
     */
-    AFAPI af_err af_random_uniform(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type, af_random_engine engine);
+    AFAPI af_err af_random_uniform(af_array *out, const unsigned ndims,
+                                   const dim_t * const dims, const af_dtype type,
+                                   af_random_engine engine);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -409,8 +391,10 @@ extern "C" {
        C Interface for creating an array of normal numbers using a random engine
 
        \param[out]  out The pointer to the returned object.
-       \param[in]   ndims The number of dimensions read from the \p dims parameter
-       \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
+       \param[in]   ndims The number of dimensions read from the \p dims
+                    parameter
+       \param[in]   dims A C pointer with \p ndims elements. Each value
+                    represents the size of that dimension
        \param[in]   type The type of the \ref af_array object
        \param[in]   engine The random engine object
 
@@ -418,7 +402,9 @@ extern "C" {
 
        \ingroup random_func_randn
     */
-    AFAPI af_err af_random_normal(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type, af_random_engine engine);
+    AFAPI af_err af_random_normal(af_array *out, const unsigned ndims,
+                                  const dim_t * const dims, const af_dtype type,
+                                  af_random_engine engine);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -430,9 +416,10 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup random_engine_set_seed
+       \ingroup random_func_random_engine
     */
-    AFAPI af_err af_random_engine_set_seed(af_random_engine *engine, const unsigned long long seed);
+    AFAPI af_err af_random_engine_set_seed(af_random_engine *engine,
+                                           const unsigned long long seed);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -456,7 +443,7 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup random_func_set_type
+       \ingroup random_func_set_default_engine
     */
     AFAPI af_err af_set_default_random_engine_type(const af_random_engine_type rtype);
 #endif
@@ -470,9 +457,10 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup random_engine_get_type
+       \ingroup random_func_random_engine
     */
-    AFAPI af_err af_random_engine_get_seed(unsigned long long * const seed, af_random_engine engine);
+    AFAPI af_err af_random_engine_get_seed(unsigned long long * const seed,
+                                           af_random_engine engine);
 #endif
 
 #if AF_API_VERSION >= 34
@@ -482,7 +470,7 @@ extern "C" {
        \param[in] engine The random engine object
        \returns \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup random_engine_destructor
+       \ingroup random_func_random_engine
     */
     AFAPI af_err af_release_random_engine(af_random_engine engine);
 #endif
@@ -495,7 +483,8 @@ extern "C" {
 
        \ingroup random_func_randu
     */
-    AFAPI af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type);
+    AFAPI af_err af_randu(af_array *out, const unsigned ndims,
+                          const dim_t * const dims, const af_dtype type);
 
     /**
         \param[out] out The generated array
@@ -505,7 +494,8 @@ extern "C" {
 
        \ingroup random_func_randn
     */
-    AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type);
+    AFAPI af_err af_randn(af_array *out, const unsigned ndims,
+                          const dim_t * const dims, const af_dtype type);
 
     /**
         \param[in] seed A 64 bit unsigned integer

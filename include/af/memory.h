@@ -16,6 +16,9 @@
 
 #if AF_API_VERSION >= 37
 
+/**
+   \ingroup memory_manager_api
+*/
 typedef void* af_memory_manager;
 
 #ifdef __cplusplus

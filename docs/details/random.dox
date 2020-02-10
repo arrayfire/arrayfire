@@ -1,7 +1,5 @@
 
 /**
-\addtogroup arrayfire_func
-@{
 
 \defgroup random_mat Random Number Generation
 
@@ -13,26 +11,18 @@ Functions to generate and manage random numbers and random number engines
 
 ===============================================================================
 
-\defgroup random_engine_class randomEngine
+\addtogroup arrayfire_func
+@{
 
-\brief Random Number Engine Generation Class
+\defgroup random_func_random_engine randomEngine
 
-The \ref af::randomEngine class is used to set the type and seed of random
-number generation engine based on \ref af::randomEngineType.
-
-\ingroup random_mat
-
-===============================================================================
-
-\defgroup random_engine_func_constructor randomEngine Constructors
-
-\brief Create random number generator object
+\brief Functions to create, modify, use, and destroy randomEngine objects
 
 A \ref af::randomEngine object can be used to generate psuedo random numbers
 using various types of random number generation algorithms defined by \ref
 af::randomEngineType.
 
-\ingroup random_engine_class
+\ingroup random_mat
 
 ===============================================================================
 
@@ -60,7 +50,7 @@ The data is centered around 0.
 
 ===============================================================================
 
-\defgroup random_func_set_type setDefaultRandomEngineType
+\defgroup random_func_set_default_engine setDefaultRandomEngineType
 
 \brief Set the default random engine type.
 
@@ -98,6 +88,7 @@ Sets the seed for the current default random engine.
 Returns the seed for the current default random engine.
 
 \ingroup random_mat
+
 
 @}
 */

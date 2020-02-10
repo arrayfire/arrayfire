@@ -38,9 +38,9 @@ class array;
 /**
     \class seq
 
-    \brief seq is used to create seq for indexing af::array
+    \brief seq is used to create sequences for indexing af::array
 
-    \ingroup index_mat
+    \ingroup arrayfire_class
 */
 class AFAPI seq
 {
@@ -225,7 +225,10 @@ public:
     void init(double begin, double end, double step);
 };
 
+/// A special value representing the last value of an axis
 extern AFAPI int end;
+
+/// A special value representing the entire axis of an af::array
 extern AFAPI seq span;
 
 }
@@ -234,6 +237,8 @@ extern AFAPI seq span;
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/// Create a new af_seq object.
 AFAPI af_seq af_make_seq(double begin, double end, double step);
 
 #ifdef __cplusplus

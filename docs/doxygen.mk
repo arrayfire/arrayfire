@@ -32,19 +32,19 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = ""
+PROJECT_NAME           = "${PROJECT_NAME}"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = ""
+PROJECT_NUMBER         = "${AF_VERSION}"
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = ""
+PROJECT_BRIEF          = "A high-performance general-purpose compute library"
 
 # With the PROJECT_LOGO tag one can specify a logo or an icon that is included
 # in the documentation. The maximum height of the logo should not exceed 55
@@ -245,7 +245,8 @@ ALIASES                = "support{1}=<DIV class=\"support\">\1</DIV>" \
                          "funcgroups{4}=\ingroup \3 \4 \n @{ \n \defgroup \1 \2 \n @{ \n" \
                          "funcgroups{5}=\ingroup \3 \4 \5 \n @{ \n \defgroup \1 \2 \n @{ \n" \
                          "funcgroups{6}=\ingroup \3 \4 \5 \6 \n @{ \n \defgroup \1 \2 \n @{ \n" \
-                         "endfuncgroups=@} \n @}"
+                         "endfuncgroups=@} \n @}" \
+                         "PR{1}=[[#\1](https://github.com/arrayfire/arrayfire/pull/\1)]"
 
 # Now add special commands for math equations. All of the following commands
 # are only expected to be used inside math mode
@@ -1244,7 +1245,7 @@ HTML_TIMESTAMP         = YES
 # The default value is: YES.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_DYNAMIC_MENUS     = NO
+HTML_DYNAMIC_MENUS     = YES
 
 # If the HTML_DYNAMIC_SECTIONS tag is set to YES then the generated HTML
 # documentation will contain sections that can be hidden and shown after the
@@ -1252,7 +1253,7 @@ HTML_DYNAMIC_MENUS     = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_DYNAMIC_SECTIONS  = NO
+HTML_DYNAMIC_SECTIONS  = YES
 
 # With HTML_INDEX_NUM_ENTRIES one can control the preferred number of entries
 # shown in the various tree structured indices initially; the user can expand
@@ -1936,7 +1937,7 @@ MAN_SUBDIR             =
 # The default value is: NO.
 # This tag requires that the tag GENERATE_MAN is set to YES.
 
-MAN_LINKS              = NO
+MAN_LINKS              = YES
 
 #---------------------------------------------------------------------------
 # Configuration options related to the XML output
@@ -2101,7 +2102,7 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = __declspec(x)= \
                          __attribute__(x)= \
-                         __cplusplus = 99999999999999 \
+                         __cplusplus=99999999999999 \
                          AF_DOC \
                          AF_API_VERSION=${ArrayFire_API_VERSION_CURRENT}
 

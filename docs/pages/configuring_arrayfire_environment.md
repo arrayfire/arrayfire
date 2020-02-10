@@ -180,7 +180,7 @@ deallocations, and garbage collection.
 All trace statements printed to the console have a suffix with the following
 pattern.
 
-**[category][Seconds since Epoch][Thread Id][source file relative path] <Message>**
+**[category][Seconds since Epoch][Thread Id][source file relative path] \<Message\>**
 
 AF_MAX_BUFFERS {#af_max_buffers}
 -------------------------------------------------------------------------
