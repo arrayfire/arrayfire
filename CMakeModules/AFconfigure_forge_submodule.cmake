@@ -14,7 +14,7 @@ if(AF_BUILD_FORGE)
   set(FG_BUILD_DOCS OFF CACHE BOOL "Used to build Forge documentation")
   set(FG_WITH_FREEIMAGE OFF CACHE BOOL "Turn on usage of freeimage dependency")
 
-  add_subdirectory(extern/forge)
+  add_subdirectory(extern/forge EXCLUDE_FROM_ALL)
 
   mark_as_advanced(
       FG_BUILD_EXAMPLES
