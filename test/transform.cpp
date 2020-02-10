@@ -304,6 +304,7 @@ class TransformV2 : public Transform<T> {
     }
 
     void setTestData(string pTestFile, string pHomographyFile) {
+        if (noImageIOTests()) return;
         releaseArrays();
 
         genTestData<T>(&gold, &in, &transform, &odim0, &odim1, pTestFile,
