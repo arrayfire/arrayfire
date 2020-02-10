@@ -195,7 +195,7 @@ input arrays to be at most 2-dimensional.
 
 =======================================================================
 
-\defgroup cv_func_dog DoG
+\defgroup cv_func_dog dog
 \ingroup featdetect_mat
 
 \brief Difference of Gaussians

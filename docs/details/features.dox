@@ -1,0 +1,13 @@
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup features_group_features features
+
+\brief Lookup values of an array based on sequences and/or arrays
+
+===============================================================================
+
+
+@}
+*/

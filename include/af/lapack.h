@@ -272,7 +272,7 @@ namespace af
 
        \returns true is LAPACK support is available, false otherwise
 
-       \ingroup lapack_ops_func_norm
+       \ingroup lapack_helper_func_available
     */
     AFAPI bool isLAPACKAvailable();
 #endif
@@ -503,7 +503,7 @@ extern "C" {
 
        \returns AF_SUCCESS if successful (does not depend on the value of out)
 
-       \ingroup lapack_ops_func_norm
+       \ingroup lapack_helper_func_available
     */
     AFAPI af_err af_is_lapack_available(bool *out);
 #endif

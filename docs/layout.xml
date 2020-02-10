@@ -3,7 +3,7 @@
   <navindex>
     <tab type="mainpage" visible="yes" title="" />
     <tab type="user" url="\ref tutorials" visible="yes" title="Tutorials"/>
-    <tab type="modules" visible="yes" title="Functions" intro="Documentation grouped according to category:"/>
+    <tab type="modules" visible="yes" title="Functions" intro="Documentation grouped by category:"/>
     <tab type="user" url="\ref releasenotes" visible="yes" title="Release Notes"/>
     <tab type="examples" visible="yes" title="" intro=""/>
   </navindex>

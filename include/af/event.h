@@ -13,6 +13,11 @@
 
 #if AF_API_VERSION >= 37
 
+/**
+    Handle to an event object
+
+    \ingroup event_api
+*/
 typedef void* af_event;
 
 #ifdef __cplusplus
@@ -20,25 +25,39 @@ namespace af {
 
 /**
     C++ RAII interface for manipulating events
+    \ingroup arrayfire_class
+    \ingroup event_api
 */
 class AFAPI event {
     af_event e_;
 
    public:
+    /// Create a new event using the C af_event handle
     event(af_event e);
 #if AF_COMPILER_CXX_RVALUE_REFERENCES
+    /// Move constructor
     event(event&& other);
+
+    /// Move assignment operator
     event& operator=(event&& other);
 #endif
+    /// Create a new event object
     event();
+
+    /// event Destructor
     ~event();
 
+    /// Return the underlying C af_event handle
     af_event get() const;
 
+    /// \brief Adds the event on the default ArrayFire queue. Once this point
+    ///        on the program is executed, the event is considered complete.
     void mark();
 
+    /// \brief Block the ArrayFire queue until this even has occurred
     void enqueue();
 
+    /// \brief block the calling thread until this event has occurred
     void block() const;
 
    private:

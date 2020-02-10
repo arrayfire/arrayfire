@@ -24,7 +24,7 @@ namespace af
 
     ///
     /// \brief A multi dimensional data container
-    ///
+    /// \ingroup arrayfire_class
     class AFAPI array {
         af_array   arr;
 
@@ -725,14 +725,11 @@ namespace af
 
 
         /**
-           \defgroup device_func_device array::device<T>
-
            Get the device pointer from the array and lock the buffer in memory manager.
            @{
 
            The device memory returned by this function is not freed until unlock() is called.
 
-           \ingroup arrayfire_func
            \ingroup device_mat
         */
         template<typename T> T* device() const;

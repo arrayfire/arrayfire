@@ -13,7 +13,7 @@ The array created has the same value at all locations
 
 =======================================================================
 
-\defgroup data_func_pad Padding
+\defgroup data_func_pad pad
 
 \brief Pad an array
 

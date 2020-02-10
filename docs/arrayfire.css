@@ -123,7 +123,7 @@ div.support *
 
 #gsearch
 {
-    width       :   150px;
+    width       :   20%;
 }
 
 .tablist span
@@ -132,6 +132,10 @@ div.support *
     font-family     :   "Raleway","Helvetica Neue",Helvetica,sans-serif;
     color           :   #FFFFFF;
     text-shadow     :   none;
+}
+
+#side-nav {
+    height: 100%
 }
 
 #nav-tree

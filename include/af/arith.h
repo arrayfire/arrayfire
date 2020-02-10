@@ -268,19 +268,19 @@ namespace af
     /// function accepts two \ref af::array or one \ref af::array and a scalar
     /// as nputs.
     ///
-    /// \param[in] lhs is real value(s)
-    /// \param[in] rhs is imaginary value(s)
+    /// \param[in] real is real value(s)
+    /// \param[in] imaginary is imaginary value(s)
     /// \return complex array from inputs
     /// \ingroup arith_func_cplx
-    AFAPI array complex(const array &lhs, const array &rhs);
+    AFAPI array complex(const array &real, const array &imaginary);
 
     /// \copydoc complex(const array&, const array&)
     /// \ingroup arith_func_cplx
-    AFAPI array complex(const array &lhs, const double rhs);
+    AFAPI array complex(const array &real, const double imaginary);
 
     /// \copydoc complex(const array&, const array&)
     /// \ingroup arith_func_cplx
-    AFAPI array complex(const double lhs, const array &rhs);
+    AFAPI array complex(const double real, const array &imaginary);
 
     /// C++ Interface for creating complex array from real array
     ///
@@ -1064,14 +1064,14 @@ extern "C" {
        C Interface for creating complex array from two input arrays
 
        \param[out] out will contain the complex array generated from inputs
-       \param[in] lhs is real array
-       \param[in] rhs is imaginary array
+       \param[in] real is real array
+       \param[in] imaginary is imaginary array
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_cplx
     */
-    AFAPI af_err af_cplx2 (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
+    AFAPI af_err af_cplx2 (af_array *out, const af_array real, const af_array imaginary, const bool batch);
 
     /**
        C Interface for creating complex array from real array

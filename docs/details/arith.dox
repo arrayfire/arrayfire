@@ -118,12 +118,11 @@ Check if input two inputs are not equal
 
 
 \defgroup arith_func_and and
+\brief Logical AND
 
 \ingroup logic_mat
 
 Logical and of two inputs
-
-
 
 \defgroup arith_func_or or
 
@@ -213,6 +212,8 @@ Compute \f$x - n * y\f$ where n is quotient of \f$x / y\f$
 
 \defgroup arith_func_abs abs
 
+\brief Absolute value
+
 \ingroup numeric_mat
 
 Absolute value
@@ -220,10 +221,9 @@ Absolute value
 
 
 \defgroup arith_func_arg arg
-
 \ingroup numeric_mat
 
-Phase of a number in the complex plane
+\brief Phase of a number in the complex plane
 
 
 
@@ -319,6 +319,7 @@ arc sin of input
 
 
 \defgroup arith_func_acos acos
+\brief Inverse cosine.
 
 \ingroup trig_mat
 
@@ -373,6 +374,7 @@ asinh of input
 
 
 \defgroup arith_func_acosh acosh
+\brief Inverse hyperbolic cosine
 
 \ingroup hyper_mat
 

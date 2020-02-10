@@ -34,7 +34,7 @@ and red-difference chroma components.
 \addtogroup  arrayfire_func
 @{
 
-\defgroup image_func_colorspace colorspace
+\defgroup image_func_colorspace colorSpace
 \ingroup colorconv_mat
 
 Colorspace conversion function
@@ -262,7 +262,7 @@ discussion on it can be found [here](http://en.wikipedia.org/wiki/Sobel_operator
 
 =======================================================================
 
-\defgroup image_func_anisotropic_diffusion AnisotropicDiffusion
+\defgroup image_func_anisotropic_diffusion anisotropicDiffusion
 \ingroup imageflt_mat
 
 \brief Anisotropic Smoothing Filter
@@ -753,7 +753,7 @@ Affine transforms can be used for various purposes. \ref af::translate, \ref af:
 are specializations of the transform function.
 
 
-\defgroup transform_func_coordinates transformcoordinates
+\defgroup transform_func_coordinates transformCoordinates
 \ingroup transform_mat
 
 Transform input coordinates
@@ -766,7 +766,7 @@ transformed points.
 
 =======================================================================
 
-\defgroup image_func_sat SAT
+\defgroup image_func_sat sat
 \ingroup imageflt_mat
 
 \brief Summed Area Tables
@@ -970,7 +970,7 @@ wide range of edges in images. A more in depth discussion on it can be found [he
 
 =======================================================================
 
-\defgroup image_func_iterative_deconv Iterative Deconvolutions
+\defgroup image_func_iterative_deconv iterativeDeconv
 \ingroup imageflt_mat
 
 Iterative Deconvolution Algorithms
@@ -1022,7 +1022,7 @@ to be in a fixed range, that should be done by the caller explicitly.
 
 =======================================================================
 
-\defgroup image_func_inverse_deconv Inverse Deconvolution
+\defgroup image_func_inverse_deconv inverseDeconv
 \ingroup imageflt_mat
 
 Inverse deconvolution is an linear algorithm i.e. they are non-iterative in
@@ -1072,7 +1072,7 @@ explicitly.
 
 =======================================================================
 
-\defgroup image_func_confidence_cc Confidence Connected Components
+\defgroup image_func_confidence_cc confidenceCC
 \ingroup connected_comps_mat
 
 \brief Segment image based on similar pixel characteristics

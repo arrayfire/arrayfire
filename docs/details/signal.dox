@@ -46,7 +46,7 @@ factor is calculated internally based on the input data provided.
 \addtogroup arrayfire_func
 @{
 
-\defgroup signal_func_convolve N-Dimensional Convolutions
+\defgroup signal_func_convolve convolve (Non-separable)
 \ingroup convolve_mat
 
 \brief Convolution Integral for any(one through three) dimensional data
@@ -85,7 +85,7 @@ documentation to find out more.
 
 
 
-\defgroup signal_func_convolve_sep Separable 2D Convolution
+\defgroup signal_func_convolve_sep convolve (Separable)
 \ingroup convolve_mat
 
 \brief Separable Convolution
@@ -120,7 +120,7 @@ can be decomposed into two vectors shown below.
 \f$
 
 
-\defgroup signal_func_convolve1 1D Convolutions
+\defgroup signal_func_convolve1 convolve1
 \ingroup convolve_mat
 
 \brief Convolution Integral for one dimensional data
@@ -148,7 +148,7 @@ non-overlapping batch mode, they should satisfy one of the following conditions.
 
 
 
-\defgroup signal_func_convolve2 2D Convolutions
+\defgroup signal_func_convolve2 convolve2
 \ingroup convolve_mat
 
 \brief Convolution Integral for two dimensional data
@@ -290,7 +290,7 @@ convolutional neural networks.
 
 
 
-\defgroup signal_func_convolve3 3D Convolutions
+\defgroup signal_func_convolve3 convolve3
 \ingroup convolve_mat
 
 \brief Convolution Integral for three dimensional data
@@ -373,6 +373,7 @@ respectively, given below are the possible batch operations.
 
 \defgroup signal_func_approx1 approx1
 \ingroup approx_mat
+\brief Interpolation across a single dimension
 
 Performs interpolation on data along a single dimension.
 
@@ -407,6 +408,7 @@ interpolation types.
 
 \defgroup signal_func_approx2 approx2
 \ingroup approx_mat
+\brief Interpolation along two dimensions
 
 Performs interpolation on data along two dimensions.
 
