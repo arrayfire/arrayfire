@@ -74,7 +74,6 @@ target_link_libraries(afcommon_interface
     Boost::boost
     af_glad_interface
     ${CMAKE_DL_LIBS}
-    $<$<BOOL:${AF_BUILD_FORGE}>:forge> #Making it a dependency only so that is built with ALL targets
 )
 
 target_include_directories(afcommon_interface

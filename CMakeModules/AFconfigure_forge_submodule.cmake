@@ -15,6 +15,7 @@ if(AF_BUILD_FORGE)
   set(FG_WITH_FREEIMAGE OFF CACHE BOOL "Turn on usage of freeimage dependency")
 
   add_subdirectory(extern/forge EXCLUDE_FROM_ALL)
+  set_target_properties(forge PROPERTIES EXCLUDE_FROM_ALL False)
 
   mark_as_advanced(
       FG_BUILD_EXAMPLES
