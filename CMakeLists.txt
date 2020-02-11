@@ -186,6 +186,21 @@ set_target_properties(${built_backends} PROPERTIES
                       VERSION "${ArrayFire_VERSION}"
                       SOVERSION "${ArrayFire_VERSION_MAJOR}")
 
+if(AF_INSTALL_STANDALONE)
+
+  # This flag enables the use of RUNPATH instead of RPATH which is the
+  # preferred method to set the runtime lookup. Only doind this for
+  # standalone builds because we include all libraries with the installers
+  # and they are included in the same directory so the RUNPATH is set to
+  # $ORIGIN. This avoid setting the linker path in ld.so.conf.d
+  check_cxx_compiler_flag("-Wl,--enable-new-dtags" HAS_RUNPATH_FLAG)
+  if(HAS_RUNPATH_FLAG)
+    set_target_properties(${built_backends} PROPERTIES
+      INSTALL_RPATH "$ORIGIN"
+      LINK_OPTIONS "-Wl,--enable-new-dtags")
+  endif()
+endif()
+
 # On some distributions the linker will not add a library to the ELF header if
 # the symbols are not needed when the library was first parsed by the linker.
 # This causes undefined references issues when linking with libraries which have
