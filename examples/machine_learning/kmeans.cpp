@@ -113,8 +113,7 @@ int kmeans_demo(int k, bool console) {
     printf("** ArrayFire K-Means Demo (k = %d) **\n\n", k);
 
     array img =
-        loadImage(ASSETS_DIR "/examples/images/spider.jpg") /
-        255;  // [0-255]
+        loadImage(ASSETS_DIR "/examples/images/spider.jpg") / 255;  // [0-255]
 
     int w = img.dims(0), h = img.dims(1), c = img.dims(2);
     array vec = moddims(img, w * h, 1, c);
@@ -129,23 +128,26 @@ int kmeans_demo(int k, bool console) {
     kmeans(means_dbl, clusters_dbl, vec, k * 2);
 
     if (!console) {
-        array out_full = moddims(means_full(span, clusters_full, span), img.dims());
-        array out_half = moddims(means_half(span, clusters_half, span), img.dims());
-        array out_dbl  = moddims(means_dbl (span, clusters_dbl , span), img.dims());
+        array out_full =
+            moddims(means_full(span, clusters_full, span), img.dims());
+        array out_half =
+            moddims(means_half(span, clusters_half, span), img.dims());
+        array out_dbl =
+            moddims(means_dbl(span, clusters_dbl, span), img.dims());
 
         af::Window wnd(800, 800, "ArrayFire K-Means Demo");
         wnd.grid(2, 2);
-        std::string out_full_caption = "k = " + std::to_string(k);
-        std::string out_half_caption = "k = " + std::to_string(k / 2);
-        std::string out_dbl_caption = "k = " + std::to_string(k * 2);
+        std::stringstream out_full_caption, out_half_caption, out_dbl_caption;
+        out_full_caption << "k = " << k;
+        out_half_caption << "k = " << k / 2;
+        out_dbl_caption << "k = " << k * 2;
         while (!wnd.close()) {
             wnd(0, 0).image(img, "Input Image");
-            wnd(0, 1).image(out_full, out_full_caption.c_str());
-            wnd(1, 0).image(out_half, out_half_caption.c_str());
-            wnd(1, 1).image(out_dbl, out_dbl_caption.c_str());
+            wnd(0, 1).image(out_full, out_full_caption.str().c_str());
+            wnd(1, 0).image(out_half, out_half_caption.str().c_str());
+            wnd(1, 1).image(out_dbl, out_dbl_caption.str().c_str());
             wnd.show();
         }
-
     } else {
         means_full =
             moddims(means_full, means_full.dims(1), means_full.dims(2));
