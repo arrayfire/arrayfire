@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 
         seedx = 15;
         seedy = 15;
-        unsigned seedcoords[]{15, 15};
+        unsigned seedcoords[] = {15, 15};
         array seeds(dim4(1, 2), seedcoords);
         array background =
             confidenceCC(A, seeds, radius, multiplier, iter, 255);

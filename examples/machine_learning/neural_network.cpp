@@ -22,7 +22,7 @@ std::string toStr(const dtype dt) {
     switch(dt) {
         case f32: return "f32";
         case f16: return "f16";
-        default: return std::to_string(dt);
+        default: return "N/A";
     }
 }
 
