@@ -610,7 +610,12 @@ if (WIN32)
   set(dlib_path_prefix "${CUDA_TOOLKIT_ROOT_DIR}/bin")
 endif ()
 
-macro(afcu_collect_libs libname)
+function(afcu_collect_libs libname)
+  set(options "FULL_VERSION")
+  set(single_args "")
+  set(multi_args "")
+
+  cmake_parse_arguments(cuda_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
   if (WIN32)
     find_file(CUDA_${libname}_LIBRARY_DLL
       NAMES
@@ -636,19 +641,25 @@ macro(afcu_collect_libs libname)
         ${dlib_path_prefix})
 
     get_filename_component(outpath "${CUDA_${libname}_LIBRARY}" REALPATH)
+    if(cuda_args_FULL_VERSION)
+      set(library_install_name "${PX}${libname}${SX}.${CUDA_VERSION}")
+    else()
+      set(library_install_name "${PX}${libname}${SX}.${CUDA_VERSION_MAJOR}")
+    endif()
     install(FILES       ${outpath}
             DESTINATION ${AF_INSTALL_LIB_DIR}
-            RENAME      "${PX}${libname}${SX}.${CUDA_VERSION}"
+            RENAME      ${library_install_name}
             COMPONENT   cuda_dependencies)
   endif ()
-endmacro()
+endfunction()
 
 if(AF_INSTALL_STANDALONE)
   afcu_collect_libs(cufft)
+  afcu_collect_libs(cudnn)
   afcu_collect_libs(cublas)
   afcu_collect_libs(cusolver)
   afcu_collect_libs(cusparse)
-  afcu_collect_libs(nvrtc)
+  afcu_collect_libs(nvrtc FULL_VERSION)
 
   if(APPLE)
     afcu_collect_libs(cudart)
