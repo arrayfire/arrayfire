@@ -15,7 +15,6 @@ if(AF_BUILD_FORGE)
   set(FG_WITH_FREEIMAGE OFF CACHE BOOL "Turn on usage of freeimage dependency")
 
   add_subdirectory(extern/forge EXCLUDE_FROM_ALL)
-  set_target_properties(forge PROPERTIES EXCLUDE_FROM_ALL False)
 
   mark_as_advanced(
       FG_BUILD_EXAMPLES
@@ -34,6 +33,8 @@ if(AF_BUILD_FORGE)
       $<TARGET_FILE:forge>
       $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:forge>>
       $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:forge>>
+      $<$<PLATFORM_ID:Linux>:$<TARGET_LINKER_FILE:forge>>
+      $<$<PLATFORM_ID:Darwin>:$<TARGET_LINKER_FILE:forge>>
       DESTINATION "${AF_INSTALL_LIB_DIR}"
       COMPONENT common_backend_dependencies)
   set_property(TARGET forge APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
