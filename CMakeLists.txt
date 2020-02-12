@@ -251,8 +251,6 @@ install(FILES ${ArrayFire_BINARY_DIR}/include/af/version.h
         DESTINATION "${AF_INSTALL_INC_DIR}/af/"
         COMPONENT headers)
 
-#TODO(pradeep) install forge dependency for packaging - not required for builds
-
 # install the examples irrespective of the AF_BUILD_EXAMPLES value
 # only the examples source files are installed, so the installation of these
 # source files does not depend on AF_BUILD_EXAMPLES

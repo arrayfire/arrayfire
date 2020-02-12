@@ -76,6 +76,10 @@ target_link_libraries(afcommon_interface
     ${CMAKE_DL_LIBS}
 )
 
+if(AF_BUILD_FORGE)
+  add_dependencies(afcommon_interface forge)
+endif()
+
 target_include_directories(afcommon_interface
   INTERFACE
     ${ArrayFire_SOURCE_DIR}/src/backend
