@@ -85,6 +85,8 @@ class ForgeModule : public common::DependencyModule {
     MODULE_MEMBER(fg_append_surface_to_chart);
     MODULE_MEMBER(fg_append_vector_field_to_chart);
     MODULE_MEMBER(fg_release_chart);
+
+    MODULE_MEMBER(fg_err_to_string);
 };
 
 namespace graphics {

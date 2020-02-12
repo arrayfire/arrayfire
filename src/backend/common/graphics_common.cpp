@@ -90,6 +90,8 @@ ForgeModule::ForgeModule() : DependencyModule("forge", nullptr) {
         FG_MODULE_FUNCTION_INIT(fg_append_vector_field_to_chart);
         FG_MODULE_FUNCTION_INIT(fg_release_chart);
 
+        FG_MODULE_FUNCTION_INIT(fg_err_to_string);
+
         if (!DependencyModule::symbolsLoaded()) {
             string error_message =
                 "Error loading Forge: " + DependencyModule::getErrorMessage() +
@@ -241,27 +243,35 @@ fg_window ForgeManager::getMainWindow() {
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
 
+    af_err error      = AF_SUCCESS;
+    fg_err forgeError = FG_ERR_NONE;
     if (noGraphicsENV.empty()) {  // If AF_DISABLE_GRAPHICS is not defined
-        std::call_once(flag, [this] {
+        std::call_once(flag, [this, &error, &forgeError] {
             if (!this->mPlugin->isLoaded()) {
-                string error_message =
-                    "Error loading Forge: " + this->mPlugin->getErrorMessage() +
-                    "\nForge or one of it's dependencies failed to "
-                    "load. Try installing Forge or check if Forge is in the "
-                    "search path.";
-                AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
+                error = AF_ERR_LOAD_LIB;
+                return;
             }
             fg_window w = nullptr;
-            fg_err e    = this->mPlugin->fg_create_window(&w, WIDTH, HEIGHT,
-                                                       "ArrayFire", NULL, true);
-            if (e != FG_ERR_NONE) {
-                AF_ERROR("Graphics Window creation failed", AF_ERR_INTERNAL);
-            }
+            forgeError  = this->mPlugin->fg_create_window(
+                &w, WIDTH, HEIGHT, "ArrayFire", NULL, true);
+            if (forgeError != FG_ERR_NONE) { return; }
             this->setWindowChartGrid(w, 1, 1);
             this->mPlugin->fg_make_window_current(w);
             this->mMainWindow.reset(new Window({w}));
-            if (!gladLoadGL()) { AF_ERROR("GL Load Failed", AF_ERR_LOAD_LIB); }
+            if (!gladLoadGL()) { error = AF_ERR_LOAD_LIB; }
         });
+        if (error == AF_ERR_LOAD_LIB) {
+            string error_message =
+                "Error loading Forge: " + this->mPlugin->getErrorMessage() +
+                "\nForge or one of it's dependencies failed to "
+                "load. Try installing Forge or check if Forge is in the "
+                "search path.";
+            AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
+        }
+        if (forgeError != FG_ERR_NONE) {
+            AF_ERROR(this->mPlugin->fg_err_to_string(forgeError),
+                     AF_ERR_RUNTIME);
+        }
     }
 
     return mMainWindow->handle;
