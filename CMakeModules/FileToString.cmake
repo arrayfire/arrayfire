@@ -23,8 +23,6 @@
 #
 # where ns is the contents of kernel.cl.namespace.
 
-include(CMakeParseArguments)
-
 set(BIN2CPP_PROGRAM "bin2cpp")
 
 function(FILE_TO_STRING)
