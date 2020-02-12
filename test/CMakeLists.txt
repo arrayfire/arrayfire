@@ -70,8 +70,6 @@ if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
 endif(AF_BUILD_UNIFIED)
 
-include(CMakeParseArguments)
-
 # Creates tests for all backends
 #
 # Creates a standard test for all backends. Most of the time you only need to
