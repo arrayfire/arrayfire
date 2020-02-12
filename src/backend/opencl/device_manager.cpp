@@ -167,7 +167,7 @@ static inline bool compare_default(const Device* ldev, const Device* rdev) {
 DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , mUserDeviceOffset(0)
-    , fgMngr(new graphics::ForgeManager())
+    , fgMngr(nullptr)
     , mFFTSetup(new clfftSetupData) {
     vector<Platform> platforms;
     try {
@@ -182,6 +182,7 @@ DeviceManager::DeviceManager()
                 AF_ERR_RUNTIME);
         }
     }
+    fgMngr.reset(new graphics::ForgeManager());
 
     // This is all we need because the sort takes care of the order of devices
 #ifdef OS_MAC
