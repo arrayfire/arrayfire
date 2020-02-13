@@ -1,0 +1,50 @@
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+    - 'v*' # Push events to tag names starting with v
+
+name: ci
+
+jobs:
+    upload_src_tarball:
+        name: Upload release source tarball
+        runs-on: ubuntu-18.04
+        steps:
+            - name: Fetch Repo Info
+              run: |
+                  tag=$(echo ${GITHUB_REF} | awk '{split($0, a, "/"); print a[3]}')
+                  ver=${tag:1}
+                  response=$(curl https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${tag})
+                  id_line=$(echo "${response}" | grep -m 1 "id.:")
+                  rel_id=$(echo "${id_line}" | awk '{split($0, a, ":"); split(a[2], b, ","); print b[1]}')
+                  trimmed_rel_id=$(echo "${rel_id}" | awk '{gsub(/^[ \t]+/,""); print $0 }')
+                  echo "::set-env name=RELEASE_ID::${trimmed_rel_id}"
+                  echo "::set-env name=AF_TAG::${tag}"
+                  echo "::set-env name=AF_VER::${ver}"
+
+            - name: Checkout with Submodules
+              run: |
+                  cd ${GITHUB_WORKSPACE}
+                  clone_url="https://github.com/${GITHUB_REPOSITORY}"
+                  git clone --depth 1 --recursive -b ${AF_TAG} ${clone_url} arrayfire-full-${AF_VER}
+
+            - name: Create source tarball
+              id: create-src-tarball
+              run: |
+                  cd $GITHUB_WORKSPACE
+                  rm -rf arrayfire-full-${AF_VER}/.git
+                  rm -rf arrayfire-full-${AF_VER}/.github
+                  rm arrayfire-full-${AF_VER}/.gitmodules
+                  tar -cjf arrayfire-full-${AF_VER}.tar.bz2 arrayfire-full-${AF_VER}/
+                  echo "::set-env name=UPLOAD_FILE::arrayfire-full-${AF_VER}.tar.bz2"
+
+            - name: Upload source tarball
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets{?name,label}
+                  asset_path: ${{ env.UPLOAD_FILE }}
+                  asset_name: ${{ env.UPLOAD_FILE }}
+                  asset_content_type: application/x-bzip2
