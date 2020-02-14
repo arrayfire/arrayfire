@@ -164,6 +164,19 @@ void evalMultiple(vector<Array<T> *> array_ptrs) {
     vector<Param<T>> params;
     if (getQueue().is_worker())
         AF_ERROR("Array not evaluated", AF_ERR_INTERNAL);
+
+    // Check if all the arrays have the same dimension
+    auto it = std::adjacent_find(begin(array_ptrs), end(array_ptrs),
+                                 [](const Array<T> *l, const Array<T> *r) {
+                                     return l->dims() != r->dims();
+                                 });
+
+    // If they are not the same. eval individually
+    if (it != end(array_ptrs)) {
+        for (auto ptr : array_ptrs) { ptr->eval(); }
+        return;
+    }
+
     for (Array<T> *array : array_ptrs) {
         if (array->ready) continue;
 
