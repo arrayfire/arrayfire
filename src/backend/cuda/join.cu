@@ -129,6 +129,11 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs) {
         }
     }
 
+    std::vector<Array<T> *> input_ptrs(inputs.size());
+    std::transform(
+        begin(inputs), end(inputs), begin(input_ptrs),
+        [](const Array<T> &input) { return const_cast<Array<T> *>(&input); });
+    evalMultiple(input_ptrs);
     Array<T> out = createEmptyArray<T>(odims);
 
     switch (n_arrays) {
