@@ -28,7 +28,6 @@ const Event &getEvent(const af_event &handle) {
 
 af_event getHandle(Event &event) { return static_cast<af_event>(&event); }
 
-
 af_err af_create_event(af_event *handle) {
     try {
         AF_CHECK(af_init());

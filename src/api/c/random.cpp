@@ -27,9 +27,7 @@ using namespace common;
 
 using af::dim4;
 
-Array<uint> emptyArray() {
-    return createEmptyArray<uint>(af::dim4(0));
-}
+Array<uint> emptyArray() { return createEmptyArray<uint>(af::dim4(0)); }
 
 struct RandomEngine {
     af_random_engine_type type;
@@ -71,8 +69,7 @@ RandomEngine *getRandomEngine(const af_random_engine engineHandle) {
 
 namespace {
 template<typename T>
-inline af_array uniformDistribution_(const af::dim4 &dims,
-                                            RandomEngine *e) {
+inline af_array uniformDistribution_(const af::dim4 &dims, RandomEngine *e) {
     if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
         return getHandle(uniformDistribution<T>(dims, e->pos, e->sh1, e->sh2,
                                                 e->mask, e->recursion_table,
@@ -84,8 +81,7 @@ inline af_array uniformDistribution_(const af::dim4 &dims,
 }
 
 template<typename T>
-inline af_array normalDistribution_(const af::dim4 &dims,
-                                           RandomEngine *e) {
+inline af_array normalDistribution_(const af::dim4 &dims, RandomEngine *e) {
     if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
         return getHandle(normalDistribution<T>(dims, e->pos, e->sh1, e->sh2,
                                                e->mask, e->recursion_table,
@@ -107,14 +103,14 @@ void validateRandomType(const af_random_engine_type type) {
         AF_ERROR("Invalid random type", AF_ERR_ARG);
     }
 }
-}
+}  // namespace
 
 af_err af_get_default_random_engine(af_random_engine *r) {
     try {
         AF_CHECK(af_init());
 
         thread_local RandomEngine *re = new RandomEngine;
-        *r = static_cast<af_random_engine>(re);
+        *r                            = static_cast<af_random_engine>(re);
         return AF_SUCCESS;
     }
     CATCHALL;

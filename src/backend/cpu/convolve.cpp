@@ -11,8 +11,8 @@
 #include <arith.hpp>
 #include <blas.hpp>
 #include <common/defines.hpp>
-#include <common/indexing_helpers.hpp>
 #include <common/half.hpp>
+#include <common/indexing_helpers.hpp>
 #include <convolve.hpp>
 #include <handle.hpp>
 #include <kernel/convolve.hpp>

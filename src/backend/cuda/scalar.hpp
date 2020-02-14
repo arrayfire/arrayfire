@@ -23,7 +23,7 @@ Array<T> createScalarNode(const dim4 &size, const T val) {
     // Either this gaurd or we need to enable extended alignment
     // by defining _ENABLE_EXTENDED_ALIGNED_STORAGE before <type_traits>
     // header is included
-    using ScalarNode = common::ScalarNode<T>;
+    using ScalarNode    = common::ScalarNode<T>;
     using ScalarNodePtr = std::shared_ptr<ScalarNode>;
     return createNodeArray<T>(size, ScalarNodePtr(new ScalarNode(val)));
 #else

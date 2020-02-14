@@ -46,7 +46,7 @@ TEST(EventTests, EventCreateAndMove) {
     ASSERT_EQ(otherEvent.get(), eventHandle);
 
     event f;
-    af_event fE       = f.get();
+    af_event fE        = f.get();
     event anotherEvent = std::move(f);
     ASSERT_EQ(fE, anotherEvent.get());
     af::sync();

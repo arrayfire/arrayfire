@@ -29,10 +29,11 @@ void transpose_inplace(Param<T> in, const bool conjugate,
                        const bool is32multiple) {
     static const std::string source(transpose_inplace_cuh,
                                     transpose_inplace_cuh_len);
-    auto transposeIP = getKernel("cuda::transposeIP", source,
-                               {TemplateTypename<T>(), TemplateArg(conjugate),
-                                TemplateArg(is32multiple)},
-                               {DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
+    auto transposeIP =
+        getKernel("cuda::transposeIP", source,
+                  {TemplateTypename<T>(), TemplateArg(conjugate),
+                   TemplateArg(is32multiple)},
+                  {DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
 
     // dimensions passed to this function should be input dimensions
     // any necessary transformations and dimension related calculations are

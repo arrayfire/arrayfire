@@ -8,11 +8,11 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <af/dim4.hpp>
 #include <common/half.hpp>
 #include <err_opencl.hpp>
 #include <kernel/mean.hpp>
 #include <mean.hpp>
+#include <af/dim4.hpp>
 
 #include <complex>
 

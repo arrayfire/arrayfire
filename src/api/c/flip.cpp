@@ -11,19 +11,19 @@
 #include <vector>
 
 #include <Array.hpp>
-#include <optypes.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
+#include <handle.hpp>
 #include <lookup.hpp>
-#include <af/defines.h>
-#include <af/array.h>
+#include <optypes.hpp>
 #include <af/arith.h>
+#include <af/array.h>
 #include <af/data.h>
+#include <af/defines.h>
 #include <af/index.h>
 #include <af/seq.h>
-#include <handle.hpp>
 
 using namespace detail;
 using common::half;

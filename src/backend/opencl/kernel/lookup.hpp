@@ -31,9 +31,9 @@ void lookup(Param out, const Param in, const Param indices) {
     using cl::KernelFunctor;
     using cl::NDRange;
     using cl::Program;
-    using std::string;
     using std::is_same;
     using std::ostringstream;
+    using std::string;
     using std::to_string;
 
     std::string refName =
@@ -49,15 +49,12 @@ void lookup(Param out, const Param in, const Param indices) {
                 << " -D idx_t=" << dtype_traits<idx_t>::getName()
                 << " -D DIM=" << dim;
 
-        if (is_same<in_t, double>::value ||
-            is_same<in_t, cdouble>::value ||
+        if (is_same<in_t, double>::value || is_same<in_t, cdouble>::value ||
             is_same<idx_t, double>::value) {
             options << " -D USE_DOUBLE";
         }
 
-        if (is_same<in_t, common::half>::value) {
-          options << " -D USE_HALF";
-        }
+        if (is_same<in_t, common::half>::value) { options << " -D USE_HALF"; }
 
         const char* ker_strs[] = {lookup_cl};
         const int ker_lens[]   = {lookup_cl_len};

@@ -8,8 +8,8 @@
  ********************************************************/
 
 #pragma once
-#include <complex>
 #include <common/kernel_type.hpp>
+#include <complex>
 
 namespace cpu {
 using cdouble = std::complex<double>;

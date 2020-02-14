@@ -53,8 +53,9 @@ template<typename To, af_op_t op>
 static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
                                  const uint blocks_x, const uint blocks_y,
                                  const uint threads_x, bool inclusive_scan) {
-    auto scan_first_bcast = getKernel("cuda::scan_first_bcast", ScanFirstSource,
-                                {TemplateTypename<To>(), TemplateArg(op)});
+    auto scan_first_bcast =
+        getKernel("cuda::scan_first_bcast", ScanFirstSource,
+                  {TemplateTypename<To>(), TemplateArg(op)});
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);

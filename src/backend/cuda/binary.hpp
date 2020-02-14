@@ -143,7 +143,8 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs,
             operands[1], (int)(op)));
     };
 
-    Node_ptr out = common::createNaryNode<Ti, 2>(odims, createBinary, {&lhs, &rhs});
+    Node_ptr out =
+        common::createNaryNode<Ti, 2>(odims, createBinary, {&lhs, &rhs});
     return createNodeArray<To>(odims, out);
 }
 

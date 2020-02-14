@@ -77,7 +77,8 @@ cudnnStatus_t cudnnSetFilter4dDescriptor(cudnnFilterDescriptor_t filterDesc,
             filterDesc, dataType, format, k, c, h, w);
     }
     CUDA_NOT_SUPPORTED(
-        "cudnnSetFilter4dDescriptor not supported for the current version of cuDNN");
+        "cudnnSetFilter4dDescriptor not supported for the current version of "
+        "cuDNN");
 #elif CUDNN_VERSION == 4000
     return getCudnnPlugin().cudnnSetFilter4dDescriptor_v4(filterDesc, dataType,
                                                           format, k, c, h, w);

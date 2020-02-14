@@ -281,30 +281,26 @@ fg_window ForgeManager::getWindow(const int w, const int h,
                                   const char* const title,
                                   const bool invisible) {
     fg_window retVal = 0;
-    FG_CHECK(mPlugin->fg_create_window(&retVal, w, h, title,
-                getMainWindow(), invisible));
-    if (retVal == 0) {
-        AF_ERROR("Window creation failed", AF_ERR_INTERNAL);
-    }
+    FG_CHECK(mPlugin->fg_create_window(&retVal, w, h, title, getMainWindow(),
+                                       invisible));
+    if (retVal == 0) { AF_ERROR("Window creation failed", AF_ERR_INTERNAL); }
     setWindowChartGrid(retVal, 1, 1);
     return retVal;
 }
 
-void ForgeManager::setWindowChartGrid(const fg_window window,
-                                      const int r, const int c) {
-    ChartMapIterator iter = mChartMap.find(window);
+void ForgeManager::setWindowChartGrid(const fg_window window, const int r,
+                                      const int c) {
+    ChartMapIterator iter     = mChartMap.find(window);
     WindGridMapIterator gIter = mWndGridMap.find(window);
 
     if (iter != mChartMap.end()) {
         // ChartVec found. Clear it.
         // This has to be cleared as there is no guarantee that existing
         // chart types(2D/3D) match the future grid requirements
-        for (const ChartPtr& c: iter->second) {
-            if (c) {
-                mChartAxesOverrideMap.erase(c->handle);
-            }
+        for (const ChartPtr& c : iter->second) {
+            if (c) { mChartAxesOverrideMap.erase(c->handle); }
         }
-        (iter->second).clear(); // Clear ChartList
+        (iter->second).clear();  // Clear ChartList
         gIter->second = std::make_pair<int, int>(1, 1);
     }
 
@@ -317,8 +313,8 @@ void ForgeManager::setWindowChartGrid(const fg_window window,
     }
 }
 
-ForgeManager::WindowGridDims
-ForgeManager::getWindowGrid(const fg_window window) {
+ForgeManager::WindowGridDims ForgeManager::getWindowGrid(
+    const fg_window window) {
     WindGridMapIterator gIter = mWndGridMap.find(window);
     if (gIter == mWndGridMap.end()) {
         mWndGridMap[window] = std::make_pair(1, 1);
@@ -328,7 +324,7 @@ ForgeManager::getWindowGrid(const fg_window window) {
 
 fg_chart ForgeManager::getChart(const fg_window window, const int r,
                                 const int c, const fg_chart_type ctype) {
-    ChartMapIterator iter = mChartMap.find(window);
+    ChartMapIterator iter     = mChartMap.find(window);
     WindGridMapIterator gIter = mWndGridMap.find(window);
 
     int rows = std::get<0>(gIter->second);
@@ -388,7 +384,7 @@ fg_image ForgeManager::getImage(fg_chart chart, int w, int h,
                                 fg_channel_format mode, fg_dtype type) {
     auto key = genImageKey(w, h, mode, type);
 
-    ChartKey keypair = std::make_pair(key, chart);
+    ChartKey keypair      = std::make_pair(key, chart);
     ImageMapIterator iter = mImgMap.find(keypair);
 
     if (iter == mImgMap.end()) {
@@ -412,7 +408,7 @@ fg_plot ForgeManager::getPlot(fg_chart chart, int nPoints, fg_dtype dtype,
     long long key = (((long long)(nPoints)&_48BIT) << 16);
     key |= (((dtype & _4BIT) << 12) | ((ptype & _4BIT) << 8) | (mtype & _8BIT));
 
-    ChartKey keypair = std::make_pair(key, chart);
+    ChartKey keypair     = std::make_pair(key, chart);
     PlotMapIterator iter = mPltMap.find(keypair);
 
     if (iter == mPltMap.end()) {
@@ -433,7 +429,7 @@ fg_histogram ForgeManager::getHistogram(fg_chart chart, int nBins,
                                         fg_dtype type) {
     long long key = (((long long)(nBins)&_48BIT) << 16) | (type & _16BIT);
 
-    ChartKey keypair = std::make_pair(key, chart);
+    ChartKey keypair          = std::make_pair(key, chart);
     HistogramMapIterator iter = mHstMap.find(keypair);
 
     if (iter == mHstMap.end()) {
@@ -451,13 +447,13 @@ fg_histogram ForgeManager::getHistogram(fg_chart chart, int nBins,
     return mHstMap[keypair]->handle;
 }
 
-fg_surface ForgeManager::getSurface(fg_chart chart,
-                                    int nX, int nY, fg_dtype type) {
+fg_surface ForgeManager::getSurface(fg_chart chart, int nX, int nY,
+                                    fg_dtype type) {
     long long surfaceSize = nX * (long long)(nY);
     assert(surfaceSize <= 2ll << 48);
     long long key = ((surfaceSize & _48BIT) << 16) | (type & _16BIT);
 
-    ChartKey keypair = std::make_pair(key, chart);
+    ChartKey keypair        = std::make_pair(key, chart);
     SurfaceMapIterator iter = mSfcMap.find(keypair);
 
     if (iter == mSfcMap.end()) {
@@ -476,11 +472,11 @@ fg_surface ForgeManager::getSurface(fg_chart chart,
     return mSfcMap[keypair]->handle;
 }
 
-fg_vector_field ForgeManager::getVectorField(fg_chart chart,
-                                             int nPoints, fg_dtype type) {
+fg_vector_field ForgeManager::getVectorField(fg_chart chart, int nPoints,
+                                             fg_dtype type) {
     long long key = (((long long)(nPoints)&_48BIT) << 16) | (type & _16BIT);
 
-    ChartKey keypair = std::make_pair(key, chart);
+    ChartKey keypair         = std::make_pair(key, chart);
     VecFieldMapIterator iter = mVcfMap.find(keypair);
 
     if (iter == mVcfMap.end()) {
@@ -489,9 +485,8 @@ fg_vector_field ForgeManager::getVectorField(fg_chart chart,
 
         fg_vector_field vfield = nullptr;
         FG_CHECK(mPlugin->fg_create_vector_field(&vfield, nPoints, type,
-                    chart_type));
-        FG_CHECK(mPlugin->fg_append_vector_field_to_chart(chart,
-                    vfield));
+                                                 chart_type));
+        FG_CHECK(mPlugin->fg_append_vector_field_to_chart(chart, vfield));
         mVcfMap[keypair] = VectorFieldPtr(new VectorField({vfield}));
     }
     return mVcfMap[keypair]->handle;

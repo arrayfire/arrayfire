@@ -17,7 +17,6 @@ using namespace af;
 
 int main(int argc, char* argv[]) {
     try {
-
         unsigned s[1]       = {132};
         unsigned radius     = 3;
         unsigned multiplier = 3;
@@ -37,15 +36,15 @@ int main(int argc, char* argv[]) {
         array core =
             confidenceCC(A, sxArr, syArr, radius, multiplier, iter, 255);
 
-        seedx = 15;
-        seedy = 15;
+        seedx                 = 15;
+        seedy                 = 15;
         unsigned seedcoords[] = {15, 15};
         array seeds(dim4(1, 2), seedcoords);
         array background =
             confidenceCC(A, seeds, radius, multiplier, iter, 255);
 
         af::Window wnd("Confidence Connected Components demo");
-        while(!wnd.close()) {
+        while (!wnd.close()) {
             wnd.grid(2, 2);
             wnd(0, 0).image(A, "Input");
             wnd(0, 1).image(ring, "Ring Component - Seed(132, 132)");

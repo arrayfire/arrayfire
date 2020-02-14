@@ -31,7 +31,8 @@ int main(int argc, char** argv) {
         const af_dtype dt = (dtype == "f16" ? f16 : f32);
 
         if (dt == f16)
-          printf("Device %d isHalfAvailable ? %s\n", device, isHalfAvailable(device) ? "yes" : "no");
+            printf("Device %d isHalfAvailable ? %s\n", device,
+                   isHalfAvailable(device) ? "yes" : "no");
 
         info();
 

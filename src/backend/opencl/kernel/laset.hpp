@@ -13,11 +13,11 @@
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/laset.hpp>
+#include <magma_types.h>
 #include <program.hpp>
 #include <traits.hpp>
 #include <types.hpp>
 #include <string>
-#include <magma_types.h>
 
 using cl::Buffer;
 using cl::EnqueueArgs;

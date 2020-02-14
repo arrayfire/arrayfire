@@ -441,7 +441,7 @@ class TransformNullArgs : public TransformV2TuxNearest<float> {
 };
 
 TEST_F(TransformNullArgs, NullOutputPtr) {
-    af_array* out_ptr = 0;
+    af_array *out_ptr = 0;
     ASSERT_EQ(AF_ERR_ARG,
               af_transform(out_ptr, this->in, this->transform, this->odim0,
                            this->odim1, this->method, this->invert));
@@ -455,12 +455,12 @@ TEST_F(TransformNullArgs, NullInputArray) {
 
 TEST_F(TransformNullArgs, NullTransformArray) {
     ASSERT_EQ(AF_ERR_ARG,
-              af_transform(&this->out, this->in, 0, this->odim0,
-                           this->odim1, this->method, this->invert));
+              af_transform(&this->out, this->in, 0, this->odim0, this->odim1,
+                           this->method, this->invert));
 }
 
 TEST_F(TransformNullArgs, V2NullOutputPtr) {
-    af_array* out_ptr = 0;
+    af_array *out_ptr = 0;
     ASSERT_EQ(AF_ERR_ARG,
               af_transform_v2(out_ptr, this->in, this->transform, this->odim0,
                               this->odim1, this->method, this->invert));
@@ -474,8 +474,8 @@ TEST_F(TransformNullArgs, V2NullInputArray) {
 
 TEST_F(TransformNullArgs, V2NullTransformArray) {
     ASSERT_EQ(AF_ERR_ARG,
-              af_transform_v2(&this->out, this->in, 0, this->odim0,
-                              this->odim1, this->method, this->invert));
+              af_transform_v2(&this->out, this->in, 0, this->odim0, this->odim1,
+                              this->method, this->invert));
 }
 
 ///////////////////////////////////// CPP ////////////////////////////////

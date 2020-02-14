@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <copy.hpp>
 #include <common/err_common.hpp>
+#include <copy.hpp>
 #include <kernel/sort_by_key.hpp>
 #include <math.hpp>
 #include <platform.hpp>

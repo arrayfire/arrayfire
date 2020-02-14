@@ -13,8 +13,8 @@
 #include <type_util.hpp>
 
 #include <cmath>
-#include <string>
 #include <sstream>
+#include <string>
 
 using common::half;
 
@@ -77,23 +77,21 @@ std::string ToNumStr<half>::operator()<float>(float val) {
     return std::to_string(val);
 }
 
+#define INSTANTIATE(TYPE) template struct ToNumStr<TYPE>
 
-#define INSTANTIATE(TYPE)                       \
-  template struct ToNumStr<TYPE>
-
-  INSTANTIATE(float);
-  INSTANTIATE(double);
-  INSTANTIATE(cfloat);
-  INSTANTIATE(cdouble);
-  INSTANTIATE(short);
-  INSTANTIATE(ushort);
-  INSTANTIATE(int);
-  INSTANTIATE(uint);
-  INSTANTIATE(intl);
-  INSTANTIATE(uintl);
-  INSTANTIATE(uchar);
-  INSTANTIATE(char);
-  INSTANTIATE(half);
+INSTANTIATE(float);
+INSTANTIATE(double);
+INSTANTIATE(cfloat);
+INSTANTIATE(cdouble);
+INSTANTIATE(short);
+INSTANTIATE(ushort);
+INSTANTIATE(int);
+INSTANTIATE(uint);
+INSTANTIATE(intl);
+INSTANTIATE(uintl);
+INSTANTIATE(uchar);
+INSTANTIATE(char);
+INSTANTIATE(half);
 
 #undef INSTANTIATE
 

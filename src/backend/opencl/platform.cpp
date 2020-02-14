@@ -15,9 +15,9 @@
 #include <blas.hpp>
 #include <cache.hpp>
 #include <clfft.hpp>
+#include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/host_memory.hpp>
-#include <common/DefaultMemoryManager.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>
 #include <err_opencl.hpp>
@@ -192,7 +192,7 @@ int getDeviceCount() noexcept try {
     // If device manager threw an error then return 0 because no platforms
     // were found
     return 0;
- }
+}
 
 int getActiveDeviceId() {
     // Second element is the queue id, which is

@@ -173,7 +173,7 @@ af_err af_abs(af_array *out, const af_array in) {
 
         // Convert all inputs to floats / doubles
         af_dtype type = implicit(in_type, f32);
-        if(in_type == f16) { type = f16; }
+        if (in_type == f16) { type = f16; }
 
         switch (type) {
             case f32:

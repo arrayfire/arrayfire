@@ -28,9 +28,7 @@ using common::half;
 
 af_err af_set_backend(const af_backend bknd) {
     try {
-        if(bknd != getBackend()) {
-            return AF_ERR_ARG;
-        }
+        if (bknd != getBackend()) { return AF_ERR_ARG; }
     }
     CATCHALL;
 
@@ -52,7 +50,7 @@ af_err af_get_available_backends(int* result) {
 
 af_err af_get_backend_id(af_backend* result, const af_array in) {
     try {
-        if(in) {
+        if (in) {
             const ArrayInfo& info = getInfo(in, false, false);
             *result               = info.getBackendId();
         } else {
@@ -65,7 +63,7 @@ af_err af_get_backend_id(af_backend* result, const af_array in) {
 
 af_err af_get_device_id(int* device, const af_array in) {
     try {
-        if(in) {
+        if (in) {
             const ArrayInfo& info = getInfo(in, false, false);
             *device               = info.getDevId();
         } else {

@@ -391,18 +391,14 @@ TEST(SparseSparseArith, LinearProgrammingData) {
 }
 
 TEST(SparseSparseArith, SubsequentCircuitSimData) {
-    std::string file1(MTX_TEST_DIR
-                      "Sandia/oscil_dcop_12/oscil_dcop_12.mtx");
-    std::string file2(MTX_TEST_DIR
-                      "Sandia/oscil_dcop_42/oscil_dcop_42.mtx");
+    std::string file1(MTX_TEST_DIR "Sandia/oscil_dcop_12/oscil_dcop_12.mtx");
+    std::string file2(MTX_TEST_DIR "Sandia/oscil_dcop_42/oscil_dcop_42.mtx");
     ssArithmeticMTX<af_sub_t>(file1.c_str(), file2.c_str());
 }
 
 TEST(SparseSparseArith, QuantumChemistryData) {
-    std::string file1(MTX_TEST_DIR
-                      "QCD/conf6_0-4x4-20/conf6_0-4x4-20.mtx");
-    std::string file2(MTX_TEST_DIR
-                      "QCD/conf6_0-4x4-30/conf6_0-4x4-30.mtx");
+    std::string file1(MTX_TEST_DIR "QCD/conf6_0-4x4-20/conf6_0-4x4-20.mtx");
+    std::string file2(MTX_TEST_DIR "QCD/conf6_0-4x4-30/conf6_0-4x4-30.mtx");
     ssArithmeticMTX<af_add_t>(file1.c_str(), file2.c_str());
 }
 #endif

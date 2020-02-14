@@ -20,15 +20,15 @@ Array<T> floodFill(const Array<T>& image, const Array<uint>& seedsX,
                    const T lowValue, const T highValue,
                    const af::connectivity nlookup) {
     auto out = createValueArray(image.dims(), T(0));
-    kernel::floodFill<T>(out, image, seedsX, seedsY, newValue,
-                         lowValue, highValue, nlookup);
+    kernel::floodFill<T>(out, image, seedsX, seedsY, newValue, lowValue,
+                         highValue, nlookup);
     return out;
 }
 
-#define INSTANTIATE(T)                                                    \
-    template Array<T> floodFill(                                          \
-        const Array<T>&, const Array<uint>&, const Array<uint>&, const T, \
-        const T, const T, const af::connectivity);
+#define INSTANTIATE(T)                                                         \
+    template Array<T> floodFill(const Array<T>&, const Array<uint>&,           \
+                                const Array<uint>&, const T, const T, const T, \
+                                const af::connectivity);
 
 INSTANTIATE(float)
 INSTANTIATE(uint)

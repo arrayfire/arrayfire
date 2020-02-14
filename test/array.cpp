@@ -25,7 +25,8 @@ template<typename T>
 using ArrayDeathTest = Array<T>;
 
 typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,
-                         int, uint, intl, uintl, short, ushort, half_float::half>
+                         int, uint, intl, uintl, short, ushort,
+                         half_float::half>
     TestTypes;
 
 TYPED_TEST_CASE(Array, TestTypes);

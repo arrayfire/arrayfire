@@ -48,8 +48,8 @@ __global__ void iota_kernel(Param<T> out, const int s0, const int s1,
     const int incx = blocksPerMatX * blockDim.x;
 
     for (int oy = yy; oy < out.dims[1]; oy += incy) {
-        int oyzw = ozw + oy * out.strides[1];
-        dim_t valY   = val + (oy % s1) * s0;
+        int oyzw   = ozw + oy * out.strides[1];
+        dim_t valY = val + (oy % s1) * s0;
         for (int ox = xx; ox < out.dims[0]; ox += incx) {
             int oidx = oyzw + ox;
 

@@ -225,8 +225,8 @@ TEST(ScanByKey, FixOverflowWrite) {
     vector<float> vals(SIZE, 1.0f);
 
     array someVals = array(SIZE, vals.data());
-    array keysAF = array(SIZE, s32);
-    array valsAF = array(SIZE, vals.data());
+    array keysAF   = array(SIZE, s32);
+    array valsAF   = array(SIZE, vals.data());
 
     keysAF = array(SIZE, keys.data());
 

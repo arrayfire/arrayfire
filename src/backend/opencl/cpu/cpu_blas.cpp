@@ -92,17 +92,17 @@ using scale_type =
                          const typename blas_base<T>::type *, const T>::type;
 
 template<typename T>
-scale_type<T> getOneScalar(const T* const vals) {
+scale_type<T> getOneScalar(const T *const vals) {
     return vals[0];
 }
 
 template<>
-scale_type<cfloat> getOneScalar(const cfloat* const vals) {
+scale_type<cfloat> getOneScalar(const cfloat *const vals) {
     return reinterpret_cast<scale_type<cfloat>>(vals);
 }
 
 template<>
-scale_type<cdouble> getOneScalar(const cdouble* const vals) {
+scale_type<cdouble> getOneScalar(const cdouble *const vals) {
     return reinterpret_cast<scale_type<cdouble>>(vals);
 }
 
@@ -125,9 +125,9 @@ using gemv_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
     template<typename T>    \
     FUNC##_func_def<T> FUNC##_func();
 
-#define BLAS_FUNC(FUNC, TYPE, PREFIX)           \
-    template<>                                  \
-    FUNC##_func_def<TYPE> FUNC##_func<TYPE>() { \
+#define BLAS_FUNC(FUNC, TYPE, PREFIX)                        \
+    template<>                                               \
+    FUNC##_func_def<TYPE> FUNC##_func<TYPE>() {              \
         return (FUNC##_func_def<TYPE>)&cblas_##PREFIX##FUNC; \
     }
 
@@ -168,9 +168,8 @@ toCblasTranspose(af_mat_prop opt) {
 }
 
 template<typename T>
-void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
-          const T *alpha, const Array<T> &lhs, const Array<T> &rhs,
-          const T *beta) {
+void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
+          const Array<T> &lhs, const Array<T> &rhs, const T *beta) {
     using BT  = typename blas_base<T>::type;
     using CBT = const typename blas_base<T>::type;
 
@@ -220,23 +219,21 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
         if (rDims[bColDim] == 1) {
             dim_t incr = (rOpts == CblasNoTrans) ? rStrides[0] : rStrides[1];
             gemv_func<T>()(CblasColMajor, lOpts, lDims[0], lDims[1],
-                           getOneScalar<T>(alpha),
-                           lptr, lStrides[1], rptr, incr,
-                           getOneScalar<T>(beta), optr, 1);
+                           getOneScalar<T>(alpha), lptr, lStrides[1], rptr,
+                           incr, getOneScalar<T>(beta), optr, 1);
         } else {
             gemm_func<T>()(CblasColMajor, lOpts, rOpts, M, N, K,
-                           getOneScalar<T>(alpha), lptr,
-                           lStrides[1], rptr, rStrides[1],
-                           getOneScalar<T>(beta),
-                           optr, oStrides[1]);
+                           getOneScalar<T>(alpha), lptr, lStrides[1], rptr,
+                           rStrides[1], getOneScalar<T>(beta), optr,
+                           oStrides[1]);
         }
     }
 }
 
-#define INSTANTIATE_GEMM(TYPE)                                                         \
-    template void gemm<TYPE>(Array<TYPE> &out, af_mat_prop optLhs, af_mat_prop optRhs, \
-                             const TYPE *alpha,                       \
-                             const Array<TYPE> &lhs, const Array<TYPE> &rhs,           \
+#define INSTANTIATE_GEMM(TYPE)                                               \
+    template void gemm<TYPE>(Array<TYPE> & out, af_mat_prop optLhs,          \
+                             af_mat_prop optRhs, const TYPE *alpha,          \
+                             const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
                              const TYPE *beta);
 
 INSTANTIATE_GEMM(float)

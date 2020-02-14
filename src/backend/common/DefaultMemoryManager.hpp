@@ -35,10 +35,10 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
         size_t bytes;
     };
 
-    using locked_t = typename std::unordered_map<void *, locked_info>;
+    using locked_t    = typename std::unordered_map<void *, locked_info>;
     using locked_iter = typename locked_t::iterator;
 
-    using free_t = std::unordered_map<size_t, std::vector<void*>>;
+    using free_t    = std::unordered_map<size_t, std::vector<void *>>;
     using free_iter = typename free_t::iterator;
 
     struct memory_info {
@@ -95,7 +95,7 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
     /// bytes. If there is already a free buffer available, it will use
     /// that buffer. Otherwise, it will allocate a new buffer using the
     /// nativeAlloc function.
-    void* alloc(bool user_lock, const unsigned ndims, dim_t *dims,
+    void *alloc(bool user_lock, const unsigned ndims, dim_t *dims,
                 const unsigned element_size) override;
 
     /// returns the size of the buffer at the pointer allocated by the memory
@@ -125,7 +125,7 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
     DefaultMemoryManager()                                  = delete;
     ~DefaultMemoryManager()                                 = default;
     DefaultMemoryManager(const DefaultMemoryManager &other) = delete;
-    DefaultMemoryManager(DefaultMemoryManager &&other) = default;
+    DefaultMemoryManager(DefaultMemoryManager &&other)      = default;
     DefaultMemoryManager &operator=(const DefaultMemoryManager &other) = delete;
     DefaultMemoryManager &operator=(DefaultMemoryManager &&other) = default;
     common::mutex_t memory_mutex;

@@ -23,8 +23,8 @@
 #include <vector>
 
 // Includes one of the supported OpenCL BLAS back-ends (e.g. clBLAS, CLBlast)
-#include <magma/magma_blas.h>
 #include <cpu/cpu_blas.hpp>
+#include <magma/magma_blas.h>
 
 using common::half;
 
@@ -54,19 +54,16 @@ void gemm_fallback(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
 }
 
 template<>
-void gemm_fallback<half>(Array<half> &out, af_mat_prop optLhs, af_mat_prop optRhs,
-                          const half *alpha,
-                          const Array<half> &lhs, const Array<half> &rhs,
-                          const half *beta) {
+void gemm_fallback<half>(Array<half> &out, af_mat_prop optLhs,
+                         af_mat_prop optRhs, const half *alpha,
+                         const Array<half> &lhs, const Array<half> &rhs,
+                         const half *beta) {
     assert(false && "CPU fallback not implemented for f16");
 }
 
-
 template<typename T>
-void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
-          const T *alpha,
-          const Array<T> &lhs, const Array<T> &rhs,
-          const T *beta) {
+void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
+          const Array<T> &lhs, const Array<T> &rhs, const T *beta) {
 #if defined(WITH_LINEAR_ALGEBRA)
     // Do not force offload gemm on OSX Intel devices
     if (OpenCLCPUOffload(false) && (af_dtype)dtype_traits<T>::af_type != f16) {
@@ -119,15 +116,15 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
             OPENCL_BLAS_CHECK(gemv(lOpts, lDims[0], lDims[1], *alpha,
                                    (*lhs.get())(), lOffset, lStrides[1],
                                    (*rhs.get())(), rOffset, incr, *beta,
-                                   (*out.get())(), oOffset, oStrides[0], 1, &getQueue()(),
-                                   0, nullptr, &event()));
+                                   (*out.get())(), oOffset, oStrides[0], 1,
+                                   &getQueue()(), 0, nullptr, &event()));
         } else {
             gpu_blas_gemm_func<T> gemm;
-            OPENCL_BLAS_CHECK(gemm(lOpts, rOpts, M, N, K, *alpha, (*lhs.get())(),
-                                   lOffset, lStrides[1], (*rhs.get())(),
-                                   rOffset, rStrides[1], *beta, (*out.get())(),
-                                   oOffset, oStrides[1], 1, &getQueue()(), 0,
-                                   nullptr, &event()));
+            OPENCL_BLAS_CHECK(gemm(lOpts, rOpts, M, N, K, *alpha,
+                                   (*lhs.get())(), lOffset, lStrides[1],
+                                   (*rhs.get())(), rOffset, rStrides[1], *beta,
+                                   (*out.get())(), oOffset, oStrides[1], 1,
+                                   &getQueue()(), 0, nullptr, &event()));
         }
     }
 }
@@ -142,10 +139,10 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
     return reduce<af_add_t, T, T>(temp, 0, false, 0);
 }
 
-#define INSTANTIATE_GEMM(TYPE)                                                         \
-    template void gemm<TYPE>(Array<TYPE> &out, af_mat_prop optLhs, af_mat_prop optRhs, \
-                             const TYPE *alpha,                    \
-                             const Array<TYPE> &lhs, const Array<TYPE> &rhs,           \
+#define INSTANTIATE_GEMM(TYPE)                                               \
+    template void gemm<TYPE>(Array<TYPE> & out, af_mat_prop optLhs,          \
+                             af_mat_prop optRhs, const TYPE *alpha,          \
+                             const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
                              const TYPE *beta);
 
 INSTANTIATE_GEMM(float)

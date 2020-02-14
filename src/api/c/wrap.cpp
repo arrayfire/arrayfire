@@ -19,22 +19,18 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline void wrap(af_array *out, const af_array in,
-                        const dim_t ox, const dim_t oy,
-                        const dim_t wx, const dim_t wy,
-                        const dim_t sx, const dim_t sy,
-                        const dim_t px, const dim_t py,
-                        const bool is_column) {
+static inline void wrap(af_array* out, const af_array in, const dim_t ox,
+                        const dim_t oy, const dim_t wx, const dim_t wy,
+                        const dim_t sx, const dim_t sy, const dim_t px,
+                        const dim_t py, const bool is_column) {
     wrap<T>(getArray<T>(*out), getArray<T>(in), ox, oy, wx, wy, sx, sy, px, py,
             is_column);
 }
 
-void af_wrap_common(af_array *out, const af_array in,
-                      const dim_t ox, const dim_t oy,
-                      const dim_t wx, const dim_t wy,
-                      const dim_t sx, const dim_t sy,
-                      const dim_t px, const dim_t py,
-                      const bool is_column, bool allocate_out) {
+void af_wrap_common(af_array* out, const af_array in, const dim_t ox,
+                    const dim_t oy, const dim_t wx, const dim_t wy,
+                    const dim_t sx, const dim_t sy, const dim_t px,
+                    const dim_t py, const bool is_column, bool allocate_out) {
     ARG_ASSERT(0, out != 0);  // *out (the af_array) can be null, but not out
     ARG_ASSERT(1, in != 0);
 
@@ -81,31 +77,26 @@ void af_wrap_common(af_array *out, const af_array in,
     // clang-format on
 }
 
-af_err af_wrap(af_array* out, const af_array in,
-               const dim_t ox, const dim_t oy,
-               const dim_t wx, const dim_t wy,
-               const dim_t sx, const dim_t sy,
-               const dim_t px, const dim_t py,
-               const bool is_column) {
+af_err af_wrap(af_array* out, const af_array in, const dim_t ox, const dim_t oy,
+               const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
+               const dim_t px, const dim_t py, const bool is_column) {
     try {
-        af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py,
-                              is_column, true);
+        af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column,
+                       true);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_wrap_v2(af_array* out, const af_array in,
-                  const dim_t ox, const dim_t oy,
-                  const dim_t wx, const dim_t wy,
-                  const dim_t sx, const dim_t sy,
-                  const dim_t px, const dim_t py,
-                  const bool is_column) {
+af_err af_wrap_v2(af_array* out, const af_array in, const dim_t ox,
+                  const dim_t oy, const dim_t wx, const dim_t wy,
+                  const dim_t sx, const dim_t sy, const dim_t px,
+                  const dim_t py, const bool is_column) {
     try {
         ARG_ASSERT(0, out != 0);  // need to dereference out in next call
-        af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py,
-                              is_column, *out == 0);
+        af_wrap_common(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column,
+                       *out == 0);
     }
     CATCHALL;
 

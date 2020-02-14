@@ -488,8 +488,8 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
         CUDA_CHECK(
             cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
-        compute_t<T> val     = static_cast <compute_t<T>>(h_ptr[0]);
-        compute_t<Tw> weight = static_cast <compute_t<Tw>>(h_wptr[0]);
+        compute_t<T> val     = static_cast<compute_t<T>>(h_ptr[0]);
+        compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_wptr[0]);
 
         for (int i = 1; i < tmp_elements; i++) {
             stable_mean(&val, &weight, compute_t<T>(h_ptr[i]),

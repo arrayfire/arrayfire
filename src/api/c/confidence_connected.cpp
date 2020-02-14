@@ -28,14 +28,14 @@ using namespace detail;
 
 /// Index corner points of given seed points
 template<typename T>
-Array<T> pointList(const Array<T>& in,
-                   const Array<uint>& x, const Array<uint>& y) {
-    af_array xcoords = getHandle<uint>(x);
-    af_array ycoords = getHandle<uint>(y);
-    std::array<af_index_t, AF_MAX_DIMS> idxrs = {{
-        {xcoords, false, false}, {ycoords, false, false},
-        common::createSpanIndex(), common::createSpanIndex()
-    }};
+Array<T> pointList(const Array<T>& in, const Array<uint>& x,
+                   const Array<uint>& y) {
+    af_array xcoords                          = getHandle<uint>(x);
+    af_array ycoords                          = getHandle<uint>(y);
+    std::array<af_index_t, AF_MAX_DIMS> idxrs = {{{xcoords, false, false},
+                                                  {ycoords, false, false},
+                                                  common::createSpanIndex(),
+                                                  common::createSpanIndex()}};
 
     Array<T> retVal = detail::index(in, idxrs.data());
 
@@ -76,31 +76,30 @@ Array<T> sum(const Array<T>& sat, const Array<uint>& _x, const Array<uint>& x_,
 }
 
 template<typename T>
-af_array ccHelper(const Array<T>& img, const Array<uint> &seedx,
-                  const Array<uint> &seedy, const unsigned radius, const unsigned mult,
-                  const unsigned iterations, const double segmentedValue) {
-    using CT   = typename std::conditional<std::is_same<T, double>::value,
-                                  double, float>::type;
+af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
+                  const Array<uint>& seedy, const unsigned radius,
+                  const unsigned mult, const unsigned iterations,
+                  const double segmentedValue) {
+    using CT = typename std::conditional<std::is_same<T, double>::value, double,
+                                         float>::type;
     constexpr CT epsilon = 1.0e-6;
 
     auto calcVar = [](CT s2, CT s1, CT n) -> CT {
         CT retVal = CT(0);
-        if (n > 1) {
-            retVal = (s2 - (s1 * s1 / n)) / (n - CT(1));
-        }
+        if (n > 1) { retVal = (s2 - (s1 * s1 / n)) / (n - CT(1)); }
         return retVal;
     };
 
-    const dim4        inDims = img.dims();
-    const dim4      seedDims = seedx.dims();
-    const size_t    numSeeds = seedx.elements();
-    const unsigned  nhoodLen = 2*radius + 1;
+    const dim4 inDims        = img.dims();
+    const dim4 seedDims      = seedx.dims();
+    const size_t numSeeds    = seedx.elements();
+    const unsigned nhoodLen  = 2 * radius + 1;
     const unsigned nhoodSize = nhoodLen * nhoodLen;
 
     auto labelSegmented = [segmentedValue, inDims](const Array<CT>& segmented) {
         Array<CT> newVals = createValueArray(inDims, CT(segmentedValue));
         Array<CT> result  = arithOp<CT, af_mul_t>(newVals, segmented, inDims);
-        //cast final result to input type
+        // cast final result to input type
         return cast<T, CT>(result);
     };
 
@@ -126,8 +125,8 @@ af_array ccHelper(const Array<T>& img, const Array<uint> &seedx,
     CT upper           = mean + mult * stddev;
 
     Array<CT> seedIntensities = pointList(in, seedx, seedy);
-    CT maxSeedIntensity  = reduce_all<af_max_t, CT, CT>(seedIntensities);
-    CT minSeedIntensity  = reduce_all<af_min_t, CT, CT>(seedIntensities);
+    CT maxSeedIntensity       = reduce_all<af_max_t, CT, CT>(seedIntensities);
+    CT minSeedIntensity       = reduce_all<af_min_t, CT, CT>(seedIntensities);
 
     if (lower > minSeedIntensity) { lower = minSeedIntensity; }
     if (upper < maxSeedIntensity) { upper = maxSeedIntensity; }
@@ -140,9 +139,9 @@ af_array ccHelper(const Array<T>& img, const Array<uint> &seedx,
     }
 
     bool continueLoop = true;
-    for (uint i = 0; (i < iterations) && continueLoop ; ++i) {
-        //Segmented images are set with 1's and 0's thus essentially
-        //making them into mask arrays for each iteration's input image
+    for (uint i = 0; (i < iterations) && continueLoop; ++i) {
+        // Segmented images are set with 1's and 0's thus essentially
+        // making them into mask arrays for each iteration's input image
 
         uint sampleCount = reduce_all<af_notzero_t, CT, uint>(segmented, true);
         if (sampleCount == 0) {
@@ -182,7 +181,7 @@ af_err af_confidence_cc(af_array* out, const af_array in, const af_array seedx,
     // short bit size(16,8) types very often and occasionally
     // with 32 bit types.
     AF_ERROR("There is a known issue for OpenCL implementation",
-            AF_ERR_NOT_SUPPORTED);
+             AF_ERR_NOT_SUPPORTED);
 #endif
     try {
         const ArrayInfo inInfo         = getInfo(in);
@@ -191,9 +190,9 @@ af_err af_confidence_cc(af_array* out, const af_array in, const af_array seedx,
         const af::dim4 inputDimensions = inInfo.dims();
         const af::dtype inputArrayType = inInfo.getType();
 
-        //TODO(pradeep) handle case where seeds are towards border
+        // TODO(pradeep) handle case where seeds are towards border
         //              and indexing may result in throwing exception
-        //TODO(pradeep) add batch support later
+        // TODO(pradeep) add batch support later
         ARG_ASSERT(
             1, (inputDimensions.ndims() > 0 && inputDimensions.ndims() <= 2));
 
@@ -223,7 +222,7 @@ af_err af_confidence_cc(af_array* out, const af_array in, const af_array seedx,
                                   getArray<uint>(seedy), radius, multiplier,
                                   iter, segmented_value);
                 break;
-            default : TYPE_ERROR (0, inputArrayType);
+            default: TYPE_ERROR(0, inputArrayType);
         }
         std::swap(*out, output);
     }

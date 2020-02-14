@@ -10,8 +10,8 @@
 #include <triangle.hpp>
 
 #include <Array.hpp>
-#include <af/dim4.hpp>
 #include <common/half.hpp>
+#include <af/dim4.hpp>
 
 using af::dim4;
 using common::half;

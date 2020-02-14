@@ -71,9 +71,7 @@ void memFree(T *ptr) {
     return memoryManager().unlock((void *)ptr, false);
 }
 
-void memFreeUser(void *ptr) {
-    memoryManager().unlock(ptr, true);
-}
+void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
 
 void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
 

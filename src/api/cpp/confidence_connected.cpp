@@ -26,14 +26,14 @@ array confidenceCC(const array &in, const size_t num_seeds,
     return array(temp);
 }
 
-array confidenceCC(const array &in, const array &seeds,
-                   const unsigned radius, const unsigned multiplier,
-                   const int iter, const double segmentedValue) {
+array confidenceCC(const array &in, const array &seeds, const unsigned radius,
+                   const unsigned multiplier, const int iter,
+                   const double segmentedValue) {
     af::array xcoords = seeds.col(0);
     af::array ycoords = seeds.col(1);
-    af_array temp = 0;
-    AF_THROW(af_confidence_cc(&temp, in.get(), xcoords.get(), ycoords.get(), radius,
-                              multiplier, iter, segmentedValue));
+    af_array temp     = 0;
+    AF_THROW(af_confidence_cc(&temp, in.get(), xcoords.get(), ycoords.get(),
+                              radius, multiplier, iter, segmentedValue));
     return array(temp);
 }
 
@@ -46,4 +46,4 @@ array confidenceCC(const array &in, const array &seedx, const array &seedy,
     return array(temp);
 }
 
-} // namespace af
+}  // namespace af

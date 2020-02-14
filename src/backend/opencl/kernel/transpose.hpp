@@ -34,9 +34,9 @@ void transpose(Param out, const Param in, cl::CommandQueue queue) {
     using cl::Program;
     using std::string;
 
-    string refName =
-        std::string("transpose_") + std::string(dtype_traits<T>::getName()) +
-        std::to_string(conjugate) + std::to_string(IS32MULTIPLE);
+    string refName = std::string("transpose_") +
+                     std::string(dtype_traits<T>::getName()) +
+                     std::to_string(conjugate) + std::to_string(IS32MULTIPLE);
 
     int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);

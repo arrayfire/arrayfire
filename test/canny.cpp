@@ -84,7 +84,8 @@ TEST(Canny, DISABLED_Exact) {
     array img = loadImage(TEST_DIR "/CannyEdgeDetector/woman.jpg", false);
 
     array out = canny(img, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false);
-    array gold = loadImage(TEST_DIR "/CannyEdgeDetector/woman_edges.jpg", false) > 3;
+    array gold =
+        loadImage(TEST_DIR "/CannyEdgeDetector/woman_edges.jpg", false) > 3;
 
     ASSERT_ARRAYS_EQ(gold, out);
 }

@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
-#include <testHelpers.hpp>
 #include <half.hpp>
+#include <testHelpers.hpp>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>

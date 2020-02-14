@@ -14,16 +14,12 @@
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 
-TEST(NoDevice, Info) {
-    ASSERT_SUCCESS(af_info());
-}
+TEST(NoDevice, Info) { ASSERT_SUCCESS(af_info()); }
 
-TEST(NoDevice, InfoCxx) {
-    af::info();
-}
+TEST(NoDevice, InfoCxx) { af::info(); }
 
 TEST(NoDevice, InfoString) {
-    char *str;
+    char* str;
     ASSERT_SUCCESS(af_info_string(&str, true));
     ASSERT_SUCCESS(af_free_host((void*)str));
 }
@@ -68,6 +64,4 @@ TEST(NoDevice, GetVersion) {
     ASSERT_EQ(AF_VERSION_PATCH, patch);
 }
 
-TEST(NoDevice, GetRevision) {
-    const char* revision = af_get_revision();
-}
+TEST(NoDevice, GetRevision) { const char* revision = af_get_revision(); }

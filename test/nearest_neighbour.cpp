@@ -530,7 +530,7 @@ TEST(NearestNeighbour, DocSnippet1) {
     //! [ex_nearest_1]
 
     unsigned int h_gold_idx[3] = {0, 1, 2};
-    float h_gold_dist[3] = {0.0625f, 0.5625f, 3.0625f};
+    float h_gold_dist[3]       = {0.0625f, 0.5625f, 3.0625f};
     array gold_idx(dim4(3), h_gold_idx);
     array gold_dist(dim4(3), h_gold_dist);
     ASSERT_ARRAYS_EQ(gold_idx, idx);
@@ -539,19 +539,14 @@ TEST(NearestNeighbour, DocSnippet1) {
 
 TEST(NearestNeighbour, DocSnippet2) {
     //! [ex_nearest_2]
-    float h_pts[18] = {0.f, 0.f, 0.f,
-                       1.f, 0.f, 0.f,
-                       0.f, 1.f, 0.f,
-                       8.f, 9.f, 1.f,
-                       9.f, 8.f, 1.f,
-                       9.f, 9.f, 1.f};
+    float h_pts[18] = {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f,
+                       8.f, 9.f, 1.f, 9.f, 8.f, 1.f, 9.f, 9.f, 1.f};
     array pts(dim4(3, 6), h_pts);
     //  0.    1.    0.    8.    9.    9.
     //  0.    0.    1.    9.    8.    9.
     //  0.    0.    0.    1.    1.    1.
 
-    float h_query[6] = {1.5f, 0.f, 0.f,
-                        7.5f, 9.f, 1.f};
+    float h_query[6] = {1.5f, 0.f, 0.f, 7.5f, 9.f, 1.f};
     array query(dim4(3, 2), h_query);
     //  1.5   7.5
     //  0.    9.
@@ -571,10 +566,8 @@ TEST(NearestNeighbour, DocSnippet2) {
     //  3.25  3.25
     //! [ex_nearest_2]
 
-    unsigned int h_gold_idx[6] = {1, 0, 2,
-                                  3, 5, 4};
-    float h_gold_dist[6] = {0.25f, 2.25f, 3.25f,
-                            0.25f, 2.25f, 3.25f};
+    unsigned int h_gold_idx[6] = {1, 0, 2, 3, 5, 4};
+    float h_gold_dist[6]       = {0.25f, 2.25f, 3.25f, 0.25f, 2.25f, 3.25f};
     array gold_idx(dim4(3, 2), h_gold_idx);
     array gold_dist(dim4(3, 2), h_gold_dist);
     ASSERT_ARRAYS_EQ(gold_idx, idx);

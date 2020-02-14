@@ -39,8 +39,6 @@ const char *errorString(cudnnStatus_t err);
         }                                                                   \
     } while (0)
 
-
-
 // cuDNN Wrappers
 //
 // cuDNN deprecates and releases function names often between releases. in order

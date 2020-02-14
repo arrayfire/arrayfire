@@ -1328,16 +1328,16 @@ TEST(Indexing, SNIPPET_indexing_first) {
     af_print(A(end));  // last element
     // 9.0000
 
-    af_print(A(-1));   // also last element
+    af_print(A(-1));  // also last element
     // 9.0000
 
     af_print(A(end - 1));  // second-to-last element
     // 8.0000
 
-    af_print(A(1, span));      // second row
+    af_print(A(1, span));  // second row
     // 2.0000     5.0000     8.0000
 
-    af_print(A.row(end));      // last row
+    af_print(A.row(end));  // last row
     // 3.0000     6.0000     9.0000
 
     af_print(A.cols(1, end));  // all but first column
@@ -1454,7 +1454,7 @@ TEST(Indexing, SNIPPET_indexing_set) {
     // 3.1415     4.0000     4.0000
 
     // copy in another matrix
-    array B  = constant(1, 4, 4, s32);
+    array B = constant(1, 4, 4, s32);
     af_print(B);
     //          1          1          1          1
     //          1          1          1          1

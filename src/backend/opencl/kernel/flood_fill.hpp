@@ -40,16 +40,15 @@ constexpr int ZERO      = 0;
 
 template<typename T>
 void initSeeds(Param out, const Param seedsx, const Param seedsy) {
-    std::string refName = std::string("init_seeds_") +
-                          std::string(dtype_traits<T>::getName());
+    std::string refName =
+        std::string("init_seeds_") + std::string(dtype_traits<T>::getName());
     int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
 
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName()
-                << " -D VALID=" << T(VALID)
-                << " -D INIT_SEEDS";
+                << " -D VALID=" << T(VALID) << " -D INIT_SEEDS";
         if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
 
         const char *ker_strs[] = {flood_fill_cl};
@@ -60,11 +59,11 @@ void initSeeds(Param out, const Param seedsx, const Param seedsy) {
         entry.ker  = new Kernel(*entry.prog, "init_seeds");
         addKernelToCache(device, refName, entry);
     }
-    auto initSeedsOp = KernelFunctor<Buffer, const KParam,
-                                     const Buffer, const KParam,
-                                     const Buffer, const KParam>(*entry.ker);
+    auto initSeedsOp =
+        KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
+                      const Buffer, const KParam>(*entry.ker);
     NDRange local(kernel::THREADS, 1, 1);
-    NDRange global( divup(seedsx.info.dims[0], local[0]) * local[0], 1 , 1);
+    NDRange global(divup(seedsx.info.dims[0], local[0]) * local[0], 1, 1);
 
     initSeedsOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
                 *seedsx.data, seedsx.info, *seedsy.data, seedsy.info);
@@ -81,8 +80,7 @@ void finalizeOutput(Param out, const T newValue) {
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName()
-                << " -D VALID=" << T(VALID)
-                << " -D ZERO=" << T(ZERO)
+                << " -D VALID=" << T(VALID) << " -D ZERO=" << T(ZERO)
                 << " -D FINALIZE_OUTPUT";
         if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
 
@@ -98,11 +96,10 @@ void finalizeOutput(Param out, const T newValue) {
     auto finalizeOut = KernelFunctor<Buffer, const KParam, const T>(*entry.ker);
 
     NDRange local(kernel::THREADS_X, kernel::THREADS_Y, 1);
-    NDRange global( divup(out.info.dims[0], local[0]) * local[0],
-                    divup(out.info.dims[1], local[1]) * local[1] ,
-                    1);
-    finalizeOut(EnqueueArgs(getQueue(), global, local),
-                *out.data, out.info, newValue);
+    NDRange global(divup(out.info.dims[0], local[0]) * local[0],
+                   divup(out.info.dims[1], local[1]) * local[1], 1);
+    finalizeOut(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+                newValue);
     CL_DEBUG_FINISH(getQueue());
 }
 
@@ -112,8 +109,8 @@ void floodFill(Param out, const Param image, const Param seedsx,
                const T highValue, const af::connectivity nlookup) {
     constexpr int RADIUS = 1;
     UNUSED(nlookup);
-    std::string refName = std::string("flood_step_") +
-                          std::string(dtype_traits<T>::getName());
+    std::string refName =
+        std::string("flood_step_") + std::string(dtype_traits<T>::getName());
     int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
 
@@ -124,10 +121,8 @@ void floodFill(Param out, const Param image, const Param seedsx,
                 << " -D LMEM_WIDTH=" << (THREADS_X + 2 * RADIUS)
                 << " -D LMEM_HEIGHT=" << (THREADS_Y + 2 * RADIUS)
                 << " -D GROUP_SIZE=" << (THREADS_Y * THREADS_X)
-                << " -D VALID=" << T(VALID)
-                << " -D INVALID=" << T(INVALID)
-                << " -D ZERO=" << T(ZERO)
-                << " -D FLOOD_FILL_STEP";
+                << " -D VALID=" << T(VALID) << " -D INVALID=" << T(INVALID)
+                << " -D ZERO=" << T(ZERO) << " -D FLOOD_FILL_STEP";
         if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
 
         const char *ker_strs[] = {flood_fill_cl};
@@ -139,13 +134,12 @@ void floodFill(Param out, const Param image, const Param seedsx,
 
         addKernelToCache(device, refName, entry);
     }
-    auto floodStep = KernelFunctor<Buffer, const KParam,
-                                   const Buffer, const KParam,
-                                   const T, const T, Buffer>(*entry.ker);
+    auto floodStep =
+        KernelFunctor<Buffer, const KParam, const Buffer, const KParam, const T,
+                      const T, Buffer>(*entry.ker);
     NDRange local(kernel::THREADS_X, kernel::THREADS_Y, 1);
-    NDRange global( divup(out.info.dims[0], local[0]) * local[0],
-                    divup(out.info.dims[1], local[1]) * local[1] ,
-                    1);
+    NDRange global(divup(out.info.dims[0], local[0]) * local[0],
+                   divup(out.info.dims[1], local[1]) * local[1], 1);
 
     initSeeds<T>(out, seedsx, seedsy);
 
@@ -170,5 +164,5 @@ void floodFill(Param out, const Param image, const Param seedsx,
     finalizeOutput<T>(out, newValue);
 }
 
-}
-}
+}  // namespace kernel
+}  // namespace opencl

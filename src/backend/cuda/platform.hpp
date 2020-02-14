@@ -100,7 +100,7 @@ cudaDeviceProp getDeviceProp(int device);
 
 std::pair<int, int> getComputeCapability(const int device);
 
-bool &evalFlag();
+bool& evalFlag();
 
 MemoryManagerBase& memoryManager();
 
@@ -116,9 +116,9 @@ void resetMemoryManagerPinned();
 
 graphics::ForgeManager& forgeManager();
 
-GraphicsResourceManager &interopManager();
+GraphicsResourceManager& interopManager();
 
-PlanCache &fftManager();
+PlanCache& fftManager();
 
 BlasHandle blasHandle();
 

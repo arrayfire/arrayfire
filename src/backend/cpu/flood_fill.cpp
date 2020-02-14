@@ -28,10 +28,10 @@ Array<T> floodFill(const Array<T>& image, const Array<uint>& seedsX,
     return out;
 }
 
-#define INSTANTIATE(T)                                                    \
-    template Array<T> floodFill(                                          \
-        const Array<T>&, const Array<uint>&, const Array<uint>&, const T, \
-        const T, const T, const af::connectivity);
+#define INSTANTIATE(T)                                                         \
+    template Array<T> floodFill(const Array<T>&, const Array<uint>&,           \
+                                const Array<uint>&, const T, const T, const T, \
+                                const af::connectivity);
 
 INSTANTIATE(float)
 INSTANTIATE(uint)

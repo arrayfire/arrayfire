@@ -39,7 +39,7 @@ class PlanCache : public common::FFTPlanCache<PlanCache, PlanType> {
     do {                                                         \
         clfftStatus _clfft_st = fn;                              \
         if (_clfft_st != CLFFT_SUCCESS) {                        \
-            opencl::signalMemoryCleanup();                            \
+            opencl::signalMemoryCleanup();                       \
             _clfft_st = (fn);                                    \
         }                                                        \
         if (_clfft_st != CLFFT_SUCCESS) {                        \

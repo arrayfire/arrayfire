@@ -18,8 +18,8 @@
 using namespace af;
 using std::vector;
 
-std::string toStr(const dtype dt) { 
-    switch(dt) {
+std::string toStr(const dtype dt) {
+    switch (dt) {
         case f32: return "f32";
         case f16: return "f16";
         default: return "N/A";
@@ -94,14 +94,14 @@ void ann::back_propagate(const vector<array> signal, const array &target,
     array out = signal[num_layers - 1];
     array err = (out - target);
 
-    int m     = target.dims(0);
+    int m = target.dims(0);
 
     for (int i = num_layers - 2; i >= 0; i--) {
         array in    = add_bias(signal[i]);
         array delta = (deriv(out) * err).T();
 
         // Adjust weights
-        array tg = alpha * matmul(delta, in);
+        array tg   = alpha * matmul(delta, in);
         array grad = -(tg) / m;
         weights[i] += grad.T();
 
@@ -115,14 +115,15 @@ void ann::back_propagate(const vector<array> signal, const array &target,
     }
 }
 
-
 ann::ann(vector<int> layers, double range, dtype dt)
     : num_layers(layers.size()), weights(layers.size() - 1), datatype(dt) {
-    std::cout << "Initializing weights using a random uniformly distribution between " << -range/2 << " and " << range/2 << " at precision " << toStr(datatype) << std::endl;
+    std::cout
+        << "Initializing weights using a random uniformly distribution between "
+        << -range / 2 << " and " << range / 2 << " at precision "
+        << toStr(datatype) << std::endl;
     for (int i = 0; i < num_layers - 1; i++) {
         weights[i] = range * randu(layers[i] + 1, layers[i + 1]) - range / 2;
-        if (datatype != f32)
-            weights[i] = weights[i].as(datatype);
+        if (datatype != f32) weights[i] = weights[i].as(datatype);
     }
 }
 
@@ -136,7 +137,7 @@ double ann::train(const array &input, const array &target, double alpha,
                   int max_epochs, int batch_size, double maxerr, bool verbose) {
     const int num_samples = input.dims(0);
     const int num_batches = num_samples / batch_size;
-    
+
     double err = 0;
 
     // Training the entire network
@@ -189,7 +190,7 @@ int ann_demo(bool console, int perc, const dtype dt) {
                       test_images, train_target, test_target, frac);
     if (dt != f32) {
         train_images = train_images.as(dt);
-        test_images = test_images.as(dt);
+        test_images  = test_images.as(dt);
         train_target = train_target.as(dt);
     }
 
@@ -255,20 +256,22 @@ int ann_demo(bool console, int perc, const dtype dt) {
 }
 
 int main(int argc, char **argv) {
-    // usage:  neural_network_xxx (device) (console on/off) (percentage training/test set) (f32|f16)
+    // usage:  neural_network_xxx (device) (console on/off) (percentage
+    // training/test set) (f32|f16)
     int device   = argc > 1 ? atoi(argv[1]) : 0;
     bool console = argc > 2 ? argv[2][0] == '-' : false;
     int perc     = argc > 3 ? atoi(argv[3]) : 60;
-	if (perc < 0 || perc > 100) {
+    if (perc < 0 || perc > 100) {
         std::cerr << "Bad perc arg: " << perc << std::endl;
         return EXIT_FAILURE;
     }
     std::string dts = argc > 4 ? argv[4] : "f32";
-    dtype dt = f32;
-    if (dts == "f16") 
+    dtype dt        = f32;
+    if (dts == "f16")
         dt = f16;
     else if (dts != "f32") {
-        std::cerr << "Unsupported datatype " << dts << ". Supported: f32 or f16" << std::endl;
+        std::cerr << "Unsupported datatype " << dts << ". Supported: f32 or f16"
+                  << std::endl;
         return EXIT_FAILURE;
     }
 

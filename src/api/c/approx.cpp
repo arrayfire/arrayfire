@@ -58,13 +58,16 @@ void af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
     dim4 yo_dims       = yi_dims;
     yo_dims[xdim]      = xo_dims[xdim];
 
-    ARG_ASSERT(1, yi_info.isFloating());                        // Only floating and complex types
-    ARG_ASSERT(2, xo_info.isRealFloating()) ;                   // Only floating types
-    ARG_ASSERT(1, yi_info.isSingle() == xo_info.isSingle());    // Must have same precision
-    ARG_ASSERT(1, yi_info.isDouble() == xo_info.isDouble());    // Must have same precision
+    ARG_ASSERT(1, yi_info.isFloating());      // Only floating and complex types
+    ARG_ASSERT(2, xo_info.isRealFloating());  // Only floating types
+    ARG_ASSERT(1, yi_info.isSingle() ==
+                      xo_info.isSingle());  // Must have same precision
+    ARG_ASSERT(1, yi_info.isDouble() ==
+                      xo_info.isDouble());  // Must have same precision
     ARG_ASSERT(3, xdim >= 0 && xdim < 4);
 
-    // POS should either be (x, 1, 1, 1) or (1, yi_dims[1], yi_dims[2], yi_dims[3])
+    // POS should either be (x, 1, 1, 1) or (1, yi_dims[1], yi_dims[2],
+    // yi_dims[3])
     if (xo_dims[xdim] != xo_dims.elements()) {
         for (int i = 0; i < 4; i++) {
             if (xdim != i) DIM_ASSERT(2, xo_dims[i] == yi_dims[i]);
@@ -72,12 +75,10 @@ void af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
     }
 
     ARG_ASSERT(5, xi_step != 0);
-    ARG_ASSERT(6, (method == AF_INTERP_CUBIC         ||
-                   method == AF_INTERP_CUBIC_SPLINE  ||
-                   method == AF_INTERP_LINEAR        ||
-                   method == AF_INTERP_LINEAR_COSINE ||
-                   method == AF_INTERP_LOWER         ||
-                   method == AF_INTERP_NEAREST));
+    ARG_ASSERT(
+        6, (method == AF_INTERP_CUBIC || method == AF_INTERP_CUBIC_SPLINE ||
+            method == AF_INTERP_LINEAR || method == AF_INTERP_LINEAR_COSINE ||
+            method == AF_INTERP_LOWER || method == AF_INTERP_NEAREST));
 
     if (yi_dims.ndims() == 0 || xo_dims.ndims() == 0) {
         af_create_handle(yo, 0, nullptr, yi_info.getType());
@@ -176,13 +177,16 @@ void af_approx2_common(af_array *zo, const af_array zi, const af_array xo,
     dim4 xo_dims = xo_info.dims();
     dim4 yo_dims = yo_info.dims();
 
-    ARG_ASSERT(1, zi_info.isFloating());                      // Only floating and complex types
-    ARG_ASSERT(2, xo_info.isRealFloating());                  // Only floating types
-    ARG_ASSERT(4, yo_info.isRealFloating());                  // Only floating types
-    ARG_ASSERT(2, xo_info.getType() == yo_info.getType());    // Must have same type
-    ARG_ASSERT(1, zi_info.isSingle() == xo_info.isSingle());  // Must have same precision
-    ARG_ASSERT(1, zi_info.isDouble() == xo_info.isDouble());  // Must have same precision
-    DIM_ASSERT(2, xo_dims == yo_dims);                        // POS0 and POS1 must have same dims
+    ARG_ASSERT(1, zi_info.isFloating());      // Only floating and complex types
+    ARG_ASSERT(2, xo_info.isRealFloating());  // Only floating types
+    ARG_ASSERT(4, yo_info.isRealFloating());  // Only floating types
+    ARG_ASSERT(2,
+               xo_info.getType() == yo_info.getType());  // Must have same type
+    ARG_ASSERT(1, zi_info.isSingle() ==
+                      xo_info.isSingle());  // Must have same precision
+    ARG_ASSERT(1, zi_info.isDouble() ==
+                      xo_info.isDouble());  // Must have same precision
+    DIM_ASSERT(2, xo_dims == yo_dims);      // POS0 and POS1 must have same dims
 
     ARG_ASSERT(3, xdim >= 0 && xdim < 4);
     ARG_ASSERT(5, ydim >= 0 && ydim < 4);

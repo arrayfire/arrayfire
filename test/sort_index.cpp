@@ -82,8 +82,7 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0,
 
     vector<T> sxTest(tests[resultIdx0].size());
     transform(tests[resultIdx0].begin(), tests[resultIdx0].end(),
-              sxTest.begin(),
-              convert_to<T, float>);
+              sxTest.begin(), convert_to<T, float>);
 
     ASSERT_VEC_ARRAY_EQ(sxTest, idims, sxArray);
 
@@ -145,8 +144,7 @@ TEST(SortIndex, CPPDim0) {
 
     vector<unsigned> ixTest(tests[resultIdx1].size());
     transform(tests[resultIdx1].begin(), tests[resultIdx1].end(),
-              ixTest.begin(),
-              convert_to<unsigned, float>);
+              ixTest.begin(), convert_to<unsigned, float>);
 
     ASSERT_VEC_ARRAY_EQ(ixTest, idims, outIndices);
 }

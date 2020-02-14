@@ -9,8 +9,8 @@
 
 #pragma once
 #include <backend.hpp>
-#include <jit/kernel_generators.hpp>
 #include <common/jit/Node.hpp>
+#include <jit/kernel_generators.hpp>
 
 #include <iomanip>
 #include <mutex>

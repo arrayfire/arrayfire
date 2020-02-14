@@ -440,7 +440,7 @@ T mean_all_weighted(Param in, Param inWeight) {
                                      h_wptr.data());
 
         compute_t<T> initial = static_cast<compute_t<T>>(h_ptr[0]);
-        compute_t<Tw> w       = static_cast<compute_t<Tw>>(h_wptr[0]);
+        compute_t<Tw> w      = static_cast<compute_t<Tw>>(h_wptr[0]);
         MeanOp<compute_t<T>, compute_t<Tw>> Op(initial, w);
         for (int i = 1; i < (int)tmpOut.elements(); i++) {
             Op(compute_t<T>(h_ptr[i]), compute_t<Tw>(h_wptr[i]));

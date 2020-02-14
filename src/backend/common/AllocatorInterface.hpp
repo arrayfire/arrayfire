@@ -35,7 +35,7 @@ class AllocatorInterface {
     virtual void nativeFree(void *ptr)            = 0;
     virtual spdlog::logger *getLogger() final { return this->logger.get(); }
 
-  protected:
+   protected:
     std::shared_ptr<spdlog::logger> logger;
 };
 

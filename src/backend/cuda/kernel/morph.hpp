@@ -75,7 +75,7 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
         });
 
     morph3D.setConstant("cFilter", reinterpret_cast<CUdeviceptr>(mask.ptr),
-                      mask.dims[0] * mask.dims[1] * mask.dims[2] * sizeof(T));
+                        mask.dims[0] * mask.dims[1] * mask.dims[2] * sizeof(T));
 
     dim3 threads(kernel::CUBE_X, kernel::CUBE_Y, kernel::CUBE_Z);
 

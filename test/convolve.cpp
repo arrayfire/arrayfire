@@ -889,7 +889,7 @@ TEST_P(Conv2ConsistencyTest, RandomConvolutions) {
 
     array out_native = convolve2(signal, filter);
     array out = convolve2NN(signal, filter, params.stride_, params.padding_,
-                             params.dilation_);
+                            params.dilation_);
 
     ASSERT_ARRAYS_NEAR(out_native, out, 1e-5);
 }
@@ -898,13 +898,19 @@ template<typename T>
 float tolerance();
 
 template<>
-float tolerance<float>() { return 1e-4; }
+float tolerance<float>() {
+    return 1e-4;
+}
 
 template<>
-float tolerance<double>() { return 1e-4; }
+float tolerance<double>() {
+    return 1e-4;
+}
 
 template<>
-float tolerance<half_float::half>() { return 3e-2; }
+float tolerance<half_float::half>() {
+    return 3e-2;
+}
 
 template<typename T>
 void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
@@ -1011,10 +1017,12 @@ void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
         dilation.ndims(), dilation.get(), AF_CONV_GRADIENT_DATA));
 
     vector<T> &dataGradientGold = tests[1];
-    ASSERT_VEC_ARRAY_NEAR(dataGradientGold, sDims, data_gradient, tolerance<T>());
+    ASSERT_VEC_ARRAY_NEAR(dataGradientGold, sDims, data_gradient,
+                          tolerance<T>());
 
     vector<T> &filterGradientGold = tests[2];
-    ASSERT_VEC_ARRAY_NEAR(filterGradientGold, fDims, filter_gradient, tolerance<T>());
+    ASSERT_VEC_ARRAY_NEAR(filterGradientGold, fDims, filter_gradient,
+                          tolerance<T>());
 
     ASSERT_SUCCESS(af_release_array(incoming_gradient));
     ASSERT_SUCCESS(af_release_array(convolved));

@@ -318,8 +318,11 @@ int &tlocalActiveDeviceId() {
 
 int getDeviceCount() {
     int count = 0;
-    if (cudaGetDeviceCount(&count)) { return 0; }
-    else { return count; }
+    if (cudaGetDeviceCount(&count)) {
+        return 0;
+    } else {
+        return count;
+    }
 }
 
 int getActiveDeviceId() { return tlocalActiveDeviceId(); }
