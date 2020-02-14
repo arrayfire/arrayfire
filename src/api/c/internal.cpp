@@ -106,8 +106,8 @@ af_err af_create_strided_array(af_array *arr, const void *data,
                     dims, strides, offset, (uchar *)data, isdev));
                 break;
             case f16:
-                res = getHandle(createStridedArray<half>(
-                    dims, strides, offset, (half *)data, isdev));
+                res = getHandle(createStridedArray<half>(dims, strides, offset,
+                                                         (half *)data, isdev));
                 break;
             default: TYPE_ERROR(6, ty);
         }

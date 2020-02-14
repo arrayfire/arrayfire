@@ -26,5 +26,4 @@ CREATE_HANDLE(cudnnTensorDescriptor_t, cuda::getCudnnPlugin().cudnnCreateTensorD
 CREATE_HANDLE(cudnnFilterDescriptor_t, cuda::getCudnnPlugin().cudnnCreateFilterDescriptor, cuda::getCudnnPlugin().cudnnDestroyFilterDescriptor);
 CREATE_HANDLE(cudnnConvolutionDescriptor_t, cuda::getCudnnPlugin().cudnnCreateConvolutionDescriptor, cuda::getCudnnPlugin().cudnnDestroyConvolutionDescriptor);
 
-
 // clang-format on

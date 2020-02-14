@@ -69,5 +69,5 @@ class DependencyModule {
 #define MODULE_MEMBER(NAME) decltype(&::NAME) NAME
 
 /// Dynamically loads the function pointer at runtime
-#define MODULE_FUNCTION_INIT(NAME)                     \
+#define MODULE_FUNCTION_INIT(NAME) \
     NAME = module.getSymbol<decltype(&::NAME)>(#NAME);

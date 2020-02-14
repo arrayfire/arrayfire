@@ -20,8 +20,8 @@ Array<T> floodFill(const Array<T>& image, const Array<uint>& seedsX,
                    const T lowValue, const T highValue,
                    const af::connectivity nlookup) {
     auto out = createValueArray(image.dims(), T(0));
-    kernel::floodFill<T>(out, image, seedsX, seedsY, newValue,
-                         lowValue, highValue, nlookup);
+    kernel::floodFill<T>(out, image, seedsX, seedsY, newValue, lowValue,
+                         highValue, nlookup);
     return out;
 }
 

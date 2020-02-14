@@ -18,14 +18,14 @@
 
 #if CUDNN_VERSION > 4000
 // This function is not available on versions greater than v4
-cudnnStatus_t
-cudnnSetFilter4dDescriptor_v4(cudnnFilterDescriptor_t filterDesc,
-                              cudnnDataType_t dataType,  // image data type
-                              cudnnTensorFormat_t format,
-                              int k,   // number of output feature maps
-                              int c,   // number of input feature maps
-                              int h,   // height of each input filter
-                              int w);  // width of  each input filter
+cudnnStatus_t cudnnSetFilter4dDescriptor_v4(
+    cudnnFilterDescriptor_t filterDesc,
+    cudnnDataType_t dataType,  // image data type
+    cudnnTensorFormat_t format,
+    int k,   // number of output feature maps
+    int c,   // number of input feature maps
+    int h,   // height of each input filter
+    int w);  // width of  each input filter
 #else
 // This function is only available on newer versions of cudnn
 size_t cudnnGetCudartVersion(void);
@@ -67,9 +67,7 @@ class cudnnModule {
     spdlog::logger* getLogger();
 
     /// Returns the version of the cuDNN loaded at runtime
-    std::tuple<int, int, int> getVersion() {
-        return { major, minor, patch };
-    }
+    std::tuple<int, int, int> getVersion() { return {major, minor, patch}; }
 };
 
 cudnnModule& getCudnnPlugin();

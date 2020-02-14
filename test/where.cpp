@@ -51,9 +51,7 @@ void whereTest(string pTestFile, bool isSubRef = false,
     dim4 dims = numDims[0];
 
     vector<T> in(data[0].size());
-    transform(data[0].begin(), data[0].end(),
-              in.begin(),
-              convert_to<T, int>);
+    transform(data[0].begin(), data[0].end(), in.begin(), convert_to<T, int>);
 
     af_array inArray   = 0;
     af_array outArray  = 0;
@@ -108,8 +106,7 @@ TYPED_TEST(Where, CPP) {
     dim4 dims = numDims[0];
 
     vector<float> in(data[0].size());
-    transform(data[0].begin(), data[0].end(),
-              in.begin(),
+    transform(data[0].begin(), data[0].end(), in.begin(),
               convert_to<float, int>);
 
     array input(dims, &in.front(), afHost);

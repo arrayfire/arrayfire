@@ -654,13 +654,11 @@ void testTwoLargeNonLinear(const af_dtype dt) {
     ASSERT_VEC_ARRAY_EQ(gold, a.dims(), c.as(f32));
 }
 
-TEST(JIT, TwoLargeNonLinear) {
-  testTwoLargeNonLinear(f32);
-}
+TEST(JIT, TwoLargeNonLinear) { testTwoLargeNonLinear(f32); }
 
 TEST(JIT, TwoLargeNonLinearHalf) {
-  if (noHalfTests(f16)) return;
-  testTwoLargeNonLinear(f16);
+    if (noHalfTests(f16)) return;
+    testTwoLargeNonLinear(f16);
 }
 
 std::string select_info(

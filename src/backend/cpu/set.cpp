@@ -66,7 +66,7 @@ Array<T> setUnion(const Array<T> &first, const Array<T> &second,
 
     Array<T> out = createEmptyArray<T>(af::dim4(elements));
 
-    T *ptr = out.get();
+    T *ptr  = out.get();
     T *last = set_union(uFirst.get(), uFirst.get() + first_elements,
                         uSecond.get(), uSecond.get() + second_elements, ptr);
 
@@ -94,7 +94,7 @@ Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
 
     Array<T> out = createEmptyArray<T>(af::dim4(elements));
 
-    T *ptr  = out.get();
+    T *ptr = out.get();
     T *last =
         set_intersection(uFirst.get(), uFirst.get() + first_elements,
                          uSecond.get(), uSecond.get() + second_elements, ptr);

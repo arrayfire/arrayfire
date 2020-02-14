@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include "reduce_impl.hpp"
 #include <common/half.hpp>
+#include "reduce_impl.hpp"
 
 using common::half;
 

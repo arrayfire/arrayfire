@@ -14,7 +14,7 @@
 #include <cuda_fp16.h>
 
 namespace common {
-    class half;
+class half;
 }
 
 #ifdef __CUDACC_RTC__
@@ -133,14 +133,13 @@ const char *getFullName<common::half>() {
 }  // namespace
 #endif  //__CUDACC_RTC__
 
-  //#ifndef __CUDACC_RTC__
+//#ifndef __CUDACC_RTC__
 }  // namespace cuda
 //#endif  //__CUDACC_RTC__
 
-
 namespace common {
-  template<typename T>
-  class kernel_type;
+template<typename T>
+class kernel_type;
 }
 
 namespace common {
@@ -166,4 +165,4 @@ struct kernel_type<common::half> {
 #endif
 #endif
 };
-}
+}  // namespace common

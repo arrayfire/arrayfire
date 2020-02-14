@@ -105,7 +105,8 @@ float transform<float>(uint *val, int index) {
 template<>
 common::half transform<common::half>(uint *val, int index) {
     float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
-    return static_cast<common::half>(1.f - (v * HALF_FACTOR + HALF_HALF_FACTOR));
+    return static_cast<common::half>(1.f -
+                                     (v * HALF_FACTOR + HALF_HALF_FACTOR));
 }
 
 // Generates rationals in [0, 1)
@@ -161,8 +162,7 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
                 for (size_t buf_idx = 0; buf_idx < NUM_WRITES; ++buf_idx) {
                     size_t out_idx = iter + buf_idx * WRITE_STRIDE + i + j;
                     if (out_idx < elements) {
-                        out[out_idx] =
-                            transform<T>(ctr, buf_idx);
+                        out[out_idx] = transform<T>(ctr, buf_idx);
                     }
                 }
             }
@@ -189,9 +189,7 @@ void threefryUniform(T *out, size_t elements, const uintl seed, uintl counter) {
         ++ctr[0];
         ctr[1] += (ctr[0] == 0);
         int lim = (reset < (int)(elements - i)) ? reset : (int)(elements - i);
-        for (int j = 0; j < lim; ++j) {
-            out[i + j] = transform<T>(val, j);
-        }
+        for (int j = 0; j < lim; ++j) { out[i + j] = transform<T>(val, j); }
     }
 }
 
@@ -295,9 +293,7 @@ void uniformDistributionMT(T *out, size_t elements, uint *const state,
         mersenne(o, l_state, i, lpos, lsh1, lsh2, mask, recursion_table,
                  temper_table);
         int lim = (reset < (int)(elements - i)) ? reset : (int)(elements - i);
-        for (int j = 0; j < lim; ++j) {
-            out[i + j] = transform<T>(o, j);
-        }
+        for (int j = 0; j < lim; ++j) { out[i + j] = transform<T>(o, j); }
     }
 
     state_write(state, l_state);

@@ -24,12 +24,13 @@ class HandleBase {
     HandleBase(HandleBase const&) = delete;
     void operator=(HandleBase const&) = delete;
 
-    HandleBase(HandleBase &&h) = default;
-    HandleBase& operator=(HandleBase &&h) = default;
+    HandleBase(HandleBase&& h) = default;
+    HandleBase& operator=(HandleBase&& h) = default;
 };
 }  // namespace common
 
-#define CREATE_HANDLE(NAME, TYPE, CREATE_FUNCTION, DESTROY_FUNCTION, CHECK_FUNCTION) \
+#define CREATE_HANDLE(NAME, TYPE, CREATE_FUNCTION, DESTROY_FUNCTION,  \
+                      CHECK_FUNCTION)                                 \
     class NAME : public common::HandleBase<NAME, TYPE> {              \
        public:                                                        \
         void createHandle(TYPE* handle) {                             \

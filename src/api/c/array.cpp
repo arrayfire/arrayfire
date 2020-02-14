@@ -254,7 +254,7 @@ af_err af_get_data_ref_count(int *use_count, const af_array in) {
 
 af_err af_release_array(af_array arr) {
     try {
-        if(arr == 0) return AF_SUCCESS;
+        if (arr == 0) return AF_SUCCESS;
         const ArrayInfo &info = getInfo(arr, false, false);
         af_dtype type         = info.getType();
 

@@ -743,13 +743,12 @@ string to_test_params(const ::testing::TestParamInfo<FFTBase::ParamType> info) {
     return out.replace(out.find("."), 1, "_");
 }
 
-INSTANTIATE_TEST_CASE_P(Inputs2D, FFTC2R2D,
-                        ::testing::Values(
-                            fft_params(dim4(513, 512), false, 0.5),
-                            fft_params(dim4(1025, 1024), false, 0.5),
-                            fft_params(dim4(2049, 2048), false, 0.5)
-                            ),
-                        to_test_params);
+INSTANTIATE_TEST_CASE_P(
+    Inputs2D, FFTC2R2D,
+    ::testing::Values(fft_params(dim4(513, 512), false, 0.5),
+                      fft_params(dim4(1025, 1024), false, 0.5),
+                      fft_params(dim4(2049, 2048), false, 0.5)),
+    to_test_params);
 
 INSTANTIATE_TEST_CASE_P(
     Inputs2D, FFT2D,
@@ -765,36 +764,35 @@ INSTANTIATE_TEST_CASE_P(
                       fft_params(dim4(2048, 2048, 3), false, 0.5)),
     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(Inputs3D, FFT3D,
-                        ::testing::Values(
-                            fft_params(dim4(1024, 1024, 3), true, 0.5),
-                            fft_params(dim4(1024, 1024, 3), false, 0.5)),
-                        to_test_params);
+INSTANTIATE_TEST_CASE_P(
+    Inputs3D, FFT3D,
+    ::testing::Values(fft_params(dim4(1024, 1024, 3), true, 0.5),
+                      fft_params(dim4(1024, 1024, 3), false, 0.5)),
+    to_test_params);
 
+INSTANTIATE_TEST_CASE_P(
+    InputsND, FFTND,
+    ::testing::Values(fft_params(dim4(512), false, 0.5),
+                      fft_params(dim4(1024), false, 0.5),
+                      fft_params(dim4(1024, 1024), false, 0.5),
+                      fft_params(dim4(1024, 1024, 3), false, 0.5)),
+    to_test_params);
 
-INSTANTIATE_TEST_CASE_P(InputsND, FFTND,
-                        ::testing::Values(
-                            fft_params(dim4(512), false, 0.5),
-                            fft_params(dim4(1024), false, 0.5),
-                            fft_params(dim4(1024, 1024), false, 0.5),
-                            fft_params(dim4(1024, 1024, 3), false, 0.5)),
-                        to_test_params);
-
-
-INSTANTIATE_TEST_CASE_P(InputsND, FFTC2R,
-                        ::testing::Values(
-                            fft_params(dim4(513), false, 0.5),
-                            fft_params(dim4(1025), false, 0.5),
-                            fft_params(dim4(1025, 1024), false, 0.5),
-                            fft_params(dim4(1025, 1024, 3), false, 0.5)),
-                        to_test_params);
+INSTANTIATE_TEST_CASE_P(
+    InputsND, FFTC2R,
+    ::testing::Values(fft_params(dim4(513), false, 0.5),
+                      fft_params(dim4(1025), false, 0.5),
+                      fft_params(dim4(1025, 1024), false, 0.5),
+                      fft_params(dim4(1025, 1024, 3), false, 0.5)),
+    to_test_params);
 
 // Does not work well with CUDA 10.1
 // TEST_P(FFTC2R2D, Complex32ToRealInputsPreserved) {
 //     fft_params params = GetParam();
 //     af::array a       = af::randu(params.input_dims_, c32);
 //     af::array a_copy  = a.copy();
-//     af::array out     = af::fftC2R<2>(a, params.is_odd_, params.norm_factor_);
+//     af::array out     = af::fftC2R<2>(a, params.is_odd_,
+//     params.norm_factor_);
 //
 //     ASSERT_ARRAYS_EQ(a_copy, a);
 // }
@@ -803,7 +801,8 @@ INSTANTIATE_TEST_CASE_P(InputsND, FFTC2R,
 //     fft_params params = GetParam();
 //     af::array a       = af::randu(params.input_dims_, c64);
 //     af::array a_copy  = a.copy();
-//     af::array out     = af::fftC2R<2>(a, params.is_odd_, params.norm_factor_);
+//     af::array out     = af::fftC2R<2>(a, params.is_odd_,
+//     params.norm_factor_);
 //
 //     ASSERT_ARRAYS_EQ(a_copy, a);
 // }

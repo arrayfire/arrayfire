@@ -8,10 +8,10 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <kernel/transpose.hpp>
 #include <transpose.hpp>
 #include <af/dim4.hpp>
-#include <common/half.hpp>
 
 using af::dim4;
 using common::half;

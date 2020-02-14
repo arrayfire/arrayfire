@@ -81,8 +81,9 @@ Array<T> unaryOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
     using std::array;
 
     auto createUnary = [](array<Node_ptr, 1> &operands) {
-        return common::Node_ptr(new common::UnaryNode(
-            getFullName<T>(), shortname<T>(true), unaryName<op>(), operands[0], op));
+        return common::Node_ptr(
+            new common::UnaryNode(getFullName<T>(), shortname<T>(true),
+                                  unaryName<op>(), operands[0], op));
     };
 
     if (outDim == dim4(-1, -1, -1, -1)) { outDim = in.dims(); }

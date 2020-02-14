@@ -42,8 +42,8 @@ void DefaultMemoryManager::cleanDeviceMemoryManager(int device) {
     // This vector is used to store the pointers which will be deleted by
     // the memory manager. We are using this to avoid calling free while
     // the lock is being held because the CPU backend calls sync.
-    vector<void*> free_ptrs;
-    size_t bytes_freed           = 0;
+    vector<void *> free_ptrs;
+    size_t bytes_freed                         = 0;
     DefaultMemoryManager::memory_info &current = memory[device];
     {
         lock_guard_t lock(this->memory_mutex);
@@ -55,8 +55,9 @@ void DefaultMemoryManager::cleanDeviceMemoryManager(int device) {
             size_t num_ptrs = kv.second.size();
             // Free memory by pushing the last element into the free_ptrs
             // vector which will be freed once outside of the lock
-            //for (auto ptr : kv.second) { free_ptrs.emplace_back(pair); }
-            std::move(begin(kv.second), end(kv.second), back_inserter(free_ptrs));
+            // for (auto ptr : kv.second) { free_ptrs.emplace_back(pair); }
+            std::move(begin(kv.second), end(kv.second),
+                      back_inserter(free_ptrs));
             current.total_bytes -= num_ptrs * kv.first;
             bytes_freed += num_ptrs * kv.first;
             current.total_buffers -= num_ptrs;
@@ -67,9 +68,7 @@ void DefaultMemoryManager::cleanDeviceMemoryManager(int device) {
     AF_TRACE("GC: Clearing {} buffers {}", free_ptrs.size(),
              bytesToString(bytes_freed));
     // Free memory outside of the lock
-    for (auto ptr : free_ptrs) {
-        this->nativeFree(ptr);
-    }
+    for (auto ptr : free_ptrs) { this->nativeFree(ptr); }
 }
 
 DefaultMemoryManager::DefaultMemoryManager(int num_devices,
@@ -143,13 +142,12 @@ bool DefaultMemoryManager::jitTreeExceedsMemoryPressure(size_t bytes) {
     return 2 * bytes > current.lock_bytes;
 }
 
-void* DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
-                                  dim_t *dims,
-                                  const unsigned element_size) {
+void *DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
+                                  dim_t *dims, const unsigned element_size) {
     size_t bytes = element_size;
     for (unsigned i = 0; i < ndims; ++i) { bytes *= dims[i]; }
 
-    void* ptr = nullptr;
+    void *ptr          = nullptr;
     size_t alloc_bytes = this->debug_mode
                              ? bytes
                              : (divup(bytes, mem_step_size) * mem_step_size);
@@ -184,12 +182,12 @@ void* DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
         if (ptr == nullptr) {
             // Perform garbage collection if memory can not be allocated
             try {
-                ptr             = this->nativeAlloc(alloc_bytes);
+                ptr = this->nativeAlloc(alloc_bytes);
             } catch (const AfError &ex) {
                 // If out of memory, run garbage collect and try again
                 if (ex.getError() != AF_ERR_NO_MEM) throw;
                 this->signalMemoryCleanup();
-                ptr             = this->nativeAlloc(alloc_bytes);
+                ptr = this->nativeAlloc(alloc_bytes);
             }
             lock_guard_t lock(this->memory_mutex);
             // Increment these two only when it succeeds to come here.
@@ -212,12 +210,9 @@ size_t DefaultMemoryManager::allocated(void *ptr) {
     return (iter->second).bytes;
 }
 
-void DefaultMemoryManager::unlock(void *ptr,
-                                  bool user_unlock) {
+void DefaultMemoryManager::unlock(void *ptr, bool user_unlock) {
     // Shortcut for empty arrays
-    if (!ptr) {
-        return;
-    }
+    if (!ptr) { return; }
 
     // Frees the pointer outside the lock.
     uptr_t freed_ptr(nullptr, [this](void *p) { this->nativeFree(p); });
@@ -241,9 +236,7 @@ void DefaultMemoryManager::unlock(void *ptr,
         }
 
         // Return early if either one is locked
-        if ((iter->second).user_lock || (iter->second).manager_lock) {
-            return;
-        }
+        if ((iter->second).user_lock || (iter->second).manager_lock) { return; }
 
         size_t bytes = iter->second.bytes;
         current.lock_bytes -= iter->second.bytes;
@@ -335,8 +328,7 @@ void DefaultMemoryManager::userLock(const void *ptr) {
     if (iter != current.locked_map.end()) {
         iter->second.user_lock = true;
     } else {
-        locked_info info = {false, true,
-                                    100};  // This number is not relevant
+        locked_info info = {false, true, 100};  // This number is not relevant
 
         current.locked_map[(void *)ptr] = info;
     }

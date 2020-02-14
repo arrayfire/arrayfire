@@ -75,9 +75,11 @@ void copyElemwise(Param<OutT> dst, CParam<InT> src, OutT default_value,
                     if (isLvalid && isKvalid && isJvalid && i < trgt_i) {
                         dim_t src_idx =
                             i * src_strides[0] + src_joff + src_koff + src_loff;
-                        // The conversions here are necessary because the half type does not convert to
-                        // complex automatically
-                        temp = compute_t<OutT>(compute_t<InT>(src_ptr[src_idx])) * compute_t<OutT>(factor);
+                        // The conversions here are necessary because the half
+                        // type does not convert to complex automatically
+                        temp =
+                            compute_t<OutT>(compute_t<InT>(src_ptr[src_idx])) *
+                            compute_t<OutT>(factor);
                     }
                     dim_t dst_idx =
                         i * dst_strides[0] + dst_joff + dst_koff + dst_loff;

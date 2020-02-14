@@ -20,7 +20,6 @@
 #include <string>
 #include <vector>
 
-
 #include <iostream>
 
 using af::array;
@@ -70,9 +69,12 @@ class Clamp : public ::testing::TestWithParam<clamp_params> {
         hi_.as((dtype)af::dtype_traits<T>::af_type).host(&hhi[0]);
 
         for (int i = 0; i < num; i++) {
-            if (hin[i] < hlo[i])      hgold[i] = hlo[i];
-            else if (hin[i] > hhi[i]) hgold[i] = hhi[i];
-            else                      hgold[i] = hin[i];
+            if (hin[i] < hlo[i])
+                hgold[i] = hlo[i];
+            else if (hin[i] > hhi[i])
+                hgold[i] = hhi[i];
+            else
+                hgold[i] = hin[i];
         }
 
         gold_ = array(params.size_, &hgold[0]);

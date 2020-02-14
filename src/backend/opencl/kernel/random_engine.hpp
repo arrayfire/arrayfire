@@ -145,8 +145,8 @@ static void randomDistribution(cl::Buffer out, const size_t elements,
             get_random_engine_kernel<T>(type, kerIdx, elementsPerBlock);
         auto randomEngineOp =
             cl::KernelFunctor<cl::Buffer, uint, uint, uint, uint, uint>(ker);
-        randomEngineOp(cl::EnqueueArgs(getQueue(), global, local), out, elements,
-                       hic, loc, hi, lo);
+        randomEngineOp(cl::EnqueueArgs(getQueue(), global, local), out,
+                       elements, hic, loc, hi, lo);
     }
 
     counter += elements;
@@ -166,15 +166,15 @@ void randomDistribution(cl::Buffer out, const size_t elements, cl::Buffer state,
 
     cl::NDRange local(threads, 1);
     cl::NDRange global(threads * blocks, 1);
-    cl::Kernel ker = get_random_engine_kernel<T>(AF_RANDOM_ENGINE_MERSENNE_GP11213,
-                                             kerIdx, elementsPerBlock);
+    cl::Kernel ker = get_random_engine_kernel<T>(
+        AF_RANDOM_ENGINE_MERSENNE_GP11213, kerIdx, elementsPerBlock);
     auto randomEngineOp =
         cl::KernelFunctor<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer,
-                      cl::Buffer, uint, cl::Buffer, cl::Buffer, uint, uint>(
+                          cl::Buffer, uint, cl::Buffer, cl::Buffer, uint, uint>(
             ker);
-    randomEngineOp(cl::EnqueueArgs(getQueue(), global, local), out, state, pos, sh1,
-                   sh2, mask, recursion_table, temper_table, elementsPerBlock,
-                   elements);
+    randomEngineOp(cl::EnqueueArgs(getQueue(), global, local), out, state, pos,
+                   sh1, sh2, mask, recursion_table, temper_table,
+                   elementsPerBlock, elements);
     CL_DEBUG_FINISH(getQueue());
 }
 
@@ -215,8 +215,8 @@ void initMersenneState(cl::Buffer state, cl::Buffer table, const uintl &seed) {
     cl::NDRange local(THREADS_PER_GROUP, 1);
     cl::NDRange global(local[0] * MAX_BLOCKS, 1);
 
-    cl::Kernel ker  = get_mersenne_init_kernel();
-    auto initOp = cl::KernelFunctor<cl::Buffer, cl::Buffer, uintl>(ker);
+    cl::Kernel ker = get_mersenne_init_kernel();
+    auto initOp    = cl::KernelFunctor<cl::Buffer, cl::Buffer, uintl>(ker);
     initOp(cl::EnqueueArgs(getQueue(), global, local), state, table, seed);
     CL_DEBUG_FINISH(getQueue());
 }

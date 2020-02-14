@@ -26,9 +26,10 @@ template<typename T>
 Array<T> multiplyIndexed(const Array<T> &lhs, const Array<T> &rhs,
                          std::vector<af_seq> idx) {
     Array<T> rhs_sub = createSubArray(rhs, idx);
-    Array<T> out     = createEmptyArray<T>(dim4(lhs.dims()[0], rhs_sub.dims()[1], lhs.dims()[2], lhs.dims()[3]));
+    Array<T> out     = createEmptyArray<T>(
+        dim4(lhs.dims()[0], rhs_sub.dims()[1], lhs.dims()[2], lhs.dims()[3]));
     T alpha = scalar<T>(1.0);
-    T beta = scalar<T>(0.0);
+    T beta  = scalar<T>(0.0);
     gemm(out, AF_MAT_NONE, AF_MAT_NONE, &alpha, lhs, rhs_sub, &beta);
     return out;
 }

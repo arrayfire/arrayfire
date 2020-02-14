@@ -23,7 +23,7 @@
 
 #include <limits>
 #else
-using uint16_t = unsigned short;
+using uint16_t      = unsigned short;
 #endif
 
 #if AF_COMPILER_CXX_RELAXED_CONSTEXPR

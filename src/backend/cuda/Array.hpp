@@ -225,12 +225,12 @@ class Array {
 
     operator Param<data_t<T>>() {
         return Param<data_t<T>>(this->get(), this->dims().get(),
-                                        this->strides().get());
+                                this->strides().get());
     }
 
     operator CParam<data_t<T>>() const {
         return CParam<data_t<T>>(this->get(), this->dims().get(),
-                                         this->strides().get());
+                                 this->strides().get());
     }
 
     common::Node_ptr getNode();

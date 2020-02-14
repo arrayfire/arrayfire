@@ -58,9 +58,8 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
             // alloc an 1-element buffer to avoid OpenCL from failing using
             // direct buffer allocation as opposed to mem manager to avoid
             // reference count desprepancies between different backends
-            static cl::Buffer *empty = new Buffer(getContext(),
-                                                   CL_MEM_READ_ONLY,
-                                                   sizeof(uint));
+            static cl::Buffer* empty =
+                new Buffer(getContext(), CL_MEM_READ_ONLY, sizeof(uint));
             bPtrs[x] = empty;
         }
     }

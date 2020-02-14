@@ -8,9 +8,9 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <join.hpp>
 #include <kernel/join.hpp>
-#include <common/half.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 

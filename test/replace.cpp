@@ -9,10 +9,10 @@
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <half.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -32,8 +32,8 @@ using std::vector;
 template<typename T>
 class Replace : public ::testing::Test {};
 
-typedef ::testing::Types<half_float::half, float, double, cfloat, cdouble, uint, int, intl, uintl,
-                         uchar, char, short, ushort>
+typedef ::testing::Types<half_float::half, float, double, cfloat, cdouble, uint,
+                         int, intl, uintl, uchar, char, short, ushort>
     TestTypes;
 
 TYPED_TEST_CASE(Replace, TestTypes);

@@ -851,8 +851,8 @@ class Approx1V2 : public ::testing::Test {
     void SetUp() {}
 
     void releaseArrays() {
-        if (pos != 0)  { ASSERT_SUCCESS(af_release_array(pos)); }
-        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
+        if (pos != 0) { ASSERT_SUCCESS(af_release_array(pos)); }
+        if (in != 0) { ASSERT_SUCCESS(af_release_array(in)); }
         if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
     }
 
@@ -938,9 +938,8 @@ class SimpleTestData {
                                        40.0f, 45.0f, 50.0f, 55.0f, 60.0f,
                                        70.0f, 75.0f, 80.0f, 85.0f, 90.0f};
 
-        float in_arr[h_in_size] = {10.0f, 20.0f, 30.0f,
-                                   40.0f, 50.0f, 60.0f,
-                                   70.0f, 80.0f, 90.0f};
+        float in_arr[h_in_size] = {10.0f, 20.0f, 30.0f, 40.0f, 50.0f,
+                                   60.0f, 70.0f, 80.0f, 90.0f};
 
         float pos_arr[h_pos_size] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f};
 
@@ -1016,7 +1015,7 @@ class Approx1NullArgs : public ::testing::Test {
 
     void TearDown() {
         if (pos != 0) { ASSERT_SUCCESS(af_release_array(pos)); }
-        if (in != 0)  { ASSERT_SUCCESS(af_release_array(in)); }
+        if (in != 0) { ASSERT_SUCCESS(af_release_array(in)); }
     }
 };
 

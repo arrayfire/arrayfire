@@ -34,7 +34,7 @@ ALGO_HAPI_DEF(af_diff2)
     af_err af_func(af_array *keys_out, af_array *vals_out,                    \
                    const af_array keys, const af_array vals, const int dim) { \
         CHECK_ARRAYS(keys, vals);                                             \
-        CALL(af_func, keys_out, vals_out, keys, vals, dim);              \
+        CALL(af_func, keys_out, vals_out, keys, vals, dim);                   \
     }
 
 ALGO_HAPI_DEF_BYKEY(af_sum_by_key)
@@ -59,12 +59,12 @@ ALGO_HAPI_DEF(af_product_nan)
 
 #undef ALGO_HAPI_DEF
 
-#define ALGO_HAPI_DEF_BYKEY(af_func_nan)                         \
-    af_err af_func_nan(af_array *keys_out, af_array *vals_out,   \
-                       const af_array keys, const af_array vals, \
-                       const int dim, const double nanval) {     \
-        CHECK_ARRAYS(keys, vals);                                \
-        CALL(af_func_nan, keys_out, vals_out, keys, vals, dim, nanval);  \
+#define ALGO_HAPI_DEF_BYKEY(af_func_nan)                                \
+    af_err af_func_nan(af_array *keys_out, af_array *vals_out,          \
+                       const af_array keys, const af_array vals,        \
+                       const int dim, const double nanval) {            \
+        CHECK_ARRAYS(keys, vals);                                       \
+        CALL(af_func_nan, keys_out, vals_out, keys, vals, dim, nanval); \
     }
 
 ALGO_HAPI_DEF_BYKEY(af_sum_by_key_nan)

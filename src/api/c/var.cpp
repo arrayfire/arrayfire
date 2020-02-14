@@ -179,7 +179,7 @@ af_err af_var(af_array* out, const af_array in, const bool isbiased,
 
         af_array no_weights = 0;
         af_var_bias bias =
-            (isbiased) ? AF_VARIANCE_SAMPLE: AF_VARIANCE_POPULATION;
+            (isbiased) ? AF_VARIANCE_SAMPLE : AF_VARIANCE_POPULATION;
         switch (type) {
             case f32:
                 output = var_<float, float>(in, no_weights, bias, dim);
@@ -442,8 +442,7 @@ af_err af_meanvar(af_array* mean, af_array* var, const af_array in,
                     meanvar<cdouble, cdouble>(in, weights, bias, dim);
                 break;
             case f16:
-                tie(*mean, *var) =
-                    meanvar<half, half>(in, weights, bias, dim);
+                tie(*mean, *var) = meanvar<half, half>(in, weights, bias, dim);
                 break;
             default: TYPE_ERROR(1, iType);
         }

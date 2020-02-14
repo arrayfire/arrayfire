@@ -61,8 +61,10 @@ const detail::Array<T> &getArray(const af_array &arr) {
 
 template<>
 const detail::Array<common::half> &getArray<common::half>(const af_array &arr) {
-  const detail::Array<common::half> *A = static_cast<const detail::Array<common::half> *>(arr);
-    if (f16 != A->getType()) AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
+    const detail::Array<common::half> *A =
+        static_cast<const detail::Array<common::half> *>(arr);
+    if (f16 != A->getType())
+        AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
     return *A;
 }
 
@@ -76,7 +78,8 @@ detail::Array<T> &getArray(af_array &arr) {
 
 template<>
 detail::Array<common::half> &getArray<common::half>(af_array &arr) {
-    detail::Array<common::half> *A = static_cast<detail::Array<common::half> *>(arr);
+    detail::Array<common::half> *A =
+        static_cast<detail::Array<common::half> *>(arr);
     if (f16 != A->getType())
         AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
     return *A;

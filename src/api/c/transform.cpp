@@ -58,8 +58,8 @@ void af_transform_common(af_array *out, const af_array in, const af_array tf,
                          const af_interp_type method, const bool inverse,
                          bool allocate_out) {
     ARG_ASSERT(0, out != 0);  // *out (the af_array) can be null, but not out
-    ARG_ASSERT(1, in  != 0);
-    ARG_ASSERT(2, tf  != 0);
+    ARG_ASSERT(1, in != 0);
+    ARG_ASSERT(2, tf != 0);
 
     const ArrayInfo &t_info = getInfo(tf);
     const ArrayInfo &i_info = getInfo(in);

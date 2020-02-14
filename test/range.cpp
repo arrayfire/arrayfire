@@ -9,8 +9,8 @@
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
-#include <testHelpers.hpp>
 #include <half.hpp>
+#include <testHelpers.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>

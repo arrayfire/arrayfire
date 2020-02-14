@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include <string>
 #include <mutex>
+#include <string>
 
 inline std::string clipFilePath(std::string path, std::string str) {
     try {
@@ -78,4 +78,4 @@ using LibHandle = void*;
 namespace common {
 using mutex_t      = std::mutex;
 using lock_guard_t = std::lock_guard<mutex_t>;
-}
+}  // namespace common

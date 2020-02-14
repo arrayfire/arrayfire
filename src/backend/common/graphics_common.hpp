@@ -49,7 +49,7 @@ namespace graphics {
 ///      fg_vector_field
 ///
 class ForgeManager {
-  public:
+   public:
     using WindowGridDims = std::pair<int, int>;
 
     ForgeManager();
@@ -155,8 +155,8 @@ class ForgeManager {
     /// [0, 2^16] for the ForgeManager to correctly retrieve the necessary
     /// Forge Image object. This is an implementation limitation on how big
     /// of an image can be rendered using arrayfire graphics funtionality
-    fg_image getImage(fg_chart chart, int w, int h,
-                      fg_channel_format mode, fg_dtype type);
+    fg_image getImage(fg_chart chart, int w, int h, fg_channel_format mode,
+                      fg_dtype type);
 
     /// \brief Find/Create a Plot to render in a Chart
     ///
@@ -243,14 +243,14 @@ class ForgeManager {
     /// overriden \param[in] flag indicates if axes limits are overriden or not
     void setChartAxesOverride(const fg_chart chart, bool flag = true);
 
-  private:
-    constexpr static unsigned int WIDTH = 1280;
+   private:
+    constexpr static unsigned int WIDTH  = 1280;
     constexpr static unsigned int HEIGHT = 720;
     constexpr static long long _4BIT     = 0x000000000000000F;
     constexpr static long long _8BIT     = 0x00000000000000FF;
-    constexpr static long long _16BIT = 0x000000000000FFFF;
-    constexpr static long long _32BIT = 0x00000000FFFFFFFF;
-    constexpr static long long _48BIT = 0x0000FFFFFFFFFFFF;
+    constexpr static long long _16BIT    = 0x000000000000FFFF;
+    constexpr static long long _32BIT    = 0x00000000FFFFFFFF;
+    constexpr static long long _48BIT    = 0x0000FFFFFFFFFFFF;
 
     long long genImageKey(int w, int h, fg_channel_format mode, fg_dtype type);
 
@@ -274,14 +274,14 @@ class ForgeManager {
 
 #undef DEFINE_WRAPPER_OBJECT
 
-    using ImagePtr        = std::unique_ptr<Image      , Image::Deleter      >;
-    using ChartPtr        = std::unique_ptr<Chart      , Chart::Deleter      >;
-    using PlotPtr         = std::unique_ptr<Plot       , Plot::Deleter       >;
-    using SurfacePtr      = std::unique_ptr<Surface    , Surface::Deleter    >;
-    using HistogramPtr    = std::unique_ptr<Histogram  , Histogram::Deleter  >;
-    using VectorFieldPtr  = std::unique_ptr<VectorField, VectorField::Deleter>;
-    using ChartList       = std::vector<ChartPtr>;
-    using ChartKey        = std::pair<long long, fg_chart>;
+    using ImagePtr       = std::unique_ptr<Image, Image::Deleter>;
+    using ChartPtr       = std::unique_ptr<Chart, Chart::Deleter>;
+    using PlotPtr        = std::unique_ptr<Plot, Plot::Deleter>;
+    using SurfacePtr     = std::unique_ptr<Surface, Surface::Deleter>;
+    using HistogramPtr   = std::unique_ptr<Histogram, Histogram::Deleter>;
+    using VectorFieldPtr = std::unique_ptr<VectorField, VectorField::Deleter>;
+    using ChartList      = std::vector<ChartPtr>;
+    using ChartKey       = std::pair<long long, fg_chart>;
 
     using ChartMapIterator     = std::map<fg_window, ChartList>::iterator;
     using WindGridMapIterator  = std::map<fg_window, WindowGridDims>::iterator;
@@ -295,14 +295,14 @@ class ForgeManager {
     std::unique_ptr<ForgeModule> mPlugin;
     std::unique_ptr<Window, Window::Deleter> mMainWindow;
 
-    std::map<fg_window, ChartList     > mChartMap;
-    std::map< ChartKey, ImagePtr      > mImgMap;
-    std::map< ChartKey, PlotPtr       > mPltMap;
-    std::map< ChartKey, HistogramPtr  > mHstMap;
-    std::map< ChartKey, SurfacePtr    > mSfcMap;
-    std::map< ChartKey, VectorFieldPtr> mVcfMap;
+    std::map<fg_window, ChartList> mChartMap;
+    std::map<ChartKey, ImagePtr> mImgMap;
+    std::map<ChartKey, PlotPtr> mPltMap;
+    std::map<ChartKey, HistogramPtr> mHstMap;
+    std::map<ChartKey, SurfacePtr> mSfcMap;
+    std::map<ChartKey, VectorFieldPtr> mVcfMap;
     std::map<fg_window, WindowGridDims> mWndGridMap;
-    std::map< fg_chart, bool          > mChartAxesOverrideMap;
+    std::map<fg_chart, bool> mChartAxesOverrideMap;
 };
 
 }  // namespace graphics

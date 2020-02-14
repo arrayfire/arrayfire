@@ -19,8 +19,8 @@
 #include <type_traits>
 #include "config.hpp"
 
-#include <cub/device/device_reduce.cuh>
 #include <kernel/shfl_intrinsics.hpp>
+#include <cub/device/device_reduce.cuh>
 
 using std::unique_ptr;
 
@@ -72,7 +72,8 @@ __global__ void test_needs_reduction(int *needs_another_reduction,
 
     __syncthreads();
 
-    if (remaining_updates && (threadIdx.x % 32 == 0)) atomicOr(needs_another_reduction, remaining_updates);
+    if (remaining_updates && (threadIdx.x % 32 == 0))
+        atomicOr(needs_another_reduction, remaining_updates);
 
     // check across warp boundaries
     if ((tid + 1) < n) { k = keys_in.ptr[tid + 1]; }
@@ -271,17 +272,20 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         compute_t<To> init = Binary<compute_t<To>, op>::init();
         int eq_check, update_key;
         unsigned shflmask;
-        #pragma unroll
+#pragma unroll
         for (int delta = 1; delta < 32; delta <<= 1) {
-            eq_check = (unique_id == shfl_down_sync(FULL_MASK, unique_id, delta));
+            eq_check =
+                (unique_id == shfl_down_sync(FULL_MASK, unique_id, delta));
 
             // checks if this thread should perform a reduction
-            update_key = eq_check && (laneid < (32-delta)) && ((tidx + delta) < n);
+            update_key =
+                eq_check && (laneid < (32 - delta)) && ((tidx + delta) < n);
 
             // obtains mask of all threads that should be reduced
             shflmask = ballot_sync(FULL_MASK, update_key);
 
-            // shifts mask to include source threads that should participate in _shfl
+            // shifts mask to include source threads that should participate in
+            // _shfl
             shflmask |= (shflmask << delta);
 
             // shfls data from neighboring threads
@@ -504,17 +508,20 @@ __global__ static void reduce_blocks_dim_by_key(
         compute_t<To> init = Binary<compute_t<To>, op>::init();
         int eq_check, update_key;
         unsigned shflmask;
-        #pragma unroll
+#pragma unroll
         for (int delta = 1; delta < 32; delta <<= 1) {
-            eq_check = (unique_id == shfl_down_sync(FULL_MASK, unique_id, delta));
+            eq_check =
+                (unique_id == shfl_down_sync(FULL_MASK, unique_id, delta));
 
             // checks if this thread should perform a reduction
-            update_key = eq_check && (laneid < (32-delta)) && ((tidx + delta) < n);
+            update_key =
+                eq_check && (laneid < (32 - delta)) && ((tidx + delta) < n);
 
             // obtains mask of all threads that should be reduced
             shflmask = ballot_sync(FULL_MASK, update_key);
 
-            // shifts mask to include source threads that should participate in _shfl
+            // shifts mask to include source threads that should participate in
+            // _shfl
             shflmask |= (shflmask << delta);
 
             // shfls data from neighboring threads

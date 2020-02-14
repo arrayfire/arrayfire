@@ -8,8 +8,8 @@
  ********************************************************/
 
 #pragma once
-#include <Param.hpp>
 #include <Array.hpp>
+#include <Param.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>

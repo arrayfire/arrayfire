@@ -14,18 +14,24 @@
 // functions. They can be implemented in different back-ends,
 // such as CLBlast or clBLAS.
 
-#include "magma_common.h"
 #include <types.hpp>
+#include "magma_common.h"
 
-using opencl::cfloat;
 using opencl::cdouble;
+using opencl::cfloat;
 
-template<typename T> struct gpu_blas_gemm_func;
-template<typename T> struct gpu_blas_gemv_func;
-template<typename T> struct gpu_blas_trmm_func;
-template<typename T> struct gpu_blas_trsm_func;
-template<typename T> struct gpu_blas_trsv_func;
-template<typename T> struct gpu_blas_herk_func;
+template<typename T>
+struct gpu_blas_gemm_func;
+template<typename T>
+struct gpu_blas_gemv_func;
+template<typename T>
+struct gpu_blas_trmm_func;
+template<typename T>
+struct gpu_blas_trsm_func;
+template<typename T>
+struct gpu_blas_trsv_func;
+template<typename T>
+struct gpu_blas_herk_func;
 
 #if defined(USE_CLBLAST)
 #include "magma_blas_clblast.h"
@@ -35,4 +41,4 @@ template<typename T> struct gpu_blas_herk_func;
 #include "magma_blas_clblas.h"
 #endif
 
-#endif // __MAGMA_BLAS_H
+#endif  // __MAGMA_BLAS_H

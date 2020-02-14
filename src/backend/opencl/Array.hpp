@@ -11,8 +11,8 @@
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
-#include <common/jit/Node.hpp>
 #include <common/MemoryManagerBase.hpp>
+#include <common/jit/Node.hpp>
 #include <err_opencl.hpp>
 #include <memory.hpp>
 #include <platform.hpp>

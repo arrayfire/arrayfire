@@ -296,9 +296,9 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     dim4 oStrides = out.strides();
 
     if (oDims.ndims() <= 2) {
-        CUBLAS_CHECK(gemmDispatch<T>(blasHandle(), lOpts, rOpts, M, N, K,
-                                     alpha, lhs, lStrides[1], rhs,
-                                     rStrides[1], beta, out, oStrides[1]));
+        CUBLAS_CHECK(gemmDispatch<T>(blasHandle(), lOpts, rOpts, M, N, K, alpha,
+                                     lhs, lStrides[1], rhs, rStrides[1], beta,
+                                     out, oStrides[1]));
     } else {
         int batchSize = oDims[2] * oDims[3];
         vector<const T *> lptrs(batchSize);

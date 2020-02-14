@@ -21,7 +21,7 @@ namespace common {
 
 template<typename To, typename Ti = To>
 detail::Array<To> integralImage(const detail::Array<Ti>& in) {
-    auto input = detail::cast<To, Ti>(in);
+    auto input               = detail::cast<To, Ti>(in);
     Array<To> horizontalScan = detail::scan<af_add_t, To, To>(input, 0);
     return detail::scan<af_add_t, To, To>(horizontalScan, 1);
 }
@@ -58,7 +58,7 @@ detail::Array<To> convRange(const detail::Array<Ti>& in,
     }
 
     auto minArray = createValueArray(dims, low);
-    auto invDen   = createValueArray(dims, To(1.0/range));
+    auto invDen   = createValueArray(dims, To(1.0 / range));
     auto numer    = arithOp<To, af_sub_t>(input, minArray, dims);
     auto result   = arithOp<To, af_mul_t>(numer, invDen, dims);
 
@@ -73,4 +73,4 @@ detail::Array<To> convRange(const detail::Array<Ti>& in,
     return result;
 }
 
-} // namespace common
+}  // namespace common

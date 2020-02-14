@@ -1446,14 +1446,13 @@ TEST(ReduceHalf, AllTrue) {
 // Documentation Snippets
 
 TEST(Reduce, SNIPPET_sum_by_key) {
-
-    int hkeys[]   = { 0, 0, 1, 1, 1, 0, 0, 2, 2 };
-    float hvals[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    int hkeys[]   = {0, 0, 1, 1, 1, 0, 0, 2, 2};
+    float hvals[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     //! [ex_reduce_sum_by_key]
 
-    array keys(9, hkeys); // keys = [ 0 0 1 1 1 0 0 2 2 ]
-    array vals(9, hvals); // vals = [ 1 2 3 4 5 6 7 8 9 ];
+    array keys(9, hkeys);  // keys = [ 0 0 1 1 1 0 0 2 2 ]
+    array vals(9, hvals);  // vals = [ 1 2 3 4 5 6 7 8 9 ];
 
     array okeys, ovals;
     sumByKey(okeys, ovals, keys, vals);
@@ -1463,21 +1462,17 @@ TEST(Reduce, SNIPPET_sum_by_key) {
 
     //! [ex_reduce_sum_by_key]
 
-    vector<int> gold_keys   = { 0, 1, 0, 2 };
-    vector<float> gold_vals = { 3, 12, 13, 17 };
+    vector<int> gold_keys   = {0, 1, 0, 2};
+    vector<float> gold_vals = {3, 12, 13, 17};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(4), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(4), ovals);
 }
 
 TEST(Reduce, SNIPPET_sum_by_key_dim) {
-    int hkeys[]   = {1, 0, 0, 2, 2 };
+    int hkeys[] = {1, 0, 0, 2, 2};
 
-    float hvals[] = {1, 6,
-                     2, 7,
-                     3, 8,
-                     4, 9,
-                     5, 10};
+    float hvals[] = {1, 6, 2, 7, 3, 8, 4, 9, 5, 10};
 
     //! [ex_reduce_sum_by_key_dim]
 
@@ -1500,22 +1495,21 @@ TEST(Reduce, SNIPPET_sum_by_key_dim) {
 
     //! [ex_reduce_sum_by_key_dim]
 
-    vector<int> gold_keys   = { 1, 0, 2  };
-    vector<float> gold_vals = { 1, 6, 5, 15, 9, 19 };
+    vector<int> gold_keys   = {1, 0, 2};
+    vector<float> gold_vals = {1, 6, 5, 15, 9, 19};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals);
 }
 
 TEST(Reduce, SNIPPET_product_by_key) {
-
-    int hkeys[]   = { 0, 0, 1, 1, 1, 0, 0, 2, 2 };
-    float hvals[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    int hkeys[]   = {0, 0, 1, 1, 1, 0, 0, 2, 2};
+    float hvals[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     //! [ex_reduce_product_by_key]
 
-    array keys(9, hkeys); // keys = [ 0 0 1 1 1 0 0 2 2 ]
-    array vals(9, hvals); // vals = [ 1 2 3 4 5 6 7 8 9 ];
+    array keys(9, hkeys);  // keys = [ 0 0 1 1 1 0 0 2 2 ]
+    array vals(9, hvals);  // vals = [ 1 2 3 4 5 6 7 8 9 ];
 
     array okeys, ovals;
     productByKey(okeys, ovals, keys, vals);
@@ -1525,21 +1519,17 @@ TEST(Reduce, SNIPPET_product_by_key) {
 
     //! [ex_reduce_product_by_key]
 
-    vector<int> gold_keys   = { 0,  1,  0,  2 };
-    vector<float> gold_vals = { 2, 60, 42, 72 };
+    vector<int> gold_keys   = {0, 1, 0, 2};
+    vector<float> gold_vals = {2, 60, 42, 72};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(4), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(4), ovals);
 }
 
 TEST(Reduce, SNIPPET_product_by_key_dim) {
-    int hkeys[]   = {1, 0, 0, 2, 2 };
+    int hkeys[] = {1, 0, 0, 2, 2};
 
-    float hvals[] = {1, 6,
-                     2, 7,
-                     3, 8,
-                     4, 9,
-                     5, 10};
+    float hvals[] = {1, 6, 2, 7, 3, 8, 4, 9, 5, 10};
 
     //! [ex_reduce_product_by_key_dim]
 
@@ -1562,22 +1552,21 @@ TEST(Reduce, SNIPPET_product_by_key_dim) {
 
     //! [ex_reduce_product_by_key_dim]
 
-    vector<int> gold_keys   = { 1, 0, 2  };
-    vector<float> gold_vals = { 1, 6, 6, 56, 20, 90 };
+    vector<int> gold_keys   = {1, 0, 2};
+    vector<float> gold_vals = {1, 6, 6, 56, 20, 90};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals);
 }
 
 TEST(Reduce, SNIPPET_min_by_key) {
-
-    int hkeys[]   = { 0, 0, 1, 1, 1, 0, 0, 2, 2 };
-    float hvals[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    int hkeys[]   = {0, 0, 1, 1, 1, 0, 0, 2, 2};
+    float hvals[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     //! [ex_reduce_min_by_key]
 
-    array keys(9, hkeys); // keys = [ 0 0 1 1 1 0 0 2 2 ]
-    array vals(9, hvals); // vals = [ 1 2 3 4 5 6 7 8 9 ];
+    array keys(9, hkeys);  // keys = [ 0 0 1 1 1 0 0 2 2 ]
+    array vals(9, hvals);  // vals = [ 1 2 3 4 5 6 7 8 9 ];
 
     array okeys, ovals;
     minByKey(okeys, ovals, keys, vals);
@@ -1587,21 +1576,17 @@ TEST(Reduce, SNIPPET_min_by_key) {
 
     //! [ex_reduce_min_by_key]
 
-    vector<int> gold_keys   = { 0, 1, 0, 2 };
-    vector<float> gold_vals = { 1, 3, 6, 8 };
+    vector<int> gold_keys   = {0, 1, 0, 2};
+    vector<float> gold_vals = {1, 3, 6, 8};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(4), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(4), ovals);
 }
 
 TEST(Reduce, SNIPPET_min_by_key_dim) {
-    int hkeys[]   = {1, 0, 0, 2, 2 };
+    int hkeys[] = {1, 0, 0, 2, 2};
 
-    float hvals[] = {1, 6,
-                     2, 7,
-                     3, 8,
-                     4, 9,
-                     5, 10};
+    float hvals[] = {1, 6, 2, 7, 3, 8, 4, 9, 5, 10};
 
     //! [ex_reduce_min_by_key_dim]
 
@@ -1624,22 +1609,21 @@ TEST(Reduce, SNIPPET_min_by_key_dim) {
 
     //! [ex_reduce_min_by_key_dim]
 
-    vector<int> gold_keys   = { 1, 0, 2  };
-    vector<float> gold_vals = { 1, 6, 2, 7, 4, 9 };
+    vector<int> gold_keys   = {1, 0, 2};
+    vector<float> gold_vals = {1, 6, 2, 7, 4, 9};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals);
 }
 
 TEST(Reduce, SNIPPET_max_by_key) {
-
-    int hkeys[]   = { 0, 0, 1, 1, 1, 0, 0, 2, 2 };
-    float hvals[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    int hkeys[]   = {0, 0, 1, 1, 1, 0, 0, 2, 2};
+    float hvals[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     //! [ex_reduce_max_by_key]
 
-    array keys(9, hkeys); // keys = [ 0 0 1 1 1 0 0 2 2 ]
-    array vals(9, hvals); // vals = [ 1 2 3 4 5 6 7 8 9 ];
+    array keys(9, hkeys);  // keys = [ 0 0 1 1 1 0 0 2 2 ]
+    array vals(9, hvals);  // vals = [ 1 2 3 4 5 6 7 8 9 ];
 
     array okeys, ovals;
     maxByKey(okeys, ovals, keys, vals);
@@ -1649,21 +1633,17 @@ TEST(Reduce, SNIPPET_max_by_key) {
 
     //! [ex_reduce_max_by_key]
 
-    vector<int> gold_keys   = { 0, 1, 0, 2 };
-    vector<float> gold_vals = { 2, 5, 7, 9 };
+    vector<int> gold_keys   = {0, 1, 0, 2};
+    vector<float> gold_vals = {2, 5, 7, 9};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(4), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(4), ovals);
 }
 
 TEST(Reduce, SNIPPET_max_by_key_dim) {
-    int hkeys[]   = {1, 0, 0, 2, 2 };
+    int hkeys[] = {1, 0, 0, 2, 2};
 
-    float hvals[] = {1, 6,
-                     2, 7,
-                     3, 8,
-                     4, 9,
-                     5, 10};
+    float hvals[] = {1, 6, 2, 7, 3, 8, 4, 9, 5, 10};
 
     //! [ex_reduce_max_by_key_dim]
 
@@ -1686,22 +1666,21 @@ TEST(Reduce, SNIPPET_max_by_key_dim) {
 
     //! [ex_reduce_max_by_key_dim]
 
-    vector<int> gold_keys   = { 1, 0, 2  };
-    vector<float> gold_vals = { 1, 6, 3, 8, 5, 10 };
+    vector<int> gold_keys   = {1, 0, 2};
+    vector<float> gold_vals = {1, 6, 3, 8, 5, 10};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals);
 }
 
 TEST(Reduce, SNIPPET_alltrue_by_key) {
-
-    int hkeys[]   = { 0, 0, 1, 1, 1, 0, 0, 2, 2 };
-    float hvals[] = { 1, 1, 0, 1, 1, 0, 0, 1, 0 };
+    int hkeys[]   = {0, 0, 1, 1, 1, 0, 0, 2, 2};
+    float hvals[] = {1, 1, 0, 1, 1, 0, 0, 1, 0};
 
     //! [ex_reduce_alltrue_by_key]
 
-    array keys(9, hkeys); // keys = [ 0 0 1 1 1 0 0 2 2 ]
-    array vals(9, hvals); // vals = [ 1 1 0 1 1 0 0 1 0 ];
+    array keys(9, hkeys);  // keys = [ 0 0 1 1 1 0 0 2 2 ]
+    array vals(9, hvals);  // vals = [ 1 1 0 1 1 0 0 1 0 ];
 
     array okeys, ovals;
     allTrueByKey(okeys, ovals, keys, vals);
@@ -1711,21 +1690,17 @@ TEST(Reduce, SNIPPET_alltrue_by_key) {
 
     //! [ex_reduce_alltrue_by_key]
 
-    vector<int>  gold_keys   = { 0, 1, 0, 2 };
-    vector<unsigned char> gold_vals = { 1, 0, 0, 0 };
+    vector<int> gold_keys           = {0, 1, 0, 2};
+    vector<unsigned char> gold_vals = {1, 0, 0, 0};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(4), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(4), ovals.as(u8));
 }
 
 TEST(Reduce, SNIPPET_alltrue_by_key_dim) {
-    int hkeys[]   = {1, 0, 0, 2, 2 };
+    int hkeys[] = {1, 0, 0, 2, 2};
 
-    float hvals[] = {1, 0,
-                     1, 1,
-                     1, 0,
-                     0, 1,
-                     1, 1};
+    float hvals[] = {1, 0, 1, 1, 1, 0, 0, 1, 1, 1};
 
     //! [ex_reduce_alltrue_by_key_dim]
 
@@ -1748,22 +1723,21 @@ TEST(Reduce, SNIPPET_alltrue_by_key_dim) {
 
     //! [ex_reduce_alltrue_by_key_dim]
 
-    vector<int> gold_keys   = { 1, 0, 2  };
-    vector<unsigned char> gold_vals = { 1, 0, 1, 0, 0, 1 };
+    vector<int> gold_keys           = {1, 0, 2};
+    vector<unsigned char> gold_vals = {1, 0, 1, 0, 0, 1};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals.as(u8));
 }
 
 TEST(Reduce, SNIPPET_anytrue_by_key) {
-
-    int hkeys[]   = { 0, 0, 1, 1, 1, 0, 0, 2, 2 };
-    float hvals[] = { 1, 1, 0, 1, 1, 0, 0, 1, 0 };
+    int hkeys[]   = {0, 0, 1, 1, 1, 0, 0, 2, 2};
+    float hvals[] = {1, 1, 0, 1, 1, 0, 0, 1, 0};
 
     //! [ex_reduce_anytrue_by_key]
 
-    array keys(9, hkeys); // keys = [ 0 0 1 1 1 0 0 2 2 ]
-    array vals(9, hvals); // vals = [ 1 1 0 1 1 0 0 1 0 ];
+    array keys(9, hkeys);  // keys = [ 0 0 1 1 1 0 0 2 2 ]
+    array vals(9, hvals);  // vals = [ 1 1 0 1 1 0 0 1 0 ];
 
     array okeys, ovals;
     anyTrueByKey(okeys, ovals, keys, vals);
@@ -1773,21 +1747,17 @@ TEST(Reduce, SNIPPET_anytrue_by_key) {
 
     //! [ex_reduce_anytrue_by_key]
 
-    vector<int> gold_keys   = { 0, 1, 0, 2 };
-    vector<unsigned char> gold_vals = { 1, 1, 0, 1 };
+    vector<int> gold_keys           = {0, 1, 0, 2};
+    vector<unsigned char> gold_vals = {1, 1, 0, 1};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(4), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(4), ovals.as(u8));
 }
 
 TEST(Reduce, SNIPPET_anytrue_by_key_dim) {
-    int hkeys[]   = {1, 0, 0, 2, 2 };
+    int hkeys[] = {1, 0, 0, 2, 2};
 
-    float hvals[] = {1, 0,
-                     1, 1,
-                     1, 0,
-                     0, 1,
-                     1, 1};
+    float hvals[] = {1, 0, 1, 1, 1, 0, 0, 1, 1, 1};
 
     //! [ex_reduce_anytrue_by_key_dim]
 
@@ -1810,22 +1780,21 @@ TEST(Reduce, SNIPPET_anytrue_by_key_dim) {
 
     //! [ex_reduce_anytrue_by_key_dim]
 
-    vector<int> gold_keys   = { 1, 0, 2  };
-    vector<unsigned char> gold_vals = { 1, 0, 1, 1, 1, 1 };
+    vector<int> gold_keys           = {1, 0, 2};
+    vector<unsigned char> gold_vals = {1, 0, 1, 1, 1, 1};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals.as(u8));
 }
 
 TEST(Reduce, SNIPPET_count_by_key) {
-
-    int hkeys[]   = { 0, 0, 1, 1, 1, 0, 0, 2, 2 };
-    float hvals[] = { 1, 1, 0, 1, 1, 0, 0, 1, 0 };
+    int hkeys[]   = {0, 0, 1, 1, 1, 0, 0, 2, 2};
+    float hvals[] = {1, 1, 0, 1, 1, 0, 0, 1, 0};
 
     //! [ex_reduce_count_by_key]
 
-    array keys(9, hkeys); // keys = [ 0 0 1 1 1 0 0 2 2 ]
-    array vals(9, hvals); // vals = [ 1 1 0 1 1 0 0 1 0 ];
+    array keys(9, hkeys);  // keys = [ 0 0 1 1 1 0 0 2 2 ]
+    array vals(9, hvals);  // vals = [ 1 1 0 1 1 0 0 1 0 ];
 
     array okeys, ovals;
     countByKey(okeys, ovals, keys, vals);
@@ -1835,22 +1804,17 @@ TEST(Reduce, SNIPPET_count_by_key) {
 
     //! [ex_reduce_count_by_key]
 
-    vector<int> gold_keys      = { 0, 1, 0, 2 };
-    vector<unsigned> gold_vals = { 2, 2, 0, 1 };
+    vector<int> gold_keys      = {0, 1, 0, 2};
+    vector<unsigned> gold_vals = {2, 2, 0, 1};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(4), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(4), ovals);
 }
 
 TEST(Reduce, SNIPPET_count_by_key_dim) {
+    int hkeys[] = {1, 0, 0, 2, 2};
 
-    int hkeys[]   = {1, 0, 0, 2, 2 };
-
-    float hvals[] = {1, 0,
-                     1, 1,
-                     1, 0,
-                     0, 1,
-                     1, 1};
+    float hvals[] = {1, 0, 1, 1, 1, 0, 0, 1, 1, 1};
 
     //! [ex_reduce_count_by_key_dim]
 
@@ -1861,7 +1825,6 @@ TEST(Reduce, SNIPPET_count_by_key_dim) {
 
     // vals = [[ 1 1 1 0 1 ]
     //         [ 0 1 0 1 1 ]]
-
 
     const int reduce_dim = 1;
     array okeys, ovals;
@@ -1874,8 +1837,8 @@ TEST(Reduce, SNIPPET_count_by_key_dim) {
 
     //! [ex_reduce_count_by_key_dim]
 
-    vector<int> gold_keys      = { 1, 0, 2  };
-    vector<unsigned> gold_vals = { 1, 0, 2, 1, 1, 2 };
+    vector<int> gold_keys      = {1, 0, 2};
+    vector<unsigned> gold_vals = {1, 0, 2, 1, 1, 2};
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals);

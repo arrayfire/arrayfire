@@ -35,7 +35,7 @@ using std::string;
 namespace opencl {
 namespace kernel {
 
-template <typename T>
+template<typename T>
 void wrap(Param out, const Param in, const dim_t wx, const dim_t wy,
           const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
           const bool is_column) {
@@ -89,7 +89,7 @@ void wrap(Param out, const Param in, const dim_t wx, const dim_t wy,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template <typename T>
+template<typename T>
 void wrap_dilated(Param out, const Param in, const dim_t wx, const dim_t wy,
                   const dim_t sx, const dim_t sy, const dim_t px,
                   const dim_t py, const dim_t dx, const dim_t dy,

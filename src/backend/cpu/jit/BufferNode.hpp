@@ -57,7 +57,8 @@ class BufferNode : public TNode<T> {
         T *in_ptr   = m_ptr + l_off;
         Tc *out_ptr = this->m_val.data();
         for (int i = 0; i < lim; i++) {
-            out_ptr[i] = static_cast<Tc>(in_ptr[((x + i) < m_dims[0]) ? (x + i) : 0]);
+            out_ptr[i] =
+                static_cast<Tc>(in_ptr[((x + i) < m_dims[0]) ? (x + i) : 0]);
         }
     }
 
