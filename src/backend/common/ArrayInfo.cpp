@@ -103,7 +103,9 @@ bool ArrayInfo::isSingle() const { return (type == f32 || type == c32); }
 
 bool ArrayInfo::isHalf() const { return (type == f16); }
 
-bool ArrayInfo::isRealFloating() const { return (type == f64 || type == f32 || type == f16); }
+bool ArrayInfo::isRealFloating() const {
+    return (type == f64 || type == f32 || type == f16);
+}
 
 bool ArrayInfo::isFloating() const { return (!isInteger() && !isBool()); }
 

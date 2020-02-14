@@ -178,7 +178,7 @@ int computeHomography(T* H_ptr, const float* rnd_ptr, const float* x_src_ptr,
     float src_scale = sqrt(2.0f) / sqrt(src_var);
     float dst_scale = sqrt(2.0f) / sqrt(dst_var);
 
-    Array<T> A = createValueArray<T>(af::dim4(9, 9), (T)0);
+    Array<T> A     = createValueArray<T>(af::dim4(9, 9), (T)0);
     af::dim4 Adims = A.dims();
     T* A_ptr       = A.get();
     getQueue().sync();

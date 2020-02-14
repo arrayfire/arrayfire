@@ -111,7 +111,7 @@ template<typename T>
 double relEps(array in) {
     typedef typename af::dtype_traits<T>::base_type InBaseType;
     double fixed_eps = eps<T>();
-    double calc_eps = std::numeric_limits<InBaseType>::epsilon() *
+    double calc_eps  = std::numeric_limits<InBaseType>::epsilon() *
                       std::max(in.dims(0), in.dims(1)) * af::max<double>(in);
     // Use the fixed values above if calculated error tolerance is unnecessarily
     // too small

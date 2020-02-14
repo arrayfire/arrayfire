@@ -161,8 +161,8 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
                            tmp.getOffset(), NB, queue, &info);
 
         Array<T> B_new = createEmptyArray<T>(dim4(A.dims()[0], B.dims()[1]));
-        T alpha = scalar<T>(1.0);
-        T beta = scalar<T>(0.0);
+        T alpha        = scalar<T>(1.0);
+        T beta         = scalar<T>(0.0);
         gemm<T>(B_new, AF_MAT_NONE, AF_MAT_NONE, &alpha, A, B, &beta);
         B = B_new;
 #endif

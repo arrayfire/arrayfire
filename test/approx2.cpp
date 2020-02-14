@@ -781,7 +781,7 @@ class Approx2V2 : public ::testing::Test {
     void releaseArrays() {
         if (pos2 != 0) { ASSERT_SUCCESS(af_release_array(pos2)); }
         if (pos1 != 0) { ASSERT_SUCCESS(af_release_array(pos1)); }
-        if (in != 0)   { ASSERT_SUCCESS(af_release_array(in)); }
+        if (in != 0) { ASSERT_SUCCESS(af_release_array(in)); }
         if (gold != 0) { ASSERT_SUCCESS(af_release_array(gold)); }
     }
 

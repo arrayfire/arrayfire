@@ -49,8 +49,8 @@ static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanbykey_dim_nonfinal(qArgs, out, tmp, tflg, tlid, in, key, dim, blocks_all[0],
-                    blocks_all[1], lim, inclusive_scan);
+    scanbykey_dim_nonfinal(qArgs, out, tmp, tflg, tlid, in, key, dim,
+                           blocks_all[0], blocks_all[1], lim, inclusive_scan);
     POST_LAUNCH_CHECK();
 }
 
@@ -73,8 +73,8 @@ static void scan_dim_final_launcher(Param<To> out, CParam<Ti> in,
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanbykey_dim_final(qArgs, out, in, key, dim, blocks_all[0], blocks_all[1], lim,
-                 calculateFlags, inclusive_scan);
+    scanbykey_dim_final(qArgs, out, in, key, dim, blocks_all[0], blocks_all[1],
+                        lim, calculateFlags, inclusive_scan);
     POST_LAUNCH_CHECK();
 }
 
@@ -82,16 +82,17 @@ template<typename To, af_op_t op>
 static void bcast_dim_launcher(Param<To> out, CParam<To> tmp, Param<int> tlid,
                                const int dim, const uint threads_y,
                                const dim_t blocks_all[4]) {
-    auto scanbykey_dim_bcast = getKernel("cuda::scanbykey_dim_bcast", ScanDimByKeySource,
-                              {TemplateTypename<To>(), TemplateArg(op)});
+    auto scanbykey_dim_bcast =
+        getKernel("cuda::scanbykey_dim_bcast", ScanDimByKeySource,
+                  {TemplateTypename<To>(), TemplateArg(op)});
     dim3 threads(THREADS_X, threads_y);
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
 
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanbykey_dim_bcast(qArgs, out, tmp, tlid, dim, blocks_all[0], blocks_all[1],
-             blocks_all[dim], lim);
+    scanbykey_dim_bcast(qArgs, out, tmp, tlid, dim, blocks_all[0],
+                        blocks_all[1], blocks_all[dim], lim);
     POST_LAUNCH_CHECK();
 }
 

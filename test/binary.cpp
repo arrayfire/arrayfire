@@ -414,14 +414,14 @@ class ResultType : public testing::TestWithParam<result_type_param> {
     void SetUp() {
         result_type_param params = GetParam();
         gold                     = params.result_;
-        skip = false;
+        skip                     = false;
         if (noHalfTests(params.result_) || noHalfTests(params.lhs_) ||
             noHalfTests(params.rhs_)) {
             skip = true;
             return;
         }
-        lhs                      = af::array(10, params.lhs_);
-        rhs                      = af::array(10, params.rhs_);
+        lhs = af::array(10, params.lhs_);
+        rhs = af::array(10, params.rhs_);
     }
 };
 
@@ -512,11 +512,9 @@ TEST_P(ResultType, Division)       {
 
 template<typename T>
 class ResultTypeScalar : public ::testing::Test {
-protected:
+   protected:
     T scalar;
-    void SetUp() {
-      scalar = T(1);
-    }
+    void SetUp() { scalar = T(1); }
 };
 
 typedef ::testing::Types<float, double, unsigned int, int, short,

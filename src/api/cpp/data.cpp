@@ -8,6 +8,7 @@
  ********************************************************/
 #include <af/data.h>
 
+#include <half.hpp>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/complex.h>
@@ -16,7 +17,6 @@
 #include <af/half.h>
 #include <af/traits.hpp>
 #include "error.hpp"
-#include <half.hpp>
 
 #include <type_traits>
 

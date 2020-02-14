@@ -69,13 +69,14 @@ class NaryNode : public Node {
 template<typename Ti, int N, typename FUNC>
 common::Node_ptr createNaryNode(
     const af::dim4 &odims, FUNC createNode,
-    std::array<const detail::Array<Ti>*, N> &&children) {
+    std::array<const detail::Array<Ti> *, N> &&children) {
     std::array<common::Node_ptr, N> childNodes;
     for (int i = 0; i < N; i++) { childNodes[i] = children[i]->getNode(); }
 
     common::Node_ptr ptr = createNode(childNodes);
 
-    switch(static_cast<kJITHeuristics>(detail::passesJitHeuristics<Ti>(ptr.get()))) {
+    switch (static_cast<kJITHeuristics>(
+        detail::passesJitHeuristics<Ti>(ptr.get()))) {
         case kJITHeuristics::Pass: {
             return ptr;
         }
@@ -94,7 +95,7 @@ common::Node_ptr createNaryNode(
             return createNaryNode<Ti, N>(odims, createNode, move(children));
         }
         case kJITHeuristics::MemoryPressure: {
-            for (auto &c : children) { c->eval(); } //TODO: use evalMultiple()
+            for (auto &c : children) { c->eval(); }  // TODO: use evalMultiple()
             return ptr;
         }
     }

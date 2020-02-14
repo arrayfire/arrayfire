@@ -62,9 +62,9 @@ Array<T> matmul(const common::SparseArray<T>& lhs, const Array<T>& rhsIn,
     static const T alpha = scalar<T>(1.0);
     static const T beta  = scalar<T>(0.0);
 
-    const Array<T> &values   = lhs.getValues();
-    const Array<int> &rowIdx = lhs.getRowIdx();
-    const Array<int> &colIdx = lhs.getColIdx();
+    const Array<T>& values   = lhs.getValues();
+    const Array<int>& rowIdx = lhs.getRowIdx();
+    const Array<int>& colIdx = lhs.getColIdx();
 
     if (optLhs == AF_MAT_NONE) {
         if (N == 1) {

@@ -121,7 +121,7 @@ void padBorders(Param<T> out, CParam<T> in, const dim4 lBoundPadSize,
                                                          iDims[0], btype);
 
                     dst[oLOff + oKOff + oJOff + oIOff] =
-                       src[iLOff + iKOff + iJOff + iIOff];
+                        src[iLOff + iKOff + iJOff + iIOff];
 
                 }  // first dimension loop
             }      // second dimension loop

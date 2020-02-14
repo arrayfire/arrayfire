@@ -30,4 +30,4 @@ struct kernel_type {
     /// The type defined by the compute framework for this type
     using native = compute;
 };
-}
+}  // namespace common

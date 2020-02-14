@@ -32,9 +32,9 @@ void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t p) {
     static const std::string source(exampleFunction_cuh,
                                     exampleFunction_cuh_len);
     auto exampleFunc = getKernel("cuda::exampleFunc", source,
-                             {
-                                 TemplateTypename<T>(),
-                             });
+                                 {
+                                     TemplateTypename<T>(),
+                                 });
 
     dim3 threads(TX, TY, 1);  // set your cuda launch config for blocks
 

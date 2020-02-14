@@ -9,10 +9,10 @@
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <half.hpp>
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <half.hpp>
 #include <complex>
 #include <string>
 #include <vector>
@@ -89,7 +89,7 @@ void dotTest(string pTestFile, const int resultIdx,
 
     ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), out));
 
-    if(false == (isinf(outData.front()) && isinf(goldData[0]))) {
+    if (false == (isinf(outData.front()) && isinf(goldData[0]))) {
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_NEAR(abs(goldData[elIter]), abs(outData[elIter]), 0.03)
                 << "at: " << elIter << endl;
@@ -148,7 +148,7 @@ void dotAllTest(string pTestFile, const int resultIdx,
 
     vector<T> goldData = tests[resultIdx];
 
-    if(false == (isinf(rval) && isinf(goldData[0]))) {
+    if (false == (isinf(rval) && isinf(goldData[0]))) {
         compare<T>(rval, ival, goldData[0]);
     }
 

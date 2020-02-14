@@ -54,9 +54,7 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef = false,
     dim4 dims = numDims[0];
 
     vector<Ti> in(data[0].size());
-    transform(data[0].begin(), data[0].end(),
-              in.begin(),
-              convert_to<Ti, int>);
+    transform(data[0].begin(), data[0].end(), in.begin(), convert_to<Ti, int>);
 
     af_array inArray   = 0;
     af_array outArray  = 0;
@@ -138,8 +136,7 @@ TEST(Accum, CPP) {
     dim4 dims = numDims[0];
 
     vector<float> in(data[0].size());
-    transform(data[0].begin(), data[0].end(),
-              in.begin(),
+    transform(data[0].begin(), data[0].end(), in.begin(),
               convert_to<float, int>);
 
     array input(dims, &(in.front()));

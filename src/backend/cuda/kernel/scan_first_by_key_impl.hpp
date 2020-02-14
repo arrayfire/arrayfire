@@ -44,8 +44,8 @@ static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
     uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanbykey_first_nonfinal(qArgs, out, tmp, tflg, tlid, in, key, blocks_x, blocks_y, lim,
-                 inclusive_scan);
+    scanbykey_first_nonfinal(qArgs, out, tmp, tflg, tlid, in, key, blocks_x,
+                             blocks_y, lim, inclusive_scan);
     POST_LAUNCH_CHECK();
 }
 
@@ -65,8 +65,8 @@ static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
     uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scanbykey_first_final(qArgs, out, in, key, blocks_x, blocks_y, lim, calculateFlags,
-              inclusive_scan);
+    scanbykey_first_final(qArgs, out, in, key, blocks_x, blocks_y, lim,
+                          calculateFlags, inclusive_scan);
     POST_LAUNCH_CHECK();
 }
 

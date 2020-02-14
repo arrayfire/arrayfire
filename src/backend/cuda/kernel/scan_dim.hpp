@@ -46,7 +46,7 @@ static void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
     scan_dim(qArgs, out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim],
-            lim);
+             lim);
     POST_LAUNCH_CHECK();
 }
 
@@ -70,8 +70,8 @@ static void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
-    scan_dim_bcast(qArgs, out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim],
-             lim, inclusive_scan);
+    scan_dim_bcast(qArgs, out, tmp, blocks_all[0], blocks_all[1],
+                   blocks_all[dim], lim, inclusive_scan);
     POST_LAUNCH_CHECK();
 }
 

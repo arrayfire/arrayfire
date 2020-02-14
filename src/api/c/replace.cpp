@@ -22,8 +22,8 @@
 #include <select.hpp>
 
 using namespace detail;
-using common::half;
 using af::dim4;
+using common::half;
 
 template<typename T>
 void replace(af_array a, const af_array cond, const af_array b) {

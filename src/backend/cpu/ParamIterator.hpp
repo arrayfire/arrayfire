@@ -242,8 +242,8 @@ class NeighborhoodIterator {
     }
 
     NeighborhoodIterator(const NeighborhoodIterator<T>& other) = default;
-    NeighborhoodIterator(NeighborhoodIterator<T>&& other) = default;
-    ~NeighborhoodIterator() noexcept = default;
+    NeighborhoodIterator(NeighborhoodIterator<T>&& other)      = default;
+    ~NeighborhoodIterator() noexcept                           = default;
     NeighborhoodIterator<T>& operator=(const Self& other) = default;
     NeighborhoodIterator<T>& operator=(Self&& other) = default;
 

@@ -117,33 +117,31 @@ using ptr_type = typename conditional<is_complex<T>::value,
 template<typename T, bool batched = false>
 struct scale_type {
     const T val;
-    scale_type(const T* val_ptr)
-        : val(*val_ptr){}
-    using api_type = const typename conditional<is_complex<T>::value,
-                                                const typename blas_base<T>::type *,
-                                                const typename conditional<batched,  const T*, const T>::type>::type;
+    scale_type(const T *val_ptr) : val(*val_ptr) {}
+    using api_type = const typename conditional<
+        is_complex<T>::value, const typename blas_base<T>::type *,
+        const typename conditional<batched, const T *, const T>::type>::type;
 
-    api_type getScale() const {
-		return val;
-	}
+    api_type getScale() const { return val; }
 };
 
-
-#define INSTANTIATE_BATCHED(TYPE)                                                    \
-template<>                                                                           \
-typename scale_type<TYPE, true>::api_type scale_type<TYPE, true>::getScale() const { \
-    return &val;                                                                     \
-}
+#define INSTANTIATE_BATCHED(TYPE)              \
+    template<>                                 \
+    typename scale_type<TYPE, true>::api_type  \
+    scale_type<TYPE, true>::getScale() const { \
+        return &val;                           \
+    }
 
 INSTANTIATE_BATCHED(float);
 INSTANTIATE_BATCHED(double);
 #undef INSTANTIATE_BATCHED
 
-#define INSTANTIATE_COMPLEX(TYPE, BATCHED)                                        \
-template<>                                                                        \
-scale_type<TYPE, BATCHED>::api_type scale_type<TYPE, BATCHED>::getScale() const { \
-    return reinterpret_cast<const blas_base<TYPE>::type * const>(&val);           \
-}
+#define INSTANTIATE_COMPLEX(TYPE, BATCHED)                                    \
+    template<>                                                                \
+    scale_type<TYPE, BATCHED>::api_type scale_type<TYPE, BATCHED>::getScale() \
+        const {                                                               \
+        return reinterpret_cast<const blas_base<TYPE>::type *const>(&val);    \
+    }
 
 INSTANTIATE_COMPLEX(cfloat, true);
 INSTANTIATE_COMPLEX(cfloat, false);
@@ -154,26 +152,28 @@ INSTANTIATE_COMPLEX(cdouble, false);
 template<typename T>
 using gemm_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                const CBLAS_TRANSPOSE, const blasint,
-                               const blasint, const blasint, typename scale_type<T>::api_type,
-                               cptr_type<T>, const blasint, cptr_type<T>,
-                               const blasint, typename scale_type<T>::api_type, ptr_type<T>,
+                               const blasint, const blasint,
+                               typename scale_type<T>::api_type, cptr_type<T>,
+                               const blasint, cptr_type<T>, const blasint,
+                               typename scale_type<T>::api_type, ptr_type<T>,
                                const blasint);
 
 template<typename T>
 using gemv_func_def = void (*)(const CBLAS_ORDER, const CBLAS_TRANSPOSE,
-                               const blasint, const blasint, typename scale_type<T>::api_type,
-                               cptr_type<T>, const blasint, cptr_type<T>,
-                               const blasint, typename scale_type<T>::api_type, ptr_type<T>,
+                               const blasint, const blasint,
+                               typename scale_type<T>::api_type, cptr_type<T>,
+                               const blasint, cptr_type<T>, const blasint,
+                               typename scale_type<T>::api_type, ptr_type<T>,
                                const blasint);
 
 #ifdef USE_MKL
 template<typename T>
 using gemm_batch_func_def = void (*)(
     const CBLAS_LAYOUT, const CBLAS_TRANSPOSE *, const CBLAS_TRANSPOSE *,
-    const MKL_INT *, const MKL_INT *, const MKL_INT *, typename scale_type<T, true>::api_type,
-    cptr_type<T> *, const MKL_INT *, cptr_type<T> *, const MKL_INT *,
-    typename scale_type<T, true>::api_type, ptr_type<T> *, const MKL_INT *, const MKL_INT,
-    const MKL_INT *);
+    const MKL_INT *, const MKL_INT *, const MKL_INT *,
+    typename scale_type<T, true>::api_type, cptr_type<T> *, const MKL_INT *,
+    cptr_type<T> *, const MKL_INT *, typename scale_type<T, true>::api_type,
+    ptr_type<T> *, const MKL_INT *, const MKL_INT, const MKL_INT *);
 #endif
 
 #define BLAS_FUNC_DEF(FUNC) \
@@ -219,10 +219,8 @@ toCblasTranspose(af_mat_prop opt) {
 }
 
 template<typename T>
-void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
-          const T *alpha,
-          const Array<T> &lhs, const Array<T> &rhs,
-          const T *beta) {
+void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
+          const Array<T> &lhs, const Array<T> &rhs, const T *beta) {
     const CBLAS_TRANSPOSE lOpts = toCblasTranspose(optLhs);
     const CBLAS_TRANSPOSE rOpts = toCblasTranspose(optRhs);
 
@@ -240,10 +238,10 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
     using BT  = typename blas_base<T>::type;
     using CBT = const typename blas_base<T>::type;
 
-    auto alpha_ = scale_type<T, false>(alpha);
-    auto beta_ = scale_type<T, false>(beta);
+    auto alpha_        = scale_type<T, false>(alpha);
+    auto beta_         = scale_type<T, false>(beta);
     auto alpha_batched = scale_type<T, true>(alpha);
-    auto beta_batched = scale_type<T, true>(beta);
+    auto beta_batched  = scale_type<T, true>(beta);
 
     auto func = [=](Param<T> output, CParam<T> left, CParam<T> right) {
         dim4 lStrides = left.strides();
@@ -254,19 +252,19 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
             if (right.dims()[bColDim] == 1) {
                 dim_t incr =
                     (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
-                gemv_func<T>()(CblasColMajor, lOpts,
-                               lDims[0], lDims[1], alpha_.getScale(),
-                               reinterpret_cast<CBT*>(left.get()), lStrides[1],
-                               reinterpret_cast<CBT*>(right.get()), incr,
-                               beta_.getScale(),
-                               reinterpret_cast<BT*>(output.get()), oStrides[0]);
+                gemv_func<T>()(
+                    CblasColMajor, lOpts, lDims[0], lDims[1], alpha_.getScale(),
+                    reinterpret_cast<CBT *>(left.get()), lStrides[1],
+                    reinterpret_cast<CBT *>(right.get()), incr,
+                    beta_.getScale(), reinterpret_cast<BT *>(output.get()),
+                    oStrides[0]);
             } else {
-                gemm_func<T>()(CblasColMajor, lOpts, rOpts,
-                               M, N, K, alpha_.getScale(),
-                               reinterpret_cast<CBT *>(left.get()), lStrides[1],
-                               reinterpret_cast<CBT *>(right.get()), rStrides[1],
-                               beta_.getScale(),
-                               reinterpret_cast<BT *>(output.get()), oStrides[1]);
+                gemm_func<T>()(
+                    CblasColMajor, lOpts, rOpts, M, N, K, alpha_.getScale(),
+                    reinterpret_cast<CBT *>(left.get()), lStrides[1],
+                    reinterpret_cast<CBT *>(right.get()), rStrides[1],
+                    beta_.getScale(), reinterpret_cast<BT *>(output.get()),
+                    oStrides[1]);
             }
         } else {
             int batchSize = oDims[2] * oDims[3];
@@ -302,29 +300,23 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
             const MKL_INT ldb = rStrides[1];
             const MKL_INT ldc = oStrides[1];
 
-            gemm_batch_func<T>()(CblasColMajor, &lOpts, &rOpts,
-                                 &M, &N, &K,
-                                 alpha_batched.getScale(),
-                                 lptrs.data(), &lda, rptrs.data(), &ldb,
-                                 beta_batched.getScale(),
+            gemm_batch_func<T>()(CblasColMajor, &lOpts, &rOpts, &M, &N, &K,
+                                 alpha_batched.getScale(), lptrs.data(), &lda,
+                                 rptrs.data(), &ldb, beta_batched.getScale(),
                                  optrs.data(), &ldc, 1, &batchSize);
 #else
             for (int n = 0; n < batchSize; n++) {
                 if (rDims[bColDim] == 1) {
                     dim_t incr =
                         (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
-                    gemv_func<T>()(CblasColMajor, lOpts,
-                                   lDims[0], lDims[1],
-                                   alpha_.getScale(),
-                                   lptrs[n], lStrides[1], rptrs[n], incr,
-                                   beta_.getScale(),
-                                   optrs[n], oStrides[0]);
+                    gemv_func<T>()(CblasColMajor, lOpts, lDims[0], lDims[1],
+                                   alpha_.getScale(), lptrs[n], lStrides[1],
+                                   rptrs[n], incr, beta_.getScale(), optrs[n],
+                                   oStrides[0]);
                 } else {
-                    gemm_func<T>()(CblasColMajor, lOpts, rOpts,
-                                   M, N, K,
-                                   alpha_.getScale(),
-                                   lptrs[n], lStrides[1], rptrs[n], rStrides[1],
-                                   beta_.getScale(),
+                    gemm_func<T>()(CblasColMajor, lOpts, rOpts, M, N, K,
+                                   alpha_.getScale(), lptrs[n], lStrides[1],
+                                   rptrs[n], rStrides[1], beta_.getScale(),
                                    optrs[n], oStrides[1]);
                 }
             }
@@ -367,8 +359,8 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
 }
 
 template<>
-Array<half> dot<half>(const Array<half> &lhs, const Array<half> &rhs, af_mat_prop optLhs,
-                      af_mat_prop optRhs) {
+Array<half> dot<half>(const Array<half> &lhs, const Array<half> &rhs,
+                      af_mat_prop optLhs, af_mat_prop optRhs) {
     Array<float> out = dot(cast<float>(lhs), cast<float>(rhs), optLhs, optRhs);
     return cast<half>(out);
 }
@@ -376,11 +368,10 @@ Array<half> dot<half>(const Array<half> &lhs, const Array<half> &rhs, af_mat_pro
 #undef BT
 #undef REINTEPRET_CAST
 
-#define INSTANTIATE_GEMM(TYPE)                                          \
-    template void gemm<TYPE>(Array<TYPE> &out,                          \
-                             af_mat_prop optLhs, af_mat_prop optRhs,    \
-                             const TYPE *alphas, const Array<TYPE> &lhs,\
-                             const Array<TYPE> &rhs,                    \
+#define INSTANTIATE_GEMM(TYPE)                                               \
+    template void gemm<TYPE>(Array<TYPE> & out, af_mat_prop optLhs,          \
+                             af_mat_prop optRhs, const TYPE *alphas,         \
+                             const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
                              const TYPE *beta)
 
 INSTANTIATE_GEMM(float);

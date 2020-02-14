@@ -22,7 +22,6 @@ namespace opencl {
 namespace kernel {
 template<typename T>
 static void identity(Param out) {
-
     using af::scalar_to_option;
     using cl::Buffer;
     using cl::EnqueueArgs;
@@ -31,12 +30,12 @@ static void identity(Param out) {
     using cl::NDRange;
     using cl::Program;
     using common::half;
+    using std::is_same;
     using std::ostringstream;
     using std::string;
-    using std::is_same;
 
     string refName = std::string("identity_kernel") +
-                          std::string(dtype_traits<T>::getName());
+                     std::string(dtype_traits<T>::getName());
 
     int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
@@ -50,9 +49,7 @@ static void identity(Param out) {
             options << " -D USE_DOUBLE";
         }
 
-        if (is_same<T, half>::value) {
-          options << " -D USE_HALF";
-        }
+        if (is_same<T, half>::value) { options << " -D USE_HALF"; }
 
         const char* ker_strs[] = {identity_cl};
         const int ker_lens[]   = {identity_cl_len};

@@ -54,7 +54,7 @@ __global__ void range_kernel(Param<T> out, const int dim,
 
     for (int oy = yy; oy < out.dims[1]; oy += incy) {
         compute_t<T> valYZW = valZW + (mul1 * oy);
-        int oyzw     = ozw + oy * out.strides[1];
+        int oyzw            = ozw + oy * out.strides[1];
         for (int ox = xx; ox < out.dims[0]; ox += incx) {
             int oidx         = oyzw + ox;
             compute_t<T> val = valYZW + static_cast<compute_t<T>>(ox * mul0);

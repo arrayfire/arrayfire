@@ -40,11 +40,11 @@
 namespace compute = boost::compute;
 
 using cl::Buffer;
-using cl::Program;
+using cl::EnqueueArgs;
 using cl::Kernel;
 using cl::KernelFunctor;
-using cl::EnqueueArgs;
 using cl::NDRange;
+using cl::Program;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -53,7 +53,7 @@ namespace opencl {
 
 namespace kernel {
 
-template <typename Ti, typename Tk, typename To, af_op_t op>
+template<typename Ti, typename Tk, typename To, af_op_t op>
 void launch_reduce_blocks_dim_by_key(cl::Buffer *reduced_block_sizes,
                                      Param keys_out, Param vals_out,
                                      const Param keys, const Param vals,
@@ -118,7 +118,7 @@ void launch_reduce_blocks_dim_by_key(cl::Buffer *reduced_block_sizes,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template <typename Ti, typename Tk, typename To, af_op_t op>
+template<typename Ti, typename Tk, typename To, af_op_t op>
 void launch_reduce_blocks_by_key(cl::Buffer *reduced_block_sizes,
                                  Param keys_out, Param vals_out,
                                  const Param keys, const Param vals,
@@ -181,7 +181,7 @@ void launch_reduce_blocks_by_key(cl::Buffer *reduced_block_sizes,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template <typename Tk, typename To, af_op_t op>
+template<typename Tk, typename To, af_op_t op>
 void launch_final_boundary_reduce(cl::Buffer *reduced_block_sizes,
                                   Param keys_out, Param vals_out, const int n,
                                   const int numBlocks, const int threads_x) {
@@ -235,11 +235,12 @@ void launch_final_boundary_reduce(cl::Buffer *reduced_block_sizes,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template <typename Tk, typename To, af_op_t op>
+template<typename Tk, typename To, af_op_t op>
 void launch_final_boundary_reduce_dim(cl::Buffer *reduced_block_sizes,
-                                      Param keys_out, Param vals_out, const int n,
-                                      const int numBlocks, const int threads_x,
-                                      const int dim, vector<int> dim_ordering) {
+                                      Param keys_out, Param vals_out,
+                                      const int n, const int numBlocks,
+                                      const int threads_x, const int dim,
+                                      vector<int> dim_ordering) {
     std::string ref_name =
         std::string("final_boundary_reduce") +
         std::string(dtype_traits<Tk>::getName()) + std::string("_") +
@@ -268,7 +269,7 @@ void launch_final_boundary_reduce_dim(cl::Buffer *reduced_block_sizes,
         }
 
         const char *ker_strs[] = {ops_cl, reduce_by_key_boundary_dim_cl};
-        const int ker_lens[]   = {ops_cl_len, reduce_by_key_boundary_dim_cl_len};
+        const int ker_lens[] = {ops_cl_len, reduce_by_key_boundary_dim_cl_len};
         Program prog;
         buildProgram(prog, 2, ker_strs, ker_lens, options.str());
 
@@ -284,7 +285,8 @@ void launch_final_boundary_reduce_dim(cl::Buffer *reduced_block_sizes,
                        vals_out.info.dims[dim_ordering[3]]);
 
     auto reduceOp =
-        KernelFunctor<Buffer, Buffer, KParam, Buffer, KParam, int, int>(*entry.ker);
+        KernelFunctor<Buffer, Buffer, KParam, Buffer, KParam, int, int>(
+            *entry.ker);
 
     reduceOp(EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
              *keys_out.data, keys_out.info, *vals_out.data, vals_out.info, n,
@@ -293,7 +295,7 @@ void launch_final_boundary_reduce_dim(cl::Buffer *reduced_block_sizes,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template <typename Tk, typename To>
+template<typename Tk, typename To>
 void launch_compact(cl::Buffer *reduced_block_sizes, Param keys_out,
                     Param vals_out, const Param keys, const Param vals,
                     const int numBlocks, const int threads_x) {
@@ -346,7 +348,7 @@ void launch_compact(cl::Buffer *reduced_block_sizes, Param keys_out,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template <typename Tk, typename To>
+template<typename Tk, typename To>
 void launch_compact_dim(cl::Buffer *reduced_block_sizes, Param keys_out,
                         Param vals_out, const Param keys, const Param vals,
                         const int numBlocks, const int threads_x, const int dim,
@@ -402,7 +404,7 @@ void launch_compact_dim(cl::Buffer *reduced_block_sizes, Param keys_out,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template <typename Tk>
+template<typename Tk>
 void launch_test_needs_reduction(cl::Buffer needs_reduction,
                                  cl::Buffer needs_boundary, const Param keys,
                                  const int n, const int numBlocks,
@@ -444,7 +446,7 @@ void launch_test_needs_reduction(cl::Buffer needs_reduction,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template <typename Ti, typename Tk, typename To, af_op_t op>
+template<typename Ti, typename Tk, typename To, af_op_t op>
 int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
                         const Param keys, const Param vals, bool change_nan,
                         double nanval) {
@@ -554,7 +556,7 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
     return n_reduced_host;
 }
 
-template <typename Ti, typename Tk, typename To, af_op_t op>
+template<typename Ti, typename Tk, typename To, af_op_t op>
 int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
                       const Param keys, const Param vals, bool change_nan,
                       double nanval, const int dim) {
@@ -671,7 +673,7 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
     return n_reduced_host;
 }
 
-template <af_op_t op, typename Ti, typename Tk, typename To>
+template<af_op_t op, typename Ti, typename Tk, typename To>
 void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
                    const Array<Tk> &keys, const Array<Ti> &vals, int dim,
                    bool change_nan, double nanval) {
@@ -704,5 +706,5 @@ void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
     keys_out = createSubArray<Tk>(reduced_keys, kindex, true);
     vals_out = createSubArray<To>(reduced_vals, vindex, true);
 }
-}
-}
+}  // namespace kernel
+}  // namespace opencl

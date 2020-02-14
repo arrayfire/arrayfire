@@ -260,18 +260,18 @@ TYPED_TEST(Sparse, EmptyDeepCopy) {
     EXPECT_EQ(0, sparseGetNNZ(b));
 }
 
-TEST(Sparse, CPPSparseFromHostArrays)
-{
+TEST(Sparse, CPPSparseFromHostArrays) {
     //! [ex_sparse_host_arrays]
 
-    float  vals[] = { 5, 8, 3, 6 };
-    int row_ptr[] = { 0, 0, 2, 3, 4 };
-    int col_idx[] = { 0, 1, 2, 1 };
+    float vals[]  = {5, 8, 3, 6};
+    int row_ptr[] = {0, 0, 2, 3, 4};
+    int col_idx[] = {0, 1, 2, 1};
     const int M = 4, N = 4, nnz = 4;
 
     // Create sparse array (CSR) from host pointers to values, row
     // pointers, and column indices.
-    array sparse = af::sparse(M, N, nnz, vals, row_ptr, col_idx, f32, AF_STORAGE_CSR, afHost);
+    array sparse = af::sparse(M, N, nnz, vals, row_ptr, col_idx, f32,
+                              AF_STORAGE_CSR, afHost);
 
     // sparse
     //     values:  [ 5.0, 8.0, 3.0, 6.0 ]
@@ -282,25 +282,25 @@ TEST(Sparse, CPPSparseFromHostArrays)
 
     array sparse_vals, sparse_row_ptr, sparse_col_idx;
     af::storage sparse_storage;
-    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage, sparse);
+    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage,
+                  sparse);
 
-    ASSERT_ARRAYS_EQ(sparse_vals   , array(dim4(nnz,1), vals));
-    ASSERT_ARRAYS_EQ(sparse_row_ptr, array(dim4(M+1,1), row_ptr));
-    ASSERT_ARRAYS_EQ(sparse_col_idx, array(dim4(nnz,1), col_idx));
+    ASSERT_ARRAYS_EQ(sparse_vals, array(dim4(nnz, 1), vals));
+    ASSERT_ARRAYS_EQ(sparse_row_ptr, array(dim4(M + 1, 1), row_ptr));
+    ASSERT_ARRAYS_EQ(sparse_col_idx, array(dim4(nnz, 1), col_idx));
     ASSERT_EQ(sparse_storage, AF_STORAGE_CSR);
     ASSERT_EQ(sparseGetNNZ(sparse), nnz);
 }
 
-TEST(Sparse, CPPSparseFromAFArrays)
-{
+TEST(Sparse, CPPSparseFromAFArrays) {
     //! [ex_sparse_af_arrays]
 
-    float v[] = { 5, 8, 3, 6 };
-    int   r[] = { 0, 0, 2, 3, 4 };
-    int   c[] = { 0, 1, 2, 1 };
+    float v[]   = {5, 8, 3, 6};
+    int r[]     = {0, 0, 2, 3, 4};
+    int c[]     = {0, 1, 2, 1};
     const int M = 4, N = 4, nnz = 4;
-    array    vals = array(dim4(nnz), v);
-    array row_ptr = array(dim4(M+1), r);
+    array vals    = array(dim4(nnz), v);
+    array row_ptr = array(dim4(M + 1), r);
     array col_idx = array(dim4(nnz), c);
 
     // Create sparse array (CSR) from af::arrays containing values,
@@ -316,23 +316,20 @@ TEST(Sparse, CPPSparseFromAFArrays)
 
     array sparse_vals, sparse_row_ptr, sparse_col_idx;
     af::storage sparse_storage;
-    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage, sparse);
+    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage,
+                  sparse);
 
-    ASSERT_ARRAYS_EQ(sparse_vals   , vals);
+    ASSERT_ARRAYS_EQ(sparse_vals, vals);
     ASSERT_ARRAYS_EQ(sparse_row_ptr, row_ptr);
     ASSERT_ARRAYS_EQ(sparse_col_idx, col_idx);
     ASSERT_EQ(sparse_storage, AF_STORAGE_CSR);
     ASSERT_EQ(sparseGetNNZ(sparse), nnz);
 }
 
-TEST(Sparse, CPPSparseFromDenseUsage)
-{
-    float dns[] = { 0, 5, 0, 0,
-                    0, 8, 0, 6,
-                    0, 0, 3, 0,
-                    0, 0, 0, 0 };
+TEST(Sparse, CPPSparseFromDenseUsage) {
+    float dns[] = {0, 5, 0, 0, 0, 8, 0, 6, 0, 0, 3, 0, 0, 0, 0, 0};
     const int M = 4, N = 4, nnz = 4;
-    array dense(dim4(M,N), dns);
+    array dense(dim4(M, N), dns);
 
     //! [ex_sparse_from_dense]
 
@@ -352,32 +349,29 @@ TEST(Sparse, CPPSparseFromDenseUsage)
 
     //! [ex_sparse_from_dense]
 
-    float v[] = { 5, 8, 3, 6 };
-    int   r[] = { 0, 0, 2, 3, 4 };
-    int   c[] = { 0, 1, 2, 1 };
-    array gold_vals(   dim4(nnz), v);
-    array gold_row_ptr(dim4(M+1), r);
+    float v[] = {5, 8, 3, 6};
+    int r[]   = {0, 0, 2, 3, 4};
+    int c[]   = {0, 1, 2, 1};
+    array gold_vals(dim4(nnz), v);
+    array gold_row_ptr(dim4(M + 1), r);
     array gold_col_idx(dim4(nnz), c);
 
     array sparse_vals, sparse_row_ptr, sparse_col_idx;
     af::storage sparse_storage;
-    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage, sparse);
+    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage,
+                  sparse);
 
-    ASSERT_ARRAYS_EQ(sparse_vals   , gold_vals);
+    ASSERT_ARRAYS_EQ(sparse_vals, gold_vals);
     ASSERT_ARRAYS_EQ(sparse_row_ptr, gold_row_ptr);
     ASSERT_ARRAYS_EQ(sparse_col_idx, gold_col_idx);
     ASSERT_EQ(sparse_storage, AF_STORAGE_CSR);
     ASSERT_EQ(sparseGetNNZ(sparse), nnz);
 }
 
-TEST(Sparse, CPPDenseToSparseToDenseUsage)
-{
-    float g[] = { 0, 5, 0, 0,
-                  0, 8, 0, 6,
-                  0, 0, 3, 0,
-                  0, 0, 0, 0 };
+TEST(Sparse, CPPDenseToSparseToDenseUsage) {
+    float g[]   = {0, 5, 0, 0, 0, 8, 0, 6, 0, 0, 3, 0, 0, 0, 0, 0};
     const int M = 4, N = 4;
-    array in(dim4(M,N), g);
+    array in(dim4(M, N), g);
     array sparse = af::sparse(in, AF_STORAGE_CSR);
 
     //! [ex_dense_from_sparse]
@@ -398,26 +392,27 @@ TEST(Sparse, CPPDenseToSparseToDenseUsage)
 
     //! [ex_dense_from_sparse]
 
-    float v[] = { 5, 8, 3, 6 };
-    int   r[] = { 0, 0, 2, 3, 4 };
-    int   c[] = { 0, 1, 2, 1 };
+    float v[]     = {5, 8, 3, 6};
+    int r[]       = {0, 0, 2, 3, 4};
+    int c[]       = {0, 1, 2, 1};
     const int nnz = 4;
-    array gold_vals(   dim4(nnz), v);
-    array gold_row_ptr(dim4(M+1), r);
+    array gold_vals(dim4(nnz), v);
+    array gold_row_ptr(dim4(M + 1), r);
     array gold_col_idx(dim4(nnz), c);
 
     array sparse_vals, sparse_row_ptr, sparse_col_idx;
     af::storage sparse_storage;
-    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage, sparse);
+    sparseGetInfo(sparse_vals, sparse_row_ptr, sparse_col_idx, sparse_storage,
+                  sparse);
 
-    ASSERT_ARRAYS_EQ(sparse_vals   , gold_vals);
+    ASSERT_ARRAYS_EQ(sparse_vals, gold_vals);
     ASSERT_ARRAYS_EQ(sparse_row_ptr, gold_row_ptr);
     ASSERT_ARRAYS_EQ(sparse_col_idx, gold_col_idx);
     ASSERT_EQ(sparse_storage, AF_STORAGE_CSR);
     ASSERT_EQ(sparseGetNNZ(sparse), nnz);
 
     // Check dense array
-    array gold(dim4(M,N), g);
+    array gold(dim4(M, N), g);
     ASSERT_ARRAYS_EQ(in, gold);
     ASSERT_ARRAYS_EQ(dense, gold);
 }

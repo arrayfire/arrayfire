@@ -10,6 +10,7 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/half.hpp>
 #include <handle.hpp>
 #include <implicit.hpp>
 #include <optypes.hpp>
@@ -17,7 +18,6 @@
 #include <af/array.h>
 #include <af/data.h>
 #include <af/defines.h>
-#include <common/half.hpp>
 
 #include <arith.hpp>
 #include <logic.hpp>

@@ -43,8 +43,7 @@ static const int THREADS = 256;
 // Generates rationals in (0, 1]
 __device__ static compute_t<common::half> getHalf(const uint &num) {
     ushort v = num;
-    return (compute_t<common::half>)(v * HALF_FACTOR +
-                                     HALF_HALF_FACTOR);
+    return (compute_t<common::half>)(v * HALF_FACTOR + HALF_HALF_FACTOR);
 }
 
 // Generates rationals in (0, 1]

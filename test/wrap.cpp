@@ -250,17 +250,13 @@ TEST(Wrap, DocSnippet) {
 }
 
 static void getInput(af_array *data, const dim_t *dims) {
-    float h_data[16] = { 10, 20, 20, 30,
-                         30, 40, 40, 50,
-                         30, 40, 40, 50,
-                         50, 60, 60, 70 };
+    float h_data[16] = {10, 20, 20, 30, 30, 40, 40, 50,
+                        30, 40, 40, 50, 50, 60, 60, 70};
     ASSERT_SUCCESS(af_create_array(data, &h_data[0], 2, dims, f32));
 }
 static void getGold(af_array *gold, const dim_t *dims) {
-    float h_gold[16]= { 10, 20, 30, 40,
-                        20, 30, 40, 50,
-                        30, 40, 50, 60,
-                        40, 50, 60, 70 };
+    float h_gold[16] = {10, 20, 30, 40, 20, 30, 40, 50,
+                        30, 40, 50, 60, 40, 50, 60, 70};
     ASSERT_SUCCESS(af_create_array(gold, &h_gold[0], 2, dims, f32));
 }
 
@@ -344,18 +340,17 @@ class WrapV2 : public WrapCommon {
         }
 
         // Taken from the Wrap.DocSnippet test
-        ASSERT_SUCCESS(af_wrap_v2(&out, this->in_,
-                                  4, 4,   // output dims
-                                  2, 2,   // window size
-                                  2, 2,   // stride
-                                  0, 0,   // padding
-                                  true)); // is_column
+        ASSERT_SUCCESS(af_wrap_v2(&out, this->in_, 4, 4,  // output dims
+                                  2, 2,                   // window size
+                                  2, 2,                   // stride
+                                  0, 0,                   // padding
+                                  true));                 // is_column
 
         ASSERT_SPECIAL_ARRAYS_EQ(this->gold_, out, &metadata);
     }
 
     void releaseArrays() {
-        if (this->in_ != 0)   { ASSERT_SUCCESS(af_release_array(this->in_)); }
+        if (this->in_ != 0) { ASSERT_SUCCESS(af_release_array(this->in_)); }
         if (this->gold_ != 0) { ASSERT_SUCCESS(af_release_array(this->gold_)); }
     }
 };
@@ -406,46 +401,42 @@ TYPED_TEST(WrapV2Simple, UseReorderedOutputArray) {
 class WrapNullArgs : public WrapCommon {};
 
 TEST_F(WrapNullArgs, NullOutputPtr) {
-    af_array* out_ptr = 0;
-    ASSERT_EQ(af_wrap(out_ptr, this->in_,
-                      4, 4,  // output dims
-                      2, 2,  // window size
-                      2, 2,  // stride
-                      0, 0,  // padding
-                      true), // is_column
+    af_array *out_ptr = 0;
+    ASSERT_EQ(af_wrap(out_ptr, this->in_, 4, 4,  // output dims
+                      2, 2,                      // window size
+                      2, 2,                      // stride
+                      0, 0,                      // padding
+                      true),                     // is_column
               AF_ERR_ARG);
 }
 
 TEST_F(WrapNullArgs, NullInputArray) {
     af_array out = 0;
-    ASSERT_EQ(af_wrap(&out, 0,
-                      4, 4,  // output dims
-                      2, 2,  // window size
-                      2, 2,  // stride
-                      0, 0,  // padding
-                      true), // is_column
+    ASSERT_EQ(af_wrap(&out, 0, 4, 4,  // output dims
+                      2, 2,           // window size
+                      2, 2,           // stride
+                      0, 0,           // padding
+                      true),          // is_column
               AF_ERR_ARG);
 }
 
 TEST_F(WrapNullArgs, V2NullOutputPtr) {
-    af_array* out_ptr = 0;
-    ASSERT_EQ(af_wrap_v2(out_ptr, this->in_,
-                         4, 4,  // output dims
-                         2, 2,  // window size
-                         2, 2,  // stride
-                         0, 0,  // padding
-                         true), // is_column
+    af_array *out_ptr = 0;
+    ASSERT_EQ(af_wrap_v2(out_ptr, this->in_, 4, 4,  // output dims
+                         2, 2,                      // window size
+                         2, 2,                      // stride
+                         0, 0,                      // padding
+                         true),                     // is_column
               AF_ERR_ARG);
 }
 
 TEST_F(WrapNullArgs, V2NullInputArray) {
     af_array out = 0;
-    ASSERT_EQ(af_wrap_v2(&out, 0,
-                         4, 4,  // output dims
-                         2, 2,  // window size
-                         2, 2,  // stride
-                         0, 0,  // padding
-                         true), // is_column
+    ASSERT_EQ(af_wrap_v2(&out, 0, 4, 4,  // output dims
+                         2, 2,           // window size
+                         2, 2,           // stride
+                         0, 0,           // padding
+                         true),          // is_column
               AF_ERR_ARG);
 }
 

@@ -79,7 +79,8 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
     int NRHS   = b.dims()[1];
     Array<T> B = copyArray<T>(b);
 
-    auto func = [=](CParam<T> A, Param<T> B, CParam<int> pivot, int N, int NRHS) {
+    auto func = [=](CParam<T> A, Param<T> B, CParam<int> pivot, int N,
+                    int NRHS) {
         getrs_func<T>()(AF_LAPACK_COL_MAJOR, 'N', N, NRHS, A.get(),
                         A.strides(1), pivot.get(), B.get(), B.strides(1));
     };

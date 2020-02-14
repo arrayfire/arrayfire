@@ -33,16 +33,18 @@ void derivative(Param<To> output, CParam<Ti> input) {
         for (dim_t b2 = 0; b2 < dims[2]; ++b2) {
             for (dim_t j = 0; j < dims[1]; ++j) {
                 int joff    = j;
-                int _joff   = reflect101(j - 1, static_cast<int>(dims[1]-1));
-                int joff_   = reflect101(j + 1, static_cast<int>(dims[1]-1));
+                int _joff   = reflect101(j - 1, static_cast<int>(dims[1] - 1));
+                int joff_   = reflect101(j + 1, static_cast<int>(dims[1] - 1));
                 int joffset = j * ostrides[1];
 
                 for (dim_t i = 0; i < dims[0]; ++i) {
                     To accum = To(0);
 
-                    int ioff  = i;
-                    int _ioff = reflect101(i - 1, static_cast<int>(dims[0]-1));
-                    int ioff_ = reflect101(i + 1, static_cast<int>(dims[0]-1));
+                    int ioff = i;
+                    int _ioff =
+                        reflect101(i - 1, static_cast<int>(dims[0] - 1));
+                    int ioff_ =
+                        reflect101(i + 1, static_cast<int>(dims[0] - 1));
 
                     To NW = iptr[_joff * istrides[1] + _ioff * istrides[0]];
                     To SW = iptr[_joff * istrides[1] + ioff_ * istrides[0]];

@@ -114,7 +114,8 @@ class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T> > {
 
         // Cast to the expected type
         af_array in = 0;
-        ASSERT_SUCCESS(af_cast(&in, test.in_, (af_dtype)dtype_traits<T>::af_type));
+        ASSERT_SUCCESS(
+            af_cast(&in, test.in_, (af_dtype)dtype_traits<T>::af_type));
 
         EXPECT_EQ(AF_SUCCESS, af_meanvar(&mean, &var, in, test.weights_,
                                          test.bias_, test.dim_));

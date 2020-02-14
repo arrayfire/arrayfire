@@ -13,16 +13,18 @@
 #include <testHelpers.hpp>
 #include <af/blas.h>
 #include <af/defines.h>
-#include <af/half.h>
 #include <af/dim4.hpp>
+#include <af/half.h>
 #include <af/traits.hpp>
-#include <string>
 #include <algorithm>
+#include <string>
 
 using af::array;
 using af::cdouble;
 using af::cfloat;
+using af::constant;
 using af::dim4;
+using af::dot;
 using af::dtype_traits;
 using af::getDevice;
 using af::getDeviceCount;
@@ -31,8 +33,6 @@ using af::max;
 using af::randu;
 using af::setDevice;
 using af::span;
-using af::constant;
-using af::dot;
 using af::transpose;
 using std::copy;
 using std::cout;
@@ -96,7 +96,7 @@ void MatMulCheck(string TestFile) {
 
     for (size_t i = 0; i < tests.size(); i++) {
         dim4 dd;
-        dim_t* d = dd.get();
+        dim_t *d = dd.get();
         af_get_dims(&d[0], &d[1], &d[2], &d[3], out[i]);
         ASSERT_VEC_ARRAY_NEAR(tests[i], dd, out[i], 1e-3);
     }
@@ -173,7 +173,7 @@ void cppMatMulCheck(string TestFile) {
     for (size_t i = 0; i < tests.size(); i++) {
         dim_t elems = out[i].elements();
         vector<T> h_out(elems);
-        out[i].host((void*)&h_out.front());
+        out[i].host((void *)&h_out.front());
 
         if (false == equal(h_out.begin(), h_out.end(), tests[i].begin())) {
             cout << "Failed test " << i << "\nCalculated: " << endl;
@@ -204,7 +204,7 @@ TYPED_TEST(MatrixMultiply, RectangleVector_CPP) {
 
 #define DEVICE_ITERATE(func)                             \
     do {                                                 \
-        const char* ENV = getenv("AF_MULTI_GPU_TESTS");  \
+        const char *ENV = getenv("AF_MULTI_GPU_TESTS");  \
         if (ENV && ENV[0] == '0') {                      \
             func;                                        \
         } else {                                         \
@@ -329,78 +329,51 @@ TEST(MatrixMultiply, RhsBroadcastBatched) {
 }
 
 float alpha = 1.f;
-float beta = 0.f;
+float beta  = 0.f;
 
-float h_gold_gemv[4] = {5, 5, 5, 5};
-float h_half_ones[20] = {1.f, 1.f, 1.f, 1.f, 1.f,
-                         1.f, 1.f, 1.f, 1.f, 1.f,
-                         1.f, 1.f, 1.f, 1.f, 1.f,
-                         1.f, 1.f, 1.f, 1.f, 1.f};
+float h_gold_gemv[4]  = {5, 5, 5, 5};
+float h_half_ones[20] = {1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f,
+                         1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f};
 
-float h_lhs[9] =         {1.f, 4.f, 7.f,
-                          2.f, 5.f, 8.f,
-                          3.f, 6.f, 9.f};
+float h_lhs[9] = {1.f, 4.f, 7.f, 2.f, 5.f, 8.f, 3.f, 6.f, 9.f};
 
-float h_lhs_tall[6] =    {1.f, 3.f, 5.f,
-                          2.f, 4.f, 6.f};
+float h_lhs_tall[6] = {1.f, 3.f, 5.f, 2.f, 4.f, 6.f};
 
-float h_lhs_wide[6] =    {1.f, 4.f,
-                          2.f, 5.f,
-                          3.f, 6.f};
+float h_lhs_wide[6] = {1.f, 4.f, 2.f, 5.f, 3.f, 6.f};
 
-float h_lhs_batch[18] =  {1.f, 4.f, 7.f,
-                          2.f, 5.f, 8.f,
-                          3.f, 6.f, 9.f,
+float h_lhs_batch[18] = {1.f, 4.f, 7.f, 2.f, 5.f, 8.f, 3.f, 6.f, 9.f,
 
-                          8.f, 2.f, 5.f,
-                          3.f, 4.f, 7.f,
-                          1.f, 0.f, 6.f};
+                         8.f, 2.f, 5.f, 3.f, 4.f, 7.f, 1.f, 0.f, 6.f};
 
-float h_rhs[9] =         {9.f, 6.f, 3.f,
-                          8.f, 5.f, 2.f,
-                          7.f, 4.f, 1.f};
+float h_rhs[9] = {9.f, 6.f, 3.f, 8.f, 5.f, 2.f, 7.f, 4.f, 1.f};
 
-float h_rhs_tall[6] =    {9.f, 7.f, 5.f,
-                          8.f, 6.f, 4.f};
+float h_rhs_tall[6] = {9.f, 7.f, 5.f, 8.f, 6.f, 4.f};
 
-float h_rhs_wide[6] =    {9.f, 6.f,
-                          8.f, 5.f,
-                          7.f, 4.f};
+float h_rhs_wide[6] = {9.f, 6.f, 8.f, 5.f, 7.f, 4.f};
 
-float h_gold[9] =        {30.f, 84.f, 138.f,
-                          24.f, 69.f, 114.f,
-                          18.f, 54.f, 90.f};
+float h_gold[9] = {30.f, 84.f, 138.f, 24.f, 69.f, 114.f, 18.f, 54.f, 90.f};
 
-float h_gold_NN[9] =     {21.f, 51.f, 81.f,
-                          18.f, 44.f, 70.f,
-                          15.f, 37.f, 59.f};
+float h_gold_NN[9] = {21.f, 51.f, 81.f, 18.f, 44.f, 70.f, 15.f, 37.f, 59.f};
 
-float h_gold_NT[9] =     {25.f, 59.f, 93.f,
-                          19.f, 45.f, 71.f,
-                          13.f, 31.f, 49.f};
+float h_gold_NT[9] = {25.f, 59.f, 93.f, 19.f, 45.f, 71.f, 13.f, 31.f, 49.f};
 
-float h_gold_TN[4] =     {55.f, 76.f,
-                          46.f, 64.f};
+float h_gold_TN[4] = {55.f, 76.f, 46.f, 64.f};
 
-float h_gold_TT[4] =     {68.f, 92.f,
-                          41.f, 56.f};
+float h_gold_TT[4] = {68.f, 92.f, 41.f, 56.f};
 
-float h_gold_batch[18] = {30.f, 84.f, 138.f,
-                          24.f, 69.f, 114.f,
-                          18.f, 54.f, 90.f,
+float h_gold_batch[18] = {
+    30.f, 84.f, 138.f, 24.f, 69.f, 114.f, 18.f, 54.f, 90.f,
 
-                          93.f, 42.f, 105.f,
-                          81.f, 36.f, 87.f,
-                          69.f, 30.f, 69.f};
-
+    93.f, 42.f, 105.f, 81.f, 36.f, 87.f,  69.f, 30.f, 69.f};
 
 TEST(MatrixMultiply, float) {
-    array A32 = array(3, 3, h_lhs);
-    array B32 = array(3, 3, h_rhs);
-    af_array C32 = 0;
+    array A32           = array(3, 3, h_lhs);
+    array B32           = array(3, 3, h_rhs);
+    af_array C32        = 0;
     const float alpha32 = 1.0f;
-    const float beta32 = 0.0f;
-    af_gemm(&C32, AF_MAT_NONE, AF_MAT_NONE, &alpha32, A32.get(), B32.get(), &beta32);
+    const float beta32  = 0.0f;
+    af_gemm(&C32, AF_MAT_NONE, AF_MAT_NONE, &alpha32, A32.get(), B32.get(),
+            &beta32);
     array expected32 = array(3, 3, h_gold);
     ASSERT_ARRAYS_NEAR(expected32, af::array(C32), 0.0001);
 }
@@ -408,15 +381,16 @@ TEST(MatrixMultiply, float) {
 TEST(MatrixMultiply, half) {
     SUPPORTED_TYPE_CHECK(af_half);
 
-    array A16 = array(3, 3, h_lhs).as(f16);
-    array B16 = array(3, 3, h_rhs).as(f16);
+    array A16        = array(3, 3, h_lhs).as(f16);
+    array B16        = array(3, 3, h_rhs).as(f16);
     array expected16 = array(3, 3, h_gold).as(f16);
 
     {
         af_array C16 = 0;
         const half_float::half alpha16(1.0f);
         const half_float::half beta16(0.0f);
-        ASSERT_SUCCESS(af_gemm(&C16, AF_MAT_NONE, AF_MAT_NONE, &alpha16, A16.get(), B16.get(), &beta16));
+        ASSERT_SUCCESS(af_gemm(&C16, AF_MAT_NONE, AF_MAT_NONE, &alpha16,
+                               A16.get(), B16.get(), &beta16));
         af::array C(C16);
         ASSERT_ARRAYS_NEAR(expected16, C, 0.00001);
     }
@@ -439,18 +413,20 @@ struct test_params {
     float *beta;
     TestOutputArrayType out_array_type;
 
-    test_params(af_mat_prop optl, af_mat_prop optr,
-                float *a,
-                float *l, float *r, float *g,
-                dim4 ldims, dim4 rdims, dim4 odims,
-                float *b,
-                TestOutputArrayType t)
-        :opt_lhs(optl), opt_rhs(optr),
-         alpha(a),
-         h_lhs(l), h_rhs(r), h_gold(g),
-         lhs_dims(ldims), rhs_dims(rdims), out_dims(odims),
-         beta(b),
-         out_array_type(t) {}
+    test_params(af_mat_prop optl, af_mat_prop optr, float *a, float *l,
+                float *r, float *g, dim4 ldims, dim4 rdims, dim4 odims,
+                float *b, TestOutputArrayType t)
+        : opt_lhs(optl)
+        , opt_rhs(optr)
+        , alpha(a)
+        , h_lhs(l)
+        , h_rhs(r)
+        , h_gold(g)
+        , lhs_dims(ldims)
+        , rhs_dims(rdims)
+        , out_dims(odims)
+        , beta(b)
+        , out_array_type(t) {}
 };
 
 class Gemm : public ::testing::TestWithParam<test_params> {
@@ -465,24 +441,28 @@ class Gemm : public ::testing::TestWithParam<test_params> {
         test_params params = GetParam();
 
         lhs  = 0;
-        rhs = 0;
-        out = 0;
+        rhs  = 0;
+        out  = 0;
         gold = 0;
 
-        ASSERT_SUCCESS(
-            af_create_array(&lhs, params.h_lhs, params.lhs_dims.ndims(), params.lhs_dims.get(), f32));
-        ASSERT_SUCCESS(
-            af_create_array(&rhs, params.h_rhs, params.rhs_dims.ndims(), params.rhs_dims.get(), f32));
+        ASSERT_SUCCESS(af_create_array(&lhs, params.h_lhs,
+                                       params.lhs_dims.ndims(),
+                                       params.lhs_dims.get(), f32));
+        ASSERT_SUCCESS(af_create_array(&rhs, params.h_rhs,
+                                       params.rhs_dims.ndims(),
+                                       params.rhs_dims.get(), f32));
 
-        dim_t gold_dim0 = params.opt_lhs == AF_MAT_TRANS ? params.lhs_dims[1] : params.lhs_dims[0];
-        dim_t gold_dim1 = params.opt_rhs == AF_MAT_TRANS ? params.rhs_dims[0] : params.rhs_dims[1];
+        dim_t gold_dim0 = params.opt_lhs == AF_MAT_TRANS ? params.lhs_dims[1]
+                                                         : params.lhs_dims[0];
+        dim_t gold_dim1 = params.opt_rhs == AF_MAT_TRANS ? params.rhs_dims[0]
+                                                         : params.rhs_dims[1];
         dim_t gold_dim2 = std::max(params.lhs_dims[2], params.rhs_dims[2]);
         dim_t gold_dim3 = std::max(params.lhs_dims[3], params.rhs_dims[3]);
         dim4 gold_dims(gold_dim0, gold_dim1, gold_dim2, gold_dim3);
 
         metadata = TestOutputArrayInfo(params.out_array_type);
-        genTestOutputArray(&out, params.out_dims.ndims(), params.out_dims.get(), f32,
-                           &metadata);
+        genTestOutputArray(&out, params.out_dims.ndims(), params.out_dims.get(),
+                           f32, &metadata);
 
         ASSERT_SUCCESS(af_create_array(&gold, params.h_gold, gold_dims.ndims(),
                                        gold_dims.get(), f32));
@@ -495,8 +475,8 @@ class Gemm : public ::testing::TestWithParam<test_params> {
     }
 };
 
-void replace_all(std::string& str, const std::string& oldStr,
-                 const std::string& newStr) {
+void replace_all(std::string &str, const std::string &oldStr,
+                 const std::string &newStr) {
     std::string::size_type pos = 0u;
     while ((pos = str.find(oldStr, pos)) != std::string::npos) {
         str.replace(pos, oldStr.length(), newStr);
@@ -517,32 +497,21 @@ string out_info(const ::testing::TestParamInfo<Gemm::ParamType> info) {
 
     stringstream ss;
     switch (params.out_array_type) {
-    case NULL_ARRAY:
-        ss << "NullOut";
-        break;
-    case FULL_ARRAY:
-        ss << "FullOut";
-        break;
-    case SUB_ARRAY:
-        ss << "SubarrayOut";
-        break;
-    case REORDERED_ARRAY:
-        ss << "ReorderedOut";
-        break;
-    default:
-        ss << "UnknownOutArrayType";
-        break;
+        case NULL_ARRAY: ss << "NullOut"; break;
+        case FULL_ARRAY: ss << "FullOut"; break;
+        case SUB_ARRAY: ss << "SubarrayOut"; break;
+        case REORDERED_ARRAY: ss << "ReorderedOut"; break;
+        default: ss << "UnknownOutArrayType"; break;
     }
 
-    ss << "_" << concat_dim4(params.lhs_dims) << "_" << concat_dim4(params.rhs_dims);
+    ss << "_" << concat_dim4(params.lhs_dims) << "_"
+       << concat_dim4(params.rhs_dims);
 
     ss << "_";
     ss << (params.opt_lhs == AF_MAT_TRANS ? "T" : "N");
     ss << (params.opt_rhs == AF_MAT_TRANS ? "T" : "N");
 
-    if (params.lhs_dims[2] > 1 || params.rhs_dims[2] > 1) {
-        ss << "_Batched";
-    }
+    if (params.lhs_dims[2] > 1 || params.rhs_dims[2] > 1) { ss << "_Batched"; }
 
     return ss.str();
 }
@@ -611,8 +580,8 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(Gemm, UsePreallocatedOutArray) {
     test_params params = GetParam();
-    ASSERT_SUCCESS(af_gemm(&out, params.opt_lhs, params.opt_rhs,
-                           params.alpha, lhs, rhs, params.beta));
+    ASSERT_SUCCESS(af_gemm(&out, params.opt_lhs, params.opt_rhs, params.alpha,
+                           lhs, rhs, params.beta));
 
     ASSERT_SPECIAL_ARRAYS_EQ(gold, out, &metadata);
 }
@@ -631,7 +600,8 @@ TEST(Gemm, DocSnippet) {
 
     // Undefined behavior!
     // af_array undef;
-    // af_gemm(&undef, AF_MAT_NONE, AF_MAT_NONE, &alpha, a.get(), b.get(), &beta);
+    // af_gemm(&undef, AF_MAT_NONE, AF_MAT_NONE, &alpha, a.get(), b.get(),
+    // &beta);
 
     af_array C = 0;
     af_gemm(&C, AF_MAT_NONE, AF_MAT_NONE, &alpha, A, B, &beta);
@@ -657,8 +627,8 @@ TEST(Gemm, DocSnippet) {
     ASSERT_ARRAYS_EQ(gold1, c1);
 
     //! [ex_af_gemm_overwrite]
-    alpha = 1.f;
-    beta  = 1.f;
+    alpha                = 1.f;
+    beta                 = 1.f;
     af_seq first_slice[] = {af_span, af_span, {0., 0., 1.}};
     af_array Asub, Bsub, Csub;
     af_index(&Asub, A, 3, first_slice);
@@ -682,7 +652,7 @@ TEST(Gemm, DocSnippet) {
     af_array c2_copy = 0;
     ASSERT_SUCCESS(af_retain_array(&c2_copy, C));
     af::array c2(c2_copy);
-    vector<float> gold2(5*5*2, 3);
+    vector<float> gold2(5 * 5 * 2, 3);
     fill(gold2.begin(), gold2.begin() + (5 * 5), 6);
 
     af_release_array(A);
@@ -699,7 +669,7 @@ TEST(Gemv, HalfScalarProduct) {
     SUPPORTED_TYPE_CHECK(half_float::half);
 
     const unsigned int sizeValue = 5;
-    array gold = constant(sizeValue, 4, 1, f16);
+    array gold                   = constant(sizeValue, 4, 1, f16);
     {
         array a     = constant(1, 4, sizeValue, f16);
         array b     = constant(1, sizeValue, 1, f16);
@@ -707,9 +677,9 @@ TEST(Gemv, HalfScalarProduct) {
         ASSERT_ARRAYS_EQ(mmRes, gold);
     }
     {
-        array a     = constant(1, 1, sizeValue, f16);
-        array b     = constant(1, sizeValue, 1, f16);
-        array mmRes = matmul(a, b);
+        array a      = constant(1, 1, sizeValue, f16);
+        array b      = constant(1, sizeValue, 1, f16);
+        array mmRes  = matmul(a, b);
         array dotRes = dot(transpose(a), b);
         ASSERT_ARRAYS_EQ(mmRes, dotRes);
     }

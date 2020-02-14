@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <debug_thrust.hpp>
 #include <debug_cuda.hpp>
+#include <debug_thrust.hpp>
 #include <kernel/thrust_sort_by_key.hpp>
 #include <thrust/sort.h>
 #include <types.hpp>

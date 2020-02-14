@@ -30,9 +30,11 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
                           const af::fluxFunction fftype, bool isMCDE) {
     static const std::string source(anisotropic_diffusion_cuh,
                                     anisotropic_diffusion_cuh_len);
-    auto diffUpdate = getKernel("cuda::diffUpdate", source,
-                             {TemplateTypename<T>(), TemplateArg(fftype), TemplateArg(isMCDE)},
-                             {DefineValue(THREADS_X), DefineValue(THREADS_Y), DefineValue(YDIM_LOAD)});
+    auto diffUpdate = getKernel(
+        "cuda::diffUpdate", source,
+        {TemplateTypename<T>(), TemplateArg(fftype), TemplateArg(isMCDE)},
+        {DefineValue(THREADS_X), DefineValue(THREADS_Y),
+         DefineValue(YDIM_LOAD)});
 
     dim3 threads(THREADS_X, THREADS_Y, 1);
 

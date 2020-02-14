@@ -13,15 +13,15 @@
 #include <testHelpers.hpp>
 #include <af/traits.hpp>
 
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
 using af::dim4;
 using std::abs;
 using std::string;
-using std::to_string;
 using std::stringstream;
+using std::to_string;
 using std::vector;
 
 template<typename T>
@@ -35,19 +35,18 @@ typedef ::testing::Types<float, uint, ushort, uchar> TestTypes;
 TYPED_TEST_CASE(ConfidenceConnectedImageTest, TestTypes);
 
 struct CCCTestParams {
-    const char* prefix;
+    const char *prefix;
     unsigned int radius;
     unsigned int multiplier;
     unsigned int iterations;
     double replace;
 };
 
-void apiWrapper(af_array* out, const af_array in, const af_array seedx,
-        const af_array seedy, const CCCTestParams params) {
-    ASSERT_SUCCESS(
-            af_confidence_cc(out, in, seedx, seedy,
-                params.radius, params.multiplier,
-                params.iterations, params.replace));
+void apiWrapper(af_array *out, const af_array in, const af_array seedx,
+                const af_array seedy, const CCCTestParams params) {
+    ASSERT_SUCCESS(af_confidence_cc(out, in, seedx, seedy, params.radius,
+                                    params.multiplier, params.iterations,
+                                    params.replace));
 
     int device = 0;
     ASSERT_SUCCESS(af_get_device(&device));
@@ -56,8 +55,9 @@ void apiWrapper(af_array* out, const af_array in, const af_array seedx,
 
 template<typename T>
 void testImage(const std::string pTestFile, const size_t numSeeds,
-        const unsigned *seedx, const unsigned *seedy, const int multiplier,
-        const unsigned neighborhood_radius, const int iter) {
+               const unsigned *seedx, const unsigned *seedy,
+               const int multiplier, const unsigned neighborhood_radius,
+               const int iter) {
     SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
@@ -66,17 +66,17 @@ void testImage(const std::string pTestFile, const size_t numSeeds,
     vector<dim_t> outSizes;
     vector<string> outFiles;
 
-    readImageTests(std::string(TEST_DIR)+"/confidence_cc/"+pTestFile,
-            inDims, inFiles, outSizes, outFiles);
+    readImageTests(std::string(TEST_DIR) + "/confidence_cc/" + pTestFile,
+                   inDims, inFiles, outSizes, outFiles);
 
     size_t testCount = inDims.size();
 
     af_array seedxArr = 0, seedyArr = 0;
     dim4 seedDims(numSeeds);
-    ASSERT_SUCCESS(af_create_array(
-                &seedxArr, seedx, seedDims.ndims(), seedDims.get(), u32));
-    ASSERT_SUCCESS(af_create_array(
-                &seedyArr, seedy, seedDims.ndims(), seedDims.get(), u32));
+    ASSERT_SUCCESS(af_create_array(&seedxArr, seedx, seedDims.ndims(),
+                                   seedDims.get(), u32));
+    ASSERT_SUCCESS(af_create_array(&seedyArr, seedy, seedDims.ndims(),
+                                   seedDims.get(), u32));
 
     for (size_t testId = 0; testId < testCount; ++testId) {
         af_array _inArray   = 0;
@@ -90,20 +90,20 @@ void testImage(const std::string pTestFile, const size_t numSeeds,
         outFiles[testId].insert(0, string(TEST_DIR "/confidence_cc/"));
 
         ASSERT_SUCCESS(
-                af_load_image(&_inArray, inFiles[testId].c_str(), false));
+            af_load_image(&_inArray, inFiles[testId].c_str(), false));
         ASSERT_SUCCESS(
-                af_load_image(&_goldArray, outFiles[testId].c_str(), false));
+            af_load_image(&_goldArray, outFiles[testId].c_str(), false));
 
         // af_load_image always returns float array, so convert to output type
         ASSERT_SUCCESS(conv_image<T>(&inArray, _inArray));
         ASSERT_SUCCESS(conv_image<T>(&goldArray, _goldArray));
 
         CCCTestParams params;
-        params.prefix = "Image";
-        params.radius = neighborhood_radius;
+        params.prefix     = "Image";
+        params.radius     = neighborhood_radius;
         params.multiplier = multiplier;
         params.iterations = iter;
-        params.replace = 255.0;
+        params.replace    = 255.0;
 
         apiWrapper(&outArray, inArray, seedxArr, seedyArr, params);
 
@@ -127,10 +127,9 @@ void testData(CCCTestParams params) {
     vector<vector<T> > in;
     vector<vector<T> > tests;
 
-    string file = string(TEST_DIR) + "/confidence_cc/" +
-                string(params.prefix) + "_" +
-                to_string(params.radius) + "_" +
-                to_string(params.multiplier) + ".test";
+    string file = string(TEST_DIR) + "/confidence_cc/" + string(params.prefix) +
+                  "_" + to_string(params.radius) + "_" +
+                  to_string(params.multiplier) + ".test";
     readTests<T, T, int>(file, numDims, in, tests);
 
     dim4 dims         = numDims[0];
@@ -141,12 +140,13 @@ void testData(CCCTestParams params) {
     const unsigned *seedxy = seedCoords.data();
 
     dim4 seedDims(1);
-    ASSERT_SUCCESS(af_create_array(
-                &seedxArr, seedxy+0, seedDims.ndims(), seedDims.get(), u32));
-    ASSERT_SUCCESS(af_create_array(
-                &seedyArr, seedxy+1, seedDims.ndims(), seedDims.get(), u32));
+    ASSERT_SUCCESS(af_create_array(&seedxArr, seedxy + 0, seedDims.ndims(),
+                                   seedDims.get(), u32));
+    ASSERT_SUCCESS(af_create_array(&seedyArr, seedxy + 1, seedDims.ndims(),
+                                   seedDims.get(), u32));
     ASSERT_SUCCESS(af_create_array(&inArray, &(in[0].front()), dims.ndims(),
-                dims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                                   dims.get(),
+                                   (af_dtype)af::dtype_traits<T>::af_type));
 
     af_array outArray = 0;
     apiWrapper(&outArray, inArray, seedxArr, seedyArr, params);
@@ -160,47 +160,46 @@ void testData(CCCTestParams params) {
 }
 
 class ConfidenceConnectedDataTest
-    : public testing::TestWithParam<CCCTestParams> {
-};
+    : public testing::TestWithParam<CCCTestParams> {};
 
 #if !defined(AF_OPENCL)
 
 TYPED_TEST(ConfidenceConnectedImageTest, DonutBackgroundExtraction) {
     const unsigned seedx = 10;
     const unsigned seedy = 10;
-    testImage<TypeParam>(
-        std::string("donut_background.test"), 1, &seedx, &seedy, 3, 3, 25);
+    testImage<TypeParam>(std::string("donut_background.test"), 1, &seedx,
+                         &seedy, 3, 3, 25);
 }
 
 TYPED_TEST(ConfidenceConnectedImageTest, DonutRingExtraction) {
     const unsigned seedx = 132;
     const unsigned seedy = 132;
-    testImage<TypeParam>(
-        std::string("donut_ring.test"), 1, &seedx, &seedy, 3, 3, 25);
+    testImage<TypeParam>(std::string("donut_ring.test"), 1, &seedx, &seedy, 3,
+                         3, 25);
 }
 
 TYPED_TEST(ConfidenceConnectedImageTest, DonutKernelExtraction) {
     const unsigned seedx = 150;
     const unsigned seedy = 150;
-    testImage<TypeParam>(
-        std::string("donut_core.test"), 1, &seedx, &seedy, 3, 3, 25);
+    testImage<TypeParam>(std::string("donut_core.test"), 1, &seedx, &seedy, 3,
+                         3, 25);
 }
 
 TEST_P(ConfidenceConnectedDataTest, SegmentARegion) {
     testData<unsigned char>(GetParam());
 }
 
-INSTANTIATE_TEST_CASE_P(SingleSeed, ConfidenceConnectedDataTest,
-        testing::Values(CCCTestParams{"core", 0u, 1u, 5u, 255.0},
-            CCCTestParams{"background", 0u, 1u, 5u, 255.0},
-            CCCTestParams{"ring", 0u, 1u, 5u, 255.0}),
-        [](const ::testing::TestParamInfo<ConfidenceConnectedDataTest::ParamType> info) {
-            stringstream ss;
-            ss << "_prefix_" << info.param.prefix
-               << "_radius_" << info.param.radius
-               << "_multiplier_" << info.param.multiplier
-               << "_iterations_" << info.param.iterations
-               << "_replace_" << info.param.replace;
-            return ss.str();
-        });
+INSTANTIATE_TEST_CASE_P(
+    SingleSeed, ConfidenceConnectedDataTest,
+    testing::Values(CCCTestParams{"core", 0u, 1u, 5u, 255.0},
+                    CCCTestParams{"background", 0u, 1u, 5u, 255.0},
+                    CCCTestParams{"ring", 0u, 1u, 5u, 255.0}),
+    [](const ::testing::TestParamInfo<ConfidenceConnectedDataTest::ParamType>
+           info) {
+        stringstream ss;
+        ss << "_prefix_" << info.param.prefix << "_radius_" << info.param.radius
+           << "_multiplier_" << info.param.multiplier << "_iterations_"
+           << info.param.iterations << "_replace_" << info.param.replace;
+        return ss.str();
+    });
 #endif

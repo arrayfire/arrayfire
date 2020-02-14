@@ -13,7 +13,6 @@
 
 #include <af/memory.h>
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Memory Manager API
 ////////////////////////////////////////////////////////////////////////////////
@@ -22,7 +21,8 @@
  * An internal wrapper around an af_memory_manager which calls function pointers
  * on a af_memory_manager via calls to a MemoryManagerBase
  */
-class MemoryManagerFunctionWrapper final : public common::memory::MemoryManagerBase {
+class MemoryManagerFunctionWrapper final
+    : public common::memory::MemoryManagerBase {
     af_memory_manager handle_;
 
    public:
@@ -30,7 +30,7 @@ class MemoryManagerFunctionWrapper final : public common::memory::MemoryManagerB
     ~MemoryManagerFunctionWrapper();
     void initialize() override;
     void shutdown() override;
-    void* alloc(bool user_lock, const unsigned ndims, dim_t *dims,
+    void *alloc(bool user_lock, const unsigned ndims, dim_t *dims,
                 const unsigned element_size) override;
     size_t allocated(void *ptr) override;
     void unlock(void *ptr, bool user_unlock) override;

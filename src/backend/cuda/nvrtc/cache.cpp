@@ -46,11 +46,8 @@
 #include <type_traits>
 #include <utility>
 
-using std::array;
 using std::accumulate;
-using std::chrono::duration_cast;
-using std::chrono::high_resolution_clock;
-using std::chrono::milliseconds;
+using std::array;
 using std::begin;
 using std::end;
 using std::extent;
@@ -63,8 +60,11 @@ using std::to_string;
 using std::transform;
 using std::unique_ptr;
 using std::vector;
+using std::chrono::duration_cast;
+using std::chrono::high_resolution_clock;
+using std::chrono::milliseconds;
 
-spdlog::logger* getLogger() {
+spdlog::logger *getLogger() {
     static std::shared_ptr<spdlog::logger> logger(common::loggerFactory("jit"));
     return logger.get();
 }
@@ -300,11 +300,10 @@ Kernel buildKernel(const int device, const string &nameExpr,
     // skip --std=c++14 because it will stay the same. It doesn't
     // provide useful information
     auto listOpts = [](vector<const char *> &in) {
-        return accumulate(
-            begin(in) + 2, end(in), string(in[0]),
-            [](const string &lhs, const string &rhs) {
-                return lhs + ", " + rhs;
-            });
+        return accumulate(begin(in) + 2, end(in), string(in[0]),
+                          [](const string &lhs, const string &rhs) {
+                              return lhs + ", " + rhs;
+                          });
     };
 
     AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, link:{:>4} ms, {{ {} }}, {} }}}}",
