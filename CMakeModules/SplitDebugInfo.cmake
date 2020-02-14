@@ -37,59 +37,66 @@ function(af_split_debug_info _target _destination_dir)
   endif ()
 
   if (SPLIT_TOOL_EXISTS)
-    get_target_property(TARGET_TYPE ${_target} TYPE)
-    set(PREFIX_EXPR_1
-      "$<$<STREQUAL:$<TARGET_PROPERTY:${_target},PREFIX>,>:${CMAKE_${TARGET_TYPE}_PREFIX}>")
-    set(PREFIX_EXPR_2
-      "$<$<NOT:$<STREQUAL:$<TARGET_PROPERTY:${_target},PREFIX>,>>:$<TARGET_PROPERTY:${_target},PREFIX>>")
-    set(PREFIX_EXPR_FULL "${PREFIX_EXPR_1}${PREFIX_EXPR_2}")
-
-    # If a custom OUTPUT_NAME was specified, use it.
-    set(OUTPUT_NAME_EXPR_1
-        "$<$<STREQUAL:$<TARGET_PROPERTY:${_target},OUTPUT_NAME>,>:${_target}>")
-    set(OUTPUT_NAME_EXPR_2
-        "$<$<NOT:$<STREQUAL:$<TARGET_PROPERTY:${_target},OUTPUT_NAME>,>>:$<TARGET_PROPERTY:${_target},OUTPUT_NAME>>")
-    set(OUTPUT_NAME_EXPR "${OUTPUT_NAME_EXPR_1}${OUTPUT_NAME_EXPR_2}")
-    set(OUTPUT_NAME_FULL "${PREFIX_EXPR_FULL}${OUTPUT_NAME_EXPR}$<TARGET_PROPERTY:${_target},POSTFIX>")
-
-    set(SPLIT_DEBUG_TARGET_EXT ".debug")
-    if(APPLE)
-        set(SPLIT_DEBUG_TARGET_EXT ".dSYM")
+    get_target_property(TRGT_PREFIX ${_target} PREFIX)
+    if(TRGT_PREFIX)
+      set(prefix ${TRGT_PREFIX})
+    else()
+      get_target_property(TRGT_TYPE ${_target} TYPE)
+      set(prefix "${CMAKE_${TRGT_TYPE}_PREFIX}")
     endif()
-    set(SPLIT_DEBUG_SOURCE "$<TARGET_FILE:${_target}>")
-    set(SPLIT_DEBUG_TARGET_NAME
-        "$<TARGET_FILE_DIR:${_target}>/${OUTPUT_NAME_FULL}")
-    set(SPLIT_DEBUG_TARGET
-        "${SPLIT_DEBUG_TARGET_NAME}${SPLIT_DEBUG_TARGET_EXT}")
+
+    get_target_property(TRGT_OUT_NAME ${_target} OUTPUT_NAME)
+    if(TRGT_OUT_NAME)
+      set(outName ${TRGT_OUT_NAME})
+    else()
+      set(outName "${_target}")
+    endif()
+
+    get_target_property(TRGT_POSTFIX ${_target} POSTFIX)
+    if(TRGT_POSTFIX)
+      set(postfix ${TRGT_POSTFIX})
+    else()
+      get_target_property(TRGT_TYPE ${_target} TYPE)
+      set(postfix "${CMAKE_${TRGT_TYPE}_POSTFIX}")
+    endif()
+
+    set(OUT_NAME "${prefix}${outName}")
+    set(OUT_NAME_WE "${OUT_NAME}${postfix}")
+    set(SPLIT_DEBUG_OUT_FILE_EXT ".debug")
+    if(APPLE)
+      set(SPLIT_DEBUG_OUT_FILE_EXT ".dSYM")
+    endif()
+    set(SPLIT_DEBUG_SRC_FILE "$<TARGET_FILE:${_target}>")
+    set(SPLIT_DEBUG_OUT_NAME "$<TARGET_FILE_DIR:${_target}>/${OUT_NAME_WE}")
+    set(SPLIT_DEBUG_OUT_FILE "${SPLIT_DEBUG_OUT_NAME}${SPLIT_DEBUG_OUT_FILE_EXT}")
 
     if(APPLE)
       add_custom_command(TARGET ${_target} POST_BUILD
-          COMMAND dsymutil ${SPLIT_DEBUG_SOURCE} -o ${SPLIT_DEBUG_TARGET}
+          COMMAND dsymutil ${SPLIT_DEBUG_SRC_FILE} -o ${SPLIT_DEBUG_OUT_FILE}
           #TODO(pradeep) From initial research stripping debug info from
           # is removing debug LC_ID_DYLIB command also which is make
           # shared library unusable. Confirm this from OSX expert
           # and remove these comments and below command
-          #COMMAND ${CMAKE_STRIP} --strip-debug ${SPLIT_DEBUG_SOURCE}
+          #COMMAND ${CMAKE_STRIP} --strip-debug ${SPLIT_DEBUG_SRC_FILE}
         )
     else(APPLE)
       add_custom_command(TARGET ${_target} POST_BUILD
         COMMAND ${CMAKE_OBJCOPY}
-          --only-keep-debug ${SPLIT_DEBUG_SOURCE} ${SPLIT_DEBUG_TARGET}
+          --only-keep-debug ${SPLIT_DEBUG_SRC_FILE} ${SPLIT_DEBUG_OUT_FILE}
         COMMAND ${CMAKE_STRIP}
-          --strip-debug ${SPLIT_DEBUG_SOURCE}
+          --strip-debug ${SPLIT_DEBUG_SRC_FILE}
         COMMAND ${CMAKE_OBJCOPY}
-          --add-gnu-debuglink=${SPLIT_DEBUG_TARGET} ${SPLIT_DEBUG_SOURCE}
+          --add-gnu-debuglink=${SPLIT_DEBUG_OUT_FILE} ${SPLIT_DEBUG_SRC_FILE}
         )
     endif()
 
-    install(FILES
-      ${SPLIT_DEBUG_TARGET}
+    install(FILES ${SPLIT_DEBUG_OUT_FILE}
       DESTINATION ${_destination_dir}
-      COMPONENT "${OUTPUT_NAME_FULL}_debug_symbols"
+      COMPONENT "${OUT_NAME}_debug_symbols"
       )
 
     # Make sure the file is deleted on `make clean`.
     set_property(DIRECTORY APPEND
-      PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${SPLIT_DEBUG_TARGET})
+      PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${SPLIT_DEBUG_OUT_FILE})
   endif(SPLIT_TOOL_EXISTS)
 endfunction(af_split_debug_info)
