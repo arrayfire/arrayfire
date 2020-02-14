@@ -172,6 +172,18 @@ void evalMultiple(std::vector<Array<T> *> arrays) {
     vector<Array<T> *> output_arrays;
     vector<Node *> nodes;
 
+    // Check if all the arrays have the same dimension
+    auto it = std::adjacent_find(begin(arrays), end(arrays),
+                                 [](const Array<T> *l, const Array<T> *r) {
+                                     return l->dims() != r->dims();
+                                 });
+
+    // If they are not the same. eval individually
+    if (it != end(arrays)) {
+        for (auto ptr : arrays) { ptr->eval(); }
+        return;
+    }
+
     for (Array<T> *array : arrays) {
         if (array->isReady()) { continue; }
 

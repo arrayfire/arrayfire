@@ -14,8 +14,10 @@
 #include <af/dim4.hpp>
 #include <af/index.h>
 #include <af/traits.hpp>
+
 #include <complex>
 #include <iostream>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -26,6 +28,7 @@ using af::dim4;
 using af::dtype_traits;
 using af::join;
 using af::randu;
+using af::seq;
 using af::sum;
 using std::endl;
 using std::string;
@@ -198,4 +201,48 @@ TEST(JoinMany1, CPP) {
     array output = join(dim, a0, a1, a2, a3);
     array gold   = join(dim, a0, join(dim, a1, join(dim, a2, a3)));
     ASSERT_EQ(sum<float>(output - gold), 0);
+}
+
+TEST(Join, DifferentSizes) {
+    array a = seq(10);
+    array b = seq(11);
+    array c = seq(12);
+
+    array d = join(0, a, b, c);
+
+    vector<float> ha(10);
+    vector<float> hb(11);
+    vector<float> hc(12);
+
+    for (int i = 0; i < ha.size(); i++) { ha[i] = i; }
+    for (int i = 0; i < hb.size(); i++) { hb[i] = i; }
+    for (int i = 0; i < hc.size(); i++) { hc[i] = i; }
+    vector<float> hgold(10 + 11 + 12);
+    vector<float>::iterator it = copy(ha.begin(), ha.end(), hgold.begin());
+    it                         = copy(hb.begin(), hb.end(), it);
+    it                         = copy(hc.begin(), hc.end(), it);
+
+    ASSERT_VEC_ARRAY_EQ(hgold, dim4(10 + 11 + 12), d);
+}
+
+TEST(Join, SameSize) {
+    array a = seq(10);
+    array b = seq(10);
+    array c = seq(10);
+
+    array d = join(0, a, b, c);
+
+    vector<float> ha(10);
+    vector<float> hb(10);
+    vector<float> hc(10);
+
+    for (int i = 0; i < ha.size(); i++) { ha[i] = i; }
+    for (int i = 0; i < hb.size(); i++) { hb[i] = i; }
+    for (int i = 0; i < hc.size(); i++) { hc[i] = i; }
+    vector<float> hgold(10 + 10 + 10);
+    vector<float>::iterator it = copy(ha.begin(), ha.end(), hgold.begin());
+    it                         = copy(hb.begin(), hb.end(), it);
+    it                         = copy(hc.begin(), hc.end(), it);
+
+    ASSERT_VEC_ARRAY_EQ(hgold, dim4(10 + 10 + 10), d);
 }
