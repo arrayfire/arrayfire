@@ -67,6 +67,16 @@ typedef uintl uintl;
 using aft::intl;
 using aft::uintl;
 
+std::ostream &operator<<(std::ostream &os, af::Backend bk) {
+    switch (bk) {
+        case AF_BACKEND_CPU: os << "AF_BACKEND_CPU"; break;
+        case AF_BACKEND_CUDA: os << "AF_BACKEND_CUDA"; break;
+        case AF_BACKEND_OPENCL: os << "AF_BACKEND_OPENCL"; break;
+        case AF_BACKEND_DEFAULT: os << "AF_BACKEND_DEFAULT"; break;
+    }
+    return os;
+}
+
 std::ostream &operator<<(std::ostream &os, af_err e) {
     return os << af_err_to_string(e);
 }

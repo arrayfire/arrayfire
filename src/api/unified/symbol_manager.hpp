@@ -43,20 +43,20 @@ static inline int backend_index(af::Backend be) {
 
 class AFSymbolManager {
    public:
-    static AFSymbolManager& getInstance();
+    static AFSymbolManager& getInstance() {
+        static AFSymbolManager* symbolManager = new AFSymbolManager();
+        return *symbolManager;
+    }
 
     ~AFSymbolManager();
 
     unsigned getBackendCount();
-
     int getAvailableBackends();
+    af::Backend getDefaultBackend() { return defaultBackend; }
+    LibHandle getDefaultHandle() { return defaultHandle; }
 
-    af_err setBackend(af::Backend bnkd);
-
-    af::Backend getActiveBackend() { return activeBackend; }
-
-    LibHandle getHandle() { return activeHandle; }
     spdlog::logger* getLogger();
+    LibHandle getHandle(int idx) { return bkndHandles[idx]; }
 
    protected:
     AFSymbolManager();
@@ -71,14 +71,18 @@ class AFSymbolManager {
    private:
     LibHandle bkndHandles[NUM_BACKENDS];
 
-    LibHandle activeHandle;
     LibHandle defaultHandle;
     unsigned numBackends;
     int backendsAvailable;
-    af_backend activeBackend;
     af_backend defaultBackend;
     std::shared_ptr<spdlog::logger> logger;
 };
+
+af_err setBackend(af::Backend bnkd);
+
+af::Backend& getActiveBackend();
+
+LibHandle& getActiveHandle();
 
 namespace {
 bool checkArray(af_backend activeBackend, const af_array a) {
@@ -128,8 +132,7 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
 /// \param[in] Any number of af_arrays or pointer to af_arrays
 #define CHECK_ARRAYS(...)                                                     \
     do {                                                                      \
-        af_backend backendId =                                                \
-            unified::AFSymbolManager::getInstance().getActiveBackend();       \
+        af_backend backendId = unified::getActiveBackend();                   \
         if (!unified::checkArrays(backendId, __VA_ARGS__))                    \
             AF_RETURN_ERROR("Input array does not belong to current backend", \
                             AF_ERR_ARR_BKND_MISMATCH);                        \
@@ -137,15 +140,15 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
 
 #define CALL(FUNCTION, ...)                                                      \
     using af_func                  = std::add_pointer<decltype(FUNCTION)>::type; \
-    thread_local auto& instance    = unified::AFSymbolManager::getInstance();    \
-    thread_local af_backend index_ = instance.getActiveBackend();                \
-    if (instance.getHandle()) {                                                  \
+    static auto& instance          = unified::AFSymbolManager::getInstance();    \
+    thread_local af_backend index_ = unified::getActiveBackend();                \
+    if (unified::getActiveHandle()) {                                            \
         thread_local af_func func = (af_func)common::getFunctionPointer(         \
-            instance.getHandle(), __func__);                                     \
-        if (index_ != instance.getActiveBackend()) {                             \
-            index_ = instance.getActiveBackend();                                \
-            func   = (af_func)common::getFunctionPointer(instance.getHandle(),   \
-                                                       __func__);              \
+            unified::getActiveHandle(), __func__);                               \
+        if (index_ != unified::getActiveBackend()) {                             \
+            index_ = unified::getActiveBackend();                                \
+            func   = (af_func)common::getFunctionPointer(                        \
+                unified::getActiveHandle(), __func__);                         \
         }                                                                        \
         return func(__VA_ARGS__);                                                \
     } else {                                                                     \
@@ -155,6 +158,5 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
 
 #define CALL_NO_PARAMS(FUNCTION) CALL(FUNCTION)
 
-#define LOAD_SYMBOL()           \
-    common::getFunctionPointer( \
-        unified::AFSymbolManager::getInstance().getHandle(), __FUNCTION__)
+#define LOAD_SYMBOL() \
+    common::getFunctionPointer(unified::getActiveHandle(), __FUNCTION__)
