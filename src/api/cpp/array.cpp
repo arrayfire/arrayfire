@@ -248,12 +248,12 @@ array::~array() {
     static auto &instance = unified::AFSymbolManager::getInstance();
 
     if (get()) {
-        af_backend backend = instance.getActiveBackend();
+        af_backend backend = unified::getActiveBackend();
         af_err err         = af_get_backend_id(&backend, get());
         if (!err) {
             switch (backend) {
                 case AF_BACKEND_CPU: {
-                    static auto cpu_handle = instance.getHandle();
+                    static auto cpu_handle = unified::getActiveHandle();
                     static af_release_array_ptr func =
                         reinterpret_cast<af_release_array_ptr>(
                             common::getFunctionPointer(cpu_handle,
@@ -262,7 +262,7 @@ array::~array() {
                     break;
                 }
                 case AF_BACKEND_OPENCL: {
-                    static auto opencl_handle = instance.getHandle();
+                    static auto opencl_handle = unified::getActiveHandle();
                     static af_release_array_ptr func =
                         reinterpret_cast<af_release_array_ptr>(
                             common::getFunctionPointer(opencl_handle,
@@ -271,7 +271,7 @@ array::~array() {
                     break;
                 }
                 case AF_BACKEND_CUDA: {
-                    static auto cuda_handle = instance.getHandle();
+                    static auto cuda_handle = unified::getActiveHandle();
                     static af_release_array_ptr func =
                         reinterpret_cast<af_release_array_ptr>(
                             common::getFunctionPointer(cuda_handle,

@@ -166,16 +166,22 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
     return retVal;
 }
 
-AFSymbolManager& AFSymbolManager::getInstance() {
-    thread_local AFSymbolManager symbolManager;
-    return symbolManager;
-}
-
 spdlog::logger* AFSymbolManager::getLogger() { return logger.get(); }
 
+af::Backend& getActiveBackend() {
+    thread_local af_backend activeBackend =
+        AFSymbolManager::getInstance().getDefaultBackend();
+    return activeBackend;
+}
+
+LibHandle& getActiveHandle() {
+    thread_local LibHandle activeHandle =
+        AFSymbolManager::getInstance().getDefaultHandle();
+    return activeHandle;
+}
+
 AFSymbolManager::AFSymbolManager()
-    : activeHandle(nullptr)
-    , defaultHandle(nullptr)
+    : defaultHandle(nullptr)
     , numBackends(0)
     , backendsAvailable(0)
     , logger(loggerFactory("unified")) {
@@ -183,27 +189,28 @@ AFSymbolManager::AFSymbolManager()
     static const af_backend order[] = {AF_BACKEND_CUDA, AF_BACKEND_OPENCL,
                                        AF_BACKEND_CPU};
 
+    LibHandle handle;
+    af::Backend backend;
     // Decremeting loop. The last successful backend loaded will be the most
     // prefered one.
     for (int i = NUM_BACKENDS - 1; i >= 0; i--) {
-        int backend          = order[i] >> 1;  // 2 4 1 -> 1 2 0
-        bkndHandles[backend] = openDynLibrary(order[i]);
-        if (bkndHandles[backend]) {
-            activeHandle  = bkndHandles[backend];
-            activeBackend = (af_backend)order[i];
+        int backend_index          = order[i] >> 1;  // 2 4 1 -> 1 2 0
+        bkndHandles[backend_index] = openDynLibrary(order[i]);
+        if (bkndHandles[backend_index]) {
+            handle  = bkndHandles[backend_index];
+            backend = (af_backend)order[i];
             numBackends++;
             backendsAvailable += order[i];
         }
     }
-    if (activeBackend) {
-        AF_TRACE("AF_DEFAULT_BACKEND: {}",
-                 getBackendDirectoryName(activeBackend));
+    if (backend) {
+        AF_TRACE("AF_DEFAULT_BACKEND: {}", getBackendDirectoryName(backend));
     }
 
     // Keep a copy of default order handle inorder to use it in ::setBackend
     // when the user passes AF_BACKEND_DEFAULT
-    defaultHandle  = activeHandle;
-    defaultBackend = activeBackend;
+    defaultHandle  = handle;
+    defaultBackend = backend;
 }
 
 AFSymbolManager::~AFSymbolManager() {
@@ -216,20 +223,21 @@ unsigned AFSymbolManager::getBackendCount() { return numBackends; }
 
 int AFSymbolManager::getAvailableBackends() { return backendsAvailable; }
 
-af_err AFSymbolManager::setBackend(af::Backend bknd) {
+af_err setBackend(af::Backend bknd) {
+    auto& instance = AFSymbolManager::getInstance();
     if (bknd == AF_BACKEND_DEFAULT) {
-        if (defaultHandle) {
-            activeHandle  = defaultHandle;
-            activeBackend = defaultBackend;
+        if (instance.getDefaultHandle()) {
+            getActiveHandle()  = instance.getDefaultHandle();
+            getActiveBackend() = instance.getDefaultBackend();
             return AF_SUCCESS;
         } else {
             UNIFIED_ERROR_LOAD_LIB();
         }
     }
     int idx = bknd >> 1;  // Convert 1, 2, 4 -> 0, 1, 2
-    if (bkndHandles[idx]) {
-        activeHandle  = bkndHandles[idx];
-        activeBackend = bknd;
+    if (instance.getHandle(idx)) {
+        getActiveHandle()  = instance.getHandle(idx);
+        getActiveBackend() = bknd;
         return AF_SUCCESS;
     } else {
         UNIFIED_ERROR_LOAD_LIB();

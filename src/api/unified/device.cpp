@@ -13,7 +13,7 @@
 #include "symbol_manager.hpp"
 
 af_err af_set_backend(const af_backend bknd) {
-    return unified::AFSymbolManager::getInstance().setBackend(bknd);
+    return unified::setBackend(bknd);
 }
 
 af_err af_get_backend_count(unsigned *num_backends) {
@@ -38,7 +38,7 @@ af_err af_get_device_id(int *device, const af_array in) {
 }
 
 af_err af_get_active_backend(af_backend *result) {
-    *result = unified::AFSymbolManager::getInstance().getActiveBackend();
+    *result = unified::getActiveBackend();
     return AF_SUCCESS;
 }
 
