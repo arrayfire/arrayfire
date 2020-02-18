@@ -28,7 +28,9 @@ using common::half;
 
 af_err af_set_backend(const af_backend bknd) {
     try {
-        if (bknd != getBackend()) { return AF_ERR_ARG; }
+        if (bknd != getBackend() && bknd != AF_BACKEND_DEFAULT) {
+            return AF_ERR_ARG;
+        }
     }
     CATCHALL;
 
