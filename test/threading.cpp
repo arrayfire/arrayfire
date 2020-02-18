@@ -35,6 +35,94 @@ static const unsigned ITERATION_COUNT = 10;
 static const unsigned ITERATION_COUNT = 1000;
 #endif
 
+enum ArithOp { ADD, SUB, DIV, MUL };
+
+void calc(ArithOp opcode, array op1, array op2, float outValue,
+          int iteration_count) {
+    setDevice(0);
+    array res;
+    for (unsigned i = 0; i < iteration_count; ++i) {
+        switch (opcode) {
+            case ADD: res = op1 + op2; break;
+            case SUB: res = op1 - op2; break;
+            case DIV: res = op1 / op2; break;
+            case MUL: res = op1 * op2; break;
+        }
+    }
+
+    vector<float> out(res.elements());
+    res.host((void*)out.data());
+
+    for (unsigned i = 0; i < out.size(); ++i) ASSERT_EQ(out[i], outValue);
+    af::sync();
+}
+
+TEST(Threading, SimultaneousRead) {
+    setDevice(0);
+
+    array A = constant(1.0, 100, 100);
+    array B = constant(1.0, 100, 100);
+
+    vector<std::thread> tests;
+
+    int thread_count    = 8;
+    int iteration_count = 30;
+    for (int t = 0; t < thread_count; ++t) {
+        ArithOp op;
+        float outValue;
+
+        switch (t % 4) {
+            case 0:
+                op       = ADD;
+                outValue = 2.0f;
+                break;
+            case 1:
+                op       = SUB;
+                outValue = 0.0f;
+                break;
+            case 2:
+                op       = DIV;
+                outValue = 1.0f;
+                break;
+            case 3:
+                op       = MUL;
+                outValue = 1.0f;
+                break;
+        }
+
+        tests.emplace_back(calc, op, A, B, outValue, iteration_count);
+    }
+
+    for (int t = 0; t < thread_count; ++t)
+        if (tests[t].joinable()) tests[t].join();
+}
+
+std::condition_variable cv;
+std::mutex cvMutex;
+size_t counter = THREAD_COUNT;
+
+void doubleAllocationTest() {
+    setDevice(0);
+
+    // Block until all threads are launched and the
+    // counter variable hits zero
+    std::unique_lock<std::mutex> lock(cvMutex);
+    // Check for current thread launch counter value
+    // if reached zero, notify others to continue
+    // otherwise block current thread
+    if (--counter == 0)
+        cv.notify_all();
+    else
+        cv.wait(lock, [] { return counter == 0; });
+    lock.unlock();
+
+    array a = randu(5, 5);
+
+    // Wait for for other threads to hit randu call
+    // while this thread's variable a is still in scope.
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+}
+
 int nextTargetDeviceId() {
     static int nextId = 0;
     return nextId++;
@@ -119,90 +207,8 @@ TEST(Threading, SetPerThreadActiveDevice) {
         if (tests[testId].joinable()) tests[testId].join();
 }
 
-enum ArithOp { ADD, SUB, DIV, MUL };
-
-void calc(ArithOp opcode, array op1, array op2, float outValue) {
-    setDevice(0);
-    array res;
-    for (unsigned i = 0; i < ITERATION_COUNT; ++i) {
-        switch (opcode) {
-            case ADD: res = op1 + op2; break;
-            case SUB: res = op1 - op2; break;
-            case DIV: res = op1 / op2; break;
-            case MUL: res = op1 * op2; break;
-        }
-    }
-
-    vector<float> out(res.elements());
-    res.host((void*)out.data());
-
-    for (unsigned i = 0; i < out.size(); ++i) ASSERT_EQ(out[i], outValue);
-}
-
-TEST(Threading, SimultaneousRead) {
-    setDevice(0);
-    array A = constant(1.0, 100, 100);
-    array B = constant(1.0, 100, 100);
-
-    vector<std::thread> tests;
-
-    for (int t = 0; t < THREAD_COUNT; ++t) {
-        ArithOp op;
-        float outValue;
-
-        switch (t % 4) {
-            case 0:
-                op       = ADD;
-                outValue = 2.0f;
-                break;
-            case 1:
-                op       = SUB;
-                outValue = 0.0f;
-                break;
-            case 2:
-                op       = DIV;
-                outValue = 1.0f;
-                break;
-            case 3:
-                op       = MUL;
-                outValue = 1.0f;
-                break;
-        }
-
-        tests.emplace_back(calc, op, A, B, outValue);
-    }
-
-    for (int t = 0; t < THREAD_COUNT; ++t)
-        if (tests[t].joinable()) tests[t].join();
-}
-
-std::condition_variable cv;
-std::mutex cvMutex;
-size_t counter = THREAD_COUNT;
-
-void doubleAllocationTest() {
-    setDevice(0);
-
-    // Block until all threads are launched and the
-    // counter variable hits zero
-    std::unique_lock<std::mutex> lock(cvMutex);
-    // Check for current thread launch counter value
-    // if reached zero, notify others to continue
-    // otherwise block current thread
-    if (--counter == 0)
-        cv.notify_all();
-    else
-        cv.wait(lock, [] { return counter == 0; });
-    lock.unlock();
-
-    array a = randu(5, 5);
-
-    // Wait for for other threads to hit randu call
-    // while this thread's variable a is still in scope.
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-}
-
 TEST(Threading, MemoryManagementScope) {
+    setDevice(0);
     cleanSlate();  // Clean up everything done so far
 
     vector<std::thread> tests;
