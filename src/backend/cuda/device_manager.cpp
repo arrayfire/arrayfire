@@ -33,6 +33,8 @@
 // __gl_h_ should be defined by glad.h inclusion
 #include <cuda_gl_interop.h>
 
+#include <nvrtc.h>
+
 #include <algorithm>
 #include <array>
 #include <cstdio>
@@ -468,6 +470,16 @@ void DeviceManager::checkCudaVsDriverVersion() {
     }
 }
 
+/// This function initializes and deletes a nvrtcProgram object. There seems to
+/// be a bug in nvrtc which fails if this is first done on a child thread. We
+/// are assuming that the initilization is done in the main thread.
+void initNvrtc() {
+    nvrtcProgram prog;
+    auto err = nvrtcCreateProgram(&prog, " ", "dummy", 0, nullptr, nullptr);
+    nvrtcDestroyProgram(&prog);
+    return;
+}
+
 DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , cuDevices(0)
@@ -555,6 +567,7 @@ DeviceManager::DeviceManager()
             setActiveDevice(def_device, cuDevices[def_device].nativeId);
         }
     }
+    initNvrtc();
     AF_TRACE("Default device: {}({})", getActiveDeviceId(),
              cuDevices[getActiveDeviceId()].prop.name);
 }
