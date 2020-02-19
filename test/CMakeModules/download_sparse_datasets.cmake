@@ -20,13 +20,9 @@ function(mtxDownload name group)
       ${extproj_name}
       PREFIX "${path_prefix}"
       URL "${URL}/MM/${group}/${name}.tar.gz"
-      DOWNLOAD_NO_EXTRACT False
-      DOWNLOAD_NO_PROGRESS False
-      LOG_DOWNLOAD True
-      LOG_DIR ${PREFIX}
-      CONFIGURE_COMMAND ${CMAKE_COMMAND} -E make_directory "${mtx_data_dir}/${group}"
-      BINARY_DIR "${mtx_data_dir}/${group}"
-      BUILD_COMMAND ${CMAKE_COMMAND} -E tar xzf "${path_prefix}/src/${name}.tar.gz"
+      SOURCE_DIR "${mtx_data_dir}/${group}/${name}"
+      CONFIGURE_COMMAND ""
+      BUILD_COMMAND ""
       INSTALL_COMMAND ""
     )
   add_dependencies(mtxDownloads mtxDownload-${group}-${name})
