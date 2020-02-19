@@ -2,6 +2,7 @@ on:
   push:
     branches:
     - master
+    - cmake_3.5_fixes
   pull_request:
     branches:
     - master
@@ -14,12 +15,15 @@ jobs:
         runs-on: ${{ matrix.os }}
         env:
           NINJA_VER: 1.9.0
+          CMAKE_VER: 3.5.1
         strategy:
             fail-fast: false
             matrix:
                 blas_backend: [Atlas, MKL, OpenBLAS]
-                os: [ubuntu-18.04, macos-latest]
+                os: [ubuntu-16.04, ubuntu-18.04, macos-latest]
                 exclude:
+                    - os: ubuntu-16.04
+                      blas_backend: Atlas
                     - os: macos-latest
                       blas_backend: Atlas
                     - os: macos-latest
@@ -42,13 +46,30 @@ jobs:
                   chmod +x ninja
                   ${GITHUB_WORKSPACE}/ninja --version
 
-            - name: Install Common Dependencies for Macos
+            - name: Download CMake 3.5.1 for Linux
+              if: matrix.os != 'macos-latest'
+              env:
+                  OS_NAME: ${{ matrix.os }}
+              run: |
+                  cmake_suffix=$(if [ $OS_NAME == 'macos-latest' ]; then echo "Darwin-x86_64"; else echo "Linux-x86_64"; fi)
+                  cmake_url=$(echo "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-${cmake_suffix}.tar.gz")
+                  wget --quiet "${cmake_url}"
+                  tar -xf ./cmake-${CMAKE_VER}-${cmake_suffix}.tar.gz
+                  cmake_install_dir=$(echo "cmake-${CMAKE_VER}-x86_64")
+                  mv cmake-${CMAKE_VER}-${cmake_suffix} ${cmake_install_dir}
+                  cmake_lnx_dir=$(echo "${cmake_install_dir}/bin")
+                  cmake_osx_dir=$(echo "${cmake_install_dir}/CMake.app/Contents/bin")
+                  cmake_dir=$(if [ $OS_NAME == 'macos-latest' ]; then echo "${cmake_osx_dir}"; else echo "${cmake_lnx_dir}"; fi)
+                  echo "::set-env name=CMAKE_PROGRAM::$(pwd)/${cmake_dir}/cmake"
+
+            - name: Install Dependencies for Macos
               if: matrix.os == 'macos-latest'
               run: |
                   brew install fontconfig glfw freeimage boost fftw lapack openblas
+                  echo "::set-env name=CMAKE_PROGRAM::cmake"
 
             - name: Install Common Dependencies for Ubuntu
-              if: matrix.os == 'ubuntu-18.04'
+              if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04'
               run: |
                   sudo apt-get -qq update
                   sudo apt-get install -y libfreeimage-dev \
@@ -62,7 +83,7 @@ jobs:
               run: sudo apt-get install -y libatlas-base-dev
 
             - name: Install MKL for Ubuntu
-              if: matrix.os == 'ubuntu-18.04' && matrix.blas_backend == 'MKL'
+              if: (matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04') && matrix.blas_backend == 'MKL'
               run: |
                   wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
                   sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
@@ -71,7 +92,7 @@ jobs:
                   sudo apt-get install -y intel-mkl-64bit-2020.0-088
 
             - name: Install OpenBLAS for Ubuntu
-              if: matrix.os == 'ubuntu-18.04' && matrix.blas_backend == 'OpenBLAS'
+              if: (matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04') && matrix.blas_backend == 'OpenBLAS'
               run: sudo apt-get install -y libopenblas-dev
 
             - name: CMake Configure
@@ -86,7 +107,7 @@ jobs:
                   dashboard=$(if [ -z "$prnum" ]; then echo "Continuous"; else echo "Experimental"; fi)
                   buildname="$buildname-cpu-$BLAS_BACKEND"
                   mkdir build && cd build
-                  cmake -G Ninja \
+                  ${CMAKE_PROGRAM} -G Ninja \
                       -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=ON \
