@@ -31,8 +31,6 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
           "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim_by_key_impl.hpp"
           "${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first_by_key_impl.hpp"
           OPTIONS
-          -I$<JOIN:$<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>, -I>
-          -D$<JOIN:$<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>, -D>
           -DSBK_BINARY_OP=${SBK_BINARY_OP} "${platform_flags} ${cuda_cxx_flags} -DAFDLL"
       )
 
