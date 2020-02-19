@@ -184,6 +184,16 @@ endfunction()
 arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
 arrayfire_get_platform_definitions(platform_flags)
 
+
+get_property(boost_includes TARGET Boost::boost PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+get_property(boost_definitions TARGET Boost::boost PROPERTY INTERFACE_COMPILE_DEFINITIONS)
+
+string(REPLACE ";" ";-I" boost_includes "-I${boost_includes}")
+string(REPLACE ";" ";-D" boost_definitions "-D${boost_definitions}")
+
+set(cuda_cxx_flags "${cuda_cxx_flags};${boost_includes}")
+set(cuda_cxx_flags "${cuda_cxx_flags};${boost_definitions}")
+
 # This definition is required in addition to the definition below because in
 # an older verion of cmake definitions added using target_compile_definitions
 # were not added to the nvcc flags. This manually adds these definitions and

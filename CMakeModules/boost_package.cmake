@@ -48,6 +48,13 @@ if(NOT
     INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR};${source_dir}/include"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR};${source_dir}/include"
     )
+else()
+  if(NOT TARGET Boost::boost)
+    add_library(Boost::boost IMPORTED INTERFACE GLOBAL)
+    set_target_properties(Boost::boost PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR}"
+      INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR}")
+  endif()
 endif()
 
 if(TARGET Boost::boost)
