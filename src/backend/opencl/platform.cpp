@@ -332,7 +332,7 @@ bool isDoubleSupported(int device) {
         dev = *devMngr.mDevices[device];
     }
 
-    return (dev.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() > 0);
+    return (dev.getInfo<CL_DEVICE_DOUBLE_FP_CONFIG>() > 0);
 }
 
 bool isHalfSupported(int device) {
@@ -343,7 +343,20 @@ bool isHalfSupported(int device) {
         common::lock_guard_t lock(devMngr.deviceMutex);
         dev = *devMngr.mDevices[device];
     }
-    return (dev.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF>() > 0);
+    cl_device_fp_config config = 0;
+    size_t ret_size            = 0;
+    // NVIDIA OpenCL seems to return error codes for CL_DEVICE_HALF_FP_CONFIG.
+    // It seems to be a bug in their implementation. Assuming if this function
+    // fails that the implemenation does not support f16 type. Using the C API
+    // to avoid exceptions
+    cl_int err =
+        clGetDeviceInfo(dev(), CL_DEVICE_HALF_FP_CONFIG,
+                        sizeof(cl_device_fp_config), &config, &ret_size);
+
+    if (err)
+        return false;
+    else
+        return config > 0;
 }
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
