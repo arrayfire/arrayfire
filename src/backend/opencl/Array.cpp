@@ -47,6 +47,34 @@ Node_ptr bufferNodePtr() {
                                    shortname<T>(true));
 }
 
+namespace {
+template<typename T>
+void verifyTypeSupport() {
+    return;
+}
+
+template<>
+void verifyTypeSupport<double>() {
+    if (!isDoubleSupported(getActiveDeviceId())) {
+        AF_ERROR("Double precision not supported", AF_ERR_NO_DBL);
+    }
+}
+
+template<>
+void verifyTypeSupport<cdouble>() {
+    if (!isDoubleSupported(getActiveDeviceId())) {
+        AF_ERROR("Double precision not supported", AF_ERR_NO_DBL);
+    }
+}
+
+template<>
+void verifyTypeSupport<common::half>() {
+    if (!isHalfSupported(getActiveDeviceId())) {
+        AF_ERROR("Half precision not supported", AF_ERR_NO_HALF);
+    }
+}
+}  // namespace
+
 template<typename T>
 Array<T>::Array(dim4 dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
