@@ -1059,7 +1059,7 @@ template<typename T>
 /// \param[in] EXPECTED The expected array of the assertion
 /// \param[in] ACTUAL The actual resulting array from the calculation
 #define ASSERT_ARRAYS_EQ(EXPECTED, ACTUAL) \
-    EXPECT_PRED_FORMAT2(assertArrayEq, EXPECTED, ACTUAL)
+    ASSERT_PRED_FORMAT2(assertArrayEq, EXPECTED, ACTUAL)
 
 /// Same as ASSERT_ARRAYS_EQ, but for cases when a "special" output array is
 /// given to the function.
@@ -1069,7 +1069,7 @@ template<typename T>
 /// \param[in] EXPECTED The expected array of the assertion
 /// \param[in] ACTUAL The actual resulting array from the calculation
 #define ASSERT_SPECIAL_ARRAYS_EQ(EXPECTED, ACTUAL, META) \
-    EXPECT_PRED_FORMAT3(assertArrayEq, EXPECTED, ACTUAL, META)
+    ASSERT_PRED_FORMAT3(assertArrayEq, EXPECTED, ACTUAL, META)
 
 /// Compares a std::vector with an af::/af_array for their types, dims, and
 /// values (strict equality).
@@ -1078,7 +1078,7 @@ template<typename T>
 /// \param[in] EXPECTED_ARR_DIMS The dimensions of the expected array
 /// \param[in] ACTUAL_ARR The actual resulting array from the calculation
 #define ASSERT_VEC_ARRAY_EQ(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR) \
-    EXPECT_PRED_FORMAT3(assertArrayEq, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
+    ASSERT_PRED_FORMAT3(assertArrayEq, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
                         ACTUAL_ARR)
 
 /// Compares two af::array or af_arrays for their type, dims, and values (with a
@@ -1091,7 +1091,7 @@ template<typename T>
 ///
 /// \NOTE: This macro will deallocate the af_arrays after the call
 #define ASSERT_ARRAYS_NEAR(EXPECTED, ACTUAL, MAX_ABSDIFF) \
-    EXPECT_PRED_FORMAT3(assertArrayNear, EXPECTED, ACTUAL, MAX_ABSDIFF)
+    ASSERT_PRED_FORMAT3(assertArrayNear, EXPECTED, ACTUAL, MAX_ABSDIFF)
 
 /// Compares a std::vector with an af::array for their dims and values (with a
 /// given tolerance).
@@ -1103,7 +1103,7 @@ template<typename T>
 ///            elements of EXPECTED and ACTUAL
 #define ASSERT_VEC_ARRAY_NEAR(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR, \
                               MAX_ABSDIFF)                                 \
-    EXPECT_PRED_FORMAT4(assertArrayNear, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
+    ASSERT_PRED_FORMAT4(assertArrayNear, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
                         ACTUAL_ARR, MAX_ABSDIFF)
 
 #if defined(USE_MTX)
