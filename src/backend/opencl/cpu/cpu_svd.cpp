@@ -58,10 +58,10 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     int M      = iDims[0];
     int N      = iDims[1];
 
-    std::shared_ptr<Tr> sPtr = s.getMappedPtr();
-    std::shared_ptr<T> uPtr  = u.getMappedPtr();
-    std::shared_ptr<T> vPtr  = vt.getMappedPtr();
-    std::shared_ptr<T> iPtr  = in.getMappedPtr();
+    mapped_ptr<Tr> sPtr = s.getMappedPtr();
+    mapped_ptr<T> uPtr  = u.getMappedPtr();
+    mapped_ptr<T> vPtr  = vt.getMappedPtr();
+    mapped_ptr<T> iPtr  = in.getMappedPtr();
 
 #if defined(USE_MKL) || defined(__APPLE__)
     svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', M, N, iPtr.get(),

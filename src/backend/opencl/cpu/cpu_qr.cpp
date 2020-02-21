@@ -69,9 +69,9 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     dim4 rdims(M, N);
     r = createEmptyArray<T>(rdims);
 
-    std::shared_ptr<T> qPtr = q.getMappedPtr();
-    std::shared_ptr<T> rPtr = r.getMappedPtr();
-    std::shared_ptr<T> tPtr = t.getMappedPtr();
+    mapped_ptr<T> qPtr = q.getMappedPtr();
+    mapped_ptr<T> rPtr = r.getMappedPtr();
+    mapped_ptr<T> tPtr = t.getMappedPtr();
 
     triangle<T, true, false>(rPtr.get(), qPtr.get(), rdims, r.strides(),
                              q.strides());
@@ -90,8 +90,8 @@ Array<T> qr_inplace(Array<T> &in) {
 
     Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
 
-    std::shared_ptr<T> iPtr = in.getMappedPtr();
-    std::shared_ptr<T> tPtr = t.getMappedPtr();
+    mapped_ptr<T> iPtr = in.getMappedPtr();
+    mapped_ptr<T> tPtr = t.getMappedPtr();
 
     geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N, iPtr.get(), in.strides()[1],
                     tPtr.get());

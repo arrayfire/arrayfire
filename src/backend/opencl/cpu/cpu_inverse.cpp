@@ -50,8 +50,8 @@ Array<T> inverse(const Array<T> &in) {
 
     Array<int> pivot = cpu::lu_inplace<T>(A, false);
 
-    std::shared_ptr<T> aPtr   = A.getMappedPtr();
-    std::shared_ptr<int> pPtr = pivot.getMappedPtr();
+    mapped_ptr<T> aPtr   = A.getMappedPtr();
+    mapped_ptr<int> pPtr = pivot.getMappedPtr();
 
     getri_func<T>()(AF_LAPACK_COL_MAJOR, M, aPtr.get(), A.strides()[1],
                     pPtr.get());

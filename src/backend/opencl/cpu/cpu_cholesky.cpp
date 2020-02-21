@@ -40,7 +40,7 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     Array<T> out = copyArray<T>(in);
     *info        = cholesky_inplace(out, is_upper);
 
-    std::shared_ptr<T> oPtr = out.getMappedPtr();
+    mapped_ptr<T> oPtr = out.getMappedPtr();
 
     if (is_upper)
         triangle<T, true, false>(oPtr.get(), oPtr.get(), out.dims(),
@@ -60,7 +60,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper) {
     char uplo = 'L';
     if (is_upper) uplo = 'U';
 
-    std::shared_ptr<T> inPtr = in.getMappedPtr();
+    mapped_ptr<T> inPtr = in.getMappedPtr();
 
     int info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo, N, inPtr.get(),
                                in.strides()[1]);

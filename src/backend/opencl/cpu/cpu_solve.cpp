@@ -74,9 +74,9 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
 
     Array<T> B = copyArray<T>(b);
 
-    std::shared_ptr<T> aPtr   = A.getMappedPtr();
-    std::shared_ptr<T> bPtr   = B.getMappedPtr();
-    std::shared_ptr<int> pPtr = pivot.getMappedPtr();
+    mapped_ptr<T> aPtr   = A.getMappedPtr();
+    mapped_ptr<T> bPtr   = B.getMappedPtr();
+    mapped_ptr<int> pPtr = pivot.getMappedPtr();
 
     getrs_func<T>()(AF_LAPACK_COL_MAJOR, 'N', N, NRHS, aPtr.get(),
                     A.strides()[1], pPtr.get(), bPtr.get(), B.strides()[1]);
@@ -91,8 +91,8 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
     int N      = B.dims()[0];
     int NRHS   = B.dims()[1];
 
-    std::shared_ptr<T> aPtr = A.getMappedPtr();
-    std::shared_ptr<T> bPtr = B.getMappedPtr();
+    mapped_ptr<T> aPtr = A.getMappedPtr();
+    mapped_ptr<T> bPtr = B.getMappedPtr();
 
     trtrs_func<T>()(AF_LAPACK_COL_MAJOR, options & AF_MAT_UPPER ? 'U' : 'L',
                     'N',  // transpose flag
@@ -116,8 +116,8 @@ Array<T> solve(const Array<T> &a, const Array<T> &b,
     Array<T> A = copyArray<T>(a);
     Array<T> B = padArray<T, T>(b, dim4(max(M, N), K), scalar<T>(0));
 
-    std::shared_ptr<T> aPtr = A.getMappedPtr();
-    std::shared_ptr<T> bPtr = B.getMappedPtr();
+    mapped_ptr<T> aPtr = A.getMappedPtr();
+    mapped_ptr<T> bPtr = B.getMappedPtr();
 
     if (M == N) {
         std::vector<int> pivot(N);
