@@ -14,6 +14,8 @@
 #include <math.hpp>
 #include <range.hpp>
 
+#include <numeric>
+
 namespace opencl {
 namespace cpu {
 
@@ -38,9 +40,9 @@ LU_FUNC(getrf, cdouble, z)
 
 template<typename T>
 void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in) {
-    auto ls = lower.getMappedPtr();
-    auto us = upper.getMappedPtr();
-    auto is = in.getMappedPtr(CL_MAP_READ);
+    mapped_ptr<T> ls = lower.getMappedPtr();
+    mapped_ptr<T> us = upper.getMappedPtr();
+    mapped_ptr<T> is = in.getMappedPtr(CL_MAP_READ);
 
     T *l = ls.get();
     T *u = us.get();
@@ -89,26 +91,16 @@ void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in) {
     }
 }
 
-void convertPivot(Array<int> &pivot, int out_sz) {
-    Array<int> p = range<int>(dim4(out_sz), 0);  // Runs opencl
+void convertPivot(int *pivot, int out_sz, size_t pivot_dim) {
+    std::vector<int> p(out_sz);
+    iota(begin(p), end(p), 0);
 
-    std::shared_ptr<int> pi = pivot.getMappedPtr();
-    std::shared_ptr<int> po = p.getMappedPtr();
-
-    int *d_pi = pi.get();
-    int *d_po = po.get();
-
-    dim_t d0 = pivot.dims()[0];
-
-    for (int j = 0; j < (int)d0; j++) {
+    for (int j = 0; j < (int)pivot_dim; j++) {
         // 1 indexed in pivot
-        std::swap(d_po[j], d_po[d_pi[j] - 1]);
+        std::swap(p[j], p[pivot[j] - 1]);
     }
 
-    pi.reset();
-    po.reset();
-
-    pivot = p;
+    copy(begin(p), end(p), pivot);
 }
 
 template<typename T>
@@ -136,18 +128,17 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     int M      = iDims[0];
     int N      = iDims[1];
 
-    Array<int> pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
+    int pivot_dim    = min(M, N);
+    Array<int> pivot = createEmptyArray<int>(af::dim4(pivot_dim, 1, 1, 1));
+    if (convert_pivot) { pivot = range<int>(af::dim4(M, 1, 1, 1)); }
 
-    std::shared_ptr<T> inPtr   = in.getMappedPtr();
-    std::shared_ptr<int> piPtr = pivot.getMappedPtr();
+    mapped_ptr<T> inPtr   = in.getMappedPtr();
+    mapped_ptr<int> piPtr = pivot.getMappedPtr();
 
     getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N, inPtr.get(), in.strides()[1],
                     piPtr.get());
 
-    inPtr.reset();
-    piPtr.reset();
-
-    if (convert_pivot) convertPivot(pivot, M);
+    if (convert_pivot) convertPivot(piPtr.get(), M, min(M, N));
 
     return pivot;
 }
