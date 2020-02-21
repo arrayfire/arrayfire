@@ -204,8 +204,8 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     mapped_ptr<T> oPtr = out.getMappedPtr(CL_MAP_READ | CL_MAP_WRITE);
 
     for (int n = 0; n < batchSize; ++n) {
-        int w = n / rDims[2];
-        int z = n - w * rDims[2];
+        int w = n / oDims[2];
+        int z = n - w * oDims[2];
 
         int loff = z * (is_l_d2_batched * lStrides[2]) +
                    w * (is_l_d3_batched * lStrides[3]);

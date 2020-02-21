@@ -278,54 +278,147 @@ TEST(MatrixMultiply, ISSUE_1882) {
     ASSERT_ARRAYS_NEAR(res1, res2, 1E-5);
 }
 
-TEST(MatrixMultiply, LhsBroadcastBatched) {
-    const int M  = 512;
-    const int K  = 512;
-    const int N  = 10;
-    const int D2 = 2;
-    const int D3 = 3;
+struct blas_params {
+    int m, n, k, ld2, ld3, rd2, rd3;
+    af_dtype type;
+    blas_params(int m_, int n_, int k_, int ld2_, int ld3_, int rd2_, int rd3_,
+                af_dtype type_)
+        : m(m_)
+        , n(n_)
+        , k(k_)
+        , ld2(ld2_)
+        , ld3(ld3_)
+        , rd2(rd2_)
+        , rd3(rd3_)
+        , type(type_) {}
+};
 
-    for (int d3 = 1; d3 <= D3; d3 *= D3) {
-        for (int d2 = 1; d2 <= D2; d2 *= D2) {
-            array a = randu(M, K);
-            array b = randu(K, N, d2, d3);
-            array c = matmul(a, b);
+class MatrixMultiplyBatch : public ::testing::TestWithParam<blas_params> {
+   public:
+    array lhs, rhs, out;
+    void SetUp() {
+        blas_params params = GetParam();
+        lhs = randu(params.m, params.k, params.ld2, params.ld3, params.type);
+        rhs = randu(params.k, params.n, params.rd2, params.rd3, params.type);
 
-            for (int j = 0; j < d3; j++) {
-                for (int i = 0; i < d2; i++) {
-                    array b_ij = b(span, span, i, j);
-                    array c_ij = c(span, span, i, j);
-                    array res  = matmul(a, b_ij);
-                    ASSERT_ARRAYS_NEAR(c_ij, res, batch_tol);
+        array gold(params.m, params.n, std::max(params.ld2, params.rd2),
+                   std::max(params.ld3, params.rd3));
+
+        if (params.ld2 == params.rd2 && params.ld3 == params.rd3) {
+            for (int i = 0; i < params.ld2; i++) {
+                for (int j = 0; j < params.ld3; j++) {
+                    array lhs_sub          = lhs(span, span, i, j);
+                    array rhs_sub          = rhs(span, span, i, j);
+                    gold(span, span, i, j) = matmul(lhs_sub, rhs_sub);
+                }
+            }
+        } else {
+            for (int i = 0; i < params.ld2; i++) {
+                for (int j = 0; j < params.ld3; j++) {
+                    for (int k = 0; k < params.rd2; k++) {
+                        for (int l = 0; l < params.rd3; l++) {
+                            array lhs_sub = lhs(span, span, i, j);
+                            array rhs_sub = rhs(span, span, k, l);
+                            gold(span, span, std::max(i, k), std::max(j, l)) =
+                                matmul(lhs_sub, rhs_sub);
+                        }
+                    }
                 }
             }
         }
     }
+};
+
+std::string print_blas_params(
+    const ::testing::TestParamInfo<MatrixMultiplyBatch::ParamType> info) {
+    std::stringstream ss;
+
+    ss << "LHS_" << info.param.m << "x" << info.param.k << "x" << info.param.ld2
+       << "x" << info.param.ld3 << "__RHS" << info.param.k << "x"
+       << info.param.n << "x" << info.param.rd2 << "x" << info.param.rd3;
+
+    return ss.str();
 }
 
-TEST(MatrixMultiply, RhsBroadcastBatched) {
-    const int M  = 512;
-    const int K  = 512;
-    const int N  = 10;
-    const int D2 = 2;
-    const int D3 = 3;
+INSTANTIATE_TEST_CASE_P(
+    LHSBroadcast, MatrixMultiplyBatch,
+    ::testing::Values(
 
-    for (int d3 = 1; d3 <= D3; d3 *= D3) {
-        for (int d2 = 1; d2 <= D2; d2 *= D2) {
-            array a = randu(M, K, d2, d3);
-            array b = randu(K, N);
-            array c = matmul(a, b);
+        // clang-format off
+            //             M      N     K   ld2  ld3   rd2   rd3  type
+            blas_params( 32,     32,   10,    2,   1,    1,    1,  f32),
+            blas_params( 32,     32,   10,    1,   2,    1,    1,  f32),
+            blas_params( 32,     32,   10,    2,   2,    1,    1,  f32),
+            blas_params( 32,     32,   10,    3,   2,    1,    1,  f32),
+            blas_params( 32,     32,   10,    3,   3,    1,    1,  f32),
+            blas_params( 32,     32,   10,    4,   4,    1,    1,  f32),
 
-            for (int j = 0; j < d3; j++) {
-                for (int i = 0; i < d2; i++) {
-                    array a_ij = a(span, span, i, j);
-                    array c_ij = c(span, span, i, j);
-                    array res  = matmul(a_ij, b);
-                    ASSERT_ARRAYS_NEAR(c_ij, res, batch_tol);
-                }
-            }
-        }
-    }
+            blas_params(512,     32,  512,    4,   4,    1,    1,  f32),
+            blas_params(512,     32,  513,    4,   4,    1,    1,  f32),
+            blas_params(513,     32,  513,    4,   4,    1,    1,  f32),
+            blas_params(513,     33,  513,    4,   4,    1,    1,  f32),
+            blas_params(513,    511,   32,    4,   4,    1,    1,  f32),
+            blas_params(513,    511,   31,    4,   4,    1,    1,  f32),
+            blas_params(513,    511,   33,    4,   4,    1,    1,  f32),
+            blas_params(511,    511,   33,    4,   4,    1,    1,  f32)
+        // clang-format on
+
+        ),
+    print_blas_params);
+
+INSTANTIATE_TEST_CASE_P(
+    RHSBroadcast, MatrixMultiplyBatch,
+    ::testing::Values(
+        // clang-format off
+            //            M      N     K   ld2  ld3   rd2  rd3  type
+            blas_params( 32 ,    32,  10,    1,   1,    2,   1,  f32),
+            blas_params( 32 ,    32,  10,    1,   1,    1,   2,  f32),
+            blas_params( 32 ,    32,  10,    1,   1,    2,   2,  f32),
+            blas_params( 32 ,    32,  10,    1,   1,    3,   2,  f32),
+            blas_params( 32 ,    32,  10,    1,   1,    3,   3,  f32),
+            blas_params( 32 ,    32,  10,    1,   1,    4,   4,  f32),
+
+            blas_params(512 ,    32,  512,   1,   1,    4,   4,  f32),
+            blas_params(512 ,    32,  513,   1,   1,    4,   4,  f32),
+            blas_params(513 ,    32,  513,   1,   1,    4,   4,  f32),
+            blas_params(513 ,    33,  513,   1,   1,    4,   4,  f32),
+            blas_params(513 ,   511,   32,   1,   1,    4,   4,  f32),
+            blas_params(513 ,   511,   31,   1,   1,    4,   4,  f32),
+            blas_params(513 ,   511,   33,   1,   1,    4,   4,  f32),
+            blas_params(511 ,   511,   33,   1,   1,    4,   4,  f32)
+        // clang-format on
+        ),
+    print_blas_params);
+
+INSTANTIATE_TEST_CASE_P(
+    SameBatch, MatrixMultiplyBatch,
+    ::testing::Values(
+        // clang-format off
+            //          M      N     K   ld2  ld3   rd2  rd3  type
+            blas_params(32,   32,  10,     2,   1,    2,   1,  f32),
+            blas_params(32,   32,  10,     1,   2,    1,   2,  f32),
+            blas_params(32,   32,  10,     2,   2,    2,   2,  f32),
+            blas_params(32,   32,  10,     3,   2,    3,   2,  f32),
+            blas_params(32,   32,  10,     3,   3,    3,   3,  f32),
+            blas_params(32,   32,  10,     4,   4,    4,   4,  f32),
+
+            blas_params(512,  32, 512,     4,   4,    4,   4,  f32),
+            blas_params(512,  32, 513,     4,   4,    4,   4,  f32),
+            blas_params(513,  32, 513,     4,   4,    4,   4,  f32),
+            blas_params(513,  33, 513,     4,   4,    4,   4,  f32),
+            blas_params(513, 511,  32,     4,   4,    4,   4,  f32),
+            blas_params(513, 511,  31,     4,   4,    4,   4,  f32),
+            blas_params(513, 511,  33,     4,   4,    4,   4,  f32),
+            blas_params(511, 511,  33,     4,   4,    4,   4,  f32),
+
+            blas_params( 32,  32,  10,     1,   1,    1,   1, f32)
+        // clang-format on
+        ),
+    print_blas_params);
+
+TEST_P(MatrixMultiplyBatch, Batched) {
+    array out         = matmul(lhs, rhs);
+    blas_params param = GetParam();
 }
 
 float alpha = 1.f;
