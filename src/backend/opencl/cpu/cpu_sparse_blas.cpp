@@ -223,18 +223,18 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
     int ldc = out.strides()[1];
 
     // get host pointers from mapped memory
-    auto rhsPtr = rhs.getMappedPtr();
-    auto outPtr = out.getMappedPtr();
+    mapped_ptr<T> rhsPtr = rhs.getMappedPtr(CL_MAP_READ);
+    mapped_ptr<T> outPtr = out.getMappedPtr();
 
     Array<T> values   = lhs.getValues();
     Array<int> rowIdx = lhs.getRowIdx();
     Array<int> colIdx = lhs.getColIdx();
 
-    auto vPtr = values.getMappedPtr();
-    auto rPtr = rowIdx.getMappedPtr();
-    auto cPtr = colIdx.getMappedPtr();
-    int *pB   = rPtr.get();
-    int *pE   = rPtr.get() + 1;
+    mapped_ptr<T> vPtr   = values.getMappedPtr();
+    mapped_ptr<int> rPtr = rowIdx.getMappedPtr();
+    mapped_ptr<int> cPtr = colIdx.getMappedPtr();
+    int *pB              = rPtr.get();
+    int *pE              = rPtr.get() + 1;
 
     sparse_matrix_t csrLhs;
     create_csr_func<T>()(&csrLhs, SPARSE_INDEX_BASE_ZERO, lhs.dims()[0],
@@ -293,11 +293,11 @@ template<typename T, bool conjugate>
 void mv(Array<T> output, const Array<T> values, const Array<int> rowIdx,
         const Array<int> colIdx, const Array<T> right, int M) {
     UNUSED(M);
-    auto oPtr   = output.getMappedPtr();
-    auto rhtPtr = right.getMappedPtr();
-    auto vPtr   = values.getMappedPtr();
-    auto rPtr   = rowIdx.getMappedPtr();
-    auto cPtr   = colIdx.getMappedPtr();
+    mapped_ptr<T> oPtr   = output.getMappedPtr();
+    mapped_ptr<T> rhtPtr = right.getMappedPtr();
+    mapped_ptr<T> vPtr   = values.getMappedPtr();
+    mapped_ptr<int> rPtr = rowIdx.getMappedPtr();
+    mapped_ptr<int> cPtr = colIdx.getMappedPtr();
 
     T const *const valPtr   = vPtr.get();
     int const *const rowPtr = rPtr.get();
@@ -322,11 +322,11 @@ void mv(Array<T> output, const Array<T> values, const Array<int> rowIdx,
 template<typename T, bool conjugate>
 void mtv(Array<T> output, const Array<T> values, const Array<int> rowIdx,
          const Array<int> colIdx, const Array<T> right, int M) {
-    auto oPtr   = output.getMappedPtr();
-    auto rhtPtr = right.getMappedPtr();
-    auto vPtr   = values.getMappedPtr();
-    auto rPtr   = rowIdx.getMappedPtr();
-    auto cPtr   = colIdx.getMappedPtr();
+    mapped_ptr<T> oPtr   = output.getMappedPtr();
+    mapped_ptr<T> rhtPtr = right.getMappedPtr();
+    mapped_ptr<T> vPtr   = values.getMappedPtr();
+    mapped_ptr<int> rPtr = rowIdx.getMappedPtr();
+    mapped_ptr<int> cPtr = colIdx.getMappedPtr();
 
     T const *const valPtr   = vPtr.get();
     int const *const rowPtr = rPtr.get();
@@ -354,11 +354,11 @@ void mm(Array<T> output, const Array<T> values, const Array<int> rowIdx,
         const Array<int> colIdx, const Array<T> right, int M, int N, int ldb,
         int ldc) {
     UNUSED(M);
-    auto oPtr   = output.getMappedPtr();
-    auto rhtPtr = right.getMappedPtr();
-    auto vPtr   = values.getMappedPtr();
-    auto rPtr   = rowIdx.getMappedPtr();
-    auto cPtr   = colIdx.getMappedPtr();
+    mapped_ptr<T> oPtr   = output.getMappedPtr();
+    mapped_ptr<T> rhtPtr = right.getMappedPtr();
+    mapped_ptr<T> vPtr   = values.getMappedPtr();
+    mapped_ptr<int> rPtr = rowIdx.getMappedPtr();
+    mapped_ptr<int> cPtr = colIdx.getMappedPtr();
 
     T const *const valPtr   = vPtr.get();
     int const *const rowPtr = rPtr.get();
@@ -388,11 +388,11 @@ template<typename T, bool conjugate>
 void mtm(Array<T> output, const Array<T> values, const Array<int> rowIdx,
          const Array<int> colIdx, const Array<T> right, int M, int N, int ldb,
          int ldc) {
-    auto oPtr   = output.getMappedPtr();
-    auto rhtPtr = right.getMappedPtr();
-    auto vPtr   = values.getMappedPtr();
-    auto rPtr   = rowIdx.getMappedPtr();
-    auto cPtr   = colIdx.getMappedPtr();
+    mapped_ptr<T> oPtr   = output.getMappedPtr();
+    mapped_ptr<T> rhtPtr = right.getMappedPtr();
+    mapped_ptr<T> vPtr   = values.getMappedPtr();
+    mapped_ptr<int> rPtr = rowIdx.getMappedPtr();
+    mapped_ptr<int> cPtr = colIdx.getMappedPtr();
 
     T const *const valPtr   = vPtr.get();
     int const *const rowPtr = rPtr.get();
