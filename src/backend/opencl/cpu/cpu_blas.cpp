@@ -198,6 +198,11 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     bool is_r_d2_batched = (oDims[2] == rDims[2]);
     bool is_r_d3_batched = (oDims[3] == rDims[3]);
 
+    // get host pointers from mapped memory
+    mapped_ptr<T> lPtr = lhs.getMappedPtr(CL_MAP_READ);
+    mapped_ptr<T> rPtr = rhs.getMappedPtr(CL_MAP_READ);
+    mapped_ptr<T> oPtr = out.getMappedPtr(CL_MAP_READ | CL_MAP_WRITE);
+
     for (int n = 0; n < batchSize; ++n) {
         int w = n / rDims[2];
         int z = n - w * rDims[2];
@@ -206,11 +211,6 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
                    w * (is_l_d3_batched * lStrides[3]);
         int roff = z * (is_r_d2_batched * rStrides[2]) +
                    w * (is_r_d3_batched * rStrides[3]);
-
-        // get host pointers from mapped memory
-        auto lPtr = lhs.getMappedPtr();
-        auto rPtr = rhs.getMappedPtr();
-        auto oPtr = out.getMappedPtr();
 
         CBT *lptr = (CBT *)(lPtr.get() + loff);
         CBT *rptr = (CBT *)(rPtr.get() + roff);

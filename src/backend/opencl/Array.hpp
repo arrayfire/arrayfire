@@ -114,6 +114,9 @@ void *getRawPtr(const Array<T> &arr) {
 }
 
 template<typename T>
+using mapped_ptr = std::unique_ptr<T, std::function<void(void *)>>;
+
+template<typename T>
 class Array {
     ArrayInfo info;  // This must be the first element of Array<T>
     Buffer_ptr data;
@@ -245,23 +248,25 @@ class Array {
     common::Node_ptr getNode();
 
    public:
-    std::shared_ptr<T> getMappedPtr() const {
-        auto func = [=](void *ptr) {
+    mapped_ptr<T> getMappedPtr(cl_map_flags map_flags = CL_MAP_READ |
+                                                        CL_MAP_WRITE) const {
+        auto func = [this](void *ptr) {
             if (ptr != nullptr) {
-                getQueue().enqueueUnmapMemObject(*data, ptr);
-                ptr = nullptr;
+                cl_int err = getQueue().enqueueUnmapMemObject(*data, ptr);
+                ptr        = nullptr;
             }
         };
 
         T *ptr = nullptr;
         if (ptr == nullptr) {
+            cl_int err;
             ptr = (T *)getQueue().enqueueMapBuffer(
-                *const_cast<cl::Buffer *>(get()), true,
-                CL_MAP_READ | CL_MAP_WRITE, getOffset() * sizeof(T),
-                (getDataDims().elements() - getOffset()) * sizeof(T));
+                *const_cast<cl::Buffer *>(get()), CL_TRUE, map_flags,
+                getOffset() * sizeof(T), elements() * sizeof(T), nullptr,
+                nullptr, &err);
         }
 
-        return std::shared_ptr<T>(ptr, func);
+        return mapped_ptr<T>(ptr, func);
     }
 
     friend void evalMultiple<T>(std::vector<Array<T> *> arrays);

@@ -684,3 +684,26 @@ TEST(Gemv, HalfScalarProduct) {
         ASSERT_ARRAYS_EQ(mmRes, dotRes);
     }
 }
+
+TEST(MatrixMultiply, SameInput) {
+    // Tests for an error that occured in the Intel OpenCL GPU implementation
+    // that caused an error when you passed the same array as the lhs and the
+    // rhs. see #1711 and PR #2774. Caused by mapping the same buffer with
+    // CL_MEM_WRITE access
+    int dim = 10;
+    array a = randu(dim, dim);
+    vector<float> ha(dim * dim);
+    a.host(&ha.front());
+
+    vector<float> hgold(dim * dim, 0);
+
+    for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < dim; j++) {
+            for (int k = 0; k < dim; k++) {
+                hgold[i * dim + j] += ha[k * dim + j] * ha[i * dim + k];
+            }
+        }
+    }
+    array out = matmul(a, a);
+    ASSERT_VEC_ARRAY_NEAR(hgold, dim4(dim, dim), out, 1e-4);
+}
