@@ -38,9 +38,9 @@ LU_FUNC(getrf, cdouble, z)
 
 template<typename T>
 void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in) {
-    std::shared_ptr<T> ls = lower.getMappedPtr();
-    std::shared_ptr<T> us = upper.getMappedPtr();
-    std::shared_ptr<T> is = in.getMappedPtr();
+    auto ls = lower.getMappedPtr();
+    auto us = upper.getMappedPtr();
+    auto is = in.getMappedPtr(CL_MAP_READ);
 
     T *l = ls.get();
     T *u = us.get();
