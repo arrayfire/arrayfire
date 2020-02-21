@@ -40,12 +40,7 @@ class DotC : public ::testing::Test {
     virtual void SetUp() {}
 };
 
-// create lists of types to be tested
-#ifdef AF_CPU
 typedef ::testing::Types<float, double> TestTypesF;
-#else
-typedef ::testing::Types<half_float::half, float, double> TestTypesF;
-#endif
 typedef ::testing::Types<cfloat, cdouble> TestTypesC;
 
 // register the type list
@@ -85,16 +80,8 @@ void dotTest(string pTestFile, const int resultIdx,
 
     vector<T> goldData = tests[resultIdx];
     size_t nElems      = goldData.size();
-    vector<T> outData(nElems);
 
-    ASSERT_SUCCESS(af_get_data_ptr((void*)&outData.front(), out));
-
-    if (false == (isinf(outData.front()) && isinf(goldData[0]))) {
-        for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_NEAR(abs(goldData[elIter]), abs(outData[elIter]), 0.03)
-                << "at: " << elIter << endl;
-        }
-    }
+    ASSERT_VEC_ARRAY_NEAR(goldData, dim4(nElems), out, 0.03);
 
     ASSERT_SUCCESS(af_release_array(a));
     ASSERT_SUCCESS(af_release_array(b));
@@ -279,4 +266,42 @@ TEST(DotAllCCU, CPP) {
     vector<cfloat> goldData = tests[2];
 
     ASSERT_EQ(goldData[0], out);
+}
+
+class Dot : public ::testing::TestWithParam<int> {
+   public:
+    array ha, hb, gold;
+
+    void SetUp() {
+        SUPPORTED_TYPE_CHECK(half_float::half);
+        int elems = GetParam();
+        array fa  = af::randu(elems) - 0.5f;
+        array fb  = af::randu(elems) - 0.5f;
+
+        ha = fa.as(f16);
+        hb = fb.as(f16);
+
+        gold = dot(fa, fb);
+    }
+};
+
+std::string print_dot(const ::testing::TestParamInfo<Dot::ParamType> info) {
+    std::stringstream ss;
+
+    ss << info.param;
+
+    return ss.str();
+}
+
+INSTANTIATE_TEST_CASE_P(Small, Dot,
+                        ::testing::Values(2, 4, 5, 10, 31, 32, 33, 100, 127,
+                                          128, 129, 200, 500, 511, 512, 513,
+                                          1000),
+                        print_dot);
+
+TEST_P(Dot, Half) {
+    SUPPORTED_TYPE_CHECK(half_float::half);
+    array hc = dot(ha, hb);
+
+    ASSERT_ARRAYS_NEAR(gold, hc.as(f32), 1e-2);
 }
