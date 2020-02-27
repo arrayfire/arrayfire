@@ -27,7 +27,7 @@ using std::vector;
 const int num        = 10000;
 const float hlf_err  = 1e-2;
 const float flt_err  = 1e-3;
-const double dbl_err = 1e-10;
+const double dbl_err = 1e-6;
 
 typedef std::complex<float> complex_float;
 typedef std::complex<double> complex_double;
