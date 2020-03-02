@@ -16,7 +16,9 @@
 
 namespace cuda {
 namespace kernel {
-INSTANTIATE_SCAN_FIRST_BY_KEY_OP(SBK_BINARY_OP)
-INSTANTIATE_SCAN_DIM_BY_KEY_OP(SBK_BINARY_OP)
+// clang-format off
+INSTANTIATE_SCAN_FIRST_BY_KEY_OP( @SBK_BINARY_OP@ )
+INSTANTIATE_SCAN_DIM_BY_KEY_OP( @SBK_BINARY_OP@ )
+// clang-format on
 }  // namespace kernel
 }  // namespace cuda
