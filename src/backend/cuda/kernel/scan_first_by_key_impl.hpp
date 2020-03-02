@@ -6,26 +6,29 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+
 #pragma once
 
 #include <Param.hpp>
-#include <backend.hpp>
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
-#include <err_cuda.hpp>
+#include <kernel/config.hpp>
 #include <memory.hpp>
 #include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/scan_first_by_key_cuh.hpp>
 #include <optypes.hpp>
-#include "config.hpp"
 
 #include <algorithm>
+#include <string>
 
 namespace cuda {
 namespace kernel {
 
-static const std::string ScanFirstByKeySource(scan_first_by_key_cuh,
-                                              scan_first_by_key_cuh_len);
+static inline std::string sbkFirstSource() {
+    static const std::string src(scan_first_by_key_cuh,
+                                 scan_first_by_key_cuh_len);
+    return src;
+}
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
 static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
@@ -34,7 +37,7 @@ static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                    const uint blocks_x, const uint blocks_y,
                                    const uint threads_x, bool inclusive_scan) {
     auto scanbykey_first_nonfinal = getKernel(
-        "cuda::scanbykey_first_nonfinal", ScanFirstByKeySource,
+        "cuda::scanbykey_first_nonfinal", sbkFirstSource(),
         {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
          TemplateArg(op)},
         {DefineValue(THREADS_PER_BLOCK), DefineKeyValue(DIMX, threads_x)});
@@ -55,7 +58,7 @@ static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
                                 const uint threads_x, bool calculateFlags,
                                 bool inclusive_scan) {
     auto scanbykey_first_final = getKernel(
-        "cuda::scanbykey_first_final", ScanFirstByKeySource,
+        "cuda::scanbykey_first_final", sbkFirstSource(),
         {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
          TemplateArg(op)},
         {DefineValue(THREADS_PER_BLOCK), DefineKeyValue(DIMX, threads_x)});
@@ -75,7 +78,7 @@ static void bcast_first_launcher(Param<To> out, Param<To> tmp, Param<int> tlid,
                                  const dim_t blocks_x, const dim_t blocks_y,
                                  const uint threads_x) {
     auto scanbykey_first_bcast =
-        getKernel("cuda::scanbykey_first_bcast", ScanFirstByKeySource,
+        getKernel("cuda::scanbykey_first_bcast", sbkFirstSource(),
                   {TemplateTypename<To>(), TemplateArg(op)});
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);

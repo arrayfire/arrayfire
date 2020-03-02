@@ -7,23 +7,24 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/dispatch.hpp>
-#include <debug_cuda.hpp>
-#include <err_cuda.hpp>
-#include <memory.hpp>
+#include <fast_pyramid.hpp>
 
-#include "fast.hpp"
-#include "resize.hpp"
+#include <Array.hpp>
+#include <err_cuda.hpp>
+#include <fast.hpp>
+#include <resize.hpp>
+#include <af/dim4.hpp>
+
+using af::dim4;
+using std::vector;
 
 namespace cuda {
 
-namespace kernel {
-
 template<typename T>
-void fast_pyramid(std::vector<unsigned>& feat_pyr, std::vector<float*>& d_x_pyr,
-                  std::vector<float*>& d_y_pyr, std::vector<unsigned>& lvl_best,
-                  std::vector<float>& lvl_scl, std::vector<Array<T>>& img_pyr,
-                  const Array<T>& in, const float fast_thr,
+void fast_pyramid(vector<unsigned> &feat_pyr, vector<Array<float>> &x_pyr,
+                  vector<Array<float>> &y_pyr, vector<unsigned> &lvl_best,
+                  vector<float> &lvl_scl, vector<Array<T>> &img_pyr,
+                  const Array<T> &in, const float fast_thr,
                   const unsigned max_feat, const float scl_fctr,
                   const unsigned levels, const unsigned patch_size) {
     dim4 indims         = in.dims();
@@ -72,48 +73,53 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr, std::vector<float*>& d_x_pyr,
                       round(indims[1] / lvl_scl[i]));
 
             img_pyr.push_back(createEmptyArray<T>(dims));
-            resize<T>(img_pyr[i], img_pyr[i - 1], AF_INTERP_BILINEAR);
+            img_pyr[i] =
+                resize(img_pyr[i - 1], dims[0], dims[1], AF_INTERP_BILINEAR);
         }
     }
 
     feat_pyr.resize(max_levels);
-    d_x_pyr.resize(max_levels);
-    d_y_pyr.resize(max_levels);
+
+    // Round feature size to nearest odd integer
+    float size = 2.f * floor(patch_size / 2.f) + 1.f;
+
+    // Avoid keeping features that are too wide and might not fit the image,
+    // sqrt(2.f) is the radius when angle is 45 degrees and represents
+    // widest case possible
+    unsigned edge = ceil(size * sqrt(2.f) / 2.f);
 
     for (unsigned i = 0; i < max_levels; i++) {
-        unsigned lvl_feat   = 0;
-        float* d_x_feat     = NULL;
-        float* d_y_feat     = NULL;
-        float* d_score_feat = NULL;
+        Array<float> x_out     = createEmptyArray<float>(dim4());
+        Array<float> y_out     = createEmptyArray<float>(dim4());
+        Array<float> score_out = createEmptyArray<float>(dim4());
 
-        // Round feature size to nearest odd integer
-        float size = 2.f * floor(patch_size / 2.f) + 1.f;
+        unsigned lvl_feat = fast(x_out, y_out, score_out, img_pyr[i], fast_thr,
+                                 9, 1, 0.14f, edge);
 
-        // Avoid keeping features that are too wide and might not fit the image,
-        // sqrt(2.f) is the radius when angle is 45 degrees and represents
-        // widest case possible
-        unsigned edge = ceil(size * sqrt(2.f) / 2.f);
-
-        // Detects FAST features
-        fast(&lvl_feat, &d_x_feat, &d_y_feat, &d_score_feat, img_pyr[i],
-             fast_thr, 9, 1, 0.15f, edge);
-
-        // FAST score is not used
-        // TODO: should be handled by fast()
-        memFree(d_score_feat);
-
-        if (lvl_feat == 0) {
-            feat_pyr[i] = 0;
-            d_x_pyr[i]  = NULL;
-            d_x_pyr[i]  = NULL;
-        } else {
+        if (lvl_feat > 0) {
             feat_pyr[i] = lvl_feat;
-            d_x_pyr[i]  = d_x_feat;
-            d_y_pyr[i]  = d_y_feat;
+            x_pyr.push_back(x_out);
+            y_pyr.push_back(y_out);
+        } else {
+            feat_pyr[i] = 0;
         }
     }
 }
 
-}  // namespace kernel
+#define INSTANTIATE(T)                                                      \
+    template void fast_pyramid<T>(                                          \
+        vector<unsigned> &, vector<Array<float>> &, vector<Array<float>> &, \
+        vector<unsigned> &, vector<float> &, vector<Array<T>> &,            \
+        const Array<T> &, const float, const unsigned, const float,         \
+        const unsigned, const unsigned);
+
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(char)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
 
 }  // namespace cuda

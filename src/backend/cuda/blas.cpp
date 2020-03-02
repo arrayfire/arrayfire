@@ -199,7 +199,7 @@ cublasGemmAlgo_t selectGEMMAlgorithm() {
 }
 
 template<>
-cublasGemmAlgo_t selectGEMMAlgorithm<half>() {
+cublasGemmAlgo_t selectGEMMAlgorithm<common::half>() {
     auto dev              = getDeviceProp(getActiveDeviceId());
     cublasGemmAlgo_t algo = CUBLAS_GEMM_DEFAULT;
     if (dev.major >= 7) { algo = CUBLAS_GEMM_DEFAULT_TENSOR_OP; }

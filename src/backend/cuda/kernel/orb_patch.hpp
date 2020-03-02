@@ -10,7 +10,6 @@
 #pragma once
 
 namespace cuda {
-
 namespace kernel {
 
 // Reference pattern, generated for a patch size of 31x31, as suggested by

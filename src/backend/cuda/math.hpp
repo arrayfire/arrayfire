@@ -168,84 +168,84 @@ STATIC_ double minval() {
 }
 #else
 template<typename T>
-__device__ T maxval() {
+STATIC_ __device__ T maxval() {
     return 1u << (8 * sizeof(T) - 1);
 }
 template<typename T>
-__device__ T minval() {
+STATIC_ __device__ T minval() {
     return scalar<T>(0);
 }
 
 template<>
-__device__ int maxval<int>() {
+STATIC_ __device__ int maxval<int>() {
     return 0x7fffffff;
 }
 template<>
-__device__ int minval<int>() {
+STATIC_ __device__ int minval<int>() {
     return 0x80000000;
 }
 template<>
-__device__ intl maxval<intl>() {
+STATIC_ __device__ intl maxval<intl>() {
     return 0x7fffffffffffffff;
 }
 template<>
-__device__ intl minval<intl>() {
+STATIC_ __device__ intl minval<intl>() {
     return 0x8000000000000000;
 }
 template<>
-__device__ uintl maxval<uintl>() {
+STATIC_ __device__ uintl maxval<uintl>() {
     return 1ULL << (8 * sizeof(uintl) - 1);
 }
 template<>
-__device__ char maxval<char>() {
+STATIC_ __device__ char maxval<char>() {
     return 0x7f;
 }
 template<>
-__device__ char minval<char>() {
+STATIC_ __device__ char minval<char>() {
     return 0x80;
 }
 template<>
-__device__ float maxval<float>() {
+STATIC_ __device__ float maxval<float>() {
     return CUDART_INF_F;
 }
 template<>
-__device__ float minval<float>() {
+STATIC_ __device__ float minval<float>() {
     return -CUDART_INF_F;
 }
 template<>
-__device__ double maxval<double>() {
+STATIC_ __device__ double maxval<double>() {
     return CUDART_INF;
 }
 template<>
-__device__ double minval<double>() {
+STATIC_ __device__ double minval<double>() {
     return -CUDART_INF;
 }
 template<>
-__device__ short maxval<short>() {
+STATIC_ __device__ short maxval<short>() {
     return 0x7fff;
 }
 template<>
-__device__ short minval<short>() {
+STATIC_ __device__ short minval<short>() {
     return 0x8000;
 }
 template<>
-__device__ ushort maxval<ushort>() {
+STATIC_ __device__ ushort maxval<ushort>() {
     return ((ushort)1) << (8 * sizeof(ushort) - 1);
 }
 template<>
-__device__ common::half maxval<common::half>() {
+STATIC_ __device__ common::half maxval<common::half>() {
     return common::half(65537.f);
 }
 template<>
-__device__ common::half minval<common::half>() {
+STATIC_ __device__ common::half minval<common::half>() {
     return common::half(-65537.f);
 }
 template<>
-__device__ __half maxval<__half>() {
+STATIC_ __device__ __half maxval<__half>() {
     return __float2half(CUDART_INF);
 }
 template<>
-__device__ __half minval<__half>() {
+STATIC_ __device__ __half minval<__half>() {
     return __float2half(-CUDART_INF);
 }
 #endif

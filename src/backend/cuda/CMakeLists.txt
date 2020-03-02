@@ -38,9 +38,12 @@ set(CUDA_architecture_build_targets ${detected_gpus} CACHE
 cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_targets})
 message(STATUS "CUDA_architecture_build_targets: ${CUDA_architecture_build_targets}")
 
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};
-  ${cuda_architecture_flags}
-  )
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};${cuda_architecture_flags})
+if(${CUDA_SEPARABLE_COMPILATION})
+  # Enable relocatable device code generation for separable
+  # compilation which is in turn required for any device linking done.
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-rdc=true)
+endif()
 
 mark_as_advanced(
     CUDA_LIBRARIES_PATH
@@ -177,7 +180,8 @@ function(cuda_add_library cuda_target)
   set_target_properties(${cuda_target}
     PROPERTIES
     LINKER_LANGUAGE ${CUDA_C_OR_CXX}
-    )
+    POSITION_INDEPENDENT_CODE ON
+  )
 
 endfunction()
 
@@ -221,7 +225,6 @@ cuda_add_library(afcuda
     assign.cu
     bilateral.cpp
     canny.cpp
-    cholesky.cu
     copy.cu
     count.cu
     diagonal.cu
@@ -234,7 +237,6 @@ cuda_add_library(afcuda
     Event.hpp
     exampleFunction.cpp
     fast.cu
-    fast_pyramid.cu
     fftconvolve.cu
     gradient.cu
     harris.cu
@@ -244,7 +246,6 @@ cuda_add_library(afcuda
     identity.cu
     iir.cu
     index.cu
-    inverse.cu
     iota.cu
     ireduce.cu
     join.cu
@@ -272,7 +273,6 @@ cuda_add_library(afcuda
     set.cu
     sift.cu
     sobel.cpp
-    solve.cu
     sort.cu
     sort_by_key.cu
     sort_index.cu
@@ -280,7 +280,6 @@ cuda_add_library(afcuda
     sparse_arith.cu
     sum.cu
     susan.cu
-    svd.cu
     tile.cu
     topk.cu
     transform.cpp
@@ -304,7 +303,6 @@ cuda_add_library(afcuda
     kernel/exampleFunction.hpp
     kernel/fast.hpp
     kernel/fast_lut.hpp
-    kernel/fast_pyramid.hpp
     kernel/fftconvolve.hpp
     kernel/flood_fill.hpp
     kernel/gradient.hpp
@@ -385,6 +383,7 @@ cuda_add_library(afcuda
     blas.hpp
     canny.hpp
     cast.hpp
+    cholesky.cpp
     cholesky.hpp
     complex.hpp
     convolve.cpp
@@ -412,6 +411,7 @@ cuda_add_library(afcuda
     err_cuda.hpp
     exampleFunction.hpp
     fast.hpp
+    fast_pyramid.cpp
     fast_pyramid.hpp
     fft.cpp
     fft.hpp
@@ -433,6 +433,7 @@ cuda_add_library(afcuda
     image.cpp
     image.hpp
     index.hpp
+    inverse.cpp
     inverse.hpp
     iota.hpp
     ireduce.hpp
@@ -479,6 +480,7 @@ cuda_add_library(afcuda
     shift.hpp
     sift.hpp
     sobel.hpp
+    solve.cpp
     solve.hpp
     sort_by_key.hpp
     sort_index.hpp
@@ -489,6 +491,7 @@ cuda_add_library(afcuda
     surface.cpp
     surface.hpp
     susan.hpp
+    svd.cpp
     svd.hpp
     tile.hpp
     topk.hpp
@@ -512,21 +515,18 @@ cuda_add_library(afcuda
 
     nvrtc/cache.cpp
 
+    ${scan_by_key_sources}
+
     OPTIONS ${platform_flags} ${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\"
   )
 
 arrayfire_set_default_cxx_flags(afcuda)
 
-# NOTE: Do not add additional CUDA specific definitions here. Add it to the
-# cxx_definitions variable above. cxx_definitions is used to propigate
-# definitions to the scan_by_key and thrust_sort_by_key targets as well as the
-# cuda library above.
 target_compile_options(afcuda PRIVATE ${cxx_definitions})
 
 add_library(ArrayFire::afcuda ALIAS afcuda)
 
 add_dependencies(afcuda ${jit_kernel_targets} ${nvrtc_kernel_targets})
-add_dependencies(cuda_scan_by_key ${nvrtc_kernel_targets})
 
 target_include_directories (afcuda
   PUBLIC
@@ -542,8 +542,6 @@ target_include_directories (afcuda
     ${CMAKE_CURRENT_BINARY_DIR}
     ${cuDNN_INCLUDE_DIRS}
 )
-
-set_target_properties(afcuda PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Remove cublas_device library which is no longer included with the cuda
 # toolkit. Fixes issues with older CMake versions
@@ -562,7 +560,6 @@ target_link_libraries(afcuda
     c_api_interface
     cpp_api_interface
     afcommon_interface
-    cuda_scan_by_key
     cuda_thrust_sort_by_key
     ${CUDA_nvrtc_LIBRARY}
     ${CUDA_CUBLAS_LIBRARIES}
