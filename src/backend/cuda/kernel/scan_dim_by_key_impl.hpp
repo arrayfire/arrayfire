@@ -6,19 +6,18 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+
 #pragma once
 
 #include <Param.hpp>
-#include <backend.hpp>
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
-#include <err_cuda.hpp>
+#include <kernel/config.hpp>
 #include <memory.hpp>
 #include <nvrtc/cache.hpp>
 #include <nvrtc_kernel_headers/scan_dim_by_key_cuh.hpp>
 #include <optypes.hpp>
 #include <traits.hpp>
-#include "config.hpp"
 
 #include <algorithm>
 #include <string>
@@ -26,8 +25,10 @@
 namespace cuda {
 namespace kernel {
 
-static const std::string ScanDimByKeySource(scan_dim_by_key_cuh,
-                                            scan_dim_by_key_cuh_len);
+static inline std::string sbkDimSource() {
+    static const std::string src(scan_dim_by_key_cuh, scan_dim_by_key_cuh_len);
+    return src;
+}
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
 static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
@@ -37,7 +38,7 @@ static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                        const dim_t blocks_all[4],
                                        bool inclusive_scan) {
     auto scanbykey_dim_nonfinal =
-        getKernel("cuda::scanbykey_dim_nonfinal", ScanDimByKeySource,
+        getKernel("cuda::scanbykey_dim_nonfinal", sbkDimSource(),
                   {TemplateTypename<Ti>(), TemplateTypename<Tk>(),
                    TemplateTypename<To>(), TemplateArg(op)},
                   {DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
@@ -61,7 +62,7 @@ static void scan_dim_final_launcher(Param<To> out, CParam<Ti> in,
                                     const dim_t blocks_all[4],
                                     bool calculateFlags, bool inclusive_scan) {
     auto scanbykey_dim_final =
-        getKernel("cuda::scanbykey_dim_final", ScanDimByKeySource,
+        getKernel("cuda::scanbykey_dim_final", sbkDimSource(),
                   {TemplateTypename<Ti>(), TemplateTypename<Tk>(),
                    TemplateTypename<To>(), TemplateArg(op)},
                   {DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
@@ -83,7 +84,7 @@ static void bcast_dim_launcher(Param<To> out, CParam<To> tmp, Param<int> tlid,
                                const int dim, const uint threads_y,
                                const dim_t blocks_all[4]) {
     auto scanbykey_dim_bcast =
-        getKernel("cuda::scanbykey_dim_bcast", ScanDimByKeySource,
+        getKernel("cuda::scanbykey_dim_bcast", sbkDimSource(),
                   {TemplateTypename<To>(), TemplateArg(op)});
     dim3 threads(THREADS_X, threads_y);
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);

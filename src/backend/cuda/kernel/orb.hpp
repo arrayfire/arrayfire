@@ -352,9 +352,6 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
                     d_score_harris.get(), harris_idx.get(), NULL, feat_pyr[i]);
         POST_LAUNCH_CHECK();
 
-        memFree(d_x_pyr[i]);
-        memFree(d_y_pyr[i]);
-
         float* d_ori_lvl = memAlloc<float>(feat_pyr[i]).release();
 
         // Compute orientation of features
