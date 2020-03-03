@@ -266,6 +266,9 @@ af_err af_array_to_string(char **output, const char *exp, const af_array arr,
                 case u16:
                     print<ushort>(exp, arr, precision, ss, transpose);
                     break;
+                case f16:
+                    print<half>(exp, arr, precision, ss, transpose);
+                    break;
                 default: TYPE_ERROR(1, type);
             }
         }
