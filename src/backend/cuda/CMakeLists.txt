@@ -89,45 +89,74 @@ set(nvrtc_src
   ${PROJECT_BINARY_DIR}/include/af/version.h
 
   ${CMAKE_CURRENT_SOURCE_DIR}/Param.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/assign_kernel_param.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/backend.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/dims_param.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/interp.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/shared.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/math.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/minmax_op.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/utility.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/types.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/half.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/internal_enums.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/kernel_type.hpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/anisotropic_diffusion.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/approx1.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/approx2.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/assign.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/bilateral.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/canny.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve1.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve2.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve3.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve_separable.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/copy.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/diagonal.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/diff.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/exampleFunction.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/fftconvolve.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/flood_fill.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/gradient.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/histogram.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/hsv_rgb.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/identity.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/iir.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/index.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/iota.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/ireduce.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/join.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/lookup.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/lu_split.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/match_template.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/meanshift.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/medfilt.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/memcopy.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/moments.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/morph.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/pad_array_borders.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/range.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/resize.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reorder.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/rotate.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/select.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim_by_key.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first_by_key.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sobel.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sparse.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sparse_arith.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/susan.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/tile.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transform.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose_inplace.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/triangle.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/unwrap.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/where.cuh
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/wrap.cuh
   )
 
 file_to_string(
@@ -222,13 +251,9 @@ cuda_add_library(afcuda
     anisotropic_diffusion.cpp
     any.cu
     approx.cpp
-    assign.cu
     bilateral.cpp
     canny.cpp
-    copy.cu
     count.cu
-    diagonal.cu
-    diff.cu
     dilate.cpp
     dilate3d.cpp
     erode.cpp
@@ -237,20 +262,10 @@ cuda_add_library(afcuda
     Event.hpp
     exampleFunction.cpp
     fast.cu
-    fftconvolve.cu
-    gradient.cu
     harris.cu
     histogram.cpp
     homography.cu
     hsv_rgb.cpp
-    identity.cu
-    iir.cu
-    index.cu
-    iota.cu
-    ireduce.cu
-    join.cu
-    lookup.cu
-    lu.cu
     match_template.cpp
     max.cu
     mean.cu
@@ -262,32 +277,21 @@ cuda_add_library(afcuda
     orb.cu
     pad_array_borders.cpp
     product.cu
-    qr.cu
     random_engine.cu
-    range.cu
     regions.cu
-    reorder.cu
     resize.cpp
     rotate.cpp
-    select.cu
     set.cu
     sift.cu
     sobel.cpp
     sort.cu
     sort_by_key.cu
     sort_index.cu
-    sparse.cu
-    sparse_arith.cu
     sum.cu
-    susan.cu
-    tile.cu
     topk.cu
     transform.cpp
     transpose.cpp
     transpose_inplace.cpp
-    triangle.cu
-    unwrap.cu
-    wrap.cu
 
     kernel/anisotropic_diffusion.hpp
     kernel/approx.hpp
@@ -375,6 +379,7 @@ cuda_add_library(afcuda
     anisotropic_diffusion.hpp
     approx.hpp
     arith.hpp
+    assign.cpp
     assign.hpp
     backend.hpp
     bilateral.hpp
@@ -388,6 +393,7 @@ cuda_add_library(afcuda
     complex.hpp
     convolve.cpp
     convolve.hpp
+    copy.cpp
     copy.hpp
     cublas.cpp
     cublas.hpp
@@ -405,7 +411,9 @@ cuda_add_library(afcuda
     device_manager.hpp
     debug_cuda.hpp
     debug_thrust.hpp
+    diagonal.cpp
     diagonal.hpp
+    diff.cpp
     diff.hpp
     driver.cpp
     err_cuda.hpp
@@ -415,11 +423,13 @@ cuda_add_library(afcuda
     fast_pyramid.hpp
     fft.cpp
     fft.hpp
+    fftconvolve.cpp
     fftconvolve.hpp
     flood_fill.cpp
     flood_fill.hpp
     GraphicsResourceManager.cpp
     GraphicsResourceManager.hpp
+    gradient.cpp
     gradient.hpp
     handle.cpp
     harris.hpp
@@ -428,19 +438,27 @@ cuda_add_library(afcuda
     histogram.hpp
     homography.hpp
     hsv_rgb.hpp
+    identity.cpp
     identity.hpp
+    iir.cpp
     iir.hpp
     image.cpp
     image.hpp
+    index.cpp
     index.hpp
     inverse.cpp
     inverse.hpp
+    iota.cpp
     iota.hpp
+    ireduce.cpp
     ireduce.hpp
     jit.cpp
+    join.cpp
     join.hpp
     logic.hpp
+    lookup.cpp
     lookup.hpp
+    lu.cpp
     lu.hpp
     match_template.hpp
     math.hpp
@@ -449,6 +467,7 @@ cuda_add_library(afcuda
     medfilt.hpp
     memory.cpp
     memory.hpp
+    minmax_op.hpp
     moments.hpp
     morph.hpp
     morph3d_impl.hpp
@@ -460,12 +479,15 @@ cuda_add_library(afcuda
     plot.cpp
     plot.hpp
     print.hpp
+    qr.cpp
     qr.hpp
     random_engine.hpp
+    range.cpp
     range.hpp
     reduce.hpp
     reduce_impl.hpp
     regions.hpp
+    reorder.cpp
     reorder.hpp
     resize.hpp
     rotate.hpp
@@ -474,6 +496,7 @@ cuda_add_library(afcuda
     scan.hpp
     scan_by_key.cpp
     scan_by_key.hpp
+    select.cpp
     select.hpp
     set.hpp
     shift.cpp
@@ -484,23 +507,29 @@ cuda_add_library(afcuda
     solve.hpp
     sort_by_key.hpp
     sort_index.hpp
+    sparse.cpp
     sparse.hpp
+    sparse_arith.cpp
     sparse_arith.hpp
     sparse_blas.cpp
     sparse_blas.hpp
     surface.cpp
     surface.hpp
+    susan.cpp
     susan.hpp
     svd.cpp
     svd.hpp
+    tile.cpp
     tile.hpp
     topk.hpp
     traits.hpp
     transform.hpp
     transpose.hpp
+    triangle.cpp
     triangle.hpp
     types.hpp
     unary.hpp
+    unwrap.cpp
     unwrap.hpp
     utility.cpp
     utility.hpp
@@ -508,6 +537,7 @@ cuda_add_library(afcuda
     vector_field.hpp
     where.cpp
     where.hpp
+    wrap.cpp
     wrap.hpp
 
     jit/BufferNode.hpp

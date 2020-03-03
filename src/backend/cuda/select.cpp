@@ -6,13 +6,15 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+
+#include <select.hpp>
+
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <common/jit/NaryNode.hpp>
 #include <err_cuda.hpp>
 #include <kernel/select.hpp>
 #include <scalar.hpp>
-#include <select.hpp>
 
 #include <memory>
 
@@ -23,6 +25,7 @@ using std::make_shared;
 using std::max;
 
 namespace cuda {
+
 template<typename T>
 void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
             const Array<T> &b) {
@@ -32,7 +35,7 @@ void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
 template<typename T, bool flip>
 void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
                    const double &b) {
-    kernel::select_scalar<T, flip>(out, cond, a, b, out.ndims());
+    kernel::select_scalar<T>(out, cond, a, b, out.ndims(), flip);
 }
 
 template<typename T>
@@ -80,7 +83,8 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     if (detail::passesJitHeuristics<T>(node.get()) == kJITHeuristics::Pass) {
         return createNodeArray<T>(odims, node);
     } else {
-        if(a_node->getHeight() > max(b_node->getHeight(), cond_node->getHeight())) {
+        if (a_node->getHeight() >
+            max(b_node->getHeight(), cond_node->getHeight())) {
             a.eval();
         } else {
             cond.eval();

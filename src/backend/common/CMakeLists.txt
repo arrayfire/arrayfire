@@ -52,6 +52,7 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/half.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/host_memory.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/internal_enums.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel_type.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp

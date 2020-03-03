@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <common/internal_enums.hpp>
+
 #include <mutex>
 #include <string>
 
@@ -40,22 +42,6 @@ inline std::string clipFilePath(std::string path, std::string str) {
 #define STATIC_ inline
 #define __AF_FILENAME__ (clipFilePath(__FILE__, "src/").c_str())
 #endif
-
-typedef enum {
-    AF_BATCH_UNSUPPORTED = -1, /* invalid inputs */
-    AF_BATCH_NONE,             /* one signal, one filter   */
-    AF_BATCH_LHS,              /* many signal, one filter  */
-    AF_BATCH_RHS,              /* one signal, many filter  */
-    AF_BATCH_SAME,             /* signal and filter have same batch size */
-    AF_BATCH_DIFF,             /* signal and filter have different batch size */
-} AF_BATCH_KIND;
-
-enum class kJITHeuristics {
-    Pass                = 0, /* no eval necessary */
-    TreeHeight          = 1, /* eval due to jit tree height */
-    KernelParameterSize = 2, /* eval due to many kernel parameters */
-    MemoryPressure      = 3  /* eval due to memory pressure */
-};
 
 #ifdef OS_WIN
 #include <Windows.h>

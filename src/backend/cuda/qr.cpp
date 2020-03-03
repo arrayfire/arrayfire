@@ -140,7 +140,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     dim4 rdims(M, N);
     r = createEmptyArray<T>(rdims);
 
-    kernel::triangle<T, true, false>(r, in_copy);
+    kernel::triangle<T>(r, in_copy, true, false);
 
     int mn = max(M, N);
     dim4 qdims(M, mn);

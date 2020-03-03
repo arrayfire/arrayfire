@@ -7,13 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <assign.hpp>
-#include <kernel/assign.hpp>
+#include <index.hpp>
 
 #include <Array.hpp>
+#include <assign_kernel_param.hpp>
 #include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <handle.hpp>
+#include <kernel/index.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
@@ -22,8 +23,8 @@ using common::half;
 namespace cuda {
 
 template<typename T>
-void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
-    kernel::AssignKernelParam_t p;
+Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
+    IndexKernelParam p;
     std::vector<af_seq> seqs(4, af_span);
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
@@ -32,16 +33,16 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
     }
 
     // retrieve dimensions, strides and offsets
-    dim4 dDims = out.dims();
-    // retrieve dimensions & strides for array
-    // to which rhs is being copied to
-    dim4 dstOffs  = toOffset(seqs, dDims);
-    dim4 dstStrds = toStride(seqs, dDims);
+    dim4 iDims  = in.dims();
+    dim4 dDims  = in.getDataDims();
+    dim4 oDims  = toDims(seqs, iDims);
+    dim4 iOffs  = toOffset(seqs, dDims);
+    dim4 iStrds = in.strides();
 
     for (dim_t i = 0; i < 4; ++i) {
         p.isSeq[i] = idxrs[i].isSeq;
-        p.offs[i]  = dstOffs[i];
-        p.strds[i] = dstStrds[i];
+        p.offs[i]  = iOffs[i];
+        p.strds[i] = iStrds[i];
     }
 
     std::vector<Array<uint>> idxArrs(4, createEmptyArray<uint>(dim4()));
@@ -53,28 +54,34 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
         if (!p.isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
             p.ptr[x]   = idxArrs[x].get();
+            // set output array ith dimension value
+            oDims[x] = idxArrs[x].elements();
         }
     }
 
-    kernel::assign<T>(out, rhs, p);
+    Array<T> out = createEmptyArray<T>(oDims);
+    if (oDims.elements() == 0) { return out; }
+
+    kernel::index<T>(out, in, p);
+
+    return out;
 }
 
-#define INSTANTIATE(T)                                                \
-    template void assign<T>(Array<T> & out, const af_index_t idxrs[], \
-                            const Array<T>& rhs);
+#define INSTANTIATE(T) \
+    template Array<T> index<T>(const Array<T>& in, const af_index_t idxrs[]);
 
 INSTANTIATE(cdouble)
 INSTANTIATE(double)
 INSTANTIATE(cfloat)
 INSTANTIATE(float)
-INSTANTIATE(int)
 INSTANTIATE(uint)
-INSTANTIATE(intl)
+INSTANTIATE(int)
 INSTANTIATE(uintl)
-INSTANTIATE(char)
+INSTANTIATE(intl)
 INSTANTIATE(uchar)
-INSTANTIATE(short)
+INSTANTIATE(char)
 INSTANTIATE(ushort)
+INSTANTIATE(short)
 INSTANTIATE(half)
 
 }  // namespace cuda

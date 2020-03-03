@@ -20,8 +20,8 @@ using af::dim4;
 namespace cuda {
 
 template<typename T>
-static const dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
-                                 const dim_t baseDim) {
+const dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
+                          const dim_t baseDim) {
     const dim4 i1d = i1.dims();
     const dim4 i2d = i2.dims();
 
