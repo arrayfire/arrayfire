@@ -6,11 +6,12 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+
 #include <range.hpp>
-#include <kernel/range.hpp>
 
 #include <Array.hpp>
 #include <err_cuda.hpp>
+#include <kernel/range.hpp>
 #include <math.hpp>
 
 #include <stdexcept>

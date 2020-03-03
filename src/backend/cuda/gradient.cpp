@@ -7,11 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <gradient.hpp>
+
 #include <Array.hpp>
 #include <err_cuda.hpp>
-#include <gradient.hpp>
 #include <kernel/gradient.hpp>
 #include <math.hpp>
+
 #include <stdexcept>
 
 namespace cuda {

@@ -56,10 +56,7 @@ Array<T> copyArray(const Array<T> &src) {
             cudaMemcpyAsync(out.get(), src.get(), src.elements() * sizeof(T),
                             cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
     } else {
-        // FIXME: Seems to fail when using Param<T>
-        kernel::memcopy(out.get(), out.strides().get(), src.get(),
-                        src.dims().get(), src.strides().get(),
-                        (uint)src.ndims());
+        kernel::memcopy<T>(out, src, src.ndims());
     }
     return out;
 }

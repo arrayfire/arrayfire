@@ -6,8 +6,9 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#include <index.hpp>
-#include <kernel/index.hpp>
+
+#include <assign.hpp>
+#include <kernel/assign.hpp>
 
 #include <Array.hpp>
 #include <common/half.hpp>
@@ -21,8 +22,8 @@ using common::half;
 namespace cuda {
 
 template<typename T>
-Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
-    kernel::IndexKernelParam_t p;
+void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
+    AssignKernelParam p;
     std::vector<af_seq> seqs(4, af_span);
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
@@ -31,16 +32,16 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
     }
 
     // retrieve dimensions, strides and offsets
-    dim4 iDims  = in.dims();
-    dim4 dDims  = in.getDataDims();
-    dim4 oDims  = toDims(seqs, iDims);
-    dim4 iOffs  = toOffset(seqs, dDims);
-    dim4 iStrds = in.strides();
+    dim4 dDims = out.dims();
+    // retrieve dimensions & strides for array
+    // to which rhs is being copied to
+    dim4 dstOffs  = toOffset(seqs, dDims);
+    dim4 dstStrds = toStride(seqs, dDims);
 
     for (dim_t i = 0; i < 4; ++i) {
         p.isSeq[i] = idxrs[i].isSeq;
-        p.offs[i]  = iOffs[i];
-        p.strds[i] = iStrds[i];
+        p.offs[i]  = dstOffs[i];
+        p.strds[i] = dstStrds[i];
     }
 
     std::vector<Array<uint>> idxArrs(4, createEmptyArray<uint>(dim4()));
@@ -52,34 +53,28 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
         if (!p.isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
             p.ptr[x]   = idxArrs[x].get();
-            // set output array ith dimension value
-            oDims[x] = idxArrs[x].elements();
         }
     }
 
-    Array<T> out = createEmptyArray<T>(oDims);
-    if (oDims.elements() == 0) { return out; }
-
-    kernel::index<T>(out, in, p);
-
-    return out;
+    kernel::assign<T>(out, rhs, p);
 }
 
-#define INSTANTIATE(T) \
-    template Array<T> index<T>(const Array<T>& in, const af_index_t idxrs[]);
+#define INSTANTIATE(T)                                                \
+    template void assign<T>(Array<T> & out, const af_index_t idxrs[], \
+                            const Array<T>& rhs);
 
 INSTANTIATE(cdouble)
 INSTANTIATE(double)
 INSTANTIATE(cfloat)
 INSTANTIATE(float)
-INSTANTIATE(uint)
 INSTANTIATE(int)
-INSTANTIATE(uintl)
+INSTANTIATE(uint)
 INSTANTIATE(intl)
-INSTANTIATE(uchar)
+INSTANTIATE(uintl)
 INSTANTIATE(char)
-INSTANTIATE(ushort)
+INSTANTIATE(uchar)
 INSTANTIATE(short)
+INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 }  // namespace cuda

@@ -19,6 +19,13 @@
 #include <unordered_map>
 #include <vector>
 
+enum class kJITHeuristics {
+    Pass                = 0, /* no eval necessary */
+    TreeHeight          = 1, /* eval due to jit tree height */
+    KernelParameterSize = 2, /* eval due to many kernel parameters */
+    MemoryPressure      = 3  /* eval due to memory pressure */
+};
+
 namespace common {
 class Node;
 struct Node_ids;

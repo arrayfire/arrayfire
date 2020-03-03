@@ -30,20 +30,7 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
 
     dim_t nDims = iDims.ndims();
 
-    switch (dim) {
-        case 0:
-            kernel::lookup<in_t, idx_t, 0>(out, input, indices, nDims);
-            break;
-        case 1:
-            kernel::lookup<in_t, idx_t, 1>(out, input, indices, nDims);
-            break;
-        case 2:
-            kernel::lookup<in_t, idx_t, 2>(out, input, indices, nDims);
-            break;
-        case 3:
-            kernel::lookup<in_t, idx_t, 3>(out, input, indices, nDims);
-            break;
-    }
+    kernel::lookup<in_t, idx_t>(out, input, indices, nDims, dim);
 
     return out;
 }

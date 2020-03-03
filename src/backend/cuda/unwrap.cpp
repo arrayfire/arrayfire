@@ -7,10 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <unwrap.hpp>
+
 #include <Array.hpp>
 #include <err_cuda.hpp>
 #include <kernel/unwrap.hpp>
-#include <unwrap.hpp>
+
 #include <stdexcept>
 
 namespace cuda {

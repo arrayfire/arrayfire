@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <kernel/sparse.hpp>
 #include <sparse.hpp>
 
 #include <arith.hpp>
@@ -16,6 +15,7 @@
 #include <complex.hpp>
 #include <copy.hpp>
 #include <cusparse.hpp>
+#include <kernel/sparse.hpp>
 #include <lookup.hpp>
 #include <math.hpp>
 #include <platform.hpp>

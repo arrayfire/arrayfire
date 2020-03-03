@@ -7,17 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/err_common.hpp>
 #include <lu.hpp>
 
 #include <common/err_common.hpp>
 #include <copy.hpp>
 #include <cusolverDn.hpp>
-#include <math.hpp>
+#include <kernel/lu_split.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
 
-#include <kernel/lu_split.hpp>
+#include <algorithm>
 
 namespace cuda {
 
@@ -103,8 +102,8 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
     pivot            = lu_inplace(in_copy);
 
     // SPLIT into lower and upper
-    dim4 ldims(M, min(M, N));
-    dim4 udims(min(M, N), N);
+    dim4 ldims(M, std::min(M, N));
+    dim4 udims(std::min(M, N), N);
     lower = createEmptyArray<T>(ldims);
     upper = createEmptyArray<T>(udims);
     kernel::lu_split<T>(lower, upper, in_copy);
@@ -116,7 +115,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     int M      = iDims[0];
     int N      = iDims[1];
 
-    Array<int> pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
+    Array<int> pivot = createEmptyArray<int>(af::dim4(std::min(M, N), 1, 1, 1));
 
     int lwork = 0;
 

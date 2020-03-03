@@ -142,7 +142,7 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     rhs.eval();
     af::storage sfmt = lhs.getStorage();
 
-    auto desc = make_handle<cusparseMatDescr_t>();
+    auto desc        = make_handle<cusparseMatDescr_t>();
     const dim4 ldims = lhs.dims();
 
     const int M = ldims[0];
