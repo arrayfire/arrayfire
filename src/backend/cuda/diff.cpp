@@ -8,20 +8,18 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <common/half.hpp>
+#include <diff.hpp>
 #include <err_cuda.hpp>
-#include <kernel/tile.hpp>
-#include <tile.hpp>
+#include <kernel/diff.hpp>
 #include <stdexcept>
 
-using common::half;
-
 namespace cuda {
+
 template<typename T>
-Array<T> tile(const Array<T> &in, const af::dim4 &tileDims) {
+Array<T> diff(const Array<T> &in, const int dim, const bool isDiff2) {
     const af::dim4 iDims = in.dims();
     af::dim4 oDims       = iDims;
-    oDims *= tileDims;
+    oDims[dim] -= (isDiff2 + 1);
 
     if (iDims.elements() == 0 || oDims.elements() == 0) {
         AF_ERROR("Elements are 0", AF_ERR_SIZE);
@@ -29,13 +27,24 @@ Array<T> tile(const Array<T> &in, const af::dim4 &tileDims) {
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    kernel::tile<T>(out, in);
+    kernel::diff<T>(out, in, in.ndims(), dim, isDiff2);
 
     return out;
 }
 
-#define INSTANTIATE(T) \
-    template Array<T> tile<T>(const Array<T> &in, const af::dim4 &tileDims);
+template<typename T>
+Array<T> diff1(const Array<T> &in, const int dim) {
+    return diff<T>(in, dim, false);
+}
+
+template<typename T>
+Array<T> diff2(const Array<T> &in, const int dim) {
+    return diff<T>(in, dim, true);
+}
+
+#define INSTANTIATE(T)                                             \
+    template Array<T> diff1<T>(const Array<T> &in, const int dim); \
+    template Array<T> diff2<T>(const Array<T> &in, const int dim);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -49,6 +58,5 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
-INSTANTIATE(half)
 
 }  // namespace cuda

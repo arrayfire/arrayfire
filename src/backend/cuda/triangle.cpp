@@ -6,12 +6,13 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#include <kernel/triangle.hpp>
+
 #include <triangle.hpp>
 
 #include <Array.hpp>
-#include <af/dim4.hpp>
 #include <common/half.hpp>
+#include <kernel/triangle.hpp>
+#include <af/dim4.hpp>
 
 using af::dim4;
 using common::half;
@@ -20,7 +21,7 @@ namespace cuda {
 
 template<typename T, bool is_upper, bool is_unit_diag>
 void triangle(Array<T> &out, const Array<T> &in) {
-    kernel::triangle<T, is_upper, is_unit_diag>(out, in);
+    kernel::triangle<T>(out, in, is_upper, is_unit_diag);
 }
 
 template<typename T, bool is_upper, bool is_unit_diag>
@@ -56,4 +57,5 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(half)
+
 }  // namespace cuda

@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <err_cuda.hpp>
 #include <common/half.hpp>
+#include <err_cuda.hpp>
 #include <join.hpp>
 #include <kernel/join.hpp>
 #include <stdexcept>
@@ -17,13 +17,13 @@
 using common::half;
 
 namespace cuda {
-template<int dim>
-af::dim4 calcOffset(const af::dim4 dims) {
+
+af::dim4 calcOffset(const af::dim4 dims, const int dim) {
     af::dim4 offset;
-    offset[0] = (dim == 0) ? dims[0] : 0;
-    offset[1] = (dim == 1) ? dims[1] : 0;
-    offset[2] = (dim == 2) ? dims[2] : 0;
-    offset[3] = (dim == 3) ? dims[3] : 0;
+    offset[0] = (dim == 0) * dims[0];
+    offset[1] = (dim == 1) * dims[1];
+    offset[2] = (dim == 2) * dims[2];
+    offset[3] = (dim == 3) * dims[3];
     return offset;
 }
 
@@ -47,24 +47,8 @@ Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
 
     af::dim4 zero(0, 0, 0, 0);
 
-    switch (dim) {
-        case 0:
-            kernel::join<Tx, Tx, 0>(out, first, zero);
-            kernel::join<Tx, Ty, 0>(out, second, calcOffset<0>(fdims));
-            break;
-        case 1:
-            kernel::join<Tx, Tx, 1>(out, first, zero);
-            kernel::join<Tx, Ty, 1>(out, second, calcOffset<1>(fdims));
-            break;
-        case 2:
-            kernel::join<Tx, Tx, 2>(out, first, zero);
-            kernel::join<Tx, Ty, 2>(out, second, calcOffset<2>(fdims));
-            break;
-        case 3:
-            kernel::join<Tx, Tx, 3>(out, first, zero);
-            kernel::join<Tx, Ty, 3>(out, second, calcOffset<3>(fdims));
-            break;
-    }
+    kernel::join<Tx, Tx>(out, first, zero, dim);
+    kernel::join<Tx, Ty>(out, second, calcOffset(fdims, dim), dim);
 
     return out;
 }
@@ -75,35 +59,10 @@ void join_wrapper(const int dim, Array<T> &out,
     af::dim4 zero(0, 0, 0, 0);
     af::dim4 d = zero;
 
-    switch (dim) {
-        case 0:
-            kernel::join<T, T, 0>(out, inputs[0], zero);
-            for (int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                kernel::join<T, T, 0>(out, inputs[i], calcOffset<0>(d));
-            }
-            break;
-        case 1:
-            kernel::join<T, T, 1>(out, inputs[0], zero);
-            for (int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                kernel::join<T, T, 1>(out, inputs[i], calcOffset<1>(d));
-            }
-            break;
-        case 2:
-            kernel::join<T, T, 1>(out, inputs[0], zero);
-            for (int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                kernel::join<T, T, 2>(out, inputs[i], calcOffset<2>(d));
-            }
-            break;
-        case 3:
-            kernel::join<T, T, 3>(out, inputs[0], zero);
-            for (int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                kernel::join<T, T, 3>(out, inputs[i], calcOffset<3>(d));
-            }
-            break;
+    kernel::join<T, T>(out, inputs[0], zero, dim);
+    for (int i = 1; i < n_arrays; i++) {
+        d += inputs[i - 1].dims();
+        kernel::join<T, T>(out, inputs[i], calcOffset(d, dim), dim);
     }
 }
 

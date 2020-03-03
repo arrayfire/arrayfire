@@ -10,19 +10,24 @@
 #include <nvrtc/cache.hpp>
 
 #include <common/Logger.hpp>
+#include <common/internal_enums.hpp>
 #include <device_manager.hpp>
 #include <kernel_headers/jit_cuh.hpp>
 #include <nvrtc_kernel_headers/Param_hpp.hpp>
+#include <nvrtc_kernel_headers/assign_kernel_param_hpp.hpp>
 #include <nvrtc_kernel_headers/backend_hpp.hpp>
 #include <nvrtc_kernel_headers/cuComplex_h.hpp>
 #include <nvrtc_kernel_headers/cuda_fp16_h.hpp>
 #include <nvrtc_kernel_headers/cuda_fp16_hpp.hpp>
 #include <nvrtc_kernel_headers/defines_h.hpp>
+#include <nvrtc_kernel_headers/dims_param_hpp.hpp>
 #include <nvrtc_kernel_headers/half_hpp.hpp>
+#include <nvrtc_kernel_headers/internal_enums_hpp.hpp>
 #include <nvrtc_kernel_headers/interp_hpp.hpp>
 #include <nvrtc_kernel_headers/kernel_type_hpp.hpp>
 #include <nvrtc_kernel_headers/math_constants_h.hpp>
 #include <nvrtc_kernel_headers/math_hpp.hpp>
+#include <nvrtc_kernel_headers/minmax_op_hpp.hpp>
 #include <nvrtc_kernel_headers/ops_hpp.hpp>
 #include <nvrtc_kernel_headers/optypes_hpp.hpp>
 #include <nvrtc_kernel_headers/shared_hpp.hpp>
@@ -101,6 +106,7 @@ using kc_t = map<string, Kernel>;
         char *logptr = log.get();                                       \
         nvrtcGetProgramLog(prog, logptr);                               \
         logptr[logSize] = '\x0';                                        \
+        puts(logptr);                                                   \
         AF_TRACE("NVRTC API Call: {}\nError Message: {}", #fn, logptr); \
         AF_ERROR("NVRTC ERROR", AF_ERR_INTERNAL);                       \
     } while (0)
@@ -182,6 +188,10 @@ Kernel buildKernel(const int device, const string &nameExpr,
             "af/defines.h",
             "af/version.h",
             "utility.hpp",
+            "assign_kernel_param.hpp",
+            "dims_param.hpp",
+            "common/internal_enums.hpp",
+            "minmax_op.hpp",
         };
 
         constexpr size_t NumHeaders = extent<decltype(includeNames)>::value;
@@ -209,6 +219,10 @@ Kernel buildKernel(const int device, const string &nameExpr,
             string(defines_h, defines_h_len),
             string(version_h, version_h_len),
             string(utility_hpp, utility_hpp_len),
+            string(assign_kernel_param_hpp, assign_kernel_param_hpp_len),
+            string(dims_param_hpp, dims_param_hpp_len),
+            string(internal_enums_hpp, internal_enums_hpp_len),
+            string(minmax_op_hpp, minmax_op_hpp_len),
         }};
 
         static const char *headers[] = {
@@ -223,7 +237,9 @@ Kernel buildKernel(const int device, const string &nameExpr,
             sourceStrings[16].c_str(), sourceStrings[17].c_str(),
             sourceStrings[18].c_str(), sourceStrings[19].c_str(),
             sourceStrings[20].c_str(), sourceStrings[21].c_str(),
-            sourceStrings[22].c_str(),
+            sourceStrings[22].c_str(), sourceStrings[23].c_str(),
+            sourceStrings[24].c_str(), sourceStrings[25].c_str(),
+            sourceStrings[26].c_str(),
         };
         NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name,
                                        NumHeaders, headers, includeNames));
@@ -537,6 +553,22 @@ string toString(af_flux_function p) {
     switch (p) {
         CASE_STMT(AF_FLUX_QUADRATIC);
         CASE_STMT(AF_FLUX_EXPONENTIAL);
+    }
+#undef CASE_STMT
+    return retVal;
+}
+
+template<>
+string toString(AF_BATCH_KIND p) {
+    const char *retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (p) {
+        CASE_STMT(AF_BATCH_NONE);
+        CASE_STMT(AF_BATCH_LHS);
+        CASE_STMT(AF_BATCH_RHS);
+        CASE_STMT(AF_BATCH_SAME);
+        CASE_STMT(AF_BATCH_DIFF);
     }
 #undef CASE_STMT
     return retVal;
