@@ -7,11 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <err_cuda.hpp>
+#include <fast.hpp>
+
+#include <LookupTable1D.hpp>
 #include <kernel/fast.hpp>
+#include <kernel/fast_lut.hpp>
 #include <af/dim4.hpp>
-#include <af/features.h>
+
+#include <mutex>
 
 using af::dim4;
 using af::features;
@@ -28,8 +31,14 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     float *d_y_out;
     float *d_score_out;
 
+    // TODO(pradeep) Figure out a better way to create lut Array only once
+    const Array<unsigned char> lut = createHostDataArray(
+        af::dim4(sizeof(FAST_LUT) / sizeof(unsigned char)), FAST_LUT);
+
+    LookupTable1D<unsigned char> fastLUT(lut);
+
     kernel::fast<T>(&nfeat, &d_x_out, &d_y_out, &d_score_out, in, thr,
-                    arc_length, non_max, feature_ratio, edge);
+                    arc_length, non_max, feature_ratio, edge, fastLUT);
 
     if (nfeat > 0) {
         const dim4 out_dims(nfeat);
@@ -38,7 +47,6 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
         y_out     = createDeviceDataArray<float>(out_dims, d_y_out);
         score_out = createDeviceDataArray<float>(out_dims, d_score_out);
     }
-
     return nfeat;
 }
 
