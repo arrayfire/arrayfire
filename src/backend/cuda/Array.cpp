@@ -34,6 +34,18 @@ using std::shared_ptr;
 using std::vector;
 
 namespace cuda {
+
+template<typename T>
+void verifyTypeSupport() {
+    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+        !isDoubleSupported(getActiveDeviceId())) {
+        AF_ERROR("Double precision not supported", AF_ERR_NO_DBL);
+    } else if (std::is_same<T, common::half>::value &&
+               !isHalfSupported(getActiveDeviceId())) {
+        AF_ERROR("Half precision not supported", AF_ERR_NO_HALF);
+    }
+}
+
 template<typename T>
 Node_ptr bufferNodePtr() {
     return Node_ptr(new BufferNode<T>(getFullName<T>(), shortname<T>(true)));
@@ -302,12 +314,14 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
 
 template<typename T>
 Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
+    verifyTypeSupport<T>();
     Array<T> out = Array<T>(dims, node);
     return out;
 }
 
 template<typename T>
 Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
+    verifyTypeSupport<T>();
     bool is_device   = false;
     bool copy_device = false;
     return Array<T>(dims, data, is_device, copy_device);
@@ -315,6 +329,7 @@ Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
 
 template<typename T>
 Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
+    verifyTypeSupport<T>();
     bool is_device   = true;
     bool copy_device = false;
     return Array<T>(dims, static_cast<T *>(data), is_device, copy_device);
@@ -322,11 +337,13 @@ Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
 
 template<typename T>
 Array<T> createValueArray(const dim4 &dims, const T &value) {
+    verifyTypeSupport<T>();
     return createScalarNode<T>(dims, value);
 }
 
 template<typename T>
 Array<T> createEmptyArray(const dim4 &dims) {
+    verifyTypeSupport<T>();
     return Array<T>(dims);
 }
 
