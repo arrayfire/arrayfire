@@ -39,6 +39,7 @@ cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_ta
 message(STATUS "CUDA_architecture_build_targets: ${CUDA_architecture_build_targets}")
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};${cuda_architecture_flags})
+
 if(${CUDA_SEPARABLE_COMPILATION})
   # Enable relocatable device code generation for separable
   # compilation which is in turn required for any device linking done.
@@ -245,6 +246,7 @@ include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
 
 cuda_add_library(afcuda
+    ${thrust_sort_sources}
     sort.hpp
 
     all.cu
@@ -551,11 +553,18 @@ cuda_add_library(afcuda
 
     ${scan_by_key_sources}
 
-    OPTIONS ${platform_flags} ${cuda_cxx_flags} -Xcudafe \"--diag_suppress=1427\"
+    OPTIONS
+    ${platform_flags}
+    ${cuda_cxx_flags}
+    -Xcudafe \"--diag_suppress=1427\"
   )
 
 arrayfire_set_default_cxx_flags(afcuda)
 
+# NOTE: Do not add additional CUDA specific definitions here. Add it to the
+# cxx_definitions variable above. cxx_definitions is used to propigate
+# definitions to the scan_by_key and thrust_sort_by_key targets as well as the
+# cuda library above.
 target_compile_options(afcuda PRIVATE ${cxx_definitions})
 
 add_library(ArrayFire::afcuda ALIAS afcuda)
@@ -594,7 +603,6 @@ target_link_libraries(afcuda
     c_api_interface
     cpp_api_interface
     afcommon_interface
-    cuda_thrust_sort_by_key
     ${CUDA_nvrtc_LIBRARY}
     ${CUDA_CUBLAS_LIBRARIES}
     ${CUDA_CUFFT_LIBRARIES}
