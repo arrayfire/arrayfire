@@ -375,6 +375,7 @@ cuda_add_library(afcuda
 
     Array.cpp
     Array.hpp
+    LookupTable1D.hpp
     Param.hpp
     anisotropic_diffusion.hpp
     approx.hpp
