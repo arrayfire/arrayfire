@@ -236,9 +236,17 @@ bool isDoubleSupported(int device) {
 }
 
 bool isHalfSupported(int device) {
-    auto prop     = getDeviceProp(device);
-    float compute = prop.major * 1000 + prop.minor * 10;
-    return compute >= 5030;
+    std::array<bool, DeviceManager::MAX_DEVICES> half_supported = []() {
+        std::array<bool, DeviceManager::MAX_DEVICES> out;
+        int count = getDeviceCount();
+        for (int i = 0; i < count; i++) {
+            auto prop     = getDeviceProp(i);
+            float compute = prop.major * 1000 + prop.minor * 10;
+            out[i]        = compute >= 5030;
+        }
+        return out;
+    }();
+    return half_supported[device];
 }
 
 void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
