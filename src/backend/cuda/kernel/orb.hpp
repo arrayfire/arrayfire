@@ -9,28 +9,26 @@
 
 #pragma once
 
+#include <LookupTable1D.hpp>
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
-#include <err_cuda.hpp>
+#include <kernel/convolve.hpp>
+#include <kernel/orb_patch.hpp>
+#include <kernel/range.hpp>
+#include <kernel/sort_by_key.hpp>
 #include <memory.hpp>
-
-#include "convolve.hpp"
-#include "orb_patch.hpp"
-#include "range.hpp"
-#include "sort_by_key.hpp"
 
 using std::unique_ptr;
 using std::vector;
 
 namespace cuda {
-
 namespace kernel {
 
-static const int THREADS   = 256;
-static const int THREADS_X = 16;
-static const int THREADS_Y = 16;
+constexpr int THREADS   = 256;
+constexpr int THREADS_X = 16;
+constexpr int THREADS_Y = 16;
 
-static const float PI_VAL = 3.14159265358979323846f;
+constexpr float PI_VAL = 3.14159265358979323846f;
 
 template<typename T>
 void gaussian1D(T* out, const int dim, double sigma = 0.0) {
@@ -213,12 +211,17 @@ inline __device__ T get_pixel(unsigned x, unsigned y, const float ori,
     return image.ptr[x * image.dims[0] + y];
 }
 
+inline __device__ int lookup(const int n, cudaTextureObject_t tex) {
+    return tex1Dfetch<int>(tex, n);
+}
+
 template<typename T>
 __global__ void extract_orb(unsigned* desc_out, const unsigned n_feat,
                             float* x_in_out, float* y_in_out,
                             const float* ori_in, float* size_out,
                             CParam<T> image, const float scl,
-                            const unsigned patch_size) {
+                            const unsigned patch_size,
+                            cudaTextureObject_t luTable) {
     unsigned f = blockDim.x * blockIdx.x + threadIdx.x;
 
     if (f < n_feat) {
@@ -240,13 +243,13 @@ __global__ void extract_orb(unsigned* desc_out, const unsigned n_feat,
             for (unsigned j = 0; j < 16; j++) {
                 // Get position from distribution pattern and values of points
                 // p1 and p2
-                int dist_x = d_ref_pat[i * 16 * 4 + j * 4];
-                int dist_y = d_ref_pat[i * 16 * 4 + j * 4 + 1];
+                int dist_x = lookup(i * 16 * 4 + j * 4, luTable);
+                int dist_y = lookup(i * 16 * 4 + j * 4 + 1, luTable);
                 T p1       = get_pixel(x, y, ori, size, dist_x, dist_y, image,
                                  patch_size);
 
-                dist_x = d_ref_pat[i * 16 * 4 + j * 4 + 2];
-                dist_y = d_ref_pat[i * 16 * 4 + j * 4 + 3];
+                dist_x = lookup(i * 16 * 4 + j * 4 + 2, luTable);
+                dist_y = lookup(i * 16 * 4 + j * 4 + 3, luTable);
                 T p2   = get_pixel(x, y, ori, size, dist_x, dist_y, image,
                                  patch_size);
 
@@ -274,7 +277,8 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
          vector<float*>& d_y_pyr, vector<unsigned>& lvl_best,
          vector<float>& lvl_scl, vector<Array<T>>& img_pyr,
          const float fast_thr, const unsigned max_feat, const float scl_fctr,
-         const unsigned levels, const bool blur_img) {
+         const unsigned levels, const bool blur_img,
+         const LookupTable1D<int>& luTable) {
     UNUSED(fast_thr);
     UNUSED(max_feat);
     UNUSED(scl_fctr);
@@ -381,7 +385,7 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
         blocks  = dim3(divup(feat_pyr[i], threads.x), 1);
         CUDA_LAUNCH((extract_orb<T>), blocks, threads, d_desc_lvl, feat_pyr[i],
                     d_x_lvl, d_y_lvl, d_ori_lvl, d_size_lvl, img_pyr[i],
-                    lvl_scl[i], patch_size);
+                    lvl_scl[i], patch_size, luTable.get());
         POST_LAUNCH_CHECK();
 
         // Store results to pyramids
@@ -446,5 +450,4 @@ void orb(unsigned* out_feat, float** d_x, float** d_y, float** d_score,
 }
 
 }  // namespace kernel
-
 }  // namespace cuda

@@ -10,19 +10,18 @@
 #pragma once
 
 namespace cuda {
-namespace kernel {
 
 // Reference pattern, generated for a patch size of 31x31, as suggested by
 // original ORB paper
-#define REF_PAT_SIZE 31
-#define REF_PAT_SAMPLES 256
-#define REF_PAT_COORDS 4
-#define REF_PAT_LENGTH (REF_PAT_SAMPLES * REF_PAT_COORDS)
+constexpr unsigned REF_PAT_SIZE    = 31;
+constexpr unsigned REF_PAT_SAMPLES = 256;
+constexpr unsigned REF_PAT_COORDS  = 4;
+constexpr unsigned REF_PAT_LENGTH  = (REF_PAT_SAMPLES * REF_PAT_COORDS);
 
 // Current reference pattern was borrowed from OpenCV, a randomly generated
 // pattern will not achieve same quality as it must be trained like described
 // in sections 4.2 and 4.3 of the original ORB paper.
-__constant__ int d_ref_pat[REF_PAT_LENGTH] = {
+int d_ref_pat[REF_PAT_LENGTH] = {
     8,   -3,  9,   5,   4,   2,   7,   -12, -11, 9,   -8,  2,   7,   -12, 12,
     -13, 2,   -13, 2,   12,  1,   -7,  1,   6,   -2,  -10, -2,  -4,  -13, -13,
     -11, -8,  -13, -3,  -12, -9,  10,  4,   11,  9,   -13, -8,  -8,  -9,  -11,
@@ -93,7 +92,5 @@ __constant__ int d_ref_pat[REF_PAT_LENGTH] = {
     4,   -10, 9,   7,   3,   12,  4,   9,   -7,  10,  -2,  7,   0,   12,  -2,
     -1,  -6,  0,   -11,
 };
-
-}  // namespace kernel
 
 }  // namespace cuda

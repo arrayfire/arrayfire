@@ -7,12 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <orb.hpp>
+
 #include <Array.hpp>
+#include <LookupTable1D.hpp>
 #include <err_cuda.hpp>
 #include <fast_pyramid.hpp>
 #include <kernel/orb.hpp>
 #include <kernel/orb_patch.hpp>
 #include <af/dim4.hpp>
+
+#include <type_traits>
 
 using af::dim4;
 
@@ -52,10 +57,16 @@ unsigned orb(Array<float> &x, Array<float> &y, Array<float> &score,
     float *size_out;
     unsigned *desc_out;
 
-    kernel::orb<T, convAccT>(&nfeat_out, &x_out, &y_out, &score_out,
-                             &orientation_out, &size_out, &desc_out, feat_pyr,
-                             d_x_pyr, d_y_pyr, lvl_best, lvl_scl, img_pyr,
-                             fast_thr, max_feat, scl_fctr, levels, blur_img);
+    // TODO(pradeep) Figure out a better way to create lut Array only once
+    const Array<int> lut = createHostDataArray(
+        af::dim4(sizeof(d_ref_pat) / sizeof(int)), d_ref_pat);
+
+    LookupTable1D<int> orbLUT(lut);
+
+    kernel::orb<T, convAccT>(
+        &nfeat_out, &x_out, &y_out, &score_out, &orientation_out, &size_out,
+        &desc_out, feat_pyr, d_x_pyr, d_y_pyr, lvl_best, lvl_scl, img_pyr,
+        fast_thr, max_feat, scl_fctr, levels, blur_img, orbLUT);
 
     if (nfeat_out > 0) {
         if (x_out == NULL || y_out == NULL || score_out == NULL ||
