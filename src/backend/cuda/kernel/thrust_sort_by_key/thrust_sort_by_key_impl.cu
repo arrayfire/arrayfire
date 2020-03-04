@@ -16,6 +16,8 @@
 
 namespace cuda {
 namespace kernel {
-INSTANTIATESBK_INST(SBK_TYPE)
-}
+// clang-format off
+@INSTANTIATESBK_INST@ ( @SBK_TYPE@ )
+// clang-format on
+}  // namespace kernel
 }  // namespace cuda
