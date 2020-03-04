@@ -9,14 +9,13 @@
 
 #pragma once
 
+#include <LookupTable1D.hpp>
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
-#include <err_cuda.hpp>
-#include <kernel/fast_lut.hpp>
+#include <kernel/shared.hpp>
 #include <math.hpp>
 #include <memory.hpp>
 #include <cub/block/block_reduce.cuh>
-#include "shared.hpp"
 
 namespace cuda {
 namespace kernel {
@@ -102,11 +101,16 @@ inline __device__ double abs_diff(const double x, const double y) {
     return fabs(x - y);
 }
 
+inline __device__ int lookup(const int n, cudaTextureObject_t tex) {
+    return (int)tex1Dfetch<unsigned char>(tex, n);
+}
+
 template<typename T, int arc_length>
 __device__ void locate_features_core(T *local_image, float *score,
                                      const unsigned idim0, const unsigned idim1,
                                      const float thr, int x, int y,
-                                     const unsigned edge) {
+                                     const unsigned edge,
+                                     cudaTextureObject_t luTable) {
     if (x >= idim0 - edge || y >= idim1 - edge) return;
 
     score[y * idim0 + x] = 0.f;
@@ -159,8 +163,8 @@ __device__ void locate_features_core(T *local_image, float *score,
 
     // Checks LUT to verify if there is a segment for which all pixels are much
     // brighter or much darker than central pixel p.
-    if ((int)FAST_LUT[bright] >= arc_length ||
-        (int)FAST_LUT[dark] >= arc_length)
+    if (lookup(bright, luTable) >= arc_length ||
+        lookup(dark, luTable) >= arc_length)
         score[x + idim0 * y] = max_val(s_bright, s_dark);
 }
 
@@ -187,7 +191,8 @@ __device__ void load_shared_image(CParam<T> in, T *local_image, unsigned ix,
 
 template<typename T, int arc_length>
 __global__ void locate_features(CParam<T> in, float *score, const float thr,
-                                const unsigned edge) {
+                                const unsigned edge,
+                                cudaTextureObject_t luTable) {
     unsigned ix = threadIdx.x;
     unsigned iy = threadIdx.y;
     unsigned bx = blockDim.x;
@@ -202,7 +207,7 @@ __global__ void locate_features(CParam<T> in, float *score, const float thr,
     load_shared_image(in, local_image_curr, ix, iy, bx, by, x, y, lx, ly, edge);
     __syncthreads();
     locate_features_core<T, arc_length>(local_image_curr, score, in.dims[0],
-                                        in.dims[1], thr, x, y, edge);
+                                        in.dims[1], thr, x, y, edge, luTable);
 }
 
 template<bool nonmax>
@@ -316,8 +321,8 @@ __global__ void get_features(float *x_out, float *y_out, float *score_out,
 template<typename T>
 void fast(unsigned *out_feat, float **x_out, float **y_out, float **score_out,
           const Array<T> &in, const float thr, const unsigned arc_length,
-          const unsigned nonmax, const float feature_ratio,
-          const unsigned edge) {
+          const unsigned nonmax, const float feature_ratio, const unsigned edge,
+          const LookupTable1D<unsigned char> &luTable) {
     dim4 indims             = in.dims();
     const unsigned max_feat = ceil(indims[0] * indims[1] * feature_ratio);
 
@@ -342,35 +347,43 @@ void fast(unsigned *out_feat, float **x_out, float **y_out, float **score_out,
     switch (arc_length) {
         case 9:
             CUDA_LAUNCH_SMEM((locate_features<T, 9>), blocks, threads,
-                             shared_size, in, d_score.get(), thr, edge);
+                             shared_size, in, d_score.get(), thr, edge,
+                             luTable.get());
             break;
         case 10:
             CUDA_LAUNCH_SMEM((locate_features<T, 10>), blocks, threads,
-                             shared_size, in, d_score.get(), thr, edge);
+                             shared_size, in, d_score.get(), thr, edge,
+                             luTable.get());
             break;
         case 11:
             CUDA_LAUNCH_SMEM((locate_features<T, 11>), blocks, threads,
-                             shared_size, in, d_score.get(), thr, edge);
+                             shared_size, in, d_score.get(), thr, edge,
+                             luTable.get());
             break;
         case 12:
             CUDA_LAUNCH_SMEM((locate_features<T, 12>), blocks, threads,
-                             shared_size, in, d_score.get(), thr, edge);
+                             shared_size, in, d_score.get(), thr, edge,
+                             luTable.get());
             break;
         case 13:
             CUDA_LAUNCH_SMEM((locate_features<T, 13>), blocks, threads,
-                             shared_size, in, d_score.get(), thr, edge);
+                             shared_size, in, d_score.get(), thr, edge,
+                             luTable.get());
             break;
         case 14:
             CUDA_LAUNCH_SMEM((locate_features<T, 14>), blocks, threads,
-                             shared_size, in, d_score.get(), thr, edge);
+                             shared_size, in, d_score.get(), thr, edge,
+                             luTable.get());
             break;
         case 15:
             CUDA_LAUNCH_SMEM((locate_features<T, 15>), blocks, threads,
-                             shared_size, in, d_score.get(), thr, edge);
+                             shared_size, in, d_score.get(), thr, edge,
+                             luTable.get());
             break;
         case 16:
             CUDA_LAUNCH_SMEM((locate_features<T, 16>), blocks, threads,
-                             shared_size, in, d_score.get(), thr, edge);
+                             shared_size, in, d_score.get(), thr, edge,
+                             luTable.get());
             break;
     }
 
