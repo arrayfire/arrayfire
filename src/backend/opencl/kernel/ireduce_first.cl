@@ -11,7 +11,8 @@ __kernel void ireduce_first_kernel(__global T *oData, KParam oInfo,
                                    __global uint *olData,
                                    const __global T *iData, KParam iInfo,
                                    const __global uint *ilData, uint groups_x,
-                                   uint groups_y, uint repeat) {
+                                   uint groups_y, uint repeat,
+                                   __global uint *rlenptr, KParam rlen) {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const uint lid  = lidy * get_local_size(0) + lidx;
@@ -37,6 +38,9 @@ __kernel void ireduce_first_kernel(__global T *oData, KParam oInfo,
     olData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
               yid * oInfo.strides[1] + oInfo.offset;
 
+    rlenptr += (rlenptr) ?  wid * oInfo.strides[3] + zid * oInfo.strides[2] +
+             yid * oInfo.strides[1] + oInfo.offset : 0;
+
     bool cond =
         (yid < iInfo.dims[1]) && (zid < iInfo.dims[2]) && (wid < iInfo.dims[3]);
 
@@ -44,7 +48,10 @@ __kernel void ireduce_first_kernel(__global T *oData, KParam oInfo,
     __local uint s_idx[THREADS_PER_GROUP];
 
     int last     = (xid + repeat * DIMX);
-    int lim      = last > iInfo.dims[0] ? iInfo.dims[0] : last;
+
+    int minlen = rlenptr ? min(*rlenptr, (uint)iInfo.dims[0]) : iInfo.dims[0];
+
+    int lim      = last > minlen ? minlen : last;
     T out_val    = init;
     uint out_idx = xid;
 

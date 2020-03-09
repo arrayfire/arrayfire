@@ -10,7 +10,8 @@
 __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
                                  __global uint *olData, const __global T *iData,
                                  KParam iInfo, const __global uint *ilData,
-                                 uint groups_x, uint groups_y, uint group_dim) {
+                                 uint groups_x, uint groups_y, uint group_dim,
+                                 __global uint *rlenptr, KParam rlen) {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const uint lid  = lidy * THREADS_X + lidx;
@@ -32,6 +33,9 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
              ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
     olData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
               ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
+
+    rlenptr += (rlenptr) ?  ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
+             ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset : 0;
     const uint id_dim_out = ids[kDim];
 
     ids[kDim] = ids[kDim] * get_local_size(1) + lidy;
@@ -56,7 +60,8 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     T out_val    = init;
     uint out_idx = id_dim_in;
 
-    if (is_valid && id_dim_in < iInfo.dims[kDim]) {
+    int minlen = rlenptr ? min(*rlenptr, (uint)iInfo.dims[kDim]) : iInfo.dims[kDim];
+    if (is_valid && id_dim_in < minlen) {
         out_val = *iData;
         if (!IS_FIRST) out_idx = *ilData;
     }

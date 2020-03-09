@@ -42,7 +42,7 @@ namespace kernel {
 template<typename T, af_op_t op>
 void ireduce_dim_launcher(Param out, cl::Buffer *oidx, Param in,
                           cl::Buffer *iidx, const int dim, const int threads_y,
-                          const bool is_first, const uint groups_all[4]) {
+                          const bool is_first, const uint groups_all[4], Param rlen) {
     std::string ref_name =
         std::string("ireduce_") + std::to_string(dim) + std::string("_") +
         std::string(dtype_traits<T>::getName()) + std::string("_") +
@@ -82,17 +82,17 @@ void ireduce_dim_launcher(Param out, cl::Buffer *oidx, Param in,
                    groups_all[1] * groups_all[3] * local[1]);
 
     auto ireduceOp = KernelFunctor<Buffer, KParam, Buffer, Buffer, KParam,
-                                   Buffer, uint, uint, uint>(*entry.ker);
+                                   Buffer, uint, uint, uint, Buffer, KParam>(*entry.ker);
 
     ireduceOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
               *oidx, *in.data, in.info, *iidx, groups_all[0], groups_all[1],
-              groups_all[dim]);
+              groups_all[dim], *rlen.data, rlen.info);
 
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename T, af_op_t op>
-void ireduce_dim(Param out, cl::Buffer *oidx, Param in, int dim) {
+void ireduce_dim(Param out, cl::Buffer *oidx, Param in, int dim, Param rlen) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
     uint threads_x = THREADS_X;
 
@@ -119,13 +119,13 @@ void ireduce_dim(Param out, cl::Buffer *oidx, Param in, int dim) {
     }
 
     ireduce_dim_launcher<T, op>(tmp, tidx, in, tidx, dim, threads_y, true,
-                                groups_all);
+                                groups_all, rlen);
 
     if (groups_all[dim] > 1) {
         groups_all[dim] = 1;
 
         ireduce_dim_launcher<T, op>(out, oidx, tmp, tidx, dim, threads_y, false,
-                                    groups_all);
+                                    groups_all, rlen);
         bufferFree(tmp.data);
         bufferFree(tidx);
     }
@@ -135,7 +135,7 @@ template<typename T, af_op_t op>
 void ireduce_first_launcher(Param out, cl::Buffer *oidx, Param in,
                             cl::Buffer *iidx, const int threads_x,
                             const bool is_first, const uint groups_x,
-                            const uint groups_y) {
+                            const uint groups_y, Param rlen) {
     std::string ref_name =
         std::string("ireduce_0_") + std::string(dtype_traits<T>::getName()) +
         std::string("_") + std::to_string(op) + std::string("_") +
@@ -177,16 +177,16 @@ void ireduce_first_launcher(Param out, cl::Buffer *oidx, Param in,
     uint repeat = divup(in.info.dims[0], (local[0] * groups_x));
 
     auto ireduceOp = KernelFunctor<Buffer, KParam, Buffer, Buffer, KParam,
-                                   Buffer, uint, uint, uint>(*entry.ker);
+                                   Buffer, uint, uint, uint, Buffer, KParam>(*entry.ker);
 
     ireduceOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-              *oidx, *in.data, in.info, *iidx, groups_x, groups_y, repeat);
+              *oidx, *in.data, in.info, *iidx, groups_x, groups_y, repeat, *rlen.data, rlen.info);
 
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename T, af_op_t op>
-void ireduce_first(Param out, cl::Buffer *oidx, Param in) {
+void ireduce_first(Param out, cl::Buffer *oidx, Param in, Param rlen) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_GROUP);
     uint threads_y = THREADS_PER_GROUP / threads_x;
@@ -209,11 +209,11 @@ void ireduce_first(Param out, cl::Buffer *oidx, Param in) {
     }
 
     ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true,
-                                  groups_x, groups_y);
+                                  groups_x, groups_y, rlen);
 
     if (groups_x > 1) {
         ireduce_first_launcher<T, op>(out, oidx, tmp, tidx, threads_x, false, 1,
-                                      groups_y);
+                                      groups_y, rlen);
 
         bufferFree(tmp.data);
         bufferFree(tidx);
@@ -221,11 +221,11 @@ void ireduce_first(Param out, cl::Buffer *oidx, Param in) {
 }
 
 template<typename T, af_op_t op>
-void ireduce(Param out, cl::Buffer *oidx, Param in, int dim) {
+void ireduce(Param out, cl::Buffer *oidx, Param in, int dim, Param rlen) {
     if (dim == 0)
-        return ireduce_first<T, op>(out, oidx, in);
+        return ireduce_first<T, op>(out, oidx, in, rlen);
     else
-        return ireduce_dim<T, op>(out, oidx, in, dim);
+        return ireduce_dim<T, op>(out, oidx, in, dim, rlen);
 }
 
 #if defined(__GNUC__) || defined(__GNUG__)
@@ -313,8 +313,10 @@ T ireduce_all(uint *loc, Param in) {
         int tmp_elements = tmp.elements();
         cl::Buffer *tidx = bufferAlloc(tmp_elements * sizeof(uint));
 
+        Param rlen;
+        rlen.data = nullptr;
         ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true,
-                                      groups_x, groups_y);
+                                      groups_x, groups_y, rlen);
 
         unique_ptr<T[]> h_ptr(new T[tmp_elements]);
         unique_ptr<uint[]> h_iptr(new uint[tmp_elements]);
@@ -362,11 +364,6 @@ T ireduce_all(uint *loc, Param in) {
         *loc = Op.m_idx;
         return Op.m_val;
     }
-}
-
-template<typename T, af_op_t op>
-void rreduce(Param out, cl::Buffer *oidx, Param in, int dim, const cl::Buffer *rlen) {
-    //TODO: @umar456
 }
 
 }  // namespace kernel
