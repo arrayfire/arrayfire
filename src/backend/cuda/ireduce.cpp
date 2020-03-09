@@ -15,7 +15,6 @@
 #undef _GLIBCXX_USE_INT128
 #include <err_cuda.hpp>
 #include <kernel/ireduce.hpp>
-#include <kernel/rreduce.hpp>
 
 #include <complex>
 
@@ -27,13 +26,14 @@ namespace cuda {
 template<af_op_t op, typename T>
 void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
              const int dim) {
-    kernel::ireduce<T, op>(out, loc.get(), in, dim);
+    Array<uint> rlen = createEmptyArray<uint>(af::dim4(0));
+    kernel::ireduce<T, op>(out, loc.get(), in, dim, rlen);
 }
 
 template<af_op_t op, typename T>
 void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
              const int dim, const Array<uint> &rlen) {
-    kernel::rreduce<T, op>(out, loc.get(), in, dim, rlen);
+    kernel::ireduce<T, op>(out, loc.get(), in, dim, rlen);
 }
 
 template<af_op_t op, typename T>
