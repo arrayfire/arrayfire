@@ -363,6 +363,12 @@ T ireduce_all(uint *loc, Param in) {
         return Op.m_val;
     }
 }
+
+template<typename T, af_op_t op>
+void rreduce(Param out, cl::Buffer *oidx, Param in, int dim, const cl::Buffer *rlen) {
+    //TODO: @umar456
+}
+
 }  // namespace kernel
 
 }  // namespace opencl

@@ -216,6 +216,23 @@ namespace af
                         const int dim = -1);
 #endif
 
+#if AF_API_VERSION >= 37
+    /**
+       C++ Interface for ragged max values in an array
+
+       \param[out] val will contain the maximum ragged values in \p in along \p dim according to \p ragged_len
+       \param[out] idx will contain the locations of the maximum ragged values in \p in along \p dim according to \p ragged_len
+       \param[in] in contains the input values to be reduced
+       \param[in] dim The dimension along which the max operation occurs
+       \param[in] ragged_len The number of elements to look at when reducing along \p dim
+
+       \ingroup reduce_func_max
+
+       \note NaN values are ignored
+    */
+    AFAPI void max(array &val, array &idx, const array &in, const int dim, const array &ragged_len);
+#endif
+
     /**
        C++ Interface for checking all true values in an array
 
@@ -836,6 +853,24 @@ extern "C" {
     AFAPI af_err af_max_by_key(af_array *keys_out, af_array *vals_out,
                                const af_array keys, const af_array vals,
                                const int dim);
+#endif
+
+#if AF_API_VERSION >= 37
+    /**
+       C Interface for finding ragged max values in an array
+
+       \param[out] val will contain the maximum ragged values in \p in along \p dim according to \p ragged_len
+       \param[out] idx will contain the locations of the maximum ragged values in \p in along \p dim according to \p ragged_len
+       \param[in] in contains the input values to be reduced
+       \param[in] dim The dimension along which the max operation occurs
+       \param[in] ragged_len The number of elements to look at when reducing along \p dim
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_max
+
+       \note NaN values are ignored
+    */
+    AFAPI af_err af_rmax(af_array *val, af_array *idx, const af_array in, const int dim, const af_array ragged_len);
 #endif
 
     /**

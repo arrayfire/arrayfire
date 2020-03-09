@@ -1843,3 +1843,53 @@ TEST(Reduce, SNIPPET_count_by_key_dim) {
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals);
 }
+
+TEST(RaggedMax, simple) {
+    const int testKeys[6]   = {1, 2, 3, 4, 5, 6};
+    const unsigned testVals[2] = {9, 2};
+
+    array arr(3, 2, testKeys);
+    array keys(1, 2, testVals);
+
+    af_print(arr);
+    af_print(keys);
+
+    array ragged_max, idx;
+    const int dim       = 0;
+    max(ragged_max, idx, arr, dim, keys);
+
+    af_print(ragged_max);
+    af_print(idx);
+
+    const dim4 goldSz(1, 2);
+    const vector<int> gold_reduced{ 3, 5 };
+    const vector<unsigned> gold_idx{ 2, 1 };
+
+    ASSERT_VEC_ARRAY_EQ(gold_reduced, goldSz, ragged_max);
+    ASSERT_VEC_ARRAY_EQ(gold_idx, goldSz, idx);
+}
+
+TEST(RaggedMax, simpleDim1) {
+    const int testKeys[8]   = {1, 2, 3, 4, 5, 6, 7, 8 };
+    const unsigned testVals[2] = {8, 2};
+
+    array arr(2, 4, testKeys);
+    array keys(2, 1, testVals);
+
+    af_print(arr);
+    af_print(keys);
+
+    array ragged_max, idx;
+    const int dim       = 1;
+    max(ragged_max, idx, arr, dim, keys);
+
+    af_print(ragged_max);
+    af_print(idx);
+
+    const dim4 goldSz(2, 1);
+    const vector<int> gold_reduced{ 7, 4 };
+    const vector<unsigned> gold_idx{ 3, 1 };
+
+    ASSERT_VEC_ARRAY_EQ(gold_reduced, goldSz, ragged_max);
+    ASSERT_VEC_ARRAY_EQ(gold_idx, goldSz, idx);
+}

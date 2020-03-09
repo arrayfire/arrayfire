@@ -39,6 +39,22 @@ void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
 }
 
 template<af_op_t op, typename T>
+void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
+             const int dim, const Array<uint> &rlen) {
+    dim4 odims                                           = in.dims();
+    odims[dim]                                           = 1;
+
+    printf("TODO CPU rreduce\n");
+    /*
+    static const ireduce_dim_func<op, T> ireduce_funcs[] = {
+        kernel::ireduce_dim<op, T, 1>(), kernel::ireduce_dim<op, T, 2>(),
+        kernel::ireduce_dim<op, T, 3>(), kernel::ireduce_dim<op, T, 4>()};
+
+    getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim);
+    */
+}
+
+template<af_op_t op, typename T>
 T ireduce_all(unsigned *loc, const Array<T> &in) {
     getQueue().sync();
 
@@ -72,6 +88,8 @@ T ireduce_all(unsigned *loc, const Array<T> &in) {
 #define INSTANTIATE(ROp, T)                                           \
     template void ireduce<ROp, T>(Array<T> & out, Array<uint> & loc,  \
                                   const Array<T> &in, const int dim); \
+    template void rreduce<ROp, T>(Array<T> & out, Array<uint> & loc,  \
+         const Array<T> &in, const int dim, const Array<uint> &rlen); \
     template T ireduce_all<ROp, T>(unsigned *loc, const Array<T> &in);
 
 // min

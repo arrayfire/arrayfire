@@ -752,6 +752,22 @@ static inline void ireduce(af_array *res, af_array *loc, const af_array in,
     *loc = getHandle(Loc);
 }
 
+template<af_op_t op, typename T>
+static inline void rreduce(af_array *res, af_array *loc, const af_array in,
+                           const int dim, const af_array ragged_len) {
+    const Array<T> In  = getArray<T>(in);
+    const Array<uint> Len = getArray<uint>(ragged_len);
+    dim4 odims        = In.dims();
+    odims[dim]        = 1;
+
+    Array<T> Res    = createEmptyArray<T>(odims);
+    Array<uint> Loc = createEmptyArray<uint>(odims);
+    rreduce<op, T>(Res, Loc, In, dim, Len);
+
+    *res = getHandle(Res);
+    *loc = getHandle(Loc);
+}
+
 template<af_op_t op>
 static af_err ireduce_common(af_array *val, af_array *idx, const af_array in,
                              const int dim) {
@@ -802,6 +818,68 @@ af_err af_imin(af_array *val, af_array *idx, const af_array in, const int dim) {
 
 af_err af_imax(af_array *val, af_array *idx, const af_array in, const int dim) {
     return ireduce_common<af_max_t>(val, idx, in, dim);
+}
+
+template<af_op_t op>
+static af_err rreduce_common(af_array *val, af_array *idx, const af_array in,
+                             const int dim, const af_array ragged_len) {
+    try {
+        ARG_ASSERT(3, dim >= 0);
+        ARG_ASSERT(3, dim < 4);
+
+        const ArrayInfo &in_info = getInfo(in);
+        ARG_ASSERT(2, in_info.ndims() > 0);
+
+        if (dim >= (int)in_info.ndims()) {
+            *val = retain(in);
+            *idx = createHandleFromValue<uint>(in_info.dims(), 0);
+            return AF_SUCCESS;
+        }
+
+        // TODO: make sure ragged_len.dims == in.dims(), except on reduced dim
+        const ArrayInfo &key_info = getInfo(ragged_len);
+        dim4 test_dim = in_info.dims();
+        test_dim[dim] = 1;
+        ARG_ASSERT(4, test_dim == key_info.dims());
+        ARG_ASSERT(4, test_dim == key_info.dims());
+
+
+        af_dtype keytype = key_info.getType();
+        //if(keytype != s32 && keytype != u32) { //TODO both integer types?
+        if(keytype != u32) {
+            TYPE_ERROR(4, keytype);
+        }
+
+        af_dtype type = in_info.getType();
+        af_array res, loc;
+
+        switch (type) {
+            case f32: rreduce<op, float>(&res, &loc, in, dim, ragged_len); break;
+            case f64: rreduce<op, double>(&res, &loc, in, dim, ragged_len); break;
+            case c32: rreduce<op, cfloat>(&res, &loc, in, dim, ragged_len); break;
+            case c64: rreduce<op, cdouble>(&res, &loc, in, dim, ragged_len); break;
+            case u32: rreduce<op, uint>(&res, &loc, in, dim, ragged_len); break;
+            case s32: rreduce<op, int>(&res, &loc, in, dim, ragged_len); break;
+            case u64: rreduce<op, uintl>(&res, &loc, in, dim, ragged_len); break;
+            case s64: rreduce<op, intl>(&res, &loc, in, dim, ragged_len); break;
+            case u16: rreduce<op, ushort>(&res, &loc, in, dim, ragged_len); break;
+            case s16: rreduce<op, short>(&res, &loc, in, dim, ragged_len); break;
+            case b8:  rreduce<op, char>(&res, &loc, in, dim, ragged_len); break;
+            case u8:  rreduce<op, uchar>(&res, &loc, in, dim, ragged_len); break;
+            case f16: rreduce<op, half>(&res, &loc, in, dim, ragged_len); break;
+            default: TYPE_ERROR(2, type);
+        }
+
+        std::swap(*val, res);
+        std::swap(*idx, loc);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_rmax(af_array *val, af_array *idx, const af_array in, const int dim, const af_array ragged_len) {
+    return rreduce_common<af_max_t>(val, idx, in, dim, ragged_len);
 }
 
 template<af_op_t op, typename T>
