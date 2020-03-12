@@ -13,7 +13,7 @@
 AFAPI af_err af_gemm(af_array *out, const af_mat_prop optLhs,
                      const af_mat_prop optRhs, const void *alpha,
                      const af_array lhs, const af_array rhs, const void *beta) {
-    CHECK_ARRAYS(out, lhs, rhs);
+    CHECK_ARRAYS(lhs, rhs);
     CALL(af_gemm, out, optLhs, optRhs, alpha, lhs, rhs, beta);
 }
 
