@@ -973,7 +973,7 @@ wide range of edges in images. A more in depth discussion on it can be found [he
 \defgroup image_func_iterative_deconv iterativeDeconv
 \ingroup imageflt_mat
 
-Iterative Deconvolution Algorithms
+\brief Iterative Deconvolution
 
 The following table shows the iteration update equations of the respective
 deconvolution algorithms.
@@ -981,22 +981,16 @@ deconvolution algorithms.
 <table>
 <tr><th>Algorithm</th><th>Update Equation</th></tr>
 <tr>
-  <td>VanCittert</td>
-  <td>
-    \f$ \hat{I}_{n} = \hat{I}_{n-1} + \alpha * (I - P \otimes \hat{I}_{n-1}) \f$
-  </td>
-</tr>
-<tr>
-  <td>Jansson-VanCittert</td>
-  <td>
-    \f$ \hat{I}_{n} = \hat{I}_{n-1} + \alpha * (1 - \frac{2*| \hat{I}_{n-1}-\frac{B}{2} |}{B}) * (I - P \otimes \hat{I}_{n-1}) \f$
-  </td>
-</tr>
-<tr>
     <td>LandWeber</td>
     <td>
         \f$ \hat{I}_{n} = \hat{I}_{n-1} + \alpha * P^T \otimes (I - P \otimes \hat{I}_{n-1}) \f$
     </td>
+</tr>
+<tr>
+  <td>Richardson-Lucy</td>
+  <td>
+    \f$ \hat{I}_{n} = \hat{I}_{n-1} . ( \frac{I}{\hat{I}_{n-1} \otimes P} \otimes P^T ) \f$
+  </td>
 </tr>
 </table>
 
@@ -1025,6 +1019,8 @@ to be in a fixed range, that should be done by the caller explicitly.
 \defgroup image_func_inverse_deconv inverseDeconv
 \ingroup imageflt_mat
 
+\brief Inverse Deconvolution
+
 Inverse deconvolution is an linear algorithm i.e. they are non-iterative in
 nature and usually faster than iterative deconvolution algorithms.
 
@@ -1043,20 +1039,6 @@ where
     - \f$ I_{\omega} \f$ is the observed(input/blurred) image in frequency domain
     - \f$ P_{\omega} \f$ is the point spread function in frequency domain
     - \f$ \gamma \f$ is a user defined regularization constant
-
-#### Weiner's Deconvolution Method:
-
-The update equation for this algorithm is as follows:
-
-\f[
-\hat{I}_{\omega} = \frac{ I_{\omega} * P^{*}_{\omega} } { |P_{\omega}|^2 + \frac{\gamma}{|I_{\omega}|^2 - \gamma} }
-\f]
-
-where
-    - \f$ I_{\omega} \f$ is the input/blurred image in frequency domain
-    - \f$ P_{\omega} \f$ is the point spread function in frequency domain
-    - \f$ \gamma \f$ is a user defined noise variance constant
-
 
 Inverse deconvolution function excepts \ref af::array of the following types only:
     - \ref f32
