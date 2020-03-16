@@ -67,7 +67,9 @@ class cudnnModule {
     spdlog::logger* getLogger();
 
     /// Returns the version of the cuDNN loaded at runtime
-    std::tuple<int, int, int> getVersion() { return {major, minor, patch}; }
+    std::tuple<int, int, int> getVersion() {
+        return std::make_tuple(major, minor, patch);
+    }
 };
 
 cudnnModule& getCudnnPlugin();
