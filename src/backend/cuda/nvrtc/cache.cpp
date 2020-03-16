@@ -105,8 +105,7 @@ using kc_t = map<string, Kernel>;
         unique_ptr<char[]> log(new char[logSize + 1]);                  \
         char *logptr = log.get();                                       \
         nvrtcGetProgramLog(prog, logptr);                               \
-        logptr[logSize] = '\x0';                                        \
-        puts(logptr);                                                   \
+        logptr[logSize] = '\0';                                         \
         AF_TRACE("NVRTC API Call: {}\nError Message: {}", #fn, logptr); \
         AF_ERROR("NVRTC ERROR", AF_ERR_INTERNAL);                       \
     } while (0)
