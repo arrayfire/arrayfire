@@ -17,7 +17,7 @@ or Linux or download it from source:
 
 ## Easy to use
 
-The [array](\ref construct_mat) object is beautifully simple.
+The [array](\ref af::array) object is beautifully simple.
 
 Array-based notation effectively expresses computational algorithms in
 readable math-resembling notation. You _do not_ need expertise in
@@ -92,9 +92,9 @@ Read more about how [ArrayFire JIT](http://arrayfire.com/performance-of-arrayfir
 
 ## Simple Example
 
-Here's a live example to let you see ArrayFire code. You create [arrays](\ref construct_mat)
+Here's a live example to let you see ArrayFire code. You create [arrays](\ref af::array)
 which reside on CUDA or OpenCL devices. Then you can use
-[ArrayFire functions](modules.htm) on those [arrays](\ref construct_mat).
+[ArrayFire functions](modules.htm) on those [arrays](\ref af::array).
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 // sample 40 million points on the GPU
