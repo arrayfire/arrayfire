@@ -31,17 +31,14 @@
 
       Array constructors, random number generation, transpose, indexing, etc.
 
-      @defgroup construct_mat Constructors of array class
-      Construct an array object
-
-      @defgroup method_mat Methods of array class
-      Get information about the array object
-
       @defgroup device_mat Managing devices in ArrayFire
       getting device pointer, allocating and freeing memory
 
       @defgroup data_mat Functions to create arrays.
       constant, random, range, etc.
+
+      @defgroup c_api_mat C API to manage arrays
+      Create, release, copy, fetch-properties of \ref af_array
 
       @defgroup index_mat Assignment & Indexing operation on arrays
       Access sub regions of an array object
