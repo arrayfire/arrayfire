@@ -48,7 +48,7 @@ which cannot freed until the `array` object goes out of scope. As device memory
 allocation can be expensive, ArrayFire also includes a memory manager which
 will re-use device memory whenever possible.
 
-Arrays can be created using one of the [array constructors](\ref #construct_mat).
+Arrays can be created using one of the [array constructors](\ref af::array).
 Below we show how to create 1D, 2D, and 3D arrays with uninitialized values:
 
 \snippet test/getting_started.cpp ex_getting_started_constructors
