@@ -163,11 +163,6 @@ namespace af
             const array::array_proxy slices(int first, int last) const;
         };
 
-        //array(af_array in, const array *par, af_index_t seqs[4]);
-        /**
-            \ingroup construct_mat
-            @{
-        */
         /**
             Create an uninitialized array (no data, undefined size)
 
@@ -554,15 +549,6 @@ namespace af
                 const dim_t dim2 = 1, const dim_t dim3 = 1);
 
         /**
-            @}
-        */
-
-        /**
-           \ingroup method_mat
-           @{
-        */
-
-        /**
            get the \ref af_array handle
         */
         af_array get();
@@ -720,22 +706,12 @@ namespace af
         template<typename T> T scalar() const;
 
         /**
-           @}
-        */
-
-
-        /**
-           Get the device pointer from the array and lock the buffer in memory manager.
-           @{
+           \brief Get the device pointer from the array and lock the buffer in memory manager.
 
            The device memory returned by this function is not freed until unlock() is called.
 
-           \ingroup device_mat
         */
         template<typename T> T* device() const;
-        /**
-           @}
-        */
 
         // INDEXING
         // Single arguments
@@ -884,7 +860,6 @@ namespace af
         ///
         ///  \param[in] type is the desired type(f32, s64, etc.)
         /// \returns an array with the type specified by \p type
-        /// \ingroup method_mat
         const array as(dtype type) const;
 
 
@@ -893,12 +868,10 @@ namespace af
         /// \brief Get the transposed the array
         ///
         /// \returns Transposed matrix
-        /// \ingroup method_mat
         array T() const;
         /// \brief Get the conjugate-transpose of the current array
         ///
         /// \returns conjugate-transpose matrix
-        /// \ingroup method_mat
         array H() const;
 
 #define ASSIGN_(OP2)                                                                      \
@@ -1366,7 +1339,7 @@ namespace af
 
     /// Evaluate an expression (nonblocking).
     /**
-       \ingroup method_mat
+       \ingroup data_mat
        @{
     */
     inline array &eval(array &a) { a.eval(); return a; }
@@ -1432,10 +1405,6 @@ namespace af
 #if AF_API_VERSION >= 37
 
     /// Evaluate an expression (nonblocking).
-    /**
-       \ingroup method_mat
-       @{
-    */
     inline const array &eval(const array &a) { a.eval(); return a; }
 
 #if AF_COMPILER_CXX_VARIADIC_TEMPLATES
@@ -1506,14 +1475,14 @@ extern "C" {
 #endif
 
     /**
-       \ingroup construct_mat
+       \ingroup c_api_mat
        @{
     */
 
     /**
        Create an \ref af_array handle initialized with user defined data
 
-       This function will create an \ref af_array handle from the memory provided in \p data
+       This function will create an \ref af_array handle from the memory provided in \p data.
 
        \param[out]  arr The pointer to the returned object.
        \param[in]   data The data which will be loaded into the array
@@ -1528,6 +1497,9 @@ extern "C" {
     /**
        Create af_array handle
 
+       To release the memory allocated by this call you would have to
+       call \ref af_release_array once your use of this \ref af_array is complete.
+
        \param[out]  arr The pointer to the retured object.
        \param[in]   ndims The number of dimensions read from the \p dims parameter
        \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
@@ -1538,13 +1510,6 @@ extern "C" {
     AFAPI af_err af_create_handle(af_array *arr, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     /**
-    @}
-    */
-
-    /**
-       \ingroup method_mat
-       @{
-
        Deep copy an array to another
     */
     AFAPI af_err af_copy_array(af_array *arr, const af_array in);
@@ -1575,24 +1540,15 @@ extern "C" {
 
 #if AF_API_VERSION >= 31
     /**
-       \ingroup method_mat
-       @{
-
        Get the reference count of \ref af_array
     */
     AFAPI af_err af_get_data_ref_count(int *use_count, const af_array in);
 #endif
 
-
     /**
        Evaluate any expressions in the Array
     */
     AFAPI af_err af_eval(af_array in);
-
-    /**
-      @}
-    */
-
 
 #if AF_API_VERSION >= 34
     /**
@@ -1614,14 +1570,7 @@ extern "C" {
     */
     AFAPI af_err af_get_manual_eval_flag(bool *flag);
 #endif
-    /**
-      @}
-    */
 
-    /**
-        \ingroup method_mat
-        @{
-    */
     /**
         \brief Get the total number of elements across all dimensions of the array
 

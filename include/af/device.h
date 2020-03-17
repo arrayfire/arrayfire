@@ -351,7 +351,7 @@ extern "C" {
 
     /**
        Create array from device memory
-       \ingroup construct_mat
+       \ingroup c_api_mat
     */
     AFAPI af_err af_device_array(af_array *arr, void *data, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
@@ -380,9 +380,9 @@ extern "C" {
        \param [in] msg A message to print before the table
        \param [in] device_id print the memory info of the specified device.
        -1 signifies active device.
-      
+
        \returns AF_SUCCESS if successful
-      
+
        \ingroup device_func_mem
     */
     AFAPI af_err af_print_mem_info(const char *msg, const int device_id);
