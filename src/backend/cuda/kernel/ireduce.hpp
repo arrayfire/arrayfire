@@ -114,8 +114,9 @@ __global__ static void ireduce_dim_kernel(Param<T> out, uint *olptr,
     const T *iptr = in.ptr;
     T *optr       = out.ptr;
     const uint *rlenptr   = (rlen.ptr) ?
-             rlen.ptr + ids[3] * out.strides[3] + ids[2] * out.strides[2] +
-             ids[1] * out.strides[1] + ids[0] : nullptr;
+             rlen.ptr + ids[3] * rlen.strides[3] + ids[2] * rlen.strides[2] +
+             ids[1] * rlen.strides[1] + ids[0] : nullptr;
+
 
     // There is only one element per block for out
     // There are blockDim.y elements per block for in
@@ -143,8 +144,9 @@ __global__ static void ireduce_dim_kernel(Param<T> out, uint *olptr,
     T val    = Binary<T, op>::init();
     uint idx = id_dim_in;
 
-    int lim = (rlenptr) ? min(in.dims[dim], *rlenptr) : in.dims[dim];
-    if (is_valid && id_dim_in < lim) {
+    int lim = (rlenptr) ? *rlenptr : in.dims[dim];
+    bool within_ragged_bounds = (is_first) ? (idx < lim) : ((rlenptr)? ((is_valid) && (*ilptr < lim)) : true);
+    if (is_valid && id_dim_in < in.dims[dim] && within_ragged_bounds) {
         val = *iptr;
         if (!is_first) idx = *ilptr;
     }
@@ -156,7 +158,7 @@ __global__ static void ireduce_dim_kernel(Param<T> out, uint *olptr,
     __shared__ T s_val[THREADS_X * DIMY];
     __shared__ uint s_idx[THREADS_X * DIMY];
 
-    for (int id = id_dim_in_start; is_valid && (id < in.dims[dim]);
+    for (int id = id_dim_in_start; is_valid && (id < lim);
          id += offset_dim * blockDim.y) {
         iptr = iptr + offset_dim * blockDim.y * istride_dim;
         if (!is_first) {
@@ -317,8 +319,8 @@ __global__ static void ireduce_first_kernel(Param<T> out, uint *olptr,
 
     const data_t<T> *iptr = in.ptr;
     data_t<T> *optr       = out.ptr;
-    const uint *rlenptr   = (rlen.ptr) ?  rlen.ptr + wid * out.strides[3] +
-                        zid * out.strides[2] + yid * out.strides[1] : nullptr;
+    const uint *rlenptr   = (rlen.ptr) ?  rlen.ptr + wid * rlen.strides[3] +
+                        zid * rlen.strides[2] + yid * rlen.strides[1] : nullptr;
 
     iptr += wid * in.strides[3] + zid * in.strides[2] + yid * in.strides[1];
     optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];

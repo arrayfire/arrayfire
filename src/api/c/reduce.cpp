@@ -878,7 +878,7 @@ static af_err rreduce_common(af_array *val, af_array *idx, const af_array in,
     return AF_SUCCESS;
 }
 
-af_err af_rmax(af_array *val, af_array *idx, const af_array in, const int dim, const af_array ragged_len) {
+af_err af_max_ragged(af_array *val, af_array *idx, const af_array in, const int dim, const af_array ragged_len) {
     return rreduce_common<af_max_t>(val, idx, in, dim, ragged_len);
 }
 

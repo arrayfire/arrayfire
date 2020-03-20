@@ -216,7 +216,7 @@ namespace af
                         const int dim = -1);
 #endif
 
-#if AF_API_VERSION >= 37
+#if AF_API_VERSION >= 38
     /**
        C++ Interface for ragged max values in an array
 
@@ -855,7 +855,7 @@ extern "C" {
                                const int dim);
 #endif
 
-#if AF_API_VERSION >= 37
+#if AF_API_VERSION >= 38
     /**
        C Interface for finding ragged max values in an array
 
@@ -870,7 +870,7 @@ extern "C" {
 
        \note NaN values are ignored
     */
-    AFAPI af_err af_rmax(af_array *val, af_array *idx, const af_array in, const int dim, const af_array ragged_len);
+    AFAPI af_err af_max_ragged(af_array *val, af_array *idx, const af_array in, const int dim, const af_array ragged_len);
 #endif
 
     /**
