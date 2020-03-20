@@ -38,8 +38,8 @@ __kernel void ireduce_first_kernel(__global T *oData, KParam oInfo,
     olData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
               yid * oInfo.strides[1] + oInfo.offset;
 
-    rlenptr += (rlenptr) ?  wid * oInfo.strides[3] + zid * oInfo.strides[2] +
-             yid * oInfo.strides[1] + oInfo.offset : 0;
+    rlenptr += (rlenptr) ?  wid * rlen.strides[3] + zid * rlen.strides[2] +
+             yid * rlen.strides[1] + rlen.offset : 0;
 
     bool cond =
         (yid < iInfo.dims[1]) && (zid < iInfo.dims[2]) && (wid < iInfo.dims[3]);

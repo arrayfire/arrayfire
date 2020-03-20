@@ -34,8 +34,8 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     olData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
               ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
 
-    rlenptr += (rlenptr) ?  ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
-             ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset : 0;
+    rlenptr += (rlenptr) ?  ids[3] * rlen.strides[3] + ids[2] * rlen.strides[2] +
+             ids[1] * rlen.strides[1] + ids[0] + rlen.offset : 0;
     const uint id_dim_out = ids[kDim];
 
     ids[kDim] = ids[kDim] * get_local_size(1) + lidy;
@@ -60,15 +60,17 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     T out_val    = init;
     uint out_idx = id_dim_in;
 
-    int minlen = rlenptr ? min(*rlenptr, (uint)iInfo.dims[kDim]) : iInfo.dims[kDim];
-    if (is_valid && id_dim_in < minlen) {
+    int lim = rlenptr ? *rlenptr : iInfo.dims[kDim];
+    bool within_ragged_bounds = (IS_FIRST) ? (out_idx < lim) :
+                                ((rlenptr) ? (is_valid) && (*ilData < lim) : true);
+    if (is_valid && id_dim_in < iInfo.dims[kDim] && within_ragged_bounds) {
         out_val = *iData;
         if (!IS_FIRST) out_idx = *ilData;
     }
 
     const uint id_dim_in_start = id_dim_in + group_dim * get_local_size(1);
 
-    for (int id = id_dim_in_start; is_valid && (id < iInfo.dims[kDim]);
+    for (int id = id_dim_in_start; is_valid && (id < lim);
          id += group_dim * get_local_size(1)) {
         iData = iData + group_dim * get_local_size(1) * istride_dim;
 
