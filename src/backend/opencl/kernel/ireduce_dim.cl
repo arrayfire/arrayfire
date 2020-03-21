@@ -29,13 +29,16 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     // There are get_local_size(1) elements per group for in
     // Hence increment ids[kDim] just after offseting out and before offsetting
     // in
+    bool rlen_valid = (ids[0] < rlen.dims[0]) && (ids[1] < rlen.dims[1]) &&
+                      (ids[2] < rlen.dims[2]) && (ids[3] < rlen.dims[3]);
+    rlenptr += (rlenptr && rlen_valid) ?  ids[3] * rlen.strides[3] + ids[2] * rlen.strides[2] +
+             ids[1] * rlen.strides[1] + ids[0] + rlen.offset : 0;
+
     oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
              ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
     olData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
               ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
 
-    rlenptr += (rlenptr) ?  ids[3] * rlen.strides[3] + ids[2] * rlen.strides[2] +
-             ids[1] * rlen.strides[1] + ids[0] + rlen.offset : 0;
     const uint id_dim_out = ids[kDim];
 
     ids[kDim] = ids[kDim] * get_local_size(1) + lidy;
@@ -60,7 +63,8 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     T out_val    = init;
     uint out_idx = id_dim_in;
 
-    int lim = rlenptr ? *rlenptr : iInfo.dims[kDim];
+    uint lim = rlenptr ? *rlenptr : iInfo.dims[kDim];
+    lim = (IS_FIRST) ? min((uint)iInfo.dims[kDim], lim) : lim;
     bool within_ragged_bounds = (IS_FIRST) ? (out_idx < lim) :
                                 ((rlenptr) ? (is_valid) && (*ilData < lim) : true);
     if (is_valid && id_dim_in < iInfo.dims[kDim] && within_ragged_bounds) {

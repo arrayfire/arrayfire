@@ -17,7 +17,7 @@ namespace cuda {
 template<typename T, af_op_t op, uint dim, bool is_first, uint DIMY>
 __global__ static void ireduceDim(Param<T> out, uint *olptr, CParam<T> in,
                                   const uint *ilptr, uint blocks_x,
-                                  uint blocks_y, uint offset_dim) {
+                                  uint blocks_y, uint offset_dim, CParam<uint> rlen) {
     const uint tidx = threadIdx.x;
     const uint tidy = threadIdx.y;
     const uint tid  = tidy * THREADS_X + tidx;
@@ -39,10 +39,18 @@ __global__ static void ireduceDim(Param<T> out, uint *olptr, CParam<T> in,
     // There are blockDim.y elements per block for in
     // Hence increment ids[dim] just after offseting out and before offsetting
     // in
+    bool rlen_valid = (ids[0] < rlen.dims[0]) && (ids[1] < rlen.dims[1]) &&
+                      (ids[2] < rlen.dims[2]) && (ids[3] < rlen.dims[3]);
+    const uint *rlenptr   = (rlen.ptr && rlen_valid) ?
+             rlen.ptr + ids[3] * rlen.strides[3] + ids[2] * rlen.strides[2] +
+             ids[1] * rlen.strides[1] + ids[0] : nullptr;
+
     optr += ids[3] * out.strides[3] + ids[2] * out.strides[2] +
             ids[1] * out.strides[1] + ids[0];
     olptr += ids[3] * out.strides[3] + ids[2] * out.strides[2] +
              ids[1] * out.strides[1] + ids[0];
+
+
     const uint blockIdx_dim = ids[dim];
 
     ids[dim] = ids[dim] * blockDim.y + tidy;
@@ -61,7 +69,10 @@ __global__ static void ireduceDim(Param<T> out, uint *olptr, CParam<T> in,
     T val    = Binary<T, op>::init();
     uint idx = id_dim_in;
 
-    if (is_valid && id_dim_in < in.dims[dim]) {
+    uint lim = (rlenptr) ? *rlenptr : in.dims[dim];
+    lim = (is_first) ? min((uint)in.dims[dim], lim) : lim;
+    bool within_ragged_bounds = (is_first) ? (idx < lim) : ((rlenptr)? ((is_valid) && (*ilptr < lim)) : true);
+    if (is_valid && id_dim_in < in.dims[dim] && within_ragged_bounds) {
         val = *iptr;
         if (!is_first) idx = *ilptr;
     }
@@ -73,7 +84,7 @@ __global__ static void ireduceDim(Param<T> out, uint *olptr, CParam<T> in,
     __shared__ T s_val[THREADS_X * DIMY];
     __shared__ uint s_idx[THREADS_X * DIMY];
 
-    for (int id = id_dim_in_start; is_valid && (id < in.dims[dim]);
+    for (int id = id_dim_in_start; is_valid && (id < lim);
          id += offset_dim * blockDim.y) {
         iptr = iptr + offset_dim * blockDim.y * istride_dim;
         if (!is_first) {
@@ -139,9 +150,10 @@ __device__ void warp_reduce(T *s_ptr, uint *s_idx, uint tidx) {
 }
 
 template<typename T, af_op_t op, bool is_first, uint DIMX>
-__global__ static void ireduceFirst(Param<T> out, uint *olptr, CParam<T> in,
-                                    const uint *ilptr, uint blocks_x,
-                                    uint blocks_y, uint repeat) {
+__global__ static void ireduceFirst(Param<T> out, uint *olptr,
+                                    CParam<T> in, const uint *ilptr,
+                                    uint blocks_x, uint blocks_y,
+                                    uint repeat, CParam<uint> rlen) {
     const uint tidx = threadIdx.x;
     const uint tidy = threadIdx.y;
     const uint tid  = tidy * blockDim.x + tidx;
@@ -156,6 +168,8 @@ __global__ static void ireduceFirst(Param<T> out, uint *olptr, CParam<T> in,
 
     const data_t<T> *iptr = in.ptr;
     data_t<T> *optr       = out.ptr;
+    const uint *rlenptr   = (rlen.ptr) ?  rlen.ptr + wid * rlen.strides[3] +
+                        zid * rlen.strides[2] + yid * rlen.strides[1] : nullptr;
 
     iptr += wid * in.strides[3] + zid * in.strides[2] + yid * in.strides[1];
     optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
@@ -167,7 +181,8 @@ __global__ static void ireduceFirst(Param<T> out, uint *olptr, CParam<T> in,
 
     if (yid >= in.dims[1] || zid >= in.dims[2] || wid >= in.dims[3]) return;
 
-    int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
+    int minlen = rlenptr ? min(*rlenptr, in.dims[0]) : in.dims[0];
+    int lim = min((int)(xid + repeat * DIMX), minlen);
 
     compute_t<T> val = Binary<compute_t<T>, op>::init();
     uint idx         = xid;
