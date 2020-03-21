@@ -26,18 +26,18 @@ __kernel void reduce_dim_kernel(__global To *oData, KParam oInfo,
 
     // There is only one element per group for out
     // There are get_local_size(1) elements per group for in
-    // Hence increment ids[dim] just after offseting out and before offsetting
+    // Hence increment ids[_af_dim_] just after offseting out and before offsetting
     // in
     oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
              ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
-    const uint id_dim_out = ids[dim];
+    const uint id_dim_out = ids[_af_dim_];
 
-    ids[dim] = ids[dim] * get_local_size(1) + lidy;
+    ids[_af_dim_] = ids[_af_dim_] * get_local_size(1) + lidy;
     iData += ids[3] * iInfo.strides[3] + ids[2] * iInfo.strides[2] +
              ids[1] * iInfo.strides[1] + ids[0] + iInfo.offset;
-    const uint id_dim_in = ids[dim];
+    const uint id_dim_in = ids[_af_dim_];
 
-    const uint istride_dim = iInfo.strides[dim];
+    const uint istride_dim = iInfo.strides[_af_dim_];
 
     bool is_valid = (ids[0] < iInfo.dims[0]) && (ids[1] < iInfo.dims[1]) &&
                     (ids[2] < iInfo.dims[2]) && (ids[3] < iInfo.dims[3]);
@@ -45,7 +45,7 @@ __kernel void reduce_dim_kernel(__global To *oData, KParam oInfo,
     __local To s_val[THREADS_X * DIMY];
 
     To out_val = init;
-    for (int id = id_dim_in; is_valid && (id < iInfo.dims[dim]);
+    for (int id = id_dim_in; is_valid && (id < iInfo.dims[_af_dim_]);
          id += group_dim * get_local_size(1)) {
         To in_val = transform(*iData);
         if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
@@ -73,7 +73,7 @@ __kernel void reduce_dim_kernel(__global To *oData, KParam oInfo,
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    if (lidy == 0 && is_valid && (id_dim_out < oInfo.dims[dim])) {
+    if (lidy == 0 && is_valid && (id_dim_out < oInfo.dims[_af_dim_])) {
         *oData = *s_ptr;
     }
 }

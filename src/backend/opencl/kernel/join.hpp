@@ -48,7 +48,7 @@ void join(Param out, const Param in, const af::dim4 offset) {
         std::ostringstream options;
         options << " -D To=" << dtype_traits<To>::getName()
                 << " -D Ti=" << dtype_traits<Ti>::getName()
-                << " -D dim=" << dim;
+                << " -D _af_dim_=" << dim;
 
         if (std::is_same<To, double>::value ||
             std::is_same<To, cdouble>::value) {
