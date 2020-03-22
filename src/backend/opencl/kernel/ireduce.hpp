@@ -57,8 +57,9 @@ void ireduce_dim_launcher(Param out, cl::Buffer *oidx, Param in,
         ToNumStr<T> toNumStr;
 
         std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName() << " -D _af_dim_=" << dim
-                << " -D DIMY=" << threads_y << " -D THREADS_X=" << THREADS_X
+        options << " -D T=" << dtype_traits<T>::getName()
+                << " -D _af_dim_=" << dim << " -D DIMY=" << threads_y
+                << " -D THREADS_X=" << THREADS_X
                 << " -D init=" << toNumStr(Binary<T, op>::init()) << " -D "
                 << binOpName<op>() << " -D CPLX=" << af::iscplx<T>()
                 << " -D IS_FIRST=" << is_first;
