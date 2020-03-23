@@ -236,7 +236,7 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
     // A lightweight check based on the height of the node. This is an
     // inexpensive operation and does not traverse the JIT tree.
     if (root_node->getHeight() > 6 ||
-        getMemoryPressure() > getMemoryPressureThreshold()) {
+        getMemoryPressure() >= getMemoryPressureThreshold()) {
         // The size of the parameters without any extra arguments from the
         // JIT tree. This includes one output Param object and 4 integers.
         constexpr size_t base_param_size =

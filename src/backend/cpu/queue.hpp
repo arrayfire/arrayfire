@@ -69,7 +69,7 @@ class queue {
 #ifndef NDEBUG
         sync();
 #else
-        if (getMemoryPressure() > getMemoryPressureThreshold() || count >= 25) {
+        if (getMemoryPressure() >= getMemoryPressureThreshold() || count >= 25) {
             sync();
         }
 #endif

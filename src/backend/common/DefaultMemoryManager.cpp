@@ -162,7 +162,8 @@ void* DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
         if (!this->debug_mode) {
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (getMemoryPressure() > getMemoryPressureThreshold()) {
+            if (current.lock_bytes >= current.max_bytes ||
+                current.total_buffers >= this->max_buffers) {
                 this->signalMemoryCleanup();
             }
 

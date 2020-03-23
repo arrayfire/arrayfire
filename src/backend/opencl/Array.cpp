@@ -256,7 +256,7 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
         return kJITHeuristics::TreeHeight;
     }
 
-    bool isBufferLimit = getMemoryPressure() > getMemoryPressureThreshold();
+    bool isBufferLimit = getMemoryPressure() >= getMemoryPressureThreshold();
     auto platform      = getActivePlatform();
 
     // The Apple platform can have the nvidia card or the AMD card
