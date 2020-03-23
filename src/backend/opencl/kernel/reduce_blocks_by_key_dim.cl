@@ -7,8 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-Tk work_group_scan_inclusive_add(__local Tk *arr) {
-    __local Tk tmp[DIMX];
+Tk work_group_scan_inclusive_add(__local Tk *wg_tmp, __local Tk *arr) {
     __local int *l_val;
 
     const int lid = get_local_id(0);
@@ -21,7 +20,7 @@ Tk work_group_scan_inclusive_add(__local Tk *arr) {
         if (lid >= off) val = val + l_val[lid - off];
 
         wbuf       = 1 - wbuf;
-        l_val      = wbuf ? tmp : arr;
+        l_val      = wbuf ? wg_tmp : arr;
         l_val[lid] = val;
     }
 
@@ -45,6 +44,7 @@ __kernel void reduce_blocks_by_key_dim(__global int *reduced_block_sizes,
 
     __local Tk keys[DIMX];
     __local To vals[DIMX];
+    __local Tk wg_temp[DIMX];
 
     __local Tk reduced_keys[DIMX];
     __local To reduced_vals[DIMX];
@@ -79,7 +79,7 @@ __kernel void reduce_blocks_by_key_dim(__global int *reduced_block_sizes,
                         bidz * iVInfo.strides[dims_ordering[2]] +
                         bidy * iVInfo.strides[dims_ordering[1]] +
                         gidx * iVInfo.strides[DIM];
-        v                 = transform(iVals[gid]);
+        v = transform(iVals[gid]);
         if (change_nan) v = IS_NAN(v) ? nanval : v;
     } else {
         v = init_val;
@@ -96,7 +96,7 @@ __kernel void reduce_blocks_by_key_dim(__global int *reduced_block_sizes,
     int unique_flag   = (eq_check || (lid == 0)) && (gidx < n);
     unique_flags[lid] = unique_flag;
 
-    int unique_id   = work_group_scan_inclusive_add(unique_flags);
+    int unique_id   = work_group_scan_inclusive_add(wg_temp, unique_flags);
     unique_ids[lid] = unique_id;
 
     if (lid == DIMX - 1) reducedBlockSize = unique_id;
