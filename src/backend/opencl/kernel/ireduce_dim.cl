@@ -26,15 +26,15 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
 
     // There is only one element per group for out
     // There are get_local_size(1) elements per group for in
-    // Hence increment ids[_af_dim_] just after offseting out and before offsetting
+    // Hence increment ids[kDim] just after offseting out and before offsetting
     // in
     oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
              ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
     olData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
               ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
-    const uint id_dim_out = ids[_af_dim_];
+    const uint id_dim_out = ids[kDim];
 
-    ids[_af_dim_] = ids[_af_dim_] * get_local_size(1) + lidy;
+    ids[kDim] = ids[kDim] * get_local_size(1) + lidy;
 
     iData += ids[3] * iInfo.strides[3] + ids[2] * iInfo.strides[2] +
              ids[1] * iInfo.strides[1] + ids[0] + iInfo.offset;
@@ -44,8 +44,8 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
                   ids[1] * iInfo.strides[1] + ids[0] + iInfo.offset;
     }
 
-    const uint id_dim_in   = ids[_af_dim_];
-    const uint istride_dim = iInfo.strides[_af_dim_];
+    const uint id_dim_in   = ids[kDim];
+    const uint istride_dim = iInfo.strides[kDim];
 
     bool is_valid = (ids[0] < iInfo.dims[0]) && (ids[1] < iInfo.dims[1]) &&
                     (ids[2] < iInfo.dims[2]) && (ids[3] < iInfo.dims[3]);
@@ -56,14 +56,14 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     T out_val    = init;
     uint out_idx = id_dim_in;
 
-    if (is_valid && id_dim_in < iInfo.dims[_af_dim_]) {
+    if (is_valid && id_dim_in < iInfo.dims[kDim]) {
         out_val = *iData;
         if (!IS_FIRST) out_idx = *ilData;
     }
 
     const uint id_dim_in_start = id_dim_in + group_dim * get_local_size(1);
 
-    for (int id = id_dim_in_start; is_valid && (id < iInfo.dims[_af_dim_]);
+    for (int id = id_dim_in_start; is_valid && (id < iInfo.dims[kDim]);
          id += group_dim * get_local_size(1)) {
         iData = iData + group_dim * get_local_size(1) * istride_dim;
 
@@ -112,7 +112,7 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    if (lidy == 0 && is_valid && (id_dim_out < oInfo.dims[_af_dim_])) {
+    if (lidy == 0 && is_valid && (id_dim_out < oInfo.dims[kDim])) {
         *oData  = *s_vptr;
         *olData = *s_iptr;
     }

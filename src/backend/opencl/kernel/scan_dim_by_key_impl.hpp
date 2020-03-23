@@ -58,7 +58,7 @@ static Kernel get_scan_dim_kernels(int kerIdx, int dim, bool calculateFlags,
         options << " -D To=" << dtype_traits<To>::getName()
                 << " -D Ti=" << dtype_traits<Ti>::getName()
                 << " -D Tk=" << dtype_traits<Tk>::getName() << " -D T=To"
-                << " -D _af_dim_=" << dim << " -D DIMY=" << threads_y
+                << " -D kDim=" << dim << " -D DIMY=" << threads_y
                 << " -D THREADS_X=" << THREADS_X
                 << " -D init=" << toNumStr(Binary<To, op>::init()) << " -D "
                 << binOpName<op>() << " -D CPLX=" << af::iscplx<Ti>()

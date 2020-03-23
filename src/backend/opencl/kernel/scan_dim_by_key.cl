@@ -31,7 +31,7 @@ __kernel void scan_dim_by_key_nonfinal_kernel(
 
     // There is only one element per group for out
     // There are DIMY elements per group for in
-    // Hence increment ids[_af_dim_] just after offseting out and before offsetting
+    // Hence increment ids[kDim] just after offseting out and before offsetting
     // in
     tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] +
              ids[1] * tInfo.strides[1] + ids[0];
@@ -39,9 +39,9 @@ __kernel void scan_dim_by_key_nonfinal_kernel(
               ids[1] * tfInfo.strides[1] + ids[0];
     tiData += ids[3] * tiInfo.strides[3] + ids[2] * tiInfo.strides[2] +
               ids[1] * tiInfo.strides[1] + ids[0];
-    const int groupId_dim = ids[_af_dim_];
+    const int groupId_dim = ids[kDim];
 
-    ids[_af_dim_] = ids[_af_dim_] * DIMY * lim + lidy;
+    ids[kDim] = ids[kDim] * DIMY * lim + lidy;
     oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
              ids[1] * oInfo.strides[1] + ids[0];
     iData += ids[3] * iInfo.strides[3] + ids[2] * iInfo.strides[2] +
@@ -50,14 +50,14 @@ __kernel void scan_dim_by_key_nonfinal_kernel(
              ids[1] * kInfo.strides[1] + ids[0];
     iData += iInfo.offset;
 
-    int id_dim        = ids[_af_dim_];
-    const int out_dim = oInfo.dims[_af_dim_];
+    int id_dim        = ids[kDim];
+    const int out_dim = oInfo.dims[kDim];
 
     bool is_valid = (ids[0] < oInfo.dims[0]) && (ids[1] < oInfo.dims[1]) &&
                     (ids[2] < oInfo.dims[2]) && (ids[3] < oInfo.dims[3]);
 
-    const int ostride_dim = oInfo.strides[_af_dim_];
-    const int istride_dim = iInfo.strides[_af_dim_];
+    const int ostride_dim = oInfo.strides[kDim];
+    const int istride_dim = iInfo.strides[kDim];
 
     __local To l_val0[THREADS_X * DIMY];
     __local To l_val1[THREADS_X * DIMY];
@@ -86,7 +86,7 @@ __kernel void scan_dim_by_key_nonfinal_kernel(
         bool cond = (is_valid) && (id_dim < out_dim);
 
         if (cond) {
-            flag = calculate_head_flags_dim(kData, id_dim, kInfo.strides[_af_dim_]);
+            flag = calculate_head_flags_dim(kData, id_dim, kInfo.strides[kDim]);
         } else {
             flag = 0;
         }
@@ -102,7 +102,7 @@ __kernel void scan_dim_by_key_nonfinal_kernel(
             if ((id_dim == 0) || (!cond) || flag) {
                 val = init_val;
             } else {
-                val = transform(*(iData - iInfo.strides[_af_dim_]));
+                val = transform(*(iData - iInfo.strides[kDim]));
             }
         }
 
@@ -150,13 +150,13 @@ __kernel void scan_dim_by_key_nonfinal_kernel(
             l_ftmp[lidx] = flag;
         }
         id_dim += DIMY;
-        kData += DIMY * kInfo.strides[_af_dim_];
+        kData += DIMY * kInfo.strides[kDim];
         iData += DIMY * istride_dim;
         oData += DIMY * ostride_dim;
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    if (is_valid && (groupId_dim < tInfo.dims[_af_dim_]) && isLast) {
+    if (is_valid && (groupId_dim < tInfo.dims[kDim]) && isLast) {
         *tData       = val;
         *tfData      = flag;
         int boundary = boundaryid[lidx];
@@ -183,11 +183,11 @@ __kernel void scan_dim_by_key_final_kernel(
 
     // There is only one element per group for out
     // There are DIMY elements per group for in
-    // Hence increment ids[_af_dim_] just after offseting out and before offsetting
+    // Hence increment ids[kDim] just after offseting out and before offsetting
     // in
-    const int groupId_dim = ids[_af_dim_];
+    const int groupId_dim = ids[kDim];
 
-    ids[_af_dim_] = ids[_af_dim_] * DIMY * lim + lidy;
+    ids[kDim] = ids[kDim] * DIMY * lim + lidy;
     oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
              ids[1] * oInfo.strides[1] + ids[0];
     iData += ids[3] * iInfo.strides[3] + ids[2] * iInfo.strides[2] +
@@ -196,14 +196,14 @@ __kernel void scan_dim_by_key_final_kernel(
              ids[1] * kInfo.strides[1] + ids[0];
     iData += iInfo.offset;
 
-    int id_dim        = ids[_af_dim_];
-    const int out_dim = oInfo.dims[_af_dim_];
+    int id_dim        = ids[kDim];
+    const int out_dim = oInfo.dims[kDim];
 
     bool is_valid = (ids[0] < oInfo.dims[0]) && (ids[1] < oInfo.dims[1]) &&
                     (ids[2] < oInfo.dims[2]) && (ids[3] < oInfo.dims[3]);
 
-    const int ostride_dim = oInfo.strides[_af_dim_];
-    const int istride_dim = iInfo.strides[_af_dim_];
+    const int ostride_dim = oInfo.strides[kDim];
+    const int istride_dim = iInfo.strides[kDim];
 
     __local To l_val0[THREADS_X * DIMY];
     __local To l_val1[THREADS_X * DIMY];
@@ -232,7 +232,7 @@ __kernel void scan_dim_by_key_final_kernel(
         if (calculateFlags) {
             if (cond) {
                 flag =
-                    calculate_head_flags_dim(kData, id_dim, kInfo.strides[_af_dim_]);
+                    calculate_head_flags_dim(kData, id_dim, kInfo.strides[kDim]);
             } else {
                 flag = 0;
             }
@@ -251,7 +251,7 @@ __kernel void scan_dim_by_key_final_kernel(
             if ((id_dim == 0) || (!cond) || flag) {
                 val = init_val;
             } else {
-                val = transform(*(iData - iInfo.strides[_af_dim_]));
+                val = transform(*(iData - iInfo.strides[kDim]));
             }
         }
 
@@ -287,7 +287,7 @@ __kernel void scan_dim_by_key_final_kernel(
             l_ftmp[lidx] = flag;
         }
         id_dim += DIMY;
-        kData += DIMY * kInfo.strides[_af_dim_];
+        kData += DIMY * kInfo.strides[kDim];
         iData += DIMY * istride_dim;
         oData += DIMY * ostride_dim;
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -311,32 +311,32 @@ __kernel void bcast_dim_kernel(__global To *oData, KParam oInfo,
     const int yid       = groupId_y;
 
     int ids[4]            = {xid, yid, zid, wid};
-    const int groupId_dim = ids[_af_dim_];
+    const int groupId_dim = ids[kDim];
 
     if (groupId_dim != 0) {
         // There is only one element per group for out
         // There are DIMY elements per group for in
-        // Hence increment ids[_af_dim_] just after offseting out and before
+        // Hence increment ids[kDim] just after offseting out and before
         // offsetting in
         tiData += ids[3] * tiInfo.strides[3] + ids[2] * tiInfo.strides[2] +
                   ids[1] * tiInfo.strides[1] + ids[0];
         tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] +
                  ids[1] * tInfo.strides[1] + ids[0];
 
-        ids[_af_dim_] = ids[_af_dim_] * DIMY * lim + lidy;
+        ids[kDim] = ids[kDim] * DIMY * lim + lidy;
         oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
                  ids[1] * oInfo.strides[1] + ids[0];
 
-        const int id_dim = ids[_af_dim_];
+        const int id_dim = ids[kDim];
 
         bool is_valid = (ids[0] < oInfo.dims[0]) && (ids[1] < oInfo.dims[1]) &&
                         (ids[2] < oInfo.dims[2]) && (ids[3] < oInfo.dims[3]);
 
         if (is_valid) {
             int boundary = *tiData;
-            To accum     = *(tData - tInfo.strides[_af_dim_]);
+            To accum     = *(tData - tInfo.strides[kDim]);
 
-            const int ostride_dim = oInfo.strides[_af_dim_];
+            const int ostride_dim = oInfo.strides[kDim];
 
             for (int k = 0, id = id_dim; is_valid && k < lim && (id < boundary);
                  k++, id += DIMY) {
