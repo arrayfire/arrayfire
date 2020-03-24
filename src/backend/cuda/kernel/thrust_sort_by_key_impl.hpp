@@ -8,9 +8,9 @@
  ********************************************************/
 
 #include <debug_cuda.hpp>
-#include <debug_thrust.hpp>
 #include <kernel/thrust_sort_by_key.hpp>
 #include <thrust/sort.h>
+#include <thrust_utils.hpp>
 #include <types.hpp>
 
 namespace cuda {

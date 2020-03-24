@@ -9,11 +9,11 @@
 
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
-#include <debug_thrust.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <memory.hpp>
-#include <stdio.h>
+#include <thrust_utils.hpp>
+
 #include <thrust/adjacent_difference.h>
 #include <thrust/binary_search.h>
 #include <thrust/device_vector.h>
@@ -23,6 +23,8 @@
 #include <thrust/sort.h>
 #include <thrust/system/cuda/detail/par.h>
 #include <thrust/transform_scan.h>
+
+#include <cstdio>
 
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
