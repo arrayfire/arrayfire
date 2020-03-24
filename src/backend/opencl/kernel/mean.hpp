@@ -134,8 +134,9 @@ void mean_dim_launcher(Param out, Param owt, Param in, Param inWeight,
         std::ostringstream options;
         options << " -D Ti=" << dtype_traits<Ti>::getName()
                 << " -D Tw=" << dtype_traits<Tw>::getName()
-                << " -D To=" << dtype_traits<To>::getName() << " -D dim=" << dim
-                << " -D DIMY=" << threads_y << " -D THREADS_X=" << THREADS_X
+                << " -D To=" << dtype_traits<To>::getName()
+                << " -D kDim=" << dim << " -D DIMY=" << threads_y
+                << " -D THREADS_X=" << THREADS_X
                 << " -D init_To=" << toNumStr(Binary<To, af_add_t>::init())
                 << " -D init_Tw=" << twNumStr(transform_weight(0))
                 << " -D one_Tw=" << twNumStr(transform_weight(1));
