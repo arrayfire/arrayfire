@@ -38,6 +38,4 @@ void return_temporary_buffer(ThrustArrayFirePolicy, Pointer p) {
     memFree(p.get());
 }
 
-const ThrustArrayFirePolicy& getThrustPolicy();
-
 }  // namespace cuda

@@ -20,9 +20,9 @@ using ThrustVector = thrust::device_vector<T, cuda::ThrustAllocator<T>>;
 
 #if THRUST_MAJOR_VERSION >= 1 && THRUST_MINOR_VERSION >= 8
 
-#define THRUST_SELECT(fn, ...) fn(cuda::getThrustPolicy(), __VA_ARGS__)
+#define THRUST_SELECT(fn, ...) fn(cuda::ThrustArrayFirePolicy(), __VA_ARGS__)
 #define THRUST_SELECT_OUT(res, fn, ...) \
-    res = fn(cuda::getThrustPolicy(), __VA_ARGS__)
+    res = fn(cuda::ThrustArrayFirePolicy(), __VA_ARGS__)
 
 #else
 

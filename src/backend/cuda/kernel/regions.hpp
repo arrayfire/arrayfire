@@ -24,8 +24,6 @@
 #include <thrust/system/cuda/detail/par.h>
 #include <thrust/transform_scan.h>
 
-#include <cstdio>
-
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 

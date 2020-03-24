@@ -17,8 +17,4 @@ cudaError_t synchronize_stream(ThrustArrayFirePolicy) {
     return cudaStreamSynchronize(getActiveStream());
 }
 
-const ThrustArrayFirePolicy& getThrustPolicy() {
-    static ThrustArrayFirePolicy* policy = new ThrustArrayFirePolicy();
-    return *policy;
-}
 }  // namespace cuda
