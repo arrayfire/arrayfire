@@ -377,6 +377,9 @@ cuda_add_library(afcuda
     Array.hpp
     LookupTable1D.hpp
     Param.hpp
+    ThrustAllocator.cuh
+    ThrustArrayFirePolicy.hpp
+    ThrustArrayFirePolicy.cpp
     anisotropic_diffusion.hpp
     approx.hpp
     arith.hpp
@@ -411,7 +414,7 @@ cuda_add_library(afcuda
     device_manager.cpp
     device_manager.hpp
     debug_cuda.hpp
-    debug_thrust.hpp
+    thrust_utils.hpp
     diagonal.cpp
     diagonal.hpp
     diff.cpp
