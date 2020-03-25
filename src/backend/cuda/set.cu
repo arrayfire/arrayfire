@@ -10,17 +10,17 @@
 #include <Array.hpp>
 #include <copy.hpp>
 #include <debug_cuda.hpp>
-#include <debug_thrust.hpp>
+#include <thrust_utils.hpp>
 #include <set.hpp>
 #include <sort.hpp>
 #include <af/dim4.hpp>
-
-#include <algorithm>
 
 #include <thrust/device_ptr.h>
 #include <thrust/set_operations.h>
 #include <thrust/sort.h>
 #include <thrust/unique.h>
+
+#include <algorithm>
 
 namespace cuda {
 using af::dim4;

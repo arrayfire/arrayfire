@@ -10,13 +10,13 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
-#include <debug_thrust.hpp>
 #include <err_cuda.hpp>
 #include <handle.hpp>
 #include <iota.hpp>
 #include <kernel/thrust_sort_by_key.hpp>
 #include <math.hpp>
 #include <thrust/sort.h>
+#include <thrust_utils.hpp>
 
 namespace cuda {
 namespace kernel {

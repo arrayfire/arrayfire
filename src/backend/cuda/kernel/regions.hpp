@@ -9,11 +9,11 @@
 
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
-#include <debug_thrust.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <memory.hpp>
-#include <stdio.h>
+#include <thrust_utils.hpp>
+
 #include <thrust/adjacent_difference.h>
 #include <thrust/binary_search.h>
 #include <thrust/device_vector.h>

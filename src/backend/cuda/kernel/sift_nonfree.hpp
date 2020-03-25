@@ -74,9 +74,9 @@
 
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
-#include <debug_thrust.hpp>
 #include <err_cuda.hpp>
 #include <memory.hpp>
+#include <thrust_utils.hpp>
 #include <af/defines.h>
 #include "shared.hpp"
 
