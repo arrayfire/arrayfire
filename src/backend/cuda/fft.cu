@@ -7,11 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <fft.hpp>
+
 #include <Array.hpp>
 #include <copy.hpp>
 #include <cufft.hpp>
 #include <debug_cuda.hpp>
-#include <fft.hpp>
 #include <math.hpp>
 #include <memory.hpp>
 #include <af/dim4.hpp>

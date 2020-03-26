@@ -5,13 +5,18 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+dependency_check(CUDA_FOUND "CUDA not found.")
+
+include(AFcuda_helpers)
+include(FileToString)
 include(InternalUtils)
 include(select_compute_arch)
 
-dependency_check(CUDA_FOUND "CUDA not found.")
-
-find_cuda_helper_libs(nvrtc)
-find_cuda_helper_libs(nvrtc-builtins)
+# Remove cublas_device library which is no longer included with the cuda
+# toolkit. Fixes issues with older CMake versions
+if(DEFINED CUDA_cublas_device_LIBRARY AND NOT CUDA_cublas_device_LIBRARY)
+  list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES ${CUDA_cublas_device_LIBRARY})
+endif()
 
 if(NOT OPENGL_FOUND)
   # create a dummy gl.h header to satisfy cuda_gl_interop.h requirement
@@ -24,9 +29,50 @@ if(NOT OPENGL_FOUND)
   file(WRITE "${dummy_gl_root}/gl.h" "// Dummy file to satisy cuda_gl_interop")
 endif()
 
-get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
+# Find if CUDA Toolkit is at least 10.0 to use static
+# lapack library. Otherwise, we have to use regular shared library
+if(UNIX AND CUDA_VERSION_MAJOR VERSION_GREATER 10 OR CUDA_VERSION_MAJOR VERSION_EQUAL 10)
+  set(use_static_cuda_lapack ON)
+else()
+  set(use_static_cuda_lapack OFF)
+endif()
 
-include(FileToString)
+find_cuda_helper_libs(nvrtc)
+find_cuda_helper_libs(nvrtc-builtins)
+if(UNIX)
+  af_find_static_cuda_libs(culibos)
+  af_find_static_cuda_libs(cublas_static)
+  af_find_static_cuda_libs(cublasLt_static)
+  af_find_static_cuda_libs(cufft_static)
+  af_find_static_cuda_libs(cusparse_static)
+
+  # FIXME When NVCC resolves this particular issue.
+  # NVCC doesn't like -l<full_path_static_lib>, hence we cannot
+  # use ${CMAKE_*_LIBRARY} variables in the following flags.
+  set(af_cuda_static_flags "-rdc=true;-dlink")
+  set(af_cuda_static_flags "${af_cuda_static_flags};-lculibos")
+  set(af_cuda_static_flags "${af_cuda_static_flags};-lcublas_static")
+  set(af_cuda_static_flags "${af_cuda_static_flags};-lcublasLt_static")
+  set(af_cuda_static_flags "${af_cuda_static_flags};-lcufft_static")
+  set(af_cuda_static_flags "${af_cuda_static_flags};-lcusparse_static")
+
+  if(${use_static_cuda_lapack})
+    af_find_static_cuda_libs(cusolver_static)
+    set(cusolver_static_lib "${CUDA_cusolver_static_LIBRARY}")
+
+    # NVIDIA LAPACK library liblapack_static.a is a subset of LAPACK and only
+    # contains GPU accelerated stedc and bdsqr. The user has to link
+    # libcusolver_static.a with liblapack_static.a in order to build
+    # successfully.
+    af_find_static_cuda_libs(lapack_static)
+
+    set(af_cuda_static_flags "${af_cuda_static_flags};-lcusolver_static")
+  else()
+    set(cusolver_lib "${CUDA_cusolver_LIBRARY}")
+  endif()
+endif()
+
+get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
 
 if(NOT CUDA_architecture_build_targets)
   cuda_detect_installed_gpus(detected_gpus)
@@ -171,53 +217,8 @@ file_to_string(
     NULLTERM
     )
 
-## Copied from FindCUDA.cmake
-## The target_link_library needs to link with the cuda libraries using
-## PRIVATE
-function(cuda_add_library cuda_target)
-  cuda_add_cuda_include_once()
-
-  # Separate the sources from the options
-  cuda_get_sources_and_options(_sources _cmake_options _options ${ARGN})
-  cuda_build_shared_library(_cuda_shared_flag ${ARGN})
-  # Create custom commands and targets for each file.
-  cuda_wrap_srcs( ${cuda_target} OBJ _generated_files ${_sources}
-    ${_cmake_options} ${_cuda_shared_flag}
-    OPTIONS ${_options} )
-
-  # Compute the file name of the intermedate link file used for separable
-  # compilation.
-  cuda_compute_separable_compilation_object_file_name(link_file ${cuda_target} "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-
-  # Add the library.
-  add_library(${cuda_target} ${_cmake_options}
-    ${_generated_files}
-    ${_sources}
-    ${link_file}
-    )
-
-  # Add a link phase for the separable compilation if it has been enabled.  If
-  # it has been enabled then the ${cuda_target}_SEPARABLE_COMPILATION_OBJECTS
-  # variable will have been defined.
-  cuda_link_separable_compilation_objects("${link_file}" ${cuda_target} "${_options}" "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
-
-  target_link_libraries(${cuda_target}
-      PRIVATE ${CUDA_LIBRARIES}
-    )
-
-  # We need to set the linker language based on what the expected generated file
-  # would be. CUDA_C_OR_CXX is computed based on CUDA_HOST_COMPILATION_CPP.
-  set_target_properties(${cuda_target}
-    PROPERTIES
-    LINKER_LANGUAGE ${CUDA_C_OR_CXX}
-    POSITION_INDEPENDENT_CODE ON
-  )
-
-endfunction()
-
 arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
 arrayfire_get_platform_definitions(platform_flags)
-
 
 get_property(boost_includes TARGET Boost::boost PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 get_property(boost_definitions TARGET Boost::boost PROPERTY INTERFACE_COMPILE_DEFINITIONS)
@@ -245,9 +246,78 @@ list(APPEND cuda_cxx_flags ${cxx_definitions})
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
 
+# CUDA static libraries require device linking to successfully link
+# against afcuda target. Device linking requires CUDA_SEPARABLE_COMPILATION
+# to be ON. Therefore, we turn on separable compilation for a subset of
+# source files while compiling af_cuda_static_cuda_library target. Once
+# this subset is compiled, separable compilation is reset to it's original
+# value.
+if(UNIX)
+  # Static linking cuda libs require device linking, which in turn
+  # requires separable compilation.
+  set(pior_val_CUDA_SEPARABLE_COMPILATION OFF)
+  if(DEFINED CUDA_SEPARABLE_COMPILATION)
+    set(pior_val_CUDA_SEPARABLE_COMPILATION ${CUDA_SEPARABLE_COMPILATION})
+  endif()
+  set(CUDA_SEPARABLE_COMPILATION ON)
+endif()
+
+cuda_add_library(af_cuda_static_cuda_library STATIC
+    blas.cu
+    blas.hpp
+    cufft.cu
+    cufft.hpp
+    fft.cu
+    sparse.cu
+    sparse.hpp
+    sparse_arith.cu
+    sparse_arith.hpp
+    sparse_blas.cu
+    sparse_blas.hpp
+    solve.cu
+    solve.hpp
+
+    OPTIONS
+    ${platform_flags} ${cuda_cxx_flags} ${af_cuda_static_flags}
+    -Xcudafe \"--diag_suppress=1427\" -DAFDLL
+)
+
+set_target_properties(af_cuda_static_cuda_library
+  PROPERTIES
+  LINKER_LANGUAGE CXX
+  FOLDER "Generated Targets"
+)
+
+if(UNIX)
+  target_link_libraries(af_cuda_static_cuda_library
+    PRIVATE
+      Boost::boost
+      ${CMAKE_DL_LIBS}
+      ${cusolver_lib}
+      -Wl,--start-group
+      ${CUDA_culibos_LIBRARY} #also a static libary
+      ${CUDA_cublas_static_LIBRARY}
+      ${CUDA_cublasLt_static_LIBRARY}
+      ${CUDA_cufft_static_LIBRARY}
+      ${CUDA_lapack_static_LIBRARY}
+      ${CUDA_cusparse_static_LIBRARY}
+      ${cusolver_static_lib}
+      -Wl,--end-group
+  )
+  set(CUDA_SEPARABLE_COMPILATION ${pior_val_CUDA_SEPARABLE_COMPILATION})
+else()
+  target_link_libraries(af_cuda_static_cuda_library
+    PRIVATE
+      Boost::boost
+      ${CUDA_CUBLAS_LIBRARIES}
+      ${CUDA_CUFFT_LIBRARIES}
+      ${CUDA_cusolver_LIBRARY}
+      ${CUDA_cusparse_LIBRARY}
+  )
+endif()
+
 cuda_add_library(afcuda
     ${thrust_sort_sources}
-    sort.hpp
 
     all.cu
     anisotropic_diffusion.cpp
@@ -390,7 +460,6 @@ cuda_add_library(afcuda
     backend.hpp
     bilateral.hpp
     binary.hpp
-    blas.cpp
     blas.hpp
     canny.hpp
     cast.hpp
@@ -407,7 +476,6 @@ cuda_add_library(afcuda
     cudnn.hpp
     cudnnModule.cpp
     cudnnModule.hpp
-    cufft.cpp
     cufft.hpp
     cusolverDn.cpp
     cusolverDn.hpp
@@ -427,7 +495,6 @@ cuda_add_library(afcuda
     fast.hpp
     fast_pyramid.cpp
     fast_pyramid.hpp
-    fft.cpp
     fft.hpp
     fftconvolve.cpp
     fftconvolve.hpp
@@ -509,15 +576,12 @@ cuda_add_library(afcuda
     shift.hpp
     sift.hpp
     sobel.hpp
-    solve.cpp
     solve.hpp
+    sort.hpp
     sort_by_key.hpp
     sort_index.hpp
-    sparse.cpp
     sparse.hpp
-    sparse_arith.cpp
     sparse_arith.hpp
-    sparse_blas.cpp
     sparse_blas.hpp
     surface.cpp
     surface.hpp
@@ -570,6 +634,8 @@ target_compile_options(afcuda PRIVATE ${cxx_definitions})
 add_library(ArrayFire::afcuda ALIAS afcuda)
 
 add_dependencies(afcuda ${jit_kernel_targets} ${nvrtc_kernel_targets})
+add_dependencies(af_cuda_static_cuda_library ${nvrtc_kernel_targets})
+add_dependencies(afcuda af_cuda_static_cuda_library)
 
 target_include_directories (afcuda
   PUBLIC
@@ -586,29 +652,14 @@ target_include_directories (afcuda
     ${cuDNN_INCLUDE_DIRS}
 )
 
-# Remove cublas_device library which is no longer included with the cuda
-# toolkit. Fixes issues with older CMake versions
-if(DEFINED CUDA_cublas_device_LIBRARY AND NOT CUDA_cublas_device_LIBRARY)
-  list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES ${CUDA_cublas_device_LIBRARY})
-endif()
-
-# Remove cublas_device library which is no longer included with the cuda
-# toolkit. Fixes issues with older CMake versions
-if(DEFINED CUDA_cublas_device_LIBRARY AND NOT CUDA_cublas_device_LIBRARY)
-  list(REMOVE_ITEM CUDA_CUBLAS_LIBRARIES ${CUDA_cublas_device_LIBRARY})
-endif()
-
 target_link_libraries(afcuda
   PRIVATE
     c_api_interface
     cpp_api_interface
     afcommon_interface
-    ${CUDA_nvrtc_LIBRARY}
-    ${CUDA_CUBLAS_LIBRARIES}
-    ${CUDA_CUFFT_LIBRARIES}
-    ${CUDA_cusolver_LIBRARY}
-    ${CUDA_cusparse_LIBRARY}
     ${CMAKE_DL_LIBS}
+    ${CUDA_nvrtc_LIBRARY}
+    af_cuda_static_cuda_library
   )
 
 # If the driver is not found the cuda driver api need to be linked against the
@@ -703,13 +754,17 @@ function(afcu_collect_libs libname)
 endfunction()
 
 if(AF_INSTALL_STANDALONE)
-  afcu_collect_libs(cufft)
   afcu_collect_libs(cudnn)
-  afcu_collect_libs(cublas)
-  afcu_collect_libs(cublasLt)
-  afcu_collect_libs(cusolver)
-  afcu_collect_libs(cusparse)
   afcu_collect_libs(nvrtc FULL_VERSION)
+  if(WIN32)
+    afcu_collect_libs(cufft)
+    afcu_collect_libs(cublas)
+    afcu_collect_libs(cublasLt)
+    afcu_collect_libs(cusolver)
+    afcu_collect_libs(cusparse)
+  elseif(NOT ${use_static_cuda_lapack})
+    afcu_collect_libs(cusolver)
+  endif()
 
   if(APPLE)
     afcu_collect_libs(cudart)

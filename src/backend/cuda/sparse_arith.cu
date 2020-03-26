@@ -7,11 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <kernel/sparse_arith.hpp>
-#include <sparse.hpp>
-
-#include <stdexcept>
-#include <string>
+#include <sparse_arith.hpp>
 
 #include <arith.hpp>
 #include <cast.hpp>
@@ -20,10 +16,15 @@
 #include <complex.hpp>
 #include <copy.hpp>
 #include <cusparse.hpp>
+#include <kernel/sparse_arith.hpp>
 #include <lookup.hpp>
 #include <math.hpp>
 #include <platform.hpp>
+#include <sparse.hpp>
 #include <where.hpp>
+
+#include <stdexcept>
+#include <string>
 
 namespace cuda {
 

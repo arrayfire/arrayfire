@@ -7,8 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/err_common.hpp>
 #include <cublas.hpp>
+
+#include <common/err_common.hpp>
 #include <platform.hpp>
 
 namespace cuda {
