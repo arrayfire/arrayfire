@@ -7,14 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cuda_runtime.h>
-#include <cusparse.hpp>
-#include <platform.hpp>
 #include <sparse_blas.hpp>
 
 #include <common/err_common.hpp>
 #include <complex.hpp>
+#include <cuda_runtime.h>
+#include <cusparse.hpp>
 #include <math.hpp>
+#include <platform.hpp>
+
 #include <stdexcept>
 #include <string>
 

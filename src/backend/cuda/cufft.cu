@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <cufft.hpp>
+
 #include <memory.hpp>
 #include <platform.hpp>
 
