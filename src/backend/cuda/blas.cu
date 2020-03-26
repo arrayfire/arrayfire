@@ -7,11 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#define NVCC
 #include <blas.hpp>
-#include <cublas_v2.h>
-#include <cuda_runtime.h>
-#include <platform.hpp>
 
 #include <arith.hpp>
 #include <cast.hpp>
@@ -20,11 +16,15 @@
 #include <complex.hpp>
 #include <copy.hpp>
 #include <cublas.hpp>
+#include <cublas_v2.h>
+#include <cuda_runtime.h>
 #include <err_cuda.hpp>
 #include <math.hpp>
+#include <platform.hpp>
 #include <reduce.hpp>
 #include <tile.hpp>
 #include <transpose.hpp>
+#include <types.hpp>
 
 #include <cassert>
 #include <functional>

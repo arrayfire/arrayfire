@@ -7,23 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/err_common.hpp>
 #include <solve.hpp>
 
+#include <blas.hpp>
+#include <common/err_common.hpp>
 #include <copy.hpp>
 #include <cublas_v2.h>
 #include <cusolverDn.hpp>
 #include <identity.hpp>
+#include <lu.hpp>
+#include <math.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
-#include <transpose.hpp>
-
-#include <common/err_common.hpp>
-#include <math.hpp>
-
-#include <blas.hpp>
-#include <lu.hpp>
 #include <qr.hpp>
+#include <transpose.hpp>
 
 #include <cstdio>
 
