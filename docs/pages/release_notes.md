@@ -1,6 +1,41 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.7.1
+======
+
+Improvements
+------------
+
+- Improve mtx download for test data \PR{2742}
+- Documentation improvements \PR{2754} \PR{2792} \PR{2797}
+- Remove verbose messages in older CMake versions \PR{2773}
+- Reduce binary size with the use of nvrtc  \PR{2790}
+- Use texture memory to load LUT in orb and fast \PR{2791}
+- Add missing print function for f16 \PR{2784}
+- Add checks for f16 support in the CUDA backend \PR{2784}
+- Create a thrust policy to intercept tmp buffer allocations \PR{2806}
+
+Fixes
+-----
+
+- Fix segfault on exit when ArrayFire is not initialized in the main thread
+- Fix support for CMake 3.5.1 \PR{2771} \PR{2772} \PR{2760}
+- Fix evalMultiple if the input array sizes aren't the same \PR{2766}
+- Fix error when AF_BACKEND_DEFAULT is passed directly to backend \PR{2769}
+- Workaround name collision with AMD OpenCL implementation \PR{2802}
+- Fix on-exit errors with the unified backend \PR{2769}
+- Fix check for f16 compatibility in OpenCL \PR{2773}
+- Fix matmul on Intel OpenCL when passing same array as input \PR{2774}
+- Fix CPU OpenCL blas batching \PR{2774}
+- Fix memory pressure in the default memory manager \PR{2801}
+
+Contributions
+-------------
+Special thanks to our contributors:
+[padentomasello](https://github.com/padentomasello)
+[glavaux2](https://github.com/glavaux2)
+
 v3.7.0
 ======
 
