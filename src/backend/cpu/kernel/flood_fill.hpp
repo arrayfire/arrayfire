@@ -35,16 +35,28 @@ void floodFill(Param<T> out, CParam<T> in, CParam<uint> x, CParam<uint> y,
     UNUSED(connectivity);
 
     using af::dim4;
+    using PtrDist    = typename ParamIterator<T>::difference_type;
     using Point      = std::pair<uint, uint>;
     using Candidates = std::queue<Point>;
 
-    const size_t numSeeds = x.dims().elements();
-    const dim4 inDims     = in.dims();
+    const dim4 dims    = in.dims();
+    const dim4 strides = in.strides();
 
-    auto isInside = [&inDims](uint x, uint y) -> bool {
-        return (x >= 0 && x < inDims[0] && y >= 0 && y < inDims[1]);
+    ParamIterator<T> endOfNeighborhood;
+    const dim4 nhoodRadii(1, 1, 0, 0);
+    const dim4 nhood(2 * nhoodRadii[0] + 1, 2 * nhoodRadii[1] + 1,
+                     2 * nhoodRadii[2] + 1, 2 * nhoodRadii[3] + 1);
+
+    auto isInside = [&dims](uint x, uint y) {
+        return (x >= 0 && x < dims[0] && y >= 0 && y < dims[1]);
     };
-
+    auto leftTopPtr = [&strides, &nhoodRadii](T* ptr, const af::dim4& center) {
+        T* ltPtr = ptr;
+        for (dim_t d = 0; d < AF_MAX_DIMS; ++d) {
+            ltPtr += ((center[d] - nhoodRadii[d]) * strides[d]);
+        }
+        return ltPtr;
+    };
     Candidates queue;
     {
         auto oit = begin(out);
@@ -52,44 +64,50 @@ void floodFill(Param<T> out, CParam<T> in, CParam<uint> x, CParam<uint> y,
              xit != end(x) && yit != end(y); ++xit, ++yit) {
             if (isInside(*xit, *yit)) {
                 queue.emplace(*xit, *yit);
-                oit.operator->()[(*xit) + (*yit) * inDims[0]] = T(2);
+                oit.operator->()[(*xit) + (*yit) * dims[0]] = T(2);
             }
         }
     }
 
-    NeighborhoodIterator<T> inNeighborhood(in, dim4(1, 1, 0, 0));
-    NeighborhoodIterator<T> endOfNeighborhood;
-    NeighborhoodIterator<T> outNeighborhood(out, dim4(1, 1, 0, 0));
+    T* inPtr  = const_cast<T*>(in.get());
+    T* outPtr = out.get();
 
     while (!queue.empty()) {
-        auto p = queue.front();
+        Point& p = queue.front();
 
-        inNeighborhood.setCenter(dim4(p.first, p.second, 0, 0));
-        outNeighborhood.setCenter(dim4(p.first, p.second, 0, 0));
+        const dim4 center(p.first, p.second, 0, 0);
 
-        while (inNeighborhood != endOfNeighborhood) {
-            const dim4 offsetP = inNeighborhood.offset();
-            const uint currx   = static_cast<uint>(p.first + offsetP[0]);
-            const uint curry   = static_cast<uint>(p.second + offsetP[1]);
+        CParam<T> inNHood(const_cast<const T*>(leftTopPtr(inPtr, center)),
+                          nhood, strides);
+        Param<T> outNHood(leftTopPtr(outPtr, center), nhood, strides);
 
-            if (isInside(currx, curry) && (*outNeighborhood == 0)) {
+        ParamIterator<T> inIter(inNHood);
+        ParamIterator<T> outIter(outNHood);
+
+        while (inIter != endOfNeighborhood) {
+            const T* ptr     = inIter.operator->();
+            PtrDist dist     = ptr - inPtr;
+            const uint currx = static_cast<uint>(dist % dims[0]);
+            const uint curry = static_cast<uint>(dist / dims[0]);
+
+            if (isInside(currx, curry) && (*outIter == 0)) {
                 // Current point is inside image boundaries and hasn't been
                 // visited at all.
-                if (*inNeighborhood >= lower && *inNeighborhood <= upper) {
+                if (*inIter >= lower && *inIter <= upper) {
                     // Current pixel is within threshold limits.
                     // Mark as valid and push on to the queue
-                    *outNeighborhood = T(2);
+                    *outIter = T(2);
                     queue.emplace(currx, curry);
                 } else {
                     // Not valid pixel
-                    *outNeighborhood = T(1);
+                    *outIter = T(1);
                 }
             }
             // Both input and output neighborhood iterators
             // should increment in lock step for this algorithm
             // to work correctly
-            ++inNeighborhood;
-            ++outNeighborhood;
+            ++inIter;
+            ++outIter;
         }
         queue.pop();
     }
