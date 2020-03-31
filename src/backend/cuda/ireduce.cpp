@@ -31,8 +31,8 @@ void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
 }
 
 template<af_op_t op, typename T>
-void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
-             const int dim, const Array<uint> &rlen) {
+void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim,
+             const Array<uint> &rlen) {
     kernel::ireduce<T, op>(out, loc.get(), in, dim, rlen);
 }
 
@@ -45,7 +45,8 @@ T ireduce_all(unsigned *loc, const Array<T> &in) {
     template void ireduce<ROp, T>(Array<T> & out, Array<uint> & loc,  \
                                   const Array<T> &in, const int dim); \
     template void rreduce<ROp, T>(Array<T> & out, Array<uint> & loc,  \
-         const Array<T> &in, const int dim, const Array<uint> &rlen); \
+                                  const Array<T> &in, const int dim,  \
+                                  const Array<uint> &rlen);           \
     template T ireduce_all<ROp, T>(unsigned *loc, const Array<T> &in);
 
 // min

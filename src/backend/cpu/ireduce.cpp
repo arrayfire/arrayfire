@@ -23,33 +23,36 @@ using common::half;
 namespace cpu {
 
 template<af_op_t op, typename T>
-using ireduce_dim_func = std::function<void(Param<T>, Param<uint>, const dim_t,
-                                            CParam<T>, const dim_t, const int, CParam<uint>)>;
+using ireduce_dim_func =
+    std::function<void(Param<T>, Param<uint>, const dim_t, CParam<T>,
+                       const dim_t, const int, CParam<uint>)>;
 
 template<af_op_t op, typename T>
 void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
              const int dim) {
-    dim4 odims                                           = in.dims();
-    odims[dim]                                           = 1;
+    dim4 odims       = in.dims();
+    odims[dim]       = 1;
     Array<uint> rlen = createEmptyArray<uint>(af::dim4(0));
     static const ireduce_dim_func<op, T> ireduce_funcs[] = {
         kernel::ireduce_dim<op, T, 1>(), kernel::ireduce_dim<op, T, 2>(),
         kernel::ireduce_dim<op, T, 3>(), kernel::ireduce_dim<op, T, 4>()};
 
-    getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim, rlen);
+    getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim,
+                       rlen);
 }
 
 template<af_op_t op, typename T>
-void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
-             const int dim, const Array<uint> &rlen) {
-    dim4 odims                                           = in.dims();
-    odims[dim]                                           = 1;
+void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim,
+             const Array<uint> &rlen) {
+    dim4 odims = in.dims();
+    odims[dim] = 1;
 
     static const ireduce_dim_func<op, T> ireduce_funcs[] = {
         kernel::ireduce_dim<op, T, 1>(), kernel::ireduce_dim<op, T, 2>(),
         kernel::ireduce_dim<op, T, 3>(), kernel::ireduce_dim<op, T, 4>()};
 
-    getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim, rlen);
+    getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim,
+                       rlen);
 }
 
 template<af_op_t op, typename T>
@@ -87,7 +90,8 @@ T ireduce_all(unsigned *loc, const Array<T> &in) {
     template void ireduce<ROp, T>(Array<T> & out, Array<uint> & loc,  \
                                   const Array<T> &in, const int dim); \
     template void rreduce<ROp, T>(Array<T> & out, Array<uint> & loc,  \
-         const Array<T> &in, const int dim, const Array<uint> &rlen); \
+                                  const Array<T> &in, const int dim,  \
+                                  const Array<uint> &rlen);           \
     template T ireduce_all<ROp, T>(unsigned *loc, const Array<T> &in);
 
 // min

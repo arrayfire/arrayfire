@@ -106,8 +106,8 @@ void maxByKey(array &keys_out, array &vals_out, const array &keys,
     vals_out = array(ovals);
 }
 
-void max(array &val, array &idx, const array &in, const int dim, const array
-         &ragged_len) {
+void max(array &val, array &idx, const array &in, const int dim,
+         const array &ragged_len) {
     af_array oval, oidx;
     AF_THROW(af_max_ragged(&oval, &oidx, in.get(), dim, ragged_len.get()));
     val = array(oval);

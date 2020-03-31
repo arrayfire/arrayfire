@@ -86,17 +86,16 @@ struct ireduce_dim<op, T, 0> {
         const af::dim4 idims    = input.dims();
         const af::dim4 istrides = input.strides();
 
-        T const *const in = input.get();
-        T *out            = output.get();
-        uint *loc         = locParam.get();
-        const uint *rlenptr   = (rlen.get()) ?  rlen.get() + outOffset : nullptr;
+        T const *const in   = input.get();
+        T *out              = output.get();
+        uint *loc           = locParam.get();
+        const uint *rlenptr = (rlen.get()) ? rlen.get() + outOffset : nullptr;
 
         dim_t stride = istrides[dim];
         MinMaxOp<op, T> Op(in[inOffset], 0);
-        int lim = (rlenptr) ? std::min(idims[dim], (dim_t)*rlenptr) : idims[dim];
-        for (dim_t i = 0; i < lim; i++) {
-            Op(in[inOffset + i * stride], i);
-        }
+        int lim =
+            (rlenptr) ? std::min(idims[dim], (dim_t)*rlenptr) : idims[dim];
+        for (dim_t i = 0; i < lim; i++) { Op(in[inOffset + i * stride], i); }
 
         out[outOffset] = Op.m_val;
         loc[outOffset] = Op.m_idx;

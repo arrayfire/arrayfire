@@ -1865,38 +1865,38 @@ TEST(Reduce, SNIPPET_count_by_key_dim) {
 }
 
 TEST(RaggedMax, simple) {
-    const int testKeys[6]   = {1, 2, 3, 4, 5, 6};
+    const int testKeys[6]      = {1, 2, 3, 4, 5, 6};
     const unsigned testVals[2] = {9, 2};
 
     array arr(3, 2, testKeys);
     array keys(1, 2, testVals);
 
     array ragged_max, idx;
-    const int dim       = 0;
+    const int dim = 0;
     max(ragged_max, idx, arr, dim, keys);
 
     const dim4 goldSz(1, 2);
-    const vector<int> gold_reduced{ 3, 5 };
-    const vector<unsigned> gold_idx{ 2, 1 };
+    const vector<int> gold_reduced{3, 5};
+    const vector<unsigned> gold_idx{2, 1};
 
     ASSERT_VEC_ARRAY_EQ(gold_reduced, goldSz, ragged_max);
     ASSERT_VEC_ARRAY_EQ(gold_idx, goldSz, idx);
 }
 
 TEST(RaggedMax, simpleDim1) {
-    const int testKeys[8]   = {1, 2, 3, 4, 5, 6, 7, 8 };
+    const int testKeys[8]      = {1, 2, 3, 4, 5, 6, 7, 8};
     const unsigned testVals[2] = {8, 2};
 
     array arr(2, 4, testKeys);
     array keys(2, 1, testVals);
 
     array ragged_max, idx;
-    const int dim       = 1;
+    const int dim = 1;
     max(ragged_max, idx, arr, dim, keys);
 
     const dim4 goldSz(2, 1);
-    const vector<int> gold_reduced{ 7, 4 };
-    const vector<unsigned> gold_idx{ 3, 1 };
+    const vector<int> gold_reduced{7, 4};
+    const vector<unsigned> gold_idx{3, 1};
 
     ASSERT_VEC_ARRAY_EQ(gold_reduced, goldSz, ragged_max);
     ASSERT_VEC_ARRAY_EQ(gold_idx, goldSz, idx);
@@ -1921,18 +1921,18 @@ void testRangeDim(const int dim, const int rdim_size) {
 }
 
 TEST(RaggedMax, raggedMaxRangeTest) {
-    //testRangeDim(0, 1024);
-    //testRangeDim(1, 1024);
-    //testRangeDim(2, 1024);
-    //testRangeDim(3, 1024);
-    //testRangeDim(0, 4096);
-    //testRangeDim(1, 4096);
-    //testRangeDim(2, 4096);
-    //testRangeDim(3, 4096);
-    //testRangeDim(0, 31);
-    //testRangeDim(1, 31);
-    //testRangeDim(2, 31);
-    //testRangeDim(3, 31);
+    // testRangeDim(0, 1024);
+    // testRangeDim(1, 1024);
+    // testRangeDim(2, 1024);
+    // testRangeDim(3, 1024);
+    // testRangeDim(0, 4096);
+    // testRangeDim(1, 4096);
+    // testRangeDim(2, 4096);
+    // testRangeDim(3, 4096);
+    // testRangeDim(0, 31);
+    // testRangeDim(1, 31);
+    // testRangeDim(2, 31);
+    // testRangeDim(3, 31);
 }
 
 struct ragged_params {
@@ -1950,12 +1950,12 @@ struct ragged_params_t : public ragged_params {
 
     ragged_params_t(size_t reduce_dim_len, int reduce_dim, string testname)
         : testname_(testname) {
-        ragged_params::reduceDim_ = reduce_dim;
+        ragged_params::reduceDim_    = reduce_dim;
         ragged_params::reduceDimLen_ = reduce_dim_len;
-        ragged_params::lType_ = (af_dtype)af::dtype_traits<Tl>::af_type;
-        ragged_params::vType_ = (af_dtype)af::dtype_traits<Tv>::af_type;
-        ragged_params::oType_ = (af_dtype)af::dtype_traits<To>::af_type;
-        ragged_params::testname_ = testname_;
+        ragged_params::lType_        = (af_dtype)af::dtype_traits<Tl>::af_type;
+        ragged_params::vType_        = (af_dtype)af::dtype_traits<Tv>::af_type;
+        ragged_params::oType_        = (af_dtype)af::dtype_traits<To>::af_type;
+        ragged_params::testname_     = testname_;
     }
     ~ragged_params_t() {}
 };
@@ -1970,26 +1970,25 @@ class RaggedReduceMaxRangeP : public ::testing::TestWithParam<ragged_params *> {
         if (noHalfTests(params->vType_)) { return; }
 
         const size_t rdim_size = params->reduceDimLen_;
-        const int dim = params->reduceDim_;
+        const int dim          = params->reduceDim_;
 
         af::dim4 rdim(3, 3, 3, 3);
         rdim[dim] = rdim_size;
-        vals = af::range(rdim, dim, params->vType_);
+        vals      = af::range(rdim, dim, params->vType_);
 
-        rdim[dim] = 1;
+        rdim[dim]   = 1;
         ragged_lens = af::range(rdim, (dim > 0) ? 0 : 1, params->lType_) + 1;
 
         valsReducedGold = af::range(rdim, (dim > 0) ? 0 : 1, params->oType_);
         idxsReducedGold = af::range(rdim, (dim > 0) ? 0 : 1, params->lType_);
-
     }
 
     void TearDown() { delete GetParam(); }
 };
 
 template<typename Tl, typename Tv, typename To>
-ragged_params * ragged_range_data(const string testname, const int testSz,
-                                      const int rdim) {
+ragged_params *ragged_range_data(const string testname, const int testSz,
+                                 const int rdim) {
     return new ragged_params_t<Tl, Tv, To>(testSz, rdim, testname);
 }
 

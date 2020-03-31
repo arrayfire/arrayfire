@@ -755,10 +755,10 @@ static inline void ireduce(af_array *res, af_array *loc, const af_array in,
 template<af_op_t op, typename T>
 static inline void rreduce(af_array *res, af_array *loc, const af_array in,
                            const int dim, const af_array ragged_len) {
-    const Array<T> In  = getArray<T>(in);
+    const Array<T> In     = getArray<T>(in);
     const Array<uint> Len = getArray<uint>(ragged_len);
-    dim4 odims        = In.dims();
-    odims[dim]        = 1;
+    dim4 odims            = In.dims();
+    odims[dim]            = 1;
 
     Array<T> Res    = createEmptyArray<T>(odims);
     Array<uint> Loc = createEmptyArray<uint>(odims);
@@ -838,34 +838,45 @@ static af_err rreduce_common(af_array *val, af_array *idx, const af_array in,
 
         // TODO: make sure ragged_len.dims == in.dims(), except on reduced dim
         const ArrayInfo &key_info = getInfo(ragged_len);
-        dim4 test_dim = in_info.dims();
-        test_dim[dim] = 1;
+        dim4 test_dim             = in_info.dims();
+        test_dim[dim]             = 1;
         ARG_ASSERT(4, test_dim == key_info.dims());
         ARG_ASSERT(4, test_dim == key_info.dims());
-
 
         af_dtype keytype = key_info.getType();
-        //if(keytype != s32 && keytype != u32) { //TODO both integer types?
-        if(keytype != u32) {
-            TYPE_ERROR(4, keytype);
-        }
+        // if(keytype != s32 && keytype != u32) { //TODO both integer types?
+        if (keytype != u32) { TYPE_ERROR(4, keytype); }
 
         af_dtype type = in_info.getType();
         af_array res, loc;
 
         switch (type) {
-            case f32: rreduce<op, float>(&res, &loc, in, dim, ragged_len); break;
-            case f64: rreduce<op, double>(&res, &loc, in, dim, ragged_len); break;
-            case c32: rreduce<op, cfloat>(&res, &loc, in, dim, ragged_len); break;
-            case c64: rreduce<op, cdouble>(&res, &loc, in, dim, ragged_len); break;
+            case f32:
+                rreduce<op, float>(&res, &loc, in, dim, ragged_len);
+                break;
+            case f64:
+                rreduce<op, double>(&res, &loc, in, dim, ragged_len);
+                break;
+            case c32:
+                rreduce<op, cfloat>(&res, &loc, in, dim, ragged_len);
+                break;
+            case c64:
+                rreduce<op, cdouble>(&res, &loc, in, dim, ragged_len);
+                break;
             case u32: rreduce<op, uint>(&res, &loc, in, dim, ragged_len); break;
             case s32: rreduce<op, int>(&res, &loc, in, dim, ragged_len); break;
-            case u64: rreduce<op, uintl>(&res, &loc, in, dim, ragged_len); break;
+            case u64:
+                rreduce<op, uintl>(&res, &loc, in, dim, ragged_len);
+                break;
             case s64: rreduce<op, intl>(&res, &loc, in, dim, ragged_len); break;
-            case u16: rreduce<op, ushort>(&res, &loc, in, dim, ragged_len); break;
-            case s16: rreduce<op, short>(&res, &loc, in, dim, ragged_len); break;
-            case b8:  rreduce<op, char>(&res, &loc, in, dim, ragged_len); break;
-            case u8:  rreduce<op, uchar>(&res, &loc, in, dim, ragged_len); break;
+            case u16:
+                rreduce<op, ushort>(&res, &loc, in, dim, ragged_len);
+                break;
+            case s16:
+                rreduce<op, short>(&res, &loc, in, dim, ragged_len);
+                break;
+            case b8: rreduce<op, char>(&res, &loc, in, dim, ragged_len); break;
+            case u8: rreduce<op, uchar>(&res, &loc, in, dim, ragged_len); break;
             case f16: rreduce<op, half>(&res, &loc, in, dim, ragged_len); break;
             default: TYPE_ERROR(2, type);
         }
@@ -878,7 +889,8 @@ static af_err rreduce_common(af_array *val, af_array *idx, const af_array in,
     return AF_SUCCESS;
 }
 
-af_err af_max_ragged(af_array *val, af_array *idx, const af_array in, const int dim, const af_array ragged_len) {
+af_err af_max_ragged(af_array *val, af_array *idx, const af_array in,
+                     const int dim, const af_array ragged_len) {
     return rreduce_common<af_max_t>(val, idx, in, dim, ragged_len);
 }
 

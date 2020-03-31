@@ -42,7 +42,8 @@ namespace kernel {
 template<typename T, af_op_t op>
 void ireduce_dim_launcher(Param out, cl::Buffer *oidx, Param in,
                           cl::Buffer *iidx, const int dim, const int threads_y,
-                          const bool is_first, const uint groups_all[4], Param rlen) {
+                          const bool is_first, const uint groups_all[4],
+                          Param rlen) {
     std::string ref_name =
         std::string("ireduce_") + std::to_string(dim) + std::string("_") +
         std::string(dtype_traits<T>::getName()) + std::string("_") +
@@ -81,8 +82,9 @@ void ireduce_dim_launcher(Param out, cl::Buffer *oidx, Param in,
     NDRange global(groups_all[0] * groups_all[2] * local[0],
                    groups_all[1] * groups_all[3] * local[1]);
 
-    auto ireduceOp = KernelFunctor<Buffer, KParam, Buffer, Buffer, KParam,
-                                   Buffer, uint, uint, uint, Buffer, KParam>(*entry.ker);
+    auto ireduceOp =
+        KernelFunctor<Buffer, KParam, Buffer, Buffer, KParam, Buffer, uint,
+                      uint, uint, Buffer, KParam>(*entry.ker);
 
     ireduceOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
               *oidx, *in.data, in.info, *iidx, groups_all[0], groups_all[1],
@@ -176,11 +178,13 @@ void ireduce_first_launcher(Param out, cl::Buffer *oidx, Param in,
 
     uint repeat = divup(in.info.dims[0], (local[0] * groups_x));
 
-    auto ireduceOp = KernelFunctor<Buffer, KParam, Buffer, Buffer, KParam,
-                                   Buffer, uint, uint, uint, Buffer, KParam>(*entry.ker);
+    auto ireduceOp =
+        KernelFunctor<Buffer, KParam, Buffer, Buffer, KParam, Buffer, uint,
+                      uint, uint, Buffer, KParam>(*entry.ker);
 
     ireduceOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-              *oidx, *in.data, in.info, *iidx, groups_x, groups_y, repeat, *rlen.data, rlen.info);
+              *oidx, *in.data, in.info, *iidx, groups_x, groups_y, repeat,
+              *rlen.data, rlen.info);
 
     CL_DEBUG_FINISH(getQueue());
 }
@@ -222,6 +226,14 @@ void ireduce_first(Param out, cl::Buffer *oidx, Param in, Param rlen) {
 
 template<typename T, af_op_t op>
 void ireduce(Param out, cl::Buffer *oidx, Param in, int dim, Param rlen) {
+    if (rlen.info.dims[0] * rlen.info.dims[1] * rlen.info.dims[2] *
+            rlen.info.dims[3] ==
+        0) {
+        // empty opencl::Param() does not have nullptr by default
+        // set to nullptr explicitly here for consequent kernel calls
+        // through cl::Buffer's constructor
+        rlen.data = new cl::Buffer();
+    }
     if (dim == 0)
         return ireduce_first<T, op>(out, oidx, in, rlen);
     else
@@ -314,7 +326,7 @@ T ireduce_all(uint *loc, Param in) {
         cl::Buffer *tidx = bufferAlloc(tmp_elements * sizeof(uint));
 
         Param rlen;
-        rlen.data = nullptr;
+        rlen.data = new cl::Buffer();
         ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true,
                                       groups_x, groups_y, rlen);
 

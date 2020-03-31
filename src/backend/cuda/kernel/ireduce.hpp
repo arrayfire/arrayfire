@@ -43,10 +43,10 @@ void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
     blocks.y = divup(blocks.y, blocks.z);
 
     auto ireduceDim =
-    getKernel("cuda::ireduceDim", ireduceSource(),
-              {TemplateTypename<T>(), TemplateArg(op), TemplateArg(dim),
-               TemplateArg(is_first), TemplateArg(threads_y)},
-              {DefineValue(THREADS_X)});
+        getKernel("cuda::ireduceDim", ireduceSource(),
+                  {TemplateTypename<T>(), TemplateArg(op), TemplateArg(dim),
+                   TemplateArg(is_first), TemplateArg(threads_y)},
+                  {DefineValue(THREADS_X)});
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -98,7 +98,8 @@ void ireduce_dim(Param<T> out, uint *olptr, CParam<T> in, CParam<uint> rlen) {
 template<typename T, af_op_t op, bool is_first>
 void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
                             const uint *ilptr, const uint blocks_x,
-                            const uint blocks_y, const uint threads_x, CParam<uint> rlen) {
+                            const uint blocks_y, const uint threads_x,
+                            CParam<uint> rlen) {
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * in.dims[2], blocks_y * in.dims[3]);
     const int maxBlocksY =
@@ -111,13 +112,14 @@ void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
     // threads_x can take values 32, 64, 128, 256
     auto ireduceFirst =
         getKernel("cuda::ireduceFirst", ireduceSource(),
-            {TemplateTypename<T>(), TemplateArg(op),
-             TemplateArg(is_first), TemplateArg(threads_x)},
-            {DefineValue(THREADS_PER_BLOCK)});
+                  {TemplateTypename<T>(), TemplateArg(op),
+                   TemplateArg(is_first), TemplateArg(threads_x)},
+                  {DefineValue(THREADS_PER_BLOCK)});
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    ireduceFirst(qArgs, out, olptr, in, ilptr, blocks_x, blocks_y, repeat, rlen);
+    ireduceFirst(qArgs, out, olptr, in, ilptr, blocks_x, blocks_y, repeat,
+                 rlen);
     POST_LAUNCH_CHECK();
 }
 
@@ -155,7 +157,8 @@ void ireduce_first(Param<T> out, uint *olptr, CParam<T> in, CParam<uint> rlen) {
 }
 
 template<typename T, af_op_t op>
-void ireduce(Param<T> out, uint *olptr, CParam<T> in, int dim, CParam<uint> rlen) {
+void ireduce(Param<T> out, uint *olptr, CParam<T> in, int dim,
+             CParam<uint> rlen) {
     switch (dim) {
         case 0: return ireduce_first<T, op>(out, olptr, in, rlen);
         case 1: return ireduce_dim<T, op, 1>(out, olptr, in, rlen);

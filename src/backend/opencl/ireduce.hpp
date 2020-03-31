@@ -16,8 +16,8 @@ void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
              const int dim);
 
 template<af_op_t op, typename T>
-void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
-             const int dim, const Array<uint> &rlen);
+void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim,
+             const Array<uint> &rlen);
 
 template<af_op_t op, typename T>
 T ireduce_all(unsigned *loc, const Array<T> &in);
