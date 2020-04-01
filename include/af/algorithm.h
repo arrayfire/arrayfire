@@ -219,18 +219,19 @@ namespace af
 #if AF_API_VERSION >= 38
     /**
        C++ Interface for ragged max values in an array
+       Uses an additional input array to determine the number of elements to use along the reduction axis.
 
        \param[out] val will contain the maximum ragged values in \p in along \p dim according to \p ragged_len
        \param[out] idx will contain the locations of the maximum ragged values in \p in along \p dim according to \p ragged_len
        \param[in] in contains the input values to be reduced
+       \param[in] ragged_len array containing number of elements to use when reducing along \p dim
        \param[in] dim The dimension along which the max operation occurs
-       \param[in] ragged_len The number of elements to look at when reducing along \p dim
 
        \ingroup reduce_func_max
 
        \note NaN values are ignored
     */
-    AFAPI void max(array &val, array &idx, const array &in, const int dim, const array &ragged_len);
+    AFAPI void max(array &val, array &idx, const array &in, const array &ragged_len, const int dim);
 #endif
 
     /**
@@ -858,19 +859,20 @@ extern "C" {
 #if AF_API_VERSION >= 38
     /**
        C Interface for finding ragged max values in an array
+       Uses an additional input array to determine the number of elements to use along the reduction axis.
 
        \param[out] val will contain the maximum ragged values in \p in along \p dim according to \p ragged_len
        \param[out] idx will contain the locations of the maximum ragged values in \p in along \p dim according to \p ragged_len
        \param[in] in contains the input values to be reduced
+       \param[in] ragged_len array containing number of elements to use when reducing along \p dim
        \param[in] dim The dimension along which the max operation occurs
-       \param[in] ragged_len The number of elements to look at when reducing along \p dim
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_max
 
        \note NaN values are ignored
     */
-    AFAPI af_err af_max_ragged(af_array *val, af_array *idx, const af_array in, const int dim, const af_array ragged_len);
+    AFAPI af_err af_max_ragged(af_array *val, af_array *idx, const af_array in, const af_array ragged_len, const int dim);
 #endif
 
     /**

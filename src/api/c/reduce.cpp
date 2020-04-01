@@ -822,7 +822,7 @@ af_err af_imax(af_array *val, af_array *idx, const af_array in, const int dim) {
 
 template<af_op_t op>
 static af_err rreduce_common(af_array *val, af_array *idx, const af_array in,
-                             const int dim, const af_array ragged_len) {
+                             const af_array ragged_len, const int dim) {
     try {
         ARG_ASSERT(3, dim >= 0);
         ARG_ASSERT(3, dim < 4);
@@ -841,10 +841,8 @@ static af_err rreduce_common(af_array *val, af_array *idx, const af_array in,
         dim4 test_dim             = in_info.dims();
         test_dim[dim]             = 1;
         ARG_ASSERT(4, test_dim == key_info.dims());
-        ARG_ASSERT(4, test_dim == key_info.dims());
 
         af_dtype keytype = key_info.getType();
-        // if(keytype != s32 && keytype != u32) { //TODO both integer types?
         if (keytype != u32) { TYPE_ERROR(4, keytype); }
 
         af_dtype type = in_info.getType();
@@ -890,8 +888,8 @@ static af_err rreduce_common(af_array *val, af_array *idx, const af_array in,
 }
 
 af_err af_max_ragged(af_array *val, af_array *idx, const af_array in,
-                     const int dim, const af_array ragged_len) {
-    return rreduce_common<af_max_t>(val, idx, in, dim, ragged_len);
+                     const af_array ragged_len, const int dim) {
+    return rreduce_common<af_max_t>(val, idx, in, ragged_len, dim);
 }
 
 template<af_op_t op, typename T>

@@ -1873,7 +1873,7 @@ TEST(RaggedMax, simple) {
 
     array ragged_max, idx;
     const int dim = 0;
-    max(ragged_max, idx, arr, dim, keys);
+    max(ragged_max, idx, arr, keys, dim);
 
     const dim4 goldSz(1, 2);
     const vector<int> gold_reduced{3, 5};
@@ -1892,7 +1892,7 @@ TEST(RaggedMax, simpleDim1) {
 
     array ragged_max, idx;
     const int dim = 1;
-    max(ragged_max, idx, arr, dim, keys);
+    max(ragged_max, idx, arr, keys, dim);
 
     const dim4 goldSz(2, 1);
     const vector<int> gold_reduced{7, 4};
@@ -1911,7 +1911,7 @@ void testRangeDim(const int dim, const int rdim_size) {
     array len = af::range(rdim, (dim > 0) ? 0 : 1, u32) + 1;
 
     array ragged_max, idx;
-    max(ragged_max, idx, arr, dim, len);
+    max(ragged_max, idx, arr, len, dim);
 
     array gold_max = af::range(rdim, (dim > 0) ? 0 : 1, f32);
     array gold_loc = af::range(rdim, (dim > 0) ? 0 : 1, u32);
@@ -2040,8 +2040,6 @@ vector<ragged_params *> generateAllTypesRagged() {
         genRaggedRangeTests<int, int>(),
         genRaggedRangeTests<float, float>(),
         genRaggedRangeTests<double, double>(),
-        //genRaggedRangeTests<cfloat, cfloat>(),
-        //genRaggedRangeTests<cdouble, cdouble>(),
         genRaggedRangeTests<half_float::half, half_float::half>()
     };
 
@@ -2071,7 +2069,7 @@ TEST_P(RaggedReduceMaxRangeP, rangeMaxTest) {
 
     array ragged_max, idx;
     const int dim = GetParam()->reduceDim_;
-    max(ragged_max, idx, vals, dim, ragged_lens);
+    max(ragged_max, idx, vals, ragged_lens, dim);
 
     ASSERT_ARRAYS_EQ(valsReducedGold, ragged_max);
     ASSERT_ARRAYS_EQ(idxsReducedGold, idx);
