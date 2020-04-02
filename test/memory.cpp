@@ -11,7 +11,6 @@
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
-#include <af/event.h>
 #include <af/internal.h>
 #include <af/memory.h>
 #include <af/traits.hpp>
@@ -711,9 +710,6 @@ af_err unlock_fn(af_memory_manager manager, void *ptr, int userLock) {
 
 af_err user_unlock_fn(af_memory_manager manager, void *ptr) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
-    af_event event;
-    af_create_event(&event);
-    af_mark_event(event);
     af_err err = unlock_fn(manager, ptr, /* user */ 1);
     payload->lockedBytes -= payload->table[ptr];
     return err;
@@ -746,7 +742,7 @@ af_err print_info_fn(af_memory_manager manager, char *c, int b) {
 
 af_err get_memory_pressure_fn(af_memory_manager manager, float *out) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
-    if (payload->totalBytes > payload->maxBytes ||
+    if (payload->lockedBytes > payload->maxBytes ||
         payload->totalBuffers > payload->maxBuffers) {
         *out = 1.0;
     } else {
@@ -773,7 +769,7 @@ af_err alloc_fn(af_memory_manager manager, void **ptr,
         get_memory_pressure_fn(manager, &pressure);
         float threshold;
         af_memory_manager_get_memory_pressure_threshold(manager, &threshold);
-        if (pressure > threshold) { signal_memory_cleanup_fn(manager); }
+        if (pressure >= threshold) { signal_memory_cleanup_fn(manager); }
 
         af_memory_manager_native_alloc(manager, ptr, size);
 

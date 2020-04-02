@@ -236,12 +236,14 @@ namespace af
     AFAPI void deviceGC();
     /// @}
 
-    /// \brief Set the resolution of memory chunks
+    /// \brief Set the resolution of memory chunks. Works only with the default
+    /// memory manager - throws if a custom memory manager is set.
     ///
     /// \ingroup device_func_mem
     AFAPI void setMemStepSize(const size_t size);
 
-    /// \brief Get the resolution of memory chunks
+    /// \brief Get the resolution of memory chunks. Works only with the default
+    /// memory manager - throws if a custom memory manager is set.
     ///
     /// \ingroup device_func_mem
     AFAPI size_t getMemStepSize();
@@ -395,13 +397,17 @@ extern "C" {
     AFAPI af_err af_device_gc();
 
     /**
-       Set the minimum memory chunk size
+       Set the minimum memory chunk size. Works only with the default
+       memory manager - returns an error if a custom memory manager is set.
+
        \ingroup device_func_mem
     */
     AFAPI af_err af_set_mem_step_size(const size_t step_bytes);
 
     /**
-       Get the minimum memory chunk size
+       Get the minimum memory chunk size. Works only with the default
+       memory manager - returns an error if a custom memory manager is set.
+
        \ingroup device_func_mem
     */
     AFAPI af_err af_get_mem_step_size(size_t *step_bytes);
