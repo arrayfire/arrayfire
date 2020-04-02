@@ -16,6 +16,11 @@ particular is that instead of wasting time copying and reformatting data from
 the GPU to the host and back to the GPU, we can draw directly from GPU-data to
 GPU-framebuffers! This saves 2 memory copies.
 
+Visualizations can be manipulated with a mouse. The following actions are available:
+- zoom (Alt + Mouse Left Click, move up & down)
+- pan (Just left click and drag)
+- rotation (Mouse right click - track ball rotation).
+
 Let's see exactly what visuals we can illuminate with forge and how Arrayfire
 anneals the data between the two libraries.
 
