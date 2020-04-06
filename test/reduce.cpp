@@ -1902,39 +1902,6 @@ TEST(RaggedMax, simpleDim1) {
     ASSERT_VEC_ARRAY_EQ(gold_idx, goldSz, idx);
 }
 
-void testRangeDim(const int dim, const int rdim_size) {
-    af::dim4 rdim(3, 3, 3, 3);
-    rdim[dim] = rdim_size;
-    array arr = af::range(rdim, dim);
-
-    rdim[dim] = 1;
-    array len = af::range(rdim, (dim > 0) ? 0 : 1, u32) + 1;
-
-    array ragged_max, idx;
-    max(ragged_max, idx, arr, len, dim);
-
-    array gold_max = af::range(rdim, (dim > 0) ? 0 : 1, f32);
-    array gold_loc = af::range(rdim, (dim > 0) ? 0 : 1, u32);
-
-    ASSERT_ARRAYS_EQ(gold_max, ragged_max);
-    ASSERT_ARRAYS_EQ(gold_loc, idx);
-}
-
-TEST(RaggedMax, raggedMaxRangeTest) {
-    // testRangeDim(0, 1024);
-    // testRangeDim(1, 1024);
-    // testRangeDim(2, 1024);
-    // testRangeDim(3, 1024);
-    // testRangeDim(0, 4096);
-    // testRangeDim(1, 4096);
-    // testRangeDim(2, 4096);
-    // testRangeDim(3, 4096);
-    // testRangeDim(0, 31);
-    // testRangeDim(1, 31);
-    // testRangeDim(2, 31);
-    // testRangeDim(3, 31);
-}
-
 struct ragged_params {
     size_t reduceDimLen_;
     int reduceDim_;

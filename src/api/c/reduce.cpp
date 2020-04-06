@@ -837,12 +837,12 @@ static af_err rreduce_common(af_array *val, af_array *idx, const af_array in,
         }
 
         // TODO: make sure ragged_len.dims == in.dims(), except on reduced dim
-        const ArrayInfo &key_info = getInfo(ragged_len);
-        dim4 test_dim             = in_info.dims();
-        test_dim[dim]             = 1;
-        ARG_ASSERT(4, test_dim == key_info.dims());
+        const ArrayInfo &ragged_info = getInfo(ragged_len);
+        dim4 test_dim                = in_info.dims();
+        test_dim[dim]                = 1;
+        ARG_ASSERT(4, test_dim == ragged_info.dims());
 
-        af_dtype keytype = key_info.getType();
+        af_dtype keytype = ragged_info.getType();
         if (keytype != u32) { TYPE_ERROR(4, keytype); }
 
         af_dtype type = in_info.getType();
