@@ -10,7 +10,8 @@
 __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
                                  __global uint *olData, const __global T *iData,
                                  KParam iInfo, const __global uint *ilData,
-                                 uint groups_x, uint groups_y, uint group_dim) {
+                                 uint groups_x, uint groups_y, uint group_dim,
+                                 __global uint *rlenptr, KParam rlen) {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const uint lid  = lidy * THREADS_X + lidx;
@@ -28,10 +29,16 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     // There are get_local_size(1) elements per group for in
     // Hence increment ids[kDim] just after offseting out and before offsetting
     // in
+    bool rlen_valid = (ids[0] < rlen.dims[0]) && (ids[1] < rlen.dims[1]) &&
+                      (ids[2] < rlen.dims[2]) && (ids[3] < rlen.dims[3]);
+    rlenptr += (rlenptr && rlen_valid) ?  ids[3] * rlen.strides[3] + ids[2] * rlen.strides[2] +
+             ids[1] * rlen.strides[1] + ids[0] + rlen.offset : 0;
+
     oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
              ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
     olData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
               ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
+
     const uint id_dim_out = ids[kDim];
 
     ids[kDim] = ids[kDim] * get_local_size(1) + lidy;
@@ -56,14 +63,18 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     T out_val    = init;
     uint out_idx = id_dim_in;
 
-    if (is_valid && id_dim_in < iInfo.dims[kDim]) {
+    uint lim = rlenptr ? *rlenptr : iInfo.dims[kDim];
+    lim = (IS_FIRST) ? min((uint)iInfo.dims[kDim], lim) : lim;
+    bool within_ragged_bounds = (IS_FIRST) ? (out_idx < lim) :
+                                ((rlenptr) ? (is_valid) && (*ilData < lim) : true);
+    if (is_valid && id_dim_in < iInfo.dims[kDim] && within_ragged_bounds) {
         out_val = *iData;
         if (!IS_FIRST) out_idx = *ilData;
     }
 
     const uint id_dim_in_start = id_dim_in + group_dim * get_local_size(1);
 
-    for (int id = id_dim_in_start; is_valid && (id < iInfo.dims[kDim]);
+    for (int id = id_dim_in_start; is_valid && (id < lim);
          id += group_dim * get_local_size(1)) {
         iData = iData + group_dim * get_local_size(1) * istride_dim;
 

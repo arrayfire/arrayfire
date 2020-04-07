@@ -26,7 +26,14 @@ namespace cuda {
 template<af_op_t op, typename T>
 void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
              const int dim) {
-    kernel::ireduce<T, op>(out, loc.get(), in, dim);
+    Array<uint> rlen = createEmptyArray<uint>(af::dim4(0));
+    kernel::ireduce<T, op>(out, loc.get(), in, dim, rlen);
+}
+
+template<af_op_t op, typename T>
+void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim,
+             const Array<uint> &rlen) {
+    kernel::ireduce<T, op>(out, loc.get(), in, dim, rlen);
 }
 
 template<af_op_t op, typename T>
@@ -37,6 +44,9 @@ T ireduce_all(unsigned *loc, const Array<T> &in) {
 #define INSTANTIATE(ROp, T)                                           \
     template void ireduce<ROp, T>(Array<T> & out, Array<uint> & loc,  \
                                   const Array<T> &in, const int dim); \
+    template void rreduce<ROp, T>(Array<T> & out, Array<uint> & loc,  \
+                                  const Array<T> &in, const int dim,  \
+                                  const Array<uint> &rlen);           \
     template T ireduce_all<ROp, T>(unsigned *loc, const Array<T> &in);
 
 // min

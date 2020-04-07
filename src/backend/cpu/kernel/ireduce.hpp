@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 #include <ops.hpp>
+#include <algorithm>
 
 namespace cpu {
 namespace kernel {
@@ -64,7 +65,7 @@ template<af_op_t op, typename T, int D>
 struct ireduce_dim {
     void operator()(Param<T> output, Param<uint> locParam,
                     const dim_t outOffset, CParam<T> input,
-                    const dim_t inOffset, const int dim) {
+                    const dim_t inOffset, const int dim, CParam<uint> rlen) {
         const af::dim4 odims    = output.dims();
         const af::dim4 ostrides = output.strides();
         const af::dim4 istrides = input.strides();
@@ -72,7 +73,7 @@ struct ireduce_dim {
         for (dim_t i = 0; i < odims[D1]; i++) {
             ireduce_dim<op, T, D1>()(output, locParam,
                                      outOffset + i * ostrides[D1], input,
-                                     inOffset + i * istrides[D1], dim);
+                                     inOffset + i * istrides[D1], dim, rlen);
         }
     }
 };
@@ -81,19 +82,20 @@ template<af_op_t op, typename T>
 struct ireduce_dim<op, T, 0> {
     void operator()(Param<T> output, Param<uint> locParam,
                     const dim_t outOffset, CParam<T> input,
-                    const dim_t inOffset, const int dim) {
+                    const dim_t inOffset, const int dim, CParam<uint> rlen) {
         const af::dim4 idims    = input.dims();
         const af::dim4 istrides = input.strides();
 
-        T const *const in = input.get();
-        T *out            = output.get();
-        uint *loc         = locParam.get();
+        T const *const in   = input.get();
+        T *out              = output.get();
+        uint *loc           = locParam.get();
+        const uint *rlenptr = (rlen.get()) ? rlen.get() + outOffset : nullptr;
 
         dim_t stride = istrides[dim];
         MinMaxOp<op, T> Op(in[inOffset], 0);
-        for (dim_t i = 0; i < idims[dim]; i++) {
-            Op(in[inOffset + i * stride], i);
-        }
+        int lim =
+            (rlenptr) ? std::min(idims[dim], (dim_t)*rlenptr) : idims[dim];
+        for (dim_t i = 0; i < lim; i++) { Op(in[inOffset + i * stride], i); }
 
         out[outOffset] = Op.m_val;
         loc[outOffset] = Op.m_idx;

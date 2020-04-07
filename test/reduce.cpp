@@ -381,6 +381,26 @@ array ptrToArray(size_t size, void *ptr, af_dtype type) {
     return res;
 }
 
+array ptrToArray(af::dim4 size, void *ptr, af_dtype type) {
+    array res;
+    switch (type) {
+        case f32: res = array(size, (float *)ptr); break;
+        case f64: res = array(size, (double *)ptr); break;
+        case c32: res = array(size, (cfloat *)ptr); break;
+        case c64: res = array(size, (cdouble *)ptr); break;
+        case u32: res = array(size, (unsigned *)ptr); break;
+        case s32: res = array(size, (int *)ptr); break;
+        case u64: res = array(size, (unsigned long long *)ptr); break;
+        case s64: res = array(size, (long long *)ptr); break;
+        case u16: res = array(size, (unsigned short *)ptr); break;
+        case s16: res = array(size, (short *)ptr); break;
+        case b8: res = array(size, (char *)ptr); break;
+        case u8: res = array(size, (unsigned char *)ptr); break;
+        case f16: res = array(size, (half_float::half *)ptr); break;
+    }
+    return res;
+}
+
 class ReduceByKeyP : public ::testing::TestWithParam<reduce_by_key_params *> {
    public:
     array keys, vals;
@@ -1842,4 +1862,183 @@ TEST(Reduce, SNIPPET_count_by_key_dim) {
 
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals);
+}
+
+TEST(RaggedMax, simple) {
+    const int testKeys[6]      = {1, 2, 3, 4, 5, 6};
+    const unsigned testVals[2] = {9, 2};
+
+    array arr(3, 2, testKeys);
+    array keys(1, 2, testVals);
+
+    array ragged_max, idx;
+    const int dim = 0;
+    max(ragged_max, idx, arr, keys, dim);
+
+    const dim4 goldSz(1, 2);
+    const vector<int> gold_reduced{3, 5};
+    const vector<unsigned> gold_idx{2, 1};
+
+    ASSERT_VEC_ARRAY_EQ(gold_reduced, goldSz, ragged_max);
+    ASSERT_VEC_ARRAY_EQ(gold_idx, goldSz, idx);
+}
+
+TEST(RaggedMax, simpleDim1) {
+    const int testKeys[8]      = {1, 2, 3, 4, 5, 6, 7, 8};
+    const unsigned testVals[2] = {8, 2};
+
+    array arr(2, 4, testKeys);
+    array keys(2, 1, testVals);
+
+    array ragged_max, idx;
+    const int dim = 1;
+    max(ragged_max, idx, arr, keys, dim);
+
+    const dim4 goldSz(2, 1);
+    const vector<int> gold_reduced{7, 4};
+    const vector<unsigned> gold_idx{3, 1};
+
+    ASSERT_VEC_ARRAY_EQ(gold_reduced, goldSz, ragged_max);
+    ASSERT_VEC_ARRAY_EQ(gold_idx, goldSz, idx);
+}
+
+struct ragged_params {
+    size_t reduceDimLen_;
+    int reduceDim_;
+    af_dtype lType_, vType_, oType_;
+    string testname_;
+
+    virtual ~ragged_params() {}
+};
+
+template<typename Tl, typename Tv, typename To>
+struct ragged_params_t : public ragged_params {
+    string testname_;
+
+    ragged_params_t(size_t reduce_dim_len, int reduce_dim, string testname)
+        : testname_(testname) {
+        ragged_params::reduceDim_    = reduce_dim;
+        ragged_params::reduceDimLen_ = reduce_dim_len;
+        ragged_params::lType_        = (af_dtype)af::dtype_traits<Tl>::af_type;
+        ragged_params::vType_        = (af_dtype)af::dtype_traits<Tv>::af_type;
+        ragged_params::oType_        = (af_dtype)af::dtype_traits<To>::af_type;
+        ragged_params::testname_     = testname_;
+    }
+    ~ragged_params_t() {}
+};
+
+class RaggedReduceMaxRangeP : public ::testing::TestWithParam<ragged_params *> {
+   public:
+    array vals, ragged_lens;
+    array valsReducedGold, idxsReducedGold;
+
+    void SetUp() {
+        ragged_params *params = GetParam();
+        if (noHalfTests(params->vType_)) { return; }
+
+        const size_t rdim_size = params->reduceDimLen_;
+        const int dim          = params->reduceDim_;
+
+        af::dim4 rdim(3, 3, 3, 3);
+        rdim[dim] = rdim_size;
+        vals      = af::range(rdim, dim, params->vType_);
+
+        rdim[dim]   = 1;
+        ragged_lens = af::range(rdim, (dim > 0) ? 0 : 1, params->lType_) + 1;
+
+        valsReducedGold = af::range(rdim, (dim > 0) ? 0 : 1, params->oType_);
+        idxsReducedGold = af::range(rdim, (dim > 0) ? 0 : 1, params->lType_);
+    }
+
+    void TearDown() { delete GetParam(); }
+};
+
+template<typename Tl, typename Tv, typename To>
+ragged_params *ragged_range_data(const string testname, const int testSz,
+                                 const int rdim) {
+    return new ragged_params_t<Tl, Tv, To>(testSz, rdim, testname);
+}
+
+// clang-format off
+template<typename Tv, typename To>
+vector<ragged_params *> genRaggedRangeTests() {
+  return {ragged_range_data<unsigned, Tv, To>("ragged_range", 31,          0),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 32,          0),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 33,          0),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 255,         0),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 256,         0),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 257,         0),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1024,        0),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1025,        0),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1024 * 1025, 0),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 31,          1),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 32,          1),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 33,          1),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 255,         1),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 256,         1),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 257,         1),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1024,        1),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1025,        1),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1024 * 1025, 1),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 31,          2),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 32,          2),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 33,          2),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 255,         2),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 256,         2),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 257,         2),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1024,        2),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1025,        2),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1024 * 1025, 2),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 31,          3),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 32,          3),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 33,          3),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 255,         3),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 256,         3),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 257,         3),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1024,        3),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1025,        3),
+          ragged_range_data<unsigned, Tv, To>("ragged_range", 1024 * 1025, 3),
+    };
+}
+
+vector<ragged_params *> generateAllTypesRagged() {
+    vector<ragged_params *> out;
+    vector<vector<ragged_params *> > tmp{
+        genRaggedRangeTests<int, int>(),
+        genRaggedRangeTests<float, float>(),
+        genRaggedRangeTests<double, double>(),
+        genRaggedRangeTests<half_float::half, half_float::half>()
+    };
+
+    for (auto &v : tmp) { copy(begin(v), end(v), back_inserter(out)); }
+    return out;
+}
+
+template<typename TestClass>
+string testNameGeneratorRagged(
+    const ::testing::TestParamInfo<typename TestClass::ParamType> info) {
+    af_dtype lt = info.param->lType_;
+    af_dtype vt = info.param->vType_;
+    size_t size = info.param->reduceDimLen_;
+    int rdim = info.param->reduceDim_;
+    std::stringstream s;
+    s << info.param->testname_ << "_lenType_" << lt << "_valueType_" << vt
+      << "_size_" << size << "_reduceDim_" << rdim;
+    return s.str();
+}
+
+INSTANTIATE_TEST_CASE_P(RaggedReduceTests, RaggedReduceMaxRangeP,
+                        ::testing::ValuesIn(generateAllTypesRagged()),
+                        testNameGeneratorRagged<RaggedReduceMaxRangeP>);
+
+TEST_P(RaggedReduceMaxRangeP, rangeMaxTest) {
+    if (noHalfTests(GetParam()->vType_)) { return; }
+
+    array ragged_max, idx;
+    const int dim = GetParam()->reduceDim_;
+    max(ragged_max, idx, vals, ragged_lens, dim);
+
+    ASSERT_ARRAYS_EQ(valsReducedGold, ragged_max);
+    ASSERT_ARRAYS_EQ(idxsReducedGold, idx);
+
 }

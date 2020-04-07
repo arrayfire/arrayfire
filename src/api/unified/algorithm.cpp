@@ -176,3 +176,9 @@ af_err af_set_intersect(af_array *out, const af_array first,
     CHECK_ARRAYS(first, second);
     CALL(af_set_intersect, out, first, second, is_unique);
 }
+
+af_err af_max_ragged(af_array *vals, af_array *idx, const af_array in,
+                     const af_array ragged_len, const int dim) {
+    CHECK_ARRAYS(in, ragged_len);
+    CALL(af_max_ragged, vals, idx, in, ragged_len, dim);
+}

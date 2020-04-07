@@ -32,7 +32,7 @@ static inline std::string ireduceSource() {
 template<typename T, af_op_t op, int dim, bool is_first>
 void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
                           const uint *ilptr, const uint threads_y,
-                          const dim_t blocks_dim[4]) {
+                          const dim_t blocks_dim[4], CParam<uint> rlen) {
     dim3 threads(THREADS_X, threads_y);
 
     dim3 blocks(blocks_dim[0] * blocks_dim[2], blocks_dim[1] * blocks_dim[3]);
@@ -51,13 +51,13 @@ void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
     ireduceDim(qArgs, out, olptr, in, ilptr, blocks_dim[0], blocks_dim[1],
-               blocks_dim[dim]);
+               blocks_dim[dim], rlen);
 
     POST_LAUNCH_CHECK();
 }
 
 template<typename T, af_op_t op, int dim>
-void ireduce_dim(Param<T> out, uint *olptr, CParam<T> in) {
+void ireduce_dim(Param<T> out, uint *olptr, CParam<T> in, CParam<uint> rlen) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.dims[dim]));
     uint threads_x = THREADS_X;
 
@@ -85,20 +85,21 @@ void ireduce_dim(Param<T> out, uint *olptr, CParam<T> in) {
     }
 
     ireduce_dim_launcher<T, op, dim, true>(tmp, tlptr, in, NULL, threads_y,
-                                           blocks_dim);
+                                           blocks_dim, rlen);
 
     if (blocks_dim[dim] > 1) {
         blocks_dim[dim] = 1;
 
         ireduce_dim_launcher<T, op, dim, false>(out, olptr, tmp, tlptr,
-                                                threads_y, blocks_dim);
+                                                threads_y, blocks_dim, rlen);
     }
 }
 
 template<typename T, af_op_t op, bool is_first>
 void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
                             const uint *ilptr, const uint blocks_x,
-                            const uint blocks_y, const uint threads_x) {
+                            const uint blocks_y, const uint threads_x,
+                            CParam<uint> rlen) {
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * in.dims[2], blocks_y * in.dims[3]);
     const int maxBlocksY =
@@ -117,12 +118,13 @@ void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    ireduceFirst(qArgs, out, olptr, in, ilptr, blocks_x, blocks_y, repeat);
+    ireduceFirst(qArgs, out, olptr, in, ilptr, blocks_x, blocks_y, repeat,
+                 rlen);
     POST_LAUNCH_CHECK();
 }
 
 template<typename T, af_op_t op>
-void ireduce_first(Param<T> out, uint *olptr, CParam<T> in) {
+void ireduce_first(Param<T> out, uint *olptr, CParam<T> in, CParam<uint> rlen) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
     uint threads_y = THREADS_PER_BLOCK / threads_x;
@@ -146,21 +148,22 @@ void ireduce_first(Param<T> out, uint *olptr, CParam<T> in) {
     }
 
     ireduce_first_launcher<T, op, true>(tmp, tlptr, in, NULL, blocks_x,
-                                        blocks_y, threads_x);
+                                        blocks_y, threads_x, rlen);
 
     if (blocks_x > 1) {
         ireduce_first_launcher<T, op, false>(out, olptr, tmp, tlptr, 1,
-                                             blocks_y, threads_x);
+                                             blocks_y, threads_x, rlen);
     }
 }
 
 template<typename T, af_op_t op>
-void ireduce(Param<T> out, uint *olptr, CParam<T> in, int dim) {
+void ireduce(Param<T> out, uint *olptr, CParam<T> in, int dim,
+             CParam<uint> rlen) {
     switch (dim) {
-        case 0: return ireduce_first<T, op>(out, olptr, in);
-        case 1: return ireduce_dim<T, op, 1>(out, olptr, in);
-        case 2: return ireduce_dim<T, op, 2>(out, olptr, in);
-        case 3: return ireduce_dim<T, op, 3>(out, olptr, in);
+        case 0: return ireduce_first<T, op>(out, olptr, in, rlen);
+        case 1: return ireduce_dim<T, op, 1>(out, olptr, in, rlen);
+        case 2: return ireduce_dim<T, op, 2>(out, olptr, in, rlen);
+        case 3: return ireduce_dim<T, op, 3>(out, olptr, in, rlen);
     }
 }
 
@@ -210,8 +213,10 @@ T ireduce_all(uint *idx, CParam<T> in) {
         auto tlptr_alloc = memAlloc<uint>(tmp_elements);
         tmp.ptr          = tmp_alloc.get();
         tlptr            = tlptr_alloc.get();
+        af::dim4 emptysz(0);
+        CParam<uint> rlen(nullptr, emptysz.get(), emptysz.get());
         ireduce_first_launcher<T, op, true>(tmp, tlptr, in, NULL, blocks_x,
-                                            blocks_y, threads_x);
+                                            blocks_y, threads_x, rlen);
 
         unique_ptr<T[]> h_ptr(new T[tmp_elements]);
         unique_ptr<uint[]> h_lptr(new uint[tmp_elements]);
