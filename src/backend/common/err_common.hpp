@@ -9,7 +9,10 @@
 
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
 #include <boost/stacktrace.hpp>
+#pragma GCC diagnostic pop
 #include <common/defines.hpp>
 #include <af/defines.h>
 
