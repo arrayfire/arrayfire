@@ -52,13 +52,15 @@ shared_ptr<logger> loggerFactory(string name) {
 }
 
 string bytesToString(size_t bytes) {
-    static array<const char *, 5> units{{"B", "KB", "MB", "GB", "TB"}};
+    constexpr array<const char *, 7> units{
+        {"B", "KB", "MB", "GB", "TB", "PB", "EB"}};
     size_t count     = 0;
     double fbytes    = static_cast<double>(bytes);
     size_t num_units = units.size();
     for (count = 0; count < num_units && fbytes > 1000.0f; count++) {
         fbytes *= (1.0f / 1024.0f);
     }
+    if (count == units.size()) count--;
     return fmt::format("{:.3g} {}", fbytes, units[count]);
 }
 }  // namespace common
