@@ -476,7 +476,7 @@ af_err af_memory_manager_get_memory_pressure_threshold(af_memory_manager handle,
                                                        float *value) {
     try {
         MemoryManager &manager = getMemoryManager(handle);
-        manager.wrapper->getMemoryPressureThreshold();
+        *value                 = manager.wrapper->getMemoryPressureThreshold();
     }
     CATCHALL;
 
