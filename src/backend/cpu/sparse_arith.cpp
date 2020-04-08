@@ -27,25 +27,28 @@
 #include <string>
 #include <vector>
 
-namespace cpu {
+using std::numeric_limits;
+using common::SparseArray;
+using common::createArrayDataSparseArray;
+using common::createEmptySparseArray;
 
-using namespace common;
+namespace cpu {
 
 template<typename T>
 T getInf() {
-    return scalar<T>(std::numeric_limits<T>::infinity());
+    return scalar<T>(numeric_limits<T>::infinity());
 }
 
 template<>
 cfloat getInf() {
-    return scalar<cfloat, float>(std::numeric_limits<float>::infinity(),
-                                 std::numeric_limits<float>::infinity());
+    return scalar<cfloat, float>(numeric_limits<float>::infinity(),
+                                 numeric_limits<float>::infinity());
 }
 
 template<>
 cdouble getInf() {
-    return scalar<cdouble, double>(std::numeric_limits<double>::infinity(),
-                                   std::numeric_limits<double>::infinity());
+    return scalar<cdouble, double>(numeric_limits<double>::infinity(),
+                                   numeric_limits<double>::infinity());
 }
 
 template<typename T, af_op_t op>
@@ -109,7 +112,7 @@ template<typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     af::storage sfmt = lhs.getStorage();
 
-    const dim4 dims = lhs.dims();
+    const dim4 &dims = lhs.dims();
     const uint M    = dims[0];
     const uint N    = dims[1];
 

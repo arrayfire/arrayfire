@@ -16,7 +16,13 @@
 #include <af/defines.h>
 
 using af::dim4;
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 static inline af_array diff1(const af_array in, const int dim) {

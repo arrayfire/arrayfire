@@ -185,8 +185,6 @@ void sort_by_key_tmplt(af_array *okey, af_array *oval, const af_array ikey,
             break;
         default: TYPE_ERROR(1, vtype);
     }
-
-    return;
 }
 
 af_err af_sort_by_key(af_array *out_keys, af_array *out_values,

@@ -201,7 +201,7 @@ struct unaryOpCplxFun<Tc, Tr, af_log_t> {
         // log(r)
         Array<Tr> a_out = unaryOp<Tr, af_log_t>(r);
         // phi
-        Array<Tr> b_out = phi;
+        const Array<Tr> &b_out = phi;
 
         // log(r) + i * phi
         return cplx<Tc, Tr>(a_out, b_out, a_out.dims());
@@ -631,14 +631,16 @@ static inline af_array checkOp(const af_array in) {
 
 template<af_op_t op>
 struct cplxLogicOp {
-    af_array operator()(Array<char> resR, Array<char> resI, dim4 dims) {
+    af_array operator()(const Array<char> &resR, const Array<char> &resI,
+                        const dim4 &dims) {
         return getHandle(logicOp<char, af_or_t>(resR, resI, dims));
     }
 };
 
 template<>
 struct cplxLogicOp<af_iszero_t> {
-    af_array operator()(Array<char> resR, Array<char> resI, dim4 dims) {
+    af_array operator()(const Array<char> &resR, const Array<char> &resI,
+                        const dim4 &dims) {
         return getHandle(logicOp<char, af_and_t>(resR, resI, dims));
     }
 };
@@ -652,7 +654,7 @@ static inline af_array checkOpCplx(const af_array in) {
     Array<char> resI = checkOp<BT, op>(I);
 
     const ArrayInfo &in_info = getInfo(in);
-    dim4 dims                = in_info.dims();
+    const dim4 &dims         = in_info.dims();
     cplxLogicOp<op> cplxLogic;
     af_array res = cplxLogic(resR, resI, dims);
 
@@ -669,7 +671,7 @@ static af_err af_check(af_array *out, const af_array in) {
 
         // Convert all inputs to floats / doubles / complex
         af_dtype type = implicit(in_type, f32);
-        if (in_type == f16) type = f16;
+        if (in_type == f16) { type = f16; }
 
         switch (type) {
             case f32: res = checkOp<float, op>(in); break;

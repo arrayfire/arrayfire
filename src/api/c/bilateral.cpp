@@ -16,7 +16,9 @@
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::bilateral;
+using detail::uchar;
+using detail::uint;
 
 template<typename inType, typename outType, bool isColor>
 static inline af_array bilateral(const af_array &in, const float &sp_sig,
@@ -74,8 +76,11 @@ static af_err bilateral(af_array *out, const af_array &in, const float &s_sigma,
 
 af_err af_bilateral(af_array *out, const af_array in, const float spatial_sigma,
                     const float chromatic_sigma, const bool isColor) {
-    if (isColor)
-        return bilateral<true>(out, in, spatial_sigma, chromatic_sigma);
-    else
-        return bilateral<false>(out, in, spatial_sigma, chromatic_sigma);
+    af_err err = AF_ERR_UNKNOWN;
+    if (isColor) {
+        err = bilateral<true>(out, in, spatial_sigma, chromatic_sigma);
+    } else {
+        err = bilateral<false>(out, in, spatial_sigma, chromatic_sigma);
+    }
+    return err;
 }

@@ -10,12 +10,14 @@
 #include <common/err_common.hpp>
 #include <af/device.h>
 #include <af/exception.h>
+
 #include <algorithm>
 #include <string>
 
 void af_get_last_error(char **str, dim_t *len) {
     std::string &global_error_string = get_global_error_string();
-    dim_t slen = std::min(MAX_ERR_SIZE, (int)global_error_string.size());
+    dim_t slen =
+        std::min(MAX_ERR_SIZE, static_cast<int>(global_error_string.size()));
 
     if (len && slen == 0) {
         *len = 0;
@@ -23,13 +25,13 @@ void af_get_last_error(char **str, dim_t *len) {
         return;
     }
 
-    af_alloc_host((void **)str, sizeof(char) * (slen + 1));
+    af_alloc_host(reinterpret_cast<void **>(str), sizeof(char) * (slen + 1));
     global_error_string.copy(*str, slen);
 
     (*str)[slen]        = '\0';
     global_error_string = std::string("");
 
-    if (len) *len = slen;
+    if (len) { *len = slen; }
 }
 
 af_err af_set_enable_stacktrace(int is_enabled) {

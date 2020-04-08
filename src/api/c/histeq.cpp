@@ -20,7 +20,7 @@
 #include <af/image.h>
 #include <af/index.h>
 
-using namespace detail;
+using detail::Array;
 
 template<typename T, typename hType>
 static af_array hist_equal(const af_array& in, const af_array& hist) {
@@ -31,14 +31,14 @@ static af_array hist_equal(const af_array& in, const af_array& hist) {
 
     Array<float> fHist = cast<float>(getArray<hType>(hist));
 
-    dim4 hDims       = fHist.dims();
-    dim_t grayLevels = fHist.elements();
+    const dim4& hDims = fHist.dims();
+    dim_t grayLevels  = fHist.elements();
 
     Array<float> cdf = scan<af_add_t, float, float>(fHist, 0);
 
     float minCdf = reduce_all<af_min_t, float, float>(cdf);
     float maxCdf = reduce_all<af_max_t, float, float>(cdf);
-    float factor = (float)(grayLevels - 1) / (maxCdf - minCdf);
+    float factor = static_cast<float>(grayLevels - 1) / (maxCdf - minCdf);
 
     // constant array of min value from cdf
     Array<float> minCnst = createValueArray<float>(hDims, minCdf);

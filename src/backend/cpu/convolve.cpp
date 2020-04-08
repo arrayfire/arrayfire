@@ -29,7 +29,6 @@
 using af::dim4;
 using common::flip;
 using common::half;
-using std::vector;
 
 namespace cpu {
 
@@ -51,7 +50,7 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
     } else {
         oDims = sDims;
         if (kind == AF_BATCH_RHS) {
-            for (dim_t i = baseDim; i < 4; ++i) oDims[i] = fDims[i];
+            for (dim_t i = baseDim; i < 4; ++i) { oDims[i] = fDims[i]; }
         }
     }
 
@@ -66,7 +65,7 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
 template<typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const &signal, Array<accT> const &c_filter,
                    Array<accT> const &r_filter) {
-    auto sDims = signal.dims();
+    const auto &sDims = signal.dims();
     dim4 tDims = sDims;
     dim4 oDims = sDims;
 
@@ -74,8 +73,8 @@ Array<T> convolve2(Array<T> const &signal, Array<accT> const &c_filter,
         auto cfDims = c_filter.dims();
         auto rfDims = r_filter.dims();
 
-        dim_t cflen = (dim_t)cfDims.elements();
-        dim_t rflen = (dim_t)rfDims.elements();
+        auto cflen = cfDims.elements();
+        auto rflen = rfDims.elements();
         // separable convolve only does AF_BATCH_NONE and standard
         // batch(AF_BATCH_LHS)
         tDims[0] += cflen - 1;
@@ -134,8 +133,8 @@ INSTANTIATE(intl, float)
 
 template<typename T>
 Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
-                          const dim4 stride, const dim4 padding,
-                          const dim4 dilation) {
+                          const dim4 &stride, const dim4 &padding,
+                          const dim4 &dilation) {
     dim4 sDims = signal.dims();
     dim4 fDims = filter.dims();
 
@@ -190,11 +189,12 @@ template<typename T>
 Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
                            const Array<T> &original_signal,
                            const Array<T> &original_filter,
-                           const Array<T> &convolved_output, af::dim4 stride,
-                           af::dim4 padding, af::dim4 dilation) {
-    const dim4 cDims = incoming_gradient.dims();
-    const dim4 sDims = original_signal.dims();
-    const dim4 fDims = original_filter.dims();
+                           const Array<T> & /*convolved_output*/,
+                           af::dim4 stride, af::dim4 padding,
+                           af::dim4 dilation) {
+    const dim4 &cDims = incoming_gradient.dims();
+    const dim4 &sDims = original_signal.dims();
+    const dim4 &fDims = original_filter.dims();
 
     Array<T> collapsed_filter = flip(original_filter, {1, 1, 0, 0});
     collapsed_filter.modDims(dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
@@ -221,10 +221,11 @@ template<typename T>
 Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
                              const Array<T> &original_signal,
                              const Array<T> &original_filter,
-                             const Array<T> &convolved_output, af::dim4 stride,
-                             af::dim4 padding, af::dim4 dilation) {
-    const dim4 cDims = incoming_gradient.dims();
-    const dim4 fDims = original_filter.dims();
+                             const Array<T> & /*convolved_output*/,
+                             af::dim4 stride, af::dim4 padding,
+                             af::dim4 dilation) {
+    const dim4 &cDims = incoming_gradient.dims();
+    const dim4 &fDims = original_filter.dims();
 
     const bool retCols = false;
     Array<T> unwrapped =

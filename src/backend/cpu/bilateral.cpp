@@ -22,7 +22,7 @@ namespace cpu {
 template<typename inType, typename outType, bool isColor>
 Array<outType> bilateral(const Array<inType> &in, const float &s_sigma,
                          const float &c_sigma) {
-    const dim4 dims    = in.dims();
+    const dim4 &dims   = in.dims();
     Array<outType> out = createEmptyArray<outType>(dims);
     getQueue().enqueue(kernel::bilateral<outType, inType, isColor>, out, in,
                        s_sigma, c_sigma);

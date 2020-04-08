@@ -17,11 +17,23 @@
 #include <resize.hpp>
 #include <sort_index.hpp>
 #include <af/dim4.hpp>
+
+#include <cmath>
 #include <cstring>
+#include <functional>
+#include <memory>
+#include <utility>
+#include <vector>
 
 using af::dim4;
-
+using std::ceil;
+using std::floor;
 using std::function;
+using std::min;
+using std::move;
+using std::pow;
+using std::round;
+using std::sqrt;
 using std::unique_ptr;
 using std::vector;
 
@@ -36,21 +48,21 @@ unsigned orb(Array<float>& x, Array<float>& y, Array<float>& score,
     image.eval();
     getQueue().sync();
 
-    unsigned patch_size = REF_PAT_SIZE;
+    float patch_size = REF_PAT_SIZE;
 
-    const af::dim4 idims = image.dims();
-    unsigned min_side    = std::min(idims[0], idims[1]);
-    unsigned max_levels  = 0;
-    float scl_sum        = 0.f;
+    const dim4& idims   = image.dims();
+    float min_side   = min(idims[0], idims[1]);
+    unsigned max_levels = 0;
+    float scl_sum       = 0.f;
 
     for (unsigned i = 0; i < levels; i++) {
         min_side /= scl_fctr;
 
         // Minimum image side for a descriptor to be computed
-        if (min_side < patch_size || max_levels == levels) break;
+        if (min_side < patch_size || max_levels == levels) { break; }
 
         max_levels++;
-        scl_sum += 1.f / (float)std::pow(scl_fctr, (float)i);
+        scl_sum += 1.f / pow(scl_fctr, static_cast<float>(i));
     }
 
     vector<unique_ptr<float[], function<void(float*)>>> h_x_pyr(max_levels);
@@ -61,31 +73,31 @@ unsigned orb(Array<float>& x, Array<float>& y, Array<float>& score,
     vector<unique_ptr<unsigned[], function<void(unsigned*)>>> h_desc_pyr(
         max_levels);
 
-    std::vector<unsigned> feat_pyr(max_levels);
+    vector<unsigned> feat_pyr(max_levels);
     unsigned total_feat = 0;
 
     // Compute number of features to keep for each level
-    std::vector<unsigned> lvl_best(max_levels);
+    vector<unsigned> lvl_best(max_levels);
     unsigned feat_sum = 0;
     for (unsigned i = 0; i < max_levels - 1; i++) {
-        float lvl_scl = (float)std::pow(scl_fctr, (float)i);
-        lvl_best[i]   = ceil((max_feat / scl_sum) / lvl_scl);
+        auto lvl_scl = pow(scl_fctr, static_cast<float>(i));
+        lvl_best[i]  = ceil((static_cast<float>(max_feat) / scl_sum) / lvl_scl);
         feat_sum += lvl_best[i];
     }
     lvl_best[max_levels - 1] = max_feat - feat_sum;
 
     // Maintain a reference to previous level image
-    Array<T> prev_img = createEmptyArray<T>(af::dim4());
-    af::dim4 prev_ldims;
+    Array<T> prev_img = createEmptyArray<T>(dim4());
+    dim4 prev_ldims;
 
-    af::dim4 gauss_dims(9);
-    std::unique_ptr<T[], std::function<void(T*)>> h_gauss;
-    Array<T> gauss_filter = createEmptyArray<T>(af::dim4());
+    dim4 gauss_dims(9);
+    unique_ptr<T[], function<void(T*)>> h_gauss;
+    Array<T> gauss_filter = createEmptyArray<T>(dim4());
 
     for (unsigned i = 0; i < max_levels; i++) {
-        af::dim4 ldims;
-        const float lvl_scl = (float)std::pow(scl_fctr, (float)i);
-        Array<T> lvl_img    = createEmptyArray<T>(af::dim4());
+        dim4 ldims;
+        const auto lvl_scl = pow(scl_fctr, static_cast<float>(i));
+        Array<T> lvl_img   = createEmptyArray<T>(dim4());
 
         if (i == 0) {
             // First level is used in its original size
@@ -114,7 +126,7 @@ unsigned orb(Array<float>& x, Array<float>& y, Array<float>& score,
         Array<float> score_feat = createEmptyArray<float>(dim4());
 
         // Round feature size to nearest odd integer
-        float size = 2.f * floor(patch_size / 2.f) + 1.f;
+        float size = 2.f * floor(static_cast<float>(patch_size) / 2.f) + 1.f;
 
         // Avoid keeping features that might be too wide and might not fit on
         // the image, sqrt(2.f) is the radius when angle is 45 degrees and
@@ -153,7 +165,7 @@ unsigned orb(Array<float>& x, Array<float>& y, Array<float>& score,
         sort_index<float>(harris_sorted, harris_idx, score_harris, 0, false);
         getQueue().sync();
 
-        usable_feat = std::min(usable_feat, lvl_best[i]);
+        usable_feat = min(usable_feat, lvl_best[i]);
 
         if (usable_feat == 0) {
             h_score_harris.release();
@@ -201,26 +213,27 @@ unsigned orb(Array<float>& x, Array<float>& y, Array<float>& score,
         // Compute ORB descriptors
         auto h_desc_lvl = memAlloc<unsigned>(usable_feat * 8);
         memset(h_desc_lvl.get(), 0, usable_feat * 8 * sizeof(unsigned));
-        if (blur_img)
+        if (blur_img) {
             kernel::extract_orb<T>(h_desc_lvl.get(), usable_feat, h_x_lvl.get(),
                                    h_y_lvl.get(), h_ori_lvl.get(),
                                    h_size_lvl.get(), lvl_filt, lvl_scl,
                                    patch_size);
-        else
+        } else {
             kernel::extract_orb<T>(h_desc_lvl.get(), usable_feat, h_x_lvl.get(),
                                    h_y_lvl.get(), h_ori_lvl.get(),
                                    h_size_lvl.get(), lvl_img, lvl_scl,
                                    patch_size);
+        }
 
         // Store results to pyramids
         total_feat += usable_feat;
         feat_pyr[i]    = usable_feat;
-        h_x_pyr[i]     = std::move(h_x_lvl);
-        h_y_pyr[i]     = std::move(h_y_lvl);
-        h_score_pyr[i] = std::move(h_score_lvl);
-        h_ori_pyr[i]   = std::move(h_ori_lvl);
-        h_size_pyr[i]  = std::move(h_size_lvl);
-        h_desc_pyr[i]  = std::move(h_desc_lvl);
+        h_x_pyr[i]     = move(h_x_lvl);
+        h_y_pyr[i]     = move(h_y_lvl);
+        h_score_pyr[i] = move(h_score_lvl);
+        h_ori_pyr[i]   = move(h_ori_lvl);
+        h_size_pyr[i]  = move(h_size_lvl);
+        h_desc_pyr[i]  = move(h_desc_lvl);
         h_score_harris.release();
         h_gauss.release();
     }
@@ -247,9 +260,9 @@ unsigned orb(Array<float>& x, Array<float>& y, Array<float>& score,
 
         unsigned offset = 0;
         for (unsigned i = 0; i < max_levels; i++) {
-            if (feat_pyr[i] == 0) continue;
+            if (feat_pyr[i] == 0) { continue; }
 
-            if (i > 0) offset += feat_pyr[i - 1];
+            if (i > 0) { offset += feat_pyr[i - 1]; }
 
             memcpy(h_x + offset, h_x_pyr[i].get(), feat_pyr[i] * sizeof(float));
             memcpy(h_y + offset, h_y_pyr[i].get(), feat_pyr[i] * sizeof(float));

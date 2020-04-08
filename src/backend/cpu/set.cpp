@@ -30,10 +30,11 @@ using std::unique;
 template<typename T>
 Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
     Array<T> out = createEmptyArray<T>(af::dim4());
-    if (is_sorted)
+    if (is_sorted) {
         out = copyArray<T>(in);
-    else
+    } else {
         out = sort<T>(in, 0, true);
+    }
 
     // Need to sync old jobs since we need to
     // operator on pointers directly in std::unique
@@ -41,7 +42,7 @@ Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
 
     T *ptr     = out.get();
     T *last    = unique(ptr, ptr + in.elements());
-    dim_t dist = (dim_t)distance(ptr, last);
+    auto dist  = static_cast<dim_t>(distance(ptr, last));
 
     dim4 dims(dist, 1, 1, 1);
     out.resetDims(dims);
@@ -70,7 +71,7 @@ Array<T> setUnion(const Array<T> &first, const Array<T> &second,
     T *last = set_union(uFirst.get(), uFirst.get() + first_elements,
                         uSecond.get(), uSecond.get() + second_elements, ptr);
 
-    dim_t dist = (dim_t)distance(ptr, last);
+    auto dist = static_cast<dim_t>(distance(ptr, last));
     dim4 dims(dist, 1, 1, 1);
     out.resetDims(dims);
 
@@ -99,7 +100,7 @@ Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
         set_intersection(uFirst.get(), uFirst.get() + first_elements,
                          uSecond.get(), uSecond.get() + second_elements, ptr);
 
-    dim_t dist = (dim_t)distance(ptr, last);
+    auto dist = static_cast<dim_t>(distance(ptr, last));
     dim4 dims(dist, 1, 1, 1);
     out.resetDims(dims);
 

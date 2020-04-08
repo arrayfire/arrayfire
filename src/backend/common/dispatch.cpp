@@ -10,11 +10,11 @@
 #include "dispatch.hpp"
 
 unsigned nextpow2(unsigned x) {
-    x = x - 1;
-    x = x | (x >> 1);
-    x = x | (x >> 2);
-    x = x | (x >> 4);
-    x = x | (x >> 8);
-    x = x | (x >> 16);
-    return x + 1;
+    x = x - 1U;
+    x = x | (x >> 1U);
+    x = x | (x >> 2U);
+    x = x | (x >> 4U);
+    x = x | (x >> 8U);
+    x = x | (x >> 16U);
+    return x + 1U;
 }

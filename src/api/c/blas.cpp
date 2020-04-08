@@ -26,36 +26,39 @@
 #include <af/dim4.hpp>
 
 using common::half;
+using common::SparseArrayBase;
+using detail::cdouble;
+using detail::cfloat;
+using detail::gemm;
+using detail::matmul;
 
 template<typename T>
 static inline af_array sparseMatmul(const af_array lhs, const af_array rhs,
                                     af_mat_prop optLhs, af_mat_prop optRhs) {
-    return getHandle(detail::matmul<T>(getSparseArray<T>(lhs), getArray<T>(rhs),
-                                       optLhs, optRhs));
+    return getHandle(
+        matmul<T>(getSparseArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
 
 template<typename T>
 static inline void gemm(af_array *out, af_mat_prop optLhs, af_mat_prop optRhs,
                         const T *alpha, const af_array lhs, const af_array rhs,
                         const T *betas) {
-    detail::gemm<T>(getArray<T>(*out), optLhs, optRhs, alpha, getArray<T>(lhs),
-                    getArray<T>(rhs), betas);
+    gemm<T>(getArray<T>(*out), optLhs, optRhs, alpha, getArray<T>(lhs),
+            getArray<T>(rhs), betas);
 }
 
 template<typename T>
 static inline af_array dot(const af_array lhs, const af_array rhs,
                            af_mat_prop optLhs, af_mat_prop optRhs) {
     return getHandle(
-        detail::dot<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
+        dot<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
 
 af_err af_sparse_matmul(af_array *out, const af_array lhs, const af_array rhs,
                         const af_mat_prop optLhs, const af_mat_prop optRhs) {
-    using namespace detail;
-
     try {
-        common::SparseArrayBase lhsBase = getSparseArrayBase(lhs);
-        const ArrayInfo &rhsInfo        = getInfo(rhs);
+        const SparseArrayBase lhsBase = getSparseArrayBase(lhs);
+        const ArrayInfo &rhsInfo      = getInfo(rhs);
 
         ARG_ASSERT(2,
                    lhsBase.isSparse() == true && rhsInfo.isSparse() == false);
@@ -117,8 +120,6 @@ af_err af_sparse_matmul(af_array *out, const af_array lhs, const af_array rhs,
 af_err af_gemm(af_array *out, const af_mat_prop optLhs,
                const af_mat_prop optRhs, const void *alpha, const af_array lhs,
                const af_array rhs, const void *beta) {
-    using namespace detail;  // needed for cfloat and cdouble
-
     try {
         const ArrayInfo &lhsInfo = getInfo(lhs, false, true);
         const ArrayInfo &rhsInfo = getInfo(rhs, true, true);
@@ -212,27 +213,25 @@ af_err af_gemm(af_array *out, const af_mat_prop optLhs,
 
 af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
                  const af_mat_prop optLhs, const af_mat_prop optRhs) {
-    using namespace detail;  // needed for cfloat and cdouble
-
     try {
         const ArrayInfo &lhsInfo = getInfo(lhs, false, true);
         const ArrayInfo &rhsInfo = getInfo(rhs, true, true);
 
-        if (lhsInfo.isSparse())
+        if (lhsInfo.isSparse()) {
             return af_sparse_matmul(out, lhs, rhs, optLhs, optRhs);
+        }
 
         const int aRowDim = (optLhs == AF_MAT_NONE) ? 0 : 1;
         const int bColDim = (optRhs == AF_MAT_NONE) ? 1 : 0;
 
-        const af::dim4 lDims = lhsInfo.dims();
-        const af::dim4 rDims = rhsInfo.dims();
-        const int M          = lDims[aRowDim];
-        const int N          = rDims[bColDim];
+        const af::dim4 &lDims = lhsInfo.dims();
+        const af::dim4 &rDims = rhsInfo.dims();
+        const int M           = lDims[aRowDim];
+        const int N           = rDims[bColDim];
 
         const dim_t d2       = std::max(lDims[2], rDims[2]);
         const dim_t d3       = std::max(lDims[3], rDims[3]);
         const af::dim4 oDims = af::dim4(M, N, d2, d3);
-        const int num_batch  = oDims[2] * oDims[3];
 
         af_array gemm_out = 0;
         AF_CHECK(af_create_handle(&gemm_out, oDims.ndims(), oDims.get(),
@@ -287,8 +286,6 @@ af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
 
 af_err af_dot(af_array *out, const af_array lhs, const af_array rhs,
               const af_mat_prop optLhs, const af_mat_prop optRhs) {
-    using namespace detail;
-
     try {
         const ArrayInfo &lhsInfo = getInfo(lhs);
         const ArrayInfo &rhsInfo = getInfo(rhs);
@@ -332,7 +329,7 @@ af_err af_dot(af_array *out, const af_array lhs, const af_array rhs,
 
 template<typename T>
 static inline T dotAll(af_array out) {
-    T res;
+    T res{};
     AF_CHECK(af_eval(out));
     AF_CHECK(af_get_data_ptr((void *)&res, out));
     return res;
@@ -341,17 +338,18 @@ static inline T dotAll(af_array out) {
 af_err af_dot_all(double *rval, double *ival, const af_array lhs,
                   const af_array rhs, const af_mat_prop optLhs,
                   const af_mat_prop optRhs) {
-    using namespace detail;
+    using namespace detail;  // NOLINT needed for imag and real functions
+                             // name resolution
 
     try {
         *rval = 0;
-        if (ival) *ival = 0;
+        if (ival) { *ival = 0; }
 
         af_array out = 0;
         AF_CHECK(af_dot(&out, lhs, rhs, optLhs, optRhs));
 
-        ArrayInfo lhsInfo = getInfo(lhs);
-        af_dtype lhs_type = lhsInfo.getType();
+        const ArrayInfo &lhsInfo = getInfo(lhs);
+        af_dtype lhs_type        = lhsInfo.getType();
 
         switch (lhs_type) {
             case f16: *rval = static_cast<double>(dotAll<half>(out)); break;
@@ -360,17 +358,17 @@ af_err af_dot_all(double *rval, double *ival, const af_array lhs,
             case c32: {
                 cfloat temp = dotAll<cfloat>(out);
                 *rval       = real(temp);
-                if (ival) *ival = imag(temp);
+                if (ival) { *ival = imag(temp); }
             } break;
             case c64: {
                 cdouble temp = dotAll<cdouble>(out);
                 *rval        = real(temp);
-                if (ival) *ival = imag(temp);
+                if (ival) { *ival = imag(temp); }
             } break;
             default: TYPE_ERROR(1, lhs_type);
         }
 
-        if (out != 0) AF_CHECK(af_release_array(out));
+        if (out != 0) { AF_CHECK(af_release_array(out)); }
     }
     CATCHALL
     return AF_SUCCESS;

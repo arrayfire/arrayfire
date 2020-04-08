@@ -7,24 +7,29 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <arith.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <handle.hpp>
 #include <implicit.hpp>
+#include <logic.hpp>
 #include <optypes.hpp>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
 #include <af/defines.h>
 
-#include <arith.hpp>
-#include <logic.hpp>
-
-using namespace detail;
 using af::dim4;
 using common::half;
+using detail::arithOp;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uintl;
 
 template<typename T>
 static inline af_array clampOp(const af_array in, const af_array lo,

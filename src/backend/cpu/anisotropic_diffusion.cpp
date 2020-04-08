@@ -16,12 +16,13 @@ template<typename T>
 void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
                           const af::fluxFunction fftype,
                           const af::diffusionEq eq) {
-    if (eq == AF_DIFFUSION_MCDE)
+    if (eq == AF_DIFFUSION_MCDE) {
         getQueue().enqueue(kernel::anisotropicDiffusion<T, true>, inout, dt,
                            mct, fftype);
-    else
+    } else {
         getQueue().enqueue(kernel::anisotropicDiffusion<T, false>, inout, dt,
                            mct, fftype);
+    }
 }
 
 #define INSTANTIATE(T)                                     \

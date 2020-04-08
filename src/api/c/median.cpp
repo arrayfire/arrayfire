@@ -20,8 +20,11 @@
 #include <af/index.h>
 #include <af/statistics.h>
 
-using namespace detail;
 using af::dim4;
+using detail::Array;
+using detail::division;
+using detail::uchar;
+using std::sort;
 
 template<typename T>
 static double median(const af_array& in) {
@@ -38,7 +41,8 @@ static double median(const af_array& in) {
         T result;
         AF_CHECK(af_get_data_ptr((void*)&result, in));
         return result;
-    } else if (nElems == 2) {
+    }
+    if (nElems == 2) {
         T result[2];
         AF_CHECK(af_get_data_ptr((void*)&result, in));
         return division(
@@ -96,6 +100,7 @@ static af_array median(const af_array& in, const dim_t dim) {
     af_array sortedIn_handle = getHandle<T>(sortedIn);
     AF_CHECK(af_index(&left, sortedIn_handle, input.ndims(), slices));
 
+    af_array out = nullptr;
     if (dimLength % 2 == 1) {
         // mid-1 is our guy
         if (input.isFloating()) {
@@ -119,7 +124,6 @@ static af_array median(const af_array& in, const dim_t dim) {
 
         af_array sumarr = 0;
         af_array carr   = 0;
-        af_array result = 0;
 
         dim4 cdims = dims;
         cdims[dim] = 1;
@@ -137,18 +141,19 @@ static af_array median(const af_array& in, const dim_t dim) {
         }
 
         AF_CHECK(af_add(&sumarr, left, right, false));
-        AF_CHECK(af_mul(&result, sumarr, carr, false));
+        AF_CHECK(af_mul(&out, sumarr, carr, false));
 
         AF_CHECK(af_release_array(left));
         AF_CHECK(af_release_array(right));
         AF_CHECK(af_release_array(sumarr));
         AF_CHECK(af_release_array(carr));
         AF_CHECK(af_release_array(sortedIn_handle));
-        return result;
     }
+    return out;
 }
 
-af_err af_median_all(double* realVal, double* imagVal, const af_array in) {
+af_err af_median_all(double* realVal, double* imagVal,  // NOLINT
+                     const af_array in) {
     UNUSED(imagVal);
     try {
         const ArrayInfo& info = getInfo(in);

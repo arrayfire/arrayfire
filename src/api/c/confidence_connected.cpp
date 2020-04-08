@@ -24,18 +24,23 @@
 #include <type_traits>
 
 using af::dim4;
-using namespace detail;
+using std::abs;
+using std::array;
+using std::conditional;
+using std::is_same;
+using std::sqrt;
+using std::swap;
 
 /// Index corner points of given seed points
 template<typename T>
 Array<T> pointList(const Array<T>& in, const Array<uint>& x,
                    const Array<uint>& y) {
-    af_array xcoords                          = getHandle<uint>(x);
-    af_array ycoords                          = getHandle<uint>(y);
-    std::array<af_index_t, AF_MAX_DIMS> idxrs = {{{xcoords, false, false},
-                                                  {ycoords, false, false},
-                                                  common::createSpanIndex(),
-                                                  common::createSpanIndex()}};
+    af_array xcoords                     = getHandle<uint>(x);
+    af_array ycoords                     = getHandle<uint>(y);
+    array<af_index_t, AF_MAX_DIMS> idxrs = {{{xcoords, false, false},
+                                             {ycoords, false, false},
+                                             common::createSpanIndex(),
+                                             common::createSpanIndex()}};
 
     Array<T> retVal = detail::index(in, idxrs.data());
 
@@ -80,8 +85,8 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
                   const Array<uint>& seedy, const unsigned radius,
                   const unsigned mult, const unsigned iterations,
                   const double segmentedValue) {
-    using CT = typename std::conditional<std::is_same<T, double>::value, double,
-                                         float>::type;
+    using CT =
+        typename conditional<is_same<T, double>::value, double, float>::type;
     constexpr CT epsilon = 1.0e-6;
 
     auto calcVar = [](CT s2, CT s1, CT n) -> CT {
@@ -90,8 +95,8 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
         return retVal;
     };
 
-    const dim4 inDims        = img.dims();
-    const dim4 seedDims      = seedx.dims();
+    const dim4& inDims       = img.dims();
+    const dim4& seedDims     = seedx.dims();
     const size_t numSeeds    = seedx.elements();
     const unsigned nhoodLen  = 2 * radius + 1;
     const unsigned nhoodSize = nhoodLen * nhoodLen;
@@ -118,11 +123,11 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
     CT totSum          = reduce_all<af_add_t, CT, CT>(S1);
     CT totSumSq        = reduce_all<af_add_t, CT, CT>(S2);
     CT totalNum        = numSeeds * nhoodSize;
-    CT mean            = totSum / totalNum;
-    CT var             = calcVar(totSumSq, totSum, totalNum);
-    CT stddev          = std::sqrt(var);
-    CT lower           = mean - mult * stddev;
-    CT upper           = mean + mult * stddev;
+    CT s1mean          = totSum / totalNum;
+    CT s1var           = calcVar(totSumSq, totSum, totalNum);
+    CT s1stddev        = sqrt(s1var);
+    CT lower           = s1mean - mult * s1stddev;
+    CT upper           = s1mean + mult * s1stddev;
 
     Array<CT> seedIntensities = pointList(in, seedx, seedy);
     CT maxSeedIntensity       = reduce_all<af_max_t, CT, CT>(seedIntensities);
@@ -133,7 +138,7 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
 
     Array<CT> segmented = floodFill(in, seedx, seedy, CT(1), lower, upper);
 
-    if (std::abs(var) < epsilon) {
+    if (abs<CT>(s1var) < epsilon) {
         // If variance is close to zero, stop after initial segmentation
         return getHandle(labelSegmented(segmented));
     }
@@ -151,18 +156,18 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
         Array<CT> valids = arithOp<CT, af_mul_t>(segmented, in, inDims);
         Array<CT> vsqrd  = arithOp<CT, af_mul_t>(valids, valids, inDims);
 
-        CT sum      = reduce_all<af_add_t, CT, CT>(valids, true);
-        CT sumOfSqs = reduce_all<af_add_t, CT, CT>(vsqrd, true);
-        CT mean     = sum / sampleCount;
-        CT var      = calcVar(sumOfSqs, sum, CT(sampleCount));
-        CT stddev   = std::sqrt(var);
-        CT newLow   = mean - mult * stddev;
-        CT newHigh  = mean + mult * stddev;
+        CT validsSum  = reduce_all<af_add_t, CT, CT>(valids, true);
+        CT sumOfSqs   = reduce_all<af_add_t, CT, CT>(vsqrd, true);
+        CT validsMean = validsSum / sampleCount;
+        CT validsVar  = calcVar(sumOfSqs, validsSum, CT(sampleCount));
+        CT stddev     = sqrt(validsVar);
+        CT newLow     = validsMean - mult * stddev;
+        CT newHigh    = validsMean + mult * stddev;
 
         if (newLow > minSeedIntensity) { newLow = minSeedIntensity; }
         if (newHigh < maxSeedIntensity) { newHigh = maxSeedIntensity; }
 
-        if (std::abs(var) < epsilon) {
+        if (abs<CT>(validsVar) < epsilon) {
             // If variance is close to zero, discontinue iterating.
             continueLoop = false;
         }
@@ -184,11 +189,11 @@ af_err af_confidence_cc(af_array* out, const af_array in, const af_array seedx,
              AF_ERR_NOT_SUPPORTED);
 #endif
     try {
-        const ArrayInfo inInfo         = getInfo(in);
-        const ArrayInfo seedxInfo      = getInfo(seedx);
-        const ArrayInfo seedyInfo      = getInfo(seedy);
-        const af::dim4 inputDimensions = inInfo.dims();
-        const af::dtype inputArrayType = inInfo.getType();
+        const ArrayInfo& inInfo         = getInfo(in);
+        const ArrayInfo& seedxInfo      = getInfo(seedx);
+        const ArrayInfo& seedyInfo      = getInfo(seedy);
+        const af::dim4& inputDimensions = inInfo.dims();
+        const af::dtype inputArrayType  = inInfo.getType();
 
         // TODO(pradeep) handle case where seeds are towards border
         //              and indexing may result in throwing exception
@@ -224,7 +229,7 @@ af_err af_confidence_cc(af_array* out, const af_array in, const af_array seedx,
                 break;
             default: TYPE_ERROR(0, inputArrayType);
         }
-        std::swap(*out, output);
+        swap(*out, output);
     }
     CATCHALL;
     return AF_SUCCESS;

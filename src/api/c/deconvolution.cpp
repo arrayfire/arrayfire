@@ -26,12 +26,16 @@
 #include <af/image.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <type_traits>
 #include <vector>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::shift;
+using std::array;
+using std::vector;
 
 const int BASE_DIM = 2;
 
@@ -58,13 +62,13 @@ Array<T> complexNorm(const Array<CT>& input) {
 std::vector<af_seq> calcPadInfo(dim4& inLPad, dim4& psfLPad, dim4& inUPad,
                                 dim4& psfUPad, dim4& odims, dim_t nElems,
                                 const dim4& idims, const dim4& fdims) {
-    std::vector<af_seq> index(4);
+    vector<af_seq> index(4);
 
     for (int d = 0; d < 4; ++d) {
         if (d < BASE_DIM) {
             dim_t pad = idims[d] + fdims[d];
 
-            while (greatestPrimeFactor(pad) > GREATEST_PRIME_FACTOR) pad++;
+            while (greatestPrimeFactor(pad) > GREATEST_PRIME_FACTOR) { pad++; }
 
             dim_t diffLen  = pad - idims[d];
             inLPad[d]      = diffLen / 2;
@@ -137,7 +141,7 @@ void landweber(Array<T>& currentEstimate, const Array<T>& in,
 template<typename InputType, typename RealType = float>
 af_array iterDeconv(const af_array in, const af_array ker, const uint iters,
                     const float rfactor, const af_iterative_deconv_algo algo) {
-    typedef RealType T;
+    using T    = RealType;
     using CT   = typename std::conditional<std::is_same<T, double>::value,
                                          cdouble, cfloat>::type;
     auto input = castArray<T>(in);
@@ -154,24 +158,25 @@ af_array iterDeconv(const af_array in, const af_array ker, const uint iters,
         padArrayBorders<T>(input, inLPad, inUPad, AF_PAD_CLAMP_TO_EDGE);
     auto paddedPsf = padArrayBorders<T>(psf, psfLPad, psfUPad, AF_PAD_ZERO);
 
-    const int shiftDims[4] = {-int(fdims[0] / 2), -int(fdims[1] / 2), 0, 0};
-    auto shiftedPsf        = shift(paddedPsf, shiftDims);
+    const std::array<int, 4> shiftDims = {-int(fdims[0] / 2),
+                                          -int(fdims[1] / 2), 0, 0};
+    auto shiftedPsf                    = shift(paddedPsf, shiftDims.data());
 
     auto P  = fft_r2c<CT, T, BASE_DIM>(shiftedPsf);
     auto Pc = conj(P);
 
     Array<T> currentEstimate = paddedIn;
-    const double normFactor  = 1 / (double)nElems;
+    const double normFactor  = 1 / static_cast<double>(nElems);
 
     switch (algo) {
         case AF_ITERATIVE_DECONV_RICHARDSONLUCY:
             richardsonLucy(currentEstimate, paddedIn, P, Pc, iters, normFactor,
                            odims);
             break;
+        case AF_ITERATIVE_DECONV_LANDWEBER:
         default:
             landweber(currentEstimate, paddedIn, P, Pc, iters, rfactor,
                       normFactor, odims);
-            break;
     }
     return getHandle(createSubArray<T>(currentEstimate, index));
 }
@@ -220,7 +225,7 @@ af_err af_iterative_deconv(af_array* out, const af_array in, const af_array ker,
 template<typename CT>
 Array<CT> denominator(const Array<CT>& I, const Array<CT>& P, const float gamma,
                       const af_inverse_deconv_algo algo) {
-    typedef typename af::dtype_traits<CT>::base_type T;
+    using T = typename af::dtype_traits<CT>::base_type;
 
     auto RCNST = createValueArray(I.dims(), scalar<T>(gamma));
 
@@ -245,7 +250,7 @@ Array<CT> denominator(const Array<CT>& I, const Array<CT>& P, const float gamma,
 template<typename InputType, typename RealType = float>
 af_array invDeconv(const af_array in, const af_array ker, const float gamma,
                    const af_inverse_deconv_algo algo) {
-    typedef RealType T;
+    using T    = RealType;
     using CT   = typename std::conditional<std::is_same<T, double>::value,
                                          cdouble, cfloat>::type;
     auto input = castArray<T>(in);
@@ -261,9 +266,10 @@ af_array invDeconv(const af_array in, const af_array ker, const float gamma,
     auto paddedIn =
         padArrayBorders<T>(input, inLPad, inUPad, AF_PAD_CLAMP_TO_EDGE);
     auto paddedPsf = padArrayBorders<T>(psf, psfLPad, psfUPad, AF_PAD_ZERO);
-    const int shiftDims[4] = {-int(fdims[0] / 2), -int(fdims[1] / 2), 0, 0};
+    const array<int, 4> shiftDims = {-int(fdims[0] / 2), -int(fdims[1] / 2), 0,
+                                     0};
 
-    auto shiftedPsf = shift(paddedPsf, shiftDims);
+    auto shiftedPsf = shift(paddedPsf, shiftDims.data());
 
     auto I      = fft_r2c<CT, T, BASE_DIM>(paddedIn);
     auto P      = fft_r2c<CT, T, BASE_DIM>(shiftedPsf);
@@ -277,7 +283,8 @@ af_array invDeconv(const af_array in, const af_array ker, const float gamma,
 
     select_scalar<CT, false>(val, cond, val, 0);
 
-    auto ival = fft_c2r<CT, T, BASE_DIM>(val, 1 / (double)nElems, odims);
+    auto ival =
+        fft_c2r<CT, T, BASE_DIM>(val, 1 / static_cast<double>(nElems), odims);
 
     return getHandle(createSubArray<T>(ival, index));
 }

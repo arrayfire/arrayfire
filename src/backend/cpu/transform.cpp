@@ -19,6 +19,7 @@ template<typename T>
 void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
                const dim4 &odims, const af_interp_type method,
                const bool inverse, const bool perspective) {
+    UNUSED(odims);
     out.eval();
     in.eval();
     tf.eval();

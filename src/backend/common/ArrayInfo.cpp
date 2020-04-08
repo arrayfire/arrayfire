@@ -33,7 +33,7 @@ dim4 calcStrides(const dim4 &parentDim) {
 int ArrayInfo::getDevId() const {
     // The actual device ID is only stored in the first 8 bits of devId
     // See ArrayInfo.hpp for more
-    return devId & 0xff;
+    return devId & 0xffU;
 }
 
 void ArrayInfo::setId(int id) const {
@@ -51,15 +51,15 @@ void ArrayInfo::setId(int id) {
     // See ArrayInfo.hpp for more
     int backendId =
         detail::getBackend() >> 1;  // Convert enums 1, 2, 4 to ints 0, 1, 2
-    devId = id | 1 << (backendId + 8);
+    devId = id | 1 << (backendId + 8U);
 }
 
 af_backend ArrayInfo::getBackendId() const {
     // devId >> 8 converts the backend info to 1, 2, 4 which are enums
     // for CPU, CUDA and OpenCL respectively
     // See ArrayInfo.hpp for more
-    int backendId = devId >> 8;
-    return (af_backend)backendId;
+    int backendId = devId >> 8U;
+    return static_cast<af_backend>(backendId);
 }
 
 void ArrayInfo::modStrides(const dim4 &newStrides) { dim_strides = newStrides; }
@@ -120,7 +120,7 @@ bool ArrayInfo::isLinear() const {
     if (ndims() == 1) { return dim_strides[0] == 1; }
 
     dim_t count = 1;
-    for (int i = 0; i < (int)ndims(); i++) {
+    for (size_t i = 0; i < ndims(); i++) {
         if (count != dim_strides[i]) { return false; }
         count *= dim_size[i];
     }
@@ -150,8 +150,9 @@ dim4 toDims(const vector<af_seq> &seqs, const dim4 &parentDims) {
     dim4 outDims(1, 1, 1, 1);
     for (unsigned i = 0; i < seqs.size(); i++) {
         outDims[i] = af::calcDim(seqs[i], parentDims[i]);
-        if (outDims[i] > parentDims[i])
+        if (outDims[i] > parentDims[i]) {
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+        }
     }
     return outDims;
 }
@@ -167,8 +168,9 @@ dim4 toOffset(const vector<af_seq> &seqs, const dim4 &parentDims) {
             outOffsets[i] = 0;
         }
 
-        if (outOffsets[i] >= parentDims[i])
+        if (outOffsets[i] >= parentDims[i]) {
             AF_ERROR("Index out of range", AF_ERR_SIZE);
+        }
     }
     return outOffsets;
 }

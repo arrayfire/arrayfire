@@ -19,7 +19,21 @@
 #include <af/signal.h>
 
 using af::dim4;
-using namespace detail;
+using detail::arithOp;
+using detail::Array;
+using detail::cast;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createSubArray;
+using detail::fftconvolve;
+using detail::intl;
+using detail::real;
+using detail::uchar;
+using detail::uintl;
+using detail::ushort;
+using std::max;
+using std::swap;
+using std::vector;
 
 template<typename T, typename convT, typename cT, int baseDim>
 static inline af_array fftconvolve_fallback(const af_array signal,
@@ -27,13 +41,13 @@ static inline af_array fftconvolve_fallback(const af_array signal,
                                             bool expand) {
     const Array<cT> S = castArray<cT>(signal);
     const Array<cT> F = castArray<cT>(filter);
-    const dim4 sdims  = S.dims();
-    const dim4 fdims  = F.dims();
+    const dim4 &sdims = S.dims();
+    const dim4 &fdims = F.dims();
     dim4 odims(1, 1, 1, 1);
     dim4 psdims(1, 1, 1, 1);
     dim4 pfdims(1, 1, 1, 1);
 
-    std::vector<af_seq> index(AF_MAX_DIMS);
+    vector<af_seq> index(AF_MAX_DIMS);
 
     int count = 1;
     for (int i = 0; i < baseDim; i++) {
@@ -49,17 +63,17 @@ static inline af_array fftconvolve_fallback(const af_array signal,
 
         // Get the indexing params for output
         if (expand) {
-            index[i].begin = 0;
-            index[i].end   = tdim_i - 1;
+            index[i].begin = 0.;
+            index[i].end   = static_cast<double>(tdim_i) - 1.;
         } else {
-            index[i].begin = fdims[i] / 2;
-            index[i].end   = index[i].begin + sdims[i] - 1;
+            index[i].begin = static_cast<double>(fdims[i]) / 2.0;
+            index[i].end = static_cast<double>(index[i].begin + sdims[i]) - 1.;
         }
-        index[i].step = 1;
+        index[i].step = 1.;
     }
 
     for (int i = baseDim; i < AF_MAX_DIMS; i++) {
-        odims[i]  = std::max(sdims[i], fdims[i]);
+        odims[i]  = max(sdims[i], fdims[i]);
         psdims[i] = sdims[i];
         pfdims[i] = fdims[i];
         index[i]  = af_span;
@@ -75,8 +89,8 @@ static inline af_array fftconvolve_fallback(const af_array signal,
     T1 = arithOp<cT, af_mul_t>(T1, T2, odims);
 
     // ifft(ffit(signal) * fft(filter))
-    T1 = fft<cT, cT, baseDim, false>(T1, 1.0 / (double)count, baseDim,
-                                     odims.get());
+    T1 = fft<cT, cT, baseDim, false>(T1, 1.0 / static_cast<double>(count),
+                                     baseDim, odims.get());
 
     // Index to proper offsets
     T1 = createSubArray<cT>(T1, index);
@@ -92,11 +106,12 @@ template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
          dim_t baseDim>
 inline static af_array fftconvolve(const af_array &s, const af_array &f,
                                    const bool expand, AF_BATCH_KIND kind) {
-    if (kind == AF_BATCH_DIFF)
+    if (kind == AF_BATCH_DIFF) {
         return fftconvolve_fallback<T, convT, cT, baseDim>(s, f, expand);
-    else
+    } else {
         return getHandle(fftconvolve<T, convT, cT, isDouble, roundOut, baseDim>(
             getArray<T>(s), castArray<T>(f), expand, kind));
+    }
 }
 
 template<dim_t baseDim>
@@ -104,14 +119,14 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
     dim_t sn = sDims.ndims();
     dim_t fn = fDims.ndims();
 
-    if (sn == baseDim && fn == baseDim)
-        return AF_BATCH_NONE;
-    else if (sn == baseDim && (fn > baseDim && fn <= AF_MAX_DIMS))
+    if (sn == baseDim && fn == baseDim) { return AF_BATCH_NONE; }
+    if (sn == baseDim && (fn > baseDim && fn <= AF_MAX_DIMS)) {
         return AF_BATCH_RHS;
-    else if ((sn > baseDim && sn <= AF_MAX_DIMS) && fn == baseDim)
+    }
+    if ((sn > baseDim && sn <= AF_MAX_DIMS) && fn == baseDim) {
         return AF_BATCH_LHS;
-    else if ((sn > baseDim && sn <= AF_MAX_DIMS) &&
-             (fn > baseDim && fn <= AF_MAX_DIMS)) {
+    } else if ((sn > baseDim && sn <= AF_MAX_DIMS) &&
+               (fn > baseDim && fn <= AF_MAX_DIMS)) {
         bool doesDimensionsMatch = true;
         bool isInterleaved       = true;
         for (dim_t i = baseDim; i < AF_MAX_DIMS; i++) {
@@ -119,10 +134,11 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
             isInterleaved &=
                 (sDims[i] == 1 || fDims[i] == 1 || sDims[i] == fDims[i]);
         }
-        if (doesDimensionsMatch) return AF_BATCH_SAME;
+        if (doesDimensionsMatch) { return AF_BATCH_SAME; }
         return (isInterleaved ? AF_BATCH_DIFF : AF_BATCH_UNSUPPORTED);
-    } else
+    } else {
         return AF_BATCH_UNSUPPORTED;
+    }
 }
 
 template<dim_t baseDim>
@@ -134,8 +150,8 @@ af_err fft_convolve(af_array *out, const af_array signal, const af_array filter,
 
         af_dtype stype = sInfo.getType();
 
-        dim4 sdims = sInfo.dims();
-        dim4 fdims = fInfo.dims();
+        const dim4 &sdims = sInfo.dims();
+        const dim4 &fdims = fInfo.dims();
 
         AF_BATCH_KIND convBT = identifyBatchKind<baseDim>(sdims, fdims);
 
@@ -200,7 +216,7 @@ af_err fft_convolve(af_array *out, const af_array signal, const af_array filter,
                 break;
             default: TYPE_ERROR(1, stype);
         }
-        std::swap(*out, output);
+        swap(*out, output);
     }
     CATCHALL;
 
@@ -217,9 +233,8 @@ af_err af_fft_convolve2(af_array *out, const af_array signal,
     if (getInfo(signal).dims().ndims() < 2 &&
         getInfo(filter).dims().ndims() < 2) {
         return fft_convolve<1>(out, signal, filter, mode == AF_CONV_EXPAND);
-    } else {
-        return fft_convolve<2>(out, signal, filter, mode == AF_CONV_EXPAND);
     }
+    return fft_convolve<2>(out, signal, filter, mode == AF_CONV_EXPAND);
 }
 
 af_err af_fft_convolve3(af_array *out, const af_array signal,
@@ -227,7 +242,6 @@ af_err af_fft_convolve3(af_array *out, const af_array signal,
     if (getInfo(signal).dims().ndims() < 3 &&
         getInfo(filter).dims().ndims() < 3) {
         return fft_convolve<2>(out, signal, filter, mode == AF_CONV_EXPAND);
-    } else {
-        return fft_convolve<3>(out, signal, filter, mode == AF_CONV_EXPAND);
     }
+    return fft_convolve<3>(out, signal, filter, mode == AF_CONV_EXPAND);
 }

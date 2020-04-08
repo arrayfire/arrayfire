@@ -22,11 +22,11 @@ namespace cpu {
 template<typename T, bool isDilation>
 Array<T> morph(const Array<T> &in, const Array<T> &mask) {
     af::borderType padType = isDilation ? AF_PAD_ZERO : AF_PAD_CLAMP_TO_EDGE;
-    const af::dim4 idims   = in.dims();
-    const af::dim4 mdims   = mask.dims();
+    const af::dim4 &idims  = in.dims();
+    const af::dim4 &mdims  = mask.dims();
 
     const af::dim4 lpad(mdims[0] / 2, mdims[1] / 2, 0, 0);
-    const af::dim4 upad(lpad);
+    const af::dim4 &upad(lpad);
     const af::dim4 odims(lpad[0] + idims[0] + upad[0],
                          lpad[1] + idims[1] + upad[1], idims[2], idims[3]);
 

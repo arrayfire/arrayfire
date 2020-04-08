@@ -18,7 +18,6 @@
 #include <af/dim4.hpp>
 #include <complex>
 
-using af::dim4;
 using namespace detail;
 
 template<af_op_t op, typename Ti, typename To>
@@ -116,7 +115,7 @@ af_err af_accum(af_array* out, const af_array in, const int dim) {
 
         const ArrayInfo& in_info = getInfo(in);
 
-        if (dim >= (int)in_info.ndims()) {
+        if (dim >= static_cast<int>(in_info.ndims())) {
             *out = retain(in);
             return AF_SUCCESS;
         }
@@ -157,7 +156,7 @@ af_err af_scan(af_array* out, const af_array in, const int dim, af_binary_op op,
 
         const ArrayInfo& in_info = getInfo(in);
 
-        if (dim >= (int)in_info.ndims()) {
+        if (dim >= static_cast<int>(in_info.ndims())) {
             *out = retain(in);
             return AF_SUCCESS;
         }
@@ -221,7 +220,7 @@ af_err af_scan_by_key(af_array* out, const af_array key, const af_array in,
         const ArrayInfo& in_info  = getInfo(in);
         const ArrayInfo& key_info = getInfo(key);
 
-        if (dim >= (int)in_info.ndims()) {
+        if (dim >= static_cast<int>(in_info.ndims())) {
             *out = retain(in);
             return AF_SUCCESS;
         }
@@ -245,9 +244,7 @@ af_err af_scan_by_key(af_array* out, const af_array key, const af_array in,
                 res =
                     scan_op<cdouble, cdouble>(key, in, dim, op, inclusive_scan);
                 break;
-            case u32:
-                res = scan_op<uint, uint>(key, in, dim, op, inclusive_scan);
-                break;
+            case s16:
             case s32:
                 res = scan_op<int, int>(key, in, dim, op, inclusive_scan);
                 break;
@@ -258,14 +255,8 @@ af_err af_scan_by_key(af_array* out, const af_array key, const af_array in,
                 res = scan_op<intl, intl>(key, in, dim, op, inclusive_scan);
                 break;
             case u16:
-                res = scan_op<uint, uint>(key, in, dim, op, inclusive_scan);
-                break;
-            case s16:
-                res = scan_op<int, int>(key, in, dim, op, inclusive_scan);
-                break;
+            case u32:
             case u8:
-                res = scan_op<uint, uint>(key, in, dim, op, inclusive_scan);
-                break;
             case b8:
                 res = scan_op<uint, uint>(key, in, dim, op, inclusive_scan);
                 break;

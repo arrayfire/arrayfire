@@ -18,7 +18,12 @@
 
 using af::dim4;
 using common::half;
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uintl;
+using detail::ushort;
 
 namespace {
 template<typename T>

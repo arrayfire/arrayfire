@@ -16,7 +16,6 @@
 #include <af/dim4.hpp>
 #include <complex>
 
-using af::dim4;
 using namespace detail;
 
 template<typename T>

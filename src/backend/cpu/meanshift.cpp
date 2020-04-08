@@ -24,16 +24,17 @@ using std::vector;
 namespace cpu {
 template<typename T>
 Array<T> meanshift(const Array<T> &in, const float &spatialSigma,
-                   const float &chromaticSigma, const unsigned &numInterations,
+                   const float &chromaticSigma, const unsigned &numIterations,
                    const bool &isColor) {
     Array<T> out = createEmptyArray<T>(in.dims());
 
-    if (isColor)
+    if (isColor) {
         getQueue().enqueue(kernel::meanShift<T, true>, out, in, spatialSigma,
-                           chromaticSigma, numInterations);
-    else
+                           chromaticSigma, numIterations);
+    } else {
         getQueue().enqueue(kernel::meanShift<T, false>, out, in, spatialSigma,
-                           chromaticSigma, numInterations);
+                           chromaticSigma, numIterations);
+    }
 
     return out;
 }

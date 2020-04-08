@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <Array.hpp>
 #include <arith.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
@@ -18,7 +19,10 @@
 #include <af/vision.h>
 
 using af::dim4;
-using namespace detail;
+using detail::arithOp;
+using detail::Array;
+using detail::convolve;
+using detail::uchar;
 
 template<typename T, typename accT>
 static af_array dog(const af_array& in, const int radius1, const int radius2) {

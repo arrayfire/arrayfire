@@ -16,14 +16,17 @@
 #include <sparse_handle.hpp>
 #include <af/sparse.h>
 
-using namespace detail;
-
+using af::dim4;
 using common::half;
 using common::SparseArrayBase;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uintl;
+using detail::ushort;
 
-af_array createHandle(const af::dim4 &d, af_dtype dtype) {
-    using namespace detail;
-
+af_array createHandle(const dim4 &d, af_dtype dtype) {
     // clang-format off
     switch (dtype) {
         case f32: return createHandle<float  >(d);
@@ -44,9 +47,7 @@ af_array createHandle(const af::dim4 &d, af_dtype dtype) {
     // clang-format on
 }
 
-af_array createHandleFromValue(const af::dim4 &d, double val, af_dtype dtype) {
-    using namespace detail;
-
+af_array createHandleFromValue(const dim4 &d, double val, af_dtype dtype) {
     // clang-format off
     switch (dtype) {
         case f32: return createHandleFromValue<float  >(d, val);
@@ -161,7 +162,7 @@ af_err af_create_handle(af_array *result, const unsigned ndims,
     try {
         AF_CHECK(af_init());
 
-        if (ndims > 0) ARG_ASSERT(2, ndims > 0 && dims != NULL);
+        if (ndims > 0) { ARG_ASSERT(2, ndims > 0 && dims != NULL); }
 
         dim4 d(0);
         for (unsigned i = 0; i < ndims; i++) { d[i] = dims[i]; }
@@ -181,40 +182,39 @@ af_err af_copy_array(af_array *out, const af_array in) {
 
         af_array res = 0;
         if (info.isSparse()) {
-            SparseArrayBase sbase = getSparseArrayBase(in);
+            const SparseArrayBase sbase = getSparseArrayBase(in);
             if (info.ndims() == 0) {
                 return af_create_sparse_array_from_ptr(
                     out, info.dims()[0], info.dims()[1], 0, nullptr, nullptr,
                     nullptr, type, sbase.getStorage(), afDevice);
-            } else {
-                switch (type) {
-                    case f32: res = copySparseArray<float>(in); break;
-                    case f64: res = copySparseArray<double>(in); break;
-                    case c32: res = copySparseArray<cfloat>(in); break;
-                    case c64: res = copySparseArray<cdouble>(in); break;
-                    default: TYPE_ERROR(0, type);
-                }
             }
+            switch (type) {
+                case f32: res = copySparseArray<float>(in); break;
+                case f64: res = copySparseArray<double>(in); break;
+                case c32: res = copySparseArray<cfloat>(in); break;
+                case c64: res = copySparseArray<cdouble>(in); break;
+                default: TYPE_ERROR(0, type);
+            }
+
         } else {
             if (info.ndims() == 0) {
                 return af_create_handle(out, 0, nullptr, type);
-            } else {
-                switch (type) {
-                    case f32: res = copyArray<float>(in); break;
-                    case c32: res = copyArray<cfloat>(in); break;
-                    case f64: res = copyArray<double>(in); break;
-                    case c64: res = copyArray<cdouble>(in); break;
-                    case b8: res = copyArray<char>(in); break;
-                    case s32: res = copyArray<int>(in); break;
-                    case u32: res = copyArray<uint>(in); break;
-                    case u8: res = copyArray<uchar>(in); break;
-                    case s64: res = copyArray<intl>(in); break;
-                    case u64: res = copyArray<uintl>(in); break;
-                    case s16: res = copyArray<short>(in); break;
-                    case u16: res = copyArray<ushort>(in); break;
-                    case f16: res = copyArray<half>(in); break;
-                    default: TYPE_ERROR(1, type);
-                }
+            }
+            switch (type) {
+                case f32: res = copyArray<float>(in); break;
+                case c32: res = copyArray<cfloat>(in); break;
+                case f64: res = copyArray<double>(in); break;
+                case c64: res = copyArray<cdouble>(in); break;
+                case b8: res = copyArray<char>(in); break;
+                case s32: res = copyArray<int>(in); break;
+                case u32: res = copyArray<uint>(in); break;
+                case u8: res = copyArray<uchar>(in); break;
+                case s64: res = copyArray<intl>(in); break;
+                case u64: res = copyArray<uintl>(in); break;
+                case s16: res = copyArray<short>(in); break;
+                case u16: res = copyArray<ushort>(in); break;
+                case f16: res = copyArray<half>(in); break;
+                default: TYPE_ERROR(1, type);
             }
         }
         std::swap(*out, res);
@@ -254,7 +254,7 @@ af_err af_get_data_ref_count(int *use_count, const af_array in) {
 
 af_err af_release_array(af_array arr) {
     try {
-        if (arr == 0) return AF_SUCCESS;
+        if (arr == 0) { return AF_SUCCESS; }
         const ArrayInfo &info = getInfo(arr, false, false);
         af_dtype type         = info.getType();
 
@@ -338,7 +338,6 @@ void write_array(af_array arr, const T *const data, const size_t bytes,
     } else {
         writeDeviceDataArray(getArray<T>(arr), data, bytes);
     }
-    return;
 }
 
 af_err af_write_array(af_array arr, const void *data, const size_t bytes,

@@ -16,7 +16,14 @@
 #include <af/vision.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::intl;
+using detail::uchar;
+using detail::uintl;
+using detail::ushort;
 
 template<typename Ti, typename To>
 static void nearest_neighbour(af_array* idx, af_array* dist,

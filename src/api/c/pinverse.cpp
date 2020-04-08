@@ -59,7 +59,7 @@ Array<T> pinverseSvd(const Array<T> &in, const double tol) {
     dim_t Q = in.dims()[3];
 
     // Compute SVD
-    typedef typename dtype_traits<T>::base_type Tr;
+    using Tr = typename dtype_traits<T>::base_type;
     // Ideally, these initializations should use createEmptyArray(), but for
     // some reason, linux-opencl-k80 will produce wrong results for large arrays
     Array<T> u  = createValueArray<T>(dim4(M, M, P, Q), scalar<T>(0));

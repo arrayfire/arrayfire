@@ -20,7 +20,7 @@
 
 #include <common/SparseArray.hpp>
 
-const common::SparseArrayBase &getSparseArrayBase(const af_array arr,
+const common::SparseArrayBase &getSparseArrayBase(const af_array in,
                                                   bool device_check = true);
 
 template<typename T>

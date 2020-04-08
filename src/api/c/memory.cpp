@@ -25,10 +25,29 @@
 
 #include <utility>
 
-using namespace detail;
-
+using af::dim4;
 using common::half;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createDeviceDataArray;
+using detail::deviceMemoryInfo;
+using detail::getActiveDeviceId;
+using detail::getDeviceCount;
+using detail::intl;
+using detail::isLocked;
+using detail::memAllocUser;
+using detail::memFreeUser;
+using detail::memLock;
+using detail::memUnlock;
+using detail::pinnedAlloc;
+using detail::pinnedFree;
+using detail::printMemInfo;
+using detail::signalMemoryCleanup;
+using detail::uchar;
+using detail::uintl;
+using detail::ushort;
 using std::move;
+using std::swap;
 
 af_err af_device_array(af_array *arr, void *data, const unsigned ndims,
                        const dim_t *const dims, const af_dtype type) {
@@ -87,7 +106,7 @@ af_err af_device_array(af_array *arr, void *data, const unsigned ndims,
             default: TYPE_ERROR(4, type);
         }
 
-        std::swap(*arr, res);
+        swap(*arr, res);
     }
     CATCHALL;
 
@@ -127,7 +146,7 @@ inline void lockArray(const af_array arr) {
     // Ideally we need to use .get(false), i.e. get ptr without offset
     // This is however not supported in opencl
     // Use getData().get() as alternative
-    memLock((void *)getArray<T>(arr).getData().get());
+    memLock(static_cast<void *>(getArray<T>(arr).getData().get()));
 }
 
 af_err af_lock_device_ptr(const af_array arr) { return af_lock_array(arr); }
@@ -163,7 +182,7 @@ inline bool checkUserLock(const af_array arr) {
     // Ideally we need to use .get(false), i.e. get ptr without offset
     // This is however not supported in opencl
     // Use getData().get() as alternative
-    return isLocked((void *)getArray<T>(arr).getData().get());
+    return isLocked(static_cast<void *>(getArray<T>(arr).getData().get()));
 }
 
 af_err af_is_locked_array(bool *res, const af_array arr) {
@@ -197,7 +216,7 @@ inline void unlockArray(const af_array arr) {
     // Ideally we need to use .get(false), i.e. get ptr without offset
     // This is however not supported in opencl
     // Use getData().get() as alternative
-    memUnlock((void *)getArray<T>(arr).getData().get());
+    memUnlock(static_cast<void *>(getArray<T>(arr).getData().get()));
 }
 
 af_err af_unlock_device_ptr(const af_array arr) { return af_unlock_array(arr); }
@@ -240,7 +259,7 @@ af_err af_alloc_device(void **ptr, const dim_t bytes) {
 af_err af_alloc_pinned(void **ptr, const dim_t bytes) {
     try {
         AF_CHECK(af_init());
-        *ptr = (void *)pinnedAlloc<char>(bytes);
+        *ptr = static_cast<void *>(pinnedAlloc<char>(bytes));
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -256,19 +275,21 @@ af_err af_free_device(void *ptr) {
 
 af_err af_free_pinned(void *ptr) {
     try {
-        pinnedFree<char>((char *)ptr);
+        pinnedFree<char>(static_cast<char *>(ptr));
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_alloc_host(void **ptr, const dim_t bytes) {
-    if ((*ptr = malloc(bytes))) { return AF_SUCCESS; }
+    if ((*ptr = malloc(bytes))) {  // NOLINT(hicpp-no-malloc)
+        return AF_SUCCESS;
+    }
     return AF_ERR_NO_MEM;
 }
 
 af_err af_free_host(void *ptr) {
-    free(ptr);
+    free(ptr);  // NOLINT(hicpp-no-malloc)
     return AF_SUCCESS;
 }
 
@@ -277,8 +298,9 @@ af_err af_print_mem_info(const char *msg, const int device_id) {
         int device = device_id;
         if (device == -1) { device = getActiveDeviceId(); }
 
-        if (msg != NULL)
+        if (msg != nullptr) {
             ARG_ASSERT(0, strlen(msg) < 256);  // 256 character limit on msg
+        }
         ARG_ASSERT(1, device >= 0 && device < getDeviceCount());
 
         printMemInfo(msg ? msg : "", device);
@@ -325,21 +347,20 @@ af_err af_get_mem_step_size(size_t *step_bytes) {
 ////////////////////////////////////////////////////////////////////////////////
 
 MemoryManager &getMemoryManager(const af_memory_manager handle) {
-    return *(MemoryManager *)handle;
+    return *static_cast<MemoryManager *>(handle);
 }
 
 af_memory_manager getHandle(MemoryManager &manager) {
     MemoryManager *handle;
     handle = &manager;
-    return (af_memory_manager)handle;
+    return static_cast<af_memory_manager>(handle);
 }
 
 af_err af_create_memory_manager(af_memory_manager *manager) {
     try {
         AF_CHECK(af_init());
         std::unique_ptr<MemoryManager> m(new MemoryManager());
-        *manager = getHandle(*m);
-        m.release();
+        *manager = getHandle(*m.release());
     }
     CATCHALL;
 
@@ -351,7 +372,7 @@ af_err af_release_memory_manager(af_memory_manager handle) {
         // NB: does NOT reset the internal memory manager to be the default:
         // af_unset_memory_manager_pinned must be used to fully-reset with a new
         // AF default memory manager
-        delete (MemoryManager *)handle;
+        delete static_cast<MemoryManager *>(handle);
     }
     CATCHALL;
 
@@ -721,13 +742,13 @@ bool MemoryManagerFunctionWrapper::isUserLocked(const void *ptr) {
     int out;
     AF_CHECK(getMemoryManager(handle_).is_user_locked_fn(
         handle_, &out, const_cast<void *>(ptr)));
-    return (bool)out;
+    return static_cast<bool>(out);
 }
 
-void MemoryManagerFunctionWrapper::usageInfo(size_t *alloc_bytes,
-                                             size_t *alloc_buffers,
-                                             size_t *lock_bytes,
-                                             size_t *lock_buffers) {
+void MemoryManagerFunctionWrapper::usageInfo(size_t * /*alloc_bytes*/,
+                                             size_t * /*alloc_buffers*/,
+                                             size_t * /*lock_bytes*/,
+                                             size_t * /*lock_buffers*/) {
     // Not implemented in the public memory manager API, but for backward
     // compatibility reasons, needs to be in the common memory manager interface
     // so that it can be used with the default memory manager. Called from
@@ -748,7 +769,7 @@ bool MemoryManagerFunctionWrapper::jitTreeExceedsMemoryPressure(size_t bytes) {
     int out;
     AF_CHECK(getMemoryManager(handle_).jit_tree_exceeds_memory_pressure_fn(
         handle_, &out, bytes));
-    return (bool)out;
+    return static_cast<bool>(out);
 }
 
 size_t MemoryManagerFunctionWrapper::getMemStepSize() {
@@ -764,6 +785,7 @@ void MemoryManagerFunctionWrapper::setMemStepSize(size_t new_step_size) {
     // Not implemented in the public memory manager API, but for backward
     // compatibility reasons, needs to be in the common memory manager interface
     // so that it can be used with the default memory manager.
+    UNUSED(new_step_size);
     AF_ERROR("Memory step size API not implemented for custom memory manager ",
              AF_ERR_NOT_SUPPORTED);
 }

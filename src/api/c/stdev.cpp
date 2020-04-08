@@ -28,8 +28,8 @@ using namespace detail;
 
 template<typename inType, typename outType>
 static outType stdev(const af_array& in) {
-    typedef typename baseOutType<outType>::type weightType;
-    Array<inType> _in       = getArray<inType>(in);
+    using weightType        = typename baseOutType<outType>::type;
+    const Array<inType> _in = getArray<inType>(in);
     Array<outType> input    = cast<outType>(_in);
     Array<outType> meanCnst = createValueArray<outType>(
         input.dims(), mean<inType, weightType, outType>(_in));
@@ -45,10 +45,10 @@ static outType stdev(const af_array& in) {
 
 template<typename inType, typename outType>
 static af_array stdev(const af_array& in, int dim) {
-    typedef typename baseOutType<outType>::type weightType;
-    Array<inType> _in    = getArray<inType>(in);
-    Array<outType> input = cast<outType>(_in);
-    dim4 iDims           = input.dims();
+    using weightType        = typename baseOutType<outType>::type;
+    const Array<inType> _in = getArray<inType>(in);
+    Array<outType> input    = cast<outType>(_in);
+    dim4 iDims              = input.dims();
 
     Array<outType> meanArr = mean<inType, weightType, outType>(_in, dim);
 
@@ -63,7 +63,7 @@ static af_array stdev(const af_array& in, int dim) {
     Array<outType> diffSq =
         detail::arithOp<outType, af_mul_t>(diff, diff, diff.dims());
     Array<outType> redDiff = reduce<af_add_t, outType, outType>(diffSq, dim);
-    dim4 oDims             = redDiff.dims();
+    const dim4& oDims      = redDiff.dims();
 
     Array<outType> divArr =
         createValueArray<outType>(oDims, scalar<outType>(iDims[dim]));
@@ -74,6 +74,7 @@ static af_array stdev(const af_array& in, int dim) {
     return getHandle<outType>(result);
 }
 
+// NOLINTNEXTLINE(readability-non-const-parameter)
 af_err af_stdev_all(double* realVal, double* imagVal, const af_array in) {
     UNUSED(imagVal);  // TODO implement for complex values
     try {
@@ -90,8 +91,8 @@ af_err af_stdev_all(double* realVal, double* imagVal, const af_array in) {
             case u64: *realVal = stdev<uintl, double>(in); break;
             case u8: *realVal = stdev<uchar, float>(in); break;
             case b8: *realVal = stdev<char, float>(in); break;
-            // TODO: FIXME: sqrt(complex) is not present in cuda/opencl backend
-            // case c32: {
+            // TODO(umar): FIXME: sqrt(complex) is not present in cuda/opencl
+            // backend case c32: {
             //    cfloat tmp = stdev<cfloat,cfloat>(in);
             //    *realVal = real(tmp);
             //    *imagVal = imag(tmp);
@@ -126,9 +127,9 @@ af_err af_stdev(af_array* out, const af_array in, const dim_t dim) {
             case u64: output = stdev<uintl, double>(in, dim); break;
             case u8: output = stdev<uchar, float>(in, dim); break;
             case b8: output = stdev<char, float>(in, dim); break;
-            // TODO: FIXME: sqrt(complex) is not present in cuda/opencl backend
-            // case c32: output = stdev<cfloat,  cfloat>(in, dim); break;
-            // case c64: output = stdev<cdouble,cdouble>(in, dim); break;
+            // TODO(umar): FIXME: sqrt(complex) is not present in cuda/opencl
+            // backend case c32: output = stdev<cfloat,  cfloat>(in, dim);
+            // break; case c64: output = stdev<cdouble,cdouble>(in, dim); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*out, output);

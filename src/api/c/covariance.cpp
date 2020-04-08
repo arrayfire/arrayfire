@@ -23,13 +23,13 @@
 #include "stats.h"
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
 
 template<typename T, typename cType>
-static af_array cov(const af_array& X, const af_array& Y, const bool isbiased) {
-    typedef typename baseOutType<cType>::type weightType;
-    Array<T> _x       = getArray<T>(X);
-    Array<T> _y       = getArray<T>(Y);
+static af_array cov(const af_array& X, const af_array& Y, bool isbiased) {
+    using weightType  = typename baseOutType<cType>::type;
+    const Array<T> _x = getArray<T>(X);
+    const Array<T> _y = getArray<T>(Y);
     Array<cType> xArr = cast<cType>(_x);
     Array<cType> yArr = cast<cType>(_y);
 

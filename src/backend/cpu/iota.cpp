@@ -15,7 +15,7 @@
 #include <platform.hpp>
 #include <queue.hpp>
 
-using common::half;
+using common::half;  // NOLINT(misc-unused-using-decls) bug in clang-tidy
 
 namespace cpu {
 

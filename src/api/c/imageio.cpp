@@ -38,14 +38,13 @@ using af::dim4;
 using namespace detail;
 using std::string;
 using std::swap;
-using std::unique_ptr;
 
 template<typename T, FI_CHANNELS fi_color, FI_CHANNELS fo_color>
 static af_err readImage(af_array* rImage, const uchar* pSrcLine,
                         const int nSrcPitch, const uint fi_w, const uint fi_h) {
     // create an array to receive the loaded image data.
     AF_CHECK(af_init());
-    float* pDst  = pinnedAlloc<float>(fi_w * fi_h * 4);  // 4 channels is max
+    auto* pDst   = pinnedAlloc<float>(fi_w * fi_h * 4);  // 4 channels is max
     float* pDst0 = pDst;
     float* pDst1 = pDst + (fi_w * fi_h * 1);
     float* pDst2 = pDst + (fi_w * fi_h * 2);
@@ -56,32 +55,37 @@ static af_err readImage(af_array* rImage, const uchar* pSrcLine,
 
     for (uint x = 0; x < fi_w; ++x) {
         for (uint y = 0; y < fi_h; ++y) {
-            const T* src = (T*)(pSrcLine - y * nSrcPitch);
+            const T* src = reinterpret_cast<const T*>(pSrcLine - y * nSrcPitch);
             if (fo_color == 1) {
-                pDst0[indx] = (T) * (src + (x * step));
+                pDst0[indx] = static_cast<T>(*(src + (x * step)));
             } else if (fo_color >= 3) {
-                if ((af_dtype)af::dtype_traits<T>::af_type == u8) {
-                    pDst0[indx] = (float)*(src + (x * step + FI_RGBA_RED));
-                    pDst1[indx] = (float)*(src + (x * step + FI_RGBA_GREEN));
-                    pDst2[indx] = (float)*(src + (x * step + FI_RGBA_BLUE));
-                    if (fo_color == 4)
+                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) {
+                    pDst0[indx] =
+                        static_cast<float>(*(src + (x * step + FI_RGBA_RED)));
+                    pDst1[indx] =
+                        static_cast<float>(*(src + (x * step + FI_RGBA_GREEN)));
+                    pDst2[indx] =
+                        static_cast<float>(*(src + (x * step + FI_RGBA_BLUE)));
+                    if (fo_color == 4) {
                         pDst3[indx] =
                             (float)*(src + (x * step + FI_RGBA_ALPHA));
+                    }
                 } else {
                     // Non 8-bit types do not use ordering
                     // See Pixel Access Functions Chapter in FreeImage Doc
-                    pDst0[indx] = (float)*(src + (x * step + 0));
-                    pDst1[indx] = (float)*(src + (x * step + 1));
-                    pDst2[indx] = (float)*(src + (x * step + 2));
-                    if (fo_color == 4)
-                        pDst3[indx] = (float)*(src + (x * step + 3));
+                    pDst0[indx] = static_cast<float>(*(src + (x * step + 0)));
+                    pDst1[indx] = static_cast<float>(*(src + (x * step + 1)));
+                    pDst2[indx] = static_cast<float>(*(src + (x * step + 2)));
+                    if (fo_color == 4) {
+                        pDst3[indx] =
+                            static_cast<float>(*(src + (x * step + 3)));
+                    }
                 }
             }
             indx++;
         }
     }
 
-    // TODO
     af::dim4 dims(fi_h, fi_w, fo_color, 1);
     af_err err = af_create_array(rImage, pDst, dims.ndims(), dims.get(),
                                  (af_dtype)af::dtype_traits<float>::af_type);
@@ -104,7 +108,8 @@ FreeImage_Module::FreeImage_Module() : module(nullptr, nullptr) {
 FreeImage_Module::FreeImage_Module() : module("freeimage", nullptr) {
     if (!module.isLoaded()) {
         string error_message =
-            "Error loading FreeImage: " + module.getErrorMessage() +
+            "Error loading FreeImage: " +
+            common::DependencyModule::getErrorMessage() +
             "\nFreeImage or one of it's dependencies failed to "
             "load. Try installing FreeImage or check if FreeImage is in the "
             "search path.";
@@ -139,7 +144,8 @@ FreeImage_Module::FreeImage_Module() : module("freeimage", nullptr) {
 #ifndef FREEIMAGE_STATIC
     if (!module.symbolsLoaded()) {
         string error_message =
-            "Error loading FreeImage: " + module.getErrorMessage() +
+            "Error loading FreeImage: " +
+            common::DependencyModule::getErrorMessage() +
             "\nThe installed version of FreeImage is not compatible with "
             "ArrayFire. Please create an issue on which this error message";
         AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
@@ -154,7 +160,7 @@ FreeImage_Module::~FreeImage_Module() {
 }
 
 FreeImage_Module& getFreeImagePlugin() {
-    static FreeImage_Module* plugin = new FreeImage_Module();
+    static auto* plugin = new FreeImage_Module();
     return *plugin;
 }
 
@@ -167,7 +173,7 @@ static af_err readImage(af_array* rImage, const uchar* pSrcLine,
                         const int nSrcPitch, const uint fi_w, const uint fi_h) {
     // create an array to receive the loaded image data.
     AF_CHECK(af_init());
-    float* pDst = pinnedAlloc<float>(fi_w * fi_h);
+    auto* pDst = pinnedAlloc<float>(fi_w * fi_h);
 
     uint indx = 0;
     uint step = nSrcPitch / (fi_w * sizeof(T));
@@ -176,18 +182,18 @@ static af_err readImage(af_array* rImage, const uchar* pSrcLine,
         for (uint y = 0; y < fi_h; ++y) {
             const T* src = (T*)(pSrcLine - y * nSrcPitch);
             if (fo_color == 1) {
-                pDst[indx] = (T) * (src + (x * step));
+                pDst[indx] = static_cast<T>(*(src + (x * step)));
             } else if (fo_color >= 3) {
-                if ((af_dtype)af::dtype_traits<T>::af_type == u8) {
-                    r = (T) * (src + (x * step + FI_RGBA_RED));
-                    g = (T) * (src + (x * step + FI_RGBA_GREEN));
-                    b = (T) * (src + (x * step + FI_RGBA_BLUE));
+                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) {
+                    r = *(src + (x * step + FI_RGBA_RED));
+                    g = *(src + (x * step + FI_RGBA_GREEN));
+                    b = *(src + (x * step + FI_RGBA_BLUE));
                 } else {
                     // Non 8-bit types do not use ordering
                     // See Pixel Access Functions Chapter in FreeImage Doc
-                    r = (T) * (src + (x * step + 0));
-                    g = (T) * (src + (x * step + 1));
-                    b = (T) * (src + (x * step + 2));
+                    r = *(src + (x * step + 0));
+                    g = *(src + (x * step + 1));
+                    b = *(src + (x * step + 2));
                 }
                 pDst[indx] = r * 0.2989f + g * 0.5870f + b * 0.1140f;
             }
@@ -226,10 +232,10 @@ af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        int flags = 0;
-        if (fif == FIF_JPEG) flags = flags | JPEG_ACCURATE;
+        unsigned flags = 0;
+        if (fif == FIF_JPEG) { flags = flags | JPEG_ACCURATE; }
 #ifdef JPEG_GREYSCALE
-        if (fif == FIF_JPEG && !isColor) flags = flags | JPEG_GREYSCALE;
+        if (fif == FIF_JPEG && !isColor) { flags = flags | JPEG_GREYSCALE; }
 #endif
 
         // check that the plugin has reading capabilities ...
@@ -289,19 +295,19 @@ af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
         af_array rImage;
         if (isColor) {
             if (fi_color == 4) {  // 4 channel image
-                if (fi_bpc == 8)
+                if (fi_bpc == 8) {
                     AF_CHECK((readImage<uchar, AFFI_RGBA, AFFI_RGBA>)(&rImage,
                                                                       pSrcLine,
                                                                       nSrcPitch,
                                                                       fi_w,
                                                                       fi_h));
-                else if (fi_bpc == 16)
+                } else if (fi_bpc == 16) {
                     AF_CHECK(
                         (readImage<ushort, AFFI_RGBA, AFFI_RGBA>)(&rImage,
                                                                   pSrcLine,
                                                                   nSrcPitch,
                                                                   fi_w, fi_h));
-                else if (fi_bpc == 32)
+                } else if (fi_bpc == 32) {
                     switch (image_type) {
                         case FIT_UINT32:
                             AF_CHECK((readImage<uint, AFFI_RGBA,
@@ -328,20 +334,21 @@ af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
                                      AF_ERR_NOT_SUPPORTED);
                             break;
                     }
+                }
             } else if (fi_color == 1) {
-                if (fi_bpc == 8)
+                if (fi_bpc == 8) {
                     AF_CHECK((readImage<uchar, AFFI_GRAY, AFFI_RGB>)(&rImage,
                                                                      pSrcLine,
                                                                      nSrcPitch,
                                                                      fi_w,
                                                                      fi_h));
-                else if (fi_bpc == 16)
+                } else if (fi_bpc == 16) {
                     AF_CHECK((readImage<ushort, AFFI_GRAY, AFFI_RGB>)(&rImage,
                                                                       pSrcLine,
                                                                       nSrcPitch,
                                                                       fi_w,
                                                                       fi_h));
-                else if (fi_bpc == 32)
+                } else if (fi_bpc == 32) {
                     switch (image_type) {
                         case FIT_UINT32:
                             AF_CHECK((
@@ -370,19 +377,20 @@ af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
                                      AF_ERR_NOT_SUPPORTED);
                             break;
                     }
+                }
             } else {  // 3 channel image
-                if (fi_bpc == 8)
+                if (fi_bpc == 8) {
                     AF_CHECK((
                         readImage<uchar, AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine,
                                                               nSrcPitch, fi_w,
                                                               fi_h));
-                else if (fi_bpc == 16)
+                } else if (fi_bpc == 16) {
                     AF_CHECK((readImage<ushort, AFFI_RGB, AFFI_RGB>)(&rImage,
                                                                      pSrcLine,
                                                                      nSrcPitch,
                                                                      fi_w,
                                                                      fi_h));
-                else if (fi_bpc == 32)
+                } else if (fi_bpc == 32) {
                     switch (image_type) {
                         case FIT_UINT32:
                             AF_CHECK(
@@ -413,18 +421,19 @@ af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
                                      AF_ERR_NOT_SUPPORTED);
                             break;
                     }
+                }
             }
         } else {                  // output gray irrespective
             if (fi_color == 1) {  // 4 channel image
-                if (fi_bpc == 8)
+                if (fi_bpc == 8) {
                     AF_CHECK((readImage<uchar, AFFI_GRAY>)(&rImage, pSrcLine,
                                                            nSrcPitch, fi_w,
                                                            fi_h));
-                else if (fi_bpc == 16)
+                } else if (fi_bpc == 16) {
                     AF_CHECK((readImage<ushort, AFFI_GRAY>)(&rImage, pSrcLine,
                                                             nSrcPitch, fi_w,
                                                             fi_h));
-                else if (fi_bpc == 32)
+                } else if (fi_bpc == 32) {
                     switch (image_type) {
                         case FIT_UINT32:
                             AF_CHECK((readImage<uint, AFFI_GRAY>)(&rImage,
@@ -449,16 +458,17 @@ af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
                                      AF_ERR_NOT_SUPPORTED);
                             break;
                     }
+                }
             } else if (fi_color == 3 || fi_color == 4) {
-                if (fi_bpc == 8)
+                if (fi_bpc == 8) {
                     AF_CHECK((readImage<uchar, AFFI_RGB>)(&rImage, pSrcLine,
                                                           nSrcPitch, fi_w,
                                                           fi_h));
-                else if (fi_bpc == 16)
+                } else if (fi_bpc == 16) {
                     AF_CHECK((readImage<ushort, AFFI_RGB>)(&rImage, pSrcLine,
                                                            nSrcPitch, fi_w,
                                                            fi_h));
-                else if (fi_bpc == 32)
+                } else if (fi_bpc == 32) {
                     switch (image_type) {
                         case FIT_UINT32:
                             AF_CHECK((readImage<uint, AFFI_RGB>)(&rImage,
@@ -483,6 +493,7 @@ af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
                                      AF_ERR_NOT_SUPPORTED);
                             break;
                     }
+                }
             }
         }
 
@@ -578,10 +589,11 @@ af_err af_save_image(const char* filename, const af_array in_) {
             AF_CHECK(af_transpose(&aaT, aa, false));
 
             const ArrayInfo& cinfo = getInfo(rrT);
-            float* pSrc0           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc1           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc2           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc3           = pinnedAlloc<float>(cinfo.elements());
+
+            auto* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc2 = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc3 = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -592,13 +604,13 @@ af_err af_save_image(const char* filename, const af_array in_) {
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
                     *(pDstLine + x * step + FI_RGBA_RED) =
-                        (uchar)pSrc0[indx];  // r
+                        static_cast<uchar>(pSrc0[indx]);  // r
                     *(pDstLine + x * step + FI_RGBA_GREEN) =
-                        (uchar)pSrc1[indx];  // g
+                        static_cast<uchar>(pSrc1[indx]);  // g
                     *(pDstLine + x * step + FI_RGBA_BLUE) =
-                        (uchar)pSrc2[indx];  // b
+                        static_cast<uchar>(pSrc2[indx]);  // b
                     *(pDstLine + x * step + FI_RGBA_ALPHA) =
-                        (uchar)pSrc3[indx];  // a
+                        static_cast<uchar>(pSrc3[indx]);  // a
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -613,9 +625,10 @@ af_err af_save_image(const char* filename, const af_array in_) {
             AF_CHECK(af_transpose(&bbT, bb, false));
 
             const ArrayInfo& cinfo = getInfo(rrT);
-            float* pSrc0           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc1           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc2           = pinnedAlloc<float>(cinfo.elements());
+
+            auto* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc2 = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -625,11 +638,11 @@ af_err af_save_image(const char* filename, const af_array in_) {
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
                     *(pDstLine + x * step + FI_RGBA_RED) =
-                        (uchar)pSrc0[indx];  // r
+                        static_cast<uchar>(pSrc0[indx]);  // r
                     *(pDstLine + x * step + FI_RGBA_GREEN) =
-                        (uchar)pSrc1[indx];  // g
+                        static_cast<uchar>(pSrc1[indx]);  // g
                     *(pDstLine + x * step + FI_RGBA_BLUE) =
-                        (uchar)pSrc2[indx];  // b
+                        static_cast<uchar>(pSrc2[indx]);  // b
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -640,12 +653,12 @@ af_err af_save_image(const char* filename, const af_array in_) {
         } else {
             AF_CHECK(af_transpose(&rrT, rr, false));
             const ArrayInfo& cinfo = getInfo(rrT);
-            float* pSrc0           = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc0            = pinnedAlloc<float>(cinfo.elements());
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
 
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step) = (uchar)pSrc0[indx];
+                    *(pDstLine + x * step) = static_cast<uchar>(pSrc0[indx]);
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -654,7 +667,7 @@ af_err af_save_image(const char* filename, const af_array in_) {
         }
 
         int flags = 0;
-        if (fif == FIF_JPEG) flags = flags | JPEG_QUALITYSUPERB;
+        if (fif == FIF_JPEG) { flags = flags | JPEG_QUALITYSUPERB; }
 
         // now save the result image
         if (!(_.FreeImage_Save(fif, pResultBitmap.get(), filename, flags) ==
@@ -662,15 +675,15 @@ af_err af_save_image(const char* filename, const af_array in_) {
             AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
         }
 
-        if (free_in) AF_CHECK(af_release_array(in));
-        if (rr != 0) AF_CHECK(af_release_array(rr));
-        if (gg != 0) AF_CHECK(af_release_array(gg));
-        if (bb != 0) AF_CHECK(af_release_array(bb));
-        if (aa != 0) AF_CHECK(af_release_array(aa));
-        if (rrT != 0) AF_CHECK(af_release_array(rrT));
-        if (ggT != 0) AF_CHECK(af_release_array(ggT));
-        if (bbT != 0) AF_CHECK(af_release_array(bbT));
-        if (aaT != 0) AF_CHECK(af_release_array(aaT));
+        if (free_in) { AF_CHECK(af_release_array(in)); }
+        if (rr != 0) { AF_CHECK(af_release_array(rr)); }
+        if (gg != 0) { AF_CHECK(af_release_array(gg)); }
+        if (bb != 0) { AF_CHECK(af_release_array(bb)); }
+        if (aa != 0) { AF_CHECK(af_release_array(aa)); }
+        if (rrT != 0) { AF_CHECK(af_release_array(rrT)); }
+        if (ggT != 0) { AF_CHECK(af_release_array(ggT)); }
+        if (bbT != 0) { AF_CHECK(af_release_array(bbT)); }
+        if (aaT != 0) { AF_CHECK(af_release_array(aaT)); }
     }
     CATCHALL
 
@@ -690,7 +703,7 @@ af_err af_load_image_memory(af_array* out, const void* ptr) {
         // set your own FreeImage error handler
         _.FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
-        FIMEMORY* stream = (FIMEMORY*)ptr;
+        auto* stream = static_cast<FIMEMORY*>(const_cast<void*>(ptr));
         _.FreeImage_SeekMemory(stream, 0L, SEEK_SET);
 
         // try to guess the file format from the file extension
@@ -704,8 +717,8 @@ af_err af_load_image_memory(af_array* out, const void* ptr) {
                      AF_ERR_NOT_SUPPORTED);
         }
 
-        int flags = 0;
-        if (fif == FIF_JPEG) flags = flags | JPEG_ACCURATE;
+        unsigned flags = 0;
+        if (fif == FIF_JPEG) { flags = flags | JPEG_ACCURATE; }
 
         // check that the plugin has reading capabilities ...
         bitmap_ptr pBitmap = make_bitmap_ptr(NULL);
@@ -759,47 +772,50 @@ af_err af_load_image_memory(af_array* out, const void* ptr) {
         // result image
         af_array rImage;
         if (fi_color == 4) {  // 4 channel image
-            if (fi_bpc == 8)
+            if (fi_bpc == 8) {
                 AF_CHECK((readImage<uchar, AFFI_RGBA, AFFI_RGBA>)(&rImage,
                                                                   pSrcLine,
                                                                   nSrcPitch,
                                                                   fi_w, fi_h));
-            else if (fi_bpc == 16)
+            } else if (fi_bpc == 16) {
                 AF_CHECK((readImage<ushort, AFFI_RGBA, AFFI_RGBA>)(&rImage,
                                                                    pSrcLine,
                                                                    nSrcPitch,
                                                                    fi_w, fi_h));
-            else if (fi_bpc == 32)
+            } else if (fi_bpc == 32) {
                 AF_CHECK((readImage<float, AFFI_RGBA, AFFI_RGBA>)(&rImage,
                                                                   pSrcLine,
                                                                   nSrcPitch,
                                                                   fi_w, fi_h));
+            }
         } else if (fi_color == 1) {  // 1 channel image
-            if (fi_bpc == 8)
+            if (fi_bpc == 8) {
                 AF_CHECK((readImage<uchar, AFFI_GRAY>)(&rImage, pSrcLine,
                                                        nSrcPitch, fi_w, fi_h));
-            else if (fi_bpc == 16)
+            } else if (fi_bpc == 16) {
                 AF_CHECK((readImage<ushort, AFFI_GRAY>)(&rImage, pSrcLine,
                                                         nSrcPitch, fi_w, fi_h));
-            else if (fi_bpc == 32)
+            } else if (fi_bpc == 32) {
                 AF_CHECK((readImage<float, AFFI_GRAY>)(&rImage, pSrcLine,
                                                        nSrcPitch, fi_w, fi_h));
+            }
         } else {  // 3 channel image
-            if (fi_bpc == 8)
+            if (fi_bpc == 8) {
                 AF_CHECK((readImage<uchar, AFFI_RGB, AFFI_RGB>)(&rImage,
                                                                 pSrcLine,
                                                                 nSrcPitch, fi_w,
                                                                 fi_h));
-            else if (fi_bpc == 16)
+            } else if (fi_bpc == 16) {
                 AF_CHECK((readImage<ushort, AFFI_RGB, AFFI_RGB>)(&rImage,
                                                                  pSrcLine,
                                                                  nSrcPitch,
                                                                  fi_w, fi_h));
-            else if (fi_bpc == 32)
+            } else if (fi_bpc == 32) {
                 AF_CHECK((readImage<float, AFFI_RGB, AFFI_RGB>)(&rImage,
                                                                 pSrcLine,
                                                                 nSrcPitch, fi_w,
                                                                 fi_h));
+            }
         }
 
         swap(*out, rImage);
@@ -819,7 +835,7 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
         _.FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
         // try to guess the file format from the file extension
-        FREE_IMAGE_FORMAT fif = (FREE_IMAGE_FORMAT)format;
+        auto fif = static_cast<FREE_IMAGE_FORMAT>(format);
 
         if (fif == FIF_UNKNOWN || fif > 34) {  // FreeImage FREE_IMAGE_FORMAT
                                                // has upto 34 enums as of 3.17
@@ -882,10 +898,10 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
             AF_CHECK(af_transpose(&aaT, aa, false));
 
             const ArrayInfo& cinfo = getInfo(rrT);
-            float* pSrc0           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc1           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc2           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc3           = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc0            = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc1            = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc2            = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc3            = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -896,13 +912,13 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
                     *(pDstLine + x * step + FI_RGBA_RED) =
-                        (uchar)pSrc0[indx];  // r
+                        static_cast<uchar>(pSrc0[indx]);  // r
                     *(pDstLine + x * step + FI_RGBA_GREEN) =
-                        (uchar)pSrc1[indx];  // g
+                        static_cast<uchar>(pSrc1[indx]);  // g
                     *(pDstLine + x * step + FI_RGBA_BLUE) =
-                        (uchar)pSrc2[indx];  // b
+                        static_cast<uchar>(pSrc2[indx]);  // b
                     *(pDstLine + x * step + FI_RGBA_ALPHA) =
-                        (uchar)pSrc3[indx];  // a
+                        static_cast<uchar>(pSrc3[indx]);  // a
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -917,9 +933,9 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
             AF_CHECK(af_transpose(&bbT, bb, false));
 
             const ArrayInfo& cinfo = getInfo(rrT);
-            float* pSrc0           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc1           = pinnedAlloc<float>(cinfo.elements());
-            float* pSrc2           = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc0            = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc1            = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc2            = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -929,11 +945,11 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
                     *(pDstLine + x * step + FI_RGBA_RED) =
-                        (uchar)pSrc0[indx];  // r
+                        static_cast<uchar>(pSrc0[indx]);  // r
                     *(pDstLine + x * step + FI_RGBA_GREEN) =
-                        (uchar)pSrc1[indx];  // g
+                        static_cast<uchar>(pSrc1[indx]);  // g
                     *(pDstLine + x * step + FI_RGBA_BLUE) =
-                        (uchar)pSrc2[indx];  // b
+                        static_cast<uchar>(pSrc2[indx]);  // b
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -944,12 +960,12 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
         } else {
             AF_CHECK(af_transpose(&rrT, rr, false));
             const ArrayInfo& cinfo = getInfo(rrT);
-            float* pSrc0           = pinnedAlloc<float>(cinfo.elements());
+            auto* pSrc0            = pinnedAlloc<float>(cinfo.elements());
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
 
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step) = (uchar)pSrc0[indx];
+                    *(pDstLine + x * step) = static_cast<uchar>(pSrc0[indx]);
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -962,7 +978,7 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
         FIMEMORY* stream       = _.FreeImage_OpenMemory(data, size_in_bytes);
 
         int flags = 0;
-        if (fif == FIF_JPEG) flags = flags | JPEG_QUALITYSUPERB;
+        if (fif == FIF_JPEG) { flags = flags | JPEG_QUALITYSUPERB; }
 
         // now save the result image
         if (!(_.FreeImage_SaveToMemory(fif, pResultBitmap.get(), stream,
@@ -972,15 +988,15 @@ af_err af_save_image_memory(void** ptr, const af_array in_,
 
         *ptr = stream;
 
-        if (free_in) AF_CHECK(af_release_array(in));
-        if (rr != 0) AF_CHECK(af_release_array(rr));
-        if (gg != 0) AF_CHECK(af_release_array(gg));
-        if (bb != 0) AF_CHECK(af_release_array(bb));
-        if (aa != 0) AF_CHECK(af_release_array(aa));
-        if (rrT != 0) AF_CHECK(af_release_array(rrT));
-        if (ggT != 0) AF_CHECK(af_release_array(ggT));
-        if (bbT != 0) AF_CHECK(af_release_array(bbT));
-        if (aaT != 0) AF_CHECK(af_release_array(aaT));
+        if (free_in) { AF_CHECK(af_release_array(in)); }
+        if (rr != 0) { AF_CHECK(af_release_array(rr)); }
+        if (gg != 0) { AF_CHECK(af_release_array(gg)); }
+        if (bb != 0) { AF_CHECK(af_release_array(bb)); }
+        if (aa != 0) { AF_CHECK(af_release_array(aa)); }
+        if (rrT != 0) { AF_CHECK(af_release_array(rrT)); }
+        if (ggT != 0) { AF_CHECK(af_release_array(ggT)); }
+        if (bbT != 0) { AF_CHECK(af_release_array(bbT)); }
+        if (aaT != 0) { AF_CHECK(af_release_array(aaT)); }
     }
     CATCHALL
 
@@ -996,17 +1012,17 @@ af_err af_delete_image_memory(void* ptr) {
         // set your own FreeImage error handler
         _.FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
-        FIMEMORY* stream = (FIMEMORY*)ptr;
+        auto* stream = static_cast<FIMEMORY*>(ptr);
         _.FreeImage_SeekMemory(stream, 0L, SEEK_SET);
 
         // Ensure data is freeimage compatible
         FREE_IMAGE_FORMAT fif =
-            _.FreeImage_GetFileTypeFromMemory((FIMEMORY*)ptr, 0);
+            _.FreeImage_GetFileTypeFromMemory(static_cast<FIMEMORY*>(ptr), 0);
         if (fif == FIF_UNKNOWN) {
             AF_ERROR("FreeImage Error: Unknown Filetype", AF_ERR_NOT_SUPPORTED);
         }
 
-        _.FreeImage_CloseMemory((FIMEMORY*)ptr);
+        _.FreeImage_CloseMemory(static_cast<FIMEMORY*>(ptr));
     }
     CATCHALL
 

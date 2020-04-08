@@ -16,7 +16,9 @@
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::hsv2rgb;
+using detail::rgb2hsv;
 
 template<typename T, bool isHSV2RGB>
 static af_array convert(const af_array& in) {

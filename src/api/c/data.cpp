@@ -27,7 +27,16 @@
 
 using af::dim4;
 using common::half;
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createValueArray;
+using detail::intl;
+using detail::iota;
+using detail::padArrayBorders;
+using detail::range;
+using detail::scalar;
+using detail::uchar;
+using detail::uintl;
 
 dim4 verifyDims(const unsigned ndims, const dim_t *const dims) {
     DIM_ASSERT(1, ndims >= 1);
@@ -49,12 +58,8 @@ af_err af_constant(af_array *result, const double value, const unsigned ndims,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d(1, 1, 1, 1);
-        if (ndims <= 0) {
-            return af_create_handle(result, 0, nullptr, type);
-        } else {
-            d = verifyDims(ndims, dims);
-        }
+        if (ndims <= 0) { return af_create_handle(result, 0, nullptr, type); }
+        dim4 d = verifyDims(ndims, dims);
 
         switch (type) {
             case f32: out = createHandleFromValue<float>(d, value); break;
@@ -92,12 +97,8 @@ af_err af_constant_complex(af_array *result, const double real,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d(1, 1, 1, 1);
-        if (ndims <= 0) {
-            return af_create_handle(result, 0, nullptr, type);
-        } else {
-            d = verifyDims(ndims, dims);
-        }
+        if (ndims <= 0) { return af_create_handle(result, 0, nullptr, type); }
+        dim4 d = verifyDims(ndims, dims);
 
         switch (type) {
             case c32: out = createCplx<cfloat, float>(d, real, imag); break;
@@ -117,12 +118,8 @@ af_err af_constant_long(af_array *result, const intl val, const unsigned ndims,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d(1, 1, 1, 1);
-        if (ndims <= 0) {
-            return af_create_handle(result, 0, nullptr, s64);
-        } else {
-            d = verifyDims(ndims, dims);
-        }
+        if (ndims <= 0) { return af_create_handle(result, 0, nullptr, s64); }
+        dim4 d = verifyDims(ndims, dims);
 
         out = getHandle(createValueArray<intl>(d, val));
 
@@ -139,12 +136,9 @@ af_err af_constant_ulong(af_array *result, const uintl val,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d(1, 1, 1, 1);
-        if (ndims <= 0) {
-            return af_create_handle(result, 0, nullptr, u64);
-        } else {
-            d = verifyDims(ndims, dims);
-        }
+        if (ndims <= 0) { return af_create_handle(result, 0, nullptr, u64); }
+        dim4 d = verifyDims(ndims, dims);
+
         out = getHandle(createValueArray<uintl>(d, val));
 
         std::swap(*result, out);
@@ -207,12 +201,8 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_t *const dims,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d(0);
-        if (ndims <= 0) {
-            return af_create_handle(result, 0, nullptr, type);
-        } else {
-            d = verifyDims(ndims, dims);
-        }
+        if (ndims <= 0) { return af_create_handle(result, 0, nullptr, type); }
+        dim4 d = verifyDims(ndims, dims);
 
         switch (type) {
             case f32: out = range_<float>(d, seq_dim); break;
@@ -364,10 +354,11 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num) {
 
 template<typename T, bool is_upper>
 af_array triangle(const af_array in, bool is_unit_diag) {
-    if (is_unit_diag)
+    if (is_unit_diag) {
         return getHandle(triangle<T, is_upper, true>(getArray<T>(in)));
-    else
+    } else {
         return getHandle(triangle<T, is_upper, false>(getArray<T>(in)));
+    }
 }
 
 af_err af_lower(af_array *out, const af_array in, bool is_unit_diag) {

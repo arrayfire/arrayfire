@@ -17,8 +17,13 @@
 #include <af/features.h>
 #include <af/vision.h>
 
+#include <cmath>
+
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::createEmptyArray;
+using detail::createValueArray;
+using std::floor;
 
 template<typename T, typename convAccT>
 static af_features harris(af_array const &in, const unsigned max_corners,
@@ -50,12 +55,13 @@ af_err af_harris(af_features *out, const af_array in,
                  const float k_thr) {
     try {
         const ArrayInfo &info = getInfo(in);
-        af::dim4 dims         = info.dims();
+        dim4 dims             = info.dims();
         dim_t in_ndims        = dims.ndims();
 
-        unsigned filter_len =
-            (block_size == 0) ? floor(6.f * sigma) : block_size;
-        if (block_size == 0 && filter_len % 2 == 0) filter_len--;
+        unsigned filter_len = (block_size == 0)
+                                  ? static_cast<unsigned>(floor(6.f * sigma))
+                                  : block_size;
+        if (block_size == 0 && filter_len % 2 == 0) { filter_len--; }
 
         const unsigned edge =
             (block_size > 0) ? block_size / 2 : filter_len / 2;

@@ -38,7 +38,7 @@ using std::vector;
 
 namespace {
 
-std::string libName(std::string name) {
+std::string libName(const std::string& name) {
     return libraryPrefix + name + librarySuffix;
 }
 }  // namespace
@@ -62,9 +62,9 @@ DependencyModule::DependencyModule(const char* plugin_file_name,
     }
 }
 
-DependencyModule::DependencyModule(const vector<string> plugin_base_file_name,
-                                   const vector<string> suffixes,
-                                   const vector<string> paths)
+DependencyModule::DependencyModule(const vector<string>& plugin_base_file_name,
+                                   const vector<string>& suffixes,
+                                   const vector<string>& paths)
     : handle(nullptr), logger(common::loggerFactory("platform")) {
     for (const string& base_name : plugin_base_file_name) {
         for (const string& path : paths) {
@@ -86,14 +86,15 @@ DependencyModule::~DependencyModule() noexcept {
     if (handle) { unloadLibrary(handle); }
 }
 
-bool DependencyModule::isLoaded() const noexcept { return (bool)handle; }
+bool DependencyModule::isLoaded() const noexcept { return static_cast<bool>(handle);
+}
 
 bool DependencyModule::symbolsLoaded() const noexcept {
     return all_of(begin(functions), end(functions),
                   [](void* ptr) { return ptr != nullptr; });
 }
 
-string DependencyModule::getErrorMessage() const noexcept {
+string DependencyModule::getErrorMessage() noexcept {
     return common::getErrorMessage();
 }
 

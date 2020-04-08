@@ -36,10 +36,11 @@ class AfError : public std::logic_error {
             boost::stacktrace::stacktrace st);
 
     AfError(std::string func, std::string file, const int line,
-            std::string message, af_err err, boost::stacktrace::stacktrace st);
+            const std::string& message, af_err err,
+            boost::stacktrace::stacktrace st);
 
     AfError(const AfError& other) noexcept = delete;
-    AfError(AfError&& other) noexcept = default;
+    AfError(AfError&& other) noexcept      = default;
 
     const std::string& getFunctionName() const noexcept;
 
@@ -119,7 +120,7 @@ class DimensionError : public AfError {
     DimensionError(const char* const func, const char* const file,
                    const int line, const int index,
                    const char* const expectString,
-                   const boost::stacktrace::stacktrace st);
+                   const boost::stacktrace::stacktrace& st);
     DimensionError(DimensionError&& other) noexcept = default;
 
     const std::string& getExpectedCondition() const noexcept;

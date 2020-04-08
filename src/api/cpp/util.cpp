@@ -17,12 +17,10 @@ using namespace std;
 namespace af {
 void print(const char *exp, const array &arr) {
     AF_THROW(af_print_array_gen(exp, arr.get(), 4));
-    return;
 }
 
 void print(const char *exp, const array &arr, const int precision) {
     AF_THROW(af_print_array_gen(exp, arr.get(), precision));
-    return;
 }
 
 int saveArray(const char *key, const array &arr, const char *filename,
@@ -53,7 +51,6 @@ int readArrayCheck(const char *filename, const char *key) {
 void toString(char **output, const char *exp, const array &arr,
               const int precision, const bool transpose) {
     AF_THROW(af_array_to_string(output, exp, arr.get(), precision, transpose));
-    return;
 }
 
 const char *toString(const char *exp, const array &arr, const int precision,

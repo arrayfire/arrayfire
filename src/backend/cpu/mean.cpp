@@ -72,8 +72,8 @@ T mean(const Array<T> &in, const Array<Tw> &wt) {
     const T *inPtr   = in.get();
     const Tw *wtPtr  = wt.get();
 
-    compute_t<T> input   = compute_t<T>(inPtr[0]);
-    compute_t<Tw> weight = compute_t<Tw>(wtPtr[0]);
+    auto input  = compute_t<T>(inPtr[0]);
+    auto weight = compute_t<Tw>(wtPtr[0]);
     MeanOpT Op(input, weight);
 
     for (dim_t l = 0; l < dims[3]; l++) {

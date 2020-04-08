@@ -35,13 +35,14 @@ CPUInfo::CPUInfo()
 
     CPUID cpuID0(0, 0);
     uint32_t HFS = cpuID0.EAX();
-    mVendorId += string((const char*)&cpuID0.EBX(), 4);
-    mVendorId += string((const char*)&cpuID0.EDX(), 4);
-    mVendorId += string((const char*)&cpuID0.ECX(), 4);
+    mVendorId += string(reinterpret_cast<const char*>(&cpuID0.EBX()), 4);
+    mVendorId += string(reinterpret_cast<const char*>(&cpuID0.EDX()), 4);
+    mVendorId += string(reinterpret_cast<const char*>(&cpuID0.ECX()), 4);
 
     string upVId = mVendorId;
 
-    for_each(upVId.begin(), upVId.end(), [](char& in) { in = ::toupper(in); });
+    for_each(upVId.begin(), upVId.end(),
+             [](char& in) { in = static_cast<char>(::toupper(in)); });
 
     // Get num of cores
     if (upVId.find("INTEL") != std::string::npos) {
@@ -49,7 +50,7 @@ CPUInfo::CPUInfo()
         if (HFS >= 11) {
             for (int lvl = 0; lvl < MAX_INTEL_TOP_LVL; ++lvl) {
                 CPUID cpuID4(0x0B, lvl);
-                uint32_t currLevel = (LVL_TYPE & cpuID4.ECX()) >> 8;
+                uint32_t currLevel = (LVL_TYPE & cpuID4.ECX()) >> 8U;
                 switch (currLevel) {
                     case 0x01: mNumSMT = LVL_CORES & cpuID4.EBX(); break;
                     case 0x02: mNumLogCpus = LVL_CORES & cpuID4.EBX(); break;
@@ -61,15 +62,15 @@ CPUInfo::CPUInfo()
             mNumCores = mNumLogCpus / (mNumSMT == 0 ? 1 : mNumSMT);
         } else {
             if (HFS >= 1) {
-                mNumLogCpus = (cpuID1.EBX() >> 16) & 0xFF;
+                mNumLogCpus = (cpuID1.EBX() >> 16U) & 0xFFU;
                 if (HFS >= 4) {
-                    mNumCores = 1 + ((CPUID(4, 0).EAX() >> 26) & 0x3F);
+                    mNumCores = 1 + ((CPUID(4, 0).EAX() >> 26U) & 0x3FU);
                 }
             }
             if (mIsHTT) {
                 if (!(mNumCores > 1)) {
                     mNumCores   = 1;
-                    mNumLogCpus = (mNumLogCpus >= 2 ? mNumLogCpus : 2);
+                    mNumLogCpus = (mNumLogCpus >= 2 ? mNumLogCpus : 2U);
                 }
             } else {
                 mNumCores = mNumLogCpus = 1;
@@ -78,9 +79,9 @@ CPUInfo::CPUInfo()
     } else if (upVId.find("AMD") != std::string::npos) {
         mVendorId = "AMD";
         if (HFS >= 1) {
-            mNumLogCpus = (cpuID1.EBX() >> 16) & 0xFF;
-            if (CPUID(0x80000000, 0).EAX() >= 8) {
-                mNumCores = 1 + ((CPUID(0x80000008, 0).ECX() & 0xFF));
+            mNumLogCpus = (cpuID1.EBX() >> 16U) & 0xFFU;
+            if (CPUID(0x80000000, 0).EAX() >= 8U) {
+                mNumCores = 1 + ((CPUID(0x80000008, 0).ECX() & 0xFFU));
             }
         }
         if (mIsHTT) {
@@ -98,12 +99,12 @@ CPUInfo::CPUInfo()
     // This seems to be working for both Intel & AMD vendors
     for (unsigned i = 0x80000002; i < 0x80000005; ++i) {
         CPUID cpuID(i, 0);
-        mModelName += string((const char*)&cpuID.EAX(), 4);
-        mModelName += string((const char*)&cpuID.EBX(), 4);
-        mModelName += string((const char*)&cpuID.ECX(), 4);
-        mModelName += string((const char*)&cpuID.EDX(), 4);
+        mModelName += string(reinterpret_cast<const char*>(&cpuID.EAX()), 4);
+        mModelName += string(reinterpret_cast<const char*>(&cpuID.EBX()), 4);
+        mModelName += string(reinterpret_cast<const char*>(&cpuID.ECX()), 4);
+        mModelName += string(reinterpret_cast<const char*>(&cpuID.EDX()), 4);
     }
-    mModelName = string(mModelName.c_str());
+    mModelName.shrink_to_fit();
 }
 
 #else
@@ -133,7 +134,7 @@ DeviceManager::DeviceManager()
 }
 
 DeviceManager& DeviceManager::getInstance() {
-    static DeviceManager* my_instance = new DeviceManager();
+    static auto* my_instance = new DeviceManager();
     return *my_instance;
 }
 
@@ -166,6 +167,8 @@ void DeviceManager::setMemoryManager(
 
 void DeviceManager::setMemoryManagerPinned(
     std::unique_ptr<MemoryManagerBase> newMgr) {
+    UNUSED(newMgr);
+    UNUSED(this);
     AF_ERROR("Using pinned memory with CPU is not supported",
              AF_ERR_NOT_SUPPORTED);
 }

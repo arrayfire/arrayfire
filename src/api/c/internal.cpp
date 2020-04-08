@@ -42,12 +42,14 @@ af_err af_create_strided_array(af_array *arr, const void *data,
         ARG_ASSERT(5, strides_ != NULL);
         ARG_ASSERT(5, strides_[0] == 1);
 
-        for (int i = 1; i < (int)ndims; i++) { ARG_ASSERT(5, strides_[i] > 0); }
+        for (int i = 1; i < static_cast<int>(ndims); i++) {
+            ARG_ASSERT(5, strides_[i] > 0);
+        }
 
         dim4 dims(ndims, dims_);
         dim4 strides(ndims, strides_);
 
-        for (int i = ndims; i < 4; i++) {
+        for (int i = static_cast<int>(ndims); i < 4; i++) {
             strides[i] = strides[i - 1] * dims[i - 1];
         }
 
@@ -56,58 +58,60 @@ af_err af_create_strided_array(af_array *arr, const void *data,
         af_array res;
         AF_CHECK(af_init());
 
+        void *in_data = const_cast<void *>(data); // const cast because the api cannot change
         switch (ty) {
             case f32:
                 res = getHandle(createStridedArray<float>(
-                    dims, strides, offset, (float *)data, isdev));
+                    dims, strides, offset, static_cast<float *>(in_data), isdev));
                 break;
             case f64:
                 res = getHandle(createStridedArray<double>(
-                    dims, strides, offset, (double *)data, isdev));
+                    dims, strides, offset, static_cast<double *>(in_data), isdev));
                 break;
             case c32:
                 res = getHandle(createStridedArray<cfloat>(
-                    dims, strides, offset, (cfloat *)data, isdev));
+                    dims, strides, offset, static_cast<cfloat *>(in_data), isdev));
                 break;
             case c64:
                 res = getHandle(createStridedArray<cdouble>(
-                    dims, strides, offset, (cdouble *)data, isdev));
+                    dims, strides, offset, static_cast<cdouble *>(in_data),
+                    isdev));
                 break;
             case u32:
-                res = getHandle(createStridedArray<uint>(dims, strides, offset,
-                                                         (uint *)data, isdev));
+                res = getHandle(createStridedArray<uint>(
+                    dims, strides, offset, static_cast<uint *>(in_data), isdev));
                 break;
             case s32:
-                res = getHandle(createStridedArray<int>(dims, strides, offset,
-                                                        (int *)data, isdev));
+                res = getHandle(createStridedArray<int>(
+                    dims, strides, offset, static_cast<int *>(in_data), isdev));
                 break;
             case u64:
                 res = getHandle(createStridedArray<uintl>(
-                    dims, strides, offset, (uintl *)data, isdev));
+                    dims, strides, offset, static_cast<uintl *>(in_data), isdev));
                 break;
             case s64:
-                res = getHandle(createStridedArray<intl>(dims, strides, offset,
-                                                         (intl *)data, isdev));
+                res = getHandle(createStridedArray<intl>(
+                    dims, strides, offset, static_cast<intl *>(in_data), isdev));
                 break;
             case u16:
                 res = getHandle(createStridedArray<ushort>(
-                    dims, strides, offset, (ushort *)data, isdev));
+                    dims, strides, offset, static_cast<ushort *>(in_data), isdev));
                 break;
             case s16:
                 res = getHandle(createStridedArray<short>(
-                    dims, strides, offset, (short *)data, isdev));
+                    dims, strides, offset, static_cast<short *>(in_data), isdev));
                 break;
             case b8:
-                res = getHandle(createStridedArray<char>(dims, strides, offset,
-                                                         (char *)data, isdev));
+                res = getHandle(createStridedArray<char>(
+                    dims, strides, offset, static_cast<char *>(in_data), isdev));
                 break;
             case u8:
                 res = getHandle(createStridedArray<uchar>(
-                    dims, strides, offset, (uchar *)data, isdev));
+                    dims, strides, offset, static_cast<uchar *>(in_data), isdev));
                 break;
             case f16:
-                res = getHandle(createStridedArray<half>(dims, strides, offset,
-                                                         (half *)data, isdev));
+                res = getHandle(createStridedArray<half>(
+                    dims, strides, offset, static_cast<half *>(in_data), isdev));
                 break;
             default: TYPE_ERROR(6, ty);
         }
@@ -147,19 +151,19 @@ af_err af_get_raw_ptr(void **ptr, const af_array arr) {
         af_dtype ty = getInfo(arr).getType();
 
         switch (ty) {
-            case f32: res = (void *)getRawPtr(getArray<float>(arr)); break;
-            case f64: res = (void *)getRawPtr(getArray<double>(arr)); break;
-            case c32: res = (void *)getRawPtr(getArray<cfloat>(arr)); break;
-            case c64: res = (void *)getRawPtr(getArray<cdouble>(arr)); break;
-            case u32: res = (void *)getRawPtr(getArray<uint>(arr)); break;
-            case s32: res = (void *)getRawPtr(getArray<int>(arr)); break;
-            case u64: res = (void *)getRawPtr(getArray<uintl>(arr)); break;
-            case s64: res = (void *)getRawPtr(getArray<intl>(arr)); break;
-            case u16: res = (void *)getRawPtr(getArray<ushort>(arr)); break;
-            case s16: res = (void *)getRawPtr(getArray<short>(arr)); break;
-            case b8: res = (void *)getRawPtr(getArray<char>(arr)); break;
-            case u8: res = (void *)getRawPtr(getArray<uchar>(arr)); break;
-            case f16: res = (void *)getRawPtr(getArray<half>(arr)); break;
+            case f32: res = getRawPtr(getArray<float>(arr)); break;
+            case f64: res = getRawPtr(getArray<double>(arr)); break;
+            case c32: res = getRawPtr(getArray<cfloat>(arr)); break;
+            case c64: res = getRawPtr(getArray<cdouble>(arr)); break;
+            case u32: res = getRawPtr(getArray<uint>(arr)); break;
+            case s32: res = getRawPtr(getArray<int>(arr)); break;
+            case u64: res = getRawPtr(getArray<uintl>(arr)); break;
+            case s64: res = getRawPtr(getArray<intl>(arr)); break;
+            case u16: res = getRawPtr(getArray<ushort>(arr)); break;
+            case s16: res = getRawPtr(getArray<short>(arr)); break;
+            case b8: res = getRawPtr(getArray<char>(arr)); break;
+            case u8: res = getRawPtr(getArray<uchar>(arr)); break;
+            case f16: res = getRawPtr(getArray<half>(arr)); break;
             default: TYPE_ERROR(6, ty);
         }
 
@@ -184,19 +188,19 @@ af_err af_is_owner(bool *result, const af_array arr) {
         af_dtype ty = getInfo(arr).getType();
 
         switch (ty) {
-            case f32: res = (void *)getArray<float>(arr).isOwner(); break;
-            case f64: res = (void *)getArray<double>(arr).isOwner(); break;
-            case c32: res = (void *)getArray<cfloat>(arr).isOwner(); break;
-            case c64: res = (void *)getArray<cdouble>(arr).isOwner(); break;
-            case u32: res = (void *)getArray<uint>(arr).isOwner(); break;
-            case s32: res = (void *)getArray<int>(arr).isOwner(); break;
-            case u64: res = (void *)getArray<uintl>(arr).isOwner(); break;
-            case s64: res = (void *)getArray<intl>(arr).isOwner(); break;
-            case u16: res = (void *)getArray<ushort>(arr).isOwner(); break;
-            case s16: res = (void *)getArray<short>(arr).isOwner(); break;
-            case b8: res = (void *)getArray<char>(arr).isOwner(); break;
-            case u8: res = (void *)getArray<uchar>(arr).isOwner(); break;
-            case f16: res = (void *)getArray<half>(arr).isOwner(); break;
+            case f32: res = getArray<float>(arr).isOwner(); break;
+            case f64: res = getArray<double>(arr).isOwner(); break;
+            case c32: res = getArray<cfloat>(arr).isOwner(); break;
+            case c64: res = getArray<cdouble>(arr).isOwner(); break;
+            case u32: res = getArray<uint>(arr).isOwner(); break;
+            case s32: res = getArray<int>(arr).isOwner(); break;
+            case u64: res = getArray<uintl>(arr).isOwner(); break;
+            case s64: res = getArray<intl>(arr).isOwner(); break;
+            case u16: res = getArray<ushort>(arr).isOwner(); break;
+            case s16: res = getArray<short>(arr).isOwner(); break;
+            case b8: res = getArray<char>(arr).isOwner(); break;
+            case u8: res = getArray<uchar>(arr).isOwner(); break;
+            case f16: res = getArray<half>(arr).isOwner(); break;
             default: TYPE_ERROR(6, ty);
         }
 

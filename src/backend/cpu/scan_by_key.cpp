@@ -22,7 +22,7 @@ namespace cpu {
 template<af_op_t op, typename Ti, typename Tk, typename To>
 Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
                bool inclusive_scan) {
-    dim4 dims     = in.dims();
+    const dim4& dims = in.dims();
     Array<To> out = createEmptyArray<To>(dims);
     kernel::scan_dim_by_key<op, Ti, Tk, To, 1> func1(inclusive_scan);
     kernel::scan_dim_by_key<op, Ti, Tk, To, 2> func2(inclusive_scan);

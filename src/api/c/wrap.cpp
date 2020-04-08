@@ -36,7 +36,7 @@ void af_wrap_common(af_array* out, const af_array in, const dim_t ox,
 
     const ArrayInfo& info  = getInfo(in);
     const af_dtype in_type = info.getType();
-    const dim4 in_dims     = info.dims();
+    const dim4& in_dims    = info.dims();
     const dim4 out_dims(ox, oy, in_dims[2], in_dims[3]);
 
     ARG_ASSERT(4, wx > 0);

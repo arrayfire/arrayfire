@@ -39,7 +39,7 @@ class ArrayInfo {
     // This can be changed in the future if the need arises for more devices as
     // this implementation is internal. Make sure to change the bit shift ops
     // when such a change is being made
-    int devId;
+    unsigned devId;
     af_dtype type;
     af::dim4 dim_size;
     dim_t offset;

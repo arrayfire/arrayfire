@@ -14,19 +14,23 @@
 #include <af/dim4.hpp>
 #include <af/image.h>
 
-using af::dim4;
-using namespace detail;
+using detail::intl;
+using detail::uchar;
+using detail::uintl;
 
 template<typename inType, typename outType>
 static inline af_array histogram(const af_array in, const unsigned &nbins,
                                  const double &minval, const double &maxval,
                                  const bool islinear) {
-    if (islinear)
-        return getHandle(histogram<inType, outType, true>(
+    af_array out = nullptr;
+    if (islinear) {
+        out = getHandle(histogram<inType, outType, true>(
             getArray<inType>(in), nbins, minval, maxval));
-    else
-        return getHandle(histogram<inType, outType, false>(
+    } else {
+        out = getHandle(histogram<inType, outType, false>(
             getArray<inType>(in), nbins, minval, maxval));
+    }
+    return out;
 }
 
 af_err af_histogram(af_array *out, const af_array in, const unsigned nbins,

@@ -80,9 +80,9 @@ class CPUInfo {
     // Attributes
     std::string mVendorId;
     std::string mModelName;
-    int mNumSMT;
-    int mNumCores;
-    int mNumLogCpus;
+    unsigned mNumSMT;
+    unsigned mNumCores;
+    unsigned mNumLogCpus;
     bool mIsHTT;
 };
 

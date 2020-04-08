@@ -11,15 +11,17 @@
 #include <kernel/fast.hpp>
 
 #include <Array.hpp>
-#include <math.h>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <af/dim4.hpp>
+#include <cmath>
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 
 using af::dim4;
+using std::ceil;
 
 namespace cpu {
 
@@ -38,7 +40,7 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     Array<float> V = createEmptyArray<float>(dim4());
     if (nonmax == 1) {
         dim4 V_dims(in_dims[0], in_dims[1]);
-        V = createValueArray<float>(V_dims, (float)0);
+        V = createValueArray<float>(V_dims, 0.f);
         V.eval();
     }
     getQueue().sync();

@@ -16,11 +16,17 @@
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::uint;
+using detail::uchar;
+using detail::ushort;
 
 template<typename T, bool isDilation>
 static inline af_array morph(const af_array &in, const af_array &mask) {
-    const Array<T> &input  = getArray<T>(in);
+    const Array<T> input   = getArray<T>(in);
     const Array<T> &filter = castArray<T>(mask);
     Array<T> out           = morph<T, isDilation>(input, filter);
     return getHandle(out);
@@ -28,7 +34,7 @@ static inline af_array morph(const af_array &in, const af_array &mask) {
 
 template<typename T, bool isDilation>
 static inline af_array morph3d(const af_array &in, const af_array &mask) {
-    const Array<T> &input  = getArray<T>(in);
+    const Array<T> input   = getArray<T>(in);
     const Array<T> &filter = castArray<T>(mask);
     Array<T> out           = morph3d<T, isDilation>(input, filter);
     return getHandle(out);

@@ -7,8 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <backend.hpp>
 #include <cholesky.hpp>
+
+#include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
 #include <handle.hpp>
@@ -16,8 +17,8 @@
 #include <af/defines.h>
 #include <af/lapack.h>
 
-using af::dim4;
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
 
 template<typename T>
 static inline af_array cholesky(int *info, const af_array in,

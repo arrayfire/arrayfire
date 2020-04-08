@@ -33,7 +33,7 @@ static inline af_array join_many(const int dim, const unsigned n_arrays,
     std::vector<Array<T>> inputs_;
     inputs_.reserve(n_arrays);
 
-    for (int i = 0; i < (int)n_arrays; i++) {
+    for (unsigned i = 0; i < n_arrays; i++) {
         inputs_.push_back(getArray<T>(inputs[i]));
     }
     return getHandle(join<T>(dim, inputs_));
@@ -59,7 +59,7 @@ af_err af_join(af_array *out, const int dim, const af_array first,
         // All dimensions except join dimension must be equal
         // Compute output dims
         for (int i = 0; i < 4; i++) {
-            if (i != dim) DIM_ASSERT(2, fdims[i] == sdims[i]);
+            if (i != dim) { DIM_ASSERT(2, fdims[i] == sdims[i]); }
         }
 
         af_array output;
@@ -97,14 +97,14 @@ af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays,
         std::vector<ArrayInfo> info;
         info.reserve(n_arrays);
         std::vector<af::dim4> dims(n_arrays);
-        for (int i = 0; i < (int)n_arrays; i++) {
+        for (unsigned i = 0; i < n_arrays; i++) {
             info.push_back(getInfo(inputs[i]));
             dims[i] = info[i].dims();
         }
 
         ARG_ASSERT(1, dim >= 0 && dim < 4);
 
-        for (int i = 1; i < (int)n_arrays; i++) {
+        for (unsigned i = 1; i < n_arrays; i++) {
             ARG_ASSERT(3, info[0].getType() == info[i].getType());
             DIM_ASSERT(3, info[i].elements() > 0);
         }
@@ -113,7 +113,7 @@ af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays,
         // Compute output dims
         for (int i = 0; i < 4; i++) {
             if (i != dim) {
-                for (int j = 1; j < (int)n_arrays; j++) {
+                for (unsigned j = 1; j < n_arrays; j++) {
                     DIM_ASSERT(3, dims[0][i] == dims[j][i]);
                 }
             }

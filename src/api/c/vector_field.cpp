@@ -57,17 +57,19 @@ fg_chart setup_vector_field(fg_window window, const vector<af_array>& points,
     fg_chart chart = NULL;
 
     if (pIn.dims()[0] == 2) {
-        if (props->col > -1 && props->row > -1)
+        if (props->col > -1 && props->row > -1) {
             chart =
                 fgMngr.getChart(window, props->row, props->col, FG_CHART_2D);
-        else
+        } else {
             chart = fgMngr.getChart(window, 0, 0, FG_CHART_2D);
+        }
     } else {
-        if (props->col > -1 && props->row > -1)
+        if (props->col > -1 && props->row > -1) {
             chart =
                 fgMngr.getChart(window, props->row, props->col, FG_CHART_3D);
-        else
+        } else {
             chart = fgMngr.getChart(window, 0, 0, FG_CHART_3D);
+        }
     }
 
     fg_vector_field vfield =
@@ -93,16 +95,16 @@ fg_chart setup_vector_field(fg_window window, const vector<af_array>& points,
             cmax[0] = step_round(dmax[0], true);
             cmin[1] = step_round(dmin[1], false);
             cmax[1] = step_round(dmax[1], true);
-            if (pIn.dims()[0] == 3) cmin[2] = step_round(dmin[2], false);
-            if (pIn.dims()[0] == 3) cmax[2] = step_round(dmax[2], true);
+            if (pIn.dims()[0] == 3) { cmin[2] = step_round(dmin[2], false); }
+            if (pIn.dims()[0] == 3) { cmax[2] = step_round(dmax[2], true); }
         } else {
-            if (cmin[0] > dmin[0]) cmin[0] = step_round(dmin[0], false);
-            if (cmax[0] < dmax[0]) cmax[0] = step_round(dmax[0], true);
-            if (cmin[1] > dmin[1]) cmin[1] = step_round(dmin[1], false);
-            if (cmax[1] < dmax[1]) cmax[1] = step_round(dmax[1], true);
+            if (cmin[0] > dmin[0]) { cmin[0] = step_round(dmin[0], false); }
+            if (cmax[0] < dmax[0]) { cmax[0] = step_round(dmax[0], true); }
+            if (cmin[1] > dmin[1]) { cmin[1] = step_round(dmin[1], false); }
+            if (cmax[1] < dmax[1]) { cmax[1] = step_round(dmax[1], true); }
             if (pIn.dims()[0] == 3) {
-                if (cmin[2] > dmin[2]) cmin[2] = step_round(dmin[2], false);
-                if (cmax[2] < dmax[2]) cmax[2] = step_round(dmax[2], true);
+                if (cmin[2] > dmin[2]) { cmin[2] = step_round(dmin[2], false); }
+                if (cmax[2] < dmax[2]) { cmax[2] = step_round(dmax[2], true); }
             }
         }
         FG_CHECK(_.fg_set_chart_axes_limits(chart, cmin[0], cmax[0], cmin[1],
@@ -124,7 +126,7 @@ af_err vectorFieldWrapper(const af_window window, const af_array points,
         af_dtype pType         = pInfo.getType();
 
         const ArrayInfo& dInfo = getInfo(directions);
-        af::dim4 dDims         = dInfo.dims();
+        const af::dim4& dDims  = dInfo.dims();
         af_dtype dType         = dInfo.getType();
 
         DIM_ASSERT(0, pDims == dDims);
@@ -193,9 +195,9 @@ af_err vectorFieldWrapper(const af_window window, const af_array xPoints,
         const ArrayInfo& ypInfo = getInfo(yPoints);
         const ArrayInfo& zpInfo = getInfo(zPoints);
 
-        af::dim4 xpDims = xpInfo.dims();
-        af::dim4 ypDims = ypInfo.dims();
-        af::dim4 zpDims = zpInfo.dims();
+        af::dim4 xpDims        = xpInfo.dims();
+        const af::dim4& ypDims = ypInfo.dims();
+        const af::dim4& zpDims = zpInfo.dims();
 
         af_dtype xpType = xpInfo.getType();
         af_dtype ypType = ypInfo.getType();
@@ -205,9 +207,9 @@ af_err vectorFieldWrapper(const af_window window, const af_array xPoints,
         const ArrayInfo& ydInfo = getInfo(yDirs);
         const ArrayInfo& zdInfo = getInfo(zDirs);
 
-        af::dim4 xdDims = xdInfo.dims();
-        af::dim4 ydDims = ydInfo.dims();
-        af::dim4 zdDims = zdInfo.dims();
+        const af::dim4& xdDims = xdInfo.dims();
+        const af::dim4& ydDims = ydInfo.dims();
+        const af::dim4& zdDims = zdInfo.dims();
 
         af_dtype xdType = xdInfo.getType();
         af_dtype ydType = ydInfo.getType();
@@ -298,8 +300,8 @@ af_err vectorFieldWrapper(const af_window window, const af_array xPoints,
         const ArrayInfo& xpInfo = getInfo(xPoints);
         const ArrayInfo& ypInfo = getInfo(yPoints);
 
-        af::dim4 xpDims = xpInfo.dims();
-        af::dim4 ypDims = ypInfo.dims();
+        af::dim4 xpDims        = xpInfo.dims();
+        const af::dim4& ypDims = ypInfo.dims();
 
         af_dtype xpType = xpInfo.getType();
         af_dtype ypType = ypInfo.getType();
@@ -307,8 +309,8 @@ af_err vectorFieldWrapper(const af_window window, const af_array xPoints,
         const ArrayInfo& xdInfo = getInfo(xDirs);
         const ArrayInfo& ydInfo = getInfo(yDirs);
 
-        af::dim4 xdDims = xdInfo.dims();
-        af::dim4 ydDims = ydInfo.dims();
+        const af::dim4& xdDims = xdInfo.dims();
+        const af::dim4& ydDims = ydInfo.dims();
 
         af_dtype xdType = xdInfo.getType();
         af_dtype ydType = ydInfo.getType();
