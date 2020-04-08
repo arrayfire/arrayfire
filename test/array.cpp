@@ -14,6 +14,7 @@
 #include <testHelpers.hpp>
 #include <cstddef>
 #include <cstdlib>
+#include <initializer_list>
 
 using namespace af;
 using std::vector;
@@ -564,4 +565,22 @@ void deathTest() {
 
 TEST(ArrayDeathTest, ProxyMoveAssignmentOperator) {
     EXPECT_EXIT(deathTest(), ::testing::ExitedWithCode(0), "");
+}
+
+TEST(Array, InitializerList) {
+    int h_buffer[] = {23, 34, 18, 99, 34};
+
+    array A(5, h_buffer);
+    array B({23, 34, 18, 99, 34});
+
+    ASSERT_ARRAYS_EQ(A, B);
+}
+
+TEST(Array, InitializerListAndDim4) {
+    int h_buffer[] = {23, 34, 18, 99, 34, 44};
+
+    array A(2, 3, h_buffer);
+    array B(dim4(2, 3), {23, 34, 18, 99, 34, 44});
+
+    ASSERT_ARRAYS_EQ(A, B);
 }

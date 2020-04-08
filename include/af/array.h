@@ -17,6 +17,12 @@
 #ifdef __cplusplus
 #include <af/traits.hpp>
 
+#if AF_API_VERSION >= 38
+#if AF_COMPILER_CXX_GENERALIZED_INITIALIZERS
+#include <initializer_list>
+#endif
+#endif
+
 namespace af
 {
 
@@ -485,6 +491,15 @@ namespace af
         explicit
         array(const dim4& dims,
               const T *pointer, af::source src=afHost);
+
+#if AF_API_VERSION >= 38
+#if AF_COMPILER_CXX_GENERALIZED_INITIALIZERS
+        template <typename T> array(std::initializer_list<T> list);
+
+        template <typename T>
+        array(const af::dim4 &dims, std::initializer_list<T> list);
+#endif
+#endif
 
         /**
            Adjust the dimensions of an N-D array (fast).
