@@ -35,6 +35,9 @@ class dim4;
         \param[in]  grad_type specifies which gradient to return
         \return     gradient wrt/grad_type
 
+        \note Make sure you pass in both dim0, and dim1 in your dim4 arguments. The third
+        and fourth dimensions are currently ignored.
+
         \ingroup ml_convolution
     */
     AFAPI array convolve2GradientNN(const array& incoming_gradient,

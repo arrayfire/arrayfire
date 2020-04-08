@@ -1166,3 +1166,14 @@ TYPED_TEST(ConvolveStrided, Gradient_sig81032_filt3334_s11_p11_d11) {
         string(TEST_DIR "/convolve/sig81032_filt3334_s11_p11_d11.test"),
         dim4(1, 1), dim4(1, 1), dim4(1, 1));
 }
+
+TEST(ConvolveNN, ZeroPadding_Issue2817) {
+    array signal = constant(1.f, 5, 5);
+    array filter = constant(1 / 9.f, 3, 3);
+    dim4 strides(1, 1), dilation(1, 1);
+    dim4 padding(0, 0, 1, 1);
+
+    array convolved = convolve2NN(signal, filter, strides, padding, dilation);
+    ASSERT_EQ(sum<float>(abs(signal(seq(1, 3), seq(1, 3)) - convolved)) < 1E-5,
+              true);
+}

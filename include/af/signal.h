@@ -612,6 +612,9 @@ AFAPI array convolve2(const array& signal, const array& filter, const convMode m
    \param[in]  dilation specifies the amount to dilate the filter before convolution
    \return              the convolved array
 
+   \note Make sure you pass in both dim0, and dim1 in your dim4 arguments. The third
+   and fourth dimensions are currently ignored.
+
    \ingroup signal_func_convolve2
  */
 AFAPI array convolve2NN(const array& signal, const array& filter,
