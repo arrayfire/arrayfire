@@ -219,7 +219,15 @@ struct dtype_traits<half_float::half> {
     AFAPI array::array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,         \
                        const T *ptr, af::source src)                           \
         : arr(initDataArray(ptr, dtype_traits<T>::af_type, src, dim0, dim1,    \
-                            dim2, dim3)) {}
+                            dim2, dim3)) {}                                    \
+    template<>                                                                 \
+    AFAPI array::array(std::initializer_list<T> list)                          \
+        : arr(initDataArray(list.begin(), dtype_traits<T>::af_type, afHost,    \
+                            list.size(), 1, 1, 1)) {}                          \
+    template<>                                                                 \
+    AFAPI array::array(const af::dim4 &dims, std::initializer_list<T> list)    \
+        : arr(initDataArray(list.begin(), dtype_traits<T>::af_type, afHost,    \
+                            dims[0], dims[1], dims[2], dims[3])) {}
 
 INSTANTIATE(cdouble)
 INSTANTIATE(cfloat)

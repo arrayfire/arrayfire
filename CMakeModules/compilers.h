@@ -196,6 +196,12 @@
 #      define AF_COMPILER_CXX_STATIC_ASSERT 0
 #    endif
 
+#    if ((__clang_major__ * 100) + __clang_minor__) >= 400 && __has_feature(cxx_generalized_initializers)
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 1
+#    else
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
+#    endif
+
 #  elif AF_COMPILER_IS_Clang
 
 #    if !(((__clang_major__ * 100) + __clang_minor__) >= 301)
@@ -239,6 +245,12 @@
 #      define AF_COMPILER_CXX_STATIC_ASSERT 1
 #    else
 #      define AF_COMPILER_CXX_STATIC_ASSERT 0
+#    endif
+
+#    if ((__clang_major__ * 100) + __clang_minor__) >= 301 && __has_feature(cxx_generalized_initializers)
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 1
+#    else
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
 #  elif AF_COMPILER_IS_GNU
@@ -287,6 +299,12 @@
 #      define AF_COMPILER_CXX_STATIC_ASSERT 1
 #    else
 #      define AF_COMPILER_CXX_STATIC_ASSERT 0
+#    endif
+
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 404 && (__cplusplus >= 201103L || (defined(__GXX_EXPERIMENTAL_CXX0X__) && __GXX_EXPERIMENTAL_CXX0X__))
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 1
+#    else
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
 #  elif AF_COMPILER_IS_Intel
@@ -354,6 +372,12 @@
 #      define AF_COMPILER_CXX_STATIC_ASSERT 0
 #    endif
 
+#    if __INTEL_COMPILER >= 1400 && ((__cplusplus >= 201103L) || defined(__INTEL_CXX11_MODE__) || defined(__GXX_EXPERIMENTAL_CXX0X__))
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 1
+#    else
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
+#    endif
+
 #  elif AF_COMPILER_IS_MSVC
 
 #    if !(_MSC_VER >= 1600)
@@ -404,6 +428,12 @@
 #      define AF_COMPILER_CXX_STATIC_ASSERT 1
 #    else
 #      define AF_COMPILER_CXX_STATIC_ASSERT 0
+#    endif
+
+#    if _MSC_FULL_VER >= 180030723
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 1
+#    else
+#      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
 #  endif
