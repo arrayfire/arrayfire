@@ -56,7 +56,7 @@ void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
             okey = reorder<T>(okey, reorderDims);
             oval = reorder<uint>(oval, reorderDims);
         }
-    } catch (std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
+    } catch (const std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
 }
 
 #define INSTANTIATE(T)                                              \

@@ -49,15 +49,15 @@ AfError::AfError(string func, string file, const int line, string message,
     , error(err)
     , st_(move(st)) {}
 
-const string &AfError::getFunctionName() const { return functionName; }
+const string &AfError::getFunctionName() const noexcept { return functionName; }
 
-const string &AfError::getFileName() const { return fileName; }
+const string &AfError::getFileName() const noexcept { return fileName; }
 
-int AfError::getLine() const { return lineNumber; }
+int AfError::getLine() const noexcept { return lineNumber; }
 
-af_err AfError::getError() const { return error; }
+af_err AfError::getError() const noexcept { return error; }
 
-AfError::~AfError() throw() {}
+AfError::~AfError() noexcept {}
 
 TypeError::TypeError(const char *const func, const char *const file,
                      const int line, const int index, const af_dtype type,
@@ -66,9 +66,9 @@ TypeError::TypeError(const char *const func, const char *const file,
     , argIndex(index)
     , errTypeName(getName(type)) {}
 
-const string &TypeError::getTypeName() const { return errTypeName; }
+const string &TypeError::getTypeName() const noexcept { return errTypeName; }
 
-int TypeError::getArgIndex() const { return argIndex; }
+int TypeError::getArgIndex() const noexcept { return argIndex; }
 
 ArgumentError::ArgumentError(const char *const func, const char *const file,
                              const int line, const int index,
@@ -78,9 +78,11 @@ ArgumentError::ArgumentError(const char *const func, const char *const file,
     , argIndex(index)
     , expected(expectString) {}
 
-const string &ArgumentError::getExpectedCondition() const { return expected; }
+const string &ArgumentError::getExpectedCondition() const noexcept {
+    return expected;
+}
 
-int ArgumentError::getArgIndex() const { return argIndex; }
+int ArgumentError::getArgIndex() const noexcept { return argIndex; }
 
 SupportError::SupportError(const char *const func, const char *const file,
                            const int line, const char *const back,
@@ -89,7 +91,7 @@ SupportError::SupportError(const char *const func, const char *const file,
               move(st))
     , backend(back) {}
 
-const string &SupportError::getBackendName() const { return backend; }
+const string &SupportError::getBackendName() const noexcept { return backend; }
 
 DimensionError::DimensionError(const char *const func, const char *const file,
                                const int line, const int index,
@@ -99,9 +101,11 @@ DimensionError::DimensionError(const char *const func, const char *const file,
     , argIndex(index)
     , expected(expectString) {}
 
-const string &DimensionError::getExpectedCondition() const { return expected; }
+const string &DimensionError::getExpectedCondition() const noexcept {
+    return expected;
+}
 
-int DimensionError::getArgIndex() const { return argIndex; }
+int DimensionError::getArgIndex() const noexcept { return argIndex; }
 
 af_err set_global_error_string(const string &msg, af_err err) {
     std::string perr = getEnvVar("AF_PRINT_ERRORS");
@@ -172,7 +176,7 @@ af_err processException() {
     return err;
 }
 
-std::string &get_global_error_string() {
+std::string &get_global_error_string() noexcept {
     thread_local std::string *global_error_string = new std::string("");
     return *global_error_string;
 }
@@ -217,7 +221,7 @@ const char *af_err_to_string(const af_err err) {
 
 namespace common {
 
-bool &is_stacktrace_enabled() {
+bool &is_stacktrace_enabled() noexcept {
     static bool stacktrace_enabled = true;
     return stacktrace_enabled;
 }

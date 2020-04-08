@@ -135,7 +135,7 @@ void Allocator::shutdown() {
         try {
             cuda::setDevice(n);
             shutdownMemoryManager();
-        } catch (AfError err) {
+        } catch (const AfError& err) {
             continue;  // Do not throw any errors while shutting down
         }
     }

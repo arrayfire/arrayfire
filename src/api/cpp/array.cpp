@@ -89,7 +89,7 @@ af::dim4 seqToDims(af_index_t *indices, af::dim4 parentDims,
             }
         }
         return odims;
-    } catch (logic_error &err) { AF_THROW_ERR(err.what(), AF_ERR_SIZE); }
+    } catch (const logic_error &err) { AF_THROW_ERR(err.what(), AF_ERR_SIZE); }
 }
 
 unsigned numDims(const af_array arr) {

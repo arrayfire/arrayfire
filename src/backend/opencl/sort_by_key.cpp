@@ -50,7 +50,7 @@ void sort_by_key(Array<Tk> &okey, Array<Tv> &oval, const Array<Tk> &ikey,
             okey = reorder<Tk>(okey, reorderDims);
             oval = reorder<Tv>(oval, reorderDims);
         }
-    } catch (std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
+    } catch (const std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
 }
 
 #define INSTANTIATE(Tk, Tv)                                        \

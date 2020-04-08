@@ -38,17 +38,22 @@ class AfError : public std::logic_error {
     AfError(std::string func, std::string file, const int line,
             std::string message, af_err err, boost::stacktrace::stacktrace st);
 
-    const std::string& getFunctionName() const;
+    AfError(const AfError& other) noexcept = delete;
+    AfError(AfError&& other) noexcept = default;
 
-    const std::string& getFileName() const;
+    const std::string& getFunctionName() const noexcept;
 
-    const boost::stacktrace::stacktrace& getStacktrace() const { return st_; };
+    const std::string& getFileName() const noexcept;
 
-    int getLine() const;
+    const boost::stacktrace::stacktrace& getStacktrace() const noexcept {
+        return st_;
+    };
 
-    af_err getError() const;
+    int getLine() const noexcept;
 
-    virtual ~AfError() throw();
+    af_err getError() const noexcept;
+
+    virtual ~AfError() noexcept;
 };
 
 // TODO: Perhaps add a way to return supported types
@@ -62,11 +67,13 @@ class TypeError : public AfError {
               const int index, const af_dtype type,
               const boost::stacktrace::stacktrace st);
 
-    const std::string& getTypeName() const;
+    TypeError(TypeError&& other) noexcept = default;
 
-    int getArgIndex() const;
+    const std::string& getTypeName() const noexcept;
 
-    ~TypeError() throw() {}
+    int getArgIndex() const noexcept;
+
+    ~TypeError() noexcept {}
 };
 
 class ArgumentError : public AfError {
@@ -79,12 +86,13 @@ class ArgumentError : public AfError {
                   const int line, const int index,
                   const char* const expectString,
                   const boost::stacktrace::stacktrace st);
+    ArgumentError(ArgumentError&& other) noexcept = default;
 
-    const std::string& getExpectedCondition() const;
+    const std::string& getExpectedCondition() const noexcept;
 
-    int getArgIndex() const;
+    int getArgIndex() const noexcept;
 
-    ~ArgumentError() throw() {}
+    ~ArgumentError() noexcept {}
 };
 
 class SupportError : public AfError {
@@ -95,10 +103,11 @@ class SupportError : public AfError {
     SupportError(const char* const func, const char* const file, const int line,
                  const char* const back,
                  const boost::stacktrace::stacktrace st);
+    SupportError(SupportError&& other) noexcept = default;
 
-    ~SupportError() throw() {}
+    ~SupportError() noexcept {}
 
-    const std::string& getBackendName() const;
+    const std::string& getBackendName() const noexcept;
 };
 
 class DimensionError : public AfError {
@@ -111,12 +120,13 @@ class DimensionError : public AfError {
                    const int line, const int index,
                    const char* const expectString,
                    const boost::stacktrace::stacktrace st);
+    DimensionError(DimensionError&& other) noexcept = default;
 
-    const std::string& getExpectedCondition() const;
+    const std::string& getExpectedCondition() const noexcept;
 
-    int getArgIndex() const;
+    int getArgIndex() const noexcept;
 
-    ~DimensionError() throw() {}
+    ~DimensionError() noexcept {}
 };
 
 af_err processException();
@@ -187,10 +197,10 @@ af_err set_global_error_string(const std::string& msg,
     } while (0)
 
 static const int MAX_ERR_SIZE = 1024;
-std::string& get_global_error_string();
+std::string& get_global_error_string() noexcept;
 
 namespace common {
 
-bool& is_stacktrace_enabled();
+bool& is_stacktrace_enabled() noexcept;
 
 }  // namespace common
