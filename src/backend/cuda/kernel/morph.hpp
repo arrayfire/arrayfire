@@ -19,7 +19,7 @@
 namespace cuda {
 namespace kernel {
 
-static const int MAX_MORPH_FILTER_LEN = 17;
+static const int MAX_MORPH_FILTER_LEN = 19;
 static const int THREADS_X            = 16;
 static const int THREADS_Y            = 16;
 static const int CUBE_X               = 8;
