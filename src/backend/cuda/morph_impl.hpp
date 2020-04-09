@@ -22,7 +22,7 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask) {
     if (mdims[0] != mdims[1]) {
         CUDA_NOT_SUPPORTED("Rectangular masks are not supported");
     }
-    if (mdims[0] > 19) {
+    if (mdims[0] > MAX_MORPH_FILTER_LEN) {
         CUDA_NOT_SUPPORTED("Kernels > 19x19 are not supported");
     }
     Array<T> out = createEmptyArray<T>(in.dims());
