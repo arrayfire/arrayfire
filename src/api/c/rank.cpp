@@ -56,19 +56,17 @@ af_err af_rank(uint* out, const af_array in, const double tol) {
         af_dtype type = i_info.getType();
 
         ARG_ASSERT(1, i_info.isFloating());  // Only floating and complex types
+        ARG_ASSERT(0, out != nullptr);
 
-        uint output;
-        if (i_info.ndims() == 0) {
-            output = 0;
-            return AF_SUCCESS;
-        }
-
-        switch (type) {
-            case f32: output = rank<float>(in, tol); break;
-            case f64: output = rank<double>(in, tol); break;
-            case c32: output = rank<cfloat>(in, tol); break;
-            case c64: output = rank<cdouble>(in, tol); break;
-            default: TYPE_ERROR(1, type);
+        uint output = 0;
+        if (i_info.ndims() != 0) {
+            switch (type) {
+                case f32: output = rank<float>(in, tol); break;
+                case f64: output = rank<double>(in, tol); break;
+                case c32: output = rank<cfloat>(in, tol); break;
+                case c64: output = rank<cdouble>(in, tol); break;
+                default: TYPE_ERROR(1, type);
+            }
         }
         std::swap(*out, output);
     }

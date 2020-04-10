@@ -112,3 +112,13 @@ void detTest() {
 }
 
 TYPED_TEST(Det, Small) { detTest<TypeParam>(); }
+
+TEST(Rank, NullOutput) {
+    if (noLAPACKTests()) return;
+    dim4 dims(3, 3);
+    af_array in = 0;
+    af_randu(&in, dims.ndims(), dims.get(), f32);
+
+    ASSERT_EQ(AF_ERR_ARG, af_rank(NULL, in, 1e-6));
+    ASSERT_SUCCESS(af_release_array(in));
+}
