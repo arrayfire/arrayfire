@@ -316,8 +316,21 @@ else()
   )
 endif()
 
+if(cuDNN_FOUND)
+    set(convolveNN_sources convolveNN_cudnn.cpp
+                           cudnn.cpp
+                           cudnn.hpp
+                           cudnnModule.cpp
+                           cudnnModule.hpp)
+else()
+    set(convolveNN_sources convolveNN_base.cpp)
+    set(cuDNN_INCLUDE_DIRS "")
+endif()
+
 cuda_add_library(afcuda
     ${thrust_sort_sources}
+
+    ${convolveNN_sources}
 
     all.cu
     anisotropic_diffusion.cpp
@@ -472,10 +485,6 @@ cuda_add_library(afcuda
     copy.hpp
     cublas.cpp
     cublas.hpp
-    cudnn.cpp
-    cudnn.hpp
-    cudnnModule.cpp
-    cudnnModule.hpp
     cufft.hpp
     cusolverDn.cpp
     cusolverDn.hpp
@@ -623,6 +632,10 @@ cuda_add_library(afcuda
     -Xcudafe \"--diag_suppress=1427\"
   )
 
+if(cuDNN_FOUND)
+    target_compile_definitions(afcuda PRIVATE WITH_CUDNN)
+endif()
+
 arrayfire_set_default_cxx_flags(afcuda)
 
 # NOTE: Do not add additional CUDA specific definitions here. Add it to the
@@ -754,7 +767,10 @@ function(afcu_collect_libs libname)
 endfunction()
 
 if(AF_INSTALL_STANDALONE)
+  if(cuDNN_FOUND)
   afcu_collect_libs(cudnn)
+  endif()
+
   afcu_collect_libs(nvrtc FULL_VERSION)
   if(WIN32)
     afcu_collect_libs(cufft)
