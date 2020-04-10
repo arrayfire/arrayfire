@@ -179,3 +179,13 @@ TYPED_TEST(QR, RectangularLarge1) {
 TYPED_TEST(QR, RectangularMultipleOfTwoLarge1) {
     qrTester<TypeParam>(512, 1024, eps<TypeParam>());
 }
+
+TEST(QR, InPlaceNullOutput) {
+    if (noLAPACKTests()) return;
+    dim4 dims(3, 3);
+    af_array in = 0;
+    ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));
+
+    ASSERT_EQ(AF_ERR_ARG, af_qr_inplace(NULL, in));
+    ASSERT_SUCCESS(af_release_array(in));
+}

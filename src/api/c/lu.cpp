@@ -49,6 +49,9 @@ af_err af_lu(af_array *lower, af_array *upper, af_array *pivot,
 
         af_dtype type = i_info.getType();
 
+        ARG_ASSERT(0, lower != nullptr);
+        ARG_ASSERT(1, upper != nullptr);
+        ARG_ASSERT(2, pivot != nullptr);
         ARG_ASSERT(3, i_info.isFloating());  // Only floating and complex types
 
         if (i_info.ndims() == 0) {
@@ -81,13 +84,13 @@ af_err af_lu_inplace(af_array *pivot, af_array in, const bool is_lapack_piv) {
         }
 
         ARG_ASSERT(1, i_info.isFloating());  // Only floating and complex types
+        ARG_ASSERT(0, pivot != nullptr);
 
         if (i_info.ndims() == 0) {
             return af_create_handle(pivot, 0, nullptr, type);
         }
 
         af_array out;
-
         switch (type) {
             case f32: out = lu_inplace<float>(in, is_lapack_piv); break;
             case f64: out = lu_inplace<double>(in, is_lapack_piv); break;
@@ -95,7 +98,7 @@ af_err af_lu_inplace(af_array *pivot, af_array in, const bool is_lapack_piv) {
             case c64: out = lu_inplace<cdouble>(in, is_lapack_piv); break;
             default: TYPE_ERROR(1, type);
         }
-        if (pivot != NULL) std::swap(*pivot, out);
+        std::swap(*pivot, out);
     }
     CATCHALL;
 
