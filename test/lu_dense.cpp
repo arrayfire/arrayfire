@@ -235,3 +235,46 @@ TYPED_TEST(LU, RectangularLarge1) {
 TYPED_TEST(LU, RectangularMultipleOfTwoLarge1) {
     luTester<TypeParam>(512, 1024, eps<TypeParam>());
 }
+
+TEST(LU, NullLowerOutput) {
+    if (noLAPACKTests()) return;
+    dim4 dims(3, 3);
+    af_array in = 0;
+    ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));
+
+    af_array upper, pivot;
+    ASSERT_EQ(AF_ERR_ARG, af_lu(NULL, &upper, &pivot, in));
+    ASSERT_SUCCESS(af_release_array(in));
+}
+
+TEST(LU, NullUpperOutput) {
+    if (noLAPACKTests()) return;
+    dim4 dims(3, 3);
+    af_array in = 0;
+    ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));
+
+    af_array lower, pivot;
+    ASSERT_EQ(AF_ERR_ARG, af_lu(&lower, NULL, &pivot, in));
+    ASSERT_SUCCESS(af_release_array(in));
+}
+
+TEST(LU, NullPivotOutput) {
+    if (noLAPACKTests()) return;
+    dim4 dims(3, 3);
+    af_array in = 0;
+    ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));
+
+    af_array lower, upper;
+    ASSERT_EQ(AF_ERR_ARG, af_lu(&lower, &upper, NULL, in));
+    ASSERT_SUCCESS(af_release_array(in));
+}
+
+TEST(LU, InPlaceNullOutput) {
+    if (noLAPACKTests()) return;
+    dim4 dims(3, 3);
+    af_array in = 0;
+    ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));
+
+    ASSERT_EQ(AF_ERR_ARG, af_lu_inplace(NULL, in, true));
+    ASSERT_SUCCESS(af_release_array(in));
+}
