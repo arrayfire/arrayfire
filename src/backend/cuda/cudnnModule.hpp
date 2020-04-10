@@ -70,6 +70,9 @@ class cudnnModule {
     std::tuple<int, int, int> getVersion() {
         return std::make_tuple(major, minor, patch);
     }
+
+    //bool isLoaded() const { return module.isLoaded(); }
+    bool isLoaded() const { return true; }
 };
 
 cudnnModule& getCudnnPlugin();

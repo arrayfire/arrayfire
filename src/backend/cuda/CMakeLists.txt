@@ -316,15 +316,15 @@ else()
   )
 endif()
 
-if(cuDNN_FOUND)
-    set(convolveNN_sources convolveNN_cudnn.cpp
-                           cudnn.cpp
-                           cudnn.hpp
-                           cudnnModule.cpp
-                           cudnnModule.hpp)
+if(AF_WITH_CUDNN)
+  set(convolveNN_sources convolveNN.cpp
+                         cudnn.cpp
+                         cudnn.hpp
+                         cudnnModule.cpp
+                         cudnnModule.hpp)
 else()
-    set(convolveNN_sources convolveNN_base.cpp)
-    set(cuDNN_INCLUDE_DIRS "")
+  set(convolveNN_sources convolveNN.cpp)
+  set(cuDNN_INCLUDE_DIRS "")
 endif()
 
 cuda_add_library(afcuda
@@ -632,8 +632,8 @@ cuda_add_library(afcuda
     -Xcudafe \"--diag_suppress=1427\"
   )
 
-if(cuDNN_FOUND)
-    target_compile_definitions(afcuda PRIVATE WITH_CUDNN)
+if(AF_WITH_CUDNN)
+  target_compile_definitions(afcuda PRIVATE WITH_CUDNN)
 endif()
 
 arrayfire_set_default_cxx_flags(afcuda)
@@ -767,8 +767,8 @@ function(afcu_collect_libs libname)
 endfunction()
 
 if(AF_INSTALL_STANDALONE)
-  if(cuDNN_FOUND)
-  afcu_collect_libs(cudnn)
+  if(AF_WITH_CUDNN)
+    afcu_collect_libs(cudnn)
   endif()
 
   afcu_collect_libs(nvrtc FULL_VERSION)
