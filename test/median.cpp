@@ -150,3 +150,18 @@ MEDIAN(float, uchar)
 MEDIAN(float, short)
 MEDIAN(float, ushort)
 MEDIAN(double, double)
+
+TEST(Median, OneElement) {
+    af::array in = randu(1, f32);
+
+    af::array out = median(in);
+    ASSERT_ARRAYS_EQ(in, out);
+}
+
+TEST(Median, TwoElements) {
+    af::array in = randu(2, f32);
+
+    af::array out  = median(in);
+    af::array gold = mean(in);
+    ASSERT_ARRAYS_EQ(gold, out);
+}
