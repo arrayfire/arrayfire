@@ -35,11 +35,8 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
         size_t bytes;
     };
 
-    using locked_t    = typename std::unordered_map<void *, locked_info>;
-    using locked_iter = typename locked_t::iterator;
-
-    using free_t    = std::unordered_map<size_t, std::vector<void *>>;
-    using free_iter = typename free_t::iterator;
+    using locked_t = typename std::unordered_map<void *, locked_info>;
+    using free_t   = std::unordered_map<size_t, std::vector<void *>>;
 
     struct memory_info {
         locked_t locked_map;
