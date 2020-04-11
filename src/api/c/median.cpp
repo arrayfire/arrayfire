@@ -41,14 +41,12 @@ static double median(const af_array& in) {
     } else if (nElems == 2) {
         T result[2];
         AF_CHECK(af_get_data_ptr((void*)&result, in));
-        if (input.isFloating()) {
-            return division(result[0] + result[1], 2.0);
-        } else {
-            return division((float)result[0] + (float)result[1], 2.0);
-        }
+        return division(
+            (static_cast<double>(result[0]) + static_cast<double>(result[1])),
+            2.0);
     }
 
-    double mid       = (nElems + 1) / 2;
+    double mid       = static_cast<double>(nElems + 1) / 2.0;
     af_seq mdSpan[1] = {af_make_seq(mid - 1, mid, 1)};
 
     Array<T> sortedArr = sort<T>(input, 0, true);
@@ -68,11 +66,9 @@ static double median(const af_array& in) {
     if (nElems % 2 == 1) {
         result = resPtr[0];
     } else {
-        if (input.isFloating()) {
-            result = division(resPtr[0] + resPtr[1], 2);
-        } else {
-            result = division((float)resPtr[0] + (float)resPtr[1], 2);
-        }
+        result = division(
+            static_cast<double>(resPtr[0]) + static_cast<double>(resPtr[1]),
+            2.0);
     }
 
     return result;
@@ -90,9 +86,9 @@ static af_array median(const af_array& in, const dim_t dim) {
 
     Array<T> sortedIn = sort<T>(input, dim, true);
 
-    int dimLength = input.dims()[dim];
-    double mid    = (dimLength + 1) / 2;
-    af_array left = 0;
+    size_t dimLength = input.dims()[dim];
+    double mid       = static_cast<double>(dimLength + 1) / 2.0;
+    af_array left    = 0;
 
     af_seq slices[4] = {af_span, af_span, af_span, af_span};
     slices[dim]      = af_make_seq(mid - 1.0, mid - 1.0, 1.0);
