@@ -710,7 +710,7 @@ af_err unlock_fn(af_memory_manager manager, void *ptr, int userLock) {
 
 af_err user_unlock_fn(af_memory_manager manager, void *ptr) {
     auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
-    af_err err = unlock_fn(manager, ptr, /* user */ 1);
+    af_err err    = unlock_fn(manager, ptr, /* user */ 1);
     payload->lockedBytes -= payload->table[ptr];
     return err;
 }
