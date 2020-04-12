@@ -82,19 +82,19 @@ DependencyModule::DependencyModule(const vector<string> plugin_base_file_name,
     AF_TRACE("Unable to open {}", plugin_base_file_name[0]);
 }
 
-DependencyModule::~DependencyModule() {
+DependencyModule::~DependencyModule() noexcept {
     if (handle) { unloadLibrary(handle); }
 }
 
-bool DependencyModule::isLoaded() { return (bool)handle; }
+bool DependencyModule::isLoaded() const noexcept { return (bool)handle; }
 
-bool DependencyModule::symbolsLoaded() {
+bool DependencyModule::symbolsLoaded() const noexcept {
     return all_of(begin(functions), end(functions),
                   [](void* ptr) { return ptr != nullptr; });
 }
 
-string DependencyModule::getErrorMessage() { return common::getErrorMessage(); }
+string DependencyModule::getErrorMessage() const noexcept { return common::getErrorMessage(); }
 
-spdlog::logger* DependencyModule::getLogger() { return logger.get(); }
+spdlog::logger* DependencyModule::getLogger() const noexcept { return logger.get(); }
 
 }  // namespace common
