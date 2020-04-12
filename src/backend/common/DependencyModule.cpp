@@ -93,8 +93,12 @@ bool DependencyModule::symbolsLoaded() const noexcept {
                   [](void* ptr) { return ptr != nullptr; });
 }
 
-string DependencyModule::getErrorMessage() const noexcept { return common::getErrorMessage(); }
+string DependencyModule::getErrorMessage() const noexcept {
+    return common::getErrorMessage();
+}
 
-spdlog::logger* DependencyModule::getLogger() const noexcept { return logger.get(); }
+spdlog::logger* DependencyModule::getLogger() const noexcept {
+    return logger.get();
+}
 
 }  // namespace common

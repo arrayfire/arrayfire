@@ -39,51 +39,6 @@ namespace cuda {
 
 #ifdef WITH_CUDNN
 
-template<typename T>
-cudnnDataType_t getCudnnDataType();
-
-template<>
-cudnnDataType_t getCudnnDataType<float>() {
-    return CUDNN_DATA_FLOAT;
-}
-template<>
-cudnnDataType_t getCudnnDataType<double>() {
-    return CUDNN_DATA_DOUBLE;
-}
-
-#if CUDNN_VERSION >= 6000
-template<>
-cudnnDataType_t getCudnnDataType<int>() {
-    return CUDNN_DATA_INT32;
-}
-
-#if CUDNN_VERSION >= 7100
-template<>
-cudnnDataType_t getCudnnDataType<unsigned char>() {
-    return CUDNN_DATA_UINT8;
-}
-#endif
-#endif
-
-template<>
-cudnnDataType_t getCudnnDataType<half>() {
-    return CUDNN_DATA_HALF;
-}
-
-void cudnnSet(cudnnTensorDescriptor_t desc, cudnnDataType_t cudnn_dtype,
-              dim4 dims) {
-    CUDNN_CHECK(cuda::cudnnSetTensor4dDescriptor(desc, CUDNN_TENSOR_NCHW,
-                                                 cudnn_dtype, dims[3], dims[2],
-                                                 dims[1], dims[0]));
-}
-
-void cudnnSet(cudnnFilterDescriptor_t desc, cudnnDataType_t cudnn_dtype,
-              dim4 dims) {
-    CUDNN_CHECK(cuda::cudnnSetFilter4dDescriptor(desc, cudnn_dtype,
-                                                 CUDNN_TENSOR_NCHW, dims[3],
-                                                 dims[2], dims[1], dims[0]));
-}
-
 template<typename Desc, typename T>
 unique_handle<Desc> toCudnn(Array<T> arr) {
     dim4 dims = arr.dims();
@@ -234,10 +189,8 @@ Array<T> convolve2(Array<T> const &signal, Array<T> const &filter,
         checkTypeSupport<T>();
         return convolve2_cudnn<T>(signal, filter, stride, padding, dilation);
     }
-    return convolve2_base<T>(signal, filter, stride, padding, dilation);
-#else
-    return convolve2_base<T>(signal, filter, stride, padding, dilation);
 #endif
+    return convolve2_base<T>(signal, filter, stride, padding, dilation);
 }
 
 #define INSTANTIATE(T)                                                        \
@@ -368,14 +321,10 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
                                       original_filter, convolved_output, stride,
                                       padding, dilation);
     }
-    return data_gradient_base<T>(incoming_gradient, original_signal,
-                                 original_filter, convolved_output, stride,
-                                 padding, dilation);
-#else
-    return data_gradient_base<T>(incoming_gradient, original_signal,
-                                 original_filter, convolved_output, stride,
-                                 padding, dilation);
 #endif
+    return data_gradient_base<T>(incoming_gradient, original_signal,
+                                 original_filter, convolved_output, stride,
+                                 padding, dilation);
 }
 
 template<typename T>
@@ -486,14 +435,10 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
                                         original_filter, convolved_output,
                                         stride, padding, dilation);
     }
-    return filter_gradient_base<T>(incoming_gradient, original_signal,
-                                   original_filter, convolved_output, stride,
-                                   padding, dilation);
-#else
-    return filter_gradient_base<T>(incoming_gradient, original_signal,
-                                   original_filter, convolved_output, stride,
-                                   padding, dilation);
 #endif
+    return filter_gradient_base<T>(incoming_gradient, original_signal,
+                                   original_filter, convolved_output, stride,
+                                   padding, dilation);
 }
 
 #define INSTANTIATE(T)                                                      \

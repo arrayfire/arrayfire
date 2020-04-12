@@ -20,7 +20,9 @@ using std::string;
 
 namespace cuda {
 
-spdlog::logger* cudnnModule::getLogger() { return module.getLogger(); }
+spdlog::logger* cudnnModule::getLogger() const noexcept {
+    return module.getLogger();
+}
 
 auto cudnnVersionComponents(size_t version) {
     int major = version / 1000;
@@ -32,12 +34,15 @@ auto cudnnVersionComponents(size_t version) {
 cudnnModule::cudnnModule()
     : module({"cudnn"}, {"", "64_7", "64_8", "64_6", "64_5", "64_4"}, {""}) {
     if (!module.isLoaded()) {
-        string error_message =
-            "Error loading cuDNN: " + module.getErrorMessage() +
+        AF_TRACE(
+            "WARNING: Unable to load cuDNN: {}"
             "\ncuDNN failed to load. Try installing cuDNN or check if cuDNN is "
             "in the search path. On Linux, you can set the LD_DEBUG=libs "
-            "environment variable to debug loading issues.";
-        AF_ERROR(error_message.c_str(), AF_ERR_LOAD_LIB);
+            "environment variable to debug loading issues. Falling back to "
+            "matmul based implementation",
+            module.getErrorMessage());
+
+        return;
     }
 
     MODULE_FUNCTION_INIT(cudnnGetVersion);
@@ -129,7 +134,7 @@ cudnnModule::cudnnModule()
     }
 }
 
-cudnnModule& getCudnnPlugin() {
+cudnnModule& getCudnnPlugin() noexcept {
     static cudnnModule* plugin = new cudnnModule();
     return *plugin;
 }

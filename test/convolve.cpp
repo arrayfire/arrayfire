@@ -909,7 +909,7 @@ float tolerance<double>() {
 
 template<>
 float tolerance<half_float::half>() {
-    return 3e-2;
+    return 4e-2;
 }
 
 template<typename T>

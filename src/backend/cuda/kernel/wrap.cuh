@@ -135,7 +135,7 @@ __global__ void wrap_dilated(Param<T> out, CParam<T> in, const int wx,
             }
 
             T ival;
-            ival = (yvalid && xvalid) ? iptr[idx] : 0;
+            ival = (yvalid && xvalid) ? iptr[idx] : T(0);
             val  = val + ival;
         }
     }
