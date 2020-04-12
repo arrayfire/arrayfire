@@ -6,6 +6,9 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 dependency_check(CUDA_FOUND "CUDA not found.")
+if(AF_WITH_CUDNN)
+  dependency_check(cuDNN_FOUND "CUDA not found.")
+endif()
 
 include(AFcuda_helpers)
 include(FileToString)
@@ -316,21 +319,8 @@ else()
   )
 endif()
 
-if(AF_WITH_CUDNN)
-  set(convolveNN_sources convolveNN.cpp
-                         cudnn.cpp
-                         cudnn.hpp
-                         cudnnModule.cpp
-                         cudnnModule.hpp)
-else()
-  set(convolveNN_sources convolveNN.cpp)
-  set(cuDNN_INCLUDE_DIRS "")
-endif()
-
 cuda_add_library(afcuda
     ${thrust_sort_sources}
-
-    ${convolveNN_sources}
 
     all.cu
     anisotropic_diffusion.cpp
@@ -481,6 +471,7 @@ cuda_add_library(afcuda
     complex.hpp
     convolve.cpp
     convolve.hpp
+    convolveNN.cpp
     copy.cpp
     copy.hpp
     cublas.cpp
@@ -633,7 +624,17 @@ cuda_add_library(afcuda
   )
 
 if(AF_WITH_CUDNN)
+  target_sources(afcuda PRIVATE
+    cudnn.cpp
+    cudnn.hpp
+    cudnnModule.cpp
+    cudnnModule.hpp)
   target_compile_definitions(afcuda PRIVATE WITH_CUDNN)
+
+  target_include_directories (afcuda
+    PRIVATE
+      ${cuDNN_INCLUDE_DIRS}
+    )
 endif()
 
 arrayfire_set_default_cxx_flags(afcuda)
@@ -662,7 +663,6 @@ target_include_directories (afcuda
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${CMAKE_CURRENT_SOURCE_DIR}/jit
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${cuDNN_INCLUDE_DIRS}
 )
 
 target_link_libraries(afcuda
