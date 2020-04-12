@@ -19,11 +19,10 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline void wrap(af_array* out, const af_array in, const dim_t ox,
-                        const dim_t oy, const dim_t wx, const dim_t wy,
-                        const dim_t sx, const dim_t sy, const dim_t px,
-                        const dim_t py, const bool is_column) {
-    wrap<T>(getArray<T>(*out), getArray<T>(in), ox, oy, wx, wy, sx, sy, px, py,
+static inline void wrap(af_array* out, const af_array in, const dim_t wx,
+                        const dim_t wy, const dim_t sx, const dim_t sy,
+                        const dim_t px, const dim_t py, const bool is_column) {
+    wrap<T>(getArray<T>(*out), getArray<T>(in), wx, wy, sx, sy, px, py,
             is_column);
 }
 
@@ -60,18 +59,18 @@ void af_wrap_common(af_array* out, const af_array in, const dim_t ox,
 
     // clang-format off
     switch(in_type) {
-        case f32: wrap<float  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case f64: wrap<double >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case c32: wrap<cfloat >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case c64: wrap<cdouble>(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case s32: wrap<int    >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case u32: wrap<uint   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case s64: wrap<intl   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case u64: wrap<uintl  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case s16: wrap<short  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case u16: wrap<ushort >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case u8:  wrap<uchar  >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
-        case b8:  wrap<char   >(out, in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+        case f32: wrap<float  >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case f64: wrap<double >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case c32: wrap<cfloat >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case c64: wrap<cdouble>(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case s32: wrap<int    >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case u32: wrap<uint   >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case s64: wrap<intl   >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case u64: wrap<uintl  >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case s16: wrap<short  >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case u16: wrap<ushort >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case u8:  wrap<uchar  >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
+        case b8:  wrap<char   >(out, in, wx, wy, sx, sy, px, py, is_column);  break;
         default:  TYPE_ERROR(1, in_type);
     }
     // clang-format on
