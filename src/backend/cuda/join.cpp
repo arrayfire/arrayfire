@@ -12,6 +12,8 @@
 #include <err_cuda.hpp>
 #include <join.hpp>
 #include <kernel/join.hpp>
+
+#include <algorithm>
 #include <stdexcept>
 
 using common::half;

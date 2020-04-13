@@ -28,8 +28,11 @@ struct cusparseContext;
 typedef struct cusparseContext* SparseHandle;
 struct cusolverDnContext;
 typedef struct cusolverDnContext* SolveHandle;
+
+#ifdef WITH_CUDNN
 struct cudnnContext;
 typedef struct cudnnContext* cudnnHandle_t;
+#endif
 
 namespace spdlog {
 class logger;
@@ -122,7 +125,9 @@ PlanCache& fftManager();
 
 BlasHandle blasHandle();
 
+#ifdef WITH_CUDNN
 cudnnHandle_t nnHandle();
+#endif
 
 SolveHandle solverDnHandle();
 

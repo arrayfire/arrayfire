@@ -11,6 +11,11 @@
 #include <windows.h>
 #endif
 
+#ifdef WITH_CUDNN
+#include <cudnn.hpp>
+#include <cudnnModule.hpp>
+#endif
+
 #include <GraphicsResourceManager.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
@@ -20,8 +25,6 @@
 #include <common/unique_handle.hpp>
 #include <common/util.hpp>
 #include <cublas.hpp>
-#include <cudnn.hpp>
-#include <cudnnModule.hpp>
 #include <cufft.hpp>
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
@@ -100,6 +103,7 @@ unique_handle<cublasHandle_t> *cublasManager(const int deviceId) {
     return &handles[deviceId];
 }
 
+#ifdef WITH_CUDNN
 unique_handle<cudnnHandle_t> *nnManager(const int deviceId) {
     thread_local unique_handle<cudnnHandle_t>
         cudnnHandles[DeviceManager::MAX_DEVICES];
@@ -126,6 +130,7 @@ unique_handle<cudnnHandle_t> *nnManager(const int deviceId) {
 
     return handle;
 }
+#endif
 
 unique_ptr<PlanCache> &cufftManager(const int deviceId) {
     thread_local unique_ptr<PlanCache> caches[DeviceManager::MAX_DEVICES];
@@ -181,7 +186,9 @@ DeviceManager::~DeviceManager() {
         delete cusparseManager(i);
         cufftManager(i).reset();
         delete cublasManager(i);
+#ifdef WITH_CUDNN
         delete nnManager(i);
+#endif
     }
 }
 
@@ -460,6 +467,7 @@ PlanCache &fftManager() {
 
 BlasHandle blasHandle() { return *cublasManager(cuda::getActiveDeviceId()); }
 
+#ifdef WITH_CUDNN
 cudnnHandle_t nnHandle() {
     // Keep the getCudnnPlugin call here because module loading can throw an
     // exception the first time its called. We want to avoid that because the
@@ -475,6 +483,7 @@ cudnnHandle_t nnHandle() {
         AF_ERROR("Error Initializing cuDNN\n", AF_ERR_RUNTIME);
     }
 }
+#endif
 
 SolveHandle solverDnHandle() {
     return *cusolverManager(cuda::getActiveDeviceId());
