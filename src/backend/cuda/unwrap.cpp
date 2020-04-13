@@ -10,10 +10,13 @@
 #include <unwrap.hpp>
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <kernel/unwrap.hpp>
 
 #include <stdexcept>
+
+using common::half;
 
 namespace cuda {
 
@@ -55,6 +58,7 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace cuda

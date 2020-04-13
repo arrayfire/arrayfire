@@ -53,6 +53,7 @@ option(AF_BUILD_OPENCL   "Build ArrayFire with a OpenCL backend"     ${OpenCL_FO
 option(AF_BUILD_UNIFIED  "Build Backend-Independent ArrayFire API"   ON)
 option(AF_BUILD_DOCS     "Create ArrayFire Documentation"            ${DOXYGEN_FOUND})
 option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
+option(AF_WITH_CUDNN     "Use cuDNN for convolveNN functions"        ${cuDNN_FOUND})
 option(AF_BUILD_FORGE
     "Forge libs are not built by default as it is not link time dependency" OFF)
 

@@ -10,7 +10,9 @@
 #pragma once
 
 #include <common/defines.hpp>
+#include <common/half.hpp>
 #include <cudnnModule.hpp>
+#include <af/dim4.hpp>
 
 namespace cuda {
 
@@ -38,6 +40,16 @@ const char *errorString(cudnnStatus_t err);
             AF_ERROR(_err_msg, AF_ERR_INTERNAL);                            \
         }                                                                   \
     } while (0)
+
+/// Returns a cuDNN type based on the template parameter
+template<typename T>
+cudnnDataType_t getCudnnDataType();
+
+void cudnnSet(cudnnTensorDescriptor_t desc, cudnnDataType_t cudnn_dtype,
+              af::dim4 dims);
+
+void cudnnSet(cudnnFilterDescriptor_t desc, cudnnDataType_t cudnn_dtype,
+              af::dim4 dims);
 
 // cuDNN Wrappers
 //
