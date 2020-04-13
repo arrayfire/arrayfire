@@ -20,10 +20,9 @@ using namespace detail;
 
 template<typename T>
 static inline void transform(af_array *out, const af_array in,
-                             const af_array tf, const dim4 &odims,
-                             const af_interp_type method, const bool inverse,
-                             const bool perspective) {
-    transform<T>(getArray<T>(*out), getArray<T>(in), getArray<float>(tf), odims,
+                             const af_array tf, const af_interp_type method,
+                             const bool inverse, const bool perspective) {
+    transform<T>(getArray<T>(*out), getArray<T>(in), getArray<float>(tf),
                  method, inverse, perspective);
 }
 
@@ -143,18 +142,18 @@ void af_transform_common(af_array *out, const af_array in, const af_array tf,
 
     // clang-format off
     switch(itype) {
-    case f32: transform<float  >(out, in, tf, odims, method, inverse, perspective);  break;
-    case f64: transform<double >(out, in, tf, odims, method, inverse, perspective);  break;
-    case c32: transform<cfloat >(out, in, tf, odims, method, inverse, perspective);  break;
-    case c64: transform<cdouble>(out, in, tf, odims, method, inverse, perspective);  break;
-    case s32: transform<int    >(out, in, tf, odims, method, inverse, perspective);  break;
-    case u32: transform<uint   >(out, in, tf, odims, method, inverse, perspective);  break;
-    case s64: transform<intl   >(out, in, tf, odims, method, inverse, perspective);  break;
-    case u64: transform<uintl  >(out, in, tf, odims, method, inverse, perspective);  break;
-    case s16: transform<short  >(out, in, tf, odims, method, inverse, perspective);  break;
-    case u16: transform<ushort >(out, in, tf, odims, method, inverse, perspective);  break;
-    case u8:  transform<uchar  >(out, in, tf, odims, method, inverse, perspective);  break;
-    case b8:  transform<char   >(out, in, tf, odims, method, inverse, perspective);  break;
+    case f32: transform<float  >(out, in, tf, method, inverse, perspective);  break;
+    case f64: transform<double >(out, in, tf, method, inverse, perspective);  break;
+    case c32: transform<cfloat >(out, in, tf, method, inverse, perspective);  break;
+    case c64: transform<cdouble>(out, in, tf, method, inverse, perspective);  break;
+    case s32: transform<int    >(out, in, tf, method, inverse, perspective);  break;
+    case u32: transform<uint   >(out, in, tf, method, inverse, perspective);  break;
+    case s64: transform<intl   >(out, in, tf, method, inverse, perspective);  break;
+    case u64: transform<uintl  >(out, in, tf, method, inverse, perspective);  break;
+    case s16: transform<short  >(out, in, tf, method, inverse, perspective);  break;
+    case u16: transform<ushort >(out, in, tf, method, inverse, perspective);  break;
+    case u8:  transform<uchar  >(out, in, tf, method, inverse, perspective);  break;
+    case b8:  transform<char   >(out, in, tf, method, inverse, perspective);  break;
     default:  TYPE_ERROR(1, itype);
     }
     // clang-format on

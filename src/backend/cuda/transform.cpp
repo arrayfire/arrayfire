@@ -16,15 +16,15 @@ namespace cuda {
 
 template<typename T>
 void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
-               const af::dim4 &odims, const af::interpType method,
-               const bool inverse, const bool perspective) {
+               const af::interpType method, const bool inverse,
+               const bool perspective) {
     kernel::transform<T>(out, in, tf, inverse, perspective, method,
                          interpOrder(method));
 }
 
 #define INSTANTIATE(T)                                                       \
     template void transform(Array<T> &out, const Array<T> &in,               \
-                            const Array<float> &tf, const af::dim4 &odims,   \
+                            const Array<float> &tf,                          \
                             const af_interp_type method, const bool inverse, \
                             const bool perspective);
 
