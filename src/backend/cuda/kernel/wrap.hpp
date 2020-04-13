@@ -49,5 +49,36 @@ void wrap(Param<T> out, CParam<T> in, const int wx, const int wy, const int sx,
     POST_LAUNCH_CHECK();
 }
 
+template<typename T>
+void wrap_dilated(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
+                  const dim_t sx, const dim_t sy, const dim_t px,
+                  const dim_t py, const dim_t dx, const dim_t dy,
+                  const bool is_column) {
+    static const std::string source(wrap_cuh, wrap_cuh_len);
+
+    auto wrap = getKernel("cuda::wrap_dilated", source,
+                          {TemplateTypename<T>(), TemplateArg(is_column)});
+
+    int nx = 1 + (out.dims[0] + 2 * px - (((wx - 1) * dx) + 1)) / sx;
+    int ny = 1 + (out.dims[1] + 2 * py - (((wy - 1) * dy) + 1)) / sy;
+
+    dim3 threads(THREADS_X, THREADS_Y);
+    int blocks_x = divup(out.dims[0], threads.x);
+    int blocks_y = divup(out.dims[1], threads.y);
+
+    dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
+
+    const int maxBlocksY =
+        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    blocks.z = divup(blocks.y, maxBlocksY);
+    blocks.y = divup(blocks.y, blocks.z);
+
+    EnqueueArgs qArgs(blocks, threads, getActiveStream());
+
+    wrap(qArgs, out, in, wx, wy, sx, sy, px, py, dx, dy, nx, ny, blocks_x,
+         blocks_y);
+    POST_LAUNCH_CHECK();
+}
+
 }  // namespace kernel
 }  // namespace cuda

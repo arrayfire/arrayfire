@@ -6,6 +6,9 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 dependency_check(CUDA_FOUND "CUDA not found.")
+if(AF_WITH_CUDNN)
+  dependency_check(cuDNN_FOUND "CUDA not found.")
+endif()
 
 include(AFcuda_helpers)
 include(FileToString)
@@ -468,14 +471,11 @@ cuda_add_library(afcuda
     complex.hpp
     convolve.cpp
     convolve.hpp
+    convolveNN.cpp
     copy.cpp
     copy.hpp
     cublas.cpp
     cublas.hpp
-    cudnn.cpp
-    cudnn.hpp
-    cudnnModule.cpp
-    cudnnModule.hpp
     cufft.hpp
     cusolverDn.cpp
     cusolverDn.hpp
@@ -623,6 +623,20 @@ cuda_add_library(afcuda
     -Xcudafe \"--diag_suppress=1427\"
   )
 
+if(AF_WITH_CUDNN)
+  target_sources(afcuda PRIVATE
+    cudnn.cpp
+    cudnn.hpp
+    cudnnModule.cpp
+    cudnnModule.hpp)
+  target_compile_definitions(afcuda PRIVATE WITH_CUDNN)
+
+  target_include_directories (afcuda
+    PRIVATE
+      ${cuDNN_INCLUDE_DIRS}
+    )
+endif()
+
 arrayfire_set_default_cxx_flags(afcuda)
 
 # NOTE: Do not add additional CUDA specific definitions here. Add it to the
@@ -649,7 +663,6 @@ target_include_directories (afcuda
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${CMAKE_CURRENT_SOURCE_DIR}/jit
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${cuDNN_INCLUDE_DIRS}
 )
 
 target_link_libraries(afcuda
@@ -754,7 +767,10 @@ function(afcu_collect_libs libname)
 endfunction()
 
 if(AF_INSTALL_STANDALONE)
-  afcu_collect_libs(cudnn)
+  if(AF_WITH_CUDNN)
+    afcu_collect_libs(cudnn)
+  endif()
+
   afcu_collect_libs(nvrtc FULL_VERSION)
   if(WIN32)
     afcu_collect_libs(cufft)

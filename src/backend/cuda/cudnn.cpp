@@ -10,6 +10,8 @@
 #include <cudnn.hpp>
 #include <err_cuda.hpp>
 
+using af::dim4;
+
 namespace cuda {
 
 const char *errorString(cudnnStatus_t err) {
@@ -39,6 +41,48 @@ const char *errorString(cudnnStatus_t err) {
 #endif
         default: return "UNKNOWN";
     }
+}
+
+template<>
+cudnnDataType_t getCudnnDataType<float>() {
+    return CUDNN_DATA_FLOAT;
+}
+template<>
+cudnnDataType_t getCudnnDataType<double>() {
+    return CUDNN_DATA_DOUBLE;
+}
+
+#if CUDNN_VERSION >= 6000
+template<>
+cudnnDataType_t getCudnnDataType<int>() {
+    return CUDNN_DATA_INT32;
+}
+
+#if CUDNN_VERSION >= 7100
+template<>
+cudnnDataType_t getCudnnDataType<unsigned char>() {
+    return CUDNN_DATA_UINT8;
+}
+#endif
+#endif
+
+template<>
+cudnnDataType_t getCudnnDataType<common::half>() {
+    return CUDNN_DATA_HALF;
+}
+
+void cudnnSet(cudnnTensorDescriptor_t desc, cudnnDataType_t cudnn_dtype,
+              dim4 dims) {
+    CUDNN_CHECK(cuda::cudnnSetTensor4dDescriptor(desc, CUDNN_TENSOR_NCHW,
+                                                 cudnn_dtype, dims[3], dims[2],
+                                                 dims[1], dims[0]));
+}
+
+void cudnnSet(cudnnFilterDescriptor_t desc, cudnnDataType_t cudnn_dtype,
+              dim4 dims) {
+    CUDNN_CHECK(cuda::cudnnSetFilter4dDescriptor(desc, cudnn_dtype,
+                                                 CUDNN_TENSOR_NCHW, dims[3],
+                                                 dims[2], dims[1], dims[0]));
 }
 
 cudnnStatus_t cudnnSetConvolution2dDescriptor(

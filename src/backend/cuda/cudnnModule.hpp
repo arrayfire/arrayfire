@@ -64,14 +64,16 @@ class cudnnModule {
     MODULE_MEMBER(cudnnSetStream);
     MODULE_MEMBER(cudnnSetTensor4dDescriptor);
 
-    spdlog::logger* getLogger();
+    spdlog::logger* getLogger() const noexcept;
 
     /// Returns the version of the cuDNN loaded at runtime
-    std::tuple<int, int, int> getVersion() {
+    std::tuple<int, int, int> getVersion() const noexcept {
         return std::make_tuple(major, minor, patch);
     }
+
+    bool isLoaded() const noexcept { return module.isLoaded(); }
 };
 
-cudnnModule& getCudnnPlugin();
+cudnnModule& getCudnnPlugin() noexcept;
 
 }  // namespace cuda
