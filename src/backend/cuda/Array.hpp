@@ -33,16 +33,16 @@ template<typename T>
 void evalNodes(Param<T> out, common::Node *node);
 
 template<typename T>
-void evalNodes(std::vector<Param<T>> &out, std::vector<common::Node *> nodes);
+void evalNodes(std::vector<Param<T>> &out, const std::vector<common::Node *> &nodes);
 
 template<typename T>
 void evalMultiple(std::vector<Array<T> *> arrays);
 
 template<typename T>
-Array<T> createNodeArray(const af::dim4 &size, common::Node_ptr node);
+Array<T> createNodeArray(const af::dim4 &dims, common::Node_ptr node);
 
 template<typename T>
-Array<T> createValueArray(const af::dim4 &size, const T &value);
+Array<T> createValueArray(const af::dim4 &dims, const T &value);
 
 // Creates an array and copies from the \p data pointer located in host memory
 //
@@ -52,11 +52,12 @@ template<typename T>
 Array<T> createHostDataArray(const af::dim4 &dims, const T *const data);
 
 template<typename T>
-Array<T> createDeviceDataArray(const af::dim4 &size, void *data);
+Array<T> createDeviceDataArray(const af::dim4 &dims, void *data);
 
 template<typename T>
-Array<T> createStridedArray(af::dim4 dims, af::dim4 strides, dim_t offset,
-                            const T *const in_data, bool is_device) {
+Array<T> createStridedArray(const af::dim4 &dims, const af::dim4 &strides,
+                            dim_t offset, const T *const in_data,
+                            bool is_device) {
     return Array<T>(dims, strides, offset, in_data, is_device);
 }
 
@@ -73,7 +74,7 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 ///
 /// \param[in] size The dimension of the output array
 template<typename T>
-Array<T> createEmptyArray(const af::dim4 &size);
+Array<T> createEmptyArray(const af::dim4 &dims);
 
 /// Create an Array object from Param<T> object.
 ///
@@ -82,7 +83,7 @@ Array<T> createEmptyArray(const af::dim4 &size);
 /// If false
 ///                  the Array<T> will not delete the object on destruction
 template<typename T>
-Array<T> createParamArray(Param<T> &in, bool owner);
+Array<T> createParamArray(Param<T> &tmp, bool owner);
 
 template<typename T>
 Array<T> createSubArray(const Array<T> &parent,
@@ -124,18 +125,18 @@ class Array {
     bool ready;
     bool owner;
 
-    Array(af::dim4 dims);
+    Array(const af::dim4 &dims);
 
-    explicit Array(af::dim4 dims, const T *const in_data,
+    explicit Array(const af::dim4 &dims, const T *const in_data,
                    bool is_device = false, bool copy_device = false);
-    Array(const Array<T> &parnt, const dim4 &dims, const dim_t &offset,
+    Array(const Array<T> &parent, const dim4 &dims, const dim_t &offset,
           const dim4 &stride);
     Array(Param<T> &tmp, bool owner);
-    Array(af::dim4 dims, common::Node_ptr n);
+    Array(const af::dim4 &dims, common::Node_ptr n);
 
    public:
-    Array(af::dim4 dims, af::dim4 strides, dim_t offset, const T *const in_data,
-          bool is_device = false);
+    Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset,
+          const T *const in_data, bool is_device = false);
 
     void resetInfo(const af::dim4 &dims) { info.resetInfo(dims); }
     void resetDims(const af::dim4 &dims) { info.resetDims(dims); }
@@ -241,8 +242,9 @@ class Array {
     friend Array<T> createHostDataArray<T>(const af::dim4 &size,
                                            const T *const data);
     friend Array<T> createDeviceDataArray<T>(const af::dim4 &size, void *data);
-    friend Array<T> createStridedArray<T>(af::dim4 dims, af::dim4 strides,
-                                          dim_t offset, const T *const in_data,
+    friend Array<T> createStridedArray<T>(const af::dim4 &dims,
+                                          const af::dim4 &strides, dim_t offset,
+                                          const T *const in_data,
                                           bool is_device);
 
     friend Array<T> createEmptyArray<T>(const af::dim4 &size);

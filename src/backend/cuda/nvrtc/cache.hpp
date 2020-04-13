@@ -105,7 +105,7 @@ struct Kernel {
 
 // TODO(pradeep): remove this in API and merge JIT and nvrtc caches
 Kernel buildKernel(const int device, const std::string& nameExpr,
-                   const std::string& jitSourceString,
+                   const std::string& jit_ker,
                    const std::vector<std::string>& opts = {},
                    const bool isJIT                     = false);
 
@@ -200,6 +200,6 @@ SPECIALIZE(unsigned long long, unsigned long long);
 ///            the kernel compilation.
 ///
 Kernel getKernel(const std::string& nameExpr, const std::string& source,
-                 const std::vector<TemplateArg>& templateArgs,
+                 const std::vector<TemplateArg>& targs,
                  const std::vector<std::string>& compileOpts = {});
 }  // namespace cuda

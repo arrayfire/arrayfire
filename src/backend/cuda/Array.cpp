@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <utility>
 
 using af::dim4;
 using common::half;
@@ -30,6 +31,7 @@ using common::NodeIterator;
 using cuda::jit::BufferNode;
 
 using std::accumulate;
+using std::move;
 using std::shared_ptr;
 using std::vector;
 
@@ -52,7 +54,7 @@ Node_ptr bufferNodePtr() {
 }
 
 template<typename T>
-Array<T>::Array(af::dim4 dims)
+Array<T>::Array(const af::dim4 &dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
     , data((dims.elements() ? memAlloc<T>(dims.elements()).release() : nullptr),
@@ -63,7 +65,7 @@ Array<T>::Array(af::dim4 dims)
     , owner(true) {}
 
 template<typename T>
-Array<T>::Array(af::dim4 dims, const T *const in_data, bool is_device,
+Array<T>::Array(const af::dim4 &dims, const T *const in_data, bool is_device,
                 bool copy_device)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
@@ -114,24 +116,24 @@ Array<T>::Array(Param<T> &tmp, bool owner_)
                     tmp.strides[3]),
            (af_dtype)dtype_traits<T>::af_type)
     , data(tmp.ptr, owner_ ? std::function<void(T *)>(memFree<T>)
-                           : std::function<void(T *)>([](T *) {}))
+                           : std::function<void(T *)>([](T * /*unused*/) {}))
     , data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]))
     , node(bufferNodePtr<T>())
     , ready(true)
     , owner(owner_) {}
 
 template<typename T>
-Array<T>::Array(af::dim4 dims, common::Node_ptr n)
+Array<T>::Array(const af::dim4 &dims, common::Node_ptr n)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            (af_dtype)dtype_traits<T>::af_type)
     , data()
     , data_dims(dims)
-    , node(n)
+    , node(move(n))
     , ready(false)
     , owner(true) {}
 
 template<typename T>
-Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
+Array<T>::Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset_,
                 const T *const in_data, bool is_device)
     : info(getActiveDeviceId(), dims, offset_, strides,
            (af_dtype)dtype_traits<T>::af_type)
@@ -152,7 +154,7 @@ Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset_,
 
 template<typename T>
 void Array<T>::eval() {
-    if (isReady()) return;
+    if (isReady()) { return; }
 
     this->setId(getActiveDeviceId());
     this->data = shared_ptr<T>(memAlloc<T>(elements()).release(), memFree<T>);
@@ -174,7 +176,7 @@ T *Array<T>::device() {
 
 template<typename T>
 void Array<T>::eval() const {
-    if (isReady()) return;
+    if (isReady()) { return; }
     const_cast<Array<T> *>(this)->eval();
 }
 
@@ -211,20 +213,18 @@ void evalMultiple(std::vector<Array<T> *> arrays) {
 
     evalNodes(outputs, nodes);
 
-    for (Array<T> *array : output_arrays) array->node = bufferNodePtr<T>();
-
-    return;
+    for (Array<T> *array : output_arrays) { array->node = bufferNodePtr<T>(); }
 }
 
 template<typename T>
-Array<T>::~Array() {}
+Array<T>::~Array() = default;
 
 template<typename T>
 Node_ptr Array<T>::getNode() {
     if (node->isBuffer()) {
-        unsigned bytes         = this->getDataDims().elements() * sizeof(T);
-        BufferNode<T> *bufNode = reinterpret_cast<BufferNode<T> *>(node.get());
-        Param<T> param         = *this;
+        unsigned bytes = this->getDataDims().elements() * sizeof(T);
+        auto *bufNode  = reinterpret_cast<BufferNode<T> *>(node.get());
+        Param<T> param = *this;
         bufNode->setData(param, data, bytes, isLinear());
     }
     return node;
@@ -253,7 +253,7 @@ Node_ptr Array<T>::getNode() const {
 template<typename T>
 kJITHeuristics passesJitHeuristics(Node *root_node) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
-    if (root_node->getHeight() >= (int)getMaxJitSize()) {
+    if (root_node->getHeight() >= static_cast<int>(getMaxJitSize())) {
         return kJITHeuristics::TreeHeight;
     }
 
@@ -361,18 +361,18 @@ Array<T> createSubArray(const Array<T> &parent,
         return createSubArray(parentCopy, index, copy);
     }
 
-    dim4 pDims   = parent.dims();
-    dim4 dims    = toDims(index, pDims);
-    dim4 strides = toStride(index, dDims);
+    const dim4 &pDims = parent.dims();
+    dim4 dims         = toDims(index, pDims);
+    dim4 strides      = toStride(index, dDims);
 
     // Find total offsets after indexing
     dim4 offsets = toOffset(index, pDims);
     dim_t offset = parent.getOffset();
-    for (int i = 0; i < 4; i++) offset += offsets[i] * parent_strides[i];
+    for (int i = 0; i < 4; i++) { offset += offsets[i] * parent_strides[i]; }
 
     Array<T> out = Array<T>(parent, dims, offset, strides);
 
-    if (!copy) return out;
+    if (!copy) { return out; }
 
     if (strides[0] != 1 || strides[1] < 0 || strides[2] < 0 || strides[3] < 0) {
         out = copyArray(out);
@@ -401,8 +401,6 @@ void writeHostDataArray(Array<T> &arr, const T *const data,
     CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyHostToDevice,
                                cuda::getActiveStream()));
     CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
-
-    return;
 }
 
 template<typename T>
@@ -414,8 +412,6 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 
     CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyDeviceToDevice,
                                cuda::getActiveStream()));
-
-    return;
 }
 
 template<typename T>
@@ -437,11 +433,11 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
     template void destroyArray<T>(Array<T> * A);                              \
     template Array<T> createNodeArray<T>(const dim4 &size,                    \
                                          common::Node_ptr node);              \
-    template Array<T>::Array(af::dim4 dims, af::dim4 strides, dim_t offset,   \
-                             const T *const in_data, bool is_device);         \
-    template Array<T>::Array(af::dim4 dims, const T *const in_data,           \
+    template Array<T>::Array(const af::dim4 &dims, const af::dim4 &strides,   \
+                             dim_t offset, const T *const in_data,            \
+                             bool is_device);                                 \
+    template Array<T>::Array(const af::dim4 &dims, const T *const in_data,    \
                              bool is_device, bool copy_device);               \
-    template Array<T>::~Array();                                              \
     template Node_ptr Array<T>::getNode() const;                              \
     template void Array<T>::eval();                                           \
     template void Array<T>::eval() const;                                     \

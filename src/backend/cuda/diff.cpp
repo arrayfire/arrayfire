@@ -17,7 +17,7 @@ namespace cuda {
 
 template<typename T>
 Array<T> diff(const Array<T> &in, const int dim, const bool isDiff2) {
-    const af::dim4 iDims = in.dims();
+    const af::dim4 &iDims = in.dims();
     af::dim4 oDims       = iDims;
     oDims[dim] -= (isDiff2 + 1);
 

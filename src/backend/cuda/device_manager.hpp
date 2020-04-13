@@ -112,7 +112,7 @@ class DeviceManager {
     void checkCudaVsDriverVersion();
     void sortDevices(sort_mode mode = flops);
 
-    int setActiveDevice(int device, int native = -1);
+    int setActiveDevice(int device, int nId = -1);
 
     std::shared_ptr<spdlog::logger> logger;
 
@@ -120,7 +120,7 @@ class DeviceManager {
     std::vector<std::pair<int, int>> devJitComputes;
 
     int nDevices;
-    cudaStream_t streams[MAX_DEVICES];
+    cudaStream_t streams[MAX_DEVICES]{};
 
     std::unique_ptr<graphics::ForgeManager> fgMngr;
 

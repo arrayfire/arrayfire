@@ -44,7 +44,6 @@ void copyData(T *dst, const Array<T> &src) {
     CUDA_CHECK(cudaMemcpyAsync(dst, ptr, src.elements() * sizeof(T),
                                cudaMemcpyDeviceToHost, stream));
     CUDA_CHECK(cudaStreamSynchronize(stream));
-    return;
 }
 
 template<typename T>
@@ -221,7 +220,7 @@ INSTANTIATE_PAD_ARRAY_COMPLEX(cdouble)
 
 template<typename T>
 T getScalar(const Array<T> &in) {
-    T retVal;
+    T retVal{};
     CUDA_CHECK(cudaMemcpyAsync(&retVal, in.get(), sizeof(T),
                                cudaMemcpyDeviceToHost,
                                cuda::getActiveStream()));

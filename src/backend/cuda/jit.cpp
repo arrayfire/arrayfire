@@ -48,16 +48,17 @@ static string getFuncName(const vector<Node *> &output_nodes,
     stringstream funcName;
     stringstream hashName;
 
-    if (is_linear)
+    if (is_linear) {
         funcName << "L_";  // Kernel Linear
-    else
+    } else {
         funcName << "G_";  // Kernel General
+    }
 
     for (const auto &node : output_nodes) {
         funcName << node->getNameStr() << "_";
     }
 
-    for (int i = 0; i < (int)full_nodes.size(); i++) {
+    for (int i = 0; i < static_cast<int>(full_nodes.size()); i++) {
         full_nodes[i]->genKerName(funcName, full_ids[i]);
     }
 
@@ -68,7 +69,7 @@ static string getFuncName(const vector<Node *> &output_nodes,
     return hashName.str();
 }
 
-static string getKernelString(const string funcName,
+static string getKernelString(const string &funcName,
                               const vector<const Node *> &full_nodes,
                               const vector<Node_ids> &full_ids,
                               const vector<int> &output_ids, bool is_linear) {
@@ -149,7 +150,7 @@ struct Param {
     stringstream opsStream;
     stringstream outrefstream;
 
-    for (int i = 0; i < (int)full_nodes.size(); i++) {
+    for (int i = 0; i < static_cast<int>(full_nodes.size()); i++) {
         const auto &node     = full_nodes[i];
         const auto &ids_curr = full_ids[i];
         // Generate input parameters, only needs current id
@@ -163,8 +164,7 @@ struct Param {
     outrefstream << "const Param<" << full_nodes[output_ids[0]]->getTypeStr()
                  << "> &outref = out" << output_ids[0] << ";\n";
 
-    for (int i = 0; i < (int)output_ids.size(); i++) {
-        int id = output_ids[i];
+    for (int id : output_ids) {
         // Generate output parameters
         outParamStream << "Param<" << full_nodes[id]->getTypeStr() << "> out"
                        << id << ", \n";
@@ -214,7 +214,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
     int device = getActiveDeviceId();
 
-    kc_t::iterator idx = kernelCaches[device].find(funcName);
+    auto idx = kernelCaches[device].find(funcName);
     Kernel entry{nullptr, nullptr};
 
     if (idx == kernelCaches[device].end()) {
@@ -231,11 +231,11 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
 }
 
 template<typename T>
-void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
+void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
     int num_outputs = (int)outputs.size();
     int device      = getActiveDeviceId();
 
-    if (num_outputs == 0) return;
+    if (num_outputs == 0) { return; }
 
     // Use thread local to reuse the memory every time you are here.
     thread_local Node_map_t nodes;
@@ -244,7 +244,7 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
     thread_local vector<int> output_ids;
 
     // Reserve some space to improve performance at smaller sizes
-    if (nodes.size() == 0) {
+    if (nodes.empty()) {
         nodes.reserve(1024);
         output_ids.reserve(output_nodes.size());
         full_nodes.reserve(1024);
@@ -274,10 +274,11 @@ void evalNodes(vector<Param<T>> &outputs, vector<Node *> output_nodes) {
 
     int num_odims = 4;
     while (num_odims >= 1) {
-        if (outputs[0].dims[num_odims - 1] == 1)
+        if (outputs[0].dims[num_odims - 1] == 1) {
             num_odims--;
-        else
+        } else {
             break;
+        }
     }
 
     if (is_linear) {
@@ -345,7 +346,6 @@ void evalNodes(Param<T> out, Node *node) {
     outputs.push_back(out);
     output_nodes.push_back(node);
     evalNodes(outputs, output_nodes);
-    return;
 }
 
 template void evalNodes<float>(Param<float> out, Node *node);
@@ -362,21 +362,21 @@ template void evalNodes<short>(Param<short> out, Node *node);
 template void evalNodes<ushort>(Param<ushort> out, Node *node);
 template void evalNodes<half>(Param<half> out, Node *node);
 
-template void evalNodes<float>(vector<Param<float>> &out, vector<Node *> node);
+template void evalNodes<float>(vector<Param<float>> &out, const vector<Node *> &node);
 template void evalNodes<double>(vector<Param<double>> &out,
-                                vector<Node *> node);
+                                const vector<Node *> &node);
 template void evalNodes<cfloat>(vector<Param<cfloat>> &out,
-                                vector<Node *> node);
+                                const vector<Node *> &node);
 template void evalNodes<cdouble>(vector<Param<cdouble>> &out,
-                                 vector<Node *> node);
-template void evalNodes<int>(vector<Param<int>> &out, vector<Node *> node);
-template void evalNodes<uint>(vector<Param<uint>> &out, vector<Node *> node);
-template void evalNodes<char>(vector<Param<char>> &out, vector<Node *> node);
-template void evalNodes<uchar>(vector<Param<uchar>> &out, vector<Node *> node);
-template void evalNodes<intl>(vector<Param<intl>> &out, vector<Node *> node);
-template void evalNodes<uintl>(vector<Param<uintl>> &out, vector<Node *> node);
-template void evalNodes<short>(vector<Param<short>> &out, vector<Node *> node);
+                                 const vector<Node *> &node);
+template void evalNodes<int>(vector<Param<int>> &out, const vector<Node *> &node);
+template void evalNodes<uint>(vector<Param<uint>> &out, const vector<Node *> &node);
+template void evalNodes<char>(vector<Param<char>> &out, const vector<Node *> &node);
+template void evalNodes<uchar>(vector<Param<uchar>> &out, const vector<Node *> &node);
+template void evalNodes<intl>(vector<Param<intl>> &out, const vector<Node *> &node);
+template void evalNodes<uintl>(vector<Param<uintl>> &out, const vector<Node *> &node);
+template void evalNodes<short>(vector<Param<short>> &out, const vector<Node *> &node);
 template void evalNodes<ushort>(vector<Param<ushort>> &out,
-                                vector<Node *> node);
-template void evalNodes<half>(vector<Param<half>> &out, vector<Node *> node);
+                                const vector<Node *> &node);
+template void evalNodes<half>(vector<Param<half>> &out, const vector<Node *> &node);
 }  // namespace cuda

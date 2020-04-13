@@ -11,9 +11,11 @@
 
 namespace cuda {
 
-cudaStream_t get_stream(ThrustArrayFirePolicy) { return getActiveStream(); }
+cudaStream_t get_stream(ThrustArrayFirePolicy /*unused*/) {
+    return getActiveStream();
+}
 
-cudaError_t synchronize_stream(ThrustArrayFirePolicy) {
+cudaError_t synchronize_stream(ThrustArrayFirePolicy /*unused*/) {
     return cudaStreamSynchronize(getActiveStream());
 }
 

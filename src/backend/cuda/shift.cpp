@@ -39,15 +39,16 @@ Array<T> shift(const Array<T> &in, const int sdims[4]) {
 
     string name_str("Sh");
     name_str += shortname<T>(true);
-    const dim4 iDims = in.dims();
+    const dim4 &iDims = in.dims();
     dim4 oDims       = iDims;
 
-    array<int, 4> shifts;
+    array<int, 4> shifts{};
     for (int i = 0; i < 4; i++) {
         // sdims_[i] will always be positive and always [0, oDims[i]].
         // Negative shifts are converted to position by going the other way
         // round
-        shifts[i] = -(sdims[i] % (int)oDims[i]) + oDims[i] * (sdims[i] > 0);
+        shifts[i] = -(sdims[i] % static_cast<int>(oDims[i])) +
+                    oDims[i] * (sdims[i] > 0);
         assert(shifts[i] >= 0 && shifts[i] <= oDims[i]);
     }
 

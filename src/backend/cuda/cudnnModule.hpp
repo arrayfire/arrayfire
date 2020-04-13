@@ -35,7 +35,7 @@ namespace cuda {
 
 class cudnnModule {
     common::DependencyModule module;
-    int major, minor, patch;
+    int major{}, minor{}, patch{};
 
    public:
     cudnnModule();

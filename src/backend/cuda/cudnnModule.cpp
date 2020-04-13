@@ -135,7 +135,7 @@ cudnnModule::cudnnModule()
 }
 
 cudnnModule& getCudnnPlugin() noexcept {
-    static cudnnModule* plugin = new cudnnModule();
+    static auto* plugin = new cudnnModule();
     return *plugin;
 }
 

@@ -245,7 +245,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
     }
 
     auto computeFlag = getComputeCapability(device);
-    array<char, 32> arch;
+    array<char, 32> arch{};
     snprintf(arch.data(), arch.size(), "--gpu-architecture=compute_%d%d",
              computeFlag.first, computeFlag.second);
     vector<const char *> compiler_options = {
@@ -335,15 +335,15 @@ kc_t &getCache(int device) {
     return caches[device];
 }
 
-Kernel findKernel(int device, const string nameExpr) {
+Kernel findKernel(int device, const string &nameExpr) {
     kc_t &cache = getCache(device);
 
-    kc_t::iterator iter = cache.find(nameExpr);
+    auto iter = cache.find(nameExpr);
 
     return (iter == cache.end() ? Kernel{0, 0} : iter->second);
 }
 
-void addKernelToCache(int device, const string nameExpr, Kernel entry) {
+void addKernelToCache(int device, const string &nameExpr, Kernel entry) {
     getCache(device).emplace(nameExpr, entry);
 }
 

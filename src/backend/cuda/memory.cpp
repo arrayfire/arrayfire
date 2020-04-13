@@ -47,7 +47,7 @@ void setMemStepSize(size_t step_bytes) {
     memoryManager().setMemStepSize(step_bytes);
 }
 
-size_t getMemStepSize(void) { return memoryManager().getMemStepSize(); }
+size_t getMemStepSize() { return memoryManager().getMemStepSize(); }
 
 void signalMemoryCleanup() { memoryManager().signalMemoryCleanup(); }
 
@@ -79,14 +79,18 @@ void memFree(T *ptr) {
     memoryManager().unlock((void *)ptr, false);
 }
 
-void memFreeUser(void *ptr) { memoryManager().unlock((void *)ptr, true); }
+void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
 
-void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
+void memLock(const void *ptr) {
+    memoryManager().userLock(const_cast<void *>(ptr));
+}
 
-void memUnlock(const void *ptr) { memoryManager().userUnlock((void *)ptr); }
+void memUnlock(const void *ptr) {
+    memoryManager().userUnlock(const_cast<void *>(ptr));
+}
 
 bool isLocked(const void *ptr) {
-    return memoryManager().isUserLocked((void *)ptr);
+    return memoryManager().isUserLocked(const_cast<void *>(ptr));
 }
 
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,

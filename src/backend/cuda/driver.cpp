@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <driver.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 #ifdef OS_WIN
 #include <stdlib.h>
@@ -59,34 +59,39 @@ int nvDriverVersion(char *result, int len) {
     char buffer[1024];
     FILE *f = NULL;
 
-    if (NULL == (f = fopen("/proc/driver/nvidia/version", "r"))) { return 0; }
+    if (NULL == (f = fopen("/proc/driver/nvidia/version", "re"))) { return 0; }
     if (fgets(buffer, 1024, f) == NULL) {
-        if (f) fclose(f);
+        if (f) { fclose(f); }
         return 0;
     }
 
     // just close it now since we've already read what we need
-    if (f) fclose(f);
+    if (f) { fclose(f); }
 
     for (i = 1; i < 8; i++) {
-        while (buffer[pos] != ' ' && buffer[pos] != '\t')
-            if (pos >= 1024 || buffer[pos] == '\0' || buffer[pos] == '\n')
+        while (buffer[pos] != ' ' && buffer[pos] != '\t') {
+            if (pos >= 1024 || buffer[pos] == '\0' || buffer[pos] == '\n') {
                 return 0;
-            else
+            } else {
                 pos++;
-        while (buffer[pos] == ' ' || buffer[pos] == '\t')
-            if (pos >= 1024 || buffer[pos] == '\0' || buffer[pos] == '\n')
+            }
+        }
+        while (buffer[pos] == ' ' || buffer[pos] == '\t') {
+            if (pos >= 1024 || buffer[pos] == '\0' || buffer[pos] == '\n') {
                 return 0;
-            else
+            } else {
                 pos++;
+            }
+        }
     }
 
     epos = pos;
     while (buffer[epos] != ' ' && buffer[epos] != '\t') {
-        if (epos >= 1024 || buffer[epos] == '\0' || buffer[epos] == '\n')
+        if (epos >= 1024 || buffer[epos] == '\0' || buffer[epos] == '\n') {
             return 0;
-        else
+        } else {
             epos++;
+        }
     }
 
     buffer[epos] = '\0';

@@ -45,7 +45,8 @@ void copy_surface(const Array<T> &P, fg_surface surface) {
 
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        GLubyte *ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        auto *ptr =
+            static_cast<GLubyte *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         if (ptr) {
             CUDA_CHECK(cudaMemcpyAsync(ptr, P.get(), bytes,
                                        cudaMemcpyDeviceToHost, stream));

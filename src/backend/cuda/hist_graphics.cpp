@@ -43,7 +43,8 @@ void copy_histogram(const Array<T> &data, fg_histogram hist) {
 
         CheckGL("Begin CUDA fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        GLubyte *ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        auto *ptr =
+            static_cast<GLubyte *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         if (ptr) {
             CUDA_CHECK(cudaMemcpyAsync(ptr, data.get(), bytes,
                                        cudaMemcpyDeviceToHost, stream));

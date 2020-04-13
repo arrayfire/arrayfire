@@ -41,7 +41,7 @@ namespace cuda {
 
 template<typename Desc, typename T>
 unique_handle<Desc> toCudnn(Array<T> arr) {
-    dim4 dims = arr.dims();
+    const dim4 &dims = arr.dims();
 
     auto descriptor             = make_handle<Desc>();
     cudnnDataType_t cudnn_dtype = getCudnnDataType<T>();
@@ -55,12 +55,12 @@ using scale_type =
 
 template<typename T>
 Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
-                         const dim4 stride, const dim4 padding,
-                         const dim4 dilation) {
+                         const dim4 &stride, const dim4 &padding,
+                         const dim4 &dilation) {
     cudnnHandle_t cudnn = nnHandle();
 
     dim4 sDims = signal.dims();
-    dim4 fDims = filter.dims();
+    const dim4 &fDims = filter.dims();
 
     const int n = sDims[3];
     const int c = sDims[2];
@@ -115,8 +115,8 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
     auto workspace_buffer = memAlloc<char>(workspace_bytes);
 
     // perform convolution
-    scale_type<T> alpha = scalar<scale_type<T>>(1.0);
-    scale_type<T> beta  = scalar<scale_type<T>>(0.0);
+    auto alpha = scalar<scale_type<T>>(1.0);
+    auto beta  = scalar<scale_type<T>>(0.0);
     CUDNN_CHECK(cuda::cudnnConvolutionForward(
         cudnn, &alpha, input_descriptor, signal.device(), filter_descriptor,
         filter.device(), convolution_descriptor, convolution_algorithm,
@@ -138,8 +138,8 @@ constexpr void checkTypeSupport() {
 
 template<typename T>
 Array<T> convolve2_base(const Array<T> &signal, const Array<T> &filter,
-                        const dim4 stride, const dim4 padding,
-                        const dim4 dilation) {
+                        const dim4 &stride, const dim4 &padding,
+                        const dim4 &dilation) {
     dim4 sDims = signal.dims();
     dim4 fDims = filter.dims();
 
@@ -209,9 +209,9 @@ Array<T> data_gradient_base(const Array<T> &incoming_gradient,
                             const Array<T> &original_filter,
                             const Array<T> &convolved_output, af::dim4 stride,
                             af::dim4 padding, af::dim4 dilation) {
-    const dim4 cDims = incoming_gradient.dims();
-    const dim4 sDims = original_signal.dims();
-    const dim4 fDims = original_filter.dims();
+    const dim4 &cDims = incoming_gradient.dims();
+    const dim4 &sDims = original_signal.dims();
+    const dim4 &fDims = original_filter.dims();
 
     Array<T> collapsed_filter = original_filter;
 
@@ -252,7 +252,7 @@ Array<T> data_gradient_cudnn(const Array<T> &incoming_gradient,
                              af::dim4 padding, af::dim4 dilation) {
     auto cudnn = nnHandle();
 
-    dim4 iDims = incoming_gradient.dims();
+    const dim4 &iDims = incoming_gradient.dims();
     dim4 sDims = original_signal.dims();
     dim4 fDims = original_filter.dims();
 
@@ -295,8 +295,8 @@ Array<T> data_gradient_cudnn(const Array<T> &incoming_gradient,
     auto workspace_buffer = memAlloc<char>(workspace_bytes);
 
     // perform convolution
-    scale_type<T> alpha = scalar<scale_type<T>>(1.0);
-    scale_type<T> beta  = scalar<scale_type<T>>(0.0);
+    auto alpha = scalar<scale_type<T>>(1.0);
+    auto beta  = scalar<scale_type<T>>(0.0);
 
     CUDNN_CHECK(cuda::cudnnConvolutionBackwardData(
         cudnn, &alpha, w_descriptor, original_filter.get(), dy_descriptor,
@@ -333,9 +333,9 @@ Array<T> filter_gradient_base(const Array<T> &incoming_gradient,
                               const Array<T> &original_filter,
                               const Array<T> &convolved_output, af::dim4 stride,
                               af::dim4 padding, af::dim4 dilation) {
-    const dim4 cDims = incoming_gradient.dims();
-    const dim4 sDims = original_signal.dims();
-    const dim4 fDims = original_filter.dims();
+    const dim4 &cDims = incoming_gradient.dims();
+    const dim4 &sDims = original_signal.dims();
+    const dim4 &fDims = original_filter.dims();
 
     const bool retCols = false;
     Array<T> unwrapped =
@@ -374,9 +374,9 @@ Array<T> filter_gradient_cudnn(const Array<T> &incoming_gradient,
                                af::dim4 dilation) {
     auto cudnn = nnHandle();
 
-    dim4 iDims = incoming_gradient.dims();
-    dim4 sDims = original_signal.dims();
-    dim4 fDims = original_filter.dims();
+    const dim4 &iDims = incoming_gradient.dims();
+    const dim4 &sDims = original_signal.dims();
+    const dim4 &fDims = original_filter.dims();
 
     // create dx descriptor
     cudnnDataType_t cudnn_dtype = getCudnnDataType<T>();
@@ -410,8 +410,8 @@ Array<T> filter_gradient_cudnn(const Array<T> &incoming_gradient,
     auto workspace_buffer = memAlloc<char>(workspace_bytes);
 
     // perform convolution
-    scale_type<T> alpha = scalar<scale_type<T>>(1.0);
-    scale_type<T> beta  = scalar<scale_type<T>>(0.0);
+    auto alpha = scalar<scale_type<T>>(1.0);
+    auto beta  = scalar<scale_type<T>>(0.0);
     CUDNN_CHECK(cuda::cudnnConvolutionBackwardFilter(
         cudnn, &alpha, x_descriptor, original_signal.device(), dy_descriptor,
         incoming_gradient.device(), convolution_descriptor,

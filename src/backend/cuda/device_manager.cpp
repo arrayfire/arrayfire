@@ -94,10 +94,11 @@ bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
     }
 
     if (rt->major >= compute.first) {
-        if (rt->major == compute.first)
+        if (rt->major == compute.first) {
             return rt->minor >= compute.second;
-        else
+        } else {
             return true;
+        }
     } else {
         return false;
     }
@@ -167,7 +168,7 @@ static inline int compute2cores(int major, int minor) {
     };
 
     for (int i = 0; gpus[i].compute != -1; ++i) {
-        if (gpus[i].compute == (major << 4) + minor) return gpus[i].cores;
+        if (gpus[i].compute == (major << 4) + minor) { return gpus[i].cores; }
     }
     return 0;
 }
@@ -263,7 +264,7 @@ bool DeviceManager::checkGraphicsInteropCapability() {
 }
 
 DeviceManager &DeviceManager::getInstance() {
-    static DeviceManager *my_instance = new DeviceManager();
+    static auto *my_instance = new DeviceManager();
     return *my_instance;
 }
 
@@ -477,7 +478,6 @@ void initNvrtc() {
     nvrtcProgram prog;
     auto err = nvrtcCreateProgram(&prog, " ", "dummy", 0, nullptr, nullptr);
     nvrtcDestroyProgram(&prog);
-    return;
 }
 
 DeviceManager::DeviceManager()
@@ -501,7 +501,7 @@ DeviceManager::DeviceManager()
         int cudaMajorVer = cudaRtVer / 1000;
 
         for (int i = 0; i < nDevices; i++) {
-            cudaDevice_t dev;
+            cudaDevice_t dev{};
             CUDA_CHECK(cudaGetDeviceProperties(&dev.prop, i));
             if (dev.prop.major < getMinSupportedCompute(cudaMajorVer)) {
                 AF_TRACE("Unsuppored device: {}", dev.prop.name);
@@ -601,11 +601,11 @@ int DeviceManager::setActiveDevice(int device, int nId) {
 
     int numDevices = cuDevices.size();
 
-    if (device >= numDevices) return -1;
+    if (device >= numDevices) { return -1; }
 
     int old = getActiveDeviceId();
 
-    if (nId == -1) nId = getDeviceNativeId(device);
+    if (nId == -1) { nId = getDeviceNativeId(device); }
 
     cudaError_t err = cudaSetDevice(nId);
 
@@ -645,7 +645,7 @@ int DeviceManager::setActiveDevice(int device, int nId) {
         // otherwise fails streamCreate with this error.
         // All other errors will error out
         device++;
-        if (device >= numDevices) break;
+        if (device >= numDevices) { break; }
 
         // Can't call getNativeId here as it will cause an infinite loop with
         // the constructor

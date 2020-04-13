@@ -46,9 +46,9 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     auto b_node    = b.getNode();
     int height     = max(a_node->getHeight(), b_node->getHeight());
     height         = max(height, cond_node->getHeight()) + 1;
-    auto node      = make_shared<NaryNode>(
-        NaryNode(getFullName<T>(), shortname<T>(true), "__select", 3,
-                 {{cond_node, a_node, b_node}}, (int)af_select_t, height));
+    auto node      = make_shared<NaryNode>(NaryNode(
+        getFullName<T>(), shortname<T>(true), "__select", 3,
+        {{cond_node, a_node, b_node}}, static_cast<int>(af_select_t), height));
 
     if (detail::passesJitHeuristics<T>(node.get()) == kJITHeuristics::Pass) {
         return createNodeArray<T>(odims, node);
