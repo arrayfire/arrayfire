@@ -27,7 +27,7 @@ class GraphicsResourceManager
         const std::vector<uint32_t> &resources);
 
    protected:
-    GraphicsResourceManager(GraphicsResourceManager const&);
-    void operator=(GraphicsResourceManager const&);
+    GraphicsResourceManager(GraphicsResourceManager const &);
+    void operator=(GraphicsResourceManager const &);
 };
 }  // namespace cuda

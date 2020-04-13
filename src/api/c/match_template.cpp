@@ -15,11 +15,11 @@
 #include <af/vision.h>
 
 using af::dim4;
+using detail::intl;
 using detail::uchar;
-using detail::ushort;
 using detail::uint;
 using detail::uintl;
-using detail::intl;
+using detail::ushort;
 
 template<typename inType, typename outType>
 static af_array match_template(const af_array& sImg, const af_array tImg,

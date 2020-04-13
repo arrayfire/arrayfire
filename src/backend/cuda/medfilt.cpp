@@ -24,7 +24,7 @@ Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
     ARG_ASSERT(2, (w_wid % 2 != 0));
 
     const dim4 &dims = in.dims();
-    Array<T> out    = createEmptyArray<T>(dims);
+    Array<T> out     = createEmptyArray<T>(dims);
 
     kernel::medfilt1<T>(out, in, pad, w_wid);
 
@@ -37,7 +37,7 @@ Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid) {
     ARG_ASSERT(2, (w_len % 2 != 0));
 
     const dim4 &dims = in.dims();
-    Array<T> out    = createEmptyArray<T>(dims);
+    Array<T> out     = createEmptyArray<T>(dims);
 
     kernel::medfilt2<T>(out, in, pad, w_len, w_wid);
 

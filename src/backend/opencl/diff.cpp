@@ -17,7 +17,7 @@ namespace opencl {
 template<typename T, bool isDiff2>
 static Array<T> diff(const Array<T> &in, const int dim) {
     const af::dim4 &iDims = in.dims();
-    af::dim4 oDims       = iDims;
+    af::dim4 oDims        = iDims;
     oDims[dim] -= (isDiff2 + 1);
 
     if (iDims.elements() == 0 || oDims.elements() == 0) {

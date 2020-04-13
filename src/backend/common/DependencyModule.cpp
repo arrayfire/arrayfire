@@ -86,7 +86,8 @@ DependencyModule::~DependencyModule() noexcept {
     if (handle) { unloadLibrary(handle); }
 }
 
-bool DependencyModule::isLoaded() const noexcept { return static_cast<bool>(handle);
+bool DependencyModule::isLoaded() const noexcept {
+    return static_cast<bool>(handle);
 }
 
 bool DependencyModule::symbolsLoaded() const noexcept {

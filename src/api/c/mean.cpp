@@ -23,10 +23,10 @@
 #include "stats.h"
 
 using common::half;
-using detail::mean;
 using detail::Array;
-using detail::cfloat;
 using detail::cdouble;
+using detail::cfloat;
+using detail::mean;
 
 template<typename Ti, typename To>
 static To mean(const af_array &in) {

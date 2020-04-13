@@ -66,8 +66,8 @@ Array<T> convolve2(Array<T> const &signal, Array<accT> const &c_filter,
     const dim_t rfLen = rfDims.elements();
 
     const dim4 &sDims = signal.dims();
-    dim4 tDims       = sDims;
-    dim4 oDims       = sDims;
+    dim4 tDims        = sDims;
+    dim4 oDims        = sDims;
 
     if (expand) {
         tDims[0] += cfLen - 1;

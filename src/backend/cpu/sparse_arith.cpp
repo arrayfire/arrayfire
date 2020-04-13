@@ -27,10 +27,10 @@
 #include <string>
 #include <vector>
 
-using std::numeric_limits;
-using common::SparseArray;
 using common::createArrayDataSparseArray;
 using common::createEmptySparseArray;
+using common::SparseArray;
+using std::numeric_limits;
 
 namespace cpu {
 
@@ -113,8 +113,8 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     af::storage sfmt = lhs.getStorage();
 
     const dim4 &dims = lhs.dims();
-    const uint M    = dims[0];
-    const uint N    = dims[1];
+    const uint M     = dims[0];
+    const uint N     = dims[1];
 
     auto rowArr = createEmptyArray<int>(dim4(M + 1));
 

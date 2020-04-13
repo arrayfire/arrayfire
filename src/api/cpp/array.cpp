@@ -138,7 +138,7 @@ namespace af {
 
 struct array::array_proxy::array_proxy_impl {
     // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-    array *parent_;          //< The original array
+    array *parent_;  //< The original array
     // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     af_index_t indices_[4];  //< Indexing array or seq objects
     // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)

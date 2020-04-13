@@ -40,9 +40,9 @@ Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
     // operator on pointers directly in std::unique
     getQueue().sync();
 
-    T *ptr     = out.get();
-    T *last    = unique(ptr, ptr + in.elements());
-    auto dist  = static_cast<dim_t>(distance(ptr, last));
+    T *ptr    = out.get();
+    T *last   = unique(ptr, ptr + in.elements());
+    auto dist = static_cast<dim_t>(distance(ptr, last));
 
     dim4 dims(dist, 1, 1, 1);
     out.resetDims(dims);

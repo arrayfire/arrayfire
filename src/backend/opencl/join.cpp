@@ -178,9 +178,8 @@ INSTANTIATE(half, half)
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(T)                       \
-    template Array<T> join<T>(const int dim, \
-                              const vector<Array<T>> &inputs);
+#define INSTANTIATE(T) \
+    template Array<T> join<T>(const int dim, const vector<Array<T>> &inputs);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

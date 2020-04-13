@@ -39,8 +39,8 @@ static af_array transform_coordinates(const af_array &tf_, const float d0_,
                                       const float d1_) {
     af::dim4 h_dims(4, 3);
     T zero = 0;
-    T one = 1;
-    T d0 = static_cast<T>(d0_);
+    T one  = 1;
+    T d0   = static_cast<T>(d0_);
     T d1   = static_cast<T>(d1_);
     // clang-format off
     T h_in[4 * 3] = {zero, zero,  d1,   d1,

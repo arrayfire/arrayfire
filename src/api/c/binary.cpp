@@ -32,8 +32,8 @@ using detail::arithOp;
 using detail::arithOpD;
 using detail::cdouble;
 using detail::cfloat;
-using detail::uchar;
 using detail::intl;
+using detail::uchar;
 using detail::uintl;
 using detail::ushort;
 

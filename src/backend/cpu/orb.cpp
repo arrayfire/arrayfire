@@ -51,7 +51,7 @@ unsigned orb(Array<float>& x, Array<float>& y, Array<float>& score,
     float patch_size = REF_PAT_SIZE;
 
     const dim4& idims   = image.dims();
-    float min_side   = min(idims[0], idims[1]);
+    float min_side      = min(idims[0], idims[1]);
     unsigned max_levels = 0;
     float scl_sum       = 0.f;
 

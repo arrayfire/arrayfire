@@ -58,19 +58,23 @@ af_err af_create_strided_array(af_array *arr, const void *data,
         af_array res;
         AF_CHECK(af_init());
 
-        void *in_data = const_cast<void *>(data); // const cast because the api cannot change
+        void *in_data = const_cast<void *>(
+            data);  // const cast because the api cannot change
         switch (ty) {
             case f32:
                 res = getHandle(createStridedArray<float>(
-                    dims, strides, offset, static_cast<float *>(in_data), isdev));
+                    dims, strides, offset, static_cast<float *>(in_data),
+                    isdev));
                 break;
             case f64:
                 res = getHandle(createStridedArray<double>(
-                    dims, strides, offset, static_cast<double *>(in_data), isdev));
+                    dims, strides, offset, static_cast<double *>(in_data),
+                    isdev));
                 break;
             case c32:
                 res = getHandle(createStridedArray<cfloat>(
-                    dims, strides, offset, static_cast<cfloat *>(in_data), isdev));
+                    dims, strides, offset, static_cast<cfloat *>(in_data),
+                    isdev));
                 break;
             case c64:
                 res = getHandle(createStridedArray<cdouble>(
@@ -79,7 +83,8 @@ af_err af_create_strided_array(af_array *arr, const void *data,
                 break;
             case u32:
                 res = getHandle(createStridedArray<uint>(
-                    dims, strides, offset, static_cast<uint *>(in_data), isdev));
+                    dims, strides, offset, static_cast<uint *>(in_data),
+                    isdev));
                 break;
             case s32:
                 res = getHandle(createStridedArray<int>(
@@ -87,31 +92,38 @@ af_err af_create_strided_array(af_array *arr, const void *data,
                 break;
             case u64:
                 res = getHandle(createStridedArray<uintl>(
-                    dims, strides, offset, static_cast<uintl *>(in_data), isdev));
+                    dims, strides, offset, static_cast<uintl *>(in_data),
+                    isdev));
                 break;
             case s64:
                 res = getHandle(createStridedArray<intl>(
-                    dims, strides, offset, static_cast<intl *>(in_data), isdev));
+                    dims, strides, offset, static_cast<intl *>(in_data),
+                    isdev));
                 break;
             case u16:
                 res = getHandle(createStridedArray<ushort>(
-                    dims, strides, offset, static_cast<ushort *>(in_data), isdev));
+                    dims, strides, offset, static_cast<ushort *>(in_data),
+                    isdev));
                 break;
             case s16:
                 res = getHandle(createStridedArray<short>(
-                    dims, strides, offset, static_cast<short *>(in_data), isdev));
+                    dims, strides, offset, static_cast<short *>(in_data),
+                    isdev));
                 break;
             case b8:
                 res = getHandle(createStridedArray<char>(
-                    dims, strides, offset, static_cast<char *>(in_data), isdev));
+                    dims, strides, offset, static_cast<char *>(in_data),
+                    isdev));
                 break;
             case u8:
                 res = getHandle(createStridedArray<uchar>(
-                    dims, strides, offset, static_cast<uchar *>(in_data), isdev));
+                    dims, strides, offset, static_cast<uchar *>(in_data),
+                    isdev));
                 break;
             case f16:
                 res = getHandle(createStridedArray<half>(
-                    dims, strides, offset, static_cast<half *>(in_data), isdev));
+                    dims, strides, offset, static_cast<half *>(in_data),
+                    isdev));
                 break;
             default: TYPE_ERROR(6, ty);
         }

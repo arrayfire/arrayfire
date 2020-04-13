@@ -24,7 +24,7 @@ template<typename T, typename To>
 void nearest_neighbour(Array<uint>& idx, Array<To>& dist, const Array<T>& query,
                        const Array<T>& train, const uint dist_dim,
                        const uint n_dist, const af_match_type dist_type) {
-    uint sample_dim  = (dist_dim == 0) ? 1 : 0;
+    uint sample_dim   = (dist_dim == 0) ? 1 : 0;
     const dim4& qDims = query.dims();
     const dim4& tDims = train.dims();
     const dim4 outDims(n_dist, qDims[sample_dim]);

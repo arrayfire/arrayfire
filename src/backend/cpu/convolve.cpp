@@ -66,8 +66,8 @@ template<typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const &signal, Array<accT> const &c_filter,
                    Array<accT> const &r_filter) {
     const auto &sDims = signal.dims();
-    dim4 tDims = sDims;
-    dim4 oDims = sDims;
+    dim4 tDims        = sDims;
+    dim4 oDims        = sDims;
 
     if (expand) {
         auto cfDims = c_filter.dims();

@@ -362,21 +362,30 @@ template void evalNodes<short>(Param<short> out, Node *node);
 template void evalNodes<ushort>(Param<ushort> out, Node *node);
 template void evalNodes<half>(Param<half> out, Node *node);
 
-template void evalNodes<float>(vector<Param<float>> &out, const vector<Node *> &node);
+template void evalNodes<float>(vector<Param<float>> &out,
+                               const vector<Node *> &node);
 template void evalNodes<double>(vector<Param<double>> &out,
                                 const vector<Node *> &node);
 template void evalNodes<cfloat>(vector<Param<cfloat>> &out,
                                 const vector<Node *> &node);
 template void evalNodes<cdouble>(vector<Param<cdouble>> &out,
                                  const vector<Node *> &node);
-template void evalNodes<int>(vector<Param<int>> &out, const vector<Node *> &node);
-template void evalNodes<uint>(vector<Param<uint>> &out, const vector<Node *> &node);
-template void evalNodes<char>(vector<Param<char>> &out, const vector<Node *> &node);
-template void evalNodes<uchar>(vector<Param<uchar>> &out, const vector<Node *> &node);
-template void evalNodes<intl>(vector<Param<intl>> &out, const vector<Node *> &node);
-template void evalNodes<uintl>(vector<Param<uintl>> &out, const vector<Node *> &node);
-template void evalNodes<short>(vector<Param<short>> &out, const vector<Node *> &node);
+template void evalNodes<int>(vector<Param<int>> &out,
+                             const vector<Node *> &node);
+template void evalNodes<uint>(vector<Param<uint>> &out,
+                              const vector<Node *> &node);
+template void evalNodes<char>(vector<Param<char>> &out,
+                              const vector<Node *> &node);
+template void evalNodes<uchar>(vector<Param<uchar>> &out,
+                               const vector<Node *> &node);
+template void evalNodes<intl>(vector<Param<intl>> &out,
+                              const vector<Node *> &node);
+template void evalNodes<uintl>(vector<Param<uintl>> &out,
+                               const vector<Node *> &node);
+template void evalNodes<short>(vector<Param<short>> &out,
+                               const vector<Node *> &node);
 template void evalNodes<ushort>(vector<Param<ushort>> &out,
                                 const vector<Node *> &node);
-template void evalNodes<half>(vector<Param<half>> &out, const vector<Node *> &node);
+template void evalNodes<half>(vector<Param<half>> &out,
+                              const vector<Node *> &node);
 }  // namespace cuda

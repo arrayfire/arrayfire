@@ -51,9 +51,10 @@ int homography(Array<T> &bestH, const Array<float> &x_src,
     af::dim4 rdims(4, iter_sz);
     Array<float> fctr =
         createValueArray<float>(rdims, static_cast<float>(nsamples));
-    Array<float> rnd  = arithOp<float, af_mul_t>(initial, fctr, rdims);
+    Array<float> rnd = arithOp<float, af_mul_t>(initial, fctr, rdims);
 
-    Array<T> tmpH = createValueArray<T>(af::dim4(9, iter_sz), static_cast<T>(0));
+    Array<T> tmpH =
+        createValueArray<T>(af::dim4(9, iter_sz), static_cast<T>(0));
 
     bestH = createValueArray<T>(af::dim4(3, 3), static_cast<T>(0));
     switch (htype) {

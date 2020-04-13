@@ -96,7 +96,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     auto upstream_dft = [=](Param<convT> packed, const dim4 fftDims) {
         int fft_dims[baseDim];
         for (int i = 0; i < baseDim; ++i) { fft_dims[i] = fftDims[i]; }
-        const dim4 packed_dims        = packed.dims();
+        const dim4 packed_dims    = packed.dims();
         const dim4 packed_strides = packed.strides();
         // Compute forward FFT
         if (isDouble) {
@@ -134,7 +134,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     auto upstream_idft = [=](Param<convT> packed, const dim4 fftDims) {
         int fft_dims[baseDim];
         for (int i = 0; i < baseDim; ++i) { fft_dims[i] = fftDims[i]; }
-        const dim4 packed_dims        = packed.dims();
+        const dim4 packed_dims    = packed.dims();
         const dim4 packed_strides = packed.strides();
         // Compute inverse FFT
         if (isDouble) {

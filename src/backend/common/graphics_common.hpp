@@ -252,7 +252,8 @@ class ForgeManager {
     constexpr static unsigned long long _32BIT = 0x00000000FFFFFFFF;
     constexpr static unsigned long long _48BIT = 0x0000FFFFFFFFFFFF;
 
-    static unsigned long long genImageKey(unsigned w, unsigned h, fg_channel_format mode,
+    static unsigned long long genImageKey(unsigned w, unsigned h,
+                                          fg_channel_format mode,
                                           fg_dtype type);
 
 #define DEFINE_WRAPPER_OBJECT(OBJECT, RELEASE)                           \

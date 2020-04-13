@@ -40,7 +40,7 @@ Array<T> shift(const Array<T> &in, const int sdims[4]) {
     string name_str("Sh");
     name_str += shortname<T>(true);
     const dim4 &iDims = in.dims();
-    dim4 oDims       = iDims;
+    dim4 oDims        = iDims;
 
     array<int, 4> shifts{};
     for (int i = 0; i < 4; i++) {

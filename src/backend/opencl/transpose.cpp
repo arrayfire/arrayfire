@@ -21,8 +21,8 @@ namespace opencl {
 template<typename T>
 Array<T> transpose(const Array<T> &in, const bool conjugate) {
     const dim4 &inDims = in.dims();
-    dim4 outDims      = dim4(inDims[1], inDims[0], inDims[2], inDims[3]);
-    Array<T> out      = createEmptyArray<T>(outDims);
+    dim4 outDims       = dim4(inDims[1], inDims[0], inDims[2], inDims[3]);
+    Array<T> out       = createEmptyArray<T>(outDims);
 
     if (conjugate) {
         if (inDims[0] % kernel::TILE_DIM == 0 &&

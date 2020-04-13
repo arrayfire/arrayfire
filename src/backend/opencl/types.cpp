@@ -18,8 +18,8 @@
 
 using common::half;
 using common::to_string;
-using std::to_string;
 using std::move;
+using std::to_string;
 
 namespace opencl {
 

@@ -81,14 +81,14 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
 
     const dim4 &lDims = lhs.dims();
     const dim4 &rDims = rhs.dims();
-    const int M      = lDims[aRowDim];
-    const int N      = rDims[bColDim];
-    const int K      = lDims[aColDim];
-    const dim4 oDims = out.dims();
+    const int M       = lDims[aRowDim];
+    const int N       = rDims[bColDim];
+    const int K       = lDims[aColDim];
+    const dim4 oDims  = out.dims();
 
     const dim4 &lStrides = lhs.strides();
     const dim4 &rStrides = rhs.strides();
-    const dim4 oStrides = out.strides();
+    const dim4 oStrides  = out.strides();
 
     int batchSize = static_cast<int>(oDims[2] * oDims[3]);
 

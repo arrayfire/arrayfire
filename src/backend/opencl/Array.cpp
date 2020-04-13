@@ -455,7 +455,7 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 
     Buffer &buf = *arr.get();
 
-    clRetainMemObject(reinterpret_cast<cl_mem>(const_cast<void*>(data)));
+    clRetainMemObject(reinterpret_cast<cl_mem>(const_cast<void *>(data)));
     Buffer data_buf =
         Buffer(reinterpret_cast<cl_mem>(const_cast<void *>(data)));
 

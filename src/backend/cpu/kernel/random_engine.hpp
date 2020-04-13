@@ -154,8 +154,8 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
                 // calculates these per thread
                 uint key[2] = {lo, hi};
                 uint ctr[4] = {loc + (uint)first_write_idx, 0, 0, 0};
-                ctr[1] = hic + (ctr[0] < loc);
-                ctr[2] = (ctr[1] < hic);
+                ctr[1]      = hic + (ctr[0] < loc);
+                ctr[2]      = (ctr[1] < hic);
                 philox(key, ctr);
 
                 // Use the same ctr array for each of the 4 locations,

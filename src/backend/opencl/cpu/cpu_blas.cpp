@@ -182,9 +182,9 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
 
     const dim4 &lDims = lhs.dims();
     const dim4 &rDims = rhs.dims();
-    const int M      = lDims[aRowDim];
-    const int N      = rDims[bColDim];
-    const int K      = lDims[aColDim];
+    const int M       = lDims[aRowDim];
+    const int N       = rDims[bColDim];
+    const int K       = lDims[aColDim];
     const dim4 &oDims = out.dims();
 
     dim4 lStrides = lhs.strides();

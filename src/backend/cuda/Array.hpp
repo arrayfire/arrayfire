@@ -33,7 +33,8 @@ template<typename T>
 void evalNodes(Param<T> out, common::Node *node);
 
 template<typename T>
-void evalNodes(std::vector<Param<T>> &out, const std::vector<common::Node *> &nodes);
+void evalNodes(std::vector<Param<T>> &out,
+               const std::vector<common::Node *> &nodes);
 
 template<typename T>
 void evalMultiple(std::vector<Array<T> *> arrays);

@@ -128,7 +128,7 @@ string getDeviceInfo() noexcept {
         for (auto device : devices) {
             const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
 
-            string dstr      = device->getInfo<CL_DEVICE_NAME>();
+            string dstr = device->getInfo<CL_DEVICE_NAME>();
             bool show_braces =
                 (static_cast<unsigned>(getActiveDeviceId()) == nDevices);
 
@@ -283,7 +283,7 @@ size_t getHostMemorySize() { return common::getHostMemorySize(); }
 
 cl_device_type getDeviceType() {
     const cl::Device& device = getDevice();
-    cl_device_type type = device.getInfo<CL_DEVICE_TYPE>();
+    cl_device_type type      = device.getInfo<CL_DEVICE_TYPE>();
     return type;
 }
 
@@ -363,9 +363,9 @@ bool isHalfSupported(int device) {
 }
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
-    unsigned nDevices        = 0;
-    auto currActiveDevId     = static_cast<unsigned>(getActiveDeviceId());
-    bool devset              = false;
+    unsigned nDevices    = 0;
+    auto currActiveDevId = static_cast<unsigned>(getActiveDeviceId());
+    bool devset          = false;
 
     DeviceManager& devMngr = DeviceManager::getInstance();
 

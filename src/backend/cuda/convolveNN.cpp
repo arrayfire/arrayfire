@@ -59,7 +59,7 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
                          const dim4 &dilation) {
     cudnnHandle_t cudnn = nnHandle();
 
-    dim4 sDims = signal.dims();
+    dim4 sDims        = signal.dims();
     const dim4 &fDims = filter.dims();
 
     const int n = sDims[3];
@@ -253,8 +253,8 @@ Array<T> data_gradient_cudnn(const Array<T> &incoming_gradient,
     auto cudnn = nnHandle();
 
     const dim4 &iDims = incoming_gradient.dims();
-    dim4 sDims = original_signal.dims();
-    dim4 fDims = original_filter.dims();
+    dim4 sDims        = original_signal.dims();
+    dim4 fDims        = original_filter.dims();
 
     cudnnDataType_t cudnn_dtype = getCudnnDataType<T>();
 

@@ -336,8 +336,8 @@ T ireduce_all(uint *loc, Param in) {
 
         getQueue().enqueueReadBuffer(*tmp.get(), CL_TRUE, 0,
                                      sizeof(T) * tmp_elements, h_ptr.data());
-        getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0,
-                                     sizeof(uint) * tmp_elements, h_iptr.data());
+        getQueue().enqueueReadBuffer(
+            *tidx, CL_TRUE, 0, sizeof(uint) * tmp_elements, h_iptr.data());
 
         T *h_ptr_raw     = h_ptr.data();
         uint *h_iptr_raw = h_iptr.data();

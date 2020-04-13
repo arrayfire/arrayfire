@@ -23,7 +23,7 @@ using ArrayPair = std::pair<af_array, af_array>;
 template<typename Ti, typename To>
 ArrayPair sobelDerivatives(const af_array &in, const unsigned &ker_size) {
     using BAPair = std::pair<Array<To>, Array<To>>;
-    BAPair out = sobelDerivatives<Ti, To>(getArray<Ti>(in), ker_size);
+    BAPair out   = sobelDerivatives<Ti, To>(getArray<Ti>(in), ker_size);
     return std::make_pair(getHandle<To>(out.first), getHandle<To>(out.second));
 }
 
