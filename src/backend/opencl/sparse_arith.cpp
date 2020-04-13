@@ -115,7 +115,7 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     rhs.eval();
     af::storage sfmt = lhs.getStorage();
 
-    const dim4 ldims = lhs.dims();
+    const dim4 &ldims = lhs.dims();
 
     const uint M = ldims[0];
     const uint N = ldims[1];

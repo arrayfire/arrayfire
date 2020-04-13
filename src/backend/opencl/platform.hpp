@@ -96,9 +96,9 @@ std::string getPlatformName(const cl::Device& device);
 
 int setDevice(int device);
 
-void addDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
+void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que);
 
-void setDeviceContext(cl_device_id dev, cl_context cxt);
+void setDeviceContext(cl_device_id dev, cl_context ctx);
 
 void removeDeviceContext(cl_device_id dev, cl_context ctx);
 

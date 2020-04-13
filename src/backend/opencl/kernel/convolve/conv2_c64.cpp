@@ -15,6 +15,6 @@ namespace kernel {
 
 INSTANTIATE(cdouble, cdouble)
 
-}
+}  // namespace kernel
 
 }  // namespace opencl

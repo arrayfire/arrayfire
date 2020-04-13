@@ -45,7 +45,7 @@ void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
             af::dim4 reorderDims(0, 1, 2, 3);
             reorderDims[dim] = 0;
             preorderDims[0]  = okey.dims()[dim];
-            for (int i = 1; i <= (int)dim; i++) {
+            for (uint i = 1; i <= dim; i++) {
                 reorderDims[i - 1] = i;
                 preorderDims[i]    = okey.dims()[i - 1];
             }

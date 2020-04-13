@@ -33,7 +33,7 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
     }
 
     // retrieve dimensions, strides and offsets
-    dim4 dDims = out.dims();
+    const dim4& dDims = out.dims();
     // retrieve dimensions & strides for array
     // to which rhs is being copied to
     dim4 dstOffs  = toOffset(seqs, dDims);
@@ -58,8 +58,9 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
             // alloc an 1-element buffer to avoid OpenCL from failing using
             // direct buffer allocation as opposed to mem manager to avoid
             // reference count desprepancies between different backends
-            static cl::Buffer* empty =
-                new Buffer(getContext(), CL_MEM_READ_ONLY, sizeof(uint));
+            static auto* empty = new Buffer(
+                getContext(), CL_MEM_READ_ONLY,  // NOLINT(hicpp-signed-bitwise)
+                sizeof(uint));
             bPtrs[x] = empty;
         }
     }

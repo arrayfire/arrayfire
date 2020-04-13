@@ -57,8 +57,8 @@ using scale_type =
                          const typename blas_base<T>::type, const T>::type;
 
 template<typename To, typename Ti>
-To getScaleValue(Ti val) {
-    return (To)(val);
+auto getScaleValue(Ti val) -> std::remove_cv_t<To> {
+    return static_cast<std::remove_cv_t<To>>(val);
 }
 
 #ifdef USE_MKL
@@ -143,7 +143,7 @@ SPARSE_FUNC(mm, cdouble, z)
 #undef SPARSE_FUNC_DEF
 
 template<>
-const sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val) {
+sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val) {
     sp_cfloat ret;
     ret.real = val.s[0];
     ret.imag = val.s[1];
@@ -151,7 +151,7 @@ const sp_cfloat getScaleValue<const sp_cfloat, cfloat>(cfloat val) {
 }
 
 template<>
-const sp_cdouble getScaleValue<const sp_cdouble, cdouble>(cdouble val) {
+sp_cdouble getScaleValue<const sp_cdouble, cdouble>(cdouble val) {
     sp_cdouble ret;
     ret.real = val.s[0];
     ret.imag = val.s[1];
@@ -241,7 +241,7 @@ Array<T> matmul(const common::SparseArray<T> lhs, const Array<T> rhs,
                          lhs.dims()[1], pB, pE, cPtr.get(),
                          reinterpret_cast<ptr_type<T>>(vPtr.get()));
 
-    struct matrix_descr descrLhs;
+    struct matrix_descr descrLhs {};
     descrLhs.type = SPARSE_MATRIX_TYPE_GENERAL;
 
     mkl_sparse_optimize(csrLhs);

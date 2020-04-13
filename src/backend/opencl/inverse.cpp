@@ -20,7 +20,7 @@ namespace opencl {
 template<typename T>
 Array<T> inverse(const Array<T> &in) {
     if (OpenCLCPUOffload()) {
-        if (in.dims()[0] == in.dims()[1]) return cpu::inverse(in);
+        if (in.dims()[0] == in.dims()[1]) { return cpu::inverse(in); }
     }
     Array<T> I = identity<T>(in.dims());
     return solve<T>(in, I);

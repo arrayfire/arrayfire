@@ -44,7 +44,6 @@ void copyData(T *data, const Array<T> &A) {
     // FIXME: Add checks
     getQueue().enqueueReadBuffer(buf, CL_TRUE, sizeof(T) * offset,
                                  sizeof(T) * A.elements(), data);
-    return;
 }
 
 template<typename T>
@@ -69,12 +68,13 @@ Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
                         outType default_value, double factor) {
     Array<outType> ret = createEmptyArray<outType>(dims);
 
-    if (in.dims() == dims)
+    if (in.dims() == dims) {
         kernel::copy<inType, outType, true>(ret, in, in.ndims(), default_value,
                                             factor);
-    else
+    } else {
         kernel::copy<inType, outType, false>(ret, in, in.ndims(), default_value,
                                              factor);
+    }
     return ret;
 }
 
@@ -86,12 +86,13 @@ void multiply_inplace(Array<T> &in, double val) {
 template<typename inType, typename outType>
 struct copyWrapper {
     void operator()(Array<outType> &out, Array<inType> const &in) {
-        if (in.dims() == out.dims())
+        if (in.dims() == out.dims()) {
             kernel::copy<inType, outType, true>(out, in, in.ndims(),
                                                 scalar<outType>(0), 1);
-        else
+        } else {
             kernel::copy<inType, outType, false>(out, in, in.ndims(),
                                                  scalar<outType>(0), 1);
+        }
     }
 };
 
@@ -106,10 +107,11 @@ struct copyWrapper<T, T> {
             getQueue().enqueueCopyBuffer(*in.get(), *out.get(), in_offset,
                                          out_offset, in.elements() * sizeof(T));
         } else {
-            if (in.dims() == out.dims())
+            if (in.dims() == out.dims()) {
                 kernel::copy<T, T, true>(out, in, in.ndims(), scalar<T>(0), 1);
-            else
+            } else {
                 kernel::copy<T, T, false>(out, in, in.ndims(), scalar<T>(0), 1);
+            }
         }
     }
 };
@@ -237,7 +239,7 @@ INSTANTIATE_PAD_ARRAY_COMPLEX(cdouble)
 
 template<typename T>
 T getScalar(const Array<T> &in) {
-    T retVal;
+    T retVal{};
     getQueue().enqueueReadBuffer(*in.get(), CL_TRUE, sizeof(T) * in.getOffset(),
                                  sizeof(T), &retVal);
     return retVal;

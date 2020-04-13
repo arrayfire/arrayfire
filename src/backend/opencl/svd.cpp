@@ -65,9 +65,9 @@ void svd(Array<T> &arrU, Array<Tr> &arrS, Array<T> &arrVT, Array<T> &arrA,
     dim4 idims    = arrA.dims();
     dim4 istrides = arrA.strides();
 
-    const int m      = (int)idims[0];
-    const int n      = (int)idims[1];
-    const int ldda   = (int)istrides[1];
+    const int m      = static_cast<int>(idims[0]);
+    const int n      = static_cast<int>(idims[1]);
+    const int ldda   = static_cast<int>(istrides[1]);
     const int lda    = m;
     const int min_mn = std::min(m, n);
     const int ldu    = m;
@@ -92,12 +92,12 @@ void svd(Array<T> &arrU, Array<Tr> &arrS, Array<T> &arrVT, Array<T> &arrA,
     static const int ione  = 1;
     static const int izero = 0;
 
-    bool iscl = 0;
+    bool iscl = false;
     if (anrm > 0. && anrm < smlnum) {
-        iscl  = 1;
+        iscl  = true;
         scale = scalar<T>(calc_scale<Tr>(anrm, smlnum));
     } else if (anrm > bignum) {
-        iscl  = 1;
+        iscl  = true;
         scale = scalar<T>(calc_scale<Tr>(anrm, bignum));
     }
 

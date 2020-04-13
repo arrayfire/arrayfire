@@ -63,11 +63,11 @@ template double magma_real<float>(float val);
 template double magma_real<double>(double val);
 template<>
 double magma_real<magmaFloatComplex>(magmaFloatComplex val) {
-    return (double)val.s[0];
+    return static_cast<double>(val.s[0]);
 }
 template<>
 double magma_real<magmaDoubleComplex>(magmaDoubleComplex val) {
-    return (double)val.s[0];
+    return static_cast<double>(val.s[0]);
 }
 
 #define INSTANTIATE_CPLX_SCALAR(T)  \
@@ -99,60 +99,66 @@ bool magma_is_real<magmaDoubleComplex>() {
 
 template<typename T>
 magma_int_t magma_get_getrf_nb(magma_int_t m) {
-    if (m <= 3200)
+    if (m <= 3200) {
         return 128;
-    else if (m < 9000)
+    } else if (m < 9000) {
         return 256;
-    else
+    } else {
         return 320;
+    }
 }
 
 template magma_int_t magma_get_getrf_nb<float>(magma_int_t m);
 
 template<>
 magma_int_t magma_get_getrf_nb<double>(magma_int_t m) {
-    if (m <= 2048)
+    if (m <= 2048) {
         return 64;
-    else if (m < 7200)
+    } else if (m < 7200) {
         return 192;
-    else
+    } else {
         return 256;
+    }
 }
 
 template<>
 magma_int_t magma_get_getrf_nb<magmaFloatComplex>(magma_int_t m) {
-    if (m <= 2048)
+    if (m <= 2048) {
         return 64;
-    else
+    } else {
         return 128;
+    }
 }
 
 template<>
 magma_int_t magma_get_getrf_nb<magmaDoubleComplex>(magma_int_t m) {
-    if (m <= 3072)
+    if (m <= 3072) {
         return 32;
-    else if (m <= 9024)
+    } else if (m <= 9024) {
         return 64;
-    else
+    } else {
         return 128;
+    }
 }
 
 template<typename T>
 magma_int_t magma_get_potrf_nb(magma_int_t m) {
-    if (m <= 1024)
+    if (m <= 1024) {
         return 128;
-    else
+    } else {
         return 320;
+    }
 }
 
 template magma_int_t magma_get_potrf_nb<float>(magma_int_t m);
 
 template<>
 magma_int_t magma_get_potrf_nb<double>(magma_int_t m) {
-    if (m <= 4256)
+    if (m <= 4256) {
         return 128;
-    else
+    } else {
         return 256;
+    }
 }
 
 template<>
@@ -177,28 +183,30 @@ template magma_int_t magma_get_geqrf_nb<float>(magma_int_t m);
 
 template<>
 magma_int_t magma_get_geqrf_nb<double>(magma_int_t m) {
-    if (m <= 2048) return 64;
+    if (m <= 2048) { return 64; }
     return 128;
 }
 
 template<>
 magma_int_t magma_get_geqrf_nb<magmaFloatComplex>(magma_int_t m) {
-    if (m <= 2048)
+    if (m <= 2048) {
         return 32;
-    else if (m <= 4032)
+    } else if (m <= 4032) {
         return 64;
-    else
+    } else {
         return 128;
+    }
 }
 
 template<>
 magma_int_t magma_get_geqrf_nb<magmaDoubleComplex>(magma_int_t m) {
-    if (m <= 2048)
+    if (m <= 2048) {
         return 32;
-    else if (m <= 4032)
+    } else if (m <= 4032) {
         return 64;
-    else
+    } else {
         return 128;
+    }
 }
 
 #if defined(__GNUC__) || defined(__GNUG__)
@@ -218,7 +226,7 @@ template float magma_make<float>(double r, double i);
 template double magma_make<double>(double r, double i);
 template<>
 magmaFloatComplex magma_make<magmaFloatComplex>(double r, double i) {
-    magmaFloatComplex tmp = {(float)r, (float)i};
+    magmaFloatComplex tmp = {static_cast<float>(r), static_cast<float>(i)};
     return tmp;
 }
 template<>

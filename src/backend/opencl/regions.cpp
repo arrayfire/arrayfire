@@ -19,7 +19,7 @@ namespace opencl {
 
 template<typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity) {
-    const af::dim4 dims = in.dims();
+    const af::dim4 &dims = in.dims();
 
     Array<T> out = createEmptyArray<T>(dims);
 

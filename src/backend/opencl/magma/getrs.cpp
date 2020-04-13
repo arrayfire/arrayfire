@@ -245,7 +245,7 @@ magma_int_t magma_getrs_gpu(magma_trans_t trans, magma_int_t n,
         magma_setmatrix<Ty>(n, nrhs, work, n, dB, dB_offset, lddb, queue);
     }
 
-    if (nrhs > 1 && dAT != 0) magma_free(dAT);
+    if (nrhs > 1 && dAT != 0) { magma_free(dAT); }
     magma_free_cpu(work);
     return *info;
 }

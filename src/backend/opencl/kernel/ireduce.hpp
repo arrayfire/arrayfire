@@ -326,20 +326,21 @@ T ireduce_all(uint *loc, Param in) {
         cl::Buffer *tidx = bufferAlloc(tmp_elements * sizeof(uint));
 
         Param rlen;
-        rlen.data = new cl::Buffer();
+        auto buff = std::make_unique<cl::Buffer>();
+        rlen.data = buff.get();
         ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true,
                                       groups_x, groups_y, rlen);
 
-        unique_ptr<T[]> h_ptr(new T[tmp_elements]);
-        unique_ptr<uint[]> h_iptr(new uint[tmp_elements]);
+        std::vector<T> h_ptr(tmp_elements);
+        std::vector<uint> h_iptr(tmp_elements);
 
         getQueue().enqueueReadBuffer(*tmp.get(), CL_TRUE, 0,
-                                     sizeof(T) * tmp_elements, h_ptr.get());
+                                     sizeof(T) * tmp_elements, h_ptr.data());
         getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0,
-                                     sizeof(uint) * tmp_elements, h_iptr.get());
+                                     sizeof(uint) * tmp_elements, h_iptr.data());
 
-        T *h_ptr_raw     = h_ptr.get();
-        uint *h_iptr_raw = h_iptr.get();
+        T *h_ptr_raw     = h_ptr.data();
+        uint *h_iptr_raw = h_iptr.data();
 
         if (!is_linear) {
             // Converting n-d index into a linear index

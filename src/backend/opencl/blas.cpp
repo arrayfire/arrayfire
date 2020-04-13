@@ -54,10 +54,10 @@ void gemm_fallback(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,
 }
 
 template<>
-void gemm_fallback<half>(Array<half> &out, af_mat_prop optLhs,
-                         af_mat_prop optRhs, const half *alpha,
-                         const Array<half> &lhs, const Array<half> &rhs,
-                         const half *beta) {
+void gemm_fallback<half>(Array<half> & /*out*/, af_mat_prop /*optLhs*/,
+                         af_mat_prop /*optRhs*/, const half * /*alpha*/,
+                         const Array<half> & /*lhs*/,
+                         const Array<half> & /*rhs*/, const half * /*beta*/) {
     assert(false && "CPU fallback not implemented for f16");
 }
 
@@ -66,7 +66,8 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
           const Array<T> &lhs, const Array<T> &rhs, const T *beta) {
 #if defined(WITH_LINEAR_ALGEBRA)
     // Do not force offload gemm on OSX Intel devices
-    if (OpenCLCPUOffload(false) && (af_dtype)dtype_traits<T>::af_type != f16) {
+    if (OpenCLCPUOffload(false) &&
+        static_cast<af_dtype>(dtype_traits<T>::af_type) != f16) {
         gemm_fallback(out, optLhs, optRhs, alpha, lhs, rhs, beta);
         return;
     }
@@ -78,18 +79,18 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     const auto aColDim = (lOpts == OPENCL_BLAS_NO_TRANS) ? 1 : 0;
     const auto bColDim = (rOpts == OPENCL_BLAS_NO_TRANS) ? 1 : 0;
 
-    const dim4 lDims = lhs.dims();
-    const dim4 rDims = rhs.dims();
+    const dim4 &lDims = lhs.dims();
+    const dim4 &rDims = rhs.dims();
     const int M      = lDims[aRowDim];
     const int N      = rDims[bColDim];
     const int K      = lDims[aColDim];
     const dim4 oDims = out.dims();
 
-    const dim4 lStrides = lhs.strides();
-    const dim4 rStrides = rhs.strides();
+    const dim4 &lStrides = lhs.strides();
+    const dim4 &rStrides = rhs.strides();
     const dim4 oStrides = out.strides();
 
-    int batchSize = oDims[2] * oDims[3];
+    int batchSize = static_cast<int>(oDims[2] * oDims[3]);
 
     bool is_l_d2_batched = oDims[2] == lDims[2];
     bool is_l_d3_batched = oDims[3] == lDims[3];
@@ -97,8 +98,8 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     bool is_r_d3_batched = oDims[3] == rDims[3];
 
     for (int n = 0; n < batchSize; n++) {
-        int w = n / oDims[2];
-        int z = n - w * oDims[2];
+        int w = static_cast<int>(n / oDims[2]);
+        int z = static_cast<int>(n - w * oDims[2]);
 
         int loff = z * (is_l_d2_batched * lStrides[2]) +
                    w * (is_l_d3_batched * lStrides[3]);

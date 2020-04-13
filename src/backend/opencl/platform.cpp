@@ -24,6 +24,7 @@
 #include <errorcodes.hpp>
 #include <version.hpp>
 #include <af/version.h>
+#include <memory>
 
 #ifdef OS_MAC
 #include <OpenGL/CGLCurrent.h>
@@ -68,7 +69,7 @@ using common::memory::MemoryManagerBase;
 
 namespace opencl {
 
-static const string get_system(void) {
+static string get_system() {
     string arch = (sizeof(void*) == 4) ? "32-bit " : "64-bit ";
 
     return arch +
@@ -128,7 +129,8 @@ string getDeviceInfo() noexcept {
             const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
 
             string dstr      = device->getInfo<CL_DEVICE_NAME>();
-            bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
+            bool show_braces =
+                (static_cast<unsigned>(getActiveDeviceId()) == nDevices);
 
             string id = (show_braces ? string("[") : "-") +
                         to_string(nDevices) + (show_braces ? string("]") : "-");
@@ -208,7 +210,7 @@ int getDeviceIdFromNativeId(cl_device_id id) {
     int nDevices = devMngr.mDevices.size();
     int devId    = 0;
     for (devId = 0; devId < nDevices; ++devId) {
-        if (id == devMngr.mDevices[devId]->operator()()) break;
+        if (id == devMngr.mDevices[devId]->operator()()) { break; }
     }
 
     return devId;
@@ -256,7 +258,7 @@ CommandQueue& getQueue() {
 const cl::Device& getDevice(int id) {
     device_id_t& devId = tlocalActiveDeviceId();
 
-    if (id == -1) id = get<1>(devId);
+    if (id == -1) { id = get<1>(devId); }
 
     DeviceManager& devMngr = DeviceManager::getInstance();
 
@@ -280,7 +282,7 @@ size_t getDeviceMemorySize(int device) {
 size_t getHostMemorySize() { return common::getHostMemorySize(); }
 
 cl_device_type getDeviceType() {
-    cl::Device device   = getDevice();
+    const cl::Device& device = getDevice();
     cl_device_type type = device.getInfo<CL_DEVICE_TYPE>();
     return type;
 }
@@ -292,7 +294,7 @@ bool isHostUnifiedMemory(const cl::Device& device) {
 bool OpenCLCPUOffload(bool forceOffloadOSX) {
     static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") != "0";
     bool offload                 = false;
-    if (offloadEnv) offload = isHostUnifiedMemory(getDevice());
+    if (offloadEnv) { offload = isHostUnifiedMemory(getDevice()); }
 #if OS_MAC
     // FORCED OFFLOAD FOR LAPACK FUNCTIONS ON OSX UNIFIED MEMORY DEVICES
     //
@@ -353,15 +355,16 @@ bool isHalfSupported(int device) {
         clGetDeviceInfo(dev(), CL_DEVICE_HALF_FP_CONFIG,
                         sizeof(cl_device_fp_config), &config, &ret_size);
 
-    if (err)
+    if (err) {
         return false;
-    else
+    } else {
         return config > 0;
+    }
 }
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
     unsigned nDevices        = 0;
-    unsigned currActiveDevId = (unsigned)getActiveDeviceId();
+    auto currActiveDevId     = static_cast<unsigned>(getActiveDeviceId());
     bool devset              = false;
 
     DeviceManager& devMngr = DeviceManager::getInstance();
@@ -399,19 +402,20 @@ void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
                 snprintf(d_compute, 10, "%s", com_str.c_str());
                 devset = true;
             }
-            if (devset) break;
+            if (devset) { break; }
             nDevices++;
         }
-        if (devset) break;
+        if (devset) { break; }
     }
 
     // Sanitize input
     for (int i = 0; i < 31; i++) {
         if (d_name[i] == ' ') {
-            if (d_name[i + 1] == 0 || d_name[i + 1] == ' ')
+            if (d_name[i + 1] == 0 || d_name[i + 1] == ' ') {
                 d_name[i] = 0;
-            else
+            } else {
                 d_name[i] = '_';
+            }
         }
     }
 }
@@ -421,8 +425,8 @@ int setDevice(int device) {
 
     common::lock_guard_t lock(devMngr.deviceMutex);
 
-    if (device >= (int)devMngr.mQueues.size() ||
-        device >= (int)DeviceManager::MAX_DEVICES) {
+    if (device >= static_cast<int>(devMngr.mQueues.size()) ||
+        device >= static_cast<int>(DeviceManager::MAX_DEVICES)) {
         return -1;
     } else {
         int old = getActiveDeviceId();
@@ -449,8 +453,8 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
     {
         common::lock_guard_t lock(devMngr.deviceMutex);
 
-        cl::Device* tDevice   = new cl::Device(dev);
-        cl::Context* tContext = new cl::Context(ctx);
+        auto* tDevice  = new cl::Device(dev);
+        auto* tContext = new cl::Context(ctx);
         cl::CommandQueue* tQueue =
             (que == NULL ? new cl::CommandQueue(*tContext, *tDevice)
                          : new cl::CommandQueue(que));
@@ -514,7 +518,7 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx) {
         }
     }
 
-    if (deleteIdx < (int)devMngr.mUserDeviceOffset) {
+    if (deleteIdx < static_cast<int>(devMngr.mUserDeviceOffset)) {
         AF_ERROR("Cannot pop ArrayFire internal devices", AF_ERR_ARG);
     } else if (deleteIdx == -1) {
         AF_ERROR("No matching device found", AF_ERR_ARG);
@@ -546,7 +550,7 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx) {
         // OTHERWISE, update(decrement) the thread local active device ids
         device_id_t& devId = tlocalActiveDeviceId();
 
-        if (deleteIdx < (int)devId.first) {
+        if (deleteIdx < static_cast<int>(devId.first)) {
             device_id_t newVals = make_pair(devId.first - 1, devId.second - 1);
             devId               = newVals;
         }
@@ -589,12 +593,12 @@ MemoryManagerBase& memoryManager() {
 
     std::call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.memManager.reset(new common::DefaultMemoryManager(
+        inst.memManager = std::make_unique<common::DefaultMemoryManager>(
             getDeviceCount(), common::MAX_BUFFERS,
-            AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+            AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG);
         // Set the memory manager's device memory manager
         std::unique_ptr<opencl::Allocator> deviceMemoryManager;
-        deviceMemoryManager.reset(new opencl::Allocator());
+        deviceMemoryManager = std::make_unique<opencl::Allocator>();
         inst.memManager->setAllocator(std::move(deviceMemoryManager));
         inst.memManager->initialize();
     });
@@ -609,12 +613,12 @@ MemoryManagerBase& pinnedMemoryManager() {
 
     std::call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.pinnedMemManager.reset(new common::DefaultMemoryManager(
+        inst.pinnedMemManager = std::make_unique<common::DefaultMemoryManager>(
             getDeviceCount(), common::MAX_BUFFERS,
-            AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG));
+            AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG);
         // Set the memory manager's device memory manager
         std::unique_ptr<opencl::AllocatorPinned> deviceMemoryManager;
-        deviceMemoryManager.reset(new opencl::AllocatorPinned());
+        deviceMemoryManager = std::make_unique<opencl::AllocatorPinned>();
         inst.pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
         inst.pinnedMemManager->initialize();
     });
@@ -650,7 +654,7 @@ GraphicsResourceManager& interopManager() {
     DeviceManager& inst = DeviceManager::getInstance();
 
     call_once(initFlags[id], [&] {
-        inst.gfxManagers[id].reset(new GraphicsResourceManager());
+        inst.gfxManagers[id] = std::make_unique<GraphicsResourceManager>();
     });
 
     return *(inst.gfxManagers[id].get());
@@ -679,7 +683,7 @@ void removeKernelFromCache(int device, const string& key) {
 kc_entry_t kernelCache(int device, const string& key) {
     kc_t& cache = getKernelCache(device);
 
-    kc_t::iterator iter = cache.find(key);
+    auto iter = cache.find(key);
 
     return (iter == cache.end() ? kc_entry_t{0, 0} : iter->second);
 }
@@ -690,7 +694,7 @@ using namespace opencl;
 
 af_err afcl_get_device_type(afcl_device_type* res) {
     try {
-        *res = (afcl_device_type)getActiveDeviceType();
+        *res = static_cast<afcl_device_type>(getActiveDeviceType());
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -698,7 +702,7 @@ af_err afcl_get_device_type(afcl_device_type* res) {
 
 af_err afcl_get_platform(afcl_platform* res) {
     try {
-        *res = (afcl_platform)getActivePlatform();
+        *res = static_cast<afcl_platform>(getActivePlatform());
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -707,7 +711,7 @@ af_err afcl_get_platform(afcl_platform* res) {
 af_err afcl_get_context(cl_context* ctx, const bool retain) {
     try {
         *ctx = getContext()();
-        if (retain) clRetainContext(*ctx);
+        if (retain) { clRetainContext(*ctx); }
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -716,7 +720,7 @@ af_err afcl_get_context(cl_context* ctx, const bool retain) {
 af_err afcl_get_queue(cl_command_queue* queue, const bool retain) {
     try {
         *queue = getQueue()();
-        if (retain) clRetainCommandQueue(*queue);
+        if (retain) { clRetainCommandQueue(*queue); }
     }
     CATCHALL;
     return AF_SUCCESS;
