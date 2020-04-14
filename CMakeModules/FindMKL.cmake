@@ -357,8 +357,7 @@ find_package_handle_standard_args(MKL_Shared
   REQUIRED_VARS MKL_INCLUDE_DIR
                 MKL_Core_LINK_LIBRARY
                 MKL_Interface_LINK_LIBRARY
-                MKL_ThreadLayer_LINK_LIBRARY
-                MKL_ThreadingLibrary_LINK_LIBRARY)
+                MKL_ThreadLayer_LINK_LIBRARY)
 
 find_package_handle_standard_args(MKL_Static
   FAIL_MESSAGE "Could NOT find MKL: Source the compilervars.sh or mklvars.sh scripts included with your installation of MKL. This script searches for the libraries in MKLROOT, LIBRARY_PATHS(Linux), and LIB(Windows) environment variables"
@@ -366,8 +365,7 @@ find_package_handle_standard_args(MKL_Static
   REQUIRED_VARS MKL_INCLUDE_DIR
                 MKL_Core_STATIC_LINK_LIBRARY
                 MKL_Interface_STATIC_LINK_LIBRARY
-                MKL_ThreadLayer_STATIC_LINK_LIBRARY
-                MKL_ThreadingLibrary_LINK_LIBRARY)
+                MKL_ThreadLayer_STATIC_LINK_LIBRARY)
 
 if(NOT WIN32)
   find_library(M_LIB m)
