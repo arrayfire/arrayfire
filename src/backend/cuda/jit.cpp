@@ -206,7 +206,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
                             const vector<const Node *> &full_nodes,
                             const vector<Node_ids> &full_ids,
                             const bool is_linear) {
-    typedef map<string, Kernel> kc_t;
+    using kc_t = map<string, Kernel>;
 
     thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
 
@@ -232,8 +232,8 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
 
 template<typename T>
 void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
-    int num_outputs = (int)outputs.size();
-    int device      = getActiveDeviceId();
+    size_t num_outputs = outputs.size();
+    int device         = getActiveDeviceId();
 
     if (num_outputs == 0) { return; }
 
@@ -318,14 +318,14 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
                       });
     }
 
-    for (int i = 0; i < num_outputs; i++) {
-        args.push_back((void *)&outputs[i]);
+    for (size_t i = 0; i < num_outputs; i++) {
+        args.push_back(static_cast<void *>(&outputs[i]));
     }
 
-    args.push_back((void *)&blocks_x_);
-    args.push_back((void *)&blocks_y_);
-    args.push_back((void *)&blocks_x_total);
-    args.push_back((void *)&num_odims);
+    args.push_back(static_cast<void *>(&blocks_x_));
+    args.push_back(static_cast<void *>(&blocks_y_));
+    args.push_back(static_cast<void *>(&blocks_x_total));
+    args.push_back(static_cast<void *>(&num_odims));
 
     CU_CHECK(cuLaunchKernel(ker, blocks_x, blocks_y, blocks_z, threads_x,
                             threads_y, 1, 0, getActiveStream(), args.data(),

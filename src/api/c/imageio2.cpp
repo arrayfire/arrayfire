@@ -65,7 +65,7 @@ static af_err readImage_t(af_array* rImage, const uchar* pSrcLine,
                     pDst1[indx] = *(src + (x * step + FI_RGBA_GREEN));
                     pDst2[indx] = *(src + (x * step + FI_RGBA_BLUE));
                     if (fi_color == 4) {
-                        pDst3[indx] = (T) * (src + (x * step + FI_RGBA_ALPHA));
+                        pDst3[indx] = *(src + (x * step + FI_RGBA_ALPHA));
                     }
                 } else {
                     // Non 8-bit types do not use ordering
@@ -141,12 +141,15 @@ af_err af_load_image_native(af_array* out, const char* filename) {
         }
 
         unsigned flags = 0;
-        if (fif == FIF_JPEG) { flags = flags | JPEG_ACCURATE; }
+        if (fif == FIF_JPEG) {
+            flags = flags | static_cast<unsigned>(JPEG_ACCURATE);
+        }
 
         // check that the plugin has reading capabilities ...
         bitmap_ptr pBitmap = make_bitmap_ptr(nullptr);
         if (_.FreeImage_FIFSupportsReading(fif)) {
-            pBitmap.reset(_.FreeImage_Load(fif, filename, flags));
+            pBitmap.reset(
+                _.FreeImage_Load(fif, filename, static_cast<int>(flags)));
         }
 
         if (pBitmap == NULL) {
@@ -159,7 +162,7 @@ af_err af_load_image_native(af_array* out, const char* filename) {
         uint color_type   = _.FreeImage_GetColorType(pBitmap.get());
         const uint fi_bpp = _.FreeImage_GetBPP(pBitmap.get());
         // int fi_color = (int)((fi_bpp / 8.0) + 0.5);        //ceil
-        int fi_color;
+        uint fi_color;
         switch (color_type) {
             case 0:  // FIC_MINISBLACK
             case 1:  // FIC_MINISWHITE
@@ -178,7 +181,7 @@ af_err af_load_image_native(af_array* out, const char* filename) {
                 break;
         }
 
-        const int fi_bpc = fi_bpp / fi_color;
+        const uint fi_bpc = fi_bpp / fi_color;
         if (fi_bpc != 8 && fi_bpc != 16 && fi_bpc != 32) {
             AF_ERROR("FreeImage Error: Bits per channel not supported",
                      AF_ERR_NOT_SUPPORTED);
@@ -348,7 +351,7 @@ static void save_t(T* pDstLine, const af_array in, const dim4& dims,
             if (channels == 1) {
                 *(pDstLine + x * step) = pSrc0[indx];  // r -> 0
             } else if (channels >= 3) {
-                if ((af_dtype)af::dtype_traits<T>::af_type == u8) {
+                if (static_cast<af_dtype>(af::dtype_traits<T>::af_type) == u8) {
                     *(pDstLine + x * step + FI_RGBA_RED) =
                         pSrc0[indx];  // r -> 0
                     *(pDstLine + x * step + FI_RGBA_GREEN) =
@@ -508,15 +511,17 @@ af_err af_save_image_native(const char* filename, const af_array in) {
         }
 
         unsigned flags = 0;
-        if (fif == FIF_JPEG) { flags = flags | JPEG_QUALITYSUPERB; }
+        if (fif == FIF_JPEG) {
+            flags = flags | static_cast<unsigned>(JPEG_QUALITYSUPERB);
+        }
 
         // now save the result image
-        if (!(_.FreeImage_Save(fif, pResultBitmap.get(), filename, flags) ==
-              TRUE)) {
+        if (!(_.FreeImage_Save(fif, pResultBitmap.get(), filename,
+                               static_cast<int>(flags)) == TRUE)) {
             AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
         }
     }
-    CATCHALL
+    CATCHALL;
 
     return AF_SUCCESS;
 }

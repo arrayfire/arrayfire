@@ -122,8 +122,8 @@ template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
     in.eval();
 
-    SparseArray<T> converted =
-        createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
+    SparseArray<T> converted = createEmptySparseArray<T>(
+        in.dims(), static_cast<int>(in.getNNZ()), dest);
     converted.eval();
 
     if (src == AF_STORAGE_CSR && dest == AF_STORAGE_COO) {

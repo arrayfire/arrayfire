@@ -49,12 +49,12 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
         resp_out = createEmptyArray<float>(dim4());
         return 0;
     } else {
-        x_out    = createDeviceDataArray<float>(dim4(corners_out),
-                                             (void *)x_corners.get());
-        y_out    = createDeviceDataArray<float>(dim4(corners_out),
-                                             (void *)y_corners.get());
-        resp_out = createDeviceDataArray<float>(dim4(corners_out),
-                                                (void *)resp_corners.get());
+        x_out = createDeviceDataArray<float>(
+            dim4(corners_out), static_cast<void *>(x_corners.get()));
+        y_out = createDeviceDataArray<float>(
+            dim4(corners_out), static_cast<void *>(y_corners.get()));
+        resp_out = createDeviceDataArray<float>(
+            dim4(corners_out), static_cast<void *>(resp_corners.get()));
         x_corners.release();
         y_corners.release();
         resp_corners.release();

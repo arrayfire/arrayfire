@@ -181,7 +181,7 @@ sparse_operation_t toSparseTranspose(af_mat_prop opt) {
 }
 
 template<typename T, int value>
-scale_type<T> getScale() {
+scale_type<T> getScale() {  // NOLINT(readability-const-return-type)
     thread_local T val = scalar<T>(value);
     return getScaleValue<scale_type<T>, T>(val);
 }

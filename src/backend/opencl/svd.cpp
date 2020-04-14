@@ -109,9 +109,9 @@ void svd(Array<T> &arrU, Array<Tr> &arrS, Array<T> &arrVT, Array<T> &arrA,
     // Instead of copying U, S, VT, and A to the host and copying the results
     // back to the device, create a pointer that's mapped to device memory where
     // the computation can directly happen
-    T *mappedA = (T *)getQueue().enqueueMapBuffer(
+    T *mappedA = static_cast<T *>(getQueue().enqueueMapBuffer(
         *arrA.get(), CL_FALSE, CL_MAP_READ, sizeof(T) * arrA.getOffset(),
-        sizeof(T) * arrA.elements());
+        sizeof(T) * arrA.elements()));
     std::vector<T> tauq(min_mn), taup(min_mn);
     std::vector<T> work(lwork);
     Tr *mappedS0 = (Tr *)getQueue().enqueueMapBuffer(
@@ -126,20 +126,20 @@ void svd(Array<T> &arrU, Array<Tr> &arrS, Array<T> &arrVT, Array<T> &arrA,
     // (CWorkspace: need 2*N + M, prefer 2*N + (M + N)*NB)
     // (RWorkspace: need N)
     magma_gebrd_hybrid<T>(m, n, mappedA, lda, (*arrA.get())(), arrA.getOffset(),
-                          ldda, (void *)mappedS0, (void *)&s1[0], &tauq[0],
-                          &taup[0], &work[0], lwork, getQueue()(), &info,
-                          false);
+                          ldda, (void *)mappedS0, static_cast<void *>(&s1[0]),
+                          &tauq[0], &taup[0], &work[0], lwork, getQueue()(),
+                          &info, false);
 
     T *mappedU = nullptr, *mappedVT = nullptr;
     std::vector<T> cdummy(1);
 
     if (want_vectors) {
-        mappedU = (T *)getQueue().enqueueMapBuffer(
+        mappedU  = static_cast<T *>(getQueue().enqueueMapBuffer(
             *arrU.get(), CL_FALSE, CL_MAP_WRITE, sizeof(T) * arrU.getOffset(),
-            sizeof(T) * arrU.elements());
-        mappedVT = (T *)getQueue().enqueueMapBuffer(
+            sizeof(T) * arrU.elements()));
+        mappedVT = static_cast<T *>(getQueue().enqueueMapBuffer(
             *arrVT.get(), CL_TRUE, CL_MAP_WRITE, sizeof(T) * arrVT.getOffset(),
-            sizeof(T) * arrVT.elements());
+            sizeof(T) * arrVT.elements()));
 
         // If left singular vectors desired in U, copy result to U
         // and generate left bidiagonalizing vectors in U

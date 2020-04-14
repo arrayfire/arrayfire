@@ -56,7 +56,7 @@ Node_ptr bufferNodePtr() {
 template<typename T>
 Array<T>::Array(const af::dim4 &dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
-           (af_dtype)dtype_traits<T>::af_type)
+           static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data((dims.elements() ? memAlloc<T>(dims.elements()).release() : nullptr),
            memFree<T>)
     , data_dims(dims)
@@ -68,7 +68,7 @@ template<typename T>
 Array<T>::Array(const af::dim4 &dims, const T *const in_data, bool is_device,
                 bool copy_device)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
-           (af_dtype)dtype_traits<T>::af_type)
+           static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(
           ((is_device & !copy_device) ? const_cast<T *>(in_data)
                                       : memAlloc<T>(dims.elements()).release()),
@@ -101,7 +101,7 @@ template<typename T>
 Array<T>::Array(const Array<T> &parent, const dim4 &dims, const dim_t &offset_,
                 const dim4 &strides)
     : info(parent.getDevId(), dims, offset_, strides,
-           (af_dtype)dtype_traits<T>::af_type)
+           static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(parent.getData())
     , data_dims(parent.getDataDims())
     , node(bufferNodePtr<T>())
@@ -114,7 +114,7 @@ Array<T>::Array(Param<T> &tmp, bool owner_)
            af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]), 0,
            af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2],
                     tmp.strides[3]),
-           (af_dtype)dtype_traits<T>::af_type)
+           static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(tmp.ptr, owner_ ? std::function<void(T *)>(memFree<T>)
                            : std::function<void(T *)>([](T * /*unused*/) {}))
     , data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]))
@@ -125,7 +125,7 @@ Array<T>::Array(Param<T> &tmp, bool owner_)
 template<typename T>
 Array<T>::Array(const af::dim4 &dims, common::Node_ptr n)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
-           (af_dtype)dtype_traits<T>::af_type)
+           static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data()
     , data_dims(dims)
     , node(move(n))
@@ -136,8 +136,9 @@ template<typename T>
 Array<T>::Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset_,
                 const T *const in_data, bool is_device)
     : info(getActiveDeviceId(), dims, offset_, strides,
-           (af_dtype)dtype_traits<T>::af_type)
-    , data(is_device ? (T *)in_data : memAlloc<T>(info.total()).release(),
+           static_cast<af_dtype>(dtype_traits<T>::af_type))
+    , data(is_device ? const_cast<T *>(in_data)
+                     : memAlloc<T>(info.total()).release(),
            memFree<T>)
     , data_dims(dims)
     , node(bufferNodePtr<T>())

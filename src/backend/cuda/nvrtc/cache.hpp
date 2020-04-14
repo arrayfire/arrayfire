@@ -110,7 +110,7 @@ Kernel buildKernel(const int device, const std::string& nameExpr,
                    const bool isJIT                     = false);
 
 template<typename T>
-std::string toString(T value);
+std::string toString(T val);
 
 struct TemplateArg {
     std::string _tparam;
@@ -200,6 +200,6 @@ SPECIALIZE(unsigned long long, unsigned long long);
 ///            the kernel compilation.
 ///
 Kernel getKernel(const std::string& nameExpr, const std::string& source,
-                 const std::vector<TemplateArg>& targs,
+                 const std::vector<TemplateArg>& templateArgs,
                  const std::vector<std::string>& compileOpts = {});
 }  // namespace cuda

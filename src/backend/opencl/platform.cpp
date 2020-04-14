@@ -93,7 +93,7 @@ static inline string& ltrim(string& s) {
 }
 
 static string platformMap(string& platStr) {
-    typedef map<string, string> strmap_t;
+    using strmap_t                = map<string, string>;
     static const strmap_t platMap = {
         make_pair("NVIDIA CUDA", "NVIDIA"),
         make_pair("Intel(R) OpenCL", "INTEL"),

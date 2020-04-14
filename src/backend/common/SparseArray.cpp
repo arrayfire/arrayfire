@@ -163,7 +163,8 @@ void destroySparseArray(SparseArray<T> *sparse) {
 ////////////////////////////////////////////////////////////////////////////
 template<typename T>
 SparseArray<T>::SparseArray(const dim4 &_dims, dim_t _nNZ, af::storage _storage)
-    : base(_dims, _nNZ, _storage, (af_dtype)dtype_traits<T>::af_type)
+    : base(_dims, _nNZ, _storage,
+           static_cast<af_dtype>(dtype_traits<T>::af_type))
     , values(createValueArray<T>(dim4(_nNZ), scalar<T>(0))) {
     static_assert(std::is_standard_layout<SparseArray<T>>::value,
                   "SparseArray<T> must be a standard layout type");
@@ -178,7 +179,8 @@ SparseArray<T>::SparseArray(const af::dim4 &_dims, dim_t _nNZ, T *const _values,
                             const af::storage _storage, bool _is_device,
                             bool _copy_device)
     : base(_dims, _nNZ, _rowIdx, _colIdx, _storage,
-           (af_dtype)dtype_traits<T>::af_type, _is_device, _copy_device)
+           static_cast<af_dtype>(dtype_traits<T>::af_type), _is_device,
+           _copy_device)
     , values(_is_device ? (!_copy_device
                                ? createDeviceDataArray<T>(dim4(_nNZ), _values)
                                : createValueArray<T>(dim4(_nNZ), scalar<T>(0)))
@@ -194,7 +196,7 @@ SparseArray<T>::SparseArray(const af::dim4 &_dims, const Array<T> &_values,
                             const Array<int> &_colIdx,
                             const af::storage _storage, bool _copy)
     : base(_dims, _rowIdx, _colIdx, _storage,
-           (af_dtype)dtype_traits<T>::af_type, _copy)
+           static_cast<af_dtype>(dtype_traits<T>::af_type), _copy)
     , values(_copy ? copyArray<T>(_values) : _values) {}
 
 template<typename T>

@@ -74,7 +74,7 @@ class DeviceManager {
 
     friend std::string getPlatformInfo() noexcept;
 
-    friend std::string getDriverVersion();
+    friend std::string getDriverVersion() noexcept;
 
     friend std::string getCUDARuntimeVersion() noexcept;
 

@@ -95,7 +95,7 @@ class ArrayInfo {
     const af::dim4& dims() const { return dim_size; }
     size_t total() const { return offset + dim_strides[3] * dim_size[3]; }
 
-    int getDevId() const;
+    unsigned getDevId() const;
 
     void setId(int id) const;
 

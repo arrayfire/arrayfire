@@ -156,7 +156,7 @@ pair<int, int> getComputeCapability(const int device) {
 }
 
 // pulled from CUTIL from CUDA SDK
-static inline int compute2cores(int major, int minor) {
+static inline int compute2cores(unsigned major, unsigned minor) {
     struct {
         int compute;  // 0xMm (hex), M = major version, m = minor version
         int cores;
@@ -168,7 +168,7 @@ static inline int compute2cores(int major, int minor) {
     };
 
     for (int i = 0; gpus[i].compute != -1; ++i) {
-        if (gpus[i].compute == (major << 4) + minor) { return gpus[i].cores; }
+        if (gpus[i].compute == (major << 4U) + minor) { return gpus[i].cores; }
     }
     return 0;
 }
@@ -476,7 +476,7 @@ void DeviceManager::checkCudaVsDriverVersion() {
 /// are assuming that the initilization is done in the main thread.
 void initNvrtc() {
     nvrtcProgram prog;
-    auto err = nvrtcCreateProgram(&prog, " ", "dummy", 0, nullptr, nullptr);
+    nvrtcCreateProgram(&prog, " ", "dummy", 0, nullptr, nullptr);
     nvrtcDestroyProgram(&prog);
 }
 
@@ -540,7 +540,7 @@ DeviceManager::DeviceManager()
     // Initialize all streams to 0.
     // Streams will be created in setActiveDevice()
     for (size_t i = 0; i < MAX_DEVICES; i++) {
-        streams[i] = (cudaStream_t)0;
+        streams[i] = static_cast<cudaStream_t>(0);
         if (i < nDevices) {
             auto prop =
                 make_pair(cuDevices[i].prop.major, cuDevices[i].prop.minor);

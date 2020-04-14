@@ -20,6 +20,7 @@
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
+#include <common/err_common.hpp>
 #include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
 #include <common/unique_handle.hpp>
@@ -179,17 +180,30 @@ unique_handle<cusparseHandle_t> *cusparseManager(const int deviceId) {
 }
 
 DeviceManager::~DeviceManager() {
-    // Reset unique_ptrs for all cu[BLAS | Sparse | Solver]
-    // handles of all devices
-    for (int i = 0; i < nDevices; ++i) {
-        setDevice(i);
-        delete cusolverManager(i);
-        delete cusparseManager(i);
-        cufftManager(i).reset();
-        delete cublasManager(i);
+    try {
+        // Reset unique_ptrs for all cu[BLAS | Sparse | Solver]
+        // handles of all devices
+        for (int i = 0; i < nDevices; ++i) {
+            setDevice(i);
+            delete cusolverManager(i);
+            delete cusparseManager(i);
+            cufftManager(i).reset();
+            delete cublasManager(i);
 #ifdef WITH_CUDNN
-        delete nnManager(i);
+            delete nnManager(i);
 #endif
+        }
+    } catch (const AfError &err) {
+        AF_TRACE(
+            "Exception thrown during destruction of DeviceManager(ignoring). "
+            "{}({}):{} "
+            "{}",
+            err.getFileName(), err.getLine(), err.getFunctionName(),
+            err.what());
+    } catch (...) {
+        AF_TRACE(
+            "Unknown exception thrown during destruction of "
+            "DeviceManager(ignoring)");
     }
 }
 
@@ -227,9 +241,9 @@ string getDeviceInfo() noexcept {
 }
 
 string getPlatformInfo() noexcept {
-    string driverVersion    = getDriverVersion();
-    std::string cudaRuntime = getCUDARuntimeVersion();
-    string platform         = "Platform: CUDA Runtime " + cudaRuntime;
+    string driverVersion = getDriverVersion();
+    string cudaRuntime   = getCUDARuntimeVersion();
+    string platform      = "Platform: CUDA Runtime " + cudaRuntime;
     if (!driverVersion.empty()) {
         platform.append(", Driver: ");
         platform.append(driverVersion);
@@ -248,9 +262,9 @@ bool isHalfSupported(int device) {
         std::array<bool, DeviceManager::MAX_DEVICES> out{};
         int count = getDeviceCount();
         for (int i = 0; i < count; i++) {
-            auto prop     = getDeviceProp(i);
-            float compute = prop.major * 1000 + prop.minor * 10;
-            out[i]        = compute >= 5030;
+            auto prop   = getDeviceProp(i);
+            int compute = prop.major * 1000 + prop.minor * 10;
+            out[i]      = compute >= 5030;
         }
         return out;
     }();
@@ -285,7 +299,7 @@ void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
     }
 }
 
-string getDriverVersion() {
+string getDriverVersion() noexcept {
     char driverVersion[1024] = {" "};
     int x = nvDriverVersion(driverVersion, sizeof(driverVersion));
     if (x != 1) {
@@ -295,7 +309,7 @@ string getDriverVersion() {
         return "N/A";
 #endif
         int driver = 0;
-        CUDA_CHECK(cudaDriverGetVersion(&driver));
+        if (cudaDriverGetVersion(&driver)) { return "N/A"; }
         return to_string(driver);
     } else {
         return string(driverVersion);
@@ -476,9 +490,9 @@ BlasHandle blasHandle() { return *cublasManager(cuda::getActiveDeviceId()); }
 #ifdef WITH_CUDNN
 cudnnHandle_t nnHandle() {
     // Keep the getCudnnPlugin call here because module loading can throw an
-    // exception the first time its called. We want to avoid that because the
-    // unique handle object is marked noexcept and could terminate. if the
-    // module is not loaded correctly
+    // exception the first time its called. We want to avoid that because
+    // the unique handle object is marked noexcept and could terminate. if
+    // the module is not loaded correctly
     static cudnnModule keep_me_to_avoid_exceptions_exceptions =
         getCudnnPlugin();
     static unique_handle<cudnnHandle_t> *handle =

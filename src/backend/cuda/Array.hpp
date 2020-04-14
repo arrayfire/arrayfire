@@ -240,15 +240,15 @@ class Array {
 
     friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
     friend Array<T> createValueArray<T>(const af::dim4 &size, const T &value);
-    friend Array<T> createHostDataArray<T>(const af::dim4 &size,
+    friend Array<T> createHostDataArray<T>(const af::dim4 &dims,
                                            const T *const data);
-    friend Array<T> createDeviceDataArray<T>(const af::dim4 &size, void *data);
+    friend Array<T> createDeviceDataArray<T>(const af::dim4 &dims, void *data);
     friend Array<T> createStridedArray<T>(const af::dim4 &dims,
                                           const af::dim4 &strides, dim_t offset,
                                           const T *const in_data,
                                           bool is_device);
 
-    friend Array<T> createEmptyArray<T>(const af::dim4 &size);
+    friend Array<T> createEmptyArray<T>(const af::dim4 &dims);
     friend Array<T> createParamArray<T>(Param<T> &tmp, bool owner);
     friend Array<T> createNodeArray<T>(const af::dim4 &dims,
                                        common::Node_ptr node);

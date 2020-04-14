@@ -135,17 +135,17 @@ static inline float real(cfloat in) { return in.s[0]; }
 static inline double imag(cdouble in) { return in.s[1]; }
 static inline float imag(cfloat in) { return in.s[1]; }
 
-bool operator==(cfloat a, cfloat b);
-bool operator!=(cfloat a, cfloat b);
-bool operator==(cdouble a, cdouble b);
-bool operator!=(cdouble a, cdouble b);
-cfloat operator+(cfloat a, cfloat b);
-cfloat operator+(cfloat a);
-cdouble operator+(cdouble a, cdouble b);
-cdouble operator+(cdouble a);
+bool operator==(cfloat lhs, cfloat rhs);
+bool operator!=(cfloat lhs, cfloat rhs);
+bool operator==(cdouble lhs, cdouble rhs);
+bool operator!=(cdouble lhs, cdouble rhs);
+cfloat operator+(cfloat lhs, cfloat rhs);
+cfloat operator+(cfloat lhs);
+cdouble operator+(cdouble lhs, cdouble rhs);
+cdouble operator+(cdouble lhs);
 cfloat operator*(cfloat lhs, cfloat rhs);
 cdouble operator*(cdouble lhs, cdouble rhs);
-common::half operator+(common::half a, common::half b) noexcept;
+common::half operator+(common::half lhs, common::half rhs) noexcept;
 }  // namespace opencl
 
 #if defined(__GNUC__) || defined(__GNUG__)

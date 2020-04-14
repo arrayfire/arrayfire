@@ -17,9 +17,6 @@
 #include <string>
 
 using common::half;
-using common::to_string;
-using std::move;
-using std::to_string;
 
 namespace opencl {
 
@@ -68,7 +65,7 @@ std::string ToNumStr<half>::operator()(half val) {
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
     if (common::isinf(val)) { return val < 0.f ? NINF : PINF; }
-    return to_string(val);
+    return common::to_string(val);
 }
 
 template<>

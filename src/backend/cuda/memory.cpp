@@ -76,7 +76,7 @@ void *memAllocUser(const size_t &bytes) {
 
 template<typename T>
 void memFree(T *ptr) {
-    memoryManager().unlock((void *)ptr, false);
+    memoryManager().unlock(static_cast<void *>(ptr), false);
 }
 
 void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
@@ -109,7 +109,7 @@ T *pinnedAlloc(const size_t &elements) {
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    pinnedMemoryManager().unlock((void *)ptr, false);
+    pinnedMemoryManager().unlock(static_cast<void *>(ptr), false);
 }
 
 #define INSTANTIATE(T)                                 \

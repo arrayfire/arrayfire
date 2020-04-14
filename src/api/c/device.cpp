@@ -82,7 +82,7 @@ af_err af_get_device_id(int* device, const af_array in) {
     try {
         if (in) {
             const ArrayInfo& info = getInfo(in, false, false);
-            *device               = info.getDevId();
+            *device               = static_cast<int>(info.getDevId());
         } else {
             return AF_ERR_ARG;
         }

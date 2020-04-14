@@ -209,6 +209,7 @@ Array<T> data_gradient_base(const Array<T> &incoming_gradient,
                             const Array<T> &original_filter,
                             const Array<T> &convolved_output, af::dim4 stride,
                             af::dim4 padding, af::dim4 dilation) {
+    UNUSED(convolved_output);
     const dim4 &cDims = incoming_gradient.dims();
     const dim4 &sDims = original_signal.dims();
     const dim4 &fDims = original_filter.dims();
@@ -250,6 +251,7 @@ Array<T> data_gradient_cudnn(const Array<T> &incoming_gradient,
                              const Array<T> &original_filter,
                              const Array<T> &convolved_output, af::dim4 stride,
                              af::dim4 padding, af::dim4 dilation) {
+    UNUSED(convolved_output);
     auto cudnn = nnHandle();
 
     const dim4 &iDims = incoming_gradient.dims();
@@ -333,6 +335,7 @@ Array<T> filter_gradient_base(const Array<T> &incoming_gradient,
                               const Array<T> &original_filter,
                               const Array<T> &convolved_output, af::dim4 stride,
                               af::dim4 padding, af::dim4 dilation) {
+    UNUSED(convolved_output);
     const dim4 &cDims = incoming_gradient.dims();
     const dim4 &sDims = original_signal.dims();
     const dim4 &fDims = original_filter.dims();
@@ -372,6 +375,7 @@ Array<T> filter_gradient_cudnn(const Array<T> &incoming_gradient,
                                const Array<T> &convolved_output,
                                af::dim4 stride, af::dim4 padding,
                                af::dim4 dilation) {
+    UNUSED(convolved_output);
     auto cudnn = nnHandle();
 
     const dim4 &iDims = incoming_gradient.dims();
