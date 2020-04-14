@@ -301,7 +301,7 @@ void DeviceManager::setMemoryManagerPinned(
     // pinnedMemoryManager()
     pinnedMemoryManager();
     // Calls shutdown() on the existing memory manager.
-    if (pinnedMemoryManager) { pinnedMemManager->shutdownAllocator(); }
+    if (pinnedMemManager) { pinnedMemManager->shutdownAllocator(); }
     // Set the backend memory manager for this new manager to register native
     // functions correctly.
     pinnedMemManager = std::move(newMgr);

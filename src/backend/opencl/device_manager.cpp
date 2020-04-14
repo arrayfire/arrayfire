@@ -362,10 +362,10 @@ void DeviceManager::setMemoryManagerPinned(
     // pinnedMemoryManager()
     pinnedMemoryManager();
     // Calls shutdown() on the existing memory manager.
-    pinnedMemManager->shutdownAllocator();
-    pinnedMemManager = std::move(newMgr);
+    if (pinnedMemManager) { pinnedMemManager->shutdownAllocator(); }
     // Set the backend pinned memory manager for this new manager to register
     // native functions correctly.
+    pinnedMemManager = std::move(newMgr);
     std::unique_ptr<opencl::AllocatorPinned> deviceMemoryManager(
         new opencl::AllocatorPinned());
     pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
