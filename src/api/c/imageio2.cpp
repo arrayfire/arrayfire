@@ -35,6 +35,8 @@ using af::dim4;
 using detail::pinnedAlloc;
 using detail::pinnedFree;
 using detail::uchar;
+using detail::uint;
+using detail::ushort;
 
 template<typename T, FI_CHANNELS fi_color>
 static af_err readImage_t(af_array* rImage, const uchar* pSrcLine,

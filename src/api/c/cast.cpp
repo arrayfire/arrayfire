@@ -27,7 +27,9 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
+using detail::ushort;
 
 static af_array cast(const af_array in, const af_dtype type) {
     const ArrayInfo& info = getInfo(in, false, true);

@@ -33,6 +33,7 @@ using detail::cfloat;
 using detail::intl;
 using detail::uchar;
 using detail::uintl;
+using detail::ushort;
 using std::swap;
 using std::vector;
 
