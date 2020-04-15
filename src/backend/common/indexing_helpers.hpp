@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+
 #include <Array.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -15,17 +16,21 @@
 #include <array>
 
 namespace common {
+
 // will generate indexes to flip input array
 // of size original dims according to axes specified in flip
 template<typename T>
-detail::Array<T> flip(const detail::Array<T> &in,
-                      const std::array<bool, AF_MAX_DIMS> flip) {
+static detail::Array<T> flip(const detail::Array<T>& in,
+                             const std::array<bool, AF_MAX_DIMS> flip) {
     std::vector<af_seq> index(4, af_span);
-    af::dim4 dims = in.dims();
+    const af::dim4& dims = in.dims();
 
     for (int i = 0; i < AF_MAX_DIMS; ++i) {
-        if (flip[i]) { index[i] = {(double)(dims[i] - 1), 0, -1}; }
+        if (flip[i]) {
+            index[i] = {static_cast<double>(dims[i] - 1), 0.0, -1.0};
+        }
     }
     return createSubArray(in, index);
 }
+
 }  // namespace common
