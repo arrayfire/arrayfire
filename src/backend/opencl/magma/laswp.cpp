@@ -62,14 +62,15 @@ void magmablas_laswp(magma_int_t n, cl_mem dAT, size_t dAT_offset,
                      const magma_int_t *ipiv, magma_int_t inci,
                      magma_queue_t queue) {
     magma_int_t info = 0;
-    if (n < 0)
+    if (n < 0) {
         info = -1;
-    else if (k1 < 1)
+    } else if (k1 < 1) {
         info = -4;
-    else if (k2 < 1)
+    } else if (k2 < 1) {
         info = -5;
-    else if (inci <= 0)
+    } else if (inci <= 0) {
         info = -7;
+    }
 
     if (info != 0) {
         // magma_xerbla( __func__, -(info) );

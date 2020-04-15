@@ -14,7 +14,6 @@
 #include <handle.hpp>
 #include <platform.hpp>
 #include <sparse_handle.hpp>
-
 #include <af/backend.h>
 #include <af/device.h>
 #include <af/dim4.hpp>
@@ -23,8 +22,26 @@
 #include <cstring>
 #include <string>
 
-using namespace detail;
+using af::dim4;
 using common::half;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::devprop;
+using detail::evalFlag;
+using detail::getActiveDeviceId;
+using detail::getBackend;
+using detail::getDeviceCount;
+using detail::getDeviceInfo;
+using detail::intl;
+using detail::isDoubleSupported;
+using detail::isHalfSupported;
+using detail::setDevice;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 af_err af_set_backend(const af_backend bknd) {
     try {
@@ -67,7 +84,7 @@ af_err af_get_device_id(int* device, const af_array in) {
     try {
         if (in) {
             const ArrayInfo& info = getInfo(in, false, false);
-            *device               = info.getDevId();
+            *device               = static_cast<int>(info.getDevId());
         } else {
             return AF_ERR_ARG;
         }
@@ -77,7 +94,7 @@ af_err af_get_device_id(int* device, const af_array in) {
 }
 
 af_err af_get_active_backend(af_backend* result) {
-    *result = (af_backend)getBackend();
+    *result = static_cast<af_backend>(getBackend());
     return AF_SUCCESS;
 }
 
@@ -92,7 +109,7 @@ af_err af_init() {
 
 af_err af_info() {
     try {
-        printf("%s", getDeviceInfo().c_str());
+        printf("%s", getDeviceInfo().c_str());  // NOLINT
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -102,7 +119,8 @@ af_err af_info_string(char** str, const bool verbose) {
     UNUSED(verbose);  // TODO(umar): Add something useful
     try {
         std::string infoStr = getDeviceInfo();
-        af_alloc_host((void**)str, sizeof(char) * (infoStr.size() + 1));
+        af_alloc_host(reinterpret_cast<void**>(str),
+                      sizeof(char) * (infoStr.size() + 1));
 
         // Need to do a deep copy
         // str.c_str wont cut it
@@ -172,7 +190,7 @@ af_err af_set_device(const int device) {
                 char err_msg[] =
                     "The device index of %d is out of range. Use a value "
                     "between 0 and %d.";
-                snprintf(buf, 512, err_msg, device, ndevices - 1);
+                snprintf(buf, 512, err_msg, device, ndevices - 1);  // NOLINT
                 AF_ERROR(buf, AF_ERR_ARG);
             }
         }
@@ -194,13 +212,11 @@ af_err af_sync(const int device) {
 template<typename T>
 static inline void eval(af_array arr) {
     getArray<T>(arr).eval();
-    return;
 }
 
 template<typename T>
 static inline void sparseEval(af_array arr) {
     getSparseArray<T>(arr).eval();
-    return;
 }
 
 af_err af_eval(af_array arr) {
@@ -250,14 +266,13 @@ static inline void evalMultiple(int num, af_array* arrayPtrs) {
     }
 
     evalMultiple<T>(arrays);
-    return;
 }
 
 af_err af_eval_multiple(int num, af_array* arrays) {
     try {
         const ArrayInfo& info = getInfo(arrays[0]);
         af_dtype type         = info.getType();
-        dim4 dims             = info.dims();
+        const dim4& dims      = info.dims();
 
         for (int i = 1; i < num; i++) {
             const ArrayInfo& currInfo = getInfo(arrays[i]);

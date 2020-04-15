@@ -14,10 +14,8 @@
 #include <af/defines.h>
 
 namespace cpu {
-Array<uint> initMersenneState(const uintl seed, Array<uint> tbl);
-
 void initMersenneState(Array<uint> &state, const uintl seed,
-                       const Array<uint> tbl);
+                       const Array<uint> &tbl);
 
 template<typename T>
 Array<T> uniformDistribution(const af::dim4 &dims,

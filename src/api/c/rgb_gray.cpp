@@ -117,10 +117,11 @@ af_err convert(af_array* out, const af_array in, const float r, const float g,
 
         // If RGB is input, then assert 3 channels
         // else 1 channel
-        if (isRGB2GRAY)
+        if (isRGB2GRAY) {
             ARG_ASSERT(1, (inputDims[2] == 3));
-        else
+        } else {
             ARG_ASSERT(1, (inputDims[2] == 1));
+        }
 
         af_array output = 0;
         switch (iType) {

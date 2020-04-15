@@ -7,16 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <math.h>
 #include <af/device.h>
 #include <af/timing.h>
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 using namespace af;
 
 // get current time
-static inline timer time_now(void) {
+static inline timer time_now() {
 #if defined(OS_WIN)
     timer time;
     QueryPerformanceCounter(&time.val);
@@ -53,7 +53,7 @@ static inline double time_seconds(timer start, timer end) {
     double nano = (double)info.numer / (double)info.denom;
     return (end.val - start.val) * nano * 1e-9;
 #elif defined(OS_LNX)
-    struct timeval elapsed;
+    struct timeval elapsed {};
     timersub(&start.val, &end.val, &elapsed);
     long sec  = elapsed.tv_sec;
     long usec = elapsed.tv_usec;
@@ -98,12 +98,12 @@ double timeit(void (*fn)()) {
     //   then run (min time / (trials * median_time)) batches
     // else
     //   run 1 batch
-    int batches     = (int)ceilf(min_time / (trials * median_time));
+    int batches = static_cast<int>(ceilf(min_time / (trials * median_time)));
     double run_time = 0;
 
     for (int b = 0; b < batches; b++) {
         timer start = timer::start();
-        for (int i = 0; i < trials; ++i) fn();
+        for (int i = 0; i < trials; ++i) { fn(); }
         sync();
         run_time += timer::stop(start) / trials;
     }

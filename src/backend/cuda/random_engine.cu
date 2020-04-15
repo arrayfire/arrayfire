@@ -17,7 +17,7 @@ using common::half;
 
 namespace cuda {
 void initMersenneState(Array<uint> &state, const uintl seed,
-                       const Array<uint> tbl) {
+                       const Array<uint> &tbl) {
     kernel::initMersenneState(state.get(), tbl.get(), seed);
 }
 

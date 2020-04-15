@@ -17,23 +17,24 @@
 #include <gradient.hpp>
 #include <handle.hpp>
 #include <reduce.hpp>
+
 #include <af/dim4.hpp>
 #include <af/image.h>
 
 #include <type_traits>
 
 using af::dim4;
-using namespace detail;
 
 template<typename T>
-af_array diffusion(const Array<float> in, const float dt, const float K,
+af_array diffusion(const Array<float>& in, const float dt, const float K,
                    const unsigned iterations, const af_flux_function fftype,
                    const af::diffusionEq eq) {
-    auto out   = copyArray(in);
-    auto dims  = out.dims();
-    auto g0    = createEmptyArray<float>(dims);
-    auto g1    = createEmptyArray<float>(dims);
-    float cnst = -2.0f * K * K / dims.elements();
+    auto out  = copyArray(in);
+    auto dims = out.dims();
+    auto g0   = createEmptyArray<float>(dims);
+    auto g1   = createEmptyArray<float>(dims);
+    float cnst =
+        -2.0f * K * K / dims.elements();  // NOLINT(readability-magic-numbers)
 
     for (unsigned i = 0; i < iterations; ++i) {
         gradient<float>(g0, g1, out);
@@ -71,7 +72,7 @@ af_err af_anisotropic_diffusion(af_array* out, const af_array in,
 
         auto input = castArray<float>(in);
 
-        af_array output = 0;
+        af_array output = nullptr;
         switch (inputType) {
             case f64:
                 output = diffusion<double>(input, dt, K, iterations, F, eq);

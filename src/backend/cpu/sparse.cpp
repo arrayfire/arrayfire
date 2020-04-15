@@ -83,13 +83,14 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
     Array<int> rowIdx = in.getRowIdx();
     Array<int> colIdx = in.getColIdx();
 
-    if (stype == AF_STORAGE_CSR)
+    if (stype == AF_STORAGE_CSR) {
         getQueue().enqueue(kernel::csr2dense<T>, dense, values, rowIdx, colIdx);
-    else if (stype == AF_STORAGE_COO)
+    } else if (stype == AF_STORAGE_COO) {
         getQueue().enqueue(kernel::coo2dense<T>, dense, values, rowIdx, colIdx);
-    else
+    } else {
         AF_ERROR("CPU Backend only supports CSR or COO to Dense",
                  AF_ERR_NOT_SUPPORTED);
+    }
 
     return dense;
 }
@@ -98,8 +99,8 @@ template<typename T, af_storage dest, af_storage src>
 SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
     in.eval();
 
-    auto converted =
-        createEmptySparseArray<T>(in.dims(), (int)in.getNNZ(), dest);
+    auto converted = createEmptySparseArray<T>(
+        in.dims(), static_cast<int>(in.getNNZ()), dest);
     converted.eval();
 
     function<void(Param<T>, Param<int>, Param<int>, CParam<T>, CParam<int>,

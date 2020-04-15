@@ -34,7 +34,7 @@ Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x) {
 
     int num_a = a.dims()[0];
 
-    if (num_a == 1) return c;
+    if (num_a == 1) { return c; }
 
     dim4 ydims = c.dims();
     Array<T> y = createEmptyArray<T>(ydims);

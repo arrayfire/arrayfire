@@ -20,7 +20,7 @@ class dim4;
 namespace cpu {
 
 template<typename T>
-void copyData(T *data, const Array<T> &A);
+void copyData(T *to, const Array<T> &from);
 
 template<typename T>
 Array<T> copyArray(const Array<T> &A);

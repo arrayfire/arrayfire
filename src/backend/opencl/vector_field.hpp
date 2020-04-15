@@ -14,6 +14,5 @@ namespace opencl {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
-                       fg_vector_field vector_field);
-
+                       fg_vector_field vfield);
 }

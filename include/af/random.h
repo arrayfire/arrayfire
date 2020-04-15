@@ -53,9 +53,9 @@ namespace af
       /**
           Copy constructor for \ref af::randomEngine.
 
-          \param[in] in The input random engine object
+          \param[in] other The input random engine object
       */
-      randomEngine(const randomEngine &in);
+      randomEngine(const randomEngine &other);
 
       /**
           Creates a copy of the random engine object from a \ref
@@ -73,11 +73,11 @@ namespace af
       /**
           \brief Assigns the internal state of randome engine
 
-          \param[in] in The object to be assigned to the random engine
+          \param[in] other The object to be assigned to the random engine
 
           \returns the reference to this
       */
-      randomEngine &operator=(const randomEngine &in);
+      randomEngine &operator=(const randomEngine &other);
 
       /**
           \brief Sets the random type of the random engine

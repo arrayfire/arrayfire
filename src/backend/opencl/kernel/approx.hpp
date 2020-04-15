@@ -50,8 +50,8 @@ std::string generateOptionsString() {
             << " -D InterpPosTy=" << dtype_traits<Tp>::getName()
             << " -D ZERO=" << toNumStr(scalar<Ty>(0));
 
-    if ((af_dtype)dtype_traits<Ty>::af_type == c32 ||
-        (af_dtype)dtype_traits<Ty>::af_type == c64) {
+    if (static_cast<af_dtype>(dtype_traits<Ty>::af_type) == c32 ||
+        static_cast<af_dtype>(dtype_traits<Ty>::af_type) == c64) {
         options << " -D IS_CPLX=1";
     } else {
         options << " -D IS_CPLX=0";

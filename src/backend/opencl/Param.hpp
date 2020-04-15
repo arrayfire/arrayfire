@@ -28,5 +28,5 @@ struct Param {
 };
 
 // AF_DEPRECATED("Use Array<T>")
-Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
+Param makeParam(cl_mem mem, int off, const int dims[4], const int strides[4]);
 }  // namespace opencl

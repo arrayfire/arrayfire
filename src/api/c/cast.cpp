@@ -7,22 +7,29 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <backend.hpp>
+#include <cast.hpp>
 #include <common/ArrayInfo.hpp>
+#include <common/err_common.hpp>
+#include <common/half.hpp>
+#include <handle.hpp>
 #include <optypes.hpp>
 #include <sparse.hpp>
 #include <sparse_handle.hpp>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/defines.h>
+#include <af/dim4.hpp>
 
-#include <backend.hpp>
-#include <cast.hpp>
-#include <common/err_common.hpp>
-#include <common/half.hpp>
-#include <handle.hpp>
-
-using namespace detail;
+using af::dim4;
 using common::half;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 static af_array cast(const af_array in, const af_dtype type) {
     const ArrayInfo& info = getInfo(in, false, true);

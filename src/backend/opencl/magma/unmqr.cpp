@@ -296,13 +296,13 @@ magma_int_t magma_unmqr_gpu(magma_side_t side, magma_trans_t trans,
                 jc = i;
             }
 
-            if (mi == 0 || ni == 0) break;
+            if (mi == 0 || ni == 0) { break; }
 
             ret = magma_larfb_gpu<Ty>(
                 MagmaLeft, is_real ? MagmaTrans : MagmaConjTrans, MagmaForward,
                 MagmaColumnwise, mi, ni, ib, a_ref(i, i), ldda, t_ref(i), nb,
                 c_ref(ic, jc), lddc, dwork, 0, nw, queue);
-            if (ret != MAGMA_SUCCESS) return ret;
+            if (ret != MAGMA_SUCCESS) { return ret; }
         }
     } else {
         i = i1;

@@ -180,12 +180,12 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     const int aColDim = (lOpts == CblasNoTrans) ? 1 : 0;
     const int bColDim = (rOpts == CblasNoTrans) ? 1 : 0;
 
-    const dim4 lDims = lhs.dims();
-    const dim4 rDims = rhs.dims();
-    const int M      = lDims[aRowDim];
-    const int N      = rDims[bColDim];
-    const int K      = lDims[aColDim];
-    const dim4 oDims = out.dims();
+    const dim4 &lDims = lhs.dims();
+    const dim4 &rDims = rhs.dims();
+    const int M       = lDims[aRowDim];
+    const int N       = rDims[bColDim];
+    const int K       = lDims[aColDim];
+    const dim4 &oDims = out.dims();
 
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
@@ -212,9 +212,10 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         int roff = z * (is_r_d2_batched * rStrides[2]) +
                    w * (is_r_d3_batched * rStrides[3]);
 
-        CBT *lptr = (CBT *)(lPtr.get() + loff);
-        CBT *rptr = (CBT *)(rPtr.get() + roff);
-        BT *optr  = (BT *)(oPtr.get() + z * oStrides[2] + w * oStrides[3]);
+        CBT *lptr = static_cast<CBT *>(lPtr.get() + loff);
+        CBT *rptr = static_cast<CBT *>(rPtr.get() + roff);
+        BT *optr =
+            static_cast<BT *>(oPtr.get() + z * oStrides[2] + w * oStrides[3]);
 
         if (rDims[bColDim] == 1) {
             dim_t incr = (rOpts == CblasNoTrans) ? rStrides[0] : rStrides[1];

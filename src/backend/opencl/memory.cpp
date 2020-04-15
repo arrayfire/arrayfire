@@ -39,7 +39,7 @@ void setMemStepSize(size_t step_bytes) {
     memoryManager().setMemStepSize(step_bytes);
 }
 
-size_t getMemStepSize(void) { return memoryManager().getMemStepSize(); }
+size_t getMemStepSize() { return memoryManager().getMemStepSize(); }
 
 void signalMemoryCleanup() { memoryManager().signalMemoryCleanup(); }
 
@@ -56,8 +56,8 @@ unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
-    void *ptr       = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    cl::Buffer *buf = static_cast<cl::Buffer *>(ptr);
+    void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    auto *buf = static_cast<cl::Buffer *>(ptr);
     return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(buf,
                                                                 bufferFree);
 }
@@ -70,10 +70,10 @@ void *memAllocUser(const size_t &bytes) {
 
 template<typename T>
 void memFree(T *ptr) {
-    return memoryManager().unlock((void *)ptr, false);
+    return memoryManager().unlock(static_cast<void *>(ptr), false);
 }
 
-void memFreeUser(void *ptr) { memoryManager().unlock((void *)ptr, true); }
+void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
 
 cl::Buffer *bufferAlloc(const size_t &bytes) {
     dim4 dims(bytes);
@@ -82,15 +82,19 @@ cl::Buffer *bufferAlloc(const size_t &bytes) {
 }
 
 void bufferFree(cl::Buffer *buf) {
-    return memoryManager().unlock((void *)buf, false);
+    return memoryManager().unlock(static_cast<void *>(buf), false);
 }
 
-void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
+void memLock(const void *ptr) {
+    memoryManager().userLock(const_cast<void *>(ptr));
+}
 
-void memUnlock(const void *ptr) { memoryManager().userUnlock((void *)ptr); }
+void memUnlock(const void *ptr) {
+    memoryManager().userUnlock(const_cast<void *>(ptr));
+}
 
 bool isLocked(const void *ptr) {
-    return memoryManager().isUserLocked((void *)ptr);
+    return memoryManager().isUserLocked(const_cast<void *>(ptr));
 }
 
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
@@ -109,7 +113,7 @@ T *pinnedAlloc(const size_t &elements) {
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    pinnedMemoryManager().unlock((void *)ptr, false);
+    pinnedMemoryManager().unlock(static_cast<void *>(ptr), false);
 }
 
 #define INSTANTIATE(T)                                                         \
@@ -140,7 +144,7 @@ void Allocator::shutdown() {
         try {
             opencl::setDevice(n);
             shutdownMemoryManager();
-        } catch (AfError err) {
+        } catch (const AfError &err) {
             continue;  // Do not throw any errors while shutting down
         }
     }
@@ -153,14 +157,16 @@ size_t Allocator::getMaxMemorySize(int id) {
 }
 
 void *Allocator::nativeAlloc(const size_t bytes) {
-    auto ptr = (void *)(new cl::Buffer(getContext(), CL_MEM_READ_WRITE, bytes));
+    auto ptr = static_cast<void *>(new cl::Buffer(
+        getContext(), CL_MEM_READ_WRITE,  // NOLINT(hicpp-signed-bitwise)
+        bytes));
     AF_TRACE("nativeAlloc: {} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
 void Allocator::nativeFree(void *ptr) {
     AF_TRACE("nativeFree:          {}", ptr);
-    delete (cl::Buffer *)ptr;
+    delete static_cast<cl::Buffer *>(ptr);
 }
 
 AllocatorPinned::AllocatorPinned() : pinnedMaps(opencl::getDeviceCount()) {
@@ -187,8 +193,7 @@ size_t AllocatorPinned::getMaxMemorySize(int id) {
 
 void *AllocatorPinned::nativeAlloc(const size_t bytes) {
     void *ptr = NULL;
-    cl::Buffer *buf =
-        new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
+    auto *buf = new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
     ptr = getQueue().enqueueMapBuffer(*buf, true, CL_MAP_READ | CL_MAP_WRITE, 0,
                                       bytes);
     AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);

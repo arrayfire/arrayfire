@@ -76,14 +76,14 @@ void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in) {
                     const dim_t uMem = uYZW + ox;
                     const dim_t iMem = iYZW + ox;
                     if (ox > oy) {
-                        if (oy < ldm[1]) l[lMem] = i[iMem];
-                        if (ox < udm[0]) u[uMem] = scalar<T>(0);
+                        if (oy < ldm[1]) { l[lMem] = i[iMem]; }
+                        if (ox < udm[0]) { u[uMem] = scalar<T>(0); }
                     } else if (oy > ox) {
-                        if (oy < ldm[1]) l[lMem] = scalar<T>(0);
-                        if (ox < udm[0]) u[uMem] = i[iMem];
+                        if (oy < ldm[1]) { l[lMem] = scalar<T>(0); }
+                        if (ox < udm[0]) { u[uMem] = i[iMem]; }
                     } else if (ox == oy) {
-                        if (oy < ldm[1]) l[lMem] = scalar<T>(1.0);
-                        if (ox < udm[0]) u[uMem] = i[iMem];
+                        if (oy < ldm[1]) { l[lMem] = scalar<T>(1.0); }
+                        if (ox < udm[0]) { u[uMem] = i[iMem]; }
                     }
                 }
             }
@@ -95,7 +95,7 @@ void convertPivot(int *pivot, int out_sz, size_t pivot_dim) {
     std::vector<int> p(out_sz);
     iota(begin(p), end(p), 0);
 
-    for (int j = 0; j < (int)pivot_dim; j++) {
+    for (int j = 0; j < static_cast<int>(pivot_dim); j++) {
         // 1 indexed in pivot
         std::swap(p[j], p[pivot[j] - 1]);
     }
@@ -138,7 +138,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N, inPtr.get(), in.strides()[1],
                     piPtr.get());
 
-    if (convert_pivot) convertPivot(piPtr.get(), M, min(M, N));
+    if (convert_pivot) { convertPivot(piPtr.get(), M, min(M, N)); }
 
     return pivot;
 }

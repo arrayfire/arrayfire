@@ -11,4 +11,8 @@ GPATH
 docs/details/examples.dox
 /TAGS
 external/
+extern/
 compile_commands.json
+venv
+test/gtest
+src/backend/cuda/cub

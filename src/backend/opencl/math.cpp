@@ -11,26 +11,26 @@
 #include <common/half.hpp>
 
 namespace opencl {
-bool operator==(cfloat a, cfloat b) {
-    return (a.s[0] == b.s[0]) && (a.s[1] == b.s[1]);
+bool operator==(cfloat lhs, cfloat rhs) {
+    return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
 }
-bool operator!=(cfloat a, cfloat b) { return !(a == b); }
-bool operator==(cdouble a, cdouble b) {
-    return (a.s[0] == b.s[0]) && (a.s[1] == b.s[1]);
+bool operator!=(cfloat lhs, cfloat rhs) { return !(lhs == rhs); }
+bool operator==(cdouble lhs, cdouble rhs) {
+    return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
 }
-bool operator!=(cdouble a, cdouble b) { return !(a == b); }
+bool operator!=(cdouble lhs, cdouble rhs) { return !(lhs == rhs); }
 
-cfloat operator+(cfloat a, cfloat b) {
-    cfloat res = {{a.s[0] + b.s[0], a.s[1] + b.s[1]}};
+cfloat operator+(cfloat lhs, cfloat rhs) {
+    cfloat res = {{lhs.s[0] + rhs.s[0], lhs.s[1] + rhs.s[1]}};
     return res;
 }
 
-common::half operator+(common::half a, common::half b) noexcept {
-    return common::half(static_cast<float>(a) + static_cast<float>(b));
+common::half operator+(common::half lhs, common::half rhs) noexcept {
+    return common::half(static_cast<float>(lhs) + static_cast<float>(rhs));
 }
 
-cdouble operator+(cdouble a, cdouble b) {
-    cdouble res = {{a.s[0] + b.s[0], a.s[1] + b.s[1]}};
+cdouble operator+(cdouble lhs, cdouble rhs) {
+    cdouble res = {{lhs.s[0] + rhs.s[0], lhs.s[1] + rhs.s[1]}};
     return res;
 }
 

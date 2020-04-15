@@ -18,8 +18,8 @@ using common::half;
 namespace opencl {
 template<typename T>
 Array<T> tile(const Array<T> &in, const af::dim4 &tileDims) {
-    const af::dim4 iDims = in.dims();
-    af::dim4 oDims       = iDims;
+    const af::dim4 &iDims = in.dims();
+    af::dim4 oDims        = iDims;
     oDims *= tileDims;
 
     Array<T> out = createEmptyArray<T>(oDims);

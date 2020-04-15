@@ -237,10 +237,11 @@ magma_int_t magma_larfb_gpu(magma_side_t side, magma_trans_t trans,
 
     // whether T is upper or lower triangular
     OPENCL_BLAS_TRIANGLE_T uplo;
-    if (direct == MagmaForward)
+    if (direct == MagmaForward) {
         uplo = OPENCL_BLAS_TRIANGLE_UPPER;
-    else
+    } else {
         uplo = OPENCL_BLAS_TRIANGLE_LOWER;
+    }
 
     // whether V is stored transposed or not
     OPENCL_BLAS_TRANS_T notransV, transV;

@@ -130,12 +130,13 @@ magma_int_t magma_getrf_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
 
     /* Check arguments */
     *info = 0;
-    if (m < 0)
+    if (m < 0) {
         *info = -1;
-    else if (n < 0)
+    } else if (n < 0) {
         *info = -2;
-    else if (ldda < std::max(1, m))
+    } else if (ldda < std::max(1, m)) {
         *info = -4;
+    }
 
     if (*info != 0) {
         // magma_xerbla(__func__, -(*info));
@@ -143,7 +144,7 @@ magma_int_t magma_getrf_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
     }
 
     /* Quick return if possible */
-    if (m == 0 || n == 0) return *info;
+    if (m == 0 || n == 0) { return *info; }
 
     gpu_blas_gemm_func<Ty> gpu_blas_gemm;
     gpu_blas_trsm_func<Ty> gpu_blas_trsm;
@@ -196,7 +197,7 @@ magma_int_t magma_getrf_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
         ldwork = maxm;
         if (MAGMA_SUCCESS != magma_malloc_cpu<Ty>(&work, ldwork * nb)) {
             magma_free(dAP);
-            if (dA != dAT) magma_free(dAT);
+            if (dA != dAT) { magma_free(dAT); }
 
             *info = MAGMA_ERR_HOST_ALLOC;
             return *info;
@@ -232,7 +233,7 @@ magma_int_t magma_getrf_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
             rows = m - j * nb;
             LAPACKE_CHECK(
                 cpu_lapack_getrf(rows, nb, work, ldwork, ipiv + j * nb));
-            if (*info == 0 && iinfo > 0) *info = iinfo + j * nb;
+            if (*info == 0 && iinfo > 0) { *info = iinfo + j * nb; }
 
             for (i = j * nb; i < j * nb + nb; ++i) { ipiv[i] += j * nb; }
             magmablas_laswp<Ty>(n, dAT(0, 0), lddat, j * nb + 1, j * nb + nb,
@@ -291,7 +292,7 @@ magma_int_t magma_getrf_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
             // do the cpu part
             LAPACKE_CHECK(
                 cpu_lapack_getrf(rows, nb0, work, ldwork, ipiv + s * nb));
-            if (*info == 0 && iinfo > 0) *info = iinfo + s * nb;
+            if (*info == 0 && iinfo > 0) { *info = iinfo + s * nb; }
 
             for (i = s * nb; i < s * nb + nb0; ++i) { ipiv[i] += s * nb; }
             magmablas_laswp<Ty>(n, dAT(0, 0), lddat, s * nb + 1, s * nb + nb0,

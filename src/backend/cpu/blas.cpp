@@ -36,12 +36,7 @@
 using af::dtype_traits;
 using common::half;
 using common::is_complex;
-using std::add_const;
-using std::add_pointer;
 using std::conditional;
-using std::enable_if;
-using std::is_floating_point;
-using std::remove_const;
 using std::vector;
 
 namespace cpu {
@@ -115,14 +110,18 @@ using ptr_type = typename conditional<is_complex<T>::value,
                                       typename blas_base<T>::type *, T *>::type;
 
 template<typename T, bool batched = false>
-struct scale_type {
+class scale_type {
     const T val;
-    scale_type(const T *val_ptr) : val(*val_ptr) {}
+
+   public:
+    explicit scale_type(const T *val_ptr) : val(*val_ptr) {}
     using api_type = const typename conditional<
         is_complex<T>::value, const typename blas_base<T>::type *,
         const typename conditional<batched, const T *, const T>::type>::type;
 
-    api_type getScale() const { return val; }
+    api_type getScale() const {  // NOLINT(readability-const-return-type)
+        return val;
+    }
 };
 
 #define INSTANTIATE_BATCHED(TYPE)              \
@@ -132,8 +131,8 @@ struct scale_type {
         return &val;                           \
     }
 
-INSTANTIATE_BATCHED(float);
-INSTANTIATE_BATCHED(double);
+INSTANTIATE_BATCHED(float);   // NOLINT(readability-const-return-type)
+INSTANTIATE_BATCHED(double);  // NOLINT(readability-const-return-type)
 #undef INSTANTIATE_BATCHED
 
 #define INSTANTIATE_COMPLEX(TYPE, BATCHED)                                    \
@@ -143,10 +142,10 @@ INSTANTIATE_BATCHED(double);
         return reinterpret_cast<const blas_base<TYPE>::type *const>(&val);    \
     }
 
-INSTANTIATE_COMPLEX(cfloat, true);
-INSTANTIATE_COMPLEX(cfloat, false);
-INSTANTIATE_COMPLEX(cdouble, true);
-INSTANTIATE_COMPLEX(cdouble, false);
+INSTANTIATE_COMPLEX(cfloat, true);    // NOLINT(readability-const-return-type)
+INSTANTIATE_COMPLEX(cfloat, false);   // NOLINT(readability-const-return-type)
+INSTANTIATE_COMPLEX(cdouble, true);   // NOLINT(readability-const-return-type)
+INSTANTIATE_COMPLEX(cdouble, false);  // NOLINT(readability-const-return-type)
 #undef INSTANTIATE_COMPLEX
 
 template<typename T>
@@ -228,12 +227,12 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     const int aColDim = (lOpts == CblasNoTrans) ? 1 : 0;
     const int bColDim = (rOpts == CblasNoTrans) ? 1 : 0;
 
-    const dim4 lDims = lhs.dims();
-    const dim4 rDims = rhs.dims();
-    const int M      = lDims[aRowDim];
-    const int N      = rDims[bColDim];
-    const int K      = lDims[aColDim];
-    const dim4 oDims = out.dims();
+    const dim4 &lDims = lhs.dims();
+    const dim4 &rDims = rhs.dims();
+    const int M       = lDims[aRowDim];
+    const int N       = rDims[bColDim];
+    const int K       = lDims[aColDim];
+    const dim4 oDims  = out.dims();
 
     using BT  = typename blas_base<T>::type;
     using CBT = const typename blas_base<T>::type;
@@ -267,7 +266,7 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
                     oStrides[1]);
             }
         } else {
-            int batchSize = oDims[2] * oDims[3];
+            int batchSize = static_cast<int>(oDims[2] * oDims[3]);
 
             const bool is_l_d2_batched = oDims[2] == lDims[2];
             const bool is_l_d3_batched = oDims[3] == lDims[3];
@@ -279,13 +278,13 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
             vector<BT *> optrs(batchSize);
 
             for (int n = 0; n < batchSize; n++) {
-                int w = n / oDims[2];
-                int z = n - w * oDims[2];
+                ptrdiff_t w = n / oDims[2];
+                ptrdiff_t z = n - w * oDims[2];
 
-                int loff = z * (is_l_d2_batched * lStrides[2]) +
-                           w * (is_l_d3_batched * lStrides[3]);
-                int roff = z * (is_r_d2_batched * rStrides[2]) +
-                           w * (is_r_d3_batched * rStrides[3]);
+                ptrdiff_t loff = z * (is_l_d2_batched * lStrides[2]) +
+                                 w * (is_l_d3_batched * lStrides[3]);
+                ptrdiff_t roff = z * (is_r_d2_batched * rStrides[2]) +
+                                 w * (is_r_d3_batched * rStrides[3]);
 
                 lptrs[n] = reinterpret_cast<CBT *>(left.get() + loff);
                 rptrs[n] = reinterpret_cast<CBT *>(right.get() + roff);
@@ -330,9 +329,9 @@ template<>
 void gemm<half>(Array<half> &out, af_mat_prop optLhs, af_mat_prop optRhs,
                 const half *alpha, const Array<half> &lhs,
                 const Array<half> &rhs, const half *beta) {
-    Array<float> outArr     = createValueArray<float>(out.dims(), 0);
-    const float float_alpha = static_cast<float>(*alpha);
-    const float float_beta  = static_cast<float>(*beta);
+    Array<float> outArr    = createValueArray<float>(out.dims(), 0);
+    const auto float_alpha = static_cast<float>(*alpha);
+    const auto float_beta  = static_cast<float>(*beta);
     gemm<float>(outArr, optLhs, optRhs, &float_alpha, cast<float>(lhs),
                 cast<float>(rhs), &float_beta);
     copyArray(out, outArr);

@@ -38,8 +38,8 @@ array matmulTT(const array &lhs, const array &rhs) {
 }
 
 array matmul(const array &a, const array &b, const array &c) {
-    int tmp1 = a.dims(0) * b.dims(1);
-    int tmp2 = b.dims(0) * c.dims(1);
+    dim_t tmp1 = a.dims(0) * b.dims(1);
+    dim_t tmp2 = b.dims(0) * c.dims(1);
 
     if (tmp1 < tmp2) {
         return matmul(matmul(a, b), c);
@@ -49,8 +49,8 @@ array matmul(const array &a, const array &b, const array &c) {
 }
 
 array matmul(const array &a, const array &b, const array &c, const array &d) {
-    int tmp1 = a.dims(0) * c.dims(1);
-    int tmp2 = b.dims(0) * d.dims(1);
+    dim_t tmp1 = a.dims(0) * c.dims(1);
+    dim_t tmp2 = b.dims(0) * d.dims(1);
 
     if (tmp1 < tmp2) {
         return matmul(matmul(a, b, c), d);

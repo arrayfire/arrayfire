@@ -28,13 +28,10 @@ void unloadLibrary(LibHandle handle) { dlclose(handle); }
 
 string getErrorMessage() {
     char* errMsg = dlerror();
-    if (errMsg) {
-        return string(errMsg);
-    } else {
-        // constructing std::basic_string from NULL/0 address is
-        // invalid and has undefined behavior
-        return string("No Error");
-    }
+    if (errMsg) { return string(errMsg); }
+    // constructing std::basic_string from NULL/0 address is
+    // invalid and has undefined behavior
+    return string("No Error");
 }
 
 }  // namespace common

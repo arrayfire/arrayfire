@@ -6,16 +6,16 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#include <convolve.hpp>
+
 #include <arith.hpp>
 #include <backend.hpp>
 #include <cast.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
-#include <convolve.hpp>
 #include <fftconvolve.hpp>
 #include <handle.hpp>
 #include <tile.hpp>
-
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -26,7 +26,17 @@
 
 using af::dim4;
 using common::half;
-using namespace detail;
+using detail::arithOp;
+using detail::Array;
+using detail::cast;
+using detail::cdouble;
+using detail::cfloat;
+using detail::convolve;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T, typename accT, dim_t baseDim, bool expand>
 inline static af_array convolve(const af_array &s, const af_array &f,
@@ -65,14 +75,15 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
     dim_t sn = sDims.ndims();
     dim_t fn = fDims.ndims();
 
-    if (sn == baseDim && fn == baseDim)
-        return AF_BATCH_NONE;
-    else if (sn == baseDim && (fn > baseDim && fn <= AF_MAX_DIMS))
+    if (sn == baseDim && fn == baseDim) { return AF_BATCH_NONE; }
+    if (sn == baseDim && (fn > baseDim && fn <= AF_MAX_DIMS)) {
         return AF_BATCH_RHS;
-    else if ((sn > baseDim && sn <= AF_MAX_DIMS) && fn == baseDim)
+    }
+    if ((sn > baseDim && sn <= AF_MAX_DIMS) && fn == baseDim) {
         return AF_BATCH_LHS;
-    else if ((sn > baseDim && sn <= AF_MAX_DIMS) &&
-             (fn > baseDim && fn <= AF_MAX_DIMS)) {
+    }
+    if ((sn > baseDim && sn <= AF_MAX_DIMS) &&
+        (fn > baseDim && fn <= AF_MAX_DIMS)) {
         bool doesDimensionsMatch = true;
         bool isInterleaved       = true;
         for (dim_t i = baseDim; i < AF_MAX_DIMS; i++) {
@@ -80,10 +91,10 @@ AF_BATCH_KIND identifyBatchKind(const dim4 &sDims, const dim4 &fDims) {
             isInterleaved &=
                 (sDims[i] == 1 || fDims[i] == 1 || sDims[i] == fDims[i]);
         }
-        if (doesDimensionsMatch) return AF_BATCH_SAME;
+        if (doesDimensionsMatch) { return AF_BATCH_SAME; }
         return (isInterleaved ? AF_BATCH_DIFF : AF_BATCH_UNSUPPORTED);
-    } else
-        return AF_BATCH_UNSUPPORTED;
+    }
+    return AF_BATCH_UNSUPPORTED;
 }
 
 template<dim_t baseDim, bool expand>
@@ -240,36 +251,38 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter,
 template<int baseDim>
 bool isFreqDomain(const af_array &signal, const af_array filter,
                   af_conv_domain domain) {
-    if (domain == AF_CONV_FREQ) return true;
-    if (domain != AF_CONV_AUTO) return false;
+    if (domain == AF_CONV_FREQ) { return true; }
+    if (domain != AF_CONV_AUTO) { return false; }
 
     const ArrayInfo &sInfo = getInfo(signal);
     const ArrayInfo &fInfo = getInfo(filter);
 
-    dim4 sdims = sInfo.dims();
-    dim4 fdims = fInfo.dims();
+    const dim4 &sdims = sInfo.dims();
+    dim4 fdims        = fInfo.dims();
 
-    if (identifyBatchKind<baseDim>(sdims, fdims) == AF_BATCH_DIFF) return true;
+    if (identifyBatchKind<baseDim>(sdims, fdims) == AF_BATCH_DIFF) {
+        return true;
+    }
 
     int kbatch = 1;
     for (int i = 3; i >= baseDim; i--) { kbatch *= fdims[i]; }
 
-    if (kbatch >= 10) return true;
+    if (kbatch >= 10) { return true; }
 
     if (baseDim == 1) {
-        if (fdims[0] > 128) return true;
+        if (fdims[0] > 128) { return true; }
     }
 
     if (baseDim == 2) {
         // maximum supported size in 2D domain
-        if (fdims[0] > 17 || fdims[1] > 17) return true;
+        if (fdims[0] > 17 || fdims[1] > 17) { return true; }
 
         // Maximum supported non square size
-        if (fdims[0] != fdims[1] && fdims[0] > 5) return true;
+        if (fdims[0] != fdims[1] && fdims[0] > 5) { return true; }
     }
 
     if (baseDim == 3) {
-        if (fdims[0] > 5 || fdims[1] > 5 || fdims[2] > 5) return true;
+        if (fdims[0] > 5 || fdims[1] > 5 || fdims[2] > 5) { return true; }
     }
 
     return false;
@@ -278,13 +291,14 @@ bool isFreqDomain(const af_array &signal, const af_array filter,
 af_err af_convolve1(af_array *out, const af_array signal, const af_array filter,
                     const af_conv_mode mode, af_conv_domain domain) {
     try {
-        if (isFreqDomain<1>(signal, filter, domain))
+        if (isFreqDomain<1>(signal, filter, domain)) {
             return af_fft_convolve1(out, signal, filter, mode);
+        }
 
-        if (mode == AF_CONV_EXPAND)
+        if (mode == AF_CONV_EXPAND) {
             return convolve<1, true>(out, signal, filter);
-        else
-            return convolve<1, false>(out, signal, filter);
+        }
+        { return convolve<1, false>(out, signal, filter); }
     }
     CATCHALL;
 }
@@ -297,13 +311,15 @@ af_err af_convolve2(af_array *out, const af_array signal, const af_array filter,
             return af_convolve1(out, signal, filter, mode, domain);
         }
 
-        if (isFreqDomain<2>(signal, filter, domain))
+        if (isFreqDomain<2>(signal, filter, domain)) {
             return af_fft_convolve2(out, signal, filter, mode);
+        }
 
-        if (mode == AF_CONV_EXPAND)
+        if (mode == AF_CONV_EXPAND) {
             return convolve<2, true>(out, signal, filter);
-        else
+        } else {
             return convolve<2, false>(out, signal, filter);
+        }
     }
     CATCHALL;
 }
@@ -371,13 +387,15 @@ af_err af_convolve3(af_array *out, const af_array signal, const af_array filter,
             return af_convolve2(out, signal, filter, mode, domain);
         }
 
-        if (isFreqDomain<3>(signal, filter, domain))
+        if (isFreqDomain<3>(signal, filter, domain)) {
             return af_fft_convolve3(out, signal, filter, mode);
+        }
 
-        if (mode == AF_CONV_EXPAND)
+        if (mode == AF_CONV_EXPAND) {
             return convolve<3, true>(out, signal, filter);
-        else
+        } else {
             return convolve<3, false>(out, signal, filter);
+        }
     }
     CATCHALL;
 }
@@ -386,10 +404,11 @@ af_err af_convolve2_sep(af_array *out, const af_array signal,
                         const af_array col_filter, const af_array row_filter,
                         const af_conv_mode mode) {
     try {
-        if (mode == AF_CONV_EXPAND)
+        if (mode == AF_CONV_EXPAND) {
             return convolve2_sep<true>(out, signal, col_filter, row_filter);
-        else
+        } else {
             return convolve2_sep<false>(out, signal, col_filter, row_filter);
+        }
     }
     CATCHALL;
 }
@@ -398,8 +417,8 @@ template<typename T>
 af_array conv2GradCall(const af_array incoming_gradient,
                        const af_array original_signal,
                        const af_array original_filter,
-                       const af_array convolved_output, af::dim4 stride,
-                       af::dim4 padding, af::dim4 dilation,
+                       const af_array convolved_output, const dim4 &stride,
+                       const dim4 &padding, const dim4 &dilation,
                        af_conv_gradient_type grad_type) {
     if (grad_type == AF_CONV_GRADIENT_FILTER) {
         return getHandle(detail::conv2FilterGradient<T>(
@@ -423,7 +442,7 @@ af_err af_convolve2_gradient_nn(
     af_conv_gradient_type grad_type) {
     try {
         const ArrayInfo &iinfo = getInfo(incoming_gradient);
-        af::dim4 iDims         = iinfo.dims();
+        const af::dim4 &iDims  = iinfo.dims();
 
         const ArrayInfo &sinfo = getInfo(original_signal);
         af::dim4 sDims         = sinfo.dims();

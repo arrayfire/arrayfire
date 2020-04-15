@@ -25,21 +25,28 @@
 #include <af/index.h>
 #include <af/seq.h>
 
-using namespace detail;
+using af::dim4;
 using common::half;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uintl;
+using detail::ushort;
 using std::swap;
 using std::vector;
 
 template<typename T>
 static af_array flipArray(const af_array in, const unsigned dim) {
-    const Array<T> &input = getArray<T>(in);
+    const Array<T> input = getArray<T>(in);
     vector<af_seq> index(4);
 
     for (int i = 0; i < 4; i++) { index[i] = af_span; }
 
     // Reverse "dim"
     dim4 in_dims = input.dims();
-    af_seq s     = {(double)(in_dims[dim] - 1), 0, -1};
+    af_seq s     = {static_cast<double>(in_dims[dim] - 1), 0, -1};
 
     index[dim] = s;
 

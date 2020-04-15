@@ -24,7 +24,7 @@ namespace cpu {
 
 template<typename T>
 Array<T> transpose(const Array<T> &in, const bool conjugate) {
-    const dim4 inDims  = in.dims();
+    const dim4 &inDims = in.dims();
     const dim4 outDims = dim4(inDims[1], inDims[0], inDims[2], inDims[3]);
     // create an array with first two dimensions swapped
     Array<T> out = createEmptyArray<T>(outDims);

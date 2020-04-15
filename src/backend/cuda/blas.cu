@@ -176,7 +176,6 @@ cudaDataType_t getComputeType() {
 
 template<>
 cudaDataType_t getComputeType<half>() {
-    auto dev            = getDeviceProp(getActiveDeviceId());
     cudaDataType_t algo = getType<half>();
     // There is probbaly a bug in nvidia cuda docs and/or drivers: According to
     // https://docs.nvidia.com/cuda/cublas/index.html#cublas-GemmEx computeType
@@ -186,6 +185,7 @@ cudaDataType_t getComputeType<half>() {
     // returns OK. At the moment let's comment out : the drawback is just that
     // the speed of f16 computation on these GPUs is very slow:
     //
+    // auto dev            = getDeviceProp(getActiveDeviceId());
     // if (dev.major == // 6 && dev.minor == 1) { algo = CUDA_R_32F; }
 
     return algo;
@@ -193,9 +193,7 @@ cudaDataType_t getComputeType<half>() {
 
 template<typename T>
 cublasGemmAlgo_t selectGEMMAlgorithm() {
-    auto dev              = getDeviceProp(getActiveDeviceId());
-    cublasGemmAlgo_t algo = CUBLAS_GEMM_DEFAULT;
-    return algo;
+    return CUBLAS_GEMM_DEFAULT;
 }
 
 template<>

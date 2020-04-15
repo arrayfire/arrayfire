@@ -16,8 +16,8 @@
 namespace opencl {
 template<typename T, bool isDiff2>
 static Array<T> diff(const Array<T> &in, const int dim) {
-    const af::dim4 iDims = in.dims();
-    af::dim4 oDims       = iDims;
+    const af::dim4 &iDims = in.dims();
+    af::dim4 oDims        = iDims;
     oDims[dim] -= (isDiff2 + 1);
 
     if (iDims.elements() == 0 || oDims.elements() == 0) {
@@ -27,13 +27,11 @@ static Array<T> diff(const Array<T> &in, const int dim) {
     Array<T> out = createEmptyArray<T>(oDims);
 
     switch (dim) {
-        case (0): kernel::diff<T, 0, isDiff2>(out, in, in.ndims()); break;
-
-        case (1): kernel::diff<T, 1, isDiff2>(out, in, in.ndims()); break;
-
-        case (2): kernel::diff<T, 2, isDiff2>(out, in, in.ndims()); break;
-
-        case (3): kernel::diff<T, 3, isDiff2>(out, in, in.ndims()); break;
+        case 0: kernel::diff<T, 0, isDiff2>(out, in, in.ndims()); break;
+        case 1: kernel::diff<T, 1, isDiff2>(out, in, in.ndims()); break;
+        case 2: kernel::diff<T, 2, isDiff2>(out, in, in.ndims()); break;
+        case 3: kernel::diff<T, 3, isDiff2>(out, in, in.ndims()); break;
+        default: AF_ERROR("dim only supports values 0-3.", AF_ERR_UNKNOWN);
     }
 
     return out;

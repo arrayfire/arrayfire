@@ -31,7 +31,7 @@ int getAvailableBackends() {
 }
 
 af::Backend getBackendId(const array &in) {
-    af::Backend result = (af::Backend)0;
+    auto result = static_cast<af::Backend>(0);
     AF_THROW(af_get_backend_id(&result, in.get()));
     return result;
 }
@@ -44,7 +44,7 @@ int getDeviceId(const array &in) {
 }
 
 af::Backend getActiveBackend() {
-    af::Backend result = (af::Backend)0;
+    auto result = static_cast<af::Backend>(0);
     AF_THROW(af_get_active_backend(&result));
     return result;
 }
@@ -54,7 +54,7 @@ void info() { AF_THROW(af_info()); }
 const char *infoString(const bool verbose) {
     char *str = NULL;
     AF_THROW(af_info_string(&str, verbose));
-    return (const char *)str;
+    return str;
 }
 
 void deviceprop(char *d_name, char *d_platform, char *d_toolkit,

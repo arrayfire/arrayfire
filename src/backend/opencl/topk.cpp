@@ -33,7 +33,7 @@ using std::vector;
 namespace opencl {
 vector<af_index_t> indexForTopK(const int k) {
     af_index_t idx;
-    idx.idx.seq = af_seq{0.0, (double)k - 1, 1.0};
+    idx.idx.seq = af_seq{0.0, static_cast<double>(k) - 1.0, 1.0};
     idx.isSeq   = true;
     idx.isBatch = false;
 

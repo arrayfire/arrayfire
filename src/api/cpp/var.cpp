@@ -53,28 +53,28 @@ template<>
 AFAPI af_cfloat var(const array& in, const bool isbiased) {
     double real, imag;
     AF_THROW(af_var_all(&real, &imag, in.get(), isbiased));
-    return af_cfloat((float)real, (float)imag);
+    return {static_cast<float>(real), static_cast<float>(imag)};
 }
 
 template<>
 AFAPI af_cdouble var(const array& in, const bool isbiased) {
     double real, imag;
     AF_THROW(af_var_all(&real, &imag, in.get(), isbiased));
-    return af_cdouble(real, imag);
+    return {real, imag};
 }
 
 template<>
 AFAPI af_cfloat var(const array& in, const array& weights) {
     double real, imag;
     AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));
-    return af_cfloat((float)real, (float)imag);
+    return {static_cast<float>(real), static_cast<float>(imag)};
 }
 
 template<>
 AFAPI af_cdouble var(const array& in, const array& weights) {
     double real, imag;
     AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));
-    return af_cdouble(real, imag);
+    return {real, imag};
 }
 
 INSTANTIATE_VAR(float);

@@ -12,9 +12,11 @@
 #include "error.hpp"
 
 namespace af {
-array createStridedArray(const void *data, const dim_t offset, const dim4 dims,
-                         const dim4 strides, const af::dtype ty,
-                         const af::source location) {
+array createStridedArray(
+    const void *data, const dim_t offset,
+    const dim4 dims,     // NOLINT(performance-unnecessary-value-param)
+    const dim4 strides,  // NOLINT(performance-unnecessary-value-param)
+    const af::dtype ty, const af::source location) {
     af_array res;
     AF_THROW(af_create_strided_array(&res, data, offset, dims.ndims(),
                                      dims.get(), strides.get(), ty, location));

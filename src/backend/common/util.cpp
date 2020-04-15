@@ -62,7 +62,7 @@ const char* getName(af_dtype type) {
 void saveKernel(const std::string& funcName, const std::string& jit_ker,
                 const std::string& ext) {
     static const char* jitKernelsOutput = getenv(saveJitKernelsEnvVarName);
-    if (!jitKernelsOutput) return;
+    if (!jitKernelsOutput) { return; }
     if (std::strcmp(jitKernelsOutput, "stdout") == 0) {
         fputs(jit_ker.c_str(), stdout);
         return;
@@ -74,12 +74,13 @@ void saveKernel(const std::string& funcName, const std::string& jit_ker,
     // Path to a folder
     const std::string ffp =
         std::string(jitKernelsOutput) + AF_PATH_SEPARATOR + funcName + ext;
-    FILE* f = fopen(ffp.c_str(), "w");
+    FILE* f = fopen(ffp.c_str(), "we");
     if (!f) {
         fprintf(stderr, "Cannot open file %s\n", ffp.c_str());
         return;
     }
-    if (fputs(jit_ker.c_str(), f) == EOF)
+    if (fputs(jit_ker.c_str(), f) == EOF) {
         fprintf(stderr, "Failed to write kernel to file %s\n", ffp.c_str());
+    }
     fclose(f);
 }

@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <Array.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
 #include <fast.hpp>
@@ -18,7 +19,12 @@
 #include <af/vision.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::createEmptyArray;
+using detail::createValueArray;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 
 template<typename T>
 static af_features fast(af_array const &in, const float thr,

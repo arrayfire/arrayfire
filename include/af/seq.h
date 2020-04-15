@@ -111,10 +111,10 @@ public:
 
         Creates a copy seq from another sequence.
 
-        \param[in] afs seqence to be copies
+        \param[in] other seqence to be copies
         \param[in] is_gfor is the gfor flag
     */
-    seq(seq afs, bool is_gfor);
+    seq(seq other, bool is_gfor);
 
     /**
         \brief Create a seq object from an \ref af_seq struct

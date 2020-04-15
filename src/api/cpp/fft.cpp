@@ -12,6 +12,9 @@
 #include <af/signal.h>
 #include "error.hpp"
 
+using af::array;
+using af::dim4;
+
 namespace af {
 array fftNorm(const array& in, const double norm_factor, const dim_t odim0) {
     af_array out = 0;
@@ -46,6 +49,7 @@ array fft3(const array& in, const dim_t odim0, const dim_t odim1,
     return fft3Norm(in, 1.0, odim0, odim1, odim2);
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 array dft(const array& in, const double norm_factor, const dim4 outDims) {
     array temp;
     switch (in.dims().ndims()) {
@@ -60,6 +64,7 @@ array dft(const array& in, const double norm_factor, const dim4 outDims) {
     return temp;
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 array dft(const array& in, const dim4 outDims) { return dft(in, 1.0, outDims); }
 
 array dft(const array& in) { return dft(in, 1.0, dim4(0, 0, 0, 0)); }
@@ -87,7 +92,7 @@ array ifft3Norm(const array& in, const double norm_factor, const dim_t odim0,
 array ifft(const array& in, const dim_t odim0) {
     const dim4 dims    = in.dims();
     dim_t dim0         = odim0 == 0 ? dims[0] : odim0;
-    double norm_factor = 1.0 / dim0;
+    double norm_factor = 1.0 / static_cast<double>(dim0);
     return ifftNorm(in, norm_factor, odim0);
 }
 
@@ -95,7 +100,7 @@ array ifft2(const array& in, const dim_t odim0, const dim_t odim1) {
     const dim4 dims    = in.dims();
     dim_t dim0         = odim0 == 0 ? dims[0] : odim0;
     dim_t dim1         = odim1 == 0 ? dims[1] : odim1;
-    double norm_factor = 1.0 / (dim0 * dim1);
+    double norm_factor = 1.0 / static_cast<double>(dim0 * dim1);
     return ifft2Norm(in, norm_factor, odim0, odim1);
 }
 
@@ -105,10 +110,11 @@ array ifft3(const array& in, const dim_t odim0, const dim_t odim1,
     dim_t dim0         = odim0 == 0 ? dims[0] : odim0;
     dim_t dim1         = odim1 == 0 ? dims[1] : odim1;
     dim_t dim2         = odim2 == 0 ? dims[2] : odim2;
-    double norm_factor = 1.0 / (dim0 * dim1 * dim2);
+    double norm_factor = 1.0 / static_cast<double>(dim0 * dim1 * dim2);
     return ifft3Norm(in, norm_factor, odim0, odim1, odim2);
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 array idft(const array& in, const double norm_factor, const dim4 outDims) {
     array temp;
     switch (in.dims().ndims()) {
@@ -125,6 +131,7 @@ array idft(const array& in, const double norm_factor, const dim4 outDims) {
     return temp;
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 array idft(const array& in, const dim4 outDims) {
     return idft(in, 1.0, outDims);
 }
@@ -145,19 +152,20 @@ void fft3InPlace(array& in, const double norm_factor) {
 
 void ifftInPlace(array& in, const double norm_factor) {
     const dim4 dims = in.dims();
-    double norm     = norm_factor * (1.0 / dims[0]);
+    double norm     = norm_factor * (1.0 / static_cast<double>(dims[0]));
     AF_THROW(af_ifft_inplace(in.get(), norm));
 }
 
 void ifft2InPlace(array& in, const double norm_factor) {
     const dim4 dims = in.dims();
-    double norm     = norm_factor * (1.0 / (dims[0] * dims[1]));
+    double norm = norm_factor * (1.0 / static_cast<double>(dims[0] * dims[1]));
     AF_THROW(af_ifft2_inplace(in.get(), norm));
 }
 
 void ifft3InPlace(array& in, const double norm_factor) {
     const dim4 dims = in.dims();
-    double norm     = norm_factor * (1.0 / (dims[0] * dims[1] * dims[2]));
+    double norm =
+        norm_factor * (1.0 / static_cast<double>(dims[0] * dims[1] * dims[2]));
     AF_THROW(af_ifft3_inplace(in.get(), norm));
 }
 
@@ -200,7 +208,7 @@ AFAPI array fftC2R<1>(const array& in, const bool is_odd,
     if (norm == 0) {
         dim4 idims = in.dims();
         dim_t dim0 = getOrigDim(idims[0], is_odd);
-        norm       = 1.0 / dim0;
+        norm       = 1.0 / static_cast<double>(dim0);
     }
 
     af_array res;
@@ -217,7 +225,7 @@ AFAPI array fftC2R<2>(const array& in, const bool is_odd,
         dim4 idims = in.dims();
         dim_t dim0 = getOrigDim(idims[0], is_odd);
         dim_t dim1 = idims[1];
-        norm       = 1.0 / (dim0 * dim1);
+        norm       = 1.0 / static_cast<double>(dim0 * dim1);
     }
 
     af_array res;
@@ -235,7 +243,7 @@ AFAPI array fftC2R<3>(const array& in, const bool is_odd,
         dim_t dim0 = getOrigDim(idims[0], is_odd);
         dim_t dim1 = idims[1];
         dim_t dim2 = idims[2];
-        norm       = 1.0 / (dim0 * dim1 * dim2);
+        norm       = 1.0 / static_cast<double>(dim0 * dim1 * dim2);
     }
 
     af_array res;

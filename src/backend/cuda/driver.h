@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-int nvDriverVersion(char *buffer, int len);
+int nvDriverVersion(char *result, int len);
 
 #ifdef __cplusplus
 }

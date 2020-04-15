@@ -16,7 +16,7 @@ uchar abs(uchar val) { return val; }
 uintl abs(uintl val) { return val; }
 
 cfloat scalar(float val) {
-    cfloat cval = {(float)val, 0};
+    cfloat cval = {val, 0};
     return cval;
 }
 

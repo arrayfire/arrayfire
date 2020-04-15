@@ -30,8 +30,8 @@ namespace cuda {
 template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
                   AF_BATCH_KIND kind) {
-    const dim4 sDims = signal.dims();
-    const dim4 fDims = filter.dims();
+    const dim4 &sDims = signal.dims();
+    const dim4 &fDims = filter.dims();
 
     dim4 oDims(1);
     if (expand) {
@@ -45,7 +45,7 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
     } else {
         oDims = sDims;
         if (kind == AF_BATCH_RHS) {
-            for (dim_t i = baseDim; i < 4; ++i) oDims[i] = fDims[i];
+            for (dim_t i = baseDim; i < 4; ++i) { oDims[i] = fDims[i]; }
         }
     }
 
@@ -59,15 +59,15 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
 template<typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const &signal, Array<accT> const &c_filter,
                    Array<accT> const &r_filter) {
-    const dim4 cfDims = c_filter.dims();
-    const dim4 rfDims = r_filter.dims();
+    const dim4 &cfDims = c_filter.dims();
+    const dim4 &rfDims = r_filter.dims();
 
     const dim_t cfLen = cfDims.elements();
     const dim_t rfLen = rfDims.elements();
 
-    const dim4 sDims = signal.dims();
-    dim4 tDims       = sDims;
-    dim4 oDims       = sDims;
+    const dim4 &sDims = signal.dims();
+    dim4 tDims        = sDims;
+    dim4 oDims        = sDims;
 
     if (expand) {
         tDims[0] += cfLen - 1;

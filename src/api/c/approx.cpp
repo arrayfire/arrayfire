@@ -19,7 +19,10 @@
 #include <af/signal.h>
 
 using af::dim4;
-using namespace detail;
+using detail::approx1;
+using detail::approx2;
+using detail::cdouble;
+using detail::cfloat;
 
 namespace {
 template<typename Ty, typename Tp>
@@ -53,10 +56,10 @@ void af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
     const ArrayInfo &yi_info = getInfo(yi);
     const ArrayInfo &xo_info = getInfo(xo);
 
-    const dim4 yi_dims = yi_info.dims();
-    const dim4 xo_dims = xo_info.dims();
-    dim4 yo_dims       = yi_dims;
-    yo_dims[xdim]      = xo_dims[xdim];
+    const dim4 &yi_dims = yi_info.dims();
+    const dim4 &xo_dims = xo_info.dims();
+    dim4 yo_dims        = yi_dims;
+    yo_dims[xdim]       = xo_dims[xdim];
 
     ARG_ASSERT(1, yi_info.isFloating());      // Only floating and complex types
     ARG_ASSERT(2, xo_info.isRealFloating());  // Only floating types
@@ -70,7 +73,7 @@ void af_approx1_common(af_array *yo, const af_array yi, const af_array xo,
     // yi_dims[3])
     if (xo_dims[xdim] != xo_dims.elements()) {
         for (int i = 0; i < 4; i++) {
-            if (xdim != i) DIM_ASSERT(2, xo_dims[i] == yi_dims[i]);
+            if (xdim != i) { DIM_ASSERT(2, xo_dims[i] == yi_dims[i]); }
         }
     }
 
@@ -196,7 +199,9 @@ void af_approx2_common(af_array *zo, const af_array zi, const af_array xo,
     // POS should either be (x, y, 1, 1) or (x, y, zi_dims[2], zi_dims[3])
     if (xo_dims[xdim] * xo_dims[ydim] != xo_dims.elements()) {
         for (int i = 0; i < 4; i++) {
-            if (xdim != i && ydim != i) DIM_ASSERT(2, xo_dims[i] == zi_dims[i]);
+            if (xdim != i && ydim != i) {
+                DIM_ASSERT(2, xo_dims[i] == zi_dims[i]);
+            }
         }
     }
 

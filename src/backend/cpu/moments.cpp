@@ -16,10 +16,10 @@
 
 namespace cpu {
 
-static inline int bitCount(int v) {
-    v = v - ((v >> 1) & 0x55555555);
-    v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
-    return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
+static inline unsigned bitCount(unsigned v) {
+    v = v - ((v >> 1U) & 0x55555555U);
+    v = (v & 0x33333333U) + ((v >> 2U) & 0x33333333U);
+    return (((v + (v >> 4U)) & 0xF0F0F0FU) * 0x1010101U) >> 24U;
 }
 
 using af::dim4;

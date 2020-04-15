@@ -13,7 +13,6 @@
 #include <kernel/flood_fill.hpp>
 
 using af::connectivity;
-using af::dim4;
 
 namespace cpu {
 

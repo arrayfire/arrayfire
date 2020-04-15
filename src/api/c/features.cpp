@@ -14,26 +14,27 @@
 
 af_err af_release_features(af_features featHandle) {
     try {
-        af_features_t feat = *(af_features_t *)featHandle;
+        af_features_t feat = *static_cast<af_features_t *>(featHandle);
         if (feat.n > 0) {
-            if (feat.x != 0) AF_CHECK(af_release_array(feat.x));
-            if (feat.y != 0) AF_CHECK(af_release_array(feat.y));
-            if (feat.score != 0) AF_CHECK(af_release_array(feat.score));
-            if (feat.orientation != 0)
+            if (feat.x != 0) { AF_CHECK(af_release_array(feat.x)); }
+            if (feat.y != 0) { AF_CHECK(af_release_array(feat.y)); }
+            if (feat.score != 0) { AF_CHECK(af_release_array(feat.score)); }
+            if (feat.orientation != 0) {
                 AF_CHECK(af_release_array(feat.orientation));
-            if (feat.size != 0) AF_CHECK(af_release_array(feat.size));
+            }
+            if (feat.size != 0) { AF_CHECK(af_release_array(feat.size)); }
             feat.n = 0;
         }
-        delete (af_features_t *)featHandle;
+        delete static_cast<af_features_t *>(featHandle);
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
 af_features getFeaturesHandle(const af_features_t feat) {
-    af_features_t *featHandle = new af_features_t;
-    *featHandle               = feat;
-    return (af_features)featHandle;
+    auto *featHandle = new af_features_t;
+    *featHandle      = feat;
+    return static_cast<af_features>(featHandle);
 }
 
 af_err af_create_features(af_features *featHandle, dim_t num) {
@@ -58,7 +59,7 @@ af_err af_create_features(af_features *featHandle, dim_t num) {
 }
 
 af_features_t getFeatures(const af_features featHandle) {
-    return *(af_features_t *)featHandle;
+    return *static_cast<af_features_t *>(featHandle);
 }
 
 af_err af_retain_features(af_features *outHandle,

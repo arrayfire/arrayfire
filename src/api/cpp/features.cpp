@@ -13,9 +13,9 @@
 
 namespace af {
 
-features::features() { AF_THROW(af_create_features(&feat, 0)); }
+features::features() : feat{} { AF_THROW(af_create_features(&feat, 0)); }
 
-features::features(const size_t n) {
+features::features(const size_t n) : feat{} {
     AF_THROW(af_create_features(&feat, (int)n));
 }
 

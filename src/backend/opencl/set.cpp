@@ -56,7 +56,7 @@ Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
         out.resetDims(dim4(std::distance(begin, end), 1, 1, 1));
 
         return out;
-    } catch (std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
+    } catch (const std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
 }
 
 template<typename T>
@@ -94,7 +94,7 @@ Array<T> setUnion(const Array<T> &first, const Array<T> &second,
         out.resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
         return out;
 
-    } catch (std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
+    } catch (const std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
 }
 
 template<typename T>
@@ -132,7 +132,7 @@ Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
 
         out.resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
         return out;
-    } catch (std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
+    } catch (const std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
 }
 
 #define INSTANTIATE(T)                                                        \

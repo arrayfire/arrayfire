@@ -30,7 +30,8 @@ double matrixNorm(const Array<T> &A, double p) {
     if (p == 1) {
         Array<T> colSum = reduce<af_add_t, T, T>(A, 0);
         return reduce_all<af_max_t, T, T>(colSum);
-    } else if (p == af::Inf) {
+    }
+    if (p == af::Inf) {
         Array<T> rowSum = reduce<af_add_t, T, T>(A, 1);
         return reduce_all<af_max_t, T, T>(rowSum);
     }
@@ -41,9 +42,8 @@ double matrixNorm(const Array<T> &A, double p) {
 
 template<typename T>
 double vectorNorm(const Array<T> &A, double p) {
-    if (p == 1) {
-        return reduce_all<af_add_t, T, T>(A);
-    } else if (p == af::Inf) {
+    if (p == 1) { return reduce_all<af_add_t, T, T>(A); }
+    if (p == af::Inf) {
         return reduce_all<af_max_t, T, T>(A);
     } else if (p == 2) {
         Array<T> A_sq = arithOp<T, af_mul_t>(A, A, A.dims());
@@ -81,7 +81,7 @@ double LPQNorm(const Array<T> &A, double p, double q) {
 template<typename T>
 double norm(const af_array a, const af_norm_type type, const double p,
             const double q) {
-    typedef typename af::dtype_traits<T>::base_type BT;
+    using BT = typename af::dtype_traits<T>::base_type;
 
     const Array<BT> A = abs<BT, T>(getArray<T>(a));
 

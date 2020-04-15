@@ -14,8 +14,9 @@
 #include <platform.hpp>
 #include <queue.hpp>
 #include <af/event.h>
-
 #include <memory>
+
+using std::make_unique;
 
 namespace cpu {
 /// \brief Creates a new event and marks it in the queue
@@ -26,8 +27,7 @@ Event makeEvent(cpu::queue& queue) {
 }
 
 af_event createEvent() {
-    std::unique_ptr<Event> e;
-    e.reset(new Event());
+    auto e = make_unique<Event>();
     // Ensure that the default queue is initialized
     getQueue();
     if (e->create() != 0) {

@@ -89,7 +89,7 @@ af::dim4 seqToDims(af_index_t *indices, af::dim4 parentDims,
             }
         }
         return odims;
-    } catch (logic_error &err) { AF_THROW_ERR(err.what(), AF_ERR_SIZE); }
+    } catch (const logic_error &err) { AF_THROW_ERR(err.what(), AF_ERR_SIZE); }
 }
 
 unsigned numDims(const af_array arr) {
@@ -137,12 +137,16 @@ af_array initDataArray(const void *ptr, int ty, af::source src, dim_t d0,
 namespace af {
 
 struct array::array_proxy::array_proxy_impl {
-    array *parent_;          //< The original array
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+    array *parent_;  //< The original array
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     af_index_t indices_[4];  //< Indexing array or seq objects
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     bool is_linear_;
 
     // if true the parent_ object will be deleted on distruction. This is
     // necessary only when calling indexing functions in array_proxy objects.
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     bool delete_on_destruction_;
     array_proxy_impl(array &parent, af_index_t *idx, bool linear)
         : parent_(&parent)
@@ -194,7 +198,7 @@ array::array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, af::dtype ty)
 template<>
 struct dtype_traits<half_float::half> {
     enum { af_type = f16, ctype = f16 };
-    typedef half base_type;
+    using base_type = half;
     static const char *getName() { return "half"; }
 };
 
@@ -292,7 +296,7 @@ array::~array() {
     }
 #else
     // THOU SHALL NOT THROW IN DESTRUCTORS
-    if (af_array arr = get()) af_release_array(arr);
+    if (af_array arr = get()) { af_release_array(arr); }
 #endif
 }
 
@@ -386,6 +390,7 @@ array::array_proxy array::operator()(const index &s0, const index &s1,
     return const_cast<const array *>(this)->operator()(s0, s1, s2, s3);
 }
 
+// NOLINTNEXTLINE(readability-const-return-type)
 const array::array_proxy array::operator()(const index &s0) const {
     index z = index(0);
     if (isvector()) {
@@ -401,12 +406,14 @@ const array::array_proxy array::operator()(const index &s0) const {
     }
 }
 
+// NOLINTNEXTLINE(readability-const-return-type)
 const array::array_proxy array::operator()(const index &s0, const index &s1,
                                            const index &s2,
                                            const index &s3) const {
     return gen_indexing(*this, s0, s1, s2, s3);
 }
 
+// NOLINTNEXTLINE(readability-const-return-type)
 const array::array_proxy array::row(int index) const {
     return this->operator()(index, span, span, span);
 }
@@ -415,6 +422,7 @@ array::array_proxy array::row(int index) {
     return const_cast<const array *>(this)->row(index);
 }
 
+// NOLINTNEXTLINE(readability-const-return-type)
 const array::array_proxy array::col(int index) const {
     return this->operator()(span, index, span, span);
 }
@@ -423,6 +431,7 @@ array::array_proxy array::col(int index) {
     return const_cast<const array *>(this)->col(index);
 }
 
+// NOLINTNEXTLINE(readability-const-return-type)
 const array::array_proxy array::slice(int index) const {
     return this->operator()(span, span, index, span);
 }
@@ -431,6 +440,7 @@ array::array_proxy array::slice(int index) {
     return const_cast<const array *>(this)->slice(index);
 }
 
+// NOLINTNEXTLINE(readability-const-return-type)
 const array::array_proxy array::rows(int first, int last) const {
     seq idx(first, last, 1);
     return this->operator()(idx, span, span, span);
@@ -440,6 +450,7 @@ array::array_proxy array::rows(int first, int last) {
     return const_cast<const array *>(this)->rows(first, last);
 }
 
+// NOLINTNEXTLINE(readability-const-return-type)
 const array::array_proxy array::cols(int first, int last) const {
     seq idx(first, last, 1);
     return this->operator()(span, idx, span, span);
@@ -449,6 +460,7 @@ array::array_proxy array::cols(int first, int last) {
     return const_cast<const array *>(this)->cols(first, last);
 }
 
+// NOLINTNEXTLINE(readability-const-return-type)
 const array::array_proxy array::slices(int first, int last) const {
     seq idx(first, last, 1);
     return this->operator()(span, span, idx, span);
@@ -458,6 +470,7 @@ array::array_proxy array::slices(int first, int last) {
     return const_cast<const array *>(this)->slices(first, last);
 }
 
+// NOLINTNEXTLINE(readability-const-return-type)
 const array array::as(af::dtype type) const {
     af_array out;
     AF_THROW(af_cast(&out, this->get(), type));
@@ -576,6 +589,7 @@ array::array_proxy &af::array::array_proxy::operator=(const array &other) {
 
 array::array_proxy &af::array::array_proxy::operator=(
     const array::array_proxy &other) {
+    if (this == &other) { return *this; }
     array out = other;
     *this     = out;
     return *this;
@@ -588,6 +602,7 @@ af::array::array_proxy::array_proxy(const array_proxy &other)
     : impl(new array_proxy_impl(*other.impl->parent_, other.impl->indices_,
                                 other.impl->is_linear_)) {}
 
+// NOLINTNEXTLINE(hicpp-noexcept-move) too late to change public API
 af::array::array_proxy::array_proxy(array_proxy &&other) {
     impl       = other.impl;
     other.impl = nullptr;
@@ -758,12 +773,17 @@ array::array_proxy::operator array() {
         proxy.impl->delete_on_destruction(true);                  \
         return proxy;                                             \
     }
-
+// NOLINTNEXTLINE(readability-const-return-type)
 MEM_INDEX(row(int index), row(index));
+// NOLINTNEXTLINE(readability-const-return-type)
 MEM_INDEX(rows(int first, int last), rows(first, last));
+// NOLINTNEXTLINE(readability-const-return-type)
 MEM_INDEX(col(int index), col(index));
+// NOLINTNEXTLINE(readability-const-return-type)
 MEM_INDEX(cols(int first, int last), cols(first, last));
+// NOLINTNEXTLINE(readability-const-return-type)
 MEM_INDEX(slice(int index), slice(index));
+// NOLINTNEXTLINE(readability-const-return-type)
 MEM_INDEX(slices(int first, int last), slices(first, last));
 
 #undef MEM_INDEX
@@ -772,7 +792,7 @@ MEM_INDEX(slices(int first, int last), slices(first, last));
 // Operator =
 ///////////////////////////////////////////////////////////////////////////
 array &array::operator=(const array &other) {
-    if (this->get() == other.get()) { return *this; }
+    if (this == &other || this->get() == other.get()) { return *this; }
     // TODO(umar): Unsafe. loses data if af_weak_copy fails
     if (this->arr != nullptr) { AF_THROW(af_release_array(this->arr)); }
 
@@ -1067,6 +1087,8 @@ INSTANTIATE(half_float::half)
 // FIXME: These functions need to be implemented properly at a later point
 void array::array_proxy::unlock() const {}
 void array::array_proxy::lock() const {}
+
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 bool array::array_proxy::isLocked() const { return false; }
 
 int array::nonzeros() const { return count<int>(*this); }
