@@ -30,33 +30,33 @@ using af::dim4;
 Array<uint> emptyArray() { return createEmptyArray<uint>(af::dim4(0)); }
 
 struct RandomEngine {
-    af_random_engine_type type;
-    std::shared_ptr<uintl> seed;
-    std::shared_ptr<uintl> counter;
-    Array<uint> pos;
-    Array<uint> sh1;
-    Array<uint> sh2;
-    uint mask;
-    Array<uint> recursion_table;
-    Array<uint> temper_table;
-    Array<uint> state;
+    // clang-format off
+    af_random_engine_type type{AF_RANDOM_ENGINE_DEFAULT}; // NOLINT(misc-non-private-member-variables-in-classes)
+    std::shared_ptr<uintl> seed;                          // NOLINT(misc-non-private-member-variables-in-classes)
+    std::shared_ptr<uintl> counter;                       // NOLINT(misc-non-private-member-variables-in-classes)
+    Array<uint> pos;                                      // NOLINT(misc-non-private-member-variables-in-classes)
+    Array<uint> sh1;                                      // NOLINT(misc-non-private-member-variables-in-classes)
+    Array<uint> sh2;                                      // NOLINT(misc-non-private-member-variables-in-classes)
+    uint mask{0};                                         // NOLINT(misc-non-private-member-variables-in-classes)
+    Array<uint> recursion_table;                          // NOLINT(misc-non-private-member-variables-in-classes)
+    Array<uint> temper_table;                             // NOLINT(misc-non-private-member-variables-in-classes)
+    Array<uint> state;                                    // NOLINT(misc-non-private-member-variables-in-classes)
+    // clang-format on
 
-    RandomEngine(void)
-        : type(AF_RANDOM_ENGINE_DEFAULT)
-        , seed(new uintl())
+    RandomEngine()
+        : seed(new uintl())
         , counter(new uintl())
         , pos(emptyArray())
         , sh1(emptyArray())
         , sh2(emptyArray())
-        , mask(0)
         , recursion_table(emptyArray())
         , temper_table(emptyArray())
         , state(emptyArray()) {}
 };
 
-af_random_engine getRandomEngineHandle(const RandomEngine engine) {
-    RandomEngine *engineHandle = new RandomEngine;
-    *engineHandle              = engine;
+af_random_engine getRandomEngineHandle(const RandomEngine &engine) {
+    auto *engineHandle = new RandomEngine;
+    *engineHandle      = engine;
     return static_cast<af_random_engine>(engineHandle);
 }
 
@@ -64,7 +64,7 @@ RandomEngine *getRandomEngine(const af_random_engine engineHandle) {
     if (engineHandle == 0) {
         AF_ERROR("Uninitialized random engine", AF_ERR_ARG);
     }
-    return (RandomEngine *)engineHandle;
+    return static_cast<RandomEngine *>(engineHandle);
 }
 
 namespace {
@@ -109,8 +109,8 @@ af_err af_get_default_random_engine(af_random_engine *r) {
     try {
         AF_CHECK(af_init());
 
-        thread_local RandomEngine *re = new RandomEngine;
-        *r                            = static_cast<af_random_engine>(re);
+        thread_local auto *re = new RandomEngine;
+        *r                    = static_cast<af_random_engine>(re);
         return AF_SUCCESS;
     }
     CATCHALL;

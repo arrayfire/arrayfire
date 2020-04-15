@@ -14,7 +14,11 @@
 #include <af/device.h>
 #include <af/event.h>
 
-using namespace detail;
+using detail::block;
+using detail::createEvent;
+using detail::enqueueWaitOnActiveQueue;
+using detail::Event;
+using detail::markEventOnActiveQueue;
 
 Event &getEvent(af_event &handle) {
     Event &event = *static_cast<Event *>(handle);

@@ -16,7 +16,7 @@ using common::half;
 
 namespace cpu {
 void initMersenneState(Array<uint> &state, const uintl seed,
-                       const Array<uint> tbl) {
+                       const Array<uint> &tbl) {
     getQueue().enqueue(kernel::initMersenneState, state.get(), tbl.get(), seed);
 }
 
@@ -157,10 +157,10 @@ INSTANTIATE_NORMAL(float)
 INSTANTIATE_NORMAL(double)
 INSTANTIATE_NORMAL(half)
 
-COMPLEX_UNIFORM_DISTRIBUTION(cdouble, double)
-COMPLEX_UNIFORM_DISTRIBUTION(cfloat, float)
+COMPLEX_UNIFORM_DISTRIBUTION(cdouble, double)  // NOLINT
+COMPLEX_UNIFORM_DISTRIBUTION(cfloat, float)    // NOLINT
 
-COMPLEX_NORMAL_DISTRIBUTION(cdouble, double)
-COMPLEX_NORMAL_DISTRIBUTION(cfloat, float)
+COMPLEX_NORMAL_DISTRIBUTION(cdouble, double)  // NOLINT
+COMPLEX_NORMAL_DISTRIBUTION(cfloat, float)    // NOLINT
 
 }  // namespace cpu

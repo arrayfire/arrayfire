@@ -21,16 +21,17 @@
 
 namespace cuda {
 template<typename T>
-cusolverStatus_t gesvd_buf_func(cusolverDnHandle_t handle, int m, int n,
-                                int *Lwork) {
+cusolverStatus_t gesvd_buf_func(cusolverDnHandle_t /*handle*/, int /*m*/,
+                                int /*n*/, int * /*Lwork*/) {
     return CUSOLVER_STATUS_ARCH_MISMATCH;
 }
 
 template<typename T, typename Tr>
-cusolverStatus_t gesvd_func(cusolverDnHandle_t handle, char jobu, char jobvt,
-                            int m, int n, T *A, int lda, Tr *S, T *U, int ldu,
-                            T *VT, int ldvt, T *Work, int Lwork, Tr *rwork,
-                            int *devInfo) {
+cusolverStatus_t gesvd_func(cusolverDnHandle_t /*handle*/, char /*jobu*/,
+                            char /*jobvt*/, int /*m*/, int /*n*/, T * /*A*/,
+                            int /*lda*/, Tr * /*S*/, T * /*U*/, int /*ldu*/,
+                            T * /*VT*/, int /*ldvt*/, T * /*Work*/,
+                            int /*Lwork*/, Tr * /*rwork*/, int * /*devInfo*/) {
     return CUSOLVER_STATUS_ARCH_MISMATCH;
 }
 

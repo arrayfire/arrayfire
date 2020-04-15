@@ -71,7 +71,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     magma_getrf_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
                        &ipiv[0], getQueue()(), &info);
 
-    if (!convert_pivot) return createHostDataArray<int>(dim4(MN), &ipiv[0]);
+    if (!convert_pivot) { return createHostDataArray<int>(dim4(MN), &ipiv[0]); }
 
     Array<int> pivot = convertPivot(&ipiv[0], MN, M);
     return pivot;

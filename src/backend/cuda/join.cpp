@@ -20,7 +20,7 @@ using common::half;
 
 namespace cuda {
 
-af::dim4 calcOffset(const af::dim4 dims, const int dim) {
+af::dim4 calcOffset(const af::dim4 &dims, const int dim) {
     af::dim4 offset;
     offset[0] = (dim == 0) * dims[0];
     offset[1] = (dim == 1) * dims[1];
@@ -77,7 +77,7 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs) {
     std::vector<af::dim4> idims(n_arrays);
 
     dim_t dim_size = 0;
-    for (int i = 0; i < (int)idims.size(); i++) {
+    for (int i = 0; i < static_cast<int>(idims.size()); i++) {
         idims[i] = inputs[i].dims();
         dim_size += idims[i][dim];
     }

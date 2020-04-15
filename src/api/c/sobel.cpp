@@ -19,11 +19,11 @@
 using af::dim4;
 using namespace detail;
 
-typedef std::pair<af_array, af_array> ArrayPair;
+using ArrayPair = std::pair<af_array, af_array>;
 template<typename Ti, typename To>
 ArrayPair sobelDerivatives(const af_array &in, const unsigned &ker_size) {
-    typedef std::pair<Array<To>, Array<To>> BAPair;
-    BAPair out = sobelDerivatives<Ti, To>(getArray<Ti>(in), ker_size);
+    using BAPair = std::pair<Array<To>, Array<To>>;
+    BAPair out   = sobelDerivatives<Ti, To>(getArray<Ti>(in), ker_size);
     return std::make_pair(getHandle<To>(out.first), getHandle<To>(out.second));
 }
 

@@ -45,8 +45,8 @@ class Program;
 
 namespace opencl {
 void buildProgram(cl::Program &prog, const char *ker_str, const int ker_len,
-                  std::string options);
+                  const std::string &options);
 
 void buildProgram(cl::Program &prog, const int num_files, const char **ker_str,
-                  const int *ker_len, std::string options);
+                  const int *ker_len, const std::string &options);
 }  // namespace opencl

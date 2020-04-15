@@ -22,8 +22,8 @@ array fftConvolve(const array& signal, const array& filter,
     switch (std::min(sN, fN)) {
         case 1: return fftConvolve1(signal, filter, mode);
         case 2: return fftConvolve2(signal, filter, mode);
+        default:
         case 3: return fftConvolve3(signal, filter, mode);
-        default: return fftConvolve3(signal, filter, mode);
     }
 }
 

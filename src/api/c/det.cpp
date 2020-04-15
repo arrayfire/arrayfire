@@ -20,7 +20,11 @@
 #include <af/lapack.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::scalar;
 
 template<typename T>
 T det(const af_array a) {
@@ -57,7 +61,7 @@ T det(const af_array a) {
         is_neg ^= (hP[i] != (i + 1));
     }
 
-    if (is_neg) res = res * scalar<T>(-1);
+    if (is_neg) { res = res * scalar<T>(-1); }
 
     return res;
 }
@@ -72,9 +76,10 @@ af_err af_det(double *real_val, double *imag_val, const af_array in) {
 
         af_dtype type = i_info.getType();
 
-        if (i_info.dims()[0])
+        if (i_info.dims()[0]) {
             DIM_ASSERT(1, i_info.dims()[0] ==
                               i_info.dims()[1]);  // Only square matrices
+        }
         ARG_ASSERT(1, i_info.isFloating());  // Only floating and complex types
 
         *real_val = 0;

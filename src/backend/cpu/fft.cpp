@@ -84,7 +84,7 @@ void fft_inplace(Array<T> &in) {
 
         const af::dim4 istrides = in.strides();
 
-        typedef typename fftw_transform<T>::ctype_t ctype_t;
+        using ctype_t = typename fftw_transform<T>::ctype_t;
         typename fftw_transform<T>::plan_t plan;
 
         fftw_transform<T> transform;
@@ -93,10 +93,13 @@ void fft_inplace(Array<T> &in) {
         for (int i = rank; i < 4; i++) { batch *= idims[i]; }
 
         plan = transform.create(
-            rank, t_dims, (int)batch, (ctype_t *)in.get(), in_embed,
-            (int)istrides[0], (int)istrides[rank], (ctype_t *)in.get(),
-            in_embed, (int)istrides[0], (int)istrides[rank],
-            direction ? FFTW_FORWARD : FFTW_BACKWARD, FFTW_ESTIMATE);
+            rank, t_dims, batch, reinterpret_cast<ctype_t *>(in.get()),
+            in_embed, static_cast<int>(istrides[0]),
+            static_cast<int>(istrides[rank]),
+            reinterpret_cast<ctype_t *>(in.get()), in_embed,
+            static_cast<int>(istrides[0]), static_cast<int>(istrides[rank]),
+            direction ? FFTW_FORWARD : FFTW_BACKWARD,
+            FFTW_ESTIMATE);  // NOLINT(hicpp-signed-bitwise)
 
         transform.execute(plan);
         transform.destroy(plan);
@@ -125,8 +128,9 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
         const af::dim4 istrides = in.strides();
         const af::dim4 ostrides = out.strides();
 
-        typedef typename fftw_real_transform<Tc, Tr>::ctype_t ctype_t;
-        typename fftw_real_transform<Tc, Tr>::plan_t plan;
+        using ctype_t = typename fftw_real_transform<Tc, Tr>::ctype_t;
+        using plan_t  = typename fftw_real_transform<Tc, Tr>::plan_t;
+        plan_t plan;
 
         fftw_real_transform<Tc, Tr> transform;
 
@@ -134,9 +138,11 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
         for (int i = rank; i < 4; i++) { batch *= idims[i]; }
 
         plan = transform.create(
-            rank, t_dims, (int)batch, (Tr *)in.get(), in_embed,
-            (int)istrides[0], (int)istrides[rank], (ctype_t *)out.get(),
-            out_embed, (int)ostrides[0], (int)ostrides[rank], FFTW_ESTIMATE);
+            rank, t_dims, batch, const_cast<Tr *>(in.get()), in_embed,
+            static_cast<int>(istrides[0]), static_cast<int>(istrides[rank]),
+            reinterpret_cast<ctype_t *>(out.get()), out_embed,
+            static_cast<int>(ostrides[0]), static_cast<int>(ostrides[rank]),
+            FFTW_ESTIMATE);
 
         transform.execute(plan);
         transform.destroy(plan);
@@ -164,8 +170,9 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
         const af::dim4 istrides = in.strides();
         const af::dim4 ostrides = out.strides();
 
-        typedef typename fftw_real_transform<Tr, Tc>::ctype_t ctype_t;
-        typename fftw_real_transform<Tr, Tc>::plan_t plan;
+        using ctype_t = typename fftw_real_transform<Tr, Tc>::ctype_t;
+        using plan_t  = typename fftw_real_transform<Tr, Tc>::plan_t;
+        plan_t plan;
 
         fftw_real_transform<Tr, Tc> transform;
 
@@ -178,13 +185,17 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
         // FFTW_PRESERVE_INPUT also. This flag however only works for 1D
         // transforms and for higher level transformations, a copy of input
         // data is passed onto the upstream FFTW calls.
-        unsigned int flags = FFTW_ESTIMATE;
-        if (rank == 1) { flags |= FFTW_PRESERVE_INPUT; }
+        unsigned int flags = FFTW_ESTIMATE;  // NOLINT(hicpp-signed-bitwise)
+        if (rank == 1) {
+            flags |= FFTW_PRESERVE_INPUT;  // NOLINT(hicpp-signed-bitwise)
+        }
 
-        plan = transform.create(rank, t_dims, (int)batch, (ctype_t *)in.get(),
-                                in_embed, (int)istrides[0], (int)istrides[rank],
-                                (Tr *)out.get(), out_embed, (int)ostrides[0],
-                                (int)ostrides[rank], flags);
+        plan = transform.create(
+            rank, t_dims, batch,
+            reinterpret_cast<ctype_t *>(const_cast<Tc *>(in.get())), in_embed,
+            static_cast<int>(istrides[0]), static_cast<int>(istrides[rank]),
+            out.get(), out_embed, static_cast<int>(ostrides[0]),
+            static_cast<int>(ostrides[rank]), flags);
 
         transform.execute(plan);
         transform.destroy(plan);

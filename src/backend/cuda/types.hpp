@@ -139,7 +139,7 @@ const char *getFullName<common::half>() {
 
 namespace common {
 template<typename T>
-class kernel_type;
+struct kernel_type;
 }
 
 namespace common {

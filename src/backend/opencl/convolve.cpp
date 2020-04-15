@@ -33,8 +33,8 @@ namespace opencl {
 template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
                   AF_BATCH_KIND kind) {
-    const dim4 sDims = signal.dims();
-    const dim4 fDims = filter.dims();
+    const dim4 &sDims = signal.dims();
+    const dim4 &fDims = filter.dims();
 
     dim4 oDims(1);
     if (expand) {
@@ -48,7 +48,7 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
     } else {
         oDims = sDims;
         if (kind == AF_BATCH_RHS) {
-            for (dim_t i = baseDim; i < 4; ++i) oDims[i] = fDims[i];
+            for (dim_t i = baseDim; i < 4; ++i) { oDims[i] = fDims[i]; }
         }
     }
 
@@ -59,15 +59,17 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
     dim_t MCFL3 = kernel::MAX_CONV3_FILTER_LEN;
     switch (baseDim) {
         case 1:
-            if (fDims[0] > kernel::MAX_CONV1_FILTER_LEN) callKernel = false;
+            if (fDims[0] > kernel::MAX_CONV1_FILTER_LEN) { callKernel = false; }
             break;
         case 2:
-            if ((fDims[0] * fDims[1]) > (MCFL2 * MCFL2)) callKernel = false;
+            if ((fDims[0] * fDims[1]) > (MCFL2 * MCFL2)) { callKernel = false; }
             break;
         case 3:
-            if ((fDims[0] * fDims[1] * fDims[2]) > (MCFL3 * MCFL3 * MCFL3))
+            if ((fDims[0] * fDims[1] * fDims[2]) > (MCFL3 * MCFL3 * MCFL3)) {
                 callKernel = false;
+            }
             break;
+        default: AF_ERROR("baseDim only supports values 1-3.", AF_ERR_UNKNOWN);
     }
 
     if (!callKernel) {
@@ -120,8 +122,8 @@ INSTANTIATE(intl, float)
 
 template<typename T>
 Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
-                          const dim4 stride, const dim4 padding,
-                          const dim4 dilation) {
+                          const dim4 &stride, const dim4 &padding,
+                          const dim4 &dilation) {
     dim4 sDims = signal.dims();
     dim4 fDims = filter.dims();
 
@@ -179,11 +181,12 @@ template<typename T>
 Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
                            const Array<T> &original_signal,
                            const Array<T> &original_filter,
-                           const Array<T> &convolved_output, af::dim4 stride,
-                           af::dim4 padding, af::dim4 dilation) {
-    const dim4 cDims = incoming_gradient.dims();
-    const dim4 sDims = original_signal.dims();
-    const dim4 fDims = original_filter.dims();
+                           const Array<T> & /*convolved_output*/,
+                           af::dim4 stride, af::dim4 padding,
+                           af::dim4 dilation) {
+    const dim4 &cDims = incoming_gradient.dims();
+    const dim4 &sDims = original_signal.dims();
+    const dim4 &fDims = original_filter.dims();
 
     Array<T> collapsed_filter = original_filter;
 
@@ -212,11 +215,12 @@ template<typename T>
 Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
                              const Array<T> &original_signal,
                              const Array<T> &original_filter,
-                             const Array<T> &convolved_output, af::dim4 stride,
-                             af::dim4 padding, af::dim4 dilation) {
-    const dim4 cDims = incoming_gradient.dims();
-    const dim4 sDims = original_signal.dims();
-    const dim4 fDims = original_filter.dims();
+                             const Array<T> & /*convolved_output*/,
+                             af::dim4 stride, af::dim4 padding,
+                             af::dim4 dilation) {
+    const dim4 &cDims = incoming_gradient.dims();
+    const dim4 &sDims = original_signal.dims();
+    const dim4 &fDims = original_filter.dims();
 
     const bool retCols = false;
     Array<T> unwrapped =

@@ -39,7 +39,7 @@ af_err af_mean_shift(af_array *out, const af_array in,
         af::dim4 dims         = info.dims();
 
         DIM_ASSERT(1, (dims.ndims() >= 2));
-        if (is_color) DIM_ASSERT(1, (dims[2] == 3));
+        if (is_color) { DIM_ASSERT(1, (dims[2] == 3)); }
 
         af_array output;
         switch (type) {

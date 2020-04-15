@@ -23,7 +23,7 @@
 #include <cstdio>
 #include <cstring>
 
-using common::half;
+using common::half;  // NOLINT(misc-unused-using-decls) bug in clang-tidy
 using common::is_complex;
 
 namespace cpu {

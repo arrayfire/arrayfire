@@ -12,7 +12,8 @@
 
 #include <string>
 #include <vector>
-using namespace std;
+
+using std::vector;
 
 namespace common {
 
@@ -20,7 +21,7 @@ int Node::getNodesMap(Node_map_t &node_map, vector<const Node *> &full_nodes,
                       vector<Node_ids> &full_ids) const {
     auto iter = node_map.find(this);
     if (iter == node_map.end()) {
-        Node_ids ids;
+        Node_ids ids{};
 
         for (int i = 0; i < kMaxChildren && m_children[i] != nullptr; i++) {
             ids.child_ids[i] =

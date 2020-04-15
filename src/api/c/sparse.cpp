@@ -133,19 +133,22 @@ af_array createSparseArrayFromPtr(const af::dim4 &dims, const dim_t nNZ,
                                   const int *const colIdx,
                                   const af::storage stype,
                                   const af::source source) {
-    SparseArray<T> sparse = createEmptySparseArray<T>(dims, nNZ, stype);
-
     if (nNZ) {
-        if (source == afHost)
-            sparse = common::createHostDataSparseArray(dims, nNZ, values,
-                                                       rowIdx, colIdx, stype);
-        else if (source == afDevice)
-            sparse = common::createDeviceDataSparseArray(
-                dims, nNZ, const_cast<T *>(values), const_cast<int *>(rowIdx),
-                const_cast<int *>(colIdx), stype);
+        switch (source) {
+            case afHost:
+                return getHandle(common::createHostDataSparseArray(
+                    dims, nNZ, values, rowIdx, colIdx, stype));
+                break;
+            case afDevice:
+                return getHandle(common::createDeviceDataSparseArray(
+                    dims, nNZ, const_cast<T *>(values),
+                    const_cast<int *>(rowIdx), const_cast<int *>(colIdx),
+                    stype));
+                break;
+        }
     }
 
-    return getHandle(sparse);
+    return getHandle(createEmptySparseArray<T>(dims, nNZ, stype));
 }
 
 af_err af_create_sparse_array_from_ptr(
@@ -400,10 +403,10 @@ af_array getSparseValues(const af_array in) {
 af_err af_sparse_get_info(af_array *values, af_array *rows, af_array *cols,
                           af_storage *stype, const af_array in) {
     try {
-        if (values != NULL) AF_CHECK(af_sparse_get_values(values, in));
-        if (rows != NULL) AF_CHECK(af_sparse_get_row_idx(rows, in));
-        if (cols != NULL) AF_CHECK(af_sparse_get_col_idx(cols, in));
-        if (stype != NULL) AF_CHECK(af_sparse_get_storage(stype, in));
+        if (values != NULL) { AF_CHECK(af_sparse_get_values(values, in)); }
+        if (rows != NULL) { AF_CHECK(af_sparse_get_row_idx(rows, in)); }
+        if (cols != NULL) { AF_CHECK(af_sparse_get_col_idx(cols, in)); }
+        if (stype != NULL) { AF_CHECK(af_sparse_get_storage(stype, in)); }
     }
     CATCHALL;
 

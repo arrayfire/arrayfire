@@ -20,6 +20,7 @@
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
+#include <common/err_common.hpp>
 #include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
 #include <common/unique_handle.hpp>
@@ -37,6 +38,7 @@
 #include <af/cuda.h>
 #include <af/device.h>
 #include <af/version.h>
+#include <memory>
 
 #include <algorithm>
 #include <array>
@@ -62,7 +64,7 @@ using common::memory::MemoryManagerBase;
 
 namespace cuda {
 
-static const std::string get_system(void) {
+static std::string get_system() {
     std::string arch = (sizeof(void *) == 4) ? "32-bit " : "64-bit ";
 
     return arch +
@@ -118,7 +120,7 @@ unique_handle<cudnnHandle_t> *nnManager(const int deviceId) {
 
         // Not throwing an AF_ERROR here because we are in a lambda that could
         // be executing on another thread;
-        if (!(*handle)) getLogger()->error("Error initalizing cuDNN");
+        if (!(*handle)) { getLogger()->error("Error initalizing cuDNN"); }
     });
     if (error) {
         string error_msg = fmt::format("Error initializing cuDNN({}): {}.",
@@ -136,7 +138,7 @@ unique_ptr<PlanCache> &cufftManager(const int deviceId) {
     thread_local unique_ptr<PlanCache> caches[DeviceManager::MAX_DEVICES];
     thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
     call_once(initFlags[deviceId],
-              [&] { caches[deviceId].reset(new PlanCache()); });
+              [&] { caches[deviceId] = std::make_unique<PlanCache>(); });
     return caches[deviceId];
 }
 
@@ -178,17 +180,30 @@ unique_handle<cusparseHandle_t> *cusparseManager(const int deviceId) {
 }
 
 DeviceManager::~DeviceManager() {
-    // Reset unique_ptrs for all cu[BLAS | Sparse | Solver]
-    // handles of all devices
-    for (int i = 0; i < nDevices; ++i) {
-        setDevice(i);
-        delete cusolverManager(i);
-        delete cusparseManager(i);
-        cufftManager(i).reset();
-        delete cublasManager(i);
+    try {
+        // Reset unique_ptrs for all cu[BLAS | Sparse | Solver]
+        // handles of all devices
+        for (int i = 0; i < nDevices; ++i) {
+            setDevice(i);
+            delete cusolverManager(i);
+            delete cusparseManager(i);
+            cufftManager(i).reset();
+            delete cublasManager(i);
 #ifdef WITH_CUDNN
-        delete nnManager(i);
+            delete nnManager(i);
 #endif
+        }
+    } catch (const AfError &err) {
+        AF_TRACE(
+            "Exception thrown during destruction of DeviceManager(ignoring). "
+            "{}({}):{} "
+            "{}",
+            err.getFileName(), err.getLine(), err.getFunctionName(),
+            err.what());
+    } catch (...) {
+        AF_TRACE(
+            "Unknown exception thrown during destruction of "
+            "DeviceManager(ignoring)");
     }
 }
 
@@ -226,9 +241,9 @@ string getDeviceInfo() noexcept {
 }
 
 string getPlatformInfo() noexcept {
-    string driverVersion    = getDriverVersion();
-    std::string cudaRuntime = getCUDARuntimeVersion();
-    string platform         = "Platform: CUDA Runtime " + cudaRuntime;
+    string driverVersion = getDriverVersion();
+    string cudaRuntime   = getCUDARuntimeVersion();
+    string platform      = "Platform: CUDA Runtime " + cudaRuntime;
     if (!driverVersion.empty()) {
         platform.append(", Driver: ");
         platform.append(driverVersion);
@@ -244,12 +259,12 @@ bool isDoubleSupported(int device) {
 
 bool isHalfSupported(int device) {
     std::array<bool, DeviceManager::MAX_DEVICES> half_supported = []() {
-        std::array<bool, DeviceManager::MAX_DEVICES> out;
+        std::array<bool, DeviceManager::MAX_DEVICES> out{};
         int count = getDeviceCount();
         for (int i = 0; i < count; i++) {
-            auto prop     = getDeviceProp(i);
-            float compute = prop.major * 1000 + prop.minor * 10;
-            out[i]        = compute >= 5030;
+            auto prop   = getDeviceProp(i);
+            int compute = prop.major * 1000 + prop.minor * 10;
+            out[i]      = compute >= 5030;
         }
         return out;
     }();
@@ -275,15 +290,16 @@ void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
     // Sanitize input
     for (int i = 0; i < 256; i++) {
         if (d_name[i] == ' ') {
-            if (d_name[i + 1] == 0 || d_name[i + 1] == ' ')
+            if (d_name[i + 1] == 0 || d_name[i + 1] == ' ') {
                 d_name[i] = 0;
-            else
+            } else {
                 d_name[i] = '_';
+            }
         }
     }
 }
 
-string getDriverVersion() {
+string getDriverVersion() noexcept {
     char driverVersion[1024] = {" "};
     int x = nvDriverVersion(driverVersion, sizeof(driverVersion));
     if (x != 1) {
@@ -293,7 +309,7 @@ string getDriverVersion() {
         return "N/A";
 #endif
         int driver = 0;
-        CUDA_CHECK(cudaDriverGetVersion(&driver));
+        if (cudaDriverGetVersion(&driver)) { return "N/A"; }
         return to_string(driver);
     } else {
         return string(driverVersion);
@@ -343,8 +359,10 @@ int getDeviceCount() {
 int getActiveDeviceId() { return tlocalActiveDeviceId(); }
 
 int getDeviceNativeId(int device) {
-    if (device < (int)DeviceManager::getInstance().cuDevices.size())
+    if (device <
+        static_cast<int>(DeviceManager::getInstance().cuDevices.size())) {
         return DeviceManager::getInstance().cuDevices[device].nativeId;
+    }
     return -1;
 }
 
@@ -353,7 +371,7 @@ int getDeviceIdFromNativeId(int nativeId) {
 
     int devId = 0;
     for (devId = 0; devId < mngr.nDevices; ++devId) {
-        if (nativeId == mngr.cuDevices[devId].nativeId) break;
+        if (nativeId == mngr.cuDevices[devId].nativeId) { break; }
     }
     return devId;
 }
@@ -382,8 +400,10 @@ int setDevice(int device) {
 }
 
 cudaDeviceProp getDeviceProp(int device) {
-    if (device < (int)DeviceManager::getInstance().cuDevices.size())
+    if (device <
+        static_cast<int>(DeviceManager::getInstance().cuDevices.size())) {
         return DeviceManager::getInstance().cuDevices[device].prop;
+    }
     return DeviceManager::getInstance().cuDevices[0].prop;
 }
 
@@ -394,9 +414,9 @@ MemoryManagerBase &memoryManager() {
 
     std::call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.memManager.reset(new common::DefaultMemoryManager(
+        inst.memManager = std::make_unique<common::DefaultMemoryManager>(
             getDeviceCount(), common::MAX_BUFFERS,
-            AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
+            AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG);
         // Set the memory manager's device memory manager
         std::unique_ptr<cuda::Allocator> deviceMemoryManager(
             new cuda::Allocator());
@@ -414,9 +434,9 @@ MemoryManagerBase &pinnedMemoryManager() {
 
     std::call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.pinnedMemManager.reset(new common::DefaultMemoryManager(
+        inst.pinnedMemManager = std::make_unique<common::DefaultMemoryManager>(
             getDeviceCount(), common::MAX_BUFFERS,
-            AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
+            AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG);
         // Set the memory manager's device memory manager
         std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(
             new cuda::AllocatorPinned());
@@ -455,7 +475,7 @@ GraphicsResourceManager &interopManager() {
     DeviceManager &inst = DeviceManager::getInstance();
 
     std::call_once(initFlags[id], [&] {
-        inst.gfxManagers[id].reset(new GraphicsResourceManager());
+        inst.gfxManagers[id] = std::make_unique<GraphicsResourceManager>();
     });
 
     return *(inst.gfxManagers[id].get());
@@ -470,16 +490,16 @@ BlasHandle blasHandle() { return *cublasManager(cuda::getActiveDeviceId()); }
 #ifdef WITH_CUDNN
 cudnnHandle_t nnHandle() {
     // Keep the getCudnnPlugin call here because module loading can throw an
-    // exception the first time its called. We want to avoid that because the
-    // unique handle object is marked noexcept and could terminate. if the
-    // module is not loaded correctly
+    // exception the first time its called. We want to avoid that because
+    // the unique handle object is marked noexcept and could terminate. if
+    // the module is not loaded correctly
     static cudnnModule keep_me_to_avoid_exceptions_exceptions =
         getCudnnPlugin();
     static unique_handle<cudnnHandle_t> *handle =
         nnManager(cuda::getActiveDeviceId());
-    if (*handle)
+    if (*handle) {
         return *handle;
-    else {
+    } else {
         AF_ERROR("Error Initializing cuDNN\n", AF_ERR_RUNTIME);
     }
 }
@@ -549,6 +569,6 @@ template<>
 __half *array::device<__half>() const {
     void *ptr = NULL;
     af_get_device_ptr(&ptr, get());
-    return (__half *)ptr;
+    return static_cast<__half *>(ptr);
 }
 }  // namespace af

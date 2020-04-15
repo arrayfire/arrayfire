@@ -20,23 +20,23 @@ namespace opencl {
 template<typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter,
                    Array<accT> const& r_filter) {
-    const dim_t cflen = (dim_t)c_filter.elements();
-    const dim_t rflen = (dim_t)r_filter.elements();
+    const auto cflen = c_filter.elements();
+    const auto rflen = r_filter.elements();
 
     if ((cflen > kernel::MAX_SCONV_FILTER_LEN) ||
         (rflen > kernel::MAX_SCONV_FILTER_LEN)) {
         // TODO call upon fft
         char errMessage[256];
         snprintf(errMessage, sizeof(errMessage),
-                 "\nOpenCL Separable convolution doesn't support %lld(coloumn) "
-                 "%lld(row) filters\n",
+                 "\nOpenCL Separable convolution doesn't support %zu(coloumn) "
+                 "%zu(row) filters\n",
                  cflen, rflen);
         OPENCL_NOT_SUPPORTED(errMessage);
     }
 
-    const dim4 sDims = signal.dims();
-    dim4 tDims       = sDims;
-    dim4 oDims       = sDims;
+    const dim4& sDims = signal.dims();
+    dim4 tDims        = sDims;
+    dim4 oDims        = sDims;
 
     if (expand) {
         tDims[0] += cflen - 1;

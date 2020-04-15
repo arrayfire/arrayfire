@@ -17,7 +17,5 @@
 #include <af/array.h>
 #include <af/defines.h>
 
-using namespace detail;
-
 af_dtype implicit(const af_array lhs, const af_array rhs);
 af_dtype implicit(const af_dtype lty, const af_dtype rty);

@@ -13,8 +13,12 @@
 #include <handle.hpp>
 #include <rotate.hpp>
 #include <af/image.h>
+#include <cmath>
 
 using af::dim4;
+using std::cos;
+using std::fabs;
+using std::sin;
 using namespace detail;
 
 template<typename T>
@@ -27,16 +31,14 @@ static inline af_array rotate(const af_array in, const float theta,
 af_err af_rotate(af_array *out, const af_array in, const float theta,
                  const bool crop, const af_interp_type method) {
     try {
-        unsigned odims0 = 0, odims1 = 0;
+        dim_t odims0 = 0, odims1 = 0;
 
         const ArrayInfo &info = getInfo(in);
         af::dim4 idims        = info.dims();
 
         if (!crop) {
-            odims0 = idims[0] * fabs(std::cos(theta)) +
-                     idims[1] * fabs(std::sin(theta));
-            odims1 = idims[1] * fabs(std::cos(theta)) +
-                     idims[0] * fabs(std::sin(theta));
+            odims0 = idims[0] * fabs(cos(theta)) + idims[1] * fabs(sin(theta));
+            odims1 = idims[1] * fabs(cos(theta)) + idims[0] * fabs(sin(theta));
         } else {
             odims0 = idims[0];
             odims1 = idims[1];
@@ -68,7 +70,7 @@ af_err af_rotate(af_array *out, const af_array in, const float theta,
             case u64: output = rotate<uintl>(in, theta, odims, method); break;
             case s16: output = rotate<short>(in, theta, odims, method); break;
             case u16: output = rotate<ushort>(in, theta, odims, method); break;
-            case u8: output = rotate<uchar>(in, theta, odims, method); break;
+            case u8:
             case b8: output = rotate<uchar>(in, theta, odims, method); break;
             default: TYPE_ERROR(1, itype);
         }

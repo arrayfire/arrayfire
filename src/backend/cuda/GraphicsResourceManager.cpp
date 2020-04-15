@@ -18,7 +18,8 @@
 
 namespace cuda {
 GraphicsResourceManager::ShrdResVector
-GraphicsResourceManager::registerResources(std::vector<uint32_t> resources) {
+GraphicsResourceManager::registerResources(
+    const std::vector<uint32_t>& resources) {
     ShrdResVector output;
 
     auto deleter = [](cudaGraphicsResource_t* handle) {

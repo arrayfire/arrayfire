@@ -26,7 +26,7 @@ using namespace detail;
 template<typename T>
 static inline af_array tile(const af_array in, const af::dim4 &tileDims) {
     const Array<T> inArray = getArray<T>(in);
-    const dim4 inDims      = inArray.dims();
+    const dim4 &inDims     = inArray.dims();
 
     // FIXME: Always use JIT instead of checking for the condition.
     // The current limitation exists for performance reasons. it should change
@@ -42,11 +42,13 @@ static inline af_array tile(const af_array in, const af::dim4 &tileDims) {
         outDims[i] = inDims[i] * tileDims[i];
     }
 
+    af_array out = nullptr;
     if (take_jit_path) {
-        return getHandle(unaryOp<T, af_noop_t>(inArray, outDims));
+        out = getHandle(unaryOp<T, af_noop_t>(inArray, outDims));
     } else {
-        return getHandle(tile<T>(inArray, tileDims));
+        out = getHandle(tile<T>(inArray, tileDims));
     }
+    return out;
 }
 
 af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims) {

@@ -65,7 +65,8 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         // Points
         glBindBuffer(GL_ARRAY_BUFFER, buff1);
-        GLubyte *ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        auto *ptr =
+            static_cast<GLubyte *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         if (ptr) {
             CUDA_CHECK(cudaMemcpyAsync(ptr, points.get(), size1,
                                        cudaMemcpyDeviceToHost, stream));
@@ -76,7 +77,8 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         // Directions
         glBindBuffer(GL_ARRAY_BUFFER, buff2);
-        ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        ptr =
+            static_cast<GLubyte *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         if (ptr) {
             CUDA_CHECK(cudaMemcpyAsync(ptr, directions.get(), size2,
                                        cudaMemcpyDeviceToHost, stream));

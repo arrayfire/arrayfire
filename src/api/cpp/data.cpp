@@ -44,14 +44,15 @@ struct is_complex<af::cdouble> {
 
 array constant(af_half val, const dim4 &dims, const dtype type) {
     af_array res;
+    UNUSED(val);
     AF_THROW(af_constant(&res, 0,  //(double)val,
                          dims.ndims(), dims.get(), type));
     return array(res);
 }
 
-template<typename T,
-         typename = typename enable_if<is_complex<T>::value == false, T>::type>
-array constant(T val, const dim4 &dims, const dtype type) {
+template<typename T, typename = typename enable_if<
+                         !static_cast<bool>(is_complex<T>::value), T>::type>
+array constant(T val, const dim4 &dims, dtype type) {
     af_array res;
     if (type != s64 && type != u64) {
         AF_THROW(
@@ -67,8 +68,8 @@ array constant(T val, const dim4 &dims, const dtype type) {
 }
 
 template<typename T>
-typename enable_if<is_complex<T>::value == true, array>::type constant(
-    T val, const dim4 &dims, const dtype type) {
+typename enable_if<static_cast<bool>(is_complex<T>::value), array>::type
+constant(T val, const dim4 &dims, const dtype type) {
     if (type != c32 && type != c64) {
         return ::constant(real(val), dims, type);
     }

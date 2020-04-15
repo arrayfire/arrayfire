@@ -118,9 +118,10 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
     float getMemoryPressure() override;
     bool jitTreeExceedsMemoryPressure(size_t bytes) override;
 
+    ~DefaultMemoryManager() = default;
+
    protected:
     DefaultMemoryManager()                                  = delete;
-    ~DefaultMemoryManager()                                 = default;
     DefaultMemoryManager(const DefaultMemoryManager &other) = delete;
     DefaultMemoryManager(DefaultMemoryManager &&other)      = default;
     DefaultMemoryManager &operator=(const DefaultMemoryManager &other) = delete;

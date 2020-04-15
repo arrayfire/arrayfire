@@ -16,7 +16,6 @@
 #include <af/defines.h>
 #include <af/lapack.h>
 
-using af::dim4;
 using namespace detail;
 
 template<typename T>

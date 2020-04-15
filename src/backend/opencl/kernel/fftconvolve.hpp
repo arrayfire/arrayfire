@@ -83,9 +83,10 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
 
         options << " -D T=" << dtype_traits<T>::getName();
 
-        if ((af_dtype)dtype_traits<convT>::af_type == c32) {
+        if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c32) {
             options << " -D CONVT=float";
-        } else if ((af_dtype)dtype_traits<convT>::af_type == c64 && isDouble) {
+        } else if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c64 &&
+                   isDouble) {
             options << " -D CONVT=double"
                     << " -D USE_DOUBLE";
         }
@@ -140,9 +141,10 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
 
         options << " -D T=" << dtype_traits<T>::getName();
 
-        if ((af_dtype)dtype_traits<convT>::af_type == c32) {
+        if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c32) {
             options << " -D CONVT=float";
-        } else if ((af_dtype)dtype_traits<convT>::af_type == c64 && isDouble) {
+        } else if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c64 &&
+                   isDouble) {
             options << " -D CONVT=double"
                     << " -D USE_DOUBLE";
         }
@@ -189,9 +191,10 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
                 << " -D AF_BATCH_RHS=" << (int)AF_BATCH_RHS
                 << " -D AF_BATCH_SAME=" << (int)AF_BATCH_SAME;
 
-        if ((af_dtype)dtype_traits<convT>::af_type == c32) {
+        if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c32) {
             options << " -D CONVT=float";
-        } else if ((af_dtype)dtype_traits<convT>::af_type == c64 && isDouble) {
+        } else if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c64 &&
+                   isDouble) {
             options << " -D CONVT=double"
                     << " -D USE_DOUBLE";
         }
@@ -251,9 +254,10 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
                 << " -D ROUND_OUT=" << (int)roundOut
                 << " -D EXPAND=" << (int)expand;
 
-        if ((af_dtype)dtype_traits<convT>::af_type == c32) {
+        if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c32) {
             options << " -D CONVT=float";
-        } else if ((af_dtype)dtype_traits<convT>::af_type == c64 && isDouble) {
+        } else if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c64 &&
+                   isDouble) {
             options << " -D CONVT=double"
                     << " -D USE_DOUBLE";
         }

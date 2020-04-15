@@ -20,20 +20,21 @@ using af::dim4;
 namespace cuda {
 
 template<typename T>
-const dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
-                          const dim_t baseDim) {
-    const dim4 i1d = i1.dims();
-    const dim4 i2d = i2.dims();
+dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
+                    const dim_t baseDim) {
+    const dim4& i1d = i1.dims();
+    const dim4& i2d = i2.dims();
 
     dim_t pd[4] = {1, 1, 1, 1};
 
     dim_t max_d0 = (i1d[0] > i2d[0]) ? i1d[0] : i2d[0];
     dim_t min_d0 = (i1d[0] < i2d[0]) ? i1d[0] : i2d[0];
-    pd[0]        = nextpow2((unsigned)((int)ceil(max_d0 / 2.f) + min_d0 - 1));
+    pd[0]        = nextpow2(static_cast<unsigned>(
+        static_cast<int>(ceil(max_d0 / 2.f)) + min_d0 - 1));
 
     for (dim_t k = 1; k < 4; k++) {
         if (k < baseDim) {
-            pd[k] = nextpow2((unsigned)(i1d[k] + i2d[k] - 1));
+            pd[k] = nextpow2(static_cast<unsigned>(i1d[k] + i2d[k] - 1));
         } else {
             pd[k] = i1d[k];
         }
@@ -46,8 +47,8 @@ template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
          dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind) {
-    const dim4 sDims = signal.dims();
-    const dim4 fDims = filter.dims();
+    const dim4& sDims = signal.dims();
+    const dim4& fDims = filter.dims();
 
     dim4 oDims(1);
     if (expand) {
@@ -61,7 +62,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     } else {
         oDims = sDims;
         if (kind == AF_BATCH_RHS) {
-            for (dim_t i = baseDim; i < 4; ++i) oDims[i] = fDims[i];
+            for (dim_t i = baseDim; i < 4; ++i) { oDims[i] = fDims[i]; }
         }
     }
 
@@ -81,20 +82,22 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     if (kind == AF_BATCH_RHS) {
         fft_inplace<cT, baseDim, false>(filter_packed);
-        if (expand)
+        if (expand) {
             kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true>(
                 out, filter_packed, signal, filter);
-        else
+        } else {
             kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(
                 out, filter_packed, signal, filter);
+        }
     } else {
         fft_inplace<cT, baseDim, false>(signal_packed);
-        if (expand)
+        if (expand) {
             kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true>(
                 out, signal_packed, signal, filter);
-        else
+        } else {
             kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(
                 out, signal_packed, signal, filter);
+        }
     }
 
     return out;

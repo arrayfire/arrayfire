@@ -24,16 +24,18 @@ void transpose_inplace(Array<T> &in, const bool conjugate) {
 
     if (conjugate) {
         if (iDims[0] % kernel::TILE_DIM == 0 &&
-            iDims[1] % kernel::TILE_DIM == 0)
+            iDims[1] % kernel::TILE_DIM == 0) {
             kernel::transpose_inplace<T, true, true>(in, getQueue());
-        else
+        } else {
             kernel::transpose_inplace<T, true, false>(in, getQueue());
+        }
     } else {
         if (iDims[0] % kernel::TILE_DIM == 0 &&
-            iDims[1] % kernel::TILE_DIM == 0)
+            iDims[1] % kernel::TILE_DIM == 0) {
             kernel::transpose_inplace<T, false, true>(in, getQueue());
-        else
+        } else {
             kernel::transpose_inplace<T, false, false>(in, getQueue());
+        }
     }
 }
 

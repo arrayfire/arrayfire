@@ -21,9 +21,13 @@
 
 #include <complex.hpp>
 
-using namespace detail;
 using af::dim4;
 using common::half;
+using detail::cdouble;
+using detail::cfloat;
+using detail::conj;
+using detail::imag;
+using detail::real;
 
 template<typename To, typename Ti>
 static inline af_array cplx(const af_array lhs, const af_array rhs,
@@ -42,7 +46,7 @@ af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs,
             AF_ERROR("Inputs to cplx2 can not be of complex type", AF_ERR_ARG);
         }
 
-        if (type != f64) type = f32;
+        if (type != f64) { type = f32; }
 
         dim4 odims =
             getOutDims(getInfo(lhs).dims(), getInfo(rhs).dims(), batchMode);
@@ -176,21 +180,13 @@ af_err af_abs(af_array *out, const af_array in) {
         if (in_type == f16) { type = f16; }
 
         switch (type) {
-            case f32:
-                res = getHandle(abs<float, float>(castArray<float>(in)));
-                break;
-            case f64:
-                res = getHandle(abs<double, double>(castArray<double>(in)));
-                break;
-            case c32:
-                res = getHandle(abs<float, cfloat>(castArray<cfloat>(in)));
-                break;
-            case c64:
-                res = getHandle(abs<double, cdouble>(castArray<cdouble>(in)));
-                break;
-            case f16:
-                res = getHandle(abs<half, half>(getArray<half>(in)));
-                break;
+            // clang-format off
+            case f32: res = getHandle(detail::abs<float, float>(castArray<float>(in))); break;
+            case f64: res = getHandle(detail::abs<double, double>(castArray<double>(in))); break;
+            case c32: res = getHandle(detail::abs<float, cfloat>(castArray<cfloat>(in))); break;
+            case c64: res = getHandle(detail::abs<double, cdouble>(castArray<cdouble>(in))); break;
+            case f16: res = getHandle(detail::abs<half, half>(getArray<half>(in))); break;
+            // clang-format on
             default: TYPE_ERROR(1, in_type); break;
         }
 

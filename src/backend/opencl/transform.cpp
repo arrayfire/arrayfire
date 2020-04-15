@@ -17,8 +17,8 @@ namespace opencl {
 
 template<typename T>
 void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
-               const dim4 &odims, const af_interp_type method,
-               const bool inverse, const bool perspective) {
+               const af_interp_type method, const bool inverse,
+               const bool perspective) {
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
@@ -38,7 +38,7 @@ void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
 
 #define INSTANTIATE(T)                                                       \
     template void transform(Array<T> &out, const Array<T> &in,               \
-                            const Array<float> &tf, const dim4 &odims,       \
+                            const Array<float> &tf,                          \
                             const af_interp_type method, const bool inverse, \
                             const bool perspective);
 

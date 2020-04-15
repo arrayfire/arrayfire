@@ -42,7 +42,7 @@ void setMemStepSize(size_t step_bytes) {
     memoryManager().setMemStepSize(step_bytes);
 }
 
-size_t getMemStepSize(void) { return memoryManager().getMemStepSize(); }
+size_t getMemStepSize() { return memoryManager().getMemStepSize(); }
 
 void signalMemoryCleanup() { memoryManager().signalMemoryCleanup(); }
 
@@ -56,8 +56,9 @@ template<typename T>
 unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
-    void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    return unique_ptr<T[], function<void(T *)>>((T *)ptr, memFree<T>);
+    T *ptr = static_cast<T *>(
+        memoryManager().alloc(false, 1, dims.get(), sizeof(T)));
+    return unique_ptr<T[], function<void(T *)>>(ptr, memFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
@@ -68,18 +69,16 @@ void *memAllocUser(const size_t &bytes) {
 
 template<typename T>
 void memFree(T *ptr) {
-    return memoryManager().unlock((void *)ptr, false);
+    return memoryManager().unlock(static_cast<void *>(ptr), false);
 }
 
 void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
 
-void memLock(const void *ptr) { memoryManager().userLock((void *)ptr); }
+void memLock(const void *ptr) { memoryManager().userLock(ptr); }
 
-bool isLocked(const void *ptr) {
-    return memoryManager().isUserLocked((void *)ptr);
-}
+bool isLocked(const void *ptr) { return memoryManager().isUserLocked(ptr); }
 
-void memUnlock(const void *ptr) { memoryManager().userUnlock((void *)ptr); }
+void memUnlock(const void *ptr) { memoryManager().userUnlock(ptr); }
 
 void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                       size_t *lock_bytes, size_t *lock_buffers) {
@@ -92,12 +91,12 @@ T *pinnedAlloc(const size_t &elements) {
     // TODO: make pinnedAlloc aware of array shapes
     dim4 dims(elements);
     void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    return (T *)ptr;
+    return static_cast<T *>(ptr);
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    memoryManager().unlock((void *)ptr, false);
+    memoryManager().unlock(static_cast<void *>(ptr), false);
 }
 
 #define INSTANTIATE(T)                                                \
@@ -128,7 +127,7 @@ void Allocator::shutdown() {
         try {
             cpu::setDevice(n);
             shutdownMemoryManager();
-        } catch (AfError err) {
+        } catch (const AfError &err) {
             continue;  // Do not throw any errors while shutting down
         }
     }
@@ -141,9 +140,9 @@ size_t Allocator::getMaxMemorySize(int id) {
 }
 
 void *Allocator::nativeAlloc(const size_t bytes) {
-    void *ptr = malloc(bytes);
+    void *ptr = malloc(bytes);  // NOLINT(hicpp-no-malloc)
     AF_TRACE("nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
-    if (!ptr) AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM);
+    if (!ptr) { AF_ERROR("Unable to allocate memory", AF_ERR_NO_MEM); }
     return ptr;
 }
 
@@ -152,6 +151,6 @@ void Allocator::nativeFree(void *ptr) {
     // Make sure this pointer is not being used on the queue before freeing the
     // memory.
     getQueue().sync();
-    return free((void *)ptr);
+    free(ptr);  // NOLINT(hicpp-no-malloc)
 }
 }  // namespace cpu

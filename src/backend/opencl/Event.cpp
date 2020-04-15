@@ -13,8 +13,12 @@
 #include <events.hpp>
 #include <platform.hpp>
 #include <af/event.h>
+#include <memory>
 
 #include <memory>
+
+using std::make_unique;
+using std::unique_ptr;
 
 namespace opencl {
 /// \brief Creates a new event and marks it in the queue
@@ -25,8 +29,7 @@ Event makeEvent(cl::CommandQueue& queue) {
 }
 
 af_event createEvent() {
-    std::unique_ptr<Event> e;
-    e.reset(new Event());
+    auto e = make_unique<Event>();
     // Ensure the default CL command queue is initialized
     getQueue()();
     if (e->create() != CL_SUCCESS) {

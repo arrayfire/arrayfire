@@ -20,8 +20,8 @@ template<typename T>
 Array<T> meanshift(const Array<T> &in, const float &spatialSigma,
                    const float &chromaticSigma, const unsigned &numIterations,
                    const bool &isColor) {
-    const dim4 dims = in.dims();
-    Array<T> out    = createEmptyArray<T>(dims);
+    const dim4 &dims = in.dims();
+    Array<T> out     = createEmptyArray<T>(dims);
     kernel::meanshift<T>(out, in, spatialSigma, chromaticSigma, numIterations,
                          isColor);
     return out;

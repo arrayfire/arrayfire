@@ -15,7 +15,11 @@
 #include <af/vision.h>
 
 using af::dim4;
-using namespace detail;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename inType, typename outType>
 static af_array match_template(const af_array& sImg, const af_array tImg,
@@ -63,8 +67,8 @@ af_err af_match_template(af_array* out, const af_array search_img,
         const ArrayInfo& sInfo = getInfo(search_img);
         const ArrayInfo& tInfo = getInfo(template_img);
 
-        dim4 const sDims = sInfo.dims();
-        dim4 const tDims = tInfo.dims();
+        dim4 const& sDims = sInfo.dims();
+        dim4 const& tDims = tInfo.dims();
 
         dim_t sNumDims = sDims.ndims();
         dim_t tNumDims = tDims.ndims();

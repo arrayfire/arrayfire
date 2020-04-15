@@ -112,8 +112,8 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
                 << " -D BASE_DIM=" << bDim << " -D EXPAND=" << expand << " -D "
                 << binOpName<af_mul_t>();
 
-        if ((af_dtype)dtype_traits<T>::af_type == c32 ||
-            (af_dtype)dtype_traits<T>::af_type == c64) {
+        if (static_cast<af_dtype>(dtype_traits<T>::af_type) == c32 ||
+            static_cast<af_dtype>(dtype_traits<T>::af_type) == c64) {
             options << " -D CPLX=1";
         } else {
             options << " -D CPLX=0";

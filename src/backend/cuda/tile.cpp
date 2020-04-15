@@ -21,8 +21,8 @@ using common::half;
 namespace cuda {
 template<typename T>
 Array<T> tile(const Array<T> &in, const af::dim4 &tileDims) {
-    const af::dim4 iDims = in.dims();
-    af::dim4 oDims       = iDims;
+    const af::dim4 &iDims = in.dims();
+    af::dim4 oDims        = iDims;
     oDims *= tileDims;
 
     if (iDims.elements() == 0 || oDims.elements() == 0) {

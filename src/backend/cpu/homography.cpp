@@ -14,13 +14,23 @@
 #include <platform.hpp>
 #include <queue.hpp>
 #include <af/dim4.hpp>
-#include <cfloat>
-#include <cstring>
 
 #include <array>
+#include <cfloat>
+#include <cmath>
+#include <cstring>
+#include <vector>
 
 using af::dim4;
+using std::abs;
 using std::array;
+using std::log;
+using std::max;
+using std::min;
+using std::pow;
+using std::round;
+using std::sqrt;
+using std::vector;
 
 namespace cpu {
 
@@ -53,7 +63,7 @@ struct EPS<double> {
 template<typename T, int M, int N>
 void JacobiSVD(T* S, T* V) {
     const int iterations = 30;
-    array<T, N> d;
+    array<T, N> d{};
 
     for (int i = 0; i < N; i++) {
         T sd = 0;
@@ -76,21 +86,22 @@ void JacobiSVD(T* S, T* V) {
                 T* Vi = V + i * N;
                 T* Vj = V + j * N;
 
-                T p = (T)0;
-                for (int k = 0; k < M; k++) p += Si[k] * Sj[k];
+                T p = static_cast<T>(0);
+                for (int k = 0; k < M; k++) { p += Si[k] * Sj[k]; }
 
-                if (std::abs(p) <= M * EPS<T>::eps() * std::sqrt(d[i] * d[j]))
+                if (abs(p) <= M * EPS<T>::eps() * sqrt(d[i] * d[j])) {
                     continue;
+                }
 
                 T y  = d[i] - d[j];
                 T r  = hypot(p * 2, y);
                 T r2 = r * 2;
                 T c, s;
                 if (y >= 0) {
-                    c = std::sqrt((r + y) / r2);
+                    c = sqrt((r + y) / r2);
                     s = p / (r2 * c);
                 } else {
-                    s = std::sqrt((r - y) / r2);
+                    s = sqrt((r - y) / r2);
                     c = p / (r2 * s);
                 }
 
@@ -117,44 +128,53 @@ void JacobiSVD(T* S, T* V) {
 
                 converged = true;
             }
-            if (!converged) break;
+            if (!converged) { break; }
         }
     }
 }
 
 unsigned updateIterations(float inlier_ratio, unsigned iter) {
-    float w  = std::min(std::max(inlier_ratio, 0.0f), 1.0f);
+    float w  = min(max(inlier_ratio, 0.0f), 1.0f);
     float wn = pow(1 - w, 4.f);
 
     float d = 1.f - wn;
-    if (d < FLT_MIN) return 0;
+    if (d < FLT_MIN) { return 0; }
 
     d = log(d);
 
-    float p = std::min(std::max(RANSACConfidence, 0.0f), 1.0f);
+    float p = min(max(RANSACConfidence, 0.0f), 1.0f);
     float n = log(1.f - p);
 
-    return n <= d * iter ? iter : (unsigned)round(n / d);
+    return n <= d * static_cast<float>(iter)
+               ? iter
+               : static_cast<unsigned>(round(n / d));
 }
 
 template<typename T>
 int computeHomography(T* H_ptr, const float* rnd_ptr, const float* x_src_ptr,
                       const float* y_src_ptr, const float* x_dst_ptr,
                       const float* y_dst_ptr) {
-    if ((unsigned)rnd_ptr[0] == (unsigned)rnd_ptr[1] ||
-        (unsigned)rnd_ptr[0] == (unsigned)rnd_ptr[2] ||
-        (unsigned)rnd_ptr[0] == (unsigned)rnd_ptr[3] ||
-        (unsigned)rnd_ptr[1] == (unsigned)rnd_ptr[2] ||
-        (unsigned)rnd_ptr[1] == (unsigned)rnd_ptr[3] ||
-        (unsigned)rnd_ptr[2] == (unsigned)rnd_ptr[3])
+    if (static_cast<unsigned>(rnd_ptr[0]) ==
+            static_cast<unsigned>(rnd_ptr[1]) ||
+        static_cast<unsigned>(rnd_ptr[0]) ==
+            static_cast<unsigned>(rnd_ptr[2]) ||
+        static_cast<unsigned>(rnd_ptr[0]) ==
+            static_cast<unsigned>(rnd_ptr[3]) ||
+        static_cast<unsigned>(rnd_ptr[1]) ==
+            static_cast<unsigned>(rnd_ptr[2]) ||
+        static_cast<unsigned>(rnd_ptr[1]) ==
+            static_cast<unsigned>(rnd_ptr[3]) ||
+        static_cast<unsigned>(rnd_ptr[2]) ==
+            static_cast<unsigned>(rnd_ptr[3])) {
         return 1;
+    }
 
     float src_pt_x[4], src_pt_y[4], dst_pt_x[4], dst_pt_y[4];
     for (unsigned j = 0; j < 4; j++) {
-        src_pt_x[j] = x_src_ptr[(unsigned)rnd_ptr[j]];
-        src_pt_y[j] = y_src_ptr[(unsigned)rnd_ptr[j]];
-        dst_pt_x[j] = x_dst_ptr[(unsigned)rnd_ptr[j]];
-        dst_pt_y[j] = y_dst_ptr[(unsigned)rnd_ptr[j]];
+        src_pt_x[j] = x_src_ptr[static_cast<unsigned>(rnd_ptr[j])];
+        src_pt_y[j] = y_src_ptr[static_cast<unsigned>(rnd_ptr[j])];
+        dst_pt_x[j] = x_dst_ptr[static_cast<unsigned>(rnd_ptr[j])];
+        dst_pt_y[j] = y_dst_ptr[static_cast<unsigned>(rnd_ptr[j])];
     }
 
     float x_src_mean =
@@ -178,7 +198,7 @@ int computeHomography(T* H_ptr, const float* rnd_ptr, const float* x_src_ptr,
     float src_scale = sqrt(2.0f) / sqrt(src_var);
     float dst_scale = sqrt(2.0f) / sqrt(dst_var);
 
-    Array<T> A     = createValueArray<T>(af::dim4(9, 9), (T)0);
+    Array<T> A     = createValueArray<T>(af::dim4(9, 9), static_cast<T>(0));
     af::dim4 Adims = A.dims();
     T* A_ptr       = A.get();
     getQueue().sync();
@@ -204,7 +224,8 @@ int computeHomography(T* H_ptr, const float* rnd_ptr, const float* x_src_ptr,
         APTR(8, j * 2 + 1) = -dstx;
     }
 
-    Array<T> V = createValueArray<T>(af::dim4(Adims[1], Adims[1]), (T)0);
+    Array<T> V =
+        createValueArray<T>(af::dim4(Adims[1], Adims[1]), static_cast<T>(0));
     V.eval();
     getQueue().sync();
     JacobiSVD<T, 9, 9>(A.get(), V.get());
@@ -212,8 +233,8 @@ int computeHomography(T* H_ptr, const float* rnd_ptr, const float* x_src_ptr,
     dim4 Vdims = V.dims();
     T* V_ptr   = V.get();
 
-    array<T, 9> vH;
-    for (unsigned j = 0; j < 9; j++) vH[j] = V_ptr[8 * Vdims[0] + j];
+    array<T, 9> vH{};
+    for (unsigned j = 0; j < 9; j++) { vH[j] = V_ptr[8 * Vdims[0] + j]; }
 
     H_ptr[0] = src_scale * x_dst_mean * vH[6] + src_scale * vH[0] / dst_scale;
     H_ptr[1] = src_scale * x_dst_mean * vH[7] + src_scale * vH[1] / dst_scale;
@@ -252,17 +273,18 @@ int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
     const float* x_dst_ptr = x_dst.get();
     const float* y_dst_ptr = y_dst.get();
 
-    Array<T> H = createValueArray<T>(af::dim4(9, iterations), (T)0);
+    Array<T> H =
+        createValueArray<T>(af::dim4(9, iterations), static_cast<T>(0));
     H.eval();
     getQueue().sync();
 
-    const af::dim4 rdims = rnd.dims();
-    const af::dim4 Hdims = H.dims();
+    const af::dim4& rdims = rnd.dims();
+    const af::dim4& Hdims = H.dims();
 
-    unsigned iter        = iterations;
-    unsigned bestIdx     = 0;
-    unsigned bestInliers = 0;
-    float minMedian      = FLT_MAX;
+    unsigned iter    = iterations;
+    unsigned bestIdx = 0;
+    int bestInliers  = 0;
+    float minMedian  = FLT_MAX;
 
     for (unsigned i = 0; i < iter; i++) {
         const unsigned Hidx = Hdims[0] * i;
@@ -272,11 +294,12 @@ int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
         const float* rnd_ptr = rnd.get() + ridx;
 
         if (computeHomography<T>(H_ptr, rnd_ptr, x_src_ptr, y_src_ptr,
-                                 x_dst_ptr, y_dst_ptr))
+                                 x_dst_ptr, y_dst_ptr)) {
             continue;
+        }
 
         if (htype == AF_HOMOGRAPHY_RANSAC) {
-            unsigned inliers_count = 0;
+            int inliers_count = 0;
             for (unsigned j = 0; j < nsamples; j++) {
                 float z = H_ptr[6] * x_src_ptr[j] + H_ptr[7] * y_src_ptr[j] +
                           H_ptr[8];
@@ -288,16 +311,18 @@ int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
                           z;
 
                 float dist = sq(x_dst_ptr[j] - x) + sq(y_dst_ptr[j] - y);
-                if (dist < (inlier_thr * inlier_thr)) inliers_count++;
+                if (dist < (inlier_thr * inlier_thr)) { inliers_count++; }
             }
-            iter = updateIterations(
-                (nsamples - inliers_count) / (float)nsamples, iter);
+            iter =
+                updateIterations(static_cast<float>(nsamples - inliers_count) /
+                                     static_cast<float>(nsamples),
+                                 iter);
             if (inliers_count > bestInliers) {
                 bestIdx     = i;
                 bestInliers = inliers_count;
             }
         } else if (htype == AF_HOMOGRAPHY_LMEDS) {
-            std::vector<float> err(nsamples);
+            vector<float> err(nsamples);
             for (unsigned j = 0; j < nsamples; j++) {
                 float z = H_ptr[6] * x_src_ptr[j] + H_ptr[7] * y_src_ptr[j] +
                           H_ptr[8];
@@ -312,11 +337,12 @@ int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
                 err[j]     = sqrt(dist);
             }
 
-            std::stable_sort(err.begin(), err.end());
+            stable_sort(err.begin(), err.end());
 
             float median = err[nsamples / 2];
-            if (nsamples % 2 == 0)
+            if (nsamples % 2 == 0) {
                 median = (median + err[nsamples / 2 - 1]) * 0.5f;
+            }
 
             if (median < minMedian && median > FLT_EPSILON) {
                 minMedian = median;
@@ -328,9 +354,10 @@ int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
     memcpy(bestH.get(), H.get() + bestIdx * 9, 9 * sizeof(T));
 
     if (htype == AF_HOMOGRAPHY_LMEDS) {
-        float sigma = std::max(
-            1.4826f * (1 + 5.f / (nsamples - 4)) * (float)sqrt(minMedian),
-            1e-6f);
+        float sigma =
+            max(1.4826f * (1.f + 5.f / (static_cast<float>(nsamples) - 4.f)) *
+                    static_cast<float>(sqrt(minMedian)),
+                1e-6f);
         float dist_thr = sq(2.5f * sigma);
         T* bestH_ptr   = bestH.get();
 
@@ -345,7 +372,7 @@ int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
                       z;
 
             float dist = sq(x_dst_ptr[j] - x) + sq(y_dst_ptr[j] - y);
-            if (dist <= dist_thr) bestInliers++;
+            if (dist <= dist_thr) { bestInliers++; }
         }
     }
 
@@ -358,18 +385,20 @@ int homography(Array<T>& bestH, const Array<float>& x_src,
                const Array<float>& y_dst, const Array<float>& initial,
                const af_homography_type htype, const float inlier_thr,
                const unsigned iterations) {
-    const af::dim4 idims    = x_src.dims();
+    const dim4& idims       = x_src.dims();
     const unsigned nsamples = idims[0];
 
     unsigned iter = iterations;
-    if (htype == AF_HOMOGRAPHY_LMEDS)
-        iter = std::min(
-            iter, (unsigned)(log(1.f - LMEDSConfidence) /
+    if (htype == AF_HOMOGRAPHY_LMEDS) {
+        iter = min(iter, static_cast<unsigned>(
+                             log(1.f - LMEDSConfidence) /
                              log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
+    }
 
     af::dim4 rdims(4, iter);
-    Array<float> fctr = createValueArray<float>(rdims, (float)nsamples);
-    Array<float> rnd  = arithOp<float, af_mul_t>(initial, fctr, rdims);
+    Array<float> fctr =
+        createValueArray<float>(rdims, static_cast<float>(nsamples));
+    Array<float> rnd = arithOp<float, af_mul_t>(initial, fctr, rdims);
     rnd.eval();
     getQueue().sync();
 

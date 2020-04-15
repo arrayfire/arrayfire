@@ -51,10 +51,11 @@ fg_chart setup_plot(fg_window window, const af_array in_,
     fg_chart chart      = NULL;
     fg_chart_type ctype = order == 2 ? FG_CHART_2D : FG_CHART_3D;
 
-    if (props->col > -1 && props->row > -1)
+    if (props->col > -1 && props->row > -1) {
         chart = fgMngr.getChart(window, props->row, props->col, ctype);
-    else
+    } else {
         chart = fgMngr.getChart(window, 0, 0, ctype);
+    }
 
     fg_plot plot =
         fgMngr.getPlot(chart, tdims[1], getGLType<T>(), ptype, mtype);
@@ -79,16 +80,16 @@ fg_chart setup_plot(fg_window window, const af_array in_,
             cmax[0] = step_round(dmax[0], true);
             cmin[1] = step_round(dmin[1], false);
             cmax[1] = step_round(dmax[1], true);
-            if (order == 3) cmin[2] = step_round(dmin[2], false);
-            if (order == 3) cmax[2] = step_round(dmax[2], true);
+            if (order == 3) { cmin[2] = step_round(dmin[2], false); }
+            if (order == 3) { cmax[2] = step_round(dmax[2], true); }
         } else {
-            if (cmin[0] > dmin[0]) cmin[0] = step_round(dmin[0], false);
-            if (cmax[0] < dmax[0]) cmax[0] = step_round(dmax[0], true);
-            if (cmin[1] > dmin[1]) cmin[1] = step_round(dmin[1], false);
-            if (cmax[1] < dmax[1]) cmax[1] = step_round(dmax[1], true);
+            if (cmin[0] > dmin[0]) { cmin[0] = step_round(dmin[0], false); }
+            if (cmax[0] < dmax[0]) { cmax[0] = step_round(dmax[0], true); }
+            if (cmin[1] > dmin[1]) { cmin[1] = step_round(dmin[1], false); }
+            if (cmax[1] < dmax[1]) { cmax[1] = step_round(dmax[1], true); }
             if (order == 3) {
-                if (cmin[2] > dmin[2]) cmin[2] = step_round(dmin[2], false);
-                if (cmax[2] < dmax[2]) cmax[2] = step_round(dmax[2], true);
+                if (cmin[2] > dmin[2]) { cmin[2] = step_round(dmin[2], false); }
+                if (cmax[2] < dmax[2]) { cmax[2] = step_round(dmax[2], true); }
             }
         }
         FG_CHECK(_.fg_set_chart_axes_limits(chart, cmin[0], cmax[0], cmin[1],
@@ -103,10 +104,12 @@ template<typename T>
 fg_chart setup_plot(fg_window window, const af_array in_, const int order,
                     const af_cell* const props, fg_plot_type ptype,
                     fg_marker_type mtype) {
-    if (order == 2)
+    if (order == 2) {
         return setup_plot<T, 2>(window, in_, props, ptype, mtype);
-    else if (order == 3)
+    }
+    if (order == 3) {
         return setup_plot<T, 3>(window, in_, props, ptype, mtype);
+    }
     // Dummy to avoid warnings
     return NULL;
 }
@@ -181,15 +184,15 @@ af_err plotWrapper(const af_window window, const af_array X, const af_array Y,
         if (window == 0) { AF_ERROR("Not a valid window", AF_ERR_INTERNAL); }
 
         const ArrayInfo& xInfo = getInfo(X);
-        af::dim4 xDims         = xInfo.dims();
+        const af::dim4& xDims  = xInfo.dims();
         af_dtype xType         = xInfo.getType();
 
         const ArrayInfo& yInfo = getInfo(Y);
-        af::dim4 yDims         = yInfo.dims();
+        const af::dim4& yDims  = yInfo.dims();
         af_dtype yType         = yInfo.getType();
 
         const ArrayInfo& zInfo = getInfo(Z);
-        af::dim4 zDims         = zInfo.dims();
+        const af::dim4& zDims  = zInfo.dims();
         af_dtype zType         = zInfo.getType();
 
         DIM_ASSERT(0, xDims == yDims);
@@ -255,11 +258,11 @@ af_err plotWrapper(const af_window window, const af_array X, const af_array Y,
         if (window == 0) { AF_ERROR("Not a valid window", AF_ERR_INTERNAL); }
 
         const ArrayInfo& xInfo = getInfo(X);
-        af::dim4 xDims         = xInfo.dims();
+        const af::dim4& xDims  = xInfo.dims();
         af_dtype xType         = xInfo.getType();
 
         const ArrayInfo& yInfo = getInfo(Y);
-        af::dim4 yDims         = yInfo.dims();
+        const af::dim4& yDims  = yInfo.dims();
         af_dtype yType         = yInfo.getType();
 
         DIM_ASSERT(0, xDims == yDims);
@@ -344,7 +347,8 @@ af_err af_draw_plot3(const af_window wind, const af_array P,
 
         if (dims.ndims() == 2 && dims[1] == 3) {
             return plotWrapper(wind, P, 1, props);
-        } else if (dims.ndims() == 2 && dims[0] == 3) {
+        }
+        if (dims.ndims() == 2 && dims[0] == 3) {
             return plotWrapper(wind, P, 0, props);
         } else if (dims.ndims() == 1 && dims[0] % 3 == 0) {
             dim4 rdims(dims.elements() / 3, 3, 1, 1);
@@ -405,7 +409,8 @@ af_err af_draw_scatter3(const af_window wind, const af_array P,
 
         if (dims.ndims() == 2 && dims[1] == 3) {
             return plotWrapper(wind, P, 1, props, FG_PLOT_SCATTER, fg_marker);
-        } else if (dims.ndims() == 2 && dims[0] == 3) {
+        }
+        if (dims.ndims() == 2 && dims[0] == 3) {
             return plotWrapper(wind, P, 0, props, FG_PLOT_SCATTER, fg_marker);
         } else if (dims.ndims() == 1 && dims[0] % 3 == 0) {
             dim4 rdims(dims.elements() / 3, 3, 1, 1);

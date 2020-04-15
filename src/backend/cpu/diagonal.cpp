@@ -19,13 +19,15 @@
 #include <algorithm>
 #include <cstdlib>
 
-using common::half;
+using common::half;  // NOLINT(misc-unused-using-decls) bug in clang-tidy
+using std::abs;      // NOLINT(misc-unused-using-decls) bug in clang-tidy
+using std::min;      // NOLINT(misc-unused-using-decls) bug in clang-tidy
 
 namespace cpu {
 
 template<typename T>
 Array<T> diagCreate(const Array<T> &in, const int num) {
-    int size     = in.dims()[0] + std::abs(num);
+    int size     = in.dims()[0] + abs(num);
     int batch    = in.dims()[1];
     Array<T> out = createEmptyArray<T>(dim4(size, size, batch));
 
@@ -36,9 +38,9 @@ Array<T> diagCreate(const Array<T> &in, const int num) {
 
 template<typename T>
 Array<T> diagExtract(const Array<T> &in, const int num) {
-    const dim4 idims = in.dims();
-    dim_t size       = std::min(idims[0], idims[1]) - std::abs(num);
-    Array<T> out     = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
+    const dim4 &idims = in.dims();
+    dim_t size        = min(idims[0], idims[1]) - abs(num);
+    Array<T> out      = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
 
     getQueue().enqueue(kernel::diagExtract<T>, out, in, num);
 

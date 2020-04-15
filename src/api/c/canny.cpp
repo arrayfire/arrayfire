@@ -34,7 +34,6 @@
 
 using af::dim4;
 using std::vector;
-using namespace detail;
 
 Array<float> gradientMagnitude(const Array<float>& gx, const Array<float>& gy,
                                const bool& isf) {
@@ -56,7 +55,7 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
     Array<uint> hist =
         detail::histogram<float, uint, false>(supEdges, NUM_BINS, 0, maxVal);
 
-    const af::dim4 hDims = hist.dims();
+    const af::dim4& hDims = hist.dims();
 
     // reduce along histogram dimension i.e. 0th dimension
     auto totals = reduce<af_add_t, uint, float>(hist, 0);
@@ -71,16 +70,16 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
     std::vector<af_seq> seqBegin(4, af_span);
     std::vector<af_seq> seqRest(4, af_span);
 
-    seqBegin[0] = af_make_seq(0, hDims[0] - 1, 1);
-    seqRest[0]  = af_make_seq(0, hDims[0] - 1, 1);
+    seqBegin[0] = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
+    seqRest[0]  = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
 
     const af::dim4& iDims = supEdges.dims();
 
     Array<float> sigmas = detail::createEmptyArray<float>(hDims);
 
     for (unsigned b = 0; b < (NUM_BINS - 1); ++b) {
-        seqBegin[0].end  = (double)b;
-        seqRest[0].begin = (double)(b + 1);
+        seqBegin[0].end  = static_cast<double>(b);
+        seqRest[0].begin = static_cast<double>(b + 1);
 
         auto frontPartition = createSubArray(probability, seqBegin, false);
         auto endPartition   = createSubArray(probability, seqRest, false);
@@ -139,12 +138,12 @@ Array<float> normalize(const Array<float>& supEdges, const float minVal,
 std::pair<Array<char>, Array<char>> computeCandidates(
     const Array<float>& supEdges, const float t1, const af_canny_threshold ct,
     const float t2) {
-    float maxVal = detail::reduce_all<af_max_t, float, float>(supEdges);
-    const unsigned NUM_BINS = static_cast<unsigned>(maxVal);
+    float maxVal  = detail::reduce_all<af_max_t, float, float>(supEdges);
+    auto NUM_BINS = static_cast<unsigned>(maxVal);
 
     auto lowRatio = createValueArray<float>(supEdges.dims(), t1);
 
-    switch (ct) {
+    switch (ct) {  // NOLINT(hicpp-multiway-paths-covered)
         case AF_CANNY_THRESHOLD_AUTO_OTSU: {
             auto T2 = otsuThreshold(supEdges, NUM_BINS, maxVal);
             auto T1 = arithOp<float, af_mul_t>(T2, lowRatio, T2.dims());

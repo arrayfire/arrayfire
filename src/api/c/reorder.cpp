@@ -40,8 +40,8 @@ static inline af_array reorder(const af_array in, const af::dim4 &rdims0) {
 
     af_array out;
     if (rdims[0] == 0 && rdims[1] == 1 && rdims[2] == 2 && rdims[3] == 3) {
-        Array<T> Out = In;
-        out          = getHandle(Out);
+        const Array<T> &Out = In;
+        out                 = getHandle(Out);
     } else if (rdims[0] == 0) {
         dim4 odims    = dim4(1, 1, 1, 1);
         dim4 ostrides = dim4(1, 1, 1, 1);

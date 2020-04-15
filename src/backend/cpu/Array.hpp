@@ -43,7 +43,7 @@ using af::dim4;
 using std::shared_ptr;
 
 template<typename T>
-void evalMultiple(std::vector<Array<T> *> arrays);
+void evalMultiple(std::vector<Array<T> *> array_ptrs);
 
 // Creates a new Array object on the heap and returns a reference to it.
 template<typename T>

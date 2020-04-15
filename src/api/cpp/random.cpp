@@ -25,7 +25,7 @@ randomEngine::randomEngine(const randomEngine &other) : engine(0) {
     }
 }
 
-randomEngine::randomEngine(af_random_engine handle) : engine(handle) {}
+randomEngine::randomEngine(af_random_engine engine) : engine(engine) {}
 
 randomEngine::~randomEngine() {
     if (engine) { af_release_random_engine(engine); }
@@ -39,7 +39,7 @@ randomEngine &randomEngine::operator=(const randomEngine &other) {
     return *this;
 }
 
-randomEngineType randomEngine::getType(void) {
+randomEngineType randomEngine::getType() {
     af_random_engine_type type;
     AF_THROW(af_random_engine_get_type(&type, engine));
     return type;
@@ -53,13 +53,13 @@ void randomEngine::setSeed(const unsigned long long seed) {
     AF_THROW(af_random_engine_set_seed(&engine, seed));
 }
 
-unsigned long long randomEngine::getSeed(void) const {
+unsigned long long randomEngine::getSeed() const {
     unsigned long long seed;
     AF_THROW(af_random_engine_get_seed(&seed, engine));
     return seed;
 }
 
-af_random_engine randomEngine::get(void) const { return engine; }
+af_random_engine randomEngine::get() const { return engine; }
 
 array randu(const dim4 &dims, const dtype ty, randomEngine &r) {
     af_array out;
@@ -121,7 +121,7 @@ void setDefaultRandomEngineType(randomEngineType rtype) {
     AF_THROW(af_set_default_random_engine_type(rtype));
 }
 
-randomEngine getDefaultRandomEngine(void) {
+randomEngine getDefaultRandomEngine() {
     af_random_engine internal_handle = 0;
     af_random_engine handle          = 0;
     AF_THROW(af_get_default_random_engine(&internal_handle));

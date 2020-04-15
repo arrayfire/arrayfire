@@ -35,9 +35,9 @@ using std::tuple;
 
 template<typename inType, typename outType>
 static outType varAll(const af_array& in, const bool isbiased) {
-    typedef typename baseOutType<outType>::type weightType;
-    Array<inType> inArr  = getArray<inType>(in);
-    Array<outType> input = cast<outType>(inArr);
+    using weightType          = typename baseOutType<outType>::type;
+    const Array<inType> inArr = getArray<inType>(in);
+    Array<outType> input      = cast<outType>(inArr);
 
     Array<outType> meanCnst = createValueArray<outType>(
         input.dims(), mean<inType, weightType, outType>(inArr));
@@ -56,13 +56,13 @@ static outType varAll(const af_array& in, const bool isbiased) {
 
 template<typename inType, typename outType>
 static outType varAll(const af_array& in, const af_array weights) {
-    typedef typename baseOutType<outType>::type bType;
+    using bType = typename baseOutType<outType>::type;
 
     Array<outType> input = cast<outType>(getArray<inType>(in));
     Array<outType> wts   = cast<outType>(getArray<bType>(weights));
 
     bType wtsSum = reduce_all<af_add_t, bType, bType>(getArray<bType>(weights));
-    outType wtdMean = mean<outType, bType>(input, getArray<bType>(weights));
+    auto wtdMean = mean<outType, bType>(input, getArray<bType>(weights));
 
     Array<outType> meanArr = createValueArray<outType>(input.dims(), wtdMean);
     Array<outType> diff =
@@ -83,7 +83,7 @@ static tuple<Array<outType>, Array<outType>> meanvar(
     const Array<inType>& in,
     const Array<typename baseOutType<outType>::type>& weights,
     const af_var_bias bias, const dim_t dim) {
-    typedef typename baseOutType<outType>::type weightType;
+    using weightType     = typename baseOutType<outType>::type;
     Array<outType> input = cast<outType>(in);
     dim4 iDims           = input.dims();
 
@@ -129,7 +129,7 @@ static tuple<af_array, af_array> meanvar(const af_array& in,
                                          const af_array& weights,
                                          const af_var_bias bias,
                                          const dim_t dim) {
-    typedef typename baseOutType<outType>::type weightType;
+    using weightType    = typename baseOutType<outType>::type;
     Array<outType> mean = createEmptyArray<outType>({0}),
                    var  = createEmptyArray<outType>({0});
 
@@ -162,10 +162,9 @@ static af_array var_(const af_array& in, const af_array& weights,
         Array<bType> empty = createEmptyArray<bType>({0});
         return getHandle(
             var<inType, outType>(getArray<inType>(in), empty, bias, dim));
-    } else {
-        return getHandle(var<inType, outType>(
-            getArray<inType>(in), getArray<bType>(weights), bias, dim));
     }
+    return getHandle(var<inType, outType>(getArray<inType>(in),
+                                          getArray<bType>(weights), bias, dim));
 }
 
 af_err af_var(af_array* out, const af_array in, const bool isbiased,

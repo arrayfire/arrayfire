@@ -28,7 +28,7 @@ static inline void svd(af_array *s, af_array *u, af_array *vt,
     int M                 = dims[0];
     int N                 = dims[1];
 
-    typedef typename af::dtype_traits<T>::base_type Tr;
+    using Tr = typename af::dtype_traits<T>::base_type;
 
     // Allocate output arrays
     Array<Tr> sA = createEmptyArray<Tr>(af::dim4(min(M, N)));
@@ -50,7 +50,7 @@ static inline void svdInPlace(af_array *s, af_array *u, af_array *vt,
     int M                 = dims[0];
     int N                 = dims[1];
 
-    typedef typename af::dtype_traits<T>::base_type Tr;
+    using Tr = typename af::dtype_traits<T>::base_type;
 
     // Allocate output arrays
     Array<Tr> sA = createEmptyArray<Tr>(af::dim4(min(M, N)));

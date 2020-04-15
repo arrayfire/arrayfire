@@ -16,7 +16,6 @@
 #include <af/defines.h>
 #include <af/image.h>
 
-using af::dim4;
 using namespace detail;
 
 template<typename T>

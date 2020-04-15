@@ -24,18 +24,25 @@
 #include <af/dim4.hpp>
 #include <af/index.h>
 
-using namespace detail;
-
-using std::enable_if;
 using std::signbit;
 using std::swap;
 using std::vector;
 
+using af::dim4;
 using common::convert2Canonical;
 using common::createSpanIndex;
 using common::half;
 using common::if_complex;
 using common::if_real;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createSubArray;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename Tout, typename Tin>
 static void assign(Array<Tout>& out, const vector<af_seq> seqs,
@@ -44,23 +51,23 @@ static void assign(Array<Tout>& out, const vector<af_seq> seqs,
     const dim4& outDs = out.dims();
     const dim4& iDims = in.dims();
 
-    if (iDims.elements() == 0) return;
+    if (iDims.elements() == 0) { return; }
 
     out.eval();
 
     dim4 oDims = toDims(seqs, outDs);
 
     bool isVec = true;
-    for (int i = 0; isVec && i < (int)oDims.ndims() - 1; i++) {
+    for (int i = 0; isVec && i < static_cast<int>(oDims.ndims()) - 1; i++) {
         isVec &= oDims[i] == 1;
     }
 
     isVec &= in.isVector() || in.isScalar();
 
-    for (dim_t i = ndims; i < (int)in.ndims(); i++) { oDims[i] = 1; }
+    for (dim_t i = ndims; i < in.ndims(); i++) { oDims[i] = 1; }
 
     if (isVec) {
-        if (oDims.elements() != (dim_t)in.elements() && in.elements() != 1) {
+        if (oDims.elements() != in.elements() && in.elements() != 1) {
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
         }
 
@@ -73,8 +80,9 @@ static void assign(Array<Tout>& out, const vector<af_seq> seqs,
         copyArray<Tin, Tout>(dst, in_);
     } else {
         for (int i = 0; i < AF_MAX_DIMS; i++) {
-            if (oDims[i] != iDims[i])
+            if (oDims[i] != iDims[i]) {
                 AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+            }
         }
         Array<Tout> dst = createSubArray<Tout>(out, seqs, false);
 
@@ -126,7 +134,8 @@ af_err af_assign_seq(af_array* out, const af_array lhs, const unsigned ndims,
         const ArrayInfo& lInfo = getInfo(lhs);
 
         if (ndims == 1 && ndims != lInfo.ndims()) {
-            af_array tmp_in, tmp_out;
+            af_array tmp_in;
+            af_array tmp_out;
             AF_CHECK(af_flat(&tmp_in, lhs));
             AF_CHECK(af_assign_seq(&tmp_out, tmp_in, ndims, index, rhs));
             AF_CHECK(
@@ -135,7 +144,7 @@ af_err af_assign_seq(af_array* out, const af_array lhs, const unsigned ndims,
             // This can run into a double free issue if tmp_in == tmp_out
             // The condition ensures release only if both are different
             // Issue found on Tegra X1
-            if (tmp_in != tmp_out) AF_CHECK(af_release_array(tmp_out));
+            if (tmp_in != tmp_out) { AF_CHECK(af_release_array(tmp_out)); }
             return AF_SUCCESS;
         }
 
@@ -144,10 +153,11 @@ af_err af_assign_seq(af_array* out, const af_array lhs, const unsigned ndims,
         if (*out != lhs) {
             int count = 0;
             AF_CHECK(af_get_data_ref_count(&count, lhs));
-            if (count > 1)
+            if (count > 1) {
                 AF_CHECK(af_copy_array(&res, lhs));
-            else
+            } else {
                 res = retain(lhs);
+            }
         } else {
             res = lhs;
         }
@@ -223,7 +233,7 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
         }
 
         af_array rhs = rhs_;
-        if (track == (int)ndims) {
+        if (track == static_cast<int>(ndims)) {
             // all indexs are sequences, redirecting to af_assign
             return af_assign_seq(out, lhs, ndims, seqs.data(), rhs);
         }
@@ -238,15 +248,17 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
         af_dtype lhsType       = lInfo.getType();
         af_dtype rhsType       = rInfo.getType();
 
-        if (rhsDims.ndims() == 0) return af_retain_array(out, lhs);
+        if (rhsDims.ndims() == 0) { return af_retain_array(out, lhs); }
 
-        if (lhsDims.ndims() == 0)
+        if (lhsDims.ndims() == 0) {
             return af_create_handle(out, 0, nullptr, lhsType);
+        }
 
         ARG_ASSERT(2, (ndims == 1) || (ndims == (dim_t)lInfo.ndims()));
 
-        if (ndims == 1 && ndims != (dim_t)lInfo.ndims()) {
-            af_array tmp_in = 0, tmp_out = 0;
+        if (ndims == 1 && ndims != static_cast<dim_t>(lInfo.ndims())) {
+            af_array tmp_in  = 0;
+            af_array tmp_out = 0;
             AF_CHECK(af_flat(&tmp_in, lhs));
             AF_CHECK(af_assign_gen(&tmp_out, tmp_in, ndims, indexs, rhs_));
             AF_CHECK(
@@ -255,7 +267,7 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
             // This can run into a double free issue if tmp_in == tmp_out
             // The condition ensures release only if both are different
             // Issue found on Tegra X1
-            if (tmp_in != tmp_out) AF_CHECK(af_release_array(tmp_out));
+            if (tmp_in != tmp_out) { AF_CHECK(af_release_array(tmp_out)); }
             return AF_SUCCESS;
         }
 
@@ -269,8 +281,9 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
             AF_CHECK(af_get_data_ref_count(&count, lhs));
             if (count > 1) {
                 AF_CHECK(af_copy_array(&output, lhs));
-            } else
+            } else {
                 output = retain(lhs);
+            }
         } else {
             output = lhs;
         }
@@ -280,21 +293,24 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
         // particular dimension, set the length of
         // that dimension accordingly before any checks
         for (dim_t i = 0; i < ndims; i++) {
-            if (!indexs[i].isSeq)
+            if (!indexs[i].isSeq) {
                 oDims[i] = getInfo(indexs[i].idx.arr).elements();
+            }
         }
 
-        for (dim_t i = ndims; i < (dim_t)lInfo.ndims(); i++) oDims[i] = 1;
+        for (dim_t i = ndims; i < static_cast<dim_t>(lInfo.ndims()); i++) {
+            oDims[i] = 1;
+        }
 
         bool isVec = true;
         for (int i = 0; isVec && i < oDims.ndims() - 1; i++) {
             isVec &= oDims[i] == 1;
         }
 
-        // TODO: Move logic out of this
+        // TODO(umar): Move logic out of this
         isVec &= rInfo.isVector() || rInfo.isScalar();
         if (isVec) {
-            if (oDims.elements() != (dim_t)rInfo.elements() &&
+            if (oDims.elements() != static_cast<dim_t>(rInfo.elements()) &&
                 rInfo.elements() != 1) {
                 AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
             }
@@ -308,13 +324,14 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
             }
         } else {
             for (int i = 0; i < AF_MAX_DIMS; i++) {
-                if (oDims[i] != rhsDims[i])
+                if (oDims[i] != rhsDims[i]) {
                     AF_ERROR("Size mismatch between input and output",
                              AF_ERR_SIZE);
+                }
             }
         }
 
-        std::array<af_index_t, AF_MAX_DIMS> idxrs;
+        std::array<af_index_t, AF_MAX_DIMS> idxrs{};
         for (dim_t i = 0; i < AF_MAX_DIMS; ++i) {
             if (i < ndims) {
                 bool isSeq = indexs[i].isSeq;
@@ -370,11 +387,11 @@ af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
         } catch (...) {
             if (*out != lhs) {
                 AF_CHECK(af_release_array(output));
-                if (isVec) AF_CHECK(af_release_array(rhs));
+                if (isVec) { AF_CHECK(af_release_array(rhs)); }
             }
             throw;
         }
-        if (isVec) AF_CHECK(af_release_array(rhs));
+        if (isVec) { AF_CHECK(af_release_array(rhs)); }
         swap(*out, output);
     }
     CATCHALL;

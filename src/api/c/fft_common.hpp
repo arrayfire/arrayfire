@@ -10,38 +10,38 @@
 #include <fft.hpp>
 #include <handle.hpp>
 
-using namespace detail;
-
-void computePaddedDims(dim4 &pdims, const dim4 &idims, const dim_t npad,
+void computePaddedDims(af::dim4 &pdims, const af::dim4 &idims, const dim_t npad,
                        dim_t const *const pad);
 
 template<typename inType, typename outType, int rank, bool direction>
-Array<outType> fft(const Array<inType> input, const double norm_factor,
-                   const dim_t npad, const dim_t *const pad) {
-    dim4 pdims(1);
+detail::Array<outType> fft(const detail::Array<inType> input,
+                           const double norm_factor, const dim_t npad,
+                           const dim_t *const pad) {
+    af::dim4 pdims(1);
     computePaddedDims(pdims, input.dims(), npad, pad);
-    auto res = padArray(input, pdims, scalar<outType>(0));
+    auto res = padArray(input, pdims, detail::scalar<outType>(0));
 
-    fft_inplace<outType, rank, direction>(res);
+    detail::fft_inplace<outType, rank, direction>(res);
     if (norm_factor != 1.0) multiply_inplace(res, norm_factor);
 
     return res;
 }
 
 template<typename inType, typename outType, int rank>
-Array<outType> fft_r2c(const Array<inType> input, const double norm_factor,
-                       const dim_t npad, const dim_t *const pad) {
-    dim4 idims = input.dims();
+detail::Array<outType> fft_r2c(const detail::Array<inType> input,
+                               const double norm_factor, const dim_t npad,
+                               const dim_t *const pad) {
+    af::dim4 idims = input.dims();
 
     bool is_pad = false;
     for (int i = 0; i < npad; i++) { is_pad |= (pad[i] != idims[i]); }
 
-    Array<inType> tmp = input;
+    detail::Array<inType> tmp = input;
 
     if (is_pad) {
-        dim4 pdims(1);
+        af::dim4 pdims(1);
         computePaddedDims(pdims, input.dims(), npad, pad);
-        tmp = padArray(input, pdims, scalar<inType>(0));
+        tmp = padArray(input, pdims, detail::scalar<inType>(0));
     }
 
     auto res = fft_r2c<outType, inType, rank>(tmp);
@@ -51,9 +51,11 @@ Array<outType> fft_r2c(const Array<inType> input, const double norm_factor,
 }
 
 template<typename inType, typename outType, int rank>
-Array<outType> fft_c2r(const Array<inType> input, const double norm_factor,
-                       const dim4 &odims) {
-    Array<outType> output = fft_c2r<outType, inType, rank>(input, odims);
+detail::Array<outType> fft_c2r(const detail::Array<inType> input,
+                               const double norm_factor,
+                               const af::dim4 &odims) {
+    detail::Array<outType> output =
+        fft_c2r<outType, inType, rank>(input, odims);
 
     if (norm_factor != 1) {
         // Normalize input because tmp was not normalized

@@ -15,12 +15,15 @@
 #include <af/signal.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::multiply_inplace;
 
 void computePaddedDims(dim4 &pdims, const dim4 &idims, const dim_t npad,
                        dim_t const *const pad) {
     for (int i = 0; i < 4; i++) {
-        pdims[i] = (i < (int)npad) ? pad[i] : idims[i];
+        pdims[i] = (i < static_cast<int>(npad)) ? pad[i] : idims[i];
     }
 }
 
@@ -37,7 +40,7 @@ static af_err fft(af_array *out, const af_array in, const double norm_factor,
     try {
         const ArrayInfo &info = getInfo(in);
         af_dtype type         = info.getType();
-        af::dim4 dims         = info.dims();
+        const dim4 &dims      = info.dims();
 
         if (dims.ndims() == 0) { return af_retain_array(out, in); }
 

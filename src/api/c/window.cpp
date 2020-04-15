@@ -15,7 +15,6 @@
 #include <common/graphics_common.hpp>
 #include <platform.hpp>
 
-using af::dim4;
 using namespace detail;
 using namespace graphics;
 
@@ -75,26 +74,27 @@ af_err af_set_axes_limits_compute(const af_window window, const af_array x,
 
         ForgeManager& fgMngr = forgeManager();
 
-        fg_chart chart = NULL;
+        fg_chart chart = nullptr;
 
         fg_chart_type ctype = (z ? FG_CHART_3D : FG_CHART_2D);
 
-        if (props->col > -1 && props->row > -1)
+        if (props->col > -1 && props->row > -1) {
             chart = fgMngr.getChart(window, props->row, props->col, ctype);
-        else
+        } else {
             chart = fgMngr.getChart(window, 0, 0, ctype);
+        }
 
-        double xmin = -1, xmax = 1;
-        double ymin = -1, ymax = 1;
-        double zmin = -1, zmax = 1;
-        AF_CHECK(af_min_all(&xmin, NULL, x));
-        AF_CHECK(af_max_all(&xmax, NULL, x));
-        AF_CHECK(af_min_all(&ymin, NULL, y));
-        AF_CHECK(af_max_all(&ymax, NULL, y));
+        double xmin = -1., xmax = 1.;
+        double ymin = -1., ymax = 1.;
+        double zmin = -1., zmax = 1.;
+        AF_CHECK(af_min_all(&xmin, nullptr, x));
+        AF_CHECK(af_max_all(&xmax, nullptr, x));
+        AF_CHECK(af_min_all(&ymin, nullptr, y));
+        AF_CHECK(af_max_all(&ymax, nullptr, y));
 
         if (ctype == FG_CHART_3D) {
-            AF_CHECK(af_min_all(&zmin, NULL, z));
-            AF_CHECK(af_max_all(&zmax, NULL, z));
+            AF_CHECK(af_min_all(&zmin, nullptr, z));
+            AF_CHECK(af_max_all(&zmax, nullptr, z));
         }
 
         if (!exact) {
@@ -123,21 +123,22 @@ af_err af_set_axes_limits_2d(const af_window window, const float xmin,
 
         ForgeManager& fgMngr = forgeManager();
 
-        fg_chart chart = NULL;
+        fg_chart chart = nullptr;
         // The ctype here below doesn't really matter as it is only fetching
         // the chart. It will not set it.
         // If this is actually being done, then it is extremely bad.
         fg_chart_type ctype = FG_CHART_2D;
 
-        if (props->col > -1 && props->row > -1)
+        if (props->col > -1 && props->row > -1) {
             chart = fgMngr.getChart(window, props->row, props->col, ctype);
-        else
+        } else {
             chart = fgMngr.getChart(window, 0, 0, ctype);
+        }
 
-        float _xmin = xmin;
-        float _xmax = xmax;
-        float _ymin = ymin;
-        float _ymax = ymax;
+        double _xmin = xmin;
+        double _xmax = xmax;
+        double _ymin = ymin;
+        double _ymax = ymax;
         if (!exact) {
             _xmin = step_round(_xmin, false);
             _xmax = step_round(_xmax, true);
@@ -163,23 +164,24 @@ af_err af_set_axes_limits_3d(const af_window window, const float xmin,
 
         ForgeManager& fgMngr = forgeManager();
 
-        fg_chart chart = NULL;
+        fg_chart chart = nullptr;
         // The ctype here below doesn't really matter as it is only fetching
         // the chart. It will not set it.
         // If this is actually being done, then it is extremely bad.
         fg_chart_type ctype = FG_CHART_3D;
 
-        if (props->col > -1 && props->row > -1)
+        if (props->col > -1 && props->row > -1) {
             chart = fgMngr.getChart(window, props->row, props->col, ctype);
-        else
+        } else {
             chart = fgMngr.getChart(window, 0, 0, ctype);
+        }
 
-        float _xmin = xmin;
-        float _xmax = xmax;
-        float _ymin = ymin;
-        float _ymax = ymax;
-        float _zmin = zmin;
-        float _zmax = zmax;
+        double _xmin = xmin;
+        double _xmax = xmax;
+        double _ymin = ymin;
+        double _ymax = ymax;
+        double _zmin = zmin;
+        double _zmax = zmax;
         if (!exact) {
             _xmin = step_round(_xmin, false);
             _xmax = step_round(_xmax, true);
@@ -205,14 +207,15 @@ af_err af_set_axes_titles(const af_window window, const char* const xtitle,
 
         ForgeManager& fgMngr = forgeManager();
 
-        fg_chart chart = NULL;
+        fg_chart chart = nullptr;
 
         fg_chart_type ctype = (ztitle ? FG_CHART_3D : FG_CHART_2D);
 
-        if (props->col > -1 && props->row > -1)
+        if (props->col > -1 && props->row > -1) {
             chart = fgMngr.getChart(window, props->row, props->col, ctype);
-        else
+        } else {
             chart = fgMngr.getChart(window, 0, 0, ctype);
+        }
 
         FG_CHECK(forgePlugin().fg_set_chart_axes_titles(chart, xtitle, ytitle,
                                                         ztitle));
@@ -238,10 +241,11 @@ af_err af_set_axes_label_format(const af_window window,
 
         fg_chart_type ctype = (zformat ? FG_CHART_3D : FG_CHART_2D);
 
-        if (props->col > -1 && props->row > -1)
+        if (props->col > -1 && props->row > -1) {
             chart = fgMngr.getChart(window, props->row, props->col, ctype);
-        else
+        } else {
             chart = fgMngr.getChart(window, 0, 0, ctype);
+        }
 
         if (ctype == FG_CHART_2D) {
             FG_CHECK(forgePlugin().fg_set_chart_label_format(chart, xformat,

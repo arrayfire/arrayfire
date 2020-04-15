@@ -18,7 +18,9 @@
 #include <af/signal.h>
 
 using af::dim4;
-using namespace detail;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 
 af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length,
                   const dim_t wind_width, const af_border_type edge_pad) {

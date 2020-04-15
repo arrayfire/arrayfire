@@ -37,14 +37,14 @@ namespace cuda {
 
 template<typename T>
 struct getrf_func_def_t {
-    typedef cusolverStatus_t (*getrf_func_def)(cusolverDnHandle_t, int, int,
-                                               T *, int, T *, int *, int *);
+    using getrf_func_def = cusolverStatus_t (*)(cusolverDnHandle_t, int, int,
+                                                T *, int, T *, int *, int *);
 };
 
 template<typename T>
 struct getrf_buf_func_def_t {
-    typedef cusolverStatus_t (*getrf_buf_func_def)(cusolverDnHandle_t, int, int,
-                                                   T *, int, int *);
+    using getrf_buf_func_def = cusolverStatus_t (*)(cusolverDnHandle_t, int,
+                                                    int, T *, int, int *);
 };
 
 #define LU_FUNC_DEF(FUNC)                                         \
@@ -129,7 +129,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
                                    in.strides()[1], workspace.get(),
                                    pivot.get(), info.get()));
 
-    if (convert_pivot) convertPivot(pivot, M);
+    if (convert_pivot) { convertPivot(pivot, M); }
 
     return pivot;
 }

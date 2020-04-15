@@ -30,15 +30,16 @@ int homography(Array<T> &bestH, const Array<float> &x_src,
                const Array<float> &y_dst, const Array<float> &initial,
                const af_homography_type htype, const float inlier_thr,
                const unsigned iterations) {
-    const af::dim4 idims    = x_src.dims();
+    const af::dim4 &idims   = x_src.dims();
     const unsigned nsamples = idims[0];
 
     unsigned iter    = iterations;
     Array<float> err = createEmptyArray<float>(af::dim4());
     if (htype == AF_HOMOGRAPHY_LMEDS) {
-        iter = ::std::min(
-            iter, (unsigned)(log(1.f - LMEDSConfidence) /
-                             log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
+        iter =
+            ::std::min(iter, static_cast<unsigned>(
+                                 log(1.f - LMEDSConfidence) /
+                                 log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
         err = createValueArray<float>(af::dim4(nsamples, iter), FLT_MAX);
     } else {
         // Avoid passing "null" cl_mem object to kernels
@@ -48,12 +49,14 @@ int homography(Array<T> &bestH, const Array<float> &x_src,
     const size_t iter_sz = divup(iter, 256) * 256;
 
     af::dim4 rdims(4, iter_sz);
-    Array<float> fctr = createValueArray<float>(rdims, (float)nsamples);
-    Array<float> rnd  = arithOp<float, af_mul_t>(initial, fctr, rdims);
+    Array<float> fctr =
+        createValueArray<float>(rdims, static_cast<float>(nsamples));
+    Array<float> rnd = arithOp<float, af_mul_t>(initial, fctr, rdims);
 
-    Array<T> tmpH = createValueArray<T>(af::dim4(9, iter_sz), (T)0);
+    Array<T> tmpH =
+        createValueArray<T>(af::dim4(9, iter_sz), static_cast<T>(0));
 
-    bestH = createValueArray<T>(af::dim4(3, 3), (T)0);
+    bestH = createValueArray<T>(af::dim4(3, 3), static_cast<T>(0));
     switch (htype) {
         case AF_HOMOGRAPHY_RANSAC:
             return kernel::computeH<T, AF_HOMOGRAPHY_RANSAC>(

@@ -20,14 +20,11 @@
 #include <string>
 #include <vector>
 
-using std::make_unique;
 using std::max;
 using std::move;
 using std::stoi;
 using std::string;
 using std::vector;
-
-using spdlog::logger;
 
 namespace common {
 
@@ -37,7 +34,7 @@ DefaultMemoryManager::getCurrentMemoryInfo() {
 }
 
 void DefaultMemoryManager::cleanDeviceMemoryManager(int device) {
-    if (this->debug_mode) return;
+    if (this->debug_mode) { return; }
 
     // This vector is used to store the pointers which will be deleted by
     // the memory manager. We are using this to avoid calling free while
@@ -48,7 +45,7 @@ void DefaultMemoryManager::cleanDeviceMemoryManager(int device) {
     {
         lock_guard_t lock(this->memory_mutex);
         // Return if all buffers are locked
-        if (current.total_buffers == current.lock_buffers) return;
+        if (current.total_buffers == current.lock_buffers) { return; }
         free_ptrs.reserve(current.free_map.size());
 
         for (auto &kv : current.free_map) {
@@ -81,12 +78,12 @@ DefaultMemoryManager::DefaultMemoryManager(int num_devices,
 
     // Debug mode
     string env_var = getEnvVar("AF_MEM_DEBUG");
-    if (!env_var.empty()) this->debug_mode = env_var[0] != '0';
-    if (this->debug_mode) mem_step_size = 1;
+    if (!env_var.empty()) { this->debug_mode = env_var[0] != '0'; }
+    if (this->debug_mode) { mem_step_size = 1; }
 
     // Max Buffer count
     env_var = getEnvVar("AF_MAX_BUFFERS");
-    if (!env_var.empty()) this->max_buffers = max(1, stoi(env_var));
+    if (!env_var.empty()) { this->max_buffers = max(1, stoi(env_var)); }
 }
 
 void DefaultMemoryManager::initialize() { this->setMaxMemorySize(); }
@@ -96,7 +93,7 @@ void DefaultMemoryManager::shutdown() { signalMemoryCleanup(); }
 void DefaultMemoryManager::addMemoryManagement(int device) {
     // If there is a memory manager allocated for this device id, we might
     // as well use it and the buffers allocated for it
-    if (static_cast<size_t>(device) < memory.size()) return;
+    if (static_cast<size_t>(device) < memory.size()) { return; }
 
     // Assuming, device need not be always the next device Lets resize to
     // current_size + device + 1 +1 is to account for device being 0-based
@@ -105,8 +102,9 @@ void DefaultMemoryManager::addMemoryManagement(int device) {
 }
 
 void DefaultMemoryManager::removeMemoryManagement(int device) {
-    if ((size_t)device >= memory.size())
+    if (static_cast<size_t>(device) >= memory.size()) {
         AF_ERROR("No matching device found", AF_ERR_ARG);
+    }
 
     // Do garbage collection for the device and leave the memory::memory_info
     // struct from the memory vector intact
@@ -120,8 +118,9 @@ void DefaultMemoryManager::setMaxMemorySize() {
         // memsize returned 0, then use 1GB
         size_t memsize = this->getMaxMemorySize(n);
         memory[n].max_bytes =
-            memsize == 0 ? ONE_GB
-                         : max(memsize * 0.75, (double)(memsize - ONE_GB));
+            memsize == 0
+                ? ONE_GB
+                : max(memsize * 0.75, static_cast<double>(memsize - ONE_GB));
     }
 }
 
@@ -188,7 +187,7 @@ void *DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
                 ptr = this->nativeAlloc(alloc_bytes);
             } catch (const AfError &ex) {
                 // If out of memory, run garbage collect and try again
-                if (ex.getError() != AF_ERR_NO_MEM) throw;
+                if (ex.getError() != AF_ERR_NO_MEM) { throw; }
                 this->signalMemoryCleanup();
                 ptr = this->nativeAlloc(alloc_bytes);
             }
@@ -206,7 +205,7 @@ void *DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
 }
 
 size_t DefaultMemoryManager::allocated(void *ptr) {
-    if (!ptr) return 0;
+    if (!ptr) { return 0; }
     memory_info &current = this->getCurrentMemoryInfo();
     auto locked_iter     = current.locked_map.find(ptr);
     if (locked_iter == current.locked_map.end()) { return 0; }
@@ -281,13 +280,14 @@ void DefaultMemoryManager::printInfo(const char *msg, const int device) {
     for (auto &kv : current.locked_map) {
         const char *status_mngr = "Yes";
         const char *status_user = "Unknown";
-        if (kv.second.user_lock)
+        if (kv.second.user_lock) {
             status_user = "Yes";
-        else
+        } else {
             status_user = " No";
+        }
 
         const char *unit = "KB";
-        double size      = (double)(kv.second.bytes) / 1024;
+        double size      = static_cast<double>(kv.second.bytes) / 1024;
         if (size >= 1024) {
             size = size / 1024;
             unit = "MB";
@@ -302,7 +302,7 @@ void DefaultMemoryManager::printInfo(const char *msg, const int device) {
         const char *status_user = "No";
 
         const char *unit = "KB";
-        double size      = (double)(kv.first) / 1024;
+        double size      = static_cast<double>(kv.first) / 1024;
         if (size >= 1024) {
             size = size / 1024;
             unit = "MB";
@@ -321,10 +321,10 @@ void DefaultMemoryManager::usageInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                                      size_t *lock_bytes, size_t *lock_buffers) {
     const memory_info &current = this->getCurrentMemoryInfo();
     lock_guard_t lock(this->memory_mutex);
-    if (alloc_bytes) *alloc_bytes = current.total_bytes;
-    if (alloc_buffers) *alloc_buffers = current.total_buffers;
-    if (lock_bytes) *lock_bytes = current.lock_bytes;
-    if (lock_buffers) *lock_buffers = current.lock_buffers;
+    if (alloc_bytes) { *alloc_bytes = current.total_bytes; }
+    if (alloc_buffers) { *alloc_buffers = current.total_buffers; }
+    if (lock_bytes) { *lock_bytes = current.lock_bytes; }
+    if (lock_buffers) { *lock_buffers = current.lock_buffers; }
 }
 
 void DefaultMemoryManager::userLock(const void *ptr) {
@@ -338,7 +338,7 @@ void DefaultMemoryManager::userLock(const void *ptr) {
     } else {
         locked_info info = {false, true, 100};  // This number is not relevant
 
-        current.locked_map[(void *)ptr] = info;
+        current.locked_map[const_cast<void *>(ptr)] = info;
     }
 }
 
