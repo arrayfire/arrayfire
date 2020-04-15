@@ -31,7 +31,7 @@ class InteropManager {
     ~InteropManager() {
         try {
             destroyResources();
-        } catch (AfError &ex) {
+        } catch (const AfError &ex) {
             std::string perr = getEnvVar("AF_PRINT_ERRORS");
             if (!perr.empty()) {
                 if (perr != "0") fprintf(stderr, "%s\n", ex.what());

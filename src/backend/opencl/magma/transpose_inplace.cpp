@@ -58,17 +58,18 @@ template<typename T>
 void magmablas_transpose_inplace(magma_int_t n, cl_mem dA, size_t dA_offset,
                                  magma_int_t ldda, magma_queue_t queue) {
     magma_int_t info = 0;
-    if (n < 0)
+    if (n < 0) {
         info = -1;
-    else if (ldda < n)
+    } else if (ldda < n) {
         info = -3;
+    }
 
     if (info != 0) {
         // magma_xerbla( __func__, -(info) );
         return;  // info;
     }
 
-    if (n == 0) return;
+    if (n == 0) { return; }
 
     int dims[]    = {n, n, 1, 1};
     int strides[] = {1, ldda, ldda * n, ldda * n};

@@ -76,6 +76,6 @@ struct MemoryManager {
     MemoryManagerFunctionWrapper *wrapper;
 };
 
-MemoryManager &getMemoryManager(const af_memory_manager manager);
+MemoryManager &getMemoryManager(const af_memory_manager handle);
 
 af_memory_manager getHandle(MemoryManager &manager);

@@ -17,7 +17,7 @@ namespace opencl {
 template<typename T>
 Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
                 const af_interp_type method) {
-    const af::dim4 iDims = in.dims();
+    const af::dim4 &iDims = in.dims();
     af::dim4 oDims(odim0, odim1, iDims[2], iDims[3]);
 
     Array<T> out = createEmptyArray<T>(oDims);

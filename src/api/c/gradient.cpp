@@ -16,7 +16,8 @@
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
 
 template<typename T>
 static inline void gradient(af_array *grad0, af_array *grad1,

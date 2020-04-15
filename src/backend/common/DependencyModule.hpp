@@ -37,9 +37,9 @@ class DependencyModule {
     DependencyModule(const char* plugin_file_name,
                      const char** paths = nullptr);
 
-    DependencyModule(const std::vector<std::string> plugin_base_file_name,
-                     const std::vector<std::string> suffixes,
-                     const std::vector<std::string> paths);
+    DependencyModule(const std::vector<std::string>& plugin_base_file_name,
+                     const std::vector<std::string>& suffixes,
+                     const std::vector<std::string>& paths);
 
     ~DependencyModule() noexcept;
 
@@ -58,7 +58,7 @@ class DependencyModule {
 
     /// Returns the last error message that occurred because of loading the
     /// library
-    std::string getErrorMessage() const noexcept;
+    static std::string getErrorMessage() noexcept;
 
     spdlog::logger* getLogger() const noexcept;
 };

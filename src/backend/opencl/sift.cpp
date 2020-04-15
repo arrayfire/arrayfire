@@ -74,14 +74,15 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
     UNUSED(double_input);
     UNUSED(img_scale);
     UNUSED(feature_ratio);
-    if (compute_GLOH)
+    if (compute_GLOH) {
         AF_ERROR(
             "ArrayFire was not built with nonfree support, GLOH disabled\n",
             AF_ERR_NONFREE);
-    else
+    } else {
         AF_ERROR(
             "ArrayFire was not built with nonfree support, SIFT disabled\n",
             AF_ERR_NONFREE);
+    }
 #endif
 }
 

@@ -193,7 +193,7 @@ magma_int_t magma_geqrf3_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
     }
 
     k = minmn = std::min(m, n);
-    if (k == 0) return *info;
+    if (k == 0) { return *info; }
 
     nb = magma_get_geqrf_nb<Ty>(m);
 
@@ -252,7 +252,7 @@ magma_int_t magma_geqrf3_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
 
             /* Put 0s in the upper triangular part of a panel (and 1s on the
                diagonal); copy the upper triangular in ut and invert it. */
-            if (i > 0) magma_event_sync(event[0]);
+            if (i > 0) { magma_event_sync(event[0]); }
             // Change me
             split_diag_block<Ty>(ib, work_ref(i), ldwork, ut);
             magma_setmatrix<Ty>(rows, ib, work_ref(i), ldwork, a_ref(i, i),

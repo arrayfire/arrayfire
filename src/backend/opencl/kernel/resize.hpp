@@ -55,8 +55,8 @@ void resize(Param out, const Param in) {
             default: break;
         }
 
-        if ((af_dtype)dtype_traits<T>::af_type == c32 ||
-            (af_dtype)dtype_traits<T>::af_type == c64) {
+        if (static_cast<af_dtype>(dtype_traits<T>::af_type) == c32 ||
+            static_cast<af_dtype>(dtype_traits<T>::af_type) == c64) {
             options << " -D CPLX=1";
             options << " -D TB=" << dtype_traits<BT>::getName();
         } else {

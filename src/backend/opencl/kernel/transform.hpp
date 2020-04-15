@@ -65,8 +65,8 @@ void transform(Param out, const Param in, const Param tf, bool isInverse,
         options << " -D InterpValTy=" << dtype_traits<vtype_t<T>>::getName();
         options << " -D InterpPosTy=" << dtype_traits<wtype_t<BT>>::getName();
 
-        if ((af_dtype)dtype_traits<T>::af_type == c32 ||
-            (af_dtype)dtype_traits<T>::af_type == c64) {
+        if (static_cast<af_dtype>(dtype_traits<T>::af_type) == c32 ||
+            static_cast<af_dtype>(dtype_traits<T>::af_type) == c64) {
             options << " -D IS_CPLX=1";
             options << " -D TB=" << dtype_traits<BT>::getName();
         } else {

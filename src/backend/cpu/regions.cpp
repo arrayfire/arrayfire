@@ -25,7 +25,7 @@ namespace cpu {
 
 template<typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity) {
-    Array<T> out = createValueArray(in.dims(), (T)0);
+    Array<T> out = createValueArray(in.dims(), static_cast<T>(0));
     getQueue().enqueue(kernel::regions<T>, out, in, connectivity);
 
     return out;

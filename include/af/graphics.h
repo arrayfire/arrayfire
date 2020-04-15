@@ -83,12 +83,13 @@ class AFAPI Window {
            Creates a window object with default width
            and height with title set to "ArrayFire"
 
-           \param[in] wnd is an \ref af_window handle which can be retrieved by
+           \param[in] window is an \ref af_window handle which can be retrieved
+                             by
            doing a get call on any \ref Window object
 
            \ingroup gfx_func_window
          */
-        Window(const af_window wnd);
+        Window(const af_window window);
 
         /**
            Destroys the window handle

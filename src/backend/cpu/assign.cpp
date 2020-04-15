@@ -26,7 +26,6 @@
 #include <vector>
 
 using af::dim4;
-using common::half;
 using std::vector;
 
 namespace cpu {
@@ -70,6 +69,6 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
-INSTANTIATE(half)
+INSTANTIATE(common::half)
 
 }  // namespace cpu

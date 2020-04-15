@@ -52,10 +52,11 @@ template<typename T>
 void sort0(Array<T>& val, bool isAscending) {
     int higherDims = val.elements() / val.dims()[0];
     // TODO Make a better heurisitic
-    if (higherDims > 10)
+    if (higherDims > 10) {
         sortBatched<T, 0>(val, isAscending);
-    else
+    } else {
         getQueue().enqueue(kernel::sort0Iterative<T>, val, isAscending);
+    }
 }
 
 template<typename T>
@@ -74,7 +75,7 @@ Array<T> sort(const Array<T>& in, const unsigned dim, bool isAscending) {
         af::dim4 reorderDims(0, 1, 2, 3);
         reorderDims[dim] = 0;
         preorderDims[0]  = out.dims()[dim];
-        for (int i = 1; i <= (int)dim; i++) {
+        for (int i = 1; i <= static_cast<int>(dim); i++) {
             reorderDims[i - 1] = i;
             preorderDims[i]    = out.dims()[i - 1];
         }

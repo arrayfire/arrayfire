@@ -36,10 +36,10 @@ void fast_pyramid(vector<unsigned> &feat_pyr, vector<Array<float>> &x_pyr,
         min_side /= scl_fctr;
 
         // Minimum image side for a descriptor to be computed
-        if (min_side < patch_size || max_levels == levels) break;
+        if (min_side < patch_size || max_levels == levels) { break; }
 
         max_levels++;
-        scl_sum += 1.f / (float)std::pow(scl_fctr, (float)i);
+        scl_sum += 1.f / std::pow(scl_fctr, static_cast<float>(i));
     }
 
     // Compute number of features to keep for each level
@@ -47,13 +47,14 @@ void fast_pyramid(vector<unsigned> &feat_pyr, vector<Array<float>> &x_pyr,
     lvl_scl.resize(max_levels);
     unsigned feat_sum = 0;
     for (unsigned i = 0; i < max_levels - 1; i++) {
-        float scl  = (float)std::pow(scl_fctr, (float)i);
+        auto scl   = std::pow(scl_fctr, static_cast<float>(i));
         lvl_scl[i] = scl;
 
         lvl_best[i] = ceil((max_feat / scl_sum) / lvl_scl[i]);
         feat_sum += lvl_best[i];
     }
-    lvl_scl[max_levels - 1]  = (float)std::pow(scl_fctr, (float)max_levels - 1);
+    lvl_scl[max_levels - 1] =
+        std::pow(scl_fctr, static_cast<float>(max_levels) - 1);
     lvl_best[max_levels - 1] = max_feat - feat_sum;
 
     // Hold multi-scale image pyramids

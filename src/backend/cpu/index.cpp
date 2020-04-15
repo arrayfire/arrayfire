@@ -21,7 +21,7 @@
 #include <vector>
 
 using af::dim4;
-using common::half;
+using common::half;  // NOLINT(misc-unused-using-decls) bug in clang-tidy
 using std::vector;
 
 namespace cpu {

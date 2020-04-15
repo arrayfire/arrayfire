@@ -90,7 +90,7 @@ af_err af_transpose_inplace(af_array in, const bool conjugate) {
         DIM_ASSERT(0, dims[0] == dims[1]);
 
         // If singleton element
-        if (dims[0] == 1) return AF_SUCCESS;
+        if (dims[0] == 1) { return AF_SUCCESS; }
 
         switch (type) {
             case f32: transpose_inplace<float>(in, conjugate); break;

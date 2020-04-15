@@ -38,8 +38,15 @@ template<typename T>
 static af_array transform_coordinates(const af_array &tf_, const float d0_,
                                       const float d1_) {
     af::dim4 h_dims(4, 3);
-    T h_in[4 * 3] = {(T)0,   (T)0, (T)d1_, (T)d1_, (T)0, (T)d0_,
-                     (T)d0_, (T)0, (T)1,   (T)1,   (T)1, (T)1};
+    T zero = 0;
+    T one  = 1;
+    T d0   = static_cast<T>(d0_);
+    T d1   = static_cast<T>(d1_);
+    // clang-format off
+    T h_in[4 * 3] = {zero, zero,  d1,   d1,
+                     zero,   d0,  d0, zero,
+                      one,  one, one,  one};
+    // clang-format on
 
     const Array<T> tf = getArray<T>(tf_);
     Array<T> in       = createHostDataArray<T>(h_dims, h_in);

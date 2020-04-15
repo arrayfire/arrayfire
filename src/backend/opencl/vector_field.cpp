@@ -65,7 +65,8 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         // Points
         glBindBuffer(GL_ARRAY_BUFFER, buff1);
-        GLubyte *pPtr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        auto *pPtr =
+            static_cast<GLubyte *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         if (pPtr) {
             getQueue().enqueueReadBuffer(*points.get(), CL_TRUE, 0, size1,
                                          pPtr);
@@ -75,7 +76,8 @@ void copy_vector_field(const Array<T> &points, const Array<T> &directions,
 
         // Directions
         glBindBuffer(GL_ARRAY_BUFFER, buff2);
-        GLubyte *dPtr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        auto *dPtr =
+            static_cast<GLubyte *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         if (dPtr) {
             getQueue().enqueueReadBuffer(*directions.get(), CL_TRUE, 0, size2,
                                          dPtr);

@@ -53,6 +53,7 @@
 
 using std::accumulate;
 using std::array;
+using std::back_insert_iterator;
 using std::begin;
 using std::end;
 using std::extent;
@@ -245,7 +246,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
     }
 
     auto computeFlag = getComputeCapability(device);
-    array<char, 32> arch;
+    array<char, 32> arch{};
     snprintf(arch.data(), arch.size(), "--gpu-architecture=compute_%d%d",
              computeFlag.first, computeFlag.second);
     vector<const char *> compiler_options = {
@@ -257,7 +258,10 @@ Kernel buildKernel(const int device, const string &nameExpr,
 #endif
     };
     if (!isJIT) {
-        for (auto &s : opts) { compiler_options.push_back(&s[0]); }
+        transform(begin(opts), end(opts),
+                  back_insert_iterator<vector<const char *>>(compiler_options),
+                  [](const std::string &s) { return s.data(); });
+
         compiler_options.push_back("--device-as-default-execution-space");
         NVRTC_CHECK(nvrtcAddNameExpression(prog, ker_name));
     }
@@ -335,15 +339,15 @@ kc_t &getCache(int device) {
     return caches[device];
 }
 
-Kernel findKernel(int device, const string nameExpr) {
+Kernel findKernel(int device, const string &nameExpr) {
     kc_t &cache = getCache(device);
 
-    kc_t::iterator iter = cache.find(nameExpr);
+    auto iter = cache.find(nameExpr);
 
     return (iter == cache.end() ? Kernel{0, 0} : iter->second);
 }
 
-void addKernelToCache(int device, const string nameExpr, Kernel entry) {
+void addKernelToCache(int device, const string &nameExpr, Kernel entry) {
     getCache(device).emplace(nameExpr, entry);
 }
 
@@ -469,16 +473,16 @@ string toString(af_op_t val) {
 }
 
 template<>
-string toString(const char *str) {
-    return string(str);
+string toString(const char *val) {
+    return string(val);
 }
 
 template<>
-string toString(af_interp_type p) {
+string toString(af_interp_type val) {
     const char *retVal = NULL;
 #define CASE_STMT(v) \
     case v: retVal = #v; break
-    switch (p) {
+    switch (val) {
         CASE_STMT(AF_INTERP_NEAREST);
         CASE_STMT(AF_INTERP_LINEAR);
         CASE_STMT(AF_INTERP_BILINEAR);
@@ -495,11 +499,11 @@ string toString(af_interp_type p) {
 }
 
 template<>
-string toString(af_border_type p) {
+string toString(af_border_type val) {
     const char *retVal = NULL;
 #define CASE_STMT(v) \
     case v: retVal = #v; break
-    switch (p) {
+    switch (val) {
         CASE_STMT(AF_PAD_ZERO);
         CASE_STMT(AF_PAD_SYM);
         CASE_STMT(AF_PAD_CLAMP_TO_EDGE);
@@ -510,11 +514,11 @@ string toString(af_border_type p) {
 }
 
 template<>
-string toString(af_moment_type p) {
+string toString(af_moment_type val) {
     const char *retVal = NULL;
 #define CASE_STMT(v) \
     case v: retVal = #v; break
-    switch (p) {
+    switch (val) {
         CASE_STMT(AF_MOMENT_M00);
         CASE_STMT(AF_MOMENT_M01);
         CASE_STMT(AF_MOMENT_M10);
@@ -526,11 +530,11 @@ string toString(af_moment_type p) {
 }
 
 template<>
-string toString(af_match_type p) {
+string toString(af_match_type val) {
     const char *retVal = NULL;
 #define CASE_STMT(v) \
     case v: retVal = #v; break
-    switch (p) {
+    switch (val) {
         CASE_STMT(AF_SAD);
         CASE_STMT(AF_ZSAD);
         CASE_STMT(AF_LSAD);
@@ -539,47 +543,51 @@ string toString(af_match_type p) {
         CASE_STMT(AF_LSSD);
         CASE_STMT(AF_NCC);
         CASE_STMT(AF_ZNCC);
+        CASE_STMT(AF_SHD);
     }
 #undef CASE_STMT
     return retVal;
 }
 
 template<>
-string toString(af_flux_function p) {
+string toString(af_flux_function val) {
     const char *retVal = NULL;
 #define CASE_STMT(v) \
     case v: retVal = #v; break
-    switch (p) {
+    switch (val) {
         CASE_STMT(AF_FLUX_QUADRATIC);
         CASE_STMT(AF_FLUX_EXPONENTIAL);
+        CASE_STMT(AF_FLUX_DEFAULT);
     }
 #undef CASE_STMT
     return retVal;
 }
 
 template<>
-string toString(AF_BATCH_KIND p) {
+string toString(AF_BATCH_KIND val) {
     const char *retVal = NULL;
 #define CASE_STMT(v) \
     case v: retVal = #v; break
-    switch (p) {
+    switch (val) {
         CASE_STMT(AF_BATCH_NONE);
         CASE_STMT(AF_BATCH_LHS);
         CASE_STMT(AF_BATCH_RHS);
         CASE_STMT(AF_BATCH_SAME);
         CASE_STMT(AF_BATCH_DIFF);
+        CASE_STMT(AF_BATCH_UNSUPPORTED);
     }
 #undef CASE_STMT
     return retVal;
 }
 
 Kernel getKernel(const string &nameExpr, const string &source,
-                 const vector<TemplateArg> &targs,
+                 const vector<TemplateArg> &templateArgs,
                  const vector<string> &compileOpts) {
     vector<string> args;
-    args.reserve(targs.size());
+    args.reserve(templateArgs.size());
 
-    transform(targs.begin(), targs.end(), std::back_inserter(args),
+    transform(templateArgs.begin(), templateArgs.end(),
+              std::back_inserter(args),
               [](const TemplateArg &arg) -> string { return arg._tparam; });
 
     string tInstance = nameExpr + "<" + args[0];

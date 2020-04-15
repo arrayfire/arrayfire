@@ -39,7 +39,7 @@ class ArrayInfo {
     // This can be changed in the future if the need arises for more devices as
     // this implementation is internal. Make sure to change the bit shift ops
     // when such a change is being made
-    int devId;
+    unsigned devId;
     af_dtype type;
     af::dim4 dim_size;
     dim_t offset;
@@ -95,7 +95,7 @@ class ArrayInfo {
     const af::dim4& dims() const { return dim_size; }
     size_t total() const { return offset + dim_strides[3] * dim_size[3]; }
 
-    int getDevId() const;
+    unsigned getDevId() const;
 
     void setId(int id) const;
 

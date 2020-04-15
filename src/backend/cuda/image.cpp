@@ -47,8 +47,8 @@ void copy_image(const Array<T> &in, fg_image image) {
 
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
         glBufferData(GL_PIXEL_UNPACK_BUFFER, data_size, 0, GL_STREAM_DRAW);
-        GLubyte *ptr =
-            (GLubyte *)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+        auto *ptr = static_cast<GLubyte *>(
+            glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY));
         if (ptr) {
             CUDA_CHECK(cudaMemcpyAsync(ptr, in.get(), data_size,
                                        cudaMemcpyDeviceToHost, stream));

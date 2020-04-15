@@ -65,7 +65,7 @@ std::string ToNumStr<half>::operator()(half val) {
     static const char *PINF = "+INFINITY";
     static const char *NINF = "-INFINITY";
     if (common::isinf(val)) { return val < 0.f ? NINF : PINF; }
-    return to_string(move(val));
+    return common::to_string(val);
 }
 
 template<>

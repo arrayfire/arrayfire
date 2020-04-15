@@ -16,7 +16,7 @@ namespace opencl {
 Param::Param() : data(nullptr), info{{0, 0, 0, 0}, {0, 0, 0, 0}, 0} {}
 Param::Param(cl::Buffer *data_, KParam info_) : data(data_), info(info_) {}
 
-Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]) {
+Param makeParam(cl_mem mem, int off, const int dims[4], const int strides[4]) {
     Param out;
     out.data        = new cl::Buffer(mem);
     out.info.offset = off;

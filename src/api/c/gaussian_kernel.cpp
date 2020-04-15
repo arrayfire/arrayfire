@@ -20,7 +20,9 @@
 #include <af/dim4.hpp>
 #include <af/image.h>
 
-using namespace detail;
+using detail::arithOp;
+using detail::Array;
+using detail::createValueArray;
 
 template<typename T>
 Array<T> gaussianKernel(const int rows, const int cols, const double sigma_r,
@@ -36,8 +38,8 @@ Array<T> gaussianKernel(const int rows, const int cols, const double sigma_r,
         Array<T> wt = range<T>(dim4(cols, rows), 0);
         Array<T> w  = transpose<T>(wt, false);
 
-        Array<T> c =
-            createValueArray<T>(odims, scalar<T>((double)(cols - 1) / 2.0));
+        Array<T> c = createValueArray<T>(
+            odims, scalar<T>(static_cast<double>(cols - 1) / 2.0));
         w = arithOp<T, af_sub_t>(w, c, odims);
 
         sigma        = sigma_c > 0 ? sigma_c : 0.25 * cols;
@@ -51,8 +53,8 @@ Array<T> gaussianKernel(const int rows, const int cols, const double sigma_r,
     if (rows > 1) {
         Array<T> w = range<T>(dim4(rows, cols), 0);
 
-        Array<T> r =
-            createValueArray<T>(odims, scalar<T>((double)(rows - 1) / 2.0));
+        Array<T> r = createValueArray<T>(
+            odims, scalar<T>(static_cast<double>(rows - 1) / 2.0));
         w = arithOp<T, af_sub_t>(w, r, odims);
 
         sigma        = sigma_r > 0 ? sigma_r : 0.25 * rows;

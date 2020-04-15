@@ -64,7 +64,7 @@ static string getFuncName(const vector<Node *> &output_nodes,
 
     for (auto node : output_nodes) { funcName << node->getNameStr() << "_"; }
 
-    for (int i = 0; i < (int)full_nodes.size(); i++) {
+    for (size_t i = 0; i < full_nodes.size(); i++) {
         full_nodes[i]->genKerName(funcName, full_ids[i]);
     }
 
@@ -73,7 +73,7 @@ static string getFuncName(const vector<Node *> &output_nodes,
     return hashName.str();
 }
 
-static string getKernelString(const string funcName,
+static string getKernelString(const string &funcName,
                               const vector<const Node *> &full_nodes,
                               const vector<Node_ids> &full_ids,
                               const vector<int> &output_ids, bool is_linear) {
@@ -129,7 +129,7 @@ static string getKernelString(const string funcName,
     stringstream offsetsStream;
     stringstream opsStream;
 
-    for (int i = 0; i < (int)full_nodes.size(); i++) {
+    for (size_t i = 0; i < full_nodes.size(); i++) {
         const auto &node     = full_nodes[i];
         const auto &ids_curr = full_ids[i];
         // Generate input parameters, only needs current id
@@ -140,8 +140,7 @@ static string getKernelString(const string funcName,
         node->genFuncs(opsStream, ids_curr);
     }
 
-    for (int i = 0; i < (int)output_ids.size(); i++) {
-        int id = output_ids[i];
+    for (int id : output_ids) {
         // Generate output parameters
         outParamStream << "__global " << full_nodes[id]->getTypeStr() << " *out"
                        << id << ", \n";
@@ -188,7 +187,7 @@ static Kernel getKernel(const vector<Node *> &output_nodes,
                                          output_ids, is_linear);
         saveKernel(funcName, jit_ker, ".cl");
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
-        const int ker_lens[]   = {jit_cl_len, (int)jit_ker.size()};
+        const int ker_lens[]   = {jit_cl_len, static_cast<int>(jit_ker.size())};
 
         Program prog;
         string options =
@@ -212,8 +211,8 @@ static Kernel getKernel(const vector<Node *> &output_nodes,
     return *entry.ker;
 }
 
-void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes) {
-    if (outputs.size() == 0) return;
+void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
+    if (outputs.empty()) { return; }
 
     // Assume all ouputs are of same size
     // FIXME: Add assert to check if all outputs are same size?
@@ -226,7 +225,7 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes) {
     thread_local vector<int> output_ids;
 
     // Reserve some space to improve performance at smaller sizes
-    if (nodes.size() == 0) {
+    if (nodes.empty()) {
         nodes.reserve(1024);
         output_ids.reserve(output_nodes.size());
         full_nodes.reserve(1024);
@@ -259,10 +258,11 @@ void evalNodes(vector<Param> &outputs, vector<Node *> output_nodes) {
         (getActiveDeviceType() == AFCL_DEVICE_TYPE_CPU) ? 1024 : 256;
 
     while (num_odims >= 1) {
-        if (out_info.dims[num_odims - 1] == 1)
+        if (out_info.dims[num_odims - 1] == 1) {
             num_odims--;
-        else
+        } else {
             break;
+        }
     }
 
     if (is_linear) {

@@ -11,8 +11,11 @@
 #include <common/err_common.hpp>
 #include <platform.hpp>
 #include <af/defines.h>
+
+#include <memory>
 #include <string>
 
+using std::make_unique;
 using std::string;
 
 namespace opencl {
@@ -122,20 +125,21 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout, clfftDim rank,
         key_string.append(std::string(key_str_temp));
     }
 
-    sprintf(key_str_temp, "%d:" SIZE_T_FRMT_SPECIFIER, (int)precision, batch);
+    sprintf(key_str_temp, "%d:" SIZE_T_FRMT_SPECIFIER,
+            static_cast<int>(precision), batch);
     key_string.append(std::string(key_str_temp));
 
     PlanCache &planner = opencl::fftManager();
     SharedPlan retVal  = planner.find(key_string);
 
-    if (retVal) return retVal;
+    if (retVal) { return retVal; }
 
-    PlanType *temp = (PlanType *)malloc(sizeof(PlanType));
+    auto temp = make_unique<PlanType>();
 
     // getContext() returns object of type Context
     // Context() returns the actual cl_context handle
-    CLFFT_CHECK(
-        clfftCreateDefaultPlan(temp, opencl::getContext()(), rank, clLengths));
+    CLFFT_CHECK(clfftCreateDefaultPlan(temp.get(), opencl::getContext()(), rank,
+                                       clLengths));
 
     // complex to complex
     if (iLayout == oLayout) {
@@ -156,7 +160,7 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout, clfftDim rank,
     // CommandQueue() returns the actual cl_command_queue handle
     CLFFT_CHECK(clfftBakePlan(*temp, 1, &(opencl::getQueue()()), NULL, NULL));
 
-    retVal.reset(temp, [](PlanType *p) {
+    retVal.reset(temp.release(), [](PlanType *p) {
 #ifndef OS_WIN
         // On Windows the resources that are released after the main function
         // have exited cause "Pure Virtual Function Called" errors. It seems

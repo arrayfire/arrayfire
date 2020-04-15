@@ -61,14 +61,15 @@ void magmablas_laset(magma_uplo_t uplo, magma_int_t m, magma_int_t n, T offdiag,
                      T diag, cl_mem dA, size_t dA_offset, magma_int_t ldda,
                      magma_queue_t queue) {
     magma_int_t info = 0;
-    if (uplo != MagmaLower && uplo != MagmaUpper && uplo != MagmaFull)
+    if (uplo != MagmaLower && uplo != MagmaUpper && uplo != MagmaFull) {
         info = -1;
-    else if (m < 0)
+    } else if (m < 0) {
         info = -2;
-    else if (n < 0)
+    } else if (n < 0) {
         info = -3;
-    else if (ldda < std::max(1, m))
+    } else if (ldda < std::max(1, m)) {
         info = -7;
+    }
 
     if (info != 0) {
         return;  // info;

@@ -34,7 +34,7 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
     int ndims = in.dims().ndims();
     for (int i = 0; i < ndims; i++) {
         if (i == dim) {
-            out_dims[i] = min(k, (int)in.dims()[i]);
+            out_dims[i] = min(k, static_cast<int>(in.dims()[i]));
         } else {
             out_dims[i] = in.dims()[i];
         }

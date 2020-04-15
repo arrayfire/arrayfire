@@ -26,10 +26,11 @@ Array<outType> match_template(const Array<inType> &sImg,
     bool needMean = mType == AF_ZSAD || mType == AF_LSAD || mType == AF_ZSSD ||
                     mType == AF_LSSD || mType == AF_ZNCC;
 
-    if (needMean)
+    if (needMean) {
         kernel::matchTemplate<inType, outType, mType, true>(out, sImg, tImg);
-    else
+    } else {
         kernel::matchTemplate<inType, outType, mType, false>(out, sImg, tImg);
+    }
 
     return out;
 }

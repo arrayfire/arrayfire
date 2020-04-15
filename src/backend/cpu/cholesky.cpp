@@ -50,10 +50,11 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     Array<T> out = copyArray<T>(in);
     *info        = cholesky_inplace(out, is_upper);
 
-    if (is_upper)
+    if (is_upper) {
         triangle<T, true, false>(out, out);
-    else
+    } else {
         triangle<T, false, false>(out, out);
+    }
 
     return out;
 }
@@ -64,7 +65,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper) {
     int N      = iDims[0];
 
     char uplo = 'L';
-    if (is_upper) uplo = 'U';
+    if (is_upper) { uplo = 'U'; }
 
     int info  = 0;
     auto func = [&](int *info, Param<T> in) {

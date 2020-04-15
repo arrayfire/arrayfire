@@ -17,8 +17,6 @@
 #include <platform.hpp>
 #include <queue.hpp>
 
-using af::dim4;
-
 namespace cpu {
 
 template<typename T>

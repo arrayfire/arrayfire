@@ -30,7 +30,7 @@ using data_t = typename common::kernel_type<T>::data;
 
 namespace common {
 template<typename T>
-class kernel_type;
+struct kernel_type;
 
 class half;
 

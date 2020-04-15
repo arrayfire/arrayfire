@@ -51,7 +51,8 @@ void copy_histogram(const Array<T> &data, fg_histogram hist) {
 
         CheckGL("Begin OpenCL fallback-resource copy");
         glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        GLubyte *ptr = (GLubyte *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        auto *ptr =
+            static_cast<GLubyte *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
         if (ptr) {
             getQueue().enqueueReadBuffer(*data.get(), CL_TRUE, 0, bytes, ptr);
             glUnmapBuffer(GL_ARRAY_BUFFER);

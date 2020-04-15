@@ -190,7 +190,7 @@ magma_int_t magma_gebrd_hybrid(magma_int_t m, magma_int_t n, Ty *a,
         the vector defining G(i).
         ===================================================================== */
 
-    typedef typename af::dtype_traits<Ty>::base_type Tr;
+    using Tr = typename af::dtype_traits<Ty>::base_type;
 
     Tr *d = (Tr *)_d;
     Tr *e = (Tr *)_e;
@@ -228,8 +228,9 @@ magma_int_t magma_gebrd_hybrid(magma_int_t m, magma_int_t n, Ty *a,
     if (*info < 0) {
         // magma_xerbla(__func__, -(*info));
         return *info;
-    } else if (lquery)
+    } else if (lquery) {
         return *info;
+    }
 
     /* Quick return if possible */
     minmn = std::min(m, n);

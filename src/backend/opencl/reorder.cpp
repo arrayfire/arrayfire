@@ -19,9 +19,9 @@ using common::half;
 namespace opencl {
 template<typename T>
 Array<T> reorder(const Array<T> &in, const af::dim4 &rdims) {
-    const af::dim4 iDims = in.dims();
+    const af::dim4 &iDims = in.dims();
     af::dim4 oDims(0);
-    for (int i = 0; i < 4; i++) oDims[i] = iDims[rdims[i]];
+    for (int i = 0; i < 4; i++) { oDims[i] = iDims[rdims[i]]; }
 
     Array<T> out = createEmptyArray<T>(oDims);
 

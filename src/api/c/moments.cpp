@@ -62,7 +62,7 @@ af_err af_moments(af_array* out, const af_array in,
 
 template<typename T>
 static inline void moment_copy(double* out, const af_array moments) {
-    auto info = getInfo(moments);
+    const auto& info = getInfo(moments);
     vector<T> h_moments(info.elements());
     copyData(h_moments.data(), moments);
 

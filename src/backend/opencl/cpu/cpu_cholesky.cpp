@@ -42,12 +42,13 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
 
     mapped_ptr<T> oPtr = out.getMappedPtr();
 
-    if (is_upper)
+    if (is_upper) {
         triangle<T, true, false>(oPtr.get(), oPtr.get(), out.dims(),
                                  out.strides(), out.strides());
-    else
+    } else {
         triangle<T, false, false>(oPtr.get(), oPtr.get(), out.dims(),
                                   out.strides(), out.strides());
+    }
 
     return out;
 }
@@ -58,7 +59,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper) {
     int N      = iDims[0];
 
     char uplo = 'L';
-    if (is_upper) uplo = 'U';
+    if (is_upper) { uplo = 'U'; }
 
     mapped_ptr<T> inPtr = in.getMappedPtr();
 

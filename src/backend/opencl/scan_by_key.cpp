@@ -27,15 +27,17 @@ Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
     Param In  = in;
 
     if (inclusive_scan) {
-        if (dim == 0)
+        if (dim == 0) {
             kernel::scan_first<Ti, Tk, To, op, true>(Out, In, Key);
-        else
+        } else {
             kernel::scan_dim<Ti, Tk, To, op, true>(Out, In, Key, dim);
+        }
     } else {
-        if (dim == 0)
+        if (dim == 0) {
             kernel::scan_first<Ti, Tk, To, op, false>(Out, In, Key);
-        else
+        } else {
             kernel::scan_dim<Ti, Tk, To, op, false>(Out, In, Key, dim);
+        }
     }
     return out;
 }

@@ -60,14 +60,15 @@ void magmablas_transpose(magma_int_t m, magma_int_t n, cl_mem dA,
                          size_t dAT_offset, magma_int_t lddat,
                          magma_queue_t queue) {
     magma_int_t info = 0;
-    if (m < 0)
+    if (m < 0) {
         info = -1;
-    else if (n < 0)
+    } else if (n < 0) {
         info = -2;
-    else if (ldda < m)
+    } else if (ldda < m) {
         info = -4;
-    else if (lddat < n)
+    } else if (lddat < n) {
         info = -6;
+    }
 
     if (info != 0) {
         // magma_xerbla( __func__, -(info) );
@@ -75,7 +76,7 @@ void magmablas_transpose(magma_int_t m, magma_int_t n, cl_mem dA,
     }
 
     /* Quick return */
-    if ((m == 0) || (n == 0)) return;
+    if ((m == 0) || (n == 0)) { return; }
 
     int idims[]    = {m, n, 1, 1};
     int odims[]    = {n, m, 1, 1};

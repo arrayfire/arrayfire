@@ -80,7 +80,7 @@ void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
 
     std::vector<af_seq> index;
     for (int i = 0; i < keys.ndims(); ++i) {
-        af_seq s = {0.0, (double)okdims[i] - 1, 1.0};
+        af_seq s = {0.0, static_cast<double>(okdims[i]) - 1, 1.0};
         index.push_back(s);
     }
     Array<Tk> okeys = createSubArray<Tk>(fullsz_okeys, index, true);
@@ -99,15 +99,15 @@ void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
     vals_out = ovals;
 }
 
-template<af_op_t op, typename Ti, typename To>
-To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
+template<af_op_t op, typename Ti, typename Taccumulate>
+Taccumulate reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
     in.eval();
     getQueue().sync();
 
-    Transform<Ti, compute_t<To>, op> transform;
-    Binary<compute_t<To>, op> reduce;
+    Transform<Ti, compute_t<Taccumulate>, op> transform;
+    Binary<compute_t<Taccumulate>, op> reduce;
 
-    compute_t<To> out = Binary<compute_t<To>, op>::init();
+    compute_t<Taccumulate> out = Binary<compute_t<Taccumulate>, op>::init();
 
     // Decrement dimension of select dimension
     af::dim4 dims           = in.dims();
@@ -126,15 +126,17 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
                 for (dim_t i = 0; i < dims[0]; i++) {
                     dim_t idx = i + off1 + off2 + off3;
 
-                    compute_t<To> in_val = transform(inPtr[idx]);
-                    if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
+                    compute_t<Taccumulate> in_val = transform(inPtr[idx]);
+                    if (change_nan) {
+                        in_val = IS_NAN(in_val) ? nanval : in_val;
+                    }
                     out = reduce(in_val, out);
                 }
             }
         }
     }
 
-    return data_t<To>(out);
+    return data_t<Taccumulate>(out);
 }
 
 #define INSTANTIATE(ROp, Ti, To)                                               \

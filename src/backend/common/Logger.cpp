@@ -22,10 +22,8 @@
 #include <string>
 
 using std::array;
-using std::make_shared;
 using std::shared_ptr;
 using std::string;
-using std::to_string;
 
 using spdlog::get;
 using spdlog::logger;
@@ -33,7 +31,7 @@ using spdlog::stdout_logger_mt;
 
 namespace common {
 
-shared_ptr<logger> loggerFactory(string name) {
+shared_ptr<logger> loggerFactory(const string& name) {
     shared_ptr<logger> logger;
     if (!(logger = get(name))) {
         logger = stdout_logger_mt(name);
@@ -52,15 +50,15 @@ shared_ptr<logger> loggerFactory(string name) {
 }
 
 string bytesToString(size_t bytes) {
-    constexpr array<const char *, 7> units{
+    constexpr array<const char*, 7> units{
         {"B", "KB", "MB", "GB", "TB", "PB", "EB"}};
     size_t count     = 0;
-    double fbytes    = static_cast<double>(bytes);
+    auto fbytes      = static_cast<double>(bytes);
     size_t num_units = units.size();
     for (count = 0; count < num_units && fbytes > 1000.0f; count++) {
         fbytes *= (1.0f / 1024.0f);
     }
-    if (count == units.size()) count--;
+    if (count == units.size()) { count--; }
     return fmt::format("{:.3g} {}", fbytes, units[count]);
 }
 }  // namespace common

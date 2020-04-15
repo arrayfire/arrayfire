@@ -22,7 +22,7 @@ Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
     ARG_ASSERT(2, (w_wid <= kernel::MAX_MEDFILTER1_LEN));
     ARG_ASSERT(2, (w_wid % 2 != 0));
 
-    const dim4 dims = in.dims();
+    const dim4 &dims = in.dims();
 
     Array<T> out = createEmptyArray<T>(dims);
 
@@ -37,7 +37,7 @@ Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid) {
     ARG_ASSERT(2, (w_len <= kernel::MAX_MEDFILTER2_LEN));
     ARG_ASSERT(2, (w_len % 2 != 0));
 
-    const dim4 dims = in.dims();
+    const dim4 &dims = in.dims();
 
     Array<T> out = createEmptyArray<T>(dims);
 
@@ -49,6 +49,9 @@ Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid) {
         case 11: kernel::medfilt2<T, pad, 11, 11>(out, in); break;
         case 13: kernel::medfilt2<T, pad, 13, 13>(out, in); break;
         case 15: kernel::medfilt2<T, pad, 15, 15>(out, in); break;
+        default:
+            AF_ERROR("w_len only supports values 3, 5, 7, 9, 11, 12, and 15.",
+                     AF_ERR_UNKNOWN);
     }
     return out;
 }

@@ -51,23 +51,23 @@ namespace cuda {
 
 template<typename T>
 struct geqrf_func_def_t {
-    typedef cusolverStatus_t (*geqrf_func_def)(cusolverDnHandle_t, int, int,
-                                               T *, int, T *, T *, int, int *);
+    using geqrf_func_def = cusolverStatus_t (*)(cusolverDnHandle_t, int, int,
+                                                T *, int, T *, T *, int, int *);
 };
 
 template<typename T>
 struct geqrf_buf_func_def_t {
-    typedef cusolverStatus_t (*geqrf_buf_func_def)(cusolverDnHandle_t, int, int,
-                                                   T *, int, int *);
+    using geqrf_buf_func_def = cusolverStatus_t (*)(cusolverDnHandle_t, int,
+                                                    int, T *, int, int *);
 };
 
 template<typename T>
 struct mqr_func_def_t {
-    typedef cusolverStatus_t (*mqr_func_def)(cusolverDnHandle_t,
-                                             cublasSideMode_t,
-                                             cublasOperation_t, int, int, int,
-                                             const T *, int, const T *, T *,
-                                             int, T *, int, int *);
+    using mqr_func_def = cusolverStatus_t (*)(cusolverDnHandle_t,
+                                              cublasSideMode_t,
+                                              cublasOperation_t, int, int, int,
+                                              const T *, int, const T *, T *,
+                                              int, T *, int, int *);
 };
 
 #define QR_FUNC_DEF(FUNC)                                         \

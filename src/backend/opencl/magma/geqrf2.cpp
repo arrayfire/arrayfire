@@ -210,7 +210,7 @@ magma_int_t magma_geqrf2_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
     }
 
     k = std::min(m, n);
-    if (k == 0) return *info;
+    if (k == 0) { return *info; }
 
     nb = magma_get_geqrf_nb<Ty>(m);
 

@@ -41,16 +41,16 @@ namespace cuda {
 
 template<typename T>
 struct potrf_func_def_t {
-    typedef cusolverStatus_t (*potrf_func_def)(cusolverDnHandle_t,
-                                               cublasFillMode_t, int, T *, int,
-                                               T *, int, int *);
+    using potrf_func_def = cusolverStatus_t (*)(cusolverDnHandle_t,
+                                                cublasFillMode_t, int, T *, int,
+                                                T *, int, int *);
 };
 
 template<typename T>
 struct potrf_buf_func_def_t {
-    typedef cusolverStatus_t (*potrf_buf_func_def)(cusolverDnHandle_t,
-                                                   cublasFillMode_t, int, T *,
-                                                   int, int *);
+    using potrf_buf_func_def = cusolverStatus_t (*)(cusolverDnHandle_t,
+                                                    cublasFillMode_t, int, T *,
+                                                    int, int *);
 };
 
 #define CH_FUNC_DEF(FUNC)                                         \
@@ -85,10 +85,11 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     Array<T> out = copyArray<T>(in);
     *info        = cholesky_inplace(out, is_upper);
 
-    if (is_upper)
+    if (is_upper) {
         triangle<T, true, false>(out, out);
-    else
+    } else {
         triangle<T, false, false>(out, out);
+    }
 
     return out;
 }
@@ -101,7 +102,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper) {
     int lwork = 0;
 
     cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
-    if (is_upper) uplo = CUBLAS_FILL_MODE_UPPER;
+    if (is_upper) { uplo = CUBLAS_FILL_MODE_UPPER; }
 
     CUSOLVER_CHECK(potrf_buf_func<T>()(solverDnHandle(), uplo, N, in.get(),
                                        in.strides()[1], &lwork));

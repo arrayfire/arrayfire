@@ -17,9 +17,8 @@
 #include <reduce.hpp>
 #include <af/graphics.h>
 
-using af::dim4;
-using namespace detail;
-using namespace graphics;
+using detail::Array;
+using graphics::ForgeManager;
 
 template<typename T>
 fg_chart setup_histogram(fg_window const window, const af_array in,
@@ -27,18 +26,19 @@ fg_chart setup_histogram(fg_window const window, const af_array in,
                          const af_cell* const props) {
     ForgeModule& _ = graphics::forgePlugin();
 
-    Array<T> histogramInput = getArray<T>(in);
-    dim_t nBins             = histogramInput.elements();
+    const Array<T> histogramInput = getArray<T>(in);
+    dim_t nBins                   = histogramInput.elements();
 
     // Retrieve Forge Histogram with nBins and array type
     ForgeManager& fgMngr = forgeManager();
 
     // Get the chart for the current grid position (if any)
     fg_chart chart = NULL;
-    if (props->col > -1 && props->row > -1)
+    if (props->col > -1 && props->row > -1) {
         chart = fgMngr.getChart(window, props->row, props->col, FG_CHART_2D);
-    else
+    } else {
         chart = fgMngr.getChart(window, 0, 0, FG_CHART_2D);
+    }
 
     // Create a histogram for the chart
     fg_histogram hist = fgMngr.getHistogram(chart, nBins, getGLType<T>());
@@ -56,15 +56,21 @@ fg_chart setup_histogram(fg_window const window, const af_array in,
 
         if (xMin == 0 && xMax == 0 && yMin == 0 && yMax == 0) {
             // No previous limits. Set without checking
-            xMin = step_round(minval, false);
-            xMax = step_round(maxval, true);
-            yMax = step_round(freqMax, true);
+            xMin = static_cast<float>(step_round(minval, false));
+            xMax = static_cast<float>(step_round(maxval, true));
+            yMax = static_cast<float>(step_round(freqMax, true));
             // For histogram, always set yMin to 0.
             yMin = 0;
         } else {
-            if (xMin > minval) xMin = step_round(minval, false);
-            if (xMax < maxval) xMax = step_round(maxval, true);
-            if (yMax < freqMax) yMax = step_round(freqMax, true);
+            if (xMin > minval) {
+                xMin = static_cast<float>(step_round(minval, false));
+            }
+            if (xMax < maxval) {
+                xMax = static_cast<float>(step_round(maxval, true));
+            }
+            if (yMax < freqMax) {
+                yMax = static_cast<float>(step_round(freqMax, true));
+            }
             // For histogram, always set yMin to 0.
             yMin = 0;
         }

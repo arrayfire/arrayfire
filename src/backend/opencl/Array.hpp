@@ -31,7 +31,8 @@ template<typename T>
 void evalMultiple(std::vector<Array<T> *> arrays);
 
 void evalNodes(Param &out, common::Node *node);
-void evalNodes(std::vector<Param> &outputs, std::vector<common::Node *> nodes);
+void evalNodes(std::vector<Param> &outputs,
+               const std::vector<common::Node *> &nodes);
 
 /// Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
@@ -49,8 +50,9 @@ template<typename T>
 Array<T> createDeviceDataArray(const af::dim4 &dims, void *data);
 
 template<typename T>
-Array<T> createStridedArray(af::dim4 dims, af::dim4 strides, dim_t offset,
-                            const T *const in_data, bool is_device) {
+Array<T> createStridedArray(const af::dim4 &dims, const af::dim4 &strides,
+                            dim_t offset, const T *const in_data,
+                            bool is_device) {
     return Array<T>(dims, strides, offset, in_data, is_device);
 }
 
@@ -126,18 +128,18 @@ class Array {
     bool ready;
     bool owner;
 
-    Array(af::dim4 dims);
+    Array(const af::dim4 &dims);
 
-    Array(const Array<T> &parnt, const dim4 &dims, const dim_t &offset,
+    Array(const Array<T> &parent, const dim4 &dims, const dim_t &offset,
           const dim4 &stride);
     Array(Param &tmp, bool owner);
-    explicit Array(af::dim4 dims, common::Node_ptr n);
-    explicit Array(af::dim4 dims, const T *const in_data);
-    explicit Array(af::dim4 dims, cl_mem mem, size_t offset, bool copy);
+    explicit Array(const af::dim4 &dims, common::Node_ptr n);
+    explicit Array(const af::dim4 &dims, const T *const in_data);
+    explicit Array(const af::dim4 &dims, cl_mem mem, size_t offset, bool copy);
 
    public:
-    Array(af::dim4 dims, af::dim4 strides, dim_t offset, const T *const in_data,
-          bool is_device = false);
+    Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset,
+          const T *const in_data, bool is_device = false);
 
     void resetInfo(const af::dim4 &dims) { info.resetInfo(dims); }
     void resetDims(const af::dim4 &dims) { info.resetDims(dims); }
@@ -178,7 +180,7 @@ class Array {
     INFO_IS_FUNC(isSparse);
 
 #undef INFO_IS_FUNC
-    ~Array();
+    ~Array() = default;
 
     bool isReady() const { return ready; }
     bool isOwner() const { return owner; }
@@ -275,8 +277,9 @@ class Array {
     friend Array<T> createHostDataArray<T>(const af::dim4 &dims,
                                            const T *const data);
     friend Array<T> createDeviceDataArray<T>(const af::dim4 &dims, void *data);
-    friend Array<T> createStridedArray<T>(af::dim4 dims, af::dim4 strides,
-                                          dim_t offset, const T *const in_data,
+    friend Array<T> createStridedArray<T>(const af::dim4 &dims,
+                                          const af::dim4 &strides, dim_t offset,
+                                          const T *const in_data,
                                           bool is_device);
 
     friend Array<T> createEmptyArray<T>(const af::dim4 &dims);

@@ -20,10 +20,9 @@ using namespace detail;
 
 template<typename T>
 static inline void transform(af_array *out, const af_array in,
-                             const af_array tf, const dim4 &odims,
-                             const af_interp_type method, const bool inverse,
-                             const bool perspective) {
-    transform<T>(getArray<T>(*out), getArray<T>(in), getArray<float>(tf), odims,
+                             const af_array tf, const af_interp_type method,
+                             const bool inverse, const bool perspective) {
+    transform<T>(getArray<T>(*out), getArray<T>(in), getArray<float>(tf),
                  method, inverse, perspective);
 }
 
@@ -33,13 +32,12 @@ AF_BATCH_KIND getTransformBatchKind(const dim4 &iDims, const dim4 &tDims) {
     dim_t iNd = iDims.ndims();
     dim_t tNd = tDims.ndims();
 
-    if (iNd == baseDim && tNd == baseDim)
-        return AF_BATCH_NONE;
-    else if (iNd == baseDim && tNd <= 4)
+    if (iNd == baseDim && tNd == baseDim) { return AF_BATCH_NONE; }
+    if (iNd == baseDim && tNd <= 4) {
         return AF_BATCH_RHS;
-    else if (iNd <= 4 && tNd == baseDim)
+    } else if (iNd <= 4 && tNd == baseDim) {
         return AF_BATCH_LHS;
-    else if (iNd <= 4 && tNd <= 4) {
+    } else if (iNd <= 4 && tNd <= 4) {
         bool dimsMatch     = true;
         bool isInterleaved = true;
         for (dim_t i = baseDim; i < 4; i++) {
@@ -47,10 +45,11 @@ AF_BATCH_KIND getTransformBatchKind(const dim4 &iDims, const dim4 &tDims) {
             isInterleaved &=
                 (iDims[i] == 1 || tDims[i] == 1 || iDims[i] == tDims[i]);
         }
-        if (dimsMatch) return AF_BATCH_SAME;
+        if (dimsMatch) { return AF_BATCH_SAME; }
         return (isInterleaved ? AF_BATCH_DIFF : AF_BATCH_UNSUPPORTED);
-    } else
+    } else {
         return AF_BATCH_UNSUPPORTED;
+    }
 }
 
 void af_transform_common(af_array *out, const af_array in, const af_array tf,
@@ -64,8 +63,8 @@ void af_transform_common(af_array *out, const af_array in, const af_array tf,
     const ArrayInfo &t_info = getInfo(tf);
     const ArrayInfo &i_info = getInfo(in);
 
-    const dim4 idims     = i_info.dims();
-    const dim4 tdims     = t_info.dims();
+    const dim4 &idims    = i_info.dims();
+    const dim4 &tdims    = t_info.dims();
     const af_dtype itype = i_info.getType();
 
     // Assert type and interpolation
@@ -93,17 +92,19 @@ void af_transform_common(af_array *out, const af_array in, const af_array tf,
 
     // If idims[2] > 1 and tdims[2] > 1, then both must be equal
     // else at least one of them must be 1
-    if (tdims[2] != 1 && idims[2] != 1)
+    if (tdims[2] != 1 && idims[2] != 1) {
         DIM_ASSERT(2, idims[2] == tdims[2]);
-    else
+    } else {
         DIM_ASSERT(2, idims[2] == 1 || tdims[2] == 1);
+    }
 
     // If idims[3] > 1 and tdims[3] > 1, then both must be equal
     // else at least one of them must be 1
-    if (tdims[3] != 1 && idims[3] != 1)
+    if (tdims[3] != 1 && idims[3] != 1) {
         DIM_ASSERT(2, idims[3] == tdims[3]);
-    else
+    } else {
         DIM_ASSERT(2, idims[3] == 1 || tdims[3] == 1);
+    }
 
     const bool perspective = (tdims[1] == 3);
     dim_t o0 = odim0, o1 = odim1, o2 = 0, o3 = 0;
@@ -141,18 +142,18 @@ void af_transform_common(af_array *out, const af_array in, const af_array tf,
 
     // clang-format off
     switch(itype) {
-    case f32: transform<float  >(out, in, tf, odims, method, inverse, perspective);  break;
-    case f64: transform<double >(out, in, tf, odims, method, inverse, perspective);  break;
-    case c32: transform<cfloat >(out, in, tf, odims, method, inverse, perspective);  break;
-    case c64: transform<cdouble>(out, in, tf, odims, method, inverse, perspective);  break;
-    case s32: transform<int    >(out, in, tf, odims, method, inverse, perspective);  break;
-    case u32: transform<uint   >(out, in, tf, odims, method, inverse, perspective);  break;
-    case s64: transform<intl   >(out, in, tf, odims, method, inverse, perspective);  break;
-    case u64: transform<uintl  >(out, in, tf, odims, method, inverse, perspective);  break;
-    case s16: transform<short  >(out, in, tf, odims, method, inverse, perspective);  break;
-    case u16: transform<ushort >(out, in, tf, odims, method, inverse, perspective);  break;
-    case u8:  transform<uchar  >(out, in, tf, odims, method, inverse, perspective);  break;
-    case b8:  transform<char   >(out, in, tf, odims, method, inverse, perspective);  break;
+    case f32: transform<float  >(out, in, tf, method, inverse, perspective);  break;
+    case f64: transform<double >(out, in, tf, method, inverse, perspective);  break;
+    case c32: transform<cfloat >(out, in, tf, method, inverse, perspective);  break;
+    case c64: transform<cdouble>(out, in, tf, method, inverse, perspective);  break;
+    case s32: transform<int    >(out, in, tf, method, inverse, perspective);  break;
+    case u32: transform<uint   >(out, in, tf, method, inverse, perspective);  break;
+    case s64: transform<intl   >(out, in, tf, method, inverse, perspective);  break;
+    case u64: transform<uintl  >(out, in, tf, method, inverse, perspective);  break;
+    case s16: transform<short  >(out, in, tf, method, inverse, perspective);  break;
+    case u16: transform<ushort >(out, in, tf, method, inverse, perspective);  break;
+    case u8:  transform<uchar  >(out, in, tf, method, inverse, perspective);  break;
+    case b8:  transform<char   >(out, in, tf, method, inverse, perspective);  break;
     default:  TYPE_ERROR(1, itype);
     }
     // clang-format on
@@ -225,8 +226,8 @@ af_err af_scale(af_array *out, const af_array in, const float scale0,
             DIM_ASSERT(4, odim0 != 0);
             DIM_ASSERT(5, odim1 != 0);
 
-            sx = idims[0] / (float)_odim0;
-            sy = idims[1] / (float)_odim1;
+            sx = idims[0] / static_cast<float>(_odim0);
+            sy = idims[1] / static_cast<float>(_odim1);
 
         } else {
             sx = 1.f / scale0, sy = 1.f / scale1;

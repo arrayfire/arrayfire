@@ -35,10 +35,12 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out,
     auto h_filter = memAlloc<convAccT>(filter_len);
     // Decide between rectangular or circular filter
     if (sigma < 0.5f) {
-        for (unsigned i = 0; i < filter_len; i++)
-            h_filter[i] = (T)1.f / (filter_len);
+        for (unsigned i = 0; i < filter_len; i++) {
+            h_filter[i] = static_cast<T>(1) / (filter_len);
+        }
     } else {
-        gaussian1D<convAccT>(h_filter.get(), (int)filter_len, sigma);
+        gaussian1D<convAccT>(h_filter.get(), static_cast<int>(filter_len),
+                             sigma);
     }
     Array<convAccT> filter =
         createDeviceDataArray<convAccT>(dim4(filter_len), h_filter.release());
@@ -74,7 +76,8 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out,
     Array<float> yCorners    = createEmptyArray<float>(dim4(corner_lim));
     Array<float> respCorners = createEmptyArray<float>(dim4(corner_lim));
 
-    const unsigned min_r = (max_corners > 0) ? 0.f : min_response;
+    const unsigned min_r =
+        (max_corners > 0) ? 0U : static_cast<unsigned>(min_response);
 
     // Performs non-maximal suppression
     getQueue().sync();
@@ -85,7 +88,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out,
 
     const unsigned corners_out =
         min(corners_found, (max_corners > 0) ? max_corners : corner_lim);
-    if (corners_out == 0) return 0;
+    if (corners_out == 0) { return 0; }
 
     if (max_corners > 0 && corners_found > corners_out) {
         respCorners.resetDims(dim4(corners_found));
@@ -110,15 +113,16 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out,
         y_out    = createEmptyArray<float>(dim4(corners_out));
         resp_out = createEmptyArray<float>(dim4(corners_out));
 
-        auto copyFunc = [=](Param<float> x_out, Param<float> y_out,
-                            Param<float> outResponses, CParam<float> x_crnrs,
-                            CParam<float> y_crnrs, CParam<float> inResponses,
-                            const unsigned corners_out) {
-            memcpy(x_out.get(), x_crnrs.get(), corners_out * sizeof(float));
-            memcpy(y_out.get(), y_crnrs.get(), corners_out * sizeof(float));
-            memcpy(outResponses.get(), inResponses.get(),
-                   corners_out * sizeof(float));
-        };
+        auto copyFunc =
+            [=](Param<float> x_out, Param<float> y_out,
+                Param<float> outResponses, const CParam<float> &x_crnrs,
+                const CParam<float> &y_crnrs, const CParam<float> &inResponses,
+                const unsigned corners_out) {
+                memcpy(x_out.get(), x_crnrs.get(), corners_out * sizeof(float));
+                memcpy(y_out.get(), y_crnrs.get(), corners_out * sizeof(float));
+                memcpy(outResponses.get(), inResponses.get(),
+                       corners_out * sizeof(float));
+            };
         getQueue().enqueue(copyFunc, x_out, y_out, resp_out, xCorners, yCorners,
                            respCorners, corners_out);
     } else {

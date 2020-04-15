@@ -14,7 +14,6 @@
 #include <shift.hpp>
 #include <af/data.h>
 
-using af::dim4;
 using namespace detail;
 
 template<typename T>

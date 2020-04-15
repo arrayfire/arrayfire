@@ -51,7 +51,7 @@ class CUDARuntimeEventPolicy {
 using Event = common::EventBase<CUDARuntimeEventPolicy>;
 
 /// \brief Creates a new event and marks it in the stream
-Event makeEvent(cudaStream_t stream);
+Event makeEvent(cudaStream_t queue);
 
 af_event createEvent();
 

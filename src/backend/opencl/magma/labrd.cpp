@@ -201,7 +201,7 @@ magma_int_t magma_labrd_gpu(magma_int_t m, magma_int_t n, magma_int_t nb, Ty *a,
         of the vector defining G(i).
         ===================================================================== */
 
-    typedef typename af::dtype_traits<Ty>::base_type Tr;
+    using Tr = typename af::dtype_traits<Ty>::base_type;
 
     constexpr bool is_cplx = common::is_complex<Ty>::value;
 
@@ -216,7 +216,7 @@ magma_int_t magma_labrd_gpu(magma_int_t m, magma_int_t n, magma_int_t nb, Ty *a,
     magma_int_t a_dim1, a_offset, x_dim1, x_offset, y_dim1, y_offset, i__2,
         i__3;
     magma_int_t i__;
-    Ty alpha;
+    Ty alpha{};
 
     a_dim1   = lda;
     a_offset = 1 + a_dim1;

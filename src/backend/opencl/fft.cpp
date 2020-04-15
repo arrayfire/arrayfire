@@ -37,32 +37,33 @@ struct Precision<cdouble> {
 };
 
 static void computeDims(size_t rdims[4], const dim4 &idims) {
-    for (int i = 0; i < 4; i++) { rdims[i] = (size_t)idims[i]; }
+    for (int i = 0; i < 4; i++) { rdims[i] = static_cast<size_t>(idims[i]); }
 }
 
 //(currently) true is in clFFT if length is a power of 2,3,5
 inline bool isSupLen(dim_t length) {
     while (length > 1) {
-        if (length % 2 == 0)
+        if (length % 2 == 0) {
             length /= 2;
-        else if (length % 3 == 0)
+        } else if (length % 3 == 0) {
             length /= 3;
-        else if (length % 5 == 0)
+        } else if (length % 5 == 0) {
             length /= 5;
-        else if (length % 7 == 0)
+        } else if (length % 7 == 0) {
             length /= 7;
-        else if (length % 11 == 0)
+        } else if (length % 11 == 0) {
             length /= 11;
-        else if (length % 13 == 0)
+        } else if (length % 13 == 0) {
             length /= 13;
-        else
+        } else {
             return false;
+        }
     }
     return true;
 }
 
 template<int rank>
-void verifySupported(const dim4 dims) {
+void verifySupported(const dim4 &dims) {
     for (int i = 0; i < rank; i++) { ARG_ASSERT(1, isSupLen(dims[i])); }
 }
 
@@ -77,10 +78,10 @@ void fft_inplace(Array<T> &in) {
     int batch = 1;
     for (int i = rank; i < 4; i++) { batch *= tdims[i]; }
 
-    SharedPlan plan =
-        findPlan(CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED,
-                 (clfftDim)rank, tdims, istrides, istrides[rank], istrides,
-                 istrides[rank], (clfftPrecision)Precision<T>::type, batch);
+    SharedPlan plan = findPlan(
+        CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED,
+        static_cast<clfftDim>(rank), tdims, istrides, istrides[rank], istrides,
+        istrides[rank], static_cast<clfftPrecision>(Precision<T>::type), batch);
 
     cl_mem imem            = (*in.get())();
     cl_command_queue queue = getQueue()();
@@ -108,10 +109,10 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
     int batch = 1;
     for (int i = rank; i < 4; i++) { batch *= tdims[i]; }
 
-    SharedPlan plan =
-        findPlan(CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED, (clfftDim)rank, tdims,
-                 istrides, istrides[rank], ostrides, ostrides[rank],
-                 (clfftPrecision)Precision<Tc>::type, batch);
+    SharedPlan plan = findPlan(
+        CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED, static_cast<clfftDim>(rank),
+        tdims, istrides, istrides[rank], ostrides, ostrides[rank],
+        static_cast<clfftPrecision>(Precision<Tc>::type), batch);
 
     cl_mem imem            = (*in.get())();
     cl_mem omem            = (*out.get())();
@@ -137,10 +138,10 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
     int batch = 1;
     for (int i = rank; i < 4; i++) { batch *= tdims[i]; }
 
-    SharedPlan plan =
-        findPlan(CLFFT_HERMITIAN_INTERLEAVED, CLFFT_REAL, (clfftDim)rank, tdims,
-                 istrides, istrides[rank], ostrides, ostrides[rank],
-                 (clfftPrecision)Precision<Tc>::type, batch);
+    SharedPlan plan = findPlan(
+        CLFFT_HERMITIAN_INTERLEAVED, CLFFT_REAL, static_cast<clfftDim>(rank),
+        tdims, istrides, istrides[rank], ostrides, ostrides[rank],
+        static_cast<clfftPrecision>(Precision<Tc>::type), batch);
 
     cl_mem imem            = (*in.get())();
     cl_mem omem            = (*out.get())();

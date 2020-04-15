@@ -38,7 +38,7 @@ namespace af
         ~features();
 
         /// Copy assignment operator
-        features& operator= (const features& f);
+        features& operator= (const features& other);
 
         /// Returns  the number of features represented by this object
         size_t getNumFeatures() const;

@@ -23,7 +23,6 @@ static_assert(std::is_standard_layout<dim4>::value,
 
 using std::abs;
 using std::numeric_limits;
-using std::vector;
 
 dim4::dim4() : dims{0, 0, 0, 0} {}
 
@@ -33,7 +32,7 @@ dim4::dim4(dim_t first, dim_t second, dim_t third, dim_t fourth)
 dim4::dim4(const dim4& other)
     : dims{other.dims[0], other.dims[1], other.dims[2], other.dims[3]} {}
 
-dim4::dim4(const unsigned ndims_, const dim_t* const dims_) {
+dim4::dim4(const unsigned ndims_, const dim_t* const dims_) : dims{} {
     for (unsigned i = 0; i < 4; i++) { dims[i] = ndims_ > i ? dims_[i] : 1; }
 }
 
@@ -43,12 +42,12 @@ dim_t dim4::elements() { return static_cast<const dim4&>(*this).elements(); }
 
 dim_t dim4::ndims() const {
     dim_t num = elements();
-    if (num == 0) return 0;
-    if (num == 1) return 1;
+    if (num == 0) { return 0; }
+    if (num == 1) { return 1; }
 
-    if (dims[3] != 1) return 4;
-    if (dims[2] != 1) return 3;
-    if (dims[1] != 1) return 2;
+    if (dims[3] != 1) { return 4; }
+    if (dims[2] != 1) { return 3; }
+    if (dims[1] != 1) { return 2; }
 
     return 1;
 }
@@ -127,8 +126,8 @@ dim_t calcDim(const af_seq& seq, const dim_t& parentDim) {
         outDim = parentDim;
     } else if (hasEnd(seq)) {
         af_seq temp = {seq.begin, seq.end, seq.step};
-        if (seq.begin < 0) temp.begin += parentDim;
-        if (seq.end < 0) temp.end += parentDim;
+        if (seq.begin < 0) { temp.begin += parentDim; }
+        if (seq.end < 0) { temp.end += parentDim; }
         outDim = seqElements(temp);
     } else {
         DIM_ASSERT(1, seq.begin >= -DBL_MIN && seq.begin < parentDim);

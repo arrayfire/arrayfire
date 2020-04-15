@@ -48,7 +48,7 @@ class SparseArrayBase {
                     af_dtype _type, bool _is_device = false,
                     bool _copy_device = false);
 
-    SparseArrayBase(af::dim4 _dims, const Array<int> &_rowIdx,
+    SparseArrayBase(const af::dim4 &_dims, const Array<int> &_rowIdx,
                     const Array<int> &_colIdx, const af::storage _storage,
                     af_dtype _type, bool _copy = false);
 
@@ -59,7 +59,7 @@ class SparseArrayBase {
     ///
     /// \param[in] in         The array that will be copied
     /// \param[in] deep_copy  If true a deep copy is performed
-    SparseArrayBase(const SparseArrayBase &in, bool deep_copy = false);
+    SparseArrayBase(const SparseArrayBase &base, bool deep_copy = false);
 
     ~SparseArrayBase();
 
@@ -130,14 +130,14 @@ class SparseArray {
         base;         ///< This must be the first element of SparseArray<T>.
     Array<T> values;  ///< Linear array containing actual values
 
-    SparseArray(af::dim4 _dims, dim_t _nNZ, af::storage stype);
+    SparseArray(const af::dim4 &_dims, dim_t _nNZ, af::storage _storage);
 
-    explicit SparseArray(af::dim4 _dims, dim_t _nNZ, T *const _values,
+    explicit SparseArray(const af::dim4 &_dims, dim_t _nNZ, T *const _values,
                          int *const _rowIdx, int *const _colIdx,
                          const af::storage _storage, bool _is_device = false,
                          bool _copy_device = false);
 
-    SparseArray(af::dim4 _dims, const Array<T> &_values,
+    SparseArray(const af::dim4 &_dims, const Array<T> &_values,
                 const Array<int> &_rowIdx, const Array<int> &_colIdx,
                 const af::storage _storage, bool _copy = false);
 
@@ -146,12 +146,12 @@ class SparseArray {
     /// This constructor copies the \p in SparseArray and creates a new object
     /// from it. It can also perform a deep copy if the second argument is true.
     ///
-    /// \param[in] in         The array that will be copied
+    /// \param[in] other      The array that will be copied
     /// \param[in] deep_copy  If true a deep copy is performed
-    SparseArray(const SparseArray<T> &in, bool deep_copy);
+    SparseArray(const SparseArray<T> &other, bool deep_copy);
 
    public:
-    ~SparseArray();
+    ~SparseArray() noexcept = default;
 
 // Functions that call ArrayInfo object's functions
 #define INSTANTIATE_INFO(return_type, func) \

@@ -25,8 +25,8 @@ array convolve(const array &signal, const array &filter, const convMode mode,
     switch (std::min(sN, fN)) {
         case 1: return convolve1(signal, filter, mode, domain);
         case 2: return convolve2(signal, filter, mode, domain);
+        default:
         case 3: return convolve3(signal, filter, mode, domain);
-        default: return convolve3(signal, filter, mode, domain);
     }
 }
 
@@ -52,8 +52,11 @@ array convolve2(const array &signal, const array &filter, const convMode mode,
     return array(out);
 }
 
-array convolve2NN(const array &signal, const array &filter, const dim4 stride,
-                  const dim4 padding, const dim4 dilation) {
+array convolve2NN(
+    const array &signal, const array &filter,
+    const dim4 stride,      // NOLINT(performance-unnecessary-value-param)
+    const dim4 padding,     // NOLINT(performance-unnecessary-value-param)
+    const dim4 dilation) {  // NOLINT(performance-unnecessary-value-param)
     af_array out = 0;
     AF_THROW(af_convolve2_nn(&out, signal.get(), filter.get(), stride.ndims(),
                              stride.get(), padding.ndims(), padding.get(),
@@ -61,12 +64,13 @@ array convolve2NN(const array &signal, const array &filter, const dim4 stride,
     return array(out);
 }
 
-array convolve2GradientNN(const array &incoming_gradient,
-                          const array &original_signal,
-                          const array &original_filter,
-                          const array &convolved_output, const dim4 stride,
-                          const dim4 padding, const dim4 dilation,
-                          af_conv_gradient_type gradType) {
+array convolve2GradientNN(
+    const array &incoming_gradient, const array &original_signal,
+    const array &original_filter, const array &convolved_output,
+    const dim4 stride,    // NOLINT(performance-unnecessary-value-param)
+    const dim4 padding,   // NOLINT(performance-unnecessary-value-param)
+    const dim4 dilation,  // NOLINT(performance-unnecessary-value-param)
+    af_conv_gradient_type gradType) {
     af_array out = 0;
     AF_THROW(af_convolve2_gradient_nn(
         &out, incoming_gradient.get(), original_signal.get(),

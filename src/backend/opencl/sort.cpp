@@ -34,7 +34,7 @@ Array<T> sort(const Array<T> &in, const unsigned dim, bool isAscending) {
             af::dim4 reorderDims(0, 1, 2, 3);
             reorderDims[dim] = 0;
             preorderDims[0]  = out.dims()[dim];
-            for (int i = 1; i <= (int)dim; i++) {
+            for (int i = 1; i <= static_cast<int>(dim); i++) {
                 reorderDims[i - 1] = i;
                 preorderDims[i]    = out.dims()[i - 1];
             }

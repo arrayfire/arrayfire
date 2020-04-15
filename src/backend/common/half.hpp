@@ -991,6 +991,10 @@ CONSTEXPR_DH static inline bool operator<(common::half lhs,
 #ifndef __CUDA_ARCH__
 std::ostream& operator<<(std::ostream& os, const half& val);
 
+static inline std::string to_string(const half& val) {
+    return std::to_string(static_cast<float>(val));
+}
+
 static inline std::string to_string(const half&& val) {
     return std::to_string(static_cast<float>(val));
 }

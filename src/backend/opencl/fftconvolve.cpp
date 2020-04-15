@@ -19,19 +19,20 @@ using af::dim4;
 namespace opencl {
 
 template<typename T>
-static const dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
-                                 const dim_t baseDim) {
-    const dim4 i1d = i1.dims();
-    const dim4 i2d = i2.dims();
+static dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
+                           const dim_t baseDim) {
+    const dim4& i1d = i1.dims();
+    const dim4& i2d = i2.dims();
 
     dim_t pd[4] = {1, 1, 1, 1};
 
     // Pack both signal and filter on same memory array, this will ensure
     // better use of batched cuFFT capabilities
-    pd[0] = nextpow2((unsigned)((int)ceil(i1d[0] / 2.f) + i2d[0] - 1));
+    pd[0] = nextpow2(static_cast<unsigned>(
+        static_cast<int>(std::ceil(i1d[0] / 2.f)) + i2d[0] - 1));
 
     for (dim_t k = 1; k < baseDim; k++) {
-        pd[k] = nextpow2((unsigned)(i1d[k] + i2d[k] - 1));
+        pd[k] = nextpow2(static_cast<unsigned>(i1d[k] + i2d[k] - 1));
     }
 
     dim_t i1batch = 1;
@@ -49,8 +50,8 @@ template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
          dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind) {
-    const dim4 sDims = signal.dims();
-    const dim4 fDims = filter.dims();
+    const dim4& sDims = signal.dims();
+    const dim4& fDims = filter.dims();
 
     dim4 oDims(1);
     if (expand) {
@@ -64,7 +65,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     } else {
         oDims = sDims;
         if (kind == AF_BATCH_RHS) {
-            for (dim_t i = baseDim; i < 4; ++i) oDims[i] = fDims[i];
+            for (dim_t i = baseDim; i < 4; ++i) { oDims[i] = fDims[i]; }
         }
     }
 
@@ -83,12 +84,13 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     if (kind == AF_BATCH_RHS) {
         std::vector<af_seq> seqs;
         for (dim_t k = 0; k < 4; k++) {
-            if (k < baseDim)
+            if (k < baseDim) {
                 seqs.push_back({0., static_cast<double>(pDims[k] - 1), 1.});
-            else if (k == baseDim)
+            } else if (k == baseDim) {
                 seqs.push_back({1., static_cast<double>(pDims[k] - 1), 1.});
-            else
+            } else {
                 seqs.push_back({0., 0., 1.});
+            }
         }
 
         Array<cT> subPacked = createSubArray<cT>(packed, seqs);
@@ -96,12 +98,13 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     } else {
         std::vector<af_seq> seqs;
         for (dim_t k = 0; k < 4; k++) {
-            if (k < baseDim)
-                seqs.push_back({0., (double)pDims[k] - 1, 1.});
-            else if (k == baseDim)
+            if (k < baseDim) {
+                seqs.push_back({0., static_cast<double>(pDims[k]) - 1, 1.});
+            } else if (k == baseDim) {
                 seqs.push_back({0., static_cast<double>(pDims[k] - 2), 1.});
-            else
+            } else {
                 seqs.push_back({0., 0., 1.});
+            }
         }
 
         Array<cT> subPacked = createSubArray<cT>(packed, seqs);
@@ -110,12 +113,13 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    if (expand)
+    if (expand) {
         kernel::reorderOutputHelper<T, cT, isDouble, roundOut, true, convT>(
             out, packed, signal, filter, baseDim, kind);
-    else
+    } else {
         kernel::reorderOutputHelper<T, cT, isDouble, roundOut, false, convT>(
             out, packed, signal, filter, baseDim, kind);
+    }
 
     return out;
 }

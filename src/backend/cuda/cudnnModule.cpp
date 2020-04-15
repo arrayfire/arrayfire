@@ -16,6 +16,7 @@
 #include <string>
 #include <tuple>
 
+using std::make_tuple;
 using std::string;
 
 namespace cuda {
@@ -25,10 +26,10 @@ spdlog::logger* cudnnModule::getLogger() const noexcept {
 }
 
 auto cudnnVersionComponents(size_t version) {
-    int major = version / 1000;
-    int minor = (version - (major * 1000)) / 100;
-    int patch = (version - (major * 1000) - (minor * 100));
-    return std::tuple<int, int, int>(major, minor, patch);
+    size_t major = version / 1000;
+    size_t minor = (version - (major * 1000)) / 100;
+    size_t patch = (version - (major * 1000) - (minor * 100));
+    return make_tuple(major, minor, patch);
 }
 
 cudnnModule::cudnnModule()
@@ -48,8 +49,8 @@ cudnnModule::cudnnModule()
     MODULE_FUNCTION_INIT(cudnnGetVersion);
 
     int rtmajor, rtminor;
-    int cudnn_version             = this->cudnnGetVersion();
-    int cudnn_rtversion           = 0;
+    size_t cudnn_version          = this->cudnnGetVersion();
+    size_t cudnn_rtversion        = 0;
     std::tie(major, minor, patch) = cudnnVersionComponents(cudnn_version);
 
     if (cudnn_version >= 6000) {
@@ -135,7 +136,7 @@ cudnnModule::cudnnModule()
 }
 
 cudnnModule& getCudnnPlugin() noexcept {
-    static cudnnModule* plugin = new cudnnModule();
+    static auto* plugin = new cudnnModule();
     return *plugin;
 }
 

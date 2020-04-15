@@ -32,8 +32,8 @@ static To corrcoef(const af_array& X, const af_array& Y) {
     Array<To> xIn = cast<To>(getArray<Ti>(X));
     Array<To> yIn = cast<To>(getArray<Ti>(Y));
 
-    dim4 dims = xIn.dims();
-    dim_t n   = xIn.elements();
+    const dim4& dims = xIn.dims();
+    dim_t n          = xIn.elements();
 
     To xSum = detail::reduce_all<af_add_t, To, To>(xIn);
     To ySum = detail::reduce_all<af_add_t, To, To>(yIn);
@@ -46,15 +46,17 @@ static To corrcoef(const af_array& X, const af_array& Y) {
     To ySqSum = detail::reduce_all<af_add_t, To, To>(ySq);
     To xySum  = detail::reduce_all<af_add_t, To, To>(xy);
 
-    To result = (n * xySum - xSum * ySum) / (sqrt(n * xSqSum - xSum * xSum) *
-                                             sqrt(n * ySqSum - ySum * ySum));
+    To result =
+        (n * xySum - xSum * ySum) / (std::sqrt(n * xSqSum - xSum * xSum) *
+                                     std::sqrt(n * ySqSum - ySum * ySum));
 
     return result;
 }
 
+// NOLINTNEXTLINE
 af_err af_corrcoef(double* realVal, double* imagVal, const af_array X,
                    const af_array Y) {
-    UNUSED(imagVal);  // TODO: implement for complex types
+    UNUSED(imagVal);  // TODO(umar): implement for complex types
     try {
         const ArrayInfo& xInfo = getInfo(X);
         const ArrayInfo& yInfo = getInfo(Y);
@@ -66,8 +68,9 @@ af_err af_corrcoef(double* realVal, double* imagVal, const af_array X,
         ARG_ASSERT(2, (xType == yType));
         ARG_ASSERT(2, (xDims.ndims() == yDims.ndims()));
 
-        for (dim_t i = 0; i < xDims.ndims(); ++i)
+        for (dim_t i = 0; i < xDims.ndims(); ++i) {
             ARG_ASSERT(2, (xDims[i] == yDims[i]));
+        }
 
         switch (xType) {
             case f64: *realVal = corrcoef<double, double>(X, Y); break;

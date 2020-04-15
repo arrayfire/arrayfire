@@ -244,15 +244,17 @@ class ForgeManager {
     void setChartAxesOverride(const fg_chart chart, bool flag = true);
 
    private:
-    constexpr static unsigned int WIDTH  = 1280;
-    constexpr static unsigned int HEIGHT = 720;
-    constexpr static long long _4BIT     = 0x000000000000000F;
-    constexpr static long long _8BIT     = 0x00000000000000FF;
-    constexpr static long long _16BIT    = 0x000000000000FFFF;
-    constexpr static long long _32BIT    = 0x00000000FFFFFFFF;
-    constexpr static long long _48BIT    = 0x0000FFFFFFFFFFFF;
+    constexpr static unsigned int WIDTH        = 1280;
+    constexpr static unsigned int HEIGHT       = 720;
+    constexpr static unsigned long long _4BIT  = 0x000000000000000F;
+    constexpr static unsigned long long _8BIT  = 0x00000000000000FF;
+    constexpr static unsigned long long _16BIT = 0x000000000000FFFF;
+    constexpr static unsigned long long _32BIT = 0x00000000FFFFFFFF;
+    constexpr static unsigned long long _48BIT = 0x0000FFFFFFFFFFFF;
 
-    long long genImageKey(int w, int h, fg_channel_format mode, fg_dtype type);
+    static unsigned long long genImageKey(unsigned w, unsigned h,
+                                          fg_channel_format mode,
+                                          fg_dtype type);
 
 #define DEFINE_WRAPPER_OBJECT(OBJECT, RELEASE)                           \
     struct OBJECT {                                                      \
@@ -281,7 +283,7 @@ class ForgeManager {
     using HistogramPtr   = std::unique_ptr<Histogram, Histogram::Deleter>;
     using VectorFieldPtr = std::unique_ptr<VectorField, VectorField::Deleter>;
     using ChartList      = std::vector<ChartPtr>;
-    using ChartKey       = std::pair<long long, fg_chart>;
+    using ChartKey       = std::pair<unsigned long long, fg_chart>;
 
     using ChartMapIterator     = std::map<fg_window, ChartList>::iterator;
     using WindGridMapIterator  = std::map<fg_window, WindowGridDims>::iterator;
