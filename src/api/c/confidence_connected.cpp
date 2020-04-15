@@ -24,7 +24,6 @@
 #include <type_traits>
 
 using af::dim4;
-using std::abs;
 using std::array;
 using std::conditional;
 using std::is_same;
@@ -138,7 +137,7 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
 
     Array<CT> segmented = floodFill(in, seedx, seedy, CT(1), lower, upper);
 
-    if (abs<CT>(s1var) < epsilon) {
+    if (std::abs<CT>(s1var) < epsilon) {
         // If variance is close to zero, stop after initial segmentation
         return getHandle(labelSegmented(segmented));
     }
@@ -167,7 +166,7 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
         if (newLow > minSeedIntensity) { newLow = minSeedIntensity; }
         if (newHigh < maxSeedIntensity) { newHigh = maxSeedIntensity; }
 
-        if (abs<CT>(validsVar) < epsilon) {
+        if (std::abs<CT>(validsVar) < epsilon) {
             // If variance is close to zero, discontinue iterating.
             continueLoop = false;
         }
