@@ -23,6 +23,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
 using detail::ushort;
 

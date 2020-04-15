@@ -40,6 +40,7 @@ using detail::cfloat;
 using detail::createSubArray;
 using detail::intl;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
 using detail::ushort;
 

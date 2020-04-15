@@ -22,6 +22,7 @@ using detail::cfloat;
 using detail::createEmptyArray;
 using detail::intl;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
 using detail::ushort;
 

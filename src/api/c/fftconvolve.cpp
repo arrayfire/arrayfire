@@ -29,6 +29,7 @@ using detail::fftconvolve;
 using detail::intl;
 using detail::real;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
 using detail::ushort;
 using std::max;

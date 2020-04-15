@@ -16,7 +16,9 @@
 
 using detail::intl;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
+using detail::ushort;
 
 template<typename inType, typename outType>
 static inline af_array histogram(const af_array in, const unsigned &nbins,

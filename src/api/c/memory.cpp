@@ -44,6 +44,7 @@ using detail::pinnedFree;
 using detail::printMemInfo;
 using detail::signalMemoryCleanup;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
 using detail::ushort;
 using std::move;

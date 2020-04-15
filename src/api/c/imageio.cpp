@@ -38,6 +38,7 @@ using af::dim4;
 using detail::pinnedAlloc;
 using detail::pinnedFree;
 using detail::uchar;
+using detail::uint;
 using detail::ushort;
 using std::string;
 using std::swap;

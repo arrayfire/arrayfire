@@ -29,7 +29,9 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 static inline af_array clampOp(const af_array in, const af_array lo,

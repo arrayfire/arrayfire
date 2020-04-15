@@ -34,6 +34,8 @@ using detail::copy_image;
 using detail::createValueArray;
 using detail::forgeManager;
 using detail::uchar;
+using detail::uint;
+using detail::ushort;
 using graphics::ForgeManager;
 
 template<typename T>

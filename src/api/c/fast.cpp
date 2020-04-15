@@ -23,6 +23,8 @@ using detail::Array;
 using detail::createEmptyArray;
 using detail::createValueArray;
 using detail::uchar;
+using detail::uint;
+using detail::ushort;
 
 template<typename T>
 static af_features fast(af_array const &in, const float thr,

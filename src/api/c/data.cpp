@@ -36,7 +36,9 @@ using detail::padArrayBorders;
 using detail::range;
 using detail::scalar;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
+using detail::ushort;
 
 dim4 verifyDims(const unsigned ndims, const dim_t *const dims) {
     DIM_ASSERT(1, ndims >= 1);

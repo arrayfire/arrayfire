@@ -19,6 +19,7 @@ using af::dim4;
 using detail::bilateral;
 using detail::uchar;
 using detail::uint;
+using detail::ushort;
 
 template<typename inType, typename outType, bool isColor>
 static inline af_array bilateral(const af_array &in, const float &sp_sig,

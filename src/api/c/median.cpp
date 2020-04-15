@@ -24,6 +24,8 @@ using af::dim4;
 using detail::Array;
 using detail::division;
 using detail::uchar;
+using detail::uint;
+using detail::ushort;
 using std::sort;
 
 template<typename T>

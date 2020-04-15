@@ -34,7 +34,9 @@ using detail::cfloat;
 using detail::convolve;
 using detail::intl;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
+using detail::ushort;
 
 template<typename T, typename accT, dim_t baseDim, bool expand>
 inline static af_array convolve(const af_array &s, const af_array &f,

@@ -23,6 +23,8 @@ using detail::arithOp;
 using detail::Array;
 using detail::convolve;
 using detail::uchar;
+using detail::uint;
+using detail::ushort;
 
 template<typename T, typename accT>
 static af_array dog(const af_array& in, const int radius1, const int radius2) {

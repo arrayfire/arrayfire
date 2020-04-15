@@ -39,7 +39,9 @@ using detail::isDoubleSupported;
 using detail::isHalfSupported;
 using detail::setDevice;
 using detail::uchar;
+using detail::uint;
 using detail::uintl;
+using detail::ushort;
 
 af_err af_set_backend(const af_backend bknd) {
     try {
