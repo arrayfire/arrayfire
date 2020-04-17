@@ -695,7 +695,7 @@ CONSTEXPR_DH inline float half2float(native_half_t value) noexcept {
 ///           value
 /// \param value The value to convert to integer
 template<std::float_round_style R, bool E, typename T>
-constexpr T half2int(native_half_t value) {
+T half2int(native_half_t value) {
     static_assert(std::is_integral<T>::value,
                   "half to int conversion only supports builtin integer types");
     unsigned int e = value & 0x7FFF;
