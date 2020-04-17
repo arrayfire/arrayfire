@@ -35,7 +35,7 @@ install the Visual Studio 2015 (x64) runtime libraries.
 Once you have downloaded the ArrayFire installer, execute the installer as you
 normally would on Windows. If you choose not to modify the path during the
 installation procedure, you'll need to manually add ArrayFire to the path for
-all users. Simply append `%AF_PATH%/lib` to the PATH variable so that the loader
+all users. Simply append `%%AF_PATH%/lib` to the PATH variable so that the loader
 can find ArrayFire DLLs.
 
 For more information on using ArrayFire on Windows, visit the following
