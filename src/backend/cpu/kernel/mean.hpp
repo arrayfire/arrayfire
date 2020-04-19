@@ -22,7 +22,9 @@ struct MeanOp {
     MeanOp(Ti mean, Tw count)
         : transform(), runningMean(transform(mean)), runningCount(count) {}
 
-    void operator()(Ti _newMean, Tw newCount) {
+    /// Prevents the optimzation of the mean calculation by some compiler flags
+    /// specifically -march=native.
+    [[gnu::optimize("01")]] void operator()(Ti _newMean, Tw newCount) {
         To newMean = transform(_newMean);
         if ((newCount != 0) || (runningCount != 0)) {
             Tw runningScale = runningCount;
