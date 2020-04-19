@@ -310,10 +310,22 @@ void testRandomEngineUniform(randomEngineType type) {
     int elem = 16 * 1024 * 1024;
     randomEngine r(type, 0);
     array A = randu(elem, ty, r);
-    T m     = mean<T>(A);
-    T s     = stdev<T>(A);
-    ASSERT_NEAR(m, 0.5, 1e-3);
-    ASSERT_NEAR(s, 0.2887, 1e-2);
+
+    // If double precision is available then perform the mean calculation using
+    // double because the A array is large and causes accuracy issues when using
+    // certain compiler flags (i.e. --march=native)
+    if (af::isDoubleAvailable(af::getDevice())) {
+        array Ad = A.as(f64);
+        double m = mean<double>(Ad);
+        double s = stdev<double>(Ad);
+        ASSERT_NEAR(m, 0.5, 1e-3);
+        ASSERT_NEAR(s, 0.2887, 1e-2);
+    } else {
+        T m = mean<T>(A);
+        T s = stdev<T>(A);
+        ASSERT_NEAR(m, 0.5, 1e-3);
+        ASSERT_NEAR(s, 0.2887, 1e-2);
+    }
 }
 
 template<typename T>
