@@ -166,12 +166,11 @@ void *DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
 
             lock_guard_t lock(this->memory_mutex);
             auto free_buffer_iter = current.free_map.find(alloc_bytes);
-            vector<void *> &free_buffer_vector = free_buffer_iter->second;
-
             if (free_buffer_iter != current.free_map.end() &&
-                !free_buffer_vector.empty()) {
+                !free_buffer_iter->second.empty()) {
                 // Delete existing buffer info and underlying event
                 // Set to existing in from free map
+                vector<void *> &free_buffer_vector = free_buffer_iter->second;
                 ptr = free_buffer_vector.back();
                 free_buffer_vector.pop_back();
                 current.locked_map[ptr] = info;
@@ -223,15 +222,14 @@ void DefaultMemoryManager::unlock(void *ptr, bool user_unlock) {
         memory_info &current = this->getCurrentMemoryInfo();
 
         auto locked_buffer_iter         = current.locked_map.find(ptr);
-        locked_info &locked_buffer_info = locked_buffer_iter->second;
-        void *locked_buffer_ptr         = locked_buffer_iter->first;
-
-        // Pointer not found in locked map
         if (locked_buffer_iter == current.locked_map.end()) {
+            // Pointer not found in locked map
             // Probably came from user, just free it
             freed_ptr.reset(ptr);
             return;
         }
+        locked_info &locked_buffer_info = locked_buffer_iter->second;
+        void *locked_buffer_ptr         = locked_buffer_iter->first;
 
         if (user_unlock) {
             locked_buffer_info.user_lock = false;
