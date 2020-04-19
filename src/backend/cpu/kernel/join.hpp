@@ -39,11 +39,7 @@ void join_append(To *out, const Tx *X, const af::dim4 &offset,
                 const dim_t xYZW = xZW + oy * xst[1];
                 const dim_t oYZW = oZW + (oy + offset[1]) * ost[1];
 
-                for (dim_t ox = 0; ox < xdims[0]; ox++) {
-                    const dim_t iMem = xYZW + ox;
-                    const dim_t oMem = oYZW + (ox + offset[0]);
-                    out[oMem]        = X[iMem];
-                }
+                memcpy(out + oYZW + offset[0], X + xYZW, xdims[0] * sizeof(To));
             }
         }
     }
