@@ -71,6 +71,12 @@ function(arrayfire_set_default_cxx_flags target)
         target_compile_options(${target}
           PRIVATE -Wno-ignored-attributes)
     endif()
+
+    check_cxx_compiler_flag(-Wall has_all_warnings_flag)
+    if(has_all_warnings_flag)
+      target_compile_options(${target}
+        PRIVATE -Wall)
+    endif()
   endif()
 endfunction()
 
