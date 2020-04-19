@@ -295,14 +295,14 @@ struct blas_params {
 
 class MatrixMultiplyBatch : public ::testing::TestWithParam<blas_params> {
    public:
-    array lhs, rhs, out;
+    array lhs, rhs, out, gold;
     void SetUp() {
         blas_params params = GetParam();
         lhs = randu(params.m, params.k, params.ld2, params.ld3, params.type);
         rhs = randu(params.k, params.n, params.rd2, params.rd3, params.type);
 
-        array gold(params.m, params.n, std::max(params.ld2, params.rd2),
-                   std::max(params.ld3, params.rd3));
+        gold = array(params.m, params.n, std::max(params.ld2, params.rd2),
+                     std::max(params.ld3, params.rd3));
 
         if (params.ld2 == params.rd2 && params.ld3 == params.rd3) {
             for (int i = 0; i < params.ld2; i++) {
@@ -418,7 +418,7 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(MatrixMultiplyBatch, Batched) {
     array out         = matmul(lhs, rhs);
-    blas_params param = GetParam();
+    ASSERT_ARRAYS_NEAR(gold, out, 1e-3);
 }
 
 float alpha = 1.f;
