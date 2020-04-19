@@ -16,7 +16,6 @@
 #include <math.hpp>
 #include <mean.hpp>
 #include <reduce.hpp>
-#include <tile.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/statistics.h>
@@ -107,14 +106,8 @@ static tuple<Array<outType>, Array<outType>> meanvar(
         normArr = arithOp<outType, af_div_t>(ones, wtsSum, meanArr.dims());
     }
 
-    /* now tile meanArr along dim and use it for variance computation */
-    dim4 tileDims(1);
-    tileDims[dim]           = iDims[dim];
-    Array<outType> tMeanArr = tile<outType>(meanArr, tileDims);
-    /* now mean array is ready */
-
     Array<outType> diff =
-        arithOp<outType, af_sub_t>(input, tMeanArr, tMeanArr.dims());
+        arithOp<outType, af_sub_t>(input, meanArr, input.dims());
     Array<outType> diffSq = arithOp<outType, af_mul_t>(diff, diff, diff.dims());
     Array<outType> redDiff = reduce<af_add_t, outType, outType>(diffSq, dim);
 
