@@ -221,7 +221,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
         entry = loadKernel(device, funcName);
         if (entry.prog == nullptr || entry.ker == nullptr) {
             string jit_ker = getKernelString(funcName, full_nodes, full_ids,
-                output_ids, is_linear);
+                                             output_ids, is_linear);
             saveKernel(funcName, jit_ker, ".cu");
             entry = buildKernel(device, funcName, jit_ker, {}, true);
         }

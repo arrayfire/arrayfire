@@ -40,9 +40,12 @@
 #include <af/defines.h>
 #include <af/version.h>
 
+#include <sys/stat.h>
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <fstream>
+#include <functional>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -50,13 +53,10 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-#include <fstream>
-#include <functional>
-#include <sys/stat.h>
 
 #if !defined(OS_WIN)
-#include <unistd.h>
 #include <pwd.h>
+#include <unistd.h>
 #endif
 
 using std::accumulate;
@@ -210,7 +210,7 @@ bool isDirectoryWritable(const string &path) {
     const string testPath = path + AF_PATH_SEPARATOR + "test";
     if (!std::ofstream(testPath).is_open()) return false;
     removeFile(testPath);
-    
+
     return true;
 }
 
@@ -218,7 +218,7 @@ const string &getKernelCacheDirectory() {
     thread_local std::once_flag flag;
     thread_local string cacheDirectory;
 
-    std::call_once(flag, []() { 
+    std::call_once(flag, []() {
         const vector<string> pathList = {
 #if !defined(OS_WIN)
             "/var/lib/arrayfire",
@@ -229,12 +229,12 @@ const string &getKernelCacheDirectory() {
 #endif
         };
 
-        for (const string& path : pathList) {
+        for (const string &path : pathList) {
             if (isDirectoryWritable(path)) {
                 cacheDirectory = path;
                 break;
             }
-        } 
+        }
     });
 
     return cacheDirectory;
@@ -242,12 +242,15 @@ const string &getKernelCacheDirectory() {
 
 string getKernelCacheFilename(const int device, const string &nameExpr) {
     const string mangledName = "KER" + std::hash<string>{}(nameExpr);
-    auto computeFlag = getComputeCapability(device);
+
+    const auto computeFlag = getComputeCapability(device);
+    const string computeVersion = to_string(computeFlag.first) + 
+                                  to_string(computeFlag.second);
 
     return mangledName + 
-        "_CU_" + to_string(computeFlag.first) + to_string(computeFlag.second) +
-        "_AF_" + to_string(AF_API_VERSION_CURRENT) +
-        ".cubin";
+           "_CU_" + computeVersion +
+           "_AF_" + to_string(AF_API_VERSION_CURRENT) +
+           ".cubin";
 }
 
 Kernel buildKernel(const int device, const string &nameExpr,
@@ -417,15 +420,15 @@ Kernel buildKernel(const int device, const string &nameExpr,
     // save kernel in cache
     const string &cacheDirectory = getKernelCacheDirectory();
     if (!cacheDirectory.empty()) {
-        const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR 
-            + getKernelCacheFilename(device, nameExpr);
+        const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
+                                 getKernelCacheFilename(device, nameExpr);
 
         std::ofstream out(cacheFile, std::ios::binary);
         const size_t nameSize = strlen(name);
         out << nameSize;
         out.write(name, nameSize);
         out << cubinSize;
-        out.write(static_cast<const char*>(cubin), cubinSize);
+        out.write(static_cast<const char *>(cubin), cubinSize);
     }
 
     CU_LINK_CHECK(cuLinkDestroy(linkState));
@@ -453,16 +456,15 @@ Kernel loadKernel(const int device, const string &nameExpr) {
     const string &cacheDirectory = getKernelCacheDirectory();
     if (cacheDirectory.empty()) return Kernel{nullptr, nullptr};
 
-    const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR
-        + getKernelCacheFilename(device, nameExpr);
+    const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
+                             getKernelCacheFilename(device, nameExpr);
 
     CUmodule module = nullptr;
     CUfunction kernel = nullptr;
 
-    try
-    {
+    try {
         std::ifstream in(cacheFile, std::ios::binary);
-        if (!in.is_open()) return Kernel{ nullptr, nullptr };
+        if (!in.is_open()) return Kernel{nullptr, nullptr};
 
         in.exceptions(std::ios::failbit | std::ios::badbit);
 
@@ -481,10 +483,10 @@ Kernel loadKernel(const int device, const string &nameExpr) {
         CU_CHECK(cuModuleLoadDataEx(&module, cubin.data(), 0, 0, 0));
         CU_CHECK(cuModuleGetFunction(&kernel, module, name.c_str()));
 
-        AF_TRACE("{{{:<30} : loaded from {} for {} }}",
-            nameExpr, cacheFile, getDeviceProp(device).name);
+        AF_TRACE("{{{:<30} : loaded from {} for {} }}", nameExpr, cacheFile, 
+                 getDeviceProp(device).name);
 
-        return Kernel{ module, kernel };
+        return Kernel{module, kernel};
     } catch (...) {
         if (module != nullptr) {
             CU_CHECK(cuModuleUnload(module));
@@ -508,7 +510,7 @@ Kernel findKernel(int device, const string &nameExpr) {
 
     auto iter = cache.find(nameExpr);
     if (iter != cache.end()) return iter->second;
-    
+
     Kernel kernel = loadKernel(device, nameExpr);
     if (kernel.prog != nullptr && kernel.ker != nullptr) {
         addKernelToCache(device, nameExpr, kernel);

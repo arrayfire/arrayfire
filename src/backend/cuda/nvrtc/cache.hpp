@@ -110,7 +110,7 @@ Kernel buildKernel(const int device, const std::string& nameExpr,
                    const bool isJIT                     = false);
 
 
-Kernel loadKernel(const int device, const std::string &nameExpr);
+Kernel loadKernel(const int device, const std::string& nameExpr);
 
 template<typename T>
 std::string toString(T val);
