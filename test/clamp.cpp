@@ -68,7 +68,7 @@ class Clamp : public ::testing::TestWithParam<clamp_params> {
         lo_.as((dtype)af::dtype_traits<T>::af_type).host(&hlo[0]);
         hi_.as((dtype)af::dtype_traits<T>::af_type).host(&hhi[0]);
 
-        for (int i = 0; i < num; i++) {
+        for (size_t i = 0; i < num; i++) {
             if (hin[i] < hlo[i])
                 hgold[i] = hlo[i];
             else if (hin[i] > hhi[i])

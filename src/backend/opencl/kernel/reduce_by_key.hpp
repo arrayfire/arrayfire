@@ -309,8 +309,6 @@ void launch_compact(cl::Buffer *reduced_block_sizes, Param keys_out,
     kc_entry_t entry = kernelCache(device, ref_name);
 
     if (entry.prog == 0 && entry.ker == 0) {
-        ToNumStr<To> toNumStr;
-
         std::ostringstream options;
         options << " -D To=" << dtype_traits<To>::getName()
                 << " -D Tk=" << dtype_traits<Tk>::getName() << " -D T=To"
@@ -363,8 +361,6 @@ void launch_compact_dim(cl::Buffer *reduced_block_sizes, Param keys_out,
     kc_entry_t entry = kernelCache(device, ref_name);
 
     if (entry.prog == 0 && entry.ker == 0) {
-        ToNumStr<To> toNumStr;
-
         std::ostringstream options;
         options << " -D To=" << dtype_traits<To>::getName()
                 << " -D Tk=" << dtype_traits<Tk>::getName() << " -D T=To"

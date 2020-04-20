@@ -34,11 +34,11 @@
 #include <err_cuda.hpp>
 #include <memory.hpp>
 #include <spdlog/spdlog.h>
+#include <utility.hpp>
 #include <version.hpp>
 #include <af/cuda.h>
 #include <af/device.h>
 #include <af/version.h>
-#include <memory>
 
 #include <algorithm>
 #include <array>
@@ -215,7 +215,7 @@ string getDeviceInfo(int device) noexcept {
     size_t mem_gpu_total = dev.totalGlobalMem;
     // double cc = double(dev.major) + double(dev.minor) / 10;
 
-    bool show_braces = getActiveDeviceId() == device;
+    bool show_braces = getActiveDeviceId() == static_cast<unsigned>(device);
 
     string id = (show_braces ? string("[") : "-") + to_string(device) +
                 (show_braces ? string("]") : "-");
@@ -356,7 +356,7 @@ int getDeviceCount() {
     }
 }
 
-int getActiveDeviceId() { return tlocalActiveDeviceId(); }
+unsigned getActiveDeviceId() { return tlocalActiveDeviceId(); }
 
 int getDeviceNativeId(int device) {
     if (device <

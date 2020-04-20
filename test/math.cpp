@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #include <gtest/gtest.h>
-#include <half.hpp>
 #include <testHelpers.hpp>
 #include <af/arith.h>
 #include <af/data.h>
@@ -42,21 +41,21 @@ T rsqrt(T in) {
     return T(1.0 / sqrt(in));
 }
 
-#define MATH_TEST(T, func, err, lo, hi)                                     \
-    TEST(MathTests, Test_##func##_##T) {                                    \
-        try {                                                               \
-            SUPPORTED_TYPE_CHECK(T);                                        \
-            af_dtype ty = (af_dtype)dtype_traits<T>::af_type;               \
-            array a     = (hi - lo) * randu(num, ty) + lo + err;            \
-            a           = a.as(ty);                                         \
-            eval(a);                                                        \
-            array b = func(a);                                              \
-            vector<T> h_a(a.elements());                                    \
-            a.host(&h_a[0]);                                                \
-            for (int i = 0; i < h_a.size(); i++) { h_a[i] = func(h_a[i]); } \
-                                                                            \
-            ASSERT_VEC_ARRAY_NEAR(h_a, dim4(h_a.size()), b, err);           \
-        } catch (exception & ex) { FAIL() << ex.what(); }                   \
+#define MATH_TEST(T, func, err, lo, hi)                                        \
+    TEST(MathTests, Test_##func##_##T) {                                       \
+        try {                                                                  \
+            SUPPORTED_TYPE_CHECK(T);                                           \
+            af_dtype ty = (af_dtype)dtype_traits<T>::af_type;                  \
+            array a     = (hi - lo) * randu(num, ty) + lo + err;               \
+            a           = a.as(ty);                                            \
+            eval(a);                                                           \
+            array b = func(a);                                                 \
+            vector<T> h_a(a.elements());                                       \
+            a.host(&h_a[0]);                                                   \
+            for (size_t i = 0; i < h_a.size(); i++) { h_a[i] = func(h_a[i]); } \
+                                                                               \
+            ASSERT_VEC_ARRAY_NEAR(h_a, dim4(h_a.size()), b, err);              \
+        } catch (exception & ex) { FAIL() << ex.what(); }                      \
     }
 
 #define MATH_TESTS_HALF(func) MATH_TEST(half, func, hlf_err, 0.05f, 0.95f)

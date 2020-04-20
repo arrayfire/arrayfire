@@ -45,8 +45,8 @@ double error(const array &out, const array &pred) {
 class ann {
    private:
     int num_layers;
-    dtype datatype;
     vector<array> weights;
+    dtype datatype;
 
     // Add bias input to the output from previous layer
     array add_bias(const array &in);

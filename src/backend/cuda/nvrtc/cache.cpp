@@ -84,7 +84,7 @@ using kc_t = map<string, Kernel>;
     do {                                                                     \
         CUresult res = fn;                                                   \
         if (res == CUDA_SUCCESS) break;                                      \
-        char cu_err_msg[1024];                                               \
+        char cu_err_msg[1024 + 48];                                          \
         const char *cu_err_name;                                             \
         cuGetErrorName(res, &cu_err_name);                                   \
         snprintf(cu_err_msg, sizeof(cu_err_msg), "CU Error %s(%d): %s\n",    \

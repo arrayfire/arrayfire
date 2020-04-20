@@ -189,8 +189,8 @@ AFSymbolManager::AFSymbolManager()
     static const af_backend order[] = {AF_BACKEND_CUDA, AF_BACKEND_OPENCL,
                                        AF_BACKEND_CPU};
 
-    LibHandle handle;
-    af::Backend backend;
+    LibHandle handle    = nullptr;
+    af::Backend backend = AF_BACKEND_DEFAULT;
     // Decremeting loop. The last successful backend loaded will be the most
     // prefered one.
     for (int i = NUM_BACKENDS - 1; i >= 0; i--) {
@@ -205,12 +205,15 @@ AFSymbolManager::AFSymbolManager()
     }
     if (backend) {
         AF_TRACE("AF_DEFAULT_BACKEND: {}", getBackendDirectoryName(backend));
+        defaultBackend = backend;
+    } else {
+        logger->error("Backend was not found");
+        defaultBackend = AF_BACKEND_DEFAULT;
     }
 
     // Keep a copy of default order handle inorder to use it in ::setBackend
     // when the user passes AF_BACKEND_DEFAULT
-    defaultHandle  = handle;
-    defaultBackend = backend;
+    defaultHandle = handle;
 }
 
 AFSymbolManager::~AFSymbolManager() {

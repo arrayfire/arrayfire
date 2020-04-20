@@ -123,10 +123,10 @@ namespace cpu {
 
 DeviceManager::DeviceManager()
     : queues(MAX_QUEUES)
+    , fgMngr(new graphics::ForgeManager())
     , memManager(new common::DefaultMemoryManager(
           getDeviceCount(), common::MAX_BUFFERS,
-          AF_MEM_DEBUG || AF_CPU_MEM_DEBUG))
-    , fgMngr(new graphics::ForgeManager()) {
+          AF_MEM_DEBUG || AF_CPU_MEM_DEBUG)) {
     // Use the default ArrayFire memory manager
     std::unique_ptr<cpu::Allocator> deviceMemoryManager(new cpu::Allocator());
     memManager->setAllocator(std::move(deviceMemoryManager));

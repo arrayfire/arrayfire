@@ -214,9 +214,9 @@ TEST(Join, DifferentSizes) {
     vector<float> hb(11);
     vector<float> hc(12);
 
-    for (int i = 0; i < ha.size(); i++) { ha[i] = i; }
-    for (int i = 0; i < hb.size(); i++) { hb[i] = i; }
-    for (int i = 0; i < hc.size(); i++) { hc[i] = i; }
+    for (size_t i = 0; i < ha.size(); i++) { ha[i] = i; }
+    for (size_t i = 0; i < hb.size(); i++) { hb[i] = i; }
+    for (size_t i = 0; i < hc.size(); i++) { hc[i] = i; }
     vector<float> hgold(10 + 11 + 12);
     vector<float>::iterator it = copy(ha.begin(), ha.end(), hgold.begin());
     it                         = copy(hb.begin(), hb.end(), it);
@@ -236,9 +236,9 @@ TEST(Join, SameSize) {
     vector<float> hb(10);
     vector<float> hc(10);
 
-    for (int i = 0; i < ha.size(); i++) { ha[i] = i; }
-    for (int i = 0; i < hb.size(); i++) { hb[i] = i; }
-    for (int i = 0; i < hc.size(); i++) { hc[i] = i; }
+    for (size_t i = 0; i < ha.size(); i++) { ha[i] = i; }
+    for (size_t i = 0; i < hb.size(); i++) { hb[i] = i; }
+    for (size_t i = 0; i < hc.size(); i++) { hc[i] = i; }
     vector<float> hgold(10 + 10 + 10);
     vector<float>::iterator it = copy(ha.begin(), ha.end(), hgold.begin());
     it                         = copy(hb.begin(), hb.end(), it);

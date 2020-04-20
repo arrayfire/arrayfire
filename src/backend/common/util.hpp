@@ -19,12 +19,5 @@ std::string getEnvVar(const std::string& key);
 // Dump the kernel sources only if the environment variable is defined
 void saveKernel(const std::string& funcName, const std::string& jit_ker,
                 const std::string& ext);
-namespace {
-static constexpr const char* saveJitKernelsEnvVarName = "AF_JIT_KERNEL_TRACE";
 
-std::string int_version_to_string(int version) {
-    return std::to_string(version / 1000) + "." +
-           std::to_string((int)((version % 1000) / 10.));
-}
-
-}  // namespace
+std::string int_version_to_string(int version);

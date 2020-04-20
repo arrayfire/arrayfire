@@ -38,7 +38,6 @@ af::Backend getBackendId(const array &in) {
 
 int getDeviceId(const array &in) {
     int device = getDevice();
-    ;
     AF_THROW(af_get_device_id(&device, in.get()));
     return device;
 }
