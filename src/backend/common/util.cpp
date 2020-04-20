@@ -10,17 +10,24 @@
 /// This file contains platform independent utility functions
 #if defined(OS_WIN)
 #include <Windows.h>
+#else
+#include <pwd.h>
+#include <unistd.h>
 #endif
 
 #include <common/defines.hpp>
 #include <common/util.hpp>
 #include <af/defines.h>
 
+#include <sys/stat.h>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <string>
+#include <vector>
 
 using std::string;
+using std::vector;
 
 string getEnvVar(const std::string& key) {
 #if defined(OS_WIN)
@@ -90,4 +97,87 @@ void saveKernel(const std::string& funcName, const std::string& jit_ker,
 std::string int_version_to_string(int version) {
     return std::to_string(version / 1000) + "." +
            std::to_string((int)((version % 1000) / 10.));
+}
+
+#if !defined(OS_WIN)
+string getHomeDirectory() {
+    string home = getEnvVar("XDG_CACHE_HOME");
+    if (!home.empty()) return home;
+
+    home = getEnvVar("HOME");
+    if (!home.empty()) return home;
+
+    home = getpwuid(getuid())->pw_dir;
+}
+#else
+string getTemporaryDirectory() {
+    DWORD bufSize = 261;  // limit according to GetTempPath documentation
+    string retVal;
+    retVal.resize(bufSize);
+    bufSize = GetTempPathA(bufSize, &retVal[0]);
+    retVal.resize(bufSize);
+    return retVal;
+}
+#endif
+
+bool folderExists(const string &path) {
+#if !defined(OS_WIN)
+    struct stat status;
+    return stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
+#else
+    struct _stat status;
+    return _stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
+#endif
+}
+
+bool createFolder(const string &path) {
+#if !defined(OS_WIN)
+    return mkdir(path.c_str(), 0777) == 0;
+#else
+    return CreateDirectoryA(path.c_str(), NULL) != 0;
+#endif
+}
+
+bool removeFile(const string &path) {
+#if !defined(OS_WIN)
+    return unlink(path.c_str()) == 0;
+#else
+    return DeleteFileA(path.c_str()) != 0;
+#endif
+}
+
+bool isDirectoryWritable(const string &path) {
+    if (!folderExists(path) && !createFolder(path)) return false;
+
+    const string testPath = path + AF_PATH_SEPARATOR + "test";
+    if (!std::ofstream(testPath).is_open()) return false;
+    removeFile(testPath);
+
+    return true;
+}
+
+const string &getCacheDirectory() {
+    thread_local std::once_flag flag;
+    thread_local string cacheDirectory;
+
+    std::call_once(flag, []() {
+        const vector<string> pathList = {
+#if !defined(OS_WIN)
+            "/var/lib/arrayfire",
+            getHomeDirectory() + "/.arrayfire",
+            "/tmp/arrayfire"
+#else
+            getTemporaryDirectory() + "\\ArrayFire"
+#endif
+        };
+
+        for (const string &path : pathList) {
+            if (isDirectoryWritable(path)) {
+                cacheDirectory = path;
+                break;
+            }
+        }
+    });
+
+    return cacheDirectory;
 }

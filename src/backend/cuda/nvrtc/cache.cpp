@@ -39,8 +39,8 @@
 #include <platform.hpp>
 #include <af/defines.h>
 #include <af/version.h>
+#include <common/util.hpp>
 
-#include <sys/stat.h>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -53,11 +53,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-
-#if !defined(OS_WIN)
-#include <pwd.h>
-#include <unistd.h>
-#endif
 
 using std::accumulate;
 using std::array;
@@ -156,89 +151,6 @@ void Kernel::getScalar(T &out, const char *name) {
 
 template void Kernel::setScalar<int>(const char *, int);
 template void Kernel::getScalar<int>(int &, const char *);
-
-#if !defined(OS_WIN)
-string getHomeDirectory() {
-    string home = getEnvVar("XDG_CACHE_HOME");
-    if (!home.empty()) return home;
-
-    home = getEnvVar("HOME");
-    if (!home.empty()) return home;
-
-    home = getpwuid(getuid())->pw_dir;
-}
-#else
-string getTemporaryDirectory() {
-    DWORD bufSize = 261;  // limit according to GetTempPath documentation
-    string retVal;
-    retVal.resize(bufSize);
-    bufSize = GetTempPathA(bufSize, &retVal[0]);
-    retVal.resize(bufSize);
-    return retVal;
-}
-#endif
-
-bool folderExists(const string &path) {
-#if !defined(OS_WIN)
-    struct stat status;
-    return stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
-#else
-    struct _stat status;
-    return _stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
-#endif
-}
-
-bool createFolder(const string &path) {
-#if !defined(OS_WIN)
-    return mkdir(path.c_str(), 0777) == 0;
-#else
-    return CreateDirectoryA(path.c_str(), NULL) != 0;
-#endif
-}
-
-bool removeFile(const string &path) {
-#if !defined(OS_WIN)
-    return unlink(path.c_str()) == 0;
-#else
-    return DeleteFileA(path.c_str()) != 0;
-#endif
-}
-
-bool isDirectoryWritable(const string &path) {
-    if (!folderExists(path) && !createFolder(path)) return false;
-
-    const string testPath = path + AF_PATH_SEPARATOR + "test";
-    if (!std::ofstream(testPath).is_open()) return false;
-    removeFile(testPath);
-
-    return true;
-}
-
-const string &getKernelCacheDirectory() {
-    thread_local std::once_flag flag;
-    thread_local string cacheDirectory;
-
-    std::call_once(flag, []() {
-        const vector<string> pathList = {
-#if !defined(OS_WIN)
-            "/var/lib/arrayfire",
-            getHomeDirectory() + "/.arrayfire",
-            "/tmp/arrayfire"
-#else
-            getTemporaryDirectory() + "\\ArrayFire"
-#endif
-        };
-
-        for (const string &path : pathList) {
-            if (isDirectoryWritable(path)) {
-                cacheDirectory = path;
-                break;
-            }
-        }
-    });
-
-    return cacheDirectory;
-}
 
 string getKernelCacheFilename(const int device, const string &nameExpr) {
     const string mangledName = "KER" + std::hash<string>{}(nameExpr);
@@ -418,7 +330,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
     Kernel entry = {module, kernel};
 
     // save kernel in cache
-    const string &cacheDirectory = getKernelCacheDirectory();
+    const string &cacheDirectory = getCacheDirectory();
     if (!cacheDirectory.empty()) {
         const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
                                  getKernelCacheFilename(device, nameExpr);
@@ -453,7 +365,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
 }
 
 Kernel loadKernel(const int device, const string &nameExpr) {
-    const string &cacheDirectory = getKernelCacheDirectory();
+    const string &cacheDirectory = getCacheDirectory();
     if (cacheDirectory.empty()) return Kernel{nullptr, nullptr};
 
     const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +

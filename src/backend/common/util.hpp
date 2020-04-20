@@ -21,3 +21,13 @@ void saveKernel(const std::string& funcName, const std::string& jit_ker,
                 const std::string& ext);
 
 std::string int_version_to_string(int version);
+
+const std::string& getCacheDirectory();
+
+bool folderExists(const std::string& path);
+
+bool createFolder(const std::string& path);
+
+bool removeFile(const std::string& path);
+
+bool isDirectoryWritable(const std::string& path);
