@@ -23,7 +23,7 @@ exception::exception() : m_msg{}, m_err(AF_ERR_UNKNOWN) {
 }
 
 exception::exception(const char *msg) : m_msg{}, m_err(AF_ERR_UNKNOWN) {
-    strncpy(m_msg, msg, sizeof(m_msg));
+    strncpy(m_msg, msg, sizeof(m_msg) - 1);
     m_msg[sizeof(m_msg) - 1] = '\0';
 }
 

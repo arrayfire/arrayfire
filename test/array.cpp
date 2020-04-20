@@ -10,7 +10,6 @@
 #define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <arrayfire.h>
 #include <gtest/gtest.h>
-#include <half.hpp>
 #include <testHelpers.hpp>
 #include <cstddef>
 #include <cstdlib>

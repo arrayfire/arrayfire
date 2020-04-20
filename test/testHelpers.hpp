@@ -12,7 +12,11 @@
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#pragma once
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 #include <half.hpp>
+#pragma GCC diagnostic pop
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -145,7 +149,9 @@ float convert(af::half in) {
 template<>
 af_half convert(int in) {
     half_float::half h = half_float::half(in);
-    return *reinterpret_cast<af_half *>(&h);
+    af_half out;
+    memcpy(&out, &h, sizeof(af_half));
+    return out;
 }
 
 template<typename inType, typename outType, typename FileElementType>
@@ -599,7 +605,8 @@ void cleanSlate() {
 //  as numbers
 af_half abs(af_half in) {
     half_float::half in_;
-    memcpy(&in_, &in, sizeof(af_half));
+    // casting to void* to avoid class-memaccess warnings on windows
+    memcpy(static_cast<void *>(&in_), &in, sizeof(af_half));
     half_float::half out_ = abs(in_);
     af_half out;
     memcpy(&out, &out_, sizeof(af_half));
@@ -609,8 +616,10 @@ af_half abs(af_half in) {
 af_half operator-(af_half lhs, af_half rhs) {
     half_float::half lhs_;
     half_float::half rhs_;
-    memcpy(&lhs_, &lhs, sizeof(af_half));
-    memcpy(&rhs_, &rhs, sizeof(af_half));
+
+    // casting to void* to avoid class-memaccess warnings on windows
+    memcpy(static_cast<void *>(&lhs_), &lhs, sizeof(af_half));
+    memcpy(static_cast<void *>(&rhs_), &rhs, sizeof(af_half));
     half_float::half out = lhs_ - rhs_;
     af_half o;
     memcpy(&o, &out, sizeof(af_half));

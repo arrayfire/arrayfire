@@ -34,7 +34,8 @@ const SparseArrayBase &getSparseArrayBase(const af_array in,
             AF_ERR_ARG);
     }
 
-    if (device_check && base->getDevId() != detail::getActiveDeviceId()) {
+    if (device_check &&
+        base->getDevId() != static_cast<int>(detail::getActiveDeviceId())) {
         AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
     }
 
@@ -84,7 +85,7 @@ af_err af_create_sparse_array(af_array *out, const dim_t nRows,
         ARG_ASSERT(5, cInfo.getType() == s32);
         DIM_ASSERT(5, cInfo.isLinear());
 
-        const size_t nNZ = vInfo.elements();
+        const dim_t nNZ = vInfo.elements();
         if (stype == AF_STORAGE_COO) {
             DIM_ASSERT(4, rInfo.elements() == nNZ);
             DIM_ASSERT(5, cInfo.elements() == nNZ);

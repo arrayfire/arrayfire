@@ -133,7 +133,6 @@ Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
     dim_t outputHeight =
         1 + (sDims[1] + 2 * padding[1] - (((fDims[1] - 1) * dilation[1]) + 1)) /
                 stride[1];
-    dim4 oDims = dim4(outputWidth, outputHeight, fDims[3], sDims[3]);
 
     const bool retCols = false;
     Array<T> unwrapped =
@@ -219,7 +218,6 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
                              af::dim4 stride, af::dim4 padding,
                              af::dim4 dilation) {
     const dim4 &cDims = incoming_gradient.dims();
-    const dim4 &sDims = original_signal.dims();
     const dim4 &fDims = original_filter.dims();
 
     const bool retCols = false;

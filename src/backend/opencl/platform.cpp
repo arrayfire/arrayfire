@@ -112,6 +112,23 @@ static string platformMap(string& platStr) {
     }
 }
 
+afcl::platform getPlatformEnum(cl::Device dev) {
+    std::string pname = getPlatformName(dev);
+    if (verify_present(pname, "AMD"))
+        return AFCL_PLATFORM_AMD;
+    else if (verify_present(pname, "NVIDIA"))
+        return AFCL_PLATFORM_NVIDIA;
+    else if (verify_present(pname, "INTEL"))
+        return AFCL_PLATFORM_INTEL;
+    else if (verify_present(pname, "APPLE"))
+        return AFCL_PLATFORM_APPLE;
+    else if (verify_present(pname, "BEIGNET"))
+        return AFCL_PLATFORM_BEIGNET;
+    else if (verify_present(pname, "POCL"))
+        return AFCL_PLATFORM_POCL;
+    return AFCL_PLATFORM_UNKNOWN;
+}
+
 string getDeviceInfo() noexcept {
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION << " (OpenCL, " << get_system()
@@ -196,7 +213,7 @@ int getDeviceCount() noexcept try {
     return 0;
 }
 
-int getActiveDeviceId() {
+unsigned getActiveDeviceId() {
     // Second element is the queue id, which is
     // what we mean by active device id in opencl backend
     return get<1>(tlocalActiveDeviceId());

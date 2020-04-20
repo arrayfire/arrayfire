@@ -9,7 +9,11 @@
 
 #include <af/dim4.hpp>
 #include <af/half.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 #include "half.hpp"
+#pragma GCC diagnostic pop
 
 #include <cstring>
 
@@ -37,11 +41,12 @@ To cast(T in) {
 }
 
 template<>
-af_half cast<af_half, double>(double in) {
+[[gnu::unused]] af_half cast<af_half, double>(double in) {
     half_float::half tmp = static_cast<half_float::half>(in);
     af_half out;
     memcpy(&out, &tmp, sizeof(af_half));
     return out;
 }
+
 }  // namespace
 }  // namespace af

@@ -31,7 +31,7 @@ TEST(hsv_rgb, InvalidArray) {
     try {
         array output = hsv2rgb(input);
         ASSERT_EQ(true, false);
-    } catch (exception) {
+    } catch (const exception & /* ex */) {
         ASSERT_EQ(true, true);
         return;
     }

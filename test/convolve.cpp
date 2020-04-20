@@ -942,8 +942,6 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
 
     vector<T> &currGoldBar = tests[0];
 
-    size_t nElems = currGoldBar.size();
-
     dim_t expectedDim0 =
         1 + (sDims[0] + 2 * padding[0] - (((fDims[0] - 1) * dilation[0]) + 1)) /
                 stride[0];

@@ -120,7 +120,7 @@ bool ArrayInfo::isLinear() const {
     if (ndims() == 1) { return dim_strides[0] == 1; }
 
     dim_t count = 1;
-    for (size_t i = 0; i < ndims(); i++) {
+    for (dim_t i = 0; i < ndims(); i++) {
         if (count != dim_strides[i]) { return false; }
         count *= dim_size[i];
     }

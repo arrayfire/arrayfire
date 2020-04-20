@@ -29,10 +29,7 @@ TEST(NoDevice, GetDeviceCount) {
     ASSERT_SUCCESS(af_get_device_count(&device));
 }
 
-TEST(NoDevice, GetDeviceCountCxx) {
-    int device = 0;
-    af::getDeviceCount();
-}
+TEST(NoDevice, GetDeviceCountCxx) { af::getDeviceCount(); }
 
 TEST(NoDevice, GetSizeOf) {
     size_t size;
@@ -52,6 +49,7 @@ TEST(NoDevice, GetBackendCount) {
 
 TEST(NoDevice, GetBackendCountCxx) {
     unsigned int nbackends = af::getBackendCount();
+    UNUSED(nbackends);
 }
 
 TEST(NoDevice, GetVersion) {
@@ -64,4 +62,7 @@ TEST(NoDevice, GetVersion) {
     ASSERT_EQ(AF_VERSION_PATCH, patch);
 }
 
-TEST(NoDevice, GetRevision) { const char* revision = af_get_revision(); }
+TEST(NoDevice, GetRevision) {
+    const char* revision = af_get_revision();
+    UNUSED(revision);
+}

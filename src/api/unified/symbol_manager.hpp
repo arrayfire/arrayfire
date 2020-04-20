@@ -100,7 +100,7 @@ bool checkArray(af_backend activeBackend, const af_array a) {
     return backend == activeBackend;
 }
 
-bool checkArray(af_backend activeBackend, const af_array* a) {
+[[gnu::unused]] bool checkArray(af_backend activeBackend, const af_array* a) {
     if (a) {
         return checkArray(activeBackend, *a);
     } else {
@@ -108,7 +108,7 @@ bool checkArray(af_backend activeBackend, const af_array* a) {
     }
 }
 
-bool checkArrays(af_backend activeBackend) {
+[[gnu::unused]] bool checkArrays(af_backend activeBackend) {
     UNUSED(activeBackend);
     // Dummy
     return true;
@@ -140,7 +140,6 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
 
 #define CALL(FUNCTION, ...)                                                      \
     using af_func                  = std::add_pointer<decltype(FUNCTION)>::type; \
-    static auto& instance          = unified::AFSymbolManager::getInstance();    \
     thread_local af_backend index_ = unified::getActiveBackend();                \
     if (unified::getActiveHandle()) {                                            \
         thread_local af_func func = (af_func)common::getFunctionPointer(         \

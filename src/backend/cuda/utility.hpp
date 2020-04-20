@@ -14,7 +14,8 @@
 
 namespace cuda {
 
-static __DH__ dim_t trimIndex(const int &idx, const dim_t &len) {
+[[gnu::unused]] static __DH__ dim_t trimIndex(const int &idx,
+                                              const dim_t &len) {
     int ret_val = idx;
     if (ret_val < 0) {
         int offset = (abs(ret_val) - 1) % len;

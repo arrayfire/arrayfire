@@ -736,7 +736,7 @@ TEST(JIT, AllBuffers) {
 
   int inc = 2;
   for(int ii = buffers/2; ii > 2; ii/=2) {
-      for(int i = 0; i < arrs.size(); i += inc) {
+      for(size_t i = 0; i < arrs.size(); i += inc) {
           arrs[i] = arrs[i] + arrs[i + inc/2];
       }
       inc *= 2;

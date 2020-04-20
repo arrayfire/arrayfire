@@ -11,7 +11,6 @@
 #include <arrayfire.h>
 #include <gtest/gtest.h>
 
-#include <half.hpp>
 #include <testHelpers.hpp>
 
 #include <iterator>
@@ -266,7 +265,7 @@ template<typename T>
 vector<meanvar_test<T> > large_test_values() {
     return {
         // clang-format off
-        //               |           Name |     in_index | weight_index |                  bias |  dim | mean_index | var_index |
+        //                  |       Name |      in_index | weight_index |                  bias |  dim | mean_index | var_index |
         meanvar_test_gen<T>("Sample1Ddim0",             0,            -1,     AF_VARIANCE_SAMPLE,     0,           0,          1, MEANVAR_LARGE),
         meanvar_test_gen<T>("Sample1Ddim1",             1,            -1,     AF_VARIANCE_SAMPLE,     1,           0,          1, MEANVAR_LARGE),
         meanvar_test_gen<T>("Sample1Ddim2",             2,            -1,     AF_VARIANCE_SAMPLE,     2,           0,          1, MEANVAR_LARGE),

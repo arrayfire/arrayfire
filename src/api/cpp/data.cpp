@@ -8,7 +8,11 @@
  ********************************************************/
 #include <af/data.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 #include <half.hpp>
+#pragma GCC diagnostic pop
+
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/complex.h>

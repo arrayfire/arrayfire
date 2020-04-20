@@ -68,6 +68,7 @@ DependencyModule::DependencyModule(const vector<string>& plugin_base_file_name,
     : handle(nullptr), logger(common::loggerFactory("platform")) {
     for (const string& base_name : plugin_base_file_name) {
         for (const string& path : paths) {
+            UNUSED(path);
             for (const string& suffix : suffixes) {
                 string filename = libName(base_name + suffix);
                 AF_TRACE("Attempting to load: {}", filename);

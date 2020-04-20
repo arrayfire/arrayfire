@@ -84,7 +84,6 @@ void testImage(const std::string pTestFile, const size_t numSeeds,
         af_array outArray   = 0;
         af_array _goldArray = 0;
         af_array goldArray  = 0;
-        dim_t nElems        = 0;
 
         inFiles[testId].insert(0, string(TEST_DIR "/confidence_cc/"));
         outFiles[testId].insert(0, string(TEST_DIR "/confidence_cc/"));
