@@ -153,7 +153,7 @@ template void Kernel::setScalar<int>(const char *, int);
 template void Kernel::getScalar<int>(int &, const char *);
 
 string getKernelCacheFilename(const int device, const string &nameExpr) {
-    const string mangledName = "KER" + std::hash<string>{}(nameExpr);
+    const string mangledName = "KER" + to_string(std::hash<string>{}(nameExpr));
 
     const auto computeFlag = getComputeCapability(device);
     const string computeVersion =
