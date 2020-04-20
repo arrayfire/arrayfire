@@ -61,6 +61,8 @@ const char* getName(af_dtype type) {
 
 void saveKernel(const std::string& funcName, const std::string& jit_ker,
                 const std::string& ext) {
+    static constexpr const char* saveJitKernelsEnvVarName =
+        "AF_JIT_KERNEL_TRACE";
     static const char* jitKernelsOutput = getenv(saveJitKernelsEnvVarName);
     if (!jitKernelsOutput) { return; }
     if (std::strcmp(jitKernelsOutput, "stdout") == 0) {
@@ -83,4 +85,9 @@ void saveKernel(const std::string& funcName, const std::string& jit_ker,
         fprintf(stderr, "Failed to write kernel to file %s\n", ffp.c_str());
     }
     fclose(f);
+}
+
+std::string int_version_to_string(int version) {
+    return std::to_string(version / 1000) + "." +
+           std::to_string((int)((version % 1000) / 10.));
 }

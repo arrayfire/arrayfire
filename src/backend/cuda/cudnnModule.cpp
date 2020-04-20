@@ -12,6 +12,7 @@
 #include <common/util.hpp>
 #include <cudnnModule.hpp>
 #include <device_manager.hpp>
+#include <utility.hpp>
 
 #include <string>
 #include <tuple>
@@ -81,7 +82,7 @@ cudnnModule::cudnnModule()
 
     int afcuda_runtime = 0;
     cudaRuntimeGetVersion(&afcuda_runtime);
-    if (afcuda_runtime != cudnn_version) {
+    if (afcuda_runtime != static_cast<int>(cudnn_version)) {
         getLogger()->warn(
             "WARNING: ArrayFire CUDA Runtime({}) and cuDNN CUDA "
             "Runtime({}.{}) do not match. For maximum compatibility, make sure "

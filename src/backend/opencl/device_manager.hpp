@@ -98,7 +98,7 @@ class DeviceManager {
     friend int getActivePlatform();
 
    public:
-    static const unsigned MAX_DEVICES = 32;
+    static const int MAX_DEVICES = 32;
 
     static DeviceManager& getInstance();
 

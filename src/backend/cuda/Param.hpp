@@ -22,7 +22,7 @@ class Param {
     dim_t strides[4];
     T *ptr;
 
-    __DH__ Param() noexcept : ptr(nullptr) {}
+    __DH__ Param() noexcept : dims(), strides(), ptr(nullptr) {}
 
     __DH__
     Param(T *iptr, const dim_t *idims, const dim_t *istrides) noexcept

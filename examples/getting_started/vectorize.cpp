@@ -183,7 +183,7 @@ int main(int, char **) {
         printf("Time for dist_tile1: %2.2fms\n", 1000 * timeit(bench_tile1));
         printf("Time for dist_tile2: %2.2fms\n", 1000 * timeit(bench_tile2));
 
-    } catch (af::exception ex) {
+    } catch (const af::exception &ex) {
         fprintf(stderr, "%s\n", ex.what());
         throw;
     }

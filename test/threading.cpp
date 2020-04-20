@@ -41,7 +41,7 @@ void calc(ArithOp opcode, array op1, array op2, float outValue,
           int iteration_count) {
     setDevice(0);
     array res;
-    for (unsigned i = 0; i < iteration_count; ++i) {
+    for (int i = 0; i < iteration_count; ++i) {
         switch (opcode) {
             case ADD: res = op1 + op2; break;
             case SUB: res = op1 - op2; break;

@@ -62,8 +62,7 @@ struct reduce_dim<op, Ti, To, 0> {
 
 template<typename Tk>
 void n_reduced_keys(Param<Tk> okeys, int *n_reduced, CParam<Tk> keys) {
-    const af::dim4 kstrides = keys.strides();
-    const af::dim4 kdims    = keys.dims();
+    const af::dim4 kdims = keys.dims();
 
     Tk *const outKeysPtr      = okeys.get();
     Tk const *const inKeysPtr = keys.get();
@@ -117,14 +116,10 @@ struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
     void operator()(Param<To> ovals, const dim_t ovOffset, CParam<Tk> keys,
                     CParam<Ti> vals, const dim_t vOffset, int *n_reduced,
                     const int dim, bool change_nan, double nanval) {
-        const af::dim4 kstrides = keys.strides();
-        const af::dim4 kdims    = keys.dims();
-
         const af::dim4 vstrides = vals.strides();
         const af::dim4 vdims    = vals.dims();
 
         const af::dim4 ovstrides = ovals.strides();
-        const af::dim4 ovdims    = ovals.dims();
 
         data_t<Tk> const *const inKeysPtr = keys.get();
         data_t<Ti> const *const inValsPtr = vals.get();
@@ -138,7 +133,6 @@ struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
         dim_t ostride = ovstrides[dim];
 
         for (dim_t i = 0; i < vdims[dim]; i++) {
-            dim_t off            = vOffset;
             compute_t<Tk> keyval = inKeysPtr[i];
 
             if (keyval == current_key) {

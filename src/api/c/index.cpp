@@ -58,10 +58,10 @@ af_seq convert2Canonical(const af_seq s, const dim_t len) {
 template<typename T>
 static af_array indexBySeqs(const af_array& src,
                             const vector<af_seq> indicesV) {
-    size_t ndims      = indicesV.size();
+    dim_t ndims       = static_cast<dim_t>(indicesV.size());
     const auto& input = getArray<T>(src);
 
-    if (ndims == 1 && ndims != input.ndims()) {
+    if (ndims == 1U && ndims != input.ndims()) {
         return getHandle(createSubArray(::flat(input), indicesV));
     } else {
         return getHandle(createSubArray(input, indicesV));

@@ -63,8 +63,7 @@ template<typename T>
 uptr<T> memAlloc(const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
-    size_t size = elements * sizeof(T);
-    void *ptr   = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
     return uptr<T>(static_cast<T *>(ptr), memFree<T>);
 }
 

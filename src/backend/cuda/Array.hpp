@@ -150,8 +150,8 @@ class Array {
 
     INFO_FUNC(const af_dtype &, getType)
     INFO_FUNC(const af::dim4 &, strides)
-    INFO_FUNC(size_t, elements)
-    INFO_FUNC(size_t, ndims)
+    INFO_FUNC(dim_t, elements)
+    INFO_FUNC(dim_t, ndims)
     INFO_FUNC(const af::dim4 &, dims)
     INFO_FUNC(int, getDevId)
 

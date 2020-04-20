@@ -40,7 +40,7 @@ unsigned getMaxJitSize();
 
 int getDeviceCount();
 
-int getActiveDeviceId();
+unsigned getActiveDeviceId();
 
 size_t getDeviceMemorySize(int device);
 

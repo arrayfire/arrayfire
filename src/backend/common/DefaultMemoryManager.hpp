@@ -42,11 +42,11 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
         locked_t locked_map;
         free_t free_map;
 
-        size_t lock_bytes;
-        size_t lock_buffers;
+        size_t max_bytes;
         size_t total_bytes;
         size_t total_buffers;
-        size_t max_bytes;
+        size_t lock_bytes;
+        size_t lock_buffers;
 
         memory_info()
             // Calling getMaxMemorySize() here calls the virtual function

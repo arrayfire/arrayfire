@@ -90,8 +90,9 @@ static tuple<Array<outType>, Array<outType>> meanvar(
     Array<outType> normArr = createEmptyArray<outType>({0});
     if (weights.isEmpty()) {
         meanArr  = mean<outType, weightType, outType>(input, dim);
-        auto val = 1.0 / (bias == AF_VARIANCE_POPULATION ? iDims[dim]
-                                                         : iDims[dim] - 1);
+        auto val = 1.0 / static_cast<double>(bias == AF_VARIANCE_POPULATION
+                                                 ? iDims[dim]
+                                                 : iDims[dim] - 1);
         normArr =
             createValueArray<outType>(meanArr.dims(), scalar<outType>(val));
     } else {

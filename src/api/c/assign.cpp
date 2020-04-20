@@ -64,7 +64,9 @@ static void assign(Array<Tout>& out, const vector<af_seq> seqs,
 
     isVec &= in.isVector() || in.isScalar();
 
-    for (dim_t i = ndims; i < in.ndims(); i++) { oDims[i] = 1; }
+    for (dim_t i = static_cast<dim_t>(ndims); i < in.ndims(); i++) {
+        oDims[i] = 1;
+    }
 
     if (isVec) {
         if (oDims.elements() != in.elements() && in.elements() != 1) {
