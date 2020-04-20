@@ -120,7 +120,7 @@ string getTemporaryDirectory() {
 }
 #endif
 
-bool folderExists(const string &path) {
+bool folderExists(const string& path) {
 #if !defined(OS_WIN)
     struct stat status;
     return stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
@@ -130,7 +130,7 @@ bool folderExists(const string &path) {
 #endif
 }
 
-bool createFolder(const string &path) {
+bool createFolder(const string& path) {
 #if !defined(OS_WIN)
     return mkdir(path.c_str(), 0777) == 0;
 #else
@@ -138,7 +138,7 @@ bool createFolder(const string &path) {
 #endif
 }
 
-bool removeFile(const string &path) {
+bool removeFile(const string& path) {
 #if !defined(OS_WIN)
     return unlink(path.c_str()) == 0;
 #else
@@ -146,7 +146,7 @@ bool removeFile(const string &path) {
 #endif
 }
 
-bool isDirectoryWritable(const string &path) {
+bool isDirectoryWritable(const string& path) {
     if (!folderExists(path) && !createFolder(path)) return false;
 
     const string testPath = path + AF_PATH_SEPARATOR + "test";
@@ -156,7 +156,7 @@ bool isDirectoryWritable(const string &path) {
     return true;
 }
 
-const string &getCacheDirectory() {
+const string& getCacheDirectory() {
     thread_local std::once_flag flag;
     thread_local string cacheDirectory;
 
@@ -171,7 +171,7 @@ const string &getCacheDirectory() {
 #endif
         };
 
-        for (const string &path : pathList) {
+        for (const string& path : pathList) {
             if (isDirectoryWritable(path)) {
                 cacheDirectory = path;
                 break;

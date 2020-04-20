@@ -109,7 +109,6 @@ Kernel buildKernel(const int device, const std::string& nameExpr,
                    const std::vector<std::string>& opts = {},
                    const bool isJIT                     = false);
 
-
 Kernel loadKernel(const int device, const std::string& nameExpr);
 
 template<typename T>

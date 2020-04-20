@@ -11,6 +11,7 @@
 
 #include <common/Logger.hpp>
 #include <common/internal_enums.hpp>
+#include <common/util.hpp>
 #include <device_manager.hpp>
 #include <kernel_headers/jit_cuh.hpp>
 #include <nvrtc_kernel_headers/Param_hpp.hpp>
@@ -39,7 +40,6 @@
 #include <platform.hpp>
 #include <af/defines.h>
 #include <af/version.h>
-#include <common/util.hpp>
 
 #include <algorithm>
 #include <array>
@@ -156,13 +156,11 @@ string getKernelCacheFilename(const int device, const string &nameExpr) {
     const string mangledName = "KER" + std::hash<string>{}(nameExpr);
 
     const auto computeFlag = getComputeCapability(device);
-    const string computeVersion = to_string(computeFlag.first) + 
-                                  to_string(computeFlag.second);
+    const string computeVersion = 
+        to_string(computeFlag.first) + to_string(computeFlag.second);
 
-    return mangledName + 
-           "_CU_" + computeVersion +
-           "_AF_" + to_string(AF_API_VERSION_CURRENT) +
-           ".cubin";
+    return mangledName + "_CU_" + computeVersion + "_AF_" + 
+           to_string(AF_API_VERSION_CURRENT) + ".cubin";
 }
 
 Kernel buildKernel(const int device, const string &nameExpr,
@@ -371,7 +369,7 @@ Kernel loadKernel(const int device, const string &nameExpr) {
     const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
                              getKernelCacheFilename(device, nameExpr);
 
-    CUmodule module = nullptr;
+    CUmodule module   = nullptr;
     CUfunction kernel = nullptr;
 
     try {
@@ -395,14 +393,12 @@ Kernel loadKernel(const int device, const string &nameExpr) {
         CU_CHECK(cuModuleLoadDataEx(&module, cubin.data(), 0, 0, 0));
         CU_CHECK(cuModuleGetFunction(&kernel, module, name.c_str()));
 
-        AF_TRACE("{{{:<30} : loaded from {} for {} }}", nameExpr, cacheFile, 
+        AF_TRACE("{{{:<30} : loaded from {} for {} }}", nameExpr, cacheFile,
                  getDeviceProp(device).name);
 
         return Kernel{module, kernel};
     } catch (...) {
-        if (module != nullptr) {
-            CU_CHECK(cuModuleUnload(module));
-        }
+        if (module != nullptr) { CU_CHECK(cuModuleUnload(module)); }
         removeFile(cacheFile);
         return Kernel{nullptr, nullptr};
     }
