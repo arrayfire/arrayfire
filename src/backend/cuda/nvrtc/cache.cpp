@@ -483,15 +483,15 @@ Kernel loadKernel(const int device, const string &nameExpr) {
 
         AF_TRACE("{{{:<30} : loaded from {} for {} }}",
             nameExpr, cacheFile, getDeviceProp(device).name);
+
+        return Kernel{ module, kernel };
     } catch (...) {
         if (module != nullptr) {
             CU_CHECK(cuModuleUnload(module));
         }
         removeFile(cacheFile);
-        throw;
+        return Kernel{nullptr, nullptr};
     }
-
-    return Kernel{ module, kernel };
 }
 
 kc_t &getCache(int device) {
