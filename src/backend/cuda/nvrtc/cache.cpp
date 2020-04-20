@@ -159,7 +159,7 @@ template void Kernel::getScalar<int>(int &, const char *);
 
 #if !defined(OS_WIN)
 string getHomeDirectory() {
-    string home = getEnvVar("XDG_CONFIG_HOME");
+    string home = getEnvVar("XDG_CACHE_HOME");
     if (!home.empty()) return home;
 
     home = getEnvVar("HOME");
