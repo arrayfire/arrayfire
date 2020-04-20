@@ -240,22 +240,14 @@ const string &getKernelCacheDirectory() {
     return cacheDirectory;
 }
 
-string hashKernelName(const string &nameExpr) {
-    return to_string(std::hash<string>{}(nameExpr));
-}
-
 string getKernelCacheFilename(const int device, const string &nameExpr) {
-    string mangledName = nameExpr;
-    if (mangledName.substr(0, 3) != "KER") {
-        mangledName = "KERF" + hashKernelName(nameExpr);
-    }
-
+    const string mangledName = "KER" + std::hash<string>{}(nameExpr);
     auto computeFlag = getComputeCapability(device);
 
-    return mangledName
-        + "_CU" + to_string(computeFlag.first) + to_string(computeFlag.second) 
-        + "_AF" + to_string(AF_API_VERSION_CURRENT)
-        + ".cubin";
+    return mangledName + 
+        "_CU_" + to_string(computeFlag.first) + to_string(computeFlag.second) +
+        "_AF_" + to_string(AF_API_VERSION_CURRENT) +
+        ".cubin";
 }
 
 Kernel buildKernel(const int device, const string &nameExpr,
