@@ -105,7 +105,6 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted = false) {
         outArray.host((void*)outData.data());
 
         vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
-        size_t nElems = currGoldBar.size();
 
         dim4 goldDims = dims;
         goldDims[dim] = 1;
@@ -128,7 +127,6 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted = false) {
         outArray.host((void*)outData.data());
 
         vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
-        size_t nElems = currGoldBar.size();
 
         ASSERT_VEC_ARRAY_NEAR(currGoldBar, goldDims, outArray, tol);
     }
@@ -214,7 +212,7 @@ void meanAllTest(half_float::half const_value, dim4 dims) {
     // make sure output2 and output are binary equals. This is necessary
     // because af_half is not a complete type
     half output2_copy;
-    memcpy(&output2_copy, &output2, sizeof(af_half));
+    memcpy(static_cast<void*>(&output2_copy), &output2, sizeof(af_half));
     ASSERT_EQ(output, output2_copy);
 
     ASSERT_NEAR(output, gold, 1.0e-3);

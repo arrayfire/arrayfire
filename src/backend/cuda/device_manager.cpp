@@ -18,7 +18,6 @@
 #include <common/defines.hpp>
 #include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
-#include <common/util.hpp>
 #include <cublas_v2.h>  // needed for af/cuda.h
 #include <device_manager.hpp>
 #include <driver.h>
@@ -32,6 +31,7 @@
 // cuda_gl_interop.h does not include OpenGL headers for ARM
 // __gl_h_ should be defined by glad.h inclusion
 #include <cuda_gl_interop.h>
+#include <utility.hpp>
 
 #include <nvrtc.h>
 
@@ -107,7 +107,8 @@ bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
 /// Check for compatible compute version based on runtime cuda toolkit version
 void checkAndSetDevMaxCompute(pair<int, int> &prop) {
     auto originalCompute = prop;
-    int rtCudaVer        = 0;
+    UNUSED(originalCompute);
+    int rtCudaVer = 0;
     CUDA_CHECK(cudaRuntimeGetVersion(&rtCudaVer));
     auto tkitMaxCompute = find_if(
         begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
@@ -168,7 +169,9 @@ static inline int compute2cores(unsigned major, unsigned minor) {
     };
 
     for (int i = 0; gpus[i].compute != -1; ++i) {
-        if (gpus[i].compute == (major << 4U) + minor) { return gpus[i].cores; }
+        if (static_cast<unsigned>(gpus[i].compute) == (major << 4U) + minor) {
+            return gpus[i].cores;
+        }
     }
     return 0;
 }
@@ -539,7 +542,7 @@ DeviceManager::DeviceManager()
 
     // Initialize all streams to 0.
     // Streams will be created in setActiveDevice()
-    for (size_t i = 0; i < MAX_DEVICES; i++) {
+    for (int i = 0; i < MAX_DEVICES; i++) {
         streams[i] = static_cast<cudaStream_t>(0);
         if (i < nDevices) {
             auto prop =

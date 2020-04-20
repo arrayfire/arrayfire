@@ -17,7 +17,6 @@ using namespace af;
 
 int main(int argc, char* argv[]) {
     try {
-        unsigned s[1]       = {132};
         unsigned radius     = 3;
         unsigned multiplier = 3;
         int iter            = 5;

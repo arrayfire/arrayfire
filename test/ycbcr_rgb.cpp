@@ -29,7 +29,7 @@ TEST(ycbcr_rgb, InvalidArray) {
     try {
         array output = hsv2rgb(input);
         ASSERT_EQ(true, false);
-    } catch (af::exception) {
+    } catch (const af::exception &ex) {
         ASSERT_EQ(true, true);
         return;
     }

@@ -417,7 +417,7 @@ INSTANTIATE_TEST_CASE_P(
     print_blas_params);
 
 TEST_P(MatrixMultiplyBatch, Batched) {
-    array out         = matmul(lhs, rhs);
+    array out = matmul(lhs, rhs);
     ASSERT_ARRAYS_NEAR(gold, out, 1e-3);
 }
 

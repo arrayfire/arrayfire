@@ -334,11 +334,11 @@ struct reduce_by_key_params {
 //
 template<typename Tk, typename Tv, typename To>
 struct reduce_by_key_params_t : public reduce_by_key_params {
-    string testname_;
     vector<Tk> iKeys_;
     vector<Tv> iVals_;
     vector<Tk> oKeys_;
     vector<To> oVals_;
+    string testname_;
 
     reduce_by_key_params_t(vector<Tk> ikeys, vector<Tv> ivals, vector<Tk> okeys,
                            vector<To> ovals, string testname)
@@ -597,7 +597,7 @@ void reduce_by_key_test(std::string test_fn) {
     vector<vector<float> > tests;
     readTests<float, float, float>(test_fn, numDims, data, tests);
 
-    for (int t = 0; t < numDims.size() / 2; ++t) {
+    for (size_t t = 0; t < numDims.size() / 2; ++t) {
         dim4 kdim = numDims[t * 2];
         dim4 vdim = numDims[t * 2 + 1];
 

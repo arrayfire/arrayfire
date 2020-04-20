@@ -80,9 +80,9 @@ class IndexGeneralizedLegacy : public ::testing::TestWithParam<index_params> {
     }
 
     void TearDown() {
-        if (inArray_) ASSERT_SUCCESS(af_release_array(inArray_));
-        if (idxArray_) ASSERT_SUCCESS(af_release_array(idxArray_));
-        if (gold_) ASSERT_SUCCESS(af_release_array(gold_));
+        if (inArray_) { ASSERT_SUCCESS(af_release_array(inArray_)); }
+        if (idxArray_) { ASSERT_SUCCESS(af_release_array(idxArray_)); }
+        if (gold_) { ASSERT_SUCCESS(af_release_array(gold_)); }
     }
 
    public:

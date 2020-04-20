@@ -31,7 +31,7 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
     static const std::string src(lookup_cuh, lookup_cuh_len);
 
     /* find which dimension has non-zero # of elements */
-    int vDim = 0;
+    unsigned vDim = 0;
     for (int i = 0; i < 4; i++) {
         if (in.dims[i] == 1)
             vDim++;

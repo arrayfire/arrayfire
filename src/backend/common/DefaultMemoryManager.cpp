@@ -72,8 +72,8 @@ DefaultMemoryManager::DefaultMemoryManager(int num_devices,
                                            unsigned max_buffers, bool debug)
     : mem_step_size(1024)
     , max_buffers(max_buffers)
-    , memory(num_devices)
-    , debug_mode(debug) {
+    , debug_mode(debug)
+    , memory(num_devices) {
     // Check for environment variables
 
     // Debug mode
@@ -171,7 +171,7 @@ void *DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
                 // Delete existing buffer info and underlying event
                 // Set to existing in from free map
                 vector<void *> &free_buffer_vector = free_buffer_iter->second;
-                ptr = free_buffer_vector.back();
+                ptr                                = free_buffer_vector.back();
                 free_buffer_vector.pop_back();
                 current.locked_map[ptr] = info;
                 current.lock_bytes += alloc_bytes;
@@ -221,7 +221,7 @@ void DefaultMemoryManager::unlock(void *ptr, bool user_unlock) {
         lock_guard_t lock(this->memory_mutex);
         memory_info &current = this->getCurrentMemoryInfo();
 
-        auto locked_buffer_iter         = current.locked_map.find(ptr);
+        auto locked_buffer_iter = current.locked_map.find(ptr);
         if (locked_buffer_iter == current.locked_map.end()) {
             // Pointer not found in locked map
             // Probably came from user, just free it

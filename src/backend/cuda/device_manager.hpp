@@ -37,7 +37,7 @@ bool checkDeviceWithRuntime(int runtime, std::pair<int, int> compute);
 
 class DeviceManager {
    public:
-    static const size_t MAX_DEVICES = 16;
+    static const int MAX_DEVICES = 16;
 
     static bool checkGraphicsInteropCapability();
 

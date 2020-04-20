@@ -59,14 +59,6 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
                          const dim4 &dilation) {
     cudnnHandle_t cudnn = nnHandle();
 
-    dim4 sDims        = signal.dims();
-    const dim4 &fDims = filter.dims();
-
-    const int n = sDims[3];
-    const int c = sDims[2];
-    const int h = sDims[1];
-    const int w = sDims[0];
-
     cudnnDataType_t cudnn_dtype = getCudnnDataType<T>();
     auto input_descriptor       = toCudnn<cudnnTensorDescriptor_t>(signal);
     auto filter_descriptor      = toCudnn<cudnnFilterDescriptor_t>(filter);
@@ -149,7 +141,6 @@ Array<T> convolve2_base(const Array<T> &signal, const Array<T> &filter,
     dim_t outputHeight =
         1 + (sDims[1] + 2 * padding[1] - (((fDims[1] - 1) * dilation[1]) + 1)) /
                 stride[1];
-    dim4 oDims = dim4(outputWidth, outputHeight, fDims[3], sDims[3]);
 
     const bool retCols = false;
     Array<T> unwrapped =
@@ -254,9 +245,8 @@ Array<T> data_gradient_cudnn(const Array<T> &incoming_gradient,
     UNUSED(convolved_output);
     auto cudnn = nnHandle();
 
-    const dim4 &iDims = incoming_gradient.dims();
-    dim4 sDims        = original_signal.dims();
-    dim4 fDims        = original_filter.dims();
+    dim4 sDims = original_signal.dims();
+    dim4 fDims = original_filter.dims();
 
     cudnnDataType_t cudnn_dtype = getCudnnDataType<T>();
 
@@ -337,7 +327,6 @@ Array<T> filter_gradient_base(const Array<T> &incoming_gradient,
                               af::dim4 padding, af::dim4 dilation) {
     UNUSED(convolved_output);
     const dim4 &cDims = incoming_gradient.dims();
-    const dim4 &sDims = original_signal.dims();
     const dim4 &fDims = original_filter.dims();
 
     const bool retCols = false;
@@ -378,8 +367,6 @@ Array<T> filter_gradient_cudnn(const Array<T> &incoming_gradient,
     UNUSED(convolved_output);
     auto cudnn = nnHandle();
 
-    const dim4 &iDims = incoming_gradient.dims();
-    const dim4 &sDims = original_signal.dims();
     const dim4 &fDims = original_filter.dims();
 
     // create dx descriptor

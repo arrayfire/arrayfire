@@ -90,8 +90,8 @@ class ArrayInfo {
 
     const af::dim4& strides() const { return dim_strides; }
 
-    size_t elements() const { return dim_size.elements(); }
-    size_t ndims() const { return dim_size.ndims(); }
+    dim_t elements() const { return dim_size.elements(); }
+    dim_t ndims() const { return dim_size.ndims(); }
     const af::dim4& dims() const { return dim_size; }
     size_t total() const { return offset + dim_strides[3] * dim_size[3]; }
 

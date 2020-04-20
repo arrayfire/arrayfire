@@ -77,7 +77,8 @@ detail::Array<T> &getArray(af_array &arr) {
 }
 
 template<>
-detail::Array<common::half> &getArray<common::half>(af_array &arr) {
+[[gnu::unused]] detail::Array<common::half> &getArray<common::half>(
+    af_array &arr) {
     detail::Array<common::half> *A =
         static_cast<detail::Array<common::half> *>(arr);
     if (f16 != A->getType())

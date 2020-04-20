@@ -21,7 +21,11 @@
 #include <af/traits.hpp>
 #include <af/util.h>
 #include "error.hpp"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wparentheses"
 #include "half.hpp"  //note: NOT common. From extern/half/include/half.hpp
+#pragma GCC diagnostic pop
 
 #ifdef AF_CUDA
 // NOTE: Adding ifdef here to avoid copying code constructor in the cuda backend
@@ -257,7 +261,6 @@ array::~array() {
 #ifdef AF_UNIFIED
     using af_release_array_ptr =
         std::add_pointer<decltype(af_release_array)>::type;
-    static auto &instance = unified::AFSymbolManager::getInstance();
 
     if (get()) {
         af_backend backend = unified::getActiveBackend();
@@ -291,6 +294,10 @@ array::~array() {
                     func(get());
                     break;
                 }
+                case AF_BACKEND_DEFAULT:
+                    assert(1 != 1 &&
+                           "AF_BACKEND_DEFAULT cannot be set as a backend for "
+                           "an array");
             }
         }
     }
