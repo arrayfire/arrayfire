@@ -13,8 +13,8 @@
 
 namespace cuda {
 
-template<typename To, typename Ti, int dim>
-__global__ void join(Param<To> out, CParam<Ti> in, const int o0, const int o1,
+template<typename T>
+__global__ void join(Param<T> out, CParam<T> in, const int o0, const int o1,
                      const int o2, const int o3, const int blocksPerMatX,
                      const int blocksPerMatY) {
     const int incy = blocksPerMatY * blockDim.y;
@@ -24,8 +24,8 @@ __global__ void join(Param<To> out, CParam<Ti> in, const int o0, const int o1,
     const int blockIdx_x = blockIdx.x - iz * blocksPerMatX;
     const int xx         = threadIdx.x + blockIdx_x * blockDim.x;
 
-    To *d_out      = out.ptr;
-    Ti const *d_in = in.ptr;
+    T *d_out      = out.ptr;
+    T const *d_in = in.ptr;
 
     const int iw = (blockIdx.y + (blockIdx.z * gridDim.y)) / blocksPerMatY;
     const int blockIdx_y =
@@ -37,8 +37,8 @@ __global__ void join(Param<To> out, CParam<Ti> in, const int o0, const int o1,
         d_in  = d_in + iz * in.strides[2] + iw * in.strides[3];
 
         for (int iy = yy; iy < in.dims[1]; iy += incy) {
-            Ti const *d_in_ = d_in + iy * in.strides[1];
-            To *d_out_      = d_out + (iy + o1) * out.strides[1];
+            T const *d_in_ = d_in + iy * in.strides[1];
+            T *d_out_      = d_out + (iy + o1) * out.strides[1];
 
             for (int ix = xx; ix < in.dims[0]; ix += incx) {
                 d_out_[ix + o0] = d_in_[ix];
