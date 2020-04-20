@@ -35,26 +35,20 @@ static const int TY    = 8;
 static const int TILEX = 256;
 static const int TILEY = 32;
 
-template<typename To, typename Ti, int dim>
-void join(Param out, const Param in, const af::dim4 offset) {
+template<typename T>
+void join(Param out, const Param in, dim_t dim, const af::dim4 offset) {
     std::string refName =
-        std::string("join_kernel_") + std::string(dtype_traits<To>::getName()) +
-        std::string(dtype_traits<Ti>::getName()) + std::to_string(dim);
+        std::string("join_kernel_") + std::string(dtype_traits<T>::getName()) +
+        std::string(dtype_traits<T>::getName()) + std::to_string(dim);
 
     int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
 
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
-        options << " -D To=" << dtype_traits<To>::getName()
-                << " -D Ti=" << dtype_traits<Ti>::getName()
-                << " -D kDim=" << dim;
+        options << " -D T=" << dtype_traits<T>::getName();
 
-        if (std::is_same<To, double>::value ||
-            std::is_same<To, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        } else if (std::is_same<Ti, double>::value ||
-                   std::is_same<Ti, cdouble>::value) {
+        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
             options << " -D USE_DOUBLE";
         }
 

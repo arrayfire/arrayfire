@@ -20,11 +20,10 @@ using af::dim4;
 using common::half;
 using namespace detail;
 
-template<typename Tx, typename Ty>
+template<typename T>
 static inline af_array join(const int dim, const af_array first,
                             const af_array second) {
-    return getHandle(
-        join<Tx, Ty>(dim, getArray<Tx>(first), getArray<Ty>(second)));
+    return getHandle(join<T>(dim, getArray<T>(first), getArray<T>(second)));
 }
 
 template<typename T>
@@ -65,21 +64,19 @@ af_err af_join(af_array *out, const int dim, const af_array first,
         af_array output;
 
         switch (finfo.getType()) {
-            case f32: output = join<float, float>(dim, first, second); break;
-            case c32: output = join<cfloat, cfloat>(dim, first, second); break;
-            case f64: output = join<double, double>(dim, first, second); break;
-            case c64:
-                output = join<cdouble, cdouble>(dim, first, second);
-                break;
-            case b8: output = join<char, char>(dim, first, second); break;
-            case s32: output = join<int, int>(dim, first, second); break;
-            case u32: output = join<uint, uint>(dim, first, second); break;
-            case s64: output = join<intl, intl>(dim, first, second); break;
-            case u64: output = join<uintl, uintl>(dim, first, second); break;
-            case s16: output = join<short, short>(dim, first, second); break;
-            case u16: output = join<ushort, ushort>(dim, first, second); break;
-            case u8: output = join<uchar, uchar>(dim, first, second); break;
-            case f16: output = join<half, half>(dim, first, second); break;
+            case f32: output = join<float>(dim, first, second); break;
+            case c32: output = join<cfloat>(dim, first, second); break;
+            case f64: output = join<double>(dim, first, second); break;
+            case c64: output = join<cdouble>(dim, first, second); break;
+            case b8: output = join<char>(dim, first, second); break;
+            case s32: output = join<int>(dim, first, second); break;
+            case u32: output = join<uint>(dim, first, second); break;
+            case s64: output = join<intl>(dim, first, second); break;
+            case u64: output = join<uintl>(dim, first, second); break;
+            case s16: output = join<short>(dim, first, second); break;
+            case u16: output = join<ushort>(dim, first, second); break;
+            case u8: output = join<uchar>(dim, first, second); break;
+            case f16: output = join<half>(dim, first, second); break;
             default: TYPE_ERROR(1, finfo.getType());
         }
         std::swap(*out, output);
@@ -92,7 +89,14 @@ af_err af_join(af_array *out, const int dim, const af_array first,
 af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays,
                     const af_array *inputs) {
     try {
-        ARG_ASSERT(3, n_arrays > 1 && n_arrays <= 10);
+        ARG_ASSERT(3, inputs != nullptr);
+
+        if (n_arrays == 1) {
+            af_array ret = nullptr;
+            AF_CHECK(af_retain_array(&ret, inputs[0]));
+            std::swap(*out, ret);
+            return AF_SUCCESS;
+        }
 
         std::vector<ArrayInfo> info;
         info.reserve(n_arrays);

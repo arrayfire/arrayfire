@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void join_kernel(__global To *d_out, const KParam out,
-                          __global const Ti *d_in, const KParam in,
+__kernel void join_kernel(__global T *d_out, const KParam out,
+                          __global const T *d_in, const KParam in,
                           const int o0, const int o1, const int o2,
                           const int o3, const int blocksPerMatX,
                           const int blocksPerMatY) {
@@ -31,8 +31,8 @@ __kernel void join_kernel(__global To *d_out, const KParam out,
         d_in  = d_in + iz * in.strides[2] + iw * in.strides[3];
 
         for (int iy = yy; iy < in.dims[1]; iy += incy) {
-            __global Ti *d_in_  = d_in + iy * in.strides[1];
-            __global To *d_out_ = d_out + (iy + o1) * out.strides[1];
+            __global T *d_in_  = d_in + iy * in.strides[1];
+            __global T *d_out_ = d_out + (iy + o1) * out.strides[1];
 
             for (int ix = xx; ix < in.dims[0]; ix += incx) {
                 d_out_[ix + o0] = d_in_[ix];

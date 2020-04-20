@@ -11,12 +11,11 @@
 #include <GraphicsResourceManager.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
-#include <join.hpp>
-#include <reduce.hpp>
-#include <reorder.hpp>
 #include <surface.hpp>
 
 using af::dim4;
+using cl::Memory;
+using std::vector;
 
 namespace opencl {
 
@@ -31,7 +30,7 @@ void copy_surface(const Array<T> &P, fg_surface surface) {
 
         auto res = interopManager().getSurfaceResources(surface);
 
-        std::vector<cl::Memory> shared_objects;
+        vector<Memory> shared_objects;
         shared_objects.push_back(*(res[0].get()));
 
         glFinish();
