@@ -20,8 +20,8 @@
 namespace cuda {
 namespace kernel {
 
-template<typename To, typename Tx>
-void join(Param<To> out, CParam<Tx> X, const af::dim4 &offset, int dim) {
+template<typename T>
+void join(Param<T> out, CParam<T> X, const af::dim4 &offset, int dim) {
     constexpr unsigned TX    = 32;
     constexpr unsigned TY    = 8;
     constexpr unsigned TILEX = 256;
@@ -29,9 +29,7 @@ void join(Param<To> out, CParam<Tx> X, const af::dim4 &offset, int dim) {
 
     static const std::string source(join_cuh, join_cuh_len);
 
-    auto join = getKernel(
-        "cuda::join", source,
-        {TemplateTypename<To>(), TemplateTypename<Tx>(), TemplateArg(dim)});
+    auto join = getKernel("cuda::join", source, {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 
