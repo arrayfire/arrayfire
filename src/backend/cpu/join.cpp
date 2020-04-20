@@ -20,8 +20,8 @@ using common::half;
 
 namespace cpu {
 
-template<typename Tx, typename Ty>
-Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
+template<typename T>
+Array<T> join(const int dim, const Array<T> &first, const Array<T> &second) {
     // All dimensions except join dimension must be equal
     // Compute output dims
     af::dim4 odims;
@@ -36,9 +36,9 @@ Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
         }
     }
 
-    Array<Tx> out = createEmptyArray<Tx>(odims);
-
-    getQueue().enqueue(kernel::join<Tx, Ty>, out, dim, first, second);
+    Array<T> out = createEmptyArray<T>(odims);
+    std::vector<CParam<T>> v{first, second};
+    getQueue().enqueue(kernel::join<T>, dim, out, v, 2);
 
     return out;
 }
@@ -73,59 +73,28 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs) {
     std::vector<CParam<T>> inputParams(inputs.begin(), inputs.end());
     Array<T> out = createEmptyArray<T>(odims);
 
-    switch (n_arrays) {
-        case 1:
-            getQueue().enqueue(kernel::join<T, 1>, dim, out, inputParams);
-            break;
-        case 2:
-            getQueue().enqueue(kernel::join<T, 2>, dim, out, inputParams);
-            break;
-        case 3:
-            getQueue().enqueue(kernel::join<T, 3>, dim, out, inputParams);
-            break;
-        case 4:
-            getQueue().enqueue(kernel::join<T, 4>, dim, out, inputParams);
-            break;
-        case 5:
-            getQueue().enqueue(kernel::join<T, 5>, dim, out, inputParams);
-            break;
-        case 6:
-            getQueue().enqueue(kernel::join<T, 6>, dim, out, inputParams);
-            break;
-        case 7:
-            getQueue().enqueue(kernel::join<T, 7>, dim, out, inputParams);
-            break;
-        case 8:
-            getQueue().enqueue(kernel::join<T, 8>, dim, out, inputParams);
-            break;
-        case 9:
-            getQueue().enqueue(kernel::join<T, 9>, dim, out, inputParams);
-            break;
-        case 10:
-            getQueue().enqueue(kernel::join<T, 10>, dim, out, inputParams);
-            break;
-    }
+    getQueue().enqueue(kernel::join<T>, dim, out, inputParams, n_arrays);
 
     return out;
 }
 
-#define INSTANTIATE(Tx, Ty)                                                \
-    template Array<Tx> join<Tx, Ty>(const int dim, const Array<Tx> &first, \
-                                    const Array<Ty> &second);
+#define INSTANTIATE(T)                                              \
+    template Array<T> join<T>(const int dim, const Array<T> &first, \
+                              const Array<T> &second);
 
-INSTANTIATE(float, float)
-INSTANTIATE(double, double)
-INSTANTIATE(cfloat, cfloat)
-INSTANTIATE(cdouble, cdouble)
-INSTANTIATE(int, int)
-INSTANTIATE(uint, uint)
-INSTANTIATE(intl, intl)
-INSTANTIATE(uintl, uintl)
-INSTANTIATE(uchar, uchar)
-INSTANTIATE(char, char)
-INSTANTIATE(ushort, ushort)
-INSTANTIATE(short, short)
-INSTANTIATE(half, half)
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(cdouble)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(ushort)
+INSTANTIATE(short)
+INSTANTIATE(half)
 
 #undef INSTANTIATE
 

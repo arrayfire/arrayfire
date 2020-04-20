@@ -23,8 +23,7 @@ using std::transform;
 using std::vector;
 
 namespace opencl {
-template<int dim>
-dim4 calcOffset(const dim4 &dims) {
+dim4 calcOffset(const dim4 &dims, int dim) {
     dim4 offset;
     offset[0] = (dim == 0) ? dims[0] : 0;
     offset[1] = (dim == 1) ? dims[1] : 0;
@@ -33,8 +32,8 @@ dim4 calcOffset(const dim4 &dims) {
     return offset;
 }
 
-template<typename Tx, typename Ty>
-Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
+template<typename T>
+Array<T> join(const int dim, const Array<T> &first, const Array<T> &second) {
     // All dimensions except join dimension must be equal
     // Compute output dims
     dim4 odims;
@@ -49,67 +48,26 @@ Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second) {
         }
     }
 
-    Array<Tx> out = createEmptyArray<Tx>(odims);
+    Array<T> out = createEmptyArray<T>(odims);
 
     dim4 zero(0, 0, 0, 0);
 
-    switch (dim) {
-        case 0:
-            kernel::join<Tx, Tx, 0>(out, first, zero);
-            kernel::join<Tx, Ty, 0>(out, second, calcOffset<0>(fdims));
-            break;
-        case 1:
-            kernel::join<Tx, Tx, 1>(out, first, zero);
-            kernel::join<Tx, Ty, 1>(out, second, calcOffset<1>(fdims));
-            break;
-        case 2:
-            kernel::join<Tx, Tx, 2>(out, first, zero);
-            kernel::join<Tx, Ty, 2>(out, second, calcOffset<2>(fdims));
-            break;
-        case 3:
-            kernel::join<Tx, Tx, 3>(out, first, zero);
-            kernel::join<Tx, Ty, 3>(out, second, calcOffset<3>(fdims));
-            break;
-    }
+    kernel::join<T>(out, first, dim, zero);
+    kernel::join<T>(out, second, dim, calcOffset(fdims, dim));
 
     return out;
 }
 
-template<typename T, int n_arrays>
+template<typename T>
 void join_wrapper(const int dim, Array<T> &out,
                   const vector<Array<T>> &inputs) {
     dim4 zero(0, 0, 0, 0);
     dim4 d = zero;
 
-    switch (dim) {
-        case 0:
-            kernel::join<T, T, 0>(out, inputs[0], zero);
-            for (int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                kernel::join<T, T, 0>(out, inputs[i], calcOffset<0>(d));
-            }
-            break;
-        case 1:
-            kernel::join<T, T, 1>(out, inputs[0], zero);
-            for (int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                kernel::join<T, T, 1>(out, inputs[i], calcOffset<1>(d));
-            }
-            break;
-        case 2:
-            kernel::join<T, T, 1>(out, inputs[0], zero);
-            for (int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                kernel::join<T, T, 2>(out, inputs[i], calcOffset<2>(d));
-            }
-            break;
-        case 3:
-            kernel::join<T, T, 3>(out, inputs[0], zero);
-            for (int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                kernel::join<T, T, 3>(out, inputs[i], calcOffset<3>(d));
-            }
-            break;
+    kernel::join<T>(out, inputs[0], dim, zero);
+    for (size_t i = 1; i < inputs.size(); i++) {
+        d += inputs[i - 1].dims();
+        kernel::join<T>(out, inputs[i], dim, calcOffset(d, dim));
     }
 }
 
@@ -143,38 +101,27 @@ Array<T> join(const int dim, const vector<Array<T>> &inputs) {
     vector<Param> inputParams(inputs.begin(), inputs.end());
     Array<T> out = createEmptyArray<T>(odims);
 
-    switch (n_arrays) {
-        case 1: join_wrapper<T, 1>(dim, out, inputs); break;
-        case 2: join_wrapper<T, 2>(dim, out, inputs); break;
-        case 3: join_wrapper<T, 3>(dim, out, inputs); break;
-        case 4: join_wrapper<T, 4>(dim, out, inputs); break;
-        case 5: join_wrapper<T, 5>(dim, out, inputs); break;
-        case 6: join_wrapper<T, 6>(dim, out, inputs); break;
-        case 7: join_wrapper<T, 7>(dim, out, inputs); break;
-        case 8: join_wrapper<T, 8>(dim, out, inputs); break;
-        case 9: join_wrapper<T, 9>(dim, out, inputs); break;
-        case 10: join_wrapper<T, 10>(dim, out, inputs); break;
-    }
+    join_wrapper<T>(dim, out, inputs);
     return out;
 }
 
-#define INSTANTIATE(Tx, Ty)                                                \
-    template Array<Tx> join<Tx, Ty>(const int dim, const Array<Tx> &first, \
-                                    const Array<Ty> &second);
+#define INSTANTIATE(T)                                              \
+    template Array<T> join<T>(const int dim, const Array<T> &first, \
+                              const Array<T> &second);
 
-INSTANTIATE(float, float)
-INSTANTIATE(double, double)
-INSTANTIATE(cfloat, cfloat)
-INSTANTIATE(cdouble, cdouble)
-INSTANTIATE(int, int)
-INSTANTIATE(uint, uint)
-INSTANTIATE(intl, intl)
-INSTANTIATE(uintl, uintl)
-INSTANTIATE(short, short)
-INSTANTIATE(ushort, ushort)
-INSTANTIATE(uchar, uchar)
-INSTANTIATE(char, char)
-INSTANTIATE(half, half)
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(cdouble)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(half)
 
 #undef INSTANTIATE
 
