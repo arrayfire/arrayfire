@@ -156,10 +156,10 @@ string getKernelCacheFilename(const int device, const string &nameExpr) {
     const string mangledName = "KER" + std::hash<string>{}(nameExpr);
 
     const auto computeFlag = getComputeCapability(device);
-    const string computeVersion = 
+    const string computeVersion =
         to_string(computeFlag.first) + to_string(computeFlag.second);
 
-    return mangledName + "_CU_" + computeVersion + "_AF_" + 
+    return mangledName + "_CU_" + computeVersion + "_AF_" +
            to_string(AF_API_VERSION_CURRENT) + ".cubin";
 }
 
