@@ -7,26 +7,29 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-Tk work_group_scan_inclusive_add(__local Tk *wg_tmp, __local Tk *arr) {
-    __local int *l_val;
+// Starting from OpenCL 2.0, core profile includes work group level
+// inclusive scan operations, hence skip defining custom one
+#if __OPENCL_VERSION__ < 200
+int work_group_scan_inclusive_add(__local int *wg_temp, __local int *arr) {
+    __local int *active_buf;
 
     const int lid = get_local_id(0);
-    Tk val        = arr[lid];
-    l_val         = arr;
+    int val       = arr[lid];
+    active_buf    = arr;
 
-    bool wbuf = 0;
+    bool swap_buffer = false;
     for (int off = 1; off <= DIMX; off *= 2) {
         barrier(CLK_LOCAL_MEM_FENCE);
-        if (lid >= off) val = val + l_val[lid - off];
-
-        wbuf       = 1 - wbuf;
-        l_val      = wbuf ? wg_tmp : arr;
-        l_val[lid] = val;
+        if (lid >= off) { val = val + active_buf[lid - off]; }
+        swap_buffer     = !swap_buffer;
+        active_buf      = swap_buffer ? wg_temp : arr;
+        active_buf[lid] = val;
     }
 
-    Tk res = l_val[lid];
+    int res = active_buf[lid];
     return res;
 }
+#endif  // __OPENCL_VERSION__ < 200
 
 __kernel void reduce_blocks_by_key_dim(__global int *reduced_block_sizes,
                                        __global Tk *oKeys, KParam oKInfo,
@@ -44,13 +47,13 @@ __kernel void reduce_blocks_by_key_dim(__global int *reduced_block_sizes,
 
     __local Tk keys[DIMX];
     __local To vals[DIMX];
-    __local Tk wg_temp[DIMX];
-
     __local Tk reduced_keys[DIMX];
     __local To reduced_vals[DIMX];
-
-    __local int unique_flags[DIMX];
     __local int unique_ids[DIMX];
+#if __OPENCL_VERSION__ < 200
+    __local int wg_temp[DIMX];
+    __local int unique_flags[DIMX];
+#endif
 
     const To init_val = init;
 
@@ -94,9 +97,13 @@ __kernel void reduce_blocks_by_key_dim(__global int *reduced_block_sizes,
     // mark threads containing unique keys
     int eq_check      = (lid > 0) ? (k != reduced_keys[lid - 1]) : 0;
     int unique_flag   = (eq_check || (lid == 0)) && (gidx < n);
-    unique_flags[lid] = unique_flag;
 
+#if __OPENCL_VERSION__ < 200
+    unique_flags[lid] = unique_flag;
     int unique_id   = work_group_scan_inclusive_add(wg_temp, unique_flags);
+#else
+    int unique_id   = work_group_scan_inclusive_add(unique_flag);
+#endif
     unique_ids[lid] = unique_id;
 
     if (lid == DIMX - 1) reducedBlockSize = unique_id;
