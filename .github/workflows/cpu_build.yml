@@ -172,6 +172,7 @@ jobs:
                       -DFFTW_INCLUDE_DIR:PATH="$env:GITHUB_WORKSPACE\vcpkg\installed/x64-windows\include" `
                       -DFFTW_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows\lib\fftw3.lib" `
                       -DFFTWF_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows\lib\fftw3f.lib" `
+                      -DBOOST_ROOT:PATH="$env:BOOST_ROOT_1_72_0" `
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
                       -DBUILDNAME:STRING="$buildname"
