@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+
 #include <math.hpp>
 #include <optypes.hpp>
 #include <array>
@@ -17,14 +18,7 @@
 namespace cpu {
 
 template<typename To, typename Ti, af_op_t op>
-struct BinOp {
-    void eval(jit::array<To> &out, const jit::array<Ti> &lhs,
-              const jit::array<Ti> &rhs, int lim) const {
-        UNUSED(lhs);
-        UNUSED(rhs);
-        for (int i = 0; i < lim; i++) { out[i] = scalar<To>(0); }
-    }
-};
+struct BinOp;
 
 namespace jit {
 
