@@ -30,4 +30,8 @@ bool createDirectory(const std::string& path);
 
 bool removeFile(const std::string& path);
 
+bool renameFile(const std::string& sourcePath, const std::string& destPath);
+
 bool isDirectoryWritable(const std::string& path);
+
+std::string makeTempFilename();

@@ -20,6 +20,7 @@
 #include <af/defines.h>
 
 #include <sys/stat.h>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -146,6 +147,10 @@ bool removeFile(const string& path) {
 #endif
 }
 
+bool renameFile(const string& sourcePath, const string& destPath) {
+    return std::rename(sourcePath.c_str(), destPath.c_str()) == 0;
+}
+
 bool isDirectoryWritable(const string& path) {
     if (!directoryExists(path) && !createDirectory(path)) return false;
 
@@ -180,4 +185,15 @@ const string& getCacheDirectory() {
     });
 
     return cacheDirectory;
+}
+
+string makeTempFilename() {
+    thread_local std::size_t fileCount = 0u;
+
+    ++fileCount;
+    const std::size_t threadID =
+        std::hash<std::thread::id>{}(std::this_thread::get_id());
+
+    return std::to_string(std::hash<string>{}(std::to_string(threadID) + "_" +
+                                              std::to_string(fileCount)));
 }
