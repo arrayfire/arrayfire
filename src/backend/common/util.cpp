@@ -120,7 +120,7 @@ string getTemporaryDirectory() {
 }
 #endif
 
-bool folderExists(const string& path) {
+bool directoryExists(const string& path) {
 #if !defined(OS_WIN)
     struct stat status;
     return stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
@@ -130,7 +130,7 @@ bool folderExists(const string& path) {
 #endif
 }
 
-bool createFolder(const string& path) {
+bool createDirectory(const string& path) {
 #if !defined(OS_WIN)
     return mkdir(path.c_str(), 0777) == 0;
 #else
@@ -147,7 +147,7 @@ bool removeFile(const string& path) {
 }
 
 bool isDirectoryWritable(const string& path) {
-    if (!folderExists(path) && !createFolder(path)) return false;
+    if (!directoryExists(path) && !createDirectory(path)) return false;
 
     const string testPath = path + AF_PATH_SEPARATOR + "test";
     if (!std::ofstream(testPath).is_open()) return false;
