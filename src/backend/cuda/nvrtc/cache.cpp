@@ -332,13 +332,23 @@ Kernel buildKernel(const int device, const string &nameExpr,
     if (!cacheDirectory.empty()) {
         const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
                                  getKernelCacheFilename(device, nameExpr);
+        const string tempFile = cacheDirectory + AF_PATH_SEPARATOR +
+                                makeTempFilename();
 
-        std::ofstream out(cacheFile, std::ios::binary);
+        std::ofstream out(tempFile, std::ios::binary);
         const size_t nameSize = strlen(name);
         out << nameSize;
         out.write(name, nameSize);
         out << cubinSize;
         out.write(static_cast<const char *>(cubin), cubinSize);
+        out.close();
+
+        // try to rename temporary file into final cache file, if this fails
+        // this means another thread has finished compiling this kernel before
+        // the current thread.
+        if (!renameFile(tempFile, cacheFile)) {
+            removeFile(tempFile);
+        }
     }
 
     CU_LINK_CHECK(cuLinkDestroy(linkState));
