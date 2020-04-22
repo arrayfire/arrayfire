@@ -44,6 +44,8 @@ Array<T> padArrayBorders(const Array<T> &in, const dim4 &lowerBoundPadding,
                lowerBoundPadding[2] + iDims[2] + upperBoundPadding[2],
                lowerBoundPadding[3] + iDims[3] + upperBoundPadding[3]);
 
+    if (oDims == iDims) { return in; }
+
     auto ret = (btype == AF_PAD_ZERO ? createValueArray<T>(oDims, scalar<T>(0))
                                      : createEmptyArray<T>(oDims));
 
