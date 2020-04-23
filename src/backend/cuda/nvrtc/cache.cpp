@@ -45,7 +45,6 @@
 #include <array>
 #include <chrono>
 #include <fstream>
-#include <functional>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -153,7 +152,7 @@ template void Kernel::setScalar<int>(const char *, int);
 template void Kernel::getScalar<int>(int &, const char *);
 
 string getKernelCacheFilename(const int device, const string &nameExpr) {
-    const string mangledName = "KER" + to_string(std::hash<string>{}(nameExpr));
+    const string mangledName = "KER" + to_string(deterministicHash(nameExpr));
 
     const auto computeFlag = getComputeCapability(device);
     const string computeVersion =

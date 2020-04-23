@@ -23,7 +23,6 @@
 #include <af/dim4.hpp>
 
 #include <cstdio>
-#include <functional>
 #include <map>
 #include <stdexcept>
 #include <thread>
@@ -34,7 +33,6 @@ using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
 
-using std::hash;
 using std::map;
 using std::string;
 using std::stringstream;
@@ -62,10 +60,8 @@ static string getFuncName(const vector<Node *> &output_nodes,
         full_nodes[i]->genKerName(funcName, full_ids[i]);
     }
 
-    hash<string> hash_fn;
-
     hashName << "KER";
-    hashName << hash_fn(funcName.str());
+    hashName << deterministicHash(funcName.str());
     return hashName.str();
 }
 
