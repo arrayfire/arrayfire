@@ -214,7 +214,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
     Kernel entry{nullptr, nullptr};
 
     if (idx == kernelCaches[device].end()) {
-#ifdef AF_CACHE_KERNELS
+#ifdef AF_CACHE_KERNELS_TO_DISK
         entry = loadKernel(device, funcName);
 #endif
         if (entry.prog == nullptr || entry.ker == nullptr) {

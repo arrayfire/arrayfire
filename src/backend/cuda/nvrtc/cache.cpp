@@ -326,7 +326,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
     CU_CHECK(cuModuleGetFunction(&kernel, module, name));
     Kernel entry = {module, kernel};
 
-#ifdef AF_CACHE_KERNELS
+#ifdef AF_CACHE_KERNELS_TO_DISK
     // save kernel in cache
     const string &cacheDirectory = getCacheDirectory();
     if (!cacheDirectory.empty()) {
@@ -444,7 +444,7 @@ Kernel findKernel(int device, const string &nameExpr) {
     auto iter = cache.find(nameExpr);
     if (iter != cache.end()) return iter->second;
 
-#ifdef AF_CACHE_KERNELS
+#ifdef AF_CACHE_KERNELS_TO_DISK
     Kernel kernel = loadKernel(device, nameExpr);
     if (kernel.prog != nullptr && kernel.ker != nullptr) {
         addKernelToCache(device, nameExpr, kernel);
