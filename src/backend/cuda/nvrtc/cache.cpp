@@ -327,6 +327,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
     CU_CHECK(cuModuleGetFunction(&kernel, module, name));
     Kernel entry = {module, kernel};
 
+#ifdef AF_CACHE_KERNELS
     // save kernel in cache
     const string &cacheDirectory = getCacheDirectory();
     if (!cacheDirectory.empty()) {
@@ -350,6 +351,7 @@ Kernel buildKernel(const int device, const string &nameExpr,
             removeFile(tempFile);
         }
     }
+#endif
 
     CU_LINK_CHECK(cuLinkDestroy(linkState));
     NVRTC_CHECK(nvrtcDestroyProgram(&prog));
@@ -429,11 +431,13 @@ Kernel findKernel(int device, const string &nameExpr) {
     auto iter = cache.find(nameExpr);
     if (iter != cache.end()) return iter->second;
 
+#ifdef AF_CACHE_KERNELS
     Kernel kernel = loadKernel(device, nameExpr);
     if (kernel.prog != nullptr && kernel.ker != nullptr) {
         addKernelToCache(device, nameExpr, kernel);
         return kernel;
     }
+#endif
 
     return Kernel{nullptr, nullptr};
 }
