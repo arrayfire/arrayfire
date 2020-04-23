@@ -92,6 +92,16 @@ static inline string& ltrim(string& s) {
     return s;
 }
 
+bool verify_present(const std::string& pname, const std::string ref) {
+    auto iter = std::search(
+        begin(pname), end(pname), std::begin(ref), std::end(ref),
+        [](const std::string::value_type& l, const std::string::value_type& r) {
+            return tolower(l) == tolower(r);
+        });
+
+    return iter != end(pname);
+}
+
 static string platformMap(string& platStr) {
     using strmap_t                = map<string, string>;
     static const strmap_t platMap = {
@@ -99,6 +109,7 @@ static string platformMap(string& platStr) {
         make_pair("Intel(R) OpenCL", "INTEL"),
         make_pair("AMD Accelerated Parallel Processing", "AMD"),
         make_pair("Intel Gen OCL Driver", "BEIGNET"),
+        make_pair("Intel(R) OpenCL HD Graphics", "INTEL"),
         make_pair("Apple", "APPLE"),
         make_pair("Portable Computing Language", "POCL"),
     };

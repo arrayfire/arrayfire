@@ -302,10 +302,16 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
         platform == AFCL_PLATFORM_NVIDIA || platform == AFCL_PLATFORM_APPLE;
     bool isAmd =
         platform == AFCL_PLATFORM_AMD || platform == AFCL_PLATFORM_APPLE;
+    bool isIntel = platform == AFCL_PLATFORM_INTEL;
+
+    /// Intels param_size limit is much smaller than the other platforms
+    /// so we need to start checking earlier with smaller trees
+    int heightCheckLimit =
+        isIntel && getDeviceType() == CL_DEVICE_TYPE_GPU ? 3 : 6;
 
     // A lightweight check based on the height of the node. This is
     // an inexpensive operation and does not traverse the JIT tree.
-    bool isParamLimit = (root_node->getHeight() > 6);
+    bool isParamLimit = (root_node->getHeight() >= heightCheckLimit);
     if (isParamLimit || isBufferLimit) {
         // This is the base parameter size if the kernel had no
         // arguments
@@ -317,11 +323,19 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
         constexpr size_t max_nvidia_param_size = (4096 - base_param_size);
         constexpr size_t max_amd_param_size    = (3520 - base_param_size);
 
+        // This value is really for the Intel HD Graphics platform. The CPU
+        // platform seems like it can handle unlimited parameters but the
+        // compile times become very large.
+        constexpr size_t max_intel_igpu_param_size =
+            (1024 - 256 - base_param_size);
+
         size_t max_param_size = 0;
         if (isNvidia) {
             max_param_size = max_nvidia_param_size;
         } else if (isAmd) {
             max_param_size = max_amd_param_size;
+        } else if (isIntel && getDeviceType() == CL_DEVICE_TYPE_GPU) {
+            max_param_size = max_intel_igpu_param_size;
         } else {
             max_param_size = 8192;
         }
