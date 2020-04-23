@@ -336,11 +336,12 @@ Kernel buildKernel(const int device, const string &nameExpr,
         const string tempFile = cacheDirectory + AF_PATH_SEPARATOR +
                                 makeTempFilename();
 
+        // write kernel function name and CUBIN binary data
         std::ofstream out(tempFile, std::ios::binary);
         const size_t nameSize = strlen(name);
-        out << nameSize;
+        out.write(reinterpret_cast<const char *>(&nameSize), sizeof(nameSize));
         out.write(name, nameSize);
-        out << cubinSize;
+        out.write(reinterpret_cast<const char *>(&cubinSize), sizeof(cubinSize));
         out.write(static_cast<const char *>(cubin), cubinSize);
         out.close();
 
@@ -390,14 +391,14 @@ Kernel loadKernel(const int device, const string &nameExpr) {
 
         in.exceptions(std::ios::failbit | std::ios::badbit);
 
-        size_t nameSize;
-        in >> nameSize;
+        size_t nameSize = 0;
+        in.read(reinterpret_cast<char *>(&nameSize), sizeof(nameSize));
         string name;
         name.resize(nameSize);
         in.read(&name[0], nameSize);
 
-        size_t cubinSize;
-        in >> cubinSize;
+        size_t cubinSize = 0;
+        in.read(reinterpret_cast<char *>(&cubinSize), sizeof(cubinSize));
         vector<char> cubin(cubinSize);
         in.read(cubin.data(), cubinSize);
         in.close();
