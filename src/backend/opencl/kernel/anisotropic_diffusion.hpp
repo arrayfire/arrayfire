@@ -49,7 +49,7 @@ void anisotropicDiffusion(Param inout, const float dt, const float mct,
                 << " -D SHRD_MEM_WIDTH=" << (THREADS_X + 2)
                 << " -D IS_MCDE=" << isMCDE << " -D FLUX_FN=" << fluxFnCode
                 << " -D YDIM_LOAD=" << YDIM_LOAD;
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {anisotropic_diffusion_cl};
         const int ker_lens[]   = {anisotropic_diffusion_cl_len};

@@ -82,8 +82,7 @@ getHarrisKernels() {
     if (entries[0].prog == 0 && entries[0].ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {harris_cl};
         const int ker_lens[]   = {harris_cl_len};

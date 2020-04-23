@@ -44,8 +44,7 @@ void tile(Param out, const Param in) {
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {tile_cl};
         const int ker_lens[]   = {tile_cl_len};

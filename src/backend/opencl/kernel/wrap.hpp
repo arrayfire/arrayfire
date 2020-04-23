@@ -52,10 +52,8 @@ void wrap(Param out, const Param in, const dim_t wx, const dim_t wy,
         options << " -D is_column=" << is_column
                 << " -D ZERO=" << toNumStr(scalar<T>(0))
                 << " -D T=" << dtype_traits<T>::getName();
+        options << getTypeBuildDefinition<T>();
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
         Program prog;
         buildProgram(prog, wrap_cl, wrap_cl_len, options.str());
 
@@ -107,10 +105,7 @@ void wrap_dilated(Param out, const Param in, const dim_t wx, const dim_t wy,
         options << " -D is_column=" << is_column
                 << " -D ZERO=" << toNumStr(scalar<T>(0))
                 << " -D T=" << dtype_traits<T>::getName();
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         Program prog;
         buildProgram(prog, wrap_dilated_cl, wrap_dilated_cl_len, options.str());

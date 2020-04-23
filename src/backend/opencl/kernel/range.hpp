@@ -45,10 +45,7 @@ void range(Param out, const int dim) {
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
-
-        if (std::is_same<T, common::half>::value) options << " -D USE_HALF";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {range_cl};
         const int ker_lens[]   = {range_cl_len};

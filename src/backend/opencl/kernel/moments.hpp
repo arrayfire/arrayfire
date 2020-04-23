@@ -50,10 +50,7 @@ void moments(Param out, const Param in, af_moment_type moment) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
         options << " -D MOMENTS_SZ=" << out.info.dims[0];
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         Program prog;
         buildProgram(prog, moments_cl, moments_cl_len, options.str());

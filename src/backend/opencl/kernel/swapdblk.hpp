@@ -42,8 +42,7 @@ void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
         std::ostringstream options;
 
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {swapdblk_cl};
         const int ker_lens[]   = {swapdblk_cl_len};

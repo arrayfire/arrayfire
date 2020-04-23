@@ -68,9 +68,8 @@ void csrmv(Param out, const Param &values, const Param &rowIdx,
         options << " -D USE_GREEDY=" << use_greedy;
         options << " -D THREADS=" << threads;
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
+
         if (std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value) {
             options << " -D IS_CPLX=1";
         } else {

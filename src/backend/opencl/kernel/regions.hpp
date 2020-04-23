@@ -82,8 +82,7 @@ std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*> getRegionsKernels() {
                     << " -D N_PER_THREAD=" << n_per_thread
                     << " -D LIMIT_MAX=" << toNumStr(maxval<T>());
         }
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {regions_cl};
         const int ker_lens[]   = {regions_cl_len};

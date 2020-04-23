@@ -44,7 +44,7 @@ void hsv2rgb_convert(Param out, const Param in) {
         options << " -D T=" << dtype_traits<T>::getName();
 
         if (isHSV2RGB) options << " -D isHSV2RGB";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {hsv_rgb_cl};
         const int ker_lens[]   = {hsv_rgb_cl_len};

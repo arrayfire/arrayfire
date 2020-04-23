@@ -47,11 +47,7 @@ void transpose(Param out, const Param in, cl::CommandQueue queue) {
                 << " -D IS32MULTIPLE=" << IS32MULTIPLE
                 << " -D DOCONJUGATE=" << (conjugate && af::iscplx<T>())
                 << " -D T=" << dtype_traits<T>::getName();
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
-
-        if (std::is_same<T, common::half>::value) options << " -D USE_HALF";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {transpose_cl};
         const int ker_lens[]   = {transpose_cl_len};

@@ -50,7 +50,7 @@ void matchTemplate(Param out, const Param srch, const Param tmplt) {
                 << " -D AF_ZSSD=" << AF_ZSSD << " -D AF_LSSD=" << AF_LSSD
                 << " -D AF_NCC=" << AF_NCC << " -D AF_ZNCC=" << AF_ZNCC
                 << " -D AF_SHD=" << AF_SHD;
-        if (std::is_same<outType, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<outType>();
 
         const char* ker_strs[] = {matchTemplate_cl};
         const int ker_lens[]   = {matchTemplate_cl_len};

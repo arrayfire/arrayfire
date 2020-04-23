@@ -64,14 +64,7 @@ void reduce_dim_launcher(Param out, Param in, const int dim,
                 << " -D THREADS_X=" << THREADS_X
                 << " -D init=" << toNumStr(Binary<To, op>::init()) << " -D "
                 << binOpName<op>() << " -D CPLX=" << af::iscplx<Ti>();
-        if (std::is_same<Ti, double>::value ||
-            std::is_same<Ti, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
-
-        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
-            options << " -D USE_HALF";
-        }
+        options << getTypeBuildDefinition<Ti, To>();
 
         const char *ker_strs[] = {ops_cl, reduce_dim_cl};
         const int ker_lens[]   = {ops_cl_len, reduce_dim_cl_len};
@@ -164,14 +157,7 @@ void reduce_first_launcher(Param out, Param in, const uint groups_x,
                 << " -D THREADS_PER_GROUP=" << THREADS_PER_GROUP
                 << " -D init=" << toNumStr(Binary<To, op>::init()) << " -D "
                 << binOpName<op>() << " -D CPLX=" << af::iscplx<Ti>();
-        if (std::is_same<Ti, double>::value ||
-            std::is_same<Ti, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
-
-        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
-            options << " -D USE_HALF";
-        }
+        options << getTypeBuildDefinition<Ti, To>();
 
         const char *ker_strs[] = {ops_cl, reduce_first_cl};
         const int ker_lens[]   = {ops_cl_len, reduce_first_cl_len};

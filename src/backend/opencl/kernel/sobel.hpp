@@ -44,7 +44,7 @@ void sobel(Param dx, Param dy, const Param in) {
         options << " -D Ti=" << dtype_traits<Ti>::getName()
                 << " -D To=" << dtype_traits<To>::getName()
                 << " -D KER_SIZE=" << ker_size;
-        if (std::is_same<Ti, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<Ti>();
 
         const char* ker_strs[] = {sobel_cl};
         const int ker_lens[]   = {sobel_cl_len};

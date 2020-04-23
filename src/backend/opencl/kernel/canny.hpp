@@ -47,7 +47,7 @@ void nonMaxSuppression(Param output, const Param magnitude, const Param dx,
                 << " -D SHRD_MEM_HEIGHT=" << (THREADS_X + 2)
                 << " -D SHRD_MEM_WIDTH=" << (THREADS_Y + 2)
                 << " -D NON_MAX_SUPPRESSION";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {nonmax_suppression_cl};
         const int ker_lens[]   = {nonmax_suppression_cl_len};
@@ -92,7 +92,7 @@ void initEdgeOut(Param output, const Param strong, const Param weak) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D INIT_EDGE_OUT";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {trace_edge_cl};
         const int ker_lens[]   = {trace_edge_cl_len};
@@ -135,7 +135,7 @@ void suppressLeftOver(Param output) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D SUPPRESS_LEFT_OVER";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {trace_edge_cl};
         const int ker_lens[]   = {trace_edge_cl_len};
@@ -183,7 +183,7 @@ void edgeTrackingHysteresis(Param output, const Param strong,
                 << " -D SHRD_MEM_WIDTH=" << (THREADS_Y + 2)
                 << " -D TOTAL_NUM_THREADS=" << (THREADS_X * THREADS_Y)
                 << " -D EDGE_TRACER";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {trace_edge_cl};
         const int ker_lens[]   = {trace_edge_cl_len};

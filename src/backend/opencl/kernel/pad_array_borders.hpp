@@ -46,8 +46,7 @@ void padBorders(Param out, const Param in, dim4 const& lBPadding) {
                 << " -D AF_PAD_SYM=" << AF_PAD_SYM
                 << " -D AF_PAD_PERIODIC=" << AF_PAD_PERIODIC
                 << " -D AF_PAD_CLAMP_TO_EDGE=" << AF_PAD_CLAMP_TO_EDGE;
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {pad_array_borders_cl};
         const int ker_lens[]   = {pad_array_borders_cl_len};

@@ -56,9 +56,7 @@ std::string generateOptionsString() {
     } else {
         options << " -D IS_CPLX=0";
     }
-    if (std::is_same<Ty, double>::value || std::is_same<Ty, cdouble>::value) {
-        options << " -D USE_DOUBLE";
-    }
+    options << getTypeBuildDefinition<Ty>();
 
     options << " -D INTERP_ORDER=" << order;
     addInterpEnumOptions(options);

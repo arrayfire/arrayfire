@@ -34,9 +34,8 @@ std::string generateOptionsString() {
     std::ostringstream options;
     options << " -D T=" << dtype_traits<T>::getName() << " -D ZERO=(T)("
             << scalar_to_option(scalar<T>(0)) << ")";
-    if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-        options << " -D USE_DOUBLE";
-    }
+    options << getTypeBuildDefinition<T>();
+
     return options.str();
 }
 

@@ -64,10 +64,7 @@ static Kernel get_scan_dim_kernels(int kerIdx, int dim, bool calculateFlags,
                 << binOpName<op>() << " -D CPLX=" << af::iscplx<Ti>()
                 << " -D calculateFlags=" << calculateFlags
                 << " -D inclusive_scan=" << inclusive_scan;
-        if (std::is_same<Ti, double>::value ||
-            std::is_same<Ti, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<Ti>();
 
         const char *ker_strs[] = {ops_cl, scan_dim_by_key_cl};
         const int ker_lens[]   = {ops_cl_len, scan_dim_by_key_cl_len};

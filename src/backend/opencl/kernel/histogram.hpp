@@ -47,10 +47,7 @@ void histogram(Param out, const Param in, int nbins, float minval,
                 << " -D outType=" << dtype_traits<outType>::getName()
                 << " -D THRD_LOAD=" << THRD_LOAD << " -D MAX_BINS=" << MAX_BINS;
         if (isLinear) options << " -D IS_LINEAR";
-        if (std::is_same<inType, double>::value ||
-            std::is_same<inType, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<inType>();
 
         const char* ker_strs[] = {histogram_cl};
         const int ker_lens[]   = {histogram_cl_len};

@@ -47,10 +47,10 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma) {
         std::ostringstream options;
         options << " -D inType=" << dtype_traits<inType>::getName()
                 << " -D outType=" << dtype_traits<outType>::getName();
-        if (std::is_same<inType, double>::value ||
+
+        options << getTypeBuildDefinition<inType>();
+        if (!std::is_same<inType, double>::value ||
             std::is_same<inType, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        } else {
             options << " -D USE_NATIVE_EXP";
         }
 
