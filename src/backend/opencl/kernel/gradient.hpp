@@ -54,9 +54,7 @@ void gradient(Param grad0, Param grad1, const Param in) {
         } else {
             options << " -D CPLX=0";
         }
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {gradient_cl};
         const int ker_lens[]   = {gradient_cl_len};

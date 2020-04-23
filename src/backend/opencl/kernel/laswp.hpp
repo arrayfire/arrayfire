@@ -50,8 +50,7 @@ void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2,
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D MAX_PIVOTS=" << MAX_PIVOTS;
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {laswp_cl};
         const int ker_lens[]   = {laswp_cl_len};

@@ -53,8 +53,7 @@ void memcopy(cl::Buffer out, const dim_t *ostrides, const cl::Buffer in,
         std::ostringstream options;
 
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {memcopy_cl};
         const int ker_lens[]   = {memcopy_cl_len};
@@ -112,12 +111,7 @@ void copy(Param dst, const Param src, int ndims, outType default_value,
                 << " -D inType_" << dtype_traits<inType>::getName()
                 << " -D outType_" << dtype_traits<outType>::getName()
                 << " -D SAME_DIMS=" << same_dims;
-
-        if (std::is_same<inType, double>::value ||
-            std::is_same<inType, cdouble>::value ||
-            std::is_same<outType, double>::value ||
-            std::is_same<outType, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<inType, outType>();
 
         const char *ker_strs[] = {copy_cl};
         const int ker_lens[]   = {copy_cl_len};

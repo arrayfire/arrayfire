@@ -49,7 +49,7 @@ void initSeeds(Param out, const Param seedsx, const Param seedsy) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D VALID=" << T(VALID) << " -D INIT_SEEDS";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {flood_fill_cl};
         const int ker_lens[]   = {flood_fill_cl_len};
@@ -82,7 +82,7 @@ void finalizeOutput(Param out, const T newValue) {
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D VALID=" << T(VALID) << " -D ZERO=" << T(ZERO)
                 << " -D FINALIZE_OUTPUT";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {flood_fill_cl};
         const int ker_lens[]   = {flood_fill_cl_len};
@@ -123,7 +123,7 @@ void floodFill(Param out, const Param image, const Param seedsx,
                 << " -D GROUP_SIZE=" << (THREADS_Y * THREADS_X)
                 << " -D VALID=" << T(VALID) << " -D INVALID=" << T(INVALID)
                 << " -D ZERO=" << T(ZERO) << " -D FLOOD_FILL_STEP";
-        if (std::is_same<T, double>::value) options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {flood_fill_cl};
         const int ker_lens[]   = {flood_fill_cl_len};

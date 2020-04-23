@@ -72,9 +72,7 @@ void all_distances(Param dist, Param query, Param train, const dim_t dist_dim) {
             default: break;
         }
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         if (use_lmem) options << " -D USE_LOCAL_MEM";
 

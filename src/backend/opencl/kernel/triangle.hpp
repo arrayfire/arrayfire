@@ -53,10 +53,7 @@ void triangle(Param out, const Param in) {
                 << " -D is_unit_diag=" << is_unit_diag << " -D ZERO=(T)("
                 << scalar_to_option(scalar<T>(0)) << ")"
                 << " -D ONE=(T)(" << scalar_to_option(scalar<T>(1)) << ")";
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
-
-        if (std::is_same<T, common::half>::value) options << " -D USE_HALF";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {triangle_cl};
         const int ker_lens[]   = {triangle_cl_len};

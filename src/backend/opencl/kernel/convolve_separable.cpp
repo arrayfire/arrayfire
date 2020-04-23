@@ -72,9 +72,7 @@ void convSep(Param out, const Param signal, const Param filter) {
         } else {
             options << " -D CPLX=0";
         }
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {ops_cl, convolve_separable_cl};
         const int ker_lens[]   = {ops_cl_len, convolve_separable_cl_len};

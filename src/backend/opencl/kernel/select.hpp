@@ -46,8 +46,7 @@ void select_launcher(Param out, Param cond, Param a, Param b, int ndims) {
         std::ostringstream options;
         options << " -D is_same=" << is_same
                 << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {select_cl};
         const int ker_lens[]   = {select_cl_len};
@@ -109,8 +108,7 @@ void select_scalar(Param out, Param cond, Param a, const double b, int ndims) {
         std::ostringstream options;
         options << " -D flip=" << flip
                 << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {select_cl};
         const int ker_lens[]   = {select_cl_len};

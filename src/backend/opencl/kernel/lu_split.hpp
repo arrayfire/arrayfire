@@ -52,8 +52,7 @@ void lu_split_launcher(Param lower, Param upper, const Param in) {
                 << scalar_to_option(scalar<T>(0)) << ")"
                 << " -D ONE=(T)(" << scalar_to_option(scalar<T>(1)) << ")";
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {lu_split_cl};
         const int ker_lens[]   = {lu_split_cl_len};

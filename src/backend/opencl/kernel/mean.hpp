@@ -143,16 +143,7 @@ void mean_dim_launcher(Param out, Param owt, Param in, Param inWeight,
 
         if (input_weight) { options << " -D INPUT_WEIGHT"; }
         if (output_weight) { options << " -D OUTPUT_WEIGHT"; }
-
-        if (std::is_same<Ti, double>::value ||
-            std::is_same<Ti, cdouble>::value ||
-            std::is_same<To, double>::value) {
-            options << " -D USE_DOUBLE";
-        }
-
-        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
-            options << " -D USE_HALF";
-        }
+        options << getTypeBuildDefinition<Ti, To>();
 
         const char *ker_strs[] = {mean_ops_cl, mean_dim_cl};
         const int ker_lens[]   = {mean_ops_cl_len, mean_dim_cl_len};
@@ -272,16 +263,7 @@ void mean_first_launcher(Param out, Param owt, Param in, Param inWeight,
 
         if (input_weight) { options << " -D INPUT_WEIGHT"; }
         if (output_weight) { options << " -D OUTPUT_WEIGHT"; }
-
-        if (std::is_same<Ti, double>::value ||
-            std::is_same<Ti, cdouble>::value ||
-            std::is_same<To, double>::value) {
-            options << " -D USE_DOUBLE";
-        }
-
-        if (std::is_same<Ti, half>::value || std::is_same<To, half>::value) {
-            options << " -D USE_HALF";
-        }
+        options << getTypeBuildDefinition<Ti, To>();
 
         const char *ker_strs[] = {mean_ops_cl, mean_first_cl};
         const int ker_lens[]   = {mean_ops_cl_len, mean_first_cl_len};

@@ -50,8 +50,7 @@ void meanshift(Param out, const Param in, const float spatialSigma,
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D AccType=" << dtype_traits<AccType>::getName()
                 << " -D MAX_CHANNELS=" << (is_color ? 3 : 1);
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {meanshift_cl};
         const int ker_lens[]   = {meanshift_cl_len};

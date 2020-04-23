@@ -47,10 +47,7 @@ void join(Param out, const Param in, dim_t dim, const af::dim4 offset) {
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {join_cl};
         const int ker_lens[]   = {join_cl_len};

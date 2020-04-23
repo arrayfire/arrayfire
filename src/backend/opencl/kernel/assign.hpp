@@ -48,8 +48,7 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p,
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {assign_cl};
         const int ker_lens[]   = {assign_cl_len};

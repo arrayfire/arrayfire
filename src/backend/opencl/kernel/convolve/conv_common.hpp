@@ -118,8 +118,7 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
         } else {
             options << " -D CPLX=0";
         }
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {ops_cl, convolve_cl};
         const int ker_lens[]   = {ops_cl_len, convolve_cl_len};
