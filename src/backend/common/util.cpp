@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -195,4 +196,20 @@ string makeTempFilename() {
 
     return std::to_string(std::hash<string>{}(std::to_string(threadID) + "_" +
                                               std::to_string(fileCount)));
+}
+
+std::size_t deterministicHash(const void* data, std::size_t byteSize) {
+    // Fowler-Noll-Vo "1a" 32 bit hash
+    // https://en.wikipedia.org/wiki/Fowler-Noll-Vo_hash_function
+    constexpr std::size_t seed = 0x811C9DC5;
+    constexpr std::size_t prime = 0x01000193;
+    const std::uint8_t* byteData = static_cast<const std::uint8_t*>(data);
+    return std::accumulate(byteData, byteData + byteSize, seed,
+                           [&](std::size_t hash, std::uint8_t data) {
+                               return (hash ^ data) * prime;
+                           });
+}
+
+std::size_t deterministicHash(const std::string& data) {
+    return deterministicHash(data.data(), data.size());
 }

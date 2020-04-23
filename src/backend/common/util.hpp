@@ -35,3 +35,7 @@ bool renameFile(const std::string& sourcePath, const std::string& destPath);
 bool isDirectoryWritable(const std::string& path);
 
 std::string makeTempFilename();
+
+std::size_t deterministicHash(const void* data, std::size_t byteSize);
+
+std::size_t deterministicHash(const std::string& data);
