@@ -54,7 +54,7 @@ gfor (seq i, N)
 There are three formats for instantiating gfor-loops.
 -# gfor(var,n) Creates a sequence _{0, 1, ..., n-1}_
 -# gfor(var,first,last) Creates a sequence _{first, first+1, ..., last}_
--# gfor(var,first,incr,last) Creates a sequence _{first, first+inc, first+2*inc, ..., last}_
+-# gfor(var,first,last,incr) Creates a sequence _{first, first+inc, first+2*inc, ..., last}_
 
 So all of the following represent the equivalent sequence: _0,1,2,3,4_
 
