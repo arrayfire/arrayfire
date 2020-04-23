@@ -54,9 +54,7 @@ class GraphicsResourceManager;
 struct kc_entry_t;  // kernel cache entry
 class PlanCache;    // clfft
 
-static inline bool verify_present(std::string pname, const char* ref) {
-    return pname.find(ref) != std::string::npos;
-}
+bool verify_present(const std::string& pname, const std::string ref);
 
 int getBackend();
 
