@@ -20,6 +20,7 @@
 #include <af/defines.h>
 
 #include <sys/stat.h>
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -176,12 +177,10 @@ const string& getCacheDirectory() {
 #endif
         };
 
-        for (const string& path : pathList) {
-            if (isDirectoryWritable(path)) {
-                cacheDirectory = path;
-                break;
-            }
-        }
+        auto iterDir = std::find_if(pathList.begin(), pathList.end(), 
+            isDirectoryWritable);
+
+        return iterDir != pathList.end() ? *iterDir : "";
     });
 
     return cacheDirectory;
