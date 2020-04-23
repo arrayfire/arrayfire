@@ -224,6 +224,10 @@ foreach(backend ${built_backends})
     target_compile_definitions(${backend}
       PRIVATE AF_WITH_LOGGING)
   endif()
+  if(AF_CACHE_KERNELS_TO_DISK)
+    target_compile_definitions(${backend}
+      PRIVATE AF_CACHE_KERNELS_TO_DISK)
+  endif()
 endforeach()
 
 if(AF_BUILD_FRAMEWORK)
