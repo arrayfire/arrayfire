@@ -332,8 +332,8 @@ Kernel buildKernel(const int device, const string &nameExpr,
     if (!cacheDirectory.empty()) {
         const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
                                  getKernelCacheFilename(device, nameExpr);
-        const string tempFile = cacheDirectory + AF_PATH_SEPARATOR +
-                                makeTempFilename();
+        const string tempFile =
+            cacheDirectory + AF_PATH_SEPARATOR + makeTempFilename();
 
         // compute CUBIN hash
         const size_t cubinHash = deterministicHash(cubin, cubinSize);
@@ -343,17 +343,17 @@ Kernel buildKernel(const int device, const string &nameExpr,
         const size_t nameSize = strlen(name);
         out.write(reinterpret_cast<const char *>(&nameSize), sizeof(nameSize));
         out.write(name, nameSize);
-        out.write(reinterpret_cast<const char *>(&cubinHash), sizeof(cubinHash));
-        out.write(reinterpret_cast<const char *>(&cubinSize), sizeof(cubinSize));
+        out.write(reinterpret_cast<const char *>(&cubinHash),
+                  sizeof(cubinHash));
+        out.write(reinterpret_cast<const char *>(&cubinSize),
+                  sizeof(cubinSize));
         out.write(static_cast<const char *>(cubin), cubinSize);
         out.close();
 
         // try to rename temporary file into final cache file, if this fails
         // this means another thread has finished compiling this kernel before
         // the current thread.
-        if (!renameFile(tempFile, cacheFile)) {
-            removeFile(tempFile);
-        }
+        if (!renameFile(tempFile, cacheFile)) { removeFile(tempFile); }
     }
 #endif
 
@@ -409,7 +409,8 @@ Kernel loadKernel(const int device, const string &nameExpr) {
         in.close();
 
         // check CUBIN binary data has not been corrupted
-        const size_t recomputedHash = deterministicHash(cubin.data(), cubinSize);
+        const size_t recomputedHash =
+            deterministicHash(cubin.data(), cubinSize);
         if (recomputedHash != cubinHash) {
             AF_ERROR("cached kernel data is corrupted", AF_ERR_LOAD_SYM);
         }
