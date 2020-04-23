@@ -335,11 +335,15 @@ Kernel buildKernel(const int device, const string &nameExpr,
         const string tempFile = cacheDirectory + AF_PATH_SEPARATOR +
                                 makeTempFilename();
 
+        // compute CUBIN hash
+        const size_t cubinHash = deterministicHash(cubin, cubinSize);
+
         // write kernel function name and CUBIN binary data
         std::ofstream out(tempFile, std::ios::binary);
         const size_t nameSize = strlen(name);
         out.write(reinterpret_cast<const char *>(&nameSize), sizeof(nameSize));
         out.write(name, nameSize);
+        out.write(reinterpret_cast<const char *>(&cubinHash), sizeof(cubinHash));
         out.write(reinterpret_cast<const char *>(&cubinSize), sizeof(cubinSize));
         out.write(static_cast<const char *>(cubin), cubinSize);
         out.close();
@@ -396,11 +400,19 @@ Kernel loadKernel(const int device, const string &nameExpr) {
         name.resize(nameSize);
         in.read(&name[0], nameSize);
 
+        size_t cubinHash = 0;
+        in.read(reinterpret_cast<char *>(&cubinHash), sizeof(cubinHash));
         size_t cubinSize = 0;
         in.read(reinterpret_cast<char *>(&cubinSize), sizeof(cubinSize));
         vector<char> cubin(cubinSize);
         in.read(cubin.data(), cubinSize);
         in.close();
+
+        // check CUBIN binary data has not been corrupted
+        const size_t recomputedHash = deterministicHash(cubin.data(), cubinSize);
+        if (recomputedHash != cubinHash) {
+            AF_ERROR("cached kernel data is corrupted", AF_ERR_LOAD_SYM);
+        }
 
         CU_CHECK(cuModuleLoadDataEx(&module, cubin.data(), 0, 0, 0));
         CU_CHECK(cuModuleGetFunction(&kernel, module, name.c_str()));
