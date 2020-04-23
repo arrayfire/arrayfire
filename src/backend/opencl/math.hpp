@@ -10,6 +10,7 @@
 #pragma once
 
 #include <common/defines.hpp>
+#include <common/half.hpp>
 #include <af/defines.h>
 
 #include <backend.hpp>
@@ -121,13 +122,24 @@ template<>
 STATIC_ double maxval() {
     return std::numeric_limits<double>::infinity();
 }
+
+template<>
+STATIC_ common::half maxval() {
+    return std::numeric_limits<common::half>::infinity();
+}
+
 template<>
 STATIC_ float minval() {
     return -std::numeric_limits<float>::infinity();
 }
+
 template<>
 STATIC_ double minval() {
     return -std::numeric_limits<double>::infinity();
+}
+template<>
+STATIC_ common::half minval() {
+    return -std::numeric_limits<common::half>::infinity();
 }
 
 static inline double real(cdouble in) { return in.s[0]; }
