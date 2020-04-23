@@ -180,7 +180,7 @@ const string& getCacheDirectory() {
         auto iterDir = std::find_if(pathList.begin(), pathList.end(), 
             isDirectoryWritable);
 
-        return iterDir != pathList.end() ? *iterDir : "";
+        cacheDirectory = iterDir != pathList.end() ? *iterDir : "";
     });
 
     return cacheDirectory;
