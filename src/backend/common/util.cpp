@@ -101,7 +101,16 @@ std::string int_version_to_string(int version) {
            std::to_string((int)((version % 1000) / 10.));
 }
 
-#if !defined(OS_WIN)
+#if defined(OS_WIN)
+string getTemporaryDirectory() {
+    DWORD bufSize = 261;  // limit according to GetTempPath documentation
+    string retVal;
+    retVal.resize(bufSize);
+    bufSize = GetTempPathA(bufSize, &retVal[0]);
+    retVal.resize(bufSize);
+    return retVal;
+}
+#else
 string getHomeDirectory() {
     string home = getEnvVar("XDG_CACHE_HOME");
     if (!home.empty()) return home;
@@ -111,40 +120,31 @@ string getHomeDirectory() {
 
     home = getpwuid(getuid())->pw_dir;
 }
-#else
-string getTemporaryDirectory() {
-    DWORD bufSize = 261;  // limit according to GetTempPath documentation
-    string retVal;
-    retVal.resize(bufSize);
-    bufSize = GetTempPathA(bufSize, &retVal[0]);
-    retVal.resize(bufSize);
-    return retVal;
-}
 #endif
 
 bool directoryExists(const string& path) {
-#if !defined(OS_WIN)
-    struct stat status;
-    return stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
-#else
+#if defined(OS_WIN)
     struct _stat status;
     return _stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
+#else
+    struct stat status;
+    return stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
 #endif
 }
 
 bool createDirectory(const string& path) {
-#if !defined(OS_WIN)
-    return mkdir(path.c_str(), 0777) == 0;
-#else
+#if defined(OS_WIN)
     return CreateDirectoryA(path.c_str(), NULL) != 0;
+#else
+    return mkdir(path.c_str(), 0777) == 0;
 #endif
 }
 
 bool removeFile(const string& path) {
-#if !defined(OS_WIN)
-    return unlink(path.c_str()) == 0;
-#else
+#if defined(OS_WIN)
     return DeleteFileA(path.c_str()) != 0;
+#else
+    return unlink(path.c_str()) == 0;
 #endif
 }
 
@@ -168,12 +168,12 @@ const string& getCacheDirectory() {
 
     std::call_once(flag, []() {
         const vector<string> pathList = {
-#if !defined(OS_WIN)
+#if defined(OS_WIN)
+            getTemporaryDirectory() + "\\ArrayFire"
+#else
             "/var/lib/arrayfire",
             getHomeDirectory() + "/.arrayfire",
             "/tmp/arrayfire"
-#else
-            getTemporaryDirectory() + "\\ArrayFire"
 #endif
         };
 
