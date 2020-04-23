@@ -162,8 +162,8 @@ bool isDirectoryWritable(const string& path) {
 }
 
 const string& getCacheDirectory() {
-    thread_local std::once_flag flag;
-    thread_local string cacheDirectory;
+    static std::once_flag flag;
+    static string cacheDirectory;
 
     std::call_once(flag, []() {
         const vector<string> pathList = {
