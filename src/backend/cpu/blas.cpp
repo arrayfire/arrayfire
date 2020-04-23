@@ -237,10 +237,12 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     using BT  = typename blas_base<T>::type;
     using CBT = const typename blas_base<T>::type;
 
-    auto alpha_        = scale_type<T, false>(alpha);
-    auto beta_         = scale_type<T, false>(beta);
+    auto alpha_ = scale_type<T, false>(alpha);
+    auto beta_  = scale_type<T, false>(beta);
+#ifdef USE_MKL
     auto alpha_batched = scale_type<T, true>(alpha);
     auto beta_batched  = scale_type<T, true>(beta);
+#endif
 
     auto func = [=](Param<T> output, CParam<T> left, CParam<T> right) {
         dim4 lStrides = left.strides();
