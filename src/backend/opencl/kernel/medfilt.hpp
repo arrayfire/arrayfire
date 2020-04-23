@@ -51,8 +51,7 @@ void medfilt1(Param out, const Param in, unsigned w_wid) {
                 << " -D AF_PAD_ZERO=" << AF_PAD_ZERO
                 << " -D AF_PAD_SYM=" << AF_PAD_SYM
                 << " -D ARR_SIZE=" << ARR_SIZE << " -D w_wid=" << w_wid;
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {medfilt1_cl};
         const int ker_lens[]   = {medfilt1_cl_len};
@@ -101,8 +100,7 @@ void medfilt2(Param out, const Param in) {
                 << " -D AF_PAD_SYM=" << AF_PAD_SYM
                 << " -D ARR_SIZE=" << ARR_SIZE << " -D w_len=" << w_len
                 << " -D w_wid=" << w_wid;
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {medfilt2_cl};
         const int ker_lens[]   = {medfilt2_cl_len};

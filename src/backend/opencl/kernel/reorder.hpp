@@ -44,8 +44,7 @@ void reorder(Param out, const Param in, const dim_t* rdims) {
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {reorder_cl};
         const int ker_lens[]   = {reorder_cl_len};

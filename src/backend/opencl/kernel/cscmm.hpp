@@ -69,10 +69,8 @@ void cscmm_nn(Param out, const Param &values, const Param &colIdx,
         options << " -D THREADS=" << threads;
         options << " -D ROWS_PER_GROUP=" << rows_per_group;
         options << " -D COLS_PER_GROUP=" << cols_per_group;
+        options << getTypeBuildDefinition<T>();
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
         if (std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value) {
             options << " -D IS_CPLX=1";
         } else {

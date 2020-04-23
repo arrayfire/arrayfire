@@ -20,6 +20,8 @@
 #include <common/kernel_type.hpp>
 #include <common/traits.hpp>
 
+#include <algorithm>
+#include <array>
 #include <string>
 
 namespace common {
@@ -117,6 +119,34 @@ inline const char *shortname<ushort>(bool caps) {
 template<typename T>
 const char *getFullName() {
     return af::dtype_traits<T>::getName();
+}
+
+template<typename... ARGS>
+constexpr const char *getTypeBuildDefinition() {
+    using common::half;
+    using std::any_of;
+    using std::array;
+    using std::begin;
+    using std::end;
+    using std::is_same;
+    array<bool, sizeof...(ARGS)> is_half = {is_same<ARGS, half>::value...};
+    array<bool, sizeof...(ARGS) * 2> is_double = {
+        is_same<ARGS, double>::value..., is_same<ARGS, cdouble>::value...};
+
+    bool half_def =
+        any_of(begin(is_half), end(is_half), [](bool val) { return val; });
+    bool double_def =
+        any_of(begin(is_double), end(is_double), [](bool val) { return val; });
+
+    if (half_def && double_def) {
+        return " -D USE_HALF -D USE_DOUBLE";
+    } else if (half_def) {
+        return " -D USE_HALF";
+    } else if (double_def) {
+        return " -D USE_DOUBLE";
+    } else {
+        return "";
+    }
 }
 
 }  // namespace opencl

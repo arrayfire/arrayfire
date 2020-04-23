@@ -438,8 +438,7 @@ std::array<cl::Kernel*, 7> getSiftKernels() {
     if (entries[0].prog == 0 && entries[0].ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         cl::Program prog;
         buildProgram(prog, sift_nonfree_cl, sift_nonfree_cl_len, options.str());

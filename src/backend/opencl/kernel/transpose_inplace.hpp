@@ -48,9 +48,7 @@ void transpose_inplace(Param in, cl::CommandQueue& queue) {
                 << " -D IS32MULTIPLE=" << IS32MULTIPLE
                 << " -D DOCONJUGATE=" << (conjugate && af::iscplx<T>())
                 << " -D T=" << dtype_traits<T>::getName();
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {transpose_inplace_cl};
         const int ker_lens[]   = {transpose_inplace_cl_len};

@@ -54,8 +54,8 @@ std::array<cl::Kernel*, 5> getHomographyKernels() {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
 
+        options << getTypeBuildDefinition<T>();
         if (std::is_same<T, double>::value) {
-            options << " -D USE_DOUBLE";
             options << " -D EPS=" << DBL_EPSILON;
         } else
             options << " -D EPS=" << FLT_EPSILON;

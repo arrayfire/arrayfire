@@ -83,8 +83,7 @@ static cl::Kernel get_random_engine_kernel(const af_random_engine_type type,
         if (type != AF_RANDOM_ENGINE_MERSENNE_GP11213) {
             options << " -D ELEMENTS_PER_BLOCK=" << elementsPerBlock;
         }
-        if (std::is_same<T, double>::value) { options << " -D USE_DOUBLE"; }
-        if (std::is_same<T, common::half>::value) { options << " -D USE_HALF"; }
+        options << getTypeBuildDefinition<T>();
 #if defined(OS_MAC)  // Because apple is "special"
         options << " -D IS_APPLE"
                 << " -D log10_val=" << std::log(10.0);

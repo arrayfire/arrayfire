@@ -48,11 +48,7 @@ void lookup(Param out, const Param in, const Param indices) {
         options << " -D in_t=" << dtype_traits<in_t>::getName()
                 << " -D idx_t=" << dtype_traits<idx_t>::getName()
                 << " -D DIM=" << dim;
-
-        if (is_same<in_t, double>::value || is_same<in_t, cdouble>::value ||
-            is_same<idx_t, double>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<in_t, idx_t>();
 
         if (is_same<in_t, common::half>::value) { options << " -D USE_HALF"; }
 

@@ -47,8 +47,8 @@ std::string generateOptionsString() {
     options << " -D T=" << dtype_traits<T>::getName()
             << " -D isDilation=" << isDilation << " -D init=" << toNumStr(init)
             << " -D SeLength=" << SeLength;
-    if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-        options << " -D USE_DOUBLE";
+    options << getTypeBuildDefinition<T>();
+
     return options.str();
 }
 

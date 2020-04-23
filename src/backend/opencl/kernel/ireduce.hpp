@@ -62,10 +62,7 @@ void ireduce_dim_launcher(Param out, cl::Buffer *oidx, Param in,
                 << " -D init=" << toNumStr(Binary<T, op>::init()) << " -D "
                 << binOpName<op>() << " -D CPLX=" << af::iscplx<T>()
                 << " -D IS_FIRST=" << is_first;
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {iops_cl, ireduce_dim_cl};
         const int ker_lens[]   = {iops_cl_len, ireduce_dim_cl_len};
@@ -155,10 +152,7 @@ void ireduce_first_launcher(Param out, cl::Buffer *oidx, Param in,
                 << " -D init=" << toNumStr(Binary<T, op>::init()) << " -D "
                 << binOpName<op>() << " -D CPLX=" << af::iscplx<T>()
                 << " -D IS_FIRST=" << is_first;
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {iops_cl, ireduce_first_cl};
         const int ker_lens[]   = {iops_cl_len, ireduce_first_cl_len};

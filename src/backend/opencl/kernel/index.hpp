@@ -49,8 +49,7 @@ void index(Param out, const Param in, const IndexKernelParam_t& p,
         std::ostringstream options;
 
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {index_cl};
         const int ker_lens[]   = {index_cl_len};

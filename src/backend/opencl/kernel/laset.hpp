@@ -65,8 +65,7 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
                 << " -D BLK_X=" << BLK_X << " -D BLK_Y=" << BLK_Y
                 << " -D IS_CPLX=" << af::iscplx<T>();
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {laset_cl};
         const int ker_lens[]   = {laset_cl_len};

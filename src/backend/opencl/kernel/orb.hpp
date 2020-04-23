@@ -98,9 +98,7 @@ std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*, cl::Kernel*> getOrbKernels() {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D BLOCK_SIZE=" << ORB_THREADS_X;
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {orb_cl};
         const int ker_lens[]   = {orb_cl_len};

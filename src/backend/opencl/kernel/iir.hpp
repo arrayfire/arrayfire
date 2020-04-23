@@ -48,8 +48,7 @@ void iir(Param y, Param c, Param a) {
                 << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")"
                 << " -D T=" << dtype_traits<T>::getName();
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {iir_cl};
         const int ker_lens[]   = {iir_cl_len};
