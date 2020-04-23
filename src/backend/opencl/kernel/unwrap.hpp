@@ -52,10 +52,7 @@ void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
         options << " -D IS_COLUMN=" << is_column
                 << " -D ZERO=" << toNumStr(scalar<T>(0))
                 << " -D T=" << dtype_traits<T>::getName();
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         Program prog;
         buildProgram(prog, unwrap_cl, unwrap_cl_len, options.str());

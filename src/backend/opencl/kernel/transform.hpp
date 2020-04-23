@@ -72,9 +72,7 @@ void transform(Param out, const Param in, const Param tf, bool isInverse,
         } else {
             options << " -D IS_CPLX=0";
         }
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         options << " -D INTERP_ORDER=" << order;
         addInterpEnumOptions(options);

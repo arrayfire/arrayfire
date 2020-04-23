@@ -51,8 +51,7 @@ void susan(cl::Buffer* out, const cl::Buffer* in, const unsigned in_off,
                 << " -D BLOCK_X=" << SUSAN_THREADS_X
                 << " -D BLOCK_Y=" << SUSAN_THREADS_Y << " -D RADIUS=" << radius
                 << " -D RESPONSE";
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {susan_cl};
         const int ker_lens[]   = {susan_cl_len};
@@ -91,8 +90,7 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName() << " -D NONMAX";
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {susan_cl};
         const int ker_lens[]   = {susan_cl_len};

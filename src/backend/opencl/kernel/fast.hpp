@@ -53,9 +53,7 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
                 << " -D ARC_LENGTH=" << arc_length
                 << " -D NONMAX=" << static_cast<unsigned>(nonmax);
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         cl::Program prog;
         buildProgram(prog, fast_cl, fast_cl_len, options.str());

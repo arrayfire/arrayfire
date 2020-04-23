@@ -62,9 +62,7 @@ void resize(Param out, const Param in) {
         } else {
             options << " -D CPLX=0";
         }
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {resize_cl};
         const int ker_lens[]   = {resize_cl_len};

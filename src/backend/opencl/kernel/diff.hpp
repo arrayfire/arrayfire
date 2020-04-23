@@ -43,9 +43,7 @@ void diff(Param out, const Param in, const unsigned indims) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName() << " -D DIM=" << dim
                 << " -D isDiff2=" << isDiff2;
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {diff_cl};
         const int ker_lens[]   = {diff_cl_len};

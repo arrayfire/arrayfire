@@ -53,8 +53,7 @@ void laset_band(int m, int  n, int k,
             << " -D NB=" << NB
             << " -D IS_CPLX=" << af::iscplx<T>();
 
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char* ker_strs[] = {laset_band_cl};
         const int   ker_lens[] = {laset_band_cl_len};

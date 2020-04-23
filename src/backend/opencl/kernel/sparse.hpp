@@ -52,10 +52,7 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D reps=" << REPEAT;
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         Program prog;
         buildProgram(prog, coo2dense_cl, coo2dense_cl_len, options.str());
@@ -101,10 +98,7 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
         options << " -D THREADS=" << threads;
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {csr2dense_cl};
         const int ker_lens[]   = {csr2dense_cl_len};
@@ -159,9 +153,7 @@ void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
         if (std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value) {
             options << " -D IS_CPLX=1";
         } else {
@@ -206,10 +198,7 @@ void swapIndex(Param ovalues, Param oindex, const Param ivalues,
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         Program prog;
         buildProgram(prog, csr2coo_cl, csr2coo_cl_len, options.str());
@@ -247,10 +236,7 @@ void csr2coo(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {csr2coo_cl};
         const int ker_lens[]   = {csr2coo_cl_len};
@@ -308,10 +294,7 @@ void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     if (entry.prog == 0 && entry.ker == 0) {
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName();
-
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         Program prog;
         buildProgram(prog, csr2coo_cl, csr2coo_cl_len, options.str());

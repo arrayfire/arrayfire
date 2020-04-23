@@ -45,9 +45,7 @@ static void identity(Param out) {
         options << " -D T=" << dtype_traits<T>::getName() << " -D ONE=(T)("
                 << scalar_to_option(scalar<T>(1)) << ")"
                 << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
-        if (is_same<T, double>::value || is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         if (is_same<T, half>::value) { options << " -D USE_HALF"; }
 

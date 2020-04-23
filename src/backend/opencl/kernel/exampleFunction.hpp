@@ -74,9 +74,7 @@ void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
         // The following option is passed to kernel compilation
         // if template parameter T is double or complex double
         // to enable FP64 extension
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value) {
-            options << " -D USE_DOUBLE";
-        }
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {example_cl};
         const int ker_lens[]   = {example_cl_len};

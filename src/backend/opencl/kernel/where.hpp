@@ -47,8 +47,7 @@ static void get_out_idx(Buffer *out_data, Param &otmp, Param &rtmp, Param &in,
         options << " -D T=" << dtype_traits<T>::getName()
                 << " -D zero=" << toNumStr(scalar<T>(0))
                 << " -D CPLX=" << af::iscplx<T>();
-        if (std::is_same<T, double>::value || std::is_same<T, cdouble>::value)
-            options << " -D USE_DOUBLE";
+        options << getTypeBuildDefinition<T>();
 
         const char *ker_strs[] = {where_cl};
         const int ker_lens[]   = {where_cl_len};
