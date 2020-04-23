@@ -173,7 +173,6 @@ const string& getCacheDirectory() {
 #if defined(OS_WIN)
             getTemporaryDirectory() + "\\ArrayFire"
 #else
-            "/var/lib/arrayfire",
             getHomeDirectory() + "/.arrayfire",
             "/tmp/arrayfire"
 #endif
