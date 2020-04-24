@@ -499,3 +499,47 @@ TEST(ASSIGN, ISSUE_1127) {
 
     ASSERT_ARRAYS_EQ(out0, out1);
 }
+
+TEST(GFOR, ArithLoopWithNonUnitIncrSeq) {
+    const int nx    = 10;
+    const int ny    = 10;
+    const int batch = 10;
+    const int start = 0;
+    const int end   = 8;
+    const int incr  = 2;
+
+    array A = randu(nx, ny, batch);
+    array B = randu(nx, ny);
+    array C = constant(0, nx, ny, batch);
+    array G = constant(0, nx, ny, batch);
+
+    for (int i = 0; i < batch; i += incr) {
+        G(span, span, i) = A(span, span, i) * B;
+    }
+    gfor(seq ii, start, end, incr) {
+        C(span, span, ii) = A(span, span, ii) * B;
+    }
+    ASSERT_ARRAYS_EQ(C, G);
+}
+
+TEST(GFOR, MatmulLoopWithNonUnitIncrSeq) {
+    const int nx    = 10;
+    const int ny    = 10;
+    const int batch = 10;
+    const int start = 0;
+    const int end   = 8;
+    const int incr  = 2;
+
+    array A = randu(nx, ny, batch);
+    array B = randu(nx, ny);
+    array C = constant(0, nx, ny, batch);
+    array G = constant(0, nx, ny, batch);
+
+    for (int i = 0; i < batch; i += incr) {
+        G(span, span, i) = matmul(A(span, span, i), B);
+    }
+    gfor(seq ii, start, end, incr) {
+        C(span, span, ii) = matmul(A(span, span, ii), B);
+    }
+    ASSERT_ARRAYS_NEAR(C, G, 1E-03);
+}
