@@ -34,8 +34,21 @@ bool renameFile(const std::string& sourcePath, const std::string& destPath);
 
 bool isDirectoryWritable(const std::string& path);
 
+/// Return a string suitable for naming a temporary file. 
+/// 
+/// Every call to this function will generate a new string with a very low
+/// probability of colliding with past or future outputs of this function, 
+/// including calls from other threads or processes. The string contains
+/// no extension.
 std::string makeTempFilename();
 
+/// Return the FNV-1a hash of the provided bata.
+///
+/// \param[in] data Binary data to hash
+/// \param[in] byteSize Size of the data in bytes
+///
+/// \returns An unsigned integer representing the hash of the data
 std::size_t deterministicHash(const void* data, std::size_t byteSize);
 
+// This is just a wrapper around the above function.
 std::size_t deterministicHash(const std::string& data);
