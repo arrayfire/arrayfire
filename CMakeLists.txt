@@ -60,6 +60,7 @@ option(AF_BUILD_FORGE
 option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
 option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
 option(AF_WITH_STACKTRACE  "Add stacktraces to the error messages." ON)
+option(AF_CACHE_KERNELS_TO_DISK "Enable caching kernels to disk" ON)
 
 if(WIN32)
   set(AF_STACKTRACE_TYPE "Windbg" CACHE STRING "The type of backtrace features. Windbg(simple), None")
@@ -222,6 +223,10 @@ foreach(backend ${built_backends})
   if(AF_WITH_LOGGING)
     target_compile_definitions(${backend}
       PRIVATE AF_WITH_LOGGING)
+  endif()
+  if(AF_CACHE_KERNELS_TO_DISK)
+    target_compile_definitions(${backend}
+      PRIVATE AF_CACHE_KERNELS_TO_DISK)
   endif()
 endforeach()
 

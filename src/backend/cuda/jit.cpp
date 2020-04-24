@@ -23,7 +23,6 @@
 #include <af/dim4.hpp>
 
 #include <cstdio>
-#include <functional>
 #include <map>
 #include <stdexcept>
 #include <thread>
@@ -34,7 +33,6 @@ using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
 
-using std::hash;
 using std::map;
 using std::string;
 using std::stringstream;
@@ -62,10 +60,8 @@ static string getFuncName(const vector<Node *> &output_nodes,
         full_nodes[i]->genKerName(funcName, full_ids[i]);
     }
 
-    hash<string> hash_fn;
-
     hashName << "KER";
-    hashName << hash_fn(funcName.str());
+    hashName << deterministicHash(funcName.str());
     return hashName.str();
 }
 
@@ -218,10 +214,15 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
     Kernel entry{nullptr, nullptr};
 
     if (idx == kernelCaches[device].end()) {
-        string jit_ker = getKernelString(funcName, full_nodes, full_ids,
-                                         output_ids, is_linear);
-        saveKernel(funcName, jit_ker, ".cu");
-        entry = buildKernel(device, funcName, jit_ker, {}, true);
+#ifdef AF_CACHE_KERNELS_TO_DISK
+        entry = loadKernel(device, funcName);
+#endif
+        if (entry.prog == nullptr || entry.ker == nullptr) {
+            string jit_ker = getKernelString(funcName, full_nodes, full_ids,
+                                             output_ids, is_linear);
+            saveKernel(funcName, jit_ker, ".cu");
+            entry = buildKernel(device, funcName, jit_ker, {}, true);
+        }
         kernelCaches[device][funcName] = entry;
     } else {
         entry = idx->second;

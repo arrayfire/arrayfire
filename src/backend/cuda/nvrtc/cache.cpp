@@ -11,6 +11,7 @@
 
 #include <common/Logger.hpp>
 #include <common/internal_enums.hpp>
+#include <common/util.hpp>
 #include <device_manager.hpp>
 #include <kernel_headers/jit_cuh.hpp>
 #include <nvrtc_kernel_headers/Param_hpp.hpp>
@@ -43,6 +44,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <fstream>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -148,6 +150,17 @@ void Kernel::getScalar(T &out, const char *name) {
 
 template void Kernel::setScalar<int>(const char *, int);
 template void Kernel::getScalar<int>(int &, const char *);
+
+string getKernelCacheFilename(const int device, const string &nameExpr) {
+    const string mangledName = "KER" + to_string(deterministicHash(nameExpr));
+
+    const auto computeFlag = getComputeCapability(device);
+    const string computeVersion =
+        to_string(computeFlag.first) + to_string(computeFlag.second);
+
+    return mangledName + "_CU_" + computeVersion + "_AF_" +
+           to_string(AF_API_VERSION_CURRENT) + ".cubin";
+}
 
 Kernel buildKernel(const int device, const string &nameExpr,
                    const string &jit_ker, const vector<string> &opts,
@@ -313,6 +326,37 @@ Kernel buildKernel(const int device, const string &nameExpr,
     CU_CHECK(cuModuleGetFunction(&kernel, module, name));
     Kernel entry = {module, kernel};
 
+#ifdef AF_CACHE_KERNELS_TO_DISK
+    // save kernel in cache
+    const string &cacheDirectory = getCacheDirectory();
+    if (!cacheDirectory.empty()) {
+        const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
+                                 getKernelCacheFilename(device, nameExpr);
+        const string tempFile =
+            cacheDirectory + AF_PATH_SEPARATOR + makeTempFilename();
+
+        // compute CUBIN hash
+        const size_t cubinHash = deterministicHash(cubin, cubinSize);
+
+        // write kernel function name and CUBIN binary data
+        std::ofstream out(tempFile, std::ios::binary);
+        const size_t nameSize = strlen(name);
+        out.write(reinterpret_cast<const char *>(&nameSize), sizeof(nameSize));
+        out.write(name, nameSize);
+        out.write(reinterpret_cast<const char *>(&cubinHash),
+                  sizeof(cubinHash));
+        out.write(reinterpret_cast<const char *>(&cubinSize),
+                  sizeof(cubinSize));
+        out.write(static_cast<const char *>(cubin), cubinSize);
+        out.close();
+
+        // try to rename temporary file into final cache file, if this fails
+        // this means another thread has finished compiling this kernel before
+        // the current thread.
+        if (!renameFile(tempFile, cacheFile)) { removeFile(tempFile); }
+    }
+#endif
+
     CU_LINK_CHECK(cuLinkDestroy(linkState));
     NVRTC_CHECK(nvrtcDestroyProgram(&prog));
 
@@ -334,21 +378,81 @@ Kernel buildKernel(const int device, const string &nameExpr,
     return entry;
 }
 
+Kernel loadKernel(const int device, const string &nameExpr) {
+    const string &cacheDirectory = getCacheDirectory();
+    if (cacheDirectory.empty()) return Kernel{nullptr, nullptr};
+
+    const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
+                             getKernelCacheFilename(device, nameExpr);
+
+    CUmodule module   = nullptr;
+    CUfunction kernel = nullptr;
+
+    try {
+        std::ifstream in(cacheFile, std::ios::binary);
+        if (!in.is_open()) return Kernel{nullptr, nullptr};
+
+        in.exceptions(std::ios::failbit | std::ios::badbit);
+
+        size_t nameSize = 0;
+        in.read(reinterpret_cast<char *>(&nameSize), sizeof(nameSize));
+        string name;
+        name.resize(nameSize);
+        in.read(&name[0], nameSize);
+
+        size_t cubinHash = 0;
+        in.read(reinterpret_cast<char *>(&cubinHash), sizeof(cubinHash));
+        size_t cubinSize = 0;
+        in.read(reinterpret_cast<char *>(&cubinSize), sizeof(cubinSize));
+        vector<char> cubin(cubinSize);
+        in.read(cubin.data(), cubinSize);
+        in.close();
+
+        // check CUBIN binary data has not been corrupted
+        const size_t recomputedHash =
+            deterministicHash(cubin.data(), cubinSize);
+        if (recomputedHash != cubinHash) {
+            AF_ERROR("cached kernel data is corrupted", AF_ERR_LOAD_SYM);
+        }
+
+        CU_CHECK(cuModuleLoadDataEx(&module, cubin.data(), 0, 0, 0));
+        CU_CHECK(cuModuleGetFunction(&kernel, module, name.c_str()));
+
+        AF_TRACE("{{{:<30} : loaded from {} for {} }}", nameExpr, cacheFile,
+                 getDeviceProp(device).name);
+
+        return Kernel{module, kernel};
+    } catch (...) {
+        if (module != nullptr) { CU_CHECK(cuModuleUnload(module)); }
+        removeFile(cacheFile);
+        return Kernel{nullptr, nullptr};
+    }
+}
+
 kc_t &getCache(int device) {
     thread_local kc_t caches[DeviceManager::MAX_DEVICES];
     return caches[device];
+}
+
+void addKernelToCache(int device, const string &nameExpr, Kernel entry) {
+    getCache(device).emplace(nameExpr, entry);
 }
 
 Kernel findKernel(int device, const string &nameExpr) {
     kc_t &cache = getCache(device);
 
     auto iter = cache.find(nameExpr);
+    if (iter != cache.end()) return iter->second;
 
-    return (iter == cache.end() ? Kernel{0, 0} : iter->second);
-}
+#ifdef AF_CACHE_KERNELS_TO_DISK
+    Kernel kernel = loadKernel(device, nameExpr);
+    if (kernel.prog != nullptr && kernel.ker != nullptr) {
+        addKernelToCache(device, nameExpr, kernel);
+        return kernel;
+    }
+#endif
 
-void addKernelToCache(int device, const string &nameExpr, Kernel entry) {
-    getCache(device).emplace(nameExpr, entry);
+    return Kernel{nullptr, nullptr};
 }
 
 string getOpEnumStr(af_op_t val) {
@@ -597,7 +701,7 @@ Kernel getKernel(const string &nameExpr, const string &source,
     int device    = getActiveDeviceId();
     Kernel kernel = findKernel(device, tInstance);
 
-    if (kernel.prog == 0 || kernel.ker == 0) {
+    if (kernel.prog == nullptr || kernel.ker == nullptr) {
         kernel = buildKernel(device, tInstance, source, compileOpts);
         addKernelToCache(device, tInstance, kernel);
     }
