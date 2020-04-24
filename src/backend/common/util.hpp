@@ -35,9 +35,9 @@ bool renameFile(const std::string& sourcePath, const std::string& destPath);
 bool isDirectoryWritable(const std::string& path);
 
 /// Return a string suitable for naming a temporary file. 
-/// 
+///
 /// Every call to this function will generate a new string with a very low
-/// probability of colliding with past or future outputs of this function, 
+/// probability of colliding with past or future outputs of this function,
 /// including calls from other threads or processes. The string contains
 /// no extension.
 std::string makeTempFilename();
