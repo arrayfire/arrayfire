@@ -120,7 +120,7 @@ string getHomeDirectory() {
     home = getEnvVar("HOME");
     if (!home.empty()) return home;
 
-    home = getpwuid(getuid())->pw_dir;
+    return getpwuid(getuid())->pw_dir;
 }
 #endif
 
