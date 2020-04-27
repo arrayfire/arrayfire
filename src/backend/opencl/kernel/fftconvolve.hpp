@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <backend.hpp>
 #include <cache.hpp>
 #include <common/dispatch.hpp>
@@ -17,7 +19,10 @@
 #include <kernel_headers/fftconvolve_reorder.hpp>
 #include <memory.hpp>
 #include <program.hpp>
+#include <types.hpp>
 #include <af/defines.h>
+
+#include <type_traits>
 
 using cl::Buffer;
 using cl::EnqueueArgs;
@@ -67,13 +72,15 @@ void calcParamSizes(Param& sig_tmp, Param& filter_tmp, Param& packed,
     }
 }
 
-template<typename convT, typename T, bool isDouble, typename printT>
+template<typename convT, typename T>
 void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
                     AF_BATCH_KIND kind) {
+    constexpr bool IsTypeDouble = std::is_same<T, double>::value;
+
     std::string refName = std::string("pack_data_") +
                           std::string(dtype_traits<convT>::getName()) +
                           std::string(dtype_traits<T>::getName()) +
-                          std::to_string(isDouble);
+                          std::to_string(IsTypeDouble);
 
     int device          = getActiveDeviceId();
     kc_entry_t pdkEntry = kernelCache(device, refName);
@@ -82,13 +89,13 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
         std::ostringstream options;
 
         options << " -D T=" << dtype_traits<T>::getName();
+        options << getTypeBuildDefinition<T, convT>();
 
-        if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c32) {
+        auto ctDType = static_cast<af_dtype>(dtype_traits<convT>::af_type);
+        if (ctDType == c32) {
             options << " -D CONVT=float";
-        } else if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c64 &&
-                   isDouble) {
-            options << " -D CONVT=double"
-                    << " -D USE_DOUBLE";
+        } else if (ctDType == c64 && IsTypeDouble) {
+            options << " -D CONVT=double";
         }
 
         const char* ker_strs[] = {fftconvolve_pack_cl};
@@ -132,7 +139,7 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
     refName = std::string("pack_array_") +
               std::string(dtype_traits<convT>::getName()) +
               std::string(dtype_traits<T>::getName()) +
-              std::to_string(isDouble);
+              std::to_string(IsTypeDouble);
 
     kc_entry_t pakEntry = kernelCache(device, refName);
 
@@ -140,13 +147,13 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
         std::ostringstream options;
 
         options << " -D T=" << dtype_traits<T>::getName();
+        options << getTypeBuildDefinition<T, convT>();
 
-        if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c32) {
+        auto ctDType = static_cast<af_dtype>(dtype_traits<convT>::af_type);
+        if (ctDType == c32) {
             options << " -D CONVT=float";
-        } else if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c64 &&
-                   isDouble) {
-            options << " -D CONVT=double"
-                    << " -D USE_DOUBLE";
+        } else if (ctDType == c64 && IsTypeDouble) {
+            options << " -D CONVT=double";
         }
 
         const char* ker_strs[] = {fftconvolve_pack_cl};
@@ -171,13 +178,15 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename convT, typename T, bool isDouble, typename printT>
+template<typename convT, typename T>
 void complexMultiplyHelper(Param packed, Param sig, Param filter,
                            const int baseDim, AF_BATCH_KIND kind) {
+    constexpr bool IsTypeDouble = std::is_same<T, double>::value;
+
     std::string refName = std::string("complex_multiply_") +
                           std::string(dtype_traits<convT>::getName()) +
                           std::string(dtype_traits<T>::getName()) +
-                          std::to_string(isDouble);
+                          std::to_string(IsTypeDouble);
 
     int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
@@ -190,13 +199,13 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
                 << " -D AF_BATCH_LHS=" << (int)AF_BATCH_LHS
                 << " -D AF_BATCH_RHS=" << (int)AF_BATCH_RHS
                 << " -D AF_BATCH_SAME=" << (int)AF_BATCH_SAME;
+        options << getTypeBuildDefinition<T, convT>();
 
-        if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c32) {
+        auto ctDType = static_cast<af_dtype>(dtype_traits<convT>::af_type);
+        if (ctDType == c32) {
             options << " -D CONVT=float";
-        } else if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c64 &&
-                   isDouble) {
-            options << " -D CONVT=double"
-                    << " -D USE_DOUBLE";
+        } else if (ctDType == c64 && IsTypeDouble) {
+            options << " -D CONVT=double";
         }
 
         const char* ker_strs[] = {fftconvolve_multiply_cl};
@@ -234,15 +243,17 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
     CL_DEBUG_FINISH(getQueue());
 }
 
-template<typename T, typename convT, bool isDouble, bool roundOut, bool expand,
-         typename printT>
+template<typename T, typename convT>
 void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
-                         const int baseDim, AF_BATCH_KIND kind) {
+                         const int baseDim, AF_BATCH_KIND kind, bool expand) {
+    constexpr bool IsTypeDouble = std::is_same<T, double>::value;
+    constexpr bool RoundResult  = std::is_integral<T>::value;
+
     std::string refName = std::string("reorder_output_") +
                           std::string(dtype_traits<T>::getName()) +
                           std::string(dtype_traits<convT>::getName()) +
-                          std::to_string(isDouble) + std::to_string(roundOut) +
-                          std::to_string(expand);
+                          std::to_string(IsTypeDouble) +
+                          std::to_string(RoundResult) + std::to_string(expand);
 
     int device       = getActiveDeviceId();
     kc_entry_t entry = kernelCache(device, refName);
@@ -251,15 +262,15 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
         std::ostringstream options;
 
         options << " -D T=" << dtype_traits<T>::getName()
-                << " -D ROUND_OUT=" << (int)roundOut
+                << " -D ROUND_OUT=" << (int)RoundResult
                 << " -D EXPAND=" << (int)expand;
+        options << getTypeBuildDefinition<T, convT>();
 
-        if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c32) {
+        auto ctDType = static_cast<af_dtype>(dtype_traits<convT>::af_type);
+        if (ctDType == c32) {
             options << " -D CONVT=float";
-        } else if (static_cast<af_dtype>(dtype_traits<convT>::af_type) == c64 &&
-                   isDouble) {
-            options << " -D CONVT=double"
-                    << " -D USE_DOUBLE";
+        } else if (ctDType == c64 && IsTypeDouble) {
+            options << " -D CONVT=double";
         }
 
         const char* ker_strs[] = {fftconvolve_reorder_cl};

@@ -10,12 +10,16 @@
 #include <fftconvolve.hpp>
 
 #include <Array.hpp>
+#include <fft.hpp>
 #include <kernel/fftconvolve.hpp>
 #include <af/dim4.hpp>
 
-#include <fft.hpp>
+#include <type_traits>
 
 using af::dim4;
+using std::conditional;
+using std::is_integral;
+using std::is_same;
 
 namespace cuda {
 
@@ -43,10 +47,15 @@ dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
     return dim4(pd[0], pd[1], pd[2], pd[3]);
 }
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
-         dim_t baseDim>
+template<typename T, dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind) {
+    using convT =
+        typename conditional<is_integral<T>::value || is_same<T, float>::value,
+                             float, double>::type;
+    using cT = typename conditional<is_same<convT, float>::value, cfloat,
+                                    cdouble>::type;
+
     const dim4& sDims = signal.dims();
     const dim4& fDims = filter.dims();
 
@@ -82,47 +91,37 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     if (kind == AF_BATCH_RHS) {
         fft_inplace<cT, baseDim, false>(filter_packed);
-        if (expand) {
-            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true>(
-                out, filter_packed, signal, filter);
-        } else {
-            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(
-                out, filter_packed, signal, filter);
-        }
+        kernel::reorderOutputHelper<T, cT>(out, filter_packed, signal, filter,
+                                           expand, baseDim);
     } else {
         fft_inplace<cT, baseDim, false>(signal_packed);
-        if (expand) {
-            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true>(
-                out, signal_packed, signal, filter);
-        } else {
-            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(
-                out, signal_packed, signal, filter);
-        }
+        kernel::reorderOutputHelper<T, cT>(out, signal_packed, signal, filter,
+                                           expand, baseDim);
     }
 
     return out;
 }
 
-#define INSTANTIATE(T, convT, cT, isDouble, roundOut)                      \
-    template Array<T> fftconvolve<T, convT, cT, isDouble, roundOut, 1>(    \
+#define INSTANTIATE(T)                                                     \
+    template Array<T> fftconvolve<T, 1>(                                   \
         Array<T> const& signal, Array<T> const& filter, const bool expand, \
         AF_BATCH_KIND kind);                                               \
-    template Array<T> fftconvolve<T, convT, cT, isDouble, roundOut, 2>(    \
+    template Array<T> fftconvolve<T, 2>(                                   \
         Array<T> const& signal, Array<T> const& filter, const bool expand, \
         AF_BATCH_KIND kind);                                               \
-    template Array<T> fftconvolve<T, convT, cT, isDouble, roundOut, 3>(    \
+    template Array<T> fftconvolve<T, 3>(                                   \
         Array<T> const& signal, Array<T> const& filter, const bool expand, \
         AF_BATCH_KIND kind);
 
-INSTANTIATE(double, double, cdouble, true, false)
-INSTANTIATE(float, float, cfloat, false, false)
-INSTANTIATE(uint, float, cfloat, false, true)
-INSTANTIATE(int, float, cfloat, false, true)
-INSTANTIATE(uchar, float, cfloat, false, true)
-INSTANTIATE(char, float, cfloat, false, true)
-INSTANTIATE(ushort, float, cfloat, false, true)
-INSTANTIATE(short, float, cfloat, false, true)
-INSTANTIATE(uintl, float, cfloat, false, true)
-INSTANTIATE(intl, float, cfloat, false, true)
+INSTANTIATE(double)
+INSTANTIATE(float)
+INSTANTIATE(uint)
+INSTANTIATE(int)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(uintl)
+INSTANTIATE(intl)
+INSTANTIATE(ushort)
+INSTANTIATE(short)
 
 }  // namespace cuda
