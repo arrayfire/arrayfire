@@ -156,11 +156,13 @@ void complexMultiply(Param<T> packed, const af::dim4 sig_dims,
     }
 }
 
-template<typename To, typename Ti, bool roundOut>
+template<typename To, typename Ti>
 void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                    const Ti* in_ptr, const af::dim4& id, const af::dim4& is,
                    const af::dim4& fd, const int half_di0, const int baseDim,
                    const int fftScale, const bool expand) {
+    constexpr bool RoundResult = std::is_integral<To>::value;
+
     UNUSED(id);
     for (int d3 = 0; d3 < (int)od[3]; d3++) {
         for (int d2 = 0; d2 < (int)od[2]; d2++) {
@@ -187,7 +189,7 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                     if (id0 < half_di0) {
                         // Copy top elements
                         int iidx = id3 + id2 + id1 + id0 * 2;
-                        if (roundOut)
+                        if (RoundResult)
                             out_ptr[oidx] =
                                 (To)roundf((float)(in_ptr[iidx] / fftScale));
                         else
@@ -196,7 +198,7 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                         // Add signal and filter elements to central part
                         int iidx1 = id3 + id2 + id1 + id0 * 2;
                         int iidx2 = id3 + id2 + id1 + (id0 - half_di0) * 2 + 1;
-                        if (roundOut)
+                        if (RoundResult)
                             out_ptr[oidx] = (To)roundf(
                                 (float)((in_ptr[iidx1] + in_ptr[iidx2]) /
                                         fftScale));
@@ -207,7 +209,7 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                         // Copy bottom elements
                         const int iidx =
                             id3 + id2 + id1 + (id0 - half_di0) * 2 + 1;
-                        if (roundOut)
+                        if (RoundResult)
                             out_ptr[oidx] =
                                 (To)roundf((float)(in_ptr[iidx] / fftScale));
                         else
@@ -219,12 +221,16 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
     }
 }
 
-template<typename T, typename convT, bool roundOut, int baseDim>
+template<typename T, typename convT, int baseDim>
 void reorder(Param<T> out, Param<convT> packed, CParam<T> filter,
              const dim_t sig_half_d0, const dim_t fftScale,
              const dim4 sig_tmp_dims, const dim4 sig_tmp_strides,
              const dim4 filter_tmp_dims, const dim4 filter_tmp_strides,
              bool expand, AF_BATCH_KIND kind) {
+    // TODO(pradeep) check if we can avoid convT template parameter also
+    // using convT = typename std::conditional<std::is_integral<T>::value,
+    // float, double>::type;
+
     T* out_ptr                 = out.get();
     const af::dim4 out_dims    = out.dims();
     const af::dim4 out_strides = out.strides();
@@ -237,15 +243,14 @@ void reorder(Param<T> out, Param<convT> packed, CParam<T> filter,
 
     // Reorder the output
     if (kind == AF_BATCH_RHS) {
-        reorderHelper<T, convT, roundOut>(
-            out_ptr, out_dims, out_strides, filter_tmp_ptr, filter_tmp_dims,
-            filter_tmp_strides, filter_dims, sig_half_d0, baseDim, fftScale,
-            expand);
+        reorderHelper<T, convT>(out_ptr, out_dims, out_strides, filter_tmp_ptr,
+                                filter_tmp_dims, filter_tmp_strides,
+                                filter_dims, sig_half_d0, baseDim, fftScale,
+                                expand);
     } else {
-        reorderHelper<T, convT, roundOut>(
-            out_ptr, out_dims, out_strides, sig_tmp_ptr, sig_tmp_dims,
-            sig_tmp_strides, filter_dims, sig_half_d0, baseDim, fftScale,
-            expand);
+        reorderHelper<T, convT>(out_ptr, out_dims, out_strides, sig_tmp_ptr,
+                                sig_tmp_dims, sig_tmp_strides, filter_dims,
+                                sig_half_d0, baseDim, fftScale, expand);
     }
 }
 

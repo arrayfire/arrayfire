@@ -10,12 +10,20 @@
 #include <fftconvolve.hpp>
 
 #include <Array.hpp>
-#include <err_opencl.hpp>
 #include <fft.hpp>
 #include <kernel/fftconvolve.hpp>
 #include <af/dim4.hpp>
 
+#include <cmath>
+#include <type_traits>
+#include <vector>
+
 using af::dim4;
+using std::ceil;
+using std::conditional;
+using std::is_integral;
+using std::is_same;
+using std::vector;
 
 namespace opencl {
 
@@ -30,7 +38,7 @@ static dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
     // Pack both signal and filter on same memory array, this will ensure
     // better use of batched cuFFT capabilities
     pd[0] = nextpow2(static_cast<unsigned>(
-        static_cast<int>(std::ceil(i1d[0] / 2.f)) + i2d[0] - 1));
+        static_cast<int>(ceil(i1d[0] / 2.f)) + i2d[0] - 1));
 
     for (dim_t k = 1; k < baseDim; k++) {
         pd[k] = nextpow2(static_cast<unsigned>(i1d[k] + i2d[k] - 1));
@@ -47,10 +55,15 @@ static dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2,
     return dim4(pd[0], pd[1], pd[2], pd[3]);
 }
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
-         dim_t baseDim>
+template<typename T, dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind) {
+    using convT =
+        typename conditional<is_integral<T>::value || is_same<T, float>::value,
+                             float, double>::type;
+    using cT = typename conditional<is_same<convT, float>::value, cfloat,
+                                    cdouble>::type;
+
     const dim4& sDims = signal.dims();
     const dim4& fDims = filter.dims();
 
@@ -73,17 +86,13 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     const dim4 pDims = calcPackedSize<T>(signal, filter, baseDim);
     Array<cT> packed = createEmptyArray<cT>(pDims);
 
-    kernel::packDataHelper<cT, T, isDouble, convT>(packed, signal, filter,
-                                                   baseDim, kind);
-
+    kernel::packDataHelper<cT, T>(packed, signal, filter, baseDim, kind);
     fft_inplace<cT, baseDim, true>(packed);
-
-    kernel::complexMultiplyHelper<cT, T, isDouble, convT>(
-        packed, signal, filter, baseDim, kind);
+    kernel::complexMultiplyHelper<cT, T>(packed, signal, filter, baseDim, kind);
 
     // Compute inverse FFT only on complex-multiplied data
     if (kind == AF_BATCH_RHS) {
-        std::vector<af_seq> seqs;
+        vector<af_seq> seqs;
         for (dim_t k = 0; k < 4; k++) {
             if (k < baseDim) {
                 seqs.push_back({0., static_cast<double>(pDims[k] - 1), 1.});
@@ -97,7 +106,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
         Array<cT> subPacked = createSubArray<cT>(packed, seqs);
         fft_inplace<cT, baseDim, false>(subPacked);
     } else {
-        std::vector<af_seq> seqs;
+        vector<af_seq> seqs;
         for (dim_t k = 0; k < 4; k++) {
             if (k < baseDim) {
                 seqs.push_back({0., static_cast<double>(pDims[k]) - 1, 1.});
@@ -114,37 +123,31 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    if (expand) {
-        kernel::reorderOutputHelper<T, cT, isDouble, roundOut, true, convT>(
-            out, packed, signal, filter, baseDim, kind);
-    } else {
-        kernel::reorderOutputHelper<T, cT, isDouble, roundOut, false, convT>(
-            out, packed, signal, filter, baseDim, kind);
-    }
-
+    kernel::reorderOutputHelper<T, cT>(out, packed, signal, filter, baseDim,
+                                       kind, expand);
     return out;
 }
 
-#define INSTANTIATE(T, convT, cT, isDouble, roundOut)                      \
-    template Array<T> fftconvolve<T, convT, cT, isDouble, roundOut, 1>(    \
+#define INSTANTIATE(T)                                                     \
+    template Array<T> fftconvolve<T, 1>(                                   \
         Array<T> const& signal, Array<T> const& filter, const bool expand, \
         AF_BATCH_KIND kind);                                               \
-    template Array<T> fftconvolve<T, convT, cT, isDouble, roundOut, 2>(    \
+    template Array<T> fftconvolve<T, 2>(                                   \
         Array<T> const& signal, Array<T> const& filter, const bool expand, \
         AF_BATCH_KIND kind);                                               \
-    template Array<T> fftconvolve<T, convT, cT, isDouble, roundOut, 3>(    \
+    template Array<T> fftconvolve<T, 3>(                                   \
         Array<T> const& signal, Array<T> const& filter, const bool expand, \
         AF_BATCH_KIND kind);
 
-INSTANTIATE(double, double, cdouble, true, false)
-INSTANTIATE(float, float, cfloat, false, false)
-INSTANTIATE(uint, float, cfloat, false, true)
-INSTANTIATE(int, float, cfloat, false, true)
-INSTANTIATE(uchar, float, cfloat, false, true)
-INSTANTIATE(char, float, cfloat, false, true)
-INSTANTIATE(ushort, float, cfloat, false, true)
-INSTANTIATE(short, float, cfloat, false, true)
-INSTANTIATE(uintl, float, cfloat, false, true)
-INSTANTIATE(intl, float, cfloat, false, true)
+INSTANTIATE(double)
+INSTANTIATE(float)
+INSTANTIATE(uint)
+INSTANTIATE(int)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(uintl)
+INSTANTIATE(intl)
+INSTANTIATE(ushort)
+INSTANTIATE(short)
 
 }  // namespace opencl

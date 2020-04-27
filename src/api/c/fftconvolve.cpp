@@ -6,6 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+
 #include <arith.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
@@ -17,6 +18,10 @@
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/signal.h>
+
+#include <algorithm>
+#include <type_traits>
+#include <vector>
 
 using af::dim4;
 using detail::arithOp;
@@ -32,14 +37,23 @@ using detail::uchar;
 using detail::uint;
 using detail::uintl;
 using detail::ushort;
+using std::conditional;
+using std::is_integral;
+using std::is_same;
 using std::max;
 using std::swap;
 using std::vector;
 
-template<typename T, typename convT, typename cT, int baseDim>
+template<typename T, int baseDim>
 static inline af_array fftconvolve_fallback(const af_array signal,
                                             const af_array filter,
                                             bool expand) {
+    using convT =
+        typename conditional<is_integral<T>::value || is_same<T, float>::value,
+                             float, double>::type;
+    using cT = typename conditional<is_same<convT, float>::value, cfloat,
+                                    cdouble>::type;
+
     const Array<cT> S = castArray<cT>(signal);
     const Array<cT> F = castArray<cT>(filter);
     const dim4 &sdims = S.dims();
@@ -103,14 +117,13 @@ static inline af_array fftconvolve_fallback(const af_array signal,
     }
 }
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
-         dim_t baseDim>
+template<typename T, dim_t baseDim>
 inline static af_array fftconvolve(const af_array &s, const af_array &f,
                                    const bool expand, AF_BATCH_KIND kind) {
     if (kind == AF_BATCH_DIFF) {
-        return fftconvolve_fallback<T, convT, cT, baseDim>(s, f, expand);
+        return fftconvolve_fallback<T, baseDim>(s, f, expand);
     } else {
-        return getHandle(fftconvolve<T, convT, cT, isDouble, roundOut, baseDim>(
+        return getHandle(fftconvolve<T, baseDim>(
             getArray<T>(s), castArray<T>(f), expand, kind));
     }
 }
@@ -149,73 +162,68 @@ af_err fft_convolve(af_array *out, const af_array signal, const af_array filter,
         const ArrayInfo &sInfo = getInfo(signal);
         const ArrayInfo &fInfo = getInfo(filter);
 
-        af_dtype stype = sInfo.getType();
+        af_dtype signalType = sInfo.getType();
+        af_dtype filterType = fInfo.getType();
 
         const dim4 &sdims = sInfo.dims();
         const dim4 &fdims = fInfo.dims();
 
         AF_BATCH_KIND convBT = identifyBatchKind<baseDim>(sdims, fdims);
 
+        ARG_ASSERT(1, (signalType == filterType));
         ARG_ASSERT(1, (convBT != AF_BATCH_UNSUPPORTED));
 
         af_array output;
-        switch (stype) {
+        switch (signalType) {
             case f64:
-                output =
-                    fftconvolve<double, double, cdouble, true, false, baseDim>(
-                        signal, filter, expand, convBT);
+                output = fftconvolve<double, baseDim>(signal, filter, expand,
+                                                      convBT);
                 break;
             case f32:
                 output =
-                    fftconvolve<float, float, cfloat, false, false, baseDim>(
-                        signal, filter, expand, convBT);
+                    fftconvolve<float, baseDim>(signal, filter, expand, convBT);
                 break;
             case u32:
-                output = fftconvolve<uint, float, cfloat, false, true, baseDim>(
-                    signal, filter, expand, convBT);
+                output =
+                    fftconvolve<uint, baseDim>(signal, filter, expand, convBT);
                 break;
             case s32:
-                output = fftconvolve<int, float, cfloat, false, true, baseDim>(
-                    signal, filter, expand, convBT);
+                output =
+                    fftconvolve<int, baseDim>(signal, filter, expand, convBT);
                 break;
             case u64:
                 output =
-                    fftconvolve<uintl, float, cfloat, false, true, baseDim>(
-                        signal, filter, expand, convBT);
+                    fftconvolve<uintl, baseDim>(signal, filter, expand, convBT);
                 break;
             case s64:
-                output = fftconvolve<intl, float, cfloat, false, true, baseDim>(
-                    signal, filter, expand, convBT);
+                output =
+                    fftconvolve<intl, baseDim>(signal, filter, expand, convBT);
                 break;
             case u16:
-                output =
-                    fftconvolve<ushort, float, cfloat, false, true, baseDim>(
-                        signal, filter, expand, convBT);
+                output = fftconvolve<ushort, baseDim>(signal, filter, expand,
+                                                      convBT);
                 break;
             case s16:
                 output =
-                    fftconvolve<short, float, cfloat, false, true, baseDim>(
-                        signal, filter, expand, convBT);
+                    fftconvolve<short, baseDim>(signal, filter, expand, convBT);
                 break;
             case u8:
                 output =
-                    fftconvolve<uchar, float, cfloat, false, true, baseDim>(
-                        signal, filter, expand, convBT);
+                    fftconvolve<uchar, baseDim>(signal, filter, expand, convBT);
                 break;
             case b8:
-                output = fftconvolve<char, float, cfloat, false, true, baseDim>(
-                    signal, filter, expand, convBT);
+                output =
+                    fftconvolve<char, baseDim>(signal, filter, expand, convBT);
                 break;
             case c32:
-                output = fftconvolve_fallback<cfloat, cfloat, cfloat, baseDim>(
-                    signal, filter, expand);
+                output = fftconvolve_fallback<cfloat, baseDim>(signal, filter,
+                                                               expand);
                 break;
             case c64:
-                output =
-                    fftconvolve_fallback<cdouble, cdouble, cdouble, baseDim>(
-                        signal, filter, expand);
+                output = fftconvolve_fallback<cdouble, baseDim>(signal, filter,
+                                                                expand);
                 break;
-            default: TYPE_ERROR(1, stype);
+            default: TYPE_ERROR(1, signalType);
         }
         swap(*out, output);
     }
