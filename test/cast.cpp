@@ -9,9 +9,11 @@
 
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <af/algorithm.h>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
+#include <af/random.h>
 
 using af::cdouble;
 using af::cfloat;

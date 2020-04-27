@@ -49,7 +49,7 @@ void regionsTest(string pTestFile, af_connectivity connectivity,
     vector<dim4> numDims;
     vector<vector<uchar> > in;
     vector<vector<T> > tests;
-    readTests<uchar, T, unsigned>(pTestFile, numDims, in, tests);
+    readTests<uchar, T, int>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
 
@@ -112,8 +112,8 @@ TEST(Regions, CPP) {
     vector<dim4> numDims;
     vector<vector<float> > in;
     vector<vector<float> > tests;
-    readTests<float, float, unsigned>(
-        string(TEST_DIR "/regions/regions_8x8_4.test"), numDims, in, tests);
+    readTests<float, float, int>(string(TEST_DIR "/regions/regions_8x8_4.test"),
+                                 numDims, in, tests);
 
     dim4 idims = numDims[0];
     array input(idims, (float*)&(in[0].front()));

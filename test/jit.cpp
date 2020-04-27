@@ -7,13 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#define GTEST_LINKED_AS_SHARED_LIBRARY 1
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
+#include <af/algorithm.h>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
+#include <af/device.h>
+#include <af/gfor.h>
+#include <af/random.h>
 
+#include <numeric>
 #include <tuple>
 
 using af::array;
