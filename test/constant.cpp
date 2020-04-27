@@ -10,9 +10,11 @@
 #include <gtest/gtest.h>
 #include <half.hpp>
 #include <testHelpers.hpp>
+#include <af/algorithm.h>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
+#include <af/exception.h>
 
 using af::array;
 using af::cdouble;

@@ -114,8 +114,8 @@ TYPED_TEST(Var, DimCPPSmall) {
     vector<vector<TypeParam> > in;
     vector<vector<outType> > tests;
 
-    readTests<TypeParam, outType, double>(TEST_DIR "/var/var.data", numDims, in,
-                                          tests);
+    readTests<TypeParam, outType, float>(TEST_DIR "/var/var.data", numDims, in,
+                                         tests);
 
     for (size_t i = 0; i < in.size(); i++) {
         array input(numDims[i], &in[i].front(), afHost);

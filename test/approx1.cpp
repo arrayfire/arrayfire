@@ -7,10 +7,19 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/algorithm.h>
+#include <af/arith.h>
 #include <af/array.h>
+#include <af/blas.h>
 #include <af/complex.h>
+#include <af/constants.h>
+#include <af/data.h>
+#include <af/defines.h>
 #include <af/dim4.hpp>
+#include <af/exception.h>
+#include <af/gfor.h>
 #include <af/index.h>
+#include <af/random.h>
 #include <af/signal.h>
 #include <af/traits.hpp>
 

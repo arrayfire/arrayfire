@@ -7,11 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/data.h>
-
 #include <gtest/gtest.h>
 #include <half.hpp>
 #include <testHelpers.hpp>
+#include <af/algorithm.h>
+#include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>

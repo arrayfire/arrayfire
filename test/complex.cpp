@@ -12,6 +12,8 @@
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
+#include <af/device.h>
+#include <af/random.h>
 
 using std::endl;
 using namespace af;
