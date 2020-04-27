@@ -18,6 +18,7 @@
 
 #include <array>
 #include <cmath>
+#include <type_traits>
 
 using af::dim4;
 using std::array;
@@ -25,10 +26,15 @@ using std::ceil;
 
 namespace cpu {
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut,
-         dim_t baseDim>
+template<typename T, dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind) {
+    using convT = typename std::conditional<std::is_integral<T>::value ||
+                                                std::is_same<T, float>::value,
+                                            float, double>::type;
+
+    constexpr bool IsTypeDouble = std::is_same<T, double>::value;
+
     const dim4& sd = signal.dims();
     const dim4& fd = filter.dims();
     dim_t fftScale = 1;
@@ -86,7 +92,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
         const dim4 packedDims     = packed.dims();
         const dim4 packed_strides = packed.strides();
         // Compute forward FFT
-        if (isDouble) {
+        if (IsTypeDouble) {
             fftw_plan plan = fftw_plan_many_dft(
                 baseDim, fftDims.data(), packedDims[baseDim],
                 reinterpret_cast<fftw_complex*>(packed.get()), nullptr,
@@ -123,7 +129,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
         const dim4 packedDims     = packed.dims();
         const dim4 packed_strides = packed.strides();
         // Compute inverse FFT
-        if (isDouble) {
+        if (IsTypeDouble) {
             fftw_plan plan = fftw_plan_many_dft(
                 baseDim, fftDims.data(), packedDims[baseDim],
                 reinterpret_cast<fftw_complex*>(packed.get()), nullptr,
@@ -168,34 +174,33 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    getQueue().enqueue(kernel::reorder<T, convT, roundOut, baseDim>, out,
-                       packed, filter, sig_half_d0, fftScale, paddedSigDims,
-                       paddedSigStrides, paddedFilDims, paddedFilStrides,
-                       expand, kind);
+    getQueue().enqueue(kernel::reorder<T, convT, baseDim>, out, packed, filter,
+                       sig_half_d0, fftScale, paddedSigDims, paddedSigStrides,
+                       paddedFilDims, paddedFilStrides, expand, kind);
 
     return out;
 }
 
-#define INSTANTIATE(T, convT, cT, isDouble, roundOut)                      \
-    template Array<T> fftconvolve<T, convT, cT, isDouble, roundOut, 1>(    \
+#define INSTANTIATE(T)                                                     \
+    template Array<T> fftconvolve<T, 1>(                                   \
         Array<T> const& signal, Array<T> const& filter, const bool expand, \
         AF_BATCH_KIND kind);                                               \
-    template Array<T> fftconvolve<T, convT, cT, isDouble, roundOut, 2>(    \
+    template Array<T> fftconvolve<T, 2>(                                   \
         Array<T> const& signal, Array<T> const& filter, const bool expand, \
         AF_BATCH_KIND kind);                                               \
-    template Array<T> fftconvolve<T, convT, cT, isDouble, roundOut, 3>(    \
+    template Array<T> fftconvolve<T, 3>(                                   \
         Array<T> const& signal, Array<T> const& filter, const bool expand, \
         AF_BATCH_KIND kind);
 
-INSTANTIATE(double, double, cdouble, true, false)
-INSTANTIATE(float, float, cfloat, false, false)
-INSTANTIATE(uint, float, cfloat, false, true)
-INSTANTIATE(int, float, cfloat, false, true)
-INSTANTIATE(uchar, float, cfloat, false, true)
-INSTANTIATE(char, float, cfloat, false, true)
-INSTANTIATE(uintl, float, cfloat, false, true)
-INSTANTIATE(intl, float, cfloat, false, true)
-INSTANTIATE(ushort, float, cfloat, false, true)
-INSTANTIATE(short, float, cfloat, false, true)
+INSTANTIATE(double)
+INSTANTIATE(float)
+INSTANTIATE(uint)
+INSTANTIATE(int)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(uintl)
+INSTANTIATE(intl)
+INSTANTIATE(ushort)
+INSTANTIATE(short)
 
 }  // namespace cpu

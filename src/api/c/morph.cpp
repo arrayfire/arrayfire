@@ -80,7 +80,7 @@ static inline af_array morph(const af_array &input, const af_array &mask) {
                          static_cast<dim_t>(seDims[1] % 2 == 0), 0, 0},
                         {0, 0, 0, 0}, AF_PAD_ZERO);
 
-    auto fftConv = fftconvolve<float, float, cfloat, false, false, 2>;
+    auto fftConv = fftconvolve<float, 2>;
 
     if (isDilation) {
         Array<float> dft =

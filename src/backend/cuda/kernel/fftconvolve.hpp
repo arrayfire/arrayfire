@@ -101,13 +101,15 @@ void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, typename convT, bool roundOut, int baseDim, bool expand>
+template<typename T, typename convT>
 void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
-                         CParam<T> filter) {
+                         CParam<T> filter, bool expand, int baseDim) {
+    constexpr bool RoundResult = std::is_integral<T>::value;
+
     auto reorderOut =
         getKernel("cuda::reorderOutput", fftConvSource(),
                   {TemplateTypename<T>(), TemplateTypename<convT>(),
-                   TemplateArg(expand), TemplateArg(roundOut)});
+                   TemplateArg(expand), TemplateArg(RoundResult)});
 
     dim_t *sd    = sig.dims;
     int fftScale = 1;
