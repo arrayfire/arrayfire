@@ -13,6 +13,7 @@
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
+#include <af/random.h>
 
 using af::array;
 using af::dtype_traits;

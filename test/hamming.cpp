@@ -50,7 +50,7 @@ void hammingMatcherTest(string pTestFile, int feat_dim) {
     vector<vector<uint> > in32;
     vector<vector<uint> > tests;
 
-    readTests<uint, uint, uint>(pTestFile, numDims, in32, tests);
+    readTests<uint, uint, int>(pTestFile, numDims, in32, tests);
 
     vector<vector<T> > in(in32.size());
     for (size_t i = 0; i < in32[0].size(); i++) in[0].push_back((T)in32[0][i]);
@@ -124,7 +124,7 @@ TEST(HammingMatcher, CPP) {
     vector<vector<uint> > in;
     vector<vector<uint> > tests;
 
-    readTests<uint, uint, uint>(
+    readTests<uint, uint, int>(
         TEST_DIR "/hamming/hamming_500_5000_dim0_u32.test", numDims, in, tests);
 
     dim4 qDims = numDims[0];
