@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <err_cuda.hpp>
 #include <fftconvolve.hpp>
+
+#include <Array.hpp>
 #include <kernel/fftconvolve.hpp>
 #include <af/dim4.hpp>
 
