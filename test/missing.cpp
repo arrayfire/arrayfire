@@ -12,6 +12,9 @@
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
+#include <af/image.h>
+#include <af/lapack.h>
+#include <af/random.h>
 
 using namespace af;
 

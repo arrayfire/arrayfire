@@ -10,6 +10,10 @@
 #include <testHelpers.hpp>
 #include <af/arith.h>
 #include <af/data.h>
+#include <af/device.h>
+#include <af/exception.h>
+#include <af/random.h>
+
 #include <complex>
 
 // This makes the macros cleaner

@@ -21,6 +21,7 @@ if(NOT TARGET gtest)
   if(WIN32)
     set(gtest_force_shared_crt ON
         CACHE INTERNAL "Required so that the libs Runtime is not set to MT DLL")
+    set(BUILD_SHARED_LIBS OFF)
   endif()
 
   add_subdirectory(gtest EXCLUDE_FROM_ALL)
@@ -70,6 +71,35 @@ if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
 endif(AF_BUILD_UNIFIED)
 
+
+add_library(arrayfire_test OBJECT
+  testHelpers.hpp
+  arrayfire_test.cpp)
+
+target_include_directories(arrayfire_test
+  PRIVATE
+    .
+    ../include
+    ../build/include
+    ../extern/half/include
+    mmio
+    gtest/googletest/include)
+
+if(WIN32)
+  target_compile_options(arrayfire_test
+    PRIVATE
+      /bigobj
+      /EHsc)
+  target_compile_definitions(arrayfire_test
+    PRIVATE
+      WIN32_LEAN_AND_MEAN
+      NOMINMAX)
+endif()
+
+target_compile_definitions(arrayfire_test
+  PRIVATE
+    USE_MTX)
+
 # Creates tests for all backends
 #
 # Creates a standard test for all backends. Most of the time you only need to
@@ -97,7 +127,7 @@ function(make_test)
       continue()
     endif()
     set(target "test_${src_name}_${backend}")
-    add_executable(${target} ${mt_args_SRC})
+    add_executable(${target} ${mt_args_SRC} $<TARGET_OBJECTS:arrayfire_test>)
     target_include_directories(${target}
       PRIVATE
         ${ArrayFire_SOURCE_DIR}/extern/half/include
@@ -106,9 +136,8 @@ function(make_test)
       )
     target_link_libraries(${target}
       PRIVATE
-        gtest
-        gtest_main
         ${mt_args_LIBRARIES}
+        gtest
       )
 
     if(${backend} STREQUAL "unified")
@@ -139,8 +168,8 @@ function(make_test)
         AF_$<UPPER_CASE:${backend}>
         ${mt_args_DEFINITIONS}
       )
+    target_link_libraries(${target} PRIVATE mmio)
     if(AF_TEST_WITH_MTX_FILES AND ${mt_args_USE_MMIO})
-      target_link_libraries(${target} PRIVATE mmio)
       add_dependencies(${target} mtxDownloads)
       target_compile_definitions(${target}
         PRIVATE
@@ -179,7 +208,6 @@ make_test(SRC arrayio.cpp)
 make_test(SRC assign.cpp CXX11)
 make_test(SRC backend.cpp CXX11)
 make_test(SRC basic.cpp)
-make_test(SRC basic_c.c)
 make_test(SRC bilateral.cpp)
 make_test(SRC binary.cpp CXX11)
 make_test(SRC blas.cpp)
@@ -234,7 +262,6 @@ make_test(SRC iterative_deconv.cpp)
 make_test(SRC jit.cpp CXX11)
 make_test(SRC join.cpp)
 make_test(SRC lu_dense.cpp SERIAL)
-make_test(SRC main.cpp)
 #make_test(manual_memory_test.cpp)
 make_test(SRC match_template.cpp)
 make_test(SRC math.cpp CXX11)
@@ -312,6 +339,21 @@ make_test(SRC where.cpp)
 make_test(SRC wrap.cpp)
 make_test(SRC write.cpp)
 make_test(SRC ycbcr_rgb.cpp)
+
+foreach(backend ${enabled_backends})
+  set(target "test_basic_c_${backend}")
+  add_executable(${target} basic_c.c)
+  if(${backend} STREQUAL "unified")
+    target_link_libraries(${target}
+      PRIVATE
+      ArrayFire::af)
+  else()
+    target_link_libraries(${target}
+      PRIVATE
+      ArrayFire::af${backend})
+  endif()
+  add_test(NAME ${target} COMMAND ${target})
+endforeach()
 
 if(AF_TEST_WITH_MTX_FILES)
   make_test(SRC matrixmarket.cpp USE_MMIO)
