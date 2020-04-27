@@ -7,10 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <fftconvolve.hpp>
+
 #include <Array.hpp>
 #include <err_opencl.hpp>
 #include <fft.hpp>
-#include <fftconvolve.hpp>
 #include <kernel/fftconvolve.hpp>
 #include <af/dim4.hpp>
 
