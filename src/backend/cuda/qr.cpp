@@ -7,20 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/err_common.hpp>
 #include <qr.hpp>
 
 #include <copy.hpp>
 #include <cublas_v2.h>
 #include <cusolverDn.hpp>
 #include <identity.hpp>
+#include <kernel/triangle.hpp>
+#include <math.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
-
-#include <common/err_common.hpp>
-#include <math.hpp>
-
-#include <kernel/triangle.hpp>
 
 namespace cuda {
 

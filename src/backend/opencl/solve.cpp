@@ -7,27 +7,23 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <err_opencl.hpp>
 #include <solve.hpp>
+
+#include <err_opencl.hpp>
 
 #if defined(WITH_LINEAR_ALGEBRA)
 #include <blas.hpp>
 #include <copy.hpp>
-#include <err_opencl.hpp>
+#include <cpu/cpu_solve.hpp>
 #include <lu.hpp>
 #include <magma/magma.h>
 #include <magma/magma_blas.h>
 #include <magma/magma_data.h>
 #include <magma/magma_helper.h>
 #include <math.hpp>
+#include <platform.hpp>
 #include <transpose.hpp>
 #include <af/opencl.h>
-
-#include <algorithm>
-#include <string>
-
-#include <cpu/cpu_solve.hpp>
-#include <platform.hpp>
 
 namespace opencl {
 
@@ -107,7 +103,11 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
         Array<T> A = transpose<T>(a, true);
 
 #if UNMQR
-        B = padArray<T, T>(b, dim4(N, K), scalar<T>(0));
+        const dim4 NullShape(0, 0, 0, 0);
+        dim4 endPadding(N - b.dims()[0], K - b.dims()[1], 0, 0);
+        B = (endPadding == NullShape
+                 ? copyArray(b)
+                 : padArrayBorders(b, NullShape, endPadding, AF_PAD_ZERO));
         B.resetDims(dim4(M, K));
 #else
         B = copyArray<T>(b);
