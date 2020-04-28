@@ -60,8 +60,12 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     int M      = iDims[0];
     int N      = iDims[1];
 
-    dim4 padDims(M, max(M, N));
-    q = padArray<T, T>(in, padDims, scalar<T>(0));
+    const dim4 NullShape(0, 0, 0, 0);
+
+    dim4 endPadding(M - iDims[0], max(M, N) - iDims[1], 0, 0);
+    q = (endPadding == NullShape
+             ? copyArray(in)
+             : padArrayBorders(in, NullShape, endPadding, AF_PAD_ZERO));
     q.resetDims(iDims);
     t = qr_inplace(q);
 

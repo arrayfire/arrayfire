@@ -109,12 +109,17 @@ Array<T> solve(const Array<T> &a, const Array<T> &b,
         return triangleSolve<T>(a, b, options);
     }
 
+    const dim4 NullShape(0, 0, 0, 0);
+
     int M = a.dims()[0];
     int N = a.dims()[1];
     int K = b.dims()[1];
 
     Array<T> A = copyArray<T>(a);
-    Array<T> B = padArray<T, T>(b, dim4(max(M, N), K), scalar<T>(0));
+    dim4 endPadding(max(M, N) - b.dims()[0], K - b.dims()[1], 0, 0);
+    Array<T> B = (endPadding == NullShape
+                      ? copyArray(b)
+                      : padArrayBorders(b, NullShape, endPadding, AF_PAD_ZERO));
 
     mapped_ptr<T> aPtr = A.getMappedPtr();
     mapped_ptr<T> bPtr = B.getMappedPtr();

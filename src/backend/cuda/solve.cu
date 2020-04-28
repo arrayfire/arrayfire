@@ -22,8 +22,6 @@
 #include <qr.hpp>
 #include <transpose.hpp>
 
-#include <cstdio>
-
 namespace cuda {
 
 // cusolverStatus_t cusolverDn<>getrs(
@@ -214,6 +212,8 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
     Array<T> B = createEmptyArray<T>(dim4());
 
     if (M < N) {
+        const dim4 NullShape(0, 0, 0, 0);
+
         // Least squres for this case is solved using the following
         // solve(A, B) == matmul(Q, Xpad);
         // Where:
@@ -224,7 +224,10 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
 
         // QR is performed on the transpose of A
         Array<T> A = transpose<T>(a, true);
-        B          = padArray<T, T>(b, dim4(N, K), scalar<T>(0));
+        dim4 endPadding(N - b.dims()[0], K - b.dims()[1], 0, 0);
+        B = (endPadding == NullShape
+                 ? copyArray(b)
+                 : padArrayBorders(b, NullShape, endPadding, AF_PAD_ZERO));
 
         int lwork = 0;
 
