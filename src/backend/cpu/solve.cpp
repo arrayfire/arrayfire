@@ -7,18 +7,18 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/err_common.hpp>
 #include <solve.hpp>
 
-#if defined(WITH_LINEAR_ALGEBRA)
 #include <err_cpu.hpp>
-#include <handle.hpp>
+
+#if defined(WITH_LINEAR_ALGEBRA)
+#include <copy.hpp>
 #include <lapack_helper.hpp>
 #include <math.hpp>
-#include <platform.hpp>
 #include <queue.hpp>
 #include <af/dim4.hpp>
-#include <cassert>
+
+using af::dim4;
 
 namespace cpu {
 
@@ -116,12 +116,18 @@ Array<T> solve(const Array<T> &a, const Array<T> &b,
         return triangleSolve<T>(a, b, options);
     }
 
+    const dim4 NullShape(0, 0, 0, 0);
+
     int M = a.dims()[0];
     int N = a.dims()[1];
     int K = b.dims()[1];
 
     Array<T> A = copyArray<T>(a);
-    Array<T> B = padArray<T, T>(b, dim4(max(M, N), K));
+
+    dim4 endPadding(max(M, N) - b.dims()[0], K - b.dims()[1], 0, 0);
+    Array<T> B = (endPadding == NullShape
+                      ? copyArray(b)
+                      : padArrayBorders(b, NullShape, endPadding, AF_PAD_ZERO));
 
     if (M == N) {
         Array<int> pivot = createEmptyArray<int>(dim4(N, 1, 1));

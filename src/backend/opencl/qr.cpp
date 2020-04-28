@@ -7,13 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <blas.hpp>
-#include <copy.hpp>
-#include <err_opencl.hpp>
 #include <qr.hpp>
+
+#include <err_opencl.hpp>
 
 #if defined(WITH_LINEAR_ALGEBRA)
 
+#include <blas.hpp>
+#include <copy.hpp>
 #include <cpu/cpu_qr.hpp>
 #include <identity.hpp>
 #include <kernel/triangle.hpp>
@@ -28,13 +29,17 @@ template<typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig) {
     if (OpenCLCPUOffload()) { return cpu::qr(q, r, t, orig); }
 
+    const dim4 NullShape(0, 0, 0, 0);
+
     dim4 iDims = orig.dims();
     int M      = iDims[0];
     int N      = iDims[1];
 
-    dim4 pDims(M, std::max(M, N));
+    dim4 endPadding(M - iDims[0], max(M, N) - iDims[1], 0, 0);
     Array<T> in =
-        padArray<T, T>(orig, pDims, scalar<T>(0));  // copyArray<T>(orig);
+        (endPadding == NullShape
+             ? copyArray(orig)
+             : padArrayBorders(orig, NullShape, endPadding, AF_PAD_ZERO));
     in.resetDims(iDims);
 
     int MN = std::min(M, N);
