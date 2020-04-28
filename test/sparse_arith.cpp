@@ -353,7 +353,7 @@ SP_SP_ARITH_TESTS(cfloat,
                   1e-4)  // This is mostly for complex division in OpenCL
 SP_SP_ARITH_TESTS(cdouble, 1e-6)
 
-#if defined(USE_MTX)
+#if defined(USE_MTX) && defined(MTX_TEST_DIR)
 
 // Sparse-Sparse Arithmetic testing function using mtx files
 template<af_op_t op>
