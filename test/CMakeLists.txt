@@ -39,7 +39,7 @@ if(NOT TARGET gtest)
     gtest_hide_internal_symbols)
 endif()
 
-if(AF_TEST_WITH_MTX_FILES AND NOT TARGET mmio)
+if(NOT TARGET mmio)
   add_subdirectory(mmio)
 endif()
 
