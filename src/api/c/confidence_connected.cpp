@@ -36,8 +36,8 @@ Array<T> pointList(const Array<T>& in, const Array<uint>& x,
                    const Array<uint>& y) {
     af_array xcoords                     = getHandle<uint>(x);
     af_array ycoords                     = getHandle<uint>(y);
-    array<af_index_t, AF_MAX_DIMS> idxrs = {{{xcoords, false, false},
-                                             {ycoords, false, false},
+    array<af_index_t, AF_MAX_DIMS> idxrs = {{{{xcoords}, false, false},
+                                             {{ycoords}, false, false},
                                              common::createSpanIndex(),
                                              common::createSpanIndex()}};
 
