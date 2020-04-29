@@ -988,6 +988,13 @@ array array::operator!() const {
     return array(out);
 }
 
+array array::operator~() const {
+    af_array lhs = this->get();
+    af_array out = nullptr;
+    AF_THROW(af_bitnot(&out, lhs));
+    return array(out);
+}
+
 void array::eval() const { AF_THROW(af_eval(get())); }
 
 // array instanciations

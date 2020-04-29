@@ -77,6 +77,8 @@ UNARY_OP(cbrt)
 UNARY_OP(tgamma)
 UNARY_OP(lgamma)
 
+UNARY_OP_FN(bitnot, ~)
+
 #undef UNARY_OP
 #undef UNARY_OP_FN
 

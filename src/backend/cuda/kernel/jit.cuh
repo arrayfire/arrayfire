@@ -47,6 +47,7 @@ typedef cuDoubleComplex cdouble;
 #define __abs(in) abs(in)
 #define __sigmoid(in) (1.0 / (1 + exp(-(in))))
 
+#define __bitnot(in) (~(in))
 #define __bitor(lhs, rhs) ((lhs) | (rhs))
 #define __bitand(lhs, rhs) ((lhs) & (rhs))
 #define __bitxor(lhs, rhs) ((lhs) ^ (rhs))

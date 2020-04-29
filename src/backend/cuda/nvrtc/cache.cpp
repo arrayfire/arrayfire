@@ -474,6 +474,7 @@ string getOpEnumStr(af_op_t val) {
         CASE_STMT(af_gt_t);
         CASE_STMT(af_ge_t);
 
+        CASE_STMT(af_bitnot_t);
         CASE_STMT(af_bitor_t);
         CASE_STMT(af_bitand_t);
         CASE_STMT(af_bitxor_t);

@@ -66,6 +66,7 @@ UNARY_FN(signbit)
 UNARY_FN(ceil)
 UNARY_FN(floor)
 
+UNARY_DECL(bitnot, "__bitnot")
 UNARY_DECL(isinf, "__isinf")
 UNARY_DECL(isnan, "__isnan")
 UNARY_FN(iszero)

@@ -741,6 +741,19 @@ extern "C" {
     */
     AFAPI af_err af_not   (af_array *out, const af_array in);
 
+#if AF_API_VERSION >= 38
+    /**
+       C Interface for performing bitwise not on input
+
+       \param[out] out will contain result of bitwise not of \p in.
+       \param[in] in is the input
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_bitnot
+    */
+    AFAPI af_err af_bitnot   (af_array *out, const af_array in);
+#endif
+
     /**
        C Interface for performing bitwise and on two arrays
 
