@@ -996,6 +996,15 @@ namespace af
         /// \returns an \ref array with negated values
         array operator !() const;
 
+#if AF_API_VERSION >= 38
+        ///
+        /// \brief Performs a bitwise not operation on the values of the array
+        /// \ingroup arith_func_bitnot
+        ///
+        /// \returns an \ref array with inverted values
+        array operator ~() const;
+#endif
+
         ///
         /// \brief Get the count of non-zero elements in the array
         ///

@@ -289,6 +289,26 @@ BITOP(bitxor, uintl, ^)
 BITOP(bitshiftl, uintl, <<)
 BITOP(bitshiftr, uintl, >>)
 
+#define UBITOP(func, T)                                     \
+    TEST(BinaryTests, Test_##func##_##T) {                  \
+        af_dtype ty   = (af_dtype)dtype_traits<T>::af_type; \
+        const T vala  = 4095;                               \
+        const T valc  = ~vala;                              \
+        const int num = 10;                                 \
+        af::array a   = af::constant(vala, num, ty);        \
+        af::array b   = af::constant(valc, num, ty);        \
+        af::array c   = ~a;                                 \
+        ASSERT_ARRAYS_EQ(c, b);                             \
+    }
+
+UBITOP(bitnot, int)
+UBITOP(bitnot, uint)
+UBITOP(bitnot, intl)
+UBITOP(bitnot, uintl)
+UBITOP(bitnot, uchar)
+UBITOP(bitnot, short)
+UBITOP(bitnot, ushort)
+
 TEST(BinaryTests, Test_pow_cfloat_float) {
     af::array a        = randgen(num, c32);
     af::array b        = randgen(num, f32);

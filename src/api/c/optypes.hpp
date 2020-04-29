@@ -29,6 +29,7 @@ typedef enum {
     af_bitxor_t,
     af_bitshiftl_t,
     af_bitshiftr_t,
+    af_bitnot_t,
 
     af_min_t,
     af_max_t,

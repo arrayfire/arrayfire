@@ -560,6 +560,41 @@ af_err af_not(af_array *out, const af_array in) {
     return AF_SUCCESS;
 }
 
+template<typename T>
+static inline af_array bitOpNot(const af_array in) {
+    return unaryOp<T, af_bitnot_t>(in);
+}
+
+af_err af_bitnot(af_array *out, const af_array in) {
+    try {
+        const ArrayInfo &iinfo = getInfo(in);
+        const af_dtype type    = iinfo.getType();
+
+        dim4 odims = iinfo.dims();
+
+        if (odims.ndims() == 0) {
+            return af_create_handle(out, 0, nullptr, type);
+        }
+
+        af_array res;
+        switch (type) {
+            case s32: res = bitOpNot<int>(in); break;
+            case u32: res = bitOpNot<uint>(in); break;
+            case u8: res = bitOpNot<uchar>(in); break;
+            case b8: res = bitOpNot<char>(in); break;
+            case s64: res = bitOpNot<intl>(in); break;
+            case u64: res = bitOpNot<uintl>(in); break;
+            case s16: res = bitOpNot<short>(in); break;
+            case u16: res = bitOpNot<ushort>(in); break;
+            default: TYPE_ERROR(0, type);
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_arg(af_array *out, const af_array in) {
     try {
         const ArrayInfo &in_info = getInfo(in);

@@ -95,6 +95,7 @@ float2 __cdivf(float2 lhs, float2 rhs) {
 #define __cgt(lhs, rhs) (__cabs(lhs) > __cabs(rhs))
 #define __cge(lhs, rhs) (__cabs(lhs) >= __cabs(rhs))
 
+#define __bitnot(in) (~(in))
 #define __bitor(lhs, rhs) ((lhs) | (rhs))
 #define __bitand(lhs, rhs) ((lhs) & (rhs))
 #define __bitxor(lhs, rhs) ((lhs) ^ (rhs))

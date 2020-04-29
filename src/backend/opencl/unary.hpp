@@ -70,6 +70,8 @@ UNARY_FN(isnan)
 UNARY_FN(iszero)
 UNARY_DECL(noop, "__noop")
 
+UNARY_DECL(bitnot, "__bitnot")
+
 #undef UNARY_FN
 
 template<typename T, af_op_t op>

@@ -99,6 +99,7 @@ UNARY_HAPI_DEF(af_iszero)
 UNARY_HAPI_DEF(af_isinf)
 UNARY_HAPI_DEF(af_isnan)
 UNARY_HAPI_DEF(af_not)
+UNARY_HAPI_DEF(af_bitnot)
 
 af_err af_clamp(af_array* out, const af_array in, const af_array lo,
                 const af_array hi, const bool batch) {
