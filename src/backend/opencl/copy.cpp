@@ -63,21 +63,6 @@ Array<T> copyArray(const Array<T> &A) {
     return out;
 }
 
-template<typename inType, typename outType>
-Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
-                        outType default_value, double factor) {
-    Array<outType> ret = createEmptyArray<outType>(dims);
-
-    if (in.dims() == dims) {
-        kernel::copy<inType, outType, true>(ret, in, in.ndims(), default_value,
-                                            factor);
-    } else {
-        kernel::copy<inType, outType, false>(ret, in, in.ndims(), default_value,
-                                             factor);
-    }
-    return ret;
-}
-
 template<typename T>
 void multiply_inplace(Array<T> &in, double val) {
     kernel::copy<T, T, true>(in, in, in.ndims(), scalar<T>(0), val);
@@ -143,99 +128,54 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(half)
 
-#define INSTANTIATE_PAD_ARRAY(SRC_T)                                      \
-    template Array<float> padArray<SRC_T, float>(                         \
-        Array<SRC_T> const &src, dim4 const &dims, float default_value,   \
-        double factor);                                                   \
-    template Array<double> padArray<SRC_T, double>(                       \
-        Array<SRC_T> const &src, dim4 const &dims, double default_value,  \
-        double factor);                                                   \
-    template Array<cfloat> padArray<SRC_T, cfloat>(                       \
-        Array<SRC_T> const &src, dim4 const &dims, cfloat default_value,  \
-        double factor);                                                   \
-    template Array<cdouble> padArray<SRC_T, cdouble>(                     \
-        Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, \
-        double factor);                                                   \
-    template Array<int> padArray<SRC_T, int>(                             \
-        Array<SRC_T> const &src, dim4 const &dims, int default_value,     \
-        double factor);                                                   \
-    template Array<uint> padArray<SRC_T, uint>(                           \
-        Array<SRC_T> const &src, dim4 const &dims, uint default_value,    \
-        double factor);                                                   \
-    template Array<intl> padArray<SRC_T, intl>(                           \
-        Array<SRC_T> const &src, dim4 const &dims, intl default_value,    \
-        double factor);                                                   \
-    template Array<uintl> padArray<SRC_T, uintl>(                         \
-        Array<SRC_T> const &src, dim4 const &dims, uintl default_value,   \
-        double factor);                                                   \
-    template Array<short> padArray<SRC_T, short>(                         \
-        Array<SRC_T> const &src, dim4 const &dims, short default_value,   \
-        double factor);                                                   \
-    template Array<ushort> padArray<SRC_T, ushort>(                       \
-        Array<SRC_T> const &src, dim4 const &dims, ushort default_value,  \
-        double factor);                                                   \
-    template Array<uchar> padArray<SRC_T, uchar>(                         \
-        Array<SRC_T> const &src, dim4 const &dims, uchar default_value,   \
-        double factor);                                                   \
-    template Array<char> padArray<SRC_T, char>(                           \
-        Array<SRC_T> const &src, dim4 const &dims, char default_value,    \
-        double factor);                                                   \
-    template Array<half> padArray<SRC_T, half>(                           \
-        Array<SRC_T> const &src, dim4 const &dims, half default_value,    \
-        double factor);                                                   \
-    template void copyArray<SRC_T, float>(Array<float> & dst,             \
-                                          Array<SRC_T> const &src);       \
-    template void copyArray<SRC_T, double>(Array<double> & dst,           \
-                                           Array<SRC_T> const &src);      \
-    template void copyArray<SRC_T, cfloat>(Array<cfloat> & dst,           \
-                                           Array<SRC_T> const &src);      \
-    template void copyArray<SRC_T, cdouble>(Array<cdouble> & dst,         \
-                                            Array<SRC_T> const &src);     \
-    template void copyArray<SRC_T, int>(Array<int> & dst,                 \
-                                        Array<SRC_T> const &src);         \
-    template void copyArray<SRC_T, uint>(Array<uint> & dst,               \
-                                         Array<SRC_T> const &src);        \
-    template void copyArray<SRC_T, intl>(Array<intl> & dst,               \
-                                         Array<SRC_T> const &src);        \
-    template void copyArray<SRC_T, uintl>(Array<uintl> & dst,             \
-                                          Array<SRC_T> const &src);       \
-    template void copyArray<SRC_T, short>(Array<short> & dst,             \
-                                          Array<SRC_T> const &src);       \
-    template void copyArray<SRC_T, ushort>(Array<ushort> & dst,           \
-                                           Array<SRC_T> const &src);      \
-    template void copyArray<SRC_T, uchar>(Array<uchar> & dst,             \
-                                          Array<SRC_T> const &src);       \
-    template void copyArray<SRC_T, char>(Array<char> & dst,               \
-                                         Array<SRC_T> const &src);        \
-    template void copyArray<SRC_T, half>(Array<half> & dst,               \
+#define INSTANTIATE_COPY_ARRAY(SRC_T)                                 \
+    template void copyArray<SRC_T, float>(Array<float> & dst,         \
+                                          Array<SRC_T> const &src);   \
+    template void copyArray<SRC_T, double>(Array<double> & dst,       \
+                                           Array<SRC_T> const &src);  \
+    template void copyArray<SRC_T, cfloat>(Array<cfloat> & dst,       \
+                                           Array<SRC_T> const &src);  \
+    template void copyArray<SRC_T, cdouble>(Array<cdouble> & dst,     \
+                                            Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, int>(Array<int> & dst,             \
+                                        Array<SRC_T> const &src);     \
+    template void copyArray<SRC_T, uint>(Array<uint> & dst,           \
+                                         Array<SRC_T> const &src);    \
+    template void copyArray<SRC_T, intl>(Array<intl> & dst,           \
+                                         Array<SRC_T> const &src);    \
+    template void copyArray<SRC_T, uintl>(Array<uintl> & dst,         \
+                                          Array<SRC_T> const &src);   \
+    template void copyArray<SRC_T, short>(Array<short> & dst,         \
+                                          Array<SRC_T> const &src);   \
+    template void copyArray<SRC_T, ushort>(Array<ushort> & dst,       \
+                                           Array<SRC_T> const &src);  \
+    template void copyArray<SRC_T, uchar>(Array<uchar> & dst,         \
+                                          Array<SRC_T> const &src);   \
+    template void copyArray<SRC_T, char>(Array<char> & dst,           \
+                                         Array<SRC_T> const &src);    \
+    template void copyArray<SRC_T, half>(Array<half> & dst,           \
                                          Array<SRC_T> const &src);
 
-INSTANTIATE_PAD_ARRAY(float)
-INSTANTIATE_PAD_ARRAY(double)
-INSTANTIATE_PAD_ARRAY(int)
-INSTANTIATE_PAD_ARRAY(uint)
-INSTANTIATE_PAD_ARRAY(intl)
-INSTANTIATE_PAD_ARRAY(uintl)
-INSTANTIATE_PAD_ARRAY(uchar)
-INSTANTIATE_PAD_ARRAY(char)
-INSTANTIATE_PAD_ARRAY(short)
-INSTANTIATE_PAD_ARRAY(ushort)
-INSTANTIATE_PAD_ARRAY(half)
+INSTANTIATE_COPY_ARRAY(float)
+INSTANTIATE_COPY_ARRAY(double)
+INSTANTIATE_COPY_ARRAY(int)
+INSTANTIATE_COPY_ARRAY(uint)
+INSTANTIATE_COPY_ARRAY(intl)
+INSTANTIATE_COPY_ARRAY(uintl)
+INSTANTIATE_COPY_ARRAY(uchar)
+INSTANTIATE_COPY_ARRAY(char)
+INSTANTIATE_COPY_ARRAY(short)
+INSTANTIATE_COPY_ARRAY(ushort)
+INSTANTIATE_COPY_ARRAY(half)
 
-#define INSTANTIATE_PAD_ARRAY_COMPLEX(SRC_T)                              \
-    template Array<cfloat> padArray<SRC_T, cfloat>(                       \
-        Array<SRC_T> const &src, dim4 const &dims, cfloat default_value,  \
-        double factor);                                                   \
-    template Array<cdouble> padArray<SRC_T, cdouble>(                     \
-        Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, \
-        double factor);                                                   \
-    template void copyArray<SRC_T, cfloat>(Array<cfloat> & dst,           \
-                                           Array<SRC_T> const &src);      \
-    template void copyArray<SRC_T, cdouble>(Array<cdouble> & dst,         \
+#define INSTANTIATE_COPY_ARRAY_COMPLEX(SRC_T)                        \
+    template void copyArray<SRC_T, cfloat>(Array<cfloat> & dst,      \
+                                           Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, cdouble>(Array<cdouble> & dst,    \
                                             Array<SRC_T> const &src);
 
-INSTANTIATE_PAD_ARRAY_COMPLEX(cfloat)
-INSTANTIATE_PAD_ARRAY_COMPLEX(cdouble)
+INSTANTIATE_COPY_ARRAY_COMPLEX(cfloat)
+INSTANTIATE_COPY_ARRAY_COMPLEX(cdouble)
 
 template<typename T>
 T getScalar(const Array<T> &in) {

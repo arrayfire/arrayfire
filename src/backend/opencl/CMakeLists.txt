@@ -189,6 +189,7 @@ target_sources(afopencl
     reorder.hpp
     resize.cpp
     resize.hpp
+    reshape.cpp
     rotate.cpp
     rotate.hpp
     scalar.hpp
