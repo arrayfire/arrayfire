@@ -110,7 +110,6 @@ target_sources(afcpu
     nearest_neighbour.hpp
     orb.cpp
     orb.hpp
-    padarray.cpp
     ParamIterator.hpp
     platform.cpp
     platform.hpp
@@ -132,6 +131,7 @@ target_sources(afcpu
     reorder.hpp
     resize.cpp
     resize.hpp
+    reshape.cpp
     rotate.cpp
     rotate.hpp
     scan.cpp
