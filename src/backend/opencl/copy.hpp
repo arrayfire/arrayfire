@@ -50,6 +50,8 @@ Array<T> padArrayBorders(Array<T> const &in, dim4 const &lowerBoundPadding,
                lowerBoundPadding[2] + iDims[2] + upperBoundPadding[2],
                lowerBoundPadding[3] + iDims[3] + upperBoundPadding[3]);
 
+    if (oDims == iDims) { return in; }
+
     auto ret = createEmptyArray<T>(oDims);
 
     switch (btype) {
