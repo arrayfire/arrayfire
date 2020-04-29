@@ -43,6 +43,7 @@ using cpu::jit::BufferNode;
 using cpu::jit::Node;
 using cpu::jit::Node_map_t;
 using cpu::jit::Node_ptr;
+using std::adjacent_find;
 using std::copy;
 using std::is_standard_layout;
 using std::move;
@@ -170,10 +171,10 @@ void evalMultiple(vector<Array<T> *> array_ptrs) {
     }
 
     // Check if all the arrays have the same dimension
-    auto it = std::adjacent_find(begin(array_ptrs), end(array_ptrs),
-                                 [](const Array<T> *l, const Array<T> *r) {
-                                     return l->dims() != r->dims();
-                                 });
+    auto it = adjacent_find(begin(array_ptrs), end(array_ptrs),
+                            [](const Array<T> *l, const Array<T> *r) {
+                                return l->dims() != r->dims();
+                            });
 
     // If they are not the same. eval individually
     if (it != end(array_ptrs)) {

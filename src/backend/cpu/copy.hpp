@@ -28,10 +28,23 @@ Array<T> copyArray(const Array<T> &A);
 template<typename inType, typename outType>
 void copyArray(Array<outType> &out, const Array<inType> &in);
 
+// Resize Array to target dimensions and convert type
+//
+// Depending on the \p outDims, the output Array can be either truncated
+// or padded (towards end of respective dimensions).
+//
+// While resizing copying, if output dimensions are larger than input, then
+// elements beyond the input dimensions are set to the \p defaultValue.
+//
+// \param[in] in is input Array
+// \param[in] outDims is the target output dimensions
+// \param[in] defaultValue is the value to which padded locations are set.
+// \param[in] scale is the value by which all output elements are scaled.
+//
+// \returns Array<outType>
 template<typename inType, typename outType>
-Array<outType> padArray(const Array<inType> &in, const dim4 &dims,
-                        outType default_value = outType(0),
-                        double factor         = 1.0);
+Array<outType> reshape(const Array<inType> &in, const dim4 &outDims,
+                       outType defaultValue = outType(0), double scale = 1.0);
 
 template<typename T>
 Array<T> padArrayBorders(const Array<T> &in, const dim4 &lowerBoundPadding,
