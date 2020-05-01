@@ -258,12 +258,6 @@ ALIASES += "convolve_t{2}=\1 \ast \2"
 ALIASES += "set_eq{2}=\f$ \left\\{ \1 \ \Bigg\vert \ \2 \right\\} \f$"
 ALIASES += "set_t{2}=\left\\\{ \1 \ \Bigg\vert \ \2 \right\\\}"
 
-# This tag can be used to specify a number of word-keyword mappings (TCL only).
-# A mapping has the form "name=value". For example adding "class=itcl::class"
-# will allow you to use the command class in the itcl::class meaning.
-
-TCL_SUBST              =
-
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
 # instance, some of the names that are used will be different. The list of all
