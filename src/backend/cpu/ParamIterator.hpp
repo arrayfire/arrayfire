@@ -26,6 +26,7 @@ class ParamIterator {
     using value_type        = T;
     using pointer           = T*;
     using reference         = T&;
+    using const_reference   = const T&;
     using iterator_category = std::forward_iterator_tag;
 
     /// Creates a sentinel iterator. This is equivalent to the end iterator
@@ -76,7 +77,9 @@ class ParamIterator {
         return *this;
     }
 
-    const reference operator*() const noexcept { return *ptr; }
+    reference operator*() noexcept { return *ptr; }
+
+    const_reference operator*() const noexcept { return *ptr; }
 
     const pointer operator->() const noexcept { return ptr; }
 
