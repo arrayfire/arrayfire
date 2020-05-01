@@ -11,6 +11,7 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
+#pragma GCC diagnostic ignored "-Wparentheses"
 #include <boost/stacktrace.hpp>
 #pragma GCC diagnostic pop
 #include <common/defines.hpp>
