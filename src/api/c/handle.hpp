@@ -139,7 +139,16 @@ af_array copyArray(const af_array in) {
 
 template<typename T>
 void releaseHandle(const af_array arr) {
-    detail::destroyArray(static_cast<detail::Array<T> *>(arr));
+    auto &Arr      = getArray<T>(arr);
+    int old_device = detail::getActiveDeviceId();
+    int array_id   = Arr.getDevId();
+    if (array_id != old_device) {
+        detail::setDevice(array_id);
+        detail::destroyArray(static_cast<detail::Array<T> *>(arr));
+        detail::setDevice(old_device);
+    } else {
+        detail::destroyArray(static_cast<detail::Array<T> *>(arr));
+    }
 }
 
 template<typename T>
