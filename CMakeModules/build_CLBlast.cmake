@@ -52,7 +52,7 @@ endif()
 ExternalProject_Add(
     CLBlast-ext
     GIT_REPOSITORY https://github.com/cnugteren/CLBlast.git
-    GIT_TAG 1.5.0
+    GIT_TAG 1.5.1
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
