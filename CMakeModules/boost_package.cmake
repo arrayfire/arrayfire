@@ -5,7 +5,7 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-find_package(Boost)
+find_package(Boost 1.66 REQUIRED)
 
 set(Boost_MIN_VER 107000)
 set(Boost_MIN_VER_STR "1.70")
@@ -45,8 +45,8 @@ if(NOT
   add_dependencies(Boost::boost boost_compute)
 
   set_target_properties(Boost::boost PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR};${source_dir}/include"
-    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIR};${source_dir}/include"
+    INTERFACE_INCLUDE_DIRECTORIES "${source_dir}/include;${Boost_INCLUDE_DIR}"
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${source_dir}/include;${Boost_INCLUDE_DIR}"
     )
 else()
   if(NOT TARGET Boost::boost)
