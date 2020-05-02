@@ -18,9 +18,7 @@
 namespace cuda {
 
 template<typename To, typename Ti, af_op_t op>
-struct BinOp {
-    const char *name() { return "__invalid"; }
-};
+struct BinOp;
 
 #define BINARY_TYPE_1(fn)                            \
     template<typename To, typename Ti>               \
