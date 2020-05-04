@@ -214,12 +214,12 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
     Kernel entry{nullptr, nullptr};
 
     if (idx == kernelCaches[device].end()) {
+        string jit_ker = getKernelString(funcName, full_nodes, full_ids,
+                                         output_ids, is_linear);
 #ifdef AF_CACHE_KERNELS_TO_DISK
-        entry = loadKernel(device, funcName);
+        entry = loadKernel(device, funcName, jit_ker);
 #endif
         if (entry.prog == nullptr || entry.ker == nullptr) {
-            string jit_ker = getKernelString(funcName, full_nodes, full_ids,
-                                             output_ids, is_linear);
             saveKernel(funcName, jit_ker, ".cu");
             entry = buildKernel(device, funcName, jit_ker, {}, true);
         }
