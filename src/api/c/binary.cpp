@@ -15,6 +15,7 @@
 #include <optypes.hpp>
 #include <sparse.hpp>
 #include <sparse_handle.hpp>
+#include <tile.hpp>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
@@ -25,6 +26,7 @@
 #include <sparse_arith.hpp>
 
 #include <common/half.hpp>
+#include <tuple>
 
 using af::dim4;
 using af::dtype;
@@ -55,6 +57,97 @@ static inline af_array arithOp(const af_array lhs, const af_array rhs,
     return getHandle(arithOp<T, op>(l, r, odims));
 }
 
+dim4 paddims(const dim4 &dims, unsigned offset) {
+    dim4 padded(1, 1, 1, 1);
+
+    const unsigned MAXDIMS = 4;
+    for (unsigned i = 0; i < MAXDIMS; ++i) {
+        if (i >= offset) { padded[i] = dims[i - offset]; }
+    }
+    return padded;
+}
+
+std::tuple<dim4, dim4, dim4, dim4, dim4> getBroadcastDims(
+    const ArrayInfo &linfo, const ArrayInfo &rinfo) {
+    const dim4 ldims = linfo.dims();
+    const dim4 rdims = rinfo.dims();
+
+    unsigned maxndims =
+        ldims.ndims() > rdims.ndims() ? ldims.ndims() : rdims.ndims();
+
+    // find how much each dim4 needs to be padded
+    unsigned loffset = maxndims - ldims.ndims();
+    unsigned roffset = maxndims - rdims.ndims();
+
+    // pre-pad each dimension with 1s if necessary
+    dim4 ldims_padded = paddims(ldims, loffset);
+    dim4 rdims_padded = paddims(rdims, roffset);
+
+    dim4 bdims;
+    dim4 ltile(1, 1, 1, 1);
+    dim4 rtile(1, 1, 1, 1);
+    // check that dimensions are compatible
+    for (unsigned i = 0; i < 4; ++i) {
+        if (ldims_padded[i] == rdims_padded[i]) {
+            bdims[i] = ldims_padded[i];
+        } else if (ldims_padded[i] == 1 && rdims_padded[i] != 1) {
+            bdims[i] = rdims_padded[i];
+            ltile[i] = rdims_padded[i];
+        } else if (ldims_padded[i] != 1 && rdims_padded[i] == 1) {
+            bdims[i] = ldims_padded[i];
+            rtile[i] = ldims_padded[i];
+        } else {
+            // if both are vectors, no matching broadcasts are possible
+            if (linfo.isVector() && rinfo.isVector()) {
+                AF_ERROR("Cannot broadcast mismatching input dimensions",
+                         AF_ERR_SIZE);
+            } else if (linfo.isVector()) {
+                // restart broadcast search with different padding for vector
+                if (loffset--) {
+                    ldims_padded = paddims(ldims, loffset);
+                    i            = 0;
+                } else {
+                    // no posible padding can be broadcast
+                    AF_ERROR(
+                        "Could not find valid broadcast between vector and array,\
+                              mismatching input dimensions",
+                        AF_ERR_SIZE);
+                }
+            } else if (rinfo.isVector()) {
+                if (roffset--) {
+                    rdims_padded = paddims(rdims, roffset);
+                    i            = 0;
+                } else {
+                    AF_ERROR(
+                        "Could not find valid broadcast between vector and array,\
+                              mismatching input dimensions",
+                        AF_ERR_SIZE);
+                }
+            }
+        }
+    }
+    return std::make_tuple(bdims, ltile, rtile, ldims_padded, rdims_padded);
+}
+
+template<typename T, af_op_t op>
+static inline af_array arithOpBroadcast(const af_array lhs,
+                                        const af_array rhs) {
+    const ArrayInfo &linfo = getInfo(lhs);
+    const ArrayInfo &rinfo = getInfo(rhs);
+
+    dim4 odims, ltile, rtile, lpad, rpad;
+    std::tie(odims, ltile, rtile, lpad, rpad) = getBroadcastDims(linfo, rinfo);
+
+    af_array lhsm = getHandle(modDims(getArray<T>(lhs), lpad));
+    af_array rhsm = getHandle(modDims(getArray<T>(rhs), rpad));
+    af_array lhst = getHandle(detail::tile<T>(getArray<T>(lhsm), ltile));
+    af_array rhst = getHandle(detail::tile<T>(getArray<T>(rhsm), rtile));
+
+    af_array res = getHandle(
+        arithOp<T, op>(castArray<T>(lhst), castArray<T>(rhst), odims));
+    return res;
+}
+
 template<typename T, af_op_t op>
 static inline af_array sparseArithOp(const af_array lhs, const af_array rhs) {
     auto res = arithOp<T, op>(getSparseArray<T>(lhs), getSparseArray<T>(rhs));
@@ -82,25 +175,45 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs,
         const ArrayInfo &linfo = getInfo(lhs);
         const ArrayInfo &rinfo = getInfo(rhs);
 
-        dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
-
         const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
         af_array res;
-        switch (otype) {
-            case f32: res = arithOp<float, op>(lhs, rhs, odims); break;
-            case f64: res = arithOp<double, op>(lhs, rhs, odims); break;
-            case c32: res = arithOp<cfloat, op>(lhs, rhs, odims); break;
-            case c64: res = arithOp<cdouble, op>(lhs, rhs, odims); break;
-            case s32: res = arithOp<int, op>(lhs, rhs, odims); break;
-            case u32: res = arithOp<uint, op>(lhs, rhs, odims); break;
-            case u8: res = arithOp<uchar, op>(lhs, rhs, odims); break;
-            case b8: res = arithOp<char, op>(lhs, rhs, odims); break;
-            case s64: res = arithOp<intl, op>(lhs, rhs, odims); break;
-            case u64: res = arithOp<uintl, op>(lhs, rhs, odims); break;
-            case s16: res = arithOp<short, op>(lhs, rhs, odims); break;
-            case u16: res = arithOp<ushort, op>(lhs, rhs, odims); break;
-            case f16: res = arithOp<half, op>(lhs, rhs, odims); break;
-            default: TYPE_ERROR(0, otype);
+
+        if (batchMode || linfo.dims() == rinfo.dims()) {
+            dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
+
+            switch (otype) {
+                case f32: res = arithOp<float, op>(lhs, rhs, odims); break;
+                case f64: res = arithOp<double, op>(lhs, rhs, odims); break;
+                case c32: res = arithOp<cfloat, op>(lhs, rhs, odims); break;
+                case c64: res = arithOp<cdouble, op>(lhs, rhs, odims); break;
+                case s32: res = arithOp<int, op>(lhs, rhs, odims); break;
+                case u32: res = arithOp<uint, op>(lhs, rhs, odims); break;
+                case u8: res = arithOp<uchar, op>(lhs, rhs, odims); break;
+                case b8: res = arithOp<char, op>(lhs, rhs, odims); break;
+                case s64: res = arithOp<intl, op>(lhs, rhs, odims); break;
+                case u64: res = arithOp<uintl, op>(lhs, rhs, odims); break;
+                case s16: res = arithOp<short, op>(lhs, rhs, odims); break;
+                case u16: res = arithOp<ushort, op>(lhs, rhs, odims); break;
+                case f16: res = arithOp<half, op>(lhs, rhs, odims); break;
+                default: TYPE_ERROR(0, otype);
+            }
+        } else {
+            switch (otype) {
+                case f32: res = arithOpBroadcast<float, op>(lhs, rhs); break;
+                case f64: res = arithOpBroadcast<double, op>(lhs, rhs); break;
+                case c32: res = arithOpBroadcast<cfloat, op>(lhs, rhs); break;
+                case c64: res = arithOpBroadcast<cdouble, op>(lhs, rhs); break;
+                case s32: res = arithOpBroadcast<int, op>(lhs, rhs); break;
+                case u32: res = arithOpBroadcast<uint, op>(lhs, rhs); break;
+                case u8: res = arithOpBroadcast<uchar, op>(lhs, rhs); break;
+                case b8: res = arithOpBroadcast<char, op>(lhs, rhs); break;
+                case s64: res = arithOpBroadcast<intl, op>(lhs, rhs); break;
+                case u64: res = arithOpBroadcast<uintl, op>(lhs, rhs); break;
+                case s16: res = arithOpBroadcast<short, op>(lhs, rhs); break;
+                case u16: res = arithOpBroadcast<ushort, op>(lhs, rhs); break;
+                case f16: res = arithOpBroadcast<half, op>(lhs, rhs); break;
+                default: TYPE_ERROR(0, otype);
+            }
         }
 
         std::swap(*out, res);

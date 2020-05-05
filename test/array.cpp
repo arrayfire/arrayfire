@@ -641,6 +641,81 @@ TEST(Array, ReferenceCount2) {
     }
 }
 
+TEST(Broadcast, Simple1) {
+    dim_t s = 10;
+    array A = range(dim4(s, s, 3), 2);
+    array B = -range(dim4(3));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, s, 3)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, s, 3)));
+}
+
+TEST(Broadcast, Simple3) {
+    array A = constant(-1, dim4(5, 4));
+    array B = constant(1, dim4(1));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(5, 4)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(5, 4)));
+}
+
+TEST(Broadcast, Simple4) {
+    array A = range(dim4(15, 3, 5));
+    array B = -range(dim4(15, 1, 5));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+}
+
+TEST(Broadcast, Simple5) {
+    array A = range(dim4(2, 3, 5), 1);
+    array B = -range(dim4(3, 5), 0);
+    array C = A + B;
+    af_print(C);
+
+    EXPECT_THROW(A + B, af::exception);
+}
+
+TEST(Broadcast, Simple6) {
+    array A = constant(-1, dim4(15, 3, 5));
+    array B = constant(1, dim4(3, 1));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+}
+
+TEST(Broadcast, Simple7) {
+    array A = range(dim4(3, 2, 2, 4), 1);
+    array B = -range(dim4(2));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(3, 2, 2, 4)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(3, 2, 2, 4)));
+}
+
+TEST(Broadcast, ManySlicesVsOneSlice) {
+    array A = constant(1, dim4(3, 3, 2));
+    array B = constant(2, dim4(3, 3));
+    array C = A + B;
+
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(3, 3, 2)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(3, 3, 2)));
+
 // This tests situations where the compiler incorrectly assumes the initializer
 // list constructor instead of the regular constructor when using the uniform
 // initilization syntax
