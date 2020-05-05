@@ -214,10 +214,10 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         int roff = z * (is_r_d2_batched * rStrides[2]) +
                    w * (is_r_d3_batched * rStrides[3]);
 
-        CBT *lptr = static_cast<CBT *>(lPtr.get() + loff);
-        CBT *rptr = static_cast<CBT *>(rPtr.get() + roff);
-        BT *optr =
-            static_cast<BT *>(oPtr.get() + z * oStrides[2] + w * oStrides[3]);
+        CBT *lptr = reinterpret_cast<CBT *>(lPtr.get() + loff);
+        CBT *rptr = reinterpret_cast<CBT *>(rPtr.get() + roff);
+        BT *optr  = reinterpret_cast<BT *>(oPtr.get() + z * oStrides[2] +
+                                          w * oStrides[3]);
 
         if (rDims[bColDim] == 1) {
             dim_t incr = (rOpts == CblasNoTrans) ? rStrides[0] : rStrides[1];
