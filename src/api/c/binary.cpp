@@ -138,13 +138,12 @@ static inline af_array arithOpBroadcast(const af_array lhs,
     dim4 odims, ltile, rtile, lpad, rpad;
     std::tie(odims, ltile, rtile, lpad, rpad) = getBroadcastDims(linfo, rinfo);
 
-    af_array lhsm = getHandle(modDims(getArray<T>(lhs), lpad));
-    af_array rhsm = getHandle(modDims(getArray<T>(rhs), rpad));
-    af_array lhst = getHandle(detail::tile<T>(getArray<T>(lhsm), ltile));
-    af_array rhst = getHandle(detail::tile<T>(getArray<T>(rhsm), rtile));
+    detail::Array<T> lhst =
+        detail::tile<T>(modDims(getArray<T>(lhs), lpad), ltile);
+    detail::Array<T> rhst =
+        detail::tile<T>(modDims(getArray<T>(rhs), rpad), rtile);
 
-    af_array res = getHandle(
-        arithOp<T, op>(castArray<T>(lhst), castArray<T>(rhst), odims));
+    af_array res = getHandle(arithOp<T, op>(lhst, rhst, odims));
     return res;
 }
 
