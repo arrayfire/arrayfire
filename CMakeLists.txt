@@ -107,6 +107,7 @@ mark_as_advanced(
   SPDLOG_BUILD_TESTING
   ADDR2LINE_PROGRAM
   Backtrace_LIBRARY
+  AF_WITH_STATIC_MKL
   )
 
 #Configure forge submodule

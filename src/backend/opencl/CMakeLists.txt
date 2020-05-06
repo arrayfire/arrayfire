@@ -491,11 +491,11 @@ if(LAPACK_FOUND OR MKL_Shared_FOUND)
     dependency_check(MKL_Shared_FOUND "MKL not found")
     target_compile_definitions(afopencl PRIVATE USE_MKL)
 
-    target_link_libraries(afopencl
-      PRIVATE
-        $<$<BOOL:${AF_WITH_STATIC_MKL}>:MKL::Static>
-        $<$<NOT:$<BOOL:${AF_WITH_STATIC_MKL}>>:MKL::Shared>
-        )
+    if(AF_WITH_STATIC_MKL)
+        target_link_libraries(afopencl PRIVATE MKL::Static)
+    else()
+        target_link_libraries(afopencl PRIVATE MKL::Shared)
+    endif()
   else()
     dependency_check(OpenCL_FOUND "OpenCL not found.")
 
