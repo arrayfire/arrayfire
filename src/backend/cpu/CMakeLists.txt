@@ -304,9 +304,13 @@ if(USE_CPU_MKL)
       cpp_api_interface
       afcommon_interface
       cpu_sort_by_key
-      MKL::Shared
       Threads::Threads
     )
+  if(AF_WITH_STATIC_MKL)
+      target_link_libraries(afcpu PRIVATE MKL::Static)
+  else()
+      target_link_libraries(afcpu PRIVATE MKL::Shared)
+  endif()
 else()
   dependency_check(FFTW_FOUND "FFTW not found")
   dependency_check(CBLAS_FOUND "CBLAS not found")
