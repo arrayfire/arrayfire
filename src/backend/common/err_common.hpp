@@ -41,7 +41,17 @@ class AfError : public std::logic_error {
             boost::stacktrace::stacktrace st);
 
     AfError(const AfError& other) noexcept = delete;
-    AfError(AfError&& other) noexcept      = default;
+
+    /// This is the same as default but gcc 6.1 fails when noexcept is used
+    /// along with the default specifier. Expanded the default definition
+    /// to avoid this error
+    AfError(AfError&& other) noexcept
+        : std::logic_error(std::forward<std::logic_error>(other))
+        , functionName(std::forward<std::string>(other.functionName))
+        , fileName(std::forward<std::string>(other.fileName))
+        , lineNumber(std::forward<int>(other.lineNumber))
+        , error(std::forward<af_err>(other.error))
+        , st_(std::forward<boost::stacktrace::stacktrace>(other.st_)) {}
 
     const std::string& getFunctionName() const noexcept;
 
