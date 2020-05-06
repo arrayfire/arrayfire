@@ -61,6 +61,7 @@ option(AF_WITH_NONFREE  "Build ArrayFire nonfree algorithms"   OFF)
 option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
 option(AF_WITH_STACKTRACE  "Add stacktraces to the error messages." ON)
 option(AF_CACHE_KERNELS_TO_DISK "Enable caching kernels to disk" ON)
+option(AF_WITH_STATIC_MKL "Link against static Intel MKL libraries" OFF)
 
 if(WIN32)
   set(AF_STACKTRACE_TYPE "Windbg" CACHE STRING "The type of backtrace features. Windbg(simple), None")
@@ -106,6 +107,7 @@ mark_as_advanced(
   SPDLOG_BUILD_TESTING
   ADDR2LINE_PROGRAM
   Backtrace_LIBRARY
+  AF_WITH_STATIC_MKL
   )
 
 #Configure forge submodule
@@ -311,7 +313,7 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
               DESTINATION ${AF_INSTALL_CMAKE_DIR}
               COMPONENT cmake)
 
-if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::Shared AND AF_INSTALL_STANDALONE)
+if((USE_CPU_MKL OR USE_OPENCL_MKL) AND AF_INSTALL_STANDALONE)
   if(TARGET MKL::ThreadingLibrary)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>
@@ -319,24 +321,26 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::Shared AND AF_INSTALL_STANDAL
       COMPONENT mkl_dependencies)
   endif()
 
-  if(NOT WIN32)
+  if(NOT AF_WITH_STATIC_MKL AND TARGET MKL::Shared)
+    if(NOT WIN32)
+      install(FILES
+        $<TARGET_FILE:MKL::Interface>
+        DESTINATION ${AF_INSTALL_LIB_DIR}
+        COMPONENT mkl_dependencies)
+    endif()
+
     install(FILES
-      $<TARGET_FILE:MKL::Interface>
+      $<TARGET_FILE:MKL::Shared>
+      $<TARGET_FILE:MKL::ThreadLayer>
+      ${MKL_RUNTIME_KERNEL_LIBRARIES}
+
+      # This variable is used to add tbb.so.2 library because the main lib
+      # is a linker script and not a symlink so it cant be resolved using
+      # get_filename_component
+      ${AF_ADDITIONAL_MKL_LIBRARIES}
       DESTINATION ${AF_INSTALL_LIB_DIR}
       COMPONENT mkl_dependencies)
   endif()
-
-  install(FILES
-    $<TARGET_FILE:MKL::Shared>
-    $<TARGET_FILE:MKL::ThreadLayer>
-    ${MKL_RUNTIME_KERNEL_LIBRARIES}
-
-    # This variable is used to add tbb.so.2 library because the main lib
-    # is a linker script and not a symlink so it cant be resolved using
-    # get_filename_component
-    ${AF_ADDITIONAL_MKL_LIBRARIES}
-    DESTINATION ${AF_INSTALL_LIB_DIR}
-    COMPONENT mkl_dependencies)
 endif()
 
 # This file will be used to create the config file for the build directory.
