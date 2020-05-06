@@ -91,7 +91,9 @@ target_link_libraries(af
 if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::Shared)
   target_link_libraries(af
     PRIVATE
-      MKL::Shared)
+      $<$<BOOL:${AF_WITH_STATIC_MKL}>:MKL::Static>
+      $<$<NOT:$<BOOL:${AF_WITH_STATIC_MKL}>>:MKL::Shared>
+      )
 endif()
 
 

@@ -304,7 +304,8 @@ if(USE_CPU_MKL)
       cpp_api_interface
       afcommon_interface
       cpu_sort_by_key
-      MKL::Shared
+      $<$<BOOL:${AF_WITH_STATIC_MKL}>:MKL::Static>
+      $<$<NOT:$<BOOL:${AF_WITH_STATIC_MKL}>>:MKL::Shared>
       Threads::Threads
     )
 else()
