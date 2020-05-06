@@ -88,10 +88,8 @@ target_link_libraries(af
 # pass the RTLD_GLOBAL flag to dlload, but that causes issues with the ArrayFire
 # libraries. To get around this we are also linking the unified backend with
 # the MKL library
-if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::Shared)
-  target_link_libraries(af
-    PRIVATE
-      MKL::Shared)
+if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::Shared AND NOT AF_WITH_STATIC_MKL)
+  target_link_libraries(af PRIVATE MKL::Shared)
 endif()
 
 
