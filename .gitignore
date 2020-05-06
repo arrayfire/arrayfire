@@ -16,3 +16,7 @@ compile_commands.json
 venv
 test/gtest
 src/backend/cuda/cub
+conanbuildinfo*
+conaninfo*
+conan.lock
+graph_info.json
