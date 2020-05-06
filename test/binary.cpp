@@ -292,7 +292,7 @@ BITOP(bitshiftr, uintl, >>)
 #define UBITOP(func, T)                                     \
     TEST(BinaryTests, Test_##func##_##T) {                  \
         af_dtype ty   = (af_dtype)dtype_traits<T>::af_type; \
-        const T vala  = 4095;                               \
+        const T vala  = 127u;                               \
         const T valc  = ~vala;                              \
         const int num = 10;                                 \
         af::array a   = af::constant(vala, num, ty);        \
