@@ -484,11 +484,15 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
                                      sizeof(int), &n_reduced_host);
 
         // reset flags
-        getQueue().enqueueFillBuffer<int>(*needs_another_reduction.get(), 0, 0,
-                                          sizeof(int));
-        getQueue().enqueueFillBuffer<int>(*needs_block_boundary_reduction.get(),
-                                          0, 0, sizeof(int));
+        needs_block_boundary_reduction_host = 0;
+        needs_another_reduction_host        = 0;
 
+        getQueue().enqueueWriteBuffer(*needs_another_reduction.get(), CL_FALSE,
+                                      0, sizeof(int),
+                                      &needs_another_reduction_host);
+        getQueue().enqueueWriteBuffer(*needs_block_boundary_reduction.get(),
+                                      CL_FALSE, 0, sizeof(int),
+                                      &needs_block_boundary_reduction_host);
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
         launch_test_needs_reduction<Tk>(*needs_another_reduction.get(),
@@ -496,11 +500,11 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
                                         t_reduced_keys, n_reduced_host,
                                         numBlocksD0, numThreads);
 
-        getQueue().enqueueReadBuffer(*needs_another_reduction.get(), true, 0,
+        getQueue().enqueueReadBuffer(*needs_another_reduction.get(), CL_TRUE, 0,
                                      sizeof(int),
                                      &needs_another_reduction_host);
         getQueue().enqueueReadBuffer(*needs_block_boundary_reduction.get(),
-                                     true, 0, sizeof(int),
+                                     CL_TRUE, 0, sizeof(int),
                                      &needs_block_boundary_reduction_host);
 
         if (needs_block_boundary_reduction_host &&
@@ -600,10 +604,15 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
                                      sizeof(int), &n_reduced_host);
 
         // reset flags
-        getQueue().enqueueFillBuffer<int>(*needs_another_reduction.get(), 0, 0,
-                                          sizeof(int));
-        getQueue().enqueueFillBuffer<int>(*needs_block_boundary_reduction.get(),
-                                          0, 0, sizeof(int));
+        needs_block_boundary_reduction_host = 0;
+        needs_another_reduction_host        = 0;
+
+        getQueue().enqueueWriteBuffer(*needs_another_reduction.get(), CL_FALSE,
+                                      0, sizeof(int),
+                                      &needs_another_reduction_host);
+        getQueue().enqueueWriteBuffer(*needs_block_boundary_reduction.get(),
+                                      CL_FALSE, 0, sizeof(int),
+                                      &needs_block_boundary_reduction_host);
 
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
@@ -612,11 +621,11 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
                                         t_reduced_keys, n_reduced_host,
                                         numBlocksD0, numThreads);
 
-        getQueue().enqueueReadBuffer(*needs_another_reduction.get(), true, 0,
+        getQueue().enqueueReadBuffer(*needs_another_reduction.get(), CL_TRUE, 0,
                                      sizeof(int),
                                      &needs_another_reduction_host);
         getQueue().enqueueReadBuffer(*needs_block_boundary_reduction.get(),
-                                     true, 0, sizeof(int),
+                                     CL_TRUE, 0, sizeof(int),
                                      &needs_block_boundary_reduction_host);
 
         if (needs_block_boundary_reduction_host &&
