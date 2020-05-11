@@ -63,7 +63,7 @@ af_err af_orb(af_features* feat, af_array* desc, const af_array in,
         ARG_ASSERT(6, levels > 0);
 
         dim_t in_ndims = dims.ndims();
-        DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
+        DIM_ASSERT(1, (in_ndims == 2));
 
         af_array tmp_desc;
         af_dtype type = info.getType();
