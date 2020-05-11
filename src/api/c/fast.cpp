@@ -64,7 +64,7 @@ af_err af_fast(af_features *out, const af_array in, const float thr,
         ARG_ASSERT(6, (feature_ratio > 0.0f && feature_ratio <= 1.0f));
 
         dim_t in_ndims = dims.ndims();
-        DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
+        DIM_ASSERT(1, (in_ndims == 2));
 
         af_dtype type = info.getType();
         switch (type) {

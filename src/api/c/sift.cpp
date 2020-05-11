@@ -129,7 +129,7 @@ af_err af_gloh(af_features* feat, af_array* desc, const af_array in,
         ARG_ASSERT(9, feature_ratio > 0.0f);
 
         dim_t in_ndims = dims.ndims();
-        DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
+        DIM_ASSERT(1, (in_ndims == 2));
 
         af_array tmp_desc;
         af_dtype type = info.getType();
