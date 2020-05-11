@@ -500,8 +500,8 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
                                         t_reduced_keys, n_reduced_host,
                                         numBlocksD0, numThreads);
 
-        getQueue().enqueueReadBuffer(*needs_another_reduction.get(), CL_TRUE, 0,
-                                     sizeof(int),
+        getQueue().enqueueReadBuffer(*needs_another_reduction.get(), CL_FALSE,
+                                     0, sizeof(int),
                                      &needs_another_reduction_host);
         getQueue().enqueueReadBuffer(*needs_block_boundary_reduction.get(),
                                      CL_TRUE, 0, sizeof(int),
@@ -621,8 +621,8 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
                                         t_reduced_keys, n_reduced_host,
                                         numBlocksD0, numThreads);
 
-        getQueue().enqueueReadBuffer(*needs_another_reduction.get(), CL_TRUE, 0,
-                                     sizeof(int),
+        getQueue().enqueueReadBuffer(*needs_another_reduction.get(), CL_FALSE,
+                                     0, sizeof(int),
                                      &needs_another_reduction_host);
         getQueue().enqueueReadBuffer(*needs_block_boundary_reduction.get(),
                                      CL_TRUE, 0, sizeof(int),
