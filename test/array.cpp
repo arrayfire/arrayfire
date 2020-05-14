@@ -678,8 +678,6 @@ TEST(Broadcast, Simple4) {
 TEST(Broadcast, Simple5) {
     array A = range(dim4(2, 3, 5), 1);
     array B = -range(dim4(3, 5), 0);
-    array C = A + B;
-    af_print(C);
 
     EXPECT_THROW(A + B, af::exception);
 }

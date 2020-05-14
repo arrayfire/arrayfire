@@ -26,6 +26,7 @@
 #include <sparse_arith.hpp>
 
 #include <common/half.hpp>
+#include <iostream>
 #include <tuple>
 
 using af::dim4;
@@ -33,13 +34,18 @@ using af::dtype;
 using common::half;
 using detail::arithOp;
 using detail::arithOpD;
+using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::tile;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
 using detail::ushort;
+using std::make_tuple;
+using std::tie;
+using std::tuple;
 
 template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs,
@@ -57,76 +63,31 @@ static inline af_array arithOp(const af_array lhs, const af_array rhs,
     return getHandle(arithOp<T, op>(l, r, odims));
 }
 
-dim4 paddims(const dim4 &dims, unsigned offset) {
-    dim4 padded(1, 1, 1, 1);
+tuple<dim4, dim4> calcShapes(const ArrayInfo &linfo, const ArrayInfo &rinfo) {
+    const dim4 ldims     = linfo.dims();
+    const dim4 rdims     = rinfo.dims();
+    const bool lIsVector = linfo.isVector();
+    const bool rIsVector = rinfo.isVector();
 
-    const unsigned MAXDIMS = 4;
-    for (unsigned i = 0; i < MAXDIMS; ++i) {
-        if (i >= offset) { padded[i] = dims[i - offset]; }
-    }
-    return padded;
-}
+    if ((lIsVector && rIsVector) || (!lIsVector && !rIsVector)) {
+        return make_tuple(ldims, rdims);
+    } else {
+        int tdim            = 0;
+        const dim4 &vecDims = (lIsVector ? ldims : rdims);
+        const dim4 &arrDims = (lIsVector ? rdims : ldims);
 
-std::tuple<dim4, dim4, dim4, dim4, dim4> getBroadcastDims(
-    const ArrayInfo &linfo, const ArrayInfo &rinfo) {
-    const dim4 ldims = linfo.dims();
-    const dim4 rdims = rinfo.dims();
-
-    unsigned maxndims =
-        ldims.ndims() > rdims.ndims() ? ldims.ndims() : rdims.ndims();
-
-    // find how much each dim4 needs to be padded
-    unsigned loffset = maxndims - ldims.ndims();
-    unsigned roffset = maxndims - rdims.ndims();
-
-    // pre-pad each dimension with 1s if necessary
-    dim4 ldims_padded = paddims(ldims, loffset);
-    dim4 rdims_padded = paddims(rdims, roffset);
-
-    dim4 bdims;
-    dim4 ltile(1, 1, 1, 1);
-    dim4 rtile(1, 1, 1, 1);
-    // check that dimensions are compatible
-    for (unsigned i = 0; i < 4; ++i) {
-        if (ldims_padded[i] == rdims_padded[i]) {
-            bdims[i] = ldims_padded[i];
-        } else if (ldims_padded[i] == 1 && rdims_padded[i] != 1) {
-            bdims[i] = rdims_padded[i];
-            ltile[i] = rdims_padded[i];
-        } else if (ldims_padded[i] != 1 && rdims_padded[i] == 1) {
-            bdims[i] = ldims_padded[i];
-            rtile[i] = ldims_padded[i];
-        } else {
-            // if both are vectors, no matching broadcasts are possible
-            if (linfo.isVector() && rinfo.isVector()) {
-                AF_ERROR("Cannot broadcast mismatching input dimensions",
-                         AF_ERR_SIZE);
-            } else if (linfo.isVector()) {
-                // restart broadcast search with different padding for vector
-                if (loffset--) {
-                    ldims_padded = paddims(ldims, loffset);
-                    i            = 0;
-                } else {
-                    // no posible padding can be broadcast
-                    AF_ERROR(
-                        "Could not find valid broadcast between vector and array,\
-                              mismatching input dimensions",
-                        AF_ERR_SIZE);
-                }
-            } else if (rinfo.isVector()) {
-                if (roffset--) {
-                    rdims_padded = paddims(rdims, roffset);
-                    i            = 0;
-                } else {
-                    AF_ERROR(
-                        "Could not find valid broadcast between vector and array,\
-                              mismatching input dimensions",
-                        AF_ERR_SIZE);
-                }
+        for (int i = 0; i < arrDims.ndims(); i++) {
+            if (arrDims[i] == vecDims.elements()) {
+                tdim = i;
+                break;
             }
         }
+        dim4 nshape(1);
+        nshape[tdim] = vecDims.elements();
+
+        return make_tuple((lIsVector ? nshape : arrDims),
+                          (rIsVector ? nshape : arrDims));
     }
-    return std::make_tuple(bdims, ltile, rtile, ldims_padded, rdims_padded);
 }
 
 template<typename T, af_op_t op>
@@ -135,16 +96,27 @@ static inline af_array arithOpBroadcast(const af_array lhs,
     const ArrayInfo &linfo = getInfo(lhs);
     const ArrayInfo &rinfo = getInfo(rhs);
 
-    dim4 odims, ltile, rtile, lpad, rpad;
-    std::tie(odims, ltile, rtile, lpad, rpad) = getBroadcastDims(linfo, rinfo);
+    dim4 odims(1), ltile(1), rtile(1), lshape(1), rshape(1);
+    tie(lshape, rshape) = calcShapes(linfo, rinfo);
 
-    detail::Array<T> lhst =
-        detail::tile<T>(modDims(getArray<T>(lhs), lpad), ltile);
-    detail::Array<T> rhst =
-        detail::tile<T>(modDims(getArray<T>(rhs), rpad), rtile);
+    for (int d = 0; d < AF_MAX_DIMS; ++d) {
+        DIM_ASSERT(
+            1, ((lshape[d] == rshape[d]) || (lshape[d] == 1 && rshape[d] > 1) ||
+                (lshape[d] > 1 && rshape[d] == 1)));
+        odims[d] = std::max(lshape[d], rshape[d]);
+        if (lshape[d] == rshape[d]) {
+            ltile[d] = rtile[d] = 1;
+        } else if (lshape[d] == 1 && rshape[d] > 1) {
+            ltile[d] = odims[d];
+        } else if (lshape[d] > 1 && rshape[d] == 1) {
+            rtile[d] = odims[d];
+        }
+    }
 
-    af_array res = getHandle(arithOp<T, op>(lhst, rhst, odims));
-    return res;
+    Array<T> lhst = tile<T>(modDims(getArray<T>(lhs), lshape), ltile);
+    Array<T> rhst = tile<T>(modDims(getArray<T>(rhs), rshape), rtile);
+
+    return getHandle(arithOp<T, op>(lhst, rhst, odims));
 }
 
 template<typename T, af_op_t op>
