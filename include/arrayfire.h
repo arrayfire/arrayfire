@@ -364,9 +364,6 @@
 
      Machine learning functions
 
-     @defgroup ml_pool Pooling operations
-     Pool 2D, ND, maxpooling, minpooling, meanpooling
-
      @defgroup ml_convolution Convolutions
      Forward and backward convolution passes
    @}
