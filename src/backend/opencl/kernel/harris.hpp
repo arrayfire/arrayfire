@@ -7,29 +7,27 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cache.hpp>
+#pragma once
+
+#include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
-#include <err_opencl.hpp>
 #include <kernel/convolve_separable.hpp>
 #include <kernel/gradient.hpp>
 #include <kernel/range.hpp>
 #include <kernel/sort_by_key.hpp>
 #include <kernel_headers/harris.hpp>
 #include <memory.hpp>
-#include <program.hpp>
 #include <af/constants.h>
 #include <af/defines.h>
 
-#include <tuple>
+#include <array>
+#include <string>
 #include <vector>
 
 namespace opencl {
 namespace kernel {
-static const unsigned HARRIS_THREADS_PER_GROUP = 256;
-static const unsigned HARRIS_THREADS_X         = 16;
-static const unsigned HARRIS_THREADS_Y =
-    HARRIS_THREADS_PER_GROUP / HARRIS_THREADS_X;
 
 template<typename T>
 void gaussian1D(T *out, const int dim, double sigma = 0.0) {
@@ -63,62 +61,43 @@ void conv_helper(Array<T> &ixx, Array<T> &ixy, Array<T> &iyy,
 }
 
 template<typename T>
-std::tuple<cl::Kernel *, cl::Kernel *, cl::Kernel *, cl::Kernel *>
-getHarrisKernels() {
-    using cl::Kernel;
-    using cl::Program;
-    static const char *kernelNames[4] = {"second_order_deriv", "keep_corners",
-                                         "harris_responses", "non_maximal"};
+std::array<Kernel, 4> getHarrisKernels() {
+    static const std::string src(harris_cl, harris_cl_len);
 
-    kc_entry_t entries[4];
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+    };
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-    int device = getActiveDeviceId();
-
-    std::string checkName = kernelNames[0] + std::string("_") +
-                            std::string(dtype_traits<T>::getName());
-
-    entries[0] = kernelCache(device, checkName);
-
-    if (entries[0].prog == 0 && entries[0].ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << getTypeBuildDefinition<T>();
-
-        const char *ker_strs[] = {harris_cl};
-        const int ker_lens[]   = {harris_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-
-        for (int i = 0; i < 4; ++i) {
-            entries[i].prog = new Program(prog);
-            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i]);
-
-            std::string name = kernelNames[i] + std::string("_") +
-                               std::string(dtype_traits<T>::getName());
-
-            addKernelToCache(device, name, entries[i]);
-        }
-    } else {
-        for (int i = 1; i < 4; ++i) {
-            std::string name = kernelNames[i] + std::string("_") +
-                               std::string(dtype_traits<T>::getName());
-
-            entries[i] = kernelCache(device, name);
-        }
-    }
-
-    return std::make_tuple(entries[0].ker, entries[1].ker, entries[2].ker,
-                           entries[3].ker);
+    return {
+        common::findKernel("second_order_deriv", {src}, targs, options),
+        common::findKernel("keep_corners", {src}, targs, options),
+        common::findKernel("harris_responses", {src}, targs, options),
+        common::findKernel("non_maximal", {src}, targs, options),
+    };
 }
 
 template<typename T, typename convAccT>
 void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
             Param in, const unsigned max_corners, const float min_response,
             const float sigma, const unsigned filter_len, const float k_thr) {
-    auto kernels = getHarrisKernels<T>();
+    constexpr unsigned HARRIS_THREADS_PER_GROUP = 256;
+    constexpr unsigned HARRIS_THREADS_X         = 16;
+    constexpr unsigned HARRIS_THREADS_Y =
+        HARRIS_THREADS_PER_GROUP / HARRIS_THREADS_X;
+
     using cl::Buffer;
     using cl::EnqueueArgs;
     using cl::NDRange;
+
+    auto kernels = getHarrisKernels<T>();
+    auto soOp    = kernels[0];
+    auto kcOp    = kernels[1];
+    auto hrOp    = kernels[2];
+    auto nmOp    = kernels[3];
 
     // Window filter
     std::vector<convAccT> h_filter(filter_len);
@@ -151,9 +130,6 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
     const NDRange local_so(HARRIS_THREADS_PER_GROUP, 1);
     const NDRange global_so(blk_x_so * HARRIS_THREADS_PER_GROUP, 1);
 
-    auto soOp = KernelFunctor<Buffer, Buffer, Buffer, unsigned, Buffer, Buffer>(
-        *std::get<0>(kernels));
-
     // Compute second-order derivatives
     soOp(EnqueueArgs(getQueue(), global_so, local_so), *ixx.get(), *ixy.get(),
          *iyy.get(), in.info.dims[3] * in.info.strides[3], *ix.get(),
@@ -175,13 +151,10 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
     const NDRange global_hr(blk_x_hr * HARRIS_THREADS_X,
                             blk_y_hr * HARRIS_THREADS_Y);
 
-    auto hrOp = KernelFunctor<Buffer, unsigned, unsigned, Buffer, Buffer,
-                              Buffer, float, unsigned>(*std::get<2>(kernels));
-
     // Calculate Harris responses for all pixels
     hrOp(EnqueueArgs(getQueue(), global_hr, local_hr), *d_responses,
-         in.info.dims[0], in.info.dims[1], *ixx.get(), *ixy.get(), *iyy.get(),
-         k_thr, border_len);
+         static_cast<uint>(in.info.dims[0]), static_cast<uint>(in.info.dims[1]),
+         *ixx.get(), *ixy.get(), *iyy.get(), k_thr, border_len);
     CL_DEBUG_FINISH(getQueue());
 
     // Number of corners is not known a priori, limit maximum number of corners
@@ -199,14 +172,11 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
 
     const float min_r = (max_corners > 0) ? 0.f : min_response;
 
-    auto nmOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
-                              unsigned, float, unsigned, unsigned>(
-        *std::get<3>(kernels));
-
     // Perform non-maximal suppression
     nmOp(EnqueueArgs(getQueue(), global_hr, local_hr), *d_x_corners,
          *d_y_corners, *d_resp_corners, *d_corners_found, *d_responses,
-         in.info.dims[0], in.info.dims[1], min_r, border_len, corner_lim);
+         static_cast<uint>(in.info.dims[0]), static_cast<uint>(in.info.dims[1]),
+         min_r, border_len, corner_lim);
     CL_DEBUG_FINISH(getQueue());
 
     getQueue().enqueueReadBuffer(*d_corners_found, CL_TRUE, 0, sizeof(unsigned),
@@ -269,10 +239,6 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
         const NDRange local_kc(HARRIS_THREADS_PER_GROUP, 1);
         const NDRange global_kc(blk_x_kc * HARRIS_THREADS_PER_GROUP, 1);
 
-        auto kcOp =
-            KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
-                          Buffer, unsigned>(*std::get<1>(kernels));
-
         // Keep only the first corners_to_keep corners with higher Harris
         // responses
         kcOp(EnqueueArgs(getQueue(), global_kc, local_kc), *x_out.data,
@@ -304,5 +270,6 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
         resp_out.data = d_resp_corners;
     }
 }
+
 }  // namespace kernel
 }  // namespace opencl

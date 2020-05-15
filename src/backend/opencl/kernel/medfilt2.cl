@@ -19,7 +19,7 @@ int lIdx(int x, int y, int stride1, int stride0) {
     return (y * stride1 + x * stride0);
 }
 
-void load2ShrdMem(__local T* shrd, __global const T* in, int lx, int ly,
+void load2ShrdMem(local T* shrd, global const T* in, int lx, int ly,
                   int shrdStride, int dim0, int dim1, int gx, int gy,
                   int inStride1, int inStride0) {
     if (pad == AF_PAD_ZERO) {
@@ -38,8 +38,8 @@ void load2ShrdMem(__local T* shrd, __global const T* in, int lx, int ly,
     }
 }
 
-__kernel void medfilt2(__global T* out, KParam oInfo, __global const T* in,
-                       KParam iInfo, __local T* localMem, int nBBS0,
+kernel void medfilt2(global T* out, KParam oInfo, __global const T* in,
+                       KParam iInfo, local T* localMem, int nBBS0,
                        int nBBS1) {
     // calculate necessary offset and window parameters
     const int padding = w_len - 1;
@@ -49,9 +49,9 @@ __kernel void medfilt2(__global T* out, KParam oInfo, __global const T* in,
     // batch offsets
     unsigned b2 = get_group_id(0) / nBBS0;
     unsigned b3 = get_group_id(1) / nBBS1;
-    __global const T* iptr =
+    global const T* iptr =
         in + (b2 * iInfo.strides[2] + b3 * iInfo.strides[3] + iInfo.offset);
-    __global T* optr = out + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
+    global T* optr = out + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
     // local neighborhood indices
     int lx = get_local_id(0);

@@ -17,18 +17,12 @@
 #include <memory.hpp>
 #include <ops.hpp>
 #include <traits.hpp>
-#include <types.hpp>
 
 #include <string>
 #include <vector>
 
 namespace opencl {
 namespace kernel {
-constexpr int THREADS_X = 16;
-constexpr int THREADS_Y = 16;
-constexpr int CUBE_X    = 8;
-constexpr int CUBE_Y    = 8;
-constexpr int CUBE_Z    = 4;
 
 template<typename T>
 void morph(Param out, const Param in, const Param mask, bool isDilation) {
@@ -39,6 +33,9 @@ void morph(Param out, const Param in, const Param mask, bool isDilation) {
     using std::string;
     using std::vector;
 
+    constexpr int THREADS_X = 16;
+    constexpr int THREADS_Y = 16;
+
     ToNumStr<T> toNumStr;
     const T DefaultVal =
         isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
@@ -48,20 +45,20 @@ void morph(Param out, const Param in, const Param mask, bool isDilation) {
     const int windLen  = mask.info.dims[0];
     const int SeLength = (windLen <= 10 ? windLen : 0);
 
-    std::vector<TemplateArg> tmpltArgs = {
+    std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(isDilation),
         TemplateArg(SeLength),
     };
-    vector<string> compileOpts = {
+    vector<string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineValue(isDilation),
         DefineValue(SeLength),
         DefineKeyValue(init, toNumStr(DefaultVal)),
     };
-    compileOpts.emplace_back(getTypeBuildDefinition<T>());
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto morphOp = common::findKernel("morph", {src}, tmpltArgs, compileOpts);
+    auto morphOp = common::findKernel("morph", {src}, targs, options);
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -98,6 +95,10 @@ void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
     using std::string;
     using std::vector;
 
+    constexpr int CUBE_X = 8;
+    constexpr int CUBE_Y = 8;
+    constexpr int CUBE_Z = 4;
+
     ToNumStr<T> toNumStr;
     const T DefaultVal =
         isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
@@ -106,20 +107,20 @@ void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
 
     const int SeLength = mask.info.dims[0];
 
-    std::vector<TemplateArg> tmpltArgs = {
+    std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(isDilation),
         TemplateArg(SeLength),
     };
-    vector<string> compileOpts = {
+    vector<string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineValue(isDilation),
         DefineValue(SeLength),
         DefineKeyValue(init, toNumStr(DefaultVal)),
     };
-    compileOpts.emplace_back(getTypeBuildDefinition<T>());
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto morphOp = common::findKernel("morph3d", {src}, tmpltArgs, compileOpts);
+    auto morphOp = common::findKernel("morph3d", {src}, targs, options);
 
     NDRange local(CUBE_X, CUBE_Y, CUBE_Z);
 

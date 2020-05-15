@@ -19,21 +19,8 @@ Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
                 const af_interp_type method) {
     const af::dim4 &iDims = in.dims();
     af::dim4 oDims(odim0, odim1, iDims[2], iDims[3]);
-
     Array<T> out = createEmptyArray<T>(oDims);
-
-    switch (method) {
-        case AF_INTERP_NEAREST:
-            kernel::resize<T, AF_INTERP_NEAREST>(out, in);
-            break;
-        case AF_INTERP_BILINEAR:
-            kernel::resize<T, AF_INTERP_BILINEAR>(out, in);
-            break;
-        case AF_INTERP_LOWER:
-            kernel::resize<T, AF_INTERP_LOWER>(out, in);
-            break;
-        default: break;
-    }
+    kernel::resize<T>(out, in, method);
     return out;
 }
 

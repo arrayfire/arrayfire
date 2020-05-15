@@ -7,10 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cache.hpp>
+#pragma once
+
+#include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
-#include <err_opencl.hpp>
 #include <kernel/convolve_separable.hpp>
 #include <kernel/fast.hpp>
 #include <kernel/range.hpp>
@@ -18,17 +20,10 @@
 #include <kernel/sort_by_key.hpp>
 #include <kernel_headers/orb.hpp>
 #include <memory.hpp>
-#include <program.hpp>
 #include <af/defines.h>
-#include <vector>
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::LocalSpaceArg;
-using cl::NDRange;
-using cl::Program;
-using std::vector;
+#include <string>
+#include <vector>
 
 #if defined(__clang__)
 /* Clang/LLVM */
@@ -51,11 +46,11 @@ using std::vector;
 
 namespace opencl {
 namespace kernel {
-static const int ORB_THREADS   = 256;
-static const int ORB_THREADS_X = 16;
-static const int ORB_THREADS_Y = 16;
 
-static const float PI_VAL = 3.14159265358979323846f;
+constexpr int ORB_THREADS   = 256;
+constexpr int ORB_THREADS_X = 16;
+constexpr int ORB_THREADS_Y = 16;
+constexpr float PI_VAL      = 3.14159265358979323846f;
 
 // Reference pattern, generated for a patch size of 31x31, as suggested by
 // original ORB paper
@@ -81,50 +76,24 @@ void gaussian1D(T* out, const int dim, double sigma = 0.0) {
 }
 
 template<typename T>
-std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*, cl::Kernel*> getOrbKernels() {
-    static const char* kernelNames[4] = {"harris_response", "keep_features",
-                                         "centroid_angle", "extract_orb"};
+std::array<Kernel, 4> getOrbKernels() {
+    static const std::string src(orb_cl, orb_cl_len);
 
-    kc_entry_t entries[4];
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+    };
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(BLOCK_SIZE, ORB_THREADS_X),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    int device = getActiveDeviceId();
-
-    std::string checkName = kernelNames[0] + std::string("_") +
-                            std::string(dtype_traits<T>::getName());
-
-    entries[0] = kernelCache(device, checkName);
-
-    if (entries[0].prog == 0 && entries[0].ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D BLOCK_SIZE=" << ORB_THREADS_X;
-        options << getTypeBuildDefinition<T>();
-
-        const char* ker_strs[] = {orb_cl};
-        const int ker_lens[]   = {orb_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-
-        for (int i = 0; i < 4; ++i) {
-            entries[i].prog = new Program(prog);
-            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i]);
-
-            std::string name = kernelNames[i] + std::string("_") +
-                               std::string(dtype_traits<T>::getName());
-
-            addKernelToCache(device, name, entries[i]);
-        }
-    } else {
-        for (int i = 1; i < 4; ++i) {
-            std::string name = kernelNames[i] + std::string("_") +
-                               std::string(dtype_traits<T>::getName());
-
-            entries[i] = kernelCache(device, name);
-        }
-    }
-
-    return std::make_tuple(entries[0].ker, entries[1].ker, entries[2].ker,
-                           entries[3].ker);
+    return {
+        common::findKernel("harris_response", {src}, targs, compileOpts),
+        common::findKernel("keep_features", {src}, targs, compileOpts),
+        common::findKernel("centroid_angle", {src}, targs, compileOpts),
+        common::findKernel("extract_orb", {src}, targs, compileOpts),
+    };
 }
 
 template<typename T, typename convAccT>
@@ -132,6 +101,11 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
          Param& ori_out, Param& size_out, Param& desc_out, Param image,
          const float fast_thr, const unsigned max_feat, const float scl_fctr,
          const unsigned levels, const bool blur_img) {
+    using cl::Buffer;
+    using cl::EnqueueArgs;
+    using cl::NDRange;
+    using std::vector;
+
     auto kernels = getOrbKernels<T>();
 
     unsigned patch_size = REF_PAT_SIZE;
@@ -149,12 +123,12 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
         scl_sum += 1.f / (float)pow(scl_fctr, (float)i);
     }
 
-    vector<cl::Buffer*> d_x_pyr(max_levels);
-    vector<cl::Buffer*> d_y_pyr(max_levels);
-    vector<cl::Buffer*> d_score_pyr(max_levels);
-    vector<cl::Buffer*> d_ori_pyr(max_levels);
-    vector<cl::Buffer*> d_size_pyr(max_levels);
-    vector<cl::Buffer*> d_desc_pyr(max_levels);
+    vector<Buffer*> d_x_pyr(max_levels);
+    vector<Buffer*> d_y_pyr(max_levels);
+    vector<Buffer*> d_score_pyr(max_levels);
+    vector<Buffer*> d_ori_pyr(max_levels);
+    vector<Buffer*> d_size_pyr(max_levels);
+    vector<Buffer*> d_desc_pyr(max_levels);
 
     vector<unsigned> feat_pyr(max_levels);
     unsigned total_feat = 0;
@@ -204,7 +178,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
             lvl_img.data        = bufferAlloc(lvl_img.info.dims[3] *
                                        lvl_img.info.strides[3] * sizeof(T));
 
-            resize<T, AF_INTERP_BILINEAR>(lvl_img, prev_img);
+            resize<T>(lvl_img, prev_img, AF_INTERP_BILINEAR);
 
             if (i > 1) bufferFree(prev_img.data);
             prev_img = lvl_img;
@@ -222,9 +196,8 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
         unsigned edge = ceil(size * sqrt(2.f) / 2.f);
 
         // Detect FAST features
-        fast<T, true>(9, &lvl_feat, d_x_feat, d_y_feat, d_score_feat, lvl_img,
-                      fast_thr, 0.15f, edge);
-
+        fast<T>(9, &lvl_feat, d_x_feat, d_y_feat, d_score_feat, lvl_img,
+                fast_thr, 0.15f, edge, true);
         if (lvl_feat == 0) {
             feat_pyr[i] = 0;
 
@@ -235,14 +208,14 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
 
         bufferFree(d_score_feat.data);
 
-        unsigned usable_feat      = 0;
-        cl::Buffer* d_usable_feat = bufferAlloc(sizeof(unsigned));
+        unsigned usable_feat  = 0;
+        Buffer* d_usable_feat = bufferAlloc(sizeof(unsigned));
         getQueue().enqueueWriteBuffer(*d_usable_feat, CL_TRUE, 0,
                                       sizeof(unsigned), &usable_feat);
 
-        cl::Buffer* d_x_harris     = bufferAlloc(lvl_feat * sizeof(float));
-        cl::Buffer* d_y_harris     = bufferAlloc(lvl_feat * sizeof(float));
-        cl::Buffer* d_score_harris = bufferAlloc(lvl_feat * sizeof(float));
+        Buffer* d_x_harris     = bufferAlloc(lvl_feat * sizeof(float));
+        Buffer* d_y_harris     = bufferAlloc(lvl_feat * sizeof(float));
+        Buffer* d_score_harris = bufferAlloc(lvl_feat * sizeof(float));
 
         // Calculate Harris responses
         // Good block_size >= 7 (must be an odd number)
@@ -253,10 +226,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
         unsigned block_size = 7;
         float k_thr         = 0.04f;
 
-        auto hrOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer,
-                                  const unsigned, Buffer, Buffer, KParam,
-                                  const unsigned, const float, const unsigned>(
-            *std::get<0>(kernels));
+        auto hrOp = kernels[0];
 
         hrOp(EnqueueArgs(getQueue(), global, local), *d_x_harris, *d_y_harris,
              *d_score_harris, *d_x_feat.data, *d_y_feat.data, lvl_feat,
@@ -314,9 +284,9 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
 
         kernel::sort0ByKey<float, uint>(d_harris_sorted, d_harris_idx, false);
 
-        cl::Buffer* d_x_lvl     = bufferAlloc(usable_feat * sizeof(float));
-        cl::Buffer* d_y_lvl     = bufferAlloc(usable_feat * sizeof(float));
-        cl::Buffer* d_score_lvl = bufferAlloc(usable_feat * sizeof(float));
+        Buffer* d_x_lvl     = bufferAlloc(usable_feat * sizeof(float));
+        Buffer* d_y_lvl     = bufferAlloc(usable_feat * sizeof(float));
+        Buffer* d_score_lvl = bufferAlloc(usable_feat * sizeof(float));
 
         usable_feat = std::min(usable_feat, lvl_best[i]);
 
@@ -325,9 +295,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
         const NDRange local_keep(ORB_THREADS, 1);
         const NDRange global_keep(keep_blk * ORB_THREADS, 1);
 
-        auto kfOp =
-            KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
-                          Buffer, const unsigned>(*std::get<1>(kernels));
+        auto kfOp = kernels[1];
 
         kfOp(EnqueueArgs(getQueue(), global_keep, local_keep), *d_x_lvl,
              *d_y_lvl, *d_score_lvl, *d_x_harris, *d_y_harris,
@@ -339,8 +307,8 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
         bufferFree(d_harris_sorted.data);
         bufferFree(d_harris_idx.data);
 
-        cl::Buffer* d_ori_lvl  = bufferAlloc(usable_feat * sizeof(float));
-        cl::Buffer* d_size_lvl = bufferAlloc(usable_feat * sizeof(float));
+        Buffer* d_ori_lvl  = bufferAlloc(usable_feat * sizeof(float));
+        Buffer* d_size_lvl = bufferAlloc(usable_feat * sizeof(float));
 
         // Compute orientation of features
         const int centroid_blk_x = divup(usable_feat, ORB_THREADS_X);
@@ -348,9 +316,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
         const NDRange global_centroid(centroid_blk_x * ORB_THREADS_X,
                                       ORB_THREADS_Y);
 
-        auto caOp =
-            KernelFunctor<Buffer, Buffer, Buffer, const unsigned, Buffer,
-                          KParam, const unsigned>(*std::get<2>(kernels));
+        auto caOp = kernels[2];
 
         caOp(EnqueueArgs(getQueue(), global_centroid, local_centroid), *d_x_lvl,
              *d_y_lvl, *d_ori_lvl, usable_feat, *lvl_img.data, lvl_img.info,
@@ -399,20 +365,14 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
         }
 
         // Compute ORB descriptors
-        cl::Buffer* d_desc_lvl =
-            bufferAlloc(usable_feat * 8 * sizeof(unsigned));
+        Buffer* d_desc_lvl = bufferAlloc(usable_feat * 8 * sizeof(unsigned));
         {
             vector<unsigned> h_desc_lvl(usable_feat * 8);
             getQueue().enqueueWriteBuffer(*d_desc_lvl, CL_TRUE, 0,
                                           usable_feat * 8 * sizeof(unsigned),
                                           h_desc_lvl.data());
         }
-
-        auto eoOp =
-            KernelFunctor<Buffer, const unsigned, Buffer, Buffer, Buffer,
-                          Buffer, Buffer, KParam, const float, const unsigned>(
-                *std::get<3>(kernels));
-
+        auto eoOp = kernels[3];
         if (blur_img) {
             eoOp(EnqueueArgs(getQueue(), global_centroid, local_centroid),
                  *d_desc_lvl, usable_feat, *d_x_lvl, *d_y_lvl, *d_ori_lvl,

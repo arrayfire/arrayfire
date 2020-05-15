@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void test_needs_reduction(__global int *needs_another_reduction,
-                                   __global int *needs_block_boundary_reduced,
-                                   const __global Tk *iKeys, KParam iKInfo,
+kernel void test_needs_reduction(global int *needs_another_reduction,
+                                   global int *needs_block_boundary_reduced,
+                                   const global Tk *iKeys, KParam iKInfo,
                                    int n) {
     const uint lid = get_local_id(0);
     const uint bid = get_group_id(0);
@@ -18,7 +18,7 @@ __kernel void test_needs_reduction(__global int *needs_another_reduction,
     Tk k;
     if (gid < n) { k = iKeys[gid]; }
 
-    __local Tk keys[DIMX];
+    local Tk keys[DIMX];
     keys[lid] = k;
     barrier(CLK_LOCAL_MEM_FENCE);
 

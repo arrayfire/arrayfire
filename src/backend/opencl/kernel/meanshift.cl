@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void meanshift(__global T* d_dst, KParam oInfo,
-                        __global const T* d_src, KParam iInfo, int radius,
+kernel void meanshift(global T* d_dst, KParam oInfo,
+                        global const T* d_src, KParam iInfo, int radius,
                         float cvar, unsigned numIters, int nBBS0, int nBBS1) {
     unsigned b2 = get_group_id(0) / nBBS0;
     unsigned b3 = get_group_id(1) / nBBS1;
@@ -18,9 +18,9 @@ __kernel void meanshift(__global T* d_dst, KParam oInfo,
         get_local_size(1) * (get_group_id(1) - b3 * nBBS1) + get_local_id(1);
 
     if (gx < iInfo.dims[0] && gy < iInfo.dims[1]) {
-        __global const T* iptr = d_src + (b2 * iInfo.strides[2] +
+        global const T* iptr = d_src + (b2 * iInfo.strides[2] +
                                           b3 * iInfo.strides[3] + iInfo.offset);
-        __global T* optr =
+        global T* optr =
             d_dst + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
         int meanPosI = gx;

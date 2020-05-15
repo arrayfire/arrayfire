@@ -29,8 +29,8 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     Param y;
     Param score;
 
-    kernel::fast_dispatch<T>(arc_length, non_max, &nfeat, x, y, score, in, thr,
-                             feature_ratio, edge);
+    kernel::fast<T>(arc_length, &nfeat, x, y, score, in, thr, feature_ratio,
+                    edge, non_max);
 
     if (nfeat > 0) {
         x_out     = createParamArray<float>(x, true);

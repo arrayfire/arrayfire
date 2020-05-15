@@ -65,19 +65,14 @@ Array<T> copyArray(const Array<T> &A) {
 
 template<typename T>
 void multiply_inplace(Array<T> &in, double val) {
-    kernel::copy<T, T, true>(in, in, in.ndims(), scalar<T>(0), val);
+    kernel::copy<T, T>(in, in, in.ndims(), scalar<T>(0), val, true);
 }
 
 template<typename inType, typename outType>
 struct copyWrapper {
     void operator()(Array<outType> &out, Array<inType> const &in) {
-        if (in.dims() == out.dims()) {
-            kernel::copy<inType, outType, true>(out, in, in.ndims(),
-                                                scalar<outType>(0), 1);
-        } else {
-            kernel::copy<inType, outType, false>(out, in, in.ndims(),
-                                                 scalar<outType>(0), 1);
-        }
+        kernel::copy<inType, outType>(out, in, in.ndims(), scalar<outType>(0),
+                                      1, in.dims() == out.dims());
     }
 };
 
@@ -92,11 +87,8 @@ struct copyWrapper<T, T> {
             getQueue().enqueueCopyBuffer(*in.get(), *out.get(), in_offset,
                                          out_offset, in.elements() * sizeof(T));
         } else {
-            if (in.dims() == out.dims()) {
-                kernel::copy<T, T, true>(out, in, in.ndims(), scalar<T>(0), 1);
-            } else {
-                kernel::copy<T, T, false>(out, in, in.ndims(), scalar<T>(0), 1);
-            }
+            kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1,
+                               in.dims() == out.dims());
         }
     }
 };

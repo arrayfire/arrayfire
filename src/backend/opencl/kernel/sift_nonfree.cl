@@ -128,7 +128,7 @@ void gaussianElimination(float* A, float* b, float* x, const int n) {
     }
 }
 
-inline void fatomic_add(volatile __local float* source, const float operand) {
+inline void fatomic_add(volatile local float* source, const float operand) {
     union {
         unsigned int intVal;
         float floatVal;
@@ -140,11 +140,11 @@ inline void fatomic_add(volatile __local float* source, const float operand) {
     do {
         prevVal.floatVal = *source;
         newVal.floatVal  = prevVal.floatVal + operand;
-    } while (atomic_cmpxchg((volatile __local unsigned int*)source,
+    } while (atomic_cmpxchg((volatile local unsigned int*)source,
                             prevVal.intVal, newVal.intVal) != prevVal.intVal);
 }
 
-inline void normalizeDesc(__local float* desc, __local float* accum,
+inline void normalizeDesc(local float* desc, __local float* accum,
                           const int histlen, int lid_x, int lid_y, int lsz_x) {
     for (int i = lid_x; i < histlen; i += lsz_x)
         accum[i] = desc[lid_y * histlen + i] * desc[lid_y * histlen + i];
@@ -179,7 +179,7 @@ inline void normalizeDesc(__local float* desc, __local float* accum,
     barrier(CLK_LOCAL_MEM_FENCE);
 }
 
-inline void normalizeGLOHDesc(__local float* desc, __local float* accum,
+inline void normalizeGLOHDesc(local float* desc, __local float* accum,
                               const int histlen, int lid_x, int lid_y,
                               int lsz_x) {
     for (int i = lid_x; i < histlen; i += lsz_x)
@@ -219,7 +219,7 @@ inline void normalizeGLOHDesc(__local float* desc, __local float* accum,
     barrier(CLK_LOCAL_MEM_FENCE);
 }
 
-__kernel void sub(__global T* out, __global const T* in, unsigned nel,
+kernel void sub(global T* out, __global const T* in, unsigned nel,
                   unsigned n_layers) {
     unsigned i = get_global_id(0);
 
@@ -235,11 +235,11 @@ __kernel void sub(__global T* out, __global const T* in, unsigned nel,
 
 // Determines whether a pixel is a scale-space extremum by comparing it to its
 // 3x3x3 pixel neighborhood.
-__kernel void detectExtrema(__global float* x_out, __global float* y_out,
-                            __global unsigned* layer_out,
-                            __global unsigned* counter, __global const T* dog,
+kernel void detectExtrema(global float* x_out, __global float* y_out,
+                            global unsigned* layer_out,
+                            global unsigned* counter, __global const T* dog,
                             KParam iDoG, const unsigned max_feat,
-                            const float threshold, __local float* l_mem) {
+                            const float threshold, local float* l_mem) {
     const int dim0 = iDoG.dims[0];
     const int dim1 = iDoG.dims[1];
     const int imel = iDoG.dims[0] * iDoG.dims[1];
@@ -255,9 +255,9 @@ __kernel void detectExtrema(__global float* x_out, __global float* y_out,
     const int l_i = lsz_i + 2;
     const int l_j = lsz_j + 2;
 
-    __local float* l_prev   = l_mem;
-    __local float* l_center = l_mem + l_i * l_j;
-    __local float* l_next   = l_mem + l_i * l_j * 2;
+    local float* l_prev   = l_mem;
+    local float* l_center = l_mem + l_i * l_j;
+    local float* l_next   = l_mem + l_i * l_j * 2;
 
     const int x = lid_i + 1;
     const int y = lid_j + 1;
@@ -352,12 +352,12 @@ __kernel void detectExtrema(__global float* x_out, __global float* y_out,
 // Interpolates a scale-space extremum's location and scale to subpixel
 // accuracy to form an image feature. Rejects features with low contrast.
 // Based on Section 4 of Lowe's paper.
-__kernel void interpolateExtrema(
-    __global float* x_out, __global float* y_out, __global unsigned* layer_out,
-    __global float* response_out, __global float* size_out,
-    __global unsigned* counter, __global const float* x_in,
-    __global const float* y_in, __global const unsigned* layer_in,
-    const unsigned extrema_feat, __global const T* dog_octave, KParam iDoG,
+kernel void interpolateExtrema(
+    global float* x_out, __global float* y_out, __global unsigned* layer_out,
+    global float* response_out, __global float* size_out,
+    global unsigned* counter, __global const float* x_in,
+    global const float* y_in, __global const unsigned* layer_in,
+    const unsigned extrema_feat, global const T* dog_octave, KParam iDoG,
     const unsigned max_feat, const unsigned octave, const unsigned n_layers,
     const float contrast_thr, const float edge_thr, const float sigma,
     const float img_scale) {
@@ -379,9 +379,9 @@ __kernel void interpolateExtrema(
         const int dim1 = iDoG.dims[1];
         const int imel = dim0 * dim1;
 
-        __global const T* prev   = dog_octave + (int)((layer - 1) * imel);
-        __global const T* center = dog_octave + (int)((layer)*imel);
-        __global const T* next   = dog_octave + (int)((layer + 1) * imel);
+        global const T* prev   = dog_octave + (int)((layer - 1) * imel);
+        global const T* center = dog_octave + (int)((layer)*imel);
+        global const T* next   = dog_octave + (int)((layer + 1) * imel);
 
         for (i = 0; i < MAX_INTERP_STEPS; i++) {
             float dD[3] = {
@@ -474,12 +474,12 @@ __kernel void interpolateExtrema(
 #undef NPTR
 
 // Remove duplicate keypoints
-__kernel void removeDuplicates(
-    __global float* x_out, __global float* y_out, __global unsigned* layer_out,
-    __global float* response_out, __global float* size_out,
-    __global unsigned* counter, __global const float* x_in,
-    __global const float* y_in, __global const unsigned* layer_in,
-    __global const float* response_in, __global const float* size_in,
+kernel void removeDuplicates(
+    global float* x_out, __global float* y_out, __global unsigned* layer_out,
+    global float* response_out, __global float* size_out,
+    global unsigned* counter, __global const float* x_in,
+    global const float* y_in, __global const unsigned* layer_in,
+    global const float* response_in, __global const float* size_in,
     const unsigned total_feat) {
     const unsigned f = get_global_id(0);
 
@@ -515,15 +515,15 @@ __kernel void removeDuplicates(
 // Computes a canonical orientation for each image feature in an array.  Based
 // on Section 5 of Lowe's paper.  This function adds features to the array when
 // there is more than one dominant orientation at a given feature location.
-__kernel void calcOrientation(
-    __global float* x_out, __global float* y_out, __global unsigned* layer_out,
-    __global float* response_out, __global float* size_out,
-    __global float* ori_out, __global unsigned* counter,
-    __global const float* x_in, __global const float* y_in,
-    __global const unsigned* layer_in, __global const float* response_in,
-    __global const float* size_in, const unsigned total_feat,
-    __global const T* gauss_octave, KParam iGauss, const unsigned max_feat,
-    const unsigned octave, const int double_input, __local float* l_mem) {
+kernel void calcOrientation(
+    global float* x_out, __global float* y_out, __global unsigned* layer_out,
+    global float* response_out, __global float* size_out,
+    global float* ori_out, __global unsigned* counter,
+    global const float* x_in, __global const float* y_in,
+    global const unsigned* layer_in, __global const float* response_in,
+    global const float* size_in, const unsigned total_feat,
+    global const T* gauss_octave, KParam iGauss, const unsigned max_feat,
+    const unsigned octave, const int double_input, local float* l_mem) {
     const int lid_x = get_local_id(0);
     const int lid_y = get_local_id(1);
     const int lsz_x = get_local_size(0);
@@ -532,8 +532,8 @@ __kernel void calcOrientation(
 
     const int n = ORI_HIST_BINS;
 
-    __local float* hist     = l_mem;
-    __local float* temphist = l_mem + n * 8;
+    local float* hist     = l_mem;
+    local float* temphist = l_mem + n * 8;
 
     // Initialize temporary histogram
     for (int i = lid_x; i < n; i += lsz_x) { hist[lid_y * n + i] = 0.f; }
@@ -565,7 +565,7 @@ __kernel void calcOrientation(
 
         // Calculate layer offset
         const int layer_offset = layer * dim0 * dim1;
-        __global const T* img  = gauss_octave + layer_offset;
+        global const T* img  = gauss_octave + layer_offset;
 
         // Calculate orientation histogram
         for (int l = lid_x; l < len * len; l += lsz_x) {
@@ -683,22 +683,22 @@ __kernel void calcOrientation(
 
 // Computes feature descriptors for features in an array.  Based on Section 6
 // of Lowe's paper.
-__kernel void computeDescriptor(
-    __global float* desc_out, const unsigned desc_len, const unsigned histsz,
-    __global const float* x_in, __global const float* y_in,
-    __global const unsigned* layer_in, __global const float* response_in,
-    __global const float* size_in, __global const float* ori_in,
-    const unsigned total_feat, __global const T* gauss_octave, KParam iGauss,
+kernel void computeDescriptor(
+    global float* desc_out, const unsigned desc_len, const unsigned histsz,
+    global const float* x_in, __global const float* y_in,
+    global const unsigned* layer_in, __global const float* response_in,
+    global const float* size_in, __global const float* ori_in,
+    const unsigned total_feat, global const T* gauss_octave, KParam iGauss,
     const int d, const int n, const float scale, const int n_layers,
-    __local float* l_mem) {
+    local float* l_mem) {
     const int lid_x = get_local_id(0);
     const int lid_y = get_local_id(1);
     const int lsz_x = get_local_size(0);
 
     const int f = get_global_id(1);
 
-    __local float* desc  = l_mem;
-    __local float* accum = l_mem + desc_len * histsz;
+    local float* desc  = l_mem;
+    local float* accum = l_mem + desc_len * histsz;
 
     for (int i = lid_x; i < desc_len * histsz; i += lsz_x)
         desc[lid_y * desc_len + i] = 0.f;
@@ -715,7 +715,7 @@ __kernel void computeDescriptor(
         // Points img to correct Gaussian pyramid layer
         const int dim0        = iGauss.dims[0];
         const int dim1        = iGauss.dims[1];
-        __global const T* img = gauss_octave + (layer * dim0 * dim1);
+        global const T* img = gauss_octave + (layer * dim0 * dim1);
 
         float cos_t        = cos(ori);
         float sin_t        = sin(ori);
@@ -815,22 +815,22 @@ __kernel void computeDescriptor(
     }
 }
 
-__kernel void computeGLOHDescriptor(
-    __global float* desc_out, const unsigned desc_len, const unsigned histsz,
-    __global const float* x_in, __global const float* y_in,
-    __global const unsigned* layer_in, __global const float* response_in,
-    __global const float* size_in, __global const float* ori_in,
-    const unsigned total_feat, __global const T* gauss_octave, KParam iGauss,
+kernel void computeGLOHDescriptor(
+    global float* desc_out, const unsigned desc_len, const unsigned histsz,
+    global const float* x_in, __global const float* y_in,
+    global const unsigned* layer_in, __global const float* response_in,
+    global const float* size_in, __global const float* ori_in,
+    const unsigned total_feat, global const T* gauss_octave, KParam iGauss,
     const int d, const unsigned rb, const unsigned ab, const unsigned hb,
-    const float scale, const int n_layers, __local float* l_mem) {
+    const float scale, const int n_layers, local float* l_mem) {
     const int lid_x = get_local_id(0);
     const int lid_y = get_local_id(1);
     const int lsz_x = get_local_size(0);
 
     const int f = get_global_id(1);
 
-    __local float* desc  = l_mem;
-    __local float* accum = l_mem + desc_len * histsz;
+    local float* desc  = l_mem;
+    local float* accum = l_mem + desc_len * histsz;
 
     for (int i = lid_x; i < desc_len * histsz; i += lsz_x)
         desc[lid_y * desc_len + i] = 0.f;
@@ -847,7 +847,7 @@ __kernel void computeGLOHDescriptor(
         // Points img to correct Gaussian pyramid layer
         const int dim0        = iGauss.dims[0];
         const int dim1        = iGauss.dims[1];
-        __global const T* img = gauss_octave + (layer * dim0 * dim1);
+        global const T* img = gauss_octave + (layer * dim0 * dim1);
 
         float cos_t              = cos(ori);
         float sin_t              = sin(ori);

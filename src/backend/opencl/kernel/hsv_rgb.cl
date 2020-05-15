@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-kernel void convert(global T* out, KParam oInfo, global const T* in,
-                    KParam iInfo, int nBBS) {
+kernel void hsvrgbConvert(global T* out, KParam oInfo, global const T* in,
+                          KParam iInfo, int nBBS) {
     // batch offsets
     unsigned batchId    = get_group_id(0) / nBBS;
     global const T* src = in + (batchId * iInfo.strides[3]);

@@ -10,7 +10,6 @@
 #include <kernel/convolve/conv_common.hpp>
 
 namespace opencl {
-
 namespace kernel {
 
 template<typename T, typename aT, bool expand>
@@ -67,5 +66,4 @@ INSTANTIATE(uintl, float)
 INSTANTIATE(intl, float)
 
 }  // namespace kernel
-
 }  // namespace opencl

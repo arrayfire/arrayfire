@@ -10,73 +10,51 @@
 #pragma once
 
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
-#include <err_opencl.hpp>
 #include <kernel_headers/bilateral.hpp>
-#include <program.hpp>
 #include <traits.hpp>
 #include <af/opencl.h>
+
 #include <algorithm>
 #include <string>
-
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::LocalSpaceArg;
-using cl::NDRange;
-using cl::Program;
-using std::string;
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-static const int THREADS_X = 16;
-static const int THREADS_Y = 16;
 
-template<typename inType, typename outType, bool isColor>
-void bilateral(Param out, const Param in, float s_sigma, float c_sigma) {
-    std::string refName = std::string("bilateral_") +
-                          std::string(dtype_traits<inType>::getName()) +
-                          std::string(dtype_traits<outType>::getName()) +
-                          std::to_string(isColor);
+template<typename inType, typename outType>
+void bilateral(Param out, const Param in, const float s_sigma,
+               const float c_sigma, const bool isColor) {
+    constexpr int THREADS_X     = 16;
+    constexpr int THREADS_Y     = 16;
+    constexpr bool UseNativeExp = !std::is_same<inType, double>::value ||
+                                  std::is_same<inType, cdouble>::value;
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    static const std::string src(bilateral_cl, bilateral_cl_len);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D inType=" << dtype_traits<inType>::getName()
-                << " -D outType=" << dtype_traits<outType>::getName();
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<inType>(),
+        TemplateTypename<outType>(),
+        TemplateArg(isColor),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(inType, dtype_traits<inType>::getName()),
+        DefineKeyValue(outType, dtype_traits<outType>::getName()),
+    };
+    if (UseNativeExp) { options.emplace_back(DefineKey(USE_NATIVE_EXP)); }
+    options.emplace_back(getTypeBuildDefinition<inType>());
 
-        options << getTypeBuildDefinition<inType>();
-        if (!std::is_same<inType, double>::value ||
-            std::is_same<inType, cdouble>::value) {
-            options << " -D USE_NATIVE_EXP";
-        }
+    auto bilateralOp = common::findKernel("bilateral", {src}, targs, options);
 
-        const char* ker_strs[] = {bilateral_cl};
-        const int ker_lens[]   = {bilateral_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "bilateral");
-
-        addKernelToCache(device, refName, entry);
-    }
-
-    auto bilateralOp =
-        KernelFunctor<Buffer, KParam, Buffer, KParam, LocalSpaceArg,
-                      LocalSpaceArg, float, float, int, int, int>(*entry.ker);
-
-    NDRange local(THREADS_X, THREADS_Y);
+    cl::NDRange local(THREADS_X, THREADS_Y);
 
     int blk_x = divup(in.info.dims[0], THREADS_X);
     int blk_y = divup(in.info.dims[1], THREADS_Y);
 
-    NDRange global(blk_x * in.info.dims[2] * THREADS_X,
-                   blk_y * in.info.dims[3] * THREADS_Y);
+    cl::NDRange global(blk_x * in.info.dims[2] * THREADS_X,
+                       blk_y * in.info.dims[3] * THREADS_Y);
 
     // calculate local memory size
     int radius          = (int)std::max(s_sigma * 1.5f, 1.f);
@@ -93,11 +71,10 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma) {
         OPENCL_NOT_SUPPORTED(errMessage);
     }
 
-    bilateralOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+    bilateralOp(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
                 *in.data, in.info, cl::Local(num_shrd_elems * sizeof(outType)),
                 cl::Local(num_gauss_elems * sizeof(outType)), s_sigma, c_sigma,
                 num_shrd_elems, blk_x, blk_y);
-
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel

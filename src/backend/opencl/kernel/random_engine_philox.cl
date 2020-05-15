@@ -97,8 +97,8 @@ void philox(uint key[2], uint ctr[4]) {
     philoxRound(key, ctr);
 }
 
-__kernel void generate(__global T *output, unsigned elements, unsigned hic,
-                       unsigned loc, unsigned hi, unsigned lo) {
+kernel void philoxGenerator(global T *output, unsigned elements, unsigned hic,
+                            unsigned loc, unsigned hi, unsigned lo) {
     unsigned gid   = get_group_id(0);
     unsigned off   = get_local_size(0);
     unsigned index = gid * ELEMENTS_PER_BLOCK + get_local_id(0);

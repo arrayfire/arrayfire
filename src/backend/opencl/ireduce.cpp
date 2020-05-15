@@ -36,7 +36,7 @@ void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim,
 
 template<af_op_t op, typename T>
 T ireduce_all(unsigned *loc, const Array<T> &in) {
-    return kernel::ireduce_all<T, op>(loc, in);
+    return kernel::ireduceAll<T, op>(loc, in);
 }
 
 #define INSTANTIATE(ROp, T)                                           \

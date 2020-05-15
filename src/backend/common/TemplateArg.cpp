@@ -271,3 +271,16 @@ string toString(AF_BATCH_KIND val) {
 #undef CASE_STMT
     return retVal;
 }
+
+template<>
+string toString(af_homography_type val) {
+    const char* retVal = NULL;
+#define CASE_STMT(v) \
+    case v: retVal = #v; break
+    switch (val) {
+        CASE_STMT(AF_HOMOGRAPHY_RANSAC);
+        CASE_STMT(AF_HOMOGRAPHY_LMEDS);
+    }
+#undef CASE_STMT
+    return retVal;
+}

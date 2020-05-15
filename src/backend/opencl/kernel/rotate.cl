@@ -15,11 +15,11 @@ typedef struct {
     float tmat[6];
 } tmat_t;
 
-__kernel void rotate_kernel(__global T *d_out, const KParam out,
-                            __global const T *d_in, const KParam in,
-                            const tmat_t t, const int nimages,
-                            const int batches, const int blocksXPerImage,
-                            const int blocksYPerImage, int method) {
+kernel void rotateKernel(global T *d_out, const KParam out,
+                         global const T *d_in, const KParam in,
+                         const tmat_t t, const int nimages, const int batches,
+                         const int blocksXPerImage, const int blocksYPerImage,
+                         int method) {
     // Compute which image set
     const int setId      = get_group_id(0) / blocksXPerImage;
     const int blockIdx_x = get_group_id(0) - setId * blocksXPerImage;

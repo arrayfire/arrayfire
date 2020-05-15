@@ -7,11 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void scan_dim_kernel(__global To *oData, KParam oInfo,
-                              __global To *tData, KParam tInfo,
-                              const __global Ti *iData, KParam iInfo,
-                              uint groups_x, uint groups_y, uint groups_dim,
-                              uint lim) {
+kernel void scanDim(global To *oData, KParam oInfo, global To *tData,
+                    KParam tInfo, const global Ti *iData, KParam iInfo,
+                    uint groups_x, uint groups_y, uint groups_dim, uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
     const int lid  = lidy * THREADS_X + lidx;
@@ -49,10 +47,10 @@ __kernel void scan_dim_kernel(__global To *oData, KParam oInfo,
     const int ostride_dim = oInfo.strides[kDim];
     const int istride_dim = iInfo.strides[kDim];
 
-    __local To l_val0[THREADS_X * DIMY];
-    __local To l_val1[THREADS_X * DIMY];
-    __local To *l_val = l_val0;
-    __local To l_tmp[THREADS_X];
+    local To l_val0[THREADS_X * DIMY];
+    local To l_val1[THREADS_X * DIMY];
+    local To *l_val = l_val0;
+    local To l_tmp[THREADS_X];
 
     bool flip         = 0;
     const To init_val = init;
@@ -79,7 +77,7 @@ __kernel void scan_dim_kernel(__global To *oData, KParam oInfo,
 
         val = binOp(val, l_tmp[lidx]);
 
-        if (inclusive_scan != 0) {
+        if (INCLUSIVE_SCAN != 0) {
             if (cond) { *oData = val; }
         } else if (is_valid) {
             if (id_dim == (out_dim - 1)) {
@@ -95,15 +93,15 @@ __kernel void scan_dim_kernel(__global To *oData, KParam oInfo,
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    if (!isFinalPass && is_valid && (groupId_dim < tInfo.dims[kDim]) && isLast) {
+    if (!IS_FINAL_PASS && is_valid && (groupId_dim < tInfo.dims[kDim]) &&
+        isLast) {
         *tData = val;
     }
 }
 
-__kernel void bcast_dim_kernel(__global To *oData, KParam oInfo,
-                               const __global To *tData, KParam tInfo,
-                               uint groups_x, uint groups_y, uint groups_dim,
-                               uint lim) {
+kernel void bcastDim(global To *oData, KParam oInfo, const global To *tData,
+                     KParam tInfo, uint groups_x, uint groups_y,
+                     uint groups_dim, uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
     const int lid  = lidy * THREADS_X + lidx;
@@ -131,7 +129,7 @@ __kernel void bcast_dim_kernel(__global To *oData, KParam oInfo,
                  ids[1] * oInfo.strides[1] + ids[0];
 
         // Shift broadcast one step to the right for exclusive scan (#2366)
-        int offset = inclusive_scan ? 0 : oInfo.strides[kDim];
+        int offset = INCLUSIVE_SCAN ? 0 : oInfo.strides[kDim];
         oData += offset;
 
         const int id_dim  = ids[kDim];

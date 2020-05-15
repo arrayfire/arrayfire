@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-void diff_this(__global T* out, __global const T* in, const int oMem,
+void diff_this(global T* out, __global const T* in, const int oMem,
                const int iMem0, const int iMem1, const int iMem2) {
     if (isDiff2 == 0) {
         out[oMem] = in[iMem1] - in[iMem0];
@@ -16,7 +16,7 @@ void diff_this(__global T* out, __global const T* in, const int oMem,
     }
 }
 
-__kernel void diff_kernel(__global T* out, __global const T* in,
+kernel void diff_kernel(global T* out, __global const T* in,
                           const KParam op, const KParam ip, const int oElem,
                           const int blocksPerMatX, const int blocksPerMatY) {
     const int idz = get_group_id(0) / blocksPerMatX;

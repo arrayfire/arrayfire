@@ -43,11 +43,11 @@ T __ccmul(T lhs, T rhs) {
 // row, `THREADS_PER_GROUP` dense columns). The threads in the block load the
 // sparse row into local memmory and then perform individual "dot" operations.
 
-__kernel void csrmm_nt(__global T *output, __global const T *values,
-                       __global const int *rowidx, __global const int *colidx,
-                       const int M, const int N, __global const T *rhs,
+kernel void csrmm_nt(global T *output, __global const T *values,
+                       global const int *rowidx, __global const int *colidx,
+                       const int M, const int N, global const T *rhs,
                        const KParam rinfo, const T alpha, const T beta,
-                       __global int *counter) {
+                       global int *counter) {
     int gidx = get_global_id(0);
     int lid  = get_local_id(0);
 
@@ -56,11 +56,11 @@ __kernel void csrmm_nt(__global T *output, __global const T *values,
 
     bool within_N = (gidx < N);
 
-    __local T s_values[THREADS_PER_GROUP];
-    __local int s_colidx[THREADS_PER_GROUP];
+    local T s_values[THREADS_PER_GROUP];
+    local int s_colidx[THREADS_PER_GROUP];
 
     int rowNext = get_group_id(1);
-    __local int s_rowId;
+    local int s_rowId;
 
     // Each iteration writes `THREADS_PER_GROUP` columns from one row of the
     // output

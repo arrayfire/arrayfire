@@ -40,7 +40,7 @@
     Thread assignment for m=10, n=12, k=4, nb=8. Each column is done in
  parallel.
 */
-__kernel void laset_band_upper(int m, int n, T offdiag, T diag, __global T *A,
+kernel void laset_band_upper(int m, int n, T offdiag, T diag, global T *A,
                                unsigned long off, int lda) {
     int k   = get_local_size(0);
     int ibx = get_group_id(0) * NB;
@@ -88,7 +88,7 @@ __kernel void laset_band_upper(int m, int n, T offdiag, T diag, __global T *A,
  parallel.
 */
 
-__kernel void laset_band_lower(int m, int n, T offdiag, T diag, __global T *A,
+kernel void laset_band_lower(int m, int n, T offdiag, T diag, global T *A,
                                unsigned long off, int lda) {
     // int k   = get_local_size(0);
     int ibx = get_group_id(0) * NB;

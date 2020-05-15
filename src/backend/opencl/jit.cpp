@@ -9,20 +9,25 @@
 
 #include <Array.hpp>
 #include <common/Logger.hpp>
+#include <common/compile_kernel.hpp>
 #include <common/dispatch.hpp>
 #include <common/jit/Node.hpp>
+#include <common/kernel_cache.hpp>
+#include <common/util.hpp>
 #include <copy.hpp>
+#include <device_manager.hpp>
 #include <err_opencl.hpp>
 #include <kernel_headers/jit.hpp>
-#include <program.hpp>
 #include <af/dim4.hpp>
 #include <af/opencl.h>
 
 #include <chrono>
 #include <functional>
+#include <map>
 #include <stdexcept>
 #include <vector>
 
+using common::compileKernel;
 using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
@@ -36,6 +41,7 @@ using cl::NullRange;
 using cl::Program;
 
 using std::hash;
+using std::map;
 using std::string;
 using std::stringstream;
 using std::vector;
@@ -171,44 +177,60 @@ static string getKernelString(const string &funcName,
     return kerStream.str();
 }
 
-static Kernel getKernel(const vector<Node *> &output_nodes,
-                        const vector<int> &output_ids,
-                        const vector<const Node *> &full_nodes,
-                        const vector<Node_ids> &full_ids,
-                        const bool is_linear) {
+static cl::Kernel getKernel(const vector<Node *> &output_nodes,
+                            const vector<int> &output_ids,
+                            const vector<const Node *> &full_nodes,
+                            const vector<Node_ids> &full_ids,
+                            const bool is_linear) {
+    using kc_t = map<string, Kernel>;
+
+    static const string jit(jit_cl, jit_cl_len);
+
+    thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
+
     string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
     int device = getActiveDeviceId();
 
-    kc_entry_t entry = kernelCache(device, funcName);
+    auto idx = kernelCaches[device].find(funcName);
+    Kernel entry{nullptr, nullptr};
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        string jit_ker = getKernelString(funcName, full_nodes, full_ids,
-                                         output_ids, is_linear);
-        saveKernel(funcName, jit_ker, ".cl");
-        const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
-        const int ker_lens[]   = {jit_cl_len, static_cast<int>(jit_ker.size())};
+    if (idx == kernelCaches[device].end()) {
+        string jitKer = getKernelString(funcName, full_nodes, full_ids,
+                                        output_ids, is_linear);
+#ifdef AF_CACHE_KERNELS_TO_DISK
+        // TODO(pradeep) load jit kernels cached to disk
+#endif
+        if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
+            saveKernel(funcName, jitKer, ".cl");
 
-        Program prog;
-        string options =
-            (isDoubleSupported(device) ? string(" -D USE_DOUBLE")
-                                       : string("")) +
-            (isHalfSupported(device) ? string(" -D USE_HALF") : string(""));
-        auto compileBegin = high_resolution_clock::now();
-        buildProgram(prog, 2, ker_strs, ker_lens, options);
-        auto compileEnd = high_resolution_clock::now();
+            vector<string> options;
+            if (isDoubleSupported(device)) {
+                options.emplace_back(DefineKey(USE_DOUBLE));
+            }
+            if (isHalfSupported(device)) {
+                options.emplace_back(DefineKey(USE_HALF));
+            }
 
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, funcName.c_str());
+            auto compileBegin = high_resolution_clock::now();
+            // First argument, funcName, is important.
+            // From jit, second argument can be null as it is not used for
+            // OpenCL
+            entry = compileKernel(funcName, "", {jit, jitKer}, options, true);
+            auto compileEnd = high_resolution_clock::now();
 
-        addKernelToCache(device, funcName, entry);
-
-        AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", funcName,
-                 duration_cast<milliseconds>(compileEnd - compileBegin).count(),
-                 options, getDevice(device).getInfo<CL_DEVICE_NAME>());
+            AF_TRACE(
+                "{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", funcName,
+                duration_cast<milliseconds>(compileEnd - compileBegin).count(),
+                fmt::join(options, " "),
+                getDevice(device).getInfo<CL_DEVICE_NAME>());
+        }
+        kernelCaches[device][funcName] = entry;
+    } else {
+        entry = idx->second;
     }
 
-    return *entry.ker;
+    return *entry.getKernel();
 }
 
 void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
@@ -242,7 +264,7 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
         is_linear &= node->isLinear(outputs[0].info.dims);
     }
 
-    Kernel ker =
+    cl::Kernel ker =
         getKernel(output_nodes, output_ids, full_nodes, full_ids, is_linear);
 
     uint local_0   = 1;

@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void range_kernel(__global T *out, const KParam op, const int dim,
+kernel void range_kernel(global T *out, const KParam op, const int dim,
                            const int blocksPerMatX, const int blocksPerMatY) {
     const int mul0 = (dim == 0);
     const int mul1 = (dim == 1);

@@ -45,7 +45,6 @@ namespace opencl {
 
 // Forward declarations
 class GraphicsResourceManager;
-struct kc_entry_t;  // kernel cache entry
 class PlanCache;    // clfft
 
 bool verify_present(const std::string& pname, const std::string ref);
@@ -122,13 +121,6 @@ graphics::ForgeManager& forgeManager();
 GraphicsResourceManager& interopManager();
 
 PlanCache& fftManager();
-
-void addKernelToCache(int device, const std::string& key,
-                      const kc_entry_t entry);
-
-void removeKernelFromCache(int device, const std::string& key);
-
-kc_entry_t kernelCache(int device, const std::string& key);
 
 afcl::platform getPlatformEnum(cl::Device dev);
 

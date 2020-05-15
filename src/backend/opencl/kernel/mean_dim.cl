@@ -7,15 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void mean_dim_kernel(__global To *oData, KParam oInfo,
+kernel void meanDim(global To *oData, KParam oInfo,
 #ifdef OUTPUT_WEIGHT
-                              __global Tw *owData, KParam owInfo,
+                    global Tw *owData, KParam owInfo,
 #endif
-                              const __global Ti *iData, KParam iInfo,
+                    const global Ti *iData, KParam iInfo,
 #ifdef INPUT_WEIGHT
-                              const __global Tw *iwData, KParam iwInfo,
+                    const global Tw *iwData, KParam iwInfo,
 #endif
-                              uint groups_x, uint groups_y, uint group_dim) {
+                    uint groups_x, uint groups_y, uint group_dim) {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const uint lid  = lidy * THREADS_X + lidx;
@@ -58,8 +58,8 @@ __kernel void mean_dim_kernel(__global To *oData, KParam oInfo,
     bool is_valid = (ids[0] < iInfo.dims[0]) && (ids[1] < iInfo.dims[1]) &&
                     (ids[2] < iInfo.dims[2]) && (ids[3] < iInfo.dims[3]);
 
-    __local To s_val[THREADS_X * DIMY];
-    __local Tw s_wt[THREADS_X * DIMY];
+    local To s_val[THREADS_X * DIMY];
+    local Tw s_wt[THREADS_X * DIMY];
 
     To out_val = init_To;
     Tw out_wt  = init_Tw;
@@ -93,8 +93,8 @@ __kernel void mean_dim_kernel(__global To *oData, KParam oInfo,
     s_val[lid] = out_val;
     s_wt[lid]  = out_wt;
 
-    __local To *s_vptr = s_val + lid;
-    __local Tw *s_wptr = s_wt + lid;
+    local To *s_vptr = s_val + lid;
+    local Tw *s_wptr = s_wt + lid;
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (DIMY == 8) {

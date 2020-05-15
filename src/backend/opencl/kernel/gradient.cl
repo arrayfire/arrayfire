@@ -24,11 +24,9 @@
 
 #define sidx(y, x) scratch[((y + 1) * (TX + 2)) + (x + 1)]
 
-__kernel void gradient_kernel(__global T *d_grad0, const KParam grad0,
-                              __global T *d_grad1, const KParam grad1,
-                              __global const T *d_in, const KParam in,
-                              const int blocksPerMatX,
-                              const int blocksPerMatY) {
+kernel void gradient(global T *d_grad0, const KParam grad0, global T *d_grad1,
+                     const KParam grad1, global const T *d_in, const KParam in,
+                     const int blocksPerMatX, const int blocksPerMatY) {
     const int idz = get_group_id(0) / blocksPerMatX;
     const int idw = get_group_id(1) / blocksPerMatY;
 
@@ -59,14 +57,14 @@ __kernel void gradient_kernel(__global T *d_grad0, const KParam grad0,
     int g1dx = idw * grad1.strides[3] + idz * grad1.strides[2] +
                idy * grad1.strides[1] + idx;
 
-    __local T scratch[(TY + 2) * (TX + 2)];
+    local T scratch[(TY + 2) * (TX + 2)];
 
     // Multipliers - 0.5 for interior, 1 for edge cases
     float xf = 0.5 * (1 + (idx == 0 || idx >= (in.dims[0] - 1)));
     float yf = 0.5 * (1 + (idy == 0 || idy >= (in.dims[1] - 1)));
 
     // Copy data to scratch space
-    T zero = ZERO;
+    T zero = (T)(ZERO);
     if (cond) {
         sidx(ty, tx) = zero;
     } else {

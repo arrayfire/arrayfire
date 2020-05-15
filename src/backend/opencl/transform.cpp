@@ -9,11 +9,7 @@
 
 #include <transform.hpp>
 
-#include <err_opencl.hpp>
 #include <kernel/transform.hpp>
-#include <af/dim4.hpp>
-
-#include <stdexcept>
 
 namespace opencl {
 
@@ -24,15 +20,15 @@ void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
-            kernel::transform<T, 1>(out, in, tf, inverse, perspective, method);
+            kernel::transform<T>(out, in, tf, inverse, perspective, method, 1);
             break;
         case AF_INTERP_BILINEAR:
         case AF_INTERP_BILINEAR_COSINE:
-            kernel::transform<T, 2>(out, in, tf, inverse, perspective, method);
+            kernel::transform<T>(out, in, tf, inverse, perspective, method, 2);
             break;
         case AF_INTERP_BICUBIC:
         case AF_INTERP_BICUBIC_SPLINE:
-            kernel::transform<T, 3>(out, in, tf, inverse, perspective, method);
+            kernel::transform<T>(out, in, tf, inverse, perspective, method, 3);
             break;
         default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
     }

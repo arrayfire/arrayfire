@@ -8,31 +8,21 @@
  ********************************************************/
 
 #pragma once
-#pragma once
-#include <Param.hpp>
-#include <cache.hpp>
-#include <common/dispatch.hpp>
-#include <debug_opencl.hpp>
-#include <kernel_headers/cscmm.hpp>
-#include <program.hpp>
-#include <traits.hpp>
-#include <type_util.hpp>
-#include <af/opencl.h>
-#include <map>
-#include <mutex>
-#include <string>
-#include "config.hpp"
-#include "reduce.hpp"
-#include "scan_dim.hpp"
-#include "scan_first.hpp"
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
+#include <Param.hpp>
+#include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
+#include <debug_opencl.hpp>
+#include <kernel/config.hpp>
+#include <kernel/reduce.hpp>
+#include <kernel/scan_dim.hpp>
+#include <kernel/scan_first.hpp>
+#include <kernel_headers/cscmm.hpp>
+#include <traits.hpp>
+#include <af/opencl.h>
+
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
@@ -40,71 +30,48 @@ template<typename T>
 void cscmm_nn(Param out, const Param &values, const Param &colIdx,
               const Param &rowIdx, const Param &rhs, const T alpha,
               const T beta, bool is_conj) {
-    bool use_alpha = (alpha != scalar<T>(1.0));
-    bool use_beta  = (beta != scalar<T>(0.0));
-
-    int threads = 256;
+    constexpr int threads = 256;
     // TODO: Find a better way to tune these parameters
-    int rows_per_group = 8;
-    int cols_per_group = 8;
+    constexpr int rows_per_group = 8;
+    constexpr int cols_per_group = 8;
 
-    std::string ref_name =
-        std::string("cscmm_nn_") + std::string(dtype_traits<T>::getName()) +
-        std::string("_") + std::to_string(use_alpha) + std::string("_") +
-        std::to_string(use_beta) + std::string("_") + std::to_string(is_conj) +
-        std::string("_") + std::to_string(rows_per_group) + std::string("_") +
-        std::to_string(cols_per_group) + std::string("_") +
-        std::to_string(threads);
+    static const std::string src(cscmm_cl, cscmm_cl_len);
 
-    int device = getActiveDeviceId();
+    const bool use_alpha = (alpha != scalar<T>(1.0));
+    const bool use_beta  = (beta != scalar<T>(0.0));
 
-    kc_entry_t entry = kernelCache(device, ref_name);
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),       TemplateArg(use_alpha),
+        TemplateArg(use_beta),       TemplateArg(is_conj),
+        TemplateArg(rows_per_group), TemplateArg(cols_per_group),
+        TemplateArg(threads),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(USE_ALPHA, use_alpha),
+        DefineKeyValue(USE_BETA, use_beta),
+        DefineKeyValue(IS_CONJ, is_conj),
+        DefineKeyValue(THREADS, threads),
+        DefineKeyValue(ROWS_PER_GROUP, rows_per_group),
+        DefineKeyValue(COLS_PER_GROUP, cols_per_group),
+        DefineKeyValue(IS_CPLX, (af::iscplx<T>() ? 1 : 0)),
+    };
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << " -D USE_ALPHA=" << use_alpha;
-        options << " -D USE_BETA=" << use_beta;
-        options << " -D IS_CONJ=" << is_conj;
-        options << " -D THREADS=" << threads;
-        options << " -D ROWS_PER_GROUP=" << rows_per_group;
-        options << " -D COLS_PER_GROUP=" << cols_per_group;
-        options << getTypeBuildDefinition<T>();
+    auto cscmmNN = common::findKernel("cscmm_nn", {src}, targs, options);
 
-        if (std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value) {
-            options << " -D IS_CPLX=1";
-        } else {
-            options << " -D IS_CPLX=0";
-        }
-
-        const char *ker_strs[] = {cscmm_cl};
-        const int ker_lens[]   = {cscmm_cl_len};
-
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "cscmm_nn");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    auto cscmm_kernel = *entry.ker;
-    auto cscmm_func   = KernelFunctor<Buffer, Buffer, Buffer, Buffer, int, int,
-                                    int, Buffer, KParam, T, T>(cscmm_kernel);
-
-    NDRange local(threads, 1);
+    cl::NDRange local(threads, 1);
     int M = out.info.dims[0];
     int N = out.info.dims[1];
     int K = colIdx.info.dims[0] - 1;
 
     int groups_x = divup(M, rows_per_group);
     int groups_y = divup(N, cols_per_group);
-    NDRange global(local[0] * groups_x, local[1] * groups_y);
+    cl::NDRange global(local[0] * groups_x, local[1] * groups_y);
 
-    cscmm_func(EnqueueArgs(getQueue(), global, local), *out.data, *values.data,
-               *colIdx.data, *rowIdx.data, M, K, N, *rhs.data, rhs.info, alpha,
-               beta);
-
+    cscmmNN(cl::EnqueueArgs(getQueue(), global, local), *out.data, *values.data,
+            *colIdx.data, *rowIdx.data, M, K, N, *rhs.data, rhs.info, alpha,
+            beta);
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel

@@ -7,10 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void complex_multiply(__global CONVT *d_out, KParam oInfo,
-                               __global const CONVT *d_in1, KParam i1Info,
-                               __global const CONVT *d_in2, KParam i2Info,
-                               const int nelem, const int kind) {
+kernel void complex_multiply(global CONVT *d_out, KParam oInfo,
+                             global const CONVT *d_in1, KParam i1Info,
+                             global const CONVT *d_in2, KParam i2Info,
+                             const int nelem, const int kind) {
     const int t = get_global_id(0);
 
     if (t >= nelem) return;

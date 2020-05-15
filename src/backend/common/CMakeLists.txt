@@ -76,10 +76,6 @@ else()
   target_sources(afcommon_interface INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/module_loading_unix.cpp)
 endif()
 
-if(AF_ENABLE_DEV_WARNINGS)
-  target_compile_definitions(afcommon_interface INTERFACE AF_WITH_DEV_WARNINGS)
-endif()
-
 target_link_libraries(afcommon_interface
   INTERFACE
     spdlog

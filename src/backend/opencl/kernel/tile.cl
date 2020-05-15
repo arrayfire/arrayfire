@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void tile_kernel(__global T *out, __global const T *in,
-                          const KParam op, const KParam ip,
-                          const int blocksPerMatX, const int blocksPerMatY) {
+kernel void tile(global T *out, global const T *in, const KParam op,
+                 const KParam ip, const int blocksPerMatX,
+                 const int blocksPerMatY) {
     const int oz = get_group_id(0) / blocksPerMatX;
     const int ow = get_group_id(1) / blocksPerMatY;
 

@@ -7,12 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void ireduce_first_kernel(__global T *oData, KParam oInfo,
-                                   __global uint *olData,
-                                   const __global T *iData, KParam iInfo,
-                                   const __global uint *ilData, uint groups_x,
+kernel void ireduce_first_kernel(global T *oData, KParam oInfo,
+                                   global uint *olData,
+                                   const global T *iData, KParam iInfo,
+                                   const global uint *ilData, uint groups_x,
                                    uint groups_y, uint repeat,
-                                   __global uint *rlenptr, KParam rlen) {
+                                   global uint *rlenptr, KParam rlen) {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const uint lid  = lidy * get_local_size(0) + lidx;
@@ -38,16 +38,17 @@ __kernel void ireduce_first_kernel(__global T *oData, KParam oInfo,
     olData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
               yid * oInfo.strides[1] + oInfo.offset;
 
-    rlenptr += (rlenptr) ?  wid * rlen.strides[3] + zid * rlen.strides[2] +
-             yid * rlen.strides[1] + rlen.offset : 0;
+    rlenptr += (rlenptr) ? wid * rlen.strides[3] + zid * rlen.strides[2] +
+                               yid * rlen.strides[1] + rlen.offset
+                         : 0;
 
     bool cond =
         (yid < iInfo.dims[1]) && (zid < iInfo.dims[2]) && (wid < iInfo.dims[3]);
 
-    __local T s_val[THREADS_PER_GROUP];
-    __local uint s_idx[THREADS_PER_GROUP];
+    local T s_val[THREADS_PER_GROUP];
+    local uint s_idx[THREADS_PER_GROUP];
 
-    int last     = (xid + repeat * DIMX);
+    int last = (xid + repeat * DIMX);
 
     int minlen = rlenptr ? min(*rlenptr, (uint)iInfo.dims[0]) : iInfo.dims[0];
 
@@ -72,8 +73,8 @@ __kernel void ireduce_first_kernel(__global T *oData, KParam oInfo,
     s_idx[lid] = out_idx;
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    __local T *s_vptr    = s_val + lidy * DIMX;
-    __local uint *s_iptr = s_idx + lidy * DIMX;
+    local T *s_vptr    = s_val + lidy * DIMX;
+    local uint *s_iptr = s_idx + lidy * DIMX;
 
     if (DIMX == 256) {
         if (lidx < 128) {

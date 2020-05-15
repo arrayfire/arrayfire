@@ -7,12 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void sparse_arith_csr_kernel(__global T *oPtr, const KParam out,
-                                      __global const T *values,
-                                      __global const int *rowIdx,
-                                      __global const int *colIdx, const int nNZ,
-                                      __global const T *rPtr, const KParam rhs,
-                                      const int reverse) {
+kernel void sparseArithCSR(global T *oPtr, const KParam out,
+                           global const T *values, global const int *rowIdx,
+                           global const int *colIdx, const int nNZ,
+                           global const T *rPtr, const KParam rhs,
+                           const int reverse) {
     const int row = get_group_id(0) * get_local_size(1) + get_local_id(1);
 
     if (row >= out.dims[0]) return;
@@ -39,11 +38,10 @@ __kernel void sparse_arith_csr_kernel(__global T *oPtr, const KParam out,
     }
 }
 
-__kernel void sparse_arith_csr_kernel_S(__global T *values,
-                                        __global int *rowIdx,
-                                        __global int *colIdx, const int nNZ,
-                                        __global const T *rPtr,
-                                        const KParam rhs, const int reverse) {
+kernel void sparseArithCSR2(global T *values, global int *rowIdx,
+                            global int *colIdx, const int nNZ,
+                            global const T *rPtr, const KParam rhs,
+                            const int reverse) {
     const int row = get_group_id(0) * get_local_size(1) + get_local_id(1);
 
     if (row >= rhs.dims[0]) return;

@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void reorder_kernel(__global T *out, __global const T *in,
+kernel void reorder_kernel(global T *out, __global const T *in,
                              const KParam op, const KParam ip, const int d0,
                              const int d1, const int d2, const int d3,
                              const int blocksPerMatX, const int blocksPerMatY) {

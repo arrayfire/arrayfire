@@ -7,12 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void compact_dim(__global int *reduced_block_sizes, __global Tk *oKeys,
-                          KParam oKInfo, __global To *oVals, KParam oVInfo,
-                          const __global Tk *iKeys, KParam iKInfo,
-                          const __global To *iVals, KParam iVInfo,
-                          const int nBlocksZ) {
-    __local int dim_ordering[4];
+kernel void compact_dim(global int *reduced_block_sizes, global Tk *oKeys,
+                        KParam oKInfo, global To *oVals, KParam oVInfo,
+                        const global Tk *iKeys, KParam iKInfo,
+                        const global To *iVals, KParam iVInfo,
+                        const int nBlocksZ) {
+    local int dim_ordering[4];
     const uint lid  = get_local_id(0);
     const uint bid  = get_group_id(0);
     const uint gidx = get_global_id(0);
