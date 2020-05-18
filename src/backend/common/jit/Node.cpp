@@ -9,7 +9,9 @@
 
 #include <common/defines.hpp>
 #include <common/jit/Node.hpp>
+#include <common/util.hpp>
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -17,8 +19,8 @@ using std::vector;
 
 namespace common {
 
-int Node::getNodesMap(Node_map_t &node_map, vector<const Node *> &full_nodes,
-                      vector<Node_ids> &full_ids) const {
+int Node::getNodesMap(Node_map_t &node_map, vector<Node *> &full_nodes,
+                      vector<Node_ids> &full_ids) {
     auto iter = node_map.find(this);
     if (iter == node_map.end()) {
         Node_ids ids{};
@@ -34,6 +36,31 @@ int Node::getNodesMap(Node_map_t &node_map, vector<const Node *> &full_nodes,
         return ids.id;
     }
     return iter->second;
+}
+
+std::string getFuncName(const vector<Node *> &output_nodes,
+                        const vector<Node *> &full_nodes,
+                        const vector<Node_ids> &full_ids, bool is_linear) {
+    std::stringstream funcName;
+    std::stringstream hashName;
+
+    if (is_linear) {
+        funcName << "L_";  // Kernel Linear
+    } else {
+        funcName << "G_";  // Kernel General
+    }
+
+    for (const auto &node : output_nodes) {
+        funcName << node->getNameStr() << "_";
+    }
+
+    for (int i = 0; i < static_cast<int>(full_nodes.size()); i++) {
+        full_nodes[i]->genKerName(funcName, full_ids[i]);
+    }
+
+    hashName << "KER";
+    hashName << deterministicHash(funcName.str());
+    return hashName.str();
 }
 
 }  // namespace common

@@ -55,7 +55,7 @@ struct ToNumStr {
 
 namespace {
 template<typename T>
-inline const char *shortname(bool caps) {
+inline const char *shortname(bool caps = false) {
     return caps ? "X" : "x";
 }
 
@@ -107,12 +107,22 @@ template<>
 inline const char *shortname<ushort>(bool caps) {
     return caps ? "Q" : "q";
 }
-}  // namespace
 
 template<typename T>
-const char *getFullName() {
+inline const char *getFullName() {
     return af::dtype_traits<T>::getName();
 }
+
+template<>
+inline const char *getFullName<cfloat>() {
+    return "float2";
+}
+
+template<>
+inline const char *getFullName<cdouble>() {
+    return "double2";
+}
+}  // namespace
 
 template<typename... ARGS>
 constexpr const char *getTypeBuildDefinition() {

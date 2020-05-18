@@ -18,21 +18,22 @@ namespace kernel {
 
 template<typename T>
 void evalMultiple(std::vector<Param<T>> arrays,
-                  std::vector<jit::Node_ptr> output_nodes_) {
+                  std::vector<common::Node_ptr> output_nodes_) {
     af::dim4 odims = arrays[0].dims();
     af::dim4 ostrs = arrays[0].strides();
 
-    jit::Node_map_t nodes;
+    common::Node_map_t nodes;
     std::vector<T *> ptrs;
-    std::vector<jit::TNode<T> *> output_nodes;
-    std::vector<jit::Node *> full_nodes;
+    std::vector<TNode<T> *> output_nodes;
+    std::vector<common::Node *> full_nodes;
+    std::vector<common::Node_ids> ids;
 
     int narrays = static_cast<int>(arrays.size());
     for (int i = 0; i < narrays; i++) {
         ptrs.push_back(arrays[i].get());
         output_nodes.push_back(
-            reinterpret_cast<jit::TNode<T> *>(output_nodes_[i].get()));
-        output_nodes_[i]->getNodesMap(nodes, full_nodes);
+            reinterpret_cast<TNode<T> *>(output_nodes_[i].get()));
+        output_nodes_[i]->getNodesMap(nodes, full_nodes, ids);
     }
 
     bool is_linear = true;
@@ -85,7 +86,7 @@ void evalMultiple(std::vector<Param<T>> arrays,
 }
 
 template<typename T>
-void evalArray(Param<T> arr, jit::Node_ptr node) {
+void evalArray(Param<T> arr, common::Node_ptr node) {
     evalMultiple<T>({arr}, {node});
 }
 

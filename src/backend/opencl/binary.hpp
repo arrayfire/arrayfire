@@ -137,8 +137,8 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs,
     auto createBinary = [](std::array<Node_ptr, 2> &operands) -> Node_ptr {
         BinOp<To, Ti, op> bop;
         return Node_ptr(new common::BinaryNode(
-            getFullName<To>(), shortname<To>(true), bop.name(), operands[0],
-            operands[1], (int)(op)));
+            static_cast<af::dtype>(dtype_traits<To>::af_type), bop.name(), operands[0], operands[1],
+            (int)(op)));
     };
 
     Node_ptr out =
