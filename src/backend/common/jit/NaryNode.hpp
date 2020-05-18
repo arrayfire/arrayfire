@@ -29,12 +29,11 @@ class NaryNode : public Node {
     const std::string m_op_str;
 
    public:
-    NaryNode(const char *out_type_str, const char *name_str, const char *op_str,
-             const int num_children,
+    NaryNode(const af::dtype type, const char *op_str, const int num_children,
              const std::array<common::Node_ptr, Node::kMaxChildren> &&children,
              const int op, const int height)
         : common::Node(
-              out_type_str, name_str, height,
+              type, height,
               std::forward<
                   const std::array<common::Node_ptr, Node::kMaxChildren>>(
                   children))
@@ -57,7 +56,8 @@ class NaryNode : public Node {
 
     void genFuncs(std::stringstream &kerStream,
                   const common::Node_ids &ids) const final {
-        kerStream << m_type_str << " val" << ids.id << " = " << m_op_str << "(";
+        kerStream << getTypeStr() << " val" << ids.id << " = " << m_op_str
+                  << "(";
         for (int i = 0; i < m_num_children; i++) {
             if (i > 0) kerStream << ", ";
             kerStream << "val" << ids.child_ids[i];

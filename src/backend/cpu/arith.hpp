@@ -84,13 +84,13 @@ NUMERIC_FN(af_hypot_t, hypot)
 template<typename T, af_op_t op>
 Array<T> arithOp(const Array<T> &lhs, const Array<T> &rhs,
                  const af::dim4 &odims) {
-    jit::Node_ptr lhs_node = lhs.getNode();
-    jit::Node_ptr rhs_node = rhs.getNode();
+    common::Node_ptr lhs_node = lhs.getNode();
+    common::Node_ptr rhs_node = rhs.getNode();
 
     jit::BinaryNode<T, T, op> *node =
         new jit::BinaryNode<T, T, op>(lhs_node, rhs_node);
 
-    return createNodeArray<T>(odims, jit::Node_ptr(node));
+    return createNodeArray<T>(odims, common::Node_ptr(node));
 }
 
 }  // namespace cpu

@@ -89,9 +89,9 @@ struct CastWrapper {
     Array<To> operator()(const Array<Ti> &in) {
         CastOp<To, Ti> cop;
         common::Node_ptr in_node = in.getNode();
-        common::UnaryNode *node =
-            new common::UnaryNode(getFullName<To>(), shortname<To>(true),
-                                  cop.name(), in_node, af_cast_t);
+        common::UnaryNode *node  = new common::UnaryNode(
+            static_cast<af::dtype>(dtype_traits<To>::af_type), cop.name(),
+            in_node, af_cast_t);
         return createNodeArray<To>(in.dims(), common::Node_ptr(node));
     }
 };

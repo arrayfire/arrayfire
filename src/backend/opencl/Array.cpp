@@ -45,8 +45,8 @@ using std::vector;
 namespace opencl {
 template<typename T>
 Node_ptr bufferNodePtr() {
-    return make_shared<BufferNode>(dtype_traits<T>::getName(),
-                                   shortname<T>(true));
+    return make_shared<BufferNode>(
+        static_cast<af::dtype>(dtype_traits<T>::af_type));
 }
 
 namespace {
