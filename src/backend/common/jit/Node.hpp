@@ -8,8 +8,11 @@
  ********************************************************/
 
 #pragma once
+#include <backend.hpp>
+#include <common/defines.hpp>
 #include <optypes.hpp>
 #include <platform.hpp>
+#include <types.hpp>
 #include <af/defines.h>
 
 #include <array>
@@ -31,8 +34,46 @@ class Node;
 struct Node_ids;
 
 using Node_ptr      = std::shared_ptr<Node>;
-using Node_map_t    = std::unordered_map<const Node *, int>;
+using Node_map_t    = std::unordered_map<Node *, int>;
 using Node_map_iter = Node_map_t::iterator;
+
+static const char *getFullName(af::dtype type) {
+    switch (type) {
+        case f32: return detail::getFullName<float>();
+        case f64: return detail::getFullName<double>();
+        case c32: return detail::getFullName<detail::cfloat>();
+        case c64: return detail::getFullName<detail::cdouble>();
+        case u32: return detail::getFullName<unsigned>();
+        case s32: return detail::getFullName<int>();
+        case u64: return detail::getFullName<unsigned long long>();
+        case s64: return detail::getFullName<long long>();
+        case u16: return detail::getFullName<unsigned short>();
+        case s16: return detail::getFullName<short>();
+        case b8: return detail::getFullName<char>();
+        case u8: return detail::getFullName<unsigned char>();
+        case f16: return "half";
+    }
+    return "";
+}
+
+static const char *getShortName(af::dtype type) {
+    switch (type) {
+        case f32: return detail::shortname<float>();
+        case f64: return detail::shortname<double>();
+        case c32: return detail::shortname<detail::cfloat>();
+        case c64: return detail::shortname<detail::cdouble>();
+        case u32: return detail::shortname<unsigned>();
+        case s32: return detail::shortname<int>();
+        case u64: return detail::shortname<unsigned long long>();
+        case s64: return detail::shortname<long long>();
+        case u16: return detail::shortname<unsigned short>();
+        case s16: return detail::shortname<short>();
+        case b8: return detail::shortname<char>();
+        case u8: return detail::shortname<unsigned char>();
+        case f16: return "h";
+    }
+    return "";
+}
 
 class Node {
    public:
@@ -40,22 +81,31 @@ class Node {
 
    protected:
     const std::array<Node_ptr, kMaxChildren> m_children;
-    const std::string m_type_str;
-    const std::string m_name_str;
+    const af::dtype m_type;
     const int m_height;
+
     template<typename T>
     friend class NodeIterator;
 
    public:
-    Node(const char *type_str, const char *name_str, const int height,
+    Node(const af::dtype type, const int height,
          const std::array<Node_ptr, kMaxChildren> children)
-        : m_children(children)
-        , m_type_str(type_str)
-        , m_name_str(name_str)
-        , m_height(height) {}
+        : m_children(children), m_type(type), m_height(height) {}
 
-    int getNodesMap(Node_map_t &node_map, std::vector<const Node *> &full_nodes,
-                    std::vector<Node_ids> &full_ids) const;
+    /// Default copy constructor
+    Node(Node &node) = default;
+
+    /// Default move constructor
+    Node(Node &&node) = default;
+
+    /// Default copy assignment operator
+    Node &operator=(const Node &node) = default;
+
+    /// Default move assignment operator
+    Node &operator=(Node &&node) = default;
+
+    int getNodesMap(Node_map_t &node_map, std::vector<Node *> &full_nodes,
+                    std::vector<Node_ids> &full_ids);
 
     /// Generates the string that will be used to hash the kernel
     virtual void genKerName(std::stringstream &kerStream,
@@ -71,6 +121,18 @@ class Node {
         UNUSED(kerStream);
         UNUSED(id);
         UNUSED(is_linear);
+    }
+
+    virtual void calc(int x, int y, int z, int w, int lim) {
+        UNUSED(x);
+        UNUSED(y);
+        UNUSED(z);
+        UNUSED(w);
+    }
+
+    virtual void calc(int idx, int lim) {
+        UNUSED(idx);
+        UNUSED(lim);
     }
 
     /// Generates the variable that stores the thread's/work-item's offset into
@@ -132,19 +194,35 @@ class Node {
 
     // Returns true if this node is a Buffer
     virtual bool isBuffer() const { return false; }
+
+    /// Returns true if the buffer is linear
     virtual bool isLinear(dim_t dims[4]) const {
         UNUSED(dims);
         return true;
     }
-    std::string getTypeStr() const { return m_type_str; }
-    int getHeight() const { return m_height; }
-    std::string getNameStr() const { return m_name_str; }
 
-    virtual ~Node() {}
+    /// Returns the string representation of the type
+    std::string getTypeStr() const { return getFullName(m_type); }
+
+    /// Returns the height of the JIT tree from this node
+    int getHeight() const { return m_height; }
+
+    /// Returns the short name for this type
+    /// \note For the shift node this is "Sh" appended by the short name of the
+    ///       type
+    virtual std::string getNameStr() const { return getShortName(m_type); }
+
+    /// Default destructor
+    virtual ~Node() = default;
 };
 
 struct Node_ids {
     std::array<int, Node::kMaxChildren> child_ids;
     int id;
 };
+
+std::string getFuncName(const std::vector<Node *> &output_nodes,
+                        const std::vector<Node *> &full_nodes,
+                        const std::vector<Node_ids> &full_ids, bool is_linear);
+
 }  // namespace common

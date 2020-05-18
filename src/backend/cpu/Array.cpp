@@ -38,11 +38,11 @@
 
 using af::dim4;
 using common::half;
+using common::Node;
+using common::Node_map_t;
+using common::Node_ptr;
 using common::NodeIterator;
 using cpu::jit::BufferNode;
-using cpu::jit::Node;
-using cpu::jit::Node_map_t;
-using cpu::jit::Node_ptr;
 using std::adjacent_find;
 using std::copy;
 using std::is_standard_layout;
@@ -163,7 +163,7 @@ T *Array<T>::device() {
 
 template<typename T>
 void evalMultiple(vector<Array<T> *> array_ptrs) {
-    vector<Array<T> *> output_arrays;
+    vector<Array<T> *> outputs;
     vector<Node_ptr> nodes;
     vector<Param<T>> params;
     if (getQueue().is_worker()) {
@@ -189,14 +189,14 @@ void evalMultiple(vector<Array<T> *> array_ptrs) {
         array->data =
             shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
 
-        output_arrays.push_back(array);
+        outputs.push_back(array);
         params.push_back(*array);
         nodes.push_back(array->node);
     }
 
-    if (!output_arrays.empty()) {
+    if (!outputs.empty()) {
         getQueue().enqueue(kernel::evalMultiple<T>, params, nodes);
-        for (Array<T> *array : output_arrays) {
+        for (Array<T> *array : outputs) {
             array->ready = true;
             array->node  = bufferNodePtr<T>();
         }

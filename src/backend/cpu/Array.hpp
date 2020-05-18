@@ -9,6 +9,7 @@
 
 // This is the array implementation class.
 #pragma once
+
 #include <Param.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/MemoryManagerBase.hpp>
@@ -28,11 +29,11 @@
 namespace cpu {
 namespace kernel {
 template<typename T>
-void evalArray(Param<T> in, jit::Node_ptr node);
+void evalArray(Param<T> in, common::Node_ptr node);
 
 template<typename T>
 void evalMultiple(std::vector<Param<T>> arrays,
-                  std::vector<jit::Node_ptr> nodes);
+                  std::vector<common::Node_ptr> nodes);
 
 }  // namespace kernel
 
@@ -47,7 +48,7 @@ void evalMultiple(std::vector<Array<T> *> array_ptrs);
 
 // Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
-Array<T> createNodeArray(const af::dim4 &dims, jit::Node_ptr node);
+Array<T> createNodeArray(const af::dim4 &dims, common::Node_ptr node);
 
 template<typename T>
 Array<T> createValueArray(const af::dim4 &dims, const T &value);
@@ -92,7 +93,7 @@ template<typename T>
 void destroyArray(Array<T> *A);
 
 template<typename T>
-kJITHeuristics passesJitHeuristics(jit::Node *node);
+kJITHeuristics passesJitHeuristics(common::Node *node);
 
 template<typename T>
 void *getDevicePtr(const Array<T> &arr) {
@@ -116,7 +117,7 @@ class Array {
     // data if parent. empty if child
     std::shared_ptr<T> data;
     af::dim4 data_dims;
-    jit::Node_ptr node;
+    common::Node_ptr node;
 
     bool ready;
     bool owner;
@@ -128,7 +129,7 @@ class Array {
                    bool copy_device = false);
     Array(const Array<T> &parent, const dim4 &dims, const dim_t &offset,
           const dim4 &stride);
-    explicit Array(const af::dim4 &dims, jit::Node_ptr n);
+    explicit Array(const af::dim4 &dims, common::Node_ptr n);
     Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset,
           T *const in_data, bool is_device = false);
 
@@ -226,7 +227,7 @@ class Array {
         return CParam<T>(this->get(), this->dims(), this->strides());
     }
 
-    jit::Node_ptr getNode() const;
+    common::Node_ptr getNode() const;
 
     friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
 
@@ -240,15 +241,15 @@ class Array {
 
     friend Array<T> createEmptyArray<T>(const af::dim4 &dims);
     friend Array<T> createNodeArray<T>(const af::dim4 &dims,
-                                       jit::Node_ptr node);
+                                       common::Node_ptr node);
 
     friend Array<T> createSubArray<T>(const Array<T> &parent,
                                       const std::vector<af_seq> &index,
                                       bool copy);
 
-    friend void kernel::evalArray<T>(Param<T> in, jit::Node_ptr node);
+    friend void kernel::evalArray<T>(Param<T> in, common::Node_ptr node);
     friend void kernel::evalMultiple<T>(std::vector<Param<T>> arrays,
-                                        std::vector<jit::Node_ptr> nodes);
+                                        std::vector<common::Node_ptr> nodes);
 
     friend void destroyArray<T>(Array<T> *arr);
     friend void *getDevicePtr<T>(const Array<T> &arr);

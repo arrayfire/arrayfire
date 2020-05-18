@@ -69,13 +69,13 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
 template<typename T, af_op_t op>
 Array<char> logicOp(const Array<T> &lhs, const Array<T> &rhs,
                     const af::dim4 &odims) {
-    jit::Node_ptr lhs_node = lhs.getNode();
-    jit::Node_ptr rhs_node = rhs.getNode();
+    common::Node_ptr lhs_node = lhs.getNode();
+    common::Node_ptr rhs_node = rhs.getNode();
 
     jit::BinaryNode<char, T, op> *node =
         new jit::BinaryNode<char, T, op>(lhs_node, rhs_node);
 
-    return createNodeArray<char>(odims, jit::Node_ptr(node));
+    return createNodeArray<char>(odims, common::Node_ptr(node));
 }
 
 #define BITWISE_FN(OP, op)                                               \
@@ -98,12 +98,12 @@ BITWISE_FN(af_bitshiftr_t, >>)
 template<typename T, af_op_t op>
 Array<T> bitOp(const Array<T> &lhs, const Array<T> &rhs,
                const af::dim4 &odims) {
-    jit::Node_ptr lhs_node = lhs.getNode();
-    jit::Node_ptr rhs_node = rhs.getNode();
+    common::Node_ptr lhs_node = lhs.getNode();
+    common::Node_ptr rhs_node = rhs.getNode();
 
     jit::BinaryNode<T, T, op> *node =
         new jit::BinaryNode<T, T, op>(lhs_node, rhs_node);
 
-    return createNodeArray<T>(odims, jit::Node_ptr(node));
+    return createNodeArray<T>(odims, common::Node_ptr(node));
 }
 }  // namespace cpu
