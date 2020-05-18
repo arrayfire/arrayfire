@@ -50,7 +50,8 @@ void verifyTypeSupport() {
 
 template<typename T>
 Node_ptr bufferNodePtr() {
-    return Node_ptr(new BufferNode<T>(getFullName<T>(), shortname<T>(true)));
+    return Node_ptr(
+        new BufferNode<T>(static_cast<af::dtype>(dtype_traits<T>::af_type)));
 }
 
 template<typename T>

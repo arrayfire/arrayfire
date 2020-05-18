@@ -29,7 +29,7 @@ class BinaryNode : public TNode<compute_t<To>> {
     TNode<compute_t<Ti>> *m_lhs, *m_rhs;
 
    public:
-    BinaryNode(Node_ptr lhs, Node_ptr rhs)
+    BinaryNode(common::Node_ptr lhs, common::Node_ptr rhs)
         : TNode<compute_t<To>>(compute_t<To>(0),
                                std::max(lhs->getHeight(), rhs->getHeight()) + 1,
                                {{lhs, rhs}})
@@ -47,6 +47,40 @@ class BinaryNode : public TNode<compute_t<To>> {
     void calc(int idx, int lim) final {
         UNUSED(idx);
         m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
+    }
+
+    void genKerName(std::stringstream &kerStream,
+                    const common::Node_ids &ids) const final {
+        UNUSED(kerStream);
+        UNUSED(ids);
+    }
+
+    void genParams(std::stringstream &kerStream, int id,
+                   bool is_linear) const final {
+        UNUSED(kerStream);
+        UNUSED(id);
+        UNUSED(is_linear);
+    }
+
+    int setArgs(int start_id, bool is_linear,
+                std::function<void(int id, const void *ptr, size_t arg_size)>
+                    setArg) const override {
+        UNUSED(is_linear);
+        UNUSED(setArg);
+        return start_id++;
+    }
+
+    void genOffsets(std::stringstream &kerStream, int id,
+                    bool is_linear) const final {
+        UNUSED(kerStream);
+        UNUSED(id);
+        UNUSED(is_linear);
+    }
+
+    void genFuncs(std::stringstream &kerStream,
+                  const common::Node_ids &ids) const final {
+        UNUSED(kerStream);
+        UNUSED(ids);
     }
 };
 

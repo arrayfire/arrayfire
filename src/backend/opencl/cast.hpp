@@ -76,7 +76,7 @@ struct CastWrapper {
         CastOp<To, Ti> cop;
         common::Node_ptr in_node = in.getNode();
         common::UnaryNode *node  = new common::UnaryNode(
-            dtype_traits<To>::getName(), shortname<To>(true), cop.name(),
+            static_cast<af::dtype>(dtype_traits<To>::af_type), cop.name(),
             in_node, af_cast_t);
         return createNodeArray<To>(in.dims(), common::Node_ptr(node));
     }

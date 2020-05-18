@@ -82,9 +82,9 @@ Array<T> unaryOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
     using std::array;
 
     auto createUnary = [](array<Node_ptr, 1> &operands) {
-        return common::Node_ptr(
-            new common::UnaryNode(getFullName<T>(), shortname<T>(true),
-                                  unaryName<op>(), operands[0], op));
+        return common::Node_ptr(new common::UnaryNode(
+            static_cast<af::dtype>(af::dtype_traits<T>::af_type),
+            unaryName<op>(), operands[0], op));
     };
 
     if (outDim == dim4(-1, -1, -1, -1)) { outDim = in.dims(); }
@@ -97,9 +97,9 @@ Array<char> checkOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
     using common::Node_ptr;
 
     auto createUnary = [](std::array<Node_ptr, 1> &operands) {
-        return Node_ptr(
-            new common::UnaryNode(getFullName<char>(), shortname<char>(true),
-                                  unaryName<op>(), operands[0], op));
+        return Node_ptr(new common::UnaryNode(
+            static_cast<af::dtype>(dtype_traits<char>::af_type),
+            unaryName<op>(), operands[0], op));
     };
 
     if (outDim == dim4(-1, -1, -1, -1)) { outDim = in.dims(); }

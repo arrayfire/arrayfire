@@ -31,6 +31,7 @@
 #include <vector>
 
 using common::compileKernel;
+using common::getFuncName;
 using common::half;
 using common::Node;
 using common::Node_ids;
@@ -43,33 +44,8 @@ using std::vector;
 
 namespace cuda {
 
-static string getFuncName(const vector<Node *> &output_nodes,
-                          const vector<const Node *> &full_nodes,
-                          const vector<Node_ids> &full_ids, bool is_linear) {
-    stringstream funcName;
-    stringstream hashName;
-
-    if (is_linear) {
-        funcName << "L_";  // Kernel Linear
-    } else {
-        funcName << "G_";  // Kernel General
-    }
-
-    for (const auto &node : output_nodes) {
-        funcName << node->getNameStr() << "_";
-    }
-
-    for (int i = 0; i < static_cast<int>(full_nodes.size()); i++) {
-        full_nodes[i]->genKerName(funcName, full_ids[i]);
-    }
-
-    hashName << "KER";
-    hashName << deterministicHash(funcName.str());
-    return hashName.str();
-}
-
 static string getKernelString(const string &funcName,
-                              const vector<const Node *> &full_nodes,
+                              const vector<Node *> &full_nodes,
                               const vector<Node_ids> &full_ids,
                               const vector<int> &output_ids, bool is_linear) {
     const std::string includeFileStr(jit_cuh, jit_cuh_len);
@@ -202,7 +178,7 @@ struct Param {
 
 static CUfunction getKernel(const vector<Node *> &output_nodes,
                             const vector<int> &output_ids,
-                            const vector<const Node *> &full_nodes,
+                            const vector<Node *> &full_nodes,
                             const vector<Node_ids> &full_ids,
                             const bool is_linear) {
     using kc_t = map<string, Kernel>;
@@ -245,7 +221,7 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
 
     // Use thread local to reuse the memory every time you are here.
     thread_local Node_map_t nodes;
-    thread_local vector<const Node *> full_nodes;
+    thread_local vector<Node *> full_nodes;
     thread_local vector<Node_ids> full_ids;
     thread_local vector<int> output_ids;
 

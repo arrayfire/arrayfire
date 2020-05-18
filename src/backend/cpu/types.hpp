@@ -12,6 +12,20 @@
 #include <complex>
 
 namespace cpu {
+
+namespace {
+template<typename T>
+const char *shortname(bool caps = false) {
+    return caps ? "?" : "?";
+}
+
+template<typename T>
+const char *getFullName() {
+    return "N/A";
+}
+
+}  // namespace
+
 using cdouble = std::complex<double>;
 using cfloat  = std::complex<float>;
 using intl    = long long;

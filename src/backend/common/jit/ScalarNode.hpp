@@ -8,7 +8,9 @@
  ********************************************************/
 
 #pragma once
+#include <backend.hpp>
 #include <common/jit/Node.hpp>
+#include <af/traits.hpp>
 
 #include <math.hpp>
 #include <types.hpp>
@@ -23,12 +25,12 @@ class ScalarNode : public common::Node {
 
    public:
     ScalarNode(T val)
-        : Node(detail::getFullName<T>(), detail::shortname<T>(false), 0, {})
+        : Node(static_cast<af::dtype>(af::dtype_traits<T>::af_type), 0, {})
         , m_val(val) {}
 
     void genKerName(std::stringstream& kerStream,
                     const common::Node_ids& ids) const final {
-        kerStream << "_" << m_name_str;
+        kerStream << "_" << getTypeStr();
         kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id
                   << std::dec;
     }
@@ -36,7 +38,7 @@ class ScalarNode : public common::Node {
     void genParams(std::stringstream& kerStream, int id,
                    bool is_linear) const final {
         UNUSED(is_linear);
-        kerStream << m_type_str << " scalar" << id << ", \n";
+        kerStream << getTypeStr() << " scalar" << id << ", \n";
     }
 
     int setArgs(int start_id, bool is_linear,
@@ -49,9 +51,11 @@ class ScalarNode : public common::Node {
 
     void genFuncs(std::stringstream& kerStream,
                   const common::Node_ids& ids) const final {
-        kerStream << m_type_str << " val" << ids.id << " = scalar" << ids.id
+        kerStream << getTypeStr() << " val" << ids.id << " = scalar" << ids.id
                   << ";\n";
     }
+
+    std::string getNameStr() const final { return detail::shortname<T>(false); }
 
     // Return the info for the params and the size of the buffers
     virtual size_t getParamBytes() const final { return sizeof(T); }

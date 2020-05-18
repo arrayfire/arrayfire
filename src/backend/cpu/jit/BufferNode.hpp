@@ -8,7 +8,10 @@
  ********************************************************/
 
 #pragma once
+
 #include <optypes.hpp>
+#include <af/defines.h>
+
 #include <mutex>
 #include <vector>
 #include "Node.hpp"
@@ -82,7 +85,41 @@ class BufferNode : public TNode<T> {
 
     size_t getBytes() const final { return m_bytes; }
 
-    bool isLinear(const dim_t *dims) const final {
+    void genKerName(std::stringstream &kerStream,
+                    const common::Node_ids &ids) const final {
+        UNUSED(kerStream);
+        UNUSED(ids);
+    }
+
+    void genParams(std::stringstream &kerStream, int id,
+                   bool is_linear) const final {
+        UNUSED(kerStream);
+        UNUSED(id);
+        UNUSED(is_linear);
+    }
+
+    int setArgs(int start_id, bool is_linear,
+                std::function<void(int id, const void *ptr, size_t arg_size)>
+                    setArg) const override {
+        UNUSED(is_linear);
+        UNUSED(setArg);
+        return start_id++;
+    }
+
+    void genOffsets(std::stringstream &kerStream, int id,
+                    bool is_linear) const final {
+        UNUSED(kerStream);
+        UNUSED(id);
+        UNUSED(is_linear);
+    }
+
+    void genFuncs(std::stringstream &kerStream,
+                  const common::Node_ids &ids) const final {
+        UNUSED(kerStream);
+        UNUSED(ids);
+    }
+
+    bool isLinear(dim_t *dims) const final {
         return m_linear_buffer && dims[0] == m_dims[0] &&
                dims[1] == m_dims[1] && dims[2] == m_dims[2] &&
                dims[3] == m_dims[3];

@@ -53,7 +53,7 @@ Array<T> shift(const Array<T> &in, const int sdims[4]) {
     }
 
     auto node = make_shared<ShiftNode<T>>(
-        getFullName<T>(), name_str.c_str(),
+        static_cast<af::dtype>(af::dtype_traits<T>::af_type),
         static_pointer_cast<BufferNode<T>>(in.getNode()), shifts);
     return createNodeArray<T>(oDims, Node_ptr(node));
 }

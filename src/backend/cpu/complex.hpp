@@ -28,13 +28,13 @@ struct BinOp<To, Ti, af_cplx2_t> {
 template<typename To, typename Ti>
 Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs,
                const af::dim4 &odims) {
-    jit::Node_ptr lhs_node = lhs.getNode();
-    jit::Node_ptr rhs_node = rhs.getNode();
+    common::Node_ptr lhs_node = lhs.getNode();
+    common::Node_ptr rhs_node = rhs.getNode();
 
     jit::BinaryNode<To, Ti, af_cplx2_t> *node =
         new jit::BinaryNode<To, Ti, af_cplx2_t>(lhs_node, rhs_node);
 
-    return createNodeArray<To>(odims, jit::Node_ptr(node));
+    return createNodeArray<To>(odims, common::Node_ptr(node));
 }
 
 #define CPLX_UNARY_FN(op)                                              \
@@ -53,41 +53,41 @@ CPLX_UNARY_FN(abs)
 
 template<typename To, typename Ti>
 Array<To> real(const Array<Ti> &in) {
-    jit::Node_ptr in_node = in.getNode();
+    common::Node_ptr in_node = in.getNode();
     jit::UnaryNode<To, Ti, af_real_t> *node =
         new jit::UnaryNode<To, Ti, af_real_t>(in_node);
 
-    return createNodeArray<To>(in.dims(),
-                               jit::Node_ptr(static_cast<jit::Node *>(node)));
+    return createNodeArray<To>(
+        in.dims(), common::Node_ptr(static_cast<common::Node *>(node)));
 }
 
 template<typename To, typename Ti>
 Array<To> imag(const Array<Ti> &in) {
-    jit::Node_ptr in_node = in.getNode();
+    common::Node_ptr in_node = in.getNode();
     jit::UnaryNode<To, Ti, af_imag_t> *node =
         new jit::UnaryNode<To, Ti, af_imag_t>(in_node);
 
-    return createNodeArray<To>(in.dims(),
-                               jit::Node_ptr(static_cast<jit::Node *>(node)));
+    return createNodeArray<To>(
+        in.dims(), common::Node_ptr(static_cast<common::Node *>(node)));
 }
 
 template<typename To, typename Ti>
 Array<To> abs(const Array<Ti> &in) {
-    jit::Node_ptr in_node = in.getNode();
+    common::Node_ptr in_node = in.getNode();
     jit::UnaryNode<To, Ti, af_abs_t> *node =
         new jit::UnaryNode<To, Ti, af_abs_t>(in_node);
 
-    return createNodeArray<To>(in.dims(),
-                               jit::Node_ptr(static_cast<jit::Node *>(node)));
+    return createNodeArray<To>(
+        in.dims(), common::Node_ptr(static_cast<common::Node *>(node)));
 }
 
 template<typename T>
 Array<T> conj(const Array<T> &in) {
-    jit::Node_ptr in_node = in.getNode();
+    common::Node_ptr in_node = in.getNode();
     jit::UnaryNode<T, T, af_conj_t> *node =
         new jit::UnaryNode<T, T, af_conj_t>(in_node);
 
-    return createNodeArray<T>(in.dims(),
-                              jit::Node_ptr(static_cast<jit::Node *>(node)));
+    return createNodeArray<T>(
+        in.dims(), common::Node_ptr(static_cast<common::Node *>(node)));
 }
 }  // namespace cpu

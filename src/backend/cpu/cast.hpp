@@ -155,11 +155,12 @@ CAST_B8(char)
 template<typename To, typename Ti>
 struct CastWrapper {
     Array<To> operator()(const Array<Ti> &in) {
-        jit::Node_ptr in_node = in.getNode();
+        common::Node_ptr in_node = in.getNode();
         jit::UnaryNode<To, Ti, af_cast_t> *node =
             new jit::UnaryNode<To, Ti, af_cast_t>(in_node);
         return createNodeArray<To>(
-            in.dims(), jit::Node_ptr(reinterpret_cast<jit::Node *>(node)));
+            in.dims(),
+            common::Node_ptr(reinterpret_cast<common::Node *>(node)));
     }
 };
 

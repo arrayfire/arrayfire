@@ -35,7 +35,7 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     int height     = max(a_node->getHeight(), b_node->getHeight());
     height         = max(height, cond_node->getHeight()) + 1;
     auto node      = make_shared<NaryNode>(NaryNode(
-        dtype_traits<T>::getName(), shortname<T>(true), "__select", 3,
+        static_cast<af::dtype>(dtype_traits<T>::af_type), "__select", 3,
         {{cond_node, a_node, b_node}}, static_cast<int>(af_select_t), height));
 
     if (detail::passesJitHeuristics<T>(node.get()) == kJITHeuristics::Pass) {
@@ -64,7 +64,7 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     height         = max(height, cond_node->getHeight()) + 1;
 
     auto node = make_shared<NaryNode>(NaryNode(
-        dtype_traits<T>::getName(), shortname<T>(true),
+        static_cast<af::dtype>(dtype_traits<T>::af_type),
         (flip ? "__not_select" : "__select"), 3, {{cond_node, a_node, b_node}},
         static_cast<int>(flip ? af_not_select_t : af_select_t), height));
 
