@@ -71,9 +71,13 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
-#include <err_opencl.hpp>
-#include <program.hpp>
+#include <kernel/convolve_separable.hpp>
+#include <kernel/fast.hpp>
+#include <kernel/resize.hpp>
+#include <kernel_headers/sift_nonfree.hpp>
+#include <memory.hpp>
 #include <af/defines.h>
 
 #pragma GCC diagnostic push
@@ -87,55 +91,42 @@
 
 #pragma GCC diagnostic pop
 
-#include <cache.hpp>
-#include <kernel/convolve_separable.hpp>
-#include <kernel/fast.hpp>
-#include <kernel/resize.hpp>
-#include <kernel_headers/sift_nonfree.hpp>
-#include <memory.hpp>
 #include <vector>
 
 namespace compute = boost::compute;
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::LocalSpaceArg;
-using cl::NDRange;
-using cl::Program;
-using std::vector;
-
 namespace opencl {
 namespace kernel {
-static const int SIFT_THREADS   = 256;
-static const int SIFT_THREADS_X = 32;
-static const int SIFT_THREADS_Y = 8;
+
+constexpr int SIFT_THREADS   = 256;
+constexpr int SIFT_THREADS_X = 32;
+constexpr int SIFT_THREADS_Y = 8;
 
 // assumed gaussian blur for input image
-static const float InitSigma = 0.5f;
+constexpr float InitSigma = 0.5f;
 
 // width of border in which to ignore keypoints
-static const int ImgBorder = 5;
+constexpr int ImgBorder = 5;
 
 // default width of descriptor histogram array
-static const int DescrWidth = 4;
+constexpr int DescrWidth = 4;
 
 // default number of bins per histogram in descriptor array
-static const int DescrHistBins = 8;
+constexpr int DescrHistBins = 8;
 
 // default number of bins in histogram for orientation assignment
-static const int OriHistBins = 36;
+constexpr int OriHistBins = 36;
 
 // Number of GLOH bins in radial direction
-static const unsigned GLOHRadialBins = 3;
+constexpr unsigned GLOHRadialBins = 3;
 
 // Number of GLOH angular bins (excluding the inner-most radial section)
-static const unsigned GLOHAngularBins = 8;
+constexpr unsigned GLOHAngularBins = 8;
 
 // Number of GLOH bins per histogram in descriptor
-static const unsigned GLOHHistBins = 16;
+constexpr unsigned GLOHHistBins = 16;
 
-static const float PI_VAL = 3.14159265358979323846f;
+constexpr float PI_VAL = 3.14159265358979323846f;
 
 template<typename T>
 void gaussian1D(T* out, const int dim, double sigma = 0.0) {
@@ -231,7 +222,7 @@ Param createInitialImage(Param img, const float init_sigma,
 
     const Param filter = gaussFilter<convAccT>(s);
 
-    if (double_input) resize<T, AF_INTERP_BILINEAR>(init_img, img);
+    if (double_input) resize<T>(init_img, img, AF_INTERP_BILINEAR);
 
     convSepFull<T, convAccT>(init_img, (double_input) ? init_img : img, filter);
 
@@ -310,7 +301,7 @@ std::vector<Param> buildGaussPyr(Param init_img, const unsigned n_octaves,
                     tmp_pyr[idx].info.strides[3] * tmp_pyr[idx].info.dims[3];
                 tmp_pyr[idx].data = bufferAlloc(lvl_el * sizeof(T));
 
-                resize<T, AF_INTERP_BILINEAR>(tmp_pyr[idx], tmp_pyr[src_idx]);
+                resize<T>(tmp_pyr[idx], tmp_pyr[src_idx], AF_INTERP_BILINEAR);
             } else {
                 for (int k = 0; k < 4; k++) {
                     tmp_pyr[idx].info.dims[k] = tmp_pyr[src_idx].info.dims[k];
@@ -352,7 +343,7 @@ std::vector<Param> buildGaussPyr(Param init_img, const unsigned n_octaves,
 template<typename T>
 std::vector<Param> buildDoGPyr(std::vector<Param> gauss_pyr,
                                const unsigned n_octaves,
-                               const unsigned n_layers, Kernel* suKernel) {
+                               const unsigned n_layers, Kernel suOp) {
     // DoG Pyramid
     std::vector<Param> dog_pyr(n_octaves);
     for (unsigned o = 0; o < n_octaves; o++) {
@@ -368,23 +359,18 @@ std::vector<Param> buildDoGPyr(std::vector<Param> gauss_pyr,
 
         dog_pyr[o].data = bufferAlloc(dog_pyr[o].info.dims[3] *
                                       dog_pyr[o].info.strides[3] * sizeof(T));
-
         const unsigned nel =
             dog_pyr[o].info.dims[1] * dog_pyr[o].info.strides[1];
         const unsigned dog_layers = n_layers + 2;
 
         const int blk_x = divup(nel, SIFT_THREADS);
-        const NDRange local(SIFT_THREADS, 1);
-        const NDRange global(blk_x * SIFT_THREADS, 1);
+        const cl::NDRange local(SIFT_THREADS, 1);
+        const cl::NDRange global(blk_x * SIFT_THREADS, 1);
 
-        auto suOp =
-            KernelFunctor<Buffer, Buffer, unsigned, unsigned>(*suKernel);
-
-        suOp(EnqueueArgs(getQueue(), global, local), *dog_pyr[o].data,
+        suOp(cl::EnqueueArgs(getQueue(), global, local), *dog_pyr[o].data,
              *gauss_pyr[o].data, nel, dog_layers);
         CL_DEBUG_FINISH(getQueue());
     }
-
     return dog_pyr;
 }
 
@@ -416,55 +402,26 @@ void apply_permutation(compute::buffer_iterator<T>& keys,
 }
 
 template<typename T>
-std::array<cl::Kernel*, 7> getSiftKernels() {
-    static const unsigned NUM_KERNELS           = 7;
-    static const char* kernelNames[NUM_KERNELS] = {"sub",
-                                                   "detectExtrema",
-                                                   "interpolateExtrema",
-                                                   "calcOrientation",
-                                                   "removeDuplicates",
-                                                   "computeDescriptor",
-                                                   "computeGLOHDescriptor"};
+std::array<Kernel, 7> getSiftKernels() {
+    static const std::string src(sift_nonfree_cl, sift_nonfree_cl_len);
 
-    kc_entry_t entries[NUM_KERNELS];
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+    };
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    int device = getActiveDeviceId();
-
-    std::string checkName = kernelNames[0] + std::string("_") +
-                            std::string(dtype_traits<T>::getName());
-
-    entries[0] = kernelCache(device, checkName);
-
-    if (entries[0].prog == 0 && entries[0].ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << getTypeBuildDefinition<T>();
-
-        cl::Program prog;
-        buildProgram(prog, sift_nonfree_cl, sift_nonfree_cl_len, options.str());
-
-        for (unsigned i = 0; i < NUM_KERNELS; ++i) {
-            entries[i].prog = new Program(prog);
-            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i]);
-
-            std::string name = kernelNames[i] + std::string("_") +
-                               std::string(dtype_traits<T>::getName());
-
-            addKernelToCache(device, name, entries[i]);
-        }
-    } else {
-        for (unsigned i = 1; i < NUM_KERNELS; ++i) {
-            std::string name = kernelNames[i] + std::string("_") +
-                               std::string(dtype_traits<T>::getName());
-
-            entries[i] = kernelCache(device, name);
-        }
-    }
-
-    std::array<cl::Kernel*, NUM_KERNELS> retVal;
-    for (unsigned i = 0; i < NUM_KERNELS; ++i) retVal[i] = entries[i].ker;
-
-    return retVal;
+    return {
+        common::findKernel("sub", {src}, targs, compileOpts),
+        common::findKernel("detectExtrema", {src}, targs, compileOpts),
+        common::findKernel("interpolateExtrema", {src}, targs, compileOpts),
+        common::findKernel("calcOrientation", {src}, targs, compileOpts),
+        common::findKernel("removeDuplicates", {src}, targs, compileOpts),
+        common::findKernel("computeDescriptor", {src}, targs, compileOpts),
+        common::findKernel("computeGLOHDescriptor", {src}, targs, compileOpts),
+    };
 }
 
 template<typename T, typename convAccT>
@@ -474,6 +431,12 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
           const float edge_thr, const float init_sigma, const bool double_input,
           const float img_scale, const float feature_ratio,
           const bool compute_GLOH) {
+    using cl::Buffer;
+    using cl::EnqueueArgs;
+    using cl::Local;
+    using cl::NDRange;
+    using std::vector;
+
     auto kernels = getSiftKernels<T>();
 
     unsigned min_dim = min(img.info.dims[0], img.info.dims[1]);
@@ -484,19 +447,19 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
     Param init_img =
         createInitialImage<T, convAccT>(img, init_sigma, double_input);
 
-    std::vector<Param> gauss_pyr =
+    vector<Param> gauss_pyr =
         buildGaussPyr<T, convAccT>(init_img, n_octaves, n_layers, init_sigma);
 
-    std::vector<Param> dog_pyr =
+    vector<Param> dog_pyr =
         buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers, kernels[0]);
 
-    std::vector<cl::Buffer*> d_x_pyr(n_octaves, NULL);
-    std::vector<cl::Buffer*> d_y_pyr(n_octaves, NULL);
-    std::vector<cl::Buffer*> d_response_pyr(n_octaves, NULL);
-    std::vector<cl::Buffer*> d_size_pyr(n_octaves, NULL);
-    std::vector<cl::Buffer*> d_ori_pyr(n_octaves, NULL);
-    std::vector<cl::Buffer*> d_desc_pyr(n_octaves, NULL);
-    std::vector<unsigned> feat_pyr(n_octaves, 0);
+    vector<Buffer*> d_x_pyr(n_octaves, NULL);
+    vector<Buffer*> d_y_pyr(n_octaves, NULL);
+    vector<Buffer*> d_response_pyr(n_octaves, NULL);
+    vector<Buffer*> d_size_pyr(n_octaves, NULL);
+    vector<Buffer*> d_ori_pyr(n_octaves, NULL);
+    vector<Buffer*> d_desc_pyr(n_octaves, NULL);
+    vector<unsigned> feat_pyr(n_octaves, 0);
     unsigned total_feat = 0;
 
     const unsigned d  = DescrWidth;
@@ -507,7 +470,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
     const unsigned desc_len =
         (compute_GLOH) ? (1 + (rb - 1) * ab) * hb : d * d * n;
 
-    cl::Buffer* d_count = bufferAlloc(sizeof(unsigned));
+    Buffer* d_count = bufferAlloc(sizeof(unsigned));
 
     for (unsigned o = 0; o < n_octaves; o++) {
         if (dog_pyr[o].info.dims[0] - 2 * ImgBorder < 1 ||
@@ -517,9 +480,9 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         const unsigned imel = dog_pyr[o].info.dims[0] * dog_pyr[o].info.dims[1];
         const unsigned max_feat = ceil(imel * feature_ratio);
 
-        cl::Buffer* d_extrema_x     = bufferAlloc(max_feat * sizeof(float));
-        cl::Buffer* d_extrema_y     = bufferAlloc(max_feat * sizeof(float));
-        cl::Buffer* d_extrema_layer = bufferAlloc(max_feat * sizeof(unsigned));
+        Buffer* d_extrema_x     = bufferAlloc(max_feat * sizeof(float));
+        Buffer* d_extrema_y     = bufferAlloc(max_feat * sizeof(float));
+        Buffer* d_extrema_layer = bufferAlloc(max_feat * sizeof(unsigned));
 
         unsigned extrema_feat = 0;
         getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
@@ -535,15 +498,13 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
 
         float extrema_thr = 0.5f * contrast_thr / n_layers;
 
-        auto deOp =
-            KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, KParam,
-                          unsigned, float, LocalSpaceArg>(*kernels[1]);
+        auto deOp = kernels[1];
 
         deOp(EnqueueArgs(getQueue(), global, local), *d_extrema_x, *d_extrema_y,
              *d_extrema_layer, *d_count, *dog_pyr[o].data, dog_pyr[o].info,
              max_feat, extrema_thr,
-             cl::Local((SIFT_THREADS_X + 2) * (SIFT_THREADS_Y + 2) * 3 *
-                       sizeof(float)));
+             Local((SIFT_THREADS_X + 2) * (SIFT_THREADS_Y + 2) * 3 *
+                   sizeof(float)));
         CL_DEBUG_FINISH(getQueue());
 
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
@@ -562,22 +523,17 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
                                       &interp_feat);
 
-        cl::Buffer* d_interp_x = bufferAlloc(extrema_feat * sizeof(float));
-        cl::Buffer* d_interp_y = bufferAlloc(extrema_feat * sizeof(float));
-        cl::Buffer* d_interp_layer =
-            bufferAlloc(extrema_feat * sizeof(unsigned));
-        cl::Buffer* d_interp_response =
-            bufferAlloc(extrema_feat * sizeof(float));
-        cl::Buffer* d_interp_size = bufferAlloc(extrema_feat * sizeof(float));
+        Buffer* d_interp_x     = bufferAlloc(extrema_feat * sizeof(float));
+        Buffer* d_interp_y     = bufferAlloc(extrema_feat * sizeof(float));
+        Buffer* d_interp_layer = bufferAlloc(extrema_feat * sizeof(unsigned));
+        Buffer* d_interp_response = bufferAlloc(extrema_feat * sizeof(float));
+        Buffer* d_interp_size     = bufferAlloc(extrema_feat * sizeof(float));
 
         const int blk_x_interp = divup(extrema_feat, SIFT_THREADS);
         const NDRange local_interp(SIFT_THREADS, 1);
         const NDRange global_interp(blk_x_interp * SIFT_THREADS, 1);
 
-        auto ieOp = KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer,
-                                  Buffer, Buffer, Buffer, Buffer, unsigned,
-                                  Buffer, KParam, unsigned, unsigned, unsigned,
-                                  float, float, float, float>(*kernels[2]);
+        auto ieOp = kernels[2];
 
         ieOp(EnqueueArgs(getQueue(), global_interp, local_interp), *d_interp_x,
              *d_interp_y, *d_interp_layer, *d_interp_response, *d_interp_size,
@@ -643,20 +599,17 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
                                       &nodup_feat);
 
-        cl::Buffer* d_nodup_x     = bufferAlloc(interp_feat * sizeof(float));
-        cl::Buffer* d_nodup_y     = bufferAlloc(interp_feat * sizeof(float));
-        cl::Buffer* d_nodup_layer = bufferAlloc(interp_feat * sizeof(unsigned));
-        cl::Buffer* d_nodup_response = bufferAlloc(interp_feat * sizeof(float));
-        cl::Buffer* d_nodup_size     = bufferAlloc(interp_feat * sizeof(float));
+        Buffer* d_nodup_x        = bufferAlloc(interp_feat * sizeof(float));
+        Buffer* d_nodup_y        = bufferAlloc(interp_feat * sizeof(float));
+        Buffer* d_nodup_layer    = bufferAlloc(interp_feat * sizeof(unsigned));
+        Buffer* d_nodup_response = bufferAlloc(interp_feat * sizeof(float));
+        Buffer* d_nodup_size     = bufferAlloc(interp_feat * sizeof(float));
 
         const int blk_x_nodup = divup(extrema_feat, SIFT_THREADS);
         const NDRange local_nodup(SIFT_THREADS, 1);
         const NDRange global_nodup(blk_x_nodup * SIFT_THREADS, 1);
 
-        auto rdOp =
-            KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
-                          Buffer, Buffer, Buffer, Buffer, Buffer, unsigned>(
-                *kernels[4]);
+        auto rdOp = kernels[4];
 
         rdOp(EnqueueArgs(getQueue(), global_nodup, local_nodup), *d_nodup_x,
              *d_nodup_y, *d_nodup_layer, *d_nodup_response, *d_nodup_size,
@@ -679,28 +632,21 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
                                       &oriented_feat);
         const unsigned max_oriented_feat = nodup_feat * 3;
 
-        cl::Buffer* d_oriented_x =
-            bufferAlloc(max_oriented_feat * sizeof(float));
-        cl::Buffer* d_oriented_y =
-            bufferAlloc(max_oriented_feat * sizeof(float));
-        cl::Buffer* d_oriented_layer =
+        Buffer* d_oriented_x = bufferAlloc(max_oriented_feat * sizeof(float));
+        Buffer* d_oriented_y = bufferAlloc(max_oriented_feat * sizeof(float));
+        Buffer* d_oriented_layer =
             bufferAlloc(max_oriented_feat * sizeof(unsigned));
-        cl::Buffer* d_oriented_response =
+        Buffer* d_oriented_response =
             bufferAlloc(max_oriented_feat * sizeof(float));
-        cl::Buffer* d_oriented_size =
+        Buffer* d_oriented_size =
             bufferAlloc(max_oriented_feat * sizeof(float));
-        cl::Buffer* d_oriented_ori =
-            bufferAlloc(max_oriented_feat * sizeof(float));
+        Buffer* d_oriented_ori = bufferAlloc(max_oriented_feat * sizeof(float));
 
         const int blk_x_ori = divup(nodup_feat, SIFT_THREADS_Y);
         const NDRange local_ori(SIFT_THREADS_X, SIFT_THREADS_Y);
         const NDRange global_ori(SIFT_THREADS_X, blk_x_ori * SIFT_THREADS_Y);
 
-        auto coOp =
-            KernelFunctor<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
-                          Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
-                          unsigned, Buffer, KParam, unsigned, unsigned, int,
-                          LocalSpaceArg>(*kernels[3]);
+        auto coOp = kernels[3];
 
         coOp(EnqueueArgs(getQueue(), global_ori, local_ori), *d_oriented_x,
              *d_oriented_y, *d_oriented_layer, *d_oriented_response,
@@ -708,7 +654,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
              *d_nodup_y, *d_nodup_layer, *d_nodup_response, *d_nodup_size,
              nodup_feat, *gauss_pyr[o].data, gauss_pyr[o].info,
              max_oriented_feat, o, (int)double_input,
-             cl::Local(OriHistBins * SIFT_THREADS_Y * 2 * sizeof(float)));
+             Local(OriHistBins * SIFT_THREADS_Y * 2 * sizeof(float)));
         CL_DEBUG_FINISH(getQueue());
 
         bufferFree(d_nodup_x);
@@ -731,8 +677,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
             continue;
         }
 
-        cl::Buffer* d_desc =
-            bufferAlloc(oriented_feat * desc_len * sizeof(float));
+        Buffer* d_desc = bufferAlloc(oriented_feat * desc_len * sizeof(float));
 
         float scale = 1.f / (1 << o);
         if (double_input) scale *= 2.f;
@@ -744,31 +689,23 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         const unsigned histsz = 8;
 
         if (compute_GLOH) {
-            auto cgOp =
-                KernelFunctor<Buffer, unsigned, unsigned, Buffer, Buffer,
-                              Buffer, Buffer, Buffer, Buffer, unsigned, Buffer,
-                              KParam, int, unsigned, unsigned, unsigned, float,
-                              int, LocalSpaceArg>(*kernels[6]);
+            auto cgOp = kernels[6];
 
             cgOp(EnqueueArgs(getQueue(), global_desc, local_desc), *d_desc,
                  desc_len, histsz, *d_oriented_x, *d_oriented_y,
                  *d_oriented_layer, *d_oriented_response, *d_oriented_size,
                  *d_oriented_ori, oriented_feat, *gauss_pyr[o].data,
                  gauss_pyr[o].info, d, rb, ab, hb, scale, n_layers,
-                 cl::Local(desc_len * (histsz + 1) * sizeof(float)));
+                 Local(desc_len * (histsz + 1) * sizeof(float)));
         } else {
-            auto cdOp =
-                KernelFunctor<Buffer, unsigned, unsigned, Buffer, Buffer,
-                              Buffer, Buffer, Buffer, Buffer, unsigned, Buffer,
-                              KParam, int, int, float, int, LocalSpaceArg>(
-                    *kernels[5]);
+            auto cdOp = kernels[5];
 
             cdOp(EnqueueArgs(getQueue(), global_desc, local_desc), *d_desc,
                  desc_len, histsz, *d_oriented_x, *d_oriented_y,
                  *d_oriented_layer, *d_oriented_response, *d_oriented_size,
                  *d_oriented_ori, oriented_feat, *gauss_pyr[o].data,
                  gauss_pyr[o].info, d, n, scale, n_layers,
-                 cl::Local(desc_len * (histsz + 1) * sizeof(float)));
+                 Local(desc_len * (histsz + 1) * sizeof(float)));
         }
         CL_DEBUG_FINISH(getQueue());
 

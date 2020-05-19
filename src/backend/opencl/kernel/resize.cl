@@ -28,7 +28,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////
 // nearest-neighbor resampling
-void resize_n_(__global T* d_out, const KParam out, __global const T* d_in,
+void resize_n_(global T* d_out, const KParam out, __global const T* d_in,
                const KParam in, const int blockIdx_x, const int blockIdx_y,
                const float xf, const float yf) {
     int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
@@ -48,7 +48,7 @@ void resize_n_(__global T* d_out, const KParam out, __global const T* d_in,
 
 ////////////////////////////////////////////////////////////////////////////////////
 // bilinear resampling
-void resize_b_(__global T* d_out, const KParam out, __global const T* d_in,
+void resize_b_(global T* d_out, const KParam out, __global const T* d_in,
                const KParam in, const int blockIdx_x, const int blockIdx_y,
                const float xf_, const float yf_) {
     int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
@@ -82,7 +82,7 @@ void resize_b_(__global T* d_out, const KParam out, __global const T* d_in,
 
 ////////////////////////////////////////////////////////////////////////////////////
 // lower resampling
-void resize_l_(__global T* d_out, const KParam out, __global const T* d_in,
+void resize_l_(global T* d_out, const KParam out, __global const T* d_in,
                const KParam in, const int blockIdx_x, const int blockIdx_y,
                const float xf, const float yf) {
     int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
@@ -100,8 +100,8 @@ void resize_l_(__global T* d_out, const KParam out, __global const T* d_in,
 
 ////////////////////////////////////////////////////////////////////////////////////
 // Wrapper Kernel
-__kernel void resize_kernel(__global T* d_out, const KParam out,
-                            __global const T* d_in, const KParam in,
+kernel void resize_kernel(global T* d_out, const KParam out,
+                            global const T* d_in, const KParam in,
                             const int b0, const int b1, const float xf,
                             const float yf) {
     int bIdx = get_group_id(0) / b0;

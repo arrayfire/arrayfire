@@ -7,15 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-char calculate_head_flags_dim(const __global Tk *kptr, int id, int stride) {
+char calculate_head_flags_dim(const global Tk *kptr, int id, int stride) {
     return (id == 0) ? 1 : ((*kptr) != (*(kptr - stride)));
 }
 
-__kernel void scan_dim_by_key_nonfinal_kernel(
-    __global To *oData, KParam oInfo, __global To *tData, KParam tInfo,
-    __global char *tfData, KParam tfInfo, __global int *tiData, KParam tiInfo,
-    const __global Ti *iData, KParam iInfo, const __global Tk *kData,
-    KParam kInfo, uint groups_x, uint groups_y, uint groups_dim, uint lim) {
+kernel void scanDimByKeyNonfinal(
+    global To *oData, KParam oInfo, global To *tData, KParam tInfo,
+    global char *tfData, KParam tfInfo, global int *tiData, KParam tiInfo,
+    const global Ti *iData, KParam iInfo, const global Tk *kData, KParam kInfo,
+    uint groups_x, uint groups_y, uint groups_dim, uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
     const int lid  = lidy * THREADS_X + lidx;
@@ -59,15 +59,15 @@ __kernel void scan_dim_by_key_nonfinal_kernel(
     const int ostride_dim = oInfo.strides[kDim];
     const int istride_dim = iInfo.strides[kDim];
 
-    __local To l_val0[THREADS_X * DIMY];
-    __local To l_val1[THREADS_X * DIMY];
-    __local char l_flg0[THREADS_X * DIMY];
-    __local char l_flg1[THREADS_X * DIMY];
-    __local To *l_val   = l_val0;
-    __local char *l_flg = l_flg0;
-    __local To l_tmp[THREADS_X];
-    __local char l_ftmp[THREADS_X];
-    __local int boundaryid[THREADS_X];
+    local To l_val0[THREADS_X * DIMY];
+    local To l_val1[THREADS_X * DIMY];
+    local char l_flg0[THREADS_X * DIMY];
+    local char l_flg1[THREADS_X * DIMY];
+    local To *l_val   = l_val0;
+    local char *l_flg = l_flg0;
+    local To l_tmp[THREADS_X];
+    local char l_ftmp[THREADS_X];
+    local int boundaryid[THREADS_X];
 
     bool flip         = 0;
     const To init_val = init;
@@ -92,7 +92,7 @@ __kernel void scan_dim_by_key_nonfinal_kernel(
         }
 
         // Load val from global in
-        if (inclusive_scan) {
+        if (INCLUSIVE_SCAN) {
             if (!cond) {
                 val = init_val;
             } else {
@@ -164,10 +164,11 @@ __kernel void scan_dim_by_key_nonfinal_kernel(
     }
 }
 
-__kernel void scan_dim_by_key_final_kernel(
-    __global To *oData, KParam oInfo, const __global Ti *iData, KParam iInfo,
-    const __global Tk *kData, KParam kInfo, uint groups_x, uint groups_y,
-    uint groups_dim, uint lim) {
+kernel void scanDimByKeyFinal(global To *oData, KParam oInfo,
+                              const global Ti *iData, KParam iInfo,
+                              const global Tk *kData, KParam kInfo,
+                              uint groups_x, uint groups_y, uint groups_dim,
+                              uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
     const int lid  = lidy * THREADS_X + lidx;
@@ -205,14 +206,14 @@ __kernel void scan_dim_by_key_final_kernel(
     const int ostride_dim = oInfo.strides[kDim];
     const int istride_dim = iInfo.strides[kDim];
 
-    __local To l_val0[THREADS_X * DIMY];
-    __local To l_val1[THREADS_X * DIMY];
-    __local char l_flg0[THREADS_X * DIMY];
-    __local char l_flg1[THREADS_X * DIMY];
-    __local To *l_val   = l_val0;
-    __local char *l_flg = l_flg0;
-    __local To l_tmp[THREADS_X];
-    __local char l_ftmp[THREADS_X];
+    local To l_val0[THREADS_X * DIMY];
+    local To l_val1[THREADS_X * DIMY];
+    local char l_flg0[THREADS_X * DIMY];
+    local char l_flg1[THREADS_X * DIMY];
+    local To *l_val   = l_val0;
+    local char *l_flg = l_flg0;
+    local To l_tmp[THREADS_X];
+    local char l_ftmp[THREADS_X];
 
     bool flip         = 0;
     const To init_val = init;
@@ -231,8 +232,8 @@ __kernel void scan_dim_by_key_final_kernel(
 
         if (calculateFlags) {
             if (cond) {
-                flag =
-                    calculate_head_flags_dim(kData, id_dim, kInfo.strides[kDim]);
+                flag = calculate_head_flags_dim(kData, id_dim,
+                                                kInfo.strides[kDim]);
             } else {
                 flag = 0;
             }
@@ -241,7 +242,7 @@ __kernel void scan_dim_by_key_final_kernel(
         }
 
         // Load val from global in
-        if (inclusive_scan) {
+        if (INCLUSIVE_SCAN) {
             if (!cond) {
                 val = init_val;
             } else {
@@ -294,11 +295,11 @@ __kernel void scan_dim_by_key_final_kernel(
     }
 }
 
-__kernel void bcast_dim_kernel(__global To *oData, KParam oInfo,
-                               const __global To *tData, KParam tInfo,
-                               const __global int *tiData, KParam tiInfo,
-                               uint groups_x, uint groups_y, uint groups_dim,
-                               uint lim) {
+kernel void bcastDimByKey(global To *oData, KParam oInfo,
+                          const global To *tData, KParam tInfo,
+                          const global int *tiData, KParam tiInfo,
+                          uint groups_x, uint groups_y, uint groups_dim,
+                          uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
     const int lid  = lidy * THREADS_X + lidx;

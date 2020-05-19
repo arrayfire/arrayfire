@@ -90,7 +90,7 @@ void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
 template<typename T, bool flip>
 void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
                    const double &b) {
-    kernel::select_scalar<T, flip>(out, cond, a, b, out.ndims());
+    kernel::select_scalar<T>(out, cond, a, b, out.ndims(), flip);
 }
 
 #define INSTANTIATE(T)                                                        \

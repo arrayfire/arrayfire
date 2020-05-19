@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void reduce_dim_kernel(__global To *oData, KParam oInfo,
-                                const __global Ti *iData, KParam iInfo,
+kernel void reduce_dim_kernel(global To *oData, KParam oInfo,
+                                const global Ti *iData, KParam iInfo,
                                 uint groups_x, uint groups_y, uint group_dim,
                                 int change_nan, To nanval) {
     const uint lidx = get_local_id(0);
@@ -42,7 +42,7 @@ __kernel void reduce_dim_kernel(__global To *oData, KParam oInfo,
     bool is_valid = (ids[0] < iInfo.dims[0]) && (ids[1] < iInfo.dims[1]) &&
                     (ids[2] < iInfo.dims[2]) && (ids[3] < iInfo.dims[3]);
 
-    __local To s_val[THREADS_X * DIMY];
+    local To s_val[THREADS_X * DIMY];
 
     To out_val = init;
     for (int id = id_dim_in; is_valid && (id < iInfo.dims[kDim]);
@@ -55,7 +55,7 @@ __kernel void reduce_dim_kernel(__global To *oData, KParam oInfo,
 
     s_val[lid] = out_val;
 
-    __local To *s_ptr = s_val + lid;
+    local To *s_ptr = s_val + lid;
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (DIMY == 8) {

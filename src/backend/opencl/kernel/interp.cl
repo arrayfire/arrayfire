@@ -75,8 +75,8 @@ InterpValTy bicubicInterpFunc(InterpValTy val[4][4], InterpPosTy xratio,
 }
 
 #if INTERP_ORDER == 1
-void interp1_general(__global InterpInTy *d_out, KParam out, int ooff,
-                     __global const InterpInTy *d_in, KParam in, int ioff,
+void interp1_general(global InterpInTy *d_out, KParam out, int ooff,
+                     global const InterpInTy *d_in, KParam in, int ioff,
                      InterpPosTy x, int method, int batch, bool clamp, int xdim,
                      int batch_dim) {
     InterpInTy zero = ZERO;
@@ -97,8 +97,8 @@ void interp1_general(__global InterpInTy *d_out, KParam out, int ooff,
     }
 }
 #elif INTERP_ORDER == 2
-void interp1_general(__global InterpInTy *d_out, KParam out, int ooff,
-                     __global const InterpInTy *d_in, KParam in, int ioff,
+void interp1_general(global InterpInTy *d_out, KParam out, int ooff,
+                     global const InterpInTy *d_in, KParam in, int ioff,
                      InterpPosTy x, int method, int batch, bool clamp, int xdim,
                      int batch_dim) {
     const int grid_x        = floor(x);    // nearest grid
@@ -126,8 +126,8 @@ void interp1_general(__global InterpInTy *d_out, KParam out, int ooff,
     }
 }
 #elif INTERP_ORDER == 3
-void interp1_general(__global InterpInTy *d_out, KParam out, int ooff,
-                     __global const InterpInTy *d_in, KParam in, int ioff,
+void interp1_general(global InterpInTy *d_out, KParam out, int ooff,
+                     global const InterpInTy *d_in, KParam in, int ioff,
                      InterpPosTy x, int method, int batch, bool clamp, int xdim,
                      int batch_dim) {
     const int grid_x        = floor(x);    // nearest grid
@@ -160,8 +160,8 @@ void interp1_general(__global InterpInTy *d_out, KParam out, int ooff,
 #endif
 
 #if INTERP_ORDER == 1
-void interp2_general(__global InterpInTy *d_out, KParam out, int ooff,
-                     __global const InterpInTy *d_in, KParam in, int ioff,
+void interp2_general(global InterpInTy *d_out, KParam out, int ooff,
+                     global const InterpInTy *d_in, KParam in, int ioff,
                      InterpPosTy x, InterpPosTy y, int method, int batch,
                      bool clamp, int xdim, int ydim, int batch_dim) {
     int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
@@ -190,8 +190,8 @@ void interp2_general(__global InterpInTy *d_out, KParam out, int ooff,
     }
 }
 #elif INTERP_ORDER == 2
-void interp2_general(__global InterpInTy *d_out, KParam out, int ooff,
-                     __global const InterpInTy *d_in, KParam in, int ioff,
+void interp2_general(global InterpInTy *d_out, KParam out, int ooff,
+                     global const InterpInTy *d_in, KParam in, int ioff,
                      InterpPosTy x, InterpPosTy y, int method, int batch,
                      bool clamp, int xdim, int ydim, int batch_dim) {
     const int grid_x        = floor(x);
@@ -233,8 +233,8 @@ void interp2_general(__global InterpInTy *d_out, KParam out, int ooff,
     }
 }
 #elif INTERP_ORDER == 3
-void interp2_general(__global InterpInTy *d_out, KParam out, int ooff,
-                     __global const InterpInTy *d_in, KParam in, int ioff,
+void interp2_general(global InterpInTy *d_out, KParam out, int ooff,
+                     global const InterpInTy *d_in, KParam in, int ioff,
                      InterpPosTy x, InterpPosTy y, int method, int batch,
                      bool clamp, int xdim, int ydim, int batch_dim) {
     const int grid_x        = floor(x);

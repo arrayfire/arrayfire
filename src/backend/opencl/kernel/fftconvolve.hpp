@@ -9,33 +9,23 @@
 
 #pragma once
 
-#include <backend.hpp>
-#include <cache.hpp>
+#include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
-#include <err_opencl.hpp>
 #include <kernel_headers/fftconvolve_multiply.hpp>
 #include <kernel_headers/fftconvolve_pack.hpp>
 #include <kernel_headers/fftconvolve_reorder.hpp>
-#include <memory.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <types.hpp>
 #include <af/defines.h>
 
-#include <type_traits>
-
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::LocalSpaceArg;
-using cl::NDRange;
-using cl::Program;
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-static const int THREADS = 256;
+
+constexpr int THREADS = 256;
 
 void calcParamSizes(Param& sig_tmp, Param& filter_tmp, Param& packed,
                     Param& sig, Param& filter, const int baseDim,
@@ -77,37 +67,28 @@ template<typename convT, typename T>
 void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
                     AF_BATCH_KIND kind) {
     constexpr bool IsTypeDouble = std::is_same<T, double>::value;
+    constexpr auto ctDType =
+        static_cast<af_dtype>(dtype_traits<convT>::af_type);
 
-    std::string refName = std::string("pack_data_") +
-                          std::string(dtype_traits<convT>::getName()) +
-                          std::string(dtype_traits<T>::getName()) +
-                          std::to_string(IsTypeDouble);
+    static const std::string src(fftconvolve_pack_cl, fftconvolve_pack_cl_len);
 
-    int device          = getActiveDeviceId();
-    kc_entry_t pdkEntry = kernelCache(device, refName);
-
-    if (pdkEntry.prog == 0 && pdkEntry.ker == 0) {
-        std::ostringstream options;
-
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << getTypeBuildDefinition<T, convT>();
-
-        auto ctDType = static_cast<af_dtype>(dtype_traits<convT>::af_type);
-        if (ctDType == c32) {
-            options << " -D CONVT=float";
-        } else if (ctDType == c64 && IsTypeDouble) {
-            options << " -D CONVT=double";
-        }
-
-        const char* ker_strs[] = {fftconvolve_pack_cl};
-        const int ker_lens[]   = {fftconvolve_pack_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        pdkEntry.prog = new Program(prog);
-        pdkEntry.ker  = new Kernel(*pdkEntry.prog, "pack_data");
-
-        addKernelToCache(device, refName, pdkEntry);
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+        TemplateTypename<convT>(),
+        TemplateArg(IsTypeDouble),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+    };
+    if (ctDType == c32) {
+        options.emplace_back(DefineKeyValue(CONVT, "float"));
+    } else if (ctDType == c64 && IsTypeDouble) {
+        options.emplace_back(DefineKeyValue(CONVT, "double"));
     }
+    options.emplace_back(getTypeBuildDefinition<T, convT>());
+
+    auto packData = common::findKernel("pack_data", {src}, targs, options);
+    auto padArray = common::findKernel("pad_array", {src}, targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
@@ -123,59 +104,21 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
     int blocks = divup(sig_packed_elem, THREADS);
 
     // Locate features kernel sizes
-    NDRange local(THREADS);
-    NDRange global(blocks * THREADS);
+    cl::NDRange local(THREADS);
+    cl::NDRange global(blocks * THREADS);
 
     // Pack signal in a complex matrix where first dimension is half the input
     // (allows faster FFT computation) and pad array to a power of 2 with 0s
-    auto pdOp =
-        KernelFunctor<Buffer, KParam, Buffer, KParam, const int, const int>(
-            *pdkEntry.ker);
-
-    pdOp(EnqueueArgs(getQueue(), global, local), *sig_tmp.data, sig_tmp.info,
-         *sig.data, sig.info, sig_half_d0, sig_half_d0_odd);
-
+    packData(cl::EnqueueArgs(getQueue(), global, local), *sig_tmp.data,
+             sig_tmp.info, *sig.data, sig.info, sig_half_d0, sig_half_d0_odd);
     CL_DEBUG_FINISH(getQueue());
 
-    refName = std::string("pack_array_") +
-              std::string(dtype_traits<convT>::getName()) +
-              std::string(dtype_traits<T>::getName()) +
-              std::to_string(IsTypeDouble);
-
-    kc_entry_t pakEntry = kernelCache(device, refName);
-
-    if (pakEntry.prog == 0 && pakEntry.ker == 0) {
-        std::ostringstream options;
-
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << getTypeBuildDefinition<T, convT>();
-
-        auto ctDType = static_cast<af_dtype>(dtype_traits<convT>::af_type);
-        if (ctDType == c32) {
-            options << " -D CONVT=float";
-        } else if (ctDType == c64 && IsTypeDouble) {
-            options << " -D CONVT=double";
-        }
-
-        const char* ker_strs[] = {fftconvolve_pack_cl};
-        const int ker_lens[]   = {fftconvolve_pack_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        pakEntry.prog = new Program(prog);
-        pakEntry.ker  = new Kernel(*pakEntry.prog, "pad_array");
-
-        addKernelToCache(device, refName, pakEntry);
-    }
-
     blocks = divup(filter_packed_elem, THREADS);
-    global = NDRange(blocks * THREADS);
+    global = cl::NDRange(blocks * THREADS);
 
     // Pad filter array with 0s
-    auto paOp = KernelFunctor<Buffer, KParam, Buffer, KParam>(*pakEntry.ker);
-
-    paOp(EnqueueArgs(getQueue(), global, local), *filter_tmp.data,
-         filter_tmp.info, *filter.data, filter.info);
-
+    padArray(cl::EnqueueArgs(getQueue(), global, local), *filter_tmp.data,
+             filter_tmp.info, *filter.data, filter.info);
     CL_DEBUG_FINISH(getQueue());
 }
 
@@ -183,41 +126,32 @@ template<typename convT, typename T>
 void complexMultiplyHelper(Param packed, Param sig, Param filter,
                            const int baseDim, AF_BATCH_KIND kind) {
     constexpr bool IsTypeDouble = std::is_same<T, double>::value;
+    constexpr auto ctDType =
+        static_cast<af_dtype>(dtype_traits<convT>::af_type);
 
-    std::string refName = std::string("complex_multiply_") +
-                          std::string(dtype_traits<convT>::getName()) +
-                          std::string(dtype_traits<T>::getName()) +
-                          std::to_string(IsTypeDouble);
-
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
-
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D AF_BATCH_NONE=" << (int)AF_BATCH_NONE
-                << " -D AF_BATCH_LHS=" << (int)AF_BATCH_LHS
-                << " -D AF_BATCH_RHS=" << (int)AF_BATCH_RHS
-                << " -D AF_BATCH_SAME=" << (int)AF_BATCH_SAME;
-        options << getTypeBuildDefinition<T, convT>();
-
-        auto ctDType = static_cast<af_dtype>(dtype_traits<convT>::af_type);
-        if (ctDType == c32) {
-            options << " -D CONVT=float";
-        } else if (ctDType == c64 && IsTypeDouble) {
-            options << " -D CONVT=double";
-        }
-
-        const char* ker_strs[] = {fftconvolve_multiply_cl};
-        const int ker_lens[]   = {fftconvolve_multiply_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "complex_multiply");
-
-        addKernelToCache(device, refName, entry);
+    static const std::string src(fftconvolve_multiply_cl,
+                                 fftconvolve_multiply_cl_len);
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+        TemplateTypename<convT>(),
+        TemplateArg(IsTypeDouble),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(AF_BATCH_NONE, static_cast<int>(AF_BATCH_NONE)),
+        DefineKeyValue(AF_BATCH_LHS, static_cast<int>(AF_BATCH_LHS)),
+        DefineKeyValue(AF_BATCH_RHS, static_cast<int>(AF_BATCH_RHS)),
+        DefineKeyValue(AF_BATCH_SAME, static_cast<int>(AF_BATCH_SAME)),
+    };
+    if (ctDType == c32) {
+        options.emplace_back(DefineKeyValue(CONVT, "float"));
+    } else if (ctDType == c64 && IsTypeDouble) {
+        options.emplace_back(DefineKeyValue(CONVT, "double"));
     }
+    options.emplace_back(getTypeBuildDefinition<T, convT>());
+
+    auto cplxMul =
+        common::findKernel("complex_multiply", {src}, targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
@@ -227,20 +161,15 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
         filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
     int mul_elem = (sig_packed_elem < filter_packed_elem) ? filter_packed_elem
                                                           : sig_packed_elem;
-
     int blocks = divup(mul_elem, THREADS);
 
-    NDRange local(THREADS);
-    NDRange global(blocks * THREADS);
+    cl::NDRange local(THREADS);
+    cl::NDRange global(blocks * THREADS);
 
     // Multiply filter and signal FFT arrays
-    auto cmOp = KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer, KParam,
-                              const int, const int>(*entry.ker);
-
-    cmOp(EnqueueArgs(getQueue(), global, local), *packed.data, packed.info,
-         *sig_tmp.data, sig_tmp.info, *filter_tmp.data, filter_tmp.info,
-         mul_elem, (int)kind);
-
+    cplxMul(cl::EnqueueArgs(getQueue(), global, local), *packed.data,
+            packed.info, *sig_tmp.data, sig_tmp.info, *filter_tmp.data,
+            filter_tmp.info, mul_elem, (int)kind);
     CL_DEBUG_FINISH(getQueue());
 }
 
@@ -248,41 +177,31 @@ template<typename T, typename convT>
 void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
                          const int baseDim, AF_BATCH_KIND kind, bool expand) {
     constexpr bool IsTypeDouble = std::is_same<T, double>::value;
-    constexpr bool RoundResult  = std::is_integral<T>::value;
+    constexpr auto ctDType =
+        static_cast<af_dtype>(dtype_traits<convT>::af_type);
+    constexpr bool RoundResult = std::is_integral<T>::value;
 
-    std::string refName = std::string("reorder_output_") +
-                          std::string(dtype_traits<T>::getName()) +
-                          std::string(dtype_traits<convT>::getName()) +
-                          std::to_string(IsTypeDouble) +
-                          std::to_string(RoundResult) + std::to_string(expand);
+    static const std::string src(fftconvolve_reorder_cl,
+                                 fftconvolve_reorder_cl_len);
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
-
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D ROUND_OUT=" << (int)RoundResult
-                << " -D EXPAND=" << (int)expand;
-        options << getTypeBuildDefinition<T, convT>();
-
-        auto ctDType = static_cast<af_dtype>(dtype_traits<convT>::af_type);
-        if (ctDType == c32) {
-            options << " -D CONVT=float";
-        } else if (ctDType == c64 && IsTypeDouble) {
-            options << " -D CONVT=double";
-        }
-
-        const char* ker_strs[] = {fftconvolve_reorder_cl};
-        const int ker_lens[]   = {fftconvolve_reorder_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "reorder_output");
-
-        addKernelToCache(device, refName, entry);
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),     TemplateTypename<convT>(),
+        TemplateArg(IsTypeDouble), TemplateArg(RoundResult),
+        TemplateArg(expand),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(ROUND_OUT, static_cast<int>(RoundResult)),
+        DefineKeyValue(EXPAND, static_cast<int>(expand)),
+    };
+    if (ctDType == c32) {
+        options.emplace_back(DefineKeyValue(CONVT, "float"));
+    } else if (ctDType == c64 && IsTypeDouble) {
+        options.emplace_back(DefineKeyValue(CONVT, "double"));
     }
+    options.emplace_back(getTypeBuildDefinition<T, convT>());
+
+    auto reorder = common::findKernel("reorder_output", {src}, targs, options);
 
     int fftScale = 1;
 
@@ -297,22 +216,18 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
 
     int blocks = divup(out.info.strides[3] * out.info.dims[3], THREADS);
 
-    NDRange local(THREADS);
-    NDRange global(blocks * THREADS);
-
-    auto roOp = KernelFunctor<Buffer, KParam, Buffer, KParam, KParam, const int,
-                              const int, const int>(*entry.ker);
+    cl::NDRange local(THREADS);
+    cl::NDRange global(blocks * THREADS);
 
     if (kind == AF_BATCH_RHS) {
-        roOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-             *filter_tmp.data, filter_tmp.info, filter.info, sig_half_d0,
-             baseDim, fftScale);
+        reorder(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+                *filter_tmp.data, filter_tmp.info, filter.info, sig_half_d0,
+                baseDim, fftScale);
     } else {
-        roOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-             *sig_tmp.data, sig_tmp.info, filter.info, sig_half_d0, baseDim,
-             fftScale);
+        reorder(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+                *sig_tmp.data, sig_tmp.info, filter.info, sig_half_d0, baseDim,
+                fftScale);
     }
-
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel

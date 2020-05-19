@@ -69,18 +69,18 @@ typedef struct {
 // Each GPU block processes one block-column of A.
 // Each thread goes down a column of A,
 // swapping rows according to pivots stored in params.
-__kernel void laswp(int n, __global T *dAT, unsigned long dAT_offset, int ldda,
+kernel void laswp(int n, global T *dAT, unsigned long dAT_offset, int ldda,
                     zlaswp_params_t params) {
     dAT += dAT_offset;
 
     int tid = get_local_id(0) + get_local_size(0) * get_group_id(0);
     if (tid < n) {
         dAT += tid;
-        __global T *A1 = dAT;
+        global T *A1 = dAT;
 
         for (int i1 = 0; i1 < params.npivots; ++i1) {
             int i2         = params.ipiv[i1];
-            __global T *A2 = dAT + i2 * ldda;
+            global T *A2 = dAT + i2 * ldda;
             T temp         = *A1;
             *A1            = *A2;
             *A2            = temp;

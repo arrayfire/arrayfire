@@ -49,8 +49,8 @@
  *
  **********************************************************************/
 
-__kernel void swapdblk(int nb, __global T *dA, unsigned long dA_offset,
-                       int ldda, int inca, __global T *dB,
+kernel void swapdblk(int nb, global T *dA, unsigned long dA_offset,
+                       int ldda, int inca, global T *dB,
                        unsigned long dB_offset, int lddb, int incb) {
     const int tx = get_local_id(0);
     const int bx = get_group_id(0);

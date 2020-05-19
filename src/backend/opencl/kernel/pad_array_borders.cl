@@ -22,10 +22,10 @@ int trimIndex(int idx, const int len) {
     return ret_val;
 }
 
-//TODO(Pradeep) move trimindex from all locations into
+// TODO(Pradeep) move trimindex from all locations into
 //              a single header after opencl cache is cleaned up
 int idxByndEdge(const int i, const int lb, const int len) {
-    return trimIndex(i-lb, len);
+    return trimIndex(i - lb, len);
 }
 
 #elif AF_BORDER_TYPE == AF_PAD_CLAMP_TO_EDGE
@@ -37,7 +37,7 @@ int idxByndEdge(const int i, const int lb, const int len) {
 #elif AF_BORDER_TYPE == AF_PAD_PERIODIC
 
 int idxByndEdge(const int i, const int lb, const int len) {
-    int rem   = (i - lb) % len;
+    int rem  = (i - lb) % len;
     int cond = rem < 0;
     return cond * (rem + len) + (1 - cond) * rem;
 }
@@ -48,7 +48,7 @@ int idxByndEdge(const int i, const int lb, const int len) {
 
 #endif
 
-__kernel void padBorders(__global T* out, KParam oInfo, __global const T* in,
+kernel void padBorders(global T* out, KParam oInfo, __global const T* in,
                          KParam iInfo, int l0, int l1, int l2, int l3,
                          unsigned blk_x, unsigned blk_y) {
     const int lx = get_local_id(0);
@@ -70,8 +70,8 @@ __kernel void padBorders(__global T* out, KParam oInfo, __global const T* in,
     const int s2 = iInfo.strides[2];
     const int s3 = iInfo.strides[3];
 
-    __global const T* src = in + iInfo.offset;
-    __global T* dst       = out;
+    global const T* src = in + iInfo.offset;
+    global T* dst       = out;
 
     bool isNotPadding =
         (l >= l3 && l < (d3 + l3)) && (k >= l2 && k < (d2 + l2)) &&

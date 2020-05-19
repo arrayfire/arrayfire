@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void diagCreateKernel(__global T *oData, KParam oInfo,
-                               const __global T *iData, KParam iInfo, int num,
+kernel void diagCreateKernel(global T *oData, KParam oInfo,
+                               const global T *iData, KParam iInfo, int num,
                                int groups_x) {
     unsigned idz       = get_group_id(0) / groups_x;
     unsigned groupId_x = get_group_id(0) - idz * groups_x;
@@ -19,11 +19,11 @@ __kernel void diagCreateKernel(__global T *oData, KParam oInfo,
     if (idx >= oInfo.dims[0] || idy >= oInfo.dims[1] || idz >= oInfo.dims[2])
         return;
 
-    __global T *optr =
+    global T *optr =
         oData + idz * oInfo.strides[2] + idy * oInfo.strides[1] + idx;
-    const __global T *iptr =
+    const global T *iptr =
         iData + idz * iInfo.strides[1] + ((num > 0) ? idx : idy) + iInfo.offset;
 
-    T val = (idx == (idy - num)) ? *iptr : ZERO;
+    T val = (idx == (idy - num)) ? *iptr : (T)(ZERO);
     *optr = val;
 }

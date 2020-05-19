@@ -35,7 +35,7 @@ T __ccmul(T lhs, T rhs) {
 #define CMUL(a, b) (a) * (b)
 #endif
 
-int binary_search(__global const int *ptr, int len, int val) {
+int binary_search(global const int *ptr, int len, int val) {
     int start = 0;
     int end   = len;
     while (end > start) {
@@ -55,13 +55,13 @@ int binary_search(__global const int *ptr, int len, int val) {
 // and (K / THREAD) columns. This generates a local output buffer of size
 // ROWS_PER_THREAD for each thread. The outputs from each thread are added up to
 // generate the final result.
-__kernel void cscmv_block(
-    __global T *output, __global const T *values,
-    __global const int *colidx,  // rowidx from csr is colidx in csc
-    __global const int *rowidx,  // colidx from csr is rowidx in csc
+kernel void cscmv_block(
+    global T *output, __global const T *values,
+    global const int *colidx,  // rowidx from csr is colidx in csc
+    global const int *rowidx,  // colidx from csr is rowidx in csc
     const int M,                 // K from csr is M in csc
     const int K,                 // M from csr is K in csc
-    __global const T *rhs, const KParam rinfo, const T alpha, const T beta) {
+    global const T *rhs, const KParam rinfo, const T alpha, const T beta) {
     int lid = get_local_id(0);
 
     // Get the row offset for the current group in the uncompressed matrix
@@ -93,10 +93,10 @@ __kernel void cscmv_block(
     }
 
     // s_outvals is used for reduction
-    __local T s_outvals[THREADS];
+    local T s_outvals[THREADS];
 
     // s_output is used to store the final output into local memory
-    __local T s_output[ROWS_PER_GROUP];
+    local T s_output[ROWS_PER_GROUP];
 
     // For each row of output, copy registers to local memory, add results,
     // write to output.

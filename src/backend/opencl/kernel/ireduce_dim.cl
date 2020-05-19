@@ -7,10 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
-                                 __global uint *olData, const __global T *iData,
-                                 KParam iInfo, const __global uint *ilData,
-                                 uint groups_x, uint groups_y, uint group_dim) {
+kernel void ireduce_dim_kernel(global T *oData, KParam oInfo,
+                               global uint *olData, const __global T *iData,
+                               KParam iInfo, const global uint *ilData,
+                               uint groups_x, uint groups_y, uint group_dim) {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const uint lid  = lidy * THREADS_X + lidx;
@@ -50,8 +50,8 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     bool is_valid = (ids[0] < iInfo.dims[0]) && (ids[1] < iInfo.dims[1]) &&
                     (ids[2] < iInfo.dims[2]) && (ids[3] < iInfo.dims[3]);
 
-    __local T s_val[THREADS_X * DIMY];
-    __local uint s_idx[THREADS_X * DIMY];
+    local T s_val[THREADS_X * DIMY];
+    local uint s_idx[THREADS_X * DIMY];
 
     T out_val    = init;
     uint out_idx = id_dim_in;
@@ -78,8 +78,8 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     s_val[lid] = out_val;
     s_idx[lid] = out_idx;
 
-    __local T *s_vptr    = s_val + lid;
-    __local uint *s_iptr = s_idx + lid;
+    local T *s_vptr    = s_val + lid;
+    local uint *s_iptr = s_idx + lid;
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (DIMY == 8) {

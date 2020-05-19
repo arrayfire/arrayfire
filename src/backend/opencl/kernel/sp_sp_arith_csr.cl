@@ -8,7 +8,7 @@
  ********************************************************/
 
 // TODO_PERF(pradeep) More performance improvements are possible
-__attribute__((reqd_work_group_size(256, 1, 1))) kernel void ssarith_csr_kernel(
+__attribute__((reqd_work_group_size(256, 1, 1))) kernel void ssarith_csr(
     global T *oVals, global int *oColIdx, global const int *oRowIdx, uint M,
     uint N, uint nnza, global const T *lVals, global const int *lRowIdx,
     global const int *lColIdx, uint nnzb, global const T *rVals,
@@ -32,8 +32,8 @@ __attribute__((reqd_work_group_size(256, 1, 1))) kernel void ssarith_csr_kernel(
         uint lci = lColIdx[l];
         uint rci = rColIdx[r];
 
-        T lhs = (lci <= rci ? lVals[l] : IDENTITY_VALUE);
-        T rhs = (lci >= rci ? rVals[r] : IDENTITY_VALUE);
+        T lhs = (lci <= rci ? lVals[l] : (T)(IDENTITY_VALUE));
+        T rhs = (lci >= rci ? rVals[r] : (T)(IDENTITY_VALUE));
 
         ovPtr[nnz] = OP(lhs, rhs);
         ocPtr[nnz] = (lci <= rci) ? lci : rci;
@@ -43,13 +43,13 @@ __attribute__((reqd_work_group_size(256, 1, 1))) kernel void ssarith_csr_kernel(
         nnz++;
     }
     while (l < lEnd) {
-        ovPtr[nnz] = OP(lVals[l], IDENTITY_VALUE);
+        ovPtr[nnz] = OP(lVals[l], (T)(IDENTITY_VALUE));
         ocPtr[nnz] = lColIdx[l];
         l++;
         nnz++;
     }
     while (r < rEnd) {
-        ovPtr[nnz] = OP(IDENTITY_VALUE, rVals[r]);
+        ovPtr[nnz] = OP((T)(IDENTITY_VALUE), rVals[r]);
         ocPtr[nnz] = rColIdx[r];
         r++;
         nnz++;

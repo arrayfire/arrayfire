@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+
 #include <Array.hpp>
 #include <Param.hpp>
 #include <common/dispatch.hpp>
@@ -18,10 +19,7 @@
 #include <kernel/sort_helper.hpp>
 #include <math.hpp>
 #include <memory.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <mutex>
-#include <string>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -39,14 +37,7 @@
 
 namespace compute = boost::compute;
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
 using common::half;
-using std::string;
 
 template<typename Tk, typename Tv, bool isAscending>
 inline boost::compute::function<bool(const std::pair<Tk, Tv>,

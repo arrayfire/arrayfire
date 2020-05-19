@@ -20,14 +20,8 @@ namespace opencl {
 template<typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity) {
     const af::dim4 &dims = in.dims();
-
-    Array<T> out = createEmptyArray<T>(dims);
-
-    switch (connectivity) {
-        case AF_CONNECTIVITY_4: kernel::regions<T, false, 2>(out, in); break;
-        case AF_CONNECTIVITY_8: kernel::regions<T, true, 2>(out, in); break;
-    }
-
+    Array<T> out         = createEmptyArray<T>(dims);
+    kernel::regions<T>(out, in, connectivity == AF_CONNECTIVITY_8, 2);
     return out;
 }
 

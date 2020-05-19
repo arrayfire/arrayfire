@@ -10,58 +10,48 @@
 #pragma once
 
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/transpose_inplace.hpp>
-#include <platform.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <types.hpp>
 
 #include <string>
-
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-static const int TILE_DIM  = 16;
-static const int THREADS_X = TILE_DIM;
-static const int THREADS_Y = 256 / TILE_DIM;
 
-template<typename T, bool conjugate, bool IS32MULTIPLE>
-void transpose_inplace(Param in, cl::CommandQueue& queue) {
-    std::string refName = std::string("transpose_inplace_") +
-                          std::string(dtype_traits<T>::getName()) +
-                          std::to_string(conjugate) +
-                          std::to_string(IS32MULTIPLE);
+constexpr int TILE_DIM  = 16;
+constexpr int THREADS_X = TILE_DIM;
+constexpr int THREADS_Y = 256 / TILE_DIM;
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+template<typename T>
+void transpose_inplace(Param in, cl::CommandQueue& queue, const bool conjugate,
+                       const bool IS32MULTIPLE) {
+    using cl::EnqueueArgs;
+    using cl::NDRange;
+    using std::string;
+    using std::vector;
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D TILE_DIM=" << TILE_DIM << " -D THREADS_Y=" << THREADS_Y
-                << " -D IS32MULTIPLE=" << IS32MULTIPLE
-                << " -D DOCONJUGATE=" << (conjugate && af::iscplx<T>())
-                << " -D T=" << dtype_traits<T>::getName();
-        options << getTypeBuildDefinition<T>();
+    static const string src(transpose_inplace_cl, transpose_inplace_cl_len);
 
-        const char* ker_strs[] = {transpose_inplace_cl};
-        const int ker_lens[]   = {transpose_inplace_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "transpose_inplace");
+    vector<TemplateArg> tmpltArgs = {
+        TemplateTypename<T>(),
+        TemplateArg(conjugate),
+        TemplateArg(IS32MULTIPLE),
+    };
+    vector<string> compileOpts = {
+        DefineValue(TILE_DIM),
+        DefineValue(THREADS_Y),
+        DefineValue(IS32MULTIPLE),
+        DefineKeyValue(DOCONJUGATE, (conjugate && af::iscplx<T>())),
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-        addKernelToCache(device, refName, entry);
-    }
+    auto transpose =
+        common::findKernel("transpose_inplace", {src}, tmpltArgs, compileOpts);
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -72,13 +62,11 @@ void transpose_inplace(Param in, cl::CommandQueue& queue) {
     NDRange global(blk_x * local[0] * in.info.dims[2],
                    blk_y * local[1] * in.info.dims[3]);
 
-    auto transposeOp =
-        KernelFunctor<Buffer, const KParam, const int, const int>(*entry.ker);
-
-    transposeOp(EnqueueArgs(queue, global, local), *in.data, in.info, blk_x,
-                blk_y);
+    transpose(EnqueueArgs(queue, global, local), *in.data, in.info, blk_x,
+              blk_y);
 
     CL_DEBUG_FINISH(queue);
 }
+
 }  // namespace kernel
 }  // namespace opencl

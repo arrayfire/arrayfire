@@ -26,7 +26,7 @@ Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
 
     Array<T> out = createEmptyArray<T>(dims);
 
-    kernel::medfilt1<T, pad>(out, in, w_wid);
+    kernel::medfilt1<T>(out, in, w_wid, pad);
 
     return out;
 }
@@ -34,25 +34,12 @@ Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
 template<typename T, af_border_type pad>
 Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid) {
     UNUSED(w_wid);
-    ARG_ASSERT(2, (w_len <= kernel::MAX_MEDFILTER2_LEN));
+    ARG_ASSERT(2, (w_len == w_wid));
     ARG_ASSERT(2, (w_len % 2 != 0));
+    ARG_ASSERT(2, (w_len <= kernel::MAX_MEDFILTER2_LEN));
 
-    const dim4 &dims = in.dims();
-
-    Array<T> out = createEmptyArray<T>(dims);
-
-    switch (w_len) {
-        case 3: kernel::medfilt2<T, pad, 3, 3>(out, in); break;
-        case 5: kernel::medfilt2<T, pad, 5, 5>(out, in); break;
-        case 7: kernel::medfilt2<T, pad, 7, 7>(out, in); break;
-        case 9: kernel::medfilt2<T, pad, 9, 9>(out, in); break;
-        case 11: kernel::medfilt2<T, pad, 11, 11>(out, in); break;
-        case 13: kernel::medfilt2<T, pad, 13, 13>(out, in); break;
-        case 15: kernel::medfilt2<T, pad, 15, 15>(out, in); break;
-        default:
-            AF_ERROR("w_len only supports values 3, 5, 7, 9, 11, 12, and 15.",
-                     AF_ERR_UNKNOWN);
-    }
+    Array<T> out = createEmptyArray<T>(in.dims());
+    kernel::medfilt2<T>(out, in, pad, w_len, w_wid);
     return out;
 }
 

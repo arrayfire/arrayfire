@@ -35,15 +35,15 @@ void nonMaxSuppression(Param output, const Param magnitude, const Param dx,
     using std::vector;
 
     static const string src(nonmax_suppression_cl, nonmax_suppression_cl_len);
-    vector<string> compileOpts = {
+    vector<string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(SHRD_MEM_HEIGHT, THREADS_X + 2),
         DefineKeyValue(SHRD_MEM_WIDTH, THREADS_Y + 2),
     };
-    compileOpts.emplace_back(getTypeBuildDefinition<T>());
+    options.emplace_back(getTypeBuildDefinition<T>());
 
     auto nonMaxOp = common::findKernel("nonMaxSuppressionKernel", {src},
-                                       {TemplateTypename<T>()}, compileOpts);
+                                       {TemplateTypename<T>()}, options);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y, 1);
 
@@ -70,14 +70,14 @@ void initEdgeOut(Param output, const Param strong, const Param weak) {
 
     static const string src(trace_edge_cl, trace_edge_cl_len);
 
-    vector<string> compileOpts = {
+    vector<string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKey(INIT_EDGE_OUT),
     };
-    compileOpts.emplace_back(getTypeBuildDefinition<T>());
+    options.emplace_back(getTypeBuildDefinition<T>());
 
     auto initOp = common::findKernel("initEdgeOutKernel", {src},
-                                     {TemplateTypename<T>()}, compileOpts);
+                                     {TemplateTypename<T>()}, options);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y, 1);
 
@@ -104,14 +104,14 @@ void suppressLeftOver(Param output) {
 
     static const string src(trace_edge_cl, trace_edge_cl_len);
 
-    vector<string> compileOpts = {
+    vector<string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKey(SUPPRESS_LEFT_OVER),
     };
-    compileOpts.emplace_back(getTypeBuildDefinition<T>());
+    options.emplace_back(getTypeBuildDefinition<T>());
 
     auto finalOp = common::findKernel("suppressLeftOverKernel", {src},
-                                      {TemplateTypename<T>()}, compileOpts);
+                                      {TemplateTypename<T>()}, options);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y, 1);
 
@@ -138,17 +138,17 @@ void edgeTrackingHysteresis(Param output, const Param strong,
 
     static const string src(trace_edge_cl, trace_edge_cl_len);
 
-    vector<string> compileOpts = {
+    vector<string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKey(EDGE_TRACER),
         DefineKeyValue(SHRD_MEM_HEIGHT, THREADS_X + 2),
         DefineKeyValue(SHRD_MEM_WIDTH, THREADS_Y + 2),
         DefineKeyValue(TOTAL_NUM_THREADS, THREADS_X * THREADS_Y),
     };
-    compileOpts.emplace_back(getTypeBuildDefinition<T>());
+    options.emplace_back(getTypeBuildDefinition<T>());
 
     auto edgeTraceOp = common::findKernel("edgeTrackKernel", {src},
-                                          {TemplateTypename<T>()}, compileOpts);
+                                          {TemplateTypename<T>()}, options);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y);
 

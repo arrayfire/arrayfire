@@ -35,7 +35,7 @@ T __ccmul(T lhs, T rhs) {
 #define CMUL(a, b) (a) * (b)
 #endif
 
-int binary_search(__global const int *ptr, int len, int val) {
+int binary_search(global const int *ptr, int len, int val) {
     int start = 0;
     int end   = len;
     while (end > start) {
@@ -55,14 +55,14 @@ int binary_search(__global const int *ptr, int len, int val) {
 // Each thread in a group maintains the partial outputs of size ROWS_PER_GROUP x
 // COLS_PER_GROUP The outputs from each thread are added up to generate the
 // final result.
-__kernel void cscmm_nn(
-    __global T *output, __global const T *values,
-    __global const int *colidx,  // rowidx from csr is colidx in csc
-    __global const int *rowidx,  // colidx from csr is rowidx in csc
+kernel void cscmm_nn(
+    global T *output, __global const T *values,
+    global const int *colidx,  // rowidx from csr is colidx in csc
+    global const int *rowidx,  // colidx from csr is rowidx in csc
     const int M,                 // K from csr is M in csc
     const int K,                 // M from csr is K in csc
     const int N,                 // N is number of columns in dense matrix
-    __global const T *rhs, const KParam rinfo, const T alpha, const T beta) {
+    global const T *rhs, const KParam rinfo, const T alpha, const T beta) {
     int lid = get_local_id(0);
 
     // Get the row offset for the current group in the uncompressed matrix
@@ -113,7 +113,7 @@ __kernel void cscmm_nn(
         }
     }
 
-    __local T s_outvals[THREADS];
+    local T s_outvals[THREADS];
 
     // For each row and col of output, copy registers to local memory, add
     // results, write to output.

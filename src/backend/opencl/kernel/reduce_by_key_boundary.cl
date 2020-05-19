@@ -7,10 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void final_boundary_reduce(__global int *reduced_block_sizes,
-                                    __global Tk *oKeys, KParam oKInfo,
-                                    __global To *oVals, KParam oVInfo,
-                                    const int n) {
+kernel void final_boundary_reduce(global int *reduced_block_sizes,
+                                  global Tk *oKeys, KParam oKInfo,
+                                  global To *oVals, KParam oVInfo,
+                                  const int n) {
     const uint lid = get_local_id(0);
     const uint bid = get_group_id(0);
     const uint gid = get_global_id(0);

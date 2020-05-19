@@ -47,10 +47,10 @@ inType scale(inType value, float factor) {
 
 #endif
 
-__kernel void copy(__global outType *dst, KParam oInfo,
-                   __global const inType *src, KParam iInfo,
-                   outType default_value, float factor, dims_t trgt, int blk_x,
-                   int blk_y) {
+kernel void reshapeCopy(global outType *dst, KParam oInfo,
+                        global const inType *src, KParam iInfo,
+                        outType default_value, float factor, dims_t trgt,
+                        int blk_x, int blk_y) {
     uint lx = get_local_id(0);
     uint ly = get_local_id(1);
 
@@ -61,12 +61,11 @@ __kernel void copy(__global outType *dst, KParam oInfo,
     uint gx         = blockIdx_x * get_local_size(0) + lx;
     uint gy         = blockIdx_y * get_local_size(1) + ly;
 
-    __global const inType *in =
+    global const inType *in =
         src + (gw * iInfo.strides[3] + gz * iInfo.strides[2] +
                gy * iInfo.strides[1] + iInfo.offset);
-    __global outType *out =
-        dst + (gw * oInfo.strides[3] + gz * oInfo.strides[2] +
-               gy * oInfo.strides[1] + oInfo.offset);
+    global outType *out = dst + (gw * oInfo.strides[3] + gz * oInfo.strides[2] +
+                                 gy * oInfo.strides[1] + oInfo.offset);
 
     uint istride0 = iInfo.strides[0];
     uint ostride0 = oInfo.strides[0];

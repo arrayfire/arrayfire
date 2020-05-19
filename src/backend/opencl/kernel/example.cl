@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void example(__global T* d_dst, KParam oInfo, __global const T* d_src1,
-                      KParam iInfo1, __global const T* d_src2, KParam iInfo2,
+kernel void example(global T* d_dst, KParam oInfo, __global const T* d_src1,
+                      KParam iInfo1, global const T* d_src2, KParam iInfo2,
                       int method);
 {
     // get current thread global identifiers along required dimensions

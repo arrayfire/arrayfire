@@ -22,13 +22,8 @@ Array<T> meanshift(const Array<T> &in, const float &spatialSigma,
                    const bool &isColor) {
     const dim4 &dims = in.dims();
     Array<T> out     = createEmptyArray<T>(dims);
-    if (isColor) {
-        kernel::meanshift<T, true>(out, in, spatialSigma, chromaticSigma,
-                                   numIterations);
-    } else {
-        kernel::meanshift<T, false>(out, in, spatialSigma, chromaticSigma,
-                                    numIterations);
-    }
+    kernel::meanshift<T>(out, in, spatialSigma, chromaticSigma, numIterations,
+                         isColor);
     return out;
 }
 

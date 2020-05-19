@@ -8,14 +8,13 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
-#include <common/dispatch.hpp>
-#include <debug_opencl.hpp>
-#include <traits.hpp>
 
 namespace opencl {
 namespace kernel {
-template<typename Ti, typename Tk, typename To, af_op_t op, bool inclusive_scan>
-void scan_first(Param &out, const Param &in, const Param &key);
+template<typename Ti, typename Tk, typename To, af_op_t op>
+void scanFirstByKey(Param &out, const Param &in, const Param &key,
+                    const bool inclusive_scan);
 }
 }  // namespace opencl

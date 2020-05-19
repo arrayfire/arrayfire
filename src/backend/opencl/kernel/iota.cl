@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void iota_kernel(__global T *out, const KParam op, const int s0,
-                          const int s1, const int s2, const int s3,
-                          const int blocksPerMatX, const int blocksPerMatY) {
+kernel void iota_kernel(global T *out, const KParam op, const int s0,
+                        const int s1, const int s2, const int s3,
+                        const int blocksPerMatX, const int blocksPerMatY) {
     const int oz = get_group_id(0) / blocksPerMatX;
     const int ow = get_group_id(1) / blocksPerMatY;
 

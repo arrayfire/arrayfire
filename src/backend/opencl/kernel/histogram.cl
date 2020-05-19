@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void histogram(__global outType *d_dst, KParam oInfo,
-                        __global const inType *d_src, KParam iInfo,
-                        __local outType *localMem, int len, int nbins,
+kernel void histogram(global outType *d_dst, KParam oInfo,
+                        global const inType *d_src, KParam iInfo,
+                        local outType *localMem, int len, int nbins,
                         float minval, float maxval, int nBBS) {
     unsigned b2 = get_group_id(0) / nBBS;
     int start = (get_group_id(0) - b2 * nBBS) * THRD_LOAD * get_local_size(0) +
@@ -17,10 +17,10 @@ __kernel void histogram(__global outType *d_dst, KParam oInfo,
     int end = min((int)(start + THRD_LOAD * get_local_size(0)), len);
 
     // offset input and output to account for batch ops
-    __global const inType *in = d_src + b2 * iInfo.strides[2] +
+    global const inType *in = d_src + b2 * iInfo.strides[2] +
                                 get_group_id(1) * iInfo.strides[3] +
                                 iInfo.offset;
-    __global outType *out =
+    global outType *out =
         d_dst + b2 * oInfo.strides[2] + get_group_id(1) * oInfo.strides[3];
 
     float dx = (maxval - minval) / (float)nbins;

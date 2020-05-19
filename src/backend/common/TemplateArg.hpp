@@ -27,3 +27,4 @@ struct TemplateArg {
 #define DefineKey(arg) " -D " #arg
 #define DefineValue(arg) " -D " #arg "=" + toString(arg)
 #define DefineKeyValue(key, arg) " -D " #key "=" + toString(arg)
+#define DefineKeyFromStr(arg) toString(" -D " + std::string(arg))
