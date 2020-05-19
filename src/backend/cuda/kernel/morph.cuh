@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <Param.hpp>
+#include <common/Binary.hpp>
 #include <math.hpp>
-#include <ops.hpp>
 #include <shared.hpp>
 
 // cFilter is used by both 2d morph and 3d morph

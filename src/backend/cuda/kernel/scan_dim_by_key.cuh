@@ -8,8 +8,9 @@
  ********************************************************/
 
 #include <Param.hpp>
+#include <common/Binary.hpp>
+#include <common/Transform.hpp>
 #include <math.hpp>
-#include <ops.hpp>
 
 namespace cuda {
 

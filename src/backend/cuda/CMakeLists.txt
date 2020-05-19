@@ -132,7 +132,6 @@ set(nvrtc_src
   ${CUDA_TOOLKIT_ROOT_DIR}/include/cuComplex.h
   ${CUDA_TOOLKIT_ROOT_DIR}/include/math_constants.h
 
-  ${PROJECT_SOURCE_DIR}/src/api/c/ops.hpp
   ${PROJECT_SOURCE_DIR}/src/api/c/optypes.hpp
   ${PROJECT_SOURCE_DIR}/include/af/defines.h
   ${PROJECT_SOURCE_DIR}/include/af/traits.hpp
@@ -148,6 +147,8 @@ set(nvrtc_src
   ${CMAKE_CURRENT_SOURCE_DIR}/minmax_op.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/utility.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/types.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/Binary.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../common/Transform.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/half.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/internal_enums.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../common/kernel_type.hpp

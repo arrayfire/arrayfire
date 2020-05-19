@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2020, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -71,7 +71,7 @@ template<typename T>
 struct Binary<T, af_min_t> {
     static __DH__ T init() { return maxval<T>(); }
 
-    __DH__ T operator()(T lhs, T rhs) { return min(lhs, rhs); }
+    __DH__ T operator()(T lhs, T rhs) { return detail::min(lhs, rhs); }
 };
 
 template<>
@@ -98,7 +98,7 @@ template<typename T>
 struct Binary<T, af_max_t> {
     static __DH__ T init() { return minval<T>(); }
 
-    __DH__ T operator()(T lhs, T rhs) { return max(lhs, rhs); }
+    __DH__ T operator()(T lhs, T rhs) { return detail::max(lhs, rhs); }
 };
 
 template<>
@@ -120,39 +120,5 @@ SPECIALIZE_COMPLEX_MAX(cfloat, float)
 SPECIALIZE_COMPLEX_MAX(cdouble, double)
 
 #undef SPECIALIZE_COMPLEX_MAX
-
-template<typename Ti, typename To, af_op_t op>
-struct Transform {
-    __DH__ To operator()(Ti in) { return static_cast<To>(in); }
-};
-
-template<typename Ti, typename To>
-struct Transform<Ti, To, af_min_t> {
-    __DH__ To operator()(Ti in) {
-        return IS_NAN(in) ? Binary<To, af_min_t>::init() : To(in);
-    }
-};
-
-template<typename Ti, typename To>
-struct Transform<Ti, To, af_max_t> {
-    __DH__ To operator()(Ti in) {
-        return IS_NAN(in) ? Binary<To, af_max_t>::init() : To(in);
-    }
-};
-
-template<typename Ti, typename To>
-struct Transform<Ti, To, af_or_t> {
-    __DH__ To operator()(Ti in) { return (in != scalar<Ti>(0.)); }
-};
-
-template<typename Ti, typename To>
-struct Transform<Ti, To, af_and_t> {
-    __DH__ To operator()(Ti in) { return (in != scalar<Ti>(0.)); }
-};
-
-template<typename Ti, typename To>
-struct Transform<Ti, To, af_notzero_t> {
-    __DH__ To operator()(Ti in) { return (in != scalar<Ti>(0.)); }
-};
 
 }  // namespace common

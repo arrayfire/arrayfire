@@ -9,6 +9,8 @@
 
 #include <Param.hpp>
 #include <backend.hpp>
+#include <common/Binary.hpp>
+#include <common/Transform.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <copy.hpp>
@@ -17,13 +19,10 @@
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <memory.hpp>
-#include <ops.hpp>
 #include "config.hpp"
 
 #include <memory>
 #include <vector>
-
-using std::vector;
 
 namespace cuda {
 
@@ -474,8 +473,8 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
         mean_first_launcher<T, Tw, T>(tmpOut, tmpWt, in, iwt, blocks_x,
                                       blocks_y, threads_x);
 
-        vector<T> h_ptr(tmp_elements);
-        vector<Tw> h_wptr(tmp_elements);
+        std::vector<T> h_ptr(tmp_elements);
+        std::vector<Tw> h_wptr(tmp_elements);
 
         CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.get(),
                                    tmp_elements * sizeof(T),
@@ -498,8 +497,8 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
 
         return static_cast<T>(val);
     } else {
-        vector<T> h_ptr(in_elements);
-        vector<Tw> h_wptr(in_elements);
+        std::vector<T> h_ptr(in_elements);
+        std::vector<Tw> h_wptr(in_elements);
 
         CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), in.ptr,
                                    in_elements * sizeof(T),
@@ -559,8 +558,8 @@ To mean_all(CParam<Ti> in) {
                                         blocks_y, threads_x);
 
         int tmp_elements = tmpOut.elements();
-        vector<To> h_ptr(tmp_elements);
-        vector<Tw> h_cptr(tmp_elements);
+        std::vector<To> h_ptr(tmp_elements);
+        std::vector<Tw> h_cptr(tmp_elements);
 
         CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.get(),
                                    tmp_elements * sizeof(To),
@@ -583,7 +582,7 @@ To mean_all(CParam<Ti> in) {
 
         return static_cast<To>(val);
     } else {
-        vector<Ti> h_ptr(in_elements);
+        std::vector<Ti> h_ptr(in_elements);
 
         CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), in.ptr,
                                    in_elements * sizeof(Ti),

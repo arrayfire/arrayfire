@@ -10,6 +10,7 @@
 #pragma once
 
 #include <Param.hpp>
+#include <common/Binary.hpp>
 #include <minmax_op.hpp>
 
 namespace cuda {

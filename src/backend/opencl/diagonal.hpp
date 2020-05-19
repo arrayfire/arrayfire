@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <ops.hpp>
 
 namespace opencl {
 template<typename T>
