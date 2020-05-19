@@ -9,14 +9,13 @@
 
 #pragma once
 
-#include <cache.hpp>
+#include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/regions.hpp>
 #include <math.hpp>
 #include <memory.hpp>
-#include <platform.hpp>
-#include <program.hpp>
 #include <traits.hpp>
 #include <af/defines.h>
 
@@ -34,92 +33,60 @@
 
 #pragma GCC diagnostic pop
 
-#include <cstdio>
+#include <array>
+#include <string>
+#include <vector>
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
 namespace compute = boost::compute;
 
 namespace opencl {
 namespace kernel {
-static const int THREADS_X = 16;
-static const int THREADS_Y = 16;
 
-template<typename T, bool full_conn, int n_per_thread>
-std::tuple<cl::Kernel*, cl::Kernel*, cl::Kernel*> getRegionsKernels() {
-    static const int block_dim                  = 16;
-    static const int num_warps                  = 8;
-    static const unsigned NUM_KERNELS           = 3;
-    static const char* kernelNames[NUM_KERNELS] = {
-        "initial_label", "final_relabel", "update_equiv"};
+template<typename T>
+std::array<Kernel, 3> getRegionsKernels(const bool full_conn,
+                                        const int n_per_thread) {
+    using std::string;
+    using std::vector;
 
-    kc_entry_t entries[NUM_KERNELS];
+    constexpr int block_dim = 16;
+    constexpr int num_warps = 8;
 
-    int device = getActiveDeviceId();
+    static const std::string src(regions_cl, regions_cl_len);
 
-    std::string checkName = kernelNames[0] + std::string("_") +
-                            std::string(dtype_traits<T>::getName()) +
-                            std::to_string(full_conn) +
-                            std::to_string(n_per_thread);
+    ToNumStr<T> toNumStr;
+    vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+        TemplateArg(full_conn),
+        TemplateArg(n_per_thread),
+    };
+    vector<string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(BLOCK_DIM, block_dim),
+        DefineKeyValue(NUM_WARPS, num_warps),
+        DefineKeyValue(N_PER_THREAD, n_per_thread),
+        DefineKeyValue(LIMIT_MAX, toNumStr(maxval<T>())),
+    };
+    if (full_conn) { options.emplace_back(DefineKey(FULL_CONN)); }
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-    entries[0] = kernelCache(device, checkName);
-
-    if (entries[0].prog == 0 && entries[0].ker == 0) {
-        ToNumStr<T> toNumStr;
-        std::ostringstream options;
-        if (full_conn) {
-            options << " -D T=" << dtype_traits<T>::getName()
-                    << " -D BLOCK_DIM=" << block_dim
-                    << " -D NUM_WARPS=" << num_warps
-                    << " -D N_PER_THREAD=" << n_per_thread
-                    << " -D LIMIT_MAX=" << toNumStr(maxval<T>())
-                    << " -D FULL_CONN";
-        } else {
-            options << " -D T=" << dtype_traits<T>::getName()
-                    << " -D BLOCK_DIM=" << block_dim
-                    << " -D NUM_WARPS=" << num_warps
-                    << " -D N_PER_THREAD=" << n_per_thread
-                    << " -D LIMIT_MAX=" << toNumStr(maxval<T>());
-        }
-        options << getTypeBuildDefinition<T>();
-
-        const char* ker_strs[] = {regions_cl};
-        const int ker_lens[]   = {regions_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-
-        for (unsigned i = 0; i < NUM_KERNELS; ++i) {
-            entries[i].prog = new Program(prog);
-            entries[i].ker  = new Kernel(*entries[i].prog, kernelNames[i]);
-
-            std::string name = kernelNames[i] + std::string("_") +
-                               std::string(dtype_traits<T>::getName()) +
-                               std::to_string(full_conn) +
-                               std::to_string(n_per_thread);
-
-            addKernelToCache(device, name, entries[i]);
-        }
-    } else {
-        for (unsigned i = 1; i < NUM_KERNELS; ++i) {
-            std::string name = kernelNames[i] + std::string("_") +
-                               std::string(dtype_traits<T>::getName()) +
-                               std::to_string(full_conn) +
-                               std::to_string(n_per_thread);
-
-            entries[i] = kernelCache(device, name);
-        }
-    }
-
-    return std::make_tuple(entries[0].ker, entries[1].ker, entries[2].ker);
+    return {
+        common::findKernel("initial_label", {src}, targs, options),
+        common::findKernel("final_relabel", {src}, targs, options),
+        common::findKernel("update_equiv", {src}, targs, options),
+    };
 }
 
-template<typename T, bool full_conn, int n_per_thread>
-void regions(Param out, Param in) {
-    auto kernels = getRegionsKernels<T, full_conn, n_per_thread>();
+template<typename T>
+void regions(Param out, Param in, const bool full_conn,
+             const int n_per_thread) {
+    using cl::Buffer;
+    using cl::EnqueueArgs;
+    using cl::NDRange;
+
+    constexpr int THREADS_X = 16;
+    constexpr int THREADS_Y = 16;
+
+    auto kernels = getRegionsKernels<T>(full_conn, n_per_thread);
 
     const NDRange local(THREADS_X, THREADS_Y);
 
@@ -128,33 +95,27 @@ void regions(Param out, Param in) {
 
     const NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
 
-    auto ilOp =
-        KernelFunctor<Buffer, KParam, Buffer, KParam>(*std::get<0>(kernels));
+    auto ilOp = kernels[0];
+    auto ueOp = kernels[2];
+    auto frOp = kernels[1];
 
     ilOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info, *in.data,
          in.info);
-
     CL_DEBUG_FINISH(getQueue());
 
-    int h_continue         = 1;
-    cl::Buffer* d_continue = bufferAlloc(sizeof(int));
+    int h_continue     = 1;
+    Buffer* d_continue = bufferAlloc(sizeof(int));
 
     while (h_continue) {
         h_continue = 0;
         getQueue().enqueueWriteBuffer(*d_continue, CL_TRUE, 0, sizeof(int),
                                       &h_continue);
-
-        auto ueOp =
-            KernelFunctor<Buffer, KParam, Buffer>(*std::get<2>(kernels));
-
         ueOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
              *d_continue);
         CL_DEBUG_FINISH(getQueue());
-
         getQueue().enqueueReadBuffer(*d_continue, CL_TRUE, 0, sizeof(int),
                                      &h_continue);
     }
-
     bufferFree(d_continue);
 
     // Now, perform the final relabeling.  This converts the equivalency
@@ -229,13 +190,9 @@ void regions(Param out, Param in) {
     compute::exclusive_scan(labels_begin, labels_end, labels_begin, c_queue);
 
     // Apply the correct labels to the equivalency map
-    auto frOp = KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer>(
-        *std::get<1>(kernels));
-
     // Buffer labels_buf(tmp.get_buffer().get());
     frOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info, *in.data,
          in.info, labels);
-
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel

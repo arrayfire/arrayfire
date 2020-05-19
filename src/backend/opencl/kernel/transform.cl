@@ -11,7 +11,7 @@
 #define BILINEAR transform_b
 #define LOWER transform_l
 
-void calc_transf_inverse(float *txo, __global const float *txi) {
+void calc_transf_inverse(float *txo, global const float *txi) {
 #if PERSPECTIVE
     txo[0] = txi[4] * txi[8] - txi[5] * txi[7];
     txo[1] = -(txi[1] * txi[8] - txi[2] * txi[7]);
@@ -49,13 +49,13 @@ void calc_transf_inverse(float *txo, __global const float *txi) {
 #endif
 }
 
-__kernel void transform_kernel(__global T *d_out, const KParam out,
-                               __global const T *d_in, const KParam in,
-                               __global const float *c_tmat, const KParam tf,
-                               const int nImg2, const int nImg3,
-                               const int nTfs2, const int nTfs3,
-                               const int batchImg2, const int blocksXPerImage,
-                               const int blocksYPerImage, const int method) {
+kernel void transformKernel(global T *d_out, const KParam out,
+                            global const T *d_in, const KParam in,
+                            global const float *c_tmat, const KParam tf,
+                            const int nImg2, const int nImg3, const int nTfs2,
+                            const int nTfs3, const int batchImg2,
+                            const int blocksXPerImage,
+                            const int blocksYPerImage, const int method) {
     // Image Ids
     const int imgId2 = get_group_id(0) / blocksXPerImage;
     const int imgId3 = get_group_id(1) / blocksYPerImage;
@@ -133,7 +133,7 @@ __kernel void transform_kernel(__global T *d_out, const KParam out,
     const int transf_len = 6;
     float tmat[6];
 #endif
-    __global const float *tmat_ptr = c_tmat + t_idx * transf_len;
+    global const float *tmat_ptr = c_tmat + t_idx * transf_len;
 
     // We expect a inverse transform matrix by default
     // If it is an forward transform, then we need its inverse

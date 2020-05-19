@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void csr2dense(__global T *output, __global const T *values,
-                        __global const int *rowidx, __global const int *colidx,
-                        const int M) {
+kernel void csr2Dense(global T *output, global const T *values,
+                      global const int *rowidx, global const int *colidx,
+                      const int M) {
     int lid = get_local_id(0);
     for (int rowId = get_group_id(0); rowId < M; rowId += get_num_groups(0)) {
         int colStart = rowidx[rowId];

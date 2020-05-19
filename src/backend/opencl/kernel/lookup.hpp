@@ -10,77 +10,53 @@
 #pragma once
 
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/lookup.hpp>
-#include <platform.hpp>
-#include <program.hpp>
 #include <traits.hpp>
 
 #include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-static const int THREADS_X = 32;
-static const int THREADS_Y = 8;
 
-template<typename in_t, typename idx_t, unsigned dim>
-void lookup(Param out, const Param in, const Param indices) {
-    using cl::Buffer;
-    using cl::EnqueueArgs;
-    using cl::Kernel;
-    using cl::KernelFunctor;
-    using cl::NDRange;
-    using cl::Program;
-    using std::is_same;
-    using std::ostringstream;
-    using std::string;
-    using std::to_string;
+template<typename in_t, typename idx_t>
+void lookup(Param out, const Param in, const Param indices,
+            const unsigned dim) {
+    constexpr int THREADS_X = 32;
+    constexpr int THREADS_Y = 8;
 
-    std::string refName =
-        string("lookupND_") + string(dtype_traits<in_t>::getName()) +
-        string(dtype_traits<idx_t>::getName()) + to_string(dim);
+    static const std::string src(lookup_cl, lookup_cl_len);
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<in_t>(),
+        TemplateTypename<idx_t>(),
+        TemplateArg(dim),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(in_t, dtype_traits<in_t>::getName()),
+        DefineKeyValue(idx_t, dtype_traits<idx_t>::getName()),
+        DefineKeyValue(DIM, dim),
+    };
+    options.emplace_back(getTypeBuildDefinition<in_t, idx_t>());
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        ostringstream options;
-        options << " -D in_t=" << dtype_traits<in_t>::getName()
-                << " -D idx_t=" << dtype_traits<idx_t>::getName()
-                << " -D DIM=" << dim;
-        options << getTypeBuildDefinition<in_t, idx_t>();
-
-        if (is_same<in_t, common::half>::value) { options << " -D USE_HALF"; }
-
-        const char* ker_strs[] = {lookup_cl};
-        const int ker_lens[]   = {lookup_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "lookupND");
-
-        addKernelToCache(device, refName, entry);
-    }
-
-    NDRange local(THREADS_X, THREADS_Y);
+    cl::NDRange local(THREADS_X, THREADS_Y);
 
     int blk_x = divup(out.info.dims[0], THREADS_X);
     int blk_y = divup(out.info.dims[1], THREADS_Y);
 
-    NDRange global(blk_x * out.info.dims[2] * THREADS_X,
-                   blk_y * out.info.dims[3] * THREADS_Y);
+    cl::NDRange global(blk_x * out.info.dims[2] * THREADS_X,
+                       blk_y * out.info.dims[3] * THREADS_Y);
 
-    auto arrIdxOp =
-        KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer, KParam, int, int>(
-            *entry.ker);
+    auto arrIdxOp = common::findKernel("lookupND", {src}, targs, options);
 
-    arrIdxOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+    arrIdxOp(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
              *in.data, in.info, *indices.data, indices.info, blk_x, blk_y);
-
     CL_DEBUG_FINISH(getQueue());
 }
+
 }  // namespace kernel
 }  // namespace opencl

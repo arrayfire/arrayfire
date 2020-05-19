@@ -7,14 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <common/half.hpp>
-#include <err_opencl.hpp>
-#include <kernel/mean.hpp>
 #include <mean.hpp>
-#include <af/dim4.hpp>
 
-#include <complex>
+#include <common/half.hpp>
+#include <kernel/mean.hpp>
+#include <af/dim4.hpp>
 
 using af::dim4;
 using common::half;
@@ -23,12 +20,12 @@ using std::swap;
 namespace opencl {
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti>& in) {
-    return kernel::mean_all<Ti, Tw, To>(in);
+    return kernel::meanAll<Ti, Tw, To>(in);
 }
 
 template<typename T, typename Tw>
 T mean(const Array<T>& in, const Array<Tw>& wts) {
-    return kernel::mean_all_weighted<T, Tw>(in, wts);
+    return kernel::meanAllWeighted<T, Tw>(in, wts);
 }
 
 template<typename Ti, typename Tw, typename To>
@@ -45,7 +42,7 @@ Array<T> mean(const Array<T>& in, const Array<Tw>& wts, const int dim) {
     dim4 odims   = in.dims();
     odims[dim]   = 1;
     Array<T> out = createEmptyArray<T>(odims);
-    kernel::mean_weighted<T, Tw, T>(out, in, wts, dim);
+    kernel::meanWeighted<T, Tw, T>(out, in, wts, dim);
     return out;
 }
 

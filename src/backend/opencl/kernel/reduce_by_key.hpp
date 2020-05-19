@@ -8,10 +8,13 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
+#include <kernel/config.hpp>
+#include <kernel/names.hpp>
 #include <kernel_headers/ops.hpp>
 #include <kernel_headers/reduce_blocks_by_key_dim.hpp>
 #include <kernel_headers/reduce_blocks_by_key_first.hpp>
@@ -21,413 +24,302 @@
 #include <kernel_headers/reduce_by_key_compact_dim.hpp>
 #include <kernel_headers/reduce_by_key_needs_reduction.hpp>
 #include <memory.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <type_util.hpp>
-#include <algorithm>
-#include <map>
-#include <memory>
-#include <mutex>
-#include <string>
-#include "config.hpp"
-#include "names.hpp"
 
 #include <boost/compute/algorithm/inclusive_scan.hpp>
 #include <boost/compute/core.hpp>
 #include <boost/compute/functional/operator.hpp>
 #include <boost/compute/iterator/buffer_iterator.hpp>
 
+#include <string>
+#include <vector>
+
 namespace compute = boost::compute;
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-
 namespace opencl {
-
 namespace kernel {
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
-void launch_reduce_blocks_dim_by_key(cl::Buffer *reduced_block_sizes,
-                                     Param keys_out, Param vals_out,
-                                     const Param keys, const Param vals,
-                                     int change_nan, double nanval, const int n,
-                                     const uint threads_x, const int dim,
-                                     vector<int> dim_ordering) {
-    std::string ref_name =
-        std::string("reduce_blocks_dim_by_key_") +
-        std::string(dtype_traits<Ti>::getName()) + std::string("_") +
-        std::string(dtype_traits<Tk>::getName()) + std::string("_") +
-        std::string(dtype_traits<To>::getName()) + std::string("_") +
-        std::to_string(op) + std::string("_") + std::to_string(threads_x);
+void reduceBlocksByKeyDim(cl::Buffer *reduced_block_sizes, Param keys_out,
+                          Param vals_out, const Param keys, const Param vals,
+                          int change_nan, double nanval, const int n,
+                          const uint threads_x, const int dim,
+                          std::vector<int> dim_ordering) {
+    static const std::string src1(ops_cl, ops_cl_len);
+    static const std::string src2(reduce_blocks_by_key_dim_cl,
+                                  reduce_blocks_by_key_dim_cl_len);
 
-    int device = getActiveDeviceId();
+    ToNumStr<To> toNumStr;
+    std::vector<TemplateArg> tmpltArgs = {
+        TemplateTypename<Ti>(), TemplateTypename<To>(), TemplateTypename<Tk>(),
+        TemplateArg(op),        TemplateArg(threads_x),
+    };
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(Tk, dtype_traits<Tk>::getName()),
+        DefineKeyValue(Ti, dtype_traits<Ti>::getName()),
+        DefineKeyValue(To, dtype_traits<To>::getName()),
+        DefineKeyValue(T, "To"),
+        DefineKeyValue(DIMX, threads_x),
+        DefineKeyValue(DIM, dim),
+        DefineKeyValue(init, toNumStr(Binary<To, op>::init())),
+        DefineKeyFromStr(binOpName<op>()),
+        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    kc_entry_t entry = kernelCache(device, ref_name);
-
-    if (entry.prog == 0 && entry.ker == 0) {
-        Binary<To, op> reduce;
-        ToNumStr<To> toNumStr;
-
-        std::ostringstream options;
-        options << " -D To=" << dtype_traits<To>::getName()
-                << " -D Tk=" << dtype_traits<Tk>::getName()
-                << " -D Ti=" << dtype_traits<Ti>::getName() << " -D T=To"
-                << " -D DIMX=" << threads_x << " -D DIM=" << dim
-                << " -D init=" << toNumStr(reduce.init()) << " -D "
-                << binOpName<op>() << " -D CPLX=" << af::iscplx<Ti>();
-
-        options << getTypeBuildDefinition<Ti>();
-
-        const char *ker_strs[] = {ops_cl, reduce_blocks_by_key_dim_cl};
-        const int ker_lens[]   = {ops_cl_len, reduce_blocks_by_key_dim_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "reduce_blocks_by_key_dim");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
+    auto reduceBlocksByKeyDim = common::findKernel(
+        "reduce_blocks_by_key_dim", {src1, src2}, tmpltArgs, compileOpts);
     int numBlocks = divup(n, threads_x);
 
-    NDRange local(threads_x);
-    NDRange global(threads_x * numBlocks, vals_out.info.dims[dim_ordering[1]],
-                   vals_out.info.dims[dim_ordering[2]] *
-                       vals_out.info.dims[dim_ordering[3]]);
+    cl::NDRange local(threads_x);
+    cl::NDRange global(threads_x * numBlocks,
+                       vals_out.info.dims[dim_ordering[1]],
+                       vals_out.info.dims[dim_ordering[2]] *
+                           vals_out.info.dims[dim_ordering[3]]);
 
-    auto reduceOp =
-        KernelFunctor<Buffer, Buffer, KParam, Buffer, KParam, Buffer, KParam,
-                      Buffer, KParam, int, To, int, int>(*entry.ker);
-
-    reduceOp(EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
-             *keys_out.data, keys_out.info, *vals_out.data, vals_out.info,
-             *keys.data, keys.info, *vals.data, vals.info, change_nan,
-             scalar<To>(nanval), n, vals_out.info.dims[dim_ordering[2]]);
-
+    reduceBlocksByKeyDim(cl::EnqueueArgs(getQueue(), global, local),
+                         *reduced_block_sizes, *keys_out.data, keys_out.info,
+                         *vals_out.data, vals_out.info, *keys.data, keys.info,
+                         *vals.data, vals.info, change_nan, scalar<To>(nanval),
+                         n,
+                         static_cast<int>(vals_out.info.dims[dim_ordering[2]]));
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
-void launch_reduce_blocks_by_key(cl::Buffer *reduced_block_sizes,
-                                 Param keys_out, Param vals_out,
-                                 const Param keys, const Param vals,
-                                 int change_nan, double nanval, const int n,
-                                 const uint threads_x) {
-    std::string ref_name =
-        std::string("reduce_blocks_by_key_0_") +
-        std::string(dtype_traits<Ti>::getName()) + std::string("_") +
-        std::string(dtype_traits<Tk>::getName()) + std::string("_") +
-        std::string(dtype_traits<To>::getName()) + std::string("_") +
-        std::to_string(op) + std::string("_") + std::to_string(threads_x);
+void reduceBlocksByKey(cl::Buffer *reduced_block_sizes, Param keys_out,
+                       Param vals_out, const Param keys, const Param vals,
+                       int change_nan, double nanval, const int n,
+                       const uint threads_x) {
+    static const std::string src1(ops_cl, ops_cl_len);
+    static const std::string src2(reduce_blocks_by_key_first_cl,
+                                  reduce_blocks_by_key_first_cl_len);
 
-    int device = getActiveDeviceId();
+    ToNumStr<To> toNumStr;
+    std::vector<TemplateArg> tmpltArgs = {
+        TemplateTypename<Ti>(), TemplateTypename<To>(), TemplateTypename<Tk>(),
+        TemplateArg(op),        TemplateArg(threads_x),
+    };
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(Tk, dtype_traits<Tk>::getName()),
+        DefineKeyValue(Ti, dtype_traits<Ti>::getName()),
+        DefineKeyValue(To, dtype_traits<To>::getName()),
+        DefineKeyValue(T, "To"),
+        DefineKeyValue(DIMX, threads_x),
+        DefineKeyValue(init, toNumStr(Binary<To, op>::init())),
+        DefineKeyFromStr(binOpName<op>()),
+        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    kc_entry_t entry = kernelCache(device, ref_name);
-
-    if (entry.prog == 0 && entry.ker == 0) {
-        Binary<To, op> reduce;
-        ToNumStr<To> toNumStr;
-
-        std::ostringstream options;
-        options << " -D To=" << dtype_traits<To>::getName()
-                << " -D Tk=" << dtype_traits<Tk>::getName()
-                << " -D Ti=" << dtype_traits<Ti>::getName() << " -D T=To"
-                << " -D DIMX=" << threads_x
-                << " -D init=" << toNumStr(reduce.init()) << " -D "
-                << binOpName<op>() << " -D CPLX=" << af::iscplx<Ti>();
-
-        options << getTypeBuildDefinition<Ti>();
-
-        const char *ker_strs[] = {ops_cl, reduce_blocks_by_key_first_cl};
-        const int ker_lens[] = {ops_cl_len, reduce_blocks_by_key_first_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "reduce_blocks_by_key_first");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
+    auto reduceBlocksByKeyFirst = common::findKernel(
+        "reduce_blocks_by_key_first", {src1, src2}, tmpltArgs, compileOpts);
     int numBlocks = divup(n, threads_x);
 
-    NDRange local(threads_x);
-    NDRange global(threads_x * numBlocks, vals_out.info.dims[1],
-                   vals_out.info.dims[2] * vals_out.info.dims[3]);
+    cl::NDRange local(threads_x);
+    cl::NDRange global(threads_x * numBlocks, vals_out.info.dims[1],
+                       vals_out.info.dims[2] * vals_out.info.dims[3]);
 
-    auto reduceOp =
-        KernelFunctor<Buffer, Buffer, KParam, Buffer, KParam, Buffer, KParam,
-                      Buffer, KParam, int, To, int, int>(*entry.ker);
-
-    reduceOp(EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
-             *keys_out.data, keys_out.info, *vals_out.data, vals_out.info,
-             *keys.data, keys.info, *vals.data, vals.info, change_nan,
-             scalar<To>(nanval), n, vals_out.info.dims[2]);
-
+    reduceBlocksByKeyFirst(
+        cl::EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
+        *keys_out.data, keys_out.info, *vals_out.data, vals_out.info,
+        *keys.data, keys.info, *vals.data, vals.info, change_nan,
+        scalar<To>(nanval), n, static_cast<int>(vals_out.info.dims[2]));
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename Tk, typename To, af_op_t op>
-void launch_final_boundary_reduce(cl::Buffer *reduced_block_sizes,
-                                  Param keys_out, Param vals_out, const int n,
-                                  const int numBlocks, const int threads_x) {
-    std::string ref_name =
-        std::string("final_boundary_reduce") +
-        std::string(dtype_traits<Tk>::getName()) + std::string("_") +
-        std::string(dtype_traits<To>::getName()) + std::string("_") +
-        std::to_string(op) + std::string("_") + std::to_string(threads_x);
+void finalBoundaryReduce(cl::Buffer *reduced_block_sizes, Param keys_out,
+                         Param vals_out, const int n, const int numBlocks,
+                         const int threads_x) {
+    static const std::string src1(ops_cl, ops_cl_len);
+    static const std::string src2(reduce_by_key_boundary_cl,
+                                  reduce_by_key_boundary_cl_len);
 
-    int device = getActiveDeviceId();
+    ToNumStr<To> toNumStr;
+    std::vector<TemplateArg> tmpltArgs = {
+        TemplateTypename<To>(),
+        TemplateTypename<Tk>(),
+        TemplateArg(op),
+        TemplateArg(threads_x),
+    };
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(Tk, dtype_traits<Tk>::getName()),
+        DefineKeyValue(Ti, dtype_traits<To>::getName()),
+        DefineKeyValue(To, dtype_traits<To>::getName()),
+        DefineKeyValue(T, "To"),
+        DefineKeyValue(DIMX, threads_x),
+        DefineKeyValue(init, toNumStr(Binary<To, op>::init())),
+        DefineKeyFromStr(binOpName<op>()),
+        DefineKeyValue(CPLX, af::iscplx<To>()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    kc_entry_t entry = kernelCache(device, ref_name);
+    auto finalBoundaryReduce = common::findKernel(
+        "final_boundary_reduce", {src1, src2}, tmpltArgs, compileOpts);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        Binary<To, op> reduce;
-        ToNumStr<To> toNumStr;
+    cl::NDRange local(threads_x);
+    cl::NDRange global(threads_x * numBlocks);
 
-        std::ostringstream options;
-        options << " -D To=" << dtype_traits<To>::getName()
-                << " -D Ti=" << dtype_traits<To>::getName()
-                << " -D Tk=" << dtype_traits<Tk>::getName() << " -D T=To"
-                << " -D DIMX=" << threads_x
-                << " -D init=" << toNumStr(reduce.init()) << " -D "
-                << binOpName<op>() << " -D CPLX=" << af::iscplx<To>();
-
-        options << getTypeBuildDefinition<To>();
-
-        const char *ker_strs[] = {ops_cl, reduce_by_key_boundary_cl};
-        const int ker_lens[]   = {ops_cl_len, reduce_by_key_boundary_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "final_boundary_reduce");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    NDRange local(threads_x);
-    NDRange global(threads_x * numBlocks);
-
-    auto reduceOp =
-        KernelFunctor<Buffer, Buffer, KParam, Buffer, KParam, int>(*entry.ker);
-
-    reduceOp(EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
-             *keys_out.data, keys_out.info, *vals_out.data, vals_out.info, n);
-
+    finalBoundaryReduce(cl::EnqueueArgs(getQueue(), global, local),
+                        *reduced_block_sizes, *keys_out.data, keys_out.info,
+                        *vals_out.data, vals_out.info, n);
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename Tk, typename To, af_op_t op>
-void launch_final_boundary_reduce_dim(cl::Buffer *reduced_block_sizes,
-                                      Param keys_out, Param vals_out,
-                                      const int n, const int numBlocks,
-                                      const int threads_x, const int dim,
-                                      vector<int> dim_ordering) {
-    std::string ref_name =
-        std::string("final_boundary_reduce") +
-        std::string(dtype_traits<Tk>::getName()) + std::string("_") +
-        std::string(dtype_traits<To>::getName()) + std::string("_") +
-        std::to_string(op) + std::string("_") + std::to_string(threads_x);
+void finalBoundaryReduceDim(cl::Buffer *reduced_block_sizes, Param keys_out,
+                            Param vals_out, const int n, const int numBlocks,
+                            const int threads_x, const int dim,
+                            std::vector<int> dim_ordering) {
+    static const std::string src1(ops_cl, ops_cl_len);
+    static const std::string src2(reduce_by_key_boundary_dim_cl,
+                                  reduce_by_key_boundary_dim_cl_len);
 
-    int device = getActiveDeviceId();
+    ToNumStr<To> toNumStr;
+    std::vector<TemplateArg> tmpltArgs = {
+        TemplateTypename<To>(),
+        TemplateTypename<Tk>(),
+        TemplateArg(op),
+        TemplateArg(threads_x),
+    };
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(Tk, dtype_traits<Tk>::getName()),
+        DefineKeyValue(Ti, dtype_traits<To>::getName()),
+        DefineKeyValue(To, dtype_traits<To>::getName()),
+        DefineKeyValue(T, "To"),
+        DefineKeyValue(DIMX, threads_x),
+        DefineKeyValue(DIM, dim),
+        DefineKeyValue(init, toNumStr(Binary<To, op>::init())),
+        DefineKeyFromStr(binOpName<op>()),
+        DefineKeyValue(CPLX, af::iscplx<To>()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    kc_entry_t entry = kernelCache(device, ref_name);
+    auto finalBoundaryReduceDim = common::findKernel(
+        "final_boundary_reduce_dim", {src1, src2}, tmpltArgs, compileOpts);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        Binary<To, op> reduce;
-        ToNumStr<To> toNumStr;
+    cl::NDRange local(threads_x);
+    cl::NDRange global(threads_x * numBlocks,
+                       vals_out.info.dims[dim_ordering[1]],
+                       vals_out.info.dims[dim_ordering[2]] *
+                           vals_out.info.dims[dim_ordering[3]]);
 
-        std::ostringstream options;
-        options << " -D To=" << dtype_traits<To>::getName()
-                << " -D Ti=" << dtype_traits<To>::getName()
-                << " -D Tk=" << dtype_traits<Tk>::getName() << " -D T=To"
-                << " -D DIMX=" << threads_x << " -D DIM=" << dim
-                << " -D init=" << toNumStr(reduce.init()) << " -D "
-                << binOpName<op>() << " -D CPLX=" << af::iscplx<To>();
-
-        options << getTypeBuildDefinition<To>();
-
-        const char *ker_strs[] = {ops_cl, reduce_by_key_boundary_dim_cl};
-        const int ker_lens[] = {ops_cl_len, reduce_by_key_boundary_dim_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "final_boundary_reduce_dim");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    NDRange local(threads_x);
-    NDRange global(threads_x * numBlocks, vals_out.info.dims[dim_ordering[1]],
-                   vals_out.info.dims[dim_ordering[2]] *
-                       vals_out.info.dims[dim_ordering[3]]);
-
-    auto reduceOp =
-        KernelFunctor<Buffer, Buffer, KParam, Buffer, KParam, int, int>(
-            *entry.ker);
-
-    reduceOp(EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
-             *keys_out.data, keys_out.info, *vals_out.data, vals_out.info, n,
-             vals_out.info.dims[dim_ordering[2]]);
-
+    finalBoundaryReduceDim(
+        cl::EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
+        *keys_out.data, keys_out.info, *vals_out.data, vals_out.info, n,
+        static_cast<int>(vals_out.info.dims[dim_ordering[2]]));
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename Tk, typename To>
-void launch_compact(cl::Buffer *reduced_block_sizes, Param keys_out,
-                    Param vals_out, const Param keys, const Param vals,
-                    const int numBlocks, const int threads_x) {
-    std::string ref_name =
-        std::string("compact_") + std::string(dtype_traits<Tk>::getName()) +
-        std::string("_") + std::string(dtype_traits<To>::getName()) +
-        std::string("_") + std::to_string(threads_x);
+void compact(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
+             const Param keys, const Param vals, const int numBlocks,
+             const int threads_x) {
+    static const std::string src1(ops_cl, ops_cl_len);
+    static const std::string src2(reduce_by_key_compact_cl,
+                                  reduce_by_key_compact_cl_len);
 
-    int device = getActiveDeviceId();
+    std::vector<TemplateArg> tmpltArgs = {
+        TemplateTypename<To>(),
+        TemplateTypename<Tk>(),
+        TemplateArg(threads_x),
+    };
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(Tk, dtype_traits<Tk>::getName()),
+        DefineKeyValue(To, dtype_traits<To>::getName()),
+        DefineKeyValue(T, "To"),
+        DefineKeyValue(DIMX, threads_x),
+        DefineKeyValue(CPLX, af::iscplx<To>()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    kc_entry_t entry = kernelCache(device, ref_name);
+    auto compact =
+        common::findKernel("compact", {src1, src2}, tmpltArgs, compileOpts);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D To=" << dtype_traits<To>::getName()
-                << " -D Tk=" << dtype_traits<Tk>::getName() << " -D T=To"
-                << " -D DIMX=" << threads_x << " -D CPLX=" << af::iscplx<To>();
+    cl::NDRange local(threads_x);
+    cl::NDRange global(threads_x * numBlocks, vals_out.info.dims[1],
+                       vals_out.info.dims[2] * vals_out.info.dims[3]);
 
-        options << getTypeBuildDefinition<To>();
-
-        const char *ker_strs[] = {ops_cl, reduce_by_key_compact_cl};
-        const int ker_lens[]   = {ops_cl_len, reduce_by_key_compact_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "compact");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    NDRange local(threads_x);
-    NDRange global(threads_x * numBlocks, vals_out.info.dims[1],
-                   vals_out.info.dims[2] * vals_out.info.dims[3]);
-
-    auto reduceOp =
-        KernelFunctor<Buffer, Buffer, KParam, Buffer, KParam, Buffer, KParam,
-                      Buffer, KParam, int>(*entry.ker);
-
-    reduceOp(EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
-             *keys_out.data, keys_out.info, *vals_out.data, vals_out.info,
-             *keys.data, keys.info, *vals.data, vals.info,
-             vals_out.info.dims[2]);
-
+    compact(cl::EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
+            *keys_out.data, keys_out.info, *vals_out.data, vals_out.info,
+            *keys.data, keys.info, *vals.data, vals.info,
+            static_cast<int>(vals_out.info.dims[2]));
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename Tk, typename To>
-void launch_compact_dim(cl::Buffer *reduced_block_sizes, Param keys_out,
-                        Param vals_out, const Param keys, const Param vals,
-                        const int numBlocks, const int threads_x, const int dim,
-                        vector<int> dim_ordering) {
-    std::string ref_name =
-        std::string("compact_dim_") + std::string(dtype_traits<Tk>::getName()) +
-        std::string("_") + std::string(dtype_traits<To>::getName()) +
-        std::string("_") + std::to_string(threads_x);
+void compactDim(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
+                const Param keys, const Param vals, const int numBlocks,
+                const int threads_x, const int dim,
+                std::vector<int> dim_ordering) {
+    static const std::string src1(ops_cl, ops_cl_len);
+    static const std::string src2(reduce_by_key_compact_dim_cl,
+                                  reduce_by_key_compact_dim_cl_len);
 
-    int device = getActiveDeviceId();
+    std::vector<TemplateArg> tmpltArgs = {
+        TemplateTypename<To>(),
+        TemplateTypename<Tk>(),
+        TemplateArg(threads_x),
+    };
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(Tk, dtype_traits<Tk>::getName()),
+        DefineKeyValue(To, dtype_traits<To>::getName()),
+        DefineKeyValue(T, "To"),
+        DefineKeyValue(DIMX, threads_x),
+        DefineKeyValue(DIM, dim),
+        DefineKeyValue(CPLX, af::iscplx<To>()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    kc_entry_t entry = kernelCache(device, ref_name);
+    auto compactDim =
+        common::findKernel("compact_dim", {src1, src2}, tmpltArgs, compileOpts);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D To=" << dtype_traits<To>::getName()
-                << " -D Tk=" << dtype_traits<Tk>::getName() << " -D T=To"
-                << " -D DIMX=" << threads_x << " -D DIM=" << dim
-                << " -D CPLX=" << af::iscplx<To>();
+    cl::NDRange local(threads_x);
+    cl::NDRange global(threads_x * numBlocks,
+                       vals_out.info.dims[dim_ordering[1]],
+                       vals_out.info.dims[dim_ordering[2]] *
+                           vals_out.info.dims[dim_ordering[3]]);
 
-        options << getTypeBuildDefinition<To>();
-
-        const char *ker_strs[] = {ops_cl, reduce_by_key_compact_dim_cl};
-        const int ker_lens[]   = {ops_cl_len, reduce_by_key_compact_dim_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "compact_dim");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    NDRange local(threads_x);
-    NDRange global(threads_x * numBlocks, vals_out.info.dims[dim_ordering[1]],
-                   vals_out.info.dims[dim_ordering[2]] *
-                       vals_out.info.dims[dim_ordering[3]]);
-
-    auto reduceOp =
-        KernelFunctor<Buffer, Buffer, KParam, Buffer, KParam, Buffer, KParam,
-                      Buffer, KParam, int>(*entry.ker);
-
-    reduceOp(EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
-             *keys_out.data, keys_out.info, *vals_out.data, vals_out.info,
-             *keys.data, keys.info, *vals.data, vals.info,
-             vals_out.info.dims[dim_ordering[2]]);
-
+    compactDim(cl::EnqueueArgs(getQueue(), global, local), *reduced_block_sizes,
+               *keys_out.data, keys_out.info, *vals_out.data, vals_out.info,
+               *keys.data, keys.info, *vals.data, vals.info,
+               static_cast<int>(vals_out.info.dims[dim_ordering[2]]));
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename Tk>
-void launch_test_needs_reduction(cl::Buffer needs_reduction,
-                                 cl::Buffer needs_boundary, const Param keys,
-                                 const int n, const int numBlocks,
-                                 const int threads_x) {
-    std::string ref_name = std::string("test_needs_reduction_") +
-                           std::string(dtype_traits<Tk>::getName()) +
-                           std::string("_") + std::to_string(threads_x);
+void testNeedsReduction(cl::Buffer needs_reduction, cl::Buffer needs_boundary,
+                        const Param keys, const int n, const int numBlocks,
+                        const int threads_x) {
+    static const std::string src1(ops_cl, ops_cl_len);
+    static const std::string src2(reduce_by_key_needs_reduction_cl,
+                                  reduce_by_key_needs_reduction_cl_len);
 
-    int device = getActiveDeviceId();
+    std::vector<TemplateArg> tmpltArgs = {
+        TemplateTypename<Tk>(),
+        TemplateArg(threads_x),
+    };
+    std::vector<std::string> compileOpts = {
+        DefineKeyValue(Tk, dtype_traits<Tk>::getName()),
+        DefineKeyValue(DIMX, threads_x),
+    };
 
-    kc_entry_t entry = kernelCache(device, ref_name);
+    auto testIfNeedsReduction = common::findKernel(
+        "test_needs_reduction", {src1, src2}, tmpltArgs, compileOpts);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D Tk=" << dtype_traits<Tk>::getName()
-                << " -D DIMX=" << threads_x;
+    cl::NDRange local(threads_x);
+    cl::NDRange global(threads_x * numBlocks);
 
-        const char *ker_strs[] = {ops_cl, reduce_by_key_needs_reduction_cl};
-        const int ker_lens[]   = {ops_cl_len,
-                                reduce_by_key_needs_reduction_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "test_needs_reduction");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    NDRange local(threads_x);
-    NDRange global(threads_x * numBlocks);
-
-    auto reduceOp =
-        KernelFunctor<Buffer, Buffer, Buffer, KParam, int>(*entry.ker);
-
-    reduceOp(EnqueueArgs(getQueue(), global, local), needs_reduction,
-             needs_boundary, *keys.data, keys.info, n);
-
+    testIfNeedsReduction(cl::EnqueueArgs(getQueue(), global, local),
+                         needs_reduction, needs_boundary, *keys.data, keys.info,
+                         n);
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
-int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
-                        const Param keys, const Param vals, bool change_nan,
-                        double nanval) {
+int reduceByKeyFirst(Array<Tk> &keys_out, Array<To> &vals_out, const Param keys,
+                     const Param vals, bool change_nan, double nanval) {
     dim4 kdims(4, keys.info.dims);
     dim4 odims(4, vals.info.dims);
 
@@ -459,12 +351,12 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
         if (first_pass) {
-            launch_reduce_blocks_by_key<Ti, Tk, To, op>(
+            reduceBlocksByKey<Ti, Tk, To, op>(
                 reduced_block_sizes.get(), reduced_keys, reduced_vals, keys,
                 vals, change_nan, nanval, n_reduced_host, numThreads);
             first_pass = false;
         } else {
-            launch_reduce_blocks_by_key<To, Tk, To, op>(
+            reduceBlocksByKey<To, Tk, To, op>(
                 reduced_block_sizes.get(), reduced_keys, reduced_vals,
                 t_reduced_keys, t_reduced_vals, change_nan, nanval,
                 n_reduced_host, numThreads);
@@ -475,9 +367,9 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
             compute::make_buffer_iterator<int>(val_buf, numBlocksD0),
             compute::make_buffer_iterator<int>(val_buf), c_queue);
 
-        launch_compact<Tk, To>(reduced_block_sizes.get(), t_reduced_keys,
-                               t_reduced_vals, reduced_keys, reduced_vals,
-                               numBlocksD0, numThreads);
+        compact<Tk, To>(reduced_block_sizes.get(), t_reduced_keys,
+                        t_reduced_vals, reduced_keys, reduced_vals, numBlocksD0,
+                        numThreads);
 
         getQueue().enqueueReadBuffer(*reduced_block_sizes.get(), true,
                                      (numBlocksD0 - 1) * sizeof(int),
@@ -495,10 +387,10 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
                                       &needs_block_boundary_reduction_host);
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
-        launch_test_needs_reduction<Tk>(*needs_another_reduction.get(),
-                                        *needs_block_boundary_reduction.get(),
-                                        t_reduced_keys, n_reduced_host,
-                                        numBlocksD0, numThreads);
+        testNeedsReduction<Tk>(*needs_another_reduction.get(),
+                               *needs_block_boundary_reduction.get(),
+                               t_reduced_keys, n_reduced_host, numBlocksD0,
+                               numThreads);
 
         getQueue().enqueueReadBuffer(*needs_another_reduction.get(), CL_FALSE,
                                      0, sizeof(int),
@@ -509,7 +401,7 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
 
         if (needs_block_boundary_reduction_host &&
             !needs_another_reduction_host) {
-            launch_final_boundary_reduce<Tk, To, op>(
+            finalBoundaryReduce<Tk, To, op>(
                 reduced_block_sizes.get(), t_reduced_keys, t_reduced_vals,
                 n_reduced_host, numBlocksD0, numThreads);
 
@@ -522,9 +414,9 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
                                          (numBlocksD0 - 1) * sizeof(int),
                                          sizeof(int), &n_reduced_host);
 
-            launch_compact<Tk, To>(reduced_block_sizes.get(), reduced_keys,
-                                   reduced_vals, t_reduced_keys, t_reduced_vals,
-                                   numBlocksD0, numThreads);
+            compact<Tk, To>(reduced_block_sizes.get(), reduced_keys,
+                            reduced_vals, t_reduced_keys, t_reduced_vals,
+                            numBlocksD0, numThreads);
 
             std::swap(t_reduced_keys, reduced_keys);
             std::swap(t_reduced_vals, reduced_vals);
@@ -539,10 +431,10 @@ int reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
 }
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
-int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
-                      const Param keys, const Param vals, bool change_nan,
-                      double nanval, const int dim) {
-    vector<int> dim_ordering = {dim};
+int reduceByKeyDim(Array<Tk> &keys_out, Array<To> &vals_out, const Param keys,
+                   const Param vals, bool change_nan, double nanval,
+                   const int dim) {
+    std::vector<int> dim_ordering = {dim};
     for (int i = 0; i < 4; ++i) {
         if (i != dim) { dim_ordering.push_back(i); }
     }
@@ -578,13 +470,13 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
         if (first_pass) {
-            launch_reduce_blocks_dim_by_key<Ti, Tk, To, op>(
+            reduceBlocksByKeyDim<Ti, Tk, To, op>(
                 reduced_block_sizes.get(), reduced_keys, reduced_vals, keys,
                 vals, change_nan, nanval, n_reduced_host, numThreads, dim,
                 dim_ordering);
             first_pass = false;
         } else {
-            launch_reduce_blocks_dim_by_key<To, Tk, To, op>(
+            reduceBlocksByKeyDim<To, Tk, To, op>(
                 reduced_block_sizes.get(), reduced_keys, reduced_vals,
                 t_reduced_keys, t_reduced_vals, change_nan, nanval,
                 n_reduced_host, numThreads, dim, dim_ordering);
@@ -595,9 +487,9 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
             compute::make_buffer_iterator<int>(val_buf, numBlocksD0),
             compute::make_buffer_iterator<int>(val_buf), c_queue);
 
-        launch_compact_dim<Tk, To>(reduced_block_sizes.get(), t_reduced_keys,
-                                   t_reduced_vals, reduced_keys, reduced_vals,
-                                   numBlocksD0, numThreads, dim, dim_ordering);
+        compactDim<Tk, To>(reduced_block_sizes.get(), t_reduced_keys,
+                           t_reduced_vals, reduced_keys, reduced_vals,
+                           numBlocksD0, numThreads, dim, dim_ordering);
 
         getQueue().enqueueReadBuffer(*reduced_block_sizes.get(), true,
                                      (numBlocksD0 - 1) * sizeof(int),
@@ -616,10 +508,10 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
 
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
-        launch_test_needs_reduction<Tk>(*needs_another_reduction.get(),
-                                        *needs_block_boundary_reduction.get(),
-                                        t_reduced_keys, n_reduced_host,
-                                        numBlocksD0, numThreads);
+        testNeedsReduction<Tk>(*needs_another_reduction.get(),
+                               *needs_block_boundary_reduction.get(),
+                               t_reduced_keys, n_reduced_host, numBlocksD0,
+                               numThreads);
 
         getQueue().enqueueReadBuffer(*needs_another_reduction.get(), CL_FALSE,
                                      0, sizeof(int),
@@ -630,7 +522,7 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
 
         if (needs_block_boundary_reduction_host &&
             !needs_another_reduction_host) {
-            launch_final_boundary_reduce_dim<Tk, To, op>(
+            finalBoundaryReduceDim<Tk, To, op>(
                 reduced_block_sizes.get(), t_reduced_keys, t_reduced_vals,
                 n_reduced_host, numBlocksD0, numThreads, dim, dim_ordering);
 
@@ -643,10 +535,9 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
                                          (numBlocksD0 - 1) * sizeof(int),
                                          sizeof(int), &n_reduced_host);
 
-            launch_compact_dim<Tk, To>(reduced_block_sizes.get(), reduced_keys,
-                                       reduced_vals, t_reduced_keys,
-                                       t_reduced_vals, numBlocksD0, numThreads,
-                                       dim, dim_ordering);
+            compactDim<Tk, To>(reduced_block_sizes.get(), reduced_keys,
+                               reduced_vals, t_reduced_keys, t_reduced_vals,
+                               numBlocksD0, numThreads, dim, dim_ordering);
 
             std::swap(t_reduced_keys, reduced_keys);
             std::swap(t_reduced_vals, reduced_vals);
@@ -661,9 +552,9 @@ int reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
 }
 
 template<af_op_t op, typename Ti, typename Tk, typename To>
-void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
-                   const Array<Tk> &keys, const Array<Ti> &vals, int dim,
-                   bool change_nan, double nanval) {
+void reduceByKey(Array<Tk> &keys_out, Array<To> &vals_out,
+                 const Array<Tk> &keys, const Array<Ti> &vals, int dim,
+                 bool change_nan, double nanval) {
     dim4 kdims = keys.dims();
     dim4 odims = vals.dims();
 
@@ -673,10 +564,10 @@ void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
 
     int n_reduced = 0;
     if (dim == 0) {
-        n_reduced = reduce_by_key_first<Ti, Tk, To, op>(
+        n_reduced = reduceByKeyFirst<Ti, Tk, To, op>(
             reduced_keys, reduced_vals, keys, vals, change_nan, nanval);
     } else {
-        n_reduced = reduce_by_key_dim<Ti, Tk, To, op>(
+        n_reduced = reduceByKeyDim<Ti, Tk, To, op>(
             reduced_keys, reduced_vals, keys, vals, change_nan, nanval, dim);
     }
 

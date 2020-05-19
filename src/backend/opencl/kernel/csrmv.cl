@@ -39,11 +39,11 @@ T __ccmul(T lhs, T rhs) {
 // elements from one row and multiplying with the corresponding elements from
 // the dense vector to produce a single output value. This kernel should be used
 // when the number of nonzero elements per block is fairly small
-__kernel void csrmv_thread(__global T *output, __global const T *values,
-                           __global const int *rowidx,
-                           __global const int *colidx, const int M,
-                           __global const T *rhs, const KParam rinfo,
-                           const T alpha, const T beta, __global int *counter) {
+kernel void csrmv_thread(global T *output, __global const T *values,
+                           global const int *rowidx,
+                           global const int *colidx, const int M,
+                           global const T *rhs, const KParam rinfo,
+                           const T alpha, const T beta, global int *counter) {
     rhs += rinfo.offset;
     int rowNext = get_global_id(0);
 
@@ -91,18 +91,18 @@ __kernel void csrmv_thread(__global T *output, __global const T *values,
 // elements from dense vector to produce a local output values. Then the block
 // performs a reduction operation to produce a single output value. This kernel
 // should be used when the number of nonzero elements per block is large
-__kernel void csrmv_block(__global T *output, __global const T *values,
-                          __global const int *rowidx,
-                          __global const int *colidx, const int M,
-                          __global const T *rhs, const KParam rinfo,
-                          const T alpha, const T beta, __global int *counter) {
+kernel void csrmv_block(global T *output, __global const T *values,
+                          global const int *rowidx,
+                          global const int *colidx, const int M,
+                          global const T *rhs, const KParam rinfo,
+                          const T alpha, const T beta, global int *counter) {
     rhs += rinfo.offset;
     int lid     = get_local_id(0);
     int rowNext = get_group_id(0);
-    __local int s_rowId;
+    local int s_rowId;
 
     // Each thread stores part of the output result
-    __local T s_outval[THREADS];
+    local T s_outval[THREADS];
 
     // Each groups performs multiple "dot" operations
     while (true) {

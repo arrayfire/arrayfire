@@ -11,10 +11,9 @@ typedef struct {
     dim_t dim[4];
 } dims_t;
 
-__kernel void memcopy_kernel(__global T *out, dims_t ostrides,
-                             __global const T *in, dims_t idims,
-                             dims_t istrides, int offset, int groups_0,
-                             int groups_1) {
+kernel void memCopy(global T *out, dims_t ostrides, global const T *in,
+                    dims_t idims, dims_t istrides, int offset, int groups_0,
+                    int groups_1) {
     const int lid0 = get_local_id(0);
     const int lid1 = get_local_id(1);
 

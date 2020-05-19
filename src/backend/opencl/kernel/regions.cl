@@ -9,7 +9,7 @@
 
 // The initial label kernel distinguishes between valid (nonzero)
 // pixels and "background" (zero) pixels.
-__kernel void initial_label(global T* equiv_map, KParam eInfo,
+kernel void initial_label(global T* equiv_map, KParam eInfo,
                             global char* bin_, KParam bInfo) {
     global char* bin = bin_ + bInfo.offset;
     const int base_x =
@@ -32,7 +32,7 @@ __kernel void initial_label(global T* equiv_map, KParam eInfo,
     }
 }
 
-__kernel void final_relabel(global T* equiv_map, KParam eInfo,
+kernel void final_relabel(global T* equiv_map, KParam eInfo,
                             global char* bin_, KParam bInfo,
                             global const T* d_tmp) {
     global char* bin = bin_ + bInfo.offset;
@@ -75,7 +75,7 @@ static inline T relabel(const T a, const T b) {
 // NUM_WARPS = 8; // (Could compute this from block dim)
 // Number of elements to handle per thread in each dimension
 // N_PER_THREAD = 2; // 2x2 per thread = 4 total elems per thread
-__kernel void update_equiv(global T* equiv_map, KParam eInfo,
+kernel void update_equiv(global T* equiv_map, KParam eInfo,
                            global int* continue_flag) {
     // Basic coordinates
     const int base_x =
@@ -97,10 +97,10 @@ __kernel void update_equiv(global T* equiv_map, KParam eInfo,
     }
 
     // Cached tile of the equivalency map
-    __local T s_tile[N_PER_THREAD * BLOCK_DIM][(N_PER_THREAD * BLOCK_DIM)];
+    local T s_tile[N_PER_THREAD * BLOCK_DIM][(N_PER_THREAD * BLOCK_DIM)];
 
     // Space to track ballot funcs to track convergence
-    __local int s_changed[NUM_WARPS];
+    local int s_changed[NUM_WARPS];
 
     const int tn = (get_local_id(1) * get_local_size(0)) + get_local_id(0);
 
@@ -109,7 +109,7 @@ __kernel void update_equiv(global T* equiv_map, KParam eInfo,
     s_changed[warpIdx] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    __local int tid_changed[NUM_WARPS];
+    local int tid_changed[NUM_WARPS];
     tid_changed[warpIdx] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
 

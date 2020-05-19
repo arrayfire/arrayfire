@@ -88,7 +88,7 @@ __constant int ref_pat[] = {
     -1,  -6,  0,   -11,
 };
 
-float block_reduce_sum(float val, __local float* data) {
+float block_reduce_sum(float val, local float* data) {
     unsigned idx = get_local_id(0) * get_local_size(0) + get_local_id(1);
 
     data[idx] = val;
@@ -103,12 +103,12 @@ float block_reduce_sum(float val, __local float* data) {
     return data[get_local_id(0) * get_local_size(0)];
 }
 
-__kernel void keep_features(__global float* x_out, __global float* y_out,
-                            __global float* score_out,
-                            __global const float* x_in,
-                            __global const float* y_in,
-                            __global const float* score_in,
-                            __global const unsigned* score_idx,
+kernel void keep_features(global float* x_out, __global float* y_out,
+                            global float* score_out,
+                            global const float* x_in,
+                            global const float* y_in,
+                            global const float* score_in,
+                            global const unsigned* score_idx,
                             const unsigned n_feat) {
     unsigned f = get_global_id(0);
 
@@ -119,13 +119,13 @@ __kernel void keep_features(__global float* x_out, __global float* y_out,
     }
 }
 
-__kernel void harris_response(
-    __global float* x_out, __global float* y_out, __global float* score_out,
-    __global const float* x_in, __global const float* y_in,
-    const unsigned total_feat, __global unsigned* usable_feat,
-    __global const T* image, KParam iInfo, const unsigned block_size,
+kernel void harris_response(
+    global float* x_out, __global float* y_out, __global float* score_out,
+    global const float* x_in, __global const float* y_in,
+    const unsigned total_feat, global unsigned* usable_feat,
+    global const T* image, KParam iInfo, const unsigned block_size,
     const float k_thr, const unsigned patch_size) {
-    __local float data[BLOCK_SIZE * BLOCK_SIZE];
+    local float data[BLOCK_SIZE * BLOCK_SIZE];
 
     unsigned f = get_global_id(0);
 
@@ -194,12 +194,12 @@ __kernel void harris_response(
     }
 }
 
-__kernel void centroid_angle(__global const float* x_in,
-                             __global const float* y_in,
-                             __global float* orientation_out,
-                             const unsigned total_feat, __global const T* image,
+kernel void centroid_angle(global const float* x_in,
+                             global const float* y_in,
+                             global float* orientation_out,
+                             const unsigned total_feat, global const T* image,
                              KParam iInfo, const unsigned patch_size) {
-    __local float data[BLOCK_SIZE * BLOCK_SIZE];
+    local float data[BLOCK_SIZE * BLOCK_SIZE];
     unsigned f = get_global_id(0);
 
     T m01 = (T)0, m10 = (T)0;
@@ -237,7 +237,7 @@ __kernel void centroid_angle(__global const float* x_in,
 }
 
 inline T get_pixel(unsigned x, unsigned y, const float ori, const unsigned size,
-                   const int dist_x, const int dist_y, __global const T* image,
+                   const int dist_x, const int dist_y, global const T* image,
                    KParam iInfo, const unsigned patch_size) {
     float ori_sin   = sin(ori);
     float ori_cos   = cos(ori);
@@ -249,10 +249,10 @@ inline T get_pixel(unsigned x, unsigned y, const float ori, const unsigned size,
     return image[x * iInfo.dims[0] + y];
 }
 
-__kernel void extract_orb(__global unsigned* desc_out, const unsigned n_feat,
-                          __global float* x_in, __global float* y_in,
-                          __global float* ori_in, __global float* size_out,
-                          __global const T* image, KParam iInfo,
+kernel void extract_orb(global unsigned* desc_out, const unsigned n_feat,
+                          global float* x_in, __global float* y_in,
+                          global float* ori_in, __global float* size_out,
+                          global const T* image, KParam iInfo,
                           const float scl, const unsigned patch_size) {
     unsigned f = get_global_id(0);
 

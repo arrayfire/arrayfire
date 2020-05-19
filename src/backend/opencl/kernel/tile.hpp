@@ -10,56 +10,40 @@
 #pragma once
 
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/tile.hpp>
-#include <platform.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <string>
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-// Kernel Launch Config Values
-static const int TX    = 32;
-static const int TY    = 8;
-static const int TILEX = 512;
-static const int TILEY = 32;
-
 template<typename T>
 void tile(Param out, const Param in) {
-    std::string refName =
-        std::string("tile_kernel_") + std::string(dtype_traits<T>::getName());
+    using cl::EnqueueArgs;
+    using cl::NDRange;
+    using std::string;
+    using std::vector;
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    constexpr int TX    = 32;
+    constexpr int TY    = 8;
+    constexpr int TILEX = 512;
+    constexpr int TILEY = 32;
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << getTypeBuildDefinition<T>();
+    static const string src(tile_cl, tile_cl_len);
 
-        const char* ker_strs[] = {tile_cl};
-        const int ker_lens[]   = {tile_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "tile_kernel");
+    vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+    };
+    vector<string> compileOpts = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-        addKernelToCache(device, refName, entry);
-    }
-
-    auto tileOp = KernelFunctor<Buffer, const Buffer, const KParam,
-                                const KParam, const int, const int>(*entry.ker);
+    auto tile = common::findKernel("tile", {src}, targs, compileOpts);
 
     NDRange local(TX, TY, 1);
 
@@ -68,9 +52,8 @@ void tile(Param out, const Param in) {
     NDRange global(local[0] * blocksPerMatX * out.info.dims[2],
                    local[1] * blocksPerMatY * out.info.dims[3], 1);
 
-    tileOp(EnqueueArgs(getQueue(), global, local), *out.data, *in.data,
-           out.info, in.info, blocksPerMatX, blocksPerMatY);
-
+    tile(EnqueueArgs(getQueue(), global, local), *out.data, *in.data, out.info,
+         in.info, blocksPerMatX, blocksPerMatY);
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel

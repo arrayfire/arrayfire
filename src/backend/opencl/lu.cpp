@@ -53,7 +53,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
     dim4 udims(MN, N);
     lower = createEmptyArray<T>(ldims);
     upper = createEmptyArray<T>(udims);
-    kernel::lu_split<T>(lower, upper, in_copy);
+    kernel::luSplit<T>(lower, upper, in_copy);
 }
 
 template<typename T>

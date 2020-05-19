@@ -6,28 +6,37 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+
 #pragma once
 
+#include <common/TemplateArg.hpp>
 #include <af/defines.h>
-#include <string>
 
-#define ADD_ENUM_OPTION(options, name) \
-    do { options << " -D " #name "=" << name; } while (0)
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
 
-static void addInterpEnumOptions(std::ostringstream &options) {
-    ADD_ENUM_OPTION(options, AF_INTERP_NEAREST);
-    ADD_ENUM_OPTION(options, AF_INTERP_LINEAR);
-    ADD_ENUM_OPTION(options, AF_INTERP_BILINEAR);
-    ADD_ENUM_OPTION(options, AF_INTERP_CUBIC);
-    ADD_ENUM_OPTION(options, AF_INTERP_LOWER);
-    ADD_ENUM_OPTION(options, AF_INTERP_LINEAR_COSINE);
-    ADD_ENUM_OPTION(options, AF_INTERP_BILINEAR_COSINE);
-    ADD_ENUM_OPTION(options, AF_INTERP_BICUBIC);
-    ADD_ENUM_OPTION(options, AF_INTERP_CUBIC_SPLINE);
-    ADD_ENUM_OPTION(options, AF_INTERP_BICUBIC_SPLINE);
+static void addInterpEnumOptions(std::vector<std::string>& options) {
+    std::vector<std::string> enOpts = {
+        DefineKeyValue(AF_INTERP_NEAREST, static_cast<int>(AF_INTERP_NEAREST)),
+        DefineKeyValue(AF_INTERP_LINEAR, static_cast<int>(AF_INTERP_LINEAR)),
+        DefineKeyValue(AF_INTERP_BILINEAR,
+                       static_cast<int>(AF_INTERP_BILINEAR)),
+        DefineKeyValue(AF_INTERP_CUBIC, static_cast<int>(AF_INTERP_CUBIC)),
+        DefineKeyValue(AF_INTERP_LOWER, static_cast<int>(AF_INTERP_LOWER)),
+        DefineKeyValue(AF_INTERP_LINEAR_COSINE,
+                       static_cast<int>(AF_INTERP_LINEAR_COSINE)),
+        DefineKeyValue(AF_INTERP_BILINEAR_COSINE,
+                       static_cast<int>(AF_INTERP_BILINEAR_COSINE)),
+        DefineKeyValue(AF_INTERP_BICUBIC, static_cast<int>(AF_INTERP_BICUBIC)),
+        DefineKeyValue(AF_INTERP_CUBIC_SPLINE,
+                       static_cast<int>(AF_INTERP_CUBIC_SPLINE)),
+        DefineKeyValue(AF_INTERP_BICUBIC_SPLINE,
+                       static_cast<int>(AF_INTERP_BICUBIC_SPLINE)),
+    };
+    options.insert(std::end(options), std::begin(enOpts), std::end(enOpts));
 }
 }  // namespace kernel
 }  // namespace opencl

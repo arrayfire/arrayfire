@@ -17,7 +17,7 @@ int lIdx(int x, int y, int stride1, int stride0) {
     return (y * stride1 + x * stride0);
 }
 
-void load2LocalMem(__local outType* shrd, __global const inType* in, int lx,
+void load2LocalMem(local outType* shrd, global const inType* in, int lx,
                    int ly, int shrdStride, int dim0, int dim1, int gx, int gy,
                    int inStride1, int inStride0) {
     int gx_ = clamp(gx, 0, dim0 - 1);
@@ -26,9 +26,9 @@ void load2LocalMem(__local outType* shrd, __global const inType* in, int lx,
         (outType)in[lIdx(gx_, gy_, inStride1, inStride0)];
 }
 
-__kernel void bilateral(__global outType* d_dst, KParam oInfo,
-                        __global const inType* d_src, KParam iInfo,
-                        __local outType* localMem, __local outType* gauss2d,
+kernel void bilateral(global outType* d_dst, KParam oInfo,
+                        global const inType* d_src, KParam iInfo,
+                        local outType* localMem, __local outType* gauss2d,
                         float sigma_space, float sigma_color, int gaussOff,
                         int nBBS0, int nBBS1) {
     const int radius                    = max((int)(sigma_space * 1.5f), 1);
@@ -43,9 +43,9 @@ __kernel void bilateral(__global outType* d_dst, KParam oInfo,
     // gfor batch offsets
     unsigned b2 = get_group_id(0) / nBBS0;
     unsigned b3 = get_group_id(1) / nBBS1;
-    __global const inType* in =
+    global const inType* in =
         d_src + (b2 * iInfo.strides[2] + b3 * iInfo.strides[3] + iInfo.offset);
-    __global outType* out =
+    global outType* out =
         d_dst + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
     int lx = get_local_id(0);

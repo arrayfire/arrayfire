@@ -15,10 +15,10 @@ T doOp(T in) {
 #define doOp(in) in
 #endif
 
-__kernel void transpose(__global T *oData, const KParam out,
-                        const __global T *iData, const KParam in,
+kernel void transpose(global T *oData, const KParam out,
+                        const global T *iData, const KParam in,
                         const int blocksPerMatX, const int blocksPerMatY) {
-    __local T shrdMem[TILE_DIM * (TILE_DIM + 1)];
+    local T shrdMem[TILE_DIM * (TILE_DIM + 1)];
 
     const int shrdStride = TILE_DIM + 1;
     // create variables to hold output dimensions

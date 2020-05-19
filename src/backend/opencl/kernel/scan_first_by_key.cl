@@ -7,15 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-char calculate_head_flags(const __global Tk *kptr, int id, int previd) {
+char calculate_head_flags(const global Tk *kptr, int id, int previd) {
     return (id == 0) ? 1 : (kptr[id] != kptr[previd]);
 }
 
-__kernel void scan_first_by_key_nonfinal_kernel(
-    __global To *oData, KParam oInfo, __global To *tData, KParam tInfo,
-    __global char *tfData, KParam tfInfo, __global int *tiData, KParam tiInfo,
-    const __global Ti *iData, KParam iInfo, const __global Tk *kData,
-    KParam kInfo, uint groups_x, uint groups_y, uint lim) {
+kernel void scanFirstByKeyNonfinal(global To *oData, KParam oInfo,
+                                   global To *tData, KParam tInfo,
+                                   global char *tfData, KParam tfInfo,
+                                   global int *tiData, KParam tiInfo,
+                                   const global Ti *iData, KParam iInfo,
+                                   const global Tk *kData, KParam kInfo,
+                                   uint groups_x, uint groups_y, uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
     const int lid  = lidy * get_local_size(0) + lidx;
@@ -48,15 +50,15 @@ __kernel void scan_first_by_key_nonfinal_kernel(
     oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
              yid * oInfo.strides[1] + oInfo.offset;
 
-    __local To l_val0[SHARED_MEM_SIZE];
-    __local To l_val1[SHARED_MEM_SIZE];
-    __local char l_flg0[SHARED_MEM_SIZE];
-    __local char l_flg1[SHARED_MEM_SIZE];
-    __local To *l_val   = l_val0;
-    __local char *l_flg = l_flg0;
-    __local To l_tmp[DIMY];
-    __local char l_ftmp[DIMY];
-    __local int boundaryid[DIMY];
+    local To l_val0[SHARED_MEM_SIZE];
+    local To l_val1[SHARED_MEM_SIZE];
+    local char l_flg0[SHARED_MEM_SIZE];
+    local char l_flg1[SHARED_MEM_SIZE];
+    local To *l_val   = l_val0;
+    local char *l_flg = l_flg0;
+    local To l_tmp[DIMY];
+    local char l_ftmp[DIMY];
+    local int boundaryid[DIMY];
 
     bool flip = 0;
 
@@ -84,7 +86,7 @@ __kernel void scan_first_by_key_nonfinal_kernel(
         }
 
         // Load val from global in
-        if (inclusive_scan) {
+        if (INCLUSIVE_SCAN) {
             if (!cond) {
                 val = init_val;
             } else {
@@ -152,12 +154,10 @@ __kernel void scan_first_by_key_nonfinal_kernel(
     }
 }
 
-__kernel void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
-                                             const __global Ti *iData,
-                                             KParam iInfo,
-                                             const __global Tk *kData,
-                                             KParam kInfo, uint groups_x,
-                                             uint groups_y, uint lim) {
+kernel void scanFirstByKeyFinal(global To *oData, KParam oInfo,
+                                const global Ti *iData, KParam iInfo,
+                                const global Tk *kData, KParam kInfo,
+                                uint groups_x, uint groups_y, uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
     const int lid  = lidy * get_local_size(0) + lidx;
@@ -181,14 +181,14 @@ __kernel void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
     oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
              yid * oInfo.strides[1] + oInfo.offset;
 
-    __local To l_val0[SHARED_MEM_SIZE];
-    __local To l_val1[SHARED_MEM_SIZE];
-    __local char l_flg0[SHARED_MEM_SIZE];
-    __local char l_flg1[SHARED_MEM_SIZE];
-    __local To *l_val   = l_val0;
-    __local char *l_flg = l_flg0;
-    __local To l_tmp[DIMY];
-    __local char l_ftmp[DIMY];
+    local To l_val0[SHARED_MEM_SIZE];
+    local To l_val1[SHARED_MEM_SIZE];
+    local char l_flg0[SHARED_MEM_SIZE];
+    local char l_flg1[SHARED_MEM_SIZE];
+    local To *l_val   = l_val0;
+    local char *l_flg = l_flg0;
+    local To l_tmp[DIMY];
+    local char l_ftmp[DIMY];
 
     bool flip = 0;
 
@@ -214,7 +214,7 @@ __kernel void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
         }
 
         // Load val from global in
-        if (inclusive_scan) {
+        if (INCLUSIVE_SCAN) {
             if (!cond) {
                 val = init_val;
             } else {
@@ -263,10 +263,10 @@ __kernel void scan_first_by_key_final_kernel(__global To *oData, KParam oInfo,
     }
 }
 
-__kernel void bcast_first_kernel(__global To *oData, KParam oInfo,
-                                 const __global To *tData, KParam tInfo,
-                                 const __global int *tiData, KParam tiInfo,
-                                 uint groups_x, uint groups_y, uint lim) {
+kernel void bcastFirstByKey(global To *oData, KParam oInfo,
+                            const global To *tData, KParam tInfo,
+                            const global int *tiData, KParam tiInfo,
+                            uint groups_x, uint groups_y, uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
 

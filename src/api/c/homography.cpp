@@ -78,6 +78,8 @@ af_err af_homography(af_array* H, int* inliers, const af_array x_src,
 
         ARG_ASSERT(5, (inlier_thr >= 0.1f));
         ARG_ASSERT(6, (iterations > 0));
+        ARG_ASSERT(
+            7, (htype == AF_HOMOGRAPHY_RANSAC || htype == AF_HOMOGRAPHY_LMEDS));
 
         af_array outH;
         int outInl;

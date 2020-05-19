@@ -42,13 +42,13 @@ T __div(T lhs, T rhs) {
 #define __div(lhs, rhs) ((lhs) / (rhs))
 #endif
 
-__kernel void iir_kernel(__global T *yptr, const KParam yinfo,
-                         const __global T *cptr, const KParam cinfo,
-                         const __global T *aptr, const KParam ainfo,
+kernel void iir_kernel(global T *yptr, const KParam yinfo,
+                         const global T *cptr, const KParam cinfo,
+                         const global T *aptr, const KParam ainfo,
                          const int groups_y) {
-    __local T s_z[MAX_A_SIZE];
-    __local T s_a[MAX_A_SIZE];
-    __local T s_y;
+    local T s_z[MAX_A_SIZE];
+    local T s_a[MAX_A_SIZE];
+    local T s_y;
 
     const int idz = get_group_id(0);
     const int idw = get_group_id(1) / groups_y;
@@ -69,9 +69,9 @@ __kernel void iir_kernel(__global T *yptr, const KParam yinfo,
     int a_off = 0;
 #endif
 
-    __global T *d_y       = yptr + y_off;
-    const __global T *d_c = cptr + c_off + cinfo.offset;
-    const __global T *d_a = aptr + a_off + ainfo.offset;
+    global T *d_y       = yptr + y_off;
+    const global T *d_c = cptr + c_off + cinfo.offset;
+    const global T *d_a = aptr + a_off + ainfo.offset;
     const int repeat      = (num_a + get_local_size(0) - 1) / get_local_size(0);
 
     for (int ii = 0; ii < MAX_A_SIZE / get_local_size(0); ii++) {

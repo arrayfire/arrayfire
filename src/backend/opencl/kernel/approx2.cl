@@ -7,12 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void approx2_kernel(
-    __global Ty *d_zo, const KParam zo, __global const Ty *d_zi,
-    const KParam zi, __global const Tp *d_xo, const KParam xo, const int xdim,
-    __global const Tp *d_yo, const KParam yo, const int ydim, const Tp xi_beg,
-    const Tp xi_step, const Tp yi_beg, const Tp yi_step, const Ty offGrid,
-    const int blocksMatX, const int blocksMatY, const int batch, int method) {
+kernel void approx2(global Ty *d_zo, const KParam zo, global const Ty *d_zi,
+                    const KParam zi, global const Tp *d_xo, const KParam xo,
+                    const int xdim, global const Tp *d_yo, const KParam yo,
+                    const int ydim, const Tp xi_beg, const Tp xi_step,
+                    const Tp yi_beg, const Tp yi_step, const Ty offGrid,
+                    const int blocksMatX, const int blocksMatY, const int batch,
+                    int method) {
     const int idz = get_group_id(0) / blocksMatX;
     const int idw = get_group_id(1) / blocksMatY;
 

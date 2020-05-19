@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void identity_kernel(__global T *oData, KParam oInfo, int groups_x,
-                              int groups_y) {
+kernel void identity_kernel(global T *oData, KParam oInfo, int groups_x,
+                            int groups_y) {
     unsigned idz = get_group_id(0) / groups_x;
     unsigned idw = get_group_id(1) / groups_y;
 
@@ -22,7 +22,7 @@ __kernel void identity_kernel(__global T *oData, KParam oInfo, int groups_x,
         idw >= oInfo.dims[3])
         return;
 
-    __global T *ptr = oData + idz * oInfo.strides[2] + idw * oInfo.strides[3];
-    T val           = (idx == idy) ? ONE : ZERO;
+    global T *ptr = oData + idz * oInfo.strides[2] + idw * oInfo.strides[3];
+    T val         = (idx == idy) ? (T)(ONE) : (T)(ZERO);
     ptr[idx + idy * oInfo.strides[1]] = val;
 }

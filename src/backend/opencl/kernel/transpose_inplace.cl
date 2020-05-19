@@ -15,11 +15,11 @@ T doOp(T in) {
 #define doOp(in) in
 #endif
 
-__kernel void transpose_inplace(__global T *iData, const KParam in,
+kernel void transpose_inplace(global T *iData, const KParam in,
                                 const int blocksPerMatX,
                                 const int blocksPerMatY) {
-    __local T shrdMem_s[TILE_DIM * (TILE_DIM + 1)];
-    __local T shrdMem_d[TILE_DIM * (TILE_DIM + 1)];
+    local T shrdMem_s[TILE_DIM * (TILE_DIM + 1)];
+    local T shrdMem_d[TILE_DIM * (TILE_DIM + 1)];
 
     const int shrdStride = TILE_DIM + 1;
 
@@ -43,7 +43,7 @@ __kernel void transpose_inplace(__global T *iData, const KParam in,
     const int x0 = TILE_DIM * blockIdx_x;
     const int y0 = TILE_DIM * blockIdx_y;
 
-    __global T *iptr = iData + batchId_x * in.strides[2] +
+    global T *iptr = iData + batchId_x * in.strides[2] +
                        batchId_y * in.strides[3] + in.offset;
 
     if (blockIdx_y > blockIdx_x) {

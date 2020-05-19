@@ -54,21 +54,7 @@ Array<T> padArrayBorders(Array<T> const &in, dim4 const &lowerBoundPadding,
 
     auto ret = createEmptyArray<T>(oDims);
 
-    switch (btype) {
-        case AF_PAD_SYM:
-            kernel::padBorders<T, AF_PAD_SYM>(ret, in, lowerBoundPadding);
-            break;
-        case AF_PAD_CLAMP_TO_EDGE:
-            kernel::padBorders<T, AF_PAD_CLAMP_TO_EDGE>(ret, in,
-                                                        lowerBoundPadding);
-            break;
-        case AF_PAD_PERIODIC:
-            kernel::padBorders<T, AF_PAD_PERIODIC>(ret, in, lowerBoundPadding);
-            break;
-        default:
-            kernel::padBorders<T, AF_PAD_ZERO>(ret, in, lowerBoundPadding);
-            break;
-    }
+    kernel::padBorders<T>(ret, in, lowerBoundPadding, btype);
 
     return ret;
 }

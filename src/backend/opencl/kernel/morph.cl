@@ -11,7 +11,7 @@ int lIdx(int x, int y, int stride1, int stride0) {
     return (y * stride1 + x * stride0);
 }
 
-void load2LocalMem(__local T* shrd, __global const T* in, int lx, int ly,
+void load2LocalMem(local T* shrd, global const T* in, int lx, int ly,
                    int shrdStride, int dim0, int dim1, int gx, int gy,
                    int inStride1, int inStride0) {
     T val = gx >= 0 && gx < dim0 && gy >= 0 && gy < dim1
@@ -22,9 +22,9 @@ void load2LocalMem(__local T* shrd, __global const T* in, int lx, int ly,
 
 // kernel assumes four dimensions
 // doing this to reduce one uneccesary parameter
-__kernel void morph(__global T* out, KParam oInfo, __global const T* in,
+kernel void morph(global T* out, KParam oInfo, __global const T* in,
                     KParam iInfo, __constant const T* d_filt,
-                    __local T* localMem, int nBBS0, int nBBS1, int windLen) {
+                    local T* localMem, int nBBS0, int nBBS1, int windLen) {
     if (SeLength > 0) windLen = SeLength;
 
     const int halo = windLen / 2;
@@ -91,7 +91,7 @@ int lIdx3D(int x, int y, int z, int stride2, int stride1, int stride0) {
     return (z * stride2 + y * stride1 + x * stride0);
 }
 
-void load2LocVolume(__local T* shrd, __global const T* in, int lx, int ly,
+void load2LocVolume(local T* shrd, global const T* in, int lx, int ly,
                     int lz, int shrdStride1, int shrdStride2, int dim0,
                     int dim1, int dim2, int gx, int gy, int gz, int inStride2,
                     int inStride1, int inStride0) {
@@ -104,9 +104,9 @@ void load2LocVolume(__local T* shrd, __global const T* in, int lx, int ly,
     shrd[lx + ly * shrdStride1 + lz * shrdStride2] = val;
 }
 
-__kernel void morph3d(__global T* out, KParam oInfo, __global const T* in,
+kernel void morph3d(global T* out, KParam oInfo, __global const T* in,
                       KParam iInfo, __constant const T* d_filt,
-                      __local T* localMem, int nBBS) {
+                      local T* localMem, int nBBS) {
     const int halo = SeLength / 2;
     const int padding =
         (SeLength % 2 == 0 ? (SeLength - 1) : (2 * (SeLength / 2)));

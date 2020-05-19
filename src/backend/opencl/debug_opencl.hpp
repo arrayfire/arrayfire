@@ -9,13 +9,13 @@
 
 #pragma once
 
+#include <platform.hpp>
+
 #ifndef NDEBUG
 
 #define CL_DEBUG_FINISH(Q) Q.finish()
 
 #else
-
-#include <platform.hpp>
 
 #define CL_DEBUG_FINISH(Q)                               \
     do {                                                 \

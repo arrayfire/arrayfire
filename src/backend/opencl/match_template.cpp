@@ -7,14 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <err_opencl.hpp>
-#include <kernel/match_template.hpp>
 #include <match_template.hpp>
-#include <af/defines.h>
-#include <af/dim4.hpp>
 
-using af::dim4;
+#include <kernel/match_template.hpp>
 
 namespace opencl {
 
@@ -26,11 +21,7 @@ Array<outType> match_template(const Array<inType> &sImg,
     bool needMean = mType == AF_ZSAD || mType == AF_LSAD || mType == AF_ZSSD ||
                     mType == AF_LSSD || mType == AF_ZNCC;
 
-    if (needMean) {
-        kernel::matchTemplate<inType, outType, mType, true>(out, sImg, tImg);
-    } else {
-        kernel::matchTemplate<inType, outType, mType, false>(out, sImg, tImg);
-    }
+    kernel::matchTemplate<inType, outType>(out, sImg, tImg, mType, needMean);
 
     return out;
 }

@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void pack_data(__global CONVT *d_out, KParam oInfo,
-                        __global const T *d_in, KParam iInfo,
-                        const int di0_half, const int odd_di0) {
+kernel void pack_data(global CONVT *d_out, KParam oInfo,
+                      global const T *d_in, KParam iInfo,
+                      const int di0_half, const int odd_di0) {
     const int t = get_global_id(0);
 
     const int tMax = oInfo.strides[3] * oInfo.dims[3];
@@ -64,8 +64,8 @@ __kernel void pack_data(__global CONVT *d_out, KParam oInfo,
     }
 }
 
-__kernel void pad_array(__global CONVT *d_out, KParam oInfo,
-                        __global const T *d_in, KParam iInfo) {
+kernel void pad_array(global CONVT *d_out, KParam oInfo,
+                        global const T *d_in, KParam iInfo) {
     const int t = get_global_id(0);
 
     const int tMax = oInfo.strides[3] * oInfo.dims[3];

@@ -13,8 +13,8 @@ int reflect101(int index, int endIndex) {
 
 Ti load2LocalMem(global const Ti* in, int d0, int d1, int gx, int gy,
                  int inStride1, int inStride0) {
-    int idx = reflect101(gx, d0-1) * inStride0 +
-              reflect101(gy, d1-1) * inStride1;
+    int idx =
+        reflect101(gx, d0 - 1) * inStride0 + reflect101(gy, d1 - 1) * inStride1;
     return in[idx];
 }
 

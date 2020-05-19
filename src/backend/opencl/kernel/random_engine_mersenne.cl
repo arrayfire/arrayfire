@@ -48,17 +48,15 @@
 
 #define divup(NUM, DEN) (((NUM) + (DEN)-1) / (DEN));
 
-void read_table(__local uint *const localTable,
-                __global const uint *const table) {
-    __global const uint *const t = table + (get_group_id(0) * TABLE_SIZE);
+void read_table(local uint *const localTable, global const uint *const table) {
+    global const uint *const t = table + (get_group_id(0) * TABLE_SIZE);
     if (get_local_id(0) < TABLE_SIZE) {
         localTable[get_local_id(0)] = t[get_local_id(0)];
     }
 }
 
-void state_read(__local uint *const localState,
-                __global const uint *const state) {
-    __global const uint *const g = state + (get_group_id(0) * N);
+void state_read(local uint *const localState, global const uint *const state) {
+    global const uint *const g = state + (get_group_id(0) * N);
     localState[STATE_SIZE - N + get_local_id(0)] = g[get_local_id(0)];
     if (get_local_id(0) < N - THREADS) {
         localState[STATE_SIZE - N + THREADS + get_local_id(0)] =
@@ -66,17 +64,16 @@ void state_read(__local uint *const localState,
     }
 }
 
-void state_write(__global uint *const state,
-                 __local const uint *const localState) {
-    __global uint *const g = state + (get_group_id(0) * N);
-    g[get_local_id(0)]     = localState[STATE_SIZE - N + get_local_id(0)];
+void state_write(global uint *const state, local const uint *const localState) {
+    global uint *const g = state + (get_group_id(0) * N);
+    g[get_local_id(0)]   = localState[STATE_SIZE - N + get_local_id(0)];
     if (get_local_id(0) < N - THREADS) {
         g[THREADS + get_local_id(0)] =
             localState[STATE_SIZE - N + THREADS + get_local_id(0)];
     }
 }
 
-uint recursion(__local const uint *const recursion_table, const uint mask,
+uint recursion(local const uint *const recursion_table, const uint mask,
                const uint sh1, const uint sh2, const uint x1, const uint x2,
                uint y) {
     uint x = (x1 & mask) ^ x2;
@@ -86,23 +83,23 @@ uint recursion(__local const uint *const recursion_table, const uint mask,
     return y ^ mat;
 }
 
-uint temper(__local const uint *const temper_table, const uint v, uint t) {
+uint temper(local const uint *const temper_table, const uint v, uint t) {
     t ^= t >> 16;
     t ^= t >> 8;
     uint mat = temper_table[t & 0x0f];
     return v ^ mat;
 }
 
-__kernel void generate(__global T *output, __global uint *const state,
-                       __global const uint *const pos_tbl,
-                       __global const uint *const sh1_tbl,
-                       __global const uint *const sh2_tbl, uint mask,
-                       __global const uint *const recursion_table,
-                       __global const uint *const temper_table,
-                       uint elements_per_block, uint elements) {
-    __local uint l_state[STATE_SIZE];
-    __local uint l_recursion_table[TABLE_SIZE];
-    __local uint l_temper_table[TABLE_SIZE];
+kernel void mersenneGenerator(global T *output, global uint *const state,
+                              global const uint *const pos_tbl,
+                              global const uint *const sh1_tbl,
+                              global const uint *const sh2_tbl, uint mask,
+                              global const uint *const recursion_table,
+                              global const uint *const temper_table,
+                              uint elements_per_block, uint elements) {
+    local uint l_state[STATE_SIZE];
+    local uint l_recursion_table[TABLE_SIZE];
+    local uint l_temper_table[TABLE_SIZE];
     uint start = get_group_id(0) * elements_per_block;
     uint end   = start + elements_per_block;
     end        = (end > elements) ? elements : end;

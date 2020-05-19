@@ -14,8 +14,9 @@
 #include <stdexcept>
 
 namespace opencl {
-template<typename T, bool isDiff2>
-static Array<T> diff(const Array<T> &in, const int dim) {
+
+template<typename T>
+Array<T> diff(const Array<T> &in, const int dim, const bool isDiff2) {
     const af::dim4 &iDims = in.dims();
     af::dim4 oDims        = iDims;
     oDims[dim] -= (isDiff2 + 1);
@@ -23,28 +24,19 @@ static Array<T> diff(const Array<T> &in, const int dim) {
     if (iDims.elements() == 0 || oDims.elements() == 0) {
         throw std::runtime_error("Elements are 0");
     }
-
     Array<T> out = createEmptyArray<T>(oDims);
-
-    switch (dim) {
-        case 0: kernel::diff<T, 0, isDiff2>(out, in, in.ndims()); break;
-        case 1: kernel::diff<T, 1, isDiff2>(out, in, in.ndims()); break;
-        case 2: kernel::diff<T, 2, isDiff2>(out, in, in.ndims()); break;
-        case 3: kernel::diff<T, 3, isDiff2>(out, in, in.ndims()); break;
-        default: AF_ERROR("dim only supports values 0-3.", AF_ERR_UNKNOWN);
-    }
-
+    kernel::diff<T>(out, in, in.ndims(), dim, isDiff2);
     return out;
 }
 
 template<typename T>
 Array<T> diff1(const Array<T> &in, const int dim) {
-    return diff<T, false>(in, dim);
+    return diff<T>(in, dim, false);
 }
 
 template<typename T>
 Array<T> diff2(const Array<T> &in, const int dim) {
-    return diff<T, true>(in, dim);
+    return diff<T>(in, dim, true);
 }
 
 #define INSTANTIATE(T)                                             \
