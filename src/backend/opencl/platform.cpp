@@ -13,7 +13,6 @@
 
 #include <GraphicsResourceManager.hpp>
 #include <blas.hpp>
-#include <cache.hpp>
 #include <clfft.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
@@ -692,28 +691,6 @@ PlanCache& fftManager() {
     thread_local PlanCache clfftManagers[DeviceManager::MAX_DEVICES];
 
     return clfftManagers[getActiveDeviceId()];
-}
-
-kc_t& getKernelCache(int device) {
-    thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
-
-    return kernelCaches[device];
-}
-
-void addKernelToCache(int device, const string& key, const kc_entry_t entry) {
-    getKernelCache(device).emplace(key, entry);
-}
-
-void removeKernelFromCache(int device, const string& key) {
-    getKernelCache(device).erase(key);
-}
-
-kc_entry_t kernelCache(int device, const string& key) {
-    kc_t& cache = getKernelCache(device);
-
-    auto iter = cache.find(key);
-
-    return (iter == cache.end() ? kc_entry_t{0, 0} : iter->second);
 }
 
 }  // namespace opencl

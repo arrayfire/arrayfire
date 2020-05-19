@@ -10,8 +10,8 @@
 // Starting from OpenCL 2.0, core profile includes work group level
 // inclusive scan operations, hence skip defining custom one
 #if __OPENCL_VERSION__ < 200
-int work_group_scan_inclusive_add(__local int *wg_temp, __local int *arr) {
-    __local int *active_buf;
+int work_group_scan_inclusive_add(local int *wg_temp, __local int *arr) {
+    local int *active_buf;
 
     const int lid = get_local_id(0);
     int val       = arr[lid];
@@ -31,11 +31,11 @@ int work_group_scan_inclusive_add(__local int *wg_temp, __local int *arr) {
 }
 #endif  // __OPENCL_VERSION__ < 200
 
-__kernel void reduce_blocks_by_key_dim(__global int *reduced_block_sizes,
-                                       __global Tk *oKeys, KParam oKInfo,
-                                       __global To *oVals, KParam oVInfo,
-                                       const __global Tk *iKeys, KParam iKInfo,
-                                       const __global Ti *iVals, KParam iVInfo,
+kernel void reduce_blocks_by_key_dim(global int *reduced_block_sizes,
+                                       global Tk *oKeys, KParam oKInfo,
+                                       global To *oVals, KParam oVInfo,
+                                       const global Tk *iKeys, KParam iKInfo,
+                                       const global Ti *iVals, KParam iVInfo,
                                        int change_nan, To nanval, int n,
                                        const int nBlocksZ) {
     const uint lid  = get_local_id(0);
@@ -45,23 +45,23 @@ __kernel void reduce_blocks_by_key_dim(__global int *reduced_block_sizes,
     const int bidz = get_group_id(2) % nBlocksZ;
     const int bidw = get_group_id(2) / nBlocksZ;
 
-    __local Tk keys[DIMX];
-    __local To vals[DIMX];
-    __local Tk reduced_keys[DIMX];
-    __local To reduced_vals[DIMX];
-    __local int unique_ids[DIMX];
+    local Tk keys[DIMX];
+    local To vals[DIMX];
+    local Tk reduced_keys[DIMX];
+    local To reduced_vals[DIMX];
+    local int unique_ids[DIMX];
 #if __OPENCL_VERSION__ < 200
-    __local int wg_temp[DIMX];
-    __local int unique_flags[DIMX];
+    local int wg_temp[DIMX];
+    local int unique_flags[DIMX];
 #endif
 
     const To init_val = init;
 
     //
     // will hold final number of reduced elements in block
-    __local int reducedBlockSize;
+    local int reducedBlockSize;
 
-    __local int dims_ordering[4];
+    local int dims_ordering[4];
     if (lid == 0) {
         reducedBlockSize = 0;
 
@@ -95,14 +95,14 @@ __kernel void reduce_blocks_by_key_dim(__global int *reduced_block_sizes,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // mark threads containing unique keys
-    int eq_check      = (lid > 0) ? (k != reduced_keys[lid - 1]) : 0;
-    int unique_flag   = (eq_check || (lid == 0)) && (gidx < n);
+    int eq_check    = (lid > 0) ? (k != reduced_keys[lid - 1]) : 0;
+    int unique_flag = (eq_check || (lid == 0)) && (gidx < n);
 
 #if __OPENCL_VERSION__ < 200
     unique_flags[lid] = unique_flag;
-    int unique_id   = work_group_scan_inclusive_add(wg_temp, unique_flags);
+    int unique_id     = work_group_scan_inclusive_add(wg_temp, unique_flags);
 #else
-    int unique_id   = work_group_scan_inclusive_add(unique_flag);
+    int unique_id = work_group_scan_inclusive_add(unique_flag);
 #endif
     unique_ids[lid] = unique_id;
 

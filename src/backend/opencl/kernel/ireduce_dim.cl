@@ -7,11 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
-                                 __global uint *olData, const __global T *iData,
-                                 KParam iInfo, const __global uint *ilData,
+kernel void ireduce_dim_kernel(global T *oData, KParam oInfo,
+                                 global uint *olData, const __global T *iData,
+                                 KParam iInfo, const global uint *ilData,
                                  uint groups_x, uint groups_y, uint group_dim,
-                                 __global uint *rlenptr, KParam rlen) {
+                                 global uint *rlenptr, KParam rlen) {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const uint lid  = lidy * THREADS_X + lidx;
@@ -31,8 +31,10 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     // in
     bool rlen_valid = (ids[0] < rlen.dims[0]) && (ids[1] < rlen.dims[1]) &&
                       (ids[2] < rlen.dims[2]) && (ids[3] < rlen.dims[3]);
-    rlenptr += (rlenptr && rlen_valid) ?  ids[3] * rlen.strides[3] + ids[2] * rlen.strides[2] +
-             ids[1] * rlen.strides[1] + ids[0] + rlen.offset : 0;
+    rlenptr += (rlenptr && rlen_valid)
+                   ? ids[3] * rlen.strides[3] + ids[2] * rlen.strides[2] +
+                         ids[1] * rlen.strides[1] + ids[0] + rlen.offset
+                   : 0;
 
     oData += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] +
              ids[1] * oInfo.strides[1] + ids[0] + oInfo.offset;
@@ -57,16 +59,17 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     bool is_valid = (ids[0] < iInfo.dims[0]) && (ids[1] < iInfo.dims[1]) &&
                     (ids[2] < iInfo.dims[2]) && (ids[3] < iInfo.dims[3]);
 
-    __local T s_val[THREADS_X * DIMY];
-    __local uint s_idx[THREADS_X * DIMY];
+    local T s_val[THREADS_X * DIMY];
+    local uint s_idx[THREADS_X * DIMY];
 
     T out_val    = init;
     uint out_idx = id_dim_in;
 
     uint lim = rlenptr ? *rlenptr : iInfo.dims[kDim];
-    lim = (IS_FIRST) ? min((uint)iInfo.dims[kDim], lim) : lim;
-    bool within_ragged_bounds = (IS_FIRST) ? (out_idx < lim) :
-                                ((rlenptr) ? (is_valid) && (*ilData < lim) : true);
+    lim      = (IS_FIRST) ? min((uint)iInfo.dims[kDim], lim) : lim;
+    bool within_ragged_bounds =
+        (IS_FIRST) ? (out_idx < lim)
+                   : ((rlenptr) ? (is_valid) && (*ilData < lim) : true);
     if (is_valid && id_dim_in < iInfo.dims[kDim] && within_ragged_bounds) {
         out_val = *iData;
         if (!IS_FIRST) out_idx = *ilData;
@@ -89,8 +92,8 @@ __kernel void ireduce_dim_kernel(__global T *oData, KParam oInfo,
     s_val[lid] = out_val;
     s_idx[lid] = out_idx;
 
-    __local T *s_vptr    = s_val + lid;
-    __local uint *s_iptr = s_idx + lid;
+    local T *s_vptr    = s_val + lid;
+    local uint *s_iptr = s_idx + lid;
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (DIMY == 8) {

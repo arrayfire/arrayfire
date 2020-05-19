@@ -8,25 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <kernel_headers/example.hpp>  // This is the header that gets auto-generated
-// from the .cl file you will create. We pre-process
-// cl files to obfuscate code.
-
-#include <program.hpp>
-#include <traits.hpp>
-
-// Following c++ standard library headers are needed to maintain
-// OpenCL cl::Kernel & cl::Program objects
-#include <string>
-
-#include <cache.hpp>  // Has the definitions of functions such as the following
-                      // used in caching and fetching kernels.
-// * kernelCache - used to fetch existing kernel from cache
-// if any
-// * addKernelToCache - push new kernels into cache
-
-#include <common/dispatch.hpp>  // common utility header for CUDA & OpenCL backends
-                                // has the divup macro
 
 #include <Param.hpp>  // This header has the declaration of structures
                       // that are passed onto kernel. Operator overloads
@@ -35,80 +16,71 @@
                       // Hence, the OpenCL kernel wrapper function takes in
                       // Param instead of opencl::Array<T>
 
+#include <kernel_headers/example.hpp>  // This is the header that gets auto-generated
+// from the .cl file you will create. We pre-process
+// cl files to obfuscate code.
+
+#include <traits.hpp>
+
+#include <common/dispatch.hpp>      // common utility header for CUDA & OpenCL
+#include <common/kernel_cache.hpp>  // Has findKernel
+                                    // backends has the divup macro
+
 #include <debug_opencl.hpp>  // For Debug only related OpenCL validations
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
+// Following c++ standard library headers are needed to create
+// the lists of parameters for common::findKernel function call
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-static const int THREADS_X = 16;
-static const int THREADS_Y = 16;
+
+constexpr int THREADS_X = 16;
+constexpr int THREADS_Y = 16;
 
 template<typename T>
 void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
-    std::string refName = std::string("example_") +  //<kernel_function_name>_
-                          std::string(dtype_traits<T>::getName());
-    // std::string("encode template parameters one after one");
-    // If you have numericals, you can use std::to_string to convert
-    // them into std::strings
+    static const std::string src(example_cl, example_cl_len);
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    // Compilation options for compiling OpenCL kernel.
+    // Go to common/kernel_cache.hpp to find details on this.
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+    };
 
-    // Make sure OpenCL kernel isn't already available before
-    // compiling for given device and combination of template
-    // parameters to this kernel wrapper function 'exampleFunc<T>'
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName();
-        // You can pass any template parameters as compile options
-        // to kernel the compilation step. This is equivalent of
-        // having templated kernels in CUDA
+    // Compilation options for compiling OpenCL kernel.
+    // Go to common/kernel_cache.hpp to find details on this.
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+    };
 
-        // The following option is passed to kernel compilation
-        // if template parameter T is double or complex double
-        // to enable FP64 extension
-        options << getTypeBuildDefinition<T>();
+    // The following templated function can take variable
+    // number of template parameters and if one of them is double
+    // precision, it will enable necessary constants, flags, ops
+    // in opencl kernel compilation stage
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-        const char *ker_strs[] = {example_cl};
-        const int ker_lens[]   = {example_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "example");
-
-        addKernelToCache(device, refName, entry);
-    }
+    // Fetch the Kernel functor, go to common/kernel_cache.hpp
+    // to find details of this function
+    auto exOp = common::findKernel("example", {src}, targs, options);
 
     // configure work group parameters
-    NDRange local(THREADS_X, THREADS_Y);
+    cl::NDRange local(THREADS_X, THREADS_Y);
 
     int blk_x = divup(c.info.dims[0], THREADS_X);
     int blk_y = divup(c.info.dims[1], THREADS_Y);
 
     // configure global launch parameters
-    NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
-
-    // create a kernel functor from the cl::Kernel object
-    // corresponding to the device on which current execution
-    // is happending.
-    auto exampleFuncOp =
-        KernelFunctor<Buffer, KParam, Buffer, KParam, Buffer, KParam, int>(
-            *entry.ker);
+    cl::NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
 
     // launch the kernel
-    exampleFuncOp(EnqueueArgs(getQueue(), global, local), *c.data, c.info,
-                  *a.data, a.info, *b.data, b.info, (int)p);
-
+    exOp(cl::EnqueueArgs(getQueue(), global, local), *c.data, c.info, *a.data,
+         a.info, *b.data, b.info, (int)p);
     // Below Macro activates validations ONLY in DEBUG
     // mode as its name indicates
     CL_DEBUG_FINISH(getQueue());
 }
+
 }  // namespace kernel
 }  // namespace opencl

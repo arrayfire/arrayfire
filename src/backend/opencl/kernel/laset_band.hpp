@@ -8,26 +8,20 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/laset_band.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <types.hpp>
-#include <string>
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
+
 #if 0  // Needs to be enabled when unmqr2 is enabled
 static const int NB = 64;
 template<int num>
@@ -40,30 +34,19 @@ void laset_band(int m, int  n, int k,
                 T offdiag, T diag,
                 cl_mem dA, size_t dA_offset, magma_int_t ldda)
 {
-    std::string refName = laset_band_name<uplo>() + std::string("_") +
-        std::string(dtype_traits<T>::getName()) +
-        std::to_string(uplo);
+    static const std::string src(laset_band_cl, laset_band_cl_len);
 
-    int device = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(), TemplateArg(uplo),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineValue(NB),
+        DefineKeyValue(IS_CPLX, static_cast<int>(af::iscplx<T>())),
+    };
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-    if (entry.prog==0 && entry.ker==0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName()
-            << " -D NB=" << NB
-            << " -D IS_CPLX=" << af::iscplx<T>();
-
-        options << getTypeBuildDefinition<T>();
-
-        const char* ker_strs[] = {laset_band_cl};
-        const int   ker_lens[] = {laset_band_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, laset_band_name<uplo>());
-
-        addKernelToCache(device, refName, entry);
-    }
+    auto lasetBandOp = common::findKernel(laset_band_name<uplo>(), {src}, targs, options);
 
     int threads = 1;
     int groups = 1;
@@ -76,13 +59,12 @@ void laset_band(int m, int  n, int k,
         groups = (std::min(m+k-1, n) - 1) / NB + 1;
     }
 
-    NDRange local(threads, 1);
-    NDRange global(threads * groups, 1);
+    cl::NDRange local(threads, 1);
+    cl::NDRange global(threads * groups, 1);
 
-    auto lasetBandOp = KernelFunctor<int, int, T, T, cl_mem, unsigned long long, int>(*entry.ker);
-
-    lasetBandOp(EnqueueArgs(getQueue(), global, local), m, n, offdiag, diag, dA, dA_offset, ldda);
+    lasetBandOp(cl::EnqueueArgs(getQueue(), global, local), m, n, offdiag, diag, dA, dA_offset, ldda);
 }
-#endif
+#endi
+
 }  // namespace kernel
 }  // namespace opencl

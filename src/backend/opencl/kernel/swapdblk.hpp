@@ -10,23 +10,15 @@
 #pragma once
 
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <common/err_common.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/swapdblk.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <types.hpp>
-#include <string>
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
@@ -34,27 +26,24 @@ template<typename T>
 void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
               cl_mem dB, size_t dB_offset, int lddb, int incb,
               cl_command_queue queue) {
-    std::string refName =
-        std::string("swapdblk_") + std::string(dtype_traits<T>::getName());
+    using cl::Buffer;
+    using cl::CommandQueue;
+    using cl::EnqueueArgs;
+    using cl::NDRange;
+    using std::string;
+    using std::vector;
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    static const string src(swapdblk_cl, swapdblk_cl_len);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
+    vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+    };
+    vector<string> compileOpts = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+    };
+    compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << getTypeBuildDefinition<T>();
-
-        const char* ker_strs[] = {swapdblk_cl};
-        const int ker_lens[]   = {swapdblk_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "swapdblk");
-
-        addKernelToCache(device, refName, entry);
-    }
+    auto swapdblk = common::findKernel("swapdblk", {src}, targs, compileOpts);
 
     int nblocks = n / nb;
 
@@ -83,16 +72,13 @@ void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
     NDRange local(nb);
     NDRange global(nblocks * nb);
 
-    cl::Buffer dAObj(dA, true);
-    cl::Buffer dBObj(dB, true);
+    Buffer dAObj(dA, true);
+    Buffer dBObj(dB, true);
 
-    auto swapdOp =
-        KernelFunctor<int, Buffer, unsigned long long, int, int, Buffer,
-                      unsigned long long, int, int>(*entry.ker);
-
-    cl::CommandQueue q(queue);
-    swapdOp(EnqueueArgs(q, global, local), nb, dAObj, dA_offset, ldda, inca,
-            dBObj, dB_offset, lddb, incb);
+    CommandQueue q(queue);
+    swapdblk(EnqueueArgs(q, global, local), nb, dAObj, dA_offset, ldda, inca,
+             dBObj, dB_offset, lddb, incb);
+    CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel
 }  // namespace opencl

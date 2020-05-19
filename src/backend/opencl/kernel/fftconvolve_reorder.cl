@@ -7,10 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void reorder_output(__global T *d_out, KParam oInfo,
-                             __global const CONVT *d_in, KParam iInfo,
-                             KParam fInfo, const int half_di0,
-                             const int baseDim, const int fftScale) {
+kernel void reorder_output(global T *d_out, KParam oInfo,
+                           global const CONVT *d_in, KParam iInfo,
+                           KParam fInfo, const int half_di0,
+                           const int baseDim, const int fftScale) {
     const int t = get_global_id(0);
 
     const int tMax = oInfo.strides[3] * oInfo.dims[3];

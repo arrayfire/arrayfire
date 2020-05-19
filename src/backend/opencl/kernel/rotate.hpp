@@ -8,27 +8,24 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/complex.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
+#include <kernel/config.hpp>
+#include <kernel/interp.hpp>
 #include <kernel_headers/interp.hpp>
 #include <kernel_headers/rotate.hpp>
 #include <math.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <type_util.hpp>
+
 #include <string>
-#include "config.hpp"
-#include "interp.hpp"
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-static const int TX = 16;
-static const int TY = 16;
-// Used for batching images
-static const int TI = 4;
 
 typedef struct {
     float tmat[6];
@@ -42,53 +39,49 @@ template<typename T>
 using vtype_t = typename std::conditional<common::is_complex<T>::value, T,
                                           wtype_t<T>>::type;
 
-template<typename T, int order>
-void rotate(Param out, const Param in, const float theta,
-            af_interp_type method) {
-    typedef typename dtype_traits<T>::base_type BT;
+template<typename T>
+void rotate(Param out, const Param in, const float theta, af_interp_type method,
+            int order) {
+    using cl::EnqueueArgs;
+    using cl::NDRange;
+    using std::string;
+    using std::vector;
+    using BT = typename dtype_traits<T>::base_type;
 
-    std::string refName = std::string("rotate_kernel_") +
-                          std::string(dtype_traits<T>::getName()) +
-                          std::to_string(order);
+    constexpr int TX = 16;
+    constexpr int TY = 16;
+    // Used for batching images
+    constexpr int TI = 4;
+    constexpr bool isComplex =
+        static_cast<af_dtype>(dtype_traits<T>::af_type) == c32 ||
+        static_cast<af_dtype>(dtype_traits<T>::af_type) == c64;
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    static const std::string src1(interp_cl, interp_cl_len);
+    static const std::string src2(rotate_cl, rotate_cl_len);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        ToNumStr<T> toNumStr;
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << " -D ZERO=" << toNumStr(scalar<T>(0));
-        options << " -D InterpInTy=" << dtype_traits<T>::getName();
-        options << " -D InterpValTy=" << dtype_traits<vtype_t<T>>::getName();
-        options << " -D InterpPosTy=" << dtype_traits<wtype_t<BT>>::getName();
-
-        if (static_cast<af_dtype>(dtype_traits<T>::af_type) == c32 ||
-            static_cast<af_dtype>(dtype_traits<T>::af_type) == c64) {
-            options << " -D IS_CPLX=1";
-            options << " -D TB=" << dtype_traits<BT>::getName();
-        } else {
-            options << " -D IS_CPLX=0";
-        }
-        options << getTypeBuildDefinition<T>();
-
-        options << " -D INTERP_ORDER=" << order;
-        addInterpEnumOptions(options);
-
-        const char *ker_strs[] = {interp_cl, rotate_cl};
-        const int ker_lens[]   = {interp_cl_len, rotate_cl_len};
-        cl::Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-        entry.prog = new cl::Program(prog);
-        entry.ker  = new cl::Kernel(*entry.prog, "rotate_kernel");
-
-        addKernelToCache(device, refName, entry);
+    vector<TemplateArg> tmpltArgs = {
+        TemplateTypename<T>(),
+        TemplateArg(order),
+    };
+    ToNumStr<T> toNumStr;
+    vector<string> compileOpts = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(ZERO, toNumStr(scalar<T>(0))),
+        DefineKeyValue(InterpInTy, dtype_traits<T>::getName()),
+        DefineKeyValue(InterpValTy, dtype_traits<vtype_t<T>>::getName()),
+        DefineKeyValue(InterpPosTy, dtype_traits<wtype_t<BT>>::getName()),
+        DefineKeyValue(INTERP_ORDER, order),
+        DefineKeyValue(IS_CPLX, (isComplex ? 1 : 0)),
+    };
+    if (isComplex) {
+        compileOpts.emplace_back(
+            DefineKeyValue(TB, dtype_traits<BT>::getName()));
     }
+    compileOpts.emplace_back(getTypeBuildDefinition<T>());
+    addInterpEnumOptions(compileOpts);
 
-    auto rotateOp =
-        cl::KernelFunctor<cl::Buffer, const KParam, const cl::Buffer,
-                          const KParam, const tmat_t, const int, const int,
-                          const int, const int, const int>(*entry.ker);
+    auto rotate = common::findKernel("rotateKernel", {src1, src2}, tmpltArgs,
+                                     compileOpts);
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;
@@ -112,7 +105,7 @@ void rotate(Param out, const Param in, const float theta,
     t.tmat[4] = round(c * 1000) / 1000.0f;
     t.tmat[5] = round(ty * 1000) / 1000.0f;
 
-    cl::NDRange local(TX, TY, 1);
+    NDRange local(TX, TY, 1);
 
     int nimages               = in.info.dims[2];
     int nbatches              = in.info.dims[3];
@@ -128,11 +121,11 @@ void rotate(Param out, const Param in, const float theta,
     }
     global_y *= nbatches;
 
-    cl::NDRange global(global_x, global_y, 1);
+    NDRange global(global_x, global_y, 1);
 
-    rotateOp(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-             *in.data, in.info, t, nimages, nbatches, blocksXPerImage,
-             blocksYPerImage, (int)method);
+    rotate(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+           *in.data, in.info, t, nimages, nbatches, blocksXPerImage,
+           blocksYPerImage, (int)method);
 
     CL_DEBUG_FINISH(getQueue());
 }

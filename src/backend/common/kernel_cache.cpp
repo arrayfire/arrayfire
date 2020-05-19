@@ -67,9 +67,14 @@ Kernel findKernel(const string& kernelName, const vector<string>& sources,
     transform(targs.begin(), targs.end(), back_inserter(args),
               [](const TemplateArg& arg) -> string { return arg._tparam; });
 
-    string tInstance = kernelName + "<" + args[0];
-    for (size_t i = 1; i < args.size(); ++i) { tInstance += ("," + args[i]); }
-    tInstance += ">";
+    string tInstance = kernelName;
+    if (args.size() > 0) {
+        tInstance = kernelName + "<" + args[0];
+        for (size_t i = 1; i < args.size(); ++i) {
+            tInstance += ("," + args[i]);
+        }
+        tInstance += ">";
+    }
 
     int device    = detail::getActiveDeviceId();
     Kernel kernel = lookupKernel(device, tInstance, sources);

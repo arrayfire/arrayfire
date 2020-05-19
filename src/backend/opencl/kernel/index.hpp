@@ -8,27 +8,19 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/index.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <string>
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-static const int THREADS_X = 32;
-static const int THREADS_Y = 8;
 
 typedef struct {
     int offs[4];
@@ -38,45 +30,30 @@ typedef struct {
 
 template<typename T>
 void index(Param out, const Param in, const IndexKernelParam_t& p,
-           Buffer* bPtr[4]) {
-    std::string refName =
-        std::string("indexKernel_") + std::string(dtype_traits<T>::getName());
+           cl::Buffer* bPtr[4]) {
+    constexpr int THREADS_X = 32;
+    constexpr int THREADS_Y = 8;
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    static const std::string src(index_cl, index_cl_len);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+    };
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << getTypeBuildDefinition<T>();
-
-        const char* ker_strs[] = {index_cl};
-        const int ker_lens[]   = {index_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "indexKernel");
-
-        addKernelToCache(device, refName, entry);
-    }
-
-    NDRange local(THREADS_X, THREADS_Y);
+    auto index = common::findKernel("indexKernel", {src},
+                                    {TemplateTypename<T>()}, options);
+    cl::NDRange local(THREADS_X, THREADS_Y);
 
     int blk_x = divup(out.info.dims[0], THREADS_X);
     int blk_y = divup(out.info.dims[1], THREADS_Y);
 
-    NDRange global(blk_x * out.info.dims[2] * THREADS_X,
-                   blk_y * out.info.dims[3] * THREADS_Y);
+    cl::NDRange global(blk_x * out.info.dims[2] * THREADS_X,
+                       blk_y * out.info.dims[3] * THREADS_Y);
 
-    auto indexOp =
-        KernelFunctor<Buffer, KParam, Buffer, KParam, IndexKernelParam_t,
-                      Buffer, Buffer, Buffer, Buffer, int, int>(*entry.ker);
-
-    indexOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-            *in.data, in.info, p, *bPtr[0], *bPtr[1], *bPtr[2], *bPtr[3], blk_x,
-            blk_y);
-
+    index(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+          *in.data, in.info, p, *bPtr[0], *bPtr[1], *bPtr[2], *bPtr[3], blk_x,
+          blk_y);
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel

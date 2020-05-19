@@ -69,7 +69,7 @@
 #define IS_EQUAL(lhs, rhs) ((rhs == lhs))
 #endif
 
-__kernel void laset_full(int m, int n, T offdiag, T diag, __global T *A,
+kernel void laset_full(int m, int n, T offdiag, T diag, global T *A,
                          unsigned long A_offset, int lda) {
     A += A_offset;
 
@@ -105,7 +105,7 @@ __kernel void laset_full(int m, int n, T offdiag, T diag, __global T *A,
 
     Code similar to zlacpy, zlat2c, clat2z.
 */
-__kernel void laset_lower(int m, int n, T offdiag, T diag, __global T *A,
+kernel void laset_lower(int m, int n, T offdiag, T diag, global T *A,
                           unsigned long A_offset, int lda) {
     A += A_offset;
 
@@ -138,7 +138,7 @@ __kernel void laset_lower(int m, int n, T offdiag, T diag, __global T *A,
 
     Code similar to zlacpy, zlat2c, clat2z.
 */
-__kernel void laset_upper(int m, int n, T offdiag, T diag, __global T *A,
+kernel void laset_upper(int m, int n, T offdiag, T diag, global T *A,
                           unsigned long A_offset, int lda) {
     A += A_offset;
 

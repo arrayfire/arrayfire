@@ -38,13 +38,13 @@ inline int test_smaller(const float x, const float p, const float thr) {
 // Returns -1 when x < p - thr
 // Returns  0 when x >= p - thr && x <= p + thr
 // Returns  1 when x > p + thr
-inline int test_pixel(__local T* local_image, const float p, const float thr,
+inline int test_pixel(local T* local_image, const float p, const float thr,
                       const int x, const int y) {
     return -test_smaller((float)local_image[idx(x, y)], p, thr) +
            test_greater((float)local_image[idx(x, y)], p, thr);
 }
 
-void locate_features_core(__local T* local_image, __global float* score,
+void locate_features_core(local T* local_image, global float* score,
                           KParam iInfo, const float thr, int x, int y,
                           const unsigned edge) {
     if (x >= iInfo.dims[0] - edge || y >= iInfo.dims[1] - edge) return;
@@ -123,8 +123,8 @@ void locate_features_core(__local T* local_image, __global float* score,
     }
 }
 
-void load_shared_image(__global const T* in, KParam iInfo,
-                       __local T* local_image, unsigned ix, unsigned iy,
+void load_shared_image(global const T* in, KParam iInfo,
+                       local T* local_image, unsigned ix, unsigned iy,
                        unsigned bx, unsigned by, unsigned x, unsigned y,
                        unsigned lx, unsigned ly) {
     // Copy an image patch to shared memory, with a 3-pixel edge
@@ -143,9 +143,9 @@ void load_shared_image(__global const T* in, KParam iInfo,
     }
 }
 
-__kernel void locate_features(__global const T* in, KParam iInfo,
-                              __global float* score, const float thr,
-                              const unsigned edge, __local T* local_image) {
+kernel void locate_features(global const T* in, KParam iInfo,
+                              global float* score, const float thr,
+                              const unsigned edge, local T* local_image) {
     unsigned ix = get_local_id(0);
     unsigned iy = get_local_id(1);
     unsigned bx = get_local_size(0);
@@ -161,12 +161,12 @@ __kernel void locate_features(__global const T* in, KParam iInfo,
     locate_features_core(local_image, score, iInfo, thr, x, y, edge);
 }
 
-__kernel void non_max_counts(__global unsigned* d_counts,
-                             __global unsigned* d_offsets,
-                             __global unsigned* d_total, __global float* flags,
-                             __global const float* score, KParam iInfo,
+kernel void non_max_counts(global unsigned* d_counts,
+                             global unsigned* d_offsets,
+                             global unsigned* d_total, __global float* flags,
+                             global const float* score, KParam iInfo,
                              const unsigned edge) {
-    __local unsigned s_counts[256];
+    local unsigned s_counts[256];
 
     const int yid  = get_group_id(1) * get_local_size(1) * 8 + get_local_id(1);
     const int yend = (get_group_id(1) + 1) * get_local_size(1) * 8;
@@ -244,11 +244,11 @@ __kernel void non_max_counts(__global unsigned* d_counts,
     }
 }
 
-__kernel void get_features(__global float* x_out, __global float* y_out,
-                           __global float* score_out,
-                           __global const float* flags,
-                           __global const unsigned* d_counts,
-                           __global const unsigned* d_offsets, KParam iInfo,
+kernel void get_features(global float* x_out, __global float* y_out,
+                           global float* score_out,
+                           global const float* flags,
+                           global const unsigned* d_counts,
+                           global const unsigned* d_offsets, KParam iInfo,
                            const unsigned total, const unsigned edge) {
     const int xid = get_group_id(0) * get_local_size(0) * 2 + get_local_id(0);
     const int yid = get_group_id(1) * get_local_size(1) * 8 + get_local_id(1);
@@ -262,8 +262,8 @@ __kernel void get_features(__global float* x_out, __global float* y_out,
 
     const int bid = get_group_id(1) * get_num_groups(0) + get_group_id(0);
 
-    __local unsigned s_count;
-    __local unsigned s_idx;
+    local unsigned s_count;
+    local unsigned s_idx;
 
     if (tid == 0) {
         s_count = d_counts[bid];

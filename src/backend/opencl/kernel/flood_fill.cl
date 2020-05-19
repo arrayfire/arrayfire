@@ -18,15 +18,14 @@
 /// to either zero or \p newValue for all valid pixels.
 
 #if defined(INIT_SEEDS)
-kernel
-void init_seeds(global T *out, KParam oInfo,
-                global const uint *seedsx, KParam sxInfo,
-                global const uint *seedsy, KParam syInfo) {
+kernel void init_seeds(global T *out, KParam oInfo, global const uint *seedsx,
+                       KParam sxInfo, global const uint *seedsy,
+                       KParam syInfo) {
     uint tid = get_global_id(0);
     if (tid < sxInfo.dims[0]) {
-        uint x = seedsx[ tid ];
-        uint y = seedsy[ tid ];
-        out[ (x * oInfo.strides[0] + y * oInfo.strides[1]) ] = VALID;
+        uint x                                             = seedsx[tid];
+        uint y                                             = seedsy[tid];
+        out[(x * oInfo.strides[0] + y * oInfo.strides[1])] = VALID;
     }
 }
 #endif
@@ -46,9 +45,9 @@ int barrierOR(local int *predicates) {
     return predicates[0];
 }
 
-kernel
-void flood_step(global T *out, KParam oInfo, global const T *img, KParam iInfo,
-                T lowValue, T highValue, global volatile int *notFinished) {
+kernel void flood_step(global T *out, KParam oInfo, global const T *img,
+                       KParam iInfo, T lowValue, T highValue,
+                       global volatile int *notFinished) {
     local T lmem[LMEM_HEIGHT][LMEM_WIDTH];
     local int predicates[GROUP_SIZE];
 
@@ -68,14 +67,15 @@ void flood_step(global T *out, KParam oInfo, global const T *img, KParam iInfo,
             int x      = gx2 - RADIUS;
             int y      = gy2 - RADIUS;
             bool inROI = (x >= 0 && x < d0 && y >= 0 && y < d1);
-            lmem[b][a] = (inROI ? out[ x*s0+y*s1 ] : INVALID);
+            lmem[b][a] = (inROI ? out[x * s0 + y * s1] : INVALID);
         }
     }
     int i = lx + RADIUS;
     int j = ly + RADIUS;
 
-    T tImgVal = img[(clamp(gx, 0, (int)(iInfo.dims[0]-1)) * iInfo.strides[0] +
-                     clamp(gy, 0, (int)(iInfo.dims[1]-1)) * iInfo.strides[1])];
+    T tImgVal =
+        img[(clamp(gx, 0, (int)(iInfo.dims[0] - 1)) * iInfo.strides[0] +
+             clamp(gy, 0, (int)(iInfo.dims[1] - 1)) * iInfo.strides[1])];
     const int isPxBtwnThresholds =
         (tImgVal >= lowValue && tImgVal <= highValue);
 
@@ -84,8 +84,7 @@ void flood_step(global T *out, KParam oInfo, global const T *img, KParam iInfo,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     T origOutVal     = lmem[j][i];
-    bool isBorderPxl = (lx == 0 || ly == 0 ||
-                        lx == (get_local_size(0) - 1) ||
+    bool isBorderPxl = (lx == 0 || ly == 0 || lx == (get_local_size(0) - 1) ||
                         ly == (get_local_size(1) - 1));
 
     for (bool blkChngd = true; blkChngd; blkChngd = barrierOR(predicates)) {
@@ -104,8 +103,8 @@ void flood_step(global T *out, KParam oInfo, global const T *img, KParam iInfo,
 
     T newOutVal = lmem[j][i];
 
-    bool brdrChngd  = (isBorderPxl &&
-                       newOutVal != origOutVal && newOutVal == VALID);
+    bool brdrChngd =
+        (isBorderPxl && newOutVal != origOutVal && newOutVal == VALID);
     predicates[tid] = brdrChngd;
 
     brdrChngd = barrierOR(predicates) > 0;
@@ -117,19 +116,18 @@ void flood_step(global T *out, KParam oInfo, global const T *img, KParam iInfo,
             // of this block
             atomic_inc(notFinished);
         }
-        out[ (gx*s0 + gy*s1) ] = lmem[j][i];
+        out[(gx * s0 + gy * s1)] = lmem[j][i];
     }
 }
 #endif
 
 #if defined(FINALIZE_OUTPUT)
-kernel
-void finalize_output(global T* out, KParam oInfo, T newValue) {
+kernel void finalize_output(global T *out, KParam oInfo, T newValue) {
     uint gx = get_global_id(0);
     uint gy = get_global_id(1);
     if (gx < oInfo.dims[0] && gy < oInfo.dims[1]) {
         uint idx = gx * oInfo.strides[0] + gy * oInfo.strides[1];
-        T val = out[idx];
+        T val    = out[idx];
         out[idx] = (val == VALID ? newValue : ZERO);
     }
 }

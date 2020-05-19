@@ -10,11 +10,9 @@
 #include <kernel/convolve/conv2_impl.hpp>
 
 namespace opencl {
-
 namespace kernel {
 
 INSTANTIATE(int, float)
 
 }  // namespace kernel
-
 }  // namespace opencl

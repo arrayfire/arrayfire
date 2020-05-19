@@ -7,15 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void mean_first_kernel(__global To *oData, KParam oInfo,
+kernel void meanFirst(global To *oData, KParam oInfo,
 #ifdef OUTPUT_WEIGHT
-                                __global Tw *owData, KParam owInfo,
+                      global Tw *owData, KParam owInfo,
 #endif
-                                const __global Ti *iData, KParam iInfo,
+                      const global Ti *iData, KParam iInfo,
 #ifdef INPUT_WEIGHT
-                                const __global Tw *iwData, KParam iwInfo,
+                      const global Tw *iwData, KParam iwInfo,
 #endif
-                                uint groups_x, uint groups_y, uint repeat) {
+                      uint groups_x, uint groups_y, uint repeat) {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const uint lid  = lidy * get_local_size(0) + lidx;
@@ -46,8 +46,8 @@ __kernel void mean_first_kernel(__global To *oData, KParam oInfo,
     bool cond =
         (yid < iInfo.dims[1]) && (zid < iInfo.dims[2]) && (wid < iInfo.dims[3]);
 
-    __local To s_val[THREADS_PER_GROUP];
-    __local Tw s_wt[THREADS_PER_GROUP];
+    local To s_val[THREADS_PER_GROUP];
+    local Tw s_wt[THREADS_PER_GROUP];
 
     int last   = (xid + repeat * DIMX);
     int lim    = last > iInfo.dims[0] ? iInfo.dims[0] : last;
@@ -77,8 +77,8 @@ __kernel void mean_first_kernel(__global To *oData, KParam oInfo,
     s_wt[lid]  = out_wt;
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    __local To *s_vptr = s_val + lidy * DIMX;
-    __local Tw *s_wptr = s_wt + lidy * DIMX;
+    local To *s_vptr = s_val + lidy * DIMX;
+    local Tw *s_wptr = s_wt + lidy * DIMX;
 
     if (DIMX == 256) {
         if (lidx < 128) {

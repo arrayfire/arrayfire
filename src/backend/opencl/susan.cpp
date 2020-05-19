@@ -32,44 +32,8 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
 
     cl::Buffer *resp = bufferAlloc(in.elements() * sizeof(float));
 
-    switch (radius) {
-        case 1:
-            kernel::susan<T, 1>(resp, in.get(), in.getOffset(), idims[0],
-                                idims[1], diff_thr, geom_thr, edge);
-            break;
-        case 2:
-            kernel::susan<T, 2>(resp, in.get(), in.getOffset(), idims[0],
-                                idims[1], diff_thr, geom_thr, edge);
-            break;
-        case 3:
-            kernel::susan<T, 3>(resp, in.get(), in.getOffset(), idims[0],
-                                idims[1], diff_thr, geom_thr, edge);
-            break;
-        case 4:
-            kernel::susan<T, 4>(resp, in.get(), in.getOffset(), idims[0],
-                                idims[1], diff_thr, geom_thr, edge);
-            break;
-        case 5:
-            kernel::susan<T, 5>(resp, in.get(), in.getOffset(), idims[0],
-                                idims[1], diff_thr, geom_thr, edge);
-            break;
-        case 6:
-            kernel::susan<T, 6>(resp, in.get(), in.getOffset(), idims[0],
-                                idims[1], diff_thr, geom_thr, edge);
-            break;
-        case 7:
-            kernel::susan<T, 7>(resp, in.get(), in.getOffset(), idims[0],
-                                idims[1], diff_thr, geom_thr, edge);
-            break;
-        case 8:
-            kernel::susan<T, 8>(resp, in.get(), in.getOffset(), idims[0],
-                                idims[1], diff_thr, geom_thr, edge);
-            break;
-        case 9:
-            kernel::susan<T, 9>(resp, in.get(), in.getOffset(), idims[0],
-                                idims[1], diff_thr, geom_thr, edge);
-            break;
-    }
+    kernel::susan<T>(resp, in.get(), in.getOffset(), idims[0], idims[1],
+                     diff_thr, geom_thr, edge, radius);
 
     unsigned corners_found =
         kernel::nonMaximal<T>(x_corners, y_corners, resp_corners, idims[0],

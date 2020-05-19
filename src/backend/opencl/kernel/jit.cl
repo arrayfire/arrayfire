@@ -27,8 +27,8 @@
 #define __neq(lhs, rhs) (lhs) != (rhs)
 
 #define __conj(in) (in)
-#define __real(in)(in)
-#define __imag(in)(0)
+#define __real(in) (in)
+#define __imag(in) (0)
 #define __abs(in) abs(in)
 
 #define __crealf(in) ((in).x)

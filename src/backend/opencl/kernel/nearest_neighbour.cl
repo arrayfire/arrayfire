@@ -31,21 +31,21 @@ To _ssd_(T v1, T v2) { return (v1 - v2) * (v1 - v2); }
 unsigned _shd_(T v1, T v2) { return popcount(v1 ^ v2); }
 #endif
 
-__kernel void all_distances(__global To* out_dist, __global const T* query,
-                            KParam qInfo, __global const T* train, KParam tInfo,
+kernel void knnAllDistances(global To* out_dist, global const T* query,
+                            KParam qInfo, global const T* train, KParam tInfo,
                             const To max_dist, const unsigned feat_len,
                             const unsigned max_feat_len,
-                            const unsigned feat_offset, __local T* lmem) {
+                            const unsigned feat_offset, local T* lmem) {
     unsigned nquery = qInfo.dims[0];
     unsigned ntrain = tInfo.dims[0];
 
     unsigned f   = get_global_id(0);
     unsigned tid = get_local_id(0);
 
-    __local To l_dist[THREADS];
+    local To l_dist[THREADS];
 
-    __local T* l_query = lmem;
-    __local T* l_train = lmem + max_feat_len;
+    local T* l_query = lmem;
+    local T* l_train = lmem + max_feat_len;
 
     l_dist[tid] = max_dist;
 

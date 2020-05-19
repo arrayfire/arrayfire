@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void csr2coo(__global int *orowidx, __global int *ocolidx,
-                      __global const int *irowidx, __global const int *icolidx,
-                      const int M) {
+kernel void csr2Coo(global int *orowidx, global int *ocolidx,
+                    global const int *irowidx, global const int *icolidx,
+                    const int M) {
     int lid = get_local_id(0);
     for (int rowId = get_group_id(0); rowId < M; rowId += get_num_groups(0)) {
         int colStart = irowidx[rowId];
@@ -22,10 +22,9 @@ __kernel void csr2coo(__global int *orowidx, __global int *ocolidx,
     }
 }
 
-__kernel void swapIndex_kernel(__global T *ovalues, __global int *oindex,
-                               __global const T *ivalues,
-                               __global const int *iindex,
-                               __global const int *swapIdx, const int nNZ) {
+kernel void swapIndex(global T *ovalues, global int *oindex,
+                      global const T *ivalues, global const int *iindex,
+                      global const int *swapIdx, const int nNZ) {
     int id = get_global_id(0);
     if (id >= nNZ) return;
 
@@ -35,9 +34,8 @@ __kernel void swapIndex_kernel(__global T *ovalues, __global int *oindex,
     oindex[id]  = iindex[idx];
 }
 
-__kernel void csrReduce_kernel(__global int *orowIdx,
-                               __global const int *irowIdx, const int M,
-                               const int nNZ) {
+kernel void csrReduce(global int *orowIdx, global const int *irowIdx,
+                      const int M, const int nNZ) {
     int id = get_global_id(0);
 
     if (id >= nNZ) return;

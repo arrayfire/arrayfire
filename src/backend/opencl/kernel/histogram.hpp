@@ -8,72 +8,55 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/histogram.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <string>
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-constexpr int MAX_BINS  = 4000;
-constexpr int THREADS_X = 256;
-constexpr int THRD_LOAD = 16;
 
-template<typename inType, typename outType, bool isLinear>
-void histogram(Param out, const Param in, int nbins, float minval,
-               float maxval) {
-    std::string refName = std::string("histogram_") +
-                          std::string(dtype_traits<inType>::getName()) +
-                          std::string(dtype_traits<inType>::getName()) +
-                          std::to_string(isLinear);
+template<typename inType, typename outType>
+void histogram(Param out, const Param in, int nbins, float minval, float maxval,
+               bool isLinear) {
+    constexpr int MAX_BINS  = 4000;
+    constexpr int THREADS_X = 256;
+    constexpr int THRD_LOAD = 16;
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, refName);
+    static const std::string src(histogram_cl, histogram_cl_len);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D inType=" << dtype_traits<inType>::getName()
-                << " -D outType=" << dtype_traits<outType>::getName()
-                << " -D THRD_LOAD=" << THRD_LOAD << " -D MAX_BINS=" << MAX_BINS;
-        if (isLinear) options << " -D IS_LINEAR";
-        options << getTypeBuildDefinition<inType>();
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<inType>(),
+        TemplateTypename<outType>(),
+        TemplateArg(isLinear),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(inType, dtype_traits<inType>::getName()),
+        DefineKeyValue(outType, dtype_traits<outType>::getName()),
+        DefineValue(THRD_LOAD),
+        DefineValue(MAX_BINS),
+    };
+    options.emplace_back(getTypeBuildDefinition<inType>());
+    if (isLinear) { options.emplace_back(DefineKey(IS_LINEAR)); }
 
-        const char* ker_strs[] = {histogram_cl};
-        const int ker_lens[]   = {histogram_cl_len};
-        Program prog;
-        buildProgram(prog, 1, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "histogram");
-
-        addKernelToCache(device, refName, entry);
-    }
-
-    auto histogramOp =
-        KernelFunctor<Buffer, KParam, Buffer, KParam, cl::LocalSpaceArg, int,
-                      int, float, float, int>(*entry.ker);
+    auto histogram = common::findKernel("histogram", {src}, targs, options);
 
     int nElems  = in.info.dims[0] * in.info.dims[1];
     int blk_x   = divup(nElems, THRD_LOAD * THREADS_X);
     int locSize = nbins <= MAX_BINS ? (nbins * sizeof(outType)) : 1;
 
-    NDRange local(THREADS_X, 1);
-    NDRange global(blk_x * in.info.dims[2] * THREADS_X, in.info.dims[3]);
+    cl::NDRange local(THREADS_X, 1);
+    cl::NDRange global(blk_x * in.info.dims[2] * THREADS_X, in.info.dims[3]);
 
-    histogramOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-                *in.data, in.info, cl::Local(locSize), nElems, nbins, minval,
-                maxval, blk_x);
-
+    histogram(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+              *in.data, in.info, cl::Local(locSize), nElems, nbins, minval,
+              maxval, blk_x);
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel

@@ -39,7 +39,7 @@ void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
     Array<T> queryT = dist_dim == 0 ? transpose(query, false) : query;
     Array<T> trainT = dist_dim == 0 ? transpose(train, false) : train;
 
-    kernel::all_distances<T, To, dist_type>(tmp_dists, queryT, trainT, 1);
+    kernel::allDistances<T, To>(tmp_dists, queryT, trainT, 1, dist_type);
 
     topk(dist, idx, tmp_dists, n_dist, 0, AF_TOPK_MIN);
 }

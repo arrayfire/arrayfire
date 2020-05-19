@@ -26,18 +26,10 @@ Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
     Param Key = key;
     Param In  = in;
 
-    if (inclusive_scan) {
-        if (dim == 0) {
-            kernel::scan_first<Ti, Tk, To, op, true>(Out, In, Key);
-        } else {
-            kernel::scan_dim<Ti, Tk, To, op, true>(Out, In, Key, dim);
-        }
+    if (dim == 0) {
+        kernel::scanFirstByKey<Ti, Tk, To, op>(Out, In, Key, inclusive_scan);
     } else {
-        if (dim == 0) {
-            kernel::scan_first<Ti, Tk, To, op, false>(Out, In, Key);
-        } else {
-            kernel::scan_dim<Ti, Tk, To, op, false>(Out, In, Key, dim);
-        }
+        kernel::scanDimByKey<Ti, Tk, To, op>(Out, In, Key, dim, inclusive_scan);
     }
     return out;
 }

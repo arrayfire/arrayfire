@@ -12,10 +12,7 @@
 #define AF_MOMENT_M10 4
 #define AF_MOMENT_M11 8
 
-////////////////////////////////////////////////////////////////////////////////////
-// Helper Functions
-////////////////////////////////////////////////////////////////////////////////////
-inline void fatomic_add_l(volatile __local float *source, const float operand) {
+inline void fatomic_add_l(volatile local float *source, const float operand) {
     union {
         unsigned int intVal;
         float floatVal;
@@ -25,13 +22,12 @@ inline void fatomic_add_l(volatile __local float *source, const float operand) {
     do {
         expVal.floatVal = prevVal.floatVal;
         newVal.floatVal = expVal.floatVal + operand;
-        prevVal.intVal = atomic_cmpxchg((volatile __local unsigned int *)source,
+        prevVal.intVal  = atomic_cmpxchg((volatile local unsigned int *)source,
                                         expVal.intVal, newVal.intVal);
     } while (expVal.intVal != prevVal.intVal);
 }
 
-inline void fatomic_add_g(volatile __global float *source,
-                          const float operand) {
+inline void fatomic_add_g(volatile global float *source, const float operand) {
     union {
         unsigned int intVal;
         float floatVal;
@@ -41,15 +37,13 @@ inline void fatomic_add_g(volatile __global float *source,
     do {
         expVal.floatVal = prevVal.floatVal;
         newVal.floatVal = expVal.floatVal + operand;
-        prevVal.intVal =
-            atomic_cmpxchg((volatile __global unsigned int *)source,
-                           expVal.intVal, newVal.intVal);
+        prevVal.intVal  = atomic_cmpxchg((volatile global unsigned int *)source,
+                                        expVal.intVal, newVal.intVal);
     } while (expVal.intVal != prevVal.intVal);
 }
 
-__kernel void moments_kernel(__global float *d_out, const KParam out,
-                             __global const T *d_in, const KParam in,
-                             const int moment, const int pBatch) {
+kernel void moments(global float *d_out, const KParam out, global const T *d_in,
+                    const KParam in, const int moment, const int pBatch) {
     const dim_t idw = get_group_id(1) / in.dims[2];
     const dim_t idz = get_group_id(1) - idw * in.dims[2];
 
@@ -58,7 +52,7 @@ __kernel void moments_kernel(__global float *d_out, const KParam out,
 
     if (idy >= in.dims[1] || idz >= in.dims[2] || idw >= in.dims[3]) return;
 
-    __local float wkg_moment_sum[MOMENTS_SZ];
+    local float wkg_moment_sum[MOMENTS_SZ];
     if (get_local_id(0) < MOMENTS_SZ) { wkg_moment_sum[get_local_id(0)] = 0.f; }
     barrier(CLK_LOCAL_MEM_FENCE);
 

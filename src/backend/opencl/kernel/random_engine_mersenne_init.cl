@@ -45,14 +45,15 @@
 #define N 351
 #define TABLE_SIZE 16
 
-__kernel void initState(__global uint *state, __global uint *tbl, ulong seed) {
+kernel void mersenneInitState(global uint *state, global uint *tbl,
+                              ulong seed) {
     int tid      = get_local_id(0);
     int nthreads = get_local_size(0);
     int gid      = get_group_id(0);
-    __local uint lstate[N];
-    const __global uint *ltbl = tbl + (TABLE_SIZE * gid);
-    uint hidden_seed          = ltbl[4] ^ (ltbl[8] << 16);
-    uint tmp                  = hidden_seed;
+    local uint lstate[N];
+    const global uint *ltbl = tbl + (TABLE_SIZE * gid);
+    uint hidden_seed        = ltbl[4] ^ (ltbl[8] << 16);
+    uint tmp                = hidden_seed;
     tmp += tmp >> 16;
     tmp += tmp >> 8;
     tmp &= 0xff;

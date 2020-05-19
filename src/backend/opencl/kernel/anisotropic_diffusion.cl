@@ -63,8 +63,8 @@ float gradientUpdate(const float mct, const float C, const float S,
 
 float curvatureUpdate(const float mct, const float C, const float S,
                       const float N, const float W, const float E,
-                      const float SE, const float SW,
-                      const float NE, const float NW) {
+                      const float SE, const float SW, const float NE,
+                      const float NW) {
     float delta     = 0;
     float prop_grad = 0;
 
@@ -118,8 +118,8 @@ float curvatureUpdate(const float mct, const float C, const float S,
     return sqrt(prop_grad) * delta;
 }
 
-kernel void diffUpdate(global T* inout, KParam info, const float dt,
-                       const float mct, unsigned blkX, unsigned blkY) {
+kernel void aisoDiffUpdate(global T* inout, KParam info, const float dt,
+                           const float mct, unsigned blkX, unsigned blkY) {
     local T localMem[SHRD_MEM_HEIGHT][SHRD_MEM_WIDTH];
 
     const int l0 = info.dims[0];
@@ -134,7 +134,7 @@ kernel void diffUpdate(global T* inout, KParam info, const float dt,
     const int b3 = get_group_id(1) / blkY;
 
     const int gx = get_local_size(0) * (get_group_id(0) - b2 * blkX) + lx;
-          int gy = get_local_size(1) * (get_group_id(1) - b3 * blkY) + ly;
+    int gy       = get_local_size(1) * (get_group_id(1) - b3 * blkY) + ly;
 
     global T* img =
         inout + (b3 * info.strides[3] + b2 * info.strides[2]) + info.offset;
@@ -143,30 +143,30 @@ kernel void diffUpdate(global T* inout, KParam info, const float dt,
          b += get_local_size(1), gy2 += get_local_size(1)) {
         for (int a = lx, gx2 = gx - 1; a < SHRD_MEM_WIDTH;
              a += get_local_size(0), gx2 += get_local_size(0)) {
-            localMem[b][a] = img[ gIndex(gx2, gy2, l0, l1, s0, s1) ];
+            localMem[b][a] = img[gIndex(gx2, gy2, l0, l1, s0, s1)];
         }
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    int i       = lx + 1;
-    int j       = ly + 1;
+    int i = lx + 1;
+    int j = ly + 1;
 
 #pragma unroll
     for (int ld = 0; ld < YDIM_LOAD;
-            ++ld, j+= get_local_size(1), gy += get_local_size(1)) {
+         ++ld, j += get_local_size(1), gy += get_local_size(1)) {
         float C     = localMem[j][i];
         float delta = 0;
 #if IS_MCDE == 1
-        delta = curvatureUpdate(
-            mct, C, localMem[j][i + 1], localMem[j][i - 1], localMem[j - 1][i],
-            localMem[j + 1][i], localMem[j + 1][i + 1], localMem[j - 1][i + 1],
-            localMem[j + 1][i - 1], localMem[j - 1][i - 1]);
+        delta = curvatureUpdate(mct, C, localMem[j][i + 1], localMem[j][i - 1],
+                                localMem[j - 1][i], localMem[j + 1][i],
+                                localMem[j + 1][i + 1], localMem[j - 1][i + 1],
+                                localMem[j + 1][i - 1], localMem[j - 1][i - 1]);
 #else
-        delta = gradientUpdate(
-            mct, C, localMem[j][i + 1], localMem[j][i - 1], localMem[j - 1][i],
-            localMem[j + 1][i], localMem[j + 1][i + 1], localMem[j - 1][i + 1],
-            localMem[j + 1][i - 1], localMem[j - 1][i - 1]);
+        delta = gradientUpdate(mct, C, localMem[j][i + 1], localMem[j][i - 1],
+                               localMem[j - 1][i], localMem[j + 1][i],
+                               localMem[j + 1][i + 1], localMem[j - 1][i + 1],
+                               localMem[j + 1][i - 1], localMem[j - 1][i - 1]);
 #endif
         if (gx < l0 && gy < l1) {
             img[gx * s0 + gy * s1] = (T)(C + delta * dt);

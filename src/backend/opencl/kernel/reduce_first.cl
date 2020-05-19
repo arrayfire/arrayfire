@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void reduce_first_kernel(__global To *oData, KParam oInfo,
-                                  const __global Ti *iData, KParam iInfo,
+kernel void reduce_first_kernel(global To *oData, KParam oInfo,
+                                  const global Ti *iData, KParam iInfo,
                                   uint groups_x, uint groups_y, uint repeat,
                                   int change_nan, To nanval) {
     const uint lidx = get_local_id(0);
@@ -30,7 +30,7 @@ __kernel void reduce_first_kernel(__global To *oData, KParam oInfo,
     bool cond =
         (yid < iInfo.dims[1]) && (zid < iInfo.dims[2]) && (wid < iInfo.dims[3]);
 
-    __local To s_val[THREADS_PER_GROUP];
+    local To s_val[THREADS_PER_GROUP];
 
     int last   = (xid + repeat * DIMX);
     int lim    = last > iInfo.dims[0] ? iInfo.dims[0] : last;
@@ -44,7 +44,7 @@ __kernel void reduce_first_kernel(__global To *oData, KParam oInfo,
 
     s_val[lid] = out_val;
     barrier(CLK_LOCAL_MEM_FENCE);
-    __local To *s_ptr = s_val + lidy * DIMX;
+    local To *s_ptr = s_val + lidy * DIMX;
 
     if (DIMX == 256) {
         if (lidx < 128) s_ptr[lidx] = binOp(s_ptr[lidx], s_ptr[lidx + 128]);

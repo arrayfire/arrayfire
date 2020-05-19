@@ -67,7 +67,6 @@ target_sources(afopencl
     binary.hpp
     blas.cpp
     blas.hpp
-    cache.hpp
     canny.cpp
     canny.hpp
     cast.hpp
@@ -171,8 +170,6 @@ target_sources(afopencl
     plot.hpp
     print.hpp
     product.cpp
-    program.cpp
-    program.hpp
     qr.cpp
     qr.hpp
     random_engine.cpp

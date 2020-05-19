@@ -7,22 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
+#include <homography.hpp>
+
 #include <arith.hpp>
-#include <err_opencl.hpp>
 #include <kernel/homography.hpp>
 #include <af/dim4.hpp>
-#include <algorithm>
 
-#include <cfloat>
+#include <algorithm>
 
 using af::dim4;
 
 namespace opencl {
-
-#define RANSACConfidence 0.99f
-#define LMEDSConfidence 0.99f
-#define LMEDSOutlierRatio 0.4f
 
 template<typename T>
 int homography(Array<T> &bestH, const Array<float> &x_src,
@@ -30,6 +25,10 @@ int homography(Array<T> &bestH, const Array<float> &x_src,
                const Array<float> &y_dst, const Array<float> &initial,
                const af_homography_type htype, const float inlier_thr,
                const unsigned iterations) {
+    // constexpr float RANSACConfidence  = 0.99f;
+    constexpr float LMEDSConfidence   = 0.99f;
+    constexpr float LMEDSOutlierRatio = 0.4f;
+
     const af::dim4 &idims   = x_src.dims();
     const unsigned nsamples = idims[0];
 
@@ -57,19 +56,8 @@ int homography(Array<T> &bestH, const Array<float> &x_src,
         createValueArray<T>(af::dim4(9, iter_sz), static_cast<T>(0));
 
     bestH = createValueArray<T>(af::dim4(3, 3), static_cast<T>(0));
-    switch (htype) {
-        case AF_HOMOGRAPHY_RANSAC:
-            return kernel::computeH<T, AF_HOMOGRAPHY_RANSAC>(
-                bestH, tmpH, err, x_src, y_src, x_dst, y_dst, rnd, iter,
-                nsamples, inlier_thr);
-            break;
-        case AF_HOMOGRAPHY_LMEDS:
-            return kernel::computeH<T, AF_HOMOGRAPHY_LMEDS>(
-                bestH, tmpH, err, x_src, y_src, x_dst, y_dst, rnd, iter,
-                nsamples, inlier_thr);
-            break;
-        default: return -1; break;
-    }
+    return kernel::computeH<T>(bestH, tmpH, err, x_src, y_src, x_dst, y_dst,
+                               rnd, iter, nsamples, inlier_thr, htype);
 }
 
 #define INSTANTIATE(T)                                                     \

@@ -7,43 +7,30 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <err_opencl.hpp>
 #include <scan.hpp>
-#include <af/dim4.hpp>
-#include <complex>
 
 #include <kernel/scan_dim.hpp>
 #include <kernel/scan_first.hpp>
 
 namespace opencl {
 template<af_op_t op, typename Ti, typename To>
-Array<To> scan(const Array<Ti>& in, const int dim, bool inclusive_scan) {
+Array<To> scan(const Array<Ti>& in, const int dim, bool inclusiveScan) {
     Array<To> out = createEmptyArray<To>(in.dims());
 
     Param Out = out;
     Param In  = in;
 
-    if (inclusive_scan) {
-        if (dim == 0) {
-            kernel::scan_first<Ti, To, op, true>(Out, In);
-        } else {
-            kernel::scan_dim<Ti, To, op, true>(Out, In, dim);
-        }
+    if (dim == 0) {
+        kernel::scanFirst<Ti, To, op>(Out, In, inclusiveScan);
     } else {
-        if (dim == 0) {
-            kernel::scan_first<Ti, To, op, false>(Out, In);
-        } else {
-            kernel::scan_dim<Ti, To, op, false>(Out, In, dim);
-        }
+        kernel::scanDim<Ti, To, op>(Out, In, dim, inclusiveScan);
     }
 
     return out;
 }
 
-#define INSTANTIATE_SCAN(ROp, Ti, To)                                        \
-    template Array<To> scan<ROp, Ti, To>(const Array<Ti>& in, const int dim, \
-                                         bool inclusive_scan);
+#define INSTANTIATE_SCAN(ROp, Ti, To) \
+    template Array<To> scan<ROp, Ti, To>(const Array<Ti>&, const int, bool);
 
 #define INSTANTIATE_SCAN_ALL(ROp)           \
     INSTANTIATE_SCAN(ROp, float, float)     \

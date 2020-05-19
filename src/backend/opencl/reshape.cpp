@@ -21,14 +21,8 @@ template<typename inType, typename outType>
 Array<outType> reshape(const Array<inType> &in, const dim4 &outDims,
                        outType defaultValue, double scale) {
     Array<outType> out = createEmptyArray<outType>(outDims);
-
-    if (in.dims() == outDims) {
-        kernel::copy<inType, outType, true>(out, in, in.ndims(), defaultValue,
-                                            scale);
-    } else {
-        kernel::copy<inType, outType, false>(out, in, in.ndims(), defaultValue,
-                                             scale);
-    }
+    kernel::copy<inType, outType>(out, in, in.ndims(), defaultValue, scale,
+                                  in.dims() == outDims);
     return out;
 }
 

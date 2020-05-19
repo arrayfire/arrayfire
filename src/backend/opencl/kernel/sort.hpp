@@ -8,12 +8,12 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_opencl.hpp>
 #include <iota.hpp>
 #include <kernel/sort_helper.hpp>
-#include <program.hpp>
 #include <traits.hpp>
 
 #pragma GCC diagnostic push
@@ -26,13 +26,6 @@
 #include <boost/compute/iterator/buffer_iterator.hpp>
 
 namespace compute = boost::compute;
-
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
 
 namespace opencl {
 namespace kernel {

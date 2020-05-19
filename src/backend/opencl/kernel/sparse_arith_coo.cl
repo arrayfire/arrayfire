@@ -7,12 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void sparse_arith_coo_kernel(__global T *oPtr, const KParam out,
-                                      __global const T *values,
-                                      __global const int *rowIdx,
-                                      __global const int *colIdx, const int nNZ,
-                                      __global const T *rPtr, const KParam rhs,
-                                      const int reverse) {
+kernel void sparseArithCOO(global T *oPtr, const KParam out,
+                           global const T *values, global const int *rowIdx,
+                           global const int *colIdx, const int nNZ,
+                           global const T *rPtr, const KParam rhs,
+                           const int reverse) {
     const int idx = get_global_id(0);
 
     if (idx >= nNZ) return;
@@ -33,11 +32,10 @@ __kernel void sparse_arith_coo_kernel(__global T *oPtr, const KParam out,
         oPtr[offset] = OP(val, rval);
 }
 
-__kernel void sparse_arith_coo_kernel_S(__global T *values,
-                                        __global int *rowIdx,
-                                        __global int *colIdx, const int nNZ,
-                                        __global const T *rPtr,
-                                        const KParam rhs, const int reverse) {
+kernel void sparseArithCOO2(global T *values, global int *rowIdx,
+                            global int *colIdx, const int nNZ,
+                            global const T *rPtr, const KParam rhs,
+                            const int reverse) {
     const int idx = get_global_id(0);
 
     if (idx >= nNZ) return;

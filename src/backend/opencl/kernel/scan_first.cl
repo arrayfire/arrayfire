@@ -7,10 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void scan_first_kernel(__global To *oData, KParam oInfo,
-                                __global To *tData, KParam tInfo,
-                                const __global Ti *iData, KParam iInfo,
-                                uint groups_x, uint groups_y, uint lim) {
+kernel void scanFirst(global To *oData, KParam oInfo, global To *tData,
+                      KParam tInfo, const global Ti *iData, KParam iInfo,
+                      uint groups_x, uint groups_y, uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
     const int lid  = lidy * get_local_size(0) + lidx;
@@ -34,10 +33,10 @@ __kernel void scan_first_kernel(__global To *oData, KParam oInfo,
     oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
              yid * oInfo.strides[1] + oInfo.offset;
 
-    __local To l_val0[SHARED_MEM_SIZE];
-    __local To l_val1[SHARED_MEM_SIZE];
-    __local To *l_val = l_val0;
-    __local To l_tmp[DIMY];
+    local To l_val0[SHARED_MEM_SIZE];
+    local To l_val1[SHARED_MEM_SIZE];
+    local To *l_val = l_val0;
+    local To l_tmp[DIMY];
 
     bool flip = 0;
 
@@ -65,7 +64,7 @@ __kernel void scan_first_kernel(__global To *oData, KParam oInfo,
         }
 
         val = binOp(val, l_tmp[lidy]);
-        if (inclusive_scan != 0) {
+        if (INCLUSIVE_SCAN != 0) {
             if (cond) { oData[id] = val; }
         } else {
             if (id == (oInfo.dims[0] - 1)) {
@@ -78,12 +77,11 @@ __kernel void scan_first_kernel(__global To *oData, KParam oInfo,
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    if (!isFinalPass && isLast && cond_yzw) { tData[groupId_x] = val; }
+    if (!IS_FINAL_PASS && isLast && cond_yzw) { tData[groupId_x] = val; }
 }
 
-__kernel void bcast_first_kernel(__global To *oData, KParam oInfo,
-                                 const __global To *tData, KParam tInfo,
-                                 uint groups_x, uint groups_y, uint lim) {
+kernel void bcastFirst(global To *oData, KParam oInfo, const global To *tData,
+                       KParam tInfo, uint groups_x, uint groups_y, uint lim) {
     const int lidx = get_local_id(0);
     const int lidy = get_local_id(1);
     const int lid  = lidy * get_local_size(0) + lidx;
@@ -109,7 +107,7 @@ __kernel void bcast_first_kernel(__global To *oData, KParam oInfo,
             To accum = tData[groupId_x - 1];
 
             // Shift broadcast one step to the right for exclusive scan (#2366)
-            int offset = !inclusive_scan;
+            int offset = !INCLUSIVE_SCAN;
             for (int k = 0, id = xid + offset; k < lim && id < oInfo.dims[0];
                  k++, id += DIMX) {
                 oData[id] = binOp(accum, oData[id]);

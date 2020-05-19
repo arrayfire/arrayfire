@@ -13,12 +13,10 @@
 #define IS_ZERO(val) (val == 0)
 #endif
 
-__kernel void dense2csr_split_kernel(__global T *svalptr, __global int *scolptr,
-                                     __global const T *dvalptr,
-                                     const KParam valinfo,
-                                     __global const int *dcolptr,
-                                     const KParam colinfo,
-                                     __global const int *rowptr) {
+kernel void dense2Csr(global T *svalptr, global int *scolptr,
+                      global const T *dvalptr, const KParam valinfo,
+                      global const int *dcolptr, const KParam colinfo,
+                      global const int *rowptr) {
     int gidx = get_global_id(0);
     int gidy = get_global_id(1);
 

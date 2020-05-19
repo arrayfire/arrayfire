@@ -7,10 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void nonMaxSuppressionKernel(__global T* output, KParam oInfo,
-                                      __global const T* in, KParam inInfo,
-                                      __global const T* dx, KParam dxInfo,
-                                      __global const T* dy, KParam dyInfo,
+kernel void nonMaxSuppressionKernel(global T* output, KParam oInfo,
+                                      global const T* in, KParam inInfo,
+                                      global const T* dx, KParam dxInfo,
+                                      global const T* dy, KParam dyInfo,
                                       unsigned nBBS0, unsigned nBBS1) {
     // local thread indices
     const int lx = get_local_id(0);
@@ -24,17 +24,17 @@ __kernel void nonMaxSuppressionKernel(__global T* output, KParam oInfo,
     const int gx = get_local_size(0) * (get_group_id(0) - b2 * nBBS0) + lx;
     const int gy = get_local_size(1) * (get_group_id(1) - b3 * nBBS1) + ly;
 
-    __local T localMem[SHRD_MEM_HEIGHT][SHRD_MEM_WIDTH];
+    local T localMem[SHRD_MEM_HEIGHT][SHRD_MEM_WIDTH];
 
-    __global const T* mag =
+    global const T* mag =
         in + (b2 * inInfo.strides[2] + b3 * inInfo.strides[3] + inInfo.offset);
-    __global const T* dX =
+    global const T* dX =
         dx + (b2 * dxInfo.strides[2] + b3 * dxInfo.strides[3] + dxInfo.offset) +
         dxInfo.strides[1] + 1;
-    __global const T* dY =
+    global const T* dY =
         dy + (b2 * dyInfo.strides[2] + b3 * dyInfo.strides[3] + dyInfo.offset) +
         dyInfo.strides[1] + 1;
-    __global T* out = output + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) +
+    global T* out = output + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) +
                       oInfo.strides[1] + 1;
 
 #pragma unroll
@@ -43,8 +43,8 @@ __kernel void nonMaxSuppressionKernel(__global T* output, KParam oInfo,
 #pragma unroll
         for (int a = lx, gx2 = gx; a < SHRD_MEM_WIDTH && gx2 < inInfo.dims[0];
              a += get_local_size(0), gx2 += get_local_size(0)) {
-            localMem[b][a] = mag[(gx2) * inInfo.strides[0] +
-                                 (gy2) * inInfo.strides[1]];
+            localMem[b][a] =
+                mag[(gx2)*inInfo.strides[0] + (gy2)*inInfo.strides[1]];
         }
     }
     int i = lx + 1;

@@ -8,91 +8,67 @@
  ********************************************************/
 
 #pragma once
+
 #include <Array.hpp>
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
+#include <kernel/config.hpp>
+#include <kernel/names.hpp>
 #include <kernel_headers/ops.hpp>
 #include <kernel_headers/reduce_dim.hpp>
 #include <kernel_headers/reduce_first.hpp>
 #include <memory.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <type_util.hpp>
-#include <map>
-#include <memory>
-#include <mutex>
+
 #include <string>
-#include "config.hpp"
-#include "names.hpp"
+#include <vector>
 
 namespace opencl {
 namespace kernel {
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using common::half;
-using std::string;
-using std::unique_ptr;
-
 template<typename Ti, typename To, af_op_t op>
-void reduce_dim_launcher(Param out, Param in, const int dim,
-                         const uint threads_y, const uint groups_all[4],
-                         int change_nan, double nanval) {
-    std::string ref_name =
-        std::string("reduce_") + std::to_string(dim) + std::string("_") +
-        std::string(dtype_traits<Ti>::getName()) + std::string("_") +
-        std::string(dtype_traits<To>::getName()) + std::string("_") +
-        std::to_string(op) + std::string("_") + std::to_string(threads_y);
+void reduceDimLauncher(Param out, Param in, const int dim, const uint threads_y,
+                       const uint groups_all[4], int change_nan,
+                       double nanval) {
+    static const std::string src1(ops_cl, ops_cl_len);
+    static const std::string src2(reduce_dim_cl, reduce_dim_cl_len);
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, ref_name);
+    ToNumStr<To> toNumStr;
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<Ti>(), TemplateTypename<To>(), TemplateArg(dim),
+        TemplateArg(op),        TemplateArg(threads_y),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(Ti, dtype_traits<Ti>::getName()),
+        DefineKeyValue(To, dtype_traits<To>::getName()),
+        DefineKeyValue(T, "To"),
+        DefineKeyValue(kDim, dim),
+        DefineKeyValue(DIMY, threads_y),
+        DefineValue(THREADS_X),
+        DefineKeyValue(init, toNumStr(Binary<To, op>::init())),
+        DefineKeyFromStr(binOpName<op>()),
+        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+    };
+    options.emplace_back(getTypeBuildDefinition<Ti, To>());
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        ToNumStr<To> toNumStr;
+    auto reduceDim =
+        common::findKernel("reduce_dim_kernel", {src1, src2}, targs, options);
 
-        std::ostringstream options;
-        options << " -D To=" << dtype_traits<To>::getName()
-                << " -D Ti=" << dtype_traits<Ti>::getName() << " -D T=To"
-                << " -D kDim=" << dim << " -D DIMY=" << threads_y
-                << " -D THREADS_X=" << THREADS_X
-                << " -D init=" << toNumStr(Binary<To, op>::init()) << " -D "
-                << binOpName<op>() << " -D CPLX=" << af::iscplx<Ti>();
-        options << getTypeBuildDefinition<Ti, To>();
+    cl::NDRange local(THREADS_X, threads_y);
+    cl::NDRange global(groups_all[0] * groups_all[2] * local[0],
+                       groups_all[1] * groups_all[3] * local[1]);
 
-        const char *ker_strs[] = {ops_cl, reduce_dim_cl};
-        const int ker_lens[]   = {ops_cl_len, reduce_dim_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "reduce_dim_kernel");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    NDRange local(THREADS_X, threads_y);
-    NDRange global(groups_all[0] * groups_all[2] * local[0],
-                   groups_all[1] * groups_all[3] * local[1]);
-
-    auto reduceOp = KernelFunctor<Buffer, KParam, Buffer, KParam, uint, uint,
-                                  uint, int, To>(*entry.ker);
-
-    reduceOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-             *in.data, in.info, groups_all[0], groups_all[1], groups_all[dim],
-             change_nan, scalar<To>(nanval));
-
+    reduceDim(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+              *in.data, in.info, groups_all[0], groups_all[1], groups_all[dim],
+              change_nan, scalar<To>(nanval));
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename Ti, typename To, af_op_t op>
-void reduce_dim(Param out, Param in, int change_nan, double nanval, int dim) {
+void reduceDim(Param out, Param in, int change_nan, double nanval, int dim) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
     uint threads_x = THREADS_X;
 
@@ -116,78 +92,66 @@ void reduce_dim(Param out, Param in, int change_nan, double nanval, int dim) {
             tmp.info.strides[k] *= groups_all[dim];
     }
 
-    reduce_dim_launcher<Ti, To, op>(tmp, in, dim, threads_y, groups_all,
-                                    change_nan, nanval);
+    reduceDimLauncher<Ti, To, op>(tmp, in, dim, threads_y, groups_all,
+                                  change_nan, nanval);
 
     if (groups_all[dim] > 1) {
         groups_all[dim] = 1;
 
         if (op == af_notzero_t) {
-            reduce_dim_launcher<To, To, af_add_t>(
-                out, tmp, dim, threads_y, groups_all, change_nan, nanval);
+            reduceDimLauncher<To, To, af_add_t>(out, tmp, dim, threads_y,
+                                                groups_all, change_nan, nanval);
         } else {
-            reduce_dim_launcher<To, To, op>(out, tmp, dim, threads_y,
-                                            groups_all, change_nan, nanval);
+            reduceDimLauncher<To, To, op>(out, tmp, dim, threads_y, groups_all,
+                                          change_nan, nanval);
         }
         bufferFree(tmp.data);
     }
 }
 
 template<typename Ti, typename To, af_op_t op>
-void reduce_first_launcher(Param out, Param in, const uint groups_x,
-                           const uint groups_y, const uint threads_x,
-                           int change_nan, double nanval) {
-    std::string ref_name =
-        std::string("reduce_0_") + std::string(dtype_traits<Ti>::getName()) +
-        std::string("_") + std::string(dtype_traits<To>::getName()) +
-        std::string("_") + std::to_string(op) + std::string("_") +
-        std::to_string(threads_x);
+void reduceFirstLauncher(Param out, Param in, const uint groups_x,
+                         const uint groups_y, const uint threads_x,
+                         int change_nan, double nanval) {
+    static const std::string src1(ops_cl, ops_cl_len);
+    static const std::string src2(reduce_first_cl, reduce_first_cl_len);
 
-    int device = getActiveDeviceId();
+    ToNumStr<To> toNumStr;
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<Ti>(),
+        TemplateTypename<To>(),
+        TemplateArg(op),
+        TemplateArg(threads_x),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(Ti, dtype_traits<Ti>::getName()),
+        DefineKeyValue(To, dtype_traits<To>::getName()),
+        DefineKeyValue(T, "To"),
+        DefineKeyValue(DIMX, threads_x),
+        DefineValue(THREADS_PER_GROUP),
+        DefineKeyValue(init, toNumStr(Binary<To, op>::init())),
+        DefineKeyFromStr(binOpName<op>()),
+        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+    };
+    options.emplace_back(getTypeBuildDefinition<Ti, To>());
 
-    kc_entry_t entry = kernelCache(device, ref_name);
+    auto reduceFirst =
+        common::findKernel("reduce_first_kernel", {src1, src2}, targs, options);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        ToNumStr<To> toNumStr;
-
-        std::ostringstream options;
-        options << " -D To=" << dtype_traits<To>::getName()
-                << " -D Ti=" << dtype_traits<Ti>::getName() << " -D T=To"
-                << " -D DIMX=" << threads_x
-                << " -D THREADS_PER_GROUP=" << THREADS_PER_GROUP
-                << " -D init=" << toNumStr(Binary<To, op>::init()) << " -D "
-                << binOpName<op>() << " -D CPLX=" << af::iscplx<Ti>();
-        options << getTypeBuildDefinition<Ti, To>();
-
-        const char *ker_strs[] = {ops_cl, reduce_first_cl};
-        const int ker_lens[]   = {ops_cl_len, reduce_first_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "reduce_first_kernel");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
-    NDRange global(groups_x * in.info.dims[2] * local[0],
-                   groups_y * in.info.dims[3] * local[1]);
+    cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
+    cl::NDRange global(groups_x * in.info.dims[2] * local[0],
+                       groups_y * in.info.dims[3] * local[1]);
 
     uint repeat = divup(in.info.dims[0], (local[0] * groups_x));
 
-    auto reduceOp = KernelFunctor<Buffer, KParam, Buffer, KParam, uint, uint,
-                                  uint, int, To>(*entry.ker);
-
-    reduceOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-             *in.data, in.info, groups_x, groups_y, repeat, change_nan,
-             scalar<To>(nanval));
-
+    reduceFirst(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+                *in.data, in.info, groups_x, groups_y, repeat, change_nan,
+                scalar<To>(nanval));
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename Ti, typename To, af_op_t op>
-void reduce_first(Param out, Param in, int change_nan, double nanval) {
+void reduceFirst(Param out, Param in, int change_nan, double nanval) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_GROUP);
     uint threads_y = THREADS_PER_GROUP / threads_x;
@@ -205,19 +169,18 @@ void reduce_first(Param out, Param in, int change_nan, double nanval) {
         for (int k = 1; k < 4; k++) tmp.info.strides[k] *= groups_x;
     }
 
-    reduce_first_launcher<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x,
-                                      change_nan, nanval);
+    reduceFirstLauncher<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x,
+                                    change_nan, nanval);
 
     if (groups_x > 1) {
         // FIXME: Is there an alternative to the if condition ?
         if (op == af_notzero_t) {
-            reduce_first_launcher<To, To, af_add_t>(
+            reduceFirstLauncher<To, To, af_add_t>(
                 out, tmp, 1, groups_y, threads_x, change_nan, nanval);
         } else {
-            reduce_first_launcher<To, To, op>(out, tmp, 1, groups_y, threads_x,
-                                              change_nan, nanval);
+            reduceFirstLauncher<To, To, op>(out, tmp, 1, groups_y, threads_x,
+                                            change_nan, nanval);
         }
-
         bufferFree(tmp.data);
     }
 }
@@ -225,13 +188,13 @@ void reduce_first(Param out, Param in, int change_nan, double nanval) {
 template<typename Ti, typename To, af_op_t op>
 void reduce(Param out, Param in, int dim, int change_nan, double nanval) {
     if (dim == 0)
-        return reduce_first<Ti, To, op>(out, in, change_nan, nanval);
+        return reduceFirst<Ti, To, op>(out, in, change_nan, nanval);
     else
-        return reduce_dim<Ti, To, op>(out, in, change_nan, nanval, dim);
+        return reduceDim<Ti, To, op>(out, in, change_nan, nanval, dim);
 }
 
 template<typename Ti, typename To, af_op_t op>
-To reduce_all(Param in, int change_nan, double nanval) {
+To reduceAll(Param in, int change_nan, double nanval) {
     int in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
@@ -262,8 +225,8 @@ To reduce_all(Param in, int change_nan, double nanval) {
 
         int tmp_elements = tmp.elements();
 
-        reduce_first_launcher<Ti, To, op>(tmp, in, groups_x, groups_y,
-                                          threads_x, change_nan, nanval);
+        reduceFirstLauncher<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x,
+                                        change_nan, nanval);
 
         std::vector<To> h_ptr(tmp_elements);
         getQueue().enqueueReadBuffer(*tmp.get(), CL_TRUE, 0,

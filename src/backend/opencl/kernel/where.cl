@@ -13,11 +13,10 @@
 #define isZero(val) ((val == 0))
 #endif
 
-__kernel void get_out_idx_kernel(__global uint *oData, __global uint *otData,
-                                 KParam otInfo, __global uint *rtData,
-                                 KParam rtInfo, __global T *iData, KParam iInfo,
-                                 uint groups_x, uint groups_y, uint lim) {
-    T Zero = zero;
+kernel void get_out_idx(global uint *oData, global uint *otData, KParam otInfo,
+                        global uint *rtData, KParam rtInfo, global T *iData,
+                        KParam iInfo, uint groups_x, uint groups_y, uint lim) {
+    T Zero = ZERO;
 
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);

@@ -32,13 +32,13 @@ template<af_op_t op, typename Ti, typename Tk, typename To>
 void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
                    const Array<Tk> &keys, const Array<Ti> &vals, const int dim,
                    bool change_nan, double nanval) {
-    kernel::reduce_by_key<op, Ti, Tk, To>(keys_out, vals_out, keys, vals, dim,
-                                          change_nan, nanval);
+    kernel::reduceByKey<op, Ti, Tk, To>(keys_out, vals_out, keys, vals, dim,
+                                        change_nan, nanval);
 }
 
 template<af_op_t op, typename Ti, typename To>
 To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
-    return kernel::reduce_all<Ti, To, op>(in, change_nan, nanval);
+    return kernel::reduceAll<Ti, To, op>(in, change_nan, nanval);
 }
 }  // namespace opencl
 

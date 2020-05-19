@@ -15,7 +15,7 @@
         b     = max(tmp, b); \
     }
 
-void load2ShrdMem_1d(__local T* shrd, __global const T* in, int lx, int dim0,
+void load2ShrdMem_1d(local T* shrd, global const T* in, int lx, int dim0,
                      int gx, int inStride0) {
     if (pad == AF_PAD_ZERO) {
         if (gx < 0 || gx >= dim0)
@@ -29,8 +29,8 @@ void load2ShrdMem_1d(__local T* shrd, __global const T* in, int lx, int dim0,
     }
 }
 
-__kernel void medfilt1(__global T* out, KParam oInfo, __global const T* in,
-                       KParam iInfo, __local T* localMem, int nBBS0) {
+kernel void medfilt1(global T* out, KParam oInfo, __global const T* in,
+                       KParam iInfo, local T* localMem, int nBBS0) {
     // calculate necessary offset and window parameters
     const int padding = w_wid - 1;
     const int halo    = padding / 2;
@@ -41,11 +41,11 @@ __kernel void medfilt1(__global T* out, KParam oInfo, __global const T* in,
     unsigned b0            = get_group_id(0) - b1 * nBBS0;
     unsigned b2            = get_group_id(1);
     unsigned b3            = get_group_id(2);
-    __global const T* iptr = in +
+    global const T* iptr = in +
                              (b1 * iInfo.strides[1] + b2 * iInfo.strides[2] +
                               b3 * iInfo.strides[3]) +
                              iInfo.offset;
-    __global T* optr = out +
+    global T* optr = out +
                        (b1 * oInfo.strides[1] + b2 * oInfo.strides[2] +
                         b3 * oInfo.strides[3]) +
                        oInfo.offset;

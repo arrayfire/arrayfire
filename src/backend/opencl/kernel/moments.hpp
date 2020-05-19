@@ -8,73 +8,50 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
+#include <kernel/config.hpp>
 #include <kernel_headers/moments.hpp>
 #include <math.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <type_util.hpp>
-#include <map>
-#include <mutex>
-#include <string>
-#include "config.hpp"
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
+#include <string>
+#include <vector>
 
 namespace opencl {
 namespace kernel {
-static const int THREADS = 128;
 
-///////////////////////////////////////////////////////////////////////////
-// Wrapper functions
-///////////////////////////////////////////////////////////////////////////
 template<typename T>
 void moments(Param out, const Param in, af_moment_type moment) {
-    std::string ref_name = std::string("moments_") +
-                           std::string(dtype_traits<T>::getName()) +
-                           std::string("_") + std::to_string(out.info.dims[0]);
+    constexpr int THREADS = 128;
 
-    int device       = getActiveDeviceId();
-    kc_entry_t entry = kernelCache(device, ref_name);
+    static const std::string src(moments_cl, moments_cl_len);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName();
-        options << " -D MOMENTS_SZ=" << out.info.dims[0];
-        options << getTypeBuildDefinition<T>();
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+        TemplateArg(out.info.dims[0]),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(MOMENTS_SZ, out.info.dims[0]),
+    };
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-        Program prog;
-        buildProgram(prog, moments_cl, moments_cl_len, options.str());
+    auto momentsOp = common::findKernel("moments", {src}, targs, options);
 
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "moments_kernel");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    auto momentsp =
-        KernelFunctor<Buffer, const KParam, const Buffer, const KParam,
-                      const int, const int>(*entry.ker);
-
-    NDRange local(THREADS, 1, 1);
-    NDRange global(in.info.dims[1] * local[0],
-                   in.info.dims[2] * in.info.dims[3] * local[1]);
+    cl::NDRange local(THREADS, 1, 1);
+    cl::NDRange global(in.info.dims[1] * local[0],
+                       in.info.dims[2] * in.info.dims[3] * local[1]);
 
     bool pBatch = !(in.info.dims[2] == 1 && in.info.dims[3] == 1);
 
-    momentsp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-             *in.data, in.info, (int)moment, (int)pBatch);
-
+    momentsOp(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+              *in.data, in.info, (int)moment, (int)pBatch);
     CL_DEBUG_FINISH(getQueue());
 }
+
 }  // namespace kernel
 }  // namespace opencl

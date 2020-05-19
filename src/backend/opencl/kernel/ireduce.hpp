@@ -8,90 +8,64 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
-#include <cache.hpp>
 #include <common/dispatch.hpp>
+#include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
+#include <kernel/config.hpp>
+#include <kernel/names.hpp>
 #include <kernel_headers/iops.hpp>
 #include <kernel_headers/ireduce_dim.hpp>
 #include <kernel_headers/ireduce_first.hpp>
 #include <memory.hpp>
-#include <program.hpp>
 #include <traits.hpp>
-#include <type_util.hpp>
-#include <map>
-#include <memory>
-#include <mutex>
-#include <string>
-#include "config.hpp"
-#include "names.hpp"
 
-using cl::Buffer;
-using cl::EnqueueArgs;
-using cl::Kernel;
-using cl::KernelFunctor;
-using cl::NDRange;
-using cl::Program;
-using std::string;
-using std::unique_ptr;
+#include <string>
+#include <vector>
 
 namespace opencl {
-
 namespace kernel {
 
 template<typename T, af_op_t op>
-void ireduce_dim_launcher(Param out, cl::Buffer *oidx, Param in,
-                          cl::Buffer *iidx, const int dim, const int threads_y,
-                          const bool is_first, const uint groups_all[4],
-                          Param rlen) {
-    std::string ref_name =
-        std::string("ireduce_") + std::to_string(dim) + std::string("_") +
-        std::string(dtype_traits<T>::getName()) + std::string("_") +
-        std::to_string(op) + std::string("_") + std::to_string(is_first) +
-        std::string("_") + std::to_string(threads_y);
+void ireduceDimLauncher(Param out, cl::Buffer *oidx, Param in, cl::Buffer *iidx,
+                        const int dim, const int threads_y, const bool is_first,
+                        const uint groups_all[4], Param rlen) {
+    static const std::string src1(iops_cl, iops_cl_len);
+    static const std::string src2(ireduce_dim_cl, ireduce_dim_cl_len);
 
-    int device = getActiveDeviceId();
+    ToNumStr<T> toNumStr;
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(), TemplateArg(dim),       TemplateArg(op),
+        TemplateArg(is_first), TemplateArg(threads_y),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(kDim, dim),
+        DefineKeyValue(DIMY, threads_y),
+        DefineValue(THREADS_X),
+        DefineKeyValue(init, toNumStr(Binary<T, op>::init())),
+        DefineKeyFromStr(binOpName<op>()),
+        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(IS_FIRST, is_first),
+    };
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-    kc_entry_t entry = kernelCache(device, ref_name);
+    auto ireduceDim =
+        common::findKernel("ireduce_dim_kernel", {src1, src2}, targs, options);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        ToNumStr<T> toNumStr;
+    cl::NDRange local(THREADS_X, threads_y);
+    cl::NDRange global(groups_all[0] * groups_all[2] * local[0],
+                       groups_all[1] * groups_all[3] * local[1]);
 
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName() << " -D kDim=" << dim
-                << " -D DIMY=" << threads_y << " -D THREADS_X=" << THREADS_X
-                << " -D init=" << toNumStr(Binary<T, op>::init()) << " -D "
-                << binOpName<op>() << " -D CPLX=" << af::iscplx<T>()
-                << " -D IS_FIRST=" << is_first;
-        options << getTypeBuildDefinition<T>();
-
-        const char *ker_strs[] = {iops_cl, ireduce_dim_cl};
-        const int ker_lens[]   = {iops_cl_len, ireduce_dim_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "ireduce_dim_kernel");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    NDRange local(THREADS_X, threads_y);
-    NDRange global(groups_all[0] * groups_all[2] * local[0],
-                   groups_all[1] * groups_all[3] * local[1]);
-
-    auto ireduceOp =
-        KernelFunctor<Buffer, KParam, Buffer, Buffer, KParam, Buffer, uint,
-                      uint, uint, Buffer, KParam>(*entry.ker);
-
-    ireduceOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-              *oidx, *in.data, in.info, *iidx, groups_all[0], groups_all[1],
-              groups_all[dim], *rlen.data, rlen.info);
-
+    ireduceDim(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+               *oidx, *in.data, in.info, *iidx, groups_all[0], groups_all[1],
+               groups_all[dim], *rlen.data, rlen.info);
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename T, af_op_t op>
-void ireduce_dim(Param out, cl::Buffer *oidx, Param in, int dim, Param rlen) {
+void ireduceDim(Param out, cl::Buffer *oidx, Param in, int dim, Param rlen) {
     uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
     uint threads_x = THREADS_X;
 
@@ -117,74 +91,62 @@ void ireduce_dim(Param out, cl::Buffer *oidx, Param in, int dim, Param rlen) {
             tmp.info.strides[k] *= groups_all[dim];
     }
 
-    ireduce_dim_launcher<T, op>(tmp, tidx, in, tidx, dim, threads_y, true,
-                                groups_all, rlen);
+    ireduceDimLauncher<T, op>(tmp, tidx, in, tidx, dim, threads_y, true,
+                              groups_all, rlen);
 
     if (groups_all[dim] > 1) {
         groups_all[dim] = 1;
 
-        ireduce_dim_launcher<T, op>(out, oidx, tmp, tidx, dim, threads_y, false,
-                                    groups_all, rlen);
+        ireduceDimLauncher<T, op>(out, oidx, tmp, tidx, dim, threads_y, false,
+                                  groups_all, rlen);
         bufferFree(tmp.data);
         bufferFree(tidx);
     }
 }
 
 template<typename T, af_op_t op>
-void ireduce_first_launcher(Param out, cl::Buffer *oidx, Param in,
-                            cl::Buffer *iidx, const int threads_x,
-                            const bool is_first, const uint groups_x,
-                            const uint groups_y, Param rlen) {
-    std::string ref_name =
-        std::string("ireduce_0_") + std::string(dtype_traits<T>::getName()) +
-        std::string("_") + std::to_string(op) + std::string("_") +
-        std::to_string(is_first) + std::string("_") + std::to_string(threads_x);
+void ireduceFirstLauncher(Param out, cl::Buffer *oidx, Param in,
+                          cl::Buffer *iidx, const int threads_x,
+                          const bool is_first, const uint groups_x,
+                          const uint groups_y, Param rlen) {
+    static const std::string src1(iops_cl, iops_cl_len);
+    static const std::string src2(ireduce_first_cl, ireduce_first_cl_len);
 
-    int device = getActiveDeviceId();
+    ToNumStr<T> toNumStr;
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<T>(),
+        TemplateArg(op),
+        TemplateArg(is_first),
+        TemplateArg(threads_x),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()),
+        DefineKeyValue(DIMX, threads_x),
+        DefineValue(THREADS_PER_GROUP),
+        DefineKeyValue(init, toNumStr(Binary<T, op>::init())),
+        DefineKeyFromStr(binOpName<op>()),
+        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(IS_FIRST, is_first),
+    };
+    options.emplace_back(getTypeBuildDefinition<T>());
 
-    kc_entry_t entry = kernelCache(device, ref_name);
+    auto ireduceFirst = common::findKernel("ireduce_first_kernel", {src1, src2},
+                                           targs, options);
 
-    if (entry.prog == 0 && entry.ker == 0) {
-        ToNumStr<T> toNumStr;
-
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D DIMX=" << threads_x
-                << " -D THREADS_PER_GROUP=" << THREADS_PER_GROUP
-                << " -D init=" << toNumStr(Binary<T, op>::init()) << " -D "
-                << binOpName<op>() << " -D CPLX=" << af::iscplx<T>()
-                << " -D IS_FIRST=" << is_first;
-        options << getTypeBuildDefinition<T>();
-
-        const char *ker_strs[] = {iops_cl, ireduce_first_cl};
-        const int ker_lens[]   = {iops_cl_len, ireduce_first_cl_len};
-        Program prog;
-        buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-        entry.prog = new Program(prog);
-        entry.ker  = new Kernel(*entry.prog, "ireduce_first_kernel");
-
-        addKernelToCache(device, ref_name, entry);
-    }
-
-    NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
-    NDRange global(groups_x * in.info.dims[2] * local[0],
-                   groups_y * in.info.dims[3] * local[1]);
+    cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
+    cl::NDRange global(groups_x * in.info.dims[2] * local[0],
+                       groups_y * in.info.dims[3] * local[1]);
 
     uint repeat = divup(in.info.dims[0], (local[0] * groups_x));
 
-    auto ireduceOp =
-        KernelFunctor<Buffer, KParam, Buffer, Buffer, KParam, Buffer, uint,
-                      uint, uint, Buffer, KParam>(*entry.ker);
-
-    ireduceOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-              *oidx, *in.data, in.info, *iidx, groups_x, groups_y, repeat,
-              *rlen.data, rlen.info);
-
+    ireduceFirst(cl::EnqueueArgs(getQueue(), global, local), *out.data,
+                 out.info, *oidx, *in.data, in.info, *iidx, groups_x, groups_y,
+                 repeat, *rlen.data, rlen.info);
     CL_DEBUG_FINISH(getQueue());
 }
 
 template<typename T, af_op_t op>
-void ireduce_first(Param out, cl::Buffer *oidx, Param in, Param rlen) {
+void ireduceFirst(Param out, cl::Buffer *oidx, Param in, Param rlen) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_GROUP);
     uint threads_y = THREADS_PER_GROUP / threads_x;
@@ -206,12 +168,12 @@ void ireduce_first(Param out, cl::Buffer *oidx, Param in, Param rlen) {
         for (int k = 1; k < 4; k++) tmp.info.strides[k] *= groups_x;
     }
 
-    ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true,
-                                  groups_x, groups_y, rlen);
+    ireduceFirstLauncher<T, op>(tmp, tidx, in, tidx, threads_x, true, groups_x,
+                                groups_y, rlen);
 
     if (groups_x > 1) {
-        ireduce_first_launcher<T, op>(out, oidx, tmp, tidx, threads_x, false, 1,
-                                      groups_y, rlen);
+        ireduceFirstLauncher<T, op>(out, oidx, tmp, tidx, threads_x, false, 1,
+                                    groups_y, rlen);
 
         bufferFree(tmp.data);
         bufferFree(tidx);
@@ -229,9 +191,9 @@ void ireduce(Param out, cl::Buffer *oidx, Param in, int dim, Param rlen) {
         rlen.data = new cl::Buffer();
     }
     if (dim == 0)
-        return ireduce_first<T, op>(out, oidx, in, rlen);
+        return ireduceFirst<T, op>(out, oidx, in, rlen);
     else
-        return ireduce_dim<T, op>(out, oidx, in, dim, rlen);
+        return ireduceDim<T, op>(out, oidx, in, dim, rlen);
 }
 
 #if defined(__GNUC__) || defined(__GNUG__)
@@ -287,7 +249,7 @@ struct MinMaxOp<af_max_t, T> {
 #endif
 
 template<typename T, af_op_t op>
-T ireduce_all(uint *loc, Param in) {
+T ireduceAll(uint *loc, Param in) {
     int in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
@@ -298,7 +260,6 @@ T ireduce_all(uint *loc, Param in) {
             is_linear &= (in.info.strides[k] ==
                           (in.info.strides[k - 1] * in.info.dims[k - 1]));
         }
-
         if (is_linear) {
             in.info.dims[0] = in_elements;
             for (int k = 1; k < 4; k++) {
@@ -322,8 +283,8 @@ T ireduce_all(uint *loc, Param in) {
         Param rlen;
         auto buff = std::make_unique<cl::Buffer>();
         rlen.data = buff.get();
-        ireduce_first_launcher<T, op>(tmp, tidx, in, tidx, threads_x, true,
-                                      groups_x, groups_y, rlen);
+        ireduceFirstLauncher<T, op>(tmp, tidx, in, tidx, threads_x, true,
+                                    groups_x, groups_y, rlen);
 
         std::vector<T> h_ptr(tmp_elements);
         std::vector<uint> h_iptr(tmp_elements);
@@ -358,7 +319,7 @@ T ireduce_all(uint *loc, Param in) {
         return Op.m_val;
 
     } else {
-        unique_ptr<T[]> h_ptr(new T[in_elements]);
+        std::unique_ptr<T[]> h_ptr(new T[in_elements]);
         T *h_ptr_raw = h_ptr.get();
 
         getQueue().enqueueReadBuffer(*in.data, CL_TRUE,
@@ -374,5 +335,4 @@ T ireduce_all(uint *loc, Param in) {
 }
 
 }  // namespace kernel
-
 }  // namespace opencl

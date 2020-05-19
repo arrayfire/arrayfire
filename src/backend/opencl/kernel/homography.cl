@@ -9,8 +9,8 @@
 
 inline T sq(T a) { return a * a; }
 
-inline void jacobi_svd(__local T* l_V, __local T* l_S, __local T* l_d,
-                       __local T* l_acc1, __local T* l_acc2, int m, int n) {
+inline void jacobi_svd(local T* l_V, __local T* l_S, __local T* l_d,
+                       local T* l_acc1, __local T* l_acc2, int m, int n) {
     const int iterations = 30;
 
     int tid_x = get_local_id(0);
@@ -47,11 +47,11 @@ inline void jacobi_svd(__local T* l_V, __local T* l_S, __local T* l_d,
     for (int it = 0; tcond && it < iterations; it++) {
         for (int i = 0; i < n - 1; i++) {
             for (int j = i + 1; j < n; j++) {
-                __local T* Si = l_S + soff + i * m;
-                __local T* Sj = l_S + soff + j * m;
+                local T* Si = l_S + soff + i * m;
+                local T* Sj = l_S + soff + j * m;
 
-                __local T* Vi = l_V + soff + i * n;
-                __local T* Vj = l_V + soff + j * n;
+                local T* Vi = l_V + soff + i * n;
+                local T* Vj = l_V + soff + j * n;
 
                 T p = (T)0;
                 for (int k = 0; k < m; k++) p += Si[k] * Sj[k];
@@ -119,11 +119,11 @@ inline int compute_mean_scale(float* x_src_mean, float* y_src_mean,
                               float* x_dst_mean, float* y_dst_mean,
                               float* src_scale, float* dst_scale,
                               float* src_pt_x, float* src_pt_y, float* dst_pt_x,
-                              float* dst_pt_y, __global const float* x_src,
-                              __global const float* y_src,
-                              __global const float* x_dst,
-                              __global const float* y_dst,
-                              __global const float* rnd, KParam rInfo, int i) {
+                              float* dst_pt_y, global const float* x_src,
+                              global const float* y_src,
+                              global const float* x_dst,
+                              global const float* y_dst,
+                              global const float* rnd, KParam rInfo, int i) {
     const unsigned ridx = rInfo.dims[0] * i;
     unsigned r[4]       = {(unsigned)rnd[ridx], (unsigned)rnd[ridx + 1],
                      (unsigned)rnd[ridx + 2], (unsigned)rnd[ridx + 3]};
@@ -164,12 +164,12 @@ inline int compute_mean_scale(float* x_src_mean, float* y_src_mean,
 
 #define LSPTR(Z, Y, X) (l_S[(Z)*81 + (Y)*9 + (X)])
 
-__kernel void compute_homography(__global T* H, KParam HInfo,
-                                 __global const float* x_src,
-                                 __global const float* y_src,
-                                 __global const float* x_dst,
-                                 __global const float* y_dst,
-                                 __global const float* rnd, KParam rInfo,
+kernel void compute_homography(global T* H, KParam HInfo,
+                                 global const float* x_src,
+                                 global const float* y_src,
+                                 global const float* x_dst,
+                                 global const float* y_dst,
+                                 global const float* rnd, KParam rInfo,
                                  const unsigned iterations) {
     unsigned i     = get_global_id(1);
     unsigned tid_y = get_local_id(1);
@@ -185,12 +185,12 @@ __kernel void compute_homography(__global T* H, KParam HInfo,
                            &src_scale, &dst_scale, src_pt_x, src_pt_y, dst_pt_x,
                            dst_pt_y, x_src, y_src, x_dst, y_dst, rnd, rInfo, i);
 
-    __local T l_acc1[256];
-    __local T l_acc2[256];
+    local T l_acc1[256];
+    local T l_acc2[256];
 
-    __local T l_S[16 * 81];
-    __local T l_V[16 * 81];
-    __local T l_d[16 * 9];
+    local T l_S[16 * 81];
+    local T l_V[16 * 81];
+    local T l_d[16 * 9];
 
     // Compute input matrix
     if (tid_x < 4) {
@@ -265,7 +265,7 @@ __kernel void compute_homography(__global T* H, KParam HInfo,
                    src_scale * x_src_mean * vH[6];
 
         const unsigned Hidx = HInfo.dims[0] * i;
-        __global T* H_ptr   = H + Hidx;
+        global T* H_ptr   = H + Hidx;
         for (int h = 0; h < 9; h++) H_ptr[h] = bad ? 0 : H_tmp[h];
     }
 }
@@ -274,18 +274,18 @@ __kernel void compute_homography(__global T* H, KParam HInfo,
 
 // LMedS:
 // http://research.microsoft.com/en-us/um/people/zhang/INRIA/Publis/Tutorial-Estim/node25.html
-__kernel void eval_homography(
-    __global unsigned* inliers, __global unsigned* idx, __global T* H,
-    KParam HInfo, __global float* err, KParam eInfo,
-    __global const float* x_src, __global const float* y_src,
-    __global const float* x_dst, __global const float* y_dst,
-    __global const float* rnd, const unsigned iterations,
+kernel void eval_homography(
+    global unsigned* inliers, __global unsigned* idx, __global T* H,
+    KParam HInfo, global float* err, KParam eInfo,
+    global const float* x_src, __global const float* y_src,
+    global const float* x_dst, __global const float* y_dst,
+    global const float* rnd, const unsigned iterations,
     const unsigned nsamples, const float inlier_thr) {
     unsigned tid_x = get_local_id(0);
     unsigned i     = get_global_id(0);
 
-    __local unsigned l_inliers[256];
-    __local unsigned l_idx[256];
+    local unsigned l_inliers[256];
+    local unsigned l_idx[256];
 
     l_inliers[tid_x] = 0;
     l_idx[tid_x]     = 0;
@@ -293,7 +293,7 @@ __kernel void eval_homography(
 
     if (i < iterations) {
         const unsigned Hidx = HInfo.dims[0] * i;
-        __global T* H_ptr   = H + Hidx;
+        global T* H_ptr   = H + Hidx;
         T H_tmp[9];
         for (int h = 0; h < 9; h++) H_tmp[h] = H_ptr[h];
 
@@ -351,15 +351,15 @@ __kernel void eval_homography(
 #endif
 }
 
-__kernel void compute_median(__global float* median, __global unsigned* idx,
-                             __global const float* err, KParam eInfo,
+kernel void compute_median(global float* median, __global unsigned* idx,
+                             global const float* err, KParam eInfo,
                              const unsigned iterations) {
     const unsigned tid = get_local_id(0);
     const unsigned bid = get_group_id(0);
     const unsigned i   = get_global_id(0);
 
-    __local float l_median[256];
-    __local unsigned l_idx[256];
+    local float l_median[256];
+    local unsigned l_idx[256];
 
     l_median[tid] = FLT_MAX;
     l_idx[tid]    = 0;
@@ -391,14 +391,14 @@ __kernel void compute_median(__global float* median, __global unsigned* idx,
 
 #define DIVUP(A, B) (((A) + (B)-1) / (B))
 
-__kernel void find_min_median(__global float* minMedian,
-                              __global unsigned* minIdx,
-                              __global const float* median, KParam mInfo,
-                              __global const unsigned* idx) {
+kernel void find_min_median(global float* minMedian,
+                              global unsigned* minIdx,
+                              global const float* median, KParam mInfo,
+                              global const unsigned* idx) {
     const unsigned tid = get_local_id(0);
 
-    __local float l_minMedian[256];
-    __local unsigned l_minIdx[256];
+    local float l_minMedian[256];
+    local unsigned l_minIdx[256];
 
     l_minMedian[tid] = FLT_MAX;
     l_minIdx[tid]    = 0;
@@ -431,17 +431,17 @@ __kernel void find_min_median(__global float* minMedian,
 
 #undef DIVUP
 
-__kernel void compute_lmeds_inliers(
-    __global unsigned* inliers, __global const T* H,
-    __global const float* x_src, __global const float* y_src,
-    __global const float* x_dst, __global const float* y_dst,
+kernel void compute_lmeds_inliers(
+    global unsigned* inliers, __global const T* H,
+    global const float* x_src, __global const float* y_src,
+    global const float* x_dst, __global const float* y_dst,
     const float minMedian, const unsigned nsamples) {
     unsigned tid = get_local_id(0);
     unsigned bid = get_group_id(0);
     unsigned i   = get_global_id(0);
 
-    __local T l_H[9];
-    __local unsigned l_inliers[256];
+    local T l_H[9];
+    local unsigned l_inliers[256];
 
     l_inliers[tid] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);

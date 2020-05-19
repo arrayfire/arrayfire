@@ -23,13 +23,13 @@ int getOffset(dim_t *dims, dim_t *strides, dim_t *refdims, int ids[4]) {
     return off;
 }
 
-__kernel void select_kernel(__global T *optr, KParam oinfo,
-                            __global char *cptr_, KParam cinfo,
-                            __global T *aptr_, KParam ainfo, __global T *bptr_,
+kernel void select_kernel(global T *optr, KParam oinfo,
+                            global char *cptr_, KParam cinfo,
+                            global T *aptr_, KParam ainfo, __global T *bptr_,
                             KParam binfo, int groups_0, int groups_1) {
-    __global char *cptr = cptr_ + cinfo.offset;
-    __global T *aptr    = aptr_ + ainfo.offset;
-    __global T *bptr    = bptr_ + binfo.offset;
+    global char *cptr = cptr_ + cinfo.offset;
+    global T *aptr    = aptr_ + ainfo.offset;
+    global T *bptr    = bptr_ + binfo.offset;
 
     const int idz = get_group_id(0) / groups_0;
     const int idw = get_group_id(1) / groups_1;
@@ -71,12 +71,12 @@ __kernel void select_kernel(__global T *optr, KParam oinfo,
     }
 }
 
-__kernel void select_scalar_kernel(__global T *optr, KParam oinfo,
-                                   __global char *cptr_, KParam cinfo,
-                                   __global T *aptr_, KParam ainfo, T b,
+kernel void select_scalar_kernel(global T *optr, KParam oinfo,
+                                   global char *cptr_, KParam cinfo,
+                                   global T *aptr_, KParam ainfo, T b,
                                    int groups_0, int groups_1) {
-    __global char *cptr = cptr_ + cinfo.offset;
-    __global T *aptr    = aptr_ + ainfo.offset;
+    global char *cptr = cptr_ + cinfo.offset;
+    global T *aptr    = aptr_ + ainfo.offset;
 
     const int idz = get_group_id(0) / groups_0;
     const int idw = get_group_id(1) / groups_1;

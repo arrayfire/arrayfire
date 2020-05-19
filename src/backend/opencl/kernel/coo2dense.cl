@@ -7,10 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel void coo2dense_kernel(__global T *oPtr, const KParam output,
-                               __global const T *vPtr, const KParam values,
-                               __global const int *rPtr, const KParam rowIdx,
-                               __global const int *cPtr, const KParam colIdx) {
+kernel void coo2Dense(global T *oPtr, const KParam output, global const T *vPtr,
+                      const KParam values, global const int *rPtr,
+                      const KParam rowIdx, global const int *cPtr,
+                      const KParam colIdx) {
     const int id = get_group_id(0) * get_local_size(0) * reps + get_local_id(0);
 
     if (id >= values.dims[0]) return;
