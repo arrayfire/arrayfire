@@ -19,9 +19,14 @@
 #include <af/array.h>
 #include <af/sparse.h>
 
-using namespace detail;
-using namespace common;
 using af::dim4;
+using common::createEmptySparseArray;
+using common::SparseArray;
+using common::SparseArrayBase;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::sparseConvertDenseToStorage;
 
 const SparseArrayBase &getSparseArrayBase(const af_array in,
                                           bool device_check) {

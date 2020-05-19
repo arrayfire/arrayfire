@@ -24,9 +24,27 @@
 
 #include <tuple>
 
-using namespace detail;
-
+using af::dim4;
 using common::half;
+using detail::arithOp;
+using detail::Array;
+using detail::cast;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::createValueArray;
+using detail::division;
+using detail::imag;
+using detail::intl;
+using detail::mean;
+using detail::real;
+using detail::reduce;
+using detail::reduce_all;
+using detail::scalar;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 using std::ignore;
 using std::make_tuple;
 using std::tie;

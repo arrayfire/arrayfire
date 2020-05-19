@@ -18,22 +18,28 @@
 #include <svd.hpp>
 #include <af/defines.h>
 
-using namespace detail;
+using af::dim4;
+using af::dtype_traits;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using std::min;
 
 template<typename T>
 static inline void svd(af_array *s, af_array *u, af_array *vt,
                        const af_array in) {
     const ArrayInfo &info = getInfo(in);  // ArrayInfo is the base class which
-    af::dim4 dims         = info.dims();
+    dim4 dims             = info.dims();
     int M                 = dims[0];
     int N                 = dims[1];
 
-    using Tr = typename af::dtype_traits<T>::base_type;
+    using Tr = typename dtype_traits<T>::base_type;
 
     // Allocate output arrays
-    Array<Tr> sA = createEmptyArray<Tr>(af::dim4(min(M, N)));
-    Array<T> uA  = createEmptyArray<T>(af::dim4(M, M));
-    Array<T> vtA = createEmptyArray<T>(af::dim4(N, N));
+    Array<Tr> sA = createEmptyArray<Tr>(dim4(min(M, N)));
+    Array<T> uA  = createEmptyArray<T>(dim4(M, M));
+    Array<T> vtA = createEmptyArray<T>(dim4(N, N));
 
     svd<T, Tr>(sA, uA, vtA, getArray<T>(in));
 
@@ -46,16 +52,16 @@ template<typename T>
 static inline void svdInPlace(af_array *s, af_array *u, af_array *vt,
                               af_array in) {
     const ArrayInfo &info = getInfo(in);  // ArrayInfo is the base class which
-    af::dim4 dims         = info.dims();
+    dim4 dims             = info.dims();
     int M                 = dims[0];
     int N                 = dims[1];
 
-    using Tr = typename af::dtype_traits<T>::base_type;
+    using Tr = typename dtype_traits<T>::base_type;
 
     // Allocate output arrays
-    Array<Tr> sA = createEmptyArray<Tr>(af::dim4(min(M, N)));
-    Array<T> uA  = createEmptyArray<T>(af::dim4(M, M));
-    Array<T> vtA = createEmptyArray<T>(af::dim4(N, N));
+    Array<Tr> sA = createEmptyArray<Tr>(dim4(min(M, N)));
+    Array<T> uA  = createEmptyArray<T>(dim4(M, M));
+    Array<T> vtA = createEmptyArray<T>(dim4(N, N));
 
     svdInPlace<T, Tr>(sA, uA, vtA, getArray<T>(in));
 
@@ -67,7 +73,7 @@ static inline void svdInPlace(af_array *s, af_array *u, af_array *vt,
 af_err af_svd(af_array *u, af_array *s, af_array *vt, const af_array in) {
     try {
         const ArrayInfo &info = getInfo(in);
-        af::dim4 dims         = info.dims();
+        dim4 dims             = info.dims();
 
         ARG_ASSERT(3, (dims.ndims() >= 0 && dims.ndims() <= 3));
         af_dtype type = info.getType();
@@ -94,7 +100,7 @@ af_err af_svd(af_array *u, af_array *s, af_array *vt, const af_array in) {
 af_err af_svd_inplace(af_array *u, af_array *s, af_array *vt, af_array in) {
     try {
         const ArrayInfo &info = getInfo(in);
-        af::dim4 dims         = info.dims();
+        dim4 dims             = info.dims();
 
         ARG_ASSERT(3, (dims.ndims() >= 0 && dims.ndims() <= 3));
         af_dtype type = info.getType();

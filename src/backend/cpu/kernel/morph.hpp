@@ -45,8 +45,8 @@ struct MorphFilterOp {
 template<typename T, bool IsDilation>
 void morph(Param<T> paddedOut, CParam<T> paddedIn, CParam<T> mask) {
     MorphFilterOp<T, IsDilation> filterOp;
-    T init =
-        IsDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
+    T init = IsDilation ? common::Binary<T, af_max_t>::init()
+                        : common::Binary<T, af_min_t>::init();
 
     const af::dim4 ostrides = paddedOut.strides();
     T* outData              = paddedOut.get();
@@ -89,8 +89,8 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask) {
     const T* inData         = in.get();
     const T* filter         = mask.get();
 
-    T init =
-        IsDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
+    T init = IsDilation ? common::Binary<T, af_max_t>::init()
+                        : common::Binary<T, af_min_t>::init();
 
     for (dim_t batchId = 0; batchId < bCount; ++batchId) {
         // either channels or batch is handled by outer most loop

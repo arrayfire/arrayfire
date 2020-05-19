@@ -31,10 +31,27 @@
 
 using af::dim4;
 using af::dtype_traits;
+using detail::arithOp;
+using detail::Array;
+using detail::cast;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::createSelectNode;
+using detail::createSubArray;
+using detail::createValueArray;
+using detail::diagCreate;
+using detail::gemm;
+using detail::logicOp;
+using detail::max;
+using detail::min;
+using detail::reduce;
+using detail::scalar;
+using detail::svd;
+using detail::tile;
+using detail::uint;
 using std::swap;
 using std::vector;
-
-using namespace detail;
 
 template<typename T>
 Array<T> getSubArray(const Array<T> &in, const bool copy, uint dim0begin = 0,

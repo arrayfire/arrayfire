@@ -168,7 +168,7 @@ af_err af_get_device_count(int* nDevices) {
 
 af_err af_get_device(int* device) {
     try {
-        *device = getActiveDeviceId();
+        *device = static_cast<int>(getActiveDeviceId());
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -202,7 +202,7 @@ af_err af_set_device(const int device) {
 
 af_err af_sync(const int device) {
     try {
-        int dev = device == -1 ? getActiveDeviceId() : device;
+        int dev = device == -1 ? static_cast<int>(getActiveDeviceId()) : device;
         detail::sync(dev);
     }
     CATCHALL;

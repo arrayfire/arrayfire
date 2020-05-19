@@ -17,7 +17,11 @@
 #include <af/lapack.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::isLAPACKAvailable;
 
 template<typename T>
 static inline void lu(af_array *lower, af_array *upper, af_array *pivot,

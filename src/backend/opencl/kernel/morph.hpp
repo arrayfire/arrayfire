@@ -37,8 +37,8 @@ void morph(Param out, const Param in, const Param mask, bool isDilation) {
     constexpr int THREADS_Y = 16;
 
     ToNumStr<T> toNumStr;
-    const T DefaultVal =
-        isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
+    const T DefaultVal = isDilation ? common::Binary<T, af_max_t>::init()
+                                    : common::Binary<T, af_min_t>::init();
 
     static const string src(morph_cl, morph_cl_len);
 
@@ -100,8 +100,8 @@ void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
     constexpr int CUBE_Z = 4;
 
     ToNumStr<T> toNumStr;
-    const T DefaultVal =
-        isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
+    const T DefaultVal = isDilation ? common::Binary<T, af_max_t>::init()
+                                    : common::Binary<T, af_min_t>::init();
 
     static const string src(morph_cl, morph_cl_len);
 

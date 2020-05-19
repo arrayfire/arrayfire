@@ -14,5 +14,5 @@
 namespace cpu {
 namespace kernel {
 INSTANTIATE1(TYPE)
-}
+}  // namespace kernel
 }  // namespace cpu

@@ -22,7 +22,15 @@
 #include <cstdio>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 static inline af_array sort(const af_array in, const unsigned dim,

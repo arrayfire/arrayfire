@@ -8,6 +8,7 @@
  ********************************************************/
 #include <common/defines.hpp>
 #include <math.hpp>
+#include <complex>
 
 namespace cpu {
 

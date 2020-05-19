@@ -15,7 +15,7 @@
 #include <common/graphics_common.hpp>
 #include <platform.hpp>
 
-using namespace detail;
+using detail::forgeManager;
 using namespace graphics;
 
 af_err af_create_window(af_window* out, const int width, const int height,

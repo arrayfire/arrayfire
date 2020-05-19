@@ -20,9 +20,15 @@
 #include <af/dim4.hpp>
 #include <af/image.h>
 
+using af::dim4;
 using detail::arithOp;
 using detail::Array;
 using detail::createValueArray;
+using detail::range;
+using detail::reduce_all;
+using detail::scalar;
+using detail::transpose;
+using detail::unaryOp;
 
 template<typename T>
 Array<T> gaussianKernel(const int rows, const int cols, const double sigma_r,

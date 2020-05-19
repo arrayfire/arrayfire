@@ -369,15 +369,6 @@ BINOP_SCALAR(cdouble, double, cdouble)
 
 #undef BINOP_SCALAR
 
-__SDH__ bool operator==(cfloat a, cfloat b) {
-    return (a.x == b.x) && (a.y == b.y);
-}
-__SDH__ bool operator!=(cfloat a, cfloat b) { return !(a == b); }
-__SDH__ bool operator==(cdouble a, cdouble b) {
-    return (a.x == b.x) && (a.y == b.y);
-}
-__SDH__ bool operator!=(cdouble a, cdouble b) { return !(a == b); }
-
 template<typename T>
 static inline T division(T lhs, double rhs) {
     return lhs / rhs;
@@ -403,3 +394,12 @@ static inline __DH__ T clamp(const T value, const T lo, const T hi) {
 }
 
 }  // namespace cuda
+
+__SDH__ bool operator==(cuda::cfloat a, cuda::cfloat b) {
+    return (a.x == b.x) && (a.y == b.y);
+}
+__SDH__ bool operator!=(cuda::cfloat a, cuda::cfloat b) { return !(a == b); }
+__SDH__ bool operator==(cuda::cdouble a, cuda::cdouble b) {
+    return (a.x == b.x) && (a.y == b.y);
+}
+__SDH__ bool operator!=(cuda::cdouble a, cuda::cdouble b) { return !(a == b); }

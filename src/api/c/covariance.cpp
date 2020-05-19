@@ -23,7 +23,18 @@
 #include "stats.h"
 
 using af::dim4;
+using detail::arithOp;
 using detail::Array;
+using detail::cast;
+using detail::createValueArray;
+using detail::intl;
+using detail::mean;
+using detail::reduce;
+using detail::scalar;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T, typename cType>
 static af_array cov(const af_array& X, const af_array& Y, bool isbiased) {
@@ -42,12 +53,12 @@ static af_array cov(const af_array& X, const af_array& Y, bool isbiased) {
         createValueArray<cType>(xDims, mean<T, weightType, cType>(_y));
     Array<cType> nArr = createValueArray<cType>(xDims, scalar<cType>(N));
 
-    Array<cType> diffX  = detail::arithOp<cType, af_sub_t>(xArr, xmArr, xDims);
-    Array<cType> diffY  = detail::arithOp<cType, af_sub_t>(yArr, ymArr, xDims);
-    Array<cType> mulXY  = detail::arithOp<cType, af_mul_t>(diffX, diffY, xDims);
-    Array<cType> redArr = detail::reduce<af_add_t, cType, cType>(mulXY, 0);
+    Array<cType> diffX  = arithOp<cType, af_sub_t>(xArr, xmArr, xDims);
+    Array<cType> diffY  = arithOp<cType, af_sub_t>(yArr, ymArr, xDims);
+    Array<cType> mulXY  = arithOp<cType, af_mul_t>(diffX, diffY, xDims);
+    Array<cType> redArr = reduce<af_add_t, cType, cType>(mulXY, 0);
     xDims[0]            = 1;
-    Array<cType> result = detail::arithOp<cType, af_div_t>(redArr, nArr, xDims);
+    Array<cType> result = arithOp<cType, af_div_t>(redArr, nArr, xDims);
 
     return getHandle<cType>(result);
 }

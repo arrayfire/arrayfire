@@ -23,8 +23,16 @@
 #include <vector>
 
 using af::dim4;
+using detail::Array;
+using detail::copy_vector_field;
+using detail::forgeManager;
+using detail::reduce;
+using detail::transpose;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 using std::vector;
-using namespace detail;
+
 using namespace graphics;
 
 template<typename T>

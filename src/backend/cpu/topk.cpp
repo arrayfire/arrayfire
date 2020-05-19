@@ -55,7 +55,7 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
         int iter = in.dims()[1] * in.dims()[2] * in.dims()[3];
         for (int i = 0; i < iter; i++) {
             auto idx_itr = begin(idx) + i * in.strides()[1];
-            auto kiptr   = iptr + k * i;
+            auto* kiptr  = iptr + k * i;
 
             if (order == AF_TOPK_MIN) {
                 // Sort the top k values in each column
@@ -72,7 +72,7 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
                     });
             }
 
-            auto kvptr = vptr + k * i;
+            auto* kvptr = vptr + k * i;
             for (int j = 0; j < k; j++) {
                 // Update the value arrays with the original values
                 kvptr[j] = ptr[kiptr[j]];

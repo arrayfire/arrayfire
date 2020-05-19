@@ -30,8 +30,23 @@
 #include <af/data.h>
 #include <af/defines.h>
 
+using af::dim4;
 using common::half;
-using namespace detail;
+using detail::arithOp;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::cplx;
+using detail::createValueArray;
+using detail::imag;
+using detail::intl;
+using detail::logicOp;
+using detail::real;
+using detail::scalar;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T, af_op_t op>
 static inline af_array unaryOp(const af_array in) {
@@ -195,7 +210,7 @@ struct unaryOpCplxFun<Tc, Tr, af_log_t> {
         // --> phi = atan2(b, a)
         Array<Tr> phi = arithOp<Tr, af_atan2_t>(b, a, b.dims());
 
-        Array<Tr> r = abs<Tr>(z);
+        Array<Tr> r = detail::abs<Tr>(z);
 
         // compute log
         // log(r)
@@ -515,7 +530,7 @@ struct unaryOpCplxFun<Tc, Tr, af_sqrt_t> {
         // phi = arg(a + ib)
         // --> phi = atan2(b, a)
         Array<Tr> phi = arithOp<Tr, af_atan2_t>(b, a, b.dims());
-        Array<Tr> r   = abs<Tr>(z);
+        Array<Tr> r   = detail::abs<Tr>(z);
 
         // compute sqrt
         Array<Tr> two = createValueArray<Tr>(phi.dims(), 2.0);

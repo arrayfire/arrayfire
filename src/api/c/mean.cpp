@@ -22,11 +22,18 @@
 
 #include "stats.h"
 
+using af::dim4;
 using common::half;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
+using detail::imag;
+using detail::intl;
 using detail::mean;
+using detail::real;
+using detail::uchar;
+using detail::uintl;
+using detail::ushort;
 
 template<typename Ti, typename To>
 static To mean(const af_array &in) {

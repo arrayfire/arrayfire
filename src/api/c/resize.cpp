@@ -16,7 +16,13 @@
 #include <af/defines.h>
 #include <af/image.h>
 
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 static inline af_array resize(const af_array in, const dim_t odim0,

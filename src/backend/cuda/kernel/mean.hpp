@@ -96,10 +96,10 @@ __global__ static void mean_dim_kernel(Param<To> out, Param<Tw> owt,
     bool is_valid = (ids[0] < in.dims[0]) && (ids[1] < in.dims[1]) &&
                     (ids[2] < in.dims[2]) && (ids[3] < in.dims[3]);
 
-    Transform<Ti, compute_t<To>, af_add_t> transform;
+    common::Transform<Ti, compute_t<To>, af_add_t> transform;
 
-    compute_t<To> val    = Binary<compute_t<To>, af_add_t>::init();
-    compute_t<Tw> weight = Binary<compute_t<Tw>, af_add_t>::init();
+    compute_t<To> val    = common::Binary<compute_t<To>, af_add_t>::init();
+    compute_t<Tw> weight = common::Binary<compute_t<Tw>, af_add_t>::init();
 
     if (is_valid && id_dim_in < in.dims[dim]) {
         val = transform(*iptr);
@@ -282,10 +282,10 @@ __global__ static void mean_first_kernel(Param<To> out, Param<Tw> owt,
 
     int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-    Transform<Ti, compute_t<To>, af_add_t> transform;
+    common::Transform<Ti, compute_t<To>, af_add_t> transform;
 
-    compute_t<To> val    = Binary<compute_t<To>, af_add_t>::init();
-    compute_t<Tw> weight = Binary<compute_t<Tw>, af_add_t>::init();
+    compute_t<To> val    = common::Binary<compute_t<To>, af_add_t>::init();
+    compute_t<Tw> weight = common::Binary<compute_t<Tw>, af_add_t>::init();
 
     if (xid < lim) {
         val = transform(iptr[xid]);
@@ -592,7 +592,7 @@ To mean_all(CParam<Ti> in) {
         CUDA_CHECK(
             cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
-        Transform<Ti, compute_t<To>, af_add_t> transform;
+        common::Transform<Ti, compute_t<To>, af_add_t> transform;
         compute_t<Tw> count = static_cast<compute_t<Tw>>(1);
 
         compute_t<To> val    = transform(h_ptr[0]);

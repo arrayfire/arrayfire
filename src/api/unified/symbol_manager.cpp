@@ -86,7 +86,7 @@ string getBackendDirectoryName(const af_backend backend) {
 string join_path(string first) { return first; }
 
 template<typename... ARGS>
-string join_path(string first, ARGS... args) {
+string join_path(const string& first, ARGS... args) {
     if (first.empty()) {
         return join_path(args...);
     } else {
@@ -136,16 +136,15 @@ LibHandle openDynLibrary(const af_backend bknd_idx) {
 
     LibHandle retVal = nullptr;
 
-    for (size_t i = 0; i < extent<decltype(pathPrefixes)>::value; i++) {
+    for (auto& pathPrefixe : pathPrefixes) {
         AF_TRACE("Attempting: {}",
-                 (pathPrefixes[i].empty() ? "Default System Paths"
-                                          : pathPrefixes[i]));
-        if ((retVal = loadLibrary(
-                 join_path(pathPrefixes[i], bkndLibName).c_str()))) {
-            AF_TRACE("Found: {}", join_path(pathPrefixes[i], bkndLibName));
+                 (pathPrefixe.empty() ? "Default System Paths" : pathPrefixe));
+        if ((retVal =
+                 loadLibrary(join_path(pathPrefixe, bkndLibName).c_str()))) {
+            AF_TRACE("Found: {}", join_path(pathPrefixe, bkndLibName));
 
-            func count_func =
-                (func)getFunctionPointer(retVal, "af_get_device_count");
+            func count_func = reinterpret_cast<func>(
+                getFunctionPointer(retVal, "af_get_device_count"));
             if (count_func) {
                 int count = 0;
                 count_func(&count);
@@ -194,11 +193,11 @@ AFSymbolManager::AFSymbolManager()
     // Decremeting loop. The last successful backend loaded will be the most
     // prefered one.
     for (int i = NUM_BACKENDS - 1; i >= 0; i--) {
-        int backend_index          = order[i] >> 1;  // 2 4 1 -> 1 2 0
+        int backend_index          = order[i] >> 1U;  // 2 4 1 -> 1 2 0
         bkndHandles[backend_index] = openDynLibrary(order[i]);
         if (bkndHandles[backend_index]) {
             handle  = bkndHandles[backend_index];
-            backend = (af_backend)order[i];
+            backend = order[i];
             numBackends++;
             backendsAvailable += order[i];
         }
@@ -217,14 +216,14 @@ AFSymbolManager::AFSymbolManager()
 }
 
 AFSymbolManager::~AFSymbolManager() {
-    for (int i = 0; i < NUM_BACKENDS; ++i) {
-        if (bkndHandles[i]) { common::unloadLibrary(bkndHandles[i]); }
+    for (auto& bkndHandle : bkndHandles) {
+        if (bkndHandle) { common::unloadLibrary(bkndHandle); }
     }
 }
 
-unsigned AFSymbolManager::getBackendCount() { return numBackends; }
+unsigned AFSymbolManager::getBackendCount() const { return numBackends; }
 
-int AFSymbolManager::getAvailableBackends() { return backendsAvailable; }
+int AFSymbolManager::getAvailableBackends() const { return backendsAvailable; }
 
 af_err setBackend(af::Backend bknd) {
     auto& instance = AFSymbolManager::getInstance();
@@ -237,7 +236,7 @@ af_err setBackend(af::Backend bknd) {
             UNIFIED_ERROR_LOAD_LIB();
         }
     }
-    int idx = bknd >> 1;  // Convert 1, 2, 4 -> 0, 1, 2
+    int idx = bknd >> 1U;  // Convert 1, 2, 4 -> 0, 1, 2
     if (instance.getHandle(idx)) {
         getActiveHandle()  = instance.getHandle(idx);
         getActiveBackend() = bknd;

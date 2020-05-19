@@ -297,7 +297,7 @@ af_err af_free_host(void *ptr) {
 af_err af_print_mem_info(const char *msg, const int device_id) {
     try {
         int device = device_id;
-        if (device == -1) { device = getActiveDeviceId(); }
+        if (device == -1) { device = static_cast<int>(getActiveDeviceId()); }
 
         if (msg != nullptr) {
             ARG_ASSERT(0, strlen(msg) < 256);  // 256 character limit on msg

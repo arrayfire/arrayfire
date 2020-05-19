@@ -20,7 +20,19 @@
 #include <af/image.h>
 #include <af/index.h>
 
+using af::dim4;
+using detail::arithOp;
 using detail::Array;
+using detail::cast;
+using detail::createValueArray;
+using detail::intl;
+using detail::lookup;
+using detail::reduce_all;
+using detail::scan;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T, typename hType>
 static af_array hist_equal(const af_array& in, const af_array& hist) {

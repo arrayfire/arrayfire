@@ -18,7 +18,10 @@
 #include <af/vision.h>
 
 using af::dim4;
-using namespace detail;
+
+using detail::Array;
+using detail::createEmptyArray;
+using detail::uint;
 
 template<typename T, typename convAccT>
 static void orb(af_features& feat_, af_array& descriptor, const af_array& in,

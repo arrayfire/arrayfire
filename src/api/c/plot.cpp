@@ -23,7 +23,13 @@
 #include <transpose.hpp>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::copy_plot;
+using detail::forgeManager;
+using detail::reduce;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 using namespace graphics;
 
 // Requires in_ to be in either [order, n] or [n, order] format

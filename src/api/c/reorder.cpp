@@ -21,7 +21,15 @@
 
 using af::dim4;
 using common::half;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
+using std::swap;
 
 template<typename T>
 static inline af_array reorder(const af_array in, const af::dim4 &rdims0) {
@@ -107,7 +115,7 @@ af_err af_reorder(af_array *out, const af_array in, const af::dim4 &rdims) {
             case f16: output = reorder<half>(in, rdims); break;
             default: TYPE_ERROR(1, type);
         }
-        std::swap(*out, output);
+        swap(*out, output);
     }
     CATCHALL;
 

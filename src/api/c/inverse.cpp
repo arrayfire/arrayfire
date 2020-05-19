@@ -16,7 +16,8 @@
 #include <af/defines.h>
 #include <af/lapack.h>
 
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
 
 template<typename T>
 static inline af_array inverse(const af_array in) {

@@ -50,8 +50,8 @@ class AFSymbolManager {
 
     ~AFSymbolManager();
 
-    unsigned getBackendCount();
-    int getAvailableBackends();
+    unsigned getBackendCount() const;
+    int getAvailableBackends() const;
     af::Backend getDefaultBackend() { return defaultBackend; }
     LibHandle getDefaultHandle() { return defaultHandle; }
 
@@ -69,7 +69,7 @@ class AFSymbolManager {
     void operator=(AFSymbolManager const&);
 
    private:
-    LibHandle bkndHandles[NUM_BACKENDS];
+    LibHandle bkndHandles[NUM_BACKENDS]{};
 
     LibHandle defaultHandle;
     unsigned numBackends;
@@ -78,7 +78,7 @@ class AFSymbolManager {
     std::shared_ptr<spdlog::logger> logger;
 };
 
-af_err setBackend(af::Backend bnkd);
+af_err setBackend(af::Backend bknd);
 
 af::Backend& getActiveBackend();
 

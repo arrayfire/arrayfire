@@ -66,7 +66,7 @@ af_err af_join(af_array *out, const int dim, const af_array first,
 
 af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays,
                     const af_array *inputs) {
-    for (unsigned i = 0; i < n_arrays; i++) CHECK_ARRAYS(inputs[i]);
+    for (unsigned i = 0; i < n_arrays; i++) { CHECK_ARRAYS(inputs[i]); }
     CALL(af_join_many, out, dim, n_arrays, inputs);
 }
 
