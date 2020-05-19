@@ -118,7 +118,6 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/morph.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/nearest_neighbour.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/norm.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/ops.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/optypes.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/orb.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/pinverse.cpp

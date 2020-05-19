@@ -10,12 +10,12 @@
 #pragma once
 
 #include <Param.hpp>
+#include <common/Binary.hpp>
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/morph.hpp>
 #include <memory.hpp>
-#include <ops.hpp>
 #include <traits.hpp>
 
 #include <string>

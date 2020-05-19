@@ -10,12 +10,13 @@
 #pragma once
 #include <Param.hpp>
 #include <backend.hpp>
+#include <common/Binary.hpp>
+#include <common/Transform.hpp>
 #include <common/dispatch.hpp>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <memory.hpp>
-#include <ops.hpp>
 #include "config.hpp"
 
 #include <cub/warp/warp_reduce.cuh>

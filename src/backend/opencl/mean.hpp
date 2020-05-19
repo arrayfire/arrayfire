@@ -9,7 +9,6 @@
 
 #pragma once
 #include <Array.hpp>
-#include <ops.hpp>
 
 namespace opencl {
 template<typename Ti, typename Tw, typename To>

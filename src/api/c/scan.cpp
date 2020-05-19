@@ -10,7 +10,7 @@
 #include <backend.hpp>
 #include <common/err_common.hpp>
 #include <handle.hpp>
-#include <ops.hpp>
+#include <optypes.hpp>
 #include <scan.hpp>
 #include <scan_by_key.hpp>
 #include <af/algorithm.h>

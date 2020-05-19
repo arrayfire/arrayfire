@@ -8,9 +8,10 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/Binary.hpp>
+#include <common/Transform.hpp>
 #include <common/half.hpp>
 #include <kernel/reduce.hpp>
-#include <ops.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <reduce.hpp>

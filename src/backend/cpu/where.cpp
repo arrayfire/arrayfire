@@ -8,11 +8,14 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/Binary.hpp>
+#include <common/Transform.hpp>
+#include <math.hpp>
 #include <memory.hpp>
-#include <ops.hpp>
 #include <platform.hpp>
 #include <where.hpp>
 #include <af/dim4.hpp>
+
 #include <complex>
 #include <vector>
 

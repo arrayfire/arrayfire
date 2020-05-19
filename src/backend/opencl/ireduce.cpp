@@ -12,7 +12,7 @@
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <err_opencl.hpp>
-#include <ops.hpp>
+#include <optypes.hpp>
 #include <af/dim4.hpp>
 #include <complex>
 
