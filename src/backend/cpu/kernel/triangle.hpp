@@ -9,7 +9,7 @@
 
 #pragma once
 #include <Param.hpp>
-#include <ops.hpp>
+#include <math.hpp>
 
 namespace cpu {
 namespace kernel {

@@ -9,7 +9,8 @@
 
 #pragma once
 #include <Param.hpp>
-#include <ops.hpp>
+#include <common/Binary.hpp>
+#include <algorithm>
 
 namespace cpu {
 namespace kernel {

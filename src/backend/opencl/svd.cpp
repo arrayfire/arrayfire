@@ -11,6 +11,7 @@
 #include <blas.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>  // error check functions and Macros
+#include <math.hpp>
 #include <reduce.hpp>
 #include <svd.hpp>  // opencl backend function header
 #include <transpose.hpp>

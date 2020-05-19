@@ -10,7 +10,7 @@
 #pragma once
 #include <Param.hpp>
 #include <err_cpu.hpp>
-#include <ops.hpp>
+#include <math.hpp>
 
 namespace cpu {
 namespace kernel {

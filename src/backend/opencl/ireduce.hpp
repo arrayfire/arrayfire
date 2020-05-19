@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <ops.hpp>
+#include <optypes.hpp>
 
 namespace opencl {
 template<af_op_t op, typename T>

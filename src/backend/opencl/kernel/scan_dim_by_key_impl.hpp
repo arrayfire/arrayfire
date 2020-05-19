@@ -10,6 +10,7 @@
 #pragma once
 
 #include <Param.hpp>
+#include <common/Binary.hpp>
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
@@ -18,6 +19,7 @@
 #include <kernel_headers/ops.hpp>
 #include <kernel_headers/scan_dim_by_key.hpp>
 #include <memory.hpp>
+#include <optypes.hpp>
 #include <traits.hpp>
 
 #include <string>

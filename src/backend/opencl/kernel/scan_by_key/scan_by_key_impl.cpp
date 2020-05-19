@@ -10,7 +10,6 @@
 #include <backend.hpp>
 #include <kernel/scan_dim_by_key_impl.hpp>
 #include <kernel/scan_first_by_key_impl.hpp>
-#include <ops.hpp>
 
 // This file instantiates scan_dim_by_key as separate object files from CMake
 // The line below is read by CMake to determenine the instantiations

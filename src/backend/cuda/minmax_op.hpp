@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <ops.hpp>
+#include <common/Binary.hpp>
 
 namespace cuda {
 

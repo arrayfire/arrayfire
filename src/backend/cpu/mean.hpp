@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <ops.hpp>
 
 namespace cpu {
 template<typename Ti, typename Tw, typename To>

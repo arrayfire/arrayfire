@@ -9,7 +9,6 @@
 
 #include <Array.hpp>
 #include <kernel/scan_by_key.hpp>
-#include <ops.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <scan_by_key.hpp>

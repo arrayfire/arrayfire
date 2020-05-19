@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <ops.hpp>
+#include <optypes.hpp>
 
 #undef _GLIBCXX_USE_INT128
 #include <kernel/scan_dim_by_key.hpp>

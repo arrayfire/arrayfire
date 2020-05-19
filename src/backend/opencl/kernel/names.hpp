@@ -8,7 +8,9 @@
  ********************************************************/
 
 #pragma once
-#include <ops.hpp>
+#include <common/defines.hpp>
+#include <optypes.hpp>
+
 template<af_op_t T>
 static const char *binOpName() {
     return "ADD_OP";

@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <ops.hpp>
+#include <optypes.hpp>
 
 namespace cpu {
 template<af_op_t op, typename Ti, typename To>
