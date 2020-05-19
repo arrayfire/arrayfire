@@ -13,7 +13,7 @@
 #include <handle.hpp>
 #include <ireduce.hpp>
 #include <math.hpp>
-#include <ops.hpp>
+#include <optypes.hpp>
 #include <reduce.hpp>
 #include <af/algorithm.h>
 #include <af/defines.h>

@@ -9,7 +9,7 @@
 
 #include <Array.hpp>
 #include <kernel/scan.hpp>
-#include <ops.hpp>
+#include <optypes.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <scan.hpp>

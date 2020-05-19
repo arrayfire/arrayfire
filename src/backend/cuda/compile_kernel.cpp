@@ -15,7 +15,9 @@
 #include <common/util.hpp>
 #include <device_manager.hpp>
 #include <kernel_headers/jit_cuh.hpp>
+#include <nvrtc_kernel_headers/Binary_hpp.hpp>
 #include <nvrtc_kernel_headers/Param_hpp.hpp>
+#include <nvrtc_kernel_headers/Transform_hpp.hpp>
 #include <nvrtc_kernel_headers/assign_kernel_param_hpp.hpp>
 #include <nvrtc_kernel_headers/backend_hpp.hpp>
 #include <nvrtc_kernel_headers/cuComplex_h.hpp>
@@ -30,7 +32,6 @@
 #include <nvrtc_kernel_headers/math_constants_h.hpp>
 #include <nvrtc_kernel_headers/math_hpp.hpp>
 #include <nvrtc_kernel_headers/minmax_op_hpp.hpp>
-#include <nvrtc_kernel_headers/ops_hpp.hpp>
 #include <nvrtc_kernel_headers/optypes_hpp.hpp>
 #include <nvrtc_kernel_headers/shared_hpp.hpp>
 #include <nvrtc_kernel_headers/traits_hpp.hpp>
@@ -168,13 +169,14 @@ Kernel compileKernel(const string &kernelName, const string &nameExpr,
             "cuComplex.h",
             "jit.cuh",
             "math.hpp",
-            "ops.hpp",
             "optypes.hpp",
             "Param.hpp",
             "shared.hpp",
             "types.hpp",
             "cuda_fp16.hpp",
             "cuda_fp16.h",
+            "common/Binary.hpp",
+            "common/Transform.hpp",
             "common/half.hpp",
             "common/kernel_type.hpp",
             "af/traits.hpp",
@@ -199,13 +201,14 @@ Kernel compileKernel(const string &kernelName, const string &nameExpr,
             string(cuComplex_h, cuComplex_h_len),
             string(jit_cuh, jit_cuh_len),
             string(math_hpp, math_hpp_len),
-            string(ops_hpp, ops_hpp_len),
             string(optypes_hpp, optypes_hpp_len),
             string(Param_hpp, Param_hpp_len),
             string(shared_hpp, shared_hpp_len),
             string(types_hpp, types_hpp_len),
             string(cuda_fp16_hpp, cuda_fp16_hpp_len),
             string(cuda_fp16_h, cuda_fp16_h_len),
+            string(Binary_hpp, Binary_hpp_len),
+            string(Transform_hpp, Transform_hpp_len),
             string(half_hpp, half_hpp_len),
             string(kernel_type_hpp, kernel_type_hpp_len),
             string(traits_hpp, traits_hpp_len),
@@ -234,8 +237,10 @@ Kernel compileKernel(const string &kernelName, const string &nameExpr,
             sourceStrings[20].c_str(), sourceStrings[21].c_str(),
             sourceStrings[22].c_str(), sourceStrings[23].c_str(),
             sourceStrings[24].c_str(), sourceStrings[25].c_str(),
-            sourceStrings[26].c_str(),
+            sourceStrings[26].c_str(), sourceStrings[27].c_str(),
         };
+        static_assert(extent<decltype(headers)>::value == NumHeaders,
+                      "headers array contains fewer sources than includeNames");
         NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name,
                                        NumHeaders, headers, includeNames));
     }

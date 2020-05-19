@@ -17,6 +17,7 @@
 #include <kernel/names.hpp>
 #include <kernel/scan_first.hpp>
 #include <kernel_headers/where.hpp>
+#include <math.hpp>
 #include <traits.hpp>
 
 #include <string>

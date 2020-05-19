@@ -9,8 +9,9 @@
 
 #pragma once
 #include <Param.hpp>
+#include <common/Binary.hpp>
+#include <common/Transform.hpp>
 #include <common/half.hpp>
-#include <ops.hpp>
 
 namespace cpu {
 namespace kernel {
