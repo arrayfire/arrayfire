@@ -14,11 +14,10 @@
 
 namespace cuda {
 
-template<typename Ti, typename To, af_op_t op,
-         bool isFinalPass, uint DIMX, bool inclusive_scan>
-__global__
-void scan_first(Param<To> out, Param<To> tmp, CParam<Ti> in,
-                uint blocks_x, uint blocks_y, uint lim) {
+template<typename Ti, typename To, af_op_t op, bool isFinalPass, uint DIMX,
+         bool inclusive_scan>
+__global__ void scan_first(Param<To> out, Param<To> tmp, CParam<Ti> in,
+                           uint blocks_x, uint blocks_y, uint lim) {
     const int tidx = threadIdx.x;
     const int tidy = threadIdx.y;
 
@@ -51,10 +50,10 @@ void scan_first(Param<To> out, Param<To> tmp, CParam<Ti> in,
 
     To *sptr = s_val + tidy * (2 * DIMX + 1);
 
-    Transform<Ti, To, op> transform;
-    Binary<To, op> binop;
+    common::Transform<Ti, To, op> transform;
+    common::Binary<To, op> binop;
 
-    const To init = Binary<To, op>::init();
+    const To init = common::Binary<To, op>::init();
     int id        = xid;
     To val        = init;
 
@@ -97,9 +96,8 @@ void scan_first(Param<To> out, Param<To> tmp, CParam<Ti> in,
 }
 
 template<typename To, af_op_t op>
-__global__
-void scan_first_bcast(Param<To> out, CParam<To> tmp, uint blocks_x,
-        uint blocks_y, uint lim, bool inclusive_scan) {
+__global__ void scan_first_bcast(Param<To> out, CParam<To> tmp, uint blocks_x,
+                                 uint blocks_y, uint lim, bool inclusive_scan) {
     const int tidx = threadIdx.x;
     const int tidy = threadIdx.y;
 
@@ -123,7 +121,7 @@ void scan_first_bcast(Param<To> out, CParam<To> tmp, uint blocks_x,
     optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
     tptr += wid * tmp.strides[3] + zid * tmp.strides[2] + yid * tmp.strides[1];
 
-    Binary<To, op> binop;
+    common::Binary<To, op> binop;
     To accum = tptr[blockIdx_x - 1];
 
     // Shift broadcast one step to the right for exclusive scan (#2366)
@@ -134,4 +132,4 @@ void scan_first_bcast(Param<To> out, CParam<To> tmp, uint blocks_x,
     }
 }
 
-}
+}  // namespace cuda

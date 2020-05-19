@@ -28,7 +28,6 @@ class NodeIterator;
 namespace cpu {
 
 namespace jit {
-class Node;
 constexpr int VECTOR_LENGTH = 256;
 
 template<typename T>

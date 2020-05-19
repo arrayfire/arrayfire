@@ -64,7 +64,8 @@ string getDeviceInfo() noexcept {
 
     string model = cinfo.model();
 
-    size_t memMB = getDeviceMemorySize(getActiveDeviceId()) / 1048576;
+    size_t memMB =
+        getDeviceMemorySize(static_cast<int>(getActiveDeviceId())) / 1048576;
 
     info << string("[0] ") << cinfo.vendor() << ": " << ltrim(model);
 

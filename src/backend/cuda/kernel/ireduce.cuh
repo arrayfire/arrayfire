@@ -43,6 +43,7 @@ __global__ static void ireduceDim(Param<T> out, uint *olptr, CParam<T> in,
             ids[1] * out.strides[1] + ids[0];
     olptr += ids[3] * out.strides[3] + ids[2] * out.strides[2] +
              ids[1] * out.strides[1] + ids[0];
+
     const uint blockIdx_dim = ids[dim];
 
     ids[dim] = ids[dim] * blockDim.y + tidy;
@@ -58,7 +59,7 @@ __global__ static void ireduceDim(Param<T> out, uint *olptr, CParam<T> in,
     bool is_valid = (ids[0] < in.dims[0]) && (ids[1] < in.dims[1]) &&
                     (ids[2] < in.dims[2]) && (ids[3] < in.dims[3]);
 
-    T val    = Binary<T, op>::init();
+    T val    = common::Binary<T, op>::init();
     uint idx = id_dim_in;
 
     if (is_valid && id_dim_in < in.dims[dim]) {
@@ -169,7 +170,7 @@ __global__ static void ireduceFirst(Param<T> out, uint *olptr, CParam<T> in,
 
     int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
 
-    compute_t<T> val = Binary<compute_t<T>, op>::init();
+    compute_t<T> val = common::Binary<compute_t<T>, op>::init();
     uint idx         = xid;
 
     if (xid < lim) {

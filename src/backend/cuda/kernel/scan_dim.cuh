@@ -14,11 +14,11 @@
 
 namespace cuda {
 
-template<typename Ti, typename To, af_op_t op, int dim,
-         bool isFinalPass, uint DIMY, bool inclusive_scan>
-__global__
-void scan_dim(Param<To> out, Param<To> tmp, CParam<Ti> in,
-              uint blocks_x, uint blocks_y, uint blocks_dim, uint lim) {
+template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass,
+         uint DIMY, bool inclusive_scan>
+__global__ void scan_dim(Param<To> out, Param<To> tmp, CParam<Ti> in,
+                         uint blocks_x, uint blocks_y, uint blocks_dim,
+                         uint lim) {
     const int tidx = threadIdx.x;
     const int tidy = threadIdx.y;
     const int tid  = tidy * THREADS_X + tidx;
@@ -63,10 +63,10 @@ void scan_dim(Param<To> out, Param<To> tmp, CParam<Ti> in,
     __shared__ To s_tmp[THREADS_X];
     To *sptr = s_val + tid;
 
-    Transform<Ti, To, op> transform;
-    Binary<To, op> binop;
+    common::Transform<Ti, To, op> transform;
+    common::Binary<To, op> binop;
 
-    const To init = Binary<To, op>::init();
+    const To init = common::Binary<To, op>::init();
     To val        = init;
 
     const bool isLast = (tidy == (DIMY - 1));
@@ -111,9 +111,9 @@ void scan_dim(Param<To> out, Param<To> tmp, CParam<Ti> in,
 }
 
 template<typename To, af_op_t op, int dim>
-__global__
-void scan_dim_bcast(Param<To> out, CParam<To> tmp, uint blocks_x, uint blocks_y,
-                    uint blocks_dim, uint lim, bool inclusive_scan) {
+__global__ void scan_dim_bcast(Param<To> out, CParam<To> tmp, uint blocks_x,
+                               uint blocks_y, uint blocks_dim, uint lim,
+                               bool inclusive_scan) {
     const int tidx = threadIdx.x;
     const int tidy = threadIdx.y;
 
@@ -156,7 +156,7 @@ void scan_dim_bcast(Param<To> out, CParam<To> tmp, uint blocks_x, uint blocks_y,
 
     To accum = *(tptr - tmp.strides[dim]);
 
-    Binary<To, op> binop;
+    common::Binary<To, op> binop;
     const int ostride_dim = out.strides[dim];
 
     for (int k = 0, id = id_dim; is_valid && k < lim && (id < out_dim);
@@ -166,4 +166,4 @@ void scan_dim_bcast(Param<To> out, CParam<To> tmp, uint blocks_x, uint blocks_y,
     }
 }
 
-}
+}  // namespace cuda

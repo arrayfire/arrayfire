@@ -18,7 +18,11 @@
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::arithOp;
+using detail::Array;
+using detail::createValueArray;
+using detail::join;
+using detail::scalar;
 
 template<typename T>
 static Array<T> mix(const Array<T>& X, const Array<T>& Y, double xf,

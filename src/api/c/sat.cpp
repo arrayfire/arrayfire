@@ -14,7 +14,13 @@
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename To, typename Ti>
 inline af_array sat(const af_array& in) {

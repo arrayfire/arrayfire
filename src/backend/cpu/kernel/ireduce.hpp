@@ -31,7 +31,7 @@ struct MinMaxOp {
     T m_val;
     uint m_idx;
     MinMaxOp(T val, uint idx) : m_val(val), m_idx(idx) {
-        if (is_nan(val)) { m_val = Binary<T, op>::init(); }
+        if (is_nan(val)) { m_val = common::Binary<T, op>::init(); }
     }
 
     void operator()(T val, uint idx) {
@@ -48,7 +48,7 @@ struct MinMaxOp<af_max_t, T> {
     T m_val;
     uint m_idx;
     MinMaxOp(T val, uint idx) : m_val(val), m_idx(idx) {
-        if (is_nan(val)) { m_val = Binary<T, af_max_t>::init(); }
+        if (is_nan(val)) { m_val = common::Binary<T, af_max_t>::init(); }
     }
 
     void operator()(T val, uint idx) {

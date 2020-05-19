@@ -160,7 +160,7 @@ af_err af_set_axes_limits_compute(const af_window wind, const af_array x,
                                   const bool exact,
                                   const af_cell* const props) {
     CHECK_ARRAYS(x, y);
-    if (z) CHECK_ARRAYS(z);
+    if (z) { CHECK_ARRAYS(z); }
     CALL(af_set_axes_limits_compute, wind, x, y, z, exact, props);
 }
 

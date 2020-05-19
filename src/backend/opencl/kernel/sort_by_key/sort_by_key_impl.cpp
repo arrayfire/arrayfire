@@ -14,5 +14,5 @@
 namespace opencl {
 namespace kernel {
 INSTANTIATE1(TYPE)
-}
+}  // namespace kernel
 }  // namespace opencl

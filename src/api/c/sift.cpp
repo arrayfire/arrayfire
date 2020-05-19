@@ -18,7 +18,8 @@
 #include <af/vision.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::createEmptyArray;
 
 template<typename T, typename convAccT>
 static void sift(af_features& feat_, af_array& descriptors, const af_array& in,

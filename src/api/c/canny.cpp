@@ -33,49 +33,70 @@
 #include <vector>
 
 using af::dim4;
+using detail::arithOp;
+using detail::Array;
+using detail::cast;
+using detail::convolve2;
+using detail::createEmptyArray;
+using detail::createHostDataArray;
+using detail::createSubArray;
+using detail::createValueArray;
+using detail::histogram;
+using detail::iota;
+using detail::ireduce;
+using detail::logicOp;
+using detail::reduce;
+using detail::reduce_all;
+using detail::sobelDerivatives;
+using detail::uchar;
+using detail::uint;
+using detail::unaryOp;
+using detail::ushort;
+using std::make_pair;
+using std::pair;
 using std::vector;
 
 Array<float> gradientMagnitude(const Array<float>& gx, const Array<float>& gy,
                                const bool& isf) {
+    using detail::abs;
     if (isf) {
-        Array<float> gx2 = detail::abs<float, float>(gx);
-        Array<float> gy2 = detail::abs<float, float>(gy);
-        return detail::arithOp<float, af_add_t>(gx2, gy2, gx2.dims());
+        Array<float> gx2 = abs<float, float>(gx);
+        Array<float> gy2 = abs<float, float>(gy);
+        return arithOp<float, af_add_t>(gx2, gy2, gx2.dims());
     } else {
-        Array<float> gx2 = detail::arithOp<float, af_mul_t>(gx, gx, gx.dims());
-        Array<float> gy2 = detail::arithOp<float, af_mul_t>(gy, gy, gy.dims());
-        Array<float> sg =
-            detail::arithOp<float, af_add_t>(gx2, gy2, gx2.dims());
-        return detail::unaryOp<float, af_sqrt_t>(sg);
+        Array<float> gx2 = arithOp<float, af_mul_t>(gx, gx, gx.dims());
+        Array<float> gy2 = arithOp<float, af_mul_t>(gy, gy, gy.dims());
+        Array<float> sg  = arithOp<float, af_add_t>(gx2, gy2, gx2.dims());
+        return unaryOp<float, af_sqrt_t>(sg);
     }
 }
 
 Array<float> otsuThreshold(const Array<float>& supEdges,
                            const unsigned NUM_BINS, const float maxVal) {
     Array<uint> hist =
-        detail::histogram<float, uint, false>(supEdges, NUM_BINS, 0, maxVal);
+        histogram<float, uint, false>(supEdges, NUM_BINS, 0, maxVal);
 
-    const af::dim4& hDims = hist.dims();
+    const dim4& hDims = hist.dims();
 
     // reduce along histogram dimension i.e. 0th dimension
     auto totals = reduce<af_add_t, uint, float>(hist, 0);
 
     // tile histogram total along 0th dimension
-    auto ttotals = tile(totals, af::dim4(hDims[0]));
+    auto ttotals = tile(totals, dim4(hDims[0]));
 
     // pixel frequency probabilities
     auto probability =
         arithOp<float, af_div_t>(cast<float, uint>(hist), ttotals, hDims);
 
-    std::vector<af_seq> seqBegin(4, af_span);
-    std::vector<af_seq> seqRest(4, af_span);
+    vector<af_seq> seqBegin(4, af_span);
+    vector<af_seq> seqRest(4, af_span);
 
     seqBegin[0] = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
     seqRest[0]  = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
 
-    const af::dim4& iDims = supEdges.dims();
+    const dim4& iDims = supEdges.dims();
 
-    Array<float> sigmas = detail::createEmptyArray<float>(hDims);
+    Array<float> sigmas = createEmptyArray<float>(hDims);
 
     for (unsigned b = 0; b < (NUM_BINS - 1); ++b) {
         seqBegin[0].end  = static_cast<double>(b);
@@ -109,7 +130,7 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
         auto op2   = arithOp<float, af_mul_t>(qL, qH, tdims);
         auto sigma = arithOp<float, af_mul_t>(sqrd, op2, tdims);
 
-        std::vector<af_seq> sliceIndex(4, af_span);
+        vector<af_seq> sliceIndex(4, af_span);
         sliceIndex[0] = {double(b), double(b), 1};
 
         auto binRes = createSubArray<float>(sigmas, sliceIndex, false);
@@ -135,10 +156,11 @@ Array<float> normalize(const Array<float>& supEdges, const float minVal,
     return arithOp<float, af_div_t>(diff, denom, supEdges.dims());
 }
 
-std::pair<Array<char>, Array<char>> computeCandidates(
-    const Array<float>& supEdges, const float t1, const af_canny_threshold ct,
-    const float t2) {
-    float maxVal  = detail::reduce_all<af_max_t, float, float>(supEdges);
+pair<Array<char>, Array<char>> computeCandidates(const Array<float>& supEdges,
+                                                 const float t1,
+                                                 const af_canny_threshold ct,
+                                                 const float t2) {
+    float maxVal  = reduce_all<af_max_t, float, float>(supEdges);
     auto NUM_BINS = static_cast<unsigned>(maxVal);
 
     auto lowRatio = createValueArray<float>(supEdges.dims(), t1);
@@ -155,10 +177,10 @@ std::pair<Array<char>, Array<char>> computeCandidates(
                 logicOp<char, af_and_t>(weak1, weak2, weak1.dims());
             Array<char> strong =
                 logicOp<float, af_ge_t>(supEdges, T2, supEdges.dims());
-            return std::make_pair(strong, weak);
+            return make_pair(strong, weak);
         };
         default: {
-            float minVal = detail::reduce_all<af_min_t, float, float>(supEdges);
+            float minVal = reduce_all<af_min_t, float, float>(supEdges);
             auto normG   = normalize(supEdges, minVal, maxVal);
             auto T2      = createValueArray<float>(supEdges.dims(), t2);
             auto T1      = createValueArray<float>(supEdges.dims(), t1);
@@ -181,27 +203,24 @@ af_array cannyHelper(const Array<T>& in, const float t1,
                      const unsigned sw, const bool isf) {
     static const vector<float> v{-0.11021f, -0.23691f, -0.30576f, -0.23691f,
                                  -0.11021f};
-    Array<float> cFilter =
-        detail::createHostDataArray<float>(dim4(5, 1), v.data());
-    Array<float> rFilter =
-        detail::createHostDataArray<float>(dim4(1, 5), v.data());
+    Array<float> cFilter = createHostDataArray<float>(dim4(5, 1), v.data());
+    Array<float> rFilter = createHostDataArray<float>(dim4(1, 5), v.data());
 
     // Run separable convolution to smooth the input image
-    Array<float> smt = detail::convolve2<float, float, false>(
-        cast<float, T>(in), cFilter, rFilter);
+    Array<float> smt =
+        convolve2<float, float, false>(cast<float, T>(in), cFilter, rFilter);
 
-    auto g          = detail::sobelDerivatives<float, float>(smt, sw);
+    auto g          = sobelDerivatives<float, float>(smt, sw);
     Array<float> gx = g.first;
     Array<float> gy = g.second;
 
     Array<float> gmag = gradientMagnitude(gx, gy, isf);
 
-    Array<float> supEdges = detail::nonMaximumSuppression(gmag, gx, gy);
+    Array<float> supEdges = nonMaximumSuppression(gmag, gx, gy);
 
     auto swpair = computeCandidates(supEdges, t1, ct, t2);
 
-    return getHandle(
-        detail::edgeTrackingByHysteresis(swpair.first, swpair.second));
+    return getHandle(edgeTrackingByHysteresis(swpair.first, swpair.second));
 }
 
 af_err af_canny(af_array* out, const af_array in, const af_canny_threshold ct,

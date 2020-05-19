@@ -18,6 +18,11 @@
 #include <af/graphics.h>
 
 using detail::Array;
+using detail::copy_histogram;
+using detail::forgeManager;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 using graphics::ForgeManager;
 
 template<typename T>

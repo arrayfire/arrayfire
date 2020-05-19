@@ -20,6 +20,7 @@
 #include <kernel_headers/ops.hpp>
 #include <kernel_headers/reduce_dim.hpp>
 #include <kernel_headers/reduce_first.hpp>
+#include <math.hpp>
 #include <memory.hpp>
 #include <traits.hpp>
 
@@ -48,7 +49,7 @@ void reduceDimLauncher(Param out, Param in, const int dim, const uint threads_y,
         DefineKeyValue(kDim, dim),
         DefineKeyValue(DIMY, threads_y),
         DefineValue(THREADS_X),
-        DefineKeyValue(init, toNumStr(Binary<To, op>::init())),
+        DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
         DefineKeyValue(CPLX, af::iscplx<Ti>()),
     };
@@ -129,7 +130,7 @@ void reduceFirstLauncher(Param out, Param in, const uint groups_x,
         DefineKeyValue(T, "To"),
         DefineKeyValue(DIMX, threads_x),
         DefineValue(THREADS_PER_GROUP),
-        DefineKeyValue(init, toNumStr(Binary<To, op>::init())),
+        DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
         DefineKeyValue(CPLX, af::iscplx<Ti>()),
     };
@@ -232,8 +233,8 @@ To reduceAll(Param in, int change_nan, double nanval) {
         getQueue().enqueueReadBuffer(*tmp.get(), CL_TRUE, 0,
                                      sizeof(To) * tmp_elements, h_ptr.data());
 
-        Binary<compute_t<To>, op> reduce;
-        compute_t<To> out = Binary<compute_t<To>, op>::init();
+        common::Binary<compute_t<To>, op> reduce;
+        compute_t<To> out = common::Binary<compute_t<To>, op>::init();
         for (int i = 0; i < (int)tmp_elements; i++) {
             out = reduce(out, compute_t<To>(h_ptr[i]));
         }
@@ -244,9 +245,9 @@ To reduceAll(Param in, int change_nan, double nanval) {
                                      sizeof(Ti) * in.info.offset,
                                      sizeof(Ti) * in_elements, h_ptr.data());
 
-        Transform<Ti, compute_t<To>, op> transform;
-        Binary<compute_t<To>, op> reduce;
-        compute_t<To> out       = Binary<compute_t<To>, op>::init();
+        common::Transform<Ti, compute_t<To>, op> transform;
+        common::Binary<compute_t<To>, op> reduce;
+        compute_t<To> out       = common::Binary<compute_t<To>, op>::init();
         compute_t<To> nanval_to = scalar<compute_t<To>>(nanval);
 
         for (int i = 0; i < (int)in_elements; i++) {

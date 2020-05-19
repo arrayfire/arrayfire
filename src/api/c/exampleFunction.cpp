@@ -30,6 +30,7 @@
                                 // where your new function declaration
                                 // is written
 
+// NOLINTNEXTLINE(google-build-using-namespace)
 using namespace detail;  // detail is an alias to appropriate backend
                          // defined in backend.hpp. You don't need to
                          // change this

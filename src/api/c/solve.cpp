@@ -17,7 +17,10 @@
 #include <af/lapack.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::solveLU;
 
 template<typename T>
 static inline af_array solve(const af_array a, const af_array b,

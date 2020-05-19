@@ -14,12 +14,20 @@
 #include <platform.hpp>
 #include <af/traits.hpp>
 
+using af::dim4;
 using af::dtype_traits;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::copyArray;
+using detail::createDeviceDataArray;
+using detail::createHostDataArray;
+using detail::createValueArray;
+using detail::getActiveDeviceId;
+using detail::scalar;
+using detail::writeDeviceDataArray;
 
 namespace common {
-
-using namespace detail;
-
 ////////////////////////////////////////////////////////////////////////////
 // Sparse Array Base Implementations
 ////////////////////////////////////////////////////////////////////////////
@@ -35,7 +43,7 @@ using namespace detail;
     ((stype == AF_STORAGE_COO || stype == AF_STORAGE_CSR) ? _nNZ \
                                                           : (_dims[1] + 1))
 
-SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ,
+SparseArrayBase::SparseArrayBase(const af::dim4 &_dims, dim_t _nNZ,
                                  af::storage _storage, af_dtype _type)
     : info(getActiveDeviceId(), _dims, 0, calcStrides(_dims), _type, true)
     , stype(_storage)
@@ -46,10 +54,10 @@ SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ,
                   "SparseArrayBase.");
 }
 
-SparseArrayBase::SparseArrayBase(af::dim4 _dims, dim_t _nNZ, int *const _rowIdx,
-                                 int *const _colIdx, const af::storage _storage,
-                                 af_dtype _type, bool _is_device,
-                                 bool _copy_device)
+SparseArrayBase::SparseArrayBase(const af::dim4 &_dims, dim_t _nNZ,
+                                 int *const _rowIdx, int *const _colIdx,
+                                 const af::storage _storage, af_dtype _type,
+                                 bool _is_device, bool _copy_device)
     : info(getActiveDeviceId(), _dims, 0, calcStrides(_dims), _type, true)
     , stype(_storage)
     , rowIdx(_is_device

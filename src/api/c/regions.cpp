@@ -11,12 +11,14 @@
 #include <common/err_common.hpp>
 #include <handle.hpp>
 #include <regions.hpp>
+#include <types.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::uint;
+using detail::ushort;
 
 template<typename T>
 static af_array regions(af_array const &in, af_connectivity connectivity) {

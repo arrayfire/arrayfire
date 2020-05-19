@@ -16,7 +16,12 @@
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::intl;
+using detail::meanshift;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 static inline af_array mean_shift(const af_array &in, const float &s_sigma,

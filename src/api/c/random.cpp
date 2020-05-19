@@ -22,12 +22,31 @@
 #include <af/dim4.hpp>
 #include <memory>
 
-using namespace detail;
-using namespace common;
-
 using af::dim4;
+using common::half;
+using common::mask;
+using common::MaxBlocks;
+using common::MtStateLength;
+using common::pos;
+using common::recursion_tbl;
+using common::sh1;
+using common::sh2;
+using common::TableLength;
+using common::temper_tbl;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::createHostDataArray;
+using detail::intl;
+using detail::normalDistribution;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::uniformDistribution;
+using detail::ushort;
 
-Array<uint> emptyArray() { return createEmptyArray<uint>(af::dim4(0)); }
+Array<uint> emptyArray() { return createEmptyArray<uint>(dim4(0)); }
 
 struct RandomEngine {
     // clang-format off
@@ -69,7 +88,7 @@ RandomEngine *getRandomEngine(const af_random_engine engineHandle) {
 
 namespace {
 template<typename T>
-inline af_array uniformDistribution_(const af::dim4 &dims, RandomEngine *e) {
+inline af_array uniformDistribution_(const dim4 &dims, RandomEngine *e) {
     if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
         return getHandle(uniformDistribution<T>(dims, e->pos, e->sh1, e->sh2,
                                                 e->mask, e->recursion_table,
@@ -81,7 +100,7 @@ inline af_array uniformDistribution_(const af::dim4 &dims, RandomEngine *e) {
 }
 
 template<typename T>
-inline af_array normalDistribution_(const af::dim4 &dims, RandomEngine *e) {
+inline af_array normalDistribution_(const dim4 &dims, RandomEngine *e) {
     if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
         return getHandle(normalDistribution<T>(dims, e->pos, e->sh1, e->sh2,
                                                e->mask, e->recursion_table,
@@ -128,16 +147,16 @@ af_err af_create_random_engine(af_random_engine *engineHandle,
         *e.counter = 0;
 
         if (rtype == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-            e.pos  = createHostDataArray<uint>(af::dim4(MaxBlocks), pos);
-            e.sh1  = createHostDataArray<uint>(af::dim4(MaxBlocks), sh1);
-            e.sh2  = createHostDataArray<uint>(af::dim4(MaxBlocks), sh2);
+            e.pos  = createHostDataArray<uint>(dim4(MaxBlocks), pos);
+            e.sh1  = createHostDataArray<uint>(dim4(MaxBlocks), sh1);
+            e.sh2  = createHostDataArray<uint>(dim4(MaxBlocks), sh2);
             e.mask = mask;
 
             e.recursion_table =
-                createHostDataArray<uint>(af::dim4(TableLength), recursion_tbl);
+                createHostDataArray<uint>(dim4(TableLength), recursion_tbl);
             e.temper_table =
-                createHostDataArray<uint>(af::dim4(TableLength), temper_tbl);
-            e.state = createEmptyArray<uint>(af::dim4(MtStateLength));
+                createHostDataArray<uint>(dim4(TableLength), temper_tbl);
+            e.state = createEmptyArray<uint>(dim4(MtStateLength));
 
             initMersenneState(e.state, seed, e.recursion_table);
         }
@@ -167,16 +186,16 @@ af_err af_random_engine_set_type(af_random_engine *engine,
         RandomEngine *e = getRandomEngine(*engine);
         if (rtype != e->type) {
             if (rtype == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
-                e->pos  = createHostDataArray<uint>(af::dim4(MaxBlocks), pos);
-                e->sh1  = createHostDataArray<uint>(af::dim4(MaxBlocks), sh1);
-                e->sh2  = createHostDataArray<uint>(af::dim4(MaxBlocks), sh2);
+                e->pos  = createHostDataArray<uint>(dim4(MaxBlocks), pos);
+                e->sh1  = createHostDataArray<uint>(dim4(MaxBlocks), sh1);
+                e->sh2  = createHostDataArray<uint>(dim4(MaxBlocks), sh2);
                 e->mask = mask;
 
-                e->recursion_table = createHostDataArray<uint>(
-                    af::dim4(TableLength), recursion_tbl);
-                e->temper_table = createHostDataArray<uint>(
-                    af::dim4(TableLength), temper_tbl);
-                e->state = createEmptyArray<uint>(af::dim4(MtStateLength));
+                e->recursion_table =
+                    createHostDataArray<uint>(dim4(TableLength), recursion_tbl);
+                e->temper_table =
+                    createHostDataArray<uint>(dim4(TableLength), temper_tbl);
+                e->state = createEmptyArray<uint>(dim4(MtStateLength));
 
                 initMersenneState(e->state, *(e->seed), e->recursion_table);
             } else if (e->type == AF_RANDOM_ENGINE_MERSENNE_GP11213) {
@@ -249,7 +268,7 @@ af_err af_random_uniform(af_array *out, const unsigned ndims,
         AF_CHECK(af_init());
         af_array result;
 
-        af::dim4 d      = verifyDims(ndims, dims);
+        dim4 d          = verifyDims(ndims, dims);
         RandomEngine *e = getRandomEngine(engine);
 
         switch (type) {
@@ -281,7 +300,7 @@ af_err af_random_normal(af_array *out, const unsigned ndims,
         AF_CHECK(af_init());
         af_array result;
 
-        af::dim4 d      = verifyDims(ndims, dims);
+        dim4 d          = verifyDims(ndims, dims);
         RandomEngine *e = getRandomEngine(engine);
 
         switch (type) {
@@ -316,7 +335,7 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t *const dims,
         af_random_engine engine;
         AF_CHECK(af_get_default_random_engine(&engine));
         RandomEngine *e = getRandomEngine(engine);
-        af::dim4 d      = verifyDims(ndims, dims);
+        dim4 d          = verifyDims(ndims, dims);
 
         switch (type) {
             case f32: result = uniformDistribution_<float>(d, e); break;
@@ -349,7 +368,7 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_t *const dims,
         af_random_engine engine;
         AF_CHECK(af_get_default_random_engine(&engine));
         RandomEngine *e = getRandomEngine(engine);
-        af::dim4 d      = verifyDims(ndims, dims);
+        dim4 d          = verifyDims(ndims, dims);
 
         switch (type) {
             case f32: result = normalDistribution_<float>(d, e); break;

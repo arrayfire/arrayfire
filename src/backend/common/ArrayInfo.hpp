@@ -47,7 +47,7 @@ class ArrayInfo {
     bool is_sparse;
 
    public:
-    ArrayInfo(int id, af::dim4 size, dim_t offset_, af::dim4 stride,
+    ArrayInfo(unsigned id, af::dim4 size, dim_t offset_, af::dim4 stride,
               af_dtype af_type)
         : devId(id)
         , type(af_type)
@@ -63,7 +63,7 @@ class ArrayInfo {
                    This is then used in the unified backend to check mismatched arrays.");
     }
 
-    ArrayInfo(int id, af::dim4 size, dim_t offset_, af::dim4 stride,
+    ArrayInfo(unsigned id, af::dim4 size, dim_t offset_, af::dim4 stride,
               af_dtype af_type, bool sparse)
         : devId(id)
         , type(af_type)

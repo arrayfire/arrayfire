@@ -20,7 +20,16 @@
 #include <af/lapack.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::createValueArray;
+using detail::logicOp;
+using detail::reduce;
+using detail::reduce_all;
+using detail::scalar;
+using detail::uint;
 
 template<typename T>
 static inline uint rank(const af_array in, double tol) {
@@ -35,6 +44,7 @@ static inline uint rank(const af_array in, double tol) {
         Array<T> r = createEmptyArray<T>(dim4());
         Array<T> t = createEmptyArray<T>(dim4());
         qr(q, r, t, In);
+        using detail::abs;
 
         R = abs<BT, T>(r);
     }

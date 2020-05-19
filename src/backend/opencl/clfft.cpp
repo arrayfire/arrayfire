@@ -169,6 +169,7 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout, clfftDim rank,
         // thrown. This is related to
         // https://github.com/arrayfire/arrayfire/pull/1899
         CLFFT_CHECK(clfftDestroyPlan(p));
+        // NOLINTNEXTLINE(hicpp-no-malloc)
         free(p);
 #endif
     });

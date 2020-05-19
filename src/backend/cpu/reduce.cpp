@@ -20,7 +20,12 @@
 #include <functional>
 
 using af::dim4;
+using common::Binary;
 using common::half;
+using common::Transform;
+using cpu::cdouble;
+
+namespace common {
 
 template<>
 struct Binary<cdouble, af_add_t> {
@@ -30,6 +35,8 @@ struct Binary<cdouble, af_add_t> {
         return cdouble(real(lhs) + real(rhs), imag(lhs) + imag(rhs));
     }
 };
+
+}  // namespace common
 
 namespace cpu {
 
