@@ -22,10 +22,16 @@
 
 #include <cmath>
 
+using af::dim4;
 using detail::arithOp;
+using detail::Array;
+using detail::cast;
 using detail::intl;
 using detail::reduce_all;
+using detail::uchar;
+using detail::uint;
 using detail::uintl;
+using detail::ushort;
 
 template<typename Ti, typename To>
 static To corrcoef(const af_array& X, const af_array& Y) {
@@ -35,16 +41,16 @@ static To corrcoef(const af_array& X, const af_array& Y) {
     const dim4& dims = xIn.dims();
     dim_t n          = xIn.elements();
 
-    To xSum = detail::reduce_all<af_add_t, To, To>(xIn);
-    To ySum = detail::reduce_all<af_add_t, To, To>(yIn);
+    To xSum = reduce_all<af_add_t, To, To>(xIn);
+    To ySum = reduce_all<af_add_t, To, To>(yIn);
 
-    Array<To> xSq = detail::arithOp<To, af_mul_t>(xIn, xIn, dims);
-    Array<To> ySq = detail::arithOp<To, af_mul_t>(yIn, yIn, dims);
-    Array<To> xy  = detail::arithOp<To, af_mul_t>(xIn, yIn, dims);
+    Array<To> xSq = arithOp<To, af_mul_t>(xIn, xIn, dims);
+    Array<To> ySq = arithOp<To, af_mul_t>(yIn, yIn, dims);
+    Array<To> xy  = arithOp<To, af_mul_t>(xIn, yIn, dims);
 
-    To xSqSum = detail::reduce_all<af_add_t, To, To>(xSq);
-    To ySqSum = detail::reduce_all<af_add_t, To, To>(ySq);
-    To xySum  = detail::reduce_all<af_add_t, To, To>(xy);
+    To xSqSum = reduce_all<af_add_t, To, To>(xSq);
+    To ySqSum = reduce_all<af_add_t, To, To>(ySq);
+    To xySum  = reduce_all<af_add_t, To, To>(xy);
 
     To result =
         (n * xySum - xSum * ySum) / (std::sqrt(n * xSqSum - xSum * xSum) *

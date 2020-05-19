@@ -18,7 +18,13 @@
 #include <af/dim4.hpp>
 #include <complex>
 
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<af_op_t op, typename Ti, typename To>
 static inline af_array scan(const af_array in, const int dim,

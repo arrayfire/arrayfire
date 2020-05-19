@@ -28,8 +28,8 @@
 
 using af::dim4;
 
+using detail::Array;
 using std::vector;
-using namespace detail;
 
 template<typename T>
 static inline void moments(af_array* out, const af_array in,

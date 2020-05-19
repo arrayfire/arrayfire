@@ -147,10 +147,6 @@ static inline float real(cfloat in) { return in.s[0]; }
 static inline double imag(cdouble in) { return in.s[1]; }
 static inline float imag(cfloat in) { return in.s[1]; }
 
-bool operator==(cfloat lhs, cfloat rhs);
-bool operator!=(cfloat lhs, cfloat rhs);
-bool operator==(cdouble lhs, cdouble rhs);
-bool operator!=(cdouble lhs, cdouble rhs);
 cfloat operator+(cfloat lhs, cfloat rhs);
 cfloat operator+(cfloat lhs);
 cdouble operator+(cdouble lhs, cdouble rhs);
@@ -159,6 +155,21 @@ cfloat operator*(cfloat lhs, cfloat rhs);
 cdouble operator*(cdouble lhs, cdouble rhs);
 common::half operator+(common::half lhs, common::half rhs) noexcept;
 }  // namespace opencl
+
+static inline bool operator==(opencl::cfloat lhs, opencl::cfloat rhs) noexcept {
+    return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
+}
+static inline bool operator!=(opencl::cfloat lhs, opencl::cfloat rhs) noexcept {
+    return !(lhs == rhs);
+}
+static inline bool operator==(opencl::cdouble lhs,
+                              opencl::cdouble rhs) noexcept {
+    return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
+}
+static inline bool operator!=(opencl::cdouble lhs,
+                              opencl::cdouble rhs) noexcept {
+    return !(lhs == rhs);
+}
 
 #if defined(__GNUC__) || defined(__GNUG__)
 /* GCC/G++, Clang/LLVM, Intel ICC */

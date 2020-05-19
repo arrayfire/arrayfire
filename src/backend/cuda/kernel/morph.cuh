@@ -22,18 +22,16 @@ __constant__ char
 
 namespace cuda {
 
-__forceinline__ __device__
-int lIdx(int x, int y, int stride1, int stride0) {
+__forceinline__ __device__ int lIdx(int x, int y, int stride1, int stride0) {
     return (y * stride1 + x * stride0);
 }
 
 template<typename T, bool isDilation>
-inline __device__
-void load2ShrdMem(T* shrd, const T* const in, int lx, int ly, int shrdStride,
-                  int dim0, int dim1, int gx, int gy,
-                  int inStride1, int inStride0) {
-    T val =
-        isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
+inline __device__ void load2ShrdMem(T* shrd, const T* const in, int lx, int ly,
+                                    int shrdStride, int dim0, int dim1, int gx,
+                                    int gy, int inStride1, int inStride0) {
+    T val = isDilation ? common::Binary<T, af_max_t>::init()
+                       : common::Binary<T, af_min_t>::init();
     if (gx >= 0 && gx < dim0 && gy >= 0 && gy < dim1) {
         val = in[lIdx(gx, gy, inStride1, inStride0)];
     }
@@ -56,8 +54,8 @@ void load2ShrdMem(T* shrd, const T* const in, int lx, int ly, int shrdStride,
 //  * windLen
 // If SeLength is > 0, then that will override the kernel argument.
 template<typename T, bool isDilation, int SeLength = 0>
-__global__
-void morph(Param<T> out, CParam<T> in, int nBBS0, int nBBS1, int windLen = 0) {
+__global__ void morph(Param<T> out, CParam<T> in, int nBBS0, int nBBS1,
+                      int windLen = 0) {
     windLen = (SeLength > 0 ? SeLength : windLen);
 
     SharedMemory<T> shared;
@@ -102,8 +100,8 @@ void morph(Param<T> out, CParam<T> in, int nBBS0, int nBBS1, int windLen = 0) {
     __syncthreads();
 
     const T* d_filt = (const T*)cFilter;
-    T acc =
-        isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
+    T acc           = isDilation ? common::Binary<T, af_max_t>::init()
+                       : common::Binary<T, af_min_t>::init();
 #pragma unroll
     for (int wj = 0; wj < windLen; ++wj) {
         int joff   = wj * windLen;
@@ -126,19 +124,20 @@ void morph(Param<T> out, CParam<T> in, int nBBS0, int nBBS1, int windLen = 0) {
     }
 }
 
-__forceinline__ __device__
-int lIdx3D(int x, int y, int z, int stride2, int stride1, int stride0) {
+__forceinline__ __device__ int lIdx3D(int x, int y, int z, int stride2,
+                                      int stride1, int stride0) {
     return (z * stride2 + y * stride1 + x * stride0);
 }
 
 template<typename T, bool isDilation>
-inline __device__
-void load2ShrdVolume(T* shrd, const T* const in, int lx, int ly, int lz,
-                     int shrdStride1, int shrdStride2, int dim0, int dim1,
-                     int dim2, int gx, int gy, int gz,
-                     int inStride2, int inStride1, int inStride0) {
-    T val =
-        isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
+inline __device__ void load2ShrdVolume(T* shrd, const T* const in, int lx,
+                                       int ly, int lz, int shrdStride1,
+                                       int shrdStride2, int dim0, int dim1,
+                                       int dim2, int gx, int gy, int gz,
+                                       int inStride2, int inStride1,
+                                       int inStride0) {
+    T val = isDilation ? common::Binary<T, af_max_t>::init()
+                       : common::Binary<T, af_min_t>::init();
     if (gx >= 0 && gx < dim0 && gy >= 0 && gy < dim1 && gz >= 0 && gz < dim2) {
         val = in[gx * inStride0 + gy * inStride1 + gz * inStride2];
     }
@@ -148,8 +147,7 @@ void load2ShrdVolume(T* shrd, const T* const in, int lx, int ly, int lz,
 // kernel assumes mask/filter is square and hence does the
 // necessary operations accordingly.
 template<typename T, bool isDilation, int windLen>
-__global__
-void morph3D(Param<T> out, CParam<T> in, int nBBS) {
+__global__ void morph3D(Param<T> out, CParam<T> in, int nBBS) {
     SharedMemory<T> shared;
     T* shrdMem = shared.getPointer();
 
@@ -198,8 +196,8 @@ void morph3D(Param<T> out, CParam<T> in, int nBBS) {
     int k = lz + halo;
 
     const T* d_filt = (const T*)cFilter;
-    T acc =
-        isDilation ? Binary<T, af_max_t>::init() : Binary<T, af_min_t>::init();
+    T acc           = isDilation ? common::Binary<T, af_max_t>::init()
+                       : common::Binary<T, af_min_t>::init();
 #pragma unroll
     for (int wk = 0; wk < windLen; ++wk) {
         int koff   = wk * se_area;
@@ -228,4 +226,4 @@ void morph3D(Param<T> out, CParam<T> in, int nBBS) {
     }
 }
 
-} // namespace cuda
+}  // namespace cuda

@@ -65,7 +65,7 @@ void DefaultMemoryManager::cleanDeviceMemoryManager(int device) {
     AF_TRACE("GC: Clearing {} buffers {}", free_ptrs.size(),
              bytesToString(bytes_freed));
     // Free memory outside of the lock
-    for (auto ptr : free_ptrs) { this->nativeFree(ptr); }
+    for (auto *ptr : free_ptrs) { this->nativeFree(ptr); }
 }
 
 DefaultMemoryManager::DefaultMemoryManager(int num_devices,
@@ -116,7 +116,7 @@ void DefaultMemoryManager::setMaxMemorySize() {
         // Calls garbage collection when: total_bytes > memsize * 0.75 when
         // memsize < 4GB total_bytes > memsize - 1 GB when memsize >= 4GB If
         // memsize returned 0, then use 1GB
-        size_t memsize = this->getMaxMemorySize(n);
+        size_t memsize = this->getMaxMemorySize(static_cast<int>(n));
         memory[n].max_bytes =
             memsize == 0
                 ? ONE_GB
@@ -275,7 +275,7 @@ void DefaultMemoryManager::printInfo(const char *msg, const int device) {
         "---------------------------------------------------------\n");
 
     lock_guard_t lock(this->memory_mutex);
-    for (auto &kv : current.locked_map) {
+    for (const auto &kv : current.locked_map) {
         const char *status_mngr = "Yes";
         const char *status_user = "Unknown";
         if (kv.second.user_lock) {
@@ -295,7 +295,7 @@ void DefaultMemoryManager::printInfo(const char *msg, const int device) {
                status_mngr, status_user);
     }
 
-    for (auto &kv : current.free_map) {
+    for (const auto &kv : current.free_map) {
         const char *status_mngr = "No";
         const char *status_user = "No";
 
@@ -306,7 +306,7 @@ void DefaultMemoryManager::printInfo(const char *msg, const int device) {
             unit = "MB";
         }
 
-        for (auto &ptr : kv.second) {
+        for (const auto &ptr : kv.second) {
             printf("|  %14p  |  %6.f %s | %9s | %9s |\n", ptr, size, unit,
                    status_mngr, status_user);
         }

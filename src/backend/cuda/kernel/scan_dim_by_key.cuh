@@ -14,17 +14,17 @@
 namespace cuda {
 
 template<typename Tk>
-__device__ inline
-char calculate_head_flags_dim(const Tk *kptr, int id, int stride) {
+__device__ inline char calculate_head_flags_dim(const Tk *kptr, int id,
+                                                int stride) {
     return (id == 0) ? 1 : ((*kptr) != (*(kptr - stride)));
 }
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
-__global__
-void scanbykey_dim_nonfinal(Param<To> out, Param<To> tmp, Param<char> tflg,
-                            Param<int> tlid, CParam<Ti> in, CParam<Tk> key,
-                            int dim, uint blocks_x, uint blocks_y, uint lim,
-                            bool inclusive_scan) {
+__global__ void scanbykey_dim_nonfinal(Param<To> out, Param<To> tmp,
+                                       Param<char> tflg, Param<int> tlid,
+                                       CParam<Ti> in, CParam<Tk> key, int dim,
+                                       uint blocks_x, uint blocks_y, uint lim,
+                                       bool inclusive_scan) {
     const int tidx = threadIdx.x;
     const int tidy = threadIdx.y;
     const int tid  = tidy * THREADS_X + tidx;
@@ -81,10 +81,10 @@ void scanbykey_dim_nonfinal(Param<To> out, Param<To> tmp, Param<char> tflg,
     To *sptr    = s_val + tid;
     char *sfptr = s_flg + tid;
 
-    Transform<Ti, To, op> transform;
-    Binary<To, op> binop;
+    common::Transform<Ti, To, op> transform;
+    common::Binary<To, op> binop;
 
-    const To init = Binary<To, op>::init();
+    const To init = common::Binary<To, op>::init();
     To val        = init;
 
     const bool isLast = (tidy == (DIMY - 1));
@@ -181,10 +181,10 @@ void scanbykey_dim_nonfinal(Param<To> out, Param<To> tmp, Param<char> tflg,
 }
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
-__global__
-void scanbykey_dim_final(Param<To> out, CParam<Ti> in, CParam<Tk> key,
-                         int dim, uint blocks_x, uint blocks_y, uint lim,
-                         bool calculateFlags, bool inclusive_scan) {
+__global__ void scanbykey_dim_final(Param<To> out, CParam<Ti> in,
+                                    CParam<Tk> key, int dim, uint blocks_x,
+                                    uint blocks_y, uint lim,
+                                    bool calculateFlags, bool inclusive_scan) {
     const int tidx = threadIdx.x;
     const int tidy = threadIdx.y;
     const int tid  = tidy * THREADS_X + tidx;
@@ -230,10 +230,10 @@ void scanbykey_dim_final(Param<To> out, CParam<Ti> in, CParam<Tk> key,
     To *sptr    = s_val + tid;
     char *sfptr = s_flg + tid;
 
-    Transform<Ti, To, op> transform;
-    Binary<To, op> binop;
+    common::Transform<Ti, To, op> transform;
+    common::Binary<To, op> binop;
 
-    const To init = Binary<To, op>::init();
+    const To init = common::Binary<To, op>::init();
     To val        = init;
 
     const bool isLast = (tidy == (DIMY - 1));
@@ -313,10 +313,9 @@ void scanbykey_dim_final(Param<To> out, CParam<Ti> in, CParam<Tk> key,
 }
 
 template<typename To, af_op_t op>
-__global__
-void scanbykey_dim_bcast(Param<To> out, CParam<To> tmp, Param<int> tlid,
-                         int dim, uint blocks_x, uint blocks_y,
-                         uint blocks_dim, uint lim) {
+__global__ void scanbykey_dim_bcast(Param<To> out, CParam<To> tmp,
+                                    Param<int> tlid, int dim, uint blocks_x,
+                                    uint blocks_y, uint blocks_dim, uint lim) {
     const int tidx = threadIdx.x;
     const int tidy = threadIdx.y;
 
@@ -357,7 +356,7 @@ void scanbykey_dim_bcast(Param<To> out, CParam<To> tmp, Param<int> tlid,
     int boundary = *iptr;
     To accum     = *(tptr - tmp.strides[dim]);
 
-    Binary<To, op> binop;
+    common::Binary<To, op> binop;
     const int ostride_dim = out.strides[dim];
 
     for (int k = 0, id = id_dim; is_valid && k < lim && (id < boundary);
@@ -367,4 +366,4 @@ void scanbykey_dim_bcast(Param<To> out, CParam<To> tmp, Param<int> tlid,
     }
 }
 
-}
+}  // namespace cuda

@@ -23,7 +23,15 @@
 #include <tile.hpp>
 
 using af::dim4;
-using namespace detail;
+using detail::arithOp;
+using detail::Array;
+using detail::cast;
+using detail::createValueArray;
+using detail::join;
+using detail::scalar;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 
 template<typename T, typename cType>
 static af_array rgb2gray(const af_array& in, const float r, const float g,

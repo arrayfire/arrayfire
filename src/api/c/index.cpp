@@ -26,14 +26,22 @@
 #include <cmath>
 #include <vector>
 
-using namespace detail;
 using std::signbit;
 using std::swap;
 using std::vector;
 
+using af::dim4;
 using common::convert2Canonical;
 using common::createSpanIndex;
 using common::half;
+using detail::cdouble;
+using detail::cfloat;
+using detail::index;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 namespace common {
 af_index_t createSpanIndex() {
@@ -57,8 +65,8 @@ af_seq convert2Canonical(const af_seq s, const dim_t len) {
 
 template<typename T>
 static af_array indexBySeqs(const af_array& src,
-                            const vector<af_seq> indicesV) {
-    dim_t ndims       = static_cast<dim_t>(indicesV.size());
+                            const vector<af_seq>& indicesV) {
+    auto ndims        = static_cast<dim_t>(indicesV.size());
     const auto& input = getArray<T>(src);
 
     if (ndims == 1U && ndims != input.ndims()) {

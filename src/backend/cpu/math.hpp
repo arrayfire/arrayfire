@@ -113,4 +113,10 @@ static inline T clamp(const T value, const T lo, const T hi) {
     return (value < lo ? lo : (value > hi ? hi : value));
 }
 #endif
+
+inline double real(cdouble in) noexcept { return std::real(in); }
+inline float real(cfloat in) noexcept { return std::real(in); }
+inline double imag(cdouble in) noexcept { return std::imag(in); }
+inline float imag(cfloat in) noexcept { return std::imag(in); }
+
 }  // namespace cpu

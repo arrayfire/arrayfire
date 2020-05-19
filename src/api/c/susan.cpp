@@ -18,7 +18,15 @@
 #include <af/vision.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::createValueArray;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 
 template<typename T>
 static af_features susan(af_array const& in, const unsigned radius,

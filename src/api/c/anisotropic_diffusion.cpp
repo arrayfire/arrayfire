@@ -24,6 +24,12 @@
 #include <type_traits>
 
 using af::dim4;
+using detail::arithOp;
+using detail::Array;
+using detail::cast;
+using detail::createEmptyArray;
+using detail::gradient;
+using detail::reduce_all;
 
 template<typename T>
 af_array diffusion(const Array<float>& in, const float dt, const float K,

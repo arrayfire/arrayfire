@@ -35,14 +35,14 @@ cfloat operator*(const cfloat &lhs, const cfloat &rhs) {
     complex<float> clhs(lhs.real, lhs.imag);
     complex<float> crhs(rhs.real, rhs.imag);
     complex<float> out = clhs * crhs;
-    return cfloat(out.real(), out.imag());
+    return {out.real(), out.imag()};
 }
 
 cdouble operator*(const cdouble &lhs, const cdouble &rhs) {
     complex<double> clhs(lhs.real, lhs.imag);
     complex<double> crhs(rhs.real, rhs.imag);
     complex<double> out = clhs * crhs;
-    return cdouble(out.real(), out.imag());
+    return {out.real(), out.imag()};
 }
 
 cfloat operator-(const cfloat &lhs, const cfloat &rhs) {
@@ -59,14 +59,14 @@ cfloat operator/(const cfloat &lhs, const cfloat &rhs) {
     complex<float> clhs(lhs.real, lhs.imag);
     complex<float> crhs(rhs.real, rhs.imag);
     complex<float> out = clhs / crhs;
-    return cfloat(out.real(), out.imag());
+    return {out.real(), out.imag()};
 }
 
 cdouble operator/(const cdouble &lhs, const cdouble &rhs) {
     complex<double> clhs(lhs.real, lhs.imag);
     complex<double> crhs(rhs.real, rhs.imag);
     complex<double> out = clhs / crhs;
-    return cdouble(out.real(), out.imag());
+    return {out.real(), out.imag()};
 }
 
 #define IMPL_OP(OP)                                              \
@@ -120,9 +120,9 @@ double abs(const cdouble &val) {
     return abs(out);
 }
 
-cfloat conj(const cfloat &val) { return cfloat(val.real, -val.imag); }
+cfloat conj(const cfloat &val) { return {val.real, -val.imag}; }
 
-cdouble conj(const cdouble &val) { return cdouble(val.real, -val.imag); }
+cdouble conj(const cdouble &val) { return {val.real, -val.imag}; }
 
 std::ostream &operator<<(std::ostream &os, const cfloat &in) {
     os << "(" << in.real << ", " << in.imag << ")";

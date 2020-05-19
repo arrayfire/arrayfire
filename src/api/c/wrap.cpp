@@ -16,7 +16,13 @@
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 static inline void wrap(af_array* out, const af_array in, const dim_t wx,

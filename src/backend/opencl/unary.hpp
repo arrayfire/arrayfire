@@ -97,8 +97,8 @@ Array<char> checkOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
 
     auto createUnary = [](std::array<Node_ptr, 1> &operands) {
         return Node_ptr(new common::UnaryNode(
-            static_cast<af::dtype>(dtype_traits<char>::af_type), unaryName<op>(),
-            operands[0], op));
+            static_cast<af::dtype>(dtype_traits<char>::af_type),
+            unaryName<op>(), operands[0], op));
     };
 
     if (outDim == dim4(-1, -1, -1, -1)) { outDim = in.dims(); }

@@ -30,9 +30,14 @@
 
 #include <af/index.h>
 
-using namespace detail;
-
 using common::half;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 using std::cout;
 using std::endl;
 using std::ostream;
@@ -44,6 +49,7 @@ static void printer(ostream &out, const T *ptr, const ArrayInfo &info,
     dim_t stride = info.strides()[dim];
     dim_t d      = info.dims()[dim];
     ToNum<T> toNum;
+    using namespace detail;  // NOLINT
 
     if (dim == 0) {
         for (dim_t i = 0, j = 0; i < d; i++, j += stride) {

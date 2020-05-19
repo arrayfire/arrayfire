@@ -16,10 +16,16 @@
 #include <cmath>
 
 using af::dim4;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 using std::cos;
 using std::fabs;
 using std::sin;
-using namespace detail;
 
 template<typename T>
 static inline af_array rotate(const af_array in, const float theta,

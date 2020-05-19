@@ -9,32 +9,12 @@
 
 #pragma once
 
-template<typename T, typename Other>
-struct is_same {
-    static const bool value = false;
-};
-
-template<typename T>
-struct is_same<T, T> {
-    static const bool value = true;
-};
-
-template<bool, typename T, typename O>
-struct cond_type;
-
-template<typename T, typename Other>
-struct cond_type<true, T, Other> {
-    typedef T type;
-};
-
-template<typename T, typename Other>
-struct cond_type<false, T, Other> {
-    typedef Other type;
-};
+#include <backend.hpp>
+#include <type_traits>
 
 template<typename T>
 struct baseOutType {
-    typedef typename cond_type<is_same<T, cdouble>::value ||
-                                   is_same<T, double>::value,
-                               double, float>::type type;
+    typedef typename std::conditional<std::is_same<T, detail::cdouble>::value ||
+                                          std::is_same<T, double>::value,
+                                      double, float>::type type;
 };

@@ -16,7 +16,7 @@ namespace kernel {
 
 template<typename Ti, typename To, typename Tw>
 struct MeanOp {
-    Transform<Ti, To, af_add_t> transform;
+    common::Transform<Ti, To, af_add_t> transform;
     To runningMean;
     Tw runningCount;
     MeanOp(Ti mean, Tw count)

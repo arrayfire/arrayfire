@@ -11,15 +11,6 @@
 #include <common/half.hpp>
 
 namespace opencl {
-bool operator==(cfloat lhs, cfloat rhs) {
-    return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
-}
-bool operator!=(cfloat lhs, cfloat rhs) { return !(lhs == rhs); }
-bool operator==(cdouble lhs, cdouble rhs) {
-    return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
-}
-bool operator!=(cdouble lhs, cdouble rhs) { return !(lhs == rhs); }
-
 cfloat operator+(cfloat lhs, cfloat rhs) {
     cfloat res = {{lhs.s[0] + rhs.s[0], lhs.s[1] + rhs.s[1]}};
     return res;

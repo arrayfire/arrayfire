@@ -41,14 +41,17 @@ Window::~Window() {
     if (wnd) { af_destroy_window(wnd); }
 }
 
+// NOLINTNEXTLINE(readability-make-member-function-const)
 void Window::setPos(const unsigned x, const unsigned y) {
     AF_THROW(af_set_position(get(), x, y));
 }
 
+// NOLINTNEXTLINE(readability-make-member-function-const)
 void Window::setTitle(const char* const title) {
     AF_THROW(af_set_title(get(), title));
 }
 
+// NOLINTNEXTLINE(readability-make-member-function-const)
 void Window::setSize(const unsigned w, const unsigned h) {
     AF_THROW(af_set_size(get(), w, h));
 }
@@ -151,6 +154,7 @@ void Window::vectorField(const array& xPoints, const array& yPoints,
                                      xDirs.get(), yDirs.get(), &temp));
 }
 
+// NOLINTNEXTLINE(readability-make-member-function-const)
 void Window::grid(const int rows, const int cols) {
     AF_THROW(af_grid(get(), rows, cols));
 }
@@ -202,12 +206,14 @@ void Window::show() {
     _c = -1;
 }
 
+// NOLINTNEXTLINE(readability-make-member-function-const)
 bool Window::close() {
     bool temp = true;
     AF_THROW(af_is_window_closed(&temp, get()));
     return temp;
 }
 
+// NOLINTNEXTLINE(readability-make-member-function-const)
 void Window::setVisibility(const bool isVisible) {
     AF_THROW(af_set_visibility(get(), isVisible));
 }

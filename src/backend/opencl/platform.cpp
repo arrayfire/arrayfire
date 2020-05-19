@@ -352,7 +352,7 @@ bool isGLSharingSupported() {
     return devMngr.mIsGLSharingOn[get<1>(devId)];
 }
 
-bool isDoubleSupported(int device) {
+bool isDoubleSupported(unsigned device) {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     cl::Device dev;
@@ -364,7 +364,7 @@ bool isDoubleSupported(int device) {
     return (dev.getInfo<CL_DEVICE_DOUBLE_FP_CONFIG>() > 0);
 }
 
-bool isHalfSupported(int device) {
+bool isHalfSupported(unsigned device) {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     cl::Device dev;

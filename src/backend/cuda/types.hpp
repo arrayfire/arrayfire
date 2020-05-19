@@ -138,11 +138,10 @@ const char *getFullName<common::half>() {
 //#endif  //__CUDACC_RTC__
 
 namespace common {
+
 template<typename T>
 struct kernel_type;
-}
 
-namespace common {
 template<>
 struct kernel_type<common::half> {
     using data = common::half;

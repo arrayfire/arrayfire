@@ -18,11 +18,20 @@
 #include <af/algorithm.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
-#include <complex>
 
 using af::dim4;
 using common::half;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::imag;
+using detail::intl;
+using detail::real;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<af_op_t op, typename Ti, typename To>
 static inline af_array reduce(const af_array in, const int dim,

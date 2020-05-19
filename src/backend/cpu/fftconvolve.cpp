@@ -40,7 +40,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     dim_t fftScale = 1;
 
     dim4 packedDims(1, 1, 1, 1);
-    array<int, baseDim> fftDims;
+    array<int, baseDim> fftDims{};
 
     // Pack both signal and filter on same memory array, this will ensure
     // better use of batched FFT capabilities

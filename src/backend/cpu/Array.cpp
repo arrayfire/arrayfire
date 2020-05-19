@@ -244,8 +244,8 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
 
     // Check if approaching the memory limit
     if (getMemoryPressure() >= getMemoryPressureThreshold()) {
-        NodeIterator<jit::Node> it(root_node);
-        NodeIterator<jit::Node> end_node;
+        NodeIterator<Node> it(root_node);
+        NodeIterator<Node> end_node;
         size_t bytes = accumulate(it, end_node, size_t(0),
                                   [=](const size_t prev, const Node &n) {
                                       // getBytes returns the size of the data

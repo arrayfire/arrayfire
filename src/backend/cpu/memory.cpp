@@ -133,7 +133,9 @@ void Allocator::shutdown() {
     }
 }
 
-int Allocator::getActiveDeviceId() { return cpu::getActiveDeviceId(); }
+int Allocator::getActiveDeviceId() {
+    return static_cast<int>(cpu::getActiveDeviceId());
+}
 
 size_t Allocator::getMaxMemorySize(int id) {
     return cpu::getDeviceMemorySize(id);

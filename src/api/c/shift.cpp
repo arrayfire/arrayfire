@@ -14,7 +14,13 @@
 #include <shift.hpp>
 #include <af/data.h>
 
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 static inline af_array shift(const af_array in, const int sdims[4]) {

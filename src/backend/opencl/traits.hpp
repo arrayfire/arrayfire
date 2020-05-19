@@ -19,14 +19,14 @@
 namespace af {
 
 template<>
-struct dtype_traits<cl_float2> {
+struct dtype_traits<opencl::cfloat> {
     enum { af_type = c32 };
     typedef float base_type;
     static const char *getName() { return "float2"; }
 };
 
 template<>
-struct dtype_traits<cl_double2> {
+struct dtype_traits<opencl::cdouble> {
     enum { af_type = c64 };
     typedef double base_type;
     static const char *getName() { return "double2"; }
@@ -37,11 +37,11 @@ static bool iscplx() {
     return false;
 }
 template<>
-STATIC_ bool iscplx<cl_float2>() {
+STATIC_ bool iscplx<opencl::cfloat>() {
     return true;
 }
 template<>
-STATIC_ bool iscplx<cl_double2>() {
+STATIC_ bool iscplx<opencl::cdouble>() {
     return true;
 }
 
