@@ -45,7 +45,7 @@ namespace opencl {
 
 // Forward declarations
 class GraphicsResourceManager;
-class PlanCache;    // clfft
+class PlanCache;  // clfft
 
 bool verify_present(const std::string& pname, const std::string ref);
 
