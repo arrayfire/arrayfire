@@ -21,8 +21,10 @@ event::~event() {
     if (e_) { af_delete_event(e_); }
 }
 
+// NOLINTNEXTLINE(performance-noexcept-move-constructor) we can't change the API
 event::event(event&& other) : e_(other.e_) { other.e_ = 0; }
 
+// NOLINTNEXTLINE(performance-noexcept-move-constructor) we can't change the API
 event& event::operator=(event&& other) {
     af_delete_event(this->e_);
     this->e_ = other.e_;

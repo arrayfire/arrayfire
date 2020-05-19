@@ -107,7 +107,7 @@ void meanDimLauncher(Param out, Param owt, Param in, Param inWeight,
 
     ToNumStr<To> toNumStr;
     ToNumStr<Tw> twNumStr;
-    Transform<uint, Tw, af_add_t> transform_weight;
+    common::Transform<uint, Tw, af_add_t> transform_weight;
 
     std::vector<TemplateArg> targs = {
         TemplateTypename<Ti>(),     TemplateTypename<To>(),
@@ -122,7 +122,7 @@ void meanDimLauncher(Param out, Param owt, Param in, Param inWeight,
         DefineKeyValue(kDim, dim),
         DefineKeyValue(DIMY, threads_y),
         DefineValue(THREADS_X),
-        DefineKeyValue(init_To, toNumStr(Binary<To, af_add_t>::init())),
+        DefineKeyValue(init_To, toNumStr(common::Binary<To, af_add_t>::init())),
         DefineKeyValue(init_Tw, twNumStr(transform_weight(0))),
         DefineKeyValue(one_Tw, twNumStr(transform_weight(1))),
     };
@@ -204,7 +204,7 @@ void meanFirstLauncher(Param out, Param owt, Param in, Param inWeight,
 
     ToNumStr<To> toNumStr;
     ToNumStr<Tw> twNumStr;
-    Transform<uint, Tw, af_add_t> transform_weight;
+    common::Transform<uint, Tw, af_add_t> transform_weight;
 
     std::vector<TemplateArg> targs = {
         TemplateTypename<Ti>(),    TemplateTypename<To>(),
@@ -217,7 +217,7 @@ void meanFirstLauncher(Param out, Param owt, Param in, Param inWeight,
         DefineKeyValue(Tw, dtype_traits<Tw>::getName()),
         DefineKeyValue(DIMX, threads_x),
         DefineValue(THREADS_PER_GROUP),
-        DefineKeyValue(init_To, toNumStr(Binary<To, af_add_t>::init())),
+        DefineKeyValue(init_To, toNumStr(common::Binary<To, af_add_t>::init())),
         DefineKeyValue(init_Tw, twNumStr(transform_weight(0))),
         DefineKeyValue(one_Tw, twNumStr(transform_weight(1))),
     };
@@ -455,8 +455,8 @@ To meanAll(Param in) {
                                      sizeof(Ti) * in_elements, h_ptr.data());
 
         // TODO : MeanOp with (Tw)1
-        Transform<Ti, compute_t<To>, af_add_t> transform;
-        Transform<uint, compute_t<Tw>, af_add_t> transform_weight;
+        common::Transform<Ti, compute_t<To>, af_add_t> transform;
+        common::Transform<uint, compute_t<Tw>, af_add_t> transform_weight;
         MeanOp<compute_t<To>, compute_t<Tw>> Op(transform(h_ptr[0]),
                                                 transform_weight(1));
         for (int i = 1; i < (int)in_elements; i++) {

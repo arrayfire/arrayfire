@@ -377,7 +377,7 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
 template<typename T>
 void *getDevicePtr(const Array<T> &arr) {
     const cl::Buffer *buf = arr.device();
-    if (!buf) return NULL;
+    if (!buf) { return NULL; }
     memLock((T *)buf);
     cl_mem mem = (*buf)();
     return (void *)mem;
@@ -495,7 +495,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
 
 template<typename T>
 size_t Array<T>::getAllocatedBytes() const {
-    if (!isReady()) return 0;
+    if (!isReady()) { return 0; }
     size_t bytes = memoryManager().allocated(data.get());
     // External device pointer
     if (bytes == 0 && data.get()) { return data_dims.elements() * sizeof(T); }

@@ -22,7 +22,13 @@
 #include <tile.hpp>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::copy_surface;
+using detail::forgeManager;
+using detail::reduce_all;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 using namespace graphics;
 
 template<typename T>
@@ -38,9 +44,9 @@ fg_chart setup_surface(fg_window window, const af_array xVals,
     const ArrayInfo& Yinfo = getInfo(yVals);
     const ArrayInfo& Zinfo = getInfo(zVals);
 
-    af::dim4 X_dims = Xinfo.dims();
-    af::dim4 Y_dims = Yinfo.dims();
-    af::dim4 Z_dims = Zinfo.dims();
+    dim4 X_dims = Xinfo.dims();
+    dim4 Y_dims = Yinfo.dims();
+    dim4 Z_dims = Zinfo.dims();
 
     if (Xinfo.isVector()) {
         // Convert xIn is a column vector
@@ -50,7 +56,7 @@ fg_chart setup_surface(fg_window window, const af_array xVals,
         xIn = tile(xIn, x_tdims);
 
         // Convert yIn to a row vector
-        yIn = modDims(yIn, af::dim4(1, yIn.elements()));
+        yIn = modDims(yIn, dim4(1, yIn.elements()));
         // Now tile along first dimension
         dim4 y_tdims(X_dims[0], 1, 1, 1);
         yIn = tile(yIn, y_tdims);
@@ -128,15 +134,15 @@ af_err af_draw_surface(const af_window window, const af_array xVals,
         if (window == 0) { AF_ERROR("Not a valid window", AF_ERR_INTERNAL); }
 
         const ArrayInfo& Xinfo = getInfo(xVals);
-        af::dim4 X_dims        = Xinfo.dims();
+        dim4 X_dims            = Xinfo.dims();
         af_dtype Xtype         = Xinfo.getType();
 
         const ArrayInfo& Yinfo = getInfo(yVals);
-        af::dim4 Y_dims        = Yinfo.dims();
+        dim4 Y_dims            = Yinfo.dims();
         af_dtype Ytype         = Yinfo.getType();
 
         const ArrayInfo& Sinfo = getInfo(S);
-        const af::dim4& S_dims = Sinfo.dims();
+        const dim4& S_dims     = Sinfo.dims();
         af_dtype Stype         = Sinfo.getType();
 
         TYPE_ASSERT(Xtype == Ytype);

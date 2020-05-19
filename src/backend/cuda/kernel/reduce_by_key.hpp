@@ -34,7 +34,7 @@ template<typename Tk, typename To, af_op_t op>
 __global__ void final_boundary_reduce(int *reduced_block_sizes, Param<Tk> keys,
                                       Param<To> vals, const int n) {
     const int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    Binary<compute_t<To>, op> reduce;
+    common::Binary<compute_t<To>, op> reduce;
 
     if (tid == ((blockIdx.x + 1) * blockDim.x) - 1 &&
         blockIdx.x < gridDim.x - 1) {
@@ -229,8 +229,8 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         warpReduceValsSmemFinal[threadIdx.x] = scalar<compute_t<To>>(0);
     __syncthreads();
 
-    Binary<compute_t<To>, op> reduce;
-    Transform<compute_t<Ti>, compute_t<To>, op> transform;
+    common::Binary<compute_t<To>, op> reduce;
+    common::Transform<compute_t<Ti>, compute_t<To>, op> transform;
 
     // load keys and values to threads
     compute_t<Tk> k;
@@ -243,7 +243,7 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         v = transform(compute_t<Ti>(vals.ptr[tid]));
         if (change_nan) v = IS_NAN(v) ? compute_t<To>(nanval) : v;
     } else {
-        v = Binary<compute_t<To>, op>::init();
+        v = common::Binary<compute_t<To>, op>::init();
     }
 
     compute_t<Tk> eq_check = (k != shfl_up_sync(FULL_MASK, k, 1));
@@ -269,7 +269,7 @@ __global__ static void reduce_blocks_by_key(int *reduced_block_sizes,
         v = reduce(v, shfl_down_sync(FULL_MASK, v, 8));
         v = reduce(v, shfl_down_sync(FULL_MASK, v, 16));
     } else {
-        compute_t<To> init = Binary<compute_t<To>, op>::init();
+        compute_t<To> init = common::Binary<compute_t<To>, op>::init();
         int eq_check, update_key;
         unsigned shflmask;
 #pragma unroll
@@ -449,7 +449,7 @@ __global__ static void reduce_blocks_dim_by_key(
     __shared__ int reducedBlockSize;
     __shared__ int dim_ordering[4];
 
-    compute_t<To> init = Binary<compute_t<To>, op>::init();
+    compute_t<To> init = common::Binary<compute_t<To>, op>::init();
 
     if (threadIdx.x == 0) {
         reducedBlockSize = 0;
@@ -463,8 +463,8 @@ __global__ static void reduce_blocks_dim_by_key(
         warpReduceValsSmemFinal[threadIdx.x] = init;
     __syncthreads();
 
-    Binary<compute_t<To>, op> reduce;
-    Transform<compute_t<Ti>, compute_t<To>, op> transform;
+    common::Binary<compute_t<To>, op> reduce;
+    common::Transform<compute_t<Ti>, compute_t<To>, op> transform;
 
     // load keys and values to threads
     Tk k;
@@ -505,7 +505,7 @@ __global__ static void reduce_blocks_dim_by_key(
         v = reduce(v, shfl_down_sync(FULL_MASK, v, 8));
         v = reduce(v, shfl_down_sync(FULL_MASK, v, 16));
     } else {
-        compute_t<To> init = Binary<compute_t<To>, op>::init();
+        compute_t<To> init = common::Binary<compute_t<To>, op>::init();
         int eq_check, update_key;
         unsigned shflmask;
 #pragma unroll

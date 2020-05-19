@@ -23,7 +23,15 @@
 #include <af/traits.hpp>
 
 using af::dim4;
-using namespace detail;
+using detail::arithOp;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using detail::createValueArray;
+using detail::reduce;
+using detail::reduce_all;
+using detail::scalar;
 
 template<typename T>
 double matrixNorm(const Array<T> &A, double p) {
@@ -83,7 +91,7 @@ double norm(const af_array a, const af_norm_type type, const double p,
             const double q) {
     using BT = typename af::dtype_traits<T>::base_type;
 
-    const Array<BT> A = abs<BT, T>(getArray<T>(a));
+    const Array<BT> A = detail::abs<BT, T>(getArray<T>(a));
 
     switch (type) {
         case AF_NORM_EUCLID: return vectorNorm(A, 2);

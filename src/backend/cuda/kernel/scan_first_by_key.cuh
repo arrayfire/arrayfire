@@ -14,20 +14,20 @@
 namespace cuda {
 
 template<typename Tk>
-__device__ inline
-char calculate_head_flags(const Tk *kptr, int id, int previd) {
+__device__ inline char calculate_head_flags(const Tk *kptr, int id,
+                                            int previd) {
     return (id == 0) ? 1 : (kptr[id] != kptr[previd]);
 }
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
-__global__
-void scanbykey_first_nonfinal(Param<To> out, Param<To> tmp, Param<char> tflg,
-                              Param<int> tlid, CParam<Ti> in, CParam<Tk> key,
-                              uint blocks_x, uint blocks_y, uint lim,
-                              bool inclusive_scan) {
-    Transform<Ti, To, op> transform;
-    Binary<To, op> binop;
-    const To init = Binary<To, op>::init();
+__global__ void scanbykey_first_nonfinal(Param<To> out, Param<To> tmp,
+                                         Param<char> tflg, Param<int> tlid,
+                                         CParam<Ti> in, CParam<Tk> key,
+                                         uint blocks_x, uint blocks_y, uint lim,
+                                         bool inclusive_scan) {
+    common::Transform<Ti, To, op> transform;
+    common::Binary<To, op> binop;
+    const To init = common::Binary<To, op>::init();
     To val        = init;
 
     const int istride         = in.strides[0];
@@ -158,13 +158,14 @@ void scanbykey_first_nonfinal(Param<To> out, Param<To> tmp, Param<char> tflg,
 }
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
-__global__
-void scanbykey_first_final(Param<To> out, CParam<Ti> in, CParam<Tk> key,
-                           uint blocks_x, uint blocks_y, uint lim,
-                           bool calculateFlags, bool inclusive_scan) {
-    Transform<Ti, To, op> transform;
-    Binary<To, op> binop;
-    const To init = Binary<To, op>::init();
+__global__ void scanbykey_first_final(Param<To> out, CParam<Ti> in,
+                                      CParam<Tk> key, uint blocks_x,
+                                      uint blocks_y, uint lim,
+                                      bool calculateFlags,
+                                      bool inclusive_scan) {
+    common::Transform<Ti, To, op> transform;
+    common::Binary<To, op> binop;
+    const To init = common::Binary<To, op>::init();
     To val        = init;
 
     const int istride         = in.strides[0];
@@ -269,9 +270,9 @@ void scanbykey_first_final(Param<To> out, CParam<Ti> in, CParam<Tk> key,
 }
 
 template<typename To, af_op_t op>
-__global__
-void scanbykey_first_bcast(Param<To> out, Param<To> tmp, Param<int> tlid,
-                           uint blocks_x, uint blocks_y, uint lim) {
+__global__ void scanbykey_first_bcast(Param<To> out, Param<To> tmp,
+                                      Param<int> tlid, uint blocks_x,
+                                      uint blocks_y, uint lim) {
     const int tidx = threadIdx.x;
     const int tidy = threadIdx.y;
 
@@ -283,19 +284,21 @@ void scanbykey_first_bcast(Param<To> out, Param<To> tmp, Param<int> tlid,
     const int yid        = blockIdx_y * blockDim.y + tidy;
 
     if (blockIdx_x != 0) {
-        bool cond = (yid < out.dims[1]) && (zid < out.dims[2]) &&
-                    (wid < out.dims[3]);
+        bool cond =
+            (yid < out.dims[1]) && (zid < out.dims[2]) && (wid < out.dims[3]);
         if (cond) {
             To *optr        = out.ptr;
             const To *tptr  = tmp.ptr;
             const int *iptr = tlid.ptr;
 
-            optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
-            tptr += wid * tmp.strides[3] + zid * tmp.strides[2] + yid * tmp.strides[1];
-            iptr +=
-                wid * tlid.strides[3] + zid * tlid.strides[2] + yid * tlid.strides[1];
+            optr += wid * out.strides[3] + zid * out.strides[2] +
+                    yid * out.strides[1];
+            tptr += wid * tmp.strides[3] + zid * tmp.strides[2] +
+                    yid * tmp.strides[1];
+            iptr += wid * tlid.strides[3] + zid * tlid.strides[2] +
+                    yid * tlid.strides[1];
 
-            Binary<To, op> binop;
+            common::Binary<To, op> binop;
             int boundary = iptr[blockIdx_x];
             To accum     = tptr[blockIdx_x - 1];
 
@@ -308,4 +311,4 @@ void scanbykey_first_bcast(Param<To> out, Param<To> tmp, Param<int> tlid,
     }
 }
 
-}
+}  // namespace cuda

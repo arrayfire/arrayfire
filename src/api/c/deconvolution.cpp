@@ -32,8 +32,21 @@
 #include <vector>
 
 using af::dim4;
+using detail::arithOp;
 using detail::Array;
+using detail::cast;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createSubArray;
+using detail::createValueArray;
+using detail::logicOp;
+using detail::padArrayBorders;
+using detail::scalar;
+using detail::select_scalar;
 using detail::shift;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 using std::array;
 using std::vector;
 
@@ -54,7 +67,7 @@ const dim_t GREATEST_PRIME_FACTOR = 7;
 
 template<typename T, typename CT>
 Array<T> complexNorm(const Array<CT>& input) {
-    auto mag  = abs<T, CT>(input);
+    auto mag  = detail::abs<T, CT>(input);
     auto TWOS = createValueArray(input.dims(), scalar<T>(2));
     return arithOp<T, af_pow_t>(mag, TWOS, input.dims());
 }
@@ -276,7 +289,7 @@ af_array invDeconv(const af_array in, const af_array ker, const float gamma,
     auto Pc     = conj(P);
     auto numer  = arithOp<CT, af_mul_t>(I, Pc, I.dims());
     auto denom  = denominator(I, P, gamma, algo);
-    auto absVal = abs<T, CT>(denom);
+    auto absVal = detail::abs<T, CT>(denom);
     auto THRESH = createValueArray(I.dims(), scalar<T>(gamma));
     auto cond   = logicOp<T, af_ge_t>(absVal, THRESH, absVal.dims());
     auto val    = arithOp<CT, af_div_t>(numer, denom, numer.dims());

@@ -100,7 +100,7 @@ void saveKernel(const std::string& funcName, const std::string& jit_ker,
 
 std::string int_version_to_string(int version) {
     return std::to_string(version / 1000) + "." +
-           std::to_string((int)((version % 1000) / 10.));
+           std::to_string(static_cast<int>((version % 1000) / 10.));
 }
 
 #if defined(OS_WIN)
@@ -115,10 +115,10 @@ string getTemporaryDirectory() {
 #else
 string getHomeDirectory() {
     string home = getEnvVar("XDG_CACHE_HOME");
-    if (!home.empty()) return home;
+    if (!home.empty()) { return home; }
 
     home = getEnvVar("HOME");
-    if (!home.empty()) return home;
+    if (!home.empty()) { return home; }
 
     return getpwuid(getuid())->pw_dir;
 }
@@ -129,7 +129,8 @@ bool directoryExists(const string& path) {
     struct _stat status;
     return _stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
 #else
-    struct stat status;
+    struct stat status {};
+    // NOLINTNEXTLINE(hicpp-signed-bitwise)
     return stat(path.c_str(), &status) == 0 && (status.st_mode & S_IFDIR) != 0;
 #endif
 }
@@ -155,10 +156,10 @@ bool renameFile(const string& sourcePath, const string& destPath) {
 }
 
 bool isDirectoryWritable(const string& path) {
-    if (!directoryExists(path) && !createDirectory(path)) return false;
+    if (!directoryExists(path) && !createDirectory(path)) { return false; }
 
     const string testPath = path + AF_PATH_SEPARATOR + "test";
-    if (!std::ofstream(testPath).is_open()) return false;
+    if (!std::ofstream(testPath).is_open()) { return false; }
     removeFile(testPath);
 
     return true;
@@ -201,9 +202,9 @@ string makeTempFilename() {
 std::size_t deterministicHash(const void* data, std::size_t byteSize) {
     // Fowler-Noll-Vo "1a" 32 bit hash
     // https://en.wikipedia.org/wiki/Fowler-Noll-Vo_hash_function
-    constexpr std::size_t seed   = 0x811C9DC5;
-    constexpr std::size_t prime  = 0x01000193;
-    const std::uint8_t* byteData = static_cast<const std::uint8_t*>(data);
+    constexpr std::size_t seed  = 0x811C9DC5;
+    constexpr std::size_t prime = 0x01000193;
+    const auto* byteData        = static_cast<const std::uint8_t*>(data);
     return std::accumulate(byteData, byteData + byteSize, seed,
                            [&](std::size_t hash, std::uint8_t data) {
                                return (hash ^ data) * prime;

@@ -18,7 +18,7 @@ namespace jit {
 
 template<typename T>
 class ScalarNode : public TNode<T> {
-  public:
+   public:
     ScalarNode(T val) : TNode<T>(val, 0, {}) {}
 
     void genKerName(std::stringstream &kerStream,

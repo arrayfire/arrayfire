@@ -16,7 +16,13 @@
 #include <af/image.h>
 
 using af::dim4;
-using namespace detail;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 static inline void transform(af_array *out, const af_array in,

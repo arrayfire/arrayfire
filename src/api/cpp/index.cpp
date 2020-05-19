@@ -68,7 +68,7 @@ index::index(const af::array &idx0) : impl{} {
 
 index::index(const af::index &idx0) : impl{idx0.impl} {}  // NOLINT
 
-// NOLINTNEXTLINE(hicpp-noexcept-move)
+// NOLINTNEXTLINE(hicpp-noexcept-move, performance-noexcept-move-constructor)
 index::index(index &&idx0) : impl{idx0.impl} { idx0.impl.idx.arr = nullptr; }
 
 index::~index() {
@@ -87,7 +87,7 @@ index &index::operator=(const index &idx0) {
     return *this;
 }
 
-// NOLINTNEXTLINE(hicpp-noexcept-move)
+// NOLINTNEXTLINE(hicpp-noexcept-move, performance-noexcept-move-constructor)
 index &index::operator=(index &&idx0) {
     impl              = idx0.impl;
     idx0.impl.idx.arr = nullptr;

@@ -17,8 +17,9 @@
 #include <handle.hpp>
 #include <topk.hpp>
 
-using namespace detail;
 using common::half;
+using detail::createEmptyArray;
+using detail::uint;
 
 namespace {
 
@@ -52,8 +53,8 @@ af_err af_topk(af_array *values, af_array *indices, const af_array in,
                                           : errValue;
         }
 
-        int rdim     = dim;
-        auto &inDims = inInfo.dims();
+        int rdim           = dim;
+        const auto &inDims = inInfo.dims();
 
         if (rdim == -1) {
             for (dim_t d = 0; d < 4; d++) {

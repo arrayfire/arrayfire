@@ -24,7 +24,22 @@
 
 #include "stats.h"
 
-using namespace detail;
+using af::dim4;
+using detail::Array;
+using detail::cast;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createValueArray;
+using detail::division;
+using detail::intl;
+using detail::mean;
+using detail::reduce;
+using detail::reduce_all;
+using detail::scalar;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename inType, typename outType>
 static outType stdev(const af_array& in) {

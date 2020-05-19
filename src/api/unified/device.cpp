@@ -86,12 +86,12 @@ af_err af_free_device(void *ptr) { CALL(af_free_device, ptr); }
 af_err af_free_pinned(void *ptr) { CALL(af_free_pinned, ptr); }
 
 af_err af_alloc_host(void **ptr, const dim_t bytes) {
-    *ptr = malloc(bytes);
+    *ptr = malloc(bytes);  // NOLINT(hicpp-no-malloc)
     return (*ptr == NULL) ? AF_ERR_NO_MEM : AF_SUCCESS;
 }
 
 af_err af_free_host(void *ptr) {
-    free(ptr);
+    free(ptr);  // NOLINT(hicpp-no-malloc)
     return AF_SUCCESS;
 }
 

@@ -17,14 +17,18 @@
 #include <af/lapack.h>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createEmptyArray;
+using std::swap;
 
 template<typename T>
 static inline void qr(af_array *q, af_array *r, af_array *tau,
                       const af_array in) {
-    Array<T> qArray = createEmptyArray<T>(af::dim4());
-    Array<T> rArray = createEmptyArray<T>(af::dim4());
-    Array<T> tArray = createEmptyArray<T>(af::dim4());
+    Array<T> qArray = createEmptyArray<T>(dim4());
+    Array<T> rArray = createEmptyArray<T>(dim4());
+    Array<T> tArray = createEmptyArray<T>(dim4());
 
     qr<T>(qArray, rArray, tArray, getArray<T>(in));
 
@@ -98,7 +102,7 @@ af_err af_qr_inplace(af_array *tau, af_array in) {
             case c64: out = qr_inplace<cdouble>(in); break;
             default: TYPE_ERROR(1, type);
         }
-        std::swap(*tau, out);
+        swap(*tau, out);
     }
     CATCHALL;
 

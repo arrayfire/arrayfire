@@ -21,7 +21,15 @@
 
 using af::dim4;
 using common::half;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::unaryOp;
+using detail::ushort;
 
 template<typename T>
 static inline af_array tile(const af_array in, const af::dim4 &tileDims) {

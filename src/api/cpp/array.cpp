@@ -268,30 +268,30 @@ array::~array() {
         if (!err) {
             switch (backend) {
                 case AF_BACKEND_CPU: {
-                    static auto cpu_handle = unified::getActiveHandle();
-                    static af_release_array_ptr func =
+                    static auto *cpu_handle = unified::getActiveHandle();
+                    static auto release_func =
                         reinterpret_cast<af_release_array_ptr>(
                             common::getFunctionPointer(cpu_handle,
                                                        "af_release_array"));
-                    func(get());
+                    release_func(get());
                     break;
                 }
                 case AF_BACKEND_OPENCL: {
-                    static auto opencl_handle = unified::getActiveHandle();
-                    static af_release_array_ptr func =
+                    static auto *opencl_handle = unified::getActiveHandle();
+                    static auto release_func =
                         reinterpret_cast<af_release_array_ptr>(
                             common::getFunctionPointer(opencl_handle,
                                                        "af_release_array"));
-                    func(get());
+                    release_func(get());
                     break;
                 }
                 case AF_BACKEND_CUDA: {
-                    static auto cuda_handle = unified::getActiveHandle();
-                    static af_release_array_ptr func =
+                    static auto *cuda_handle = unified::getActiveHandle();
+                    static auto release_func =
                         reinterpret_cast<af_release_array_ptr>(
                             common::getFunctionPointer(cuda_handle,
                                                        "af_release_array"));
-                    func(get());
+                    release_func(get());
                     break;
                 }
                 case AF_BACKEND_DEFAULT:
@@ -609,12 +609,13 @@ af::array::array_proxy::array_proxy(const array_proxy &other)
     : impl(new array_proxy_impl(*other.impl->parent_, other.impl->indices_,
                                 other.impl->is_linear_)) {}
 
-// NOLINTNEXTLINE(hicpp-noexcept-move) too late to change public API
+// NOLINTNEXTLINE(performance-noexcept-move-constructor,hicpp-noexcept-move)
 af::array::array_proxy::array_proxy(array_proxy &&other) {
     impl       = other.impl;
     other.impl = nullptr;
 }
 
+// NOLINTNEXTLINE(performance-noexcept-move-constructor,hicpp-noexcept-move)
 array::array_proxy &af::array::array_proxy::operator=(array_proxy &&other) {
     array out = other;
     *this     = out;
@@ -911,44 +912,44 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type) {
     return scalar_type;
 }
 
-#define BINARY_TYPE(TY, OP, func, dty)                          \
-    array operator OP(const array &plhs, const TY &value) {     \
-        af_array out;                                           \
-        af::dtype cty = implicit_dtype(dty, plhs.type());       \
-        array cst     = constant(value, plhs.dims(), cty);      \
-        AF_THROW(func(&out, plhs.get(), cst.get(), gforGet())); \
-        return array(out);                                      \
-    }                                                           \
-    array operator OP(const TY &value, const array &other) {    \
-        const af_array rhs = other.get();                       \
-        af_array out;                                           \
-        af::dtype cty = implicit_dtype(dty, other.type());      \
-        array cst     = constant(value, other.dims(), cty);     \
-        AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
-        return array(out);                                      \
+#define BINARY_TYPE(TY, OP, release_func, dty)                          \
+    array operator OP(const array &plhs, const TY &value) {             \
+        af_array out;                                                   \
+        af::dtype cty = implicit_dtype(dty, plhs.type());               \
+        array cst     = constant(value, plhs.dims(), cty);              \
+        AF_THROW(release_func(&out, plhs.get(), cst.get(), gforGet())); \
+        return array(out);                                              \
+    }                                                                   \
+    array operator OP(const TY &value, const array &other) {            \
+        const af_array rhs = other.get();                               \
+        af_array out;                                                   \
+        af::dtype cty = implicit_dtype(dty, other.type());              \
+        array cst     = constant(value, other.dims(), cty);             \
+        AF_THROW(release_func(&out, cst.get(), rhs, gforGet()));        \
+        return array(out);                                              \
     }
 
-#define BINARY_OP(OP, func)                                    \
-    array operator OP(const array &lhs, const array &rhs) {    \
-        af_array out;                                          \
-        AF_THROW(func(&out, lhs.get(), rhs.get(), gforGet())); \
-        return array(out);                                     \
-    }                                                          \
-    BINARY_TYPE(double, OP, func, f64)                         \
-    BINARY_TYPE(float, OP, func, f32)                          \
-    BINARY_TYPE(cdouble, OP, func, c64)                        \
-    BINARY_TYPE(cfloat, OP, func, c32)                         \
-    BINARY_TYPE(int, OP, func, s32)                            \
-    BINARY_TYPE(unsigned, OP, func, u32)                       \
-    BINARY_TYPE(long, OP, func, s64)                           \
-    BINARY_TYPE(unsigned long, OP, func, u64)                  \
-    BINARY_TYPE(long long, OP, func, s64)                      \
-    BINARY_TYPE(unsigned long long, OP, func, u64)             \
-    BINARY_TYPE(char, OP, func, b8)                            \
-    BINARY_TYPE(unsigned char, OP, func, u8)                   \
-    BINARY_TYPE(bool, OP, func, b8)                            \
-    BINARY_TYPE(short, OP, func, s16)                          \
-    BINARY_TYPE(unsigned short, OP, func, u16)
+#define BINARY_OP(OP, release_func)                                    \
+    array operator OP(const array &lhs, const array &rhs) {            \
+        af_array out;                                                  \
+        AF_THROW(release_func(&out, lhs.get(), rhs.get(), gforGet())); \
+        return array(out);                                             \
+    }                                                                  \
+    BINARY_TYPE(double, OP, release_func, f64)                         \
+    BINARY_TYPE(float, OP, release_func, f32)                          \
+    BINARY_TYPE(cdouble, OP, release_func, c64)                        \
+    BINARY_TYPE(cfloat, OP, release_func, c32)                         \
+    BINARY_TYPE(int, OP, release_func, s32)                            \
+    BINARY_TYPE(unsigned, OP, release_func, u32)                       \
+    BINARY_TYPE(long, OP, release_func, s64)                           \
+    BINARY_TYPE(unsigned long, OP, release_func, u64)                  \
+    BINARY_TYPE(long long, OP, release_func, s64)                      \
+    BINARY_TYPE(unsigned long long, OP, release_func, u64)             \
+    BINARY_TYPE(char, OP, release_func, b8)                            \
+    BINARY_TYPE(unsigned char, OP, release_func, u8)                   \
+    BINARY_TYPE(bool, OP, release_func, b8)                            \
+    BINARY_TYPE(short, OP, release_func, s16)                          \
+    BINARY_TYPE(unsigned short, OP, release_func, u16)
 
 BINARY_OP(+, af_add)
 BINARY_OP(-, af_sub)

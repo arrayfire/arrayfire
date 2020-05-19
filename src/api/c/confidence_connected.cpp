@@ -24,7 +24,15 @@
 #include <type_traits>
 
 using af::dim4;
-using std::array;
+using common::createSpanIndex;
+using detail::arithOp;
+using detail::Array;
+using detail::cast;
+using detail::createValueArray;
+using detail::reduce_all;
+using detail::uchar;
+using detail::uint;
+using detail::ushort;
 using std::conditional;
 using std::is_same;
 using std::sqrt;
@@ -34,12 +42,12 @@ using std::swap;
 template<typename T>
 Array<T> pointList(const Array<T>& in, const Array<uint>& x,
                    const Array<uint>& y) {
-    af_array xcoords                     = getHandle<uint>(x);
-    af_array ycoords                     = getHandle<uint>(y);
-    array<af_index_t, AF_MAX_DIMS> idxrs = {{{{xcoords}, false, false},
-                                             {{ycoords}, false, false},
-                                             common::createSpanIndex(),
-                                             common::createSpanIndex()}};
+    af_array xcoords                          = getHandle<uint>(x);
+    af_array ycoords                          = getHandle<uint>(y);
+    std::array<af_index_t, AF_MAX_DIMS> idxrs = {{{{xcoords}, false, false},
+                                                  {{ycoords}, false, false},
+                                                  createSpanIndex(),
+                                                  createSpanIndex()}};
 
     Array<T> retVal = detail::index(in, idxrs.data());
 

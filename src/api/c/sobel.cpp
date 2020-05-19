@@ -17,7 +17,14 @@
 #include <utility>
 
 using af::dim4;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 using ArrayPair = std::pair<af_array, af_array>;
 template<typename Ti, typename To>

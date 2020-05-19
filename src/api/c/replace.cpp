@@ -21,9 +21,16 @@
 
 #include <select.hpp>
 
-using namespace detail;
 using af::dim4;
 using common::half;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::select_scalar;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 void replace(af_array a, const af_array cond, const af_array b) {

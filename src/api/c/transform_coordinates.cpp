@@ -20,7 +20,12 @@
 #include <vector>
 
 using af::dim4;
-using namespace detail;
+using detail::arithOp;
+using detail::Array;
+using detail::createEmptyArray;
+using detail::createHostDataArray;
+using detail::createSubArray;
+using detail::scalar;
 
 template<typename T>
 Array<T> multiplyIndexed(const Array<T> &lhs, const Array<T> &rhs,

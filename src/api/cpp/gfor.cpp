@@ -23,7 +23,7 @@ void gforSet(bool val) { gforStatus = val; }
 
 bool gforToggle() {
     bool status = gforGet();
-    status ^= 1;
+    status ^= 1U;
     gforSet(status);
     return status;
 }

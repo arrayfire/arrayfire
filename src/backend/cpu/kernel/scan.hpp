@@ -18,9 +18,9 @@ template<af_op_t op, typename Ti, typename To, int D, bool inclusive_scan>
 struct scan_dim {
     void operator()(Param<To> out, dim_t outOffset, CParam<Ti> in,
                     dim_t inOffset, const int dim) const {
-        const dim4 odims    = out.dims();
-        const dim4 ostrides = out.strides();
-        const dim4 istrides = in.strides();
+        const af::dim4 odims    = out.dims();
+        const af::dim4 ostrides = out.strides();
+        const af::dim4 istrides = in.strides();
 
         const int D1 = D - 1;
         for (dim_t i = 0; i < odims[D1]; i++) {
@@ -39,18 +39,18 @@ struct scan_dim<op, Ti, To, 0, inclusive_scan> {
         const Ti* in = input.get() + inOffset;
         To* out      = output.get() + outOffset;
 
-        const dim4 ostrides = output.strides();
-        const dim4 istrides = input.strides();
-        const dim4 idims    = input.dims();
+        const af::dim4 ostrides = output.strides();
+        const af::dim4 istrides = input.strides();
+        const af::dim4 idims    = input.dims();
 
         dim_t istride = istrides[dim];
         dim_t ostride = ostrides[dim];
 
-        Transform<Ti, To, op> transform;
+        common::Transform<Ti, To, op> transform;
         // FIXME: Change the name to something better
-        Binary<To, op> scan;
+        common::Binary<To, op> scan;
 
-        To out_val = Binary<To, op>::init();
+        To out_val = common::Binary<To, op>::init();
         for (dim_t i = 0; i < idims[dim]; i++) {
             To in_val = transform(in[i * istride]);
             out_val   = scan(in_val, out_val);
@@ -58,7 +58,7 @@ struct scan_dim<op, Ti, To, 0, inclusive_scan> {
                 // The loop shifts the output index by 1.
                 // The last index wraps around and writes the first element.
                 if (i == (idims[dim] - 1)) {
-                    out[0] = Binary<To, op>::init();
+                    out[0] = common::Binary<To, op>::init();
                 } else {
                     out[(i + 1) * ostride] = out_val;
                 }

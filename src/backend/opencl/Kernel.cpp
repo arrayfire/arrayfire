@@ -11,11 +11,15 @@
 
 #include <backend.hpp>
 #include <cl2hpp.hpp>
+#include <common/defines.hpp>
 #include <platform.hpp>
 
 namespace opencl {
 
-Kernel::DevPtrType Kernel::get(const char *name) { return nullptr; }
+Kernel::DevPtrType Kernel::get(const char* name) {
+    UNUSED(name);
+    return nullptr;
+}
 
 void Kernel::copyToReadOnly(Kernel::DevPtrType dst, Kernel::DevPtrType src,
                             size_t bytes) {

@@ -18,7 +18,16 @@
 
 using af::dim4;
 using common::half;
-using namespace detail;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
+using std::swap;
+using std::vector;
 
 template<typename T>
 static inline af_array join(const int dim, const af_array first,
@@ -29,7 +38,7 @@ static inline af_array join(const int dim, const af_array first,
 template<typename T>
 static inline af_array join_many(const int dim, const unsigned n_arrays,
                                  const af_array *inputs) {
-    std::vector<Array<T>> inputs_;
+    vector<Array<T>> inputs_;
     inputs_.reserve(n_arrays);
 
     for (unsigned i = 0; i < n_arrays; i++) {
@@ -43,8 +52,8 @@ af_err af_join(af_array *out, const int dim, const af_array first,
     try {
         const ArrayInfo &finfo = getInfo(first);
         const ArrayInfo &sinfo = getInfo(second);
-        af::dim4 fdims         = finfo.dims();
-        af::dim4 sdims         = sinfo.dims();
+        dim4 fdims             = finfo.dims();
+        dim4 sdims             = sinfo.dims();
 
         ARG_ASSERT(1, dim >= 0 && dim < 4);
         ARG_ASSERT(2, finfo.getType() == sinfo.getType());
@@ -98,9 +107,9 @@ af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays,
             return AF_SUCCESS;
         }
 
-        std::vector<ArrayInfo> info;
+        vector<ArrayInfo> info;
         info.reserve(n_arrays);
-        std::vector<af::dim4> dims(n_arrays);
+        vector<af::dim4> dims(n_arrays);
         for (unsigned i = 0; i < n_arrays; i++) {
             info.push_back(getInfo(inputs[i]));
             dims[i] = info[i].dims();
@@ -141,7 +150,7 @@ af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays,
             case f16: output = join_many<half>(dim, n_arrays, inputs); break;
             default: TYPE_ERROR(1, info[0].getType());
         }
-        std::swap(*out, output);
+        swap(*out, output);
     }
     CATCHALL;
 

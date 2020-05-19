@@ -19,9 +19,17 @@
 #include <af/data.h>
 #include <af/defines.h>
 
-using namespace detail;
 using af::dim4;
 using common::half;
+using detail::Array;
+using detail::cdouble;
+using detail::cfloat;
+using detail::createSelectNode;
+using detail::intl;
+using detail::uchar;
+using detail::uint;
+using detail::uintl;
+using detail::ushort;
 
 template<typename T>
 af_array select(const af_array cond, const af_array a, const af_array b,
