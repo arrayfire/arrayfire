@@ -143,7 +143,7 @@ Kernel compileKernel(const string &kernelName, const string &tInstance,
     return {prg, krn};
 }
 
-Kernel loadKernel(const int device, const string &nameExpr) {
+Kernel loadKernelFromDisk(const int device, const string &nameExpr) {
     OPENCL_NOT_SUPPORTED(
         "Disk caching OpenCL kernel binaries is not yet supported");
     return {nullptr, nullptr};
