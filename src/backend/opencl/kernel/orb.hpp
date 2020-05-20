@@ -89,10 +89,10 @@ std::array<Kernel, 4> getOrbKernels() {
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::findKernel("harris_response", {src}, targs, compileOpts),
-        common::findKernel("keep_features", {src}, targs, compileOpts),
-        common::findKernel("centroid_angle", {src}, targs, compileOpts),
-        common::findKernel("extract_orb", {src}, targs, compileOpts),
+        common::getKernel("harris_response", {src}, targs, compileOpts),
+        common::getKernel("keep_features", {src}, targs, compileOpts),
+        common::getKernel("centroid_angle", {src}, targs, compileOpts),
+        common::getKernel("extract_orb", {src}, targs, compileOpts),
     };
 }
 

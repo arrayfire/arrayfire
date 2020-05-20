@@ -50,11 +50,11 @@ std::array<Kernel, 5> getHomographyKernels(const af_homography_type htype) {
         options.emplace_back(DefineKey(IS_CPU));
     }
     return {
-        common::findKernel("compute_homography", {src}, targs, options),
-        common::findKernel("eval_homography", {src}, targs, options),
-        common::findKernel("compute_median", {src}, targs, options),
-        common::findKernel("find_min_median", {src}, targs, options),
-        common::findKernel("compute_lmeds_inliers", {src}, targs, options),
+        common::getKernel("compute_homography", {src}, targs, options),
+        common::getKernel("eval_homography", {src}, targs, options),
+        common::getKernel("compute_median", {src}, targs, options),
+        common::getKernel("find_min_median", {src}, targs, options),
+        common::getKernel("compute_lmeds_inliers", {src}, targs, options),
     };
 }
 

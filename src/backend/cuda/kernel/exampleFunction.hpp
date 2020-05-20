@@ -31,10 +31,10 @@ template<typename T>  // CUDA kernel wrapper function
 void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t p) {
     static const std::string source(exampleFunction_cuh,
                                     exampleFunction_cuh_len);
-    auto exampleFunc = common::findKernel("cuda::exampleFunc", {source},
-                                          {
-                                              TemplateTypename<T>(),
-                                          });
+    auto exampleFunc = common::getKernel("cuda::exampleFunc", {source},
+                                         {
+                                             TemplateTypename<T>(),
+                                         });
 
     dim3 threads(TX, TY, 1);  // set your cuda launch config for blocks
 
@@ -48,7 +48,7 @@ void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t p) {
     // on your CUDA kernels needs such as shared memory etc.
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    // Call the kernel functor retrieved using common::findKernel
+    // Call the kernel functor retrieved using common::getKernel
     exampleFunc(qArgs, c, a, b, p);
 
     POST_LAUNCH_CHECK();  // Macro for post kernel launch checks

@@ -11,62 +11,44 @@
 
 #include <common/kernel_cache.hpp>
 
-#include <common/compile_kernel.hpp>
+#include <common/compile_module.hpp>
+#include <common/util.hpp>
 #include <device_manager.hpp>
 #include <platform.hpp>
 
 #include <algorithm>
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 using detail::Kernel;
+using detail::Module;
 
 using std::back_inserter;
-using std::map;
 using std::string;
 using std::transform;
+using std::unordered_map;
 using std::vector;
 
 namespace common {
 
-using KernelMap = map<string, Kernel>;
+using ModuleMap = unordered_map<string, Module>;
 
-KernelMap& getCache(const int device) {
-    thread_local KernelMap caches[detail::DeviceManager::MAX_DEVICES];
+ModuleMap& getCache(const int device) {
+    thread_local ModuleMap caches[detail::DeviceManager::MAX_DEVICES];
     return caches[device];
 }
 
-void cacheKernel(const int device, const string& nameExpr, const Kernel entry) {
-    getCache(device).emplace(nameExpr, entry);
-}
-
-Kernel lookupKernel(const int device, const string& nameExpr,
-                    const vector<string>& sources) {
+Module findModule(const int device, const string& key) {
     auto& cache = getCache(device);
-    auto iter   = cache.find(nameExpr);
-
-    if (iter != cache.end()) return iter->second;
-
-    if (sources.size() > 0) {
-#if defined(AF_CUDA) && defined(AF_CACHE_KERNELS_TO_DISK)
-        Kernel kernel = loadKernelFromDisk(device, nameExpr, sources);
-        if (kernel.getModule() != nullptr && kernel.getKernel() != nullptr) {
-            cacheKernel(device, nameExpr, kernel);
-            return kernel;
-        }
-#endif
-    }
-    return Kernel{nullptr, nullptr};
+    auto iter   = cache.find(key);
+    if (iter != cache.end()) { return iter->second; }
+    return Module{nullptr};
 }
 
-Kernel lookupKernel(const int device, const string& key) {
-    return lookupKernel(device, key, {});
-}
-
-Kernel findKernel(const string& kernelName, const vector<string>& sources,
-                  const vector<TemplateArg>& targs,
-                  const vector<string>& compileOpts, const bool isKernelJIT) {
+Kernel getKernel(const string& kernelName, const vector<string>& sources,
+                 const vector<TemplateArg>& targs,
+                 const vector<string>& options, const bool sourceIsJIT) {
     vector<string> args;
     args.reserve(targs.size());
 
@@ -82,15 +64,36 @@ Kernel findKernel(const string& kernelName, const vector<string>& sources,
         tInstance += ">";
     }
 
-    int device    = detail::getActiveDeviceId();
-    Kernel kernel = lookupKernel(device, tInstance, sources);
+    const bool notJIT = !sourceIsJIT;
 
-    if (kernel.getModule() == nullptr || kernel.getKernel() == nullptr) {
-        kernel = compileKernel(kernelName, tInstance, sources, compileOpts,
-                               isKernelJIT);
-        cacheKernel(device, tInstance, kernel);
+    vector<string> hashingVals;
+    hashingVals.reserve(1 + (notJIT * (sources.size() + options.size())));
+    hashingVals.push_back(tInstance);
+    if (notJIT) {
+        // This code path is only used for regular kernel compilation
+        // since, jit funcName(kernelName) is unique to use it's hash
+        // for caching the relevant compiled/linked module
+        hashingVals.insert(hashingVals.end(), sources.begin(), sources.end());
+        hashingVals.insert(hashingVals.end(), options.begin(), options.end());
     }
-    return kernel;
+
+    const string moduleKey = std::to_string(deterministicHash(hashingVals));
+    const int device       = detail::getActiveDeviceId();
+    Module currModule      = findModule(device, moduleKey);
+
+    if (currModule.get() == nullptr) {
+        currModule = loadModuleFromDisk(device, moduleKey);
+        if (currModule.get() == nullptr) {
+            currModule = compileModule(moduleKey, sources, options, {tInstance},
+                                       sourceIsJIT);
+        }
+        getCache(device).emplace(moduleKey, currModule);
+    }
+#if defined(AF_CUDA)
+    return getKernel(currModule, tInstance, sourceIsJIT);
+#elif defined(AF_OPENCL)
+    return getKernel(currModule, kernelName, sourceIsJIT);
+#endif
 }
 
 }  // namespace common

@@ -26,7 +26,7 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
                float c_sigma) {
     static const std::string source(bilateral_cuh, bilateral_cuh_len);
 
-    auto bilateral = common::findKernel(
+    auto bilateral = common::getKernel(
         "cuda::bilateral", {source},
         {TemplateTypename<inType>(), TemplateTypename<outType>()},
         {DefineValue(THREADS_X), DefineValue(THREADS_Y)});

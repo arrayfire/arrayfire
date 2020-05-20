@@ -45,8 +45,8 @@ void initSeeds(Param out, const Param seedsx, const Param seedsy) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto initSeeds = common::findKernel("init_seeds", {floodfillSrc()},
-                                        {TemplateTypename<T>()}, options);
+    auto initSeeds = common::getKernel("init_seeds", {floodfillSrc()},
+                                       {TemplateTypename<T>()}, options);
     cl::NDRange local(kernel::THREADS, 1, 1);
     cl::NDRange global(divup(seedsx.info.dims[0], local[0]) * local[0], 1, 1);
 
@@ -65,8 +65,8 @@ void finalizeOutput(Param out, const T newValue) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto finalizeOut = common::findKernel("finalize_output", {floodfillSrc()},
-                                          {TemplateTypename<T>()}, options);
+    auto finalizeOut = common::getKernel("finalize_output", {floodfillSrc()},
+                                         {TemplateTypename<T>()}, options);
     cl::NDRange local(kernel::THREADS_X, kernel::THREADS_Y, 1);
     cl::NDRange global(divup(out.info.dims[0], local[0]) * local[0],
                        divup(out.info.dims[1], local[1]) * local[1], 1);
@@ -95,8 +95,8 @@ void floodFill(Param out, const Param image, const Param seedsx,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto floodStep = common::findKernel("flood_step", {floodfillSrc()},
-                                        {TemplateTypename<T>()}, options);
+    auto floodStep = common::getKernel("flood_step", {floodfillSrc()},
+                                       {TemplateTypename<T>()}, options);
     cl::NDRange local(kernel::THREADS_X, kernel::THREADS_Y, 1);
     cl::NDRange global(divup(out.info.dims[0], local[0]) * local[0],
                        divup(out.info.dims[1], local[1]) * local[1], 1);

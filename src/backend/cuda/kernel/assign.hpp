@@ -27,7 +27,7 @@ void assign(Param<T> out, CParam<T> in, const AssignKernelParam& p) {
     static const std::string src(assign_cuh, assign_cuh_len);
 
     auto assignKer =
-        common::findKernel("cuda::assign", {src}, {TemplateTypename<T>()});
+        common::getKernel("cuda::assign", {src}, {TemplateTypename<T>()});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

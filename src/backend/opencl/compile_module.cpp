@@ -7,7 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/compile_kernel.hpp>
+#include <common/compile_module.hpp>  //compileModule & loadModuleFromDisk
+#include <common/kernel_cache.hpp>    //getKernel(Module&, ...)
 
 #include <cl2hpp.hpp>
 #include <common/Logger.hpp>
@@ -25,6 +26,7 @@
 #include <vector>
 
 using detail::Kernel;
+using detail::Module;
 
 using std::ostringstream;
 using std::string;
@@ -38,17 +40,17 @@ spdlog::logger *getLogger() {
     return logger.get();
 }
 
-#define SHOW_DEBUG_BUILD_INFO(PROG)                                       \
-    do {                                                                  \
-        cl_uint numDevices = PROG.getInfo<CL_PROGRAM_NUM_DEVICES>();      \
-        for (unsigned int i = 0; i < numDevices; ++i) {                   \
-            printf("%s\n", PROG.getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
-                                   PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) \
-                               .c_str());                                 \
-            printf("%s\n", PROG.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(   \
-                                   PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) \
-                               .c_str());                                 \
-        }                                                                 \
+#define SHOW_DEBUG_BUILD_INFO(PROG)                                        \
+    do {                                                                   \
+        cl_uint numDevices = PROG->getInfo<CL_PROGRAM_NUM_DEVICES>();      \
+        for (unsigned int i = 0; i < numDevices; ++i) {                    \
+            printf("%s\n", PROG->getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
+                                   PROG->getInfo<CL_PROGRAM_DEVICES>()[i]) \
+                               .c_str());                                  \
+            printf("%s\n", PROG->getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(   \
+                                   PROG->getInfo<CL_PROGRAM_DEVICES>()[i]) \
+                               .c_str());                                  \
+        }                                                                  \
     } while (0)
 
 #if defined(NDEBUG)
@@ -80,12 +82,12 @@ const static std::string DEFAULT_MACROS_STR(
                                            #endif\n                     \
                                            ");
 
-cl::Program buildProgram(const std::vector<std::string> &kernelSources,
-                         const std::vector<std::string> &compileOpts) {
+cl::Program *buildProgram(const std::vector<std::string> &kernelSources,
+                          const std::vector<std::string> &compileOpts) {
     using std::begin;
     using std::end;
 
-    cl::Program retVal;
+    cl::Program *retVal = nullptr;
     try {
         static const std::string defaults =
             std::string(" -D dim_t=") +
@@ -102,14 +104,14 @@ cl::Program buildProgram(const std::vector<std::string> &kernelSources,
         sources.emplace_back(KParam_hpp, KParam_hpp_len);
         sources.insert(end(sources), begin(kernelSources), end(kernelSources));
 
-        retVal = cl::Program(getContext(), sources);
+        retVal = new cl::Program(getContext(), sources);
 
         ostringstream options;
         for (auto &opt : compileOpts) { options << opt; }
 
-        retVal.build({device}, (cl_std + defaults + options.str()).c_str());
+        retVal->build({device}, (cl_std + defaults + options.str()).c_str());
     } catch (...) {
-        SHOW_BUILD_INFO(retVal);
+        if (retVal) { SHOW_BUILD_INFO(retVal); }
         throw;
     }
     return retVal;
@@ -119,33 +121,37 @@ cl::Program buildProgram(const std::vector<std::string> &kernelSources,
 
 namespace common {
 
-Kernel compileKernel(const string &kernelName, const string &tInstance,
-                     const vector<string> &sources,
-                     const vector<string> &compileOpts, const bool isJIT) {
+Module compileModule(const string &moduleKey, const vector<string> &sources,
+                     const vector<string> &options,
+                     const vector<string> &kInstances, const bool isJIT) {
     using opencl::getActiveDeviceId;
     using opencl::getDevice;
 
+    UNUSED(kInstances);
     UNUSED(isJIT);
-    UNUSED(tInstance);
 
     auto compileBegin = high_resolution_clock::now();
-    auto prog         = detail::buildProgram(sources, compileOpts);
-    auto prg          = new cl::Program(prog);
-    auto krn          = new cl::Kernel(*prg, kernelName.c_str());
+    auto program      = detail::buildProgram(sources, options);
     auto compileEnd   = high_resolution_clock::now();
 
-    AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", kernelName,
+    AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", moduleKey,
              duration_cast<milliseconds>(compileEnd - compileBegin).count(),
-             fmt::join(compileOpts, " "),
+             fmt::join(options, " "),
              getDevice(getActiveDeviceId()).getInfo<CL_DEVICE_NAME>());
 
-    return {prg, krn};
+    return {program};
 }
 
-Kernel loadKernelFromDisk(const int device, const string &nameExpr) {
-    OPENCL_NOT_SUPPORTED(
-        "Disk caching OpenCL kernel binaries is not yet supported");
-    return {nullptr, nullptr};
+Module loadModuleFromDisk(const int device, const string &moduleKey) {
+    UNUSED(device);
+    UNUSED(moduleKey);
+    return {nullptr};
+}
+
+Kernel getKernel(const Module &mod, const string &nameExpr,
+                 const bool sourceWasJIT) {
+    UNUSED(sourceWasJIT);
+    return {mod.get(), new cl::Kernel(*mod.get(), nameExpr.c_str())};
 }
 
 }  // namespace common

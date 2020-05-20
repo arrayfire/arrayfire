@@ -31,7 +31,7 @@ void iota(Param<T> out, const af::dim4 &sdims) {
     static const std::string source(iota_cuh, iota_cuh_len);
 
     auto iota =
-        common::findKernel("cuda::iota", {source}, {TemplateTypename<T>()});
+        common::getKernel("cuda::iota", {source}, {TemplateTypename<T>()});
 
     dim3 threads(IOTA_TX, IOTA_TY, 1);
 

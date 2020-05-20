@@ -53,7 +53,7 @@ void susan(cl::Buffer* out, const cl::Buffer* in, const unsigned in_off,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto susan =
-        common::findKernel("susan_responses", {susanSrc()}, targs, compileOpts);
+        common::getKernel("susan_responses", {susanSrc()}, targs, compileOpts);
 
     cl::NDRange local(SUSAN_THREADS_X, SUSAN_THREADS_Y);
     cl::NDRange global(divup(idim0 - 2 * edge, local[0]) * local[0],
@@ -79,7 +79,7 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto nonMax =
-        common::findKernel("non_maximal", {susanSrc()}, targs, compileOpts);
+        common::getKernel("non_maximal", {susanSrc()}, targs, compileOpts);
 
     unsigned corners_found      = 0;
     cl::Buffer* d_corners_found = bufferAlloc(sizeof(unsigned));

@@ -43,7 +43,7 @@ void tile(Param out, const Param in) {
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto tile = common::findKernel("tile", {src}, targs, compileOpts);
+    auto tile = common::getKernel("tile", {src}, targs, compileOpts);
 
     NDRange local(TX, TY, 1);
 

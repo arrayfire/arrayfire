@@ -54,7 +54,7 @@ void triangle(Param out, const Param in, bool is_upper, bool is_unit_diag) {
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto triangle =
-        common::findKernel("triangle", {src}, tmpltArgs, compileOpts);
+        common::getKernel("triangle", {src}, tmpltArgs, compileOpts);
 
     NDRange local(TX, TY);
 

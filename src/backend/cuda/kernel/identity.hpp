@@ -25,7 +25,7 @@ void identity(Param<T> out) {
     static const std::string source(identity_cuh, identity_cuh_len);
 
     auto identity =
-        common::findKernel("cuda::identity", {source}, {TemplateTypename<T>()});
+        common::getKernel("cuda::identity", {source}, {TemplateTypename<T>()});
 
     dim3 threads(32, 8);
     int blocks_x = divup(out.dims[0], threads.x);

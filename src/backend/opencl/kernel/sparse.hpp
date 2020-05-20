@@ -45,7 +45,7 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto coo2dense =
-        common::findKernel("coo2Dense", {src}, tmpltArgs, compileOpts);
+        common::getKernel("coo2Dense", {src}, tmpltArgs, compileOpts);
 
     cl::NDRange local(THREADS_PER_GROUP, 1, 1);
 
@@ -80,7 +80,7 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto csr2dense =
-        common::findKernel("csr2Dense", {src}, tmpltArgs, compileOpts);
+        common::getKernel("csr2Dense", {src}, tmpltArgs, compileOpts);
 
     cl::NDRange local(threads, 1);
     int groups_x = std::min((int)(divup(M, local[0])), MAX_GROUPS);
@@ -108,7 +108,7 @@ void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto dense2Csr =
-        common::findKernel("dense2Csr", {src}, tmpltArgs, compileOpts);
+        common::getKernel("dense2Csr", {src}, tmpltArgs, compileOpts);
 
     int num_rows = dense.info.dims[0];
     int num_cols = dense.info.dims[1];
@@ -155,7 +155,7 @@ void swapIndex(Param ovalues, Param oindex, const Param ivalues,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto swapIndex =
-        common::findKernel("swapIndex", {src}, tmpltArgs, compileOpts);
+        common::getKernel("swapIndex", {src}, tmpltArgs, compileOpts);
 
     cl::NDRange global(ovalues.info.dims[0], 1, 1);
 
@@ -178,7 +178,7 @@ void csr2coo(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csr2coo = common::findKernel("csr2Coo", {src}, tmpltArgs, compileOpts);
+    auto csr2coo = common::getKernel("csr2Coo", {src}, tmpltArgs, compileOpts);
 
     const int MAX_GROUPS = 4096;
     int M                = irowIdx.info.dims[0] - 1;
@@ -220,7 +220,7 @@ void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto csrReduce =
-        common::findKernel("csrReduce", {src}, tmpltArgs, compileOpts);
+        common::getKernel("csrReduce", {src}, tmpltArgs, compileOpts);
 
     // Now we need to sort this into column major
     kernel::sort0ByKeyIterative<int, int>(rowCopy, index, true);

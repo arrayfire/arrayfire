@@ -67,7 +67,7 @@ void reduceBlocksByKeyDim(cl::Buffer *reduced_block_sizes, Param keys_out,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    auto reduceBlocksByKeyDim = common::findKernel(
+    auto reduceBlocksByKeyDim = common::getKernel(
         "reduce_blocks_by_key_dim", {src1, src2}, tmpltArgs, compileOpts);
     int numBlocks = divup(n, threads_x);
 
@@ -112,7 +112,7 @@ void reduceBlocksByKey(cl::Buffer *reduced_block_sizes, Param keys_out,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    auto reduceBlocksByKeyFirst = common::findKernel(
+    auto reduceBlocksByKeyFirst = common::getKernel(
         "reduce_blocks_by_key_first", {src1, src2}, tmpltArgs, compileOpts);
     int numBlocks = divup(n, threads_x);
 
@@ -155,7 +155,7 @@ void finalBoundaryReduce(cl::Buffer *reduced_block_sizes, Param keys_out,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    auto finalBoundaryReduce = common::findKernel(
+    auto finalBoundaryReduce = common::getKernel(
         "final_boundary_reduce", {src1, src2}, tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
@@ -196,7 +196,7 @@ void finalBoundaryReduceDim(cl::Buffer *reduced_block_sizes, Param keys_out,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    auto finalBoundaryReduceDim = common::findKernel(
+    auto finalBoundaryReduceDim = common::getKernel(
         "final_boundary_reduce_dim", {src1, src2}, tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
@@ -235,7 +235,7 @@ void compact(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
     auto compact =
-        common::findKernel("compact", {src1, src2}, tmpltArgs, compileOpts);
+        common::getKernel("compact", {src1, src2}, tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks, vals_out.info.dims[1],
@@ -273,7 +273,7 @@ void compactDim(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
     auto compactDim =
-        common::findKernel("compact_dim", {src1, src2}, tmpltArgs, compileOpts);
+        common::getKernel("compact_dim", {src1, src2}, tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks,
@@ -305,7 +305,7 @@ void testNeedsReduction(cl::Buffer needs_reduction, cl::Buffer needs_boundary,
         DefineKeyValue(DIMX, threads_x),
     };
 
-    auto testIfNeedsReduction = common::findKernel(
+    auto testIfNeedsReduction = common::getKernel(
         "test_needs_reduction", {src1, src2}, tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);

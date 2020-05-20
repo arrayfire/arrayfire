@@ -79,13 +79,13 @@ static Kernel getRandomEngineKernel(const af_random_engine_type type,
 #endif
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    return common::findKernel(key, sources, targs, options);
+    return common::getKernel(key, sources, targs, options);
 }
 
 static Kernel getMersenneInitKernel(void) {
     static const std::string src(random_engine_mersenne_init_cl,
                                  random_engine_mersenne_init_cl_len);
-    return common::findKernel("mersenneInitState", {src}, {});
+    return common::getKernel("mersenneInitState", {src}, {});
 }
 
 template<typename T>

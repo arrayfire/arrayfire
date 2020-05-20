@@ -45,7 +45,7 @@ void memcopy(cl::Buffer out, const dim_t *ostrides, const cl::Buffer in,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto memCopy = common::findKernel("memCopy", {source}, targs, options);
+    auto memCopy = common::getKernel("memCopy", {source}, targs, options);
 
     dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
     dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
@@ -91,7 +91,7 @@ void copy(Param dst, const Param src, const int ndims,
     };
     options.emplace_back(getTypeBuildDefinition<inType, outType>());
 
-    auto copy = common::findKernel("reshapeCopy", {source}, targs, options);
+    auto copy = common::getKernel("reshapeCopy", {source}, targs, options);
 
     cl::NDRange local(DIM0, DIM1);
     size_t local_size[] = {DIM0, DIM1};

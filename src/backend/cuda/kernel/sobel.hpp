@@ -30,12 +30,12 @@ void sobel(Param<To> dx, Param<To> dy, CParam<Ti> in,
     static const std::string source(sobel_cuh, sobel_cuh_len);
 
     auto sobel3x3 =
-        common::findKernel("cuda::sobel3x3", {source},
-                           {
-                               TemplateTypename<Ti>(),
-                               TemplateTypename<To>(),
-                           },
-                           {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+        common::getKernel("cuda::sobel3x3", {source},
+                          {
+                              TemplateTypename<Ti>(),
+                              TemplateTypename<To>(),
+                          },
+                          {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

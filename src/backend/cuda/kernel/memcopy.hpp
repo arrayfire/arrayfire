@@ -32,7 +32,7 @@ void memcopy(Param<T> out, CParam<T> in, const dim_t ndims) {
     static const std::string src(memcopy_cuh, memcopy_cuh_len);
 
     auto memCopy =
-        common::findKernel("cuda::memcopy", {src}, {TemplateTypename<T>()});
+        common::getKernel("cuda::memcopy", {src}, {TemplateTypename<T>()});
 
     dim3 threads(DIMX, DIMY);
 
@@ -91,7 +91,7 @@ void copy(Param<outType> dst, CParam<inType> src, int ndims,
         ((src.dims[0] == dst.dims[0]) && (src.dims[1] == dst.dims[1]) &&
          (src.dims[2] == dst.dims[2]) && (src.dims[3] == dst.dims[3]));
 
-    auto copy = common::findKernel(
+    auto copy = common::getKernel(
         "cuda::copy", {source},
         {TemplateTypename<inType>(), TemplateTypename<outType>(),
          TemplateArg(same_dims)});

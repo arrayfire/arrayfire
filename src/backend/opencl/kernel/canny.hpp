@@ -42,8 +42,8 @@ void nonMaxSuppression(Param output, const Param magnitude, const Param dx,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto nonMaxOp = common::findKernel("nonMaxSuppressionKernel", {src},
-                                       {TemplateTypename<T>()}, options);
+    auto nonMaxOp = common::getKernel("nonMaxSuppressionKernel", {src},
+                                      {TemplateTypename<T>()}, options);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y, 1);
 
@@ -76,8 +76,8 @@ void initEdgeOut(Param output, const Param strong, const Param weak) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto initOp = common::findKernel("initEdgeOutKernel", {src},
-                                     {TemplateTypename<T>()}, options);
+    auto initOp = common::getKernel("initEdgeOutKernel", {src},
+                                    {TemplateTypename<T>()}, options);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y, 1);
 
@@ -110,8 +110,8 @@ void suppressLeftOver(Param output) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto finalOp = common::findKernel("suppressLeftOverKernel", {src},
-                                      {TemplateTypename<T>()}, options);
+    auto finalOp = common::getKernel("suppressLeftOverKernel", {src},
+                                     {TemplateTypename<T>()}, options);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y, 1);
 
@@ -147,8 +147,8 @@ void edgeTrackingHysteresis(Param output, const Param strong,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto edgeTraceOp = common::findKernel("edgeTrackKernel", {src},
-                                          {TemplateTypename<T>()}, options);
+    auto edgeTraceOp = common::getKernel("edgeTrackKernel", {src},
+                                         {TemplateTypename<T>()}, options);
 
     NDRange threads(kernel::THREADS_X, kernel::THREADS_Y);
 

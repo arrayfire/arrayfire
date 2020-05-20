@@ -42,7 +42,7 @@ void iir(Param y, Param c, Param a) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto iir = common::findKernel("iir_kernel", {src}, targs, options);
+    auto iir = common::getKernel("iir_kernel", {src}, targs, options);
 
     const int groups_y = y.info.dims[1];
     const int groups_x = y.info.dims[2];

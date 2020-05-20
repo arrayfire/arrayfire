@@ -33,7 +33,7 @@ void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
                const bool perspective, const af::interpType method, int order) {
     static const std::string src(transform_cuh, transform_cuh_len);
 
-    auto transform = common::findKernel(
+    auto transform = common::getKernel(
         "cuda::transform", {src},
         {TemplateTypename<T>(), TemplateArg(inverse), TemplateArg(order)});
 
@@ -44,7 +44,7 @@ void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
     const unsigned int tf_len = (perspective) ? 9 : 6;
 
     // Copy transform to constant memory.
-    auto constPtr = transform.get("c_tmat");
+    auto constPtr = transform.getDevPtr("c_tmat");
     transform.copyToReadOnly(constPtr, reinterpret_cast<CUdeviceptr>(tf.ptr),
                              nTfs2 * nTfs3 * tf_len * sizeof(float));
 

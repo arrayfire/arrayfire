@@ -34,9 +34,9 @@ template<typename T, af_op_t op>
 void sparseArithOpCSR(Param<T> out, CParam<T> values, CParam<int> rowIdx,
                       CParam<int> colIdx, CParam<T> rhs, const bool reverse) {
     auto csrArithDSD =
-        common::findKernel("cuda::csrArithDSD", {sparseArithSrc()},
-                           {TemplateTypename<T>(), TemplateArg(op)},
-                           {DefineValue(TX), DefineValue(TY)});
+        common::getKernel("cuda::csrArithDSD", {sparseArithSrc()},
+                          {TemplateTypename<T>(), TemplateArg(op)},
+                          {DefineValue(TX), DefineValue(TY)});
 
     // Each Y for threads does one row
     dim3 threads(TX, TY, 1);
@@ -53,7 +53,7 @@ void sparseArithOpCSR(Param<T> out, CParam<T> values, CParam<int> rowIdx,
 template<typename T, af_op_t op>
 void sparseArithOpCOO(Param<T> out, CParam<T> values, CParam<int> rowIdx,
                       CParam<int> colIdx, CParam<T> rhs, const bool reverse) {
-    auto cooArithDSD = common::findKernel(
+    auto cooArithDSD = common::getKernel(
         "cuda::cooArithDSD", {sparseArithSrc()},
         {TemplateTypename<T>(), TemplateArg(op)}, {DefineValue(THREADS)});
 
@@ -73,9 +73,9 @@ template<typename T, af_op_t op>
 void sparseArithOpCSR(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                       CParam<T> rhs, const bool reverse) {
     auto csrArithSSD =
-        common::findKernel("cuda::csrArithSSD", {sparseArithSrc()},
-                           {TemplateTypename<T>(), TemplateArg(op)},
-                           {DefineValue(TX), DefineValue(TY)});
+        common::getKernel("cuda::csrArithSSD", {sparseArithSrc()},
+                          {TemplateTypename<T>(), TemplateArg(op)},
+                          {DefineValue(TX), DefineValue(TY)});
 
     // Each Y for threads does one row
     dim3 threads(TX, TY, 1);
@@ -92,7 +92,7 @@ void sparseArithOpCSR(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
 template<typename T, af_op_t op>
 void sparseArithOpCOO(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                       CParam<T> rhs, const bool reverse) {
-    auto cooArithSSD = common::findKernel(
+    auto cooArithSSD = common::getKernel(
         "cuda::cooArithSSD", {sparseArithSrc()},
         {TemplateTypename<T>(), TemplateArg(op)}, {DefineValue(THREADS)});
 
