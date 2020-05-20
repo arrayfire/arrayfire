@@ -11,6 +11,7 @@ project(ArrayFire VERSION 3.7.1 LANGUAGES C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
+include(config_ccache)
 include(AFBuildConfigurations)
 include(AFInstallDirs)
 include(CMakeDependentOption)
