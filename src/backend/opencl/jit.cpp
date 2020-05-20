@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <common/compile_kernel.hpp>
+#include <common/compile_module.hpp>
 #include <common/dispatch.hpp>
 #include <common/jit/Node.hpp>
 #include <common/kernel_cache.hpp>
@@ -22,9 +22,9 @@
 
 #include <functional>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
-using common::compileKernel;
 using common::getFuncName;
 using common::Node;
 using common::Node_ids;
@@ -40,10 +40,9 @@ using std::vector;
 
 namespace opencl {
 
-static string getKernelString(const string &funcName,
-                              const vector<Node *> &full_nodes,
-                              const vector<Node_ids> &full_ids,
-                              const vector<int> &output_ids, bool is_linear) {
+string getKernelString(const string &funcName, const vector<Node *> &full_nodes,
+                       const vector<Node_ids> &full_ids,
+                       const vector<int> &output_ids, bool is_linear) {
     // Common OpenCL code
     // This part of the code does not change with the kernel.
 
@@ -138,17 +137,20 @@ static string getKernelString(const string &funcName,
     return kerStream.str();
 }
 
-static cl::Kernel getKernel(const vector<Node *> &output_nodes,
-                            const vector<int> &output_ids,
-                            const vector<Node *> &full_nodes,
-                            const vector<Node_ids> &full_ids,
-                            const bool is_linear) {
-    string funcName =
+cl::Kernel *getKernel(const vector<Node *> &output_nodes,
+                      const vector<int> &output_ids,
+                      const vector<Node *> &full_nodes,
+                      const vector<Node_ids> &full_ids, const bool is_linear) {
+    const string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
+    const string moduleKey = std::to_string(deterministicHash(funcName));
 
-    auto entry = common::lookupKernel(getActiveDeviceId(), funcName);
+    // A forward lookup in module cache helps avoid recompiling the jit
+    // source generated from identical jit-trees. It also enables us
+    // with a way to save jit kernels to disk only once
+    auto entry = common::findModule(getActiveDeviceId(), moduleKey);
 
-    if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
+    if (entry.get() == nullptr) {
         static const string jit(jit_cl, jit_cl_len);
 
         string jitKer = getKernelString(funcName, full_nodes, full_ids,
@@ -164,9 +166,10 @@ static cl::Kernel getKernel(const vector<Node *> &output_nodes,
 
         saveKernel(funcName, jitKer, ".cl");
 
-        entry = common::findKernel(funcName, {jit, jitKer}, {}, options, true);
+        return common::getKernel(funcName, {jit, jitKer}, {}, options, true)
+            .get();
     }
-    return *entry.getKernel();
+    return common::getKernel(entry, funcName, true).get();
 }
 
 void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
@@ -200,7 +203,7 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
         is_linear &= node->isLinear(outputs[0].info.dims);
     }
 
-    cl::Kernel ker =
+    auto ker =
         getKernel(output_nodes, output_ids, full_nodes, full_ids, is_linear);
 
     uint local_0   = 1;
@@ -249,25 +252,25 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
     for (const auto &node : full_nodes) {
         nargs = node->setArgs(nargs, is_linear,
                               [&](int id, const void *ptr, size_t arg_size) {
-                                  ker.setArg(id, arg_size, ptr);
+                                  ker->setArg(id, arg_size, ptr);
                               });
     }
 
     // Set output parameters
     for (auto output : outputs) {
-        ker.setArg(nargs, *(output.data));
+        ker->setArg(nargs, *(output.data));
         ++nargs;
     }
 
     // Set dimensions
     // All outputs are asserted to be of same size
     // Just use the size from the first output
-    ker.setArg(nargs + 0, out_info);
-    ker.setArg(nargs + 1, groups_0);
-    ker.setArg(nargs + 2, groups_1);
-    ker.setArg(nargs + 3, num_odims);
+    ker->setArg(nargs + 0, out_info);
+    ker->setArg(nargs + 1, groups_0);
+    ker->setArg(nargs + 2, groups_1);
+    ker->setArg(nargs + 3, num_odims);
 
-    getQueue().enqueueNDRangeKernel(ker, NullRange, global, local);
+    getQueue().enqueueNDRangeKernel(*ker, NullRange, global, local);
 
     // Reset the thread local vectors
     nodes.clear();

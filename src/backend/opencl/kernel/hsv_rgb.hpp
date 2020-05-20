@@ -39,7 +39,7 @@ void hsv2rgb_convert(Param out, const Param in, bool isHSV2RGB) {
     options.emplace_back(getTypeBuildDefinition<T>());
     if (isHSV2RGB) { options.emplace_back(DefineKey(isHSV2RGB)); }
 
-    auto convert = common::findKernel("hsvrgbConvert", {src}, targs, options);
+    auto convert = common::getKernel("hsvrgbConvert", {src}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

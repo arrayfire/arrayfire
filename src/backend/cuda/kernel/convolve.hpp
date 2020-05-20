@@ -106,7 +106,7 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     static const std::string src(convolve1_cuh, convolve1_cuh_len);
 
-    auto convolve1 = common::findKernel(
+    auto convolve1 = common::getKernel(
         "cuda::convolve1", {src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
         {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS)});
@@ -126,7 +126,7 @@ void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                 const aT* fptr = filt.ptr + (f1Off + f2Off + f3Off);
 
                 // FIXME: case where filter array is strided
-                auto constMemPtr = convolve1.get(conv_c_name);
+                auto constMemPtr = convolve1.getDevPtr(conv_c_name);
                 convolve1.copyToReadOnly(constMemPtr,
                                          reinterpret_cast<CUdeviceptr>(fptr),
                                          filterSize);
@@ -163,7 +163,7 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
 
     static const std::string src(convolve2_cuh, convolve2_cuh_len);
 
-    auto convolve2 = common::findKernel(
+    auto convolve2 = common::getKernel(
         "cuda::convolve2", {src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand),
          TemplateArg(f0), TemplateArg(f1)},
@@ -171,7 +171,7 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
          DefineValue(CONV2_THREADS_X), DefineValue(CONV2_THREADS_Y)});
 
     // FIXME: case where filter array is strided
-    auto constMemPtr = convolve2.get(conv_c_name);
+    auto constMemPtr = convolve2.getDevPtr(conv_c_name);
     convolve2.copyToReadOnly(constMemPtr, reinterpret_cast<CUdeviceptr>(fptr),
                              f0 * f1 * sizeof(aT));
 
@@ -210,7 +210,7 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     static const std::string src(convolve3_cuh, convolve3_cuh_len);
 
-    auto convolve3 = common::findKernel(
+    auto convolve3 = common::getKernel(
         "cuda::convolve3", {src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
         {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
@@ -227,7 +227,7 @@ void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
         const aT* fptr = filt.ptr + f3Off;
 
         // FIXME: case where filter array is strided
-        auto constMemPtr = convolve3.get(conv_c_name);
+        auto constMemPtr = convolve3.getDevPtr(conv_c_name);
         convolve3.copyToReadOnly(
             constMemPtr, reinterpret_cast<CUdeviceptr>(fptr), filterSize);
 
@@ -316,7 +316,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
 
     static const std::string src(convolve_separable_cuh,
                                  convolve_separable_cuh_len);
-    auto convolve2_separable = common::findKernel(
+    auto convolve2_separable = common::getKernel(
         "cuda::convolve2_separable", {src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(conv_dim),
          TemplateArg(expand), TemplateArg(fLen)},
@@ -331,7 +331,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
     dim3 blocks(blk_x * signal.dims[2], blk_y * signal.dims[3]);
 
     // FIXME: case where filter array is strided
-    auto constMemPtr = convolve2_separable.get(sconv_c_name);
+    auto constMemPtr = convolve2_separable.getDevPtr(sconv_c_name);
     convolve2_separable.copyToReadOnly(
         constMemPtr, reinterpret_cast<CUdeviceptr>(filter.ptr),
         fLen * sizeof(aT));

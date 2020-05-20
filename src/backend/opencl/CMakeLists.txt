@@ -49,6 +49,7 @@ target_sources(afopencl
     Array.hpp
     Kernel.cpp
     Kernel.hpp
+    Module.hpp
     Param.cpp
     Param.hpp
     all.cpp
@@ -74,7 +75,7 @@ target_sources(afopencl
     cholesky.hpp
     clfft.cpp
     clfft.hpp
-    compile_kernel.cpp
+    compile_module.cpp
     complex.hpp
     convolve.cpp
     convolve.hpp

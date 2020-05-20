@@ -58,7 +58,7 @@ void morph(Param out, const Param in, const Param mask, bool isDilation) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto morphOp = common::findKernel("morph", {src}, targs, options);
+    auto morphOp = common::getKernel("morph", {src}, targs, options);
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -120,7 +120,7 @@ void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto morphOp = common::findKernel("morph3d", {src}, targs, options);
+    auto morphOp = common::getKernel("morph3d", {src}, targs, options);
 
     NDRange local(CUBE_X, CUBE_Y, CUBE_Z);
 

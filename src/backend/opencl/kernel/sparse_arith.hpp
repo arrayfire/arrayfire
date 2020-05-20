@@ -65,7 +65,7 @@ auto fetchKernel(const std::string key, const std::string &additionalSrc,
     options.emplace_back(getTypeBuildDefinition<T>());
     options.insert(std::end(options), std::begin(additionalOptions),
                    std::end(additionalOptions));
-    return common::findKernel(key, {src, additionalSrc}, tmpltArgs, options);
+    return common::getKernel(key, {src, additionalSrc}, tmpltArgs, options);
 }
 
 template<typename T, af_op_t op>
@@ -151,7 +151,7 @@ static void csrCalcOutNNZ(Param outRowIdx, unsigned &nnzC, const uint M,
         TemplateTypename<uint>(),
     };
 
-    auto calcNNZ = common::findKernel("csr_calc_out_nnz", {src}, tmpltArgs, {});
+    auto calcNNZ = common::getKernel("csr_calc_out_nnz", {src}, tmpltArgs, {});
 
     cl::NDRange local(256, 1);
     cl::NDRange global(divup(M, local[0]) * local[0], 1, 1);

@@ -48,7 +48,7 @@ static void get_out_idx(cl::Buffer *out_data, Param &otmp, Param &rtmp,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto getIdx =
-        common::findKernel("get_out_idx", {src}, tmpltArgs, compileOpts);
+        common::getKernel("get_out_idx", {src}, tmpltArgs, compileOpts);
 
     NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     NDRange global(local[0] * groups_x * in.info.dims[2],

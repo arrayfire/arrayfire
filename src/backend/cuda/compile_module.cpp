@@ -7,9 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/compile_kernel.hpp>
+#include <common/compile_module.hpp>  //compileModule & loadModuleFromDisk
+#include <common/kernel_cache.hpp>    //getKernel(Module&, ...)
 
-#include <Kernel.hpp>
+#include <Module.hpp>
 #include <common/Logger.hpp>
 #include <common/internal_enums.hpp>
 #include <common/util.hpp>
@@ -59,7 +60,7 @@
 
 using namespace cuda;
 
-using detail::Kernel;
+using detail::Module;
 using std::accumulate;
 using std::array;
 using std::back_insert_iterator;
@@ -127,38 +128,30 @@ spdlog::logger *getLogger() {
     return logger.get();
 }
 
-string getKernelCacheFilename(const int device, const string &nameExpr,
-                              const vector<string> &sources) {
-    const string srcs =
-        accumulate(sources.begin(), sources.end(), std::string(""));
-    const string mangledName =
-        "KER" + to_string(deterministicHash(nameExpr + srcs));
-
+string getKernelCacheFilename(const int device, const string &key) {
     const auto computeFlag = getComputeCapability(device);
     const string computeVersion =
         to_string(computeFlag.first) + to_string(computeFlag.second);
 
-    return mangledName + "_CU_" + computeVersion + "_AF_" +
+    return "KER" + key + "_CU_" + computeVersion + "_AF_" +
            to_string(AF_API_VERSION_CURRENT) + ".cubin";
 }
 
 namespace common {
 
-Kernel compileKernel(const string &kernelName, const string &nameExpr,
-                     const vector<string> &sources, const vector<string> &opts,
-                     const bool isJIT) {
-    auto &jit_ker        = sources[0];
-    const char *ker_name = nameExpr.c_str();
-
+Module compileModule(const string &moduleKey, const vector<string> &sources,
+                     const vector<string> &opts,
+                     const vector<string> &kInstances, const bool sourceIsJIT) {
     nvrtcProgram prog;
-    if (isJIT) {
+    if (sourceIsJIT) {
         array<const char *, 2> headers = {
             cuda_fp16_hpp,
             cuda_fp16_h,
         };
         array<const char *, 2> header_names = {"cuda_fp16.hpp", "cuda_fp16.h"};
-        NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name, 2,
-                                       headers.data(), header_names.data()));
+        NVRTC_CHECK(nvrtcCreateProgram(&prog, sources[0].c_str(),
+                                       moduleKey.c_str(), 2, headers.data(),
+                                       header_names.data()));
     } else {
         constexpr static const char *includeNames[] = {
             "math.h",          // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
@@ -241,8 +234,9 @@ Kernel compileKernel(const string &kernelName, const string &nameExpr,
         };
         static_assert(extent<decltype(headers)>::value == NumHeaders,
                       "headers array contains fewer sources than includeNames");
-        NVRTC_CHECK(nvrtcCreateProgram(&prog, jit_ker.c_str(), ker_name,
-                                       NumHeaders, headers, includeNames));
+        NVRTC_CHECK(nvrtcCreateProgram(&prog, sources[0].c_str(),
+                                       moduleKey.c_str(), NumHeaders, headers,
+                                       includeNames));
     }
 
     int device       = cuda::getActiveDeviceId();
@@ -258,13 +252,15 @@ Kernel compileKernel(const string &kernelName, const string &nameExpr,
         "--generate-line-info"
 #endif
     };
-    if (!isJIT) {
+    if (!sourceIsJIT) {
         transform(begin(opts), end(opts),
                   back_insert_iterator<vector<const char *>>(compiler_options),
                   [](const string &s) { return s.data(); });
 
         compiler_options.push_back("--device-as-default-execution-space");
-        NVRTC_CHECK(nvrtcAddNameExpression(prog, ker_name));
+        for (auto &instantiation : kInstances) {
+            NVRTC_CHECK(nvrtcAddNameExpression(prog, instantiation.c_str()));
+        }
     }
 
     auto compile = high_resolution_clock::now();
@@ -294,41 +290,54 @@ Kernel compileKernel(const string &kernelName, const string &nameExpr,
     auto link = high_resolution_clock::now();
     CU_LINK_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
     CU_LINK_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void *)ptx.data(),
-                                ptx.size(), ker_name, 0, NULL, NULL));
+                                ptx.size(), moduleKey.c_str(), 0, NULL, NULL));
 
     void *cubin = nullptr;
     size_t cubinSize;
 
-    CUmodule module;
-    CUfunction kernel;
+    CUmodule modOut = nullptr;
     CU_LINK_CHECK(cuLinkComplete(linkState, &cubin, &cubinSize));
-    CU_CHECK(cuModuleLoadDataEx(&module, cubin, 0, 0, 0));
+    CU_CHECK(cuModuleLoadData(&modOut, cubin));
     auto link_end = high_resolution_clock::now();
 
-    const char *name = ker_name;
-    if (!isJIT) { NVRTC_CHECK(nvrtcGetLoweredName(prog, ker_name, &name)); }
-
-    CU_CHECK(cuModuleGetFunction(&kernel, module, name));
-    Kernel entry = {module, kernel};
+    Module retVal(modOut);
+    if (!sourceIsJIT) {
+        for (auto &instantiation : kInstances) {
+            // memory allocated & destroyed by nvrtcProgram for below var
+            const char *name = nullptr;
+            NVRTC_CHECK(
+                nvrtcGetLoweredName(prog, instantiation.c_str(), &name));
+            retVal.add(instantiation, string(name, strlen(name)));
+        }
+    }
 
 #ifdef AF_CACHE_KERNELS_TO_DISK
     // save kernel in cache
     const string &cacheDirectory = getCacheDirectory();
     if (!cacheDirectory.empty()) {
-        const string cacheFile =
-            cacheDirectory + AF_PATH_SEPARATOR +
-            getKernelCacheFilename(device, nameExpr, sources);
+        const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
+                                 getKernelCacheFilename(device, moduleKey);
         const string tempFile =
             cacheDirectory + AF_PATH_SEPARATOR + makeTempFilename();
 
         // compute CUBIN hash
         const size_t cubinHash = deterministicHash(cubin, cubinSize);
 
-        // write kernel function name and CUBIN binary data
+        // write module hash(everything: names, code & options) and CUBIN data
         ofstream out(tempFile, std::ios::binary);
-        const size_t nameSize = strlen(name);
-        out.write(reinterpret_cast<const char *>(&nameSize), sizeof(nameSize));
-        out.write(name, nameSize);
+        size_t mangledNamesListSize = retVal.map().size();
+        out.write(reinterpret_cast<const char *>(&cubinHash),
+                  sizeof(mangledNamesListSize));
+        for (auto &iter : retVal.map()) {
+            size_t kySize   = iter.first.size();
+            size_t vlSize   = iter.second.size();
+            const char *key = iter.first.c_str();
+            const char *val = iter.second.c_str();
+            out.write(reinterpret_cast<const char *>(&kySize), sizeof(kySize));
+            out.write(key, iter.first.size());
+            out.write(reinterpret_cast<const char *>(&vlSize), sizeof(vlSize));
+            out.write(val, iter.second.size());
+        }
         out.write(reinterpret_cast<const char *>(&cubinHash),
                   sizeof(cubinHash));
         out.write(reinterpret_cast<const char *>(&cubinSize),
@@ -354,37 +363,48 @@ Kernel compileKernel(const string &kernelName, const string &nameExpr,
                               return lhs + ", " + rhs;
                           });
     };
-
     AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, link:{:>4} ms, {{ {} }}, {} }}}}",
-             nameExpr,
+             sources[0],
              duration_cast<milliseconds>(compile_end - compile).count(),
              duration_cast<milliseconds>(link_end - link).count(),
              listOpts(compiler_options), getDeviceProp(device).name);
-    return entry;
+    return retVal;
 }
 
-Kernel loadKernelFromDisk(const int device, const string &nameExpr,
-                          const vector<string> &sources) {
+Module loadModuleFromDisk(const int device, const string &moduleKey) {
     const string &cacheDirectory = getCacheDirectory();
-    if (cacheDirectory.empty()) return Kernel{nullptr, nullptr};
+    if (cacheDirectory.empty()) return Module{nullptr};
 
     const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
-                             getKernelCacheFilename(device, nameExpr, sources);
+                             getKernelCacheFilename(device, moduleKey);
 
-    CUmodule module   = nullptr;
-    CUfunction kernel = nullptr;
-
+    CUmodule modOut = nullptr;
+    Module retVal{nullptr};
     try {
         std::ifstream in(cacheFile, std::ios::binary);
-        if (!in.is_open()) return Kernel{nullptr, nullptr};
+        if (!in.is_open()) return Module{nullptr};
 
         in.exceptions(std::ios::failbit | std::ios::badbit);
 
-        size_t nameSize = 0;
-        in.read(reinterpret_cast<char *>(&nameSize), sizeof(nameSize));
-        string name;
-        name.resize(nameSize);
-        in.read(&name[0], nameSize);
+        size_t mangledListSize = 0;
+        in.read(reinterpret_cast<char *>(&mangledListSize),
+                sizeof(mangledListSize));
+        for (size_t i = 0; i < mangledListSize; ++i) {
+            size_t keySize = 0;
+            in.read(reinterpret_cast<char *>(&keySize), sizeof(keySize));
+            vector<char> key;
+            key.reserve(keySize);
+            in.read(key.data(), keySize);
+
+            size_t itemSize = 0;
+            in.read(reinterpret_cast<char *>(&itemSize), sizeof(itemSize));
+            vector<char> item;
+            item.reserve(itemSize);
+            in.read(item.data(), itemSize);
+
+            retVal.add(string(key.data(), keySize),
+                       string(item.data(), itemSize));
+        }
 
         size_t cubinHash = 0;
         in.read(reinterpret_cast<char *>(&cubinHash), sizeof(cubinHash));
@@ -398,21 +418,28 @@ Kernel loadKernelFromDisk(const int device, const string &nameExpr,
         const size_t recomputedHash =
             deterministicHash(cubin.data(), cubinSize);
         if (recomputedHash != cubinHash) {
-            AF_ERROR("cached kernel data is corrupted", AF_ERR_LOAD_SYM);
+            AF_ERROR("Module on disk seems to be corrupted", AF_ERR_LOAD_SYM);
         }
 
-        CU_CHECK(cuModuleLoadDataEx(&module, cubin.data(), 0, 0, 0));
-        CU_CHECK(cuModuleGetFunction(&kernel, module, name.c_str()));
+        CU_CHECK(cuModuleLoadData(&modOut, cubin.data()));
 
-        AF_TRACE("{{{:<30} : loaded from {} for {} }}", nameExpr, cacheFile,
+        AF_TRACE("{{{:<30} : loaded from {} for {} }}", moduleKey, cacheFile,
                  getDeviceProp(device).name);
 
-        return Kernel{module, kernel};
+        retVal.set(modOut);
     } catch (...) {
-        if (module != nullptr) { CU_CHECK(cuModuleUnload(module)); }
+        if (modOut != nullptr) { CU_CHECK(cuModuleUnload(modOut)); }
         removeFile(cacheFile);
-        return Kernel{nullptr, nullptr};
     }
+    return retVal;
+}
+
+Kernel getKernel(const Module &mod, const string &nameExpr,
+                 const bool sourceWasJIT) {
+    std::string name  = (sourceWasJIT ? nameExpr : mod.mangledName(nameExpr));
+    CUfunction kernel = nullptr;
+    CU_CHECK(cuModuleGetFunction(&kernel, mod.get(), name.c_str()));
+    return {mod.get(), kernel};
 }
 
 }  // namespace common

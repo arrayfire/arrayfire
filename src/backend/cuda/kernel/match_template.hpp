@@ -28,7 +28,7 @@ void matchTemplate(Param<outType> out, CParam<inType> srch,
                    bool needMean) {
     static const std::string source(match_template_cuh, match_template_cuh_len);
 
-    auto matchTemplate = common::findKernel(
+    auto matchTemplate = common::getKernel(
         "cuda::matchTemplate", {source},
         {TemplateTypename<inType>(), TemplateTypename<outType>(),
          TemplateArg(mType), TemplateArg(needMean)});

@@ -32,7 +32,7 @@ template<typename T>
 void susan_responses(T* out, const T* in, const unsigned idim0,
                      const unsigned idim1, const int radius, const float t,
                      const float g, const unsigned edge) {
-    auto susan = common::findKernel(
+    auto susan = common::getKernel(
         "cuda::susan", {susanSource()}, {TemplateTypename<T>()},
         {DefineValue(BLOCK_X), DefineValue(BLOCK_Y)});
 
@@ -52,8 +52,8 @@ template<typename T>
 void nonMaximal(float* x_out, float* y_out, float* resp_out, unsigned* count,
                 const unsigned idim0, const unsigned idim1, const T* resp_in,
                 const unsigned edge, const unsigned max_corners) {
-    auto nonMax = common::findKernel("cuda::nonMax", {susanSource()},
-                                     {TemplateTypename<T>()});
+    auto nonMax = common::getKernel("cuda::nonMax", {susanSource()},
+                                    {TemplateTypename<T>()});
 
     dim3 threads(BLOCK_X, BLOCK_Y);
     dim3 blocks(divup(idim0 - edge * 2, BLOCK_X),

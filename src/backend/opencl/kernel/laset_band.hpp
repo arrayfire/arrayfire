@@ -46,7 +46,7 @@ void laset_band(int m, int  n, int k,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto lasetBandOp = common::findKernel(laset_band_name<uplo>(), {src}, targs, options);
+    auto lasetBandOp = common::getKernel(laset_band_name<uplo>(), {src}, targs, options);
 
     int threads = 1;
     int groups = 1;

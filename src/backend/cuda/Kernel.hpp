@@ -61,13 +61,13 @@ class Kernel
     Kernel() : BaseClass(nullptr, nullptr) {}
     Kernel(ModuleType mod, KernelType ker) : BaseClass(mod, ker) {}
 
-    DevPtrType get(const char* name) override;
+    DevPtrType getDevPtr(const char* name) final;
 
-    void copyToReadOnly(DevPtrType dst, DevPtrType src, size_t bytes) override;
+    void copyToReadOnly(DevPtrType dst, DevPtrType src, size_t bytes) final;
 
-    void setScalar(DevPtrType dst, int value) override;
+    void setScalar(DevPtrType dst, int value) final;
 
-    int getScalar(DevPtrType src) override;
+    int getScalar(DevPtrType src) final;
 };
 
 }  // namespace cuda
