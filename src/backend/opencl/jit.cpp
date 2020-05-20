@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <common/Logger.hpp>
 #include <common/compile_kernel.hpp>
 #include <common/dispatch.hpp>
 #include <common/jit/Node.hpp>
@@ -21,9 +20,7 @@
 #include <af/dim4.hpp>
 #include <af/opencl.h>
 
-#include <chrono>
 #include <functional>
-#include <map>
 #include <stdexcept>
 #include <vector>
 
@@ -33,27 +30,13 @@ using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
 
-using cl::Buffer;
-using cl::EnqueueArgs;
 using cl::Kernel;
-using cl::KernelFunctor;
 using cl::NDRange;
 using cl::NullRange;
-using cl::Program;
 
-using std::hash;
-using std::map;
 using std::string;
 using std::stringstream;
 using std::vector;
-using std::chrono::duration_cast;
-using std::chrono::high_resolution_clock;
-using std::chrono::milliseconds;
-
-spdlog::logger *getLogger() {
-    static std::shared_ptr<spdlog::logger> logger(common::loggerFactory("jit"));
-    return logger.get();
-}
 
 namespace opencl {
 
@@ -160,54 +143,29 @@ static cl::Kernel getKernel(const vector<Node *> &output_nodes,
                             const vector<Node *> &full_nodes,
                             const vector<Node_ids> &full_ids,
                             const bool is_linear) {
-    using kc_t = map<string, Kernel>;
-
-    static const string jit(jit_cl, jit_cl_len);
-
-    thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
-
     string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
-    int device = getActiveDeviceId();
 
-    auto idx = kernelCaches[device].find(funcName);
-    Kernel entry{nullptr, nullptr};
+    auto entry = common::lookupKernel(getActiveDeviceId(), funcName);
 
-    if (idx == kernelCaches[device].end()) {
+    if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
+        static const string jit(jit_cl, jit_cl_len);
+
         string jitKer = getKernelString(funcName, full_nodes, full_ids,
                                         output_ids, is_linear);
-#ifdef AF_CACHE_KERNELS_TO_DISK
-        // TODO(pradeep) load jit kernels cached to disk
-#endif
-        if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
-            saveKernel(funcName, jitKer, ".cl");
-
-            vector<string> options;
-            if (isDoubleSupported(device)) {
-                options.emplace_back(DefineKey(USE_DOUBLE));
-            }
-            if (isHalfSupported(device)) {
-                options.emplace_back(DefineKey(USE_HALF));
-            }
-
-            auto compileBegin = high_resolution_clock::now();
-            // First argument, funcName, is important.
-            // From jit, second argument can be null as it is not used for
-            // OpenCL
-            entry = compileKernel(funcName, "", {jit, jitKer}, options, true);
-            auto compileEnd = high_resolution_clock::now();
-
-            AF_TRACE(
-                "{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", funcName,
-                duration_cast<milliseconds>(compileEnd - compileBegin).count(),
-                fmt::join(options, " "),
-                getDevice(device).getInfo<CL_DEVICE_NAME>());
+        int device    = getActiveDeviceId();
+        vector<string> options;
+        if (isDoubleSupported(device)) {
+            options.emplace_back(DefineKey(USE_DOUBLE));
         }
-        kernelCaches[device][funcName] = entry;
-    } else {
-        entry = idx->second;
-    }
+        if (isHalfSupported(device)) {
+            options.emplace_back(DefineKey(USE_HALF));
+        }
 
+        saveKernel(funcName, jitKer, ".cl");
+
+        entry = common::findKernel(funcName, {jit, jitKer}, {}, options, true);
+    }
     return *entry.getKernel();
 }
 

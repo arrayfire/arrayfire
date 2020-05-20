@@ -9,7 +9,6 @@
 
 #include <Array.hpp>
 #include <Kernel.hpp>
-#include <common/compile_kernel.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/jit/Node.hpp>
@@ -25,19 +24,16 @@
 #include <af/dim4.hpp>
 
 #include <cstdio>
-#include <map>
 #include <stdexcept>
 #include <thread>
 #include <vector>
 
-using common::compileKernel;
 using common::getFuncName;
 using common::half;
 using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
 
-using std::map;
 using std::string;
 using std::stringstream;
 using std::vector;
@@ -181,34 +177,18 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
                             const vector<Node *> &full_nodes,
                             const vector<Node_ids> &full_ids,
                             const bool is_linear) {
-    using kc_t = map<string, Kernel>;
-
-    thread_local kc_t kernelCaches[DeviceManager::MAX_DEVICES];
-
     string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
-    int device = getActiveDeviceId();
 
-    auto idx = kernelCaches[device].find(funcName);
-    Kernel entry{nullptr, nullptr};
+    auto entry = common::lookupKernel(getActiveDeviceId(), funcName);
 
-    if (idx == kernelCaches[device].end()) {
-        string jit_ker = getKernelString(funcName, full_nodes, full_ids,
-                                         output_ids, is_linear);
-#ifdef AF_CACHE_KERNELS_TO_DISK
-        entry = common::loadKernel(device, funcName, {jit_ker});
-#endif
-        if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
-            saveKernel(funcName, jit_ker, ".cu");
-            // second argument, funcName, is important.
-            // From jit, first argument can be null as it is not used for CUDA
-            entry = compileKernel("", funcName, {jit_ker}, {}, true);
-        }
-        kernelCaches[device][funcName] = entry;
-    } else {
-        entry = idx->second;
+    if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
+        string jitKer = getKernelString(funcName, full_nodes, full_ids,
+                                        output_ids, is_linear);
+        saveKernel(funcName, jitKer, ".cu");
+
+        entry = common::findKernel(funcName, {jitKer}, {}, {}, true);
     }
-
     return entry.getKernel();
 }
 
