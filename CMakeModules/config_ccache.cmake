@@ -8,7 +8,7 @@ if (UNIX)
     set(CCACHE_FOUND ON)
   endif()
 
-  option(AF_USE_CCACHE "Build ArrayFire with a CPU backend" ${CCACHE_FOUND})
+  option(AF_USE_CCACHE "Use ccache when compiling" ${CCACHE_FOUND})
 
   if(${AF_USE_CCACHE})
     # Set up wrapper scripts
