@@ -876,6 +876,17 @@ TEST(MemoryManagerApi, E2ETest) {
     af::deviceGC();
     ASSERT_EQ(payload->table.size(), 0);
 
+    // OOM
+    {
+        af::array a;
+        const unsigned N = 99999;
+        try {
+            a = af::array({N,N,N}, af::dtype::f32);
+        } catch(af::exception& ex) {
+            ASSERT_EQ(ex.err(), AF_ERR_NO_MEM);
+        }
+    }
+
     // printInfo
     std::string printInfoMsg = "testPrintInfo";
     int printInfoDeviceId    = 0;
