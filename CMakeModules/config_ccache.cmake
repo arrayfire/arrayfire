@@ -2,28 +2,37 @@
 
 if (UNIX)
   find_program(CCACHE_PROGRAM ccache)
+
+  set(CCACHE_FOUND OFF)
   if(CCACHE_PROGRAM)
+    set(CCACHE_FOUND ON)
+  endif()
+
+  option(AF_WITH_CCACHE "Build ArrayFire with a CPU backend" ${CCACHE_FOUND})
+
+  if(${AF_WITH_CCACHE})
     # Set up wrapper scripts
     set(C_LAUNCHER   "${CCACHE_PROGRAM}")
     set(CXX_LAUNCHER "${CCACHE_PROGRAM}")
-    configure_file(${PROJECT_SOURCE_DIR}/scripts/launch-c.in   launch-c)
-    configure_file(${PROJECT_SOURCE_DIR}/scripts/launch-cxx.in launch-cxx)
+    configure_file(${ArrayFire_SOURCE_DIR}/CMakeModules/launch-c.in   launch-c)
+    configure_file(${ArrayFire_SOURCE_DIR}/CMakeModules/launch-cxx.in launch-cxx)
     execute_process(COMMAND chmod a+rx
-        "${PROJECT_BINARY_DIR}/launch-c"
-        "${PROJECT_BINARY_DIR}/launch-cxx"
+        "${ArrayFire_BINARY_DIR}/launch-c"
+        "${ArrayFire_BINARY_DIR}/launch-cxx"
       )
     if(CMAKE_GENERATOR STREQUAL "Xcode")
       # Set Xcode project attributes to route compilation and linking
       # through our scripts
-      set(CMAKE_XCODE_ATTRIBUTE_CC         "${PROJECT_BINARY_DIR}/launch-c")
-      set(CMAKE_XCODE_ATTRIBUTE_CXX        "${PROJECT_BINARY_DIR}/launch-cxx")
-      set(CMAKE_XCODE_ATTRIBUTE_LD         "${PROJECT_BINARY_DIR}/launch-c")
-      set(CMAKE_XCODE_ATTRIBUTE_LDPLUSPLUS "${PROJECT_BINARY_DIR}/launch-cxx")
+      set(CMAKE_XCODE_ATTRIBUTE_CC         "${ArrayFire_BINARY_DIR}/launch-c")
+      set(CMAKE_XCODE_ATTRIBUTE_CXX        "${ArrayFire_BINARY_DIR}/launch-cxx")
+      set(CMAKE_XCODE_ATTRIBUTE_LD         "${ArrayFire_BINARY_DIR}/launch-c")
+      set(CMAKE_XCODE_ATTRIBUTE_LDPLUSPLUS "${ArrayFire_BINARY_DIR}/launch-cxx")
     else()
       # Support Unix Makefiles and Ninja
-      set(CMAKE_C_COMPILER_LAUNCHER   "${PROJECT_BINARY_DIR}/launch-c")
-      set(CMAKE_CXX_COMPILER_LAUNCHER "${PROJECT_BINARY_DIR}/launch-cxx")
+      set(CMAKE_C_COMPILER_LAUNCHER   "${ArrayFire_BINARY_DIR}/launch-c")
+      set(CMAKE_CXX_COMPILER_LAUNCHER "${ArrayFire_BINARY_DIR}/launch-cxx")
     endif()
   endif()
   mark_as_advanced(CCACHE_PROGRAM)
+  mark_as_advanced(AF_WITH_CCACHE)
 endif()
