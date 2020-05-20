@@ -10,6 +10,7 @@
 #include <common/compile_kernel.hpp>
 
 #include <cl2hpp.hpp>
+#include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/util.hpp>
 #include <debug_opencl.hpp>
@@ -24,9 +25,18 @@
 #include <vector>
 
 using detail::Kernel;
+
 using std::ostringstream;
 using std::string;
 using std::vector;
+using std::chrono::duration_cast;
+using std::chrono::high_resolution_clock;
+using std::chrono::milliseconds;
+
+spdlog::logger *getLogger() {
+    static std::shared_ptr<spdlog::logger> logger(common::loggerFactory("jit"));
+    return logger.get();
+}
 
 #define SHOW_DEBUG_BUILD_INFO(PROG)                                       \
     do {                                                                  \
@@ -112,13 +122,24 @@ namespace common {
 Kernel compileKernel(const string &kernelName, const string &tInstance,
                      const vector<string> &sources,
                      const vector<string> &compileOpts, const bool isJIT) {
+    using opencl::getActiveDeviceId;
+    using opencl::getDevice;
+
     UNUSED(isJIT);
     UNUSED(tInstance);
 
-    auto prog = detail::buildProgram(sources, compileOpts);
-    auto prg  = new cl::Program(prog);
+    auto compileBegin = high_resolution_clock::now();
+    auto prog         = detail::buildProgram(sources, compileOpts);
+    auto prg          = new cl::Program(prog);
     auto krn =
         new cl::Kernel(*static_cast<cl::Program *>(prg), kernelName.c_str());
+    auto compileEnd = high_resolution_clock::now();
+
+    AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", kernelName,
+             duration_cast<milliseconds>(compileEnd - compileBegin).count(),
+             fmt::join(compileOpts, " "),
+             getDevice(getActiveDeviceId()).getInfo<CL_DEVICE_NAME>());
+
     return {prg, krn};
 }
 

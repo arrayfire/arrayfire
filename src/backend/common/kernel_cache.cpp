@@ -21,6 +21,7 @@
 #include <vector>
 
 using detail::Kernel;
+
 using std::back_inserter;
 using std::map;
 using std::string;
@@ -47,20 +48,25 @@ Kernel lookupKernel(const int device, const string& nameExpr,
 
     if (iter != cache.end()) return iter->second;
 
+    if (sources.size() > 0) {
 #if defined(AF_CUDA) && defined(AF_CACHE_KERNELS_TO_DISK)
-    Kernel kernel = loadKernel(device, nameExpr, sources);
-    if (kernel.getModule() != nullptr && kernel.getKernel() != nullptr) {
-        cacheKernel(device, nameExpr, kernel);
-        return kernel;
-    }
+        Kernel kernel = loadKernel(device, nameExpr, sources);
+        if (kernel.getModule() != nullptr && kernel.getKernel() != nullptr) {
+            cacheKernel(device, nameExpr, kernel);
+            return kernel;
+        }
 #endif
-
+    }
     return Kernel{nullptr, nullptr};
+}
+
+Kernel lookupKernel(const int device, const string& key) {
+    return lookupKernel(device, key, {});
 }
 
 Kernel findKernel(const string& kernelName, const vector<string>& sources,
                   const vector<TemplateArg>& targs,
-                  const vector<string>& compileOpts) {
+                  const vector<string>& compileOpts, const bool isKernelJIT) {
     vector<string> args;
     args.reserve(targs.size());
 
@@ -80,10 +86,10 @@ Kernel findKernel(const string& kernelName, const vector<string>& sources,
     Kernel kernel = lookupKernel(device, tInstance, sources);
 
     if (kernel.getModule() == nullptr || kernel.getKernel() == nullptr) {
-        kernel = compileKernel(kernelName, tInstance, sources, compileOpts);
+        kernel = compileKernel(kernelName, tInstance, sources, compileOpts,
+                               isKernelJIT);
         cacheKernel(device, tInstance, kernel);
     }
-
     return kernel;
 }
 
