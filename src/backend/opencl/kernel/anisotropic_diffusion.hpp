@@ -53,7 +53,7 @@ void anisotropicDiffusion(Param inout, const float dt, const float mct,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto diffUpdate =
-        common::findKernel("aisoDiffUpdate", {src}, tmpltArgs, compileOpts);
+        common::getKernel("aisoDiffUpdate", {src}, tmpltArgs, compileOpts);
 
     NDRange local(THREADS_X, THREADS_Y, 1);
 

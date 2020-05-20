@@ -23,13 +23,13 @@
 #include <traits.hpp>
 
 #include <common/dispatch.hpp>      // common utility header for CUDA & OpenCL
-#include <common/kernel_cache.hpp>  // Has findKernel
+#include <common/kernel_cache.hpp>  // Has getKernel
                                     // backends has the divup macro
 
 #include <debug_opencl.hpp>  // For Debug only related OpenCL validations
 
 // Following c++ standard library headers are needed to create
-// the lists of parameters for common::findKernel function call
+// the lists of parameters for common::getKernel function call
 #include <string>
 #include <vector>
 
@@ -63,7 +63,7 @@ void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
 
     // Fetch the Kernel functor, go to common/kernel_cache.hpp
     // to find details of this function
-    auto exOp = common::findKernel("example", {src}, targs, options);
+    auto exOp = common::getKernel("example", {src}, targs, options);
 
     // configure work group parameters
     cl::NDRange local(THREADS_X, THREADS_Y);

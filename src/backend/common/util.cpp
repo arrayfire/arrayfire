@@ -30,6 +30,7 @@
 #include <thread>
 #include <vector>
 
+using std::accumulate;
 using std::string;
 using std::vector;
 
@@ -213,4 +214,9 @@ std::size_t deterministicHash(const void* data, std::size_t byteSize) {
 
 std::size_t deterministicHash(const std::string& data) {
     return deterministicHash(data.data(), data.size());
+}
+
+std::size_t deterministicHash(const vector<string>& list) {
+    string accumStr = accumulate(list.begin(), list.end(), string(""));
+    return deterministicHash(accumStr.data(), accumStr.size());
 }

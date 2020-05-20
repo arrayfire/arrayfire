@@ -80,8 +80,8 @@ void rotate(Param out, const Param in, const float theta, af_interp_type method,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
     addInterpEnumOptions(compileOpts);
 
-    auto rotate = common::findKernel("rotateKernel", {src1, src2}, tmpltArgs,
-                                     compileOpts);
+    auto rotate =
+        common::getKernel("rotateKernel", {src1, src2}, tmpltArgs, compileOpts);
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;

@@ -39,8 +39,8 @@ class Kernel
     Kernel(ModuleType mod, KernelType ker) : BaseClass(mod, ker) {}
 
     // clang-format off
-    [[deprecated("OpenCL backend doesn't need Kernel::get method")]]
-    DevPtrType get(const char* name) override;
+    [[deprecated("OpenCL backend doesn't need Kernel::getDevPtr method")]]
+    DevPtrType getDevPtr(const char* name) override;
     // clang-format on
 
     void copyToReadOnly(DevPtrType dst, DevPtrType src, size_t bytes) override;

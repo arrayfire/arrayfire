@@ -44,7 +44,7 @@ void luSplitLauncher(Param lower, Param upper, const Param in, bool same_dims) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto luSplit = common::findKernel("luSplit", {src}, targs, options);
+    auto luSplit = common::getKernel("luSplit", {src}, targs, options);
 
     cl::NDRange local(TX, TY);
 

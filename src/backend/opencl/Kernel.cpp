@@ -16,7 +16,7 @@
 
 namespace opencl {
 
-Kernel::DevPtrType Kernel::get(const char* name) {
+Kernel::DevPtrType Kernel::getDevPtr(const char* name) {
     UNUSED(name);
     return nullptr;
 }

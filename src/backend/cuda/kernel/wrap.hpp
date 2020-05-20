@@ -27,8 +27,8 @@ void wrap(Param<T> out, CParam<T> in, const int wx, const int wy, const int sx,
     static const std::string source(wrap_cuh, wrap_cuh_len);
 
     auto wrap =
-        common::findKernel("cuda::wrap", {source},
-                           {TemplateTypename<T>(), TemplateArg(is_column)});
+        common::getKernel("cuda::wrap", {source},
+                          {TemplateTypename<T>(), TemplateArg(is_column)});
 
     int nx = (out.dims[0] + 2 * px - wx) / sx + 1;
     int ny = (out.dims[1] + 2 * py - wy) / sy + 1;
@@ -58,8 +58,8 @@ void wrap_dilated(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
     static const std::string source(wrap_cuh, wrap_cuh_len);
 
     auto wrap =
-        common::findKernel("cuda::wrap_dilated", {source},
-                           {TemplateTypename<T>(), TemplateArg(is_column)});
+        common::getKernel("cuda::wrap_dilated", {source},
+                          {TemplateTypename<T>(), TemplateArg(is_column)});
 
     int nx = 1 + (out.dims[0] + 2 * px - (((wx - 1) * dx) + 1)) / sx;
     int ny = 1 + (out.dims[1] + 2 * py - (((wy - 1) * dy) + 1)) / sy;

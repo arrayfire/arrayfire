@@ -30,7 +30,7 @@ void range(Param<T> out, const int dim) {
     static const std::string source(range_cuh, range_cuh_len);
 
     auto range =
-        common::findKernel("cuda::range", {source}, {TemplateTypename<T>()});
+        common::getKernel("cuda::range", {source}, {TemplateTypename<T>()});
 
     dim3 threads(RANGE_TX, RANGE_TY, 1);
 

@@ -12,6 +12,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <vector>
 
 std::string getEnvVar(const std::string& key);
 
@@ -51,3 +52,6 @@ std::size_t deterministicHash(const void* data, std::size_t byteSize);
 
 // This is just a wrapper around the above function.
 std::size_t deterministicHash(const std::string& data);
+
+// This concatenates strings in the vector and computes hash
+std::size_t deterministicHash(const std::vector<std::string>& list);

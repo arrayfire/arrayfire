@@ -41,8 +41,8 @@ void index(Param out, const Param in, const IndexKernelParam_t& p,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto index = common::findKernel("indexKernel", {src},
-                                    {TemplateTypename<T>()}, options);
+    auto index = common::getKernel("indexKernel", {src},
+                                   {TemplateTypename<T>()}, options);
     cl::NDRange local(THREADS_X, THREADS_Y);
 
     int blk_x = divup(out.info.dims[0], THREADS_X);

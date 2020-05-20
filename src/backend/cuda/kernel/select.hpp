@@ -37,8 +37,8 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
     for (int i = 0; i < 4; i++) { is_same &= (a.dims[i] == b.dims[i]); }
 
     auto select =
-        common::findKernel("cuda::select", {selectSource()},
-                           {TemplateTypename<T>(), TemplateArg(is_same)});
+        common::getKernel("cuda::select", {selectSource()},
+                          {TemplateTypename<T>(), TemplateArg(is_same)});
 
     dim3 threads(DIMX, DIMY);
 
@@ -67,8 +67,8 @@ template<typename T>
 void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b,
                    int ndims, bool flip) {
     auto selectScalar =
-        common::findKernel("cuda::selectScalar", {selectSource()},
-                           {TemplateTypename<T>(), TemplateArg(flip)});
+        common::getKernel("cuda::selectScalar", {selectSource()},
+                          {TemplateTypename<T>(), TemplateArg(flip)});
 
     dim3 threads(DIMX, DIMY);
 

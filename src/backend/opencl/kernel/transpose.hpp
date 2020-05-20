@@ -51,7 +51,7 @@ void transpose(Param out, const Param in, cl::CommandQueue queue,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto transpose =
-        common::findKernel("transpose", {src}, tmpltArgs, compileOpts);
+        common::getKernel("transpose", {src}, tmpltArgs, compileOpts);
 
     NDRange local(THREADS_X, THREADS_Y);
 

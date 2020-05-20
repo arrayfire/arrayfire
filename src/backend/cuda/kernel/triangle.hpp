@@ -30,9 +30,9 @@ void triangle(Param<T> r, CParam<T> in, bool is_upper, bool is_unit_diag) {
     static const std::string source(triangle_cuh, triangle_cuh_len);
 
     auto triangle =
-        common::findKernel("cuda::triangle", {source},
-                           {TemplateTypename<T>(), TemplateArg(is_upper),
-                            TemplateArg(is_unit_diag)});
+        common::getKernel("cuda::triangle", {source},
+                          {TemplateTypename<T>(), TemplateArg(is_upper),
+                           TemplateArg(is_unit_diag)});
 
     dim3 threads(TX, TY, 1);
 

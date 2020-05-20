@@ -55,9 +55,8 @@ void csrmv(Param out, const Param &values, const Param &rowIdx,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csrmvThread =
-        common::findKernel("csrmv_thread", {src}, targs, options);
-    auto csrmvBlock = common::findKernel("csrmv_block", {src}, targs, options);
+    auto csrmvThread = common::getKernel("csrmv_thread", {src}, targs, options);
+    auto csrmvBlock  = common::getKernel("csrmv_block", {src}, targs, options);
 
     int count           = 0;
     cl::Buffer *counter = bufferAlloc(sizeof(int));

@@ -60,7 +60,7 @@ static opencl::Kernel getScanDimKernel(const std::string key, int dim,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    return common::findKernel(key, {src1, src2}, tmpltArgs, compileOpts);
+    return common::getKernel(key, {src1, src2}, tmpltArgs, compileOpts);
 }
 
 template<typename Ti, typename To, af_op_t op>

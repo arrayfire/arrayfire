@@ -28,7 +28,7 @@ void tile(Param<T> out, CParam<T> in) {
     static const std::string source(tile_cuh, tile_cuh_len);
 
     auto tile =
-        common::findKernel("cuda::tile", {source}, {TemplateTypename<T>()});
+        common::getKernel("cuda::tile", {source}, {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 

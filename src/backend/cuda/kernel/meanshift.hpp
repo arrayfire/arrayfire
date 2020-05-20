@@ -29,7 +29,7 @@ void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
                                       float>::type AccType;
     static const std::string source(meanshift_cuh, meanshift_cuh_len);
 
-    auto meanshift = common::findKernel(
+    auto meanshift = common::getKernel(
         "cuda::meanshift", {source},
         {
             TemplateTypename<AccType>(), TemplateTypename<T>(),

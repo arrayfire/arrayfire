@@ -55,7 +55,7 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto cscmvBlock = common::findKernel("cscmv_block", {src}, targs, options);
+    auto cscmvBlock = common::getKernel("cscmv_block", {src}, targs, options);
 
     cl::NDRange local(threads);
     int K        = colIdx.info.dims[0] - 1;

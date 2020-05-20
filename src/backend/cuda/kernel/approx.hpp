@@ -31,7 +31,7 @@ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
              const af::interpType method, const int order) {
     static const std::string source(approx1_cuh, approx1_cuh_len);
 
-    auto approx1 = common::findKernel(
+    auto approx1 = common::getKernel(
         "cuda::approx1", {source},
         {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(order)});
 
@@ -61,7 +61,7 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
              const af::interpType method, const int order) {
     static const std::string source(approx2_cuh, approx2_cuh_len);
 
-    auto approx2 = common::findKernel(
+    auto approx2 = common::getKernel(
         "cuda::approx2", {source},
         {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(order)});
 

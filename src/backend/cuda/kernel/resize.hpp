@@ -27,7 +27,7 @@ template<typename T>
 void resize(Param<T> out, CParam<T> in, af_interp_type method) {
     static const std::string source(resize_cuh, resize_cuh_len);
 
-    auto resize = common::findKernel(
+    auto resize = common::getKernel(
         "cuda::resize", {source}, {TemplateTypename<T>(), TemplateArg(method)});
 
     dim3 threads(TX, TY, 1);
