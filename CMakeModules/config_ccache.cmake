@@ -8,9 +8,9 @@ if (UNIX)
     set(CCACHE_FOUND ON)
   endif()
 
-  option(AF_WITH_CCACHE "Build ArrayFire with a CPU backend" ${CCACHE_FOUND})
+  option(AF_USE_CCACHE "Build ArrayFire with a CPU backend" ${CCACHE_FOUND})
 
-  if(${AF_WITH_CCACHE})
+  if(${AF_USE_CCACHE})
     # Set up wrapper scripts
     set(C_LAUNCHER   "${CCACHE_PROGRAM}")
     set(CXX_LAUNCHER "${CCACHE_PROGRAM}")
@@ -34,5 +34,5 @@ if (UNIX)
     endif()
   endif()
   mark_as_advanced(CCACHE_PROGRAM)
-  mark_as_advanced(AF_WITH_CCACHE)
+  mark_as_advanced(AF_USE_CCACHE)
 endif()
