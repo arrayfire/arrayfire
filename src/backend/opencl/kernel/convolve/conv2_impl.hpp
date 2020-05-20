@@ -54,7 +54,7 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto convolve =
-        common::findKernel("convolve", {src1, src2}, tmpltArgs, compileOpts);
+        common::getKernel("convolve", {src1, src2}, tmpltArgs, compileOpts);
 
     convolve(EnqueueArgs(getQueue(), param.global, param.local), *out.data,
              out.info, *signal.data, signal.info, *param.impulse, filter.info,

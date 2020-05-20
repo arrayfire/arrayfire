@@ -30,7 +30,7 @@ void reorder(Param<T> out, CParam<T> in, const dim_t *rdims) {
     static const std::string source(reorder_cuh, reorder_cuh_len);
 
     auto reorder =
-        common::findKernel("cuda::reorder", {source}, {TemplateTypename<T>()});
+        common::getKernel("cuda::reorder", {source}, {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 

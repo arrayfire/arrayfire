@@ -87,8 +87,8 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
     }
     options.emplace_back(getTypeBuildDefinition<T, convT>());
 
-    auto packData = common::findKernel("pack_data", {src}, targs, options);
-    auto padArray = common::findKernel("pad_array", {src}, targs, options);
+    auto packData = common::getKernel("pack_data", {src}, targs, options);
+    auto padArray = common::getKernel("pad_array", {src}, targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
@@ -150,8 +150,7 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
     }
     options.emplace_back(getTypeBuildDefinition<T, convT>());
 
-    auto cplxMul =
-        common::findKernel("complex_multiply", {src}, targs, options);
+    auto cplxMul = common::getKernel("complex_multiply", {src}, targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
@@ -201,7 +200,7 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
     }
     options.emplace_back(getTypeBuildDefinition<T, convT>());
 
-    auto reorder = common::findKernel("reorder_output", {src}, targs, options);
+    auto reorder = common::getKernel("reorder_output", {src}, targs, options);
 
     int fftScale = 1;
 

@@ -60,7 +60,7 @@ void convSep(Param out, const Param signal, const Param filter) {
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto conv =
-        common::findKernel("convolve", {src1, src2}, tmpltArgs, compileOpts);
+        common::getKernel("convolve", {src1, src2}, tmpltArgs, compileOpts);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

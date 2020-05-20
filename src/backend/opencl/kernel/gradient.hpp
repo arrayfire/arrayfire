@@ -43,7 +43,7 @@ void gradient(Param grad0, Param grad1, const Param in) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto gradOp = common::findKernel("gradient", {src}, targs, options);
+    auto gradOp = common::getKernel("gradient", {src}, targs, options);
 
     cl::NDRange local(TX, TY, 1);
 

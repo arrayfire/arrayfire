@@ -33,7 +33,7 @@ void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
                const bool perspective, const af::interpType method, int order) {
     static const std::string src(transform_cuh, transform_cuh_len);
 
-    auto transform = common::findKernel(
+    auto transform = common::getKernel(
         "cuda::transform", {src},
         {TemplateTypename<T>(), TemplateArg(inverse), TemplateArg(order)});
 

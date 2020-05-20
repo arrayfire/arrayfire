@@ -36,7 +36,7 @@ void rotate(Param<T> out, CParam<T> in, const float theta,
             const af::interpType method, const int order) {
     static const std::string source(rotate_cuh, rotate_cuh_len);
 
-    auto rotate = common::findKernel(
+    auto rotate = common::getKernel(
         "cuda::rotate", {source}, {TemplateTypename<T>(), TemplateArg(order)});
 
     const float c = cos(-theta), s = sin(-theta);

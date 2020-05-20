@@ -28,8 +28,8 @@ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in) {
     static const std::string source(gradient_cuh, gradient_cuh_len);
 
     auto gradient =
-        common::findKernel("cuda::gradient", {source}, {TemplateTypename<T>()},
-                           {DefineValue(TX), DefineValue(TY)});
+        common::getKernel("cuda::gradient", {source}, {TemplateTypename<T>()},
+                          {DefineValue(TX), DefineValue(TY)});
 
     dim3 threads(TX, TY, 1);
 

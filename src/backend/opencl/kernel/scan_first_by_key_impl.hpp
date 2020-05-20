@@ -64,7 +64,7 @@ static opencl::Kernel getScanFirstKernel(const std::string key,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    return common::findKernel(key, {src1, src2}, tmpltArgs, compileOpts);
+    return common::getKernel(key, {src1, src2}, tmpltArgs, compileOpts);
 }
 
 template<typename Ti, typename Tk, typename To, af_op_t op>

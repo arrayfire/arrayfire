@@ -46,7 +46,7 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
 
         dim3 blocks(blks, 1);
 
-        auto lookup1d = common::findKernel(
+        auto lookup1d = common::getKernel(
             "cuda::lookup1D", {src},
             {TemplateTypename<in_t>(), TemplateTypename<idx_t>()},
             {DefineValue(THREADS), DefineValue(THRD_LOAD)});
@@ -68,9 +68,9 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
         blocks.y = divup(blocks.y, blocks.z);
 
         auto lookupnd =
-            common::findKernel("cuda::lookupND", {src},
-                               {TemplateTypename<in_t>(),
-                                TemplateTypename<idx_t>(), TemplateArg(dim)});
+            common::getKernel("cuda::lookupND", {src},
+                              {TemplateTypename<in_t>(),
+                               TemplateTypename<idx_t>(), TemplateArg(dim)});
         EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
         lookupnd(qArgs, out, in, indices, blks_x, blks_y);

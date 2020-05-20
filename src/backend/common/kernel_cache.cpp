@@ -41,8 +41,8 @@ void cacheKernel(const int device, const string& nameExpr, const Kernel entry) {
     getCache(device).emplace(nameExpr, entry);
 }
 
-Kernel lookupKernel(const int device, const string& nameExpr,
-                    const vector<string>& sources) {
+Kernel findKernel(const int device, const string& nameExpr,
+                  const vector<string>& sources) {
     auto& cache = getCache(device);
     auto iter   = cache.find(nameExpr);
 
@@ -60,13 +60,13 @@ Kernel lookupKernel(const int device, const string& nameExpr,
     return Kernel{nullptr, nullptr};
 }
 
-Kernel lookupKernel(const int device, const string& key) {
-    return lookupKernel(device, key, {});
+Kernel findKernel(const int device, const string& key) {
+    return findKernel(device, key, {});
 }
 
-Kernel findKernel(const string& kernelName, const vector<string>& sources,
-                  const vector<TemplateArg>& targs,
-                  const vector<string>& compileOpts, const bool isKernelJIT) {
+Kernel getKernel(const string& kernelName, const vector<string>& sources,
+                 const vector<TemplateArg>& targs,
+                 const vector<string>& compileOpts, const bool isKernelJIT) {
     vector<string> args;
     args.reserve(targs.size());
 
@@ -83,7 +83,7 @@ Kernel findKernel(const string& kernelName, const vector<string>& sources,
     }
 
     int device    = detail::getActiveDeviceId();
-    Kernel kernel = lookupKernel(device, tInstance, sources);
+    Kernel kernel = findKernel(device, tInstance, sources);
 
     if (kernel.getModule() == nullptr || kernel.getKernel() == nullptr) {
         kernel = compileKernel(kernelName, tInstance, sources, compileOpts,

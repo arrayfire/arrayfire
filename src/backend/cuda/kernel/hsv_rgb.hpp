@@ -26,8 +26,8 @@ void hsv2rgb_convert(Param<T> out, CParam<T> in, bool isHSV2RGB) {
     static const std::string source(hsv_rgb_cuh, hsv_rgb_cuh_len);
 
     auto hsvrgbConverter =
-        common::findKernel("cuda::hsvrgbConverter", {source},
-                           {TemplateTypename<T>(), TemplateArg(isHSV2RGB)});
+        common::getKernel("cuda::hsvrgbConverter", {source},
+                          {TemplateTypename<T>(), TemplateArg(isHSV2RGB)});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

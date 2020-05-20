@@ -73,10 +73,10 @@ std::array<Kernel, 4> getHarrisKernels() {
     options.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::findKernel("second_order_deriv", {src}, targs, options),
-        common::findKernel("keep_corners", {src}, targs, options),
-        common::findKernel("harris_responses", {src}, targs, options),
-        common::findKernel("non_maximal", {src}, targs, options),
+        common::getKernel("second_order_deriv", {src}, targs, options),
+        common::getKernel("keep_corners", {src}, targs, options),
+        common::getKernel("harris_responses", {src}, targs, options),
+        common::getKernel("non_maximal", {src}, targs, options),
     };
 }
 

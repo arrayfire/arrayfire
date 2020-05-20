@@ -31,11 +31,11 @@ template<typename convT, typename T>
 void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                     CParam<T> sig, CParam<T> filter) {
     auto packData =
-        common::findKernel("cuda::packData", {fftConvSource()},
-                           {TemplateTypename<convT>(), TemplateTypename<T>()});
+        common::getKernel("cuda::packData", {fftConvSource()},
+                          {TemplateTypename<convT>(), TemplateTypename<T>()});
     auto padArray =
-        common::findKernel("cuda::padArray", {fftConvSource()},
-                           {TemplateTypename<convT>(), TemplateTypename<T>()});
+        common::getKernel("cuda::padArray", {fftConvSource()},
+                          {TemplateTypename<convT>(), TemplateTypename<T>()});
 
     dim_t *sd = sig.dims;
 
@@ -75,8 +75,8 @@ template<typename T, typename convT>
 void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                            AF_BATCH_KIND kind) {
     auto cplxMul =
-        common::findKernel("cuda::complexMultiply", {fftConvSource()},
-                           {TemplateTypename<convT>(), TemplateArg(kind)});
+        common::getKernel("cuda::complexMultiply", {fftConvSource()},
+                          {TemplateTypename<convT>(), TemplateArg(kind)});
 
     int sig_packed_elem    = 1;
     int filter_packed_elem = 1;
@@ -108,9 +108,9 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
     constexpr bool RoundResult = std::is_integral<T>::value;
 
     auto reorderOut =
-        common::findKernel("cuda::reorderOutput", {fftConvSource()},
-                           {TemplateTypename<T>(), TemplateTypename<convT>(),
-                            TemplateArg(expand), TemplateArg(RoundResult)});
+        common::getKernel("cuda::reorderOutput", {fftConvSource()},
+                          {TemplateTypename<T>(), TemplateTypename<convT>(),
+                           TemplateArg(expand), TemplateArg(RoundResult)});
 
     dim_t *sd    = sig.dims;
     int fftScale = 1;

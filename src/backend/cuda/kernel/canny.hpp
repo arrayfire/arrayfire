@@ -30,7 +30,7 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
                        CParam<T> dy) {
     static const std::string source(canny_cuh, canny_cuh_len);
 
-    auto nonMaxSuppress = common::findKernel(
+    auto nonMaxSuppress = common::getKernel(
         "cuda::nonMaxSuppression", {source}, {TemplateTypename<T>()},
         {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
          DefineValue(THREADS_X), DefineValue(THREADS_Y)});
@@ -53,15 +53,15 @@ template<typename T>
 void edgeTrackingHysteresis(Param<T> output, CParam<T> strong, CParam<T> weak) {
     static const std::string source(canny_cuh, canny_cuh_len);
 
-    auto initEdgeOut = common::findKernel(
+    auto initEdgeOut = common::getKernel(
         "cuda::initEdgeOut", {source}, {TemplateTypename<T>()},
         {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
          DefineValue(THREADS_X), DefineValue(THREADS_Y)});
-    auto edgeTrack = common::findKernel(
+    auto edgeTrack = common::getKernel(
         "cuda::edgeTrack", {source}, {TemplateTypename<T>()},
         {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
          DefineValue(THREADS_X), DefineValue(THREADS_Y)});
-    auto suppressLeftOver = common::findKernel(
+    auto suppressLeftOver = common::getKernel(
         "cuda::suppressLeftOver", {source}, {TemplateTypename<T>()},
         {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
          DefineValue(THREADS_X), DefineValue(THREADS_Y)});

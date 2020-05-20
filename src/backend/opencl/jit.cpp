@@ -146,7 +146,11 @@ static cl::Kernel getKernel(const vector<Node *> &output_nodes,
     string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
 
-    auto entry = common::lookupKernel(getActiveDeviceId(), funcName);
+    // Lookup kernel cache for a kernel with the key funcName.
+    // A forward lookup helps avoid recompiling the jit source
+    // generated from identical jit-trees. It also enables us
+    // with a way to save jit kernels to disk only once
+    auto entry = common::findKernel(getActiveDeviceId(), funcName);
 
     if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
         static const string jit(jit_cl, jit_cl_len);
@@ -164,7 +168,8 @@ static cl::Kernel getKernel(const vector<Node *> &output_nodes,
 
         saveKernel(funcName, jitKer, ".cl");
 
-        entry = common::findKernel(funcName, {jit, jitKer}, {}, options, true);
+        // getKernel compiles and caches the kernel handle for later lookup
+        entry = common::getKernel(funcName, {jit, jitKer}, {}, options, true);
     }
     return *entry.getKernel();
 }

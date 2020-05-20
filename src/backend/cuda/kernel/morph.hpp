@@ -33,7 +33,7 @@ void morph(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
     const int windLen  = mask.dims[0];
     const int SeLength = (windLen <= 10 ? windLen : 0);
 
-    auto morph = common::findKernel(
+    auto morph = common::getKernel(
         "cuda::morph", {source},
         {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(SeLength)},
         {
@@ -72,7 +72,7 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
         CUDA_NOT_SUPPORTED("Morph 3D does not support kernels larger than 7.");
     }
 
-    auto morph3D = common::findKernel(
+    auto morph3D = common::getKernel(
         "cuda::morph3D", {source},
         {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(windLen)},
         {

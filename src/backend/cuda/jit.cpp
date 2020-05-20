@@ -180,14 +180,19 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
     string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
 
-    auto entry = common::lookupKernel(getActiveDeviceId(), funcName);
+    // Lookup kernel cache for a kernel with the key funcName.
+    // A forward lookup helps avoid recompiling the jit source
+    // generated from identical jit-trees. It also enables us
+    // with a way to save jit kernels to disk only once
+    auto entry = common::findKernel(getActiveDeviceId(), funcName);
 
     if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
         string jitKer = getKernelString(funcName, full_nodes, full_ids,
                                         output_ids, is_linear);
         saveKernel(funcName, jitKer, ".cu");
 
-        entry = common::findKernel(funcName, {jitKer}, {}, {}, true);
+        // getKernel compiles and caches the kernel handle for later lookup
+        entry = common::getKernel(funcName, {jitKer}, {}, {}, true);
     }
     return entry.getKernel();
 }

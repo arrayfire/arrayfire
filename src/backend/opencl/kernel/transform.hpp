@@ -80,8 +80,8 @@ void transform(Param out, const Param in, const Param tf, bool isInverse,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
     addInterpEnumOptions(compileOpts);
 
-    auto transform = common::findKernel("transformKernel", {src1, src2},
-                                        tmpltArgs, compileOpts);
+    auto transform = common::getKernel("transformKernel", {src1, src2},
+                                       tmpltArgs, compileOpts);
 
     const int nImg2 = in.info.dims[2];
     const int nImg3 = in.info.dims[3];

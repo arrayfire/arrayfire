@@ -29,7 +29,7 @@ void index(Param<T> out, CParam<T> in, const IndexKernelParam& p) {
     static const std::string source(index_cuh, index_cuh_len);
 
     auto index =
-        common::findKernel("cuda::index", {source}, {TemplateTypename<T>()});
+        common::getKernel("cuda::index", {source}, {TemplateTypename<T>()});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

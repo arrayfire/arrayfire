@@ -37,8 +37,8 @@ void join(Param out, const Param in, dim_t dim, const af::dim4 offset) {
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto join =
-        common::findKernel("join_kernel", {src},
-                           {TemplateTypename<T>(), TemplateArg(dim)}, options);
+        common::getKernel("join_kernel", {src},
+                          {TemplateTypename<T>(), TemplateArg(dim)}, options);
     cl::NDRange local(TX, TY, 1);
 
     int blocksPerMatX = divup(in.info.dims[0], TILEX);
