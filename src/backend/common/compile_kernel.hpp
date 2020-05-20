@@ -42,8 +42,9 @@ detail::Kernel compileKernel(const std::string& kernelName,
 /// \param[in] device is the device index
 /// \param[in] kernelNameExpr is the name identifying the relevant kernel
 /// \param[in] sources is the list of kernel and helper source files
-detail::Kernel loadKernel(const int device, const std::string& kernelNameExpr,
-                          const std::vector<std::string>& sources);
+detail::Kernel loadKernelFromDisk(const int device,
+                                  const std::string& kernelNameExpr,
+                                  const std::vector<std::string>& sources);
 
 }  // namespace common
 

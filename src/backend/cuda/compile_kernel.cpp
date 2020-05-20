@@ -363,8 +363,8 @@ Kernel compileKernel(const string &kernelName, const string &nameExpr,
     return entry;
 }
 
-Kernel loadKernel(const int device, const string &nameExpr,
-                  const vector<string> &sources) {
+Kernel loadKernelFromDisk(const int device, const string &nameExpr,
+                          const vector<string> &sources) {
     const string &cacheDirectory = getCacheDirectory();
     if (cacheDirectory.empty()) return Kernel{nullptr, nullptr};
 

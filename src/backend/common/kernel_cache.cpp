@@ -50,7 +50,7 @@ Kernel lookupKernel(const int device, const string& nameExpr,
 
     if (sources.size() > 0) {
 #if defined(AF_CUDA) && defined(AF_CACHE_KERNELS_TO_DISK)
-        Kernel kernel = loadKernel(device, nameExpr, sources);
+        Kernel kernel = loadKernelFromDisk(device, nameExpr, sources);
         if (kernel.getModule() != nullptr && kernel.getKernel() != nullptr) {
             cacheKernel(device, nameExpr, kernel);
             return kernel;
