@@ -30,7 +30,7 @@ void join(Param<T> out, CParam<T> X, const af::dim4 &offset, int dim) {
     static const std::string source(join_cuh, join_cuh_len);
 
     auto join =
-        common::findKernel("cuda::join", {source}, {TemplateTypename<T>()});
+        common::getKernel("cuda::join", {source}, {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 

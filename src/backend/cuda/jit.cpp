@@ -25,9 +25,11 @@
 
 #include <cstdio>
 #include <stdexcept>
+#include <string>
 #include <thread>
 #include <vector>
 
+using common::findModule;
 using common::getFuncName;
 using common::half;
 using common::Node;
@@ -36,6 +38,7 @@ using common::Node_map_t;
 
 using std::string;
 using std::stringstream;
+using std::to_string;
 using std::vector;
 
 namespace cuda {
@@ -177,19 +180,23 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
                             const vector<Node *> &full_nodes,
                             const vector<Node_ids> &full_ids,
                             const bool is_linear) {
-    string funcName =
+    const string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
+    const string moduleKey = to_string(deterministicHash(funcName));
 
-    auto entry = common::lookupKernel(getActiveDeviceId(), funcName);
+    // A forward lookup in module cache helps avoid recompiling the jit
+    // source generated from identical jit-trees. It also enables us
+    // with a way to save jit kernels to disk only once
+    auto entry = findModule(getActiveDeviceId(), moduleKey);
 
-    if (entry.getModule() == nullptr || entry.getKernel() == nullptr) {
-        string jitKer = getKernelString(funcName, full_nodes, full_ids,
-                                        output_ids, is_linear);
+    if (entry.get() == nullptr) {
+        const string jitKer = getKernelString(funcName, full_nodes, full_ids,
+                                              output_ids, is_linear);
         saveKernel(funcName, jitKer, ".cu");
 
-        entry = common::findKernel(funcName, {jitKer}, {}, {}, true);
+        return common::getKernel(funcName, {jitKer}, {}, {}, true).get();
     }
-    return entry.getKernel();
+    return common::getKernel(entry, funcName, true).get();
 }
 
 template<typename T>

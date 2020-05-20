@@ -40,7 +40,7 @@ static void identity(Param out) {
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto identityOp =
-        common::findKernel("identity_kernel", {src}, targs, options);
+        common::getKernel("identity_kernel", {src}, targs, options);
 
     cl::NDRange local(32, 8);
     int groups_x = divup(out.info.dims[0], local[0]);

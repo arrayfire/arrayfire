@@ -26,7 +26,7 @@ void moments(Param<float> out, CParam<T> in, const af::momentType moment) {
     static const std::string source(moments_cuh, moments_cuh_len);
 
     auto moments =
-        common::findKernel("cuda::moments", {source}, {TemplateTypename<T>()});
+        common::getKernel("cuda::moments", {source}, {TemplateTypename<T>()});
 
     dim3 threads(THREADS, 1, 1);
     dim3 blocks(in.dims[1], in.dims[2] * in.dims[3]);

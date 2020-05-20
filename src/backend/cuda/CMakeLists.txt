@@ -451,6 +451,7 @@ cuda_add_library(afcuda
     Kernel.cpp
     Kernel.hpp
     LookupTable1D.hpp
+    Module.hpp
     Param.hpp
     ThrustAllocator.cuh
     ThrustArrayFirePolicy.hpp
@@ -469,7 +470,7 @@ cuda_add_library(afcuda
     cholesky.cpp
     cholesky.hpp
     complex.hpp
-    compile_kernel.cpp
+    compile_module.cpp
     convolve.cpp
     convolve.hpp
     convolveNN.cpp

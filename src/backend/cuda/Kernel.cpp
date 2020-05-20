@@ -13,10 +13,10 @@
 
 namespace cuda {
 
-Kernel::DevPtrType Kernel::get(const char *name) {
+Kernel::DevPtrType Kernel::getDevPtr(const char *name) {
     Kernel::DevPtrType out = 0;
     size_t size            = 0;
-    CU_CHECK(cuModuleGetGlobal(&out, &size, this->getModule(), name));
+    CU_CHECK(cuModuleGetGlobal(&out, &size, this->getModuleHandle(), name));
     return out;
 }
 

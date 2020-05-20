@@ -70,9 +70,9 @@ std::array<Kernel, 3> getRegionsKernels(const bool full_conn,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::findKernel("initial_label", {src}, targs, options),
-        common::findKernel("final_relabel", {src}, targs, options),
-        common::findKernel("update_equiv", {src}, targs, options),
+        common::getKernel("initial_label", {src}, targs, options),
+        common::getKernel("final_relabel", {src}, targs, options),
+        common::getKernel("update_equiv", {src}, targs, options),
     };
 }
 

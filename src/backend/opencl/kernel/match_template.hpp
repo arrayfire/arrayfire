@@ -53,8 +53,7 @@ void matchTemplate(Param out, const Param srch, const Param tmplt,
     };
     options.emplace_back(getTypeBuildDefinition<outType>());
 
-    auto matchImgOp =
-        common::findKernel("matchTemplate", {src}, targs, options);
+    auto matchImgOp = common::getKernel("matchTemplate", {src}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

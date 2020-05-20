@@ -28,8 +28,8 @@ void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
     static const std::string source(sparse_cuh, sparse_cuh_len);
 
     auto coo2Dense =
-        common::findKernel("cuda::coo2Dense", {source}, {TemplateTypename<T>()},
-                           {DefineValue(reps)});
+        common::getKernel("cuda::coo2Dense", {source}, {TemplateTypename<T>()},
+                          {DefineValue(reps)});
 
     dim3 threads(256, 1, 1);
 

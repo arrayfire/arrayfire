@@ -28,7 +28,7 @@ void diff(Param<T> out, CParam<T> in, const int indims, const unsigned dim,
 
     static const std::string src(diff_cuh, diff_cuh_len);
 
-    auto diff = common::findKernel(
+    auto diff = common::getKernel(
         "cuda::diff", {src},
         {TemplateTypename<T>(), TemplateArg(dim), TemplateArg(isDiff2)});
 

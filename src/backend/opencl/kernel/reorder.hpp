@@ -37,8 +37,7 @@ void reorder(Param out, const Param in, const dim_t* rdims) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto reorderOp =
-        common::findKernel("reorder_kernel", {src}, targs, options);
+    auto reorderOp = common::getKernel("reorder_kernel", {src}, targs, options);
 
     cl::NDRange local(TX, TY, 1);
 

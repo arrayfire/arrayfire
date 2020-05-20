@@ -25,7 +25,7 @@ template<typename T>
 static void where(Param<uint> &out, CParam<T> in) {
     static const std::string src(where_cuh, where_cuh_len);
     auto where =
-        common::findKernel("cuda::where", {src}, {TemplateTypename<T>()});
+        common::getKernel("cuda::where", {src}, {TemplateTypename<T>()});
 
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_BLOCK);

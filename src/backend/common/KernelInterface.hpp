@@ -19,38 +19,34 @@ template<typename ModuleType, typename KernelType, typename EnqueuerType,
          typename DevPtrType>
 class KernelInterface {
    private:
-    ModuleType mProgram;
-    KernelType mKernel;
+    ModuleType mModuleHandle;
+    KernelType mKernelHandle;
 
    public:
     KernelInterface(ModuleType mod, KernelType ker)
-        : mProgram(mod), mKernel(ker) {}
+        : mModuleHandle(mod), mKernelHandle(ker) {}
 
-    /// \brief Set module and kernel
+    /// \brief Set kernel
     ///
-    /// \param[in] mod is backend specific module handle
     /// \param[in] ker is backend specific kernel handle
-    void set(ModuleType mod, KernelType ker) {
-        mProgram = mod;
-        mKernel  = ker;
-    }
-
-    /// \brief Get module
-    ///
-    /// \returns handle to backend specific module
-    inline ModuleType getModule() { return mProgram; }
+    inline void set(KernelType ker) { mKernelHandle = ker; }
 
     /// \brief Get kernel
     ///
     /// \returns handle to backend specific kernel
-    inline KernelType getKernel() { return mKernel; }
+    inline KernelType get() const { return mKernelHandle; }
+
+    /// \brief Get module
+    ///
+    /// \returns handle to backend specific module
+    inline ModuleType getModuleHandle() { return mModuleHandle; }
 
     /// \brief Get device pointer associated with name(label)
     ///
     /// This function is only useful with CUDA NVRTC based compilation
     /// at the moment, calling this function for OpenCL backend build
     /// will return a null pointer.
-    virtual DevPtrType get(const char* name) = 0;
+    virtual DevPtrType getDevPtr(const char* name) = 0;
 
     /// \brief Copy data from device memory to read-only memory
     ///
@@ -94,7 +90,7 @@ class KernelInterface {
     template<typename EnqueueArgsType, typename... Args>
     void operator()(const EnqueueArgsType& qArgs, Args... args) {
         EnqueuerType launch;
-        launch(mKernel, qArgs, std::forward<Args>(args)...);
+        launch(mKernelHandle, qArgs, std::forward<Args>(args)...);
     }
 };
 

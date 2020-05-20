@@ -47,9 +47,9 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto locate  = common::findKernel("locate_features", {src}, targs, options);
-    auto nonMax  = common::findKernel("non_max_counts", {src}, targs, options);
-    auto getFeat = common::findKernel("get_features", {src}, targs, options);
+    auto locate  = common::getKernel("locate_features", {src}, targs, options);
+    auto nonMax  = common::getKernel("non_max_counts", {src}, targs, options);
+    auto getFeat = common::getKernel("get_features", {src}, targs, options);
 
     const unsigned max_feat =
         ceil(in.info.dims[0] * in.info.dims[1] * feature_ratio);

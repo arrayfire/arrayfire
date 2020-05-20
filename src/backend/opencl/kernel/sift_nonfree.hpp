@@ -414,13 +414,13 @@ std::array<Kernel, 7> getSiftKernels() {
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::findKernel("sub", {src}, targs, compileOpts),
-        common::findKernel("detectExtrema", {src}, targs, compileOpts),
-        common::findKernel("interpolateExtrema", {src}, targs, compileOpts),
-        common::findKernel("calcOrientation", {src}, targs, compileOpts),
-        common::findKernel("removeDuplicates", {src}, targs, compileOpts),
-        common::findKernel("computeDescriptor", {src}, targs, compileOpts),
-        common::findKernel("computeGLOHDescriptor", {src}, targs, compileOpts),
+        common::getKernel("sub", {src}, targs, compileOpts),
+        common::getKernel("detectExtrema", {src}, targs, compileOpts),
+        common::getKernel("interpolateExtrema", {src}, targs, compileOpts),
+        common::getKernel("calcOrientation", {src}, targs, compileOpts),
+        common::getKernel("removeDuplicates", {src}, targs, compileOpts),
+        common::getKernel("computeDescriptor", {src}, targs, compileOpts),
+        common::getKernel("computeGLOHDescriptor", {src}, targs, compileOpts),
     };
 }
 

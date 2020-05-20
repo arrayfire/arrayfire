@@ -26,9 +26,9 @@ void iir(Param<T> y, CParam<T> c, CParam<T> a) {
 
     static const std::string source(iir_cuh, iir_cuh_len);
 
-    auto iir = common::findKernel("cuda::iir", {source},
-                                  {TemplateTypename<T>(), TemplateArg(batch_a)},
-                                  {DefineValue(MAX_A_SIZE)});
+    auto iir = common::getKernel("cuda::iir", {source},
+                                 {TemplateTypename<T>(), TemplateArg(batch_a)},
+                                 {DefineValue(MAX_A_SIZE)});
 
     const int blocks_y = y.dims[1];
     const int blocks_x = y.dims[2];

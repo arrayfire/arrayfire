@@ -28,8 +28,8 @@ void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
     static const std::string source(unwrap_cuh, unwrap_cuh_len);
 
     auto unwrap =
-        common::findKernel("cuda::unwrap", {source},
-                           {TemplateTypename<T>(), TemplateArg(is_column)});
+        common::getKernel("cuda::unwrap", {source},
+                          {TemplateTypename<T>(), TemplateArg(is_column)});
 
     dim3 threads, blocks;
     int reps;

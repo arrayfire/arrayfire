@@ -42,7 +42,7 @@ void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
     blocks.z = divup(blocks.y, maxBlocksY);
     blocks.y = divup(blocks.y, blocks.z);
 
-    auto ireduceDim = common::findKernel(
+    auto ireduceDim = common::getKernel(
         "cuda::ireduceDim", {ireduceSource()},
         {TemplateTypename<T>(), TemplateArg(op), TemplateArg(dim),
          TemplateArg(is_first), TemplateArg(threads_y)},
@@ -111,10 +111,10 @@ void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
 
     // threads_x can take values 32, 64, 128, 256
     auto ireduceFirst =
-        common::findKernel("cuda::ireduceFirst", {ireduceSource()},
-                           {TemplateTypename<T>(), TemplateArg(op),
-                            TemplateArg(is_first), TemplateArg(threads_x)},
-                           {DefineValue(THREADS_PER_BLOCK)});
+        common::getKernel("cuda::ireduceFirst", {ireduceSource()},
+                          {TemplateTypename<T>(), TemplateArg(op),
+                           TemplateArg(is_first), TemplateArg(threads_x)},
+                          {DefineValue(THREADS_PER_BLOCK)});
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
