@@ -78,10 +78,10 @@ add_library(arrayfire_test OBJECT
 
 target_include_directories(arrayfire_test
   PRIVATE
-    .
-    ../include
-    ../build/include
-    ../extern/half/include
+    ${CMAKE_CURRENT_LIST_DIR}
+    ${ArrayFire_SOURCE_DIR}/include
+    ${ArrayFire_BINARY_DIR}/include
+    ${ArrayFire_SOURCE_DIR}/extern/half/include
     mmio
     gtest/googletest/include)
 
