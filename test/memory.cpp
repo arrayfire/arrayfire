@@ -771,7 +771,9 @@ af_err alloc_fn(af_memory_manager manager, void **ptr,
         af_memory_manager_get_memory_pressure_threshold(manager, &threshold);
         if (pressure >= threshold) { signal_memory_cleanup_fn(manager); }
 
-        af_memory_manager_native_alloc(manager, ptr, size);
+        if (af_err err = af_memory_manager_native_alloc(manager, ptr, size)) {
+            return err;
+        }
 
         auto *payload        = getMemoryManagerPayload<E2ETestPayload>(manager);
         payload->table[*ptr] = size;
@@ -796,7 +798,75 @@ void remove_memory_management_fn(af_memory_manager manager, int id) {}
 
 }  // namespace
 
-TEST(MemoryManagerApi, E2ETest) {
+class MemoryManagerApi : public ::testing::Test {
+   public:
+    af_memory_manager manager;
+    std::unique_ptr<E2ETestPayload> payload{new E2ETestPayload()};
+    void SetUp() override {
+        af_create_memory_manager(&manager);
+
+        // Set payload_fn
+        af_memory_manager_set_payload(manager, payload.get());
+
+        auto initialize_fn = [](af_memory_manager manager) {
+            auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
+            payload->initializeCalledTimes++;
+            return AF_SUCCESS;
+        };
+        af_memory_manager_set_initialize_fn(manager, initialize_fn);
+
+        auto shutdown_fn = [](af_memory_manager manager) {
+            auto *payload = getMemoryManagerPayload<E2ETestPayload>(manager);
+            payload->shutdownCalledTimes++;
+            return AF_SUCCESS;
+        };
+        af_memory_manager_set_shutdown_fn(manager, shutdown_fn);
+
+        // alloc
+        af_memory_manager_set_alloc_fn(manager, alloc_fn);
+        af_memory_manager_set_allocated_fn(manager, allocated_fn);
+        af_memory_manager_set_unlock_fn(manager, unlock_fn);
+        // utils
+        af_memory_manager_set_signal_memory_cleanup_fn(
+            manager, signal_memory_cleanup_fn);
+        af_memory_manager_set_print_info_fn(manager, print_info_fn);
+        // user lock/unlock
+        af_memory_manager_set_user_lock_fn(manager, user_lock_fn);
+        af_memory_manager_set_user_unlock_fn(manager, user_unlock_fn);
+        af_memory_manager_set_is_user_locked_fn(manager, is_user_locked_fn);
+        // memory pressure
+        af_memory_manager_set_get_memory_pressure_fn(manager,
+                                                     get_memory_pressure_fn);
+        af_memory_manager_set_jit_tree_exceeds_memory_pressure_fn(
+            manager, jit_tree_exceeds_memory_pressure_fn);
+        // ocl
+        af_memory_manager_set_add_memory_management_fn(
+            manager, add_memory_management_fn);
+        af_memory_manager_set_remove_memory_management_fn(
+            manager, remove_memory_management_fn);
+
+        af_set_memory_manager(manager);
+    }
+
+    void TearDown() override {
+        af_device_gc();
+        af_unset_memory_manager();
+        af_release_memory_manager(manager);
+    }
+};
+
+TEST_F(MemoryManagerApi, OutOfMemory) {
+    af::array a;
+    const unsigned N = 99999;
+    try {
+        a = af::randu({N, N, N}, af::dtype::f32);
+        FAIL();
+    } catch (af::exception &ex) {
+        ASSERT_EQ(ex.err(), AF_ERR_NO_MEM);
+    } catch (...) { FAIL(); }
+}
+
+TEST(MemoryManagerE2E, E2ETest) {
     af_memory_manager manager;
     af_create_memory_manager(&manager);
 
