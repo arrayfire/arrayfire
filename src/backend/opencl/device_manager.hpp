@@ -155,9 +155,9 @@ class DeviceManager {
     // Attributes
     std::shared_ptr<spdlog::logger> logger;
     std::mutex deviceMutex;
-    std::vector<cl::Device*> mDevices;
-    std::vector<cl::Context*> mContexts;
-    std::vector<cl::CommandQueue*> mQueues;
+    std::vector<std::unique_ptr<cl::Device>> mDevices;
+    std::vector<std::unique_ptr<cl::Context>> mContexts;
+    std::vector<std::unique_ptr<cl::CommandQueue>> mQueues;
     std::vector<bool> mIsGLSharingOn;
     std::vector<int> mDeviceTypes;
     std::vector<int> mPlatforms;
