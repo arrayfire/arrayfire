@@ -55,6 +55,7 @@ using std::endl;
 using std::find_if;
 using std::get;
 using std::make_pair;
+using std::make_unique;
 using std::map;
 using std::once_flag;
 using std::ostringstream;
@@ -149,10 +150,8 @@ string getDeviceInfo() noexcept {
         DeviceManager& devMngr = DeviceManager::getInstance();
 
         common::lock_guard_t lock(devMngr.deviceMutex);
-        devices = devMngr.mDevices;
-
         unsigned nDevices = 0;
-        for (auto device : devices) {
+        for (auto& device : devMngr.mDevices) {
             const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
 
             string dstr = device->getInfo<CL_DEVICE_NAME>();
@@ -396,43 +395,41 @@ void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
 
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    vector<cl::Context*> contexts;
     {
         common::lock_guard_t lock(devMngr.deviceMutex);
-        contexts = devMngr.mContexts;  // NOTE: copy, not a reference
-    }
 
-    for (auto context : contexts) {
-        vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
+        for (auto& context : devMngr.mContexts) {
+            vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
 
-        for (auto& device : devices) {
-            const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
-            string platStr = platform.getInfo<CL_PLATFORM_NAME>();
+            for (auto& device : devices) {
+                const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
+                string platStr = platform.getInfo<CL_PLATFORM_NAME>();
 
-            if (currActiveDevId == nDevices) {
-                string dev_str;
-                device.getInfo(CL_DEVICE_NAME, &dev_str);
-                string com_str = device.getInfo<CL_DEVICE_VERSION>();
-                com_str        = com_str.substr(7, 3);
+                if (currActiveDevId == nDevices) {
+                    string dev_str;
+                    device.getInfo(CL_DEVICE_NAME, &dev_str);
+                    string com_str = device.getInfo<CL_DEVICE_VERSION>();
+                    com_str        = com_str.substr(7, 3);
 
-                // strip out whitespace from the device string:
-                const string& whitespace = " \t";
-                const auto strBegin = dev_str.find_first_not_of(whitespace);
-                const auto strEnd   = dev_str.find_last_not_of(whitespace);
-                const auto strRange = strEnd - strBegin + 1;
-                dev_str             = dev_str.substr(strBegin, strRange);
+                    // strip out whitespace from the device string:
+                    const string& whitespace = " \t";
+                    const auto strBegin = dev_str.find_first_not_of(whitespace);
+                    const auto strEnd   = dev_str.find_last_not_of(whitespace);
+                    const auto strRange = strEnd - strBegin + 1;
+                    dev_str             = dev_str.substr(strBegin, strRange);
 
-                // copy to output
-                snprintf(d_name, 64, "%s", dev_str.c_str());
-                snprintf(d_platform, 10, "OpenCL");
-                snprintf(d_toolkit, 64, "%s", platStr.c_str());
-                snprintf(d_compute, 10, "%s", com_str.c_str());
-                devset = true;
+                    // copy to output
+                    snprintf(d_name, 64, "%s", dev_str.c_str());
+                    snprintf(d_platform, 10, "OpenCL");
+                    snprintf(d_toolkit, 64, "%s", platStr.c_str());
+                    snprintf(d_compute, 10, "%s", com_str.c_str());
+                    devset = true;
+                }
+                if (devset) { break; }
+                nDevices++;
             }
             if (devset) { break; }
-            nDevices++;
         }
-        if (devset) { break; }
     }
 
     // Sanitize input
@@ -470,28 +467,25 @@ void sync(int device) {
 }
 
 void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
-    clRetainDevice(dev);
-    clRetainContext(ctx);
-    clRetainCommandQueue(que);
-
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     int nDevices = 0;
     {
         common::lock_guard_t lock(devMngr.deviceMutex);
 
-        auto* tDevice  = new cl::Device(dev);
-        auto* tContext = new cl::Context(ctx);
-        cl::CommandQueue* tQueue =
-            (que == NULL ? new cl::CommandQueue(*tContext, *tDevice)
-                         : new cl::CommandQueue(que));
-        devMngr.mDevices.push_back(tDevice);
-        devMngr.mContexts.push_back(tContext);
-        devMngr.mQueues.push_back(tQueue);
+        auto tDevice  = make_unique<cl::Device>(dev, true);
+        auto tContext = make_unique<cl::Context>(ctx, true);
+        auto tQueue =
+            (que == NULL ? make_unique<cl::CommandQueue>(*tContext, *tDevice)
+                         : make_unique<cl::CommandQueue>(que, true));
         devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.push_back(false);
         devMngr.mDeviceTypes.push_back(tDevice->getInfo<CL_DEVICE_TYPE>());
+
+        devMngr.mDevices.push_back(move(tDevice));
+        devMngr.mContexts.push_back(move(tContext));
+        devMngr.mQueues.push_back(move(tQueue));
         nDevices = devMngr.mDevices.size() - 1;
 
         // cache the boost program_cache object, clean up done on program exit
@@ -554,10 +548,6 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx) {
         memoryManager().removeMemoryManagement(deleteIdx);
 
         common::lock_guard_t lock(devMngr.deviceMutex);
-        clReleaseDevice((*devMngr.mDevices[deleteIdx])());
-        clReleaseContext((*devMngr.mContexts[deleteIdx])());
-        clReleaseCommandQueue((*devMngr.mQueues[deleteIdx])());
-
         // FIXME: this case can potentially cause issues due to the
         // modification of the device pool stl containers.
 
