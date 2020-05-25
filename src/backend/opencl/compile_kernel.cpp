@@ -131,9 +131,8 @@ Kernel compileKernel(const string &kernelName, const string &tInstance,
     auto compileBegin = high_resolution_clock::now();
     auto prog         = detail::buildProgram(sources, compileOpts);
     auto prg          = new cl::Program(prog);
-    auto krn =
-        new cl::Kernel(*static_cast<cl::Program *>(prg), kernelName.c_str());
-    auto compileEnd = high_resolution_clock::now();
+    auto krn          = new cl::Kernel(*prg, kernelName.c_str());
+    auto compileEnd   = high_resolution_clock::now();
 
     AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", kernelName,
              duration_cast<milliseconds>(compileEnd - compileBegin).count(),

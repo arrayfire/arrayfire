@@ -47,8 +47,10 @@ using cl::Platform;
 using std::begin;
 using std::end;
 using std::find;
+using std::make_unique;
 using std::string;
 using std::stringstream;
+using std::unique_ptr;
 using std::vector;
 
 namespace opencl {
@@ -78,7 +80,8 @@ static afcl::deviceType getDeviceTypeEnum(const Device& dev) {
     return static_cast<afcl::deviceType>(dev.getInfo<CL_DEVICE_TYPE>());
 }
 
-static inline bool compare_default(const Device* ldev, const Device* rdev) {
+static inline bool compare_default(const unique_ptr<Device>& ldev,
+                                   const unique_ptr<Device>& rdev) {
     const cl_device_type device_types[] = {CL_DEVICE_TYPE_GPU,
                                            CL_DEVICE_TYPE_ACCELERATOR};
 
@@ -219,8 +222,8 @@ DeviceManager::DeviceManager()
         }
         AF_TRACE("Found {} devices on platform {}", current_devices.size(),
                  platform.getInfo<CL_PLATFORM_NAME>());
-        for (const auto& dev : current_devices) {
-            mDevices.push_back(new Device(dev));
+        for (auto& dev : current_devices) {
+            mDevices.emplace_back(make_unique<Device>(dev));
             AF_TRACE("Found device {} on platform {}",
                      dev.getInfo<CL_DEVICE_NAME>(),
                      platform.getInfo<CL_PLATFORM_NAME>());
@@ -242,10 +245,9 @@ DeviceManager::DeviceManager()
         cl_context_properties cps[3] = {
             CL_CONTEXT_PLATFORM, (cl_context_properties)(device_platform), 0};
 
-        auto* ctx = new Context(*mDevices[i], cps);
-        auto* cq  = new CommandQueue(*ctx, *mDevices[i]);
-        mContexts.push_back(ctx);
-        mQueues.push_back(cq);
+        mContexts.push_back(make_unique<Context>(*mDevices[i], cps));
+        mQueues.push_back(make_unique<CommandQueue>(
+            *mContexts.back(), *mDevices[i], cl::QueueProperties::None));
         mIsGLSharingOn.push_back(false);
         mDeviceTypes.push_back(getDeviceTypeEnum(*mDevices[i]));
         mPlatforms.push_back(getPlatformEnum(*mDevices[i]));
@@ -319,7 +321,7 @@ DeviceManager::DeviceManager()
 
     // Cache Boost program_cache
     namespace compute = boost::compute;
-    for (auto ctx : mContexts) {
+    for (auto& ctx : mContexts) {
         compute::context c(ctx->get());
         BoostProgCache currCache = compute::program_cache::get_global_cache(c);
         mBoostProgCacheVector.emplace_back(new BoostProgCache(currCache));
@@ -413,10 +415,10 @@ DeviceManager::~DeviceManager() {
     // on the investigation done so far. This problem
     // doesn't seem to happen on Linux or MacOSX.
     // So, clean up OpenCL resources on non-Windows platforms
-#ifndef OS_WIN
-    for (auto q : mQueues) { delete q; }
-    for (auto c : mContexts) { delete c; }
-    for (auto d : mDevices) { delete d; }
+#ifdef OS_WIN
+    for (auto& q : mQueues) { q.release(); }
+    for (auto& c : mContexts) { c.release(); }
+    for (auto& d : mDevices) { d.release(); }
 #endif
 }
 
@@ -509,17 +511,11 @@ void DeviceManager::markDeviceForInterop(const int device,
 #endif
 
             // Change current device to use GL sharing
-            auto* ctx = new Context(*mDevices[device], cps);
-            auto* cq  = new CommandQueue(*ctx, *mDevices[device]);
+            auto ctx = make_unique<Context>(*mDevices[device], cps);
+            auto cq  = make_unique<CommandQueue>(*ctx, *mDevices[device]);
 
-            // May be fixes the AMD GL issues we see on windows?
-#if !defined(_WIN32) && !defined(_MSC_VER)
-            delete mContexts[device];
-            delete mQueues[device];
-#endif
-
-            mContexts[device]      = ctx;
-            mQueues[device]        = cq;
+            mQueues[device]        = move(cq);
+            mContexts[device]      = move(ctx);
             mIsGLSharingOn[device] = true;
         }
     } catch (const cl::Error& ex) {
