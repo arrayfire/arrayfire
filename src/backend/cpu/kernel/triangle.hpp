@@ -8,15 +8,15 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <math.hpp>
 
 namespace cpu {
 namespace kernel {
 
-template<typename T>
-void triangle(Param<T> out, CParam<T> in, const bool is_upper,
-              const bool is_unit_diag) {
+template<typename T, bool IsUpper, bool IsUnitDiag>
+void triangle(Param<T> out, CParam<T> in) {
     T *o       = out.get();
     const T *i = in.get();
 
@@ -41,8 +41,8 @@ void triangle(Param<T> out, CParam<T> in, const bool is_upper,
                     const dim_t oMem = oYZW + ox;
                     const dim_t iMem = iYZW + ox;
 
-                    bool cond         = is_upper ? (oy >= ox) : (oy <= ox);
-                    bool do_unit_diag = (is_unit_diag && ox == oy);
+                    bool cond         = IsUpper ? (oy >= ox) : (oy <= ox);
+                    bool do_unit_diag = (IsUnitDiag && ox == oy);
                     if (cond) {
                         o[oMem] = do_unit_diag ? scalar<T>(1) : i[iMem];
                     } else {

@@ -13,9 +13,9 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T>
+template<typename T, bool IsLinear>
 void histogram(Param<uint> out, CParam<T> in, const unsigned nbins,
-               const double minval, const double maxval, const bool IsLinear) {
+               const double minval, const double maxval) {
     dim4 const outDims  = out.dims();
     float const step    = (maxval - minval) / (float)nbins;
     dim4 const inDims   = in.dims();
