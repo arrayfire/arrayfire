@@ -142,9 +142,11 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
     return {program};
 }
 
-Module loadModuleFromDisk(const int device, const string &moduleKey) {
+Module loadModuleFromDisk(const int device, const string &moduleKey,
+                          const bool isJIT) {
     UNUSED(device);
     UNUSED(moduleKey);
+    UNUSED(isJIT);
     return {nullptr};
 }
 
