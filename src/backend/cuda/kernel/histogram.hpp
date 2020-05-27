@@ -22,15 +22,14 @@ constexpr int MAX_BINS  = 4000;
 constexpr int THREADS_X = 256;
 constexpr int THRD_LOAD = 16;
 
-template<typename inType, typename outType>
-void histogram(Param<outType> out, CParam<inType> in, int nbins, float minval,
+template<typename T>
+void histogram(Param<uint> out, CParam<T> in, int nbins, float minval,
                float maxval, bool isLinear) {
     static const std::string source(histogram_cuh, histogram_cuh_len);
 
     auto histogram =
         common::getKernel("cuda::histogram", {source},
-                          {TemplateTypename<inType>(),
-                           TemplateTypename<outType>(), TemplateArg(isLinear)},
+                          {TemplateTypename<T>(), TemplateArg(isLinear)},
                           {DefineValue(MAX_BINS), DefineValue(THRD_LOAD)});
 
     dim3 threads(kernel::THREADS_X, 1);
@@ -41,7 +40,7 @@ void histogram(Param<outType> out, CParam<inType> in, int nbins, float minval,
     dim3 blocks(blk_x * in.dims[2], in.dims[3]);
 
     // If nbins > MAX_BINS, we are using global memory so smem_size can be 0;
-    int smem_size = nbins <= MAX_BINS ? (nbins * sizeof(outType)) : 0;
+    int smem_size = nbins <= MAX_BINS ? (nbins * sizeof(uint)) : 0;
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream(), smem_size);
     histogram(qArgs, out, in, nElems, nbins, minval, maxval, blk_x);

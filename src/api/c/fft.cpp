@@ -14,11 +14,15 @@
 #include <af/dim4.hpp>
 #include <af/signal.h>
 
+#include <type_traits>
+
 using af::dim4;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::multiply_inplace;
+using std::conditional;
+using std::is_same;
 
 void computePaddedDims(dim4 &pdims, const dim4 &idims, const dim_t npad,
                        dim_t const *const pad) {
@@ -27,16 +31,19 @@ void computePaddedDims(dim4 &pdims, const dim4 &idims, const dim_t npad,
     }
 }
 
-template<typename inType, typename outType, int rank, bool direction>
-static af_array fft(const af_array in, const double norm_factor,
-                    const dim_t npad, const dim_t *const pad) {
-    return getHandle(fft<inType, outType, rank, direction>(
-        getArray<inType>(in), norm_factor, npad, pad));
+template<typename InType>
+af_array fft(const af_array in, const double norm_factor, const dim_t npad,
+             const dim_t *const pad, int rank, bool direction) {
+    using OutType = typename conditional<is_same<InType, double>::value ||
+                                             is_same<InType, cdouble>::value,
+                                         cdouble, cfloat>::type;
+    return getHandle(fft<InType, OutType>(getArray<InType>(in), norm_factor,
+                                          npad, pad, rank, direction));
 }
 
-template<int rank, bool direction>
-static af_err fft(af_array *out, const af_array in, const double norm_factor,
-                  const dim_t npad, const dim_t *const pad) {
+af_err fft(af_array *out, const af_array in, const double norm_factor,
+           const dim_t npad, const dim_t *const pad, const int rank,
+           const bool direction) {
     try {
         const ArrayInfo &info = getInfo(in);
         af_dtype type         = info.getType();
@@ -49,20 +56,20 @@ static af_err fft(af_array *out, const af_array in, const double norm_factor,
         af_array output;
         switch (type) {
             case c32:
-                output = fft<cfloat, cfloat, rank, direction>(in, norm_factor,
-                                                              npad, pad);
+                output =
+                    fft<cfloat>(in, norm_factor, npad, pad, rank, direction);
                 break;
             case c64:
-                output = fft<cdouble, cdouble, rank, direction>(in, norm_factor,
-                                                                npad, pad);
+                output =
+                    fft<cdouble>(in, norm_factor, npad, pad, rank, direction);
                 break;
             case f32:
-                output = fft<float, cfloat, rank, direction>(in, norm_factor,
-                                                             npad, pad);
+                output =
+                    fft<float>(in, norm_factor, npad, pad, rank, direction);
                 break;
             case f64:
-                output = fft<double, cdouble, rank, direction>(in, norm_factor,
-                                                               npad, pad);
+                output =
+                    fft<double>(in, norm_factor, npad, pad, rank, direction);
                 break;
             default: TYPE_ERROR(1, type);
         }
@@ -76,52 +83,53 @@ static af_err fft(af_array *out, const af_array in, const double norm_factor,
 af_err af_fft(af_array *out, const af_array in, const double norm_factor,
               const dim_t pad0) {
     const dim_t pad[1] = {pad0};
-    return fft<1, true>(out, in, norm_factor, (pad0 > 0 ? 1 : 0), pad);
+    return fft(out, in, norm_factor, (pad0 > 0 ? 1 : 0), pad, 1, true);
 }
 
 af_err af_fft2(af_array *out, const af_array in, const double norm_factor,
                const dim_t pad0, const dim_t pad1) {
     const dim_t pad[2] = {pad0, pad1};
-    return fft<2, true>(out, in, norm_factor, (pad0 > 0 && pad1 > 0 ? 2 : 0),
-                        pad);
+    return fft(out, in, norm_factor, (pad0 > 0 && pad1 > 0 ? 2 : 0), pad, 2,
+               true);
 }
 
 af_err af_fft3(af_array *out, const af_array in, const double norm_factor,
                const dim_t pad0, const dim_t pad1, const dim_t pad2) {
     const dim_t pad[3] = {pad0, pad1, pad2};
-    return fft<3, true>(out, in, norm_factor,
-                        (pad0 > 0 && pad1 > 0 && pad2 > 0 ? 3 : 0), pad);
+    return fft(out, in, norm_factor, (pad0 > 0 && pad1 > 0 && pad2 > 0 ? 3 : 0),
+               pad, 3, true);
 }
 
 af_err af_ifft(af_array *out, const af_array in, const double norm_factor,
                const dim_t pad0) {
     const dim_t pad[1] = {pad0};
-    return fft<1, false>(out, in, norm_factor, (pad0 > 0 ? 1 : 0), pad);
+    return fft(out, in, norm_factor, (pad0 > 0 ? 1 : 0), pad, 1, false);
 }
 
 af_err af_ifft2(af_array *out, const af_array in, const double norm_factor,
                 const dim_t pad0, const dim_t pad1) {
     const dim_t pad[2] = {pad0, pad1};
-    return fft<2, false>(out, in, norm_factor, (pad0 > 0 && pad1 > 0 ? 2 : 0),
-                         pad);
+    return fft(out, in, norm_factor, (pad0 > 0 && pad1 > 0 ? 2 : 0), pad, 2,
+               false);
 }
 
 af_err af_ifft3(af_array *out, const af_array in, const double norm_factor,
                 const dim_t pad0, const dim_t pad1, const dim_t pad2) {
     const dim_t pad[3] = {pad0, pad1, pad2};
-    return fft<3, false>(out, in, norm_factor,
-                         (pad0 > 0 && pad1 > 0 && pad2 > 0 ? 3 : 0), pad);
+    return fft(out, in, norm_factor, (pad0 > 0 && pad1 > 0 && pad2 > 0 ? 3 : 0),
+               pad, 3, false);
 }
 
-template<typename T, int rank, bool direction>
-static void fft_inplace(af_array in, const double norm_factor) {
+template<typename T>
+void fft_inplace(af_array in, const double norm_factor, int rank,
+                 bool direction) {
     Array<T> &input = getArray<T>(in);
-    fft_inplace<T, rank, direction>(input);
+    fft_inplace<T>(input, rank, direction);
     if (norm_factor != 1) { multiply_inplace<T>(input, norm_factor); }
 }
 
-template<int rank, bool direction>
-static af_err fft_inplace(af_array in, const double norm_factor) {
+af_err fft_inplace(af_array in, const double norm_factor, int rank,
+                   bool direction) {
     try {
         const ArrayInfo &info = getInfo(in);
         af_dtype type         = info.getType();
@@ -132,10 +140,10 @@ static af_err fft_inplace(af_array in, const double norm_factor) {
 
         switch (type) {
             case c32:
-                fft_inplace<cfloat, rank, direction>(in, norm_factor);
+                fft_inplace<cfloat>(in, norm_factor, rank, direction);
                 break;
             case c64:
-                fft_inplace<cdouble, rank, direction>(in, norm_factor);
+                fft_inplace<cdouble>(in, norm_factor, rank, direction);
                 break;
             default: TYPE_ERROR(1, type);
         }
@@ -146,40 +154,40 @@ static af_err fft_inplace(af_array in, const double norm_factor) {
 }
 
 af_err af_fft_inplace(af_array in, const double norm_factor) {
-    return fft_inplace<1, true>(in, norm_factor);
+    return fft_inplace(in, norm_factor, 1, true);
 }
 
 af_err af_fft2_inplace(af_array in, const double norm_factor) {
-    return fft_inplace<2, true>(in, norm_factor);
+    return fft_inplace(in, norm_factor, 2, true);
 }
 
 af_err af_fft3_inplace(af_array in, const double norm_factor) {
-    return fft_inplace<3, true>(in, norm_factor);
+    return fft_inplace(in, norm_factor, 3, true);
 }
 
 af_err af_ifft_inplace(af_array in, const double norm_factor) {
-    return fft_inplace<1, false>(in, norm_factor);
+    return fft_inplace(in, norm_factor, 1, false);
 }
 
 af_err af_ifft2_inplace(af_array in, const double norm_factor) {
-    return fft_inplace<2, false>(in, norm_factor);
+    return fft_inplace(in, norm_factor, 2, false);
 }
 
 af_err af_ifft3_inplace(af_array in, const double norm_factor) {
-    return fft_inplace<3, false>(in, norm_factor);
+    return fft_inplace(in, norm_factor, 3, false);
 }
 
-template<typename inType, typename outType, int rank>
-static af_array fft_r2c(const af_array in, const double norm_factor,
-                        const dim_t npad, const dim_t *const pad) {
-    return getHandle(fft_r2c<inType, outType, rank>(getArray<inType>(in),
-                                                    norm_factor, npad, pad));
+template<typename InType>
+af_array fft_r2c(const af_array in, const double norm_factor, const dim_t npad,
+                 const dim_t *const pad, const int rank) {
+    using OutType = typename conditional<is_same<InType, double>::value,
+                                         cdouble, cfloat>::type;
+    return getHandle(fft_r2c<InType, OutType>(getArray<InType>(in), norm_factor,
+                                              npad, pad, rank));
 }
 
-template<int rank>
-static af_err fft_r2c(af_array *out, const af_array in,
-                      const double norm_factor, const dim_t npad,
-                      const dim_t *const pad) {
+af_err fft_r2c(af_array *out, const af_array in, const double norm_factor,
+               const dim_t npad, const dim_t *const pad, const int rank) {
     try {
         const ArrayInfo &info = getInfo(in);
         af_dtype type         = info.getType();
@@ -191,12 +199,10 @@ static af_err fft_r2c(af_array *out, const af_array in,
         af_array output;
         switch (type) {
             case f32:
-                output =
-                    fft_r2c<float, cfloat, rank>(in, norm_factor, npad, pad);
+                output = fft_r2c<float>(in, norm_factor, npad, pad, rank);
                 break;
             case f64:
-                output =
-                    fft_r2c<double, cdouble, rank>(in, norm_factor, npad, pad);
+                output = fft_r2c<double>(in, norm_factor, npad, pad, rank);
                 break;
             default: {
                 TYPE_ERROR(1, type);
@@ -212,33 +218,34 @@ static af_err fft_r2c(af_array *out, const af_array in,
 af_err af_fft_r2c(af_array *out, const af_array in, const double norm_factor,
                   const dim_t pad0) {
     const dim_t pad[1] = {pad0};
-    return fft_r2c<1>(out, in, norm_factor, (pad0 > 0 ? 1 : 0), pad);
+    return fft_r2c(out, in, norm_factor, (pad0 > 0 ? 1 : 0), pad, 1);
 }
 
 af_err af_fft2_r2c(af_array *out, const af_array in, const double norm_factor,
                    const dim_t pad0, const dim_t pad1) {
     const dim_t pad[2] = {pad0, pad1};
-    return fft_r2c<2>(out, in, norm_factor, (pad0 > 0 && pad1 > 0 ? 2 : 0),
-                      pad);
+    return fft_r2c(out, in, norm_factor, (pad0 > 0 && pad1 > 0 ? 2 : 0), pad,
+                   2);
 }
 
 af_err af_fft3_r2c(af_array *out, const af_array in, const double norm_factor,
                    const dim_t pad0, const dim_t pad1, const dim_t pad2) {
     const dim_t pad[3] = {pad0, pad1, pad2};
-    return fft_r2c<3>(out, in, norm_factor,
-                      (pad0 > 0 && pad1 > 0 && pad2 > 0 ? 3 : 0), pad);
+    return fft_r2c(out, in, norm_factor,
+                   (pad0 > 0 && pad1 > 0 && pad2 > 0 ? 3 : 0), pad, 3);
 }
 
-template<typename inType, typename outType, int rank>
+template<typename InType>
 static af_array fft_c2r(const af_array in, const double norm_factor,
-                        const dim4 &odims) {
-    return getHandle(fft_c2r<inType, outType, rank>(getArray<inType>(in),
-                                                    norm_factor, odims));
+                        const dim4 &odims, const int rank) {
+    using OutType = typename conditional<is_same<InType, cdouble>::value,
+                                         double, float>::type;
+    return getHandle(fft_c2r<InType, OutType>(getArray<InType>(in), norm_factor,
+                                              odims, rank));
 }
 
-template<int rank>
-static af_err fft_c2r(af_array *out, const af_array in,
-                      const double norm_factor, const bool is_odd) {
+af_err fft_c2r(af_array *out, const af_array in, const double norm_factor,
+               const bool is_odd, const int rank) {
     try {
         const ArrayInfo &info = getInfo(in);
         af_dtype type         = info.getType();
@@ -253,10 +260,10 @@ static af_err fft_c2r(af_array *out, const af_array in,
         af_array output;
         switch (type) {
             case c32:
-                output = fft_c2r<cfloat, float, rank>(in, norm_factor, odims);
+                output = fft_c2r<cfloat>(in, norm_factor, odims, rank);
                 break;
             case c64:
-                output = fft_c2r<cdouble, double, rank>(in, norm_factor, odims);
+                output = fft_c2r<cdouble>(in, norm_factor, odims, rank);
                 break;
             default: TYPE_ERROR(1, type);
         }
@@ -269,17 +276,17 @@ static af_err fft_c2r(af_array *out, const af_array in,
 
 af_err af_fft_c2r(af_array *out, const af_array in, const double norm_factor,
                   const bool is_odd) {
-    return fft_c2r<1>(out, in, norm_factor, is_odd);
+    return fft_c2r(out, in, norm_factor, is_odd, 1);
 }
 
 af_err af_fft2_c2r(af_array *out, const af_array in, const double norm_factor,
                    const bool is_odd) {
-    return fft_c2r<2>(out, in, norm_factor, is_odd);
+    return fft_c2r(out, in, norm_factor, is_odd, 2);
 }
 
 af_err af_fft3_c2r(af_array *out, const af_array in, const double norm_factor,
                    const bool is_odd) {
-    return fft_c2r<3>(out, in, norm_factor, is_odd);
+    return fft_c2r(out, in, norm_factor, is_odd, 3);
 }
 
 af_err af_set_fft_plan_cache_size(size_t cache_size) {

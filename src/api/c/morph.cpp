@@ -82,12 +82,9 @@ af_array morph<char>(const af_array &input, const af_array &mask,
                         {static_cast<dim_t>(seDims[0] % 2 == 0),
                          static_cast<dim_t>(seDims[1] % 2 == 0), 0, 0},
                         {0, 0, 0, 0}, AF_PAD_ZERO);
-
-    auto fftConv = fftconvolve<float, 2>;
-
     if (isDilation) {
         Array<float> dft =
-            fftConv(cast<float>(in), paddedSe, false, AF_BATCH_LHS);
+            fftconvolve(cast<float>(in), paddedSe, false, AF_BATCH_LHS, 2);
 
         return getHandle(cast<char>(unaryOp<float, af_round_t>(dft)));
     } else {
@@ -96,7 +93,7 @@ af_array morph<char>(const af_array &input, const af_array &mask,
         const Array<char> inv    = arithOp<char, af_sub_t>(ONES, in, inDims);
 
         Array<float> dft =
-            fftConv(cast<float>(inv), paddedSe, false, AF_BATCH_LHS);
+            fftconvolve(cast<float>(inv), paddedSe, false, AF_BATCH_LHS, 2);
 
         Array<float> rounded = unaryOp<float, af_round_t>(dft);
         Array<char> thrshd   = logicOp<float, af_gt_t>(rounded, ZEROS, inDims);

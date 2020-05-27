@@ -27,7 +27,7 @@ Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x) {
     }
 
     // Extract the first N elements
-    Array<T> c = convolve<T, T, 1, true>(x, b, type);
+    Array<T> c = convolve<T, T>(x, b, type, 1, true);
     dim4 cdims = c.dims();
     cdims[0]   = x.dims()[0];
     c.resetDims(cdims);

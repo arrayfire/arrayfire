@@ -820,9 +820,9 @@ Array<T> createInitialImage(const Array<T>& img, const float init_sigma,
     if (double_input) {
         Array<T> double_img =
             resize<T>(img, idims[0] * 2, idims[1] * 2, AF_INTERP_BILINEAR);
-        init_img = convolve2<T, convAccT, false>(double_img, filter, filter);
+        init_img = convolve2<T, convAccT>(double_img, filter, filter, false);
     } else {
-        init_img = convolve2<T, convAccT, false>(img, filter, filter);
+        init_img = convolve2<T, convAccT>(img, filter, filter, false);
     }
 
     return init_img;
@@ -862,8 +862,8 @@ std::vector<Array<T>> buildGaussPyr(const Array<T>& init_img,
             } else {
                 Array<T> filter = gauss_filter<T>(sig_layers[l]);
 
-                gauss_pyr[idx] = convolve2<T, convAccT, false>(
-                    gauss_pyr[src_idx], filter, filter);
+                gauss_pyr[idx] = convolve2<T, convAccT>(gauss_pyr[src_idx],
+                                                        filter, filter, false);
             }
         }
     }

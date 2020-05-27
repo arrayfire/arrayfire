@@ -12,42 +12,36 @@
 #include <histogram.hpp>
 #include <kernel/histogram.hpp>
 #include <af/dim4.hpp>
-#include <vector>
 
 using af::dim4;
-using std::vector;
 
 namespace cuda {
 
-template<typename inType, typename outType, bool isLinear>
-Array<outType> histogram(const Array<inType> &in, const unsigned &nbins,
-                         const double &minval, const double &maxval) {
-    const dim4 &dims   = in.dims();
-    dim4 outDims       = dim4(nbins, 1, dims[2], dims[3]);
-    Array<outType> out = createValueArray<outType>(outDims, outType(0));
-
-    kernel::histogram<inType, outType>(out, in, nbins, minval, maxval,
-                                       isLinear);
+template<typename T>
+Array<uint> histogram(const Array<T> &in, const unsigned &nbins,
+                      const double &minval, const double &maxval,
+                      const bool isLinear) {
+    const dim4 &dims = in.dims();
+    dim4 outDims     = dim4(nbins, 1, dims[2], dims[3]);
+    Array<uint> out  = createValueArray<uint>(outDims, uint(0));
+    kernel::histogram<T>(out, in, nbins, minval, maxval, isLinear);
     return out;
 }
 
-#define INSTANTIATE(in_t, out_t)                                            \
-    template Array<out_t> histogram<in_t, out_t, true>(                     \
-        const Array<in_t> &in, const unsigned &nbins, const double &minval, \
-        const double &maxval);                                              \
-    template Array<out_t> histogram<in_t, out_t, false>(                    \
-        const Array<in_t> &in, const unsigned &nbins, const double &minval, \
-        const double &maxval);
+#define INSTANTIATE(T)                                                    \
+    template Array<uint> histogram<T>(const Array<T> &, const unsigned &, \
+                                      const double &, const double &,     \
+                                      const bool);
 
-INSTANTIATE(float, uint)
-INSTANTIATE(double, uint)
-INSTANTIATE(char, uint)
-INSTANTIATE(int, uint)
-INSTANTIATE(uint, uint)
-INSTANTIATE(uchar, uint)
-INSTANTIATE(short, uint)
-INSTANTIATE(ushort, uint)
-INSTANTIATE(intl, uint)
-INSTANTIATE(uintl, uint)
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(char)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
 
 }  // namespace cuda

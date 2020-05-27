@@ -27,38 +27,38 @@ using std::is_same;
 
 namespace cuda {
 
-template<typename T, typename accT, dim_t baseDim, bool expand>
+template<typename T, typename accT>
 Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
-                  AF_BATCH_KIND kind) {
+                  AF_BATCH_KIND kind, const int rank, const bool expand) {
     const dim4 &sDims = signal.dims();
     const dim4 &fDims = filter.dims();
 
     dim4 oDims(1);
     if (expand) {
-        for (dim_t d = 0; d < 4; ++d) {
+        for (int d = 0; d < AF_MAX_DIMS; ++d) {
             if (kind == AF_BATCH_NONE || kind == AF_BATCH_RHS) {
                 oDims[d] = sDims[d] + fDims[d] - 1;
             } else {
-                oDims[d] = (d < baseDim ? sDims[d] + fDims[d] - 1 : sDims[d]);
+                oDims[d] = (d < rank ? sDims[d] + fDims[d] - 1 : sDims[d]);
             }
         }
     } else {
         oDims = sDims;
         if (kind == AF_BATCH_RHS) {
-            for (dim_t i = baseDim; i < 4; ++i) { oDims[i] = fDims[i]; }
+            for (int i = rank; i < AF_MAX_DIMS; ++i) { oDims[i] = fDims[i]; }
         }
     }
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    kernel::convolve_nd<T, accT>(out, signal, filter, kind, baseDim, expand);
+    kernel::convolve_nd<T, accT>(out, signal, filter, kind, rank, expand);
 
     return out;
 }
 
-template<typename T, typename accT, bool expand>
+template<typename T, typename accT>
 Array<T> convolve2(Array<T> const &signal, Array<accT> const &c_filter,
-                   Array<accT> const &r_filter) {
+                   Array<accT> const &r_filter, const bool expand) {
     const dim4 &cfDims = c_filter.dims();
     const dim4 &rfDims = r_filter.dims();
 
@@ -84,31 +84,12 @@ Array<T> convolve2(Array<T> const &signal, Array<accT> const &c_filter,
     return out;
 }
 
-#define INSTANTIATE(T, accT)                                                 \
-    template Array<T> convolve<T, accT, 1, true>(Array<T> const &signal,     \
-                                                 Array<accT> const &filter,  \
-                                                 AF_BATCH_KIND kind);        \
-    template Array<T> convolve<T, accT, 1, false>(Array<T> const &signal,    \
-                                                  Array<accT> const &filter, \
-                                                  AF_BATCH_KIND kind);       \
-    template Array<T> convolve<T, accT, 2, true>(Array<T> const &signal,     \
-                                                 Array<accT> const &filter,  \
-                                                 AF_BATCH_KIND kind);        \
-    template Array<T> convolve<T, accT, 2, false>(Array<T> const &signal,    \
-                                                  Array<accT> const &filter, \
-                                                  AF_BATCH_KIND kind);       \
-    template Array<T> convolve<T, accT, 3, true>(Array<T> const &signal,     \
-                                                 Array<accT> const &filter,  \
-                                                 AF_BATCH_KIND kind);        \
-    template Array<T> convolve<T, accT, 3, false>(Array<T> const &signal,    \
-                                                  Array<accT> const &filter, \
-                                                  AF_BATCH_KIND kind);       \
-    template Array<T> convolve2<T, accT, true>(Array<T> const &signal,       \
-                                               Array<accT> const &c_filter,  \
-                                               Array<accT> const &r_filter); \
-    template Array<T> convolve2<T, accT, false>(Array<T> const &signal,      \
-                                                Array<accT> const &c_filter, \
-                                                Array<accT> const &r_filter);
+#define INSTANTIATE(T, accT)                                                   \
+    template Array<T> convolve<T, accT>(Array<T> const &, Array<accT> const &, \
+                                        AF_BATCH_KIND, const int, const bool); \
+    template Array<T> convolve2<T, accT>(Array<T> const &,                     \
+                                         Array<accT> const &,                  \
+                                         Array<accT> const &, const bool);
 
 INSTANTIATE(cdouble, cdouble)
 INSTANTIATE(cfloat, cfloat)

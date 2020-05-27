@@ -7,17 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
+#include <fft.hpp>
+
 #include <clfft.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>
-#include <fft.hpp>
 #include <math.hpp>
 #include <memory.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
-using std::string;
 
 namespace opencl {
 
@@ -36,8 +35,10 @@ struct Precision<cdouble> {
     enum { type = CLFFT_DOUBLE };
 };
 
-static void computeDims(size_t rdims[4], const dim4 &idims) {
-    for (int i = 0; i < 4; i++) { rdims[i] = static_cast<size_t>(idims[i]); }
+void computeDims(size_t rdims[AF_MAX_DIMS], const dim4 &idims) {
+    for (int i = 0; i < AF_MAX_DIMS; i++) {
+        rdims[i] = static_cast<size_t>(idims[i]);
+    }
 }
 
 //(currently) true is in clFFT if length is a power of 2,3,5
@@ -62,21 +63,20 @@ inline bool isSupLen(dim_t length) {
     return true;
 }
 
-template<int rank>
-void verifySupported(const dim4 &dims) {
+void verifySupported(const int rank, const dim4 &dims) {
     for (int i = 0; i < rank; i++) { ARG_ASSERT(1, isSupLen(dims[i])); }
 }
 
-template<typename T, int rank, bool direction>
-void fft_inplace(Array<T> &in) {
-    verifySupported<rank>(in.dims());
-    size_t tdims[4], istrides[4];
+template<typename T>
+void fft_inplace(Array<T> &in, const int rank, const bool direction) {
+    verifySupported(rank, in.dims());
+    size_t tdims[AF_MAX_DIMS], istrides[AF_MAX_DIMS];
 
     computeDims(tdims, in.dims());
     computeDims(istrides, in.strides());
 
     int batch = 1;
-    for (int i = rank; i < 4; i++) { batch *= tdims[i]; }
+    for (int i = rank; i < AF_MAX_DIMS; i++) { batch *= tdims[i]; }
 
     SharedPlan plan = findPlan(
         CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED,
@@ -91,23 +91,23 @@ void fft_inplace(Array<T> &in) {
         NULL, NULL, &imem, &imem, NULL));
 }
 
-template<typename Tc, typename Tr, int rank>
-Array<Tc> fft_r2c(const Array<Tr> &in) {
+template<typename Tc, typename Tr>
+Array<Tc> fft_r2c(const Array<Tr> &in, const int rank) {
     dim4 odims = in.dims();
 
     odims[0] = odims[0] / 2 + 1;
 
     Array<Tc> out = createEmptyArray<Tc>(odims);
 
-    verifySupported<rank>(in.dims());
-    size_t tdims[4], istrides[4], ostrides[4];
+    verifySupported(rank, in.dims());
+    size_t tdims[AF_MAX_DIMS], istrides[AF_MAX_DIMS], ostrides[AF_MAX_DIMS];
 
     computeDims(tdims, in.dims());
     computeDims(istrides, in.strides());
     computeDims(ostrides, out.strides());
 
     int batch = 1;
-    for (int i = rank; i < 4; i++) { batch *= tdims[i]; }
+    for (int i = rank; i < AF_MAX_DIMS; i++) { batch *= tdims[i]; }
 
     SharedPlan plan = findPlan(
         CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED, static_cast<clfftDim>(rank),
@@ -124,19 +124,19 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
     return out;
 }
 
-template<typename Tr, typename Tc, int rank>
-Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
+template<typename Tr, typename Tc>
+Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims, const int rank) {
     Array<Tr> out = createEmptyArray<Tr>(odims);
 
-    verifySupported<rank>(odims);
-    size_t tdims[4], istrides[4], ostrides[4];
+    verifySupported(rank, odims);
+    size_t tdims[AF_MAX_DIMS], istrides[AF_MAX_DIMS], ostrides[AF_MAX_DIMS];
 
     computeDims(tdims, odims);
     computeDims(istrides, in.strides());
     computeDims(ostrides, out.strides());
 
     int batch = 1;
-    for (int i = rank; i < 4; i++) { batch *= tdims[i]; }
+    for (int i = rank; i < AF_MAX_DIMS; i++) { batch *= tdims[i]; }
 
     SharedPlan plan = findPlan(
         CLFFT_HERMITIAN_INTERLEAVED, CLFFT_REAL, static_cast<clfftDim>(rank),
@@ -153,27 +153,16 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
     return out;
 }
 
-#define INSTANTIATE(T)                                     \
-    template void fft_inplace<T, 1, true>(Array<T> & in);  \
-    template void fft_inplace<T, 2, true>(Array<T> & in);  \
-    template void fft_inplace<T, 3, true>(Array<T> & in);  \
-    template void fft_inplace<T, 1, false>(Array<T> & in); \
-    template void fft_inplace<T, 2, false>(Array<T> & in); \
-    template void fft_inplace<T, 3, false>(Array<T> & in);
+#define INSTANTIATE(T) \
+    template void fft_inplace<T>(Array<T> &, const int, const bool);
 
 INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
-#define INSTANTIATE_REAL(Tr, Tc)                                \
-    template Array<Tc> fft_r2c<Tc, Tr, 1>(const Array<Tr> &in); \
-    template Array<Tc> fft_r2c<Tc, Tr, 2>(const Array<Tr> &in); \
-    template Array<Tc> fft_r2c<Tc, Tr, 3>(const Array<Tr> &in); \
-    template Array<Tr> fft_c2r<Tr, Tc, 1>(const Array<Tc> &in,  \
-                                          const dim4 &odims);   \
-    template Array<Tr> fft_c2r<Tr, Tc, 2>(const Array<Tc> &in,  \
-                                          const dim4 &odims);   \
-    template Array<Tr> fft_c2r<Tr, Tc, 3>(const Array<Tc> &in,  \
-                                          const dim4 &odims);
+#define INSTANTIATE_REAL(Tr, Tc)                                        \
+    template Array<Tc> fft_r2c<Tc, Tr>(const Array<Tr> &, const int);   \
+    template Array<Tr> fft_c2r<Tr, Tc>(const Array<Tc> &, const dim4 &, \
+                                       const int);
 
 INSTANTIATE_REAL(float, cfloat)
 INSTANTIATE_REAL(double, cdouble)

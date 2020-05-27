@@ -22,7 +22,7 @@
 namespace opencl {
 namespace kernel {
 
-template<typename inType, typename outType>
+template<typename T>
 void histogram(Param out, const Param in, int nbins, float minval, float maxval,
                bool isLinear) {
     constexpr int MAX_BINS  = 4000;
@@ -32,24 +32,22 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval,
     static const std::string src(histogram_cl, histogram_cl_len);
 
     std::vector<TemplateArg> targs = {
-        TemplateTypename<inType>(),
-        TemplateTypename<outType>(),
+        TemplateTypename<T>(),
         TemplateArg(isLinear),
     };
     std::vector<std::string> options = {
-        DefineKeyValue(inType, dtype_traits<inType>::getName()),
-        DefineKeyValue(outType, dtype_traits<outType>::getName()),
+        DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineValue(THRD_LOAD),
         DefineValue(MAX_BINS),
     };
-    options.emplace_back(getTypeBuildDefinition<inType>());
+    options.emplace_back(getTypeBuildDefinition<T>());
     if (isLinear) { options.emplace_back(DefineKey(IS_LINEAR)); }
 
     auto histogram = common::getKernel("histogram", {src}, targs, options);
 
     int nElems  = in.info.dims[0] * in.info.dims[1];
     int blk_x   = divup(nElems, THRD_LOAD * THREADS_X);
-    int locSize = nbins <= MAX_BINS ? (nbins * sizeof(outType)) : 1;
+    int locSize = nbins <= MAX_BINS ? (nbins * sizeof(uint)) : 1;
 
     cl::NDRange local(THREADS_X, 1);
     cl::NDRange global(blk_x * in.info.dims[2] * THREADS_X, in.info.dims[3]);

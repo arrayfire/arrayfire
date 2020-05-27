@@ -18,33 +18,27 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename T, af_border_type pad>
-Array<T> medfilt1(const Array<T> &in, dim_t w_wid) {
+template<typename T>
+Array<T> medfilt1(const Array<T> &in, const int w_wid,
+                  const af::borderType pad) {
     Array<T> out = createEmptyArray<T>(in.dims());
-
-    getQueue().enqueue(kernel::medfilt1<T, pad>, out, in, w_wid);
-
+    getQueue().enqueue(kernel::medfilt1<T>, out, in, w_wid, pad);
     return out;
 }
 
-template<typename T, af_border_type pad>
-Array<T> medfilt2(const Array<T> &in, dim_t w_len, dim_t w_wid) {
+template<typename T>
+Array<T> medfilt2(const Array<T> &in, const int w_len, const int w_wid,
+                  const af::borderType pad) {
     Array<T> out = createEmptyArray<T>(in.dims());
-
-    getQueue().enqueue(kernel::medfilt2<T, pad>, out, in, w_len, w_wid);
-
+    getQueue().enqueue(kernel::medfilt2<T>, out, in, w_len, w_wid, pad);
     return out;
 }
 
-#define INSTANTIATE(T)                                                         \
-    template Array<T> medfilt1<T, AF_PAD_ZERO>(const Array<T> &in,             \
-                                               dim_t w_wid);                   \
-    template Array<T> medfilt1<T, AF_PAD_SYM>(const Array<T> &in,              \
-                                              dim_t w_wid);                    \
-    template Array<T> medfilt2<T, AF_PAD_ZERO>(const Array<T> &in,             \
-                                               dim_t w_len, dim_t w_wid);      \
-    template Array<T> medfilt2<T, AF_PAD_SYM>(const Array<T> &in, dim_t w_len, \
-                                              dim_t w_wid);
+#define INSTANTIATE(T)                                                 \
+    template Array<T> medfilt1<T>(const Array<T> &in, const int w_wid, \
+                                  const af::borderType);               \
+    template Array<T> medfilt2<T>(const Array<T> &in, const int w_len, \
+                                  const int w_wid, const af::borderType);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
