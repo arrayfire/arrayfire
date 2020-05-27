@@ -7,25 +7,37 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <kernel/match_template.hpp>
 #include <match_template.hpp>
+
+#include <kernel/match_template.hpp>
 #include <platform.hpp>
 #include <queue.hpp>
 #include <af/dim4.hpp>
+
+#include <functional>
 
 using af::dim4;
 
 namespace cpu {
 
+template<typename To, typename Ti>
+using matchFunc = std::function<void(Param<To>, CParam<Ti>, CParam<Ti>)>;
+
 template<typename inType, typename outType>
 Array<outType> match_template(const Array<inType> &sImg,
                               const Array<inType> &tImg,
                               const af::matchType mType) {
-    Array<outType> out = createEmptyArray<outType>(sImg.dims());
-    getQueue().enqueue(kernel::matchTemplate<outType, inType>, out, sImg, tImg,
-                       mType);
+    static const matchFunc<outType, inType> funcs[6] = {
+        kernel::matchTemplate<outType, inType, AF_SAD>,
+        kernel::matchTemplate<outType, inType, AF_ZSAD>,
+        kernel::matchTemplate<outType, inType, AF_LSAD>,
+        kernel::matchTemplate<outType, inType, AF_SSD>,
+        kernel::matchTemplate<outType, inType, AF_ZSSD>,
+        kernel::matchTemplate<outType, inType, AF_LSSD>,
+    };
 
+    Array<outType> out = createEmptyArray<outType>(sImg.dims());
+    getQueue().enqueue(funcs[static_cast<int>(mType)], out, sImg, tImg);
     return out;
 }
 

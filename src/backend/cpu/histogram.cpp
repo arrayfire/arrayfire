@@ -25,10 +25,13 @@ Array<uint> histogram(const Array<T> &in, const unsigned &nbins,
     const dim4 &inDims = in.dims();
     dim4 outDims       = dim4(nbins, 1, inDims[2], inDims[3]);
     Array<uint> out    = createValueArray<uint>(outDims, uint(0));
-
-    getQueue().enqueue(kernel::histogram<T>, out, in, nbins, minval, maxval,
-                       isLinear);
-
+    if (isLinear) {
+        getQueue().enqueue(kernel::histogram<T, true>, out, in, nbins, minval,
+                           maxval);
+    } else {
+        getQueue().enqueue(kernel::histogram<T, false>, out, in, nbins, minval,
+                           maxval);
+    }
     return out;
 }
 

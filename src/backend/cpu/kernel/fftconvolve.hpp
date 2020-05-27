@@ -156,11 +156,10 @@ void complexMultiply(Param<T> packed, const af::dim4 sig_dims,
     }
 }
 
-template<typename To, typename Ti>
+template<typename To, typename Ti, int Rank, bool Expand>
 void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                    const Ti* in_ptr, const af::dim4& id, const af::dim4& is,
-                   const af::dim4& fd, const int half_di0, const int rank,
-                   const int fftScale, const bool expand) {
+                   const af::dim4& fd, const int half_di0, const int fftScale) {
     constexpr bool RoundResult = std::is_integral<To>::value;
 
     UNUSED(id);
@@ -169,15 +168,15 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
             for (int d1 = 0; d1 < (int)od[1]; d1++) {
                 for (int d0 = 0; d0 < (int)od[0]; d0++) {
                     int id0, id1, id2, id3;
-                    if (expand) {
+                    if (Expand) {
                         id0 = d0;
                         id1 = d1 * is[1];
                         id2 = d2 * is[2];
                         id3 = d3 * is[3];
                     } else {
                         id0 = d0 + fd[0] / 2;
-                        id1 = (d1 + (rank > 1) * (fd[1] / 2)) * is[1];
-                        id2 = (d2 + (rank > 2) * (fd[2] / 2)) * is[2];
+                        id1 = (d1 + (Rank > 1) * (fd[1] / 2)) * is[1];
+                        id2 = (d2 + (Rank > 2) * (fd[2] / 2)) * is[2];
                         id3 = d3 * is[3];
                     }
 
@@ -221,16 +220,12 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
     }
 }
 
-template<typename T, typename convT>
+template<typename T, typename convT, int Rank, bool Expand>
 void reorder(Param<T> out, Param<convT> packed, CParam<T> filter,
              const dim_t sig_half_d0, const dim_t fftScale,
              const dim4 sig_tmp_dims, const dim4 sig_tmp_strides,
              const dim4 filter_tmp_dims, const dim4 filter_tmp_strides,
-             bool expand, AF_BATCH_KIND kind, const int rank) {
-    // TODO(pradeep) check if we can avoid convT template parameter also
-    // using convT = typename std::conditional<std::is_integral<T>::value,
-    // float, double>::type;
-
+             AF_BATCH_KIND kind) {
     T* out_ptr                 = out.get();
     const af::dim4 out_dims    = out.dims();
     const af::dim4 out_strides = out.strides();
@@ -243,14 +238,13 @@ void reorder(Param<T> out, Param<convT> packed, CParam<T> filter,
 
     // Reorder the output
     if (kind == AF_BATCH_RHS) {
-        reorderHelper<T, convT>(out_ptr, out_dims, out_strides, filter_tmp_ptr,
-                                filter_tmp_dims, filter_tmp_strides,
-                                filter_dims, sig_half_d0, rank, fftScale,
-                                expand);
+        reorderHelper<T, convT, Rank, Expand>(
+            out_ptr, out_dims, out_strides, filter_tmp_ptr, filter_tmp_dims,
+            filter_tmp_strides, filter_dims, sig_half_d0, fftScale);
     } else {
-        reorderHelper<T, convT>(out_ptr, out_dims, out_strides, sig_tmp_ptr,
-                                sig_tmp_dims, sig_tmp_strides, filter_dims,
-                                sig_half_d0, rank, fftScale, expand);
+        reorderHelper<T, convT, Rank, Expand>(
+            out_ptr, out_dims, out_strides, sig_tmp_ptr, sig_tmp_dims,
+            sig_tmp_strides, filter_dims, sig_half_d0, fftScale);
     }
 }
 

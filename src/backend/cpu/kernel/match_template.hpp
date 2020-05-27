@@ -13,9 +13,12 @@
 namespace cpu {
 namespace kernel {
 
-template<typename OutT, typename InT>
-void matchTemplate(Param<OutT> out, CParam<InT> sImg, CParam<InT> tImg,
-                   const af::matchType mType) {
+template<typename OutT, typename InT, af::matchType MatchType>
+void matchTemplate(Param<OutT> out, CParam<InT> sImg, CParam<InT> tImg) {
+    constexpr bool needMean = MatchType == AF_ZSAD || MatchType == AF_LSAD ||
+                              MatchType == AF_ZSSD || MatchType == AF_LSSD ||
+                              MatchType == AF_ZNCC;
+
     const af::dim4 sDims    = sImg.dims();
     const af::dim4 tDims    = tImg.dims();
     const af::dim4 sStrides = sImg.strides();
@@ -30,9 +33,7 @@ void matchTemplate(Param<OutT> out, CParam<InT> sImg, CParam<InT> tImg,
 
     OutT tImgMean        = OutT(0);
     dim_t winNumElements = tImg.dims().elements();
-    bool needMean = mType == AF_ZSAD || mType == AF_LSAD || mType == AF_ZSSD ||
-                    mType == AF_LSSD || mType == AF_ZNCC;
-    const InT* tpl = tImg.get();
+    const InT* tpl       = tImg.get();
 
     if (needMean) {
         for (dim_t tj = 0; tj < tDim1; tj++) {
@@ -58,7 +59,7 @@ void matchTemplate(Param<OutT> out, CParam<InT> sImg, CParam<InT> tImg,
                     OutT disparity = OutT(0);
 
                     // mean for window
-                    // this variable will be used based on mType value
+                    // this variable will be used based on MatchType value
                     OutT wImgMean = OutT(0);
                     if (needMean) {
                         for (dim_t tj = 0, j = sj; tj < tDim1; tj++, j++) {
@@ -85,7 +86,7 @@ void matchTemplate(Param<OutT> out, CParam<InT> sImg, CParam<InT> tImg,
                                             : InT(0));
                             InT tVal = tpl[tjStride + ti * tStrides[0]];
                             OutT temp;
-                            switch (mType) {
+                            switch (MatchType) {
                                 case AF_SAD:
                                     disparity += fabs((OutT)sVal - (OutT)tVal);
                                     break;
