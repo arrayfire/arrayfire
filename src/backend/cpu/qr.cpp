@@ -81,7 +81,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
     dim4 rdims(M, N);
     r = createEmptyArray<T>(rdims);
 
-    triangle<T, true, false>(r, q);
+    triangle<T>(r, q, true, false);
 
     auto func = [=](Param<T> q, Param<T> t, int M, int N) {
         gqr_func<T>()(AF_LAPACK_COL_MAJOR, M, M, min(M, N), q.get(),

@@ -18,35 +18,20 @@ using af::dim4;
 
 namespace cpu {
 
-template<typename InT, typename OutT, af_match_type MatchT>
-Array<OutT> match_template(const Array<InT> &sImg, const Array<InT> &tImg) {
-    Array<OutT> out = createEmptyArray<OutT>(sImg.dims());
-
-    getQueue().enqueue(kernel::matchTemplate<OutT, InT, MatchT>, out, sImg,
-                       tImg);
+template<typename inType, typename outType>
+Array<outType> match_template(const Array<inType> &sImg,
+                              const Array<inType> &tImg,
+                              const af::matchType mType) {
+    Array<outType> out = createEmptyArray<outType>(sImg.dims());
+    getQueue().enqueue(kernel::matchTemplate<outType, inType>, out, sImg, tImg,
+                       mType);
 
     return out;
 }
 
-#define INSTANTIATE(in_t, out_t)                                \
-    template Array<out_t> match_template<in_t, out_t, AF_SAD>(  \
-        const Array<in_t> &sImg, const Array<in_t> &tImg);      \
-    template Array<out_t> match_template<in_t, out_t, AF_LSAD>( \
-        const Array<in_t> &sImg, const Array<in_t> &tImg);      \
-    template Array<out_t> match_template<in_t, out_t, AF_ZSAD>( \
-        const Array<in_t> &sImg, const Array<in_t> &tImg);      \
-    template Array<out_t> match_template<in_t, out_t, AF_SSD>(  \
-        const Array<in_t> &sImg, const Array<in_t> &tImg);      \
-    template Array<out_t> match_template<in_t, out_t, AF_LSSD>( \
-        const Array<in_t> &sImg, const Array<in_t> &tImg);      \
-    template Array<out_t> match_template<in_t, out_t, AF_ZSSD>( \
-        const Array<in_t> &sImg, const Array<in_t> &tImg);      \
-    template Array<out_t> match_template<in_t, out_t, AF_NCC>(  \
-        const Array<in_t> &sImg, const Array<in_t> &tImg);      \
-    template Array<out_t> match_template<in_t, out_t, AF_ZNCC>( \
-        const Array<in_t> &sImg, const Array<in_t> &tImg);      \
-    template Array<out_t> match_template<in_t, out_t, AF_SHD>(  \
-        const Array<in_t> &sImg, const Array<in_t> &tImg);
+#define INSTANTIATE(in_t, out_t)                       \
+    template Array<out_t> match_template<in_t, out_t>( \
+        const Array<in_t> &, const Array<in_t> &, const af::matchType);
 
 INSTANTIATE(double, double)
 INSTANTIATE(float, float)

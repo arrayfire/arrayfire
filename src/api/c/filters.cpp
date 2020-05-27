@@ -30,20 +30,8 @@ af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length,
 template<typename T>
 static af_array medfilt1(af_array const &in, dim_t w_wid,
                          af_border_type edge_pad) {
-    switch (edge_pad) {
-        case AF_PAD_ZERO:
-            return getHandle<T>(
-                medfilt1<T, AF_PAD_ZERO>(getArray<T>(in), w_wid));
-            break;
-        case AF_PAD_SYM:
-            return getHandle<T>(
-                medfilt1<T, AF_PAD_SYM>(getArray<T>(in), w_wid));
-            break;
-        default:
-            return getHandle<T>(
-                medfilt1<T, AF_PAD_ZERO>(getArray<T>(in), w_wid));
-            break;
-    }
+    return getHandle<T>(
+        medfilt1<T>(getArray<T>(in), static_cast<int>(w_wid), edge_pad));
 }
 
 af_err af_medfilt1(af_array *out, const af_array in, const dim_t wind_width,
@@ -60,38 +48,26 @@ af_err af_medfilt1(af_array *out, const af_array in, const dim_t wind_width,
 
         if (wind_width == 1) {
             *out = retain(in);
-        } else {
-            af_array output;
-            af_dtype type = info.getType();
-            switch (type) {
-                case f32:
-                    output = medfilt1<float>(in, wind_width, edge_pad);
-                    break;
-                case f64:
-                    output = medfilt1<double>(in, wind_width, edge_pad);
-                    break;
-                case b8:
-                    output = medfilt1<char>(in, wind_width, edge_pad);
-                    break;
-                case s32:
-                    output = medfilt1<int>(in, wind_width, edge_pad);
-                    break;
-                case u32:
-                    output = medfilt1<uint>(in, wind_width, edge_pad);
-                    break;
-                case s16:
-                    output = medfilt1<short>(in, wind_width, edge_pad);
-                    break;
-                case u16:
-                    output = medfilt1<ushort>(in, wind_width, edge_pad);
-                    break;
-                case u8:
-                    output = medfilt1<uchar>(in, wind_width, edge_pad);
-                    break;
-                default: TYPE_ERROR(1, type);
-            }
-            std::swap(*out, output);
+            return AF_SUCCESS;
         }
+        af_array output = nullptr;
+        af_dtype type   = info.getType();
+        switch (type) {
+            case f32: output = medfilt1<float>(in, wind_width, edge_pad); break;
+            case f64:
+                output = medfilt1<double>(in, wind_width, edge_pad);
+                break;
+            case b8: output = medfilt1<char>(in, wind_width, edge_pad); break;
+            case s32: output = medfilt1<int>(in, wind_width, edge_pad); break;
+            case u32: output = medfilt1<uint>(in, wind_width, edge_pad); break;
+            case s16: output = medfilt1<short>(in, wind_width, edge_pad); break;
+            case u16:
+                output = medfilt1<ushort>(in, wind_width, edge_pad);
+                break;
+            case u8: output = medfilt1<uchar>(in, wind_width, edge_pad); break;
+            default: TYPE_ERROR(1, type);
+        }
+        std::swap(*out, output);
     }
     CATCHALL;
 
@@ -99,22 +75,10 @@ af_err af_medfilt1(af_array *out, const af_array in, const dim_t wind_width,
 }
 
 template<typename T>
-static af_array medfilt2(af_array const &in, dim_t w_len, dim_t w_wid,
+inline af_array medfilt2(af_array const &in, dim_t w_len, dim_t w_wid,
                          af_border_type edge_pad) {
-    switch (edge_pad) {
-        case AF_PAD_ZERO:
-            return getHandle<T>(
-                medfilt2<T, AF_PAD_ZERO>(getArray<T>(in), w_len, w_wid));
-            break;
-        case AF_PAD_SYM:
-            return getHandle<T>(
-                medfilt2<T, AF_PAD_SYM>(getArray<T>(in), w_len, w_wid));
-            break;
-        default:
-            return getHandle<T>(
-                medfilt2<T, AF_PAD_ZERO>(getArray<T>(in), w_len, w_wid));
-            break;
-    }
+    return getHandle(medfilt2<T>(getArray<T>(in), static_cast<int>(w_len),
+                                 static_cast<int>(w_wid), edge_pad));
 }
 
 af_err af_medfilt2(af_array *out, const af_array in, const dim_t wind_length,
@@ -137,46 +101,40 @@ af_err af_medfilt2(af_array *out, const af_array in, const dim_t wind_length,
 
         if (wind_length == 1) {
             *out = retain(in);
-        } else {
-            af_array output;
-            af_dtype type = info.getType();
-            switch (type) {
-                case f32:
-                    output =
-                        medfilt2<float>(in, wind_length, wind_width, edge_pad);
-                    break;
-                case f64:
-                    output =
-                        medfilt2<double>(in, wind_length, wind_width, edge_pad);
-                    break;
-                case b8:
-                    output =
-                        medfilt2<char>(in, wind_length, wind_width, edge_pad);
-                    break;
-                case s32:
-                    output =
-                        medfilt2<int>(in, wind_length, wind_width, edge_pad);
-                    break;
-                case u32:
-                    output =
-                        medfilt2<uint>(in, wind_length, wind_width, edge_pad);
-                    break;
-                case s16:
-                    output =
-                        medfilt2<short>(in, wind_length, wind_width, edge_pad);
-                    break;
-                case u16:
-                    output =
-                        medfilt2<ushort>(in, wind_length, wind_width, edge_pad);
-                    break;
-                case u8:
-                    output =
-                        medfilt2<uchar>(in, wind_length, wind_width, edge_pad);
-                    break;
-                default: TYPE_ERROR(1, type);
-            }
-            std::swap(*out, output);
+            return AF_SUCCESS;
         }
+        af_array output = nullptr;
+        af_dtype type   = info.getType();
+        switch (type) {
+            case f32:
+                output = medfilt2<float>(in, wind_length, wind_width, edge_pad);
+                break;
+            case f64:
+                output =
+                    medfilt2<double>(in, wind_length, wind_width, edge_pad);
+                break;
+            case b8:
+                output = medfilt2<char>(in, wind_length, wind_width, edge_pad);
+                break;
+            case s32:
+                output = medfilt2<int>(in, wind_length, wind_width, edge_pad);
+                break;
+            case u32:
+                output = medfilt2<uint>(in, wind_length, wind_width, edge_pad);
+                break;
+            case s16:
+                output = medfilt2<short>(in, wind_length, wind_width, edge_pad);
+                break;
+            case u16:
+                output =
+                    medfilt2<ushort>(in, wind_length, wind_width, edge_pad);
+                break;
+            case u8:
+                output = medfilt2<uchar>(in, wind_length, wind_width, edge_pad);
+                break;
+            default: TYPE_ERROR(1, type);
+        }
+        std::swap(*out, output);
     }
     CATCHALL;
 

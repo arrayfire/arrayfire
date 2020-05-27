@@ -61,9 +61,9 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out,
                        in.elements(), ix, iy);
 
     // Convolve second-order derivatives with proper window filter
-    ixx = convolve2<T, convAccT, false>(ixx, filter, filter);
-    ixy = convolve2<T, convAccT, false>(ixy, filter, filter);
-    iyy = convolve2<T, convAccT, false>(iyy, filter, filter);
+    ixx = convolve2<T, convAccT>(ixx, filter, filter, false);
+    ixy = convolve2<T, convAccT>(ixy, filter, filter, false);
+    iyy = convolve2<T, convAccT>(iyy, filter, filter, false);
 
     const unsigned corner_lim = in.elements() * 0.2f;
 

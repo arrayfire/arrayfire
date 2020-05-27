@@ -28,13 +28,13 @@ namespace kernel {
 constexpr int THREADS = 256;
 
 void calcParamSizes(Param& sig_tmp, Param& filter_tmp, Param& packed,
-                    Param& sig, Param& filter, const int baseDim,
+                    Param& sig, Param& filter, const int rank,
                     AF_BATCH_KIND kind) {
     sig_tmp.info.dims[0] = filter_tmp.info.dims[0] = packed.info.dims[0];
     sig_tmp.info.strides[0] = filter_tmp.info.strides[0] = 1;
 
     for (int k = 1; k < 4; k++) {
-        if (k < baseDim) {
+        if (k < rank) {
             sig_tmp.info.dims[k]    = packed.info.dims[k];
             filter_tmp.info.dims[k] = packed.info.dims[k];
         } else {
@@ -64,7 +64,7 @@ void calcParamSizes(Param& sig_tmp, Param& filter_tmp, Param& packed,
 }
 
 template<typename convT, typename T>
-void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
+void packDataHelper(Param packed, Param sig, Param filter, const int rank,
                     AF_BATCH_KIND kind) {
     constexpr bool IsTypeDouble = std::is_same<T, double>::value;
     constexpr auto ctDType =
@@ -91,7 +91,7 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
     auto padArray = common::getKernel("pad_array", {src}, targs, options);
 
     Param sig_tmp, filter_tmp;
-    calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
+    calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
 
     int sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
     int filter_packed_elem =
@@ -124,7 +124,7 @@ void packDataHelper(Param packed, Param sig, Param filter, const int baseDim,
 
 template<typename convT, typename T>
 void complexMultiplyHelper(Param packed, Param sig, Param filter,
-                           const int baseDim, AF_BATCH_KIND kind) {
+                           const int rank, AF_BATCH_KIND kind) {
     constexpr bool IsTypeDouble = std::is_same<T, double>::value;
     constexpr auto ctDType =
         static_cast<af_dtype>(dtype_traits<convT>::af_type);
@@ -153,7 +153,7 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
     auto cplxMul = common::getKernel("complex_multiply", {src}, targs, options);
 
     Param sig_tmp, filter_tmp;
-    calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
+    calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
 
     int sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
     int filter_packed_elem =
@@ -174,7 +174,7 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
 
 template<typename T, typename convT>
 void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
-                         const int baseDim, AF_BATCH_KIND kind, bool expand) {
+                         const int rank, AF_BATCH_KIND kind, bool expand) {
     constexpr bool IsTypeDouble = std::is_same<T, double>::value;
     constexpr auto ctDType =
         static_cast<af_dtype>(dtype_traits<convT>::af_type);
@@ -205,10 +205,10 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
     int fftScale = 1;
 
     // Calculate the scale by which to divide clFFT results
-    for (int k = 0; k < baseDim; k++) fftScale *= packed.info.dims[k];
+    for (int k = 0; k < rank; k++) fftScale *= packed.info.dims[k];
 
     Param sig_tmp, filter_tmp;
-    calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
+    calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
 
     // Number of packed complex elements in dimension 0
     int sig_half_d0 = divup(sig.info.dims[0], 2);
@@ -221,10 +221,10 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
     if (kind == AF_BATCH_RHS) {
         reorder(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
                 *filter_tmp.data, filter_tmp.info, filter.info, sig_half_d0,
-                baseDim, fftScale);
+                rank, fftScale);
     } else {
         reorder(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-                *sig_tmp.data, sig_tmp.info, filter.info, sig_half_d0, baseDim,
+                *sig_tmp.data, sig_tmp.info, filter.info, sig_half_d0, rank,
                 fftScale);
     }
     CL_DEBUG_FINISH(getQueue());

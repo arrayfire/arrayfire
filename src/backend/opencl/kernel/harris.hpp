@@ -52,12 +52,12 @@ void conv_helper(Array<T> &ixx, Array<T> &ixy, Array<T> &iyy,
     Array<convAccT> ixy_tmp = createEmptyArray<convAccT>(ixy.dims());
     Array<convAccT> iyy_tmp = createEmptyArray<convAccT>(iyy.dims());
 
-    convSep<T, convAccT, 0, false>(ixx_tmp, ixx, filter);
-    convSep<T, convAccT, 1, false>(ixx, ixx_tmp, filter);
-    convSep<T, convAccT, 0, false>(ixy_tmp, ixy, filter);
-    convSep<T, convAccT, 1, false>(ixy, ixy_tmp, filter);
-    convSep<T, convAccT, 0, false>(iyy_tmp, iyy, filter);
-    convSep<T, convAccT, 1, false>(iyy, iyy_tmp, filter);
+    convSep<T, convAccT>(ixx_tmp, ixx, filter, 0, false);
+    convSep<T, convAccT>(ixx, ixx_tmp, filter, 1, false);
+    convSep<T, convAccT>(ixy_tmp, ixy, filter, 0, false);
+    convSep<T, convAccT>(ixy, ixy_tmp, filter, 1, false);
+    convSep<T, convAccT>(iyy_tmp, iyy, filter, 0, false);
+    convSep<T, convAccT>(iyy, iyy_tmp, filter, 1, false);
 }
 
 template<typename T>

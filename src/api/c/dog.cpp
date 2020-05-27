@@ -41,9 +41,9 @@ static af_array dog(const af_array& in, const int radius1, const int radius2) {
     AF_BATCH_KIND bkind = iDims[2] > 1 ? AF_BATCH_LHS : AF_BATCH_NONE;
 
     Array<accT> smth1 =
-        convolve<accT, accT, 2, false>(input, castArray<accT>(g1), bkind);
+        convolve<accT, accT>(input, castArray<accT>(g1), bkind, 2, false);
     Array<accT> smth2 =
-        convolve<accT, accT, 2, false>(input, castArray<accT>(g2), bkind);
+        convolve<accT, accT>(input, castArray<accT>(g2), bkind, 2, false);
     Array<accT> retVal = arithOp<accT, af_sub_t>(smth1, smth2, iDims);
 
     AF_CHECK(af_release_array(g1));

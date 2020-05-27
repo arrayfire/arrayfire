@@ -13,18 +13,16 @@
 
 namespace cuda {
 
-template<typename inType, typename outType, bool isLinear>
-__global__
-void histogram(Param<outType> out, CParam<inType> in, int len, int nbins,
-               float minval, float maxval, int nBBS) {
-    SharedMemory<outType> shared;
-    outType *shrdMem = shared.getPointer();
+template<typename T, bool isLinear>
+__global__ void histogram(Param<uint> out, CParam<T> in, int len, int nbins,
+                          float minval, float maxval, int nBBS) {
+    SharedMemory<uint> shared;
+    uint *shrdMem = shared.getPointer();
 
     // offset input and output to account for batch ops
-    unsigned b2 = blockIdx.x / nBBS;
-    const inType *iptr =
-        in.ptr + b2 * in.strides[2] + blockIdx.y * in.strides[3];
-    outType *optr = out.ptr + b2 * out.strides[2] + blockIdx.y * out.strides[3];
+    unsigned b2   = blockIdx.x / nBBS;
+    const T *iptr = in.ptr + b2 * in.strides[2] + blockIdx.y * in.strides[3];
+    uint *optr    = out.ptr + b2 * out.strides[2] + blockIdx.y * out.strides[3];
 
     int start = (blockIdx.x - b2 * nBBS) * THRD_LOAD * blockDim.x + threadIdx.x;
     int end   = min((start + THRD_LOAD * blockDim.x), len);
@@ -65,4 +63,4 @@ void histogram(Param<outType> out, CParam<inType> in, int len, int nbins,
     }
 }
 
-} // namespace cuda
+}  // namespace cuda

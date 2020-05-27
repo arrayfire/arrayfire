@@ -11,7 +11,7 @@ int index(int i, int j, int k, int jstride, int kstride) {
     return i + j * jstride + k * kstride;
 }
 
-#if BASE_DIM == 1
+#if RANK == 1
 kernel void convolve(global T *out, KParam oInfo, global T const *signal,
                      KParam sInfo, local T *localMem,
                      constant accType const *impulse, KParam fInfo, int nBBS0,
@@ -67,7 +67,7 @@ kernel void convolve(global T *out, KParam oInfo, global T const *signal,
 }
 #endif
 
-#if BASE_DIM == 2
+#if RANK == 2
 kernel void convolve(global T *out, KParam oInfo, global T const *signal,
                      KParam sInfo, constant accType const *impulse,
                      KParam fInfo, int nBBS0, int nBBS1, int ostep2, int ostep3,
@@ -143,7 +143,7 @@ kernel void convolve(global T *out, KParam oInfo, global T const *signal,
 }
 #endif
 
-#if BASE_DIM == 3
+#if RANK == 3
 kernel void convolve(global T *out, KParam oInfo, global T const *signal,
                      KParam sInfo, local T *localMem,
                      constant accType const *impulse, KParam fInfo, int nBBS0,

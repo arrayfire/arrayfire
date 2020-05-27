@@ -358,8 +358,8 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
 
             // Filter level image with Gaussian kernel to reduce noise
             // sensitivity
-            convSep<T, convAccT, 0, false>(lvl_tmp, lvl_img, gauss_filter);
-            convSep<T, convAccT, 1, false>(lvl_filt, lvl_tmp, gauss_filter);
+            convSep<T, convAccT>(lvl_tmp, lvl_img, gauss_filter, 0, false);
+            convSep<T, convAccT>(lvl_filt, lvl_tmp, gauss_filter, 1, false);
 
             bufferFree(lvl_tmp.data);
         }

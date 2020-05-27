@@ -16,9 +16,11 @@
 #include <types.hpp>
 #include <af/dim4.hpp>
 
+#include <array>
 #include <type_traits>
 
 using af::dim4;
+using std::array;
 
 namespace cpu {
 
@@ -64,23 +66,21 @@ TRANSFORM_REAL(fftw, cdouble, double, r2c)
 TRANSFORM_REAL(fftwf, float, cfloat, c2r)
 TRANSFORM_REAL(fftw, double, cdouble, c2r)
 
-template<int rank>
-void computeDims(int rdims[rank], const af::dim4 &idims) {
-    for (int i = 0; i < rank; i++) { rdims[i] = idims[(rank - 1) - i]; }
+inline array<int, AF_MAX_DIMS> computeDims(const int rank, const dim4 &idims) {
+    array<int, AF_MAX_DIMS> retVal = {};
+    for (int i = 0; i < rank; i++) { retVal[i] = idims[(rank - 1) - i]; }
+    return retVal;
 }
 
 void setFFTPlanCacheSize(size_t numPlans) { UNUSED(numPlans); }
 
-template<typename T, int rank, bool direction>
-void fft_inplace(Array<T> &in) {
+template<typename T>
+void fft_inplace(Array<T> &in, const int rank, const bool direction) {
     auto func = [=](Param<T> in, const af::dim4 iDataDims) {
-        int t_dims[rank];
-        int in_embed[rank];
-
         const af::dim4 idims = in.dims();
 
-        computeDims<rank>(t_dims, idims);
-        computeDims<rank>(in_embed, iDataDims);
+        auto t_dims   = computeDims(rank, idims);
+        auto in_embed = computeDims(rank, iDataDims);
 
         const af::dim4 istrides = in.strides();
 
@@ -93,10 +93,10 @@ void fft_inplace(Array<T> &in) {
         for (int i = rank; i < 4; i++) { batch *= idims[i]; }
 
         plan = transform.create(
-            rank, t_dims, batch, reinterpret_cast<ctype_t *>(in.get()),
-            in_embed, static_cast<int>(istrides[0]),
+            rank, t_dims.data(), batch, reinterpret_cast<ctype_t *>(in.get()),
+            in_embed.data(), static_cast<int>(istrides[0]),
             static_cast<int>(istrides[rank]),
-            reinterpret_cast<ctype_t *>(in.get()), in_embed,
+            reinterpret_cast<ctype_t *>(in.get()), in_embed.data(),
             static_cast<int>(istrides[0]), static_cast<int>(istrides[rank]),
             direction ? FFTW_FORWARD : FFTW_BACKWARD,
             FFTW_ESTIMATE);  // NOLINT(hicpp-signed-bitwise)
@@ -107,8 +107,8 @@ void fft_inplace(Array<T> &in) {
     getQueue().enqueue(func, in, in.getDataDims());
 }
 
-template<typename Tc, typename Tr, int rank>
-Array<Tc> fft_r2c(const Array<Tr> &in) {
+template<typename Tc, typename Tr>
+Array<Tc> fft_r2c(const Array<Tr> &in, const int rank) {
     dim4 odims    = in.dims();
     odims[0]      = odims[0] / 2 + 1;
     Array<Tc> out = createEmptyArray<Tc>(odims);
@@ -117,13 +117,9 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
                     const af::dim4 iDataDims) {
         af::dim4 idims = in.dims();
 
-        int t_dims[rank];
-        int in_embed[rank];
-        int out_embed[rank];
-
-        computeDims<rank>(t_dims, idims);
-        computeDims<rank>(in_embed, iDataDims);
-        computeDims<rank>(out_embed, oDataDims);
+        auto t_dims    = computeDims(rank, idims);
+        auto in_embed  = computeDims(rank, iDataDims);
+        auto out_embed = computeDims(rank, oDataDims);
 
         const af::dim4 istrides = in.strides();
         const af::dim4 ostrides = out.strides();
@@ -138,9 +134,10 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
         for (int i = rank; i < 4; i++) { batch *= idims[i]; }
 
         plan = transform.create(
-            rank, t_dims, batch, const_cast<Tr *>(in.get()), in_embed,
-            static_cast<int>(istrides[0]), static_cast<int>(istrides[rank]),
-            reinterpret_cast<ctype_t *>(out.get()), out_embed,
+            rank, t_dims.data(), batch, const_cast<Tr *>(in.get()),
+            in_embed.data(), static_cast<int>(istrides[0]),
+            static_cast<int>(istrides[rank]),
+            reinterpret_cast<ctype_t *>(out.get()), out_embed.data(),
             static_cast<int>(ostrides[0]), static_cast<int>(ostrides[rank]),
             FFTW_ESTIMATE);
 
@@ -153,19 +150,15 @@ Array<Tc> fft_r2c(const Array<Tr> &in) {
     return out;
 }
 
-template<typename Tr, typename Tc, int rank>
-Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
+template<typename Tr, typename Tc>
+Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims, const int rank) {
     Array<Tr> out = createEmptyArray<Tr>(odims);
 
     auto func = [=](Param<Tr> out, const af::dim4 oDataDims, CParam<Tc> in,
                     const af::dim4 iDataDims, const af::dim4 odims) {
-        int t_dims[rank];
-        int in_embed[rank];
-        int out_embed[rank];
-
-        computeDims<rank>(t_dims, odims);
-        computeDims<rank>(in_embed, iDataDims);
-        computeDims<rank>(out_embed, oDataDims);
+        auto t_dims    = computeDims(rank, odims);
+        auto in_embed  = computeDims(rank, iDataDims);
+        auto out_embed = computeDims(rank, oDataDims);
 
         const af::dim4 istrides = in.strides();
         const af::dim4 ostrides = out.strides();
@@ -191,11 +184,12 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
         }
 
         plan = transform.create(
-            rank, t_dims, batch,
-            reinterpret_cast<ctype_t *>(const_cast<Tc *>(in.get())), in_embed,
-            static_cast<int>(istrides[0]), static_cast<int>(istrides[rank]),
-            out.get(), out_embed, static_cast<int>(ostrides[0]),
-            static_cast<int>(ostrides[rank]), flags);
+            rank, t_dims.data(), batch,
+            reinterpret_cast<ctype_t *>(const_cast<Tc *>(in.get())),
+            in_embed.data(), static_cast<int>(istrides[0]),
+            static_cast<int>(istrides[rank]), out.get(), out_embed.data(),
+            static_cast<int>(ostrides[0]), static_cast<int>(ostrides[rank]),
+            flags);
 
         transform.execute(plan);
         transform.destroy(plan);
@@ -220,27 +214,16 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims) {
     return out;
 }
 
-#define INSTANTIATE(T)                                     \
-    template void fft_inplace<T, 1, true>(Array<T> & in);  \
-    template void fft_inplace<T, 2, true>(Array<T> & in);  \
-    template void fft_inplace<T, 3, true>(Array<T> & in);  \
-    template void fft_inplace<T, 1, false>(Array<T> & in); \
-    template void fft_inplace<T, 2, false>(Array<T> & in); \
-    template void fft_inplace<T, 3, false>(Array<T> & in);
+#define INSTANTIATE(T) \
+    template void fft_inplace<T>(Array<T> &, const int, const bool);
 
 INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
-#define INSTANTIATE_REAL(Tr, Tc)                                \
-    template Array<Tc> fft_r2c<Tc, Tr, 1>(const Array<Tr> &in); \
-    template Array<Tc> fft_r2c<Tc, Tr, 2>(const Array<Tr> &in); \
-    template Array<Tc> fft_r2c<Tc, Tr, 3>(const Array<Tr> &in); \
-    template Array<Tr> fft_c2r<Tr, Tc, 1>(const Array<Tc> &in,  \
-                                          const dim4 &odims);   \
-    template Array<Tr> fft_c2r<Tr, Tc, 2>(const Array<Tc> &in,  \
-                                          const dim4 &odims);   \
-    template Array<Tr> fft_c2r<Tr, Tc, 3>(const Array<Tc> &in,  \
-                                          const dim4 &odims);
+#define INSTANTIATE_REAL(Tr, Tc)                                             \
+    template Array<Tc> fft_r2c<Tc, Tr>(const Array<Tr> &, const int);        \
+    template Array<Tr> fft_c2r<Tr, Tc>(const Array<Tc> &in, const dim4 &odi, \
+                                       const int);
 
 INSTANTIATE_REAL(float, cfloat)
 INSTANTIATE_REAL(double, cdouble)

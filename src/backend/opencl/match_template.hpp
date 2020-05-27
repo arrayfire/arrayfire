@@ -11,9 +11,8 @@
 #include <af/defines.h>
 
 namespace opencl {
-
-template<typename inType, typename outType, af_match_type mType>
+template<typename inType, typename outType>
 Array<outType> match_template(const Array<inType> &sImg,
-                              const Array<inType> &tImg);
-
+                              const Array<inType> &tImg,
+                              const af::matchType mType);
 }

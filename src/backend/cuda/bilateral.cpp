@@ -16,20 +16,17 @@ using af::dim4;
 
 namespace cuda {
 
-template<typename inType, typename outType, bool isColor>
-Array<outType> bilateral(const Array<inType> &in, const float &s_sigma,
-                         const float &c_sigma) {
-    UNUSED(isColor);
+template<typename inType, typename outType>
+Array<outType> bilateral(const Array<inType> &in, const float &sSigma,
+                         const float &cSigma) {
     Array<outType> out = createEmptyArray<outType>(in.dims());
-    kernel::bilateral<inType, outType>(out, in, s_sigma, c_sigma);
+    kernel::bilateral<inType, outType>(out, in, sSigma, cSigma);
     return out;
 }
 
-#define INSTANTIATE(inT, outT)                                             \
-    template Array<outT> bilateral<inT, outT, true>(                       \
-        const Array<inT> &in, const float &s_sigma, const float &c_sigma); \
-    template Array<outT> bilateral<inT, outT, false>(                      \
-        const Array<inT> &in, const float &s_sigma, const float &c_sigma);
+#define INSTANTIATE(inT, outT)                                    \
+    template Array<outT> bilateral<inT, outT>(const Array<inT> &, \
+                                              const float &, const float &);
 
 INSTANTIATE(double, double)
 INSTANTIATE(float, float)
