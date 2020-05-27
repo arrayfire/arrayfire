@@ -22,6 +22,11 @@ class Module : public common::ModuleInterface<cl::Program*> {
     using BaseClass  = common::ModuleInterface<ModuleType>;
 
     Module(ModuleType mod) : BaseClass(mod) {}
+
+    void unload() final {
+        delete get();
+        set(nullptr);
+    }
 };
 
 }  // namespace opencl

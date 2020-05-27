@@ -10,6 +10,7 @@
 #pragma once
 
 #include <common/ModuleInterface.hpp>
+#include <cu_check_macro.hpp>
 
 #include <cuda.h>
 
@@ -29,6 +30,11 @@ class Module : public common::ModuleInterface<CUmodule> {
 
     Module(ModuleType mod) : BaseClass(mod) {
         mInstanceMangledNames.reserve(1);
+    }
+
+    void unload() final {
+        CU_CHECK(cuModuleUnload(get()));
+        set(nullptr);
     }
 
     const std::string mangledName(const std::string& instantiation) const {

@@ -29,6 +29,9 @@ class ModuleInterface {
     ///
     /// \returns handle to backend specific module
     inline ModuleType get() const { return mModuleHandle; }
+
+    /// \brief Unload module
+    virtual void unload() = 0;
 };
 
 }  // namespace common

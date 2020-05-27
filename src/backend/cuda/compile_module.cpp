@@ -325,18 +325,22 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
 
         // write module hash(everything: names, code & options) and CUBIN data
         ofstream out(tempFile, std::ios::binary);
-        size_t mangledNamesListSize = retVal.map().size();
-        out.write(reinterpret_cast<const char *>(&cubinHash),
-                  sizeof(mangledNamesListSize));
-        for (auto &iter : retVal.map()) {
-            size_t kySize   = iter.first.size();
-            size_t vlSize   = iter.second.size();
-            const char *key = iter.first.c_str();
-            const char *val = iter.second.c_str();
-            out.write(reinterpret_cast<const char *>(&kySize), sizeof(kySize));
-            out.write(key, iter.first.size());
-            out.write(reinterpret_cast<const char *>(&vlSize), sizeof(vlSize));
-            out.write(val, iter.second.size());
+        if (!sourceIsJIT) {
+            size_t mangledNamesListSize = retVal.map().size();
+            out.write(reinterpret_cast<const char *>(&mangledNamesListSize),
+                      sizeof(mangledNamesListSize));
+            for (auto &iter : retVal.map()) {
+                size_t kySize   = iter.first.size();
+                size_t vlSize   = iter.second.size();
+                const char *key = iter.first.c_str();
+                const char *val = iter.second.c_str();
+                out.write(reinterpret_cast<const char *>(&kySize),
+                          sizeof(kySize));
+                out.write(key, iter.first.size());
+                out.write(reinterpret_cast<const char *>(&vlSize),
+                          sizeof(vlSize));
+                out.write(val, iter.second.size());
+            }
         }
         out.write(reinterpret_cast<const char *>(&cubinHash),
                   sizeof(cubinHash));
@@ -371,7 +375,8 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
     return retVal;
 }
 
-Module loadModuleFromDisk(const int device, const string &moduleKey) {
+Module loadModuleFromDisk(const int device, const string &moduleKey,
+                          const bool isJIT) {
     const string &cacheDirectory = getCacheDirectory();
     if (cacheDirectory.empty()) return Module{nullptr};
 
@@ -386,24 +391,26 @@ Module loadModuleFromDisk(const int device, const string &moduleKey) {
 
         in.exceptions(std::ios::failbit | std::ios::badbit);
 
-        size_t mangledListSize = 0;
-        in.read(reinterpret_cast<char *>(&mangledListSize),
-                sizeof(mangledListSize));
-        for (size_t i = 0; i < mangledListSize; ++i) {
-            size_t keySize = 0;
-            in.read(reinterpret_cast<char *>(&keySize), sizeof(keySize));
-            vector<char> key;
-            key.reserve(keySize);
-            in.read(key.data(), keySize);
+        if (!isJIT) {
+            size_t mangledListSize = 0;
+            in.read(reinterpret_cast<char *>(&mangledListSize),
+                    sizeof(mangledListSize));
+            for (size_t i = 0; i < mangledListSize; ++i) {
+                size_t keySize = 0;
+                in.read(reinterpret_cast<char *>(&keySize), sizeof(keySize));
+                vector<char> key;
+                key.reserve(keySize);
+                in.read(key.data(), keySize);
 
-            size_t itemSize = 0;
-            in.read(reinterpret_cast<char *>(&itemSize), sizeof(itemSize));
-            vector<char> item;
-            item.reserve(itemSize);
-            in.read(item.data(), itemSize);
+                size_t itemSize = 0;
+                in.read(reinterpret_cast<char *>(&itemSize), sizeof(itemSize));
+                vector<char> item;
+                item.reserve(itemSize);
+                in.read(item.data(), itemSize);
 
-            retVal.add(string(key.data(), keySize),
-                       string(item.data(), itemSize));
+                retVal.add(string(key.data(), keySize),
+                           string(item.data(), itemSize));
+            }
         }
 
         size_t cubinHash = 0;

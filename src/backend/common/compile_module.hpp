@@ -58,7 +58,8 @@ detail::Module compileModule(const std::string& moduleKey,
 /// \param[in] device is the device index
 /// \param[in] moduleKey is hash of code+options+instantiations
 detail::Module loadModuleFromDisk(const int device,
-                                  const std::string& moduleKey);
+                                  const std::string& moduleKey,
+                                  const bool isJIT);
 
 }  // namespace common
 
