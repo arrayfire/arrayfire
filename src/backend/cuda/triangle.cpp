@@ -19,30 +19,24 @@ using common::half;
 
 namespace cuda {
 
-template<typename T, bool is_upper, bool is_unit_diag>
-void triangle(Array<T> &out, const Array<T> &in) {
+template<typename T>
+void triangle(Array<T> &out, const Array<T> &in, const bool is_upper,
+              const bool is_unit_diag) {
     kernel::triangle<T>(out, in, is_upper, is_unit_diag);
 }
 
-template<typename T, bool is_upper, bool is_unit_diag>
-Array<T> triangle(const Array<T> &in) {
+template<typename T>
+Array<T> triangle(const Array<T> &in, const bool is_upper,
+                  const bool is_unit_diag) {
     Array<T> out = createEmptyArray<T>(in.dims());
-    triangle<T, is_upper, is_unit_diag>(out, in);
+    triangle<T>(out, in, is_upper, is_unit_diag);
     return out;
 }
 
-#define INSTANTIATE(T)                                                         \
-    template void triangle<T, true, true>(Array<T> & out, const Array<T> &in); \
-    template void triangle<T, false, true>(Array<T> & out,                     \
-                                           const Array<T> &in);                \
-    template void triangle<T, true, false>(Array<T> & out,                     \
-                                           const Array<T> &in);                \
-    template void triangle<T, false, false>(Array<T> & out,                    \
-                                            const Array<T> &in);               \
-    template Array<T> triangle<T, true, true>(const Array<T> &in);             \
-    template Array<T> triangle<T, false, true>(const Array<T> &in);            \
-    template Array<T> triangle<T, true, false>(const Array<T> &in);            \
-    template Array<T> triangle<T, false, false>(const Array<T> &in);
+#define INSTANTIATE(T)                                                  \
+    template void triangle<T>(Array<T> &, const Array<T> &, const bool, \
+                              const bool);                              \
+    template Array<T> triangle<T>(const Array<T> &, const bool, const bool);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

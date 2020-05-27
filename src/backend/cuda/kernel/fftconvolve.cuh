@@ -150,7 +150,7 @@ __global__ void complexMultiply(Param<convT> out, Param<convT> in1,
 
 template<typename To, typename Ti, bool expand, bool roundOut>
 __global__ void reorderOutput(Param<To> out, Param<Ti> in, CParam<To> filter,
-                              const int half_di0, const int baseDim,
+                              const int half_di0, const int rank,
                               const int fftScale) {
     const int t = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -183,8 +183,8 @@ __global__ void reorderOutput(Param<To> out, Param<Ti> in, CParam<To> filter,
         ti3 = to3 * si3;
     } else {
         ti0 = to0 + filter.dims[0] / 2;
-        ti1 = (to1 + (baseDim > 1) * (filter.dims[1] / 2)) * si1;
-        ti2 = (to2 + (baseDim > 2) * (filter.dims[2] / 2)) * si2;
+        ti1 = (to1 + (rank > 1) * (filter.dims[1] / 2)) * si1;
+        ti2 = (to2 + (rank > 2) * (filter.dims[2] / 2)) * si2;
         ti3 = to3 * si3;
     }
 

@@ -11,6 +11,7 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/err_common.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel/names.hpp>
@@ -24,8 +25,15 @@
 namespace opencl {
 namespace kernel {
 
-template<typename T, typename accType, int conv_dim, bool expand>
-void convSep(Param out, const Param signal, const Param filter) {
+template<typename T, typename accType>
+void convSep(Param out, const Param signal, const Param filter,
+             const int conv_dim, const bool expand) {
+    if (!(conv_dim == 0 || conv_dim == 1)) {
+        AF_ERROR(
+            "Separable convolution accepts only 0 or 1 as convolution "
+            "dimension",
+            AF_ERR_NOT_SUPPORTED);
+    }
     constexpr int THREADS_X = 16;
     constexpr int THREADS_Y = 16;
     constexpr bool IsComplex =
@@ -81,14 +89,8 @@ void convSep(Param out, const Param signal, const Param filter) {
 }
 
 #define INSTANTIATE(T, accT)                                             \
-    template void convSep<T, accT, 0, true>(Param out, const Param sig,  \
-                                            const Param filt);           \
-    template void convSep<T, accT, 1, true>(Param out, const Param sig,  \
-                                            const Param filt);           \
-    template void convSep<T, accT, 0, false>(Param out, const Param sig, \
-                                             const Param filt);          \
-    template void convSep<T, accT, 1, false>(Param out, const Param sig, \
-                                             const Param filt);
+    template void convSep<T, accT>(Param, const Param, const Param filt, \
+                                   const int, const bool);
 
 INSTANTIATE(cdouble, cdouble)
 INSTANTIATE(cfloat, cfloat)

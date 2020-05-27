@@ -204,8 +204,8 @@ unsigned orb(Array<float>& x, Array<float>& y, Array<float>& score,
 
             // Filter level image with Gaussian kernel to reduce noise
             // sensitivity
-            lvl_filt = convolve2<T, convAccT, false>(lvl_img, gauss_filter,
-                                                     gauss_filter);
+            lvl_filt = convolve2<T, convAccT>(lvl_img, gauss_filter,
+                                              gauss_filter, false);
         }
         lvl_filt.eval();
         getQueue().sync();

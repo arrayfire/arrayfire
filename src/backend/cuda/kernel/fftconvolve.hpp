@@ -104,7 +104,7 @@ void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
 
 template<typename T, typename convT>
 void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
-                         CParam<T> filter, bool expand, int baseDim) {
+                         CParam<T> filter, bool expand, int rank) {
     constexpr bool RoundResult = std::is_integral<T>::value;
 
     auto reorderOut =
@@ -116,7 +116,7 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
     int fftScale = 1;
 
     // Calculate the scale by which to divide cuFFT results
-    for (int k = 0; k < baseDim; k++) fftScale *= packed.dims[k];
+    for (int k = 0; k < rank; k++) fftScale *= packed.dims[k];
 
     // Number of packed complex elements in dimension 0
     int sig_half_d0 = divup(sd[0], 2);
@@ -126,7 +126,7 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    reorderOut(qArgs, out, packed, filter, sig_half_d0, baseDim, fftScale);
+    reorderOut(qArgs, out, packed, filter, sig_half_d0, rank, fftScale);
     POST_LAUNCH_CHECK();
 }
 

@@ -19,8 +19,9 @@ namespace kernel {
 // considering complex types as well
 constexpr int MAX_SCONV_FILTER_LEN = 31;
 
-template<typename T, typename accT, int cDim, bool expand>
-void convSep(Param out, const Param sig, const Param filt);
+template<typename T, typename accT>
+void convSep(Param out, const Param sig, const Param filt, const int cDim,
+             const bool expand);
 
 }  // namespace kernel
 }  // namespace opencl

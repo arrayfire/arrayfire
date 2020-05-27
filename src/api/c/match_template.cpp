@@ -11,8 +11,11 @@
 #include <common/err_common.hpp>
 #include <handle.hpp>
 #include <match_template.hpp>
+#include <types.hpp>
 #include <af/defines.h>
 #include <af/vision.h>
+
+#include <type_traits>
 
 using af::dim4;
 using detail::intl;
@@ -20,42 +23,16 @@ using detail::uchar;
 using detail::uint;
 using detail::uintl;
 using detail::ushort;
+using std::conditional;
+using std::is_same;
 
-template<typename inType, typename outType>
+template<typename InType>
 static af_array match_template(const af_array& sImg, const af_array tImg,
                                af_match_type mType) {
-    switch (mType) {
-        case AF_SAD:
-            return getHandle(match_template<inType, outType, AF_SAD>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_ZSAD:
-            return getHandle(match_template<inType, outType, AF_ZSAD>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_LSAD:
-            return getHandle(match_template<inType, outType, AF_LSAD>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_SSD:
-            return getHandle(match_template<inType, outType, AF_SSD>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_ZSSD:
-            return getHandle(match_template<inType, outType, AF_ZSSD>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_LSSD:
-            return getHandle(match_template<inType, outType, AF_LSSD>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_NCC:
-            return getHandle(match_template<inType, outType, AF_NCC>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_ZNCC:
-            return getHandle(match_template<inType, outType, AF_ZNCC>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_SHD:
-            return getHandle(match_template<inType, outType, AF_SHD>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-        default:
-            return getHandle(match_template<inType, outType, AF_SAD>(
-                getArray<inType>(sImg), getArray<inType>(tImg)));
-    }
+    using OutType = typename conditional<is_same<InType, double>::value, double,
+                                         float>::type;
+    return getHandle(match_template<InType, OutType>(
+        getArray<InType>(sImg), getArray<InType>(tImg), mType));
 }
 
 af_err af_match_template(af_array* out, const af_array search_img,
@@ -81,36 +58,33 @@ af_err af_match_template(af_array* out, const af_array search_img,
         af_array output = 0;
         switch (sType) {
             case f64:
-                output = match_template<double, double>(search_img,
-                                                        template_img, m_type);
+                output =
+                    match_template<double>(search_img, template_img, m_type);
                 break;
             case f32:
-                output = match_template<float, float>(search_img, template_img,
-                                                      m_type);
+                output =
+                    match_template<float>(search_img, template_img, m_type);
                 break;
             case s32:
-                output = match_template<int, float>(search_img, template_img,
-                                                    m_type);
+                output = match_template<int>(search_img, template_img, m_type);
                 break;
             case u32:
-                output = match_template<uint, float>(search_img, template_img,
-                                                     m_type);
+                output = match_template<uint>(search_img, template_img, m_type);
                 break;
             case s16:
-                output = match_template<short, float>(search_img, template_img,
-                                                      m_type);
+                output =
+                    match_template<short>(search_img, template_img, m_type);
                 break;
             case u16:
-                output = match_template<ushort, float>(search_img, template_img,
-                                                       m_type);
+                output =
+                    match_template<ushort>(search_img, template_img, m_type);
                 break;
             case b8:
-                output = match_template<char, float>(search_img, template_img,
-                                                     m_type);
+                output = match_template<char>(search_img, template_img, m_type);
                 break;
             case u8:
-                output = match_template<uchar, float>(search_img, template_img,
-                                                      m_type);
+                output =
+                    match_template<uchar>(search_img, template_img, m_type);
                 break;
             default: TYPE_ERROR(1, sType);
         }

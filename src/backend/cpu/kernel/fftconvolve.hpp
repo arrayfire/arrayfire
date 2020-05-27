@@ -159,7 +159,7 @@ void complexMultiply(Param<T> packed, const af::dim4 sig_dims,
 template<typename To, typename Ti>
 void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                    const Ti* in_ptr, const af::dim4& id, const af::dim4& is,
-                   const af::dim4& fd, const int half_di0, const int baseDim,
+                   const af::dim4& fd, const int half_di0, const int rank,
                    const int fftScale, const bool expand) {
     constexpr bool RoundResult = std::is_integral<To>::value;
 
@@ -176,8 +176,8 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
                         id3 = d3 * is[3];
                     } else {
                         id0 = d0 + fd[0] / 2;
-                        id1 = (d1 + (baseDim > 1) * (fd[1] / 2)) * is[1];
-                        id2 = (d2 + (baseDim > 2) * (fd[2] / 2)) * is[2];
+                        id1 = (d1 + (rank > 1) * (fd[1] / 2)) * is[1];
+                        id2 = (d2 + (rank > 2) * (fd[2] / 2)) * is[2];
                         id3 = d3 * is[3];
                     }
 
@@ -221,12 +221,12 @@ void reorderHelper(To* out_ptr, const af::dim4& od, const af::dim4& os,
     }
 }
 
-template<typename T, typename convT, int baseDim>
+template<typename T, typename convT>
 void reorder(Param<T> out, Param<convT> packed, CParam<T> filter,
              const dim_t sig_half_d0, const dim_t fftScale,
              const dim4 sig_tmp_dims, const dim4 sig_tmp_strides,
              const dim4 filter_tmp_dims, const dim4 filter_tmp_strides,
-             bool expand, AF_BATCH_KIND kind) {
+             bool expand, AF_BATCH_KIND kind, const int rank) {
     // TODO(pradeep) check if we can avoid convT template parameter also
     // using convT = typename std::conditional<std::is_integral<T>::value,
     // float, double>::type;
@@ -245,12 +245,12 @@ void reorder(Param<T> out, Param<convT> packed, CParam<T> filter,
     if (kind == AF_BATCH_RHS) {
         reorderHelper<T, convT>(out_ptr, out_dims, out_strides, filter_tmp_ptr,
                                 filter_tmp_dims, filter_tmp_strides,
-                                filter_dims, sig_half_d0, baseDim, fftScale,
+                                filter_dims, sig_half_d0, rank, fftScale,
                                 expand);
     } else {
         reorderHelper<T, convT>(out_ptr, out_dims, out_strides, sig_tmp_ptr,
                                 sig_tmp_dims, sig_tmp_strides, filter_dims,
-                                sig_half_d0, baseDim, fftScale, expand);
+                                sig_half_d0, rank, fftScale, expand);
     }
 }
 

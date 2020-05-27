@@ -112,13 +112,13 @@ void richardsonLucy(Array<T>& currentEstimate, const Array<T>& in,
                     const unsigned iters, const float normFactor,
                     const dim4 odims) {
     for (unsigned i = 0; i < iters; ++i) {
-        auto fft1  = fft_r2c<CT, T, BASE_DIM>(currentEstimate);
+        auto fft1  = fft_r2c<CT, T>(currentEstimate, BASE_DIM);
         auto cmul1 = arithOp<CT, af_mul_t>(fft1, P, P.dims());
-        auto ifft1 = fft_c2r<CT, T, BASE_DIM>(cmul1, normFactor, odims);
+        auto ifft1 = fft_c2r<CT, T>(cmul1, normFactor, odims, BASE_DIM);
         auto div1  = arithOp<T, af_div_t>(in, ifft1, in.dims());
-        auto fft2  = fft_r2c<CT, T, BASE_DIM>(div1);
+        auto fft2  = fft_r2c<CT, T>(div1, BASE_DIM);
         auto cmul2 = arithOp<CT, af_mul_t>(fft2, Pc, Pc.dims());
-        auto ifft2 = fft_c2r<CT, T, BASE_DIM>(cmul2, normFactor, odims);
+        auto ifft2 = fft_c2r<CT, T>(cmul2, normFactor, odims, BASE_DIM);
 
         currentEstimate =
             arithOp<T, af_mul_t>(currentEstimate, ifft2, ifft2.dims());
@@ -132,7 +132,7 @@ void landweber(Array<T>& currentEstimate, const Array<T>& in,
                const dim4 odims) {
     const dim4& dims = P.dims();
 
-    auto I        = fft_r2c<CT, T, BASE_DIM>(in);
+    auto I        = fft_r2c<CT, T>(in, BASE_DIM);
     auto Pn       = complexNorm<T, CT>(P);
     auto ONE      = createValueArray(dims, scalar<T>(1.0));
     auto alpha    = createValueArray(dims, scalar<T>(relaxFactor));
@@ -148,7 +148,7 @@ void landweber(Array<T>& currentEstimate, const Array<T>& in,
         auto mul = arithOp<CT, af_mul_t>(iterTemp, lhs, dims);
         iterTemp = arithOp<CT, af_add_t>(mul, rhs, dims);
     }
-    currentEstimate = fft_c2r<CT, T, BASE_DIM>(iterTemp, normFactor, odims);
+    currentEstimate = fft_c2r<CT, T>(iterTemp, normFactor, odims, BASE_DIM);
 }
 
 template<typename InputType, typename RealType = float>
@@ -175,7 +175,7 @@ af_array iterDeconv(const af_array in, const af_array ker, const uint iters,
                                           -int(fdims[1] / 2), 0, 0};
     auto shiftedPsf                    = shift(paddedPsf, shiftDims.data());
 
-    auto P  = fft_r2c<CT, T, BASE_DIM>(shiftedPsf);
+    auto P  = fft_r2c<CT, T>(shiftedPsf, BASE_DIM);
     auto Pc = conj(P);
 
     Array<T> currentEstimate = paddedIn;
@@ -284,8 +284,8 @@ af_array invDeconv(const af_array in, const af_array ker, const float gamma,
 
     auto shiftedPsf = shift(paddedPsf, shiftDims.data());
 
-    auto I      = fft_r2c<CT, T, BASE_DIM>(paddedIn);
-    auto P      = fft_r2c<CT, T, BASE_DIM>(shiftedPsf);
+    auto I      = fft_r2c<CT, T>(paddedIn, BASE_DIM);
+    auto P      = fft_r2c<CT, T>(shiftedPsf, BASE_DIM);
     auto Pc     = conj(P);
     auto numer  = arithOp<CT, af_mul_t>(I, Pc, I.dims());
     auto denom  = denominator(I, P, gamma, algo);
@@ -297,7 +297,7 @@ af_array invDeconv(const af_array in, const af_array ker, const float gamma,
     select_scalar<CT, false>(val, cond, val, 0);
 
     auto ival =
-        fft_c2r<CT, T, BASE_DIM>(val, 1 / static_cast<double>(nElems), odims);
+        fft_c2r<CT, T>(val, 1 / static_cast<double>(nElems), odims, BASE_DIM);
 
     return getHandle(createSubArray<T>(ival, index));
 }

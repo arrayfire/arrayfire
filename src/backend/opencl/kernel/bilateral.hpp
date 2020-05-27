@@ -26,7 +26,7 @@ namespace kernel {
 
 template<typename inType, typename outType>
 void bilateral(Param out, const Param in, const float s_sigma,
-               const float c_sigma, const bool isColor) {
+               const float c_sigma) {
     constexpr int THREADS_X     = 16;
     constexpr int THREADS_Y     = 16;
     constexpr bool UseNativeExp = !std::is_same<inType, double>::value ||
@@ -37,7 +37,6 @@ void bilateral(Param out, const Param in, const float s_sigma,
     std::vector<TemplateArg> targs = {
         TemplateTypename<inType>(),
         TemplateTypename<outType>(),
-        TemplateArg(isColor),
     };
     std::vector<std::string> options = {
         DefineKeyValue(inType, dtype_traits<inType>::getName()),

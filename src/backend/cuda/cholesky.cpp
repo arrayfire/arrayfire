@@ -85,11 +85,7 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
     Array<T> out = copyArray<T>(in);
     *info        = cholesky_inplace(out, is_upper);
 
-    if (is_upper) {
-        triangle<T, true, false>(out, out);
-    } else {
-        triangle<T, false, false>(out, out);
-    }
+    triangle<T>(out, out, is_upper, false);
 
     return out;
 }

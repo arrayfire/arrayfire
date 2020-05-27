@@ -14,8 +14,9 @@
 namespace cpu {
 namespace kernel {
 
-template<typename T, bool is_upper, bool is_unit_diag>
-void triangle(Param<T> out, CParam<T> in) {
+template<typename T>
+void triangle(Param<T> out, CParam<T> in, const bool is_upper,
+              const bool is_unit_diag) {
     T *o       = out.get();
     const T *i = in.get();
 
