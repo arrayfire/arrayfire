@@ -18,6 +18,7 @@
 
 #include <array>
 #include <cmath>
+#include <functional>
 #include <type_traits>
 
 using af::dim4;
@@ -25,6 +26,13 @@ using std::array;
 using std::ceil;
 
 namespace cpu {
+
+template<typename T, typename convT>
+using reorderFunc = std::function<void(
+    Param<T> out, Param<convT> packed, CParam<T> filter,
+    const dim_t sig_half_d0, const dim_t fftScale, const dim4 sig_tmp_dims,
+    const dim4 sig_tmp_strides, const dim4 filter_tmp_dims,
+    const dim4 filter_tmp_strides, AF_BATCH_KIND kind)>;
 
 template<typename T>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
@@ -174,9 +182,18 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    getQueue().enqueue(kernel::reorder<T, convT>, out, packed, filter,
+    static const reorderFunc<T, convT> funcs[6] = {
+        kernel::reorder<T, convT, 1, false>,
+        kernel::reorder<T, convT, 2, false>,
+        kernel::reorder<T, convT, 3, false>,
+        kernel::reorder<T, convT, 1, true>,
+        kernel::reorder<T, convT, 2, true>,
+        kernel::reorder<T, convT, 3, true>,
+    };
+
+    getQueue().enqueue(funcs[expand * 3 + (rank - 1)], out, packed, filter,
                        sig_half_d0, fftScale, paddedSigDims, paddedSigStrides,
-                       paddedFilDims, paddedFilStrides, expand, kind, rank);
+                       paddedFilDims, paddedFilStrides, kind);
 
     return out;
 }

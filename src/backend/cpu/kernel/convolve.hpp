@@ -209,23 +209,22 @@ void convolve_nd(Param<InT> out, CParam<InT> signal, CParam<AccT> filter,
     }
 }
 
-template<typename InT, typename AccT>
+template<typename InT, typename AccT, bool Expand, int ConvDim>
 void convolve2_separable(InT *optr, InT const *const iptr,
                          AccT const *const fptr, af::dim4 const &oDims,
                          af::dim4 const &sDims, af::dim4 const &orgDims,
                          dim_t fDim, af::dim4 const &oStrides,
-                         af::dim4 const &sStrides, dim_t fStride,
-                         const bool expand, const int conv_dim) {
+                         af::dim4 const &sStrides, dim_t fStride) {
     UNUSED(orgDims);
     UNUSED(sStrides);
     UNUSED(fStride);
     for (dim_t j = 0; j < oDims[1]; ++j) {
         dim_t jOff = j * oStrides[1];
-        dim_t cj   = j + (conv_dim == 1) * (expand ? 0 : fDim >> 1);
+        dim_t cj   = j + (ConvDim == 1) * (Expand ? 0 : fDim >> 1);
 
         for (dim_t i = 0; i < oDims[0]; ++i) {
             dim_t iOff = i * oStrides[0];
-            dim_t ci   = i + (conv_dim == 0) * (expand ? 0 : fDim >> 1);
+            dim_t ci   = i + (ConvDim == 0) * (Expand ? 0 : fDim >> 1);
 
             AccT accum = scalar<AccT>(0);
 
@@ -233,7 +232,7 @@ void convolve2_separable(InT *optr, InT const *const iptr,
                 InT f_val = fptr[f];
                 InT s_val;
 
-                if (conv_dim == 0) {
+                if (ConvDim == 0) {
                     dim_t offi     = ci - f;
                     bool isCIValid = offi >= 0 && offi < sDims[0];
                     bool isCJValid = cj >= 0 && cj < sDims[1];
@@ -254,9 +253,9 @@ void convolve2_separable(InT *optr, InT const *const iptr,
     }
 }
 
-template<typename InT, typename AccT>
+template<typename InT, typename AccT, bool Expand>
 void convolve2(Param<InT> out, CParam<InT> signal, CParam<AccT> c_filter,
-               CParam<AccT> r_filter, Param<InT> temp, const bool expand) {
+               CParam<AccT> r_filter, Param<InT> temp) {
     dim_t cflen = (dim_t)c_filter.dims().elements();
     dim_t rflen = (dim_t)r_filter.dims().elements();
 
@@ -277,13 +276,13 @@ void convolve2(Param<InT> out, CParam<InT> signal, CParam<AccT> c_filter,
             InT *tptr             = temp.get() + b2 * tStrides[2] + t_b3Off;
             InT *optr             = out.get() + b2 * oStrides[2] + o_b3Off;
 
-            convolve2_separable<InT, AccT>(
+            convolve2_separable<InT, AccT, Expand, 0>(
                 tptr, iptr, c_filter.get(), temp.dims(), sDims, sDims, cflen,
-                tStrides, sStrides, c_filter.strides(0), expand, 0);
+                tStrides, sStrides, c_filter.strides(0));
 
-            convolve2_separable<InT, AccT>(
+            convolve2_separable<InT, AccT, Expand, 1>(
                 optr, tptr, r_filter.get(), oDims, temp.dims(), sDims, rflen,
-                oStrides, tStrides, r_filter.strides(0), expand, 1);
+                oStrides, tStrides, r_filter.strides(0));
         }
     }
 }
