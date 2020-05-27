@@ -6,23 +6,33 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#include <kernel/triangle.hpp>
 #include <triangle.hpp>
 
-#include <Array.hpp>
 #include <common/half.hpp>
-#include <math.hpp>
+#include <kernel/triangle.hpp>
 #include <platform.hpp>
 #include <af/dim4.hpp>
+
+#include <functional>
 
 using common::half;
 
 namespace cpu {
 
 template<typename T>
+using triangleFunc = std::function<void(Param<T>, CParam<T>)>;
+
+template<typename T>
 void triangle(Array<T> &out, const Array<T> &in, const bool is_upper,
               const bool is_unit_diag) {
-    getQueue().enqueue(kernel::triangle<T>, out, in, is_upper, is_unit_diag);
+    static const triangleFunc<T> funcs[4] = {
+        kernel::triangle<T, false, false>,
+        kernel::triangle<T, false, true>,
+        kernel::triangle<T, true, false>,
+        kernel::triangle<T, true, true>,
+    };
+    const int funcIdx = is_upper * 2 + is_unit_diag;
+    getQueue().enqueue(funcs[funcIdx], out, in);
 }
 
 template<typename T>

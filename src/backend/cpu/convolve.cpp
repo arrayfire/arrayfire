@@ -85,9 +85,13 @@ Array<T> convolve2(Array<T> const &signal, Array<accT> const &c_filter,
     Array<T> out  = createEmptyArray<T>(oDims);
     Array<T> temp = createEmptyArray<T>(tDims);
 
-    getQueue().enqueue(kernel::convolve2<T, accT>, out, signal, c_filter,
-                       r_filter, temp, expand);
-
+    if (expand) {
+        getQueue().enqueue(kernel::convolve2<T, accT, true>, out, signal,
+                           c_filter, r_filter, temp);
+    } else {
+        getQueue().enqueue(kernel::convolve2<T, accT, false>, out, signal,
+                           c_filter, r_filter, temp);
+    }
     return out;
 }
 

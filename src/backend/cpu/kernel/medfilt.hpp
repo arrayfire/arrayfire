@@ -10,16 +10,17 @@
 #pragma once
 
 #include <Param.hpp>
-#include <err_cpu.hpp>
+
 #include <algorithm>
 #include <vector>
 
 namespace cpu {
 namespace kernel {
 
-template<typename T>
-void medfilt1(Param<T> out, CParam<T> in, dim_t w_wid,
-              const af::borderType pad) {
+template<typename T, af::borderType Pad>
+void medfilt1(Param<T> out, CParam<T> in, dim_t w_wid) {
+    constexpr bool IsValidPadType = (Pad == AF_PAD_ZERO || Pad == AF_PAD_SYM);
+
     const af::dim4 dims     = in.dims();
     const af::dim4 istrides = in.strides();
     const af::dim4 ostrides = out.strides();
@@ -40,7 +41,7 @@ void medfilt1(Param<T> out, CParam<T> in, dim_t w_wid,
                     for (int wi = 0; wi < (int)w_wid; ++wi) {
                         int im_row = row + wi - w_wid / 2;
                         int im_roff;
-                        switch (pad) {
+                        switch (Pad) {
                             case AF_PAD_ZERO:
                                 im_roff = im_row * istrides[0];
                                 if (im_row < 0 || im_row >= (int)dims[0])
@@ -59,7 +60,8 @@ void medfilt1(Param<T> out, CParam<T> in, dim_t w_wid,
                                 wind_vals.push_back(in_ptr[im_roff]);
                             } break;
                             default:
-                                CPU_NOT_SUPPORTED("Unsupported padding type");
+                                static_assert(IsValidPadType,
+                                              "Unsupported padding type");
                                 break;
                         }
                     }
@@ -80,9 +82,10 @@ void medfilt1(Param<T> out, CParam<T> in, dim_t w_wid,
     }
 }
 
-template<typename T>
-void medfilt2(Param<T> out, CParam<T> in, dim_t w_len, dim_t w_wid,
-              const af::borderType pad) {
+template<typename T, af::borderType Pad>
+void medfilt2(Param<T> out, CParam<T> in, dim_t w_len, dim_t w_wid) {
+    constexpr bool IsValidPadType = (Pad == AF_PAD_ZERO || Pad == AF_PAD_SYM);
+
     const af::dim4 dims     = in.dims();
     const af::dim4 istrides = in.strides();
     const af::dim4 ostrides = out.strides();
@@ -106,7 +109,7 @@ void medfilt2(Param<T> out, CParam<T> in, dim_t w_len, dim_t w_wid,
 
                         int im_col  = col + wj - w_wid / 2;
                         int im_coff = 0;
-                        switch (pad) {
+                        switch (Pad) {
                             case AF_PAD_ZERO:
                                 im_coff = im_col * istrides[1];
                                 if (im_col < 0 || im_col >= (int)dims[1])
@@ -126,7 +129,8 @@ void medfilt2(Param<T> out, CParam<T> in, dim_t w_len, dim_t w_wid,
                                 im_coff = im_col * istrides[1];
                             } break;
                             default:
-                                CPU_NOT_SUPPORTED("Unsupported padding type");
+                                static_assert(IsValidPadType,
+                                              "Unsupported padding type");
                                 break;
                         }
 
@@ -135,7 +139,7 @@ void medfilt2(Param<T> out, CParam<T> in, dim_t w_len, dim_t w_wid,
 
                             int im_row  = row + wi - w_len / 2;
                             int im_roff = 0;
-                            switch (pad) {
+                            switch (Pad) {
                                 case AF_PAD_ZERO:
                                     im_roff = im_row * istrides[0];
                                     if (im_row < 0 || im_row >= (int)dims[0])
@@ -156,13 +160,13 @@ void medfilt2(Param<T> out, CParam<T> in, dim_t w_len, dim_t w_wid,
                                     im_roff = im_row * istrides[0];
                                 } break;
                                 default:
-                                    CPU_NOT_SUPPORTED(
-                                        "Unsupported padding type");
+                                    static_assert(IsValidPadType,
+                                                  "Unsupported padding type");
                                     break;
                             }
 
                             if (isRowOff || isColOff) {
-                                switch (pad) {
+                                switch (Pad) {
                                     case AF_PAD_ZERO:
                                         wind_vals.push_back(0);
                                         break;
@@ -171,7 +175,8 @@ void medfilt2(Param<T> out, CParam<T> in, dim_t w_len, dim_t w_wid,
                                             in_ptr[im_coff + im_roff]);
                                         break;
                                     default:
-                                        CPU_NOT_SUPPORTED(
+                                        static_assert(
+                                            IsValidPadType,
                                             "Unsupported padding type");
                                         break;
                                 }
