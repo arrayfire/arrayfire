@@ -17,6 +17,7 @@
 #include <platform.hpp>
 
 #include <algorithm>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -25,6 +26,7 @@ using detail::Kernel;
 using detail::Module;
 
 using std::back_inserter;
+using std::shared_timed_mutex;
 using std::string;
 using std::transform;
 using std::unordered_map;
@@ -34,12 +36,18 @@ namespace common {
 
 using ModuleMap = unordered_map<string, Module>;
 
+shared_timed_mutex& getCacheMutex(const int device) {
+    static shared_timed_mutex mutexes[detail::DeviceManager::MAX_DEVICES];
+    return mutexes[device];
+}
+
 ModuleMap& getCache(const int device) {
-    thread_local ModuleMap caches[detail::DeviceManager::MAX_DEVICES];
+    static ModuleMap caches[detail::DeviceManager::MAX_DEVICES];
     return caches[device];
 }
 
 Module findModule(const int device, const string& key) {
+    std::shared_lock<shared_timed_mutex> readLock(getCacheMutex(device));
     auto& cache = getCache(device);
     auto iter   = cache.find(key);
     if (iter != cache.end()) { return iter->second; }
@@ -82,12 +90,23 @@ Kernel getKernel(const string& kernelName, const vector<string>& sources,
     Module currModule      = findModule(device, moduleKey);
 
     if (currModule.get() == nullptr) {
-        currModule = loadModuleFromDisk(device, moduleKey);
+        currModule = loadModuleFromDisk(device, moduleKey, sourceIsJIT);
         if (currModule.get() == nullptr) {
             currModule = compileModule(moduleKey, sources, options, {tInstance},
                                        sourceIsJIT);
         }
-        getCache(device).emplace(moduleKey, currModule);
+
+        std::unique_lock<shared_timed_mutex> writeLock(getCacheMutex(device));
+        auto& cache = getCache(device);
+        auto iter   = cache.find(moduleKey);
+        if (iter == cache.end()) {
+            // If not found, this thread is the first one to compile this
+            // kernel. Keep the generated module.
+            getCache(device).emplace(moduleKey, currModule);
+        } else {
+            currModule.unload();  // dump the current threads extra compilation
+            currModule = iter->second;
+        }
     }
 #if defined(AF_CUDA)
     return getKernel(currModule, tInstance, sourceIsJIT);
