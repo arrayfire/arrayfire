@@ -29,9 +29,9 @@ constexpr int MAX_CONV3_FILTER_LEN = 5;
  * file under the folder 'kernel/convovel' with their implementations
  * written in corresponding conv[1|2|3].cpp files under the same folder.
  */
-template<typename T, typename accType, int baseDim, bool expand>
+template<typename T, typename accType>
 void convolve_nd(Param out, const Param signal, const Param filter,
-                 AF_BATCH_KIND kind) {
+                 AF_BATCH_KIND kind, const int rank, const bool expand) {
     conv_kparam_t param;
 
     for (int i = 0; i < 3; ++i) {
@@ -42,12 +42,12 @@ void convolve_nd(Param out, const Param signal, const Param filter,
     param.outHasNoOffset   = kind == AF_BATCH_LHS || kind == AF_BATCH_NONE;
     param.inHasNoOffset    = kind != AF_BATCH_SAME;
 
-    prepareKernelArgs<T>(param, out.info.dims, filter.info.dims, baseDim);
+    prepareKernelArgs<T>(param, out.info.dims, filter.info.dims, rank);
 
-    switch (baseDim) {
-        case 1: conv1<T, accType, expand>(param, out, signal, filter); break;
-        case 2: conv2<T, accType, expand>(param, out, signal, filter); break;
-        case 3: conv3<T, accType, expand>(param, out, signal, filter); break;
+    switch (rank) {
+        case 1: conv1<T, accType>(param, out, signal, filter, expand); break;
+        case 2: conv2<T, accType>(param, out, signal, filter, expand); break;
+        case 3: conv3<T, accType>(param, out, signal, filter, expand); break;
     }
 
     CL_DEBUG_FINISH(getQueue());

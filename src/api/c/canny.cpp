@@ -73,8 +73,7 @@ Array<float> gradientMagnitude(const Array<float>& gx, const Array<float>& gy,
 
 Array<float> otsuThreshold(const Array<float>& supEdges,
                            const unsigned NUM_BINS, const float maxVal) {
-    Array<uint> hist =
-        histogram<float, uint, false>(supEdges, NUM_BINS, 0, maxVal);
+    Array<uint> hist = histogram<float>(supEdges, NUM_BINS, 0, maxVal, false);
 
     const dim4& hDims = hist.dims();
 
@@ -208,7 +207,7 @@ af_array cannyHelper(const Array<T>& in, const float t1,
 
     // Run separable convolution to smooth the input image
     Array<float> smt =
-        convolve2<float, float, false>(cast<float, T>(in), cFilter, rFilter);
+        convolve2<float, float>(cast<float, T>(in), cFilter, rFilter, false);
 
     auto g          = sobelDerivatives<float, float>(smt, sw);
     Array<float> gx = g.first;

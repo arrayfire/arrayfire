@@ -185,8 +185,8 @@ void convSepFull(Param& dst, Param src, Param filter) {
     const dim_t src_el = src.info.dims[3] * src.info.strides[3];
     tmp.data           = bufferAlloc(src_el * sizeof(T));
 
-    convSep<T, convAccT, 0, false>(tmp, src, filter);
-    convSep<T, convAccT, 1, false>(dst, tmp, filter);
+    convSep<T, convAccT>(tmp, src, filter, 0, false);
+    convSep<T, convAccT>(dst, tmp, filter, 1, false);
 
     bufferFree(tmp.data);
 }

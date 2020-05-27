@@ -50,28 +50,28 @@ struct conv_kparam_t {
 
 template<typename T>
 void prepareKernelArgs(conv_kparam_t& param, dim_t* oDims, const dim_t* fDims,
-                       int baseDim) {
+                       const int rank) {
     using cl::NDRange;
 
     int batchDims[4] = {1, 1, 1, 1};
-    for (int i = baseDim; i < 4; ++i) {
+    for (int i = rank; i < 4; ++i) {
         batchDims[i] = (param.launchMoreBlocks ? 1 : oDims[i]);
     }
 
-    if (baseDim == 1) {
+    if (rank == 1) {
         param.local    = NDRange(THREADS, 1);
         param.nBBS0    = divup(oDims[0], THREADS);
         param.nBBS1    = batchDims[2];
         param.global   = NDRange(param.nBBS0 * THREADS * batchDims[1],
                                param.nBBS1 * batchDims[3]);
         param.loc_size = (THREADS + 2 * (fDims[0] - 1)) * sizeof(T);
-    } else if (baseDim == 2) {
+    } else if (rank == 2) {
         param.local  = NDRange(THREADS_X, THREADS_Y);
         param.nBBS0  = divup(oDims[0], THREADS_X);
         param.nBBS1  = divup(oDims[1], THREADS_Y);
         param.global = NDRange(param.nBBS0 * THREADS_X * batchDims[2],
                                param.nBBS1 * THREADS_Y * batchDims[3]);
-    } else if (baseDim == 3) {
+    } else if (rank == 3) {
         param.local    = NDRange(CUBE_X, CUBE_Y, CUBE_Z);
         param.nBBS0    = divup(oDims[0], CUBE_X);
         param.nBBS1    = divup(oDims[1], CUBE_Y);
@@ -84,9 +84,9 @@ void prepareKernelArgs(conv_kparam_t& param, dim_t* oDims, const dim_t* fDims,
     }
 }
 
-template<typename T, typename aT, int bDim, bool expand>
+template<typename T, typename aT>
 void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
-                 const Param& filter) {
+                 const Param& filter, const int rank, const bool expand) {
     using cl::EnqueueArgs;
     using cl::NDRange;
     using std::string;
@@ -101,7 +101,7 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateTypename<aT>(),
-        TemplateArg(bDim),
+        TemplateArg(rank),
         TemplateArg(expand),
     };
     vector<string> compileOpts = {
@@ -109,7 +109,7 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
         DefineKeyValue(Ti, dtype_traits<T>::getName()),
         DefineKeyValue(To, dtype_traits<aT>::getName()),
         DefineKeyValue(accType, dtype_traits<aT>::getName()),
-        DefineKeyValue(BASE_DIM, bDim),
+        DefineKeyValue(RANK, rank),
         DefineKeyValue(EXPAND, (expand ? 1 : 0)),
         DefineKeyFromStr(binOpName<af_mul_t>()),
         DefineKeyValue(CPLX, (IsComplex ? 1 : 0)),
@@ -125,13 +125,16 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
              param.o[1], param.o[2], param.s[0], param.s[1], param.s[2]);
 }
 
-template<typename T, typename aT, bool expand>
-void conv1(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
+template<typename T, typename aT>
+void conv1(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt,
+           const bool expand);
 
-template<typename T, typename aT, bool expand>
-void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
+template<typename T, typename aT>
+void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt,
+           const bool expand);
 
-template<typename T, typename aT, bool expand>
-void conv3(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
+template<typename T, typename aT>
+void conv3(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt,
+           const bool expand);
 }  // namespace kernel
 }  // namespace opencl

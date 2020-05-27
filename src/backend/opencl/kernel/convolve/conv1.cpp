@@ -12,8 +12,9 @@
 namespace opencl {
 namespace kernel {
 
-template<typename T, typename aT, bool expand>
-void conv1(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt) {
+template<typename T, typename aT>
+void conv1(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt,
+           const bool expand) {
     size_t se_size = filt.info.dims[0] * sizeof(aT);
     p.impulse      = bufferAlloc(se_size);
     int f0Off      = filt.info.offset;
@@ -40,17 +41,15 @@ void conv1(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt) {
                 p.s[1] = (p.inHasNoOffset ? 0 : b2);
                 p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
-                convNHelper<T, aT, 1, expand>(p, out, sig, filt);
+                convNHelper<T, aT>(p, out, sig, filt, 1, expand);
             }
         }
     }
 }
 
-#define INSTANTIATE(T, accT)                                                 \
-    template void conv1<T, accT, true>(conv_kparam_t & p, Param & out,       \
-                                       const Param& sig, const Param& filt); \
-    template void conv1<T, accT, false>(conv_kparam_t & p, Param & out,      \
-                                        const Param& sig, const Param& filt);
+#define INSTANTIATE(T, accT)                                           \
+    template void conv1<T, accT>(conv_kparam_t&, Param&, const Param&, \
+                                 const Param&, const bool);
 
 INSTANTIATE(cdouble, cdouble)
 INSTANTIATE(cfloat, cfloat)

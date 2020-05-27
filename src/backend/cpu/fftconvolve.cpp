@@ -26,9 +26,9 @@ using std::ceil;
 
 namespace cpu {
 
-template<typename T, dim_t baseDim>
+template<typename T>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
-                     const bool expand, AF_BATCH_KIND kind) {
+                     const bool expand, AF_BATCH_KIND kind, const int rank) {
     using convT = typename std::conditional<std::is_integral<T>::value ||
                                                 std::is_same<T, float>::value,
                                             float, double>::type;
@@ -40,36 +40,36 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     dim_t fftScale = 1;
 
     dim4 packedDims(1, 1, 1, 1);
-    array<int, baseDim> fftDims{};
+    array<int, AF_MAX_DIMS> fftDims{};  // AF_MAX_DIMS(4) > rank
 
     // Pack both signal and filter on same memory array, this will ensure
     // better use of batched FFT capabilities
-    fftDims[baseDim - 1] = nextpow2(
+    fftDims[rank - 1] = nextpow2(
         static_cast<unsigned>(static_cast<int>(ceil(sd[0] / 2.f)) + fd[0] - 1));
-    packedDims[0] = 2 * fftDims[baseDim - 1];
-    fftScale *= fftDims[baseDim - 1];
+    packedDims[0] = 2 * fftDims[rank - 1];
+    fftScale *= fftDims[rank - 1];
 
-    for (dim_t k = 1; k < baseDim; k++) {
+    for (int k = 1; k < rank; k++) {
         packedDims[k] = nextpow2(static_cast<unsigned>(sd[k] + fd[k] - 1));
-        fftDims[baseDim - k - 1] = packedDims[k];
-        fftScale *= fftDims[baseDim - k - 1];
+        fftDims[rank - k - 1] = packedDims[k];
+        fftScale *= fftDims[rank - k - 1];
     }
 
     dim_t sbatch = 1, fbatch = 1;
-    for (int k = baseDim; k < AF_MAX_DIMS; k++) {
+    for (int k = rank; k < AF_MAX_DIMS; k++) {
         sbatch *= sd[k];
         fbatch *= fd[k];
     }
-    packedDims[baseDim] = (sbatch + fbatch);
+    packedDims[rank] = (sbatch + fbatch);
 
     Array<convT> packed = createEmptyArray<convT>(packedDims);
 
-    dim4 paddedSigDims(packedDims[0], (1 < baseDim ? packedDims[1] : sd[1]),
-                       (2 < baseDim ? packedDims[2] : sd[2]),
-                       (3 < baseDim ? packedDims[3] : sd[3]));
-    dim4 paddedFilDims(packedDims[0], (1 < baseDim ? packedDims[1] : fd[1]),
-                       (2 < baseDim ? packedDims[2] : fd[2]),
-                       (3 < baseDim ? packedDims[3] : fd[3]));
+    dim4 paddedSigDims(packedDims[0], (1 < rank ? packedDims[1] : sd[1]),
+                       (2 < rank ? packedDims[2] : sd[2]),
+                       (3 < rank ? packedDims[3] : sd[3]));
+    dim4 paddedFilDims(packedDims[0], (1 < rank ? packedDims[1] : fd[1]),
+                       (2 < rank ? packedDims[2] : fd[2]),
+                       (3 < rank ? packedDims[3] : fd[3]));
     dim4 paddedSigStrides = calcStrides(paddedSigDims);
     dim4 paddedFilStrides = calcStrides(paddedFilDims);
 
@@ -88,28 +88,28 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
     auto upstream_dft = [=](Param<convT> packed,
-                            const array<int, baseDim> fftDims) {
+                            const array<int, AF_MAX_DIMS> fftDims) {
         const dim4 packedDims     = packed.dims();
         const dim4 packed_strides = packed.strides();
         // Compute forward FFT
         if (IsTypeDouble) {
             fftw_plan plan = fftw_plan_many_dft(
-                baseDim, fftDims.data(), packedDims[baseDim],
+                rank, fftDims.data(), packedDims[rank],
                 reinterpret_cast<fftw_complex*>(packed.get()), nullptr,
-                packed_strides[0], packed_strides[baseDim] / 2,
+                packed_strides[0], packed_strides[rank] / 2,
                 reinterpret_cast<fftw_complex*>(packed.get()), nullptr,
-                packed_strides[0], packed_strides[baseDim] / 2, FFTW_FORWARD,
+                packed_strides[0], packed_strides[rank] / 2, FFTW_FORWARD,
                 FFTW_ESTIMATE);  // NOLINT(hicpp-signed-bitwise)
 
             fftw_execute(plan);
             fftw_destroy_plan(plan);
         } else {
             fftwf_plan plan = fftwf_plan_many_dft(
-                baseDim, fftDims.data(), packedDims[baseDim],
+                rank, fftDims.data(), packedDims[rank],
                 reinterpret_cast<fftwf_complex*>(packed.get()), nullptr,
-                packed_strides[0], packed_strides[baseDim] / 2,
+                packed_strides[0], packed_strides[rank] / 2,
                 reinterpret_cast<fftwf_complex*>(packed.get()), nullptr,
-                packed_strides[0], packed_strides[baseDim] / 2, FFTW_FORWARD,
+                packed_strides[0], packed_strides[rank] / 2, FFTW_FORWARD,
                 FFTW_ESTIMATE);  // NOLINT(hicpp-signed-bitwise)
 
             fftwf_execute(plan);
@@ -125,28 +125,28 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
     auto upstream_idft = [=](Param<convT> packed,
-                             const array<int, baseDim> fftDims) {
+                             const array<int, AF_MAX_DIMS> fftDims) {
         const dim4 packedDims     = packed.dims();
         const dim4 packed_strides = packed.strides();
         // Compute inverse FFT
         if (IsTypeDouble) {
             fftw_plan plan = fftw_plan_many_dft(
-                baseDim, fftDims.data(), packedDims[baseDim],
+                rank, fftDims.data(), packedDims[rank],
                 reinterpret_cast<fftw_complex*>(packed.get()), nullptr,
-                packed_strides[0], packed_strides[baseDim] / 2,
+                packed_strides[0], packed_strides[rank] / 2,
                 reinterpret_cast<fftw_complex*>(packed.get()), nullptr,
-                packed_strides[0], packed_strides[baseDim] / 2, FFTW_BACKWARD,
+                packed_strides[0], packed_strides[rank] / 2, FFTW_BACKWARD,
                 FFTW_ESTIMATE);  // NOLINT(hicpp-signed-bitwise)
 
             fftw_execute(plan);
             fftw_destroy_plan(plan);
         } else {
             fftwf_plan plan = fftwf_plan_many_dft(
-                baseDim, fftDims.data(), packedDims[baseDim],
+                rank, fftDims.data(), packedDims[rank],
                 reinterpret_cast<fftwf_complex*>(packed.get()), nullptr,
-                packed_strides[0], packed_strides[baseDim] / 2,
+                packed_strides[0], packed_strides[rank] / 2,
                 reinterpret_cast<fftwf_complex*>(packed.get()), nullptr,
-                packed_strides[0], packed_strides[baseDim] / 2, FFTW_BACKWARD,
+                packed_strides[0], packed_strides[rank] / 2, FFTW_BACKWARD,
                 FFTW_ESTIMATE);  // NOLINT(hicpp-signed-bitwise)
 
             fftwf_execute(plan);
@@ -158,39 +158,32 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     // Compute output dimensions
     dim4 oDims(1);
     if (expand) {
-        for (dim_t d = 0; d < 4; ++d) {
+        for (int d = 0; d < AF_MAX_DIMS; ++d) {
             if (kind == AF_BATCH_NONE || kind == AF_BATCH_RHS) {
                 oDims[d] = sd[d] + fd[d] - 1;
             } else {
-                oDims[d] = (d < baseDim ? sd[d] + fd[d] - 1 : sd[d]);
+                oDims[d] = (d < rank ? sd[d] + fd[d] - 1 : sd[d]);
             }
         }
     } else {
         oDims = sd;
         if (kind == AF_BATCH_RHS) {
-            for (dim_t i = baseDim; i < 4; ++i) { oDims[i] = fd[i]; }
+            for (int i = rank; i < AF_MAX_DIMS; ++i) { oDims[i] = fd[i]; }
         }
     }
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    getQueue().enqueue(kernel::reorder<T, convT, baseDim>, out, packed, filter,
+    getQueue().enqueue(kernel::reorder<T, convT>, out, packed, filter,
                        sig_half_d0, fftScale, paddedSigDims, paddedSigStrides,
-                       paddedFilDims, paddedFilStrides, expand, kind);
+                       paddedFilDims, paddedFilStrides, expand, kind, rank);
 
     return out;
 }
 
-#define INSTANTIATE(T)                                                     \
-    template Array<T> fftconvolve<T, 1>(                                   \
-        Array<T> const& signal, Array<T> const& filter, const bool expand, \
-        AF_BATCH_KIND kind);                                               \
-    template Array<T> fftconvolve<T, 2>(                                   \
-        Array<T> const& signal, Array<T> const& filter, const bool expand, \
-        AF_BATCH_KIND kind);                                               \
-    template Array<T> fftconvolve<T, 3>(                                   \
-        Array<T> const& signal, Array<T> const& filter, const bool expand, \
-        AF_BATCH_KIND kind);
+#define INSTANTIATE(T)                                                 \
+    template Array<T> fftconvolve<T>(Array<T> const&, Array<T> const&, \
+                                     const bool, AF_BATCH_KIND, const int);
 
 INSTANTIATE(double)
 INSTANTIATE(float)

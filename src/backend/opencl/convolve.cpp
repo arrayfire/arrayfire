@@ -30,25 +30,25 @@ using std::vector;
 
 namespace opencl {
 
-template<typename T, typename accT, dim_t baseDim, bool expand>
+template<typename T, typename accT>
 Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
-                  AF_BATCH_KIND kind) {
+                  AF_BATCH_KIND kind, const int rank, const bool expand) {
     const dim4 &sDims = signal.dims();
     const dim4 &fDims = filter.dims();
 
     dim4 oDims(1);
     if (expand) {
-        for (dim_t d = 0; d < 4; ++d) {
+        for (int d = 0; d < AF_MAX_DIMS; ++d) {
             if (kind == AF_BATCH_NONE || kind == AF_BATCH_RHS) {
                 oDims[d] = sDims[d] + fDims[d] - 1;
             } else {
-                oDims[d] = (d < baseDim ? sDims[d] + fDims[d] - 1 : sDims[d]);
+                oDims[d] = (d < rank ? sDims[d] + fDims[d] - 1 : sDims[d]);
             }
         }
     } else {
         oDims = sDims;
         if (kind == AF_BATCH_RHS) {
-            for (dim_t i = baseDim; i < 4; ++i) { oDims[i] = fDims[i]; }
+            for (int i = rank; i < AF_MAX_DIMS; ++i) { oDims[i] = fDims[i]; }
         }
     }
 
@@ -57,7 +57,7 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
 
     dim_t MCFL2 = kernel::MAX_CONV2_FILTER_LEN;
     dim_t MCFL3 = kernel::MAX_CONV3_FILTER_LEN;
-    switch (baseDim) {
+    switch (rank) {
         case 1:
             if (fDims[0] > kernel::MAX_CONV1_FILTER_LEN) { callKernel = false; }
             break;
@@ -69,7 +69,7 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
                 callKernel = false;
             }
             break;
-        default: AF_ERROR("baseDim only supports values 1-3.", AF_ERR_UNKNOWN);
+        default: AF_ERROR("rank only supports values 1-3.", AF_ERR_UNKNOWN);
     }
 
     if (!callKernel) {
@@ -81,30 +81,14 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
         OPENCL_NOT_SUPPORTED(errMessage);
     }
 
-    kernel::convolve_nd<T, accT, baseDim, expand>(out, signal, filter, kind);
+    kernel::convolve_nd<T, accT>(out, signal, filter, kind, rank, expand);
 
     return out;
 }
 
-#define INSTANTIATE(T, accT)                                                 \
-    template Array<T> convolve<T, accT, 1, true>(Array<T> const &signal,     \
-                                                 Array<accT> const &filter,  \
-                                                 AF_BATCH_KIND kind);        \
-    template Array<T> convolve<T, accT, 1, false>(Array<T> const &signal,    \
-                                                  Array<accT> const &filter, \
-                                                  AF_BATCH_KIND kind);       \
-    template Array<T> convolve<T, accT, 2, true>(Array<T> const &signal,     \
-                                                 Array<accT> const &filter,  \
-                                                 AF_BATCH_KIND kind);        \
-    template Array<T> convolve<T, accT, 2, false>(Array<T> const &signal,    \
-                                                  Array<accT> const &filter, \
-                                                  AF_BATCH_KIND kind);       \
-    template Array<T> convolve<T, accT, 3, true>(Array<T> const &signal,     \
-                                                 Array<accT> const &filter,  \
-                                                 AF_BATCH_KIND kind);        \
-    template Array<T> convolve<T, accT, 3, false>(Array<T> const &signal,    \
-                                                  Array<accT> const &filter, \
-                                                  AF_BATCH_KIND kind);
+#define INSTANTIATE(T, accT)                                                   \
+    template Array<T> convolve<T, accT>(Array<T> const &, Array<accT> const &, \
+                                        AF_BATCH_KIND, const int, const bool);
 
 INSTANTIATE(cdouble, cdouble)
 INSTANTIATE(cfloat, cfloat)

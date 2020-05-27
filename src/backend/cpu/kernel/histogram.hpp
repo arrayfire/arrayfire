@@ -13,9 +13,9 @@
 namespace cpu {
 namespace kernel {
 
-template<typename OutT, typename InT, bool IsLinear>
-void histogram(Param<OutT> out, CParam<InT> in, unsigned const nbins,
-               double const minval, double const maxval) {
+template<typename T>
+void histogram(Param<uint> out, CParam<T> in, const unsigned nbins,
+               const double minval, const double maxval, const bool IsLinear) {
     dim4 const outDims  = out.dims();
     float const step    = (maxval - minval) / (float)nbins;
     dim4 const inDims   = in.dims();
@@ -24,8 +24,8 @@ void histogram(Param<OutT> out, CParam<InT> in, unsigned const nbins,
     dim_t const nElems  = inDims[0] * inDims[1];
 
     for (dim_t b3 = 0; b3 < outDims[3]; b3++) {
-        OutT* outData     = out.get() + b3 * oStrides[3];
-        const InT* inData = in.get() + b3 * iStrides[3];
+        uint* outData   = out.get() + b3 * oStrides[3];
+        const T* inData = in.get() + b3 * iStrides[3];
         for (dim_t b2 = 0; b2 < outDims[2]; b2++) {
             for (dim_t i = 0; i < nElems; i++) {
                 int idx =

@@ -20,19 +20,12 @@ using detail::uint;
 using detail::uintl;
 using detail::ushort;
 
-template<typename inType, typename outType>
-static inline af_array histogram(const af_array in, const unsigned &nbins,
-                                 const double &minval, const double &maxval,
-                                 const bool islinear) {
-    af_array out = nullptr;
-    if (islinear) {
-        out = getHandle(histogram<inType, outType, true>(
-            getArray<inType>(in), nbins, minval, maxval));
-    } else {
-        out = getHandle(histogram<inType, outType, false>(
-            getArray<inType>(in), nbins, minval, maxval));
-    }
-    return out;
+template<typename T>
+inline af_array histogram(const af_array in, const unsigned &nbins,
+                          const double &minval, const double &maxval,
+                          const bool islinear) {
+    return getHandle(
+        histogram<T>(getArray<T>(in), nbins, minval, maxval, islinear));
 }
 
 af_err af_histogram(af_array *out, const af_array in, const unsigned nbins,
@@ -46,44 +39,44 @@ af_err af_histogram(af_array *out, const af_array in, const unsigned nbins,
         af_array output;
         switch (type) {
             case f32:
-                output = histogram<float, uint>(in, nbins, minval, maxval,
-                                                info.isLinear());
+                output = histogram<float>(in, nbins, minval, maxval,
+                                          info.isLinear());
                 break;
             case f64:
-                output = histogram<double, uint>(in, nbins, minval, maxval,
-                                                 info.isLinear());
+                output = histogram<double>(in, nbins, minval, maxval,
+                                           info.isLinear());
                 break;
             case b8:
-                output = histogram<char, uint>(in, nbins, minval, maxval,
-                                               info.isLinear());
+                output =
+                    histogram<char>(in, nbins, minval, maxval, info.isLinear());
                 break;
             case s32:
-                output = histogram<int, uint>(in, nbins, minval, maxval,
-                                              info.isLinear());
+                output =
+                    histogram<int>(in, nbins, minval, maxval, info.isLinear());
                 break;
             case u32:
-                output = histogram<uint, uint>(in, nbins, minval, maxval,
-                                               info.isLinear());
+                output =
+                    histogram<uint>(in, nbins, minval, maxval, info.isLinear());
                 break;
             case s16:
-                output = histogram<short, uint>(in, nbins, minval, maxval,
-                                                info.isLinear());
+                output = histogram<short>(in, nbins, minval, maxval,
+                                          info.isLinear());
                 break;
             case u16:
-                output = histogram<ushort, uint>(in, nbins, minval, maxval,
-                                                 info.isLinear());
+                output = histogram<ushort>(in, nbins, minval, maxval,
+                                           info.isLinear());
                 break;
             case s64:
-                output = histogram<intl, uint>(in, nbins, minval, maxval,
-                                               info.isLinear());
+                output =
+                    histogram<intl>(in, nbins, minval, maxval, info.isLinear());
                 break;
             case u64:
-                output = histogram<uintl, uint>(in, nbins, minval, maxval,
-                                                info.isLinear());
+                output = histogram<uintl>(in, nbins, minval, maxval,
+                                          info.isLinear());
                 break;
             case u8:
-                output = histogram<uchar, uint>(in, nbins, minval, maxval,
-                                                info.isLinear());
+                output = histogram<uchar>(in, nbins, minval, maxval,
+                                          info.isLinear());
                 break;
             default: TYPE_ERROR(1, type);
         }
