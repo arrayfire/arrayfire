@@ -83,7 +83,7 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
 
     unsigned corners_found      = 0;
     cl::Buffer* d_corners_found = bufferAlloc(sizeof(unsigned));
-    getQueue().enqueueWriteBuffer(*d_corners_found, CL_TRUE, 0,
+    getQueue().enqueueWriteBuffer(*d_corners_found, CL_FALSE, 0,
                                   sizeof(unsigned), &corners_found);
 
     cl::NDRange local(SUSAN_THREADS_X, SUSAN_THREADS_Y);
