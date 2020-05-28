@@ -11,6 +11,7 @@
 #include <common/MemoryManagerBase.hpp>
 #include <common/half.hpp>
 #include <err_opencl.hpp>
+#include <errorcodes.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
 #include <spdlog/spdlog.h>
@@ -56,42 +57,69 @@ template<typename T>
 unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc(
     const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
-    dim4 dims(elements);
-    void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    auto *buf = static_cast<cl::Buffer *>(ptr);
-    return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(buf,
-                                                                bufferFree);
+    if (elements) {
+        dim4 dims(elements);
+        void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
+        auto buf  = static_cast<cl_mem>(ptr);
+        cl::Buffer *bptr = new cl::Buffer(buf, true);
+        return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(bptr,
+                                                                    bufferFree);
+    } else {
+        return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(nullptr,
+                                                                    bufferFree);
+    }
 }
 
 void *memAllocUser(const size_t &bytes) {
     dim4 dims(bytes);
     void *ptr = memoryManager().alloc(true, 1, dims.get(), 1);
-    return ptr;
+    auto buf  = static_cast<cl_mem>(ptr);
+    return new cl::Buffer(buf, true);
 }
 
 template<typename T>
 void memFree(T *ptr) {
-    return memoryManager().unlock(static_cast<void *>(ptr), false);
+    cl::Buffer *buf = reinterpret_cast<cl::Buffer *>(ptr);
+    cl_mem mem      = static_cast<cl_mem>((*buf)());
+    delete buf;
+    return memoryManager().unlock(static_cast<void *>(mem), false);
 }
 
-void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
+void memFreeUser(void *ptr) {
+    cl::Buffer *buf = static_cast<cl::Buffer *>(ptr);
+    cl_mem mem      = (*buf)();
+    delete buf;
+    memoryManager().unlock(mem, true);
+}
 
 cl::Buffer *bufferAlloc(const size_t &bytes) {
     dim4 dims(bytes);
-    void *ptr = memoryManager().alloc(false, 1, dims.get(), 1);
-    return static_cast<cl::Buffer *>(ptr);
+    if (bytes) {
+        void *ptr       = memoryManager().alloc(false, 1, dims.get(), 1);
+        cl_mem mem      = static_cast<cl_mem>(ptr);
+        cl::Buffer *buf = new cl::Buffer(mem, true);
+        return buf;
+    } else {
+        return nullptr;
+    }
 }
 
 void bufferFree(cl::Buffer *buf) {
-    return memoryManager().unlock(static_cast<void *>(buf), false);
+    if (buf) {
+        cl_mem mem = (*buf)();
+        delete buf;
+        memoryManager().unlock(static_cast<void *>(mem), false);
+    }
 }
 
-void memLock(const void *ptr) {
-    memoryManager().userLock(const_cast<void *>(ptr));
+void memLock(const cl::Buffer *ptr) {
+    cl_mem mem = static_cast<cl_mem>((*ptr)());
+    memoryManager().userLock(static_cast<void *>(mem));
 }
 
-void memUnlock(const void *ptr) {
-    memoryManager().userUnlock(const_cast<void *>(ptr));
+void memUnlock(const cl::Buffer *ptr) {
+    cl_mem mem = static_cast<cl_mem>((*ptr)());
+    memoryManager().userUnlock(static_cast<void *>(mem));
 }
 
 bool isLocked(const void *ptr) {
@@ -158,16 +186,28 @@ size_t Allocator::getMaxMemorySize(int id) {
 }
 
 void *Allocator::nativeAlloc(const size_t bytes) {
-    auto ptr = static_cast<void *>(new cl::Buffer(
-        getContext(), CL_MEM_READ_WRITE,  // NOLINT(hicpp-signed-bitwise)
-        bytes));
+    cl_int err = CL_SUCCESS;
+    auto ptr   = static_cast<void *>(clCreateBuffer(
+        getContext()(), CL_MEM_READ_WRITE,  // NOLINT(hicpp-signed-bitwise)
+        bytes, nullptr, &err));
+
+    if (err != CL_SUCCESS) {
+        auto str = fmt::format("Failed to allocate device memory of size {}",
+                               bytesToString(bytes));
+        AF_ERROR(str, AF_ERR_NO_MEM);
+    }
+
     AF_TRACE("nativeAlloc: {} {}", bytesToString(bytes), ptr);
     return ptr;
 }
 
 void Allocator::nativeFree(void *ptr) {
+    cl_mem buffer = static_cast<cl_mem>(ptr);
     AF_TRACE("nativeFree:          {}", ptr);
-    delete static_cast<cl::Buffer *>(ptr);
+    cl_int err = clReleaseMemObject(buffer);
+    if (err != CL_SUCCESS) {
+        AF_ERROR("Failed to release device memory.", AF_ERR_RUNTIME);
+    }
 }
 
 AllocatorPinned::AllocatorPinned() : pinnedMaps(opencl::getDeviceCount()) {
@@ -194,23 +234,39 @@ size_t AllocatorPinned::getMaxMemorySize(int id) {
 
 void *AllocatorPinned::nativeAlloc(const size_t bytes) {
     void *ptr = NULL;
-    auto *buf = new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, bytes);
-    ptr = getQueue().enqueueMapBuffer(*buf, true, CL_MAP_READ | CL_MAP_WRITE, 0,
-                                      bytes);
+
+    cl_int err = CL_SUCCESS;
+    auto buf   = clCreateBuffer(getContext()(), CL_MEM_ALLOC_HOST_PTR, bytes,
+                              nullptr, &err);
+    if (err != CL_SUCCESS) {
+        AF_ERROR("Failed to allocate pinned memory.", AF_ERR_NO_MEM);
+    }
+
+    ptr = clEnqueueMapBuffer(getQueue()(), buf, CL_TRUE,
+                             CL_MAP_READ | CL_MAP_WRITE, 0, bytes, 0, nullptr,
+                             nullptr, &err);
+    if (err != CL_SUCCESS) {
+        AF_ERROR("Failed to map pinned memory", AF_ERR_RUNTIME);
+    }
     AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
-    pinnedMaps[opencl::getActiveDeviceId()].emplace(ptr, buf);
+    pinnedMaps[opencl::getActiveDeviceId()].emplace(ptr, new cl::Buffer(buf));
     return ptr;
 }
 
 void AllocatorPinned::nativeFree(void *ptr) {
     AF_TRACE("Pinned::nativeFree:          {}", ptr);
     int n     = opencl::getActiveDeviceId();
-    auto map  = pinnedMaps[n];
+    auto &map = pinnedMaps[n];
     auto iter = map.find(ptr);
 
     if (iter != map.end()) {
         cl::Buffer *buf = map[ptr];
-        getQueue().enqueueUnmapMemObject(*buf, ptr);
+        if (cl_int err = getQueue().enqueueUnmapMemObject(*buf, ptr)) {
+            getLogger()->warn(
+                "Pinned::nativeFree: Error unmapping pinned memory({}:{}). "
+                "Ignoring",
+                err, getErrorMessage(err));
+        }
         delete buf;
         map.erase(iter);
     }

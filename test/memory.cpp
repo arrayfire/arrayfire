@@ -855,6 +855,97 @@ class MemoryManagerApi : public ::testing::Test {
     }
 };
 
+TEST_F(MemoryManagerApi, E2ETest1D) {
+    size_t aSize = 8;
+
+    array a = af::array(aSize, af::dtype::f32);
+    ASSERT_EQ(payload->table.size(), 1);
+
+    ASSERT_EQ(payload->table[a.device<float>()], aSize * sizeof(float));
+    ASSERT_EQ(payload->lastNdims, 1);
+    ASSERT_EQ(payload->lastDims, af::dim4(aSize));
+    ASSERT_EQ(payload->lastElementSize, 4);
+}
+
+TEST_F(MemoryManagerApi, E2ETest2D) {
+    size_t aSize = 8;
+
+    af::array a = af::array(aSize, aSize, af::dtype::f32);
+    ASSERT_EQ(payload->table.size(), 1);
+    ASSERT_EQ(payload->table[a.device<float>()], aSize * aSize * sizeof(float));
+    ASSERT_EQ(payload->lastElementSize, 4);
+
+    // Currently this is set to 1 because all allocations request linear memory
+    // This behavior will change in the future
+    ASSERT_EQ(payload->lastNdims, 1);
+    ASSERT_EQ(payload->lastDims, af::dim4(aSize * aSize));
+}
+
+TEST_F(MemoryManagerApi, E2ETest3D) {
+    size_t aSize = 8;
+
+    af::array a = af::array(aSize, aSize, aSize, af::dtype::f32);
+    ASSERT_EQ(payload->table.size(), 1);
+    ASSERT_EQ(payload->table[a.device<float>()],
+              aSize * aSize * aSize * sizeof(float));
+    ASSERT_EQ(payload->lastElementSize, 4);
+
+    // Currently this is set to 1 because all allocations request linear memory
+    // This behavior will change in the future
+    ASSERT_EQ(payload->lastNdims, 1);
+    ASSERT_EQ(payload->lastDims, af::dim4(aSize * aSize * aSize));
+}
+
+TEST_F(MemoryManagerApi, E2ETest4D) {
+    size_t aSize = 8;
+
+    af::array a = af::array(aSize, aSize, aSize, aSize, af::dtype::f32);
+    ASSERT_EQ(payload->table.size(), 1);
+    ASSERT_EQ(payload->table[a.device<float>()],
+              aSize * aSize * aSize * aSize * sizeof(float));
+    ASSERT_EQ(payload->lastElementSize, 4);
+
+    // Currently this is set to 1 because all allocations request linear memory
+    // This behavior will change in the future
+    ASSERT_EQ(payload->lastNdims, 1);
+    ASSERT_EQ(payload->lastDims, af::dim4(aSize * aSize * aSize * aSize));
+    af::sync();
+}
+
+TEST_F(MemoryManagerApi, E2ETest4DComplexDouble) {
+    size_t aSize = 8;
+
+    af::array a = af::array(aSize, aSize, aSize, aSize, af::dtype::c64);
+    ASSERT_EQ(payload->table.size(), 1);
+    ASSERT_EQ(payload->table[a.device<float>()],
+              aSize * aSize * aSize * aSize * sizeof(double) * 2);
+    ASSERT_EQ(payload->lastElementSize, 16);
+
+    // Currently this is set to 1 because all allocations request linear memory
+    // This behavior will change in the future
+    ASSERT_EQ(payload->lastNdims, 1);
+    ASSERT_EQ(payload->lastDims, af::dim4(aSize * aSize * aSize * aSize));
+}
+
+TEST_F(MemoryManagerApi, E2ETestMultipleAllocations) {
+    size_t aSize = 8;
+
+    af::array a = af::array(aSize, af::dtype::c64);
+    ASSERT_EQ(payload->lastElementSize, 16);
+
+    af::array b = af::array(aSize, af::dtype::f64);
+    ASSERT_EQ(payload->lastElementSize, 8);
+
+    ASSERT_EQ(payload->table.size(), 2);
+    ASSERT_EQ(payload->table[a.device<float>()], aSize * sizeof(double) * 2);
+    ASSERT_EQ(payload->table[b.device<float>()], aSize * sizeof(double));
+
+    // Currently this is set to 1 because all allocations request linear memory
+    // This behavior will change in the future
+    ASSERT_EQ(payload->lastNdims, 1);
+    ASSERT_EQ(payload->lastDims, af::dim4(aSize));
+}
+
 TEST_F(MemoryManagerApi, OutOfMemory) {
     af::array a;
     const unsigned N = 99999;
@@ -915,13 +1006,13 @@ TEST(MemoryManagerE2E, E2ETest) {
     {
         size_t aSize = 8;
 
-        void *a = af::alloc(aSize, af::dtype::f32);
+        array a = af::randu(aSize, af::dtype::f32);
         ASSERT_EQ(payload->table.size(), 1);
 
-        ASSERT_EQ(payload->table[a], aSize * sizeof(float));
+        ASSERT_EQ(payload->table[a.device<float>()], aSize * sizeof(float));
         ASSERT_EQ(payload->lastNdims, 1);
-        ASSERT_EQ(payload->lastDims, af::dim4(aSize * sizeof(float)));
-        ASSERT_EQ(payload->lastElementSize, 1);
+        ASSERT_EQ(payload->lastDims, af::dim4(aSize));
+        ASSERT_EQ(payload->lastElementSize, 4);
 
         dim_t bDim = 2;
         auto b     = af::randu({bDim, bDim});
@@ -934,7 +1025,7 @@ TEST(MemoryManagerE2E, E2ETest) {
         ASSERT_EQ(payload->lastDims, af::dim4(bDim * b.numdims()));
         ASSERT_EQ(payload->lastElementSize, sizeof(float));
 
-        af::free(a);
+        a = array();
 
         ASSERT_EQ(payload->totalBytes, aSize * sizeof(float) + b.bytes());
         ASSERT_EQ(payload->totalBuffers, 2);
@@ -962,4 +1053,17 @@ TEST(MemoryManagerE2E, E2ETest) {
     af_release_memory_manager(manager);
     ASSERT_EQ(payload->initializeCalledTimes, 1);
     ASSERT_EQ(payload->shutdownCalledTimes, af::getDeviceCount());
+}
+TEST(Memory, AfAllocDeviceCPUC) {
+    af_backend active_backend;
+    ASSERT_SUCCESS(af_get_active_backend(&active_backend));
+
+    if (active_backend == AF_BACKEND_CPU) {
+        void *ptr;
+        ASSERT_SUCCESS(af_alloc_device(&ptr, sizeof(float)));
+
+        // This is the CPU backend so we can assign to the pointer
+        *static_cast<float *>(ptr) = 5;
+        ASSERT_SUCCESS(af_free_device(ptr));
+    }
 }

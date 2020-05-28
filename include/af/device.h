@@ -106,40 +106,44 @@ namespace af
     /// @{
     /// \brief Allocates memory using ArrayFire's memory manager
     ///
-    /// \copydoc device_func_alloc
     /// \param[in] elements the number of elements to allocate
     /// \param[in] type is the type of the elements to allocate
-    /// \returns the pointer to the memory
+    /// \returns Pointer to the device memory on the current device. This is a
+    ///          CUDA device pointer for the CUDA backend. A cl::Buffer pointer
+    ///          from the cl2.hpp header on the OpenCL backend and a C pointer
+    ///          for the CPU backend
     ///
-    /// \note The device memory returned by this function is only freed if af::free() is called explicitly
-
+    /// \note The device memory returned by this function is only freed if
+    ///       af::free() is called explicitly
     AFAPI void *alloc(const size_t elements, const dtype type);
 
     /// \brief Allocates memory using ArrayFire's memory manager
     //
-    /// \copydoc device_func_alloc
     /// \param[in] elements the number of elements to allocate
-    /// \returns the pointer to the memory
+    /// \returns Pointer to the device memory on the current device. This is a
+    ///          CUDA device pointer for the CUDA backend. A cl::Buffer pointer
+    ///          from the cl2.hpp header on the OpenCL backend and a C pointer
+    ///          for the CPU backend
     ///
     /// \note the size of the memory allocated is the number of \p elements *
-    ///         sizeof(type)
-    ///
-    /// \note The device memory returned by this function is only freed if af::free() is called explicitly
-    template<typename T>
-    T* alloc(const size_t elements);
+    ///       sizeof(type)
+    /// \note The device memory returned by this function is only freed if
+    ///       af::free() is called explicitly
+    template <typename T> T *alloc(const size_t elements);
     /// @}
 
     /// \ingroup device_func_free
     ///
     /// \copydoc device_func_free
-    /// \param[in] ptr the memory to free
+    /// \param[in] ptr the memory allocated by the af::alloc function that
+    ///                will be freed
     ///
-    /// This function will free a device pointer even if it has been previously locked.
+    /// \note This function will free a device pointer even if it has been
+    ///       previously locked.
     AFAPI void free(const void *ptr);
 
     /// \ingroup device_func_pinned
     /// @{
-    ///
     /// \copydoc device_func_pinned
     ///
     /// \param[in] elements the number of elements to allocate
@@ -312,18 +316,32 @@ extern "C" {
     AFAPI af_err af_sync(const int device);
 
     /**
+       \brief Allocates memory using ArrayFire's memory manager
        \ingroup device_func_alloc
 
        This device memory returned by this function can only be freed using
        af_free_device
+
+       \param [out] ptr Pointer to the device memory on the current device. This
+                        is a CUDA device pointer for the CUDA backend. A
+                        cl::Buffer pointer on the OpenCL backend and a C pointer
+                        for the CPU backend
+       \param [in] bytes The number of bites to allocate on the device
+
+       \returns AF_SUCCESS if a pointer could be allocated. AF_ERR_NO_MEM if
+                there is no memory
     */
     AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
 
     /**
-       \ingroup device_func_free
+       \brief Returns memory to ArrayFire's memory manager.
 
        This function will free a device pointer even if it has been previously
        locked.
+
+       \param[in] ptr The pointer allocated by af_alloc_device to be freed
+
+       \ingroup device_func_free
     */
     AFAPI af_err af_free_device(void *ptr);
 
