@@ -36,8 +36,8 @@ template<typename T>
 void memFree(T *ptr);
 void memFreeUser(void *ptr);
 
-void memLock(const void *ptr);
-void memUnlock(const void *ptr);
+void memLock(const cl::Buffer *ptr);
+void memUnlock(const cl::Buffer *ptr);
 bool isLocked(const void *ptr);
 
 template<typename T>

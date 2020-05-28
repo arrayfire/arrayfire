@@ -283,8 +283,49 @@ make_test(SRC nodevice.cpp CXX11)
 if(OpenCL_FOUND)
   make_test(SRC ocl_ext_context.cpp
             LIBRARIES OpenCL::OpenCL
-            BACKENDS "opencl")
+            BACKENDS "opencl"
+            CXX11)
 endif()
+
+if(CUDA_FOUND)
+  foreach(backend ${enabled_backends})
+    set(cuda_test_backends "cuda" "unified")
+    if(${backend} IN_LIST cuda_test_backends)
+      set(target test_cuda_${backend})
+      cuda_add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
+      target_include_directories(${target} PRIVATE
+        ${ArrayFire_SOURCE_DIR}/extern/half/include
+        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR})
+      if(${backend} STREQUAL "unified")
+        target_link_libraries(${target}
+          ArrayFire::af)
+      else()
+        target_link_libraries(${target}
+          ArrayFire::af${backend})
+      endif()
+      target_link_libraries(${target}
+        mmio
+        gtest)
+
+      # Couldn't get Threads::Threads to work with this cuda binary. The import
+      # target would not add the -pthread flag which is required for this
+      # executable (on Ubuntu 18.04 anyway)
+      check_cxx_compiler_flag(-pthread pthread_flag)
+      if(pthread_flag)
+        target_link_libraries(${target} -pthread)
+      endif()
+
+      set_target_properties(${target}
+        PROPERTIES
+        FOLDER "Tests"
+        OUTPUT_NAME "cuda_${backend}")
+
+      add_test(NAME ${target} COMMAND ${target})
+    endif()
+  endforeach()
+endif()
+
 
 make_test(SRC orb.cpp)
 make_test(SRC pad_borders.cpp CXX11)

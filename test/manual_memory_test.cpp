@@ -26,7 +26,7 @@ TEST(Memory, recover) {
             vec[i] = randu(1024, 1024, 256);  // Allocating 1GB
         }
 
-        ASSERT_EQ(true, false);  // Is there a simple assert statement?
+        FAIL();
     } catch (exception &ae) {
         ASSERT_EQ(ae.err(), AF_ERR_NO_MEM);
 
