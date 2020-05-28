@@ -257,6 +257,25 @@ af_err af_alloc_device(void **ptr, const dim_t bytes) {
     return AF_SUCCESS;
 }
 
+af_err af_alloc_device_v2(void **ptr, const dim_t bytes) {
+    try {
+        AF_CHECK(af_init());
+#ifdef AF_OPENCL
+        auto *buf = static_cast<cl::Buffer *>(memAllocUser(bytes));
+        *ptr      = buf->operator()();
+
+        // Calling retain to offset the decrement the reference count by the
+        // destructor of cl::Buffer
+        clRetainMemObject(cl_mem(*ptr));
+        delete buf;
+#else
+        *ptr = static_cast<void *>(memAllocUser(bytes));
+#endif
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_alloc_pinned(void **ptr, const dim_t bytes) {
     try {
         AF_CHECK(af_init());
@@ -269,6 +288,19 @@ af_err af_alloc_pinned(void **ptr, const dim_t bytes) {
 af_err af_free_device(void *ptr) {
     try {
         memFreeUser(ptr);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_free_device_v2(void *ptr) {
+    try {
+#ifdef AF_OPENCL
+        auto mem = static_cast<cl_mem>(ptr);
+        memFreeUser(new cl::Buffer(mem, false));
+#else
+        memFreeUser(ptr);
+#endif
     }
     CATCHALL;
     return AF_SUCCESS;

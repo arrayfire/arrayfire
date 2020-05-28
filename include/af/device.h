@@ -115,7 +115,25 @@ namespace af
     ///
     /// \note The device memory returned by this function is only freed if
     ///       af::free() is called explicitly
+    /// \deprecated Use allocV2 instead. allocV2 accepts number of bytes
+    ///             instead of number of elements and returns a cl_mem object
+    ///             instead of the cl::Buffer object for the OpenCL backend.
+    ///             Otherwise the functionallity is identical to af::alloc.
+    AF_DEPRECATED("Use af::allocV2 instead")
     AFAPI void *alloc(const size_t elements, const dtype type);
+
+#if AF_API_VERSION >= 38
+    /// \brief Allocates memory using ArrayFire's memory manager
+    ///
+    /// \param[in] bytes the number of bytes to allocate
+    /// \returns Pointer to the device memory on the current device. This is a
+    ///          CUDA device pointer for the CUDA backend. A cl_mem pointer
+    ///          on the OpenCL backend and a C pointer for the CPU backend
+    ///
+    /// \note The device memory returned by this function is only freed if
+    ///       af::freeV2() is called explicitly
+    AFAPI void *allocV2(const size_t bytes);
+#endif
 
     /// \brief Allocates memory using ArrayFire's memory manager
     //
@@ -129,7 +147,13 @@ namespace af
     ///       sizeof(type)
     /// \note The device memory returned by this function is only freed if
     ///       af::free() is called explicitly
-    template <typename T> T *alloc(const size_t elements);
+    /// \deprecated Use allocV2 instead. allocV2 accepts number of bytes
+    ///             instead of number of elements and returns a cl_mem object
+    ///             instead of the cl::Buffer object for the OpenCL backend.
+    ///             Otherwise the functionallity is identical to af::alloc.
+    template <typename T>
+    AF_DEPRECATED("Use af::allocV2 instead")
+    T *alloc(const size_t elements);
     /// @}
 
     /// \ingroup device_func_free
@@ -140,7 +164,21 @@ namespace af
     ///
     /// \note This function will free a device pointer even if it has been
     ///       previously locked.
+    /// \deprecated Use af::freeV2 instead. af_alloc_device_v2 returns a
+    ///             cl_mem object instead of the cl::Buffer object for the
+    ///             OpenCL backend. Otherwise the functionallity is identical
+    AF_DEPRECATED("Use af::freeV2 instead")
     AFAPI void free(const void *ptr);
+
+#if AF_API_VERSION >= 38
+    /// \ingroup device_func_free
+    /// \copydoc device_func_free
+    /// \param[in] ptr The pointer returned by af::allocV2
+    ///
+    /// This function will free a device pointer even if it has been previously
+    /// locked.
+    AFAPI void freeV2(const void *ptr);
+#endif
 
     /// \ingroup device_func_pinned
     /// @{
@@ -330,7 +368,11 @@ extern "C" {
 
        \returns AF_SUCCESS if a pointer could be allocated. AF_ERR_NO_MEM if
                 there is no memory
+       \deprecated Use af_alloc_device_v2 instead. af_alloc_device_v2 returns a
+                   cl_mem object instead of the cl::Buffer object for the OpenCL
+                   backend. Otherwise the functionallity is identical
     */
+    AF_DEPRECATED("Use af_alloc_device_v2 instead")
     AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
 
     /**
@@ -341,10 +383,45 @@ extern "C" {
 
        \param[in] ptr The pointer allocated by af_alloc_device to be freed
 
+       \deprecated Use af_free_device_v2 instead. The new function handles the
+                   new behavior of the af_alloc_device_v2 function.
        \ingroup device_func_free
     */
+    AF_DEPRECATED("Use af_free_device_v2 instead")
     AFAPI af_err af_free_device(void *ptr);
 
+#if AF_API_VERSION >= 38
+    /**
+       \brief Allocates memory using ArrayFire's memory manager
+
+       This device memory returned by this function can only be freed using
+       af_free_device_v2.
+
+       \param [out] ptr Pointer to the device memory on the current device. This
+                        is a CUDA device pointer for the CUDA backend. A
+                        cl::Buffer pointer on the OpenCL backend and a C pointer
+                        for the CPU backend
+       \param [in] bytes The number of bites to allocate on the device
+
+       \returns AF_SUCCESS if a pointer could be allocated. AF_ERR_NO_MEM if
+                there is no memory
+       \ingroup device_func_alloc
+    */
+    AFAPI af_err af_alloc_device_v2(void **ptr, const dim_t bytes);
+
+    /**
+       \brief Returns memory to ArrayFire's memory manager.
+
+       This function will free a device pointer even if it has been previously
+       locked.
+
+       \param[in] ptr The pointer allocated by af_alloc_device_v2 to be freed
+       \note this function will not work for pointers allocated using the
+             af_alloc_device function for all backends
+       \ingroup device_func_free
+    */
+    AFAPI af_err af_free_device_v2(void *ptr);
+#endif
     /**
        \ingroup device_func_pinned
     */
