@@ -9,9 +9,25 @@
 
 #include <arrayfire.h>
 #include <gtest/gtest.h>
+#include <testHelpers.hpp>
 #if defined(AF_OPENCL)
 #include <af/opencl.h>
 #include <iostream>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
+#pragma GCC diagnostic ignored "-Wignored-attributes"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#if __GNUC__ >= 8
+#pragma GCC diagnostic ignored "-Wcatch-value="
+#endif
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#define CL_HPP_ENABLE_EXCEPTIONS 1
+#include <CL/cl2.hpp>
+#pragma GCC diagnostic pop
 
 using af::array;
 using af::constant;
@@ -29,14 +45,13 @@ inline void checkErr(cl_int err, const char *name) {
     }
 }
 
-void getExternals(cl_device_id &deviceId, cl_context &context,
-                  cl_command_queue &queue) {
-    static cl_device_id dId     = NULL;
-    static cl_context cId       = NULL;
-    static cl_command_queue qId = NULL;
-    static bool call_once       = true;
+class OCLExtContext : public ::testing::Test {
+   public:
+    cl_device_id deviceId  = NULL;
+    cl_context context     = NULL;
+    cl_command_queue queue = NULL;
 
-    if (call_once) {
+    void SetUp() override {
         cl_platform_id platformId = NULL;
         cl_uint numPlatforms;
         cl_uint numDevices;
@@ -45,64 +60,51 @@ void getExternals(cl_device_id &deviceId, cl_context &context,
         checkErr(clGetPlatformIDs(1, &platformId, &numPlatforms),
                  "Get Platforms failed");
 
-        checkErr(clGetDeviceIDs(platformId, CL_DEVICE_TYPE_DEFAULT, 1, &dId,
-                                &numDevices),
+        checkErr(clGetDeviceIDs(platformId, CL_DEVICE_TYPE_DEFAULT, 1,
+                                &deviceId, &numDevices),
                  "Get cl_device_id failed");
 
-        cId = clCreateContext(NULL, 1, &dId, NULL, NULL, &errorCode);
+        context = clCreateContext(NULL, 1, &deviceId, NULL, NULL, &errorCode);
         checkErr(errorCode, "Context creation failed");
 
 #ifdef CL_VERSION_2_0
-        qId = clCreateCommandQueueWithProperties(cId, dId, 0, &errorCode);
+        queue = clCreateCommandQueueWithProperties(context, deviceId, 0,
+                                                   &errorCode);
 #else
-        qId = clCreateCommandQueue(cId, dId, 0, &errorCode);
+        queue = clCreateCommandQueue(context, deviceId, 0, &errorCode);
 #endif
 
         checkErr(errorCode, "Command queue creation failed");
-        call_once = false;
     }
-    deviceId = dId;
-    context  = cId;
-    queue    = qId;
-}
+    void TearDown() override {
+        checkErr(clReleaseCommandQueue(queue), "clReleaseCommandQueue");
+        checkErr(clReleaseContext(context), "clReleaseContext");
+        checkErr(clReleaseDevice(deviceId), "clReleaseDevice");
+    }
+};
 
-TEST(OCLExtContext, PushAndPop) {
-    cl_device_id deviceId  = NULL;
-    cl_context context     = NULL;
-    cl_command_queue queue = NULL;
-
-    getExternals(deviceId, context, queue);
+TEST_F(OCLExtContext, PushAndPop) {
     int dCount = getDeviceCount();
-    printf("\n%d devices before afcl::addDevice\n\n", dCount);
     info();
 
     afcl::addDevice(deviceId, context, queue);
     ASSERT_EQ(true, dCount + 1 == getDeviceCount());
-    printf("\n%d devices after afcl::addDevice\n", getDeviceCount());
 
     afcl::deleteDevice(deviceId, context);
     ASSERT_EQ(true, dCount == getDeviceCount());
-    printf("\n%d devices after afcl::deleteDevice\n\n", getDeviceCount());
     info();
 }
 
-TEST(OCLExtContext, set) {
-    cl_device_id deviceId  = NULL;
-    cl_context context     = NULL;
-    cl_command_queue queue = NULL;
-
+TEST_F(OCLExtContext, set) {
     int dCount = getDeviceCount();  // Before user device addition
     setDevice(0);
     info();
     array t = randu(5, 5);
     af_print(t);
 
-    getExternals(deviceId, context, queue);
     afcl::addDevice(deviceId, context, queue);
-    printf("\nBefore setting device to newly added one\n\n");
     info();
 
-    printf("\n\nBefore setting device to newly added one\n\n");
     setDevice(
         dCount);  // In 0-based index, dCount is index of newly added device
     info();
@@ -115,7 +117,6 @@ TEST(OCLExtContext, set) {
     a.host((void *)host.data());
     for (int i = 0; i < s; ++i) ASSERT_EQ(host[i], 1.0f);
 
-    printf("\n\nAfter reset to default set of devices\n\n");
     setDevice(0);
     info();
     af_print(t);
@@ -136,3 +137,27 @@ TEST(OCLCheck, DevicePlatform) {
 #else
 TEST(OCLExtContext, NoopCPU) {}
 #endif
+
+TEST(Memory, AfAllocDeviceOpenCL) {
+    /// Tests to see if the pointer returned can be used by opencl functions
+    float gold_val = 5;
+
+    void *alloc_ptr;
+    ASSERT_SUCCESS(af_alloc_device(&alloc_ptr, sizeof(float)));
+    // af_alloc_device returns a cl::Buffer object from alloc unfortunately
+    cl::Buffer *bptr = static_cast<cl::Buffer *>(alloc_ptr);
+    ASSERT_EQ(2, bptr->getInfo<CL_MEM_REFERENCE_COUNT>());
+
+    cl_command_queue queue;
+    afcl_get_queue(&queue, true);
+    cl::CommandQueue cq(queue);
+
+    cl::Buffer gold(cq, &gold_val, &gold_val + 1, false);
+    cq.enqueueCopyBuffer(gold, *bptr, 0, 0, sizeof(float));
+
+    float host;
+    cq.enqueueReadBuffer(*bptr, CL_TRUE, 0, sizeof(float), &host);
+
+    ASSERT_SUCCESS(af_free_device(alloc_ptr));
+    ASSERT_EQ(gold_val, host);
+}
