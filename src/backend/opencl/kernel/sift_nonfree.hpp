@@ -485,7 +485,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         Buffer* d_extrema_layer = bufferAlloc(max_feat * sizeof(unsigned));
 
         unsigned extrema_feat = 0;
-        getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
+        getQueue().enqueueWriteBuffer(*d_count, CL_FALSE, 0, sizeof(unsigned),
                                       &extrema_feat);
 
         int dim0 = dog_pyr[o].info.dims[0];
@@ -520,7 +520,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         }
 
         unsigned interp_feat = 0;
-        getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
+        getQueue().enqueueWriteBuffer(*d_count, CL_FALSE, 0, sizeof(unsigned),
                                       &interp_feat);
 
         Buffer* d_interp_x     = bufferAlloc(extrema_feat * sizeof(float));
@@ -596,7 +596,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         apply_permutation<float>(interp_size_begin, permutation, queue);
 
         unsigned nodup_feat = 0;
-        getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
+        getQueue().enqueueWriteBuffer(*d_count, CL_FALSE, 0, sizeof(unsigned),
                                       &nodup_feat);
 
         Buffer* d_nodup_x        = bufferAlloc(interp_feat * sizeof(float));
@@ -628,7 +628,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         bufferFree(d_interp_size);
 
         unsigned oriented_feat = 0;
-        getQueue().enqueueWriteBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
+        getQueue().enqueueWriteBuffer(*d_count, CL_FALSE, 0, sizeof(unsigned),
                                       &oriented_feat);
         const unsigned max_oriented_feat = nodup_feat * 3;
 

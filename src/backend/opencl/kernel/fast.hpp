@@ -60,7 +60,7 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
         bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(float));
     std::vector<float> score_init(in.info.dims[0] * in.info.dims[1], (float)0);
     getQueue().enqueueWriteBuffer(
-        *d_score, CL_TRUE, 0, in.info.dims[0] * in.info.dims[1] * sizeof(float),
+        *d_score, CL_FALSE, 0, in.info.dims[0] * in.info.dims[1] * sizeof(float),
         &score_init[0]);
 
     cl::Buffer *d_flags = d_score;
@@ -92,7 +92,7 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
 
     unsigned count_init = 0;
     cl::Buffer *d_total = bufferAlloc(sizeof(unsigned));
-    getQueue().enqueueWriteBuffer(*d_total, CL_TRUE, 0, sizeof(unsigned),
+    getQueue().enqueueWriteBuffer(*d_total, CL_FALSE, 0, sizeof(unsigned),
                                   &count_init);
 
     // size_t *global_nonmax_dims = global_nonmax();

@@ -210,7 +210,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
 
         unsigned usable_feat  = 0;
         Buffer* d_usable_feat = bufferAlloc(sizeof(unsigned));
-        getQueue().enqueueWriteBuffer(*d_usable_feat, CL_TRUE, 0,
+        getQueue().enqueueWriteBuffer(*d_usable_feat, CL_FALSE, 0,
                                       sizeof(unsigned), &usable_feat);
 
         Buffer* d_x_harris     = bufferAlloc(lvl_feat * sizeof(float));
@@ -368,7 +368,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
         Buffer* d_desc_lvl = bufferAlloc(usable_feat * 8 * sizeof(unsigned));
         {
             vector<unsigned> h_desc_lvl(usable_feat * 8);
-            getQueue().enqueueWriteBuffer(*d_desc_lvl, CL_TRUE, 0,
+            getQueue().enqueueWriteBuffer(*d_desc_lvl, CL_FALSE, 0,
                                           usable_feat * 8 * sizeof(unsigned),
                                           h_desc_lvl.data());
         }

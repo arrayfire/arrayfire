@@ -108,7 +108,7 @@ void floodFill(Param out, const Param image, const Param seedsx,
 
     while (notFinished) {
         notFinished = 0;
-        getQueue().enqueueWriteBuffer(*dContinue, CL_TRUE, 0, sizeof(int),
+        getQueue().enqueueWriteBuffer(*dContinue, CL_FALSE, 0, sizeof(int),
                                       &notFinished);
 
         floodStep(cl::EnqueueArgs(getQueue(), global, local), *out.data,
