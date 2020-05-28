@@ -22,6 +22,7 @@
 #include <vector>
 
 using af::alloc;
+using af::allocV2;
 using af::array;
 using af::cdouble;
 using af::cfloat;
@@ -30,6 +31,7 @@ using af::deviceMemInfo;
 using af::dim4;
 using af::dtype;
 using af::dtype_traits;
+using af::freeV2;
 using af::randu;
 using af::seq;
 using af::span;
@@ -125,8 +127,9 @@ void memAllocPtrScopeTest(int elements) {
     size_t lock_bytes, lock_buffers;
 
     cleanSlate();  // Clean up everything done so far
-
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         T *ptr = alloc<T>(elements);
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
@@ -138,6 +141,7 @@ void memAllocPtrScopeTest(int elements) {
         ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
 
         af::free(ptr);
+#pragma GCC diagnostic pop
     }
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
@@ -152,7 +156,7 @@ void memAllocPtrScopeTest(int elements) {
     cleanSlate();  // Clean up everything done so far
 
     {
-        void *ptr = alloc(elements, (af_dtype)dtype_traits<T>::af_type);
+        void *ptr = allocV2(elements * sizeof(T));
 
         deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
 
@@ -162,7 +166,7 @@ void memAllocPtrScopeTest(int elements) {
         ASSERT_EQ(alloc_bytes, roundUpToStep(elements * sizeof(T)));
         ASSERT_EQ(lock_bytes, roundUpToStep(elements * sizeof(T)));
 
-        af::free(ptr);
+        af::freeV2(ptr);
     }
 
     deviceMemInfo(&alloc_bytes, &alloc_buffers, &lock_bytes, &lock_buffers);
@@ -1006,13 +1010,13 @@ TEST(MemoryManagerE2E, E2ETest) {
     {
         size_t aSize = 8;
 
-        array a = af::randu(aSize, af::dtype::f32);
+        void *a = af::allocV2(aSize * sizeof(float));
         ASSERT_EQ(payload->table.size(), 1);
 
-        ASSERT_EQ(payload->table[a.device<float>()], aSize * sizeof(float));
+        ASSERT_EQ(payload->table[a], aSize * sizeof(float));
         ASSERT_EQ(payload->lastNdims, 1);
-        ASSERT_EQ(payload->lastDims, af::dim4(aSize));
-        ASSERT_EQ(payload->lastElementSize, 4);
+        ASSERT_EQ(payload->lastDims, af::dim4(aSize) * sizeof(float));
+        ASSERT_EQ(payload->lastElementSize, 1);
 
         dim_t bDim = 2;
         auto b     = af::randu({bDim, bDim});
@@ -1025,7 +1029,7 @@ TEST(MemoryManagerE2E, E2ETest) {
         ASSERT_EQ(payload->lastDims, af::dim4(bDim * b.numdims()));
         ASSERT_EQ(payload->lastElementSize, sizeof(float));
 
-        a = array();
+        af::freeV2(a);
 
         ASSERT_EQ(payload->totalBytes, aSize * sizeof(float) + b.bytes());
         ASSERT_EQ(payload->totalBuffers, 2);
@@ -1054,6 +1058,9 @@ TEST(MemoryManagerE2E, E2ETest) {
     ASSERT_EQ(payload->initializeCalledTimes, 1);
     ASSERT_EQ(payload->shutdownCalledTimes, af::getDeviceCount());
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 TEST(Memory, AfAllocDeviceCPUC) {
     af_backend active_backend;
     ASSERT_SUCCESS(af_get_active_backend(&active_backend));
@@ -1065,5 +1072,41 @@ TEST(Memory, AfAllocDeviceCPUC) {
         // This is the CPU backend so we can assign to the pointer
         *static_cast<float *>(ptr) = 5;
         ASSERT_SUCCESS(af_free_device(ptr));
+    }
+}
+#pragma GCC diagnostic pop
+
+TEST(Memory, AfAllocDeviceV2CPUC) {
+    af_backend active_backend;
+    ASSERT_SUCCESS(af_get_active_backend(&active_backend));
+
+    if (active_backend == AF_BACKEND_CPU) {
+        void *ptr;
+        ASSERT_SUCCESS(af_alloc_device_v2(&ptr, sizeof(float)));
+
+        // This is the CPU backend so we can assign to the pointer
+        *static_cast<float *>(ptr) = 5;
+        ASSERT_SUCCESS(af_free_device_v2(ptr));
+    }
+}
+
+TEST(Memory, SNIPPET_AllocCPU) {
+    af_backend active_backend;
+    ASSERT_SUCCESS(af_get_active_backend(&active_backend));
+
+    if (active_backend == AF_BACKEND_CPU) {
+        //! [ex_alloc_v2_cpu]
+
+        // Allocate one float and cast to float*
+        void *ptr   = af::allocV2(sizeof(float));
+        float *dptr = static_cast<float *>(ptr);
+
+        // This is the CPU backend so we can assign to the pointer
+        dptr[0] = 5.0f;
+        freeV2(ptr);
+
+        //! [ex_alloc_v2_cpu]
+
+        ASSERT_EQ(*dptr, 5.0f);
     }
 }

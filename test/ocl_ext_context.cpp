@@ -29,8 +29,10 @@
 #include <CL/cl2.hpp>
 #pragma GCC diagnostic pop
 
+using af::allocV2;
 using af::array;
 using af::constant;
+using af::freeV2;
 using af::getDeviceCount;
 using af::info;
 using af::randu;
@@ -138,6 +140,8 @@ TEST(OCLCheck, DevicePlatform) {
 TEST(OCLExtContext, NoopCPU) {}
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 TEST(Memory, AfAllocDeviceOpenCL) {
     /// Tests to see if the pointer returned can be used by opencl functions
     float gold_val = 5;
@@ -160,4 +164,98 @@ TEST(Memory, AfAllocDeviceOpenCL) {
 
     ASSERT_SUCCESS(af_free_device(alloc_ptr));
     ASSERT_EQ(gold_val, host);
+}
+#pragma GCC diagnostic pop
+
+TEST(Memory, AfAllocDeviceV2OpenCLC) {
+    /// Tests to see if the pointer returned can be used by opencl functions
+    float gold_val = 5;
+
+    void *alloc_ptr;
+    ASSERT_SUCCESS(af_alloc_device_v2(&alloc_ptr, sizeof(float)));
+    {
+        cl::Buffer bptr(static_cast<cl_mem>(alloc_ptr), true);
+        ASSERT_EQ(3, bptr.getInfo<CL_MEM_REFERENCE_COUNT>());
+
+        cl_command_queue queue;
+        afcl_get_queue(&queue, true);
+        cl::CommandQueue cq(queue);
+
+        cl::Buffer gold(cq, &gold_val, &gold_val + 1, false);
+        cq.enqueueCopyBuffer(gold, bptr, 0, 0, sizeof(float));
+
+        float host;
+        cq.enqueueReadBuffer(bptr, CL_TRUE, 0, sizeof(float), &host);
+        ASSERT_EQ(gold_val, host);
+    }
+
+    ASSERT_SUCCESS(af_free_device_v2(alloc_ptr));
+}
+
+TEST(Memory, AfAllocDeviceV2OpenCLCPP) {
+    /// Tests to see if the pointer returned can be used by opencl functions
+    float gold_val = 5;
+
+    cl_mem alloc_ptr = static_cast<cl_mem>(allocV2(sizeof(float)));
+    {
+        cl::Buffer bptr(alloc_ptr, true);
+        ASSERT_EQ(3, bptr.getInfo<CL_MEM_REFERENCE_COUNT>());
+
+        cl_command_queue queue;
+        afcl_get_queue(&queue, true);
+        cl::CommandQueue cq(queue);
+
+        cl::Buffer gold(cq, &gold_val, &gold_val + 1, false);
+        cq.enqueueCopyBuffer(gold, bptr, 0, 0, sizeof(float));
+
+        float host;
+        cq.enqueueReadBuffer(bptr, CL_TRUE, 0, sizeof(float), &host);
+        ASSERT_EQ(gold_val, host);
+    }
+
+    freeV2(alloc_ptr);
+}
+
+TEST(Memory, SNIPPET_AllocOpenCL) {
+    // clang-format off
+    //! [ex_alloc_v2_opencl]
+    cl_command_queue queue;
+    afcl_get_queue(&queue, true);
+    cl_context context;
+    afcl_get_context(&context, true);
+
+    void *alloc_ptr = allocV2(sizeof(float));
+    cl_mem mem = static_cast<cl_mem>(alloc_ptr);
+
+    // Map memory from the device to the System memory
+    cl_int map_err_code;
+    void *mapped_ptr = clEnqueueMapBuffer(
+        queue, // command queueu
+        mem, // buffer
+        CL_TRUE, // is blocking
+        CL_MAP_READ | CL_MAP_WRITE, // map type
+        0, // offset
+        sizeof(float), // size
+        0, // num_events_in_wait_list
+        nullptr, // event_wait_list
+        nullptr, // event
+        &map_err_code); // error code
+
+    float *float_ptr = static_cast<float *>(mapped_ptr);
+    float_ptr[0]     = 5.0f;
+
+    // Unmap buffer after we are done using it
+    cl_int unmap_err_code =
+        clEnqueueUnmapMemObject(queue,      // command queue
+                                mem,        // buffer
+                                mapped_ptr, // mapped pointer
+                                0,          // num_events_in_wait_list
+                                nullptr,    // event_wait_list
+                                nullptr);   // event
+    freeV2(alloc_ptr);
+    //! [ex_alloc_v2_opencl]
+    // clang-format on
+
+    ASSERT_EQ(CL_SUCCESS, map_err_code);
+    ASSERT_EQ(CL_SUCCESS, unmap_err_code);
 }

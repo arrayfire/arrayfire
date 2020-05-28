@@ -74,14 +74,28 @@ af_err af_get_device(int *device) { CALL(af_get_device, device); }
 af_err af_sync(const int device) { CALL(af_sync, device); }
 
 af_err af_alloc_device(void **ptr, const dim_t bytes) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     CALL(af_alloc_device, ptr, bytes);
+#pragma GCC diagnostic pop
+}
+
+af_err af_alloc_device_v2(void **ptr, const dim_t bytes) {
+    CALL(af_alloc_device_v2, ptr, bytes);
 }
 
 af_err af_alloc_pinned(void **ptr, const dim_t bytes) {
     CALL(af_alloc_pinned, ptr, bytes);
 }
 
-af_err af_free_device(void *ptr) { CALL(af_free_device, ptr); }
+af_err af_free_device(void *ptr) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    CALL(af_free_device, ptr);
+#pragma GCC diagnostic pop
+}
+
+af_err af_free_device_v2(void *ptr) { CALL(af_free_device_v2, ptr); }
 
 af_err af_free_pinned(void *ptr) { CALL(af_free_pinned, ptr); }
 
