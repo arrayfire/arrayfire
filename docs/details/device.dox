@@ -84,15 +84,26 @@ have finished.
 
 This function will allocate memory on the device and return a pointer
 to it. The memory is allocated using ArrayFire's memory manager which
-has some different characteristics to standard method of memory
-allocation
+will defer releasing memory to the driver and reuse the same memory
+for later operations.
+
+This function will return different objects based on the type used. The
+interface returns a void pointer that needs to be cast to the backend
+appropriate memory type.
+
+
+| function           | CPU | CUDA | OpenCL      |
+|--------------------|-----|------|-------------|
+| af_alloc_device    | T*  | T*   | cl::Buffer* |
+| af::alloc          | T*  | T*   | cl::Buffer* |
 
 ===============================================================================
 
 \defgroup device_func_free free
 \ingroup device_mat
 
-\brief Free device memory allocated by ArrayFire's memory manager
+\brief Returns memory to ArrayFire's memory manager. The memory will
+       return to the memory pool.
 
 These calls free the device memory. These functions need to be called on
 pointers allocated using alloc function.

@@ -378,7 +378,7 @@ template<typename T>
 void *getDevicePtr(const Array<T> &arr) {
     const cl::Buffer *buf = arr.device();
     if (!buf) { return NULL; }
-    memLock((T *)buf);
+    memLock(buf);
     cl_mem mem = (*buf)();
     return (void *)mem;
 }

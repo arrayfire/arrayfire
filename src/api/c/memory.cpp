@@ -147,7 +147,7 @@ inline void lockArray(const af_array arr) {
     // Ideally we need to use .get(false), i.e. get ptr without offset
     // This is however not supported in opencl
     // Use getData().get() as alternative
-    memLock(static_cast<void *>(getArray<T>(arr).getData().get()));
+    memLock(getArray<T>(arr).getData().get());
 }
 
 af_err af_lock_device_ptr(const af_array arr) { return af_lock_array(arr); }
@@ -217,7 +217,7 @@ inline void unlockArray(const af_array arr) {
     // Ideally we need to use .get(false), i.e. get ptr without offset
     // This is however not supported in opencl
     // Use getData().get() as alternative
-    memUnlock(static_cast<void *>(getArray<T>(arr).getData().get()));
+    memUnlock(getArray<T>(arr).getData().get());
 }
 
 af_err af_unlock_device_ptr(const af_array arr) { return af_unlock_array(arr); }
