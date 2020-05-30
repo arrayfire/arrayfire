@@ -15,6 +15,7 @@
 #include <cmath>
 
 using af::features;
+using std::vector;
 
 namespace opencl {
 
@@ -26,38 +27,31 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
     dim4 idims = in.dims();
 
     const unsigned corner_lim = in.elements() * feature_ratio;
-    cl::Buffer *x_corners     = bufferAlloc(corner_lim * sizeof(float));
-    cl::Buffer *y_corners     = bufferAlloc(corner_lim * sizeof(float));
-    cl::Buffer *resp_corners  = bufferAlloc(corner_lim * sizeof(float));
+    Array<float> x_corners    = createEmptyArray<float>({corner_lim});
+    Array<float> y_corners    = createEmptyArray<float>({corner_lim});
+    Array<float> resp_corners = createEmptyArray<float>({corner_lim});
 
-    cl::Buffer *resp = bufferAlloc(in.elements() * sizeof(float));
+    auto resp = memAlloc<float>(in.elements());
 
-    kernel::susan<T>(resp, in.get(), in.getOffset(), idims[0], idims[1],
+    kernel::susan<T>(resp.get(), in.get(), in.getOffset(), idims[0], idims[1],
                      diff_thr, geom_thr, edge, radius);
 
-    unsigned corners_found =
-        kernel::nonMaximal<T>(x_corners, y_corners, resp_corners, idims[0],
-                              idims[1], resp, edge, corner_lim);
-    bufferFree(resp);
+    unsigned corners_found = kernel::nonMaximal<T>(
+        x_corners.get(), y_corners.get(), resp_corners.get(), idims[0],
+        idims[1], resp.get(), edge, corner_lim);
 
     const unsigned corners_out = std::min(corners_found, corner_lim);
     if (corners_out == 0) {
-        bufferFree(x_corners);
-        bufferFree(y_corners);
-        bufferFree(resp_corners);
         x_out    = createEmptyArray<float>(dim4());
         y_out    = createEmptyArray<float>(dim4());
         resp_out = createEmptyArray<float>(dim4());
-        return 0;
     } else {
-        x_out    = createDeviceDataArray<float>(dim4(corners_out),
-                                             (void *)((*x_corners)()));
-        y_out    = createDeviceDataArray<float>(dim4(corners_out),
-                                             (void *)((*y_corners)()));
-        resp_out = createDeviceDataArray<float>(dim4(corners_out),
-                                                (void *)((*resp_corners)()));
-        return corners_out;
+        vector<af_seq> idx{{0., static_cast<double>(corners_out - 1.0), 1.}};
+        x_out    = createSubArray(x_corners, idx);
+        y_out    = createSubArray(y_corners, idx);
+        resp_out = createSubArray(resp_corners, idx);
     }
+    return corners_out;
 }
 
 #define INSTANTIATE(T)                                                        \

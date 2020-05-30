@@ -15,6 +15,7 @@
 #include <debug_opencl.hpp>
 #include <kernel/config.hpp>
 #include <kernel_headers/susan.hpp>
+#include <memory.hpp>
 #include <traits.hpp>
 #include <af/defines.h>
 
@@ -81,8 +82,8 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
     auto nonMax =
         common::getKernel("non_maximal", {susanSrc()}, targs, compileOpts);
 
-    unsigned corners_found      = 0;
-    cl::Buffer* d_corners_found = bufferAlloc(sizeof(unsigned));
+    unsigned corners_found = 0;
+    auto d_corners_found   = memAlloc<unsigned>(1);
     getQueue().enqueueWriteBuffer(*d_corners_found, CL_FALSE, 0,
                                   sizeof(unsigned), &corners_found);
 
@@ -95,7 +96,6 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
            max_corners);
     getQueue().enqueueReadBuffer(*d_corners_found, CL_TRUE, 0, sizeof(unsigned),
                                  &corners_found);
-    bufferFree(d_corners_found);
     return corners_found;
 }
 }  // namespace kernel
