@@ -54,6 +54,11 @@
 #include "kernel/transpose_inplace.hpp"
 #include "magma_data.h"
 
+using cl::Buffer;
+using cl::CommandQueue;
+using opencl::makeParam;
+using opencl::kernel::transpose_inplace;
+
 template<typename T>
 void magmablas_transpose_inplace(magma_int_t n, cl_mem dA, size_t dA_offset,
                                  magma_int_t ldda, magma_queue_t queue) {
@@ -74,11 +79,11 @@ void magmablas_transpose_inplace(magma_int_t n, cl_mem dA, size_t dA_offset,
     int dims[]    = {n, n, 1, 1};
     int strides[] = {1, ldda, ldda * n, ldda * n};
 
-    using namespace opencl;
+    Buffer dABuf(dA, true);
 
-    cl::CommandQueue q(queue, true);
-    kernel::transpose_inplace<T>(makeParam(dA, dA_offset, dims, strides), q,
-                                 false, n % 32 == 0);
+    CommandQueue q(queue, true);
+    transpose_inplace<T>(makeParam(dABuf, dA_offset, dims, strides), q, false,
+                         n % 32 == 0);
 }
 
 #define INSTANTIATE(T)                                                \
