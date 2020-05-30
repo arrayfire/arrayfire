@@ -42,7 +42,8 @@ shared_timed_mutex& getCacheMutex(const int device) {
 }
 
 ModuleMap& getCache(const int device) {
-    static ModuleMap caches[detail::DeviceManager::MAX_DEVICES];
+    static ModuleMap* caches =
+        new ModuleMap[detail::DeviceManager::MAX_DEVICES];
     return caches[device];
 }
 
@@ -51,7 +52,7 @@ Module findModule(const int device, const string& key) {
     auto& cache = getCache(device);
     auto iter   = cache.find(key);
     if (iter != cache.end()) { return iter->second; }
-    return Module{nullptr};
+    return Module{};
 }
 
 Kernel getKernel(const string& kernelName, const vector<string>& sources,
@@ -89,9 +90,9 @@ Kernel getKernel(const string& kernelName, const vector<string>& sources,
     const int device       = detail::getActiveDeviceId();
     Module currModule      = findModule(device, moduleKey);
 
-    if (currModule.get() == nullptr) {
+    if (!currModule) {
         currModule = loadModuleFromDisk(device, moduleKey, sourceIsJIT);
-        if (currModule.get() == nullptr) {
+        if (!currModule) {
             currModule = compileModule(moduleKey, sources, options, {tInstance},
                                        sourceIsJIT);
         }
@@ -102,7 +103,8 @@ Kernel getKernel(const string& kernelName, const vector<string>& sources,
         if (iter == cache.end()) {
             // If not found, this thread is the first one to compile this
             // kernel. Keep the generated module.
-            getCache(device).emplace(moduleKey, currModule);
+            Module mod = currModule;
+            getCache(device).emplace(moduleKey, mod);
         } else {
             currModule.unload();  // dump the current threads extra compilation
             currModule = iter->second;

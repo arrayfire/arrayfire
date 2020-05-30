@@ -28,9 +28,12 @@ class Module : public common::ModuleInterface<CUmodule> {
     using ModuleType = CUmodule;
     using BaseClass  = common::ModuleInterface<ModuleType>;
 
+    Module() = default;
     Module(ModuleType mod) : BaseClass(mod) {
         mInstanceMangledNames.reserve(1);
     }
+
+    operator bool() const final { return get(); }
 
     void unload() final {
         CU_CHECK(cuModuleUnload(get()));

@@ -18,24 +18,24 @@ namespace opencl {
 
 struct Enqueuer {
     template<typename... Args>
-    void operator()(void* ker, const cl::EnqueueArgs& qArgs, Args... args) {
-        auto launchOp =
-            cl::KernelFunctor<Args...>(*static_cast<const cl::Kernel*>(ker));
+    void operator()(cl::Kernel ker, const cl::EnqueueArgs& qArgs,
+                    Args... args) {
+        auto launchOp = cl::KernelFunctor<Args...>(ker);
         launchOp(qArgs, std::forward<Args>(args)...);
     }
 };
 
 class Kernel
-    : public common::KernelInterface<cl::Program*, cl::Kernel*, Enqueuer,
+    : public common::KernelInterface<const cl::Program*, cl::Kernel, Enqueuer,
                                      cl::Buffer*> {
    public:
-    using ModuleType = cl::Program*;
-    using KernelType = cl::Kernel*;
+    using ModuleType = const cl::Program*;
+    using KernelType = cl::Kernel;
     using DevPtrType = cl::Buffer*;
     using BaseClass =
         common::KernelInterface<ModuleType, KernelType, Enqueuer, DevPtrType>;
 
-    Kernel() : BaseClass(nullptr, nullptr) {}
+    Kernel() : BaseClass(nullptr, cl::Kernel{nullptr, false}) {}
     Kernel(ModuleType mod, KernelType ker) : BaseClass(mod, ker) {}
 
     // clang-format off
