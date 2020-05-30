@@ -183,18 +183,20 @@ void ireduceFirst(Param out, cl::Buffer *oidx, Param in, Param rlen) {
 
 template<typename T, af_op_t op>
 void ireduce(Param out, cl::Buffer *oidx, Param in, int dim, Param rlen) {
+    cl::Buffer buf;
     if (rlen.info.dims[0] * rlen.info.dims[1] * rlen.info.dims[2] *
             rlen.info.dims[3] ==
         0) {
         // empty opencl::Param() does not have nullptr by default
         // set to nullptr explicitly here for consequent kernel calls
         // through cl::Buffer's constructor
-        rlen.data = new cl::Buffer();
+        rlen.data = &buf;
     }
-    if (dim == 0)
-        return ireduceFirst<T, op>(out, oidx, in, rlen);
-    else
-        return ireduceDim<T, op>(out, oidx, in, dim, rlen);
+    if (dim == 0) {
+        ireduceFirst<T, op>(out, oidx, in, rlen);
+    } else {
+        ireduceDim<T, op>(out, oidx, in, dim, rlen);
+    }
 }
 
 #if defined(__GNUC__) || defined(__GNUG__)
