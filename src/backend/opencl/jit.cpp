@@ -137,10 +137,10 @@ string getKernelString(const string &funcName, const vector<Node *> &full_nodes,
     return kerStream.str();
 }
 
-cl::Kernel *getKernel(const vector<Node *> &output_nodes,
-                      const vector<int> &output_ids,
-                      const vector<Node *> &full_nodes,
-                      const vector<Node_ids> &full_ids, const bool is_linear) {
+cl::Kernel getKernel(const vector<Node *> &output_nodes,
+                     const vector<int> &output_ids,
+                     const vector<Node *> &full_nodes,
+                     const vector<Node_ids> &full_ids, const bool is_linear) {
     const string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
     const string moduleKey = std::to_string(deterministicHash(funcName));
@@ -150,7 +150,7 @@ cl::Kernel *getKernel(const vector<Node *> &output_nodes,
     // with a way to save jit kernels to disk only once
     auto entry = common::findModule(getActiveDeviceId(), moduleKey);
 
-    if (entry.get() == nullptr) {
+    if (!entry) {
         static const string jit(jit_cl, jit_cl_len);
 
         string jitKer = getKernelString(funcName, full_nodes, full_ids,
@@ -252,25 +252,25 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
     for (const auto &node : full_nodes) {
         nargs = node->setArgs(nargs, is_linear,
                               [&](int id, const void *ptr, size_t arg_size) {
-                                  ker->setArg(id, arg_size, ptr);
+                                  ker.setArg(id, arg_size, ptr);
                               });
     }
 
     // Set output parameters
-    for (auto output : outputs) {
-        ker->setArg(nargs, *(output.data));
+    for (auto &output : outputs) {
+        ker.setArg(nargs, *(output.data));
         ++nargs;
     }
 
     // Set dimensions
     // All outputs are asserted to be of same size
     // Just use the size from the first output
-    ker->setArg(nargs + 0, out_info);
-    ker->setArg(nargs + 1, groups_0);
-    ker->setArg(nargs + 2, groups_1);
-    ker->setArg(nargs + 3, num_odims);
+    ker.setArg(nargs + 0, out_info);
+    ker.setArg(nargs + 1, groups_0);
+    ker.setArg(nargs + 2, groups_1);
+    ker.setArg(nargs + 3, num_odims);
 
-    getQueue().enqueueNDRangeKernel(*ker, NullRange, global, local);
+    getQueue().enqueueNDRangeKernel(ker, NullRange, global, local);
 
     // Reset the thread local vectors
     nodes.clear();

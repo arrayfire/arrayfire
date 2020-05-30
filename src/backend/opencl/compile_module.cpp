@@ -25,39 +25,48 @@
 #include <string>
 #include <vector>
 
-using detail::Kernel;
-using detail::Module;
+using cl::Error;
+using cl::Program;
+using common::loggerFactory;
+using opencl::getActiveDeviceId;
+using opencl::getDevice;
+using opencl::Kernel;
+using opencl::Module;
+using spdlog::logger;
 
+using std::begin;
+using std::end;
 using std::ostringstream;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 using std::chrono::milliseconds;
 
-spdlog::logger *getLogger() {
-    static std::shared_ptr<spdlog::logger> logger(common::loggerFactory("jit"));
+logger *getLogger() {
+    static shared_ptr<logger> logger(loggerFactory("jit"));
     return logger.get();
 }
 
-#define SHOW_DEBUG_BUILD_INFO(PROG)                                        \
-    do {                                                                   \
-        cl_uint numDevices = PROG->getInfo<CL_PROGRAM_NUM_DEVICES>();      \
-        for (unsigned int i = 0; i < numDevices; ++i) {                    \
-            printf("%s\n", PROG->getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
-                                   PROG->getInfo<CL_PROGRAM_DEVICES>()[i]) \
-                               .c_str());                                  \
-            printf("%s\n", PROG->getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(   \
-                                   PROG->getInfo<CL_PROGRAM_DEVICES>()[i]) \
-                               .c_str());                                  \
-        }                                                                  \
+#define SHOW_DEBUG_BUILD_INFO(PROG)                                       \
+    do {                                                                  \
+        cl_uint numDevices = PROG.getInfo<CL_PROGRAM_NUM_DEVICES>();      \
+        for (unsigned int i = 0; i < numDevices; ++i) {                   \
+            printf("%s\n", PROG.getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
+                                   PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) \
+                               .c_str());                                 \
+            printf("%s\n", PROG.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(   \
+                                   PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) \
+                               .c_str());                                 \
+        }                                                                 \
     } while (0)
 
 #if defined(NDEBUG)
 
 #define SHOW_BUILD_INFO(PROG)                                              \
     do {                                                                   \
-        std::string info = getEnvVar("AF_OPENCL_SHOW_BUILD_INFO");         \
+        string info = getEnvVar("AF_OPENCL_SHOW_BUILD_INFO");              \
         if (!info.empty() && info != "0") { SHOW_DEBUG_BUILD_INFO(PROG); } \
     } while (0)
 
@@ -67,7 +76,7 @@ spdlog::logger *getLogger() {
 
 namespace opencl {
 
-const static std::string DEFAULT_MACROS_STR(
+const static string DEFAULT_MACROS_STR(
     "\n\
                                            #ifdef USE_DOUBLE\n\
                                            #pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
@@ -82,36 +91,32 @@ const static std::string DEFAULT_MACROS_STR(
                                            #endif\n                     \
                                            ");
 
-cl::Program *buildProgram(const std::vector<std::string> &kernelSources,
-                          const std::vector<std::string> &compileOpts) {
-    using std::begin;
-    using std::end;
-
-    cl::Program *retVal = nullptr;
+Program buildProgram(const vector<string> &kernelSources,
+                     const vector<string> &compileOpts) {
+    Program retVal;
     try {
-        static const std::string defaults =
-            std::string(" -D dim_t=") +
-            std::string(dtype_traits<dim_t>::getName());
+        static const string defaults =
+            string(" -D dim_t=") + string(dtype_traits<dim_t>::getName());
 
         auto device = getDevice();
 
-        const std::string cl_std =
-            std::string(" -cl-std=CL") +
+        const string cl_std =
+            string(" -cl-std=CL") +
             device.getInfo<CL_DEVICE_OPENCL_C_VERSION>().substr(9, 3);
 
-        cl::Program::Sources sources;
+        Program::Sources sources;
         sources.emplace_back(DEFAULT_MACROS_STR);
         sources.emplace_back(KParam_hpp, KParam_hpp_len);
         sources.insert(end(sources), begin(kernelSources), end(kernelSources));
 
-        retVal = new cl::Program(getContext(), sources);
+        retVal = Program(getContext(), sources);
 
         ostringstream options;
         for (auto &opt : compileOpts) { options << opt; }
 
-        retVal->build({device}, (cl_std + defaults + options.str()).c_str());
-    } catch (...) {
-        if (retVal) { SHOW_BUILD_INFO(retVal); }
+        retVal.build({device}, (cl_std + defaults + options.str()).c_str());
+    } catch (Error &err) {
+        if (err.err() == CL_BUILD_ERROR) { SHOW_BUILD_INFO(retVal); }
         throw;
     }
     return retVal;
@@ -124,14 +129,11 @@ namespace common {
 Module compileModule(const string &moduleKey, const vector<string> &sources,
                      const vector<string> &options,
                      const vector<string> &kInstances, const bool isJIT) {
-    using opencl::getActiveDeviceId;
-    using opencl::getDevice;
-
     UNUSED(kInstances);
     UNUSED(isJIT);
 
     auto compileBegin = high_resolution_clock::now();
-    auto program      = detail::buildProgram(sources, options);
+    auto program      = opencl::buildProgram(sources, options);
     auto compileEnd   = high_resolution_clock::now();
 
     AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", moduleKey,
@@ -147,13 +149,13 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
     UNUSED(device);
     UNUSED(moduleKey);
     UNUSED(isJIT);
-    return {nullptr};
+    return {};
 }
 
 Kernel getKernel(const Module &mod, const string &nameExpr,
                  const bool sourceWasJIT) {
     UNUSED(sourceWasJIT);
-    return {mod.get(), new cl::Kernel(*mod.get(), nameExpr.c_str())};
+    return {&mod.get(), cl::Kernel(mod.get(), nameExpr.c_str())};
 }
 
 }  // namespace common

@@ -18,6 +18,12 @@ class ModuleInterface {
     ModuleType mModuleHandle;
 
    public:
+    /// \brief Creates an uninitialized Module
+    ModuleInterface() = default;
+
+    /// \brief Creates a module given a backend specific ModuleType
+    ///
+    /// \param[in] mod The backend specific module
     ModuleInterface(ModuleType mod) : mModuleHandle(mod) {}
 
     /// \brief Set module
@@ -28,10 +34,13 @@ class ModuleInterface {
     /// \brief Get module
     ///
     /// \returns handle to backend specific module
-    inline ModuleType get() const { return mModuleHandle; }
+    inline const ModuleType& get() const { return mModuleHandle; }
 
     /// \brief Unload module
     virtual void unload() = 0;
+
+    /// \brief Returns true if the module mModuleHandle is initialized
+    virtual operator bool() const = 0;
 };
 
 }  // namespace common
