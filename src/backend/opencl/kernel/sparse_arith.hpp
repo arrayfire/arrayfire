@@ -156,8 +156,8 @@ static void csrCalcOutNNZ(Param outRowIdx, unsigned &nnzC, const uint M,
     cl::NDRange local(256, 1);
     cl::NDRange global(divup(M, local[0]) * local[0], 1, 1);
 
-    nnzC            = 0;
-    cl::Buffer *out = bufferAlloc(sizeof(unsigned));
+    nnzC     = 0;
+    auto out = memAlloc<unsigned>(1);
     getQueue().enqueueWriteBuffer(*out, CL_TRUE, 0, sizeof(unsigned), &nnzC);
 
     calcNNZ(cl::EnqueueArgs(getQueue(), global, local), *out, *outRowIdx.data,
