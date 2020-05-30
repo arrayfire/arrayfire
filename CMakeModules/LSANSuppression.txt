@@ -2,6 +2,7 @@
 leak:libnvidia-ptxjitcompile
 leak:tbb::internal::task_stream
 leak:libnvidia-opencl.so
+leak:FFTRepo::FFTRepoKey::privatizeData
 
 # Allocated by Intel's OpenMP implementation during inverse_dense_cpu
 # This is not something we can control in ArrayFire
