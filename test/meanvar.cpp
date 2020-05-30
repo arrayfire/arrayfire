@@ -26,6 +26,7 @@ using std::move;
 using std::string;
 using std::vector;
 
+af_err init_err = af_init();
 template<typename T>
 struct elseType {
     typedef typename cond_type<is_same_type<T, uintl>::value ||
@@ -91,7 +92,7 @@ struct meanvar_test {
 
     ~meanvar_test() {
 #ifndef _WIN32
-        af_release_array(in_);
+        if (in_) af_release_array(in_);
         if (weights_) {
             af_release_array(weights_);
             weights_ = 0;

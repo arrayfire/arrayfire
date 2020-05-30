@@ -250,9 +250,7 @@ void evalMultiple(vector<Array<T> *> arrays) {
              info.strides()[3]},
             0};
 
-        Param res = {array->data.get(), kInfo};
-
-        outputs.push_back(res);
+        outputs.emplace_back(array->data.get(), kInfo);
         output_arrays.push_back(array);
         nodes.push_back(array->node.get());
     }
