@@ -16,17 +16,22 @@
 namespace opencl {
 
 /// OpenCL backend wrapper for cl::Program object
-class Module : public common::ModuleInterface<cl::Program*> {
+class Module : public common::ModuleInterface<cl::Program> {
    public:
-    using ModuleType = cl::Program*;
+    using ModuleType = cl::Program;
     using BaseClass  = common::ModuleInterface<ModuleType>;
 
+    /// \brief Create an uninitialized Module
+    Module() = default;
+
+    /// \brief Create a module given a cl::Program type
     Module(ModuleType mod) : BaseClass(mod) {}
 
-    void unload() final {
-        delete get();
-        set(nullptr);
-    }
+    /// \brief Unload module
+    operator bool() const final { return get()(); }
+
+    /// Unload the module
+    void unload() final { set(cl::Program()); }
 };
 
 }  // namespace opencl
