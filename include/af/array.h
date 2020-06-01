@@ -710,6 +710,8 @@ namespace af
 
            The device memory returned by this function is not freed until unlock() is called.
 
+           /note When using the OpenCL backend and using the cl_mem template argument, the
+                 delete function should be called on the pointer returned by this function.
         */
         template<typename T> T* device() const;
 
