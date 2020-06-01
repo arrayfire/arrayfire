@@ -10,6 +10,7 @@
 #include <af/array.h>
 #include <af/device.h>
 #include <af/exception.h>
+#include <af/util.h>
 #include <algorithm>
 #include "symbol_manager.hpp"
 
@@ -41,4 +42,8 @@ void af_get_last_error(char **str, dim_t *len) {
         auto func = reinterpret_cast<af_func>(LOAD_SYMBOL());
         func(str, len);
     }
+}
+
+af_err af_set_enable_stacktrace(int is_enabled) {
+    CALL(af_set_enable_stacktrace, is_enabled);
 }
