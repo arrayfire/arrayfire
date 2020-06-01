@@ -115,7 +115,7 @@ target_compile_definitions(arrayfire_test
 # 'BACKENDS'    Backends to target for this test. If not set then the test will
 #               compiled againat all backends
 function(make_test)
-  set(options CXX11 SERIAL USE_MMIO)
+  set(options CXX11 SERIAL USE_MMIO NO_ARRAYFIRE_TEST)
   set(single_args SRC)
   set(multi_args LIBRARIES DEFINITIONS BACKENDS)
   cmake_parse_arguments(mt_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
@@ -127,7 +127,12 @@ function(make_test)
       continue()
     endif()
     set(target "test_${src_name}_${backend}")
-    add_executable(${target} ${mt_args_SRC} $<TARGET_OBJECTS:arrayfire_test>)
+
+    if (${mt_args_NO_ARRAYFIRE_TEST})
+      add_executable(${target} ${mt_args_SRC})
+    else()
+      add_executable(${target} ${mt_args_SRC} $<TARGET_OBJECTS:arrayfire_test>)
+    endif()
     target_include_directories(${target}
       PRIVATE
         ${ArrayFire_SOURCE_DIR}/extern/half/include
@@ -284,6 +289,16 @@ if(OpenCL_FOUND)
   make_test(SRC ocl_ext_context.cpp
             LIBRARIES OpenCL::OpenCL
             BACKENDS "opencl"
+            CXX11)
+  make_test(SRC interop_opencl_custom_kernel_snippet.cpp
+            LIBRARIES OpenCL::OpenCL
+            BACKENDS "opencl"
+            NO_ARRAYFIRE_TEST
+            CXX11)
+  make_test(SRC interop_opencl_external_context_snippet.cpp
+            LIBRARIES OpenCL::OpenCL
+            BACKENDS "opencl"
+            NO_ARRAYFIRE_TEST
             CXX11)
 endif()
 
