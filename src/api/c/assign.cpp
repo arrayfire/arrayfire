@@ -129,9 +129,9 @@ static if_real<T> assign(Array<T>& out, const vector<af_seq> iv,
 af_err af_assign_seq(af_array* out, const af_array lhs, const unsigned ndims,
                      const af_seq* index, const af_array rhs) {
     try {
-        ARG_ASSERT(0, (lhs != 0));
-        ARG_ASSERT(1, (ndims > 0));
-        ARG_ASSERT(3, (rhs != 0));
+        ARG_ASSERT(2, (ndims > 0 && ndims <= AF_MAX_DIMS));
+        ARG_ASSERT(1, (lhs != 0));
+        ARG_ASSERT(4, (rhs != 0));
 
         const ArrayInfo& lInfo = getInfo(lhs);
 
@@ -223,6 +223,7 @@ inline void genAssign(af_array& out, const af_index_t* indexs,
 af_err af_assign_gen(af_array* out, const af_array lhs, const dim_t ndims,
                      const af_index_t* indexs, const af_array rhs_) {
     try {
+        ARG_ASSERT(2, (ndims > 0 && ndims <= AF_MAX_DIMS));
         ARG_ASSERT(3, (indexs != NULL));
 
         int track = 0;
