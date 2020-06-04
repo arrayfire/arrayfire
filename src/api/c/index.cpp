@@ -79,6 +79,8 @@ static af_array indexBySeqs(const af_array& src,
 af_err af_index(af_array* result, const af_array in, const unsigned ndims,
                 const af_seq* indices) {
     try {
+        ARG_ASSERT(2, (ndims > 0 && ndims <= AF_MAX_DIMS));
+
         const ArrayInfo& inInfo = getInfo(in);
         af_dtype type           = inInfo.getType();
         const dim4& iDims       = inInfo.dims();
@@ -200,7 +202,7 @@ static inline af_array genIndex(const af_array& in, const af_index_t idxrs[]) {
 af_err af_index_gen(af_array* out, const af_array in, const dim_t ndims,
                     const af_index_t* indexs) {
     try {
-        ARG_ASSERT(2, (ndims > 0));
+        ARG_ASSERT(2, (ndims > 0 && ndims <= AF_MAX_DIMS));
         ARG_ASSERT(3, (indexs != NULL));
 
         const ArrayInfo& iInfo = getInfo(in);
