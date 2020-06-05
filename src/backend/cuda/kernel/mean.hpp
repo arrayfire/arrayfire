@@ -26,7 +26,7 @@
 
 namespace cuda {
 
-__host__ __device__ auto operator*(float lhs, __half rhs) -> __half {
+__device__ auto operator*(float lhs, __half rhs) -> __half {
     return __float2half(lhs * __half2float(rhs));
 }
 

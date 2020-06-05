@@ -34,8 +34,8 @@ get_temporary_buffer(ThrustArrayFirePolicy, std::ptrdiff_t n) {
 }
 
 template<typename Pointer>
-void return_temporary_buffer(ThrustArrayFirePolicy, Pointer p) {
-    memFree(p.get());
+inline void return_temporary_buffer(ThrustArrayFirePolicy, Pointer p) {
+    memFree(thrust::raw_pointer_cast(p));
 }
 
 }  // namespace cuda

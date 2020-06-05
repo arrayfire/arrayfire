@@ -131,6 +131,8 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(half)
 
+template void memFree(void *ptr);
+
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
 void Allocator::shutdown() {
