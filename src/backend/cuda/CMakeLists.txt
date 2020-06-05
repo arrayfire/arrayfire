@@ -7,7 +7,7 @@
 
 dependency_check(CUDA_FOUND "CUDA not found.")
 if(AF_WITH_CUDNN)
-  dependency_check(cuDNN_FOUND "CUDA not found.")
+  dependency_check(cuDNN_FOUND "CUDNN not found.")
 endif()
 
 include(AFcuda_helpers)
@@ -34,7 +34,7 @@ endif()
 
 # Find if CUDA Toolkit is at least 10.0 to use static
 # lapack library. Otherwise, we have to use regular shared library
-if(UNIX AND CUDA_VERSION_MAJOR VERSION_GREATER 10 OR CUDA_VERSION_MAJOR VERSION_EQUAL 10)
+if(UNIX AND (CUDA_VERSION_MAJOR VERSION_GREATER 10 OR CUDA_VERSION_MAJOR VERSION_EQUAL 10))
   set(use_static_cuda_lapack ON)
 else()
   set(use_static_cuda_lapack OFF)
@@ -52,7 +52,6 @@ if(UNIX)
   # FIXME When NVCC resolves this particular issue.
   # NVCC doesn't like -l<full_path_static_lib>, hence we cannot
   # use ${CMAKE_*_LIBRARY} variables in the following flags.
-  set(af_cuda_static_flags "-rdc=true;-dlink")
   set(af_cuda_static_flags "${af_cuda_static_flags};-lculibos")
   set(af_cuda_static_flags "${af_cuda_static_flags};-lcublas_static")
   set(af_cuda_static_flags "${af_cuda_static_flags};-lcublasLt_static")
@@ -71,7 +70,7 @@ if(UNIX)
 
     set(af_cuda_static_flags "${af_cuda_static_flags};-lcusolver_static")
   else()
-    set(cusolver_lib "${CUDA_cusolver_LIBRARY}")
+    set(cusolver_lib "${CUDA_cusolver_LIBRARY}" OpenMP::OpenMP_CXX)
   endif()
 endif()
 
@@ -88,12 +87,6 @@ cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_ta
 message(STATUS "CUDA_architecture_build_targets: ${CUDA_architecture_build_targets}")
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};${cuda_architecture_flags})
-
-if(${CUDA_SEPARABLE_COMPILATION})
-  # Enable relocatable device code generation for separable
-  # compilation which is in turn required for any device linking done.
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-rdc=true)
-endif()
 
 mark_as_advanced(
     CUDA_LIBRARIES_PATH
@@ -301,13 +294,19 @@ if(UNIX)
       -Wl,--start-group
       ${CUDA_culibos_LIBRARY} #also a static libary
       ${CUDA_cublas_static_LIBRARY}
-      ${CUDA_cublasLt_static_LIBRARY}
       ${CUDA_cufft_static_LIBRARY}
-      ${CUDA_lapack_static_LIBRARY}
       ${CUDA_cusparse_static_LIBRARY}
       ${cusolver_static_lib}
       -Wl,--end-group
   )
+
+  if(CUDA_VERSION VERSION_GREATER 9.5)
+    target_link_libraries(af_cuda_static_cuda_library
+      PRIVATE
+        ${CUDA_cublasLt_static_LIBRARY}
+        ${CUDA_lapack_static_LIBRARY})
+  endif()
+
   set(CUDA_SEPARABLE_COMPILATION ${pior_val_CUDA_SEPARABLE_COMPILATION})
 else()
   target_link_libraries(af_cuda_static_cuda_library
