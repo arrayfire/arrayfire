@@ -47,69 +47,69 @@ using data_t = typename common::kernel_type<T>::data;
 #ifndef __CUDACC_RTC__
 namespace {
 template<typename T>
-const char *shortname(bool caps = false) {
+inline const char *shortname(bool caps = false) {
     return caps ? "Q" : "q";
 }
 template<>
-const char *shortname<float>(bool caps) {
+inline const char *shortname<float>(bool caps) {
     return caps ? "S" : "s";
 }
 template<>
-const char *shortname<double>(bool caps) {
+inline const char *shortname<double>(bool caps) {
     return caps ? "D" : "d";
 }
 template<>
-const char *shortname<cfloat>(bool caps) {
+inline const char *shortname<cfloat>(bool caps) {
     return caps ? "C" : "c";
 }
 template<>
-const char *shortname<cdouble>(bool caps) {
+inline const char *shortname<cdouble>(bool caps) {
     return caps ? "Z" : "z";
 }
 template<>
-const char *shortname<int>(bool caps) {
+inline const char *shortname<int>(bool caps) {
     return caps ? "I" : "i";
 }
 template<>
-const char *shortname<uint>(bool caps) {
+inline const char *shortname<uint>(bool caps) {
     return caps ? "U" : "u";
 }
 template<>
-const char *shortname<char>(bool caps) {
+inline const char *shortname<char>(bool caps) {
     return caps ? "J" : "j";
 }
 template<>
-const char *shortname<uchar>(bool caps) {
+inline const char *shortname<uchar>(bool caps) {
     return caps ? "V" : "v";
 }
 template<>
-const char *shortname<intl>(bool caps) {
+inline const char *shortname<intl>(bool caps) {
     return caps ? "X" : "x";
 }
 template<>
-const char *shortname<uintl>(bool caps) {
+inline const char *shortname<uintl>(bool caps) {
     return caps ? "Y" : "y";
 }
 template<>
-const char *shortname<short>(bool caps) {
+inline const char *shortname<short>(bool caps) {
     return caps ? "P" : "p";
 }
 template<>
-const char *shortname<ushort>(bool caps) {
+inline const char *shortname<ushort>(bool caps) {
     return caps ? "Q" : "q";
 }
 template<>
-const char *shortname<common::half>(bool caps) {
+inline const char *shortname<common::half>(bool caps) {
     return caps ? "H" : "h";
 }
 
 template<typename T>
-const char *getFullName();
+inline const char *getFullName();
 
-#define SPECIALIZE(T)              \
-    template<>                     \
-    const char *getFullName<T>() { \
-        return #T;                 \
+#define SPECIALIZE(T)                     \
+    template<>                            \
+    inline const char *getFullName<T>() { \
+        return #T;                        \
     }
 
 SPECIALIZE(float)
@@ -126,7 +126,7 @@ SPECIALIZE(unsigned long long)
 SPECIALIZE(long long)
 
 template<>
-const char *getFullName<common::half>() {
+inline const char *getFullName<common::half>() {
     return "half";
 }
 #undef SPECIALIZE
