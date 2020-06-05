@@ -202,6 +202,13 @@
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
+#if ((__clang_major__ * 100) + __clang_minor__) >= 400 &&                      \
+    __has_feature(cxx_relaxed_constexpr)
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#else
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#endif
+
 #  elif AF_COMPILER_IS_Clang
 
 #    if !(((__clang_major__ * 100) + __clang_minor__) >= 301)
@@ -252,6 +259,13 @@
 #    else
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
+
+#if ((__clang_major__ * 100) + __clang_minor__) >= 301 &&                      \
+    __has_feature(cxx_relaxed_constexpr)
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#else
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#endif
 
 #  elif AF_COMPILER_IS_GNU
 
@@ -306,6 +320,12 @@
 #    else
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
+
+#if (__GNUC__ * 100 + __GNUC_MINOR__) >= 500 && __cplusplus >= 201402L
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#else
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#endif
 
 #  elif AF_COMPILER_IS_Intel
 
@@ -378,6 +398,20 @@
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
+#if __cpp_constexpr >= 201304 ||                                               \
+    (__INTEL_COMPILER >= 1700 &&                                               \
+     ((__cplusplus >= 201300L) ||                                              \
+      ((__cplusplus == 201103L) && !defined(__INTEL_CXX11_MODE__)) ||          \
+      ((((__INTEL_COMPILER == 1500) && (__INTEL_COMPILER_UPDATE == 1))) &&     \
+       defined(__GXX_EXPERIMENTAL_CXX0X__) &&                                  \
+       !defined(__INTEL_CXX11_MODE__)) ||                                      \
+      (defined(__INTEL_CXX11_MODE__) && defined(__cpp_aggregate_nsdmi))) &&    \
+     !defined(_MSC_VER))
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#else
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#endif
+
 #  elif AF_COMPILER_IS_MSVC
 
 #    if !(_MSC_VER >= 1600)
@@ -436,6 +470,12 @@
 #      define AF_COMPILER_CXX_GENERALIZED_INITIALIZERS 0
 #    endif
 
+#if _MSC_VER >= 1911
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 1
+#else
+#define AF_COMPILER_CXX_RELAXED_CONSTEXPR 0
+#endif
+
 #  endif
 
 #  if defined(AF_COMPILER_CXX_NOEXCEPT) && AF_COMPILER_CXX_NOEXCEPT
@@ -469,6 +509,13 @@ template<> struct AFStaticAssert<true>{};
 #    define AF_STATIC_ASSERT_MSG(X, MSG) enum { AF_STATIC_ASSERT_JOIN(AFStaticAssertEnum, __LINE__) = sizeof(AFStaticAssert<X>) }
 #  endif
 
+#endif
+
+#if defined(AF_COMPILER_CXX_RELAXED_CONSTEXPR) &&                              \
+    AF_COMPILER_CXX_RELAXED_CONSTEXPR
+#define AF_CONSTEXPR constexpr
+#else
+#define AF_CONSTEXPR
 #endif
 
 #endif

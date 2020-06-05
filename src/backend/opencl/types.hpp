@@ -12,6 +12,7 @@
 #include <cl2hpp.hpp>
 #include <common/kernel_type.hpp>
 #include <common/traits.hpp>
+#include <af/compilers.h>
 
 #include <algorithm>
 #include <array>
@@ -125,7 +126,7 @@ inline const char *getFullName<cdouble>() {
 }  // namespace
 
 template<typename... ARGS>
-constexpr const char *getTypeBuildDefinition() {
+AF_CONSTEXPR const char *getTypeBuildDefinition() {
     using common::half;
     using std::any_of;
     using std::array;

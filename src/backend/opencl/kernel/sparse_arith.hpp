@@ -33,7 +33,7 @@ constexpr unsigned TY      = 8;
 constexpr unsigned THREADS = TX * TY;
 
 template<af_op_t op>
-constexpr std::string getOpString() {
+AF_CONSTEXPR std::string getOpString() {
     switch (op) {
         case af_add_t: return "ADD";
         case af_sub_t: return "SUB";

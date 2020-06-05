@@ -8,6 +8,8 @@
  ********************************************************/
 #pragma once
 
+#include <af/compilers.h>
+
 namespace common {
 
 /// Deletes a handle.
@@ -72,7 +74,8 @@ class unique_handle {
     constexpr operator const T &() const noexcept { return handle_; }
 
     unique_handle(const unique_handle &other) noexcept = delete;
-    unique_handle(unique_handle &&other) noexcept : handle_(other.handle_) {
+    AF_CONSTEXPR unique_handle(unique_handle &&other) noexcept
+        : handle_(other.handle_) {
         other.handle_ = 0;
     }
 
