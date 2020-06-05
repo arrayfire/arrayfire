@@ -216,7 +216,8 @@ cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
                             const Array<T> &rhs, dim_t rStride, const T *beta,
                             Array<T> &out, dim_t oleading) {
     auto prop = getDeviceProp(getActiveDeviceId());
-    if (prop.major > 3) {
+#if __CUDACC_VER_MAJOR__ >= 10
+    if (prop.major > 3 && __CUDACC_VER_MAJOR__ >= 10) {
         return cublasGemmEx(
             blasHandle(), lOpts, rOpts, M, N, K, alpha, lhs.get(), getType<T>(),
             lStride, rhs.get(), getType<T>(), rStride, beta, out.get(),
@@ -233,11 +234,15 @@ cublasStatus_t gemmDispatch(BlasHandle handle, cublasOperation_t lOpts,
             // type is CUDA_R_32F?
             selectGEMMAlgorithm<T>());
     } else {
+#endif
         using Nt = typename common::kernel_type<T>::native;
         return gemm_func<Nt>()(blasHandle(), lOpts, rOpts, M, N, K, (Nt *)alpha,
                                (Nt *)lhs.get(), lStride, (Nt *)rhs.get(),
                                rStride, (Nt *)beta, (Nt *)out.get(), oleading);
+
+#if __CUDACC_VER_MAJOR__ >= 10
     }
+#endif
 }
 
 template<typename T>
@@ -248,6 +253,7 @@ cublasStatus_t gemmBatchedDispatch(BlasHandle handle, cublasOperation_t lOpts,
                                    const T *beta, T **optrs, int oStrides,
                                    int batchSize) {
     auto prop = getDeviceProp(getActiveDeviceId());
+#if __CUDACC_VER_MAJOR__ >= 10
     if (prop.major > 3) {
         return cublasGemmBatchedEx(
             blasHandle(), lOpts, rOpts, M, N, K, alpha, (const void **)lptrs,
@@ -264,12 +270,15 @@ cublasStatus_t gemmBatchedDispatch(BlasHandle handle, cublasOperation_t lOpts,
             // type is CUDA_R_32F?
             selectGEMMAlgorithm<T>());
     } else {
+#endif
         using Nt = typename common::kernel_type<T>::native;
         return gemmBatched_func<Nt>()(
             blasHandle(), lOpts, rOpts, M, N, K, (const Nt *)alpha,
             (const Nt **)lptrs, lStrides, (const Nt **)rptrs, rStrides,
             (const Nt *)beta, (Nt **)optrs, oStrides, batchSize);
+#if __CUDACC_VER_MAJOR__ >= 10
     }
+#endif
 }
 
 template<typename T>
