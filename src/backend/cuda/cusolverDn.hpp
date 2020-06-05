@@ -14,16 +14,16 @@ namespace cuda {
 
 const char* errorString(cusolverStatus_t err);
 
-#define CUSOLVER_CHECK(fn)                                                  \
-    do {                                                                    \
-        cusolverStatus_t _error = fn;                                       \
-        if (_error != CUSOLVER_STATUS_SUCCESS) {                            \
-            char _err_msg[1024];                                            \
-            snprintf(_err_msg, sizeof(_err_msg), "CUBLAS Error (%d): %s\n", \
-                     (int)(_error), cuda::errorString(_error));             \
-                                                                            \
-            AF_ERROR(_err_msg, AF_ERR_INTERNAL);                            \
-        }                                                                   \
+#define CUSOLVER_CHECK(fn)                                                    \
+    do {                                                                      \
+        cusolverStatus_t _error = fn;                                         \
+        if (_error != CUSOLVER_STATUS_SUCCESS) {                              \
+            char _err_msg[1024];                                              \
+            snprintf(_err_msg, sizeof(_err_msg), "CUSOLVER Error (%d): %s\n", \
+                     (int)(_error), cuda::errorString(_error));               \
+                                                                              \
+            AF_ERROR(_err_msg, AF_ERR_INTERNAL);                              \
+        }                                                                     \
     } while (0)
 
 }  // namespace cuda
