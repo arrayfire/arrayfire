@@ -132,20 +132,23 @@ constexpr const char *getTypeBuildDefinition() {
     using std::begin;
     using std::end;
     using std::is_same;
-    array<bool, sizeof...(ARGS)> is_half = {is_same<ARGS, half>::value...};
-    array<bool, sizeof...(ARGS) * 2> is_double = {
-        is_same<ARGS, double>::value..., is_same<ARGS, cdouble>::value...};
+    array<bool, sizeof...(ARGS)> is_half    = {is_same<ARGS, half>::value...};
+    array<bool, sizeof...(ARGS)> is_double  = {is_same<ARGS, double>::value...};
+    array<bool, sizeof...(ARGS)> is_cdouble = {
+        is_same<ARGS, cdouble>::value...};
 
     bool half_def =
         any_of(begin(is_half), end(is_half), [](bool val) { return val; });
     bool double_def =
         any_of(begin(is_double), end(is_double), [](bool val) { return val; });
+    bool cdouble_def = any_of(begin(is_cdouble), end(is_cdouble),
+                              [](bool val) { return val; });
 
-    if (half_def && double_def) {
+    if (half_def && (double_def || cdouble_def)) {
         return " -D USE_HALF -D USE_DOUBLE";
     } else if (half_def) {
         return " -D USE_HALF";
-    } else if (double_def) {
+    } else if (double_def || cdouble_def) {
         return " -D USE_DOUBLE";
     } else {
         return "";
