@@ -15,7 +15,9 @@
 #include <common/half.hpp>
 #include <common/indexing_helpers.hpp>
 #include <common/unique_handle.hpp>
+#ifdef WITH_CUDNN
 #include <cudnn.hpp>
+#endif
 #include <err_cuda.hpp>
 #include <kernel/convolve.hpp>
 #include <platform.hpp>
