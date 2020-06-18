@@ -1,13 +1,39 @@
-**Short description of change**  
-Not the commit message. Description of what was done for an unfamiliar reviewer.
 
-**Additional description**  
-More detail if necessary to describe all commits in pull request.
+<!-- 
+Short description of change
 
-**Motivation**  
-Why these changes are necessary or will be useful. Specific issues solved by this PR
+This should be one or two sentences that describe the overall motivation of
+the PR. Description of what was done for an unfamiliar
+reviewer.
+-->
 
-**Future considerations**  
-What additional changes or issues might need to be addressed in the future due to this PR.
+Description
+-----------
+<!--
+Additional information about the PR answering following questions:
 
+* Is this a new feature or a bug fix
+* More detail if necessary to describe all commits in pull request.
+* Why these changes are necessary.
+* Potential impact on specific hardware, software or backends
+* New function and their functionallity
+* Can this PR be backported to older versions
+-->
+Fixes: #<issue number> ...
+
+Changes to Users
+----------------
+<!--
+* Additional options added to the build
+* What changes will existing users have to make to their code or build steps?
+* 
 Refer to [wiki](https://github.com/arrayfire/arrayfire/wiki) for development guidelines
+-->
+
+Checklist
+---------
+- [ ] Rebased on latest master
+- [ ] Code compiles
+- [ ] Tests pass
+- [ ] Functions added to unified API
+- [ ] Functions documented
