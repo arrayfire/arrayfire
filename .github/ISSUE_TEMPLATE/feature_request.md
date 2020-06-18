@@ -1,20 +1,20 @@
 ---
 name: Feature Request
-about: Suggest an idea for this project
+about: Suggest a new idea for ArrayFire
 title: ''
-labels: ''
+labels: 'feature'
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+<!-- One or two sentences describing the feature. -->
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
-
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
+Description
+===========
+<!--
+* Additional information about the feature you would like to add
+* What problem are you trying to solve?
+* (Optional) API of new function
+* (Optional) Algorithms that could be used to implement this feature
+* (Optional)Are there other libraries that implement this feature?
+-->
