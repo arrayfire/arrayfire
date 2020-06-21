@@ -29,13 +29,25 @@ endif()
 endfunction()
 
 function(arrayfire_get_cuda_cxx_flags cuda_flags)
-  if(NOT MSVC)
-    set(flags -std=c++14 --expt-relaxed-constexpr -Xcompiler -fPIC -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden)
-  else()
-    set(flags -Xcompiler /wd4251 -Xcompiler /wd4068 -Xcompiler /wd4275 -Xcompiler /bigobj -Xcompiler /EHsc)
+  if(MSVC)
+    set(flags -Xcompiler /wd4251
+              -Xcompiler /wd4068
+              -Xcompiler /wd4275
+              -Xcompiler /bigobj
+              -Xcompiler /EHsc
+              --expt-relaxed-constexpr)
     if(CMAKE_GENERATOR MATCHES "Ninja")
       set(flags ${flags} -Xcompiler /FS)
     endif()
+    if(cplusplus_define)
+      list(APPEND flags -Xcompiler /Zc:__cplusplus
+                        -Xcompiler /std:c++14)
+    endif()
+  else()
+    set(flags -std=c++14
+              -Xcompiler -fPIC
+              -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden
+              --expt-relaxed-constexpr)
   endif()
 
   if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
