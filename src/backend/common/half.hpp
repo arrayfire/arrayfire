@@ -10,12 +10,36 @@
 #pragma once
 
 #if defined(NVCC) || defined(__CUDACC_RTC__)
+
+// MSVC sets __cplusplus to 199711L for all versions unless you specify
+// the new \Zc:__cplusplus flag in Visual Studio 2017. This is not possible
+// in older versions of MSVC so we updated it here for the cuda_fp16 header
+// because otherwise it does not define the default constructor for __half
+// as default and that prevents the __half struct to be used in a constexpr
+// expression
+#if defined(_MSC_VER) && __cplusplus == 199711L
+#undef __cplusplus
+#define __cplusplus 201402L
+#define AF_CPLUSPLUS_CHANGED
+#endif
+
 #include <cuda_fp16.h>
+
+#ifdef AF_CPLUSPLUS_CHANGED
+#undef __cplusplus
+#undef AF_CPLUSPLUS_CHANGED
+#define __cplusplus 199711L
+#endif
 #endif
 
 #include <backend.hpp>
 
-#ifndef __CUDACC_RTC__
+#ifdef __CUDACC_RTC__
+using uint16_t = unsigned short;
+// we do not include the af/compilers header in nvrtc compilations so
+// we are defining the AF_CONSTEXPR expression here
+#define AF_CONSTEXPR constexpr
+#else
 #include <af/compilers.h>
 #include <cstring>
 #include <ostream>
@@ -23,8 +47,6 @@
 #include <type_traits>
 
 #include <limits>
-#else
-using uint16_t      = unsigned short;
 #endif
 
 namespace common {
