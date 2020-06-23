@@ -234,6 +234,12 @@ if(AF_WITH_NONFREE)
   set(cxx_definitions -DAF_WITH_NONFREE_SIFT)
 endif()
 
+if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
+   (UNIX AND
+    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 0))
+  list(APPEND cxx_definitions -DAF_USE_NEW_CUSPARSE_API)
+endif()
+
 # CUDA_NO_HALF prevents the inclusion of the half class in the global namespace
 # which conflicts with the half class in ArrayFire's common namespace. prefer
 # using __half class instead for CUDA
@@ -262,8 +268,10 @@ endif()
 cuda_add_library(af_cuda_static_cuda_library STATIC
     blas.cu
     blas.hpp
+    cudaDataType.hpp
     cufft.cu
     cufft.hpp
+    cusparse_descriptor_helpers.hpp
     fft.cu
     sparse.cu
     sparse.hpp
@@ -284,6 +292,12 @@ set_target_properties(af_cuda_static_cuda_library
   LINKER_LANGUAGE CXX
   FOLDER "Generated Targets"
 )
+
+if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
+   (UNIX AND
+    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 0))
+  target_compile_definitions(af_cuda_static_cuda_library PRIVATE AF_USE_NEW_CUSPARSE_API)
+endif()
 
 if(UNIX)
 
