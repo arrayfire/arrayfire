@@ -28,24 +28,6 @@ namespace cuda {
 
 using namespace common;
 
-// cusparseStatus_t cusparseZcsr2csc(cusparseHandle_t handle,
-//                                  int m, int n, int nnz,
-//                                  const cuDoubleComplex *csrSortedVal,
-//                                  const int *csrSortedRowPtr, const int
-//                                  *csrSortedColInd, cuDoubleComplex
-//                                  *cscSortedVal, int *cscSortedRowInd, int
-//                                  *cscSortedColPtr, cusparseAction_t
-//                                  copyValues, cusparseIndexBase_t idxBase);
-
-template<typename T>
-struct csr2csc_func_def_t {
-    typedef cusparseStatus_t (*csr2csc_func_def)(cusparseHandle_t, int, int,
-                                                 int, const T *, const int *,
-                                                 const int *, T *, int *, int *,
-                                                 cusparseAction_t,
-                                                 cusparseIndexBase_t);
-};
-
 // cusparseStatus_t cusparseZdense2csr(cusparseHandle_t handle,
 //                                    int m, int n,
 //                                    const cusparseMatDescr_t descrA,
@@ -143,12 +125,6 @@ struct gthr_func_def_t {
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
                cusparse##PREFIX##FUNC;                                      \
     }
-
-SPARSE_FUNC_DEF(csr2csc)
-SPARSE_FUNC(csr2csc, float, S)
-SPARSE_FUNC(csr2csc, double, D)
-SPARSE_FUNC(csr2csc, cfloat, C)
-SPARSE_FUNC(csr2csc, cdouble, Z)
 
 SPARSE_FUNC_DEF(dense2csr)
 SPARSE_FUNC(dense2csr, float, S)

@@ -10,8 +10,8 @@
 [submodule "src/backend/cpu/threads"]
 	path = src/backend/cpu/threads
 	url = https://github.com/alltheflops/threads.git
-[submodule "src/backend/cuda/cub"]
-	path = src/backend/cuda/cub
+[submodule "extern/cub"]
+	path = extern/cub
 	url = https://github.com/NVlabs/cub.git
 [submodule "extern/spdlog"]
 	path = extern/spdlog
