@@ -11,8 +11,10 @@
 
 #include <common/err_common.hpp>
 #include <complex.hpp>
+#include <cudaDataType.hpp>
 #include <cuda_runtime.h>
 #include <cusparse.hpp>
+#include <cusparse_descriptor_helpers.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 
@@ -32,51 +34,69 @@ cusparseOperation_t toCusparseTranspose(af_mat_prop opt) {
     return out;
 }
 
-// cusparseStatus_t cusparseZcsrmm(  cusparseHandle_t handle,
-//                                  cusparseOperation_t transA,
-//                                  int m, int n, int k, int nnz,
-//                                  const cuDoubleComplex *alpha,
-//                                  const cusparseMatDescr_t descrA,
-//                                  const cuDoubleComplex *csrValA,
-//                                  const int *csrRowPtrA, const int
-//                                  *csrColIndA, const cuDoubleComplex *B, int
-//                                  ldb, const cuDoubleComplex *beta,
-//                                  cuDoubleComplex *C, int ldc);
+#if defined(AF_USE_NEW_CUSPARSE_API)
 
 template<typename T>
-struct csrmm_func_def_t {
-    typedef cusparseStatus_t (*csrmm_func_def)(
-        cusparseHandle_t, cusparseOperation_t, int, int, int, int, const T *,
-        const cusparseMatDescr_t, const T *, const int *, const int *,
-        const T *, int, const T *, T *, int);
-};
+size_t spmvBufferSize(cusparseOperation_t opA, const T *alpha,
+                      const cusparseSpMatDescr_t matA,
+                      const cusparseDnVecDescr_t vecX, const T *beta,
+                      const cusparseDnVecDescr_t vecY) {
+    size_t retVal = 0;
+    CUSPARSE_CHECK(cusparseSpMV_bufferSize(
+        sparseHandle(), opA, alpha, matA, vecX, beta, vecY, getComputeType<T>(),
+        CUSPARSE_CSRMV_ALG1, &retVal));
+    return retVal;
+}
 
-// cusparseStatus_t cusparseZcsrmv(  cusparseHandle_t handle,
-//                                  cusparseOperation_t transA,
-//                                  int m, int n, int nnz,
-//                                  const cuDoubleComplex *alpha,
-//                                  const cusparseMatDescr_t descrA,
-//                                  const cuDoubleComplex *csrValA,
-//                                  const int *csrRowPtrA, const int
-//                                  *csrColIndA, const cuDoubleComplex *x, const
-//                                  cuDoubleComplex *beta, cuDoubleComplex *y)
+template<typename T>
+void spmv(cusparseOperation_t opA, const T *alpha,
+          const cusparseSpMatDescr_t matA, const cusparseDnVecDescr_t vecX,
+          const T *beta, const cusparseDnVecDescr_t vecY, void *buffer) {
+    CUSPARSE_CHECK(cusparseSpMV(sparseHandle(), opA, alpha, matA, vecX, beta,
+                                vecY, getComputeType<T>(),
+                                CUSPARSE_MV_ALG_DEFAULT, buffer));
+}
+
+template<typename T>
+size_t spmmBufferSize(cusparseOperation_t opA, cusparseOperation_t opB,
+                      const T *alpha, const cusparseSpMatDescr_t matA,
+                      const cusparseDnMatDescr_t matB, const T *beta,
+                      const cusparseDnMatDescr_t matC) {
+    size_t retVal = 0;
+    CUSPARSE_CHECK(cusparseSpMM_bufferSize(
+        sparseHandle(), opA, opB, alpha, matA, matB, beta, matC,
+        getComputeType<T>(), CUSPARSE_CSRMM_ALG1, &retVal));
+    return retVal;
+}
+
+template<typename T>
+void spmm(cusparseOperation_t opA, cusparseOperation_t opB, const T *alpha,
+          const cusparseSpMatDescr_t matA, const cusparseDnMatDescr_t matB,
+          const T *beta, const cusparseDnMatDescr_t matC, void *buffer) {
+    CUSPARSE_CHECK(cusparseSpMM(sparseHandle(), opA, opB, alpha, matA, matB,
+                                beta, matC, getComputeType<T>(),
+                                CUSPARSE_CSRMM_ALG1, buffer));
+}
+
+#else
 
 template<typename T>
 struct csrmv_func_def_t {
     typedef cusparseStatus_t (*csrmv_func_def)(
-        cusparseHandle_t, cusparseOperation_t, int, int, int, const T *,
-        const cusparseMatDescr_t, const T *, const int *, const int *,
-        const T *, const T *, T *);
+        cusparseHandle_t handle, cusparseOperation_t transA, int m, int n,
+        int k, const T *alpha, const cusparseMatDescr_t descrA,
+        const T *csrValA, const int *csrRowPtrA, const int *csrColIndA,
+        const T *x, const T *beta, T *y);
 };
 
-// cusparseStatus_t cusparseZcsr2csc(cusparseHandle_t handle,
-//                                  int m, int n, int nnz,
-//                                  const cuDoubleComplex *csrSortedVal,
-//                                  const int *csrSortedRowPtr, const int
-//                                  *csrSortedColInd, cuDoubleComplex
-//                                  *cscSortedVal, int *cscSortedRowInd, int
-//                                  *cscSortedColPtr, cusparseAction_t
-//                                  copyValues, cusparseIndexBase_t idxBase);
+template<typename T>
+struct csrmm_func_def_t {
+    typedef cusparseStatus_t (*csrmm_func_def)(
+        cusparseHandle_t handle, cusparseOperation_t transA, int m, int n,
+        int k, int nnz, const T *alpha, const cusparseMatDescr_t descrA,
+        const T *csrValA, const int *csrRowPtrA, const int *csrColIndA,
+        const T *B, int ldb, const T *beta, T *C, int ldc);
+};
 
 #define SPARSE_FUNC_DEF(FUNC) \
     template<typename T>      \
@@ -104,10 +124,11 @@ SPARSE_FUNC(csrmv, cdouble, Z)
 #undef SPARSE_FUNC
 #undef SPARSE_FUNC_DEF
 
+#endif
+
 template<typename T>
 Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
-    UNUSED(optRhs);
     // Similar Operations to GEMM
     cusparseOperation_t lOpts = toCusparseTranspose(optLhs);
 
@@ -127,6 +148,31 @@ Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
     T beta       = scalar<T>(0);
 
     dim4 rStrides = rhs.strides();
+
+#if defined(AF_USE_NEW_CUSPARSE_API)
+
+    auto spMat = csrMatDescriptor<T>(lhs);
+
+    if (rDims[rColDim] == 1) {
+        auto dnVec = denVecDescriptor<T>(rhs);
+        auto dnOut = denVecDescriptor<T>(out);
+        size_t bufferSize =
+            spmvBufferSize<T>(lOpts, &alpha, spMat, dnVec, &beta, dnOut);
+        auto tempBuffer = createEmptyArray<char>(dim4(bufferSize));
+        spmv<T>(lOpts, &alpha, spMat, dnVec, &beta, dnOut, tempBuffer.get());
+    } else {
+        cusparseOperation_t rOpts = toCusparseTranspose(optRhs);
+
+        auto dnMat = denMatDescriptor<T>(rhs);
+        auto dnOut = denMatDescriptor<T>(out);
+        size_t bufferSize =
+            spmmBufferSize<T>(lOpts, rOpts, &alpha, spMat, dnMat, &beta, dnOut);
+        auto tempBuffer = createEmptyArray<char>(dim4(bufferSize));
+        spmm<T>(lOpts, rOpts, &alpha, spMat, dnMat, &beta, dnOut,
+                tempBuffer.get());
+    }
+
+#else
 
     // Create Sparse Matrix Descriptor
     cusparseMatDescr_t descr = 0;
@@ -151,9 +197,9 @@ Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
             lhs.getRowIdx().get(), lhs.getColIdx().get(), rhs.get(),
             rStrides[1], &beta, out.get(), out.dims()[0]));
     }
-
-    // Destory Sparse Matrix Descriptor
     CUSPARSE_CHECK(cusparseDestroyMatDescr(descr));
+
+#endif
 
     return out;
 }

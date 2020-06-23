@@ -20,6 +20,27 @@ CREATE_HANDLE(cublasHandle_t, cublasCreate, cublasDestroy);
 CREATE_HANDLE(cusolverDnHandle_t, cusolverDnCreate, cusolverDnDestroy);
 CREATE_HANDLE(cufftHandle, cufftCreate, cufftDestroy);
 
+#if defined(AF_USE_NEW_CUSPARSE_API)
+namespace common {
+
+template<>
+void handle_deleter<cusparseSpMatDescr_t>(cusparseSpMatDescr_t handle) noexcept {
+    cusparseDestroySpMat(handle);
+}
+
+template<>
+void handle_deleter<cusparseDnVecDescr_t>(cusparseDnVecDescr_t handle) noexcept {
+    cusparseDestroyDnVec(handle);
+}
+
+template<>
+void handle_deleter<cusparseDnMatDescr_t>(cusparseDnMatDescr_t handle) noexcept {
+    cusparseDestroyDnMat(handle);
+}
+
+}  // namespace common
+#endif
+
 #ifdef WITH_CUDNN
 
 #include <cudnn.hpp>
