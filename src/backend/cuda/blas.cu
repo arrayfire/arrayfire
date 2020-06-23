@@ -17,6 +17,7 @@
 #include <copy.hpp>
 #include <cublas.hpp>
 #include <cublas_v2.h>
+#include <cudaDataType.hpp>
 #include <cuda_runtime.h>
 #include <err_cuda.hpp>
 #include <math.hpp>
@@ -140,56 +141,6 @@ BLAS_FUNC(dot, cdouble, false, Z, u)
 
 #undef BLAS_FUNC
 #undef BLAS_FUNC_DEF
-
-template<typename T>
-cudaDataType_t getType();
-
-template<>
-cudaDataType_t getType<float>() {
-    return CUDA_R_32F;
-}
-
-template<>
-cudaDataType_t getType<cfloat>() {
-    return CUDA_C_32F;
-}
-
-template<>
-cudaDataType_t getType<double>() {
-    return CUDA_R_64F;
-}
-
-template<>
-cudaDataType_t getType<cdouble>() {
-    return CUDA_C_64F;
-}
-
-template<>
-cudaDataType_t getType<half>() {
-    return CUDA_R_16F;
-}
-
-template<typename T>
-cudaDataType_t getComputeType() {
-    return getType<T>();
-}
-
-template<>
-cudaDataType_t getComputeType<half>() {
-    cudaDataType_t algo = getType<half>();
-    // There is probbaly a bug in nvidia cuda docs and/or drivers: According to
-    // https://docs.nvidia.com/cuda/cublas/index.html#cublas-GemmEx computeType
-    // could be 32F even if A/B inputs are 16F. But CudaCompute 6.1 GPUs (for
-    // example GTX10X0) dont seem to be capbale to compute at f32 when the
-    // inputs are f16: results are inf if trying to do so and cublasGemmEx even
-    // returns OK. At the moment let's comment out : the drawback is just that
-    // the speed of f16 computation on these GPUs is very slow:
-    //
-    // auto dev            = getDeviceProp(getActiveDeviceId());
-    // if (dev.major == // 6 && dev.minor == 1) { algo = CUDA_R_32F; }
-
-    return algo;
-}
 
 template<typename T>
 cublasGemmAlgo_t selectGEMMAlgorithm() {
