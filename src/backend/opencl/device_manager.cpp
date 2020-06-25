@@ -181,14 +181,20 @@ DeviceManager::DeviceManager()
     try {
         Platform::get(&platforms);
     } catch (const cl::Error& err) {
+#if !defined(OS_MAC)
+        // CL_PLATFORM_NOT_FOUND_KHR is not defined in Apple's OpenCL
+        // implementation. Thus, it requires this ugly check.
         if (err.err() == CL_PLATFORM_NOT_FOUND_KHR) {
+#endif
             AF_ERROR(
                 "No OpenCL platforms found on this system. Ensure you have "
                 "installed the device driver as well as the OpenCL runtime and "
                 "ICD from your device vendor. You can use the clinfo utility "
                 "to debug OpenCL installation issues.",
                 AF_ERR_RUNTIME);
+#if !defined(OS_MAC)
         }
+#endif
     }
     fgMngr = std::make_unique<graphics::ForgeManager>();
 
