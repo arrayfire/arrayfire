@@ -26,7 +26,31 @@ class ScalarNode : public common::Node {
    public:
     ScalarNode(T val)
         : Node(static_cast<af::dtype>(af::dtype_traits<T>::af_type), 0, {})
-        , m_val(val) {}
+        , m_val(val) {
+        static_assert(std::is_nothrow_move_assignable<ScalarNode>::value,
+                      "ScalarNode is not move assignable");
+        static_assert(std::is_nothrow_move_constructible<ScalarNode>::value,
+                      "ScalarNode is not move constructible");
+    }
+
+    /// Default move copy constructor
+    ScalarNode(const ScalarNode& other) = default;
+
+    /// Default move constructor
+    ScalarNode(ScalarNode&& other) = default;
+
+    /// Default move/copy assignment operator(Rule of 4)
+    ScalarNode& operator=(ScalarNode node) noexcept {
+        swap(node);
+        return *this;
+    }
+
+    // Swap specilization
+    void swap(ScalarNode& other) noexcept {
+        using std::swap;
+        Node::swap(other);
+        swap(m_val, other.m_val);
+    }
 
     void genKerName(std::stringstream& kerStream,
                     const common::Node_ids& ids) const final {

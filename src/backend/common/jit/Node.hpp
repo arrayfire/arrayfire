@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 enum class kJITHeuristics {
@@ -80,29 +81,36 @@ class Node {
     static const int kMaxChildren = 3;
 
    protected:
-    const std::array<Node_ptr, kMaxChildren> m_children;
-    const af::dtype m_type;
-    const int m_height;
+    std::array<Node_ptr, kMaxChildren> m_children;
+    af::dtype m_type;
+    int m_height;
 
     template<typename T>
     friend class NodeIterator;
 
+    void swap(Node &other) noexcept {
+        using std::swap;
+        for (int i = 0; i < kMaxChildren; i++) {
+            swap(m_children[i], other.m_children[i]);
+        }
+        swap(m_type, other.m_type);
+        swap(m_height, other.m_height);
+    }
+
    public:
+    Node() = default;
     Node(const af::dtype type, const int height,
          const std::array<Node_ptr, kMaxChildren> children)
-        : m_children(children), m_type(type), m_height(height) {}
+        : m_children(children), m_type(type), m_height(height) {
+        static_assert(std::is_nothrow_move_assignable<Node>::value,
+                      "Node is not move assignable");
+    }
 
-    /// Default copy constructor
-    Node(Node &node) = default;
-
-    /// Default move constructor
-    Node(Node &&node) = default;
+    /// Default copy constructor operator
+    Node(const Node &node) = default;
 
     /// Default copy assignment operator
     Node &operator=(const Node &node) = default;
-
-    /// Default move assignment operator
-    Node &operator=(Node &&node) = default;
 
     int getNodesMap(Node_map_t &node_map, std::vector<Node *> &full_nodes,
                     std::vector<Node_ids> &full_ids);
@@ -213,7 +221,7 @@ class Node {
     virtual std::string getNameStr() const { return getShortName(m_type); }
 
     /// Default destructor
-    virtual ~Node() = default;
+    virtual ~Node() noexcept = default;
 };
 
 struct Node_ids {

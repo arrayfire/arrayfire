@@ -24,9 +24,9 @@ namespace common {
 
 class NaryNode : public Node {
    private:
-    const int m_num_children;
-    const int m_op;
-    const std::string m_op_str;
+    int m_num_children;
+    int m_op;
+    std::string m_op_str;
 
    public:
     NaryNode(const af::dtype type, const char *op_str, const int num_children,
@@ -39,7 +39,30 @@ class NaryNode : public Node {
                   children))
         , m_num_children(num_children)
         , m_op(op)
-        , m_op_str(op_str) {}
+        , m_op_str(op_str) {
+        static_assert(std::is_nothrow_move_assignable<NaryNode>::value,
+                      "NaryNode is not move assignable");
+        static_assert(std::is_nothrow_move_constructible<NaryNode>::value,
+                      "NaryNode is not move constructible");
+    }
+
+    NaryNode(NaryNode &&other) = default;
+
+    NaryNode(const NaryNode &other) = default;
+
+    /// Default copy assignment operator
+    NaryNode &operator=(const NaryNode &node) = default;
+
+    /// Default move assignment operator
+    NaryNode &operator=(NaryNode &&node) noexcept = default;
+
+    void swap(NaryNode &other) noexcept {
+        using std::swap;
+        Node::swap(other);
+        swap(m_num_children, other.m_num_children);
+        swap(m_op, other.m_op);
+        swap(m_op_str, other.m_op_str);
+    }
 
     void genKerName(std::stringstream &kerStream,
                     const common::Node_ids &ids) const final {
