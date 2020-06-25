@@ -15,6 +15,11 @@ namespace common {
 class UnaryNode : public NaryNode {
    public:
     UnaryNode(const af::dtype type, const char *op_str, Node_ptr child, int op)
-        : NaryNode(type, op_str, 1, {{child}}, op, child->getHeight() + 1) {}
+        : NaryNode(type, op_str, 1, {{child}}, op, child->getHeight() + 1) {
+        static_assert(std::is_nothrow_move_assignable<UnaryNode>::value,
+                      "UnaryNode is not move assignable");
+        static_assert(std::is_nothrow_move_constructible<UnaryNode>::value,
+                      "UnaryNode is not move constructible");
+    }
 };
 }  // namespace common
