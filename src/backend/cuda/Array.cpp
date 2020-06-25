@@ -78,13 +78,15 @@ Array<T>::Array(const af::dim4 &dims, const T *const in_data, bool is_device,
     , node(bufferNodePtr<T>())
     , ready(true)
     , owner(true) {
-#if __cplusplus > 199711L
     static_assert(std::is_standard_layout<Array<T>>::value,
                   "Array<T> must be a standard layout type");
+    static_assert(std::is_move_assignable<Array<T>>::value,
+                  "Array<T> is not move assignable");
+    static_assert(std::is_move_constructible<Array<T>>::value,
+                  "Array<T> is not move constructible");
     static_assert(
         offsetof(Array<T>, info) == 0,
         "Array<T>::info must be the first member variable of Array<T>");
-#endif
     if (!is_device) {
         CUDA_CHECK(
             cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),

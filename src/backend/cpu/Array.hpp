@@ -134,6 +134,24 @@ class Array {
           T *const in_data, bool is_device = false);
 
    public:
+    Array<T>(const Array<T> &other) = default;
+    Array<T>(Array<T> &&other)      = default;
+
+    Array<T> &operator=(Array<T> other) noexcept {
+        swap(other);
+        return *this;
+    }
+
+    void swap(Array<T> &other) noexcept {
+        using std::swap;
+        swap(info, other.info);
+        swap(data, other.data);
+        swap(data_dims, other.data_dims);
+        swap(node, other.node);
+        swap(ready, other.ready);
+        swap(owner, other.owner);
+    }
+
     void resetInfo(const af::dim4 &dims) { info.resetInfo(dims); }
     void resetDims(const af::dim4 &dims) { info.resetDims(dims); }
     void modDims(const af::dim4 &newDims) { info.modDims(newDims); }

@@ -1,5 +1,5 @@
 
-<!-- 
+<!--
 Short description of change
 
 This should be one or two sentences that describe the overall
@@ -16,7 +16,7 @@ Additional information about the PR answering following questions:
 * More detail if necessary to describe all commits in pull request.
 * Why these changes are necessary.
 * Potential impact on specific hardware, software or backends.
-* New functions and their functionallity.
+* New functions and their functionality.
 * Can this PR be backported to older versions?
 * Future changes not implemented in this PR.
 -->
