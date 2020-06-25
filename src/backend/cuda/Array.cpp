@@ -219,9 +219,6 @@ void evalMultiple(std::vector<Array<T> *> arrays) {
 }
 
 template<typename T>
-Array<T>::~Array() = default;
-
-template<typename T>
 Node_ptr Array<T>::getNode() {
     if (node->isBuffer()) {
         unsigned bytes = this->getDataDims().elements() * sizeof(T);

@@ -76,6 +76,7 @@ target_link_libraries(af
     cpp_api_interface
     spdlog
     Threads::Threads
+    Boost::boost
     ${CMAKE_DL_LIBS}
   )
 

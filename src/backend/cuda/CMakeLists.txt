@@ -286,18 +286,25 @@ set_target_properties(af_cuda_static_cuda_library
 )
 
 if(UNIX)
+
+  check_cxx_compiler_flag("-Wl,--start-group -Werror" group_flags)
+  if(group_flags)
+    set(START_GROUP -Wl,--start-group)
+    set(END_GROUP -Wl,--end-group)
+  endif()
+
   target_link_libraries(af_cuda_static_cuda_library
     PRIVATE
       Boost::boost
       ${CMAKE_DL_LIBS}
       ${cusolver_lib}
-      -Wl,--start-group
+      ${START_GROUP}
       ${CUDA_culibos_LIBRARY} #also a static libary
       ${CUDA_cublas_static_LIBRARY}
       ${CUDA_cufft_static_LIBRARY}
       ${CUDA_cusparse_static_LIBRARY}
       ${cusolver_static_lib}
-      -Wl,--end-group
+      ${END_GROUP}
   )
 
   if(CUDA_VERSION VERSION_GREATER 9.5)
