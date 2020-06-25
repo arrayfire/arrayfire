@@ -12,31 +12,6 @@ find_program(GIT git)
 set(prefix ${PROJECT_BINARY_DIR}/third_party/CLBlast)
 set(CLBlast_location ${prefix}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}clblast${CMAKE_STATIC_LIBRARY_SUFFIX})
 
-if(APPLE)
-  # We need this patch on macOS until #PR 356 is merged in the CLBlast repo
-  write_file(clblast.patch
-"diff --git a/src/clpp11.hpp b/src/clpp11.hpp
-index 9446499..786f7db 100644
---- a/src/clpp11.hpp
-+++ b/src/clpp11.hpp
-@@ -358,8 +358,10 @@ class Device {
-
-   // Returns if the Nvidia chip is a Volta or later archicture (sm_70 or higher)
-   bool IsPostNVIDIAVolta() const {
--    assert(HasExtension(\"cl_nv_device_attribute_query\"));
--    return GetInfo<cl_uint>(CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV) >= 7;
-+    if(HasExtension(\"cl_nv_device_attribute_query\")) {
-+      return GetInfo<cl_uint>(CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV) >= 7;
-+    }
-+    return false;
-   }
-
-   // Retrieves the above extra information (if present)
-")
-
-  set(CLBLAST_PATCH_COMMAND ${GIT} apply ${ArrayFire_BINARY_DIR}/clblast.patch)
-endif()
-
 if(WIN32 AND CMAKE_GENERATOR_PLATFORM AND NOT CMAKE_GENERATOR MATCHES "Ninja")
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
 else()
@@ -56,7 +31,6 @@ ExternalProject_Add(
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
-    PATCH_COMMAND ${CLBLAST_PATCH_COMMAND}
     BUILD_BYPRODUCTS ${CLBlast_location}
     CONFIGURE_COMMAND ${CMAKE_COMMAND} ${extproj_gen_opts}
       -Wno-dev <SOURCE_DIR>
