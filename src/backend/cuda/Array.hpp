@@ -179,7 +179,7 @@ class Array {
 
 #undef INFO_IS_FUNC
 
-    ~Array();
+    ~Array() = default;
 
     bool isReady() const { return ready; }
     bool isOwner() const { return owner; }
