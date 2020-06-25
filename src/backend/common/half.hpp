@@ -844,6 +844,14 @@ class alignas(2) half {
         data_(bits)
 #endif
     {
+#ifndef __CUDACC_RTC__
+        static_assert(std::is_standard_layout<half>::value,
+                      "half must be a standard layout type");
+        static_assert(std::is_nothrow_move_assignable<half>::value,
+                      "half is not move assignable");
+        static_assert(std::is_nothrow_move_constructible<half>::value,
+                      "half is not move constructible");
+#endif
     }
 
 #if defined(__CUDA_ARCH__)

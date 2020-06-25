@@ -28,7 +28,9 @@ class BufferNodeBase : public common::Node {
     bool m_linear_buffer;
 
    public:
-    BufferNodeBase(af::dtype type) : Node(type, 0, {}) {}
+    BufferNodeBase(af::dtype type) : Node(type, 0, {}) {
+        // This class is not movable because of std::once_flag
+    }
 
     bool isBuffer() const final { return true; }
 

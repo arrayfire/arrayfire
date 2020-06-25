@@ -56,6 +56,10 @@ class ArrayInfo {
         , dim_strides(stride)
         , is_sparse(false) {
         setId(id);
+        static_assert(std::is_move_assignable<ArrayInfo>::value,
+                      "ArrayInfo is not move assignable");
+        static_assert(std::is_move_constructible<ArrayInfo>::value,
+                      "ArrayInfo is not move constructible");
         static_assert(
             offsetof(ArrayInfo, devId) == 0,
             "ArrayInfo::devId must be the first member variable of ArrayInfo. \
@@ -79,10 +83,24 @@ class ArrayInfo {
                    This is then used in the unified backend to check mismatched arrays.");
     }
 
-    // Copy constructors are deprecated if there is a
-    // user-defined destructor in c++11
     ArrayInfo()                       = default;
     ArrayInfo(const ArrayInfo& other) = default;
+    ArrayInfo(ArrayInfo&& other)      = default;
+
+    ArrayInfo& operator=(ArrayInfo other) noexcept {
+        swap(other);
+        return *this;
+    }
+
+    void swap(ArrayInfo& other) noexcept {
+        using std::swap;
+        swap(devId, other.devId);
+        swap(type, other.type);
+        swap(dim_size, other.dim_size);
+        swap(offset, other.offset);
+        swap(dim_strides, other.dim_strides);
+        swap(is_sparse, other.is_sparse);
+    }
 
     const af_dtype& getType() const { return type; }
 

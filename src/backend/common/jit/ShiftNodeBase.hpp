@@ -26,12 +26,37 @@ template<typename BufferNode>
 class ShiftNodeBase : public Node {
    private:
     std::shared_ptr<BufferNode> m_buffer_node;
-    const std::array<int, 4> m_shifts;
+    std::array<int, 4> m_shifts;
 
    public:
     ShiftNodeBase(const af::dtype type, std::shared_ptr<BufferNode> buffer_node,
                   const std::array<int, 4> shifts)
-        : Node(type, 0, {}), m_buffer_node(buffer_node), m_shifts(shifts) {}
+        : Node(type, 0, {}), m_buffer_node(buffer_node), m_shifts(shifts) {
+        static_assert(std::is_nothrow_move_assignable<ShiftNodeBase>::value,
+                      "ShiftNode is not move assignable");
+        static_assert(std::is_nothrow_move_constructible<ShiftNodeBase>::value,
+                      "ShiftNode is not move constructible");
+    }
+
+    /// Default move copy constructor
+    ShiftNodeBase(const ShiftNodeBase &other) = default;
+
+    /// Default move constructor
+    ShiftNodeBase(ShiftNodeBase &&other) = default;
+
+    /// Default move/copy assignment operator(Rule of 4)
+    ShiftNodeBase &operator=(ShiftNodeBase node) noexcept {
+        swap(node);
+        return *this;
+    }
+
+    // Swap specilization
+    void swap(ShiftNodeBase &other) noexcept {
+        using std::swap;
+        Node::swap(other);
+        swap(m_buffer_node, other.m_buffer_node);
+        swap(m_shifts, other.m_shifts);
+    }
 
     bool isLinear(dim_t dims[4]) const final {
         UNUSED(dims);
