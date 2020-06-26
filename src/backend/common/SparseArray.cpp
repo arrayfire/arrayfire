@@ -52,6 +52,10 @@ SparseArrayBase::SparseArrayBase(const af::dim4 &_dims, dim_t _nNZ,
     static_assert(offsetof(SparseArrayBase, info) == 0,
                   "SparseArrayBase::info must be the first member variable of "
                   "SparseArrayBase.");
+    static_assert(std::is_nothrow_move_assignable<SparseArrayBase>::value,
+                  "SparseArrayBase is not move assignable");
+    static_assert(std::is_nothrow_move_constructible<SparseArrayBase>::value,
+                  "SparseArrayBase is not move constructible");
 }
 
 SparseArrayBase::SparseArrayBase(const af::dim4 &_dims, dim_t _nNZ,
@@ -176,6 +180,10 @@ SparseArray<T>::SparseArray(const dim4 &_dims, dim_t _nNZ, af::storage _storage)
     , values(createValueArray<T>(dim4(_nNZ), scalar<T>(0))) {
     static_assert(std::is_standard_layout<SparseArray<T>>::value,
                   "SparseArray<T> must be a standard layout type");
+    static_assert(std::is_nothrow_move_assignable<SparseArray<T>>::value,
+                  "SparseArray<T> is not move assignable");
+    static_assert(std::is_nothrow_move_constructible<SparseArray<T>>::value,
+                  "SparseArray<T> is not move constructible");
     static_assert(offsetof(SparseArray<T>, base) == 0,
                   "SparseArray<T>::base must be the first member variable of "
                   "SparseArray<T>");

@@ -81,6 +81,10 @@ class ArrayInfo {
             "ArrayInfo::devId must be the first member variable of ArrayInfo. \
                    devId is used to encode the backend into the integer. \
                    This is then used in the unified backend to check mismatched arrays.");
+        static_assert(std::is_nothrow_move_assignable<ArrayInfo>::value,
+                      "ArrayInfo is not nothrow move assignable");
+        static_assert(std::is_nothrow_move_constructible<ArrayInfo>::value,
+                      "ArrayInfo is not nothrow move constructible");
     }
 
     ArrayInfo()                       = default;
