@@ -134,9 +134,27 @@ class Array {
     explicit Array(const af::dim4 &dims, cl_mem mem, size_t offset, bool copy);
 
    public:
+    Array(const Array<T> &other) = default;
+
+    Array(Array<T> &&other) noexcept = default;
+
+    Array<T> &operator=(Array<T> other) noexcept {
+        swap(other);
+        return *this;
+    }
+
+    void swap(Array<T> &other) noexcept {
+        using std::swap;
+        swap(info, other.info);
+        swap(data, other.data);
+        swap(data_dims, other.data_dims);
+        swap(node, other.node);
+        swap(ready, other.ready);
+        swap(owner, other.owner);
+    }
+
     Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset,
           const T *const in_data, bool is_device = false);
-
     void resetInfo(const af::dim4 &dims) { info.resetInfo(dims); }
     void resetDims(const af::dim4 &dims) { info.resetDims(dims); }
     void modDims(const af::dim4 &newDims) { info.modDims(newDims); }

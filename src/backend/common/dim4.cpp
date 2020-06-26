@@ -36,6 +36,11 @@ dim4::dim4(const unsigned ndims_, const dim_t* const dims_) : dims{} {
     for (unsigned i = 0; i < 4; i++) { dims[i] = ndims_ > i ? dims_[i] : 1; }
 }
 
+dim4& dim4::operator=(dim4 other) noexcept {
+    std::swap(dims, other.dims);
+    return *this;
+}
+
 dim_t dim4::elements() const { return dims[0] * dims[1] * dims[2] * dims[3]; }
 
 dim_t dim4::elements() { return static_cast<const dim4&>(*this).elements(); }

@@ -80,9 +80,9 @@ Array<T>::Array(const af::dim4 &dims, const T *const in_data, bool is_device,
     , owner(true) {
     static_assert(std::is_standard_layout<Array<T>>::value,
                   "Array<T> must be a standard layout type");
-    static_assert(std::is_move_assignable<Array<T>>::value,
+    static_assert(std::is_nothrow_move_assignable<Array<T>>::value,
                   "Array<T> is not move assignable");
-    static_assert(std::is_move_constructible<Array<T>>::value,
+    static_assert(std::is_nothrow_move_constructible<Array<T>>::value,
                   "Array<T> is not move constructible");
     static_assert(
         offsetof(Array<T>, info) == 0,

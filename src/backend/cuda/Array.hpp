@@ -136,6 +136,25 @@ class Array {
     Array(const af::dim4 &dims, common::Node_ptr n);
 
    public:
+    Array(const Array<T> &other) = default;
+
+    Array(Array<T> &&other) noexcept = default;
+
+    Array<T> &operator=(Array<T> other) noexcept {
+        swap(other);
+        return *this;
+    }
+
+    void swap(Array<T> &other) noexcept {
+        using std::swap;
+        swap(info, other.info);
+        swap(data, other.data);
+        swap(data_dims, other.data_dims);
+        swap(node, other.node);
+        swap(ready, other.ready);
+        swap(owner, other.owner);
+    }
+
     Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset,
           const T *const in_data, bool is_device = false);
 

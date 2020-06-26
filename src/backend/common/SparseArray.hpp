@@ -38,6 +38,7 @@ class SparseArrayBase {
     detail::Array<int> colIdx;  ///< Linear array containing col indices
 
    public:
+    SparseArrayBase(SparseArrayBase &&other) noexcept = default;
     SparseArrayBase(const af::dim4 &_dims, dim_t _nNZ, af::storage _storage,
                     af_dtype _type);
 
@@ -50,6 +51,11 @@ class SparseArrayBase {
                     const detail::Array<int> &_colIdx,
                     const af::storage _storage, af_dtype _type,
                     bool _copy = false);
+
+    SparseArrayBase &operator=(SparseArrayBase other) noexcept {
+        std::swap(*this, other);
+        return *this;
+    }
 
     /// A copy constructor for SparseArray
     ///
@@ -151,8 +157,15 @@ class SparseArray {
     SparseArray(const SparseArray<T> &other, bool deep_copy);
 
    public:
+    SparseArray(const SparseArray<T> &other)     = default;
+    SparseArray(SparseArray<T> &&other) noexcept = default;
+
     ~SparseArray() noexcept = default;
 
+    SparseArray<T> &operator=(SparseArray<T> other) noexcept {
+        std::swap(*this, other);
+        return *this;
+    }
 // Functions that call ArrayInfo object's functions
 #define INSTANTIATE_INFO(return_type, func) \
     return_type func() const { return base.func(); }
