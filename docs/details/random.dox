@@ -67,6 +67,9 @@ an \ref af::randomEngine object as an argument.
 
 Returns the \ref af::randomEngine that is currently set as default.
 
+Note that there is no need to call \ref af_release_random_engine on the handle
+returned by \ref af_get_default_random_engine.
+
 \ingroup random_mat
 
 ===============================================================================
