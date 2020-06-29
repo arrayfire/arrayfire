@@ -106,11 +106,17 @@ class Node {
                       "Node is not move assignable");
     }
 
+    /// Default move constructor operator
+    Node(Node &&node) noexcept = default;
+
     /// Default copy constructor operator
     Node(const Node &node) = default;
 
     /// Default copy assignment operator
     Node &operator=(const Node &node) = default;
+
+    /// Default move assignment operator
+    Node &operator=(Node &&node) noexcept = default;
 
     int getNodesMap(Node_map_t &node_map, std::vector<Node *> &full_nodes,
                     std::vector<Node_ids> &full_ids);
