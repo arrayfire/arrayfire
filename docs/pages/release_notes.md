@@ -1,6 +1,96 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.8.0
+======
+
+Major Updates
+-------------
+- Ragged max
+- Bitwise not
+- Updated alloc and free
+- Initializer list for af::array
+
+Improvements
+------------
+
+v3.7.2
+======
+
+Improvements
+------------
+- Cache CUDA kernels to disk to improve load times(Thanks to \@cschreib-ibex) /PR{2848}
+- Staticly link against cuda libraries /PR{2785}
+- Make cuDNN an optional build dependency /PR{2836}
+- Improve support for different compilers and OS /PR{2876} /PR{2945} /PR{2925} /PR{2942} /PR{2943} /PR{2945}
+- Improve performance of join and transpose on CPU /PR{2849}
+- Improve documentation /PR{2816} /PR{2821} /PR{2846} /PR{2918} /PR{2928} /PR{2947}
+- Reduce binary size using NVRTC and template reducing instantiations /PR{2849} /PR{2861} /PR{2890}
+- Improve reduceByKey performance on OpenCL by using builtin functions /PR{2851}
+- Improve support for Intel OpenCL GPUs /PR{2855}
+- Allow staticly linking against MKL /PR{2877} (Sponsered by SDL)
+- Better support for older CUDA toolkits /PR{2923}
+- Add support for CUDA 11 /PR{2939}
+- Add support for ccache for faster builds /PR{2931}
+- Add support for the conan package manager on linux /PR{2875}
+
+Fixes
+-----
+- Bug crash when allocating large arrays /PR{2827}
+- Fix various compiler warnings /PR{2827} /PR{2849} /PR{2872} /PR{2876}
+- Fix minor leaks in OpenCL functions /PR{2913}
+- Various continuous integration related fixes /PR{2819}
+- Fix zero padding with convolv2NN /PR{2820}
+- Fix af_get_memory_pressure_threshold return value /PR{2831}
+- Increased the max filter length for morph
+- Handle empty array inputs for LU, QR, and Rank functions /PR{2838}
+- Fix FindMKL.cmake script for sequential threading library /PR{2840}
+- Various internal refactoring /PR{2839} /PR{2861} /PR{2864} /PR{2873} /PR{2890} /PR{2891} /PR{2913}
+- Fix OpenCL 2.0 builtin function name conflict /PR{2851}
+- Fix error caused when releasing memory with multiple devices /PR{2867}
+
+Contributions
+-------------
+Special thanks to our contributors:
+[Corentin Schreiber](https://github.com/cschreib-ibex)
+[Jacob Khan](https://github.com/jacobkahn)
+[Paul Jurczak](https://github.com/pauljurczak)
+
+v3.7.1
+======
+
+Improvements
+------------
+
+- Improve mtx download for test data \PR{2742}
+- Documentation improvements \PR{2754} \PR{2792} \PR{2797}
+- Remove verbose messages in older CMake versions \PR{2773}
+- Reduce binary size with the use of nvrtc  \PR{2790}
+- Use texture memory to load LUT in orb and fast \PR{2791}
+- Add missing print function for f16 \PR{2784}
+- Add checks for f16 support in the CUDA backend \PR{2784}
+- Create a thrust policy to intercept tmp buffer allocations \PR{2806}
+
+Fixes
+-----
+
+- Fix segfault on exit when ArrayFire is not initialized in the main thread
+- Fix support for CMake 3.5.1 \PR{2771} \PR{2772} \PR{2760}
+- Fix evalMultiple if the input array sizes aren't the same \PR{2766}
+- Fix error when AF_BACKEND_DEFAULT is passed directly to backend \PR{2769}
+- Workaround name collision with AMD OpenCL implementation \PR{2802}
+- Fix on-exit errors with the unified backend \PR{2769}
+- Fix check for f16 compatibility in OpenCL \PR{2773}
+- Fix matmul on Intel OpenCL when passing same array as input \PR{2774}
+- Fix CPU OpenCL blas batching \PR{2774}
+- Fix memory pressure in the default memory manager \PR{2801}
+
+Contributions
+-------------
+Special thanks to our contributors:
+[padentomasello](https://github.com/padentomasello)
+[glavaux2](https://github.com/glavaux2)
+
 v3.7.0
 ======
 
@@ -205,7 +295,7 @@ Misc
 Contributions
 -------------
 Special thanks to our contributors: [Jacob Kahn](https://github.com/jacobkahn),
-[Vardan Akopian](https://github.com/vakopian)  
+[Vardan Akopian](https://github.com/vakopian)
 
 v3.6.1
 ======
