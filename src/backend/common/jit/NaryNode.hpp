@@ -26,7 +26,7 @@ class NaryNode : public Node {
    private:
     int m_num_children;
     int m_op;
-    std::string m_op_str;
+    const char *m_op_str;
 
    public:
     NaryNode(const af::dtype type, const char *op_str, const int num_children,
@@ -46,7 +46,7 @@ class NaryNode : public Node {
                       "NaryNode is not move constructible");
     }
 
-    NaryNode(NaryNode &&other) = default;
+    NaryNode(NaryNode &&other) noexcept = default;
 
     NaryNode(const NaryNode &other) = default;
 
