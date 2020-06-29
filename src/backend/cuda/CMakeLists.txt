@@ -54,7 +54,10 @@ if(UNIX)
   # use ${CMAKE_*_LIBRARY} variables in the following flags.
   set(af_cuda_static_flags "${af_cuda_static_flags};-lculibos")
   set(af_cuda_static_flags "${af_cuda_static_flags};-lcublas_static")
-  set(af_cuda_static_flags "${af_cuda_static_flags};-lcublasLt_static")
+
+  if(CUDA_VERSION VERSION_GREATER 10.0)
+    set(af_cuda_static_flags "${af_cuda_static_flags};-lcublasLt_static")
+  endif()
   set(af_cuda_static_flags "${af_cuda_static_flags};-lcufft_static")
   set(af_cuda_static_flags "${af_cuda_static_flags};-lcusparse_static")
 
@@ -323,10 +326,14 @@ if(UNIX)
       ${END_GROUP}
   )
 
+  if(CUDA_VERSION VERSION_GREATER 10.0)
+    target_link_libraries(af_cuda_static_cuda_library
+      PRIVATE
+        ${CUDA_cublasLt_static_LIBRARY})
+  endif()
   if(CUDA_VERSION VERSION_GREATER 9.5)
     target_link_libraries(af_cuda_static_cuda_library
       PRIVATE
-        ${CUDA_cublasLt_static_LIBRARY}
         ${CUDA_lapack_static_LIBRARY})
   endif()
 
@@ -798,7 +805,9 @@ if(AF_INSTALL_STANDALONE)
   if(WIN32)
     afcu_collect_libs(cufft)
     afcu_collect_libs(cublas)
-    afcu_collect_libs(cublasLt)
+    if(CUDA_VERSION VERSION_GREATER 10.0)
+      afcu_collect_libs(cublasLt)
+    endif()
     afcu_collect_libs(cusolver)
     afcu_collect_libs(cusparse)
   elseif(NOT ${use_static_cuda_lapack})
