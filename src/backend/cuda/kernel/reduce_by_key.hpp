@@ -106,9 +106,6 @@ __global__ void compact(int *reduced_block_sizes, Param<Tk> keys_out,
     const int bidz = blockIdx.z % nBlocksZ;
     const int bidw = blockIdx.z / nBlocksZ;
 
-    Tk k;
-    To v;
-
     // reduced_block_sizes should have inclusive sum of block sizes
     int nwrite = (blockIdx.x == 0) ? reduced_block_sizes[0]
                                    : reduced_block_sizes[blockIdx.x] -
@@ -117,8 +114,8 @@ __global__ void compact(int *reduced_block_sizes, Param<Tk> keys_out,
 
     const int bOffset = bidw * vals_in.strides[3] + bidz * vals_in.strides[2] +
                         bidy * vals_in.strides[1];
-    k = keys_in.ptr[tidx];
-    v = vals_in.ptr[bOffset + tidx];
+    Tk k = keys_in.ptr[tidx];
+    To v = vals_in.ptr[bOffset + tidx];
 
     if (threadIdx.x < nwrite) {
         keys_out.ptr[writeloc + threadIdx.x]           = k;
@@ -147,9 +144,6 @@ __global__ void compact_dim(int *reduced_block_sizes, Param<Tk> keys_out,
     const int bidz = blockIdx.z % nBlocksZ;
     const int bidw = blockIdx.z / nBlocksZ;
 
-    Tk k;
-    To v;
-
     // reduced_block_sizes should have inclusive sum of block sizes
     int nwrite = (blockIdx.x == 0) ? reduced_block_sizes[0]
                                    : reduced_block_sizes[blockIdx.x] -
@@ -160,8 +154,8 @@ __global__ void compact_dim(int *reduced_block_sizes, Param<Tk> keys_out,
                     bidz * vals_in.strides[dim_ordering[2]] +
                     bidy * vals_in.strides[dim_ordering[1]] +
                     tidx * vals_in.strides[dim];
-    k = keys_in.ptr[tidx];
-    v = vals_in.ptr[tid];
+    Tk k = keys_in.ptr[tidx];
+    To v = vals_in.ptr[tid];
 
     if (threadIdx.x < nwrite) {
         keys_out.ptr[writeloc + threadIdx.x] = k;

@@ -832,7 +832,10 @@ class alignas(2) half {
 #endif
 
    public:
-    AF_CONSTEXPR half() = default;
+#if CUDA_VERSION >= 10000
+    AF_CONSTEXPR
+#endif
+    half() = default;
 
     /// Constructor.
     /// \param bits binary representation to set half to

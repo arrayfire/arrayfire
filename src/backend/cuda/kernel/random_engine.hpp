@@ -10,6 +10,7 @@
 #pragma once
 
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_cuda.hpp>
 #include <err_cuda.hpp>
 #include <kernel/random_engine_mersenne.hpp>
@@ -597,7 +598,7 @@ __device__ static void partialWriteOut128Bytes(common::half *out,
 __device__ static void partialBoxMullerWriteOut128Bytes(
     common::half *out, const uint &index, const uint &r1, const uint &r2,
     const uint &r3, const uint &r4, const uint &elements) {
-    common::half n[8];
+    __half n[8];
     boxMullerTransform(n + 0, n + 1, getHalf(r1), getHalf(r1 >> 16));
     boxMullerTransform(n + 2, n + 3, getHalf(r2), getHalf(r2 >> 16));
     boxMullerTransform(n + 4, n + 5, getHalf(r3), getHalf(r3 >> 16));
