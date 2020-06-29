@@ -204,6 +204,10 @@ function(find_mkl_library)
 
   cmake_parse_arguments(mkl_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
 
+  if(TARGET MKL::${mkl_args_NAME})
+    return()
+  endif()
+
   add_library(MKL::${mkl_args_NAME}        SHARED IMPORTED)
   add_library(MKL::${mkl_args_NAME}_STATIC STATIC IMPORTED)
 
@@ -315,11 +319,13 @@ elseif(MKL_THREAD_LAYER STREQUAL "GNU OpenMP")
   if(MKL_ThreadingLibrary_LINK_LIBRARY)
     mark_as_advanced(MKL_${mkl_args_NAME}_LINK_LIBRARY)
   endif()
-  add_library(MKL::ThreadingLibrary SHARED IMPORTED)
-  set_target_properties(MKL::ThreadingLibrary
-    PROPERTIES
-      IMPORTED_LOCATION "${MKL_ThreadingLibrary_LINK_LIBRARY}"
-      INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_CXX)
+  if(NOT TARGET MKL::ThreadingLibrary)
+    add_library(MKL::ThreadingLibrary SHARED IMPORTED)
+    set_target_properties(MKL::ThreadingLibrary
+      PROPERTIES
+        IMPORTED_LOCATION "${MKL_ThreadingLibrary_LINK_LIBRARY}"
+        INTERFACE_LINK_LIBRARIES OpenMP::OpenMP_CXX)
+  endif()
 elseif(MKL_THREAD_LAYER STREQUAL "TBB")
   find_mkl_library(NAME ThreadLayer LIBRARY_NAME mkl_tbb_thread SEARCH_STATIC)
   find_mkl_library(NAME ThreadingLibrary LIBRARY_NAME tbb)
@@ -351,6 +357,11 @@ set(MKL_RUNTIME_KERNEL_LIBRARIES "${MKL_RUNTIME_KERNEL_LIBRARIES_TMP}" CACHE STR
     "MKL kernel libraries targeting different CPU architectures")
 mark_as_advanced(MKL_RUNTIME_KERNEL_LIBRARIES)
 
+# Bypass developer warning that the first argument to find_package_handle_standard_args (MKL_...) does not match
+# the name of the calling package (MKL)
+# https://cmake.org/cmake/help/v3.17/module/FindPackageHandleStandardArgs.html
+set(FPHSA_NAME_MISMATCHED TRUE)
+
 find_package_handle_standard_args(MKL_Shared
   FAIL_MESSAGE "Could NOT find MKL: Source the compilervars.sh or mklvars.sh scripts included with your installation of MKL. This script searches for the libraries in MKLROOT, LIBRARY_PATHS(Linux), and LIB(Windows) environment variables"
   VERSION_VAR  MKL_VERSION_STRING
@@ -372,7 +383,7 @@ if(NOT WIN32)
   mark_as_advanced(M_LIB)
 endif()
 
-if(MKL_Shared_FOUND)
+if(MKL_Shared_FOUND AND NOT TARGET MKL::Shared)
   add_library(MKL::Shared SHARED IMPORTED)
   if(MKL_THREAD_LAYER STREQUAL "Sequential")
     set_target_properties(MKL::Shared
@@ -397,7 +408,7 @@ if(MKL_Shared_FOUND)
   endif()
 endif()
 
-if(MKL_Static_FOUND)
+if(MKL_Static_FOUND AND NOT TARGET MKL::Static)
   add_library(MKL::Static STATIC IMPORTED)
 
   if(UNIX AND NOT APPLE)
