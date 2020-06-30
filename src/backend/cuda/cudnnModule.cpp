@@ -14,13 +14,31 @@
 #include <device_manager.hpp>
 #include <utility.hpp>
 
+#include <array>
 #include <string>
 #include <tuple>
 
+using common::Version;
 using std::make_tuple;
 using std::string;
 
 namespace cuda {
+
+// clang-format off
+// Latest version from each minor releases are enlisted below
+constexpr std::array<common::Version, 10> cudnnVersions = {
+    make_tuple(7, 6,  5),
+    make_tuple(7, 5,  1),
+    make_tuple(7, 4,  2),
+    make_tuple(7, 3,  1),
+    make_tuple(7, 2,  1),
+    make_tuple(7, 1,  4),
+    make_tuple(7, 0,  5),
+    make_tuple(6, 0, 21),
+    make_tuple(5, 1, 10),
+    make_tuple(4, 0,  7)
+};
+// clang-format on
 
 spdlog::logger* cudnnModule::getLogger() const noexcept {
     return module.getLogger();
@@ -34,7 +52,8 @@ auto cudnnVersionComponents(size_t version) {
 }
 
 cudnnModule::cudnnModule()
-    : module({"cudnn"}, {"", "64_7", "64_8", "64_6", "64_5", "64_4"}, {""}) {
+    : module({"cudnn"}, {"", "64_7", "64_8", "64_6", "64_5", "64_4"}, {""},
+             cudnnVersions.size(), cudnnVersions.data()) {
     if (!module.isLoaded()) {
         AF_TRACE(
             "WARNING: Unable to load cuDNN: {}"
