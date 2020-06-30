@@ -8,8 +8,12 @@
  ********************************************************/
 
 #pragma once
+
 #include <common/defines.hpp>
+#include <common/unique_handle.hpp>
 #include <cublas_v2.h>
+
+DEFINE_HANDLER(cublasHandle_t, cublasCreate, cublasDestroy);
 
 namespace cuda {
 

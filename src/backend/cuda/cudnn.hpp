@@ -11,8 +11,19 @@
 
 #include <common/defines.hpp>
 #include <common/half.hpp>
+#include <common/unique_handle.hpp>
 #include <cudnnModule.hpp>
 #include <af/dim4.hpp>
+
+// clang-format off
+DEFINE_HANDLER(cudnnHandle_t, cuda::getCudnnPlugin().cudnnCreate, cuda::getCudnnPlugin().cudnnDestroy);
+
+DEFINE_HANDLER(cudnnTensorDescriptor_t, cuda::getCudnnPlugin().cudnnCreateTensorDescriptor, cuda::getCudnnPlugin().cudnnDestroyTensorDescriptor);
+
+DEFINE_HANDLER(cudnnFilterDescriptor_t, cuda::getCudnnPlugin().cudnnCreateFilterDescriptor, cuda::getCudnnPlugin().cudnnDestroyFilterDescriptor);
+
+DEFINE_HANDLER(cudnnConvolutionDescriptor_t, cuda::getCudnnPlugin().cudnnCreateConvolutionDescriptor, cuda::getCudnnPlugin().cudnnDestroyConvolutionDescriptor);
+// clang-format on
 
 namespace cuda {
 

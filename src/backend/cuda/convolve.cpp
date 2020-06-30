@@ -10,7 +10,6 @@
 #include <Array.hpp>
 #include <cast.hpp>
 #include <common/half.hpp>
-#include <common/unique_handle.hpp>
 #include <convolve.hpp>
 #include <err_cuda.hpp>
 #include <kernel/convolve.hpp>
@@ -20,8 +19,6 @@
 
 using af::dim4;
 using common::half;
-using common::make_handle;
-using common::unique_handle;
 using std::conditional;
 using std::is_same;
 

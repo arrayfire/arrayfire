@@ -33,7 +33,6 @@ using af::dim4;
 using common::flip;
 using common::half;
 using common::make_handle;
-using common::unique_handle;
 using std::conditional;
 using std::is_same;
 
@@ -42,12 +41,9 @@ namespace cuda {
 #ifdef WITH_CUDNN
 
 template<typename Desc, typename T>
-unique_handle<Desc> toCudnn(Array<T> arr) {
-    const dim4 &dims = arr.dims();
-
-    auto descriptor             = make_handle<Desc>();
-    cudnnDataType_t cudnn_dtype = getCudnnDataType<T>();
-    cudnnSet(descriptor, cudnn_dtype, dims);
+auto toCudnn(Array<T> arr) {
+    auto descriptor = make_handle<Desc>();
+    cudnnSet(descriptor, getCudnnDataType<T>(), arr.dims());
     return descriptor;
 }
 
@@ -378,6 +374,7 @@ Array<T> filter_gradient_cudnn(const Array<T> &incoming_gradient,
 
     // create convolution descriptor
     auto convolution_descriptor = make_handle<cudnnConvolutionDescriptor_t>();
+
     CUDNN_CHECK(cuda::cudnnSetConvolution2dDescriptor(
         convolution_descriptor, padding[1], padding[0], stride[1], stride[0],
         dilation[1], dilation[0], CUDNN_CONVOLUTION, cudnn_dtype));

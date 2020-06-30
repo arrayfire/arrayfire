@@ -15,40 +15,32 @@
 #include <common/unique_handle.hpp>
 #include <cusparse.hpp>
 
+#include <utility>
+
 namespace cuda {
 
 template<typename T>
-common::unique_handle<cusparseSpMatDescr_t> csrMatDescriptor(
-    const common::SparseArray<T> &in) {
-    auto dims                   = in.dims();
-    cusparseSpMatDescr_t resMat = NULL;
-    CUSPARSE_CHECK(cusparseCreateCsr(
-        &resMat, dims[0], dims[1], in.getNNZ(), (void *)(in.getRowIdx().get()),
+auto csrMatDescriptor(const common::SparseArray<T> &in) {
+    auto dims = in.dims();
+    return common::make_handle<cusparseSpMatDescr_t>(
+        dims[0], dims[1], in.getNNZ(), (void *)(in.getRowIdx().get()),
         (void *)(in.getColIdx().get()), (void *)(in.getValues().get()),
         CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO,
-        getType<T>()));
-    return common::unique_handle<cusparseSpMatDescr_t>(resMat);
+        getType<T>());
 }
 
 template<typename T>
-common::unique_handle<cusparseDnVecDescr_t> denVecDescriptor(
-    const Array<T> &in) {
-    auto dims                   = in.dims();
-    cusparseDnVecDescr_t resVec = NULL;
-    CUSPARSE_CHECK(cusparseCreateDnVec(&resVec, dims.elements(),
-                                       (void *)(in.get()), getType<T>()));
-    return common::unique_handle<cusparseDnVecDescr_t>(resVec);
+auto denVecDescriptor(const Array<T> &in) {
+    return common::make_handle<cusparseDnVecDescr_t>(
+        in.elements(), (void *)(in.get()), getType<T>());
 }
 
 template<typename T>
-common::unique_handle<cusparseDnMatDescr_t> denMatDescriptor(
-    const Array<T> &in) {
-    auto dims                   = in.dims();
-    cusparseDnMatDescr_t resMat = NULL;
-    CUSPARSE_CHECK(cusparseCreateDnMat(&resMat, dims[0], dims[1], dims[0],
-                                       (void *)(in.get()), getType<T>(),
-                                       CUSPARSE_ORDER_COL));
-    return common::unique_handle<cusparseDnMatDescr_t>(resMat);
+auto denMatDescriptor(const Array<T> &in) {
+    auto dims = in.dims();
+    return common::make_handle<cusparseDnMatDescr_t>(
+        dims[0], dims[1], dims[0], (void *)(in.get()), getType<T>(),
+        CUSPARSE_ORDER_COL);
 }
 
 }  // namespace cuda
