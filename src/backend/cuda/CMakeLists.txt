@@ -484,7 +484,6 @@ cuda_add_library(afcuda
     Param.hpp
     ThrustAllocator.cuh
     ThrustArrayFirePolicy.hpp
-    ThrustArrayFirePolicy.cpp
     anisotropic_diffusion.hpp
     approx.hpp
     arith.hpp
