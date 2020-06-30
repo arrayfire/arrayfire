@@ -10,6 +10,7 @@
 #include <common/DependencyModule.hpp>
 #include <common/Logger.hpp>
 #include <common/module_loading.hpp>
+
 #include <algorithm>
 #include <string>
 
@@ -19,29 +20,72 @@
 #include <dlfcn.h>
 #endif
 
+using common::Version;
+using std::make_tuple;
+using std::string;
+using std::to_string;
+using std::vector;
+
+constexpr Version NullVersion{-1, -1, -1};
+
 #ifdef OS_WIN
 #include <Windows.h>
+
 static const char* librarySuffix = ".dll";
-static const char* libraryPrefix = "";
+
+namespace {
+vector<string> libNames(const std::string& name, const string& suffix,
+                        const Version& ver = NullVersion) {
+    UNUSED(ver);  // Windows DLL files are not version suffixed
+    return {name + suffix + librarySuffix};
+}
+}  // namespace
+
 #elif defined(OS_MAC)
+
 static const char* librarySuffix = ".dylib";
 static const char* libraryPrefix = "lib";
+
+namespace {
+vector<string> libNames(const std::string& name, const string& suffix,
+                        const Version& ver = NullVersion) {
+    UNUSED(suffix);
+    const string noVerName = libraryPrefix + name + librarySuffix;
+    if (ver != NullVersion) {
+        const string infix = "." + to_string(std::get<0>(ver)) + ".";
+        return {libraryPrefix + name + infix + librarySuffix, noVerName};
+    } else {
+        return {noVerName};
+    }
+}
+}  // namespace
+
 #elif defined(OS_LNX)
+
 static const char* librarySuffix = ".so";
 static const char* libraryPrefix = "lib";
+
+namespace {
+vector<string> libNames(const std::string& name, const string& suffix,
+                        const Version& ver = NullVersion) {
+    UNUSED(suffix);
+    const string noVerName = libraryPrefix + name + librarySuffix;
+    if (ver != NullVersion) {
+        const string soname("." + to_string(std::get<0>(ver)));
+
+        const string vsfx = "." + to_string(std::get<0>(ver)) + "." +
+                            to_string(std::get<1>(ver)) + "." +
+                            to_string(std::get<2>(ver));
+        return {noVerName + vsfx, noVerName + soname, noVerName};
+    } else {
+        return {noVerName};
+    }
+}
+}  // namespace
+
 #else
 #error "Unsupported platform"
 #endif
-
-using std::string;
-using std::vector;
-
-namespace {
-
-std::string libName(const std::string& name) {
-    return libraryPrefix + name + librarySuffix;
-}
-}  // namespace
 
 namespace common {
 
@@ -51,11 +95,11 @@ DependencyModule::DependencyModule(const char* plugin_file_name,
     // TODO(umar): Implement handling of non-standard paths
     UNUSED(paths);
     if (plugin_file_name) {
-        string filename = libName(plugin_file_name);
-        AF_TRACE("Attempting to load: {}", filename);
-        handle = loadLibrary(filename.c_str());
+        auto fileNames = libNames(plugin_file_name, "");
+        AF_TRACE("Attempting to load: {}", fileNames[0]);
+        handle = loadLibrary(fileNames[0].c_str());
         if (handle) {
-            AF_TRACE("Found: {}", filename);
+            AF_TRACE("Found: {}", fileNames[0]);
         } else {
             AF_TRACE("Unable to open {}", plugin_file_name);
         }
@@ -64,17 +108,36 @@ DependencyModule::DependencyModule(const char* plugin_file_name,
 
 DependencyModule::DependencyModule(const vector<string>& plugin_base_file_name,
                                    const vector<string>& suffixes,
-                                   const vector<string>& paths)
+                                   const vector<string>& paths,
+                                   const size_t verListSize,
+                                   const Version* versions)
     : handle(nullptr), logger(common::loggerFactory("platform")) {
     for (const string& base_name : plugin_base_file_name) {
         for (const string& path : paths) {
             UNUSED(path);
             for (const string& suffix : suffixes) {
-                string filename = libName(base_name + suffix);
-                AF_TRACE("Attempting to load: {}", filename);
-                handle = loadLibrary(filename.c_str());
+#if !defined(OS_WIN)
+                // For a non-windows OS, i.e. most likely unix, shared library
+                // names have versions suffix based on the version. Lookup for
+                // libraries for given versions and proceed to a simple name
+                // lookup if versioned library is not found.
+                for (size_t v = 0; v < verListSize; v++) {
+                    auto fileNames = libNames(base_name, suffix, versions[v]);
+                    for (auto& fileName : fileNames) {
+                        AF_TRACE("Attempting to load: {}", fileName);
+                        handle = loadLibrary(fileName.c_str());
+                        if (handle) {
+                            AF_TRACE("Found: {}", fileName);
+                            return;
+                        }
+                    }
+                }
+#endif
+                auto fileNames = libNames(base_name, suffix);
+                AF_TRACE("Attempting to load: {}", fileNames[0]);
+                handle = loadLibrary(fileNames[0].c_str());
                 if (handle) {
-                    AF_TRACE("Found: {}", filename);
+                    AF_TRACE("Found: {}", fileNames[0]);
                     return;
                 }
             }

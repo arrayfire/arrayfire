@@ -8,12 +8,14 @@
  ********************************************************/
 
 #pragma once
+
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/module_loading.hpp>
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -21,6 +23,8 @@ namespace spdlog {
 class logger;
 }
 namespace common {
+
+using Version = std::tuple<int, int, int>;  // major, minor, patch
 
 /// Allows you to create classes which dynamically load dependencies at runtime
 ///
@@ -39,7 +43,9 @@ class DependencyModule {
 
     DependencyModule(const std::vector<std::string>& plugin_base_file_name,
                      const std::vector<std::string>& suffixes,
-                     const std::vector<std::string>& paths);
+                     const std::vector<std::string>& paths,
+                     const size_t verListSize = 0,
+                     const Version* versions  = nullptr);
 
     ~DependencyModule() noexcept;
 
