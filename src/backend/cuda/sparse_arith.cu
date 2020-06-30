@@ -187,17 +187,14 @@ template<typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     lhs.eval();
     rhs.eval();
-    af::storage sfmt = lhs.getStorage();
 
-    auto desc        = make_handle<cusparseMatDescr_t>();
-    const dim4 ldims = lhs.dims();
-
-    const int M = ldims[0];
-    const int N = ldims[1];
-
-    const dim_t nnzA = lhs.getNNZ();
-    const dim_t nnzB = rhs.getNNZ();
-
+    af::storage sfmt      = lhs.getStorage();
+    auto desc             = make_handle<cusparseMatDescr_t>();
+    const dim4 ldims      = lhs.dims();
+    const int M           = ldims[0];
+    const int N           = ldims[1];
+    const dim_t nnzA      = lhs.getNNZ();
+    const dim_t nnzB      = rhs.getNNZ();
     const int *csrRowPtrA = lhs.getRowIdx().get();
     const int *csrColPtrA = lhs.getColIdx().get();
     const int *csrRowPtrB = rhs.getRowIdx().get();

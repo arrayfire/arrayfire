@@ -8,12 +8,17 @@
  ********************************************************/
 
 #pragma once
+
 #include <common/FFTPlanCache.hpp>
 #include <common/err_common.hpp>
+#include <common/unique_handle.hpp>
 #include <cufft.h>
 #include <cstdio>
 
+DEFINE_HANDLER(cufftHandle, cufftCreate, cufftDestroy);
+
 namespace cuda {
+
 typedef cufftHandle PlanType;
 typedef std::shared_ptr<PlanType> SharedPlan;
 
@@ -28,6 +33,7 @@ class PlanCache : public common::FFTPlanCache<PlanCache, PlanType> {
                                int idist, int *onembed, int ostride, int odist,
                                cufftType type, int batch);
 };
+
 }  // namespace cuda
 
 #define CUFFT_CHECK(fn)                                           \
