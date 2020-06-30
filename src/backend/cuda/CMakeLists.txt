@@ -797,7 +797,14 @@ endfunction()
 
 if(AF_INSTALL_STANDALONE)
   if(AF_WITH_CUDNN)
-    afcu_collect_libs(cudnn)
+    if(WIN32)
+      set(cudnn_lib "${cuDNN_DLL_LIBRARY}")
+    else()
+      get_filename_component(cudnn_lib "${cuDNN_LINK_LIBRARY}" REALPATH)
+    endif()
+    install(FILES ${cudnn_lib}
+          DESTINATION ${AF_INSTALL_LIB_DIR}
+          COMPONENT   cuda_dependencies)
   endif()
 
   afcu_collect_libs(nvrtc FULL_VERSION)
