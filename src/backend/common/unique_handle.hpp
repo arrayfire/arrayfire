@@ -10,55 +10,39 @@
 
 #include <af/compilers.h>
 
+#include <utility>
+
 namespace common {
 
-/// Deletes a handle.
-///
-/// This function deletes a handle. Handle are usually typedefed pointers
-/// which are created by a C API of a library.
-///
-/// \param[in] handle the handle that will deleted by the destroy function
-/// \note This function will need to be specialized for each type of handle
 template<typename T>
-void handle_deleter(T handle) noexcept;
-
-/// Creates a handle
-/// This function creates a handle. Handle are usually typedefed pointers
-/// which are created by a C API of a library.
-///
-/// \param[in] handle the handle that will be initialzed by the create function
-/// \note This function will need to be specialized for each type of handle
-template<typename T>
-int handle_creator(T *handle) noexcept;
+class ResourceHandler {
+   public:
+    template<typename... Args>
+    static int createHandle(T *handle, Args... args);
+    static int destroyHandle(T handle);
+};
 
 /// \brief A generic class to manage basic RAII lifetimes for C handles
 ///
 /// This class manages the lifetimes of C handles found in many types of
 /// libraries. This class is non-copiable but can be moved.
 ///
-/// You can use this class with a new handle by using the CREATE_HANDLE macro in
-/// the src/backend/*/handle.cpp file. This macro instantiates the
-/// handle_createor and handle_deleter functions used by this class.
+/// You can use this class with a new handle by using the DEFINE_HANDLER
+/// macro to define creatHandle/destroyHandle policy implemention for a
+/// given resource handle type.
 ///
 /// \code{.cpp}
-/// CREATE_HANDLE(cusparseHandle_t, cusparseCreate, cusparseDestroy);
+/// DEFINE_HANDLER(ClassName, HandleName, HandleCreator, HandleDestroyer);
 /// \code{.cpp}
 template<typename T>
 class unique_handle {
+   private:
     T handle_;
 
    public:
     /// Default constructor. Initializes the handle to zero. Does not call the
     /// create function
     constexpr unique_handle() noexcept : handle_(0) {}
-    int create() {
-        if (!handle_) {
-            int error = handle_creator(&handle_);
-            if (error) { handle_ = 0; }
-            return error;
-        }
-        return 0;
-    }
 
     /// \brief Takes ownership of a previously created handle
     ///
@@ -67,22 +51,34 @@ class unique_handle {
 
     /// \brief Deletes the handle if created.
     ~unique_handle() noexcept {
-        if (handle_) handle_deleter(handle_);
+        if (handle_) { ResourceHandler<T>::destroyHandle(handle_); }
     };
 
-    /// \brief Implicit converter for the handle
-    constexpr operator const T &() const noexcept { return handle_; }
-
     unique_handle(const unique_handle &other) noexcept = delete;
+    unique_handle &operator=(unique_handle &other) noexcept = delete;
+
     AF_CONSTEXPR unique_handle(unique_handle &&other) noexcept
         : handle_(other.handle_) {
         other.handle_ = 0;
     }
 
-    unique_handle &operator=(unique_handle &other) noexcept = delete;
     unique_handle &operator=(unique_handle &&other) noexcept {
         handle_       = other.handle_;
         other.handle_ = 0;
+    }
+
+    /// \brief Implicit converter for the handle
+    constexpr operator const T &() const noexcept { return handle_; }
+
+    template<typename... Args>
+    int create(Args... args) {
+        if (!handle_) {
+            int error = ResourceHandler<T>::createHandle(
+                &handle_, std::forward<Args>(args)...);
+            if (error) { handle_ = 0; }
+            return error;
+        }
+        return 0;
     }
 
     // Returns true if the \p other unique_handle is the same as this handle
@@ -105,32 +101,28 @@ class unique_handle {
 };
 
 /// \brief Returns an initialized handle object. The create function on this
-///        object is already called
-template<typename T>
-unique_handle<T> make_handle() {
+///        object is already called with the parameter pack provided as
+///        function arguments.
+template<typename T, typename... Args>
+unique_handle<T> make_handle(Args... args) {
     unique_handle<T> h;
-    h.create();
+    h.create(std::forward<Args>(args)...);
     return h;
 }
 
 }  // namespace common
 
-/// specializes the handle_creater and handle_deleter functions for a specific
-/// handle
-///
-/// \param[in] HANDLE The type of the handle
-/// \param[in] CREATE The create function for the handle
-/// \param[in] DESTROY The destroy function for the handle
-/// \note Do not add this macro to another namespace, The macro provides a
-///       namespace for the functions.
-#define CREATE_HANDLE(HANDLE, CREATE, DESTROY)             \
-    namespace common {                                     \
-    template<>                                             \
-    void handle_deleter<HANDLE>(HANDLE handle) noexcept {  \
-        DESTROY(handle);                                   \
-    }                                                      \
-    template<>                                             \
-    int handle_creator<HANDLE>(HANDLE * handle) noexcept { \
-        return CREATE(handle);                             \
-    }                                                      \
+#define DEFINE_HANDLER(HANDLE_TYPE, HCREATOR, HDESTROYER)            \
+    namespace common {                                               \
+    template<>                                                       \
+    class ResourceHandler<HANDLE_TYPE> {                             \
+       public:                                                       \
+        template<typename... Args>                                   \
+        static int createHandle(HANDLE_TYPE *handle, Args... args) { \
+            return HCREATOR(handle, std::forward<Args>(args)...);    \
+        }                                                            \
+        static int destroyHandle(HANDLE_TYPE handle) {               \
+            return HDESTROYER(handle);                               \
+        }                                                            \
+    };                                                               \
     }  // namespace common

@@ -8,7 +8,11 @@
  ********************************************************/
 
 #pragma once
+
+#include <common/unique_handle.hpp>
 #include <cusolverDn.h>
+
+DEFINE_HANDLER(cusolverDnHandle_t, cusolverDnCreate, cusolverDnDestroy);
 
 namespace cuda {
 
