@@ -18,11 +18,25 @@ namespace cuda {
 struct ThrustArrayFirePolicy
     : thrust::device_execution_policy<ThrustArrayFirePolicy> {};
 
+namespace {
 __DH__
-cudaStream_t get_stream(ThrustArrayFirePolicy);
+inline cudaStream_t get_stream(ThrustArrayFirePolicy) {
+#if defined(__CUDA_ARCH__)
+    return 0;
+#else
+    return getActiveStream();
+#endif
+}
 
 __DH__
-cudaError_t synchronize_stream(ThrustArrayFirePolicy);
+inline cudaError_t synchronize_stream(ThrustArrayFirePolicy) {
+#if defined(__CUDA_ARCH__)
+    return cudaDeviceSynchronize();
+#else
+    return cudaStreamSynchronize(getActiveStream());
+#endif
+}
+}  // namespace
 
 template<typename T>
 thrust::pair<thrust::pointer<T, ThrustArrayFirePolicy>, std::ptrdiff_t>
