@@ -123,6 +123,7 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
                                    sizeof(int), getActiveStream()));
         CUDA_CHECK(cudaMemsetAsync(needs_block_boundary_reduction.get(), 0,
                                    sizeof(int), getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
@@ -139,6 +140,7 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
                                    needs_block_boundary_reduction.get(),
                                    sizeof(int), cudaMemcpyDeviceToHost,
                                    getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
         if (needs_block_boundary_reduction_host &&
             !needs_another_reduction_host) {
@@ -165,6 +167,7 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
 
             swap(t_reduced_keys, reduced_keys);
             swap(t_reduced_vals, reduced_vals);
+            CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
         }
     } while (needs_another_reduction_host ||
              needs_block_boundary_reduction_host);
@@ -264,6 +267,7 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
                                    sizeof(int), getActiveStream()));
         CUDA_CHECK(cudaMemsetAsync(needs_block_boundary_reduction.get(), 0,
                                    sizeof(int), getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
@@ -280,6 +284,7 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
                                    needs_block_boundary_reduction.get(),
                                    sizeof(int), cudaMemcpyDeviceToHost,
                                    getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
         if (needs_block_boundary_reduction_host &&
             !needs_another_reduction_host) {
@@ -306,6 +311,7 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
 
             swap(t_reduced_keys, reduced_keys);
             swap(t_reduced_vals, reduced_vals);
+            CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
         }
     } while (needs_another_reduction_host ||
              needs_block_boundary_reduction_host);
