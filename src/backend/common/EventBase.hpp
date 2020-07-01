@@ -48,7 +48,7 @@ class EventBase {
     ///        is executed, the event is marked complete.
     ///
     /// \returns the error code for the mark call
-    ErrorType mark(QueueType &queue) noexcept {
+    ErrorType mark(QueueType queue) noexcept {
         return NativeEventPolicy::markEvent(&e_, queue);
     }
 
@@ -59,7 +59,7 @@ class EventBase {
     /// \param queue The queue that will wait for the previous tasks to complete
     ///
     /// \returns the error code for the wait call
-    ErrorType enqueueWait(QueueType &queue) noexcept {
+    ErrorType enqueueWait(QueueType queue) noexcept {
         return NativeEventPolicy::waitForEvent(&e_, queue);
     }
 
