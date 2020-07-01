@@ -77,10 +77,11 @@ __global__ void test_needs_reduction(int *needs_another_reduction,
         atomicOr(needs_another_reduction, remaining_updates);
 
     // check across warp boundaries
-    if ((tid + 1) < n) { k = keys_in.ptr[tid + 1]; }
-
-    update_key = (k == shfl_down_sync(FULL_MASK, k, 1)) &&
-                 ((tid + 1) < (n - 1)) && ((threadIdx.x % 32) < 31);
+    update_key =
+        (((threadIdx.x % 32) == 31)           // last thread in warp
+         && (threadIdx.x < (blockDim.x - 1))  // not last thread in block
+         // next value valid and equal
+         && ((tid + 1) < n) && (k == keys_in.ptr[tid + 1]));
     remaining_updates = any_sync(FULL_MASK, update_key);
 
     // TODO: single per warp? change to assignment rather than atomicOr
