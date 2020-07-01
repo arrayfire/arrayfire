@@ -307,6 +307,15 @@ if(CUDA_FOUND)
     set(cuda_test_backends "cuda" "unified")
     if(${backend} IN_LIST cuda_test_backends)
       set(target test_cuda_${backend})
+      if(${CMAKE_VERSION} VERSION_LESS 3.5.2)
+        cuda_include_directories(
+          ${ArrayFire_SOURCE_DIR}/include
+          ${ArrayFire_BINARY_DIR}/include
+          ${ArrayFire_SOURCE_DIR}/extern/half/include
+          ${CMAKE_CURRENT_SOURCE_DIR}
+          ${CMAKE_CURRENT_SOURCE_DIR}/gtest/googletest/include
+        )
+      endif()
       cuda_add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
       target_include_directories(${target} PRIVATE
         ${ArrayFire_SOURCE_DIR}/extern/half/include
