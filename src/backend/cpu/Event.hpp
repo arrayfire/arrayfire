@@ -12,12 +12,14 @@
 #include <queue.hpp>
 #include <af/event.h>
 
+#include <type_traits>
+
 namespace cpu {
 
 class CPUEventPolicy {
    public:
     using EventType = queue_event;
-    using QueueType = queue;
+    using QueueType = std::add_lvalue_reference<queue>::type;
     using ErrorType = int;
 
     static int createAndMarkEvent(queue_event *e) noexcept {

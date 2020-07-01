@@ -9,17 +9,20 @@
 
 #pragma once
 
-#include <Array.hpp>
 #include <af/dim4.hpp>
 
 #undef _GLIBCXX_USE_INT128
+#include <Array.hpp>
+#include <Event.hpp>
 #include <err_cuda.hpp>
 #include <kernel/reduce.hpp>
 #include <kernel/reduce_by_key.hpp>
 #include <reduce.hpp>
 #include <set.hpp>
-#include <complex>
+
 #include <cub/device/device_scan.cuh>
+
+#include <complex>
 
 using af::dim4;
 using std::swap;
@@ -117,14 +120,15 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
         CUDA_CHECK(cudaMemcpyAsync(
             &n_reduced_host, reduced_block_sizes.get() + (numBlocksD0 - 1),
             sizeof(int), cudaMemcpyDeviceToHost, getActiveStream()));
+        Event reduce_host_event = makeEvent(getActiveStream());
 
         // reset flags
         CUDA_CHECK(cudaMemsetAsync(needs_another_reduction.get(), 0,
                                    sizeof(int), getActiveStream()));
         CUDA_CHECK(cudaMemsetAsync(needs_block_boundary_reduction.get(), 0,
                                    sizeof(int), getActiveStream()));
-        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
+        reduce_host_event.block();
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
         CUDA_LAUNCH((kernel::test_needs_reduction<Tk>), numBlocksD0, numThreads,
@@ -159,6 +163,7 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
             CUDA_CHECK(cudaMemcpyAsync(
                 &n_reduced_host, reduced_block_sizes.get() + (numBlocksD0 - 1),
                 sizeof(int), cudaMemcpyDeviceToHost, getActiveStream()));
+            reduce_host_event.mark(getActiveStream());
 
             CUDA_LAUNCH((kernel::compact_dim<Tk, To>), blocks, numThreads,
                         reduced_block_sizes.get(), reduced_keys, reduced_vals,
@@ -167,7 +172,7 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
 
             swap(t_reduced_keys, reduced_keys);
             swap(t_reduced_vals, reduced_vals);
-            CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
+            reduce_host_event.block();
         }
     } while (needs_another_reduction_host ||
              needs_block_boundary_reduction_host);
@@ -261,14 +266,15 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
         CUDA_CHECK(cudaMemcpyAsync(
             &n_reduced_host, reduced_block_sizes.get() + (numBlocksD0 - 1),
             sizeof(int), cudaMemcpyDeviceToHost, getActiveStream()));
+        Event reduce_host_event = makeEvent(getActiveStream());
 
         // reset flags
         CUDA_CHECK(cudaMemsetAsync(needs_another_reduction.get(), 0,
                                    sizeof(int), getActiveStream()));
         CUDA_CHECK(cudaMemsetAsync(needs_block_boundary_reduction.get(), 0,
                                    sizeof(int), getActiveStream()));
-        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
+        reduce_host_event.block();
         numBlocksD0 = divup(n_reduced_host, numThreads);
 
         CUDA_LAUNCH((kernel::test_needs_reduction<Tk>), numBlocksD0, numThreads,
@@ -303,6 +309,7 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
             CUDA_CHECK(cudaMemcpyAsync(
                 &n_reduced_host, reduced_block_sizes.get() + (numBlocksD0 - 1),
                 sizeof(int), cudaMemcpyDeviceToHost, getActiveStream()));
+            reduce_host_event.mark(getActiveStream());
 
             CUDA_LAUNCH((kernel::compact<Tk, To>), blocks, numThreads,
                         reduced_block_sizes.get(), reduced_keys, reduced_vals,
@@ -311,7 +318,7 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
 
             swap(t_reduced_keys, reduced_keys);
             swap(t_reduced_vals, reduced_vals);
-            CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
+            reduce_host_event.block();
         }
     } while (needs_another_reduction_host ||
              needs_block_boundary_reduction_host);
