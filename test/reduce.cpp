@@ -1842,3 +1842,27 @@ TEST(Reduce, SNIPPET_count_by_key_dim) {
     ASSERT_VEC_ARRAY_EQ(gold_keys, dim4(3), okeys);
     ASSERT_VEC_ARRAY_EQ(gold_vals, dim4(2, 3), ovals);
 }
+
+TEST(ReduceByKey, ISSUE_2955) {
+    int N                  = 256;
+    af::array val          = af::randu(N);
+    af::array key          = af::range(af::dim4(N), 0, af::dtype::s32);
+    key(seq(127, af::end)) = 1;
+
+    af::array ok, ov;
+    af::sumByKey(ok, ov, key, val);
+    ASSERT_EQ(ok.dims(0), 128);
+    ASSERT_EQ(ov.dims(0), 128);
+}
+
+TEST(ReduceByKey, ISSUE_2955_dim) {
+    int N                  = 256;
+    af::array val          = af::randu(8, N);
+    af::array key          = af::range(af::dim4(N), 0, af::dtype::s32);
+    key(seq(127, af::end)) = 1;
+
+    af::array ok, ov;
+    af::sumByKey(ok, ov, key, val, 1);
+    ASSERT_EQ(ok.dims(0), 128);
+    ASSERT_EQ(ov.dims(1), 128);
+}
