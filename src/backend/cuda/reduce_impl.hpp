@@ -71,9 +71,9 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
     auto reduced_block_sizes = memAlloc<int>(numBlocksD0);
 
     size_t temp_storage_bytes = 0;
-    cub::DeviceScan::InclusiveSum(NULL, temp_storage_bytes,
-                                  reduced_block_sizes.get(),
-                                  reduced_block_sizes.get(), numBlocksD0);
+    cub::DeviceScan::InclusiveSum(
+        NULL, temp_storage_bytes, reduced_block_sizes.get(),
+        reduced_block_sizes.get(), numBlocksD0, getActiveStream());
     auto d_temp_storage = memAlloc<char>(temp_storage_bytes);
 
     int n_reduced_host = nelems;
@@ -106,7 +106,8 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
 
         cub::DeviceScan::InclusiveSum(
             (void *)d_temp_storage.get(), temp_storage_bytes,
-            reduced_block_sizes.get(), reduced_block_sizes.get(), numBlocksD0);
+            reduced_block_sizes.get(), reduced_block_sizes.get(), numBlocksD0,
+            getActiveStream());
 
         CUDA_LAUNCH((kernel::compact_dim<Tk, To>), blocks, numThreads,
                     reduced_block_sizes.get(), t_reduced_keys, t_reduced_vals,
@@ -151,7 +152,7 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
             cub::DeviceScan::InclusiveSum(
                 (void *)d_temp_storage.get(), temp_storage_bytes,
                 reduced_block_sizes.get(), reduced_block_sizes.get(),
-                numBlocksD0);
+                numBlocksD0, getActiveStream());
 
             CUDA_CHECK(cudaMemcpyAsync(
                 &n_reduced_host, reduced_block_sizes.get() + (numBlocksD0 - 1),
@@ -213,9 +214,9 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
     auto reduced_block_sizes = memAlloc<int>(numBlocksD0);
 
     size_t temp_storage_bytes = 0;
-    cub::DeviceScan::InclusiveSum(NULL, temp_storage_bytes,
-                                  reduced_block_sizes.get(),
-                                  reduced_block_sizes.get(), numBlocksD0);
+    cub::DeviceScan::InclusiveSum(
+        NULL, temp_storage_bytes, reduced_block_sizes.get(),
+        reduced_block_sizes.get(), numBlocksD0, getActiveStream());
     auto d_temp_storage = memAlloc<char>(temp_storage_bytes);
 
     int n_reduced_host = nelems;
@@ -246,7 +247,8 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
 
         cub::DeviceScan::InclusiveSum(
             (void *)d_temp_storage.get(), temp_storage_bytes,
-            reduced_block_sizes.get(), reduced_block_sizes.get(), numBlocksD0);
+            reduced_block_sizes.get(), reduced_block_sizes.get(), numBlocksD0,
+            getActiveStream());
 
         CUDA_LAUNCH((kernel::compact<Tk, To>), blocks, numThreads,
                     reduced_block_sizes.get(), t_reduced_keys, t_reduced_vals,
@@ -291,7 +293,7 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
             cub::DeviceScan::InclusiveSum(
                 (void *)d_temp_storage.get(), temp_storage_bytes,
                 reduced_block_sizes.get(), reduced_block_sizes.get(),
-                numBlocksD0);
+                numBlocksD0, getActiveStream());
 
             CUDA_CHECK(cudaMemcpyAsync(
                 &n_reduced_host, reduced_block_sizes.get() + (numBlocksD0 - 1),
