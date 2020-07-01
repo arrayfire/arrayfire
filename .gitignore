@@ -20,3 +20,5 @@ conanbuildinfo*
 conaninfo*
 conan.lock
 graph_info.json
+.ccls-cache
+.projectile
