@@ -28,6 +28,7 @@
 using cl::Error;
 using cl::Program;
 using common::loggerFactory;
+using fmt::format;
 using opencl::getActiveDeviceId;
 using opencl::getDevice;
 using opencl::Kernel;
@@ -49,30 +50,22 @@ logger *getLogger() {
     return logger.get();
 }
 
-#define SHOW_DEBUG_BUILD_INFO(PROG)                                       \
-    do {                                                                  \
-        cl_uint numDevices = PROG.getInfo<CL_PROGRAM_NUM_DEVICES>();      \
-        for (unsigned int i = 0; i < numDevices; ++i) {                   \
-            printf("%s\n", PROG.getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
-                                   PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) \
-                               .c_str());                                 \
-            printf("%s\n", PROG.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(   \
-                                   PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) \
-                               .c_str());                                 \
-        }                                                                 \
+#define THROW_BUILD_LOG_EXCEPTION(PROG)                                     \
+    do {                                                                    \
+        string build_error;                                                 \
+        build_error.reserve(4096);                                          \
+        auto devices = PROG.getInfo<CL_PROGRAM_DEVICES>();                  \
+        for (auto &device : PROG.getInfo<CL_PROGRAM_DEVICES>()) {           \
+            build_error +=                                                  \
+                format("OpenCL Device: {}\n\tOptions: {}\n\tLog:\n{}\n",    \
+                       device.getInfo<CL_DEVICE_NAME>(),                    \
+                       PROG.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(device), \
+                       PROG.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));    \
+        }                                                                   \
+        string info = getEnvVar("AF_OPENCL_SHOW_BUILD_INFO");               \
+        if (!info.empty() && info != "0") puts(build_error.c_str());        \
+        AF_ERROR(build_error, AF_ERR_INTERNAL);                             \
     } while (0)
-
-#if defined(NDEBUG)
-
-#define SHOW_BUILD_INFO(PROG)                                              \
-    do {                                                                   \
-        string info = getEnvVar("AF_OPENCL_SHOW_BUILD_INFO");              \
-        if (!info.empty() && info != "0") { SHOW_DEBUG_BUILD_INFO(PROG); } \
-    } while (0)
-
-#else
-#define SHOW_BUILD_INFO(PROG) SHOW_DEBUG_BUILD_INFO(PROG)
-#endif
 
 namespace opencl {
 
@@ -116,7 +109,9 @@ Program buildProgram(const vector<string> &kernelSources,
 
         retVal.build({device}, (cl_std + defaults + options.str()).c_str());
     } catch (Error &err) {
-        if (err.err() == CL_BUILD_PROGRAM_FAILURE) { SHOW_BUILD_INFO(retVal); }
+        if (err.err() == CL_BUILD_PROGRAM_FAILURE) {
+            THROW_BUILD_LOG_EXCEPTION(retVal);
+        }
         throw;
     }
     return retVal;
