@@ -13,9 +13,9 @@ kernel void final_boundary_reduce_dim(global int *reduced_block_sizes,
                                       const int n, const int nBlocksZ) {
     local int dim_ordering[4];
 
-    const uint lid  = get_local_id(0);
-    const uint bid  = get_group_id(0);
-    const uint gidx = get_global_id(0);
+    const uint lid = get_local_id(0);
+    const uint bid = get_group_id(0);
+    const uint gid = get_global_id(0);
 
     const int bidy = get_group_id(1);
     const int bidz = get_group_id(2) % nBlocksZ;
