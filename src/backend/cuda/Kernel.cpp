@@ -25,14 +25,14 @@ void Kernel::copyToReadOnly(Kernel::DevPtrType dst, Kernel::DevPtrType src,
     CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, cuda::getActiveStream()));
 }
 
-void Kernel::setScalar(Kernel::DevPtrType dst, int* scalarValPtr,
-                       const bool syncCopy) {
+void Kernel::setFlag(Kernel::DevPtrType dst, int* scalarValPtr,
+                     const bool syncCopy) {
     CU_CHECK(cuMemcpyHtoDAsync(dst, scalarValPtr, sizeof(int),
                                cuda::getActiveStream()));
     if (syncCopy) { CU_CHECK(cuStreamSynchronize(cuda::getActiveStream())); }
 }
 
-int Kernel::getScalar(Kernel::DevPtrType src) {
+int Kernel::getFlag(Kernel::DevPtrType src) {
     int retVal = 0;
     CU_CHECK(
         cuMemcpyDtoHAsync(&retVal, src, sizeof(int), cuda::getActiveStream()));
