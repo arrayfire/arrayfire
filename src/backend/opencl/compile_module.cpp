@@ -116,7 +116,7 @@ Program buildProgram(const vector<string> &kernelSources,
 
         retVal.build({device}, (cl_std + defaults + options.str()).c_str());
     } catch (Error &err) {
-        if (err.err() == CL_BUILD_ERROR) { SHOW_BUILD_INFO(retVal); }
+        if (err.err() == CL_BUILD_PROGRAM_FAILURE) { SHOW_BUILD_INFO(retVal); }
         throw;
     }
     return retVal;
