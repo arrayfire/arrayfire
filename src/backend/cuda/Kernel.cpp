@@ -13,7 +13,7 @@
 
 namespace cuda {
 
-Kernel::DevPtrType Kernel::getDevPtr(const char *name) {
+Kernel::DevPtrType Kernel::getDevPtr(const char* name) {
     Kernel::DevPtrType out = 0;
     size_t size            = 0;
     CU_CHECK(cuModuleGetGlobal(&out, &size, this->getModuleHandle(), name));
@@ -25,10 +25,11 @@ void Kernel::copyToReadOnly(Kernel::DevPtrType dst, Kernel::DevPtrType src,
     CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, cuda::getActiveStream()));
 }
 
-void Kernel::setScalar(Kernel::DevPtrType dst, int value) {
-    CU_CHECK(
-        cuMemcpyHtoDAsync(dst, &value, sizeof(int), cuda::getActiveStream()));
-    CU_CHECK(cuStreamSynchronize(cuda::getActiveStream()));
+void Kernel::setScalar(Kernel::DevPtrType dst, int* scalarValPtr,
+                       const bool syncCopy) {
+    CU_CHECK(cuMemcpyHtoDAsync(dst, scalarValPtr, sizeof(int),
+                               cuda::getActiveStream()));
+    if (syncCopy) { CU_CHECK(cuStreamSynchronize(cuda::getActiveStream())); }
 }
 
 int Kernel::getScalar(Kernel::DevPtrType src) {

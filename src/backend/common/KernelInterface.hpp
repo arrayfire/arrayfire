@@ -65,8 +65,13 @@ class KernelInterface {
     /// to the device memory pointed by `dst`
     ///
     /// \param[in] dst is the device pointer to which data will be copied
-    /// \param[in] value is the integer scalar to set at device pointer
-    virtual void setScalar(DevPtrType dst, int value) = 0;
+    /// \param[in] value is a poiner to the scalar value that is set at device
+    ///            pointer
+    /// \param[in] syncCopy will indicate if the backend call to upload the
+    ///            scalar value to GPU memory has to wait for copy to finish
+    ///            or proceed ahead without wait
+    virtual void setScalar(DevPtrType dst, int* scalarValPtr,
+                           const bool syncCopy = false) = 0;
 
     /// \brief Fetch a scalar from device memory
     ///
