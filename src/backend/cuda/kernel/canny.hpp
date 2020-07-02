@@ -84,7 +84,7 @@ void edgeTrackingHysteresis(Param<T> output, CParam<T> strong, CParam<T> weak) {
     int notFinished = 1;
     while (notFinished) {
         notFinished = 0;
-        edgeTrack.setScalar(flagPtr, notFinished);
+        edgeTrack.setScalar(flagPtr, &notFinished);
         edgeTrack(qArgs, output, blk_x, blk_y);
         POST_LAUNCH_CHECK();
         notFinished = edgeTrack.getScalar(flagPtr);
