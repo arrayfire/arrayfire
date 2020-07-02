@@ -49,10 +49,10 @@ class Kernel
 
     void copyToReadOnly(DevPtrType dst, DevPtrType src, size_t bytes) final;
 
-    void setScalar(DevPtrType dst, int* scalarValPtr,
-                   const bool syncCopy = false) final;
+    void setFlag(DevPtrType dst, int* scalarValPtr,
+                 const bool syncCopy = false) final;
 
-    int getScalar(DevPtrType src) final;
+    int getFlag(DevPtrType src) final;
 };
 
 }  // namespace cuda

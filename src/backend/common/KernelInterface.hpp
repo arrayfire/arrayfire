@@ -70,8 +70,8 @@ class KernelInterface {
     /// \param[in] syncCopy will indicate if the backend call to upload the
     ///            scalar value to GPU memory has to wait for copy to finish
     ///            or proceed ahead without wait
-    virtual void setScalar(DevPtrType dst, int* scalarValPtr,
-                           const bool syncCopy = false) = 0;
+    virtual void setFlag(DevPtrType dst, int* scalarValPtr,
+                         const bool syncCopy = false) = 0;
 
     /// \brief Fetch a scalar from device memory
     ///
@@ -80,7 +80,7 @@ class KernelInterface {
     /// \param[in] src is the device pointer from which data will be copied
     ///
     /// \returns the integer scalar
-    virtual int getScalar(DevPtrType src) = 0;
+    virtual int getFlag(DevPtrType src) = 0;
 
     /// \brief Enqueue Kernel per queueing criteria forwarding other parameters
     ///

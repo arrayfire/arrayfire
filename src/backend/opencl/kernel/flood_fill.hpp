@@ -108,12 +108,12 @@ void floodFill(Param out, const Param image, const Param seedsx,
 
     while (notFinished) {
         notFinished = 0;
-        floodStep.setScalar(dContinue, &notFinished);
+        floodStep.setFlag(dContinue, &notFinished);
         floodStep(cl::EnqueueArgs(getQueue(), global, local), *out.data,
                   out.info, *image.data, image.info, lowValue, highValue,
                   *dContinue);
         CL_DEBUG_FINISH(getQueue());
-        notFinished = floodStep.getScalar(dContinue);
+        notFinished = floodStep.getFlag(dContinue);
     }
     bufferFree(dContinue);
     finalizeOutput<T>(out, newValue);
