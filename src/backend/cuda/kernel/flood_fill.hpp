@@ -71,7 +71,7 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
 
     for (int doAnotherLaunch = 1; doAnotherLaunch > 0;) {
         doAnotherLaunch = 0;
-        floodStep.setScalar(continueFlagPtr, doAnotherLaunch);
+        floodStep.setScalar(continueFlagPtr, &doAnotherLaunch);
         floodStep(fQArgs, out, image, lowValue, highValue);
         POST_LAUNCH_CHECK();
         doAnotherLaunch = floodStep.getScalar(continueFlagPtr);

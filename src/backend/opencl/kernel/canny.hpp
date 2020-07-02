@@ -167,7 +167,7 @@ void edgeTrackingHysteresis(Param output, const Param strong,
 
     while (notFinished > 0) {
         notFinished = 0;
-        edgeTraceOp.setScalar(dContinue.get(), notFinished);
+        edgeTraceOp.setScalar(dContinue.get(), &notFinished);
         edgeTraceOp(EnqueueArgs(getQueue(), global, threads), *output.data,
                     output.info, blk_x, blk_y, *dContinue);
         CL_DEBUG_FINISH(getQueue());

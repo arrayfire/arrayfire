@@ -26,8 +26,10 @@ void Kernel::copyToReadOnly(Kernel::DevPtrType dst, Kernel::DevPtrType src,
     getQueue().enqueueCopyBuffer(*src, *dst, 0, 0, bytes);
 }
 
-void Kernel::setScalar(Kernel::DevPtrType dst, int value) {
-    getQueue().enqueueWriteBuffer(*dst, CL_FALSE, 0, sizeof(int), &value);
+void Kernel::setScalar(Kernel::DevPtrType dst, int* scalarValPtr,
+                       const bool syncCopy) {
+    getQueue().enqueueWriteBuffer(*dst, (syncCopy ? CL_TRUE : CL_FALSE), 0,
+                                  sizeof(int), scalarValPtr);
 }
 
 int Kernel::getScalar(Kernel::DevPtrType src) {

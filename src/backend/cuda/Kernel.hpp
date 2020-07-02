@@ -49,7 +49,8 @@ class Kernel
 
     void copyToReadOnly(DevPtrType dst, DevPtrType src, size_t bytes) final;
 
-    void setScalar(DevPtrType dst, int value) final;
+    void setScalar(DevPtrType dst, int* scalarValPtr,
+                   const bool syncCopy = false) final;
 
     int getScalar(DevPtrType src) final;
 };

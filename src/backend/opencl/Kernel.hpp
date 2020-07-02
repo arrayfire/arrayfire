@@ -40,14 +40,15 @@ class Kernel
 
     // clang-format off
     [[deprecated("OpenCL backend doesn't need Kernel::getDevPtr method")]]
-    DevPtrType getDevPtr(const char* name) override;
+    DevPtrType getDevPtr(const char* name) final;
     // clang-format on
 
-    void copyToReadOnly(DevPtrType dst, DevPtrType src, size_t bytes) override;
+    void copyToReadOnly(DevPtrType dst, DevPtrType src, size_t bytes) final;
 
-    void setScalar(DevPtrType dst, int value) override;
+    void setScalar(DevPtrType dst, int* scalarValPtr,
+                   const bool syncCopy = false) final;
 
-    int getScalar(DevPtrType src) override;
+    int getScalar(DevPtrType src) final;
 };
 
 }  // namespace opencl
