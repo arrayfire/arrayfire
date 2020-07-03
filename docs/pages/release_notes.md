@@ -4,22 +4,27 @@ Release Notes {#releasenotes}
 v3.7.2
 ======
 
+
 Improvements
 ------------
 - Cache CUDA kernels to disk to improve load times(Thanks to @cschreib-ibex) /PR{2848}
 - Staticly link against cuda libraries /PR{2785}
 - Make cuDNN an optional build dependency /PR{2836}
-- Improve support for different compilers and OS /PR{2876} /PR{2945} /PR{2925} /PR{2942} /PR{2943} /PR{2945}
+- Improve support for different compilers and OS /PR{2876} /PR{2945} /PR{2925} /PR{2942} /PR{2943} /PR{2945} /PR{2958}
 - Improve performance of join and transpose on CPU /PR{2849}
 - Improve documentation /PR{2816} /PR{2821} /PR{2846} /PR{2918} /PR{2928} /PR{2947}
-- Reduce binary size using NVRTC and template reducing instantiations /PR{2849} /PR{2861} /PR{2890}
-- Improve reduceByKey performance on OpenCL by using builtin functions /PR{2851}
+- Reduce binary size using NVRTC and template reducing instantiations /PR{2849} /PR{2861} /PR{2890} /PR{2957}
+- reduceByKey performance improvements /PR{2851} /PR{2957}
 - Improve support for Intel OpenCL GPUs /PR{2855}
 - Allow staticly linking against MKL /PR{2877} (Sponsered by SDL)
 - Better support for older CUDA toolkits /PR{2923}
 - Add support for CUDA 11 /PR{2939}
 - Add support for ccache for faster builds /PR{2931}
 - Add support for the conan package manager on linux /PR{2875}
+- Propagate build errors up the stack in AFError exceptions /PR{2948} /PR{2957}
+- Improve runtime dependency library loading /PR{2954}
+- Improved cuDNN runtime checks and warnings /PR{2960}
+- Document af\_memory\_manager\_* native memory return values /PR{2911}
 
 Fixes
 -----
@@ -31,10 +36,13 @@ Fixes
 - Fix af_get_memory_pressure_threshold return value /PR{2831}
 - Increased the max filter length for morph
 - Handle empty array inputs for LU, QR, and Rank functions /PR{2838}
-- Fix FindMKL.cmake script for sequential threading library /PR{2840}
-- Various internal refactoring /PR{2839} /PR{2861} /PR{2864} /PR{2873} /PR{2890} /PR{2891} /PR{2913}
+- Fix FindMKL.cmake script for sequential threading library /PR{2840} /PR{2952}
+- Various internal refactoring /PR{2839} /PR{2861} /PR{2864} /PR{2873} /PR{2890} /PR{2891} /PR{2913} /PR{2959}
 - Fix OpenCL 2.0 builtin function name conflict /PR{2851}
 - Fix error caused when releasing memory with multiple devices /PR{2867}
+- Fix missing set stacktrace symbol from unified API /PR{2915}
+- Fix zero padding issue in convolve2NN /PR{2820}
+- Fixed bugs in ReduceByKey /PR{2957}
 
 Contributions
 -------------
@@ -42,6 +50,7 @@ Special thanks to our contributors:
 [Corentin Schreiber](https://github.com/cschreib-ibex)
 [Jacob Khan](https://github.com/jacobkahn)
 [Paul Jurczak](https://github.com/pauljurczak)
+[Christoph Junghans](https://github.com/junghans)
 
 v3.7.1
 ======
