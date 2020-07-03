@@ -135,16 +135,6 @@ cudnnModule::cudnnModule()
     MODULE_FUNCTION_INIT(cudnnSetStream);
     MODULE_FUNCTION_INIT(cudnnSetTensor4dDescriptor);
 
-    // Check to see if the cuDNN runtime is compatible with the current device
-    cudaDeviceProp prop = getDeviceProp(getActiveDeviceId());
-    if (!checkDeviceWithRuntime(cudnn_rtversion, {prop.major, prop.minor})) {
-        string error_message = fmt::format(
-            "Error: cuDNN CUDA Runtime({}.{}) does not support the "
-            "current device's compute capability(sm_{}{}).",
-            rtmajor, rtminor, prop.major, prop.minor);
-        AF_ERROR(error_message, AF_ERR_RUNTIME);
-    }
-
     if (!module.symbolsLoaded()) {
         string error_message =
             "Error loading cuDNN symbols. ArrayFire was unable to load some "
