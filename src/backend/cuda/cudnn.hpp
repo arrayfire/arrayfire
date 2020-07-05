@@ -116,13 +116,11 @@ cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(
     const cudnnFilterDescriptor_t filterDesc, int nbDims,
     int tensorOuputDimA[]);
 
-cudnnStatus_t cudnnGetConvolutionForwardAlgorithm(
-    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
-    const cudnnFilterDescriptor_t wDesc,
-    const cudnnConvolutionDescriptor_t convDesc,
-    const cudnnTensorDescriptor_t yDesc,
-    cudnnConvolutionFwdPreference_t preference, size_t memoryLimitInBytes,
-    cudnnConvolutionFwdAlgo_t *algo);
+cudnnStatus_t cudnnGetConvolutionForwardAlgorithmMaxCount(cudnnHandle_t handle,
+                                                          int *count);
+
+cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(
+    cudnnHandle_t handle, int *count);
 
 cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(
     cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
@@ -131,13 +129,34 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(
     const cudnnTensorDescriptor_t yDesc, cudnnConvolutionFwdAlgo_t algo,
     size_t *sizeInBytes);
 
-cudnnStatus_t cudnnConvolutionForward(
-    cudnnHandle_t handle, const void *alpha,
-    const cudnnTensorDescriptor_t xDesc, const void *x,
-    const cudnnFilterDescriptor_t wDesc, const void *w,
-    const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo,
-    void *workSpace, size_t workSpaceSizeInBytes, const void *beta,
-    const cudnnTensorDescriptor_t yDesc, void *y);
+cudnnStatus_t cudnnGetConvolutionBackwardFilterWorkspaceSize(
+    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
+    const cudnnTensorDescriptor_t dyDesc,
+    const cudnnConvolutionDescriptor_t convDesc,
+    const cudnnFilterDescriptor_t gradDesc,
+    cudnnConvolutionBwdFilterAlgo_t algo, size_t *sizeInBytes);
+
+cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(
+    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
+    const cudnnFilterDescriptor_t wDesc,
+    const cudnnConvolutionDescriptor_t convDesc,
+    const cudnnTensorDescriptor_t yDesc, const int requestedAlgoCount,
+    int *returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t *perfResults);
+
+cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithm(
+    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
+    const cudnnTensorDescriptor_t dyDesc,
+    const cudnnConvolutionDescriptor_t convDesc,
+    const cudnnFilterDescriptor_t dwDesc, const int requestedAlgoCount,
+    int *returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t *perfResults);
+
+cudnnStatus_t cudnnGetConvolutionForwardAlgorithm(
+    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
+    const cudnnFilterDescriptor_t wDesc,
+    const cudnnConvolutionDescriptor_t convDesc,
+    const cudnnTensorDescriptor_t yDesc,
+    cudnnConvolutionFwdPreference_t preference, size_t memoryLimitInBytes,
+    cudnnConvolutionFwdAlgo_t *algo);
 
 cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm(
     cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
@@ -147,12 +166,13 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm(
     cudnnConvolutionBwdFilterPreference_t preference, size_t memoryLimitInBytes,
     cudnnConvolutionBwdFilterAlgo_t *algo);
 
-cudnnStatus_t cudnnGetConvolutionBackwardFilterWorkspaceSize(
-    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
-    const cudnnTensorDescriptor_t dyDesc,
-    const cudnnConvolutionDescriptor_t convDesc,
-    const cudnnFilterDescriptor_t gradDesc,
-    cudnnConvolutionBwdFilterAlgo_t algo, size_t *sizeInBytes);
+cudnnStatus_t cudnnConvolutionForward(
+    cudnnHandle_t handle, const void *alpha,
+    const cudnnTensorDescriptor_t xDesc, const void *x,
+    const cudnnFilterDescriptor_t wDesc, const void *w,
+    const cudnnConvolutionDescriptor_t convDesc, cudnnConvolutionFwdAlgo_t algo,
+    void *workSpace, size_t workSpaceSizeInBytes, const void *beta,
+    const cudnnTensorDescriptor_t yDesc, void *y);
 
 cudnnStatus_t cudnnConvolutionBackwardFilter(
     cudnnHandle_t handle, const void *alpha,

@@ -37,6 +37,10 @@ const char *errorString(cudnnStatus_t err) {
             return "CUDNN_STATUS_RUNTIME_IN_PROGRESS";
         case CUDNN_STATUS_RUNTIME_FP_OVERFLOW:
             return "CUDNN_STATUS_RUNTIME_FP_OVERFLOW";
+#if CUDNN_VERSION >= 8000
+        case CUDNN_STATUS_VERSION_MISMATCH:
+            return "CUDNN_STATUS_VERSION_MISMATCH";
+#endif
 #endif
 #endif
         default: return "UNKNOWN";
@@ -171,16 +175,16 @@ cudnnStatus_t cudnnGetConvolutionNdForwardOutputDim(
         convDesc, inputTensorDesc, filterDesc, nbDims, tensorOuputDimA);
 }
 
-cudnnStatus_t cudnnGetConvolutionForwardAlgorithm(
-    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
-    const cudnnFilterDescriptor_t wDesc,
-    const cudnnConvolutionDescriptor_t convDesc,
-    const cudnnTensorDescriptor_t yDesc,
-    cudnnConvolutionFwdPreference_t preference, size_t memoryLimitInBytes,
-    cudnnConvolutionFwdAlgo_t *algo) {
-    return getCudnnPlugin().cudnnGetConvolutionForwardAlgorithm(
-        handle, xDesc, wDesc, convDesc, yDesc, preference, memoryLimitInBytes,
-        algo);
+cudnnStatus_t cudnnGetConvolutionForwardAlgorithmMaxCount(cudnnHandle_t handle,
+                                                          int *count) {
+    return getCudnnPlugin().cudnnGetConvolutionForwardAlgorithmMaxCount(handle,
+                                                                        count);
+}
+
+cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(
+    cudnnHandle_t handle, int *count) {
+    return getCudnnPlugin().cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(
+        handle, count);
 }
 
 cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(
@@ -193,6 +197,80 @@ cudnnStatus_t cudnnGetConvolutionForwardWorkspaceSize(
         handle, xDesc, wDesc, convDesc, yDesc, algo, sizeInBytes);
 }
 
+cudnnStatus_t cudnnGetConvolutionBackwardFilterWorkspaceSize(
+    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
+    const cudnnTensorDescriptor_t dyDesc,
+    const cudnnConvolutionDescriptor_t convDesc,
+    const cudnnFilterDescriptor_t gradDesc,
+    cudnnConvolutionBwdFilterAlgo_t algo, size_t *sizeInBytes) {
+    return getCudnnPlugin().cudnnGetConvolutionBackwardFilterWorkspaceSize(
+        handle, xDesc, dyDesc, convDesc, gradDesc, algo, sizeInBytes);
+}
+
+cudnnStatus_t cudnnFindConvolutionForwardAlgorithm(
+    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
+    const cudnnFilterDescriptor_t wDesc,
+    const cudnnConvolutionDescriptor_t convDesc,
+    const cudnnTensorDescriptor_t yDesc, const int requestedAlgoCount,
+    int *returnedAlgoCount, cudnnConvolutionFwdAlgoPerf_t *perfResults) {
+    return getCudnnPlugin().cudnnFindConvolutionForwardAlgorithm(
+        handle, xDesc, wDesc, convDesc, yDesc, requestedAlgoCount,
+        returnedAlgoCount, perfResults);
+}
+
+cudnnStatus_t cudnnFindConvolutionBackwardFilterAlgorithm(
+    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
+    const cudnnTensorDescriptor_t dyDesc,
+    const cudnnConvolutionDescriptor_t convDesc,
+    const cudnnFilterDescriptor_t dwDesc, const int requestedAlgoCount,
+    int *returnedAlgoCount, cudnnConvolutionBwdFilterAlgoPerf_t *perfResults) {
+    return getCudnnPlugin().cudnnFindConvolutionBackwardFilterAlgorithm(
+        handle, xDesc, dyDesc, convDesc, dwDesc, requestedAlgoCount,
+        returnedAlgoCount, perfResults);
+}
+
+cudnnStatus_t cudnnGetConvolutionForwardAlgorithm(
+    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
+    const cudnnFilterDescriptor_t wDesc,
+    const cudnnConvolutionDescriptor_t convDesc,
+    const cudnnTensorDescriptor_t yDesc,
+    cudnnConvolutionFwdPreference_t preference, size_t memoryLimitInBytes,
+    cudnnConvolutionFwdAlgo_t *algo) {
+    auto version = getCudnnPlugin().getVersion();
+    if (std::get<0>(version) < 8) {
+        return getCudnnPlugin().cudnnGetConvolutionForwardAlgorithm(
+            handle, xDesc, wDesc, convDesc, yDesc, preference,
+            memoryLimitInBytes, algo);
+    } else {
+        AF_ERROR(
+            "cudnnGetConvolutionForwardAlgorithm has been removed since cuDNN "
+            "8",
+            AF_ERR_NOT_SUPPORTED);
+        return CUDNN_STATUS_SUCCESS;
+    }
+}
+
+cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm(
+    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
+    const cudnnTensorDescriptor_t dyDesc,
+    const cudnnConvolutionDescriptor_t convDesc,
+    const cudnnFilterDescriptor_t dwDesc,
+    cudnnConvolutionBwdFilterPreference_t preference, size_t memoryLimitInBytes,
+    cudnnConvolutionBwdFilterAlgo_t *algo) {
+    auto version = getCudnnPlugin().getVersion();
+    if (std::get<0>(version) < 8) {
+        return getCudnnPlugin().cudnnGetConvolutionBackwardFilterAlgorithm(
+            handle, xDesc, dyDesc, convDesc, dwDesc, preference,
+            memoryLimitInBytes, algo);
+    } else {
+        AF_ERROR(
+            "cudnnGetConvolutionBackwardFilterAlgorithm has been removed since "
+            "cuDNN 8",
+            AF_ERR_NOT_SUPPORTED);
+        return CUDNN_STATUS_SUCCESS;
+    }
+}
+
 cudnnStatus_t cudnnConvolutionForward(
     cudnnHandle_t handle, const void *alpha,
     const cudnnTensorDescriptor_t xDesc, const void *x,
@@ -203,28 +281,6 @@ cudnnStatus_t cudnnConvolutionForward(
     return getCudnnPlugin().cudnnConvolutionForward(
         handle, alpha, xDesc, x, wDesc, w, convDesc, algo, workSpace,
         workSpaceSizeInBytes, beta, yDesc, y);
-}
-
-cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm(
-    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
-    const cudnnTensorDescriptor_t dyDesc,
-    const cudnnConvolutionDescriptor_t convDesc,
-    const cudnnFilterDescriptor_t dwDesc,
-    cudnnConvolutionBwdFilterPreference_t preference, size_t memoryLimitInBytes,
-    cudnnConvolutionBwdFilterAlgo_t *algo) {
-    return getCudnnPlugin().cudnnGetConvolutionBackwardFilterAlgorithm(
-        handle, xDesc, dyDesc, convDesc, dwDesc, preference, memoryLimitInBytes,
-        algo);
-}
-
-cudnnStatus_t cudnnGetConvolutionBackwardFilterWorkspaceSize(
-    cudnnHandle_t handle, const cudnnTensorDescriptor_t xDesc,
-    const cudnnTensorDescriptor_t dyDesc,
-    const cudnnConvolutionDescriptor_t convDesc,
-    const cudnnFilterDescriptor_t gradDesc,
-    cudnnConvolutionBwdFilterAlgo_t algo, size_t *sizeInBytes) {
-    return getCudnnPlugin().cudnnGetConvolutionBackwardFilterWorkspaceSize(
-        handle, xDesc, dyDesc, convDesc, gradDesc, algo, sizeInBytes);
 }
 
 cudnnStatus_t cudnnConvolutionBackwardFilter(
