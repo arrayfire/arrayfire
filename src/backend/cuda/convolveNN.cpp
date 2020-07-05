@@ -28,6 +28,8 @@
 #include <af/dim4.hpp>
 
 #include <type_traits>
+#include <utility>
+#include <vector>
 
 using af::dim4;
 using common::flip;
@@ -35,10 +37,15 @@ using common::half;
 using common::make_handle;
 using std::conditional;
 using std::is_same;
+using std::pair;
+using std::tie;
+using std::vector;
 
 namespace cuda {
 
 #ifdef WITH_CUDNN
+
+auto getLogger() { return getCudnnPlugin().getLogger(); }
 
 template<typename Desc, typename T>
 auto toCudnn(Array<T> arr) {
@@ -50,6 +57,49 @@ auto toCudnn(Array<T> arr) {
 template<typename T>
 using scale_type =
     typename conditional<is_same<T, double>::value, double, float>::type;
+
+pair<cudnnConvolutionFwdAlgo_t, size_t> getForwardAlgorithm(
+    cudnnHandle_t cudnn, cudnnTensorDescriptor_t input_descriptor,
+    cudnnFilterDescriptor_t filter_descriptor,
+    cudnnConvolutionDescriptor_t convolution_descriptor,
+    cudnnTensorDescriptor_t output_descriptor) {
+    cudnnConvolutionFwdAlgo_t convolution_algorithm;
+    size_t workspace_bytes = 0;
+
+    auto version = getCudnnPlugin().getVersion();
+    if (std::get<0>(version) >= 8) {
+        int maxAlgoCount = 0;
+        CUDNN_CHECK(cuda::cudnnGetConvolutionForwardAlgorithmMaxCount(
+            cudnn, &maxAlgoCount));
+
+        vector<cudnnConvolutionFwdAlgoPerf_t> perfResults(maxAlgoCount);
+        int returnAlgoCount = 0;
+        CUDNN_CHECK(cuda::cudnnFindConvolutionForwardAlgorithm(
+            cudnn, input_descriptor, filter_descriptor, convolution_descriptor,
+            output_descriptor, maxAlgoCount, &returnAlgoCount,
+            perfResults.data()));
+
+        for (int i = 0; i < returnAlgoCount; ++i) {
+            if (perfResults[i].status == CUDNN_STATUS_SUCCESS) {
+                convolution_algorithm = perfResults[i].algo;
+                workspace_bytes       = perfResults[i].memory;
+                break;
+            }
+        }
+    } else {
+        const int memory_limit =
+            0;  // TODO: set to remaining space in memory manager?
+        CUDNN_CHECK(cuda::cudnnGetConvolutionForwardAlgorithm(
+            cudnn, input_descriptor, filter_descriptor, convolution_descriptor,
+            output_descriptor, CUDNN_CONVOLUTION_FWD_PREFER_FASTEST,
+            memory_limit, &convolution_algorithm));
+        CUDNN_CHECK(cuda::cudnnGetConvolutionForwardWorkspaceSize(
+            cudnn, input_descriptor, filter_descriptor, convolution_descriptor,
+            output_descriptor, convolution_algorithm, &workspace_bytes));
+    }
+
+    return {convolution_algorithm, workspace_bytes};
+}
 
 template<typename T>
 Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
@@ -88,19 +138,12 @@ Array<T> convolve2_cudnn(const Array<T> &signal, const Array<T> &filter,
     auto output_descriptor = toCudnn<cudnnTensorDescriptor_t>(out);
 
     // get convolution algorithm
-    const int memory_limit =
-        0;  // TODO: set to remaining space in memory manager?
     cudnnConvolutionFwdAlgo_t convolution_algorithm;
-    CUDNN_CHECK(cuda::cudnnGetConvolutionForwardAlgorithm(
-        cudnn, input_descriptor, filter_descriptor, convolution_descriptor,
-        output_descriptor, CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, memory_limit,
-        &convolution_algorithm));
+    size_t workspace_bytes = 0;
 
-    // figure out scratch space memory requirements
-    size_t workspace_bytes;
-    CUDNN_CHECK(cuda::cudnnGetConvolutionForwardWorkspaceSize(
-        cudnn, input_descriptor, filter_descriptor, convolution_descriptor,
-        output_descriptor, convolution_algorithm, &workspace_bytes));
+    tie(convolution_algorithm, workspace_bytes) =
+        getForwardAlgorithm(cudnn, input_descriptor, filter_descriptor,
+                            convolution_descriptor, output_descriptor);
 
     auto workspace_buffer = memAlloc<char>(workspace_bytes);
 
@@ -355,6 +398,48 @@ Array<T> filter_gradient_base(const Array<T> &incoming_gradient,
 }
 
 #ifdef WITH_CUDNN
+
+pair<cudnnConvolutionBwdFilterAlgo_t, size_t> getBackwardFilterAlgorithm(
+    cudnnHandle_t cudnn, cudnnTensorDescriptor_t x_descriptor,
+    cudnnTensorDescriptor_t dy_descriptor,
+    cudnnConvolutionDescriptor_t convolution_descriptor,
+    cudnnFilterDescriptor_t dw_descriptor) {
+    // determine algorithm to use
+    cudnnConvolutionBwdFilterAlgo_t bwd_filt_convolution_algorithm;
+    // figure out scratch space memory requirements
+    size_t workspace_bytes = 0;
+
+    auto version = getCudnnPlugin().getVersion();
+    if (std::get<0>(version) >= 8) {
+        int maxAlgoCount = 0;
+        CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(
+            cudnn, &maxAlgoCount));
+
+        vector<cudnnConvolutionBwdFilterAlgoPerf_t> perfResults(maxAlgoCount);
+        int returnAlgoCount = 0;
+        CUDNN_CHECK(cuda::cudnnFindConvolutionBackwardFilterAlgorithm(
+            cudnn, x_descriptor, dy_descriptor, convolution_descriptor,
+            dw_descriptor, maxAlgoCount, &returnAlgoCount, perfResults.data()));
+
+        for (int i = 0; i < returnAlgoCount; ++i) {
+            if (perfResults[i].status == CUDNN_STATUS_SUCCESS) {
+                bwd_filt_convolution_algorithm = perfResults[i].algo;
+                workspace_bytes                = perfResults[i].memory;
+                break;
+            }
+        }
+    } else {
+        CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardFilterAlgorithm(
+            cudnn, x_descriptor, dy_descriptor, convolution_descriptor,
+            dw_descriptor, CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, 0,
+            &bwd_filt_convolution_algorithm));
+        CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardFilterWorkspaceSize(
+            cudnn, x_descriptor, dy_descriptor, convolution_descriptor,
+            dw_descriptor, bwd_filt_convolution_algorithm, &workspace_bytes));
+    }
+    return {bwd_filt_convolution_algorithm, workspace_bytes};
+}
+
 template<typename T>
 Array<T> filter_gradient_cudnn(const Array<T> &incoming_gradient,
                                const Array<T> &original_signal,
@@ -384,19 +469,15 @@ Array<T> filter_gradient_cudnn(const Array<T> &incoming_gradient,
 
     // determine algorithm to use
     cudnnConvolutionBwdFilterAlgo_t bwd_filt_convolution_algorithm;
-    CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardFilterAlgorithm(
-        cudnn, x_descriptor, dy_descriptor, convolution_descriptor,
-        dw_descriptor, CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, 0,
-        &bwd_filt_convolution_algorithm));
-
     // figure out scratch space memory requirements
-    size_t workspace_bytes;
-    CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardFilterWorkspaceSize(
-        cudnn, x_descriptor, dy_descriptor, convolution_descriptor,
-        dw_descriptor, bwd_filt_convolution_algorithm, &workspace_bytes));
-    // prepare output array and scratch space
-    Array<T> out = createEmptyArray<T>(fDims);
+    size_t workspace_bytes = 0;
 
+    tie(bwd_filt_convolution_algorithm, workspace_bytes) =
+        getBackwardFilterAlgorithm(cudnn, x_descriptor, dy_descriptor,
+                                   convolution_descriptor, dw_descriptor);
+
+    // prepare output array and scratch space
+    Array<T> out          = createEmptyArray<T>(fDims);
     auto workspace_buffer = memAlloc<char>(workspace_bytes);
 
     // perform convolution

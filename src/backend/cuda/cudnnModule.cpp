@@ -26,7 +26,8 @@ namespace cuda {
 
 // clang-format off
 // Latest version from each minor releases are enlisted below
-constexpr std::array<common::Version, 10> cudnnVersions = {
+constexpr std::array<common::Version, 11> cudnnVersions = {
+    make_tuple(8, 0,  1),
     make_tuple(7, 6,  5),
     make_tuple(7, 5,  1),
     make_tuple(7, 4,  2),
@@ -130,10 +131,16 @@ cudnnModule::cudnnModule()
     MODULE_FUNCTION_INIT(cudnnDestroyFilterDescriptor);
     MODULE_FUNCTION_INIT(cudnnDestroyTensorDescriptor);
     MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardDataWorkspaceSize);
-    MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardFilterAlgorithm);
-    MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardFilterWorkspaceSize);
-    MODULE_FUNCTION_INIT(cudnnGetConvolutionForwardAlgorithm);
+    MODULE_FUNCTION_INIT(cudnnGetConvolutionForwardAlgorithmMaxCount);
+    MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardFilterAlgorithmMaxCount);
     MODULE_FUNCTION_INIT(cudnnGetConvolutionForwardWorkspaceSize);
+    MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardFilterWorkspaceSize);
+    MODULE_FUNCTION_INIT(cudnnFindConvolutionForwardAlgorithm);
+    MODULE_FUNCTION_INIT(cudnnFindConvolutionBackwardFilterAlgorithm);
+    if (major < 8) {
+        MODULE_FUNCTION_INIT(cudnnGetConvolutionForwardAlgorithm);
+        MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardFilterAlgorithm);
+    }
     MODULE_FUNCTION_INIT(cudnnGetConvolutionNdForwardOutputDim);
     MODULE_FUNCTION_INIT(cudnnSetConvolution2dDescriptor);
     MODULE_FUNCTION_INIT(cudnnSetFilter4dDescriptor);
