@@ -54,8 +54,8 @@ find_package(CUDA QUIET)
 find_path(cuDNN_INCLUDE_DIRS
   NAMES cudnn.h
   HINTS
-    ${PC_CUDNN_INCLUDE_DIRS}
     ${cuDNN_ROOT_DIR}
+    ${PC_CUDNN_INCLUDE_DIRS}
     ${CUDA_TOOLKIT_INCLUDE}
   PATH_SUFFIXES include
   DOC "cuDNN include directory path." )
@@ -64,6 +64,12 @@ if(cuDNN_INCLUDE_DIRS)
   file(READ ${cuDNN_INCLUDE_DIRS}/cudnn.h CUDNN_VERSION_FILE_CONTENTS)
   string(REGEX MATCH "define CUDNN_MAJOR * +([0-9]+)"
     CUDNN_MAJOR_VERSION "${CUDNN_VERSION_FILE_CONTENTS}")
+  list(LENGTH CUDNN_MAJOR_VERSION cudnn_ver_matches)
+  if(${cudnn_ver_matches} EQUAL 0)
+    file(READ ${cuDNN_INCLUDE_DIRS}/cudnn_version.h CUDNN_VERSION_FILE_CONTENTS)
+    string(REGEX MATCH "define CUDNN_MAJOR * +([0-9]+)"
+      CUDNN_MAJOR_VERSION "${CUDNN_VERSION_FILE_CONTENTS}")
+  endif()
   string(REGEX REPLACE "define CUDNN_MAJOR * +([0-9]+)" "\\1"
       CUDNN_MAJOR_VERSION "${CUDNN_MAJOR_VERSION}")
   string(REGEX MATCH "define CUDNN_MINOR * +([0-9]+)"
@@ -94,10 +100,10 @@ if(cuDNN_INCLUDE_DIRS)
       libcudnn.${cudnn_ver_suffix}.dylib
       cudnn
     PATHS
-      $ENV{LD_LIBRARY_PATH}
-      ${libpath_cudart}
       ${cuDNN_ROOT_DIR}
       ${PC_CUDNN_LIBRARY_DIRS}
+      $ENV{LD_LIBRARY_PATH}
+      ${libpath_cudart}
       ${CMAKE_INSTALL_PREFIX}
     PATH_SUFFIXES lib lib64 bin lib/x64 bin/x64
     DOC "cuDNN link library." )
@@ -106,10 +112,10 @@ if(cuDNN_INCLUDE_DIRS)
     find_file(cuDNN_DLL_LIBRARY
     NAMES cudnn64_${cudnn_ver_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
     PATHS
-      $ENV{PATH}
-      ${libpath_cudart}
       ${cuDNN_ROOT_DIR}
       ${PC_CUDNN_LIBRARY_DIRS}
+      $ENV{PATH}
+      ${libpath_cudart}
       ${CMAKE_INSTALL_PREFIX}
     PATH_SUFFIXES lib lib64 bin lib/x64 bin/x64
     DOC "cuDNN Windows DLL." )
