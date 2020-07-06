@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <Param.hpp>
-#include <af/defines.h>
 #include <math.hpp>
+#include <af/defines.h>
 
 /// doAnotherLaunch is a variable in kernel space
 /// used to track the convergence of
@@ -27,24 +27,33 @@ namespace cuda {
 ///
 /// Once, the algorithm is finished, output is reset
 /// to either zero or \p newValue for all valid pixels.
-template<typename T> constexpr T VALID() { return T(2); }
-template<typename T> constexpr T INVALID() { return T(1); }
-template<typename T> constexpr T ZERO() { return T(0); }
+template<typename T>
+constexpr T VALID() {
+    return T(2);
+}
+template<typename T>
+constexpr T INVALID() {
+    return T(1);
+}
+template<typename T>
+constexpr T ZERO() {
+    return T(0);
+}
 
 template<typename T>
-__global__
-void initSeeds(Param<T> out, CParam<uint> seedsx, CParam<uint> seedsy) {
+__global__ void initSeeds(Param<T> out, CParam<uint> seedsx,
+                          CParam<uint> seedsy) {
     uint idx = blockDim.x * blockIdx.x + threadIdx.x;
     if (idx < seedsx.elements()) {
-        uint x = seedsx.ptr[ idx ];
-        uint y = seedsy.ptr[ idx ];
-        out.ptr[ x + y * out.dims[0] ] = VALID<T>();
+        uint x                       = seedsx.ptr[idx];
+        uint y                       = seedsy.ptr[idx];
+        out.ptr[x + y * out.dims[0]] = VALID<T>();
     }
 }
 
 template<typename T>
-__global__
-void floodStep(Param<T> out, CParam<T> img, T lowValue, T highValue) {
+__global__ void floodStep(Param<T> out, CParam<T> img, T lowValue,
+                          T highValue) {
     constexpr int RADIUS      = 1;
     constexpr int SMEM_WIDTH  = THREADS_X + 2 * RADIUS;
     constexpr int SMEM_HEIGHT = THREADS_Y + 2 * RADIUS;
@@ -57,11 +66,10 @@ void floodStep(Param<T> out, CParam<T> img, T lowValue, T highValue) {
     const int gy = blockDim.y * blockIdx.y + ly;
     const int d0 = out.dims[0];
     const int d1 = out.dims[1];
-    const int s0 = out.strides[0];
     const int s1 = out.strides[1];
 
     const T *iptr = (const T *)img.ptr;
-          T *optr = (T *)out.ptr;
+    T *optr       = (T *)out.ptr;
 #pragma unroll
     for (int b = ly, gy2 = gy; b < SMEM_HEIGHT;
          b += blockDim.y, gy2 += blockDim.y) {
@@ -71,22 +79,23 @@ void floodStep(Param<T> out, CParam<T> img, T lowValue, T highValue) {
             int x      = gx2 - RADIUS;
             int y      = gy2 - RADIUS;
             bool inROI = (x >= 0 && x < d0 && y >= 0 && y < d1);
-            smem[b][a] = (inROI ? optr[ x*s0+y*s1 ] : INVALID<T>());
+            smem[b][a] = (inROI ? optr[x + y * s1] : INVALID<T>());
         }
     }
     int i = lx + RADIUS;
     int j = ly + RADIUS;
 
-    T tImgVal = iptr[(clamp(gx, 0, int(img.dims[0]-1)) * img.strides[0] +
-                      clamp(gy, 0, int(img.dims[1]-1)) * img.strides[1])];
+    T tImgVal = iptr[(clamp(gx, 0, int(img.dims[0] - 1)) * img.strides[0] +
+                      clamp(gy, 0, int(img.dims[1] - 1)) * img.strides[1])];
     const int isPxBtwnThresholds =
         (tImgVal >= lowValue && tImgVal <= highValue);
     __syncthreads();
 
     T origOutVal      = smem[j][i];
+    T centerVal       = origOutVal;
     bool blockChanged = false;
     bool isBorderPxl  = (lx == 0 || ly == 0 || lx == (blockDim.x - 1) ||
-                         ly == (blockDim.y - 1));
+                        ly == (blockDim.y - 1));
     do {
         int validNeighbors = 0;
 #pragma unroll
@@ -97,19 +106,18 @@ void floodStep(Param<T> out, CParam<T> img, T lowValue, T highValue) {
                 validNeighbors += (currVal == VALID<T>());
             }
         }
+        // Exempt current/center pixel from validNeighbors
+        validNeighbors -= (centerVal == VALID<T>());
         __syncthreads();
 
         bool outChanged = (smem[j][i] == ZERO<T>() && (validNeighbors > 0));
-        if (outChanged) {
-            smem[j][i] = T(isPxBtwnThresholds + INVALID<T>());
-        }
+        if (outChanged) { smem[j][i] = T(isPxBtwnThresholds + INVALID<T>()); }
         blockChanged = __syncthreads_or(int(outChanged));
+        centerVal    = smem[j][i];
     } while (blockChanged);
 
-    T newOutVal = smem[j][i];
-
-    bool borderChanged = (isBorderPxl &&
-                          newOutVal != origOutVal && newOutVal == VALID<T>());
+    bool borderChanged =
+        (isBorderPxl && centerVal != origOutVal && centerVal == VALID<T>());
 
     borderChanged = __syncthreads_or(int(borderChanged));
 
@@ -120,21 +128,18 @@ void floodStep(Param<T> out, CParam<T> img, T lowValue, T highValue) {
         doAnotherLaunch = 1;
     }
 
-    if (gx < d0 && gy < d1) {
-        optr[ (gx*s0 + gy*s1) ] = smem[j][i];
-    }
+    if (gx < d0 && gy < d1) { optr[(gx + gy * s1)] = smem[j][i]; }
 }
 
 template<typename T>
-__global__
-void finalizeOutput(Param<T> out, T newValue) {
+__global__ void finalizeOutput(Param<T> out, T newValue) {
     uint gx = blockDim.x * blockIdx.x + threadIdx.x;
     uint gy = blockDim.y * blockIdx.y + threadIdx.y;
     if (gx < out.dims[0] && gy < out.dims[1]) {
-        uint idx = gx * out.strides[0] + gy * out.strides[1];
-        T val = out.ptr[idx];
+        uint idx     = gx + gy * out.strides[1];
+        T val        = out.ptr[idx];
         out.ptr[idx] = (val == VALID<T>() ? newValue : ZERO<T>());
     }
 }
 
-} // namespace cuda
+}  // namespace cuda

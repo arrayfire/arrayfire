@@ -160,8 +160,6 @@ void testData(CCCTestParams params) {
 class ConfidenceConnectedDataTest
     : public testing::TestWithParam<CCCTestParams> {};
 
-#if !defined(AF_OPENCL)
-
 TYPED_TEST(ConfidenceConnectedImageTest, DonutBackgroundExtraction) {
     const unsigned seedx = 10;
     const unsigned seedy = 10;
@@ -200,4 +198,3 @@ INSTANTIATE_TEST_CASE_P(
            << info.param.iterations << "_replace_" << info.param.replace;
         return ss.str();
     });
-#endif
