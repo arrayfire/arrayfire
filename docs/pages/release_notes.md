@@ -19,6 +19,7 @@ Improvements
 - Allow staticly linking against MKL /PR{2877} (Sponsered by SDL)
 - Better support for older CUDA toolkits /PR{2923}
 - Add support for CUDA 11 /PR{2939}
+- Add support for cuDNN 8 /PR{2963}
 - Add support for ccache for faster builds /PR{2931}
 - Add support for the conan package manager on linux /PR{2875}
 - Propagate build errors up the stack in AFError exceptions /PR{2948} /PR{2957}
@@ -43,6 +44,7 @@ Fixes
 - Fix missing set stacktrace symbol from unified API /PR{2915}
 - Fix zero padding issue in convolve2NN /PR{2820}
 - Fixed bugs in ReduceByKey /PR{2957}
+- Add clblast patch to handle custom context with multiple devices /PR{2967}
 
 Contributions
 -------------
