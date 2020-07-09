@@ -41,8 +41,11 @@ int barrierOR(local int *predicates) {
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
+    int retVal = predicates[0];
+#if AF_IS_PLATFORM_NVIDIA
     barrier(CLK_LOCAL_MEM_FENCE);
-    return predicates[0];
+#endif
+    return retVal;
 }
 
 kernel void flood_step(global T *out, KParam oInfo, global const T *img,

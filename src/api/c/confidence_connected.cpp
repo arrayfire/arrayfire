@@ -188,13 +188,6 @@ af_err af_confidence_cc(af_array* out, const af_array in, const af_array seedx,
                         const af_array seedy, const unsigned radius,
                         const unsigned multiplier, const int iter,
                         const double segmented_value) {
-#if defined(AF_OPENCL)
-    // FIXME OpenCL backend keeps running into indefinte loop for
-    // short bit size(16,8) types very often and occasionally
-    // with 32 bit types.
-    AF_ERROR("There is a known issue for OpenCL implementation",
-             AF_ERR_NOT_SUPPORTED);
-#endif
     try {
         const ArrayInfo& inInfo         = getInfo(in);
         const ArrayInfo& seedxInfo      = getInfo(seedx);
