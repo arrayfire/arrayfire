@@ -41,8 +41,15 @@ int barrierOR(local int *predicates) {
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
+    int retVal = predicates[0];
+#if AF_IS_PLATFORM_NVIDIA
+    // Without the extra barrier sync after reading the reduction result,
+    // the caller's loop is going into infinite loop occasionally which is
+    // in turn randoms hangs. This doesn't seem to be an issue on non-nvidia
+    // hardware. Hence, the check.
     barrier(CLK_LOCAL_MEM_FENCE);
-    return predicates[0];
+#endif
+    return retVal;
 }
 
 kernel void flood_step(global T *out, KParam oInfo, global const T *img,
