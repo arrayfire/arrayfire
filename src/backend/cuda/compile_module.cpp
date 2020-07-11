@@ -316,40 +316,47 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
                                  getKernelCacheFilename(device, moduleKey);
         const string tempFile =
             cacheDirectory + AF_PATH_SEPARATOR + makeTempFilename();
-
-        // compute CUBIN hash
-        const size_t cubinHash = deterministicHash(cubin, cubinSize);
-
-        // write module hash(everything: names, code & options) and CUBIN data
-        ofstream out(tempFile, std::ios::binary);
-        if (!sourceIsJIT) {
-            size_t mangledNamesListSize = retVal.map().size();
-            out.write(reinterpret_cast<const char *>(&mangledNamesListSize),
-                      sizeof(mangledNamesListSize));
-            for (auto &iter : retVal.map()) {
-                size_t kySize   = iter.first.size();
-                size_t vlSize   = iter.second.size();
-                const char *key = iter.first.c_str();
-                const char *val = iter.second.c_str();
-                out.write(reinterpret_cast<const char *>(&kySize),
-                          sizeof(kySize));
-                out.write(key, iter.first.size());
-                out.write(reinterpret_cast<const char *>(&vlSize),
-                          sizeof(vlSize));
-                out.write(val, iter.second.size());
+        try {
+            // write module hash(everything: names, code & options) and CUBIN
+            // data
+            ofstream out(tempFile, std::ios::binary);
+            if (!sourceIsJIT) {
+                size_t mangledNamesListSize = retVal.map().size();
+                out.write(reinterpret_cast<const char *>(&mangledNamesListSize),
+                          sizeof(mangledNamesListSize));
+                for (auto &iter : retVal.map()) {
+                    size_t kySize   = iter.first.size();
+                    size_t vlSize   = iter.second.size();
+                    const char *key = iter.first.c_str();
+                    const char *val = iter.second.c_str();
+                    out.write(reinterpret_cast<const char *>(&kySize),
+                              sizeof(kySize));
+                    out.write(key, iter.first.size());
+                    out.write(reinterpret_cast<const char *>(&vlSize),
+                              sizeof(vlSize));
+                    out.write(val, iter.second.size());
+                }
             }
-        }
-        out.write(reinterpret_cast<const char *>(&cubinHash),
-                  sizeof(cubinHash));
-        out.write(reinterpret_cast<const char *>(&cubinSize),
-                  sizeof(cubinSize));
-        out.write(static_cast<const char *>(cubin), cubinSize);
-        out.close();
 
-        // try to rename temporary file into final cache file, if this fails
-        // this means another thread has finished compiling this kernel before
-        // the current thread.
-        if (!renameFile(tempFile, cacheFile)) { removeFile(tempFile); }
+            // compute CUBIN hash
+            const size_t cubinHash = deterministicHash(cubin, cubinSize);
+
+            out.write(reinterpret_cast<const char *>(&cubinHash),
+                      sizeof(cubinHash));
+            out.write(reinterpret_cast<const char *>(&cubinSize),
+                      sizeof(cubinSize));
+            out.write(static_cast<const char *>(cubin), cubinSize);
+            out.close();
+
+            // try to rename temporary file into final cache file, if this fails
+            // this means another thread has finished compiling this kernel
+            // before the current thread.
+            if (!renameFile(tempFile, cacheFile)) { removeFile(tempFile); }
+        } catch (const std::ios_base::failure &e) {
+            AF_TRACE("{{{:<30} : failed saving binary to {} for {}, {}}}",
+                     moduleKey, cacheFile, getDeviceProp(device).name,
+                     e.what());
+        }
     }
 #endif
 
@@ -383,8 +390,12 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
     Module retVal{nullptr};
     try {
         std::ifstream in(cacheFile, std::ios::binary);
-        if (!in.is_open()) return Module{nullptr};
-
+        if (!in.is_open()) {
+            AF_TRACE("{{{:<30} : Unable to open {} for {}}}", moduleKey,
+                     cacheFile, getDeviceProp(device).name);
+            removeFile(cacheFile);  // Remove if exists
+            return Module{nullptr};
+        }
         in.exceptions(std::ios::failbit | std::ios::badbit);
 
         if (!isJIT) {
@@ -430,8 +441,22 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
                  getDeviceProp(device).name);
 
         retVal.set(modOut);
-    } catch (...) {
-        if (modOut != nullptr) { CU_CHECK(cuModuleUnload(modOut)); }
+    } catch (const std::ios_base::failure &e) {
+        AF_TRACE("{{{:<30} : Unable to read {} for {}}}", moduleKey, cacheFile,
+                 getDeviceProp(device).name);
+        removeFile(cacheFile);
+    } catch (const AfError &e) {
+        if (e.getError() == AF_ERR_LOAD_SYM) {
+            AF_TRACE(
+                "{{{:<30} : Corrupt binary({}) found on disk for {}, removed}}",
+                moduleKey, cacheFile, getDeviceProp(device).name);
+        } else {
+            if (modOut != nullptr) { CU_CHECK(cuModuleUnload(modOut)); }
+            AF_TRACE(
+                "{{{:<30} : cuModuleLoadData failed with content from {} for "
+                "{}, {}}}",
+                moduleKey, cacheFile, getDeviceProp(device).name, e.what());
+        }
         removeFile(cacheFile);
     }
     return retVal;
