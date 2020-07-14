@@ -18,6 +18,7 @@
 #define LAPACK_NAME(fn) LAPACKE_##fn
 
 #ifdef USE_MKL
+#include <mkl_lapack.h>
 #include <mkl_lapacke.h>
 #else
 #ifdef __APPLE__
