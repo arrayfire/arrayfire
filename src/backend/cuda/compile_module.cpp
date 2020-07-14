@@ -131,7 +131,7 @@ string getKernelCacheFilename(const int device, const string &key) {
         to_string(computeFlag.first) + to_string(computeFlag.second);
 
     return "KER" + key + "_CU_" + computeVersion + "_AF_" +
-           to_string(AF_API_VERSION_CURRENT) + ".cubin";
+           to_string(AF_API_VERSION_CURRENT) + ".bin";
 }
 
 namespace common {
