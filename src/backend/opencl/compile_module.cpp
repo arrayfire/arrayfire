@@ -146,7 +146,7 @@ string getKernelCacheFilename(const int device, const string &key) {
     std::replace(infix.begin(), infix.end(), ' ', '_');
 
     return "KER" + key + "_CL_" + infix + "_AF_" +
-           to_string(AF_API_VERSION_CURRENT) + ".clbin";
+           to_string(AF_API_VERSION_CURRENT) + ".bin";
 }
 
 namespace common {
