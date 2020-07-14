@@ -12,6 +12,8 @@
 #include <cpu/cpu_helper.hpp>
 #include <cpu/cpu_solve.hpp>
 #include <math.hpp>
+#include <algorithm>
+#include <vector>
 
 namespace opencl {
 namespace cpu {
@@ -22,6 +24,21 @@ using gesv_func_def = int (*)(ORDER_TYPE, int, int, T *, int, int *, T *, int);
 template<typename T>
 using gels_func_def = int (*)(ORDER_TYPE, char, int, int, int, T *, int, T *,
                               int);
+
+#ifdef USE_MKL
+template<typename T>
+using getrf_batch_strided_func_def =
+    void (*)(const MKL_INT *m, const MKL_INT *n, T *a, const MKL_INT *lda,
+             const MKL_INT *stride_a, MKL_INT *ipiv, const MKL_INT *stride_ipiv,
+             const MKL_INT *batch_size, MKL_INT *info);
+
+template<typename T>
+using getrs_batch_strided_func_def =
+    void (*)(const char *trans, const MKL_INT *n, const MKL_INT *nrhs, T *a,
+             const MKL_INT *lda, const MKL_INT *stride_a, MKL_INT *ipiv,
+             const MKL_INT *stride_ipiv, T *b, const MKL_INT *ldb,
+             const MKL_INT *stride_b, const MKL_INT *batch_size, MKL_INT *info);
+#endif
 
 template<typename T>
 using getrs_func_def = int (*)(ORDER_TYPE, char, int, int, const T *, int,
@@ -52,6 +69,70 @@ SOLVE_FUNC(gels, float, s)
 SOLVE_FUNC(gels, double, d)
 SOLVE_FUNC(gels, cfloat, c)
 SOLVE_FUNC(gels, cdouble, z)
+
+#ifdef USE_MKL
+
+template<typename T>
+struct mkl_type {
+    using type = T;
+};
+template<>
+struct mkl_type<cl_float2> {
+    using type = MKL_Complex8;
+};
+template<>
+struct mkl_type<cl_double2> {
+    using type = MKL_Complex16;
+};
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnoexcept-type"
+template<typename T>
+getrf_batch_strided_func_def<T> getrf_batch_strided_func();
+
+template<>
+getrf_batch_strided_func_def<float> getrf_batch_strided_func<float>() {
+    return &sgetrf_batch_strided;
+}
+template<>
+getrf_batch_strided_func_def<double> getrf_batch_strided_func<double>() {
+    return &dgetrf_batch_strided;
+}
+template<>
+getrf_batch_strided_func_def<MKL_Complex8>
+getrf_batch_strided_func<MKL_Complex8>() {
+    return &cgetrf_batch_strided;
+}
+template<>
+getrf_batch_strided_func_def<MKL_Complex16>
+getrf_batch_strided_func<MKL_Complex16>() {
+    return &zgetrf_batch_strided;
+}
+
+template<typename T>
+getrs_batch_strided_func_def<T> getrs_batch_strided_func();
+
+template<>
+getrs_batch_strided_func_def<float> getrs_batch_strided_func<float>() {
+    return &sgetrs_batch_strided;
+}
+template<>
+getrs_batch_strided_func_def<double> getrs_batch_strided_func<double>() {
+    return &dgetrs_batch_strided;
+}
+template<>
+getrs_batch_strided_func_def<MKL_Complex8>
+getrs_batch_strided_func<MKL_Complex8>() {
+    return &cgetrs_batch_strided;
+}
+template<>
+getrs_batch_strided_func_def<MKL_Complex16>
+getrs_batch_strided_func<MKL_Complex16>() {
+    return &zgetrs_batch_strided;
+}
+
+#pragma GCC diagnostic pop
+#endif
 
 SOLVE_FUNC_DEF(getrs)
 SOLVE_FUNC(getrs, float, s)
@@ -102,6 +183,55 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
     return B;
 }
 
+#ifdef USE_MKL
+
+template<typename T>
+Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b,
+                             const af_mat_prop options) {
+    using std::vector;
+    int batches = a.dims()[2] * a.dims()[3];
+
+    dim4 aDims = a.dims();
+    dim4 bDims = b.dims();
+    int M      = aDims[0];
+    int N      = aDims[1];
+    int K      = bDims[1];
+    int MN     = std::min(M, N);
+
+    int lda     = a.strides()[1];
+    int astride = a.strides()[2];
+
+    vector<int> ipiv(MN * batches);
+    int ipivstride = MN;
+
+    int ldb     = b.strides()[1];
+    int bstride = b.strides()[2];
+
+    vector<int> info(batches, 0);
+
+    char trans = 'N';
+
+    Array<T> A = copyArray<T>(a);
+    Array<T> B = copyArray<T>(b);
+
+    mapped_ptr<T> aPtr = A.getMappedPtr();
+    mapped_ptr<T> bPtr = B.getMappedPtr();
+
+    getrf_batch_strided_func<typename mkl_type<T>::type>()(
+        &M, &N, reinterpret_cast<typename mkl_type<T>::type *>(aPtr.get()),
+        &lda, &astride, ipiv.data(), &ipivstride, &batches, info.data());
+
+    getrs_batch_strided_func<typename mkl_type<T>::type>()(
+        &trans, &M, &K,
+        reinterpret_cast<typename mkl_type<T>::type *>(aPtr.get()), &lda,
+        &astride, ipiv.data(), &ipivstride,
+        reinterpret_cast<typename mkl_type<T>::type *>(bPtr.get()), &ldb,
+        &bstride, &batches, info.data());
+
+    return B;
+}
+#endif
+
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b,
                const af_mat_prop options) {
@@ -109,7 +239,17 @@ Array<T> solve(const Array<T> &a, const Array<T> &b,
         return triangleSolve<T>(a, b, options);
     }
 
+#ifdef USE_MKL
+    if (a.dims()[2] > 1 || a.dims()[3] > 1) {
+        return generalSolveBatched(a, b, options);
+    }
+#endif
+
     const dim4 NullShape(0, 0, 0, 0);
+
+    dim4 aDims = a.dims();
+    int batchz = aDims[2];
+    int batchw = aDims[3];
 
     int M = a.dims()[0];
     int N = a.dims()[1];
@@ -124,18 +264,25 @@ Array<T> solve(const Array<T> &a, const Array<T> &b,
     mapped_ptr<T> aPtr = A.getMappedPtr();
     mapped_ptr<T> bPtr = B.getMappedPtr();
 
-    if (M == N) {
-        std::vector<int> pivot(N);
-        gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K, aPtr.get(), A.strides()[1],
-                       &pivot.front(), bPtr.get(), B.strides()[1]);
-    } else {
-        int sM = a.strides()[1];
-        int sN = a.strides()[2] / sM;
+    for (int i = 0; i < batchw; i++) {
+        for (int j = 0; j < batchz; j++) {
+            auto pA = aPtr.get() + A.strides()[2] * j + A.strides()[3] * i;
+            auto pB = bPtr.get() + B.strides()[2] * j + B.strides()[3] * i;
 
-        gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N', M, N, K, aPtr.get(),
-                       A.strides()[1], bPtr.get(), max(sM, sN));
-        B.resetDims(dim4(N, K));
+            if (M == N) {
+                std::vector<int> pivot(N);
+                gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K, pA, A.strides()[1],
+                               &pivot.front(), pB, B.strides()[1]);
+            } else {
+                int sM = a.strides()[1];
+                int sN = a.strides()[2] / sM;
+
+                gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N', M, N, K, pA,
+                               A.strides()[1], pB, max(sM, sN));
+            }
+        }
     }
+    if (M != N) { B.resetDims(dim4(N, K, B.dims()[2], B.dims()[3])); }
 
     return B;
 }

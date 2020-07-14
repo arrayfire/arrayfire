@@ -22,6 +22,7 @@
 #include <af/dim4.hpp>
 #include <af/seq.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -153,6 +154,9 @@ class Array {
     }
 
     void resetInfo(const af::dim4 &dims) { info.resetInfo(dims); }
+
+    // Modifies the dimensions of the array without modifing the underlying
+    // data
     void resetDims(const af::dim4 &dims) { info.resetDims(dims); }
     void modDims(const af::dim4 &newDims) { info.modDims(newDims); }
     void modStrides(const af::dim4 &newStrides) { info.modStrides(newStrides); }

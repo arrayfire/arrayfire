@@ -25,6 +25,13 @@
 #include <transpose.hpp>
 #include <af/opencl.h>
 
+#include <algorithm>
+#include <vector>
+
+using cl::Buffer;
+using std::min;
+using std::vector;
+
 namespace opencl {
 
 template<typename T>
@@ -35,13 +42,13 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
     int N    = A.dims()[0];
     int NRHS = b.dims()[1];
 
-    std::vector<int> ipiv(N);
+    vector<int> ipiv(N);
     copyData(&ipiv[0], pivot);
 
     Array<T> B = copyArray<T>(b);
 
-    const cl::Buffer *A_buf = A.get();
-    cl::Buffer *B_buf       = B.get();
+    const Buffer *A_buf = A.get();
+    Buffer *B_buf       = B.get();
 
     int info = 0;
     magma_getrs_gpu<T>(MagmaNoTrans, N, NRHS, (*A_buf)(), A.getOffset(),
@@ -52,26 +59,38 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
 
 template<typename T>
 Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
-    dim4 iDims = a.dims();
-    int M      = iDims[0];
-    int N      = iDims[1];
-    int MN     = std::min(M, N);
-    std::vector<int> ipiv(MN);
+    dim4 aDims = a.dims();
+    int batchz = aDims[2];
+    int batchw = aDims[3];
 
     Array<T> A = copyArray<T>(a);
     Array<T> B = copyArray<T>(b);
 
-    cl::Buffer *A_buf  = A.get();
-    int info           = 0;
-    cl_command_queue q = getQueue()();
-    magma_getrf_gpu<T>(M, N, (*A_buf)(), A.getOffset(), A.strides()[1],
-                       &ipiv[0], q, &info);
+    for (int i = 0; i < batchw; i++) {
+        for (int j = 0; j < batchz; j++) {
+            int M  = aDims[0];
+            int N  = aDims[1];
+            int MN = min(M, N);
+            vector<int> ipiv(MN);
 
-    cl::Buffer *B_buf = B.get();
-    int K             = B.dims()[1];
-    magma_getrs_gpu<T>(MagmaNoTrans, M, K, (*A_buf)(), A.getOffset(),
-                       A.strides()[1], &ipiv[0], (*B_buf)(), B.getOffset(),
-                       B.strides()[1], q, &info);
+            Buffer *A_buf      = A.get();
+            int info           = 0;
+            cl_command_queue q = getQueue()();
+            auto aoffset =
+                A.getOffset() + j * A.strides()[2] + i * A.strides()[3];
+            magma_getrf_gpu<T>(M, N, (*A_buf)(), aoffset, A.strides()[1],
+                               &ipiv[0], q, &info);
+
+            Buffer *B_buf = B.get();
+            int K         = B.dims()[1];
+
+            auto boffset =
+                B.getOffset() + j * B.strides()[2] + i * B.strides()[3];
+            magma_getrs_gpu<T>(MagmaNoTrans, M, K, (*A_buf)(), aoffset,
+                               A.strides()[1], &ipiv[0], (*B_buf)(), boffset,
+                               B.strides()[1], q, &info);
+        }
+    }
     return B;
 }
 
@@ -80,7 +99,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
     int M  = a.dims()[0];
     int N  = a.dims()[1];
     int K  = b.dims()[1];
-    int MN = std::min(M, N);
+    int MN = min(M, N);
 
     Array<T> B = createEmptyArray<T>(dim4());
     gpu_blas_trsm_func<T> gpu_blas_trsm;
@@ -117,12 +136,12 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
         int NUM      = (2 * MN + ((M + 31) / 32) * 32) * NB;
         Array<T> tmp = createEmptyArray<T>(dim4(NUM));
 
-        std::vector<T> h_tau(MN);
+        vector<T> h_tau(MN);
 
-        int info       = 0;
-        cl::Buffer *dA = A.get();
-        cl::Buffer *dT = tmp.get();
-        cl::Buffer *dB = B.get();
+        int info   = 0;
+        Buffer *dA = A.get();
+        Buffer *dT = tmp.get();
+        Buffer *dB = B.get();
 
         magma_geqrf3_gpu<T>(A.dims()[0], A.dims()[1], (*dA)(), A.getOffset(),
                             A.strides()[1], &h_tau[0], (*dT)(), tmp.getOffset(),
@@ -147,7 +166,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
 
 #if UNMQR
         int lwork = (B.dims()[0] - A.dims()[0] + NB) * (B.dims()[1] + 2 * NB);
-        std::vector<T> h_work(lwork);
+        vector<T> h_work(lwork);
         B.resetDims(dim4(N, K));
         magma_unmqr_gpu<T>(MagmaLeft, MagmaNoTrans, B.dims()[0], B.dims()[1],
                            A.dims()[0], (*dA)(), A.getOffset(), A.strides()[1],
@@ -156,7 +175,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
                            queue, &info);
 #else
         A.resetDims(dim4(N, M));
-        magma_ungqr_gpu<T>(A.dims()[0], A.dims()[1], std::min(M, N), (*dA)(),
+        magma_ungqr_gpu<T>(A.dims()[0], A.dims()[1], min(M, N), (*dA)(),
                            A.getOffset(), A.strides()[1], &h_tau[0], (*dT)(),
                            tmp.getOffset(), NB, queue, &info);
 
@@ -178,18 +197,18 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
         Array<T> A = copyArray<T>(a);
         B          = copyArray(b);
 
-        int MN = std::min(M, N);
+        int MN = min(M, N);
         int NB = magma_get_geqrf_nb<T>(M);
 
         int NUM      = (2 * MN + ((N + 31) / 32) * 32) * NB;
         Array<T> tmp = createEmptyArray<T>(dim4(NUM));
 
-        std::vector<T> h_tau(NUM);
+        vector<T> h_tau(NUM);
 
-        int info          = 0;
-        cl::Buffer *A_buf = A.get();
-        cl::Buffer *B_buf = B.get();
-        cl::Buffer *dT    = tmp.get();
+        int info      = 0;
+        Buffer *A_buf = A.get();
+        Buffer *B_buf = B.get();
+        Buffer *dT    = tmp.get();
 
         magma_geqrf3_gpu<T>(M, N, (*A_buf)(), A.getOffset(), A.strides()[1],
                             &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(),
@@ -198,7 +217,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
         int NRHS   = B.dims()[1];
         int lhwork = (M - N + NB) * (NRHS + NB) + NRHS * NB;
 
-        std::vector<T> h_work(lhwork);
+        vector<T> h_work(lhwork);
         h_work[0] = scalar<T>(lhwork);
 
         magma_unmqr_gpu<T>(MagmaLeft, MagmaConjTrans, M, NRHS, N, (*A_buf)(),
@@ -211,8 +230,8 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
                               tmp.getOffset() + NB * MN, NB, 0, queue);
 
         if (getActivePlatform() == AFCL_PLATFORM_NVIDIA) {
-            Array<T> AT        = transpose<T>(A, true);
-            cl::Buffer *AT_buf = AT.get();
+            Array<T> AT    = transpose<T>(A, true);
+            Buffer *AT_buf = AT.get();
             OPENCL_BLAS_CHECK(gpu_blas_trsm(
                 OPENCL_BLAS_SIDE_LEFT, OPENCL_BLAS_TRIANGLE_LOWER,
                 OPENCL_BLAS_CONJ_TRANS, OPENCL_BLAS_NON_UNIT_DIAGONAL, N, NRHS,
@@ -243,8 +262,8 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
     int N    = B.dims()[0];
     int NRHS = B.dims()[1];
 
-    const cl::Buffer *A_buf = A.get();
-    cl::Buffer *B_buf       = B.get();
+    const Buffer *A_buf = A.get();
+    Buffer *B_buf       = B.get();
 
     cl_event event         = 0;
     cl_command_queue queue = getQueue()();
