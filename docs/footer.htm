@@ -7,13 +7,13 @@
 <!--Google Analytics-->
 <script type="text/javascript">
   var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-5076919-1']);
+  _gaq.push(['_setAccount', 'UA-130950618-1']);
   _gaq.push(['_setDomainName', '.arrayfire.com']);
   _gaq.push(['_trackPageview']);
 
   (function() {
     var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'https://www') + '.google-analytics.com/ga.js';
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 </script>
@@ -26,7 +26,7 @@
   (function() {
     function async_load(){
       var s = document.createElement('script'); s.type = 'text/javascript';
-      s.src = (('https:' == document.location.protocol) ? "https://ssl" : "http://cdn") + ".spectate.com/s.js";
+      s.src = (('https:' == document.location.protocol) ? "https://ssl" : "https://cdn") + ".spectate.com/s.js";
       var c = document.getElementsByTagName('script')[0]; c.parentNode.insertBefore(s, c);
     }
     if(window.attachEvent) { window.attachEvent('onload', async_load); }
@@ -43,7 +43,7 @@ var oldonload = window.onload;
 window.onload = function(){
    __adroll_loaded=true;
    var scr = document.createElement("script");
-   var host = (("https:" == document.location.protocol) ? "https://s.adroll.com" : "http://a.adroll.com");
+   var host = (("https:" == document.location.protocol) ? "https://s.adroll.com" : "https://a.adroll.com");
    scr.setAttribute('async', 'true');
    scr.type = "text/javascript";
    scr.src = host + "/j/roundtrip.js";
