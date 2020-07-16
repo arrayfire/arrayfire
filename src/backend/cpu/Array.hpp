@@ -246,6 +246,7 @@ class Array {
     }
 
     common::Node_ptr getNode() const;
+    common::Node_ptr getNode();
 
     friend void evalMultiple<T>(std::vector<Array<T> *> arrays);
 

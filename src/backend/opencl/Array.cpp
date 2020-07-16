@@ -520,6 +520,7 @@ size_t Array<T>::getAllocatedBytes() const {
                              bool is_device);                                 \
     template Array<T>::Array(const dim4 &dims, cl_mem mem, size_t src_offset, \
                              bool copy);                                      \
+    template Node_ptr Array<T>::getNode();                                    \
     template Node_ptr Array<T>::getNode() const;                              \
     template void Array<T>::eval();                                           \
     template void Array<T>::eval() const;                                     \
