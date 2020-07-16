@@ -208,13 +208,19 @@ void evalMultiple(vector<Array<T> *> array_ptrs) {
 }
 
 template<typename T>
-Node_ptr Array<T>::getNode() const {
+Node_ptr Array<T>::getNode() {
     if (node->isBuffer()) {
         auto *bufNode  = reinterpret_cast<BufferNode<T> *>(node.get());
         unsigned bytes = this->getDataDims().elements() * sizeof(T);
         bufNode->setData(data, bytes, getOffset(), dims().get(),
                          strides().get(), isLinear());
     }
+    return node;
+}
+
+template<typename T>
+Node_ptr Array<T>::getNode() const {
+    if (node->isBuffer()) { return const_cast<Array<T> *>(this)->getNode(); }
     return node;
 }
 
@@ -351,6 +357,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
                              bool is_device, bool copy_device);               \
     template Array<T>::Array(const af::dim4 &dims, const af::dim4 &strides,   \
                              dim_t offset, T *const in_data, bool is_device); \
+    template Node_ptr Array<T>::getNode();                                    \
     template Node_ptr Array<T>::getNode() const;                              \
     template void writeHostDataArray<T>(Array<T> & arr, const T *const data,  \
                                         const size_t bytes);                  \

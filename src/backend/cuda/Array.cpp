@@ -439,6 +439,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
                              bool is_device);                                 \
     template Array<T>::Array(const af::dim4 &dims, const T *const in_data,    \
                              bool is_device, bool copy_device);               \
+    template Node_ptr Array<T>::getNode();                                    \
     template Node_ptr Array<T>::getNode() const;                              \
     template void Array<T>::eval();                                           \
     template void Array<T>::eval() const;                                     \
