@@ -70,6 +70,8 @@ void transform(Param out, const Param in, const Param tf, bool isInverse,
         DefineKeyValue(InterpInTy, dtype_traits<T>::getName()),
         DefineKeyValue(InterpValTy, dtype_traits<vtype_t<T>>::getName()),
         DefineKeyValue(InterpPosTy, dtype_traits<wtype_t<BT>>::getName()),
+        DefineKeyValue(XDIM, 0),
+        DefineKeyValue(YDIM, 1),
         DefineKeyValue(INTERP_ORDER, order),
         DefineKeyValue(IS_CPLX, (isComplex ? 1 : 0)),
     };
