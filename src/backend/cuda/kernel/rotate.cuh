@@ -19,8 +19,7 @@ typedef struct {
 template<typename T, int order>
 __global__ void rotate(Param<T> out, CParam<T> in, const tmat_t t,
                        const int nimages, const int nbatches,
-                       const int blocksXPerImage,
-                       const int blocksYPerImage,
+                       const int blocksXPerImage, const int blocksYPerImage,
                        af::interpType method) {
     // Compute which image set
     const int setId      = blockIdx.x / blocksXPerImage;
@@ -62,7 +61,7 @@ __global__ void rotate(Param<T> out, CParam<T> in, const tmat_t t,
         }
     }
 
-    Interp2<T, WT, order> interp;
+    Interp2<T, WT, 0, 1, order> interp;
     // FIXME: Nearest and lower do not do clamping, but other methods do
     // Make it consistent
     bool clamp = order != 1;

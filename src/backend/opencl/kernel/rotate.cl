@@ -62,7 +62,7 @@ kernel void rotateKernel(global T *d_out, const KParam out,
 
     // FIXME: Nearest and lower do not do clamping, but other methods do
     // Make it consistent
-    bool clamp = INTERP_ORDER != 1;
+    const bool doclamp = INTERP_ORDER != 1;
     interp2(d_out, out, loco, d_in, in, inoff, xidi, yidi, method, limages,
-            clamp);
+            doclamp, 2);
 }
