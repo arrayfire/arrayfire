@@ -164,7 +164,7 @@ void transform(Param<T> out, CParam<T> in,
         return;
     }
 
-    Interp2<T, WT, order> interp;
+    Interp2<T, WT, 0, 1, order> interp;
     // FIXME: Nearest and lower do not do clamping, but other methods do
     // Make it consistent
     bool clamp = order != 1;

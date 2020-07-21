@@ -155,7 +155,7 @@ kernel void transformKernel(global T *d_out, const KParam out,
     const int loco = outoff + (yido * out.strides[1] + xido);
     // FIXME: Nearest and lower do not do clamping, but other methods do
     // Make it consistent
-    bool clamp = INTERP_ORDER != 1;
+    const bool doclamp = INTERP_ORDER != 1;
 
     T zero = ZERO;
     if (xidi < (InterpPosTy)-0.0001 || yidi < (InterpPosTy)-0.0001 ||
@@ -167,5 +167,5 @@ kernel void transformKernel(global T *d_out, const KParam out,
     }
 
     interp2(d_out, out, loco, d_in, in, inoff, xidi, yidi, method, limages,
-            clamp);
+            doclamp, 2);
 }
