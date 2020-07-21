@@ -33,7 +33,7 @@ inline std::string interpSrc() {
 }
 
 template<typename Ty, typename Tp>
-auto genCompileOptions(const int order) {
+auto genCompileOptions(const int order, const int xdim, const int ydim = -1) {
     constexpr bool isComplex =
         static_cast<af_dtype>(dtype_traits<Ty>::af_type) == c32 ||
         static_cast<af_dtype>(dtype_traits<Ty>::af_type) == c64;
@@ -47,9 +47,11 @@ auto genCompileOptions(const int order) {
         DefineKeyValue(InterpValTy, dtype_traits<Ty>::getName()),
         DefineKeyValue(InterpPosTy, dtype_traits<Tp>::getName()),
         DefineKeyValue(ZERO, toNumStr(scalar<Ty>(0))),
+        DefineKeyValue(XDIM, xdim),
         DefineKeyValue(INTERP_ORDER, order),
         DefineKeyValue(IS_CPLX, (isComplex ? 1 : 0)),
     };
+    if (ydim != -1) { compileOpts.emplace_back(DefineKeyValue(YDIM, ydim)); }
     compileOpts.emplace_back(getTypeBuildDefinition<Ty>());
     addInterpEnumOptions(compileOpts);
 
@@ -72,9 +74,10 @@ void approx1(Param yo, const Param yi, const Param xo, const int xdim,
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<Ty>(),
         TemplateTypename<Tp>(),
+        TemplateArg(xdim),
         TemplateArg(order),
     };
-    auto compileOpts = genCompileOptions<Ty, Tp>(order);
+    auto compileOpts = genCompileOptions<Ty, Tp>(order, xdim);
 
     auto approx1 = common::getKernel("approx1", {interpSrc(), src}, tmpltArgs,
                                      compileOpts);
@@ -89,7 +92,7 @@ void approx1(Param yo, const Param yi, const Param xo, const int xdim,
         !(xo.info.dims[1] == 1 && xo.info.dims[2] == 1 && xo.info.dims[3] == 1);
 
     approx1(EnqueueArgs(getQueue(), global, local), *yo.data, yo.info, *yi.data,
-            yi.info, *xo.data, xo.info, xdim, xi_beg, xi_step,
+            yi.info, *xo.data, xo.info, xi_beg, Tp(1) / xi_step,
             scalar<Ty>(offGrid), (int)blocksPerMat, (int)batch, (int)method);
     CL_DEBUG_FINISH(getQueue());
 }
@@ -111,11 +114,10 @@ void approx2(Param zo, const Param zi, const Param xo, const int xdim,
     static const string src(approx2_cl, approx2_cl_len);
 
     vector<TemplateArg> tmpltArgs = {
-        TemplateTypename<Ty>(),
-        TemplateTypename<Tp>(),
-        TemplateArg(order),
+        TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(xdim),
+        TemplateArg(ydim),      TemplateArg(order),
     };
-    auto compileOpts = genCompileOptions<Ty, Tp>(order);
+    auto compileOpts = genCompileOptions<Ty, Tp>(order, xdim, ydim);
 
     auto approx2 = common::getKernel("approx2", {interpSrc(), src}, tmpltArgs,
                                      compileOpts);
@@ -130,8 +132,8 @@ void approx2(Param zo, const Param zi, const Param xo, const int xdim,
     bool batch = !(xo.info.dims[2] == 1 && xo.info.dims[3] == 1);
 
     approx2(EnqueueArgs(getQueue(), global, local), *zo.data, zo.info, *zi.data,
-            zi.info, *xo.data, xo.info, xdim, *yo.data, yo.info, ydim, xi_beg,
-            xi_step, yi_beg, yi_step, scalar<Ty>(offGrid),
+            zi.info, *xo.data, xo.info, *yo.data, yo.info, xi_beg,
+            Tp(1) / xi_step, yi_beg, Tp(1) / yi_step, scalar<Ty>(offGrid),
             static_cast<int>(blocksPerMatX), static_cast<int>(blocksPerMatY),
             static_cast<int>(batch), static_cast<int>(method));
     CL_DEBUG_FINISH(getQueue());

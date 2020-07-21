@@ -9,9 +9,9 @@
 
 kernel void approx2(global Ty *d_zo, const KParam zo, global const Ty *d_zi,
                     const KParam zi, global const Tp *d_xo, const KParam xo,
-                    const int xdim, global const Tp *d_yo, const KParam yo,
-                    const int ydim, const Tp xi_beg, const Tp xi_step,
-                    const Tp yi_beg, const Tp yi_step, const Ty offGrid,
+                    global const Tp *d_yo, const KParam yo, const Tp xi_beg,
+                    const Tp xi_step_reproc, const Tp yi_beg,
+                    const Tp yi_step_reproc, const Ty offGrid,
                     const int blocksMatX, const int blocksMatY, const int batch,
                     int method) {
     const int idz = get_group_id(0) / blocksMatX;
@@ -27,40 +27,40 @@ kernel void approx2(global Ty *d_zo, const KParam zo, global const Ty *d_zi,
         idw >= zo.dims[3])
         return;
 
-    bool is_xo_off[] = {xo.dims[0] > 1, xo.dims[1] > 1, xo.dims[2] > 1,
-                        xo.dims[3] > 1};
-    bool is_zi_off[] = {true, true, true, true};
-    is_zi_off[xdim]  = false;
-    is_zi_off[ydim]  = false;
+    // FIXME: Only cubic interpolation is doing clamping
+    // We need to make it consistent across all methods
+    // Not changing the behavior because tests will fail
+    const bool doclamp = INTERP_ORDER == 3;
+
+    bool is_off[] = {xo.dims[0] > 1, xo.dims[1] > 1, xo.dims[2] > 1,
+                     xo.dims[3] > 1};
 
     const int zo_idx = idw * zo.strides[3] + idz * zo.strides[2] +
                        idy * zo.strides[1] + idx + zo.offset;
-    int xo_idx =
-        idy * xo.strides[1] * is_xo_off[1] + idx * is_xo_off[0] + xo.offset;
-    int yo_idx =
-        idy * yo.strides[1] * is_xo_off[1] + idx * is_xo_off[0] + yo.offset;
-    xo_idx +=
-        idw * xo.strides[3] * is_xo_off[3] + idz * xo.strides[2] * is_xo_off[2];
-    yo_idx +=
-        idw * yo.strides[3] * is_xo_off[3] + idz * yo.strides[2] * is_xo_off[2];
+    int xo_idx = idy * xo.strides[1] * is_off[1] + idx * is_off[0] + xo.offset;
+    int yo_idx = idy * yo.strides[1] * is_off[1] + idx * is_off[0] + yo.offset;
+    if (batch) {
+        xo_idx +=
+            idw * xo.strides[3] * is_off[3] + idz * xo.strides[2] * is_off[2];
+        yo_idx +=
+            idw * yo.strides[3] * is_off[3] + idz * yo.strides[2] * is_off[2];
+    }
 
-    const Tp x = (d_xo[xo_idx] - xi_beg) / xi_step;
-    const Tp y = (d_yo[yo_idx] - yi_beg) / yi_step;
-    if (x < 0 || y < 0 || zi.dims[xdim] < x + 1 || zi.dims[ydim] < y + 1) {
+#pragma unroll
+    for (int flagIdx = 0; flagIdx < 4; ++flagIdx) { is_off[flagIdx] = true; }
+    is_off[XDIM] = false;
+    is_off[YDIM] = false;
+
+    const Tp x = (d_xo[xo_idx] - xi_beg) * xi_step_reproc;
+    const Tp y = (d_yo[yo_idx] - yi_beg) * yi_step_reproc;
+
+    if (x < 0 || y < 0 || zi.dims[XDIM] < x + 1 || zi.dims[YDIM] < y + 1) {
         d_zo[zo_idx] = offGrid;
         return;
     }
 
-    int zi_idx =
-        idy * zi.strides[1] * is_zi_off[1] + idx * is_zi_off[0] + zi.offset;
-    zi_idx +=
-        idw * zi.strides[3] * is_zi_off[3] + idz * zi.strides[2] * is_zi_off[2];
+    int zi_idx = idy * zi.strides[1] * is_off[1] + idx * is_off[0] + zi.offset;
+    zi_idx += idw * zi.strides[3] * is_off[3] + idz * zi.strides[2] * is_off[2];
 
-    // FIXME: Only cubic interpolation is doing clamping
-    // We need to make it consistent across all methods
-    // Not changing the behavior because tests will fail
-    bool clamp = INTERP_ORDER == 3;
-
-    interp2_dim(d_zo, zo, zo_idx, d_zi, zi, zi_idx, x, y, method, 1, clamp,
-                xdim, ydim);
+    interp2(d_zo, zo, zo_idx, d_zi, zi, zi_idx, x, y, method, 1, doclamp, 2);
 }
