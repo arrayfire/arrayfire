@@ -31,9 +31,10 @@ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
              const af::interpType method, const int order) {
     static const std::string source(approx1_cuh, approx1_cuh_len);
 
-    auto approx1 = common::getKernel(
-        "cuda::approx1", {source},
-        {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(order)});
+    auto approx1 =
+        common::getKernel("cuda::approx1", {source},
+                          {TemplateTypename<Ty>(), TemplateTypename<Tp>(),
+                           TemplateArg(xdim), TemplateArg(order)});
 
     dim3 threads(THREADS, 1, 1);
     int blocksPerMat = divup(yo.dims[0], threads.x);
@@ -48,7 +49,7 @@ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    approx1(qArgs, yo, yi, xo, xdim, xi_beg, xi_step, offGrid, blocksPerMat,
+    approx1(qArgs, yo, yi, xo, xi_beg, Tp(1) / xi_step, offGrid, blocksPerMat,
             batch, method);
 
     POST_LAUNCH_CHECK();
@@ -63,7 +64,8 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
 
     auto approx2 = common::getKernel(
         "cuda::approx2", {source},
-        {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(order)});
+        {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(xdim),
+         TemplateArg(ydim), TemplateArg(order)});
 
     dim3 threads(TX, TY, 1);
     int blocksPerMatX = divup(zo.dims[0], threads.x);
@@ -79,8 +81,9 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    approx2(qArgs, zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim, yi_beg, yi_step,
-            offGrid, blocksPerMatX, blocksPerMatY, batch, method);
+    approx2(qArgs, zo, zi, xo, xi_beg, Tp(1) / xi_step, yo, yi_beg,
+            Tp(1) / yi_step, offGrid, blocksPerMatX, blocksPerMatY, batch,
+            method);
 
     POST_LAUNCH_CHECK();
 }
