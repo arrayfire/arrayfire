@@ -85,14 +85,14 @@ __device__ inline static Ty bicubicInterpFunc(Ty val[4][4], Tp xratio,
     return cubicInterpFunc(res, yratio, spline);
 }
 
-template<typename Ty, typename Tp, int order>
+template<typename Ty, typename Tp, int xdim, int order>
 struct Interp1 {};
 
-template<typename Ty, typename Tp>
-struct Interp1<Ty, Tp, 1> {
+template<typename Ty, typename Tp, int xdim>
+struct Interp1<Ty, Tp, xdim, 1> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, af::interpType method, int batch,
-                               bool clamp, int xdim = 0, int batch_dim = 1) {
+                               bool clamp, int batch_dim = 1) {
         Ty zero = scalar<Ty>(0);
 
         const int x_lim    = in.dims[xdim];
@@ -113,11 +113,11 @@ struct Interp1<Ty, Tp, 1> {
     }
 };
 
-template<typename Ty, typename Tp>
-struct Interp1<Ty, Tp, 2> {
+template<typename Ty, typename Tp, int xdim>
+struct Interp1<Ty, Tp, xdim, 2> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, af::interpType method, int batch,
-                               bool clamp, int xdim = 0, int batch_dim = 1) {
+                               bool clamp, int batch_dim = 1) {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
@@ -149,11 +149,11 @@ struct Interp1<Ty, Tp, 2> {
     }
 };
 
-template<typename Ty, typename Tp>
-struct Interp1<Ty, Tp, 3> {
+template<typename Ty, typename Tp, int xdim>
+struct Interp1<Ty, Tp, xdim, 3> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, af::interpType method, int batch,
-                               bool clamp, int xdim = 0, int batch_dim = 1) {
+                               bool clamp, int batch_dim = 1) {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
@@ -184,15 +184,14 @@ struct Interp1<Ty, Tp, 3> {
     }
 };
 
-template<typename Ty, typename Tp, int order>
+template<typename Ty, typename Tp, int xdim, int ydim, int order>
 struct Interp2 {};
 
-template<typename Ty, typename Tp>
-struct Interp2<Ty, Tp, 1> {
+template<typename Ty, typename Tp, int xdim, int ydim>
+struct Interp2<Ty, Tp, xdim, ydim, 1> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, Tp y, af::interpType method, int batch,
-                               bool clamp, int xdim = 0, int ydim = 1,
-                               int batch_dim = 2) {
+                               bool clamp, int batch_dim = 2) {
         int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
         int yid = (method == AF_INTERP_LOWER ? floor(y) : round(y));
 
@@ -222,12 +221,11 @@ struct Interp2<Ty, Tp, 1> {
     }
 };
 
-template<typename Ty, typename Tp>
-struct Interp2<Ty, Tp, 2> {
+template<typename Ty, typename Tp, int xdim, int ydim>
+struct Interp2<Ty, Tp, xdim, ydim, 2> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, Tp y, af::interpType method, int batch,
-                               bool clamp, int xdim = 0, int ydim = 1,
-                               int batch_dim = 2) {
+                               bool clamp, int batch_dim = 2) {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
@@ -275,12 +273,11 @@ struct Interp2<Ty, Tp, 2> {
     }
 };
 
-template<typename Ty, typename Tp>
-struct Interp2<Ty, Tp, 3> {
+template<typename Ty, typename Tp, int xdim, int ydim>
+struct Interp2<Ty, Tp, xdim, ydim, 3> {
     __device__ void operator()(Param<Ty> out, int ooff, CParam<Ty> in, int ioff,
                                Tp x, Tp y, af::interpType method, int batch,
-                               bool clamp, int xdim = 0, int ydim = 1,
-                               int batch_dim = 2) {
+                               bool clamp, int batch_dim = 2) {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
