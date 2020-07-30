@@ -253,8 +253,8 @@ __device__ static void boxMullerWriteOut128Bytes(float *out, const uint &index,
     boxMullerTransform(&out[index], &out[index + blockDim.x], getFloat(r1),
                        getFloat(r2));
     boxMullerTransform(&out[index + 2 * blockDim.x],
-                       &out[index + 3 * blockDim.x], getFloat(r1),
-                       getFloat(r2));
+                       &out[index + 3 * blockDim.x], getFloat(r3),
+                       getFloat(r4));
 }
 
 __device__ static void boxMullerWriteOut128Bytes(cfloat *out, const uint &index,
