@@ -260,8 +260,7 @@ void partialWriteOut128Bytes_short(global short *out, const uint *const index,
     }
 }
 
-void partialWriteOut128Bytes_ushort(global ushort *out,
-                                    const uint *const index,
+void partialWriteOut128Bytes_ushort(global ushort *out, const uint *const index,
                                     const uint *const r1, const uint *const r2,
                                     const uint *const r3, const uint *const r4,
                                     const uint *const elements) {
@@ -357,14 +356,13 @@ void boxMullerTransform(T *const out1, T *const out2, const T r1, const T r2) {
 }
 
 // BoxMuller writes without boundary checking
-void boxMullerWriteOut128Bytes_float(global float *out,
-                                     const uint *const index,
+void boxMullerWriteOut128Bytes_float(global float *out, const uint *const index,
                                      const uint *const r1, const uint *const r2,
                                      const uint *const r3,
                                      const uint *const r4) {
     float n1, n2, n3, n4;
     boxMullerTransform((T *)&n1, (T *)&n2, getFloat(r1), getFloat(r2));
-    boxMullerTransform((T *)&n3, (T *)&n4, getFloat(r1), getFloat(r2));
+    boxMullerTransform((T *)&n3, (T *)&n4, getFloat(r3), getFloat(r4));
     out[*index]               = n1;
     out[*index + THREADS]     = n2;
     out[*index + 2 * THREADS] = n3;
@@ -406,8 +404,7 @@ void writeOut128Bytes_double(global double *out, const uint *const index,
     out[*index + THREADS] = 1.0 - getDouble(r3, r4);
 }
 
-void partialWriteOut128Bytes_double(global double *out,
-                                    const uint *const index,
+void partialWriteOut128Bytes_double(global double *out, const uint *const index,
                                     const uint *const r1, const uint *const r2,
                                     const uint *const r3, const uint *const r4,
                                     const uint *const elements) {
