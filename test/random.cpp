@@ -490,14 +490,16 @@ void testRandomEngineUniformChi2(randomEngineType type) {
     }
 }
 
-TYPED_TEST(RandomEngine, DISABLED_philoxRandomEngineUniformChi2) {
+#ifndef AF_CPU
+TYPED_TEST(RandomEngine, philoxRandomEngineUniformChi2) {
     testRandomEngineUniformChi2<TypeParam>(AF_RANDOM_ENGINE_PHILOX_4X32_10);
 }
 
-TYPED_TEST(RandomEngine, DISABLED_threefryRandomEngineUniformChi2) {
+TYPED_TEST(RandomEngine, threefryRandomEngineUniformChi2) {
     testRandomEngineUniformChi2<TypeParam>(AF_RANDOM_ENGINE_THREEFRY_2X32_16);
 }
 
-TYPED_TEST(RandomEngine, DISABLED_mersenneRandomEngineUniformChi2) {
+TYPED_TEST(RandomEngine, mersenneRandomEngineUniformChi2) {
     testRandomEngineUniformChi2<TypeParam>(AF_RANDOM_ENGINE_MERSENNE_GP11213);
 }
+#endif
