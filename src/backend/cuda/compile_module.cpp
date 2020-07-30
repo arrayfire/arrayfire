@@ -81,11 +81,13 @@ using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 using std::chrono::milliseconds;
 
+constexpr size_t linkLogSize = 2048;
+
 #define CU_LINK_CHECK(fn)                                               \
     do {                                                                \
         CUresult res = (fn);                                            \
         if (res == CUDA_SUCCESS) break;                                 \
-        array<char, 2048> cu_err_msg;                                   \
+        array<char, linkLogSize + 512> cu_err_msg;                      \
         const char *cu_err_name;                                        \
         cuGetErrorName(res, &cu_err_name);                              \
         snprintf(cu_err_msg.data(), cu_err_msg.size(),                  \
@@ -270,7 +272,6 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
     ptx.resize(ptx_size);
     NVRTC_CHECK(nvrtcGetPTX(prog, ptx.data()));
 
-    const size_t linkLogSize    = 4096;
     char linkInfo[linkLogSize]  = {0};
     char linkError[linkLogSize] = {0};
 
