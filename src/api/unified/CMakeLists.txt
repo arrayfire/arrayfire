@@ -23,6 +23,7 @@ target_sources(af
     ${CMAKE_CURRENT_SOURCE_DIR}/memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ml.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/opencl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/random.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/signal.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse.cpp
