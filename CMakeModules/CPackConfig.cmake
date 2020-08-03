@@ -131,15 +131,15 @@ cpack_add_component_group(backends
   DISPLAY_NAME "ArrayFire"
   DESCRIPTION "ArrayFire backend libraries"
   EXPANDED)
-cpack_add_component_group(cpu_backend
+cpack_add_component_group(cpu-backend
   DISPLAY_NAME "CPU backend"
   DESCRIPTION "Libraries and dependencies of the CPU backend."
   PARENT_GROUP backends)
-cpack_add_component_group(cuda_backend
+cpack_add_component_group(cuda-backend
   DISPLAY_NAME "CUDA backend"
   DESCRIPTION "Libraries and dependencies of the CUDA backend."
   PARENT_GROUP backends)
-cpack_add_component_group(opencl_backend
+cpack_add_component_group(opencl-backend
   DISPLAY_NAME "OpenCL backend"
   DESCRIPTION "Libraries and dependencies of the OpenCL backend."
   PARENT_GROUP backends)
@@ -164,13 +164,13 @@ cpack_add_component(common_backend_dependencies
 cpack_add_component(opencl_dependencies
   DISPLAY_NAME "OpenCL Dependencies"
   DESCRIPTION "Libraries required by the OpenCL backend."
-  GROUP opencl_backend
+  GROUP opencl-backend
   INSTALL_TYPES All Development Runtime)
 if (NOT APPLE) #TODO(pradeep) Remove check after OSX support addition
   cpack_add_component(afopencl_debug_symbols
     DISPLAY_NAME "OpenCL Backend Debug Symbols"
     DESCRIPTION "File containing debug symbols for afopencl dll/so/dylib file"
-    GROUP opencl_backend
+    GROUP opencl-backend
     DISABLED
     INSTALL_TYPES Development)
 endif ()
@@ -178,13 +178,13 @@ endif ()
 cpack_add_component(cuda_dependencies
   DISPLAY_NAME "CUDA Dependencies"
   DESCRIPTION "CUDA runtime and libraries required by the CUDA backend."
-  GROUP cuda_backend
+  GROUP cuda-backend
   INSTALL_TYPES All Development Runtime)
 if (NOT APPLE) #TODO(pradeep) Remove check after OSX support addition
   cpack_add_component(afcuda_debug_symbols
     DISPLAY_NAME "CUDA Backend Debug Symbols"
     DESCRIPTION "File containing debug symbols for afcuda dll/so/dylib file"
-    GROUP cuda_backend
+    GROUP cuda-backend
     DISABLED
     INSTALL_TYPES Development)
 endif ()
@@ -193,7 +193,7 @@ if (NOT APPLE) #TODO(pradeep) Remove check after OSX support addition
   cpack_add_component(afcpu_debug_symbols
     DISPLAY_NAME "CPU Backend Debug Symbols"
     DESCRIPTION "File containing debug symbols for afcpu dll/so/dylib file"
-    GROUP cpu_backend
+    GROUP cpu-backend
     DISABLED
     INSTALL_TYPES Development)
 endif ()
@@ -201,7 +201,7 @@ endif ()
 cpack_add_component(cuda
   DISPLAY_NAME "CUDA Backend"
   DESCRIPTION "The CUDA backend allows you to run ArrayFire code on CUDA-enabled GPUs. Verify that you have the CUDA toolkit installed or install the CUDA dependencies component."
-  GROUP cuda_backend
+  GROUP cuda-backend
   DEPENDS common_backend_dependencies cuda_dependencies
   INSTALL_TYPES All Development Runtime)
 
@@ -220,14 +220,14 @@ endif ()
 cpack_add_component(cpu
   DISPLAY_NAME "CPU Backend"
   DESCRIPTION "The CPU backend allows you to run ArrayFire code on your CPU."
-  GROUP cpu_backend
+  GROUP cpu-backend
   DEPENDS ${cpu_deps_comps}
   INSTALL_TYPES All Development Runtime)
 
 cpack_add_component(opencl
   DISPLAY_NAME "OpenCL Backend"
   DESCRIPTION "The OpenCL backend allows you to run ArrayFire code on OpenCL-capable GPUs. Note: ArrayFire does not currently support OpenCL for Intel CPUs on OSX."
-  GROUP opencl_backend
+  GROUP opencl-backend
   DEPENDS ${ocl_deps_comps}
   INSTALL_TYPES All Development Runtime)
 
@@ -301,9 +301,9 @@ get_native_path(bsd3_lic_path "${CMAKE_SOURCE_DIR}/LICENSES/BSD 3-Clause.txt")
 get_native_path(issl_lic_path "${CMAKE_SOURCE_DIR}/LICENSES/ISSL License.txt")
 
 cpack_ifw_configure_component_group(backends)
-cpack_ifw_configure_component_group(cpu_backend)
-cpack_ifw_configure_component_group(cuda_backend)
-cpack_ifw_configure_component_group(opencl_backend)
+cpack_ifw_configure_component_group(cpu-backend)
+cpack_ifw_configure_component_group(cuda-backend)
+cpack_ifw_configure_component_group(opencl-backend)
 if (PACKAGE_MKL_DEPS)
   cpack_ifw_configure_component(mkl_dependencies)
 endif ()

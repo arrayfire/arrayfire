@@ -19,10 +19,10 @@ class ArrayFireConan(ConanFile):
               "hpc", "performance", "scientific-computing")
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        "cpu_backend": [True, False],
-        "cuda_backend": [True, False],
-        "opencl_backend": [True, False],
-        "unified_backend": [True, False],
+        "cpu-backend": [True, False],
+        "cuda-backend": [True, False],
+        "opencl-backend": [True, False],
+        "unified-backend": [True, False],
         "graphics": [True, False],
     }
     generators = "cmake"  # unused
