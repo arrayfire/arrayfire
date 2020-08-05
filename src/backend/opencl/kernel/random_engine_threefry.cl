@@ -171,8 +171,8 @@ kernel void threefryGenerator(global T *output, unsigned elements, unsigned hic,
     threefry(key, ctr, o + 2);
 
     if (gid != get_num_groups(0) - 1) {
-        WRITE(output, &index, &o[0], &o[1], &o[2], &o[3]);
+        WRITE(output, index, o[0], o[1], o[2], o[3]);
     } else {
-        PARTIAL_WRITE(output, &index, &o[0], &o[1], &o[2], &o[3], &elements);
+        PARTIAL_WRITE(output, index, o[0], o[1], o[2], o[3], elements);
     }
 }

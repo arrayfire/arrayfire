@@ -52,13 +52,12 @@ namespace kernel {
 // Source of these constants :
 // github.com/DEShawResearch/Random123-Boost/blob/master/boost/random/philox.hpp
 
-static const uint m4x32_0 = 0xD2511F53;
-static const uint m4x32_1 = 0xCD9E8D57;
-static const uint w32_0   = 0x9E3779B9;
-static const uint w32_1   = 0xBB67AE85;
+constexpr uint m4x32_0 = 0xD2511F53;
+constexpr uint m4x32_1 = 0xCD9E8D57;
+constexpr uint w32_0   = 0x9E3779B9;
+constexpr uint w32_1   = 0xBB67AE85;
 
-static inline __device__ void mulhilo(const uint &a, const uint &b, uint &hi,
-                                      uint &lo) {
+static inline __device__ void mulhilo(uint a, uint b, uint &hi, uint &lo) {
     hi = __umulhi(a, b);
     lo = a * b;
 }

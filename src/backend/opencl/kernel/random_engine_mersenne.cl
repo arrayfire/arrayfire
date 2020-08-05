@@ -145,10 +145,9 @@ kernel void mersenneGenerator(global T *output, global uint *const state,
         }
         uint writeIndex = index + get_local_id(0);
         if (i == iter - 1) {
-            PARTIAL_WRITE(output, &writeIndex, &o[0], &o[1], &o[2], &o[3],
-                          &elements);
+            PARTIAL_WRITE(output, writeIndex, o[0], o[1], o[2], o[3], elements);
         } else {
-            WRITE(output, &writeIndex, &o[0], &o[1], &o[2], &o[3]);
+            WRITE(output, writeIndex, o[0], o[1], o[2], o[3]);
         }
         index += elementsPerBlockIteration;
     }
