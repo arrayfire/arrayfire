@@ -100,7 +100,6 @@ void philox(uint key[2], uint ctr[4]) {
 kernel void philoxGenerator(global T *output, unsigned elements, unsigned hic,
                             unsigned loc, unsigned hi, unsigned lo) {
     unsigned gid   = get_group_id(0);
-    unsigned off   = get_local_size(0);
     unsigned index = gid * ELEMENTS_PER_BLOCK + get_local_id(0);
 
     uint key[2] = {lo, hi};
@@ -112,9 +111,8 @@ kernel void philoxGenerator(global T *output, unsigned elements, unsigned hic,
     philox(key, ctr);
 
     if (gid != get_num_groups(0) - 1) {
-        WRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3]);
+        WRITE(output, index, ctr[0], ctr[1], ctr[2], ctr[3]);
     } else {
-        PARTIAL_WRITE(output, &index, &ctr[0], &ctr[1], &ctr[2], &ctr[3],
-                      &elements);
+        PARTIAL_WRITE(output, index, ctr[0], ctr[1], ctr[2], ctr[3], elements);
     }
 }

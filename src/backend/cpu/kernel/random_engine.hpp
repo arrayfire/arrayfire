@@ -19,6 +19,7 @@
 #include <types.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 
 using std::array;
@@ -31,89 +32,146 @@ static const double PI_VAL =
     3.1415926535897932384626433832795028841971693993751058209749445923078164;
 
 // Conversion to half adapted from Random123
-#define USHORTMAX 0xffff
-#define HALF_FACTOR ((1.0f) / (USHORTMAX + (1.0f)))
+#define HALF_FACTOR ((1.0f) / (std::numeric_limits<ushort>::max() + (1.0f)))
 #define HALF_HALF_FACTOR ((0.5f) * HALF_FACTOR)
 
-// Conversion to floats adapted from Random123
-#define UINTMAX 0xffffffff
-#define FLT_FACTOR ((1.0f) / (UINTMAX + (1.0f)))
-#define HALF_FLT_FACTOR ((0.5f) * FLT_FACTOR)
+// Conversion to half adapted from Random123
+#define SIGNED_HALF_FACTOR \
+    ((1.0f) / (std::numeric_limits<short>::max() + (1.0f)))
+#define SIGNED_HALF_HALF_FACTOR ((0.5f) * SIGNED_HALF_FACTOR)
 
-#define UINTLMAX 0xffffffffffffffff
-#define DBL_FACTOR ((1.0) / (UINTLMAX + (1.0)))
+#define DBL_FACTOR \
+    ((1.0) / (std::numeric_limits<unsigned long long>::max() + (1.0)))
 #define HALF_DBL_FACTOR ((0.5) * DBL_FACTOR)
 
+// Conversion to floats adapted from Random123
+#define SIGNED_DBL_FACTOR \
+    ((1.0) / (std::numeric_limits<long long>::max() + (1.0)))
+#define SIGNED_HALF_DBL_FACTOR ((0.5) * SIGNED_DBL_FACTOR)
+
 template<typename T>
-T transform(uint *val, int index) {
-    T *oval = (T *)val;
-    return oval[index];
+T transform(uint *val, uint index);
+
+template<>
+uintl transform<uintl>(uint *val, uint index) {
+    uint index2 = index << 1;
+    uintl v     = ((static_cast<uintl>(val[index2]) << 32) |
+               (static_cast<uintl>(val[index2 + 1])));
+    return v;
+}
+
+// Generates rationals in [0, 1)
+float getFloat01(uint *val, uint index) {
+    // Conversion to floats adapted from Random123
+    constexpr float factor =
+        ((1.0f) /
+         (static_cast<float>(std::numeric_limits<unsigned int>::max()) +
+          (1.0f)));
+    constexpr float half_factor = ((0.5f) * factor);
+    return fmaf(val[index], factor, half_factor);
+}
+
+// Generates rationals in (-1, 1]
+static float getFloatNegative11(uint *val, uint index) {
+    // Conversion to floats adapted from Random123
+    constexpr float factor =
+        ((1.0) /
+         (static_cast<double>(std::numeric_limits<int>::max()) + (1.0)));
+    constexpr float half_factor = ((0.5f) * factor);
+
+    return fmaf(static_cast<float>(val[index]), factor, half_factor);
+}
+
+// Generates rationals in [0, 1)
+common::half getHalf01(uint *val, uint index) {
+    float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
+    return static_cast<common::half>(fmaf(v, HALF_FACTOR, HALF_HALF_FACTOR));
+}
+
+// Generates rationals in (-1, 1]
+static common::half getHalfNegative11(uint *val, uint index) {
+    float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
+    return static_cast<common::half>(
+        fmaf(v, SIGNED_HALF_FACTOR, SIGNED_HALF_HALF_FACTOR));
+}
+
+// Generates rationals in [0, 1)
+double getDouble01(uint *val, uint index) {
+    uintl v = transform<uintl>(val, index);
+    constexpr double factor =
+        ((1.0) / (std::numeric_limits<unsigned long long>::max() +
+                  static_cast<long double>(1.0l)));
+    constexpr double half_factor((0.5) * factor);
+    return fma(v, factor, half_factor);
 }
 
 template<>
-char transform<char>(uint *val, int index) {
+char transform<char>(uint *val, uint index) {
     char v = val[index >> 2] >> (8 << (index & 3));
     v      = (v & 0x1) ? 1 : 0;
     return v;
 }
 
 template<>
-uchar transform<uchar>(uint *val, int index) {
+uchar transform<uchar>(uint *val, uint index) {
     uchar v = val[index >> 2] >> (index << 3);
     return v;
 }
 
 template<>
-ushort transform<ushort>(uint *val, int index) {
+ushort transform<ushort>(uint *val, uint index) {
     ushort v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
     return v;
 }
 
 template<>
-short transform<short>(uint *val, int index) {
+short transform<short>(uint *val, uint index) {
     return transform<ushort>(val, index);
 }
 
 template<>
-uint transform<uint>(uint *val, int index) {
+uint transform<uint>(uint *val, uint index) {
     return val[index];
 }
 
 template<>
-int transform<int>(uint *val, int index) {
+int transform<int>(uint *val, uint index) {
     return transform<uint>(val, index);
 }
 
 template<>
-uintl transform<uintl>(uint *val, int index) {
-    uintl v = (((uintl)val[index << 1]) << 32) | ((uintl)val[(index << 1) + 1]);
+intl transform<intl>(uint *val, uint index) {
+    uintl v = transform<uintl>(val, index);
+    intl out;
+    memcpy(&out, &v, sizeof(intl));
     return v;
 }
 
 template<>
-intl transform<intl>(uint *val, int index) {
-    return transform<uintl>(val, index);
+float transform<float>(uint *val, uint index) {
+    return 1.f - getFloat01(val, index);
 }
 
-// Generates rationals in [0, 1)
 template<>
-float transform<float>(uint *val, int index) {
-    return 1.f - (val[index] * FLT_FACTOR + HALF_FLT_FACTOR);
+double transform<double>(uint *val, uint index) {
+    return 1. - getDouble01(val, index);
 }
 
-// Generates rationals in [0, 1)
 template<>
-common::half transform<common::half>(uint *val, int index) {
+common::half transform<common::half>(uint *val, uint index) {
     float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
     return static_cast<common::half>(1.f -
-                                     (v * HALF_FACTOR + HALF_HALF_FACTOR));
+                                     fmaf(v, HALF_FACTOR, HALF_HALF_FACTOR));
 }
 
-// Generates rationals in [0, 1)
-template<>
-double transform<double>(uint *val, int index) {
-    uintl v = transform<uintl>(val, index);
-    return 1.0 - (v * DBL_FACTOR + HALF_DBL_FACTOR);
+// Generates rationals in [-1, 1)
+double getDoubleNegative11(uint *val, uint index) {
+    intl v = transform<intl>(val, index);
+    // Conversion to doubles adapted from Random123
+    constexpr double signed_factor =
+        ((1.0l) / (std::numeric_limits<long long>::max() + (1.0l)));
+    constexpr double half_factor = ((0.5) * signed_factor);
+    return fma(v, signed_factor, half_factor);
 }
 
 #define MAX_RESET_CTR_VAL 64
@@ -201,34 +259,35 @@ void boxMullerTransform(data_t<T> *const out1, data_t<T> *const out2,
      * The log of a real value x where 0 < x < 1 is negative.
      */
     using Tc = compute_t<T>;
-    Tc r     = sqrt((Tc)(-2.0) * log((Tc)(1.0) - static_cast<Tc>(r1)));
-    Tc theta = 2 * (Tc)PI_VAL * ((Tc)(1.0) - static_cast<Tc>(r2));
-    *out1    = r * sin(theta);
-    *out2    = r * cos(theta);
+    Tc r     = sqrt((Tc)(-2.0) * log(static_cast<Tc>(r2)));
+    Tc theta = PI_VAL * (static_cast<Tc>(r1));
+
+    *out1 = r * sin(theta);
+    *out2 = r * cos(theta);
 }
 
 void boxMullerTransform(uint val[4], double *temp) {
-    boxMullerTransform<double>(&temp[0], &temp[1], transform<double>(val, 0),
-                               transform<double>(val, 1));
+    boxMullerTransform<double>(&temp[0], &temp[1], getDoubleNegative11(val, 0),
+                               getDouble01(val, 1));
 }
 
 void boxMullerTransform(uint val[4], float *temp) {
-    boxMullerTransform<float>(&temp[0], &temp[1], transform<float>(val, 0),
-                              transform<float>(val, 1));
-    boxMullerTransform<float>(&temp[2], &temp[3], transform<float>(val, 2),
-                              transform<float>(val, 3));
+    boxMullerTransform<float>(&temp[0], &temp[1], getFloatNegative11(val, 0),
+                              getFloat01(val, 1));
+    boxMullerTransform<float>(&temp[2], &temp[3], getFloatNegative11(val, 2),
+                              getFloat01(val, 3));
 }
 
 void boxMullerTransform(uint val[4], common::half *temp) {
     using common::half;
-    boxMullerTransform<half>(&temp[0], &temp[1], transform<half>(val, 0),
-                             transform<half>(val, 1));
-    boxMullerTransform<half>(&temp[2], &temp[3], transform<half>(val, 2),
-                             transform<half>(val, 3));
-    boxMullerTransform<half>(&temp[4], &temp[5], transform<half>(val, 4),
-                             transform<half>(val, 5));
-    boxMullerTransform<half>(&temp[6], &temp[7], transform<half>(val, 6),
-                             transform<half>(val, 7));
+    boxMullerTransform<half>(&temp[0], &temp[1], getHalfNegative11(val, 0),
+                             getHalf01(val, 1));
+    boxMullerTransform<half>(&temp[2], &temp[3], getHalfNegative11(val, 2),
+                             getHalf01(val, 3));
+    boxMullerTransform<half>(&temp[4], &temp[5], getHalfNegative11(val, 4),
+                             getHalf01(val, 5));
+    boxMullerTransform<half>(&temp[6], &temp[7], getHalfNegative11(val, 6),
+                             getHalf01(val, 7));
 }
 
 template<typename T>
