@@ -74,7 +74,7 @@ inline __DH__ __half min<__half>(__half lhs, __half rhs) {
 #if __CUDA_ARCH__ >= 530
     return __hlt(lhs, rhs) ? lhs : rhs;
 #else
-    return (float)lhs < (float)rhs ? lhs : rhs;
+    return __half2float(lhs) < __half2float(rhs) ? lhs : rhs;
 #endif
 }
 
@@ -83,7 +83,7 @@ inline __DH__ __half max<__half>(__half lhs, __half rhs) {
 #if __CUDA_ARCH__ >= 530
     return __hgt(lhs, rhs) ? lhs : rhs;
 #else
-    return (float)lhs > (float)rhs ? lhs : rhs;
+    return __half2float(lhs) > __half2float(rhs) ? lhs : rhs;
 #endif
 }
 

@@ -398,15 +398,22 @@ void partialBoxMullerWriteOut128Bytes_double(global double *out, uint index,
 #define SIGNED_HALF_FACTOR ((1.h) / (SHRT_MAX + (1.h)))
 #define SIGNED_HALF_HALF_FACTOR ((0.5h) * SIGNED_HALF_FACTOR)
 
+/// This is the largest integer representable by fp16. We need to
+/// make sure that the value converted from ushort is smaller than this
+/// value to avoid generating infinity
+#define MAX_INT_BEFORE_INFINITY (ushort)65504u
+
 // Generates rationals in (0, 1]
 half getHalf01(uint num, uint index) {
-    half v = num >> (16U * (index & 1U)) & 0x0000ffff;
+    half v = (half)min(MAX_INT_BEFORE_INFINITY,
+                       (ushort)(num >> (16U * (index & 1U)) & 0x0000ffff));
     return fma(v, HALF_FACTOR, HALF_HALF_FACTOR);
 }
 
 // Generates rationals in (-1, 1]
 half getHalfNegative11(uint num, uint index) {
-    half v = num >> (16U * (index & 1U)) & 0x0000ffff;
+    half v = (half)min(MAX_INT_BEFORE_INFINITY,
+                       (ushort)(num >> (16U * (index & 1U)) & 0x0000ffff));
     return fma(v, SIGNED_HALF_FACTOR, SIGNED_HALF_HALF_FACTOR);
 }
 
