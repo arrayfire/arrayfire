@@ -822,7 +822,7 @@ AF_CONSTEXPR __DH__ static inline bool isinf(half val) noexcept;
 AF_CONSTEXPR __DH__ static inline bool isnan(common::half val) noexcept;
 
 class alignas(2) half {
-    native_half_t data_ = 0;
+    native_half_t data_ = native_half_t();
 
 #if !defined(NVCC) && !defined(__CUDACC_RTC__)
     // NVCC on OSX performs a weird transformation where it removes the std::
@@ -881,11 +881,19 @@ class alignas(2) half {
         return *this;
     }
 
-#if defined(__CUDA_ARCH__)
-    AF_CONSTEXPR __DH__ explicit half(const __half& value) noexcept
-        : data_(value) {}
-    AF_CONSTEXPR __DH__ half& operator=(__half&& value) noexcept {
-        data_ = value;
+#if defined(NVCC) || defined(__CUDACC_RTC__)
+    AF_CONSTEXPR __DH__ explicit half(__half value) noexcept
+#ifdef __CUDA_ARCH__
+        : data_(value) {
+    }
+#else
+        : data_(*reinterpret_cast<native_half_t*>(&value)) {
+    }
+#endif
+    AF_CONSTEXPR __DH__ half& operator=(__half value) noexcept {
+        // NOTE Assignment to ushort from __half only works with device code.
+        // using memcpy instead
+        data_ = *reinterpret_cast<native_half_t*>(&value);
         return *this;
     }
 #endif
@@ -988,7 +996,11 @@ class alignas(2) half {
 
     AF_CONSTEXPR static half infinity() {
         half out;
+#ifdef __CUDA_ARCH__
+        out.data_ = __half_raw{0x7C00};
+#else
         out.data_ = 0x7C00;
+#endif
         return out;
     }
 };

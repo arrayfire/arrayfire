@@ -60,7 +60,7 @@ double chi2_statistic(array input, array expected, bool print = false) {
     array diff = input - expected;
 
     double chi2 = sum<T>((diff * diff) / expected);
-    if (print && chi2 > 10000) {
+    if (print) {
         array legend = af::seq(input.elements());
         legend -= (input.elements() / 2.);
         legend *= (14. / input.elements());
@@ -137,7 +137,6 @@ TYPED_TEST(RandomEngine, mersenneRandomEngineUniformChi2) {
 }
 
 // should be used only for x <= 5 (roughly)
-
 array cnd(array x) { return 0.5 * erfc(-x * sqrt(0.5)); }
 
 template<typename T>
@@ -159,20 +158,21 @@ bool testRandomEngineNormalChi2(randomEngineType type)
 
     expected =
         af::join(0, expected(af::seq(bins - 1, 0, -1)), expected).as(f32);
-    // af_print(expected);
 
     af::randomEngine r(type, 0);
 
+    // NOTE(@rstub): In the chi^2 test one computes the test statistic and
+    // compares the value with the chi^2 distribution with appropriate number of
+    // degrees of freedom. For the uniform distribution one has "number of bins
+    // minus 1" degrees of freedom. For the normal distribution it is "number of
+    // bins minus 3", since there are two parameters mu and sigma. Here I used
+    // the qchisq() function from R to compute "suitable" values from the chi^2
+    // distribution.
+    //
     // R> qchisq(c(5e-6, 1 - 5e-6), 197)
-
     // [1] 121.3197 297.2989
     float lower(121.3197);
     float upper(297.2989);
-
-    // R> qchisq(c(5e-6, 1 - 5e-6), 199)
-    // [1] 121.3197 297.2989
-    // float lower = 118.1094;
-    // float upper = 308.6010;
 
     bool prev_step  = true;
     bool prev_total = true;
@@ -201,6 +201,10 @@ bool testRandomEngineNormalChi2(randomEngineType type)
         if (!prev_step) {
             EXPECT_GT(step_chi2, lower) << "at step " << i;
             EXPECT_LT(step_chi2, upper) << "at step: " << i;
+            if (step_chi2 < lower || step_chi2 > upper) {
+                bool print = true;
+                chi2_statistic<float>(step_hist, expected, print);
+            }
         }
 
         // if (!(step || prev_step)) break;
@@ -216,10 +220,11 @@ bool testRandomEngineNormalChi2(randomEngineType type)
         if (!prev_total) {
             EXPECT_GT(total_chi2, lower) << "at step " << i;
             EXPECT_LT(total_chi2, upper) << "at step " << i;
+            if (total_chi2 < lower || total_chi2 > upper) {
+                bool print = true;
+                chi2_statistic<float>(total_hist, expected, print);
+            }
         }
-
-        // ASSERT_TRUE(total || prev_step);
-        // if (!(total || prev_total)) break;
 
         prev_total = total;
     }

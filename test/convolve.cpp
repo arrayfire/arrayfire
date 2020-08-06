@@ -890,7 +890,7 @@ TEST_P(Conv2ConsistencyTest, RandomConvolutions) {
     array out = convolve2NN(signal, filter, params.stride_, params.padding_,
                             params.dilation_);
 
-    ASSERT_ARRAYS_NEAR(out_native, out, 1e-5);
+    ASSERT_ARRAYS_NEAR(out_native, out, 2e-5);
 }
 
 template<typename T>

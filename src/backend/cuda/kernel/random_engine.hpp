@@ -23,8 +23,26 @@
 
 namespace cuda {
 namespace kernel {
-// Utils
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 530
+__device__ __half hlog(const __half a) {
+    return __float2half(logf(__half2float(a)));
+}
+__device__ __half hsqrt(const __half a) {
+    return __float2half(sqrtf(__half2float(a)));
+}
+__device__ __half hsin(const __half a) {
+    return __float2half(sinf(__half2float(a)));
+}
+__device__ __half hcos(const __half a) {
+    return __float2half(cosf(__half2float(a)));
+}
+__device__ __half __hfma(const __half a, __half b, __half c) {
+    return __float2half(
+        fmaf(__half2float(a), __half2float(b), __half2float(c)));
+}
+#endif
 
+// Utils
 static const int THREADS = 256;
 #define PI_VAL \
     3.1415926535897932384626433832795028841971693993751058209749445923078164
@@ -37,8 +55,8 @@ static const int THREADS = 256;
 // above. This is done so that we can avoid unnecessary computations because the
 // __half datatype is not a constexprable type. This prevents the compiler from
 // peforming these operations at compile time.
-#define HALF_FACTOR __ushort_as_half(256)
-#define HALF_HALF_FACTOR __ushort_as_half(128)
+#define HALF_FACTOR __ushort_as_half(0x100u)
+#define HALF_HALF_FACTOR __ushort_as_half(0x80)
 
 // Conversion to half adapted from Random123
 //#define SIGNED_HALF_FACTOR                                \
@@ -49,87 +67,112 @@ static const int THREADS = 256;
 // above. This is done so that we can avoid unnecessary computations because the
 // __half datatype is not a constexprable type. This prevents the compiler from
 // peforming these operations at compile time
-#define SIGNED_HALF_FACTOR __ushort_as_half(512)
-#define SIGNED_HALF_HALF_FACTOR __ushort_as_half(256)
+#define SIGNED_HALF_FACTOR __ushort_as_half(0x200u)
+#define SIGNED_HALF_HALF_FACTOR __ushort_as_half(0x100u)
 
-// Conversion to floats adapted from Random123
-constexpr float FLT_FACTOR =
-    ((1.0f) /
-     (static_cast<float>(std::numeric_limits<unsigned int>::max()) + (1.0f)));
-
-constexpr float HALF_FLT_FACTOR = ((0.5f) * FLT_FACTOR);
-
-// Conversion to floats adapted from Random123
-constexpr float SIGNED_FLT_FACTOR =
-    ((1.0) / (std::numeric_limits<int>::max() + (1.0)));
-constexpr float SIGNED_HALF_FLT_FACTOR = ((0.5f) * SIGNED_FLT_FACTOR);
-
-constexpr double DBL_FACTOR =
-    ((1.0) / (std::numeric_limits<unsigned long long>::max() +
-              static_cast<long double>(1.0l)));
-constexpr double HALF_DBL_FACTOR((0.5) * DBL_FACTOR);
-
-// Conversion to floats adapted from Random123
-constexpr double SIGNED_DBL_FACTOR =
-    ((1.0l) / (std::numeric_limits<long long>::max() + (1.0l)));
-constexpr double SIGNED_HALF_DBL_FACTOR = ((0.5) * SIGNED_DBL_FACTOR);
+/// This is the largest integer representable by fp16. We need to
+/// make sure that the value converted from ushort is smaller than this
+/// value to avoid generating infinity
+constexpr ushort max_int_before_infinity = 65504;
 
 // Generates rationals in (0, 1]
 __device__ static __half oneMinusGetHalf01(uint num) {
-    ushort v = num;
-    return __ushort_as_half(0x3c00) -
-           __hfma(static_cast<__half>(v), HALF_FACTOR, HALF_HALF_FACTOR);
+    // convert to ushort before the min operation
+    ushort v = min(max_int_before_infinity, ushort(num));
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 530
+    return (1.0f - __half2float(__hfma(__ushort2half_rn(v), HALF_FACTOR,
+                                       HALF_HALF_FACTOR)));
+#else
+    __half out = __ushort_as_half(0x3c00u) /*1.0h*/ -
+                 __hfma(__ushort2half_rn(v), HALF_FACTOR, HALF_HALF_FACTOR);
+    if (__hisinf(out)) printf("val: %d ushort: %d\n", num, v);
+    return out;
+#endif
 }
 
 // Generates rationals in (0, 1]
 __device__ static __half getHalf01(uint num) {
-    ushort v = num;
-    return __hfma(static_cast<__half>(v), HALF_FACTOR, HALF_HALF_FACTOR);
+    // convert to ushort before the min operation
+    ushort v = min(max_int_before_infinity, ushort(num));
+    return __hfma(__ushort2half_rn(v), HALF_FACTOR, HALF_HALF_FACTOR);
 }
 
 // Generates rationals in (-1, 1]
 __device__ static __half getHalfNegative11(uint num) {
-    ushort v = num;
-    return __hfma(static_cast<__half>(v), SIGNED_HALF_FACTOR,
+    // convert to ushort before the min operation
+    ushort v = min(max_int_before_infinity, ushort(num));
+    return __hfma(__ushort2half_rn(v), SIGNED_HALF_FACTOR,
                   SIGNED_HALF_HALF_FACTOR);
 }
 
 // Generates rationals in (0, 1]
 __device__ static float getFloat01(uint num) {
-    return fmaf(static_cast<float>(num), FLT_FACTOR, HALF_FLT_FACTOR);
+    // Conversion to floats adapted from Random123
+    constexpr float factor =
+        ((1.0f) /
+         (static_cast<float>(std::numeric_limits<unsigned int>::max()) +
+          (1.0f)));
+    constexpr float half_factor = ((0.5f) * factor);
+
+    return fmaf(static_cast<float>(num), factor, half_factor);
 }
 
 // Generates rationals in (-1, 1]
 __device__ static float getFloatNegative11(uint num) {
-    return fmaf(static_cast<float>(num), SIGNED_FLT_FACTOR,
-                SIGNED_HALF_FLT_FACTOR);
+    // Conversion to floats adapted from Random123
+    constexpr float factor =
+        ((1.0) /
+         (static_cast<double>(std::numeric_limits<int>::max()) + (1.0)));
+    constexpr float half_factor = ((0.5f) * factor);
+
+    return fmaf(static_cast<float>(num), factor, half_factor);
 }
 
 // Generates rationals in (0, 1]
-__device__ static float getDouble01(uint num1, uint num2) {
+__device__ static double getDouble01(uint num1, uint num2) {
     uint64_t n1 = num1;
     uint64_t n2 = num2;
     n1 <<= 32;
     uint64_t num = n1 | n2;
-    return fma(static_cast<double>(num), DBL_FACTOR, HALF_DBL_FACTOR);
+#pragma diag_suppress 3245
+    constexpr double factor =
+        ((1.0) / (std::numeric_limits<unsigned long long>::max() +
+                  static_cast<long double>(1.0l)));
+    constexpr double half_factor((0.5) * factor);
+#pragma diag_default 3245
+
+    return fma(static_cast<double>(num), factor, half_factor);
 }
 
+// Conversion to doubles adapted from Random123
+constexpr double signed_factor =
+    ((1.0l) / (std::numeric_limits<long long>::max() + (1.0l)));
+constexpr double half_factor = ((0.5) * signed_factor);
+
 // Generates rationals in (-1, 1]
-__device__ static float getDoubleNegative11(uint num1, uint num2) {
+__device__ static double getDoubleNegative11(uint num1, uint num2) {
     uint32_t arr[2] = {num2, num1};
     uint64_t num;
+
     memcpy(&num, arr, sizeof(uint64_t));
-    return fma(static_cast<double>(num), SIGNED_DBL_FACTOR,
-               SIGNED_HALF_DBL_FACTOR);
+    return fma(static_cast<double>(num), signed_factor, half_factor);
 }
 
 namespace {
 
-#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 530
-__device__ __half hlog(const __half a) { return 0; }
-__device__ __half hsqrt(const __half a) { return 0; }
-__device__ __half hsin(const __half a) { return 0; }
-__device__ __half hcos(const __half a) { return 0; }
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
+#define HALF_MATH_FUNC(OP, HALF_OP)    \
+    template<>                         \
+    __device__ __half OP(__half val) { \
+        return ::HALF_OP(val);         \
+    }
+#else
+#define HALF_MATH_FUNC(OP, HALF_OP)     \
+    template<>                          \
+    __device__ __half OP(__half val) {  \
+        float fval = __half2float(val); \
+        return __float2half(OP(fval));  \
+    }
 #endif
 
 #define MATH_FUNC(OP, DOUBLE_OP, FLOAT_OP, HALF_OP) \
@@ -141,12 +184,9 @@ __device__ __half hcos(const __half a) { return 0; }
     }                                               \
     template<>                                      \
     __device__ float OP(float val) {                \
-        return FLOAT_OP(val);                       \
+        return ::FLOAT_OP(val);                     \
     }                                               \
-    template<>                                      \
-    __device__ __half OP(__half val) {              \
-        return HALF_OP(val);                        \
-    }
+    HALF_MATH_FUNC(OP, HALF_OP)
 
 MATH_FUNC(log, log, logf, hlog)
 MATH_FUNC(sqrt, sqrt, sqrtf, hsqrt)
@@ -160,14 +200,24 @@ template<>
 __device__ void sincos(double val, double *sptr, double *cptr) {
     ::sincos(val, sptr, cptr);
 }
+
 template<>
 __device__ void sincos(float val, float *sptr, float *cptr) {
     sincosf(val, sptr, cptr);
 }
+
 template<>
 __device__ void sincos(__half val, __half *sptr, __half *cptr) {
-    *sptr = hsin(val);
-    *cptr = hcos(val);
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
+    *sptr = sin(val);
+    *cptr = cos(val);
+#else
+    float s, c;
+    float fval = __half2float(val);
+    sincos(fval, &s, &c);
+    *sptr      = __float2half(s);
+    *cptr      = __float2half(c);
+#endif
 }
 
 template<typename T>
@@ -185,21 +235,25 @@ template<>
 __device__ void sincospi(__half val, __half *sptr, __half *cptr) {
     // CUDA cannot make __half into a constexpr as of CUDA 11 so we are
     // converting this offline
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
     const __half pi_val = __ushort_as_half(0x4248);  // 0x4248 == 3.14062h
-    *sptr               = hsin(val) * pi_val;
-    *cptr               = hcos(val) * pi_val;
+    val *= pi_val;
+    *sptr = sin(val);
+    *cptr = cos(val);
+#else
+    float fval = __half2float(val);
+    float s, c;
+    sincospi(fval, &s, &c);
+    *sptr = __float2half(s);
+    *cptr = __float2half(c);
+#endif
 }
 
 }  // namespace
 
 template<typename T>
-constexpr __device__ T neg_two() {
+constexpr T neg_two() {
     return -2.0;
-}
-
-template<>
-__device__ __half neg_two() {
-    return __ushort_as_half(0xc000);  // 0xc000 == -2.h
 }
 
 template<typename T>
@@ -223,6 +277,19 @@ __device__ static void boxMullerTransform(Td *const out1, Td *const out2,
     *out1 = static_cast<Td>(r * s);
     *out2 = static_cast<Td>(r * c);
 }
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 530
+template<>
+__device__ void boxMullerTransform<common::half, __half>(
+    common::half *const out1, common::half *const out2, const __half &r1,
+    const __half &r2) {
+    float o1, o2;
+    float fr1 = __half2float(r1);
+    float fr2 = __half2float(r2);
+    boxMullerTransform(&o1, &o2, fr1, fr2);
+    *out1 = o1;
+    *out2 = o2;
+}
+#endif
 
 // Writes without boundary checking
 __device__ static void writeOut128Bytes(uchar *out, const uint &index,
@@ -691,27 +758,27 @@ __device__ static void partialWriteOut128Bytes(common::half *out,
                                                const uint &r1, const uint &r2,
                                                const uint &r3, const uint &r4,
                                                const uint &elements) {
-    if (index < elements) { out[index] = getHalf01(r1); }
+    if (index < elements) { out[index] = oneMinusGetHalf01(r1); }
     if (index + blockDim.x < elements) {
-        out[index + blockDim.x] = getHalf01(r1 >> 16);
+        out[index + blockDim.x] = oneMinusGetHalf01(r1 >> 16);
     }
     if (index + 2 * blockDim.x < elements) {
-        out[index + 2 * blockDim.x] = getHalf01(r2);
+        out[index + 2 * blockDim.x] = oneMinusGetHalf01(r2);
     }
     if (index + 3 * blockDim.x < elements) {
-        out[index + 3 * blockDim.x] = getHalf01(r2 >> 16);
+        out[index + 3 * blockDim.x] = oneMinusGetHalf01(r2 >> 16);
     }
     if (index + 4 * blockDim.x < elements) {
-        out[index + 4 * blockDim.x] = getHalf01(r3);
+        out[index + 4 * blockDim.x] = oneMinusGetHalf01(r3);
     }
     if (index + 5 * blockDim.x < elements) {
-        out[index + 5 * blockDim.x] = getHalf01(r3 >> 16);
+        out[index + 5 * blockDim.x] = oneMinusGetHalf01(r3 >> 16);
     }
     if (index + 6 * blockDim.x < elements) {
-        out[index + 6 * blockDim.x] = getHalf01(r4);
+        out[index + 6 * blockDim.x] = oneMinusGetHalf01(r4);
     }
     if (index + 7 * blockDim.x < elements) {
-        out[index + 7 * blockDim.x] = getHalf01(r4 >> 16);
+        out[index + 7 * blockDim.x] = oneMinusGetHalf01(r4 >> 16);
     }
 }
 
@@ -719,7 +786,7 @@ __device__ static void partialWriteOut128Bytes(common::half *out,
 __device__ static void partialBoxMullerWriteOut128Bytes(
     common::half *out, const uint &index, const uint &r1, const uint &r2,
     const uint &r3, const uint &r4, const uint &elements) {
-    __half n[8];
+    common::half n[8];
     boxMullerTransform(n + 0, n + 1, getHalfNegative11(r1),
                        getHalf01(r1 >> 16));
     boxMullerTransform(n + 2, n + 3, getHalfNegative11(r2),
