@@ -32,22 +32,9 @@ static const double PI_VAL =
     3.1415926535897932384626433832795028841971693993751058209749445923078164;
 
 // Conversion to half adapted from Random123
-#define HALF_FACTOR ((1.0f) / (std::numeric_limits<ushort>::max() + (1.0f)))
-#define HALF_HALF_FACTOR ((0.5f) * HALF_FACTOR)
-
-// Conversion to half adapted from Random123
-#define SIGNED_HALF_FACTOR \
-    ((1.0f) / (std::numeric_limits<short>::max() + (1.0f)))
-#define SIGNED_HALF_HALF_FACTOR ((0.5f) * SIGNED_HALF_FACTOR)
-
-#define DBL_FACTOR \
-    ((1.0) / (std::numeric_limits<unsigned long long>::max() + (1.0)))
-#define HALF_DBL_FACTOR ((0.5) * DBL_FACTOR)
-
-// Conversion to floats adapted from Random123
-#define SIGNED_DBL_FACTOR \
-    ((1.0) / (std::numeric_limits<long long>::max() + (1.0)))
-#define SIGNED_HALF_DBL_FACTOR ((0.5) * SIGNED_DBL_FACTOR)
+constexpr float unsigned_half_factor =
+    ((1.0f) / (std::numeric_limits<ushort>::max() + (1.0f)));
+constexpr float unsigned_half_half_factor((0.5f) * unsigned_half_factor);
 
 template<typename T>
 T transform(uint *val, uint index);
@@ -85,14 +72,19 @@ static float getFloatNegative11(uint *val, uint index) {
 // Generates rationals in [0, 1)
 common::half getHalf01(uint *val, uint index) {
     float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
-    return static_cast<common::half>(fmaf(v, HALF_FACTOR, HALF_HALF_FACTOR));
+    return static_cast<common::half>(
+        fmaf(v, unsigned_half_factor, unsigned_half_half_factor));
 }
 
 // Generates rationals in (-1, 1]
 static common::half getHalfNegative11(uint *val, uint index) {
     float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
-    return static_cast<common::half>(
-        fmaf(v, SIGNED_HALF_FACTOR, SIGNED_HALF_HALF_FACTOR));
+    // Conversion to half adapted from Random123
+    constexpr float factor =
+        ((1.0f) / (std::numeric_limits<short>::max() + (1.0f)));
+    constexpr float half_factor = ((0.5f) * factor);
+
+    return static_cast<common::half>(fmaf(v, factor, half_factor));
 }
 
 // Generates rationals in [0, 1)
@@ -160,8 +152,8 @@ double transform<double>(uint *val, uint index) {
 template<>
 common::half transform<common::half>(uint *val, uint index) {
     float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
-    return static_cast<common::half>(1.f -
-                                     fmaf(v, HALF_FACTOR, HALF_HALF_FACTOR));
+    return static_cast<common::half>(
+        1.f - fmaf(v, unsigned_half_factor, unsigned_half_half_factor));
 }
 
 // Generates rationals in [-1, 1)
