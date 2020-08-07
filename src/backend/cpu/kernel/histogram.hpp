@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Param.hpp>
+#include <types.hpp>
 
 namespace cpu {
 namespace kernel {
@@ -23,6 +24,7 @@ void histogram(Param<uint> out, CParam<T> in, const unsigned nbins,
     dim4 const oStrides = out.strides();
     dim_t const nElems  = inDims[0] * inDims[1];
 
+    auto minValT = compute_t<T>(minval);
     for (dim_t b3 = 0; b3 < outDims[3]; b3++) {
         uint* outData   = out.get() + b3 * oStrides[3];
         const T* inData = in.get() + b3 * iStrides[3];
@@ -32,7 +34,7 @@ void histogram(Param<uint> out, CParam<T> in, const unsigned nbins,
                     IsLinear
                         ? i
                         : ((i % inDims[0]) + (i / inDims[0]) * iStrides[1]);
-                int bin = (int)((inData[idx] - minval) / step);
+                int bin = (int)((compute_t<T>(inData[idx]) - minValT) / step);
                 bin     = std::max(bin, 0);
                 bin     = std::min(bin, (int)(nbins - 1));
                 outData[bin]++;
