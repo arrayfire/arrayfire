@@ -120,21 +120,29 @@ static void sparseTransposeTester(const int m, const int n, const int k,
 
     // Result of GEMM
     af::array dRes2 = matmul(A, B, AF_MAT_TRANS, AF_MAT_NONE);
-    af::array dRes3 = matmul(A, B, AF_MAT_CTRANS, AF_MAT_NONE);
+    af::array dRes3;
+    if (IsComplex<T>::value) {
+        dRes3 = matmul(A, B, AF_MAT_CTRANS, AF_MAT_NONE);
+    }
 
     // Create Sparse Array From Dense
     af::array sA = af::sparse(A, AF_STORAGE_CSR);
 
     // Sparse Matmul
     af::array sRes2 = matmul(sA, B, AF_MAT_TRANS, AF_MAT_NONE);
-    af::array sRes3 = matmul(sA, B, AF_MAT_CTRANS, AF_MAT_NONE);
+    af::array sRes3;
+    if (IsComplex<T>::value) {
+        sRes3 = matmul(sA, B, AF_MAT_CTRANS, AF_MAT_NONE);
+    }
 
     // Verify Results
     ASSERT_NEAR(0, calc_norm(real(dRes2), real(sRes2)), eps);
     ASSERT_NEAR(0, calc_norm(imag(dRes2), imag(sRes2)), eps);
 
-    ASSERT_NEAR(0, calc_norm(real(dRes3), real(sRes3)), eps);
-    ASSERT_NEAR(0, calc_norm(imag(dRes3), imag(sRes3)), eps);
+    if (IsComplex<T>::value) {
+        ASSERT_NEAR(0, calc_norm(real(dRes3), real(sRes3)), eps);
+        ASSERT_NEAR(0, calc_norm(imag(dRes3), imag(sRes3)), eps);
+    }
 }
 
 template<typename T>

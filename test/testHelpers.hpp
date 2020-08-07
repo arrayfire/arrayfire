@@ -188,6 +188,12 @@ inline double imag<af::cfloat>(af::cfloat val) {
 }
 
 template<class T>
+struct IsComplex {
+    static const bool value = is_same_type<af::cfloat, T>::value ||
+                              is_same_type<af::cdouble, T>::value;
+};
+
+template<class T>
 struct IsFloatingPoint {
     static const bool value = is_same_type<half_float::half, T>::value ||
                               is_same_type<float, T>::value ||
