@@ -289,7 +289,7 @@ cuda_add_library(af_cuda_static_cuda_library STATIC
 
     OPTIONS
     ${platform_flags} ${cuda_cxx_flags} ${af_cuda_static_flags}
-    -Xcudafe \"--diag_suppress=1427\" -DAFDLL
+    -Xcudafe --display_error_number -Xcudafe \"--diag_suppress=1427\" -DAFDLL
 )
 
 set_target_properties(af_cuda_static_cuda_library
@@ -648,6 +648,7 @@ cuda_add_library(afcuda
     OPTIONS
     ${platform_flags}
     ${cuda_cxx_flags}
+    -Xcudafe --display_error_number
     -Xcudafe \"--diag_suppress=1427\"
   )
 
