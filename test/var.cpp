@@ -51,7 +51,7 @@ struct varOutType {
 // test var_all interface using cpp api
 
 template<typename T>
-void testCPPVar(T const_value, dim4 dims) {
+void testCPPVar(T const_value, dim4 dims, const bool useDeprecatedAPI = false) {
     typedef typename varOutType<T>::type outType;
     SUPPORTED_TYPE_CHECK(T);
     SUPPORTED_TYPE_CHECK(outType);
@@ -64,12 +64,18 @@ void testCPPVar(T const_value, dim4 dims) {
     outType gold = outType(0);
 
     array a(dims, &(hundred.front()));
-    outType output = var<outType>(a, false);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    outType output =
+        (useDeprecatedAPI ? var<outType>(a, false)
+                          : var<outType>(a, AF_VARIANCE_POPULATION));
 
     ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
     ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 
-    output = var<outType>(a, true);
+    output = (useDeprecatedAPI ? var<outType>(a, true)
+                               : var<outType>(a, AF_VARIANCE_SAMPLE));
 
     ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
     ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
@@ -78,13 +84,16 @@ void testCPPVar(T const_value, dim4 dims) {
     outType tmp[] = {outType(0), outType(1), outType(2), outType(3),
                      outType(4)};
     array b(5, tmp);
-    output = var<outType>(b, false);
+    output = (useDeprecatedAPI ? var<outType>(b, false)
+                               : var<outType>(b, AF_VARIANCE_POPULATION));
 
     ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
     ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 
     gold   = outType(2);
-    output = var<outType>(b, true);
+    output = (useDeprecatedAPI ? var<outType>(b, true)
+                               : var<outType>(b, AF_VARIANCE_SAMPLE));
+#pragma GCC diagnostic pop
 
     ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
     ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
@@ -92,39 +101,51 @@ void testCPPVar(T const_value, dim4 dims) {
 
 TYPED_TEST(Var, AllCPPSmall) {
     testCPPVar<TypeParam>(TypeParam(2), dim4(10, 10, 1, 1));
+    testCPPVar<TypeParam>(TypeParam(2), dim4(10, 10, 1, 1), true);
 }
 
 TYPED_TEST(Var, AllCPPMedium) {
     testCPPVar<TypeParam>(TypeParam(2), dim4(100, 100, 1, 1));
+    testCPPVar<TypeParam>(TypeParam(2), dim4(100, 100, 1, 1), true);
 }
 
 TYPED_TEST(Var, AllCPPLarge) {
     testCPPVar<TypeParam>(TypeParam(2), dim4(1000, 1000, 1, 1));
+    testCPPVar<TypeParam>(TypeParam(2), dim4(1000, 1000, 1, 1), true);
 }
 
-TYPED_TEST(Var, DimCPPSmall) {
-    typedef typename varOutType<TypeParam>::type outType;
+template<typename T>
+void dimCppSmallTest(const string pFileName,
+                     const bool useDeprecatedAPI = false) {
+    typedef typename varOutType<T>::type outType;
     float tol = 0.001f;
-    if ((af_dtype)af::dtype_traits<TypeParam>::af_type == f16) { tol = 0.6f; }
+    if ((af_dtype)af::dtype_traits<T>::af_type == f16) { tol = 0.6f; }
 
-    SUPPORTED_TYPE_CHECK(TypeParam);
+    SUPPORTED_TYPE_CHECK(T);
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<TypeParam> > in;
+    vector<vector<T> > in;
     vector<vector<outType> > tests;
 
-    readTests<TypeParam, outType, float>(TEST_DIR "/var/var.data", numDims, in,
-                                         tests);
+    readTests<T, outType, float>(pFileName, numDims, in, tests);
 
     for (size_t i = 0; i < in.size(); i++) {
         array input(numDims[i], &in[i].front(), afHost);
 
-        array bout  = var(input, true);
-        array nbout = var(input, false);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+        array bout  = (useDeprecatedAPI ? var(input, true)
+                                       : var(input, AF_VARIANCE_SAMPLE));
+        array nbout = (useDeprecatedAPI ? var(input, false)
+                                        : var(input, AF_VARIANCE_POPULATION));
 
-        array bout1  = var(input, true, 1);
-        array nbout1 = var(input, false, 1);
+        array bout1 = (useDeprecatedAPI ? var(input, true, 1)
+                                        : var(input, AF_VARIANCE_SAMPLE, 1));
+        array nbout1 =
+            (useDeprecatedAPI ? var(input, false, 1)
+                              : var(input, AF_VARIANCE_POPULATION, 1));
+#pragma GCC diagnostic pop
 
         vector<vector<outType> > h_out(4);
 
@@ -145,13 +166,24 @@ TYPED_TEST(Var, DimCPPSmall) {
     }
 }
 
+TYPED_TEST(Var, DimCPPSmall) {
+    dimCppSmallTest<TypeParam>(string(TEST_DIR "/var/var.data"));
+    dimCppSmallTest<TypeParam>(string(TEST_DIR "/var/var.data"), true);
+}
+
 TEST(Var, ISSUE2117) {
     using af::constant;
     using af::sum;
     using af::var;
 
     array myArray = constant(1, 1000, 3000);
-    myArray       = var(myArray, true, 1);
+    myArray       = var(myArray, AF_VARIANCE_SAMPLE, 1);
+    ASSERT_NEAR(0.0f, sum<float>(myArray), 0.000001);
 
+    myArray = constant(1, 1000, 3000);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    myArray = var(myArray, true, 1);
+#pragma GCC diagnostic pop
     ASSERT_NEAR(0.0f, sum<float>(myArray), 0.000001);
 }

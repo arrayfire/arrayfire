@@ -101,3 +101,15 @@ af_err af_topk(af_array *values, af_array *indices, const af_array in,
     CHECK_ARRAYS(in);
     CALL(af_topk, values, indices, in, k, dim, order);
 }
+
+af_err af_var_v2(af_array *out, const af_array in, const af_var_bias bias,
+                 const dim_t dim) {
+    CHECK_ARRAYS(in);
+    CALL(af_var_v2, out, in, bias, dim);
+}
+
+af_err af_var_all_v2(double *realVal, double *imagVal, const af_array in,
+                     const af_var_bias bias) {
+    CHECK_ARRAYS(in);
+    CALL(af_var_all_v2, realVal, imagVal, in, bias);
+}
