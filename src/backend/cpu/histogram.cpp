@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <histogram.hpp>
 #include <kernel/histogram.hpp>
 #include <platform.hpp>
@@ -15,6 +16,7 @@
 #include <af/dim4.hpp>
 
 using af::dim4;
+using common::half;
 
 namespace cpu {
 
@@ -50,5 +52,6 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
+INSTANTIATE(half)
 
 }  // namespace cpu

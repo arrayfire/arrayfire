@@ -322,6 +322,7 @@ INSTANTIATE(half_float::half, half_float::half, float);
 
 INSTANTIATE(double, af_cdouble, float);
 INSTANTIATE(float, af_cfloat, float);
+INSTANTIATE(half_float::half, uint, uint);
 
 #undef INSTANTIATE
 

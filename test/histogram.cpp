@@ -32,8 +32,8 @@ class Histogram : public ::testing::Test {
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort,
-                         intl, uintl>
+typedef ::testing::Types<half_float::half, float, double, int, uint, char,
+                         uchar, short, ushort, intl, uintl>
     TestTypes;
 
 // register the type list
@@ -48,7 +48,7 @@ void histTest(string pTestFile, unsigned nbins, double minval, double maxval) {
 
     vector<vector<inType> > in;
     vector<vector<outType> > tests;
-    readTests<inType, uint, int>(pTestFile, numDims, in, tests);
+    readTests<inType, uint, uint>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
     af_array outArray = 0;
