@@ -8,12 +8,14 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/half.hpp>
 #include <err_opencl.hpp>
 #include <histogram.hpp>
 #include <kernel/histogram.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
+using common::half;
 
 namespace opencl {
 
@@ -43,5 +45,6 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
+INSTANTIATE(half)
 
 }  // namespace opencl
