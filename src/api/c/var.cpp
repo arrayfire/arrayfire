@@ -51,7 +51,7 @@ using std::tie;
 using std::tuple;
 
 template<typename inType, typename outType>
-static outType varAll(const af_array& in, const bool isbiased) {
+static outType varAll(const af_array& in, const af_var_bias bias) {
     using weightType          = typename baseOutType<outType>::type;
     const Array<inType> inArr = getArray<inType>(in);
     Array<outType> input      = cast<outType>(inArr);
@@ -64,9 +64,9 @@ static outType varAll(const af_array& in, const bool isbiased) {
 
     Array<outType> diffSq = arithOp<outType, af_mul_t>(diff, diff, diff.dims());
 
-    outType result =
-        division(reduce_all<af_add_t, outType, outType>(diffSq),
-                 isbiased ? input.elements() : input.elements() - 1);
+    outType result = division(
+        reduce_all<af_add_t, outType, outType>(diffSq),
+        bias == AF_VARIANCE_SAMPLE ? input.elements() : input.elements() - 1);
 
     return result;
 }
@@ -181,6 +181,13 @@ static af_array var_(const af_array& in, const af_array& weights,
 
 af_err af_var(af_array* out, const af_array in, const bool isbiased,
               const dim_t dim) {
+    const af_var_bias bias =
+        (isbiased ? AF_VARIANCE_SAMPLE : AF_VARIANCE_POPULATION);
+    return af_var_v2(out, in, bias, dim);
+}
+
+af_err af_var_v2(af_array* out, const af_array in, const af_var_bias bias,
+                 const dim_t dim) {
     try {
         ARG_ASSERT(3, (dim >= 0 && dim <= 3));
 
@@ -189,8 +196,6 @@ af_err af_var(af_array* out, const af_array in, const bool isbiased,
         af_dtype type         = info.getType();
 
         af_array no_weights = 0;
-        af_var_bias bias =
-            (isbiased) ? AF_VARIANCE_SAMPLE : AF_VARIANCE_POPULATION;
         switch (type) {
             case f32:
                 output = var_<float, float>(in, no_weights, bias, dim);
@@ -319,28 +324,35 @@ af_err af_var_weighted(af_array* out, const af_array in, const af_array weights,
 
 af_err af_var_all(double* realVal, double* imagVal, const af_array in,
                   const bool isbiased) {
+    const af_var_bias bias =
+        (isbiased ? AF_VARIANCE_SAMPLE : AF_VARIANCE_POPULATION);
+    return af_var_all_v2(realVal, imagVal, in, bias);
+}
+
+af_err af_var_all_v2(double* realVal, double* imagVal, const af_array in,
+                     const af_var_bias bias) {
     try {
         const ArrayInfo& info = getInfo(in);
         af_dtype type         = info.getType();
         switch (type) {
-            case f64: *realVal = varAll<double, double>(in, isbiased); break;
-            case f32: *realVal = varAll<float, float>(in, isbiased); break;
-            case s32: *realVal = varAll<int, float>(in, isbiased); break;
-            case u32: *realVal = varAll<uint, float>(in, isbiased); break;
-            case s16: *realVal = varAll<short, float>(in, isbiased); break;
-            case u16: *realVal = varAll<ushort, float>(in, isbiased); break;
-            case s64: *realVal = varAll<intl, double>(in, isbiased); break;
-            case u64: *realVal = varAll<uintl, double>(in, isbiased); break;
-            case u8: *realVal = varAll<uchar, float>(in, isbiased); break;
-            case b8: *realVal = varAll<char, float>(in, isbiased); break;
-            case f16: *realVal = varAll<half, float>(in, isbiased); break;
+            case f64: *realVal = varAll<double, double>(in, bias); break;
+            case f32: *realVal = varAll<float, float>(in, bias); break;
+            case s32: *realVal = varAll<int, float>(in, bias); break;
+            case u32: *realVal = varAll<uint, float>(in, bias); break;
+            case s16: *realVal = varAll<short, float>(in, bias); break;
+            case u16: *realVal = varAll<ushort, float>(in, bias); break;
+            case s64: *realVal = varAll<intl, double>(in, bias); break;
+            case u64: *realVal = varAll<uintl, double>(in, bias); break;
+            case u8: *realVal = varAll<uchar, float>(in, bias); break;
+            case b8: *realVal = varAll<char, float>(in, bias); break;
+            case f16: *realVal = varAll<half, float>(in, bias); break;
             case c32: {
-                cfloat tmp = varAll<cfloat, cfloat>(in, isbiased);
+                cfloat tmp = varAll<cfloat, cfloat>(in, bias);
                 *realVal   = real(tmp);
                 *imagVal   = imag(tmp);
             } break;
             case c64: {
-                cdouble tmp = varAll<cdouble, cdouble>(in, isbiased);
+                cdouble tmp = varAll<cdouble, cdouble>(in, bias);
                 *realVal    = real(tmp);
                 *imagVal    = imag(tmp);
             } break;

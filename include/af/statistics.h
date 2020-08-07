@@ -46,15 +46,36 @@ AFAPI array mean(const array& in, const array& weights, const dim_t dim=-1);
    C++ Interface for variance
 
    \param[in] in is the input array
-   \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
+   \param[in] isbiased is boolean denoting Population variance (false) or Sample
+              Variance (true)
    \param[in] dim the dimension along which the variance is extracted
-   \return    the variance of the input array along dimension \p dim
+   \return the variance of the input array along dimension \p dim
+
+   \ingroup stat_func_var
+
+   \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+
+   \deprecated Use \ref af::var that takes \ref af_var_bias instead
+*/
+AF_DEPRECATED("Use \ref af::var(const array&, const af_var_bias, const dim_t)")
+AFAPI array var(const array& in, const bool isbiased=false, const dim_t dim=-1);
+
+#if AF_API_VERSION >= 38
+/**
+   C++ Interface for variance
+
+   \param[in] in is the input array
+   \param[in] bias The type of bias used for variance calculation. Takes o
+              value of type \ref af_var_bias.
+   \param[in] dim the dimension along which the variance is extracted
+   \return the variance of the input array along dimension \p dim
 
    \ingroup stat_func_var
 
    \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
 */
-AFAPI array var(const array& in, const bool isbiased=false, const dim_t dim=-1);
+AFAPI array var(const array &in, const af_var_bias bias, const dim_t dim = -1);
+#endif
 
 /**
    C++ Interface for variance of weighted inputs
@@ -153,13 +174,31 @@ AFAPI T mean(const array& in, const array& weights);
    C++ Interface for variance of all elements
 
    \param[in] in is the input array
-   \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
-   \return    variance of the entire input array
+   \param[in] isbiased is boolean denoting Population variance (false) or Sample
+              Variance (true)
+   \return variance of the entire input array
+
+   \ingroup stat_func_var
+
+   \deprecated Use \ref af::var that takes \ref af_var_bias instead
+*/
+template <typename T>
+AF_DEPRECATED("Use af::var(const af::array&, const af_var_bias)")
+AFAPI T var(const array &in, const bool isbiased = false);
+
+#if AF_API_VERSION >= 38
+/**
+   C++ Interface for variance of all elements
+
+   \param[in] in is the input array
+   \param[in] bias The type of bias used for variance calculation. Takes of
+              value of type \ref af_var_bias.
+   \return variance of the \p in array
 
    \ingroup stat_func_var
 */
-template<typename T>
-AFAPI T var(const array& in, const bool isbiased=false);
+template <typename T> AFAPI T var(const array &in, const af_var_bias bias);
+#endif
 
 /**
    C++ Interface for variance of all elements in weighted input
@@ -278,8 +317,30 @@ AFAPI af_err af_mean_weighted(af_array *out, const af_array in, const af_array w
 
    \ingroup stat_func_var
 
+   \deprecated Use \ref af_var_v2 instead
 */
+AF_DEPRECATED("Use af_var_v2")
 AFAPI af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_t dim);
+
+#if AF_API_VERSION >= 38
+/**
+   C Interface for variance
+
+   \param[out] out will contain the variance of the input array along dimension
+               \p dim
+   \param[in] in is the input array
+   \param[in] bias The type of bias used for variance calculation. Takes of
+              value of type \ref af_var_bias
+   \param[in] dim the dimension along which the variance is extracted
+   \return \ref AF_SUCCESS if the operation is successful, otherwise an
+           appropriate error code is returned.
+
+   \ingroup stat_func_var
+
+*/
+AFAPI af_err af_var_v2(af_array *out, const af_array in, const af_var_bias bias,
+                       const dim_t dim);
+#endif
 
 /**
    C Interface for variance of weighted input array
@@ -393,8 +454,31 @@ AFAPI af_err af_mean_all_weighted(double *real, double *imag, const af_array in,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_var
+
+   \deprecated Use \ref af_var_all_v2 instead
 */
+AF_DEPRECATED("Use af_var_all_v2")
 AFAPI af_err af_var_all(double *realVal, double *imagVal, const af_array in, const bool isbiased);
+
+#if AF_API_VERSION >= 38
+/**
+   C Interface for variance of all elements
+
+   \param[out] realVal will contain the real part of variance of the entire
+               input array
+   \param[out] imagVal will contain the imaginary part of variance
+               of the entire input array
+   \param[in] in is the input array
+   \param[in] bias The type of bias used for variance calculation. Takes of
+              value of type \ref af_var_bias
+   \return \ref AF_SUCCESS if the operation is successful, otherwise an
+           appropriate error code is returned.
+
+   \ingroup stat_func_var
+*/
+AFAPI af_err af_var_all_v2(double *realVal, double *imagVal, const af_array in,
+                           const af_var_bias bias);
+#endif
 
 /**
    C Interface for variance of all elements in weighted input

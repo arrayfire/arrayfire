@@ -516,9 +516,9 @@ typedef enum {
 
 #if AF_API_VERSION >= 37
 typedef enum {
-              AF_VARIANCE_DEFAULT    = 0, ///< Default (Population) variance
-              AF_VARIANCE_SAMPLE     = 1, ///< Sample variance
-              AF_VARIANCE_POPULATION = 2  ///< Population variance
+    AF_VARIANCE_DEFAULT    = 0, ///< Default (Population) variance
+    AF_VARIANCE_SAMPLE     = 1, ///< Sample variance
+    AF_VARIANCE_POPULATION = 2  ///< Population variance
 } af_var_bias;
 
 typedef enum {
