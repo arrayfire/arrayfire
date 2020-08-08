@@ -119,3 +119,15 @@ af_err af_cov_v2(af_array *out, const af_array X, const af_array Y,
     CHECK_ARRAYS(X, Y);
     CALL(af_cov_v2, out, X, Y, bias);
 }
+
+af_err af_stdev_v2(af_array *out, const af_array in, const af_var_bias bias,
+                   const dim_t dim) {
+    CHECK_ARRAYS(in);
+    CALL(af_stdev_v2, out, in, bias, dim);
+}
+
+af_err af_stdev_all_v2(double *real, double *imag, const af_array in,
+                       const af_var_bias bias) {
+    CHECK_ARRAYS(in);
+    CALL(af_stdev_all_v2, real, imag, in, bias);
+}

@@ -118,8 +118,29 @@ AFAPI void meanvar(array& mean, array& var, const array& in, const array& weight
    \ingroup stat_func_stdev
 
    \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+
+   \deprecated Use \ref af::stdev that takes \ref af_var_bias instead
 */
+AF_DEPRECATED("Use af::stdev(const array&, const af_var_bias, const dim_t)")
 AFAPI array stdev(const array& in, const dim_t dim=-1);
+
+#if AF_API_VERSION >= 38
+/**
+   C++ Interface for standard deviation
+
+   \param[in] in is the input array
+   \param[in] bias The type of bias used for variance calculation. Takes of
+              value of type \ref af_var_bias.
+   \param[in] dim the dimension along which the standard deviation is extracted
+   \return    the standard deviation of the input array along dimension \p dim
+
+   \ingroup stat_func_stdev
+
+   \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+*/
+AFAPI array stdev(const array &in, const af_var_bias bias,
+                  const dim_t dim = -1);
+#endif
 
 /**
    C++ Interface for covariance
@@ -237,9 +258,26 @@ AFAPI T var(const array& in, const array& weights);
    \return    standard deviation of the entire input array
 
    \ingroup stat_func_stdev
+
+   \deprecated Use \ref af::stdev that takes \ref af_var_bias instead
 */
-template<typename T>
-AFAPI T stdev(const array& in);
+template <typename T>
+AF_DEPRECATED("Use af::stdev(const array&, const af_var_bias)")
+AFAPI T stdev(const array &in);
+
+#if AF_API_VERSION >= 38
+/**
+   C++ Interface for standard deviation of all elements
+
+   \param[in] in is the input array
+   \param[in] bias The type of bias used for variance calculation. Takes of
+              value of type \ref af_var_bias.
+   \return    standard deviation of the entire input array
+
+   \ingroup stat_func_stdev
+*/
+template <typename T> AFAPI T stdev(const array &in, const af_var_bias bias);
+#endif
 
 /**
    C++ Interface for median of all elements
@@ -402,8 +440,30 @@ AFAPI af_err af_meanvar(af_array *mean, af_array *var, const af_array in,
 
    \ingroup stat_func_stdev
 
+   \deprecated Use \ref af_stdev_v2 instead
 */
+AF_DEPRECATED("Use af_stdev_v2")
 AFAPI af_err af_stdev(af_array *out, const af_array in, const dim_t dim);
+
+#if AF_API_VERSION >= 38
+/**
+   C Interface for standard deviation
+
+   \param[out] out will contain the standard deviation of the input array along
+               dimension \p dim
+   \param[in] in is the input array
+   \param[in] bias The type of bias used for variance calculation. Takes of
+              value of type \ref af_var_bias
+   \param[in] dim the dimension along which the standard deviation is extracted
+   \return \ref AF_SUCCESS if the operation is successful, otherwise an
+           appropriate error code is returned.
+
+   \ingroup stat_func_stdev
+
+*/
+AFAPI af_err af_stdev_v2(af_array *out, const af_array in,
+                         const af_var_bias bias, const dim_t dim);
+#endif
 
 /**
    C Interface for covariance
@@ -542,8 +602,31 @@ AFAPI af_err af_var_all_weighted(double *realVal, double *imagVal, const af_arra
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_stdev
+
+   \deprecated Use \ref af_stdev_all_v2 instead
 */
+AF_DEPRECATED("Use af_stdev_all_v2")
 AFAPI af_err af_stdev_all(double *real, double *imag, const af_array in);
+
+#if AF_API_VERSION >= 38
+/**
+   C Interface for standard deviation of all elements
+
+   \param[out] real will contain the real part of standard deviation of the
+               entire input array
+   \param[out] imag will contain the imaginary part of standard deviation
+               of the entire input array
+   \param[in] in is the input array
+   \param[in] bias The type of bias used for variance calculation. Takes of
+              value of type \ref af_var_bias
+   \return     \ref AF_SUCCESS if the operation is successful,
+   otherwise an appropriate error code is returned.
+
+   \ingroup stat_func_stdev
+*/
+AFAPI af_err af_stdev_all_v2(double *real, double *imag, const af_array in,
+                             const af_var_bias bias);
+#endif
 
 /**
    C Interface for median
