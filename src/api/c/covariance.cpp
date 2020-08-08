@@ -37,7 +37,8 @@ using detail::uintl;
 using detail::ushort;
 
 template<typename T, typename cType>
-static af_array cov(const af_array& X, const af_array& Y, bool isbiased) {
+static af_array cov(const af_array& X, const af_array& Y,
+                    const af_var_bias bias) {
     using weightType  = typename baseOutType<cType>::type;
     const Array<T> _x = getArray<T>(X);
     const Array<T> _y = getArray<T>(Y);
@@ -45,7 +46,7 @@ static af_array cov(const af_array& X, const af_array& Y, bool isbiased) {
     Array<cType> yArr = cast<cType>(_y);
 
     dim4 xDims = xArr.dims();
-    dim_t N    = isbiased ? xDims[0] : xDims[0] - 1;
+    dim_t N    = (bias == AF_VARIANCE_SAMPLE ? xDims[0] : xDims[0] - 1);
 
     Array<cType> xmArr =
         createValueArray<cType>(xDims, mean<T, weightType, cType>(_x));
@@ -65,6 +66,13 @@ static af_array cov(const af_array& X, const af_array& Y, bool isbiased) {
 
 af_err af_cov(af_array* out, const af_array X, const af_array Y,
               const bool isbiased) {
+    const af_var_bias bias =
+        (isbiased ? AF_VARIANCE_SAMPLE : AF_VARIANCE_POPULATION);
+    return af_cov_v2(out, X, Y, bias);
+}
+
+af_err af_cov_v2(af_array* out, const af_array X, const af_array Y,
+                 const af_var_bias bias) {
     try {
         const ArrayInfo& xInfo = getInfo(X);
         const ArrayInfo& yInfo = getInfo(Y);
@@ -81,15 +89,15 @@ af_err af_cov(af_array* out, const af_array X, const af_array Y,
 
         af_array output = 0;
         switch (xType) {
-            case f64: output = cov<double, double>(X, Y, isbiased); break;
-            case f32: output = cov<float, float>(X, Y, isbiased); break;
-            case s32: output = cov<int, float>(X, Y, isbiased); break;
-            case u32: output = cov<uint, float>(X, Y, isbiased); break;
-            case s64: output = cov<intl, double>(X, Y, isbiased); break;
-            case u64: output = cov<uintl, double>(X, Y, isbiased); break;
-            case s16: output = cov<short, float>(X, Y, isbiased); break;
-            case u16: output = cov<ushort, float>(X, Y, isbiased); break;
-            case u8: output = cov<uchar, float>(X, Y, isbiased); break;
+            case f64: output = cov<double, double>(X, Y, bias); break;
+            case f32: output = cov<float, float>(X, Y, bias); break;
+            case s32: output = cov<int, float>(X, Y, bias); break;
+            case u32: output = cov<uint, float>(X, Y, bias); break;
+            case s64: output = cov<intl, double>(X, Y, bias); break;
+            case u64: output = cov<uintl, double>(X, Y, bias); break;
+            case s16: output = cov<short, float>(X, Y, bias); break;
+            case u16: output = cov<ushort, float>(X, Y, bias); break;
+            case u8: output = cov<uchar, float>(X, Y, bias); break;
             default: TYPE_ERROR(1, xType);
         }
         std::swap(*out, output);
