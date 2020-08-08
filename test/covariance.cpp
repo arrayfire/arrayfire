@@ -72,7 +72,8 @@ struct covOutType {
 };
 
 template<typename T>
-void covTest(string pFileName, bool isbiased = false) {
+void covTest(string pFileName, bool isbiased = false,
+             const bool useDeprecatedAPI = false) {
     typedef typename covOutType<T>::type outType;
     SUPPORTED_TYPE_CHECK(T);
     SUPPORTED_TYPE_CHECK(outType);
@@ -91,7 +92,14 @@ void covTest(string pFileName, bool isbiased = false) {
     array a(dims1, &(input1.front()));
     array b(dims2, &(input2.front()));
 
-    array c = cov(a, b, isbiased);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    array c =
+        (useDeprecatedAPI
+             ? cov(a, b, isbiased)
+             : cov(a, b,
+                   (isbiased ? AF_VARIANCE_SAMPLE : AF_VARIANCE_POPULATION)));
+#pragma GCC diagnostic pop
 
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
@@ -112,22 +120,26 @@ void covTest(string pFileName, bool isbiased = false) {
 
 TYPED_TEST(Covariance, Vector) {
     covTest<TypeParam>(string(TEST_DIR "/covariance/vec_size60.test"), false);
+    covTest<TypeParam>(string(TEST_DIR "/covariance/vec_size60.test"), false,
+                       true);
 }
 
 TYPED_TEST(Covariance, Matrix) {
     covTest<TypeParam>(string(TEST_DIR "/covariance/matrix_65x121.test"),
                        false);
+    covTest<TypeParam>(string(TEST_DIR "/covariance/matrix_65x121.test"), false,
+                       true);
 }
 
 TEST(Covariance, c32) {
     array a = constant(cfloat(1.0f, -1.0f), 10, c32);
     array b = constant(cfloat(2.0f, -1.0f), 10, c32);
-    ASSERT_THROW(cov(a, b), exception);
+    ASSERT_THROW(cov(a, b, AF_VARIANCE_POPULATION), exception);
 }
 
 TEST(Covariance, c64) {
     SUPPORTED_TYPE_CHECK(double);
     array a = constant(cdouble(1.0, -1.0), 10, c64);
     array b = constant(cdouble(2.0, -1.0), 10, c64);
-    ASSERT_THROW(cov(a, b), exception);
+    ASSERT_THROW(cov(a, b, AF_VARIANCE_POPULATION), exception);
 }

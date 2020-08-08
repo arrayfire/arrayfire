@@ -113,3 +113,9 @@ af_err af_var_all_v2(double *realVal, double *imagVal, const af_array in,
     CHECK_ARRAYS(in);
     CALL(af_var_all_v2, realVal, imagVal, in, bias);
 }
+
+af_err af_cov_v2(af_array *out, const af_array X, const af_array Y,
+                 const af_var_bias bias) {
+    CHECK_ARRAYS(X, Y);
+    CALL(af_cov_v2, out, X, Y, bias);
+}

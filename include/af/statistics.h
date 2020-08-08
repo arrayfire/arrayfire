@@ -121,18 +121,36 @@ AFAPI void meanvar(array& mean, array& var, const array& in, const array& weight
 */
 AFAPI array stdev(const array& in, const dim_t dim=-1);
 
-
 /**
    C++ Interface for covariance
 
    \param[in] X is the first input array
    \param[in] Y is the second input array
-   \param[in] isbiased is boolean specifying if biased estimate should be taken (default: false)
+   \param[in] isbiased is boolean specifying if biased estimate should be
+              taken (default: false)
    \return    the covariance of the input arrays
 
    \ingroup stat_func_cov
+
+   \deprecated Use af::cov(const array&, const array& const af_var_bias)
 */
+AF_DEPRECATED("Use af::cov(const af::array&, const array&, conv af_var_bias)")
 AFAPI array cov(const array& X, const array& Y, const bool isbiased=false);
+
+#if AF_API_VERSION >= 38
+/**
+   C++ Interface for covariance
+
+   \param[in] X is the first input array
+   \param[in] Y is the second input array
+   \param[in] bias The type of bias used for variance calculation. Takes of
+              value of type \ref af_var_bias.
+   \return the covariance of the input arrays
+
+   \ingroup stat_func_cov
+*/
+AFAPI array cov(const array &X, const array &Y, const af_var_bias bias);
+#endif
 
 /**
    C++ Interface for median
@@ -270,7 +288,6 @@ AFAPI T corrcoef(const array& X, const array& Y);
 AFAPI void topk(array &values, array &indices, const array& in, const int k,
                 const int dim = -1, const topkFunction order = AF_TOPK_MAX);
 #endif
-
 }
 #endif
 
@@ -399,8 +416,29 @@ AFAPI af_err af_stdev(af_array *out, const af_array in, const dim_t dim);
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_cov
+
+   \deprecated Use \ref af_cov_v2 instead
 */
+AF_DEPRECATED("Use af_cov_v2")
 AFAPI af_err af_cov(af_array* out, const af_array X, const af_array Y, const bool isbiased);
+
+#if AF_API_VERSION >= 38
+/**
+   C Interface for covariance
+
+   \param[out] out will the covariance of the input arrays
+   \param[in] X is the first input array
+   \param[in] Y is the second input array
+   \param[in] bias The type of bias used for variance calculation. Takes of
+              value of type \ref af_var_bias
+   \return \ref AF_SUCCESS if the operation is successful, otherwise an
+           appropriate error code is returned.
+
+   \ingroup stat_func_cov
+*/
+AFAPI af_err af_cov_v2(af_array *out, const af_array X, const af_array Y,
+                       const af_var_bias bias);
+#endif
 
 /**
    C Interface for median
