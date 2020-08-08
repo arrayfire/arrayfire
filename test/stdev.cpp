@@ -74,7 +74,8 @@ struct sdOutType {
 };
 
 template<typename T>
-void stdevDimTest(string pFileName, dim_t dim = -1) {
+void stdevDimTest(string pFileName, dim_t dim,
+                  const bool useDeprecatedAPI = false) {
     typedef typename sdOutType<T>::type outType;
     SUPPORTED_TYPE_CHECK(T);
     SUPPORTED_TYPE_CHECK(outType);
@@ -90,7 +91,11 @@ void stdevDimTest(string pFileName, dim_t dim = -1) {
 
     array a(dims, &(input.front()));
 
-    array b = stdev(a, dim);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    array b = (useDeprecatedAPI ? stdev(a, dim)
+                                : stdev(a, AF_VARIANCE_POPULATION, dim));
+#pragma GCC diagnostic pop
 
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
@@ -111,30 +116,42 @@ void stdevDimTest(string pFileName, dim_t dim = -1) {
 
 TYPED_TEST(StandardDev, Dim0) {
     stdevDimTest<TypeParam>(string(TEST_DIR "/stdev/mat_10x10_dim0.test"), 0);
+    stdevDimTest<TypeParam>(string(TEST_DIR "/stdev/mat_10x10_dim0.test"), 0,
+                            true);
 }
 
 TYPED_TEST(StandardDev, Dim1) {
     stdevDimTest<TypeParam>(string(TEST_DIR "/stdev/mat_10x10_dim1.test"), 1);
+    stdevDimTest<TypeParam>(string(TEST_DIR "/stdev/mat_10x10_dim1.test"), 1,
+                            true);
 }
 
 TYPED_TEST(StandardDev, Dim2) {
     stdevDimTest<TypeParam>(
         string(TEST_DIR "/stdev/hypercube_10x10x5x5_dim2.test"), 2);
+    stdevDimTest<TypeParam>(
+        string(TEST_DIR "/stdev/hypercube_10x10x5x5_dim2.test"), 2, true);
 }
 
 TYPED_TEST(StandardDev, Dim3) {
     stdevDimTest<TypeParam>(
         string(TEST_DIR "/stdev/hypercube_10x10x5x5_dim3.test"), 3);
+    stdevDimTest<TypeParam>(
+        string(TEST_DIR "/stdev/hypercube_10x10x5x5_dim3.test"), 3, true);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 TEST(StandardDev, InvalidDim) { ASSERT_THROW(stdev(array(), 5), exception); }
 
 TEST(StandardDev, InvalidType) {
     ASSERT_THROW(stdev(constant(cdouble(1.0, -1.0), 10)), exception);
 }
+#pragma GCC diagnostic pop
 
 template<typename T>
-void stdevDimIndexTest(string pFileName, dim_t dim = -1) {
+void stdevDimIndexTest(string pFileName, dim_t dim,
+                       const bool useDeprecatedAPI = false) {
     typedef typename sdOutType<T>::type outType;
     SUPPORTED_TYPE_CHECK(T);
     SUPPORTED_TYPE_CHECK(outType);
@@ -151,7 +168,11 @@ void stdevDimIndexTest(string pFileName, dim_t dim = -1) {
     array a(dims, &(input.front()));
     array b = a(seq(2, 6), seq(1, 7));
 
-    array c = stdev(b, dim);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    array c = (useDeprecatedAPI ? stdev(b, dim)
+                                : stdev(b, AF_VARIANCE_POPULATION, dim));
+#pragma GCC diagnostic pop
 
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
@@ -173,32 +194,39 @@ void stdevDimIndexTest(string pFileName, dim_t dim = -1) {
 TYPED_TEST(StandardDev, IndexedArrayDim0) {
     stdevDimIndexTest<TypeParam>(
         string(TEST_DIR "/stdev/mat_10x10_seq2_6x1_7_dim0.test"), 0);
+    stdevDimIndexTest<TypeParam>(
+        string(TEST_DIR "/stdev/mat_10x10_seq2_6x1_7_dim0.test"), 0);
 }
 
 TYPED_TEST(StandardDev, IndexedArrayDim1) {
     stdevDimIndexTest<TypeParam>(
-        string(TEST_DIR "/stdev/mat_10x10_seq2_6x1_7_dim1.test"), 1);
+        string(TEST_DIR "/stdev/mat_10x10_seq2_6x1_7_dim1.test"), 1, true);
+    stdevDimIndexTest<TypeParam>(
+        string(TEST_DIR "/stdev/mat_10x10_seq2_6x1_7_dim1.test"), 1, true);
 }
 
-TYPED_TEST(StandardDev, All) {
-    typedef typename sdOutType<TypeParam>::type outType;
-    SUPPORTED_TYPE_CHECK(TypeParam);
+template<typename T>
+void stdevAllTest(string pFileName, const bool useDeprecatedAPI = false) {
+    typedef typename sdOutType<T>::type outType;
+    SUPPORTED_TYPE_CHECK(T);
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
     vector<vector<int> > in;
     vector<vector<float> > tests;
 
-    readTestsFromFile<int, float>(
-        string(TEST_DIR "/stdev/mat_10x10_scalar.test"), numDims, in, tests);
+    readTestsFromFile<int, float>(pFileName, numDims, in, tests);
 
     dim4 dims = numDims[0];
-    vector<TypeParam> input(in[0].size());
-    transform(in[0].begin(), in[0].end(), input.begin(),
-              convert_to<TypeParam, int>);
+    vector<T> input(in[0].size());
+    transform(in[0].begin(), in[0].end(), input.begin(), convert_to<T, int>);
 
     array a(dims, &(input.front()));
-    outType b = stdev<outType>(a);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    outType b = (useDeprecatedAPI ? stdev<outType>(a)
+                                  : stdev<outType>(a, AF_VARIANCE_POPULATION));
+#pragma GCC diagnostic pop
 
     vector<outType> currGoldBar(tests[0].size());
     transform(tests[0].begin(), tests[0].end(), currGoldBar.begin(),
@@ -206,4 +234,10 @@ TYPED_TEST(StandardDev, All) {
 
     ASSERT_NEAR(::real(currGoldBar[0]), ::real(b), 1.0e-3);
     ASSERT_NEAR(::imag(currGoldBar[0]), ::imag(b), 1.0e-3);
+}
+
+TYPED_TEST(StandardDev, All) {
+    stdevAllTest<TypeParam>(string(TEST_DIR "/stdev/mat_10x10_scalar.test"));
+    stdevAllTest<TypeParam>(string(TEST_DIR "/stdev/mat_10x10_scalar.test"),
+                            true);
 }
