@@ -582,3 +582,69 @@ TEST(Array, InitializerListAndDim4) {
 
     ASSERT_ARRAYS_EQ(A, B);
 }
+
+TEST(Broadcast, Simple1) {
+    array A = range(dim4(32, 32, 3), 2);
+    array B = -range(dim4(3));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(32, 32, 3)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(32, 32, 3)));
+}
+
+TEST(Broadcast, Simple3) {
+    array A = constant(-1, dim4(5, 4));
+    array B = constant(1, dim4(1));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(5, 4)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(5, 4)));
+}
+
+TEST(Broadcast, Simple4) {
+    array A = range(dim4(15, 3, 5));
+    array B = -range(dim4(15, 1, 5));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+}
+
+TEST(Broadcast, Simple5) {
+    array A = range(dim4(15, 3, 5), 1);
+    array B = -range(dim4(3, 5), 0);
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+}
+
+TEST(Broadcast, Simple6) {
+    array A = constant(-1, dim4(15, 3, 5));
+    array B = constant(1, dim4(3, 1));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+}
+
+TEST(Broadcast, Simple7) {
+    array A = range(dim4(3, 2, 2, 4), 2);
+    array B = -range(dim4(2));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(3, 2, 2, 4)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(3, 2, 2, 4)));
+}
