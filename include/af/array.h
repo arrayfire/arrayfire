@@ -50,7 +50,8 @@ namespace af
         ///
         /// \brief Intermediate data class. Used for assignment and indexing.
         ///
-        /// \note This class is for internal book keeping while indexing. This class is not intended for use in user code.
+        /// \note This class is for internal book keeping while indexing. This
+        ///       class is not intended for use in user code.
         ///
         class AFAPI array_proxy
         {
@@ -374,7 +375,10 @@ namespace af
 
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 elements are copied. If \p src is \ref afDevice, no copy is done; the array object wraps the device pointer AND takes ownership of the underlying memory.
+            \note If \p src is \ref afHost, the first \p dim0 elements are
+                  copied. If \p src is \ref afDevice, no copy is done; the
+                  array object wraps the device pointer AND takes ownership
+                  of the underlying memory.
 
         */
         template<typename T>
@@ -398,7 +402,11 @@ namespace af
 
             \image html 2dArray.png
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 elements are copied. If \p src is \ref afDevice, no copy is done; the array object wraps the device pointer AND takes ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 elements
+                  are copied. If \p src is \ref afDevice, no copy is done; the
+                  array object wraps the device pointer AND takes ownership of
+                  the underlying memory. The data is treated as column major
+                  format when performing linear algebra operations.
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1,
@@ -422,7 +430,12 @@ namespace af
             array A(3, 3, 2,  h_buffer);   // copy host data to 3D device array
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does not take ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 *
+                  \p dim2 elements are copied. If \p src is \ref afDevice, no
+                  copy is done; the array object just wraps the device pointer
+                  and does not take ownership of the underlying memory. The data
+                  is treated as column major format when performing linear
+                  algebra operations.
 
             \image html 3dArray.png
         */
@@ -451,7 +464,13 @@ namespace af
             array A(2, 2, 2, 2, h_buffer);   // copy host data to 4D device array
             \endcode
 
-            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 * \p dim3 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does not take ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 *
+                  \p dim2 * \p dim3 elements are copied. If \p src is
+                  \ref afDevice, no copy is done; the array object just wraps
+                  the device pointer and does not take ownership of the
+                  underlying memory. The data is treated as column major format
+                  when performing linear algebra operations.
+
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
@@ -488,7 +507,12 @@ namespace af
                                              // used in ArrayFire
             \endcode
 
-            \note If \p src is \ref afHost, the first dims.elements() elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer and does not take ownership of the underlying memory. The data is treated as column major format when performing linear algebra operations.
+            \note If \p src is \ref afHost, the first dims.elements() elements
+                  are copied. If \p src is \ref afDevice, no copy is done; the
+                  array object just wraps the device pointer and does not take
+                  ownership of the underlying memory. The data is treated as
+                  column major format when performing linear algebra operations.
+
         */
         template<typename T>
         explicit
@@ -670,17 +694,20 @@ namespace af
         bool isscalar() const;
 
         /**
-           \brief Returns true if only one of the array dimensions has more than one element
+           \brief Returns true if only one of the array dimensions has more
+                  than one element
         */
         bool isvector() const;
 
         /**
-           \brief Returns true if only the second dimension has more than one element
+           \brief Returns true if only the second dimension has more than one
+                  element
         */
         bool isrow() const;
 
         /**
-           \brief Returns true if only the first dimension has more than one element
+           \brief Returns true if only the first dimension has more than one
+                  element
         */
         bool iscolumn() const;
 
@@ -717,12 +744,14 @@ namespace af
         bool isrealfloating() const;
 
         /**
-           \brief Returns true if the array type is \ref f16 \ref f32, \ref f64, \ref c32 or \ref c64
+           \brief Returns true if the array type is \ref f16 \ref f32, \ref f64,
+                  \ref c32 or \ref c64
         */
         bool isfloating() const;
 
         /**
-           \brief Returns true if the array type is \ref u8, \ref b8, \ref s32 \ref u32, \ref s64, \ref u64, \ref s16, \ref u16
+           \brief Returns true if the array type is \ref u8, \ref b8, \ref s32
+                  \ref u32, \ref s64, \ref u64, \ref s16, \ref u16
         */
         bool isinteger() const;
 
@@ -746,7 +775,8 @@ namespace af
         /**
            \brief Get the first element of the array as a scalar
 
-           \note This is recommended for use while debugging. Calling this method constantly reduces performance.
+           \note The scalar function is recommended for use while debugging.
+                 Calling this method often will affect performance.
         */
         template<typename T> T scalar() const;
 
