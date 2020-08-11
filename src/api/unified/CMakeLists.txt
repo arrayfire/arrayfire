@@ -9,7 +9,6 @@ target_sources(af
     ${CMAKE_CURRENT_SOURCE_DIR}/arith.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/array.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/cuda.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/data.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/error.cpp
@@ -23,7 +22,6 @@ target_sources(af
     ${CMAKE_CURRENT_SOURCE_DIR}/memory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ml.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/opencl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/random.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/signal.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse.cpp
@@ -33,6 +31,28 @@ target_sources(af
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/vision.cpp
   )
+
+if(OpenCL_FOUND)
+  target_sources(af
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/opencl.cpp
+  )
+
+  target_link_libraries(af
+    PRIVATE
+      OpenCL::OpenCL)
+
+endif()
+
+if(CUDA_FOUND)
+  target_sources(af
+    PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/cuda.cpp)
+
+  target_include_directories(af
+    PRIVATE
+      ${CUDA_INCLUDE_DIRS})
+endif()
 
 target_sources(af
   PRIVATE
