@@ -12,7 +12,7 @@ find_program(GIT git)
 set(prefix ${PROJECT_BINARY_DIR}/third_party/CLBlast)
 set(CLBlast_location ${prefix}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}clblast${CMAKE_STATIC_LIBRARY_SUFFIX})
 
-set(CLBLAST_PATCH_COMMAND ${GIT} apply --whitespace=fix ${ArrayFire_SOURCE_DIR}/CMakeModules/clblast_program_getIR.patch)
+set(CLBLAST_PATCH_COMMAND ${GIT} apply --cached --whitespace=fix ${ArrayFire_SOURCE_DIR}/CMakeModules/clblast_program_getIR.patch)
 
 if(WIN32 AND CMAKE_GENERATOR_PLATFORM AND NOT CMAKE_GENERATOR MATCHES "Ninja")
   set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
@@ -32,7 +32,7 @@ ExternalProject_Add(
     GIT_TAG 1.5.1
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
-    UPDATE_COMMAND ""
+    UPDATE_COMMAND ${GIT} reset --hard
     PATCH_COMMAND "${CLBLAST_PATCH_COMMAND}"
     BUILD_BYPRODUCTS ${CLBlast_location}
     CONFIGURE_COMMAND ${CMAKE_COMMAND} ${extproj_gen_opts}
