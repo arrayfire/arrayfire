@@ -14,7 +14,7 @@ jobs:
         runs-on: ubuntu-18.04
         env:
             NINJA_VER: 1.9.0
-            DOXYGEN_VER: 1.8.17
+            DOXYGEN_VER: 1.8.18
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
@@ -29,7 +29,7 @@ jobs:
 
             - name: Install Doxygen
               run: |
-                  wget --quiet http://doxygen.nl/files/doxygen-${DOXYGEN_VER}.linux.bin.tar.gz
+                  wget --quiet https://sourceforge.net/projects/doxygen/files/rel-${DOXYGEN_VER}/doxygen-${DOXYGEN_VER}.linux.bin.tar.gz
                   mkdir doxygen
                   tar -xf doxygen-${DOXYGEN_VER}.linux.bin.tar.gz -C doxygen --strip 1
 
