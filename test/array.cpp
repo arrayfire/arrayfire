@@ -565,7 +565,7 @@ TEST(ArrayDeathTest, ProxyMoveAssignmentOperator) {
     EXPECT_EXIT(deathTest(), ::testing::ExitedWithCode(0), "");
 }
 
-TEST(Array, InitializerList) {
+TEST(Array, CopyListInitializerList) {
     int h_buffer[] = {23, 34, 18, 99, 34};
 
     array A(5, h_buffer);
@@ -574,11 +574,47 @@ TEST(Array, InitializerList) {
     ASSERT_ARRAYS_EQ(A, B);
 }
 
-TEST(Array, InitializerListAndDim4) {
+TEST(Array, DirectListInitializerList2) {
+    int h_buffer[] = {23, 34, 18, 99, 34};
+
+    array A(5, h_buffer);
+    array B{23, 34, 18, 99, 34};
+
+    ASSERT_ARRAYS_EQ(A, B);
+}
+
+TEST(Array, CopyListInitializerListAndDim4) {
     int h_buffer[] = {23, 34, 18, 99, 34, 44};
 
     array A(2, 3, h_buffer);
     array B(dim4(2, 3), {23, 34, 18, 99, 34, 44});
+
+    ASSERT_ARRAYS_EQ(A, B);
+}
+
+TEST(Array, DirectListInitializerListAndDim4) {
+    int h_buffer[] = {23, 34, 18, 99, 34, 44};
+
+    array A(2, 3, h_buffer);
+    array B{dim4(2, 3), {23, 34, 18, 99, 34, 44}};
+
+    ASSERT_ARRAYS_EQ(A, B);
+}
+
+TEST(Array, CopyListInitializerListAssignment) {
+    int h_buffer[] = {23, 34, 18, 99, 34};
+
+    array A(5, h_buffer);
+    array B = {23, 34, 18, 99, 34};
+
+    ASSERT_ARRAYS_EQ(A, B);
+}
+
+TEST(Array, CopyListInitializerListDim4Assignment) {
+    int h_buffer[] = {23, 34, 18, 99, 34, 44};
+
+    array A(2, 3, h_buffer);
+    array B = {dim4(2, 3), {23, 34, 18, 99, 34, 44}};
 
     ASSERT_ARRAYS_EQ(A, B);
 }

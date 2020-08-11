@@ -10,6 +10,9 @@
 #pragma once
 #include <af/compilers.h>
 #include <af/defines.h>
+#include <af/device.h>
+#include <af/dim4.hpp>
+#include <af/exception.h>
 #include <af/index.h>
 #include <af/seq.h>
 #include <af/util.h>
@@ -494,10 +497,37 @@ namespace af
 
 #if AF_API_VERSION >= 38
 #if AF_COMPILER_CXX_GENERALIZED_INITIALIZERS
-        template <typename T> array(std::initializer_list<T> list);
+        /// \brief Initializer list constructor
+        template <typename T> array(std::initializer_list<T> list)
+        : arr(nullptr) {
+          dim_t size = list.size();
+          if (af_err __aferr = af_create_array(&arr, list.begin(), 1, &size,
+                              static_cast<af_dtype>(af::dtype_traits<T>::af_type))) {
+            char *msg = NULL;
+            af_get_last_error(&msg, NULL);
+            af::exception ex(msg, __PRETTY_FUNCTION__, "include/af/array.h",
+                             __LINE__, __aferr);
+            af_free_host(msg);
+            throw std::move(ex);
+          }
+        }
 
+        /// \brief Initializer list constructor
         template <typename T>
-        array(const af::dim4 &dims, std::initializer_list<T> list);
+        array(const af::dim4 &dims, std::initializer_list<T> list)
+            : arr(nullptr) {
+          const dim_t *size = dims.get();
+          if (af_err __aferr = af_create_array(
+              &arr, list.begin(), AF_MAX_DIMS, size,
+              static_cast<af_dtype>(af::dtype_traits<T>::af_type))) {
+            char *msg = NULL;
+            af_get_last_error(&msg, NULL);
+            af::exception ex(msg, __PRETTY_FUNCTION__, "include/af/array.h",
+                             __LINE__, __aferr);
+            af_free_host(msg);
+            throw std::move(ex);
+          }
+        }
 #endif
 #endif
 
