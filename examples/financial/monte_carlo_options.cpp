@@ -42,7 +42,7 @@ static ty monte_carlo_barrier(int N, ty K, ty t, ty vol, ty r, ty strike,
 
     if (use_barrier) { S = S * allTrue(S < B, 1); }
 
-    payoff = max(0.0, S - K);
+    payoff = maxOf(0.0, S - K);
     ty P   = mean<ty>(payoff) * exp(-r * t);
     return P;
 }

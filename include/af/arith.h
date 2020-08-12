@@ -21,14 +21,32 @@ namespace af
     /// \param[in] lhs first input
     /// \param[in] rhs second input
     /// \return minimum of \p lhs and \p rhs
-    ///
+    /// \deprecated use af::minOf instead
+    AF_DEPRECATED("Use af::minOf instead")
     AFAPI array min    (const array &lhs, const array &rhs);
 
     /// \copydoc min(const array&, const array &)
+    AF_DEPRECATED("Use af::minOf instead")
     AFAPI array min    (const array &lhs, const double rhs);
 
     /// \copydoc min(const array&, const array &)
+    AF_DEPRECATED("Use af::minOf instead")
     AFAPI array min    (const double lhs, const array &rhs);
+
+    /// \brief C++ interface for min of two arrays
+    ///
+    /// \param[in] lhs first input
+    /// \param[in] rhs second input
+    /// \return minimum of \p lhs and \p rhs
+    ///
+    AFAPI array minOf(const array &lhs, const array &rhs);
+
+    /// \copydoc min(const array&, const array &)
+    AFAPI array minOf(const array &lhs, const double rhs);
+
+    /// \copydoc min(const array&, const array &)
+    AFAPI array minOf(const double lhs, const array &rhs);
+
     /// @}
 
     /// \ingroup arith_func_max
@@ -38,13 +56,32 @@ namespace af
     /// \param[in] lhs first input
     /// \param[in] rhs second input
     /// \return maximum of \p lhs and \p rhs
+    /// \deprecated use af::maxOf instead
+    AF_DEPRECATED("Use af::maxOf instead")
     AFAPI array max    (const array &lhs, const array &rhs);
 
     /// \copydoc max(const array&, const array&)
+    AF_DEPRECATED("Use af::maxOf instead")
     AFAPI array max    (const array &lhs, const double rhs);
 
     /// \copydoc max(const array&, const array&)
+    AF_DEPRECATED("Use af::maxOf instead")
     AFAPI array max    (const double lhs, const array &rhs);
+
+    /// \ingroup arith_func_max
+    /// @{
+    /// C++ Interface for max of two arrays or an array and a scalar
+    ///
+    /// \param[in] lhs first input
+    /// \param[in] rhs second input
+    /// \return maximum of \p lhs and \p rhs
+    AFAPI array maxOf(const array &lhs, const array &rhs);
+
+    /// \copydoc max(const array&, const array&)
+    AFAPI array maxOf(const array &lhs, const double rhs);
+
+    /// \copydoc max(const array&, const array&)
+    AFAPI array maxOf(const double lhs, const array &rhs);
     /// @}
 
 #if AF_API_VERSION >= 34

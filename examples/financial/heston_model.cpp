@@ -66,7 +66,7 @@ void simulateHestonModel(af::array &xres, af::array &vres, float T,
                       (sqrtVLag * dBt(span, 0));
         af::array vTmp = v[tPrevious] + kappa * (vBar - v[tPrevious]) * deltaT +
                          sigmaV * (sqrtVLag * matmul(dBt, m));
-        v[tCurrent] = max(vTmp, zeroConstant);
+        v[tCurrent] = maxOf(vTmp, zeroConstant);
     }
 
     xres = x[tCurrent];
@@ -107,7 +107,7 @@ int main() {
         af::array K            = exp(constant(k, x.dims()));
         af::array zeroConstant = constant(0, x.dims());
         af::array C_CPU =
-            exp(-r * T) * mean(af::max(af::exp(x) - K, zeroConstant));
+            exp(-r * T) * mean(af::maxOf(af::exp(x) - K, zeroConstant));
 
         af_print(C_CPU);
         return 0;

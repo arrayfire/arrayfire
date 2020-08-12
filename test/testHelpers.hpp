@@ -176,7 +176,7 @@ inline double real<af::cfloat>(af::cfloat val) {
 
 template<typename T>
 inline double imag(T val) {
-    return (double)val;
+    return (double)0;
 }
 template<>
 inline double imag<af::cdouble>(af::cdouble val) {

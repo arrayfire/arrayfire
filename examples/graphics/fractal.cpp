@@ -43,7 +43,7 @@ array mandelbrot(const array &in, int iter, float maxval) {
 
         // Get indices where abs(Z) crosses maxval
         array cond = (abs(Z) > maxval).as(f32);
-        mag        = af::max(mag, cond * ii);
+        mag        = af::maxOf(mag, cond * ii);
 
         // If abs(Z) cross maxval, turn off those locations
         C = C * (1 - cond);

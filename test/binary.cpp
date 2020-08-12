@@ -178,16 +178,26 @@ BINARY_TESTS_FLOAT(add)
 BINARY_TESTS_FLOAT(sub)
 BINARY_TESTS_FLOAT(mul)
 BINARY_TESTS_NEAR(float, float, float, div, 1e-3)  // FIXME
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 BINARY_TESTS_FLOAT(min)
 BINARY_TESTS_FLOAT(max)
+#pragma GCC diagnostic pop
+BINARY_TESTS_FLOAT(minOf)
+BINARY_TESTS_FLOAT(maxOf)
 BINARY_TESTS_NEAR(float, float, float, mod, 1e-5)  // FIXME
 
 BINARY_TESTS_DOUBLE(add)
 BINARY_TESTS_DOUBLE(sub)
 BINARY_TESTS_DOUBLE(mul)
 BINARY_TESTS_DOUBLE(div)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 BINARY_TESTS_DOUBLE(min)
 BINARY_TESTS_DOUBLE(max)
+#pragma GCC diagnostic pop
+BINARY_TESTS_DOUBLE(minOf)
+BINARY_TESTS_DOUBLE(maxOf)
 BINARY_TESTS_DOUBLE(mod)
 
 BINARY_TESTS_NEAR_FLOAT(atan2)
