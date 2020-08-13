@@ -162,14 +162,12 @@ af_err fft_convolve(af_array *out, const af_array signal, const af_array filter,
         const ArrayInfo &fInfo = getInfo(filter);
 
         af_dtype signalType = sInfo.getType();
-        af_dtype filterType = fInfo.getType();
 
         const dim4 &sdims = sInfo.dims();
         const dim4 &fdims = fInfo.dims();
 
         AF_BATCH_KIND convBT = identifyBatchKind(sdims, fdims, baseDim);
 
-        ARG_ASSERT(1, (signalType == filterType));
         ARG_ASSERT(1, (convBT != AF_BATCH_UNSUPPORTED));
 
         af_array output;
