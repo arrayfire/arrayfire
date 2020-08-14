@@ -72,7 +72,7 @@ struct covOutType {
 };
 
 template<typename T>
-void covTest(string pFileName, bool isbiased = false,
+void covTest(string pFileName, bool isbiased = true,
              const bool useDeprecatedAPI = false) {
     typedef typename covOutType<T>::type outType;
     SUPPORTED_TYPE_CHECK(T);
@@ -119,16 +119,13 @@ void covTest(string pFileName, bool isbiased = false,
 }
 
 TYPED_TEST(Covariance, Vector) {
-    covTest<TypeParam>(string(TEST_DIR "/covariance/vec_size60.test"), false);
-    covTest<TypeParam>(string(TEST_DIR "/covariance/vec_size60.test"), false,
-                       true);
+    covTest<TypeParam>(string(TEST_DIR "/covariance/vec_size60.test"));
+    covTest<TypeParam>(string(TEST_DIR "/covariance/vec_size60.test"), true);
 }
 
 TYPED_TEST(Covariance, Matrix) {
-    covTest<TypeParam>(string(TEST_DIR "/covariance/matrix_65x121.test"),
-                       false);
-    covTest<TypeParam>(string(TEST_DIR "/covariance/matrix_65x121.test"), false,
-                       true);
+    covTest<TypeParam>(string(TEST_DIR "/covariance/matrix_65x121.test"));
+    covTest<TypeParam>(string(TEST_DIR "/covariance/matrix_65x121.test"), true);
 }
 
 TEST(Covariance, c32) {

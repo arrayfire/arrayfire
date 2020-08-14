@@ -80,17 +80,18 @@ void testCPPVar(T const_value, dim4 dims, const bool useDeprecatedAPI = false) {
     ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
     ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 
-    gold          = outType(2.5);
+    gold          = outType(2);
     outType tmp[] = {outType(0), outType(1), outType(2), outType(3),
                      outType(4)};
     array b(5, tmp);
+    af_print(b);
     output = (useDeprecatedAPI ? var<outType>(b, false)
                                : var<outType>(b, AF_VARIANCE_POPULATION));
 
     ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
     ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 
-    gold   = outType(2);
+    gold   = outType(2.5);
     output = (useDeprecatedAPI ? var<outType>(b, true)
                                : var<outType>(b, AF_VARIANCE_SAMPLE));
 #pragma GCC diagnostic pop

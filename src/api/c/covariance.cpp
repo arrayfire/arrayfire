@@ -46,7 +46,7 @@ static af_array cov(const af_array& X, const af_array& Y,
     Array<cType> yArr = cast<cType>(_y);
 
     dim4 xDims = xArr.dims();
-    dim_t N    = (bias == AF_VARIANCE_SAMPLE ? xDims[0] : xDims[0] - 1);
+    dim_t N    = (bias == AF_VARIANCE_SAMPLE ? xDims[0] - 1 : xDims[0]);
 
     Array<cType> xmArr =
         createValueArray<cType>(xDims, mean<T, weightType, cType>(_x));
