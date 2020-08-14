@@ -66,7 +66,7 @@ static outType varAll(const af_array& in, const bool isbiased) {
 
     outType result =
         division(reduce_all<af_add_t, outType, outType>(diffSq),
-                 isbiased ? input.elements() : input.elements() - 1);
+                 isbiased ? input.elements() - 1 : input.elements());
 
     return result;
 }

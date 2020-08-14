@@ -74,7 +74,7 @@ void testCPPVar(T const_value, dim4 dims) {
     ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
     ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 
-    gold          = outType(2.5);
+    gold          = outType(2);
     outType tmp[] = {outType(0), outType(1), outType(2), outType(3),
                      outType(4)};
     array b(5, tmp);
@@ -83,7 +83,7 @@ void testCPPVar(T const_value, dim4 dims) {
     ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
     ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 
-    gold   = outType(2);
+    gold   = outType(2.5);
     output = var<outType>(b, true);
 
     ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
