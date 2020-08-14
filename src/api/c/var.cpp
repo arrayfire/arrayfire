@@ -64,9 +64,9 @@ static outType varAll(const af_array& in, const af_var_bias bias) {
 
     Array<outType> diffSq = arithOp<outType, af_mul_t>(diff, diff, diff.dims());
 
-    outType result = division(
-        reduce_all<af_add_t, outType, outType>(diffSq),
-        bias == AF_VARIANCE_SAMPLE ? input.elements() : input.elements() - 1);
+    outType result =
+        division(reduce_all<af_add_t, outType, outType>(diffSq),
+                 (input.elements() - (bias == AF_VARIANCE_SAMPLE)));
 
     return result;
 }
