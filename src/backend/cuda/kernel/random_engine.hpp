@@ -134,12 +134,10 @@ __device__ static double getDouble01(uint num1, uint num2) {
     uint64_t n2 = num2;
     n1 <<= 32;
     uint64_t num = n1 | n2;
-#pragma diag_suppress 3245
     constexpr double factor =
         ((1.0) / (std::numeric_limits<unsigned long long>::max() +
-                  static_cast<long double>(1.0l)));
+                  static_cast<double>(1.0)));
     constexpr double half_factor((0.5) * factor);
-#pragma diag_default 3245
 
     return fma(static_cast<double>(num), factor, half_factor);
 }

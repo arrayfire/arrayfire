@@ -832,9 +832,7 @@ class alignas(2) half {
 #endif
 
    public:
-#if CUDA_VERSION >= 10000
     AF_CONSTEXPR
-#endif
     half() = default;
 
     /// Constructor.
