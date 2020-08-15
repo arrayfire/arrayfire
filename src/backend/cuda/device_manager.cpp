@@ -407,7 +407,6 @@ static const ToolkitDriverVersions
 /// \note: only works in debug builds
 void debugRuntimeCheck(spdlog::logger *logger, int runtime_version,
                        int driver_version) {
-#ifndef NDEBUG
     auto runtime_it =
         find_if(begin(CudaToDriverVersion), end(CudaToDriverVersion),
                 [runtime_version](ToolkitDriverVersions ver) {
@@ -425,31 +424,28 @@ void debugRuntimeCheck(spdlog::logger *logger, int runtime_version,
     // display a message in the trace. Do not throw an error unless this is
     // a debug build
     if (runtime_it == end(CudaToDriverVersion)) {
-        char buf[1024];
+        char buf[256];
         char err_msg[] =
-            "CUDA runtime version(%s) not recognized. Please "
-            "create an issue or a pull request on the ArrayFire repository to "
-            "update the CudaToDriverVersion variable with this version of "
-            "the CUDA Toolkit.\n";
-        snprintf(buf, 1024, err_msg,
+            "CUDA runtime version(%s) not recognized. Please create an issue "
+            "or a pull request on the ArrayFire repository to update the "
+            "CudaToDriverVersion variable with this version of the CUDA "
+            "runtime.\n";
+        snprintf(buf, 256, err_msg,
                  int_version_to_string(runtime_version).c_str());
         AF_TRACE("{}", buf);
+#ifndef NDEBUG
         AF_ERROR(buf, AF_ERR_RUNTIME);
+#endif
     }
 
     if (driver_it == end(CudaToDriverVersion)) {
-        char buf[1024];
-        char err_msg[] =
-            "CUDA driver version(%s) not part of the "
-            "CudaToDriverVersion array. Please create an issue or a pull "
-            "request on the ArrayFire repository to update the "
-            "CudaToDriverVersion variable with this version of the CUDA "
-            "Toolkit.\n";
-        snprintf(buf, 1024, err_msg,
-                 int_version_to_string(driver_version).c_str());
-        AF_TRACE("{}", buf);
+        AF_TRACE(
+            "CUDA driver version({}) not part of the CudaToDriverVersion "
+            "array. Please create an issue or a pull request on the ArrayFire "
+            "repository to update the CudaToDriverVersion variable with this "
+            "version of the CUDA runtime.\n",
+            int_version_to_string(driver_version).c_str());
     }
-#endif
 }
 
 // Check if the device driver version is recent enough to run the cuda libs
@@ -552,11 +548,13 @@ DeviceManager::DeviceManager()
                             compute2cores(dev.prop.major, dev.prop.minor) *
                             dev.prop.clockRate;
                 dev.nativeId = i;
-                AF_TRACE("Found device: {} ({:0.3} GB | ~{} GFLOPs | {} SMs)",
-                         dev.prop.name,
-                         dev.prop.totalGlobalMem / 1024. / 1024. / 1024.,
-                         dev.flops / 1024. / 1024. * 2,
-                         dev.prop.multiProcessorCount);
+                AF_TRACE(
+                    "Found device: {} (sm_{}{}) ({:0.3} GB | ~{} GFLOPs | {} "
+                    "SMs)",
+                    dev.prop.name, dev.prop.major, dev.prop.minor,
+                    dev.prop.totalGlobalMem / 1024. / 1024. / 1024.,
+                    dev.flops / 1024. / 1024. * 2,
+                    dev.prop.multiProcessorCount);
                 cuDevices.push_back(dev);
             }
         }

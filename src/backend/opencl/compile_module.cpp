@@ -194,12 +194,12 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
             // before the current thread.
             if (!renameFile(tempFile, cacheFile)) { removeFile(tempFile); }
         } catch (const cl::Error &e) {
-            AF_TRACE("{{{:<30} : Failed to fetch opencl binary for {}, {}}}",
+            AF_TRACE("{{{:<20} : Failed to fetch opencl binary for {}, {}}}",
                      moduleKey,
                      opencl::getDevice(device).getInfo<CL_DEVICE_NAME>(),
                      e.what());
         } catch (const std::ios_base::failure &e) {
-            AF_TRACE("{{{:<30} : Failed writing binary to {} for {}, {}}}",
+            AF_TRACE("{{{:<20} : Failed writing binary to {} for {}, {}}}",
                      moduleKey, cacheFile,
                      opencl::getDevice(device).getInfo<CL_DEVICE_NAME>(),
                      e.what());
@@ -207,7 +207,7 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
     }
 #endif
 
-    AF_TRACE("{{{:<30} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", moduleKey,
+    AF_TRACE("{{{:<20} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", moduleKey,
              duration_cast<milliseconds>(compileEnd - compileBegin).count(),
              fmt::join(options, " "),
              getDevice(getActiveDeviceId()).getInfo<CL_DEVICE_NAME>());
@@ -250,26 +250,26 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
         program = Program(opencl::getContext(), {dev}, {clbin});
         program.build();
 
-        AF_TRACE("{{{:<30} : loaded from {} for {} }}", moduleKey, cacheFile,
+        AF_TRACE("{{{:<20} : loaded from {} for {} }}", moduleKey, cacheFile,
                  dev.getInfo<CL_DEVICE_NAME>());
         retVal.set(program);
     } catch (const AfError &e) {
         if (e.getError() == AF_ERR_LOAD_SYM) {
             AF_TRACE(
-                "{{{:<30} : Corrupt binary({}) found on disk for {}, removed}}",
+                "{{{:<20} : Corrupt binary({}) found on disk for {}, removed}}",
                 moduleKey, cacheFile, dev.getInfo<CL_DEVICE_NAME>());
         } else {
-            AF_TRACE("{{{:<30} : Unable to open {} for {}}}", moduleKey,
+            AF_TRACE("{{{:<20} : Unable to open {} for {}}}", moduleKey,
                      cacheFile, dev.getInfo<CL_DEVICE_NAME>());
         }
         removeFile(cacheFile);
     } catch (const std::ios_base::failure &e) {
-        AF_TRACE("{{{:<30} : IO failure while loading {} for {}; {}}}",
+        AF_TRACE("{{{:<20} : IO failure while loading {} for {}; {}}}",
                  moduleKey, cacheFile, dev.getInfo<CL_DEVICE_NAME>(), e.what());
         removeFile(cacheFile);
     } catch (const cl::Error &e) {
         AF_TRACE(
-            "{{{:<30} : Loading OpenCL binary({}) failed for {}; {}, Build "
+            "{{{:<20} : Loading OpenCL binary({}) failed for {}; {}, Build "
             "Log: {}}}",
             moduleKey, cacheFile, dev.getInfo<CL_DEVICE_NAME>(), e.what(),
             getProgramBuildLog(program));
