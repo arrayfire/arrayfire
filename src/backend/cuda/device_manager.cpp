@@ -18,6 +18,7 @@
 #include <common/defines.hpp>
 #include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
+#include <common/util.hpp>
 #include <cublas_v2.h>  // needed for af/cuda.h
 #include <device_manager.hpp>
 #include <driver.h>
@@ -44,10 +45,12 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 using std::begin;
 using std::end;
+using std::find;
 using std::find_if;
 using std::make_pair;
 using std::pair;
@@ -63,20 +66,38 @@ struct cuNVRTCcompute {
     int major;
     /// Maximum minor compute flag supported by cudaVersion
     int minor;
+    /// Maximum minor compute flag supported on the embedded(Jetson) platforms
+    int embedded_minor;
 };
 
 // clang-format off
-static const cuNVRTCcompute Toolkit2MaxCompute[] = {
-    {10020, 7, 5},
-    {10010, 7, 5},
-    {10000, 7, 2},
-    {9020, 7, 2},
-    {9010, 7, 2},
-    {9000, 7, 2},
-    {8000, 5, 3},
-    {7050, 5, 3},
-    {7000, 5, 3}};
+static const int jetsonComputeCapabilities[] = {
+    7020,
+    6020,
+    5030,
+    3020,
+};
 // clang-format on
+
+// clang-format off
+static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+    {10020, 7, 5, 2},
+    {10010, 7, 5, 2},
+    {10000, 7, 0, 2},
+    { 9020, 7, 0, 2},
+    { 9010, 7, 0, 2},
+    { 9000, 7, 0, 2},
+    { 8000, 5, 2, 3},
+    { 7050, 5, 2, 3},
+    { 7000, 5, 2, 3}};
+// clang-format on
+
+bool isEmbedded(pair<int, int> compute) {
+    int version = compute.first * 1000 + compute.second * 10;
+    return end(jetsonComputeCapabilities) !=
+           find(begin(jetsonComputeCapabilities),
+                end(jetsonComputeCapabilities), version);
+}
 
 bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
     auto rt = find_if(
@@ -88,7 +109,7 @@ bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
                 "CUDA runtime version({}) not recognized. Please "
                 "create an issue or a pull request on the ArrayFire repository "
                 "to update the Toolkit2MaxCompute array with this version of "
-                "the CUDA Runtime. Continuing assuming everything is okay.",
+                "the CUDA Runtime. Continuing.",
                 int_version_to_string(runtime));
         return true;
     }
@@ -105,50 +126,66 @@ bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
 }
 
 /// Check for compatible compute version based on runtime cuda toolkit version
-void checkAndSetDevMaxCompute(pair<int, int> &prop) {
-    auto originalCompute = prop;
-    UNUSED(originalCompute);
-    int rtCudaVer = 0;
+void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
+    auto originalCompute = computeCapability;
+    int rtCudaVer        = 0;
     CUDA_CHECK(cudaRuntimeGetVersion(&rtCudaVer));
     auto tkitMaxCompute = find_if(
         begin(Toolkit2MaxCompute), end(Toolkit2MaxCompute),
         [rtCudaVer](cuNVRTCcompute v) { return rtCudaVer == v.cudaVersion; });
 
+    bool embeddedDevice = isEmbedded(computeCapability);
+
     // If runtime cuda version is found in toolkit array
     // check for max possible compute for that cuda version
     if (tkitMaxCompute != end(Toolkit2MaxCompute) &&
-        prop.first > tkitMaxCompute->major) {
-        prop = make_pair(tkitMaxCompute->major, tkitMaxCompute->minor);
-#ifndef NDEBUG
-        char errMsg[] =
-            "Current device compute version (%d.%d) exceeds supported maximum "
-            "cuda runtime compute version (%d.%d). Using %d.%d.";
-        fprintf(stderr, errMsg, originalCompute.first, originalCompute.second,
-                prop.first, prop.second, prop.first, prop.second);
-#endif
-    } else if (prop.first > Toolkit2MaxCompute[0].major) {
+        computeCapability.first >= tkitMaxCompute->major) {
+        int minorVersion = embeddedDevice ? tkitMaxCompute->embedded_minor
+                                          : tkitMaxCompute->minor;
+
+        if (computeCapability.second > minorVersion) {
+            computeCapability = make_pair(tkitMaxCompute->major, minorVersion);
+            spdlog::get("platform")
+                ->warn(
+                    "The compute capability for the current device({}.{}) "
+                    "exceeds maximum supported by ArrayFire's CUDA "
+                    "runtime({}.{}). Download or rebuild the latest version of "
+                    "ArrayFire to avoid this warning. Using {}.{} for JIT "
+                    "compilation kernels.",
+                    originalCompute.first, originalCompute.second,
+                    computeCapability.first, computeCapability.second,
+                    computeCapability.first, computeCapability.second);
+        }
+    } else if (computeCapability.first >= Toolkit2MaxCompute[0].major) {
         // If runtime cuda version is NOT found in toolkit array
         // use the top most toolkit max compute
-        prop =
-            make_pair(Toolkit2MaxCompute[0].major, Toolkit2MaxCompute[0].minor);
-#ifndef NDEBUG
-        char errMsg[] =
-            "Runtime cuda version not found in toolkit info array."
-            "Current device compute version (%d.%d) exceeds supported maximum "
-            "runtime cuda compute version (%d.%d) of latest known cuda toolkit."
-            "Using %d.%d.";
-        fprintf(stderr, errMsg, originalCompute.first, originalCompute.second,
-                prop.first, prop.second, prop.first, prop.second);
-#endif
-    } else if (prop.first < 3) {
+        int minorVersion = embeddedDevice ? tkitMaxCompute->embedded_minor
+                                          : tkitMaxCompute->minor;
+        if (computeCapability.second > minorVersion) {
+            computeCapability =
+                make_pair(Toolkit2MaxCompute[0].major, minorVersion);
+            spdlog::get("platform")
+                ->warn(
+                    "CUDA runtime version({}) not recognized. Targeting "
+                    "compute {}.{} for this device which is the latest compute "
+                    "capability supported by ArrayFire's CUDA runtime({}.{}). "
+                    "Please create an issue or a pull request on the ArrayFire "
+                    "repository to update the Toolkit2MaxCompute array with "
+                    "this version of the CUDA Runtime.",
+                    int_version_to_string(rtCudaVer), originalCompute.first,
+                    originalCompute.second, computeCapability.first,
+                    computeCapability.second, computeCapability.first,
+                    computeCapability.second);
+        }
+    } else if (computeCapability.first < 3) {
         // all compute versions prior to Kepler, we don't support
-        // don't change the prop.
-#ifndef NDEBUG
-        char errMsg[] =
-            "Current device compute version (%d.%d) lower than the"
-            "minimum compute version ArrayFire supports.";
-        fprintf(stderr, errMsg, originalCompute.first, originalCompute.second);
-#endif
+        // don't change the computeCapability.
+        spdlog::get("platform")
+            ->warn(
+                "The compute capability of the current device({}.{}) "
+                "lower than the minimum compute version ArrayFire "
+                "supports.",
+                originalCompute.first, originalCompute.second);
     }
 }
 
