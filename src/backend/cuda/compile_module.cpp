@@ -401,8 +401,8 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
     Module retVal{nullptr};
     try {
         std::ifstream in(cacheFile, std::ios::binary);
-        if (!in.is_open()) {
-            AF_TRACE("{{{:<30} : Unable to open {} for {}}}", moduleKey,
+        if (!in) {
+            AF_TRACE("{{{:<20} : Unable to open {} for {}}}", moduleKey,
                      cacheFile, getDeviceProp(device).name);
             removeFile(cacheFile);  // Remove if exists
             return Module{nullptr};
@@ -448,23 +448,23 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
 
         CU_CHECK(cuModuleLoadData(&modOut, cubin.data()));
 
-        AF_TRACE("{{{:<30} : loaded from {} for {} }}", moduleKey, cacheFile,
+        AF_TRACE("{{{:<20} : loaded from {} for {} }}", moduleKey, cacheFile,
                  getDeviceProp(device).name);
 
         retVal.set(modOut);
     } catch (const std::ios_base::failure &e) {
-        AF_TRACE("{{{:<30} : Unable to read {} for {}}}", moduleKey, cacheFile,
+        AF_TRACE("{{{:<20} : Unable to read {} for {}}}", moduleKey, cacheFile,
                  getDeviceProp(device).name);
         removeFile(cacheFile);
     } catch (const AfError &e) {
         if (e.getError() == AF_ERR_LOAD_SYM) {
             AF_TRACE(
-                "{{{:<30} : Corrupt binary({}) found on disk for {}, removed}}",
+                "{{{:<20} : Corrupt binary({}) found on disk for {}, removed}}",
                 moduleKey, cacheFile, getDeviceProp(device).name);
         } else {
             if (modOut != nullptr) { CU_CHECK(cuModuleUnload(modOut)); }
             AF_TRACE(
-                "{{{:<30} : cuModuleLoadData failed with content from {} for "
+                "{{{:<20} : cuModuleLoadData failed with content from {} for "
                 "{}, {}}}",
                 moduleKey, cacheFile, getDeviceProp(device).name, e.what());
         }
