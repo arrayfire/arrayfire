@@ -143,20 +143,29 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
                      const vector<string> &kInstances, const bool sourceIsJIT) {
     nvrtcProgram prog;
     if (sourceIsJIT) {
-        array<const char *, 2> headers = {
+        constexpr const char *header_names[] = {
+            "utility",
+            "cuda_fp16.hpp",
+            "cuda_fp16.h",
+        };
+        constexpr size_t numHeaders = extent<decltype(header_names)>::value;
+        array<const char *, numHeaders> headers = {
+            "",
             cuda_fp16_hpp,
             cuda_fp16_h,
         };
-        array<const char *, 2> header_names = {"cuda_fp16.hpp", "cuda_fp16.h"};
+        static_assert(headers.size() == numHeaders,
+                      "headers array contains fewer sources than header_names");
         NVRTC_CHECK(nvrtcCreateProgram(&prog, sources[0].c_str(),
-                                       moduleKey.c_str(), 2, headers.data(),
-                                       header_names.data()));
+                                       moduleKey.c_str(), numHeaders,
+                                       headers.data(), header_names));
     } else {
         constexpr static const char *includeNames[] = {
             "math.h",          // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
             "stdbool.h",       // DUMMY ENTRY TO SATISFY af/defines.h inclusion
             "stdlib.h",        // DUMMY ENTRY TO SATISFY af/defines.h inclusion
             "vector_types.h",  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
+            "utility",         // DUMMY ENTRY TO SATISFY cuda_fp16.hpp inclusion
             "backend.hpp",
             "cuComplex.h",
             "jit.cuh",
@@ -183,12 +192,13 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
             "minmax_op.hpp",
         };
 
-        constexpr size_t NumHeaders = extent<decltype(includeNames)>::value;
-        static const array<string, NumHeaders> sourceStrings = {{
+        constexpr size_t numHeaders = extent<decltype(includeNames)>::value;
+        static const array<string, numHeaders> sourceStrings = {{
             string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
             string(""),  // DUMMY ENTRY TO SATISFY af/defines.h inclusion
             string(""),  // DUMMY ENTRY TO SATISFY af/defines.h inclusion
             string(""),  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
+            string(""),  // DUMMY ENTRY TO SATISFY utility inclusion
             string(backend_hpp, backend_hpp_len),
             string(cuComplex_h, cuComplex_h_len),
             string(jit_cuh, jit_cuh_len),
@@ -230,11 +240,11 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
             sourceStrings[22].c_str(), sourceStrings[23].c_str(),
             sourceStrings[24].c_str(), sourceStrings[25].c_str(),
             sourceStrings[26].c_str(), sourceStrings[27].c_str(),
-        };
-        static_assert(extent<decltype(headers)>::value == NumHeaders,
+            sourceStrings[28].c_str()};
+        static_assert(extent<decltype(headers)>::value == numHeaders,
                       "headers array contains fewer sources than includeNames");
         NVRTC_CHECK(nvrtcCreateProgram(&prog, sources[0].c_str(),
-                                       moduleKey.c_str(), NumHeaders, headers,
+                                       moduleKey.c_str(), numHeaders, headers,
                                        includeNames));
     }
 
@@ -246,6 +256,7 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
     vector<const char *> compiler_options = {
         arch.data(),
         "--std=c++14",
+        "--device-as-default-execution-space",
 #if !(defined(NDEBUG) || defined(__aarch64__) || defined(__LP64__))
         "--device-debug",
         "--generate-line-info"
@@ -256,7 +267,6 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
                   back_insert_iterator<vector<const char *>>(compiler_options),
                   [](const string &s) { return s.data(); });
 
-        compiler_options.push_back("--device-as-default-execution-space");
         for (auto &instantiation : kInstances) {
             NVRTC_CHECK(nvrtcAddNameExpression(prog, instantiation.c_str()));
         }
