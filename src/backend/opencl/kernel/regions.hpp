@@ -10,6 +10,7 @@
 #pragma once
 
 #include <Param.hpp>
+#include <common/deprecated.hpp>
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
@@ -19,9 +20,7 @@
 #include <traits.hpp>
 #include <af/defines.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
+AF_DEPRECATED_WARNINGS_OFF
 #include <boost/compute/algorithm/adjacent_difference.hpp>
 #include <boost/compute/algorithm/exclusive_scan.hpp>
 #include <boost/compute/algorithm/sort.hpp>
@@ -30,8 +29,7 @@
 #include <boost/compute/iterator/counting_iterator.hpp>
 #include <boost/compute/lambda.hpp>
 #include <boost/compute/lambda/placeholders.hpp>
-
-#pragma GCC diagnostic pop
+AF_DEPRECATED_WARNINGS_ON
 
 #include <array>
 #include <string>

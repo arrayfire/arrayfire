@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/deprecated.hpp>
 #include <af/array.h>
 #include <af/graphics.h>
 #include "symbol_manager.hpp"
@@ -38,19 +39,17 @@ af_err af_draw_image(const af_window wind, const af_array in,
 af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y,
                     const af_cell* const props) {
     CHECK_ARRAYS(X, Y);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     CALL(af_draw_plot, wind, X, Y, props);
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
 }
 
 af_err af_draw_plot3(const af_window wind, const af_array P,
                      const af_cell* const props) {
     CHECK_ARRAYS(P);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     CALL(af_draw_plot3, wind, P, props);
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
 }
 
 af_err af_draw_plot_nd(const af_window wind, const af_array in,
@@ -75,20 +74,18 @@ af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y,
                        const af_marker_type marker,
                        const af_cell* const props) {
     CHECK_ARRAYS(X, Y);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     CALL(af_draw_scatter, wind, X, Y, marker, props);
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
 }
 
 af_err af_draw_scatter3(const af_window wind, const af_array P,
                         const af_marker_type marker,
                         const af_cell* const props) {
     CHECK_ARRAYS(P);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     CALL(af_draw_scatter3, wind, P, marker, props);
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
 }
 
 af_err af_draw_scatter_nd(const af_window wind, const af_array in,

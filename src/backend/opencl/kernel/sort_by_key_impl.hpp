@@ -21,9 +21,7 @@
 #include <memory.hpp>
 #include <traits.hpp>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
+AF_DEPRECATED_WARNINGS_OFF
 #include <boost/compute/algorithm/copy.hpp>
 #include <boost/compute/algorithm/sort_by_key.hpp>
 #include <boost/compute/algorithm/transform.hpp>
@@ -34,6 +32,7 @@
 #include <boost/compute/functional/operator.hpp>
 #include <boost/compute/iterator/buffer_iterator.hpp>
 #include <boost/compute/types/pair.hpp>
+AF_DEPRECATED_WARNINGS_ON
 
 namespace compute = boost::compute;
 
@@ -254,5 +253,3 @@ void sort0ByKey(Param pKey, Param pVal, bool isAscending) {
 
 }  // namespace kernel
 }  // namespace opencl
-
-#pragma GCC diagnostic pop

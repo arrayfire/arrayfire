@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/deprecated.hpp>
 #include <af/array.h>
 #include <af/backend.h>
 #include <af/device.h>
@@ -74,10 +75,9 @@ af_err af_get_device(int *device) { CALL(af_get_device, device); }
 af_err af_sync(const int device) { CALL(af_sync, device); }
 
 af_err af_alloc_device(void **ptr, const dim_t bytes) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     CALL(af_alloc_device, ptr, bytes);
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
 }
 
 af_err af_alloc_device_v2(void **ptr, const dim_t bytes) {
@@ -89,10 +89,9 @@ af_err af_alloc_pinned(void **ptr, const dim_t bytes) {
 }
 
 af_err af_free_device(void *ptr) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     CALL(af_free_device, ptr);
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
 }
 
 af_err af_free_device_v2(void *ptr) { CALL(af_free_device_v2, ptr); }
@@ -136,18 +135,16 @@ af_err af_get_mem_step_size(size_t *step_bytes) {
 
 af_err af_lock_device_ptr(const af_array arr) {
     CHECK_ARRAYS(arr);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     CALL(af_lock_device_ptr, arr);
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
 }
 
 af_err af_unlock_device_ptr(const af_array arr) {
     CHECK_ARRAYS(arr);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     CALL(af_unlock_device_ptr, arr);
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
 }
 
 af_err af_lock_array(const af_array arr) {
