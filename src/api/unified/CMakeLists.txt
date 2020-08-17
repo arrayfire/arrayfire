@@ -65,6 +65,7 @@ target_sources(af
     ${ArrayFire_SOURCE_DIR}/src/backend/common/err_common.cpp
     ${ArrayFire_SOURCE_DIR}/src/backend/common/util.cpp
     ${ArrayFire_SOURCE_DIR}/src/backend/common/util.hpp
+    ${ArrayFire_SOURCE_DIR}/src/backend/common/deprecated.hpp
   )
 
 arrayfire_set_default_cxx_flags(af)
