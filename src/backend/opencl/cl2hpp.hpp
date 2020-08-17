@@ -9,13 +9,16 @@
 
 #pragma once
 
+#include <common/deprecated.hpp>
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+AF_DEPRECATED_WARNINGS_OFF
 #if __GNUC__ >= 8
 #pragma GCC diagnostic ignored "-Wcatch-value="
 #endif
 #include <CL/cl2.hpp>
+AF_DEPRECATED_WARNINGS_ON
 #pragma GCC diagnostic pop
