@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <common/deprecated.hpp>
 #include <af/array.h>
 #include <af/backend.h>
 #include <af/compatible.h>
@@ -102,10 +103,9 @@ void sync(int device) { AF_THROW(af_sync(device)); }
 // Alloc device memory
 void *alloc(const size_t elements, const af::dtype type) {
     void *ptr;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     AF_THROW(af_alloc_device(&ptr, elements * size_of(type)));
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
     // FIXME: Add to map
     return ptr;
 }
@@ -127,10 +127,9 @@ void *pinned(const size_t elements, const af::dtype type) {
 
 void free(const void *ptr) {
     // FIXME: look up map and call the right free
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    AF_DEPRECATED_WARNINGS_OFF
     AF_THROW(af_free_device(const_cast<void *>(ptr)));
-#pragma GCC diagnostic pop
+    AF_DEPRECATED_WARNINGS_ON
 }
 
 void freeV2(const void *ptr) {
@@ -172,8 +171,7 @@ size_t getMemStepSize() {
     return size_bytes;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+AF_DEPRECATED_WARNINGS_OFF
 #define INSTANTIATE(T)                                                        \
     template<>                                                                \
     AFAPI T *alloc(const size_t elements) {                                   \
@@ -200,6 +198,6 @@ INSTANTIATE(short)
 INSTANTIATE(unsigned short)
 INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
-#pragma GCC diagnostic pop
+AF_DEPRECATED_WARNINGS_ON
 
 }  // namespace af

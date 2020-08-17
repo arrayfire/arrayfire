@@ -70,6 +70,7 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <common/deprecated.hpp>
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
@@ -80,16 +81,13 @@
 #include <memory.hpp>
 #include <af/defines.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-
+AF_DEPRECATED_WARNINGS_OFF
 #include <boost/compute/algorithm/gather.hpp>
 #include <boost/compute/algorithm/iota.hpp>
 #include <boost/compute/algorithm/sort_by_key.hpp>
 #include <boost/compute/core.hpp>
 #include <boost/compute/iterator/buffer_iterator.hpp>
-
-#pragma GCC diagnostic pop
+AF_DEPRECATED_WARNINGS_ON
 
 #include <vector>
 

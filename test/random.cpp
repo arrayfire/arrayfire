@@ -317,12 +317,12 @@ void testRandomEngineUniform(randomEngineType type) {
     if (af::isDoubleAvailable(af::getDevice())) {
         array Ad = A.as(f64);
         double m = mean<double>(Ad);
-        double s = stdev<double>(Ad);
+        double s = stdev<double>(Ad, AF_VARIANCE_POPULATION);
         ASSERT_NEAR(m, 0.5, 1e-3);
         ASSERT_NEAR(s, 0.2887, 1e-2);
     } else {
         T m = mean<T>(A);
-        T s = stdev<T>(A);
+        T s = stdev<T>(A, AF_VARIANCE_POPULATION);
         ASSERT_NEAR(m, 0.5, 1e-3);
         ASSERT_NEAR(s, 0.2887, 1e-2);
     }
@@ -337,7 +337,7 @@ void testRandomEngineNormal(randomEngineType type) {
     randomEngine r(type, 0);
     array A = randn(elem, ty, r);
     T m     = mean<T>(A);
-    T s     = stdev<T>(A);
+    T s     = stdev<T>(A, AF_VARIANCE_POPULATION);
     ASSERT_NEAR(m, 0, 1e-1);
     ASSERT_NEAR(s, 1, 1e-1);
 }
