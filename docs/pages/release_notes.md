@@ -14,9 +14,39 @@ Major Updates
 Improvements
 ------------
 
-v3.7.2
+v3.7.3
 ======
 
+Improvements
+------------
+- Add f16 support for histogram - \PR{2984}
+- Update confidence connected components example for better illustration - \PR{2968}
+- Enable disk caching of OpenCL kernel binaries - \PR{2970}
+- Refactor extension of kernel binaries stored to disk `.bin` - \PR{2970}
+- Add minimum driver versions for CUDA toolkit 11 in internal map - \PR{2982}
+- Improve warnings messages from run-time kernel compilation functions - \PR{2996}
+
+Fixes
+-----
+- Fix bias factor of variance in var_all and cov functions - \PR{2986}
+- Fix a race condition in confidence connected components function for OpenCL backend - \PR{2969}
+- Safely ignore disk cache failures in CUDA backend for compiled kernel binaries - \PR{2970}
+- Fix randn by passing in correct values to Box-Muller - \PR{2980}
+- Fix rounding issues in Box-Muller function used for RNG - \PR{2980}
+- Fix problems in RNG for older compute architectures with fp16 - \PR{2980}  \PR{2996}
+- Fix performance regression of approx functions - \PR{2977}
+- Remove assert that check that signal/filter types have to be the same - \PR{2993}
+- Fix `checkAndSetDevMaxCompute` when the device cc is greater than max - \PR{2996}
+- Fix documentation errors and warnings - \PR{2973} , \PR{2987}
+- Add missing opencl-arrayfire interoperability functions in unified backend  - \PR{2981}
+
+Contributions
+-------------
+Special thanks to our contributors:
+[P. J. Reed](https://github.com/pjreed)
+
+v3.7.2
+======
 
 Improvements
 ------------
