@@ -5,14 +5,18 @@ v3.8.0
 ======
 
 Major Updates
--------------
-- Ragged max
-- Bitwise not
-- Updated alloc and free
-- Initializer list for af::array
+--------
+- Non-uniform(ragged) reductions \PR{2786}
+- Bit-wise not operator support for array and C API (af\_bitnot) \PR{2865}
+- Initialization list constructor for array class \PR{2829} \PR{2987}
 
 Improvements
 ------------
+- New API for following statistics function: cov, var and stdev - \PR{2986}
+- allocV2 and freeV2 which return cl\_mem on OpenCL backend \PR{2911}
+- Move constructor and move assignment operator for Dim4 class \PR{2946}
+- Support for CUDA 11.1 and Compute 8.6 \PR{3023}
+- Fix af::feature copy constructor for multi-threaded sceanarios \PR{3022}
 
 v3.7.3
 ======
@@ -20,7 +24,7 @@ v3.7.3
 Improvements
 ------------
 - Add f16 support for histogram - \PR{2984}
-- Update confidence connected components example for better illustration - \PR{2968}
+- Update confidence connected components example with better illustration - \PR{2968}
 - Enable disk caching of OpenCL kernel binaries - \PR{2970}
 - Refactor extension of kernel binaries stored to disk `.bin` - \PR{2970}
 - Add minimum driver versions for CUDA toolkit 11 in internal map - \PR{2982}
