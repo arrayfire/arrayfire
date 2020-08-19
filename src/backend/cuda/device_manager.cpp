@@ -70,6 +70,22 @@ struct cuNVRTCcompute {
     int embedded_minor;
 };
 
+/// Struct represents the cuda toolkit version and its associated minimum
+/// required driver versions.
+struct ToolkitDriverVersions {
+    /// The CUDA Toolkit version returned by cudaDriverGetVersion or
+    /// cudaRuntimeGetVersion
+    int version;
+
+    /// The minimum GPU driver version required for the \p version toolkit on
+    /// Linux or macOS
+    float unix_min_version;
+
+    /// The minimum GPU driver version required for the \p version toolkit on
+    /// Windows
+    float windows_min_version;
+};
+
 // clang-format off
 static const int jetsonComputeCapabilities[] = {
     7020,
@@ -81,6 +97,7 @@ static const int jetsonComputeCapabilities[] = {
 
 // clang-format off
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+    {11000, 8, 0, 0},
     {10020, 7, 5, 2},
     {10010, 7, 5, 2},
     {10000, 7, 0, 2},
@@ -90,6 +107,24 @@ static const cuNVRTCcompute Toolkit2MaxCompute[] = {
     { 8000, 5, 2, 3},
     { 7050, 5, 2, 3},
     { 7000, 5, 2, 3}};
+// clang-format on
+
+/// Map giving the minimum device driver needed in order to run a given version
+/// of CUDA for both Linux/Mac and Windows from:
+/// https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
+// clang-format off
+static const ToolkitDriverVersions
+    CudaToDriverVersion[] = {
+        {11000, 450.51f, 451.48f},
+        {10020, 440.33f, 441.22f},
+        {10010, 418.39f, 418.96f},
+        {10000, 410.48f, 411.31f},
+        {9020,  396.37f, 398.26f},
+        {9010,  390.46f, 391.29f},
+        {9000,  384.81f, 385.54f},
+        {8000,  375.26f, 376.51f},
+        {7050,  352.31f, 353.66f},
+        {7000,  346.46f, 347.62f}};
 // clang-format on
 
 bool isEmbedded(pair<int, int> compute) {
@@ -202,7 +237,7 @@ static inline int compute2cores(unsigned major, unsigned minor) {
         {0x10, 8},   {0x11, 8},   {0x12, 8},   {0x13, 8},   {0x20, 32},
         {0x21, 48},  {0x30, 192}, {0x32, 192}, {0x35, 192}, {0x37, 192},
         {0x50, 128}, {0x52, 128}, {0x53, 128}, {0x60, 64},  {0x61, 128},
-        {0x62, 128}, {0x70, 64},  {0x75, 64},  {-1, -1},
+        {0x62, 128}, {0x70, 64},  {0x75, 64},  {0x80, 64},  {-1, -1},
     };
 
     for (int i = 0; gpus[i].compute != -1; ++i) {
@@ -359,40 +394,6 @@ void DeviceManager::resetMemoryManagerPinned() {
                                          AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG));
     setMemoryManagerPinned(std::move(mgr));
 }
-
-/// Struct represents the cuda toolkit version and its associated minimum
-/// required driver versions.
-struct ToolkitDriverVersions {
-    /// The CUDA Toolkit version returned by cudaDriverGetVersion or
-    /// cudaRuntimeGetVersion
-    int version;
-
-    /// The minimum GPU driver version required for the \p version toolkit on
-    /// Linux or macOS
-    float unix_min_version;
-
-    /// The minimum GPU driver version required for the \p version toolkit on
-    /// Windows
-    float windows_min_version;
-};
-
-/// Map giving the minimum device driver needed in order to run a given version
-/// of CUDA for both Linux/Mac and Windows from:
-/// https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
-// clang-format off
-static const ToolkitDriverVersions
-    CudaToDriverVersion[] = {
-        {11000, 450.51f, 451.48f},
-        {10020, 440.33f, 441.22f},
-        {10010, 418.39f, 418.96f},
-        {10000, 410.48f, 411.31f},
-        {9020,  396.37f, 398.26f},
-        {9010,  390.46f, 391.29f},
-        {9000,  384.81f, 385.54f},
-        {8000,  375.26f, 376.51f},
-        {7050,  352.31f, 353.66f},
-        {7000,  346.46f, 347.62f}};
-// clang-format on
 
 /// A debug only function that checks to see if the driver or runtime
 /// function is part of the CudaToDriverVersion array. If the runtime
