@@ -15,6 +15,7 @@
 #include <unistd.h>
 #endif
 
+#include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/util.hpp>
 #include <af/defines.h>
@@ -166,12 +167,12 @@ bool isDirectoryWritable(const string& path) {
     return true;
 }
 
-const string& getCacheDirectory() {
+string& getCacheDirectory() {
     static std::once_flag flag;
     static string cacheDirectory;
 
     std::call_once(flag, []() {
-        const vector<string> pathList = {
+        std::string pathList[] = {
 #if defined(OS_WIN)
             getTemporaryDirectory() + "\\ArrayFire"
 #else
@@ -180,10 +181,24 @@ const string& getCacheDirectory() {
 #endif
         };
 
-        auto iterDir =
-            std::find_if(pathList.begin(), pathList.end(), isDirectoryWritable);
+        auto env_path = getEnvVar(JIT_KERNEL_CACHE_DIRECTORY_ENV_NAME);
+        if (!env_path.empty() && !isDirectoryWritable(env_path)) {
+            spdlog::get("platform")
+                ->warn(
+                    "The environment variable {}({}) is "
+                    "not writeable. Falling back to default.",
+                    JIT_KERNEL_CACHE_DIRECTORY_ENV_NAME, env_path);
+            env_path.clear();
+        }
 
-        cacheDirectory = iterDir != pathList.end() ? *iterDir : "";
+        if (env_path.empty()) {
+            auto iterDir = std::find_if(begin(pathList), end(pathList),
+                                        isDirectoryWritable);
+
+            cacheDirectory = iterDir != end(pathList) ? *iterDir : "";
+        } else {
+            cacheDirectory = env_path;
+        }
     });
 
     return cacheDirectory;

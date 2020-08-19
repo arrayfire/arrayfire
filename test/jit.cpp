@@ -793,3 +793,38 @@ TEST(JIT, DISABLED_ManyConstants) {
     eval(res2, res4, res6);//, res8);
     af::sync();
 }
+
+TEST(JIT, getKernelCacheDirectory) {
+  size_t length = 0;
+  ASSERT_SUCCESS(af_get_kernel_cache_directory(&length, NULL));
+
+  std::string path;
+  path.resize(length);
+  ASSERT_SUCCESS(af_get_kernel_cache_directory(&length, &path.at(0)));
+}
+
+TEST(JIT, setKernelCacheDirectory) {
+  std::string path = ".";
+
+  // Get the old path so we can reset it after the test
+  size_t length = 0;
+  ASSERT_SUCCESS(af_get_kernel_cache_directory(&length, NULL));
+  std::string old_path;
+  old_path.resize(length);
+  ASSERT_SUCCESS(af_get_kernel_cache_directory(&length, &old_path.at(0)));
+
+  // Set cache directory to the new path
+  ASSERT_SUCCESS(af_set_kernel_cache_directory(path.c_str(), false));
+
+  // Get the new path for verification
+  size_t new_length = path.size();
+  std::string new_path;
+  new_path.resize(new_length);
+  ASSERT_SUCCESS(af_get_kernel_cache_directory(&new_length, &new_path.at(0)));
+
+  ASSERT_EQ(path, new_path);
+  ASSERT_EQ(path.size(), new_path.size());
+
+  // Reset to the old path
+  ASSERT_SUCCESS(af_set_kernel_cache_directory(old_path.c_str(), false));
+}

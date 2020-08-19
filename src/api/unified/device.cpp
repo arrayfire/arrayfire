@@ -179,3 +179,11 @@ af_err af_set_manual_eval_flag(bool flag) {
 af_err af_get_manual_eval_flag(bool *flag) {
     CALL(af_get_manual_eval_flag, flag);
 }
+
+af_err af_set_kernel_cache_directory(const char *path, int override_eval) {
+    CALL(af_set_kernel_cache_directory, path, override_eval);
+}
+
+af_err af_get_kernel_cache_directory(size_t *length, char *path) {
+    CALL(af_get_kernel_cache_directory, length, path);
+}

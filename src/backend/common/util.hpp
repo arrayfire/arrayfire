@@ -14,6 +14,11 @@
 #include <string>
 #include <vector>
 
+/// The environment variable that determines where the runtime kernels
+/// will be stored on the file system
+constexpr const char* JIT_KERNEL_CACHE_DIRECTORY_ENV_NAME =
+    "AF_JIT_KERNEL_CACHE_DIRECTORY";
+
 std::string getEnvVar(const std::string& key);
 
 // Dump the kernel sources only if the environment variable is defined
@@ -22,7 +27,7 @@ void saveKernel(const std::string& funcName, const std::string& jit_ker,
 
 std::string int_version_to_string(int version);
 
-const std::string& getCacheDirectory();
+std::string& getCacheDirectory();
 
 bool directoryExists(const std::string& path);
 
