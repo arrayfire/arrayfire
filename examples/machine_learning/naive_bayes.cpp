@@ -39,7 +39,7 @@ void naive_bayes_train(float *priors, array &mu, array &sig2,
         mu(span, ii) = mean(train_feats_ii, 1);
 
         // Some pixels are always 0. Add a small variance.
-        sig2(span, ii) = var(train_feats_ii, 0, 1) + 0.01;
+        sig2(span, ii) = var(train_feats_ii, AF_VARIANCE_SAMPLE, 1) + 0.01;
 
         // Calculate priors
         priors[ii] = (float)idx.elements() / (float)num_samples;
