@@ -575,6 +575,49 @@ extern "C" {
     */
     AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr);
 
+#if AF_API_VERSION >= 38
+    /**
+       Sets the path where the kernels generated at runtime will be cached
+
+       Sets the path where the kernels generated at runtime will be stored to
+       cache for later use. The files in this directory can be safely deleted.
+       The default location for these kernels is in $HOME/.arrayfire on Unix
+       systems and in the ArrayFire temp directory on Windows.
+
+       \param[in] path The location where the kernels will be stored
+       \param[in] override_env if true this path will take precedence over the
+                               AF_JIT_KERNEL_CACHE_DIRECTORY environment variable.
+                               If false, the environment variable takes precedence
+                               over this path.
+
+       \returns AF_SUCCESS if the variable is set. AF_ERR_ARG if path is NULL.
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_set_kernel_cache_directory(const char* path,
+                                               int override_env);
+
+    /**
+       Gets the path where the kernels generated at runtime will be cached
+
+       Gets the path where the kernels generated at runtime will be stored to
+       cache for later use. The files in this directory can be safely deleted.
+       The default location for these kernels is in $HOME/.arrayfire on Unix
+       systems and in the ArrayFire temp directory on Windows.
+
+       \param[out] length The length of the path array. If \p path is NULL, the
+                          length of the current path is assigned to this pointer
+       \param[out] path The path of the runtime generated kernel cache
+                         variable. If NULL, the current path length is assigned
+                         to \p length
+       \returns AF_SUCCESS if the variable is set.
+                AF_ERR_ARG if path and length are null at the same time.
+                AF_ERR_SIZE if \p length not sufficient enought to store the
+                            path
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_get_kernel_cache_directory(size_t *length, char *path);
+
+#endif
 
 #ifdef __cplusplus
 }

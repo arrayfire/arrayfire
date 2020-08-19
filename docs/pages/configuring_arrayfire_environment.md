@@ -223,7 +223,7 @@ AF_BUILD_LIB_CUSTOM_PATH {#af_build_lib_custom_path}
 -------------------------------------------------------------------------------
 
 When set, this environment variable specifies a custom path along which the
-symbol manager will search for dynamic (shared library) backends to load. This 
+symbol manager will search for dynamic (shared library) backends to load. This
 is useful for specialized build configurations that use the unified backend and
 build shared libraries separately.
 
@@ -243,3 +243,22 @@ three values:
 CUDA backend kernels are stored in files with cu file extension.
 
 OpenCL backend kernels are stored in files with cl file extension.
+
+AF_JIT_KERNEL_CACHE_DIRECTORY {#af_jit_kernel_cache_directory}
+-------------------------------------------------------------------------------
+
+This variable sets the path to the ArrayFire cache on the filesystem. If set
+ArrayFire will write the kernels that are compiled at runtime to this directory.
+If the path is not writeable, the default path is used.
+
+This path is different from AF_JIT_KERNEL_TRACE which stores strings. These
+kernels will store binaries and the content will be dependent on the
+backend and platforms used.
+
+The default path is determined in the following order:
+  Unix:
+      1. $HOME/.arrayfire
+      2. /tmp/arrayfire
+  Windows:
+      1. ArrayFire application Temp folder(Usually
+          C:\Users\<user_name>\AppData\Local\Temp\ArrayFire)
