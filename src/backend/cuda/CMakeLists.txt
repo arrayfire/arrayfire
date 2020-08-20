@@ -79,15 +79,16 @@ endif()
 
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
 
-if(NOT CUDA_architecture_build_targets)
-  cuda_detect_installed_gpus(detected_gpus)
-endif()
-
-set(CUDA_architecture_build_targets ${detected_gpus} CACHE
-  STRING "The compute architectures targeted by this build. (Options: 3.0;Maxwell;All;Common)")
+set(CUDA_architecture_build_targets "Auto" CACHE
+    STRING "The compute architectures targeted by this build. (Options: Auto;3.0;Maxwell;All;Common)")
 
 cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_targets})
-message(STATUS "CUDA_architecture_build_targets: ${CUDA_architecture_build_targets}")
+
+string(REGEX REPLACE "-gencodearch=compute_[0-9]+,code=sm_([0-9]+)" "\\1|" cuda_build_targets ${cuda_architecture_flags})
+string(REGEX REPLACE "-gencodearch=compute_[0-9]+,code=compute_([0-9]+)" "\\1+PTX|" cuda_build_targets ${cuda_build_targets})
+string(REGEX REPLACE "([0-9]+)([0-9])\\|" "\\1.\\2 " cuda_build_targets ${cuda_build_targets})
+string(REGEX REPLACE "([0-9]+)([0-9]\\+PTX)\\|" "\\1.\\2 " cuda_build_targets ${cuda_build_targets})
+message(STATUS "CUDA_architecture_build_targets: ${CUDA_architecture_build_targets} ( ${cuda_build_targets} )")
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};${cuda_architecture_flags})
 
