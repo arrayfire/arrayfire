@@ -210,7 +210,7 @@ typedef enum {
 typedef enum {
     f32,    ///< 32-bit floating point values
     c32,    ///< 32-bit complex floating point values
-    f64,    ///< 64-bit complex floating point values
+    f64,    ///< 64-bit floating point values
     c64,    ///< 64-bit complex floating point values
     b8 ,    ///< 8-bit boolean values
     s32,    ///< 32-bit signed integral values
