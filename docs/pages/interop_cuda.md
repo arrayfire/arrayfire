@@ -84,7 +84,7 @@ int main() {
     cudaStream_t af_cuda_stream = afcu::getStream(cuda_id);
 
     // 6. Set arguments and run your kernel in ArrayFire's stream
-    //    Here launch with 10 blocks of 10 threads
+    //    Here launch with 1 block of 10 threads
     increment<<<1, num, 0, af_cuda_stream>>>(d_x);
 
     // 7. Return control of af::array memory to ArrayFire using
