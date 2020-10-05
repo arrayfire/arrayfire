@@ -35,7 +35,7 @@ af_err af_regions(af_array *out, const af_array in,
         af::dim4 dims         = info.dims();
 
         dim_t in_ndims = dims.ndims();
-        DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
+        DIM_ASSERT(1, (in_ndims == 2));
 
         af_dtype in_type = info.getType();
         if (in_type != b8) { TYPE_ERROR(1, in_type); }
