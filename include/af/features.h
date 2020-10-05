@@ -40,6 +40,19 @@ namespace af
         /// Copy assignment operator
         features& operator= (const features& other);
 
+#if AF_API_VERSION >= 38
+        /// Copy constructor
+        features(const features &other);
+
+#if AF_COMPILER_CXX_RVALUE_REFERENCES
+        /// Move constructor
+        features(features &&other);
+
+        /// Move assignment operator
+        features &operator=(features &&other);
+#endif
+#endif
+
         /// Returns  the number of features represented by this object
         size_t getNumFeatures() const;
 

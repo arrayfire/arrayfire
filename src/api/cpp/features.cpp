@@ -11,6 +11,8 @@
 #include <af/features.h>
 #include "error.hpp"
 
+#include <utility>
+
 namespace af {
 
 features::features() : feat{} { AF_THROW(af_create_features(&feat, 0)); }
@@ -21,11 +23,23 @@ features::features(const size_t n) : feat{} {
 
 features::features(af_features f) : feat(f) {}
 
+features::features(const features& other) {
+    if (this != &other) { AF_THROW(af_retain_features(&feat, other.get())); }
+}
+
 features& features::operator=(const features& other) {
     if (this != &other) {
         AF_THROW(af_release_features(feat));
         AF_THROW(af_retain_features(&feat, other.get()));
     }
+    return *this;
+}
+
+features::features(features&& other)
+    : feat(std::exchange(other.feat, nullptr)) {}
+
+features& features::operator=(features&& other) {
+    std::swap(feat, other.feat);
     return *this;
 }
 
