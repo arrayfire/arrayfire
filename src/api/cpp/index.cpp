@@ -66,7 +66,13 @@ index::index(const af::array &idx0) : impl{} {
     impl.isBatch = false;
 }
 
-index::index(const af::index &idx0) : impl{idx0.impl} {}  // NOLINT
+index::index(const af::index &idx0) : impl{idx0.impl} {
+    if (!impl.isSeq && impl.idx.arr) {
+        // increment reference count to avoid double free
+        // when/if idx0 is destroyed
+        AF_THROW(af_retain_array(&impl.idx.arr, impl.idx.arr));
+    }
+}
 
 // NOLINTNEXTLINE(hicpp-noexcept-move, performance-noexcept-move-constructor)
 index::index(index &&idx0) : impl{idx0.impl} { idx0.impl.idx.arr = nullptr; }
@@ -79,7 +85,7 @@ index &index::operator=(const index &idx0) {
     if (this == &idx0) { return *this; }
 
     impl = idx0.get();
-    if (!impl.isSeq) {
+    if (!impl.isSeq && impl.idx.arr) {
         // increment reference count to avoid double free
         // when/if idx0 is destroyed
         AF_THROW(af_retain_array(&impl.idx.arr, impl.idx.arr));
