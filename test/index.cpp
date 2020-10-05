@@ -1764,6 +1764,19 @@ TEST(Index, ISSUE_2273_Flipped) {
     ASSERT_ARRAYS_EQ(input_slice_gold, input_slice);
 }
 
+TEST(Index, CopiedIndexDestroyed) {
+    array in = randu(10, 10);
+    array a  = constant(1, 10);
+
+    af::index index1(a);
+    af::index index2(seq(10));
+
+    af::index index3(index1);
+    { af::index index4(index1); }
+
+    af_print(in(index1, index2));
+}
+
 // clang-format off
 class IndexDocs : public ::testing::Test {
 public:
