@@ -1,10 +1,14 @@
-
+generate_product_version(af_unified_ver_res_file
+  FILE_NAME "af"
+  FILE_DESCRIPTION "Unified Backend Dynamic-link library"
+)
 
 add_library(af "")
 add_library(ArrayFire::af ALIAS af)
 
 target_sources(af
   PRIVATE
+    ${af_unified_ver_res_file}
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/arith.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/array.cpp
