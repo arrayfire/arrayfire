@@ -5,6 +5,11 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+generate_product_version(af_cuda_ver_res_file
+  FILE_NAME "afcuda"
+  FILE_DESCRIPTION "CUDA Backend Dynamic-link library"
+)
+
 dependency_check(CUDA_FOUND "CUDA not found.")
 if(AF_WITH_CUDNN)
   dependency_check(cuDNN_FOUND "CUDNN not found.")
@@ -351,6 +356,7 @@ else()
 endif()
 
 cuda_add_library(afcuda
+    $<$<PLATFORM_ID:Windows>:${af_cuda_ver_res_file}>
     ${thrust_sort_sources}
 
     EnqueueArgs.hpp

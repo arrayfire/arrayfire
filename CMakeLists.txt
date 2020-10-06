@@ -23,6 +23,12 @@ include(GetPrerequisites)
 include(CheckCXXCompilerFlag)
 include(SplitDebugInfo)
 
+# Use the function generate_product_version on Windows
+# to attach version info in dll file attributes.
+# Make sure to pass appropriate arguments for each backend
+# to generate the correct resource file
+include(generate_product_version)
+
 set_policies(
   TYPE NEW
   POLICIES CMP0073
