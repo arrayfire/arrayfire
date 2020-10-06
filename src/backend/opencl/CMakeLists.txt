@@ -7,6 +7,11 @@
 
 include(InternalUtils)
 
+generate_product_version(af_opencl_ver_res_file
+  FILE_NAME "afopencl"
+  FILE_DESCRIPTION "OpenCL Backend Dynamic-link library"
+)
+
 set(AF_OPENCL_BLAS_LIBRARY CLBlast CACHE STRING "Select OpenCL BLAS back-end")
 set_property(CACHE AF_OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
 
@@ -45,6 +50,7 @@ add_library(ArrayFire::afopencl ALIAS afopencl)
 
 target_sources(afopencl
   PRIVATE
+    $<$<PLATFORM_ID:Windows>:${af_opencl_ver_res_file}>
     Array.cpp
     Array.hpp
     Kernel.cpp

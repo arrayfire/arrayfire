@@ -7,12 +7,18 @@
 
 include(InternalUtils)
 
+generate_product_version(af_cpu_ver_res_file
+  FILE_NAME "afcpu"
+  FILE_DESCRIPTION "CPU Backend Dynamic-link library"
+)
+
 add_library(afcpu "")
 add_library(ArrayFire::afcpu ALIAS afcpu)
 
 # CPU backend source files
 target_sources(afcpu
   PRIVATE
+    $<$<PLATFORM_ID:Windows>:${af_cpu_ver_res_file}>
     Array.cpp
     Array.hpp
     anisotropic_diffusion.cpp
