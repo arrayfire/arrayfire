@@ -449,7 +449,7 @@ if(APPLE)
   target_link_libraries(afopencl PRIVATE OpenGL::GL)
 endif()
 
-if(LAPACK_FOUND OR MKL_Shared_FOUND)
+if(LAPACK_FOUND OR (USE_OPENCL_MKL AND MKL_Shared_FOUND))
   target_sources(afopencl
     PRIVATE
       magma/gebrd.cpp

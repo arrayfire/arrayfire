@@ -336,7 +336,7 @@ else()
   endif()
 endif()
 
-if(LAPACK_FOUND OR MKL_Shared_FOUND)
+if(LAPACK_FOUND OR (USE_CPU_MKL AND MKL_Shared_FOUND))
   target_compile_definitions(afcpu
     PRIVATE
       WITH_LINEAR_ALGEBRA)
