@@ -6,7 +6,7 @@ timer() : A platform-independent timer with microsecond accuracy:
 
 * [timer::start()](\ref af::timer::stop) seconds since last \ref af::timer::start "start"
 
-* \ref af::timer::stop(af::timer start) "timer::start(timer start)" seconds since 'start'
+* \ref af::timer::stop(af::timer start) "timer::stop(timer start)" seconds since 'start'
 
 Example: single timer
 
