@@ -293,7 +293,6 @@ cdouble getConjugate(const cdouble &in) {
 template<typename T, bool conjugate>
 void mv(Param<T> output, CParam<T> values, CParam<int> rowIdx,
         CParam<int> colIdx, CParam<T> right, int M) {
-    UNUSED(M);
     const T *valPtr   = values.get();
     const int *rowPtr = rowIdx.get();
     const int *colPtr = colIdx.get();
@@ -301,8 +300,9 @@ void mv(Param<T> output, CParam<T> values, CParam<int> rowIdx,
 
     T *outPtr = output.get();
 
-    for (int i = 0; i < rowIdx.dims(0) - 1; ++i) {
-        outPtr[i] = scalar<T>(0);
+    // Output Array Created is a zero value Array
+    // Hence, no need to initialize to zero here
+    for (int i = 0; i < M; ++i) {
         for (int j = rowPtr[i]; j < rowPtr[i + 1]; ++j) {
             // If stride[0] of right is not 1 then rightPtr[colPtr[j]*stride]
             if (conjugate) {
@@ -317,14 +317,16 @@ void mv(Param<T> output, CParam<T> values, CParam<int> rowIdx,
 template<typename T, bool conjugate>
 void mtv(Param<T> output, CParam<T> values, CParam<int> rowIdx,
          CParam<int> colIdx, CParam<T> right, int M) {
+    UNUSED(M);
+
     const T *valPtr   = values.get();
     const int *rowPtr = rowIdx.get();
     const int *colPtr = colIdx.get();
     const T *rightPtr = right.get();
     T *outPtr         = output.get();
 
-    for (int i = 0; i < M; ++i) { outPtr[i] = scalar<T>(0); }
-
+    // Output Array Created is a zero value Array
+    // Hence, no need to initialize to zero here
     for (int i = 0; i < rowIdx.dims(0) - 1; ++i) {
         for (int j = rowPtr[i]; j < rowPtr[i + 1]; ++j) {
             // If stride[0] of right is not 1 then rightPtr[i*stride]
