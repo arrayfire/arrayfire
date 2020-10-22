@@ -59,13 +59,13 @@ jobs:
                   cmake_lnx_dir=$(echo "${cmake_install_dir}/bin")
                   cmake_osx_dir=$(echo "${cmake_install_dir}/CMake.app/Contents/bin")
                   cmake_dir=$(if [ $OS_NAME == 'macos-latest' ]; then echo "${cmake_osx_dir}"; else echo "${cmake_lnx_dir}"; fi)
-                  echo "::set-env name=CMAKE_PROGRAM::$(pwd)/${cmake_dir}/cmake"
+                  echo "CMAKE_PROGRAM=$(pwd)/${cmake_dir}/cmake" >> $GITHUB_ENV
 
             - name: Install Dependencies for Macos
               if: matrix.os == 'macos-latest'
               run: |
                   brew install boost fontconfig glfw freeimage fftw lapack openblas
-                  echo "::set-env name=CMAKE_PROGRAM::cmake"
+                  echo "CMAKE_PROGRAM=cmake" >> $GITHUB_ENV
 
             - name: Install Common Dependencies for Ubuntu
               if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04'
@@ -114,7 +114,7 @@ jobs:
                       -DUSE_CPU_MKL:BOOL=$USE_MKL \
                       -DBUILDNAME:STRING=${buildname} \
                       ..
-                  echo "::set-env name=CTEST_DASHBOARD::${dashboard}"
+                  echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
 
             - name: Build and Test
               run: |
@@ -176,7 +176,7 @@ jobs:
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
                       -DBUILDNAME:STRING="$buildname"
-                  echo "::set-env name=CTEST_DASHBOARD::${dashboard}"
+                  echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
 
             - name: Build and Test
               run: |
