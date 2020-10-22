@@ -19,9 +19,9 @@ jobs:
                   id_line=$(echo "${response}" | grep -m 1 "id.:")
                   rel_id=$(echo "${id_line}" | awk '{split($0, a, ":"); split(a[2], b, ","); print b[1]}')
                   trimmed_rel_id=$(echo "${rel_id}" | awk '{gsub(/^[ \t]+/,""); print $0 }')
-                  echo "::set-env name=RELEASE_ID::${trimmed_rel_id}"
-                  echo "::set-env name=AF_TAG::${tag}"
-                  echo "::set-env name=AF_VER::${ver}"
+                  echo "RELEASE_ID=${trimmed_rel_id}" >> $GITHUB_ENV
+                  echo "AF_TAG=${tag}" >> $GITHUB_ENV
+                  echo "AF_VER=${ver}" >> $GITHUB_ENV
 
             - name: Checkout with Submodules
               run: |
@@ -37,7 +37,7 @@ jobs:
                   rm -rf arrayfire-full-${AF_VER}/.github
                   rm arrayfire-full-${AF_VER}/.gitmodules
                   tar -cjf arrayfire-full-${AF_VER}.tar.bz2 arrayfire-full-${AF_VER}/
-                  echo "::set-env name=UPLOAD_FILE::arrayfire-full-${AF_VER}.tar.bz2"
+                  echo "UPLOAD_FILE=arrayfire-full-${AF_VER}.tar.bz2" >> $GITHUB_ENV
 
             - name: Upload source tarball
               uses: actions/upload-release-asset@v1
