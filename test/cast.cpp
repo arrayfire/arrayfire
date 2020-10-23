@@ -99,3 +99,27 @@ COMPLEX_REAL_TESTS(cfloat, float)
 COMPLEX_REAL_TESTS(cfloat, double)
 COMPLEX_REAL_TESTS(cdouble, float)
 COMPLEX_REAL_TESTS(cdouble, double)
+
+TEST(CAST_TEST, Test_JIT_DuplicateCastNoop) {
+    // Does a trivial cast - check JIT kernel trace to ensure a __noop is
+    // generated since we don't have a way to test it directly
+    af_dtype ta = (af_dtype)dtype_traits<float>::af_type;
+    af_dtype tb = (af_dtype)dtype_traits<double>::af_type;
+    dim4 dims(num, 1, 1, 1);
+    af_array a, b, c;
+    af_randu(&a, dims.ndims(), dims.get(), ta);
+
+    af_cast(&b, a, tb);
+    af_cast(&c, b, ta);
+
+    std::vector<float> a_vals(num);
+    std::vector<float> c_vals(num);
+    ASSERT_SUCCESS(af_get_data_ptr((void **)&a_vals[0], a));
+    ASSERT_SUCCESS(af_get_data_ptr((void **)&c_vals[0], c));
+
+    for (size_t i = 0; i < num; ++i) { ASSERT_FLOAT_EQ(a_vals[i], c_vals[i]); }
+
+    af_release_array(a);
+    af_release_array(b);
+    af_release_array(c);
+}

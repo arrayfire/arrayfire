@@ -26,8 +26,10 @@ namespace common {
 class NaryNode : public Node {
    private:
     int m_num_children;
-    af_op_t m_op;
     const char *m_op_str;
+
+   protected:
+    af_op_t m_op;
 
    public:
     NaryNode(const af::dtype type, const char *op_str, const int num_children,
@@ -39,8 +41,8 @@ class NaryNode : public Node {
                   const std::array<common::Node_ptr, Node::kMaxChildren>>(
                   children))
         , m_num_children(num_children)
-        , m_op(op)
-        , m_op_str(op_str) {
+        , m_op_str(op_str)
+        , m_op(op) {
         static_assert(std::is_nothrow_move_assignable<NaryNode>::value,
                       "NaryNode is not move assignable");
         static_assert(std::is_nothrow_move_constructible<NaryNode>::value,
@@ -61,8 +63,8 @@ class NaryNode : public Node {
         using std::swap;
         Node::swap(other);
         swap(m_num_children, other.m_num_children);
-        swap(m_op, other.m_op);
         swap(m_op_str, other.m_op_str);
+        swap(m_op, other.m_op);
     }
 
     af_op_t getOp() const noexcept final { return m_op; }
