@@ -320,27 +320,13 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
         constexpr size_t base_param_size =
             sizeof(T *) + sizeof(KParam) + (3 * sizeof(uint));
 
-        // This is the maximum size of the params that can be allowed by the
-        // CUDA platform.
-        constexpr size_t max_nvidia_param_size = (4096 - base_param_size);
-        constexpr size_t max_amd_param_size    = (3520 - base_param_size);
-
-        // This value is really for the Intel HD Graphics platform. The CPU
-        // platform seems like it can handle unlimited parameters but the
-        // compile times become very large.
-        constexpr size_t max_intel_igpu_param_size =
-            (1024 - 256 - base_param_size);
-
-        size_t max_param_size = 0;
-        if (isNvidia) {
-            max_param_size = max_nvidia_param_size;
-        } else if (isAmd) {
-            max_param_size = max_amd_param_size;
-        } else if (isIntel && getDeviceType() == CL_DEVICE_TYPE_GPU) {
-            max_param_size = max_intel_igpu_param_size;
-        } else {
-            max_param_size = 8192;
-        }
+        const cl::Device &device = getDevice();
+        size_t max_param_size = device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>();
+        // typical values:
+        //   NVIDIA     = 4096
+        //   AMD        = 3520  (AMD A10 iGPU = 1024)
+        //   Intel iGPU = 1024
+        max_param_size -= base_param_size;
 
         struct tree_info {
             size_t total_buffer_size;
