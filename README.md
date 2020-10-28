@@ -99,7 +99,7 @@ You can find our complete documentation [here](http://www.arrayfire.com/docs/ind
 Quick links:
 
 * [List of functions](http://www.arrayfire.org/docs/group__arrayfire__func.htm)
-* [Tutorials](http://www.arrayfire.org/docs/usergroup0.htm)
+* [Tutorials](http://arrayfire.org/docs/tutorials.htm)
 * [Examples](http://www.arrayfire.org/docs/examples.htm)
 * [Blog](http://arrayfire.com/blog/)
 
