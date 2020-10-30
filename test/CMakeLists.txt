@@ -1,4 +1,4 @@
-# Copyright (c) 2017, ArrayFire
+# Copyright (c) 2020, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
@@ -10,9 +10,10 @@ set(AF_TEST_WITH_MTX_FILES
     "Download and run tests on large matrices form sparse.tamu.edu")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
-if (AF_TEST_WITH_MTX_FILES)
+
+if(AF_TEST_WITH_MTX_FILES)
   include(download_sparse_datasets)
-endif ()
+endif()
 
 if(NOT TARGET gtest)
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
@@ -45,14 +46,23 @@ endif()
 
 # Reset the CXX flags for tests
 set(CMAKE_CXX_STANDARD 98)
-set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
 
+# TODO(pradeep) perhaps rename AF_USE_RELATIVE_TEST_DIR to AF_WITH_TEST_DATA_DIR
+#               with empty default value
 if(${AF_USE_RELATIVE_TEST_DIR})
-    # RELATIVE_TEST_DATA_DIR is a User-visible option with default value of test/data directory
-    set(RELATIVE_TEST_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data" CACHE STRING "Relative Test Data Directory")
-    set(TESTDATA_SOURCE_DIR ${RELATIVE_TEST_DATA_DIR})
-else(${AF_USE_RELATIVE_TEST_DIR})  # Not using relative test data directory
-    set(TESTDATA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data")
+  # RELATIVE_TEST_DATA_DIR is a User-visible option with default value of test/data directory
+  # This code arm assumes user is responsible for providing the test data path
+  set(RELATIVE_TEST_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/data" CACHE
+      STRING "Relative Test Data Directory")
+  set(TESTDATA_SOURCE_DIR ${RELATIVE_TEST_DATA_DIR})
+else(${AF_USE_RELATIVE_TEST_DIR})
+  FetchContent_Declare(
+    af_test_data
+    GIT_REPOSITORY https://github.com/arrayfire/arrayfire-data.git
+    GIT_TAG        master
+  )
+  FetchContent_Populate(af_test_data)
+  set(TESTDATA_SOURCE_DIR "${af_test_data_SOURCE_DIR}")
 endif(${AF_USE_RELATIVE_TEST_DIR})
 
 if(AF_BUILD_CPU)
