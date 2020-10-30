@@ -1,9 +1,6 @@
 [submodule "test/gtest"]
 	path = test/gtest
 	url = https://github.com/google/googletest.git
-[submodule "src/backend/cpu/threads"]
-	path = src/backend/cpu/threads
-	url = https://github.com/alltheflops/threads.git
 [submodule "extern/forge"]
 	path = extern/forge
 	url = https://github.com/arrayfire/forge.git
