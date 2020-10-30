@@ -4,9 +4,6 @@
 [submodule "src/backend/cpu/threads"]
 	path = src/backend/cpu/threads
 	url = https://github.com/alltheflops/threads.git
-[submodule "extern/spdlog"]
-	path = extern/spdlog
-	url = https://github.com/gabime/spdlog.git
 [submodule "extern/forge"]
 	path = extern/forge
 	url = https://github.com/arrayfire/forge.git
