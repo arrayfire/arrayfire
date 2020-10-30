@@ -79,7 +79,6 @@ endif()
 
 target_link_libraries(afcommon_interface
   INTERFACE
-    spdlog
     Boost::boost
     glad_interface
     ${CMAKE_DL_LIBS}
@@ -95,6 +94,7 @@ target_include_directories(afcommon_interface
     ${ArrayFire_BINARY_DIR}
   SYSTEM INTERFACE
     $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>
+    ${ArrayFire_SOURCE_DIR}/extern
     ${ArrayFire_SOURCE_DIR}/extern/forge/include
     ${ArrayFire_BINARY_DIR}/extern/forge/include
   )

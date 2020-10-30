@@ -110,8 +110,6 @@ mark_as_advanced(
   CUDA_HOST_COMPILER
   CUDA_USE_STATIC_CUDA_RUNTIME
   CUDA_rt_LIBRARY
-  SPDLOG_BUILD_EXAMPLES
-  SPDLOG_BUILD_TESTING
   ADDR2LINE_PROGRAM
   Backtrace_LIBRARY
   AF_WITH_STATIC_MKL
@@ -165,8 +163,6 @@ if(NOT LAPACK_FOUND)
     endif()
 endif()
 
-set(SPDLOG_BUILD_TESTING OFF CACHE INTERNAL "Disable testing in spdlog")
-add_subdirectory(extern/spdlog EXCLUDE_FROM_ALL)
 add_subdirectory(extern/glad)
 add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)

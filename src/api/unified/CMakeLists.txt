@@ -100,7 +100,6 @@ target_include_directories(af
 target_link_libraries(af
   PRIVATE
     cpp_api_interface
-    spdlog
     Threads::Threads
     Boost::boost
     ${CMAKE_DL_LIBS}
