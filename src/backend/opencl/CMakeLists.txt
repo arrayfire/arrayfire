@@ -520,7 +520,7 @@ if(LAPACK_FOUND OR (USE_OPENCL_MKL AND MKL_Shared_FOUND))
     afopencl
     PRIVATE
       WITH_LINEAR_ALGEBRA)
-endif(LAPACK_FOUND OR MKL_Shared_FOUND)
+endif()
 
 af_split_debug_info(afopencl ${AF_INSTALL_LIB_DIR})
 
