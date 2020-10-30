@@ -272,8 +272,8 @@ endif(AF_WITH_CPUID)
 
 target_sources(afcpu
   PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/threads/async_queue.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/threads/event.hpp
+    ${ArrayFire_SOURCE_DIR}/extern/threads/async_queue.hpp
+    ${ArrayFire_SOURCE_DIR}/extern/threads/event.hpp
   )
 
 arrayfire_set_default_cxx_flags(afcpu)
@@ -292,7 +292,7 @@ target_include_directories(afcpu
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    threads
+    ${ArrayFire_SOURCE_DIR}/extern/threads
     ${CBLAS_INCLUDE_DIR}
   )
 
