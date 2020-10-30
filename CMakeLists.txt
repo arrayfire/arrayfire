@@ -1,4 +1,4 @@
-# Copyright (c) 2017, ArrayFire
+# Copyright (c) 2020, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
@@ -11,6 +11,7 @@ project(ArrayFire VERSION 3.8.0 LANGUAGES C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
+include(AFfetch_content)
 include(config_ccache)
 include(AFBuildConfigurations)
 include(AFInstallDirs)
@@ -375,7 +376,13 @@ endif()
 
 conditional_directory(BUILD_TESTING test)
 
-set(ASSETS_DIR "${ArrayFire_SOURCE_DIR}/assets")
+FetchContent_Declare(
+  af_assets
+  GIT_REPOSITORY https://github.com/arrayfire/assets.git
+  GIT_TAG        master
+)
+FetchContent_Populate(af_assets)
+set(ASSETS_DIR ${af_assets_SOURCE_DIR})
 conditional_directory(AF_BUILD_EXAMPLES examples)
 conditional_directory(AF_BUILD_DOCS docs)
 
