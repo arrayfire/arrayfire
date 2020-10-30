@@ -115,7 +115,7 @@ cuda_include_directories(
   ${COMMON_INTERFACE_DIRS}
   )
 if(CUDA_VERSION_MAJOR VERSION_LESS 11)
-  cuda_include_directories(${ArrayFire_SOURCE_DIR}/extern/cub)
+  cuda_include_directories(${ArrayFire_SOURCE_DIR}/extern)
 endif()
 
 file(GLOB jit_src "kernel/jit.cuh")
