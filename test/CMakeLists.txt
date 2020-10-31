@@ -15,7 +15,14 @@ if(AF_TEST_WITH_MTX_FILES)
   include(download_sparse_datasets)
 endif()
 
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.8.1
+)
 if(NOT TARGET gtest)
+  FetchContent_Populate(googletest)
+
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
   # newer cmakes. This sets the default global setting for that policy.
   set(CMAKE_POLICY_DEFAULT_CMP0042 NEW)
@@ -25,7 +32,7 @@ if(NOT TARGET gtest)
     set(BUILD_SHARED_LIBS OFF)
   endif()
 
-  add_subdirectory(gtest EXCLUDE_FROM_ALL)
+  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
   set_target_properties(gtest gtest_main
     PROPERTIES
       FOLDER "ExternalProjectTargets/gtest")
@@ -33,11 +40,13 @@ if(NOT TARGET gtest)
   # Hide gtest project variables
   mark_as_advanced(
     BUILD_SHARED_LIBS
+    gmock_build_tests
     gtest_build_samples
     gtest_build_tests
     gtest_disable_pthreads
     gtest_force_shared_crt
-    gtest_hide_internal_symbols)
+    gtest_hide_internal_symbols
+  )
 endif()
 
 if(NOT TARGET mmio)
@@ -93,7 +102,7 @@ target_include_directories(arrayfire_test
     ${ArrayFire_BINARY_DIR}/include
     ${ArrayFire_SOURCE_DIR}/extern/half/include
     mmio
-    gtest/googletest/include)
+    ${googletest_SOURCE_DIR}/googletest/include)
 
 if(WIN32)
   target_compile_options(arrayfire_test
@@ -323,7 +332,7 @@ if(CUDA_FOUND)
           ${ArrayFire_BINARY_DIR}/include
           ${ArrayFire_SOURCE_DIR}/extern/half/include
           ${CMAKE_CURRENT_SOURCE_DIR}
-          ${CMAKE_CURRENT_SOURCE_DIR}/gtest/googletest/include
+          ${googletest_SOURCE_DIR}/googletest/include
         )
       endif()
       cuda_add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
