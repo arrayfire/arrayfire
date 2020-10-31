@@ -156,7 +156,14 @@ if(NOT LAPACK_FOUND)
 endif()
 
 set(SPDLOG_BUILD_TESTING OFF CACHE INTERNAL "Disable testing in spdlog")
-add_subdirectory(extern/spdlog EXCLUDE_FROM_ALL)
+FetchContent_Declare(
+  af_spdlog
+  GIT_REPOSITORY https://github.com/gabime/spdlog.git
+  GIT_TAG        v1.0.0
+)
+FetchContent_Populate(af_spdlog)
+add_subdirectory(${af_spdlog_SOURCE_DIR} ${af_spdlog_BINARY_DIR} EXCLUDE_FROM_ALL)
+
 add_subdirectory(extern/glad)
 add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)
