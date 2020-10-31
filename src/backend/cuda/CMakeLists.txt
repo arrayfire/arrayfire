@@ -115,7 +115,13 @@ cuda_include_directories(
   ${COMMON_INTERFACE_DIRS}
   )
 if(CUDA_VERSION_MAJOR VERSION_LESS 11)
-  cuda_include_directories(${ArrayFire_SOURCE_DIR}/extern/cub)
+  FetchContent_Declare(
+    nv_cub
+    GIT_REPOSITORY https://github.com/NVIDIA/cub.git
+    GIT_TAG        1.10.0
+  )
+  FetchContent_Populate(nv_cub)
+  cuda_include_directories(${nv_cub_SOURCE_DIR})
 endif()
 
 file(GLOB jit_src "kernel/jit.cuh")

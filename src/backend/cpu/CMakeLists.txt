@@ -271,10 +271,17 @@ if (AF_WITH_CPUID)
   target_compile_definitions(afcpu PRIVATE -DAF_WITH_CPUID)
 endif(AF_WITH_CPUID)
 
+FetchContent_Declare(
+  af_threads
+  GIT_REPOSITORY https://github.com/arrayfire/threads.git
+  GIT_TAG        b666773940269179f19ef11c8f1eb77005e85d9a
+)
+FetchContent_Populate(af_threads)
+
 target_sources(afcpu
   PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/threads/async_queue.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/threads/event.hpp
+    ${af_threads_SOURCE_DIR}/include/threads/async_queue.hpp
+    ${af_threads_SOURCE_DIR}/include/threads/event.hpp
   )
 
 arrayfire_set_default_cxx_flags(afcpu)
@@ -288,7 +295,7 @@ target_include_directories(afcpu
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    threads
+    ${af_threads_SOURCE_DIR}/include
     ${CBLAS_INCLUDE_DIR}
   )
 
