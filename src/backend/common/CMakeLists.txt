@@ -81,7 +81,7 @@ target_link_libraries(afcommon_interface
   INTERFACE
     spdlog
     Boost::boost
-    af_glad_interface
+    glad_interface
     ${CMAKE_DL_LIBS}
 )
 
@@ -95,8 +95,8 @@ target_include_directories(afcommon_interface
     ${ArrayFire_BINARY_DIR}
   SYSTEM INTERFACE
     $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>
-    ${ArrayFire_SOURCE_DIR}/extern/forge/include
-    ${ArrayFire_BINARY_DIR}/extern/forge/include
+    ${af_forge_SOURCE_DIR}/include
+    ${af_forge_BINARY_DIR}/include
   )
 
 if(APPLE AND NOT USE_MKL)
