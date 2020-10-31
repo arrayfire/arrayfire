@@ -39,9 +39,9 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
         $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:OpenCL::cl2hpp,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:af_glad_interface,INTERFACE_INCLUDE_DIRECTORIES>
-        ${ArrayFire_SOURCE_DIR}/extern/forge/include
-        ${ArrayFire_BINARY_DIR}/extern/forge/include
+        $<TARGET_PROPERTY:glad_interface,INTERFACE_INCLUDE_DIRECTORIES>
+        ${af_forge_SOURCE_DIR}/include
+        ${af_forge_BINARY_DIR}/include
       )
 
     set_target_properties(opencl_scan_by_key_${SBK_BINARY_OP}
