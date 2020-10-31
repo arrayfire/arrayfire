@@ -1,9 +1,3 @@
 [submodule "test/gtest"]
 	path = test/gtest
 	url = https://github.com/google/googletest.git
-[submodule "extern/forge"]
-	path = extern/forge
-	url = https://github.com/arrayfire/forge.git
-[submodule "extern/glad"]
-	path = extern/glad
-	url = https://github.com/arrayfire/glad.git

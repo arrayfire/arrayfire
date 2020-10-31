@@ -121,7 +121,7 @@ mark_as_advanced(
 #Configure forge submodule
 #forge is included in ALL target if AF_BUILD_FORGE is ON
 #otherwise, forge is not built at all
-include(AFconfigure_forge_submodule)
+include(AFconfigure_forge_dep)
 
 configure_file(
     ${ArrayFire_SOURCE_DIR}/CMakeModules/version.hpp.in
@@ -164,7 +164,14 @@ FetchContent_Declare(
 FetchContent_Populate(af_spdlog)
 add_subdirectory(${af_spdlog_SOURCE_DIR} ${af_spdlog_BINARY_DIR} EXCLUDE_FROM_ALL)
 
-add_subdirectory(extern/glad)
+FetchContent_Declare(
+  af_glad
+  GIT_REPOSITORY https://github.com/arrayfire/glad.git
+  GIT_TAG        master
+)
+FetchContent_Populate(af_glad)
+add_subdirectory(${af_glad_SOURCE_DIR})
+
 add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)
 add_subdirectory(src/api/cpp)

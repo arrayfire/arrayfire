@@ -5,16 +5,28 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+set(FG_VERSION_MAJOR 1)
+set(FG_VERSION_MINOR 0)
+set(FG_VERSION_PATCH 5)
+set(FG_VERSION "${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}")
+set(FG_API_VERSION_CURRENT ${FG_VERSION_MAJOR}${FG_VERSION_MINOR})
+
+FetchContent_Declare(
+  af_forge
+  GIT_REPOSITORY https://github.com/arrayfire/forge.git
+  GIT_TAG        "v${FG_VERSION}"
+)
+FetchContent_Populate(af_forge)
 if(AF_BUILD_FORGE)
   set(ArrayFireInstallPrefix ${CMAKE_INSTALL_PREFIX})
   set(ArrayFireBuildType ${CMAKE_BUILD_TYPE})
-  set(CMAKE_INSTALL_PREFIX ${ArrayFire_BINARY_DIR}/extern/forge/package)
+  set(CMAKE_INSTALL_PREFIX ${af_forge_BINARY_DIR}/extern/forge/package)
   set(CMAKE_BUILD_TYPE Release)
   set(FG_BUILD_EXAMPLES OFF CACHE BOOL "Used to build Forge examples")
   set(FG_BUILD_DOCS OFF CACHE BOOL "Used to build Forge documentation")
   set(FG_WITH_FREEIMAGE OFF CACHE BOOL "Turn on usage of freeimage dependency")
 
-  add_subdirectory(extern/forge EXCLUDE_FROM_ALL)
+  add_subdirectory(${af_forge_SOURCE_DIR} ${af_forge_BINARY_DIR} EXCLUDE_FROM_ALL)
 
   mark_as_advanced(
       FG_BUILD_EXAMPLES
@@ -39,13 +51,8 @@ if(AF_BUILD_FORGE)
       COMPONENT common_backend_dependencies)
   set_property(TARGET forge APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
 else(AF_BUILD_FORGE)
-  set(FG_VERSION "1.0.0")
-  set(FG_VERSION_MAJOR 1)
-  set(FG_VERSION_MINOR 0)
-  set(FG_VERSION_PATCH 0)
-  set(FG_API_VERSION_CURRENT 10)
   configure_file(
-    ${PROJECT_SOURCE_DIR}/extern/forge/CMakeModules/version.h.in
-    ${PROJECT_BINARY_DIR}/extern/forge/include/fg/version.h
+    ${af_forge_SOURCE_DIR}/CMakeModules/version.h.in
+    ${af_forge_BINARY_DIR}/include/fg/version.h
     )
 endif(AF_BUILD_FORGE)
