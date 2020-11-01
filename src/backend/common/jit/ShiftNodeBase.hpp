@@ -63,11 +63,11 @@ class ShiftNodeBase : public Node {
         return false;
     }
 
-    void genKerName(std::stringstream &kerStream,
+    void genKerName(std::string &kerString,
                     const common::Node_ids &ids) const final {
-        kerStream << "_" << getNameStr();
-        kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id
-                  << std::dec;
+        kerString += '_';
+        kerString += getNameStr();
+        kerString += std::to_string(ids.id);
     }
 
     void genParams(std::stringstream &kerStream, int id,

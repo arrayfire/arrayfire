@@ -21,9 +21,9 @@ class ScalarNode : public TNode<T> {
    public:
     ScalarNode(T val) : TNode<T>(val, 0, {}) {}
 
-    void genKerName(std::stringstream &kerStream,
+    void genKerName(std::string &kerString,
                     const common::Node_ids &ids) const final {
-        UNUSED(kerStream);
+        UNUSED(kerString);
         UNUSED(ids);
     }
 

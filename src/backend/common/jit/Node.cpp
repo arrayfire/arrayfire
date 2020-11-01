@@ -41,26 +41,17 @@ int Node::getNodesMap(Node_map_t &node_map, vector<Node *> &full_nodes,
 std::string getFuncName(const vector<Node *> &output_nodes,
                         const vector<Node *> &full_nodes,
                         const vector<Node_ids> &full_ids, bool is_linear) {
-    std::stringstream funcName;
-    std::stringstream hashName;
+    std::string funcName;
+    funcName.reserve(512);
+    funcName = is_linear ? 'L' : 'G';
 
-    if (is_linear) {
-        funcName << "L_";  // Kernel Linear
-    } else {
-        funcName << "G_";  // Kernel General
-    }
-
-    for (const auto &node : output_nodes) {
-        funcName << node->getNameStr() << "_";
-    }
+    for (const auto &node : output_nodes) { funcName += node->getNameStr(); }
 
     for (int i = 0; i < static_cast<int>(full_nodes.size()); i++) {
         full_nodes[i]->genKerName(funcName, full_ids[i]);
     }
 
-    hashName << "KER";
-    hashName << deterministicHash(funcName.str());
-    return hashName.str();
+    return "KER" + std::to_string(deterministicHash(funcName));
 }
 
 }  // namespace common
