@@ -38,8 +38,8 @@ foreach(SBK_TYPE ${SBK_TYPES})
         $<TARGET_PROPERTY:OpenCL::cl2hpp,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:glad_interface,INTERFACE_INCLUDE_DIRECTORIES>
-        ${af_forge_SOURCE_DIR}/include
-        ${af_forge_BINARY_DIR}/include
+        ${${forge_prefix}_SOURCE_DIR}/include
+        ${${forge_prefix}_BINARY_DIR}/include
       )
 
     set_target_properties(opencl_sort_by_key_${SBK_TYPE}

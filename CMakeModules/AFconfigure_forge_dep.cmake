@@ -12,21 +12,21 @@ set(FG_VERSION "${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}")
 set(FG_API_VERSION_CURRENT ${FG_VERSION_MAJOR}${FG_VERSION_MINOR})
 
 FetchContent_Declare(
-  af_forge
+  ${forge_prefix}
   GIT_REPOSITORY https://github.com/arrayfire/forge.git
   GIT_TAG        "v${FG_VERSION}"
 )
-FetchContent_Populate(af_forge)
+FetchContent_Populate(${forge_prefix})
 if(AF_BUILD_FORGE)
   set(ArrayFireInstallPrefix ${CMAKE_INSTALL_PREFIX})
   set(ArrayFireBuildType ${CMAKE_BUILD_TYPE})
-  set(CMAKE_INSTALL_PREFIX ${af_forge_BINARY_DIR}/extern/forge/package)
+  set(CMAKE_INSTALL_PREFIX ${${forge_prefix}_BINARY_DIR}/extern/forge/package)
   set(CMAKE_BUILD_TYPE Release)
   set(FG_BUILD_EXAMPLES OFF CACHE BOOL "Used to build Forge examples")
   set(FG_BUILD_DOCS OFF CACHE BOOL "Used to build Forge documentation")
   set(FG_WITH_FREEIMAGE OFF CACHE BOOL "Turn on usage of freeimage dependency")
 
-  add_subdirectory(${af_forge_SOURCE_DIR} ${af_forge_BINARY_DIR} EXCLUDE_FROM_ALL)
+  add_subdirectory(${${forge_prefix}_SOURCE_DIR} ${${forge_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
   mark_as_advanced(
       FG_BUILD_EXAMPLES
@@ -52,7 +52,7 @@ if(AF_BUILD_FORGE)
   set_property(TARGET forge APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
 else(AF_BUILD_FORGE)
   configure_file(
-    ${af_forge_SOURCE_DIR}/CMakeModules/version.h.in
-    ${af_forge_BINARY_DIR}/include/fg/version.h
+    ${${forge_prefix}_SOURCE_DIR}/CMakeModules/version.h.in
+    ${${forge_prefix}_BINARY_DIR}/include/fg/version.h
     )
 endif(AF_BUILD_FORGE)

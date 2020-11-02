@@ -16,12 +16,12 @@ if(AF_TEST_WITH_MTX_FILES)
 endif()
 
 FetchContent_Declare(
-  googletest
+  ${gtest_prefix}
   GIT_REPOSITORY https://github.com/google/googletest.git
   GIT_TAG        release-1.8.1
 )
 if(NOT TARGET gtest)
-  FetchContent_Populate(googletest)
+  FetchContent_Populate(${gtest_prefix})
 
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
   # newer cmakes. This sets the default global setting for that policy.
@@ -32,7 +32,7 @@ if(NOT TARGET gtest)
     set(BUILD_SHARED_LIBS OFF)
   endif()
 
-  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+  add_subdirectory(${${gtest_prefix}_SOURCE_DIR} ${${gtest_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
   set_target_properties(gtest gtest_main
     PROPERTIES
       FOLDER "ExternalProjectTargets/gtest")
@@ -66,12 +66,12 @@ if(${AF_USE_RELATIVE_TEST_DIR})
   set(TESTDATA_SOURCE_DIR ${RELATIVE_TEST_DATA_DIR})
 else(${AF_USE_RELATIVE_TEST_DIR})
   FetchContent_Declare(
-    af_test_data
+    ${testdata_prefix}
     GIT_REPOSITORY https://github.com/arrayfire/arrayfire-data.git
     GIT_TAG        master
   )
-  FetchContent_Populate(af_test_data)
-  set(TESTDATA_SOURCE_DIR "${af_test_data_SOURCE_DIR}")
+  FetchContent_Populate(${testdata_prefix})
+  set(TESTDATA_SOURCE_DIR "${${testdata_prefix}_SOURCE_DIR}")
 endif(${AF_USE_RELATIVE_TEST_DIR})
 
 if(AF_BUILD_CPU)
@@ -102,7 +102,7 @@ target_include_directories(arrayfire_test
     ${ArrayFire_BINARY_DIR}/include
     ${ArrayFire_SOURCE_DIR}/extern/half/include
     mmio
-    ${googletest_SOURCE_DIR}/googletest/include)
+    ${${gtest_prefix}_SOURCE_DIR}/googletest/include)
 
 if(WIN32)
   target_compile_options(arrayfire_test
@@ -332,7 +332,7 @@ if(CUDA_FOUND)
           ${ArrayFire_BINARY_DIR}/include
           ${ArrayFire_SOURCE_DIR}/extern/half/include
           ${CMAKE_CURRENT_SOURCE_DIR}
-          ${googletest_SOURCE_DIR}/googletest/include
+          ${${gtest_prefix}_SOURCE_DIR}/googletest/include
         )
       endif()
       cuda_add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
