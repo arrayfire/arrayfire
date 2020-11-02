@@ -95,8 +95,8 @@ target_include_directories(afcommon_interface
     ${ArrayFire_BINARY_DIR}
   SYSTEM INTERFACE
     $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>
-    ${af_forge_SOURCE_DIR}/include
-    ${af_forge_BINARY_DIR}/include
+    ${${forge_prefix}_SOURCE_DIR}/include
+    ${${forge_prefix}_BINARY_DIR}/include
   )
 
 if(APPLE AND NOT USE_MKL)

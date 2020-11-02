@@ -11,7 +11,7 @@ project(ArrayFire VERSION 3.8.0 LANGUAGES C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
-include(AFfetch_content)
+include(AFconfigure_deps_vars)
 include(config_ccache)
 include(AFBuildConfigurations)
 include(AFInstallDirs)
@@ -157,20 +157,20 @@ endif()
 
 set(SPDLOG_BUILD_TESTING OFF CACHE INTERNAL "Disable testing in spdlog")
 FetchContent_Declare(
-  af_spdlog
+  ${spdlog_prefix}
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG        v1.0.0
 )
-FetchContent_Populate(af_spdlog)
-add_subdirectory(${af_spdlog_SOURCE_DIR} ${af_spdlog_BINARY_DIR} EXCLUDE_FROM_ALL)
+FetchContent_Populate(${spdlog_prefix})
+add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
 FetchContent_Declare(
-  af_glad
+  ${glad_prefix}
   GIT_REPOSITORY https://github.com/arrayfire/glad.git
   GIT_TAG        master
 )
-FetchContent_Populate(af_glad)
-add_subdirectory(${af_glad_SOURCE_DIR})
+FetchContent_Populate(${glad_prefix})
+add_subdirectory(${${glad_prefix}_SOURCE_DIR})
 
 add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)
@@ -391,12 +391,13 @@ endif()
 conditional_directory(BUILD_TESTING test)
 
 FetchContent_Declare(
-  af_assets
+  ${assets_prefix}
   GIT_REPOSITORY https://github.com/arrayfire/assets.git
   GIT_TAG        master
 )
-FetchContent_Populate(af_assets)
-set(ASSETS_DIR ${af_assets_SOURCE_DIR})
+FetchContent_Populate(${assets_prefix})
+
+set(ASSETS_DIR ${${assets_prefix}_SOURCE_DIR})
 conditional_directory(AF_BUILD_EXAMPLES examples)
 conditional_directory(AF_BUILD_DOCS docs)
 
