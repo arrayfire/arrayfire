@@ -56,6 +56,7 @@ class ScalarNode : public common::Node {
                     const common::Node_ids& ids) const final {
         kerString += '_';
         kerString += getTypeStr();
+        kerString += ',';
         kerString += std::to_string(ids.id);
     }
 

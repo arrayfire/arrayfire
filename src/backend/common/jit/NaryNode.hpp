@@ -69,6 +69,7 @@ class NaryNode : public Node {
         // Make the dec representation of enum part of the Kernel name
         kerString += '_';
         kerString += m_op_str;
+        kerString += ',';
         for (int i = 0; i < m_num_children; i++) {
             kerString += std::to_string(ids.child_ids[i]);
             kerString += ',';

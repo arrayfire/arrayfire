@@ -67,6 +67,7 @@ class ShiftNodeBase : public Node {
                     const common::Node_ids &ids) const final {
         kerString += '_';
         kerString += getNameStr();
+        kerString += ',';
         kerString += std::to_string(ids.id);
     }
 
