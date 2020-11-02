@@ -116,12 +116,12 @@ cuda_include_directories(
   )
 if(CUDA_VERSION_MAJOR VERSION_LESS 11)
   FetchContent_Declare(
-    nv_cub
+    ${cub_prefix}
     GIT_REPOSITORY https://github.com/NVIDIA/cub.git
     GIT_TAG        1.10.0
   )
-  FetchContent_Populate(nv_cub)
-  cuda_include_directories(${nv_cub_SOURCE_DIR})
+  FetchContent_Populate(${cub_prefix})
+  cuda_include_directories(${${cub_prefix}_SOURCE_DIR})
 endif()
 
 file(GLOB jit_src "kernel/jit.cuh")
@@ -888,3 +888,8 @@ source_group(backend\\kernel  REGULAR_EXPRESSION ${CMAKE_CURRENT_SOURCE_DIR}/ker
 source_group("generated files"  FILES ${ArrayFire_BINARY_DIR}/version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h
                                 REGULAR_EXPRESSION ${CMAKE_CURRENT_BINARY_DIR}/${kernel_headers_dir}/*)
 source_group("" FILES CMakeLists.txt)
+
+mark_as_advanced(
+  FETCHCONTENT_SOURCE_DIR_NV_CUB
+  FETCHCONTENT_UPDATES_DISCONNECTED_NV_CUB
+)
