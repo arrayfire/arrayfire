@@ -300,10 +300,6 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
     auto platform      = getActivePlatform();
 
     // The Apple platform can have the nvidia card or the AMD card
-    bool isNvidia =
-        platform == AFCL_PLATFORM_NVIDIA || platform == AFCL_PLATFORM_APPLE;
-    bool isAmd =
-        platform == AFCL_PLATFORM_AMD || platform == AFCL_PLATFORM_APPLE;
     bool isIntel = platform == AFCL_PLATFORM_INTEL;
 
     /// Intels param_size limit is much smaller than the other platforms
