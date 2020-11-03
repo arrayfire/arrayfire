@@ -40,6 +40,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
         $<TARGET_PROPERTY:glad_interface,INTERFACE_INCLUDE_DIRECTORIES>
         ${${forge_prefix}_SOURCE_DIR}/include
         ${${forge_prefix}_BINARY_DIR}/include
+        ${ArrayFire_BINARY_DIR}/include
       )
 
     set_target_properties(opencl_sort_by_key_${SBK_TYPE}

@@ -1,63 +1,61 @@
-# Copyright (c) 2017, ArrayFire
+# Copyright (c) 2021, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-include(ExternalProject)
+FetchContent_Declare(
+  ${clblas_prefix}
+  GIT_REPOSITORY    https://github.com/arrayfire/clBLAS.git
+  GIT_TAG           cmake_fixes
+)
+FetchContent_Populate(${clblas_prefix})
 
-set(prefix ${PROJECT_BINARY_DIR}/third_party/clBLAS)
-set(clBLAS_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clBLAS${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(current_build_type ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory(${${clblas_prefix}_SOURCE_DIR}/src ${${clblas_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
+set(BUILD_SHARED_LIBS ${current_build_type})
 
-find_package(OpenCL)
-
-if(WIN32 AND CMAKE_GENERATOR_PLATFORM AND NOT CMAKE_GENERATOR MATCHES "Ninja")
-  set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
-else()
-  set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
-endif()
-
-if("${CMAKE_BUILD_TYPE}" MATCHES "Release|RelWithDebInfo")
-  set(extproj_build_type "Release")
-else()
-  set(extproj_build_type ${CMAKE_BUILD_TYPE})
-endif()
-
-ExternalProject_Add(
-    clBLAS-ext
-    GIT_REPOSITORY https://github.com/arrayfire/clBLAS.git
-    GIT_TAG arrayfire-release
-    BUILD_BYPRODUCTS ${clBLAS_location}
-    PREFIX "${prefix}"
-    INSTALL_DIR "${prefix}"
-    UPDATE_COMMAND ""
-    DOWNLOAD_NO_PROGRESS 1
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${extproj_gen_opts}
-      -Wno-dev <SOURCE_DIR>/src
-      -DCMAKE_CXX_FLAGS:STRING="-fPIC"
-      -DCMAKE_C_FLAGS:STRING="-fPIC"
-      -DCMAKE_BUILD_TYPE:STRING=${extproj_build_type}
-      -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-      -DBUILD_SHARED_LIBS:BOOL=OFF
-      -DBUILD_CLIENT:BOOL=OFF
-      -DBUILD_TEST:BOOL=OFF
-      -DBUILD_KTEST:BOOL=OFF
-      -DSUFFIX_LIB:STRING=
-
-      # clBLAS uses a custom FindOpenCL that doesn't work well on Ubuntu
-      -DOPENCL_LIBRARIES:FILEPATH=${OpenCL_LIBRARIES}
-    )
-
-ExternalProject_Get_Property(clBLAS-ext install_dir)
-
-set(CLBLAS_INCLUDE_DIRS ${install_dir}/include)
-set(CLBLAS_LIBRARIES clBLAS::clBLAS)
-set(CLBLAS_FOUND ON)
-make_directory("${CLBLAS_INCLUDE_DIRS}")
-
-add_library(clBLAS::clBLAS UNKNOWN IMPORTED)
-set_target_properties(clBLAS::clBLAS PROPERTIES
-  IMPORTED_LOCATION "${clBLAS_location}"
-  INTERFACE_INCLUDE_DIRECTORIES "${CLBLAS_INCLUDE_DIRS}")
-add_dependencies(clBLAS::clBLAS clBLAS-ext)
+mark_as_advanced(
+  INSTALL_SRC
+  AUTOGEMM_ARCHITECTURE
+  Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE
+  CLBLAS_BUILD64
+  CLBLAS_BUILD_CALLBACK_CLIENT
+  CLBLAS_BUILD_CLIENT
+  CLBLAS_BUILD_EXAMPLES
+  CLBLAS_BUILD_LOADLIBRARIES
+  CLBLAS_BUILD_RUNTIME
+  CLBLAS_BUILD_TEST
+  CLBLAS_CODE_COVERAGE
+  CLBLAS_SUFFIX_BIN
+  CLBLAS_SUFFIX_LIB
+  BLAS_DEBUG_TOOLS
+  BLAS_DUMP_CLBLAS_KERNELS
+  BLAS_KEEP_KERNEL_SOURCES
+  BLAS_PRINT_BUILD_ERRORS
+  BLAS_TRACE_MALLOC
+  CLBLAS_BUILD_KTEST
+  CLBLAS_BUILD_PERFORMANCE
+  CLBLAS_BUILD_SAMPLE
+  CORR_TEST_WITH_ACML
+  OPENCL_COMPILER_DIR
+  OPENCL_VERSION
+  PRECOMPILE_GEMM_PRECISION_CGEMM
+  PRECOMPILE_GEMM_PRECISION_DGEMM
+  PRECOMPILE_GEMM_PRECISION_SGEMM
+  PRECOMPILE_GEMM_PRECISION_ZGEMM
+  PRECOMPILE_GEMM_TRANS_CC
+  PRECOMPILE_GEMM_TRANS_CN
+  PRECOMPILE_GEMM_TRANS_CT
+  PRECOMPILE_GEMM_TRANS_NC
+  PRECOMPILE_GEMM_TRANS_NN
+  PRECOMPILE_GEMM_TRANS_NT
+  PRECOMPILE_GEMM_TRANS_TC
+  PRECOMPILE_GEMM_TRANS_TN
+  PRECOMPILE_GEMM_TRANS_TT
+  PRECOMPILE_TRSM_DTRSM
+  PRECOMPILE_TRSM_STRSM
+  TARGET_PLATFORM
+)
