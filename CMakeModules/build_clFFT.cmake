@@ -1,69 +1,32 @@
-# Copyright (c) 2017, ArrayFire
+# Copyright (c) 2021, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-include(ExternalProject)
-find_program(GIT git)
+FetchContent_Declare(
+  ${clfft_prefix}
+  GIT_REPOSITORY    https://github.com/arrayfire/clFFT.git
+  GIT_TAG           cmake_fixes
+)
+FetchContent_Populate(${clfft_prefix})
 
-set(prefix "${PROJECT_BINARY_DIR}/third_party/clFFT")
-set(clFFT_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clFFT${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(current_build_type ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory(${${clfft_prefix}_SOURCE_DIR}/src ${${clfft_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
+set(BUILD_SHARED_LIBS ${current_build_type})
 
-set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
-if(WIN32 AND CMAKE_GENERATOR_PLATFORM AND NOT CMAKE_GENERATOR MATCHES "Ninja")
-  list(APPEND extproj_gen_opts "-A${CMAKE_GENERATOR_PLATFORM}")
-  if(CMAKE_GENERATOR_TOOLSET)
-    list(APPEND extproj_gen_opts "-T${CMAKE_GENERATOR_TOOLSET}")
-  endif()
-endif()
-
-set(extproj_build_type_option "")
-if(NOT isMultiConfig)
-  if("${CMAKE_BUILD_TYPE}" MATCHES "Release|RelWithDebInfo")
-    set(extproj_build_type "Release")
-  else()
-    set(extproj_build_type ${CMAKE_BUILD_TYPE})
-  endif()
-  set(extproj_build_type_option "-DCMAKE_BUILD_TYPE:STRING=${extproj_build_type}")
-endif()
-
-ExternalProject_Add(
-    clFFT-ext
-    GIT_REPOSITORY https://github.com/arrayfire/clFFT.git
-    GIT_TAG arrayfire-release
-    PREFIX "${prefix}"
-    INSTALL_DIR "${prefix}"
-    UPDATE_COMMAND ""
-    BUILD_BYPRODUCTS ${clFFT_location}
-    CONFIGURE_COMMAND ${CMAKE_COMMAND} ${extproj_gen_opts}
-      -Wno-dev <SOURCE_DIR>/src
-      -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
-      "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -w -fPIC"
-      -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
-      "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
-	  ${extproj_build_type_option}
-      -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-      -DBUILD_SHARED_LIBS:BOOL=OFF
-      -DBUILD_EXAMPLES:BOOL=OFF
-      -DBUILD_CLIENT:BOOL=OFF
-      -DBUILD_TEST:BOOL=OFF
-      -DSUFFIX_LIB:STRING=
-    ${byproducts}
-    )
-
-ExternalProject_Get_Property(clFFT-ext install_dir)
-
-set(CLFFT_INCLUDE_DIRS ${install_dir}/include)
-make_directory(${install_dir}/include)
-
-add_library(clFFT::clFFT IMPORTED STATIC)
-set_target_properties(clFFT::clFFT PROPERTIES
-  IMPORTED_LOCATION ${clFFT_location}
-  INTERFACE_INCLUDE_DIRECTORIES ${install_dir}/include
-  )
-add_dependencies(clFFT::clFFT clFFT-ext)
-
-set(CLFFT_LIBRARIES clFFT)
-set(CLFFT_FOUND ON)
+mark_as_advanced(
+  Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE
+  CLFFT_BUILD64
+  CLFFT_BUILD_CALLBACK_CLIENT
+  CLFFT_BUILD_CLIENT
+  CLFFT_BUILD_EXAMPLES
+  CLFFT_BUILD_LOADLIBRARIES
+  CLFFT_BUILD_RUNTIME
+  CLFFT_BUILD_TEST
+  CLFFT_CODE_COVERAGE
+  CLFFT_SUFFIX_BIN
+  CLFFT_SUFFIX_LIB
+)

@@ -306,7 +306,7 @@ make_test(SRC nodevice.cpp CXX11)
 
 if(OpenCL_FOUND)
   make_test(SRC ocl_ext_context.cpp
-            LIBRARIES OpenCL::OpenCL
+            LIBRARIES OpenCL::OpenCL OpenCL::cl2hpp
             BACKENDS "opencl"
             CXX11)
   make_test(SRC interop_opencl_custom_kernel_snippet.cpp
@@ -315,7 +315,7 @@ if(OpenCL_FOUND)
             NO_ARRAYFIRE_TEST
             CXX11)
   make_test(SRC interop_opencl_external_context_snippet.cpp
-            LIBRARIES OpenCL::OpenCL
+            LIBRARIES OpenCL::OpenCL OpenCL::cl2hpp
             BACKENDS "opencl"
             NO_ARRAYFIRE_TEST
             CXX11)
