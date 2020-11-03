@@ -45,7 +45,10 @@ std::string getFuncName(const vector<Node *> &output_nodes,
     funcName.reserve(512);
     funcName = is_linear ? 'L' : 'G';
 
-    for (const auto &node : output_nodes) { funcName += node->getNameStr(); }
+    for (const auto &node : output_nodes) { 
+        funcName += '_';
+        funcName += node->getNameStr(); 
+    }
 
     for (int i = 0; i < static_cast<int>(full_nodes.size()); i++) {
         full_nodes[i]->genKerName(funcName, full_ids[i]);
