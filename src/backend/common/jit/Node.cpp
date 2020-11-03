@@ -43,11 +43,11 @@ std::string getFuncName(const vector<Node *> &output_nodes,
                         const vector<Node_ids> &full_ids, bool is_linear) {
     std::string funcName;
     funcName.reserve(512);
-    funcName = is_linear ? 'L' : 'G';
+    funcName = (is_linear ? 'L' : 'G');
 
-    for (const auto &node : output_nodes) { 
+    for (const auto &node : output_nodes) {
         funcName += '_';
-        funcName += node->getNameStr(); 
+        funcName += node->getNameStr();
     }
 
     for (int i = 0; i < static_cast<int>(full_nodes.size()); i++) {
