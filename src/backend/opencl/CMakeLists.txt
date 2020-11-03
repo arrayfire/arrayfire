@@ -6,6 +6,7 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 include(InternalUtils)
+include(build_cl2hpp)
 
 generate_product_version(af_opencl_ver_res_file
   FILE_NAME "afopencl"
@@ -425,7 +426,7 @@ target_link_libraries(afopencl
     OpenCL::OpenCL
     OpenCL::cl2hpp
     afcommon_interface
-    clFFT::clFFT
+    clFFT
     opencl_scan_by_key
     opencl_sort_by_key
     Threads::Threads
@@ -434,9 +435,7 @@ target_link_libraries(afopencl
 if(AF_OPENCL_BLAS_LIBRARY STREQUAL "clBLAS")
   include(build_clBLAS)
   target_compile_definitions(afopencl PRIVATE USE_CLBLAS)
-  target_link_libraries(afopencl
-    PRIVATE
-      clBLAS::clBLAS)
+  target_link_libraries(afopencl PRIVATE clBLAS)
 elseif(AF_OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
   include(build_CLBlast)
   target_compile_definitions(afopencl PRIVATE USE_CLBLAST)

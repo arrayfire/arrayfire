@@ -1,4 +1,4 @@
-# Copyright (c) 2017, ArrayFire
+# Copyright (c) 2021, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
@@ -13,23 +13,17 @@
 
 find_package(OpenCL)
 
-set(cl2hpp_file_url "https://github.com/KhronosGroup/OpenCL-CLHPP/releases/download/v2.0.10/cl2.hpp")
-set(cl2hpp_file "${ArrayFire_BINARY_DIR}/include/CL/cl2.hpp")
+FetchContent_Declare(
+  ${cl2hpp_prefix}
+  GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-CLHPP.git
+  GIT_TAG v2.0.12
+)
+FetchContent_Populate(${cl2hpp_prefix})
 
-if(OpenCL_FOUND)
-  if (NOT EXISTS ${cl2hpp_file})
-      message(STATUS "Downloading ${cl2hpp_file_url}")
-      file(DOWNLOAD ${cl2hpp_file_url} ${cl2hpp_file}
-        EXPECTED_HASH MD5=c38d1b78cd98cc809fa2a49dbd1734a5)
-  endif()
-  get_filename_component(download_dir ${cl2hpp_file} DIRECTORY)
+if (NOT TARGET OpenCL::cl2hpp OR NOT TARGET cl2hpp)
+  add_library(cl2hpp IMPORTED INTERFACE GLOBAL)
+  add_library(OpenCL::cl2hpp IMPORTED INTERFACE GLOBAL)
 
-  if (NOT TARGET OpenCL::cl2hpp OR
-      NOT TARGET cl2hpp)
-    add_library(cl2hpp IMPORTED INTERFACE GLOBAL)
-    add_library(OpenCL::cl2hpp IMPORTED INTERFACE GLOBAL)
-
-    set_target_properties(cl2hpp OpenCL::cl2hpp PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES ${download_dir}/..)
-  endif()
+  set_target_properties(cl2hpp OpenCL::cl2hpp PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${${cl2hpp_prefix}_SOURCE_DIR}/include)
 endif()

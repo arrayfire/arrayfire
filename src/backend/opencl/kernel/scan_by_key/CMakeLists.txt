@@ -42,6 +42,7 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
         $<TARGET_PROPERTY:glad_interface,INTERFACE_INCLUDE_DIRECTORIES>
         ${${forge_prefix}_SOURCE_DIR}/include
         ${${forge_prefix}_BINARY_DIR}/include
+        ${ArrayFire_BINARY_DIR}/include
       )
 
     set_target_properties(opencl_scan_by_key_${SBK_BINARY_OP}
