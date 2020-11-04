@@ -64,17 +64,17 @@ class NaryNode : public Node {
         swap(m_op_str, other.m_op_str);
     }
 
-    void genKerName(std::stringstream &kerStream,
+    void genKerName(std::string &kerString,
                     const common::Node_ids &ids) const final {
         // Make the dec representation of enum part of the Kernel name
-        kerStream << "_" << std::setw(3) << std::setfill('0') << std::dec
-                  << m_op;
+        kerString += '_';
+        kerString += std::to_string(m_op);
+        kerString += ',';
         for (int i = 0; i < m_num_children; i++) {
-            kerStream << std::setw(3) << std::setfill('0') << std::dec
-                      << ids.child_ids[i];
+            kerString += std::to_string(ids.child_ids[i]);
+            kerString += ',';
         }
-        kerStream << std::setw(3) << std::setfill('0') << std::dec << ids.id
-                  << std::dec;
+        kerString += std::to_string(ids.id);
     }
 
     void genFuncs(std::stringstream &kerStream,

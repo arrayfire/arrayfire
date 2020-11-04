@@ -85,9 +85,9 @@ class BufferNode : public TNode<T> {
 
     size_t getBytes() const final { return m_bytes; }
 
-    void genKerName(std::stringstream &kerStream,
+    void genKerName(std::string &kerString,
                     const common::Node_ids &ids) const final {
-        UNUSED(kerStream);
+        UNUSED(kerString);
         UNUSED(ids);
     }
 
