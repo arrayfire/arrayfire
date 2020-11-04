@@ -49,9 +49,9 @@ class BinaryNode : public TNode<compute_t<To>> {
         m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
     }
 
-    void genKerName(std::stringstream &kerStream,
+    void genKerName(std::string &kerString,
                     const common::Node_ids &ids) const final {
-        UNUSED(kerStream);
+        UNUSED(kerString);
         UNUSED(ids);
     }
 

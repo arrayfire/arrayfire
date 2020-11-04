@@ -122,7 +122,7 @@ class Node {
                     std::vector<Node_ids> &full_ids);
 
     /// Generates the string that will be used to hash the kernel
-    virtual void genKerName(std::stringstream &kerStream,
+    virtual void genKerName(std::string &kerString,
                             const Node_ids &ids) const = 0;
 
     /// Generates the function parameters for the node.
