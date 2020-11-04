@@ -48,9 +48,9 @@ class UnaryNode : public TNode<To> {
         m_op.eval(TNode<To>::m_val, m_child->m_val, lim);
     }
 
-    void genKerName(std::stringstream &kerStream,
+    void genKerName(std::string &kerString,
                     const common::Node_ids &ids) const final {
-        UNUSED(kerStream);
+        UNUSED(kerString);
         UNUSED(ids);
     }
 
