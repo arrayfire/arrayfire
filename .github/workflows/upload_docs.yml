@@ -1,0 +1,53 @@
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+    - 'v*' # Push events to tag names starting with v
+
+name: ci
+
+jobs:
+    upload_docs:
+        name: Upload release source tarball
+        runs-on: ubuntu-18.04
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@master
+
+            - name: Fetch Version Info
+              run: |
+                  tag=$(echo ${GITHUB_REF} | awk '{split($0, a, "/"); print a[3]}')
+                  ver=${tag:1}
+                  echo "AF_VER=${ver}" >> $GITHUB_ENV
+
+            - name: Install doxygen and dependencies
+              run: |
+                  sudo apt-get -qq update
+                  sudo apt-get install -y build-essential doxygen wget
+
+            - name: CMake Configure
+              run: |
+                  git submodule update --init --recursive
+                  mkdir build && cd build
+                  cmake .. \
+                      -DBOOST_ROOT:PATH=${BOOST_ROOT_1_72_0} \
+                      -DAF_BUILD_CPU:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
+                      -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_DOCS:BOOL=ON \
+                      -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=OFF \
+                      -DAF_BUILD_FORGE:BOOL=OFF -DBUILD_TESTING:BOOL=OFF
+                  make docs
+
+            - name: Upload docs to arrayfire.github.io
+              env:
+                  API_TOKEN_GITHUB: ${{ secrets.AF_DOCS_UPDATE_TOKEN }}
+              run: |
+                  git clone https://9prady9:${API_TOKEN_GITHUB}@github.com/arrayfire/arrayfire.github.io.git
+                  cd arrayfire.github.io
+                  git config user.name "ArrayFire"
+                  git config user.email "technical@arrayfire.com"
+                  git rm -q -r docs/*
+                  mkdir docs
+                  cp -r ../build/docs/html/* ./docs/
+                  git add docs
+                  git commit -q -m "Docs update for ${AF_VER} release"
+                  git push
