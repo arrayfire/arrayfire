@@ -7,25 +7,18 @@
 
 include(InternalUtils)
 include(build_cl2hpp)
+include(build_CLBlast)
+include(build_clFFT)
+include(FileToString)
 
 generate_product_version(af_opencl_ver_res_file
   FILE_NAME "afopencl"
   FILE_DESCRIPTION "OpenCL Backend Dynamic-link library"
 )
 
-set(AF_OPENCL_BLAS_LIBRARY CLBlast CACHE STRING "Select OpenCL BLAS back-end")
-set_property(CACHE AF_OPENCL_BLAS_LIBRARY PROPERTY STRINGS "clBLAS" "CLBlast")
-
-af_deprecate(OPENCL_BLAS_LIBRARY AF_OPENCL_BLAS_LIBRARY)
-
-include(build_clFFT)
-
 file(GLOB kernel_src kernel/*.cl kernel/KParam.hpp)
 
-set( kernel_headers_dir
-    "kernel_headers")
-
-include(FileToString)
+set( kernel_headers_dir "kernel_headers")
 
 file_to_string(
     SOURCES ${kernel_src}
@@ -407,7 +400,7 @@ target_include_directories(afopencl
 
 arrayfire_set_default_cxx_flags(afopencl)
 
-add_dependencies(afopencl ${cl_kernel_targets})
+add_dependencies(afopencl ${cl_kernel_targets} CLBlast-ext)
 add_dependencies(opencl_scan_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
 add_dependencies(opencl_sort_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
 
@@ -427,23 +420,11 @@ target_link_libraries(afopencl
     OpenCL::cl2hpp
     afcommon_interface
     clFFT
+    CLBlast
     opencl_scan_by_key
     opencl_sort_by_key
     Threads::Threads
     )
-
-if(AF_OPENCL_BLAS_LIBRARY STREQUAL "clBLAS")
-  include(build_clBLAS)
-  target_compile_definitions(afopencl PRIVATE USE_CLBLAS)
-  target_link_libraries(afopencl PRIVATE clBLAS)
-elseif(AF_OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
-  include(build_CLBlast)
-  target_compile_definitions(afopencl PRIVATE USE_CLBLAST)
-  target_link_libraries(afopencl
-    PRIVATE
-      CLBlast)
-    add_dependencies(afopencl CLBlast-ext)
-endif()
 
 if(APPLE)
   target_link_libraries(afopencl PRIVATE OpenGL::GL)
@@ -464,7 +445,6 @@ if(LAPACK_FOUND OR (USE_OPENCL_MKL AND MKL_Shared_FOUND))
       magma/laswp.cpp
       magma/magma.h
       magma/magma_blas.h
-      magma/magma_blas_clblas.h
       magma/magma_blas_clblast.h
       magma/magma_common.h
       magma/magma_cpu_blas.h
