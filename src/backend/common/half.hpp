@@ -879,22 +879,14 @@ class alignas(2) half {
         return *this;
     }
 
-#if defined(NVCC) || defined(__CUDACC_RTC__)
-    AF_CONSTEXPR __DH__ explicit half(__half value) noexcept
-#ifdef __CUDA_ARCH__
+    AF_CONSTEXPR __DH__ explicit half(native_half_t value) noexcept
         : data_(value) {
     }
-#else
-        : data_(*reinterpret_cast<native_half_t*>(&value)) {
-    }
-#endif
-    AF_CONSTEXPR __DH__ half& operator=(__half value) noexcept {
-        // NOTE Assignment to ushort from __half only works with device code.
-        // using memcpy instead
-        data_ = *reinterpret_cast<native_half_t*>(&value);
+
+    AF_CONSTEXPR __DH__ half& operator=(native_half_t value) noexcept {
+        data_ = value;
         return *this;
     }
-#endif
 
     __DH__ explicit operator float() const noexcept {
         return half2float(data_);
