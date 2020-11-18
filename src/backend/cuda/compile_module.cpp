@@ -382,7 +382,8 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
                               return lhs + ", " + rhs;
                           });
     };
-    AF_TRACE("{{{compile:{:>5} ms, link:{:>4} ms, {{ {} }}, {} }}}",
+    AF_TRACE("{{ {:<20} : compile:{:>5} ms, link:{:>4} ms, {{ {} }}, {} }}",
+             moduleKey,
              duration_cast<milliseconds>(compile_end - compile).count(),
              duration_cast<milliseconds>(link_end - link).count(),
              listOpts(compiler_options), getDeviceProp(device).name);
