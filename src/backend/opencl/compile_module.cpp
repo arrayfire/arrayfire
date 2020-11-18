@@ -207,7 +207,7 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
     }
 #endif
 
-    AF_TRACE("{{{:<20} : {{ compile:{:>5} ms, {{ {} }}, {} }}}}", moduleKey,
+    AF_TRACE("{{ {:<20} : {{ compile:{:>5} ms, {{ {} }}, {} }} }}", moduleKey,
              duration_cast<milliseconds>(compileEnd - compileBegin).count(),
              fmt::join(options, " "),
              getDevice(getActiveDeviceId()).getInfo<CL_DEVICE_NAME>());
