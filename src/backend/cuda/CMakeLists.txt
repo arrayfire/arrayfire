@@ -245,9 +245,14 @@ if(AF_WITH_NONFREE)
   set(cxx_definitions -DAF_WITH_NONFREE_SIFT)
 endif()
 
+# New API of cuSparse was introduced in 10.1.168 for Linux and the older
+# 10.1.105 fix version doesn't it. Unfortunately, the new API was introduced in
+# in a fix release of CUDA - unconventionally. As CMake's FindCUDA module
+# doesn't provide patch/fix version number, we use 10.2 as the minimum
+# CUDA version to enable this new cuSparse API.
 if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
    (UNIX AND
-    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 0))
+    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 1))
   list(APPEND cxx_definitions -DAF_USE_NEW_CUSPARSE_API)
 endif()
 
@@ -306,7 +311,7 @@ set_target_properties(af_cuda_static_cuda_library
 
 if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
    (UNIX AND
-    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 0))
+    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 1))
   target_compile_definitions(af_cuda_static_cuda_library PRIVATE AF_USE_NEW_CUSPARSE_API)
 endif()
 
