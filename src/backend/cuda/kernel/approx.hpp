@@ -15,8 +15,6 @@
 #include <nvrtc_kernel_headers/approx2_cuh.hpp>
 #include <af/defines.h>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -29,10 +27,8 @@ template<typename Ty, typename Tp>
 void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
              const Tp &xi_beg, const Tp &xi_step, const float offGrid,
              const af::interpType method, const int order) {
-    static const std::string source(approx1_cuh, approx1_cuh_len);
-
     auto approx1 =
-        common::getKernel("cuda::approx1", {source},
+        common::getKernel("cuda::approx1", {approx1_cuh_src},
                           {TemplateTypename<Ty>(), TemplateTypename<Tp>(),
                            TemplateArg(xdim), TemplateArg(order)});
 
@@ -60,10 +56,8 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
              const Tp &xi_beg, const Tp &xi_step, CParam<Tp> yo, const int ydim,
              const Tp &yi_beg, const Tp &yi_step, const float offGrid,
              const af::interpType method, const int order) {
-    static const std::string source(approx2_cuh, approx2_cuh_len);
-
     auto approx2 = common::getKernel(
-        "cuda::approx2", {source},
+        "cuda::approx2", {approx2_cuh_src},
         {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(xdim),
          TemplateArg(ydim), TemplateArg(order)});
 

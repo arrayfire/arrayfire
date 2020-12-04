@@ -49,8 +49,6 @@ std::array<Kernel, 3> getRegionsKernels(const bool full_conn,
     constexpr int block_dim = 16;
     constexpr int num_warps = 8;
 
-    static const std::string src(regions_cl, regions_cl_len);
-
     ToNumStr<T> toNumStr;
     vector<TemplateArg> targs = {
         TemplateTypename<T>(),
@@ -68,9 +66,9 @@ std::array<Kernel, 3> getRegionsKernels(const bool full_conn,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::getKernel("initial_label", {src}, targs, options),
-        common::getKernel("final_relabel", {src}, targs, options),
-        common::getKernel("update_equiv", {src}, targs, options),
+        common::getKernel("initial_label", {regions_cl_src}, targs, options),
+        common::getKernel("final_relabel", {regions_cl_src}, targs, options),
+        common::getKernel("update_equiv", {regions_cl_src}, targs, options),
     };
 }
 

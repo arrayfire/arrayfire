@@ -14,6 +14,14 @@
 #include <string>
 #include <vector>
 
+namespace common {
+struct Source {
+    const char* ptr;           // Pointer to the kernel source
+    const std::size_t length;  // Length of the kernel source
+    const std::size_t hash;    // hash value for the source *ptr;
+};
+}  // namespace common
+
 /// The environment variable that determines where the runtime kernels
 /// will be stored on the file system
 constexpr const char* JIT_KERNEL_CACHE_DIRECTORY_ENV_NAME =
@@ -51,12 +59,21 @@ std::string makeTempFilename();
 ///
 /// \param[in] data Binary data to hash
 /// \param[in] byteSize Size of the data in bytes
+/// \param[in] optional prevHash Hash of previous parts when string is split
 ///
 /// \returns An unsigned integer representing the hash of the data
-std::size_t deterministicHash(const void* data, std::size_t byteSize);
+constexpr std::size_t FNV1A_BASE_OFFSET = 0x811C9DC5;
+constexpr std::size_t FNV1A_PRIME       = 0x01000193;
+std::size_t deterministicHash(const void* data, std::size_t byteSize,
+                              const std::size_t prevHash = FNV1A_BASE_OFFSET);
 
 // This is just a wrapper around the above function.
-std::size_t deterministicHash(const std::string& data);
+std::size_t deterministicHash(const std::string& data,
+                              const std::size_t prevHash = FNV1A_BASE_OFFSET);
 
 // This concatenates strings in the vector and computes hash
-std::size_t deterministicHash(const std::vector<std::string>& list);
+std::size_t deterministicHash(const std::vector<std::string>& list,
+                              const std::size_t prevHash = FNV1A_BASE_OFFSET);
+
+// This concatenates hashes of multiple sources
+std::size_t deterministicHash(const std::vector<common::Source>& list);

@@ -19,15 +19,9 @@
 #include "config.hpp"
 
 #include <memory>
-#include <string>
 
 namespace cuda {
 namespace kernel {
-
-static inline std::string ireduceSource() {
-    static const std::string src(ireduce_cuh, ireduce_cuh_len);
-    return src;
-}
 
 template<typename T, af_op_t op, int dim, bool is_first>
 void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
@@ -43,7 +37,7 @@ void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
     blocks.y = divup(blocks.y, blocks.z);
 
     auto ireduceDim = common::getKernel(
-        "cuda::ireduceDim", {ireduceSource()},
+        "cuda::ireduceDim", {ireduce_cuh_src},
         {TemplateTypename<T>(), TemplateArg(op), TemplateArg(dim),
          TemplateArg(is_first), TemplateArg(threads_y)},
         {DefineValue(THREADS_X)});
@@ -111,7 +105,7 @@ void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
 
     // threads_x can take values 32, 64, 128, 256
     auto ireduceFirst =
-        common::getKernel("cuda::ireduceFirst", {ireduceSource()},
+        common::getKernel("cuda::ireduceFirst", {ireduce_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(op),
                            TemplateArg(is_first), TemplateArg(threads_x)},
                           {DefineValue(THREADS_PER_BLOCK)});

@@ -138,10 +138,24 @@ if(CMAKE_CROSSCOMPILING)
                        "directory and build the bin2cpp target.")
   endif()
 else()
-  add_executable(bin2cpp ${ArrayFire_SOURCE_DIR}/CMakeModules/bin2cpp.cpp)
+  add_executable(bin2cpp ${ArrayFire_SOURCE_DIR}/CMakeModules/bin2cpp.cpp
+                         ${ArrayFire_SOURCE_DIR}/src/backend/common/util.cpp)
+  if(WIN32)
+    target_compile_definitions(bin2cpp PRIVATE OS_WIN)
+  elseif(APPLE)
+    target_compile_definitions(bin2cpp PRIVATE OS_MAC)
+  elseif(UNIX)
+    target_compile_definitions(bin2cpp PRIVATE OS_LNX)
+  endif()
+  target_include_directories(bin2cpp PRIVATE
+                             ${ArrayFire_SOURCE_DIR}/include
+                             ${ArrayFire_SOURCE_DIR}/build/include
+                             ${ArrayFire_SOURCE_DIR}/src/backend
+                             ${ArrayFire_SOURCE_DIR}/extern/spdlog/include)
   target_link_libraries(bin2cpp)
   export(TARGETS bin2cpp FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake)
 endif()
+
 
 if(NOT LAPACK_FOUND)
     if(APPLE)

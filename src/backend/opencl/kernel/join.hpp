@@ -29,15 +29,13 @@ void join(Param out, const Param in, dim_t dim, const af::dim4 offset) {
     constexpr int TILEX = 256;
     constexpr int TILEY = 32;
 
-    static const std::string src(join_cl, join_cl_len);
-
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto join =
-        common::getKernel("join_kernel", {src},
+        common::getKernel("join_kernel", {join_cl_src},
                           {TemplateTypename<T>(), TemplateArg(dim)}, options);
     cl::NDRange local(TX, TY, 1);
 

@@ -15,25 +15,18 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/susan_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
 constexpr unsigned BLOCK_X = 16;
 constexpr unsigned BLOCK_Y = 16;
 
-static inline std::string susanSource() {
-    static const std::string src(susan_cuh, susan_cuh_len);
-    return src;
-}
-
 template<typename T>
 void susan_responses(T* out, const T* in, const unsigned idim0,
                      const unsigned idim1, const int radius, const float t,
                      const float g, const unsigned edge) {
     auto susan = common::getKernel(
-        "cuda::susan", {susanSource()}, {TemplateTypename<T>()},
+        "cuda::susan", {susan_cuh_src}, {TemplateTypename<T>()},
         {DefineValue(BLOCK_X), DefineValue(BLOCK_Y)});
 
     dim3 threads(BLOCK_X, BLOCK_Y);
@@ -52,7 +45,7 @@ template<typename T>
 void nonMaximal(float* x_out, float* y_out, float* resp_out, unsigned* count,
                 const unsigned idim0, const unsigned idim1, const T* resp_in,
                 const unsigned edge, const unsigned max_corners) {
-    auto nonMax = common::getKernel("cuda::nonMax", {susanSource()},
+    auto nonMax = common::getKernel("cuda::nonMax", {susan_cuh_src},
                                     {TemplateTypename<T>()});
 
     dim3 threads(BLOCK_X, BLOCK_Y);

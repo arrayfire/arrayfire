@@ -36,6 +36,7 @@ using cl::NullRange;
 
 using std::string;
 using std::stringstream;
+using std::to_string;
 using std::vector;
 
 namespace opencl {
@@ -143,7 +144,7 @@ cl::Kernel getKernel(const vector<Node *> &output_nodes,
                      const vector<Node_ids> &full_ids, const bool is_linear) {
     const string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
-    const string moduleKey = std::to_string(deterministicHash(funcName));
+    const size_t moduleKey = deterministicHash(funcName);
 
     // A forward lookup in module cache helps avoid recompiling the jit
     // source generated from identical jit-trees. It also enables us
@@ -151,11 +152,12 @@ cl::Kernel getKernel(const vector<Node *> &output_nodes,
     auto entry = common::findModule(getActiveDeviceId(), moduleKey);
 
     if (!entry) {
-        static const string jit(jit_cl, jit_cl_len);
-
         string jitKer = getKernelString(funcName, full_nodes, full_ids,
                                         output_ids, is_linear);
-        int device    = getActiveDeviceId();
+        common::Source jitKer_cl_src{
+            jitKer.data(), jitKer.size(),
+            deterministicHash(jitKer.data(), jitKer.size())};
+        int device = getActiveDeviceId();
         vector<string> options;
         if (isDoubleSupported(device)) {
             options.emplace_back(DefineKey(USE_DOUBLE));
@@ -166,7 +168,8 @@ cl::Kernel getKernel(const vector<Node *> &output_nodes,
 
         saveKernel(funcName, jitKer, ".cl");
 
-        return common::getKernel(funcName, {jit, jitKer}, {}, options, true)
+        return common::getKernel(funcName, {jit_cl_src, jitKer_cl_src}, {},
+                                 options, true)
             .get();
     }
     return common::getKernel(entry, funcName, true).get();

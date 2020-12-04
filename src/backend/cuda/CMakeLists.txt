@@ -301,6 +301,11 @@ cuda_add_library(af_cuda_static_cuda_library STATIC
     -Xcudafe --display_error_number -Xcudafe \"--diag_suppress=1427\" -DAFDLL
 )
 
+target_include_directories(af_cuda_static_cuda_library
+  PRIVATE
+  ${CMAKE_CURRENT_BINARY_DIR}
+)
+
 set_target_properties(af_cuda_static_cuda_library
   PROPERTIES
   LINKER_LANGUAGE CXX

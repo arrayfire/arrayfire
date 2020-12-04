@@ -16,8 +16,6 @@
 #include <nvrtc_kernel_headers/sparse_arith_cuh.hpp>
 #include <optypes.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -25,16 +23,11 @@ constexpr unsigned TX      = 32;
 constexpr unsigned TY      = 8;
 constexpr unsigned THREADS = TX * TY;
 
-static inline std::string sparseArithSrc() {
-    static const std::string src(sparse_arith_cuh, sparse_arith_cuh_len);
-    return src;
-}
-
 template<typename T, af_op_t op>
 void sparseArithOpCSR(Param<T> out, CParam<T> values, CParam<int> rowIdx,
                       CParam<int> colIdx, CParam<T> rhs, const bool reverse) {
     auto csrArithDSD =
-        common::getKernel("cuda::csrArithDSD", {sparseArithSrc()},
+        common::getKernel("cuda::csrArithDSD", {sparse_arith_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(op)},
                           {DefineValue(TX), DefineValue(TY)});
 
@@ -54,7 +47,7 @@ template<typename T, af_op_t op>
 void sparseArithOpCOO(Param<T> out, CParam<T> values, CParam<int> rowIdx,
                       CParam<int> colIdx, CParam<T> rhs, const bool reverse) {
     auto cooArithDSD = common::getKernel(
-        "cuda::cooArithDSD", {sparseArithSrc()},
+        "cuda::cooArithDSD", {sparse_arith_cuh_src},
         {TemplateTypename<T>(), TemplateArg(op)}, {DefineValue(THREADS)});
 
     // Linear indexing with one elements per thread
@@ -73,7 +66,7 @@ template<typename T, af_op_t op>
 void sparseArithOpCSR(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                       CParam<T> rhs, const bool reverse) {
     auto csrArithSSD =
-        common::getKernel("cuda::csrArithSSD", {sparseArithSrc()},
+        common::getKernel("cuda::csrArithSSD", {sparse_arith_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(op)},
                           {DefineValue(TX), DefineValue(TY)});
 
@@ -93,7 +86,7 @@ template<typename T, af_op_t op>
 void sparseArithOpCOO(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                       CParam<T> rhs, const bool reverse) {
     auto cooArithSSD = common::getKernel(
-        "cuda::cooArithSSD", {sparseArithSrc()},
+        "cuda::cooArithSSD", {sparse_arith_cuh_src},
         {TemplateTypename<T>(), TemplateArg(op)}, {DefineValue(THREADS)});
 
     // Linear indexing with one elements per thread

@@ -13,8 +13,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/bilateral_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -24,10 +22,8 @@ static const int THREADS_Y = 16;
 template<typename inType, typename outType>
 void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
                float c_sigma) {
-    static const std::string source(bilateral_cuh, bilateral_cuh_len);
-
     auto bilateral = common::getKernel(
-        "cuda::bilateral", {source},
+        "cuda::bilateral", {bilateral_cuh_src},
         {TemplateTypename<inType>(), TemplateTypename<outType>()},
         {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 

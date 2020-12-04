@@ -13,8 +13,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/hsv_rgb_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -23,10 +21,8 @@ static const int THREADS_Y = 16;
 
 template<typename T>
 void hsv2rgb_convert(Param<T> out, CParam<T> in, bool isHSV2RGB) {
-    static const std::string source(hsv_rgb_cuh, hsv_rgb_cuh_len);
-
     auto hsvrgbConverter =
-        common::getKernel("cuda::hsvrgbConverter", {source},
+        common::getKernel("cuda::hsvrgbConverter", {hsv_rgb_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(isHSV2RGB)});
 
     const dim3 threads(THREADS_X, THREADS_Y);

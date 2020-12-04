@@ -15,26 +15,19 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/fftconvolve_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
 static const int THREADS = 256;
 
-static inline std::string fftConvSource() {
-    static const std::string src(fftconvolve_cuh, fftconvolve_cuh_len);
-    return src;
-}
-
 template<typename convT, typename T>
 void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                     CParam<T> sig, CParam<T> filter) {
     auto packData =
-        common::getKernel("cuda::packData", {fftConvSource()},
+        common::getKernel("cuda::packData", {fftconvolve_cuh_src},
                           {TemplateTypename<convT>(), TemplateTypename<T>()});
     auto padArray =
-        common::getKernel("cuda::padArray", {fftConvSource()},
+        common::getKernel("cuda::padArray", {fftconvolve_cuh_src},
                           {TemplateTypename<convT>(), TemplateTypename<T>()});
 
     dim_t *sd = sig.dims;
@@ -75,7 +68,7 @@ template<typename T, typename convT>
 void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                            AF_BATCH_KIND kind) {
     auto cplxMul =
-        common::getKernel("cuda::complexMultiply", {fftConvSource()},
+        common::getKernel("cuda::complexMultiply", {fftconvolve_cuh_src},
                           {TemplateTypename<convT>(), TemplateArg(kind)});
 
     int sig_packed_elem    = 1;
@@ -108,7 +101,7 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
     constexpr bool RoundResult = std::is_integral<T>::value;
 
     auto reorderOut =
-        common::getKernel("cuda::reorderOutput", {fftConvSource()},
+        common::getKernel("cuda::reorderOutput", {fftconvolve_cuh_src},
                           {TemplateTypename<T>(), TemplateTypename<convT>(),
                            TemplateArg(expand), TemplateArg(RoundResult)});
 

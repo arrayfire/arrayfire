@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/sparse_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -25,11 +23,9 @@ void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
                CParam<int> colIdx) {
     constexpr int reps = 4;
 
-    static const std::string source(sparse_cuh, sparse_cuh_len);
-
     auto coo2Dense =
-        common::getKernel("cuda::coo2Dense", {source}, {TemplateTypename<T>()},
-                          {DefineValue(reps)});
+        common::getKernel("cuda::coo2Dense", {sparse_cuh_src},
+                          {TemplateTypename<T>()}, {DefineValue(reps)});
 
     dim3 threads(256, 1, 1);
 

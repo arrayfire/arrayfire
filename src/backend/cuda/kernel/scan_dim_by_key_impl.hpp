@@ -20,15 +20,9 @@
 #include <traits.hpp>
 
 #include <algorithm>
-#include <string>
 
 namespace cuda {
 namespace kernel {
-
-static inline std::string sbkDimSource() {
-    static const std::string src(scan_dim_by_key_cuh, scan_dim_by_key_cuh_len);
-    return src;
-}
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
 static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
@@ -38,7 +32,7 @@ static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                        const dim_t blocks_all[4],
                                        bool inclusive_scan) {
     auto scanbykey_dim_nonfinal = common::getKernel(
-        "cuda::scanbykey_dim_nonfinal", {sbkDimSource()},
+        "cuda::scanbykey_dim_nonfinal", {scan_dim_by_key_cuh_src},
         {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
          TemplateArg(op)},
         {DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
@@ -62,7 +56,7 @@ static void scan_dim_final_launcher(Param<To> out, CParam<Ti> in,
                                     const dim_t blocks_all[4],
                                     bool calculateFlags, bool inclusive_scan) {
     auto scanbykey_dim_final = common::getKernel(
-        "cuda::scanbykey_dim_final", {sbkDimSource()},
+        "cuda::scanbykey_dim_final", {scan_dim_by_key_cuh_src},
         {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
          TemplateArg(op)},
         {DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
@@ -83,9 +77,9 @@ template<typename To, af_op_t op>
 static void bcast_dim_launcher(Param<To> out, CParam<To> tmp, Param<int> tlid,
                                const int dim, const uint threads_y,
                                const dim_t blocks_all[4]) {
-    auto scanbykey_dim_bcast =
-        common::getKernel("cuda::scanbykey_dim_bcast", {sbkDimSource()},
-                          {TemplateTypename<To>(), TemplateArg(op)});
+    auto scanbykey_dim_bcast = common::getKernel(
+        "cuda::scanbykey_dim_bcast", {scan_dim_by_key_cuh_src},
+        {TemplateTypename<To>(), TemplateArg(op)});
     dim3 threads(THREADS_X, threads_y);
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
 

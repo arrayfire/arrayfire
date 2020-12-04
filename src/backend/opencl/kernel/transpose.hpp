@@ -34,8 +34,6 @@ void transpose(Param out, const Param in, cl::CommandQueue queue,
     using std::string;
     using std::vector;
 
-    static const string src(transpose_cl, transpose_cl_len);
-
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateArg(conjugate),
@@ -50,8 +48,8 @@ void transpose(Param out, const Param in, cl::CommandQueue queue,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto transpose =
-        common::getKernel("transpose", {src}, tmpltArgs, compileOpts);
+    auto transpose = common::getKernel("transpose", {transpose_cl_src},
+                                       tmpltArgs, compileOpts);
 
     NDRange local(THREADS_X, THREADS_Y);
 

@@ -45,13 +45,10 @@ AF_CONSTEXPR const char *getOpString() {
 }
 
 template<typename T, af_op_t op>
-auto fetchKernel(const std::string key, const std::string &additionalSrc,
+auto fetchKernel(const std::string key, const common::Source &additionalSrc,
                  const std::vector<std::string> additionalOptions = {}) {
     constexpr bool IsComplex =
         std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
-
-    static const std::string src(sparse_arith_common_cl,
-                                 sparse_arith_common_cl_len);
 
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
@@ -65,15 +62,15 @@ auto fetchKernel(const std::string key, const std::string &additionalSrc,
     options.emplace_back(getTypeBuildDefinition<T>());
     options.insert(std::end(options), std::begin(additionalOptions),
                    std::end(additionalOptions));
-    return common::getKernel(key, {src, additionalSrc}, tmpltArgs, options);
+    return common::getKernel(key, {sparse_arith_common_cl_src, additionalSrc},
+                             tmpltArgs, options);
 }
 
 template<typename T, af_op_t op>
 void sparseArithOpCSR(Param out, const Param values, const Param rowIdx,
                       const Param colIdx, const Param rhs, const bool reverse) {
-    static const std::string src(sparse_arith_csr_cl, sparse_arith_csr_cl_len);
-
-    auto sparseArithCSR = fetchKernel<T, op>("sparseArithCSR", src);
+    auto sparseArithCSR =
+        fetchKernel<T, op>("sparseArithCSR", sparse_arith_csr_cl_src);
 
     cl::NDRange local(TX, TY, 1);
     cl::NDRange global(divup(out.info.dims[0], TY) * TX, TY, 1);
@@ -88,9 +85,8 @@ void sparseArithOpCSR(Param out, const Param values, const Param rowIdx,
 template<typename T, af_op_t op>
 void sparseArithOpCOO(Param out, const Param values, const Param rowIdx,
                       const Param colIdx, const Param rhs, const bool reverse) {
-    static const std::string src(sparse_arith_coo_cl, sparse_arith_coo_cl_len);
-
-    auto sparseArithCOO = fetchKernel<T, op>("sparseArithCOO", src);
+    auto sparseArithCOO =
+        fetchKernel<T, op>("sparseArithCOO", sparse_arith_coo_cl_src);
 
     cl::NDRange local(THREADS, 1, 1);
     cl::NDRange global(divup(values.info.dims[0], THREADS) * THREADS, 1, 1);
@@ -105,9 +101,8 @@ void sparseArithOpCOO(Param out, const Param values, const Param rowIdx,
 template<typename T, af_op_t op>
 void sparseArithOpCSR(Param values, Param rowIdx, Param colIdx, const Param rhs,
                       const bool reverse) {
-    static const std::string src(sparse_arith_csr_cl, sparse_arith_csr_cl_len);
-
-    auto sparseArithCSR = fetchKernel<T, op>("sparseArithCSR2", src);
+    auto sparseArithCSR =
+        fetchKernel<T, op>("sparseArithCSR2", sparse_arith_csr_cl_src);
 
     cl::NDRange local(TX, TY, 1);
     cl::NDRange global(divup(rhs.info.dims[0], TY) * TX, TY, 1);
@@ -122,9 +117,8 @@ void sparseArithOpCSR(Param values, Param rowIdx, Param colIdx, const Param rhs,
 template<typename T, af_op_t op>
 void sparseArithOpCOO(Param values, Param rowIdx, Param colIdx, const Param rhs,
                       const bool reverse) {
-    static const std::string src(sparse_arith_coo_cl, sparse_arith_coo_cl_len);
-
-    auto sparseArithCOO = fetchKernel<T, op>("sparseArithCOO2", src);
+    auto sparseArithCOO =
+        fetchKernel<T, op>("sparseArithCOO2", sparse_arith_coo_cl_src);
 
     cl::NDRange local(THREADS, 1, 1);
     cl::NDRange global(divup(values.info.dims[0], THREADS) * THREADS, 1, 1);
@@ -144,14 +138,12 @@ static void csrCalcOutNNZ(Param outRowIdx, unsigned &nnzC, const uint M,
     UNUSED(nnzA);
     UNUSED(nnzB);
 
-    static const std::string src(ssarith_calc_out_nnz_cl,
-                                 ssarith_calc_out_nnz_cl_len);
-
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<uint>(),
     };
 
-    auto calcNNZ = common::getKernel("csr_calc_out_nnz", {src}, tmpltArgs, {});
+    auto calcNNZ = common::getKernel(
+        "csr_calc_out_nnz", {ssarith_calc_out_nnz_cl_src}, tmpltArgs, {});
 
     cl::NDRange local(256, 1);
     cl::NDRange global(divup(M, local[0]) * local[0], 1, 1);
@@ -172,13 +164,11 @@ void ssArithCSR(Param oVals, Param oColIdx, const Param oRowIdx, const uint M,
                 const uint N, unsigned nnzA, const Param lVals,
                 const Param lRowIdx, const Param lColIdx, unsigned nnzB,
                 const Param rVals, const Param rRowIdx, const Param rColIdx) {
-    static const std::string src(sp_sp_arith_csr_cl, sp_sp_arith_csr_cl_len);
-
     const T iden_val =
         (op == af_mul_t || op == af_div_t ? scalar<T>(1) : scalar<T>(0));
 
     auto arithOp = fetchKernel<T, op>(
-        "ssarith_csr", src,
+        "ssarith_csr", sp_sp_arith_csr_cl_src,
         {DefineKeyValue(IDENTITY_VALUE, af::scalar_to_option(iden_val))});
 
     cl::NDRange local(256, 1);

@@ -34,8 +34,6 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
     // handle this.
     constexpr int rows_per_group = 64;
 
-    static const std::string src(cscmv_cl, cscmv_cl_len);
-
     const bool use_alpha = (alpha != scalar<T>(1.0));
     const bool use_beta  = (beta != scalar<T>(0.0));
 
@@ -55,7 +53,8 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto cscmvBlock = common::getKernel("cscmv_block", {src}, targs, options);
+    auto cscmvBlock =
+        common::getKernel("cscmv_block", {cscmv_cl_src}, targs, options);
 
     cl::NDRange local(threads);
     int K        = colIdx.info.dims[0] - 1;
