@@ -149,7 +149,7 @@ else()
   endif()
   target_include_directories(bin2cpp PRIVATE
                              ${ArrayFire_SOURCE_DIR}/include
-                             ${ArrayFire_SOURCE_DIR}/build/include
+                             ${ArrayFire_BINARY_DIR}/include
                              ${ArrayFire_SOURCE_DIR}/src/backend
                              ${ArrayFire_SOURCE_DIR}/extern/spdlog/include)
   target_link_libraries(bin2cpp)
