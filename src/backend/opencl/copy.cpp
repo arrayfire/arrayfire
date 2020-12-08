@@ -22,6 +22,8 @@ namespace opencl {
 
 template<typename T>
 void copyData(T *data, const Array<T> &A) {
+    if (A.elements() == 0) { return; }
+
     // FIXME: Merge this with copyArray
     A.eval();
 
