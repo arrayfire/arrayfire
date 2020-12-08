@@ -51,8 +51,9 @@ void copyData(T *data, const Array<T> &A) {
 template<typename T>
 Array<T> copyArray(const Array<T> &A) {
     Array<T> out = createEmptyArray<T>(A.dims());
-    dim_t offset = A.getOffset();
+    if (A.elements() == 0) { return out; }
 
+    dim_t offset = A.getOffset();
     if (A.isLinear()) {
         // FIXME: Add checks
         getQueue().enqueueCopyBuffer(*A.get(), *out.get(), sizeof(T) * offset,
