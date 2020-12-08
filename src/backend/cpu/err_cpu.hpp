@@ -9,8 +9,8 @@
 
 #include <common/err_common.hpp>
 
-#define CPU_NOT_SUPPORTED(message)                                         \
-    do {                                                                   \
-        throw SupportError(__PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, \
-                           message, boost::stacktrace::stacktrace());      \
+#define CPU_NOT_SUPPORTED(message)                                          \
+    do {                                                                    \
+        throw SupportError(__AF_FUNC__, __AF_FILENAME__, __LINE__, message, \
+                           boost::stacktrace::stacktrace());                \
     } while (0)
