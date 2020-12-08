@@ -36,11 +36,15 @@ inline std::string clipFilePath(std::string path, std::string str) {
 #define STATIC_ static
 #define __AF_FILENAME__ (clipFilePath(__FILE__, "src\\").c_str())
 #else
-//#ifndef __PRETTY_FUNCTION__
-//    #define __PRETTY_FUNCTION__ __func__ // __PRETTY_FUNCTION__ Fallback
-//#endif
 #define STATIC_ inline
 #define __AF_FILENAME__ (clipFilePath(__FILE__, "src/").c_str())
+#endif
+
+#if defined(NDEBUG)
+#define __AF_FUNC__ __FUNCTION__
+#else
+// Debug
+#define __AF_FUNC__ __PRETTY_FUNCTION__
 #endif
 
 #ifdef OS_WIN
