@@ -618,3 +618,14 @@ TEST(Array, CopyListInitializerListDim4Assignment) {
 
     ASSERT_ARRAYS_EQ(A, B);
 }
+
+TEST(Array, EmptyArrayHostCopy) {
+    EXPECT_EXIT(
+        {
+            af::array empty;
+            std::vector<float> hdata(100);
+            empty.host(hdata.data());
+            exit(0);
+        },
+        ::testing::ExitedWithCode(0), ".*");
+}

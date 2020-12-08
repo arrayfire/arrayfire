@@ -30,6 +30,8 @@ namespace cpu {
 
 template<typename T>
 void copyData(T *to, const Array<T> &from) {
+    if (from.elements() == 0) { return; }
+
     from.eval();
     // Ensure all operations on 'from' are complete before copying data to host.
     getQueue().sync();
