@@ -51,6 +51,7 @@ void copyData(T *dst, const Array<T> &src) {
 template<typename T>
 Array<T> copyArray(const Array<T> &src) {
     Array<T> out = createEmptyArray<T>(src.dims());
+    if (src.elements() == 0) { return out; }
 
     if (src.isLinear()) {
         CUDA_CHECK(
