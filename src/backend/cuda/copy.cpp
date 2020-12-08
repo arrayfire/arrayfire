@@ -23,6 +23,8 @@ namespace cuda {
 
 template<typename T>
 void copyData(T *dst, const Array<T> &src) {
+    if (src.elements() == 0) { return; }
+
     // FIXME: Merge this with copyArray
     src.eval();
 
