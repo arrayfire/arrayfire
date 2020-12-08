@@ -12,10 +12,10 @@
 #include <common/err_common.hpp>
 #include <stdio.h>
 
-#define CUDA_NOT_SUPPORTED(message)                                        \
-    do {                                                                   \
-        throw SupportError(__PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, \
-                           message, boost::stacktrace::stacktrace());      \
+#define CUDA_NOT_SUPPORTED(message)                                         \
+    do {                                                                    \
+        throw SupportError(__AF_FUNC__, __AF_FILENAME__, __LINE__, message, \
+                           boost::stacktrace::stacktrace());                \
     } while (0)
 
 #define CUDA_CHECK(fn)                                               \

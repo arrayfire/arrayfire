@@ -17,14 +17,13 @@
         if (__err == AF_SUCCESS) break;                                       \
         char *msg = NULL;                                                     \
         af_get_last_error(&msg, NULL);                                        \
-        af::exception ex(msg, __PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, \
-                         __err);                                              \
+        af::exception ex(msg, __AF_FUNC__, __AF_FILENAME__, __LINE__, __err); \
         af_free_host(msg);                                                    \
         throw std::move(ex);                                                  \
     } while (0)
 
-#define AF_THROW_ERR(__msg, __err)                                       \
-    do {                                                                 \
-        throw af::exception(__msg, __PRETTY_FUNCTION__, __AF_FILENAME__, \
-                            __LINE__, __err);                            \
+#define AF_THROW_ERR(__msg, __err)                                         \
+    do {                                                                   \
+        throw af::exception(__msg, __AF_FUNC__, __AF_FILENAME__, __LINE__, \
+                            __err);                                        \
     } while (0)

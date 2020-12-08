@@ -146,40 +146,39 @@ af_err processException();
 af_err set_global_error_string(const std::string& msg,
                                af_err err = AF_ERR_UNKNOWN);
 
-#define DIM_ASSERT(INDEX, COND)                                        \
-    do {                                                               \
-        if ((COND) == false) {                                         \
-            throw DimensionError(__PRETTY_FUNCTION__, __AF_FILENAME__, \
-                                 __LINE__, INDEX, #COND,               \
-                                 boost::stacktrace::stacktrace());     \
-        }                                                              \
+#define DIM_ASSERT(INDEX, COND)                                          \
+    do {                                                                 \
+        if ((COND) == false) {                                           \
+            throw DimensionError(__AF_FUNC__, __AF_FILENAME__, __LINE__, \
+                                 INDEX, #COND,                           \
+                                 boost::stacktrace::stacktrace());       \
+        }                                                                \
     } while (0)
 
-#define ARG_ASSERT(INDEX, COND)                                       \
-    do {                                                              \
-        if ((COND) == false) {                                        \
-            throw ArgumentError(__PRETTY_FUNCTION__, __AF_FILENAME__, \
-                                __LINE__, INDEX, #COND,               \
-                                boost::stacktrace::stacktrace());     \
-        }                                                             \
-    } while (0)
-
-#define TYPE_ERROR(INDEX, type)                                                \
+#define ARG_ASSERT(INDEX, COND)                                                \
     do {                                                                       \
-        throw TypeError(__PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, INDEX, \
-                        type, boost::stacktrace::stacktrace());                \
+        if ((COND) == false) {                                                 \
+            throw ArgumentError(__AF_FUNC__, __AF_FILENAME__, __LINE__, INDEX, \
+                                #COND, boost::stacktrace::stacktrace());       \
+        }                                                                      \
     } while (0)
 
-#define AF_ERROR(MSG, ERR_TYPE)                                            \
-    do {                                                                   \
-        throw AfError(__PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, MSG, \
-                      ERR_TYPE, boost::stacktrace::stacktrace());          \
+#define TYPE_ERROR(INDEX, type)                                              \
+    do {                                                                     \
+        throw TypeError(__AF_FUNC__, __AF_FILENAME__, __LINE__, INDEX, type, \
+                        boost::stacktrace::stacktrace());                    \
+    } while (0)
+
+#define AF_ERROR(MSG, ERR_TYPE)                                              \
+    do {                                                                     \
+        throw AfError(__AF_FUNC__, __AF_FILENAME__, __LINE__, MSG, ERR_TYPE, \
+                      boost::stacktrace::stacktrace());                      \
     } while (0)
 
 #define AF_RETURN_ERROR(MSG, ERR_TYPE)                                       \
     do {                                                                     \
         std::stringstream s;                                                 \
-        s << "Error in " << __PRETTY_FUNCTION__ << "\n"                      \
+        s << "Error in " << __AF_FUNC__ << "\n"                              \
           << "In file " << __AF_FILENAME__ << ":" << __LINE__ << ": " << MSG \
           << "\n"                                                            \
           << boost::stacktrace::stacktrace();                                \
@@ -200,12 +199,12 @@ af_err set_global_error_string(const std::string& msg,
         return processException(); \
     }
 
-#define AF_CHECK(fn)                                                        \
-    do {                                                                    \
-        af_err __err = fn;                                                  \
-        if (__err == AF_SUCCESS) break;                                     \
-        throw AfError(__PRETTY_FUNCTION__, __AF_FILENAME__, __LINE__, "\n", \
-                      __err, boost::stacktrace::stacktrace());              \
+#define AF_CHECK(fn)                                                       \
+    do {                                                                   \
+        af_err __err = fn;                                                 \
+        if (__err == AF_SUCCESS) break;                                    \
+        throw AfError(__AF_FUNC__, __AF_FILENAME__, __LINE__, "\n", __err, \
+                      boost::stacktrace::stacktrace());                    \
     } while (0)
 
 static const int MAX_ERR_SIZE = 1024;
