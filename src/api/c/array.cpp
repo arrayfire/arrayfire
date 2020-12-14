@@ -343,6 +343,7 @@ void write_array(af_array arr, const T *const data, const size_t bytes,
 
 af_err af_write_array(af_array arr, const void *data, const size_t bytes,
                       af_source src) {
+    if (bytes == 0) { return AF_SUCCESS; }
     try {
         af_dtype type = getInfo(arr).getType();
         // DIM_ASSERT(2, bytes <= getInfo(arr).bytes());
