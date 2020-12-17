@@ -184,6 +184,7 @@ string getDeviceInfo() noexcept {
             nDevices++;
         }
     } catch (const AfError& err) {
+        UNUSED(err);
         info << "No platforms found.\n";
         // Don't throw an exception here. Info should pass even if the system
         // doesn't have the correct drivers installed.
@@ -215,8 +216,9 @@ int getDeviceCount() noexcept try {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     common::lock_guard_t lock(devMngr.deviceMutex);
-    return devMngr.mQueues.size();
+    return static_cast<int>(devMngr.mQueues.size());
 } catch (const AfError& err) {
+    UNUSED(err);
     // If device manager threw an error then return 0 because no platforms
     // were found
     return 0;
@@ -233,7 +235,7 @@ int getDeviceIdFromNativeId(cl_device_id id) {
 
     common::lock_guard_t lock(devMngr.deviceMutex);
 
-    int nDevices = devMngr.mDevices.size();
+    int nDevices = static_cast<int>(devMngr.mDevices.size());
     int devId    = 0;
     for (devId = 0; devId < nDevices; ++devId) {
         if (id == devMngr.mDevices[devId]->operator()()) { break; }
@@ -359,8 +361,9 @@ bool isDoubleSupported(unsigned device) {
         common::lock_guard_t lock(devMngr.deviceMutex);
         dev = *devMngr.mDevices[device];
     }
-
-    return (dev.getInfo<CL_DEVICE_DOUBLE_FP_CONFIG>() > 0);
+    // 64bit fp is an optional extension
+    return (dev.getInfo<CL_DEVICE_EXTENSIONS>().find("cl_khr_fp64") !=
+            string::npos);
 }
 
 bool isHalfSupported(unsigned device) {
@@ -371,21 +374,9 @@ bool isHalfSupported(unsigned device) {
         common::lock_guard_t lock(devMngr.deviceMutex);
         dev = *devMngr.mDevices[device];
     }
-    cl_device_fp_config config = 0;
-    size_t ret_size            = 0;
-    // NVIDIA OpenCL seems to return error codes for CL_DEVICE_HALF_FP_CONFIG.
-    // It seems to be a bug in their implementation. Assuming if this function
-    // fails that the implemenation does not support f16 type. Using the C API
-    // to avoid exceptions
-    cl_int err =
-        clGetDeviceInfo(dev(), CL_DEVICE_HALF_FP_CONFIG,
-                        sizeof(cl_device_fp_config), &config, &ret_size);
-
-    if (err) {
-        return false;
-    } else {
-        return config > 0;
-    }
+    // 16bit fp is an option extension
+    return (dev.getInfo<CL_DEVICE_EXTENSIONS>().find("cl_khr_fp16") !=
+            string::npos);
 }
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
@@ -481,12 +472,13 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
         devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.push_back(false);
-        devMngr.mDeviceTypes.push_back(tDevice->getInfo<CL_DEVICE_TYPE>());
+        devMngr.mDeviceTypes.push_back(
+            static_cast<int>(tDevice->getInfo<CL_DEVICE_TYPE>()));
 
         devMngr.mDevices.push_back(move(tDevice));
         devMngr.mContexts.push_back(move(tContext));
         devMngr.mQueues.push_back(move(tQueue));
-        nDevices = devMngr.mDevices.size() - 1;
+        nDevices = static_cast<int>(devMngr.mDevices.size()) - 1;
 
         // cache the boost program_cache object, clean up done on program exit
         // not during removeDeviceContext
@@ -507,7 +499,7 @@ void setDeviceContext(cl_device_id dev, cl_context ctx) {
 
     common::lock_guard_t lock(devMngr.deviceMutex);
 
-    const int dCount = devMngr.mDevices.size();
+    const int dCount = static_cast<int>(devMngr.mDevices.size());
     for (int i = 0; i < dCount; ++i) {
         if (devMngr.mDevices[i]->operator()() == dev &&
             devMngr.mContexts[i]->operator()() == ctx) {
@@ -529,7 +521,7 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx) {
     {
         common::lock_guard_t lock(devMngr.deviceMutex);
 
-        const int dCount = devMngr.mDevices.size();
+        const int dCount = static_cast<int>(devMngr.mDevices.size());
         for (int i = 0; i < dCount; ++i) {
             if (devMngr.mDevices[i]->operator()() == dev &&
                 devMngr.mContexts[i]->operator()() == ctx) {
