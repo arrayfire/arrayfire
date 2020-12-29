@@ -105,9 +105,9 @@ struct Interp1<Ty, Tp, xdim, 1> {
         const int idx = ioff + xid * x_stride;
 
         for (int n = 0; n < batch; n++) {
-            Ty outval = (cond || clamp)
-                            ? in.ptr[idx + n * in.strides[batch_dim]]
-                            : zero;
+            Ty outval                                  = (cond || clamp)
+                                                             ? in.ptr[idx + n * in.strides[batch_dim]]
+                                                             : zero;
             out.ptr[ooff + n * out.strides[batch_dim]] = outval;
         }
     }

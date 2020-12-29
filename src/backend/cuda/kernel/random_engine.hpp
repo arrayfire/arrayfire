@@ -213,8 +213,8 @@ __device__ void sincos(__half val, __half *sptr, __half *cptr) {
     float s, c;
     float fval = __half2float(val);
     sincos(fval, &s, &c);
-    *sptr      = __float2half(s);
-    *cptr      = __float2half(c);
+    *sptr = __float2half(s);
+    *cptr = __float2half(c);
 #endif
 }
 
