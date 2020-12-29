@@ -7,14 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
-#include <err_cuda.hpp>
-#include <af/dim4.hpp>
-#include <af/features.h>
+#include <sift.hpp>
 
-#ifdef AF_WITH_NONFREE_SIFT
-#include <kernel/sift_nonfree.hpp>
-#endif
+#include <kernel/sift.hpp>
 
 using af::dim4;
 using af::features;
@@ -29,7 +24,6 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               const float init_sigma, const bool double_input,
               const float img_scale, const float feature_ratio,
               const bool compute_GLOH) {
-#ifdef AF_WITH_NONFREE_SIFT
     unsigned nfeat_out;
     unsigned desc_len;
     float* x_out;
@@ -62,30 +56,6 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
     }
 
     return nfeat_out;
-#else
-    UNUSED(x);
-    UNUSED(y);
-    UNUSED(score);
-    UNUSED(ori);
-    UNUSED(size);
-    UNUSED(desc);
-    UNUSED(in);
-    UNUSED(n_layers);
-    UNUSED(contrast_thr);
-    UNUSED(edge_thr);
-    UNUSED(init_sigma);
-    UNUSED(double_input);
-    UNUSED(img_scale);
-    UNUSED(feature_ratio);
-    if (compute_GLOH)
-        AF_ERROR(
-            "ArrayFire was not built with nonfree support, GLOH disabled\n",
-            AF_ERR_NONFREE);
-    else
-        AF_ERROR(
-            "ArrayFire was not built with nonfree support, SIFT disabled\n",
-            AF_ERR_NONFREE);
-#endif
 }
 
 #define INSTANTIATE(T, convAccT)                                               \
