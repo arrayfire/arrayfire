@@ -92,9 +92,9 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
     // Allocate some temporary buffers
     Param inliers, idx, median;
     inliers.info.offset = idx.info.offset = median.info.offset = 0;
-    inliers.info.dims[0] = (htype == AF_HOMOGRAPHY_RANSAC)
-                               ? blk_x_eh
-                               : divup(nsamples, HG_THREADS);
+    inliers.info.dims[0]    = (htype == AF_HOMOGRAPHY_RANSAC)
+                                  ? blk_x_eh
+                                  : divup(nsamples, HG_THREADS);
     inliers.info.strides[0] = 1;
     idx.info.dims[0] = median.info.dims[0] = blk_x_eh;
     idx.info.strides[0] = median.info.strides[0] = 1;

@@ -91,7 +91,7 @@ void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
 
     int mul_elem = (sig_packed_elem < filter_packed_elem) ? filter_packed_elem
                                                           : sig_packed_elem;
-    blocks = dim3(divup(mul_elem, threads.x));
+    blocks       = dim3(divup(mul_elem, threads.x));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
     if (kind == AF_BATCH_RHS) {
