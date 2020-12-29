@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2015, ArrayFire
+ * Copyright (c) 2021, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -9,66 +9,10 @@
 
 // The source code contained in this file is based on the original code by
 // Rob Hess. Please note that SIFT is an algorithm patented and protected
-// by US law, before using this code or any binary forms generated from it,
-// verify that you have permission to do so. The original license by Rob Hess
-// can be read below:
-//
-// Copyright (c) 2006-2012, Rob Hess <rob@iqengines.com>
-// All rights reserved.
-//
-// The following patent has been issued for methods embodied in this
-// software: "Method and apparatus for identifying scale invariant features
-// in an image and use of same for locating an object in an image," David
-// G. Lowe, US Patent 6,711,293 (March 23, 2004). Provisional application
-// filed March 8, 1999. Asignee: The University of British Columbia. For
-// further details, contact David Lowe (lowe@cs.ubc.ca) or the
-// University-Industry Liaison Office of the University of British
-// Columbia.
-//
-// Note that restrictions imposed by this patent (and possibly others)
-// exist independently of and may be in conflict with the freedoms granted
-// in this license, which refers to copyright of the program, not patents
-// for any methods that it implements.  Both copyright and patent law must
-// be obeyed to legally use and redistribute this program and it is not the
-// purpose of this license to induce you to infringe any patents or other
-// property right claims or to contest validity of any such claims.  If you
-// redistribute or use the program, then this license merely protects you
-// from committing copyright infringement.  It does not protect you from
-// committing patent infringement.  So, before you do anything with this
-// program, make sure that you have permission to do so not merely in terms
-// of copyright, but also in terms of patent law.
-//
-// Please note that this license is not to be understood as a guarantee
-// either.  If you use the program according to this license, but in
-// conflict with patent law, it does not mean that the licensor will refund
-// you for any losses that you incur if you are sued for your patent
-// infringement.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//     * Redistributions of source code must retain the above copyright and
-//       patent notices, this list of conditions and the following
-//       disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in
-//       the documentation and/or other materials provided with the
-//       distribution.
-//     * Neither the name of Oregon State University nor the names of its
-//       contributors may be used to endorse or promote products derived
-//       from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
-// IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-// PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// HOLDER BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// by US law. As of 29-Dec-2020, the patent stands expired. It can be looked
+// up here - https://patents.google.com/patent/US6711293B1/en
+
+#pragma once
 
 #include <common/deprecated.hpp>
 #include <common/dispatch.hpp>
@@ -89,6 +33,7 @@ AF_DEPRECATED_WARNINGS_OFF
 #include <boost/compute/iterator/buffer_iterator.hpp>
 AF_DEPRECATED_WARNINGS_ON
 
+#include <cmath>
 #include <vector>
 
 namespace compute = boost::compute;
@@ -273,7 +218,7 @@ std::vector<Param> buildGaussPyr(Param init_img, const unsigned n_octaves,
         for (unsigned l = 0; l < n_layers + 3; l++) {
             unsigned src_idx = (l == 0) ? (o - 1) * (n_layers + 3) + n_layers
                                         : o * (n_layers + 3) + l - 1;
-            unsigned idx = o * (n_layers + 3) + l;
+            unsigned idx     = o * (n_layers + 3) + l;
 
             tmp_pyr[o].info.offset = 0;
             if (o == 0 && l == 0) {
@@ -437,7 +382,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
 
     auto kernels = getSiftKernels<T>();
 
-    unsigned min_dim = min(img.info.dims[0], img.info.dims[1]);
+    unsigned min_dim = std::min(img.info.dims[0], img.info.dims[1]);
     if (double_input) min_dim *= 2;
 
     const unsigned n_octaves = floor(log(min_dim) / log(2)) - 2;
@@ -507,7 +452,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
 
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
                                      &extrema_feat);
-        extrema_feat = min(extrema_feat, max_feat);
+        extrema_feat = std::min(extrema_feat, max_feat);
 
         if (extrema_feat == 0) {
             bufferFree(d_extrema_x);
@@ -546,7 +491,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
 
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
                                      &interp_feat);
-        interp_feat = min(interp_feat, extrema_feat);
+        interp_feat = std::min(interp_feat, extrema_feat);
 
         if (interp_feat == 0) {
             bufferFree(d_interp_x);
@@ -617,7 +562,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
 
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
                                      &nodup_feat);
-        nodup_feat = min(nodup_feat, interp_feat);
+        nodup_feat = std::min(nodup_feat, interp_feat);
 
         bufferFree(d_interp_x);
         bufferFree(d_interp_y);
@@ -663,7 +608,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
 
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
                                      &oriented_feat);
-        oriented_feat = min(oriented_feat, max_oriented_feat);
+        oriented_feat = std::min(oriented_feat, max_oriented_feat);
 
         if (oriented_feat == 0) {
             bufferFree(d_oriented_x);

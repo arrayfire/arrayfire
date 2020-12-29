@@ -321,6 +321,7 @@ target_sources(afopencl
     kernel/scan_first_by_key.hpp
     kernel/scan_first_by_key_impl.hpp
     kernel/select.hpp
+    kernel/sift.hpp
     kernel/sobel.hpp
     kernel/sort.hpp
     kernel/sort_by_key.hpp
@@ -443,12 +444,6 @@ elseif(AF_OPENCL_BLAS_LIBRARY STREQUAL "CLBlast")
     PRIVATE
       CLBlast)
     add_dependencies(afopencl CLBlast-ext)
-endif()
-
-
-if(AF_WITH_NONFREE)
-  target_sources(afopencl PRIVATE kernel/sift_nonfree.hpp)
-  target_compile_definitions(afopencl PRIVATE AF_WITH_NONFREE_SIFT)
 endif()
 
 if(APPLE)

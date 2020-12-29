@@ -40,7 +40,7 @@ typedef struct {
 typedef struct {
     float d[128];
 } desc_t;
-#ifdef AF_WITH_NONFREE_SIFT
+
 static bool feat_cmp(feat_desc_t i, feat_desc_t j) {
     for (int k = 0; k < 5; k++)
         if (round(i.f[k] * 1e1f) != round(j.f[k] * 1e1f))
@@ -123,7 +123,6 @@ static bool compareEuclidean(dim_t desc_len, dim_t ndesc, float* cpu,
 
     return ret;
 }
-#endif
 
 template<typename T>
 class SIFT : public ::testing::Test {
@@ -138,7 +137,6 @@ TYPED_TEST_CASE(SIFT, TestTypes);
 template<typename T>
 void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
               float edgeThr, float initSigma, bool doubleInput) {
-#ifdef AF_WITH_NONFREE_SIFT
     SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
@@ -253,7 +251,6 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
         delete[] outSize;
         delete[] outDesc;
     }
-#endif
 }
 
 #define SIFT_INIT(desc, image, nLayers, contrastThr, edgeThr, initSigma,  \
@@ -275,7 +272,6 @@ SIFT_INIT(Man_NoDoubleInput, man_nodoubleinput, 3, 0.04f, 10.0f, 1.6f, false);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(SIFT, CPP) {
-#ifdef AF_WITH_NONFREE_SIFT
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;
@@ -351,5 +347,4 @@ TEST(SIFT, CPP) {
     delete[] outOrientation;
     delete[] outSize;
     delete[] outDesc;
-#endif
 }

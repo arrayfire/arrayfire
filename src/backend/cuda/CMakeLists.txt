@@ -237,14 +237,6 @@ string(REPLACE ";" ";-D" boost_definitions "-D${boost_definitions}")
 set(cuda_cxx_flags "${cuda_cxx_flags};${boost_includes}")
 set(cuda_cxx_flags "${cuda_cxx_flags};${boost_definitions}")
 
-# This definition is required in addition to the definition below because in
-# an older verion of cmake definitions added using target_compile_definitions
-# were not added to the nvcc flags. This manually adds these definitions and
-# pass them to the options parameter in cuda_add_library
-if(AF_WITH_NONFREE)
-  set(cxx_definitions -DAF_WITH_NONFREE_SIFT)
-endif()
-
 # New API of cuSparse was introduced in 10.1.168 for Linux and the older
 # 10.1.105 fix version doesn't it. Unfortunately, the new API was introduced in
 # in a fix release of CUDA - unconventionally. As CMake's FindCUDA module
@@ -468,7 +460,7 @@ cuda_add_library(afcuda
     kernel/select.hpp
     kernel/shared.hpp
     kernel/shfl_intrinsics.hpp
-    kernel/sift_nonfree.hpp
+    kernel/sift.hpp
     kernel/sobel.hpp
     kernel/sort.hpp
     kernel/sort_by_key.hpp
