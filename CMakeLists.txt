@@ -127,17 +127,6 @@ configure_file(
     ${ArrayFire_BINARY_DIR}/version.hpp
 )
 
-if(AF_WITH_NONFREE)
-  message("Building with NONFREE requires the following patents")
-  message("Method and apparatus for identifying scale invariant features\n"
-    "in an image and use of same for locating an object in an image, David\n"
-    "G. Lowe, US Patent 6,711,293 (March 23, 2004). Provisional application\n"
-    "filed March 8, 1999. Asignee: The University of British Columbia. For\n"
-    "further details, contact David Lowe (lowe@cs.ubc.ca) or the\n"
-    "University-Industry Liaison Office of the University of British\n"
-    "Columbia.")
-endif()
-
 # when crosscompiling use the bin2cpp file from the native bin directory
 if(CMAKE_CROSSCOMPILING)
   set(NATIVE_BIN_DIR "NATIVE_BIN_DIR-NOTFOUND"

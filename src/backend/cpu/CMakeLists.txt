@@ -251,6 +251,7 @@ target_sources(afcpu
     kernel/scan_by_key.hpp
     kernel/select.hpp
     kernel/shift.hpp
+    kernel/sift.hpp
     kernel/sobel.hpp
     kernel/sort.hpp
     kernel/sort_by_key.hpp
@@ -279,11 +280,6 @@ target_sources(afcpu
 arrayfire_set_default_cxx_flags(afcpu)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
-
-if(AF_WITH_NONFREE)
-  target_sources(afcpu PRIVATE kernel/sift_nonfree.hpp)
-  target_compile_definitions(afcpu PRIVATE AF_WITH_NONFREE_SIFT)
-endif()
 
 target_include_directories(afcpu
   PUBLIC

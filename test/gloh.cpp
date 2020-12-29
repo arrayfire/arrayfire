@@ -41,7 +41,6 @@ typedef struct {
     float d[272];
 } desc_t;
 
-#ifdef AF_WITH_NONFREE_SIFT
 static bool feat_cmp(feat_desc_t i, feat_desc_t j) {
     for (int k = 0; k < 5; k++)
         if (round(i.f[k] * 1e1f) != round(j.f[k] * 1e1f))
@@ -124,7 +123,6 @@ static bool compareEuclidean(dim_t desc_len, dim_t ndesc, float* cpu,
 
     return ret;
 }
-#endif
 
 template<typename T>
 class GLOH : public ::testing::Test {
@@ -138,7 +136,6 @@ TYPED_TEST_CASE(GLOH, TestTypes);
 
 template<typename T>
 void glohTest(string pTestFile) {
-#ifdef AF_WITH_NONFREE_SIFT
     SUPPORTED_TYPE_CHECK(T);
     if (noImageIOTests()) return;
 
@@ -252,7 +249,6 @@ void glohTest(string pTestFile) {
         delete[] outSize;
         delete[] outDesc;
     }
-#endif
 }
 
 #define GLOH_INIT(desc, image)                                         \
@@ -265,7 +261,6 @@ GLOH_INIT(man, man);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(GLOH, CPP) {
-#ifdef AF_WITH_NONFREE_SIFT
     if (noImageIOTests()) return;
 
     vector<dim4> inDims;
@@ -341,5 +336,4 @@ TEST(GLOH, CPP) {
     delete[] outOrientation;
     delete[] outSize;
     delete[] outDesc;
-#endif
 }
