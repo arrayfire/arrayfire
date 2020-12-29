@@ -137,7 +137,7 @@ void dimCppSmallTest(const string pFileName,
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
         array bout  = (useDeprecatedAPI ? var(input, true)
-                                       : var(input, AF_VARIANCE_SAMPLE));
+                                        : var(input, AF_VARIANCE_SAMPLE));
         array nbout = (useDeprecatedAPI ? var(input, false)
                                         : var(input, AF_VARIANCE_POPULATION));
 

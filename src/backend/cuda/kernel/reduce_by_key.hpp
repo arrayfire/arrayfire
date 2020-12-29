@@ -108,8 +108,8 @@ __global__ void compact(int *reduced_block_sizes, Param<Tk> keys_out,
     const int bidw = blockIdx.z / nBlocksZ;
 
     // reduced_block_sizes should have inclusive sum of block sizes
-    int nwrite = (blockIdx.x == 0) ? reduced_block_sizes[0]
-                                   : reduced_block_sizes[blockIdx.x] -
+    int nwrite   = (blockIdx.x == 0) ? reduced_block_sizes[0]
+                                     : reduced_block_sizes[blockIdx.x] -
                                          reduced_block_sizes[blockIdx.x - 1];
     int writeloc = (blockIdx.x == 0) ? 0 : reduced_block_sizes[blockIdx.x - 1];
 
@@ -146,8 +146,8 @@ __global__ void compact_dim(int *reduced_block_sizes, Param<Tk> keys_out,
     const int bidw = blockIdx.z / nBlocksZ;
 
     // reduced_block_sizes should have inclusive sum of block sizes
-    int nwrite = (blockIdx.x == 0) ? reduced_block_sizes[0]
-                                   : reduced_block_sizes[blockIdx.x] -
+    int nwrite   = (blockIdx.x == 0) ? reduced_block_sizes[0]
+                                     : reduced_block_sizes[blockIdx.x] -
                                          reduced_block_sizes[blockIdx.x - 1];
     int writeloc = (blockIdx.x == 0) ? 0 : reduced_block_sizes[blockIdx.x - 1];
 

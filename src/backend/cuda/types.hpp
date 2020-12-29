@@ -162,7 +162,7 @@ struct kernel_type<common::half> {
     using compute = float;
 
 #if defined(NVCC) || defined(__CUDACC_RTC__)
-    using native  = __half;
+    using native = __half;
 #else
     using native = common::half;
 #endif
