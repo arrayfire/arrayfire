@@ -160,7 +160,7 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
         filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
     int mul_elem = (sig_packed_elem < filter_packed_elem) ? filter_packed_elem
                                                           : sig_packed_elem;
-    int blocks = divup(mul_elem, THREADS);
+    int blocks   = divup(mul_elem, THREADS);
 
     cl::NDRange local(THREADS);
     cl::NDRange global(blocks * THREADS);
