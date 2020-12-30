@@ -248,7 +248,7 @@ Array<T> createEmptyArray(const dim4 &dims) {
 template<typename T>
 kJITHeuristics passesJitHeuristics(Node *root_node) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
-    if (root_node->getHeight() >= static_cast<int>(getMaxJitSize())) {
+    if (root_node->getHeight() > static_cast<int>(getMaxJitSize())) {
         return kJITHeuristics::TreeHeight;
     }
 

@@ -41,56 +41,59 @@ void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
 template<typename T>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const Array<T> &b, const af::dim4 &odims) {
-    auto cond_node = cond.getNode();
-    auto a_node    = a.getNode();
-    auto b_node    = b.getNode();
-    int height     = max(a_node->getHeight(), b_node->getHeight());
-    height         = max(height, cond_node->getHeight()) + 1;
-    auto node      = make_shared<NaryNode>(NaryNode(
+    auto cond_node   = cond.getNode();
+    auto a_node      = a.getNode();
+    auto b_node      = b.getNode();
+    auto a_height    = a_node->getHeight();
+    auto b_height    = b_node->getHeight();
+    auto cond_height = cond_node->getHeight();
+    const int height = max(max(a_height, b_height), cond_height) + 1;
+
+    auto node = make_shared<NaryNode>(NaryNode(
         static_cast<af::dtype>(dtype_traits<T>::af_type), "__select", 3,
         {{cond_node, a_node, b_node}}, static_cast<int>(af_select_t), height));
 
-    if (detail::passesJitHeuristics<T>(node.get()) == kJITHeuristics::Pass) {
-        return createNodeArray<T>(odims, node);
-    } else {
-        if (a_node->getHeight() >
-            max(b_node->getHeight(), cond_node->getHeight())) {
+    if (detail::passesJitHeuristics<T>(node.get()) != kJITHeuristics::Pass) {
+        if (a_height > max(b_height, cond_height)) {
             a.eval();
-        } else if (b_node->getHeight() > cond_node->getHeight()) {
+        } else if (b_height > cond_height) {
             b.eval();
         } else {
             cond.eval();
         }
         return createSelectNode<T>(cond, a, b, odims);
     }
+    return createNodeArray<T>(odims, node);
 }
 
 template<typename T, bool flip>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const double &b_val, const af::dim4 &odims) {
-    auto cond_node = cond.getNode();
-    auto a_node    = a.getNode();
-    Array<T> b     = createScalarNode<T>(odims, scalar<T>(b_val));
-    auto b_node    = b.getNode();
-    int height     = max(a_node->getHeight(), b_node->getHeight());
-    height         = max(height, cond_node->getHeight()) + 1;
+    auto cond_node   = cond.getNode();
+    auto a_node      = a.getNode();
+    Array<T> b       = createScalarNode<T>(odims, scalar<T>(b_val));
+    auto b_node      = b.getNode();
+    auto a_height    = a_node->getHeight();
+    auto b_height    = b_node->getHeight();
+    auto cond_height = cond_node->getHeight();
+    const int height = max(max(a_height, b_height), cond_height) + 1;
 
     auto node = make_shared<NaryNode>(NaryNode(
         static_cast<af::dtype>(dtype_traits<T>::af_type),
         (flip ? "__not_select" : "__select"), 3, {{cond_node, a_node, b_node}},
         static_cast<int>(flip ? af_not_select_t : af_select_t), height));
 
-    if (detail::passesJitHeuristics<T>(node.get()) == kJITHeuristics::Pass) {
-        return createNodeArray<T>(odims, node);
-    } else {
-        if (a_node->getHeight() >
-            max(b_node->getHeight(), cond_node->getHeight())) {
+    if (detail::passesJitHeuristics<T>(node.get()) != kJITHeuristics::Pass) {
+        if (a_height > max(b_height, cond_height)) {
             a.eval();
+        } else if (b_height > cond_height) {
+            b.eval();
         } else {
             cond.eval();
         }
         return createSelectNode<T, flip>(cond, a, b_val, odims);
     }
+    return createNodeArray<T>(odims, node);
 }
 
 #define INSTANTIATE(T)                                                        \
