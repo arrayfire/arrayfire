@@ -98,8 +98,7 @@ common::Node_ptr createNaryNode(
 
     common::Node_ptr ptr = createNode(childNodes);
 
-    switch (static_cast<kJITHeuristics>(
-        detail::passesJitHeuristics<Ti>(ptr.get()))) {
+    switch (detail::passesJitHeuristics<Ti>(ptr.get())) {
         case kJITHeuristics::Pass: {
             return ptr;
         }
@@ -113,7 +112,6 @@ common::Node_ptr createNaryNode(
                     max_height       = childNodes[i]->getHeight();
                 }
             }
-
             children[max_height_index]->eval();
             return createNaryNode<Ti, N>(odims, createNode, move(children));
         }
