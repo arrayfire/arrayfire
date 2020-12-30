@@ -254,7 +254,7 @@ Node_ptr Array<T>::getNode() const {
 template<typename T>
 kJITHeuristics passesJitHeuristics(Node *root_node) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
-    if (root_node->getHeight() >= static_cast<int>(getMaxJitSize())) {
+    if (root_node->getHeight() > static_cast<int>(getMaxJitSize())) {
         return kJITHeuristics::TreeHeight;
     }
 
