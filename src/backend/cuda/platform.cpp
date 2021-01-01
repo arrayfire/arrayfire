@@ -325,14 +325,14 @@ string getCUDARuntimeVersion() noexcept {
     }
 }
 
-unsigned getMaxJitSize() {
-    const int MAX_JIT_LEN = 100;
-
-    thread_local int length = 0;
-    if (length == 0) {
+int &getMaxJitSize() {
+    constexpr int MAX_JIT_LEN = 100;
+    thread_local int length   = 0;
+    if (length <= 0) {
         std::string env_var = getEnvVar("AF_CUDA_MAX_JIT_LEN");
         if (!env_var.empty()) {
-            length = std::stoi(env_var);
+            int input_len = std::stoi(env_var);
+            length        = input_len > 0 ? input_len : MAX_JIT_LEN;
         } else {
             length = MAX_JIT_LEN;
         }
