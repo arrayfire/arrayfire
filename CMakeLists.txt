@@ -1,4 +1,4 @@
-# Copyright (c) 2020, ArrayFire
+# Copyright (c) 2021, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
@@ -7,7 +7,7 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-project(ArrayFire VERSION 3.8.0 LANGUAGES C CXX)
+project(ArrayFire VERSION 3.9.0 LANGUAGES C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
