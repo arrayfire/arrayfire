@@ -450,3 +450,5 @@ elseif(AF_BUILD_CUDA)
 elseif(AF_BUILD_CPU)
   target_link_libraries(print_info ArrayFire::afcpu)
 endif()
+
+make_test(SRC jit_test_api.cpp)

@@ -105,6 +105,8 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/index.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/internal.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/inverse.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/jit_test_api.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/jit_test_api.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/join.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/match_template.cpp
