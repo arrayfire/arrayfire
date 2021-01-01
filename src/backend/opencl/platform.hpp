@@ -57,7 +57,7 @@ int getDeviceCount() noexcept;
 
 unsigned getActiveDeviceId();
 
-unsigned getMaxJitSize();
+int& getMaxJitSize();
 
 const cl::Context& getContext();
 
