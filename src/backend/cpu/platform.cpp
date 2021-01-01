@@ -104,14 +104,14 @@ void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
     snprintf(d_compute, 10, "%s", "0.0");
 }
 
-unsigned getMaxJitSize() {
-    const int MAX_JIT_LEN = 100;
-
-    thread_local int length = 0;
-    if (length == 0) {
+int& getMaxJitSize() {
+    constexpr int MAX_JIT_LEN = 100;
+    thread_local int length   = 0;
+    if (length <= 0) {
         string env_var = getEnvVar("AF_CPU_MAX_JIT_LEN");
         if (!env_var.empty()) {
-            length = stoi(env_var);
+            int input_len = std::stoi(env_var);
+            length        = input_len > 0 ? input_len : MAX_JIT_LEN;
         } else {
             length = MAX_JIT_LEN;
         }

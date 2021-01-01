@@ -571,18 +571,18 @@ bool synchronize_calls() {
     return sync;
 }
 
-unsigned getMaxJitSize() {
+int& getMaxJitSize() {
 #if defined(OS_MAC)
-    const int MAX_JIT_LEN = 50;
+    constexpr int MAX_JIT_LEN = 50;
 #else
-    const int MAX_JIT_LEN = 100;
+    constexpr int MAX_JIT_LEN = 100;
 #endif
-
     thread_local int length = 0;
-    if (length == 0) {
+    if (length <= 0) {
         string env_var = getEnvVar("AF_OPENCL_MAX_JIT_LEN");
         if (!env_var.empty()) {
-            length = stoi(env_var);
+            int input_len = std::stoi(env_var);
+            length        = input_len > 0 ? input_len : MAX_JIT_LEN;
         } else {
             length = MAX_JIT_LEN;
         }
