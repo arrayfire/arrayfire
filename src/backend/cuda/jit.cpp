@@ -205,9 +205,12 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
 template<typename T>
 void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
     size_t num_outputs = outputs.size();
-    int device         = getActiveDeviceId();
-
     if (num_outputs == 0) { return; }
+
+    int device         = getActiveDeviceId();
+    dim_t *outDims     = outputs[0].dims;
+    size_t numOutElems = outDims[0] * outDims[1] * outDims[2] * outDims[3];
+    if (numOutElems == 0) { return; }
 
     // Use thread local to reuse the memory every time you are here.
     thread_local Node_map_t nodes;
@@ -229,9 +232,7 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
     }
 
     bool is_linear = true;
-    for (auto node : full_nodes) {
-        is_linear &= node->isLinear(outputs[0].dims);
-    }
+    for (auto node : full_nodes) { is_linear &= node->isLinear(outDims); }
 
     CUfunction ker =
         getKernel(output_nodes, output_ids, full_nodes, full_ids, is_linear);
@@ -246,7 +247,7 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
 
     int num_odims = 4;
     while (num_odims >= 1) {
-        if (outputs[0].dims[num_odims - 1] == 1) {
+        if (outDims[num_odims - 1] == 1) {
             num_odims--;
         } else {
             break;
@@ -257,9 +258,8 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
         threads_x = 256;
         threads_y = 1;
 
-        blocks_x_total = divup((outputs[0].dims[0] * outputs[0].dims[1] *
-                                outputs[0].dims[2] * outputs[0].dims[3]),
-                               threads_x);
+        blocks_x_total = divup(
+            (outDims[0] * outDims[1] * outDims[2] * outDims[3]), threads_x);
 
         int repeat_x = divup(blocks_x_total, max_blocks_x);
         blocks_x     = divup(blocks_x_total, repeat_x);
@@ -267,11 +267,11 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
         threads_x = 32;
         threads_y = 8;
 
-        blocks_x_ = divup(outputs[0].dims[0], threads_x);
-        blocks_y_ = divup(outputs[0].dims[1], threads_y);
+        blocks_x_ = divup(outDims[0], threads_x);
+        blocks_y_ = divup(outDims[1], threads_y);
 
-        blocks_x = blocks_x_ * outputs[0].dims[2];
-        blocks_y = blocks_y_ * outputs[0].dims[3];
+        blocks_x = blocks_x_ * outDims[2];
+        blocks_y = blocks_y_ * outDims[3];
 
         blocks_z = divup(blocks_y, max_blocks_y);
         blocks_y = divup(blocks_y, blocks_z);

@@ -180,7 +180,10 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
 
     // Assume all ouputs are of same size
     // FIXME: Add assert to check if all outputs are same size?
-    KParam out_info = outputs[0].info;
+    KParam out_info    = outputs[0].info;
+    dim_t *outDims     = out_info.dims;
+    size_t numOutElems = outDims[0] * outDims[1] * outDims[2] * outDims[3];
+    if (numOutElems == 0) { return; }
 
     // Use thread local to reuse the memory every time you are here.
     thread_local Node_map_t nodes;
@@ -202,9 +205,7 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
     }
 
     bool is_linear = true;
-    for (auto node : full_nodes) {
-        is_linear &= node->isLinear(outputs[0].info.dims);
-    }
+    for (auto node : full_nodes) { is_linear &= node->isLinear(outDims); }
 
     auto ker =
         getKernel(output_nodes, output_ids, full_nodes, full_ids, is_linear);
@@ -222,7 +223,7 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
         (getActiveDeviceType() == AFCL_DEVICE_TYPE_CPU) ? 1024 : 256;
 
     while (num_odims >= 1) {
-        if (out_info.dims[num_odims - 1] == 1) {
+        if (outDims[num_odims - 1] == 1) {
             num_odims--;
         } else {
             break;
@@ -231,7 +232,7 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
 
     if (is_linear) {
         local_0           = work_group_size;
-        uint out_elements = out_info.dims[3] * out_info.strides[3];
+        uint out_elements = outDims[3] * out_info.strides[3];
         uint groups       = divup(out_elements, local_0);
 
         global_1 = divup(groups, 1000) * local_1;
@@ -241,11 +242,11 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
         local_1 = 4;
         local_0 = work_group_size / local_1;
 
-        groups_0 = divup(out_info.dims[0], local_0);
-        groups_1 = divup(out_info.dims[1], local_1);
+        groups_0 = divup(outDims[0], local_0);
+        groups_1 = divup(outDims[1], local_1);
 
-        global_0 = groups_0 * local_0 * out_info.dims[2];
-        global_1 = groups_1 * local_1 * out_info.dims[3];
+        global_0 = groups_0 * local_0 * outDims[2];
+        global_1 = groups_1 * local_1 * outDims[3];
     }
 
     NDRange local(local_0, local_1);
