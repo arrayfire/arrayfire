@@ -10,12 +10,6 @@
 Scalar dot product between two vectors.  Also referred to as the inner
 product.
 
-This function returns the scalar product of two equal sized vectors or
-between a matrix and a vector. The second operand needs to be a vector
-in either case.
-
-\image html matrix_vector_dot_product.png
-
 =======================================================================
 
 \defgroup blas_func_matmul matmul
