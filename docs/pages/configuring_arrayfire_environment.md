@@ -261,4 +261,4 @@ The default path is determined in the following order:
       2. /tmp/arrayfire
   Windows:
       1. ArrayFire application Temp folder(Usually
-          C:\Users\<user_name>\AppData\Local\Temp\ArrayFire)
+          C:\\Users\\\<user_name\>\\AppData\\Local\\Temp\\ArrayFire)
