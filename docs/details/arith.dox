@@ -147,6 +147,14 @@ Logical not of an input
 Negative of an input
 
 
+\defgroup arith_func_bitnot bitnot
+
+\ingroup logic_mat
+
+Bitwise not on the input
+
+\copydoc arith_int_only
+
 
 \defgroup arith_func_bitand bitand
 
