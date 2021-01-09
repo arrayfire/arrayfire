@@ -43,9 +43,17 @@ For more information on using ArrayFire on Windows, visit the following
 
 ## <a name="Linux"></a> Linux
 
-Once you have downloaded the ArrayFire installer, execute the installer from the
-terminal as shown below. Set the `--prefix` argument to the directory you would
-like to install ArrayFire to - we recommend `/opt`.
+There are two ways to install ArrayFire on Linux.
+1. Package Manager
+2. Using ArrayFire Linux Installer
+
+As of today, approach (1) is only supported for Ubuntu 18.04 and 20.04. Please go
+through [our GitHub wiki page](https://github.com/arrayfire/arrayfire/wiki/Install-ArrayFire-From-Linux-Package-Managers)
+for the detailed instructions.
+
+For approach (2), once you have downloaded the ArrayFire installer, execute the
+installer from the terminal as shown below. Set the `--prefix` argument to the
+directory you would like to install ArrayFire to - we recommend `/opt`.
 
     ./Arrayfire_*_Linux_x86_64.sh --include-subdir --prefix=/opt
 
