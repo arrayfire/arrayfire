@@ -29,6 +29,11 @@ on Windows, Mac, and Linux.
 
 You can install the ArrayFire library from one of the following ways:
 
+### Package Managers
+
+This approach is currently only supported for Ubuntu 18.04 and 20.04. Please
+go through [our GitHub wiki page][1] for the detailed instructions.
+
 #### Official installers
 
 Execute one of our [official binary installers](https://arrayfire.com/download)
@@ -163,3 +168,5 @@ The literal mark “ArrayFire” and ArrayFire logos are trademarks of
 AccelerEyes LLC DBA ArrayFire.
 If you wish to use either of these marks in your own project, please consult
 [ArrayFire's Trademark Policy](http://arrayfire.com/trademark-policy/)
+
+[1]: https://github.com/arrayfire/arrayfire/wiki/Install-ArrayFire-From-Linux-Package-Managers
