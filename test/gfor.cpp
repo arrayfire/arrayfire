@@ -20,8 +20,10 @@ using af::array;
 using af::cdouble;
 using af::cfloat;
 using af::constant;
+using af::dim4;
 using af::freeHost;
 using af::gforSet;
+using af::iota;
 using af::randu;
 using af::seq;
 using af::span;
@@ -542,4 +544,23 @@ TEST(GFOR, MatmulLoopWithNonUnitIncrSeq) {
         C(span, span, ii) = matmul(A(span, span, ii), B);
     }
     ASSERT_ARRAYS_NEAR(C, G, 1E-03);
+}
+
+TEST(GFOR, ConstArrayIndexing) {
+    const std::size_t dim = 4;
+
+    array m        = iota(dim4(1, dim), dim4(dim));
+    const array cm = iota(dim4(1, dim), dim4(dim));
+
+    array out_cm(dim), out_m(dim);
+
+    EXPECT_NO_THROW({
+        gfor(seq i, static_cast<double>(dim)) {
+            out_cm(i) = af::sum(cm(span,i) * cm(span,i));
+}
+});
+gfor(seq i, static_cast<double>(dim)) {
+    out_m(i) = af::sum(m(span, i) * m(span, i));
+}
+ASSERT_ARRAYS_EQ(out_cm, out_m);
 }
