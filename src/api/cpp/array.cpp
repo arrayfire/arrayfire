@@ -732,22 +732,6 @@ array::array_proxy::operator array() const {
     AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices_));
     if (impl->is_linear_) { AF_THROW(af_release_array(arr)); }
 
-    return array(tmp);
-}
-
-array::array_proxy::operator array() {
-    af_array tmp = nullptr;
-    af_array arr = nullptr;
-
-    if (impl->is_linear_) {
-        AF_THROW(af_flat(&arr, impl->parent_->get()));
-    } else {
-        arr = impl->parent_->get();
-    }
-
-    AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices_));
-    if (impl->is_linear_) { AF_THROW(af_release_array(arr)); }
-
     int dim = gforDim(impl->indices_);
     if (tmp && dim >= 0) {
         arr = gforReorder(tmp, dim);
@@ -757,6 +741,10 @@ array::array_proxy::operator array() {
     }
 
     return array(arr);
+}
+
+array::array_proxy::operator array() {
+    return const_cast<const array::array_proxy *>(this)->operator array();
 }
 
 #define MEM_INDEX(FUNC_SIG, USAGE)                                \
