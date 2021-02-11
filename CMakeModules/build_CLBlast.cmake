@@ -6,22 +6,27 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 include(ExternalProject)
-
 find_program(GIT git)
 
 set(prefix ${PROJECT_BINARY_DIR}/third_party/CLBlast)
 set(CLBlast_location ${prefix}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}clblast${CMAKE_STATIC_LIBRARY_SUFFIX})
 
+set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
 if(WIN32 AND CMAKE_GENERATOR_PLATFORM AND NOT CMAKE_GENERATOR MATCHES "Ninja")
-  set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
-else()
-  set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
+  list(APPEND extproj_gen_opts "-A${CMAKE_GENERATOR_PLATFORM}")
+  if(CMAKE_GENERATOR_TOOLSET)
+    list(APPEND extproj_gen_opts "-T${CMAKE_GENERATOR_TOOLSET}")
+  endif()
 endif()
 
-if("${CMAKE_BUILD_TYPE}" MATCHES "Release|RelWithDebInfo")
-  set(extproj_build_type "Release")
-else()
-  set(extproj_build_type ${CMAKE_BUILD_TYPE})
+set(extproj_build_type_option "")
+if(NOT isMultiConfig)
+  if("${CMAKE_BUILD_TYPE}" MATCHES "Release|RelWithDebInfo")
+    set(extproj_build_type "Release")
+  else()
+    set(extproj_build_type ${CMAKE_BUILD_TYPE})
+  endif()
+  set(extproj_build_type_option "-DCMAKE_BUILD_TYPE:STRING=${extproj_build_type}")
 endif()
 
 ExternalProject_Add(
@@ -40,7 +45,7 @@ ExternalProject_Add(
       -DOVERRIDE_MSVC_FLAGS_TO_MT:BOOL=OFF
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
-      -DCMAKE_BUILD_TYPE:STRING=${extproj_build_type}
+      ${extproj_build_type_option}
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
       -DCMAKE_INSTALL_LIBDIR:PATH=lib
       -DBUILD_SHARED_LIBS:BOOL=OFF
