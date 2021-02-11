@@ -758,16 +758,26 @@ endif ()
 
 function(afcu_collect_libs libname)
   set(options "FULL_VERSION")
-  set(single_args "")
+  set(single_args "LIB_MAJOR;LIB_MINOR")
   set(multi_args "")
 
   cmake_parse_arguments(cuda_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
+
+  if(cuda_args_LIB_MAJOR AND cuda_args_LIB_MINOR)
+    set(lib_major ${cuda_args_LIB_MAJOR})
+	set(lib_minor ${cuda_args_LIB_MINOR})
+  else()
+    set(lib_major ${CUDA_VERSION_MAJOR})
+	set(lib_minor ${CUDA_VERSION_MINOR})
+  endif()
+  set(lib_version "${lib_major}.${lib_minor}")
+
   if (WIN32)
     find_file(CUDA_${libname}_LIBRARY_DLL
       NAMES
-        "${PX}${libname}64_${CUDA_VERSION_MAJOR}${SX}"
-        "${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}${SX}"
-        "${PX}${libname}64_${CUDA_VERSION_MAJOR}${CUDA_VERSION_MINOR}_0${SX}"
+        "${PX}${libname}64_${lib_major}${SX}"
+        "${PX}${libname}64_${lib_major}${lib_minor}${SX}"
+        "${PX}${libname}64_${lib_major}${lib_minor}_0${SX}"
       PATHS ${dlib_path_prefix}
     )
     mark_as_advanced(CUDA_${libname}_LIBRARY_DLL)
@@ -775,10 +785,10 @@ function(afcu_collect_libs libname)
       DESTINATION ${AF_INSTALL_BIN_DIR}
       COMPONENT cuda_dependencies)
   elseif (APPLE)
-    get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
+    get_filename_component(outpath "${dlib_path_prefix}/${PX}${libname}.${lib_major}.${lib_minor}${SX}" REALPATH)
     install(FILES       "${outpath}"
             DESTINATION ${AF_INSTALL_BIN_DIR}
-            RENAME      "${PX}${libname}.${CUDA_VERSION}${SX}"
+            RENAME      "${PX}${libname}.${lib_version}${SX}"
             COMPONENT   cuda_dependencies)
   else () #UNIX
     find_library(CUDA_${libname}_LIBRARY
@@ -788,9 +798,9 @@ function(afcu_collect_libs libname)
 
     get_filename_component(outpath "${CUDA_${libname}_LIBRARY}" REALPATH)
     if(cuda_args_FULL_VERSION)
-      set(library_install_name "${PX}${libname}${SX}.${CUDA_VERSION}")
+      set(library_install_name "${PX}${libname}${SX}.${lib_version}")
     else()
-      set(library_install_name "${PX}${libname}${SX}.${CUDA_VERSION_MAJOR}")
+      set(library_install_name "${PX}${libname}${SX}.${lib_major}")
     endif()
     install(FILES       ${outpath}
             DESTINATION ${AF_INSTALL_LIB_DIR}
@@ -829,7 +839,11 @@ if(AF_INSTALL_STANDALONE)
   endif()
   afcu_collect_libs(nvrtc FULL_VERSION)
   if(WIN32)
-    afcu_collect_libs(cufft)
+	if(CUDA_VERSION_MAJOR VERSION_EQUAL 11)
+      afcu_collect_libs(cufft LIB_MAJOR 10 LIB_MINOR 4)
+	else()
+      afcu_collect_libs(cufft)
+	endif()
     afcu_collect_libs(cublas)
     if(CUDA_VERSION VERSION_GREATER 10.0)
       afcu_collect_libs(cublasLt)
