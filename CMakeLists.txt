@@ -9,15 +9,6 @@ cmake_minimum_required(VERSION 3.5)
 
 project(ArrayFire VERSION 3.8.0 LANGUAGES C CXX)
 
-if(NOT CMAKE_VERSION VERSION_LESS 3.9)
-  get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-elseif(CMAKE_CONFIGURATION_TYPES)
-  # CMAKE_CONFIGURATION_TYPES is set by project() call
-  set(isMultiConfig True)
-else()
-  set(isMultiConfig False)
-endif()
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
 include(config_ccache)
