@@ -2,15 +2,15 @@
 # or single-config generator. Before 3.9, the defintion of CMAKE_CONFIGURATION_TYPES
 # variable indicated multi-config, but developers might modify.
 if(NOT CMAKE_VERSION VERSION_LESS 3.9)
-  get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+  get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 elseif(CMAKE_CONFIGURATION_TYPES)
   # CMAKE_CONFIGURATION_TYPES is set by project() call for multi-config generators
-  set(_isMultiConfig True)
+  set(isMultiConfig True)
 else()
-  set(_isMultiConfig False)
+  set(isMultiConfig False)
 endif()
 
-if(_isMultiConfig)
+if(isMultiConfig)
   set(CMAKE_CONFIGURATION_TYPES
     "Coverage;Debug;MinSizeRel;Release;RelWithDebInfo"
     CACHE STRING "Configurations for Multi-Config CMake Generator" FORCE)
