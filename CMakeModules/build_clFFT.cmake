@@ -5,29 +5,28 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-INCLUDE(ExternalProject)
+include(ExternalProject)
+find_program(GIT git)
 
-SET(prefix "${PROJECT_BINARY_DIR}/third_party/clFFT")
-SET(clFFT_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clFFT${CMAKE_STATIC_LIBRARY_SUFFIX})
-IF(CMAKE_VERSION VERSION_LESS 3.2)
-    IF(CMAKE_GENERATOR MATCHES "Ninja")
-        MESSAGE(WARNING "Building clFFT with Ninja has known issues with CMake older than 3.2")
-    endif()
-    SET(byproducts)
-ELSE()
-    SET(byproducts BUILD_BYPRODUCTS ${clFFT_location})
-ENDIF()
+set(prefix "${PROJECT_BINARY_DIR}/third_party/clFFT")
+set(clFFT_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clFFT${CMAKE_STATIC_LIBRARY_SUFFIX})
 
+set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
 if(WIN32 AND CMAKE_GENERATOR_PLATFORM AND NOT CMAKE_GENERATOR MATCHES "Ninja")
-  set(extproj_gen_opts "-G${CMAKE_GENERATOR}" "-A${CMAKE_GENERATOR_PLATFORM}")
-else()
-  set(extproj_gen_opts "-G${CMAKE_GENERATOR}")
+  list(APPEND extproj_gen_opts "-A${CMAKE_GENERATOR_PLATFORM}")
+  if(CMAKE_GENERATOR_TOOLSET)
+    list(APPEND extproj_gen_opts "-T${CMAKE_GENERATOR_TOOLSET}")
+  endif()
 endif()
 
-if("${CMAKE_BUILD_TYPE}" MATCHES "Release|RelWithDebInfo")
-  set(extproj_build_type "Release")
-else()
-  set(extproj_build_type ${CMAKE_BUILD_TYPE})
+set(extproj_build_type_option "")
+if(NOT isMultiConfig)
+  if("${CMAKE_BUILD_TYPE}" MATCHES "Release|RelWithDebInfo")
+    set(extproj_build_type "Release")
+  else()
+    set(extproj_build_type ${CMAKE_BUILD_TYPE})
+  endif()
+  set(extproj_build_type_option "-DCMAKE_BUILD_TYPE:STRING=${extproj_build_type}")
 endif()
 
 ExternalProject_Add(
@@ -37,13 +36,14 @@ ExternalProject_Add(
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
+    BUILD_BYPRODUCTS ${clFFT_location}
     CONFIGURE_COMMAND ${CMAKE_COMMAND} ${extproj_gen_opts}
       -Wno-dev <SOURCE_DIR>/src
       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
       "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -w -fPIC"
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS} -w -fPIC"
-      -DCMAKE_BUILD_TYPE:STRING=${extproj_build_type}
+	  ${extproj_build_type_option}
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
       -DBUILD_SHARED_LIBS:BOOL=OFF
       -DBUILD_EXAMPLES:BOOL=OFF
