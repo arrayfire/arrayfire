@@ -120,8 +120,9 @@ template<typename T>
 Array<T>::Array(const dim4 &dims, cl_mem mem, size_t src_offset, bool copy)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(copy ? memAlloc<T>(info.elements()).release() : new Buffer(mem),
-           bufferFree)
+    , data(
+          copy ? memAlloc<T>(info.elements()).release() : new Buffer(mem, true),
+          bufferFree)
     , data_dims(dims)
     , node(bufferNodePtr<T>())
     , ready(true)
