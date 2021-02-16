@@ -97,7 +97,7 @@ static const int jetsonComputeCapabilities[] = {
 
 // clang-format off
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
-    {11020, 8, 0, 0},
+    {11020, 8, 6, 0},
     {11010, 8, 0, 0},
     {11000, 8, 0, 0},
     {10020, 7, 5, 2},
@@ -117,7 +117,7 @@ static const cuNVRTCcompute Toolkit2MaxCompute[] = {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
-        {11020, 460.27f, 460.89f},
+        {11020, 460.27f, 460.82f},
         {11010, 455.23f, 456.38f},
         {11000, 450.51f, 451.48f},
         {10020, 440.33f, 441.22f},
