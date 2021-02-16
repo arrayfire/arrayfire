@@ -19,7 +19,7 @@ namespace opencl {
 struct Enqueuer {
     template<typename... Args>
     void operator()(cl::Kernel ker, const cl::EnqueueArgs& qArgs,
-                    Args... args) {
+                    Args&&... args) {
         auto launchOp = cl::KernelFunctor<Args...>(ker);
         launchOp(qArgs, std::forward<Args>(args)...);
     }
