@@ -127,6 +127,15 @@ configure_file(
     ${ArrayFire_BINARY_DIR}/version.hpp
 )
 
+set(SPDLOG_BUILD_TESTING OFF CACHE INTERNAL "Disable testing in spdlog")
+FetchContent_Declare(
+  ${spdlog_prefix}
+  GIT_REPOSITORY https://github.com/gabime/spdlog.git
+  GIT_TAG        v1.0.0
+)
+FetchContent_Populate(${spdlog_prefix})
+add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
+
 # when crosscompiling use the bin2cpp file from the native bin directory
 if(CMAKE_CROSSCOMPILING)
   set(NATIVE_BIN_DIR "NATIVE_BIN_DIR-NOTFOUND"
@@ -150,9 +159,8 @@ else()
   target_include_directories(bin2cpp PRIVATE
                              ${ArrayFire_SOURCE_DIR}/include
                              ${ArrayFire_BINARY_DIR}/include
-                             ${ArrayFire_SOURCE_DIR}/src/backend
-                             ${ArrayFire_SOURCE_DIR}/extern/spdlog/include)
-  target_link_libraries(bin2cpp)
+                             ${ArrayFire_SOURCE_DIR}/src/backend)
+  target_link_libraries(bin2cpp PRIVATE spdlog)
   export(TARGETS bin2cpp FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake)
 endif()
 
@@ -167,15 +175,6 @@ if(NOT LAPACK_FOUND)
         find_package(LAPACK)
     endif()
 endif()
-
-set(SPDLOG_BUILD_TESTING OFF CACHE INTERNAL "Disable testing in spdlog")
-FetchContent_Declare(
-  ${spdlog_prefix}
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG        v1.0.0
-)
-FetchContent_Populate(${spdlog_prefix})
-add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
 FetchContent_Declare(
   ${glad_prefix}
