@@ -182,7 +182,7 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
                             const bool is_linear) {
     const string funcName =
         getFuncName(output_nodes, full_nodes, full_ids, is_linear);
-    const string moduleKey = to_string(deterministicHash(funcName));
+    const size_t moduleKey = deterministicHash(funcName);
 
     // A forward lookup in module cache helps avoid recompiling the jit
     // source generated from identical jit-trees. It also enables us
@@ -194,7 +194,10 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
                                               output_ids, is_linear);
         saveKernel(funcName, jitKer, ".cu");
 
-        return common::getKernel(funcName, {jitKer}, {}, {}, true).get();
+        common::Source jit_src{jitKer.c_str(), jitKer.size(),
+                               deterministicHash(jitKer)};
+
+        return common::getKernel(funcName, {jit_src}, {}, {}, true).get();
     }
     return common::getKernel(entry, funcName, true).get();
 }

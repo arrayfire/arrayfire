@@ -35,8 +35,6 @@ void csrmm_nt(Param out, const Param &values, const Param &rowIdx,
     // FIXME: Figure out why
     constexpr bool use_greedy = false;
 
-    static const std::string src(csrmm_cl, csrmm_cl_len);
-
     const bool use_alpha = (alpha != scalar<T>(1.0));
     const bool use_beta  = (beta != scalar<T>(0.0));
 
@@ -57,7 +55,8 @@ void csrmm_nt(Param out, const Param &values, const Param &rowIdx,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     // FIXME: Switch to perf (thread vs block) baesd kernel
-    auto csrmm_nt_func = common::getKernel("csrmm_nt", {src}, targs, options);
+    auto csrmm_nt_func =
+        common::getKernel("csrmm_nt", {csrmm_cl_src}, targs, options);
 
     cl::NDRange local(THREADS_PER_GROUP, 1);
     int M = rowIdx.info.dims[0] - 1;

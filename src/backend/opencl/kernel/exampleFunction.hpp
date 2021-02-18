@@ -41,8 +41,6 @@ constexpr int THREADS_Y = 16;
 
 template<typename T>
 void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
-    static const std::string src(example_cl, example_cl_len);
-
     // Compilation options for compiling OpenCL kernel.
     // Go to common/kernel_cache.hpp to find details on this.
     std::vector<TemplateArg> targs = {
@@ -63,7 +61,7 @@ void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
 
     // Fetch the Kernel functor, go to common/kernel_cache.hpp
     // to find details of this function
-    auto exOp = common::getKernel("example", {src}, targs, options);
+    auto exOp = common::getKernel("example", {example_cl_src}, targs, options);
 
     // configure work group parameters
     cl::NDRange local(THREADS_X, THREADS_Y);

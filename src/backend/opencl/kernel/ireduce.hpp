@@ -32,9 +32,6 @@ template<typename T, af_op_t op>
 void ireduceDimLauncher(Param out, cl::Buffer *oidx, Param in, cl::Buffer *iidx,
                         const int dim, const int threads_y, const bool is_first,
                         const uint groups_all[4], Param rlen) {
-    static const std::string src1(iops_cl, iops_cl_len);
-    static const std::string src2(ireduce_dim_cl, ireduce_dim_cl_len);
-
     ToNumStr<T> toNumStr;
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(), TemplateArg(dim),       TemplateArg(op),
@@ -53,7 +50,8 @@ void ireduceDimLauncher(Param out, cl::Buffer *oidx, Param in, cl::Buffer *iidx,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto ireduceDim =
-        common::getKernel("ireduce_dim_kernel", {src1, src2}, targs, options);
+        common::getKernel("ireduce_dim_kernel",
+                          {iops_cl_src, ireduce_dim_cl_src}, targs, options);
 
     cl::NDRange local(THREADS_X, threads_y);
     cl::NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -110,9 +108,6 @@ void ireduceFirstLauncher(Param out, cl::Buffer *oidx, Param in,
                           cl::Buffer *iidx, const int threads_x,
                           const bool is_first, const uint groups_x,
                           const uint groups_y, Param rlen) {
-    static const std::string src1(iops_cl, iops_cl_len);
-    static const std::string src2(ireduce_first_cl, ireduce_first_cl_len);
-
     ToNumStr<T> toNumStr;
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
@@ -132,7 +127,8 @@ void ireduceFirstLauncher(Param out, cl::Buffer *oidx, Param in,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto ireduceFirst =
-        common::getKernel("ireduce_first_kernel", {src1, src2}, targs, options);
+        common::getKernel("ireduce_first_kernel",
+                          {iops_cl_src, ireduce_first_cl_src}, targs, options);
 
     cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     cl::NDRange global(groups_x * in.info.dims[2] * local[0],

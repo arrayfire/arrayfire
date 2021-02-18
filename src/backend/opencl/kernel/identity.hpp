@@ -27,8 +27,6 @@ namespace kernel {
 
 template<typename T>
 static void identity(Param out) {
-    static const std::string src(identity_cl, identity_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -40,7 +38,7 @@ static void identity(Param out) {
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto identityOp =
-        common::getKernel("identity_kernel", {src}, targs, options);
+        common::getKernel("identity_kernel", {identity_cl_src}, targs, options);
 
     cl::NDRange local(32, 8);
     int groups_x = divup(out.info.dims[0], local[0]);

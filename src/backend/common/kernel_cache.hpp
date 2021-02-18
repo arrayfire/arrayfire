@@ -15,6 +15,7 @@
 #include <Module.hpp>
 #include <backend.hpp>
 #include <common/TemplateTypename.hpp>
+#include <common/util.hpp>
 
 #include <string>
 #include <vector>
@@ -45,8 +46,7 @@ namespace common {
 /// Example Usage: transpose
 ///
 /// \code
-/// static const std::string src(transpose_cuh, transpose_cuh_len);
-/// auto transpose = getKernel("cuda::transpose", {src},
+/// auto transpose = getKernel("cuda::transpose", {transpase_cuh_src},
 ///         {
 ///           TemplateTypename<T>(),
 ///           TemplateArg(conjugate),
@@ -62,7 +62,7 @@ namespace common {
 /// \endcode
 ///
 /// \param[in] kernelName is the name of the kernel qualified as kernel in code
-/// \param[in] sources is the list of source strings to be compiled if required
+/// \param[in] sources is the list of common::Source to be compiled if required
 /// \param[in] templateArgs is a vector of strings containing stringified names
 ///            of the template arguments of kernel to be compiled.
 /// \param[in] options is a vector of strings that enables the user to
@@ -70,7 +70,7 @@ namespace common {
 ///            the kernel compilation.
 ///
 detail::Kernel getKernel(const std::string& kernelName,
-                         const std::vector<std::string>& sources,
+                         const std::vector<common::Source>& sources,
                          const std::vector<TemplateArg>& templateArgs,
                          const std::vector<std::string>& options = {},
                          const bool sourceIsJIT                  = false);
@@ -86,7 +86,7 @@ detail::Kernel getKernel(const std::string& kernelName,
 ///            the module look up has to be done
 /// \param[in] key is hash generated from code + options + kernel_name
 ///            at caller scope
-detail::Module findModule(const int device, const std::string& key);
+detail::Module findModule(const int device, const std::size_t& key);
 
 /// \brief Get Kernel object for given name from given Module
 ///

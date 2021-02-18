@@ -16,8 +16,6 @@
 #include <nvrtc_kernel_headers/iota_cuh.hpp>
 #include <af/dim4.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -28,10 +26,8 @@ void iota(Param<T> out, const af::dim4 &sdims) {
     constexpr unsigned TILEX   = 512;
     constexpr unsigned TILEY   = 32;
 
-    static const std::string source(iota_cuh, iota_cuh_len);
-
-    auto iota =
-        common::getKernel("cuda::iota", {source}, {TemplateTypename<T>()});
+    auto iota = common::getKernel("cuda::iota", {iota_cuh_src},
+                                  {TemplateTypename<T>()});
 
     dim3 threads(IOTA_TX, IOTA_TY, 1);
 

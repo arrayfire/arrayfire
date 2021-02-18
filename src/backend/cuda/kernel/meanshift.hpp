@@ -13,7 +13,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/meanshift_cuh.hpp>
 
-#include <string>
 #include <type_traits>
 
 namespace cuda {
@@ -27,10 +26,8 @@ void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
                const float chromaticSigma, const uint numIters, bool IsColor) {
     typedef typename std::conditional<std::is_same<T, double>::value, double,
                                       float>::type AccType;
-    static const std::string source(meanshift_cuh, meanshift_cuh_len);
-
     auto meanshift = common::getKernel(
-        "cuda::meanshift", {source},
+        "cuda::meanshift", {meanshift_cuh_src},
         {
             TemplateTypename<AccType>(), TemplateTypename<T>(),
             TemplateArg((IsColor ? 3 : 1))  // channels

@@ -32,8 +32,6 @@ void meanshift(Param out, const Param in, const float spatialSigma,
     constexpr int THREADS_X = 16;
     constexpr int THREADS_Y = 16;
 
-    static const std::string src(meanshift_cl, meanshift_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(is_color),
@@ -45,7 +43,8 @@ void meanshift(Param out, const Param in, const float spatialSigma,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto meanshiftOp = common::getKernel("meanshift", {src}, targs, options);
+    auto meanshiftOp =
+        common::getKernel("meanshift", {meanshift_cl_src}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

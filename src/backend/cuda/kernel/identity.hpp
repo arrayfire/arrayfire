@@ -15,17 +15,13 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/identity_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
 template<typename T>
 void identity(Param<T> out) {
-    static const std::string source(identity_cuh, identity_cuh_len);
-
-    auto identity =
-        common::getKernel("cuda::identity", {source}, {TemplateTypename<T>()});
+    auto identity = common::getKernel("cuda::identity", {identity_cuh_src},
+                                      {TemplateTypename<T>()});
 
     dim3 threads(32, 8);
     int blocks_x = divup(out.dims[0], threads.x);

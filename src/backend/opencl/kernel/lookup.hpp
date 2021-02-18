@@ -29,8 +29,6 @@ void lookup(Param out, const Param in, const Param indices,
     constexpr int THREADS_X = 32;
     constexpr int THREADS_Y = 8;
 
-    static const std::string src(lookup_cl, lookup_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<in_t>(),
         TemplateTypename<idx_t>(),
@@ -51,7 +49,8 @@ void lookup(Param out, const Param in, const Param indices,
     cl::NDRange global(blk_x * out.info.dims[2] * THREADS_X,
                        blk_y * out.info.dims[3] * THREADS_Y);
 
-    auto arrIdxOp = common::getKernel("lookupND", {src}, targs, options);
+    auto arrIdxOp =
+        common::getKernel("lookupND", {lookup_cl_src}, targs, options);
 
     arrIdxOp(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
              *in.data, in.info, *indices.data, indices.info, blk_x, blk_y);

@@ -34,9 +34,6 @@ void anisotropicDiffusion(Param inout, const float dt, const float mct,
     constexpr int THREADS_Y = 8;
     constexpr int YDIM_LOAD = 2 * THREADS_X / THREADS_Y;
 
-    static const string src(anisotropic_diffusion_cl,
-                            anisotropic_diffusion_cl_len);
-
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateArg(isMCDE),
@@ -53,7 +50,8 @@ void anisotropicDiffusion(Param inout, const float dt, const float mct,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto diffUpdate =
-        common::getKernel("aisoDiffUpdate", {src}, tmpltArgs, compileOpts);
+        common::getKernel("aisoDiffUpdate", {anisotropic_diffusion_cl_src},
+                          tmpltArgs, compileOpts);
 
     NDRange local(THREADS_X, THREADS_Y, 1);
 

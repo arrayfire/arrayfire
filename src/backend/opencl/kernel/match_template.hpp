@@ -28,8 +28,6 @@ void matchTemplate(Param out, const Param srch, const Param tmplt,
     constexpr int THREADS_X = 16;
     constexpr int THREADS_Y = 16;
 
-    static const std::string src(matchTemplate_cl, matchTemplate_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<inType>(),
         TemplateTypename<outType>(),
@@ -53,7 +51,8 @@ void matchTemplate(Param out, const Param srch, const Param tmplt,
     };
     options.emplace_back(getTypeBuildDefinition<outType>());
 
-    auto matchImgOp = common::getKernel("matchTemplate", {src}, targs, options);
+    auto matchImgOp = common::getKernel("matchTemplate", {matchTemplate_cl_src},
+                                        targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

@@ -33,8 +33,6 @@ void tile(Param out, const Param in) {
     constexpr int TILEX = 512;
     constexpr int TILEY = 32;
 
-    static const string src(tile_cl, tile_cl_len);
-
     vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -43,7 +41,7 @@ void tile(Param out, const Param in) {
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto tile = common::getKernel("tile", {src}, targs, compileOpts);
+    auto tile = common::getKernel("tile", {tile_cl_src}, targs, compileOpts);
 
     NDRange local(TX, TY, 1);
 

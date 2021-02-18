@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 namespace common {
 
 /// \brief Maps a type between its data representation and the type used

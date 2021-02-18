@@ -37,8 +37,6 @@ void triangle(Param out, const Param in, bool is_upper, bool is_unit_diag) {
     constexpr unsigned TILEX = 128;
     constexpr unsigned TILEY = 32;
 
-    static const string src(triangle_cl, triangle_cl_len);
-
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateArg(is_upper),
@@ -53,8 +51,8 @@ void triangle(Param out, const Param in, bool is_upper, bool is_unit_diag) {
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto triangle =
-        common::getKernel("triangle", {src}, tmpltArgs, compileOpts);
+    auto triangle = common::getKernel("triangle", {triangle_cl_src}, tmpltArgs,
+                                      compileOpts);
 
     NDRange local(TX, TY);
 

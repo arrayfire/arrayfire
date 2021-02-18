@@ -45,9 +45,6 @@ void allDistances(Param dist, Param query, Param train, const dim_t dist_dim,
     unsigned unroll_len = nextpow2(feat_len);
     if (unroll_len != feat_len) unroll_len = 0;
 
-    static const std::string src(nearest_neighbour_cl,
-                                 nearest_neighbour_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(dist_type),
@@ -73,7 +70,8 @@ void allDistances(Param dist, Param query, Param train, const dim_t dist_dim,
         options.emplace_back(DefineKeyValue(DISTOP, "_shd_"));
         options.emplace_back(DefineKey(__SHD__));
     }
-    auto hmOp = common::getKernel("knnAllDistances", {src}, targs, options);
+    auto hmOp = common::getKernel("knnAllDistances", {nearest_neighbour_cl_src},
+                                  targs, options);
 
     const dim_t sample_dim = (dist_dim == 0) ? 1 : 0;
 

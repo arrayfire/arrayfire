@@ -16,18 +16,14 @@
 #include <kernel/config.hpp>
 #include <nvrtc_kernel_headers/wrap_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
 template<typename T>
 void wrap(Param<T> out, CParam<T> in, const int wx, const int wy, const int sx,
           const int sy, const int px, const int py, const bool is_column) {
-    static const std::string source(wrap_cuh, wrap_cuh_len);
-
     auto wrap =
-        common::getKernel("cuda::wrap", {source},
+        common::getKernel("cuda::wrap", {wrap_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(is_column)});
 
     int nx = (out.dims[0] + 2 * px - wx) / sx + 1;
@@ -55,10 +51,8 @@ void wrap_dilated(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
                   const dim_t sx, const dim_t sy, const dim_t px,
                   const dim_t py, const dim_t dx, const dim_t dy,
                   const bool is_column) {
-    static const std::string source(wrap_cuh, wrap_cuh_len);
-
     auto wrap =
-        common::getKernel("cuda::wrap_dilated", {source},
+        common::getKernel("cuda::wrap_dilated", {wrap_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(is_column)});
 
     int nx = 1 + (out.dims[0] + 2 * px - (((wx - 1) * dx) + 1)) / sx;

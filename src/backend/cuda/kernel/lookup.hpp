@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/lookup_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -28,8 +26,6 @@ constexpr int THRD_LOAD = THREADS_X / THREADS_Y;
 template<typename in_t, typename idx_t>
 void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
             unsigned dim) {
-    static const std::string src(lookup_cuh, lookup_cuh_len);
-
     /* find which dimension has non-zero # of elements */
     unsigned vDim = 0;
     for (int i = 0; i < 4; i++) {
@@ -47,7 +43,7 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
         dim3 blocks(blks, 1);
 
         auto lookup1d = common::getKernel(
-            "cuda::lookup1D", {src},
+            "cuda::lookup1D", {lookup_cuh_src},
             {TemplateTypename<in_t>(), TemplateTypename<idx_t>()},
             {DefineValue(THREADS), DefineValue(THRD_LOAD)});
 
@@ -68,7 +64,7 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
         blocks.y = divup(blocks.y, blocks.z);
 
         auto lookupnd =
-            common::getKernel("cuda::lookupND", {src},
+            common::getKernel("cuda::lookupND", {lookup_cuh_src},
                               {TemplateTypename<in_t>(),
                                TemplateTypename<idx_t>(), TemplateArg(dim)});
         EnqueueArgs qArgs(blocks, threads, getActiveStream());

@@ -34,14 +34,12 @@ void index(Param out, const Param in, const IndexKernelParam_t& p,
     constexpr int THREADS_X = 32;
     constexpr int THREADS_Y = 8;
 
-    static const std::string src(index_cl, index_cl_len);
-
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto index = common::getKernel("indexKernel", {src},
+    auto index = common::getKernel("indexKernel", {index_cl_src},
                                    {TemplateTypename<T>()}, options);
     cl::NDRange local(THREADS_X, THREADS_Y);
 

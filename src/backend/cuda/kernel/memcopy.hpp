@@ -19,7 +19,6 @@
 #include <nvrtc_kernel_headers/memcopy_cuh.hpp>
 
 #include <algorithm>
-#include <string>
 
 namespace cuda {
 namespace kernel {
@@ -29,10 +28,8 @@ constexpr uint DIMY = 8;
 
 template<typename T>
 void memcopy(Param<T> out, CParam<T> in, const dim_t ndims) {
-    static const std::string src(memcopy_cuh, memcopy_cuh_len);
-
-    auto memCopy =
-        common::getKernel("cuda::memcopy", {src}, {TemplateTypename<T>()});
+    auto memCopy = common::getKernel("cuda::memcopy", {memcopy_cuh_src},
+                                     {TemplateTypename<T>()});
 
     dim3 threads(DIMX, DIMY);
 
@@ -62,8 +59,6 @@ void memcopy(Param<T> out, CParam<T> in, const dim_t ndims) {
 template<typename inType, typename outType>
 void copy(Param<outType> dst, CParam<inType> src, int ndims,
           outType default_value, double factor) {
-    static const std::string source(copy_cuh, copy_cuh_len);
-
     dim3 threads(DIMX, DIMY);
     size_t local_size[] = {DIMX, DIMY};
 
@@ -92,7 +87,7 @@ void copy(Param<outType> dst, CParam<inType> src, int ndims,
          (src.dims[2] == dst.dims[2]) && (src.dims[3] == dst.dims[3]));
 
     auto copy = common::getKernel(
-        "cuda::copy", {source},
+        "cuda::copy", {copy_cuh_src},
         {TemplateTypename<inType>(), TemplateTypename<outType>(),
          TemplateArg(same_dims)});
 

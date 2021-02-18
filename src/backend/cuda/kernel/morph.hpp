@@ -14,7 +14,6 @@
 #include <nvrtc_kernel_headers/morph_cuh.hpp>
 
 #include <limits>
-#include <string>
 
 namespace cuda {
 namespace kernel {
@@ -28,13 +27,11 @@ static const int CUBE_Z               = 8;
 
 template<typename T>
 void morph(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
-    static const std::string source(morph_cuh, morph_cuh_len);
-
     const int windLen  = mask.dims[0];
     const int SeLength = (windLen <= 10 ? windLen : 0);
 
     auto morph = common::getKernel(
-        "cuda::morph", {source},
+        "cuda::morph", {morph_cuh_src},
         {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(SeLength)},
         {
             DefineValue(MAX_MORPH_FILTER_LEN),
@@ -64,8 +61,6 @@ void morph(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
 
 template<typename T>
 void morph3d(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
-    static const std::string source(morph_cuh, morph_cuh_len);
-
     const int windLen = mask.dims[0];
 
     if (windLen > 7) {
@@ -73,7 +68,7 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
     }
 
     auto morph3D = common::getKernel(
-        "cuda::morph3D", {source},
+        "cuda::morph3D", {morph_cuh_src},
         {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(windLen)},
         {
             DefineValue(MAX_MORPH_FILTER_LEN),

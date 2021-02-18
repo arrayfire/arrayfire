@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/reorder_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -27,10 +25,8 @@ void reorder(Param<T> out, CParam<T> in, const dim_t *rdims) {
     constexpr unsigned TILEX = 512;
     constexpr unsigned TILEY = 32;
 
-    static const std::string source(reorder_cuh, reorder_cuh_len);
-
-    auto reorder =
-        common::getKernel("cuda::reorder", {source}, {TemplateTypename<T>()});
+    auto reorder = common::getKernel("cuda::reorder", {reorder_cuh_src},
+                                     {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 

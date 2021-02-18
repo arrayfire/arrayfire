@@ -34,8 +34,6 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p,
     constexpr int THREADS_X = 32;
     constexpr int THREADS_Y = 8;
 
-    static const std::string src(assign_cl, assign_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -44,7 +42,8 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto assign = common::getKernel("assignKernel", {src}, targs, options);
+    auto assign =
+        common::getKernel("assignKernel", {assign_cl_src}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

@@ -33,8 +33,6 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
     constexpr int FAST_THREADS_NONMAX_X = 32;
     constexpr int FAST_THREADS_NONMAX_Y = 8;
 
-    static const std::string src(fast_cl, fast_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(arc_length),
@@ -47,9 +45,12 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto locate  = common::getKernel("locate_features", {src}, targs, options);
-    auto nonMax  = common::getKernel("non_max_counts", {src}, targs, options);
-    auto getFeat = common::getKernel("get_features", {src}, targs, options);
+    auto locate =
+        common::getKernel("locate_features", {fast_cl_src}, targs, options);
+    auto nonMax =
+        common::getKernel("non_max_counts", {fast_cl_src}, targs, options);
+    auto getFeat =
+        common::getKernel("get_features", {fast_cl_src}, targs, options);
 
     const unsigned max_feat =
         ceil(in.info.dims[0] * in.info.dims[1] * feature_ratio);

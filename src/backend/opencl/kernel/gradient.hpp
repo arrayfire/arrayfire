@@ -29,8 +29,6 @@ void gradient(Param grad0, Param grad1, const Param in) {
     constexpr int TX = 32;
     constexpr int TY = 8;
 
-    static const std::string src(gradient_cl, gradient_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -43,7 +41,8 @@ void gradient(Param grad0, Param grad1, const Param in) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto gradOp = common::getKernel("gradient", {src}, targs, options);
+    auto gradOp =
+        common::getKernel("gradient", {gradient_cl_src}, targs, options);
 
     cl::NDRange local(TX, TY, 1);
 

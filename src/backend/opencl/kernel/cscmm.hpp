@@ -35,8 +35,6 @@ void cscmm_nn(Param out, const Param &values, const Param &colIdx,
     constexpr int rows_per_group = 8;
     constexpr int cols_per_group = 8;
 
-    static const std::string src(cscmm_cl, cscmm_cl_len);
-
     const bool use_alpha = (alpha != scalar<T>(1.0));
     const bool use_beta  = (beta != scalar<T>(0.0));
 
@@ -58,7 +56,8 @@ void cscmm_nn(Param out, const Param &values, const Param &colIdx,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto cscmmNN = common::getKernel("cscmm_nn", {src}, targs, options);
+    auto cscmmNN =
+        common::getKernel("cscmm_nn", {cscmm_cl_src}, targs, options);
 
     cl::NDRange local(threads, 1);
     int M = out.info.dims[0];

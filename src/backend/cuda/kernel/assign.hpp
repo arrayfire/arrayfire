@@ -14,8 +14,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/assign_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -24,10 +22,8 @@ void assign(Param<T> out, CParam<T> in, const AssignKernelParam& p) {
     constexpr int THREADS_X = 32;
     constexpr int THREADS_Y = 8;
 
-    static const std::string src(assign_cuh, assign_cuh_len);
-
-    auto assignKer =
-        common::getKernel("cuda::assign", {src}, {TemplateTypename<T>()});
+    auto assignKer = common::getKernel("cuda::assign", {assign_cuh_src},
+                                       {TemplateTypename<T>()});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

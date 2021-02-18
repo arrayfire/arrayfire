@@ -346,8 +346,6 @@ void apply_permutation(compute::buffer_iterator<T>& keys,
 
 template<typename T>
 std::array<Kernel, 7> getSiftKernels() {
-    static const std::string src(sift_nonfree_cl, sift_nonfree_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -357,13 +355,19 @@ std::array<Kernel, 7> getSiftKernels() {
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::getKernel("sub", {src}, targs, compileOpts),
-        common::getKernel("detectExtrema", {src}, targs, compileOpts),
-        common::getKernel("interpolateExtrema", {src}, targs, compileOpts),
-        common::getKernel("calcOrientation", {src}, targs, compileOpts),
-        common::getKernel("removeDuplicates", {src}, targs, compileOpts),
-        common::getKernel("computeDescriptor", {src}, targs, compileOpts),
-        common::getKernel("computeGLOHDescriptor", {src}, targs, compileOpts),
+        common::getKernel("sub", {sift_nonfree_cl_src}, targs, compileOpts),
+        common::getKernel("detectExtrema", {sift_nonfree_cl_src}, targs,
+                          compileOpts),
+        common::getKernel("interpolateExtrema", {sift_nonfree_cl_src}, targs,
+                          compileOpts),
+        common::getKernel("calcOrientation", {sift_nonfree_cl_src}, targs,
+                          compileOpts),
+        common::getKernel("removeDuplicates", {sift_nonfree_cl_src}, targs,
+                          compileOpts),
+        common::getKernel("computeDescriptor", {sift_nonfree_cl_src}, targs,
+                          compileOpts),
+        common::getKernel("computeGLOHDescriptor", {sift_nonfree_cl_src}, targs,
+                          compileOpts),
     };
 }
 

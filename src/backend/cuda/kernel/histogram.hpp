@@ -13,8 +13,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/histogram_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -25,10 +23,8 @@ constexpr int THRD_LOAD = 16;
 template<typename T>
 void histogram(Param<uint> out, CParam<T> in, int nbins, float minval,
                float maxval, bool isLinear) {
-    static const std::string source(histogram_cuh, histogram_cuh_len);
-
     auto histogram =
-        common::getKernel("cuda::histogram", {source},
+        common::getKernel("cuda::histogram", {histogram_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(isLinear)},
                           {DefineValue(MAX_BINS), DefineValue(THRD_LOAD)});
 

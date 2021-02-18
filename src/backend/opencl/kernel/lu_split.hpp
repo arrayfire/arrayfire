@@ -30,8 +30,6 @@ void luSplitLauncher(Param lower, Param upper, const Param in, bool same_dims) {
     constexpr unsigned TILEX = 128;
     constexpr unsigned TILEY = 32;
 
-    static const std::string src(lu_split_cl, lu_split_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(same_dims),
@@ -44,7 +42,8 @@ void luSplitLauncher(Param lower, Param upper, const Param in, bool same_dims) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto luSplit = common::getKernel("luSplit", {src}, targs, options);
+    auto luSplit =
+        common::getKernel("luSplit", {lu_split_cl_src}, targs, options);
 
     cl::NDRange local(TX, TY);
 

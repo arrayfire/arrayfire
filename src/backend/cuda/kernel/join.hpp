@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/join_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -27,10 +25,8 @@ void join(Param<T> out, CParam<T> X, const af::dim4 &offset, int dim) {
     constexpr unsigned TILEX = 256;
     constexpr unsigned TILEY = 32;
 
-    static const std::string source(join_cuh, join_cuh_len);
-
-    auto join =
-        common::getKernel("cuda::join", {source}, {TemplateTypename<T>()});
+    auto join = common::getKernel("cuda::join", {join_cuh_src},
+                                  {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 
