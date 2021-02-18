@@ -17,7 +17,6 @@
 #include <af/defines.h>
 
 #include <algorithm>
-#include <string>
 
 namespace cuda {
 namespace kernel {
@@ -31,10 +30,8 @@ static const unsigned TI = 4;
 template<typename T>
 void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
                const bool perspective, const af::interpType method, int order) {
-    static const std::string src(transform_cuh, transform_cuh_len);
-
     auto transform = common::getKernel(
-        "cuda::transform", {src},
+        "cuda::transform", {transform_cuh_src},
         {TemplateTypename<T>(), TemplateArg(inverse), TemplateArg(order)});
 
     const unsigned int nImg2  = in.dims[2];

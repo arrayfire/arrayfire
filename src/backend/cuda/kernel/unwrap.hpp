@@ -16,8 +16,6 @@
 #include <kernel/config.hpp>
 #include <nvrtc_kernel_headers/unwrap_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -25,10 +23,8 @@ template<typename T>
 void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
             const int sx, const int sy, const int px, const int py,
             const int dx, const int dy, const int nx, const bool is_column) {
-    static const std::string source(unwrap_cuh, unwrap_cuh_len);
-
     auto unwrap =
-        common::getKernel("cuda::unwrap", {source},
+        common::getKernel("cuda::unwrap", {unwrap_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(is_column)});
 
     dim3 threads, blocks;

@@ -16,19 +16,12 @@
 #include <math.hpp>
 #include <nvrtc_kernel_headers/select_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
 constexpr uint DIMX  = 32;
 constexpr uint DIMY  = 8;
 constexpr int REPEAT = 64;
-
-static inline std::string selectSource() {
-    static const std::string src(select_cuh, select_cuh_len);
-    return src;
-}
 
 template<typename T>
 void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
@@ -37,7 +30,7 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
     for (int i = 0; i < 4; i++) { is_same &= (a.dims[i] == b.dims[i]); }
 
     auto select =
-        common::getKernel("cuda::select", {selectSource()},
+        common::getKernel("cuda::select", {select_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(is_same)});
 
     dim3 threads(DIMX, DIMY);
@@ -67,7 +60,7 @@ template<typename T>
 void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b,
                    int ndims, bool flip) {
     auto selectScalar =
-        common::getKernel("cuda::selectScalar", {selectSource()},
+        common::getKernel("cuda::selectScalar", {select_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(flip)});
 
     dim3 threads(DIMX, DIMY);

@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/sobel_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -27,10 +25,9 @@ template<typename Ti, typename To>
 void sobel(Param<To> dx, Param<To> dy, CParam<Ti> in,
            const unsigned& ker_size) {
     UNUSED(ker_size);
-    static const std::string source(sobel_cuh, sobel_cuh_len);
 
     auto sobel3x3 =
-        common::getKernel("cuda::sobel3x3", {source},
+        common::getKernel("cuda::sobel3x3", {sobel_cuh_src},
                           {
                               TemplateTypename<Ti>(),
                               TemplateTypename<To>(),

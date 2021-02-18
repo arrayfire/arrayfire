@@ -27,11 +27,6 @@
 namespace opencl {
 namespace kernel {
 
-inline std::string interpSrc() {
-    static const std::string src(interp_cl, interp_cl_len);
-    return src;
-}
-
 template<typename Ty, typename Tp>
 auto genCompileOptions(const int order, const int xdim, const int ydim = -1) {
     constexpr bool isComplex =
@@ -69,8 +64,6 @@ void approx1(Param yo, const Param yi, const Param xo, const int xdim,
 
     constexpr int THREADS = 256;
 
-    static const string src(approx1_cl, approx1_cl_len);
-
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<Ty>(),
         TemplateTypename<Tp>(),
@@ -79,8 +72,8 @@ void approx1(Param yo, const Param yi, const Param xo, const int xdim,
     };
     auto compileOpts = genCompileOptions<Ty, Tp>(order, xdim);
 
-    auto approx1 = common::getKernel("approx1", {interpSrc(), src}, tmpltArgs,
-                                     compileOpts);
+    auto approx1 = common::getKernel("approx1", {interp_cl_src, approx1_cl_src},
+                                     tmpltArgs, compileOpts);
 
     NDRange local(THREADS, 1, 1);
     dim_t blocksPerMat = divup(yo.info.dims[0], local[0]);
@@ -111,16 +104,14 @@ void approx2(Param zo, const Param zi, const Param xo, const int xdim,
     constexpr int TX = 16;
     constexpr int TY = 16;
 
-    static const string src(approx2_cl, approx2_cl_len);
-
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(xdim),
         TemplateArg(ydim),      TemplateArg(order),
     };
     auto compileOpts = genCompileOptions<Ty, Tp>(order, xdim, ydim);
 
-    auto approx2 = common::getKernel("approx2", {interpSrc(), src}, tmpltArgs,
-                                     compileOpts);
+    auto approx2 = common::getKernel("approx2", {interp_cl_src, approx2_cl_src},
+                                     tmpltArgs, compileOpts);
 
     NDRange local(TX, TY, 1);
     dim_t blocksPerMatX = divup(zo.info.dims[0], local[0]);

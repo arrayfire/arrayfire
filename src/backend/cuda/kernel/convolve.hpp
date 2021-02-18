@@ -20,10 +20,6 @@
 #include <nvrtc_kernel_headers/convolve_separable_cuh.hpp>
 #include <traits.hpp>
 
-#include <string>
-
-using std::string;
-
 namespace cuda {
 namespace kernel {
 
@@ -104,10 +100,8 @@ void prepareKernelArgs(conv_kparam_t& params, dim_t oDims[], dim_t fDims[],
 template<typename T, typename aT>
 void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
-    static const std::string src(convolve1_cuh, convolve1_cuh_len);
-
     auto convolve1 = common::getKernel(
-        "cuda::convolve1", {src},
+        "cuda::convolve1", {convolve1_cuh_src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
         {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS)});
 
@@ -161,10 +155,8 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
         CUDA_NOT_SUPPORTED(errMessage);
     }
 
-    static const std::string src(convolve2_cuh, convolve2_cuh_len);
-
     auto convolve2 = common::getKernel(
-        "cuda::convolve2", {src},
+        "cuda::convolve2", {convolve2_cuh_src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand),
          TemplateArg(f0), TemplateArg(f1)},
         {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
@@ -208,10 +200,8 @@ void convolve_2d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
 template<typename T, typename aT>
 void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
-    static const std::string src(convolve3_cuh, convolve3_cuh_len);
-
     auto convolve3 = common::getKernel(
-        "cuda::convolve3", {src},
+        "cuda::convolve3", {convolve3_cuh_src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
         {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
          DefineValue(CONV3_CUBE_X), DefineValue(CONV3_CUBE_Y),
@@ -314,10 +304,8 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
         CUDA_NOT_SUPPORTED(errMessage);
     }
 
-    static const std::string src(convolve_separable_cuh,
-                                 convolve_separable_cuh_len);
     auto convolve2_separable = common::getKernel(
-        "cuda::convolve2_separable", {src},
+        "cuda::convolve2_separable", {convolve_separable_cuh_src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(conv_dim),
          TemplateArg(expand), TemplateArg(fLen)},
         {DefineValue(MAX_SCONV_FILTER_LEN), DefineValue(SCONV_THREADS_X),

@@ -14,8 +14,6 @@
 #include <nvrtc_kernel_headers/match_template_cuh.hpp>
 #include <af/defines.h>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -26,10 +24,8 @@ template<typename inType, typename outType>
 void matchTemplate(Param<outType> out, CParam<inType> srch,
                    CParam<inType> tmplt, const af::matchType mType,
                    bool needMean) {
-    static const std::string source(match_template_cuh, match_template_cuh_len);
-
     auto matchTemplate = common::getKernel(
-        "cuda::matchTemplate", {source},
+        "cuda::matchTemplate", {match_template_cuh_src},
         {TemplateTypename<inType>(), TemplateTypename<outType>(),
          TemplateArg(mType), TemplateArg(needMean)});
 

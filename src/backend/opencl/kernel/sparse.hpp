@@ -32,8 +32,6 @@ namespace kernel {
 template<typename T>
 void coo2dense(Param out, const Param values, const Param rowIdx,
                const Param colIdx) {
-    static const std::string src(coo2dense_cl, coo2dense_cl_len);
-
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateArg(REPEAT),
@@ -44,8 +42,8 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto coo2dense =
-        common::getKernel("coo2Dense", {src}, tmpltArgs, compileOpts);
+    auto coo2dense = common::getKernel("coo2Dense", {coo2dense_cl_src},
+                                       tmpltArgs, compileOpts);
 
     cl::NDRange local(THREADS_PER_GROUP, 1, 1);
 
@@ -65,8 +63,6 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
     // FIXME: This needs to be based non nonzeros per row
     constexpr int threads = 64;
 
-    static const std::string src(csr2dense_cl, csr2dense_cl_len);
-
     const int M = rowIdx.info.dims[0] - 1;
 
     std::vector<TemplateArg> tmpltArgs = {
@@ -79,8 +75,8 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csr2dense =
-        common::getKernel("csr2Dense", {src}, tmpltArgs, compileOpts);
+    auto csr2dense = common::getKernel("csr2Dense", {csr2dense_cl_src},
+                                       tmpltArgs, compileOpts);
 
     cl::NDRange local(threads, 1);
     int groups_x = std::min((int)(divup(M, local[0])), MAX_GROUPS);
@@ -96,8 +92,6 @@ void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
     constexpr bool IsComplex =
         std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
 
-    static const std::string src(dense2csr_cl, dense2csr_cl_len);
-
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
     };
@@ -107,8 +101,8 @@ void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto dense2Csr =
-        common::getKernel("dense2Csr", {src}, tmpltArgs, compileOpts);
+    auto dense2Csr = common::getKernel("dense2Csr", {dense2csr_cl_src},
+                                       tmpltArgs, compileOpts);
 
     int num_rows = dense.info.dims[0];
     int num_cols = dense.info.dims[1];
@@ -144,8 +138,6 @@ void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
 template<typename T>
 void swapIndex(Param ovalues, Param oindex, const Param ivalues,
                const cl::Buffer *iindex, const Param swapIdx) {
-    static const std::string src(csr2coo_cl, csr2coo_cl_len);
-
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
     };
@@ -154,8 +146,8 @@ void swapIndex(Param ovalues, Param oindex, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto swapIndex =
-        common::getKernel("swapIndex", {src}, tmpltArgs, compileOpts);
+    auto swapIndex = common::getKernel("swapIndex", {csr2coo_cl_src}, tmpltArgs,
+                                       compileOpts);
 
     cl::NDRange global(ovalues.info.dims[0], 1, 1);
 
@@ -168,8 +160,6 @@ void swapIndex(Param ovalues, Param oindex, const Param ivalues,
 template<typename T>
 void csr2coo(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
              const Param irowIdx, const Param icolIdx, Param index) {
-    static const std::string src(csr2coo_cl, csr2coo_cl_len);
-
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
     };
@@ -178,7 +168,8 @@ void csr2coo(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csr2coo = common::getKernel("csr2Coo", {src}, tmpltArgs, compileOpts);
+    auto csr2coo =
+        common::getKernel("csr2Coo", {csr2coo_cl_src}, tmpltArgs, compileOpts);
 
     const int MAX_GROUPS = 4096;
     int M                = irowIdx.info.dims[0] - 1;
@@ -209,8 +200,6 @@ template<typename T>
 void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
              const Param irowIdx, const Param icolIdx, Param index,
              Param rowCopy, const int M) {
-    static const std::string src(csr2coo_cl, csr2coo_cl_len);
-
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
     };
@@ -219,8 +208,8 @@ void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csrReduce =
-        common::getKernel("csrReduce", {src}, tmpltArgs, compileOpts);
+    auto csrReduce = common::getKernel("csrReduce", {csr2coo_cl_src}, tmpltArgs,
+                                       compileOpts);
 
     // Now we need to sort this into column major
     kernel::sort0ByKeyIterative<int, int>(rowCopy, index, true);

@@ -35,8 +35,6 @@ template<typename T>
 void memcopy(cl::Buffer out, const dim_t *ostrides, const cl::Buffer in,
              const dim_t *idims, const dim_t *istrides, int offset,
              uint ndims) {
-    static const std::string source(memcopy_cl, memcopy_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -45,7 +43,8 @@ void memcopy(cl::Buffer out, const dim_t *ostrides, const cl::Buffer in,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto memCopy = common::getKernel("memCopy", {source}, targs, options);
+    auto memCopy =
+        common::getKernel("memCopy", {memcopy_cl_src}, targs, options);
 
     dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
     dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
@@ -75,8 +74,6 @@ void copy(Param dst, const Param src, const int ndims,
           const bool same_dims) {
     using std::string;
 
-    static const string source(copy_cl, copy_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<inType>(),
         TemplateTypename<outType>(),
@@ -91,7 +88,7 @@ void copy(Param dst, const Param src, const int ndims,
     };
     options.emplace_back(getTypeBuildDefinition<inType, outType>());
 
-    auto copy = common::getKernel("reshapeCopy", {source}, targs, options);
+    auto copy = common::getKernel("reshapeCopy", {copy_cl_src}, targs, options);
 
     cl::NDRange local(DIM0, DIM1);
     size_t local_size[] = {DIM0, DIM1};

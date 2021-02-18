@@ -40,8 +40,6 @@ void resize(Param out, const Param in, const af_interp_type method) {
     constexpr bool IsComplex =
         std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
 
-    static const std::string src(resize_cl, resize_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(method),
@@ -70,7 +68,8 @@ void resize(Param out, const Param in, const af_interp_type method) {
         default: break;
     }
 
-    auto resizeOp = common::getKernel("resize_kernel", {src}, targs, options);
+    auto resizeOp =
+        common::getKernel("resize_kernel", {resize_cl_src}, targs, options);
 
     cl::NDRange local(RESIZE_TX, RESIZE_TY, 1);
 

@@ -39,23 +39,19 @@ static Kernel getRandomEngineKernel(const af_random_engine_type type,
                                     const int kerIdx,
                                     const uint elementsPerBlock) {
     std::string key;
-    std::vector<std::string> sources = {
-        std::string(random_engine_write_cl, random_engine_write_cl_len)};
+    std::vector<common::Source> sources{random_engine_write_cl_src};
     switch (type) {
         case AF_RANDOM_ENGINE_PHILOX_4X32_10:
             key = "philoxGenerator";
-            sources.emplace_back(random_engine_philox_cl,
-                                 random_engine_philox_cl_len);
+            sources.emplace_back(random_engine_philox_cl_src);
             break;
         case AF_RANDOM_ENGINE_THREEFRY_2X32_16:
             key = "threefryGenerator";
-            sources.emplace_back(random_engine_threefry_cl,
-                                 random_engine_threefry_cl_len);
+            sources.emplace_back(random_engine_threefry_cl_src);
             break;
         case AF_RANDOM_ENGINE_MERSENNE_GP11213:
             key = "mersenneGenerator";
-            sources.emplace_back(random_engine_mersenne_cl,
-                                 random_engine_mersenne_cl_len);
+            sources.emplace_back(random_engine_mersenne_cl_src);
             break;
         default:
             AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
@@ -80,12 +76,6 @@ static Kernel getRandomEngineKernel(const af_random_engine_type type,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     return common::getKernel(key, sources, targs, options);
-}
-
-static Kernel getMersenneInitKernel(void) {
-    static const std::string src(random_engine_mersenne_init_cl,
-                                 random_engine_mersenne_init_cl_len);
-    return common::getKernel("mersenneInitState", {src}, {});
 }
 
 template<typename T>
@@ -172,7 +162,8 @@ void initMersenneState(cl::Buffer state, cl::Buffer table, const uintl &seed) {
     cl::NDRange local(THREADS_PER_GROUP, 1);
     cl::NDRange global(local[0] * MAX_BLOCKS, 1);
 
-    auto initOp = getMersenneInitKernel();
+    auto initOp = common::getKernel("mersenneInitState",
+                                    {random_engine_mersenne_init_cl_src}, {});
     initOp(cl::EnqueueArgs(getQueue(), global, local), state, table, seed);
     CL_DEBUG_FINISH(getQueue());
 }

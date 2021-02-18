@@ -19,16 +19,9 @@
 #include <optypes.hpp>
 
 #include <algorithm>
-#include <string>
 
 namespace cuda {
 namespace kernel {
-
-static inline std::string sbkFirstSource() {
-    static const std::string src(scan_first_by_key_cuh,
-                                 scan_first_by_key_cuh_len);
-    return src;
-}
 
 template<typename Ti, typename Tk, typename To, af_op_t op>
 static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
@@ -37,7 +30,7 @@ static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                    const uint blocks_x, const uint blocks_y,
                                    const uint threads_x, bool inclusive_scan) {
     auto scanbykey_first_nonfinal = common::getKernel(
-        "cuda::scanbykey_first_nonfinal", {sbkFirstSource()},
+        "cuda::scanbykey_first_nonfinal", {scan_first_by_key_cuh_src},
         {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
          TemplateArg(op)},
         {DefineValue(THREADS_PER_BLOCK), DefineKeyValue(DIMX, threads_x)});
@@ -58,7 +51,7 @@ static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
                                 const uint threads_x, bool calculateFlags,
                                 bool inclusive_scan) {
     auto scanbykey_first_final = common::getKernel(
-        "cuda::scanbykey_first_final", {sbkFirstSource()},
+        "cuda::scanbykey_first_final", {scan_first_by_key_cuh_src},
         {TemplateTypename<Ti>(), TemplateTypename<Tk>(), TemplateTypename<To>(),
          TemplateArg(op)},
         {DefineValue(THREADS_PER_BLOCK), DefineKeyValue(DIMX, threads_x)});
@@ -77,9 +70,9 @@ template<typename To, af_op_t op>
 static void bcast_first_launcher(Param<To> out, Param<To> tmp, Param<int> tlid,
                                  const dim_t blocks_x, const dim_t blocks_y,
                                  const uint threads_x) {
-    auto scanbykey_first_bcast =
-        common::getKernel("cuda::scanbykey_first_bcast", {sbkFirstSource()},
-                          {TemplateTypename<To>(), TemplateArg(op)});
+    auto scanbykey_first_bcast = common::getKernel(
+        "cuda::scanbykey_first_bcast", {scan_first_by_key_cuh_src},
+        {TemplateTypename<To>(), TemplateArg(op)});
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
     uint lim = divup(out.dims[0], (threads_x * blocks_x));

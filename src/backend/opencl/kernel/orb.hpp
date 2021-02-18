@@ -77,8 +77,6 @@ void gaussian1D(T* out, const int dim, double sigma = 0.0) {
 
 template<typename T>
 std::array<Kernel, 4> getOrbKernels() {
-    static const std::string src(orb_cl, orb_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -89,10 +87,10 @@ std::array<Kernel, 4> getOrbKernels() {
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::getKernel("harris_response", {src}, targs, compileOpts),
-        common::getKernel("keep_features", {src}, targs, compileOpts),
-        common::getKernel("centroid_angle", {src}, targs, compileOpts),
-        common::getKernel("extract_orb", {src}, targs, compileOpts),
+        common::getKernel("harris_response", {orb_cl_src}, targs, compileOpts),
+        common::getKernel("keep_features", {orb_cl_src}, targs, compileOpts),
+        common::getKernel("centroid_angle", {orb_cl_src}, targs, compileOpts),
+        common::getKernel("extract_orb", {orb_cl_src}, targs, compileOpts),
     };
 }
 

@@ -70,8 +70,6 @@ void packDataHelper(Param packed, Param sig, Param filter, const int rank,
     constexpr auto ctDType =
         static_cast<af_dtype>(dtype_traits<convT>::af_type);
 
-    static const std::string src(fftconvolve_pack_cl, fftconvolve_pack_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateTypename<convT>(),
@@ -87,8 +85,10 @@ void packDataHelper(Param packed, Param sig, Param filter, const int rank,
     }
     options.emplace_back(getTypeBuildDefinition<T, convT>());
 
-    auto packData = common::getKernel("pack_data", {src}, targs, options);
-    auto padArray = common::getKernel("pad_array", {src}, targs, options);
+    auto packData = common::getKernel("pack_data", {fftconvolve_pack_cl_src},
+                                      targs, options);
+    auto padArray = common::getKernel("pad_array", {fftconvolve_pack_cl_src},
+                                      targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
@@ -129,8 +129,6 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
     constexpr auto ctDType =
         static_cast<af_dtype>(dtype_traits<convT>::af_type);
 
-    static const std::string src(fftconvolve_multiply_cl,
-                                 fftconvolve_multiply_cl_len);
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateTypename<convT>(),
@@ -150,7 +148,8 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
     }
     options.emplace_back(getTypeBuildDefinition<T, convT>());
 
-    auto cplxMul = common::getKernel("complex_multiply", {src}, targs, options);
+    auto cplxMul = common::getKernel(
+        "complex_multiply", {fftconvolve_multiply_cl_src}, targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
@@ -180,9 +179,6 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
         static_cast<af_dtype>(dtype_traits<convT>::af_type);
     constexpr bool RoundResult = std::is_integral<T>::value;
 
-    static const std::string src(fftconvolve_reorder_cl,
-                                 fftconvolve_reorder_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),     TemplateTypename<convT>(),
         TemplateArg(IsTypeDouble), TemplateArg(RoundResult),
@@ -200,7 +196,8 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
     }
     options.emplace_back(getTypeBuildDefinition<T, convT>());
 
-    auto reorder = common::getKernel("reorder_output", {src}, targs, options);
+    auto reorder = common::getKernel(
+        "reorder_output", {fftconvolve_reorder_cl_src}, targs, options);
 
     int fftScale = 1;
 

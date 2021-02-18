@@ -20,14 +20,12 @@
 namespace cuda {
 namespace kernel {
 
-static const std::string ScanDimSource(scan_dim_cuh, scan_dim_cuh_len);
-
 template<typename Ti, typename To, af_op_t op>
 static void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                               const uint threads_y, const dim_t blocks_all[4],
                               int dim, bool isFinalPass, bool inclusive_scan) {
     auto scan_dim = common::getKernel(
-        "cuda::scan_dim", {ScanDimSource},
+        "cuda::scan_dim", {scan_dim_cuh_src},
         {TemplateTypename<Ti>(), TemplateTypename<To>(), TemplateArg(op),
          TemplateArg(dim), TemplateArg(isFinalPass), TemplateArg(threads_y),
          TemplateArg(inclusive_scan)},
@@ -55,7 +53,7 @@ static void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
                                const uint threads_y, const dim_t blocks_all[4],
                                int dim, bool inclusive_scan) {
     auto scan_dim_bcast = common::getKernel(
-        "cuda::scan_dim_bcast", {ScanDimSource},
+        "cuda::scan_dim_bcast", {scan_dim_cuh_src},
         {TemplateTypename<To>(), TemplateArg(op), TemplateArg(dim)});
 
     dim3 threads(THREADS_X, threads_y);

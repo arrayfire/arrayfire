@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/lu_split_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -27,13 +25,12 @@ void lu_split(Param<T> lower, Param<T> upper, Param<T> in) {
     constexpr unsigned TILEX = 128;
     constexpr unsigned TILEY = 32;
 
-    static const std::string src(lu_split_cuh, lu_split_cuh_len);
-
     const bool sameDims =
         lower.dims[0] == in.dims[0] && lower.dims[1] == in.dims[1];
 
-    auto luSplit = common::getKernel(
-        "cuda::luSplit", {src}, {TemplateTypename<T>(), TemplateArg(sameDims)});
+    auto luSplit =
+        common::getKernel("cuda::luSplit", {lu_split_cuh_src},
+                          {TemplateTypename<T>(), TemplateArg(sameDims)});
 
     dim3 threads(TX, TY, 1);
 

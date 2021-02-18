@@ -30,8 +30,6 @@ constexpr int HG_THREADS   = 256;
 
 template<typename T>
 std::array<Kernel, 5> getHomographyKernels(const af_homography_type htype) {
-    static const std::string src(homography_cl, homography_cl_len);
-
     std::vector<TemplateArg> targs   = {TemplateTypename<T>(),
                                       TemplateArg(htype)};
     std::vector<std::string> options = {
@@ -50,11 +48,16 @@ std::array<Kernel, 5> getHomographyKernels(const af_homography_type htype) {
         options.emplace_back(DefineKey(IS_CPU));
     }
     return {
-        common::getKernel("compute_homography", {src}, targs, options),
-        common::getKernel("eval_homography", {src}, targs, options),
-        common::getKernel("compute_median", {src}, targs, options),
-        common::getKernel("find_min_median", {src}, targs, options),
-        common::getKernel("compute_lmeds_inliers", {src}, targs, options),
+        common::getKernel("compute_homography", {homography_cl_src}, targs,
+                          options),
+        common::getKernel("eval_homography", {homography_cl_src}, targs,
+                          options),
+        common::getKernel("compute_median", {homography_cl_src}, targs,
+                          options),
+        common::getKernel("find_min_median", {homography_cl_src}, targs,
+                          options),
+        common::getKernel("compute_lmeds_inliers", {homography_cl_src}, targs,
+                          options),
     };
 }
 

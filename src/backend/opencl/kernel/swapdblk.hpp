@@ -33,8 +33,6 @@ void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
     using std::string;
     using std::vector;
 
-    static const string src(swapdblk_cl, swapdblk_cl_len);
-
     vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -43,7 +41,8 @@ void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto swapdblk = common::getKernel("swapdblk", {src}, targs, compileOpts);
+    auto swapdblk =
+        common::getKernel("swapdblk", {swapdblk_cl_src}, targs, compileOpts);
 
     int nblocks = n / nb;
 

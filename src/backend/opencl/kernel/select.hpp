@@ -26,11 +26,6 @@ constexpr uint DIMX  = 32;
 constexpr uint DIMY  = 8;
 constexpr int REPEAT = 64;
 
-static inline auto selectSrc() {
-    static const std::string src(select_cl, select_cl_len);
-    return src;
-};
-
 template<typename T>
 void selectLauncher(Param out, Param cond, Param a, Param b, const int ndims,
                     const bool is_same) {
@@ -45,7 +40,7 @@ void selectLauncher(Param out, Param cond, Param a, Param b, const int ndims,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto selectOp =
-        common::getKernel("select_kernel", {selectSrc()}, targs, options);
+        common::getKernel("select_kernel", {select_cl_src}, targs, options);
 
     int threads[] = {DIMX, DIMY};
 
@@ -89,7 +84,7 @@ void select_scalar(Param out, Param cond, Param a, const double b,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto selectOp = common::getKernel("select_scalar_kernel", {selectSrc()},
+    auto selectOp = common::getKernel("select_scalar_kernel", {select_cl_src},
                                       targs, options);
 
     int threads[] = {DIMX, DIMY};

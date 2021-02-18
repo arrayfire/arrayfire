@@ -36,9 +36,6 @@ template<typename Ti, typename To, af_op_t op>
 void reduceDimLauncher(Param out, Param in, const int dim, const uint threads_y,
                        const uint groups_all[4], int change_nan,
                        double nanval) {
-    static const std::string src1(ops_cl, ops_cl_len);
-    static const std::string src2(reduce_dim_cl, reduce_dim_cl_len);
-
     ToNumStr<To> toNumStr;
     std::vector<TemplateArg> targs = {
         TemplateTypename<Ti>(), TemplateTypename<To>(), TemplateArg(dim),
@@ -57,8 +54,8 @@ void reduceDimLauncher(Param out, Param in, const int dim, const uint threads_y,
     };
     options.emplace_back(getTypeBuildDefinition<Ti, To>());
 
-    auto reduceDim =
-        common::getKernel("reduce_dim_kernel", {src1, src2}, targs, options);
+    auto reduceDim = common::getKernel(
+        "reduce_dim_kernel", {ops_cl_src, reduce_dim_cl_src}, targs, options);
 
     cl::NDRange local(THREADS_X, threads_y);
     cl::NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -116,9 +113,6 @@ template<typename Ti, typename To, af_op_t op>
 void reduceFirstLauncher(Param out, Param in, const uint groups_x,
                          const uint groups_y, const uint threads_x,
                          int change_nan, double nanval) {
-    static const std::string src1(ops_cl, ops_cl_len);
-    static const std::string src2(reduce_first_cl, reduce_first_cl_len);
-
     ToNumStr<To> toNumStr;
     std::vector<TemplateArg> targs = {
         TemplateTypename<Ti>(),
@@ -139,7 +133,8 @@ void reduceFirstLauncher(Param out, Param in, const uint groups_x,
     options.emplace_back(getTypeBuildDefinition<Ti, To>());
 
     auto reduceFirst =
-        common::getKernel("reduce_first_kernel", {src1, src2}, targs, options);
+        common::getKernel("reduce_first_kernel",
+                          {ops_cl_src, reduce_first_cl_src}, targs, options);
 
     cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     cl::NDRange global(groups_x * in.info.dims[2] * local[0],
