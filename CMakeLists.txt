@@ -107,7 +107,9 @@ mark_as_advanced(
   AF_BUILD_FRAMEWORK
   AF_INSTALL_STANDALONE
   AF_WITH_CPUID
+  Boost_INCLUDE_DIR
   CUDA_HOST_COMPILER
+  CUDA_SDK_ROOT_DIR
   CUDA_USE_STATIC_CUDA_RUNTIME
   CUDA_rt_LIBRARY
   SPDLOG_BUILD_EXAMPLES
@@ -115,7 +117,9 @@ mark_as_advanced(
   ADDR2LINE_PROGRAM
   Backtrace_LIBRARY
   AF_WITH_STATIC_MKL
+  GIT
   )
+mark_as_advanced(CLEAR CUDA_VERSION)
 
 #Configure forge submodule
 #forge is included in ALL target if AF_BUILD_FORGE is ON

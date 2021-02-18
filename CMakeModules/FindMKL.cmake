@@ -265,8 +265,8 @@ function(find_mkl_library)
         if (CMAKE_VERSION VERSION_GREATER 3.14)
           message(VERBOSE "MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY: ${MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY}")
         endif()
-        mark_as_advanced(MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY)
       endif()
+      mark_as_advanced(MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY)
     endif()
 
     set_target_properties(MKL::${mkl_args_NAME}
