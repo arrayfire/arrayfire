@@ -28,7 +28,6 @@ void reorder(Param out, const Param in, const dim_t* rdims) {
     constexpr int TILEX = 512;
     constexpr int TILEY = 32;
 
-    static const std::string src(reorder_cl, reorder_cl_len);
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -37,7 +36,8 @@ void reorder(Param out, const Param in, const dim_t* rdims) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto reorderOp = common::getKernel("reorder_kernel", {src}, targs, options);
+    auto reorderOp =
+        common::getKernel("reorder_kernel", {reorder_cl_src}, targs, options);
 
     cl::NDRange local(TX, TY, 1);
 

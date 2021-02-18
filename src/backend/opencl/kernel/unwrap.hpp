@@ -34,8 +34,6 @@ void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
     using std::string;
     using std::vector;
 
-    static const string src(unwrap_cl, unwrap_cl_len);
-
     ToNumStr<T> toNumStr;
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
@@ -48,7 +46,8 @@ void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto unwrap = common::getKernel("unwrap", {src}, tmpltArgs, compileOpts);
+    auto unwrap =
+        common::getKernel("unwrap", {unwrap_cl_src}, tmpltArgs, compileOpts);
 
     dim_t TX = 1, TY = 1;
     dim_t BX       = 1;

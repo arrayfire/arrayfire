@@ -14,8 +14,6 @@
 #include <nvrtc_kernel_headers/medfilt_cuh.hpp>
 #include <af/defines.h>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -28,10 +26,8 @@ template<typename T>
 void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
               int w_wid) {
     UNUSED(w_wid);
-    static const std::string source(medfilt_cuh, medfilt_cuh_len);
-
     auto medfilt2 =
-        common::getKernel("cuda::medfilt2", {source},
+        common::getKernel("cuda::medfilt2", {medfilt_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(pad),
                            TemplateArg(w_len), TemplateArg(w_wid)},
                           {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
@@ -50,10 +46,8 @@ void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
 
 template<typename T>
 void medfilt1(Param<T> out, CParam<T> in, const af::borderType pad, int w_wid) {
-    static const std::string source(medfilt_cuh, medfilt_cuh_len);
-
     auto medfilt1 = common::getKernel(
-        "cuda::medfilt1", {source},
+        "cuda::medfilt1", {medfilt_cuh_src},
         {TemplateTypename<T>(), TemplateArg(pad), TemplateArg(w_wid)});
 
     const dim3 threads(THREADS_X);

@@ -36,8 +36,6 @@ void csrmv(Param out, const Param &values, const Param &rowIdx,
     // FIXME: Find a better number based on average non zeros per row
     constexpr int threads = 64;
 
-    static const std::string src(csrmv_cl, csrmv_cl_len);
-
     const bool use_alpha = (alpha != scalar<T>(1.0));
     const bool use_beta  = (beta != scalar<T>(0.0));
 
@@ -55,8 +53,10 @@ void csrmv(Param out, const Param &values, const Param &rowIdx,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csrmvThread = common::getKernel("csrmv_thread", {src}, targs, options);
-    auto csrmvBlock  = common::getKernel("csrmv_block", {src}, targs, options);
+    auto csrmvThread =
+        common::getKernel("csrmv_thread", {csrmv_cl_src}, targs, options);
+    auto csrmvBlock =
+        common::getKernel("csrmv_block", {csrmv_cl_src}, targs, options);
 
     int count           = 0;
     cl::Buffer *counter = bufferAlloc(sizeof(int));

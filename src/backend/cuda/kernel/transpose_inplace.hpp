@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/transpose_inplace_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -27,10 +25,8 @@ static const int THREADS_Y = 256 / TILE_DIM;
 template<typename T>
 void transpose_inplace(Param<T> in, const bool conjugate,
                        const bool is32multiple) {
-    static const std::string source(transpose_inplace_cuh,
-                                    transpose_inplace_cuh_len);
     auto transposeIP =
-        common::getKernel("cuda::transposeIP", {source},
+        common::getKernel("cuda::transposeIP", {transpose_inplace_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(conjugate),
                            TemplateArg(is32multiple)},
                           {DefineValue(TILE_DIM), DefineValue(THREADS_Y)});

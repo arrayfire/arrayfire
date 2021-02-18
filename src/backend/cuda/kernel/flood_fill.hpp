@@ -16,8 +16,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/flood_fill_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -38,8 +36,6 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
                CParam<uint> seedsy, const T newValue, const T lowValue,
                const T highValue, const af::connectivity nlookup) {
     UNUSED(nlookup);
-    static const std::string source(flood_fill_cuh, flood_fill_cuh_len);
-
     if (sharedMemRequiredByFloodFill<T>() >
         cuda::getDeviceProp(cuda::getActiveDeviceId()).sharedMemPerBlock) {
         char errMessage[256];
@@ -49,13 +45,13 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
         CUDA_NOT_SUPPORTED(errMessage);
     }
 
-    auto initSeeds =
-        common::getKernel("cuda::initSeeds", {source}, {TemplateTypename<T>()});
-    auto floodStep =
-        common::getKernel("cuda::floodStep", {source}, {TemplateTypename<T>()},
-                          {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
-    auto finalizeOutput = common::getKernel("cuda::finalizeOutput", {source},
-                                            {TemplateTypename<T>()});
+    auto initSeeds = common::getKernel("cuda::initSeeds", {flood_fill_cuh_src},
+                                       {TemplateTypename<T>()});
+    auto floodStep = common::getKernel(
+        "cuda::floodStep", {flood_fill_cuh_src}, {TemplateTypename<T>()},
+        {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto finalizeOutput = common::getKernel(
+        "cuda::finalizeOutput", {flood_fill_cuh_src}, {TemplateTypename<T>()});
 
     EnqueueArgs qArgs(dim3(divup(seedsx.elements(), THREADS)), dim3(THREADS),
                       getActiveStream());

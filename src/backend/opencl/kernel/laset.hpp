@@ -46,8 +46,6 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
     constexpr int BLK_X = 64;
     constexpr int BLK_Y = 32;
 
-    static const std::string src(laset_cl, laset_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(uplo),
@@ -60,7 +58,8 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto lasetOp = common::getKernel(laset_name<uplo>(), {src}, targs, options);
+    auto lasetOp =
+        common::getKernel(laset_name<uplo>(), {laset_cl_src}, targs, options);
 
     int groups_x = (m - 1) / BLK_X + 1;
     int groups_y = (n - 1) / BLK_Y + 1;

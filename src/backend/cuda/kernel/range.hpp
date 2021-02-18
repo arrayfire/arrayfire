@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/range_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -27,10 +25,8 @@ void range(Param<T> out, const int dim) {
     constexpr unsigned RANGE_TILEX = 512;
     constexpr unsigned RANGE_TILEY = 32;
 
-    static const std::string source(range_cuh, range_cuh_len);
-
-    auto range =
-        common::getKernel("cuda::range", {source}, {TemplateTypename<T>()});
+    auto range = common::getKernel("cuda::range", {range_cuh_src},
+                                   {TemplateTypename<T>()});
 
     dim3 threads(RANGE_TX, RANGE_TY, 1);
 

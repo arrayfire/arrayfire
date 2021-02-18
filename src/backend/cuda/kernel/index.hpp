@@ -16,8 +16,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/index_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -26,10 +24,8 @@ void index(Param<T> out, CParam<T> in, const IndexKernelParam& p) {
     constexpr int THREADS_X = 32;
     constexpr int THREADS_Y = 8;
 
-    static const std::string source(index_cuh, index_cuh_len);
-
-    auto index =
-        common::getKernel("cuda::index", {source}, {TemplateTypename<T>()});
+    auto index = common::getKernel("cuda::index", {index_cuh_src},
+                                   {TemplateTypename<T>()});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

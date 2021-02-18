@@ -16,8 +16,6 @@
 #include <nvrtc_kernel_headers/anisotropic_diffusion_cuh.hpp>
 #include <af/defines.h>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -28,10 +26,8 @@ constexpr int YDIM_LOAD = 2 * THREADS_X / THREADS_Y;
 template<typename T>
 void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
                           const af::fluxFunction fftype, bool isMCDE) {
-    static const std::string source(anisotropic_diffusion_cuh,
-                                    anisotropic_diffusion_cuh_len);
     auto diffUpdate = common::getKernel(
-        "cuda::diffUpdate", {source},
+        "cuda::diffUpdate", {anisotropic_diffusion_cuh_src},
         {TemplateTypename<T>(), TemplateArg(fftype), TemplateArg(isMCDE)},
         {DefineValue(THREADS_X), DefineValue(THREADS_Y),
          DefineValue(YDIM_LOAD)});

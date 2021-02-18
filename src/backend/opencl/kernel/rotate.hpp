@@ -56,9 +56,6 @@ void rotate(Param out, const Param in, const float theta, af_interp_type method,
         static_cast<af_dtype>(dtype_traits<T>::af_type) == c32 ||
         static_cast<af_dtype>(dtype_traits<T>::af_type) == c64;
 
-    static const std::string src1(interp_cl, interp_cl_len);
-    static const std::string src2(rotate_cl, rotate_cl_len);
-
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateArg(order),
@@ -82,8 +79,8 @@ void rotate(Param out, const Param in, const float theta, af_interp_type method,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
     addInterpEnumOptions(compileOpts);
 
-    auto rotate =
-        common::getKernel("rotateKernel", {src1, src2}, tmpltArgs, compileOpts);
+    auto rotate = common::getKernel(
+        "rotateKernel", {interp_cl_src, rotate_cl_src}, tmpltArgs, compileOpts);
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;

@@ -9,9 +9,8 @@
 
 #if !defined(AF_CPU)
 
-#include <common/kernel_cache.hpp>
-
 #include <common/compile_module.hpp>
+#include <common/kernel_cache.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>
 #include <platform.hpp>
@@ -28,13 +27,14 @@ using detail::Module;
 using std::back_inserter;
 using std::shared_timed_mutex;
 using std::string;
+using std::to_string;
 using std::transform;
 using std::unordered_map;
 using std::vector;
 
 namespace common {
 
-using ModuleMap = unordered_map<string, Module>;
+using ModuleMap = unordered_map<size_t, Module>;
 
 shared_timed_mutex& getCacheMutex(const int device) {
     static shared_timed_mutex mutexes[detail::DeviceManager::MAX_DEVICES];
@@ -47,7 +47,7 @@ ModuleMap& getCache(const int device) {
     return caches[device];
 }
 
-Module findModule(const int device, const string& key) {
+Module findModule(const int device, const size_t& key) {
     std::shared_lock<shared_timed_mutex> readLock(getCacheMutex(device));
     auto& cache = getCache(device);
     auto iter   = cache.find(key);
@@ -55,66 +55,64 @@ Module findModule(const int device, const string& key) {
     return Module{};
 }
 
-Kernel getKernel(const string& kernelName, const vector<string>& sources,
+Kernel getKernel(const string& kernelName,
+                 const vector<common::Source>& sources,
                  const vector<TemplateArg>& targs,
                  const vector<string>& options, const bool sourceIsJIT) {
-    vector<string> args;
-    args.reserve(targs.size());
-
-    transform(targs.begin(), targs.end(), back_inserter(args),
-              [](const TemplateArg& arg) -> string { return arg._tparam; });
-
     string tInstance = kernelName;
-    if (args.size() > 0) {
-        tInstance = kernelName + "<" + args[0];
-        for (size_t i = 1; i < args.size(); ++i) {
-            tInstance += ("," + args[i]);
-        }
-        tInstance += ">";
+
+#if defined(AF_CUDA)
+    auto targsIt  = targs.begin();
+    auto targsEnd = targs.end();
+    if (targsIt != targsEnd) {
+        tInstance += '<' + targsIt->_tparam;
+        while (++targsIt != targsEnd) { tInstance += ',' + targsIt->_tparam; }
+        tInstance += '>';
     }
+#else
+    UNUSED(targs);
+#endif
 
-    const bool notJIT = !sourceIsJIT;
-
-    vector<string> hashingVals;
-    hashingVals.reserve(1 + (notJIT * (sources.size() + options.size())));
-    hashingVals.push_back(tInstance);
-    if (notJIT) {
-        // This code path is only used for regular kernel compilation
-        // since, jit funcName(kernelName) is unique to use it's hash
-        // for caching the relevant compiled/linked module
-        hashingVals.insert(hashingVals.end(), sources.begin(), sources.end());
-        hashingVals.insert(hashingVals.end(), options.begin(), options.end());
+    size_t moduleKey = 0;
+    if (sourceIsJIT) {
+        moduleKey = deterministicHash(tInstance);
+    } else {
+        moduleKey = (sources.size() == 1 && sources[0].hash)
+                        ? sources[0].hash
+                        : deterministicHash(sources);
+        moduleKey = deterministicHash(options, moduleKey);
+#if defined(AF_CUDA)
+        moduleKey = deterministicHash(tInstance, moduleKey);
+#endif
     }
-
-    const string moduleKey = std::to_string(deterministicHash(hashingVals));
-    const int device       = detail::getActiveDeviceId();
-    Module currModule      = findModule(device, moduleKey);
+    const int device  = detail::getActiveDeviceId();
+    Module currModule = findModule(device, moduleKey);
 
     if (!currModule) {
-        currModule = loadModuleFromDisk(device, moduleKey, sourceIsJIT);
+        currModule =
+            loadModuleFromDisk(device, to_string(moduleKey), sourceIsJIT);
         if (!currModule) {
-            currModule = compileModule(moduleKey, sources, options, {tInstance},
-                                       sourceIsJIT);
+            vector<string> sources_str;
+            for (auto s : sources) { sources_str.push_back({s.ptr, s.length}); }
+            currModule = compileModule(to_string(moduleKey), sources_str,
+                                       options, {tInstance}, sourceIsJIT);
         }
 
         std::unique_lock<shared_timed_mutex> writeLock(getCacheMutex(device));
         auto& cache = getCache(device);
         auto iter   = cache.find(moduleKey);
         if (iter == cache.end()) {
-            // If not found, this thread is the first one to compile this
-            // kernel. Keep the generated module.
+            // If not found, this thread is the first one to compile
+            // this kernel. Keep the generated module.
             Module mod = currModule;
             getCache(device).emplace(moduleKey, mod);
         } else {
-            currModule.unload();  // dump the current threads extra compilation
+            currModule.unload();  // dump the current threads extra
+                                  // compilation
             currModule = iter->second;
         }
     }
-#if defined(AF_CUDA)
     return getKernel(currModule, tInstance, sourceIsJIT);
-#elif defined(AF_OPENCL)
-    return getKernel(currModule, kernelName, sourceIsJIT);
-#endif
 }
 
 }  // namespace common

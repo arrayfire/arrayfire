@@ -34,9 +34,6 @@ static opencl::Kernel getScanFirstKernel(const std::string key,
     using std::string;
     using std::vector;
 
-    static const string src1(ops_cl, ops_cl_len);
-    static const string src2(scan_first_cl, scan_first_cl_len);
-
     const uint threads_y       = THREADS_PER_GROUP / threads_x;
     const uint SHARED_MEM_SIZE = THREADS_PER_GROUP;
     ToNumStr<To> toNumStr;
@@ -61,7 +58,8 @@ static opencl::Kernel getScanFirstKernel(const std::string key,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    return common::getKernel(key, {src1, src2}, tmpltArgs, compileOpts);
+    return common::getKernel(key, {ops_cl_src, scan_first_cl_src}, tmpltArgs,
+                             compileOpts);
 }
 
 template<typename Ti, typename To, af_op_t op>

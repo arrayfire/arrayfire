@@ -32,8 +32,6 @@ void padBorders(Param out, const Param in, dim4 const& lBPadding,
     using std::string;
     using std::vector;
 
-    static const string src(pad_array_borders_cl, pad_array_borders_cl_len);
-
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateArg(borderType),
@@ -47,7 +45,8 @@ void padBorders(Param out, const Param in, dim4 const& lBPadding,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto pad = common::getKernel("padBorders", {src}, tmpltArgs, compileOpts);
+    auto pad = common::getKernel("padBorders", {pad_array_borders_cl_src},
+                                 tmpltArgs, compileOpts);
 
     NDRange local(PADB_THREADS_X, PADB_THREADS_Y);
 

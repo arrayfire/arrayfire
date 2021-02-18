@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/iir_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -24,9 +22,7 @@ template<typename T, bool batch_a>
 void iir(Param<T> y, CParam<T> c, CParam<T> a) {
     constexpr int MAX_A_SIZE = 1024;
 
-    static const std::string source(iir_cuh, iir_cuh_len);
-
-    auto iir = common::getKernel("cuda::iir", {source},
+    auto iir = common::getKernel("cuda::iir", {iir_cuh_src},
                                  {TemplateTypename<T>(), TemplateArg(batch_a)},
                                  {DefineValue(MAX_A_SIZE)});
 

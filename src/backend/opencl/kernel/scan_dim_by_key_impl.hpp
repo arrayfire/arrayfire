@@ -34,9 +34,6 @@ static opencl::Kernel getScanDimKernel(const std::string key, int dim,
     using std::string;
     using std::vector;
 
-    static const string src1(ops_cl, ops_cl_len);
-    static const string src2(scan_dim_by_key_cl, scan_dim_by_key_cl_len);
-
     ToNumStr<To> toNumStr;
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<Ti>(),      TemplateTypename<To>(),
@@ -60,7 +57,8 @@ static opencl::Kernel getScanDimKernel(const std::string key, int dim,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    return common::getKernel(key, {src1, src2}, tmpltArgs, compileOpts);
+    return common::getKernel(key, {ops_cl_src, scan_dim_by_key_cl_src},
+                             tmpltArgs, compileOpts);
 }
 
 template<typename Ti, typename Tk, typename To, af_op_t op>

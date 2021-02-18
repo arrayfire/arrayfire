@@ -27,8 +27,6 @@ namespace kernel {
 
 template<typename T>
 static void diagCreate(Param out, Param in, int num) {
-    static const std::string src(diag_create_cl, diag_create_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -38,8 +36,8 @@ static void diagCreate(Param out, Param in, int num) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto diagCreate =
-        common::getKernel("diagCreateKernel", {src}, targs, options);
+    auto diagCreate = common::getKernel("diagCreateKernel",
+                                        {diag_create_cl_src}, targs, options);
 
     cl::NDRange local(32, 8);
     int groups_x = divup(out.info.dims[0], local[0]);
@@ -54,8 +52,6 @@ static void diagCreate(Param out, Param in, int num) {
 
 template<typename T>
 static void diagExtract(Param out, Param in, int num) {
-    static const std::string src(diag_extract_cl, diag_extract_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
@@ -65,8 +61,8 @@ static void diagExtract(Param out, Param in, int num) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto diagExtract =
-        common::getKernel("diagExtractKernel", {src}, targs, options);
+    auto diagExtract = common::getKernel("diagExtractKernel",
+                                         {diag_extract_cl_src}, targs, options);
 
     cl::NDRange local(256, 1);
     int groups_x = divup(out.info.dims[0], local[0]);

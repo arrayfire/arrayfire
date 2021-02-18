@@ -45,10 +45,6 @@ void reduceBlocksByKeyDim(cl::Buffer *reduced_block_sizes, Param keys_out,
                           int change_nan, double nanval, const int n,
                           const uint threads_x, const int dim,
                           std::vector<int> dim_ordering) {
-    static const std::string src1(ops_cl, ops_cl_len);
-    static const std::string src2(reduce_blocks_by_key_dim_cl,
-                                  reduce_blocks_by_key_dim_cl_len);
-
     ToNumStr<To> toNumStr;
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<Ti>(), TemplateTypename<To>(), TemplateTypename<Tk>(),
@@ -68,7 +64,8 @@ void reduceBlocksByKeyDim(cl::Buffer *reduced_block_sizes, Param keys_out,
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
     auto reduceBlocksByKeyDim = common::getKernel(
-        "reduce_blocks_by_key_dim", {src1, src2}, tmpltArgs, compileOpts);
+        "reduce_blocks_by_key_dim",
+        {ops_cl_src, reduce_blocks_by_key_dim_cl_src}, tmpltArgs, compileOpts);
     int numBlocks = divup(n, threads_x);
 
     cl::NDRange local(threads_x);
@@ -91,10 +88,6 @@ void reduceBlocksByKey(cl::Buffer *reduced_block_sizes, Param keys_out,
                        Param vals_out, const Param keys, const Param vals,
                        int change_nan, double nanval, const int n,
                        const uint threads_x) {
-    static const std::string src1(ops_cl, ops_cl_len);
-    static const std::string src2(reduce_blocks_by_key_first_cl,
-                                  reduce_blocks_by_key_first_cl_len);
-
     ToNumStr<To> toNumStr;
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<Ti>(), TemplateTypename<To>(), TemplateTypename<Tk>(),
@@ -112,8 +105,10 @@ void reduceBlocksByKey(cl::Buffer *reduced_block_sizes, Param keys_out,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    auto reduceBlocksByKeyFirst = common::getKernel(
-        "reduce_blocks_by_key_first", {src1, src2}, tmpltArgs, compileOpts);
+    auto reduceBlocksByKeyFirst =
+        common::getKernel("reduce_blocks_by_key_first",
+                          {ops_cl_src, reduce_blocks_by_key_first_cl_src},
+                          tmpltArgs, compileOpts);
     int numBlocks = divup(n, threads_x);
 
     cl::NDRange local(threads_x);
@@ -132,10 +127,6 @@ template<typename Tk, typename To, af_op_t op>
 void finalBoundaryReduce(cl::Buffer *reduced_block_sizes, Param keys_out,
                          Param vals_out, const int n, const int numBlocks,
                          const int threads_x) {
-    static const std::string src1(ops_cl, ops_cl_len);
-    static const std::string src2(reduce_by_key_boundary_cl,
-                                  reduce_by_key_boundary_cl_len);
-
     ToNumStr<To> toNumStr;
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<To>(),
@@ -156,7 +147,8 @@ void finalBoundaryReduce(cl::Buffer *reduced_block_sizes, Param keys_out,
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
     auto finalBoundaryReduce = common::getKernel(
-        "final_boundary_reduce", {src1, src2}, tmpltArgs, compileOpts);
+        "final_boundary_reduce", {ops_cl_src, reduce_by_key_boundary_cl_src},
+        tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks);
@@ -172,10 +164,6 @@ void finalBoundaryReduceDim(cl::Buffer *reduced_block_sizes, Param keys_out,
                             Param vals_out, const int n, const int numBlocks,
                             const int threads_x, const int dim,
                             std::vector<int> dim_ordering) {
-    static const std::string src1(ops_cl, ops_cl_len);
-    static const std::string src2(reduce_by_key_boundary_dim_cl,
-                                  reduce_by_key_boundary_dim_cl_len);
-
     ToNumStr<To> toNumStr;
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<To>(),
@@ -196,8 +184,10 @@ void finalBoundaryReduceDim(cl::Buffer *reduced_block_sizes, Param keys_out,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    auto finalBoundaryReduceDim = common::getKernel(
-        "final_boundary_reduce_dim", {src1, src2}, tmpltArgs, compileOpts);
+    auto finalBoundaryReduceDim =
+        common::getKernel("final_boundary_reduce_dim",
+                          {ops_cl_src, reduce_by_key_boundary_dim_cl_src},
+                          tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks,
@@ -216,10 +206,6 @@ template<typename Tk, typename To>
 void compact(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
              const Param keys, const Param vals, const int numBlocks,
              const int threads_x) {
-    static const std::string src1(ops_cl, ops_cl_len);
-    static const std::string src2(reduce_by_key_compact_cl,
-                                  reduce_by_key_compact_cl_len);
-
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<To>(),
         TemplateTypename<Tk>(),
@@ -235,7 +221,8 @@ void compact(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
     auto compact =
-        common::getKernel("compact", {src1, src2}, tmpltArgs, compileOpts);
+        common::getKernel("compact", {ops_cl_src, reduce_by_key_compact_cl_src},
+                          tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks, vals_out.info.dims[1],
@@ -253,10 +240,6 @@ void compactDim(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
                 const Param keys, const Param vals, const int numBlocks,
                 const int threads_x, const int dim,
                 std::vector<int> dim_ordering) {
-    static const std::string src1(ops_cl, ops_cl_len);
-    static const std::string src2(reduce_by_key_compact_dim_cl,
-                                  reduce_by_key_compact_dim_cl_len);
-
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<To>(),
         TemplateTypename<Tk>(),
@@ -272,8 +255,9 @@ void compactDim(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    auto compactDim =
-        common::getKernel("compact_dim", {src1, src2}, tmpltArgs, compileOpts);
+    auto compactDim = common::getKernel(
+        "compact_dim", {ops_cl_src, reduce_by_key_compact_dim_cl_src},
+        tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks,
@@ -292,10 +276,6 @@ template<typename Tk>
 void testNeedsReduction(cl::Buffer needs_reduction, cl::Buffer needs_boundary,
                         const Param keys, const int n, const int numBlocks,
                         const int threads_x) {
-    static const std::string src1(ops_cl, ops_cl_len);
-    static const std::string src2(reduce_by_key_needs_reduction_cl,
-                                  reduce_by_key_needs_reduction_cl_len);
-
     std::vector<TemplateArg> tmpltArgs = {
         TemplateTypename<Tk>(),
         TemplateArg(threads_x),
@@ -305,8 +285,10 @@ void testNeedsReduction(cl::Buffer needs_reduction, cl::Buffer needs_boundary,
         DefineKeyValue(DIMX, threads_x),
     };
 
-    auto testIfNeedsReduction = common::getKernel(
-        "test_needs_reduction", {src1, src2}, tmpltArgs, compileOpts);
+    auto testIfNeedsReduction =
+        common::getKernel("test_needs_reduction",
+                          {ops_cl_src, reduce_by_key_needs_reduction_cl_src},
+                          tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks);

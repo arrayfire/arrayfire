@@ -95,9 +95,6 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
     constexpr bool IsComplex =
         std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
 
-    static const string src1(ops_cl, ops_cl_len);
-    static const string src2(convolve_cl, convolve_cl_len);
-
     vector<TemplateArg> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateTypename<aT>(),
@@ -116,8 +113,8 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto convolve =
-        common::getKernel("convolve", {src1, src2}, tmpltArgs, compileOpts);
+    auto convolve = common::getKernel("convolve", {ops_cl_src, convolve_cl_src},
+                                      tmpltArgs, compileOpts);
 
     convolve(EnqueueArgs(getQueue(), param.global, param.local), *out.data,
              out.info, *signal.data, signal.info, cl::Local(param.loc_size),

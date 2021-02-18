@@ -14,8 +14,6 @@
 #include <nvrtc_kernel_headers/moments_cuh.hpp>
 #include <af/defines.h>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -23,10 +21,8 @@ static const int THREADS = 128;
 
 template<typename T>
 void moments(Param<float> out, CParam<T> in, const af::momentType moment) {
-    static const std::string source(moments_cuh, moments_cuh_len);
-
-    auto moments =
-        common::getKernel("cuda::moments", {source}, {TemplateTypename<T>()});
+    auto moments = common::getKernel("cuda::moments", {moments_cuh_src},
+                                     {TemplateTypename<T>()});
 
     dim3 threads(THREADS, 1, 1);
     dim3 blocks(in.dims[1], in.dims[2] * in.dims[3]);

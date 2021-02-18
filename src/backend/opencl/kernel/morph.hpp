@@ -39,9 +39,6 @@ void morph(Param out, const Param in, const Param mask, bool isDilation) {
     ToNumStr<T> toNumStr;
     const T DefaultVal = isDilation ? common::Binary<T, af_max_t>::init()
                                     : common::Binary<T, af_min_t>::init();
-
-    static const string src(morph_cl, morph_cl_len);
-
     const int windLen  = mask.info.dims[0];
     const int SeLength = (windLen <= 10 ? windLen : 0);
 
@@ -58,7 +55,7 @@ void morph(Param out, const Param in, const Param mask, bool isDilation) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto morphOp = common::getKernel("morph", {src}, targs, options);
+    auto morphOp = common::getKernel("morph", {morph_cl_src}, targs, options);
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -102,9 +99,6 @@ void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
     ToNumStr<T> toNumStr;
     const T DefaultVal = isDilation ? common::Binary<T, af_max_t>::init()
                                     : common::Binary<T, af_min_t>::init();
-
-    static const string src(morph_cl, morph_cl_len);
-
     const int SeLength = mask.info.dims[0];
 
     std::vector<TemplateArg> targs = {
@@ -120,7 +114,7 @@ void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto morphOp = common::getKernel("morph3d", {src}, targs, options);
+    auto morphOp = common::getKernel("morph3d", {morph_cl_src}, targs, options);
 
     NDRange local(CUBE_X, CUBE_Y, CUBE_Z);
 

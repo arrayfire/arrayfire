@@ -104,9 +104,6 @@ void meanDimLauncher(Param out, Param owt, Param in, Param inWeight,
     bool output_weight = ((owt.info.dims[0] * owt.info.dims[1] *
                            owt.info.dims[2] * owt.info.dims[3]) != 0);
 
-    static const std::string src1(mean_ops_cl, mean_ops_cl_len);
-    static const std::string src2(mean_dim_cl, mean_dim_cl_len);
-
     ToNumStr<To> toNumStr;
     ToNumStr<Tw> twNumStr;
     common::Transform<uint, Tw, af_add_t> transform_weight;
@@ -132,7 +129,8 @@ void meanDimLauncher(Param out, Param owt, Param in, Param inWeight,
     if (input_weight) { options.emplace_back(DefineKey(INPUT_WEIGHT)); }
     if (output_weight) { options.emplace_back(DefineKey(OUTPUT_WEIGHT)); }
 
-    auto meanOp = common::getKernel("meanDim", {src1, src2}, targs, options);
+    auto meanOp = common::getKernel(
+        "meanDim", {mean_ops_cl_src, mean_dim_cl_src}, targs, options);
 
     NDRange local(THREADS_X, threads_y);
     NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -200,10 +198,6 @@ void meanFirstLauncher(Param out, Param owt, Param in, Param inWeight,
 
     bool output_weight = ((owt.info.dims[0] * owt.info.dims[1] *
                            owt.info.dims[2] * owt.info.dims[3]) != 0);
-
-    static const std::string src1(mean_ops_cl, mean_ops_cl_len);
-    static const std::string src2(mean_first_cl, mean_first_cl_len);
-
     ToNumStr<To> toNumStr;
     ToNumStr<Tw> twNumStr;
     common::Transform<uint, Tw, af_add_t> transform_weight;
@@ -227,7 +221,8 @@ void meanFirstLauncher(Param out, Param owt, Param in, Param inWeight,
     if (input_weight) { options.emplace_back(DefineKey(INPUT_WEIGHT)); }
     if (output_weight) { options.emplace_back(DefineKey(OUTPUT_WEIGHT)); }
 
-    auto meanOp = common::getKernel("meanFirst", {src1, src2}, targs, options);
+    auto meanOp = common::getKernel(
+        "meanFirst", {mean_ops_cl_src, mean_first_cl_src}, targs, options);
 
     NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     NDRange global(groups_x * in.info.dims[2] * local[0],

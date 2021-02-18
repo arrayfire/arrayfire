@@ -15,8 +15,6 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/triangle_cuh.hpp>
 
-#include <string>
-
 namespace cuda {
 namespace kernel {
 
@@ -27,10 +25,8 @@ void triangle(Param<T> r, CParam<T> in, bool is_upper, bool is_unit_diag) {
     constexpr unsigned TILEX = 128;
     constexpr unsigned TILEY = 32;
 
-    static const std::string source(triangle_cuh, triangle_cuh_len);
-
     auto triangle =
-        common::getKernel("cuda::triangle", {source},
+        common::getKernel("cuda::triangle", {triangle_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(is_upper),
                            TemplateArg(is_unit_diag)});
 

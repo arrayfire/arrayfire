@@ -28,8 +28,6 @@ void iir(Param y, Param c, Param a) {
     // allocted outside
     constexpr int MAX_A_SIZE = (1024 * sizeof(double)) / sizeof(T);
 
-    static const std::string src(iir_cl, iir_cl_len);
-
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(batch_a),
@@ -42,7 +40,7 @@ void iir(Param y, Param c, Param a) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto iir = common::getKernel("iir_kernel", {src}, targs, options);
+    auto iir = common::getKernel("iir_kernel", {iir_cl_src}, targs, options);
 
     const int groups_y = y.info.dims[1];
     const int groups_x = y.info.dims[2];
