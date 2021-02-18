@@ -40,6 +40,8 @@ if(NOT TARGET gtest)
   # Hide gtest project variables
   mark_as_advanced(
     BUILD_SHARED_LIBS
+    BUILD_GMOCK
+    INSTALL_GTEST
     gmock_build_tests
     gtest_build_samples
     gtest_build_tests
