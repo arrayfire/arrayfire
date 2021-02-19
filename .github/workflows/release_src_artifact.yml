@@ -23,11 +23,30 @@ jobs:
                   echo "AF_TAG=${tag}" >> $GITHUB_ENV
                   echo "AF_VER=${ver}" >> $GITHUB_ENV
 
-            - name: Checkout with Submodules
+            - name: Checkout Repo
               run: |
                   cd ${GITHUB_WORKSPACE}
                   clone_url="https://github.com/${GITHUB_REPOSITORY}"
-                  git clone --depth 1 --recursive -b ${AF_TAG} ${clone_url} arrayfire-full-${AF_VER}
+                  git clone --depth 1 -b ${AF_TAG} ${clone_url} arrayfire-full-${AF_VER}
+
+            - name: Install Dependencies
+              run: |
+                  sudo add-apt-repository ppa:mhier/libboost-latest
+                  sudo apt-get -qq update
+                  sudo apt-get install -y libfontconfig1-dev \
+                                          libglfw3-dev \
+                                          libfftw3-dev \
+                                          liblapacke-dev \
+                                          libopenblas-dev \
+                                          ocl-icd-opencl-dev \
+                                          nvidia-cuda-toolkit \
+                                          libboost1.68-dev
+
+            - name: CMake Configure
+              run: |
+                  cd ${GITHUB_WORKSPACE}/arrayfire-full-${AF_VER}
+                  mkdir build && cd build
+                  cmake .. -DAF_BUILD_FORGE:BOOL=ON
 
             - name: Create source tarball
               id: create-src-tarball
@@ -36,6 +55,22 @@ jobs:
                   rm -rf arrayfire-full-${AF_VER}/.git
                   rm -rf arrayfire-full-${AF_VER}/.github
                   rm arrayfire-full-${AF_VER}/.gitmodules
+                  cd arrayfire-full-${AF_VER}/build/
+                  shopt -s extglob
+                  rm -r !(extern)
+                  cd ./extern
+                  rm -rf ./*-build
+                  rm -rf ./*-subbuild
+                  declare -a deps
+                  deps=($(ls))
+                  for dep in ${deps[@]}; do
+                    rm -rf ./${dep}/.git
+                    rm -rf ./${dep}/.gitattributes
+                    rm -rf ./${dep}/.gitmodules
+                  done
+                  shopt -u extglob
+                  rm -rf matrixmarket
+                  cd ../../..
                   tar -cjf arrayfire-full-${AF_VER}.tar.bz2 arrayfire-full-${AF_VER}/
                   echo "UPLOAD_FILE=arrayfire-full-${AF_VER}.tar.bz2" >> $GITHUB_ENV
 
