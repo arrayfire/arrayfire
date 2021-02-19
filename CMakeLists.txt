@@ -137,7 +137,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/gabime/spdlog.git
   GIT_TAG        v1.0.0
 )
-FetchContent_Populate(${spdlog_prefix})
+af_dep_check_and_populate(${spdlog_prefix})
 add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
 # when crosscompiling use the bin2cpp file from the native bin directory
@@ -185,7 +185,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/arrayfire/glad.git
   GIT_TAG        master
 )
-FetchContent_Populate(${glad_prefix})
+af_dep_check_and_populate(${glad_prefix})
 add_subdirectory(${${glad_prefix}_SOURCE_DIR})
 
 add_subdirectory(src/backend/common)
@@ -411,7 +411,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/arrayfire/assets.git
   GIT_TAG        master
 )
-FetchContent_Populate(${assets_prefix})
+af_dep_check_and_populate(${assets_prefix})
 
 set(ASSETS_DIR ${${assets_prefix}_SOURCE_DIR})
 conditional_directory(AF_BUILD_EXAMPLES examples)

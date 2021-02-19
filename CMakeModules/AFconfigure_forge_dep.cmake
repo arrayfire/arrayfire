@@ -16,7 +16,8 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/arrayfire/forge.git
   GIT_TAG        "v${FG_VERSION}"
 )
-FetchContent_Populate(${forge_prefix})
+af_dep_check_and_populate(${forge_prefix})
+
 if(AF_BUILD_FORGE)
   set(ArrayFireInstallPrefix ${CMAKE_INSTALL_PREFIX})
   set(ArrayFireBuildType ${CMAKE_BUILD_TYPE})

@@ -120,7 +120,7 @@ if(CUDA_VERSION_MAJOR VERSION_LESS 11)
     GIT_REPOSITORY https://github.com/NVIDIA/cub.git
     GIT_TAG        1.10.0
   )
-  FetchContent_Populate(${cub_prefix})
+  af_dep_check_and_populate(${cub_prefix})
   cuda_include_directories(${${cub_prefix}_SOURCE_DIR})
 endif()
 

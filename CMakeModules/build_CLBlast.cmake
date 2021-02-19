@@ -10,7 +10,7 @@ FetchContent_Declare(
   GIT_REPOSITORY    https://github.com/cnugteren/CLBlast.git
   GIT_TAG           41f344d1a6f2d149bba02a6615292e99b50f4856
 )
-FetchContent_Populate(${clblast_prefix})
+af_dep_check_and_populate(${clblast_prefix})
 
 include(ExternalProject)
 find_program(GIT git)

@@ -276,7 +276,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/arrayfire/threads.git
   GIT_TAG        b666773940269179f19ef11c8f1eb77005e85d9a
 )
-FetchContent_Populate(${threads_prefix})
+af_dep_check_and_populate(${threads_prefix})
 
 target_sources(afcpu
   PRIVATE
