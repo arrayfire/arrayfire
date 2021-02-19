@@ -31,10 +31,6 @@ jobs:
             - name: Checkout Repository
               uses: actions/checkout@master
 
-            - name: Checkout Submodules
-              shell: bash
-              run: git submodule update --init --recursive
-
             - name: Download Ninja
               env:
                   OS_NAME: ${{ matrix.os }}
@@ -130,10 +126,6 @@ jobs:
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
-
-            - name: Checkout Submodules
-              shell: bash
-              run: git submodule update --init --recursive
 
             - name: VCPKG Cache
               uses: actions/cache@v1
