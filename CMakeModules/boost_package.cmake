@@ -18,35 +18,21 @@ if(NOT
    (Boost_VERSION_MACRO VERSION_GREATER Boost_MIN_VER OR
     Boost_VERSION_MACRO VERSION_EQUAL Boost_MIN_VER)))
   set(VER 1.70.0)
-  set(MD5 e160ec0ff825fc2850ea4614323b1fb5)
-  include(ExternalProject)
-
-  ExternalProject_Add(
-    boost_compute
-    URL       https://github.com/boostorg/compute/archive/boost-${VER}.tar.gz
-    URL_MD5   ${MD5}
-    INSTALL_COMMAND ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    )
-
-  ExternalProject_Get_Property(boost_compute source_dir)
-
-  if(NOT EXISTS ${source_dir}/include)
-      message(WARNING "WARN: Found Boost v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}."
-                      " Required ${VER}. Build will download Boost Compute.")
-  endif()
-  make_directory(${source_dir}/include)
-
+  message(WARNING
+      "WARN: Found Boost v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}."
+      "Minimum required ${VER}. Build will download Boost Compute.")
+  FetchContent_Declare(
+    ${boost_prefix}
+    URL https://github.com/boostorg/compute/archive/boost-${VER}.tar.gz
+    URL_HASH MD5=e160ec0ff825fc2850ea4614323b1fb5
+  )
+  af_dep_check_and_populate(${boost_prefix})
   if(NOT TARGET Boost::boost)
     add_library(Boost::boost IMPORTED INTERFACE GLOBAL)
   endif()
-
-  add_dependencies(Boost::boost boost_compute)
-
   set_target_properties(Boost::boost PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${source_dir}/include;${Boost_INCLUDE_DIR}"
-    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${source_dir}/include;${Boost_INCLUDE_DIR}"
+    INTERFACE_INCLUDE_DIRECTORIES "${${boost_prefix}_SOURCE_DIR}/include;${Boost_INCLUDE_DIR}"
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${${boost_prefix}_SOURCE_DIR}/include;${Boost_INCLUDE_DIR}"
     )
 else()
   if(NOT TARGET Boost::boost)
