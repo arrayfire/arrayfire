@@ -21,7 +21,7 @@ FetchContent_Declare(
   GIT_TAG        release-1.8.1
 )
 if(NOT TARGET gtest)
-  FetchContent_Populate(${gtest_prefix})
+  af_dep_check_and_populate(${gtest_prefix})
 
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
   # newer cmakes. This sets the default global setting for that policy.
@@ -72,7 +72,7 @@ else(${AF_USE_RELATIVE_TEST_DIR})
     GIT_REPOSITORY https://github.com/arrayfire/arrayfire-data.git
     GIT_TAG        master
   )
-  FetchContent_Populate(${testdata_prefix})
+  af_dep_check_and_populate(${testdata_prefix})
   set(TESTDATA_SOURCE_DIR "${${testdata_prefix}_SOURCE_DIR}")
 endif(${AF_USE_RELATIVE_TEST_DIR})
 
