@@ -10,7 +10,7 @@ FetchContent_Declare(
   GIT_REPOSITORY    https://github.com/arrayfire/clFFT.git
   GIT_TAG           cmake_fixes
 )
-FetchContent_Populate(${clfft_prefix})
+af_dep_check_and_populate(${clfft_prefix})
 
 set(current_build_type ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)
