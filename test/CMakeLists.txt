@@ -196,10 +196,9 @@ function(make_test)
       )
     target_link_libraries(${target} PRIVATE mmio)
     if(AF_TEST_WITH_MTX_FILES AND ${mt_args_USE_MMIO})
-      add_dependencies(${target} mtxDownloads)
       target_compile_definitions(${target}
         PRIVATE
-          MTX_TEST_DIR="${CMAKE_CURRENT_BINARY_DIR}/matrixmarket/"
+        MTX_TEST_DIR="${ArrayFire_BINARY_DIR}/extern/matrixmarket/"
         )
     endif()
     if(WIN32)
