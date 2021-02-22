@@ -1,31 +1,30 @@
-# Copyright (c) 2020, ArrayFire
+# Copyright (c) 2021, ArrayFire
 # All rights reserved.
 #
 # This file is distributed under 3-clause BSD license.
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-include(ExternalProject)
-
-add_custom_target(mtxDownloads)
-
 set(URL "https://sparse.tamu.edu")
-set(mtx_data_dir "${CMAKE_CURRENT_BINARY_DIR}/matrixmarket")
-file(MAKE_DIRECTORY ${mtx_data_dir})
 
 function(mtxDownload name group)
-  set(extproj_name mtxDownload-${group}-${name})
-  set(path_prefix "${ArrayFire_BINARY_DIR}/mtx_datasets/${group}")
-  ExternalProject_Add(
-      ${extproj_name}
-      PREFIX "${path_prefix}"
-      URL "${URL}/MM/${group}/${name}.tar.gz"
-      SOURCE_DIR "${mtx_data_dir}/${group}/${name}"
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND ""
-      INSTALL_COMMAND ""
-    )
-  add_dependencies(mtxDownloads mtxDownload-${group}-${name})
+  set(root_dir ${ArrayFire_BINARY_DIR}/extern/matrixmarket)
+  set(target_dir ${root_dir}/${group}/${name})
+  set(mtx_name mtxDownload_${group}_${name})
+  string(TOLOWER ${mtx_name} mtx_name)
+  FetchContent_Declare(
+    ${mtx_name}
+    URL ${URL}/MM/${group}/${name}.tar.gz
+  )
+  af_dep_check_and_populate(${mtx_name})
+  set_and_mark_depname(mtx_prefix ${mtx_name})
+  if(AF_BUILD_OFFLINE)
+    set_fetchcontent_src_dir(mtx_prefix "{name}.mtx file from {group} group")
+  endif()
+  if(NOT EXISTS "${target_dir}/${name}.mtx")
+    file(MAKE_DIRECTORY ${target_dir})
+    file(COPY ${${mtx_name}_SOURCE_DIR}/${name}.mtx DESTINATION ${target_dir})
+  endif()
 endfunction()
 
 # Following files are used for testing mtx read fn
