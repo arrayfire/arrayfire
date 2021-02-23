@@ -125,6 +125,25 @@ mark_as_advanced(CLEAR CUDA_VERSION)
 #forge is included in ALL target if AF_BUILD_FORGE is ON
 #otherwise, forge is not built at all
 include(AFconfigure_forge_dep)
+FetchContent_Declare(
+  ${spdlog_prefix}
+  GIT_REPOSITORY https://github.com/gabime/spdlog.git
+  GIT_TAG        v1.0.0
+)
+af_dep_check_and_populate(${spdlog_prefix})
+FetchContent_Declare(
+  ${glad_prefix}
+  GIT_REPOSITORY https://github.com/arrayfire/glad.git
+  GIT_TAG        master
+)
+af_dep_check_and_populate(${glad_prefix})
+FetchContent_Declare(
+  ${assets_prefix}
+  GIT_REPOSITORY https://github.com/arrayfire/assets.git
+  GIT_TAG        master
+)
+af_dep_check_and_populate(${assets_prefix})
+set(ASSETS_DIR ${${assets_prefix}_SOURCE_DIR})
 
 configure_file(
     ${ArrayFire_SOURCE_DIR}/CMakeModules/version.hpp.in
@@ -132,12 +151,6 @@ configure_file(
 )
 
 set(SPDLOG_BUILD_TESTING OFF CACHE INTERNAL "Disable testing in spdlog")
-FetchContent_Declare(
-  ${spdlog_prefix}
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG        v1.0.0
-)
-af_dep_check_and_populate(${spdlog_prefix})
 add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
 # when crosscompiling use the bin2cpp file from the native bin directory
@@ -180,12 +193,6 @@ if(NOT LAPACK_FOUND)
     endif()
 endif()
 
-FetchContent_Declare(
-  ${glad_prefix}
-  GIT_REPOSITORY https://github.com/arrayfire/glad.git
-  GIT_TAG        master
-)
-af_dep_check_and_populate(${glad_prefix})
 add_subdirectory(${${glad_prefix}_SOURCE_DIR})
 
 add_subdirectory(src/backend/common)
@@ -295,7 +302,7 @@ install(DIRECTORY examples/ #NOTE The slash at the end is important
     DESTINATION ${AF_INSTALL_EXAMPLE_DIR}
     COMPONENT examples)
 
-install(DIRECTORY assets/examples/ #NOTE The slash at the end is important
+install(DIRECTORY ${ASSETS_DIR}/examples/ #NOTE The slash at the end is important
     DESTINATION ${AF_INSTALL_EXAMPLE_DIR}
     COMPONENT examples)
 
@@ -406,14 +413,6 @@ endif()
 
 conditional_directory(BUILD_TESTING test)
 
-FetchContent_Declare(
-  ${assets_prefix}
-  GIT_REPOSITORY https://github.com/arrayfire/assets.git
-  GIT_TAG        master
-)
-af_dep_check_and_populate(${assets_prefix})
-
-set(ASSETS_DIR ${${assets_prefix}_SOURCE_DIR})
 conditional_directory(AF_BUILD_EXAMPLES examples)
 conditional_directory(AF_BUILD_DOCS docs)
 
