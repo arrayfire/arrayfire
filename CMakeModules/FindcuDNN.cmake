@@ -164,6 +164,7 @@ if(cuDNN_INCLUDE_DIRS)
         ${CMAKE_INSTALL_PREFIX}
       PATH_SUFFIXES lib lib64 bin lib/x64 bin/x64
       DOC "cudnn${cudnn_lib_name_infix} Windows DLL." )
+      mark_as_advanced(cuDNN${LIB_INFIX}_DLL_LIBRARY)
     endif()
   endmacro()
 
