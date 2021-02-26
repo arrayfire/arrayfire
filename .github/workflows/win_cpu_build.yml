@@ -1,0 +1,69 @@
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+name: ci
+
+jobs:
+    window_build_cpu:
+        name: CPU (OpenBLAS, windows-latest)
+        runs-on: windows-latest
+        env:
+          VCPKG_HASH: 0cbc579e1ee21fa4ad0974a9ed926f60c6ed1a4a # FEB 25, 2021 - [rsasynccpp] Add new port (Rstein.AsyncCpp) (#16380)
+          NINJA_VER: 1.10.2
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@master
+
+            - name: VCPKG Cache
+              uses: actions/cache@v1
+              id: vcpkg-cache
+              with:
+                path: vcpkg
+                key: vcpkg-deps-${{ env.VCPKG_HASH }}
+
+            - name: Install VCPKG Common Deps
+              if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+              run: |
+                  git clone --recursive https://github.com/microsoft/vcpkg
+                  Set-Location -Path .\vcpkg
+                  git reset --hard $env:VCPKG_HASH
+                  .\bootstrap-vcpkg.bat
+                  .\vcpkg.exe install --triplet x64-windows boost fftw3 freeimage freetype glfw3 openblas
+                  Remove-Item .\downloads,.\buildtrees,.\packages -Recurse -Force
+
+            - name: Download Ninja
+              run: |
+                  Invoke-WebRequest -Uri "https://github.com/ninja-build/ninja/releases/download/v$env:NINJA_VER/ninja-win.zip" -OutFile ninja.zip
+                  Expand-Archive -Path ninja.zip -DestinationPath .
+
+            - name: CMake Configure
+              run: |
+                  $cwd = (Get-Item -Path ".\").FullName
+                  $ref = $env:GITHUB_REF | %{ if ($_ -match "refs/pull/[0-9]+/merge") { $_;} }
+                  $prnum = $ref | %{$_.Split("/")[2]}
+                  $branch = git branch --show-current
+                  $buildname = if($prnum -eq $null) { $branch } else { "PR-$prnum" }
+                  $dashboard = if($prnum -eq $null) { "Continuous" } else { "Experimental" }
+                  $buildname = "$buildname-cpu-openblas"
+                  mkdir build && cd build
+                  cmake .. -G "Visual Studio 16 2019" -A x64 `
+                      -DCMAKE_TOOLCHAIN_FILE:FILEPATH="$env:GITHUB_WORKSPACE\vcpkg\scripts\buildsystems\vcpkg.cmake" `
+                      -DFFTW_INCLUDE_DIR:PATH="$env:GITHUB_WORKSPACE\vcpkg\installed/x64-windows\include" `
+                      -DFFTW_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows\lib\fftw3.lib" `
+                      -DFFTWF_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows\lib\fftw3f.lib" `
+                      -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
+                      -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
+                      -DBUILDNAME:STRING="$buildname"
+                  echo "CTEST_DASHBOARD=${dashboard}" >> $env:GITHUB_ENV
+
+            - name: Build and Test
+              run: |
+                  $cwd = (Get-Item -Path ".\").FullName
+                  $Env:PATH += ";$cwd/vcpkg/installed/x64-windows/bin"
+                  Set-Location -Path $cwd/build
+                  ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -C Release -R cpu -E pinverse -j2
