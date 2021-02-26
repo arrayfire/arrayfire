@@ -13,7 +13,7 @@ jobs:
         name: CPU
         runs-on: ${{ matrix.os }}
         env:
-          NINJA_VER: 1.10.0
+          NINJA_VER: 1.10.2
           CMAKE_VER: 3.5.1
         strategy:
             fail-fast: false
@@ -66,8 +66,10 @@ jobs:
             - name: Install Common Dependencies for Ubuntu
               if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04'
               run: |
+                  sudo add-apt-repository ppa:mhier/libboost-latest
                   sudo apt-get -qq update
-                  sudo apt-get install -y libfreeimage-dev \
+                  sudo apt-get install -y libboost1.74-dev \
+                                          libfreeimage-dev \
                                           libglfw3-dev \
                                           libfftw3-dev \
                                           liblapacke-dev
@@ -103,7 +105,6 @@ jobs:
                   mkdir build && cd build
                   ${CMAKE_PROGRAM} -G Ninja \
                       -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
-                      -DBOOST_ROOT:PATH=${BOOST_ROOT_1_72_0} \
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=ON \
                       -DAF_BUILD_FORGE:BOOL=ON \
@@ -116,63 +117,3 @@ jobs:
               run: |
                   cd ${GITHUB_WORKSPACE}/build
                   ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -R cpu -j2
-
-    window_build_cpu:
-        name: CPU (OpenBLAS, windows-latest)
-        runs-on: windows-latest
-        env:
-          VCPKG_HASH: b79f7675aaa82eb6c5a96ae764fb1ce379a9d5d6 # March 29, 2020 - [hdf5] add tools and fortran feature
-          NINJA_VER: 1.10.0
-        steps:
-            - name: Checkout Repository
-              uses: actions/checkout@master
-
-            - name: VCPKG Cache
-              uses: actions/cache@v1
-              id: vcpkg-cache
-              with:
-                path: vcpkg
-                key: vcpkg-deps-${{ env.VCPKG_HASH }}
-
-            - name: Install VCPKG Common Deps
-              if: steps.vcpkg-cache.outputs.cache-hit != 'true'
-              run: |
-                  git clone --recursive https://github.com/microsoft/vcpkg
-                  Set-Location -Path .\vcpkg
-                  git reset --hard $env:VCPKG_HASH
-                  .\bootstrap-vcpkg.bat
-                  .\vcpkg.exe install --triplet x64-windows fftw3 freeimage freetype glfw3 openblas
-                  Remove-Item .\downloads,.\buildtrees,.\packages -Recurse -Force
-
-            - name: Download Ninja
-              run: |
-                  Invoke-WebRequest -Uri "https://github.com/ninja-build/ninja/releases/download/v$env:NINJA_VER/ninja-win.zip" -OutFile ninja.zip
-                  Expand-Archive -Path ninja.zip -DestinationPath .
-
-            - name: CMake Configure
-              run: |
-                  $cwd = (Get-Item -Path ".\").FullName
-                  $ref = $env:GITHUB_REF | %{ if ($_ -match "refs/pull/[0-9]+/merge") { $_;} }
-                  $prnum = $ref | %{$_.Split("/")[2]}
-                  $branch = git branch --show-current
-                  $buildname = if($prnum -eq $null) { $branch } else { "PR-$prnum" }
-                  $dashboard = if($prnum -eq $null) { "Continuous" } else { "Experimental" }
-                  $buildname = "$buildname-cpu-openblas"
-                  mkdir build && cd build
-                  cmake .. -G "Visual Studio 16 2019" -A x64 `
-                      -DCMAKE_TOOLCHAIN_FILE:FILEPATH="$env:GITHUB_WORKSPACE\vcpkg\scripts\buildsystems\vcpkg.cmake" `
-                      -DFFTW_INCLUDE_DIR:PATH="$env:GITHUB_WORKSPACE\vcpkg\installed/x64-windows\include" `
-                      -DFFTW_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows\lib\fftw3.lib" `
-                      -DFFTWF_LIBRARY:FILEPATH="$env:GITHUB_WORKSPACE\vcpkg\installed\x64-windows\lib\fftw3f.lib" `
-                      -DBOOST_ROOT:PATH="$env:BOOST_ROOT_1_72_0" `
-                      -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
-                      -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
-                      -DBUILDNAME:STRING="$buildname"
-                  echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
-
-            - name: Build and Test
-              run: |
-                  $cwd = (Get-Item -Path ".\").FullName
-                  $Env:PATH += ";$cwd/vcpkg/installed/x64-windows/bin"
-                  Set-Location -Path $cwd/build
-                  ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -C Release -R cpu -E pinverse -j2
