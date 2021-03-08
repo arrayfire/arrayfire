@@ -322,7 +322,7 @@ cpack_ifw_configure_component(documentation)
 cpack_ifw_configure_component(examples)
 cpack_ifw_configure_component(licenses FORCED_INSTALLATION
   LICENSES "GLFW" ${zlib_lic_path} "FreeImage" ${fimg_lic_path}
-  "Boost" ${boost_lic_path} "clBLAS, clFFT" ${apache_lic_path} "SIFT" ${sift_lic_path}
+  "Boost" ${boost_lic_path} "CLBlast, clFFT" ${apache_lic_path} "SIFT" ${sift_lic_path}
   "BSD3" ${bsd3_lic_path} "Intel MKL" ${issl_lic_path}
 )
 if (AF_INSTALL_FORGE_DEV)
