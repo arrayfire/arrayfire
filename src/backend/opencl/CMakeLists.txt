@@ -90,7 +90,6 @@ target_sources(afopencl
     diagonal.hpp
     diff.cpp
     diff.hpp
-    err_clblas.hpp
     err_clblast.hpp
     err_opencl.hpp
     errorcodes.cpp
