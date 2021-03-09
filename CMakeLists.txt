@@ -193,7 +193,7 @@ if(NOT LAPACK_FOUND)
     endif()
 endif()
 
-add_subdirectory(${${glad_prefix}_SOURCE_DIR})
+add_subdirectory(${${glad_prefix}_SOURCE_DIR} ${${glad_prefix}_BINARY_DIR})
 
 add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)
