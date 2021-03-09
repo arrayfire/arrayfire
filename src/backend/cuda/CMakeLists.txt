@@ -843,7 +843,7 @@ if(AF_INSTALL_STANDALONE)
 	  afcu_collect_cudnn_libs(ops_train)
 	endif()
   endif()
-  afcu_collect_libs(nvrtc FULL_VERSION)
+
   if(WIN32)
 	if(CUDA_VERSION_MAJOR VERSION_EQUAL 11)
       afcu_collect_libs(cufft LIB_MAJOR 10 LIB_MINOR 4)
@@ -860,22 +860,27 @@ if(AF_INSTALL_STANDALONE)
     afcu_collect_libs(cusolver)
   endif()
 
-  if(APPLE)
-    afcu_collect_libs(cudart)
-
-    get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
-    install(FILES       ${nvrtc_outpath}
-            DESTINATION ${AF_INSTALL_BIN_DIR}
-            RENAME      "${PX}nvrtc-builtins${SX}"
-            COMPONENT   cuda_dependencies)
-  elseif(UNIX)
-    get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins${SX}" REALPATH)
-    install(FILES       ${nvrtc_outpath}
-            DESTINATION ${AF_INSTALL_LIB_DIR}
-            RENAME      "${PX}nvrtc-builtins${SX}"
-            COMPONENT   cuda_dependencies)
+  afcu_collect_libs(nvrtc FULL_VERSION)
+  if(CUDA_VERSION VERSION_GREATER 10.0)
+    afcu_collect_libs(nvrtc-builtins FULL_VERSION)
   else()
-    afcu_collect_libs(nvrtc-builtins)
+    if(APPLE)
+      afcu_collect_libs(cudart)
+
+      get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
+      install(FILES       ${nvrtc_outpath}
+              DESTINATION ${AF_INSTALL_BIN_DIR}
+              RENAME      "${PX}nvrtc-builtins${SX}"
+              COMPONENT   cuda_dependencies)
+    elseif(UNIX)
+      get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins${SX}" REALPATH)
+      install(FILES       ${nvrtc_outpath}
+              DESTINATION ${AF_INSTALL_LIB_DIR}
+              RENAME      "${PX}nvrtc-builtins${SX}"
+              COMPONENT   cuda_dependencies)
+    else()
+      afcu_collect_libs(nvrtc-builtins)
+    endif()
   endif()
 endif()
 
