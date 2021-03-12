@@ -24,13 +24,18 @@ jobs:
                   mkdir doxygen
                   tar -xf doxygen-${DOXYGEN_VER}.linux.bin.tar.gz -C doxygen --strip 1
 
+            - name: Install Boost
+              run: |
+                  sudo add-apt-repository ppa:mhier/libboost-latest
+                  sudo apt-get -qq update
+                  sudo apt-get install -y libboost1.74-dev
+
             - name: Configure
               run: |
                   mkdir build && cd build
                   cmake -DAF_BUILD_CPU:BOOL=OFF -DAF_BUILD_CUDA:BOOL=OFF \
                         -DAF_BUILD_OPENCL:BOOL=OFF -DAF_BUILD_UNIFIED:BOOL=OFF \
                         -DAF_BUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF \
-                        -DBOOST_ROOT:PATH=${BOOST_ROOT_1_72_0} \
                         -DDOXYGEN_EXECUTABLE:FILEPATH=${GITHUB_WORKSPACE}/doxygen/bin/doxygen \
                         ..
 
