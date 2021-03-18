@@ -21,13 +21,17 @@ namespace kernel {
 
 template<typename T>
 void index(Param<T> out, CParam<T> in, const IndexKernelParam& p) {
-    constexpr int THREADS_X = 32;
-    constexpr int THREADS_Y = 8;
-
     auto index = common::getKernel("cuda::index", {index_cuh_src},
                                    {TemplateTypename<T>()});
-
-    const dim3 threads(THREADS_X, THREADS_Y);
+    dim3 threads;
+    switch (out.dims[1]) {
+        case 1: threads.y = 1; break;
+        case 2: threads.y = 2; break;
+        case 3:
+        case 4: threads.y = 4; break;
+        default: threads.y = 8; break;
+    }
+    threads.x = static_cast<unsigned>(256.f / threads.y);
 
     int blks_x = divup(out.dims[0], threads.x);
     int blks_y = divup(out.dims[1], threads.y);
