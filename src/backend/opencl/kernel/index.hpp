@@ -31,23 +31,30 @@ typedef struct {
 template<typename T>
 void index(Param out, const Param in, const IndexKernelParam_t& p,
            cl::Buffer* bPtr[4]) {
-    constexpr int THREADS_X = 32;
-    constexpr int THREADS_Y = 8;
-
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto index = common::getKernel("indexKernel", {index_cl_src},
+    auto index    = common::getKernel("indexKernel", {index_cl_src},
                                    {TemplateTypename<T>()}, options);
-    cl::NDRange local(THREADS_X, THREADS_Y);
+    int threads_x = 256;
+    int threads_y = 1;
+    cl::NDRange local(threads_x, threads_y);
+    switch (out.info.dims[1]) {
+        case 1: threads_y = 1; break;
+        case 2: threads_y = 2; break;
+        case 3:
+        case 4: threads_y = 4; break;
+        default: threads_y = 8; break;
+    }
+    threads_x = static_cast<unsigned>(256.f / threads_y);
 
-    int blk_x = divup(out.info.dims[0], THREADS_X);
-    int blk_y = divup(out.info.dims[1], THREADS_Y);
+    int blk_x = divup(out.info.dims[0], local[0]);
+    int blk_y = divup(out.info.dims[1], local[1]);
 
-    cl::NDRange global(blk_x * out.info.dims[2] * THREADS_X,
-                       blk_y * out.info.dims[3] * THREADS_Y);
+    cl::NDRange global(blk_x * out.info.dims[2] * local[0],
+                       blk_y * out.info.dims[3] * local[1]);
 
     index(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
           *in.data, in.info, p, *bPtr[0], *bPtr[1], *bPtr[2], *bPtr[3], blk_x,
