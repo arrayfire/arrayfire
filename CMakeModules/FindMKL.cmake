@@ -261,47 +261,47 @@ function(find_mkl_library)
         IntelSWTools/compilers_and_libraries/windows/compiler/lib/intel64
         IntelSWTools/compilers_and_libraries/windows/tbb/lib/intel64/${msvc_dir}
         )
-      if(MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY)
-        if (CMAKE_VERSION VERSION_GREATER 3.14)
-          message(VERBOSE "MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY: ${MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY}")
-        endif()
+    if(MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY)
+      if(CMAKE_VERSION VERSION_GREATER 3.14)
+        message(VERBOSE "MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY: ${MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY}")
       endif()
-      mark_as_advanced(MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY)
     endif()
+    mark_as_advanced(MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY)
+  endif()
+
+  set_target_properties(MKL::${mkl_args_NAME}
+    PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR}"
+      IMPORTED_LOCATION "${MKL_${mkl_args_NAME}_LINK_LIBRARY}"
+      IMPORTED_NO_SONAME TRUE)
+
+  set_target_properties(MKL::${mkl_args_NAME}_STATIC
+      PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR}"
+      IMPORTED_LOCATION "${MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY}"
+      IMPORTED_NO_SONAME TRUE)
+
+  if(WIN32)
+    find_file(MKL_${mkl_args_NAME}_DLL_LIBRARY
+      NAMES
+        ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
+        lib${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
+        $ENV{LIB}
+        $ENV{LIBRARY_PATH}
+      PATH_SUFFIXES
+        IntelSWTools/compilers_and_libraries/windows/redist/intel64/mkl
+        IntelSWTools/compilers_and_libraries/windows/redist/intel64/compiler
+        IntelSWTools/compilers_and_libraries/windows/redist/intel64/tbb/${msvc_dir}
+      NO_SYSTEM_ENVIRONMENT_PATH)
 
     set_target_properties(MKL::${mkl_args_NAME}
       PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR}"
-        IMPORTED_LOCATION "${MKL_${mkl_args_NAME}_LINK_LIBRARY}"
-        IMPORTED_NO_SONAME TRUE)
+        IMPORTED_LOCATION "${MKL_${mkl_args_NAME}_DLL_LIBRARY}"
+        IMPORTED_IMPLIB "${MKL_${mkl_args_NAME}_LINK_LIBRARY}")
 
-    set_target_properties(MKL::${mkl_args_NAME}_STATIC
-        PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR}"
-        IMPORTED_LOCATION "${MKL_${mkl_args_NAME}_STATIC_LINK_LIBRARY}"
-        IMPORTED_NO_SONAME TRUE)
-
-    if(WIN32)
-      find_file(MKL_${mkl_args_NAME}_DLL_LIBRARY
-        NAMES
-          ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
-          ${CMAKE_SHARED_LIBRARY_PREFIX}${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
-          lib${mkl_args_LIBRARY_NAME}${md_suffix}${CMAKE_SHARED_LIBRARY_SUFFIX}
-          $ENV{LIB}
-          $ENV{LIBRARY_PATH}
-        PATH_SUFFIXES
-          IntelSWTools/compilers_and_libraries/windows/redist/intel64/mkl
-          IntelSWTools/compilers_and_libraries/windows/redist/intel64/compiler
-          IntelSWTools/compilers_and_libraries/windows/redist/intel64/tbb/${msvc_dir}
-        NO_SYSTEM_ENVIRONMENT_PATH)
-
-      set_target_properties(MKL::${mkl_args_NAME}
-        PROPERTIES
-          IMPORTED_LOCATION "${MKL_${mkl_args_NAME}_DLL_LIBRARY}"
-          IMPORTED_IMPLIB "${MKL_${mkl_args_NAME}_LINK_LIBRARY}")
-
-      mark_as_advanced(MKL_${mkl_args_NAME}_DLL_LIBRARY)
-    endif()
+    mark_as_advanced(MKL_${mkl_args_NAME}_DLL_LIBRARY)
+  endif()
 endfunction()
 
 
