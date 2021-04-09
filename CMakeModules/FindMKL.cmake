@@ -212,6 +212,7 @@ function(find_mkl_library)
   add_library(MKL::${mkl_args_NAME}_STATIC STATIC IMPORTED)
 
   if(NOT (WIN32 AND mkl_args_DLL_ONLY))
+    list(APPEND CMAKE_FIND_LIBRARY_SUFFIXES ".so.1")
     find_library(MKL_${mkl_args_NAME}_LINK_LIBRARY
       NAMES
         ${mkl_args_LIBRARY_NAME}${shared_suffix}
@@ -232,6 +233,7 @@ function(find_mkl_library)
         ""
         intel64
         intel64/gcc4.7)
+    list(REMOVE_ITEM CMAKE_FIND_LIBRARY_SUFFIXES ".so.1")
     if(MKL_${mkl_args_NAME}_LINK_LIBRARY)
       if (CMAKE_VERSION VERSION_GREATER 3.14)
         message(VERBOSE "MKL_${mkl_args_NAME}_LINK_LIBRARY: ${MKL_${mkl_args_NAME}_LINK_LIBRARY}")
