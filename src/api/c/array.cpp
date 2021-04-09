@@ -346,6 +346,9 @@ af_err af_write_array(af_array arr, const void *data, const size_t bytes,
     if (bytes == 0) { return AF_SUCCESS; }
     try {
         af_dtype type = getInfo(arr).getType();
+        ARG_ASSERT(1, (data != nullptr));
+        ARG_ASSERT(3, (src == afHost || src == afDevice));
+        // FIXME ArrayInfo class no bytes method, hence commented
         // DIM_ASSERT(2, bytes <= getInfo(arr).bytes());
 
         switch (type) {
