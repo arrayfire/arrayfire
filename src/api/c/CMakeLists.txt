@@ -184,6 +184,23 @@ if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
   endif ()
 endif()
 
+if(USE_CPU_MKL OR USE_OPENCL_MKL)
+  target_compile_definitions(c_api_interface
+    INTERFACE
+      AF_MKL_INTERFACE_SIZE=${MKL_INTERFACE_INTEGER_SIZE}
+    )
+  # Create mkl thread layer compile option based on cmake cache variable
+  if(MKL_THREAD_LAYER STREQUAL "Sequential")
+    target_compile_definitions(c_api_interface INTERFACE AF_MKL_THREAD_LAYER=0)
+  elseif(MKL_THREAD_LAYER STREQUAL "GNU OpenMP")
+    target_compile_definitions(c_api_interface INTERFACE AF_MKL_THREAD_LAYER=1)
+  elseif(MKL_THREAD_LAYER STREQUAL "Intel OpenMP")
+    target_compile_definitions(c_api_interface INTERFACE AF_MKL_THREAD_LAYER=2)
+  else() #default Intel Thread Layer for ArrayFire
+    target_compile_definitions(c_api_interface INTERFACE AF_MKL_THREAD_LAYER=3)
+  endif()
+endif()
+
 target_include_directories(c_api_interface
   INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
