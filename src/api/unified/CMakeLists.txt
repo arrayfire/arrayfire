@@ -107,20 +107,6 @@ target_link_libraries(af
     ${CMAKE_DL_LIBS}
   )
 
-
-# NOTE: When loading libraries we only use the RTLD_LAZY flag for the unified
-# backend. This will only load the symbols but will not make those symbols
-# available to libraries loaded in the future. Because we link against MKL
-# and since MKL also dynamically loads libraries at runtime, the linker
-# is not able to load those symbols that are needed by those files. You could
-# pass the RTLD_GLOBAL flag to dlload, but that causes issues with the ArrayFire
-# libraries. To get around this we are also linking the unified backend with
-# the MKL library
-if((USE_CPU_MKL OR USE_OPENCL_MKL) AND TARGET MKL::Shared AND NOT AF_WITH_STATIC_MKL)
-  target_link_libraries(af PRIVATE MKL::Shared)
-endif()
-
-
 install(TARGETS af
   EXPORT ArrayFireUnifiedTargets
   COMPONENT unified

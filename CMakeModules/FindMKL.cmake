@@ -61,6 +61,12 @@
 #
 # ``MKL::{mkl_def;mkl_mc;mkl_mc3;mkl_avx;mkl_avx2;mkl_avx512}{_STATIC}``
 #   Targets for MKL kernel libraries.
+#
+# This module has the following result variables:
+#
+# ``MKL_INTERFACE_INTEGER_SIZE``
+#   This variable is set integer size in bytes on the platform where this module
+#   runs. This is usually 4/8, and set of values this is dependent on MKL library.
 
 include(CheckTypeSize)
 include(FindPackageHandleStandardArgs)
@@ -336,8 +342,10 @@ elseif(MKL_THREAD_LAYER STREQUAL "Sequential")
 endif()
 
 if("${INT_SIZE}" EQUAL 4)
+  set(MKL_INTERFACE_INTEGER_SIZE 4)
   find_mkl_library(NAME Interface LIBRARY_NAME mkl_intel_lp64 SEARCH_STATIC)
 else()
+  set(MKL_INTERFACE_INTEGER_SIZE 8)
   find_mkl_library(NAME Interface LIBRARY_NAME mkl_intel_ilp64 SEARCH_STATIC)
 endif()
 
