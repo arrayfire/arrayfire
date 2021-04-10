@@ -364,6 +364,7 @@ if((USE_CPU_MKL OR USE_OPENCL_MKL) AND AF_INSTALL_STANDALONE)
     endif()
 
     install(FILES
+      $<TARGET_FILE:MKL::RT>
       $<TARGET_FILE:MKL::Shared>
       $<TARGET_FILE:MKL::ThreadLayer>
       ${MKL_RUNTIME_KERNEL_LIBRARIES}

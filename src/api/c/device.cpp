@@ -20,6 +20,10 @@
 #include <af/dim4.hpp>
 #include <af/version.h>
 
+#if defined(USE_MKL)
+#include <mkl_service.h>
+#endif
+
 #include <cstring>
 #include <string>
 
@@ -102,7 +106,46 @@ af_err af_get_active_backend(af_backend* result) {
 af_err af_init() {
     try {
         thread_local std::once_flag flag;
-        std::call_once(flag, []() { getDeviceInfo(); });
+        std::call_once(flag, []() {
+            getDeviceInfo();
+#if defined(USE_MKL)
+            int errCode = -1;
+            // Have used the AF_MKL_INTERFACE_SIZE as regular if's so that
+            // we will know if these are not defined when using MKL when a
+            // compilation error is generated.
+            if (AF_MKL_INTERFACE_SIZE == 4) {
+                errCode = mkl_set_interface_layer(MKL_INTERFACE_LP64);
+            } else if (AF_MKL_INTERFACE_SIZE == 8) {
+                errCode = mkl_set_interface_layer(MKL_INTERFACE_ILP64);
+            }
+            if (errCode == -1) {
+                AF_ERROR(
+                    "Intel MKL Interface layer was not specified prior to the "
+                    "call and the input parameter is incorrect.",
+                    AF_ERR_RUNTIME);
+            }
+            switch (AF_MKL_THREAD_LAYER) {
+                case 0:
+                    errCode = mkl_set_threading_layer(MKL_THREADING_SEQUENTIAL);
+                    break;
+                case 1:
+                    errCode = mkl_set_threading_layer(MKL_THREADING_GNU);
+                    break;
+                case 2:
+                    errCode = mkl_set_threading_layer(MKL_THREADING_INTEL);
+                    break;
+                case 3:
+                    errCode = mkl_set_threading_layer(MKL_THREADING_TBB);
+                    break;
+            }
+            if (errCode == -1) {
+                AF_ERROR(
+                    "Intel MKL Thread layer was not specified prior to the "
+                    "call and the input parameter is incorrect.",
+                    AF_ERR_RUNTIME);
+            }
+#endif
+        });
     }
     CATCHALL;
     return AF_SUCCESS;
