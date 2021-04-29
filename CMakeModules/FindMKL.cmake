@@ -393,6 +393,12 @@ if(NOT WIN32)
   mark_as_advanced(M_LIB)
 endif()
 
+if(TARGET MKL::RT)
+  set_target_properties(MKL::RT
+  PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${MKL_INCLUDE_DIR};${MKL_FFTW_INCLUDE_DIR}")
+endif()
+
 if(MKL_Shared_FOUND AND NOT TARGET MKL::Shared)
   add_library(MKL::Shared SHARED IMPORTED)
   if(MKL_THREAD_LAYER STREQUAL "Sequential")
