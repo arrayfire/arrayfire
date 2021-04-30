@@ -8,7 +8,7 @@
 FetchContent_Declare(
   ${clblast_prefix}
   GIT_REPOSITORY    https://github.com/cnugteren/CLBlast.git
-  GIT_TAG           41f344d1a6f2d149bba02a6615292e99b50f4856
+  GIT_TAG           1.5.2
 )
 af_dep_check_and_populate(${clblast_prefix})
 
