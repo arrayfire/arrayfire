@@ -184,7 +184,7 @@ if(FreeImage_FOUND AND AF_WITH_IMAGEIO)
   endif ()
 endif()
 
-if(USE_CPU_MKL OR USE_OPENCL_MKL)
+if(AF_CPU_WITH_MKL OR AF_OPENCL_WITH_MKL)
   target_compile_definitions(c_api_interface
     INTERFACE
       AF_MKL_INTERFACE_SIZE=${MKL_INTERFACE_INTEGER_SIZE}

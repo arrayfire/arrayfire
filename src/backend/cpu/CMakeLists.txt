@@ -304,7 +304,7 @@ target_compile_definitions(afcpu
     AF_CPU
   )
 
-if(USE_CPU_MKL)
+if(AF_CPU_WITH_MKL)
   dependency_check(MKL_Shared_FOUND "MKL not found")
   target_compile_definitions(afcpu PRIVATE USE_MKL)
   target_link_libraries(afcpu
@@ -345,10 +345,8 @@ else()
   endif()
 endif()
 
-if(LAPACK_FOUND OR (USE_CPU_MKL AND MKL_Shared_FOUND))
-  target_compile_definitions(afcpu
-    PRIVATE
-      WITH_LINEAR_ALGEBRA)
+if(LAPACK_FOUND OR AF_CPU_WITH_MKL)
+  target_compile_definitions(afcpu PRIVATE WITH_LINEAR_ALGEBRA)
 endif()
 
 af_split_debug_info(afcpu ${AF_INSTALL_LIB_DIR})

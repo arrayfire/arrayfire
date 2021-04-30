@@ -69,6 +69,8 @@ option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
 option(AF_WITH_STACKTRACE  "Add stacktraces to the error messages." ON)
 option(AF_CACHE_KERNELS_TO_DISK "Enable caching kernels to disk" ON)
 option(AF_WITH_STATIC_MKL "Link against static Intel MKL libraries" OFF)
+option(AF_CPU_WITH_MKL "Use MKL for CPU backend" ${MKL_FOUND})
+option(AF_OPENCL_WITH_MKL "Use MKL for OpenCL backend" ${MKL_FOUND})
 
 if(WIN32)
   set(AF_STACKTRACE_TYPE "Windbg" CACHE STRING "The type of backtrace features. Windbg(simple), None")
@@ -347,7 +349,7 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
               DESTINATION ${AF_INSTALL_CMAKE_DIR}
               COMPONENT cmake)
 
-if((USE_CPU_MKL OR USE_OPENCL_MKL) AND AF_INSTALL_STANDALONE)
+if((AF_CPU_WITH_MKL OR AF_OPENCL_WITH_MKL) AND AF_INSTALL_STANDALONE)
   if(TARGET MKL::ThreadingLibrary)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>

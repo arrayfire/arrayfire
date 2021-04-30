@@ -429,7 +429,7 @@ if(APPLE)
   target_link_libraries(afopencl PRIVATE OpenGL::GL)
 endif()
 
-if(LAPACK_FOUND OR (USE_OPENCL_MKL AND MKL_Shared_FOUND))
+if(LAPACK_FOUND OR AF_OPENCL_WITH_MKL)
   target_sources(afopencl
     PRIVATE
       magma/gebrd.cpp
@@ -462,7 +462,7 @@ if(LAPACK_FOUND OR (USE_OPENCL_MKL AND MKL_Shared_FOUND))
       #magma/unmqr2.cpp
       )
 
-  if(USE_OPENCL_MKL)
+  if(AF_OPENCL_WITH_MKL)
     dependency_check(MKL_Shared_FOUND "MKL not found")
     target_compile_definitions(afopencl PRIVATE USE_MKL)
 
