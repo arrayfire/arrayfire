@@ -349,21 +349,31 @@ install(FILES ${ArrayFire_BINARY_DIR}/cmake/install/ArrayFireConfig.cmake
 
 if((USE_CPU_MKL OR USE_OPENCL_MKL) AND AF_INSTALL_STANDALONE)
   if(TARGET MKL::ThreadingLibrary)
+    get_filename_component(mkl_tl ${MKL_ThreadingLibrary_LINK_LIBRARY} REALPATH)
     install(FILES
       $<TARGET_FILE:MKL::ThreadingLibrary>
+      ${mkl_tl}
       DESTINATION ${AF_INSTALL_LIB_DIR}
       COMPONENT mkl_dependencies)
   endif()
 
   if(NOT AF_WITH_STATIC_MKL AND TARGET MKL::Shared)
     if(NOT WIN32)
+      get_filename_component(mkl_int ${MKL_Interface_LINK_LIBRARY} REALPATH)
       install(FILES
         $<TARGET_FILE:MKL::Interface>
+        ${mkl_int}
         DESTINATION ${AF_INSTALL_LIB_DIR}
         COMPONENT mkl_dependencies)
     endif()
 
+    get_filename_component(mkl_rnt ${MKL_RT_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_shd ${MKL_Core_LINK_LIBRARY} REALPATH)
+    get_filename_component(mkl_tly ${MKL_ThreadLayer_LINK_LIBRARY} REALPATH)
     install(FILES
+      ${mkl_rnt}
+      ${mkl_shd}
+      ${mkl_tly}
       $<TARGET_FILE:MKL::RT>
       $<TARGET_FILE:MKL::Shared>
       $<TARGET_FILE:MKL::ThreadLayer>
