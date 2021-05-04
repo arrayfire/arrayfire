@@ -67,10 +67,8 @@ void csrmm_nt(Param out, const Param &values, const Param &rowIdx,
     groups_y     = std::min(groups_y, MAX_CSRMM_GROUPS);
     cl::NDRange global(local[0] * groups_x, local[1] * groups_y);
 
-    std::vector<int> count(groups_x);
-    cl::Buffer *counter = bufferAlloc(count.size() * sizeof(int));
-    getQueue().enqueueWriteBuffer(
-        *counter, CL_TRUE, 0, count.size() * sizeof(int), (void *)count.data());
+    cl::Buffer *counter = bufferAlloc(groups_x * sizeof(int));
+    getQueue().enqueueFillBuffer(*counter, 0, 0, groups_x * sizeof(int));
 
     csrmm_nt_func(cl::EnqueueArgs(getQueue(), global, local), *out.data,
                   *values.data, *rowIdx.data, *colIdx.data, M, N, *rhs.data,
