@@ -164,6 +164,12 @@ static af_err af_arith_sparse_dense(af_array *out, const af_array lhs,
                                     const bool reverse = false) {
     try {
         const common::SparseArrayBase linfo = getSparseArrayBase(lhs);
+        if (linfo.ndims() > 2) {
+            AF_ERROR(
+                "Sparse-Dense arithmetic operations cannot be used in batch "
+                "mode",
+                AF_ERR_BATCH);
+        }
         const ArrayInfo &rinfo              = getInfo(rhs);
 
         const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
