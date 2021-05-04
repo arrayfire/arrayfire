@@ -170,7 +170,7 @@ static af_err af_arith_sparse_dense(af_array *out, const af_array lhs,
                 "mode",
                 AF_ERR_BATCH);
         }
-        const ArrayInfo &rinfo              = getInfo(rhs);
+        const ArrayInfo &rinfo = getInfo(rhs);
 
         const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
         af_array res;
