@@ -43,7 +43,11 @@ kernel void csrmv_thread(global T *output, __global const T *values,
                            global const int *rowidx,
                            global const int *colidx, const int M,
                            global const T *rhs, const KParam rinfo,
-                           const T alpha, const T beta, global int *counter) {
+                           const T alpha, const T beta
+#if USE_GREEDY
+                           , global int *counter
+#endif
+                           ) {
     rhs += rinfo.offset;
     int rowNext = get_global_id(0);
 
@@ -95,7 +99,11 @@ kernel void csrmv_block(global T *output, __global const T *values,
                           global const int *rowidx,
                           global const int *colidx, const int M,
                           global const T *rhs, const KParam rinfo,
-                          const T alpha, const T beta, global int *counter) {
+                          const T alpha, const T beta
+#if USE_GREEDY
+                          , global int *counter
+#endif
+                          ) {
     rhs += rinfo.offset;
     int lid     = get_local_id(0);
     int rowNext = get_group_id(0);
