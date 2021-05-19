@@ -136,7 +136,7 @@
       }
     },
     {
-        "name": "ninja-debug",
+        "name": "ninja-all-debug",
         "description": "Build all feasible backends using Ninja Generator in Debug Configuraiton",
         "inherits": "ninja-all-off-debug",
         "cacheVariables": {
@@ -147,42 +147,42 @@
         }
     },
     {
-        "name": "ninja-mkl-debug",
+        "name": "ninja-all-mkl-debug",
         "description": "Build all feasible backends using Ninja Generator in Debug Configuraiton",
-        "inherits": "ninja-debug",
+        "inherits": "ninja-all-debug",
         "cacheVariables": {
             "USE_CPU_MKL": "ON",
             "USE_OPENCL_MKL": "ON"
         }
     },
     {
-        "name": "ninja-relwithdebinfo",
+        "name": "ninja-all-relwithdebinfo",
         "description": "Build all feasible backends using Ninja Generator in RelWithDebInfo Configuraiton",
-        "inherits": "ninja-debug",
+        "inherits": "ninja-all-debug",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo"
         }
     },
     {
-        "name": "ninja-mkl-relwithdebinfo",
+        "name": "ninja-all-mkl-relwithdebinfo",
         "description": "Build all feasible backends using Ninja Generator in RelWithDebInfo Configuraiton",
-        "inherits": "ninja-mkl-debug",
+        "inherits": "ninja-all-mkl-debug",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo"
         }
     },
     {
-        "name": "ninja-mkl-local-install",
+        "name": "ninja-all-mkl-local-install",
         "description": "Build all feasible backends using Ninja Generator in RelWithDebInfo Configuraiton",
-        "inherits": "ninja-mkl-relwithdebinfo",
+        "inherits": "ninja-all-mkl-relwithdebinfo",
         "cacheVariables": {
             "BUILD_TESTING": "OFF"
         }
     },
     {
-        "name": "ninja-mkl-standalone-install",
+        "name": "ninja-all-mkl-standalone-install",
         "description": "Build all feasible backends using Ninja Generator in RelWithDebInfo Configuraiton",
-        "inherits": "ninja-mkl-local-install",
+        "inherits": "ninja-all-mkl-local-install",
         "cacheVariables": {
             "AF_INSTALL_STANDALONE": "ON"
         }
@@ -196,6 +196,24 @@
           "AF_BUILD_FORGE": "OFF",
           "AF_BUILD_DOCS": "ON"
       }
+    },
+    {
+        "name": "ninja-any-debug",
+        "description": "Build available backends in Debug configuration using Ninja Generator",
+        "binaryDir": "${sourceDir}/build/${presetName}",
+        "generator": "Ninja",
+        "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Debug",
+            "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/pkg"
+        }
+    },
+    {
+        "name": "ninja-any-relwithdebinfo",
+        "description": "Build available backends in RelWithDebInfo configuration using Ninja Generator",
+        "inherits": "ninja-any-debug",
+        "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        }
     }
   ]
 }
