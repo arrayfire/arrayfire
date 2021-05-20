@@ -104,8 +104,7 @@ void regions(Param out, Param in, const bool full_conn,
 
     while (h_continue) {
         h_continue = 0;
-        getQueue().enqueueWriteBuffer(*d_continue, CL_FALSE, 0, sizeof(int),
-                                      &h_continue);
+        getQueue().enqueueFillBuffer(*d_continue, h_continue, 0, sizeof(int));
         ueOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
              *d_continue);
         CL_DEBUG_FINISH(getQueue());

@@ -117,10 +117,10 @@ void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
     scanFirst<int, int, af_add_t>(rowIdx, rd1, false);
 
     int nnz = values.info.dims[0];
-    getQueue().enqueueWriteBuffer(
-        *rowIdx.data, CL_TRUE,
+    getQueue().enqueueFillBuffer(
+        *rowIdx.data, nnz,
         rowIdx.info.offset + (rowIdx.info.dims[0] - 1) * sizeof(int),
-        sizeof(int), (void *)&nnz);
+        sizeof(int));
 
     cl::NDRange local(THREADS_X, THREADS_Y);
     int groups_x = divup(dense.info.dims[0], local[0]);

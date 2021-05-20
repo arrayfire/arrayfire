@@ -59,10 +59,8 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
     // same coordinates as features, dimensions should be equal to in.
     cl::Buffer *d_score =
         bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(float));
-    std::vector<float> score_init(in.info.dims[0] * in.info.dims[1], (float)0);
-    getQueue().enqueueWriteBuffer(
-        *d_score, CL_FALSE, 0,
-        in.info.dims[0] * in.info.dims[1] * sizeof(float), &score_init[0]);
+    getQueue().enqueueFillBuffer(
+        *d_score, 0.0F, 0, in.info.dims[0] * in.info.dims[1] * sizeof(float));
 
     cl::Buffer *d_flags = d_score;
     if (nonmax) {
@@ -91,10 +89,8 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
     const cl::NDRange global_nonmax(blk_nonmax_x * FAST_THREADS_NONMAX_X,
                                     blk_nonmax_y * FAST_THREADS_NONMAX_Y);
 
-    unsigned count_init = 0;
     cl::Buffer *d_total = bufferAlloc(sizeof(unsigned));
-    getQueue().enqueueWriteBuffer(*d_total, CL_FALSE, 0, sizeof(unsigned),
-                                  &count_init);
+    getQueue().enqueueFillBuffer(*d_total, 0U, 0, sizeof(unsigned));
 
     // size_t *global_nonmax_dims = global_nonmax();
     size_t blocks_sz = blk_nonmax_x * FAST_THREADS_NONMAX_X * blk_nonmax_y *

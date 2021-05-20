@@ -28,8 +28,8 @@ void Kernel::copyToReadOnly(Kernel::DevPtrType dst, Kernel::DevPtrType src,
 
 void Kernel::setFlag(Kernel::DevPtrType dst, int* scalarValPtr,
                      const bool syncCopy) {
-    getQueue().enqueueWriteBuffer(*dst, (syncCopy ? CL_TRUE : CL_FALSE), 0,
-                                  sizeof(int), scalarValPtr);
+    UNUSED(syncCopy);
+    getQueue().enqueueFillBuffer(*dst, *scalarValPtr, 0, sizeof(int));
 }
 
 int Kernel::getFlag(Kernel::DevPtrType src) {
