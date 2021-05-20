@@ -7,55 +7,75 @@
 
 set(FG_VERSION_MAJOR 1)
 set(FG_VERSION_MINOR 0)
-set(FG_VERSION_PATCH 5)
-set(FG_VERSION "${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}")
-set(FG_API_VERSION_CURRENT ${FG_VERSION_MAJOR}${FG_VERSION_MINOR})
+set(FG_VERSION_PATCH 7)
 
-FetchContent_Declare(
-  ${forge_prefix}
-  GIT_REPOSITORY https://github.com/arrayfire/forge.git
-  GIT_TAG        "v${FG_VERSION}"
+find_package(Forge
+  ${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}
+  QUIET
 )
-af_dep_check_and_populate(${forge_prefix})
 
-if(AF_BUILD_FORGE)
-  set(ArrayFireInstallPrefix ${CMAKE_INSTALL_PREFIX})
-  set(ArrayFireBuildType ${CMAKE_BUILD_TYPE})
-  set(CMAKE_INSTALL_PREFIX ${${forge_prefix}_BINARY_DIR}/extern/forge/package)
-  set(CMAKE_BUILD_TYPE Release)
-  set(FG_BUILD_EXAMPLES OFF CACHE BOOL "Used to build Forge examples")
-  set(FG_BUILD_DOCS OFF CACHE BOOL "Used to build Forge documentation")
-  set(FG_WITH_FREEIMAGE OFF CACHE BOOL "Turn on usage of freeimage dependency")
+if(TARGET Forge::forge)
+  get_target_property(fg_lib_type Forge::forge TYPE)
+  if(NOT ${fg_lib_type} STREQUAL "STATIC_LIBRARY")
+      install(FILES
+          $<TARGET_FILE:Forge::forge>
+          $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:Forge::forge>>
+          $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:Forge::forge>>
+          $<$<PLATFORM_ID:Linux>:$<TARGET_LINKER_FILE:Forge::forge>>
+          $<$<PLATFORM_ID:Darwin>:$<TARGET_LINKER_FILE:Forge::forge>>
+          DESTINATION "${AF_INSTALL_LIB_DIR}"
+          COMPONENT common_backend_dependencies)
+  endif()
+else()
+  set(FG_VERSION "${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}")
+  set(FG_API_VERSION_CURRENT ${FG_VERSION_MAJOR}${FG_VERSION_MINOR})
 
-  add_subdirectory(${${forge_prefix}_SOURCE_DIR} ${${forge_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
+  FetchContent_Declare(
+    ${forge_prefix}
+    GIT_REPOSITORY https://github.com/arrayfire/forge.git
+    GIT_TAG        "v${FG_VERSION}"
+  )
+  af_dep_check_and_populate(${forge_prefix})
 
-  mark_as_advanced(
-      FG_BUILD_EXAMPLES
-      FG_BUILD_DOCS
-      FG_WITH_FREEIMAGE
-      FG_USE_WINDOW_TOOLKIT
-      FG_USE_SYSTEM_CL2HPP
-      FG_ENABLE_HUNTER
-      FG_RENDERING_BACKEND
-      SPHINX_EXECUTABLE
-      glfw3_DIR
-      glm_DIR
+  if(AF_BUILD_FORGE)
+    set(ArrayFireInstallPrefix ${CMAKE_INSTALL_PREFIX})
+    set(ArrayFireBuildType ${CMAKE_BUILD_TYPE})
+    set(CMAKE_INSTALL_PREFIX ${${forge_prefix}_BINARY_DIR}/extern/forge/package)
+    set(CMAKE_BUILD_TYPE Release)
+    set(FG_BUILD_EXAMPLES OFF CACHE BOOL "Used to build Forge examples")
+    set(FG_BUILD_DOCS OFF CACHE BOOL "Used to build Forge documentation")
+    set(FG_WITH_FREEIMAGE OFF CACHE BOOL "Turn on usage of freeimage dependency")
+
+    add_subdirectory(
+        ${${forge_prefix}_SOURCE_DIR} ${${forge_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
+    mark_as_advanced(
+        FG_BUILD_EXAMPLES
+        FG_BUILD_DOCS
+        FG_WITH_FREEIMAGE
+        FG_USE_WINDOW_TOOLKIT
+        FG_USE_SYSTEM_CL2HPP
+        FG_ENABLE_HUNTER
+        FG_RENDERING_BACKEND
+        SPHINX_EXECUTABLE
+        glfw3_DIR
+        glm_DIR
+        )
+    set(CMAKE_BUILD_TYPE ${ArrayFireBuildType})
+    set(CMAKE_INSTALL_PREFIX ${ArrayFireInstallPrefix})
+
+    install(FILES
+        $<TARGET_FILE:forge>
+        $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:forge>>
+        $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:forge>>
+        $<$<PLATFORM_ID:Linux>:$<TARGET_LINKER_FILE:forge>>
+        $<$<PLATFORM_ID:Darwin>:$<TARGET_LINKER_FILE:forge>>
+        DESTINATION "${AF_INSTALL_LIB_DIR}"
+        COMPONENT common_backend_dependencies)
+    set_property(TARGET forge APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
+  else(AF_BUILD_FORGE)
+    configure_file(
+      ${${forge_prefix}_SOURCE_DIR}/CMakeModules/version.h.in
+      ${${forge_prefix}_BINARY_DIR}/include/fg/version.h
       )
-  set(CMAKE_BUILD_TYPE ${ArrayFireBuildType})
-  set(CMAKE_INSTALL_PREFIX ${ArrayFireInstallPrefix})
-
-  install(FILES
-      $<TARGET_FILE:forge>
-      $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:forge>>
-      $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:forge>>
-      $<$<PLATFORM_ID:Linux>:$<TARGET_LINKER_FILE:forge>>
-      $<$<PLATFORM_ID:Darwin>:$<TARGET_LINKER_FILE:forge>>
-      DESTINATION "${AF_INSTALL_LIB_DIR}"
-      COMPONENT common_backend_dependencies)
-  set_property(TARGET forge APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
-else(AF_BUILD_FORGE)
-  configure_file(
-    ${${forge_prefix}_SOURCE_DIR}/CMakeModules/version.h.in
-    ${${forge_prefix}_BINARY_DIR}/include/fg/version.h
-    )
-endif(AF_BUILD_FORGE)
+  endif(AF_BUILD_FORGE)
+endif()

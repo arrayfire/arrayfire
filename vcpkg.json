@@ -1,0 +1,41 @@
+{
+    "name": "arrayfire",
+    "version": "3.9.0",
+    "homepage": "https://github.com/arrayfire/arrayfire",
+    "description": "ArrayFire is a HPC general-purpose library targeting parallel and massively-parallel architectures such as CPUs, GPUs, etc.",
+    "supports": "x64",
+    "dependencies": [
+        "boost-compute",
+        "boost-functional",
+        "boost-stacktrace",
+        {
+            "name": "forge",
+            "version>=": "1.0.7",
+            "platform": "windows"
+        },
+        "freeimage",
+        {
+            "name": "fontconfig",
+            "platform": "!windows"
+        },
+        "glad",
+        "intel-mkl"
+    ],
+    "features": {
+        "cuda": {
+            "description": "Build CUDA backend",
+            "dependencies": [
+                "cuda",
+                "cudnn"
+            ]
+        },
+        "opencl": {
+            "description": "Build OpenCL backend",
+            "dependencies": [
+                "boost-program-options",
+                "opencl"
+            ]
+        }
+    },
+    "builtin-baseline": "5568f110b509a9fd90711978a7cb76bae75bb092"
+}

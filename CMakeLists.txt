@@ -7,6 +7,8 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+include(CMakeModules/AF_vcpkg_options.cmake)
+
 project(ArrayFire VERSION 3.9.0 LANGUAGES C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
@@ -44,6 +46,7 @@ find_package(CUDA 9.0)
 find_package(cuDNN 4.0)
 find_package(OpenCL 1.2)
 find_package(OpenGL)
+find_package(glad CONFIG QUIET)
 find_package(FreeImage)
 find_package(Threads)
 find_package(FFTW)
@@ -127,6 +130,9 @@ mark_as_advanced(
   Backtrace_LIBRARY
   AF_WITH_STATIC_MKL
   GIT
+  Forge_DIR
+  glad_DIR
+  FG_BUILD_OFFLINE
   )
 mark_as_advanced(CLEAR CUDA_VERSION)
 
@@ -140,12 +146,25 @@ FetchContent_Declare(
   GIT_TAG        v1.0.0
 )
 af_dep_check_and_populate(${spdlog_prefix})
-FetchContent_Declare(
-  ${glad_prefix}
-  GIT_REPOSITORY https://github.com/arrayfire/glad.git
-  GIT_TAG        master
-)
-af_dep_check_and_populate(${glad_prefix})
+
+
+if(NOT TARGET glad::glad)
+  FetchContent_Declare(
+    ${glad_prefix}
+    GIT_REPOSITORY https://github.com/arrayfire/glad.git
+    GIT_TAG main
+    )
+  af_dep_check_and_populate(${glad_prefix})
+  add_subdirectory(${${glad_prefix}_SOURCE_DIR} ${${glad_prefix}_BINARY_DIR})
+
+  add_library(af_glad STATIC $<TARGET_OBJECTS:af_glad_obj_lib>)
+  target_link_libraries(af_glad PUBLIC ${CMAKE_DL_LIBS})
+  target_include_directories(af_glad
+    PUBLIC
+    $<BUILD_INTERFACE:$<TARGET_PROPERTY:af_glad_obj_lib,INTERFACE_INCLUDE_DIRECTORIES>>
+    )
+endif()
+
 FetchContent_Declare(
   ${assets_prefix}
   GIT_REPOSITORY https://github.com/arrayfire/assets.git
@@ -201,8 +220,6 @@ if(NOT LAPACK_FOUND)
         find_package(LAPACK)
     endif()
 endif()
-
-add_subdirectory(${${glad_prefix}_SOURCE_DIR} ${${glad_prefix}_BINARY_DIR})
 
 add_subdirectory(src/backend/common)
 add_subdirectory(src/api/c)
@@ -437,3 +454,24 @@ conditional_directory(AF_BUILD_EXAMPLES examples)
 conditional_directory(AF_BUILD_DOCS docs)
 
 include(CPackConfig)
+
+# VCPKG variables that aren't necessarily important
+# for ArrayFire Development. They are marked hidden.
+# If VCPKG is not used, marking them is not harmful
+mark_as_advanced(
+  VCPKG_APPLOCAL_DEPS
+  VCPKG_BOOTSTRAP_OPTIONS
+  VCPKG_INSTALL_OPTIONS
+  VCPKG_MANIFEST_DIR
+  VCPKG_MANIFEST_INSTALL
+  VCPKG_MANIFEST_MODE
+  VCPKG_OVERLAY_PORTS
+  VCPKG_OVERLAY_TRIPLETS
+  VCPKG_TARGET_TRIPLET
+  X_VCPKG_APPLOCAL_DEPS_INSTALL
+  X_VCPKG_APPLOCAL_DEPS_SERIALIZED
+  Z_VCPKG_BUILTIN_POWERSHELL_PATH
+  Z_VCPKG_PWSH_PATH
+  Z_VCPKG_CL
+  _VCPKG_INSTALLED_DIR
+  )
