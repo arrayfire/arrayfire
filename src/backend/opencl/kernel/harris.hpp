@@ -162,8 +162,8 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
 
     unsigned corners_found      = 0;
     cl::Buffer *d_corners_found = bufferAlloc(sizeof(unsigned));
-    getQueue().enqueueWriteBuffer(*d_corners_found, CL_TRUE, 0,
-                                  sizeof(unsigned), &corners_found);
+    getQueue().enqueueFillBuffer(*d_corners_found, corners_found, 0,
+                                 sizeof(unsigned));
 
     cl::Buffer *d_x_corners    = bufferAlloc(corner_lim * sizeof(float));
     cl::Buffer *d_y_corners    = bufferAlloc(corner_lim * sizeof(float));

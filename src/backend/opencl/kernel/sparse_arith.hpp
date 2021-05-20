@@ -150,7 +150,7 @@ static void csrCalcOutNNZ(Param outRowIdx, unsigned &nnzC, const uint M,
 
     nnzC     = 0;
     auto out = memAlloc<unsigned>(1);
-    getQueue().enqueueWriteBuffer(*out, CL_TRUE, 0, sizeof(unsigned), &nnzC);
+    getQueue().enqueueFillBuffer(*out, nnzC, 0, sizeof(unsigned));
 
     calcNNZ(cl::EnqueueArgs(getQueue(), global, local), *out, *outRowIdx.data,
             M, *lrowIdx.data, *lcolIdx.data, *rrowIdx.data, *rcolIdx.data,
