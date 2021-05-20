@@ -81,11 +81,15 @@ target_link_libraries(afcommon_interface
   INTERFACE
     spdlog
     Boost::boost
-    glad_interface
     ${CMAKE_DL_LIBS}
 )
+if(TARGET glad::glad)
+  target_link_libraries(afcommon_interface INTERFACE glad::glad)
+else()
+  target_link_libraries(afcommon_interface INTERFACE af_glad)
+endif()
 
-if(AF_BUILD_FORGE)
+if(AF_BUILD_FORGE AND NOT Forge_FOUND)
   add_dependencies(afcommon_interface forge)
 endif()
 
@@ -95,9 +99,19 @@ target_include_directories(afcommon_interface
     ${ArrayFire_BINARY_DIR}
   SYSTEM INTERFACE
     $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>
+  )
+if(TARGET Forge::forge)
+  target_include_directories(afcommon_interface
+    SYSTEM INTERFACE
+    $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>
+  )
+else()
+  target_include_directories(afcommon_interface
+    SYSTEM INTERFACE
     ${${forge_prefix}_SOURCE_DIR}/include
     ${${forge_prefix}_BINARY_DIR}/include
   )
+endif()
 
 if(APPLE AND NOT USE_MKL)
   target_sources(afcommon_interface
