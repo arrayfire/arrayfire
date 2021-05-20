@@ -19,10 +19,8 @@ jobs:
             fail-fast: false
             matrix:
                 blas_backend: [Atlas, MKL, OpenBLAS]
-                os: [ubuntu-16.04, ubuntu-18.04, macos-latest]
+                os: [ubuntu-18.04, ubuntu-20.04, macos-latest]
                 exclude:
-                    - os: ubuntu-16.04
-                      blas_backend: Atlas
                     - os: macos-latest
                       blas_backend: Atlas
                     - os: macos-latest
@@ -64,7 +62,7 @@ jobs:
                   echo "CMAKE_PROGRAM=cmake" >> $GITHUB_ENV
 
             - name: Install Common Dependencies for Ubuntu
-              if: matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04'
+              if: matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-18.04'
               run: |
                   sudo add-apt-repository ppa:mhier/libboost-latest
                   sudo apt-get -qq update
@@ -75,11 +73,11 @@ jobs:
                                           liblapacke-dev
 
             - name: Install Atlas for Ubuntu
-              if: matrix.os == 'ubuntu-18.04' && matrix.blas_backend == 'Atlas'
+              if: matrix.os != 'macos-latest' && matrix.blas_backend == 'Atlas'
               run: sudo apt-get install -y libatlas-base-dev
 
             - name: Install MKL for Ubuntu
-              if: (matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04') && matrix.blas_backend == 'MKL'
+              if: matrix.os != 'macos-latest' && matrix.blas_backend == 'MKL'
               run: |
                   wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
                   sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
@@ -88,7 +86,7 @@ jobs:
                   sudo apt-get install -y intel-mkl-64bit-2020.0-088
 
             - name: Install OpenBLAS for Ubuntu
-              if: (matrix.os == 'ubuntu-16.04' || matrix.os == 'ubuntu-18.04') && matrix.blas_backend == 'OpenBLAS'
+              if: matrix.os != 'macos-latest' && matrix.blas_backend == 'OpenBLAS'
               run: sudo apt-get install -y libopenblas-dev
 
             - name: CMake Configure
@@ -109,8 +107,7 @@ jobs:
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=ON \
                       -DAF_BUILD_FORGE:BOOL=ON \
                       -DUSE_CPU_MKL:BOOL=$USE_MKL \
-                      -DBUILDNAME:STRING=${buildname} \
-                      ..
+                      -DBUILDNAME:STRING=${buildname} ..
                   echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
 
             - name: Build and Test
