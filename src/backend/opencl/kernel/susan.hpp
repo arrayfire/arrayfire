@@ -79,8 +79,8 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
 
     unsigned corners_found = 0;
     auto d_corners_found   = memAlloc<unsigned>(1);
-    getQueue().enqueueWriteBuffer(*d_corners_found, CL_FALSE, 0,
-                                  sizeof(unsigned), &corners_found);
+    getQueue().enqueueFillBuffer(*d_corners_found, corners_found, 0,
+                                 sizeof(unsigned));
 
     cl::NDRange local(SUSAN_THREADS_X, SUSAN_THREADS_Y);
     cl::NDRange global(divup(idim0 - 2 * edge, local[0]) * local[0],
