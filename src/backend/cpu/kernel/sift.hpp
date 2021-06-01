@@ -91,7 +91,7 @@ bool feat_cmp(feat_t i, feat_t j) {
         if (i.f[k] != j.f[k]) return (i.f[k] < j.f[k]);
     if (i.l != j.l) return (i.l < j.l);
 
-    return true;
+    return false;
 }
 
 void array_to_feat(std::vector<feat_t>& feat, float* x, float* y,
