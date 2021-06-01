@@ -96,8 +96,7 @@ static af_array gray2rgb(const af_array& in, const float r, const float g,
     AF_CHECK(af_release_array(mod_input));
 
     // join channels
-    Array<cType> expr4 = join<cType>(2, expr1, expr2);
-    return getHandle(join<cType>(2, expr3, expr4));
+    return getHandle(join<cType>(2, {expr3, expr1, expr2}));
 }
 
 template<typename T, typename cType, bool isRGB2GRAY>

@@ -108,8 +108,7 @@ static af_array convert(const af_array& in, const af_ycc_std standard) {
                    INV_112 * (kb - 1) * kb * invKl);
         Array<T> B = mix<T>(Y_, Cb_, INV_219, INV_112 * (1 - kb));
         // join channels
-        Array<T> RG = join<T>(2, R, G);
-        return getHandle(join<T>(2, RG, B));
+        return getHandle(join<T>(2, {R, G, B}));
     }
     Array<T> Ey = mix<T>(X, Y, Z, kr, kl, kb);
     Array<T> Ecr =
@@ -120,8 +119,7 @@ static af_array convert(const af_array& in, const af_ycc_std standard) {
     Array<T> Cr = digitize<T>(Ecr, 224.0, 128.0);
     Array<T> Cb = digitize<T>(Ecb, 224.0, 128.0);
     // join channels
-    Array<T> YCb = join<T>(2, Y_, Cb);
-    return getHandle(join<T>(2, YCb, Cr));
+    return getHandle(join<T>(2, {Y_, Cb, Cr}));
 }
 
 template<bool isYCbCr2RGB>
