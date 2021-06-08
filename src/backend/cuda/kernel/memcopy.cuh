@@ -13,31 +13,54 @@
 
 namespace cuda {
 
-template<typename T>
-__global__ void memcopy(Param<T> out, CParam<T> in, uint blocks_x,
-                        uint blocks_y) {
-    const int tidx = threadIdx.x;
-    const int tidy = threadIdx.y;
+template<typename T, bool LOOP1, bool LOOP2>
+__global__ void memcopy(Param<T> out, CParam<T> in) {
+    const int g0 = blockIdx.x * blockDim.x + threadIdx.x;  // Limit 2G
+    int g1       = blockIdx.y * blockDim.y + threadIdx.y;  // Limit 64K
 
-    const int zid        = blockIdx.x / blocks_x;
-    const int blockIdx_x = blockIdx.x - (blocks_x)*zid;
-    const int xid        = blockIdx_x * blockDim.x + tidx;
+    const bool valid = (g0 < (int)in.dims[0]) && (g1 < (int)in.dims[1]);
+    if (valid) {
+        const int idims3 = in.dims[3];
+        in.ptr += g0 * (int)in.strides[0] + g1 * (int)in.strides[1];
+        const int istrides2 = in.strides[2];
+        const int istrides3 = in.strides[3];
+        out.ptr += g0 * (int)out.strides[0] + g1 * (int)out.strides[1];
+        const int ostrides2 = out.strides[2];
+        const int ostrides3 = out.strides[3];
 
-    const int wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
-    const int blockIdx_y =
-        (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y)*wid;
-    const int yid = blockIdx_y * blockDim.y + tidy;
-    // FIXME: Do more work per block
-    T *const optr = out.ptr + wid * out.strides[3] + zid * out.strides[2] +
-                    yid * out.strides[1];
-    const T *iptr = in.ptr + wid * in.strides[3] + zid * in.strides[2] +
-                    yid * in.strides[1];
+#if LOOP1
+        const int idims1 = in.dims[1];
+        const int iinc1  = gridDim.y * (int)in.strides[1];
+        const int oinc1  = gridDim.y * (int)out.strides[1];
+        do {
+#endif
 
-    int istride0 = in.strides[0];
-    if (xid < in.dims[0] && yid < in.dims[1] && zid < in.dims[2] &&
-        wid < in.dims[3]) {
-        optr[xid] = iptr[xid * istride0];
+            int g2 = blockIdx.z * blockDim.z + threadIdx.z;  // Limit 64K
+#if LOOP2
+            do {
+#endif
+                // ALWAYS looping!!
+                int ioffset          = g2 * istrides2;
+                int ooffset          = g2 * ostrides2;
+                const int ioffsetEnd = ioffset + idims3 * istrides3;
+                do {
+                    T val = in.ptr[ioffset];
+                    ioffset += istrides3;
+                    out.ptr[ooffset] = val;
+                    ooffset += ostrides3;
+                } while (ioffset != ioffsetEnd);
+
+#if LOOP2
+                g2 += gridDim.z;
+            } while (g2 < (int)in.dims[2]);
+#endif
+
+#if LOOP1
+            g1 += gridDim.y;
+            in.ptr += iinc1;
+            out.ptr += oinc1;
+        } while (g1 < idims1);
+#endif
     }
 }
-
 }  // namespace cuda

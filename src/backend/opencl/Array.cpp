@@ -315,15 +315,18 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
         // This is the base parameter size if the kernel had no
         // arguments
         constexpr size_t base_param_size =
-            sizeof(T *) + sizeof(KParam) + (3 * sizeof(uint));
+            sizeof(T *) + sizeof(KParam) + 4 * sizeof(int) + 4 * sizeof(char);
+        // extra padding for safety to avoid failure during compilation
+        constexpr size_t jit_padding_size = 32;
 
-        const cl::Device &device = getDevice();
-        size_t max_param_size = device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>();
         // typical values:
         //   NVIDIA     = 4096
         //   AMD        = 3520  (AMD A10 iGPU = 1024)
         //   Intel iGPU = 1024
-        max_param_size -= base_param_size;
+        const cl::Device &device = getDevice();
+        const size_t max_param_size =
+            device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>() - base_param_size -
+            jit_padding_size;
 
         struct tree_info {
             size_t total_buffer_size;

@@ -22,87 +22,74 @@ using common::is_complex;
 namespace cuda {
 
 template<typename T>
-void copyData(T *dst, const Array<T> &src) {
-    if (src.elements() == 0) { return; }
-
-    // FIXME: Merge this with copyArray
-    src.eval();
-
-    Array<T> out = src;
-    const T *ptr = NULL;
-
-    if (src.isLinear() ||  // No offsets, No strides
-        src.ndims() == 1   // Simple offset, no strides.
-    ) {
-        // A.get() gets data with offsets
-        ptr = src.get();
-    } else {
-        // FIXME: Think about implementing eval
-        out = copyArray(src);
-        ptr = out.get();
+void copyData(T *data, const Array<T> &src) {
+    if (src.elements() > 0) {
+        Array<T> lin = src.isReady() && src.isLinear() ? src : copyArray(src);
+        // out is now guaranteed linear
+        auto stream = cuda::getActiveStream();
+        CUDA_CHECK(cudaMemcpyAsync(data, lin.get(), lin.elements() * sizeof(T),
+                                   cudaMemcpyDeviceToHost, stream));
+        CUDA_CHECK(cudaStreamSynchronize(stream));
     }
-
-    auto stream = cuda::getActiveStream();
-    CUDA_CHECK(cudaMemcpyAsync(dst, ptr, src.elements() * sizeof(T),
-                               cudaMemcpyDeviceToHost, stream));
-    CUDA_CHECK(cudaStreamSynchronize(stream));
 }
 
 template<typename T>
 Array<T> copyArray(const Array<T> &src) {
     Array<T> out = createEmptyArray<T>(src.dims());
-    if (src.elements() == 0) { return out; }
-
-    if (src.isLinear()) {
-        CUDA_CHECK(
-            cudaMemcpyAsync(out.get(), src.get(), src.elements() * sizeof(T),
-                            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
-    } else {
+    if (src.isReady()) {
         kernel::memcopy<T>(out, src, src.ndims());
+    } else {
+        Param<T> info(out.get(), src.dims().dims, src.strides().dims);
+        evalNodes(info, src.getNode().get());
     }
     return out;
 }
 
 template<typename T>
-void multiply_inplace(Array<T> &in, double val) {
-    kernel::copy<T, T>(in, in, in.ndims(), scalar<T>(0), val);
+void multiply_inplace(Array<T> &src, double norm) {
+    kernel::copy<T, T>(src, src, src.ndims(), scalar<T>(0), norm);
 }
 
 template<typename inType, typename outType>
 struct copyWrapper {
-    void operator()(Array<outType> &out, Array<inType> const &in) {
-        kernel::copy<inType, outType>(out, in, in.ndims(), scalar<outType>(0),
-                                      1);
+    void operator()(Array<outType> &dst, Array<inType> const &src) {
+        kernel::copy<inType, outType>(dst, src, src.ndims(), scalar<outType>(0),
+                                      1.0);
     }
 };
 
 template<typename T>
 struct copyWrapper<T, T> {
-    void operator()(Array<T> &out, Array<T> const &in) {
-        if (out.isLinear() && in.isLinear() &&
-            out.elements() == in.elements()) {
-            CUDA_CHECK(cudaMemcpyAsync(
-                out.get(), in.get(), in.elements() * sizeof(T),
-                cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+    void operator()(Array<T> &dst, Array<T> const &src) {
+        if (dst.isLinear() && src.isLinear() &&
+            dst.elements() == src.elements()) {
+            if (src.isReady()) {
+                CUDA_CHECK(cudaMemcpyAsync(
+                    dst.get(), src.get(), src.elements() * sizeof(T),
+                    cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            } else {
+                Param<T> info(dst.get(), src.dims().dims, dst.strides().dims);
+                evalNodes(info, src.getNode().get());
+            }
         } else {
-            kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1);
+            kernel::copy<T, T>(dst, src, src.ndims(), scalar<T>(0), 1.0);
         }
     }
 };
 
 template<typename inType, typename outType>
-void copyArray(Array<outType> &out, Array<inType> const &in) {
+void copyArray(Array<outType> &dst, Array<inType> const &src) {
     static_assert(!(is_complex<inType>::value && !is_complex<outType>::value),
                   "Cannot copy from complex value to a non complex value");
-    ARG_ASSERT(1, (in.ndims() == out.dims().ndims()));
+    ARG_ASSERT(1, (src.ndims() == dst.ndims()));
     copyWrapper<inType, outType> copyFn;
-    copyFn(out, in);
+    copyFn(dst, src);
 }
 
-#define INSTANTIATE(T)                                       \
-    template void copyData<T>(T * dst, const Array<T> &src); \
-    template Array<T> copyArray<T>(const Array<T> &src);     \
-    template void multiply_inplace<T>(Array<T> & in, double norm);
+#define INSTANTIATE(T)                                        \
+    template void copyData<T>(T * data, const Array<T> &src); \
+    template Array<T> copyArray<T>(const Array<T> &src);      \
+    template void multiply_inplace<T>(Array<T> & src, double norm);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -168,9 +155,9 @@ INSTANTIATE_COPY_ARRAY_COMPLEX(cfloat)
 INSTANTIATE_COPY_ARRAY_COMPLEX(cdouble)
 
 template<typename T>
-T getScalar(const Array<T> &in) {
+T getScalar(const Array<T> &src) {
     T retVal{};
-    CUDA_CHECK(cudaMemcpyAsync(&retVal, in.get(), sizeof(T),
+    CUDA_CHECK(cudaMemcpyAsync(&retVal, src.get(), sizeof(T),
                                cudaMemcpyDeviceToHost,
                                cuda::getActiveStream()));
     CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));

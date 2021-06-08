@@ -8,16 +8,14 @@
  ********************************************************/
 
 typedef struct {
-    dim_t dim[4];
+    int dims[4];
 } dims_t;
 
-inType scale(inType value, float factor) {
-#ifdef inType_float2
-    return (inType)(value.s0 * factor, value.s1 * factor);
+#ifdef FACTOR
+#define SCALE(value, factor) (value * factor)
 #else
-    return (inType)(value * factor);
+#define SCALE(value, factor) (value)
 #endif
-}
 
 #if defined(outType_double2)
 
@@ -47,42 +45,51 @@ inType scale(inType value, float factor) {
 
 #endif
 
-kernel void reshapeCopy(global outType *dst, KParam oInfo,
-                        global const inType *src, KParam iInfo,
-                        outType default_value, float factor, dims_t trgt,
-                        int blk_x, int blk_y) {
-    uint lx = get_local_id(0);
-    uint ly = get_local_id(1);
+kernel void reshapeCopy(global outType *out, const dims_t odims,
+                        const dims_t ostrides, const int ooffset,
+                        global const inType *in, const dims_t idims,
+                        const dims_t istrides, const int ioffset,
+                        const outType default_value, const factorType factor) {
+    const int g0 = get_global_id(0);  // dim0 of out buffer, not in buffer!!
+    const int g1 = get_global_id(1);  // dim1 of out buffer, not in buffer!!
+    const bool inside_out =
+        (g0 < (int)odims.dims[0]) && (g1 < (int)odims.dims[1]);
 
-    uint gz         = get_group_id(0) / blk_x;
-    uint gw         = get_group_id(1) / blk_y;
-    uint blockIdx_x = get_group_id(0) - (blk_x)*gz;
-    uint blockIdx_y = get_group_id(1) - (blk_y)*gw;
-    uint gx         = blockIdx_x * get_local_size(0) + lx;
-    uint gy         = blockIdx_y * get_local_size(1) + ly;
+    if (inside_out) {
+        const int g2 = get_global_id(2);  // dim2 of out buffer, not in buffer!!
 
-    global const inType *in =
-        src + (gw * iInfo.strides[3] + gz * iInfo.strides[2] +
-               gy * iInfo.strides[1] + iInfo.offset);
-    global outType *out = dst + (gw * oInfo.strides[3] + gz * oInfo.strides[2] +
-                                 gy * oInfo.strides[1] + oInfo.offset);
-
-    uint istride0 = iInfo.strides[0];
-    uint ostride0 = oInfo.strides[0];
-
-    if (gy < oInfo.dims[1] && gz < oInfo.dims[2] && gw < oInfo.dims[3]) {
-        int loop_offset = get_local_size(0) * blk_x;
-        bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
-        for (int rep = gx; rep < oInfo.dims[0]; rep += loop_offset) {
-            outType temp = default_value;
+        int idx_in = ioffset + g0 * (int)istrides.dims[0] +
+                     g1 * (int)istrides.dims[1] + g2 * (int)istrides.dims[2];
+        const int istrides3 = istrides.dims[3];
+        int idx_out         = ooffset + g0 * (int)ostrides.dims[0] +
+                      g1 * (int)ostrides.dims[1] + g2 * (int)ostrides.dims[2];
+        const int ostrides3   = ostrides.dims[3];
+        const int idx_outEnd1 = idx_out + (int)idims.dims[3] * ostrides3;
 #if SAME_DIMS
-            temp = CONVERT(scale(in[rep * istride0], factor));
+        do {
+            outType val = CONVERT(SCALE(in[idx_in], factor));
+            idx_in += istrides3;
+            out[idx_out] = val;
+            idx_out += ostrides3;
+        } while (idx_out != idx_outEnd1);
+
 #else
-            if (rep < trgt.dim[0] && cond) {
-                temp = CONVERT(scale(in[rep * istride0], factor));
-            }
-#endif
-            out[rep * ostride0] = temp;
+        const bool inside_in = (g0 < (int)idims.dims[0]) &&
+                               (g1 < (int)idims.dims[1]) &&
+                               (g2 < (int)idims.dims[2]);
+        const int idx_outEnd2 = idx_out + (int)odims.dims[3] * ostrides3;
+        if (inside_in) {
+            do {
+                outType val = CONVERT(SCALE(in[idx_in], factor));
+                idx_in += istrides3;
+                out[idx_out] = val;
+                idx_out += ostrides3;
+            } while (idx_out < idx_outEnd1);
         }
+        while (idx_out < idx_outEnd2) {
+            out[idx_out] = default_value;
+            idx_out += ostrides3;
+        }
+#endif
     }
 }

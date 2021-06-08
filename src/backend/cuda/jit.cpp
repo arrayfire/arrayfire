@@ -37,6 +37,7 @@ using common::Node;
 using common::Node_ids;
 using common::Node_map_t;
 
+using std::array;
 using std::string;
 using std::stringstream;
 using std::to_string;
@@ -69,54 +70,72 @@ struct Param {
 
     static const char *kernelVoid = "extern \"C\" __global__ void\n";
     static const char *dimParams =
-        "uint blocks_x, uint blocks_y, uint blocks_x_total, uint num_odims";
+        "int inc0, int inc1, int inc2, int inc3, "
+        "char decode0, char decode1, char decode2, char decode3";
 
-    static const char *loopStart = R"JIT(
-    for (int blockIdx_x = blockIdx.x; blockIdx_x < blocks_x_total; blockIdx_x += gridDim.x) {
+    static const char *blockStart = "{\n";
+    static const char *blockEnd   = "\n}\n\n";
+
+    static const char *linearIndexStart = R"JIT(
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;   // only dim0 since linear
+    if (idx < (int)outref.dims[2] * (int)outref.strides[2]) {
+        const int ostrides3 = outref.strides[3];
+        const int idxEnd = idx + (int)outref.dims[3] * ostrides3;
+        do {
     )JIT";
-    static const char *loopEnd   = "}\n\n";
 
-    static const char *blockStart = "{\n\n";
-    static const char *blockEnd   = "\n\n}";
+    static const char *linearIndexEnd = R"JIT(
+            idx += ostrides3;
+        } while (idx != idxEnd);
+    }
+    )JIT";
 
-    static const char *linearIndex = R"JIT(
-        uint threadId = threadIdx.x;
-        long long idx = blockIdx_x * blockDim.x * blockDim.y + threadId;
-        if (idx >= outref.dims[3] * outref.strides[3]) return;
-        )JIT";
+    static const char *generalIndexStart = R"JIT(
+    //optimized dims
+    int od[4] {(int)(blockIdx.x * blockDim.x + threadIdx.x),
+               (int)(blockIdx.y * blockDim.y + threadIdx.y),
+               0,       // Filled in later
+               0};
+    const bool valid = (od[0] < (int)outref.dims[0]) &&
+                       (od[1] < (int)outref.dims[1]);
+    if (valid) {
+        const int odims1 = outref.dims[1];
+        const int odims2 = outref.dims[2];
+        const int odims3 = outref.dims[3];
+        int ostrides1 = outref.strides[1];
+        const int ostrides2 = outref.strides[2];
+        const int ostrides3 = outref.strides[3];
+        int offset = od[0] * (int)outref.strides[0] + od[1] * ostrides1;
+        ostrides1 *= gridDim.y;
 
-    static const char *generalIndex = R"JIT(
-        long long id0 = 0, id1 = 0, id2 = 0, id3 = 0;
-        long blockIdx_y = blockIdx.z * gridDim.y + blockIdx.y;
-        if (num_odims > 2) {
-            id2 = blockIdx_x / blocks_x;
-            id0 = blockIdx_x - id2 * blocks_x;
-            id0 = threadIdx.x + id0 * blockDim.x;
-            if (num_odims > 3) {
-                id3 = blockIdx_y / blocks_y;
-                id1 = blockIdx_y - id3 * blocks_y;
-                id1 = threadIdx.y + id1 * blockDim.y;
-            } else {
-                id1 = threadIdx.y + blockDim.y * blockIdx_y;
-            }
-        } else {
-            id3 = 0;
-            id2 = 0;
-            id1 = threadIdx.y + blockDim.y * blockIdx_y;
-            id0 = threadIdx.x + blockDim.x * blockIdx_x;
-        }
+        do {
+            od[2] = (int)(blockIdx.z * blockDim.z + threadIdx.z);
+            do {
+                int idx = offset + od[2] * ostrides2;
+                const int idxEnd = idx + odims3 * ostrides3;
 
-        bool cond = id0 < outref.dims[0] &&
-                    id1 < outref.dims[1] &&
-                    id2 < outref.dims[2] &&
-                    id3 < outref.dims[3];
+                //convert from optimized dims to internal dims
+                int id0 = od[decode0];    // input dim[0]
+                int id1 = od[decode1];    // input dim[1]
+                int id2 = od[decode2];    // input dim[2]
+                int id3 = od[decode3];    // input dim[3]
+                do {
+    )JIT";
 
-        if (!cond) { continue; }
-
-        long long idx = outref.strides[3] * id3 +
-                        outref.strides[2] * id2 +
-                        outref.strides[1] * id1 + id0;
-        )JIT";
+    static const char *generalIndexEnd = R"JIT(
+                    idx += ostrides3;
+                    id0 += inc0;
+                    id1 += inc1;
+                    id2 += inc2;
+                    id3 += inc3;
+                } while (idx != idxEnd);
+                od[2] += gridDim.z;
+            } while (od[2] < odims2);
+            od[1] += gridDim.y;
+            offset += ostrides1;
+        } while (od[1] < odims1);
+    }
+    )JIT";
 
     stringstream inParamStream;
     stringstream outParamStream;
@@ -161,16 +180,19 @@ struct Param {
     kerStream << ")\n";
     kerStream << blockStart;
     kerStream << outrefstream.str();
-    kerStream << loopStart;
     if (is_linear) {
-        kerStream << linearIndex;
+        kerStream << linearIndexStart;
     } else {
-        kerStream << generalIndex;
+        kerStream << generalIndexStart;
     }
     kerStream << offsetsStream.str();
     kerStream << opsStream.str();
     kerStream << outWriteStream.str();
-    kerStream << loopEnd;
+    if (is_linear) {
+        kerStream << linearIndexEnd;
+    } else {
+        kerStream << generalIndexEnd;
+    }
     kerStream << blockEnd;
 
     return kerStream.str();
@@ -205,13 +227,18 @@ static CUfunction getKernel(const vector<Node *> &output_nodes,
 
 template<typename T>
 void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
-    size_t num_outputs = outputs.size();
-    if (num_outputs == 0) { return; }
+    if (outputs.empty()) { return; }
 
-    int device         = getActiveDeviceId();
-    dim_t *outDims     = outputs[0].dims;
-    size_t numOutElems = outDims[0] * outDims[1] * outDims[2] * outDims[3];
-    if (numOutElems == 0) { return; }
+    dim_t *outDims       = outputs[0].dims;
+    dim_t *outStrides    = outputs[0].strides;
+    unsigned numOutElems = static_cast<unsigned>(outDims[0] * outDims[1] *
+                                                 outDims[2] * outDims[3]);
+    int ndims            = outDims[3] > 1   ? 4
+                           : outDims[2] > 1 ? 3
+                           : outDims[1] > 1 ? 2
+                           : outDims[0] > 0 ? 1
+                                            : 0;
+    if (numOutElems == 0 || ndims == 0) { return; }
 
     // Use thread local to reuse the memory every time you are here.
     thread_local Node_map_t nodes;
@@ -233,57 +260,118 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
     }
 
     bool is_linear = true;
-    for (auto node : full_nodes) { is_linear &= node->isLinear(outDims); }
+    for (const auto &node : full_nodes) {
+        is_linear &= node->isLinear(outDims);
+    }
+    for (int dim = 0, elements = 1; dim < ndims; ++dim) {
+        is_linear &= (elements == (int)outputs[0].strides[dim]);
+        elements *= (int)outDims[dim];
+    }
 
-    CUfunction ker =
+    auto ker =
         getKernel(output_nodes, output_ids, full_nodes, full_ids, is_linear);
 
-    int threads_x = 1, threads_y = 1;
-    int blocks_x_ = 1, blocks_y_ = 1;
-    int blocks_x = 1, blocks_y = 1, blocks_z = 1, blocks_x_total;
-
-    cudaDeviceProp properties    = getDeviceProp(device);
-    const long long max_blocks_x = properties.maxGridSize[0];
-    const long long max_blocks_y = properties.maxGridSize[1];
-
-    int num_odims = 4;
-    while (num_odims >= 1) {
-        if (outDims[num_odims - 1] == 1) {
-            num_odims--;
-        } else {
-            break;
-        }
-    }
+    // decode is used to reconstruct the original dimensions inside the kernel
+    // 0..3 represents the id number
+    //
+    // Suppose:
+    // original dims[dim0,dim1,1,dim3]  // Columns with 1 waste a grid counter
+    // optimized dims [od[0]=dim0,
+    //                 od[1]=dim1,
+    //                 od[2]=dim3,
+    //                 od[3]=1..1 (internal looping)]
+    // decode{0,1,3,2}  --> id in internal kernel {id0 = od[0] in [0..dim0[,
+    //                                             id1 = od[1] in [0..dim1[,
+    //                                             id2 = od[3] in [0..1[,
+    //                                             id3 = od[2] in [0..dim3[ }
+    char decode[AF_MAX_DIMS]{0, 1, 2, 3};
+    int incr[AF_MAX_DIMS]{0, 0, 0, 1};
+    dim3 threads, blocks;
 
     if (is_linear) {
-        threads_x = 256;
-        threads_y = 1;
-
-        blocks_x_total = divup(
-            (outDims[0] * outDims[1] * outDims[2] * outDims[3]), threads_x);
-
-        int repeat_x = divup(blocks_x_total, max_blocks_x);
-        blocks_x     = divup(blocks_x_total, repeat_x);
+        outDims[0]    = numOutElems;
+        outDims[1]    = 1;
+        outDims[2]    = 1;
+        outDims[3]    = 1;
+        outStrides[0] = 1;
+        outStrides[1] = outDims[0];
+        outStrides[2] = outDims[0];
+        outStrides[3] = outDims[0];
+        ndims         = 1;
+        if (numOutElems >= 8192 * 2) {
+            for (unsigned i : {3, 4, 5, 7, 11, 2}) {
+                if (numOutElems >= 8192 * i && (outDims[ndims - 1] % i) == 0) {
+                    outDims[ndims - 1] /= i;
+                    outDims[AF_MAX_DIMS - 1] = i;
+                    for (int c = 1; c < AF_MAX_DIMS; ++c) {
+                        outStrides[c] = outDims[0];
+                    }
+                    incr[AF_MAX_DIMS - 1] = 0;
+                    incr[ndims - 1] = static_cast<int>(outDims[ndims - 1]);
+                    ndims           = AF_MAX_DIMS;
+                    // Once is sufficient
+                    break;
+                }
+            }
+        }
+        threads = dim3(128U);
+        blocks  = dim3(divup((int)outDims[0], threads.x));
     } else {
-        threads_x = 32;
-        threads_y = 8;
-
-        blocks_x_ = divup(outDims[0], threads_x);
-        blocks_y_ = divup(outDims[1], threads_y);
-
-        blocks_x = blocks_x_ * outDims[2];
-        blocks_y = blocks_y_ * outDims[3];
-
-        blocks_z = divup(blocks_y, max_blocks_y);
-        blocks_y = divup(blocks_y, blocks_z);
-
-        blocks_x_total = blocks_x;
-        int repeat_x   = divup(blocks_x_total, max_blocks_x);
-        blocks_x       = divup(blocks_x_total, repeat_x);
+        // Push all active dimensions to the front, so that the OpenCL WG
+        // indexes cover a larger range
+        for (int c = 0, d = 0; c < ndims - 1; ++c, ++d) {
+            // Eliminate the column with 1, so that we have more
+            // appropriate indexes in the WG
+            if (outDims[c] == 1) {
+                for (int i = c; i < ndims - 1; ++i) {
+                    outDims[i]    = outDims[i + 1];
+                    outStrides[i] = outStrides[i + 1];
+                }
+                // Reallocation of the WG indexes to the internal indexes
+                for (int i = d + 1; i < AF_MAX_DIMS; ++i) { --decode[i]; }
+                --ndims;
+                // Replace the internal index with a fixed 1
+                decode[d]      = 3;
+                outDims[ndims] = 1;
+                --c;  // Redo this column, since it is eliminated now!!
+            }
+        }
+        // Increase work inside each thread
+        // if last dim is free && some valid columns remain
+        if (numOutElems >= 8192 * 2 && ndims != AF_MAX_DIMS && ndims != 0) {
+            for (unsigned i : {3, 4, 5, 7, 11, 2}) {
+                if (numOutElems >= 8192 * i && (outDims[ndims - 1] % i) == 0) {
+                    outDims[ndims - 1] /= i;
+                    outDims[AF_MAX_DIMS - 1] = i;
+                    for (int c = ndims; c < AF_MAX_DIMS; ++c) {
+                        // since we are beyond the ndims, the array is by
+                        // definition linear here
+                        outStrides[c] = outDims[c - 1] * outStrides[c - 1];
+                    }
+                    incr[AF_MAX_DIMS - 1] = 0;
+                    // Search the internal id to be incremented
+                    for (int c = 0; c < AF_MAX_DIMS; ++c) {
+                        if (decode[c] == ndims - 1) {
+                            incr[c] = static_cast<int>(outDims[ndims - 1]);
+                        }
+                    }
+                    ndims = AF_MAX_DIMS;
+                    // Once is sufficient
+                    break;
+                }
+            }
+        }
+        const int *maxGridSize =
+            cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize;
+        threads = bestBlockSize<dim3>(outDims, 32);
+        blocks =
+            dim3(divup(static_cast<unsigned>(outDims[0]), threads.x),
+                 std::min(static_cast<unsigned>(maxGridSize[1]),
+                          divup(static_cast<unsigned>(outDims[1]), threads.y)),
+                 std::min(static_cast<unsigned>(maxGridSize[2]),
+                          divup(static_cast<unsigned>(outDims[2]), threads.z)));
     }
-
     vector<void *> args;
-
     for (const auto &node : full_nodes) {
         node->setArgs(0, is_linear,
                       [&](int /*id*/, const void *ptr, size_t /*size*/) {
@@ -291,24 +379,19 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
                       });
     }
 
-    for (size_t i = 0; i < num_outputs; i++) {
-        args.push_back(static_cast<void *>(&outputs[i]));
-    }
-
-    args.push_back(static_cast<void *>(&blocks_x_));
-    args.push_back(static_cast<void *>(&blocks_y_));
-    args.push_back(static_cast<void *>(&blocks_x_total));
-    args.push_back(static_cast<void *>(&num_odims));
+    for (auto &out : outputs) { args.push_back(static_cast<void *>(&out)); }
+    for (auto &inc : incr) { args.push_back(static_cast<void *>(&inc)); }
+    for (auto &dec : decode) { args.push_back(static_cast<void *>(&dec)); }
 
     {
         using namespace cuda::kernel_logger;
         AF_TRACE("Launching : Blocks: [{}] Threads: [{}] ",
                  dim3(blocks_x, blocks_y, blocks_z),
-                 dim3(threads_x, threads_y));
+                 dim3(threads_x, threads_y, threads_z));
     }
-    CU_CHECK(cuLaunchKernel(ker, blocks_x, blocks_y, blocks_z, threads_x,
-                            threads_y, 1, 0, getActiveStream(), args.data(),
-                            NULL));
+    CU_CHECK(cuLaunchKernel(ker, blocks.x, blocks.y, blocks.z, threads.x,
+                            threads.y, threads.z, 0, getActiveStream(),
+                            args.data(), NULL));
 
     // Reset the thread local vectors
     nodes.clear();
@@ -319,12 +402,9 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
 
 template<typename T>
 void evalNodes(Param<T> out, Node *node) {
-    vector<Param<T>> outputs;
-    vector<Node *> output_nodes;
-
-    outputs.push_back(out);
-    output_nodes.push_back(node);
-    evalNodes(outputs, output_nodes);
+    vector<Param<T>> outputs{out};
+    vector<Node *> nodes{node};
+    evalNodes(outputs, nodes);
 }
 
 template void evalNodes<float>(Param<float> out, Node *node);
