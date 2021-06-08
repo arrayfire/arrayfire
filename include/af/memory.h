@@ -50,7 +50,6 @@ typedef af_err (*af_memory_manager_shutdown_fn)(af_memory_manager handle);
 
    \param[in] handle a pointer to the active \ref af_memory_manager handle
    \param[out] ptr pointer to the allocated buffer
-   \param[in] bytes number of bytes to allocate
    \param[in] user_lock a truthy value corresponding to whether or not the
    memory should have a user lock associated with it
    \param[in] ndims the number of dimensions associated with the allocated
@@ -118,9 +117,9 @@ typedef af_err (*af_memory_manager_signal_memory_cleanup_fn)(
    enforced and can include any information that could be useful to the user.
    This function is only called by \ref af_print_mem_info.
 
-   \param[in] handle a pointer to the active \ref af_memory_manager handle
-   \param[out] a buffer to which a message will be populated
-   \param[in] the device id for which to print memory
+   \param[in]  handle a pointer to the active \ref af_memory_manager handle
+   \param[out] buffer a buffer to which a message will be populated
+   \param[in]  id     the device id for which to print memory
    \returns AF_SUCCESS
 
    \ingroup memory_manager_api
@@ -174,8 +173,8 @@ typedef af_err (*af_memory_manager_is_user_locked_fn)(af_memory_manager handle,
 
    \ingroup memory_manager_api
 */
-typedef af_err (*af_memory_manager_get_memory_pressure_fn)(af_memory_manager,
-                                                           float* pressure);
+typedef af_err (*af_memory_manager_get_memory_pressure_fn)(
+    af_memory_manager handle, float* pressure);
 
 /**
    \brief Called to query if additions to the JIT tree would exert too much
@@ -225,8 +224,8 @@ typedef void (*af_memory_manager_add_memory_management_fn)(
 
     \ingroup memory_manager_api
 */
-typedef void (*af_memory_manager_remove_memory_management_fn)(af_memory_manager,
-                                                              int id);
+typedef void (*af_memory_manager_remove_memory_management_fn)(
+    af_memory_manager handle, int id);
 
 /**
    \brief Creates an \ref af_memory_manager handle

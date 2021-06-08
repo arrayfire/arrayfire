@@ -184,7 +184,6 @@ AFAPI void fftInPlace(array& in, const double norm_factor = 1);
 
    \param[inout]  in is the input array on entry and the output of 2D forward fourier transform on exit
    \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
-   \return     the transformed array
 
    \note The input \p in must be complex
 
@@ -199,7 +198,6 @@ AFAPI void fft2InPlace(array& in, const double norm_factor = 1);
 
    \param[inout]  in is the input array on entry and the output of 3D forward fourier transform on exit
    \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
-   \return     the transformed array
 
    \note The input \p in must be complex
 
@@ -351,7 +349,6 @@ AFAPI void ifftInPlace(array& in, const double norm_factor = 1);
 
    \param[inout]  in is the input array on entry and the output of 2D inverse fourier transform on exit
    \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
-   \return     the transformed array
 
    \note The input \p in must be complex
 
@@ -366,7 +363,6 @@ AFAPI void ifft2InPlace(array& in, const double norm_factor = 1);
 
    \param[inout]  in is the input array on entry and the output of 3D inverse fourier transform on exit
    \param[in]  norm_factor is the normalization factor with which the input is scaled after the transformation is applied
-   \return     the transformed array
 
    \note The input \p in must be complex
 
