@@ -338,6 +338,7 @@ if(UNIX)
   if(CUDA_VERSION VERSION_GREATER 10.0)
     target_link_libraries(af_cuda_static_cuda_library
       PRIVATE
+        spdlog
         ${CUDA_cublasLt_static_LIBRARY})
   endif()
   if(CUDA_VERSION VERSION_GREATER 9.5)

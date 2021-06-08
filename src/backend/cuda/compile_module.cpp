@@ -49,14 +49,17 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <numeric>
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 using namespace cuda;
 
@@ -69,7 +72,6 @@ using std::end;
 using std::extent;
 using std::find_if;
 using std::make_pair;
-using std::map;
 using std::ofstream;
 using std::pair;
 using std::string;
@@ -479,7 +481,7 @@ Kernel getKernel(const Module &mod, const string &nameExpr,
     std::string name  = (sourceWasJIT ? nameExpr : mod.mangledName(nameExpr));
     CUfunction kernel = nullptr;
     CU_CHECK(cuModuleGetFunction(&kernel, mod.get(), name.c_str()));
-    return {mod.get(), kernel};
+    return {nameExpr, mod.get(), kernel};
 }
 
 }  // namespace common
