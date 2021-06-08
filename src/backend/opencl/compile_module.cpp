@@ -281,7 +281,7 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
 Kernel getKernel(const Module &mod, const string &nameExpr,
                  const bool sourceWasJIT) {
     UNUSED(sourceWasJIT);
-    return {&mod.get(), cl::Kernel(mod.get(), nameExpr.c_str())};
+    return {nameExpr, &mod.get(), cl::Kernel(mod.get(), nameExpr.c_str())};
 }
 
 }  // namespace common

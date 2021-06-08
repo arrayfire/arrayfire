@@ -23,7 +23,8 @@
 #include <platform.hpp>
 #include <af/dim4.hpp>
 
-#include <cstdio>
+#include <cstdlib>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -299,6 +300,12 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
     args.push_back(static_cast<void *>(&blocks_x_total));
     args.push_back(static_cast<void *>(&num_odims));
 
+    {
+        using namespace cuda::kernel_logger;
+        AF_TRACE("Launching : Blocks: [{}] Threads: [{}] ",
+                 dim3(blocks_x, blocks_y, blocks_z),
+                 dim3(threads_x, threads_y));
+    }
     CU_CHECK(cuLaunchKernel(ker, blocks_x, blocks_y, blocks_z, threads_x,
                             threads_y, 1, 0, getActiveStream(), args.data(),
                             NULL));
