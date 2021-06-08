@@ -10,7 +10,7 @@
 #pragma once
 
 #include <cstddef>
-#include <utility>
+#include <string>
 
 namespace common {
 
@@ -21,10 +21,11 @@ class KernelInterface {
    private:
     ModuleType mModuleHandle;
     KernelType mKernelHandle;
+    std::string mName;
 
    public:
-    KernelInterface(ModuleType mod, KernelType ker)
-        : mModuleHandle(mod), mKernelHandle(ker) {}
+    KernelInterface(std::string name, ModuleType mod, KernelType ker)
+        : mModuleHandle(mod), mKernelHandle(ker), mName(name) {}
 
     /// \brief Set kernel
     ///
@@ -95,7 +96,7 @@ class KernelInterface {
     template<typename EnqueueArgsType, typename... Args>
     void operator()(const EnqueueArgsType& qArgs, Args... args) {
         EnqueuerType launch;
-        launch(mKernelHandle, qArgs, std::forward<Args>(args)...);
+        launch(mName, mKernelHandle, qArgs, std::forward<Args>(args)...);
     }
 };
 

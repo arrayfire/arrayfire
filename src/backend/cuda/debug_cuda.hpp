@@ -8,11 +8,42 @@
  ********************************************************/
 
 #pragma once
+#include <common/Logger.hpp>
 #include <err_cuda.hpp>
 #include <platform.hpp>
+#include <string>
 
-#define CUDA_LAUNCH_SMEM(fn, blks, thrds, smem_size, ...) \
-    fn<<<blks, thrds, smem_size, cuda::getActiveStream()>>>(__VA_ARGS__)
+namespace cuda {
+namespace kernel_logger {
+
+inline auto getLogger() {
+    static auto logger = common::loggerFactory("kernel");
+    return logger;
+}
+}  // namespace kernel_logger
+}  // namespace cuda
+
+template<>
+struct fmt::formatter<dim3> : fmt::formatter<std::string> {
+    // parse is inherited from formatter<string_view>.
+    template<typename FormatContext>
+    auto format(dim3 c, FormatContext& ctx) {
+        std::string name = fmt::format("{} {} {}", c.x, c.y, c.z);
+        return formatter<std::string>::format(name, ctx);
+    }
+};
+
+#define CUDA_LAUNCH_SMEM(fn, blks, thrds, smem_size, ...)                     \
+    do {                                                                      \
+        {                                                                     \
+            using namespace cuda::kernel_logger;                              \
+            AF_TRACE(                                                         \
+                "Launching {}: Blocks: [{}] Threads: [{}] "                   \
+                "Shared Memory: {}",                                          \
+                #fn, blks, thrds, smem_size);                                 \
+        }                                                                     \
+        fn<<<blks, thrds, smem_size, cuda::getActiveStream()>>>(__VA_ARGS__); \
+    } while (false)
 
 #define CUDA_LAUNCH(fn, blks, thrds, ...) \
     CUDA_LAUNCH_SMEM(fn, blks, thrds, 0, __VA_ARGS__)
