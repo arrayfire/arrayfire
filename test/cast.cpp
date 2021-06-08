@@ -14,6 +14,9 @@
 #include <af/array.h>
 #include <af/data.h>
 #include <af/random.h>
+#include <algorithm>
+#include <cstdlib>
+#include <vector>
 
 using af::cdouble;
 using af::cfloat;
@@ -122,4 +125,68 @@ TEST(CAST_TEST, Test_JIT_DuplicateCastNoop) {
     af_release_array(a);
     af_release_array(b);
     af_release_array(c);
+}
+
+TEST(Cast, ImplicitCast) {
+    using namespace af;
+    array a = randu(100, 100, f64);
+    array b = a.as(f32);
+
+    array c = max(abs(a - b));
+    ASSERT_ARRAYS_NEAR(constant(0, 1, 100, f64), c, 1e-7);
+}
+
+TEST(Cast, ConstantCast) {
+    using namespace af;
+    array a = constant(1, 100, f64);
+    array b = a.as(f32);
+
+    array c = max(abs(a - b));
+    ASSERT_ARRAYS_NEAR(c, constant(0, 1, f64), 1e-7);
+}
+
+TEST(Cast, OpCast) {
+    using namespace af;
+    array a = constant(1, 100, f64);
+    a       = a + a;
+    array b = a.as(f32);
+
+    array c = max(abs(a - b));
+    ASSERT_ARRAYS_NEAR(c, constant(0, 1, f64), 1e-7);
+}
+TEST(Cast, ImplicitCastIndexed) {
+    using namespace af;
+    array a = randu(100, 100, f64);
+    array b = a(span, 1).as(f32);
+    array c = max(abs(a(span, 1) - b));
+    ASSERT_ARRAYS_NEAR(constant(0, 1, 1, f64), c, 1e-7);
+}
+
+TEST(Cast, ImplicitCastIndexedNonLinear) {
+    using namespace af;
+    array a = randu(100, 100, f64);
+    array b = a(seq(10, 20, 2), 1).as(f32);
+    array c = max(abs(a(seq(10, 20, 2), 1) - b));
+    ASSERT_ARRAYS_NEAR(constant(0, 1, 1, f64), c, 1e-7);
+}
+
+TEST(Cast, ImplicitCastIndexedNonLinearArray) {
+    using namespace af;
+    array a   = randu(100, 100, f64);
+    array idx = seq(10, 20, 2);
+    array b   = a(idx, 1).as(f32);
+    array c   = max(abs(a(idx, 1) - b));
+    ASSERT_ARRAYS_NEAR(constant(0, 1, 1, f64), c, 1e-7);
+}
+
+TEST(Cast, ImplicitCastIndexedAndScoped) {
+    using namespace af;
+    array c;
+    {
+        array a = randu(100, 100, f64);
+        array b = a(span, 1).as(f32);
+        c       = abs(a(span, 1) - b);
+    }
+    c = max(c);
+    ASSERT_ARRAYS_NEAR(constant(0, 1, 1, f64), c, 1e-7);
 }

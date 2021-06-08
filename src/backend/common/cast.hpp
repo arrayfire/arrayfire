@@ -10,6 +10,7 @@
 #pragma once
 #include <Array.hpp>
 #include <cast.hpp>
+#include <common/Logger.hpp>
 
 #ifdef AF_CPU
 #include <jit/UnaryNode.hpp>
@@ -33,6 +34,11 @@ struct CastWrapper {
 
 template<typename To, typename Ti>
 struct CastWrapper {
+    static spdlog::logger *getLogger() noexcept {
+        static std::shared_ptr<spdlog::logger> logger =
+            common::loggerFactory("ast");
+        return logger.get();
+    }
     detail::Array<To> operator()(const detail::Array<Ti> &in) {
         detail::CastOp<To, Ti> cop;
         common::Node_ptr in_node = in.getNode();
@@ -45,6 +51,8 @@ struct CastWrapper {
             std::dynamic_pointer_cast<common::UnaryNode>(in_node);
         if (in_node_unary && in_node_unary->getOp() == af_cast_t) {
             // child child's output type is the input type of the child
+            AF_TRACE("Cast optimiztion performed by removing cast to {}",
+                     dtype_traits<Ti>::getName());
             auto in_in_node = in_node_unary->getChildren()[0];
             if (in_in_node->getType() == to_dtype) {
                 // ignore the input node and simply connect a noop node from the
