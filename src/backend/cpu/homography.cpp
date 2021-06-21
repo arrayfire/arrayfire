@@ -16,9 +16,9 @@
 #include <af/dim4.hpp>
 
 #include <array>
-#include <cfloat>
 #include <cmath>
 #include <cstring>
+#include <limits>
 #include <vector>
 
 using af::dim4;
@@ -27,6 +27,7 @@ using std::array;
 using std::log;
 using std::max;
 using std::min;
+using std::numeric_limits;
 using std::pow;
 using std::round;
 using std::sqrt;
@@ -47,17 +48,17 @@ static const float LMEDSOutlierRatio = 0.4f;
 
 template<typename T>
 struct EPS {
-    T eps() { return FLT_EPSILON; }
+    T eps() { return numeric_limits<float>::epsilon(); }
 };
 
 template<>
 struct EPS<float> {
-    static float eps() { return FLT_EPSILON; }
+    static float eps() { return numeric_limits<float>::epsilon(); }
 };
 
 template<>
 struct EPS<double> {
-    static double eps() { return DBL_EPSILON; }
+    static double eps() { return numeric_limits<double>::epsilon(); }
 };
 
 template<typename T, int M, int N>
@@ -138,7 +139,7 @@ unsigned updateIterations(float inlier_ratio, unsigned iter) {
     float wn = pow(1 - w, 4.f);
 
     float d = 1.f - wn;
-    if (d < FLT_MIN) { return 0; }
+    if (d < numeric_limits<float>::min()) { return 0; }
 
     d = log(d);
 
@@ -284,7 +285,7 @@ int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
     unsigned iter    = iterations;
     unsigned bestIdx = 0;
     int bestInliers  = 0;
-    float minMedian  = FLT_MAX;
+    float minMedian  = numeric_limits<float>::max();
 
     for (unsigned i = 0; i < iter; i++) {
         const unsigned Hidx = Hdims[0] * i;
@@ -344,7 +345,8 @@ int findBestHomography(Array<T>& bestH, const Array<float>& x_src,
                 median = (median + err[nsamples / 2 - 1]) * 0.5f;
             }
 
-            if (median < minMedian && median > FLT_EPSILON) {
+            if (median < minMedian &&
+                median > numeric_limits<float>::epsilon()) {
                 minMedian = median;
                 bestIdx   = i;
             }

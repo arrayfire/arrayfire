@@ -14,8 +14,10 @@
 #include <af/dim4.hpp>
 
 #include <algorithm>
+#include <limits>
 
 using af::dim4;
+using std::numeric_limits;
 
 namespace opencl {
 
@@ -39,7 +41,8 @@ int homography(Array<T> &bestH, const Array<float> &x_src,
             ::std::min(iter, static_cast<unsigned>(
                                  log(1.f - LMEDSConfidence) /
                                  log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
-        err = createValueArray<float>(af::dim4(nsamples, iter), FLT_MAX);
+        err = createValueArray<float>(af::dim4(nsamples, iter),
+                                      numeric_limits<float>::max());
     } else {
         // Avoid passing "null" cl_mem object to kernels
         err = createEmptyArray<float>(af::dim4(1));
