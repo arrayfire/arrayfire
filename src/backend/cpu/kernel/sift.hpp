@@ -20,8 +20,8 @@
 #include <resize.hpp>
 #include <sort_index.hpp>
 
-#include <cfloat>
 #include <cstring>
+#include <limits>
 #include <vector>
 
 using af::dim4;
@@ -330,8 +330,9 @@ void interpolateExtrema(float* x_out, float* y_out, unsigned* layer_out,
         float det = dxx * dyy - dxy * dxy;
 
         // add FLT_EPSILON for double-precision compatibility
-        if (det <= 0 || tr * tr * edge_thr >=
-                            (edge_thr + 1) * (edge_thr + 1) * det + FLT_EPSILON)
+        if (det <= 0 ||
+            tr * tr * edge_thr >= (edge_thr + 1) * (edge_thr + 1) * det +
+                                      std::numeric_limits<float>::epsilon())
             continue;
 
         if (*counter < max_feat) {
@@ -692,7 +693,7 @@ void computeGLOHDescriptor(float* desc_out, const unsigned desc_len,
                                      (float)(GLOHRadii[1] - GLOHRadii[0])
                            : min(2 + (r - GLOHRadii[1]) /
                                          (float)(GLOHRadii[2] - GLOHRadii[1]),
-                                 3.f - FLT_EPSILON));
+                                 3.f - std::numeric_limits<float>::epsilon()));
 
             if (r <= GLOHRadii[rb - 1] && y > 0 && y < idims[0] - 1 && x > 0 &&
                 x < idims[1] - 1) {
