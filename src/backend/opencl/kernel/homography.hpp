@@ -19,6 +19,7 @@
 #include <memory.hpp>
 #include <af/defines.h>
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -36,8 +37,10 @@ std::array<Kernel, 5> getHomographyKernels(const af_homography_type htype) {
         DefineKeyValue(T, dtype_traits<T>::getName()),
     };
     options.emplace_back(getTypeBuildDefinition<T>());
-    options.emplace_back(DefineKeyValue(
-        EPS, (std::is_same<T, double>::value ? DBL_EPSILON : FLT_EPSILON)));
+    options.emplace_back(
+        DefineKeyValue(EPS, (std::is_same<T, double>::value
+                                 ? std::numeric_limits<double>::epsilon()
+                                 : std::numeric_limits<float>::epsilon())));
     if (htype == AF_HOMOGRAPHY_RANSAC) {
         options.emplace_back(DefineKey(RANSAC));
     }

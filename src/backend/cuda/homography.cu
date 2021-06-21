@@ -14,7 +14,7 @@
 #include <af/dim4.hpp>
 #include <algorithm>
 
-#include <cfloat>
+#include <limits>
 
 using af::dim4;
 
@@ -39,7 +39,8 @@ int homography(Array<T> &bestH, const Array<float> &x_src,
         iter = ::std::min(
             iter, (unsigned)(log(1.f - LMEDSConfidence) /
                              log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
-        err = createValueArray<float>(af::dim4(nsamples, iter), FLT_MAX);
+        err = createValueArray<float>(af::dim4(nsamples, iter),
+                                      std::numeric_limits<float>::max());
     }
 
     af::dim4 rdims(4, iter);
