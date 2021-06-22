@@ -18,7 +18,7 @@ template<typename T>
 class RandomEngine : public ::testing::Test {
    public:
     virtual void SetUp() {
-        //Ensure all unlocked buffers are freed
+        // Ensure all unlocked buffers are freed
         deviceGC();
     }
 };
