@@ -99,6 +99,7 @@ jobs:
                   branch=$(git rev-parse --abbrev-ref HEAD)
                   buildname=$(if [ -z "$prnum" ]; then echo "$branch"; else echo "PR-$prnum"; fi)
                   dashboard=$(if [ -z "$prnum" ]; then echo "Continuous"; else echo "Experimental"; fi)
+                  backend=$(if [ "$USE_MKL" == 1 ]; then echo "Intel-MKL"; else echo "FFTW/LAPACK/BLAS"; fi)
                   buildname="$buildname-cpu-$BLAS_BACKEND"
                   mkdir build && cd build
                   ${CMAKE_PROGRAM} -G Ninja \
@@ -106,7 +107,7 @@ jobs:
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=ON \
                       -DAF_BUILD_FORGE:BOOL=ON \
-                      -DUSE_CPU_MKL:BOOL=$USE_MKL \
+                      -DAF_COMPUTE_LIBRARY:STRING=$backend \
                       -DBUILDNAME:STRING=${buildname} ..
                   echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
 

@@ -304,51 +304,36 @@ target_compile_definitions(afcpu
     AF_CPU
   )
 
-if(USE_CPU_MKL)
-  dependency_check(MKL_Shared_FOUND "MKL not found")
+target_link_libraries(afcpu
+  PRIVATE
+    c_api_interface
+    cpp_api_interface
+    afcommon_interface
+    cpu_sort_by_key
+    Threads::Threads
+  )
+if(BUILD_WITH_MKL)
   target_compile_definitions(afcpu PRIVATE USE_MKL)
-  target_link_libraries(afcpu
-    PRIVATE
-      c_api_interface
-      cpp_api_interface
-      afcommon_interface
-      cpu_sort_by_key
-      Threads::Threads
-    )
   if(AF_WITH_STATIC_MKL)
       target_link_libraries(afcpu PRIVATE MKL::Static)
   else()
       target_link_libraries(afcpu PRIVATE MKL::RT)
   endif()
 else()
-  dependency_check(FFTW_FOUND "FFTW not found")
-  dependency_check(CBLAS_FOUND "CBLAS not found")
-
   target_link_libraries(afcpu
     PRIVATE
-      c_api_interface
-      cpp_api_interface
-      afcommon_interface
-      cpu_sort_by_key
       ${CBLAS_LIBRARIES}
       FFTW::FFTW
       FFTW::FFTWF
-      Threads::Threads
     )
   if(LAPACK_FOUND)
-    target_link_libraries(afcpu
-      PRIVATE
-        ${LAPACK_LIBRARIES})
-    target_include_directories(afcpu
-      PRIVATE
-        ${LAPACK_INCLUDE_DIR})
+    target_link_libraries(afcpu PRIVATE ${LAPACK_LIBRARIES})
+    target_include_directories(afcpu PRIVATE ${LAPACK_INCLUDE_DIR})
   endif()
 endif()
 
-if(LAPACK_FOUND OR (USE_CPU_MKL AND MKL_Shared_FOUND))
-  target_compile_definitions(afcpu
-    PRIVATE
-      WITH_LINEAR_ALGEBRA)
+if(LAPACK_FOUND OR BUILD_WITH_MKL)
+  target_compile_definitions(afcpu PRIVATE WITH_LINEAR_ALGEBRA)
 endif()
 
 af_split_debug_info(afcpu ${AF_INSTALL_LIB_DIR})
