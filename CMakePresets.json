@@ -17,6 +17,10 @@
           "type": "String",
           "value": "Debug"
         },
+        "AF_COMPUTE_LIBRARY": {
+          "type": "String",
+          "value": "Intel-MKL"
+        },
         "AF_BUILD_CPU": {
           "type": "BOOL",
           "value": "OFF"
@@ -56,33 +60,33 @@
       }
     },
     {
-      "name": "ninja-cpu-debug",
-      "description": "Build CPU Backend with FFTW and a BLAS library using Ninja Generator in Debug Configuration",
+      "name": "ninja-cpu-mkl-debug",
+      "description": "Build CPU Backend using Intel MKL in Debug Configuration with Ninja Generator",
       "inherits": "ninja-all-off-debug",
       "cacheVariables": {
         "AF_BUILD_CPU": "ON"
       }
     },
     {
-      "name": "ninja-cpu-relwithdebinfo",
-      "description": "Build CPU Backend with FFTW and a BLAS library using Ninja Generator in RelWithDebInfo Configuration",
-      "inherits": "ninja-cpu-debug",
+      "name": "ninja-cpu-mkl-relwithdebinfo",
+      "description": "Build CPU Backend using Intel MKL in RelWithDebInfo Configuration with Ninja Generator",
+      "inherits": "ninja-cpu-mkl-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {
-      "name": "ninja-cpu-mkl-debug",
-      "description": "Build CPU Backend using Intel MKL in Debug Configuration with Ninja Generator",
-      "inherits": "ninja-cpu-debug",
+      "name": "ninja-cpu-debug",
+      "description": "Build CPU Backend with FFTW and a BLAS library using Ninja Generator in Debug Configuration",
+      "inherits": "ninja-cpu-mkl-debug",
       "cacheVariables": {
-        "USE_CPU_MKL": "ON"
+        "AF_COMPUTE_LIBRARY": "FFTW/LAPCK/BLAS"
       }
     },
     {
-      "name": "ninja-cpu-mkl-relwithdebinfo",
-      "description": "Build CPU Backend using Intel MKL in RelWithDebInfo Configuration with Ninja Generator",
-      "inherits": "ninja-cpu-mkl-debug",
+      "name": "ninja-cpu-relwithdebinfo",
+      "description": "Build CPU Backend with FFTW and a BLAS library using Ninja Generator in RelWithDebInfo Configuration",
+      "inherits": "ninja-cpu-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
@@ -104,27 +108,11 @@
       }
     },
     {
-      "name": "ninja-opencl-debug",
+      "name": "ninja-opencl-mkl-debug",
       "description": "Build OpenCL Backend in debug configuration using Ninja Generator",
       "inherits": "ninja-all-off-debug",
       "cacheVariables": {
         "AF_BUILD_OPENCL": "ON"
-      }
-    },
-    {
-      "name": "ninja-opencl-mkl-debug",
-      "description": "Build OpenCL Backend in debug configuration using Ninja Generator",
-      "inherits": "ninja-opencl-debug",
-      "cacheVariables": {
-        "USE_OPENCL_MKL": "ON"
-      }
-    },
-    {
-      "name": "ninja-opencl-relwithdebinfo",
-      "description": "Build OpenCL Backend in RelWithDebInfo configuration using Ninja Generator",
-      "inherits": "ninja-opencl-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {
@@ -136,7 +124,23 @@
       }
     },
     {
-        "name": "ninja-all-debug",
+      "name": "ninja-opencl-debug",
+      "description": "Build OpenCL Backend in debug configuration using Ninja Generator",
+      "inherits": "ninja-opencl-mkl-debug",
+      "cacheVariables": {
+        "AF_COMPUTE_LIBRARY": "FFTW/LAPCK/BLAS"
+      }
+    },
+    {
+      "name": "ninja-opencl-relwithdebinfo",
+      "description": "Build OpenCL Backend in RelWithDebInfo configuration using Ninja Generator",
+      "inherits": "ninja-opencl-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+        "name": "ninja-all-mkl-debug",
         "description": "Build all feasible backends using Ninja Generator in Debug Configuraiton",
         "inherits": "ninja-all-off-debug",
         "cacheVariables": {
@@ -147,26 +151,25 @@
         }
     },
     {
-        "name": "ninja-all-mkl-debug",
-        "description": "Build all feasible backends using Ninja Generator in Debug Configuraiton",
-        "inherits": "ninja-all-debug",
+        "name": "ninja-all-mkl-relwithdebinfo",
+        "description": "Build all feasible backends using Ninja Generator in RelWithDebInfo Configuraiton",
+        "inherits": "ninja-all-mkl-debug",
         "cacheVariables": {
-            "USE_CPU_MKL": "ON",
-            "USE_OPENCL_MKL": "ON"
+            "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        }
+    },
+    {
+        "name": "ninja-all-debug",
+        "description": "Build all feasible backends using Ninja Generator in Debug Configuraiton",
+        "inherits": "ninja-all-mkl-debug",
+        "cacheVariables": {
+            "AF_COMPUTE_LIBRARY": "FFTW/LAPCK/BLAS"
         }
     },
     {
         "name": "ninja-all-relwithdebinfo",
         "description": "Build all feasible backends using Ninja Generator in RelWithDebInfo Configuraiton",
         "inherits": "ninja-all-debug",
-        "cacheVariables": {
-            "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-        }
-    },
-    {
-        "name": "ninja-all-mkl-relwithdebinfo",
-        "description": "Build all feasible backends using Ninja Generator in RelWithDebInfo Configuraiton",
-        "inherits": "ninja-all-mkl-debug",
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo"
         }
