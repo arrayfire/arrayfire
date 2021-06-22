@@ -467,3 +467,8 @@ if(MKL_Static_FOUND AND NOT TARGET MKL::Static)
     endif()
   endif()
 endif()
+
+set(MKL_FOUND OFF)
+if(MKL_Shared_FOUND OR MKL_Static_FOUND)
+  set(MKL_FOUND ON)
+endif()
