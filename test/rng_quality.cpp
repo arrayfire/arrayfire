@@ -7,6 +7,7 @@
 using af::allTrue;
 using af::array;
 using af::constant;
+using af::deviceGC;
 using af::dtype;
 using af::dtype_traits;
 using af::randomEngine;
@@ -16,7 +17,10 @@ using af::sum;
 template<typename T>
 class RandomEngine : public ::testing::Test {
    public:
-    virtual void SetUp() {}
+    virtual void SetUp() {
+        // Ensure all unlocked buffers are freed
+        deviceGC();
+    }
 };
 
 // create a list of types to be tested
