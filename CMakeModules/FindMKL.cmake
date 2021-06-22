@@ -12,6 +12,9 @@
 # script is located in the bin folder of your mkl installation. This will set the
 # MKLROOT environment variable which will be used to find the libraries on your system.
 #
+# In case you have oneAPI base toolkit installed, having ONEAPI_ROOT environment variable available
+# also will enable picking Intel oneMKL automatically.
+#
 # Example:
 # set(MKL_THREAD_LAYER "TBB")
 # find_package(MKL)
@@ -101,6 +104,7 @@ find_path(MKL_INCLUDE_DIR
     /opt/intel
     /opt/intel/mkl
     $ENV{MKLROOT}
+    $ENV{ONEAPI_ROOT}/mkl/latest
     /opt/intel/compilers_and_libraries/linux/mkl
   PATH_SUFFIXES
     include
@@ -230,6 +234,7 @@ function(find_mkl_library)
         /opt/intel/tbb/lib
         /opt/intel/lib
         $ENV{MKLROOT}/lib
+        $ENV{ONEAPI_ROOT}/mkl/latest/lib
         ${ENV_LIBRARY_PATHS}
         /opt/intel/compilers_and_libraries/linux/mkl/lib
       PATH_SUFFIXES
@@ -259,6 +264,7 @@ function(find_mkl_library)
         /opt/intel/tbb/lib
         /opt/intel/lib
         $ENV{MKLROOT}/lib
+        $ENV{ONEAPI_ROOT}/mkl/latest/lib
         ${ENV_LIBRARY_PATHS}
         /opt/intel/compilers_and_libraries/linux/mkl/lib
       PATH_SUFFIXES
