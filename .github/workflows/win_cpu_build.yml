@@ -14,25 +14,31 @@ jobs:
         runs-on: windows-latest
         env:
           VCPKG_HASH: 5568f110b509a9fd90711978a7cb76bae75bb092 # vcpkg release tag 2021.05.12 with Forge v1.0.7 update
+          VCPKG_DEFAULT_TRIPLET: x64-windows
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
 
-            - name: VCPKG Binary Cache
+            - name: VCPKG Cache
               uses: actions/cache@v2
-              id: vcpkg-bin-cache
+              id: vcpkg-cache
               with:
-                path: vcpkg_cache
-                key: vcpkg_bin_cache_${{ env.VCPKG_HASH }} # vcpkg manifest baseline
+                path: ~/vcpkg
+                key: vcpkg-deps-${{ env.VCPKG_HASH }}
+
+            - name: Install VCPKG Dependencies
+              if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+              run: |
+                cd ~
+                git clone --quiet --recursive https://github.com/microsoft/vcpkg.git
+                cd vcpkg
+                git checkout $env:VCPKG_HASH
+                .\bootstrap-vcpkg.bat
+                .\vcpkg.exe install boost-compute boost-functional boost-stacktrace fftw3 forge freeimage freetype glfw3 openblas
+                Remove-Item .\downloads,.\buildtrees,.\packages -Recurse -Force
 
             - name: CMake Configure
               run: |
-                  $cwd = (Get-Item -Path ".\").FullName
-                  Set-Location -Path ${env:VCPKG_INSTALLATION_ROOT}
-                  git pull
-                  .\bootstrap-vcpkg.bat
-                  .\vcpkg.exe install --triplet x64-windows boost-compute boost-functional boost-stacktrace fftw3 forge freeimage freetype glfw3 openblas
-                  Set-Location -Path $cwd
                   $ref = $env:GITHUB_REF | %{ if ($_ -match "refs/pull/[0-9]+/merge") { $_;} }
                   $prnum = $ref | %{$_.Split("/")[2]}
                   $branch = git branch --show-current
@@ -40,18 +46,18 @@ jobs:
                   $dashboard = if($prnum -eq $null) { "Continuous" } else { "Experimental" }
                   $buildname = "$buildname-cpu-openblas"
                   mkdir build && cd build
-                  New-Item -Path "${cwd}/vcpkg_cache" -ItemType "directory" -Force
-                  $env:VCPKG_DEFAULT_BINARY_CACHE="${cwd}/vcpkg_cache"
                   cmake .. -G "Visual Studio 16 2019" -A x64 `
+                      -DVCPKG_ROOT:PATH="~/vcpkg" `
+                      -DVCPKG_MANIFEST_MODE:BOOL=OFF `
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
                       -DBUILDNAME:STRING="$buildname" `
-                      -DVCPKG_ROOT:PATH="${env:VCPKG_INSTALLATION_ROOT}" `
-                      -DVCPKG_MANIFEST_MODE:BOOL=OFF
+                      -DAF_COMPUTE_LIBRARY:STRING="FFTW/LAPACK/BLAS"
                   echo "CTEST_DASHBOARD=${dashboard}" >> $env:GITHUB_ENV
 
             - name: Build and Test
               run: |
-                  Set-Location -Path .\build
-                  $Env:PATH += ";${env:VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin"
-                  ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -C Release -R cpu -E pinverse -j2
+                  cd build
+                  $vcpkg_path = (Resolve-Path ~).Path
+                  $Env:PATH += ";${vcpkg_path}/vcpkg/installed/x64-windows/bin"
+                  ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -C RelWithDebInfo -R cpu -E pinverse -j2
