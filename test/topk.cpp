@@ -121,7 +121,7 @@ void topkTest(const int ndims, const dim_t* dims, const unsigned k,
         } else {
             stable_sort(kvPairs.begin(), kvPairs.end(),
                         [](const KeyValuePair& lhs, const KeyValuePair& rhs) {
-                            return lhs.first >= rhs.first;
+                            return lhs.first > rhs.first;
                         });
         }
 

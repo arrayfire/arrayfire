@@ -45,7 +45,7 @@ static bool feat_cmp(feat_desc_t i, feat_desc_t j) {
     for (int k = 0; k < 5; k++)
         if (i.f[k] != j.f[k]) return (i.f[k] < j.f[k]);
 
-    return true;
+    return false;
 }
 
 static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
