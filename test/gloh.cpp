@@ -46,7 +46,7 @@ static bool feat_cmp(feat_desc_t i, feat_desc_t j) {
         if (round(i.f[k] * 1e1f) != round(j.f[k] * 1e1f))
             return (round(i.f[k] * 1e1f) < round(j.f[k] * 1e1f));
 
-    return true;
+    return false;
 }
 
 static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
