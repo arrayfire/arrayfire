@@ -36,6 +36,13 @@ if(NOT TARGET gtest)
   set_target_properties(gtest gtest_main
     PROPERTIES
       FOLDER "ExternalProjectTargets/gtest")
+  if(UNIX)
+    if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
+      CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10.3.0")
+      target_compile_options(gtest PRIVATE -Wno-maybe-uninitialized)
+      target_compile_options(gtest_main PRIVATE -Wno-maybe-uninitialized)
+    endif()
+  endif()
 
   # Hide gtest project variables
   mark_as_advanced(
