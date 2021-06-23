@@ -77,7 +77,9 @@ else(${AF_USE_RELATIVE_TEST_DIR})
   FetchContent_Declare(
     ${testdata_prefix}
     GIT_REPOSITORY https://github.com/arrayfire/arrayfire-data.git
-    GIT_TAG        master
+
+    #pinv large data set update change
+    GIT_TAG        0144a599f913cc67c76c9227031b4100156abc25
   )
   af_dep_check_and_populate(${testdata_prefix})
   set(TESTDATA_SOURCE_DIR "${${testdata_prefix}_SOURCE_DIR}")
