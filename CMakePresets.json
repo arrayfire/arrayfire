@@ -217,6 +217,43 @@
         "cacheVariables": {
             "CMAKE_BUILD_TYPE": "RelWithDebInfo"
         }
+    },
+    {
+      "name": "msvc2019",
+      "hidden": true,
+      "description": "Base preset for Visual Studio 16 2019 generator.",
+      "generator": "Visual Studio 16 2019",
+      "architecture": "x64"
+    },
+    {
+      "name": "msvc2019-cpu-mkl",
+      "description": "Build CPU Backend using Intel MKL with MSVC 2019 Generator",
+      "inherits": [ "msvc2019", "ninja-cpu-mkl-debug" ]
+    },
+    {
+      "name": "msvc2019-cuda",
+      "description": "Build CUDA Backend with MSVC 2019 Generator",
+      "inherits": [ "msvc2019", "ninja-cuda-debug" ]
+    },
+    {
+      "name": "msvc2019-opencl-mkl",
+      "description": "Build OpenCL Backend with MSVC 2019 Generator. Uses MKL for CPU fallback.",
+      "inherits": [ "msvc2019", "ninja-opencl-mkl-debug" ]
+    },
+    {
+      "name": "msvc2019-all-mkl",
+      "description": "Build all feasible Backends with MSVC 2019 Generator. Uses MKL for CPU fallback.",
+      "inherits": [ "msvc2019", "ninja-all-mkl-debug" ]
+    },
+    {
+      "name": "msvc2019-all-mkl-local-install",
+      "description": "Build all feasible Backends with MSVC 2019 Generator. Installs to specified path prefix.",
+      "inherits": [ "msvc2019", "ninja-all-mkl-local-install" ]
+    },
+    {
+      "name": "msvc2019-all-mkl-standalone-install",
+      "description": "Build all feasible Backends with MSVC 2019 Generator. Also packages dependencies while installing to specified path prefix.",
+      "inherits": [ "msvc2019", "ninja-all-mkl-standalone-install" ]
     }
   ]
 }
