@@ -12,8 +12,9 @@
 #include <blas.hpp>
 #include <common/err_common.hpp>
 #include <copy.hpp>
-#include <cublas_v2.h>
+#include <cublas.hpp>
 #include <cusolverDn.hpp>
+#include <err_cuda.hpp>
 #include <identity.hpp>
 #include <lu.hpp>
 #include <math.hpp>
@@ -23,6 +24,64 @@
 #include <transpose.hpp>
 
 namespace cuda {
+
+// cublasStatus_t cublas<>getrsBatched( cublasHandle_t handle,
+//                                      cublasOperation_t trans,
+//                                      int n,
+//                                      int nrhs,
+//                                      const <> *Aarray[],
+//                                      int lda,
+//                                      const int *devIpiv,
+//                                      <> *Barray[],
+//                                      int ldb,
+//                                      int *info,
+//                                      int batchSize);
+
+template<typename T>
+struct getrsBatched_func_def_t {
+    typedef cublasStatus_t (*getrsBatched_func_def)(cublasHandle_t,
+                                                    cublasOperation_t, int, int,
+                                                    const T **, int,
+                                                    const int *, T **, int,
+                                                    int *, int);
+};
+
+// cublasStatus_t cublas<>getrfBatched(cublasHandle_t handle,
+//                                     int n,
+//                                     float *A[],
+//                                     int lda,
+//                                     int *P,
+//                                     int *info,
+//                                     int batchSize);
+
+template<typename T>
+struct getrfBatched_func_def_t {
+    typedef cublasStatus_t (*getrfBatched_func_def)(cublasHandle_t, int, T **,
+                                                    int, int *, int *, int);
+};
+
+#define SOLVE_BATCH_FUNC_DEF(FUNC) \
+    template<typename T>           \
+    typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func();
+
+#define SOLVE_BATCH_FUNC(FUNC, TYPE, PREFIX)                                \
+    template<>                                                              \
+    typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
+        return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
+               cublas##PREFIX##FUNC;                                        \
+    }
+
+SOLVE_BATCH_FUNC_DEF(getrfBatched)
+SOLVE_BATCH_FUNC(getrfBatched, float, S)
+SOLVE_BATCH_FUNC(getrfBatched, double, D)
+SOLVE_BATCH_FUNC(getrfBatched, cfloat, C)
+SOLVE_BATCH_FUNC(getrfBatched, cdouble, Z)
+
+SOLVE_BATCH_FUNC_DEF(getrsBatched)
+SOLVE_BATCH_FUNC(getrsBatched, float, S)
+SOLVE_BATCH_FUNC(getrsBatched, double, D)
+SOLVE_BATCH_FUNC(getrsBatched, cfloat, C)
+SOLVE_BATCH_FUNC(getrsBatched, cdouble, Z)
 
 // cusolverStatus_t cusolverDn<>getrs(
 //    cusolverDnHandle_t handle,
@@ -173,7 +232,82 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
 }
 
 template<typename T>
+Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
+    Array<T> A = copyArray<T>(a);
+    Array<T> B = copyArray<T>(b);
+
+    dim4 aDims = a.dims();
+    int M      = aDims[0];
+    int N      = aDims[1];
+    int NRHS   = b.dims()[1];
+
+    if (M != N) {
+        AF_ERROR("Batched solve requires square matrices", AF_ERR_ARG);
+    }
+
+    int batchz = aDims[2];
+    int batchw = aDims[3];
+    int batch  = batchz * batchw;
+
+    size_t bytes         = batch * sizeof(T *);
+    using unique_mem_ptr = std::unique_ptr<char, void (*)(char *)>;
+
+    unique_mem_ptr aBatched_host_mem(pinnedAlloc<char>(bytes),
+                                     pinnedFree<char>);
+    unique_mem_ptr bBatched_host_mem(pinnedAlloc<char>(bytes),
+                                     pinnedFree<char>);
+
+    T *a_ptr               = A.get();
+    T *b_ptr               = B.get();
+    T **aBatched_host_ptrs = (T **)aBatched_host_mem.get();
+    T **bBatched_host_ptrs = (T **)bBatched_host_mem.get();
+
+    for (int i = 0; i < batchw; i++) {
+        for (int j = 0; j < batchz; j++) {
+            aBatched_host_ptrs[i * batchz + j] =
+                a_ptr + j * A.strides()[2] + i * A.strides()[3];
+            bBatched_host_ptrs[i * batchz + j] =
+                b_ptr + j * B.strides()[2] + i * B.strides()[3];
+        }
+    }
+
+    auto aBatched_device_mem = memAlloc<char>(bytes);
+    auto bBatched_device_mem = memAlloc<char>(bytes);
+
+    T **aBatched_device_ptrs = (T **)aBatched_device_mem.get();
+    T **bBatched_device_ptrs = (T **)bBatched_device_mem.get();
+
+    CUDA_CHECK(cudaMemcpyAsync(aBatched_device_ptrs, aBatched_host_ptrs, bytes,
+                               cudaMemcpyHostToDevice,
+                               getStream(getActiveDeviceId())));
+
+    // Perform batched LU
+    // getrf requires pivot and info to be device pointers
+    Array<int> pivots = createEmptyArray<int>(af::dim4(N, batch, 1, 1));
+    Array<int> info   = createEmptyArray<int>(af::dim4(batch, 1, 1, 1));
+
+    CUBLAS_CHECK(getrfBatched_func<T>()(blasHandle(), N, aBatched_device_ptrs,
+                                        A.strides()[1], pivots.get(),
+                                        info.get(), batch));
+
+    CUDA_CHECK(cudaMemcpyAsync(bBatched_device_ptrs, bBatched_host_ptrs, bytes,
+                               cudaMemcpyHostToDevice,
+                               getStream(getActiveDeviceId())));
+
+    // getrs requires info to be host pointer
+    unique_mem_ptr info_host_mem(pinnedAlloc<char>(batch * sizeof(int)),
+                                 pinnedFree<char>);
+    CUBLAS_CHECK(getrsBatched_func<T>()(
+        blasHandle(), CUBLAS_OP_N, N, NRHS, (const T **)aBatched_device_ptrs,
+        A.strides()[1], pivots.get(), bBatched_device_ptrs, B.strides()[1],
+        (int *)info_host_mem.get(), batch));
+    return B;
+}
+
+template<typename T>
 Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
+    if (a.dims()[2] > 1 || a.dims()[3] > 1) return generalSolveBatched(a, b);
+
     int M = a.dims()[0];
     int N = a.dims()[1];
     int K = b.dims()[1];

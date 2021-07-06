@@ -34,10 +34,6 @@ af_err af_solve(af_array* out, const af_array a, const af_array b,
         const ArrayInfo& a_info = getInfo(a);
         const ArrayInfo& b_info = getInfo(b);
 
-        if (a_info.ndims() > 2 || b_info.ndims() > 2) {
-            AF_ERROR("solve can not be used in batch mode", AF_ERR_BATCH);
-        }
-
         af_dtype a_type = a_info.getType();
         af_dtype b_type = b_info.getType();
 

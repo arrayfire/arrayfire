@@ -99,10 +99,16 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
 
     auto func = [=](const CParam<T> A, Param<T> B, int N, int NRHS,
                     const af_mat_prop options) {
-        trtrs_func<T>()(AF_LAPACK_COL_MAJOR, options & AF_MAT_UPPER ? 'U' : 'L',
-                        'N',  // transpose flag
-                        options & AF_MAT_DIAG_UNIT ? 'U' : 'N', N, NRHS,
-                        A.get(), A.strides(1), B.get(), B.strides(1));
+        const size_t batchSize = A.dims(2) * A.dims(3);
+            printf("batchSize is %lu\n", batchSize);
+        for (size_t b = 0; b < batchSize; b++) {
+            trtrs_func<T>()(AF_LAPACK_COL_MAJOR,
+                            options & AF_MAT_UPPER ? 'U' : 'L',
+                            'N',  // transpose flag
+                            options & AF_MAT_DIAG_UNIT ? 'U' : 'N', N, NRHS,
+                            A.get() + A.strides(2), A.strides(1),
+                            B.get() + B.strides(2), B.strides(1));
+        }
     };
     getQueue().enqueue(func, A, B, N, NRHS, options);
 
@@ -130,12 +136,18 @@ Array<T> solve(const Array<T> &a, const Array<T> &b,
                       : padArrayBorders(b, NullShape, endPadding, AF_PAD_ZERO));
 
     if (M == N) {
-        Array<int> pivot = createEmptyArray<int>(dim4(N, 1, 1));
+        Array<int> pivot = createEmptyArray<int>(dim4(N, 1, a.dims()[2], a.dims()[3]));
 
         auto func = [=](Param<T> A, Param<T> B, Param<int> pivot, int N,
                         int K) {
-            gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K, A.get(), A.strides(1),
-                           pivot.get(), B.get(), B.strides(1));
+            const size_t batchSize = A.dims(2) * A.dims(3);
+            printf("batchSize is %lu\n", batchSize);
+            for (size_t b = 0; b < batchSize; b++) {
+                gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K,
+                               A.get() + b * A.strides(2), A.strides(1),
+                               pivot.get() + b * pivot.strides(2),
+                               B.get() + B.strides(2), B.strides(1));
+            }
         };
         getQueue().enqueue(func, A, B, pivot, N, K);
     } else {
@@ -143,10 +155,15 @@ Array<T> solve(const Array<T> &a, const Array<T> &b,
             int sM = A.strides(1);
             int sN = A.strides(2) / sM;
 
-            gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N', M, N, K, A.get(),
-                           A.strides(1), B.get(), max(sM, sN));
+            const size_t batchSize = A.dims(2) * A.dims(3);
+            printf("batchSize is %lu\n", batchSize);
+            for (size_t b = 0; b < batchSize; b++) {
+                gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N', M, N, K,
+                               A.get() + b * A.strides(2), A.strides(1),
+                               B.get() + b * B.strides(2), max(sM, sN));
+            }
         };
-        B.resetDims(dim4(N, K));
+        B.resetDims(dim4(N, K, a.dims()[2], a.dims()[3]));
         getQueue().enqueue(func, A, B, M, N, K);
     }
 
