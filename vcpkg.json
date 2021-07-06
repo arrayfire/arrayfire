@@ -19,7 +19,18 @@
             "platform": "!windows"
         },
         "glad",
-        "intel-mkl"
+        "intel-mkl",
+        "spdlog"
+    ],
+    "overrides": [
+       {
+           "name": "fmt",
+           "version": "6.2.1"
+       },
+        {
+            "name": "spdlog",
+            "version": "1.6.1"
+        }
     ],
     "features": {
         "cuda": {
