@@ -113,6 +113,7 @@ cuda_include_directories(
   ${ArrayFire_SOURCE_DIR}/src/api/c
   ${ArrayFire_SOURCE_DIR}/src/backend
   ${COMMON_INTERFACE_DIRS}
+  $<TARGET_PROPERTY:af_spdlog,INTERFACE_INCLUDE_DIRECTORIES>
   )
 if(CUDA_VERSION_MAJOR VERSION_LESS 11)
   FetchContent_Declare(
@@ -323,6 +324,7 @@ if(UNIX)
 
   target_link_libraries(af_cuda_static_cuda_library
     PRIVATE
+      af_spdlog
       Boost::boost
       ${CMAKE_DL_LIBS}
       ${cusolver_lib}
@@ -338,7 +340,6 @@ if(UNIX)
   if(CUDA_VERSION VERSION_GREATER 10.0)
     target_link_libraries(af_cuda_static_cuda_library
       PRIVATE
-        spdlog
         ${CUDA_cublasLt_static_LIBRARY})
   endif()
   if(CUDA_VERSION VERSION_GREATER 9.5)
