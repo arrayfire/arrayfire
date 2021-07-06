@@ -54,6 +54,7 @@ find_package(CBLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
 find_package(MKL)
+find_package(spdlog 1.8.5 QUIET)
 
 include(boost_package)
 
@@ -153,6 +154,7 @@ mark_as_advanced(
   GIT
   Forge_DIR
   glad_DIR
+  spdlog_DIR
   FG_BUILD_OFFLINE
   )
 mark_as_advanced(CLEAR CUDA_VERSION)
@@ -182,13 +184,21 @@ endif()
 #forge is included in ALL target if AF_BUILD_FORGE is ON
 #otherwise, forge is not built at all
 include(AFconfigure_forge_dep)
-FetchContent_Declare(
-  ${spdlog_prefix}
-  GIT_REPOSITORY https://github.com/gabime/spdlog.git
-  GIT_TAG        v1.0.0
-)
-af_dep_check_and_populate(${spdlog_prefix})
-
+add_library(af_spdlog INTERFACE)
+if(TARGET spdlog::spdlog_header_only)
+  target_include_directories(af_spdlog
+    SYSTEM INTERFACE
+    $<TARGET_PROPERTY:spdlog::spdlog_header_only,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+else()
+  FetchContent_Declare(
+    ${spdlog_prefix}
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG        v1.8.5
+  )
+  af_dep_check_and_populate(${spdlog_prefix})
+  target_include_directories(af_spdlog INTERFACE "${${spdlog_prefix}_SOURCE_DIR}/include")
+endif()
 
 if(NOT TARGET glad::glad)
   FetchContent_Declare(
@@ -220,9 +230,6 @@ configure_file(
     ${ArrayFire_BINARY_DIR}/version.hpp
 )
 
-set(SPDLOG_BUILD_TESTING OFF CACHE INTERNAL "Disable testing in spdlog")
-add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
-
 # when crosscompiling use the bin2cpp file from the native bin directory
 if(CMAKE_CROSSCOMPILING)
   set(NATIVE_BIN_DIR "NATIVE_BIN_DIR-NOTFOUND"
@@ -247,7 +254,11 @@ else()
                              ${ArrayFire_SOURCE_DIR}/include
                              ${ArrayFire_BINARY_DIR}/include
                              ${ArrayFire_SOURCE_DIR}/src/backend)
-  target_link_libraries(bin2cpp PRIVATE spdlog)
+  if(TARGET spdlog::spdlog_header_only)
+    target_link_libraries(bin2cpp PRIVATE spdlog::spdlog_header_only)
+  else()
+    target_link_libraries(bin2cpp PRIVATE af_spdlog)
+  endif()
   export(TARGETS bin2cpp FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake)
 endif()
 
