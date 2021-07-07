@@ -82,13 +82,15 @@ af_err af_replace(af_array a, const af_array cond, const af_array b) {
     return AF_SUCCESS;
 }
 
-template<typename T>
-void replace_scalar(af_array a, const af_array cond, const double b) {
-    select_scalar<T, false>(getCopyOnWriteArray<T>(a), getArray<char>(cond),
-                            getArray<T>(a), b);
+template<typename ArrayType, typename ScalarType>
+void replace_scalar(af_array a, const af_array cond, const ScalarType& b) {
+    select_scalar<ArrayType, false>(
+        getCopyOnWriteArray<ArrayType>(a), getArray<char>(cond),
+        getArray<ArrayType>(a), detail::scalar<ArrayType>(b));
 }
 
-af_err af_replace_scalar(af_array a, const af_array cond, const double b) {
+template<typename ScalarType>
+af_err replaceScalar(af_array a, const af_array cond, const ScalarType b) {
     try {
         const ArrayInfo& ainfo = getInfo(a);
         const ArrayInfo& cinfo = getInfo(cond);
@@ -120,4 +122,18 @@ af_err af_replace_scalar(af_array a, const af_array cond, const double b) {
     }
     CATCHALL;
     return AF_SUCCESS;
+}
+
+af_err af_replace_scalar(af_array a, const af_array cond, const double b) {
+    return replaceScalar(a, cond, b);
+}
+
+af_err af_replace_scalar_long(af_array a, const af_array cond,
+                              const long long b) {
+    return replaceScalar(a, cond, b);
+}
+
+af_err af_replace_scalar_ulong(af_array a, const af_array cond,
+                               const unsigned long long b) {
+    return replaceScalar(a, cond, b);
 }

@@ -72,8 +72,8 @@ void select(Param out, Param cond, Param a, Param b, int ndims) {
 }
 
 template<typename T>
-void select_scalar(Param out, Param cond, Param a, const double b,
-                   const int ndims, const bool flip) {
+void select_scalar(Param out, Param cond, Param a, const T b, const int ndims,
+                   const bool flip) {
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
         TemplateArg(flip),
@@ -103,8 +103,7 @@ void select_scalar(Param out, Param cond, Param a, const double b,
                        groups_1 * out.info.dims[3] * local[1]);
 
     selectOp(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
-             *cond.data, cond.info, *a.data, a.info, scalar<T>(b), groups_0,
-             groups_1);
+             *cond.data, cond.info, *a.data, a.info, b, groups_0, groups_1);
 }
 }  // namespace kernel
 }  // namespace opencl

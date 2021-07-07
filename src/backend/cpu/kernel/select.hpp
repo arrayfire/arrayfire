@@ -71,8 +71,7 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b) {
 }
 
 template<typename T, bool flip>
-void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a,
-                   const double b) {
+void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const T b) {
     af::dim4 astrides = a.strides();
     af::dim4 adims    = a.dims();
     af::dim4 cstrides = cond.strides();
@@ -84,6 +83,8 @@ void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a,
     const data_t<T> *aptr = a.get();
     data_t<T> *optr       = out.get();
     const char *cptr      = cond.get();
+
+    const compute_t<T> scalar = static_cast<compute_t<T>>(b);
 
     bool is_a_same[] = {adims[0] == odims[0], adims[1] == odims[1],
                         adims[2] == odims[2], adims[3] == odims[3]};
@@ -110,7 +111,7 @@ void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a,
                     bool cval = is_c_same[0] ? cptr[c_off1 + i] : cptr[c_off1];
                     compute_t<T> aval = static_cast<compute_t<T>>(
                         is_a_same[0] ? aptr[a_off1 + i] : aptr[a_off1]);
-                    optr[o_off1 + i] = (flip ^ cval) ? aval : b;
+                    optr[o_off1 + i] = (flip ^ cval) ? aval : scalar;
                 }
             }
         }
