@@ -31,6 +31,10 @@ if(ArrayFire_CPU_FOUND)
   add_executable(kmeans_cpu kmeans.cpp)
   target_link_libraries(kmeans_cpu ArrayFire::afcpu)
 
+  # Linear Regression example
+  add_executable(linear_regression_cpu linear_regression.cpp)
+  target_link_libraries(linear_regression_cpu ArrayFire::afcpu)
+
   # Logistic Regression example
   add_executable(logistic_regression_cpu logistic_regression.cpp)
   target_link_libraries(logistic_regression_cpu ArrayFire::afcpu)
@@ -68,6 +72,9 @@ if(ArrayFire_CUDA_FOUND)
 
   add_executable(kmeans_cuda kmeans.cpp)
   target_link_libraries(kmeans_cuda ArrayFire::afcuda)
+
+  add_executable(linear_regression_cuda linear_regression.cpp)
+  target_link_libraries(linear_regression_cuda ArrayFire::afcuda)
 
   add_executable(logistic_regression_cuda logistic_regression.cpp)
   target_link_libraries(logistic_regression_cuda ArrayFire::afcuda)
