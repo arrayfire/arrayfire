@@ -8,10 +8,12 @@
  ********************************************************/
 
 #pragma once
+
 #include <arrayfire.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+
 #include <complex>
 #include <iostream>
 #include <string>
@@ -24,9 +26,6 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-
-///////////////////////////////// CPP ////////////////////////////////////
-//
 
 template<typename T>
 void solveTester(const int m, const int n, const int k, double eps,
@@ -55,16 +54,7 @@ void solveTester(const int m, const int n, const int k, double eps,
     af::array B1 = af::matmul(A, X1);
     //! [ex_solve_recon]
 
-    ASSERT_NEAR(0,
-                af::sum<typename af::dtype_traits<T>::base_type>(
-                    af::abs(real(B0 - B1))) /
-                    (m * k),
-                eps);
-    ASSERT_NEAR(0,
-                af::sum<typename af::dtype_traits<T>::base_type>(
-                    af::abs(imag(B0 - B1))) /
-                    (m * k),
-                eps);
+    ASSERT_ARRAYS_NEAR(B0, B1, eps);
 }
 
 template<typename T>
@@ -94,16 +84,7 @@ void solveLUTester(const int n, const int k, double eps,
 
     af::array B1 = af::matmul(A, X1);
 
-    ASSERT_NEAR(0,
-                af::sum<typename af::dtype_traits<T>::base_type>(
-                    af::abs(real(B0 - B1))) /
-                    (n * k),
-                eps);
-    ASSERT_NEAR(0,
-                af::sum<typename af::dtype_traits<T>::base_type>(
-                    af::abs(imag(B0 - B1))) /
-                    (n * k),
-                eps);
+    ASSERT_ARRAYS_NEAR(B0, B1, eps);
 }
 
 template<typename T>
@@ -147,14 +128,5 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps,
 
     af::array B1 = af::matmul(AT, X1);
 
-    ASSERT_NEAR(0,
-                af::sum<typename af::dtype_traits<T>::base_type>(
-                    af::abs(real(B0 - B1))) /
-                    (n * k),
-                eps);
-    ASSERT_NEAR(0,
-                af::sum<typename af::dtype_traits<T>::base_type>(
-                    af::abs(imag(B0 - B1))) /
-                    (n * k),
-                eps);
+    ASSERT_ARRAYS_NEAR(B0, B1, eps);
 }
