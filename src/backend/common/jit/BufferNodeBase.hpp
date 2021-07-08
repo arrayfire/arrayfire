@@ -34,6 +34,8 @@ class BufferNodeBase : public common::Node {
 
     bool isBuffer() const final { return true; }
 
+    DataType getDataPointer() const { return m_data; }
+
     void setData(ParamType param, DataType data, const unsigned bytes,
                  bool is_linear) {
         std::call_once(m_set_data_flag,

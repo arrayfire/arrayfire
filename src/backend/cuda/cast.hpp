@@ -9,6 +9,7 @@
 
 #pragma once
 #include <Array.hpp>
+#include <common/Logger.hpp>
 #include <common/half.hpp>
 #include <common/jit/UnaryNode.hpp>
 #include <err_cuda.hpp>
@@ -16,7 +17,6 @@
 #include <optypes.hpp>
 #include <types.hpp>
 #include <af/dim4.hpp>
-#include <complex>
 
 namespace cuda {
 
@@ -86,12 +86,35 @@ struct CastOp<unsigned char, common::half> {
 
 template<typename To, typename Ti>
 struct CastWrapper {
+    static spdlog::logger *getLogger() noexcept {
+        static std::shared_ptr<spdlog::logger> logger =
+            common::loggerFactory("ast");
+        return logger.get();
+    }
     Array<To> operator()(const Array<Ti> &in) {
         CastOp<To, Ti> cop;
         common::Node_ptr in_node = in.getNode();
-        common::UnaryNode *node  = new common::UnaryNode(
-            static_cast<af::dtype>(dtype_traits<To>::af_type), cop.name(),
-            in_node, af_cast_t);
+        af::dtype to_dtype = static_cast<af::dtype>(dtype_traits<To>::af_type);
+
+        // JIT optimization in the cast of multiple sequential casts that become
+        // idempotent - check to see if the previous operation was also a cast
+        // TODO: handle arbitrarily long chains of casts
+        auto in_node_unary =
+            std::dynamic_pointer_cast<common::UnaryNode>(in_node);
+        if (in_node_unary && in_node_unary->getOp() == af_cast_t) {
+            // child child's output type is the input type of the child
+            auto in_in_node = in_node_unary->getChildren()[0];
+            if (in_in_node->getType() == to_dtype) {
+                // ignore the input node and simply connect a noop node from the
+                // child's child to produce this op's output
+                AF_TRACE("Cast optimiztion performed by removing cast to {}",
+                         dtype_traits<Ti>::getName());
+                return createNodeArray<To>(in.dims(), in_in_node);
+            }
+        }
+
+        common::UnaryNode *node =
+            new common::UnaryNode(to_dtype, cop.name(), in_node, af_cast_t);
         return createNodeArray<To>(in.dims(), common::Node_ptr(node));
     }
 };

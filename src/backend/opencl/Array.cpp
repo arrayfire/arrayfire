@@ -23,8 +23,9 @@
 #include <af/opencl.h>
 
 #include <cstddef>
+#include <cstdlib>
 #include <numeric>
-#include <utility>
+#include <vector>
 
 using af::dim4;
 using af::dtype_traits;
@@ -92,7 +93,12 @@ Array<T>::Array(const dim4 &dims, Node_ptr n)
     , data_dims(dims)
     , node(std::move(std::move(n)))
     , ready(false)
-    , owner(true) {}
+    , owner(true) {
+    if (node->isBuffer()) {
+        data  = std::static_pointer_cast<BufferNode>(node)->getDataPointer();
+        ready = true;
+    }
+}
 
 template<typename T>
 Array<T>::Array(const dim4 &dims, const T *const in_data)

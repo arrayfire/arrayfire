@@ -326,6 +326,7 @@ if(UNIX)
     PRIVATE
       af_spdlog
       Boost::boost
+      spdlog
       ${CMAKE_DL_LIBS}
       ${cusolver_lib}
       ${START_GROUP}

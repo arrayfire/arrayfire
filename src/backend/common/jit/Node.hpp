@@ -149,6 +149,10 @@ class Node {
         UNUSED(lim);
     }
 
+    const std::array<Node_ptr, kMaxChildren> &getChildren() const {
+        return m_children;
+    }
+
     /// Generates the variable that stores the thread's/work-item's offset into
     /// the memory.
     ///
@@ -214,6 +218,9 @@ class Node {
         UNUSED(dims);
         return true;
     }
+
+    /// Returns the type
+    af::dtype getType() const { return m_type; }
 
     /// Returns the string representation of the type
     std::string getTypeStr() const { return getFullName(m_type); }
