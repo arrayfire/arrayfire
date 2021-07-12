@@ -94,40 +94,82 @@ OTHER_SPECIALIZATIONS(uchar)
 OTHER_SPECIALIZATIONS(char)
 OTHER_SPECIALIZATIONS(common::half)
 
-template<typename inType, typename outType, bool same_dims>
-__global__ void copy(Param<outType> dst, CParam<inType> src,
-                     outType default_value, double factor, const dims_t trgt,
-                     uint blk_x, uint blk_y) {
-    const uint lx = threadIdx.x;
-    const uint ly = threadIdx.y;
+template<typename inType, typename outType, bool SAME_DIMS, bool LOOP1,
+         bool LOOP2, bool FACTOR>
+__global__ void reshapeCopy(Param<outType> dst, CParam<inType> src,
+                            outType default_value, double factor) {
+    const int g0 = blockIdx.x * blockDim.x + threadIdx.x;
+    int g1       = blockIdx.y * blockDim.y + threadIdx.y;
 
-    const uint gz         = blockIdx.x / blk_x;
-    const uint gw         = (blockIdx.y + (blockIdx.z * gridDim.y)) / blk_y;
-    const uint blockIdx_x = blockIdx.x - (blk_x)*gz;
-    const uint blockIdx_y =
-        (blockIdx.y + (blockIdx.z * gridDim.y)) - (blk_y)*gw;
-    const uint gx = blockIdx_x * blockDim.x + lx;
-    const uint gy = blockIdx_y * blockDim.y + ly;
+    const bool inside_dst = (g0 < (int)dst.dims[0]) && (g1 < (int)dst.dims[1]);
+    if (inside_dst) {
+        int g2           = blockIdx.z * blockDim.z + threadIdx.z;
+        const int idims1 = src.dims[1];
+        bool inside_src =
+            SAME_DIMS || ((g0 < (int)src.dims[0]) && (g1 < idims1));
+        const int idims2    = src.dims[2];
+        const int idims3    = src.dims[3];
+        const int istrides2 = src.strides[2];
+        const int istrides3 = src.strides[3];
+        src.ptr += g0 * (int)src.strides[0] + g1 * (int)src.strides[1];
+        const int odims3    = dst.dims[3];
+        const int ostrides2 = dst.strides[2];
+        const int ostrides3 = dst.strides[3];
+        dst.ptr += g0 * (int)dst.strides[0] + g1 * (int)dst.strides[1];
+#if LOOP1
+        const int oinc1  = gridDim.y * (int)dst.strides[1];
+        const int odims1 = dst.dims[1];
+        const int iinc1  = gridDim.y * (int)src.strides[1];
+        do {
+#endif
 
-    const inType *in = src.ptr + (gw * src.strides[3] + gz * src.strides[2] +
-                                  gy * src.strides[1]);
-    outType *out     = dst.ptr + (gw * dst.strides[3] + gz * dst.strides[2] +
-                              gy * dst.strides[1]);
+#if LOOP2
+            do {
+#endif
+                int ioffset           = g2 * istrides2;
+                int ooffset           = g2 * ostrides2;
+                const int ooffsetEnd1 = ooffset + idims3 * ostrides3;
+                if (SAME_DIMS) {
+                    do {
+                        outType val = convertType<inType, outType>(
+                            FACTOR ? scale<inType>(src.ptr[ioffset], factor)
+                                   : src.ptr[ioffset]);
+                        ioffset += istrides3;
+                        dst.ptr[ooffset] = val;
+                        ooffset += ostrides3;
+                    } while (ooffset != ooffsetEnd1);
+                } else {
+                    bool inside = SAME_DIMS || (inside_src && (g2 < idims2));
+                    const int ooffsetEnd2 = ooffset + odims3 * ostrides3;
+                    if (inside) {
+                        do {
+                            outType val = convertType<inType, outType>(
+                                FACTOR ? scale<inType>(src.ptr[ioffset], factor)
+                                       : src.ptr[ioffset]);
+                            ioffset += istrides3;
+                            dst.ptr[ooffset] = val;
+                            ooffset += ostrides3;
+                        } while (ooffset != ooffsetEnd1);
+                    }
+                    while (ooffset != ooffsetEnd2) {
+                        dst.ptr[ooffset] = default_value;
+                        ooffset += ostrides3;
+                    }
+                }
 
-    int istride0 = src.strides[0];
-    int ostride0 = dst.strides[0];
+#if LOOP2
+                g2 += gridDim.z;
+            } while (g2 < (int)dst.dims[2]);
+            g2 = blockIdx.z * blockDim.z + threadIdx.z;
+#endif
 
-    if (gy < dst.dims[1] && gz < dst.dims[2] && gw < dst.dims[3]) {
-        int loop_offset = blockDim.x * blk_x;
-        bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
-        for (int rep = gx; rep < dst.dims[0]; rep += loop_offset) {
-            outType temp = default_value;
-            if (same_dims || (rep < trgt.dim[0] && cond)) {
-                temp = convertType<inType, outType>(
-                    scale<inType>(in[rep * istride0], factor));
-            }
-            out[rep * ostride0] = temp;
-        }
+#if LOOP1
+            g1 += gridDim.y;
+            src.ptr += iinc1;
+            dst.ptr += oinc1;
+            inside_src &= (SAME_DIMS || (g1 < idims1));
+        } while (g1 < odims1);
+#endif
     }
 }
 
