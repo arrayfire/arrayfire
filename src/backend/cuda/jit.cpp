@@ -386,8 +386,8 @@ void evalNodes(vector<Param<T>> &outputs, const vector<Node *> &output_nodes) {
     {
         using namespace cuda::kernel_logger;
         AF_TRACE("Launching : Blocks: [{}] Threads: [{}] ",
-                 dim3(blocks_x, blocks_y, blocks_z),
-                 dim3(threads_x, threads_y, threads_z));
+                 dim3(blocks.x, blocks.y, blocks.z),
+                 dim3(threads.x, threads.y, threads.z));
     }
     CU_CHECK(cuLaunchKernel(ker, blocks.x, blocks.y, blocks.z, threads.x,
                             threads.y, threads.z, 0, getActiveStream(),
