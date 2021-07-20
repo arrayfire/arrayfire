@@ -10,6 +10,12 @@ option(AF_BUILD_OFFLINE "Build ArrayFire assuming there is no network" OFF)
 # Override fetch content base dir before including AFfetch_content
 set(FETCHCONTENT_BASE_DIR "${ArrayFire_BINARY_DIR}/extern" CACHE PATH
     "Base directory where ArrayFire dependencies are downloaded and/or built" FORCE)
+# Override fetch content updates setting to let cmake run without internet connection
+# when cmake configure ran successfully once in the past. Developers who wish to
+# pull latest changes or make changes to dependencies using fetch content workflow
+# needs to turn this option ON as needed.
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL
+    "Disable Update stage of FetchContent workflow")
 
 include(AFfetch_content)
 
