@@ -40,18 +40,17 @@
 #include <af/device.h>
 #include <af/version.h>
 
-#include <algorithm>
 #include <array>
-#include <cstdio>
+#include <cstdlib>
 #include <memory>
 #include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <thread>
-#include <vector>
 
 using std::call_once;
+using std::make_unique;
 using std::once_flag;
 using std::ostringstream;
 using std::runtime_error;
@@ -61,11 +60,13 @@ using std::unique_ptr;
 
 using common::unique_handle;
 using common::memory::MemoryManagerBase;
+using cuda::Allocator;
+using cuda::AllocatorPinned;
 
 namespace cuda {
 
-static std::string get_system() {
-    std::string arch = (sizeof(void *) == 4) ? "32-bit " : "64-bit ";
+static string get_system() {
+    string arch = (sizeof(void *) == 4) ? "32-bit " : "64-bit ";
 
     return arch +
 #if defined(OS_LNX)
@@ -75,17 +76,6 @@ static std::string get_system() {
 #elif defined(OS_MAC)
            "Mac OSX";
 #endif
-}
-
-static inline int getMinSupportedCompute(int cudaMajorVer) {
-    // Vector of minimum supported compute versions
-    // for CUDA toolkit (i+1).* where i is the index
-    // of the vector
-    static const std::array<int, 10> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3}};
-
-    int CVSize = static_cast<int>(minSV.size());
-    return (cudaMajorVer > CVSize ? minSV[CVSize - 1]
-                                  : minSV[cudaMajorVer - 1]);
 }
 
 unique_handle<cublasHandle_t> *cublasManager(const int deviceId) {
@@ -109,11 +99,11 @@ unique_handle<cublasHandle_t> *cublasManager(const int deviceId) {
 unique_handle<cudnnHandle_t> *nnManager(const int deviceId) {
     thread_local unique_handle<cudnnHandle_t>
         cudnnHandles[DeviceManager::MAX_DEVICES];
-    thread_local std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+    thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     auto *handle        = &cudnnHandles[deviceId];
     cudnnStatus_t error = CUDNN_STATUS_SUCCESS;
-    std::call_once(initFlags[deviceId], [deviceId, handle, &error] {
+    call_once(initFlags[deviceId], [handle, &error] {
         auto getLogger = [&] { return spdlog::get("platform"); };
         AF_TRACE("Initializing cuDNN");
         error = static_cast<cudnnStatus_t>(handle->create());
@@ -138,7 +128,7 @@ unique_ptr<PlanCache> &cufftManager(const int deviceId) {
     thread_local unique_ptr<PlanCache> caches[DeviceManager::MAX_DEVICES];
     thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
     call_once(initFlags[deviceId],
-              [&] { caches[deviceId] = std::make_unique<PlanCache>(); });
+              [&] { caches[deviceId] = make_unique<PlanCache>(); });
     return caches[deviceId];
 }
 
@@ -234,7 +224,7 @@ string getDeviceInfo(int device) noexcept {
 string getDeviceInfo() noexcept {
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION << " (CUDA, " << get_system()
-         << ", build " << AF_REVISION << ")" << std::endl;
+         << ", build " << AF_REVISION << ")\n";
     info << getPlatformInfo();
     for (int i = 0; i < getDeviceCount(); ++i) { info << getDeviceInfo(i); }
     return info.str();
@@ -280,7 +270,7 @@ void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
     snprintf(d_name, 256, "%s", dev.name);
 
     // Platform
-    std::string cudaRuntime = getCUDARuntimeVersion();
+    string cudaRuntime = getCUDARuntimeVersion();
     snprintf(d_platform, 10, "CUDA");
     snprintf(d_toolkit, 64, "v%s", cudaRuntime.c_str());
 
@@ -329,9 +319,9 @@ int &getMaxJitSize() {
     constexpr int MAX_JIT_LEN = 100;
     thread_local int length   = 0;
     if (length <= 0) {
-        std::string env_var = getEnvVar("AF_CUDA_MAX_JIT_LEN");
+        string env_var = getEnvVar("AF_CUDA_MAX_JIT_LEN");
         if (!env_var.empty()) {
-            int input_len = std::stoi(env_var);
+            int input_len = stoi(env_var);
             length        = input_len > 0 ? input_len : MAX_JIT_LEN;
         } else {
             length = MAX_JIT_LEN;
@@ -377,9 +367,9 @@ int getDeviceIdFromNativeId(int nativeId) {
 }
 
 cudaStream_t getStream(int device) {
-    static std::once_flag streamInitFlags[DeviceManager::MAX_DEVICES];
+    static once_flag streamInitFlags[DeviceManager::MAX_DEVICES];
 
-    std::call_once(streamInitFlags[device], [device]() {
+    call_once(streamInitFlags[device], [device]() {
         DeviceManager &inst = DeviceManager::getInstance();
         CUDA_CHECK(cudaStreamCreate(&(inst.streams[device])));
     });
@@ -408,19 +398,18 @@ cudaDeviceProp getDeviceProp(int device) {
 }
 
 MemoryManagerBase &memoryManager() {
-    static std::once_flag flag;
+    static once_flag flag;
 
     DeviceManager &inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
+    call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.memManager = std::make_unique<common::DefaultMemoryManager>(
+        inst.memManager = make_unique<common::DefaultMemoryManager>(
             getDeviceCount(), common::MAX_BUFFERS,
             AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG);
         // Set the memory manager's device memory manager
-        std::unique_ptr<cuda::Allocator> deviceMemoryManager(
-            new cuda::Allocator());
-        inst.memManager->setAllocator(std::move(deviceMemoryManager));
+        unique_ptr<Allocator> deviceMemoryManager(new Allocator());
+        inst.memManager->setAllocator(move(deviceMemoryManager));
         inst.memManager->initialize();
     });
 
@@ -428,35 +417,33 @@ MemoryManagerBase &memoryManager() {
 }
 
 MemoryManagerBase &pinnedMemoryManager() {
-    static std::once_flag flag;
+    static once_flag flag;
 
     DeviceManager &inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
+    call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.pinnedMemManager = std::make_unique<common::DefaultMemoryManager>(
-            getDeviceCount(), common::MAX_BUFFERS,
-            AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG);
+        inst.pinnedMemManager = make_unique<common::DefaultMemoryManager>(
+            1, common::MAX_BUFFERS, AF_MEM_DEBUG || AF_CUDA_MEM_DEBUG);
         // Set the memory manager's device memory manager
-        std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(
-            new cuda::AllocatorPinned());
-        inst.pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
+        unique_ptr<AllocatorPinned> deviceMemoryManager(new AllocatorPinned());
+        inst.pinnedMemManager->setAllocator(move(deviceMemoryManager));
         inst.pinnedMemManager->initialize();
     });
 
     return *(inst.pinnedMemManager.get());
 }
 
-void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr) {
-    return DeviceManager::getInstance().setMemoryManager(std::move(mgr));
+void setMemoryManager(unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManager(move(mgr));
 }
 
 void resetMemoryManager() {
     return DeviceManager::getInstance().resetMemoryManager();
 }
 
-void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr) {
-    return DeviceManager::getInstance().setMemoryManagerPinned(std::move(mgr));
+void setMemoryManagerPinned(unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManagerPinned(move(mgr));
 }
 
 void resetMemoryManagerPinned() {
@@ -468,14 +455,14 @@ graphics::ForgeManager &forgeManager() {
 }
 
 GraphicsResourceManager &interopManager() {
-    static std::once_flag initFlags[DeviceManager::MAX_DEVICES];
+    static once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     int id = getActiveDeviceId();
 
     DeviceManager &inst = DeviceManager::getInstance();
 
-    std::call_once(initFlags[id], [&] {
-        inst.gfxManagers[id] = std::make_unique<GraphicsResourceManager>();
+    call_once(initFlags[id], [&] {
+        inst.gfxManagers[id] = make_unique<GraphicsResourceManager>();
     });
 
     return *(inst.gfxManagers[id].get());
