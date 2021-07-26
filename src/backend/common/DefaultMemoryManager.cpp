@@ -16,6 +16,8 @@
 #include <af/event.h>
 #include <af/memory.h>
 
+#include <algorithm>
+#include <cstdio>
 #include <memory>
 #include <string>
 #include <vector>
@@ -121,6 +123,8 @@ void DefaultMemoryManager::setMaxMemorySize() {
             memsize == 0
                 ? ONE_GB
                 : max(memsize * 0.75, static_cast<double>(memsize - ONE_GB));
+        AF_TRACE("memory[{}].max_bytes: {}", n,
+                 bytesToString(memory[n].max_bytes));
     }
 }
 
@@ -161,6 +165,13 @@ void *DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
             // Perhaps look at total memory available as a metric
             if (current.lock_bytes >= current.max_bytes ||
                 current.total_buffers >= this->max_buffers) {
+                AF_TRACE(
+                    "Running GC: current.lock_bytes({}) >= "
+                    "current.max_bytes({}) || current.total_buffers({}) >= "
+                    "this->max_buffers({})\n",
+                    current.lock_bytes, current.max_bytes,
+                    current.total_buffers, this->max_buffers);
+
                 this->signalMemoryCleanup();
             }
 
