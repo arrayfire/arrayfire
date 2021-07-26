@@ -32,9 +32,8 @@
 #include <boost/compute/context.hpp>
 #include <boost/compute/utility/program_cache.hpp>
 
-#include <algorithm>
 #include <cctype>
-#include <cstring>
+#include <cstdlib>
 #include <functional>
 #include <map>
 #include <mutex>
@@ -57,15 +56,19 @@ using std::get;
 using std::make_pair;
 using std::make_unique;
 using std::map;
+using std::move;
 using std::once_flag;
 using std::ostringstream;
 using std::pair;
 using std::ptr_fun;
 using std::string;
 using std::to_string;
+using std::unique_ptr;
 using std::vector;
 
 using common::memory::MemoryManagerBase;
+using opencl::Allocator;
+using opencl::AllocatorPinned;
 
 namespace opencl {
 
@@ -92,12 +95,12 @@ static inline string& ltrim(string& s) {
     return s;
 }
 
-bool verify_present(const std::string& pname, const std::string ref) {
-    auto iter = std::search(
-        begin(pname), end(pname), std::begin(ref), std::end(ref),
-        [](const std::string::value_type& l, const std::string::value_type& r) {
-            return tolower(l) == tolower(r);
-        });
+bool verify_present(const string& pname, const string ref) {
+    auto iter =
+        search(begin(pname), end(pname), begin(ref), end(ref),
+               [](const string::value_type& l, const string::value_type& r) {
+                   return tolower(l) == tolower(r);
+               });
 
     return iter != end(pname);
 }
@@ -124,7 +127,7 @@ static string platformMap(string& platStr) {
 }
 
 afcl::platform getPlatformEnum(cl::Device dev) {
-    std::string pname = getPlatformName(dev);
+    string pname = getPlatformName(dev);
     if (verify_present(pname, "AMD"))
         return AFCL_PLATFORM_AMD;
     else if (verify_present(pname, "NVIDIA"))
@@ -581,7 +584,7 @@ int& getMaxJitSize() {
     if (length <= 0) {
         string env_var = getEnvVar("AF_OPENCL_MAX_JIT_LEN");
         if (!env_var.empty()) {
-            int input_len = std::stoi(env_var);
+            int input_len = stoi(env_var);
             length        = input_len > 0 ? input_len : MAX_JIT_LEN;
         } else {
             length = MAX_JIT_LEN;
@@ -600,15 +603,15 @@ MemoryManagerBase& memoryManager() {
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
+    call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.memManager = std::make_unique<common::DefaultMemoryManager>(
+        inst.memManager = make_unique<common::DefaultMemoryManager>(
             getDeviceCount(), common::MAX_BUFFERS,
             AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG);
         // Set the memory manager's device memory manager
-        std::unique_ptr<opencl::Allocator> deviceMemoryManager;
-        deviceMemoryManager = std::make_unique<opencl::Allocator>();
-        inst.memManager->setAllocator(std::move(deviceMemoryManager));
+        unique_ptr<Allocator> deviceMemoryManager;
+        deviceMemoryManager = make_unique<Allocator>();
+        inst.memManager->setAllocator(move(deviceMemoryManager));
         inst.memManager->initialize();
     });
 
@@ -620,31 +623,31 @@ MemoryManagerBase& pinnedMemoryManager() {
 
     DeviceManager& inst = DeviceManager::getInstance();
 
-    std::call_once(flag, [&]() {
+    call_once(flag, [&]() {
         // By default, create an instance of the default memory manager
-        inst.pinnedMemManager = std::make_unique<common::DefaultMemoryManager>(
+        inst.pinnedMemManager = make_unique<common::DefaultMemoryManager>(
             getDeviceCount(), common::MAX_BUFFERS,
             AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG);
         // Set the memory manager's device memory manager
-        std::unique_ptr<opencl::AllocatorPinned> deviceMemoryManager;
-        deviceMemoryManager = std::make_unique<opencl::AllocatorPinned>();
-        inst.pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
+        unique_ptr<AllocatorPinned> deviceMemoryManager;
+        deviceMemoryManager = make_unique<AllocatorPinned>();
+        inst.pinnedMemManager->setAllocator(move(deviceMemoryManager));
         inst.pinnedMemManager->initialize();
     });
 
     return *(inst.pinnedMemManager.get());
 }
 
-void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr) {
-    return DeviceManager::getInstance().setMemoryManager(std::move(mgr));
+void setMemoryManager(unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManager(move(mgr));
 }
 
 void resetMemoryManager() {
     return DeviceManager::getInstance().resetMemoryManager();
 }
 
-void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr) {
-    return DeviceManager::getInstance().setMemoryManagerPinned(std::move(mgr));
+void setMemoryManagerPinned(unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManagerPinned(move(mgr));
 }
 
 void resetMemoryManagerPinned() {
@@ -663,7 +666,7 @@ GraphicsResourceManager& interopManager() {
     DeviceManager& inst = DeviceManager::getInstance();
 
     call_once(initFlags[id], [&] {
-        inst.gfxManagers[id] = std::make_unique<GraphicsResourceManager>();
+        inst.gfxManagers[id] = make_unique<GraphicsResourceManager>();
     });
 
     return *(inst.gfxManagers[id].get());
