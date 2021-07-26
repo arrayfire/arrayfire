@@ -15,10 +15,11 @@
 #include <version.hpp>
 #include <af/version.h>
 
-#include <algorithm>
 #include <cctype>
+#include <cstdio>
 #include <memory>
 #include <sstream>
+#include <string>
 
 using common::memory::MemoryManagerBase;
 using std::endl;
@@ -110,7 +111,7 @@ int& getMaxJitSize() {
     if (length <= 0) {
         string env_var = getEnvVar("AF_CPU_MAX_JIT_LEN");
         if (!env_var.empty()) {
-            int input_len = std::stoi(env_var);
+            int input_len = stoi(env_var);
             length        = input_len > 0 ? input_len : MAX_JIT_LEN;
         } else {
             length = MAX_JIT_LEN;
@@ -161,15 +162,15 @@ MemoryManagerBase& memoryManager() {
 }
 
 void setMemoryManager(unique_ptr<MemoryManagerBase> mgr) {
-    return DeviceManager::getInstance().setMemoryManager(std::move(mgr));
+    return DeviceManager::getInstance().setMemoryManager(move(mgr));
 }
 
 void resetMemoryManager() {
     return DeviceManager::getInstance().resetMemoryManager();
 }
 
-void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr) {
-    return DeviceManager::getInstance().setMemoryManagerPinned(std::move(mgr));
+void setMemoryManagerPinned(unique_ptr<MemoryManagerBase> mgr) {
+    return DeviceManager::getInstance().setMemoryManagerPinned(move(mgr));
 }
 
 void resetMemoryManagerPinned() {
