@@ -38,7 +38,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cstdio>
 #include <memory>
 #include <mutex>
 #include <sstream>
@@ -46,7 +45,6 @@
 #include <string>
 #include <thread>
 #include <utility>
-#include <vector>
 
 using std::begin;
 using std::end;
@@ -113,6 +111,16 @@ static const cuNVRTCcompute Toolkit2MaxCompute[] = {
     { 7000, 5, 2, 3}};
 // clang-format on
 
+// A tuple of Compute Capability and the associated number of cores in each
+// streaming multiprocessors for that architecture
+struct ComputeCapabilityToStreamingProcessors {
+    // The compute capability in hex
+    // 0xMm (hex), M = major version, m = minor version
+    int compute_capability;
+    // Number of CUDA cores per SM
+    int cores_per_sm;
+};
+
 /// Map giving the minimum device driver needed in order to run a given version
 /// of CUDA for both Linux/Mac and Windows from:
 /// https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
@@ -134,6 +142,35 @@ static const ToolkitDriverVersions
         {7050,  352.31f, 353.66f},
         {7000,  346.46f, 347.62f}};
 // clang-format on
+
+// Vector of minimum supported compute versions for CUDA toolkit (i+1).*
+// where i is the index of the vector
+static const std::array<int, 11> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3}};
+
+static ComputeCapabilityToStreamingProcessors gpus[] = {
+    {0x10, 8},   {0x11, 8},   {0x12, 8},   {0x13, 8},   {0x20, 32},
+    {0x21, 48},  {0x30, 192}, {0x32, 192}, {0x35, 192}, {0x37, 192},
+    {0x50, 128}, {0x52, 128}, {0x53, 128}, {0x60, 64},  {0x61, 128},
+    {0x62, 128}, {0x70, 64},  {0x75, 64},  {0x80, 64},  {0x86, 128},
+    {-1, -1},
+};
+
+// pulled from CUTIL from CUDA SDK
+static inline int compute2cores(unsigned major, unsigned minor) {
+    for (int i = 0; gpus[i].compute_capability != -1; ++i) {
+        if (static_cast<unsigned>(gpus[i].compute_capability) ==
+            (major << 4U) + minor) {
+            return gpus[i].cores_per_sm;
+        }
+    }
+    return 0;
+}
+
+static inline int getMinSupportedCompute(int cudaMajorVer) {
+    int CVSize = static_cast<int>(minSV.size());
+    return (cudaMajorVer > CVSize ? minSV[CVSize - 1]
+                                  : minSV[cudaMajorVer - 1]);
+}
 
 bool isEmbedded(pair<int, int> compute) {
     int version = compute.first * 1000 + compute.second * 10;
@@ -236,27 +273,6 @@ pair<int, int> getComputeCapability(const int device) {
     return DeviceManager::getInstance().devJitComputes[device];
 }
 
-// pulled from CUTIL from CUDA SDK
-static inline int compute2cores(unsigned major, unsigned minor) {
-    struct {
-        int compute;  // 0xMm (hex), M = major version, m = minor version
-        int cores;
-    } gpus[] = {
-        {0x10, 8},   {0x11, 8},   {0x12, 8},   {0x13, 8},   {0x20, 32},
-        {0x21, 48},  {0x30, 192}, {0x32, 192}, {0x35, 192}, {0x37, 192},
-        {0x50, 128}, {0x52, 128}, {0x53, 128}, {0x60, 64},  {0x61, 128},
-        {0x62, 128}, {0x70, 64},  {0x75, 64},  {0x80, 64},  {0x86, 128},
-        {-1, -1},
-    };
-
-    for (int i = 0; gpus[i].compute != -1; ++i) {
-        if (static_cast<unsigned>(gpus[i].compute) == (major << 4U) + minor) {
-            return gpus[i].cores;
-        }
-    }
-    return 0;
-}
-
 // Return true if greater, false if lesser.
 // if equal, it continues to next comparison
 #define COMPARE(a, b, f)                   \
@@ -312,16 +328,6 @@ static inline bool card_compare_num(const cudaDevice_t &l,
 
     COMPARE(lc, rc, nativeId);
     return false;
-}
-
-static inline int getMinSupportedCompute(int cudaMajorVer) {
-    // Vector of minimum supported compute versions for CUDA toolkit (i+1).*
-    // where i is the index of the vector
-    static const std::array<int, 11> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3}};
-
-    int CVSize = static_cast<int>(minSV.size());
-    return (cudaMajorVer > CVSize ? minSV[CVSize - 1]
-                                  : minSV[cudaMajorVer - 1]);
 }
 
 bool DeviceManager::checkGraphicsInteropCapability() {
