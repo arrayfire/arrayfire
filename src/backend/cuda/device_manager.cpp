@@ -97,6 +97,7 @@ static const int jetsonComputeCapabilities[] = {
 
 // clang-format off
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+    {11040, 8, 6, 0},
     {11030, 8, 6, 0},
     {11020, 8, 6, 0},
     {11010, 8, 6, 0},
@@ -118,6 +119,7 @@ static const cuNVRTCcompute Toolkit2MaxCompute[] = {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
+        {11040, 470.42f, 471.11f},
         {11030, 465.19f, 465.89f},
         {11020, 460.27f, 460.82f},
         {11010, 455.23f, 456.38f},
@@ -313,10 +315,9 @@ static inline bool card_compare_num(const cudaDevice_t &l,
 }
 
 static inline int getMinSupportedCompute(int cudaMajorVer) {
-    // Vector of minimum supported compute versions
-    // for CUDA toolkit (i+1).* where i is the index
-    // of the vector
-    static const std::array<int, 10> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3}};
+    // Vector of minimum supported compute versions for CUDA toolkit (i+1).*
+    // where i is the index of the vector
+    static const std::array<int, 11> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3}};
 
     int CVSize = static_cast<int>(minSV.size());
     return (cudaMajorVer > CVSize ? minSV[CVSize - 1]
