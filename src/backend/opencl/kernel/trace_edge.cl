@@ -13,9 +13,9 @@
 
 #if defined(INIT_EDGE_OUT)
 kernel void initEdgeOutKernel(global T* output, KParam oInfo,
-                                global const T* strong, KParam sInfo,
-                                global const T* weak, KParam wInfo,
-                                unsigned nBBS0, unsigned nBBS1) {
+                              global const T* strong, KParam sInfo,
+                              global const T* weak, KParam wInfo,
+                              unsigned nBBS0, unsigned nBBS1) {
     // batch offsets for 3rd and 4th dimension
     const unsigned b2 = get_group_id(0) / nBBS0;
     const unsigned b3 = get_group_id(1) / nBBS1;
@@ -55,8 +55,7 @@ kernel void initEdgeOutKernel(global T* output, KParam oInfo,
 
 #if defined(EDGE_TRACER)
 kernel void edgeTrackKernel(global T* output, KParam oInfo, unsigned nBBS0,
-                              unsigned nBBS1,
-                              global volatile int* hasChanged) {
+                            unsigned nBBS1, global volatile int* hasChanged) {
     // shared memory with 1 pixel border
     // strong and weak images are binary(char) images thus,
     // occupying only (16+2)*(16+2) = 324 bytes per shared memory tile
@@ -102,13 +101,11 @@ kernel void edgeTrackKernel(global T* output, KParam oInfo, unsigned nBBS0,
 
     int tid = lx + get_local_size(0) * ly;
 
-    bool continueIter = 1;
+    bool continueIter = true;
 
-    int mycounter = 0;
     while (continueIter) {
-        int nw, no, ne, we, ea, sw, so, se;
-
         if (outMem[j][i] == WEAK) {
+            int nw, no, ne, we, ea, sw, so, se;
             nw = outMem[j - 1][i - 1];
             no = outMem[j - 1][i];
             ne = outMem[j - 1][i + 1];
@@ -129,14 +126,17 @@ kernel void edgeTrackKernel(global T* output, KParam oInfo, unsigned nBBS0,
 
         predicates[tid] = false;
         if (outMem[j][i] == STRONG) {
+            bool nw, no, ne, we, ea, sw, so, se;
+            // clang-format off
             nw = outMem[j - 1][i - 1] == WEAK && VALID_BLOCK_IDX(j - 1, i - 1);
-            no = outMem[j - 1][i] == WEAK && VALID_BLOCK_IDX(j - 1, i);
+            no = outMem[j - 1][i]     == WEAK && VALID_BLOCK_IDX(j - 1, i);
             ne = outMem[j - 1][i + 1] == WEAK && VALID_BLOCK_IDX(j - 1, i + 1);
-            we = outMem[j][i - 1] == WEAK && VALID_BLOCK_IDX(j, i - 1);
-            ea = outMem[j][i + 1] == WEAK && VALID_BLOCK_IDX(j, i + 1);
+            we = outMem[j][i - 1]     == WEAK && VALID_BLOCK_IDX(j, i - 1);
+            ea = outMem[j][i + 1]     == WEAK && VALID_BLOCK_IDX(j, i + 1);
             sw = outMem[j + 1][i - 1] == WEAK && VALID_BLOCK_IDX(j + 1, i - 1);
-            so = outMem[j + 1][i] == WEAK && VALID_BLOCK_IDX(j + 1, i);
+            so = outMem[j + 1][i]     == WEAK && VALID_BLOCK_IDX(j + 1, i);
             se = outMem[j + 1][i + 1] == WEAK && VALID_BLOCK_IDX(j + 1, i + 1);
+            // clang-format on
 
             bool hasWeakNeighbour =
                 nw || no || ne || ea || se || so || sw || we;
@@ -146,7 +146,7 @@ kernel void edgeTrackKernel(global T* output, KParam oInfo, unsigned nBBS0,
         barrier(CLK_LOCAL_MEM_FENCE);
 
         // Following Block is equivalent of __syncthreads_or in CUDA
-        for (int nt = TOTAL_NUM_THREADS / 2; nt > 0; nt >>= 1) {
+        for (int nt = TOTAL_NUM_THREADS >> 1; nt > 0; nt >>= 1) {
             if (tid < nt) {
                 predicates[tid] = predicates[tid] || predicates[tid + nt];
             }
@@ -198,7 +198,7 @@ kernel void edgeTrackKernel(global T* output, KParam oInfo, unsigned nBBS0,
 
 #if defined(SUPPRESS_LEFT_OVER)
 kernel void suppressLeftOverKernel(global T* output, KParam oInfo,
-                                     unsigned nBBS0, unsigned nBBS1) {
+                                   unsigned nBBS0, unsigned nBBS1) {
     // batch offsets for 3rd and 4th dimension
     const unsigned b2 = get_group_id(0) / nBBS0;
     const unsigned b3 = get_group_id(1) / nBBS1;
@@ -211,9 +211,8 @@ kernel void suppressLeftOverKernel(global T* output, KParam oInfo,
 
     // Offset input and output pointers to second pixel of second coloumn/row
     // to skip the border
-    global T* oPtr = output +
-                       (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) +
-                       oInfo.strides[1] + 1;
+    global T* oPtr = output + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]) +
+                     oInfo.strides[1] + 1;
 
     if (gx < (oInfo.dims[0] - 2) && gy < (oInfo.dims[1] - 2)) {
         int idx = gx * oInfo.strides[0] + gy * oInfo.strides[1];
