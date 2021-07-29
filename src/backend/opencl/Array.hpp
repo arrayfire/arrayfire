@@ -21,7 +21,10 @@
 #include <types.hpp>
 #include <af/dim4.hpp>
 
+#include <algorithm>
+#include <cstdlib>
 #include <memory>
+#include <vector>
 
 namespace opencl {
 typedef std::shared_ptr<cl::Buffer> Buffer_ptr;
@@ -258,7 +261,7 @@ class Array {
    public:
     mapped_ptr<T> getMappedPtr(cl_map_flags map_flags = CL_MAP_READ |
                                                         CL_MAP_WRITE) const {
-        auto func = [this](void *ptr) {
+        auto func = [data = data](void *ptr) {
             if (ptr != nullptr) {
                 cl_int err = getQueue().enqueueUnmapMemObject(*data, ptr);
                 UNUSED(err);
@@ -266,14 +269,10 @@ class Array {
             }
         };
 
-        T *ptr = nullptr;
-        if (ptr == nullptr) {
-            cl_int err;
-            ptr = (T *)getQueue().enqueueMapBuffer(
-                *const_cast<cl::Buffer *>(get()), CL_TRUE, map_flags,
-                getOffset() * sizeof(T), elements() * sizeof(T), nullptr,
-                nullptr, &err);
-        }
+        T *ptr = (T *)getQueue().enqueueMapBuffer(
+            *static_cast<const cl::Buffer *>(get()), CL_TRUE, map_flags,
+            getOffset() * sizeof(T), elements() * sizeof(T), nullptr, nullptr,
+            nullptr);
 
         return mapped_ptr<T>(ptr, func);
     }
