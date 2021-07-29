@@ -261,6 +261,7 @@ class Array {
    public:
     mapped_ptr<T> getMappedPtr(cl_map_flags map_flags = CL_MAP_READ |
                                                         CL_MAP_WRITE) const {
+        if (!isReady()) eval();
         auto func = [data = data](void *ptr) {
             if (ptr != nullptr) {
                 cl_int err = getQueue().enqueueUnmapMemObject(*data, ptr);
