@@ -7,9 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__constant int STRONG = 1;
-__constant int WEAK   = 2;
-__constant int NOEDGE = 0;
+#define STRONG 1
+#define WEAK 2
+#define NOEDGE 0
 
 #if defined(INIT_EDGE_OUT)
 kernel void initEdgeOutKernel(global T* output, KParam oInfo,
@@ -154,7 +154,10 @@ kernel void edgeTrackKernel(global T* output, KParam oInfo, unsigned nBBS0,
         }
 
         continueIter = predicates[0];
-    };
+
+        // Needed for Intel OpenCL implementation targeting CPUs
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
 
     // Check if any 1-pixel border ring
     // has weak pixels with strong candidates
