@@ -271,8 +271,8 @@ Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
         }
     }
 
-    auto aBatched_device_mem = memAlloc<char>(bytes);
-    auto bBatched_device_mem = memAlloc<char>(bytes);
+    unique_mem_ptr aBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree<char>);
+    unique_mem_ptr bBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree<char>);
 
     T **aBatched_device_ptrs = (T **)aBatched_device_mem.get();
     T **bBatched_device_ptrs = (T **)bBatched_device_mem.get();
@@ -306,7 +306,9 @@ Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
 
 template<typename T>
 Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
-    if (a.dims()[2] > 1 || a.dims()[3] > 1) return generalSolveBatched(a, b);
+    if (a.dims()[2] > 1 || a.dims()[3] > 1) {
+        return generalSolveBatched(a, b);
+    }
 
     int M = a.dims()[0];
     int N = a.dims()[1];
