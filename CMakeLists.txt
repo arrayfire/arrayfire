@@ -23,6 +23,7 @@ include(Version)
 include(platform)
 include(GetPrerequisites)
 include(CheckCXXCompilerFlag)
+include(CheckSymbolExists)
 include(SplitDebugInfo)
 
 # Use the function generate_product_version on Windows
@@ -170,6 +171,7 @@ mark_as_advanced(CLEAR CUDA_VERSION)
 if(${AF_BUILD_CPU} OR ${AF_BUILD_OPENCL})
   if("${AF_COMPUTE_LIBRARY}" STREQUAL "Intel-MKL"
       OR "${AF_COMPUTE_LIBRARY}" STREQUAL "MKL")
+    af_mkl_batch_check()
     dependency_check(MKL_FOUND "Please ensure Intel-MKL / oneAPI-oneMKL is installed")
     set(BUILD_WITH_MKL ON)
   elseif("${AF_COMPUTE_LIBRARY}" STREQUAL "FFTW/LAPACK/BLAS")

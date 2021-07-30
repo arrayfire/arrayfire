@@ -218,6 +218,11 @@ macro(set_policies)
   endforeach()
 endmacro()
 
+macro(af_mkl_batch_check)
+  set(CMAKE_REQUIRED_LIBRARIES "MKL::RT")
+  check_symbol_exists(sgetrf_batch_strided "mkl_lapack.h" MKL_BATCH)
+endmacro()
+
 mark_as_advanced(
     pkgcfg_lib_PC_CBLAS_cblas
     pkgcfg_lib_PC_LAPACKE_lapacke
