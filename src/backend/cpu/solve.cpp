@@ -318,13 +318,17 @@ namespace cpu {
 template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
                  const af_mat_prop options) {
-    AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR(
+        "This version of ArrayFire was built without linear algebra routines",
+        AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b,
                const af_mat_prop options) {
-    AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR(
+        "This version of ArrayFire was built without linear algebra routines",
+        AF_ERR_NOT_CONFIGURED);
 }
 
 }  // namespace cpu
