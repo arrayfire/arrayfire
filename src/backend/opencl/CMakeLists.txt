@@ -466,6 +466,9 @@ if(LAPACK_FOUND OR BUILD_WITH_MKL)
 
   if(BUILD_WITH_MKL)
     target_compile_definitions(afopencl PRIVATE USE_MKL)
+    if(MKL_BATCH)
+      target_compile_definitions(afopencl PRIVATE AF_USE_MKL_BATCH)
+    endif()
 
     if(AF_WITH_STATIC_MKL)
         target_link_libraries(afopencl PRIVATE MKL::Static)
