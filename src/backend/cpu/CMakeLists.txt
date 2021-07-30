@@ -272,12 +272,10 @@ if (AF_WITH_CPUID)
   target_compile_definitions(afcpu PRIVATE -DAF_WITH_CPUID)
 endif(AF_WITH_CPUID)
 
-FetchContent_Declare(
-  ${threads_prefix}
-  GIT_REPOSITORY https://github.com/arrayfire/threads.git
-  GIT_TAG        b666773940269179f19ef11c8f1eb77005e85d9a
+af_dep_check_and_populate(${threads_prefix}
+  URI https://github.com/arrayfire/threads.git
+  REF b666773940269179f19ef11c8f1eb77005e85d9a
 )
-af_dep_check_and_populate(${threads_prefix})
 
 target_sources(afcpu
   PRIVATE

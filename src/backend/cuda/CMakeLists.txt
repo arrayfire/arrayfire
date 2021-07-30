@@ -116,12 +116,10 @@ cuda_include_directories(
   $<TARGET_PROPERTY:af_spdlog,INTERFACE_INCLUDE_DIRECTORIES>
   )
 if(CUDA_VERSION_MAJOR VERSION_LESS 11)
-  FetchContent_Declare(
-    ${cub_prefix}
-    GIT_REPOSITORY https://github.com/NVIDIA/cub.git
-    GIT_TAG        1.10.0
+  af_dep_check_and_populate(${cub_prefix}
+    URI https://github.com/NVIDIA/cub.git
+    REF 1.10.0
   )
-  af_dep_check_and_populate(${cub_prefix})
   cuda_include_directories(${${cub_prefix}_SOURCE_DIR})
 endif()
 
