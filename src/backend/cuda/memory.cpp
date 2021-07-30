@@ -24,8 +24,8 @@
 #include <types.hpp>
 #include <af/dim4.hpp>
 
+#include <cstdlib>
 #include <mutex>
-#include <utility>
 
 using af::dim4;
 using common::bytesToString;

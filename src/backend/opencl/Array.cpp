@@ -23,8 +23,9 @@
 #include <af/opencl.h>
 
 #include <cstddef>
+#include <cstdlib>
 #include <numeric>
-#include <utility>
+#include <vector>
 
 using af::dim4;
 using af::dtype_traits;
