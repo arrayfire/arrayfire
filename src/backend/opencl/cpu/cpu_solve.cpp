@@ -25,7 +25,7 @@ template<typename T>
 using gels_func_def = int (*)(ORDER_TYPE, char, int, int, int, T *, int, T *,
                               int);
 
-#ifdef USE_MKL
+#ifdef AF_USE_MKL_BATCH
 template<typename T>
 using getrf_batch_strided_func_def =
     void (*)(const MKL_INT *m, const MKL_INT *n, T *a, const MKL_INT *lda,
@@ -70,7 +70,7 @@ SOLVE_FUNC(gels, double, d)
 SOLVE_FUNC(gels, cfloat, c)
 SOLVE_FUNC(gels, cdouble, z)
 
-#ifdef USE_MKL
+#ifdef AF_USE_MKL_BATCH
 
 template<typename T>
 struct mkl_type {
@@ -183,7 +183,7 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
     return B;
 }
 
-#ifdef USE_MKL
+#ifdef AF_USE_MKL_BATCH
 
 template<typename T>
 Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b,
@@ -239,7 +239,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b,
         return triangleSolve<T>(a, b, options);
     }
 
-#ifdef USE_MKL
+#ifdef AF_USE_MKL_BATCH
     if (a.dims()[2] > 1 || a.dims()[3] > 1) {
         return generalSolveBatched(a, b, options);
     }

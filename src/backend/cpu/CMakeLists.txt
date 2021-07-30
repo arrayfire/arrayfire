@@ -314,6 +314,11 @@ target_link_libraries(afcpu
   )
 if(BUILD_WITH_MKL)
   target_compile_definitions(afcpu PRIVATE USE_MKL)
+
+  if(MKL_BATCH)
+    target_compile_definitions(afcpu PRIVATE AF_USE_MKL_BATCH)
+  endif()
+
   if(AF_WITH_STATIC_MKL)
       target_link_libraries(afcpu PRIVATE MKL::Static)
   else()
