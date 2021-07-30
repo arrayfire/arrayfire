@@ -23,11 +23,11 @@
 #include <af/lapack.h>
 #include <af/traits.hpp>
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <thread>
 #include <vector>
-#include <cstdlib>
 
 using af::array;
 using af::cdouble;
