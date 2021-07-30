@@ -168,7 +168,8 @@ mark_as_advanced(CLEAR CUDA_VERSION)
 # Note that the default value of AF_COMPUTE_LIBRARY is Intel-MKL.
 # Also, cmake doesn't have short-circuit of OR/AND conditions in if
 if(${AF_BUILD_CPU} OR ${AF_BUILD_OPENCL})
-  if("${AF_COMPUTE_LIBRARY}" STREQUAL "Intel-MKL")
+  if("${AF_COMPUTE_LIBRARY}" STREQUAL "Intel-MKL"
+      OR "${AF_COMPUTE_LIBRARY}" STREQUAL "MKL")
     dependency_check(MKL_FOUND "Please ensure Intel-MKL / oneAPI-oneMKL is installed")
     set(BUILD_WITH_MKL ON)
   elseif("${AF_COMPUTE_LIBRARY}" STREQUAL "FFTW/LAPACK/BLAS")
