@@ -43,17 +43,19 @@ using common::Node_map_t;
 using common::Node_ptr;
 using common::NodeIterator;
 using cpu::jit::BufferNode;
+
 using std::adjacent_find;
 using std::copy;
 using std::is_standard_layout;
+using std::make_shared;
 using std::move;
 using std::vector;
 
 namespace cpu {
 
 template<typename T>
-Node_ptr bufferNodePtr() {
-    return Node_ptr(reinterpret_cast<Node *>(new BufferNode<T>()));
+shared_ptr<BufferNode<T>> bufferNodePtr() {
+    return std::make_shared<BufferNode<T>>();
 }
 
 template<typename T>
@@ -62,8 +64,7 @@ Array<T>::Array(dim4 dims)
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(memAlloc<T>(dims.elements()).release(), memFree<T>)
     , data_dims(dims)
-    , node(bufferNodePtr<T>())
-    , ready(true)
+    , node()
     , owner(true) {}
 
 template<typename T>
@@ -75,8 +76,7 @@ Array<T>::Array(const dim4 &dims, T *const in_data, bool is_device,
                                       : memAlloc<T>(dims.elements()).release(),
            memFree<T>)
     , data_dims(dims)
-    , node(bufferNodePtr<T>())
-    , ready(true)
+    , node()
     , owner(true) {
     static_assert(is_standard_layout<Array<T>>::value,
                   "Array<T> must be a standard layout type");
@@ -101,7 +101,6 @@ Array<T>::Array(const af::dim4 &dims, Node_ptr n)
     , data()
     , data_dims(dims)
     , node(move(n))
-    , ready(false)
     , owner(true) {}
 
 template<typename T>
@@ -111,8 +110,7 @@ Array<T>::Array(const Array<T> &parent, const dim4 &dims, const dim_t &offset_,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(parent.getData())
     , data_dims(parent.getDataDims())
-    , node(bufferNodePtr<T>())
-    , ready(true)
+    , node()
     , owner(false) {}
 
 template<typename T>
@@ -123,8 +121,7 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
     , data(is_device ? in_data : memAlloc<T>(info.total()).release(),
            memFree<T>)
     , data_dims(dims)
-    , node(bufferNodePtr<T>())
-    , ready(true)
+    , node()
     , owner(true) {
     if (!is_device) {
         // Ensure the memory being written to isnt used anywhere else.
@@ -135,40 +132,27 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
 
 template<typename T>
 void Array<T>::eval() {
-    if (isReady()) { return; }
-    if (getQueue().is_worker()) {
-        AF_ERROR("Array not evaluated", AF_ERR_INTERNAL);
-    }
-
-    this->setId(getActiveDeviceId());
-
-    data = shared_ptr<T>(memAlloc<T>(elements()).release(), memFree<T>);
-
-    getQueue().enqueue(kernel::evalArray<T>, *this, this->node);
-    // Reset shared_ptr
-    this->node = bufferNodePtr<T>();
-    ready      = true;
+    evalMultiple<T>({this});
 }
 
 template<typename T>
 void Array<T>::eval() const {
-    if (isReady()) { return; }
     const_cast<Array<T> *>(this)->eval();
 }
 
 template<typename T>
 T *Array<T>::device() {
-    getQueue().sync();
     if (!isOwner() || getOffset() || data.use_count() > 1) {
         *this = copyArray<T>(*this);
     }
+    getQueue().sync();
     return this->get();
 }
 
 template<typename T>
 void evalMultiple(vector<Array<T> *> array_ptrs) {
     vector<Array<T> *> outputs;
-    vector<Node_ptr> nodes;
+    vector<common::Node_ptr> nodes;
     vector<Param<T>> params;
     if (getQueue().is_worker()) {
         AF_ERROR("Array not evaluated", AF_ERR_INTERNAL);
@@ -187,41 +171,39 @@ void evalMultiple(vector<Array<T> *> array_ptrs) {
     }
 
     for (Array<T> *array : array_ptrs) {
-        if (array->ready) { continue; }
+        if (array->isReady()) { continue; }
 
         array->setId(getActiveDeviceId());
         array->data =
             shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
 
         outputs.push_back(array);
-        params.push_back(*array);
+        params.emplace_back(array->getData().get(), array->dims(),
+                            array->strides());
         nodes.push_back(array->node);
     }
 
-    if (!outputs.empty()) {
-        getQueue().enqueue(kernel::evalMultiple<T>, params, nodes);
-        for (Array<T> *array : outputs) {
-            array->ready = true;
-            array->node  = bufferNodePtr<T>();
-        }
-    }
+    if (params.empty()) return;
+
+    getQueue().enqueue(cpu::kernel::evalMultiple<T>, params, nodes);
+
+    for (Array<T> *array : outputs) { array->node.reset(); }
 }
 
 template<typename T>
 Node_ptr Array<T>::getNode() {
-    if (node->isBuffer()) {
-        auto *bufNode  = reinterpret_cast<BufferNode<T> *>(node.get());
-        unsigned bytes = this->getDataDims().elements() * sizeof(T);
-        bufNode->setData(data, bytes, getOffset(), dims().get(),
-                         strides().get(), isLinear());
-    }
-    return node;
+    if (node) { return node; }
+
+    std::shared_ptr<BufferNode<T>> out = bufferNodePtr<T>();
+    unsigned bytes = this->getDataDims().elements() * sizeof(T);
+    out->setData(data, bytes, getOffset(), dims().get(), strides().get(),
+                 isLinear());
+    return out;
 }
 
 template<typename T>
 Node_ptr Array<T>::getNode() const {
-    if (node->isBuffer()) { return const_cast<Array<T> *>(this)->getNode(); }
-    return node;
+    return const_cast<Array<T> *>(this)->getNode();
 }
 
 template<typename T>
@@ -236,8 +218,7 @@ Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
 
 template<typename T>
 Array<T> createValueArray(const dim4 &dims, const T &value) {
-    auto *node = new jit::ScalarNode<T>(value);
-    return createNodeArray<T>(dims, Node_ptr(node));
+    return createNodeArray<T>(dims, make_shared<jit::ScalarNode<T>>(value));
 }
 
 template<typename T>
@@ -337,7 +318,6 @@ template<typename T>
 void Array<T>::setDataDims(const dim4 &new_dims) {
     modDims(new_dims);
     data_dims = new_dims;
-    if (node->isBuffer()) { node = bufferNodePtr<T>(); }
 }
 
 #define INSTANTIATE(T)                                                        \

@@ -28,6 +28,12 @@
 #include <vector>
 
 namespace cpu {
+
+namespace jit {
+template<typename T>
+class BufferNode;
+}
+
 namespace kernel {
 template<typename T>
 void evalArray(Param<T> in, common::Node_ptr node);
@@ -115,15 +121,23 @@ template<typename T>
 class Array {
     ArrayInfo info;  // Must be the first element of Array<T>
 
-    // data if parent. empty if child
+    /// Pointer to the data
     std::shared_ptr<T> data;
+
+    /// The shape of the underlying parent data.
     af::dim4 data_dims;
+
+    /// Null if this a buffer node. Otherwise this points to a JIT node
     common::Node_ptr node;
 
-    bool ready;
+    /// If true, the Array object is the parent. If false the data object points
+    /// to another array's data
     bool owner;
 
+    /// Default constructor
     Array() = default;
+
+    /// Creates an uninitialized array of a specific shape
     Array(dim4 dims);
 
     explicit Array(const af::dim4 &dims, T *const in_data, bool is_device,
@@ -149,7 +163,6 @@ class Array {
         swap(data, other.data);
         swap(data_dims, other.data_dims);
         swap(node, other.node);
-        swap(ready, other.ready);
         swap(owner, other.owner);
     }
 
@@ -198,7 +211,7 @@ class Array {
 
     ~Array() = default;
 
-    bool isReady() const { return ready; }
+    bool isReady() const { return static_cast<bool>(node) == false; }
 
     bool isOwner() const { return owner; }
 
@@ -236,10 +249,7 @@ class Array {
         return data.get() + (withOffset ? getOffset() : 0);
     }
 
-    int useCount() const {
-        if (!data.get()) eval();
-        return static_cast<int>(data.use_count());
-    }
+    int useCount() const { return static_cast<int>(data.use_count()); }
 
     operator Param<T>() {
         return Param<T>(this->get(), this->dims(), this->strides());

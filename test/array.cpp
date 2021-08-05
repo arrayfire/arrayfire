@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <initializer_list>
+#include <iomanip>
 
 using namespace af;
 using std::vector;
@@ -591,4 +592,51 @@ TEST(Array, EmptyArrayHostCopy) {
             exit(0);
         },
         ::testing::ExitedWithCode(0), ".*");
+}
+
+TEST(Array, ReferenceCount1) {
+    int counta = 0, countb = 0, countc = 0;
+    array a = af::randu(10, 10);
+    a.eval();
+    af::sync();
+    {
+        ASSERT_REF(a, 1) << "After a = randu(10, 10);";
+
+        array b = af::randu(10, 10);  //(af::seq(100));
+        ASSERT_REF(b, 1) << "After b = randu(10, 10);";
+
+        array c = a + b;
+        ASSERT_REF(a, 2) << "After c = a + b;";
+        ASSERT_REF(b, 2) << "After c = a + b;";
+        ASSERT_REF(c, 0) << "After c = a + b;";
+
+        c.eval();
+        af::sync();
+        ASSERT_REF(a, 1) << "After c.eval();";
+        ASSERT_REF(b, 1) << "After c.eval();";
+        ASSERT_REF(c, 1) << "After c.eval();";
+    }
+}
+
+TEST(Array, ReferenceCount2) {
+    int counta = 0, countb = 0, countc = 0;
+    array a = af::randu(10, 10);
+    array b = af::randu(10, 10);
+    {
+        ASSERT_REF(a, 1) << "After a = randu(10, 10);";
+        ASSERT_REF(b, 1) << "After a = randu(10, 10);";
+
+        array c = a + b;
+
+        ASSERT_REF(a, 2) << "After c = a + b;";
+        ASSERT_REF(b, 2) << "After c = a + b;";
+        ASSERT_REF(c, 0) << "After c = a + b;";
+
+        array d = c;
+
+        ASSERT_REF(a, 2) << "After d = c;";
+        ASSERT_REF(b, 2) << "After d = c;";
+        ASSERT_REF(c, 0) << "After d = c;";
+        ASSERT_REF(d, 0) << "After d = c;";
+    }
 }

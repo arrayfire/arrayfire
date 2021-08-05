@@ -49,9 +49,9 @@ void verifyTypeSupport() {
 }
 
 template<typename T>
-Node_ptr bufferNodePtr() {
-    return Node_ptr(
-        new BufferNode<T>(static_cast<af::dtype>(dtype_traits<T>::af_type)));
+std::shared_ptr<BufferNode<T>> bufferNodePtr() {
+    return std::make_shared<BufferNode<T>>(
+        static_cast<af::dtype>(dtype_traits<T>::af_type));
 }
 
 template<typename T>
@@ -61,8 +61,7 @@ Array<T>::Array(const af::dim4 &dims)
     , data((dims.elements() ? memAlloc<T>(dims.elements()).release() : nullptr),
            memFree<T>)
     , data_dims(dims)
-    , node(bufferNodePtr<T>())
-    , ready(true)
+    , node()
     , owner(true) {}
 
 template<typename T>
@@ -75,8 +74,7 @@ Array<T>::Array(const af::dim4 &dims, const T *const in_data, bool is_device,
                                       : memAlloc<T>(dims.elements()).release()),
           memFree<T>)
     , data_dims(dims)
-    , node(bufferNodePtr<T>())
-    , ready(true)
+    , node()
     , owner(true) {
     static_assert(std::is_standard_layout<Array<T>>::value,
                   "Array<T> must be a standard layout type");
@@ -107,8 +105,7 @@ Array<T>::Array(const Array<T> &parent, const dim4 &dims, const dim_t &offset_,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(parent.getData())
     , data_dims(parent.getDataDims())
-    , node(bufferNodePtr<T>())
-    , ready(true)
+    , node()
     , owner(false) {}
 
 template<typename T>
@@ -121,8 +118,7 @@ Array<T>::Array(Param<T> &tmp, bool owner_)
     , data(tmp.ptr, owner_ ? std::function<void(T *)>(memFree<T>)
                            : std::function<void(T *)>([](T * /*unused*/) {}))
     , data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]))
-    , node(bufferNodePtr<T>())
-    , ready(true)
+    , node()
     , owner(owner_) {}
 
 template<typename T>
@@ -132,7 +128,6 @@ Array<T>::Array(const af::dim4 &dims, common::Node_ptr n)
     , data()
     , data_dims(dims)
     , node(move(n))
-    , ready(false)
     , owner(true) {}
 
 template<typename T>
@@ -144,8 +139,7 @@ Array<T>::Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset_,
                      : memAlloc<T>(info.total()).release(),
            memFree<T>)
     , data_dims(dims)
-    , node(bufferNodePtr<T>())
-    , ready(true)
+    , node()
     , owner(true) {
     if (!is_device) {
         cudaStream_t stream = getActiveStream();
@@ -163,11 +157,14 @@ void Array<T>::eval() {
     this->setId(getActiveDeviceId());
     this->data = shared_ptr<T>(memAlloc<T>(elements()).release(), memFree<T>);
 
-    ready = true;
-    evalNodes<T>(*this, this->getNode().get());
-    // FIXME: Replace the current node in any JIT possible trees with the new
-    // BufferNode
-    node = bufferNodePtr<T>();
+    Param<T> p(data.get(), dims().get(), strides().get());
+    evalNodes<T>(p, node.get());
+    node.reset();
+}
+
+template<typename T>
+void Array<T>::eval() const {
+    const_cast<Array<T> *>(this)->eval();
 }
 
 template<typename T>
@@ -179,14 +176,8 @@ T *Array<T>::device() {
 }
 
 template<typename T>
-void Array<T>::eval() const {
-    if (isReady()) { return; }
-    const_cast<Array<T> *>(this)->eval();
-}
-
-template<typename T>
 void evalMultiple(std::vector<Array<T> *> arrays) {
-    vector<Param<T>> outputs;
+    vector<Param<T>> output_params;
     vector<Array<T> *> output_arrays;
     vector<Node *> nodes;
 
@@ -205,36 +196,38 @@ void evalMultiple(std::vector<Array<T> *> arrays) {
     for (Array<T> *array : arrays) {
         if (array->isReady()) { continue; }
 
-        array->ready = true;
         array->setId(getActiveDeviceId());
         array->data =
             shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
 
-        outputs.push_back(*array);
+        output_params.emplace_back(array->getData().get(), array->dims().get(),
+                                   array->strides().get());
         output_arrays.push_back(array);
-        nodes.push_back(array->node.get());
+        nodes.push_back(array->getNode().get());
     }
 
-    evalNodes(outputs, nodes);
+    if (output_params.empty()) return;
 
-    for (Array<T> *array : output_arrays) { array->node = bufferNodePtr<T>(); }
+    evalNodes(output_params, nodes);
+
+    for (Array<T> *array : output_arrays) { array->node.reset(); }
 }
 
 template<typename T>
 Node_ptr Array<T>::getNode() {
-    if (node->isBuffer()) {
-        unsigned bytes = this->getDataDims().elements() * sizeof(T);
-        auto *bufNode  = reinterpret_cast<BufferNode<T> *>(node.get());
-        Param<T> param = *this;
-        bufNode->setData(param, data, bytes, isLinear());
-    }
-    return node;
+    if (node) { return node; }
+
+    Param<T> kinfo = *this;
+    unsigned bytes = this->dims().elements() * sizeof(T);
+    auto nn        = bufferNodePtr<T>();
+    nn->setData(kinfo, data, bytes, isLinear());
+
+    return nn;
 }
 
 template<typename T>
 Node_ptr Array<T>::getNode() const {
-    if (node->isBuffer()) { return const_cast<Array<T> *>(this)->getNode(); }
-    return node;
+    return const_cast<Array<T> *>(this)->getNode();
 }
 
 /// This function should be called after a new JIT node is created. It will
@@ -419,7 +412,6 @@ template<typename T>
 void Array<T>::setDataDims(const dim4 &new_dims) {
     modDims(new_dims);
     data_dims = new_dims;
-    if (node->isBuffer()) { node = bufferNodePtr<T>(); }
 }
 
 #define INSTANTIATE(T)                                                        \

@@ -22,35 +22,35 @@ namespace cpu {
 
 namespace jit {
 
-using std::shared_ptr;
 template<typename T>
 class BufferNode : public TNode<T> {
    protected:
-    shared_ptr<T> m_sptr;
+    std::shared_ptr<T> m_data;
     T *m_ptr;
     unsigned m_bytes;
     dim_t m_strides[4];
     dim_t m_dims[4];
-    std::once_flag m_set_data_flag;
     bool m_linear_buffer;
 
    public:
-    BufferNode() : TNode<T>(T(0), 0, {}) {}
+    BufferNode()
+        : TNode<T>(T(0), 0, {})
+        , m_bytes(0)
+        , m_strides{0, 0, 0, 0}
+        , m_dims{0, 0, 0, 0}
+        , m_linear_buffer(true) {}
 
-    void setData(shared_ptr<T> data, unsigned bytes, dim_t data_off,
+    void setData(std::shared_ptr<T> data, unsigned bytes, dim_t data_off,
                  const dim_t *dims, const dim_t *strides,
                  const bool is_linear) {
-        std::call_once(m_set_data_flag, [this, data, bytes, data_off, dims,
-                                         strides, is_linear]() {
-            m_sptr          = data;
-            m_ptr           = data.get() + data_off;
-            m_bytes         = bytes;
-            m_linear_buffer = is_linear;
-            for (int i = 0; i < 4; i++) {
-                m_strides[i] = strides[i];
-                m_dims[i]    = dims[i];
-            }
-        });
+        m_data          = data;
+        m_ptr           = data.get() + data_off;
+        m_bytes         = bytes;
+        m_linear_buffer = is_linear;
+        for (int i = 0; i < 4; i++) {
+            m_strides[i] = strides[i];
+            m_dims[i]    = dims[i];
+        }
     }
 
     void calc(int x, int y, int z, int w, int lim) final {
