@@ -15,12 +15,13 @@
 #include <types.hpp>
 #include <af/defines.h>
 
+#include <algorithm>
 #include <array>
 #include <functional>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 enum class kJITHeuristics {
@@ -33,6 +34,17 @@ enum class kJITHeuristics {
 namespace common {
 class Node;
 }
+
+#ifdef AF_CPU
+namespace cpu {
+namespace kernel {
+
+template<typename T>
+void evalMultiple(std::vector<Param<T>> arrays,
+                  std::vector<std::shared_ptr<common::Node>> output_nodes_);
+}
+}  // namespace cpu
+#endif
 
 namespace std {
 template<>
@@ -107,15 +119,6 @@ class Node {
     template<typename T>
     friend class NodeIterator;
 
-    void swap(Node &other) noexcept {
-        using std::swap;
-        for (int i = 0; i < kMaxChildren; i++) {
-            swap(m_children[i], other.m_children[i]);
-        }
-        swap(m_type, other.m_type);
-        swap(m_height, other.m_height);
-    }
-
    public:
     Node() = default;
     Node(const af::dtype type, const int height,
@@ -123,6 +126,15 @@ class Node {
         : m_children(children), m_type(type), m_height(height) {
         static_assert(std::is_nothrow_move_assignable<Node>::value,
                       "Node is not move assignable");
+    }
+
+    void swap(Node &other) noexcept {
+        using std::swap;
+        for (int i = 0; i < kMaxChildren; i++) {
+            swap(m_children[i], other.m_children[i]);
+        }
+        swap(m_type, other.m_type);
+        swap(m_height, other.m_height);
     }
 
     /// Default move constructor operator
@@ -266,6 +278,22 @@ class Node {
     virtual bool operator==(const Node &other) const noexcept {
         return this == &other;
     }
+
+#ifdef AF_CPU
+    /// Replaces a child node pointer in the cpu::jit::BinaryNode<T> or the
+    /// cpu::jit::UnaryNode classes at \p id with *ptr. Used only in the CPU
+    /// backend and does not modify the m_children pointers in the
+    /// common::Node_ptr class.
+    virtual void replaceChild(int id, void *ptr) noexcept {
+        UNUSED(id);
+        UNUSED(ptr);
+    }
+
+    template<typename U>
+    friend void cpu::kernel::evalMultiple(
+        std::vector<cpu::Param<U>> arrays,
+        std::vector<common::Node_ptr> output_nodes_);
+#endif
 };
 
 struct Node_ids {

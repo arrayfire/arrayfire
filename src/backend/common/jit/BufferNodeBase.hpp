@@ -12,8 +12,6 @@
 #include <common/jit/Node.hpp>
 #include <jit/kernel_generators.hpp>
 
-#include <iomanip>
-#include <mutex>
 #include <sstream>
 
 namespace common {
@@ -24,25 +22,20 @@ class BufferNodeBase : public common::Node {
     DataType m_data;
     ParamType m_param;
     unsigned m_bytes;
-    std::once_flag m_set_data_flag;
     bool m_linear_buffer;
 
    public:
-    BufferNodeBase(af::dtype type) : Node(type, 0, {}) {
-        // This class is not movable because of std::once_flag
-    }
+    BufferNodeBase(af::dtype type)
+        : Node(type, 0, {}), m_bytes(0), m_linear_buffer(true) {}
 
     bool isBuffer() const final { return true; }
 
     void setData(ParamType param, DataType data, const unsigned bytes,
                  bool is_linear) {
-        std::call_once(m_set_data_flag,
-                       [this, param, data, bytes, is_linear]() {
-                           m_param         = param;
-                           m_data          = data;
-                           m_bytes         = bytes;
-                           m_linear_buffer = is_linear;
-                       });
+        m_param         = param;
+        m_data          = data;
+        m_bytes         = bytes;
+        m_linear_buffer = is_linear;
     }
 
     bool isLinear(dim_t dims[4]) const final {

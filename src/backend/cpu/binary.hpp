@@ -8,6 +8,7 @@
  ********************************************************/
 #pragma once
 
+#include <jit/Node.hpp>
 #include <math.hpp>
 #include <optypes.hpp>
 #include <types.hpp>

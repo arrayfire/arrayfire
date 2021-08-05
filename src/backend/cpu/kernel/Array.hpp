@@ -9,7 +9,10 @@
 
 #pragma once
 #include <Param.hpp>
+#include <common/jit/Node.hpp>
+#include <jit/BufferNode.hpp>
 #include <jit/Node.hpp>
+#include <jit/UnaryNode.hpp>
 #include <platform.hpp>
 #include <vector>
 
@@ -31,9 +34,25 @@ void evalMultiple(std::vector<Param<T>> arrays,
     int narrays = static_cast<int>(arrays.size());
     for (int i = 0; i < narrays; i++) {
         ptrs.push_back(arrays[i].get());
-        output_nodes.push_back(
-            reinterpret_cast<TNode<T> *>(output_nodes_[i].get()));
+        output_nodes.push_back(static_cast<TNode<T> *>(output_nodes_[i].get()));
         output_nodes_[i]->getNodesMap(nodes, full_nodes, ids);
+    }
+
+    /// Replace all nodes in the tree with the nodes in the node map. This
+    /// removes duplicate BufferNode objects that have different pointers
+    /// but have duplicate pointer and dimenstions
+    for (auto fn : full_nodes) {
+        common::Node *tnode = static_cast<common::Node *>(fn);
+
+        if (tnode->isBuffer() == false) {
+            // Go though all the children. Replace them with nodes in map
+            for (int i = 0;
+                 i < common::Node::kMaxChildren && tnode->m_children[i]; i++) {
+                tnode->replaceChild(
+                    i, static_cast<void *>(
+                           full_nodes[nodes[tnode->m_children[i].get()]]));
+            }
+        }
     }
 
     bool is_linear = true;
@@ -83,11 +102,6 @@ void evalMultiple(std::vector<Param<T>> arrays,
             }
         }
     }
-}
-
-template<typename T>
-void evalArray(Param<T> arr, common::Node_ptr node) {
-    evalMultiple<T>({arr}, {node});
 }
 
 }  // namespace kernel

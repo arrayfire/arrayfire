@@ -32,8 +32,8 @@ class BinaryNode : public TNode<compute_t<To>> {
         : TNode<compute_t<To>>(compute_t<To>(0),
                                std::max(lhs->getHeight(), rhs->getHeight()) + 1,
                                {{lhs, rhs}})
-        , m_lhs(reinterpret_cast<TNode<compute_t<Ti>> *>(lhs.get()))
-        , m_rhs(reinterpret_cast<TNode<compute_t<Ti>> *>(rhs.get())) {}
+        , m_lhs(static_cast<TNode<compute_t<Ti>> *>(lhs.get()))
+        , m_rhs(static_cast<TNode<compute_t<Ti>> *>(rhs.get())) {}
 
     void calc(int x, int y, int z, int w, int lim) final {
         UNUSED(x);
@@ -41,6 +41,17 @@ class BinaryNode : public TNode<compute_t<To>> {
         UNUSED(z);
         UNUSED(w);
         m_op.eval(this->m_val, m_lhs->m_val, m_rhs->m_val, lim);
+    }
+
+    /// Replaces a child node pointer in the cpu::jit::BinaryNode<T> class at \p
+    /// id with *ptr. Used only in the CPU backend and does not modify the
+    /// m_children pointers in the common::Node_ptr class.
+    void replaceChild(int id, void *ptr) noexcept final {
+        auto nnode = static_cast<TNode<compute_t<Ti>> *>(ptr);
+        if (nnode->isBuffer()) {
+            if (id == 0 && m_lhs != ptr) { m_lhs = nnode; }
+            if (id == 1 && m_rhs != ptr) { m_rhs = nnode; }
+        }
     }
 
     void calc(int idx, int lim) final {

@@ -15,6 +15,7 @@
 #include <common/jit/Node.hpp>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
+#include <jit/BufferNode.hpp>
 #include <memory.hpp>
 #include <traits.hpp>
 #include <types.hpp>
@@ -119,11 +120,18 @@ void *getRawPtr(const Array<T> &arr) {
 template<typename T>
 class Array {
     ArrayInfo info;  // This must be the first element of Array<T>
+
+    /// Pointer to the data
     std::shared_ptr<T> data;
+
+    /// The shape of the underlying parent data.
     af::dim4 data_dims;
 
+    /// Null if this a buffer node. Otherwise this points to a JIT node
     common::Node_ptr node;
-    bool ready;
+
+    /// If true, the Array object is the parent. If false the data object points
+    /// to another array's data
     bool owner;
 
     Array(const af::dim4 &dims);
@@ -151,7 +159,6 @@ class Array {
         swap(data, other.data);
         swap(data_dims, other.data_dims);
         swap(node, other.node);
-        swap(ready, other.ready);
         swap(owner, other.owner);
     }
 
@@ -200,7 +207,7 @@ class Array {
 
     ~Array() = default;
 
-    bool isReady() const { return ready; }
+    bool isReady() const { return static_cast<bool>(node) == false; }
     bool isOwner() const { return owner; }
 
     void eval();
@@ -239,10 +246,7 @@ class Array {
         return data.get() + (withOffset ? getOffset() : 0);
     }
 
-    int useCount() const {
-        if (!isReady()) eval();
-        return data.use_count();
-    }
+    int useCount() const { return data.use_count(); }
 
     operator Param<data_t<T>>() {
         return Param<data_t<T>>(this->get(), this->dims().get(),

@@ -53,9 +53,10 @@ TEST(JIT, CPP_JIT_HASH) {
 
     // Creating a kernel
     {
-        array d    = a + b;
-        array e    = a + c;
-        array f1   = d * e - e;
+        array d  = a + b;
+        array e  = a + c;
+        array f1 = d * e - e;
+
         float* hF1 = f1.host<float>();
 
         for (int i = 0; i < num; i++) { ASSERT_EQ(hF1[i], valF1); }
