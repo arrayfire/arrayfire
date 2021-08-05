@@ -5,6 +5,8 @@
 #include <complex.hpp>
 #include <types.hpp>
 
+#include <memory>
+
 using af::dim4;
 using af::dtype_traits;
 using detail::Array;
@@ -12,6 +14,8 @@ using detail::BinOp;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createNodeArray;
+
+using std::make_shared;
 
 namespace common {
 #ifdef AF_CPU
@@ -21,10 +25,10 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs,
     common::Node_ptr lhs_node = lhs.getNode();
     common::Node_ptr rhs_node = rhs.getNode();
 
-    detail::jit::BinaryNode<To, Ti, op> *node =
-        new detail::jit::BinaryNode<To, Ti, op>(lhs_node, rhs_node);
+    auto node =
+        make_shared<detail::jit::BinaryNode<To, Ti, op>>(lhs_node, rhs_node);
 
-    return createNodeArray<To>(odims, common::Node_ptr(node));
+    return createNodeArray<To>(odims, move(node));
 }
 
 #else

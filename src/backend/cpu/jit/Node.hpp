@@ -38,15 +38,17 @@ template<typename T>
 class TNode : public common::Node {
    public:
     alignas(16) jit::array<compute_t<T>> m_val;
+    using common::Node::m_children;
 
    public:
     TNode(T val, const int height,
-          const std::array<common::Node_ptr, kMaxChildren> children)
+          const std::array<common::Node_ptr, kMaxChildren> &&children)
         : Node(static_cast<af::dtype>(af::dtype_traits<T>::af_type), height,
-               children) {
+               move(children)) {
         using namespace common;
         m_val.fill(static_cast<compute_t<T>>(val));
     }
+
     virtual ~TNode() = default;
 };
 

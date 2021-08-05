@@ -22,12 +22,11 @@ template<typename To, typename Ti>
 struct CastWrapper {
     detail::Array<To> operator()(const detail::Array<Ti> &in) {
         using cpu::jit::UnaryNode;
+
         Node_ptr in_node = in.getNode();
-        UnaryNode<To, Ti, af_cast_t> *node =
-            new UnaryNode<To, Ti, af_cast_t>(in_node);
-        return detail::createNodeArray<To>(
-            in.dims(),
-            common::Node_ptr(reinterpret_cast<common::Node *>(node)));
+        auto node = std::make_shared<UnaryNode<To, Ti, af_cast_t>>(in_node);
+
+        return detail::createNodeArray<To>(in.dims(), move(node));
     }
 };
 #else
