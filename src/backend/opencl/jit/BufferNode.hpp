@@ -9,11 +9,9 @@
 
 #pragma once
 #include <common/jit/BufferNodeBase.hpp>
-#include <common/jit/Node.hpp>
-#include <af/defines.h>
-#include <iomanip>
-#include <mutex>
 #include "../kernel/KParam.hpp"
+
+#include <memory>
 
 namespace opencl {
 namespace jit {

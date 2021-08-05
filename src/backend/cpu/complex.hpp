@@ -54,40 +54,32 @@ CPLX_UNARY_FN(abs)
 template<typename To, typename Ti>
 Array<To> real(const Array<Ti> &in) {
     common::Node_ptr in_node = in.getNode();
-    jit::UnaryNode<To, Ti, af_real_t> *node =
-        new jit::UnaryNode<To, Ti, af_real_t>(in_node);
+    auto node = std::make_shared<jit::UnaryNode<To, Ti, af_real_t>>(in_node);
 
-    return createNodeArray<To>(
-        in.dims(), common::Node_ptr(static_cast<common::Node *>(node)));
+    return createNodeArray<To>(in.dims(), move(node));
 }
 
 template<typename To, typename Ti>
 Array<To> imag(const Array<Ti> &in) {
     common::Node_ptr in_node = in.getNode();
-    jit::UnaryNode<To, Ti, af_imag_t> *node =
-        new jit::UnaryNode<To, Ti, af_imag_t>(in_node);
+    auto node = std::make_shared<jit::UnaryNode<To, Ti, af_imag_t>>(in_node);
 
-    return createNodeArray<To>(
-        in.dims(), common::Node_ptr(static_cast<common::Node *>(node)));
+    return createNodeArray<To>(in.dims(), move(node));
 }
 
 template<typename To, typename Ti>
 Array<To> abs(const Array<Ti> &in) {
     common::Node_ptr in_node = in.getNode();
-    jit::UnaryNode<To, Ti, af_abs_t> *node =
-        new jit::UnaryNode<To, Ti, af_abs_t>(in_node);
+    auto node = std::make_shared<jit::UnaryNode<To, Ti, af_abs_t>>(in_node);
 
-    return createNodeArray<To>(
-        in.dims(), common::Node_ptr(static_cast<common::Node *>(node)));
+    return createNodeArray<To>(in.dims(), move(node));
 }
 
 template<typename T>
 Array<T> conj(const Array<T> &in) {
     common::Node_ptr in_node = in.getNode();
-    jit::UnaryNode<T, T, af_conj_t> *node =
-        new jit::UnaryNode<T, T, af_conj_t>(in_node);
+    auto node = std::make_shared<jit::UnaryNode<T, T, af_conj_t>>(in_node);
 
-    return createNodeArray<T>(
-        in.dims(), common::Node_ptr(static_cast<common::Node *>(node)));
+    return createNodeArray<T>(in.dims(), move(node));
 }
 }  // namespace cpu

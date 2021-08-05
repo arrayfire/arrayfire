@@ -13,6 +13,7 @@
 #include <types.hpp>
 #include "Node.hpp"
 
+#include <jit/BufferNode.hpp>
 #include <vector>
 
 namespace cpu {
@@ -33,7 +34,12 @@ class UnaryNode : public TNode<To> {
    public:
     UnaryNode(common::Node_ptr child)
         : TNode<To>(To(0), child->getHeight() + 1, {{child}})
-        , m_child(reinterpret_cast<TNode<Ti> *>(child.get())) {}
+        , m_child(static_cast<TNode<Ti> *>(child.get())) {}
+
+    void replaceChild(int id, void *ptr) noexcept final {
+        auto nnode = static_cast<TNode<Ti> *>(ptr);
+        if (id == 0 && nnode->isBuffer() && m_child != ptr) { m_child = nnode; }
+    }
 
     void calc(int x, int y, int z, int w, int lim) final {
         UNUSED(x);

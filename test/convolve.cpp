@@ -672,8 +672,8 @@ TEST(Convolve, 1D_C32) {
 
     cfloat acc = sum<cfloat>(out - gld);
 
-    EXPECT_EQ(std::abs(real(acc)) < 1E-3, true);
-    EXPECT_EQ(std::abs(imag(acc)) < 1E-3, true);
+    EXPECT_LT(std::abs(real(acc)), 1E-3);
+    EXPECT_LT(std::abs(imag(acc)), 1E-3);
 }
 
 TEST(Convolve, 2D_C32) {
@@ -685,8 +685,8 @@ TEST(Convolve, 2D_C32) {
 
     cfloat acc = sum<cfloat>(out - gld);
 
-    EXPECT_EQ(std::abs(real(acc)) < 1E-3, true);
-    EXPECT_EQ(std::abs(imag(acc)) < 1E-3, true);
+    EXPECT_LT(std::abs(real(acc)), 1E-3);
+    EXPECT_LT(std::abs(imag(acc)), 1E-3);
 }
 
 TEST(Convolve, 3D_C32) {

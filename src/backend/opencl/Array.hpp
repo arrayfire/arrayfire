@@ -15,10 +15,12 @@
 #include <common/MemoryManagerBase.hpp>
 #include <common/jit/Node.hpp>
 #include <err_opencl.hpp>
+#include <jit/BufferNode.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
 #include <traits.hpp>
 #include <types.hpp>
+
 #include <af/dim4.hpp>
 
 #include <algorithm>
@@ -120,11 +122,18 @@ using mapped_ptr = std::unique_ptr<T, std::function<void(void *)>>;
 template<typename T>
 class Array {
     ArrayInfo info;  // This must be the first element of Array<T>
-    Buffer_ptr data;
+
+    /// Pointer to the data
+    std::shared_ptr<cl::Buffer> data;
+
+    /// The shape of the underlying parent data.
     af::dim4 data_dims;
 
+    /// Null if this a buffer node. Otherwise this points to a JIT node
     common::Node_ptr node;
-    bool ready;
+
+    /// If true, the Array object is the parent. If false the data object points
+    /// to another array's data
     bool owner;
 
     Array(const af::dim4 &dims);
@@ -152,7 +161,6 @@ class Array {
         swap(data, other.data);
         swap(data_dims, other.data_dims);
         swap(node, other.node);
-        swap(ready, other.ready);
         swap(owner, other.owner);
     }
 
@@ -199,7 +207,7 @@ class Array {
 #undef INFO_IS_FUNC
     ~Array() = default;
 
-    bool isReady() const { return ready; }
+    bool isReady() const { return static_cast<bool>(node) == false; }
     bool isOwner() const { return owner; }
 
     void eval();
@@ -222,14 +230,11 @@ class Array {
         return data.get();
     }
 
-    int useCount() const {
-        if (!isReady()) eval();
-        return data.use_count();
-    }
+    int useCount() const { return data.use_count(); }
 
     dim_t getOffset() const { return info.getOffset(); }
 
-    Buffer_ptr getData() const { return data; }
+    std::shared_ptr<cl::Buffer> getData() const { return data; }
 
     dim4 getDataDims() const { return data_dims; }
 
