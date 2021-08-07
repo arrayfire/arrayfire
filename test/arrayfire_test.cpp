@@ -1634,6 +1634,23 @@ template<typename T>
                            bbb, maxAbsDiff);
 }
 
+::testing::AssertionResult assertRefEq(std::string hA_name,
+                                       std::string expected_name,
+                                       const af::array &a, int expected) {
+    int count = 0;
+    af_get_data_ref_count(&count, a.get());
+    if (count != expected) {
+        std::stringstream ss;
+        ss << "Incorrect reference count:\nExpected: " << expected << "\n"
+           << std::setw(8) << hA_name << ": " << count;
+
+        return ::testing::AssertionFailure() << ss.str();
+
+    } else {
+        return ::testing::AssertionSuccess();
+    }
+}
+
 #define INSTANTIATE(To)                                                        \
     template std::string printContext(                                         \
         const std::vector<To> &hGold, std::string goldName,                    \
