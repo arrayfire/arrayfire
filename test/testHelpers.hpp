@@ -360,6 +360,10 @@ template<typename T>
     std::string maxAbsDiffName, const std::vector<T> &hA, af::dim4 aDims,
     const af_array b, float maxAbsDiff);
 
+::testing::AssertionResult assertRefEq(std::string hA_name,
+                                       std::string expected_name,
+                                       const af::array &a, int expected);
+
 /// Checks if the C-API arrayfire function returns successfully
 ///
 /// \param[in] CALL This is the arrayfire C function
@@ -429,6 +433,9 @@ template<typename T>
                               MAX_ABSDIFF)                                 \
     ASSERT_PRED_FORMAT4(assertArrayNear, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
                         ACTUAL_ARR, MAX_ABSDIFF)
+
+#define ASSERT_REF(arr, expected) \
+    ASSERT_PRED_FORMAT2(assertRefEq, arr, expected)
 
 #if defined(USE_MTX)
 ::testing::AssertionResult mtxReadSparseMatrix(af::array &out,
