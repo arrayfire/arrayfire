@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <backend.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <handle.hpp>
 #include <math.hpp>
@@ -36,7 +36,7 @@ static double median(const af_array& in) {
 
     af_array temp = 0;
     AF_CHECK(af_moddims(&temp, in, 1, dims.get()));
-    const Array<T> input = getArray<T>(temp);
+    const Array<T>& input = getArray<T>(temp);
 
     // Shortcut cases for 1 or 2 elements
     if (nElems == 1) {

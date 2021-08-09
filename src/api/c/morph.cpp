@@ -9,7 +9,7 @@
 
 #include <arith.hpp>
 #include <backend.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <common/indexing_helpers.hpp>
 #include <copy.hpp>
@@ -24,10 +24,10 @@
 #include <af/image.h>
 
 using af::dim4;
+using common::cast;
 using common::flip;
 using detail::arithOp;
 using detail::Array;
-using detail::cast;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createEmptyArray;

@@ -10,7 +10,7 @@
 #pragma once
 #include <Array.hpp>
 #include <backend.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <copy.hpp>
 #include <handle.hpp>
@@ -66,7 +66,7 @@ common::SparseArray<To> castSparse(const af_array &in) {
 #define CAST_SPARSE(Ti)                                                          \
     do {                                                                         \
         const SparseArray<Ti> sparse = getSparseArray<Ti>(in);                   \
-        detail::Array<To> values     = detail::cast<To, Ti>(sparse.getValues()); \
+        detail::Array<To> values     = common::cast<To, Ti>(sparse.getValues()); \
         return createArrayDataSparseArray(                                       \
             sparse.dims(), values, sparse.getRowIdx(), sparse.getColIdx(),       \
             sparse.getStorage());                                                \
