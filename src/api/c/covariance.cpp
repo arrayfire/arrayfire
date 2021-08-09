@@ -9,7 +9,7 @@
 
 #include <arith.hpp>
 #include <backend.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <handle.hpp>
 #include <math.hpp>
 #include <mean.hpp>
@@ -23,9 +23,9 @@
 #include "stats.h"
 
 using af::dim4;
+using common::cast;
 using detail::arithOp;
 using detail::Array;
-using detail::cast;
 using detail::createValueArray;
 using detail::intl;
 using detail::mean;

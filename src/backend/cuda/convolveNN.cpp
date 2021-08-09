@@ -11,7 +11,7 @@
 
 #include <Array.hpp>
 #include <blas.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/half.hpp>
 #include <common/indexing_helpers.hpp>
 #include <common/unique_handle.hpp>

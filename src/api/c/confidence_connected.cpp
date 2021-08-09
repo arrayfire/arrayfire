@@ -10,7 +10,7 @@
 #include <af/image.h>
 
 #include <arith.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <flood_fill.hpp>
 #include <handle.hpp>
@@ -24,10 +24,10 @@
 #include <type_traits>
 
 using af::dim4;
+using common::cast;
 using common::createSpanIndex;
 using detail::arithOp;
 using detail::Array;
-using detail::cast;
 using detail::createValueArray;
 using detail::reduce_all;
 using detail::uchar;

@@ -10,7 +10,7 @@
 #include <Array.hpp>
 #include <arith.hpp>
 #include <backend.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/dispatch.hpp>
 #include <common/err_common.hpp>
 #include <complex.hpp>
@@ -32,9 +32,9 @@
 #include <vector>
 
 using af::dim4;
+using common::cast;
 using detail::arithOp;
 using detail::Array;
-using detail::cast;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createSubArray;

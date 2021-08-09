@@ -43,6 +43,8 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/TemplateArg.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TemplateTypename.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas_headers.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cast.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cast.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cblas.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/compile_module.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/complex.hpp
