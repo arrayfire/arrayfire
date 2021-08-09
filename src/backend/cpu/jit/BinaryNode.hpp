@@ -9,16 +9,15 @@
 
 #pragma once
 
+#include <binary.hpp>
+#include <common/jit/Node.hpp>
 #include <math.hpp>
 #include <optypes.hpp>
+
 #include <array>
 #include <vector>
-#include "Node.hpp"
 
 namespace cpu {
-
-template<typename To, typename Ti, af_op_t op>
-struct BinOp;
 
 namespace jit {
 
