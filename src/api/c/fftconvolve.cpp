@@ -7,13 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <fftconvolve.hpp>
+
 #include <arith.hpp>
 #include <backend.hpp>
+#include <common/cast.hpp>
 #include <common/dispatch.hpp>
 #include <common/err_common.hpp>
 #include <complex.hpp>
 #include <fft_common.hpp>
-#include <fftconvolve.hpp>
 #include <handle.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -24,9 +26,9 @@
 #include <vector>
 
 using af::dim4;
+using common::cast;
 using detail::arithOp;
 using detail::Array;
-using detail::cast;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createSubArray;

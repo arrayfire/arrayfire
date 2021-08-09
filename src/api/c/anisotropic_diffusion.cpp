@@ -11,7 +11,7 @@
 
 #include <arith.hpp>
 #include <backend.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <copy.hpp>
 #include <gradient.hpp>
@@ -24,9 +24,9 @@
 #include <type_traits>
 
 using af::dim4;
+using common::cast;
 using detail::arithOp;
 using detail::Array;
-using detail::cast;
 using detail::createEmptyArray;
 using detail::gradient;
 using detail::reduce_all;

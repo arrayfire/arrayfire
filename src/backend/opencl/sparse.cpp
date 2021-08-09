@@ -14,7 +14,7 @@
 #include <string>
 
 #include <arith.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <complex.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>

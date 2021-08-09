@@ -15,8 +15,8 @@
 
 #include <Array.hpp>
 #include <Param.hpp>
-#include <cast.hpp>
 #include <common/blas_headers.hpp>
+#include <common/cast.hpp>
 #include <common/complex.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
@@ -34,6 +34,7 @@
 #include <vector>
 
 using af::dtype_traits;
+using common::cast;
 using common::half;
 using common::is_complex;
 using std::conditional;

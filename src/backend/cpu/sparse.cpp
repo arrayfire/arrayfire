@@ -14,7 +14,7 @@
 #include <string>
 
 #include <arith.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/complex.hpp>
 #include <common/err_common.hpp>
 #include <complex.hpp>
@@ -28,6 +28,7 @@
 
 #include <functional>
 
+using common::cast;
 using std::function;
 
 namespace cpu {

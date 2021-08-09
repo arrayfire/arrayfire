@@ -9,8 +9,8 @@
 
 #pragma once
 #include <backend.hpp>
-#include <cast.hpp>
 #include <common/ArrayInfo.hpp>
+#include <common/cast.hpp>
 #include <handle.hpp>
 #include <optypes.hpp>
 #include <types.hpp>

@@ -9,7 +9,7 @@
 
 #include <arith.hpp>
 #include <backend.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <handle.hpp>
 #include <math.hpp>
@@ -23,9 +23,9 @@
 #include <cmath>
 
 using af::dim4;
+using common::cast;
 using detail::arithOp;
 using detail::Array;
-using detail::cast;
 using detail::intl;
 using detail::reduce_all;
 using detail::uchar;

@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <backend.hpp>
-#include <cast.hpp>
 #include <common/ArrayInfo.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <handle.hpp>

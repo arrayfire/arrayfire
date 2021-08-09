@@ -10,7 +10,7 @@
 #include <blas.hpp>
 
 #include <arith.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <complex.hpp>
