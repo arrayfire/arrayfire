@@ -9,6 +9,7 @@ add_library(afcommon_interface INTERFACE)
 
 target_sources(afcommon_interface
   INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/jit/BinaryNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/BinaryNode.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/NaryNode.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/Node.cpp
