@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <common/jit/NaryNode.hpp>
 
 #include <cmath>
@@ -19,4 +21,10 @@ class BinaryNode : public NaryNode {
         : NaryNode(type, op_str, 2, {{lhs, rhs}}, op,
                    std::max(lhs->getHeight(), rhs->getHeight()) + 1) {}
 };
+
+template<typename To, typename Ti, af_op_t op>
+detail::Array<To> createBinaryNode(const detail::Array<Ti> &lhs,
+                                   const detail::Array<Ti> &rhs,
+                                   const af::dim4 &odims);
+
 }  // namespace common

@@ -8,11 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <Array.hpp>
-#include <common/jit/BinaryNode.hpp>
-#include <math.hpp>
 #include <optypes.hpp>
-#include <af/dim4.hpp>
 
 namespace opencl {
 
@@ -127,23 +123,5 @@ template<typename To, typename Ti>
 struct BinOp<To, Ti, af_hypot_t> {
     const char *name() { return "hypot"; }
 };
-
-template<typename To, typename Ti, af_op_t op>
-Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs,
-                           const af::dim4 &odims) {
-    using common::Node;
-    using common::Node_ptr;
-
-    auto createBinary = [](std::array<Node_ptr, 2> &operands) -> Node_ptr {
-        BinOp<To, Ti, op> bop;
-        return Node_ptr(new common::BinaryNode(
-            static_cast<af::dtype>(dtype_traits<To>::af_type), bop.name(),
-            operands[0], operands[1], (int)(op)));
-    };
-
-    Node_ptr out =
-        common::createNaryNode<Ti, 2>(odims, createBinary, {&lhs, &rhs});
-    return createNodeArray<To>(odims, out);
-}
 
 }  // namespace opencl

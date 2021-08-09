@@ -14,6 +14,7 @@
 #include <common/kernel_cache.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/iir.hpp>
+#include <math.hpp>
 #include <traits.hpp>
 
 #include <string>
