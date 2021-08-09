@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <binary.hpp>
+#include <common/jit/BinaryNode.hpp>
 #include <err_opencl.hpp>
 #include <optypes.hpp>
 #include <af/defines.h>
@@ -18,12 +19,12 @@ namespace opencl {
 template<typename T, af_op_t op>
 Array<char> logicOp(const Array<T> &lhs, const Array<T> &rhs,
                     const af::dim4 &odims) {
-    return createBinaryNode<char, T, op>(lhs, rhs, odims);
+    return common::createBinaryNode<char, T, op>(lhs, rhs, odims);
 }
 
 template<typename T, af_op_t op>
 Array<T> bitOp(const Array<T> &lhs, const Array<T> &rhs,
                const af::dim4 &odims) {
-    return createBinaryNode<T, T, op>(lhs, rhs, odims);
+    return common::createBinaryNode<T, T, op>(lhs, rhs, odims);
 }
 }  // namespace opencl

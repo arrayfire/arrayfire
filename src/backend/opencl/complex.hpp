@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <binary.hpp>
+#include <common/jit/BinaryNode.hpp>
 #include <common/jit/UnaryNode.hpp>
 #include <optypes.hpp>
 #include <traits.hpp>
@@ -18,7 +19,7 @@ namespace opencl {
 template<typename To, typename Ti>
 Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs,
                const af::dim4 &odims) {
-    return createBinaryNode<To, Ti, af_cplx2_t>(lhs, rhs, odims);
+    return common::createBinaryNode<To, Ti, af_cplx2_t>(lhs, rhs, odims);
 }
 
 template<typename To, typename Ti>

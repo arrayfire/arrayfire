@@ -29,6 +29,7 @@ target_sources(afcpu
     assign.cpp
     assign.hpp
     backend.hpp
+    binary.hpp
     bilateral.cpp
     bilateral.hpp
     blas.cpp
