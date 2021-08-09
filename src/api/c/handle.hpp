@@ -10,7 +10,6 @@
 #pragma once
 #include <Array.hpp>
 #include <backend.hpp>
-#include <cast.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <common/traits.hpp>
@@ -32,6 +31,9 @@ af::dim4 verifyDims(const unsigned ndims, const dim_t *const dims);
 af_array createHandle(const af::dim4 &d, af_dtype dtype);
 
 af_array createHandleFromValue(const af::dim4 &d, double val, af_dtype dtype);
+
+template<typename To>
+detail::Array<To> castArray(const af_array &in);
 
 namespace {
 
@@ -66,36 +68,6 @@ detail::Array<T> &getArray(af_array &arr) {
     if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
         AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
     return *A;
-}
-
-template<typename To>
-detail::Array<To> castArray(const af_array &in) {
-    using detail::cdouble;
-    using detail::cfloat;
-    using detail::intl;
-    using detail::uchar;
-    using detail::uint;
-    using detail::uintl;
-    using detail::ushort;
-
-    const ArrayInfo &info = getInfo(in);
-    switch (info.getType()) {
-        case f32: return detail::cast<To, float>(getArray<float>(in));
-        case f64: return detail::cast<To, double>(getArray<double>(in));
-        case c32: return detail::cast<To, cfloat>(getArray<cfloat>(in));
-        case c64: return detail::cast<To, cdouble>(getArray<cdouble>(in));
-        case s32: return detail::cast<To, int>(getArray<int>(in));
-        case u32: return detail::cast<To, uint>(getArray<uint>(in));
-        case u8: return detail::cast<To, uchar>(getArray<uchar>(in));
-        case b8: return detail::cast<To, char>(getArray<char>(in));
-        case s64: return detail::cast<To, intl>(getArray<intl>(in));
-        case u64: return detail::cast<To, uintl>(getArray<uintl>(in));
-        case s16: return detail::cast<To, short>(getArray<short>(in));
-        case u16: return detail::cast<To, ushort>(getArray<ushort>(in));
-        case f16:
-            return detail::cast<To, common::half>(getArray<common::half>(in));
-        default: TYPE_ERROR(1, info.getType());
-    }
 }
 
 template<typename T>

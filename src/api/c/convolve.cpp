@@ -10,7 +10,7 @@
 
 #include <arith.hpp>
 #include <backend.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <fftconvolve.hpp>
@@ -25,10 +25,10 @@
 #include <cstdio>
 
 using af::dim4;
+using common::cast;
 using common::half;
 using detail::arithOp;
 using detail::Array;
-using detail::cast;
 using detail::cdouble;
 using detail::cfloat;
 using detail::convolve;

@@ -84,27 +84,4 @@ struct CastOp<unsigned char, common::half> {
 #undef CAST_FN
 #undef CAST_CFN
 
-template<typename To, typename Ti>
-struct CastWrapper {
-    Array<To> operator()(const Array<Ti> &in) {
-        CastOp<To, Ti> cop;
-        common::Node_ptr in_node = in.getNode();
-        common::UnaryNode *node  = new common::UnaryNode(
-            static_cast<af::dtype>(dtype_traits<To>::af_type), cop.name(),
-            in_node, af_cast_t);
-        return createNodeArray<To>(in.dims(), common::Node_ptr(node));
-    }
-};
-
-template<typename T>
-struct CastWrapper<T, T> {
-    Array<T> operator()(const Array<T> &in) { return in; }
-};
-
-template<typename To, typename Ti>
-Array<To> cast(const Array<Ti> &in) {
-    CastWrapper<To, Ti> cast_op;
-    return cast_op(in);
-}
-
 }  // namespace cuda

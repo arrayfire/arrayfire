@@ -10,7 +10,7 @@
 #include <sparse_arith.hpp>
 
 #include <arith.hpp>
-#include <cast.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <common/unique_handle.hpp>
 #include <complex.hpp>

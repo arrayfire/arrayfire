@@ -152,27 +152,4 @@ CAST_B8(int)
 CAST_B8(uchar)
 CAST_B8(char)
 
-template<typename To, typename Ti>
-struct CastWrapper {
-    Array<To> operator()(const Array<Ti> &in) {
-        common::Node_ptr in_node = in.getNode();
-        jit::UnaryNode<To, Ti, af_cast_t> *node =
-            new jit::UnaryNode<To, Ti, af_cast_t>(in_node);
-        return createNodeArray<To>(
-            in.dims(),
-            common::Node_ptr(reinterpret_cast<common::Node *>(node)));
-    }
-};
-
-template<typename T>
-struct CastWrapper<T, T> {
-    Array<T> operator()(const Array<T> &in) { return in; }
-};
-
-template<typename To, typename Ti>
-Array<To> cast(const Array<Ti> &in) {
-    CastWrapper<To, Ti> cast_op;
-    return cast_op(in);
-}
-
 }  // namespace cpu

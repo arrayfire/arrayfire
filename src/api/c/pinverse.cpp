@@ -12,8 +12,8 @@
 
 #include <arith.hpp>
 #include <blas.hpp>
-#include <cast.hpp>
 #include <common/ArrayInfo.hpp>
+#include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <diagonal.hpp>
 #include <handle.hpp>
@@ -31,9 +31,9 @@
 
 using af::dim4;
 using af::dtype_traits;
+using common::cast;
 using detail::arithOp;
 using detail::Array;
-using detail::cast;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createEmptyArray;
