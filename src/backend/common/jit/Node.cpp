@@ -57,4 +57,14 @@ std::string getFuncName(const vector<Node *> &output_nodes,
     return "KER" + std::to_string(deterministicHash(funcName));
 }
 
+bool NodePtr_equalto::operator()(const Node *l, const Node *r) const noexcept {
+    return *l == *r;
+}
+
 }  // namespace common
+
+size_t std::hash<common::Node *>::operator()(
+    common::Node *const node) const noexcept {
+    common::Node *const node_ptr = static_cast<common::Node *const>(node);
+    return node_ptr->getHash();
+}

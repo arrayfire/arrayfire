@@ -32,11 +32,30 @@ enum class kJITHeuristics {
 
 namespace common {
 class Node;
+}
+
+namespace std {
+template<>
+struct hash<common::Node *> {
+    /// Calls the getHash function of the Node pointer
+    size_t operator()(common::Node *const n) const noexcept;
+};
+}  // namespace std
+
+namespace common {
+class Node;
 struct Node_ids;
 
-using Node_ptr      = std::shared_ptr<Node>;
-using Node_map_t    = std::unordered_map<Node *, int>;
+/// A equal_to class that calls the dereference nodes equality operator
+struct NodePtr_equalto {
+    bool operator()(const Node *l, const Node *r) const noexcept;
+};
+
+using Node_map_t =
+    std::unordered_map<Node *, int, std::hash<Node *>, NodePtr_equalto>;
 using Node_map_iter = Node_map_t::iterator;
+
+using Node_ptr = std::shared_ptr<Node>;
 
 static const char *getFullName(af::dtype type) {
     switch (type) {
@@ -215,6 +234,8 @@ class Node {
         return true;
     }
 
+    af::dtype getType() const { return m_type; }
+
     /// Returns the string representation of the type
     std::string getTypeStr() const { return getFullName(m_type); }
 
@@ -228,6 +249,23 @@ class Node {
 
     /// Default destructor
     virtual ~Node() noexcept = default;
+
+    /// Returns the hash of the node. For all Nodes other than the Buffer node,
+    /// this is the pointer of the object
+    virtual size_t getHash() const noexcept {
+        std::hash<const void *> ptr_hash;
+        std::hash<af::dtype> aftype_hash;
+        std::hash<int> int_hash;
+        const void *ptr = this;
+        size_t h =
+            ptr_hash(ptr) ^ (aftype_hash(m_type) << 1) ^ (int_hash(m_height));
+        return h;
+    }
+
+    /// A very bad equality operator used only for the hash function.
+    virtual bool operator==(const Node &other) const noexcept {
+        return this == &other;
+    }
 };
 
 struct Node_ids {

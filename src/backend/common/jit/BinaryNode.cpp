@@ -34,9 +34,9 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs,
                            const af::dim4 &odims) {
     auto createBinary = [](std::array<Node_ptr, 2> &operands) -> Node_ptr {
         BinOp<To, Ti, op> bop;
-        return Node_ptr(
-            new BinaryNode(static_cast<af::dtype>(dtype_traits<To>::af_type),
-                           bop.name(), operands[0], operands[1], (int)(op)));
+        return std::make_shared<BinaryNode>(
+            static_cast<af::dtype>(dtype_traits<To>::af_type), bop.name(),
+            operands[0], operands[1], (int)(op));
     };
 
     Node_ptr out =
