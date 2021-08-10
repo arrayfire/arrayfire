@@ -14,6 +14,13 @@
 #include <af/dim4.hpp>
 
 namespace cuda {
+
+template<typename T, af_op_t op>
+Array<T> arithOp(const Array<T> &&lhs, const Array<T> &&rhs,
+                 const af::dim4 &odims) {
+    return common::createBinaryNode<T, T, op>(lhs, rhs, odims);
+}
+
 template<typename T, af_op_t op>
 Array<T> arithOp(const Array<T> &lhs, const Array<T> &rhs,
                  const af::dim4 &odims) {
