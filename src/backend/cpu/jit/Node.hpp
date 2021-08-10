@@ -18,7 +18,6 @@
 #include <array>
 #include <memory>
 #include <unordered_map>
-#include <vector>
 
 namespace common {
 template<typename T>

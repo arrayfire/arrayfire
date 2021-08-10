@@ -11,10 +11,13 @@
 
 #include <optypes.hpp>
 #include <af/defines.h>
-
-#include <mutex>
-#include <vector>
 #include "Node.hpp"
+
+#include <functional>
+#include <memory>
+#include <sstream>
+#include <string>
+
 namespace cpu {
 
 namespace jit {
@@ -126,6 +129,36 @@ class BufferNode : public TNode<T> {
     }
 
     bool isBuffer() const final { return true; }
+
+    size_t getHash() const noexcept final {
+        std::hash<const void *> ptr_hash;
+        std::hash<af::dtype> aftype_hash;
+        return ptr_hash(static_cast<const void *>(m_ptr)) ^
+               (aftype_hash(
+                    static_cast<af::dtype>(af::dtype_traits<T>::af_type))
+                << 1);
+    }
+
+    /// Compares two BufferNodeBase objects for equality
+    bool operator==(const BufferNode<T> &other) const noexcept {
+        using std::begin;
+        using std::end;
+        using std::equal;
+        return m_ptr == other.m_ptr && m_bytes == other.m_bytes &&
+               m_linear_buffer == other.m_linear_buffer &&
+               equal(begin(m_dims), end(m_dims), begin(other.m_dims)) &&
+               equal(begin(m_strides), end(m_strides), begin(other.m_strides));
+    };
+
+    /// Overloads the equality operator to call comparisons between Buffer
+    /// objects. Calls the BufferNodeBase equality operator if the other
+    /// object is also a Buffer Node
+    bool operator==(const common::Node &other) const noexcept final {
+        if (other.isBuffer() && this->getType() == other.getType()) {
+            return *this == static_cast<const BufferNode<T> &>(other);
+        }
+        return false;
+    }
 };
 
 }  // namespace jit
