@@ -94,7 +94,9 @@ common::Node_ptr createNaryNode(
     const af::dim4 &odims, FUNC createNode,
     std::array<const detail::Array<Ti> *, N> &&children) {
     std::array<common::Node_ptr, N> childNodes;
-    for (int i = 0; i < N; i++) { childNodes[i] = children[i]->getNode(); }
+    for (int i = 0; i < N; i++) {
+        childNodes[i] = move(children[i]->getNode());
+    }
 
     common::Node_ptr ptr = createNode(childNodes);
 

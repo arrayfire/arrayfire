@@ -273,7 +273,7 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
 
 template<typename T>
 Array<T> createNodeArray(const dim4 &dims, Node_ptr node) {
-    Array<T> out = Array<T>(dims, node);
+    Array<T> out(dims, node);
     return out;
 }
 
