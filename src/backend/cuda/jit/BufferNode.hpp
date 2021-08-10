@@ -16,4 +16,19 @@ namespace jit {
 template<typename T>
 using BufferNode = common::BufferNodeBase<std::shared_ptr<T>, Param<T>>;
 }
+
 }  // namespace cuda
+
+namespace common {
+
+template<typename DataType, typename ParamType>
+bool BufferNodeBase<DataType, ParamType>::operator==(
+    const BufferNodeBase<DataType, ParamType> &other) const noexcept {
+    // clang-format off
+    return m_data.get() == other.m_data.get() &&
+           m_bytes == other.m_bytes &&
+           m_param.ptr == other.m_param.ptr;
+    // clang-format on
+}
+
+}  // namespace common
