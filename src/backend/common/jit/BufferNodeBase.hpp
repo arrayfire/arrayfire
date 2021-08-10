@@ -92,6 +92,29 @@ class BufferNodeBase : public common::Node {
     }
 
     size_t getBytes() const final { return m_bytes; }
+
+    size_t getHash() const noexcept {
+        size_t out = 0;
+        auto ptr   = m_data.get();
+        memcpy(&out, &ptr, std::max(sizeof(Node *), sizeof(size_t)));
+        return out;
+    }
+
+    /// Compares two BufferNodeBase objects for equality
+    bool operator==(
+        const BufferNodeBase<DataType, ParamType> &other) const noexcept;
+
+    /// Overloads the equality operator to call comparisons between Buffer
+    /// objects. Calls the BufferNodeBase equality operator if the other
+    /// object is also a Buffer Node
+    bool operator==(const common::Node &other) const noexcept final {
+        if (other.isBuffer()) {
+            return *this ==
+                   static_cast<const BufferNodeBase<DataType, ParamType> &>(
+                       other);
+        }
+        return false;
+    }
 };
 
 }  // namespace common
