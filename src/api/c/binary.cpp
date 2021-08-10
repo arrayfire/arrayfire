@@ -27,6 +27,7 @@
 #include <common/half.hpp>
 
 using af::dim4;
+using af::dtype;
 using common::half;
 using detail::arithOp;
 using detail::arithOpD;
@@ -41,9 +42,17 @@ using detail::ushort;
 template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs,
                                const dim4 &odims) {
-    af_array res =
-        getHandle(arithOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
-    return res;
+    const ArrayInfo &linfo = getInfo(lhs);
+    const ArrayInfo &rinfo = getInfo(rhs);
+
+    dtype type = static_cast<af::dtype>(af::dtype_traits<T>::af_type);
+
+    const detail::Array<T> &l =
+        linfo.getType() == type ? getArray<T>(lhs) : castArray<T>(lhs);
+    const detail::Array<T> &r =
+        rinfo.getType() == type ? getArray<T>(rhs) : castArray<T>(rhs);
+
+    return getHandle(arithOp<T, op>(l, r, odims));
 }
 
 template<typename T, af_op_t op>
