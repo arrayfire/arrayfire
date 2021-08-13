@@ -5,8 +5,8 @@ software development for the parallel architectures found in CPUs, GPUs, and
 other hardware acceleration devices. The library serves users in every technical
 computing market.
 
-The community of ArrayFire developers invites you to build with us if you're
-interested and able to write top performing tensor functions. Together we can fulfill
+The community of ArrayFire developers invites you to build with us if you are
+interested and able to write top-performing tensor functions. Together we can fulfill
 [The ArrayFire Mission](https://github.com/arrayfire/arrayfire/wiki/The-ArrayFire-Mission-Statement)
 under an excellent Code of Conduct that promotes a respectful and friendly building experience.
 
@@ -25,18 +25,18 @@ Several of ArrayFire's benefits include:
 * [Easy to use](http://arrayfire.org/docs/gettingstarted.htm), stable,
   [well-documented](http://arrayfire.org/docs) API
 * Rigorous benchmarks and tests ensuring top performance and numerical accuracy
-* Cross platform compatibility with support for CUDA, OpenCL, and native CPU on Windows, Mac, and Linux
+* Cross-platform compatibility with support for CUDA, OpenCL, and native CPU on Windows, Mac, and Linux
 * Built-in visualization functions through [Forge](https://github.com/arrayfire/forge)
 * Commercially friendly open-source licensing
-* Commercial support from [ArrayFire](http://arrayfire.com)
+* Enterprise support from [ArrayFire](http://arrayfire.com)
 
 ArrayFire provides software developers with a high-level
 abstraction of data that resides on the accelerator, the `af::array` object.
-Developers write code that performs operations on ArrayFire arrays which, in turn,
+Developers write code that performs operations on ArrayFire arrays, which, in turn,
 are automatically translated into near-optimal kernels that execute on the computational
 device.
 
-ArrayFire is successfully used on devices ranging from low-power mobile phones
+ArrayFire runs on devices ranging from low-power mobile phones
 to high-power GPU-enabled supercomputers. ArrayFire runs on CPUs from all
 major vendors (Intel, AMD, ARM), GPUs from the prominent manufacturers
 (NVIDIA, AMD, and Qualcomm), as well as a variety of other accelerator devices
@@ -44,7 +44,7 @@ on Windows, Mac, and Linux.
 
 # Getting ArrayFire
 
-Instructions to install or build ArrayFire from source can be found on our [wiki][1]
+Instructions to install or to build ArrayFire from source can be found on the [wiki][1].
 
 ### Conway's Game of Life Using ArrayFire
 
@@ -66,7 +66,7 @@ while(!myWindow.close()) {
     myWindow.image(state);    // Display
 }
 ```
-The full source code can be found [here][3].
+The complete source code can be found [here][3].
 
 ### Perceptron
 
@@ -94,13 +94,13 @@ array train(const array &X, const array &Y,
 }
 ```
 
-The full source code can be found [here][31].
+The complete source code can be found [here][31].
 
 For more code examples, visit the [`examples/`][4] directory.
 
 # Documentation
 
-You can find our complete documentation [here](http://www.arrayfire.com/docs/index.htm).
+You can find the complete documentation [here](http://www.arrayfire.com/docs/index.htm).
 
 Quick links:
 
@@ -111,7 +111,7 @@ Quick links:
 
 # Language support
 
-ArrayFire has several official and third-party language API`s:
+ArrayFire has several official and third-party language API's:
 
 [![C++][5]][6] [![Python][7]][8] [![Rust][9]][10] [![Julia][27]][28]<sub><span>&#8224;</span></sub>
 [![Nim][29]][30]<sub><span>&#8224;</span></sub>
@@ -127,7 +127,8 @@ __In-Progress Wrappers__
 
 Contributions of any kind are welcome! Please refer to
 [the wiki](https://github.com/arrayfire/arrayfire/wiki)
-to learn more about how you can get involved with ArrayFire.
+to learn more about how you can get involved with the ArrayFire Community
+through [Sponsorship](https://github.com/arrayfire/arrayfire/wiki/Sponsorship), [Developer Commits](https://github.com/arrayfire/arrayfire/wiki/Contributing-Code-to-ArrayFire), or [Governance](https://github.com/arrayfire/arrayfire/wiki/Governance).
 
 # Citations and Acknowledgements
 
@@ -146,7 +147,7 @@ please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for an expression
 
 # Trademark Policy
 
-The literal mark “ArrayFire” and ArrayFire logos are trademarks of
+The literal mark "ArrayFire" and ArrayFire logos are trademarks of
 AccelerEyes LLC (dba ArrayFire).
 If you wish to use either of these marks in your own project, please consult
 [ArrayFire's Trademark Policy](http://arrayfire.com/trademark-policy/)
