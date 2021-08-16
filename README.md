@@ -44,7 +44,7 @@ on Windows, Mac, and Linux.
 
 # Getting ArrayFire
 
-Instructions to install or to build ArrayFire from source can be found on the [wiki][1].
+Instructions to [install][32] or to build ArrayFire from source can be found on the [wiki][1].
 
 ### Conway's Game of Life Using ArrayFire
 
@@ -183,3 +183,4 @@ If you wish to use either of these marks in your own project, please consult
 [29]: https://img.shields.io/badge/n-Nim-000000?style=for-the-badge&labelColor=efc743
 [30]: https://github.com/bitstormGER/ArrayFire-Nim
 [31]: https://github.com/arrayfire/arrayfire/blob/master/examples/machine_learning/perceptron.cpp
+[32]: https://github.com/arrayfire/arrayfire/wiki/Getting-ArrayFire
