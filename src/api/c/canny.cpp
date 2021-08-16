@@ -95,8 +95,8 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
 
     const dim4& iDims = supEdges.dims();
 
-    Array<float> sigmas = createEmptyArray<float>(hDims);
-
+    dim4 sigmaDims(NUM_BINS - 1, hDims[1], hDims[2], hDims[3]);
+    Array<float> sigmas = createEmptyArray<float>(sigmaDims);
     for (unsigned b = 0; b < (NUM_BINS - 1); ++b) {
         seqBegin[0].end  = static_cast<double>(b);
         seqRest[0].begin = static_cast<double>(b + 1);
