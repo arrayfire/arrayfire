@@ -114,7 +114,6 @@ void cannyImageOtsuTest(string pTestFile, bool isColor) {
         af_array mulArray  = 0;
         af_array outArray  = 0;
         af_array goldArray = 0;
-        dim_t nElems       = 0;
 
         inFiles[testId].insert(0, string(TEST_DIR "/CannyEdgeDetector/"));
         outFiles[testId].insert(0, string(TEST_DIR "/CannyEdgeDetector/"));
@@ -129,12 +128,9 @@ void cannyImageOtsuTest(string pTestFile, bool isColor) {
         ASSERT_SUCCESS(
             af_load_image_native(&goldArray, outFiles[testId].c_str()));
 
-        ASSERT_SUCCESS(af_get_elements(&nElems, goldArray));
-
         ASSERT_SUCCESS(af_canny(&_outArray, inArray,
                                 AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3,
                                 false));
-
         unsigned ndims = 0;
         dim_t dims[4];
 
@@ -219,4 +215,50 @@ TEST(CannyEdgeDetector, Sobel5x5_Invalid) {
                        0.72, 5, true));
 
     ASSERT_SUCCESS(af_release_array(inArray));
+}
+
+template<typename T>
+void cannyImageOtsuBatchTest(string pTestFile, const dim_t targetBatchCount) {
+    SUPPORTED_TYPE_CHECK(T);
+    if (noImageIOTests()) return;
+
+    using af::array;
+    using af::canny;
+    using af::loadImage;
+    using af::loadImageNative;
+    using af::tile;
+
+    vector<dim4> inDims;
+    vector<string> inFiles;
+    vector<dim_t> outSizes;
+    vector<string> outFiles;
+
+    readImageTests(pTestFile, inDims, inFiles, outSizes, outFiles);
+
+    size_t testCount = inDims.size();
+
+    for (size_t testId = 0; testId < testCount; ++testId) {
+        inFiles[testId].insert(0, string(TEST_DIR "/CannyEdgeDetector/"));
+        outFiles[testId].insert(0, string(TEST_DIR "/CannyEdgeDetector/"));
+
+        af_dtype type  = (af_dtype)dtype_traits<T>::af_type;
+        array readGold = loadImageNative(outFiles[testId].c_str());
+        array goldIm   = tile(readGold, 1, 1, targetBatchCount);
+        array readImg  = loadImage(inFiles[testId].c_str(), false).as(type);
+        array inputIm  = tile(readImg, 1, 1, targetBatchCount);
+
+        array outIm =
+            canny(inputIm, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false);
+        outIm *= 255.0;
+
+        ASSERT_IMAGES_NEAR(outIm.as(u8), goldIm, 1.0e-3);
+    }
+}
+
+TEST(CannyEdgeDetector, BatchofImagesUsingCPPAPI) {
+    // DO NOT INCREASE BATCH COUNT BEYOND 4
+    // This is a limitation on the test assert macro that is saving
+    // images to disk which can't handle a batch of images.
+    cannyImageOtsuBatchTest<float>(
+        string(TEST_DIR "/CannyEdgeDetector/gray.test"), 3);
 }
