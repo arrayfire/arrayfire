@@ -54,14 +54,7 @@ void bilateralTest(string pTestFile) {
         ASSERT_SUCCESS(
             af_bilateral(&outArray, inArray, 2.25f, 25.56f, isColor));
 
-        vector<T> outData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
-
-        vector<T> goldData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)goldData.data(), goldArray));
-
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(),
-                                          outData.data(), 0.02f));
+        ASSERT_IMAGES_NEAR(goldArray, outArray, 0.02f);
 
         ASSERT_SUCCESS(af_release_array(inArray));
         ASSERT_SUCCESS(af_release_array(outArray));
