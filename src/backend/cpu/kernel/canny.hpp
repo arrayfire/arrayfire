@@ -114,7 +114,7 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dxParam,
 }
 
 template<typename T>
-void traceEdge(T* out, const T* strong, const T* weak, int t, int width) {
+void traceEdge(T* out, const T* strong, const T* weak, int t, int stride1) {
     if (!out || !strong || !weak) return;
 
     const T EDGE = 1;
@@ -129,12 +129,12 @@ void traceEdge(T* out, const T* strong, const T* weak, int t, int width) {
         // get indices of 8 neighbours
         std::array<dim_t, 8> potentials;
 
-        potentials[0] = t - width - 1;      // north-west
+        potentials[0] = t - stride1 - 1;    // north-west
         potentials[1] = potentials[0] + 1;  // north
         potentials[2] = potentials[1] + 1;  // north-east
         potentials[3] = t - 1;              // west
         potentials[4] = t + 1;              // east
-        potentials[5] = t + width - 1;      // south-west
+        potentials[5] = t + stride1 - 1;    // south-west
         potentials[6] = potentials[5] + 1;  // south
         potentials[7] = potentials[6] + 1;  // south-east
 
@@ -151,27 +151,33 @@ void traceEdge(T* out, const T* strong, const T* weak, int t, int width) {
 
 template<typename T>
 void edgeTrackingHysteresis(Param<T> out, CParam<T> strong, CParam<T> weak) {
-    const af::dim4 dims = strong.dims();
+    const af::dim4 dims    = strong.dims();
+    const dim_t batchCount = dims[2] * dims[3];
+    const dim_t jMax       = dims[1] - 1;
+    const dim_t iMax       = dims[0] - 1;
 
-    dim_t t = dims[0] +
-              1;  // skip the first coloumn and first element of second coloumn
-    dim_t jMax = dims[1] - 1;  // max Y value to traverse, ignore right coloumn
-    dim_t iMax = dims[0] - 1;  // max X value to traverse, ignore bottom border
-
-    T* optr       = out.get();
     const T* sptr = strong.get();
     const T* wptr = weak.get();
+    T* optr       = out.get();
 
-    for (dim_t j = 1; j <= jMax; ++j) {
-        for (dim_t i = 1; i <= iMax; ++i, ++t) {
-            // if current pixel(sptr) is part of a edge
-            // and output doesn't have it marked already,
-            // mark it and trace the pixels from here.
-            if (sptr[t] > 0 && optr[t] != 1) {
-                optr[t] = 1;
-                traceEdge(optr, sptr, wptr, t, dims[0]);
+    for (dim_t batchId = 0; batchId < batchCount; ++batchId) {
+        // Skip processing borders
+        dim_t t = dims[0] + 1;
+
+        for (dim_t j = 1; j <= jMax; ++j) {
+            for (dim_t i = 1; i <= iMax; ++i, ++t) {
+                // if current pixel(sptr) is part of a edge
+                // and output doesn't have it marked already,
+                // mark it and trace the pixels from here.
+                if (sptr[t] > 0 && optr[t] != 1) {
+                    optr[t] = 1;
+                    traceEdge(optr, sptr, wptr, t, dims[0]);
+                }
             }
         }
+        optr += out.strides(2);
+        sptr += strong.strides(2);
+        wptr += weak.strides(2);
     }
 }
 }  // namespace kernel

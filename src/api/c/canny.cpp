@@ -89,6 +89,7 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
 
     vector<af_seq> seqBegin(4, af_span);
     vector<af_seq> seqRest(4, af_span);
+    vector<af_seq> sliceIndex(4, af_span);
 
     seqBegin[0] = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
     seqRest[0]  = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
@@ -129,11 +130,8 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
         auto op2   = arithOp<float, af_mul_t>(qL, qH, tdims);
         auto sigma = arithOp<float, af_mul_t>(sqrd, op2, tdims);
 
-        vector<af_seq> sliceIndex(4, af_span);
         sliceIndex[0] = {double(b), double(b), 1};
-
-        auto binRes = createSubArray<float>(sigmas, sliceIndex, false);
-
+        auto binRes   = createSubArray<float>(sigmas, sliceIndex, false);
         copyArray(binRes, sigma);
     }
 
