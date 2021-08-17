@@ -21,6 +21,7 @@
 #include <ireduce.hpp>
 #include <logic.hpp>
 #include <reduce.hpp>
+#include <scan.hpp>
 #include <sobel.hpp>
 #include <tile.hpp>
 #include <transpose.hpp>
@@ -47,6 +48,7 @@ using detail::ireduce;
 using detail::logicOp;
 using detail::reduce;
 using detail::reduce_all;
+using detail::scan;
 using detail::sobelDerivatives;
 using detail::uchar;
 using detail::uint;
@@ -71,22 +73,14 @@ Array<float> gradientMagnitude(const Array<float>& gx, const Array<float>& gy,
     }
 }
 
-Array<float> otsuThreshold(const Array<float>& supEdges,
-                           const unsigned NUM_BINS, const float maxVal) {
-    Array<uint> hist = histogram<float>(supEdges, NUM_BINS, 0, maxVal, false);
+Array<float> otsuThreshold(const Array<float>& in, const unsigned NUM_BINS,
+                           const float maxVal) {
+    Array<uint> hist = histogram<float>(in, NUM_BINS, 0, maxVal, false);
 
-    const dim4& hDims = hist.dims();
+    const dim4& inDims = in.dims();
+    const dim4& hDims  = hist.dims();
 
-    // reduce along histogram dimension i.e. 0th dimension
-    auto totals = reduce<af_add_t, uint, float>(hist, 0);
-
-    // tile histogram total along 0th dimension
-    auto ttotals = tile(totals, dim4(hDims[0]));
-
-    // pixel frequency probabilities
-    auto probability =
-        arithOp<float, af_div_t>(cast<float, uint>(hist), ttotals, hDims);
-
+    const dim4 oDims(1, hDims[1], hDims[2], hDims[3]);
     vector<af_seq> seqBegin(4, af_span);
     vector<af_seq> seqRest(4, af_span);
     vector<af_seq> sliceIndex(4, af_span);
@@ -94,55 +88,53 @@ Array<float> otsuThreshold(const Array<float>& supEdges,
     seqBegin[0] = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
     seqRest[0]  = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
 
-    const dim4& iDims = supEdges.dims();
+    Array<float> TWOS   = createValueArray<float>(oDims, 2.0f);
+    Array<float> UnitP  = createValueArray<float>(oDims, 1.0f);
+    Array<float> histf  = cast<float, uint>(hist);
+    Array<float> totals = createValueArray<float>(hDims, inDims[0] * inDims[1]);
+    Array<float> weights =
+        iota<float>(dim4(NUM_BINS), oDims);  // a.k.a histogram shape
+
+    // pixel frequency probabilities
+    auto freqs        = arithOp<float, af_div_t>(histf, totals, hDims);
+    auto cumFreqs     = scan<af_add_t, float, float>(freqs, 0);
+    auto oneMCumFreqs = arithOp<float, af_sub_t>(UnitP, cumFreqs, hDims);
+    auto qLqH         = arithOp<float, af_mul_t>(cumFreqs, oneMCumFreqs, hDims);
+    auto product      = arithOp<float, af_mul_t>(weights, freqs, hDims);
+    auto cumProduct   = scan<af_add_t, float, float>(product, 0);
+    auto weightedSum  = reduce<af_add_t, float, float>(product, 0);
 
     dim4 sigmaDims(NUM_BINS - 1, hDims[1], hDims[2], hDims[3]);
     Array<float> sigmas = createEmptyArray<float>(sigmaDims);
     for (unsigned b = 0; b < (NUM_BINS - 1); ++b) {
+        const dim4 fDims(b + 1, hDims[1], hDims[2], hDims[3]);
+        const dim4 eDims(NUM_BINS - 1 - b, hDims[1], hDims[2], hDims[3]);
+
+        sliceIndex[0]    = {double(b), double(b), 1};
         seqBegin[0].end  = static_cast<double>(b);
         seqRest[0].begin = static_cast<double>(b + 1);
 
-        auto frontPartition = createSubArray(probability, seqBegin, false);
-        auto endPartition   = createSubArray(probability, seqRest, false);
+        auto qL    = createSubArray(cumFreqs, sliceIndex, false);
+        auto qH    = arithOp<float, af_sub_t>(UnitP, qL, oDims);
+        auto _muL  = createSubArray(cumProduct, sliceIndex, false);
+        auto _muH  = arithOp<float, af_sub_t>(weightedSum, _muL, oDims);
+        auto muL   = arithOp<float, af_div_t>(_muL, qL, oDims);
+        auto muH   = arithOp<float, af_div_t>(_muH, qH, oDims);
+        auto diff  = arithOp<float, af_sub_t>(muL, muH, oDims);
+        auto sqrd  = arithOp<float, af_pow_t>(diff, TWOS, oDims);
+        auto op2   = createSubArray(qLqH, sliceIndex, false);
+        auto sigma = arithOp<float, af_mul_t>(sqrd, op2, oDims);
 
-        auto qL = reduce<af_add_t, float, float>(frontPartition, 0);
-        auto qH = reduce<af_add_t, float, float>(endPartition, 0);
-
-        const dim4 fdims(b + 1, hDims[1], hDims[2], hDims[3]);
-        const dim4 edims(NUM_BINS - 1 - b, hDims[1], hDims[2], hDims[3]);
-
-        const dim4 tdims(1, hDims[1], hDims[2], hDims[3]);
-        auto frontWeights = iota<float>(dim4(b + 1), tdims);
-        auto endWeights   = iota<float>(dim4(NUM_BINS - 1 - b), tdims);
-        auto offsetValues = createValueArray<float>(edims, b + 1);
-
-        endWeights = arithOp<float, af_add_t>(endWeights, offsetValues, edims);
-        auto __muL =
-            arithOp<float, af_mul_t>(frontPartition, frontWeights, fdims);
-        auto __muH = arithOp<float, af_mul_t>(endPartition, endWeights, edims);
-        auto _muL  = reduce<af_add_t, float, float>(__muL, 0);
-        auto _muH  = reduce<af_add_t, float, float>(__muH, 0);
-        auto muL   = arithOp<float, af_div_t>(_muL, qL, tdims);
-        auto muH   = arithOp<float, af_div_t>(_muH, qH, tdims);
-        auto TWOS  = createValueArray<float>(tdims, 2.0f);
-        auto diff  = arithOp<float, af_sub_t>(muL, muH, tdims);
-        auto sqrd  = arithOp<float, af_pow_t>(diff, TWOS, tdims);
-        auto op2   = arithOp<float, af_mul_t>(qL, qH, tdims);
-        auto sigma = arithOp<float, af_mul_t>(sqrd, op2, tdims);
-
-        sliceIndex[0] = {double(b), double(b), 1};
-        auto binRes   = createSubArray<float>(sigmas, sliceIndex, false);
+        auto binRes = createSubArray<float>(sigmas, sliceIndex, false);
         copyArray(binRes, sigma);
     }
 
-    dim4 odims          = sigmas.dims();
-    odims[0]            = 1;
-    Array<float> thresh = createEmptyArray<float>(odims);
-    Array<uint> locs    = createEmptyArray<uint>(odims);
+    Array<float> thresh = createEmptyArray<float>(oDims);
+    Array<uint> locs    = createEmptyArray<uint>(oDims);
 
     ireduce<af_max_t, float>(thresh, locs, sigmas, 0);
 
-    return cast<float, uint>(tile(locs, dim4(iDims[0], iDims[1], 1, 1)));
+    return cast<float, uint>(tile(locs, dim4(inDims[0], inDims[1])));
 }
 
 Array<float> normalize(const Array<float>& supEdges, const float minVal,
