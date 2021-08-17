@@ -27,6 +27,8 @@
 
 #if defined(USE_MTX)
 #include <mmio.h>
+#include <cstdlib>
+
 #endif
 
 bool operator==(const af_half &lhs, const af_half &rhs);
@@ -129,6 +131,9 @@ void readImageFeaturesDescriptors(
  */
 template<typename T>
 bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance);
+
+template<typename T>
+double computeArraysRMSD(dim_t data_size, T *gold, T *data);
 
 template<typename T, typename Other>
 struct is_same_type {
@@ -324,6 +329,17 @@ template<typename T>
                                            const af::array &b,
                                            float maxAbsDiff);
 
+::testing::AssertionResult assertImageNear(std::string aName, std::string bName,
+                                           std::string maxAbsDiffName,
+                                           const af_array &a, const af_array &b,
+                                           float maxAbsDiff);
+
+::testing::AssertionResult assertImageNear(std::string aName, std::string bName,
+                                           std::string maxAbsDiffName,
+                                           const af::array &a,
+                                           const af::array &b,
+                                           float maxAbsDiff);
+
 // Called by ASSERT_VEC_ARRAY_NEAR
 template<typename T>
 ::testing::AssertionResult assertArrayNear(
@@ -388,6 +404,18 @@ template<typename T>
 /// \NOTE: This macro will deallocate the af_arrays after the call
 #define ASSERT_ARRAYS_NEAR(EXPECTED, ACTUAL, MAX_ABSDIFF) \
     ASSERT_PRED_FORMAT3(assertArrayNear, EXPECTED, ACTUAL, MAX_ABSDIFF)
+
+/// Compares two af::array or af_arrays for their type, dims, and values (with a
+/// given tolerance).
+///
+/// \param[in] EXPECTED Expected value of the assertion
+/// \param[in] ACTUAL Actual value of the calculation
+/// \param[in] MAX_ABSDIFF Expected maximum absolute difference between
+///            elements of EXPECTED and ACTUAL
+///
+/// \NOTE: This macro will deallocate the af_arrays after the call
+#define ASSERT_IMAGES_NEAR(EXPECTED, ACTUAL, MAX_ABSDIFF) \
+    ASSERT_PRED_FORMAT3(assertImageNear, EXPECTED, ACTUAL, MAX_ABSDIFF)
 
 /// Compares a std::vector with an af::array for their dims and values (with a
 /// given tolerance).

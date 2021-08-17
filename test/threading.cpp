@@ -132,20 +132,12 @@ void morphTest(const array input, const array mask, const bool isDilation,
                const array gold, int targetDevice) {
     setDevice(targetDevice);
 
-    vector<float> goldData(gold.elements());
-    vector<float> outData(gold.elements());
-
-    gold.host((void*)goldData.data());
-
     array out;
 
     for (unsigned i = 0; i < ITERATION_COUNT; ++i)
         out = isDilation ? dilate(input, mask) : erode(input, mask);
 
-    out.host((void*)outData.data());
-
-    ASSERT_EQ(true, compareArraysRMSD(gold.elements(), goldData.data(),
-                                      outData.data(), 0.018f));
+    ASSERT_IMAGES_NEAR(gold, out, 0.018f);
 }
 
 TEST(Threading, SetPerThreadActiveDevice) {

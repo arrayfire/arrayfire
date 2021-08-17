@@ -183,20 +183,15 @@ void morphImageTest(string pTestFile, dim_t seLen) {
         }
 
 #if defined(AF_CPU)
-        ASSERT_EQ(error_code, AF_SUCCESS);
-
-        vector<T> outData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
-
-        vector<T> goldData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)goldData.data(), goldArray));
-
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(),
-                                          outData.data(), 0.018f));
+        ASSERT_SUCCESS(error_code);
+        ASSERT_IMAGES_NEAR(goldArray, outArray, 0.018f);
 #else
         ASSERT_EQ(error_code,
                   (targetType != b8 && seLen > 19 ? AF_ERR_NOT_SUPPORTED
                                                   : AF_SUCCESS));
+        if (!(targetType != b8 && seLen > 19)) {
+            ASSERT_IMAGES_NEAR(goldArray, outArray, 0.018f);
+        }
 #endif
 
         ASSERT_SUCCESS(af_release_array(_inArray));
