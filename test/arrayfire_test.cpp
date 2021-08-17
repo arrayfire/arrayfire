@@ -19,7 +19,13 @@
 
 #include <algorithm>
 #include <cfloat>
+#include <cmath>
+#include <complex>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
+#include <iomanip>
 #include <iterator>
 #include <limits>
 #include <numeric>
@@ -161,6 +167,83 @@ std::ostream &operator<<(std::ostream &os, half_float::half val) {
                    << b.type() << ") and " << aName << "(" << a.type() << ")";
     }
 
+    return ::testing::AssertionSuccess();
+}
+
+template<typename T>
+::testing::AssertionResult imageEq(std::string aName, std::string bName,
+                                   const af::array &a, const af::array &b,
+                                   float maxAbsDiff) {
+    std::vector<T> avec(a.elements());
+    a.host(avec.data());
+    std::vector<T> bvec(b.elements());
+    b.host(bvec.data());
+    double NRMSD = computeArraysRMSD(a.elements(), avec.data(), bvec.data());
+
+    if (NRMSD < maxAbsDiff) {
+        return ::testing::AssertionSuccess();
+    } else {
+        std::string test_name =
+            ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+        std::string valid_path =
+            std::string(TEST_RESULT_IMAGE_DIR) + test_name + "ValidImage.png";
+        std::string result_path =
+            std::string(TEST_RESULT_IMAGE_DIR) + test_name + "ResultImage.png";
+        std::string diff_path =
+            std::string(TEST_RESULT_IMAGE_DIR) + test_name + "DiffImage.png";
+
+        // af::array img = af::join(1, a, b);
+        // af::Window win;
+        // while (!win.close()) { win.image(img); }
+        af::saveImage(valid_path.c_str(), a.as(f32));
+        af::saveImage(result_path.c_str(), b.as(f32));
+        af::saveImage(diff_path.c_str(), abs(a.as(f32) - b.as(f32)));
+
+        std::cout
+            << "<DartMeasurementFile type=\"image/png\" name=\"ValidImage\">"
+            << valid_path << "</DartMeasurementFile>\n";
+        std::cout
+            << "<DartMeasurementFile type=\"image/png\" name=\"TestImage\">"
+            << result_path << "</DartMeasurementFile>\n";
+
+        std::cout << "<DartMeasurementFile "
+                  << "type=\"image/png\" name=\"DifferenceImage2\">"
+                  << diff_path << "</DartMeasurementFile>\n";
+
+        return ::testing::AssertionFailure()
+               << "RMSD Error(" << NRMSD << ") exceeds threshold(" << maxAbsDiff
+               << "): " << bName << "(" << b.type() << ") and " << aName << "("
+               << a.type() << ")";
+    }
+}
+
+// Called by ASSERT_ARRAYS_EQ
+::testing::AssertionResult assertImageEq(std::string aName, std::string bName,
+                                         const af::array &a, const af::array &b,
+                                         float maxAbsDiff) {
+    af::dtype aType = a.type();
+    af::dtype bType = b.type();
+    if (aType != bType)
+        return ::testing::AssertionFailure()
+               << "TYPE MISMATCH: \n"
+               << "  Actual: " << bName << "(" << b.type() << ")\n"
+               << "Expected: " << aName << "(" << a.type() << ")";
+
+    af::dtype arrDtype = aType;
+    if (a.dims() != b.dims())
+        return ::testing::AssertionFailure()
+               << "SIZE MISMATCH: \n"
+               << "  Actual: " << bName << "([" << b.dims() << "])\n"
+               << "Expected: " << aName << "([" << a.dims() << "])";
+
+    switch (arrDtype) {
+        case u8: return imageEq<unsigned char>(aName, bName, a, b, maxAbsDiff);
+        case b8: return imageEq<char>(aName, bName, a, b, maxAbsDiff);
+        case f32: return imageEq<float>(aName, bName, a, b, maxAbsDiff);
+        case f64: return imageEq<double>(aName, bName, a, b, maxAbsDiff);
+        default: throw(AF_ERR_NOT_SUPPORTED);
+    }
     return ::testing::AssertionSuccess();
 }
 
@@ -641,6 +724,30 @@ void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
     return assertArrayEq(aName, bName, a, b, maxAbsDiff);
 }
 
+// Called by ASSERT_IMAGES_NEAR
+::testing::AssertionResult assertImageNear(std::string aName, std::string bName,
+                                           std::string maxAbsDiffName,
+                                           const af_array &a, const af_array &b,
+                                           float maxAbsDiff) {
+    UNUSED(maxAbsDiffName);
+    af_array aa = 0, bb = 0;
+    af_retain_array(&aa, a);
+    af_retain_array(&bb, b);
+    af::array aaa(aa);
+    af::array bbb(bb);
+    return assertImageEq(aName, bName, aaa, bbb, maxAbsDiff);
+}
+
+// Called by ASSERT_IMAGES_NEAR
+::testing::AssertionResult assertImageNear(std::string aName, std::string bName,
+                                           std::string maxAbsDiffName,
+                                           const af::array &a,
+                                           const af::array &b,
+                                           float maxAbsDiff) {
+    UNUSED(maxAbsDiffName);
+    return assertImageEq(aName, bName, a, b, maxAbsDiff);
+}
+
 // To support C API
 ::testing::AssertionResult assertArrayNear(std::string aName, std::string bName,
                                            std::string maxAbsDiffName,
@@ -909,6 +1016,53 @@ INSTANTIATE(unsigned int);
 #undef INSTANTIATE
 
 template<typename T>
+double computeArraysRMSD(dim_t data_size, T *gold, T *data) {
+    double accum  = 0.0;
+    double maxion = -FLT_MAX;  //(double)std::numeric_limits<T>::lowest();
+    double minion = FLT_MAX;   //(double)std::numeric_limits<T>::max();
+
+    for (dim_t i = 0; i < data_size; i++) {
+        double dTemp = (double)data[i];
+        double gTemp = (double)gold[i];
+        double diff  = gTemp - dTemp;
+        if (diff > 1.e-4) {
+            // printf("%d: diff: %f %f %f\n", i, diff, data[i], gold[i]);
+        }
+        double err =
+            (std::isfinite(diff) && (std::abs(diff) > 1.0e-4)) ? diff : 0.0f;
+        accum += std::pow(err, 2.0);
+        maxion = std::max(maxion, dTemp);
+        minion = std::min(minion, dTemp);
+    }
+    accum /= data_size;
+    double NRMSD = std::sqrt(accum) / (maxion - minion);
+
+    return NRMSD;
+}
+
+template<>
+double computeArraysRMSD<unsigned char>(dim_t data_size, unsigned char *gold,
+                                        unsigned char *data) {
+    double accum = 0.0;
+    int maxion   = 0;    //(double)std::numeric_limits<T>::lowest();
+    int minion   = 255;  //(double)std::numeric_limits<T>::max();
+
+    for (dim_t i = 0; i < data_size; i++) {
+        int dTemp  = data[i];
+        int gTemp  = gold[i];
+        int diff   = abs(gTemp - dTemp);
+        double err = (diff > 1) ? diff : 0.0f;
+        accum += std::pow(err, 2.0);
+        maxion = std::max(maxion, dTemp);
+        minion = std::min(minion, dTemp);
+    }
+    accum /= data_size;
+    double NRMSD = std::sqrt(accum) / (maxion - minion);
+
+    return NRMSD;
+}
+
+template<typename T>
 bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance) {
     double accum  = 0.0;
     double maxion = -FLT_MAX;  //(double)std::numeric_limits<T>::lowest();
@@ -937,8 +1091,10 @@ bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance) {
     return true;
 }
 
-#define INSTANTIATE(TYPE)                                               \
-    template bool compareArraysRMSD<TYPE>(dim_t data_size, TYPE * gold, \
+#define INSTANTIATE(TYPE)                                                 \
+    template double computeArraysRMSD<TYPE>(dim_t data_size, TYPE * gold, \
+                                            TYPE * data);                 \
+    template bool compareArraysRMSD<TYPE>(dim_t data_size, TYPE * gold,   \
                                           TYPE * data, double tolerance)
 
 INSTANTIATE(float);
