@@ -147,14 +147,7 @@ void cannyImageOtsuTest(string pTestFile, bool isColor) {
         ASSERT_SUCCESS(af_mul(&mulArray, cstArray, _outArray, false));
         ASSERT_SUCCESS(af_cast(&outArray, mulArray, u8));
 
-        vector<unsigned char> outData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
-
-        vector<unsigned char> goldData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)goldData.data(), goldArray));
-
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(),
-                                          outData.data(), 1.0e-3));
+        ASSERT_IMAGES_NEAR(goldArray, outArray, 1.0e-3);
 
         ASSERT_SUCCESS(af_release_array(_inArray));
         ASSERT_SUCCESS(af_release_array(inArray));

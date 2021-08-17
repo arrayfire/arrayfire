@@ -89,14 +89,7 @@ void meanshiftTest(string pTestFile, const float ss) {
 
         ASSERT_SUCCESS(af_mean_shift(&outArray, inArray, ss, 30.f, 5, isColor));
 
-        vector<T> outData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
-
-        vector<T> goldData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)goldData.data(), goldArray));
-
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(),
-                                          outData.data(), 0.02f));
+        ASSERT_IMAGES_NEAR(goldArray, outArray, 0.02f);
 
         ASSERT_SUCCESS(af_release_array(inArray));
         ASSERT_SUCCESS(af_release_array(inArray_f32));
@@ -159,14 +152,7 @@ TEST(Meanshift, Color_CPP) {
         dim_t nElems = gold.elements();
         array output = meanShift(img, 3.5f, 30.f, 5, true);
 
-        vector<float> outData(nElems);
-        output.host((void*)outData.data());
-
-        vector<float> goldData(nElems);
-        gold.host((void*)goldData.data());
-
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(),
-                                          outData.data(), 0.02f));
+        ASSERT_IMAGES_NEAR(gold, output, 0.02f);
     }
 }
 

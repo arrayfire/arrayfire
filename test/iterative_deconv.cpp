@@ -102,11 +102,7 @@ void iterDeconvImageTest(string pTestFile, const unsigned iters, const float rf,
         ASSERT_SUCCESS(af_div(&divArray, numArray, denArray, false));
         ASSERT_SUCCESS(af_mul(&outArray, divArray, cstArray, false));
 
-        std::vector<OutType> outData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)outData.data(), outArray));
-
-        std::vector<OutType> goldData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void*)goldData.data(), goldArray));
+        ASSERT_IMAGES_NEAR(goldArray, outArray, 0.03);
 
         ASSERT_SUCCESS(af_release_array(_inArray));
         ASSERT_SUCCESS(af_release_array(inArray));
@@ -120,9 +116,6 @@ void iterDeconvImageTest(string pTestFile, const unsigned iters, const float rf,
         ASSERT_SUCCESS(af_release_array(outArray));
         ASSERT_SUCCESS(af_release_array(_goldArray));
         ASSERT_SUCCESS(af_release_array(goldArray));
-
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(),
-                                          outData.data(), 0.03));
     }
 }
 

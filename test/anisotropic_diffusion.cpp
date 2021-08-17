@@ -125,14 +125,7 @@ void imageTest(string pTestFile, const float dt, const float K,
         ASSERT_SUCCESS(af_div(&divArray, numArray, denArray, false));
         ASSERT_SUCCESS(af_mul(&outArray, divArray, cstArray, false));
 
-        vector<OutType> outData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void *)outData.data(), outArray));
-
-        vector<OutType> goldData(nElems);
-        ASSERT_SUCCESS(af_get_data_ptr((void *)goldData.data(), goldArray));
-
-        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData.data(),
-                                          outData.data(), 0.025f));
+        ASSERT_IMAGES_NEAR(goldArray, outArray, 0.025);
 
         ASSERT_SUCCESS(af_release_array(_inArray));
         ASSERT_SUCCESS(af_release_array(_outArray));

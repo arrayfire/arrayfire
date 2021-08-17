@@ -128,6 +128,7 @@ endif()
 
 target_compile_definitions(arrayfire_test
   PRIVATE
+    TEST_RESULT_IMAGE_DIR="${CMAKE_BINARY_DIR}/test/"
     USE_MTX)
 
 # Creates tests for all backends
