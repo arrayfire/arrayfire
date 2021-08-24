@@ -410,8 +410,78 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 
 template<typename T>
 void Array<T>::setDataDims(const dim4 &new_dims) {
+    auto new_strides = calcStrides(new_dims);
+    if (node) {
+        if (auto ptr =
+                std::dynamic_pointer_cast<common::ScalarNode<float>>(node)) {
+        } else {
+            dim4 olddims     = this->dims();
+            dim_t *olddims_t = olddims.get();
+
+            auto nn = node;
+            NodeIterator<> it(nn.get());
+
+            bool all_linear = true;
+            while (all_linear && it != NodeIterator<>()) {
+                all_linear &= it->isLinear(olddims_t);
+                ++it;
+            }
+
+            if (!all_linear) { eval(); }
+
+            if (all_linear) {
+                common::Node_map_t nodes;
+                vector<Node *> full_nodes;
+                vector<common::Node_ids> full_ids;
+                vector<int> output_ids;
+
+                int id = node->getNodesMap(nodes, full_nodes, full_ids);
+
+                // make copies of the nodes
+                vector<shared_ptr<Node>> newNodes;
+                newNodes.reserve(full_nodes.size());
+                for (auto *n : full_nodes) {
+                    newNodes.emplace_back(n->clone());
+                }
+
+                for (common::Node_ids ids : full_ids) {
+                    auto &children = newNodes[ids.id]->m_children;
+                    for (int i = 0;
+                         i < Node::kMaxChildren && children[i] != nullptr;
+                         i++) {
+                        children[i] = newNodes[ids.child_ids[i]];
+                    }
+                }
+
+                auto isBuffer = [](const Node &ptr) { return ptr.isBuffer(); };
+                NodeIterator<> it(newNodes[id].get());
+                while (it != NodeIterator<>()) {
+                    it = find_if(it, NodeIterator<>(), isBuffer);
+                    if (it == NodeIterator<>()) { break; }
+
+                    BufferNode<T> *buf = static_cast<BufferNode<T> *>(&(*it));
+
+                    buf->m_param.dims[0]    = new_dims[0];
+                    buf->m_param.dims[1]    = new_dims[1];
+                    buf->m_param.dims[2]    = new_dims[2];
+                    buf->m_param.dims[3]    = new_dims[3];
+                    buf->m_param.strides[0] = new_strides[0];
+                    buf->m_param.strides[1] = new_strides[1];
+                    buf->m_param.strides[2] = new_strides[2];
+                    buf->m_param.strides[3] = new_strides[3];
+
+                    ++it;
+                }
+                node = newNodes[id];
+            } else {
+                eval();
+            }
+        }
+    } else {
+        data_dims = new_dims;
+    }
     modDims(new_dims);
-    data_dims = new_dims;
+    modStrides(new_strides);
 }
 
 #define INSTANTIATE(T)                                                        \

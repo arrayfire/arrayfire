@@ -50,6 +50,8 @@ class ShiftNodeBase : public Node {
         return *this;
     }
 
+    Node *clone() final { return new ShiftNodeBase(*this); }
+
     // Swap specilization
     void swap(ShiftNodeBase &other) noexcept {
         using std::swap;

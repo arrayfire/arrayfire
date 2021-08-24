@@ -112,14 +112,13 @@ class Node {
     static const int kMaxChildren = 3;
 
    protected:
+   public:
     std::array<Node_ptr, kMaxChildren> m_children;
     af::dtype m_type;
     int m_height;
 
     template<typename T>
     friend class NodeIterator;
-
-   public:
     Node() = default;
     Node(const af::dtype type, const int height,
          const std::array<Node_ptr, kMaxChildren> children)
@@ -278,6 +277,7 @@ class Node {
     virtual bool operator==(const Node &other) const noexcept {
         return this == &other;
     }
+    virtual Node *clone() = 0;
 
 #ifdef AF_CPU
     /// Replaces a child node pointer in the cpu::jit::BinaryNode<T> or the

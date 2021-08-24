@@ -20,15 +20,17 @@ template<typename DataType, typename ParamType>
 class BufferNodeBase : public common::Node {
    private:
     DataType m_data;
-    ParamType m_param;
     unsigned m_bytes;
     bool m_linear_buffer;
 
    public:
+    ParamType m_param;
     BufferNodeBase(af::dtype type)
         : Node(type, 0, {}), m_bytes(0), m_linear_buffer(true) {}
 
     bool isBuffer() const final { return true; }
+
+    Node *clone() final { return new BufferNodeBase(*this); }
 
     void setData(ParamType param, DataType data, const unsigned bytes,
                  bool is_linear) {

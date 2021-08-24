@@ -20,7 +20,11 @@
 #include <af/dim4.hpp>
 #include <af/opencl.h>
 
+#include <jit/BufferNode.hpp>
+
+#include <cstdio>
 #include <functional>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -50,8 +54,8 @@ string getKernelString(const string &funcName, const vector<Node *> &full_nodes,
     static const char *kernelVoid = "__kernel void\n";
     static const char *dimParams =
         "KParam oInfo, uint groups_0, uint groups_1, uint num_odims";
-    static const char *blockStart = "{\n\n";
-    static const char *blockEnd   = "\n\n}";
+    static const char *blockStart = "{\n";
+    static const char *blockEnd   = "\n}\n";
 
     static const char *linearIndex = R"JIT(
         uint groupId  = get_group_id(1) * get_num_groups(0) + get_group_id(0);
@@ -205,7 +209,18 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
     }
 
     bool is_linear = true;
-    for (auto node : full_nodes) { is_linear &= node->isLinear(outDims); }
+    for (auto node : full_nodes) {
+        is_linear &= node->isLinear(outputs[0].info.dims);
+        // if (node->isBuffer()) {
+        //    opencl::jit::BufferNode *n =
+        //        static_cast<opencl::jit::BufferNode *>(node);
+
+        //    //    printf("evalNodes: %lld %lld %lld %lld\n",
+        //    n->m_param.dims[0],
+        //    //           n->m_param.dims[1], n->m_param.dims[2],
+        //    //           n->m_param.dims[3]);
+        //}
+    }
 
     auto ker =
         getKernel(output_nodes, output_ids, full_nodes, full_ids, is_linear);

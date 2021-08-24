@@ -96,5 +96,7 @@ typedef enum {
 
     af_select_t,
     af_not_select_t,
-    af_rsqrt_t
+    af_rsqrt_t,
+
+    af_moddims_t
 } af_op_t;

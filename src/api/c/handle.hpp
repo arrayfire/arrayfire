@@ -39,13 +39,16 @@ namespace {
 
 template<typename T>
 detail::Array<T> modDims(const detail::Array<T> &in, const af::dim4 &newDims) {
-    in.eval();  // FIXME: Figure out a better way
-
-    detail::Array<T> Out = in;
-    if (!in.isLinear()) Out = detail::copyArray<T>(in);
-    Out.setDataDims(newDims);
-
-    return Out;
+    if (!in.isLinear()) {
+        detail::Array<T> Out = detail::copyArray<T>(in);
+        Out.setDataDims(newDims);
+        return Out;
+    } else {
+        // auto node = in.getNode();
+        detail::Array<T> Out = in;
+        Out.setDataDims(newDims);
+        return Out;
+    }
 }
 
 template<typename T>

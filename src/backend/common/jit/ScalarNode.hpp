@@ -45,6 +45,8 @@ class ScalarNode : public common::Node {
         return *this;
     }
 
+    Node* clone() final { return new ScalarNode(*this); }
+
     // Swap specilization
     void swap(ScalarNode& other) noexcept {
         using std::swap;

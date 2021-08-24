@@ -64,6 +64,8 @@ class NaryNode : public Node {
         swap(m_op_str, other.m_op_str);
     }
 
+    virtual Node *clone() override { return new NaryNode(*this); }
+
     void genKerName(std::string &kerString,
                     const common::Node_ids &ids) const final {
         // Make the dec representation of enum part of the Kernel name
