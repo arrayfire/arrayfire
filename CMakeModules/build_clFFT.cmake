@@ -5,12 +5,10 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-FetchContent_Declare(
-  ${clfft_prefix}
-  GIT_REPOSITORY    https://github.com/arrayfire/clFFT.git
-  GIT_TAG           cmake_fixes
+af_dep_check_and_populate(${clfft_prefix}
+  URI https://github.com/arrayfire/clFFT.git
+  REF cmake_fixes
 )
-af_dep_check_and_populate(${clfft_prefix})
 
 set(current_build_type ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)

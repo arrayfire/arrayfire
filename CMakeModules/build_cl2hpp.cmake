@@ -13,12 +13,10 @@
 
 find_package(OpenCL)
 
-FetchContent_Declare(
-  ${cl2hpp_prefix}
-  GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-CLHPP.git
-  GIT_TAG v2.0.12
+af_dep_check_and_populate(${cl2hpp_prefix}
+  URI https://github.com/KhronosGroup/OpenCL-CLHPP.git
+  REF v2.0.12
 )
-af_dep_check_and_populate(${cl2hpp_prefix})
 
 if (NOT TARGET OpenCL::cl2hpp OR NOT TARGET cl2hpp)
   add_library(cl2hpp IMPORTED INTERFACE GLOBAL)

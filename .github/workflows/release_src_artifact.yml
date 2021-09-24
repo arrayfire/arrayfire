@@ -70,7 +70,14 @@ jobs:
                   done
                   shopt -u extglob
                   rm -rf matrixmarket
-                  cd ../../..
+                  cp -r ./* ../../extern/
+                  cd ..
+                  wget https://github.com/arrayfire/forge/releases/download/v1.0.8/forge-full-1.0.8.tar.bz2
+                  tar -xf forge-full-1.0.8.tar.bz2
+                  mv forge-full-1.0.8 ../extern/af_forge-src
+                  cd ..
+                  rm -rf build
+                  cd ..
                   tar -cjf arrayfire-full-${AF_VER}.tar.bz2 arrayfire-full-${AF_VER}/
                   echo "UPLOAD_FILE=arrayfire-full-${AF_VER}.tar.bz2" >> $GITHUB_ENV
 

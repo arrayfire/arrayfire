@@ -15,13 +15,11 @@ if(AF_TEST_WITH_MTX_FILES)
   include(download_sparse_datasets)
 endif()
 
-FetchContent_Declare(
-  ${gtest_prefix}
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        release-1.8.1
-)
 if(NOT TARGET gtest)
-  af_dep_check_and_populate(${gtest_prefix})
+  af_dep_check_and_populate(${gtest_prefix}
+    URI https://github.com/google/googletest.git
+    REF release-1.8.1
+  )
 
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
   # newer cmakes. This sets the default global setting for that policy.
@@ -74,14 +72,11 @@ if(${AF_USE_RELATIVE_TEST_DIR})
       STRING "Relative Test Data Directory")
   set(TESTDATA_SOURCE_DIR ${RELATIVE_TEST_DATA_DIR})
 else(${AF_USE_RELATIVE_TEST_DIR})
-  FetchContent_Declare(
-    ${testdata_prefix}
-    GIT_REPOSITORY https://github.com/arrayfire/arrayfire-data.git
-
+  af_dep_check_and_populate(${testdata_prefix}
+    URI https://github.com/arrayfire/arrayfire-data.git
     #pinv large data set update change
-    GIT_TAG        0144a599f913cc67c76c9227031b4100156abc25
+    REF 0144a599f913cc67c76c9227031b4100156abc25
   )
-  af_dep_check_and_populate(${testdata_prefix})
   set(TESTDATA_SOURCE_DIR "${${testdata_prefix}_SOURCE_DIR}")
 endif(${AF_USE_RELATIVE_TEST_DIR})
 
