@@ -15,7 +15,9 @@ jobs:
         name: CPU (fftw, OpenBLAS, windows-latest)
         runs-on: windows-latest
         env:
-          VCPKG_HASH: 5568f110b509a9fd90711978a7cb76bae75bb092 # vcpkg release tag 2021.05.12 with Forge v1.0.7 update
+
+          VCPKG_HASH: 4428702c1c56fdb7cb779584efdcba254d7b57ca #[neon2sse] create a new port; Has forge v1.0.8 and other cmake/vcpkg fixes
+
           VCPKG_DEFAULT_TRIPLET: x64-windows
         steps:
             - name: Checkout Repository
