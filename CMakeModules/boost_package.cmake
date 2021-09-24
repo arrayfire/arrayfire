@@ -21,12 +21,11 @@ if(NOT
   message(WARNING
       "WARN: Found Boost v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}."
       "Minimum required ${VER}. Build will download Boost Compute.")
-  FetchContent_Declare(
-    ${boost_prefix}
-    URL https://github.com/boostorg/compute/archive/boost-${VER}.tar.gz
-    URL_HASH MD5=e160ec0ff825fc2850ea4614323b1fb5
+  af_dep_check_and_populate(${boost_prefix}
+    URL_AND_HASH
+    URI https://github.com/boostorg/compute/archive/boost-${VER}.tar.gz
+    REF MD5=e160ec0ff825fc2850ea4614323b1fb5
   )
-  af_dep_check_and_populate(${boost_prefix})
   if(NOT TARGET Boost::boost)
     add_library(Boost::boost IMPORTED INTERFACE GLOBAL)
   endif()

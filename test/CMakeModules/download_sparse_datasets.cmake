@@ -12,15 +12,12 @@ function(mtxDownload name group)
   set(target_dir ${root_dir}/${group}/${name})
   set(mtx_name mtxDownload_${group}_${name})
   string(TOLOWER ${mtx_name} mtx_name)
-  FetchContent_Declare(
-    ${mtx_name}
-    URL ${URL}/MM/${group}/${name}.tar.gz
+
+  set_and_mark_depnames_advncd(mtx_prefix ${mtx_name})
+  af_dep_check_and_populate(${mtx_name}
+    URI ${URL}/MM/${group}/${name}.tar.gz
   )
-  af_dep_check_and_populate(${mtx_name})
-  set_and_mark_depname(mtx_prefix ${mtx_name})
-  if(AF_BUILD_OFFLINE)
-    set_fetchcontent_src_dir(mtx_prefix "{name}.mtx file from {group} group")
-  endif()
+
   if(NOT EXISTS "${target_dir}/${name}.mtx")
     file(MAKE_DIRECTORY ${target_dir})
     file(COPY ${${mtx_name}_SOURCE_DIR}/${name}.mtx DESTINATION ${target_dir})

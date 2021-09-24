@@ -5,12 +5,10 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-FetchContent_Declare(
-  ${clblast_prefix}
-  GIT_REPOSITORY    https://github.com/cnugteren/CLBlast.git
-  GIT_TAG           1.5.2
+af_dep_check_and_populate(${clblast_prefix}
+  URI https://github.com/cnugteren/CLBlast.git
+  REF 1.5.2
 )
-af_dep_check_and_populate(${clblast_prefix})
 
 include(ExternalProject)
 find_program(GIT git)

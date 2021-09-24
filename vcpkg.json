@@ -10,7 +10,7 @@
         "boost-stacktrace",
         {
             "name": "forge",
-            "version>=": "1.0.7",
+            "version>=": "1.0.8",
             "platform": "windows"
         },
         "freeimage",

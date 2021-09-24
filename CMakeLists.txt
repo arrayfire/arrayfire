@@ -130,7 +130,6 @@ endif()
 
 mark_as_advanced(
   AF_BUILD_FRAMEWORK
-  AF_BUILD_OFFLINE
   AF_CACHE_KERNELS_TO_DISK
   AF_INSTALL_STANDALONE
   AF_WITH_CPUID
@@ -194,22 +193,18 @@ if(TARGET spdlog::spdlog_header_only)
     $<TARGET_PROPERTY:spdlog::spdlog_header_only,INTERFACE_INCLUDE_DIRECTORIES>
     )
 else()
-  FetchContent_Declare(
-    ${spdlog_prefix}
-    GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG        v1.8.5
+  af_dep_check_and_populate(${spdlog_prefix}
+    URI https://github.com/gabime/spdlog.git
+    REF v1.8.5
   )
-  af_dep_check_and_populate(${spdlog_prefix})
   target_include_directories(af_spdlog INTERFACE "${${spdlog_prefix}_SOURCE_DIR}/include")
 endif()
 
 if(NOT TARGET glad::glad)
-  FetchContent_Declare(
-    ${glad_prefix}
-    GIT_REPOSITORY https://github.com/arrayfire/glad.git
-    GIT_TAG main
-    )
-  af_dep_check_and_populate(${glad_prefix})
+  af_dep_check_and_populate(${glad_prefix}
+    URI https://github.com/arrayfire/glad.git
+    REF main
+  )
   add_subdirectory(${${glad_prefix}_SOURCE_DIR} ${${glad_prefix}_BINARY_DIR})
 
   add_library(af_glad STATIC $<TARGET_OBJECTS:af_glad_obj_lib>)
@@ -220,12 +215,10 @@ if(NOT TARGET glad::glad)
     )
 endif()
 
-FetchContent_Declare(
-  ${assets_prefix}
-  GIT_REPOSITORY https://github.com/arrayfire/assets.git
-  GIT_TAG        master
+af_dep_check_and_populate(${assets_prefix}
+  URI https://github.com/arrayfire/assets.git
+  REF master
 )
-af_dep_check_and_populate(${assets_prefix})
 set(ASSETS_DIR ${${assets_prefix}_SOURCE_DIR})
 
 configure_file(
