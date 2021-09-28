@@ -2065,3 +2065,29 @@ TEST(ReduceByKey, ISSUE_2955_dim) {
     ASSERT_EQ(ok.dims(0), 128);
     ASSERT_EQ(ov.dims(1), 128);
 }
+
+TEST(ReduceByKey, ISSUE_3602) {
+    size_t N = 129;
+
+    af::array ones = af::constant(1, N, u32);
+    af::array zeros = af::constant(0, N, u32);
+
+    af::array okeys;
+    af::array ovalues;
+
+    af::sumByKey(okeys, ovalues, zeros, ones);
+    ASSERT_EQ(ovalues.scalar<unsigned>(), 129);
+
+    af::countByKey(okeys, ovalues, zeros, ones);
+    ASSERT_EQ(ovalues.scalar<unsigned>(), 129);
+
+    // test reduction on non-zero dimension as well
+    ones = af::constant(1, 2, N, u32);
+    zeros = af::constant(0, N, u32);
+
+    af::sumByKey(okeys, ovalues, zeros, ones, 1);
+    ASSERT_EQ(ovalues.scalar<unsigned>(), 129);
+
+    af::countByKey(okeys, ovalues, zeros, ones, 1);
+    ASSERT_EQ(ovalues.scalar<unsigned>(), 129);
+}
