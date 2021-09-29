@@ -333,9 +333,37 @@ TEST_P(TopKParams, CPP) {
                 float gold  = static_cast<float>(ii * d0 + j);
                 int goldidx = j;
                 ASSERT_FLOAT_EQ(gold, hval[i])
-                    << print_context(i, 0, hval, hidx);
-                ASSERT_EQ(goldidx, hidx[i]) << print_context(i, 0, hval, hidx);
+                    << print_context(i, j, hval, hidx);
+                ASSERT_EQ(goldidx, hidx[i]) << print_context(i, j, hval, hidx);
             }
         }
     }
+}
+
+TEST(TopK, KGreaterThan256) {
+    af::array a = af::randu(500);
+    af::array vals, idx;
+
+    int k = 257;
+    EXPECT_THROW(topk(vals, idx, a, k), af::exception)
+        << "The current limitation of the K value as increased. Please check "
+           "or remove this test";
+}
+
+TEST(TopK, KEquals0) {
+    af::array a = af::randu(500);
+    af::array vals, idx;
+
+    int k = 0;
+    EXPECT_THROW(topk(vals, idx, a, k), af::exception)
+        << "K cannot be less than 1";
+}
+
+TEST(TopK, KLessThan0) {
+    af::array a = af::randu(500);
+    af::array vals, idx;
+
+    int k = -1;
+    EXPECT_THROW(topk(vals, idx, a, k), af::exception)
+        << "K cannot be less than 0";
 }
