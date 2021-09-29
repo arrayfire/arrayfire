@@ -2066,7 +2066,7 @@ TEST(ReduceByKey, ISSUE_2955_dim) {
     ASSERT_EQ(ov.dims(1), 128);
 }
 
-TEST(ReduceByKey, ISSUE_3602) {
+TEST(ReduceByKey, ISSUE_3062) {
     size_t N = 129;
 
     af::array ones = af::constant(1, N, u32);
