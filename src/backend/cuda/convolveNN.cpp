@@ -14,6 +14,7 @@
 #include <common/cast.hpp>
 #include <common/half.hpp>
 #include <common/indexing_helpers.hpp>
+#include <common/moddims.hpp>
 #include <common/unique_handle.hpp>
 #ifdef WITH_CUDNN
 #include <cudnn.hpp>
@@ -35,6 +36,7 @@ using af::dim4;
 using common::flip;
 using common::half;
 using common::make_handle;
+using common::modDims;
 using std::conditional;
 using std::is_same;
 using std::pair;
@@ -190,12 +192,14 @@ Array<T> convolve2_base(const Array<T> &signal, const Array<T> &filter,
 
     unwrapped  = reorder(unwrapped, dim4(1, 2, 0, 3));
     dim4 uDims = unwrapped.dims();
-    unwrapped.modDims(dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
+    unwrapped =
+        modDims(unwrapped, dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
 
     Array<T> collapsedFilter = filter;
 
     collapsedFilter = flip(collapsedFilter, {1, 1, 0, 0});
-    collapsedFilter.modDims(dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
+    collapsedFilter = modDims(collapsedFilter,
+                              dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
 
     T alpha        = scalar<T>(1.0);
     T beta         = scalar<T>(0.0);
@@ -206,8 +210,8 @@ Array<T> convolve2_base(const Array<T> &signal, const Array<T> &filter,
              unwrapped.dims()[2], unwrapped.dims()[3]));
     gemm(res, AF_MAT_TRANS, AF_MAT_NONE, &alpha, unwrapped, collapsedFilter,
          &beta);
-    res.modDims(dim4(outputWidth, outputHeight, signal.dims()[3],
-                     collapsedFilter.dims()[1]));
+    res = modDims(res, dim4(outputWidth, outputHeight, signal.dims()[3],
+                            collapsedFilter.dims()[1]));
     Array<T> out = reorder(res, dim4(0, 1, 3, 2));
 
     return out;
@@ -249,11 +253,13 @@ Array<T> data_gradient_base(const Array<T> &incoming_gradient,
     Array<T> collapsed_filter = original_filter;
 
     collapsed_filter = flip(collapsed_filter, {1, 1, 0, 0});
-    collapsed_filter.modDims(dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
+    collapsed_filter = modDims(collapsed_filter,
+                               dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
 
     Array<T> collapsed_gradient = incoming_gradient;
     collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
-    collapsed_gradient.modDims(dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+    collapsed_gradient          = modDims(
+        collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     T alpha        = scalar<T>(1.0);
     T beta         = scalar<T>(0.0);
@@ -264,8 +270,8 @@ Array<T> data_gradient_base(const Array<T> &incoming_gradient,
              collapsed_gradient.dims()[3], collapsed_gradient.dims()[3]));
     gemm(res, AF_MAT_NONE, AF_MAT_TRANS, &alpha, collapsed_gradient,
          collapsed_filter, &beta);
-    res.modDims(dim4(res.dims()[0] / sDims[3], sDims[3], fDims[0] * fDims[1],
-                     sDims[2]));
+    res = modDims(res, dim4(res.dims()[0] / sDims[3], sDims[3],
+                            fDims[0] * fDims[1], sDims[2]));
     res = reorder(res, dim4(0, 2, 3, 1));
 
     const bool retCols = false;
@@ -377,11 +383,13 @@ Array<T> filter_gradient_base(const Array<T> &incoming_gradient,
 
     unwrapped  = reorder(unwrapped, dim4(1, 2, 0, 3));
     dim4 uDims = unwrapped.dims();
-    unwrapped.modDims(dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
+    unwrapped =
+        modDims(unwrapped, dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
 
     Array<T> collapsed_gradient = incoming_gradient;
     collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
-    collapsed_gradient.modDims(dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+    collapsed_gradient          = modDims(
+        collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     T alpha        = scalar<T>(1.0);
     T beta         = scalar<T>(0.0);
@@ -392,7 +400,7 @@ Array<T> filter_gradient_base(const Array<T> &incoming_gradient,
              unwrapped.dims()[2], unwrapped.dims()[3]));
     gemm(res, AF_MAT_NONE, AF_MAT_NONE, &alpha, unwrapped, collapsed_gradient,
          &beta);
-    res.modDims(dim4(fDims[0], fDims[1], fDims[2], fDims[3]));
+    res = modDims(res, dim4(fDims[0], fDims[1], fDims[2], fDims[3]));
 
     return flip(res, {1, 1, 0, 0});
 }

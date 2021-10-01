@@ -34,6 +34,7 @@ using common::createSpanIndex;
 using common::half;
 using common::if_complex;
 using common::if_real;
+using common::modDims;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;

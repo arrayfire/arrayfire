@@ -22,6 +22,7 @@
 #include <tile.hpp>
 
 using af::dim4;
+using common::modDims;
 using detail::Array;
 using detail::copy_surface;
 using detail::forgeManager;

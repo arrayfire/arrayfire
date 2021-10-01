@@ -29,6 +29,7 @@
 using af::dim4;
 using common::flip;
 using common::half;
+using common::modDims;
 
 namespace cpu {
 
@@ -137,15 +138,17 @@ Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
 
     unwrapped  = reorder(unwrapped, dim4(1, 2, 0, 3));
     dim4 uDims = unwrapped.dims();
-    unwrapped.modDims(dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
+    unwrapped =
+        modDims(unwrapped, dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
 
     Array<T> collapsedFilter = flip(filter, {1, 1, 0, 0});
-    collapsedFilter.modDims(dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
+    collapsedFilter          = modDims(collapsedFilter,
+                              dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
 
     Array<T> res =
         matmul(unwrapped, collapsedFilter, AF_MAT_TRANS, AF_MAT_NONE);
-    res.modDims(dim4(outputWidth, outputHeight, signal.dims()[3],
-                     collapsedFilter.dims()[1]));
+    res = modDims(res, dim4(outputWidth, outputHeight, signal.dims()[3],
+                            collapsedFilter.dims()[1]));
     Array<T> out = reorder(res, dim4(0, 1, 3, 2));
 
     return out;
@@ -182,16 +185,18 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
     const dim4 &fDims = original_filter.dims();
 
     Array<T> collapsed_filter = flip(original_filter, {1, 1, 0, 0});
-    collapsed_filter.modDims(dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
+    collapsed_filter          = modDims(collapsed_filter,
+                               dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
 
     Array<T> collapsed_gradient = incoming_gradient;
     collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
-    collapsed_gradient.modDims(dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+    collapsed_gradient          = modDims(
+        collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     Array<T> res =
         matmul(collapsed_gradient, collapsed_filter, AF_MAT_NONE, AF_MAT_TRANS);
-    res.modDims(dim4(res.dims()[0] / sDims[3], sDims[3], fDims[0] * fDims[1],
-                     sDims[2]));
+    res = modDims(res, dim4(res.dims()[0] / sDims[3], sDims[3],
+                            fDims[0] * fDims[1], sDims[2]));
     res = reorder(res, dim4(0, 2, 3, 1));
 
     const bool retCols = false;
@@ -219,15 +224,17 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
 
     unwrapped  = reorder(unwrapped, dim4(1, 2, 0, 3));
     dim4 uDims = unwrapped.dims();
-    unwrapped.modDims(dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
+    unwrapped =
+        modDims(unwrapped, dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
 
     Array<T> collapsed_gradient = incoming_gradient;
     collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
-    collapsed_gradient.modDims(dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+    collapsed_gradient          = modDims(
+        collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     Array<T> res =
         matmul(unwrapped, collapsed_gradient, AF_MAT_NONE, AF_MAT_NONE);
-    res.modDims(dim4(fDims[0], fDims[1], fDims[2], fDims[3]));
+    res = modDims(res, dim4(fDims[0], fDims[1], fDims[2], fDims[3]));
 
     return flip(res, {1, 1, 0, 0});
 }

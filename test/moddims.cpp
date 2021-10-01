@@ -276,9 +276,6 @@ TEST(Moddims, jit) {
     for (int i = 0; i < hc2.size(); i++) { hc2[i] += 3; }
 
     array gold(10, 5, hc2.data());
-    af_print(gold);
     gold = moddims(gold, 5, 10);
-    af_print(gold);
-    af_print(a);
     ASSERT_ARRAYS_EQ(gold, a);
 }

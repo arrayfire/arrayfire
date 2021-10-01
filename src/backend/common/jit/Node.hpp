@@ -148,6 +148,8 @@ class Node {
     /// Default move assignment operator
     Node &operator=(Node &&node) noexcept = default;
 
+    virtual af_op_t getOp() const noexcept { return af_none_t; }
+
     int getNodesMap(Node_map_t &node_map, std::vector<Node *> &full_nodes,
                     std::vector<Node_ids> &full_ids);
 
@@ -240,10 +242,7 @@ class Node {
     virtual bool isBuffer() const { return false; }
 
     /// Returns true if the buffer is linear
-    virtual bool isLinear(dim_t dims[4]) const {
-        UNUSED(dims);
-        return true;
-    }
+    virtual bool isLinear(const dim_t dims[4]) const;
 
     af::dtype getType() const { return m_type; }
 
@@ -277,22 +276,16 @@ class Node {
     virtual bool operator==(const Node &other) const noexcept {
         return this == &other;
     }
-    virtual Node *clone() = 0;
+    virtual std::unique_ptr<Node> clone() = 0;
 
 #ifdef AF_CPU
-    /// Replaces a child node pointer in the cpu::jit::BinaryNode<T> or the
-    /// cpu::jit::UnaryNode classes at \p id with *ptr. Used only in the CPU
-    /// backend and does not modify the m_children pointers in the
-    /// common::Node_ptr class.
-    virtual void replaceChild(int id, void *ptr) noexcept {
-        UNUSED(id);
-        UNUSED(ptr);
-    }
-
     template<typename U>
     friend void cpu::kernel::evalMultiple(
         std::vector<cpu::Param<U>> arrays,
         std::vector<common::Node_ptr> output_nodes_);
+
+    virtual void setShape(af::dim4 new_shape) { UNUSED(new_shape); }
+
 #endif
 };
 
@@ -304,5 +297,7 @@ struct Node_ids {
 std::string getFuncName(const std::vector<Node *> &output_nodes,
                         const std::vector<Node *> &full_nodes,
                         const std::vector<Node_ids> &full_ids, bool is_linear);
+
+auto isBuffer(const Node &ptr) -> bool;
 
 }  // namespace common

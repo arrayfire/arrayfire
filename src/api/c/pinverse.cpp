@@ -32,6 +32,7 @@
 using af::dim4;
 using af::dtype_traits;
 using common::cast;
+using common::modDims;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;

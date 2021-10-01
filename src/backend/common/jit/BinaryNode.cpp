@@ -40,7 +40,7 @@ Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs,
         BinOp<To, Ti, op> bop;
         return std::make_shared<BinaryNode>(
             static_cast<af::dtype>(dtype_traits<To>::af_type), bop.name(),
-            operands[0], operands[1], (int)(op));
+            operands[0], operands[1], op);
     };
 
     Node_ptr out =

@@ -11,6 +11,7 @@ target_sources(afcommon_interface
   INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/BinaryNode.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/BinaryNode.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/jit/ModdimNode.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/NaryNode.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/Node.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/Node.hpp
@@ -65,6 +66,8 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel_cache.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel_cache.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel_type.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/moddims.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/moddims.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/module_loading.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sparse_helpers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/traits.hpp

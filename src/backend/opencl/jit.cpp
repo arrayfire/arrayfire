@@ -10,7 +10,9 @@
 #include <Array.hpp>
 #include <common/compile_module.hpp>
 #include <common/dispatch.hpp>
+#include <common/jit/ModdimNode.hpp>
 #include <common/jit/Node.hpp>
+#include <common/jit/NodeIterator.hpp>
 #include <common/kernel_cache.hpp>
 #include <common/util.hpp>
 #include <copy.hpp>
@@ -203,23 +205,59 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
         full_ids.reserve(1024);
     }
 
-    for (auto &node : output_nodes) {
+    for (auto *node : output_nodes) {
         int id = node->getNodesMap(nodes, full_nodes, full_ids);
         output_ids.push_back(id);
     }
 
-    bool is_linear = true;
-    for (auto node : full_nodes) {
-        is_linear &= node->isLinear(outputs[0].info.dims);
-        // if (node->isBuffer()) {
-        //    opencl::jit::BufferNode *n =
-        //        static_cast<opencl::jit::BufferNode *>(node);
+    using common::ModdimNode;
+    using common::NodeIterator;
+    using jit::BufferNode;
 
-        //    //    printf("evalNodes: %lld %lld %lld %lld\n",
-        //    n->m_param.dims[0],
-        //    //           n->m_param.dims[1], n->m_param.dims[2],
-        //    //           n->m_param.dims[3]);
-        //}
+    // find all moddims in the tree
+    vector<std::shared_ptr<Node>> node_clones;
+    for (auto *node : full_nodes) { node_clones.emplace_back(node->clone()); }
+
+    for (common::Node_ids ids : full_ids) {
+        auto &children = node_clones[ids.id]->m_children;
+        for (int i = 0; i < Node::kMaxChildren && children[i] != nullptr; i++) {
+            children[i] = node_clones[ids.child_ids[i]];
+        }
+    }
+
+    for (auto &node : node_clones) {
+        if (node->getOp() == af_moddims_t) {
+            ModdimNode *mn = static_cast<ModdimNode *>(node.get());
+            auto isBuffer  = [](const Node &ptr) { return ptr.isBuffer(); };
+
+            NodeIterator<> it(node.get());
+            auto new_strides = calcStrides(mn->m_new_shape);
+            while (it != NodeIterator<>()) {
+                it = find_if(it, NodeIterator<>(), isBuffer);
+                if (it == NodeIterator<>()) { break; }
+
+                BufferNode *buf = static_cast<BufferNode *>(&(*it));
+
+                buf->m_param.dims[0]    = mn->m_new_shape[0];
+                buf->m_param.dims[1]    = mn->m_new_shape[1];
+                buf->m_param.dims[2]    = mn->m_new_shape[2];
+                buf->m_param.dims[3]    = mn->m_new_shape[3];
+                buf->m_param.strides[0] = new_strides[0];
+                buf->m_param.strides[1] = new_strides[1];
+                buf->m_param.strides[2] = new_strides[2];
+                buf->m_param.strides[3] = new_strides[3];
+
+                ++it;
+            }
+        }
+    }
+
+    full_nodes.clear();
+    for (auto &node : node_clones) { full_nodes.push_back(node.get()); }
+
+    bool is_linear = true;
+    for (auto *node : full_nodes) {
+        is_linear &= node->isLinear(outputs[0].info.dims);
     }
 
     auto ker =
@@ -270,7 +308,7 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
     int nargs = 0;
     for (const auto &node : full_nodes) {
         nargs = node->setArgs(nargs, is_linear,
-                              [&](int id, const void *ptr, size_t arg_size) {
+                              [&ker](int id, const void *ptr, size_t arg_size) {
                                   ker.setArg(id, arg_size, ptr);
                               });
     }

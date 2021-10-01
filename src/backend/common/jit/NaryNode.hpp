@@ -25,13 +25,13 @@ namespace common {
 class NaryNode : public Node {
    private:
     int m_num_children;
-    int m_op;
+    af_op_t m_op;
     const char *m_op_str;
 
    public:
     NaryNode(const af::dtype type, const char *op_str, const int num_children,
              const std::array<common::Node_ptr, Node::kMaxChildren> &&children,
-             const int op, const int height)
+             const af_op_t op, const int height)
         : common::Node(
               type, height,
               std::forward<
@@ -64,7 +64,11 @@ class NaryNode : public Node {
         swap(m_op_str, other.m_op_str);
     }
 
-    virtual Node *clone() override { return new NaryNode(*this); }
+    af_op_t getOp() const noexcept final { return m_op; }
+
+    virtual std::unique_ptr<Node> clone() override {
+        return std::make_unique<NaryNode>(*this);
+    }
 
     void genKerName(std::string &kerString,
                     const common::Node_ids &ids) const final {

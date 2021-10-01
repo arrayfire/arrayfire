@@ -30,7 +30,9 @@ class BufferNodeBase : public common::Node {
 
     bool isBuffer() const final { return true; }
 
-    Node *clone() final { return new BufferNodeBase(*this); }
+    std::unique_ptr<Node> clone() final {
+        return std::make_unique<BufferNodeBase>(*this);
+    }
 
     void setData(ParamType param, DataType data, const unsigned bytes,
                  bool is_linear) {
@@ -40,7 +42,7 @@ class BufferNodeBase : public common::Node {
         m_linear_buffer = is_linear;
     }
 
-    bool isLinear(dim_t dims[4]) const final {
+    bool isLinear(const dim_t dims[4]) const final {
         bool same_dims = true;
         for (int i = 0; same_dims && i < 4; i++) {
             same_dims &= (dims[i] == m_param.dims[i]);
