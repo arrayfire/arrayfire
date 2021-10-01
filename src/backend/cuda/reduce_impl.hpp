@@ -99,8 +99,9 @@ void reduce_by_key_dim(Array<Tk> &keys_out, Array<To> &vals_out,
             POST_LAUNCH_CHECK();
             first_pass = false;
         } else {
+            constexpr af_op_t op2 = op == af_notzero_t ? af_add_t : op;
             CUDA_LAUNCH(
-                (kernel::reduce_blocks_dim_by_key<To, Tk, To, op, numThreads>),
+                (kernel::reduce_blocks_dim_by_key<To, Tk, To, op2, numThreads>),
                 blocks, numThreads, reduced_block_sizes.get(), reduced_keys,
                 reduced_vals, t_reduced_keys, t_reduced_vals, n_reduced_host,
                 change_nan, scalar<To>(nanval), dim, folded_dim_sz);
@@ -245,8 +246,9 @@ void reduce_by_key_first(Array<Tk> &keys_out, Array<To> &vals_out,
             POST_LAUNCH_CHECK();
             first_pass = false;
         } else {
+            constexpr af_op_t op2 = op == af_notzero_t ? af_add_t : op;
             CUDA_LAUNCH(
-                (kernel::reduce_blocks_by_key<To, Tk, To, op, numThreads>),
+                (kernel::reduce_blocks_by_key<To, Tk, To, op2, numThreads>),
                 blocks, numThreads, reduced_block_sizes.get(), reduced_keys,
                 reduced_vals, t_reduced_keys, t_reduced_vals, n_reduced_host,
                 change_nan, scalar<To>(nanval), odims[2]);
