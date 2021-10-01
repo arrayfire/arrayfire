@@ -338,7 +338,8 @@ int reduceByKeyFirst(Array<Tk> &keys_out, Array<To> &vals_out, const Param keys,
                 vals, change_nan, nanval, n_reduced_host, numThreads);
             first_pass = false;
         } else {
-            reduceBlocksByKey<To, Tk, To, op>(
+            constexpr af_op_t op2 = op == af_notzero_t ? af_add_t : op;
+            reduceBlocksByKey<To, Tk, To, op2>(
                 reduced_block_sizes.get(), reduced_keys, reduced_vals,
                 t_reduced_keys, t_reduced_vals, change_nan, nanval,
                 n_reduced_host, numThreads);
@@ -458,7 +459,8 @@ int reduceByKeyDim(Array<Tk> &keys_out, Array<To> &vals_out, const Param keys,
                 dim_ordering);
             first_pass = false;
         } else {
-            reduceBlocksByKeyDim<To, Tk, To, op>(
+            constexpr af_op_t op2 = op == af_notzero_t ? af_add_t : op;
+            reduceBlocksByKeyDim<To, Tk, To, op2>(
                 reduced_block_sizes.get(), reduced_keys, reduced_vals,
                 t_reduced_keys, t_reduced_vals, change_nan, nanval,
                 n_reduced_host, numThreads, dim, dim_ordering);
