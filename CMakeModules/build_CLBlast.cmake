@@ -7,7 +7,7 @@
 
 af_dep_check_and_populate(${clblast_prefix}
   URI https://github.com/cnugteren/CLBlast.git
-  REF 1.5.2
+  REF 4500a03440e2cc54998c0edab366babf5e504d67
 )
 
 include(ExternalProject)
