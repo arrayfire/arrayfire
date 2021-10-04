@@ -175,7 +175,7 @@ AFAPI array fft3Norm(const array& in, const double norm_factor, const dim_t odim
 
    \ingroup signal_func_fft
  */
-AFAPI void fftInPlace(array& in, const double norm_factor = 1);
+AFAPI void fftInPlace(array& in, const double norm_factor = 1.0);
 #endif
 
 #if AF_API_VERSION >= 31
@@ -189,7 +189,7 @@ AFAPI void fftInPlace(array& in, const double norm_factor = 1);
 
    \ingroup signal_func_fft2
  */
-AFAPI void fft2InPlace(array& in, const double norm_factor = 1);
+AFAPI void fft2InPlace(array& in, const double norm_factor = 1.0);
 #endif
 
 #if AF_API_VERSION >= 31
@@ -203,7 +203,7 @@ AFAPI void fft2InPlace(array& in, const double norm_factor = 1);
 
    \ingroup signal_func_fft3
  */
-AFAPI void fft3InPlace(array& in, const double norm_factor = 1);
+AFAPI void fft3InPlace(array& in, const double norm_factor = 1.0);
 #endif
 
 /**
@@ -340,7 +340,7 @@ AFAPI array ifft3Norm(const array& in, const double norm_factor, const dim_t odi
 
    \ingroup signal_func_ifft
  */
-AFAPI void ifftInPlace(array& in, const double norm_factor = 1);
+AFAPI void ifftInPlace(array& in, const double norm_factor = 1.0);
 #endif
 
 #if AF_API_VERSION >= 31
@@ -354,7 +354,7 @@ AFAPI void ifftInPlace(array& in, const double norm_factor = 1);
 
    \ingroup signal_func_ifft2
  */
-AFAPI void ifft2InPlace(array& in, const double norm_factor = 1);
+AFAPI void ifft2InPlace(array& in, const double norm_factor = 1.0);
 #endif
 
 #if AF_API_VERSION >= 31
@@ -368,7 +368,7 @@ AFAPI void ifft2InPlace(array& in, const double norm_factor = 1);
 
    \ingroup signal_func_ifft3
  */
-AFAPI void ifft3InPlace(array& in, const double norm_factor = 1);
+AFAPI void ifft3InPlace(array& in, const double norm_factor = 1.0);
 #endif
 
 /**
@@ -471,7 +471,7 @@ AFAPI array idft(const array& in);
 template<int rank>
 array fftR2C(const array &in,
              const dim4& dims,
-             const double norm_factor = 0);
+             const double norm_factor = 1.0);
 #endif
 
 #if AF_API_VERSION >= 31
@@ -488,7 +488,7 @@ array fftR2C(const array &in,
 */
 template<int rank>
 array fftR2C(const array &in,
-             const double norm_factor = 0);
+             const double norm_factor = 1.0);
 #endif
 
 #if AF_API_VERSION >= 31
@@ -506,7 +506,7 @@ array fftR2C(const array &in,
 
 template<int rank>
 array fftC2R(const array &in, bool is_odd = false,
-                 const double norm_factor = 0);
+                 const double norm_factor = 1.0);
 #endif
 
 /**
