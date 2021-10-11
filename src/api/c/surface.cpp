@@ -14,6 +14,7 @@
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
 #include <common/graphics_common.hpp>
+#include <common/moddims.hpp>
 #include <handle.hpp>
 #include <join.hpp>
 #include <reduce.hpp>

@@ -11,8 +11,6 @@
 #include <Array.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
-#include <common/half.hpp>
-#include <common/moddims.hpp>
 #include <common/traits.hpp>
 #include <copy.hpp>
 #include <math.hpp>

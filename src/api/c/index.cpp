@@ -14,6 +14,7 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/moddims.hpp>
 #include <handle.hpp>
 #include <lookup.hpp>
 #include <af/arith.h>

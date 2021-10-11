@@ -14,6 +14,7 @@
 #include <common/complex.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
+#include <common/moddims.hpp>
 #include <copy.hpp>
 #include <handle.hpp>
 #include <indexing_common.hpp>

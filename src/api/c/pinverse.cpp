@@ -15,6 +15,7 @@
 #include <common/ArrayInfo.hpp>
 #include <common/cast.hpp>
 #include <common/err_common.hpp>
+#include <common/moddims.hpp>
 #include <diagonal.hpp>
 #include <handle.hpp>
 #include <logic.hpp>
