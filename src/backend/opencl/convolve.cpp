@@ -11,9 +11,9 @@
 #include <blas.hpp>
 #include <common/half.hpp>
 #include <common/indexing_helpers.hpp>
+#include <common/moddims.hpp>
 #include <convolve.hpp>
 #include <err_opencl.hpp>
-#include <handle.hpp>
 #include <kernel/convolve.hpp>
 #include <reorder.hpp>
 #include <transpose.hpp>

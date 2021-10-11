@@ -42,7 +42,7 @@ std::vector<std::shared_ptr<common::Node>> cloneNodes(
 }
 
 /// Sets the shape of the buffer nodes under the moddims node to the new shape
-void propigateModdimsShape(
+void propagateModdimsShape(
     std::vector<std::shared_ptr<common::Node>> &node_clones) {
     using common::NodeIterator;
     for (auto &node : node_clones) {
@@ -127,7 +127,7 @@ void evalMultiple(std::vector<Param<T>> arrays,
         }
     }
 
-    propigateModdimsShape(node_clones);
+    propagateModdimsShape(node_clones);
     removeNodeOfOperation(node_clones, ids, af_moddims_t);
 
     bool is_linear = true;
