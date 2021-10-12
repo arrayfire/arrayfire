@@ -73,39 +73,60 @@ Kernel getKernel(const string& kernelName,
     UNUSED(targs);
 #endif
 
-    size_t moduleKey = 0;
+    // The JIT kernel uses the hashing of the kernelName (tInstance) only to
+    // speed up to search for its cached kernel.  All the other kernels have the
+    // full source code linked in, and will hash the full code + options
+    // instead.
+    size_t moduleKeyCache = 0;
     if (sourceIsJIT) {
-        moduleKey = deterministicHash(tInstance);
+        moduleKeyCache = deterministicHash(tInstance);
     } else {
-        moduleKey = (sources.size() == 1 && sources[0].hash)
-                        ? sources[0].hash
-                        : deterministicHash(sources);
-        moduleKey = deterministicHash(options, moduleKey);
+        moduleKeyCache = (sources.size() == 1 && sources[0].hash)
+                             ? sources[0].hash
+                             : deterministicHash(sources);
+        moduleKeyCache = deterministicHash(options, moduleKeyCache);
 #if defined(AF_CUDA)
-        moduleKey = deterministicHash(tInstance, moduleKey);
+        moduleKeyCache = deterministicHash(tInstance, moduleKeyCache);
 #endif
     }
     const int device  = detail::getActiveDeviceId();
-    Module currModule = findModule(device, moduleKey);
+    Module currModule = findModule(device, moduleKeyCache);
 
     if (!currModule) {
+        // When saving on disk, the moduleKeyDisk has to correspond with the
+        // full code + optinos (in all circumstances). A recalculation for JIT
+        // is necessary, while for the others we can reuse the moduleKeyCache.
+        size_t moduleKeyDisk = 0;
+        if (sourceIsJIT) {
+            moduleKeyDisk = (sources.size() == 1 && sources[0].hash)
+                                ? sources[0].hash
+                                : deterministicHash(sources);
+            moduleKeyDisk = deterministicHash(options, moduleKeyDisk);
+#if defined(AF_CUDA)
+            moduleKeyDisk = deterministicHash(tInstance, moduleKeyDisk);
+#endif
+        } else {
+            moduleKeyDisk = moduleKeyCache;
+        }
         currModule =
-            loadModuleFromDisk(device, to_string(moduleKey), sourceIsJIT);
+            loadModuleFromDisk(device, to_string(moduleKeyDisk), sourceIsJIT);
         if (!currModule) {
             vector<string> sources_str;
-            for (auto s : sources) { sources_str.push_back({s.ptr, s.length}); }
-            currModule = compileModule(to_string(moduleKey), sources_str,
+            for (const auto& s : sources) {
+                sources_str.push_back({s.ptr, s.length});
+            }
+            currModule = compileModule(to_string(moduleKeyDisk), sources_str,
                                        options, {tInstance}, sourceIsJIT);
         }
 
         std::unique_lock<shared_timed_mutex> writeLock(getCacheMutex(device));
         auto& cache = getCache(device);
-        auto iter   = cache.find(moduleKey);
+        auto iter   = cache.find(moduleKeyCache);
         if (iter == cache.end()) {
             // If not found, this thread is the first one to compile
             // this kernel. Keep the generated module.
             Module mod = currModule;
-            getCache(device).emplace(moduleKey, mod);
+            getCache(device).emplace(moduleKeyCache, mod);
         } else {
             currModule.unload();  // dump the current threads extra
                                   // compilation
