@@ -50,6 +50,10 @@ class ShiftNodeBase : public Node {
         return *this;
     }
 
+    std::unique_ptr<Node> clone() final {
+        return std::make_unique<ShiftNodeBase>(*this);
+    }
+
     // Swap specilization
     void swap(ShiftNodeBase &other) noexcept {
         using std::swap;
@@ -58,7 +62,7 @@ class ShiftNodeBase : public Node {
         swap(m_shifts, other.m_shifts);
     }
 
-    bool isLinear(dim_t dims[4]) const final {
+    bool isLinear(const dim_t dims[4]) const final {
         UNUSED(dims);
         return false;
     }

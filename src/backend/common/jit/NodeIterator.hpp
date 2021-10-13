@@ -15,8 +15,6 @@
 #include <vector>
 
 namespace common {
-class Node;  // TODO(umar): Remove when CPU backend Node class is moved from JIT
-             // to common
 
 /// A node iterator that performs a breadth first traversal of the node tree
 template<typename Node = common::Node>

@@ -238,8 +238,6 @@ TEST(JIT, CPP_common_node) {
 
     array x = tile(r, 1, r.dims(0));
     array y = tile(r.T(), r.dims(0), 1);
-    x.eval();
-    y.eval();
 
     vector<float> hx(x.elements());
     vector<float> hy(y.elements());

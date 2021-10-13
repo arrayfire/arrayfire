@@ -10,11 +10,9 @@
 #include <kernel/sparse.hpp>
 #include <sparse.hpp>
 
-#include <stdexcept>
-#include <string>
-
 #include <arith.hpp>
 #include <common/cast.hpp>
+#include <common/moddims.hpp>
 #include <complex.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>
@@ -24,6 +22,9 @@
 #include <range.hpp>
 #include <reduce.hpp>
 #include <where.hpp>
+
+#include <stdexcept>
+#include <string>
 
 namespace opencl {
 
@@ -49,8 +50,8 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in) {
         arithOp<int, af_div_t>(nonZeroIdx, constDim, nonZeroIdx.dims());
 
     Array<T> values = copyArray<T>(in);
-    values.modDims(dim4(values.elements()));
-    values = lookup<T, int>(values, nonZeroIdx, 0);
+    values          = modDims(values, dim4(values.elements()));
+    values          = lookup<T, int>(values, nonZeroIdx, 0);
 
     return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx,
                                          AF_STORAGE_COO);

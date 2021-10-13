@@ -28,6 +28,11 @@
 #include <memory>
 #include <vector>
 
+namespace common {
+template<typename T>
+class SparseArray;
+}
+
 namespace opencl {
 typedef std::shared_ptr<cl::Buffer> Buffer_ptr;
 using af::dim4;
