@@ -79,11 +79,11 @@ jobs:
             - name: Install MKL for Ubuntu
               if: matrix.os != 'macos-latest' && matrix.blas_backend == 'MKL'
               run: |
-                  wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
-                  sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
-                  sudo sh -c 'echo deb https://apt.repos.intel.com/mkl all main > /etc/apt/sources.list.d/intel-mkl.list'
+                  wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+                  sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+                  sudo sh -c 'echo deb https://apt.repos.intel.com/oneapi all main > /etc/apt/sources.list.d/oneAPI.list'
                   sudo apt-get -qq update
-                  sudo apt-get install -y intel-mkl-64bit-2020.0-088
+                  sudo apt-get install -y intel-basekit
 
             - name: Install OpenBLAS for Ubuntu
               if: matrix.os != 'macos-latest' && matrix.blas_backend == 'OpenBLAS'
