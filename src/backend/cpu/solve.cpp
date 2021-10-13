@@ -15,6 +15,9 @@
 #include <copy.hpp>
 #include <lapack_helper.hpp>
 #include <math.hpp>
+#if INTEL_MKL_VERSION >= 20210004
+#include <mkl_version.h>
+#endif
 #include <queue.hpp>
 #include <af/dim4.hpp>
 #include <algorithm>
@@ -39,12 +42,21 @@ using getrf_batch_strided_func_def =
              const MKL_INT *stride_a, MKL_INT *ipiv, const MKL_INT *stride_ipiv,
              const MKL_INT *batch_size, MKL_INT *info);
 
+#if INTEL_MKL_VERSION >= 20210004
+template<typename T>
+using getrs_batch_strided_func_def = void (*)(
+    const char *trans, const MKL_INT *n, const MKL_INT *nrhs, const T *a,
+    const MKL_INT *lda, const MKL_INT *stride_a, const MKL_INT *ipiv,
+    const MKL_INT *stride_ipiv, T *b, const MKL_INT *ldb,
+    const MKL_INT *stride_b, const MKL_INT *batch_size, MKL_INT *info);
+#else
 template<typename T>
 using getrs_batch_strided_func_def =
     void (*)(const char *trans, const MKL_INT *n, const MKL_INT *nrhs, T *a,
              const MKL_INT *lda, const MKL_INT *stride_a, MKL_INT *ipiv,
              const MKL_INT *stride_ipiv, T *b, const MKL_INT *ldb,
              const MKL_INT *stride_b, const MKL_INT *batch_size, MKL_INT *info);
+#endif
 #endif
 
 template<typename T>
