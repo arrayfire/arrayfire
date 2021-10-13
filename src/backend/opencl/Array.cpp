@@ -11,6 +11,7 @@
 
 #include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
+#include <common/jit/ScalarNode.hpp>
 #include <common/util.hpp>
 #include <copy.hpp>
 #include <err_opencl.hpp>
@@ -24,7 +25,13 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <memory>
 #include <numeric>
+
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+
 #include <vector>
 
 using af::dim4;
@@ -41,11 +48,12 @@ using opencl::jit::BufferNode;
 using std::accumulate;
 using std::is_standard_layout;
 using std::make_shared;
+using std::shared_ptr;
 using std::vector;
 
 namespace opencl {
 template<typename T>
-std::shared_ptr<BufferNode> bufferNodePtr() {
+shared_ptr<BufferNode> bufferNodePtr() {
     return make_shared<BufferNode>(
         static_cast<af::dtype>(dtype_traits<T>::af_type));
 }
@@ -375,10 +383,9 @@ Array<T> createSubArray(const Array<T> &parent, const vector<af_seq> &index,
     parent.eval();
 
     dim4 dDims          = parent.getDataDims();
-    dim4 dStrides       = calcStrides(dDims);
     dim4 parent_strides = parent.strides();
 
-    if (dStrides != parent_strides) {
+    if (parent.isLinear() == false) {
         const Array<T> parentCopy = copyArray(parent);
         return createSubArray(parentCopy, index, copy);
     }
@@ -467,8 +474,8 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 
 template<typename T>
 void Array<T>::setDataDims(const dim4 &new_dims) {
-    modDims(new_dims);
     data_dims = new_dims;
+    modDims(new_dims);
 }
 
 template<typename T>

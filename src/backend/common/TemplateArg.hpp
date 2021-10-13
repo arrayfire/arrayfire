@@ -12,8 +12,12 @@
 #include <string>
 #include <utility>
 
+#include <optypes.hpp>
+
 template<typename T>
 std::string toString(T value);
+
+std::string getOpEnumStr(af_op_t val);
 
 struct TemplateArg {
     std::string _tparam;

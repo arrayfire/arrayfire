@@ -12,7 +12,7 @@
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <iostream>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -254,4 +254,28 @@ TEST(Moddims, Subref_CPP) {
     subMat.push_back(af_make_seq(1, 3, 1));
     cppModdimsTest<float>(string(TEST_DIR "/moddims/subref.test"), true,
                           &subMat);
+}
+
+TEST(Moddims, jit) {
+    using namespace af;
+    array c1 = constant(1, 10, 5);
+    c1.eval();
+    array c2 = randu(10, 10);
+
+    vector<float> hc2(100);
+    c2.host(hc2.data());
+
+    array c3 = c2(span, seq(5));
+    c3.eval();
+
+    array a = c1;
+    a       = a + c3;
+    a       = moddims(a, 5, 10);
+    a       = a + constant(2, 5, 10);
+
+    for (int i = 0; i < hc2.size(); i++) { hc2[i] += 3; }
+
+    array gold(10, 5, hc2.data());
+    gold = moddims(gold, 5, 10);
+    ASSERT_ARRAYS_EQ(gold, a);
 }

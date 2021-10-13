@@ -120,7 +120,7 @@ TEST(GFOR, Assign_Array_Span) {
     float *hA = A.host<float>();
     float val = B.scalar<float>();
 
-    for (int i = 0; i < nx; i++) { ASSERT_EQ(hA[i], val); }
+    ASSERT_ARRAYS_EQ(A, constant(val, nx));
 
     freeHost(hA);
 }

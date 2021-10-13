@@ -40,6 +40,10 @@ class BufferNode : public TNode<T> {
         , m_dims{0, 0, 0, 0}
         , m_linear_buffer(true) {}
 
+    std::unique_ptr<common::Node> clone() final {
+        return std::make_unique<BufferNode>(*this);
+    }
+
     void setData(std::shared_ptr<T> data, unsigned bytes, dim_t data_off,
                  const dim_t *dims, const dim_t *strides,
                  const bool is_linear) {
@@ -51,6 +55,18 @@ class BufferNode : public TNode<T> {
             m_strides[i] = strides[i];
             m_dims[i]    = dims[i];
         }
+    }
+
+    void setShape(af::dim4 new_shape) final {
+        auto new_strides = calcStrides(new_shape);
+        m_dims[0]        = new_shape[0];
+        m_dims[1]        = new_shape[1];
+        m_dims[2]        = new_shape[2];
+        m_dims[3]        = new_shape[3];
+        m_strides[0]     = new_strides[0];
+        m_strides[1]     = new_strides[1];
+        m_strides[2]     = new_strides[2];
+        m_strides[3]     = new_strides[3];
     }
 
     void calc(int x, int y, int z, int w, int lim) final {
@@ -122,7 +138,7 @@ class BufferNode : public TNode<T> {
         UNUSED(ids);
     }
 
-    bool isLinear(dim_t *dims) const final {
+    bool isLinear(const dim_t *dims) const final {
         return m_linear_buffer && dims[0] == m_dims[0] &&
                dims[1] == m_dims[1] && dims[2] == m_dims[2] &&
                dims[3] == m_dims[3];

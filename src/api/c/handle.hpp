@@ -11,7 +11,6 @@
 #include <Array.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
-#include <common/half.hpp>
 #include <common/traits.hpp>
 #include <copy.hpp>
 #include <math.hpp>
@@ -36,23 +35,6 @@ template<typename To>
 detail::Array<To> castArray(const af_array &in);
 
 namespace {
-
-template<typename T>
-detail::Array<T> modDims(const detail::Array<T> &in, const af::dim4 &newDims) {
-    in.eval();  // FIXME: Figure out a better way
-
-    detail::Array<T> Out = in;
-    if (!in.isLinear()) Out = detail::copyArray<T>(in);
-    Out.setDataDims(newDims);
-
-    return Out;
-}
-
-template<typename T>
-detail::Array<T> flat(const detail::Array<T> &in) {
-    const af::dim4 newDims(in.elements());
-    return modDims<T>(in, newDims);
-}
 
 template<typename T>
 const detail::Array<T> &getArray(const af_array &arr) {

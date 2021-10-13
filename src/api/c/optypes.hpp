@@ -10,7 +10,8 @@
 #pragma once
 
 typedef enum {
-    af_add_t = 0,
+    af_none_t = -1,
+    af_add_t  = 0,
     af_sub_t,
     af_mul_t,
     af_div_t,
@@ -96,5 +97,7 @@ typedef enum {
 
     af_select_t,
     af_not_select_t,
-    af_rsqrt_t
+    af_rsqrt_t,
+
+    af_moddims_t
 } af_op_t;

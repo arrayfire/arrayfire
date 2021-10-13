@@ -15,6 +15,7 @@
 #include <common/ArrayInfo.hpp>
 #include <common/cast.hpp>
 #include <common/err_common.hpp>
+#include <common/moddims.hpp>
 #include <diagonal.hpp>
 #include <handle.hpp>
 #include <logic.hpp>
@@ -32,6 +33,7 @@
 using af::dim4;
 using af::dtype_traits;
 using common::cast;
+using common::modDims;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;

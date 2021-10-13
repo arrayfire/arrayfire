@@ -264,10 +264,9 @@ Array<T> createSubArray(const Array<T> &parent, const vector<af_seq> &index,
     parent.eval();
 
     dim4 dDims          = parent.getDataDims();
-    dim4 dStrides       = calcStrides(dDims);
     dim4 parent_strides = parent.strides();
 
-    if (dStrides != parent_strides) {
+    if (parent.isLinear() == false) {
         const Array<T> parentCopy = copyArray(parent);
         return createSubArray(parentCopy, index, copy);
     }
@@ -316,8 +315,8 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 
 template<typename T>
 void Array<T>::setDataDims(const dim4 &new_dims) {
-    modDims(new_dims);
     data_dims = new_dims;
+    modDims(new_dims);
 }
 
 #define INSTANTIATE(T)                                                        \
@@ -344,6 +343,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
     template void writeDeviceDataArray<T>(                                    \
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(vector<Array<T> *> arrays);                 \
+    template kJITHeuristics passesJitHeuristics<T>(Node * n);                 \
     template void Array<T>::setDataDims(const dim4 &new_dims);
 
 INSTANTIATE(float)

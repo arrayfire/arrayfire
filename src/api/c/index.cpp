@@ -14,6 +14,7 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/moddims.hpp>
 #include <handle.hpp>
 #include <lookup.hpp>
 #include <af/arith.h>
@@ -33,6 +34,7 @@ using std::vector;
 using af::dim4;
 using common::convert2Canonical;
 using common::createSpanIndex;
+using common::flat;
 using common::half;
 using detail::cdouble;
 using detail::cfloat;
@@ -70,7 +72,7 @@ static af_array indexBySeqs(const af_array& src,
     const auto& input = getArray<T>(src);
 
     if (ndims == 1U && ndims != input.ndims()) {
-        return getHandle(createSubArray(::flat(input), indicesV));
+        return getHandle(createSubArray(flat(input), indicesV));
     } else {
         return getHandle(createSubArray(input, indicesV));
     }
