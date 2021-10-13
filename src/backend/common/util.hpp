@@ -10,6 +10,8 @@
 /// This file contains platform independent utility functions
 #pragma once
 
+#include <af/defines.h>
+
 #include <iosfwd>
 #include <string>
 #include <vector>
@@ -54,6 +56,8 @@ bool isDirectoryWritable(const std::string& path);
 /// including calls from other threads or processes. The string contains
 /// no extension.
 std::string makeTempFilename();
+
+const char* getName(af_dtype type);
 
 /// Return the FNV-1a hash of the provided bata.
 ///

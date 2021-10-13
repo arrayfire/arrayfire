@@ -11,6 +11,7 @@
 #include <backend.hpp>
 #include <common/cast.hpp>
 #include <common/err_common.hpp>
+#include <common/moddims.hpp>
 #include <handle.hpp>
 #include <lookup.hpp>
 #include <reduce.hpp>
@@ -22,6 +23,7 @@
 
 using af::dim4;
 using common::cast;
+using common::modDims;
 using detail::arithOp;
 using detail::Array;
 using detail::createValueArray;

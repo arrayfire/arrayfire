@@ -14,6 +14,7 @@
 #include <common/complex.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
+#include <common/moddims.hpp>
 #include <copy.hpp>
 #include <handle.hpp>
 #include <indexing_common.hpp>
@@ -34,6 +35,7 @@ using common::createSpanIndex;
 using common::half;
 using common::if_complex;
 using common::if_real;
+using common::modDims;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;

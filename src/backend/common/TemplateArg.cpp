@@ -13,6 +13,7 @@
 #include <optypes.hpp>
 #include <af/defines.h>
 
+#include <cstdlib>
 #include <string>
 
 using std::string;
@@ -159,6 +160,9 @@ string getOpEnumStr(af_op_t val) {
         CASE_STMT(af_select_t);
         CASE_STMT(af_not_select_t);
         CASE_STMT(af_rsqrt_t);
+        CASE_STMT(af_moddims_t);
+
+        CASE_STMT(af_none_t);
     }
 #undef CASE_STMT
     return retVal;

@@ -21,6 +21,10 @@ class ScalarNode : public TNode<T> {
    public:
     ScalarNode(T val) : TNode<T>(val, 0, {}) {}
 
+    std::unique_ptr<common::Node> clone() final {
+        return std::make_unique<ScalarNode>(*this);
+    }
+
     void genKerName(std::string &kerString,
                     const common::Node_ids &ids) const final {
         UNUSED(kerString);

@@ -1673,10 +1673,10 @@ TEST(Index, ISSUE_1101_MODDIMS) {
     size_t aby1, abu1, lby1, lbu1;
     deviceMemInfo(&aby1, &abu1, &lby1, &lbu1);
 
-    ASSERT_EQ(aby, aby1);
-    ASSERT_EQ(abu, abu1);
-    ASSERT_EQ(lby, lby1);
-    ASSERT_EQ(lbu, lbu1);
+    EXPECT_EQ(aby, aby1) << "Number of bytes different";
+    EXPECT_EQ(abu, abu1) << "Number of buffers different";
+    EXPECT_EQ(lby, lby1) << "Number of bytes different";
+    EXPECT_EQ(lbu, lbu1) << "Number of buffers different";
 
     vector<float> hb(b.elements());
     b.host(&hb[0]);

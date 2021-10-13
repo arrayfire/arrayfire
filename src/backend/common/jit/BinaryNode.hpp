@@ -17,7 +17,7 @@ namespace common {
 class BinaryNode : public NaryNode {
    public:
     BinaryNode(const af::dtype type, const char *op_str, common::Node_ptr lhs,
-               common::Node_ptr rhs, int op)
+               common::Node_ptr rhs, af_op_t op)
         : NaryNode(type, op_str, 2, {{lhs, rhs}}, op,
                    std::max(lhs->getHeight(), rhs->getHeight()) + 1) {}
 };
