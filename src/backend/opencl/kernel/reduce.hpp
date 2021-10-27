@@ -20,6 +20,7 @@
 #include <kernel/config.hpp>
 #include <kernel/names.hpp>
 #include <kernel_headers/ops.hpp>
+#include <kernel_headers/reduce_all.hpp>
 #include <kernel_headers/reduce_dim.hpp>
 #include <kernel_headers/reduce_first.hpp>
 #include <math.hpp>
@@ -110,6 +111,54 @@ void reduceDim(Param out, Param in, int change_nan, double nanval, int dim) {
 }
 
 template<typename Ti, typename To, af_op_t op>
+void reduceAllLauncher(Param out, Param in, const uint groups_x,
+                       const uint groups_y, const uint threads_x,
+                       int change_nan, double nanval) {
+    ToNumStr<To> toNumStr;
+    std::vector<TemplateArg> targs = {
+        TemplateTypename<Ti>(),
+        TemplateTypename<To>(),
+        TemplateArg(op),
+        TemplateArg(threads_x),
+    };
+    std::vector<std::string> options = {
+        DefineKeyValue(Ti, dtype_traits<Ti>::getName()),
+        DefineKeyValue(To, dtype_traits<To>::getName()),
+        DefineKeyValue(T, "To"),
+        DefineKeyValue(DIMX, threads_x),
+        DefineValue(THREADS_PER_GROUP),
+        DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
+        DefineKeyFromStr(binOpName<op>()),
+        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+    };
+    options.emplace_back(getTypeBuildDefinition<Ti, To>());
+
+    auto reduceAll = common::getKernel(
+        "reduce_all_kernel", {ops_cl_src, reduce_all_cl_src}, targs, options);
+
+    cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
+    cl::NDRange global(groups_x * in.info.dims[2] * local[0],
+                       groups_y * in.info.dims[3] * local[1]);
+
+    uint repeat = divup(in.info.dims[0], (local[0] * groups_x));
+
+    long tmp_elements = groups_x * in.info.dims[2] * groups_y * in.info.dims[3];
+    if (tmp_elements > UINT_MAX) {
+        AF_ERROR("Too many blocks requested (retirementCount == unsigned)",
+                 AF_ERR_RUNTIME);
+    }
+    Array<To> tmp                   = createEmptyArray<To>(tmp_elements);
+    Array<unsigned> retirementCount = createValueArray<unsigned>(1, 0);
+    Param p_tmp(tmp);
+    Param p_Count(retirementCount);
+
+    reduceAll(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+              *p_Count.data, *p_tmp.data, p_tmp.info, *in.data, in.info,
+              groups_x, groups_y, repeat, change_nan, scalar<To>(nanval));
+    CL_DEBUG_FINISH(getQueue());
+}
+
+template<typename Ti, typename To, af_op_t op>
 void reduceFirstLauncher(Param out, Param in, const uint groups_x,
                          const uint groups_y, const uint threads_x,
                          int change_nan, double nanval) {
@@ -192,7 +241,7 @@ void reduce(Param out, Param in, int dim, int change_nan, double nanval) {
 }
 
 template<typename Ti, typename To, af_op_t op>
-To reduceAll(Param in, int change_nan, double nanval) {
+void reduceAll(Param out, Param in, int change_nan, double nanval) {
     int in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
@@ -202,59 +251,22 @@ To reduceAll(Param in, int change_nan, double nanval) {
                       (in.info.strides[k - 1] * in.info.dims[k - 1]));
     }
 
-    // FIXME: Use better heuristics to get to the optimum number
-    if (in_elements > 4096 || !is_linear) {
-        if (is_linear) {
-            in.info.dims[0] = in_elements;
-            for (int k = 1; k < 4; k++) {
-                in.info.dims[k]    = 1;
-                in.info.strides[k] = in_elements;
-            }
+    if (is_linear) {
+        in.info.dims[0] = in_elements;
+        for (int k = 1; k < 4; k++) {
+            in.info.dims[k]    = 1;
+            in.info.strides[k] = in_elements;
         }
-
-        uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
-        threads_x      = std::min(threads_x, THREADS_PER_GROUP);
-        uint threads_y = THREADS_PER_GROUP / threads_x;
-
-        uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
-        uint groups_y = divup(in.info.dims[1], threads_y);
-        Array<To> tmp = createEmptyArray<To>(
-            {groups_x, in.info.dims[1], in.info.dims[2], in.info.dims[3]});
-
-        int tmp_elements = tmp.elements();
-
-        reduceFirstLauncher<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x,
-                                        change_nan, nanval);
-
-        std::vector<To> h_ptr(tmp_elements);
-        getQueue().enqueueReadBuffer(*tmp.get(), CL_TRUE, 0,
-                                     sizeof(To) * tmp_elements, h_ptr.data());
-
-        common::Binary<compute_t<To>, op> reduce;
-        compute_t<To> out = common::Binary<compute_t<To>, op>::init();
-        for (int i = 0; i < (int)tmp_elements; i++) {
-            out = reduce(out, compute_t<To>(h_ptr[i]));
-        }
-        return data_t<To>(out);
-    } else {
-        std::vector<Ti> h_ptr(in_elements);
-        getQueue().enqueueReadBuffer(*in.data, CL_TRUE,
-                                     sizeof(Ti) * in.info.offset,
-                                     sizeof(Ti) * in_elements, h_ptr.data());
-
-        common::Transform<Ti, compute_t<To>, op> transform;
-        common::Binary<compute_t<To>, op> reduce;
-        compute_t<To> out       = common::Binary<compute_t<To>, op>::init();
-        compute_t<To> nanval_to = scalar<compute_t<To>>(nanval);
-
-        for (int i = 0; i < (int)in_elements; i++) {
-            compute_t<To> in_val = transform(h_ptr[i]);
-            if (change_nan) in_val = IS_NAN(in_val) ? nanval_to : in_val;
-            out = reduce(out, compute_t<To>(in_val));
-        }
-
-        return data_t<To>(out);
     }
+
+    uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
+    threads_x      = std::min(threads_x, THREADS_PER_GROUP);
+    uint threads_y = THREADS_PER_GROUP / threads_x;
+
+    uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
+    uint groups_y = divup(in.info.dims[1], threads_y);
+    reduceAllLauncher<Ti, To, op>(out, in, groups_x, groups_y, threads_x,
+                                  change_nan, nanval);
 }
 
 }  // namespace kernel

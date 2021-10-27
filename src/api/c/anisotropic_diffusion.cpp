@@ -28,6 +28,7 @@ using common::cast;
 using detail::arithOp;
 using detail::Array;
 using detail::createEmptyArray;
+using detail::getScalar;
 using detail::gradient;
 using detail::reduce_all;
 
@@ -48,7 +49,8 @@ af_array diffusion(const Array<float>& in, const float dt, const float K,
         auto g0Sqr = arithOp<float, af_mul_t>(g0, g0, dims);
         auto g1Sqr = arithOp<float, af_mul_t>(g1, g1, dims);
         auto sumd  = arithOp<float, af_add_t>(g0Sqr, g1Sqr, dims);
-        float avg  = reduce_all<af_add_t, float, float>(sumd, true, 0);
+        float avg =
+            getScalar<float>(reduce_all<af_add_t, float, float>(sumd, true, 0));
 
         anisotropicDiffusion(out, dt, 1.0f / (cnst * avg), fftype, eq);
     }

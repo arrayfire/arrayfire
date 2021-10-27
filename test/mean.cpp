@@ -362,8 +362,9 @@ TEST(MeanAll, SubArray) {
     array in  = randu(inDims);
     array sub = in(0, span, span, span);
 
-    size_t nElems = sub.elements();
-    ASSERT_FLOAT_EQ(mean<float>(sub), sum<float>(sub) / nElems);
+    size_t nElems   = sub.elements();
+    float max_error = std::numeric_limits<float>::epsilon() * nElems;
+    ASSERT_NEAR(mean<float>(sub), sum<float>(sub) / nElems, max_error);
 }
 
 TEST(MeanHalf, dim0) {

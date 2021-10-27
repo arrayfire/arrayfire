@@ -212,6 +212,14 @@ void max(array &val, array &idx, const array &in, const int dim) {
         return out;                                       \
     }
 
+#define INSTANTIATE_ARRAY(fnC, fnCPP)                   \
+    template<>                                          \
+    AFAPI af::array fnCPP(const array &in) {            \
+        af_array out = 0;                               \
+        AF_THROW(af_##fnC##_all_array(&out, in.get())); \
+        return array(out);                              \
+    }
+
 INSTANTIATE(sum, sum)
 INSTANTIATE(product, product)
 INSTANTIATE(min, min)
@@ -223,8 +231,17 @@ INSTANTIATE(count, count)
 INSTANTIATE_REAL(all_true, allTrue, bool);
 INSTANTIATE_REAL(any_true, anyTrue, bool);
 
+INSTANTIATE_ARRAY(sum, sum)
+INSTANTIATE_ARRAY(product, product)
+INSTANTIATE_ARRAY(min, min)
+INSTANTIATE_ARRAY(max, max)
+INSTANTIATE_ARRAY(all_true, allTrue)
+INSTANTIATE_ARRAY(any_true, anyTrue)
+INSTANTIATE_ARRAY(count, count)
+
 #undef INSTANTIATE_REAL
 #undef INSTANTIATE_CPLX
+#undef INSTANTIATE_ARRAY
 
 #define INSTANTIATE_REAL(fnC, fnCPP, T)                           \
     template<>                                                    \
@@ -243,12 +260,23 @@ INSTANTIATE_REAL(any_true, anyTrue, bool);
         return out;                                               \
     }
 
+#define INSTANTIATE_ARRAY(fnC, fnCPP)                             \
+    template<>                                                    \
+    AFAPI af::array fnCPP(const array &in, const double nanval) { \
+        af_array out = 0;                                         \
+        AF_THROW(af_##fnC##_all_array(&out, in.get(), nanval));   \
+        return array(out);                                        \
+    }
+INSTANTIATE_ARRAY(sum_nan, sum)
+INSTANTIATE_ARRAY(product_nan, product)
+
 INSTANTIATE(sum_nan, sum)
 INSTANTIATE(product_nan, product)
 
 #undef INSTANTIATE_REAL
 #undef INSTANTIATE_CPLX
 #undef INSTANTIATE
+#undef INSTANTIATE_ARRAY
 
 #define INSTANTIATE_COMPAT(fnCPP, fnCompat, T) \
     template<>                                 \

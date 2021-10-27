@@ -21,5 +21,6 @@ void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
                    bool change_nan = false, double nanval = 0);
 
 template<af_op_t op, typename Ti, typename To>
-To reduce_all(const Array<Ti> &in, bool change_nan = false, double nanval = 0);
+Array<To> reduce_all(const Array<Ti> &in, bool change_nan = false,
+                     double nanval = 0);
 }  // namespace cuda

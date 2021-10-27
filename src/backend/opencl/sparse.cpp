@@ -61,7 +61,7 @@ template<typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_) {
     in_.eval();
 
-    uint nNZ = reduce_all<af_notzero_t, T, uint>(in_);
+    uint nNZ = getScalar<uint>(reduce_all<af_notzero_t, T, uint>(in_));
 
     SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, stype);
     sparse_.eval();

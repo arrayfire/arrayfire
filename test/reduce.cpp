@@ -13,7 +13,9 @@
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
 
+#include <math.h>
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <string>
@@ -96,7 +98,6 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef = false,
                 EXPECT_EQ(currGoldBar[elIter], outData[elIter])
                     << "at: " << elIter << " for dim " << d + off << endl;
             }
-            af_print_array(outArray);
             for (int i = 0; i < (int)nElems; i++) {
                 cout << currGoldBar[i] << ", ";
             }
@@ -1263,10 +1264,14 @@ TEST(Reduce, KernelName) {
 }
 
 TEST(Reduce, AllSmallIndexed) {
-    const int len = 1000;
-    array a       = af::range(dim4(len, 2));
-    array b       = a(seq(len / 2), span);
-    ASSERT_EQ(max<float>(b), len / 2 - 1);
+    const int len = 512;
+    for (int i = 0; i < 1000; ++i) {
+        // const int len = 10000;
+        array a = af::range(dim4(len, 2));
+        array b = a(seq(len / 2), span);
+        // af::sync();
+        ASSERT_EQ(max<float>(b), len / 2 - 1);
+    }
 }
 
 TEST(ProductAll, BoolIn_ISSUE2543_All_Ones) {
@@ -2090,4 +2095,193 @@ TEST(ReduceByKey, ISSUE_3062) {
 
     af::countByKey(okeys, ovalues, zeros, ones, 1);
     ASSERT_EQ(ovalues.scalar<unsigned>(), 129);
+}
+
+TEST(Reduce, Test_Sum_Global_Array) {
+    const int num = 513;
+    array a       = af::randn(num, 2, 33, 4);
+
+    float res          = af::sum<float>(a);
+    array full_reduce  = af::sum<af::array>(a);
+
+    float *h_a = a.host<float>();
+    float gold = 0.f;
+
+    for (int i = 0; i < a.elements(); i++) { gold += h_a[i]; }
+
+    float max_error = std::numeric_limits<float>::epsilon() * (float)a.elements();
+    ASSERT_NEAR(gold, res, max_error);
+    ASSERT_NEAR(res, full_reduce.scalar<float>(), max_error);
+    freeHost(h_a);
+}
+
+TEST(Reduce, Test_Product_Global_Array) {
+    const int num = 512;
+    array a       = 1 + (0.005 * af::randn(num, 2, 3, 4));
+
+    float res          = af::product<float>(a);
+    array full_reduce  = af::product<af::array>(a);
+
+    float *h_a = a.host<float>();
+    float gold = 1.f;
+
+    for (int i = 0; i < a.elements(); i++) { gold *= h_a[i]; }
+
+    float max_error = std::numeric_limits<float>::epsilon() * (float)a.elements();
+    ASSERT_NEAR(gold, res, max_error);
+    ASSERT_NEAR(res, full_reduce.scalar<float>(), max_error);
+    freeHost(h_a);
+}
+
+TEST(Reduce, Test_Count_Global_Array) {
+    const int num = 10000;
+    array a       = round(2 * randu(num, 2, 3, 4));
+    array b       = a.as(b8);
+
+    int res       = count<int>(b);
+    array res_arr = count<af::array>(b);
+    char *h_b     = b.host<char>();
+    unsigned gold      = 0;
+
+    for (int i = 0; i < a.elements(); i++) { gold += h_b[i]; }
+
+    ASSERT_EQ(gold, res);
+    ASSERT_EQ(gold, res_arr.scalar<unsigned>());
+    freeHost(h_b);
+}
+
+TEST(Reduce, Test_min_Global_Array) {
+    SUPPORTED_TYPE_CHECK(double);
+
+    const int num = 10000;
+    array a       = af::randn(num, 2, 3, 4, f64);
+    double res    = min<double>(a);
+    array res_arr = min<af::array>(a);
+    double *h_a   = a.host<double>();
+    double gold   = std::numeric_limits<double>::max();
+
+    SUPPORTED_TYPE_CHECK(double);
+
+    for (int i = 0; i < a.elements(); i++) { gold = std::min(gold, h_a[i]); }
+
+    ASSERT_EQ(gold, res);
+    ASSERT_EQ(gold, res_arr.scalar<double>());
+    freeHost(h_a);
+}
+
+TEST(Reduce, Test_max_Global_Array) {
+    const int num = 10000;
+    array a       = af::randn(num, 2, 3, 4);
+    float res     = max<float>(a);
+    array res_arr = max<af::array>(a);
+    float *h_a    = a.host<float>();
+    float gold    = -std::numeric_limits<float>::max();
+
+    for (int i = 0; i < a.elements(); i++) { gold = std::max(gold, h_a[i]); }
+
+    ASSERT_EQ(gold, res);
+    ASSERT_EQ(gold, res_arr.scalar<float>());
+    freeHost(h_a);
+}
+
+TYPED_TEST(Reduce, Test_All_Global_Array) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+
+    // Input size test
+    for (int i = 1; i < 1000; i += 100) {
+        int num = 10 * i;
+        vector<TypeParam> h_vals(num, (TypeParam) true);
+        array a(2, num / 2, &h_vals.front());
+
+        TypeParam res = allTrue<TypeParam>(a);
+        array res_arr = allTrue<array>(a);
+        typed_assert_eq((TypeParam) true, res, false);
+        typed_assert_eq((TypeParam) true, (TypeParam)res_arr.scalar<char>(), false);
+
+        h_vals[3] = false;
+        a         = array(2, num / 2, &h_vals.front());
+
+        res = allTrue<TypeParam>(a);
+        res_arr = allTrue<array>(a);
+        typed_assert_eq((TypeParam) false, res, false);
+        typed_assert_eq((TypeParam) false, (TypeParam)res_arr.scalar<char>(), false);
+    }
+
+    // false value location test
+    const int num = 10000;
+    vector<TypeParam> h_vals(num, (TypeParam) true);
+    for (int i = 1; i < 10000; i += 100) {
+        h_vals[i] = false;
+        array a(2, num / 2, &h_vals.front());
+
+        TypeParam res = allTrue<TypeParam>(a);
+        array res_arr = allTrue<array>(a);
+        typed_assert_eq((TypeParam) false, res, false);
+        typed_assert_eq((TypeParam) false, (TypeParam)res_arr.scalar<char>(), false);
+
+        h_vals[i] = true;
+    }
+}
+
+TYPED_TEST(Reduce, Test_Any_Global_Array) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
+
+    // Input size test
+    for (int i = 1; i < 1000; i += 100) {
+        int num = 10 * i;
+        vector<TypeParam> h_vals(num, (TypeParam) false);
+        array a(2, num / 2, &h_vals.front());
+
+        TypeParam res = anyTrue<TypeParam>(a);
+        array res_arr = anyTrue<array>(a);
+        typed_assert_eq((TypeParam) false, res, false);
+        typed_assert_eq((TypeParam) false, (TypeParam)res_arr.scalar<char>(), false);
+
+        h_vals[3] = true;
+        a         = array(2, num / 2, &h_vals.front());
+
+        res = anyTrue<TypeParam>(a);
+        res_arr = anyTrue<array>(a);
+        typed_assert_eq((TypeParam) true, (TypeParam)res_arr.scalar<char>(), false);
+    }
+
+    // true value location test
+    const int num = 10000;
+    vector<TypeParam> h_vals(num, (TypeParam) false);
+    for (int i = 1; i < 10000; i += 100) {
+        h_vals[i] = true;
+        array a(2, num / 2, &h_vals.front());
+
+        TypeParam res = anyTrue<TypeParam>(a);
+        array res_arr = anyTrue<array>(a);
+        typed_assert_eq((TypeParam) true, res, false);
+        typed_assert_eq((TypeParam) true, (TypeParam)res_arr.scalar<char>(), false);
+
+        h_vals[i] = false;
+    }
+}
+
+
+TEST(Reduce, Test_Sum_Global_Array_nanval) {
+    const int num = 100000;
+    array a = af::randn(num, 2, 34, 4);
+    a(1, 0, 0, 0) = NAN;
+    a(0, 1, 0, 0) = NAN;
+    a(0, 0, 1, 0) = NAN;
+    a(0, 0, 0, 1) = NAN;
+
+    double nanval = 0.2;
+    float res          = af::sum<float>(a, nanval);
+    array full_reduce  = af::sum<af::array>(a, nanval);
+
+    float *h_a = a.host<float>();
+    float gold = 0.f;
+
+    for (int i = 0; i < a.elements(); i++) {
+        gold += (isnan(h_a[i])) ? nanval : h_a[i];
+    }
+    float max_error = std::numeric_limits<float>::epsilon() * (float)a.elements();
+    ASSERT_NEAR(gold, res, max_error);
+    ASSERT_NEAR(res, full_reduce.scalar<float>(), max_error);
+    freeHost(h_a);
 }

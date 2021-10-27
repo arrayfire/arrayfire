@@ -10,6 +10,7 @@
 #include <backend.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
+#include <copy.hpp>
 #include <handle.hpp>
 #include <ireduce.hpp>
 #include <math.hpp>
@@ -25,6 +26,7 @@ using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createEmptyArray;
+using detail::getScalar;
 using detail::imag;
 using detail::intl;
 using detail::real;
@@ -533,11 +535,19 @@ af_err af_any_true_by_key(af_array *keys_out, af_array *vals_out,
                                              dim);
 }
 
+template<af_op_t op, typename Ti, typename To>
+static inline af_array reduce_all_array(const af_array in,
+                                        bool change_nan = false,
+                                        double nanval   = 0) {
+    return getHandle(
+        detail::reduce_all<op, Ti, To>(getArray<Ti>(in), change_nan, nanval));
+}
+
 template<af_op_t op, typename Ti, typename Tacc, typename Tret = double>
 static inline Tret reduce_all(const af_array in, bool change_nan = false,
                               double nanval = 0) {
-    return static_cast<Tret>(
-        reduce_all<op, Ti, Tacc>(getArray<Ti>(in), change_nan, nanval));
+    return static_cast<Tret>(getScalar<Tacc>(
+        reduce_all<op, Ti, Tacc>(getArray<Ti>(in), change_nan, nanval)));
 }
 
 template<af_op_t op, typename To>
@@ -568,6 +578,38 @@ static af_err reduce_all_type(double *real, double *imag, const af_array in) {
             // clang-format on
             default: TYPE_ERROR(1, type);
         }
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+template<af_op_t op, typename To>
+static af_err reduce_all_type_array(af_array *out, const af_array in) {
+    try {
+        const ArrayInfo &in_info = getInfo(in);
+        af_dtype type            = in_info.getType();
+
+        af_array res;
+        switch (type) {
+            // clang-format off
+            case f32: res = reduce_all_array<op, float,   To>(in); break;
+            case f64: res = reduce_all_array<op, double,  To>(in); break;
+            case c32: res = reduce_all_array<op, cfloat,  To>(in); break;
+            case c64: res = reduce_all_array<op, cdouble, To>(in); break;
+            case u32: res = reduce_all_array<op, uint,    To>(in); break;
+            case s32: res = reduce_all_array<op, int,     To>(in); break;
+            case u64: res = reduce_all_array<op, uintl,   To>(in); break;
+            case s64: res = reduce_all_array<op, intl,    To>(in); break;
+            case u16: res = reduce_all_array<op, ushort,  To>(in); break;
+            case s16: res = reduce_all_array<op, short,   To>(in); break;
+            case b8:  res = reduce_all_array<op, char,    To>(in); break;
+            case u8:  res = reduce_all_array<op, uchar,   To>(in); break;
+            case f16: res = reduce_all_array<op, half,    To>(in); break;
+            // clang-format on
+            default: TYPE_ERROR(1, type);
+        }
+        std::swap(*out, res);
     }
     CATCHALL;
 
@@ -619,6 +661,40 @@ static af_err reduce_all_common(double *real_val, double *imag_val,
 
             default: TYPE_ERROR(1, type);
         }
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+template<af_op_t op>
+static af_err reduce_all_common_array(af_array *out, const af_array in) {
+    try {
+        const ArrayInfo &in_info = getInfo(in);
+        af_dtype type            = in_info.getType();
+
+        ARG_ASSERT(2, in_info.ndims() > 0);
+        af_array res;
+
+        switch (type) {
+            // clang-format off
+            case f32: res = reduce_all_array<op, float,  float>(in); break;
+            case f64: res = reduce_all_array<op, double, double>(in); break;
+            case u32: res = reduce_all_array<op, uint,   uint>(in); break;
+            case s32: res = reduce_all_array<op, int,    int>(in); break;
+            case u64: res = reduce_all_array<op, uintl,  uintl>(in); break;
+            case s64: res = reduce_all_array<op, intl,   intl>(in); break;
+            case u16: res = reduce_all_array<op, ushort, ushort>(in); break;
+            case s16: res = reduce_all_array<op, short,  short>(in); break;
+            case b8:  res = reduce_all_array<op, char,   char>(in); break;
+            case u8:  res = reduce_all_array<op, uchar,  uchar>(in); break;
+            case f16: res = reduce_all_array<op, half,   half>(in); break;
+            // clang-format on
+            case c32: res = reduce_all_array<op, cfloat, cfloat>(in); break;
+            case c64: res = reduce_all_array<op, cdouble, cdouble>(in); break;
+            default: TYPE_ERROR(1, type);
+        }
+        std::swap(*out, res);
     }
     CATCHALL;
 
@@ -686,32 +762,131 @@ static af_err reduce_all_promote(double *real_val, double *imag_val,
     return AF_SUCCESS;
 }
 
+template<af_op_t op>
+static af_err reduce_all_promote_array(af_array *out, const af_array in,
+                                       bool change_nan = false,
+                                       double nanval   = 0.0) {
+    try {
+        const ArrayInfo &in_info = getInfo(in);
+
+        af_dtype type = in_info.getType();
+        af_array res;
+
+        switch (type) {
+            case f32:
+                res =
+                    reduce_all_array<op, float, float>(in, change_nan, nanval);
+                break;
+            case f64:
+                res = reduce_all_array<op, double, double>(in, change_nan,
+                                                           nanval);
+                break;
+            case c32:
+                res = reduce_all_array<op, cfloat, cfloat>(in, change_nan,
+                                                           nanval);
+                break;
+            case c64:
+                res = reduce_all_array<op, cdouble, cdouble>(in, change_nan,
+                                                             nanval);
+                break;
+            case u32:
+                res = reduce_all_array<op, uint, uint>(in, change_nan, nanval);
+                break;
+            case s32:
+                res = reduce_all_array<op, int, int>(in, change_nan, nanval);
+                break;
+            case u64:
+                res =
+                    reduce_all_array<op, uintl, uintl>(in, change_nan, nanval);
+                break;
+            case s64:
+                res = reduce_all_array<op, intl, intl>(in, change_nan, nanval);
+                break;
+            case u16:
+                res =
+                    reduce_all_array<op, ushort, uint>(in, change_nan, nanval);
+                break;
+            case s16:
+                res = reduce_all_array<op, short, int>(in, change_nan, nanval);
+                break;
+            case u8:
+                res = reduce_all_array<op, uchar, uint>(in, change_nan, nanval);
+                break;
+            case b8: {
+                if (op == af_mul_t) {
+                    res = reduce_all_array<af_and_t, char, char>(in, change_nan,
+                                                                 nanval);
+                } else {
+                    res = reduce_all_array<af_notzero_t, char, uint>(
+                        in, change_nan, nanval);
+                }
+            } break;
+            case f16:
+                res = reduce_all_array<op, half, float>(in, change_nan, nanval);
+                break;
+            default: TYPE_ERROR(1, type);
+        }
+        std::swap(*out, res);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 af_err af_min_all(double *real, double *imag, const af_array in) {
     return reduce_all_common<af_min_t>(real, imag, in);
+}
+
+af_err af_min_all_array(af_array *out, const af_array in) {
+    return reduce_all_common_array<af_min_t>(out, in);
 }
 
 af_err af_max_all(double *real, double *imag, const af_array in) {
     return reduce_all_common<af_max_t>(real, imag, in);
 }
 
+af_err af_max_all_array(af_array *out, const af_array in) {
+    return reduce_all_common_array<af_max_t>(out, in);
+}
+
 af_err af_sum_all(double *real, double *imag, const af_array in) {
     return reduce_all_promote<af_add_t>(real, imag, in);
+}
+
+af_err af_sum_all_array(af_array *out, const af_array in) {
+    return reduce_all_promote_array<af_add_t>(out, in);
 }
 
 af_err af_product_all(double *real, double *imag, const af_array in) {
     return reduce_all_promote<af_mul_t>(real, imag, in);
 }
 
+af_err af_product_all_array(af_array *out, const af_array in) {
+    return reduce_all_promote_array<af_mul_t>(out, in);
+}
+
 af_err af_count_all(double *real, double *imag, const af_array in) {
     return reduce_all_type<af_notzero_t, uint>(real, imag, in);
+}
+
+af_err af_count_all_array(af_array *out, const af_array in) {
+    return reduce_all_type_array<af_notzero_t, uint>(out, in);
 }
 
 af_err af_all_true_all(double *real, double *imag, const af_array in) {
     return reduce_all_type<af_and_t, char>(real, imag, in);
 }
 
+af_err af_all_true_all_array(af_array *out, const af_array in) {
+    return reduce_all_type_array<af_and_t, char>(out, in);
+}
+
 af_err af_any_true_all(double *real, double *imag, const af_array in) {
     return reduce_all_type<af_or_t, char>(real, imag, in);
+}
+
+af_err af_any_true_all_array(af_array *out, const af_array in) {
+    return reduce_all_type_array<af_or_t, char>(out, in);
 }
 
 template<af_op_t op, typename T>
@@ -948,7 +1123,17 @@ af_err af_sum_nan_all(double *real, double *imag, const af_array in,
     return reduce_all_promote<af_add_t>(real, imag, in, true, nanval);
 }
 
+af_err af_sum_nan_all_array(af_array *out, const af_array in,
+                            const double nanval) {
+    return reduce_all_promote_array<af_add_t>(out, in, true, nanval);
+}
+
 af_err af_product_nan_all(double *real, double *imag, const af_array in,
                           const double nanval) {
     return reduce_all_promote<af_mul_t>(real, imag, in, true, nanval);
+}
+
+af_err af_product_nan_all_array(af_array *out, const af_array in,
+                                const double nanval) {
+    return reduce_all_promote_array<af_mul_t>(out, in, true, nanval);
 }

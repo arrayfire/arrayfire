@@ -12,6 +12,7 @@
 #include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
+#include <copy.hpp>
 #include <handle.hpp>
 #include <math.hpp>
 #include <mean.hpp>
@@ -34,6 +35,7 @@ using detail::cfloat;
 using detail::createEmptyArray;
 using detail::createValueArray;
 using detail::division;
+using detail::getScalar;
 using detail::imag;
 using detail::intl;
 using detail::mean;
@@ -64,9 +66,9 @@ static outType varAll(const af_array& in, const af_var_bias bias) {
 
     Array<outType> diffSq = arithOp<outType, af_mul_t>(diff, diff, diff.dims());
 
-    outType result =
-        division(reduce_all<af_add_t, outType, outType>(diffSq),
-                 (input.elements() - (bias == AF_VARIANCE_SAMPLE)));
+    outType result = division(
+        getScalar<outType>(reduce_all<af_add_t, outType, outType>(diffSq)),
+        (input.elements() - (bias == AF_VARIANCE_SAMPLE)));
 
     return result;
 }
@@ -78,7 +80,8 @@ static outType varAll(const af_array& in, const af_array weights) {
     Array<outType> input = cast<outType>(getArray<inType>(in));
     Array<outType> wts   = cast<outType>(getArray<bType>(weights));
 
-    bType wtsSum = reduce_all<af_add_t, bType, bType>(getArray<bType>(weights));
+    bType wtsSum = getScalar<bType>(
+        reduce_all<af_add_t, bType, bType>(getArray<bType>(weights)));
     auto wtdMean = mean<outType, bType>(input, getArray<bType>(weights));
 
     Array<outType> meanArr = createValueArray<outType>(input.dims(), wtdMean);
@@ -89,8 +92,9 @@ static outType varAll(const af_array& in, const af_array weights) {
     Array<outType> accDiffSq =
         arithOp<outType, af_mul_t>(diffSq, wts, diffSq.dims());
 
-    outType result =
-        division(reduce_all<af_add_t, outType, outType>(accDiffSq), wtsSum);
+    outType result = division(
+        getScalar<outType>(reduce_all<af_add_t, outType, outType>(accDiffSq)),
+        wtsSum);
 
     return result;
 }

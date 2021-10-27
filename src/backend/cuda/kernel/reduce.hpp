@@ -21,6 +21,7 @@
 
 #include <cub/warp/warp_reduce.cuh>
 
+#include <climits>
 #include <vector>
 
 using std::unique_ptr;
@@ -258,6 +259,176 @@ __global__ static void reduce_first_kernel(Param<To> out, CParam<Ti> in,
     if (tidx == 0) optr[blockIdx_x] = data_t<To>(out_val);
 }
 
+template<typename Ti, typename To, af_op_t op, uint DIMX>
+__global__ static void reduce_all_kernel(Param<To> out,
+                                         Param<unsigned> retirementCount,
+                                         Param<To> tmp, CParam<Ti> in,
+                                         uint blocks_x, uint blocks_y,
+                                         uint repeat, bool change_nan,
+                                         To nanval) {
+    const uint tidx = threadIdx.x;
+    const uint tidy = threadIdx.y;
+    const uint tid  = tidy * DIMX + tidx;
+
+    const uint zid        = blockIdx.x / blocks_x;
+    const uint blockIdx_x = blockIdx.x - (blocks_x)*zid;
+    const uint xid        = blockIdx_x * blockDim.x * repeat + tidx;
+
+    const uint wid = (blockIdx.y + blockIdx.z * gridDim.y) / blocks_y;
+    const uint blockIdx_y =
+        (blockIdx.y + blockIdx.z * gridDim.y) - (blocks_y)*wid;
+    const uint yid = blockIdx_y * blockDim.y + tidy;
+
+    common::Binary<compute_t<To>, op> reduce;
+    common::Transform<Ti, compute_t<To>, op> transform;
+
+    const int nwarps = THREADS_PER_BLOCK / 32;
+    __shared__ compute_t<To> s_val[nwarps];
+
+    const data_t<Ti> *const iptr =
+        in.ptr +
+        (wid * in.strides[3] + zid * in.strides[2] + yid * in.strides[1]);
+
+    bool cond = yid < in.dims[1] && zid < in.dims[2] && wid < in.dims[3];
+
+    int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
+
+    compute_t<To> out_val = common::Binary<compute_t<To>, op>::init();
+    for (int id = xid; cond && id < lim; id += DIMX) {
+        compute_t<To> in_val = transform(iptr[id]);
+        if (change_nan)
+            in_val =
+                !IS_NAN(in_val) ? in_val : static_cast<compute_t<To>>(nanval);
+        out_val = reduce(in_val, out_val);
+    }
+
+    const int warpid = tid / 32;
+    const int lid    = tid % 32;
+
+    typedef cub::WarpReduce<compute_t<To>> WarpReduce;
+    __shared__ typename WarpReduce::TempStorage temp_storage[nwarps];
+
+    out_val = WarpReduce(temp_storage[warpid]).Reduce(out_val, reduce);
+
+    if (cond && lid == 0) {
+        s_val[warpid] = out_val;
+    } else if (!cond) {
+        s_val[warpid] = common::Binary<compute_t<To>, op>::init();
+    }
+    __syncthreads();
+
+    if (tid < 32) {
+        out_val = tid < nwarps ? s_val[tid]
+                               : common::Binary<compute_t<To>, op>::init();
+        out_val = WarpReduce(temp_storage[0]).Reduce(out_val, reduce);
+    }
+
+    const unsigned total_blocks = (gridDim.x * gridDim.y * gridDim.z);
+    const int uubidx            = (gridDim.x * gridDim.y) * blockIdx.z +
+                       (gridDim.x * blockIdx.y) + blockIdx.x;
+    if (cond && tid == 0) {
+        if (total_blocks != 1) {
+            tmp.ptr[uubidx] = data_t<To>(out_val);
+        } else {
+            out.ptr[0] = data_t<To>(out_val);
+        }
+    }
+
+    // Last block to perform final reduction
+    if (total_blocks > 1) {
+        __shared__ bool amLast;
+
+        // wait until all outstanding memory instructions in this thread are
+        // finished
+        __threadfence();
+
+        // Thread 0 takes a ticket
+        if (tid == 0) {
+            unsigned int ticket = atomicInc(retirementCount.ptr, total_blocks);
+            // If the ticket ID == number of blocks, we are the last block
+            amLast = (ticket == (total_blocks - 1));
+        }
+        __syncthreads();  // for amlast
+
+        if (amLast) {
+            int i   = tid;
+            out_val = common::Binary<compute_t<To>, op>::init();
+
+            while (i < total_blocks) {
+                compute_t<To> in_val = compute_t<To>(tmp.ptr[i]);
+                out_val              = reduce(in_val, out_val);
+                i += THREADS_PER_BLOCK;
+            }
+
+            out_val = WarpReduce(temp_storage[warpid]).Reduce(out_val, reduce);
+            if (lid == 0) { s_val[warpid] = out_val; }
+            __syncthreads();
+
+            if (tid < 32) {
+                out_val = tid < nwarps
+                              ? s_val[tid]
+                              : common::Binary<compute_t<To>, op>::init();
+                out_val = WarpReduce(temp_storage[0]).Reduce(out_val, reduce);
+            }
+
+            if (tid == 0) {
+                out.ptr[0] = out_val;
+
+                // reset retirement count so that next run succeeds
+                retirementCount.ptr[0] = 0;
+            }
+        }
+    }
+}
+
+template<typename Ti, typename To, af_op_t op>
+void reduce_all_launcher(Param<To> out, CParam<Ti> in, const uint blocks_x,
+                         const uint blocks_y, const uint threads_x,
+                         bool change_nan, double nanval) {
+    dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
+    dim3 blocks(blocks_x * in.dims[2], blocks_y * in.dims[3]);
+
+    uint repeat = divup(in.dims[0], (blocks_x * threads_x));
+
+    const int maxBlocksY =
+        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    blocks.z = divup(blocks.y, maxBlocksY);
+    blocks.y = divup(blocks.y, blocks.z);
+
+    long tmp_elements = blocks.x * blocks.y * blocks.z;
+    if (tmp_elements > UINT_MAX) {
+        AF_ERROR("Too many blocks requested (retirementCount == unsigned)",
+                 AF_ERR_RUNTIME);
+    }
+    Array<To> tmp                   = createEmptyArray<To>(tmp_elements);
+    Array<unsigned> retirementCount = createValueArray<unsigned>(1, 0);
+
+    switch (threads_x) {
+        case 32:
+            CUDA_LAUNCH((reduce_all_kernel<Ti, To, op, 32>), blocks, threads,
+                        out, retirementCount, tmp, in, blocks_x, blocks_y,
+                        repeat, change_nan, scalar<To>(nanval));
+            break;
+        case 64:
+            CUDA_LAUNCH((reduce_all_kernel<Ti, To, op, 64>), blocks, threads,
+                        out, retirementCount, tmp, in, blocks_x, blocks_y,
+                        repeat, change_nan, scalar<To>(nanval));
+            break;
+        case 128:
+            CUDA_LAUNCH((reduce_all_kernel<Ti, To, op, 128>), blocks, threads,
+                        out, retirementCount, tmp, in, blocks_x, blocks_y,
+                        repeat, change_nan, scalar<To>(nanval));
+            break;
+        case 256:
+            CUDA_LAUNCH((reduce_all_kernel<Ti, To, op, 256>), blocks, threads,
+                        out, retirementCount, tmp, in, blocks_x, blocks_y,
+                        repeat, change_nan, scalar<To>(nanval));
+            break;
+    }
+
+    POST_LAUNCH_CHECK();
+}
+
 template<typename Ti, typename To, af_op_t op>
 void reduce_first_launcher(Param<To> out, CParam<Ti> in, const uint blocks_x,
                            const uint blocks_y, const uint threads_x,
@@ -344,81 +515,33 @@ void reduce(Param<To> out, CParam<Ti> in, int dim, bool change_nan,
         case 3: return reduce_dim<Ti, To, op, 3>(out, in, change_nan, nanval);
     }
 }
-
 template<typename Ti, typename To, af_op_t op>
-To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
+void reduce_all(Param<To> out, CParam<Ti> in, bool change_nan, double nanval) {
     int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
     bool is_linear  = (in.strides[0] == 1);
     for (int k = 1; k < 4; k++) {
         is_linear &= (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
     }
 
-    // FIXME: Use better heuristics to get to the optimum number
-    if (in_elements > 4096 || !is_linear) {
-        if (is_linear) {
-            in.dims[0] = in_elements;
-            for (int k = 1; k < 4; k++) {
-                in.dims[k]    = 1;
-                in.strides[k] = in_elements;
-            }
-        }
-        uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
-        threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
-        uint threads_y = THREADS_PER_BLOCK / threads_x;
-
-        Param<To> tmp;
-
-        uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
-        uint blocks_y = divup(in.dims[1], threads_y);
-
-        tmp.dims[0]    = blocks_x;
-        tmp.strides[0] = 1;
-
+    if (is_linear) {
+        in.dims[0] = in_elements;
         for (int k = 1; k < 4; k++) {
-            tmp.dims[k]    = in.dims[k];
-            tmp.strides[k] = tmp.dims[k - 1] * tmp.strides[k - 1];
+            in.dims[k]    = 1;
+            in.strides[k] = in_elements;
         }
-
-        int tmp_elements = tmp.strides[3] * tmp.dims[3];
-
-        auto tmp_alloc = memAlloc<To>(tmp_elements);
-        tmp.ptr        = tmp_alloc.get();
-        reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y,
-                                          threads_x, change_nan, nanval);
-
-        std::vector<To> h_data(tmp_elements);
-        CUDA_CHECK(
-            cudaMemcpyAsync(h_data.data(), tmp.ptr, tmp_elements * sizeof(To),
-                            cudaMemcpyDeviceToHost, cuda::getActiveStream()));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
-
-        common::Binary<compute_t<To>, op> reduce;
-        compute_t<To> out = common::Binary<compute_t<To>, op>::init();
-        for (int i = 0; i < tmp_elements; i++) {
-            out = reduce(out, compute_t<To>(h_data[i]));
-        }
-
-        return data_t<To>(out);
-    } else {
-        std::vector<Ti> h_data(in_elements);
-        CUDA_CHECK(
-            cudaMemcpyAsync(h_data.data(), in.ptr, in_elements * sizeof(Ti),
-                            cudaMemcpyDeviceToHost, cuda::getActiveStream()));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
-
-        common::Transform<Ti, compute_t<To>, op> transform;
-        common::Binary<compute_t<To>, op> reduce;
-        compute_t<To> out       = common::Binary<compute_t<To>, op>::init();
-        compute_t<To> nanval_to = scalar<compute_t<To>>(nanval);
-
-        for (int i = 0; i < in_elements; i++) {
-            compute_t<To> in_val = transform(h_data[i]);
-            if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval_to;
-            out = reduce(out, in_val);
-        }
-
-        return data_t<To>(out);
     }
+
+    uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
+    threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
+    uint threads_y = THREADS_PER_BLOCK / threads_x;
+
+    // TODO: perf REPEAT, consider removing or runtime eval
+    // max problem size < SM resident threads, don't use REPEAT
+    uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
+    uint blocks_y = divup(in.dims[1], threads_y);
+
+    reduce_all_launcher<Ti, To, op>(out, in, blocks_x, blocks_y, threads_x,
+                                    change_nan, nanval);
 }
 
 }  // namespace kernel

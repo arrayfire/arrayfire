@@ -144,6 +144,11 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
     if (unified::getActiveHandle()) {                                            \
         thread_local af_func func = (af_func)common::getFunctionPointer(         \
             unified::getActiveHandle(), __func__);                               \
+        if (!func) {                                                             \
+            AF_RETURN_ERROR(                                                     \
+                "requested symbol name could not be found in loaded library.",   \
+                AF_ERR_LOAD_LIB);                                                \
+        }                                                                        \
         if (index_ != unified::getActiveBackend()) {                             \
             index_ = unified::getActiveBackend();                                \
             func   = (af_func)common::getFunctionPointer(                        \

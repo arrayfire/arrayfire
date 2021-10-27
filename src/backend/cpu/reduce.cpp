@@ -107,51 +107,30 @@ void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
     vals_out = ovals;
 }
 
-template<af_op_t op, typename Ti, typename Taccumulate>
-Taccumulate reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
+template<af_op_t op, typename Ti, typename To>
+using reduce_all_func =
+    std::function<void(Param<To>, CParam<Ti>, bool, double)>;
+
+template<af_op_t op, typename Ti, typename To>
+Array<To> reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
     in.eval();
+
+    Transform<Ti, compute_t<To>, op> transform;
+    Binary<compute_t<To>, op> reduce;
+
+    Array<To> out = createEmptyArray<To>(1);
+    static const reduce_all_func<op, Ti, To> reduce_all_kernel =
+        kernel::reduce_all<op, Ti, To>();
+    getQueue().enqueue(reduce_all_kernel, out, in, change_nan, nanval);
     getQueue().sync();
-
-    Transform<Ti, compute_t<Taccumulate>, op> transform;
-    Binary<compute_t<Taccumulate>, op> reduce;
-
-    compute_t<Taccumulate> out = Binary<compute_t<Taccumulate>, op>::init();
-
-    // Decrement dimension of select dimension
-    af::dim4 dims           = in.dims();
-    af::dim4 strides        = in.strides();
-    const data_t<Ti> *inPtr = in.get();
-
-    for (dim_t l = 0; l < dims[3]; l++) {
-        dim_t off3 = l * strides[3];
-
-        for (dim_t k = 0; k < dims[2]; k++) {
-            dim_t off2 = k * strides[2];
-
-            for (dim_t j = 0; j < dims[1]; j++) {
-                dim_t off1 = j * strides[1];
-
-                for (dim_t i = 0; i < dims[0]; i++) {
-                    dim_t idx = i + off1 + off2 + off3;
-
-                    compute_t<Taccumulate> in_val = transform(inPtr[idx]);
-                    if (change_nan) {
-                        in_val = IS_NAN(in_val) ? nanval : in_val;
-                    }
-                    out = reduce(in_val, out);
-                }
-            }
-        }
-    }
-
-    return data_t<Taccumulate>(out);
+    return out;
 }
 
 #define INSTANTIATE(ROp, Ti, To)                                               \
     template Array<To> reduce<ROp, Ti, To>(const Array<Ti> &in, const int dim, \
                                            bool change_nan, double nanval);    \
-    template To reduce_all<ROp, Ti, To>(const Array<Ti> &in, bool change_nan,  \
-                                        double nanval);                        \
+    template Array<To> reduce_all<ROp, Ti, To>(                                \
+        const Array<Ti> &in, bool change_nan, double nanval);                  \
     template void reduce_by_key<ROp, Ti, int, To>(                             \
         Array<int> & keys_out, Array<To> & vals_out, const Array<int> &keys,   \
         const Array<Ti> &vals, const int dim, bool change_nan, double nanval); \

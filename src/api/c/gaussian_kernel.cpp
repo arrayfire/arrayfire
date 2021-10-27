@@ -10,6 +10,7 @@
 #include <arith.hpp>
 #include <backend.hpp>
 #include <common/err_common.hpp>
+#include <copy.hpp>
 #include <handle.hpp>
 #include <math.hpp>
 #include <range.hpp>
@@ -24,6 +25,7 @@ using af::dim4;
 using detail::arithOp;
 using detail::Array;
 using detail::createValueArray;
+using detail::getScalar;
 using detail::range;
 using detail::reduce_all;
 using detail::scalar;
@@ -77,7 +79,7 @@ Array<T> gaussianKernel(const int rows, const int cols, const double sigma_r,
 
     // Use this instead of (2 * pi * sig^2);
     // This ensures the window adds up to 1
-    T norm_factor = reduce_all<af_add_t, T, T>(tmp);
+    T norm_factor = getScalar<T>(reduce_all<af_add_t, T, T>(tmp));
 
     Array<T> norm = createValueArray(odims, norm_factor);
     Array<T> res  = arithOp<T, af_div_t>(tmp, norm, odims);
