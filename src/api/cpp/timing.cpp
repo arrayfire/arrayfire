@@ -10,6 +10,7 @@
 #include <af/device.h>
 #include <af/timing.h>
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <vector>
 
@@ -71,43 +72,38 @@ double timer::stop(timer start) { return time_seconds(start, time_now()); }
 double timer::stop() { return time_seconds(_timer_, time_now()); }
 
 double timeit(void (*fn)()) {
-    // parameters
-    static const int trials      = 10;  // trial runs
-    static const int s_trials    = 5;   // trial runs
-    static const double min_time = 1;   // seconds
+    // Minimum target duration to limit impact of clock precision
+    constexpr double targetDurationPerTest = 0.050;
+    // samples during which the nr of cycles are determined to obtain target
+    // duration
+    constexpr int testSamples = 2;
+    // cycles needed to include CPU-GPU overlapping (if present)
+    constexpr int minCycles = 3;
+    // initial cycles used for the test samples
+    int cycles = minCycles;
+    // total number of real samples taken, of which the median is returned
+    constexpr int nrSamples = 10;
 
-    std::vector<double> sample_times(s_trials);
-
-    // estimate time for a few samples
-    for (int i = 0; i < s_trials; ++i) {
-        sync();
-        timer start = timer::start();
-        fn();
-        sync();
-        sample_times[i] = timer::stop(start);
+    std::array<double, nrSamples> X;
+    for (int s = -testSamples; s < nrSamples; ++s) {
+        af::sync();
+        af::timer start = af::timer::start();
+        for (int i = cycles; i > 0; --i) { fn(); }
+        af::sync();
+        const double time = af::timer::stop(start);
+        if (s >= 0) {
+            // real sample, so store it for later processing
+            X[s] = time;
+        } else {
+            // test sample, so improve nr cycles
+            cycles = std::max(
+                minCycles,
+                static_cast<int>(trunc(targetDurationPerTest / time * cycles)));
+        };
     }
-
-    // Sort sample times and select the median time
-    std::sort(sample_times.begin(), sample_times.end());
-
-    double median_time = sample_times[s_trials / 2];
-
-    // Run a bunch of batches of fn
-    // Each batch runs trial runs before sync
-    // If trials * median_time < min time,
-    //   then run (min time / (trials * median_time)) batches
-    // else
-    //   run 1 batch
-    int batches = static_cast<int>(ceilf(min_time / (trials * median_time)));
-    double run_time = 0;
-
-    for (int b = 0; b < batches; b++) {
-        timer start = timer::start();
-        for (int i = 0; i < trials; ++i) { fn(); }
-        sync();
-        run_time += timer::stop(start) / trials;
-    }
-    return run_time / batches;
+    std::sort(X.begin(), X.end());
+    // returns the median (iso of mean), to limit impact of outliers
+    return X[nrSamples / 2] / cycles;
 }
 
 }  // namespace af
