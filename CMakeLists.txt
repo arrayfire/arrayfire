@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.5)
 
 include(CMakeModules/AF_vcpkg_options.cmake)
 
-project(ArrayFire VERSION 3.8.0 LANGUAGES C CXX)
+project(ArrayFire VERSION 3.8.1 LANGUAGES C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
