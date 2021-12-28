@@ -1,6 +1,72 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.8.1
+======
+
+## Improvements
+
+- moddims now uses JIT approach for certain special cases - \PR{3177}
+- Embed Version Info in Windows DLLs - \PR{3025} 
+- OpenCL device max parameter is now queries from device properties - \PR{3032} 
+- JIT Performance Optimization: Unique funcName generation sped up - \PR{3040} 
+- Improved readability of log traces  - \PR{3050} 
+- Use short function name in non-debug build error messages - \PR{3060} 
+- SIFT/GLOH are now available as part of website binaries - \PR{3071} 
+- Short-circuit zero elements case in detail::copyArray backend function - \PR{3059} 
+- Speedup of kernel caching mechanism - \PR{3043} 
+- Add short-circuit check for empty Arrays in JIT evalNodes - \PR{3072} 
+- Performance optimization of indexing using dynamic thread block sizes - \PR{3111} 
+- ArrayFire starting with this release will use Intel MKL single dynamic library which resolves lot of linking issues unified library had when user applications used MKL themselves - \PR{3120} 
+- Add shortcut check for zero elements in af_write_array - \PR{3130} 
+- Speedup join by eliminating temp buffers for cascading joins - \PR{3145} 
+- Added batch support for solve - \PR{1705} 
+- Use pinned memory to copy device pointers in CUDA solve - \PR{1705} 
+- Added package manager instructions to docs - \PR{3076} 
+- CMake Build Improvements - \PR{3027} , \PR{3089} , \PR{3037} , \PR{3072} , \PR{3095} , \PR{3096} , \PR{3097} , \PR{3102} , \PR{3106} , \PR{3105} , \PR{3120} , \PR{3136} , \PR{3135} , \PR{3137} , \PR{3119} , \PR{3150} , \PR{3138} , \PR{3156} , \PR{3139} , \PR{1705} , \PR{3162} 
+- CPU backend improvements - \PR{3010} , \PR{3138} , \PR{3161} 
+- CUDA backend improvements - \PR{3066} , \PR{3091} , \PR{3093} , \PR{3125} , \PR{3143} , \PR{3161} 
+- OpenCL backend improvements - \PR{3091} , \PR{3068} , \PR{3127} , \PR{3010} , \PR{3039} , \PR{3138} , \PR{3161} 
+- General(including JIT) performance improvements across backends - \PR{3167} 
+- Testing improvements - \PR{3072} , \PR{3131} , \PR{3151} , \PR{3141} , \PR{3153} , \PR{3152} , \PR{3157} , \PR{1705} , \PR{3170} , \PR{3167} 
+- Update CLBlast to latest version - \PR{3135} , \PR{3179} 
+- Improved Otsu threshold computation helper in canny algorithm - \PR{3169} 
+- Modified default parameters for fftR2C and fftC2R C++ API from 0 to 1.0 - \PR{3178} 
+- Use appropriate MKL getrs_batch_strided API based on MKL Versions - \PR{3181} 
+
+## Fixes
+
+- Fixed a bug JIT kernel disk caching - \PR{3182} 
+- Fixed stream used by thrust(CUDA backend) functions - \PR{3029}  
+- Added workaround for new cuSparse API that was added by CUDA amid fix releases - \PR{3057} 
+- Fixed `const` array indexing inside `gfor` - \PR{3078} 
+- Handle zero elements in copyData to host - \PR{3059} 
+- Fixed double free regression in OpenCL backend - \PR{3091} 
+- Fixed an infinite recursion bug in NaryNode JIT Node - \PR{3072} 
+- Added missing input validation check in sparse-dense arithmetic operations - \PR{3129} 
+- Fixed bug in `getMappedPtr` in OpenCL due to invalid lambda capture - \PR{3163} 
+- Fixed bug in `getMappedPtr` on Arrays that are not ready - \PR{3163} 
+- Fixed edgeTraceKernel for CPU devices on OpenCL backend - \PR{3164} 
+- Fixed windows build issue(s) with VS2019 - \PR{3048}
+- API documentation fixes - \PR{3075} , \PR{3076} , \PR{3143} , \PR{3161} 
+- CMake Build Fixes - \PR{3088} 
+- Fixed the tutorial link in README - \PR{3033} 
+- Fixed function name typo in timing tutorial - \PR{3028} 
+- Fixed couple of bugs in CPU backend canny implementation - \PR{3169} 
+- Fixed reference count of array(s) used in JIT operations. It is related to arrayfire's internal memory book keeping. The behavior/accuracy of arrayfire code wasn't broken earlier. It corrected the reference count to be of optimal value in the said scenarios. This may potentially reduce memory usage in some narrow cases - \PR{3167} 
+- Added assert that checks if topk is called with a negative value for k - \PR{3176} 
+- Fixed an Issue where countByKey would give incorrect results for any n > 128 - \PR{3175} 
+
+## Contributions
+
+Special thanks to our contributors: [HO-COOH][1], [Willy Born][2], [Gilad Avidov][3], [Pavan Yalamanchili][4]
+
+[1]: https://github.com/HO-COOH  
+[2]: https://github.com/willyborn  
+[3]: https://github.com/avidov  
+[4]: https://github.com/pavanky  
+
+
 v3.8.0
 ======
 
