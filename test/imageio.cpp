@@ -8,6 +8,9 @@
  ********************************************************/
 
 #include <arrayfire.h>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
@@ -160,8 +163,13 @@ TEST(ImageIO, SavePNGCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    saveImage("SaveCPP.png", input);
-    array out = loadImage("SaveCPP.png", true);
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    std::string uuid_str    = to_string(uuid);
+
+    std::string imagename = "SaveCPP-" + uuid_str + ".png";
+
+    saveImage(imagename.c_str(), input);
+    array out = loadImage(imagename.c_str(), true);
 
     ASSERT_FALSE(anyTrue<bool>(out - input));
 }
@@ -177,8 +185,13 @@ TEST(ImageIO, SaveBMPCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    saveImage("SaveCPP.bmp", input);
-    array out = loadImage("SaveCPP.bmp", true);
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    std::string uuid_str    = to_string(uuid);
+
+    std::string imagename = "SaveCPP-" + uuid_str + ".bmp";
+
+    saveImage(imagename.c_str(), input);
+    array out = loadImage(imagename.c_str(), true);
 
     ASSERT_FALSE(anyTrue<bool>(out - input));
 }
@@ -285,9 +298,14 @@ TEST(ImageIO, SaveImage16CPP) {
     array input     = randu(dims, u16);
     array input_255 = (input / 257).as(u16);
 
-    saveImage("saveImage16CPP.png", input);
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    std::string uuid_str    = to_string(uuid);
 
-    array img = loadImage("saveImage16CPP.png", true);
+    std::string imagename = "saveImage16CPP-" + uuid_str + ".png";
+
+    saveImage(imagename.c_str(), input);
+
+    array img = loadImage(imagename.c_str(), true);
     ASSERT_EQ(img.type(), f32);  // loadImage should always return float
 
     ASSERT_FALSE(anyTrue<bool>(abs(img - input_255)));
@@ -357,9 +375,17 @@ void saveLoadImageNativeCPPTest(dim4 dims) {
 
     array input = randu(dims, (af_dtype)dtype_traits<T>::af_type);
 
-    saveImageNative("saveImageNative.png", input);
+    std::string testname =
+        ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
-    array loaded = loadImageNative("saveImageNative.png");
+    boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    std::string uuid_str    = to_string(uuid);
+
+    std::string imagename = testname + "-" + uuid_str + ".png";
+
+    saveImageNative(imagename.c_str(), input);
+
+    array loaded = loadImageNative(imagename.c_str());
     ASSERT_EQ(loaded.type(), input.type());
 
     ASSERT_FALSE(anyTrue<bool>(input - loaded));
