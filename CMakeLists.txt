@@ -74,6 +74,7 @@ option(AF_WITH_LOGGING  "Build ArrayFire with logging support" ON)
 option(AF_WITH_STACKTRACE  "Add stacktraces to the error messages." ON)
 option(AF_CACHE_KERNELS_TO_DISK "Enable caching kernels to disk" ON)
 option(AF_WITH_STATIC_MKL "Link against static Intel MKL libraries" OFF)
+option(AF_WITH_STATIC_CUDA_NUMERIC_LIBS "Link libafcuda with static numeric libraries(cublas, cufft, etc.)" OFF)
 
 set(default_compute_library "FFTW/LAPACK/BLAS")
 if(MKL_FOUND)

@@ -47,7 +47,7 @@ endif()
 
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
-if(UNIX)
+if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   af_find_static_cuda_libs(culibos)
   af_find_static_cuda_libs(cublas_static)
   af_find_static_cuda_libs(cublasLt_static)
@@ -312,8 +312,7 @@ if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
   target_compile_definitions(af_cuda_static_cuda_library PRIVATE AF_USE_NEW_CUSPARSE_API)
 endif()
 
-if(UNIX)
-
+if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   check_cxx_compiler_flag("-Wl,--start-group -Werror" group_flags)
   if(group_flags)
     set(START_GROUP -Wl,--start-group)
@@ -349,7 +348,7 @@ if(UNIX)
   set(CUDA_SEPARABLE_COMPILATION ${pior_val_CUDA_SEPARABLE_COMPILATION})
 else()
   target_link_libraries(af_cuda_static_cuda_library
-    PRIVATE
+    PUBLIC
       Boost::boost
       ${CUDA_CUBLAS_LIBRARIES}
       ${CUDA_CUFFT_LIBRARIES}
@@ -771,10 +770,10 @@ function(afcu_collect_libs libname)
 
   if(cuda_args_LIB_MAJOR AND cuda_args_LIB_MINOR)
     set(lib_major ${cuda_args_LIB_MAJOR})
-	set(lib_minor ${cuda_args_LIB_MINOR})
+	  set(lib_minor ${cuda_args_LIB_MINOR})
   else()
     set(lib_major ${CUDA_VERSION_MAJOR})
-	set(lib_minor ${CUDA_VERSION_MINOR})
+	  set(lib_minor ${CUDA_VERSION_MINOR})
   endif()
   set(lib_version "${lib_major}.${lib_minor}")
 
@@ -832,24 +831,24 @@ endfunction()
 if(AF_INSTALL_STANDALONE)
   if(AF_WITH_CUDNN)
     afcu_collect_cudnn_libs("")
-	if(cuDNN_VERSION_MAJOR VERSION_GREATER 8 OR cuDNN_VERSION_MAJOR VERSION_EQUAL 8)
-	  # cudnn changed how dlls are shipped starting major version 8
+    if(cuDNN_VERSION_MAJOR VERSION_GREATER 8 OR cuDNN_VERSION_MAJOR VERSION_EQUAL 8)
+      # cudnn changed how dlls are shipped starting major version 8
       # except the main dll a lot of the other DLLs are loaded upon demand
-	  afcu_collect_cudnn_libs(adv_infer)
-	  afcu_collect_cudnn_libs(adv_train)
-	  afcu_collect_cudnn_libs(cnn_infer)
-	  afcu_collect_cudnn_libs(cnn_train)
-	  afcu_collect_cudnn_libs(ops_infer)
-	  afcu_collect_cudnn_libs(ops_train)
-	endif()
+      afcu_collect_cudnn_libs(adv_infer)
+      afcu_collect_cudnn_libs(adv_train)
+      afcu_collect_cudnn_libs(cnn_infer)
+      afcu_collect_cudnn_libs(cnn_train)
+      afcu_collect_cudnn_libs(ops_infer)
+      afcu_collect_cudnn_libs(ops_train)
+    endif()
   endif()
 
-  if(WIN32)
-	if(CUDA_VERSION_MAJOR VERSION_EQUAL 11)
-      afcu_collect_libs(cufft LIB_MAJOR 10 LIB_MINOR 4)
-	else()
-      afcu_collect_libs(cufft)
-	endif()
+  if(WIN32 OR NOT AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
+    if(CUDA_VERSION_MAJOR VERSION_EQUAL 11)
+        afcu_collect_libs(cufft LIB_MAJOR 10 LIB_MINOR 4)
+    else()
+        afcu_collect_libs(cufft)
+    endif()
     afcu_collect_libs(cublas)
     if(CUDA_VERSION VERSION_GREATER 10.0)
       afcu_collect_libs(cublasLt)
