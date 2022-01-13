@@ -554,4 +554,6 @@ void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
                                          const af_array a, const af_array b,
                                          TestOutputArrayInfo *metadata);
 
+std::string generate_hex(const unsigned int len);
+
 #pragma GCC diagnostic pop

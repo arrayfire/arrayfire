@@ -8,9 +8,6 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <gtest/gtest.h>
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
@@ -163,9 +160,7 @@ TEST(ImageIO, SavePNGCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    boost::uuids::uuid uuid = boost::uuids::random_generator()();
-    std::string uuid_str    = to_string(uuid);
-
+    std::string uuid_str  = generate_hex(4);
     std::string imagename = "SaveCPP-" + uuid_str + ".png";
 
     saveImage(imagename.c_str(), input);
@@ -185,9 +180,7 @@ TEST(ImageIO, SaveBMPCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    boost::uuids::uuid uuid = boost::uuids::random_generator()();
-    std::string uuid_str    = to_string(uuid);
-
+    std::string uuid_str  = generate_hex(4);
     std::string imagename = "SaveCPP-" + uuid_str + ".bmp";
 
     saveImage(imagename.c_str(), input);
@@ -298,9 +291,7 @@ TEST(ImageIO, SaveImage16CPP) {
     array input     = randu(dims, u16);
     array input_255 = (input / 257).as(u16);
 
-    boost::uuids::uuid uuid = boost::uuids::random_generator()();
-    std::string uuid_str    = to_string(uuid);
-
+    std::string uuid_str  = generate_hex(4);
     std::string imagename = "saveImage16CPP-" + uuid_str + ".png";
 
     saveImage(imagename.c_str(), input);
@@ -378,9 +369,7 @@ void saveLoadImageNativeCPPTest(dim4 dims) {
     std::string testname =
         ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
-    boost::uuids::uuid uuid = boost::uuids::random_generator()();
-    std::string uuid_str    = to_string(uuid);
-
+    std::string uuid_str  = generate_hex(4);
     std::string imagename = testname + "-" + uuid_str + ".png";
 
     saveImageNative(imagename.c_str(), input);
