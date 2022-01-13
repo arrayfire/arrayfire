@@ -797,8 +797,8 @@ function(afcu_collect_libs libname)
             COMPONENT   cuda_dependencies)
   else () #UNIX
     find_library(CUDA_${libname}_LIBRARY
-      NAME ${libname}
-      PATH
+      NAMES ${libname}
+      PATHS
         ${dlib_path_prefix})
 
     get_filename_component(outpath "${CUDA_${libname}_LIBRARY}" REALPATH)
