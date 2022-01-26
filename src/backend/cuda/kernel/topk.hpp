@@ -25,6 +25,7 @@ using cub::BlockRadixSort;
 namespace cuda {
 namespace kernel {
 static const int TOPK_THRDS_PER_BLK = 256;
+//static const int TOPK_IDX_THRD_LOAD = 1;
 static const int TOPK_IDX_THRD_LOAD = 4;
 
 template<typename T, bool READ_INDEX>
@@ -60,7 +61,8 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
     compute_t<T> keys[TOPK_IDX_THRD_LOAD];
     ValueType vals[TOPK_IDX_THRD_LOAD];
 
-    for (uint li = 0, i = gx; li < TOPK_IDX_THRD_LOAD; i += gxStride, li++) {
+    //for (uint li = 0, i = gx; li < TOPK_IDX_THRD_LOAD; i += gxStride, li++) {
+    for (uint li = 0, i = TOPK_IDX_THRD_LOAD * gx; li < TOPK_IDX_THRD_LOAD; i++, li++) {
         if (i < elements) {
             keys[li] = static_cast<compute_t<T>>(kdata[i]);
             vals[li] = (READ_INDEX) ? idata[i] : i;
@@ -72,8 +74,10 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
     }
 
     if (order == AF_TOPK_MAX) {
+        //BlockRadixSortT(smem).SortDescending(keys, vals);
         BlockRadixSortT(smem).SortDescendingBlockedToStriped(keys, vals);
     } else {
+        //BlockRadixSortT(smem).Sort(keys, vals);
         BlockRadixSortT(smem).SortBlockedToStriped(keys, vals);
     }
 
@@ -108,6 +112,8 @@ void topkDim0(Param<T> ovals, Param<uint> oidxs, CParam<T> ivals, const int k,
         // reading this array.
         tidxs = createEmptyArray<uint>(dim4(k * numBlocksX, ivals.dims[1]));
     }
+    std::cout << tvals.dims() << std::endl;
+    std::cout << tidxs.dims() << std::endl;
 
     int prevBlocksX = 1;
 
