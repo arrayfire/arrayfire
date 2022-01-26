@@ -508,8 +508,11 @@ typedef enum {
 } af_diffusion_eq;
 
 typedef enum {
-    AF_TOPK_MIN     = 1,  ///< Top k min values
-    AF_TOPK_MAX     = 2,  ///< Top k max values
+    AF_TOPK_MIN         = 1,  ///< Top k min values
+    AF_TOPK_MAX         = 2,  ///< Top k max values
+    AF_TOPK_STABLE      = 4,  ///< Preserve order of indices for equal values
+    AF_TOPK_STABLE_MIN  = AF_TOPK_STABLE | AF_TOPK_MIN,
+    AF_TOPK_STABLE_MAX  = AF_TOPK_STABLE | AF_TOPK_MAX,
     AF_TOPK_DEFAULT = 0   ///< Default option (max)
 } af_topk_function;
 #endif
