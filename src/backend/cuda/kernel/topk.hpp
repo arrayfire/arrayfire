@@ -24,8 +24,7 @@ using cub::BlockRadixSort;
 
 namespace cuda {
 namespace kernel {
-static const int TOPK_THRDS_PER_BLK = 256;
-//static const int TOPK_IDX_THRD_LOAD = 1;
+static const int TOPK_THRDS_PER_BLK = 128;
 static const int TOPK_IDX_THRD_LOAD = 4;
 
 template<typename T, bool READ_INDEX>
@@ -37,7 +36,15 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
     using BlockRadixSortT = BlockRadixSort<compute_t<T>, TOPK_THRDS_PER_BLK,
                                            TOPK_IDX_THRD_LOAD, ValueType>;
 
+    //used for cub radix sort
     __shared__ typename BlockRadixSortT::TempStorage smem;
+
+    //used for rearranging each granule's data items
+    //we want each thread(granule) to own TOPK_IDX_THRD_LOAD=4 consecutive datum
+    //for both coalesced memory reads and this blocked layout we need this SMEM to rearrange
+    __shared__ compute_t<T> blkt_keys_smem[TOPK_IDX_THRD_LOAD * TOPK_THRDS_PER_BLK];
+    __shared__ ValueType blkt_vals_smem[TOPK_IDX_THRD_LOAD * TOPK_THRDS_PER_BLK];
+
 
     const int bw = blockIdx.y / numLaunchBlocksY;
     const int bz = blockIdx.z;
@@ -61,23 +68,32 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
     compute_t<T> keys[TOPK_IDX_THRD_LOAD];
     ValueType vals[TOPK_IDX_THRD_LOAD];
 
-    //for (uint li = 0, i = gx; li < TOPK_IDX_THRD_LOAD; i += gxStride, li++) {
-    for (uint li = 0, i = TOPK_IDX_THRD_LOAD * gx; li < TOPK_IDX_THRD_LOAD; i++, li++) {
+    const int  blockOffset = blockDim.x * blockIdx.x * TOPK_IDX_THRD_LOAD + threadIdx.x;
+    //each block will load consecutive data items while iterating a block-width at a time
+    //[B0][][]...[][B1][][]...[] ... [BN][][]...[]
+    #pragma unroll
+    for (uint li = 0, i = blockOffset; li < TOPK_IDX_THRD_LOAD; i += blockDim.x, li++) {
         if (i < elements) {
-            keys[li] = static_cast<compute_t<T>>(kdata[i]);
-            vals[li] = (READ_INDEX) ? idata[i] : i;
+            blkt_keys_smem[li*TOPK_THRDS_PER_BLK + threadIdx.x] = static_cast<compute_t<T>>(kdata[i]);
+            blkt_vals_smem[li*TOPK_THRDS_PER_BLK + threadIdx.x] = (READ_INDEX) ? idata[i] : i;
         } else {
-            keys[li] = (order == AF_TOPK_MAX) ? minval<compute_t<T>>()
-                                              : maxval<compute_t<T>>();
-            vals[li] = maxval<ValueType>();
+            blkt_keys_smem[li*TOPK_THRDS_PER_BLK + threadIdx.x] =
+                (order == AF_TOPK_MAX) ? minval<compute_t<T>>() : maxval<compute_t<T>>();
+            blkt_vals_smem[li*TOPK_THRDS_PER_BLK + threadIdx.x] = maxval<ValueType>();
         }
+    }
+    __syncthreads();
+
+    #pragma unroll
+    for (uint li = 0; li < TOPK_IDX_THRD_LOAD; li++) {
+        //transposed read into registers for cub radix sort
+        keys[li] = blkt_keys_smem[li + (threadIdx.x * TOPK_IDX_THRD_LOAD)];
+        vals[li] = blkt_vals_smem[li + (threadIdx.x * TOPK_IDX_THRD_LOAD)];
     }
 
     if (order == AF_TOPK_MAX) {
-        //BlockRadixSortT(smem).SortDescending(keys, vals);
         BlockRadixSortT(smem).SortDescendingBlockedToStriped(keys, vals);
     } else {
-        //BlockRadixSortT(smem).Sort(keys, vals);
         BlockRadixSortT(smem).SortBlockedToStriped(keys, vals);
     }
 
@@ -112,8 +128,6 @@ void topkDim0(Param<T> ovals, Param<uint> oidxs, CParam<T> ivals, const int k,
         // reading this array.
         tidxs = createEmptyArray<uint>(dim4(k * numBlocksX, ivals.dims[1]));
     }
-    std::cout << tvals.dims() << std::endl;
-    std::cout << tidxs.dims() << std::endl;
 
     int prevBlocksX = 1;
 
