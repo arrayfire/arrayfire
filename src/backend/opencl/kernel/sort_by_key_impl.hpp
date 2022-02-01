@@ -222,10 +222,11 @@ void sort0ByKey(Param pKey, Param pVal, bool isAscending) {
     // But this is only useful before GPU is saturated
     // The GPU is saturated at around 1000,000 integers
     // Call batched sort only if both conditions are met
-    if (higherDims > 4 && pKey.info.dims[0] < 1000000)
+    if (higherDims > 4 && pKey.info.dims[0] < 1000000) {
         kernel::sortByKeyBatched<Tk, Tv>(pKey, pVal, 0, isAscending);
-    else
+    } else {
         kernel::sort0ByKeyIterative<Tk, Tv>(pKey, pVal, isAscending);
+    }
 }
 
 #define INSTANTIATE(Tk, Tv)                                           \

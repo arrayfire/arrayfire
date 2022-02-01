@@ -369,24 +369,28 @@ TEST(TopK, KLessThan0) {
 }
 
 TEST(TopK, DeterministicTies) {
-    //af::array a = af::constant(1, 500);
-    //a(af::seq(0, 499, 2)) = 7;
-    af::array a = af::constant(1, 257);
-    a(af::seq(0, 255, 2)) = 7;
+    af::info();
+    af::array a = af::constant(1, 500);
+    a(af::seq(0, 499, 2)) = 7;
+    //af::array a = af::constant(1, 500, 500, 500);
+    //a(af::seq(0, 499, 2), af::span, af::span, af::span) = 7;
     af::array vals_max, idx_max;
     af::array vals_min, idx_min;
 
     int k = 6;
-    //topk(vals_max, idx_max, a, k, 0, AF_TOPK_STABLE_MAX);
+    topk(vals_max, idx_max, a, k, 0, AF_TOPK_STABLE_MAX);
     topk(vals_min, idx_min, a, k, 0, AF_TOPK_STABLE_MIN);
 
-    af::array expected_idx_max{0, 2, 4, 6, 8, 10};
-    af::array expected_idx_min{1, 3, 5, 7, 9, 11};
+    af::array expected_idx_max = af::seq(0, 499, 2);
+    af::array k_expected_idx_max = expected_idx_max(af::seq(0, k-1));
+    af::array expected_idx_min = af::seq(1, 499, 2);
+    af::array k_expected_idx_min = expected_idx_min(af::seq(0, k-1));
     //af_print(idx_max)
     //af_print(expected_idx_max)
-    af_print(idx_min)
-    af_print(expected_idx_min)
-    //ASSERT_ARRAYS_EQ(idx_max, expected_idx_max.as(u32));
-    ASSERT_ARRAYS_EQ(idx_min, expected_idx_min.as(u32));
+    //af_print(idx_min)
+    //af_print(vals_min)
+    //af_print(expected_idx_min)
+    ASSERT_ARRAYS_EQ(idx_max, k_expected_idx_max.as(u32));
+    ASSERT_ARRAYS_EQ(idx_min, k_expected_idx_min.as(u32));
 
 }
