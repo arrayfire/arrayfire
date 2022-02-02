@@ -85,7 +85,7 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
                     partial_sort_copy(
                         idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
                         [ptr](const uint lhs, const uint rhs) -> bool {
-                            return compute_t<T>(ptr[lhs]) >= compute_t<T>(ptr[rhs]);
+                            return compute_t<T>(ptr[lhs]) > compute_t<T>(ptr[rhs]);
                         });
                 }
             }
