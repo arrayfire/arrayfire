@@ -320,7 +320,8 @@ AFAPI T corrcoef(const array& X, const array& Y);
 
    \note{This function is optimized for small values of k.}
    \note{The order of the returned keys may not be in the same order as the
-   appear in the input array}
+   appear in the input array, for a stable topk, set the AF_TOPK_STABLE flag
+   in the order param. These are equivalent to AF_TOPK_STABLE_MAX and AF_TOPK_STABLE_MIN}
    \ingroup stat_func_topk
 */
 AFAPI void topk(array &values, array &indices, const array& in, const int k,
@@ -673,7 +674,8 @@ AFAPI af_err af_corrcoef(double *realVal, double *imagVal, const af_array X, con
 
    \note{This function is optimized for small values of k.}
    \note{The order of the returned keys may not be in the same order as the
-         appear in the input array}
+   appear in the input array, for a stable topk, set the AF_TOPK_STABLE flag
+   in the order param. These are equivalent to AF_TOPK_STABLE_MAX and AF_TOPK_STABLE_MIN}
    \ingroup stat_func_topk
 */
 AFAPI af_err af_topk(af_array *values, af_array *indices, const af_array in,
