@@ -246,3 +246,23 @@ TEST(Join, SameSize) {
 
     ASSERT_VEC_ARRAY_EQ(hgold, dim4(10 + 10 + 10), d);
 }
+
+TEST(Join, ManyEmpty) {
+    array gold = af::constant(0, 15, 5);
+    array a    = af::randn(5, 5);
+    array e;
+    array c  = af::randn(10, 5);
+    array ee = af::join(0, e, e);
+    ASSERT_EQ(ee.elements(), 0);
+    array eee = af::join(0, e, e, e);
+    ASSERT_EQ(eee.elements(), 0);
+
+    array eeac                     = af::join(0, e, e, a, c);
+    array eace                     = af::join(0, e, a, c, e);
+    array acee                     = af::join(0, a, c, e, e);
+    gold(af::seq(0, 4), af::span)  = a;
+    gold(af::seq(5, 14), af::span) = c;
+    ASSERT_ARRAYS_EQ(gold, eeac);
+    ASSERT_ARRAYS_EQ(gold, eace);
+    ASSERT_ARRAYS_EQ(gold, acee);
+}
