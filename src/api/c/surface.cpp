@@ -26,6 +26,7 @@ using af::dim4;
 using common::modDims;
 using detail::Array;
 using detail::copy_surface;
+using detail::createEmptyArray;
 using detail::forgeManager;
 using detail::reduce_all;
 using detail::uchar;
@@ -72,7 +73,11 @@ fg_chart setup_surface(fg_window window, const af_array xVals,
 
     // Now join along first dimension, skip reorder
     std::vector<Array<T>> inputs{xIn, yIn, zIn};
-    Array<T> Z = join(0, inputs);
+
+    dim4 odims(3, rowDims[1]);
+    Array<T> out = createEmptyArray<T>(odims);
+    join(out, 0, inputs);
+    Array<T> Z = out;
 
     ForgeManager& fgMngr = forgeManager();
 

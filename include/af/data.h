@@ -200,6 +200,8 @@ namespace af
         \param[in] second is the second input array
         \return the array that joins input arrays along the given dimension
 
+        \note empty arrays will be ignored
+
         \ingroup manip_func_join
     */
     AFAPI array join(const int dim, const array &first, const array &second);
@@ -212,6 +214,8 @@ namespace af
         \param[in] second is the second input array
         \param[in] third is the third input array
         \return the array that joins input arrays along the given dimension
+
+        \note empty arrays will be ignored
 
         \ingroup manip_func_join
     */
@@ -226,6 +230,8 @@ namespace af
         \param[in] third is the third input array
         \param[in] fourth is the fourth input array
         \return the array that joins input arrays along the given dimension
+
+        \note empty arrays will be ignored
 
         \ingroup manip_func_join
     */
@@ -547,6 +553,8 @@ extern "C" {
         \param[in] first is the first input array
         \param[in] second is the second input array
 
+        \note empty arrays will be ignored
+
         \ingroup manip_func_join
     */
     AFAPI af_err af_join(af_array *out, const int dim, const af_array first, const af_array second);
@@ -560,6 +568,8 @@ extern "C" {
         \param[in] dim is the dimension along which join occurs
         \param[in] n_arrays number of arrays to join
         \param[in] inputs is an array of af_arrays containing handles to the arrays to be joined
+
+        \note empty arrays will be ignored
 
         \ingroup manip_func_join
     */
