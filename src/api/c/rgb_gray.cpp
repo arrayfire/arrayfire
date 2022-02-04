@@ -26,6 +26,7 @@ using af::dim4;
 using common::cast;
 using detail::arithOp;
 using detail::Array;
+using detail::createEmptyArray;
 using detail::createValueArray;
 using detail::join;
 using detail::scalar;
@@ -96,7 +97,10 @@ static af_array gray2rgb(const af_array& in, const float r, const float g,
     AF_CHECK(af_release_array(mod_input));
 
     // join channels
-    return getHandle(join<cType>(2, {expr3, expr1, expr2}));
+    dim4 odims(expr1.dims()[0], expr1.dims()[1], 3);
+    Array<cType> out = createEmptyArray<cType>(odims);
+    join<cType>(out, 2, {expr3, expr1, expr2});
+    return getHandle(out);
 }
 
 template<typename T, typename cType, bool isRGB2GRAY>
