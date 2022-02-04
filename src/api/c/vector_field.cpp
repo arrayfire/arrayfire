@@ -25,6 +25,7 @@
 using af::dim4;
 using detail::Array;
 using detail::copy_vector_field;
+using detail::createEmptyArray;
 using detail::forgeManager;
 using detail::reduce;
 using detail::transpose;
@@ -50,8 +51,13 @@ fg_chart setup_vector_field(fg_window window, const vector<af_array>& points,
     }
 
     // Join for set up vector
-    Array<T> pIn = detail::join(1, pnts);
-    Array<T> dIn = detail::join(1, dirs);
+    dim4 odims(3, points.size());
+    Array<T> out_pnts = createEmptyArray<T>(odims);
+    Array<T> out_dirs = createEmptyArray<T>(odims);
+    detail::join(out_pnts, 1, pnts);
+    detail::join(out_dirs, 1, dirs);
+    Array<T> pIn = out_pnts;
+    Array<T> dIn = out_dirs;
 
     // do transpose if required
     if (transpose_) {

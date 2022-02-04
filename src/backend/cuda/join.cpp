@@ -69,36 +69,14 @@ void join_wrapper(const int dim, Array<T> &out,
 }
 
 template<typename T>
-Array<T> join(const int dim, const std::vector<Array<T>> &inputs) {
-    // All dimensions except join dimension must be equal
-    // Compute output dims
-    af::dim4 odims;
-    const dim_t n_arrays = inputs.size();
-    std::vector<af::dim4> idims(n_arrays);
-
-    dim_t dim_size = 0;
-    for (size_t i = 0; i < idims.size(); i++) {
-        idims[i] = inputs[i].dims();
-        dim_size += idims[i][dim];
-    }
-
-    for (int i = 0; i < 4; i++) {
-        if (i == dim) {
-            odims[i] = dim_size;
-        } else {
-            odims[i] = idims[0][i];
-        }
-    }
-
+void join(Array<T> &out, const int dim, const std::vector<Array<T>> &inputs) {
     std::vector<Array<T> *> input_ptrs(inputs.size());
     std::transform(
         begin(inputs), end(inputs), begin(input_ptrs),
         [](const Array<T> &input) { return const_cast<Array<T> *>(&input); });
     evalMultiple(input_ptrs);
-    Array<T> out = createEmptyArray<T>(odims);
 
     join_wrapper<T>(dim, out, inputs);
-    return out;
 }
 
 #define INSTANTIATE(T)                                              \
@@ -121,9 +99,9 @@ INSTANTIATE(half)
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(T)                       \
-    template Array<T> join<T>(const int dim, \
-                              const std::vector<Array<T>> &inputs);
+#define INSTANTIATE(T)                                   \
+    template void join<T>(Array<T> & out, const int dim, \
+                          const std::vector<Array<T>> &inputs);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
