@@ -48,7 +48,7 @@ class Join : public ::testing::Test {
 // create a list of types to be tested
 typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
                          intl, uintl, char, unsigned char, short, ushort,
-                         af_half>
+                         half_float::half>
     TestTypes;
 
 // register the type list

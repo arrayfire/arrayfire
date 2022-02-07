@@ -16,6 +16,8 @@
 #include <af/internal.h>
 
 #include <gtest/gtest.h>
+#include <half.hpp>
+#include <relative_difference.hpp>
 
 #include <algorithm>
 #include <cfloat>
@@ -159,7 +161,7 @@ std::ostream &operator<<(std::ostream &os, half_float::half val) {
             return elemWiseEq<unsigned short>(aName, bName, a, b, maxAbsDiff);
             break;
         case f16:
-            return elemWiseEq<af::half>(aName, bName, a, b, maxAbsDiff);
+            return elemWiseEq<half_float::half>(aName, bName, a, b, maxAbsDiff);
             break;
         default:
             return ::testing::AssertionFailure()
@@ -1501,6 +1503,45 @@ template<typename T>
     }
 }
 
+struct absMatch {
+    float diff_;
+    absMatch(float diff) : diff_(diff) {}
+
+    template<typename T>
+    bool operator()(T lhs, T rhs) {
+        if (diff_ > 0) {
+            using half_float::abs;
+            using std::abs;
+            return abs(rhs - lhs) <= diff_;
+        } else {
+            return boost::math::epsilon_difference(lhs, rhs) < T(1.f);
+        }
+    }
+};
+
+template<>
+bool absMatch::operator()<af::af_cfloat>(af::af_cfloat lhs, af::af_cfloat rhs) {
+    return af::abs(rhs - lhs) <= diff_;
+}
+
+template<>
+bool absMatch::operator()<af::af_cdouble>(af::af_cdouble lhs,
+                                          af::af_cdouble rhs) {
+    return af::abs(rhs - lhs) <= diff_;
+}
+
+template<>
+bool absMatch::operator()<std::complex<float> >(std::complex<float> lhs,
+                                                std::complex<float> rhs) {
+    return std::abs(rhs - lhs) <= diff_;
+}
+
+template<>
+bool absMatch::operator()<std::complex<double> >(std::complex<double> lhs,
+                                                 std::complex<double> rhs) {
+    return std::abs(rhs - lhs) <= diff_;
+}
+
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       const std::vector<T> &a, af::dim4 aDims,
@@ -1687,7 +1728,6 @@ INSTANTIATE(long long);
 INSTANTIATE(unsigned long long);
 INSTANTIATE(std::complex<float>);
 INSTANTIATE(std::complex<double>);
-INSTANTIATE(af_half);
 #undef INSTANTIATE
 
 int main(int argc, char **argv) {

@@ -108,6 +108,7 @@ target_include_directories(arrayfire_test
     ${ArrayFire_BINARY_DIR}/include
     ${ArrayFire_SOURCE_DIR}/extern/half/include
     mmio
+    $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
     ${${gtest_prefix}_SOURCE_DIR}/googletest/include)
 
 if(WIN32)
