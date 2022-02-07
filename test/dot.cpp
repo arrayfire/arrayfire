@@ -47,8 +47,14 @@ typedef ::testing::Types<cfloat, cdouble> TestTypesC;
 TYPED_TEST_CASE(DotF, TestTypesF);
 TYPED_TEST_CASE(DotC, TestTypesC);
 
-bool isinf(af::af_cfloat val) { return isinf(val.real) || isinf(val.imag); }
-bool isinf(af::af_cdouble val) { return isinf(val.real) || isinf(val.imag); }
+bool isinf(af::af_cfloat val) {
+    using std::isinf;
+    return isinf(val.real) || isinf(val.imag);
+}
+bool isinf(af::af_cdouble val) {
+    using std::isinf;
+    return isinf(val.real) || isinf(val.imag);
+}
 
 template<typename T>
 void dotTest(string pTestFile, const int resultIdx,
@@ -135,6 +141,8 @@ void dotAllTest(string pTestFile, const int resultIdx,
 
     vector<T> goldData = tests[resultIdx];
 
+    using ::isinf;
+    using std::isinf;
     if (false == (isinf(rval) && isinf(goldData[0]))) {
         compare<T>(rval, ival, goldData[0]);
     }
