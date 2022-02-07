@@ -61,7 +61,7 @@ if(NOT TARGET mmio)
 endif()
 
 # Reset the CXX flags for tests
-set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD 11)
 
 # TODO(pradeep) perhaps rename AF_USE_RELATIVE_TEST_DIR to AF_WITH_TEST_DATA_DIR
 #               with empty default value
