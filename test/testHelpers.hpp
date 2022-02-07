@@ -273,19 +273,6 @@ template<typename T>
                                       const std::vector<T> &b, af::dim4 bDims,
                                       float maxAbsDiff, IntegerTag);
 
-struct absMatch {
-    float diff_;
-    absMatch(float diff) : diff_(diff) {}
-
-    template<typename T>
-    bool operator()(T lhs, T rhs) {
-        using af::abs;
-        using half_float::abs;
-        using std::abs;
-        return abs(rhs - lhs) <= diff_;
-    }
-};
-
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       const std::vector<T> &a, af::dim4 aDims,
