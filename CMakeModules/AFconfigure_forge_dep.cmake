@@ -8,34 +8,16 @@
 set(FG_VERSION_MAJOR 1)
 set(FG_VERSION_MINOR 0)
 set(FG_VERSION_PATCH 8)
+set(FG_VERSION "${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}")
+set(FG_API_VERSION_CURRENT ${FG_VERSION_MAJOR}${FG_VERSION_MINOR})
 
-find_package(Forge
-  ${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}
-  QUIET
-)
 
-if(TARGET Forge::forge)
-  get_target_property(fg_lib_type Forge::forge TYPE)
-  if(NOT ${fg_lib_type} STREQUAL "STATIC_LIBRARY")
-      install(FILES
-          $<TARGET_FILE:Forge::forge>
-          $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:Forge::forge>>
-          $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:Forge::forge>>
-          $<$<PLATFORM_ID:Linux>:$<TARGET_LINKER_FILE:Forge::forge>>
-          $<$<PLATFORM_ID:Darwin>:$<TARGET_LINKER_FILE:Forge::forge>>
-          DESTINATION "${AF_INSTALL_LIB_DIR}"
-          COMPONENT common_backend_dependencies)
-  endif()
-else()
-  set(FG_VERSION "${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}")
-  set(FG_API_VERSION_CURRENT ${FG_VERSION_MAJOR}${FG_VERSION_MINOR})
+if(AF_BUILD_FORGE)
+    af_dep_check_and_populate(${forge_prefix}
+        URI https://github.com/arrayfire/forge.git
+        REF "v${FG_VERSION}"
+    )
 
-  af_dep_check_and_populate(${forge_prefix}
-    URI https://github.com/arrayfire/forge.git
-    REF "v${FG_VERSION}"
-  )
-
-  if(AF_BUILD_FORGE)
     set(af_FETCHCONTENT_BASE_DIR ${FETCHCONTENT_BASE_DIR})
     set(af_FETCHCONTENT_QUIET ${FETCHCONTENT_QUIET})
     set(af_FETCHCONTENT_FULLY_DISCONNECTED ${FETCHCONTENT_FULLY_DISCONNECTED})
@@ -67,9 +49,9 @@ else()
     set(FETCHCONTENT_QUIET ${af_FETCHCONTENT_QUIET})
     set(FETCHCONTENT_FULLY_DISCONNECTED ${af_FETCHCONTENT_FULLY_DISCONNECTED})
     set(FETCHCONTENT_UPDATES_DISCONNECTED ${af_FETCHCONTENT_UPDATES_DISCONNECTED})
-
     install(FILES
         $<TARGET_FILE:forge>
+        $<TARGET_RUNTIME_DLLS:forge>
         $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:forge>>
         $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:forge>>
         $<$<PLATFORM_ID:Linux>:$<TARGET_LINKER_FILE:forge>>
@@ -77,10 +59,28 @@ else()
         DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT common_backend_dependencies)
     set_property(TARGET forge APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
-  else(AF_BUILD_FORGE)
-    configure_file(
-      ${${forge_prefix}_SOURCE_DIR}/CMakeModules/version.h.in
-      ${${forge_prefix}_BINARY_DIR}/include/fg/version.h
-      )
-  endif(AF_BUILD_FORGE)
-endif()
+else(AF_BUILD_FORGE)
+    find_package(Forge
+	    ${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}
+	    QUIET
+    )
+
+    if(TARGET Forge::forge)
+        get_target_property(fg_lib_type Forge::forge TYPE)
+        if(NOT ${fg_lib_type} STREQUAL "STATIC_LIBRARY")
+            install(FILES
+                    $<TARGET_FILE:Forge::forge>
+                    $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:Forge::forge>>
+                    $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:Forge::forge>>
+                    $<$<PLATFORM_ID:Linux>:$<TARGET_LINKER_FILE:Forge::forge>>
+                    $<$<PLATFORM_ID:Darwin>:$<TARGET_LINKER_FILE:Forge::forge>>
+                    DESTINATION "${AF_INSTALL_LIB_DIR}"
+                    COMPONENT common_backend_dependencies)
+        endif()
+    else()
+        configure_file(
+		  ${${forge_prefix}_SOURCE_DIR}/CMakeModules/version.h.in
+		  ${${forge_prefix}_BINARY_DIR}/include/fg/version.h
+		  )
+    endif()
+endif(AF_BUILD_FORGE)
