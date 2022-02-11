@@ -46,7 +46,7 @@ jobs:
               run: |
                   cd ${GITHUB_WORKSPACE}/arrayfire-full-${AF_VER}
                   mkdir build && cd build
-                  cmake .. -DAF_BUILD_FORGE:BOOL=ON
+                  cmake .. -DAF_BUILD_FORGE:BOOL=ON -DAF_COMPUTE_LIBRARY="FFTW/LAPACK/BLAS"
 
             - name: Create source tarball
               id: create-src-tarball
