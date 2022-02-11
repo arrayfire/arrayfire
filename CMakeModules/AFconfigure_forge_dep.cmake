@@ -61,8 +61,8 @@ if(AF_BUILD_FORGE)
     set_property(TARGET forge APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
 else(AF_BUILD_FORGE)
     find_package(Forge
-	    ${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}
-	    QUIET
+        ${FG_VERSION_MAJOR}.${FG_VERSION_MINOR}.${FG_VERSION_PATCH}
+        QUIET
     )
 
     if(TARGET Forge::forge)
@@ -78,9 +78,14 @@ else(AF_BUILD_FORGE)
                     COMPONENT common_backend_dependencies)
         endif()
     else()
+        af_dep_check_and_populate(${forge_prefix}
+            URI https://github.com/arrayfire/forge.git
+            REF "v${FG_VERSION}"
+        )
+
         configure_file(
-		  ${${forge_prefix}_SOURCE_DIR}/CMakeModules/version.h.in
-		  ${${forge_prefix}_BINARY_DIR}/include/fg/version.h
-		  )
+            ${${forge_prefix}_SOURCE_DIR}/CMakeModules/version.h.in
+            ${${forge_prefix}_BINARY_DIR}/include/fg/version.h
+        )
     endif()
 endif(AF_BUILD_FORGE)
