@@ -57,7 +57,7 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
 }
 
 template<typename T>
-void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b,
+void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const T b,
                    int ndims, bool flip) {
     auto selectScalar =
         common::getKernel("cuda::selectScalar", {select_cuh_src},
@@ -77,7 +77,7 @@ void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    selectScalar(qArgs, out, cond, a, scalar<T>(b), blk_x, blk_y);
+    selectScalar(qArgs, out, cond, a, b, blk_x, blk_y);
     POST_LAUNCH_CHECK();
 }
 

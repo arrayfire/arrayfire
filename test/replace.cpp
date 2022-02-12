@@ -13,8 +13,10 @@
 #include <testHelpers.hpp>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+
 #include <iostream>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 using af::array;
@@ -77,6 +79,11 @@ void replaceTest(const dim4 &dims) {
 template<typename T>
 void replaceScalarTest(const dim4 &dims) {
     SUPPORTED_TYPE_CHECK(T);
+    using scalar_t =
+        typename std::conditional<std::is_same<T, intl>::value ||
+                                      std::is_same<T, uintl>::value,
+                                  T, double>::type;
+
     dtype ty = (dtype)dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
@@ -85,7 +92,7 @@ void replaceScalarTest(const dim4 &dims) {
 
     array c    = a.copy();
     array cond = randu(dims, ty) > a;
-    double b   = 3;
+    scalar_t b = static_cast<scalar_t>(3);
 
     replace(c, cond, b);
     int num = (int)a.elements();
@@ -170,7 +177,7 @@ TEST(Replace, ISSUE_1683) {
     A.host(ha1.data());
 
     array B = A(0, span);
-    replace(B, A(0, span) > 0.5, 0);
+    replace(B, A(0, span) > 0.5, 0.0);
 
     vector<float> ha2(A.elements());
     A.host(ha2.data());

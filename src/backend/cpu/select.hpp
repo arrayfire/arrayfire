@@ -16,7 +16,7 @@ void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
 
 template<typename T, bool flip>
 void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
-                   const double &b);
+                   const T &b);
 
 template<typename T>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
@@ -28,7 +28,7 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
 
 template<typename T, bool flip>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
-                          const double &b, const af::dim4 &odims) {
+                          const T &b, const af::dim4 &odims) {
     Array<T> out = createEmptyArray<T>(odims);
     select_scalar<T, flip>(out, cond, a, b);
     return out;

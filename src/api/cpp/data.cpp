@@ -313,6 +313,38 @@ void replace(array &a, const array &cond, const double &b) {
     AF_THROW(af_replace_scalar(a.get(), cond.get(), b));
 }
 
+void replace(array &a, const array &cond, const long long b) {
+    AF_THROW(af_replace_scalar_long(a.get(), cond.get(), b));
+}
+
+void replace(array &a, const array &cond, const unsigned long long b) {
+    AF_THROW(af_replace_scalar_ulong(a.get(), cond.get(), b));
+}
+
+array select(const array &cond, const array &a, const long long b) {
+    af_array res;
+    AF_THROW(af_select_scalar_r_long(&res, cond.get(), a.get(), b));
+    return array(res);
+}
+
+array select(const array &cond, const array &a, const unsigned long long b) {
+    af_array res;
+    AF_THROW(af_select_scalar_r_ulong(&res, cond.get(), a.get(), b));
+    return array(res);
+}
+
+array select(const array &cond, const long long a, const array &b) {
+    af_array res;
+    AF_THROW(af_select_scalar_l_long(&res, cond.get(), a, b.get()));
+    return array(res);
+}
+
+array select(const array &cond, const unsigned long long a, const array &b) {
+    af_array res;
+    AF_THROW(af_select_scalar_l_ulong(&res, cond.get(), a, b.get()));
+    return array(res);
+}
+
 array pad(const array &in, const dim4 &beginPadding, const dim4 &endPadding,
           const borderType padFillType) {
     af_array out = 0;
