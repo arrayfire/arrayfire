@@ -148,3 +148,39 @@ af_err af_pad(af_array *out, const af_array in, const unsigned b_ndims,
     CHECK_ARRAYS(in);
     CALL(af_pad, out, in, b_ndims, b_dims, e_ndims, e_dims, ptype);
 }
+
+af_err af_replace_scalar_long(af_array a, const af_array cond,
+                              const long long b) {
+    CHECK_ARRAYS(a, cond);
+    CALL(af_replace_scalar_long, a, cond, b);
+}
+
+af_err af_replace_scalar_ulong(af_array a, const af_array cond,
+                               const unsigned long long b) {
+    CHECK_ARRAYS(a, cond);
+    CALL(af_replace_scalar_ulong, a, cond, b);
+}
+
+af_err af_select_scalar_r_long(af_array *out, const af_array cond,
+                               const af_array a, const long long b) {
+    CHECK_ARRAYS(cond, a);
+    CALL(af_select_scalar_r_long, out, cond, a, b);
+}
+
+af_err af_select_scalar_r_ulong(af_array *out, const af_array cond,
+                                const af_array a, const unsigned long long b) {
+    CHECK_ARRAYS(cond, a);
+    CALL(af_select_scalar_r_ulong, out, cond, a, b);
+}
+
+af_err af_select_scalar_l_long(af_array *out, const af_array cond,
+                               const long long a, const af_array b) {
+    CHECK_ARRAYS(cond, b);
+    CALL(af_select_scalar_l_long, out, cond, a, b);
+}
+
+af_err af_select_scalar_l_ulong(af_array *out, const af_array cond,
+                                const unsigned long long a, const af_array b) {
+    CHECK_ARRAYS(cond, b);
+    CALL(af_select_scalar_l_ulong, out, cond, a, b);
+}

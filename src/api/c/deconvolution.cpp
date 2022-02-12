@@ -19,6 +19,7 @@
 #include <fftconvolve.hpp>
 #include <handle.hpp>
 #include <logic.hpp>
+#include <math.hpp>
 #include <reduce.hpp>
 #include <select.hpp>
 #include <shift.hpp>
@@ -294,7 +295,7 @@ af_array invDeconv(const af_array in, const af_array ker, const float gamma,
     auto cond   = logicOp<T, af_ge_t>(absVal, THRESH, absVal.dims());
     auto val    = arithOp<CT, af_div_t>(numer, denom, numer.dims());
 
-    select_scalar<CT, false>(val, cond, val, 0);
+    select_scalar<CT, false>(val, cond, val, scalar<CT>(0.0));
 
     auto ival =
         fft_c2r<CT, T>(val, 1 / static_cast<double>(nElems), odims, BASE_DIM);

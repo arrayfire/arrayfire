@@ -34,7 +34,7 @@ void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
 
 template<typename T, bool flip>
 void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
-                   const double &b) {
+                   const T &b) {
     kernel::select_scalar<T>(out, cond, a, b, out.ndims(), flip);
 }
 
@@ -68,10 +68,10 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
 
 template<typename T, bool flip>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
-                          const double &b_val, const af::dim4 &odims) {
+                          const T &b_val, const af::dim4 &odims) {
     auto cond_node   = cond.getNode();
     auto a_node      = a.getNode();
-    Array<T> b       = createScalarNode<T>(odims, scalar<T>(b_val));
+    Array<T> b       = createScalarNode<T>(odims, b_val);
     auto b_node      = b.getNode();
     auto a_height    = a_node->getHeight();
     auto b_height    = b_node->getHeight();
@@ -96,24 +96,24 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     return createNodeArray<T>(odims, node);
 }
 
-#define INSTANTIATE(T)                                                        \
-    template Array<T> createSelectNode<T>(                                    \
-        const Array<char> &cond, const Array<T> &a, const Array<T> &b,        \
-        const af::dim4 &odims);                                               \
-    template Array<T> createSelectNode<T, true>(                              \
-        const Array<char> &cond, const Array<T> &a, const double &b_val,      \
-        const af::dim4 &odims);                                               \
-    template Array<T> createSelectNode<T, false>(                             \
-        const Array<char> &cond, const Array<T> &a, const double &b_val,      \
-        const af::dim4 &odims);                                               \
-    template void select<T>(Array<T> & out, const Array<char> &cond,          \
-                            const Array<T> &a, const Array<T> &b);            \
-    template void select_scalar<T, true>(Array<T> & out,                      \
-                                         const Array<char> &cond,             \
-                                         const Array<T> &a, const double &b); \
-    template void select_scalar<T, false>(Array<T> & out,                     \
-                                          const Array<char> &cond,            \
-                                          const Array<T> &a, const double &b)
+#define INSTANTIATE(T)                                                   \
+    template Array<T> createSelectNode<T>(                               \
+        const Array<char> &cond, const Array<T> &a, const Array<T> &b,   \
+        const af::dim4 &odims);                                          \
+    template Array<T> createSelectNode<T, true>(                         \
+        const Array<char> &cond, const Array<T> &a, const T &b_val,      \
+        const af::dim4 &odims);                                          \
+    template Array<T> createSelectNode<T, false>(                        \
+        const Array<char> &cond, const Array<T> &a, const T &b_val,      \
+        const af::dim4 &odims);                                          \
+    template void select<T>(Array<T> & out, const Array<char> &cond,     \
+                            const Array<T> &a, const Array<T> &b);       \
+    template void select_scalar<T, true>(Array<T> & out,                 \
+                                         const Array<char> &cond,        \
+                                         const Array<T> &a, const T &b); \
+    template void select_scalar<T, false>(Array<T> & out,                \
+                                          const Array<char> &cond,       \
+                                          const Array<T> &a, const T &b)
 
 INSTANTIATE(float);
 INSTANTIATE(double);
