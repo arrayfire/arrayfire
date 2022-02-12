@@ -50,7 +50,7 @@ jobs:
                   $dashboard = if($prnum -eq $null) { "Continuous" } else { "Experimental" }
                   $buildname = "$buildname-cpu-openblas"
                   mkdir build && cd build
-                  cmake .. -G "Visual Studio 16 2019" -A x64 `
+                  cmake .. -G "Visual Studio 17 2022" -A x64 `
                       -DVCPKG_ROOT:PATH="~/vcpkg" `
                       -DVCPKG_MANIFEST_MODE:BOOL=OFF `
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
