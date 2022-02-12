@@ -15,7 +15,7 @@
 #include <copy.hpp>
 #include <lapack_helper.hpp>
 #include <math.hpp>
-#if INTEL_MKL_VERSION >= 20210004
+#if USE_MKL
 #include <mkl_version.h>
 #endif
 #include <queue.hpp>
