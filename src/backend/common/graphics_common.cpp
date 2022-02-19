@@ -182,10 +182,10 @@ void makeContextCurrent(fg_window window) {
 double step_round(const double in, const bool dir) {
     if (in == 0) { return 0; }
 
-    static const double __log2 = log10(2);
-    static const double __log4 = log10(4);
-    static const double __log6 = log10(6);
-    static const double __log8 = log10(8);
+    static const double LOG2 = log10(2);
+    static const double LOG4 = log10(4);
+    static const double LOG6 = log10(6);
+    static const double LOG8 = log10(8);
 
     // log_in is of the form "s abc.xyz", where
     // s is either + or -; + indicates abs(in) >= 1 and - indicates 0 < abs(in)
@@ -206,25 +206,25 @@ double step_round(const double in, const bool dir) {
 
     // Round up
     if (op_dir) {
-        if (dec <= __log2) {
+        if (dec <= LOG2) {
             mult = 2;
-        } else if (dec <= __log4) {
+        } else if (dec <= LOG4) {
             mult = 4;
-        } else if (dec <= __log6) {
+        } else if (dec <= LOG6) {
             mult = 6;
-        } else if (dec <= __log8) {
+        } else if (dec <= LOG8) {
             mult = 8;
         } else {
             mult = 10;
         }
     } else {  // Round down
-        if (dec < __log2) {
+        if (dec < LOG2) {
             mult = 1;
-        } else if (dec < __log4) {
+        } else if (dec < LOG4) {
             mult = 2;
-        } else if (dec < __log6) {
+        } else if (dec < LOG6) {
             mult = 4;
-        } else if (dec < __log8) {
+        } else if (dec < LOG8) {
             mult = 6;
         } else {
             mult = 8;
