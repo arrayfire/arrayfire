@@ -20,13 +20,13 @@ OpenCL backend, you will need to have the OpenCL **runtime** installed on your
 system. Drivers and runtimes should be downloaded and installed from your device
 vendor’s website.
 
-# Install Instructions
+# Install Instructions {#InstallInstructions}
 
 * [Windows](#Windows)
 * [Linux](#Linux)
 * [macOS](#macOS)
 
-## <a name="Windows"></a> Windows
+## Windows {#Windows}
 
 Prior to installing ArrayFire on Windows,
 [download](https://www.microsoft.com/en-in/download/details.aspx?id=48145)
@@ -41,7 +41,7 @@ can find ArrayFire DLLs.
 For more information on using ArrayFire on Windows, visit the following
 [page](http://arrayfire.org/docs/using_on_windows.htm).
 
-## <a name="Linux"></a> Linux
+## Linux {#Linux}
 
 There are two ways to install ArrayFire on Linux.
 1. Package Manager
@@ -90,7 +90,7 @@ __Fedora, Redhat, CentOS__
     yum install freeimage fontconfig mesa-libGLU
 
 
-## <a name="macOS"></a> macOS
+## macOS {#macOS}
 
 Once you have downloaded the ArrayFire installer, execute the installer by
 either double clicking on the ArrayFire `pkg` file or running the following

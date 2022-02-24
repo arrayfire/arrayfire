@@ -2,10 +2,9 @@ Using ArrayFire with Microsoft Windows and Visual Studio {#using_on_windows}
 ============================================================================
 
 If you have not already done so, please make sure you have installed,
-configured, and tested ArrayFire following the [installation instructions](\ref
-installing).
+configured, and tested ArrayFire following the [installation instructions](#installing).
 
-## The big picture
+# The big picture
 
 The ArrayFire Windows installer creates the following:
 1. **AF_PATH** environment variable to point to the installation location. The
@@ -26,12 +25,12 @@ If you chose not to modify PATH during installation please make sure to do so
 manually so that all applications using ArrayFire libraries will be able to find
 the required DLLs.
 
-## <a name="section1" />Build and Run Helloworld
+# Build and Run Helloworld {#section1}
 
 This can be done in two ways either by using CMake build tool or using Visual
 Studio directly.
 
-### <a name="section1part1"/> Using CMake
+##  Using CMake {#section1part1}
 1. Download and install [CMake](https://cmake.org/download/), preferrably the
    latest version.
 2. Open CMake-GUI and set the field __Where is the source code__ to the root
@@ -59,7 +58,7 @@ Studio directly.
 10. Once the helloworld example builds, you will see a console window with the
     output from helloworld program.
 
-### <a name="section1part2"/> Using Visual Studio
+## Using Visual Studio {#section1part2}
 
 1. Open Visual Studio of your choice and create an empty C++ project.
 2. Right click the project and add an existing source file
@@ -76,16 +75,16 @@ Studio directly.
 7. Build and run the project. You will see a console window with the output from
    helloworld program.
 
-## <a name="section2" />Using ArrayFire within Existing Visual Studio Projects
+# Using ArrayFire within Existing Visual Studio Projects {#section2}
 This is divided into three parts:
-* [Part A: Adding ArrayFire to an existing solution (Single
-  Backend)](#section3partA)
-* [Part B: Adding ArrayFire CUDA to a new/existing CUDA project](#section3partB)
-* [Part C: Project with all ArrayFire backends](#section3partC)
+* [Part A: Adding ArrayFire to an existing solution (Single Backend)](#section2partA)
+* [Part B: Adding ArrayFire CUDA to a new/existing CUDA project](#section2partB)
+* [Part C: Project with all ArrayFire backends](#section2partC)
 
-### <a name="section3partA" />Part A: Adding ArrayFire to an existing solution (Single Backend)
+## Part A: Adding ArrayFire to an existing solution (Single Backend) {#section2partA}
+
 Note: If you plan on using Native CUDA code in the project, use the steps under
-[Part B](#section3partB).
+[Part B](#section2partB).
 
 Adding a single backend to an existing project is quite simple.
 
@@ -97,7 +96,7 @@ Adding a single backend to an existing project is quite simple.
    Properties -> Linker -> Input -> Additional Dependencies_. based on your
    preferred backend.
 
-### <a name="section3partB" />Part B: Adding ArrayFire CUDA to a new/existing CUDA project
+## Part B: Adding ArrayFire CUDA to a new/existing CUDA project {#section2partB}
 Lastly, if your project contains custom CUDA code, the instructions are slightly
 different as it requires using a CUDA NVCC Project:
 
@@ -109,15 +108,15 @@ different as it requires using a CUDA NVCC Project:
 4. Add `afcpu.lib`, `afcuda.lib`, `afopencl.lib`, or `af.lib` to _Project Properties ->
    Linker -> Input -> Additional Dependencies_. based on your preferred backend.
 
-### <a name="section3partC" />Part C: Project with all ArrayFire backends
+### Part C: Project with all ArrayFire backends {#section2partC}
 If you wish to create a project that allows you to use all the ArrayFire
 backends with ease, you should use `af.lib` in step 3 from [Part
-A](#section3partA).
+A](#section2partA).
 
 You can alternately download the template project from [ArrayFire Template
 Projects](https://github.com/arrayfire/arrayfire-project-templates)
 
-## <a name="section4" />Using ArrayFire with CMake
+# <a name="section3" />Using ArrayFire with CMake
 ArrayFire ships with a series of CMake scripts to make finding and using our
 library easy.
 

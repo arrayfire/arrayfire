@@ -8,7 +8,7 @@ requirements are that you include the ArrayFire header directories and link with
 the ArrayFire library you intend to use i.e. CUDA, OpenCL, CPU, or Unified
 backends.
 
-## <a name="big-picture"/> The big picture
+## The big picture  {#big-picture}
 
 On Linux, we recommend installing ArrayFire to `/opt/arrayfire` directory. The
 installer will populate files in the following sub-directories:
