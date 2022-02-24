@@ -30,7 +30,7 @@ CMake or Makefiles with CMake being our preferred build system.
 * [CMake](#CMake)
 * [Makefiles](#Makefiles)
 
-## <a name="CMake"></a>CMake
+## CMake {#CMake}
 
 The CMake build system can be used to create ArrayFire projects. As [discussed
 above](#big-picture), ArrayFire ships with a series of CMake scripts to make
@@ -80,7 +80,7 @@ you would modify the `cmake` command above to contain the following definition:
 
 You can also specify this information in the `ccmake` command-line interface.
 
-## <a name="Makefiles"></a> Makefiles
+## Makefiles {#Makefiles}
 
 Building ArrayFire projects with Makefiles is fairly similar to CMake except you
 must specify all paths and libraries manually.
