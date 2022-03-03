@@ -51,13 +51,21 @@ if(AF_BUILD_FORGE)
     set(FETCHCONTENT_UPDATES_DISCONNECTED ${af_FETCHCONTENT_UPDATES_DISCONNECTED})
     install(FILES
         $<TARGET_FILE:forge>
-        $<TARGET_RUNTIME_DLLS:forge>
         $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:forge>>
         $<$<PLATFORM_ID:Darwin>:$<TARGET_SONAME_FILE:forge>>
         $<$<PLATFORM_ID:Linux>:$<TARGET_LINKER_FILE:forge>>
         $<$<PLATFORM_ID:Darwin>:$<TARGET_LINKER_FILE:forge>>
         DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT common_backend_dependencies)
+
+    if(AF_INSTALL_STANDALONE)
+        cmake_minimum_required(VERSION 3.21)
+        install(FILES
+            $<TARGET_RUNTIME_DLLS:forge>
+            DESTINATION "${AF_INSTALL_LIB_DIR}"
+            COMPONENT common_backend_dependencies)
+    endif(AF_INSTALL_STANDALONE)
+
     set_property(TARGET forge APPEND_STRING PROPERTY COMPILE_FLAGS " -w")
 else(AF_BUILD_FORGE)
     find_package(Forge
