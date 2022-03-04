@@ -98,6 +98,22 @@ std::string readNextNonEmptyLine(std::ifstream &file) {
     return result;
 }
 
+std::string getBackendName() {
+    af::Backend backend = af::getActiveBackend();
+    if (backend == AF_BACKEND_OPENCL)
+        return std::string("opencl");
+    else if (backend == AF_BACKEND_CUDA)
+        return std::string("cuda");
+
+    return std::string("cpu");
+}
+
+std::string getTestName() {
+    std::string testname =
+        ::testing::UnitTest::GetInstance()->current_test_info()->name();
+    return testname;
+}
+
 namespace half_float {
 std::ostream &operator<<(std::ostream &os, half_float::half val) {
     os << (float)val;

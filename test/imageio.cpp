@@ -32,16 +32,6 @@ class ImageIO : public ::testing::Test {
 
 typedef ::testing::Types<float> TestTypes;
 
-std::string getBackendString() {
-    af::Backend backend = af::getActiveBackend();
-    if(backend == AF_BACKEND_OPENCL)
-        return std::string("opencl");
-    else if(backend == AF_BACKEND_CUDA)
-        return std::string("cuda");
-
-    return std::string("cpu");
-}
-
 // register the type list
 TYPED_TEST_CASE(ImageIO, TestTypes);
 
@@ -170,9 +160,7 @@ TEST(ImageIO, SavePNGCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    std::string testname =
-        ::testing::UnitTest::GetInstance()->current_test_info()->name();
-    testname = testname + "_" + getBackendString();
+    std::string testname  = getTestName() + "_" + getBackendName();
     std::string imagename = "SaveCPP_" + testname + ".png";
 
     saveImage(imagename.c_str(), input);
@@ -192,9 +180,7 @@ TEST(ImageIO, SaveBMPCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    std::string testname =
-        ::testing::UnitTest::GetInstance()->current_test_info()->name();
-    testname = testname + "_" + getBackendString();
+    std::string testname  = getTestName() + "_" + getBackendName();
     std::string imagename = "SaveCPP_" + testname + ".bmp";
 
     saveImage(imagename.c_str(), input);
@@ -305,9 +291,7 @@ TEST(ImageIO, SaveImage16CPP) {
     array input     = randu(dims, u16);
     array input_255 = (input / 257).as(u16);
 
-    std::string testname =
-        ::testing::UnitTest::GetInstance()->current_test_info()->name();
-    testname = testname + "_" + getBackendString();
+    std::string testname  = getTestName() + "_" + getBackendName();
     std::string imagename = "saveImage16CPP_" + testname + ".png";
 
     saveImage(imagename.c_str(), input);
@@ -382,9 +366,7 @@ void saveLoadImageNativeCPPTest(dim4 dims) {
 
     array input = randu(dims, (af_dtype)dtype_traits<T>::af_type);
 
-    std::string testname =
-        ::testing::UnitTest::GetInstance()->current_test_info()->name();
-    std::string imagename = testname + "_" + getBackendString() + ".png";
+    std::string imagename = getTestName() + "_" + getBackendName() + ".png";
 
     saveImageNative(imagename.c_str(), input);
 

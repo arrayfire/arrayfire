@@ -101,10 +101,6 @@ add_library(arrayfire_test OBJECT
   testHelpers.hpp
   arrayfire_test.cpp)
 
-set_target_properties(arrayfire_test
-PROPERTIES
-    CXX_STANDARD 11)
-
 target_include_directories(arrayfire_test
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}

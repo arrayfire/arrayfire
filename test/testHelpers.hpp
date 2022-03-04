@@ -69,6 +69,9 @@ typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned short ushort;
 
+std::string getBackendName();
+std::string getTestName();
+
 std::string readNextNonEmptyLine(std::ifstream &file);
 
 namespace half_float {
@@ -553,7 +556,5 @@ void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
                                          std::string metadataName,
                                          const af_array a, const af_array b,
                                          TestOutputArrayInfo *metadata);
-
-std::string generate_hex(const unsigned int len);
 
 #pragma GCC diagnostic pop
