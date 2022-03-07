@@ -65,10 +65,10 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
                             return compute_t<T>(ptr[lhs]) <
                                            compute_t<T>(ptr[rhs])
                                        ? true
-                                       : compute_t<T>(ptr[lhs]) ==
-                                                 compute_t<T>(ptr[rhs])
-                                             ? (lhs < rhs)
-                                             : false;
+                                   : compute_t<T>(ptr[lhs]) ==
+                                           compute_t<T>(ptr[rhs])
+                                       ? (lhs < rhs)
+                                       : false;
                         });
                 } else {
                     partial_sort_copy(
@@ -87,10 +87,10 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
                             return compute_t<T>(ptr[lhs]) >
                                            compute_t<T>(ptr[rhs])
                                        ? true
-                                       : compute_t<T>(ptr[lhs]) ==
-                                                 compute_t<T>(ptr[rhs])
-                                             ? (lhs < rhs)
-                                             : false;
+                                   : compute_t<T>(ptr[lhs]) ==
+                                           compute_t<T>(ptr[rhs])
+                                       ? (lhs < rhs)
+                                       : false;
                         });
                 } else {
                     partial_sort_copy(

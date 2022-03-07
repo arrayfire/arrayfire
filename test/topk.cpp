@@ -369,7 +369,7 @@ TEST(TopK, KLessThan0) {
 }
 
 TEST(TopK, DeterministicTies) {
-    af::array a = af::constant(1, 500);
+    af::array a           = af::constant(1, 500);
     a(af::seq(0, 499, 2)) = 7;
     af::array vals_max, idx_max;
     af::array vals_min, idx_min;
@@ -378,17 +378,17 @@ TEST(TopK, DeterministicTies) {
     topk(vals_max, idx_max, a, k, 0, AF_TOPK_STABLE_MAX);
     topk(vals_min, idx_min, a, k, 0, AF_TOPK_STABLE_MIN);
 
-    af::array expected_idx_max = af::seq(0, 499, 2);
-    af::array k_expected_idx_max = expected_idx_max(af::seq(0, k-1));
-    af::array expected_idx_min = af::seq(1, 499, 2);
-    af::array k_expected_idx_min = expected_idx_min(af::seq(0, k-1));
+    af::array expected_idx_max   = af::seq(0, 499, 2);
+    af::array k_expected_idx_max = expected_idx_max(af::seq(0, k - 1));
+    af::array expected_idx_min   = af::seq(1, 499, 2);
+    af::array k_expected_idx_min = expected_idx_min(af::seq(0, k - 1));
     ASSERT_ARRAYS_EQ(idx_max, k_expected_idx_max.as(u32));
     ASSERT_ARRAYS_EQ(idx_min, k_expected_idx_min.as(u32));
 }
 
 TEST(TopK, DeterministicTiesBatched) {
     const int nbatch = 10;
-    af::array a = af::constant(1, 500, nbatch, nbatch, nbatch);
+    af::array a      = af::constant(1, 500, nbatch, nbatch, nbatch);
     a(af::seq(0, 499, 2), af::span, af::span, af::span) = 7;
     af::array vals_max, idx_max;
     af::array vals_min, idx_min;
@@ -397,10 +397,14 @@ TEST(TopK, DeterministicTiesBatched) {
     topk(vals_max, idx_max, a, k, 0, AF_TOPK_STABLE_MAX);
     topk(vals_min, idx_min, a, k, 0, AF_TOPK_STABLE_MIN);
 
-    af::array expected_idx_max   = af::seq(0, 499, 2);
-    af::array k_expected_idx_max = af::tile(expected_idx_max(af::seq(0, k-1)), af::dim4(1, nbatch, nbatch, nbatch));
-    af::array expected_idx_min   = af::seq(1, 499, 2);
-    af::array k_expected_idx_min = af::tile(expected_idx_min(af::seq(0, k-1)), af::dim4(1, nbatch, nbatch, nbatch));
+    af::array expected_idx_max = af::seq(0, 499, 2);
+    af::array k_expected_idx_max =
+        af::tile(expected_idx_max(af::seq(0, k - 1)),
+                 af::dim4(1, nbatch, nbatch, nbatch));
+    af::array expected_idx_min = af::seq(1, 499, 2);
+    af::array k_expected_idx_min =
+        af::tile(expected_idx_min(af::seq(0, k - 1)),
+                 af::dim4(1, nbatch, nbatch, nbatch));
     ASSERT_ARRAYS_EQ(idx_max, k_expected_idx_max.as(u32));
     ASSERT_ARRAYS_EQ(idx_min, k_expected_idx_min.as(u32));
 }
