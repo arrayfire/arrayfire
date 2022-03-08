@@ -75,7 +75,12 @@ option(AF_WITH_STACKTRACE  "Add stacktraces to the error messages." ON)
 option(AF_CACHE_KERNELS_TO_DISK "Enable caching kernels to disk" ON)
 option(AF_WITH_STATIC_MKL "Link against static Intel MKL libraries" OFF)
 
-set(AF_COMPUTE_LIBRARY "Intel-MKL"
+set(default_compute_library "FFTW/LAPACK/BLAS")
+if(MKL_FOUND)
+  set(default_compute_library "Intel-MKL")
+endif()
+
+set(AF_COMPUTE_LIBRARY ${default_compute_library}
     CACHE STRING "Compute library for signal processing and linear algebra routines")
 set_property(CACHE AF_COMPUTE_LIBRARY
     PROPERTY STRINGS "Intel-MKL" "FFTW/LAPACK/BLAS")
