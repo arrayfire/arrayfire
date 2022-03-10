@@ -53,7 +53,8 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
         NaryNode(static_cast<af::dtype>(dtype_traits<T>::af_type), "__select",
                  3, {{cond_node, a_node, b_node}}, af_select_t, height));
 
-    if (detail::passesJitHeuristics<T>(node.get()) != kJITHeuristics::Pass) {
+    std::array<common::Node *, 1> nodes{node.get()};
+    if (detail::passesJitHeuristics<T>(nodes) != kJITHeuristics::Pass) {
         if (a_height > max(b_height, cond_height)) {
             a.eval();
         } else if (b_height > cond_height) {
@@ -83,7 +84,8 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
         (flip ? "__not_select" : "__select"), 3, {{cond_node, a_node, b_node}},
         flip ? af_not_select_t : af_select_t, height));
 
-    if (detail::passesJitHeuristics<T>(node.get()) != kJITHeuristics::Pass) {
+    std::array<common::Node *, 1> nodes{node.get()};
+    if (detail::passesJitHeuristics<T>(nodes) != kJITHeuristics::Pass) {
         if (a_height > max(b_height, cond_height)) {
             a.eval();
         } else if (b_height > cond_height) {
