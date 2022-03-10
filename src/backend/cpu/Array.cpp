@@ -30,6 +30,7 @@
 #include <af/seq.h>
 #include <af/traits.hpp>
 
+#include <nonstd/span.hpp>
 #include <algorithm>  // IWYU pragma: keep
 #include <cstddef>
 #include <cstring>
@@ -44,6 +45,7 @@ using common::Node_ptr;
 using common::NodeIterator;
 using cpu::jit::BufferNode;
 
+using nonstd::span;
 using std::adjacent_find;
 using std::copy;
 using std::is_standard_layout;
@@ -227,28 +229,31 @@ Array<T> createEmptyArray(const dim4 &dims) {
 }
 
 template<typename T>
-kJITHeuristics passesJitHeuristics(Node *root_node) {
+kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
-    if (root_node->getHeight() > static_cast<int>(getMaxJitSize())) {
-        return kJITHeuristics::TreeHeight;
-    }
-
-    // Check if approaching the memory limit
-    if (getMemoryPressure() >= getMemoryPressureThreshold()) {
-        NodeIterator<Node> it(root_node);
-        NodeIterator<Node> end_node;
-        size_t bytes = accumulate(it, end_node, size_t(0),
-                                  [=](const size_t prev, const Node &n) {
-                                      // getBytes returns the size of the data
-                                      // Array. Sub arrays will be represented
-                                      // by their parent size.
-                                      return prev + n.getBytes();
-                                  });
-
-        if (jitTreeExceedsMemoryPressure(bytes)) {
-            return kJITHeuristics::MemoryPressure;
+    size_t bytes = 0;
+    for (Node *n : root_nodes) {
+        if (n->getHeight() > static_cast<int>(getMaxJitSize())) {
+            return kJITHeuristics::TreeHeight;
+        }
+        // Check if approaching the memory limit
+        if (getMemoryPressure() >= getMemoryPressureThreshold()) {
+            NodeIterator<Node> it(n);
+            NodeIterator<Node> end_node;
+            bytes = accumulate(it, end_node, bytes,
+                               [=](const size_t prev, const Node &n) {
+                                   // getBytes returns the size of the data
+                                   // Array. Sub arrays will be represented
+                                   // by their parent size.
+                                   return prev + n.getBytes();
+                               });
         }
     }
+
+    if (jitTreeExceedsMemoryPressure(bytes)) {
+        return kJITHeuristics::MemoryPressure;
+    }
+
     return kJITHeuristics::Pass;
 }
 
@@ -343,7 +348,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
     template void writeDeviceDataArray<T>(                                    \
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(vector<Array<T> *> arrays);                 \
-    template kJITHeuristics passesJitHeuristics<T>(Node * n);                 \
+    template kJITHeuristics passesJitHeuristics<T>(span<Node *> n);           \
     template void Array<T>::setDataDims(const dim4 &new_dims);
 
 INSTANTIATE(float)
