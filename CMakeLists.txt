@@ -220,6 +220,11 @@ if(NOT TARGET glad::glad)
     )
 endif()
 
+af_dep_check_and_populate(span-lite
+  URI https://github.com/martinmoene/span-lite
+  REF "ccf2351"
+  )
+
 af_dep_check_and_populate(${assets_prefix}
   URI https://github.com/arrayfire/assets.git
   REF master
