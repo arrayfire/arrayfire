@@ -69,6 +69,9 @@ typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned short ushort;
 
+std::string getBackendName();
+std::string getTestName();
+
 std::string readNextNonEmptyLine(std::ifstream &file);
 
 namespace half_float {
