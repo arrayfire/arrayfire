@@ -102,6 +102,7 @@ endif()
 target_include_directories(afcommon_interface
   INTERFACE
     ${ArrayFire_SOURCE_DIR}/src/backend
+    ${span-lite_SOURCE_DIR}/include
     ${ArrayFire_BINARY_DIR}
   SYSTEM INTERFACE
     $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>

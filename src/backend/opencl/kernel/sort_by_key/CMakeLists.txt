@@ -30,6 +30,7 @@ foreach(SBK_TYPE ${SBK_TYPES})
         ../../api/c
         ../common
         ../../../include
+        ${span-lite_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR})
 
     target_include_directories(opencl_sort_by_key_${SBK_TYPE}
