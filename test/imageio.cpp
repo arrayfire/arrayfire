@@ -160,8 +160,11 @@ TEST(ImageIO, SavePNGCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    saveImage("SaveCPP.png", input);
-    array out = loadImage("SaveCPP.png", true);
+    std::string testname  = getTestName() + "_" + getBackendName();
+    std::string imagename = "SaveCPP_" + testname + ".png";
+
+    saveImage(imagename.c_str(), input);
+    array out = loadImage(imagename.c_str(), true);
 
     ASSERT_FALSE(anyTrue<bool>(out - input));
 }
@@ -177,8 +180,11 @@ TEST(ImageIO, SaveBMPCPP) {
     input(9, 0, 2)          = 255;
     input(9, 9, span)       = 255;
 
-    saveImage("SaveCPP.bmp", input);
-    array out = loadImage("SaveCPP.bmp", true);
+    std::string testname  = getTestName() + "_" + getBackendName();
+    std::string imagename = "SaveCPP_" + testname + ".bmp";
+
+    saveImage(imagename.c_str(), input);
+    array out = loadImage(imagename.c_str(), true);
 
     ASSERT_FALSE(anyTrue<bool>(out - input));
 }
@@ -285,9 +291,12 @@ TEST(ImageIO, SaveImage16CPP) {
     array input     = randu(dims, u16);
     array input_255 = (input / 257).as(u16);
 
-    saveImage("saveImage16CPP.png", input);
+    std::string testname  = getTestName() + "_" + getBackendName();
+    std::string imagename = "saveImage16CPP_" + testname + ".png";
 
-    array img = loadImage("saveImage16CPP.png", true);
+    saveImage(imagename.c_str(), input);
+
+    array img = loadImage(imagename.c_str(), true);
     ASSERT_EQ(img.type(), f32);  // loadImage should always return float
 
     ASSERT_FALSE(anyTrue<bool>(abs(img - input_255)));
@@ -357,9 +366,11 @@ void saveLoadImageNativeCPPTest(dim4 dims) {
 
     array input = randu(dims, (af_dtype)dtype_traits<T>::af_type);
 
-    saveImageNative("saveImageNative.png", input);
+    std::string imagename = getTestName() + "_" + getBackendName() + ".png";
 
-    array loaded = loadImageNative("saveImageNative.png");
+    saveImageNative(imagename.c_str(), input);
+
+    array loaded = loadImageNative(imagename.c_str());
     ASSERT_EQ(loaded.type(), input.type());
 
     ASSERT_FALSE(anyTrue<bool>(input - loaded));
