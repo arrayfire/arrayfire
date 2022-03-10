@@ -45,6 +45,7 @@ using common::Node_ptr;
 using common::NodeIterator;
 using opencl::jit::BufferNode;
 
+using nonstd::span;
 using std::accumulate;
 using std::is_standard_layout;
 using std::make_shared;
@@ -293,10 +294,12 @@ Node_ptr Array<T>::getNode() const {
 /// 2. The number of parameters we are passing into the kernel exceeds the
 ///    limitation on the platform. For NVIDIA this is 4096 bytes. The
 template<typename T>
-kJITHeuristics passesJitHeuristics(Node *root_node) {
+kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
-    if (root_node->getHeight() > static_cast<int>(getMaxJitSize())) {
-        return kJITHeuristics::TreeHeight;
+    for (const Node *n : root_nodes) {
+        if (n->getHeight() > static_cast<int>(getMaxJitSize())) {
+            return kJITHeuristics::TreeHeight;
+        }
     }
 
     bool isBufferLimit = getMemoryPressure() >= getMemoryPressureThreshold();
@@ -312,12 +315,18 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
 
     // A lightweight check based on the height of the node. This is
     // an inexpensive operation and does not traverse the JIT tree.
-    bool isParamLimit = (root_node->getHeight() >= heightCheckLimit);
-    if (isParamLimit || isBufferLimit) {
+    bool atHeightLimit =
+        std::any_of(std::begin(root_nodes), std::end(root_nodes),
+                    [heightCheckLimit](Node *n) {
+                        return (n->getHeight() + 1 >= heightCheckLimit);
+                    });
+
+    if (atHeightLimit || isBufferLimit) {
         // This is the base parameter size if the kernel had no
         // arguments
-        constexpr size_t base_param_size =
-            sizeof(T *) + sizeof(KParam) + (3 * sizeof(uint));
+        size_t base_param_size =
+            (sizeof(T *) + sizeof(KParam)) * root_nodes.size() +
+            (3 * sizeof(uint));
 
         const cl::Device &device = getDevice();
         size_t max_param_size = device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>();
@@ -332,28 +341,31 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
             size_t num_buffers;
             size_t param_scalar_size;
         };
-        NodeIterator<> it(root_node);
-        tree_info info =
-            accumulate(it, NodeIterator<>(), tree_info{0, 0, 0},
-                       [](tree_info &prev, Node &n) {
-                           if (n.isBuffer()) {
-                               auto &buf_node = static_cast<BufferNode &>(n);
-                               // getBytes returns the size of the data Array.
-                               // Sub arrays will be represented by their parent
-                               // size.
-                               prev.total_buffer_size += buf_node.getBytes();
-                               prev.num_buffers++;
-                           } else {
-                               prev.param_scalar_size += n.getParamBytes();
-                           }
-                           return prev;
-                       });
+
+        tree_info info{0, 0, 0};
+        for (Node *n : root_nodes) {
+            NodeIterator<> it(n);
+            info = accumulate(
+                it, NodeIterator<>(), info, [](tree_info &prev, Node &n) {
+                    if (n.isBuffer()) {
+                        auto &buf_node = static_cast<BufferNode &>(n);
+                        // getBytes returns the size of the data Array.
+                        // Sub arrays will be represented by their parent
+                        // size.
+                        prev.total_buffer_size += buf_node.getBytes();
+                        prev.num_buffers++;
+                    } else {
+                        prev.param_scalar_size += n.getParamBytes();
+                    }
+                    return prev;
+                });
+        }
         isBufferLimit = jitTreeExceedsMemoryPressure(info.total_buffer_size);
 
         size_t param_size = (info.num_buffers * (sizeof(KParam) + sizeof(T *)) +
                              info.param_scalar_size);
 
-        isParamLimit = param_size >= max_param_size;
+        bool isParamLimit = param_size >= max_param_size;
 
         if (isParamLimit) { return kJITHeuristics::KernelParameterSize; }
         if (isBufferLimit) { return kJITHeuristics::MemoryPressure; }
@@ -513,7 +525,7 @@ size_t Array<T>::getAllocatedBytes() const {
     template void writeDeviceDataArray<T>(                                    \
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(vector<Array<T> *> arrays);                 \
-    template kJITHeuristics passesJitHeuristics<T>(Node * node);              \
+    template kJITHeuristics passesJitHeuristics<T>(span<Node *> node);        \
     template void *getDevicePtr<T>(const Array<T> &arr);                      \
     template void Array<T>::setDataDims(const dim4 &new_dims);                \
     template size_t Array<T>::getAllocatedBytes() const;

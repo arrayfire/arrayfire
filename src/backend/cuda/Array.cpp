@@ -30,6 +30,7 @@ using common::Node_ptr;
 using common::NodeIterator;
 using cuda::jit::BufferNode;
 
+using nonstd::span;
 using std::accumulate;
 using std::move;
 using std::shared_ptr;
@@ -245,27 +246,33 @@ Node_ptr Array<T>::getNode() const {
 /// 2. The number of parameters we are passing into the kernel exceeds the
 ///    limitation on the platform. For NVIDIA this is 4096 bytes. The
 template<typename T>
-kJITHeuristics passesJitHeuristics(Node *root_node) {
+kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
-    if (root_node->getHeight() > static_cast<int>(getMaxJitSize())) {
-        return kJITHeuristics::TreeHeight;
+    for (Node *n : root_nodes) {
+        if (n->getHeight() > static_cast<int>(getMaxJitSize())) {
+            return kJITHeuristics::TreeHeight;
+        }
     }
 
     // A lightweight check based on the height of the node. This is an
     // inexpensive operation and does not traverse the JIT tree.
-    if (root_node->getHeight() > 6 ||
-        getMemoryPressure() >= getMemoryPressureThreshold()) {
+    int heightCheckLimit = 6;
+    bool atHeightLimit =
+        std::any_of(std::begin(root_nodes), std::end(root_nodes),
+                    [heightCheckLimit](Node *n) {
+                        return (n->getHeight() + 1 >= heightCheckLimit);
+                    });
+    if (atHeightLimit || getMemoryPressure() >= getMemoryPressureThreshold()) {
         // The size of the parameters without any extra arguments from the
         // JIT tree. This includes one output Param object and 4 integers.
-        constexpr size_t base_param_size =
-            sizeof(Param<T>) + (4 * sizeof(uint));
+        size_t base_param_size =
+            sizeof(Param<T>) * root_nodes.size() + (4 * sizeof(uint));
 
         // extra padding for safety to avoid failure during compilation
         constexpr size_t jit_padding_size = 256;  //@umar dontfix!
         // This is the maximum size of the params that can be allowed by the
         // CUDA platform.
-        constexpr size_t max_param_size =
-            4096 - base_param_size - jit_padding_size;
+        size_t max_param_size = 4096 - base_param_size - jit_padding_size;
 
         struct tree_info {
             size_t total_buffer_size;
@@ -273,22 +280,26 @@ kJITHeuristics passesJitHeuristics(Node *root_node) {
             size_t param_scalar_size;
         };
         NodeIterator<> end_node;
-        tree_info info =
-            accumulate(NodeIterator<>(root_node), end_node, tree_info{0, 0, 0},
-                       [](tree_info &prev, const Node &node) {
-                           if (node.isBuffer()) {
-                               const auto &buf_node =
-                                   static_cast<const BufferNode<T> &>(node);
-                               // getBytes returns the size of the data Array.
-                               // Sub arrays will be represented by their parent
-                               // size.
-                               prev.total_buffer_size += buf_node.getBytes();
-                               prev.num_buffers++;
-                           } else {
-                               prev.param_scalar_size += node.getParamBytes();
-                           }
-                           return prev;
-                       });
+        tree_info info = tree_info{0, 0, 0};
+
+        for (Node *n : root_nodes) {
+            info = accumulate(
+                NodeIterator<>(n), end_node, info,
+                [](tree_info &prev, const Node &node) {
+                    if (node.isBuffer()) {
+                        const auto &buf_node =
+                            static_cast<const BufferNode<T> &>(node);
+                        // getBytes returns the size of the data Array.
+                        // Sub arrays will be represented by their
+                        // parent size.
+                        prev.total_buffer_size += buf_node.getBytes();
+                        prev.num_buffers++;
+                    } else {
+                        prev.param_scalar_size += node.getParamBytes();
+                    }
+                    return prev;
+                });
+        }
         size_t param_size =
             info.num_buffers * sizeof(Param<T>) + info.param_scalar_size;
 
@@ -440,7 +451,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
     template void writeDeviceDataArray<T>(                                    \
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(std::vector<Array<T> *> arrays);            \
-    template kJITHeuristics passesJitHeuristics<T>(Node * n);                 \
+    template kJITHeuristics passesJitHeuristics<T>(span<Node *> n);           \
     template void Array<T>::setDataDims(const dim4 &new_dims);
 
 INSTANTIATE(float)

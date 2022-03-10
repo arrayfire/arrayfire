@@ -22,6 +22,7 @@
 #include <af/dim4.hpp>
 #include <af/seq.h>
 
+#include <nonstd/span.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <memory>
@@ -100,7 +101,7 @@ template<typename T>
 void destroyArray(Array<T> *A);
 
 template<typename T>
-kJITHeuristics passesJitHeuristics(common::Node *node);
+kJITHeuristics passesJitHeuristics(nonstd::span<common::Node *> node);
 
 template<typename T>
 void *getDevicePtr(const Array<T> &arr) {

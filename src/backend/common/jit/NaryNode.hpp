@@ -14,6 +14,7 @@
 #include <common/defines.hpp>
 #include <common/jit/Node.hpp>
 
+#include <nonstd/span.hpp>
 #include <array>
 #include <iomanip>
 #include <sstream>
@@ -100,13 +101,15 @@ common::Node_ptr createNaryNode(
     const af::dim4 &odims, FUNC createNode,
     std::array<const detail::Array<Ti> *, N> &&children) {
     std::array<common::Node_ptr, N> childNodes;
+    std::array<common::Node *, N> nodes;
     for (int i = 0; i < N; i++) {
         childNodes[i] = move(children[i]->getNode());
+        nodes[i]      = childNodes[i].get();
     }
 
     common::Node_ptr ptr = createNode(childNodes);
 
-    switch (detail::passesJitHeuristics<Ti>(ptr.get())) {
+    switch (detail::passesJitHeuristics<Ti>(nodes)) {
         case kJITHeuristics::Pass: {
             return ptr;
         }
