@@ -15,6 +15,7 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/NaryNode.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/Node.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/Node.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/jit/NodeIO.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/NodeIterator.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/ScalarNode.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/jit/UnaryNode.hpp
@@ -25,6 +26,7 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/AllocatorInterface.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ArrayInfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ArrayInfo.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireTypesIO.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DefaultMemoryManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DefaultMemoryManager.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/DependencyModule.cpp
