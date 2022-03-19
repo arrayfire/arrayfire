@@ -279,3 +279,70 @@ TEST(Moddims, jit) {
     gold = moddims(gold, 5, 10);
     ASSERT_ARRAYS_EQ(gold, a);
 }
+
+TEST(Moddims, JitNested) {
+    array a    = af::constant(1, 5, 5);
+    array b    = moddims(moddims(moddims(a, 25), 1, 5, 5), 5, 5);
+    array gold = af::constant(1, 5, 5);
+    gold.eval();
+    ASSERT_ARRAYS_EQ(gold, b);
+}
+
+TEST(Moddims, JitDuplicate) {
+    array a = af::constant(1, 5, 5);
+    array b = af::moddims(a, 25);
+    array c = b + b;
+
+    array gold = af::constant(2, 25);
+    gold.eval();
+    ASSERT_ARRAYS_EQ(gold, c);
+}
+
+TEST(Moddims, JitNestedAndDuplicate) {
+    array a = af::constant(1, 10, 10);
+    array b = af::constant(1, 10, 10);
+    array c = af::constant(2, 100) + moddims(a + b, 100);
+    array d = moddims(
+        moddims(af::constant(2, 1, 10, 10) + moddims(c, 1, 10, 10), 100), 10,
+        10);
+    array e    = d + d;
+    array gold = af::constant(12, 10, 10);
+    gold.eval();
+    ASSERT_ARRAYS_EQ(gold, e);
+}
+
+TEST(Moddims, JitTileThenModdims) {
+    array a    = af::constant(1, 10);
+    array b    = tile(a, 1, 10);
+    array c    = moddims(b, 100);
+    array gold = af::constant(1, 100);
+    gold.eval();
+    ASSERT_ARRAYS_EQ(gold, c);
+}
+
+TEST(Moddims, JitModdimsThenTiled) {
+    array a    = af::constant(1, 10);
+    array b    = moddims(a, 1, 10);
+    array c    = tile(b, 10);
+    array gold = af::constant(1, 10, 10);
+    gold.eval();
+    ASSERT_ARRAYS_EQ(gold, c);
+}
+
+TEST(Moddims, JitTileThenMultipleModdims) {
+    array a    = af::constant(1, 10);
+    array b    = tile(a, 1, 10);
+    array c    = moddims(moddims(b, 100), 10, 10);
+    array gold = af::constant(1, 10, 10);
+    gold.eval();
+    ASSERT_ARRAYS_EQ(gold, c);
+}
+
+TEST(Moddims, JitMultipleModdimsThenTiled) {
+    array a    = af::constant(1, 10);
+    array b    = moddims(moddims(a, 1, 10), 1, 1, 10);
+    array c    = tile(b, 10);
+    array gold = af::constant(1, 10, 1, 10);
+    gold.eval();
+    ASSERT_ARRAYS_EQ(gold, c);
+}
