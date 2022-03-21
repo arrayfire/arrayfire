@@ -58,6 +58,8 @@ class ScalarNode : public TNode<T> {
         UNUSED(kerStream);
         UNUSED(ids);
     }
+
+    bool isScalar() const final { return true; }
 };
 }  // namespace jit
 

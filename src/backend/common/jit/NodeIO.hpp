@@ -66,8 +66,10 @@ struct fmt::formatter<common::Node> {
         format_to(ctx.out(), "{{");
         if (pointer) format_to(ctx.out(), "{} ", (void*)&node);
         if (op) {
-            if (node.isBuffer()) {
+            if (isBuffer(node)) {
                 format_to(ctx.out(), "buffer ");
+            } else if (isScalar(node)) {
+                format_to(ctx.out(), "scalar ", getOpEnumStr(node.getOp()));
             } else {
                 format_to(ctx.out(), "{} ", getOpEnumStr(node.getOp()));
             }
