@@ -85,7 +85,8 @@ jobs:
                   sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
                   sudo sh -c 'echo deb https://apt.repos.intel.com/oneapi all main > /etc/apt/sources.list.d/oneAPI.list'
                   sudo apt-get -qq update
-                  sudo apt-get install -y intel-basekit
+                  sudo apt-get install -y intel-oneapi-mkl-devel
+                  echo "MKLROOT=/opt/intel/oneapi/mkl/latest" >> ${GITHUB_ENV}
 
             - name: Install OpenBLAS for Ubuntu
               if: matrix.os != 'macos-latest' && matrix.blas_backend == 'OpenBLAS'
@@ -109,7 +110,7 @@ jobs:
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=ON \
                       -DAF_BUILD_FORGE:BOOL=ON \
-                      -DAF_COMPUTE_LIBRARY:STRING=$backend \
+                      -DAF_COMPUTE_LIBRARY:STRING=${backend} \
                       -DBUILDNAME:STRING=${buildname} ..
                   echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
 
