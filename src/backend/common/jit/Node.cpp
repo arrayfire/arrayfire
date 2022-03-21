@@ -63,6 +63,8 @@ bool NodePtr_equalto::operator()(const Node *l, const Node *r) const noexcept {
 
 auto isBuffer(const Node &ptr) -> bool { return ptr.isBuffer(); }
 
+auto isScalar(const Node &ptr) -> bool { return ptr.isScalar(); }
+
 /// Returns true if the buffer is linear
 bool Node::isLinear(const dim_t dims[4]) const { return true; }
 
