@@ -84,6 +84,9 @@ class ScalarNode : public common::Node {
                   << ";\n";
     }
 
+    // Returns true if this node is a Buffer
+    virtual bool isScalar() const { return false; }
+
     std::string getNameStr() const final { return detail::shortname<T>(false); }
 
     // Return the info for the params and the size of the buffers

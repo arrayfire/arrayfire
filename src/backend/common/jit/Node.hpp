@@ -241,6 +241,9 @@ class Node {
     // Returns true if this node is a Buffer
     virtual bool isBuffer() const { return false; }
 
+    // Returns true if this node is a Buffer
+    virtual bool isScalar() const { return false; }
+
     /// Returns true if the buffer is linear
     virtual bool isLinear(const dim_t dims[4]) const;
 
@@ -299,5 +302,7 @@ std::string getFuncName(const std::vector<Node *> &output_nodes,
                         const std::vector<Node_ids> &full_ids, bool is_linear);
 
 auto isBuffer(const Node &ptr) -> bool;
+
+auto isScalar(const Node &ptr) -> bool;
 
 }  // namespace common
