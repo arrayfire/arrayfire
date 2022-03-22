@@ -45,14 +45,27 @@ else()
   set(use_static_cuda_lapack OFF)
 endif()
 
+set(CUDA_architecture_build_targets "Auto" CACHE
+  STRING "The compute architectures targeted by this build. (Options: Auto;3.0;Maxwell;All;Common)")
+
+cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_targets})
+
+string(REGEX REPLACE "-gencodearch=compute_[0-9]+,code=sm_([0-9]+)" "\\1|" cuda_build_targets ${cuda_architecture_flags})
+string(REGEX REPLACE "-gencodearch=compute_[0-9]+,code=compute_([0-9]+)" "\\1+PTX|" cuda_build_targets ${cuda_build_targets})
+string(REGEX REPLACE "([0-9]+)([0-9])\\|" "\\1.\\2 " cuda_build_targets ${cuda_build_targets})
+string(REGEX REPLACE "([0-9]+)([0-9]\\+PTX)\\|" "\\1.\\2 " cuda_build_targets ${cuda_build_targets})
+message(STATUS "CUDA_architecture_build_targets: ${CUDA_architecture_build_targets} ( ${cuda_build_targets} )")
+
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};${cuda_architecture_flags})
+
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
 if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   af_find_static_cuda_libs(culibos)
-  af_find_static_cuda_libs(cublas_static)
-  af_find_static_cuda_libs(cublasLt_static)
+  af_find_static_cuda_libs(cublas_static PRUNE)
+  af_find_static_cuda_libs(cublasLt_static PRUNE)
   af_find_static_cuda_libs(cufft_static)
-  af_find_static_cuda_libs(cusparse_static)
+  af_find_static_cuda_libs(cusparse_static PRUNE)
 
   # FIXME When NVCC resolves this particular issue.
   # NVCC doesn't like -l<full_path_static_lib>, hence we cannot
@@ -67,8 +80,8 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   set(af_cuda_static_flags "${af_cuda_static_flags};-lcusparse_static")
 
   if(${use_static_cuda_lapack})
-    af_find_static_cuda_libs(cusolver_static)
-    set(cusolver_static_lib "${CUDA_cusolver_static_LIBRARY}")
+    af_find_static_cuda_libs(cusolver_static PRUNE)
+    set(cusolver_static_lib "${AF_CUDA_cusolver_static_LIBRARY}")
 
     # NVIDIA LAPACK library liblapack_static.a is a subset of LAPACK and only
     # contains GPU accelerated stedc and bdsqr. The user has to link
@@ -83,19 +96,6 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
 endif()
 
 get_filename_component(CUDA_LIBRARIES_PATH ${CUDA_cudart_static_LIBRARY} DIRECTORY CACHE)
-
-set(CUDA_architecture_build_targets "Auto" CACHE
-    STRING "The compute architectures targeted by this build. (Options: Auto;3.0;Maxwell;All;Common)")
-
-cuda_select_nvcc_arch_flags(cuda_architecture_flags ${CUDA_architecture_build_targets})
-
-string(REGEX REPLACE "-gencodearch=compute_[0-9]+,code=sm_([0-9]+)" "\\1|" cuda_build_targets ${cuda_architecture_flags})
-string(REGEX REPLACE "-gencodearch=compute_[0-9]+,code=compute_([0-9]+)" "\\1+PTX|" cuda_build_targets ${cuda_build_targets})
-string(REGEX REPLACE "([0-9]+)([0-9])\\|" "\\1.\\2 " cuda_build_targets ${cuda_build_targets})
-string(REGEX REPLACE "([0-9]+)([0-9]\\+PTX)\\|" "\\1.\\2 " cuda_build_targets ${cuda_build_targets})
-message(STATUS "CUDA_architecture_build_targets: ${CUDA_architecture_build_targets} ( ${cuda_build_targets} )")
-
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};${cuda_architecture_flags})
 
 mark_as_advanced(
     CUDA_LIBRARIES_PATH
@@ -327,9 +327,10 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
       ${cusolver_lib}
       ${START_GROUP}
       ${CUDA_culibos_LIBRARY} #also a static libary
-      ${CUDA_cublas_static_LIBRARY}
-      ${CUDA_cufft_static_LIBRARY}
-      ${CUDA_cusparse_static_LIBRARY}
+      ${AF_CUDA_cublas_static_LIBRARY}
+      ${AF_CUDA_cufft_static_LIBRARY}
+      ${AF_CUDA_cusparse_static_LIBRARY}
+      ${AF_CUDA_cublasLt_static_LIBRARY}
       ${cusolver_static_lib}
       ${END_GROUP}
   )
@@ -337,7 +338,7 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   if(CUDA_VERSION VERSION_GREATER 10.0)
     target_link_libraries(af_cuda_static_cuda_library
       PRIVATE
-        ${CUDA_cublasLt_static_LIBRARY})
+        ${AF_CUDA_cublasLt_static_LIBRARY})
   endif()
   if(CUDA_VERSION VERSION_GREATER 9.5)
     target_link_libraries(af_cuda_static_cuda_library
@@ -687,7 +688,9 @@ add_library(ArrayFire::afcuda ALIAS afcuda)
 
 add_dependencies(afcuda ${jit_kernel_targets} ${nvrtc_kernel_targets})
 add_dependencies(af_cuda_static_cuda_library ${nvrtc_kernel_targets})
-add_dependencies(afcuda af_cuda_static_cuda_library)
+if(cuda_pruned_libraries)
+  add_dependencies(afcuda ${cuda_pruned_libraries})
+endif()
 
 target_include_directories (afcuda
   PUBLIC
