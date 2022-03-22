@@ -5,14 +5,37 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-
+find_program(NVPRUNE NAMES nvprune)
 # The following macro uses a macro defined by
 # FindCUDA module from cmake.
 function(af_find_static_cuda_libs libname)
+  cmake_parse_arguments(fscl "PRUNE" "" "" ${ARGN})
+
   set(search_name
     "${CMAKE_STATIC_LIBRARY_PREFIX}${libname}${CMAKE_STATIC_LIBRARY_SUFFIX}")
   cuda_find_library_local_first(CUDA_${libname}_LIBRARY
     ${search_name} "${libname} static library")
+
+  if(fscl_PRUNE)
+    get_filename_component(af_${libname} ${CUDA_${libname}_LIBRARY} NAME)
+
+    set(liboutput ${CMAKE_CURRENT_BINARY_DIR}/${af_${libname}})
+    add_custom_command(OUTPUT ${liboutput}.depend
+      COMMAND ${NVPRUNE} ${cuda_architecture_flags} ${CUDA_${libname}_LIBRARY} -o ${liboutput}
+      COMMAND ${CMAKE_COMMAND} -E touch ${liboutput}.depend
+      BYPRODUCTS ${liboutput}
+      MAIN_DEPENDENCY ${CUDA_${libname}_LIBRARY}
+      COMMENT "Pruning ${CUDA_${libname}_LIBRARY} for ${cuda_build_targets}"
+      VERBATIM)
+    add_custom_target(AF_CUDA_${libname}_LIBRARY_TARGET
+      DEPENDS ${liboutput}.depend)
+    list(APPEND cuda_pruned_libraries AF_CUDA_${libname}_LIBRARY_TARGET PARENT_SCOPE)
+
+    set(AF_CUDA_${libname}_LIBRARY ${liboutput} PARENT_SCOPE)
+    mark_as_advanced(AF_CUDA_${libname}_LIBRARY)
+  else()
+    set(AF_CUDA_${libname}_LIBRARY ${CUDA_${libname}_LIBRARY} PARENT_SCOPE)
+  endif()
   mark_as_advanced(CUDA_${libname}_LIBRARY)
 endfunction()
 
