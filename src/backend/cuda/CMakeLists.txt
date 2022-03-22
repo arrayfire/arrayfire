@@ -834,8 +834,6 @@ if(AF_INSTALL_STANDALONE)
     if(cuDNN_VERSION_MAJOR VERSION_GREATER 8 OR cuDNN_VERSION_MAJOR VERSION_EQUAL 8)
       # cudnn changed how dlls are shipped starting major version 8
       # except the main dll a lot of the other DLLs are loaded upon demand
-      afcu_collect_cudnn_libs(adv_infer)
-      afcu_collect_cudnn_libs(adv_train)
       afcu_collect_cudnn_libs(cnn_infer)
       afcu_collect_cudnn_libs(cnn_train)
       afcu_collect_cudnn_libs(ops_infer)
