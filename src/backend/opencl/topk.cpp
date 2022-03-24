@@ -94,19 +94,49 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
             auto idx_itr = begin(idx) + i * in.strides()[1];
             auto kiptr   = iptr + k * i;
 
-            if (order == AF_TOPK_MIN) {
-                // Sort the top k values in each column
-                partial_sort_copy(
-                    idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
-                    [ptr](const uint lhs, const uint rhs) -> bool {
-                        return compute_t<T>(ptr[lhs]) < compute_t<T>(ptr[rhs]);
-                    });
+            if (order & AF_TOPK_MIN) {
+                if (order & AF_TOPK_STABLE) {
+                    partial_sort_copy(
+                        idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
+                        [ptr](const uint lhs, const uint rhs) -> bool {
+                            return (compute_t<T>(ptr[lhs]) <
+                                    compute_t<T>(ptr[rhs]))
+                                       ? true
+                                   : compute_t<T>(ptr[lhs]) ==
+                                           compute_t<T>(ptr[rhs])
+                                       ? (lhs < rhs)
+                                       : false;
+                        });
+                } else {
+                    // Sort the top k values in each column
+                    partial_sort_copy(
+                        idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
+                        [ptr](const uint lhs, const uint rhs) -> bool {
+                            return compute_t<T>(ptr[lhs]) <
+                                   compute_t<T>(ptr[rhs]);
+                        });
+                }
             } else {
-                partial_sort_copy(
-                    idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
-                    [ptr](const uint lhs, const uint rhs) -> bool {
-                        return compute_t<T>(ptr[lhs]) >= compute_t<T>(ptr[rhs]);
-                    });
+                if (order & AF_TOPK_STABLE) {
+                    partial_sort_copy(
+                        idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
+                        [ptr](const uint lhs, const uint rhs) -> bool {
+                            return (compute_t<T>(ptr[lhs]) >
+                                    compute_t<T>(ptr[rhs]))
+                                       ? true
+                                   : compute_t<T>(ptr[lhs]) ==
+                                           compute_t<T>(ptr[rhs])
+                                       ? (lhs < rhs)
+                                       : false;
+                        });
+                } else {
+                    partial_sort_copy(
+                        idx_itr, idx_itr + in.strides()[1], kiptr, kiptr + k,
+                        [ptr](const uint lhs, const uint rhs) -> bool {
+                            return compute_t<T>(ptr[lhs]) >
+                                   compute_t<T>(ptr[rhs]);
+                        });
+                }
             }
             ev_val.wait();
 
@@ -128,7 +158,7 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
     } else {
         auto values  = createEmptyArray<T>(in.dims());
         auto indices = createEmptyArray<unsigned>(in.dims());
-        sort_index(values, indices, in, dim, order == AF_TOPK_MIN);
+        sort_index(values, indices, in, dim, order & AF_TOPK_MIN);
         auto indVec = indexForTopK(k);
         vals        = index<T>(values, indVec.data());
         idxs        = index<unsigned>(indices, indVec.data());
