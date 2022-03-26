@@ -60,12 +60,23 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};${cuda_architecture_flags})
 
 find_cuda_helper_libs(nvrtc)
 find_cuda_helper_libs(nvrtc-builtins)
+list(APPEND nvrtc_libs ${CUDA_nvrtc_LIBRARY})
+
 if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   af_find_static_cuda_libs(culibos)
   af_find_static_cuda_libs(cublas_static PRUNE)
   af_find_static_cuda_libs(cublasLt_static PRUNE)
   af_find_static_cuda_libs(cufft_static)
   af_find_static_cuda_libs(cusparse_static PRUNE)
+
+  if(CUDA_VERSION VERSION_GREATER 11.4)
+    af_find_static_cuda_libs(nvrtc_static)
+    af_find_static_cuda_libs(nvrtc-builtins_static)
+    af_find_static_cuda_libs(nvptxcompiler_static)
+    set(nvrtc_libs ${AF_CUDA_nvrtc_static_LIBRARY}
+                   ${AF_CUDA_nvrtc-builtins_static_LIBRARY}
+                   ${AF_CUDA_nvptxcompiler_static_LIBRARY})
+  endif()
 
   # FIXME When NVCC resolves this particular issue.
   # NVCC doesn't like -l<full_path_static_lib>, hence we cannot
@@ -328,9 +339,10 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
       ${START_GROUP}
       ${CUDA_culibos_LIBRARY} #also a static libary
       ${AF_CUDA_cublas_static_LIBRARY}
+      ${AF_CUDA_cublasLt_static_LIBRARY}
       ${AF_CUDA_cufft_static_LIBRARY}
       ${AF_CUDA_cusparse_static_LIBRARY}
-      ${AF_CUDA_cublasLt_static_LIBRARY}
+      ${nvrtc_libs}
       ${cusolver_static_lib}
       ${END_GROUP}
   )
@@ -340,6 +352,7 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
       PRIVATE
         ${AF_CUDA_cublasLt_static_LIBRARY})
   endif()
+
   if(CUDA_VERSION VERSION_GREATER 9.5)
     target_link_libraries(af_cuda_static_cuda_library
       PRIVATE
@@ -355,6 +368,7 @@ else()
       ${CUDA_CUFFT_LIBRARIES}
       ${CUDA_cusolver_LIBRARY}
       ${CUDA_cusparse_LIBRARY}
+      ${nvrtc_libs}
   )
 endif()
 
@@ -712,7 +726,6 @@ target_link_libraries(afcuda
     cpp_api_interface
     afcommon_interface
     ${CMAKE_DL_LIBS}
-    ${CUDA_nvrtc_LIBRARY}
     af_cuda_static_cuda_library
   )
 
@@ -860,26 +873,28 @@ if(AF_INSTALL_STANDALONE)
     afcu_collect_libs(cusolver)
   endif()
 
-  afcu_collect_libs(nvrtc FULL_VERSION)
-  if(CUDA_VERSION VERSION_GREATER 10.0)
-    afcu_collect_libs(nvrtc-builtins FULL_VERSION)
-  else()
-    if(APPLE)
-      afcu_collect_libs(cudart)
-
-      get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
-      install(FILES       ${nvrtc_outpath}
-              DESTINATION ${AF_INSTALL_BIN_DIR}
-              RENAME      "${PX}nvrtc-builtins${SX}"
-              COMPONENT   cuda_dependencies)
-    elseif(UNIX)
-      get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins${SX}" REALPATH)
-      install(FILES       ${nvrtc_outpath}
-              DESTINATION ${AF_INSTALL_LIB_DIR}
-              RENAME      "${PX}nvrtc-builtins${SX}"
-              COMPONENT   cuda_dependencies)
+  if(WIN32 OR CUDA_VERSION VERSION_LESS 11.5 OR NOT AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
+    afcu_collect_libs(nvrtc FULL_VERSION)
+    if(CUDA_VERSION VERSION_GREATER 10.0)
+      afcu_collect_libs(nvrtc-builtins FULL_VERSION)
     else()
-      afcu_collect_libs(nvrtc-builtins)
+      if(APPLE)
+        afcu_collect_libs(cudart)
+
+        get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins.${CUDA_VERSION_MAJOR}.${CUDA_VERSION_MINOR}${SX}" REALPATH)
+        install(FILES       ${nvrtc_outpath}
+                DESTINATION ${AF_INSTALL_BIN_DIR}
+                RENAME      "${PX}nvrtc-builtins${SX}"
+                COMPONENT   cuda_dependencies)
+      elseif(UNIX)
+        get_filename_component(nvrtc_outpath "${dlib_path_prefix}/${PX}nvrtc-builtins${SX}" REALPATH)
+        install(FILES       ${nvrtc_outpath}
+                DESTINATION ${AF_INSTALL_LIB_DIR}
+                RENAME      "${PX}nvrtc-builtins${SX}"
+                COMPONENT   cuda_dependencies)
+      else()
+        afcu_collect_libs(nvrtc-builtins)
+      endif()
     endif()
   endif()
 endif()
