@@ -688,8 +688,9 @@ add_library(ArrayFire::afcuda ALIAS afcuda)
 
 add_dependencies(afcuda ${jit_kernel_targets} ${nvrtc_kernel_targets})
 add_dependencies(af_cuda_static_cuda_library ${nvrtc_kernel_targets})
-if(cuda_pruned_libraries)
-  add_dependencies(afcuda ${cuda_pruned_libraries})
+
+if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
+  add_dependencies(afcuda ${cuda_pruned_library_targets})
 endif()
 
 target_include_directories (afcuda

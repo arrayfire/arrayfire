@@ -27,11 +27,11 @@ function(af_find_static_cuda_libs libname)
       MAIN_DEPENDENCY ${CUDA_${libname}_LIBRARY}
       COMMENT "Pruning ${CUDA_${libname}_LIBRARY} for ${cuda_build_targets}"
       VERBATIM)
-    add_custom_target(AF_CUDA_${libname}_LIBRARY_TARGET
+    add_custom_target(prune_${libname}
       DEPENDS ${liboutput}.depend)
-    list(APPEND cuda_pruned_libraries AF_CUDA_${libname}_LIBRARY_TARGET PARENT_SCOPE)
+    set(cuda_pruned_library_targets ${cuda_pruned_library_targets};prune_${libname} PARENT_SCOPE)
 
-    set(AF_CUDA_${libname}_LIBRARY ${liboutput} PARENT_SCOPE)
+    set(AF_CUDA_${libname}_LIBRARY "${liboutput}" PARENT_SCOPE)
     mark_as_advanced(AF_CUDA_${libname}_LIBRARY)
   else()
     set(AF_CUDA_${libname}_LIBRARY ${CUDA_${libname}_LIBRARY} PARENT_SCOPE)
