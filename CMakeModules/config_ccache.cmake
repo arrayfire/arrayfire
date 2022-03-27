@@ -14,11 +14,14 @@ if (UNIX)
     # Set up wrapper scripts
     set(C_LAUNCHER   "${CCACHE_PROGRAM}")
     set(CXX_LAUNCHER "${CCACHE_PROGRAM}")
+    set(NVCC_LAUNCHER "${CCACHE_PROGRAM}")
     configure_file(${ArrayFire_SOURCE_DIR}/CMakeModules/launch-c.in   launch-c)
     configure_file(${ArrayFire_SOURCE_DIR}/CMakeModules/launch-cxx.in launch-cxx)
+    configure_file(${ArrayFire_SOURCE_DIR}/CMakeModules/launch-nvcc.in launch-nvcc)
     execute_process(COMMAND chmod a+rx
         "${ArrayFire_BINARY_DIR}/launch-c"
         "${ArrayFire_BINARY_DIR}/launch-cxx"
+        "${ArrayFire_BINARY_DIR}/launch-nvcc"
       )
     if(CMAKE_GENERATOR STREQUAL "Xcode")
       # Set Xcode project attributes to route compilation and linking
@@ -31,6 +34,7 @@ if (UNIX)
       # Support Unix Makefiles and Ninja
       set(CMAKE_C_COMPILER_LAUNCHER   "${ArrayFire_BINARY_DIR}/launch-c")
       set(CMAKE_CXX_COMPILER_LAUNCHER "${ArrayFire_BINARY_DIR}/launch-cxx")
+      set(CUDA_NVCC_EXECUTABLE "${ArrayFire_BINARY_DIR}/launch-nvcc")
     endif()
   endif()
   mark_as_advanced(CCACHE_PROGRAM)
