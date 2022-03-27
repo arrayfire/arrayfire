@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Xcode generator doesn't include the compiler as the
+# first argument, Ninja and Makefiles do. Handle both cases.
+if [ "$1" = "${CUDA_NVCC_EXECUTABLE}" ] ; then
+    shift
+fi
+
+export CCACHE_CPP2=true
+exec "${NVCC_LAUNCHER}" "${CUDA_NVCC_EXECUTABLE}" "$@"
