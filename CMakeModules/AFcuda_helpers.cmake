@@ -6,6 +6,7 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 find_program(NVPRUNE NAMES nvprune)
+
 # The following macro uses a macro defined by
 # FindCUDA module from cmake.
 function(af_find_static_cuda_libs libname)
@@ -16,7 +17,7 @@ function(af_find_static_cuda_libs libname)
   cuda_find_library_local_first(CUDA_${libname}_LIBRARY
     ${search_name} "${libname} static library")
 
-  if(fscl_PRUNE)
+  if(fscl_PRUNE AND AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS)
     get_filename_component(af_${libname} ${CUDA_${libname}_LIBRARY} NAME)
 
     set(liboutput ${CMAKE_CURRENT_BINARY_DIR}/${af_${libname}})
@@ -32,7 +33,6 @@ function(af_find_static_cuda_libs libname)
     set(cuda_pruned_library_targets ${cuda_pruned_library_targets};prune_${libname} PARENT_SCOPE)
 
     set(AF_CUDA_${libname}_LIBRARY "${liboutput}" PARENT_SCOPE)
-    mark_as_advanced(AF_CUDA_${libname}_LIBRARY)
   else()
     set(AF_CUDA_${libname}_LIBRARY ${CUDA_${libname}_LIBRARY} PARENT_SCOPE)
   endif()
