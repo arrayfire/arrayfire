@@ -76,6 +76,10 @@ option(AF_CACHE_KERNELS_TO_DISK "Enable caching kernels to disk" ON)
 option(AF_WITH_STATIC_MKL "Link against static Intel MKL libraries" OFF)
 option(AF_WITH_STATIC_CUDA_NUMERIC_LIBS "Link libafcuda with static numeric libraries(cublas, cufft, etc.)" OFF)
 
+if(AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
+  option(AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS "Prune CUDA static libraries to reduce binary size.(WARNING: May break some libs on older CUDA toolkits for some compute arch)" OFF)
+endif()
+
 set(default_compute_library "FFTW/LAPACK/BLAS")
 if(MKL_FOUND)
   set(default_compute_library "Intel-MKL")
