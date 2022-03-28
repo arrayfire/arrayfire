@@ -29,6 +29,7 @@
 #include <cufft.hpp>
 #include <cusolverDn.hpp>
 #include <cusparse.hpp>
+#include <cusparseModule.hpp>
 #include <device_manager.hpp>
 #include <driver.h>
 #include <err_cuda.hpp>
@@ -84,7 +85,7 @@ unique_handle<cublasHandle_t> *cublasManager(const int deviceId) {
     thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
 
     call_once(initFlags[deviceId], [&] {
-        handles[deviceId].create();
+        CUBLAS_CHECK((cublasStatus_t)handles[deviceId].create());
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
@@ -159,12 +160,13 @@ unique_handle<cusparseHandle_t> *cusparseManager(const int deviceId) {
         handles[DeviceManager::MAX_DEVICES];
     thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
     call_once(initFlags[deviceId], [&] {
+        auto &_ = getCusparsePlugin();
         handles[deviceId].create();
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
         CUSPARSE_CHECK(
-            cusparseSetStream(handles[deviceId], cuda::getStream(deviceId)));
+            _.cusparseSetStream(handles[deviceId], cuda::getStream(deviceId)));
     });
     return &handles[deviceId];
 }
