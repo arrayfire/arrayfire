@@ -115,10 +115,11 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs,
     template<typename T>               \
     FUNC##_def<T> FUNC##_func();
 
-#define SPARSE_ARITH_OP_FUNC(FUNC, TYPE, INFIX) \
-    template<>                                  \
-    FUNC##_def<TYPE> FUNC##_func<TYPE>() {      \
-        return cusparse##INFIX##FUNC;           \
+#define SPARSE_ARITH_OP_FUNC(FUNC, TYPE, INFIX)  \
+    template<>                                   \
+    FUNC##_def<TYPE> FUNC##_func<TYPE>() {       \
+        cusparseModule &_ = getCusparsePlugin(); \
+        return _.cusparse##INFIX##FUNC;          \
     }
 
 #if CUDA_VERSION >= 11000
@@ -139,7 +140,8 @@ SPARSE_ARITH_OP_BUFFER_SIZE_FUNC_DEF(csrgeam2);
 #define SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(FUNC, TYPE, INFIX)        \
     template<>                                                     \
     FUNC##_buffer_size_def<TYPE> FUNC##_buffer_size_func<TYPE>() { \
-        return cusparse##INFIX##FUNC##_bufferSizeExt;              \
+        cusparseModule &_ = getCusparsePlugin();                   \
+        return _.cusparse##INFIX##FUNC##_bufferSizeExt;            \
     }
 
 SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(csrgeam2, float, S);
@@ -206,8 +208,9 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     int baseC, nnzC;
     int *nnzcDevHostPtr = &nnzC;
 
-    T alpha = scalar<T>(1);
-    T beta  = op == af_sub_t ? scalar<T>(-1) : alpha;
+    T alpha           = scalar<T>(1);
+    T beta            = op == af_sub_t ? scalar<T>(-1) : alpha;
+    cusparseModule &_ = getCusparsePlugin();
 
 #if CUDA_VERSION >= 11000
     size_t pBufferSize = 0;
@@ -219,12 +222,12 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
 
     auto tmpBuffer = createEmptyArray<char>(dim4(pBufferSize));
 
-    CUSPARSE_CHECK(cusparseXcsrgeam2Nnz(
+    CUSPARSE_CHECK(_.cusparseXcsrgeam2Nnz(
         sparseHandle(), M, N, desc, nnzA, csrRowPtrA, csrColPtrA, desc, nnzB,
         csrRowPtrB, csrColPtrB, desc, csrRowPtrC, nnzcDevHostPtr,
         tmpBuffer.get()));
 #else
-    CUSPARSE_CHECK(cusparseXcsrgeamNnz(
+    CUSPARSE_CHECK(_.cusparseXcsrgeamNnz(
         sparseHandle(), M, N, desc, nnzA, csrRowPtrA, csrColPtrA, desc, nnzB,
         csrRowPtrB, csrColPtrB, desc, csrRowPtrC, nnzcDevHostPtr));
 #endif
