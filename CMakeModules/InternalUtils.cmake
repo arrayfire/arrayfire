@@ -223,6 +223,25 @@ macro(af_mkl_batch_check)
   check_symbol_exists(sgetrf_batch_strided "mkl_lapack.h" MKL_BATCH)
 endmacro()
 
+# Creates a CACHEd CMake variable which has limited set of possible string values
+# Argumehts:
+#   NAME: The name of the variable
+#   DEFAULT: The default value of the variable
+#   DESCRIPTION: The description of the variable
+#   OPTIONS: The possible set of values for the option
+#
+# Example:
+#
+# af_multiple_option(NAME        AF_COMPUTE_LIBRARY
+#                    DEFAULT     "Intel-MKL"
+#                    DESCRIPTION "Compute library for signal processing and linear algebra routines"
+#                    OPTIONS     "Intel-MKL" "FFTW/LAPACK/BLAS")
+macro(af_multiple_option)
+  cmake_parse_arguments(opt "" "NAME;DEFAULT;DESCRIPTION" "OPTIONS" ${ARGN})
+  set(${opt_NAME} ${opt_DEFAULT} CACHE STRING ${opt_DESCRIPTION})
+  set_property(CACHE ${opt_NAME} PROPERTY STRINGS ${opt_OPTIONS})
+endmacro()
+
 mark_as_advanced(
     pkgcfg_lib_PC_CBLAS_cblas
     pkgcfg_lib_PC_LAPACKE_lapacke
