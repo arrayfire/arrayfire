@@ -85,17 +85,21 @@ if(MKL_FOUND)
   set(default_compute_library "Intel-MKL")
 endif()
 
-set(AF_COMPUTE_LIBRARY ${default_compute_library}
-    CACHE STRING "Compute library for signal processing and linear algebra routines")
-set_property(CACHE AF_COMPUTE_LIBRARY
-    PROPERTY STRINGS "Intel-MKL" "FFTW/LAPACK/BLAS")
+af_multiple_option(NAME        AF_COMPUTE_LIBRARY
+                   DEFAULT     ${default_compute_library}
+                   DESCRIPTION "Compute library for signal processing and linear algebra routines"
+                   OPTIONS     "Intel-MKL" "FFTW/LAPACK/BLAS")
 
 if(WIN32)
-  set(AF_STACKTRACE_TYPE "Windbg" CACHE STRING "The type of backtrace features. Windbg(simple), None")
-  set_property(CACHE AF_STACKTRACE_TYPE PROPERTY STRINGS "Windbg" "None")
+  af_multiple_option(NAME         AF_STACKTRACE_TYPE
+                     DEFAULT      "Windbg"
+                     DESCRIPTION  "The type of backtrace features. Windbg(simple), None"
+                     OPTIONS       "Windbg" "None")
 else()
-  set(AF_STACKTRACE_TYPE "Basic" CACHE STRING "The type of backtrace features. Basic(simple), libbacktrace(fancy), addr2line(fancy), None")
-  set_property(CACHE AF_STACKTRACE_TYPE PROPERTY STRINGS "Basic" "libbacktrace" "addr2line" "None")
+  af_multiple_option(NAME         AF_STACKTRACE_TYPE
+                     DEFAULT      "Basic"
+                     DESCRIPTION  "The type of backtrace features. Basic(simple), libbacktrace(fancy), addr2line(fancy), None"
+                     OPTIONS       "Basic" "libbacktrace" "addr2line" "None")
 endif()
 
 option(AF_INSTALL_STANDALONE "Build installers that include all dependencies" OFF)
