@@ -131,7 +131,7 @@ Array<T>::Array(const af::dim4 &dims, common::Node_ptr n)
     , node(move(n))
     , owner(true) {
     if (node->isBuffer()) {
-        data  = std::static_pointer_cast<BufferNode<T>>(node)->getDataPointer();
+        data = std::static_pointer_cast<BufferNode<T>>(node)->getDataPointer();
     }
 }
 
