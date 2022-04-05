@@ -115,9 +115,6 @@ template<af_op_t op, typename Ti, typename To>
 Array<To> reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
     in.eval();
 
-    Transform<Ti, compute_t<To>, op> transform;
-    Binary<compute_t<To>, op> reduce;
-
     Array<To> out = createEmptyArray<To>(1);
     static const reduce_all_func<op, Ti, To> reduce_all_kernel =
         kernel::reduce_all<op, Ti, To>();

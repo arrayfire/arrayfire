@@ -28,6 +28,7 @@ kernel void reduce_all_kernel(global To *oData, KParam oInfo,
     const uint yid       = groupId_y * get_local_size(1) + tidy;
 
     local To s_val[THREADS_PER_GROUP];
+    local bool amLast;
 
     iData += wid * iInfo.strides[3] + zid * iInfo.strides[2] +
              yid * iInfo.strides[1] + iInfo.offset;
@@ -93,7 +94,6 @@ kernel void reduce_all_kernel(global To *oData, KParam oInfo,
 
     // Last block to perform final reduction
     if (total_blocks > 1) {
-        local bool amLast;
 
         mem_fence(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE);
 
