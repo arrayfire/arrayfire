@@ -181,6 +181,10 @@ class Node {
         UNUSED(lim);
     }
 
+    const std::array<Node_ptr, kMaxChildren> &getChildren() const {
+        return m_children;
+    }
+
     /// Generates the variable that stores the thread's/work-item's offset into
     /// the memory.
     ///
@@ -247,6 +251,7 @@ class Node {
     /// Returns true if the buffer is linear
     virtual bool isLinear(const dim_t dims[4]) const;
 
+    /// Returns the type
     af::dtype getType() const { return m_type; }
 
     /// Returns the string representation of the type
