@@ -16,7 +16,6 @@
 #include <optypes.hpp>
 #include <types.hpp>
 #include <af/dim4.hpp>
-#include <complex>
 
 namespace cuda {
 

@@ -21,7 +21,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
-#include <utility>
+#include <vector>
 
 using af::dim4;
 using common::half;
@@ -129,7 +129,11 @@ Array<T>::Array(const af::dim4 &dims, common::Node_ptr n)
     , data()
     , data_dims(dims)
     , node(move(n))
-    , owner(true) {}
+    , owner(true) {
+    if (node->isBuffer()) {
+        data = std::static_pointer_cast<BufferNode<T>>(node)->getDataPointer();
+    }
+}
 
 template<typename T>
 Array<T>::Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset_,

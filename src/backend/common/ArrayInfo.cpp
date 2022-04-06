@@ -9,6 +9,7 @@
 
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/traits.hpp>
 #include <algorithm>
 #include <functional>
 #include <numeric>
@@ -93,28 +94,23 @@ bool ArrayInfo::isVector() const {
     return singular_dims == AF_MAX_DIMS - 1 && non_singular_dims == 1;
 }
 
-bool ArrayInfo::isComplex() const { return ((type == c32) || (type == c64)); }
+bool ArrayInfo::isComplex() const { return common::isComplex(type); }
 
-bool ArrayInfo::isReal() const { return !isComplex(); }
+bool ArrayInfo::isReal() const { return common::isReal(type); }
 
-bool ArrayInfo::isDouble() const { return (type == f64 || type == c64); }
+bool ArrayInfo::isDouble() const { return common::isDouble(type); }
 
-bool ArrayInfo::isSingle() const { return (type == f32 || type == c32); }
+bool ArrayInfo::isSingle() const { return common::isSingle(type); }
 
-bool ArrayInfo::isHalf() const { return (type == f16); }
+bool ArrayInfo::isHalf() const { return common::isHalf(type); }
 
-bool ArrayInfo::isRealFloating() const {
-    return (type == f64 || type == f32 || type == f16);
-}
+bool ArrayInfo::isRealFloating() const { return common::isRealFloating(type); }
 
-bool ArrayInfo::isFloating() const { return (!isInteger() && !isBool()); }
+bool ArrayInfo::isFloating() const { return common::isFloating(type); }
 
-bool ArrayInfo::isInteger() const {
-    return (type == s32 || type == u32 || type == s64 || type == u64 ||
-            type == s16 || type == u16 || type == u8);
-}
+bool ArrayInfo::isInteger() const { return common::isInteger(type); }
 
-bool ArrayInfo::isBool() const { return (type == b8); }
+bool ArrayInfo::isBool() const { return common::isBool(type); }
 
 bool ArrayInfo::isLinear() const {
     if (ndims() == 1) { return dim_strides[0] == 1; }

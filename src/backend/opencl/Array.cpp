@@ -100,7 +100,11 @@ Array<T>::Array(const dim4 &dims, Node_ptr n)
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data_dims(dims)
     , node(std::move(n))
-    , owner(true) {}
+    , owner(true) {
+    if (node->isBuffer()) {
+        data = std::static_pointer_cast<BufferNode>(node)->getDataPointer();
+    }
+}
 
 template<typename T>
 Array<T>::Array(const dim4 &dims, const T *const in_data)
