@@ -34,6 +34,8 @@ class BufferNodeBase : public common::Node {
         return std::make_unique<BufferNodeBase>(*this);
     }
 
+    DataType getDataPointer() const { return m_data; }
+
     void setData(ParamType param, DataType data, const unsigned bytes,
                  bool is_linear) {
         m_param         = param;
