@@ -14,7 +14,6 @@ project(ArrayFire VERSION 3.9.0 LANGUAGES C CXX)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
 include(AFconfigure_deps_vars)
-include(config_ccache)
 include(AFBuildConfigurations)
 include(AFInstallDirs)
 include(CMakeDependentOption)
@@ -58,6 +57,7 @@ find_package(MKL)
 find_package(spdlog 1.8.5 QUIET)
 
 include(boost_package)
+include(config_ccache)
 
 option(AF_BUILD_CPU      "Build ArrayFire with a CPU backend"        ON)
 option(AF_BUILD_CUDA     "Build ArrayFire with a CUDA backend"       ${CUDA_FOUND})
