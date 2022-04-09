@@ -430,7 +430,7 @@ write_basic_package_version_file(
 set(INCLUDE_DIRS include)
 set(CMAKE_DIR ${AF_INSTALL_CMAKE_DIR})
 configure_package_config_file(
-  ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
+  ${ArrayFire_SOURCE_DIR}/CMakeModules/ArrayFireConfig.cmake.in
   cmake/install/ArrayFireConfig.cmake
   INSTALL_DESTINATION "${AF_INSTALL_CMAKE_DIR}"
   PATH_VARS INCLUDE_DIRS CMAKE_DIR
@@ -488,7 +488,7 @@ endif()
 set(INCLUDE_DIRS "${ArrayFire_SOURCE_DIR}/include" "${ArrayFire_BINARY_DIR}/include")
 set(CMAKE_DIR "${ArrayFire_BINARY_DIR}/cmake")
 configure_package_config_file(
-  ${CMAKE_MODULE_PATH}/ArrayFireConfig.cmake.in
+  ${ArrayFire_SOURCE_DIR}/CMakeModules/ArrayFireConfig.cmake.in
   ArrayFireConfig.cmake
   INSTALL_DESTINATION "${ArrayFire_BINARY_DIR}"
   PATH_VARS INCLUDE_DIRS CMAKE_DIR
@@ -506,7 +506,7 @@ configure_package_config_file(
 unset(CMAKE_CXX_VISIBILITY_PRESET)
 
 configure_file(
-  ${CMAKE_MODULE_PATH}/CTestCustom.cmake
+  ${ArrayFire_SOURCE_DIR}/CMakeModules/CTestCustom.cmake
   ${ArrayFire_BINARY_DIR}/CTestCustom.cmake)
 
 include(CTest)

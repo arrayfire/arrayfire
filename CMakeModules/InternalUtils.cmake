@@ -205,7 +205,7 @@ macro(arrayfire_set_cmake_default_variables)
   #          EPILOG ${compiler_header_epilogue}
   #          )
   configure_file(
-    ${CMAKE_MODULE_PATH}/compilers.h
+    ${ArrayFire_SOURCE_DIR}/CMakeModules/compilers.h
     ${ArrayFire_BINARY_DIR}/include/af/compilers.h)
 endmacro()
 
