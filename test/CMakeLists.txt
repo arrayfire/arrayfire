@@ -372,7 +372,9 @@ if(CUDA_FOUND)
         FOLDER "Tests"
         OUTPUT_NAME "cuda_${backend}")
 
-      add_test(NAME ${target} COMMAND ${target})
+      if(NOT ${backend} STREQUAL "unified")
+        add_test(NAME ${target} COMMAND ${target})
+      endif()
     endif()
   endforeach()
 endif()
