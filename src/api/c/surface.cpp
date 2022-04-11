@@ -15,6 +15,7 @@
 #include <common/err_common.hpp>
 #include <common/graphics_common.hpp>
 #include <common/moddims.hpp>
+#include <copy.hpp>
 #include <handle.hpp>
 #include <join.hpp>
 #include <reduce.hpp>
@@ -28,6 +29,7 @@ using detail::Array;
 using detail::copy_surface;
 using detail::createEmptyArray;
 using detail::forgeManager;
+using detail::getScalar;
 using detail::reduce_all;
 using detail::uchar;
 using detail::uint;
@@ -101,12 +103,12 @@ fg_chart setup_surface(fg_window window, const af_array xVals,
         T dmin[3], dmax[3];
         FG_CHECK(_.fg_get_chart_axes_limits(
             &cmin[0], &cmax[0], &cmin[1], &cmax[1], &cmin[2], &cmax[2], chart));
-        dmin[0] = reduce_all<af_min_t, T, T>(xIn);
-        dmax[0] = reduce_all<af_max_t, T, T>(xIn);
-        dmin[1] = reduce_all<af_min_t, T, T>(yIn);
-        dmax[1] = reduce_all<af_max_t, T, T>(yIn);
-        dmin[2] = reduce_all<af_min_t, T, T>(zIn);
-        dmax[2] = reduce_all<af_max_t, T, T>(zIn);
+        dmin[0] = getScalar<T>(reduce_all<af_min_t, T, T>(xIn));
+        dmax[0] = getScalar<T>(reduce_all<af_max_t, T, T>(xIn));
+        dmin[1] = getScalar<T>(reduce_all<af_min_t, T, T>(yIn));
+        dmax[1] = getScalar<T>(reduce_all<af_max_t, T, T>(yIn));
+        dmin[2] = getScalar<T>(reduce_all<af_min_t, T, T>(zIn));
+        dmax[2] = getScalar<T>(reduce_all<af_max_t, T, T>(zIn));
 
         if (cmin[0] == 0 && cmax[0] == 0 && cmin[1] == 0 && cmax[1] == 0 &&
             cmin[2] == 0 && cmax[2] == 0) {

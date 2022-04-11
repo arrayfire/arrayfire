@@ -10,6 +10,7 @@
 #include <arith.hpp>
 #include <backend.hpp>
 #include <common/cast.hpp>
+#include <copy.hpp>
 #include <handle.hpp>
 #include <math.hpp>
 #include <mean.hpp>
@@ -31,6 +32,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createValueArray;
 using detail::division;
+using detail::getScalar;
 using detail::intl;
 using detail::mean;
 using detail::reduce;
@@ -52,9 +54,9 @@ static outType stdev(const af_array& in, const af_var_bias bias) {
         detail::arithOp<outType, af_sub_t>(input, meanCnst, input.dims());
     Array<outType> diffSq =
         detail::arithOp<outType, af_mul_t>(diff, diff, diff.dims());
-    outType result =
-        division(reduce_all<af_add_t, outType, outType>(diffSq),
-                 (input.elements() - (bias == AF_VARIANCE_SAMPLE)));
+    outType result = division(
+        getScalar<outType>(reduce_all<af_add_t, outType, outType>(diffSq)),
+        (input.elements() - (bias == AF_VARIANCE_SAMPLE)));
     return sqrt(result);
 }
 

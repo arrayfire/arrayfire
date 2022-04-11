@@ -44,6 +44,7 @@ using detail::createEmptyArray;
 using detail::createHostDataArray;
 using detail::createSubArray;
 using detail::createValueArray;
+using detail::getScalar;
 using detail::histogram;
 using detail::iota;
 using detail::ireduce;
@@ -151,7 +152,9 @@ pair<Array<char>, Array<char>> computeCandidates(const Array<float>& supEdges,
                                                  const float t1,
                                                  const af_canny_threshold ct,
                                                  const float t2) {
-    float maxVal  = reduce_all<af_max_t, float, float>(supEdges);
+    float maxVal =
+        getScalar<float>(reduce_all<af_max_t, float, float>(supEdges));
+    ;
     auto NUM_BINS = static_cast<unsigned>(maxVal);
 
     auto lowRatio = createValueArray<float>(supEdges.dims(), t1);
@@ -171,10 +174,11 @@ pair<Array<char>, Array<char>> computeCandidates(const Array<float>& supEdges,
             return make_pair(strong, weak);
         };
         default: {
-            float minVal = reduce_all<af_min_t, float, float>(supEdges);
-            auto normG   = normalize(supEdges, minVal, maxVal);
-            auto T2      = createValueArray<float>(supEdges.dims(), t2);
-            auto T1      = createValueArray<float>(supEdges.dims(), t1);
+            float minVal =
+                getScalar<float>(reduce_all<af_min_t, float, float>(supEdges));
+            auto normG = normalize(supEdges, minVal, maxVal);
+            auto T2    = createValueArray<float>(supEdges.dims(), t2);
+            auto T1    = createValueArray<float>(supEdges.dims(), t1);
             Array<char> weak1 =
                 logicOp<float, af_ge_t>(normG, T1, normG.dims());
             Array<char> weak2 =

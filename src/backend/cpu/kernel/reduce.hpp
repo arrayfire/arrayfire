@@ -156,5 +156,46 @@ struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
         }
     }
 };
+
+template<af_op_t op, typename Ti, typename To>
+struct reduce_all {
+    common::Transform<data_t<Ti>, compute_t<To>, op> transform;
+    common::Binary<compute_t<To>, op> reduce;
+    void operator()(Param<To> out, CParam<Ti> in, bool change_nan,
+                    double nanval) {
+        // Decrement dimension of select dimension
+        af::dim4 dims            = in.dims();
+        af::dim4 strides         = in.strides();
+        const data_t<Ti> *inPtr  = in.get();
+        data_t<To> *const outPtr = out.get();
+
+        compute_t<To> out_val = common::Binary<compute_t<To>, op>::init();
+
+        for (dim_t l = 0; l < dims[3]; l++) {
+            dim_t off3 = l * strides[3];
+
+            for (dim_t k = 0; k < dims[2]; k++) {
+                dim_t off2 = k * strides[2];
+
+                for (dim_t j = 0; j < dims[1]; j++) {
+                    dim_t off1 = j * strides[1];
+
+                    for (dim_t i = 0; i < dims[0]; i++) {
+                        dim_t idx = i + off1 + off2 + off3;
+
+                        compute_t<To> in_val = transform(inPtr[idx]);
+                        if (change_nan) {
+                            in_val = IS_NAN(in_val) ? nanval : in_val;
+                        }
+                        out_val = reduce(in_val, out_val);
+                    }
+                }
+            }
+        }
+
+        *outPtr = data_t<To>(out_val);
+    }
+};
+
 }  // namespace kernel
 }  // namespace cpu

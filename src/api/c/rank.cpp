@@ -11,6 +11,7 @@
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
 #include <complex.hpp>
+#include <copy.hpp>
 #include <handle.hpp>
 #include <logic.hpp>
 #include <qr.hpp>
@@ -25,6 +26,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createEmptyArray;
 using detail::createValueArray;
+using detail::getScalar;
 using detail::logicOp;
 using detail::reduce;
 using detail::reduce_all;
@@ -52,7 +54,7 @@ static inline uint rank(const af_array in, double tol) {
     Array<BT> val  = createValueArray<BT>(R.dims(), scalar<BT>(tol));
     Array<char> gt = logicOp<BT, af_gt_t>(R, val, val.dims());
     Array<char> at = reduce<af_or_t, char, char>(gt, 1);
-    return reduce_all<af_notzero_t, char, uint>(at);
+    return getScalar<uint>(reduce_all<af_notzero_t, char, uint>(at));
 }
 
 af_err af_rank(uint* out, const af_array in, const double tol) {

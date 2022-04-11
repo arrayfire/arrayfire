@@ -674,6 +674,19 @@ extern "C" {
     */
     AFAPI af_err af_sum(af_array *out, const af_array in, const int dim);
 
+#if AF_API_VERSION >= 39
+    /**
+       C Interface for sum of all elements in an array, resulting in an array
+
+       \param[out] out will contain the sum of all values in \p in
+       \param[in] in is the input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_sum
+    */
+    AFAPI af_err af_sum_all_array(af_array *out, const af_array in);
+#endif
+
 #if AF_API_VERSION >= 31
     /**
        C Interface for sum of elements in an array while replacing nans
@@ -688,6 +701,21 @@ extern "C" {
     */
     AFAPI af_err af_sum_nan(af_array *out, const af_array in,
                             const int dim, const double nanval);
+#endif
+
+#if AF_API_VERSION >= 39
+    /**
+       C Interface for sum of all elements in an array, resulting in an array with
+       nan substitution
+
+       \param[out] out will contain the sum of all values in \p in
+       \param[in] in is the input array
+       \param[in] nanval  The value that will replace the NaNs in \p in
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_sum
+    */
+    AFAPI af_err af_sum_nan_all_array(af_array *out, const af_array in, const double nanval);
 #endif
 
 #if AF_API_VERSION >= 37
@@ -741,6 +769,19 @@ extern "C" {
     */
     AFAPI af_err af_product(af_array *out, const af_array in, const int dim);
 
+#if AF_API_VERSION >= 39
+    /**
+       C Interface for product of elements in an array, resulting in an array
+
+       \param[out] out will contain the product of all values in \p in
+       \param[in] in is the input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_product
+    */
+    AFAPI af_err af_product_all_array(af_array *out, const af_array in);
+#endif
+
 #if AF_API_VERSION >= 31
     /**
        C Interface for product of elements in an array while replacing nans
@@ -755,6 +796,21 @@ extern "C" {
        \ingroup reduce_func_product
     */
     AFAPI af_err af_product_nan(af_array *out, const af_array in, const int dim, const double nanval);
+#endif
+
+#if AF_API_VERSION >= 39
+    /**
+       C Interface for product of elements in an array, resulting in an array
+       while replacing nans
+
+       \param[out] out will contain the product of all values in \p in
+       \param[in] in   is the input array
+       \param[in] nanval  The value that will replace the NaNs in \p in
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_product
+    */
+    AFAPI af_err af_product_nan_all_array(af_array *out, const af_array in, const double nanval);
 #endif
 
 #if AF_API_VERSION >= 37
@@ -1052,6 +1108,19 @@ extern "C" {
     */
     AFAPI af_err af_min_all(double *real, double *imag, const af_array in);
 
+#if AF_API_VERSION >= 39
+    /**
+       C Interface for minimum values in an array, returning an array
+
+       \param[out] out will contain the minimum of all values in \p in
+       \param[in] in is the input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_min
+    */
+    AFAPI af_err af_min_all_array(af_array *out, const af_array in);
+#endif
+
     /**
        C Interface for getting maximum value of an array
 
@@ -1065,6 +1134,21 @@ extern "C" {
        \ingroup reduce_func_max
     */
     AFAPI af_err af_max_all(double *real, double *imag, const af_array in);
+
+#if AF_API_VERSION >= 39
+    /**
+       C Interface for getting maximum value of an array, returning an array
+
+       \param[out] out will contain the maximum of all values in \p in
+       \param[in] in is the input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \note \p imag is always set to 0 when \p in is real.
+
+       \ingroup reduce_func_max
+    */
+    AFAPI af_err af_max_all_array(af_array *out, const af_array in);
+#endif
 
     /**
        C Interface for checking if all values in an array are true
@@ -1080,6 +1164,22 @@ extern "C" {
     */
     AFAPI af_err af_all_true_all(double *real, double *imag, const af_array in);
 
+#if AF_API_VERSION >= 39
+    /**
+       C Interface for checking if all values in an array are true,
+       while returning an af_array
+
+       \param[out] out will contain 1 if all values of input \p in are true, 0 otherwise
+       \param[in] in is the input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \note \p imag is always set to 0.
+
+       \ingroup reduce_func_all_true
+    */
+    AFAPI af_err af_all_true_all_array(af_array *out, const af_array in);
+#endif
+
     /**
        C Interface for checking if any values in an array are true
 
@@ -1094,6 +1194,22 @@ extern "C" {
     */
     AFAPI af_err af_any_true_all(double *real, double *imag, const af_array in);
 
+#if AF_API_VERSION >= 39
+    /**
+       C Interface for checking if any values in an array are true,
+       while returning an af_array
+
+       \param[out] out will contain 1 if any value of input \p in is true, 0 otherwise
+       \param[in] in is the input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \note \p imag is always set to 0.
+
+       \ingroup reduce_func_any_true
+    */
+    AFAPI af_err af_any_true_all_array(af_array *out, const af_array in);
+#endif
+
     /**
        C Interface for counting total number of non-zero values in an array
 
@@ -1107,6 +1223,20 @@ extern "C" {
        \ingroup reduce_func_count
     */
     AFAPI af_err af_count_all(double *real, double *imag, const af_array in);
+
+#if AF_API_VERSION >= 39
+    /**
+       C Interface for counting total number of non-zero values in an array,
+       while returning an af_array
+
+       \param[out] out contain the number of non-zero values in \p in.
+       \param[in] in is the input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_count
+    */
+    AFAPI af_err af_count_all_array(af_array *out, const af_array in);
+#endif
 
     /**
        C Interface for getting minimum values and their locations in an array

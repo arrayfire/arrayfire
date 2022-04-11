@@ -37,9 +37,12 @@ void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
 }
 
 template<af_op_t op, typename Ti, typename To>
-To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
-    return kernel::reduceAll<Ti, To, op>(in, change_nan, nanval);
+Array<To> reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
+    Array<To> out = createEmptyArray<To>(1);
+    kernel::reduceAll<Ti, To, op>(out, in, change_nan, nanval);
+    return out;
 }
+
 }  // namespace opencl
 
 #define INSTANTIATE(Op, Ti, To)                                                \
@@ -51,5 +54,5 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
     template void reduce_by_key<Op, Ti, uint, To>(                             \
         Array<uint> & keys_out, Array<To> & vals_out, const Array<uint> &keys, \
         const Array<Ti> &vals, const int dim, bool change_nan, double nanval); \
-    template To reduce_all<Op, Ti, To>(const Array<Ti> &in, bool change_nan,   \
-                                       double nanval);
+    template Array<To> reduce_all<Op, Ti, To>(const Array<Ti> &in,             \
+                                              bool change_nan, double nanval);

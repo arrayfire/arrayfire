@@ -12,6 +12,7 @@
 #include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <common/graphics_common.hpp>
+#include <copy.hpp>
 #include <handle.hpp>
 #include <hist_graphics.hpp>
 #include <reduce.hpp>
@@ -20,6 +21,7 @@
 using detail::Array;
 using detail::copy_histogram;
 using detail::forgeManager;
+using detail::getScalar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -57,7 +59,8 @@ fg_chart setup_histogram(fg_window const window, const af_array in,
         float xMin, xMax, yMin, yMax, zMin, zMax;
         FG_CHECK(_.fg_get_chart_axes_limits(&xMin, &xMax, &yMin, &yMax, &zMin,
                                             &zMax, chart));
-        T freqMax = detail::reduce_all<af_max_t, T, T>(histogramInput);
+        T freqMax =
+            getScalar<T>(detail::reduce_all<af_max_t, T, T>(histogramInput));
 
         if (xMin == 0 && xMax == 0 && yMin == 0 && yMax == 0) {
             // No previous limits. Set without checking

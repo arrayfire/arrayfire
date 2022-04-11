@@ -124,6 +124,33 @@ ALGO_HAPI_DEF(af_imax_all)
 
 #undef ALGO_HAPI_DEF
 
+#define ALGO_HAPI_DEF(af_func)                         \
+    af_err af_func(af_array *out, const af_array in) { \
+        CHECK_ARRAYS(in);                              \
+        CALL(af_func, out, in);                        \
+    }
+
+ALGO_HAPI_DEF(af_sum_all_array)
+ALGO_HAPI_DEF(af_product_all_array)
+ALGO_HAPI_DEF(af_min_all_array)
+ALGO_HAPI_DEF(af_max_all_array)
+ALGO_HAPI_DEF(af_count_all_array)
+ALGO_HAPI_DEF(af_any_true_all_array)
+ALGO_HAPI_DEF(af_all_true_all_array)
+
+#undef ALGO_HAPI_DEF
+
+#define ALGO_HAPI_DEF(af_func)                                              \
+    af_err af_func(af_array *out, const af_array in, const double nanval) { \
+        CHECK_ARRAYS(in);                                                   \
+        CALL(af_func, out, in, nanval);                                     \
+    }
+
+ALGO_HAPI_DEF(af_sum_nan_all_array)
+ALGO_HAPI_DEF(af_product_nan_all_array)
+
+#undef ALGO_HAPI_DEF
+
 af_err af_where(af_array *idx, const af_array in) {
     CHECK_ARRAYS(in);
     CALL(af_where, idx, in);
