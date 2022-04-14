@@ -641,7 +641,19 @@ TEST(Array, ReferenceCount2) {
     }
 }
 
-TEST(Broadcast, Simple1) {
+TEST(Broadcast, VectorMatrix2d) {
+    dim_t s = 10;
+    array A = range(dim4(s, 3), 1);
+    array B = -range(dim4(3));
+
+    array C = A + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, 3)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, 3)));
+}
+
+TEST(Broadcast, VectorMatrix3d) {
     dim_t s = 10;
     array A = range(dim4(s, s, 3), 2);
     array B = -range(dim4(3));
@@ -653,38 +665,82 @@ TEST(Broadcast, Simple1) {
     ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, s, 3)));
 }
 
-TEST(Broadcast, Simple3) {
-    array A = constant(-1, dim4(5, 4));
-    array B = constant(1, dim4(1));
+TEST(Broadcast, VectorMatrix4d) {
+    dim_t s = 10;
+    array A = range(dim4(s, s, s, 3), 3);
+    array B = -range(dim4(3));
 
     array C = A + B;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(5, 4)));
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, s, s, 3)));
 
     C = B + A;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(5, 4)));
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, s, s, 3)));
 }
 
-TEST(Broadcast, Simple4) {
-    array A = range(dim4(15, 3, 5));
-    array B = -range(dim4(15, 1, 5));
+
+void testScalar(dim4 d) {
+    array A = constant(-1, d);
+    array B = constant(1, d);
 
     array C = A + B;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+    ASSERT_ARRAYS_EQ(C, constant(0, d));
 
     C = B + A;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
+    ASSERT_ARRAYS_EQ(C, constant(0, d));
 }
 
-TEST(Broadcast, Simple5) {
-    array A = range(dim4(2, 3, 5), 1);
+TEST(Broadcast, Scalar1) {
+    testScalar(dim4(5));
+}
+
+TEST(Broadcast, Scalar2) {
+    testScalar(dim4(5, 4));
+}
+
+TEST(Broadcast, Scalar3) {
+    testScalar(dim4(5, 4, 3));
+}
+
+TEST(Broadcast, Scalar4) {
+    testScalar(dim4(5, 4, 3, 2));
+}
+
+void testAllBroadcast(dim4 dims) {
+    array A = constant(1, dims);
+    for(int k=0; k<dims.ndims(); ++k) {
+        dim4 rdims = dims;
+        rdims[k] = 1;
+        array B = constant(-1, dims);
+        array C = A + B;
+        ASSERT_ARRAYS_EQ(C, constant(0, dims));
+
+        C = B + A;
+        ASSERT_ARRAYS_EQ(C, constant(0, dims));
+    }
+}
+
+TEST(Broadcast, MatrixMatrix2d) {
+    testAllBroadcast(dim4(10, 15));
+}
+
+TEST(Broadcast, MatrixMatrix3d) {
+    testAllBroadcast(dim4(10, 15, 20));
+}
+
+TEST(Broadcast, MatrixMatrix4d) {
+    testAllBroadcast(dim4(10, 15, 20, 25));
+}
+
+TEST(Broadcast, MismatchingDim0) {
+    array A =  range(dim4(2, 3, 5), 1);
     array B = -range(dim4(3, 5), 0);
 
     EXPECT_THROW(A + B, af::exception);
 }
 
-TEST(Broadcast, Simple6) {
+TEST(Broadcast, Vector2Ddims) {
     array A = constant(-1, dim4(15, 3, 5));
-    array B = constant(1, dim4(3, 1));
+    array B = constant( 1, dim4(3, 1));
 
     array C = A + B;
     ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
@@ -693,7 +749,7 @@ TEST(Broadcast, Simple6) {
     ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
 }
 
-TEST(Broadcast, Simple7) {
+TEST(Broadcast, TestFirstMatchingDim) {
     array A = range(dim4(3, 2, 2, 4), 1);
     array B = -range(dim4(2));
 
@@ -733,4 +789,30 @@ TEST(Array, InitializerListFixDim4) {
                           3.14f, 3.14f, 3.14f, 3.14f};
     array b{dim4(3, 3), data.data()};
     ASSERT_ARRAYS_EQ(constant(3.14, 3, 3), b);
+}
+
+TEST(Broadcast, SubArray) {
+    dim_t subdim = 5;
+    array A = constant(1, dim4(10, 10, 2));
+    array B = constant(2, dim4(5, 5));
+    af_print(A(seq(subdim), seq(subdim), span) );
+    af_print(B);
+    array C = A(seq(subdim), seq(subdim), span) + B;
+
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
+}
+
+TEST(Broadcast, SubArrays) {
+    dim_t subdim = 5;
+    array A = constant(1, dim4(10, 10, 2));
+    array B = constant(2, dim4(15, 15));
+
+    array C = A(seq(subdim), seq(subdim), span) + B(seq(subdim), seq(subdim));
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
 }

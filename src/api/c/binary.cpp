@@ -10,6 +10,7 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/moddims.hpp>
 #include <handle.hpp>
 #include <implicit.hpp>
 #include <optypes.hpp>
@@ -32,6 +33,7 @@
 using af::dim4;
 using af::dtype;
 using common::half;
+using common::modDims;
 using detail::arithOp;
 using detail::arithOpD;
 using detail::Array;
