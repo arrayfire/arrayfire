@@ -320,6 +320,7 @@ if(BUILD_WITH_MKL)
 
   if(AF_WITH_STATIC_MKL)
       target_link_libraries(afcpu PRIVATE MKL::Static)
+      target_compile_definitions(afcpu PRIVATE USE_STATIC_MKL)
   else()
       target_link_libraries(afcpu PRIVATE MKL::RT)
   endif()
