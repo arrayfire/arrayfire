@@ -295,16 +295,12 @@ Hypotenuse of the two inputs
 
 sin of input
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_cos cos
 
 \ingroup trig_mat
 
 cos of input
-
-\copydoc arith_real_only
 
 
 
@@ -314,16 +310,12 @@ cos of input
 
 tan of input
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_asin asin
 
 \ingroup trig_mat
 
 arc sin of input
-
-\copydoc arith_real_only
 
 
 \defgroup arith_func_acos acos
@@ -333,16 +325,12 @@ arc sin of input
 
 arc cos of input
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_atan atan/atan2
 
 \ingroup trig_mat
 
 arc tan of input
-
-\copydoc arith_real_only
 
 
 \defgroup arith_func_sinh sinh
@@ -351,16 +339,12 @@ arc tan of input
 
 sinh of input
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_cosh cosh
 
 \ingroup hyper_mat
 
 cosh of input
-
-\copydoc arith_real_only
 
 
 \defgroup arith_func_tanh tanh
@@ -369,16 +353,12 @@ cosh of input
 
 tanh of input
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_asinh asinh
 
 \ingroup hyper_mat
 
 asinh of input
-
-\copydoc arith_real_only
 
 
 \defgroup arith_func_acosh acosh
@@ -388,16 +368,12 @@ asinh of input
 
 acosh of input
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_atanh atanh
 
 \ingroup hyper_mat
 
 atanh of input
-
-\copydoc arith_real_only
 
 
 \defgroup arith_func_cplx complex
@@ -439,8 +415,6 @@ Get complex conjugate
 
 Find root of an input
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_pow pow
 
@@ -463,8 +437,6 @@ point types used to compute power is given below.
 | unsigned char      | float          |
 
 The output array will be of the same type as input.
-
-\copydoc arith_real_only
 
 
 
@@ -509,8 +481,6 @@ Complementary Error function value
 
 Natural logarithm
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_log1p log1p
 
@@ -535,8 +505,6 @@ logarithm base 10
 \ingroup explog_mat
 
 Square root of input arrays
-
-\copydoc arith_real_only
 
 \defgroup arith_func_rsqrt rsqrt
 
@@ -590,8 +558,6 @@ Logarithm of absolute values of Gamma function
 
 Check if values are zero
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_isinf isinf
 
@@ -599,16 +565,12 @@ Check if values are zero
 
 Check if values are infinite
 
-\copydoc arith_real_only
-
 
 \defgroup arith_func_isnan isNan
 
 \ingroup helper_mat
 
 Check if values are Nan
-
-\copydoc arith_real_only
 
 
 \defgroup arith_func_cast cast

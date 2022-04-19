@@ -473,7 +473,7 @@ namespace af
     /// \param[in] in is input
     /// \return the natural logarithm of (1 + input)
     ///
-    /// \note This function is useful when \p is small
+    /// \note This function is useful when \p in is small
     /// \ingroup arith_func_log1p
     AFAPI array log1p  (const array &in);
 
@@ -488,7 +488,7 @@ namespace af
     /// C++ Interface for logarithm base 2
     ///
     /// \param[in] in is input
-    /// \return the logarithm of input in base 2
+    /// \return the logarithm of input \p in base 2
     ///
     /// \ingroup explog_func_log2
     AFAPI array log2   (const array &in);
