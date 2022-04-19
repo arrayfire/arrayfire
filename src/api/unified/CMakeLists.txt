@@ -43,9 +43,9 @@ if(OpenCL_FOUND)
     ${CMAKE_CURRENT_SOURCE_DIR}/opencl.cpp
   )
 
-  target_link_libraries(af
+  target_include_directories(af
     PRIVATE
-      OpenCL::OpenCL)
+      $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>)
 
 endif()
 
