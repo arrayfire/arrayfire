@@ -108,7 +108,7 @@ af_err af_init() {
         thread_local std::once_flag flag;
         std::call_once(flag, []() {
             getDeviceInfo();
-#if defined(USE_MKL)
+#if defined(USE_MKL) && !defined(USE_STATIC_MKL)
             int errCode = -1;
             // Have used the AF_MKL_INTERFACE_SIZE as regular if's so that
             // we will know if these are not defined when using MKL when a
