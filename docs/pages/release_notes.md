@@ -1,6 +1,37 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.8.2
+======
+
+## Improvements
+
+- Optimize JIT by removing some consecutive cast operations \PR{3031}
+- Add driver checks checks for CUDA 11.5 and 11.6 \PR{3203}
+- Improve the timing algorithm used for timeit \PR{3185}
+- Dynamically link against CUDA numeric libraries by default \PR{3205}
+- Add support for pruning CUDA binaries to reduce static binary sizes \PR{3234} \PR{3237}
+- Remove unused cuDNN libraries from installations \PR{3235}
+- Add support to staticly link NVRTC libraries after CUDA 11.5 \PR{3236}
+- Add support for compiling with ccache when building the CUDA backend \PR{3241}
+- Make cuSparse an optional runtime dependency \PR{3240}
+
+## Fixes
+
+- Fix issue with consecutive moddims operations in the CPU backend \PR{3232}
+- Better floating point comparisons for tests \PR{3212}
+- Fix several warnings and inconsistencies with doxygen and documentation \PR{3226}
+- Fix issue when passing empty arrays into join \PR{3211}
+- Fix default value for the `AF_COMPUTE_LIBRARY` when not set \PR{3228}
+- Fix missing symbol issue when MKL is staticly linked \PR{3244}
+- Remove linking of OpenCL's library to the unified backend \PR{3244}
+
+## Contributions
+
+Special thanks to our contributors:
+[Jacob Kahn](https://github.com/jacobkahn)
+[Willy Born](https://github.com/willyborn)
+
 v3.8.1
 ======
 
