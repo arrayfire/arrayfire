@@ -63,23 +63,11 @@ find_cuda_helper_libs(nvrtc-builtins)
 list(APPEND nvrtc_libs ${CUDA_nvrtc_LIBRARY})
 
 if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
-  # The libraries that may be staticly linked or may be loaded at runtime
-  set(AF_CUDA_optionally_static_libraries)
-
-  af_multiple_option(NAME        AF_cusparse_LINK_LOADING
-    DEFAULT     "Module"
-    DESCRIPTION "The approach to load the cusparse library. Static linking(Static) or Dynamic runtime loading(Module) of the module"
-    OPTIONS     "Module" "Static")
-
-  if(AF_cusparse_LINK_LOADING STREQUAL "Static")
-    af_find_static_cuda_libs(cusparse_static PRUNE)
-    list(APPEND AF_CUDA_optionally_static_libraries ${AF_CUDA_cusparse_static_LIBRARY})
-  endif()
-
   af_find_static_cuda_libs(culibos)
   af_find_static_cuda_libs(cublas_static PRUNE)
   af_find_static_cuda_libs(cublasLt_static PRUNE)
   af_find_static_cuda_libs(cufft_static)
+  af_find_static_cuda_libs(cusparse_static PRUNE)
 
   if(CUDA_VERSION VERSION_GREATER 11.4)
     af_find_static_cuda_libs(nvrtc_static)
@@ -100,6 +88,7 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
     set(af_cuda_static_flags "${af_cuda_static_flags};-lcublasLt_static")
   endif()
   set(af_cuda_static_flags "${af_cuda_static_flags};-lcufft_static")
+  set(af_cuda_static_flags "${af_cuda_static_flags};-lcusparse_static")
 
   if(${use_static_cuda_lapack})
     af_find_static_cuda_libs(cusolver_static PRUNE)
@@ -352,10 +341,11 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
       ${AF_CUDA_cublas_static_LIBRARY}
       ${AF_CUDA_cublasLt_static_LIBRARY}
       ${AF_CUDA_cufft_static_LIBRARY}
-      ${AF_CUDA_optionally_static_libraries}
+      ${AF_CUDA_cusparse_static_LIBRARY}
       ${nvrtc_libs}
       ${cusolver_static_lib}
-      ${END_GROUP})
+      ${END_GROUP}
+  )
 
   if(CUDA_VERSION VERSION_GREATER 10.0)
     target_link_libraries(af_cuda_static_cuda_library
@@ -377,6 +367,7 @@ else()
       ${CUDA_CUBLAS_LIBRARIES}
       ${CUDA_CUFFT_LIBRARIES}
       ${CUDA_cusolver_LIBRARY}
+      ${CUDA_cusparse_LIBRARY}
       ${nvrtc_libs}
   )
 endif()
@@ -545,8 +536,6 @@ cuda_add_library(afcuda
     cusolverDn.hpp
     cusparse.cpp
     cusparse.hpp
-    cusparseModule.cpp
-    cusparseModule.hpp
     device_manager.cpp
     device_manager.hpp
     debug_cuda.hpp
@@ -700,13 +689,6 @@ if(AF_WITH_CUDNN)
       ${cuDNN_INCLUDE_DIRS}
     )
 endif()
-
-if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS AND AF_cusparse_LINK_LOADING STREQUAL "Static")
-  target_compile_definitions(afcuda
-    PRIVATE
-      AF_cusparse_STATIC_LINKING)
-endif()
-
 
 arrayfire_set_default_cxx_flags(afcuda)
 

@@ -15,7 +15,6 @@
 #include <complex.hpp>
 #include <copy.hpp>
 #include <cusparse.hpp>
-#include <cusparseModule.hpp>
 #include <kernel/sparse.hpp>
 #include <lookup.hpp>
 #include <math.hpp>
@@ -123,9 +122,8 @@ struct gthr_func_def_t {
 #define SPARSE_FUNC(FUNC, TYPE, PREFIX)                                     \
     template<>                                                              \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
-        cusparseModule &_ = getCusparsePlugin();                            \
-        return (FUNC##_func_def_t<TYPE>::FUNC##_func_def)(                  \
-            _.cusparse##PREFIX##FUNC);                                      \
+        return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
+               cusparse##PREFIX##FUNC;                                      \
     }
 
 SPARSE_FUNC_DEF(dense2csr)
@@ -196,12 +194,11 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
     const int M = in.dims()[0];
     const int N = in.dims()[1];
 
-    cusparseModule &_ = getCusparsePlugin();
     // Create Sparse Matrix Descriptor
     cusparseMatDescr_t descr = 0;
-    CUSPARSE_CHECK(_.cusparseCreateMatDescr(&descr));
-    _.cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
-    _.cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+    CUSPARSE_CHECK(cusparseCreateMatDescr(&descr));
+    cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
+    cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
 
     int d                   = -1;
     cusparseDirection_t dir = CUSPARSE_DIRECTION_ROW;
@@ -241,7 +238,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
             nnzPerDir.get(), values.get(), rowIdx.get(), colIdx.get()));
 
     // Destory Sparse Matrix Descriptor
-    CUSPARSE_CHECK(_.cusparseDestroyMatDescr(descr));
+    CUSPARSE_CHECK(cusparseDestroyMatDescr(descr));
 
     return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx,
                                          stype);
@@ -265,11 +262,10 @@ Array<T> sparseConvertCOOToDense(const SparseArray<T> &in) {
 template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
     // Create Sparse Matrix Descriptor
-    cusparseModule &_        = getCusparsePlugin();
     cusparseMatDescr_t descr = 0;
-    CUSPARSE_CHECK(_.cusparseCreateMatDescr(&descr));
-    _.cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
-    _.cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+    CUSPARSE_CHECK(cusparseCreateMatDescr(&descr));
+    cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
+    cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
 
     int M          = in.dims()[0];
     int N          = in.dims()[1];
@@ -288,7 +284,7 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
                                 in.getColIdx().get(), dense.get(), d_strides1));
 
     // Destory Sparse Matrix Descriptor
-    CUSPARSE_CHECK(_.cusparseDestroyMatDescr(descr));
+    CUSPARSE_CHECK(cusparseDestroyMatDescr(descr));
 
     return dense;
 }
@@ -301,7 +297,6 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
     int nNZ                  = in.getNNZ();
     SparseArray<T> converted = createEmptySparseArray<T>(in.dims(), nNZ, dest);
 
-    cusparseModule &_ = getCusparsePlugin();
     if (src == AF_STORAGE_CSR && dest == AF_STORAGE_COO) {
         // Copy colIdx as is
         CUDA_CHECK(
@@ -310,13 +305,13 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
                             cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
         // cusparse function to expand compressed row into coordinate
-        CUSPARSE_CHECK(_.cusparseXcsr2coo(
+        CUSPARSE_CHECK(cusparseXcsr2coo(
             sparseHandle(), in.getRowIdx().get(), nNZ, in.dims()[0],
             converted.getRowIdx().get(), CUSPARSE_INDEX_BASE_ZERO));
 
         // Call sort
         size_t pBufferSizeInBytes = 0;
-        CUSPARSE_CHECK(_.cusparseXcoosort_bufferSizeExt(
+        CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
             sparseHandle(), in.dims()[0], in.dims()[1], nNZ,
             converted.getRowIdx().get(), converted.getColIdx().get(),
             &pBufferSizeInBytes));
@@ -325,9 +320,9 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
 
         shared_ptr<int> P(memAlloc<int>(nNZ).release(), memFree<int>);
         CUSPARSE_CHECK(
-            _.cusparseCreateIdentityPermutation(sparseHandle(), nNZ, P.get()));
+            cusparseCreateIdentityPermutation(sparseHandle(), nNZ, P.get()));
 
-        CUSPARSE_CHECK(_.cusparseXcoosortByColumn(
+        CUSPARSE_CHECK(cusparseXcoosortByColumn(
             sparseHandle(), in.dims()[0], in.dims()[1], nNZ,
             converted.getRowIdx().get(), converted.getColIdx().get(), P.get(),
             (void *)pBuffer.get()));
@@ -349,7 +344,7 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
         // Call sort to convert column major to row major
         {
             size_t pBufferSizeInBytes = 0;
-            CUSPARSE_CHECK(_.cusparseXcoosort_bufferSizeExt(
+            CUSPARSE_CHECK(cusparseXcoosort_bufferSizeExt(
                 sparseHandle(), cooT.dims()[0], cooT.dims()[1], nNZ,
                 cooT.getRowIdx().get(), cooT.getColIdx().get(),
                 &pBufferSizeInBytes));
@@ -357,10 +352,10 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
                 memAlloc<char>(pBufferSizeInBytes).release(), memFree<char>);
 
             shared_ptr<int> P(memAlloc<int>(nNZ).release(), memFree<int>);
-            CUSPARSE_CHECK(_.cusparseCreateIdentityPermutation(sparseHandle(),
-                                                               nNZ, P.get()));
+            CUSPARSE_CHECK(cusparseCreateIdentityPermutation(sparseHandle(),
+                                                             nNZ, P.get()));
 
-            CUSPARSE_CHECK(_.cusparseXcoosortByRow(
+            CUSPARSE_CHECK(cusparseXcoosortByRow(
                 sparseHandle(), cooT.dims()[0], cooT.dims()[1], nNZ,
                 cooT.getRowIdx().get(), cooT.getColIdx().get(), P.get(),
                 (void *)pBuffer.get()));
@@ -381,7 +376,7 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
                             cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
 
         // cusparse function to compress row from coordinate
-        CUSPARSE_CHECK(_.cusparseXcoo2csr(
+        CUSPARSE_CHECK(cusparseXcoo2csr(
             sparseHandle(), cooT.getRowIdx().get(), nNZ, cooT.dims()[0],
             converted.getRowIdx().get(), CUSPARSE_INDEX_BASE_ZERO));
 

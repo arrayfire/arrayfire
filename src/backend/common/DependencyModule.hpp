@@ -38,11 +38,6 @@ class DependencyModule {
     std::vector<void*> functions;
 
    public:
-    /// Loads the library \p plugin_file_name from the \p paths locations
-    /// \param plugin_file_name  The name of the library without any prefix or
-    ///                          extensions
-    /// \param paths             The locations to search for the libraries if
-    ///                          not found in standard locations
     DependencyModule(const char* plugin_file_name,
                      const char** paths = nullptr);
 

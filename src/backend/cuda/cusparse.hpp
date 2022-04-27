@@ -12,16 +12,15 @@
 #include <common/defines.hpp>
 #include <common/err_common.hpp>
 #include <common/unique_handle.hpp>
-#include <cusparseModule.hpp>
 #include <cusparse_v2.h>
 
 // clang-format off
-DEFINE_HANDLER(cusparseHandle_t, cuda::getCusparsePlugin().cusparseCreate, cuda::getCusparsePlugin().cusparseDestroy);
-DEFINE_HANDLER(cusparseMatDescr_t, cuda::getCusparsePlugin().cusparseCreateMatDescr, cuda::getCusparsePlugin().cusparseDestroyMatDescr);
+DEFINE_HANDLER(cusparseHandle_t, cusparseCreate, cusparseDestroy);
+DEFINE_HANDLER(cusparseMatDescr_t, cusparseCreateMatDescr, cusparseDestroyMatDescr);
 #if defined(AF_USE_NEW_CUSPARSE_API)
-DEFINE_HANDLER(cusparseSpMatDescr_t, cuda::getCusparsePlugin().cusparseCreateCsr, cuda::getCusparsePlugin().cusparseDestroySpMat);
-DEFINE_HANDLER(cusparseDnVecDescr_t, cuda::getCusparsePlugin().cusparseCreateDnVec, cuda::getCusparsePlugin().cusparseDestroyDnVec);
-DEFINE_HANDLER(cusparseDnMatDescr_t, cuda::getCusparsePlugin().cusparseCreateDnMat, cuda::getCusparsePlugin().cusparseDestroyDnMat);
+DEFINE_HANDLER(cusparseSpMatDescr_t, cusparseCreateCsr, cusparseDestroySpMat);
+DEFINE_HANDLER(cusparseDnVecDescr_t, cusparseCreateDnVec, cusparseDestroyDnVec);
+DEFINE_HANDLER(cusparseDnMatDescr_t, cusparseCreateDnMat, cusparseDestroyDnMat);
 #endif
 // clang-format on
 

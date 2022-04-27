@@ -14,7 +14,6 @@
 #include <cudaDataType.hpp>
 #include <cuda_runtime.h>
 #include <cusparse.hpp>
-#include <cusparseModule.hpp>
 #include <cusparse_descriptor_helpers.hpp>
 #include <math.hpp>
 #include <platform.hpp>
@@ -42,9 +41,8 @@ size_t spmvBufferSize(cusparseOperation_t opA, const T *alpha,
                       const cusparseSpMatDescr_t matA,
                       const cusparseDnVecDescr_t vecX, const T *beta,
                       const cusparseDnVecDescr_t vecY) {
-    size_t retVal     = 0;
-    cusparseModule &_ = getCusparsePlugin();
-    CUSPARSE_CHECK(_.cusparseSpMV_bufferSize(
+    size_t retVal = 0;
+    CUSPARSE_CHECK(cusparseSpMV_bufferSize(
         sparseHandle(), opA, alpha, matA, vecX, beta, vecY, getComputeType<T>(),
         CUSPARSE_CSRMV_ALG1, &retVal));
     return retVal;
@@ -54,10 +52,9 @@ template<typename T>
 void spmv(cusparseOperation_t opA, const T *alpha,
           const cusparseSpMatDescr_t matA, const cusparseDnVecDescr_t vecX,
           const T *beta, const cusparseDnVecDescr_t vecY, void *buffer) {
-    cusparseModule &_ = getCusparsePlugin();
-    CUSPARSE_CHECK(_.cusparseSpMV(sparseHandle(), opA, alpha, matA, vecX, beta,
-                                  vecY, getComputeType<T>(),
-                                  CUSPARSE_MV_ALG_DEFAULT, buffer));
+    CUSPARSE_CHECK(cusparseSpMV(sparseHandle(), opA, alpha, matA, vecX, beta,
+                                vecY, getComputeType<T>(),
+                                CUSPARSE_MV_ALG_DEFAULT, buffer));
 }
 
 template<typename T>
@@ -65,9 +62,8 @@ size_t spmmBufferSize(cusparseOperation_t opA, cusparseOperation_t opB,
                       const T *alpha, const cusparseSpMatDescr_t matA,
                       const cusparseDnMatDescr_t matB, const T *beta,
                       const cusparseDnMatDescr_t matC) {
-    size_t retVal     = 0;
-    cusparseModule &_ = getCusparsePlugin();
-    CUSPARSE_CHECK(_.cusparseSpMM_bufferSize(
+    size_t retVal = 0;
+    CUSPARSE_CHECK(cusparseSpMM_bufferSize(
         sparseHandle(), opA, opB, alpha, matA, matB, beta, matC,
         getComputeType<T>(), CUSPARSE_CSRMM_ALG1, &retVal));
     return retVal;
@@ -77,10 +73,9 @@ template<typename T>
 void spmm(cusparseOperation_t opA, cusparseOperation_t opB, const T *alpha,
           const cusparseSpMatDescr_t matA, const cusparseDnMatDescr_t matB,
           const T *beta, const cusparseDnMatDescr_t matC, void *buffer) {
-    cusparseModule &_ = getCusparsePlugin();
-    CUSPARSE_CHECK(_.cusparseSpMM(sparseHandle(), opA, opB, alpha, matA, matB,
-                                  beta, matC, getComputeType<T>(),
-                                  CUSPARSE_CSRMM_ALG1, buffer));
+    CUSPARSE_CHECK(cusparseSpMM(sparseHandle(), opA, opB, alpha, matA, matB,
+                                beta, matC, getComputeType<T>(),
+                                CUSPARSE_CSRMM_ALG1, buffer));
 }
 
 #else
@@ -110,9 +105,8 @@ struct csrmm_func_def_t {
 #define SPARSE_FUNC(FUNC, TYPE, PREFIX)                                     \
     template<>                                                              \
     typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>() { \
-        cusparseModule &_ = getCusparsePlugin();                            \
         return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) &                 \
-               _.cusparse##PREFIX##FUNC;                                    \
+               cusparse##PREFIX##FUNC;                                      \
     }
 
 SPARSE_FUNC_DEF(csrmm)
@@ -180,12 +174,11 @@ Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
 
 #else
 
-    cusparseModule &_ = getCusparsePlugin();
     // Create Sparse Matrix Descriptor
     cusparseMatDescr_t descr = 0;
-    CUSPARSE_CHECK(_.cusparseCreateMatDescr(&descr));
-    CUSPARSE_CHECK(_.cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL));
-    CUSPARSE_CHECK(_.cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO));
+    CUSPARSE_CHECK(cusparseCreateMatDescr(&descr));
+    CUSPARSE_CHECK(cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL));
+    CUSPARSE_CHECK(cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO));
 
     // Call Matrix-Vector or Matrix-Matrix
     // Note:
@@ -204,7 +197,7 @@ Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
             lhs.getRowIdx().get(), lhs.getColIdx().get(), rhs.get(),
             rStrides[1], &beta, out.get(), out.dims()[0]));
     }
-    CUSPARSE_CHECK(_.cusparseDestroyMatDescr(descr));
+    CUSPARSE_CHECK(cusparseDestroyMatDescr(descr));
 
 #endif
 
