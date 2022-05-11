@@ -23,9 +23,7 @@
 
 using common::memory::MemoryManagerBase;
 using std::endl;
-using std::not1;
 using std::ostringstream;
-using std::ptr_fun;
 using std::stoi;
 using std::string;
 using std::unique_ptr;
@@ -43,14 +41,6 @@ static string get_system() {
 #elif defined(OS_MAC)
            "Mac OSX";
 #endif
-}
-
-// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
-// trim from start
-static inline string& ltrim(string& s) {
-    s.erase(s.begin(),
-            find_if(s.begin(), s.end(), not1(ptr_fun<int, int>(isspace))));
-    return s;
 }
 
 int getBackend() { return AF_BACKEND_CPU; }

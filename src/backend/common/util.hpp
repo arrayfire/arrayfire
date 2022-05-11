@@ -31,6 +31,8 @@ constexpr const char* JIT_KERNEL_CACHE_DIRECTORY_ENV_NAME =
 
 std::string getEnvVar(const std::string& key);
 
+std::string& ltrim(std::string& s);
+
 // Dump the kernel sources only if the environment variable is defined
 void saveKernel(const std::string& funcName, const std::string& jit_ker,
                 const std::string& ext);
