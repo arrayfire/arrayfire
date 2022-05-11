@@ -50,9 +50,15 @@ class unique_handle {
     explicit constexpr unique_handle(T handle) noexcept : handle_(handle){};
 
     /// \brief Deletes the handle if created.
-    ~unique_handle() noexcept {
-        if (handle_) { ResourceHandler<T>::destroyHandle(handle_); }
-    };
+    ~unique_handle() noexcept { reset(); }
+
+    /// \brief Deletes the handle if created.
+    void reset() noexcept {
+        if (handle_) {
+            ResourceHandler<T>::destroyHandle(handle_);
+            handle_ = 0;
+        }
+    }
 
     unique_handle(const unique_handle &other) noexcept = delete;
     unique_handle &operator=(unique_handle &other) noexcept = delete;
