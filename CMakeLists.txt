@@ -201,10 +201,14 @@ endif()
 #otherwise, forge is not built at all
 include(AFconfigure_forge_dep)
 add_library(af_spdlog INTERFACE)
+set_target_properties(af_spdlog
+  PROPERTIES
+    INTERFACE_COMPILE_DEFINITIONS FMT_HEADER_ONLY)
+
 if(TARGET spdlog::spdlog_header_only)
   target_include_directories(af_spdlog
     SYSTEM INTERFACE
-    $<TARGET_PROPERTY:spdlog::spdlog_header_only,INTERFACE_INCLUDE_DIRECTORIES>
+      $<TARGET_PROPERTY:spdlog::spdlog_header_only,INTERFACE_INCLUDE_DIRECTORIES>
     )
 else()
   af_dep_check_and_populate(${spdlog_prefix}
