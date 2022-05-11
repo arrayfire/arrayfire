@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "configure" ]; then
+    echo "/opt/intel/compilers_and_libraries/linux/mkl/lib/intel64_lin" >> /etc/ld.so.conf.d/99_arrayfire_${RC_COMPONENT}.conf
+    echo "/usr/local/cuda-${CPACK_CUDA_VERSION_MAJOR}.${CPACK_CUDA_VERSION_MINOR}/lib64" >> /etc/ld.so.conf.d/99_arrayfire_${RC_COMPONENT}.conf
+    ldconfig
+fi
