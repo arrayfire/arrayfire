@@ -815,7 +815,7 @@ SectionEnd
 ;--------------------------------
 ; Component dependencies
 Function .onSelChange
-  !insertmacro SectionList MaybeSelectionChanged
+  !insertmacro SectionList "MaybeSelectionChanged"
 FunctionEnd
 
 ;--------------------------------
