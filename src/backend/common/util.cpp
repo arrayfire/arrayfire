@@ -35,6 +35,14 @@ using std::accumulate;
 using std::string;
 using std::vector;
 
+// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
+// trim from start
+string& ltrim(string& s) {
+    s.erase(s.begin(),
+            find_if(s.begin(), s.end(), [](char c) { return !isspace(c); }));
+    return s;
+}
+
 string getEnvVar(const std::string& key) {
 #if defined(OS_WIN)
     DWORD bufSize =

@@ -28,7 +28,7 @@ void generateParamDeclaration(std::stringstream& kerStream, int id,
 }
 
 /// Calls the setArg function to set the arguments for a kernel call
-int setKernelArguments(
+inline int setKernelArguments(
     int start_id, bool is_linear,
     std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
     const std::shared_ptr<cl::Buffer>& ptr, const KParam& info) {
