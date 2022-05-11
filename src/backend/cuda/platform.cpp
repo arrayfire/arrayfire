@@ -175,12 +175,12 @@ DeviceManager::~DeviceManager() {
         // handles of all devices
         for (int i = 0; i < nDevices; ++i) {
             setDevice(i);
-            delete cusolverManager(i);
-            delete cusparseManager(i);
+            cusolverManager(i)->reset();
+            cusparseManager(i)->reset();
             cufftManager(i).reset();
-            delete cublasManager(i);
+            cublasManager(i)->reset();
 #ifdef WITH_CUDNN
-            delete nnManager(i);
+            nnManager(i)->reset();
 #endif
         }
     } catch (const AfError &err) {
