@@ -16,7 +16,7 @@ jobs:
         runs-on: windows-latest
         env:
 
-          VCPKG_HASH: 4428702c1c56fdb7cb779584efdcba254d7b57ca #[neon2sse] create a new port; Has forge v1.0.8 and other cmake/vcpkg fixes
+          VCPKG_HASH: 14e7bb4ae24616ec54ff6b2f6ef4e8659434ea44
 
           VCPKG_DEFAULT_TRIPLET: x64-windows
         steps:
@@ -38,7 +38,7 @@ jobs:
                 cd vcpkg
                 git checkout $env:VCPKG_HASH
                 .\bootstrap-vcpkg.bat
-                .\vcpkg.exe install boost-compute boost-functional boost-stacktrace fftw3 forge freeimage freetype glfw3 openblas
+                .\vcpkg.exe install boost-compute boost-math boost-stacktrace fftw3 freeimage freetype[core] forge glfw3 openblas
                 Remove-Item .\downloads,.\buildtrees,.\packages -Recurse -Force
 
             - name: CMake Configure
