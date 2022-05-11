@@ -325,7 +325,7 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num) {
 
         DIM_ASSERT(1, in_info.ndims() >= 2);
 
-        af_array result;
+        af_array result = nullptr;
         switch (type) {
             case f32: result = diagExtract<float>(in, num); break;
             case c32: result = diagExtract<cfloat>(in, num); break;
@@ -367,7 +367,7 @@ af_err af_lower(af_array *out, const af_array in, bool is_unit_diag) {
 
         if (info.ndims() == 0) { return af_retain_array(out, in); }
 
-        af_array res;
+        af_array res = nullptr;
         switch (type) {
             case f32: res = triangle<float>(in, false, is_unit_diag); break;
             case f64: res = triangle<double>(in, false, is_unit_diag); break;
@@ -396,7 +396,7 @@ af_err af_upper(af_array *out, const af_array in, bool is_unit_diag) {
 
         if (info.ndims() == 0) { return af_retain_array(out, in); }
 
-        af_array res;
+        af_array res = nullptr;
         switch (type) {
             case f32: res = triangle<float>(in, true, is_unit_diag); break;
             case f64: res = triangle<double>(in, true, is_unit_diag); break;
