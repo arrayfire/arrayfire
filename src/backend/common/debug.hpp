@@ -9,7 +9,6 @@
 
 #pragma once
 
-#define FMT_HEADER_ONLY
 #include <boost/stacktrace.hpp>
 #include <common/ArrayFireTypesIO.hpp>
 #include <common/jit/NodeIO.hpp>

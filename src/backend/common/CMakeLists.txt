@@ -91,6 +91,7 @@ target_link_libraries(afcommon_interface
     Boost::boost
     ${CMAKE_DL_LIBS}
 )
+
 if(TARGET glad::glad)
   target_link_libraries(afcommon_interface INTERFACE glad::glad)
 else()
@@ -105,7 +106,9 @@ target_include_directories(afcommon_interface
   INTERFACE
     ${ArrayFire_SOURCE_DIR}/src/backend
     ${span-lite_SOURCE_DIR}/include
-    ${ArrayFire_BINARY_DIR}
+    ${ArrayFire_BINARY_DIR})
+
+target_include_directories(afcommon_interface
   SYSTEM INTERFACE
     $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>
   )
