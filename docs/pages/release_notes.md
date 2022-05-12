@@ -14,7 +14,6 @@ v3.8.2
 - Remove unused cuDNN libraries from installations \PR{3235}
 - Add support to staticly link NVRTC libraries after CUDA 11.5 \PR{3236}
 - Add support for compiling with ccache when building the CUDA backend \PR{3241}
-- Make cuSparse an optional runtime dependency \PR{3240}
 
 ## Fixes
 
