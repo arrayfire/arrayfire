@@ -86,6 +86,7 @@ struct ToolkitDriverVersions {
 
 // clang-format off
 static const int jetsonComputeCapabilities[] = {
+    8070,
     7020,
     6020,
     5030,
@@ -95,6 +96,7 @@ static const int jetsonComputeCapabilities[] = {
 
 // clang-format off
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+    {11070, 8, 7, 0},
     {11060, 8, 6, 0},
     {11050, 8, 6, 0},
     {11040, 8, 6, 0},
@@ -129,13 +131,14 @@ struct ComputeCapabilityToStreamingProcessors {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
-        {11060, 510.39f, 511.23f},
-        {11050, 495.29f, 496.13f},
-        {11040, 470.42f, 471.11f},
-        {11030, 465.19f, 465.89f},
-        {11020, 460.27f, 460.82f},
-        {11010, 455.23f, 456.38f},
-        {11000, 450.51f, 451.48f},
+        {11070, 450.80f, 452.39f},
+        {11060, 450.80f, 452.39f},
+        {11050, 450.80f, 452.39f},
+        {11040, 450.80f, 452.39f},
+        {11030, 450.80f, 452.39f},
+        {11020, 450.80f, 452.39f},
+        {11010, 450.80f, 452.39f},
+        {11000, 450.36f, 451.22f},
         {10020, 440.33f, 441.22f},
         {10010, 418.39f, 418.96f},
         {10000, 410.48f, 411.31f},
@@ -156,7 +159,7 @@ static ComputeCapabilityToStreamingProcessors gpus[] = {
     {0x21, 48},  {0x30, 192}, {0x32, 192}, {0x35, 192}, {0x37, 192},
     {0x50, 128}, {0x52, 128}, {0x53, 128}, {0x60, 64},  {0x61, 128},
     {0x62, 128}, {0x70, 64},  {0x75, 64},  {0x80, 64},  {0x86, 128},
-    {-1, -1},
+    {0x87, 128}, {-1, -1},
 };
 
 // pulled from CUTIL from CUDA SDK
