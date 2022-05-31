@@ -22,7 +22,7 @@ cusparseModule::cusparseModule()
 #ifdef AF_cusparse_STATIC_LINKING
     module(nullptr, nullptr)
 #else
-    module("cusparse", nullptr)
+    module({"cusparse"}, {"64_11", "64_10", "64_9", "64_8"}, {""})
 #endif
 {
 #ifdef AF_cusparse_STATIC_LINKING
