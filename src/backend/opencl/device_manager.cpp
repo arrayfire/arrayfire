@@ -244,20 +244,29 @@ DeviceManager::DeviceManager()
     // Sort OpenCL devices based on default criteria
     stable_sort(mDevices.begin(), mDevices.end(), compare_default);
 
+    auto devices = move(mDevices);
+    mDevices.clear();
+
     // Create contexts and queues once the sort is done
     for (int i = 0; i < nDevices; i++) {
         cl_platform_id device_platform =
-            mDevices[i]->getInfo<CL_DEVICE_PLATFORM>();
+            devices[i]->getInfo<CL_DEVICE_PLATFORM>();
         cl_context_properties cps[3] = {
             CL_CONTEXT_PLATFORM, (cl_context_properties)(device_platform), 0};
-
-        mContexts.push_back(make_unique<Context>(*mDevices[i], cps));
-        mQueues.push_back(make_unique<CommandQueue>(
-            *mContexts.back(), *mDevices[i], cl::QueueProperties::None));
-        mIsGLSharingOn.push_back(false);
-        mDeviceTypes.push_back(getDeviceTypeEnum(*mDevices[i]));
-        mPlatforms.push_back(getPlatformEnum(*mDevices[i]));
+        try {
+            mContexts.push_back(make_unique<Context>(*devices[i], cps));
+            mQueues.push_back(make_unique<CommandQueue>(
+                *mContexts.back(), *devices[i], cl::QueueProperties::None));
+            mIsGLSharingOn.push_back(false);
+            mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
+            mPlatforms.push_back(getPlatformEnum(*devices[i]));
+            mDevices.emplace_back(std::move(devices[i]));
+        } catch (const cl::Error& err) {
+            AF_TRACE("Error creating context for device {} with error {}\n",
+                     devices[i]->getInfo<CL_DEVICE_NAME>(), err.what());
+        }
     }
+    nDevices = mDevices.size();
 
     bool default_device_set = false;
     deviceENV               = getEnvVar("AF_OPENCL_DEFAULT_DEVICE");
