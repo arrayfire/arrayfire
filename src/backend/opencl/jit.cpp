@@ -288,7 +288,7 @@ void evalNodes(vector<Param> &outputs, const vector<Node *> &output_nodes) {
         uint out_elements = outDims[3] * out_info.strides[3];
         uint groups       = divup(out_elements, local_0);
 
-        global_1 = divup(groups, 1000) * local_1;
+        global_1 = divup(groups, work_group_size) * local_1;
         global_0 = divup(groups, global_1) * local_0;
 
     } else {
