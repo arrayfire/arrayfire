@@ -39,8 +39,7 @@
         "cuda": {
             "description": "Build CUDA backend",
             "dependencies": [
-                "cuda",
-                "cudnn"
+                "cuda"
             ]
         },
         "opencl": {
@@ -54,6 +53,12 @@
             "description": "Build with MKL",
             "dependencies": [
                 "intel-mkl"
+            ]
+        },
+        "cudnn": {
+            "description": "Build CUDA with support for cuDNN",
+            "dependencies": [
+                "cudnn"
             ]
         }
     },
