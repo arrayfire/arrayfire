@@ -46,7 +46,7 @@ T rsqrt(T in) {
 }
 
 #define MATH_TEST(T, func, err, lo, hi)                                        \
-    TEST(MathTests, Test_##func##_##T) {                                       \
+    TEST(Math, func##_##T) {                                                   \
         try {                                                                  \
             SUPPORTED_TYPE_CHECK(T);                                           \
             af_dtype ty = (af_dtype)dtype_traits<T>::af_type;                  \
@@ -135,7 +135,7 @@ MATH_TESTS_REAL(erf)
 MATH_TESTS_REAL(erfc)
 #endif
 
-TEST(MathTests, Not) {
+TEST(Math, Not) {
     array a  = randu(5, 5, b8);
     array b  = !a;
     char *ha = a.host<char>();
