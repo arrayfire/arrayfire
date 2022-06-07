@@ -36,6 +36,11 @@ T mod(T a, T b) {
     return std::fmod(a, b);
 }
 
+template<typename T>
+T rem(T x, T y) {
+    return remainder(x, y);
+}
+
 af::array randgen(const int num, dtype ty) {
     af::array tmp = round(1 + 2 * af::randu(num, f32)).as(ty);
     tmp.eval();
@@ -181,6 +186,7 @@ BINARY_TESTS_NEAR(float, float, float, div, 1e-3)  // FIXME
 BINARY_TESTS_FLOAT(min)
 BINARY_TESTS_FLOAT(max)
 BINARY_TESTS_NEAR(float, float, float, mod, 1e-5)  // FIXME
+BINARY_TESTS_FLOAT(rem)
 
 BINARY_TESTS_DOUBLE(add)
 BINARY_TESTS_DOUBLE(sub)
@@ -189,6 +195,7 @@ BINARY_TESTS_DOUBLE(div)
 BINARY_TESTS_DOUBLE(min)
 BINARY_TESTS_DOUBLE(max)
 BINARY_TESTS_DOUBLE(mod)
+BINARY_TESTS_DOUBLE(rem)
 
 BINARY_TESTS_NEAR_FLOAT(atan2)
 BINARY_TESTS_NEAR_FLOAT(pow)

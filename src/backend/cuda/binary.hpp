@@ -59,7 +59,7 @@ BINARY_TYPE_1(bitshiftr)
     };                                               \
     template<typename To>                            \
     struct BinOp<To, float, af_##fn##_t> {           \
-        const char *name() { return "f" #fn; }       \
+        const char *name() { return "f" #fn "f"; }   \
     };                                               \
     template<typename To>                            \
     struct BinOp<To, double, af_##fn##_t> {          \

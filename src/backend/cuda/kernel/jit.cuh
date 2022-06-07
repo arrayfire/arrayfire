@@ -72,6 +72,7 @@ typedef cuDoubleComplex cdouble;
 
 #define __convert_char(val) (char)((val) != 0)
 #define frem(lhs, rhs) remainder((lhs), (rhs))
+#define fremf(lhs, rhs) remainderf((lhs), (rhs))
 
 // ----------------------------------------------
 // COMPLEX FLOAT OPERATIONS
