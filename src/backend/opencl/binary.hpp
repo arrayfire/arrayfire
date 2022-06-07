@@ -79,6 +79,11 @@ BINARY_TYPE_2(max)
 BINARY_TYPE_2(rem)
 BINARY_TYPE_2(mod)
 
+template<>
+struct BinOp<common::half, common::half, af_mod_t> {
+    const char *name() { return "fmod"; }
+};
+
 template<typename To, typename Ti>
 struct BinOp<To, Ti, af_pow_t> {
     const char *name() { return "__pow"; }

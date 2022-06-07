@@ -216,6 +216,15 @@ int __isinf<__half>(const __half in) {
 #endif
 }
 
+__device__ __inline__
+__half hmod(const __half lhs, const __half rhs) {
+#if __CUDA_ARCH__ >= 530
+    return __hsub(lhs, __hmul(htrunc(__hdiv(lhs, rhs)), rhs));
+#else
+    return __float2half(fmodf(__half2float(lhs), __half2float(rhs)));
+#endif
+}
+
 template<typename T>
 static __device__ __inline__
 int __isnan(const T in) {
