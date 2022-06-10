@@ -311,6 +311,7 @@ make_test(SRC moments.cpp)
 make_test(SRC morph.cpp)
 make_test(SRC nearest_neighbour.cpp CXX11)
 make_test(SRC nodevice.cpp CXX11)
+make_test(SRC norm.cpp CXX11)
 
 if(OpenCL_FOUND)
   make_test(SRC ocl_ext_context.cpp
