@@ -123,8 +123,8 @@ void reproducePrint(float& currentMax, array& searchSpace, array& sampleX,
 }
 
 void geneticSearch(bool console, const int nSamples, const int n) {
-    array searchSpaceXDisplay = 0;
-    array searchSpaceYDisplay = 0;
+    array searchSpaceXDisplay;
+    array searchSpaceYDisplay;
     array searchSpace;
     array sampleX;
     array sampleY;
@@ -170,17 +170,18 @@ int main(int argc, char** argv) {
 
     try {
         af::info();
-        printf("** ArrayFire Genetic Algorithm Search Demo **\n\n");
         printf(
-            "Search for trueMax in a search space where the objective function "
-            "is defined as :\n\n");
-        printf("SS(x ,y) = min(x, n - (x + 1)) + min(y, n - (y + 1))\n\n");
-        printf("(x, y) belongs to RxR; R = [0, n); n = %d\n\n", n);
+            "** ArrayFire Genetic Algorithm Search Demo **\n\n"
+            "Search for trueMax in a search space where the objective "
+            "function is defined as :\n\n"
+            "SS(x ,y) = min(x, n - (x + 1)) + min(y, n - (y + 1))\n\n"
+            "(x, y) belongs to RxR; R = [0, n); n = %d\n\n",
+            n);
         if (!console) {
-            printf("The left figure shows the objective function.\n");
             printf(
-                "The figure on the right shows current generation's parameters "
-                "and function values.\n\n");
+                "The left figure shows the objective function.\n"
+                "The right figure shows current generation's "
+                "parameters and function values.\n\n");
         }
         geneticSearch(console, nSamples, n);
     } catch (af::exception& e) { fprintf(stderr, "%s\n", e.what()); }
