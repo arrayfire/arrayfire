@@ -646,11 +646,8 @@ TEST(Broadcast, VectorMatrix2d) {
     array A = range(dim4(s, 3), 1);
     array B = -range(dim4(3));
 
-    array C = A + B;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, 3)));
-
-    C = B + A;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, 3)));
+    EXPECT_THROW(A + B, af::exception);
+    EXPECT_THROW(B + A, af::exception);
 }
 
 TEST(Broadcast, VectorMatrix3d) {
@@ -658,11 +655,8 @@ TEST(Broadcast, VectorMatrix3d) {
     array A = range(dim4(s, s, 3), 2);
     array B = -range(dim4(3));
 
-    array C = A + B;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, s, 3)));
-
-    C = B + A;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, s, 3)));
+    EXPECT_THROW(A + B, af::exception);
+    EXPECT_THROW(B + A, af::exception);
 }
 
 TEST(Broadcast, VectorMatrix4d) {
@@ -670,13 +664,9 @@ TEST(Broadcast, VectorMatrix4d) {
     array A = range(dim4(s, s, s, 3), 3);
     array B = -range(dim4(3));
 
-    array C = A + B;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, s, s, 3)));
-
-    C = B + A;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(s, s, s, 3)));
+    EXPECT_THROW(A + B, af::exception);
+    EXPECT_THROW(B + A, af::exception);
 }
-
 
 void testScalar(dim4 d) {
     array A = constant(-1, d);
@@ -689,29 +679,21 @@ void testScalar(dim4 d) {
     ASSERT_ARRAYS_EQ(C, constant(0, d));
 }
 
-TEST(Broadcast, Scalar1) {
-    testScalar(dim4(5));
-}
+TEST(Broadcast, Scalar1) { testScalar(dim4(5)); }
 
-TEST(Broadcast, Scalar2) {
-    testScalar(dim4(5, 4));
-}
+TEST(Broadcast, Scalar2) { testScalar(dim4(5, 4)); }
 
-TEST(Broadcast, Scalar3) {
-    testScalar(dim4(5, 4, 3));
-}
+TEST(Broadcast, Scalar3) { testScalar(dim4(5, 4, 3)); }
 
-TEST(Broadcast, Scalar4) {
-    testScalar(dim4(5, 4, 3, 2));
-}
+TEST(Broadcast, Scalar4) { testScalar(dim4(5, 4, 3, 2)); }
 
 void testAllBroadcast(dim4 dims) {
     array A = constant(1, dims);
-    for(int k=0; k<dims.ndims(); ++k) {
+    for (int k = 0; k < dims.ndims(); ++k) {
         dim4 rdims = dims;
-        rdims[k] = 1;
-        array B = constant(-1, dims);
-        array C = A + B;
+        rdims[k]   = 1;
+        array B    = constant(-1, dims);
+        array C    = A + B;
         ASSERT_ARRAYS_EQ(C, constant(0, dims));
 
         C = B + A;
@@ -719,45 +701,24 @@ void testAllBroadcast(dim4 dims) {
     }
 }
 
-TEST(Broadcast, MatrixMatrix2d) {
-    testAllBroadcast(dim4(10, 15));
-}
+TEST(Broadcast, MatrixMatrix2d) { testAllBroadcast(dim4(10, 15)); }
 
-TEST(Broadcast, MatrixMatrix3d) {
-    testAllBroadcast(dim4(10, 15, 20));
-}
+TEST(Broadcast, MatrixMatrix3d) { testAllBroadcast(dim4(10, 15, 20)); }
 
-TEST(Broadcast, MatrixMatrix4d) {
-    testAllBroadcast(dim4(10, 15, 20, 25));
-}
+TEST(Broadcast, MatrixMatrix4d) { testAllBroadcast(dim4(10, 15, 20, 25)); }
 
 TEST(Broadcast, MismatchingDim0) {
-    array A =  range(dim4(2, 3, 5), 1);
+    array A = range(dim4(2, 3, 5), 1);
     array B = -range(dim4(3, 5), 0);
 
     EXPECT_THROW(A + B, af::exception);
-}
-
-TEST(Broadcast, Vector2Ddims) {
-    array A = constant(-1, dim4(15, 3, 5));
-    array B = constant( 1, dim4(3, 1));
-
-    array C = A + B;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
-
-    C = B + A;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(15, 3, 5)));
 }
 
 TEST(Broadcast, TestFirstMatchingDim) {
     array A = range(dim4(3, 2, 2, 4), 1);
     array B = -range(dim4(2));
 
-    array C = A + B;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(3, 2, 2, 4)));
-
-    C = B + A;
-    ASSERT_ARRAYS_EQ(C, constant(0, dim4(3, 2, 2, 4)));
+    EXPECT_THROW(A + B, af::exception);
 }
 
 TEST(Broadcast, ManySlicesVsOneSlice) {
@@ -793,26 +754,37 @@ TEST(Array, InitializerListFixDim4) {
 
 TEST(Broadcast, SubArray) {
     dim_t subdim = 5;
-    array A = constant(1, dim4(10, 10, 2));
-    array B = constant(2, dim4(5, 5));
-    af_print(A(seq(subdim), seq(subdim), span) );
-    af_print(B);
-    array C = A(seq(subdim), seq(subdim), span) + B;
+    array A      = constant(1, dim4(10, 10, 2));
+    array B      = constant(2, dim4(5, 5));
+    array C      = A(seq(subdim), seq(subdim), span) + B;
 
     ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
 
-    C = B + A;
+    C = B + A(seq(subdim), seq(subdim), span);
     ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
 }
 
 TEST(Broadcast, SubArrays) {
     dim_t subdim = 5;
-    array A = constant(1, dim4(10, 10, 2));
-    array B = constant(2, dim4(15, 15));
+    array A      = constant(1, dim4(10, 10, 2));
+    array B      = constant(2, dim4(15, 15));
 
     array C = A(seq(subdim), seq(subdim), span) + B(seq(subdim), seq(subdim));
     ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
 
-    C = B + A;
+    C = B(seq(subdim), seq(subdim)) + A(seq(subdim), seq(subdim), span);
     ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
+}
+
+TEST(Broadcast, IndexedArray) {
+    array A = constant(1, dim4(2, 2, 2, 2));
+    array B = constant(-1, dim4(1, 5));
+
+    array idx = range(dim4(2, 2, 2, 2), 0);
+
+    array C = A(idx % 2 == 0) + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(8, 5)));
+
+    C = B + A(idx % 2 == 0);
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(8, 5)));
 }

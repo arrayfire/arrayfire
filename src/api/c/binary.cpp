@@ -65,41 +65,15 @@ static inline af_array arithOp(const af_array lhs, const af_array rhs,
     return getHandle(arithOp<T, op>(l, r, odims));
 }
 
-tuple<dim4, dim4> calcShapes(const ArrayInfo &linfo, const ArrayInfo &rinfo) {
-    const dim4 ldims     = linfo.dims();
-    const dim4 rdims     = rinfo.dims();
-    const bool lIsVector = linfo.isVector();
-    const bool rIsVector = rinfo.isVector();
-
-    if ((lIsVector && rIsVector) || (!lIsVector && !rIsVector)) {
-        return make_tuple(ldims, rdims);
-    } else {
-        int tdim            = 0;
-        const dim4 &vecDims = (lIsVector ? ldims : rdims);
-        const dim4 &arrDims = (lIsVector ? rdims : ldims);
-
-        for (int i = 0; i < arrDims.ndims(); i++) {
-            if (arrDims[i] == vecDims.elements()) {
-                tdim = i;
-                break;
-            }
-        }
-        dim4 nshape(1);
-        nshape[tdim] = vecDims.elements();
-
-        return make_tuple((lIsVector ? nshape : arrDims),
-                          (rIsVector ? nshape : arrDims));
-    }
-}
-
 template<typename T, af_op_t op>
 static inline af_array arithOpBroadcast(const af_array lhs,
                                         const af_array rhs) {
     const ArrayInfo &linfo = getInfo(lhs);
     const ArrayInfo &rinfo = getInfo(rhs);
 
-    dim4 odims(1), ltile(1), rtile(1), lshape(1), rshape(1);
-    tie(lshape, rshape) = calcShapes(linfo, rinfo);
+    dim4 odims(1), ltile(1), rtile(1);
+    dim4 lshape = linfo.dims();
+    dim4 rshape = rinfo.dims();
 
     for (int d = 0; d < AF_MAX_DIMS; ++d) {
         DIM_ASSERT(
