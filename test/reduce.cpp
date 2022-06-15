@@ -2091,3 +2091,28 @@ TEST(ReduceByKey, ISSUE_3062) {
     af::countByKey(okeys, ovalues, zeros, ones, 1);
     ASSERT_EQ(ovalues.scalar<unsigned>(), 129);
 }
+
+TEST(Reduce, nanval_issue_3255) {
+    char *info_str;
+    af_array  ikeys, ivals, okeys, ovals;
+    dim_t dims[1] = {8};
+
+    int ikeys_src[8] = {0, 0,  1, 1, 1,  2, 2,  0};
+    af_create_array(&ikeys, ikeys_src, 1, dims, u32);
+
+    int i;
+    for (i=0; i<8; i++) {
+        double ivals_src[8] = {1, 2,  3, 4, 5,  6, 7,  8};
+        ivals_src[i] = NAN;
+        af_create_array(&ivals, ivals_src, 1, dims, f64);
+
+        af_product_by_key_nan(&okeys, &ovals, ikeys, ivals, 0, 1.0);
+        af::array ovals_cpp(ovals);
+        ASSERT_FALSE(af::anyTrue<bool>(af::isNaN(ovals_cpp)));
+
+        af_sum_by_key_nan(&okeys, &ovals, ikeys, ivals, 0, 1.0);
+        ovals_cpp = af::array(ovals);
+
+        ASSERT_FALSE(af::anyTrue<bool>(af::isNaN(ovals_cpp)));
+    }
+}
