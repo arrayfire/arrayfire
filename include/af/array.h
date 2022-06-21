@@ -522,7 +522,9 @@ namespace af
 #if AF_API_VERSION >= 38
 #if AF_COMPILER_CXX_GENERALIZED_INITIALIZERS
         /// \brief Initializer list constructor
-        template <typename T> array(std::initializer_list<T> list)
+        template <typename T, typename = typename std::enable_if<
+                                  std::is_fundamental<T>::value, void>::type>
+        array(std::initializer_list<T> list)
         : arr(nullptr) {
           dim_t size = list.size();
           if (af_err __aferr = af_create_array(&arr, list.begin(), 1, &size,
@@ -537,7 +539,8 @@ namespace af
         }
 
         /// \brief Initializer list constructor
-        template <typename T>
+        template <typename T, typename = typename std::enable_if<
+                                  std::is_fundamental<T>::value, void>::type>
         array(const af::dim4 &dims, std::initializer_list<T> list)
             : arr(nullptr) {
           const dim_t *size = dims.get();
