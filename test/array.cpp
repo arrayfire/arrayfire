@@ -692,7 +692,7 @@ void testAllBroadcast(dim4 dims) {
     for (int k = 0; k < dims.ndims(); ++k) {
         dim4 rdims = dims;
         rdims[k]   = 1;
-        array B    = constant(-1, dims);
+        array B    = constant(-1, rdims);
         array C    = A + B;
         ASSERT_ARRAYS_EQ(C, constant(0, dims));
 

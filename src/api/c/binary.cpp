@@ -27,8 +27,6 @@
 #include <sparse_arith.hpp>
 
 #include <common/half.hpp>
-#include <iostream>
-#include <tuple>
 
 using af::dim4;
 using af::dtype;
@@ -45,9 +43,6 @@ using detail::uchar;
 using detail::uint;
 using detail::uintl;
 using detail::ushort;
-using std::make_tuple;
-using std::tie;
-using std::tuple;
 
 template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs,
