@@ -646,8 +646,12 @@ TEST(Broadcast, VectorMatrix2d) {
     array A = range(dim4(s, 3), 1);
     array B = -range(dim4(3));
 
-    EXPECT_THROW(A + B, af::exception);
-    EXPECT_THROW(B + A, af::exception);
+    try {
+        A + B;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+    try {
+        B + A;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
 }
 
 TEST(Broadcast, VectorMatrix3d) {
@@ -655,8 +659,12 @@ TEST(Broadcast, VectorMatrix3d) {
     array A = range(dim4(s, s, 3), 2);
     array B = -range(dim4(3));
 
-    EXPECT_THROW(A + B, af::exception);
-    EXPECT_THROW(B + A, af::exception);
+    try {
+        A + B;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+    try {
+        B + A;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
 }
 
 TEST(Broadcast, VectorMatrix4d) {
@@ -664,13 +672,17 @@ TEST(Broadcast, VectorMatrix4d) {
     array A = range(dim4(s, s, s, 3), 3);
     array B = -range(dim4(3));
 
-    EXPECT_THROW(A + B, af::exception);
-    EXPECT_THROW(B + A, af::exception);
+    try {
+        A + B;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+    try {
+        B + A;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
 }
 
-void testScalar(dim4 d) {
+void testScalarArray(dim4 d) {
     array A = constant(-1, d);
-    array B = constant(1, d);
+    array B = constant(1, 1);
 
     array C = A + B;
     ASSERT_ARRAYS_EQ(C, constant(0, d));
@@ -679,13 +691,13 @@ void testScalar(dim4 d) {
     ASSERT_ARRAYS_EQ(C, constant(0, d));
 }
 
-TEST(Broadcast, Scalar1) { testScalar(dim4(5)); }
+TEST(Broadcast, Scalar1) { testScalarArray(dim4(5)); }
 
-TEST(Broadcast, Scalar2) { testScalar(dim4(5, 4)); }
+TEST(Broadcast, Scalar2) { testScalarArray(dim4(5, 4)); }
 
-TEST(Broadcast, Scalar3) { testScalar(dim4(5, 4, 3)); }
+TEST(Broadcast, Scalar3) { testScalarArray(dim4(5, 4, 3)); }
 
-TEST(Broadcast, Scalar4) { testScalar(dim4(5, 4, 3, 2)); }
+TEST(Broadcast, Scalar4) { testScalarArray(dim4(5, 4, 3, 2)); }
 
 void testAllBroadcast(dim4 dims) {
     array A = constant(1, dims);
@@ -711,14 +723,18 @@ TEST(Broadcast, MismatchingDim0) {
     array A = range(dim4(2, 3, 5), 1);
     array B = -range(dim4(3, 5), 0);
 
-    EXPECT_THROW(A + B, af::exception);
+    try {
+        A + B;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
 }
 
 TEST(Broadcast, TestFirstMatchingDim) {
     array A = range(dim4(3, 2, 2, 4), 1);
     array B = -range(dim4(2));
 
-    EXPECT_THROW(A + B, af::exception);
+    try {
+        A + B;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
 }
 
 TEST(Broadcast, ManySlicesVsOneSlice) {
@@ -730,10 +746,11 @@ TEST(Broadcast, ManySlicesVsOneSlice) {
 
     C = B + A;
     ASSERT_ARRAYS_EQ(C, constant(3, dim4(3, 3, 2)));
+}
 
-// This tests situations where the compiler incorrectly assumes the initializer
-// list constructor instead of the regular constructor when using the uniform
-// initilization syntax
+// This tests situations where the compiler incorrectly assumes the
+// initializer list constructor instead of the regular constructor when
+// using the uniform initilization syntax
 TEST(Array, InitializerListFixAFArray) {
     array a = randu(1);
     array b{a};
@@ -741,9 +758,9 @@ TEST(Array, InitializerListFixAFArray) {
     ASSERT_ARRAYS_EQ(a, b);
 }
 
-// This tests situations where the compiler incorrectly assumes the initializer
-// list constructor instead of the regular constructor when using the uniform
-// initilization syntax
+// This tests situations where the compiler incorrectly assumes the
+// initializer list constructor instead of the regular constructor when
+// using the uniform initilization syntax
 TEST(Array, InitializerListFixDim4) {
     array a            = randu(1);
     vector<float> data = {3.14f, 3.14f, 3.14f, 3.14f, 3.14f,
