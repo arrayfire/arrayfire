@@ -348,6 +348,12 @@ int getDeviceCount() {
     }
 }
 
+void init() {
+    thread_local auto err =
+        cudaSetDevice(getDeviceNativeId(getActiveDeviceId()));
+    UNUSED(err);
+}
+
 unsigned getActiveDeviceId() { return tlocalActiveDeviceId(); }
 
 int getDeviceNativeId(int device) {
