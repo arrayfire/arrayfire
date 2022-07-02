@@ -218,6 +218,11 @@ int getDeviceCount() noexcept try {
     return 0;
 }
 
+void init() {
+    thread_local const DeviceManager& devMngr = DeviceManager::getInstance();
+    UNUSED(devMngr);
+}
+
 unsigned getActiveDeviceId() {
     // Second element is the queue id, which is
     // what we mean by active device id in opencl backend

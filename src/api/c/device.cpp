@@ -39,6 +39,7 @@ using detail::getActiveDeviceId;
 using detail::getBackend;
 using detail::getDeviceCount;
 using detail::getDeviceInfo;
+using detail::init;
 using detail::intl;
 using detail::isDoubleSupported;
 using detail::isHalfSupported;
@@ -107,7 +108,7 @@ af_err af_init() {
     try {
         thread_local std::once_flag flag;
         std::call_once(flag, []() {
-            getDeviceInfo();
+            init();
 #if defined(USE_MKL) && !defined(USE_STATIC_MKL)
             int errCode = -1;
             // Have used the AF_MKL_INTERFACE_SIZE as regular if's so that
