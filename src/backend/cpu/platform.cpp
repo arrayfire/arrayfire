@@ -112,6 +112,11 @@ int& getMaxJitSize() {
 
 int getDeviceCount() { return DeviceManager::NUM_DEVICES; }
 
+void init() {
+    thread_local const auto& instance = DeviceManager::getInstance();
+    UNUSED(instance);
+}
+
 // Get the currently active device id
 unsigned getActiveDeviceId() { return DeviceManager::ACTIVE_DEVICE_ID; }
 
