@@ -80,6 +80,8 @@ int& getMaxJitSize();
 
 int getDeviceCount();
 
+void init();
+
 unsigned getActiveDeviceId();
 
 int getDeviceNativeId(int device);

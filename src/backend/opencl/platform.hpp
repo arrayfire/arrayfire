@@ -55,6 +55,8 @@ std::string getDeviceInfo() noexcept;
 
 int getDeviceCount() noexcept;
 
+void init();
+
 unsigned getActiveDeviceId();
 
 int& getMaxJitSize();
