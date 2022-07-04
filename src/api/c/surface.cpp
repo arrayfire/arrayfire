@@ -15,12 +15,13 @@
 #include <common/err_common.hpp>
 #include <common/graphics_common.hpp>
 #include <common/moddims.hpp>
+#include <common/tile.hpp>
+#include <copy.hpp>
 #include <handle.hpp>
 #include <join.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>
 #include <surface.hpp>
-#include <tile.hpp>
 
 using af::dim4;
 using common::modDims;
@@ -56,13 +57,13 @@ fg_chart setup_surface(fg_window window, const af_array xVals,
         xIn = modDims(xIn, xIn.elements());
         // Now tile along second dimension
         dim4 x_tdims(1, Y_dims[0], 1, 1);
-        xIn = tile(xIn, x_tdims);
+        xIn = common::tile(xIn, x_tdims);
 
         // Convert yIn to a row vector
         yIn = modDims(yIn, dim4(1, yIn.elements()));
         // Now tile along first dimension
         dim4 y_tdims(X_dims[0], 1, 1, 1);
-        yIn = tile(yIn, y_tdims);
+        yIn = common::tile(yIn, y_tdims);
     }
 
     // Flatten xIn, yIn and zIn into row vectors

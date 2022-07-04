@@ -14,6 +14,7 @@
 #include <backend.hpp>
 #include <common/cast.hpp>
 #include <common/err_common.hpp>
+#include <common/tile.hpp>
 #include <complex.hpp>
 #include <convolve.hpp>
 #include <copy.hpp>
@@ -25,7 +26,6 @@
 #include <reduce.hpp>
 #include <scan.hpp>
 #include <sobel.hpp>
-#include <tile.hpp>
 #include <transpose.hpp>
 #include <unary.hpp>
 #include <af/defines.h>
@@ -37,6 +37,7 @@
 
 using af::dim4;
 using common::cast;
+using common::tile;
 using detail::arithOp;
 using detail::Array;
 using detail::convolve2;
@@ -136,7 +137,7 @@ Array<float> otsuThreshold(const Array<float>& in, const unsigned NUM_BINS,
 
     ireduce<af_max_t, float>(thresh, locs, sigmas, 0);
 
-    return cast<float, uint>(tile(locs, dim4(inDims[0], inDims[1])));
+    return cast<float, uint>(common::tile(locs, dim4(inDims[0], inDims[1])));
 }
 
 Array<float> normalize(const Array<float>& supEdges, const float minVal,

@@ -17,10 +17,10 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/cast.hpp>
+#include <common/tile.hpp>
 #include <handle.hpp>
 #include <join.hpp>
 #include <math.hpp>
-#include <tile.hpp>
 
 using af::dim4;
 using common::cast;
@@ -75,7 +75,7 @@ static af_array gray2rgb(const af_array& in, const float r, const float g,
                          const float b) {
     if (r == 1.0 && g == 1.0 && b == 1.0) {
         dim4 tileDims(1, 1, 3, 1);
-        return getHandle(tile(getArray<T>(in), tileDims));
+        return getHandle(common::tile(getArray<T>(in), tileDims));
     }
 
     af_array mod_input = 0;
