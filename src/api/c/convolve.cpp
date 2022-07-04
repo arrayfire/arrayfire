@@ -13,9 +13,9 @@
 #include <common/cast.hpp>
 #include <common/err_common.hpp>
 #include <common/half.hpp>
+#include <common/tile.hpp>
 #include <fftconvolve.hpp>
 #include <handle.hpp>
-#include <tile.hpp>
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -54,8 +54,8 @@ inline af_array convolve2(const af_array &s, const af_array &c_f,
     const Array<accT> signal    = castArray<accT>(s);
 
     if (colFilter.isScalar() && rowFilter.isScalar()) {
-        Array<accT> colArray = detail::tile(colFilter, signal.dims());
-        Array<accT> rowArray = detail::tile(rowFilter, signal.dims());
+        Array<accT> colArray = common::tile(colFilter, signal.dims());
+        Array<accT> rowArray = common::tile(rowFilter, signal.dims());
 
         Array<accT> filter =
             arithOp<accT, af_mul_t>(colArray, rowArray, signal.dims());
