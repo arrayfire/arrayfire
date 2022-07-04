@@ -15,11 +15,11 @@
 #include <common/err_common.hpp>
 #include <common/half.hpp>
 #include <common/moddims.hpp>
+#include <common/tile.hpp>
 #include <copy.hpp>
 #include <handle.hpp>
 #include <indexing_common.hpp>
 #include <math.hpp>
-#include <tile.hpp>
 #include <af/data.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -78,7 +78,7 @@ static void assign(Array<Tout>& out, const vector<af_seq> seqs,
         // If both out and in are vectors of equal elements,
         // reshape in to out dims
         Array<Tin> in_ =
-            in.elements() == 1 ? tile(in, oDims) : modDims(in, oDims);
+            in.elements() == 1 ? common::tile(in, oDims) : modDims(in, oDims);
         auto dst = createSubArray<Tout>(out, seqs, false);
 
         copyArray<Tin, Tout>(dst, in_);
