@@ -640,3 +640,24 @@ TEST(Array, ReferenceCount2) {
         ASSERT_REF(d, 0) << "After d = c;";
     }
 }
+
+// This tests situations where the compiler incorrectly assumes the
+// initializer list constructor instead of the regular constructor when
+// using the uniform initilization syntax
+TEST(Array, InitializerListFixAFArray) {
+    af::array a = randu(1);
+    af::array b{a};
+
+    ASSERT_ARRAYS_EQ(a, b);
+}
+
+// This tests situations where the compiler incorrectly assumes the
+// initializer list constructor instead of the regular constructor when
+// using the uniform initilization syntax
+TEST(Array, InitializerListFixDim4) {
+    af::array a        = randu(1);
+    vector<float> data = {3.14f, 3.14f, 3.14f, 3.14f, 3.14f,
+                          3.14f, 3.14f, 3.14f, 3.14f};
+    af::array b{dim4(3, 3), data.data()};
+    ASSERT_ARRAYS_EQ(constant(3.14, 3, 3), b);
+}

@@ -865,27 +865,6 @@ TEST(Broadcast, ManySlicesVsOneSlice) {
     ASSERT_ARRAYS_EQ(C, constant(3, dim4(3, 3, 2)));
 }
 
-// This tests situations where the compiler incorrectly assumes the
-// initializer list constructor instead of the regular constructor when
-// using the uniform initilization syntax
-TEST(Array, InitializerListFixAFArray) {
-    af::array a = randu(1);
-    af::array b{a};
-
-    ASSERT_ARRAYS_EQ(a, b);
-}
-
-// This tests situations where the compiler incorrectly assumes the
-// initializer list constructor instead of the regular constructor when
-// using the uniform initilization syntax
-TEST(Array, InitializerListFixDim4) {
-    af::array a        = randu(1);
-    vector<float> data = {3.14f, 3.14f, 3.14f, 3.14f, 3.14f,
-                          3.14f, 3.14f, 3.14f, 3.14f};
-    af::array b{dim4(3, 3), data.data()};
-    ASSERT_ARRAYS_EQ(constant(3.14, 3, 3), b);
-}
-
 TEST(Broadcast, SubArray) {
     dim_t subdim = 5;
     af::array A  = constant(1, dim4(10, 10, 2));
