@@ -715,7 +715,7 @@ TEST_P(Broadcast, AdditionLHSIndexed) {
 
     af::dim4 outdims       = broadcastOut(get<0>(params), rhs.dims());
     af::array indexedlhs   = lhs(seq(lhs_dims[0]), seq(lhs_dims[1]),
-                                 seq(lhs_dims[2]), seq(lhs_dims[3]));
+                               seq(lhs_dims[2]), seq(lhs_dims[3]));
     af::dim4 tilerepetions = tileRepeations(get<0>(params), rhs.dims());
     af::array tiledlhs     = tile(indexedlhs, tilerepetions);
 
@@ -758,15 +758,15 @@ TEST_P(Broadcast, AdditionBothIndexed) {
                     rhs(seq(rhs_dims[0]), seq(rhs_dims[1]), seq(rhs_dims[2]),
                         seq(rhs_dims[3]));
 
-    af::dim4 outdims = broadcastOut(lhs_dims, rhs_dims);
-    af::array indexedlhs = lhs(seq(lhs_dims[0]), seq(lhs_dims[1]),
-    seq(lhs_dims[2]), seq(lhs_dims[3])); af::dim4 tilerepetions =
-    tileRepeations(get<0>(params), get<1>(params)); af::array tiledlhs =
-    tile(indexedlhs, tilerepetions);
+    af::dim4 outdims       = broadcastOut(lhs_dims, rhs_dims);
+    af::array indexedlhs   = lhs(seq(lhs_dims[0]), seq(lhs_dims[1]),
+                               seq(lhs_dims[2]), seq(lhs_dims[3]));
+    af::dim4 tilerepetions = tileRepeations(get<0>(params), get<1>(params));
+    af::array tiledlhs     = tile(indexedlhs, tilerepetions);
 
     vector<float> outvec(outdims.elements());
     tiledlhs.host(outvec.data());
-    for(auto& out : outvec) { out += 1; }
+    for (auto &out : outvec) { out += 1; }
 
     ASSERT_VEC_ARRAY_EQ(outvec, outdims, out);
 }
@@ -819,10 +819,10 @@ TEST(Broadcast, VectorMatrix4d) {
 void testAllBroadcast(dim4 dims) {
     af::array A = constant(1, dims);
     for (int k = 0; k < dims.ndims(); ++k) {
-        dim4 rdims = dims;
-        rdims[k]   = 1;
-        af::array B    = constant(-1, rdims);
-        af::array C    = A + B;
+        dim4 rdims  = dims;
+        rdims[k]    = 1;
+        af::array B = constant(-1, rdims);
+        af::array C = A + B;
         ASSERT_ARRAYS_EQ(C, constant(0, dims));
 
         C = B + A;
@@ -903,7 +903,8 @@ TEST(Broadcast, SubArrays) {
     af::array A  = constant(1, dim4(10, 10, 2));
     af::array B  = constant(2, dim4(15, 15));
 
-    af::array C = A(seq(subdim), seq(subdim), span) + B(seq(subdim), seq(subdim));
+    af::array C =
+        A(seq(subdim), seq(subdim), span) + B(seq(subdim), seq(subdim));
     ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
 
     C = B(seq(subdim), seq(subdim)) + A(seq(subdim), seq(subdim), span);

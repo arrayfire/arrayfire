@@ -11,12 +11,12 @@
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
 #include <common/moddims.hpp>
+#include <common/tile.hpp>
 #include <handle.hpp>
 #include <implicit.hpp>
 #include <optypes.hpp>
 #include <sparse.hpp>
 #include <sparse_handle.hpp>
-#include <tile.hpp>
 #include <af/arith.h>
 #include <af/array.h>
 #include <af/data.h>
@@ -32,13 +32,13 @@ using af::dim4;
 using af::dtype;
 using common::half;
 using common::modDims;
+using common::tile;
 using detail::arithOp;
 using detail::arithOpD;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
-using detail::tile;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -84,8 +84,8 @@ static inline af_array arithOpBroadcast(const af_array lhs,
         }
     }
 
-    Array<T> lhst = tile<T>(modDims(getArray<T>(lhs), lshape), ltile);
-    Array<T> rhst = tile<T>(modDims(getArray<T>(rhs), rshape), rtile);
+    Array<T> lhst = common::tile<T>(modDims(getArray<T>(lhs), lshape), ltile);
+    Array<T> rhst = common::tile<T>(modDims(getArray<T>(rhs), rshape), rtile);
 
     return getHandle(arithOp<T, op>(lhst, rhst, odims));
 }
