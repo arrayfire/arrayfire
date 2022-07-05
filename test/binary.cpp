@@ -577,3 +577,348 @@ TYPED_TEST(ResultTypeScalar, FloatMultiplication) {
 TYPED_TEST(ResultTypeScalar, FloatDivision) {
     ASSERT_EQ(f32, (af::array(10, f32) / this->scalar).type());
 }
+
+class Broadcast : public ::testing::TestWithParam<std::tuple<dim4, dim4> > {
+    void SetUp() override {}
+};
+/// clang-format off
+
+INSTANTIATE_TEST_CASE_P(
+    CorrectCases, Broadcast,
+    ::testing::Combine(
+        ::testing::Values(dim4(1), dim4(10), dim4(1, 10), dim4(1, 1, 10),
+                          dim4(1, 1, 1, 10), dim4(10, 10), dim4(1, 10, 10),
+                          dim4(1, 1, 10, 10), dim4(10, 1, 10),
+                          dim4(1, 10, 1, 10), dim4(10, 1, 1, 10),
+                          dim4(10, 10, 10), dim4(1, 10, 10, 10),
+                          dim4(10, 1, 10, 10), dim4(10, 10, 1, 10),
+                          dim4(10, 10, 10, 10)),
+        ::testing::Values(dim4(1), dim4(10), dim4(1, 10), dim4(1, 1, 10),
+                          dim4(1, 1, 1, 10), dim4(10, 10), dim4(1, 10, 10),
+                          dim4(1, 1, 10, 10), dim4(10, 1, 10),
+                          dim4(1, 10, 1, 10), dim4(10, 1, 1, 10),
+                          dim4(10, 10, 10), dim4(1, 10, 10, 10),
+                          dim4(10, 1, 10, 10), dim4(10, 10, 1, 10),
+                          dim4(10, 10, 10, 10))),
+    [](const ::testing::TestParamInfo<Broadcast::ParamType> info) {
+        stringstream ss;
+        ss << "lhs_" << get<0>(info.param) << "_rhs_" << get<1>(info.param);
+        string s = ss.str();
+        std::replace(begin(s), std::end(s), ' ', '_');
+        return s;
+    });
+/// clang-format on
+
+af::dim4 broadcastOut(dim4 lhs, dim4 rhs) {
+    dim4 out(1);
+    for (int i = 0; i < AF_MAX_DIMS; i++) {
+        if (lhs[i] == rhs[i])
+            out[i] = lhs[i];
+        else if (lhs[i] == 1 && rhs[i] > 1)
+            out[i] = rhs[i];
+        else if (lhs[i] > 1 && rhs[i] == 1)
+            out[i] = lhs[i];
+        else {
+            std::cout << "incorrect dimension" << lhs << " op " << rhs;
+            return dim4(0);
+        }
+    }
+    return out;
+}
+
+af::dim4 tileRepeations(dim4 in, dim4 other) {
+    af::dim4 out;
+    for (int i = 0; i < AF_MAX_DIMS; i++) {
+        out[i] = std::max(dim_t(1), other[i] / in[i]);
+    }
+    return out;
+}
+
+TEST_P(Broadcast, Addition) {
+    auto params   = GetParam();
+    af::array lhs = iota(get<0>(params));
+    af::array rhs = constant(1, get<1>(params));
+
+    af::array out = lhs + rhs;
+
+    af::dim4 outdims       = broadcastOut(lhs.dims(), rhs.dims());
+    af::dim4 tilerepetions = tileRepeations(lhs.dims(), rhs.dims());
+    af::array tiledlhs     = tile(lhs, tilerepetions);
+
+    vector<float> outvec(outdims.elements());
+    tiledlhs.host(outvec.data());
+    for (auto &out : outvec) { out += 1; }
+
+    ASSERT_VEC_ARRAY_EQ(outvec, outdims, out);
+}
+
+TEST_P(Broadcast, Subtraction) {
+    auto params   = GetParam();
+    af::array lhs = range(get<0>(params));
+    af::array rhs = constant(1, get<1>(params));
+
+    af::array out          = lhs - rhs;
+    af::dim4 outdims       = broadcastOut(lhs.dims(), rhs.dims());
+    af::dim4 tilerepetions = tileRepeations(lhs.dims(), rhs.dims());
+    af::array tiledlhs     = tile(lhs, tilerepetions);
+
+    vector<float> outvec(outdims.elements());
+    tiledlhs.host(outvec.data());
+    for (auto &out : outvec) { out -= 1; }
+
+    ASSERT_VEC_ARRAY_EQ(outvec, outdims, out);
+}
+
+TEST_P(Broadcast, Multiplication) {
+    auto params   = GetParam();
+    af::array lhs = range(get<0>(params));
+    af::array rhs = constant(2, get<1>(params));
+
+    af::array out          = lhs * rhs;
+    af::dim4 outdims       = broadcastOut(lhs.dims(), rhs.dims());
+    af::dim4 tilerepetions = tileRepeations(lhs.dims(), rhs.dims());
+    af::array tiledlhs     = tile(lhs, tilerepetions);
+
+    vector<float> outvec(outdims.elements());
+    tiledlhs.host(outvec.data());
+    for (auto &out : outvec) { out *= 2; }
+
+    ASSERT_VEC_ARRAY_EQ(outvec, outdims, out);
+}
+
+TEST_P(Broadcast, Division) {
+    auto params   = GetParam();
+    af::array lhs = range(get<0>(params));
+    af::array rhs = constant(2, get<1>(params));
+
+    af::array out          = lhs / rhs;
+    af::dim4 outdims       = broadcastOut(lhs.dims(), rhs.dims());
+    af::dim4 tilerepetions = tileRepeations(lhs.dims(), rhs.dims());
+    af::array tiledlhs     = tile(lhs, tilerepetions);
+
+    vector<float> outvec(outdims.elements());
+    tiledlhs.host(outvec.data());
+    for (auto &out : outvec) { out /= 2; }
+
+    ASSERT_VEC_ARRAY_EQ(outvec, outdims, out);
+}
+
+TEST_P(Broadcast, AdditionLHSIndexed) {
+    auto params   = GetParam();
+    af::array lhs = iota(get<0>(params) * 2);
+    af::array rhs = constant(1, get<1>(params));
+
+    dim4 lhs_dims = get<0>(params);
+    af::array out = lhs(seq(lhs_dims[0]), seq(lhs_dims[1]), seq(lhs_dims[2]),
+                        seq(lhs_dims[3])) +
+                    rhs;
+
+    af::dim4 outdims       = broadcastOut(get<0>(params), rhs.dims());
+    af::array indexedlhs   = lhs(seq(lhs_dims[0]), seq(lhs_dims[1]),
+                                 seq(lhs_dims[2]), seq(lhs_dims[3]));
+    af::dim4 tilerepetions = tileRepeations(get<0>(params), rhs.dims());
+    af::array tiledlhs     = tile(indexedlhs, tilerepetions);
+
+    vector<float> outvec(outdims.elements());
+    tiledlhs.host(outvec.data());
+    for (auto &out : outvec) { out += 1; }
+
+    ASSERT_VEC_ARRAY_EQ(outvec, outdims, out);
+}
+
+TEST_P(Broadcast, AdditionRHSIndexed) {
+    auto params   = GetParam();
+    af::array lhs = iota(get<0>(params));
+    af::array rhs = constant(1, get<1>(params) * 2);
+
+    dim4 rhs_dims = get<1>(params);
+    af::array out = lhs + rhs(seq(rhs_dims[0]), seq(rhs_dims[1]),
+                              seq(rhs_dims[2]), seq(rhs_dims[3]));
+
+    af::dim4 outdims       = broadcastOut(get<0>(params), get<1>(params));
+    af::dim4 tilerepetions = tileRepeations(get<0>(params), get<1>(params));
+    af::array tiledlhs     = tile(lhs, tilerepetions);
+
+    vector<float> outvec(outdims.elements());
+    tiledlhs.host(outvec.data());
+    for (auto &out : outvec) { out += 1; }
+
+    ASSERT_VEC_ARRAY_EQ(outvec, outdims, out);
+}
+
+TEST_P(Broadcast, AdditionBothIndexed) {
+    auto params   = GetParam();
+    af::array lhs = iota(get<0>(params) * 2);
+    af::array rhs = constant(1, get<1>(params) * 2);
+
+    dim4 lhs_dims = get<0>(params);
+    dim4 rhs_dims = get<1>(params);
+    af::array out = lhs(seq(lhs_dims[0]), seq(lhs_dims[1]), seq(lhs_dims[2]),
+                        seq(lhs_dims[3])) +
+                    rhs(seq(rhs_dims[0]), seq(rhs_dims[1]), seq(rhs_dims[2]),
+                        seq(rhs_dims[3]));
+
+    af::dim4 outdims = broadcastOut(lhs_dims, rhs_dims);
+    af::array indexedlhs = lhs(seq(lhs_dims[0]), seq(lhs_dims[1]),
+    seq(lhs_dims[2]), seq(lhs_dims[3])); af::dim4 tilerepetions =
+    tileRepeations(get<0>(params), get<1>(params)); af::array tiledlhs =
+    tile(indexedlhs, tilerepetions);
+
+    vector<float> outvec(outdims.elements());
+    tiledlhs.host(outvec.data());
+    for(auto& out : outvec) { out += 1; }
+
+    ASSERT_VEC_ARRAY_EQ(outvec, outdims, out);
+}
+
+TEST(Broadcast, VectorMatrix2d) {
+    dim_t s     = 10;
+    af::array A = range(dim4(s, 3), 1);
+    af::array B = -range(dim4(3));
+
+    try {
+        A + B;
+        FAIL();
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+    try {
+        B + A;
+        FAIL();
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+}
+
+TEST(Broadcast, VectorMatrix3d) {
+    dim_t s     = 10;
+    af::array A = range(dim4(s, s, 3), 2);
+    af::array B = -range(dim4(3));
+
+    try {
+        A + B;
+        FAIL();
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+    try {
+        B + A;
+        FAIL();
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+}
+
+TEST(Broadcast, VectorMatrix4d) {
+    dim_t s     = 10;
+    af::array A = range(dim4(s, s, s, 3), 3);
+    af::array B = -range(dim4(3));
+
+    try {
+        A + B;
+        FAIL();
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+    try {
+        B + A;
+        FAIL();
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+}
+
+void testAllBroadcast(dim4 dims) {
+    af::array A = constant(1, dims);
+    for (int k = 0; k < dims.ndims(); ++k) {
+        dim4 rdims = dims;
+        rdims[k]   = 1;
+        af::array B    = constant(-1, rdims);
+        af::array C    = A + B;
+        ASSERT_ARRAYS_EQ(C, constant(0, dims));
+
+        C = B + A;
+        ASSERT_ARRAYS_EQ(C, constant(0, dims));
+    }
+}
+
+TEST(Broadcast, MatrixMatrix2d) { testAllBroadcast(dim4(10, 15)); }
+
+TEST(Broadcast, MatrixMatrix3d) { testAllBroadcast(dim4(10, 15, 20)); }
+
+TEST(Broadcast, MatrixMatrix4d) { testAllBroadcast(dim4(10, 15, 20, 25)); }
+
+TEST(Broadcast, MismatchingDim0) {
+    af::array A = range(dim4(2, 3, 5), 1);
+    af::array B = -range(dim4(3, 5), 0);
+
+    try {
+        A + B;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+}
+
+TEST(Broadcast, TestFirstMatchingDim) {
+    af::array A = range(dim4(3, 2, 2, 4), 1);
+    af::array B = -range(dim4(2));
+
+    try {
+        A + B;
+    } catch (af::exception &e) { ASSERT_EQ(e.err(), AF_ERR_SIZE); }
+}
+
+TEST(Broadcast, ManySlicesVsOneSlice) {
+    af::array A = constant(1, dim4(3, 3, 2));
+    af::array B = constant(2, dim4(3, 3));
+    af::array C = A + B;
+
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(3, 3, 2)));
+
+    C = B + A;
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(3, 3, 2)));
+}
+
+// This tests situations where the compiler incorrectly assumes the
+// initializer list constructor instead of the regular constructor when
+// using the uniform initilization syntax
+TEST(Array, InitializerListFixAFArray) {
+    af::array a = randu(1);
+    af::array b{a};
+
+    ASSERT_ARRAYS_EQ(a, b);
+}
+
+// This tests situations where the compiler incorrectly assumes the
+// initializer list constructor instead of the regular constructor when
+// using the uniform initilization syntax
+TEST(Array, InitializerListFixDim4) {
+    af::array a        = randu(1);
+    vector<float> data = {3.14f, 3.14f, 3.14f, 3.14f, 3.14f,
+                          3.14f, 3.14f, 3.14f, 3.14f};
+    af::array b{dim4(3, 3), data.data()};
+    ASSERT_ARRAYS_EQ(constant(3.14, 3, 3), b);
+}
+
+TEST(Broadcast, SubArray) {
+    dim_t subdim = 5;
+    af::array A  = constant(1, dim4(10, 10, 2));
+    af::array B  = constant(2, dim4(5, 5));
+    af::array C  = A(seq(subdim), seq(subdim), span) + B;
+
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
+
+    C = B + A(seq(subdim), seq(subdim), span);
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
+}
+
+TEST(Broadcast, SubArrays) {
+    dim_t subdim = 5;
+    af::array A  = constant(1, dim4(10, 10, 2));
+    af::array B  = constant(2, dim4(15, 15));
+
+    af::array C = A(seq(subdim), seq(subdim), span) + B(seq(subdim), seq(subdim));
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
+
+    C = B(seq(subdim), seq(subdim)) + A(seq(subdim), seq(subdim), span);
+    ASSERT_ARRAYS_EQ(C, constant(3, dim4(subdim, subdim, 2)));
+}
+
+TEST(Broadcast, IndexedArray) {
+    af::array A = constant(1, dim4(2, 2, 2, 2));
+    af::array B = constant(-1, dim4(1, 5));
+
+    af::array idx = range(dim4(2, 2, 2, 2), 0);
+
+    af::array C = A(idx % 2 == 0) + B;
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(8, 5)));
+
+    C = B + A(idx % 2 == 0);
+    ASSERT_ARRAYS_EQ(C, constant(0, dim4(8, 5)));
+}
