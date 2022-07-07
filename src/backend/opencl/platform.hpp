@@ -67,6 +67,12 @@ const cl::Context& getContext();
 
 cl::CommandQueue& getQueue();
 
+/// Return a cl_command_queue handle to the queue for the device.
+///
+/// \param[in] device The device of the returned queue
+/// \returns The cl_command_queue handle to the queue
+cl_command_queue getQueueHandle(int device_id);
+
 const cl::Device& getDevice(int id = -1);
 
 const std::string& getActiveDeviceBaseBuildFlags();

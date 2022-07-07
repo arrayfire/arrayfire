@@ -148,6 +148,8 @@ queue& getQueue(int device) {
     return DeviceManager::getInstance().queues[device];
 }
 
+queue* getQueueHandle(int device) { return &getQueue(device); }
+
 void sync(int device) { getQueue(device).sync(); }
 
 bool& evalFlag() {

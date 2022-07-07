@@ -88,6 +88,12 @@ cudaStream_t getStream(int device);
 
 cudaStream_t getActiveStream();
 
+/// Return a handle to the stream for the device.
+///
+/// \param[in] device The device of the returned stream
+/// \returns The handle to the queue/stream
+cudaStream_t getQueueHandle(int device);
+
 size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
