@@ -56,8 +56,17 @@ Array<T> createValueArray(const af::dim4 &dims, const T &value);
 template<typename T>
 Array<T> createHostDataArray(const af::dim4 &dims, const T *const data);
 
+/// Creates an Array<T> object from a device pointer.
+///
+/// \param[in] dims The shape of the resulting Array.
+/// \param[in] data The device pointer to the data
+/// \param[in] copy If true, memory will be allocated and the data will be
+///                 copied to the device. If false the data will be used
+///                 directly
+/// \returns The new Array<T> object based on the device pointer.
 template<typename T>
-Array<T> createDeviceDataArray(const af::dim4 &dims, void *data);
+Array<T> createDeviceDataArray(const af::dim4 &dims, void *data,
+                               bool copy = false);
 
 template<typename T>
 Array<T> createStridedArray(const af::dim4 &dims, const af::dim4 &strides,
@@ -268,7 +277,8 @@ class Array {
     friend Array<T> createValueArray<T>(const af::dim4 &size, const T &value);
     friend Array<T> createHostDataArray<T>(const af::dim4 &dims,
                                            const T *const data);
-    friend Array<T> createDeviceDataArray<T>(const af::dim4 &dims, void *data);
+    friend Array<T> createDeviceDataArray<T>(const af::dim4 &dims, void *data,
+                                             bool copy);
     friend Array<T> createStridedArray<T>(const af::dim4 &dims,
                                           const af::dim4 &strides, dim_t offset,
                                           const T *const in_data,

@@ -217,8 +217,9 @@ Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
 }
 
 template<typename T>
-Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
-    return Array<T>(dims, static_cast<T *>(data), true);
+Array<T> createDeviceDataArray(const dim4 &dims, void *data, bool copy) {
+    bool is_device = true;
+    return Array<T>(dims, static_cast<T *>(data), is_device, copy);
 }
 
 template<typename T>
@@ -330,7 +331,8 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
 #define INSTANTIATE(T)                                                        \
     template Array<T> createHostDataArray<T>(const dim4 &dims,                \
                                              const T *const data);            \
-    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data); \
+    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data,  \
+                                               bool copy);                    \
     template Array<T> createValueArray<T>(const dim4 &dims, const T &value);  \
     template Array<T> createEmptyArray<T>(const dim4 &dims);                  \
     template Array<T> createSubArray<T>(                                      \

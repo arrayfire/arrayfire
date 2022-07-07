@@ -435,11 +435,9 @@ Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
 }
 
 template<typename T>
-Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
+Array<T> createDeviceDataArray(const dim4 &dims, void *data, bool copy) {
     verifyTypeSupport<T>();
-
-    bool copy_device = false;
-    return Array<T>(dims, static_cast<cl_mem>(data), 0, copy_device);
+    return Array<T>(dims, static_cast<cl_mem>(data), 0, copy);
 }
 
 template<typename T>
@@ -507,7 +505,8 @@ size_t Array<T>::getAllocatedBytes() const {
 #define INSTANTIATE(T)                                                        \
     template Array<T> createHostDataArray<T>(const dim4 &dims,                \
                                              const T *const data);            \
-    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data); \
+    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data,  \
+                                               bool copy);                    \
     template Array<T> createValueArray<T>(const dim4 &dims, const T &value);  \
     template Array<T> createEmptyArray<T>(const dim4 &dims);                  \
     template Array<T> createParamArray<T>(Param & tmp, bool owner);           \

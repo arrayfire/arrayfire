@@ -71,10 +71,10 @@ Array<T>::Array(const af::dim4 &dims, const T *const in_data, bool is_device,
                 bool copy_device)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(
-          ((is_device & !copy_device) ? const_cast<T *>(in_data)
-                                      : memAlloc<T>(dims.elements()).release()),
-          memFree<T>)
+    , data(((is_device && !copy_device)
+                ? const_cast<T *>(in_data)
+                : memAlloc<T>(dims.elements()).release()),
+           memFree<T>)
     , data_dims(dims)
     , node()
     , owner(true) {
@@ -338,11 +338,10 @@ Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
 }
 
 template<typename T>
-Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
+Array<T> createDeviceDataArray(const dim4 &dims, void *data, bool copy) {
     verifyTypeSupport<T>();
-    bool is_device   = true;
-    bool copy_device = false;
-    return Array<T>(dims, static_cast<T *>(data), is_device, copy_device);
+    bool is_device = true;
+    return Array<T>(dims, static_cast<T *>(data), is_device, copy);
 }
 
 template<typename T>
@@ -432,7 +431,8 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
 #define INSTANTIATE(T)                                                        \
     template Array<T> createHostDataArray<T>(const dim4 &size,                \
                                              const T *const data);            \
-    template Array<T> createDeviceDataArray<T>(const dim4 &size, void *data); \
+    template Array<T> createDeviceDataArray<T>(const dim4 &size, void *data,  \
+                                               bool copy);                    \
     template Array<T> createValueArray<T>(const dim4 &size, const T &value);  \
     template Array<T> createEmptyArray<T>(const dim4 &size);                  \
     template Array<T> createParamArray<T>(Param<T> & tmp, bool owner);        \
