@@ -453,11 +453,10 @@ Array<T> createHostDataArray(const dim4 &dims, const T *const data) {
 }
 
 template<typename T>
-Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
+Array<T> createDeviceDataArray(const dim4 &dims, void *data, bool copy) {
     verifyTypeSupport<T>();
 
-    bool copy_device = false;
-    return Array<T>(dims, static_cast<buffer<T> *>(data), 0, copy_device);
+    return Array<T>(dims, static_cast<buffer<T> *>(data), 0, copy);
 }
 
 template<typename T>
@@ -530,35 +529,36 @@ size_t Array<T>::getAllocatedBytes() const {
     return bytes;
 }
 
-#define INSTANTIATE(T)                                                        \
-    template Array<T> createHostDataArray<T>(const dim4 &dims,                \
-                                             const T *const data);            \
-    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data); \
-    template Array<T> createValueArray<T>(const dim4 &dims, const T &value);  \
-    template Array<T> createEmptyArray<T>(const dim4 &dims);                  \
-    template Array<T> createParamArray<T>(Param<T> & tmp, bool owner);        \
-    template Array<T> createSubArray<T>(                                      \
-        const Array<T> &parent, const vector<af_seq> &index, bool copy);      \
-    template void destroyArray<T>(Array<T> * A);                              \
-    template Array<T> createNodeArray<T>(const dim4 &dims, Node_ptr node);    \
-    template Array<T>::Array(const dim4 &dims, const dim4 &strides,           \
-                             dim_t offset, const T *const in_data,            \
-                             bool is_device);                                 \
-    template Array<T>::Array(const dim4 &dims, buffer<T> *mem,                \
-                             size_t src_offset, bool copy);                   \
-    template Node_ptr Array<T>::getNode();                                    \
-    template Node_ptr Array<T>::getNode() const;                              \
-    template void Array<T>::eval();                                           \
-    template void Array<T>::eval() const;                                     \
-    template buffer<T> *Array<T>::device();                                   \
-    template void writeHostDataArray<T>(Array<T> & arr, const T *const data,  \
-                                        const size_t bytes);                  \
-    template void writeDeviceDataArray<T>(                                    \
-        Array<T> & arr, const void *const data, const size_t bytes);          \
-    template void evalMultiple<T>(vector<Array<T> *> arrays);                 \
-    template kJITHeuristics passesJitHeuristics<T>(span<Node *> node);        \
-    template void *getDevicePtr<T>(const Array<T> &arr);                      \
-    template void Array<T>::setDataDims(const dim4 &new_dims);                \
+#define INSTANTIATE(T)                                                       \
+    template Array<T> createHostDataArray<T>(const dim4 &dims,               \
+                                             const T *const data);           \
+    template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data, \
+                                               bool copy);                   \
+    template Array<T> createValueArray<T>(const dim4 &dims, const T &value); \
+    template Array<T> createEmptyArray<T>(const dim4 &dims);                 \
+    template Array<T> createParamArray<T>(Param<T> & tmp, bool owner);       \
+    template Array<T> createSubArray<T>(                                     \
+        const Array<T> &parent, const vector<af_seq> &index, bool copy);     \
+    template void destroyArray<T>(Array<T> * A);                             \
+    template Array<T> createNodeArray<T>(const dim4 &dims, Node_ptr node);   \
+    template Array<T>::Array(const dim4 &dims, const dim4 &strides,          \
+                             dim_t offset, const T *const in_data,           \
+                             bool is_device);                                \
+    template Array<T>::Array(const dim4 &dims, buffer<T> *mem,               \
+                             size_t src_offset, bool copy);                  \
+    template Node_ptr Array<T>::getNode();                                   \
+    template Node_ptr Array<T>::getNode() const;                             \
+    template void Array<T>::eval();                                          \
+    template void Array<T>::eval() const;                                    \
+    template buffer<T> *Array<T>::device();                                  \
+    template void writeHostDataArray<T>(Array<T> & arr, const T *const data, \
+                                        const size_t bytes);                 \
+    template void writeDeviceDataArray<T>(                                   \
+        Array<T> & arr, const void *const data, const size_t bytes);         \
+    template void evalMultiple<T>(vector<Array<T> *> arrays);                \
+    template kJITHeuristics passesJitHeuristics<T>(span<Node *> node);       \
+    template void *getDevicePtr<T>(const Array<T> &arr);                     \
+    template void Array<T>::setDataDims(const dim4 &new_dims);               \
     template size_t Array<T>::getAllocatedBytes() const;
 
 INSTANTIATE(float)
