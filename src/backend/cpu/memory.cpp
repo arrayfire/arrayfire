@@ -121,6 +121,19 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 INSTANTIATE(half)
 
+template<>
+void *pinnedAlloc<void>(const size_t &elements) {
+    // TODO: make pinnedAlloc aware of array shapes
+    dim4 dims(elements);
+    void *ptr = memoryManager().alloc(false, 1, dims.get(), 1);
+    return ptr;
+}
+
+template<>
+void pinnedFree(void *ptr) {
+    memoryManager().unlock(ptr, false);
+}
+
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
 void Allocator::shutdown() {

@@ -183,6 +183,20 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(arrayfire::common::half)
 
+template<>
+void *pinnedAlloc<void>(const size_t &elements) {
+    ONEAPI_NOT_SUPPORTED("pinnedAlloc Not supported");
+
+    // // TODO: make pinnedAlloc aware of array shapes
+    // dim4 dims(elements);
+    // void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    return static_cast<void *>(nullptr);
+}
+template<>
+void pinnedFree(void *ptr) {
+    // pinnedMemoryManager().unlock(ptr, false);
+}
+
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
 void Allocator::shutdown() {
