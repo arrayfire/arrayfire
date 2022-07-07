@@ -285,6 +285,14 @@ sycl::queue& getQueue() {
     return *(devMngr.mQueues[get<1>(devId)]);
 }
 
+sycl::queue* getQueueHandle(int device_id) {
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return devMngr.mQueues[device_id].get();
+}
+
 const sycl::device& getDevice(int id) {
     device_id_t& devId = tlocalActiveDeviceId();
 

@@ -50,6 +50,12 @@ int setDevice(int device);
 
 queue& getQueue(int device = 0);
 
+/// Return a handle to the queue for the device.
+///
+/// \param[in] device The device of the returned queue
+/// \returns The handle to the queue
+queue* getQueueHandle(int device);
+
 void sync(int device);
 
 bool& evalFlag();

@@ -54,6 +54,12 @@ const sycl::context& getContext();
 
 sycl::queue& getQueue();
 
+/// Return a handle to the queue for the device.
+///
+/// \param[in] device The device of the returned queue
+/// \returns The handle to the queue
+sycl::queue* getQueueHandle(int device);
+
 const sycl::device& getDevice(int id = -1);
 
 size_t getDeviceMemorySize(int device);

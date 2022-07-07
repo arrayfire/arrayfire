@@ -288,6 +288,14 @@ const Context& getContext() {
     return *(devMngr.mContexts[get<0>(devId)]);
 }
 
+cl_command_queue getQueueHandle(int device_id) {
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return (*(devMngr.mQueues[device_id]))();
+}
+
 CommandQueue& getQueue() {
     device_id_t& devId = tlocalActiveDeviceId();
 

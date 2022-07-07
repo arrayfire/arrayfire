@@ -396,6 +396,8 @@ cudaStream_t getStream(int device) {
 
 cudaStream_t getActiveStream() { return getStream(getActiveDeviceId()); }
 
+cudaStream_t getQueueHandle(int device) { return getStream(device); }
+
 size_t getDeviceMemorySize(int device) {
     return getDeviceProp(device).totalGlobalMem;
 }

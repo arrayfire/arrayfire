@@ -81,6 +81,8 @@ class DeviceManager {
 
     friend sycl::queue& getQueue();
 
+    friend sycl::queue* getQueueHandle(int device_id);
+
     friend const sycl::device& getDevice(int id);
 
     friend size_t getDeviceMemorySize(int device);
