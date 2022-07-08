@@ -2,11 +2,11 @@
 leak:libnvidia-ptxjitcompile
 leak:tbb::internal::task_stream
 leak:libnvidia-opencl.so
-leak:FFTRepo::FFTRepoKey::privatizeData
 
 # Allocated by Intel's OpenMP implementation during inverse_dense_cpu
 # This is not something we can control in ArrayFire
 leak:kmp_alloc_cpp*::bget
+leak:kmp_b_alloc
 
 # ArrayFire leaks the default random engine on each thread. This is to avoid
 # errors on exit on Windows.
