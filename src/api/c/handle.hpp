@@ -30,6 +30,15 @@ af_array createHandle(const af::dim4 &d, af_dtype dtype);
 
 af_array createHandleFromValue(const af::dim4 &d, double val, af_dtype dtype);
 
+/// This function creates an af_array handle from memory handle on the device.
+///
+/// \param[in] d The shape of the new af_array
+/// \param[in] dtype The type of the new af_array
+/// \param[in] data The handle to the device memory
+/// \returns a new af_array with a view to the \p data pointer
+af_array createHandleFromDeviceData(const af::dim4 &d, af_dtype dtype,
+                                    void *data);
+
 namespace common {
 const ArrayInfo &getInfo(const af_array arr, bool sparse_check = true,
                          bool device_check = true);

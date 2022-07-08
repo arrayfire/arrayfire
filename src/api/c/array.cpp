@@ -27,6 +27,7 @@ using arrayfire::common::half;
 using arrayfire::common::SparseArrayBase;
 using detail::cdouble;
 using detail::cfloat;
+using detail::createDeviceDataArray;
 using detail::intl;
 using detail::uchar;
 using detail::uint;

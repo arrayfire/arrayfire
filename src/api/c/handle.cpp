@@ -18,6 +18,7 @@ using af::dim4;
 using arrayfire::common::half;
 using detail::cdouble;
 using detail::cfloat;
+using detail::createDeviceDataArray;
 using detail::intl;
 using detail::uchar;
 using detail::uint;
@@ -96,6 +97,28 @@ af_array createHandleFromValue(const dim4 &d, double val, af_dtype dtype) {
         case u16: return createHandleFromValue<ushort >(d, val);
         case f16: return createHandleFromValue<half   >(d, val);
         default: TYPE_ERROR(3, dtype);
+    }
+    // clang-format on
+}
+
+af_array createHandleFromDeviceData(const af::dim4 &d, af_dtype dtype,
+                                    void *data) {
+    // clang-format off
+    switch (dtype) {
+        case f32: return getHandle(createDeviceDataArray<float  >(d, data, false));
+        case c32: return getHandle(createDeviceDataArray<cfloat >(d, data, false));
+        case f64: return getHandle(createDeviceDataArray<double >(d, data, false));
+        case c64: return getHandle(createDeviceDataArray<cdouble>(d, data, false));
+        case b8:  return getHandle(createDeviceDataArray<char   >(d, data, false));
+        case s32: return getHandle(createDeviceDataArray<int    >(d, data, false));
+        case u32: return getHandle(createDeviceDataArray<uint   >(d, data, false));
+        case u8:  return getHandle(createDeviceDataArray<uchar  >(d, data, false));
+        case s64: return getHandle(createDeviceDataArray<intl   >(d, data, false));
+        case u64: return getHandle(createDeviceDataArray<uintl  >(d, data, false));
+        case s16: return getHandle(createDeviceDataArray<short  >(d, data, false));
+        case u16: return getHandle(createDeviceDataArray<ushort >(d, data, false));
+        case f16: return getHandle(createDeviceDataArray<half   >(d, data, false));
+        default: TYPE_ERROR(2, dtype);
     }
     // clang-format on
 }
