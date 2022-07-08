@@ -432,7 +432,7 @@ make_test(SRC write.cpp)
 make_test(SRC ycbcr_rgb.cpp)
 
 foreach(backend ${enabled_backends})
-  set(target "test_basic_c_${backend}")
+  set(target "basic_c_${backend}")
   add_executable(${target} basic_c.c)
   if(${backend} STREQUAL "unified")
     target_link_libraries(${target}
@@ -443,7 +443,7 @@ foreach(backend ${enabled_backends})
       PRIVATE
       ArrayFire::af${backend})
   endif()
-  add_test(NAME ${target} COMMAND ${target})
+  add_test(NAME test_${target} COMMAND ${target})
 endforeach()
 
 if(AF_TEST_WITH_MTX_FILES)
