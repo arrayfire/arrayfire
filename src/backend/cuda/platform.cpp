@@ -360,7 +360,9 @@ int getDeviceCount() {
 void init() {
     thread_local auto err =
         cudaSetDevice(getDeviceNativeId(getActiveDeviceId()));
+    thread_local auto queue2 = getActiveStream();
     UNUSED(err);
+    UNUSED(queue2);
 }
 
 int getActiveDeviceId() { return tlocalActiveDeviceId(); }
