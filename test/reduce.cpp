@@ -2109,10 +2109,14 @@ TEST(Reduce, nanval_issue_3255) {
         af_product_by_key_nan(&okeys, &ovals, ikeys, ivals, 0, 1.0);
         af::array ovals_cpp(ovals);
         ASSERT_FALSE(af::anyTrue<bool>(af::isNaN(ovals_cpp)));
+        ASSERT_SUCCESS(af_release_array(okeys));
 
         af_sum_by_key_nan(&okeys, &ovals, ikeys, ivals, 0, 1.0);
         ovals_cpp = af::array(ovals);
 
         ASSERT_FALSE(af::anyTrue<bool>(af::isNaN(ovals_cpp)));
+        ASSERT_SUCCESS(af_release_array(ivals));
+        ASSERT_SUCCESS(af_release_array(okeys));
     }
+    ASSERT_SUCCESS(af_release_array(ikeys));
 }
