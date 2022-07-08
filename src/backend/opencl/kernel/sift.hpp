@@ -400,13 +400,20 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
     vector<Param> dog_pyr =
         buildDoGPyr<T>(gauss_pyr, n_octaves, n_layers, kernels[0]);
 
-    vector<Buffer*> d_x_pyr(n_octaves, NULL);
-    vector<Buffer*> d_y_pyr(n_octaves, NULL);
-    vector<Buffer*> d_response_pyr(n_octaves, NULL);
-    vector<Buffer*> d_size_pyr(n_octaves, NULL);
-    vector<Buffer*> d_ori_pyr(n_octaves, NULL);
-    vector<Buffer*> d_desc_pyr(n_octaves, NULL);
+    vector<bufptr> d_x_pyr;
+    vector<bufptr> d_y_pyr;
+    vector<bufptr> d_response_pyr;
+    vector<bufptr> d_size_pyr;
+    vector<bufptr> d_ori_pyr;
+    vector<bufptr> d_desc_pyr;
     vector<unsigned> feat_pyr(n_octaves, 0);
+
+    d_x_pyr.reserve(n_octaves);
+    d_y_pyr.reserve(n_octaves);
+    d_response_pyr.reserve(n_octaves);
+    d_size_pyr.reserve(n_octaves);
+    d_ori_pyr.reserve(n_octaves);
+    d_desc_pyr.reserve(n_octaves);
     unsigned total_feat = 0;
 
     const unsigned d  = DescrWidth;
@@ -417,7 +424,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
     const unsigned desc_len =
         (compute_GLOH) ? (1 + (rb - 1) * ab) * hb : d * d * n;
 
-    Buffer* d_count = bufferAlloc(sizeof(unsigned));
+    auto d_count = memAlloc<unsigned>(1);
 
     for (unsigned o = 0; o < n_octaves; o++) {
         if (dog_pyr[o].info.dims[0] - 2 * ImgBorder < 1 ||
@@ -427,9 +434,9 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         const unsigned imel = dog_pyr[o].info.dims[0] * dog_pyr[o].info.dims[1];
         const unsigned max_feat = ceil(imel * feature_ratio);
 
-        Buffer* d_extrema_x     = bufferAlloc(max_feat * sizeof(float));
-        Buffer* d_extrema_y     = bufferAlloc(max_feat * sizeof(float));
-        Buffer* d_extrema_layer = bufferAlloc(max_feat * sizeof(unsigned));
+        auto d_extrema_x     = memAlloc<float>(max_feat);
+        auto d_extrema_y     = memAlloc<float>(max_feat);
+        auto d_extrema_layer = memAlloc<unsigned>(max_feat);
 
         unsigned extrema_feat = 0;
         getQueue().enqueueWriteBuffer(*d_count, CL_FALSE, 0, sizeof(unsigned),
@@ -458,23 +465,17 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
                                      &extrema_feat);
         extrema_feat = std::min(extrema_feat, max_feat);
 
-        if (extrema_feat == 0) {
-            bufferFree(d_extrema_x);
-            bufferFree(d_extrema_y);
-            bufferFree(d_extrema_layer);
-
-            continue;
-        }
+        if (extrema_feat == 0) { continue; }
 
         unsigned interp_feat = 0;
         getQueue().enqueueWriteBuffer(*d_count, CL_FALSE, 0, sizeof(unsigned),
                                       &interp_feat);
 
-        Buffer* d_interp_x     = bufferAlloc(extrema_feat * sizeof(float));
-        Buffer* d_interp_y     = bufferAlloc(extrema_feat * sizeof(float));
-        Buffer* d_interp_layer = bufferAlloc(extrema_feat * sizeof(unsigned));
-        Buffer* d_interp_response = bufferAlloc(extrema_feat * sizeof(float));
-        Buffer* d_interp_size     = bufferAlloc(extrema_feat * sizeof(float));
+        auto d_interp_x        = memAlloc<float>(extrema_feat);
+        auto d_interp_y        = memAlloc<float>(extrema_feat);
+        auto d_interp_layer    = memAlloc<unsigned>(extrema_feat);
+        auto d_interp_response = memAlloc<float>(extrema_feat);
+        auto d_interp_size     = memAlloc<float>(extrema_feat);
 
         const int blk_x_interp = divup(extrema_feat, SIFT_THREADS);
         const NDRange local_interp(SIFT_THREADS, 1);
@@ -489,23 +490,11 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
              n_layers, contrast_thr, edge_thr, init_sigma, img_scale);
         CL_DEBUG_FINISH(getQueue());
 
-        bufferFree(d_extrema_x);
-        bufferFree(d_extrema_y);
-        bufferFree(d_extrema_layer);
-
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
                                      &interp_feat);
         interp_feat = std::min(interp_feat, extrema_feat);
 
-        if (interp_feat == 0) {
-            bufferFree(d_interp_x);
-            bufferFree(d_interp_y);
-            bufferFree(d_interp_layer);
-            bufferFree(d_interp_response);
-            bufferFree(d_interp_size);
-
-            continue;
-        }
+        if (interp_feat == 0) { continue; }
 
         compute::command_queue queue(getQueue()());
         compute::context context(getContext()());
@@ -546,11 +535,11 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         getQueue().enqueueWriteBuffer(*d_count, CL_FALSE, 0, sizeof(unsigned),
                                       &nodup_feat);
 
-        Buffer* d_nodup_x        = bufferAlloc(interp_feat * sizeof(float));
-        Buffer* d_nodup_y        = bufferAlloc(interp_feat * sizeof(float));
-        Buffer* d_nodup_layer    = bufferAlloc(interp_feat * sizeof(unsigned));
-        Buffer* d_nodup_response = bufferAlloc(interp_feat * sizeof(float));
-        Buffer* d_nodup_size     = bufferAlloc(interp_feat * sizeof(float));
+        auto d_nodup_x        = memAlloc<float>(interp_feat);
+        auto d_nodup_y        = memAlloc<float>(interp_feat);
+        auto d_nodup_layer    = memAlloc<unsigned>(interp_feat);
+        auto d_nodup_response = memAlloc<float>(interp_feat);
+        auto d_nodup_size     = memAlloc<float>(interp_feat);
 
         const int blk_x_nodup = divup(extrema_feat, SIFT_THREADS);
         const NDRange local_nodup(SIFT_THREADS, 1);
@@ -568,26 +557,17 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
                                      &nodup_feat);
         nodup_feat = std::min(nodup_feat, interp_feat);
 
-        bufferFree(d_interp_x);
-        bufferFree(d_interp_y);
-        bufferFree(d_interp_layer);
-        bufferFree(d_interp_response);
-        bufferFree(d_interp_size);
-
         unsigned oriented_feat = 0;
         getQueue().enqueueWriteBuffer(*d_count, CL_FALSE, 0, sizeof(unsigned),
                                       &oriented_feat);
         const unsigned max_oriented_feat = nodup_feat * 3;
 
-        Buffer* d_oriented_x = bufferAlloc(max_oriented_feat * sizeof(float));
-        Buffer* d_oriented_y = bufferAlloc(max_oriented_feat * sizeof(float));
-        Buffer* d_oriented_layer =
-            bufferAlloc(max_oriented_feat * sizeof(unsigned));
-        Buffer* d_oriented_response =
-            bufferAlloc(max_oriented_feat * sizeof(float));
-        Buffer* d_oriented_size =
-            bufferAlloc(max_oriented_feat * sizeof(float));
-        Buffer* d_oriented_ori = bufferAlloc(max_oriented_feat * sizeof(float));
+        auto d_oriented_x        = memAlloc<float>(max_oriented_feat);
+        auto d_oriented_y        = memAlloc<float>(max_oriented_feat);
+        auto d_oriented_layer    = memAlloc<unsigned>(max_oriented_feat);
+        auto d_oriented_response = memAlloc<float>(max_oriented_feat);
+        auto d_oriented_size     = memAlloc<float>(max_oriented_feat);
+        auto d_oriented_ori      = memAlloc<float>(max_oriented_feat);
 
         const int blk_x_ori = divup(nodup_feat, SIFT_THREADS_Y);
         const NDRange local_ori(SIFT_THREADS_X, SIFT_THREADS_Y);
@@ -604,27 +584,13 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
              Local(OriHistBins * SIFT_THREADS_Y * 2 * sizeof(float)));
         CL_DEBUG_FINISH(getQueue());
 
-        bufferFree(d_nodup_x);
-        bufferFree(d_nodup_y);
-        bufferFree(d_nodup_layer);
-        bufferFree(d_nodup_response);
-        bufferFree(d_nodup_size);
-
         getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned),
                                      &oriented_feat);
         oriented_feat = std::min(oriented_feat, max_oriented_feat);
 
-        if (oriented_feat == 0) {
-            bufferFree(d_oriented_x);
-            bufferFree(d_oriented_y);
-            bufferFree(d_oriented_layer);
-            bufferFree(d_oriented_response);
-            bufferFree(d_oriented_size);
+        if (oriented_feat == 0) { continue; }
 
-            continue;
-        }
-
-        Buffer* d_desc = bufferAlloc(oriented_feat * desc_len * sizeof(float));
+        auto d_desc = memAlloc<float>(oriented_feat * desc_len);
 
         float scale = 1.f / (1 << o);
         if (double_input) scale *= 2.f;
@@ -660,16 +626,14 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         feat_pyr[o] = oriented_feat;
 
         if (oriented_feat > 0) {
-            d_x_pyr[o]        = d_oriented_x;
-            d_y_pyr[o]        = d_oriented_y;
-            d_response_pyr[o] = d_oriented_response;
-            d_ori_pyr[o]      = d_oriented_ori;
-            d_size_pyr[o]     = d_oriented_size;
-            d_desc_pyr[o]     = d_desc;
+            d_x_pyr.emplace_back(std::move(d_oriented_x));
+            d_y_pyr.emplace_back(std::move(d_oriented_y));
+            d_response_pyr.emplace_back(std::move(d_oriented_response));
+            d_ori_pyr.emplace_back(std::move(d_oriented_ori));
+            d_size_pyr.emplace_back(std::move(d_oriented_size));
+            d_desc_pyr.emplace_back(std::move(d_desc));
         }
     }
-
-    bufferFree(d_count);
 
     for (size_t i = 0; i < gauss_pyr.size(); i++) bufferFree(gauss_pyr[i].data);
     for (size_t i = 0; i < dog_pyr.size(); i++) bufferFree(dog_pyr[i].data);
@@ -754,13 +718,6 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
         getQueue().enqueueCopyBuffer(*d_desc_pyr[i], *desc_out.data, 0,
                                      offset * desc_len * sizeof(unsigned),
                                      feat_pyr[i] * desc_len * sizeof(unsigned));
-
-        bufferFree(d_x_pyr[i]);
-        bufferFree(d_y_pyr[i]);
-        bufferFree(d_response_pyr[i]);
-        bufferFree(d_ori_pyr[i]);
-        bufferFree(d_size_pyr[i]);
-        bufferFree(d_desc_pyr[i]);
 
         offset += feat_pyr[i];
     }
