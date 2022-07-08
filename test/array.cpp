@@ -584,14 +584,10 @@ TEST(Array, CopyListInitializerListDim4Assignment) {
 }
 
 TEST(Array, EmptyArrayHostCopy) {
-    EXPECT_EXIT(
-        {
-            af::array empty;
-            std::vector<float> hdata(100);
-            empty.host(hdata.data());
-            exit(0);
-        },
-        ::testing::ExitedWithCode(0), ".*");
+    af::array empty;
+    std::vector<float> hdata(100);
+    empty.host(hdata.data());
+    SUCCEED();
 }
 
 TEST(Array, ReferenceCount1) {
