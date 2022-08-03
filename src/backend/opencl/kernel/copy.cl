@@ -8,16 +8,14 @@
  ********************************************************/
 
 typedef struct {
-    dim_t dim[4];
-} dims_t;
+    int dims[4];
+} dims_type;
 
-inType scale(inType value, float factor) {
-#ifdef inType_float2
-    return (inType)(value.s0 * factor, value.s1 * factor);
+#ifdef FACTOR
+#define SCALE(value, factor) (value * factor)
 #else
-    return (inType)(value * factor);
+#define SCALE(value, factor) (value)
 #endif
-}
 
 #if defined(outType_double2)
 
@@ -47,42 +45,185 @@ inType scale(inType value, float factor) {
 
 #endif
 
-kernel void reshapeCopy(global outType *dst, KParam oInfo,
-                        global const inType *src, KParam iInfo,
-                        outType default_value, float factor, dims_t trgt,
-                        int blk_x, int blk_y) {
-    uint lx = get_local_id(0);
-    uint ly = get_local_id(1);
+// scaledCopy without looping, so dim3 has to be 1.
+// conditions:
+//      global dims[0] >= dims[0]
+//      global dims[1] >= dims[1]
+//      global dims[2] == dims[2]
+//      only dims[3] == 1 will be processed!!
+kernel void scaledCopy(global outType *out, const dims_type odims,
+                       const dims_type ostrides, const int ooffset,
+                       global const inType *in, const dims_type idims,
+                       const dims_type istrides, const int ioffset,
+                       const outType default_value, const factorType factor) {
+    const int g0 = get_global_id(0);
+    const int g1 = get_global_id(1);
+    if ((g0 < (int)odims.dims[0]) & (g1 < (int)odims.dims[1])) {
+        const int g2 = get_global_id(2);
 
-    uint gz         = get_group_id(0) / blk_x;
-    uint gw         = get_group_id(1) / blk_y;
-    uint blockIdx_x = get_group_id(0) - (blk_x)*gz;
-    uint blockIdx_y = get_group_id(1) - (blk_y)*gw;
-    uint gx         = blockIdx_x * get_local_size(0) + lx;
-    uint gy         = blockIdx_y * get_local_size(1) + ly;
+        int idx_in = g0 * (int)istrides.dims[0] + g1 * (int)istrides.dims[1] +
+                     g2 * (int)istrides.dims[2] + ioffset;
+        int idx_out = g0 * (int)ostrides.dims[0] + g1 * (int)ostrides.dims[1] +
+                      g2 * (int)ostrides.dims[2] + ooffset;
 
-    global const inType *in =
-        src + (gw * iInfo.strides[3] + gz * iInfo.strides[2] +
-               gy * iInfo.strides[1] + iInfo.offset);
-    global outType *out = dst + (gw * oInfo.strides[3] + gz * oInfo.strides[2] +
-                                 gy * oInfo.strides[1] + oInfo.offset);
-
-    uint istride0 = iInfo.strides[0];
-    uint ostride0 = oInfo.strides[0];
-
-    if (gy < oInfo.dims[1] && gz < oInfo.dims[2] && gw < oInfo.dims[3]) {
-        int loop_offset = get_local_size(0) * blk_x;
-        bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
-        for (int rep = gx; rep < oInfo.dims[0]; rep += loop_offset) {
-            outType temp = default_value;
-#if SAME_DIMS
-            temp = CONVERT(scale(in[rep * istride0], factor));
-#else
-            if (rep < trgt.dim[0] && cond) {
-                temp = CONVERT(scale(in[rep * istride0], factor));
-            }
-#endif
-            out[rep * ostride0] = temp;
+        if (SAME_DIMS | ((g0 < (int)idims.dims[0]) & (g1 < (int)idims.dims[1]) &
+                         (g2 < (int)idims.dims[2]))) {
+            out[idx_out] = CONVERT(SCALE(in[idx_in], factor));
+        } else {
+            out[idx_out] = default_value;
         }
+    }
+}
+
+// scaledCopy with looping over dims[0] -- VECTOR ONLY
+// Conditions:
+//      global dims[0] has no restrictions
+//      only dims[1] == 1 will be processed!!
+//      only dims[2] == 1 will be processed!!
+//      only dims[3] == 1 will be processed!!
+kernel void scaledCopyLoop0(global outType *out, const dims_type odims,
+                            const dims_type ostrides, const int ooffset,
+                            global const inType *in, const dims_type idims,
+                            const dims_type istrides, const int ioffset,
+                            const outType default_value,
+                            const factorType factor) {
+    int id0              = get_global_id(0);
+    const int id0End_out = odims.dims[0];
+    if (id0 < id0End_out) {
+        const int ostrides0     = ostrides.dims[0];
+        const int id0Inc        = get_global_size(0);
+        int idx_out             = id0 * ostrides0 + ooffset;
+        const int idxID0Inc_out = id0Inc * ostrides0;
+        const int id0End_in     = idims.dims[0];
+        const int istrides0     = istrides.dims[0];
+        int idx_in              = id0 * istrides0 + ioffset;
+        const int idxID0Inc_in  = id0Inc * istrides0;
+
+        while (id0 < id0End_in) {
+            // inside input array, so convert
+            out[idx_out] = CONVERT(SCALE(in[idx_in], factor));
+            id0 += id0Inc;
+            idx_in += idxID0Inc_in;
+            idx_out += idxID0Inc_out;
+        }
+        if (!SAME_DIMS) {
+            while (id0 < id0End_out) {
+                // outside the input array, so copy default value
+                out[idx_out] = default_value;
+                id0 += id0Inc;
+                idx_out += idxID0Inc_out;
+            }
+        }
+    }
+}
+
+// scaledCopy with looping over dims[1]
+// Conditions:
+//      global dims[0] >= dims[0]
+//      global dims[1] has no restrictions
+//      global dims[2] == dims[2]
+//      only dims[3] == 1 will be processed!!
+kernel void scaledCopyLoop1(global outType *out, const dims_type odims,
+                            const dims_type ostrides, const int ooffset,
+                            global const inType *in, const dims_type idims,
+                            const dims_type istrides, const int ioffset,
+                            const outType default_value,
+                            const factorType factor) {
+    const int id0        = get_global_id(0);
+    int id1              = get_global_id(1);
+    const int id1End_out = odims.dims[1];
+    if ((id0 < (int)odims.dims[0]) & (id1 < id1End_out)) {
+        const int id2       = get_global_id(2);
+        const int ostrides1 = ostrides.dims[1];
+        const int id1Inc    = get_global_size(1);
+        int idx_out         = id0 * (int)ostrides.dims[0] + id1 * ostrides1 +
+                      id2 * (int)ostrides.dims[2] + ooffset;
+        const int idxID1Inc_out = id1Inc * ostrides1;
+        const int id1End_in     = idims.dims[1];
+        const int istrides1     = istrides.dims[1];
+        int idx_in = id0 * (int)istrides.dims[0] + id1 * istrides1 +
+                     id2 * (int)istrides.dims[2] + ioffset;
+        const int idxID1Inc_in = id1Inc * istrides1;
+
+        if (SAME_DIMS | ((id0 < idims.dims[0]) & (id2 < idims.dims[2]))) {
+            while (id1 < id1End_in) {
+                // inside input array, so convert
+                out[idx_out] = CONVERT(SCALE(in[idx_in], factor));
+                id1 += id1Inc;
+                idx_in += idxID1Inc_in;
+                idx_out += idxID1Inc_out;
+            }
+        }
+        if (!SAME_DIMS) {
+            while (id1 < id1End_out) {
+                // outside the input array, so copy default value
+                out[idx_out] = default_value;
+                id1 += id1Inc;
+                idx_out += idxID1Inc_out;
+            }
+        }
+    }
+}
+
+// scaledCopy with looping over dims[1] and dims[3]
+// Conditions:
+//      global dims[0] >= dims[0]
+//      global dims[1] has no restrictions
+//      global dims[2] == dims[2]
+kernel void scaledCopyLoop13(global outType *out, const dims_type odims,
+                             const dims_type ostrides, const int ooffset,
+                             global const inType *in, const dims_type idims,
+                             const dims_type istrides, const int ioffset,
+                             const outType default_value,
+                             const factorType factor) {
+    const int id0        = get_global_id(0);
+    int id1              = get_global_id(1);
+    const int id1End_out = odims.dims[1];
+    if ((id0 < (int)odims.dims[0]) & (id1 < id1End_out)) {
+        const int id2               = get_global_id(2);
+        const int id1Inc            = get_global_size(1);
+        const int ostrides1         = ostrides.dims[1];
+        const int idxIncID3_out     = ostrides.dims[3];
+        const int idxBaseIncID1_out = id1Inc * ostrides1;
+        int idxBase_out             = id0 * ostrides.dims[0] + id1 * ostrides1 +
+                          id2 * ostrides.dims[2] + ooffset;
+        int idxEndID3_out = odims.dims[3] * idxIncID3_out + idxBase_out;
+
+        const int id0End_in        = idims.dims[0];
+        const int id1End_in        = idims.dims[1];
+        const int id2End_in        = idims.dims[2];
+        const int istrides1        = istrides.dims[1];
+        const int idxIncID3_in     = istrides.dims[3];
+        const int idxBaseIncID1_in = id1Inc * istrides1;
+        int idxBase_in             = id0 * istrides.dims[0] + id1 * istrides1 +
+                         id2 * istrides.dims[2] + ioffset;
+        int idxEndID3_in = idims.dims[3] * idxIncID3_in + idxBase_in;
+
+        do {
+            int idx_in  = idxBase_in;
+            int idx_out = idxBase_out;
+            if (SAME_DIMS |
+                ((id0 < id0End_in) & (id1 < id1End_in) & (id2 < id2End_in))) {
+                // inside input array, so convert
+                do {
+                    out[idx_out] = CONVERT(SCALE(in[idx_in], factor));
+                    idx_in += idxIncID3_in;
+                    idx_out += idxIncID3_out;
+                } while (idx_in != idxEndID3_in);
+            }
+            if (!SAME_DIMS) {
+                while (idx_out != idxEndID3_out) {
+                    // outside the input array, so copy default value
+                    out[idx_out] = default_value;
+                    idx_out += idxIncID3_out;
+                }
+            }
+            id1 += id1Inc;
+            if (id1 >= id1End_out) break;
+            idxBase_in += idxBaseIncID1_in;
+            idxEndID3_in += idxBaseIncID1_in;
+            idxBase_out += idxBaseIncID1_out;
+            idxEndID3_out += idxBaseIncID1_out;
+        } while (true);
     }
 }
