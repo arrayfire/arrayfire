@@ -197,7 +197,6 @@ set(nvrtc_src
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/index.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/iota.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/ireduce.cuh
-  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/join.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/lookup.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/lu_split.cuh
   ${CMAKE_CURRENT_SOURCE_DIR}/kernel/match_template.cuh
@@ -449,7 +448,6 @@ cuda_add_library(afcuda
     kernel/interp.hpp
     kernel/iota.hpp
     kernel/ireduce.hpp
-    kernel/join.hpp
     kernel/lookup.hpp
     kernel/lu_split.hpp
     kernel/match_template.hpp
@@ -648,6 +646,7 @@ cuda_add_library(afcuda
     svd.hpp
     tile.cpp
     tile.hpp
+    threadsMgt.hpp
     topk.hpp
     traits.hpp
     transform.hpp

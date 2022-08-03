@@ -126,7 +126,7 @@ void memcopy(const cl::Buffer& b_out, const dim4& ostrides,
     // When the architecture prefers some width's, it is certainly
     // on char.  No preference means vector width 1 returned.
     const bool DevicePreferredVectorWidth{DevicePreferredVectorWidthChar != 1};
-    unsigned maxVectorWidth{
+    size_t maxVectorWidth{
         DevicePreferredVectorWidth
             ? sizeof(T) == 1 ? DevicePreferredVectorWidthChar
               : sizeof(T) == 2
@@ -138,10 +138,10 @@ void memcopy(const cl::Buffer& b_out, const dim4& ostrides,
                   : 1
         : sizeof(T) > 8 ? 1
                         : 16 / sizeof(T)};
-    const unsigned vectorWidth{vectorizeShape(maxVectorWidth, idims_.dims,
-                                              istrides_.dims, indims_, ioffset,
-                                              ostrides_.dims, ooffset)};
-    const dim_t sizeofNewT{sizeof(T) * vectorWidth};
+    const size_t vectorWidth{vectorizeShape(maxVectorWidth, idims_.dims,
+                                            istrides_.dims, indims_, ioffset,
+                                            ostrides_.dims, ooffset)};
+    const size_t sizeofNewT{sizeof(T) * vectorWidth};
 
     threadsMgt<int> th(idims_.dims, indims_, 1, 1, totalSize, sizeofNewT);
     const char* kernelName{
