@@ -21,93 +21,105 @@ using common::is_complex;
 namespace opencl {
 
 template<typename T>
-void copyData(T *data, const Array<T> &A) {
-    if (A.elements() == 0) { return; }
-
-    // FIXME: Merge this with copyArray
-    A.eval();
-
-    dim_t offset = 0;
-    cl::Buffer buf;
-    Array<T> out = A;
-
-    if (A.isLinear() ||  // No offsets, No strides
-        A.ndims() == 1   // Simple offset, no strides.
-    ) {
-        buf    = *A.get();
-        offset = A.getOffset();
-    } else {
-        // FIXME: Think about implementing eval
-        out    = copyArray(A);
-        buf    = *out.get();
-        offset = 0;
+void copyData(T *data, const Array<T> &src) {
+    if (src.elements() > 0) {
+        Array<T> out = src.isReady() && src.isLinear() ? src : copyArray(src);
+        // out is now guaranteed linear
+        getQueue().enqueueReadBuffer(*out.get(), CL_TRUE,
+                                     sizeof(T) * out.getOffset(),
+                                     sizeof(T) * out.elements(), data);
     }
-
-    // FIXME: Add checks
-    getQueue().enqueueReadBuffer(buf, CL_TRUE, sizeof(T) * offset,
-                                 sizeof(T) * A.elements(), data);
 }
 
 template<typename T>
-Array<T> copyArray(const Array<T> &A) {
-    Array<T> out = createEmptyArray<T>(A.dims());
-    if (A.elements() == 0) { return out; }
-
-    dim_t offset = A.getOffset();
-    if (A.isLinear()) {
-        // FIXME: Add checks
-        getQueue().enqueueCopyBuffer(*A.get(), *out.get(), sizeof(T) * offset,
-                                     0, A.elements() * sizeof(T));
-    } else {
-        kernel::memcopy<T>(*out.get(), out.strides().get(), *A.get(),
-                           A.dims().get(), A.strides().get(), offset,
-                           (uint)A.ndims());
+Array<T> copyArray(const Array<T> &src) {
+    Array<T> out = createEmptyArray<T>(src.dims());
+    if (src.elements() > 0) {
+        if (src.isReady()) {
+            if (src.isLinear()) {
+                getQueue().enqueueCopyBuffer(
+                    *src.get(), *out.get(), src.getOffset() * sizeof(T), 0,
+                    src.elements() * sizeof(T), nullptr, nullptr);
+            } else {
+                kernel::memcopy<T>(*out.get(), out.strides(), *src.get(),
+                                   src.dims(), src.strides(), src.getOffset(),
+                                   src.ndims());
+            }
+        } else {
+            Param info = {out.get(),
+                          {{src.dims().dims[0], src.dims().dims[1],
+                            src.dims().dims[2], src.dims().dims[3]},
+                           {out.strides().dims[0], out.strides().dims[1],
+                            out.strides().dims[2], out.strides().dims[3]},
+                           0}};
+            evalNodes(info, src.getNode().get());
+        }
     }
     return out;
 }
 
 template<typename T>
-void multiply_inplace(Array<T> &in, double val) {
-    kernel::copy<T, T>(in, in, in.ndims(), scalar<T>(0), val, true);
+void multiply_inplace(Array<T> &src, double norm) {
+    if (src.elements() > 0) {
+        kernel::copy<T, T>(src, src, src.ndims(), scalar<T>(0), norm);
+    }
 }
 
 template<typename inType, typename outType>
 struct copyWrapper {
-    void operator()(Array<outType> &out, Array<inType> const &in) {
-        kernel::copy<inType, outType>(out, in, in.ndims(), scalar<outType>(0),
-                                      1, in.dims() == out.dims());
+    void operator()(Array<outType> &dst, Array<inType> const &src) {
+        kernel::copy<inType, outType>(dst, src, dst.ndims(), scalar<outType>(0),
+                                      1.0);
     }
 };
 
 template<typename T>
 struct copyWrapper<T, T> {
-    void operator()(Array<T> &out, Array<T> const &in) {
-        if (out.isLinear() && in.isLinear() &&
-            out.elements() == in.elements()) {
-            dim_t in_offset  = in.getOffset() * sizeof(T);
-            dim_t out_offset = out.getOffset() * sizeof(T);
-
-            getQueue().enqueueCopyBuffer(*in.get(), *out.get(), in_offset,
-                                         out_offset, in.elements() * sizeof(T));
-        } else {
-            kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1,
-                               in.dims() == out.dims());
+    void operator()(Array<T> &dst, Array<T> const &src) {
+        if (src.elements() > 0) {
+            if (dst.dims() == src.dims()) {
+                if (src.isReady()) {
+                    if (dst.isLinear() && src.isLinear()) {
+                        getQueue().enqueueCopyBuffer(
+                            *src.get(), *dst.get(), src.getOffset() * sizeof(T),
+                            dst.getOffset() * sizeof(T),
+                            src.elements() * sizeof(T), nullptr, nullptr);
+                    } else {
+                        kernel::memcopy<T>(*dst.get(), dst.strides(),
+                                           *src.get(), src.dims(),
+                                           src.strides(), src.getOffset(),
+                                           src.ndims(), dst.getOffset());
+                    }
+                } else {
+                    Param info = {
+                        dst.get(),
+                        {{src.dims().dims[0], src.dims().dims[1],
+                          src.dims().dims[2], src.dims().dims[3]},
+                         {dst.strides().dims[0], dst.strides().dims[1],
+                          dst.strides().dims[2], dst.strides().dims[3]},
+                         dst.getOffset()}};
+                    evalNodes(info, src.getNode().get());
+                }
+            } else {
+                // dst has more elements than src, so default has to be applied
+                kernel::copy<T, T>(dst, src, dst.ndims(), scalar<T>(0), 1.0);
+            }
         }
     }
 };
 
 template<typename inType, typename outType>
-void copyArray(Array<outType> &out, Array<inType> const &in) {
+void copyArray(Array<outType> &dst, Array<inType> const &src) {
     static_assert(!(is_complex<inType>::value && !is_complex<outType>::value),
                   "Cannot copy from complex value to a non complex value");
     copyWrapper<inType, outType> copyFn;
-    copyFn(out, in);
+    copyFn(dst, src);
 }
 
-#define INSTANTIATE(T)                                         \
-    template void copyData<T>(T * data, const Array<T> &from); \
-    template Array<T> copyArray<T>(const Array<T> &A);         \
-    template void multiply_inplace<T>(Array<T> & in, double norm);
+#define INSTANTIATE(T)                                        \
+    template void copyData<T>(T * data, const Array<T> &src); \
+    template Array<T> copyArray<T>(const Array<T> &src);      \
+    template void multiply_inplace<T>(Array<T> & src, double norm);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
@@ -173,10 +185,10 @@ INSTANTIATE_COPY_ARRAY_COMPLEX(cfloat)
 INSTANTIATE_COPY_ARRAY_COMPLEX(cdouble)
 
 template<typename T>
-T getScalar(const Array<T> &in) {
+T getScalar(const Array<T> &src) {
     T retVal{};
-    getQueue().enqueueReadBuffer(*in.get(), CL_TRUE, sizeof(T) * in.getOffset(),
-                                 sizeof(T), &retVal);
+    getQueue().enqueueReadBuffer(
+        *src.get(), CL_TRUE, sizeof(T) * src.getOffset(), sizeof(T), &retVal);
     return retVal;
 }
 

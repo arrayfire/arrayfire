@@ -11,92 +11,199 @@
 
 #include <Param.hpp>
 #include <backend.hpp>
-#include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_cuda.hpp>
 #include <dims_param.hpp>
 #include <nvrtc_kernel_headers/copy_cuh.hpp>
 #include <nvrtc_kernel_headers/memcopy_cuh.hpp>
+#include <threadsMgt.hpp>
 
 #include <algorithm>
 
 namespace cuda {
 namespace kernel {
 
-constexpr uint DIMX = 32;
-constexpr uint DIMY = 8;
+// Increase vectorization by increasing the used type up to maxVectorWidth.
+// Example:
+//  input array<int> with return value = 4, means that the array became
+//  array<int4>.
+//
+// Parameters
+//  - IN     maxVectorWidth: maximum vectorisation desired
+//  - IN/OUT dims[4]: dimensions of the array
+//  - IN/OUT istrides[4]: strides of the input array
+//  - IN/OUT indims: ndims of the input array.  Updates when dim[0] becomes 1
+//  - IN/OUT ioffset: offset of the input array
+//  - IN/OUT ostrides[4]: strides of the output array
+//  - IN/OUT ooffset: offset of the output array
+//
+// Returns
+//  - maximum obtained vectorization.
+//  - All the parameters are updated accordingly
+//
+template<typename T>
+dim_t vectorizeShape(const dim_t maxVectorWidth, Param<T> &out, dim_t &indims,
+                     CParam<T> &in) {
+    dim_t vectorWidth{1};
+    if ((maxVectorWidth != 1) & (in.strides[0] == 1) & (out.strides[0] == 1)) {
+        // Only adjacent items can be grouped into a base vector type
+        void *in_ptr{(void *)in.ptr};
+        void *out_ptr{(void *)out.ptr};
+        // - global is the OR of the values to be checked.  When global is
+        // divisable by 2, than all source values are also
+        dim_t global{in.dims[0]};
+        for (int i{1}; i < indims; ++i) {
+            global |= in.strides[i] | out.strides[i];
+        }
+        // - The buffers are always aligned at 128 Bytes.  The pointers in the
+        // Param<T> structure are however, direct pointers (including the
+        // offset), so the final pointer has to be chedked on alignment
+        size_t filler{64};  // give enough space for the align to move
+        unsigned count{0};
+        while (((global & 1) == 0) & (vectorWidth < maxVectorWidth) &&
+               (in.ptr ==
+                std::align(alignof(T) * vectorWidth * 2, 1, in_ptr, filler)) &&
+               (out.ptr ==
+                std::align(alignof(T) * vectorWidth * 2, 1, out_ptr, filler))) {
+            ++count;
+            vectorWidth <<= 1;
+            global >>= 1;
+        }
+        if (count != 0) {
+            // update the dimensions, to compensate for the vector base
+            // type change
+            in.dims[0] >>= count;
+            for (int i{1}; i < indims; ++i) {
+                in.strides[i] >>= count;
+                out.strides[i] >>= count;
+            }
+            if (in.dims[0] == 1) {
+                // Vectorization has absorbed the full dim0, so eliminate
+                // this dimension
+                --indims;
+                for (int i{0}; i < indims; ++i) {
+                    in.dims[i]     = in.dims[i + 1];
+                    in.strides[i]  = in.strides[i + 1];
+                    out.strides[i] = out.strides[i + 1];
+                }
+                in.dims[indims] = 1;
+            }
+        }
+    }
+    return vectorWidth;
+}
 
 template<typename T>
-void memcopy(Param<T> out, CParam<T> in, const dim_t ndims) {
-    auto memCopy = common::getKernel("cuda::memcopy", {memcopy_cuh_src},
-                                     {TemplateTypename<T>()});
+void memcopy(Param<T> out, CParam<T> in, dim_t indims) {
+    const size_t totalSize{in.elements() * sizeof(T) * 2};
+    removeEmptyColumns(in.dims, indims, out.strides);
+    indims = removeEmptyColumns(in.dims, indims, in.dims, in.strides);
+    indims = combineColumns(in.dims, in.strides, indims, out.strides);
 
-    dim3 threads(DIMX, DIMY);
+    // Optimization memory access and caching.
+    // Best performance is achieved with the highest vectorization
+    // (<int> --> <int2>,<int4>, ...), since more data is processed per IO.
 
-    if (ndims == 1) {
-        threads.x *= threads.y;
-        threads.y = 1;
-    }
+    // 16 Bytes gives best performance (=cdouble)
+    const dim_t maxVectorWidth{sizeof(T) > 8 ? 1 : 16 / sizeof(T)};
+    const dim_t vectorWidth{vectorizeShape(maxVectorWidth, out, indims, in)};
+    const size_t sizeofNewT{sizeof(T) * vectorWidth};
 
-    // FIXME: DO more work per block
-    uint blocks_x = divup(in.dims[0], threads.x);
-    uint blocks_y = divup(in.dims[1], threads.y);
-
-    dim3 blocks(blocks_x * in.dims[2], blocks_y * in.dims[3]);
-
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    threadsMgt<dim_t> th(in.dims, indims);
+    const dim3 threads{th.genThreads()};
+    const dim3 blocks{th.genBlocks(threads, 1, 1, totalSize, sizeofNewT)};
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    memCopy(qArgs, out, in, blocks_x, blocks_y);
+    // select the kernel with the necessary loopings
+    const char *kernelName{th.loop0   ? "cuda::memCopyLoop0"
+                           : th.loop2 ? "cuda::memCopyLoop123"
+                           : th.loop1 ? th.loop3 ? "cuda::memCopyLoop13"
+                                                 : "cuda::memCopyLoop1"
+                           : th.loop3 ? "cuda::memCopyLoop3"
+                                      : "cuda::memCopy"};
 
+    // Conversion to cuda base vector types.
+    switch (sizeofNewT) {
+        case 1: {
+            auto memCopy{
+                common::getKernel(kernelName, {memcopy_cuh_src}, {"char"})};
+            memCopy(qArgs, Param<char>((char *)out.ptr, out.dims, out.strides),
+                    CParam<char>((const char *)in.ptr, in.dims, in.strides));
+        } break;
+        case 2: {
+            auto memCopy{
+                common::getKernel(kernelName, {memcopy_cuh_src}, {"short"})};
+            memCopy(qArgs,
+                    Param<short>((short *)out.ptr, out.dims, out.strides),
+                    CParam<short>((const short *)in.ptr, in.dims, in.strides));
+        } break;
+        case 4: {
+            auto memCopy{
+                common::getKernel(kernelName, {memcopy_cuh_src}, {"float"})};
+            memCopy(qArgs,
+                    Param<float>((float *)out.ptr, out.dims, out.strides),
+                    CParam<float>((const float *)in.ptr, in.dims, in.strides));
+        } break;
+        case 8: {
+            auto memCopy{
+                common::getKernel(kernelName, {memcopy_cuh_src}, {"float2"})};
+            memCopy(
+                qArgs, Param<float2>((float2 *)out.ptr, out.dims, out.strides),
+                CParam<float2>((const float2 *)in.ptr, in.dims, in.strides));
+        } break;
+        case 16: {
+            auto memCopy{
+                common::getKernel(kernelName, {memcopy_cuh_src}, {"float4"})};
+            memCopy(
+                qArgs, Param<float4>((float4 *)out.ptr, out.dims, out.strides),
+                CParam<float4>((const float4 *)in.ptr, in.dims, in.strides));
+        } break;
+        default: assert("type is larger than 16 bytes, which is unsupported");
+    }
     POST_LAUNCH_CHECK();
 }
 
 template<typename inType, typename outType>
-void copy(Param<outType> dst, CParam<inType> src, int ndims,
+void copy(Param<outType> dst, CParam<inType> src, dim_t ondims,
           outType default_value, double factor) {
-    dim3 threads(DIMX, DIMY);
-    size_t local_size[] = {DIMX, DIMY};
+    const size_t totalSize{dst.elements() * sizeof(outType) +
+                           src.elements() * sizeof(inType)};
+    bool same_dims{true};
+    for (dim_t i{0}; i < ondims; ++i) {
+        if (src.dims[i] > dst.dims[i]) {
+            src.dims[i] = dst.dims[i];
+        } else if (src.dims[i] != dst.dims[i]) {
+            same_dims = false;
+        }
+    }
+    removeEmptyColumns(dst.dims, ondims, src.dims, src.strides);
+    ondims = removeEmptyColumns(dst.dims, ondims, dst.dims, dst.strides);
+    ondims =
+        combineColumns(dst.dims, dst.strides, ondims, src.dims, src.strides);
 
-    // FIXME: Why isn't threads being updated??
-    local_size[0] *= local_size[1];
-    if (ndims == 1) { local_size[1] = 1; }
-
-    uint blk_x = divup(dst.dims[0], local_size[0]);
-    uint blk_y = divup(dst.dims[1], local_size[1]);
-
-    dim3 blocks(blk_x * dst.dims[2], blk_y * dst.dims[3]);
-
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
-
-    int trgt_l       = std::min(dst.dims[3], src.dims[3]);
-    int trgt_k       = std::min(dst.dims[2], src.dims[2]);
-    int trgt_j       = std::min(dst.dims[1], src.dims[1]);
-    int trgt_i       = std::min(dst.dims[0], src.dims[0]);
-    dims_t trgt_dims = {{trgt_i, trgt_j, trgt_k, trgt_l}};
-
-    bool same_dims =
-        ((src.dims[0] == dst.dims[0]) && (src.dims[1] == dst.dims[1]) &&
-         (src.dims[2] == dst.dims[2]) && (src.dims[3] == dst.dims[3]));
-
-    auto copy = common::getKernel(
-        "cuda::copy", {copy_cuh_src},
-        {TemplateTypename<inType>(), TemplateTypename<outType>(),
-         TemplateArg(same_dims)});
+    threadsMgt<dim_t> th(dst.dims, ondims);
+    const dim3 threads{th.genThreads()};
+    const dim3 blocks{th.genBlocks(threads, 1, 1, totalSize, sizeof(outType))};
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    copy(qArgs, dst, src, default_value, factor, trgt_dims, blk_x, blk_y);
+    auto copy{common::getKernel(th.loop0 ? "cuda::scaledCopyLoop0"
+                                : th.loop2 | th.loop3
+                                    ? "cuda::scaledCopyLoop123"
+                                : th.loop1 ? "cuda::scaledCopyLoop1"
+                                           : "cuda::scaledCopy",
+                                {copy_cuh_src},
+                                {
+                                    TemplateTypename<inType>(),
+                                    TemplateTypename<outType>(),
+                                    TemplateArg(same_dims),
+                                    TemplateArg(factor != 1.0),
+                                })};
+
+    copy(qArgs, dst, src, default_value, factor);
 
     POST_LAUNCH_CHECK();
 }
-
 }  // namespace kernel
 }  // namespace cuda
