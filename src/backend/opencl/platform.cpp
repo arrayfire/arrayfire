@@ -21,9 +21,9 @@
 #include <device_manager.hpp>
 #include <err_opencl.hpp>
 #include <errorcodes.hpp>
+#include <platform.hpp>
 #include <version.hpp>
 #include <af/version.h>
-#include <memory>
 
 #ifdef OS_MAC
 #include <OpenGL/CGLCurrent.h>
@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -223,7 +224,7 @@ void init() {
     UNUSED(devMngr);
 }
 
-unsigned getActiveDeviceId() {
+int getActiveDeviceId() {
     // Second element is the queue id, which is
     // what we mean by active device id in opencl backend
     return get<1>(tlocalActiveDeviceId());
@@ -314,10 +315,6 @@ cl_device_type getDeviceType() {
     return type;
 }
 
-bool isHostUnifiedMemory(const cl::Device& device) {
-    return device.getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-}
-
 bool OpenCLCPUOffload(bool forceOffloadOSX) {
     static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") != "0";
     bool offload                 = false;
@@ -360,9 +357,7 @@ bool isDoubleSupported(unsigned device) {
         common::lock_guard_t lock(devMngr.deviceMutex);
         dev = *devMngr.mDevices[device];
     }
-    // 64bit fp is an optional extension
-    return (dev.getInfo<CL_DEVICE_EXTENSIONS>().find("cl_khr_fp64") !=
-            string::npos);
+    return isDoubleSupported(dev);
 }
 
 bool isHalfSupported(unsigned device) {
@@ -373,9 +368,7 @@ bool isHalfSupported(unsigned device) {
         common::lock_guard_t lock(devMngr.deviceMutex);
         dev = *devMngr.mDevices[device];
     }
-    // 16bit fp is an option extension
-    return (dev.getInfo<CL_DEVICE_EXTENSIONS>().find("cl_khr_fp16") !=
-            string::npos);
+    return isHalfSupported(dev);
 }
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {

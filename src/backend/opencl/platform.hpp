@@ -57,7 +57,7 @@ int getDeviceCount() noexcept;
 
 void init();
 
-unsigned getActiveDeviceId();
+int getActiveDeviceId();
 
 int& getMaxJitSize();
 
@@ -71,18 +71,65 @@ size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
 
+inline unsigned getMemoryBusWidth(const cl::Device& device) {
+    return device.getInfo<CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE>();
+}
+
+// OCL only reports on L1 cache, so we have to estimate the L2 Cache
+// size. From studying many GPU cards, it is noticed that their is a
+// direct correlation between Cache line and L2 Cache size:
+//      - 16KB L2 Cache for each bit in Cache line.
+//        Example: RTX3070 (4096KB of L2 Cache, 256Bit of Cache
+//        line)
+//                   --> 256*16KB = 4096KB
+//      - This is also valid for all AMD GPU's
+//      - Exceptions
+//          * GTX10XX series have 8KB per bit of cache line
+//          * iGPU (64bit cacheline) have 5KB per bit of cache line
+inline size_t getL2CacheSize(const cl::Device& device) {
+    const unsigned cacheLine{getMemoryBusWidth(device)};
+    return cacheLine * 1024ULL *
+           (cacheLine == 64 ? 5
+            : device.getInfo<CL_DEVICE_NAME>().find("GTX 10") ==
+                    std::string::npos
+                ? 16
+                : 8);
+}
+
+inline unsigned getComputeUnits(const cl::Device& device) {
+    return device.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
+}
+
+// maximum nr of threads the device really can run in parallel, without
+// scheduling
+inline unsigned getMaxParallelThreads(const cl::Device& device) {
+    return getComputeUnits(device) * 2048;
+}
+
 cl_device_type getDeviceType();
 
-bool isHostUnifiedMemory(const cl::Device& device);
+inline bool isHostUnifiedMemory(const cl::Device& device) {
+    return device.getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
+}
 
 bool OpenCLCPUOffload(bool forceOffloadOSX = true);
 
 bool isGLSharingSupported();
 
 bool isDoubleSupported(unsigned device);
+inline bool isDoubleSupported(const cl::Device& device) {
+    // 64bit fp is an optional extension
+    return (device.getInfo<CL_DEVICE_EXTENSIONS>().find("cl_khr_fp64") !=
+            std::string::npos);
+}
 
 // Returns true if 16-bit precision floats are supported by the device
 bool isHalfSupported(unsigned device);
+inline bool isHalfSupported(const cl::Device& device) {
+    // 16bit fp is an option extension
+    return (device.getInfo<CL_DEVICE_EXTENSIONS>().find("cl_khr_fp16") !=
+            std::string::npos);
+}
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute);
 
