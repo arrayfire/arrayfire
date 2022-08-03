@@ -245,7 +245,7 @@ class Node {
     // Returns true if this node is a Buffer
     virtual bool isBuffer() const { return false; }
 
-    // Returns true if this node is a Buffer
+    // Returns true if this node is a Scalar
     virtual bool isScalar() const { return false; }
 
     /// Returns true if the buffer is linear
@@ -304,7 +304,9 @@ struct Node_ids {
 
 std::string getFuncName(const std::vector<Node *> &output_nodes,
                         const std::vector<Node *> &full_nodes,
-                        const std::vector<Node_ids> &full_ids, bool is_linear);
+                        const std::vector<Node_ids> &full_ids,
+                        const bool is_linear, const bool loop0,
+                        const bool loop1, const bool loop2, const bool loop3);
 
 auto isBuffer(const Node &ptr) -> bool;
 
