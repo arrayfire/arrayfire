@@ -11,76 +11,191 @@
 #include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <join.hpp>
-#include <kernel/join.hpp>
+#include <kernel/memcopy.hpp>
 
 #include <algorithm>
+#include <map>
 #include <stdexcept>
+#include <vector>
 
+using af::dim4;
 using common::half;
+using common::Node;
+using common::Node_ptr;
+using std::vector;
 
 namespace cuda {
 
-af::dim4 calcOffset(const af::dim4 &dims, const int dim) {
-    af::dim4 offset;
-    offset[0] = (dim == 0) * dims[0];
-    offset[1] = (dim == 1) * dims[1];
-    offset[2] = (dim == 2) * dims[2];
-    offset[3] = (dim == 3) * dims[3];
-    return offset;
-}
-
 template<typename T>
-Array<T> join(const int dim, const Array<T> &first, const Array<T> &second) {
+Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
     // All dimensions except join dimension must be equal
+    const dim4 &fdims{first.dims()};
+    const dim4 &sdims{second.dims()};
     // Compute output dims
-    af::dim4 odims;
-    af::dim4 fdims = first.dims();
-    af::dim4 sdims = second.dims();
+    dim4 odims(fdims);
+    odims.dims[jdim] += sdims.dims[jdim];
+    Array<T> out{createEmptyArray<T>(odims)};
+    const cudaStream_t activeStream{getActiveStream()};
 
-    for (int i = 0; i < 4; i++) {
-        if (i == dim) {
-            odims[i] = fdims[i] + sdims[i];
-        } else {
-            odims[i] = fdims[i];
+    // topspeed is achieved when byte size(in+out) ~= L2CacheSize
+    //
+    // 1 array: memcpy always copies 1 array.  topspeed
+    //      --> size(in) < L2CacheSize/2
+    // 2 arrays: topspeeds
+    //      - size(in) < L2CacheSize/2/2
+    //          --> JIT can copy 2 arrays in // and is fastest
+    //              (condition: array sizes have to be identical)
+    //      - size(in) < L2CacheSize/2
+    //          --> memcpy will achieve highest speed, although the kernel
+    //              has to be called twice
+    //      - size(in) >= L2CacheSize/2
+    //          --> memcpy will achieve veryLargeArray speed.  The kernel
+    //              will be called twice
+    if (fdims.dims[jdim] == sdims.dims[jdim]) {
+        const size_t L2CacheSize{getL2CacheSize(getActiveDeviceId())};
+        if (!(first.isReady() | second.isReady()) ||
+            (fdims.elements() * sizeof(T) * 2 * 2 < L2CacheSize)) {
+            // Both arrays have same size & everything fits into the cache,
+            // so treat in 1 JIT kernel, iso individual copies which is
+            // always slower
+            const dim_t *outStrides{out.strides().dims};
+            vector<Param<T>> outputs{
+                {out.get(), fdims.dims, outStrides},
+                {out.get() + fdims.dims[jdim] * outStrides[jdim], sdims.dims,
+                 outStrides}};
+            // Extend the life of the returned node, by saving the
+            // corresponding shared_ptr
+            const Node_ptr fNode{first.getNode()};
+            const Node_ptr sNode{second.getNode()};
+            vector<Node *> nodes{fNode.get(), sNode.get()};
+            evalNodes(outputs, nodes);
+            return out;
         }
+        // continue because individually processing is faster
     }
 
-    Array<T> out = createEmptyArray<T>(odims);
+    // Handle each array individually
+    if (first.isReady()) {
+        if (1LL + jdim >= first.ndims() && first.isLinear()) {
+            // first & out are linear
+            CUDA_CHECK(cudaMemcpyAsync(out.get(), first.get(),
+                                       first.elements() * sizeof(T),
+                                       cudaMemcpyDeviceToDevice, activeStream));
+        } else {
+            kernel::memcopy<T>(out, first, first.ndims());
+        }
+    } else {
+        // Write the result directly in the out array
+        const Param<T> output(out.get(), fdims.dims, out.strides().dims);
+        evalNodes(output, first.getNode().get());
+    }
 
-    af::dim4 zero(0, 0, 0, 0);
+    if (second.isReady()) {
+        if (1LL + jdim >= second.ndims() && second.isLinear()) {
+            // second & out are linear
+            CUDA_CHECK(cudaMemcpyAsync(
+                out.get() + fdims.dims[jdim] * out.strides().dims[jdim],
+                second.get(), second.elements() * sizeof(T),
+                cudaMemcpyDeviceToDevice, activeStream));
+        } else {
+            Param<T> output(
+                out.get() + fdims.dims[jdim] * out.strides().dims[jdim],
+                sdims.dims, out.strides().dims);
+            kernel::memcopy<T>(output, second, second.ndims());
+        }
+    } else {
+        // Write the result directly in the out array
+        const Param<T> output(
+            out.get() + fdims.dims[jdim] * out.strides().dims[jdim], sdims.dims,
+            out.strides().dims);
+        evalNodes(output, second.getNode().get());
+    }
 
-    kernel::join<T>(out, first, zero, dim);
-    kernel::join<T>(out, second, calcOffset(fdims, dim), dim);
-
-    return out;
+    return (out);
 }
 
 template<typename T>
-void join_wrapper(const int dim, Array<T> &out,
-                  const std::vector<Array<T>> &inputs) {
-    af::dim4 zero(0, 0, 0, 0);
-    af::dim4 d = zero;
+void join(Array<T> &out, const int jdim, const vector<Array<T>> &inputs) {
+    class eval {
+       public:
+        vector<Param<T>> outputs;
+        vector<Node_ptr> nodePtrs;
+        vector<Node *> nodes;
+        vector<const Array<T> *> ins;
+    };
+    std::map<dim_t, eval> evals;
+    const cudaStream_t activeStream{getActiveStream()};
+    const size_t L2CacheSize{getL2CacheSize(getActiveDeviceId())};
 
-    kernel::join<T>(out, inputs[0], zero, dim);
-    for (size_t i = 1; i < inputs.size(); i++) {
-        d += inputs[i - 1].dims();
-        kernel::join<T>(out, inputs[i], calcOffset(d, dim), dim);
+    // topspeed is achieved when byte size(in+out) ~= L2CacheSize
+    //
+    // 1 array: memcpy always copies 1 array.  topspeed
+    //      --> size(in) <= L2CacheSize/2
+    // 2 arrays: topspeeds
+    //      - size(in) < L2CacheSize/2/2
+    //          --> JIT can copy 2 arrays in // and is fastest
+    //              (condition: array sizes have to be identical)
+    //      - else
+    //          --> memcpy will achieve highest speed, although the kernel
+    //              has to be called twice
+    // 3 arrays: topspeeds
+    //      - size(in) < L2CacheSize/2/3
+    //          --> JIT can copy 3 arrays in // and is fastest
+    //              (condition: array sizes have to be identical)
+    //      - else
+    //          --> memcpy will achieve highest speed, although the kernel
+    //              has to be called multiple times
+
+    // Group all arrays according to size
+    dim_t outOffset{0};
+    for (const Array<T> &iArray : inputs) {
+        const dim_t *idims{iArray.dims().dims};
+        eval &e{evals[idims[jdim]]};
+        e.outputs.emplace_back(out.get() + outOffset, idims,
+                               out.strides().dims);
+        // Extend life of the returned node by saving the corresponding
+        // shared_ptr
+        e.nodePtrs.emplace_back(iArray.getNode());
+        e.nodes.push_back(e.nodePtrs.back().get());
+        e.ins.push_back(&iArray);
+        outOffset += idims[jdim] * out.strides().dims[jdim];
+    }
+
+    for (auto &eval : evals) {
+        auto &s{eval.second};
+        if (s.ins.size() == 1 ||
+            s.ins[0]->elements() * sizeof(T) * 2 * 2 > L2CacheSize) {
+            // Process (evaluated arrays) individually for
+            //  - single small array
+            //  - very large arrays
+            auto nodeIt{begin(s.nodes)};
+            auto outputIt{begin(s.outputs)};
+            for (const Array<T> *in : s.ins) {
+                if (in->isReady()) {
+                    if (1LL + jdim >= in->ndims() && in->isLinear()) {
+                        CUDA_CHECK(cudaMemcpyAsync(outputIt->ptr, in->get(),
+                                                   in->elements() * sizeof(T),
+                                                   cudaMemcpyHostToDevice,
+                                                   activeStream));
+                    } else {
+                        kernel::memcopy<T>(*outputIt, *in, in->ndims());
+                    }
+                    // eliminate this array from the list, so that it will
+                    // not be processed as bulk via JIT
+                    outputIt = s.outputs.erase(outputIt);
+                    nodeIt   = s.nodes.erase(nodeIt);
+                } else {
+                    ++outputIt;
+                    ++nodeIt;
+                }
+            }
+        }
+        evalNodes(s.outputs, s.nodes);
     }
 }
 
-template<typename T>
-void join(Array<T> &out, const int dim, const std::vector<Array<T>> &inputs) {
-    std::vector<Array<T> *> input_ptrs(inputs.size());
-    std::transform(
-        begin(inputs), end(inputs), begin(input_ptrs),
-        [](const Array<T> &input) { return const_cast<Array<T> *>(&input); });
-    evalMultiple(input_ptrs);
-
-    join_wrapper<T>(dim, out, inputs);
-}
-
-#define INSTANTIATE(T)                                              \
-    template Array<T> join<T>(const int dim, const Array<T> &first, \
+#define INSTANTIATE(T)                                               \
+    template Array<T> join<T>(const int jdim, const Array<T> &first, \
                               const Array<T> &second);
 
 INSTANTIATE(float)
@@ -99,9 +214,9 @@ INSTANTIATE(half)
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(T)                                   \
-    template void join<T>(Array<T> & out, const int dim, \
-                          const std::vector<Array<T>> &inputs);
+#define INSTANTIATE(T)                                    \
+    template void join<T>(Array<T> & out, const int jdim, \
+                          const vector<Array<T>> &inputs);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
