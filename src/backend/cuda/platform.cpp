@@ -58,6 +58,7 @@ using std::runtime_error;
 using std::string;
 using std::to_string;
 using std::unique_ptr;
+using std::vector;
 
 using common::unique_handle;
 using common::memory::MemoryManagerBase;
@@ -202,7 +203,7 @@ DeviceManager::~DeviceManager() {
 int getBackend() { return AF_BACKEND_CUDA; }
 
 string getDeviceInfo(int device) noexcept {
-    cudaDeviceProp dev = getDeviceProp(device);
+    const cudaDeviceProp &dev = getDeviceProp(device);
 
     size_t mem_gpu_total = dev.totalGlobalMem;
     // double cc = double(dev.major) + double(dev.minor) / 10;
@@ -244,19 +245,19 @@ string getPlatformInfo() noexcept {
     return platform;
 }
 
-bool isDoubleSupported(int device) {
+bool isDoubleSupported(int device) noexcept {
     UNUSED(device);
     return true;
 }
 
 bool isHalfSupported(int device) {
-    std::array<bool, DeviceManager::MAX_DEVICES> half_supported = []() {
+    static std::array<bool, DeviceManager::MAX_DEVICES> half_supported = []() {
         std::array<bool, DeviceManager::MAX_DEVICES> out{};
         int count = getDeviceCount();
         for (int i = 0; i < count; i++) {
-            auto prop   = getDeviceProp(i);
-            int compute = prop.major * 1000 + prop.minor * 10;
-            out[i]      = compute >= 5030;
+            const auto &prop = getDeviceProp(i);
+            int compute      = prop.major * 1000 + prop.minor * 10;
+            out[i]           = compute >= 5030;
         }
         return out;
     }();
@@ -266,7 +267,7 @@ bool isHalfSupported(int device) {
 void devprop(char *d_name, char *d_platform, char *d_toolkit, char *d_compute) {
     if (getDeviceCount() <= 0) { return; }
 
-    cudaDeviceProp dev = getDeviceProp(getActiveDeviceId());
+    const cudaDeviceProp &dev = getDeviceProp(getActiveDeviceId());
 
     // Name
     snprintf(d_name, 256, "%s", dev.name);
@@ -354,7 +355,7 @@ void init() {
     UNUSED(err);
 }
 
-unsigned getActiveDeviceId() { return tlocalActiveDeviceId(); }
+int getActiveDeviceId() { return tlocalActiveDeviceId(); }
 
 int getDeviceNativeId(int device) {
     if (device <
@@ -397,12 +398,31 @@ int setDevice(int device) {
     return DeviceManager::getInstance().setActiveDevice(device);
 }
 
-cudaDeviceProp getDeviceProp(int device) {
-    if (device <
-        static_cast<int>(DeviceManager::getInstance().cuDevices.size())) {
-        return DeviceManager::getInstance().cuDevices[device].prop;
-    }
-    return DeviceManager::getInstance().cuDevices[0].prop;
+size_t getL2CacheSize(const int device) {
+    return getDeviceProp(device).l2CacheSize;
+}
+
+const int *getMaxGridSize(const int device) {
+    return getDeviceProp(device).maxGridSize;
+}
+
+unsigned getMemoryBusWidth(const int device) {
+    return getDeviceProp(device).memoryBusWidth;
+}
+
+unsigned getMultiProcessorCount(const int device) {
+    return getDeviceProp(device).multiProcessorCount;
+}
+
+unsigned getMaxParallelThreads(const int device) {
+    const cudaDeviceProp &prop{getDeviceProp(device)};
+    return prop.multiProcessorCount * prop.maxThreadsPerMultiProcessor;
+}
+
+const cudaDeviceProp &getDeviceProp(const int device) {
+    const vector<cudaDevice_t> &devs = DeviceManager::getInstance().cuDevices;
+    if (device < static_cast<int>(devs.size())) { return devs[device].prop; }
+    return devs[0].prop;
 }
 
 MemoryManagerBase &memoryManager() {

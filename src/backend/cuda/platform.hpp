@@ -69,7 +69,7 @@ std::string getDriverVersion() noexcept;
 std::string getCUDARuntimeVersion() noexcept;
 
 // Returns true if double is supported by the device
-bool isDoubleSupported(int device);
+bool isDoubleSupported(int device) noexcept;
 
 // Returns true if half is supported by the device
 bool isHalfSupported(int device);
@@ -82,7 +82,7 @@ int getDeviceCount();
 
 void init();
 
-unsigned getActiveDeviceId();
+int getActiveDeviceId();
 
 int getDeviceNativeId(int device);
 
@@ -94,6 +94,19 @@ size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
 
+size_t getL2CacheSize(const int device);
+
+// Returns int[3] of maxGridSize
+const int* getMaxGridSize(const int device);
+
+unsigned getMemoryBusWidth(const int device);
+
+// maximum nr of threads the device really can run in parallel, without
+// scheduling
+unsigned getMaxParallelThreads(const int device);
+
+unsigned getMultiProcessorCount(const int device);
+
 int setDevice(int device);
 
 void sync(int device);
@@ -101,7 +114,7 @@ void sync(int device);
 // Returns true if the AF_SYNCHRONIZE_CALLS environment variable is set to 1
 bool synchronize_calls();
 
-cudaDeviceProp getDeviceProp(int device);
+const cudaDeviceProp& getDeviceProp(const int device);
 
 std::pair<int, int> getComputeCapability(const int device);
 
