@@ -90,7 +90,7 @@ class DeviceManager {
 
     friend int setDevice(int device);
 
-    friend cudaDeviceProp getDeviceProp(int device);
+    friend const cudaDeviceProp& getDeviceProp(int device);
 
     friend std::pair<int, int> getComputeCapability(const int device);
 
