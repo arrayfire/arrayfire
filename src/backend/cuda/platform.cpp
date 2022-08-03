@@ -208,7 +208,7 @@ string getDeviceInfo(int device) noexcept {
     size_t mem_gpu_total = dev.totalGlobalMem;
     // double cc = double(dev.major) + double(dev.minor) / 10;
 
-    bool show_braces = getActiveDeviceId() == static_cast<unsigned>(device);
+    bool show_braces = getActiveDeviceId() == device;
 
     string id = (show_braces ? string("[") : "-") + to_string(device) +
                 (show_braces ? string("]") : "-");

@@ -227,6 +227,7 @@ target_sources(afopencl
     svd.hpp
     tile.cpp
     tile.hpp
+    threadsMgt.hpp
     topk.cpp
     topk.hpp
     traits.hpp
@@ -285,7 +286,6 @@ target_sources(afopencl
     kernel/interp.hpp
     kernel/iota.hpp
     kernel/ireduce.hpp
-    kernel/join.hpp
     kernel/laset.hpp
     #kernel/laset_band.hpp
     kernel/laswp.hpp
