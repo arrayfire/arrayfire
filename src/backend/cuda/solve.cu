@@ -251,12 +251,12 @@ Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
     int batch  = batchz * batchw;
 
     size_t bytes         = batch * sizeof(T *);
-    using unique_mem_ptr = std::unique_ptr<char, void (*)(char *)>;
+    using unique_mem_ptr = std::unique_ptr<char, void (*)(void *)>;
 
     unique_mem_ptr aBatched_host_mem(pinnedAlloc<char>(bytes),
-                                     pinnedFree<char>);
+                                     pinnedFree);
     unique_mem_ptr bBatched_host_mem(pinnedAlloc<char>(bytes),
-                                     pinnedFree<char>);
+                                     pinnedFree);
 
     T *a_ptr               = A.get();
     T *b_ptr               = B.get();
@@ -272,10 +272,8 @@ Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
         }
     }
 
-    unique_mem_ptr aBatched_device_mem(pinnedAlloc<char>(bytes),
-                                       pinnedFree<char>);
-    unique_mem_ptr bBatched_device_mem(pinnedAlloc<char>(bytes),
-                                       pinnedFree<char>);
+    unique_mem_ptr aBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree);
+    unique_mem_ptr bBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree);
 
     T **aBatched_device_ptrs = (T **)aBatched_device_mem.get();
     T **bBatched_device_ptrs = (T **)bBatched_device_mem.get();
@@ -299,7 +297,7 @@ Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
 
     // getrs requires info to be host pointer
     unique_mem_ptr info_host_mem(pinnedAlloc<char>(batch * sizeof(int)),
-                                 pinnedFree<char>);
+                                 pinnedFree);
     CUBLAS_CHECK(getrsBatched_func<T>()(
         blasHandle(), CUBLAS_OP_N, N, NRHS, (const T **)aBatched_device_ptrs,
         A.strides()[1], pivots.get(), bBatched_device_ptrs, B.strides()[1],

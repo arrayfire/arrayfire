@@ -61,7 +61,7 @@ Array<T>::Array(const af::dim4 &dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data((dims.elements() ? memAlloc<T>(dims.elements()).release() : nullptr),
-           memFree<T>)
+           memFree)
     , data_dims(dims)
     , node()
     , owner(true) {}
@@ -74,7 +74,7 @@ Array<T>::Array(const af::dim4 &dims, const T *const in_data, bool is_device,
     , data(((is_device && !copy_device)
                 ? const_cast<T *>(in_data)
                 : memAlloc<T>(dims.elements()).release()),
-           memFree<T>)
+           memFree)
     , data_dims(dims)
     , node()
     , owner(true) {
@@ -117,7 +117,7 @@ Array<T>::Array(Param<T> &tmp, bool owner_)
            af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2],
                     tmp.strides[3]),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(tmp.ptr, owner_ ? std::function<void(T *)>(memFree<T>)
+    , data(tmp.ptr, owner_ ? std::function<void(T *)>(memFree)
                            : std::function<void(T *)>([](T * /*unused*/) {}))
     , data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]))
     , node()
@@ -143,7 +143,7 @@ Array<T>::Array(const af::dim4 &dims, const af::dim4 &strides, dim_t offset_,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(is_device ? const_cast<T *>(in_data)
                      : memAlloc<T>(info.total()).release(),
-           memFree<T>)
+           memFree)
     , data_dims(dims)
     , node()
     , owner(true) {
@@ -161,7 +161,7 @@ void Array<T>::eval() {
     if (isReady()) { return; }
 
     this->setId(getActiveDeviceId());
-    this->data = shared_ptr<T>(memAlloc<T>(elements()).release(), memFree<T>);
+    this->data = shared_ptr<T>(memAlloc<T>(elements()).release(), memFree);
 
     Param<T> p(data.get(), dims().get(), strides().get());
     evalNodes<T>(p, node.get());
@@ -204,7 +204,7 @@ void evalMultiple(std::vector<Array<T> *> arrays) {
 
         array->setId(getActiveDeviceId());
         array->data =
-            shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
+            shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree);
 
         output_params.emplace_back(array->getData().get(), array->dims().get(),
                                    array->strides().get());

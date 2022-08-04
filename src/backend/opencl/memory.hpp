@@ -34,8 +34,8 @@ void *memAllocUser(const size_t &bytes);
 // Need these as 2 separate function and not a default argument
 // This is because it is used as the deleter in shared pointer
 // which cannot support default arguments
-template<typename T>
-void memFree(T *ptr);
+void memFree(cl::Buffer *ptr);
+void memFree(cl_mem ptr);
 void memFreeUser(void *ptr);
 
 void memLock(const cl::Buffer *ptr);

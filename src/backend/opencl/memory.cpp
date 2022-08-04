@@ -78,12 +78,15 @@ void *memAllocUser(const size_t &bytes) {
     return new cl::Buffer(buf, true);
 }
 
-template<typename T>
-void memFree(T *ptr) {
+void memFree(cl::Buffer *ptr) {
     cl::Buffer *buf = reinterpret_cast<cl::Buffer *>(ptr);
     cl_mem mem      = static_cast<cl_mem>((*buf)());
     delete buf;
     return memoryManager().unlock(static_cast<void *>(mem), false);
+}
+
+void memFree(cl_mem ptr) {
+    return memoryManager().unlock(static_cast<void *>(ptr), false);
 }
 
 void memFreeUser(void *ptr) {
@@ -149,7 +152,6 @@ void pinnedFree(T *ptr) {
 #define INSTANTIATE(T)                                                         \
     template unique_ptr<cl::Buffer, function<void(cl::Buffer *)>> memAlloc<T>( \
         const size_t &elements);                                               \
-    template void memFree(T *ptr);                                             \
     template T *pinnedAlloc(const size_t &elements);                           \
     template void pinnedFree(T *ptr);
 

@@ -67,7 +67,7 @@ template<typename T>
 Array<T>::Array(dim4 dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(memAlloc<T>(dims.elements()).release(), memFree<T>)
+    , data(memAlloc<T>(dims.elements()).release(), memFree)
     , data_dims(dims)
     , node()
     , owner(true) {}
@@ -79,7 +79,7 @@ Array<T>::Array(const dim4 &dims, T *const in_data, bool is_device,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data((is_device & !copy_device) ? in_data
                                       : memAlloc<T>(dims.elements()).release(),
-           memFree<T>)
+           memFree)
     , data_dims(dims)
     , node()
     , owner(true) {
@@ -123,8 +123,7 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
                 T *const in_data, bool is_device)
     : info(getActiveDeviceId(), dims, offset_, strides,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(is_device ? in_data : memAlloc<T>(info.total()).release(),
-           memFree<T>)
+    , data(is_device ? in_data : memAlloc<T>(info.total()).release(), memFree)
     , data_dims(dims)
     , node()
     , owner(true) {
@@ -180,7 +179,7 @@ void evalMultiple(vector<Array<T> *> array_ptrs) {
 
         array->setId(getActiveDeviceId());
         array->data =
-            shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree<T>);
+            shared_ptr<T>(memAlloc<T>(array->elements()).release(), memFree);
 
         outputs.push_back(array);
         params.emplace_back(array->getData().get(), array->dims(),
