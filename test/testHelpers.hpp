@@ -406,6 +406,34 @@ template<typename T>
     ASSERT_PRED_FORMAT3(assertArrayEq, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
                         ACTUAL_ARR)
 
+/// Compares two af::array or af_arrays for their types, dims, and values
+/// (strict equality).
+///
+/// \param[in] EXPECTED The expected array of the assertion
+/// \param[in] ACTUAL The actual resulting array from the calculation
+#define EXPECT_ARRAYS_EQ(EXPECTED, ACTUAL) \
+    EXPECT_PRED_FORMAT2(assertArrayEq, EXPECTED, ACTUAL)
+
+/// Same as EXPECT_ARRAYS_EQ, but for cases when a "special" output array is
+/// given to the function.
+/// The special array can be null, a full-sized array, a subarray, or reordered
+/// Can only be used for testing C-API functions currently
+///
+/// \param[in] EXPECTED The expected array of the assertion
+/// \param[in] ACTUAL The actual resulting array from the calculation
+#define EXPECT_SPECIAL_ARRAYS_EQ(EXPECTED, ACTUAL, META) \
+    EXPECT_PRED_FORMAT3(assertArrayEq, EXPECTED, ACTUAL, META)
+
+/// Compares a std::vector with an af::/af_array for their types, dims, and
+/// values (strict equality).
+///
+/// \param[in] EXPECTED_VEC The vector that represents the expected array
+/// \param[in] EXPECTED_ARR_DIMS The dimensions of the expected array
+/// \param[in] ACTUAL_ARR The actual resulting array from the calculation
+#define EXPECT_VEC_ARRAY_EQ(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR) \
+    EXPECT_PRED_FORMAT3(assertArrayEq, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
+                        ACTUAL_ARR)
+
 /// Compares two af::array or af_arrays for their type, dims, and values (with a
 /// given tolerance).
 ///
@@ -441,6 +469,43 @@ template<typename T>
 #define ASSERT_VEC_ARRAY_NEAR(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR, \
                               MAX_ABSDIFF)                                 \
     ASSERT_PRED_FORMAT4(assertArrayNear, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
+                        ACTUAL_ARR, MAX_ABSDIFF)
+
+/// Compares two af::array or af_arrays for their type, dims, and values (with a
+/// given tolerance).
+///
+/// \param[in] EXPECTED Expected value of the assertion
+/// \param[in] ACTUAL Actual value of the calculation
+/// \param[in] MAX_ABSDIFF Expected maximum absolute difference between
+///            elements of EXPECTED and ACTUAL
+///
+/// \NOTE: This macro will deallocate the af_arrays after the call
+#define EXPECT_ARRAYS_NEAR(EXPECTED, ACTUAL, MAX_ABSDIFF) \
+    EXPECT_PRED_FORMAT3(assertArrayNear, EXPECTED, ACTUAL, MAX_ABSDIFF)
+
+/// Compares two af::array or af_arrays for their type, dims, and values (with a
+/// given tolerance).
+///
+/// \param[in] EXPECTED Expected value of the assertion
+/// \param[in] ACTUAL Actual value of the calculation
+/// \param[in] MAX_ABSDIFF Expected maximum absolute difference between
+///            elements of EXPECTED and ACTUAL
+///
+/// \NOTE: This macro will deallocate the af_arrays after the call
+#define EXPECT_IMAGES_NEAR(EXPECTED, ACTUAL, MAX_ABSDIFF) \
+    EXPECT_PRED_FORMAT3(assertImageNear, EXPECTED, ACTUAL, MAX_ABSDIFF)
+
+/// Compares a std::vector with an af::array for their dims and values (with a
+/// given tolerance).
+///
+/// \param[in] EXPECTED_VEC The vector that represents the expected array
+/// \param[in] EXPECTED_ARR_DIMS The dimensions of the expected array
+/// \param[in] ACTUAL_ARR The actual array from the calculation
+/// \param[in] MAX_ABSDIFF Expected maximum absolute difference between
+///            elements of EXPECTED and ACTUAL
+#define EXPECT_VEC_ARRAY_NEAR(EXPECTED_VEC, EXPECTED_ARR_DIMS, ACTUAL_ARR, \
+                              MAX_ABSDIFF)                                 \
+    EXPECT_PRED_FORMAT4(assertArrayNear, EXPECTED_VEC, EXPECTED_ARR_DIMS,  \
                         ACTUAL_ARR, MAX_ABSDIFF)
 
 #define ASSERT_REF(arr, expected) \
