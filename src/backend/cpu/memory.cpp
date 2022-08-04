@@ -54,12 +54,12 @@ void printMemInfo(const char *msg, const int device) {
 }
 
 template<typename T>
-unique_ptr<T[], function<void(T *)>> memAlloc(const size_t &elements) {
+unique_ptr<T[], function<void(void *)>> memAlloc(const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
     T *ptr = static_cast<T *>(
         memoryManager().alloc(false, 1, dims.get(), sizeof(T)));
-    return unique_ptr<T[], function<void(T *)>>(ptr, memFree<T>);
+    return unique_ptr<T[], function<void(void *)>>(ptr, memFree);
 }
 
 void *memAllocUser(const size_t &bytes) {
@@ -68,10 +68,7 @@ void *memAllocUser(const size_t &bytes) {
     return ptr;
 }
 
-template<typename T>
-void memFree(T *ptr) {
-    return memoryManager().unlock(static_cast<void *>(ptr), false);
-}
+void memFree(void *ptr) { return memoryManager().unlock(ptr, false); }
 
 void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
 
@@ -95,17 +92,12 @@ T *pinnedAlloc(const size_t &elements) {
     return static_cast<T *>(ptr);
 }
 
-template<typename T>
-void pinnedFree(T *ptr) {
-    memoryManager().unlock(static_cast<void *>(ptr), false);
-}
+void pinnedFree(void *ptr) { memoryManager().unlock(ptr, false); }
 
-#define INSTANTIATE(T)                                                \
-    template std::unique_ptr<T[], std::function<void(T *)>> memAlloc( \
-        const size_t &elements);                                      \
-    template void memFree(T *ptr);                                    \
-    template T *pinnedAlloc(const size_t &elements);                  \
-    template void pinnedFree(T *ptr);
+#define INSTANTIATE(T)                                                   \
+    template std::unique_ptr<T[], std::function<void(void *)>> memAlloc( \
+        const size_t &elements);                                         \
+    template T *pinnedAlloc(const size_t &elements);
 
 INSTANTIATE(float)
 INSTANTIATE(cfloat)
@@ -127,11 +119,6 @@ void *pinnedAlloc<void>(const size_t &elements) {
     dim4 dims(elements);
     void *ptr = memoryManager().alloc(false, 1, dims.get(), 1);
     return ptr;
-}
-
-template<>
-void pinnedFree(void *ptr) {
-    memoryManager().unlock(ptr, false);
 }
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }

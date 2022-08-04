@@ -308,7 +308,7 @@ af_err af_free_device_v2(void *ptr) {
 
 af_err af_free_pinned(void *ptr) {
     try {
-        pinnedFree<char>(static_cast<char *>(ptr));
+        pinnedFree(ptr);
     }
     CATCHALL;
     return AF_SUCCESS;

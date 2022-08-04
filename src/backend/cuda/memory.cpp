@@ -65,7 +65,7 @@ uptr<T> memAlloc(const size_t &elements) {
     // TODO: make memAlloc aware of array shapes
     dim4 dims(elements);
     void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    return uptr<T>(static_cast<T *>(ptr), memFree<T>);
+    return uptr<T>(static_cast<T *>(ptr), memFree);
 }
 
 void *memAllocUser(const size_t &bytes) {
@@ -74,10 +74,7 @@ void *memAllocUser(const size_t &bytes) {
     return ptr;
 }
 
-template<typename T>
-void memFree(T *ptr) {
-    memoryManager().unlock(static_cast<void *>(ptr), false);
-}
+void memFree(void *ptr) { memoryManager().unlock(ptr, false); }
 
 void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
 
@@ -107,16 +104,11 @@ T *pinnedAlloc(const size_t &elements) {
     return static_cast<T *>(ptr);
 }
 
-template<typename T>
-void pinnedFree(T *ptr) {
-    pinnedMemoryManager().unlock(static_cast<void *>(ptr), false);
-}
+void pinnedFree(void *ptr) { pinnedMemoryManager().unlock(ptr, false); }
 
 #define INSTANTIATE(T)                                 \
     template uptr<T> memAlloc(const size_t &elements); \
-    template void memFree(T *ptr);                     \
-    template T *pinnedAlloc(const size_t &elements);   \
-    template void pinnedFree(T *ptr);
+    template T *pinnedAlloc(const size_t &elements);
 
 INSTANTIATE(float)
 INSTANTIATE(cfloat)
@@ -139,13 +131,6 @@ void *pinnedAlloc<void>(const size_t &elements) {
     void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), 1);
     return ptr;
 }
-
-template<>
-void pinnedFree(void *ptr) {
-    pinnedMemoryManager().unlock(ptr, false);
-}
-
-template void memFree(void *ptr);
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
