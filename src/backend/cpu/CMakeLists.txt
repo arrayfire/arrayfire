@@ -274,7 +274,7 @@ endif(AF_WITH_CPUID)
 
 af_dep_check_and_populate(${threads_prefix}
   URI https://github.com/arrayfire/threads.git
-  REF b666773940269179f19ef11c8f1eb77005e85d9a
+  REF 4d4a4f0384d1ac2f25b2c4fc1d57b9e25f4d6818
 )
 
 target_sources(afcpu
