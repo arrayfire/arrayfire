@@ -46,7 +46,7 @@ class NodeIterator {
     /// NodeIterator Constructor
     ///
     /// \param[in] root The root node of the tree
-    NodeIterator(pointer root) : tree{root}, index(0) {
+    NodeIterator(pointer root) : tree{root} {
         tree.reserve(root->getHeight() * 8);
     }
 
