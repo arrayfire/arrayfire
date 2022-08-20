@@ -22,3 +22,6 @@ conan.lock
 graph_info.json
 .ccls-cache
 .projectile
+/.vs/arrayfire/FileContentIndex
+/.vs/arrayfire/v17
+/.vs

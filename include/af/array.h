@@ -11,6 +11,7 @@
 #include <af/compilers.h>
 #include <af/defines.h>
 #include <af/device.h>
+#include <af/device_pointer.h>
 #include <af/dim4.hpp>
 #include <af/exception.h>
 #include <af/index.h>
@@ -967,6 +968,7 @@ namespace af
         /// \returns an array with the type specified by \p type
         const array as(dtype type) const;
 
+        template<typename Type> operator af::device_pointer<Type>() { return af::device_pointer<Type>(this, dims(), device<Type>()); }
 
         ~array();
 
