@@ -6,6 +6,7 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.5)
+set(FPHSA_NAME_MISMATCHED TRUE)
 
 include(CMakeModules/AF_vcpkg_options.cmake)
 
