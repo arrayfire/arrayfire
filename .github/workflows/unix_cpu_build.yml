@@ -102,6 +102,7 @@ jobs:
                   dashboard=$(if [ -z "$prnum" ]; then echo "Continuous"; else echo "Experimental"; fi)
                   backend=$(if [ "$USE_MKL" == 1 ]; then echo "Intel-MKL"; else echo "FFTW/LAPACK/BLAS"; fi)
                   buildname="$buildname-cpu-$BLAS_BACKEND"
+                  cmake_rpath=$(if [ $OS_NAME == 'macos-latest' ]; then echo "-DCMAKE_INSTALL_RPATH=/opt/arrayfire/lib"; fi)
                   mkdir build && cd build
                   ${CMAKE_PROGRAM} -G Ninja \
                       -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
@@ -109,6 +110,7 @@ jobs:
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_EXAMPLES:BOOL=ON \
                       -DAF_BUILD_FORGE:BOOL=ON \
                       -DAF_COMPUTE_LIBRARY:STRING=${backend} \
+                      "$cmake_rpath" \
                       -DBUILDNAME:STRING=${buildname} ..
                   echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
 
