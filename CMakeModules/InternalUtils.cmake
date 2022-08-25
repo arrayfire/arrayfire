@@ -177,8 +177,8 @@ macro(arrayfire_set_cmake_default_variables)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ArrayFire_BINARY_DIR}/bin)
   endif()
 
-  if(APPLE AND (NOT DEFINED CMAKE_INSTALL_RPATH))
-    set(CMAKE_INSTALL_RPATH "/opt/arrayfire/lib")
+  if(APPLE)
+    list(APPEND CMAKE_INSTALL_RPATH "/opt/arrayfire/lib")
   endif()
 
   # This code is used to generate the compilers.h file in CMakeModules. Not all
