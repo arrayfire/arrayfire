@@ -89,8 +89,16 @@ target_link_libraries(afcommon_interface
   INTERFACE
     af_spdlog
     Boost::boost
+    nonstd::span-lite
     ${CMAKE_DL_LIBS}
 )
+
+if(TARGET fmt::fmt)
+  target_link_libraries(afcommon_interface
+    INTERFACE
+      fmt::fmt
+  )
+endif()
 
 if(TARGET glad::glad)
   target_link_libraries(afcommon_interface INTERFACE glad::glad)
@@ -105,7 +113,6 @@ endif()
 target_include_directories(afcommon_interface
   INTERFACE
     ${ArrayFire_SOURCE_DIR}/src/backend
-    ${span-lite_SOURCE_DIR}/include
     ${ArrayFire_BINARY_DIR})
 
 target_include_directories(afcommon_interface

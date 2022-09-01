@@ -76,6 +76,7 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
       PRIVATE
         ${opencl_compile_definitions}
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>
+        $<TARGET_PROPERTY:af_spdlog,INTERFACE_COMPILE_DEFINITIONS>
         TYPE=${SBK_BINARY_OP} AFDLL)
     target_sources(opencl_scan_by_key
       INTERFACE $<TARGET_OBJECTS:opencl_scan_by_key_${SBK_BINARY_OP}>)

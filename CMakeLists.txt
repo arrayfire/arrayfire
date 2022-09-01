@@ -39,6 +39,11 @@ set_policies(
            CMP0079)
 arrayfire_set_cmake_default_variables()
 
+option(AF_WITH_EXTERNAL_PACKAGES_ONLY "Build ArrayFire with External packages only" OFF)
+if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
+  set(AF_REQUIRED REQUIRED)
+endif()
+
 #Set Intel OpenMP as default MKL thread layer
 set(MKL_THREAD_LAYER "Intel OpenMP" CACHE STRING "The thread layer to choose for MKL")
 
@@ -54,7 +59,15 @@ find_package(CBLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
 find_package(MKL)
-find_package(spdlog 1.8.5 QUIET)
+find_package(spdlog QUIET ${AF_REQUIRED})
+find_package(fmt QUIET ${AF_REQUIRED})
+find_package(span-lite QUIET)
+find_package(GTest)
+find_package(CLBlast QUIET)
+find_package(Boost 1.70 ${AF_REQUIRED})
+
+# CLFFT used in ArrayFire requires a specific fork
+#find_package(clFFT QUIET)
 
 include(boost_package)
 include(config_ccache)
@@ -75,6 +88,8 @@ option(AF_WITH_STACKTRACE  "Add stacktraces to the error messages." ON)
 option(AF_CACHE_KERNELS_TO_DISK "Enable caching kernels to disk" ON)
 option(AF_WITH_STATIC_MKL "Link against static Intel MKL libraries" OFF)
 option(AF_WITH_STATIC_CUDA_NUMERIC_LIBS "Link libafcuda with static numeric libraries(cublas, cufft, etc.)" OFF)
+option(AF_WITH_SPDLOG_HEADER_ONLY "Build ArrayFire with header only version of spdlog" OFF)
+option(AF_WITH_FMT_HEADER_ONLY "Build ArrayFire with header only version of fmt" OFF)
 
 if(AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   option(AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS "Prune CUDA static libraries to reduce binary size.(WARNING: May break some libs on older CUDA toolkits for some compute arch)" OFF)
@@ -173,7 +188,7 @@ mark_as_advanced(
   FG_BUILD_OFFLINE
   )
 
-if(MKL_FOUND)
+if(AF_COMPUTE_LIBRARY STREQUAL "Intel-MKL")
   set(BLA_VENDOR "Intel10_64lp")
   if(MKL_THREAD_LAYER STREQUAL "Sequential")
     set(BLA_VENDOR "${BLA_VENDOR}_seq")
@@ -209,22 +224,38 @@ endif()
 #forge is included in ALL target if AF_BUILD_FORGE is ON
 #otherwise, forge is not built at all
 include(AFconfigure_forge_dep)
-add_library(af_spdlog INTERFACE)
-set_target_properties(af_spdlog
-  PROPERTIES
-    INTERFACE_COMPILE_DEFINITIONS FMT_HEADER_ONLY)
 
-if(TARGET spdlog::spdlog_header_only)
-  target_include_directories(af_spdlog
-    SYSTEM INTERFACE
-      $<TARGET_PROPERTY:spdlog::spdlog_header_only,INTERFACE_INCLUDE_DIRECTORIES>
-    )
+if(TARGET fmt::fmt AND AF_WITH_FMT_HEADER_ONLY)
+  set_target_properties(fmt::fmt
+    PROPERTIES
+      INTERFACE_COMPILE_DEFINITIONS "FMT_HEADER_ONLY=1")
+endif()
+
+if(TARGET spdlog::spdlog OR AF_WITH_EXTERNAL_PACKAGES_ONLY)
+  if(AF_WITH_SPDLOG_HEADER_ONLY)
+    add_library(af_spdlog ALIAS spdlog::spdlog_header_only)
+  else()
+    add_library(af_spdlog ALIAS spdlog::spdlog)
+  endif()
 else()
+  add_library(af_spdlog INTERFACE)
   af_dep_check_and_populate(${spdlog_prefix}
     URI https://github.com/gabime/spdlog.git
-    REF v1.8.5
+    REF v1.9.2
   )
+  add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
+
   target_include_directories(af_spdlog INTERFACE "${${spdlog_prefix}_SOURCE_DIR}/include")
+  if(TARGET fmt::fmt)
+    set_target_properties(af_spdlog
+      PROPERTIES
+        INTERFACE_COMPILE_DEFINITIONS "SPDLOG_FMT_EXTERNAL")
+  endif()
+  if(AF_WITH_SPDLOG_HEADER_ONLY)
+    set_target_properties(af_spdlog
+      PROPERTIES
+        INTERFACE_COMPILE_DEFINITIONS "$<TARGET_PROPERTY:af_spdlog,INTERFACE_COMPILE_DEFINITIONS>;SPDLOG_HEADER_ONLY")
+  endif()
 endif()
 
 if(NOT TARGET glad::glad)
@@ -237,15 +268,17 @@ if(NOT TARGET glad::glad)
   add_library(af_glad STATIC $<TARGET_OBJECTS:af_glad_obj_lib>)
   target_link_libraries(af_glad PUBLIC ${CMAKE_DL_LIBS})
   target_include_directories(af_glad
-    PUBLIC
-    $<BUILD_INTERFACE:$<TARGET_PROPERTY:af_glad_obj_lib,INTERFACE_INCLUDE_DIRECTORIES>>
-    )
+    SYSTEM PUBLIC
+      $<BUILD_INTERFACE:$<TARGET_PROPERTY:af_glad_obj_lib,INTERFACE_INCLUDE_DIRECTORIES>>)
 endif()
 
-af_dep_check_and_populate(span-lite
-  URI https://github.com/martinmoene/span-lite
-  REF "ccf2351"
-  )
+if(NOT TARGET nonstd::span-lite)
+  af_dep_check_and_populate(span-lite
+    URI https://github.com/martinmoene/span-lite
+    REF "ccf2351"
+    )
+  add_subdirectory(${span-lite_SOURCE_DIR} EXCLUDE_FROM_ALL)
+endif()
 
 af_dep_check_and_populate(${assets_prefix}
   URI https://github.com/arrayfire/assets.git
@@ -271,6 +304,9 @@ if(CMAKE_CROSSCOMPILING)
 else()
   add_executable(bin2cpp ${ArrayFire_SOURCE_DIR}/CMakeModules/bin2cpp.cpp
                          ${ArrayFire_SOURCE_DIR}/src/backend/common/util.cpp)
+
+  # NOSPDLOG is used to remove the spdlog dependency from bin2cpp
+  target_compile_definitions(bin2cpp PRIVATE NOSPDLOG)
   if(WIN32)
     target_compile_definitions(bin2cpp PRIVATE OS_WIN)
   elseif(APPLE)
@@ -282,11 +318,6 @@ else()
                              ${ArrayFire_SOURCE_DIR}/include
                              ${ArrayFire_BINARY_DIR}/include
                              ${ArrayFire_SOURCE_DIR}/src/backend)
-  if(TARGET spdlog::spdlog_header_only)
-    target_link_libraries(bin2cpp PRIVATE spdlog::spdlog_header_only)
-  else()
-    target_link_libraries(bin2cpp PRIVATE af_spdlog)
-  endif()
   export(TARGETS bin2cpp FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake)
 endif()
 
@@ -298,7 +329,6 @@ if(NOT LAPACK_FOUND)
         unset(LAPACK_LIB CACHE)
         unset(LAPACKE_INCLUDES CACHE)
         unset(LAPACKE_ROOT_DIR CACHE)
-        find_package(LAPACK)
     endif()
 endif()
 
