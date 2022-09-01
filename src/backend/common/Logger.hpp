@@ -13,7 +13,39 @@
 #include <string>
 #include <type_traits>
 
+#if defined(__clang__)
+/* Clang/LLVM */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-attributes"
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+/* Intel ICC/ICPC */
+// Fix the warning code here, if any
+#elif defined(__GNUC__) || defined(__GNUG__)
+/* GNU GCC/G++ */
+#elif defined(_MSC_VER)
+/* Microsoft Visual Studio */
+#else
+/* Other */
+#endif
+
 #include <spdlog/spdlog.h>
+
+#if defined(__clang__)
+/* Clang/LLVM */
+#pragma clang diagnostic pop
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+/* Intel ICC/ICPC */
+// Fix the warning code here, if any
+#elif defined(__GNUC__) || defined(__GNUG__)
+/* GNU GCC/G++ */
+#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+/* Microsoft Visual Studio */
+#pragma warning(pop)
+#else
+/* Other */
+#endif
+
 
 namespace common {
 std::shared_ptr<spdlog::logger> loggerFactory(const std::string& name);

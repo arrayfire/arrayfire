@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if !defined(AF_CPU)
+#if !defined(AF_CPU) && !defined(AF_ONEAPI)
 
 #include <common/compile_module.hpp>
 #include <common/kernel_cache.hpp>

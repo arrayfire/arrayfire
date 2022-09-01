@@ -76,6 +76,7 @@ include(config_ccache)
 option(AF_BUILD_CPU      "Build ArrayFire with a CPU backend"        ON)
 option(AF_BUILD_CUDA     "Build ArrayFire with a CUDA backend"       ${CUDA_FOUND})
 option(AF_BUILD_OPENCL   "Build ArrayFire with a OpenCL backend"     ${OpenCL_FOUND})
+option(AF_BUILD_ONEAPI   "Build ArrayFire with a oneAPI backend"     ${IntelDPCPP_FOUND})
 option(AF_BUILD_UNIFIED  "Build Backend-Independent ArrayFire API"   ON)
 option(AF_BUILD_DOCS     "Create ArrayFire Documentation"            ${DOXYGEN_FOUND})
 option(AF_BUILD_EXAMPLES "Build Examples"                            ON)
@@ -355,6 +356,7 @@ add_subdirectory(src/api/cpp)
 
 conditional_directory(AF_BUILD_CPU     src/backend/cpu)
 conditional_directory(AF_BUILD_CUDA    src/backend/cuda)
+conditional_directory(AF_BUILD_ONEAPI  src/backend/oneapi)
 conditional_directory(AF_BUILD_OPENCL  src/backend/opencl)
 conditional_directory(AF_BUILD_UNIFIED src/api/unified)
 
@@ -368,6 +370,10 @@ endif()
 
 if(TARGET afcuda)
   list(APPEND built_backends afcuda)
+endif()
+
+if(TARGET afoneapi)
+  list(APPEND built_backends afoneapi)
 endif()
 
 if(TARGET afopencl)
