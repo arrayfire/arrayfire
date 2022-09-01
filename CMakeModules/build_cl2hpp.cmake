@@ -13,15 +13,18 @@
 
 find_package(OpenCL)
 
-af_dep_check_and_populate(${cl2hpp_prefix}
-  URI https://github.com/KhronosGroup/OpenCL-CLHPP.git
-  REF v2.0.12
-)
-
 if (NOT TARGET OpenCL::cl2hpp OR NOT TARGET cl2hpp)
+  af_dep_check_and_populate(${cl2hpp_prefix}
+    URI https://github.com/KhronosGroup/OpenCL-CLHPP.git
+    REF v2.0.12)
+
+  find_path(cl2hpp_var
+    NAMES CL/cl2.hpp
+    PATHS ${ArrayFire_BINARY_DIR}/extern/${cl2hpp_prefix}-src/include)
+
   add_library(cl2hpp IMPORTED INTERFACE GLOBAL)
   add_library(OpenCL::cl2hpp IMPORTED INTERFACE GLOBAL)
 
   set_target_properties(cl2hpp OpenCL::cl2hpp PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES ${${cl2hpp_prefix}_SOURCE_DIR}/include)
+    INTERFACE_INCLUDE_DIRECTORIES ${cl2hpp_var})
 endif()

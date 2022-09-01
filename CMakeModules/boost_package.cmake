@@ -5,8 +5,6 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-find_package(Boost 1.66 REQUIRED)
-
 set(Boost_MIN_VER 107000)
 set(Boost_MIN_VER_STR "1.70")
 
@@ -16,7 +14,8 @@ if(NOT
    (Boost_VERSION_STRING VERSION_GREATER Boost_MIN_VER_STR OR
     Boost_VERSION_STRING VERSION_EQUAL Boost_MIN_VER_STR) OR
    (Boost_VERSION_MACRO VERSION_GREATER Boost_MIN_VER OR
-    Boost_VERSION_MACRO VERSION_EQUAL Boost_MIN_VER)))
+    Boost_VERSION_MACRO VERSION_EQUAL Boost_MIN_VER))
+  AND NOT AF_WITH_EXTERNAL_PACKAGES_ONLY)
   set(VER 1.70.0)
   message(WARNING
       "WARN: Found Boost v${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}."

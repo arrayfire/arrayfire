@@ -15,7 +15,9 @@ if(AF_TEST_WITH_MTX_FILES)
   include(download_sparse_datasets)
 endif()
 
-if(NOT TARGET gtest)
+if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
+    dependency_check(GTest_FOUND)
+else()
   af_dep_check_and_populate(${gtest_prefix}
     URI https://github.com/google/googletest.git
     REF release-1.8.1
@@ -34,6 +36,7 @@ if(NOT TARGET gtest)
   set_target_properties(gtest gtest_main
     PROPERTIES
       FOLDER "ExternalProjectTargets/gtest")
+  add_library(GTest::gtest ALIAS gtest)
   if(UNIX)
     if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
       CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10.3.0")
@@ -109,7 +112,7 @@ target_include_directories(arrayfire_test
     ${ArrayFire_SOURCE_DIR}/extern/half/include
     mmio
     $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
-    ${${gtest_prefix}_SOURCE_DIR}/googletest/include)
+    $<TARGET_PROPERTY:GTest::gtest,INTERFACE_INCLUDE_DIRECTORIES>)
 
 if(WIN32)
   target_compile_options(arrayfire_test
@@ -169,7 +172,7 @@ function(make_test)
     target_link_libraries(${target}
       PRIVATE
         ${mt_args_LIBRARIES}
-        gtest
+	      GTest::gtest
       )
 
     if(${backend} STREQUAL "unified")
@@ -340,7 +343,6 @@ if(CUDA_FOUND)
           ${ArrayFire_BINARY_DIR}/include
           ${ArrayFire_SOURCE_DIR}/extern/half/include
           ${CMAKE_CURRENT_SOURCE_DIR}
-          ${${gtest_prefix}_SOURCE_DIR}/googletest/include
         )
       endif()
       cuda_add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
@@ -357,7 +359,7 @@ if(CUDA_FOUND)
       endif()
       target_link_libraries(${target}
         mmio
-        gtest)
+        GTest::gtest)
 
       # Couldn't get Threads::Threads to work with this cuda binary. The import
       # target would not add the -pthread flag which is required for this
