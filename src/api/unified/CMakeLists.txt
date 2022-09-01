@@ -107,6 +107,13 @@ target_link_libraries(af
     ${CMAKE_DL_LIBS}
   )
 
+if(TARGET fmt::fmt)
+  target_link_libraries(af
+    PRIVATE
+      fmt::fmt
+  )
+endif()
+
 install(TARGETS af
   EXPORT ArrayFireUnifiedTargets
   COMPONENT unified

@@ -402,8 +402,6 @@ target_include_directories(afopencl
 arrayfire_set_default_cxx_flags(afopencl)
 
 add_dependencies(afopencl ${cl_kernel_targets} CLBlast-ext)
-add_dependencies(opencl_scan_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
-add_dependencies(opencl_sort_by_key ${cl_kernel_targets} cl2hpp Boost::boost)
 
 set_target_properties(afopencl PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
@@ -421,7 +419,7 @@ target_link_libraries(afopencl
     OpenCL::cl2hpp
     afcommon_interface
     clFFT
-    CLBlast
+    clblast
     opencl_scan_by_key
     opencl_sort_by_key
     Threads::Threads
