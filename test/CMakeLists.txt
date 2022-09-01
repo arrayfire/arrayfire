@@ -95,6 +95,10 @@ if(AF_BUILD_OPENCL)
   list(APPEND enabled_backends "opencl")
 endif(AF_BUILD_OPENCL)
 
+if(AF_BUILD_ONEAPI)
+  list(APPEND enabled_backends "oneapi")
+endif(AF_BUILD_ONEAPI)
+
 if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
 endif(AF_BUILD_UNIFIED)

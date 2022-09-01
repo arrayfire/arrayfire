@@ -13,6 +13,7 @@
 #include <jit/kernel_generators.hpp>
 
 #include <sstream>
+#include <cstring>
 
 namespace common {
 
@@ -95,7 +96,7 @@ class BufferNodeBase : public common::Node {
     size_t getHash() const noexcept {
         size_t out = 0;
         auto ptr   = m_data.get();
-        memcpy(&out, &ptr, std::max(sizeof(Node *), sizeof(size_t)));
+        std::memcpy(&out, &ptr, std::max(sizeof(Node *), sizeof(size_t)));
         return out;
     }
 

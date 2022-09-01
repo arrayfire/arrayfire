@@ -62,6 +62,8 @@ af_array morph<char>(const af_array &input, const af_array &mask,
     constexpr unsigned fftMethodThreshold = 17;
 #elif defined(AF_OPENCL)
     constexpr unsigned fftMethodThreshold = 19;
+#elif defined(AF_ONEAPI)
+    constexpr unsigned fftMethodThreshold = 19;
 #endif  // defined(AF_CPU)
 
     const Array<float> se = castArray<float>(mask);

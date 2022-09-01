@@ -4,6 +4,7 @@
 #include <common/jit/BinaryNode.hpp>
 #include <complex.hpp>
 #include <types.hpp>
+#include <af/traits.hpp>
 
 #include <memory>
 
