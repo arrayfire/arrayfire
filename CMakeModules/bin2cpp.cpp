@@ -14,9 +14,8 @@
 #define STRTOK_CALL(...) strtok_r(__VA_ARGS__)
 #endif
 
-#include <assert.h>
-#include <common/util.hpp>
 #include <algorithm>
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -28,6 +27,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <common/util.hpp>
 
 using namespace std;
 using std::cout;

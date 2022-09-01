@@ -323,6 +323,12 @@ if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
   target_compile_definitions(af_cuda_static_cuda_library PRIVATE AF_USE_NEW_CUSPARSE_API)
 endif()
 
+target_link_libraries(af_cuda_static_cuda_library
+  PRIVATE
+    Boost::boost
+    af_spdlog
+    nonstd::span-lite)
+
 if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   check_cxx_compiler_flag("-Wl,--start-group -Werror" group_flags)
   if(group_flags)
@@ -332,8 +338,6 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
 
   target_link_libraries(af_cuda_static_cuda_library
     PRIVATE
-      af_spdlog
-      Boost::boost
       ${CMAKE_DL_LIBS}
       ${cusolver_lib}
       ${START_GROUP}
@@ -363,7 +367,6 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
 else()
   target_link_libraries(af_cuda_static_cuda_library
     PUBLIC
-      Boost::boost
       ${CUDA_CUBLAS_LIBRARIES}
       ${CUDA_CUFFT_LIBRARIES}
       ${CUDA_cusolver_LIBRARY}

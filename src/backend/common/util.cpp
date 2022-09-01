@@ -15,7 +15,10 @@
 #include <unistd.h>
 #endif
 
+#ifndef NOSPDLOG
 #include <common/Logger.hpp>
+#endif
+
 #include <common/defines.hpp>
 #include <common/util.hpp>
 #include <af/defines.h>
@@ -32,7 +35,15 @@
 #include <vector>
 
 using std::accumulate;
+using std::hash;
+using std::ofstream;
+using std::once_flag;
+using std::rename;
+using std::size_t;
 using std::string;
+using std::thread;
+using std::to_string;
+using std::uint8_t;
 using std::vector;
 
 // http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
@@ -43,7 +54,7 @@ string& ltrim(string& s) {
     return s;
 }
 
-string getEnvVar(const std::string& key) {
+string getEnvVar(const string& key) {
 #if defined(OS_WIN)
     DWORD bufSize =
         32767;  // limit according to GetEnvironment Variable documentation
@@ -80,23 +91,23 @@ const char* getName(af_dtype type) {
     }
 }
 
-void saveKernel(const std::string& funcName, const std::string& jit_ker,
-                const std::string& ext) {
+void saveKernel(const string& funcName, const string& jit_ker,
+                const string& ext) {
     static constexpr const char* saveJitKernelsEnvVarName =
         "AF_JIT_KERNEL_TRACE";
     static const char* jitKernelsOutput = getenv(saveJitKernelsEnvVarName);
     if (!jitKernelsOutput) { return; }
-    if (std::strcmp(jitKernelsOutput, "stdout") == 0) {
+    if (strcmp(jitKernelsOutput, "stdout") == 0) {
         fputs(jit_ker.c_str(), stdout);
         return;
     }
-    if (std::strcmp(jitKernelsOutput, "stderr") == 0) {
+    if (strcmp(jitKernelsOutput, "stderr") == 0) {
         fputs(jit_ker.c_str(), stderr);
         return;
     }
     // Path to a folder
-    const std::string ffp =
-        std::string(jitKernelsOutput) + AF_PATH_SEPARATOR + funcName + ext;
+    const string ffp =
+        string(jitKernelsOutput) + AF_PATH_SEPARATOR + funcName + ext;
     FILE* f = fopen(ffp.c_str(), "we");
     if (!f) {
         fprintf(stderr, "Cannot open file %s\n", ffp.c_str());
@@ -108,9 +119,9 @@ void saveKernel(const std::string& funcName, const std::string& jit_ker,
     fclose(f);
 }
 
-std::string int_version_to_string(int version) {
-    return std::to_string(version / 1000) + "." +
-           std::to_string(static_cast<int>((version % 1000) / 10.));
+string int_version_to_string(int version) {
+    return to_string(version / 1000) + "." +
+           to_string(static_cast<int>((version % 1000) / 10.));
 }
 
 #if defined(OS_WIN)
@@ -162,25 +173,26 @@ bool removeFile(const string& path) {
 }
 
 bool renameFile(const string& sourcePath, const string& destPath) {
-    return std::rename(sourcePath.c_str(), destPath.c_str()) == 0;
+    return rename(sourcePath.c_str(), destPath.c_str()) == 0;
 }
 
 bool isDirectoryWritable(const string& path) {
     if (!directoryExists(path) && !createDirectory(path)) { return false; }
 
     const string testPath = path + AF_PATH_SEPARATOR + "test";
-    if (!std::ofstream(testPath).is_open()) { return false; }
+    if (!ofstream(testPath).is_open()) { return false; }
     removeFile(testPath);
 
     return true;
 }
 
+#ifndef NOSPDLOG
 string& getCacheDirectory() {
-    static std::once_flag flag;
+    static once_flag flag;
     static string cacheDirectory;
 
-    std::call_once(flag, []() {
-        std::string pathList[] = {
+    call_once(flag, []() {
+        string pathList[] = {
 #if defined(OS_WIN)
             getTemporaryDirectory() + "\\ArrayFire"
 #else
@@ -200,8 +212,8 @@ string& getCacheDirectory() {
         }
 
         if (env_path.empty()) {
-            auto iterDir = std::find_if(begin(pathList), end(pathList),
-                                        isDirectoryWritable);
+            auto iterDir =
+                find_if(begin(pathList), end(pathList), isDirectoryWritable);
 
             cacheDirectory = iterDir != end(pathList) ? *iterDir : "";
         } else {
@@ -211,44 +223,40 @@ string& getCacheDirectory() {
 
     return cacheDirectory;
 }
+#endif
 
 string makeTempFilename() {
-    thread_local std::size_t fileCount = 0u;
+    thread_local size_t fileCount = 0u;
 
     ++fileCount;
-    const std::size_t threadID =
-        std::hash<std::thread::id>{}(std::this_thread::get_id());
+    const size_t threadID = hash<thread::id>{}(std::this_thread::get_id());
 
-    return std::to_string(std::hash<string>{}(std::to_string(threadID) + "_" +
-                                              std::to_string(fileCount)));
+    return to_string(
+        hash<string>{}(to_string(threadID) + "_" + to_string(fileCount)));
 }
 
-std::size_t deterministicHash(const void* data, std::size_t byteSize,
-                              std::size_t prevHash) {
+size_t deterministicHash(const void* data, size_t byteSize, size_t prevHash) {
     // Fowler-Noll-Vo "1a" 32 bit hash
     // https://en.wikipedia.org/wiki/Fowler-Noll-Vo_hash_function
-    const auto* byteData = static_cast<const std::uint8_t*>(data);
-    return std::accumulate(byteData, byteData + byteSize, prevHash,
-                           [&](std::size_t hash, std::uint8_t data) {
-                               return (hash ^ data) * FNV1A_PRIME;
-                           });
+    const auto* byteData = static_cast<const uint8_t*>(data);
+    return accumulate(
+        byteData, byteData + byteSize, prevHash,
+        [&](size_t hash, uint8_t data) { return (hash ^ data) * FNV1A_PRIME; });
 }
 
-std::size_t deterministicHash(const std::string& data,
-                              const std::size_t prevHash) {
+size_t deterministicHash(const string& data, const size_t prevHash) {
     return deterministicHash(data.data(), data.size(), prevHash);
 }
 
-std::size_t deterministicHash(const vector<std::string>& list,
-                              const std::size_t prevHash) {
-    std::size_t hash = prevHash;
+size_t deterministicHash(const vector<string>& list, const size_t prevHash) {
+    size_t hash = prevHash;
     for (auto s : list) { hash = deterministicHash(s.data(), s.size(), hash); }
     return hash;
 }
 
-std::size_t deterministicHash(const std::vector<common::Source>& list) {
+size_t deterministicHash(const vector<common::Source>& list) {
     // Combine the different source codes, via their hashes
-    std::size_t hash = FNV1A_BASE_OFFSET;
+    size_t hash = FNV1A_BASE_OFFSET;
     for (auto s : list) {
         size_t h = s.hash ? s.hash : deterministicHash(s.ptr, s.length);
         hash     = deterministicHash(&h, sizeof(size_t), hash);
