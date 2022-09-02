@@ -5,7 +5,7 @@
 # The complete license agreement can be obtained at:
 # https://arrayfire.com/licenses/BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10.2)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMakeModules/nsis")
 
