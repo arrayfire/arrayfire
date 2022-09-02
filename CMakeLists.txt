@@ -156,6 +156,7 @@ mark_as_advanced(
   AF_TEST_WITH_MTX_FILES
   ArrayFire_DIR
   Boost_INCLUDE_DIR
+  CLEAR CUDA_VERSION
   CUDA_HOST_COMPILER
   CUDA_SDK_ROOT_DIR
   CUDA_USE_STATIC_CUDA_RUNTIME
@@ -171,7 +172,15 @@ mark_as_advanced(
   spdlog_DIR
   FG_BUILD_OFFLINE
   )
-mark_as_advanced(CLEAR CUDA_VERSION)
+
+if(MKL_FOUND)
+  set(BLA_VENDOR "Intel10_64lp")
+  if(MKL_THREAD_LAYER STREQUAL "Sequential")
+    set(BLA_VENDOR "${BLA_VENDOR}_seq")
+  endif()
+endif()
+find_package(BLAS)
+find_package(LAPACK)
 
 # IF: the old USE_CPU_MKL/USE_OPENCL_MKL flags are present,
 # THEN Irrespective of AF_COMPUTE_LIBRARY value, continue with MKL to preserve old
