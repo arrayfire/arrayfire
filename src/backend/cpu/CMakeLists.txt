@@ -331,9 +331,8 @@ else()
       FFTW::FFTW
       FFTW::FFTWF
     )
-  if(LAPACK_FOUND)
-    target_link_libraries(afcpu PRIVATE ${LAPACK_LIBRARIES})
-    target_include_directories(afcpu PRIVATE ${LAPACK_INCLUDE_DIR})
+  if(LAPACK_FOUND AND LAPACKE_FOUND)
+    target_link_libraries(afcpu PRIVATE LAPACKE::LAPACKE ${LAPACK_LIBRARIES})
   endif()
 endif()
 

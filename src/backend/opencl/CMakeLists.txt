@@ -483,12 +483,12 @@ if(LAPACK_FOUND OR BUILD_WITH_MKL)
 
     target_include_directories(afopencl
       PRIVATE
-        ${CBLAS_INCLUDE_DIR}
-        ${LAPACK_INCLUDE_DIR})
+        ${CBLAS_INCLUDE_DIR})
     target_link_libraries(afopencl
       PRIVATE
         ${CBLAS_LIBRARIES}
-        ${LAPACK_LIBRARIES})
+        ${LAPACK_LIBRARIES}
+        LAPACKE::LAPACKE)
   endif()
 
   target_compile_definitions(afopencl PRIVATE WITH_LINEAR_ALGEBRA)
