@@ -1,8 +1,9 @@
 # ArrayFire Installer {#installing}
 
 Installing ArrayFire couldn't be easier. Navigate to
-https://arrayfire.com/download and download the installer for your architecture
-and operating system. Although you could [build ArrayFire from
+[https://arrayfire.com/download](https://arrayfire.com/download)
+and download the installer for your architecture and
+operating system. Although you could [build ArrayFire from
 source](https://github.com/arrayfire/arrayfire), we recommend using our
 installers as we have packaged together all of the necessary dependencies to
 give you the best performance.
