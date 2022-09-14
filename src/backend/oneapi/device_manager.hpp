@@ -15,14 +15,9 @@
 #include <string>
 #include <vector>
 
-#ifndef AF_OPENCL_MEM_DEBUG
-#define AF_OPENCL_MEM_DEBUG 0
+#ifndef AF_ONEAPI_MEM_DEBUG
+#define AF_ONEAPI_MEM_DEBUG 0
 #endif
-
-namespace boost {
-template<typename T>
-class shared_ptr;
-}  // namespace boost
 
 namespace spdlog {
 class logger;
@@ -70,8 +65,6 @@ class DeviceManager {
     friend graphics::ForgeManager& forgeManager();
 
     friend GraphicsResourceManager& interopManager();
-
-    //friend PlanCache& fftManager();
 
     friend void addKernelToCache(int device, const std::string& key,
                                  const kc_entry_t entry);

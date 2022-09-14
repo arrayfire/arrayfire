@@ -45,36 +45,36 @@ void memLock(const sycl::buffer<T> *ptr);
 template<typename T>
 void memUnlock(const sycl::buffer<T> *ptr);
 
-  bool isLocked(const void *ptr);
+bool isLocked(const void *ptr);
 
-  template<typename T>
-  T *pinnedAlloc(const size_t &elements);
-  template<typename T>
-  void pinnedFree(T *ptr);
+template<typename T>
+T *pinnedAlloc(const size_t &elements);
+template<typename T>
+void pinnedFree(T *ptr);
 
-  void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
-                        size_t *lock_bytes, size_t *lock_buffers);
-  void signalMemoryCleanup();
-  void shutdownMemoryManager();
-  void pinnedGarbageCollect();
+void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                      size_t *lock_bytes, size_t *lock_buffers);
+void signalMemoryCleanup();
+void shutdownMemoryManager();
+void pinnedGarbageCollect();
 
-  void printMemInfo(const char *msg, const int device);
+void printMemInfo(const char *msg, const int device);
 
-  float getMemoryPressure();
-  float getMemoryPressureThreshold();
-  bool jitTreeExceedsMemoryPressure(size_t bytes);
-  void setMemStepSize(size_t step_bytes);
-  size_t getMemStepSize(void);
+float getMemoryPressure();
+float getMemoryPressureThreshold();
+bool jitTreeExceedsMemoryPressure(size_t bytes);
+void setMemStepSize(size_t step_bytes);
+size_t getMemStepSize(void);
 
-  class Allocator final : public common::memory::AllocatorInterface {
-     public:
-      Allocator();
-      ~Allocator() = default;
-      void shutdown() override;
-      int getActiveDeviceId() override;
-      size_t getMaxMemorySize(int id) override;
-      void *nativeAlloc(const size_t bytes) override;
-      void nativeFree(void *ptr) override;
+class Allocator final : public common::memory::AllocatorInterface {
+    public:
+    Allocator();
+    ~Allocator() = default;
+    void shutdown() override;
+    int getActiveDeviceId() override;
+    size_t getMaxMemorySize(int id) override;
+    void *nativeAlloc(const size_t bytes) override;
+    void nativeFree(void *ptr) override;
 };
 
 class AllocatorPinned final : public common::memory::AllocatorInterface {

@@ -40,6 +40,7 @@ using sycl::queue;
 using sycl::context;
 using sycl::device;
 using sycl::platform;
+
 using std::begin;
 using std::call_once;
 using std::end;
@@ -77,8 +78,9 @@ static string get_system() {
 #endif
 }
 
-int getBackend() { return AF_BACKEND_OPENCL; }
+int getBackend() { return AF_BACKEND_ONEAPI; }
 
+/*
 bool verify_present(const string& pname, const string ref) {
     auto iter =
         search(begin(pname), end(pname), begin(ref), end(ref),
@@ -109,6 +111,7 @@ static string platformMap(string& platStr) {
         return idx->second;
     }
 }
+*/
 
 /*
 afcl::platform getPlatformEnum(cl::Device dev) {
@@ -153,8 +156,15 @@ void setActiveContext(int device) {
     tlocalActiveDeviceId() = make_pair(device, device);
 }
 
-int getDeviceCount() noexcept {
-    ONEAPI_NOT_SUPPORTED("");
+int getDeviceCount() noexcept try {
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+    return static_cast<int>(devMngr.mQueues.size());
+} catch (const AfError& err) {
+    UNUSED(err);
+    // If device manager threw an error then return 0 because no platforms
+    // were found
     return 0;
 }
 
@@ -339,7 +349,7 @@ MemoryManagerBase& memoryManager() {
         // By default, create an instance of the default memory manager
         inst.memManager = make_unique<common::DefaultMemoryManager>(
             getDeviceCount(), common::MAX_BUFFERS,
-            AF_MEM_DEBUG || AF_OPENCL_MEM_DEBUG);
+            AF_MEM_DEBUG || AF_ONEAPI_MEM_DEBUG);
         // Set the memory manager's device memory manager
         unique_ptr<Allocator> deviceMemoryManager;
         deviceMemoryManager = make_unique<Allocator>();
@@ -350,11 +360,25 @@ MemoryManagerBase& memoryManager() {
     return *(inst.memManager.get());
 }
 
-/*
 MemoryManagerBase& pinnedMemoryManager() {
-    ONEAPI_NOT_SUPPORTED("");
+    static once_flag flag;
+
+    DeviceManager& inst = DeviceManager::getInstance();
+
+    call_once(flag, [&]() {
+        // By default, create an instance of the default memory manager
+        inst.pinnedMemManager = make_unique<common::DefaultMemoryManager>(
+            getDeviceCount(), common::MAX_BUFFERS,
+            AF_MEM_DEBUG || AF_ONEAPI_MEM_DEBUG);
+        // Set the memory manager's device memory manager
+        unique_ptr<AllocatorPinned> deviceMemoryManager;
+        deviceMemoryManager = make_unique<AllocatorPinned>();
+        inst.pinnedMemManager->setAllocator(move(deviceMemoryManager));
+        inst.pinnedMemManager->initialize();
+    });
+
+    return *(inst.pinnedMemManager.get());
 }
-*/
 
 void setMemoryManager(unique_ptr<MemoryManagerBase> mgr) {
     ONEAPI_NOT_SUPPORTED("");
