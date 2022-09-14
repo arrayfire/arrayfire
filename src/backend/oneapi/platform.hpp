@@ -10,7 +10,7 @@
 #pragma once
 
 #include <CL/sycl.hpp>
-//#include <af/oneapi.h>
+#include <af/oneapi.h>
 
 #include <memory>
 #include <string>
