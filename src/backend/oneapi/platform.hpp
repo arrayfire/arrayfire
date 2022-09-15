@@ -63,7 +63,7 @@ size_t getDeviceMemorySize(int device);
 size_t getHostMemorySize();
 
 //sycl::device::is_cpu,is_gpu,is_accelerator
-//cl_device_type getDeviceType();
+sycl::info::device_type getDeviceType();
 
 bool isHostUnifiedMemory(const sycl::device& device);
 

@@ -19,13 +19,9 @@ extern "C" {
 #if AF_API_VERSION >= 39
 typedef enum
 {
-    //AF_ONEAPI_DEVICE_TYPE_CPU     = sycl::info::device_type::cpu,
-    //AF_ONEAPI_DEVICE_TYPE_GPU     = sycl::info::device_type::gpu,
-    //AF_ONEAPI_DEVICE_TYPE_ACC     = sycl::info::device_type::accelerator
-    //AF_ONEAPI_DEVICE_TYPE_UNKNOWN = -1
-    AF_ONEAPI_DEVICE_TYPE_CPU     = 0,
-    AF_ONEAPI_DEVICE_TYPE_GPU     = 1,
-    AF_ONEAPI_DEVICE_TYPE_ACC     = 2,
+    AF_ONEAPI_DEVICE_TYPE_CPU     = (int)sycl::info::device_type::cpu,
+    AF_ONEAPI_DEVICE_TYPE_GPU     = (int)sycl::info::device_type::gpu,
+    AF_ONEAPI_DEVICE_TYPE_ACC     = (int)sycl::info::device_type::accelerator,
     AF_ONEAPI_DEVICE_TYPE_UNKNOWN = -1
 } af_oneapi_device_type;
 #endif
@@ -33,6 +29,7 @@ typedef enum
 #if AF_API_VERSION >= 39
 typedef enum
 {
+    //TODO: update? are these relevant in sycl
     AF_ONEAPI_PLATFORM_AMD     = 0,
     AF_ONEAPI_PLATFORM_APPLE   = 1,
     AF_ONEAPI_PLATFORM_INTEL   = 2,
