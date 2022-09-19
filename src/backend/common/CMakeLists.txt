@@ -40,9 +40,9 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManagerBase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ModuleInterface.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/TemplateArg.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TemplateArg.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TemplateTypename.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas_headers.hpp
@@ -53,6 +53,8 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/complex.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/constants.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/defines.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/deterministicHash.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/deterministicHash.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dim4.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.hpp

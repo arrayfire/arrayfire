@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <common/compile_module.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/jit/ModdimNode.hpp>
 #include <common/jit/Node.hpp>
 #include <common/jit/NodeIterator.hpp>
@@ -40,6 +41,7 @@ using common::Node_ids;
 using common::Node_map_t;
 using common::Node_ptr;
 using common::NodeIterator;
+using common::saveKernel;
 
 using cl::Kernel;
 using cl::NDRange;

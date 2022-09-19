@@ -26,15 +26,17 @@
 #include <platform.hpp>
 #endif
 
+using boost::stacktrace::stacktrace;
 using std::move;
 using std::string;
 using std::stringstream;
 
+using common::getEnvVar;
+using common::getName;
 using common::is_stacktrace_enabled;
 
 AfError::AfError(const char *const func, const char *const file, const int line,
-                 const char *const message, af_err err,
-                 boost::stacktrace::stacktrace st)
+                 const char *const message, af_err err, stacktrace st)
     : logic_error(message)
     , functionName(func)
     , fileName(file)
@@ -43,8 +45,7 @@ AfError::AfError(const char *const func, const char *const file, const int line,
     , error(err) {}
 
 AfError::AfError(string func, string file, const int line,
-                 const string &message, af_err err,
-                 boost::stacktrace::stacktrace st)
+                 const string &message, af_err err, stacktrace st)
     : logic_error(message)
     , functionName(move(func))
     , fileName(move(file))
@@ -64,7 +65,7 @@ AfError::~AfError() noexcept = default;
 
 TypeError::TypeError(const char *const func, const char *const file,
                      const int line, const int index, const af_dtype type,
-                     boost::stacktrace::stacktrace st)
+                     stacktrace st)
     : AfError(func, file, line, "Invalid data type", AF_ERR_TYPE, move(st))
     , errTypeName(getName(type))
     , argIndex(index) {}
@@ -75,8 +76,7 @@ int TypeError::getArgIndex() const noexcept { return argIndex; }
 
 ArgumentError::ArgumentError(const char *const func, const char *const file,
                              const int line, const int index,
-                             const char *const expectString,
-                             boost::stacktrace::stacktrace st)
+                             const char *const expectString, stacktrace st)
     : AfError(func, file, line, "Invalid argument", AF_ERR_ARG, move(st))
     , expected(expectString)
     , argIndex(index) {}
@@ -89,7 +89,7 @@ int ArgumentError::getArgIndex() const noexcept { return argIndex; }
 
 SupportError::SupportError(const char *const func, const char *const file,
                            const int line, const char *const back,
-                           boost::stacktrace::stacktrace st)
+                           stacktrace st)
     : AfError(func, file, line, "Unsupported Error", AF_ERR_NOT_SUPPORTED,
               move(st))
     , backend(back) {}
@@ -99,7 +99,7 @@ const string &SupportError::getBackendName() const noexcept { return backend; }
 DimensionError::DimensionError(const char *const func, const char *const file,
                                const int line, const int index,
                                const char *const expectString,
-                               const boost::stacktrace::stacktrace &st)
+                               const stacktrace &st)
     : AfError(func, file, line, "Invalid size", AF_ERR_SIZE, st)
     , expected(expectString)
     , argIndex(index) {}
@@ -111,7 +111,7 @@ const string &DimensionError::getExpectedCondition() const noexcept {
 int DimensionError::getArgIndex() const noexcept { return argIndex; }
 
 af_err set_global_error_string(const string &msg, af_err err) {
-    std::string perr = getEnvVar("AF_PRINT_ERRORS");
+    string perr = getEnvVar("AF_PRINT_ERRORS");
     if (!perr.empty()) {
         if (perr != "0") { fprintf(stderr, "%s\n", msg.c_str()); }
     }

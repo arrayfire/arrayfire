@@ -10,13 +10,12 @@
 #if !defined(AF_CPU) && !defined(AF_ONEAPI)
 
 #include <common/compile_module.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/kernel_cache.hpp>
-#include <common/util.hpp>
 #include <device_manager.hpp>
 #include <platform.hpp>
 
 #include <nonstd/span.hpp>
-#include <algorithm>
 #include <shared_mutex>
 #include <string>
 #include <unordered_map>

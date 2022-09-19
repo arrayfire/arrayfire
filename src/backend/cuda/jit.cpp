@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <Kernel.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/half.hpp>
 #include <common/jit/ModdimNode.hpp>
 #include <common/jit/Node.hpp>
@@ -34,6 +35,7 @@
 #include <vector>
 
 using common::findModule;
+using common::getEnvVar;
 using common::getFuncName;
 using common::half;
 using common::ModdimNode;
@@ -42,6 +44,7 @@ using common::Node_ids;
 using common::Node_map_t;
 using common::Node_ptr;
 using common::NodeIterator;
+using common::saveKernel;
 
 using std::array;
 using std::equal;

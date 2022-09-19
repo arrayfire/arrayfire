@@ -28,7 +28,10 @@
 #include <string>
 
 using af::dim4;
+using common::getCacheDirectory;
+using common::getEnvVar;
 using common::half;
+using common::JIT_KERNEL_CACHE_DIRECTORY_ENV_NAME;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;

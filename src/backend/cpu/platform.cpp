@@ -21,6 +21,8 @@
 #include <sstream>
 #include <string>
 
+using common::getEnvVar;
+using common::ltrim;
 using common::memory::MemoryManagerBase;
 using std::endl;
 using std::ostringstream;
