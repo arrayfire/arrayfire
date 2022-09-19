@@ -26,6 +26,7 @@
 #include <dlfcn.h>
 #endif
 
+using common::getEnvVar;
 using common::getErrorMessage;
 using common::getFunctionPointer;
 using common::loadLibrary;

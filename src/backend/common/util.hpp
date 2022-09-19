@@ -10,20 +10,12 @@
 /// This file contains platform independent utility functions
 #pragma once
 
+#include <optypes.hpp>
 #include <af/defines.h>
 
-#include <iosfwd>
 #include <string>
-#include <vector>
 
 namespace common {
-struct Source {
-    const char* ptr;           // Pointer to the kernel source
-    const std::size_t length;  // Length of the kernel source
-    const std::size_t hash;    // hash value for the source *ptr;
-};
-}  // namespace common
-
 /// The environment variable that determines where the runtime kernels
 /// will be stored on the file system
 constexpr const char* JIT_KERNEL_CACHE_DIRECTORY_ENV_NAME =
@@ -61,25 +53,8 @@ std::string makeTempFilename();
 
 const char* getName(af_dtype type);
 
-/// Return the FNV-1a hash of the provided bata.
-///
-/// \param[in] data Binary data to hash
-/// \param[in] byteSize Size of the data in bytes
-/// \param[in] optional prevHash Hash of previous parts when string is split
-///
-/// \returns An unsigned integer representing the hash of the data
-constexpr std::size_t FNV1A_BASE_OFFSET = 0x811C9DC5;
-constexpr std::size_t FNV1A_PRIME       = 0x01000193;
-std::size_t deterministicHash(const void* data, std::size_t byteSize,
-                              const std::size_t prevHash = FNV1A_BASE_OFFSET);
+std::string getOpEnumStr(af_op_t val);
 
-// This is just a wrapper around the above function.
-std::size_t deterministicHash(const std::string& data,
-                              const std::size_t prevHash = FNV1A_BASE_OFFSET);
-
-// This concatenates strings in the vector and computes hash
-std::size_t deterministicHash(const std::vector<std::string>& list,
-                              const std::size_t prevHash = FNV1A_BASE_OFFSET);
-
-// This concatenates hashes of multiple sources
-std::size_t deterministicHash(const std::vector<common::Source>& list);
+template<typename T>
+std::string toString(T value);
+}  // namespace common

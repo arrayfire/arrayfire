@@ -302,11 +302,12 @@ if(CMAKE_CROSSCOMPILING)
                        "directory and build the bin2cpp target.")
   endif()
 else()
-  add_executable(bin2cpp ${ArrayFire_SOURCE_DIR}/CMakeModules/bin2cpp.cpp
-                         ${ArrayFire_SOURCE_DIR}/src/backend/common/util.cpp)
+  add_executable(bin2cpp CMakeModules/bin2cpp.cpp
+                         src/backend/common/deterministicHash.cpp
+                         src/backend/common/deterministicHash.hpp
+                         src/backend/common/Source.hpp)
+  target_link_libraries(bin2cpp PRIVATE nonstd::span-lite)
 
-  # NOSPDLOG is used to remove the spdlog dependency from bin2cpp
-  target_compile_definitions(bin2cpp PRIVATE NOSPDLOG)
   if(WIN32)
     target_compile_definitions(bin2cpp PRIVATE OS_WIN)
   elseif(APPLE)
