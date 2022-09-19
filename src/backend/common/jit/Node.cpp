@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <common/defines.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/jit/Node.hpp>
 #include <common/util.hpp>
 

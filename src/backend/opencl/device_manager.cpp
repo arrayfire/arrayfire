@@ -44,6 +44,7 @@ using cl::CommandQueue;
 using cl::Context;
 using cl::Device;
 using cl::Platform;
+using common::getEnvVar;
 using std::begin;
 using std::end;
 using std::find;

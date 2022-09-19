@@ -9,20 +9,14 @@
 
 #pragma once
 
+#include <common/util.hpp>
+
 #include <array>
 #include <string>
 #include <utility>
 
-#include <optypes.hpp>
-#include <traits.hpp>
-
 template<typename T>
 class TemplateTypename;
-
-template<typename T>
-std::string toString(T value);
-
-std::string getOpEnumStr(af_op_t val);
 
 struct TemplateArg {
     std::string _tparam;
@@ -33,7 +27,8 @@ struct TemplateArg {
     constexpr TemplateArg(TemplateTypename<T> arg) noexcept : _tparam(arg) {}
 
     template<typename T>
-    constexpr TemplateArg(T value) noexcept : _tparam(toString(value)) {}
+    constexpr TemplateArg(T value) noexcept
+        : _tparam(common::toString(value)) {}
 };
 
 template<typename... Targs>
@@ -43,6 +38,6 @@ std::array<TemplateArg, sizeof...(Targs)> TemplateArgs(Targs &&...args) {
 }
 
 #define DefineKey(arg) " -D " #arg
-#define DefineValue(arg) " -D " #arg "=" + toString(arg)
-#define DefineKeyValue(key, arg) " -D " #key "=" + toString(arg)
-#define DefineKeyFromStr(arg) toString(" -D " + std::string(arg))
+#define DefineValue(arg) " -D " #arg "=" + common::toString(arg)
+#define DefineKeyValue(key, arg) " -D " #key "=" + common::toString(arg)
+#define DefineKeyFromStr(arg) " -D " + std::string(arg)

@@ -66,6 +66,8 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
+using common::getEnvVar;
+using common::ltrim;
 using common::memory::MemoryManagerBase;
 using opencl::Allocator;
 using opencl::AllocatorPinned;

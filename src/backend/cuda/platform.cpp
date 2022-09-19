@@ -60,6 +60,8 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
+using common::getEnvVar;
+using common::int_version_to_string;
 using common::unique_handle;
 using common::memory::MemoryManagerBase;
 using cuda::Allocator;
