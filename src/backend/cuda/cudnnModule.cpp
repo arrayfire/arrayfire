@@ -18,6 +18,7 @@
 #include <string>
 #include <tuple>
 
+using common::int_version_to_string;
 using common::Version;
 using std::make_tuple;
 using std::string;

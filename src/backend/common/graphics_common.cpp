@@ -15,6 +15,7 @@
 #include <mutex>
 #include <utility>
 
+using common::getEnvVar;
 using std::make_pair;
 using std::string;
 
