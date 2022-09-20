@@ -16,6 +16,7 @@ add_library(afoneapi
   GraphicsResourceManager.cpp
   GraphicsResourceManager.hpp
   Module.hpp
+  Param.cpp
   Param.hpp
   all.cpp
   anisotropic_diffusion.cpp

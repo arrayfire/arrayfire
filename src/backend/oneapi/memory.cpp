@@ -58,9 +58,7 @@ template<typename T>
 //unique_ptr<int, function<void(int *)>> memAlloc(
 std::unique_ptr<sycl::buffer<T>, std::function<void(sycl::buffer<T> *)>> memAlloc(
     const size_t &elements) {
-    ONEAPI_NOT_SUPPORTED("memAlloc Not supported");
-    //return unique_ptr<int, function<void(int *)>>();
-    return unique_ptr<sycl::buffer<T>, function<void(sycl::buffer<T> *)>>();
+    return unique_ptr<sycl::buffer<T>, function<void(sycl::buffer<T> *)>>(new sycl::buffer<T>(sycl::range(elements)), bufferFree<T>);
     // // TODO: make memAlloc aware of array shapes
     // if (elements) {
     //     dim4 dims(elements);

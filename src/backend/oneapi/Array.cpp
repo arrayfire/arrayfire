@@ -122,10 +122,13 @@ Array<T>::Array(const dim4 &dims, const T *const in_data)
     static_assert(
         offsetof(Array<T>, info) == 0,
         "Array<T>::info must be the first member variable of Array<T>");
-    // TODO(oneapi): Copy to buffer
     //getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0,
-    //sizeof(T) * info.elements(), in_data);
+                                  //sizeof(T) * info.elements(), in_data);
+    getQueue().submit([&] (sycl::handler &h) {
+        h.copy(in_data, data->get_access(h));
+    }).wait();
 }
+
 
 template<typename T>
 Array<T>::Array(const af::dim4 &dims, buffer<T> *const mem, size_t offset,
@@ -139,12 +142,9 @@ Array<T>::Array(const af::dim4 &dims, buffer<T> *const mem, size_t offset,
     , node()
     , owner(true) {
     if (copy) {
-      //clRetainMemObject(mem);
-      //buffer src_buf = buffer(mem);
-        // TODO(oneapi): copy buffer
-        ONEAPI_NOT_SUPPORTED("Buffer constructor not implamented");
-        //getQueue().enqueueCopyBuffer(src_buf, *data.get(), src_offset, 0,
-        //sizeof(T) * info.elements());
+        getQueue().submit([&] (sycl::handler &h) {
+            h.copy(mem->get_access(h), data->get_access(h));
+        }).wait();
     }
 }
 
@@ -180,16 +180,16 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
     : info(getActiveDeviceId(), dims, offset_, strides,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(is_device ? (new buffer<T>(*reinterpret_cast<buffer<T>*>(
-                                                                    const_cast<T *>(in_data))))
+                                        const_cast<T *>(in_data))))
                      : (memAlloc<T>(info.elements()).release()),
            bufferFree<T>)
     , data_dims(dims)
     , node()
     , owner(true) {
     if (!is_device) {
-      ONEAPI_NOT_SUPPORTED("Write to buffer from Host");
-          //getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0,
-          //sizeof(T) * info.total(), in_data);
+        getQueue().submit([&] (sycl::handler &h) {
+            h.copy(in_data, data->get_access(h));
+        }).wait();
     }
 }
 
@@ -198,18 +198,20 @@ void Array<T>::eval() {
     if (isReady()) { return; }
 
     this->setId(getActiveDeviceId());
-    data = std::shared_ptr<buffer<T>>(memAlloc<T>(info.elements()).release(),
+    data = std::shared_ptr<sycl::buffer<T>>(memAlloc<T>(info.elements()).release(),
                                        bufferFree<T>);
 
-    ONEAPI_NOT_SUPPORTED("JIT Not supported");
     // Do not replace this with cast operator
-    Param<T> info; //= {{dims()[0], dims()[1], dims()[2], dims()[3]},
-                  // {strides()[0], strides()[1], strides()[2], strides()[3]},
-                  // 0};
+    KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
+                   {strides()[0], strides()[1], strides()[2], strides()[3]},
+                   0};
 
-    Param<T> res;// = {data.get(), info};
+    Param<T> res{data.get(), info};
 
-    evalNodes(res, getNode().get());
+
+    //TODO: implement
+    ONEAPI_NOT_SUPPORTED("JIT NOT SUPPORTED");
+    //evalNodes(res, getNode().get());
     node.reset();
 }
 
@@ -232,43 +234,44 @@ void evalMultiple(vector<Array<T> *> arrays) {
     vector<Array<T> *> output_arrays;
     vector<Node *> nodes;
 
-    ONEAPI_NOT_SUPPORTED("JIT Not supported");
-    // // Check if all the arrays have the same dimension
-    // auto it = std::adjacent_find(begin(arrays), end(arrays),
-    //                              [](const Array<T> *l, const Array<T> *r) {
-    //                                  return l->dims() != r->dims();
-    //                              });
+    // Check if all the arrays have the same dimension
+    auto it = std::adjacent_find(begin(arrays), end(arrays),
+                                 [](const Array<T> *l, const Array<T> *r) {
+                                     return l->dims() != r->dims();
+                                 });
 
-    // // If they are not the same. eval individually
-    // if (it != end(arrays)) {
-    //     for (auto ptr : arrays) { ptr->eval(); }
-    //     return;
-    // }
+    // If they are not the same. eval individually
+    if (it != end(arrays)) {
+        for (auto ptr : arrays) { ptr->eval(); }
+        return;
+    }
 
-    // for (Array<T> *array : arrays) {
-    //     if (array->isReady()) { continue; }
+    for (Array<T> *array : arrays) {
+        if (array->isReady()) { continue; }
 
-    //     const ArrayInfo info = array->info;
+        const ArrayInfo info = array->info;
 
-    //     array->setId(getActiveDeviceId());
-    //     array->data = std::shared_ptr<buffer<T>>(
-    //         memAlloc<T>(info.elements()).release(), bufferFree<T>);
+        array->setId(getActiveDeviceId());
+        array->data = std::shared_ptr<buffer<T>>(
+            memAlloc<T>(info.elements()).release(), bufferFree<T>);
 
-    //     // Do not replace this with cast operator
-    //     Param<T> kInfo = {
-    //         {info.dims()[0], info.dims()[1], info.dims()[2], info.dims()[3]},
-    //         {info.strides()[0], info.strides()[1], info.strides()[2],
-    //          info.strides()[3]},
-    //         0};
+        // Do not replace this with cast operator
+        KParam kInfo = {
+            {info.dims()[0], info.dims()[1], info.dims()[2], info.dims()[3]},
+            {info.strides()[0], info.strides()[1], info.strides()[2],
+             info.strides()[3]},
+            0};
 
-    //     outputs.emplace_back(array->data.get(), kInfo);
-    //     output_arrays.push_back(array);
-    //     nodes.push_back(array->getNode().get());
-    // }
+        outputs.emplace_back(array->data.get(), kInfo);
+        output_arrays.push_back(array);
+        nodes.push_back(array->getNode().get());
+    }
 
-    // evalNodes(outputs, nodes);
+    //TODO: implement
+    ONEAPI_NOT_SUPPORTED("JIT NOT SUPPORTED");
+    //evalNodes(outputs, nodes);
 
-    // for (Array<T> *array : output_arrays) { array->node.reset(); }
+    for (Array<T> *array : output_arrays) { array->node.reset(); }
 }
 
 template<typename T>
@@ -383,12 +386,16 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     return kJITHeuristics::Pass;
 }
 
+//Doesn't make sense with sycl::buffer
+//TODO: accessors? or return sycl::buffer?
+//TODO: return accessor.get_pointer() for access::target::global_buffer or (host_buffer?)
 template<typename T>
 void *getDevicePtr(const Array<T> &arr) {
     const buffer<T> *buf = arr.device();
     //if (!buf) { return NULL; }
     //memLock(buf);
     //cl_mem mem = (*buf)();
+    ONEAPI_NOT_SUPPORTED("pointer to sycl::buffer should be accessor");
     return (void *)buf;
 }
 
@@ -474,8 +481,12 @@ template<typename T>
 void writeHostDataArray(Array<T> &arr, const T *const data,
                         const size_t bytes) {
     if (!arr.isOwner()) { arr = copyArray<T>(arr); }
-
-    ONEAPI_NOT_SUPPORTED("writeHostDataArray Not supported");
+    getQueue().submit([&] (sycl::handler &h) {
+        buffer<T> &buf = *arr.get();
+        //auto offset_acc = buf.get_access(h, sycl::range, sycl::id<>)
+        auto offset_acc = buf.get_access(h);
+        h.copy(data, offset_acc);
+    }).wait();
     //getQueue().enqueueWriteBuffer(*arr.get(), CL_TRUE, arr.getOffset(), bytes,
     //data);
 }
@@ -505,14 +516,11 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
 
 template<typename T>
 size_t Array<T>::getAllocatedBytes() const {
-    return 0;
-    /*
     if (!isReady()) { return 0; }
     size_t bytes = memoryManager().allocated(data.get());
     // External device pointer
     if (bytes == 0 && data.get()) { return data_dims.elements() * sizeof(T); }
     return bytes;
-    */
 }
 
 #define INSTANTIATE(T)                                                        \
