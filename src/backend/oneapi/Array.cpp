@@ -128,7 +128,7 @@ Array<T>::Array(const dim4 &dims, const T *const in_data)
         h.copy(in_data, data->get_access(h));
     }).wait();
 }
-
+   
 
 template<typename T>
 Array<T>::Array(const af::dim4 &dims, buffer<T> *const mem, size_t offset,
@@ -484,6 +484,7 @@ void writeHostDataArray(Array<T> &arr, const T *const data,
     getQueue().submit([&] (sycl::handler &h) {
         buffer<T> &buf = *arr.get();
         //auto offset_acc = buf.get_access(h, sycl::range, sycl::id<>)
+        //TODO: offset accessor
         auto offset_acc = buf.get_access(h);
         h.copy(data, offset_acc);
     }).wait();

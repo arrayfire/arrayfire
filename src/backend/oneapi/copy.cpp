@@ -21,7 +21,38 @@ namespace oneapi {
 
 template<typename T>
 void copyData(T *data, const Array<T> &A) {
-    ONEAPI_NOT_SUPPORTED("");
+    /*
+    if (A.elements() == 0) { return; }
+
+    // FIXME: Merge this with copyArray
+    A.eval();
+
+    dim_t offset = 0;
+    sycl::buffer<T>* buf;
+    Array<T> out = A;
+
+    if (A.isLinear() ||  // No offsets, No strides
+        A.ndims() == 1   // Simple offset, no strides.
+    ) {
+        buf    = A.get();
+        offset = A.getOffset();
+    } else {
+        // FIXME: Think about implementing eval
+        out    = copyArray(A);
+        buf    = out.get();
+        offset = 0;
+    }sycl::access::target::device>
+
+    // FIXME: Add checks
+    getQueue().submit([&] (sycl::handler &h) {
+        //auto offset_acc = buf.get_access(h, sycl::range, sycl::id<>)
+        //TODO: offset accessor
+        auto offset_acc = buf->get_access(h);
+        h.copy(offset_acc, data);
+    }).wait();
+    //getQueue().enqueueReadBuffer(buf, CL_TRUE, sizeof(T) * offset,
+                                 //sizeof(T) * A.elements(), data);
+    */
 }
 
 template<typename T>

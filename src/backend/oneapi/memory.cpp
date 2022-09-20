@@ -124,9 +124,9 @@ sycl::buffer<T> *bufferAlloc(const size_t &bytes) {
 
 template<typename T>
 void bufferFree(sycl::buffer<T> *buf) {
-
-    ONEAPI_NOT_SUPPORTED("bufferFree Not supported");
-
+    if(buf) {
+        delete buf;
+    }
     // if (buf) {
     //     cl_mem mem = (*buf)();
     //     delete buf;
