@@ -20,7 +20,7 @@ if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
 elseif(NOT TARGET GTest::gtest)
   af_dep_check_and_populate(${gtest_prefix}
     URI https://github.com/google/googletest.git
-    REF release-1.8.1
+    REF release-1.12.1
   )
 
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
@@ -32,6 +32,7 @@ elseif(NOT TARGET GTest::gtest)
     set(BUILD_SHARED_LIBS OFF)
   endif()
 
+  add_definitions(-DGTEST_HAS_SEH=OFF)
   add_subdirectory(${${gtest_prefix}_SOURCE_DIR} ${${gtest_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
   set_target_properties(gtest gtest_main
     PROPERTIES
@@ -43,6 +44,9 @@ elseif(NOT TARGET GTest::gtest)
       target_compile_options(gtest PRIVATE -Wno-maybe-uninitialized)
       target_compile_options(gtest_main PRIVATE -Wno-maybe-uninitialized)
     endif()
+  endif()
+  if(WIN32)
+      target_compile_options(gtest PRIVATE -Wno-error=ignored-attributes)
   endif()
 
   # Hide gtest project variables
