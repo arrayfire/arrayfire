@@ -29,7 +29,7 @@ Array<T> uniformDistribution(const af::dim4 &dims,
                              const af_random_engine_type type,
                              const uintl &seed, uintl &counter) {
 
-    ONEAPI_NOT_SUPPORTED("uniformDistribution Not supported");
+    //ONEAPI_NOT_SUPPORTED("uniformDistribution Not supported");
 
     Array<T> out = createEmptyArray<T>(dims);
     // kernel::uniformDistributionCBRNG<T>(*out.get(), out.elements(), type, seed,
