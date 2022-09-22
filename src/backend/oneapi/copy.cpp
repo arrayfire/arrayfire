@@ -21,14 +21,13 @@ namespace oneapi {
 
 template<typename T>
 void copyData(T *data, const Array<T> &A) {
-    /*
     if (A.elements() == 0) { return; }
 
     // FIXME: Merge this with copyArray
     A.eval();
 
     dim_t offset = 0;
-    sycl::buffer<T>* buf;
+    const sycl::buffer<T>* buf;
     Array<T> out = A;
 
     if (A.isLinear() ||  // No offsets, No strides
@@ -41,43 +40,92 @@ void copyData(T *data, const Array<T> &A) {
         out    = copyArray(A);
         buf    = out.get();
         offset = 0;
-    }sycl::access::target::device>
+    }
 
     // FIXME: Add checks
-    getQueue().submit([&] (sycl::handler &h) {
-        //auto offset_acc = buf.get_access(h, sycl::range, sycl::id<>)
-        //TODO: offset accessor
-        auto offset_acc = buf->get_access(h);
+    getQueue().submit([=] (sycl::handler &h) {
+        sycl::range rr(A.elements());
+        sycl::id offset_id(offset);
+        auto offset_acc = const_cast<sycl::buffer<T>*>(buf)->get_access(h, rr, offset_id);
         h.copy(offset_acc, data);
     }).wait();
-    //getQueue().enqueueReadBuffer(buf, CL_TRUE, sizeof(T) * offset,
-                                 //sizeof(T) * A.elements(), data);
-    */
 }
 
 template<typename T>
 Array<T> copyArray(const Array<T> &A) {
-    ONEAPI_NOT_SUPPORTED("");
-    Array<T> out = createEmptyArray<T>(dim4(1));
+    Array<T> out = createEmptyArray<T>(A.dims());
+    if (A.elements() == 0) { return out; }
+
+    dim_t offset = A.getOffset();
+    if (A.isLinear()) {
+        // FIXME: Add checks
+
+        const sycl::buffer<T>* A_buf = A.get();
+        sycl::buffer<T>* out_buf = out.get();
+
+        getQueue().submit([=] (sycl::handler &h) {
+            sycl::range rr(A.elements());
+            sycl::id offset_id(offset);
+            auto offset_acc_A  = const_cast<sycl::buffer<T>*>(A_buf)->get_access(h, rr, offset_id);
+            auto acc_out = out_buf->get_access(h);
+
+            h.copy(offset_acc_A, acc_out);
+        }).wait();
+    } else {
+        ONEAPI_NOT_SUPPORTED("");
+        /*
+        TODO:
+        kernel::memcopy<T>(*out.get(), out.strides().get(), *A.get(),
+                           A.dims().get(), A.strides().get(), offset,
+                           (uint)A.ndims());
+        */
+    }
     return out;
 }
 
 template<typename T>
 void multiply_inplace(Array<T> &in, double val) {
     ONEAPI_NOT_SUPPORTED("");
+    //TODO:
+    //kernel::copy<T, T>(in, in, in.ndims(), scalar<T>(0), val, true);
 }
 
 template<typename inType, typename outType>
 struct copyWrapper {
     void operator()(Array<outType> &out, Array<inType> const &in) {
-        ONEAPI_NOT_SUPPORTED("");
+        //TODO:
+        //kernel::copy<inType, outType>(out, in, in.ndims(), scalar<outType>(0),
+                                      //1, in.dims() == out.dims());
     }
 };
 
 template<typename T>
 struct copyWrapper<T, T> {
     void operator()(Array<T> &out, Array<T> const &in) {
-        ONEAPI_NOT_SUPPORTED("");
+        if (out.isLinear() && in.isLinear() &&
+            out.elements() == in.elements()) {
+
+            dim_t in_offset  = in.getOffset() * sizeof(T);
+            dim_t out_offset = out.getOffset() * sizeof(T);
+
+            const sycl::buffer<T>* in_buf = in.get();
+            sycl::buffer<T>* out_buf = out.get();
+
+            getQueue().submit([=] (sycl::handler &h) {
+                sycl::range rr(in.elements());
+                sycl::id in_offset_id(in_offset);
+                sycl::id out_offset_id(out_offset);
+
+                auto offset_acc_in  = const_cast<sycl::buffer<T>*>(in_buf)->get_access(h, rr, in_offset_id);
+                auto offset_acc_out = out_buf->get_access(h, rr, out_offset_id);
+
+                h.copy(offset_acc_in, offset_acc_out);
+            }).wait();
+        } else {
+            //TODO:
+            //kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1,
+                               //in.dims() == out.dims());
+        }
     }
 };
 
@@ -85,7 +133,8 @@ template<typename inType, typename outType>
 void copyArray(Array<outType> &out, Array<inType> const &in) {
     static_assert(!(is_complex<inType>::value && !is_complex<outType>::value),
                   "Cannot copy from complex value to a non complex value");
-    ONEAPI_NOT_SUPPORTED("");
+    copyWrapper<inType, outType> copyFn;
+    copyFn(out, in);
 }
 
 #define INSTANTIATE(T)                                         \
@@ -158,8 +207,16 @@ INSTANTIATE_COPY_ARRAY_COMPLEX(cdouble)
 
 template<typename T>
 T getScalar(const Array<T> &in) {
-    ONEAPI_NOT_SUPPORTED("");
-    return (T)0;
+    T retVal{};
+
+    getQueue().submit([=] (sycl::handler &h) {
+        sycl::range rr(1);
+        sycl::id offset_id(in.getOffset());
+        auto acc_in  = const_cast<sycl::buffer<T>*>(in.get())->get_access(h, rr, offset_id);
+        h.copy(acc_in, (void*)&retVal);
+    }).wait();
+
+    return retVal;
 }
 
 #define INSTANTIATE_GETSCALAR(T) template T getScalar(const Array<T> &in);
