@@ -60,6 +60,15 @@ af_err af_set_backend(const af_backend bknd) {
     return AF_SUCCESS;
 }
 
+af_err af_add_backend_library(const char* lib_path) { return AF_SUCCESS; }
+
+af_err af_set_backend_library(int lib_idx) { return AF_SUCCESS; }
+
+af_err af_check_unified_backend(bool* result) {
+    *result = false;
+    return AF_SUCCESS;
+}
+
 af_err af_get_backend_count(unsigned* num_backends) {
     *num_backends = 1;
     return AF_SUCCESS;

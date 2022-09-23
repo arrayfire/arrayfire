@@ -16,6 +16,78 @@ will return in an exception.
 
 =======================================================================
 
+\defgroup unified_func_addbackendlibrary af_add_backend_library
+
+\brief Adds a new backend library from an arbitrary path on the file system
+
+This function simply registers a new backend library located anywhere in the
+file system, given the path of that library (can be a `.so`, `.dll`, or
+`.dylib` file, depending on the operating system being used).
+
+Once registered, \ref af_set_backend_library() can be called to activate the
+backend library in a program. The order in which a library is added determines
+the index to be passed in \ref af_set_backend_library() to activate the desired
+library. The number of libraries that can be registered and activated is limited
+to 7.
+
+This function, together with \ref af_set_backend_library() can be used to load
+different versions of the ArrayFire library at runtime.
+
+This is a noop when using any one of the standalone CPU, CUDA, or OpenCL
+backends.
+
+The following is an example of how this can be used:
+\code
+af_add_backend_library("/path/to/custom/1/afcpu.so");
+af_add_backend_library("/path/to/custom/2/afcpu.so");
+
+af_set_backend_library(0); // Activates .../1/afcpu.so
+af_set_backend_library(1); // Activates .../2/afcpu.so
+\endcode
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup unified_func_setbackendlibrary af_set_backend_library
+
+\brief Activates an ArrayFire library located in an arbitrary path for use
+
+This function is used after the ArrayFire library has been registered through
+\ref af_add_backend_library(). The index to be passed in must be the order of
+when \ref af_add_backend_library() was called for the target library. This is
+can be used to load different versions of the ArrayFire library at runtime.
+
+This is a noop when using any one of the standalone CPU, CUDA, or OpenCL backends.
+
+The following is an example of how this can be used:
+\code
+af_add_backend_library("/path/to/custom/1/afcpu.so");
+af_add_backend_library("/path/to/custom/2/afcpu.so");
+
+af_set_backend_library(0); // Activates .../1/afcpu.so
+af_set_backend_library(1); // Activates .../2/afcpu.so
+\endcode
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup unified_func_checkunifiedbackend af_check_unified_backend
+
+\brief Returns `true` if the unified backend is used to call ArrayFire functions
+
+This function returns `true` if the unified backend is being used to call the
+ArrayFire functions. If the binary is linked directly to one of the backend
+libraries, this function returns `false`.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
 \defgroup unified_func_getbackendcount getBackendCount
 
 \brief Get the number of backends whose libraries were successfully loaded.
