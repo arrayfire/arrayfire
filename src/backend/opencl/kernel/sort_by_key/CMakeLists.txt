@@ -67,6 +67,9 @@ foreach(SBK_TYPE ${SBK_TYPES})
 
     set_target_properties(opencl_sort_by_key_${SBK_TYPE}
       PROPERTIES
+        CXX_STANDARD 17
+        CXX_EXTENSIONS False
+        CXX_VISIBILITY_PRESET hidden
         POSITION_INDEPENDENT_CODE ON
         FOLDER "Generated Targets")
 

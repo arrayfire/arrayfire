@@ -25,7 +25,7 @@ template<typename To, typename Ti, af_op_t op>
 class BinaryNode : public TNode<compute_t<To>> {
    protected:
     BinOp<compute_t<To>, compute_t<Ti>, op> m_op;
-    using common::Node::m_children;
+    using TNode<compute_t<To>>::m_children;
 
    public:
     BinaryNode(common::Node_ptr lhs, common::Node_ptr rhs)

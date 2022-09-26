@@ -18,10 +18,13 @@ namespace common {
 
 /// A node iterator that performs a breadth first traversal of the node tree
 template<typename Node = common::Node>
-class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
+class NodeIterator {
    public:
-    using pointer   = Node*;
-    using reference = Node&;
+    using iterator_category = std::input_iterator_tag;
+    using value_type        = Node;
+    using difference_type   = std::ptrdiff_t;
+    using pointer           = Node*;
+    using reference         = Node&;
 
    private:
     std::vector<pointer> tree;

@@ -188,7 +188,8 @@ const ArrayInfo &getInfo(const af_array arr, bool sparse_check,
     // are accepted Otherwise only regular Array<T> is accepted
     if (sparse_check) { ARG_ASSERT(0, info->isSparse() == false); }
 
-    if (device_check && info->getDevId() != detail::getActiveDeviceId()) {
+    if (device_check && info->getDevId() != static_cast<unsigned>(
+                                                detail::getActiveDeviceId())) {
         AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
     }
 

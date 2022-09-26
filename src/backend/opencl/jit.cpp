@@ -46,6 +46,7 @@ using cl::NDRange;
 using cl::NullRange;
 
 using std::equal;
+using std::find_if;
 using std::for_each;
 using std::shared_ptr;
 using std::string;

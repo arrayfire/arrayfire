@@ -15,6 +15,7 @@ namespace cpu {
 namespace kernel {
 
 inline int idx_y(int i) {
+    using std::clamp;
     if (i >= 8) return clamp(-(i - 8 - 4), -3, 3);
 
     return clamp(i - 4, -3, 3);

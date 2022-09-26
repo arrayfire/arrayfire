@@ -46,8 +46,10 @@ using common::NodeIterator;
 using cpu::jit::BufferNode;
 
 using nonstd::span;
+using std::accumulate;
 using std::adjacent_find;
 using std::copy;
+using std::find_if;
 using std::is_standard_layout;
 using std::make_shared;
 using std::move;

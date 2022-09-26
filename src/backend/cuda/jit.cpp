@@ -45,6 +45,7 @@ using common::NodeIterator;
 
 using std::array;
 using std::equal;
+using std::find_if;
 using std::for_each;
 using std::shared_ptr;
 using std::string;
