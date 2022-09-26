@@ -19,14 +19,18 @@ namespace kernel {
 template<typename OutT, typename InT>
 void bilateral(Param<OutT> out, CParam<InT> in, float const s_sigma,
                float const c_sigma) {
+    using std::clamp;
+    using std::max;
+    using std::min;
+
     af::dim4 const dims     = in.dims();
     af::dim4 const istrides = in.strides();
     af::dim4 const ostrides = out.strides();
 
     // clamp spatical and chromatic sigma's
-    float space_       = std::min(11.5f, std::max(s_sigma, 0.f));
-    float color_       = std::max(c_sigma, 0.f);
-    dim_t const radius = std::max((dim_t)(space_ * 1.5f), (dim_t)1);
+    float space_       = min(11.5f, max(s_sigma, 0.f));
+    float color_       = max(c_sigma, 0.f);
+    dim_t const radius = max((dim_t)(space_ * 1.5f), (dim_t)1);
     float const svar   = space_ * space_;
     float const cvar   = color_ * color_;
 

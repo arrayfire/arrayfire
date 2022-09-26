@@ -13,6 +13,14 @@ af_dep_check_and_populate(${clfft_prefix}
 set(current_build_type ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(${${clfft_prefix}_SOURCE_DIR}/src ${${clfft_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
+
+# OpenCL targets need this flag to avoid ignored attribute warnings in the
+# OpenCL headers
+check_cxx_compiler_flag(-Wno-ignored-attributes has_ignored_attributes_flag)
+if(has_ignored_attributes_flag)
+  target_compile_options(clFFT
+    PRIVATE -Wno-ignored-attributes)
+endif()
 set(BUILD_SHARED_LIBS ${current_build_type})
 
 mark_as_advanced(

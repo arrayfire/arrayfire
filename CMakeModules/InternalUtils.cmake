@@ -41,20 +41,15 @@ function(arrayfire_get_cuda_cxx_flags cuda_flags)
     endif()
     if(cplusplus_define)
       list(APPEND flags -Xcompiler /Zc:__cplusplus
-                        -Xcompiler /std:c++14)
+                        -Xcompiler /std:c++17)
     endif()
   else()
-    set(flags -std=c++14
+    set(flags -std=c++17
               -Xcompiler -fPIC
               -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden
               --expt-relaxed-constexpr)
   endif()
 
-  if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
-      CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "5.3.0" AND
-      ${CUDA_VERSION_MAJOR} LESS 8)
-    set(flags ${flags} -D_FORCE_INLINES -D_MWAITXINTRIN_H_INCLUDED)
-  endif()
   set(${cuda_flags} ${flags} PARENT_SCOPE)
 endfunction()
 
@@ -121,10 +116,6 @@ endfunction()
 macro(arrayfire_set_cmake_default_variables)
   set(CMAKE_PREFIX_PATH "${ArrayFire_BINARY_DIR};${CMAKE_PREFIX_PATH}")
   set(BUILD_SHARED_LIBS ON)
-
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_EXTENSIONS OFF)
-  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
   set(CMAKE_CXX_FLAGS_COVERAGE
       "-g -O0"

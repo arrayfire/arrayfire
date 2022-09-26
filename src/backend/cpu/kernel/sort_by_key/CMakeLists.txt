@@ -23,6 +23,9 @@ foreach(SBK_TYPE ${SBK_TYPES})
   set_target_properties(cpu_sort_by_key_${SBK_TYPE}
     PROPERTIES
       COMPILE_DEFINITIONS "TYPE=${SBK_TYPE};AFDLL;$<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>"
+      CXX_STANDARD 17
+      CXX_EXTENSIONS OFF
+      CXX_VISIBILITY_PRESET hidden
       FOLDER "Generated Targets")
 
   arrayfire_set_default_cxx_flags(cpu_sort_by_key_${SBK_TYPE})

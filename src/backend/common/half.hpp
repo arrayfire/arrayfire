@@ -127,9 +127,9 @@ AF_CONSTEXPR __DH__ native_half_t int2half_impl(T value) noexcept {
     if (S) value = -value;
     uint16_t bits = S << 15;
     if (value > 0xFFFF) {
-        if (R == std::round_toward_infinity)
+        if constexpr (R == std::round_toward_infinity)
             bits |= (0x7C00 - S);
-        else if (R == std::round_toward_neg_infinity)
+        else if constexpr (R == std::round_toward_neg_infinity)
             bits |= (0x7BFF + S);
         else
             bits |= (0x7BFF + (R != std::round_toward_zero));
@@ -141,15 +141,15 @@ AF_CONSTEXPR __DH__ native_half_t int2half_impl(T value) noexcept {
             ;
         bits |= (exp << 10) + m;
         if (exp > 24) {
-            if (R == std::round_to_nearest)
+            if constexpr (R == std::round_to_nearest)
                 bits += (value >> (exp - 25)) & 1
 #if HALF_ROUND_TIES_TO_EVEN
                         & (((((1 << (exp - 25)) - 1) & value) != 0) | bits)
 #endif
                     ;
-            else if (R == std::round_toward_infinity)
+            else if constexpr (R == std::round_toward_infinity)
                 bits += ((value & ((1 << (exp - 24)) - 1)) != 0) & !S;
-            else if (R == std::round_toward_neg_infinity)
+            else if constexpr (R == std::round_toward_neg_infinity)
                 bits += ((value & ((1 << (exp - 24)) - 1)) != 0) & S;
         }
     }
@@ -277,7 +277,7 @@ __DH__ native_half_t float2half_impl(float value) noexcept {
     uint16_t hbits =
         base_table[bits >> 23] +
         static_cast<uint16_t>((bits & 0x7FFFFF) >> shift_table[bits >> 23]);
-    if (R == std::round_to_nearest)
+    if constexpr (R == std::round_to_nearest)
         hbits +=
             (((bits & 0x7FFFFF) >> (shift_table[bits >> 23] - 1)) |
              (((bits >> 23) & 0xFF) == 102)) &
@@ -289,16 +289,16 @@ __DH__ native_half_t float2half_impl(float value) noexcept {
              hbits)
 #endif
             ;
-    else if (R == std::round_toward_zero)
+    else if constexpr (R == std::round_toward_zero)
         hbits -= ((hbits & 0x7FFF) == 0x7C00) & ~shift_table[bits >> 23];
-    else if (R == std::round_toward_infinity)
+    else if constexpr (R == std::round_toward_infinity)
         hbits += ((((bits & 0x7FFFFF &
                      ((static_cast<uint32_t>(1) << (shift_table[bits >> 23])) -
                       1)) != 0) |
                    (((bits >> 23) <= 102) & ((bits >> 23) != 0))) &
                   (hbits < 0x7C00)) -
                  ((hbits == 0xFC00) & ((bits >> 23) != 511));
-    else if (R == std::round_toward_neg_infinity)
+    else if constexpr (R == std::round_toward_neg_infinity)
         hbits += ((((bits & 0x7FFFFF &
                      ((static_cast<uint32_t>(1) << (shift_table[bits >> 23])) -
                       1)) != 0) |
@@ -328,9 +328,9 @@ __DH__ native_half_t float2half_impl(double value) {
         return hbits | 0x7C00 |
                (0x3FF & -static_cast<unsigned>((bits & 0xFFFFFFFFFFFFF) != 0));
     if (exp > 1038) {
-        if (R == std::round_toward_infinity)
+        if constexpr (R == std::round_toward_infinity)
             return hbits | (0x7C00 - (hbits >> 15));
-        if (R == std::round_toward_neg_infinity)
+        if constexpr (R == std::round_toward_neg_infinity)
             return hbits | (0x7BFF + (hbits >> 15));
         return hbits | (0x7BFF + (R != std::round_toward_zero));
     }
@@ -348,15 +348,15 @@ __DH__ native_half_t float2half_impl(double value) {
     } else {
         s |= hi != 0;
     }
-    if (R == std::round_to_nearest)
+    if constexpr (R == std::round_to_nearest)
 #if HALF_ROUND_TIES_TO_EVEN
         hbits += g & (s | hbits);
 #else
         hbits += g;
 #endif
-    else if (R == std::round_toward_infinity)
+    else if constexpr (R == std::round_toward_infinity)
         hbits += ~(hbits >> 15) & (s | g);
-    else if (R == std::round_toward_neg_infinity)
+    else if constexpr (R == std::round_toward_neg_infinity)
         hbits += (hbits >> 15) & (g | s);
     return hbits;
 }
@@ -773,20 +773,20 @@ AF_CONSTEXPR T half2int(native_half_t value) {
         return (value & 0x8000) ? std::numeric_limits<T>::min()
                                 : std::numeric_limits<T>::max();
     if (e < 0x3800) {
-        if (R == std::round_toward_infinity)
+        if constexpr (R == std::round_toward_infinity)
             return T(~(value >> 15) & (e != 0));
-        else if (R == std::round_toward_neg_infinity)
+        else if constexpr (R == std::round_toward_neg_infinity)
             return -T(value > 0x8000);
         return T();
     }
     unsigned int m = (value & 0x3FF) | 0x400;
     e >>= 10;
     if (e < 25) {
-        if (R == std::round_to_nearest)
+        if constexpr (R == std::round_to_nearest)
             m += (1 << (24 - e)) - (~(m >> (25 - e)) & E);
-        else if (R == std::round_toward_infinity)
+        else if constexpr (R == std::round_toward_infinity)
             m += ((value >> 15) - 1) & ((1 << (25 - e)) - 1U);
-        else if (R == std::round_toward_neg_infinity)
+        else if constexpr (R == std::round_toward_neg_infinity)
             m += -(value >> 15) & ((1 << (25 - e)) - 1U);
         m >>= 25 - e;
     } else

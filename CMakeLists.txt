@@ -304,6 +304,9 @@ if(CMAKE_CROSSCOMPILING)
 else()
   add_executable(bin2cpp ${ArrayFire_SOURCE_DIR}/CMakeModules/bin2cpp.cpp
                          ${ArrayFire_SOURCE_DIR}/src/backend/common/util.cpp)
+  set_target_properties(bin2cpp
+    PROPERTIES
+      CXX_STANDARD 17)
 
   # NOSPDLOG is used to remove the spdlog dependency from bin2cpp
   target_compile_definitions(bin2cpp PRIVATE NOSPDLOG)
@@ -358,6 +361,9 @@ if(TARGET afopencl)
 endif()
 
 set_target_properties(${built_backends} PROPERTIES
+                      CXX_STANDARD 17
+                      CXX_EXTENSIONS OFF
+                      CXX_VISIBILITY_PRESET hidden
                       VERSION "${ArrayFire_VERSION}"
                       SOVERSION "${ArrayFire_VERSION_MAJOR}")
 

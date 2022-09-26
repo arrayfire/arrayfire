@@ -53,7 +53,7 @@ void propagateModdimsShape(
 
             NodeIterator<> it(node.get());
             while (it != NodeIterator<>()) {
-                it = find_if(it, NodeIterator<>(), common::isBuffer);
+                it = std::find_if(it, NodeIterator<>(), common::isBuffer);
                 if (it == NodeIterator<>()) { break; }
 
                 it->setShape(mn->m_new_shape);

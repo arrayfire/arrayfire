@@ -388,9 +388,15 @@ static inline cdouble division(cdouble lhs, double rhs) {
     return retVal;
 }
 
+template<typename T, typename Compare>
+constexpr const __DH__ T clamp(const T value, const T lo, const T hi,
+                               Compare comp) {
+    return comp(value, lo) ? lo : comp(hi, value) ? hi : value;
+}
+
 template<typename T>
-static inline __DH__ T clamp(const T value, const T lo, const T hi) {
-    return max(lo, min(value, hi));
+constexpr const __DH__ T clamp(const T value, const T lo, const T hi) {
+    return clamp(value, lo, hi, [](auto lhs, auto rhs) { return lhs < rhs; });
 }
 
 }  // namespace cuda
