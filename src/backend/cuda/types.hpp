@@ -161,7 +161,7 @@ struct kernel_type<common::half> {
     // outside of a cuda kernel use float
     using compute = float;
 
-#if defined(NVCC) || defined(__CUDACC_RTC__)
+#if defined(__NVCC__) || defined(__CUDACC_RTC__)
     using native = __half;
 #else
     using native = common::half;

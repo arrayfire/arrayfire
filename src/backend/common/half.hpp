@@ -9,7 +9,7 @@
 
 #pragma once
 
-#if defined(NVCC) || defined(__CUDACC_RTC__)
+#if defined(__NVCC__) || defined(__CUDACC_RTC__)
 
 // MSVC sets __cplusplus to 199711L for all versions unless you specify
 // the new \Zc:__cplusplus flag in Visual Studio 2017. This is not possible
@@ -824,7 +824,7 @@ AF_CONSTEXPR __DH__ static inline bool isnan(common::half val) noexcept;
 class alignas(2) half {
     native_half_t data_ = native_half_t();
 
-#if !defined(NVCC) && !defined(__CUDACC_RTC__)
+#if !defined(__NVCC__) && !defined(__CUDACC_RTC__)
     // NVCC on OSX performs a weird transformation where it removes the std::
     // namespace and complains that the std:: namespace is not there
     friend class std::numeric_limits<half>;
@@ -1054,7 +1054,7 @@ static inline std::string to_string(const half&& val) {
 
 }  // namespace common
 
-#if !defined(NVCC) && !defined(__CUDACC_RTC__)
+#if !defined(__NVCC__) && !defined(__CUDACC_RTC__)
 //#endif
 /// Extensions to the C++ standard library.
 namespace std {
