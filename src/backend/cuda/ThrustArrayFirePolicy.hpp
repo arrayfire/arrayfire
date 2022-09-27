@@ -49,7 +49,7 @@ __DH__ inline cudaStream_t get_stream<::cuda::ThrustArrayFirePolicy>(
 __DH__
 inline cudaError_t synchronize_stream(const ::cuda::ThrustArrayFirePolicy &) {
 #if defined(__CUDA_ARCH__)
-    return cudaDeviceSynchronize();
+    return cudaSuccess;
 #else
     return cudaStreamSynchronize(::cuda::getActiveStream());
 #endif
