@@ -43,11 +43,6 @@ function(arrayfire_get_cuda_cxx_flags cuda_flags)
       list(APPEND flags -Xcompiler /Zc:__cplusplus
                         -Xcompiler /std:c++17)
     endif()
-  else()
-    set(flags -std=c++17
-              -Xcompiler -fPIC
-              -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden
-              --expt-relaxed-constexpr)
   endif()
 
   set(${cuda_flags} ${flags} PARENT_SCOPE)

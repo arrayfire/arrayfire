@@ -6,6 +6,7 @@
 # http://arrayfire.com/licenses/BSD-3-Clause
 
 cmake_minimum_required(VERSION 3.10.2)
+include(CheckLanguage)
 
 include(CMakeModules/AF_vcpkg_options.cmake)
 
@@ -130,6 +131,19 @@ cmake_dependent_option(AF_BUILD_FRAMEWORK "Build an ArrayFire framework for Appl
 option(AF_WITH_STATIC_FREEIMAGE "Use Static FreeImage Lib" OFF)
 
 set(AF_WITH_CPUID ON CACHE BOOL "Build with CPUID integration")
+
+if(AF_BUILD_CUDA)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+  elseif(CUDA_NVCC_EXECUTABLE)
+    message(STATUS "Using the FindCUDA script to search for the CUDA compiler")
+    set(CMAKE_CUDA_COMPILER ${CUDA_NVCC_EXECUTABLE} CACHE INTERNAL "CUDA compiler executable")
+    enable_language(CUDA)
+  else()
+    message(WARNING "No CUDA support")
+  endif()
+endif()
 
 af_deprecate(BUILD_CPU             AF_BUILD_CPU)
 af_deprecate(BUILD_CUDA            AF_BUILD_CUDA)
