@@ -333,6 +333,7 @@ if(OpenCL_FOUND)
 endif()
 
 if(CUDA_FOUND)
+  include(AFcuda_helpers)
   foreach(backend ${enabled_backends})
     set(cuda_test_backends "cuda" "unified")
     if(${backend} IN_LIST cuda_test_backends)
@@ -345,7 +346,7 @@ if(CUDA_FOUND)
           ${CMAKE_CURRENT_SOURCE_DIR}
         )
       endif()
-      cuda_add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
+      add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
       target_include_directories(${target} PRIVATE
         ${ArrayFire_SOURCE_DIR}/extern/half/include
         ${CMAKE_SOURCE_DIR}
@@ -369,10 +370,12 @@ if(CUDA_FOUND)
         target_link_libraries(${target} -pthread)
       endif()
 
+      af_detect_and_set_cuda_architectures(${target})
+
       set_target_properties(${target}
         PROPERTIES
-        FOLDER "Tests"
-        OUTPUT_NAME "cuda_${backend}")
+          FOLDER "Tests"
+          OUTPUT_NAME "cuda_${backend}")
 
       if(NOT ${backend} STREQUAL "unified")
         add_test(NAME ${target} COMMAND ${target})
