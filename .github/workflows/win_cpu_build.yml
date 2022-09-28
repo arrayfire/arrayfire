@@ -36,8 +36,7 @@ jobs:
                 cd vcpkg
                 git checkout $env:VCPKG_HASH
                 .\bootstrap-vcpkg.bat
-                .\vcpkg.exe install boost-compute boost-math boost-stacktrace fftw3 freeimage freetype[core] forge glfw3 openblas
-                Remove-Item .\downloads,.\buildtrees,.\packages -Recurse -Force
+                .\vcpkg.exe install --clean-after-build boost-compute boost-math boost-stacktrace fftw3 freeimage freetype[core] forge glfw3 openblas
 
             - name: CMake Configure
               run: |
@@ -49,7 +48,6 @@ jobs:
                   $buildname = "$buildname-cpu-openblas"
                   mkdir build && cd build
                   cmake .. -G "Visual Studio 17 2022" -A x64 `
-                      -DVCPKG_ROOT:PATH="~/vcpkg" `
                       -DVCPKG_MANIFEST_MODE:BOOL=OFF `
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `

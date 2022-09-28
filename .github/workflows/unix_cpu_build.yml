@@ -58,7 +58,7 @@ jobs:
             - name: Install Dependencies for Macos
               if: matrix.os == 'macos-latest'
               run: |
-                  brew install boost fontconfig glfw freeimage fftw lapack openblas
+                  brew install boost fontconfig glfw freeimage fftw lapack openblas expat
                   echo "CMAKE_PROGRAM=cmake" >> $GITHUB_ENV
 
             - name: Install Common Dependencies for Ubuntu
@@ -103,7 +103,7 @@ jobs:
                   backend=$(if [ "$USE_MKL" == 1 ]; then echo "Intel-MKL"; else echo "FFTW/LAPACK/BLAS"; fi)
                   buildname="$buildname-cpu-$BLAS_BACKEND"
                   cmake_rpath=$(if [ $OS_NAME == 'macos-latest' ]; then echo "-DCMAKE_INSTALL_RPATH=/opt/arrayfire/lib"; fi)
-                  mkdir build && cd build
+                  mkdir build && cd build && unset VCPKG_ROOT
                   ${CMAKE_PROGRAM} -G Ninja \
                       -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF \
