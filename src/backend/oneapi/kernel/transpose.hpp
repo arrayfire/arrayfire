@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <err_oneapi.hpp>
+#include <debug_oneapi.hpp>
 #include <traits.hpp>
 
 #include <string>
@@ -147,7 +148,8 @@ void transpose(Param<T> out, const Param<T> in, const bool conjugate, const bool
                                           blk_x, blk_y,
                                           conjugate, IS32MULTIPLE,
                                           shrdMem, debugStream));
-    }).wait();
+    });
+    ONEAPI_DEBUG_FINISH(getQueue());
 }
 
 }  // namespace kernel
