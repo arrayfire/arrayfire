@@ -207,6 +207,8 @@ target_sources(afoneapi
     kernel/KParam.hpp
     kernel/iota.hpp
     kernel/memcopy.hpp
+    kernel/range.hpp
+    kernel/transpose.hpp
 )
 
 add_library(ArrayFire::afoneapi ALIAS afoneapi)
