@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/kernel_cache.hpp>
+#include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
 #include <traits.hpp>
 #include <af/dim4.hpp>
@@ -108,6 +109,7 @@ void range(Param<T> out, const int dim) {
         h.parallel_for(ndrange, rangeOp<T>(out_acc, out.info,
             dim, blocksPerMatX, blocksPerMatY, debug_stream));
     });
+    ONEAPI_DEBUG_FINISH(getQueue());
 }
 
 template<>

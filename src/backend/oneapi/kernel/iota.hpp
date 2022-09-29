@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/kernel_cache.hpp>
+#include <debug_oneapi.hpp>
 #include <traits.hpp>
 #include <af/dim4.hpp>
 
@@ -103,6 +104,7 @@ void iota(Param<T> out, const af::dim4& sdims) {
             static_cast<int>(sdims[2]), static_cast<int>(sdims[3]),
             blocksPerMatX, blocksPerMatY, debug_stream));
     });
+    ONEAPI_DEBUG_FINISH(getQueue());
 }
 
 }  // namespace kernel

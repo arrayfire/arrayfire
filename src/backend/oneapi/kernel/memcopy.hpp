@@ -15,6 +15,7 @@
 #include <common/half.hpp>
 //#include <common/kernel_cache.hpp>
 #include <common/traits.hpp>
+#include <debug_oneapi.hpp>
 #include <traits.hpp>
 
 #include <algorithm>
@@ -116,6 +117,7 @@ void memcopy(sycl::buffer<T>* out, const dim_t *ostrides, const sycl::buffer<T>*
             in_acc, _idims, _istrides,
             offset, groups_0, groups_1, debug_stream));
     });
+    ONEAPI_DEBUG_FINISH(getQueue());
 }
 
 template<typename T>
@@ -312,6 +314,7 @@ void copy(Param<outType> dst, const Param<inType> src, const int ndims,
                     blk_x, blk_y, debug_stream));
         }
     });
+    ONEAPI_DEBUG_FINISH(getQueue());
 }
 
 }  // namespace kernel
