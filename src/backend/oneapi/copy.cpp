@@ -9,6 +9,7 @@
 #include <copy.hpp>
 
 #include <Array.hpp>
+#include <kernel/memcopy.hpp>
 #include <common/complex.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
@@ -72,30 +73,23 @@ Array<T> copyArray(const Array<T> &A) {
             h.copy(offset_acc_A, acc_out);
         }).wait();
     } else {
-        ONEAPI_NOT_SUPPORTED("");
-        /*
-        TODO:
-        kernel::memcopy<T>(*out.get(), out.strides().get(), *A.get(),
+        kernel::memcopy<T>(out.get(), out.strides().get(), A.get(),
                            A.dims().get(), A.strides().get(), offset,
                            (uint)A.ndims());
-        */
     }
     return out;
 }
 
 template<typename T>
 void multiply_inplace(Array<T> &in, double val) {
-    ONEAPI_NOT_SUPPORTED("");
-    //TODO:
-    //kernel::copy<T, T>(in, in, in.ndims(), scalar<T>(0), val, true);
+    kernel::copy<T, T>(in, in, in.ndims(), scalar<T>(0), val, true);
 }
 
 template<typename inType, typename outType>
 struct copyWrapper {
     void operator()(Array<outType> &out, Array<inType> const &in) {
-        //TODO:
-        //kernel::copy<inType, outType>(out, in, in.ndims(), scalar<outType>(0),
-                                      //1, in.dims() == out.dims());
+        kernel::copy<inType, outType>(out, in, in.ndims(), scalar<outType>(0),
+                                      1, in.dims() == out.dims());
     }
 };
 
@@ -122,9 +116,8 @@ struct copyWrapper<T, T> {
                 h.copy(offset_acc_in, offset_acc_out);
             }).wait();
         } else {
-            //TODO:
-            //kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1,
-                               //in.dims() == out.dims());
+            kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1,
+                               in.dims() == out.dims());
         }
     }
 };

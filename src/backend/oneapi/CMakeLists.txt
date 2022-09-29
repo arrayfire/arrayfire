@@ -202,6 +202,13 @@ add_library(afoneapi
   wrap.hpp
   )
 
+target_sources(afoneapi
+  PRIVATE
+    kernel/KParam.hpp
+    kernel/iota.hpp
+    kernel/memcopy.hpp
+)
+
 add_library(ArrayFire::afoneapi ALIAS afoneapi)
 
 arrayfire_set_default_cxx_flags(afoneapi)

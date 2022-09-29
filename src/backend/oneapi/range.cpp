@@ -6,14 +6,14 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-// #include <kernel/range.hpp>
 #include <range.hpp>
-#include <err_oneapi.hpp>
+#include <kernel/range.hpp>
 
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
 #include <math.hpp>
+
 #include <stdexcept>
 
 using common::half;
@@ -21,9 +21,6 @@ using common::half;
 namespace oneapi {
 template<typename T>
 Array<T> range(const dim4& dim, const int seq_dim) {
-
-    ONEAPI_NOT_SUPPORTED("range Not supported");
-
     // Set dimension along which the sequence should be
     // Other dimensions are simply tiled
     int _seq_dim = seq_dim;
@@ -36,7 +33,7 @@ Array<T> range(const dim4& dim, const int seq_dim) {
     }
 
     Array<T> out = createEmptyArray<T>(dim);
-    // kernel::range<T>(out, _seq_dim);
+    kernel::range<T>(out, _seq_dim);
 
     return out;
 }

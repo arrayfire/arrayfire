@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #include <iota.hpp>
+#include <kernel/iota.hpp>
 
 #include <Array.hpp>
 #include <common/half.hpp>
@@ -20,10 +21,19 @@ using common::half;
 namespace oneapi {
 template<typename T>
 Array<T> iota(const dim4 &dims, const dim4 &tile_dims) {
-    ONEAPI_NOT_SUPPORTED("");
     dim4 outdims = dims * tile_dims;
 
     Array<T> out = createEmptyArray<T>(outdims);
+    kernel::iota<T>(out, dims);
+    return out;
+}
+
+template<>
+Array<half> iota(const dim4 &dims, const dim4 &tile_dims) {
+    ONEAPI_NOT_SUPPORTED("");
+    dim4 outdims = dims * tile_dims;
+
+    Array<half> out = createEmptyArray<half>(outdims);
     return out;
 }
 
