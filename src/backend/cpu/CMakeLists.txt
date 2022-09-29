@@ -283,8 +283,6 @@ target_sources(afcpu
     ${${threads_prefix}_SOURCE_DIR}/include/threads/event.hpp
   )
 
-arrayfire_set_default_cxx_flags(afcpu)
-
 include("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
 target_include_directories(afcpu

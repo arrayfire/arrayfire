@@ -1,3 +1,10 @@
+# Copyright (c) 2022, ArrayFire
+# All rights reserved.
+#
+# This file is distributed under 3-clause BSD license.
+# The complete license agreement can be obtained at:
+# http://arrayfire.com/licenses/BSD-3-Clause
+
 generate_product_version(af_unified_ver_res_file
   FILE_NAME "af"
   FILE_DESCRIPTION "Unified Backend Dynamic-link library"
@@ -9,58 +16,36 @@ add_library(ArrayFire::af ALIAS af)
 target_sources(af
   PRIVATE
     ${af_unified_ver_res_file}
-    ${CMAKE_CURRENT_SOURCE_DIR}/algorithm.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/arith.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/array.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/blas.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/data.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/device.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/error.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/event.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/features.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/graphics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/image.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/index.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/internal.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/jit_test_api.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/lapack.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/memory.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/ml.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/moments.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/random.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/signal.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/sparse.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/statistics.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/symbol_manager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/symbol_manager.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/vision.cpp
-  )
+    algorithm.cpp
+    arith.cpp
+    array.cpp
+    blas.cpp
+    data.cpp
+    device.cpp
+    error.cpp
+    event.cpp
+    features.cpp
+    graphics.cpp
+    image.cpp
+    index.cpp
+    internal.cpp
+    jit_test_api.cpp
+    lapack.cpp
+    memory.cpp
+    ml.cpp
+    moments.cpp
+    random.cpp
+    signal.cpp
+    sparse.cpp
+    statistics.cpp
+    symbol_manager.cpp
+    symbol_manager.hpp
+    util.cpp
+    vision.cpp
 
-if(OpenCL_FOUND)
-  target_sources(af
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/opencl.cpp
-  )
+    $<$<BOOL:${OpenCL_FOUND}>: ${CMAKE_CURRENT_SOURCE_DIR}/opencl.cpp>
+    $<$<BOOL:${CUDA_FOUND}>: ${CMAKE_CURRENT_SOURCE_DIR}/cuda.cpp>
 
-  target_include_directories(af
-    PRIVATE
-      $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>)
-
-endif()
-
-if(CUDA_FOUND)
-  target_sources(af
-    PRIVATE
-      ${CMAKE_CURRENT_SOURCE_DIR}/cuda.cpp)
-
-  target_include_directories(af
-    PRIVATE
-      ${CUDA_INCLUDE_DIRS})
-endif()
-
-target_sources(af
-  PRIVATE
     ${ArrayFire_SOURCE_DIR}/src/api/c/type_util.cpp
     ${ArrayFire_SOURCE_DIR}/src/api/c/version.cpp
     ${ArrayFire_SOURCE_DIR}/src/backend/common/Logger.cpp
@@ -73,7 +58,6 @@ target_sources(af
     ${ArrayFire_SOURCE_DIR}/src/backend/common/deprecated.hpp
   )
 
-arrayfire_set_default_cxx_flags(af)
 if(WIN32)
   target_sources(af
     PRIVATE
@@ -94,8 +78,10 @@ target_include_directories(af
   PRIVATE
     ${ArrayFire_SOURCE_DIR}/src/api/c
     ${ArrayFire_SOURCE_DIR}/src/api/unified
+    ${ArrayFire_BINARY_DIR}
     $<TARGET_PROPERTY:afcommon_interface,INTERFACE_INCLUDE_DIRECTORIES>
-    ${CMAKE_BINARY_DIR}
+    $<$<BOOL:${OpenCL_FOUND}>: $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>>
+    $<$<BOOL:${CUDA_FOUND}>:  ${CUDA_INCLUDE_DIRS}>
   )
 
 target_link_libraries(af

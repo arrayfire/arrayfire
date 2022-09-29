@@ -399,8 +399,6 @@ target_include_directories(afopencl
     ../../../include
   )
 
-arrayfire_set_default_cxx_flags(afopencl)
-
 add_dependencies(afopencl ${cl_kernel_targets} CLBlast-ext)
 
 set_target_properties(afopencl PROPERTIES POSITION_INDEPENDENT_CODE ON)
