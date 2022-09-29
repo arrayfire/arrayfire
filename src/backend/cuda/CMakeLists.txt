@@ -227,31 +227,14 @@ file_to_string(
     NULLTERM
     )
 
-arrayfire_get_cuda_cxx_flags(cuda_cxx_flags)
-arrayfire_get_platform_definitions(platform_flags)
-
-# New API of cuSparse was introduced in 10.1.168 for Linux and the older
-# 10.1.105 fix version doesn't it. Unfortunately, the new API was introduced in
-# in a fix release of CUDA - unconventionally. As CMake's FindCUDA module
-# doesn't provide patch/fix version number, we use 10.2 as the minimum
-# CUDA version to enable this new cuSparse API.
-if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
-   (UNIX AND
-    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 1))
-  list(APPEND cxx_definitions -DAF_USE_NEW_CUSPARSE_API)
-endif()
-
-# CUDA_NO_HALF prevents the inclusion of the half class in the global namespace
-# which conflicts with the half class in ArrayFire's common namespace. prefer
-# using __half class instead for CUDA
-list(APPEND cxx_definitions -DAF_CUDA;-DCUDA_NO_HALF)
-list(APPEND cuda_cxx_flags ${cxx_definitions})
-
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/thrust_sort_by_key/CMakeLists.txt)
 
-add_library(af_cuda_static_cuda_library
-  STATIC
+
+add_library(afcuda
+    $<$<PLATFORM_ID:Windows>:${af_cuda_ver_res_file}>
+    ${thrust_sort_sources}
+
     blas.cu
     blas.hpp
     cudaDataType.hpp
@@ -267,104 +250,6 @@ add_library(af_cuda_static_cuda_library
     sparse_blas.hpp
     solve.cu
     solve.hpp
-)
-
-af_detect_and_set_cuda_architectures(af_cuda_static_cuda_library)
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
-  set_target_properties(af_cuda_static_cuda_library
-    PROPERTIES
-      CUDA_STANDARD 17)
-else()
-  target_compile_options(af_cuda_static_cuda_library
-    PRIVATE
-      $<$<COMPILE_LANGUAGE:CUDA>:--std=c++17>)
-endif()
-
-set_target_properties(af_cuda_static_cuda_library
-  PROPERTIES
-    POSITION_INDEPENDENT_CODE ON
-    LINKER_LANGUAGE CUDA
-    FOLDER "Generated Targets")
-
-target_include_directories(af_cuda_static_cuda_library
-  PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${ArrayFire_SOURCE_DIR}/include
-    ${ArrayFire_BINARY_DIR}/include
-    ${ArrayFire_SOURCE_DIR}/src/api/c
-    ${ArrayFire_SOURCE_DIR}/src/backend
-)
-
-target_compile_definitions(af_cuda_static_cuda_library
-  PRIVATE
-    ${platform_flags}
-    AFDLL)
-
-target_compile_options(af_cuda_static_cuda_library
-  PRIVATE
-    $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --diag_suppress=unrecognized_gcc_pragma>
-    $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
-    ${cuda_cxx_flags})
-
-if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
-   (UNIX AND
-    CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 1))
-  target_compile_definitions(af_cuda_static_cuda_library PRIVATE AF_USE_NEW_CUSPARSE_API)
-endif()
-
-target_link_libraries(af_cuda_static_cuda_library
-  PRIVATE
-    Boost::boost
-    af_spdlog
-    nonstd::span-lite)
-
-if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
-  check_cxx_compiler_flag("-Wl,--start-group -Werror" group_flags)
-  if(group_flags)
-    set(START_GROUP -Wl,--start-group)
-    set(END_GROUP -Wl,--end-group)
-  endif()
-
-  target_link_libraries(af_cuda_static_cuda_library
-    PRIVATE
-      ${CMAKE_DL_LIBS}
-      ${cusolver_lib}
-      ${START_GROUP}
-      ${CUDA_culibos_LIBRARY} #also a static libary
-      ${AF_CUDA_cublas_static_LIBRARY}
-      ${AF_CUDA_cublasLt_static_LIBRARY}
-      ${AF_CUDA_cufft_static_LIBRARY}
-      ${AF_CUDA_optionally_static_libraries}
-      ${nvrtc_libs}
-      ${cusolver_static_lib}
-      ${END_GROUP})
-
-  if(CUDA_VERSION VERSION_GREATER 10.0)
-    target_link_libraries(af_cuda_static_cuda_library
-      PRIVATE
-        ${AF_CUDA_cublasLt_static_LIBRARY})
-  endif()
-
-  if(CUDA_VERSION VERSION_GREATER 9.5)
-    target_link_libraries(af_cuda_static_cuda_library
-      PRIVATE
-        ${CUDA_lapack_static_LIBRARY})
-  endif()
-
-else()
-  target_link_libraries(af_cuda_static_cuda_library
-    PUBLIC
-      ${CUDA_CUBLAS_LIBRARIES}
-      ${CUDA_CUFFT_LIBRARIES}
-      ${CUDA_cusolver_LIBRARY}
-      ${nvrtc_libs}
-  )
-endif()
-
-add_library(afcuda
-    $<$<PLATFORM_ID:Windows>:${af_cuda_ver_res_file}>
-    ${thrust_sort_sources}
 
     EnqueueArgs.hpp
     all.cu
@@ -520,6 +405,12 @@ add_library(afcuda
     cu_check_macro.hpp
     cublas.cpp
     cublas.hpp
+
+    $<$<BOOL:${AF_WITH_CUDNN}>: cudnn.cpp
+                             cudnn.hpp
+                             cudnnModule.cpp
+                             cudnnModule.hpp>
+
     cufft.hpp
     cusolverDn.cpp
     cusolverDn.hpp
@@ -662,11 +553,56 @@ add_library(afcuda
     ${scan_by_key_sources}
   )
 
+
+if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
+  check_cxx_compiler_flag("-Wl,--start-group -Werror" group_flags)
+  if(group_flags)
+    set(START_GROUP -Wl,--start-group)
+    set(END_GROUP -Wl,--end-group)
+  endif()
+
+  target_link_libraries(afcuda
+    PRIVATE
+      ${cusolver_lib}
+      ${START_GROUP}
+      ${CUDA_culibos_LIBRARY} #also a static libary
+      ${AF_CUDA_cublas_static_LIBRARY}
+      ${AF_CUDA_cublasLt_static_LIBRARY}
+      ${AF_CUDA_cufft_static_LIBRARY}
+      ${AF_CUDA_optionally_static_libraries}
+      ${nvrtc_libs}
+      ${cusolver_static_lib}
+      ${END_GROUP})
+
+  if(CUDA_VERSION VERSION_GREATER 10.0)
+    target_link_libraries(afcuda
+      PRIVATE
+        ${AF_CUDA_cublasLt_static_LIBRARY})
+  endif()
+
+  if(CUDA_VERSION VERSION_GREATER 9.5)
+    target_link_libraries(afcuda
+      PRIVATE
+        ${CUDA_lapack_static_LIBRARY})
+  endif()
+
+else()
+  target_link_libraries(afcuda
+    PUBLIC
+      ${CUDA_CUBLAS_LIBRARIES}
+      ${CUDA_CUFFT_LIBRARIES}
+      ${CUDA_cusolver_LIBRARY}
+      ${nvrtc_libs}
+  )
+endif()
+
+
 af_detect_and_set_cuda_architectures(afcuda)
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
   set_target_properties(afcuda
     PROPERTIES
-      CUDA_STANDARD 17)
+      CUDA_STANDARD 17
+      CUDA_STANDARD_REQUIRED ON)
 else()
   target_compile_options(afcuda
     PRIVATE
@@ -675,29 +611,42 @@ endif()
 
 target_compile_definitions(afcuda
   PRIVATE
-    ${platform_flags})
+    AF_CUDA
+
+    # CUDA_NO_HALF prevents the inclusion of the half class in the global namespace
+    # which conflicts with the half class in ArrayFire's common namespace. prefer
+    # using __half class instead for CUDA
+    CUDA_NO_HALF
+
+    $<$<BOOL:${AF_WITH_CUDNN}>:WITH_CUDNN>
+)
+
+# New API of cuSparse was introduced in 10.1.168 for Linux and the older
+# 10.1.105 fix version doesn't it. Unfortunately, the new API was introduced in
+# in a fix release of CUDA - unconventionally. As CMake's FindCUDA module
+# doesn't provide patch/fix version number, we use 10.2 as the minimum
+# CUDA version to enable this new cuSparse API.
+if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
+    (UNIX AND
+      CUDA_VERSION_MAJOR VERSION_EQUAL 10 AND CUDA_VERSION_MINOR VERSION_GREATER 1))
+  target_compile_definitions(afcuda
+    PRIVATE
+      AF_USE_NEW_CUSPARSE_API)
+endif()
 
 target_compile_options(afcuda
   PRIVATE
-    ${cuda_cxx_flags}
     $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
     $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --diag_suppress=unrecognized_gcc_pragma>
+    $<$<COMPILE_LANGUAGE:CUDA>: $<$<CXX_COMPILER_ID:MSVC>:  -Xcompiler=/wd4251
+                                                            -Xcompiler=/wd4068
+                                                            -Xcompiler=/wd4275
+                                                            -Xcompiler=/wd4668
+                                                            -Xcompiler=/wd4710
+                                                            -Xcompiler=/wd4505
+                                                            -Xcompiler=/bigobj>>
 )
 
-
-if(AF_WITH_CUDNN)
-  target_sources(afcuda PRIVATE
-    cudnn.cpp
-    cudnn.hpp
-    cudnnModule.cpp
-    cudnnModule.hpp)
-  target_compile_definitions(afcuda PRIVATE WITH_CUDNN)
-
-  target_include_directories (afcuda
-    PRIVATE
-      ${cuDNN_INCLUDE_DIRS}
-    )
-endif()
 
 if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS AND AF_cusparse_LINK_LOADING STREQUAL "Static")
   target_compile_definitions(afcuda
@@ -708,7 +657,6 @@ endif()
 add_library(ArrayFire::afcuda ALIAS afcuda)
 
 add_dependencies(afcuda ${jit_kernel_targets} ${nvrtc_kernel_targets})
-add_dependencies(af_cuda_static_cuda_library ${nvrtc_kernel_targets})
 
 if(UNIX AND AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS)
   add_dependencies(afcuda ${cuda_pruned_library_targets})
@@ -720,6 +668,7 @@ target_include_directories (afcuda
     $<BUILD_INTERFACE:${ArrayFire_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
+    $<$<BOOL:${AF_WITH_CUDNN}>:${cuDNN_INCLUDE_DIRS}>
     ${CUDA_INCLUDE_DIRS}
     ${ArrayFire_SOURCE_DIR}/src/api/c
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -734,7 +683,6 @@ target_link_libraries(afcuda
     cpp_api_interface
     afcommon_interface
     ${CMAKE_DL_LIBS}
-    af_cuda_static_cuda_library
   )
 
 # If the driver is not found the cuda driver api need to be linked against the

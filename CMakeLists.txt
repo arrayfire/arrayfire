@@ -411,16 +411,11 @@ find_library(Backtrace_LIBRARY backtrace
 find_program(ADDR2LINE_PROGRAM addr2line
   DOC "The path to the addr2line program for informative stacktraces")
 
+check_cxx_compiler_flag(-Wno-ignored-attributes has_ignored_attributes_flag)
+check_cxx_compiler_flag(-Wall has_all_warnings_flag)
+
 foreach(backend ${built_backends})
-  target_compile_definitions(${backend} PRIVATE AFDLL)
-  if(AF_WITH_LOGGING)
-    target_compile_definitions(${backend}
-      PRIVATE AF_WITH_LOGGING)
-  endif()
-  if(AF_CACHE_KERNELS_TO_DISK)
-    target_compile_definitions(${backend}
-      PRIVATE AF_CACHE_KERNELS_TO_DISK)
-  endif()
+  arrayfire_set_default_cxx_flags(${backend})
 endforeach()
 
 if(AF_BUILD_FRAMEWORK)
