@@ -6,7 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-// #include <kernel/transpose.hpp>
+#include <kernel/transpose.hpp>
 #include <transpose.hpp>
 #include <err_oneapi.hpp>
 
@@ -25,11 +25,9 @@ Array<T> transpose(const Array<T> &in, const bool conjugate) {
     dim4 outDims       = dim4(inDims[1], inDims[0], inDims[2], inDims[3]);
     Array<T> out       = createEmptyArray<T>(outDims);
 
-    // const bool is32multiple =
-    //     inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0;
-
-    ONEAPI_NOT_SUPPORTED("transpose Not supported");
-    // kernel::transpose<T>(out, in, getQueue(), conjugate, is32multiple);
+    const bool is32multiple =
+        inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0;
+    kernel::transpose<T>(out, in, conjugate, is32multiple);
 
     return out;
 }
