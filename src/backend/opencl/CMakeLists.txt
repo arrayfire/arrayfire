@@ -399,7 +399,9 @@ target_include_directories(afopencl
     ../../../include
   )
 
-add_dependencies(afopencl ${cl_kernel_targets} CLBlast-ext)
+if(NOT TARGET clblast)
+  add_dependencies(afopencl ${cl_kernel_targets} CLBlast-ext)
+endif()
 
 set_target_properties(afopencl PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

@@ -13,7 +13,17 @@
 
 find_package(OpenCL)
 
-if (NOT TARGET OpenCL::cl2hpp OR NOT TARGET cl2hpp)
+find_path(cl2hpp_header_file_path
+  NAMES CL/cl2.hpp
+  PATHS ${OpenCL_INCLUDE_PATHS})
+
+if(cl2hpp_header_file_path)
+  add_library(cl2hpp IMPORTED INTERFACE GLOBAL)
+  add_library(OpenCL::cl2hpp IMPORTED INTERFACE GLOBAL)
+
+  set_target_properties(cl2hpp OpenCL::cl2hpp PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${cl2hpp_header_file_path})
+elseif (NOT TARGET OpenCL::cl2hpp OR NOT TARGET cl2hpp)
   af_dep_check_and_populate(${cl2hpp_prefix}
     URI https://github.com/KhronosGroup/OpenCL-CLHPP.git
     REF v2.0.12)
