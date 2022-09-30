@@ -300,39 +300,39 @@ class Indexing2D : public ::testing::Test {
             make_vec(af_make_seq(3, 6, 4), af_make_seq(1, 9, 4)));
     }
 
-    vector<vector<af_seq> > column_continuous_seq;
-    vector<vector<af_seq> > column_continuous_reverse_seq;
-    vector<vector<af_seq> > column_strided_seq;
-    vector<vector<af_seq> > column_strided_reverse_seq;
+    vector<vector<af_seq>> column_continuous_seq;
+    vector<vector<af_seq>> column_continuous_reverse_seq;
+    vector<vector<af_seq>> column_strided_seq;
+    vector<vector<af_seq>> column_strided_reverse_seq;
 
-    vector<vector<af_seq> > row_continuous_seq;
-    vector<vector<af_seq> > row_continuous_reverse_seq;
-    vector<vector<af_seq> > row_strided_seq;
-    vector<vector<af_seq> > row_strided_reverse_seq;
+    vector<vector<af_seq>> row_continuous_seq;
+    vector<vector<af_seq>> row_continuous_reverse_seq;
+    vector<vector<af_seq>> row_strided_seq;
+    vector<vector<af_seq>> row_strided_reverse_seq;
 
-    vector<vector<af_seq> > continuous_continuous_seq;
-    vector<vector<af_seq> > continuous_strided_seq;
-    vector<vector<af_seq> > continuous_reverse_seq;
-    vector<vector<af_seq> > continuous_strided_reverse_seq;
+    vector<vector<af_seq>> continuous_continuous_seq;
+    vector<vector<af_seq>> continuous_strided_seq;
+    vector<vector<af_seq>> continuous_reverse_seq;
+    vector<vector<af_seq>> continuous_strided_reverse_seq;
 
-    vector<vector<af_seq> > reverse_continuous_seq;
-    vector<vector<af_seq> > reverse_reverse_seq;
-    vector<vector<af_seq> > reverse_strided_seq;
-    vector<vector<af_seq> > reverse_strided_reverse_seq;
+    vector<vector<af_seq>> reverse_continuous_seq;
+    vector<vector<af_seq>> reverse_reverse_seq;
+    vector<vector<af_seq>> reverse_strided_seq;
+    vector<vector<af_seq>> reverse_strided_reverse_seq;
 
-    vector<vector<af_seq> > strided_continuous_seq;
-    vector<vector<af_seq> > strided_strided_seq;
+    vector<vector<af_seq>> strided_continuous_seq;
+    vector<vector<af_seq>> strided_strided_seq;
 };
 
 template<typename T>
-void DimCheck2D(const vector<vector<af_seq> > &seqs, string TestFile,
+void DimCheck2D(const vector<vector<af_seq>> &seqs, string TestFile,
                 size_t NDims) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
 
-    vector<vector<T> > hData;
-    vector<vector<T> > tests;
+    vector<vector<T>> hData;
+    vector<vector<T>> tests;
     readTests<T, T, int>(TestFile, numDims, hData, tests);
     dim4 dimensions = numDims[0];
 
@@ -528,18 +528,18 @@ class Indexing : public ::testing::Test {
                       af_make_seq(0, 0, 1), af_make_seq(0, 0, 1)));
     }
 
-    vector<vector<af_seq> > continuous3d_to_3d;
-    vector<vector<af_seq> > continuous3d_to_2d;
-    vector<vector<af_seq> > continuous3d_to_1d;
+    vector<vector<af_seq>> continuous3d_to_3d;
+    vector<vector<af_seq>> continuous3d_to_2d;
+    vector<vector<af_seq>> continuous3d_to_1d;
 
-    vector<vector<af_seq> > continuous4d_to_4d;
-    vector<vector<af_seq> > continuous4d_to_3d;
-    vector<vector<af_seq> > continuous4d_to_2d;
-    vector<vector<af_seq> > continuous4d_to_1d;
+    vector<vector<af_seq>> continuous4d_to_4d;
+    vector<vector<af_seq>> continuous4d_to_3d;
+    vector<vector<af_seq>> continuous4d_to_2d;
+    vector<vector<af_seq>> continuous4d_to_1d;
 };
 
 template<typename T>
-void DimCheckND(const vector<vector<af_seq> > &seqs, string TestFile,
+void DimCheckND(const vector<vector<af_seq>> &seqs, string TestFile,
                 size_t NDims) {
     SUPPORTED_TYPE_CHECK(T);
 
@@ -589,7 +589,7 @@ TEST(Index, Docs_Util_C_API) {
     //![ex_index_util_0]
     af_index_t *indexers = 0;
     af_err err           = af_create_indexers(
-        &indexers);  // Memory is allocated on heap by the callee
+                  &indexers);  // Memory is allocated on heap by the callee
     // by default all the indexers span all the elements along the given
     // dimension
 
@@ -658,7 +658,7 @@ using af::span;
 using af::where;
 
 TEST(Indexing2D, ColumnContiniousCPP) {
-    vector<vector<af_seq> > seqs;
+    vector<vector<af_seq>> seqs;
 
     seqs.push_back(make_vec(af_span, af_make_seq(0, 6, 1)));
     // seqs.push_back(make_vec(span, af_make_seq(  4,  9,  1)));
@@ -666,8 +666,8 @@ TEST(Indexing2D, ColumnContiniousCPP) {
 
     vector<dim4> numDims;
 
-    vector<vector<float> > hData;
-    vector<vector<float> > tests;
+    vector<vector<float>> hData;
+    vector<vector<float>> tests;
     readTests<float, float, int>(TEST_DIR "/index/ColumnContinious.test",
                                  numDims, hData, tests);
     dim4 dimensions = numDims[0];
@@ -717,8 +717,8 @@ void arrayIndexTest(string pTestFile, int dim) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -767,8 +767,8 @@ TYPED_TEST(lookup, Dim3) {
 
 TEST(lookup, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(string(TEST_DIR "/arrayindex/dim0.test"),
                                  numDims, in, tests);
@@ -978,8 +978,8 @@ TEST(SeqIndex, CPP_SCOPE_ARR) {
 
 TEST(SeqIndex, CPPLarge) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(string(TEST_DIR "/arrayindex/dim0Large.test"),
                                  numDims, in, tests);

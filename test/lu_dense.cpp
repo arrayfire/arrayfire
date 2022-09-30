@@ -42,8 +42,8 @@ TEST(LU, InPlaceSmall) {
     int resultIdx = 0;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/lapack/lu.test"), numDims,
                                    in, tests);
 
@@ -80,8 +80,8 @@ TEST(LU, SplitSmall) {
     int resultIdx = 0;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/lapack/lufactorized.test"),
                                    numDims, in, tests);
 

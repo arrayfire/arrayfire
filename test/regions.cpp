@@ -47,8 +47,8 @@ void regionsTest(string pTestFile, af_connectivity connectivity,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<uchar> > in;
-    vector<vector<T> > tests;
+    vector<vector<uchar>> in;
+    vector<vector<T>> tests;
     readTests<uchar, T, int>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -110,8 +110,8 @@ REGIONS_INIT(Regions3, regions_128x128, 8, AF_CONNECTIVITY_8);
 //
 TEST(Regions, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, int>(string(TEST_DIR "/regions/regions_8x8_4.test"),
                                  numDims, in, tests);
 

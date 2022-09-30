@@ -45,8 +45,8 @@ void convolveTest(string pTestFile, int baseDim, bool expand) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -218,8 +218,8 @@ void sepConvolveTest(string pTestFile, bool expand) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -378,8 +378,8 @@ using af::sum;
 
 TEST(Convolve1, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(string(TEST_DIR "/convolve/vector_same.test"),
                                  numDims, in, tests);
@@ -411,8 +411,8 @@ TEST(Convolve1, CPP) {
 
 TEST(Convolve2, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/convolve/rectangle_same_one2many.test"), numDims, in,
@@ -447,8 +447,8 @@ TEST(Convolve2, CPP) {
 
 TEST(Convolve3, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/convolve/cuboid_same_many2many.test"), numDims, in,
@@ -482,8 +482,8 @@ TEST(Convolve3, CPP) {
 
 TEST(Convolve, separable_CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/convolve/separable_conv2d_same_rectangle_batch.test"),
@@ -809,8 +809,8 @@ TEST(Convolve, CuboidBatchLaunchBugFix) {
     std::string testFile(TEST_DIR "/convolve/conv3d_launch_bug.test");
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, float>(testFile, numDims, in, tests);
 
@@ -917,8 +917,8 @@ void convolve2stridedTest(string pTestFile, dim4 stride, dim4 padding,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, float>(pTestFile, numDims, in, tests);
 
@@ -962,8 +962,8 @@ void convolve2GradientTest(string pTestFile, dim4 stride, dim4 padding,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, float>(pTestFile, numDims, in, tests);
 

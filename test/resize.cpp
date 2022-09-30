@@ -119,8 +119,8 @@ void resizeTest(string pTestFile, const unsigned resultIdx, const dim_t odim0,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, float>(pTestFile, numDims, in, tests);
 
     dim4 dims = numDims[0];
@@ -320,8 +320,8 @@ void resizeArgsTest(af_err err, string pTestFile, const dim4 odims,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, float>(pTestFile, numDims, in, tests);
 
     dim4 dims = numDims[0];
@@ -363,8 +363,8 @@ using af::span;
 
 TEST(Resize, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/resize/square.test"),
                                    numDims, in, tests);
 
@@ -378,8 +378,8 @@ TEST(Resize, CPP) {
 
 TEST(ResizeScale1, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/resize/square.test"),
                                    numDims, in, tests);
 
@@ -393,8 +393,8 @@ TEST(ResizeScale1, CPP) {
 
 TEST(ResizeScale2, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/resize/square.test"),
                                    numDims, in, tests);
 

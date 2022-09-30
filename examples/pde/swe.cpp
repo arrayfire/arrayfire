@@ -54,7 +54,7 @@ static void swe(bool console) {
         if (iter > 2000) {
             // Initial condition
             etam  = 0.01f * exp((-((x - io) * (x - io) + (y - jo) * (y - jo))) /
-                               (k * k));
+                                (k * k));
             m_eta = max<float>(etam);
             eta   = etam;
             iter  = 0;

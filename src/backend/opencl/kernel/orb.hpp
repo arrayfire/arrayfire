@@ -174,7 +174,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
 
             lvl_img.info.offset = 0;
             lvl_img.data        = bufferAlloc(lvl_img.info.dims[3] *
-                                       lvl_img.info.strides[3] * sizeof(T));
+                                              lvl_img.info.strides[3] * sizeof(T));
 
             resize<T>(lvl_img, prev_img, AF_INTERP_BILINEAR);
 
@@ -331,7 +331,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
             lvl_filt.data = bufferAlloc(lvl_filt.info.dims[0] *
                                         lvl_filt.info.dims[1] * sizeof(T));
             lvl_tmp.data  = bufferAlloc(lvl_tmp.info.dims[0] *
-                                       lvl_tmp.info.dims[1] * sizeof(T));
+                                        lvl_tmp.info.dims[1] * sizeof(T));
 
             // Calculate a separable Gaussian kernel
             if (h_gauss == nullptr) {

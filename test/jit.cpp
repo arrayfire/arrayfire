@@ -665,13 +665,13 @@ TEST(JIT, TwoLargeNonLinearHalf) {
 }
 
 std::string select_info(
-    const ::testing::TestParamInfo<std::tuple<int, int, int> > info) {
+    const ::testing::TestParamInfo<std::tuple<int, int, int>> info) {
     return "a_" + to_string(get<0>(info.param)) + "_b_" +
            to_string(get<1>(info.param)) + "_cond_" +
            to_string(get<2>(info.param));
 }
 
-class JITSelect : public ::testing::TestWithParam<std::tuple<int, int, int> > {
+class JITSelect : public ::testing::TestWithParam<std::tuple<int, int, int>> {
    protected:
     void SetUp() {}
 };

@@ -38,8 +38,8 @@ using std::vector;
 void testGeneralAssignOneArray(string pTestFile, const dim_t ndims,
                                af_index_t *indexs, int arrayDim) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(pTestFile, numDims, in, tests);
 
@@ -105,8 +105,8 @@ TEST(GeneralAssign, SASS) {
 
 TEST(GeneralAssign, SSSS) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(
         string(TEST_DIR "/gen_assign/s10_14s0_9s0_ns0_n.test"), numDims, in,
@@ -152,8 +152,8 @@ TEST(GeneralAssign, SSSS) {
 
 TEST(GeneralAssign, AAAA) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(string(TEST_DIR "/gen_assign/aaaa.test"),
                                     numDims, in, tests);

@@ -188,8 +188,8 @@ size_t Allocator::getMaxMemorySize(int id) {
 void *Allocator::nativeAlloc(const size_t bytes) {
     cl_int err = CL_SUCCESS;
     auto ptr   = static_cast<void *>(clCreateBuffer(
-        getContext()(), CL_MEM_READ_WRITE,  // NOLINT(hicpp-signed-bitwise)
-        bytes, nullptr, &err));
+          getContext()(), CL_MEM_READ_WRITE,  // NOLINT(hicpp-signed-bitwise)
+          bytes, nullptr, &err));
 
     if (err != CL_SUCCESS) {
         auto str = fmt::format("Failed to allocate device memory of size {}",
@@ -237,7 +237,7 @@ void *AllocatorPinned::nativeAlloc(const size_t bytes) {
 
     cl_int err = CL_SUCCESS;
     auto buf   = clCreateBuffer(getContext()(), CL_MEM_ALLOC_HOST_PTR, bytes,
-                              nullptr, &err);
+                                nullptr, &err);
     if (err != CL_SUCCESS) {
         AF_ERROR("Failed to allocate pinned memory.", AF_ERR_NO_MEM);
     }

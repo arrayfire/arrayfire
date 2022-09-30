@@ -38,8 +38,8 @@ void transformCoordinatesTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> inDims;
-    vector<vector<T> > in;
-    vector<vector<float> > gold;
+    vector<vector<T>> in;
+    vector<vector<float>> gold;
 
     readTests<T, float, float>(pTestFile, inDims, in, gold);
 
@@ -89,8 +89,8 @@ TYPED_TEST(TransformCoordinates, 3DMatrix) {
 //
 TEST(TransformCoordinates, CPP) {
     vector<dim4> inDims;
-    vector<vector<float> > in;
-    vector<vector<float> > gold;
+    vector<vector<float>> in;
+    vector<vector<float>> gold;
 
     readTests<float, float, float>(
         TEST_DIR "/transformCoordinates/3d_matrix.test", inDims, in, gold);

@@ -19,10 +19,10 @@ namespace cuda {
 template<typename T>
 class LookupTable1D {
    public:
-    LookupTable1D()                          = delete;
-    LookupTable1D(const LookupTable1D& arg)  = delete;
-    LookupTable1D(const LookupTable1D&& arg) = delete;
-    LookupTable1D& operator=(const LookupTable1D& arg) = delete;
+    LookupTable1D()                                     = delete;
+    LookupTable1D(const LookupTable1D& arg)             = delete;
+    LookupTable1D(const LookupTable1D&& arg)            = delete;
+    LookupTable1D& operator=(const LookupTable1D& arg)  = delete;
     LookupTable1D& operator=(const LookupTable1D&& arg) = delete;
 
     LookupTable1D(const Array<T>& lutArray) : mTexture(0), mData(lutArray) {

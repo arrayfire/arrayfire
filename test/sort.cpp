@@ -53,8 +53,8 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<float> > tests;
+    vector<vector<T>> in;
+    vector<vector<float>> tests;
     readTests<T, float, int>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -129,8 +129,8 @@ TEST(Sort, CPPDim0) {
     const unsigned resultIdx0 = 0;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, int>(string(TEST_DIR "/sort/sort_10x10.test"),
                                  numDims, in, tests);
 
@@ -160,8 +160,8 @@ TEST(Sort, CPPDim1) {
     const unsigned resultIdx0 = 0;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, int>(string(TEST_DIR "/sort/sort_10x10.test"),
                                  numDims, in, tests);
 
@@ -196,8 +196,8 @@ TEST(Sort, CPPDim2) {
     const unsigned resultIdx0 = 2;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, int>(string(TEST_DIR "/sort/sort_med.test"),
                                  numDims, in, tests);
 

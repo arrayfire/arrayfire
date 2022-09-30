@@ -32,7 +32,7 @@ constexpr int HG_THREADS   = 256;
 template<typename T>
 std::array<Kernel, 5> getHomographyKernels(const af_homography_type htype) {
     std::vector<TemplateArg> targs   = {TemplateTypename<T>(),
-                                      TemplateArg(htype)};
+                                        TemplateArg(htype)};
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
     };

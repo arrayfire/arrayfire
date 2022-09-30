@@ -47,8 +47,8 @@ class IndexGeneralizedLegacy : public ::testing::TestWithParam<index_params> {
     void SetUp() {
         index_params params = GetParam();
         vector<dim4> numDims;
-        vector<vector<float> > in;
-        vector<vector<float> > tests;
+        vector<vector<float>> in;
+        vector<vector<float>> tests;
 
         if (noDoubleTests(get<1>(params))) return;
         if (noHalfTests(get<1>(params))) return;
@@ -138,8 +138,8 @@ TEST_P(IndexGeneralizedLegacy, SSSA) {
 void testGeneralIndexOneArray(string pTestFile, const dim_t ndims,
                               af_index_t *indexs, int arrayDim) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(pTestFile, numDims, in, tests);
 
@@ -202,8 +202,8 @@ TEST(GeneralIndex, SASS) {
 
 TEST(GeneralIndex, AASS) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<float, float>(
         string(TEST_DIR "/gen_index/aas0_ns0_n.test"), numDims, in, tests);

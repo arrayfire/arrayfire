@@ -57,9 +57,9 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
             , lock_bytes(0)
             , lock_buffers(0) {}
 
-        memory_info(memory_info &other)  = delete;
-        memory_info(memory_info &&other) = default;
-        memory_info &operator=(memory_info &other) = delete;
+        memory_info(memory_info &other)             = delete;
+        memory_info(memory_info &&other)            = default;
+        memory_info &operator=(memory_info &other)  = delete;
         memory_info &operator=(memory_info &&other) = default;
     };
 

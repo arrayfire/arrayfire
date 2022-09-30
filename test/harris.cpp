@@ -65,7 +65,7 @@ void harrisTest(string pTestFile, float sigma, unsigned block_size) {
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > gold;
+    vector<vector<float>> gold;
 
     readImageTests(pTestFile, inDims, inFiles, gold);
 
@@ -171,7 +171,7 @@ TEST(FloatHarris, CPP) {
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > gold;
+    vector<vector<float>> gold;
 
     readImageTests(string(TEST_DIR "/harris/square_0_3.test"), inDims, inFiles,
                    gold);

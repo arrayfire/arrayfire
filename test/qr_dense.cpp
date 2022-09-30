@@ -39,8 +39,8 @@ TEST(QRFactorized, CPP) {
     int resultIdx = 0;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/lapack/qrfactorized.test"),
                                    numDims, in, tests);
 

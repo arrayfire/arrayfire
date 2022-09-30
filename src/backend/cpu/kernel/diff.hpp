@@ -35,7 +35,7 @@ void diff1(Param<T> out, CParam<T> in, int const dim) {
                     // in[index]
                     int idx     = getIdx(in.strides(), i, j, k, l);
                     int jdx     = getIdx(in.strides(), i + is_dim0, j + is_dim1,
-                                     k + is_dim2, l + is_dim3);
+                                         k + is_dim2, l + is_dim3);
                     int odx     = getIdx(out.strides(), i, j, k, l);
                     outPtr[odx] = inPtr[jdx] - inPtr[idx];
                 }

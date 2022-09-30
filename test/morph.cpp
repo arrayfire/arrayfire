@@ -41,8 +41,8 @@ void morphTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(inType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<inType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<inType>> tests;
 
     readTests<inType, inType, int>(pTestFile, numDims, in, tests);
 
@@ -458,11 +458,11 @@ TEST(Morph, EdgeIssue1564) {
                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0,
                               0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1};
     int goldData[10 * 10]  = {0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0,
-                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-                             0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1,
-                             1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1,
-                             1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1};
+                              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                              0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                              0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1,
+                              1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+                              1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1};
     array input(10, 10, inputData);
     int maskData[3 * 3] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
     array mask(3, 3, maskData);

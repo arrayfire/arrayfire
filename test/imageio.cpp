@@ -40,8 +40,8 @@ void loadImageTest(string pTestFile, string pImageFile, const bool isColor) {
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -126,8 +126,8 @@ TEST(ImageIO, CPP) {
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/imageio/color_small.test"),
                                    numDims, in, tests);
 
@@ -258,8 +258,8 @@ TEST(ImageIO, LoadImage16CPP) {
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(
         string(TEST_DIR "/imageio/color_seq_16.test"), numDims, in, tests);
 
@@ -316,8 +316,8 @@ void loadImageNativeCPPTest(string pTestFile, string pImageFile) {
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(pTestFile, numDims, in, tests);
 
     dim4 dims = numDims[0];

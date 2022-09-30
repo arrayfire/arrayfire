@@ -45,7 +45,7 @@ array border(const array& img, const int left, const int right, const int top,
     array ret    = constant(value, imgDims);
     ret(seq(top, imgDims[0] - bottom), seq(left, imgDims[1] - right), span,
         span)    = img(seq(top, imgDims[0] - bottom),
-                    seq(left, imgDims[1] - right), span, span);
+                       seq(left, imgDims[1] - right), span, span);
 
     return ret;
 }

@@ -81,8 +81,8 @@ void stdevDimTest(string pFileName, dim_t dim,
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<int> > in;
-    vector<vector<float> > tests;
+    vector<vector<int>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<int, float>(pFileName, numDims, in, tests);
 
@@ -157,8 +157,8 @@ void stdevDimIndexTest(string pFileName, dim_t dim,
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<int> > in;
-    vector<vector<float> > tests;
+    vector<vector<int>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<int, float>(pFileName, numDims, in, tests);
 
@@ -212,8 +212,8 @@ void stdevAllTest(string pFileName, const bool useDeprecatedAPI = false) {
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<int> > in;
-    vector<vector<float> > tests;
+    vector<vector<int>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<int, float>(pFileName, numDims, in, tests);
 
