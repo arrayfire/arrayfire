@@ -41,7 +41,7 @@ class Grad : public ::testing::Test {
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Grad, TestTypes);
+TYPED_TEST_SUITE(Grad, TestTypes);
 
 template<typename T>
 void gradTest(string pTestFile, const unsigned resultIdx0,

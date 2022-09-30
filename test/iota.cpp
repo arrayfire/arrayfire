@@ -43,7 +43,7 @@ typedef ::testing::Types<float, double, int, unsigned int, intl, uintl,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Iota, TestTypes);
+TYPED_TEST_SUITE(Iota, TestTypes);
 
 template<typename T>
 void iotaTest(const dim4 idims, const dim4 tdims) {

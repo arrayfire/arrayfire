@@ -28,7 +28,7 @@ class InverseDeconvolution : public ::testing::Test {};
 typedef ::testing::Types<float, uchar, short, ushort> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(InverseDeconvolution, TestTypes);
+TYPED_TEST_SUITE(InverseDeconvolution, TestTypes);
 
 template<typename T, bool isColor>
 void invDeconvImageTest(string pTestFile, const float gamma,

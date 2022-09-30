@@ -26,7 +26,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, char, unsigned char,
                          half_float::half>
     TestTypes;
 
-TYPED_TEST_CASE(Array, TestTypes);
+TYPED_TEST_SUITE(Array, TestTypes);
 
 TEST(Array, ConstructorDefault) {
     array a;

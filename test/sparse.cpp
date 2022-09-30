@@ -185,7 +185,7 @@ template<typename T>
 class Sparse : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> SparseTypes;
-TYPED_TEST_CASE(Sparse, SparseTypes);
+TYPED_TEST_SUITE(Sparse, SparseTypes);
 
 TYPED_TEST(Sparse, DeepCopy) {
     SUPPORTED_TYPE_CHECK(TypeParam);

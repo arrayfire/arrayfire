@@ -35,7 +35,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(MatchTemplate, TestTypes);
+TYPED_TEST_SUITE(MatchTemplate, TestTypes);
 
 template<typename T>
 void matchTemplateTest(string pTestFile, af_match_type pMatchType) {

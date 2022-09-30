@@ -32,7 +32,7 @@ class AnisotropicDiffusion : public ::testing::Test {};
 typedef ::testing::Types<float, double, int, uint, uchar, short, ushort>
     TestTypes;
 
-TYPED_TEST_CASE(AnisotropicDiffusion, TestTypes);
+TYPED_TEST_SUITE(AnisotropicDiffusion, TestTypes);
 
 template<typename T>
 array normalize(const array &p_in) {

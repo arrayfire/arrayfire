@@ -33,7 +33,7 @@ class ImageIO : public ::testing::Test {
 typedef ::testing::Types<float> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(ImageIO, TestTypes);
+TYPED_TEST_SUITE(ImageIO, TestTypes);
 
 void loadImageTest(string pTestFile, string pImageFile, const bool isColor) {
     if (noImageIOTests()) return;

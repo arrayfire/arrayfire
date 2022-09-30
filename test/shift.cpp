@@ -45,7 +45,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
                          intl, uintl, char, unsigned char, short, ushort>
     TestTypes;
 // register the type list
-TYPED_TEST_CASE(Shift, TestTypes);
+TYPED_TEST_SUITE(Shift, TestTypes);
 
 template<typename T>
 void shiftTest(string pTestFile, const unsigned resultIdx, const int x,

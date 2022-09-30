@@ -28,7 +28,17 @@
 #if defined(USE_MTX)
 #include <mmio.h>
 #include <cstdlib>
+#endif
 
+/// GTest deprecated the INSTANTIATED_TEST_CASE_P macro in favor of the
+/// INSTANTIATE_TEST_SUITE_P macro which has the same syntax but the older
+/// versions of gtest do not support this new macro adds the
+/// INSTANTIATE_TEST_SUITE_P macro and maps it to the old macro
+#ifndef INSTANTIATE_TEST_SUITE_P
+#define INSTANTIATE_TEST_SUITE_P INSTANTIATE_TEST_CASE_P
+#endif
+#ifndef TYPED_TEST_SUITE
+#define TYPED_TEST_SUITE TYPED_TEST_CASE
 #endif
 
 bool operator==(const af_half &lhs, const af_half &rhs);

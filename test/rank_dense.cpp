@@ -40,8 +40,8 @@ template<typename T>
 class Det : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
-TYPED_TEST_CASE(Rank, TestTypes);
-TYPED_TEST_CASE(Det, TestTypes);
+TYPED_TEST_SUITE(Rank, TestTypes);
+TYPED_TEST_SUITE(Det, TestTypes);
 
 template<typename T>
 void rankSmall() {

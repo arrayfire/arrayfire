@@ -174,7 +174,7 @@ template<typename T>
 class Solve : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(Solve, TestTypes);
+TYPED_TEST_SUITE(Solve, TestTypes);
 
 template<typename T>
 double eps();

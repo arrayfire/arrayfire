@@ -52,7 +52,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Tile, TestTypes);
+TYPED_TEST_SUITE(Tile, TestTypes);
 
 template<typename T>
 void tileTest(string pTestFile, const unsigned resultIdx, const uint x,

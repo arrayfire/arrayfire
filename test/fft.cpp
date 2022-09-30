@@ -742,34 +742,34 @@ string to_test_params(const ::testing::TestParamInfo<FFTBase::ParamType> info) {
     return out.replace(out.find("."), 1, "_");
 }
 
-INSTANTIATE_TEST_CASE_P(
-    Inputs2D, FFTC2R2D,
-    ::testing::Values(fft_params(dim4(513, 512), false, 0.5),
-                      fft_params(dim4(1025, 1024), false, 0.5),
-                      fft_params(dim4(2049, 2048), false, 0.5)),
-    to_test_params);
+// INSTANTIATE_TEST_SUITE_P(
+//     Inputs2D, FFTC2R2D,
+//     ::testing::Values(fft_params(dim4(513, 512), false, 0.5),
+//                       fft_params(dim4(1025, 1024), false, 0.5),
+//                       fft_params(dim4(2049, 2048), false, 0.5)),
+//     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Inputs2D, FFT2D,
     ::testing::Values(fft_params(dim4(512, 512), false, 0.5),
                       fft_params(dim4(1024, 1024), false, 0.5),
                       fft_params(dim4(2048, 2048), false, 0.5)),
     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Inputs3D, FFTC2R3D,
     ::testing::Values(fft_params(dim4(512, 512, 3), false, 0.5),
                       fft_params(dim4(1024, 1024, 3), false, 0.5),
                       fft_params(dim4(2048, 2048, 3), false, 0.5)),
     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Inputs3D, FFT3D,
     ::testing::Values(fft_params(dim4(1024, 1024, 3), true, 0.5),
                       fft_params(dim4(1024, 1024, 3), false, 0.5)),
     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     InputsND, FFTND,
     ::testing::Values(fft_params(dim4(512), false, 0.5),
                       fft_params(dim4(1024), false, 0.5),
@@ -777,7 +777,7 @@ INSTANTIATE_TEST_CASE_P(
                       fft_params(dim4(1024, 1024, 3), false, 0.5)),
     to_test_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     InputsND, FFTC2R,
     ::testing::Values(fft_params(dim4(513), false, 0.5),
                       fft_params(dim4(1025), false, 0.5),

@@ -28,7 +28,7 @@ class Var : public ::testing::Test {};
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, uintl, intl,
                          char, uchar, short, ushort, half_float::half>
     TestTypes;
-TYPED_TEST_CASE(Var, TestTypes);
+TYPED_TEST_SUITE(Var, TestTypes);
 
 template<typename T>
 struct elseType {

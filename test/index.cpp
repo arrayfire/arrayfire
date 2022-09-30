@@ -141,7 +141,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned,
                          unsigned char, intl, uintl, short, ushort,
                          half_float::half>
     AllTypes;
-TYPED_TEST_CASE(Indexing1D, AllTypes);
+TYPED_TEST_SUITE(Indexing1D, AllTypes);
 
 TYPED_TEST(Indexing1D, Continious) {
     DimCheck<TypeParam>(this->continuous_seqs);
@@ -373,7 +373,7 @@ void DimCheck2D(const vector<vector<af_seq> > &seqs, string TestFile,
     }
 }
 
-TYPED_TEST_CASE(Indexing2D, AllTypes);
+TYPED_TEST_SUITE(Indexing2D, AllTypes);
 
 TYPED_TEST(Indexing2D, ColumnContinious) {
     DimCheck2D<TypeParam>(this->column_continuous_seq,
@@ -548,7 +548,7 @@ void DimCheckND(const vector<vector<af_seq> > &seqs, string TestFile,
     DimCheck2D<T>(seqs, TestFile, NDims);
 }
 
-TYPED_TEST_CASE(Indexing, AllTypes);
+TYPED_TEST_SUITE(Indexing, AllTypes);
 
 TYPED_TEST(Indexing, 4D_to_4D) {
     DimCheckND<TypeParam>(this->continuous4d_to_4d,
@@ -710,7 +710,7 @@ class lookup : public ::testing::Test {
 typedef ::testing::Types<float, double, int, unsigned, unsigned char, short,
                          ushort, intl, uintl, half_float::half>
     ArrIdxTestTypes;
-TYPED_TEST_CASE(lookup, ArrIdxTestTypes);
+TYPED_TEST_SUITE(lookup, ArrIdxTestTypes);
 
 template<typename T>
 void arrayIndexTest(string pTestFile, int dim) {
@@ -1249,7 +1249,7 @@ class IndexedMembers : public ::testing::Test {
     virtual void SetUp() {}
 };
 
-TYPED_TEST_CASE(IndexedMembers, AllTypes);
+TYPED_TEST_SUITE(IndexedMembers, AllTypes);
 
 TYPED_TEST(IndexedMembers, MemFuncs) {
     SUPPORTED_TYPE_CHECK(TypeParam);

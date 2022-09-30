@@ -99,7 +99,7 @@ typedef ::testing::Types<float, cdouble, cfloat, double, int, uint, char, uchar,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(ArrayAssign, TestTypes);
+TYPED_TEST_SUITE(ArrayAssign, TestTypes);
 
 template<typename inType, typename outType>
 void assignTest(string pTestFile, const vector<af_seq> *seqv) {

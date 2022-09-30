@@ -534,7 +534,7 @@ std::string tile_info(const ::testing::TestParamInfo<JIT::ParamType> info) {
 }
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
                         JitTile, JIT,
                                                    //  input_dim            tile_dim             output_dim
                         ::testing::Values(
@@ -677,7 +677,7 @@ class JITSelect : public ::testing::TestWithParam<std::tuple<int, int, int> > {
 };
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
                         JitSelect, JITSelect,
                         testing::Combine(
                                          testing::Range(10, 22),

@@ -33,7 +33,7 @@ class Homography : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(Homography, TestTypes);
+TYPED_TEST_SUITE(Homography, TestTypes);
 
 template<typename T>
 array perspectiveTransform(dim4 inDims, array H) {

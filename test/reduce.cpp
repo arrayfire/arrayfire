@@ -37,7 +37,7 @@ class Reduce : public ::testing::Test {};
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
                          uchar, short, ushort>
     TestTypes;
-TYPED_TEST_CASE(Reduce, TestTypes);
+TYPED_TEST_SUITE(Reduce, TestTypes);
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 
@@ -545,9 +545,9 @@ string testNameGenerator(
     return s.str();
 }
 
-INSTANTIATE_TEST_CASE_P(UniqueKeyTests, ReduceByKeyP,
-                        ::testing::ValuesIn(generateAllTypes()),
-                        testNameGenerator<ReduceByKeyP>);
+INSTANTIATE_TEST_SUITE_P(UniqueKeyTests, ReduceByKeyP,
+                         ::testing::ValuesIn(generateAllTypes()),
+                         testNameGenerator<ReduceByKeyP>);
 
 TEST_P(ReduceByKeyP, SumDim0) {
     if (noHalfTests(GetParam()->vType_)) { return; }
@@ -1302,7 +1302,7 @@ struct reduce_params {
 
 class ReduceHalf : public ::testing::TestWithParam<reduce_params> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SumFirstNonZeroDim, ReduceHalf,
     ::testing::Values(
         reduce_params(1, dim4(10), dim4(1), -1),
@@ -1325,7 +1325,7 @@ INSTANTIATE_TEST_CASE_P(
         reduce_params(1, dim4(8192, 10, 10), dim4(1, 10, 10), -1),
         reduce_params(1, dim4(8192, 10, 10, 10), dim4(1, 10, 10, 10), -1)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SumNonZeroDim, ReduceHalf,
     ::testing::Values(
         reduce_params(1.25, dim4(10, 10), dim4(10), 1),
@@ -2026,7 +2026,7 @@ string testNameGeneratorRagged(
     return s.str();
 }
 
-INSTANTIATE_TEST_CASE_P(RaggedReduceTests, RaggedReduceMaxRangeP,
+INSTANTIATE_TEST_SUITE_P(RaggedReduceTests, RaggedReduceMaxRangeP,
                         ::testing::ValuesIn(generateAllTypesRagged()),
                         testNameGeneratorRagged<RaggedReduceMaxRangeP>);
 

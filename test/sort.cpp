@@ -45,7 +45,7 @@ typedef ::testing::Types<float, double, uint, int, uchar, short, ushort, intl,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Sort, TestTypes);
+TYPED_TEST_SUITE(Sort, TestTypes);
 
 template<typename T>
 void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0,

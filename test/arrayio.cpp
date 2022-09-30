@@ -42,7 +42,7 @@ string getTypeName(
     return info.param.name;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Types, ArrayIOType,
     ::testing::Values(type_params("f32", f32, 3.14f, 0),
                       type_params("f64", f64, 3.14, 0),

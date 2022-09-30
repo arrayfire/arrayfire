@@ -39,8 +39,8 @@ typedef ::testing::Types<uchar, ushort> TestTypes8;
 typedef ::testing::Types<uint, uintl> TestTypes32;
 
 // register the type list
-TYPED_TEST_CASE(HammingMatcher8, TestTypes8);
-TYPED_TEST_CASE(HammingMatcher32, TestTypes32);
+TYPED_TEST_SUITE(HammingMatcher8, TestTypes8);
+TYPED_TEST_SUITE(HammingMatcher32, TestTypes32);
 
 template<typename T>
 void hammingMatcherTest(string pTestFile, int feat_dim) {

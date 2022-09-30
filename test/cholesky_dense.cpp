@@ -78,7 +78,7 @@ template<typename T>
 class Cholesky : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(Cholesky, TestTypes);
+TYPED_TEST_SUITE(Cholesky, TestTypes);
 
 template<typename T>
 double eps();

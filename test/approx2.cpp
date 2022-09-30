@@ -56,7 +56,7 @@ class Approx2 : public ::testing::Test {
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Approx2, TestTypes);
+TYPED_TEST_SUITE(Approx2, TestTypes);
 
 template<typename T>
 void approx2Test(string pTestFile, const unsigned resultIdx,
@@ -862,7 +862,7 @@ class Approx2V2 : public ::testing::Test {
     }
 };
 
-TYPED_TEST_CASE(Approx2V2, TestTypes);
+TYPED_TEST_SUITE(Approx2V2, TestTypes);
 
 class SimpleTestData {
    public:
@@ -911,7 +911,7 @@ class Approx2V2Simple : public Approx2V2<T> {
     }
 };
 
-TYPED_TEST_CASE(Approx2V2Simple, TestTypes);
+TYPED_TEST_SUITE(Approx2V2Simple, TestTypes);
 
 TYPED_TEST(Approx2V2Simple, UseNullOutputArray) {
     this->testSpclOutArray(NULL_ARRAY);
