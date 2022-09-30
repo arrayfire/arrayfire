@@ -205,6 +205,7 @@ add_library(afoneapi
 target_sources(afoneapi
   PRIVATE
     kernel/KParam.hpp
+    kernel/assign.hpp
     kernel/iota.hpp
     kernel/memcopy.hpp
     kernel/range.hpp
