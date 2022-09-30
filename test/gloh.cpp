@@ -132,7 +132,7 @@ class GLOH : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(GLOH, TestTypes);
+TYPED_TEST_SUITE(GLOH, TestTypes);
 
 template<typename T>
 void glohTest(string pTestFile) {

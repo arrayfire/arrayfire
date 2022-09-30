@@ -33,7 +33,7 @@ class Constant : public ::testing::Test {};
 typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
                          uchar, uintl, intl, short, ushort, half_float::half>
     TestTypes;
-TYPED_TEST_CASE(Constant, TestTypes);
+TYPED_TEST_SUITE(Constant, TestTypes);
 
 template<typename T>
 void ConstantCPPCheck(T value) {

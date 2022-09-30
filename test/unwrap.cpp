@@ -41,7 +41,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Unwrap, TestTypes);
+TYPED_TEST_SUITE(Unwrap, TestTypes);
 
 template<typename T>
 void unwrapTest(string pTestFile, const unsigned resultIdx, const dim_t wx,

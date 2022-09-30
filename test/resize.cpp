@@ -60,8 +60,8 @@ typedef ::testing::Types<int, unsigned, intl, uintl, unsigned char, char, short,
     TestTypesI;
 
 // register the type list
-TYPED_TEST_CASE(Resize, TestTypesF);
-TYPED_TEST_CASE(ResizeI, TestTypesI);
+TYPED_TEST_SUITE(Resize, TestTypesF);
+TYPED_TEST_SUITE(ResizeI, TestTypesI);
 
 TYPED_TEST(Resize, InvalidDims) {
     SUPPORTED_TYPE_CHECK(TypeParam);

@@ -37,7 +37,7 @@ class filter : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
-TYPED_TEST_CASE(filter, TestTypes);
+TYPED_TEST_SUITE(filter, TestTypes);
 
 template<typename T>
 void firTest(const int xrows, const int xcols, const int brows,

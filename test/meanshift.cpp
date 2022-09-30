@@ -32,7 +32,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort,
                          intl, uintl>
     TestTypes;
 
-TYPED_TEST_CASE(Meanshift, TestTypes);
+TYPED_TEST_SUITE(Meanshift, TestTypes);
 
 TYPED_TEST(Meanshift, InvalidArgs) {
     SUPPORTED_TYPE_CHECK(TypeParam);

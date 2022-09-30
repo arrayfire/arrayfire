@@ -50,7 +50,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, intl,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Diff1, TestTypes);
+TYPED_TEST_SUITE(Diff1, TestTypes);
 
 template<typename T>
 void diff1Test(string pTestFile, unsigned dim, bool isSubRef = false,

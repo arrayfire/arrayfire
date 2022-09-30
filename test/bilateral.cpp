@@ -77,7 +77,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
     DataTestTypes;
 
 // register the type list
-TYPED_TEST_CASE(BilateralOnData, DataTestTypes);
+TYPED_TEST_SUITE(BilateralOnData, DataTestTypes);
 
 template<typename inType>
 void bilateralDataTest(string pTestFile) {

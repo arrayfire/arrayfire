@@ -78,7 +78,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(MemAlloc, TestTypes);
+TYPED_TEST_SUITE(MemAlloc, TestTypes);
 
 size_t roundUpToStep(size_t bytes) {
     if (step_bytes == 0) return bytes;

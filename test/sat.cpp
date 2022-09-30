@@ -36,7 +36,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, uintl, intl,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(SAT, TestTypes);
+TYPED_TEST_SUITE(SAT, TestTypes);
 
 TYPED_TEST(SAT, IntegralImage) {
     SUPPORTED_TYPE_CHECK(TypeParam);

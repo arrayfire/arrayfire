@@ -26,7 +26,7 @@ class RandomEngine : public ::testing::Test {
 // create a list of types to be tested
 typedef ::testing::Types<float, double> TestTypesEngine;
 // register the type list
-TYPED_TEST_CASE(RandomEngine, TestTypesEngine);
+TYPED_TEST_SUITE(RandomEngine, TestTypesEngine);
 
 template<typename T>
 void testRandomEnginePeriod(randomEngineType type) {

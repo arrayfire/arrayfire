@@ -35,7 +35,7 @@ typedef ::testing::Types<float, double, int, uint, intl, uintl, char, uchar>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(CorrelationCoefficient, TestTypes);
+TYPED_TEST_SUITE(CorrelationCoefficient, TestTypes);
 
 template<typename T>
 struct f32HelperType {

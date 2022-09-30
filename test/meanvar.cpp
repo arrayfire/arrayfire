@@ -73,10 +73,10 @@ struct meanvar_test {
         for (auto &v : mean) mean_.push_back((outType<T>)v);
         for (auto &v : variance) variance_.push_back((outType<T>)v);
     }
-    meanvar_test()                        = default;
-    meanvar_test(meanvar_test<T> &&other) = default;
+    meanvar_test()                                   = default;
+    meanvar_test(meanvar_test<T> &&other)            = default;
     meanvar_test &operator=(meanvar_test<T> &&other) = default;
-    meanvar_test &operator=(meanvar_test<T> &other) = delete;
+    meanvar_test &operator=(meanvar_test<T> &other)  = delete;
 
     meanvar_test(const meanvar_test<T> &other)
         : test_description_(other.test_description_)
@@ -279,12 +279,12 @@ vector<meanvar_test<T> > large_test_values() {
 
 #define MEANVAR_TEST(NAME, TYPE)                                              \
     using MeanVar##NAME = MeanVarTyped<TYPE>;                                 \
-    INSTANTIATE_TEST_CASE_P(                                                  \
+    INSTANTIATE_TEST_SUITE_P(                                                 \
         Small, MeanVar##NAME, ::testing::ValuesIn(small_test_values<TYPE>()), \
         [](const ::testing::TestParamInfo<MeanVar##NAME::ParamType> info) {   \
             return info.param.test_description_;                              \
         });                                                                   \
-    INSTANTIATE_TEST_CASE_P(                                                  \
+    INSTANTIATE_TEST_SUITE_P(                                                 \
         Large, MeanVar##NAME, ::testing::ValuesIn(large_test_values<TYPE>()), \
         [](const ::testing::TestParamInfo<MeanVar##NAME::ParamType> info) {   \
             return info.param.test_description_;                              \
@@ -313,7 +313,7 @@ MEANVAR_TEST(ComplexDouble, af::af_cdouble)
 #undef MEANVAR_TEST
 
 using MeanVarHalf = MeanVarTyped<half_float::half>;
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Small, MeanVarHalf,
     ::testing::ValuesIn(small_test_values<half_float::half>()),
     [](const ::testing::TestParamInfo<MeanVarHalf::ParamType> info) {
@@ -330,7 +330,7 @@ TEST_P(MeanVarHalf, TestingCPP) {
 
 #define MEANVAR_TEST(NAME, TYPE)                                              \
     using MeanVar##NAME = MeanVarTyped<TYPE>;                                 \
-    INSTANTIATE_TEST_CASE_P(                                                  \
+    INSTANTIATE_TEST_SUITE_P(                                                 \
         Small, MeanVar##NAME, ::testing::ValuesIn(small_test_values<TYPE>()), \
         [](const ::testing::TestParamInfo<MeanVar##NAME::ParamType> &info) {  \
             return info.param.test_description_;                              \

@@ -59,7 +59,7 @@ struct otype_t<uchar> {
 };
 
 // register the type list
-TYPED_TEST_CASE(NearestNeighbour, TestTypes);
+TYPED_TEST_SUITE(NearestNeighbour, TestTypes);
 
 template<typename T>
 void nearestNeighbourTest(string pTestFile, int feat_dim,
@@ -426,13 +426,13 @@ vector<nearest_neighbors_params> genKNNTests() {
             knn_data("1q1000t256k", 1, 1000, 1, 256, 0)};
 }
 
-INSTANTIATE_TEST_CASE_P(KNearestNeighborsSSD, NearestNeighborsTest,
-                        ::testing::ValuesIn(genNNTests()),
-                        testNameGenerator<NearestNeighborsTest>);
+INSTANTIATE_TEST_SUITE_P(KNearestNeighborsSSD, NearestNeighborsTest,
+                         ::testing::ValuesIn(genNNTests()),
+                         testNameGenerator<NearestNeighborsTest>);
 
-INSTANTIATE_TEST_CASE_P(KNearestNeighborsSSD, KNearestNeighborsTest,
-                        ::testing::ValuesIn(genKNNTests()),
-                        testNameGenerator<KNearestNeighborsTest>);
+INSTANTIATE_TEST_SUITE_P(KNearestNeighborsSSD, KNearestNeighborsTest,
+                         ::testing::ValuesIn(genKNNTests()),
+                         testNameGenerator<KNearestNeighborsTest>);
 
 TEST_P(NearestNeighborsTest, SingleQTests) {
     nearest_neighbors_params params = GetParam();

@@ -55,8 +55,8 @@ typedef ::testing::Types<float, double, int, unsigned int, intl, uintl,
     RegularTypes;
 
 // register the type list
-TYPED_TEST_CASE(Range, AllTypes);
-TYPED_TEST_CASE(RangeMax, RegularTypes);
+TYPED_TEST_SUITE(Range, AllTypes);
+TYPED_TEST_SUITE(RangeMax, RegularTypes);
 
 template<typename T>
 void rangeTest(const uint x, const uint y, const uint z, const uint w,

@@ -39,8 +39,8 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(MedianFilter, TestTypes);
-TYPED_TEST_CASE(MedianFilter1d, TestTypes);
+TYPED_TEST_SUITE(MedianFilter, TestTypes);
+TYPED_TEST_SUITE(MedianFilter1d, TestTypes);
 
 template<typename T>
 void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid,

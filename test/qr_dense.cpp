@@ -162,7 +162,7 @@ template<typename T>
 class QR : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(QR, TestTypes);
+TYPED_TEST_SUITE(QR, TestTypes);
 
 TYPED_TEST(QR, RectangularLarge0) {
     qrTester<TypeParam>(1000, 500, eps<TypeParam>());

@@ -44,8 +44,8 @@ typedef ::testing::Types<float, double> TestTypesF;
 typedef ::testing::Types<cfloat, cdouble> TestTypesC;
 
 // register the type list
-TYPED_TEST_CASE(DotF, TestTypesF);
-TYPED_TEST_CASE(DotC, TestTypesC);
+TYPED_TEST_SUITE(DotF, TestTypesF);
+TYPED_TEST_SUITE(DotC, TestTypesC);
 
 bool isinf(af::af_cfloat val) {
     using std::isinf;
@@ -301,11 +301,11 @@ std::string print_dot(const ::testing::TestParamInfo<Dot::ParamType> info) {
     return ss.str();
 }
 
-INSTANTIATE_TEST_CASE_P(Small, Dot,
-                        ::testing::Values(2, 4, 5, 10, 31, 32, 33, 100, 127,
-                                          128, 129, 200, 500, 511, 512, 513,
-                                          1000),
-                        print_dot);
+INSTANTIATE_TEST_SUITE_P(Small, Dot,
+                         ::testing::Values(2, 4, 5, 10, 31, 32, 33, 100, 127,
+                                           128, 129, 200, 500, 511, 512, 513,
+                                           1000),
+                         print_dot);
 
 TEST_P(Dot, Half) {
     SUPPORTED_TYPE_CHECK(half_float::half);

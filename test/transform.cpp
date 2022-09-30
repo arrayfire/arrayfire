@@ -41,8 +41,8 @@ typedef ::testing::Types<float, double> TestTypes;
 typedef ::testing::Types<int, intl, uint, uintl, short, ushort, uchar>
     TestTypesInt;
 
-TYPED_TEST_CASE(Transform, TestTypes);
-TYPED_TEST_CASE(TransformInt, TestTypesInt);
+TYPED_TEST_SUITE(Transform, TestTypes);
+TYPED_TEST_SUITE(TransformInt, TestTypesInt);
 
 template<typename T>
 void genTestData(af_array *gold, af_array *in, af_array *transform,
@@ -403,7 +403,7 @@ class TransformV2 : public Transform<T> {
     }
 };
 
-TYPED_TEST_CASE(TransformV2, TestTypes);
+TYPED_TEST_SUITE(TransformV2, TestTypes);
 
 template<typename T>
 class TransformV2TuxNearest : public TransformV2<T> {
@@ -416,7 +416,7 @@ class TransformV2TuxNearest : public TransformV2<T> {
     }
 };
 
-TYPED_TEST_CASE(TransformV2TuxNearest, TestTypes);
+TYPED_TEST_SUITE(TransformV2TuxNearest, TestTypes);
 
 TYPED_TEST(TransformV2TuxNearest, UseNullOutputArray) {
     this->testSpclOutArray(NULL_ARRAY);

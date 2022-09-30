@@ -30,7 +30,7 @@ class GaussianKernel : public ::testing::Test {
 typedef ::testing::Types<float> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(GaussianKernel, TestTypes);
+TYPED_TEST_SUITE(GaussianKernel, TestTypes);
 
 template<typename T>
 void gaussianKernelTest(string pFileName, double sigma) {
