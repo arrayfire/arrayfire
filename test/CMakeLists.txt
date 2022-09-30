@@ -100,7 +100,7 @@ if(AF_BUILD_UNIFIED)
 endif(AF_BUILD_UNIFIED)
 
 
-add_library(arrayfire_test OBJECT
+add_library(arrayfire_test STATIC
   testHelpers.hpp
   arrayfire_test.cpp)
 
@@ -110,9 +110,7 @@ target_include_directories(arrayfire_test
     ${ArrayFire_SOURCE_DIR}/include
     ${ArrayFire_BINARY_DIR}/include
     ${ArrayFire_SOURCE_DIR}/extern/half/include
-    mmio
-    $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
-    $<TARGET_PROPERTY:GTest::gtest,INTERFACE_INCLUDE_DIRECTORIES>)
+  )
 
 if(WIN32)
   target_compile_options(arrayfire_test
@@ -129,6 +127,14 @@ target_compile_definitions(arrayfire_test
   PRIVATE
     TEST_RESULT_IMAGE_DIR="${CMAKE_BINARY_DIR}/test/"
     USE_MTX)
+
+target_link_libraries(arrayfire_test
+  PRIVATE
+    mmio
+  PUBLIC
+    GTest::gtest
+    Boost::boost
+  )
 
 # Creates tests for all backends
 #
@@ -158,11 +164,7 @@ function(make_test)
     endif()
     set(target "test_${src_name}_${backend}")
 
-    if (${mt_args_NO_ARRAYFIRE_TEST})
-      add_executable(${target} ${mt_args_SRC})
-    else()
-      add_executable(${target} ${mt_args_SRC} $<TARGET_OBJECTS:arrayfire_test>)
-    endif()
+    add_executable(${target} ${mt_args_SRC})
     target_include_directories(${target}
       PRIVATE
         ${ArrayFire_SOURCE_DIR}/extern/half/include
@@ -172,7 +174,7 @@ function(make_test)
     target_link_libraries(${target}
       PRIVATE
         ${mt_args_LIBRARIES}
-	      GTest::gtest
+        arrayfire_test
       )
 
     if(${backend} STREQUAL "unified")
@@ -346,7 +348,7 @@ if(CUDA_FOUND)
           ${CMAKE_CURRENT_SOURCE_DIR}
         )
       endif()
-      add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
+      add_executable(${target} cuda.cu)
       target_include_directories(${target} PRIVATE
         ${ArrayFire_SOURCE_DIR}/extern/half/include
         ${CMAKE_SOURCE_DIR}
@@ -360,7 +362,7 @@ if(CUDA_FOUND)
       endif()
       target_link_libraries(${target}
         mmio
-        GTest::gtest)
+        arrayfire_test)
 
       # Couldn't get Threads::Threads to work with this cuda binary. The import
       # target would not add the -pthread flag which is required for this
