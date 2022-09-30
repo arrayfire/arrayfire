@@ -104,7 +104,7 @@ string testNameGenerator(const ::testing::TestParamInfo<clamp_params> info) {
 typedef Clamp<double> ClampFloatingPoint;
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SmallDims, ClampFloatingPoint,
     ::testing::Values(
                       clamp_params(dim4(10), f32, f32, f32, f32),

@@ -34,7 +34,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Morph, TestTypes);
+TYPED_TEST_SUITE(Morph, TestTypes);
 
 template<typename inType, bool isDilation, bool isVolume>
 void morphTest(string pTestFile) {

@@ -56,7 +56,7 @@ class Harris : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(Harris, TestTypes);
+TYPED_TEST_SUITE(Harris, TestTypes);
 
 template<typename T>
 void harrisTest(string pTestFile, float sigma, unsigned block_size) {

@@ -46,7 +46,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Wrap, TestTypes);
+TYPED_TEST_SUITE(Wrap, TestTypes);
 
 template<typename T>
 inline double get_val(T val) {
@@ -354,7 +354,7 @@ class WrapV2 : public WrapCommon {
     }
 };
 
-TYPED_TEST_CASE(WrapV2, TestTypes);
+TYPED_TEST_SUITE(WrapV2, TestTypes);
 
 template<typename T>
 class WrapV2Simple : public WrapV2<T> {
@@ -379,7 +379,7 @@ class WrapV2Simple : public WrapV2<T> {
     }
 };
 
-TYPED_TEST_CASE(WrapV2Simple, TestTypes);
+TYPED_TEST_SUITE(WrapV2Simple, TestTypes);
 
 TYPED_TEST(WrapV2Simple, UseNullOutputArray) {
     this->testSpclOutArray(NULL_ARRAY);
@@ -510,7 +510,7 @@ TEST_P(WrapAPITest, CheckDifferentWrapArgs) {
 
     af_array out_ = 0;
     af_err err    = af_wrap(&out_, in_, in_dims[0], in_dims[1], win_d0, win_d1,
-                         str_d0, str_d1, pad_d0, pad_d1, input.is_column);
+                            str_d0, str_d1, pad_d0, pad_d1, input.is_column);
 
     ASSERT_EQ(err, input.err);
     if (out_ != 0) af_release_array(out_);
@@ -537,4 +537,4 @@ WrapArgs args[] = {
     // clang-format on
 };
 
-INSTANTIATE_TEST_CASE_P(BulkTest, WrapAPITest, ::testing::ValuesIn(args));
+INSTANTIATE_TEST_SUITE_P(BulkTest, WrapAPITest, ::testing::ValuesIn(args));

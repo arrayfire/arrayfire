@@ -37,7 +37,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(DOG, TestTypes);
+TYPED_TEST_SUITE(DOG, TestTypes);
 
 TYPED_TEST(DOG, Basic) {
     SUPPORTED_TYPE_CHECK(TypeParam);

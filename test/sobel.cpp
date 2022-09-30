@@ -39,8 +39,8 @@ typedef ::testing::Types<int, unsigned, char, unsigned char, short, ushort>
     TestTypesInt;
 
 // register the type list
-TYPED_TEST_CASE(Sobel, TestTypes);
-TYPED_TEST_CASE(Sobel_Integer, TestTypesInt);
+TYPED_TEST_SUITE(Sobel, TestTypes);
+TYPED_TEST_SUITE(Sobel_Integer, TestTypesInt);
 
 template<typename Ti, typename To>
 void testSobelDerivatives(string pTestFile) {

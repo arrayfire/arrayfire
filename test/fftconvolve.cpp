@@ -45,8 +45,8 @@ typedef ::testing::Types<cfloat, cdouble, float, double, int, uint, char, uchar,
 typedef ::testing::Types<float, double> TestTypesLarge;
 
 // register the type list
-TYPED_TEST_CASE(FFTConvolve, TestTypes);
-TYPED_TEST_CASE(FFTConvolveLarge, TestTypesLarge);
+TYPED_TEST_SUITE(FFTConvolve, TestTypes);
+TYPED_TEST_SUITE(FFTConvolveLarge, TestTypesLarge);
 
 template<typename T, int baseDim>
 void fftconvolveTest(string pTestFile, bool expand) {

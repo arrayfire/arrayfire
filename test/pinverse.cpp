@@ -119,7 +119,7 @@ double relEps(array in) {
 }
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(Pinverse, TestTypes);
+TYPED_TEST_SUITE(Pinverse, TestTypes);
 
 // Test Moore-Penrose conditions in the following first 4 tests
 // See https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse#Definition

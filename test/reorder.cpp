@@ -48,7 +48,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Reorder, TestTypes);
+TYPED_TEST_SUITE(Reorder, TestTypes);
 
 template<typename T>
 void reorderTest(string pTestFile, const unsigned resultIdx, const uint x,

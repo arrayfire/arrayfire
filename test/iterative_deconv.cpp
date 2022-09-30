@@ -28,7 +28,7 @@ class IterativeDeconvolution : public ::testing::Test {};
 typedef ::testing::Types<float, uchar, short, ushort> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(IterativeDeconvolution, TestTypes);
+TYPED_TEST_SUITE(IterativeDeconvolution, TestTypes);
 
 template<typename T, bool isColor>
 void iterDeconvImageTest(string pTestFile, const unsigned iters, const float rf,

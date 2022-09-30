@@ -125,7 +125,7 @@ class ORB : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(ORB, TestTypes);
+TYPED_TEST_SUITE(ORB, TestTypes);
 
 template<typename T>
 void orbTest(string pTestFile) {

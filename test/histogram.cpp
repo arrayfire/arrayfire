@@ -37,7 +37,7 @@ typedef ::testing::Types<half_float::half, float, double, int, uint, char,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Histogram, TestTypes);
+TYPED_TEST_SUITE(Histogram, TestTypes);
 
 template<typename inType, typename outType>
 void histTest(string pTestFile, unsigned nbins, double minval, double maxval) {

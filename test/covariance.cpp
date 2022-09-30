@@ -39,7 +39,7 @@ typedef ::testing::Types<float, double, int, uint, intl, uintl, uchar, short,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Covariance, TestTypes);
+TYPED_TEST_SUITE(Covariance, TestTypes);
 
 template<typename T>
 struct f32HelperType {

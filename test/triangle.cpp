@@ -37,7 +37,7 @@ class Triangle : public ::testing::Test {};
 typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char,
                          uchar, uintl, intl, short, ushort, half_float::half>
     TestTypes;
-TYPED_TEST_CASE(Triangle, TestTypes);
+TYPED_TEST_SUITE(Triangle, TestTypes);
 
 template<typename T>
 void triangleTester(const dim4 dims, bool is_upper, bool is_unit_diag = false) {

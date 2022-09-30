@@ -42,8 +42,8 @@ typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 typedef ::testing::Types<int, intl, char, short> TestTypesInt;
 
 // register the type list
-TYPED_TEST_CASE(Translate, TestTypes);
-TYPED_TEST_CASE(TranslateInt, TestTypesInt);
+TYPED_TEST_SUITE(Translate, TestTypes);
+TYPED_TEST_SUITE(TranslateInt, TestTypesInt);
 
 template<typename T>
 void translateTest(string pTestFile, const unsigned resultIdx, dim4 odims,

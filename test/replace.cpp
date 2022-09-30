@@ -38,7 +38,7 @@ typedef ::testing::Types<half_float::half, float, double, cfloat, cdouble, uint,
                          int, intl, uintl, uchar, char, short, ushort>
     TestTypes;
 
-TYPED_TEST_CASE(Replace, TestTypes);
+TYPED_TEST_SUITE(Replace, TestTypes);
 
 template<typename T>
 void replaceTest(const dim4 &dims) {

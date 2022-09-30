@@ -45,7 +45,7 @@ template<typename T>
 class MatrixMultiply : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cdouble, cfloat> TestTypes;
-TYPED_TEST_CASE(MatrixMultiply, TestTypes);
+TYPED_TEST_SUITE(MatrixMultiply, TestTypes);
 
 template<typename T, bool isBVector>
 void MatMulCheck(string TestFile) {
@@ -339,7 +339,7 @@ std::string print_blas_params(
     return ss.str();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     LHSBroadcast, MatrixMultiplyBatch,
     ::testing::Values(
 
@@ -365,7 +365,7 @@ INSTANTIATE_TEST_CASE_P(
         ),
     print_blas_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     RHSBroadcast, MatrixMultiplyBatch,
     ::testing::Values(
         // clang-format off
@@ -389,7 +389,7 @@ INSTANTIATE_TEST_CASE_P(
         ),
     print_blas_params);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SameBatch, MatrixMultiplyBatch,
     ::testing::Values(
         // clang-format off
@@ -609,7 +609,7 @@ string out_info(const ::testing::TestParamInfo<Gemm::ParamType> info) {
 }
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Square, Gemm,
     ::testing::Values(
         //          lhs_opts     rhs_opts     alpha  lhs    rhs    gold    lhs_dims    rhs_dims    out_dims    beta  out_array_type
@@ -623,7 +623,7 @@ INSTANTIATE_TEST_CASE_P(
 // clang-format on
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Batched, Gemm,
     ::testing::Values(
         //          lhs_opts     rhs_opts     alpha  lhs          rhs    gold          lhs_dims       rhs_dims    out_dims       beta  out_array_type
@@ -637,7 +637,7 @@ INSTANTIATE_TEST_CASE_P(
 // clang-format on
 
 // clang-format off
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NonSquare, Gemm,
     ::testing::Values(
         //          lhs_opts      rhs_opts      alpha  lhs         rhs         gold       lhs_dims    rhs_dims    out_dims    beta  out_array_type

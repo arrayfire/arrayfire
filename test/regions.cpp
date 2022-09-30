@@ -39,7 +39,7 @@ class Regions : public ::testing::Test {
 typedef ::testing::Types<float, double, int, unsigned, short, ushort> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Regions, TestTypes);
+TYPED_TEST_SUITE(Regions, TestTypes);
 
 template<typename T>
 void regionsTest(string pTestFile, af_connectivity connectivity,

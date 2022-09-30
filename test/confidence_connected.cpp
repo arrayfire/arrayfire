@@ -31,7 +31,7 @@ class ConfidenceConnectedImageTest : public testing::Test {
 
 typedef ::testing::Types<float, uint, ushort, uchar> TestTypes;
 
-TYPED_TEST_CASE(ConfidenceConnectedImageTest, TestTypes);
+TYPED_TEST_SUITE(ConfidenceConnectedImageTest, TestTypes);
 
 struct CCCTestParams {
     const char *prefix;
@@ -185,7 +185,7 @@ TEST_P(ConfidenceConnectedDataTest, SegmentARegion) {
     testData<unsigned char>(GetParam());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SingleSeed, ConfidenceConnectedDataTest,
     testing::Values(CCCTestParams{"core", 0u, 1u, 5u, 255.0},
                     CCCTestParams{"background", 0u, 1u, 5u, 255.0},
