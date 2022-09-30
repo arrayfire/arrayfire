@@ -32,7 +32,7 @@ typedef ::testing::Types<float, int, uint, short, ushort, uchar, double>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(CannyEdgeDetector, TestTypes);
+TYPED_TEST_SUITE(CannyEdgeDetector, TestTypes);
 
 template<typename T>
 void cannyTest(string pTestFile) {

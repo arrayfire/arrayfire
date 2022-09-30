@@ -49,7 +49,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Transpose, TestTypes);
+TYPED_TEST_SUITE(Transpose, TestTypes);
 
 template<typename T>
 void trsTest(string pTestFile, bool isSubRef = false,

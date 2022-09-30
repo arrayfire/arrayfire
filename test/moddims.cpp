@@ -41,7 +41,7 @@ typedef ::testing::Types<float, double, int, unsigned, char, unsigned char,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Moddims, TestTypes);
+TYPED_TEST_SUITE(Moddims, TestTypes);
 
 template<typename T>
 void moddimsTest(string pTestFile, bool isSubRef = false,

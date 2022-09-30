@@ -31,7 +31,7 @@ class TransformCoordinates : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(TransformCoordinates, TestTypes);
+TYPED_TEST_SUITE(TransformCoordinates, TestTypes);
 
 template<typename T>
 void transformCoordinatesTest(string pTestFile) {

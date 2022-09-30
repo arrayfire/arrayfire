@@ -63,8 +63,8 @@ class FixedFAST : public ::testing::Test {
 typedef ::testing::Types<float, double> FloatTestTypes;
 typedef ::testing::Types<int, unsigned, short, ushort> FixedTestTypes;
 
-TYPED_TEST_CASE(FloatFAST, FloatTestTypes);
-TYPED_TEST_CASE(FixedFAST, FixedTestTypes);
+TYPED_TEST_SUITE(FloatFAST, FloatTestTypes);
+TYPED_TEST_SUITE(FixedFAST, FixedTestTypes);
 
 template<typename T>
 void fastTest(string pTestFile, bool nonmax) {

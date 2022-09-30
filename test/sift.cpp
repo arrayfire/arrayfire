@@ -132,7 +132,7 @@ class SIFT : public ::testing::Test {
 
 typedef ::testing::Types<float, double> TestTypes;
 
-TYPED_TEST_CASE(SIFT, TestTypes);
+TYPED_TEST_SUITE(SIFT, TestTypes);
 
 template<typename T>
 void siftTest(string pTestFile, unsigned nLayers, float contrastThr,

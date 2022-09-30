@@ -36,29 +36,29 @@ struct convert_params {
 
 class HalfConvert : public ::testing::TestWithParam<convert_params> {};
 
-INSTANTIATE_TEST_CASE_P(ToF16, HalfConvert,
-                        ::testing::Values(convert_params(f32, f16, 10),
-                                          convert_params(f64, f16, 10),
-                                          convert_params(s32, f16, 10),
-                                          convert_params(u32, f16, 10),
-                                          convert_params(u8, f16, 10),
-                                          convert_params(s64, f16, 10),
-                                          convert_params(u64, f16, 10),
-                                          convert_params(s16, f16, 10),
-                                          convert_params(u16, f16, 10),
-                                          convert_params(f16, f16, 10)));
+INSTANTIATE_TEST_SUITE_P(ToF16, HalfConvert,
+                         ::testing::Values(convert_params(f32, f16, 10),
+                                           convert_params(f64, f16, 10),
+                                           convert_params(s32, f16, 10),
+                                           convert_params(u32, f16, 10),
+                                           convert_params(u8, f16, 10),
+                                           convert_params(s64, f16, 10),
+                                           convert_params(u64, f16, 10),
+                                           convert_params(s16, f16, 10),
+                                           convert_params(u16, f16, 10),
+                                           convert_params(f16, f16, 10)));
 
-INSTANTIATE_TEST_CASE_P(FromF16, HalfConvert,
-                        ::testing::Values(convert_params(f16, f32, 10),
-                                          convert_params(f16, f64, 10),
-                                          convert_params(f16, s32, 10),
-                                          convert_params(f16, u32, 10),
-                                          convert_params(f16, u8, 10),
-                                          convert_params(f16, s64, 10),
-                                          convert_params(f16, u64, 10),
-                                          convert_params(f16, s16, 10),
-                                          convert_params(f16, u16, 10),
-                                          convert_params(f16, f16, 10)));
+INSTANTIATE_TEST_SUITE_P(FromF16, HalfConvert,
+                         ::testing::Values(convert_params(f16, f32, 10),
+                                           convert_params(f16, f64, 10),
+                                           convert_params(f16, s32, 10),
+                                           convert_params(f16, u32, 10),
+                                           convert_params(f16, u8, 10),
+                                           convert_params(f16, s64, 10),
+                                           convert_params(f16, u64, 10),
+                                           convert_params(f16, s16, 10),
+                                           convert_params(f16, u16, 10),
+                                           convert_params(f16, f16, 10)));
 
 TEST_P(HalfConvert, convert) {
     SUPPORTED_TYPE_CHECK(af_half);

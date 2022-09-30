@@ -44,7 +44,7 @@ typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Mean, TestTypes);
+TYPED_TEST_SUITE(Mean, TestTypes);
 
 template<typename T>
 struct f32HelperType {
@@ -270,7 +270,7 @@ class WeightedMean : public ::testing::Test {
 };
 
 // register the type list
-TYPED_TEST_CASE(WeightedMean, TestTypes);
+TYPED_TEST_SUITE(WeightedMean, TestTypes);
 
 template<typename T, typename wtsType>
 void weightedMeanAllTest(dim4 dims) {

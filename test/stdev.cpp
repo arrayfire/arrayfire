@@ -41,7 +41,7 @@ typedef ::testing::Types<float, double, int, uint, intl, uintl, char, uchar>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(StandardDev, TestTypes);
+TYPED_TEST_SUITE(StandardDev, TestTypes);
 
 template<typename T>
 struct f32HelperType {

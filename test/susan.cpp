@@ -62,7 +62,7 @@ class Susan : public ::testing::Test {
 typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
     TestTypes;
 
-TYPED_TEST_CASE(Susan, TestTypes);
+TYPED_TEST_SUITE(Susan, TestTypes);
 
 template<typename T>
 void susanTest(string pTestFile, float t, float g) {

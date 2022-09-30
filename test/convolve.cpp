@@ -38,7 +38,7 @@ typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Convolve, TestTypes);
+TYPED_TEST_SUITE(Convolve, TestTypes);
 
 template<typename T>
 void convolveTest(string pTestFile, int baseDim, bool expand) {
@@ -877,9 +877,9 @@ vector<conv2_strided_params> genConsistencyTests() {
             conv2_consistency_data(dim4(257, 257), dim4(3, 3))};
 }
 
-INSTANTIATE_TEST_CASE_P(Conv2Consistency, Conv2ConsistencyTest,
-                        ::testing::ValuesIn(genConsistencyTests()),
-                        testNameGenerator<Conv2ConsistencyTest>);
+INSTANTIATE_TEST_SUITE_P(Conv2Consistency, Conv2ConsistencyTest,
+                         ::testing::ValuesIn(genConsistencyTests()),
+                         testNameGenerator<Conv2ConsistencyTest>);
 
 TEST_P(Conv2ConsistencyTest, RandomConvolutions) {
     conv2_strided_params params = GetParam();
@@ -1039,7 +1039,7 @@ typedef ::testing::Types<float, double, half_float::half>
     TestTypesStrided;  // TODO: integral types??
 
 // register the type list
-TYPED_TEST_CASE(ConvolveStrided, TestTypesStrided);
+TYPED_TEST_SUITE(ConvolveStrided, TestTypesStrided);
 
 TYPED_TEST(ConvolveStrided, Strided_sig1010_filt33_s11_p11_d11) {
     convolve2stridedTest<TypeParam>(

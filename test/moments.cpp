@@ -39,7 +39,7 @@ class Image : public ::testing::Test {
 typedef ::testing::Types<float, double, int> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Image, TestTypes);
+TYPED_TEST_SUITE(Image, TestTypes);
 
 template<typename T>
 void momentsTest(string pTestFile) {

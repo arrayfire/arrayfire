@@ -38,7 +38,7 @@ template<typename T>
 class svd : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
-TYPED_TEST_CASE(svd, TestTypes);
+TYPED_TEST_SUITE(svd, TestTypes);
 
 template<typename T>
 inline double get_val(T val) {

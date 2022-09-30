@@ -386,27 +386,27 @@ DEF_TEST(UChar, unsigned char)
 
 #undef DEF_TEST
 
-INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestULong,
-                        testing::Range<unsigned long long>(1, 1e7, 1e6));
-INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestLong,
-                        testing::Range<long long>(1, 1e7, 1e6));
-INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestUInt,
-                        testing::Range<unsigned int>(1, 65000, 15e3));
-INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestInt,
-                        testing::Range<int>(1, 46340, 10e3));
-INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestUShort,
-                        testing::Range<unsigned short>(1, 255, 100));
-INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestShort,
-                        testing::Range<short>(1, 180, 50));
-INSTANTIATE_TEST_CASE_P(PositiveValues, PowPrecisionTestUChar,
-                        testing::Range<unsigned char>(1, 12, 5));
+INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestULong,
+                         testing::Range<unsigned long long>(1, 1e7, 1e6));
+INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestLong,
+                         testing::Range<long long>(1, 1e7, 1e6));
+INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestUInt,
+                         testing::Range<unsigned int>(1, 65000, 15e3));
+INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestInt,
+                         testing::Range<int>(1, 46340, 10e3));
+INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestUShort,
+                         testing::Range<unsigned short>(1, 255, 100));
+INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestShort,
+                         testing::Range<short>(1, 180, 50));
+INSTANTIATE_TEST_SUITE_P(PositiveValues, PowPrecisionTestUChar,
+                         testing::Range<unsigned char>(1, 12, 5));
 
-INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestLong,
-                        testing::Range<long long>(-1e7, 0, 1e6));
-INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestInt,
-                        testing::Range<int>(-46340, 0, 10e3));
-INSTANTIATE_TEST_CASE_P(NegativeValues, PowPrecisionTestShort,
-                        testing::Range<short>(-180, 0, 50));
+INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestLong,
+                         testing::Range<long long>(-1e7, 0, 1e6));
+INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestInt,
+                         testing::Range<int>(-46340, 0, 10e3));
+INSTANTIATE_TEST_SUITE_P(NegativeValues, PowPrecisionTestShort,
+                         testing::Range<short>(-180, 0, 50));
 
 struct result_type_param {
     af_dtype result_;
@@ -453,7 +453,7 @@ std::string print_types(
     return ss.str();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SameTypes, ResultType,
     // clang-format off
     ::testing::Values(result_type_param(f32),
@@ -472,7 +472,7 @@ INSTANTIATE_TEST_CASE_P(
     // clang-format on
     print_types);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Float, ResultType,
     // clang-format off
     ::testing::Values(result_type_param(f32),
@@ -491,7 +491,7 @@ INSTANTIATE_TEST_CASE_P(
     // clang-format on
     print_types);
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Double, ResultType,
     ::testing::Values(
         // clang-format off
@@ -540,7 +540,7 @@ class ResultTypeScalar : public ::testing::Test {
 typedef ::testing::Types<float, double, unsigned int, int, short,
                          unsigned short, char, unsigned char, half_float::half>
     TestTypes;
-TYPED_TEST_CASE(ResultTypeScalar, TestTypes);
+TYPED_TEST_SUITE(ResultTypeScalar, TestTypes);
 
 TYPED_TEST(ResultTypeScalar, HalfAddition) {
     SUPPORTED_TYPE_CHECK(half_float::half);
@@ -583,7 +583,7 @@ class Broadcast : public ::testing::TestWithParam<std::tuple<dim4, dim4> > {
 };
 /// clang-format off
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CorrectCases, Broadcast,
     ::testing::Combine(
         ::testing::Values(dim4(1), dim4(10), dim4(1, 10), dim4(1, 1, 10),
@@ -715,7 +715,7 @@ TEST_P(Broadcast, AdditionLHSIndexed) {
 
     af::dim4 outdims       = broadcastOut(get<0>(params), rhs.dims());
     af::array indexedlhs   = lhs(seq(lhs_dims[0]), seq(lhs_dims[1]),
-                               seq(lhs_dims[2]), seq(lhs_dims[3]));
+                                 seq(lhs_dims[2]), seq(lhs_dims[3]));
     af::dim4 tilerepetions = tileRepeations(get<0>(params), rhs.dims());
     af::array tiledlhs     = tile(indexedlhs, tilerepetions);
 
@@ -760,7 +760,7 @@ TEST_P(Broadcast, AdditionBothIndexed) {
 
     af::dim4 outdims       = broadcastOut(lhs_dims, rhs_dims);
     af::array indexedlhs   = lhs(seq(lhs_dims[0]), seq(lhs_dims[1]),
-                               seq(lhs_dims[2]), seq(lhs_dims[3]));
+                                 seq(lhs_dims[2]), seq(lhs_dims[3]));
     af::dim4 tilerepetions = tileRepeations(get<0>(params), get<1>(params));
     af::array tiledlhs     = tile(indexedlhs, tilerepetions);
 

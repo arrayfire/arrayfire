@@ -81,7 +81,7 @@ double eps<cdouble>() {
 }
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(Inverse, TestTypes);
+TYPED_TEST_SUITE(Inverse, TestTypes);
 
 TYPED_TEST(Inverse, Square) {
     inverseTester<TypeParam>(1000, 1000, eps<TypeParam>());

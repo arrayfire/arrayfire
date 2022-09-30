@@ -40,7 +40,7 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, intl,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Random, TestTypes);
+TYPED_TEST_SUITE(Random, TestTypes);
 
 template<typename T>
 class Random_norm : public ::testing::Test {
@@ -69,21 +69,21 @@ class RandomSeed : public ::testing::Test {
 // create a list of types to be tested
 typedef ::testing::Types<float, cfloat, double, cdouble, af_half> TestTypesNorm;
 // register the type list
-TYPED_TEST_CASE(Random_norm, TestTypesNorm);
+TYPED_TEST_SUITE(Random_norm, TestTypesNorm);
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double> TestTypesEngine;
 // register the type list
-TYPED_TEST_CASE(RandomEngine, TestTypesEngine);
+TYPED_TEST_SUITE(RandomEngine, TestTypesEngine);
 
 typedef ::testing::Types<unsigned> TestTypesEngineSeed;
 // register the type list
-TYPED_TEST_CASE(RandomEngineSeed, TestTypesEngineSeed);
+TYPED_TEST_SUITE(RandomEngineSeed, TestTypesEngineSeed);
 
 // create a list of types to be tested
 typedef ::testing::Types<unsigned> TestTypesSeed;
 // register the type list
-TYPED_TEST_CASE(RandomSeed, TestTypesSeed);
+TYPED_TEST_SUITE(RandomSeed, TestTypesSeed);
 
 template<typename T>
 void randuTest(dim4 &dims) {

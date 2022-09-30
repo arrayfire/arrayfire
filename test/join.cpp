@@ -52,7 +52,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int,
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Join, TestTypes);
+TYPED_TEST_SUITE(Join, TestTypes);
 
 template<typename T>
 void joinTest(string pTestFile, const unsigned dim, const unsigned in0,

@@ -43,7 +43,7 @@ typedef ::testing::Types<float, double, cfloat, cdouble, int, intl, char, short>
     TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(RotateLinear, TestTypes);
+TYPED_TEST_SUITE(RotateLinear, TestTypes);
 
 #define PI 3.1415926535897931f
 

@@ -103,7 +103,7 @@ string testNameGenerator(
     return ss.str();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Legacy, IndexGeneralizedLegacy,
     ::testing::Combine(
         ::testing::Values(index_test(

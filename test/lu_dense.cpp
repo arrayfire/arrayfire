@@ -212,7 +212,7 @@ template<typename T>
 class LU : public ::testing::Test {};
 
 typedef ::testing::Types<float, cfloat, double, cdouble> TestTypes;
-TYPED_TEST_CASE(LU, TestTypes);
+TYPED_TEST_SUITE(LU, TestTypes);
 
 TYPED_TEST(LU, SquareLarge) { luTester<TypeParam>(500, 500, eps<TypeParam>()); }
 
