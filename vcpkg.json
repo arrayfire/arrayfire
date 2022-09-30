@@ -8,19 +8,26 @@
         "boost-math",
         "boost-stacktrace",
         "spdlog",
-        "freeimage"
+        "freeimage",
+        "span-lite"
     ],
     "overrides": [
         {
             "name": "fmt",
-            "version": "7.1.3"
+            "version": "8.1.1"
         },
         {
             "name": "spdlog",
-            "version": "1.8.5"
+            "version": "1.9.2"
         }
     ],
     "features": {
+        "tests": {
+            "description": "Build with tests",
+            "dependencies": [
+                "gtest"
+            ]
+        },
         "forge": {
             "description": "Build Forge",
             "dependencies": [
