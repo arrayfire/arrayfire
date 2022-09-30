@@ -12,7 +12,14 @@ if(TARGET clblast OR AF_WITH_EXTERNAL_PACKAGES_ONLY)
     # another package so we dont need this property to link against
     # CLBlast.
     set_target_properties(clblast PROPERTIES
-      IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE "")
+      IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE ""
+      IMPORTED_LINK_INTERFACE_LIBRARIES_DEBUG "")
+
+    if(WIN32 AND VCPKG_ROOT)
+      set_target_properties(clblast PROPERTIES
+        IMPORTED_LOCATION_RELEASE ""
+        IMPORTED_LOCATION_DEBUG "")
+    endif()
   else()
     message(ERROR "CLBlast now found")
   endif()

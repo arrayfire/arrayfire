@@ -17,7 +17,7 @@ endif()
 
 if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
     dependency_check(GTest_FOUND)
-else()
+elseif(NOT TARGET GTest::gtest)
   af_dep_check_and_populate(${gtest_prefix}
     URI https://github.com/google/googletest.git
     REF release-1.8.1
