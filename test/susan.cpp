@@ -71,7 +71,7 @@ void susanTest(string pTestFile, float t, float g) {
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > gold;
+    vector<vector<float>> gold;
 
     readImageTests(pTestFile, inDims, inFiles, gold);
 

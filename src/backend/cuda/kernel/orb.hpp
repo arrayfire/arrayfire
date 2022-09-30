@@ -246,12 +246,12 @@ __global__ void extract_orb(unsigned* desc_out, const unsigned n_feat,
                 int dist_x = lookup(i * 16 * 4 + j * 4, luTable);
                 int dist_y = lookup(i * 16 * 4 + j * 4 + 1, luTable);
                 T p1       = get_pixel(x, y, ori, size, dist_x, dist_y, image,
-                                 patch_size);
+                                       patch_size);
 
                 dist_x = lookup(i * 16 * 4 + j * 4 + 2, luTable);
                 dist_y = lookup(i * 16 * 4 + j * 4 + 3, luTable);
                 T p2   = get_pixel(x, y, ori, size, dist_x, dist_y, image,
-                                 patch_size);
+                                   patch_size);
 
                 // Calculate bit based on p1 and p2 and shifts it to correct
                 // position

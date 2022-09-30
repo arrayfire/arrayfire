@@ -157,7 +157,7 @@ __device__ bool computeMeanScale(
     CParam<float> x_dst, CParam<float> y_dst, CParam<float> rnd, int i) {
     const unsigned ridx = rnd.dims[0] * i;
     unsigned r[4]       = {(unsigned)rnd.ptr[ridx], (unsigned)rnd.ptr[ridx + 1],
-                     (unsigned)rnd.ptr[ridx + 2], (unsigned)rnd.ptr[ridx + 3]};
+                           (unsigned)rnd.ptr[ridx + 2], (unsigned)rnd.ptr[ridx + 3]};
 
     // If one of the points is repeated, it's a bad samples, will still
     // compute homography to ensure all threads pass __syncthreads()

@@ -69,8 +69,8 @@ void nearestNeighbourTest(string pTestFile, int feat_dim,
     typedef typename otype_t<T>::otype To;
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<uint> > tests;
+    vector<vector<T>> in;
+    vector<vector<uint>> tests;
 
     readTests<T, uint, uint>(pTestFile, numDims, in, tests);
 
@@ -171,8 +171,8 @@ TYPED_TEST(NearestNeighbour, NN_SAD_500_5000_Dim1) {
 //
 TEST(NearestNeighbourSSD, CPP) {
     vector<dim4> numDims;
-    vector<vector<uint> > in;
-    vector<vector<uint> > tests;
+    vector<vector<uint>> in;
+    vector<vector<uint>> tests;
 
     readTests<uint, uint, uint>(TEST_DIR
                                 "/nearest_neighbour/ssd_500_5000_dim0.test",
@@ -207,8 +207,8 @@ TEST(NearestNeighbourSSD, CPP) {
 
 TEST(NearestNeighbourSAD, CPP) {
     vector<dim4> numDims;
-    vector<vector<uint> > in;
-    vector<vector<uint> > tests;
+    vector<vector<uint>> in;
+    vector<vector<uint>> tests;
 
     readTests<uint, uint, uint>(TEST_DIR
                                 "/nearest_neighbour/sad_100_1000_dim1.test",

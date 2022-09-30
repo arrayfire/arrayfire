@@ -99,8 +99,8 @@ void detTest() {
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(string(TEST_DIR "/lapack/detSmall.test"),
                                    numDims, in, tests);
     dim4 dims = numDims[0];

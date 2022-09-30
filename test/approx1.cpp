@@ -73,8 +73,8 @@ void approx1Test(string pTestFile, const unsigned resultIdx,
 
     typedef typename dtype_traits<T>::base_type BT;
     vector<dim4> numDims;
-    vector<vector<BT> > in;
-    vector<vector<T> > tests;
+    vector<vector<BT>> in;
+    vector<vector<T>> tests;
     readTests<BT, T, float>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -146,8 +146,8 @@ void approx1CubicTest(string pTestFile, const unsigned resultIdx,
 
     typedef typename dtype_traits<T>::base_type BT;
     vector<dim4> numDims;
-    vector<vector<BT> > in;
-    vector<vector<T> > tests;
+    vector<vector<BT>> in;
+    vector<vector<T>> tests;
     readTests<BT, T, float>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -233,8 +233,8 @@ void approx1ArgsTest(string pTestFile, const af_interp_type method,
     SUPPORTED_TYPE_CHECK(T);
     typedef typename dtype_traits<T>::base_type BT;
     vector<dim4> numDims;
-    vector<vector<BT> > in;
-    vector<vector<T> > tests;
+    vector<vector<BT>> in;
+    vector<vector<T>> tests;
     readTests<BT, T, float>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -279,8 +279,8 @@ void approx1ArgsTestPrecision(string pTestFile, const unsigned,
                               const af_interp_type method) {
     SUPPORTED_TYPE_CHECK(T);
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, float>(pTestFile, numDims, in, tests);
 
     dim4 idims = numDims[0];
@@ -335,8 +335,8 @@ TEST(Approx1, CPP) {
     const unsigned resultIdx = 1;
 #define BT dtype_traits<float>::base_type
     vector<dim4> numDims;
-    vector<vector<BT> > in;
-    vector<vector<float> > tests;
+    vector<vector<BT>> in;
+    vector<vector<float>> tests;
     readTests<BT, float, float>(string(TEST_DIR "/approx/approx1.test"),
                                 numDims, in, tests);
 

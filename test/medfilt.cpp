@@ -48,8 +48,8 @@ void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -108,8 +108,8 @@ void medfilt1_Test(string pTestFile, dim_t w_wid, af_border_type pad) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -342,8 +342,8 @@ TEST(MedianFilter, CPP) {
     const dim_t w_wid = 3;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/medianfilter/batch_symmetric_pad_3x3_window.test"),
@@ -368,8 +368,8 @@ TEST(MedianFilter1d, CPP) {
     const dim_t w_wid = 3;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/medianfilter/batch_symmetric_pad_3x1_window.test"),

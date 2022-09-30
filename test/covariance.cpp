@@ -79,8 +79,8 @@ void covTest(string pFileName, bool isbiased = true,
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<int> > in;
-    vector<vector<float> > tests;
+    vector<vector<int>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<int, float>(pFileName, numDims, in, tests);
 

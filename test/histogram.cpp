@@ -46,8 +46,8 @@ void histTest(string pTestFile, unsigned nbins, double minval, double maxval) {
 
     vector<dim4> numDims;
 
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
     readTests<inType, uint, uint>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -120,8 +120,8 @@ TEST(Histogram, CPP) {
 
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<uint> > tests;
+    vector<vector<float>> in;
+    vector<vector<uint>> tests;
     readTests<float, uint, int>(
         string(TEST_DIR "/histogram/100bin0min99max.test"), numDims, in, tests);
 

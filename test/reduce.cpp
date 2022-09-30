@@ -51,8 +51,8 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef = false,
 
     vector<dim4> numDims;
 
-    vector<vector<int> > data;
-    vector<vector<int> > tests;
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
     readTests<int, int, int>(pTestFile, numDims, data, tests);
     dim4 dims = numDims[0];
 
@@ -217,8 +217,8 @@ void cppReduceTest(string pTestFile) {
 
     vector<dim4> numDims;
 
-    vector<vector<int> > data;
-    vector<vector<int> > tests;
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
     readTests<int, int, int>(pTestFile, numDims, data, tests);
     dim4 dims = numDims[0];
 
@@ -507,7 +507,7 @@ vector<reduce_by_key_params*> genSingleKeyTests() {
 
 vector<reduce_by_key_params *> generateAllTypes() {
     vector<reduce_by_key_params *> out;
-    vector<vector<reduce_by_key_params *> > tmp{
+    vector<vector<reduce_by_key_params *>> tmp{
         genUniqueKeyTests<int, float, float>(),
         genSingleKeyTests<int, float, float>(),
         genUniqueKeyTests<unsigned, float, float>(),
@@ -593,8 +593,8 @@ TEST(ReduceByKey, MultiBlockReduceSingleval) {
 
 void reduce_by_key_test(std::string test_fn) {
     vector<dim4> numDims;
-    vector<vector<float> > data;
-    vector<vector<float> > tests;
+    vector<vector<float>> data;
+    vector<vector<float>> tests;
     readTests<float, float, float>(test_fn, numDims, data, tests);
 
     for (size_t t = 0; t < numDims.size() / 2; ++t) {
@@ -1112,7 +1112,7 @@ TEST(MinMax, MinCplxNaN) {
 
     array min_val = af::min(a);
 
-    vector<complex<float> > h_min_val(cols);
+    vector<complex<float>> h_min_val(cols);
     min_val.host(&h_min_val[0]);
 
     for (int i = 0; i < cols; i++) {
@@ -1148,7 +1148,7 @@ TEST(MinMax, MaxCplxNaN) {
 
     array max_val = af::max(a);
 
-    vector<complex<float> > h_max_val(cols);
+    vector<complex<float>> h_max_val(cols);
     max_val.host(&h_max_val[0]);
 
     for (int i = 0; i < cols; i++) {

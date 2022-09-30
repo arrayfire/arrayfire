@@ -58,8 +58,8 @@ void trsTest(string pTestFile, bool isSubRef = false,
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -157,8 +157,8 @@ template<typename T>
 void trsCPPTest(string pFileName) {
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pFileName, numDims, in, tests);
     dim4 dims = numDims[0];
 

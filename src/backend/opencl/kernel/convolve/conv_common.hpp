@@ -63,7 +63,7 @@ void prepareKernelArgs(conv_kparam_t& param, dim_t* oDims, const dim_t* fDims,
         param.nBBS0    = divup(oDims[0], THREADS);
         param.nBBS1    = batchDims[2];
         param.global   = NDRange(param.nBBS0 * THREADS * batchDims[1],
-                               param.nBBS1 * batchDims[3]);
+                                 param.nBBS1 * batchDims[3]);
         param.loc_size = (THREADS + 2 * (fDims[0] - 1)) * sizeof(T);
     } else if (rank == 2) {
         param.local  = NDRange(THREADS_X, THREADS_Y);
@@ -77,7 +77,7 @@ void prepareKernelArgs(conv_kparam_t& param, dim_t* oDims, const dim_t* fDims,
         param.nBBS1    = divup(oDims[1], CUBE_Y);
         int blk_z      = divup(oDims[2], CUBE_Z);
         param.global   = NDRange(param.nBBS0 * CUBE_X * batchDims[3],
-                               param.nBBS1 * CUBE_Y, blk_z * CUBE_Z);
+                                 param.nBBS1 * CUBE_Y, blk_z * CUBE_Z);
         param.loc_size = (CUBE_X + 2 * (fDims[0] - 1)) *
                          (CUBE_Y + 2 * (fDims[1] - 1)) *
                          (CUBE_Z + 2 * (fDims[2] - 1)) * sizeof(T);

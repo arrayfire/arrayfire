@@ -257,12 +257,12 @@ void extract_orb(unsigned* desc_out, const unsigned n_feat, float* x_in_out,
                 int dist_x = ref_pat[i * 32 * 4 + j * 4];
                 int dist_y = ref_pat[i * 32 * 4 + j * 4 + 1];
                 T p1       = get_pixel(x, y, ori, size, dist_x, dist_y, image,
-                                 patch_size);
+                                       patch_size);
 
                 dist_x = ref_pat[i * 32 * 4 + j * 4 + 2];
                 dist_y = ref_pat[i * 32 * 4 + j * 4 + 3];
                 T p2   = get_pixel(x, y, ori, size, dist_x, dist_y, image,
-                                 patch_size);
+                                   patch_size);
 
                 // Calculate bit based on p1 and p2 and shifts it to correct
                 // position

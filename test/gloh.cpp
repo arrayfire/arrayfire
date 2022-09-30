@@ -65,7 +65,7 @@ static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
 
 static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
                                float* score, float* ori, float* size,
-                               vector<vector<float> >& desc, unsigned nfeat) {
+                               vector<vector<float>>& desc, unsigned nfeat) {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
         feat[i].f[0] = x[i];
@@ -141,8 +141,8 @@ void glohTest(string pTestFile) {
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<float> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<float>> goldDesc;
 
     readImageFeaturesDescriptors<float>(pTestFile, inDims, inFiles, goldFeat,
                                         goldDesc);
@@ -265,8 +265,8 @@ TEST(GLOH, CPP) {
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<float> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<float>> goldDesc;
 
     readImageFeaturesDescriptors<float>(string(TEST_DIR "/gloh/man.test"),
                                         inDims, inFiles, goldFeat, goldDesc);

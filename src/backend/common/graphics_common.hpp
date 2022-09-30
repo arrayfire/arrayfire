@@ -53,10 +53,10 @@ class ForgeManager {
     using WindowGridDims = std::pair<int, int>;
 
     ForgeManager();
-    ForgeManager(ForgeManager const&) = delete;
+    ForgeManager(ForgeManager const&)            = delete;
     ForgeManager& operator=(ForgeManager const&) = delete;
     ForgeManager(ForgeManager&&)                 = delete;
-    ForgeManager& operator=(ForgeManager&&) = delete;
+    ForgeManager& operator=(ForgeManager&&)      = delete;
 
     /// \brief Module used to invoke forge API calls
     ForgeModule& plugin();

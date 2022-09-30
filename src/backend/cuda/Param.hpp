@@ -34,10 +34,10 @@ class Param {
         return dims[0] * dims[1] * dims[2] * dims[3];
     }
 
-    Param(const Param<T> &other) noexcept = default;
-    Param(Param<T> &&other) noexcept      = default;
+    Param(const Param<T> &other) noexcept               = default;
+    Param(Param<T> &&other) noexcept                    = default;
     Param<T> &operator=(const Param<T> &other) noexcept = default;
-    Param<T> &operator=(Param<T> &&other) noexcept = default;
+    Param<T> &operator=(Param<T> &&other) noexcept      = default;
 };
 
 template<typename T>
@@ -70,10 +70,10 @@ class CParam {
         return dims[0] * dims[1] * dims[2] * dims[3];
     }
 
-    CParam(const CParam<T> &other) noexcept = default;
-    CParam(CParam<T> &&other) noexcept      = default;
+    CParam(const CParam<T> &other) noexcept               = default;
+    CParam(CParam<T> &&other) noexcept                    = default;
     CParam<T> &operator=(const CParam<T> &other) noexcept = default;
-    CParam<T> &operator=(CParam<T> &&other) noexcept = default;
+    CParam<T> &operator=(CParam<T> &&other) noexcept      = default;
 };
 
 }  // namespace cuda

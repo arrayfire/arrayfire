@@ -246,7 +246,7 @@ __global__ void non_max_counts(unsigned *d_counts, unsigned *d_offsets,
             if (nonmax) {
                 float max_v = v;
                 max_v       = max_val(score[x - 1 + idim0 * (y - 1)],
-                                score[x - 1 + idim0 * y]);
+                                      score[x - 1 + idim0 * y]);
                 max_v       = max_val(max_v, score[x - 1 + idim0 * (y + 1)]);
                 max_v       = max_val(max_v, score[x + idim0 * (y - 1)]);
                 max_v       = max_val(max_v, score[x + idim0 * (y + 1)]);

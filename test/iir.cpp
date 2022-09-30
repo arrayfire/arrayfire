@@ -124,8 +124,8 @@ void iirTest(const char *testFile) {
     SUPPORTED_TYPE_CHECK(T);
     vector<dim4> inDims;
 
-    vector<vector<T> > inputs;
-    vector<vector<T> > outputs;
+    vector<vector<T>> inputs;
+    vector<vector<T>> outputs;
     readTests<T, T, float>(testFile, inDims, inputs, outputs);
 
     try {

@@ -60,7 +60,7 @@ class unique_handle {
         }
     }
 
-    unique_handle(const unique_handle &other) noexcept = delete;
+    unique_handle(const unique_handle &other) noexcept      = delete;
     unique_handle &operator=(unique_handle &other) noexcept = delete;
 
     AF_CONSTEXPR unique_handle(unique_handle &&other) noexcept
