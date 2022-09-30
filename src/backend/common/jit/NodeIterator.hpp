@@ -92,11 +92,11 @@ class NodeIterator {
     pointer operator->() const noexcept { return tree[index]; }
 
     /// Creates a sentinel iterator. This is equivalent to the end iterator
-    NodeIterator()                              = default;
-    NodeIterator(const NodeIterator& other)     = default;
-    NodeIterator(NodeIterator&& other) noexcept = default;
-    ~NodeIterator() noexcept                    = default;
-    NodeIterator& operator=(const NodeIterator& other) = default;
+    NodeIterator()                                         = default;
+    NodeIterator(const NodeIterator& other)                = default;
+    NodeIterator(NodeIterator&& other) noexcept            = default;
+    ~NodeIterator() noexcept                               = default;
+    NodeIterator& operator=(const NodeIterator& other)     = default;
     NodeIterator& operator=(NodeIterator&& other) noexcept = default;
 };
 

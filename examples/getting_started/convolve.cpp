@@ -20,7 +20,7 @@ static array img;
 
 // 5x5 derivative with separable kernels
 static float h_dx[]     = {1.f / 12, -8.f / 12, 0, 8.f / 12,
-                       -1.f / 12};  // five point stencil
+                           -1.f / 12};  // five point stencil
 static float h_spread[] = {1.f / 5, 1.f / 5, 1.f / 5, 1.f / 5, 1.f / 5};
 static array dx, spread, kernel;  // device kernels
 

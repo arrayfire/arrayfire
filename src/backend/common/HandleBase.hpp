@@ -21,10 +21,10 @@ class HandleBase {
     operator H() { return handle_; }
     H* get() { return &handle_; }
 
-    HandleBase(HandleBase const&) = delete;
+    HandleBase(HandleBase const&)     = delete;
     void operator=(HandleBase const&) = delete;
 
-    HandleBase(HandleBase&& h) = default;
+    HandleBase(HandleBase&& h)            = default;
     HandleBase& operator=(HandleBase&& h) = default;
 };
 }  // namespace common

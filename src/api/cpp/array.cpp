@@ -166,9 +166,9 @@ struct array::array_proxy::array_proxy_impl {
         if (delete_on_destruction_) { delete parent_; }
     }
 
-    array_proxy_impl(const array_proxy_impl &)  = delete;
-    array_proxy_impl(const array_proxy_impl &&) = delete;
-    array_proxy_impl operator=(const array_proxy_impl &) = delete;
+    array_proxy_impl(const array_proxy_impl &)            = delete;
+    array_proxy_impl(const array_proxy_impl &&)           = delete;
+    array_proxy_impl operator=(const array_proxy_impl &)  = delete;
     array_proxy_impl operator=(const array_proxy_impl &&) = delete;
 };
 

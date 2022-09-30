@@ -152,7 +152,7 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
         if (index_ != unified::getActiveBackend()) {                             \
             index_ = unified::getActiveBackend();                                \
             func   = (af_func)common::getFunctionPointer(                        \
-                unified::getActiveHandle(), __func__);                         \
+                  unified::getActiveHandle(), __func__);                         \
         }                                                                        \
         return func(__VA_ARGS__);                                                \
     } else {                                                                     \

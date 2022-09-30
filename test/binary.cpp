@@ -578,7 +578,7 @@ TYPED_TEST(ResultTypeScalar, FloatDivision) {
     ASSERT_EQ(f32, (af::array(10, f32) / this->scalar).type());
 }
 
-class Broadcast : public ::testing::TestWithParam<std::tuple<dim4, dim4> > {
+class Broadcast : public ::testing::TestWithParam<std::tuple<dim4, dim4>> {
     void SetUp() override {}
 };
 /// clang-format off

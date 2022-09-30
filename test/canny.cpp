@@ -39,8 +39,8 @@ void cannyTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<char> > tests;
+    vector<vector<T>> in;
+    vector<vector<char>> tests;
 
     readTests<T, char, int>(pTestFile, numDims, in, tests);
 

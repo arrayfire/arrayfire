@@ -53,7 +53,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > gold;
+    vector<vector<float>> gold;
 
     readImageTests(pTestFile, inDims, inFiles, gold);
 
@@ -224,7 +224,7 @@ TEST(Homography, CPP) {
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > gold;
+    vector<vector<float>> gold;
 
     readImageTests(string(TEST_DIR "/homography/tux.test"), inDims, inFiles,
                    gold);

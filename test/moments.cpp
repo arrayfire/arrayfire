@@ -47,8 +47,8 @@ void momentsTest(string pTestFile) {
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<float> > tests;
+    vector<vector<T>> in;
+    vector<vector<float>> tests;
     readTests<T, float, float>(pTestFile, numDims, in, tests);
 
     array imgArray(numDims.front(), &in.front()[0]);
@@ -101,8 +101,8 @@ void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor) {
     if (noImageIOTests()) return;
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, float>(pTestFile, numDims, in, tests);
 
     array imgArray = loadImage(pImageFile.c_str(), isColor);

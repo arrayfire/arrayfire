@@ -48,8 +48,8 @@ array readTestInput(string testFilePath) {
     dtype outAfType = (dtype)dtype_traits<T>::af_type;
 
     vector<dim4> dimsVec;
-    vector<vector<InBaseType> > inVec;
-    vector<vector<InBaseType> > goldVec;
+    vector<vector<InBaseType>> inVec;
+    vector<vector<InBaseType>> goldVec;
     readTestsFromFile<InBaseType, InBaseType>(testFilePath, dimsVec, inVec,
                                               goldVec);
     dim4 inDims = dimsVec[0];
@@ -67,8 +67,8 @@ array readTestGold(string testFilePath) {
     dtype outAfType = (dtype)dtype_traits<T>::af_type;
 
     vector<dim4> dimsVec;
-    vector<vector<InBaseType> > inVec;
-    vector<vector<InBaseType> > goldVec;
+    vector<vector<InBaseType>> inVec;
+    vector<vector<InBaseType>> goldVec;
     readTestsFromFile<InBaseType, InBaseType>(testFilePath, dimsVec, inVec,
                                               goldVec);
     dim4 goldDims(dimsVec[0][1], dimsVec[0][0]);

@@ -45,8 +45,8 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<outType> > tests;
+    vector<vector<T>> in;
+    vector<vector<outType>> tests;
 
     readTests<T, outType, float>(pTestFile, numDims, in, tests);
 

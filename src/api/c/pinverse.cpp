@@ -92,7 +92,7 @@ Array<T> pinverseSvd(const Array<T> &in, const double tol) {
             Array<Tr> sVecSlice = getSubArray(
                 sVec, false, 0, sVec.dims()[0] - 1, 0, 0, i, i, j, j);
             Array<T> uSlice  = getSubArray(u, false, 0, u.dims()[0] - 1, 0,
-                                          u.dims()[1] - 1, i, i, j, j);
+                                           u.dims()[1] - 1, i, i, j, j);
             Array<T> vTSlice = getSubArray(vT, false, 0, vT.dims()[0] - 1, 0,
                                            vT.dims()[1] - 1, i, i, j, j);
             svd<T, Tr>(sVecSlice, uSlice, vTSlice, inSlice);
@@ -131,7 +131,7 @@ Array<T> pinverseSvd(const Array<T> &in, const double tol) {
         dim4(sVecRecip.dims()[0], (sVecRecip.dims()[2] * sVecRecip.dims()[3])));
     Array<T> sPinv = diagCreate<T>(sVecRecipMod, 0);
     sPinv          = modDims<T>(sPinv, dim4(sPinv.dims()[0], sPinv.dims()[1],
-                                   sVecRecip.dims()[2], sVecRecip.dims()[3]));
+                                            sVecRecip.dims()[2], sVecRecip.dims()[3]));
 
     Array<T> uT = transpose(u, true);
 

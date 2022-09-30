@@ -64,8 +64,7 @@ static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
 
 static void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y,
                                float* score, float* ori, float* size,
-                               vector<vector<unsigned> >& desc,
-                               unsigned nfeat) {
+                               vector<vector<unsigned>>& desc, unsigned nfeat) {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
         feat[i].f[0] = x[i];
@@ -134,8 +133,8 @@ void orbTest(string pTestFile) {
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<unsigned> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<unsigned>> goldDesc;
 
     readImageFeaturesDescriptors<unsigned>(pTestFile, inDims, inFiles, goldFeat,
                                            goldDesc);
@@ -251,8 +250,8 @@ TEST(ORB, CPP) {
 
     vector<dim4> inDims;
     vector<string> inFiles;
-    vector<vector<float> > goldFeat;
-    vector<vector<unsigned> > goldDesc;
+    vector<vector<float>> goldFeat;
+    vector<vector<unsigned>> goldDesc;
 
     readImageFeaturesDescriptors<unsigned>(string(TEST_DIR "/orb/square.test"),
                                            inDims, inFiles, goldFeat, goldDesc);

@@ -249,7 +249,7 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
     // Calculate Harris responses for all pixels
     threads = dim3(BLOCK_SIZE, BLOCK_SIZE);
     blocks  = dim3(divup(in.dims[1] - border_len * 2, threads.x),
-                  divup(in.dims[0] - border_len * 2, threads.y));
+                   divup(in.dims[0] - border_len * 2, threads.y));
     CUDA_LAUNCH((harris_responses<T>), blocks, threads, d_responses.get(),
                 in.dims[0], in.dims[1], ixx.ptr, ixy.ptr, iyy.ptr, k_thr,
                 border_len);

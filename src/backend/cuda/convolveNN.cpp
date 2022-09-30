@@ -207,7 +207,7 @@ Array<T> convolve2_base(const Array<T> &signal, const Array<T> &filter,
     const int Ndim = 1;
     Array<T> res   = createEmptyArray<T>(
         dim4(unwrapped.dims()[Mdim], collapsedFilter.dims()[Ndim],
-             unwrapped.dims()[2], unwrapped.dims()[3]));
+               unwrapped.dims()[2], unwrapped.dims()[3]));
     gemm(res, AF_MAT_TRANS, AF_MAT_NONE, &alpha, unwrapped, collapsedFilter,
          &beta);
     res = modDims(res, dim4(outputWidth, outputHeight, signal.dims()[3],
@@ -259,7 +259,7 @@ Array<T> data_gradient_base(const Array<T> &incoming_gradient,
     Array<T> collapsed_gradient = incoming_gradient;
     collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
     collapsed_gradient          = modDims(
-        collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+                 collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     T alpha        = scalar<T>(1.0);
     T beta         = scalar<T>(0.0);
@@ -267,7 +267,7 @@ Array<T> data_gradient_base(const Array<T> &incoming_gradient,
     const int Ndim = 0;
     Array<T> res   = createEmptyArray<T>(
         dim4(collapsed_gradient.dims()[Mdim], collapsed_filter.dims()[Ndim],
-             collapsed_gradient.dims()[3], collapsed_gradient.dims()[3]));
+               collapsed_gradient.dims()[3], collapsed_gradient.dims()[3]));
     gemm(res, AF_MAT_NONE, AF_MAT_TRANS, &alpha, collapsed_gradient,
          collapsed_filter, &beta);
     res = modDims(res, dim4(res.dims()[0] / sDims[3], sDims[3],
@@ -389,7 +389,7 @@ Array<T> filter_gradient_base(const Array<T> &incoming_gradient,
     Array<T> collapsed_gradient = incoming_gradient;
     collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
     collapsed_gradient          = modDims(
-        collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+                 collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     T alpha        = scalar<T>(1.0);
     T beta         = scalar<T>(0.0);
@@ -397,7 +397,7 @@ Array<T> filter_gradient_base(const Array<T> &incoming_gradient,
     const int Ndim = 1;
     Array<T> res   = createEmptyArray<T>(
         dim4(unwrapped.dims()[Mdim], collapsed_gradient.dims()[Ndim],
-             unwrapped.dims()[2], unwrapped.dims()[3]));
+               unwrapped.dims()[2], unwrapped.dims()[3]));
     gemm(res, AF_MAT_NONE, AF_MAT_NONE, &alpha, unwrapped, collapsed_gradient,
          &beta);
     res = modDims(res, dim4(fDims[0], fDims[1], fDims[2], fDims[3]));

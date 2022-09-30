@@ -126,8 +126,8 @@ void dimCppSmallTest(const string pFileName,
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<outType> > tests;
+    vector<vector<T>> in;
+    vector<vector<outType>> tests;
 
     readTests<T, outType, float>(pFileName, numDims, in, tests);
 
@@ -148,7 +148,7 @@ void dimCppSmallTest(const string pFileName,
                               : var(input, AF_VARIANCE_POPULATION, 1));
 #pragma GCC diagnostic pop
 
-        vector<vector<outType> > h_out(4);
+        vector<vector<outType>> h_out(4);
 
         h_out[0].resize(bout.elements());
         h_out[1].resize(nbout.elements());

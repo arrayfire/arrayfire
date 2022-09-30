@@ -127,8 +127,8 @@ void fftTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0, dim_t pad2 = 0) {
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -293,8 +293,8 @@ void fftBatchTest(string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0,
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -430,8 +430,8 @@ void cppFFTTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -476,8 +476,8 @@ void cppDFTTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 

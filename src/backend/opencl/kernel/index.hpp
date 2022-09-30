@@ -37,7 +37,7 @@ void index(Param out, const Param in, const IndexKernelParam_t& p,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto index    = common::getKernel("indexKernel", {index_cl_src},
-                                   {TemplateTypename<T>()}, options);
+                                      {TemplateTypename<T>()}, options);
     int threads_x = 256;
     int threads_y = 1;
     cl::NDRange local(threads_x, threads_y);

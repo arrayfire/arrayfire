@@ -122,8 +122,8 @@ void testData(CCCTestParams params) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     string file = string(TEST_DIR) + "/confidence_cc/" + string(params.prefix) +
                   "_" + to_string(params.radius) + "_" +

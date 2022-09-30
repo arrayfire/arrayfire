@@ -29,7 +29,7 @@ namespace memory {
  */
 class MemoryManagerBase {
    public:
-    MemoryManagerBase()        = default;
+    MemoryManagerBase()                                     = default;
     MemoryManagerBase &operator=(const MemoryManagerBase &) = delete;
     MemoryManagerBase(const MemoryManagerBase &)            = delete;
     virtual ~MemoryManagerBase() {}

@@ -321,9 +321,9 @@ static void magma_setmatrix_async(magma_int_t m, magma_int_t n, T const* hA_src,
     size_t host_orig[3]     = {0, 0, 0};
     size_t region[3]        = {m * sizeof(T), (size_t)n, 1};
     cl_int err              = clEnqueueWriteBufferRect(
-        queue, dB_dst, CL_FALSE,  // non-blocking
-        buffer_origin, host_orig, region, lddb * sizeof(T), 0, ldha * sizeof(T),
-        0, hA_src, 0, NULL, event);
+                     queue, dB_dst, CL_FALSE,  // non-blocking
+                     buffer_origin, host_orig, region, lddb * sizeof(T), 0, ldha * sizeof(T),
+                     0, hA_src, 0, NULL, event);
     clFlush(queue);
     check_error(err);
 }
@@ -357,9 +357,9 @@ static void magma_getmatrix_async(magma_int_t m, magma_int_t n, cl_mem dA_src,
     size_t host_orig[3]     = {0, 0, 0};
     size_t region[3]        = {m * sizeof(T), (size_t)n, 1};
     cl_int err              = clEnqueueReadBufferRect(
-        queue, dA_src, CL_FALSE,  // non-blocking
-        buffer_origin, host_orig, region, ldda * sizeof(T), 0, ldhb * sizeof(T),
-        0, hB_dst, 0, NULL, event);
+                     queue, dA_src, CL_FALSE,  // non-blocking
+                     buffer_origin, host_orig, region, ldda * sizeof(T), 0, ldhb * sizeof(T),
+                     0, hB_dst, 0, NULL, event);
     clFlush(queue);
     check_error(err);
 }
