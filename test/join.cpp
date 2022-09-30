@@ -61,8 +61,8 @@ void joinTest(string pTestFile, const unsigned dim, const unsigned in0,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
     dim4 i0dims = numDims[in0];
@@ -161,8 +161,8 @@ TEST(Join, CPP) {
     const unsigned dim       = 2;
 
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, int>(string(TEST_DIR "/join/join_big.test"),
                                  numDims, in, tests);
 

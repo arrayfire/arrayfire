@@ -100,14 +100,14 @@ extern template af_half convert(int in);
 
 template<typename inType, typename outType, typename FileElementType>
 void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
-               std::vector<std::vector<inType> > &testInputs,
-               std::vector<std::vector<outType> > &testOutputs);
+               std::vector<std::vector<inType>> &testInputs,
+               std::vector<std::vector<outType>> &testOutputs);
 
 template<typename inType, typename outType>
 void readTestsFromFile(const std::string &FileName,
                        std::vector<af::dim4> &inputDims,
-                       std::vector<std::vector<inType> > &testInputs,
-                       std::vector<std::vector<outType> > &testOutputs);
+                       std::vector<std::vector<inType>> &testInputs,
+                       std::vector<std::vector<outType>> &testOutputs);
 
 void readImageTests(const std::string &pFileName,
                     std::vector<af::dim4> &pInputDims,
@@ -119,14 +119,14 @@ template<typename outType>
 void readImageTests(const std::string &pFileName,
                     std::vector<af::dim4> &pInputDims,
                     std::vector<std::string> &pTestInputs,
-                    std::vector<std::vector<outType> > &pTestOutputs);
+                    std::vector<std::vector<outType>> &pTestOutputs);
 
 template<typename descType>
 void readImageFeaturesDescriptors(
     const std::string &pFileName, std::vector<af::dim4> &pInputDims,
     std::vector<std::string> &pTestInputs,
-    std::vector<std::vector<float> > &pTestFeats,
-    std::vector<std::vector<descType> > &pTestDescs);
+    std::vector<std::vector<float>> &pTestFeats,
+    std::vector<std::vector<descType>> &pTestDescs);
 
 /**
  * Below is not a pair wise comparition method, rather

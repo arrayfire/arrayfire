@@ -388,7 +388,7 @@ typedef enum {
 // 2b) update min & max here, which are used to check bounds for
 // magma2lapack_constants[] 2c) add lapack_xxxx_const() converter below and in
 // control/constants.cpp
-#define Magma2lapack_Min MagmaFalse  // 0
+#define Magma2lapack_Min MagmaFalse    // 0
 #define Magma2lapack_Max MagmaRowwise  // 402
 
 // ----------------------------------------

@@ -257,8 +257,8 @@ void fftTest(int targetDevice, string pTestFile, dim_t pad0 = 0, dim_t pad1 = 0,
     SUPPORTED_TYPE_CHECK(outType);
 
     vector<dim4> numDims;
-    vector<vector<inType> > in;
-    vector<vector<outType> > tests;
+    vector<vector<inType>> in;
+    vector<vector<outType>> tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -580,8 +580,8 @@ void cppMatMulCheck(int targetDevice, string TestFile) {
     using std::vector;
     vector<dim4> numDims;
 
-    vector<vector<T> > hData;
-    vector<vector<T> > tests;
+    vector<vector<T>> hData;
+    vector<vector<T>> tests;
     readTests<T, T, int>(TestFile, numDims, hData, tests);
 
     setDevice(targetDevice);

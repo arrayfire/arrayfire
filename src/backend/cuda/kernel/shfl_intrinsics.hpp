@@ -57,7 +57,7 @@ inline __device__ cuda::cfloat shfl_down_sync(unsigned mask, cuda::cfloat var,
     cuda::cfloat res = {__shfl_down_sync(mask, var.x, delta),
                         __shfl_down_sync(mask, var.y, delta)};
 #else
-    cuda::cfloat res = {__shfl_down(var.x, delta), __shfl_down(var.y, delta)};
+    cuda::cfloat res  = {__shfl_down(var.x, delta), __shfl_down(var.y, delta)};
 #endif
     return res;
 }
@@ -91,7 +91,7 @@ inline __device__ cuda::cfloat shfl_up_sync(unsigned mask, cuda::cfloat var,
     cuda::cfloat res = {__shfl_up_sync(mask, var.x, delta),
                         __shfl_up_sync(mask, var.y, delta)};
 #else
-    cuda::cfloat res = {__shfl_up(var.x, delta), __shfl_up(var.y, delta)};
+    cuda::cfloat res  = {__shfl_up(var.x, delta), __shfl_up(var.y, delta)};
 #endif
     return res;
 }

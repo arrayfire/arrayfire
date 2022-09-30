@@ -53,10 +53,10 @@ class CParam {
     /// \param[in] i The dimension
     constexpr dim_t strides(int i) const noexcept { return m_strides[i]; }
 
-    constexpr CParam()                    = delete;
-    constexpr CParam(const CParam &other) = default;
-    constexpr CParam(CParam &&other)      = default;
-    CParam<T> &operator=(CParam &&other) noexcept = default;
+    constexpr CParam()                                 = delete;
+    constexpr CParam(const CParam &other)              = default;
+    constexpr CParam(CParam &&other)                   = default;
+    CParam<T> &operator=(CParam &&other) noexcept      = default;
     CParam<T> &operator=(const CParam &other) noexcept = default;
     ~CParam()                                          = default;
 };
@@ -108,10 +108,10 @@ class Param {
     /// \param[in] i The dimension
     constexpr dim_t strides(int i) const noexcept { return m_strides[i]; }
 
-    ~Param()                            = default;
-    constexpr Param(const Param &other) = default;
-    constexpr Param(Param &&other)      = default;
-    Param<T> &operator=(Param &&other) noexcept = default;
+    ~Param()                                         = default;
+    constexpr Param(const Param &other)              = default;
+    constexpr Param(Param &&other)                   = default;
+    Param<T> &operator=(Param &&other) noexcept      = default;
     Param<T> &operator=(const Param &other) noexcept = default;
 };
 

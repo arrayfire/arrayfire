@@ -280,8 +280,8 @@ af_half convert(int in) {
 
 template<typename inType, typename outType, typename FileElementType>
 void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
-               std::vector<std::vector<inType> > &testInputs,
-               std::vector<std::vector<outType> > &testOutputs) {
+               std::vector<std::vector<inType>> &testInputs,
+               std::vector<std::vector<outType>> &testOutputs) {
     using std::vector;
 
     std::ifstream testFile(FileName.c_str());
@@ -326,8 +326,8 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
 #define INSTANTIATE(Tin, Tout, Tfile)                                  \
     template void readTests<Tin, Tout, Tfile>(                         \
         const std::string &FileName, std::vector<af::dim4> &inputDims, \
-        std::vector<std::vector<Tin> > &testInputs,                    \
-        std::vector<std::vector<Tout> > &testOutputs)
+        std::vector<std::vector<Tin>> &testInputs,                     \
+        std::vector<std::vector<Tout>> &testOutputs)
 
 INSTANTIATE(float, float, int);
 INSTANTIATE(double, float, int);
@@ -814,8 +814,8 @@ bool noLAPACKTests() {
 template<typename inType, typename outType>
 void readTestsFromFile(const std::string &FileName,
                        std::vector<af::dim4> &inputDims,
-                       std::vector<std::vector<inType> > &testInputs,
-                       std::vector<std::vector<outType> > &testOutputs) {
+                       std::vector<std::vector<inType>> &testInputs,
+                       std::vector<std::vector<outType>> &testOutputs) {
     using std::vector;
 
     std::ifstream testFile(FileName.c_str());
@@ -863,8 +863,8 @@ void readTestsFromFile(const std::string &FileName,
 #define INSTANTIATE(Ti, To)                                            \
     template void readTestsFromFile<Ti, To>(                           \
         const std::string &FileName, std::vector<af::dim4> &inputDims, \
-        std::vector<std::vector<Ti> > &testInputs,                     \
-        std::vector<std::vector<To> > &testOutputs)
+        std::vector<std::vector<Ti>> &testInputs,                      \
+        std::vector<std::vector<To>> &testOutputs)
 
 INSTANTIATE(float, float);
 INSTANTIATE(float, af_cfloat);
@@ -880,7 +880,7 @@ template<typename outType>
 void readImageTests(const std::string &pFileName,
                     std::vector<af::dim4> &pInputDims,
                     std::vector<std::string> &pTestInputs,
-                    std::vector<std::vector<outType> > &pTestOutputs) {
+                    std::vector<std::vector<outType>> &pTestOutputs) {
     using std::vector;
 
     std::ifstream testFile(pFileName.c_str());
@@ -923,7 +923,7 @@ void readImageTests(const std::string &pFileName,
     template void readImageTests<To>(                                    \
         const std::string &pFileName, std::vector<af::dim4> &pInputDims, \
         std::vector<std::string> &pTestInputs,                           \
-        std::vector<std::vector<To> > &pTestOutputs)
+        std::vector<std::vector<To>> &pTestOutputs)
 
 INSTANTIATE(float);
 #undef INSTANTIATE
@@ -972,8 +972,8 @@ template<typename descType>
 void readImageFeaturesDescriptors(
     const std::string &pFileName, std::vector<af::dim4> &pInputDims,
     std::vector<std::string> &pTestInputs,
-    std::vector<std::vector<float> > &pTestFeats,
-    std::vector<std::vector<descType> > &pTestDescs) {
+    std::vector<std::vector<float>> &pTestFeats,
+    std::vector<std::vector<descType>> &pTestDescs) {
     using std::vector;
 
     std::ifstream testFile(pFileName.c_str());
@@ -1025,8 +1025,8 @@ void readImageFeaturesDescriptors(
     template void readImageFeaturesDescriptors<TYPE>(                    \
         const std::string &pFileName, std::vector<af::dim4> &pInputDims, \
         std::vector<std::string> &pTestInputs,                           \
-        std::vector<std::vector<float> > &pTestFeats,                    \
-        std::vector<std::vector<TYPE> > &pTestDescs)
+        std::vector<std::vector<float>> &pTestFeats,                     \
+        std::vector<std::vector<TYPE>> &pTestDescs)
 
 INSTANTIATE(float);
 INSTANTIATE(double);
@@ -1547,14 +1547,14 @@ bool absMatch::operator()<af::af_cdouble>(af::af_cdouble lhs,
 }
 
 template<>
-bool absMatch::operator()<std::complex<float> >(std::complex<float> lhs,
-                                                std::complex<float> rhs) {
+bool absMatch::operator()<std::complex<float>>(std::complex<float> lhs,
+                                               std::complex<float> rhs) {
     return std::abs(rhs - lhs) <= diff_;
 }
 
 template<>
-bool absMatch::operator()<std::complex<double> >(std::complex<double> lhs,
-                                                 std::complex<double> rhs) {
+bool absMatch::operator()<std::complex<double>>(std::complex<double> lhs,
+                                                std::complex<double> rhs) {
     return std::abs(rhs - lhs) <= diff_;
 }
 

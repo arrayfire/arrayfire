@@ -63,8 +63,8 @@ void dotTest(string pTestFile, const int resultIdx,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, T>(pTestFile, numDims, in, tests);
 
@@ -118,8 +118,8 @@ void dotAllTest(string pTestFile, const int resultIdx,
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, T>(pTestFile, numDims, in, tests);
 
@@ -194,8 +194,8 @@ INSTANTIATEC(25600, dot_c_25600);
 //
 TEST(DotF, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, float>(TEST_DIR "/blas/dot_f_1000.test", numDims,
                                    in, tests);
@@ -215,8 +215,8 @@ TEST(DotF, CPP) {
 
 TEST(DotCCU, CPP) {
     vector<dim4> numDims;
-    vector<vector<cfloat> > in;
-    vector<vector<cfloat> > tests;
+    vector<vector<cfloat>> in;
+    vector<vector<cfloat>> tests;
 
     readTests<cfloat, cfloat, cfloat>(TEST_DIR "/blas/dot_c_1000.test", numDims,
                                       in, tests);
@@ -236,8 +236,8 @@ TEST(DotCCU, CPP) {
 
 TEST(DotAllF, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, float>(TEST_DIR "/blas/dot_f_1000.test", numDims,
                                    in, tests);
@@ -257,8 +257,8 @@ TEST(DotAllF, CPP) {
 
 TEST(DotAllCCU, CPP) {
     vector<dim4> numDims;
-    vector<vector<cfloat> > in;
-    vector<vector<cfloat> > tests;
+    vector<vector<cfloat>> in;
+    vector<vector<cfloat>> tests;
 
     readTests<cfloat, cfloat, cfloat>(TEST_DIR "/blas/dot_c_1000.test", numDims,
                                       in, tests);

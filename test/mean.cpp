@@ -85,8 +85,8 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted = false) {
     double tol = 1.0e-3;
     if ((af_dtype)af::dtype_traits<T>::af_type == f16) tol = 4.e-3;
     vector<dim4> numDims;
-    vector<vector<int> > in;
-    vector<vector<float> > tests;
+    vector<vector<int>> in;
+    vector<vector<float>> tests;
 
     readTestsFromFile<int, float>(pFileName, numDims, in, tests);
 

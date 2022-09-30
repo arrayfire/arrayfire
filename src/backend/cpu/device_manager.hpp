@@ -131,7 +131,7 @@ class DeviceManager {
     // avoid copying accidental copy/assignment
     // of instance returned by getInstance to other
     // variables
-    DeviceManager(DeviceManager const&) = delete;
+    DeviceManager(DeviceManager const&)  = delete;
     void operator=(DeviceManager const&) = delete;
 
     // Attributes

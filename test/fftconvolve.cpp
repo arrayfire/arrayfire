@@ -53,8 +53,8 @@ void fftconvolveTest(string pTestFile, bool expand) {
     SUPPORTED_TYPE_CHECK(T);
 
     vector<dim4> numDims;
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -345,8 +345,8 @@ TYPED_TEST(FFTConvolve, Same_Cuboid_One2Many) {
 
 TEST(FFTConvolve1, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(string(TEST_DIR "/convolve/vector.test"),
                                  numDims, in, tests);
@@ -378,8 +378,8 @@ TEST(FFTConvolve1, CPP) {
 
 TEST(FFTConvolve2, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/convolve/rectangle_one2many.test"), numDims, in,
@@ -414,8 +414,8 @@ TEST(FFTConvolve2, CPP) {
 
 TEST(FFTConvolve3, CPP) {
     vector<dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
 
     readTests<float, float, int>(
         string(TEST_DIR "/convolve/cuboid_many2many.test"), numDims, in, tests);

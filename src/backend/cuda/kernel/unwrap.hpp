@@ -36,7 +36,7 @@ void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
         threads = dim3(TX, THREADS_PER_BLOCK / TX);
         blocks = dim3(divup(out.dims[1], threads.y), out.dims[2] * out.dims[3]);
         reps   = divup((wx * wy),
-                     threads.x);  // is > 1 only when TX == 256 && wx * wy > 256
+                       threads.x);  // is > 1 only when TX == 256 && wx * wy > 256
     } else {
         threads = dim3(THREADS_X, THREADS_Y);
         blocks = dim3(divup(out.dims[0], threads.x), out.dims[2] * out.dims[3]);

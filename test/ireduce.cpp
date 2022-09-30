@@ -261,7 +261,7 @@ TEST(IndexedReduce, MinCplxNaN) {
     array min_idx;
     af::min(min_val, min_idx, a);
 
-    vector<complex<float> > h_min_val(cols);
+    vector<complex<float>> h_min_val(cols);
     min_val.host(&h_min_val[0]);
 
     vector<int> h_min_idx(cols);
@@ -296,7 +296,7 @@ TEST(IndexedReduce, MaxCplxNaN) {
     array max_idx;
     af::max(max_val, max_idx, a);
 
-    vector<complex<float> > h_max_val(cols);
+    vector<complex<float>> h_max_val(cols);
     max_val.host(&h_max_val[0]);
 
     vector<int> h_max_idx(cols);
@@ -371,7 +371,7 @@ TEST(IndexedReduce, MinCplxPreferLargerIdxIfEqual) {
     array min_idx;
     min(min_val, min_idx, a);
 
-    vector<complex<float> > h_min_val(1);
+    vector<complex<float>> h_min_val(1);
     min_val.host(&h_min_val[0]);
 
     vector<int> h_min_idx(1);
@@ -400,7 +400,7 @@ TEST(IndexedReduce, MaxCplxPreferSmallerIdxIfEqual) {
     array max_idx;
     max(max_val, max_idx, a);
 
-    vector<complex<float> > h_max_val(1);
+    vector<complex<float>> h_max_val(1);
     max_val.host(&h_max_val[0]);
 
     vector<int> h_max_idx(1);

@@ -59,8 +59,8 @@ void diff1Test(string pTestFile, unsigned dim, bool isSubRef = false,
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -151,8 +151,8 @@ void diff1ArgsTest(string pTestFile) {
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -214,8 +214,8 @@ TEST(Diff1, CPP) {
     const unsigned dim = 0;
     vector<dim4> numDims;
 
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
     readTests<float, float, int>(string(TEST_DIR "/diff1/matrix0.test"),
                                  numDims, in, tests);
     dim4 dims = numDims[0];

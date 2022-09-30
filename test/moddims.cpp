@@ -50,8 +50,8 @@ void moddimsTest(string pTestFile, bool isSubRef = false,
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -131,8 +131,8 @@ void moddimsArgsTest(string pTestFile) {
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -164,8 +164,8 @@ void moddimsMismatchTest(string pTestFile) {
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 
@@ -200,8 +200,8 @@ void cppModdimsTest(string pTestFile, bool isSubRef = false,
 
     vector<dim4> numDims;
 
-    vector<vector<T> > in;
-    vector<vector<T> > tests;
+    vector<vector<T>> in;
+    vector<vector<T>> tests;
     readTests<T, T, int>(pTestFile, numDims, in, tests);
     dim4 dims = numDims[0];
 

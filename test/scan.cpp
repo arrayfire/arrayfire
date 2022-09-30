@@ -48,8 +48,8 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef = false,
 
     vector<dim4> numDims;
 
-    vector<vector<int> > data;
-    vector<vector<int> > tests;
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
     readTests<int, int, int>(pTestFile, numDims, data, tests);
     dim4 dims = numDims[0];
 
@@ -129,8 +129,8 @@ TEST(Scan, Test_Scan_Big1) {
 TEST(Accum, CPP) {
     vector<dim4> numDims;
 
-    vector<vector<int> > data;
-    vector<vector<int> > tests;
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
     readTests<int, int, int>(string(TEST_DIR "/scan/accum.test"), numDims, data,
                              tests);
     dim4 dims = numDims[0];

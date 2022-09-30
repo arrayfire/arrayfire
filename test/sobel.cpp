@@ -47,8 +47,8 @@ void testSobelDerivatives(string pTestFile) {
     SUPPORTED_TYPE_CHECK(Ti);
 
     vector<dim4> numDims;
-    vector<vector<Ti> > in;
-    vector<vector<To> > tests;
+    vector<vector<Ti>> in;
+    vector<vector<To>> tests;
 
     readTests<Ti, To, int>(pTestFile, numDims, in, tests);
 

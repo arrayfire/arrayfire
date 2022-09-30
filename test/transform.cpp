@@ -62,8 +62,8 @@ void genTestData(af_array *gold, af_array *in, af_array *transform,
     dim4 objDims = inNumDims[0];
 
     vector<dim4> HNumDims;
-    vector<vector<float> > HIn;
-    vector<vector<float> > HTests;
+    vector<vector<float>> HIn;
+    vector<vector<float>> HTests;
     readTests<float, float, float>(pHomographyFile, HNumDims, HIn, HTests);
 
     dim4 HDims = HNumDims[0];
@@ -489,8 +489,8 @@ TEST(Transform, CPP) {
     vector<string> goldFiles;
 
     vector<dim4> HDims;
-    vector<vector<float> > HIn;
-    vector<vector<float> > HTests;
+    vector<vector<float>> HIn;
+    vector<vector<float>> HTests;
     readTests<float, float, float>(TEST_DIR "/transform/tux_tmat.test", HDims,
                                    HIn, HTests);
 
@@ -543,8 +543,8 @@ TEST(Transform, CPP) {
 // This test simply makes sure the batching is working correctly
 TEST(TransformBatching, CPP) {
     vector<dim4> vDims;
-    vector<vector<float> > in;
-    vector<vector<float> > gold;
+    vector<vector<float>> in;
+    vector<vector<float>> gold;
 
     readTests<float, float, int>(
         string(TEST_DIR "/transform/transform_batching.test"), vDims, in, gold);
