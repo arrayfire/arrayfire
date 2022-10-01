@@ -19,10 +19,10 @@ namespace cuda {
 template<af_op_t op>
 static const char *unaryName();
 
-#define UNARY_DECL(OP, FNAME)                      \
-    template<>                                     \
-    STATIC_ const char *unaryName<af_##OP##_t>() { \
-        return FNAME;                              \
+#define UNARY_DECL(OP, FNAME)                     \
+    template<>                                    \
+    inline const char *unaryName<af_##OP##_t>() { \
+        return FNAME;                             \
     }
 
 #define UNARY_FN(OP) UNARY_DECL(OP, #OP)

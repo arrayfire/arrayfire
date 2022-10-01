@@ -47,11 +47,11 @@ static const char *abs_name() {
     return "fabs";
 }
 template<>
-STATIC_ const char *abs_name<cfloat>() {
+inline const char *abs_name<cfloat>() {
     return "__cabsf";
 }
 template<>
-STATIC_ const char *abs_name<cdouble>() {
+inline const char *abs_name<cdouble>() {
     return "__cabs";
 }
 
@@ -70,11 +70,11 @@ static const char *conj_name() {
     return "__noop";
 }
 template<>
-STATIC_ const char *conj_name<cfloat>() {
+inline const char *conj_name<cfloat>() {
     return "__cconjf";
 }
 template<>
-STATIC_ const char *conj_name<cdouble>() {
+inline const char *conj_name<cdouble>() {
     return "__cconj";
 }
 

@@ -33,10 +33,8 @@ inline std::string clipFilePath(std::string path, std::string str) {
 #if _MSC_VER < 1900
 #define snprintf sprintf_s
 #endif
-#define STATIC_ static
 #define __AF_FILENAME__ (clipFilePath(__FILE__, "src\\").c_str())
 #else
-#define STATIC_ inline
 #define __AF_FILENAME__ (clipFilePath(__FILE__, "src/").c_str())
 #endif
 
