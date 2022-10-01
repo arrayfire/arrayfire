@@ -47,48 +47,48 @@ static inline T division(T lhs, double rhs) {
 }
 
 template<>
-STATIC_ cfloat division<cfloat>(cfloat lhs, double rhs) {
+inline cfloat division<cfloat>(cfloat lhs, double rhs) {
     cfloat retVal(real(lhs) / static_cast<float>(rhs),
                   imag(lhs) / static_cast<float>(rhs));
     return retVal;
 }
 
 template<>
-STATIC_ cdouble division<cdouble>(cdouble lhs, double rhs) {
+inline cdouble division<cdouble>(cdouble lhs, double rhs) {
     cdouble retVal(real(lhs) / rhs, imag(lhs) / rhs);
     return retVal;
 }
 
 template<typename T>
-STATIC_ T maxval() {
+inline T maxval() {
     return std::numeric_limits<T>::max();
 }
 template<typename T>
-STATIC_ T minval() {
+inline T minval() {
     return std::numeric_limits<T>::lowest();
 }
 template<>
-STATIC_ float maxval() {
+inline float maxval() {
     return std::numeric_limits<float>::infinity();
 }
 template<>
-STATIC_ double maxval() {
+inline double maxval() {
     return std::numeric_limits<double>::infinity();
 }
 template<>
-STATIC_ common::half maxval() {
+inline common::half maxval() {
     return std::numeric_limits<common::half>::infinity();
 }
 template<>
-STATIC_ float minval() {
+inline float minval() {
     return -std::numeric_limits<float>::infinity();
 }
 template<>
-STATIC_ double minval() {
+inline double minval() {
     return -std::numeric_limits<double>::infinity();
 }
 template<>
-STATIC_ common::half minval() {
+inline common::half minval() {
     return -std::numeric_limits<common::half>::infinity();
 }
 
