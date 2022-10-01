@@ -38,9 +38,9 @@ AfError::AfError(const char *const func, const char *const file, const int line,
     : logic_error(message)
     , functionName(func)
     , fileName(file)
+    , st_(move(st))
     , lineNumber(line)
-    , error(err)
-    , st_(move(st)) {}
+    , error(err) {}
 
 AfError::AfError(string func, string file, const int line,
                  const string &message, af_err err,
@@ -48,9 +48,9 @@ AfError::AfError(string func, string file, const int line,
     : logic_error(message)
     , functionName(move(func))
     , fileName(move(file))
+    , st_(move(st))
     , lineNumber(line)
-    , error(err)
-    , st_(move(st)) {}
+    , error(err) {}
 
 const string &AfError::getFunctionName() const noexcept { return functionName; }
 
@@ -66,8 +66,8 @@ TypeError::TypeError(const char *const func, const char *const file,
                      const int line, const int index, const af_dtype type,
                      boost::stacktrace::stacktrace st)
     : AfError(func, file, line, "Invalid data type", AF_ERR_TYPE, move(st))
-    , argIndex(index)
-    , errTypeName(getName(type)) {}
+    , errTypeName(getName(type))
+    , argIndex(index) {}
 
 const string &TypeError::getTypeName() const noexcept { return errTypeName; }
 
@@ -78,8 +78,8 @@ ArgumentError::ArgumentError(const char *const func, const char *const file,
                              const char *const expectString,
                              boost::stacktrace::stacktrace st)
     : AfError(func, file, line, "Invalid argument", AF_ERR_ARG, move(st))
-    , argIndex(index)
-    , expected(expectString) {}
+    , expected(expectString)
+    , argIndex(index) {}
 
 const string &ArgumentError::getExpectedCondition() const noexcept {
     return expected;
@@ -101,8 +101,8 @@ DimensionError::DimensionError(const char *const func, const char *const file,
                                const char *const expectString,
                                const boost::stacktrace::stacktrace &st)
     : AfError(func, file, line, "Invalid size", AF_ERR_SIZE, st)
-    , argIndex(index)
-    , expected(expectString) {}
+    , expected(expectString)
+    , argIndex(index) {}
 
 const string &DimensionError::getExpectedCondition() const noexcept {
     return expected;
