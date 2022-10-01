@@ -58,22 +58,22 @@ cfloat division(cfloat lhs, double rhs);
 cdouble division(cdouble lhs, double rhs);
 
 template<>
-STATIC_ cfloat max<cfloat>(cfloat lhs, cfloat rhs) {
+inline cfloat max<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
 template<>
-STATIC_ cdouble max<cdouble>(cdouble lhs, cdouble rhs) {
+inline cdouble max<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) > abs(rhs) ? lhs : rhs;
 }
 
 template<>
-STATIC_ cfloat min<cfloat>(cfloat lhs, cfloat rhs) {
+inline cfloat min<cfloat>(cfloat lhs, cfloat rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
 template<>
-STATIC_ cdouble min<cdouble>(cdouble lhs, cdouble rhs) {
+inline cdouble min<cdouble>(cdouble lhs, cdouble rhs) {
     return abs(lhs) < abs(rhs) ? lhs : rhs;
 }
 
@@ -83,7 +83,7 @@ static T scalar(double val) {
 }
 
 template<>
-STATIC_ cfloat scalar<cfloat>(double val) {
+inline cfloat scalar<cfloat>(double val) {
     cfloat cval;
     cval.s[0] = (float)val;
     cval.s[1] = 0;
@@ -91,7 +91,7 @@ STATIC_ cfloat scalar<cfloat>(double val) {
 }
 
 template<>
-STATIC_ cdouble scalar<cdouble>(double val) {
+inline cdouble scalar<cdouble>(double val) {
     cdouble cval;
     cval.s[0] = val;
     cval.s[1] = 0;
@@ -107,38 +107,38 @@ static To scalar(Ti real, Ti imag) {
 }
 
 template<typename T>
-STATIC_ T maxval() {
+inline T maxval() {
     return std::numeric_limits<T>::max();
 }
 template<typename T>
-STATIC_ T minval() {
+inline T minval() {
     return std::numeric_limits<T>::min();
 }
 template<>
-STATIC_ float maxval() {
+inline float maxval() {
     return std::numeric_limits<float>::infinity();
 }
 template<>
-STATIC_ double maxval() {
+inline double maxval() {
     return std::numeric_limits<double>::infinity();
 }
 
 template<>
-STATIC_ common::half maxval() {
+inline common::half maxval() {
     return std::numeric_limits<common::half>::infinity();
 }
 
 template<>
-STATIC_ float minval() {
+inline float minval() {
     return -std::numeric_limits<float>::infinity();
 }
 
 template<>
-STATIC_ double minval() {
+inline double minval() {
     return -std::numeric_limits<double>::infinity();
 }
 template<>
-STATIC_ common::half minval() {
+inline common::half minval() {
     return -std::numeric_limits<common::half>::infinity();
 }
 

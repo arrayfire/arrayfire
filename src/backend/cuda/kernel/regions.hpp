@@ -40,9 +40,9 @@ static inline __device__ T fetch(const int n, cuda::Param<T> equiv_map,
 }
 
 template<>
-__device__ STATIC_ double fetch<double>(const int n,
-                                        cuda::Param<double> equiv_map,
-                                        cudaTextureObject_t tex) {
+__device__ inline double fetch<double>(const int n,
+                                       cuda::Param<double> equiv_map,
+                                       cudaTextureObject_t tex) {
     return equiv_map.ptr[n];
 }
 
