@@ -26,9 +26,9 @@
 class AfError : public std::logic_error {
     std::string functionName;
     std::string fileName;
+    boost::stacktrace::stacktrace st_;
     int lineNumber;
     af_err error;
-    boost::stacktrace::stacktrace st_;
     AfError();
 
    public:
@@ -49,9 +49,9 @@ class AfError : public std::logic_error {
         : std::logic_error(std::forward<std::logic_error>(other))
         , functionName(std::forward<std::string>(other.functionName))
         , fileName(std::forward<std::string>(other.fileName))
+        , st_(std::forward<boost::stacktrace::stacktrace>(other.st_))
         , lineNumber(std::forward<int>(other.lineNumber))
-        , error(std::forward<af_err>(other.error))
-        , st_(std::forward<boost::stacktrace::stacktrace>(other.st_)) {}
+        , error(std::forward<af_err>(other.error)) {}
 
     const std::string& getFunctionName() const noexcept;
 
@@ -70,8 +70,8 @@ class AfError : public std::logic_error {
 
 // TODO: Perhaps add a way to return supported types
 class TypeError : public AfError {
-    int argIndex;
     std::string errTypeName;
+    int argIndex;
     TypeError();
 
    public:
@@ -89,8 +89,8 @@ class TypeError : public AfError {
 };
 
 class ArgumentError : public AfError {
-    int argIndex;
     std::string expected;
+    int argIndex;
     ArgumentError();
 
    public:
@@ -123,8 +123,8 @@ class SupportError : public AfError {
 };
 
 class DimensionError : public AfError {
-    int argIndex;
     std::string expected;
+    int argIndex;
     DimensionError();
 
    public:
