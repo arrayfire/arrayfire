@@ -43,6 +43,14 @@
                 "glad"
             ]
         },
+        "openblasfftw": {
+            "description": "Build with OpenBLAS/FFTW",
+            "dependencies": [
+                "fftw3",
+                "openblas",
+                "lapack"
+            ]
+        },
         "cuda": {
             "description": "Build CUDA backend",
             "dependencies": [
@@ -69,5 +77,5 @@
             ]
         }
     },
-    "builtin-baseline": "14e7bb4ae24616ec54ff6b2f6ef4e8659434ea44"
+    "builtin-baseline": "6ca56aeb457f033d344a7106cb3f9f1abf8f4e98"
 }
