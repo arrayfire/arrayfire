@@ -13,16 +13,14 @@ jobs:
         name: CPU (fftw, OpenBLAS, windows-latest)
         runs-on: windows-latest
         env:
-
-          VCPKG_HASH: 14e7bb4ae24616ec54ff6b2f6ef4e8659434ea44
-
+          VCPKG_HASH: 6ca56aeb457f033d344a7106cb3f9f1abf8f4e98
           VCPKG_DEFAULT_TRIPLET: x64-windows
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
 
             - name: VCPKG Cache
-              uses: actions/cache@v2
+              uses: actions/cache@v3
               id: vcpkg-cache
               with:
                 path: ~/vcpkg
@@ -31,12 +29,20 @@ jobs:
             - name: Install VCPKG Dependencies
               if: steps.vcpkg-cache.outputs.cache-hit != 'true'
               run: |
+                pushd .
                 cd ~
                 git clone --quiet --recursive https://github.com/microsoft/vcpkg.git
                 cd vcpkg
                 git checkout $env:VCPKG_HASH
                 .\bootstrap-vcpkg.bat
-                .\vcpkg.exe install --clean-after-build boost-compute boost-math boost-stacktrace fftw3 freeimage freetype[core] forge glfw3 openblas
+                popd
+                mkdir build && cd build && set VCPKG_ROOT=
+                cmake .. -G "Visual Studio 17 2022" -A x64 `
+                      -DVCPKG_ROOT:PATH=~/vcpkg `
+                      -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
+                      -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
+                      -DBUILDNAME:STRING="$buildname" `
+                      -DAF_COMPUTE_LIBRARY:STRING="FFTW/LAPACK/BLAS"
 
             - name: CMake Configure
               run: |
@@ -46,9 +52,12 @@ jobs:
                   $buildname = if($prnum -eq $null) { $branch } else { "PR-$prnum" }
                   $dashboard = if($prnum -eq $null) { "Continuous" } else { "Experimental" }
                   $buildname = "$buildname-cpu-openblas"
-                  mkdir build && cd build
+                  if((Test-Path build) -eq 0) {
+                      mkdir build
+                  }
+                  cd build && set VCPKG_ROOT=
                   cmake .. -G "Visual Studio 17 2022" -A x64 `
-                      -DVCPKG_MANIFEST_MODE:BOOL=OFF `
+                      -DVCPKG_ROOT:PATH=~/vcpkg `
                       -DAF_BUILD_CUDA:BOOL=OFF -DAF_BUILD_OPENCL:BOOL=OFF `
                       -DAF_BUILD_UNIFIED:BOOL=OFF -DAF_BUILD_FORGE:BOOL=ON `
                       -DBUILDNAME:STRING="$buildname" `
@@ -58,6 +67,6 @@ jobs:
             - name: Build and Test
               run: |
                   cd build
-                  $vcpkg_path = (Resolve-Path ~).Path
-                  $Env:PATH += ";${vcpkg_path}/vcpkg/installed/x64-windows/bin"
+                  $build_path = (pwd).Path
+                  $Env:PATH += ";$build_path/vcpkg_installed/x64-windows/bin"
                   ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -C RelWithDebInfo -R cpu -E pinverse -j2
