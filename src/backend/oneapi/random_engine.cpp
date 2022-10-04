@@ -10,18 +10,16 @@
 #include <Array.hpp>
 #include <err_oneapi.hpp>
 #include <common/half.hpp>
-// #include <kernel/random_engine.hpp>
+#include <af/defines.h>
 #include <af/dim4.hpp>
+#include <kernel/random_engine.hpp>
 
 using common::half;
 
 namespace oneapi {
 void initMersenneState(Array<uint> &state, const uintl seed,
                        const Array<uint> &tbl) {
-
-    ONEAPI_NOT_SUPPORTED("initMersenneState Not supported");
-
-    // kernel::initMersenneState(*state.get(), *tbl.get(), seed);
+     kernel::initMersenneState(state, tbl, seed);
 }
 
 template<typename T>
@@ -29,11 +27,9 @@ Array<T> uniformDistribution(const af::dim4 &dims,
                              const af_random_engine_type type,
                              const uintl &seed, uintl &counter) {
 
-    //ONEAPI_NOT_SUPPORTED("uniformDistribution Not supported");
-
     Array<T> out = createEmptyArray<T>(dims);
-    // kernel::uniformDistributionCBRNG<T>(*out.get(), out.elements(), type, seed,
-    //                                     counter);
+    kernel::uniformDistributionCBRNG<T>(out, out.elements(), type, seed,
+                                        counter);
     return out;
 }
 
@@ -41,12 +37,9 @@ template<typename T>
 Array<T> normalDistribution(const af::dim4 &dims,
                             const af_random_engine_type type, const uintl &seed,
                             uintl &counter) {
-
-    ONEAPI_NOT_SUPPORTED("normalDistribution Not supported");
-
     Array<T> out = createEmptyArray<T>(dims);
-    // kernel::normalDistributionCBRNG<T>(*out.get(), out.elements(), type, seed,
-    //                                    counter);
+    kernel::normalDistributionCBRNG<T>(out, out.elements(), type, seed,
+                                       counter);
     return out;
 }
 
@@ -55,13 +48,10 @@ Array<T> uniformDistribution(const af::dim4 &dims, Array<uint> pos,
                              Array<uint> sh1, Array<uint> sh2, uint mask,
                              Array<uint> recursion_table,
                              Array<uint> temper_table, Array<uint> state) {
-
-    ONEAPI_NOT_SUPPORTED("uniformDistribution Not supported");
-
     Array<T> out = createEmptyArray<T>(dims);
-    // kernel::uniformDistributionMT<T>(
-    //     *out.get(), out.elements(), *state.get(), *pos.get(), *sh1.get(),
-    //     *sh2.get(), mask, *recursion_table.get(), *temper_table.get());
+    kernel::uniformDistributionMT<T>(
+        out, out.elements(), state, pos, sh1,
+        sh2, mask, recursion_table, temper_table);
     return out;
 }
 
@@ -70,13 +60,10 @@ Array<T> normalDistribution(const af::dim4 &dims, Array<uint> pos,
                             Array<uint> sh1, Array<uint> sh2, uint mask,
                             Array<uint> recursion_table,
                             Array<uint> temper_table, Array<uint> state) {
-
-    ONEAPI_NOT_SUPPORTED("normalDistribution Not supported");
-
     Array<T> out = createEmptyArray<T>(dims);
-    // kernel::normalDistributionMT<T>(
-    //     *out.get(), out.elements(), *state.get(), *pos.get(), *sh1.get(),
-    //     *sh2.get(), mask, *recursion_table.get(), *temper_table.get());
+    kernel::normalDistributionMT<T>(
+        out, out.elements(), state, pos, sh1,
+        sh2, mask, recursion_table, temper_table);
     return out;
 }
 
@@ -98,45 +85,10 @@ Array<T> normalDistribution(const af::dim4 &dims, Array<uint> pos,
         Array<uint> sh2, uint mask, Array<uint> recursion_table, \
         Array<uint> temper_table, Array<uint> state);
 
-#define COMPLEX_UNIFORM_DISTRIBUTION(T, TR)                                    \
-    template<>                                                                 \
-    Array<T> uniformDistribution<T>(const af::dim4 &dims,                      \
-                                    const af_random_engine_type type,          \
-                                    const uintl &seed, uintl &counter) {       \
-        ONEAPI_NOT_SUPPORTED("uniformDistribution Not supported");             \
-        Array<T> out    = createEmptyArray<T>(dims);                           \
-        return out;                                                            \
-    }                                                                          \
-    template<>                                                                 \
-    Array<T> uniformDistribution<T>(                                           \
-        const af::dim4 &dims, Array<uint> pos, Array<uint> sh1,                \
-        Array<uint> sh2, uint mask, Array<uint> recursion_table,               \
-        Array<uint> temper_table, Array<uint> state) {                         \
-        Array<T> out    = createEmptyArray<T>(dims);                           \
-        return out;                                                            \
-    }
-
-#define COMPLEX_NORMAL_DISTRIBUTION(T, TR)                                    \
-    template<>                                                                \
-    Array<T> normalDistribution<T>(const af::dim4 &dims,                      \
-                                   const af_random_engine_type type,          \
-                                   const uintl &seed, uintl &counter) {       \
-        ONEAPI_NOT_SUPPORTED("normalDistribution Not supported");             \
-        Array<T> out    = createEmptyArray<T>(dims);                          \
-        return out;                                                           \
-    }                                                                         \
-    template<>                                                                \
-    Array<T> normalDistribution<T>(                                           \
-        const af::dim4 &dims, Array<uint> pos, Array<uint> sh1,               \
-        Array<uint> sh2, uint mask, Array<uint> recursion_table,              \
-        Array<uint> temper_table, Array<uint> state) {                        \
-        ONEAPI_NOT_SUPPORTED("normalDistribution Not supported");             \
-        Array<T> out    = createEmptyArray<T>(dims);                          \
-        return out;                                                           \
-    }
-
 INSTANTIATE_UNIFORM(float)
 INSTANTIATE_UNIFORM(double)
+INSTANTIATE_UNIFORM(cfloat)
+INSTANTIATE_UNIFORM(cdouble)
 INSTANTIATE_UNIFORM(int)
 INSTANTIATE_UNIFORM(uint)
 INSTANTIATE_UNIFORM(intl)
@@ -149,12 +101,8 @@ INSTANTIATE_UNIFORM(half)
 
 INSTANTIATE_NORMAL(float)
 INSTANTIATE_NORMAL(double)
+INSTANTIATE_NORMAL(cdouble)
+INSTANTIATE_NORMAL(cfloat)
 INSTANTIATE_NORMAL(half)
-
-COMPLEX_UNIFORM_DISTRIBUTION(cdouble, double)
-COMPLEX_UNIFORM_DISTRIBUTION(cfloat, float)
-
-COMPLEX_NORMAL_DISTRIBUTION(cdouble, double)
-COMPLEX_NORMAL_DISTRIBUTION(cfloat, float)
 
 }  // namespace oneapi

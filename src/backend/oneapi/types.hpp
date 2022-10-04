@@ -38,10 +38,10 @@ namespace oneapi {
 using cdouble = std::complex<double>;
 using cfloat  = std::complex<float>;
 using intl    = long long;
-using uchar   = cl_uchar;
-using uint    = cl_uint;
+using uchar   = unsigned char;
+using uint    = unsigned int;
 using uintl   = unsigned long long;
-using ushort  = cl_ushort;
+using ushort  = unsigned short;
 
 template<typename T>
 using compute_t = typename common::kernel_type<T>::compute;
