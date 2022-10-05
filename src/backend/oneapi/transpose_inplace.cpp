@@ -10,7 +10,7 @@
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
-//#include <kernel/transpose_inplace.hpp>
+#include <kernel/transpose_inplace.hpp>
 #include <transpose.hpp>
 #include <af/dim4.hpp>
 
@@ -21,7 +21,12 @@ namespace oneapi {
 
 template<typename T>
 void transpose_inplace(Array<T> &in, const bool conjugate) {
-    ONEAPI_NOT_SUPPORTED("");
+    const dim4 &inDims = in.dims();
+
+    const bool is32multiple =
+        inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0;
+
+    kernel::transpose_inplace<T>(in, conjugate, is32multiple);
 }
 
 #define INSTANTIATE(T) \
