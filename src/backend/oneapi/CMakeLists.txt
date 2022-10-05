@@ -215,6 +215,7 @@ target_sources(afoneapi
     kernel/random_engine_threefry.hpp
     kernel/range.hpp
     kernel/transpose.hpp
+    kernel/transpose_inplace.hpp
 )
 
 add_library(ArrayFire::afoneapi ALIAS afoneapi)
