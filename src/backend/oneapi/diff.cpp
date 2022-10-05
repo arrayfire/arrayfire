@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 #include <diff.hpp>
-//#include <kernel/diff.hpp>
-#include <err_oneapi.hpp>
+#include <kernel/diff.hpp>
 #include <af/dim4.hpp>
 #include <stdexcept>
 
@@ -18,7 +17,6 @@ namespace oneapi {
 
 template<typename T>
 Array<T> diff(const Array<T> &in, const int dim, const bool isDiff2) {
-    ONEAPI_NOT_SUPPORTED("");
     const af::dim4 &iDims = in.dims();
     af::dim4 oDims        = iDims;
     oDims[dim] -= (isDiff2 + 1);
@@ -27,18 +25,17 @@ Array<T> diff(const Array<T> &in, const int dim, const bool isDiff2) {
         throw std::runtime_error("Elements are 0");
     }
     Array<T> out = createEmptyArray<T>(oDims);
+    kernel::diff<T>(out, in, in.ndims(), dim, isDiff2);
     return out;
 }
 
 template<typename T>
 Array<T> diff1(const Array<T> &in, const int dim) {
-    ONEAPI_NOT_SUPPORTED("");
     return diff<T>(in, dim, false);
 }
 
 template<typename T>
 Array<T> diff2(const Array<T> &in, const int dim) {
-    ONEAPI_NOT_SUPPORTED("");
     return diff<T>(in, dim, true);
 }
 
