@@ -6,7 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-// #include <kernel/triangle.hpp>
+#include <kernel/triangle.hpp>
 #include <triangle.hpp>
 #include <err_oneapi.hpp>
 
@@ -22,8 +22,7 @@ namespace oneapi {
 template<typename T>
 void triangle(Array<T> &out, const Array<T> &in, const bool is_upper,
               const bool is_unit_diag) {
-    ONEAPI_NOT_SUPPORTED("triangle Not supported");
-    // kernel::triangle<T>(out, in, is_upper, is_unit_diag);
+    kernel::triangle<T>(out, in, is_upper, is_unit_diag);
 }
 
 template<typename T>
