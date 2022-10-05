@@ -46,7 +46,6 @@
 /* Other */
 #endif
 
-
 namespace common {
 std::shared_ptr<spdlog::logger> loggerFactory(const std::string& name);
 std::string bytesToString(size_t bytes);

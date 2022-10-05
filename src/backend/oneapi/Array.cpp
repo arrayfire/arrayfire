@@ -12,10 +12,10 @@
 #include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
 #include <common/jit/ScalarNode.hpp>
-#include <jit/BufferNode.hpp>
 #include <common/util.hpp>
-#include <err_oneapi.hpp>
 #include <copy.hpp>
+#include <err_oneapi.hpp>
+#include <jit/BufferNode.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
 #include <scalar.hpp>
@@ -36,11 +36,11 @@
 using af::dim4;
 using af::dtype_traits;
 
-using oneapi::jit::BufferNode;
 using common::half;
 using common::Node;
 using common::Node_ptr;
 using common::NodeIterator;
+using oneapi::jit::BufferNode;
 
 using nonstd::span;
 using std::accumulate;
@@ -122,29 +122,29 @@ Array<T>::Array(const dim4 &dims, const T *const in_data)
     static_assert(
         offsetof(Array<T>, info) == 0,
         "Array<T>::info must be the first member variable of Array<T>");
-    //getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0,
-                                  //sizeof(T) * info.elements(), in_data);
-    getQueue().submit([&] (sycl::handler &h) {
-        h.copy(in_data, data->get_access(h));
-    }).wait();
+    // getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0,
+    // sizeof(T) * info.elements(), in_data);
+    getQueue()
+        .submit([&](sycl::handler &h) { h.copy(in_data, data->get_access(h)); })
+        .wait();
 }
-   
 
 template<typename T>
 Array<T>::Array(const af::dim4 &dims, buffer<T> *const mem, size_t offset,
                 bool copy)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(
-           copy ? memAlloc<T>(info.elements()).release() : new buffer<T>(*mem),
-          bufferFree<T>)
+    , data(copy ? memAlloc<T>(info.elements()).release() : new buffer<T>(*mem),
+           bufferFree<T>)
     , data_dims(dims)
     , node()
     , owner(true) {
     if (copy) {
-        getQueue().submit([&] (sycl::handler &h) {
-            h.copy(mem->get_access(h), data->get_access(h));
-        }).wait();
+        getQueue()
+            .submit([&](sycl::handler &h) {
+                h.copy(mem->get_access(h), data->get_access(h));
+            })
+            .wait();
     }
 }
 
@@ -168,7 +168,7 @@ Array<T>::Array(Param<T> &tmp, bool owner_)
                 tmp.info.strides[3]),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(
-           tmp.data, owner_ ? bufferFree<T> : [](buffer<T> * /*unused*/) {})
+          tmp.data, owner_ ? bufferFree<T> : [](buffer<T> * /*unused*/) {})
     , data_dims(dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2],
                      tmp.info.dims[3]))
     , node()
@@ -179,17 +179,18 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
                 const T *const in_data, bool is_device)
     : info(getActiveDeviceId(), dims, offset_, strides,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(is_device ? (new buffer<T>(*reinterpret_cast<buffer<T>*>(
-                                        const_cast<T *>(in_data))))
+    , data(is_device ? (new buffer<T>(*reinterpret_cast<buffer<T> *>(
+                           const_cast<T *>(in_data))))
                      : (memAlloc<T>(info.elements()).release()),
            bufferFree<T>)
     , data_dims(dims)
     , node()
     , owner(true) {
     if (!is_device) {
-        getQueue().submit([&] (sycl::handler &h) {
-            h.copy(in_data, data->get_access(h));
-        }).wait();
+        getQueue()
+            .submit(
+                [&](sycl::handler &h) { h.copy(in_data, data->get_access(h)); })
+            .wait();
     }
 }
 
@@ -198,8 +199,8 @@ void Array<T>::eval() {
     if (isReady()) { return; }
 
     this->setId(getActiveDeviceId());
-    data = std::shared_ptr<sycl::buffer<T>>(memAlloc<T>(info.elements()).release(),
-                                       bufferFree<T>);
+    data = std::shared_ptr<sycl::buffer<T>>(
+        memAlloc<T>(info.elements()).release(), bufferFree<T>);
 
     // Do not replace this with cast operator
     KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
@@ -208,10 +209,9 @@ void Array<T>::eval() {
 
     Param<T> res{data.get(), info};
 
-
-    //TODO: implement
+    // TODO: implement
     ONEAPI_NOT_SUPPORTED("JIT NOT SUPPORTED");
-    //evalNodes(res, getNode().get());
+    // evalNodes(res, getNode().get());
     node.reset();
 }
 
@@ -267,9 +267,9 @@ void evalMultiple(vector<Array<T> *> arrays) {
         nodes.push_back(array->getNode().get());
     }
 
-    //TODO: implement
+    // TODO: implement
     ONEAPI_NOT_SUPPORTED("JIT NOT SUPPORTED");
-    //evalNodes(outputs, nodes);
+    // evalNodes(outputs, nodes);
 
     for (Array<T> *array : output_arrays) { array->node.reset(); }
 }
@@ -342,7 +342,8 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     //         (3 * sizeof(uint));
 
     //     const cl::Device &device = getDevice();
-    //     size_t max_param_size = device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>();
+    //     size_t max_param_size =
+    //     device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>();
     //     // typical values:
     //     //   NVIDIA     = 4096
     //     //   AMD        = 3520  (AMD A10 iGPU = 1024)
@@ -375,7 +376,8 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     //     }
     //     isBufferLimit = jitTreeExceedsMemoryPressure(info.total_buffer_size);
 
-    //     size_t param_size = (info.num_buffers * (sizeof(Param<T>) + sizeof(T *)) +
+    //     size_t param_size = (info.num_buffers * (sizeof(Param<T>) + sizeof(T
+    //     *)) +
     //                          info.param_scalar_size);
 
     //     bool isParamLimit = param_size >= max_param_size;
@@ -386,15 +388,16 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     return kJITHeuristics::Pass;
 }
 
-//Doesn't make sense with sycl::buffer
-//TODO: accessors? or return sycl::buffer?
-//TODO: return accessor.get_pointer() for access::target::global_buffer or (host_buffer?)
+// Doesn't make sense with sycl::buffer
+// TODO: accessors? or return sycl::buffer?
+// TODO: return accessor.get_pointer() for access::target::global_buffer or
+// (host_buffer?)
 template<typename T>
 void *getDevicePtr(const Array<T> &arr) {
     const buffer<T> *buf = arr.device();
-    //if (!buf) { return NULL; }
-    //memLock(buf);
-    //cl_mem mem = (*buf)();
+    // if (!buf) { return NULL; }
+    // memLock(buf);
+    // cl_mem mem = (*buf)();
     ONEAPI_NOT_SUPPORTED("pointer to sycl::buffer should be accessor");
     return (void *)buf;
 }
@@ -451,7 +454,7 @@ Array<T> createDeviceDataArray(const dim4 &dims, void *data) {
     verifyTypeSupport<T>();
 
     bool copy_device = false;
-    return Array<T>(dims, static_cast<buffer<T>*>(data), 0, copy_device);
+    return Array<T>(dims, static_cast<buffer<T> *>(data), 0, copy_device);
 }
 
 template<typename T>
@@ -481,15 +484,17 @@ template<typename T>
 void writeHostDataArray(Array<T> &arr, const T *const data,
                         const size_t bytes) {
     if (!arr.isOwner()) { arr = copyArray<T>(arr); }
-    getQueue().submit([&] (sycl::handler &h) {
-        buffer<T> &buf = *arr.get();
-        //auto offset_acc = buf.get_access(h, sycl::range, sycl::id<>)
-        //TODO: offset accessor
-        auto offset_acc = buf.get_access(h);
-        h.copy(data, offset_acc);
-    }).wait();
-    //getQueue().enqueueWriteBuffer(*arr.get(), CL_TRUE, arr.getOffset(), bytes,
-    //data);
+    getQueue()
+        .submit([&](sycl::handler &h) {
+            buffer<T> &buf = *arr.get();
+            // auto offset_acc = buf.get_access(h, sycl::range, sycl::id<>)
+            // TODO: offset accessor
+            auto offset_acc = buf.get_access(h);
+            h.copy(data, offset_acc);
+        })
+        .wait();
+    // getQueue().enqueueWriteBuffer(*arr.get(), CL_TRUE, arr.getOffset(),
+    // bytes, data);
 }
 
 template<typename T>
@@ -499,14 +504,14 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
 
     buffer<T> &buf = *arr.get();
 
-    //clRetainMemObject(
+    // clRetainMemObject(
     //    reinterpret_cast<buffer<T> *>(const_cast<void *>(data)));
-    //buffer<T> data_buf =
+    // buffer<T> data_buf =
     //  buffer<T>(reinterpret_cast<buffer<T>*>(const_cast<void *>(data)));
 
     ONEAPI_NOT_SUPPORTED("writeDeviceDataArray not supported");
-    //getQueue().enqueueCopyBuffer(data_buf, buf, 0,
-    //static_cast<size_t>(arr.getOffset()), bytes);
+    // getQueue().enqueueCopyBuffer(data_buf, buf, 0,
+    // static_cast<size_t>(arr.getOffset()), bytes);
 }
 
 template<typename T>
@@ -530,7 +535,7 @@ size_t Array<T>::getAllocatedBytes() const {
     template Array<T> createDeviceDataArray<T>(const dim4 &dims, void *data); \
     template Array<T> createValueArray<T>(const dim4 &dims, const T &value);  \
     template Array<T> createEmptyArray<T>(const dim4 &dims);                  \
-    template Array<T> createParamArray<T>(Param<T> & tmp, bool owner);           \
+    template Array<T> createParamArray<T>(Param<T> & tmp, bool owner);        \
     template Array<T> createSubArray<T>(                                      \
         const Array<T> &parent, const vector<af_seq> &index, bool copy);      \
     template void destroyArray<T>(Array<T> * A);                              \
@@ -538,13 +543,13 @@ size_t Array<T>::getAllocatedBytes() const {
     template Array<T>::Array(const dim4 &dims, const dim4 &strides,           \
                              dim_t offset, const T *const in_data,            \
                              bool is_device);                                 \
-    template Array<T>::Array(const dim4 &dims, buffer<T>* mem, size_t src_offset, \
-                             bool copy);                                      \
+    template Array<T>::Array(const dim4 &dims, buffer<T> *mem,                \
+                             size_t src_offset, bool copy);                   \
     template Node_ptr Array<T>::getNode();                                    \
     template Node_ptr Array<T>::getNode() const;                              \
     template void Array<T>::eval();                                           \
     template void Array<T>::eval() const;                                     \
-    template buffer<T> *Array<T>::device();                             \
+    template buffer<T> *Array<T>::device();                                   \
     template void writeHostDataArray<T>(Array<T> & arr, const T *const data,  \
                                         const size_t bytes);                  \
     template void writeDeviceDataArray<T>(                                    \

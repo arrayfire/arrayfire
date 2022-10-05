@@ -10,7 +10,6 @@
 #include <common/graphics_common.hpp>
 
 #include <GraphicsResourceManager.hpp>
-#include <platform.hpp> //TODO: blas.hpp? y tho, also Array.hpp 
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
@@ -18,11 +17,12 @@
 #include <common/util.hpp>
 #include <device_manager.hpp>
 #include <err_oneapi.hpp>
+#include <platform.hpp>  //TODO: blas.hpp? y tho, also Array.hpp
 //#include <errorcodes.hpp>
+#include <memory.hpp>
 #include <version.hpp>
 #include <af/oneapi.h>
 #include <af/version.h>
-#include <memory.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -45,8 +45,8 @@ namespace oneapi {
 
 static inline bool compare_default(const unique_ptr<sycl::device>& ldev,
                                    const unique_ptr<sycl::device>& rdev) {
-    //TODO: update sorting criteria
-    //select according to something applicable to oneapi backend
+    // TODO: update sorting criteria
+    // select according to something applicable to oneapi backend
     auto l_mem = ldev->get_info<sycl::info::device::local_mem_size>();
     auto r_mem = rdev->get_info<sycl::info::device::local_mem_size>();
     return l_mem > r_mem;
@@ -74,8 +74,9 @@ DeviceManager::DeviceManager()
         vector<sycl::device> current_devices;
         try {
             current_devices = platform.get_devices();
-        } catch(sycl::exception& err) {
-            printf("DeviceManager::DeviceManager() exception: %s\n", err.what());
+        } catch (sycl::exception& err) {
+            printf("DeviceManager::DeviceManager() exception: %s\n",
+                   err.what());
             throw;
         }
         AF_TRACE("Found {} devices on platform {}", current_devices.size(),
@@ -102,18 +103,19 @@ DeviceManager::DeviceManager()
 
     // Create contexts and queues once the sort is done
     for (int i = 0; i < nDevices; i++) {
-        try{
+        try {
             mContexts.push_back(make_unique<sycl::context>(*devices[i]));
-            mQueues.push_back(make_unique<sycl::queue>(
-                *mContexts.back(), *devices[i]));
+            mQueues.push_back(
+                make_unique<sycl::queue>(*mContexts.back(), *devices[i]));
             mIsGLSharingOn.push_back(false);
-            //TODO:
-            //mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
-            //mPlatforms.push_back(getPlatformEnum(*devices[i]));
+            // TODO:
+            // mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
+            // mPlatforms.push_back(getPlatformEnum(*devices[i]));
             mDevices.emplace_back(std::move(devices[i]));
         } catch (sycl::exception& err) {
             AF_TRACE("Error creating context for device {} with error {}\n",
-                     devices[i]->get_info<sycl::info::device::name>(), err.what());
+                     devices[i]->get_info<sycl::info::device::name>(),
+                     err.what());
         }
     }
     nDevices = mDevices.size();
@@ -121,18 +123,18 @@ DeviceManager::DeviceManager()
     bool default_device_set = false;
     string deviceENV        = getEnvVar("AF_ONEAPI_DEFAULT_DEVICE");
     if (!deviceENV.empty()) {
-        //TODO: handle default device from env variable
+        // TODO: handle default device from env variable
     }
 
     deviceENV = getEnvVar("AF_OPENCL_DEFAULT_DEVICE_TYPE");
     if (!default_device_set && !deviceENV.empty()) {
-        //TODO: handle default device by type env variable
+        // TODO: handle default device by type env variable
     }
 
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
     string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
     if (fgMngr->plugin().isLoaded() && noGraphicsENV.empty()) {
-        //TODO: handle forge shared contexts
+        // TODO: handle forge shared contexts
     }
 
     mUserDeviceOffset = mDevices.size();

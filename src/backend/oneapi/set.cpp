@@ -8,12 +8,12 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/deprecated.hpp>
 #include <copy.hpp>
 #include <err_oneapi.hpp>
 #include <set.hpp>
 #include <sort.hpp>
 #include <af/dim4.hpp>
-#include <common/deprecated.hpp>
 
 namespace oneapi {
 using af::dim4;
@@ -29,7 +29,6 @@ using type_t =
 
 template<typename T>
 Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
-
     ONEAPI_NOT_SUPPORTED("setUnique Not supported");
     return createEmptyArray<T>(dim4(1, 1, 1, 1));
 
@@ -50,13 +49,13 @@ Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
     //     out.resetDims(dim4(std::distance(begin, end), 1, 1, 1));
 
     //     return out;
-    // } catch (const std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
+    // } catch (const std::exception &ex) { AF_ERROR(ex.what(),
+    // AF_ERR_INTERNAL); }
 }
 
 template<typename T>
 Array<T> setUnion(const Array<T> &first, const Array<T> &second,
                   const bool is_unique) {
-
     ONEAPI_NOT_SUPPORTED("setUnion Not supported");
     return createEmptyArray<T>(dim4(1, 1, 1, 1));
 
@@ -87,18 +86,19 @@ Array<T> setUnion(const Array<T> &first, const Array<T> &second,
     //     compute::buffer_iterator<type_t<T>> out_begin(out_data, 0);
 
     //     compute::buffer_iterator<type_t<T>> out_end = compute::set_union(
-    //         first_begin, first_end, second_begin, second_end, out_begin, queue);
+    //         first_begin, first_end, second_begin, second_end, out_begin,
+    //         queue);
 
     //     out.resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
     //     return out;
 
-    // } catch (const std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
+    // } catch (const std::exception &ex) { AF_ERROR(ex.what(),
+    // AF_ERR_INTERNAL); }
 }
 
 template<typename T>
 Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
                       const bool is_unique) {
-
     ONEAPI_NOT_SUPPORTED("setIntersect Not supported");
     return createEmptyArray<T>(dim4(1, 1, 1, 1));
 
@@ -129,12 +129,15 @@ Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
     //         second_data, unique_second.elements());
     //     compute::buffer_iterator<type_t<T>> out_begin(out_data, 0);
 
-    //     compute::buffer_iterator<type_t<T>> out_end = compute::set_intersection(
-    //         first_begin, first_end, second_begin, second_end, out_begin, queue);
+    //     compute::buffer_iterator<type_t<T>> out_end =
+    //     compute::set_intersection(
+    //         first_begin, first_end, second_begin, second_end, out_begin,
+    //         queue);
 
     //     out.resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
     //     return out;
-    // } catch (const std::exception &ex) { AF_ERROR(ex.what(), AF_ERR_INTERNAL); }
+    // } catch (const std::exception &ex) { AF_ERROR(ex.what(),
+    // AF_ERR_INTERNAL); }
 }
 
 #define INSTANTIATE(T)                                                        \

@@ -16,7 +16,6 @@
 #include <memory>
 #include <vector>
 
-
 namespace oneapi {
 template<typename T>
 sycl::buffer<T> *bufferAlloc(const size_t &bytes);
@@ -26,7 +25,7 @@ void bufferFree(sycl::buffer<T> *buf);
 
 template<typename T>
 using bufptr =
-  std::unique_ptr<sycl::buffer<T>, std::function<void(sycl::buffer<T> *)>>;
+    std::unique_ptr<sycl::buffer<T>, std::function<void(sycl::buffer<T> *)>>;
 
 template<typename T>
 bufptr<T> memAlloc(const size_t &elements);
@@ -67,7 +66,7 @@ void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 
 class Allocator final : public common::memory::AllocatorInterface {
-    public:
+   public:
     Allocator();
     ~Allocator() = default;
     void shutdown() override;

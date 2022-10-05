@@ -16,8 +16,9 @@
 #include <err_oneapi.hpp>  // error check functions and Macros
                            // specific to oneapi backend
 
-//#include <kernel/exampleFunction.hpp>  // this header under the folder src/oneapi/kernel
-                                       // defines the OneAPI kernel wrapper
+//#include <kernel/exampleFunction.hpp>  // this header under the folder
+// src/oneapi/kernel
+// defines the OneAPI kernel wrapper
 // function to which the main computation of your
 // algorithm should be relayed to
 
@@ -41,7 +42,7 @@ Array<T> exampleFunction(const Array<T> &a, const Array<T> &b,
     // can create.
 
     // Relay the actual computation to OneAPI kernel wrapper
-    //kernel::exampleFunc<T>(out, a, b, method);
+    // kernel::exampleFunc<T>(out, a, b, method);
 
     return out;  // return the result
 }

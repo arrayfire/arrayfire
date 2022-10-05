@@ -30,7 +30,6 @@ namespace oneapi {
 template<typename T>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const Array<T> &b, const dim4 &odims) {
-
     ONEAPI_NOT_SUPPORTED("createSelectNode Not supported");
 
     auto cond_node   = cond.getNode();
@@ -41,9 +40,9 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     auto cond_height = cond_node->getHeight();
     const int height = max(max(a_height, b_height), cond_height) + 1;
 
-    auto node = make_shared<NaryNode>(
-        NaryNode(static_cast<af::dtype>(af::dtype_traits<T>::af_type), "__select",
-                 3, {{cond_node, a_node, b_node}}, af_select_t, height));
+    auto node = make_shared<NaryNode>(NaryNode(
+        static_cast<af::dtype>(af::dtype_traits<T>::af_type), "__select", 3,
+        {{cond_node, a_node, b_node}}, af_select_t, height));
     std::array<common::Node *, 1> nodes{node.get()};
     if (detail::passesJitHeuristics<T>(nodes) != kJITHeuristics::Pass) {
         if (a_height > max(b_height, cond_height)) {
@@ -61,7 +60,6 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
 template<typename T, bool flip>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const T &b_val, const dim4 &odims) {
-
     ONEAPI_NOT_SUPPORTED("createSelectNode Not supported");
 
     auto cond_node   = cond.getNode();

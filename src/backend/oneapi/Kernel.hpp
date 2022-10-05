@@ -12,8 +12,8 @@
 #include <common/KernelInterface.hpp>
 #include <common/Logger.hpp>
 
-#include <backend.hpp>
 #include <CL/sycl.hpp>
+#include <backend.hpp>
 #include <string>
 
 namespace oneapi {
@@ -44,7 +44,8 @@ class Kernel
     using KernelType = sycl::kernel;
     using DevPtrType<T> = sycl::buffer<T>*;
     using BaseClass =
-        common::KernelInterface<ModuleType, KernelType, Enqueuer, DevPtrType<T>>;
+        common::KernelInterface<ModuleType, KernelType, Enqueuer,
+DevPtrType<T>>;
 
     Kernel() : BaseClass("", nullptr, cl::Kernel{nullptr, false}) {}
     Kernel(std::string name, ModuleType mod, KernelType ker)
@@ -55,7 +56,8 @@ class Kernel
     DevPtrType<T> getDevPtr(const char* name) final;
     // clang-format on
 
-    void copyToReadOnly(DevPtrType<T> dst, DevPtrType<T> src, size_t bytes) final;
+    void copyToReadOnly(DevPtrType<T> dst, DevPtrType<T> src, size_t bytes)
+final;
 
     void setFlag(DevPtrType<T> dst, int* scalarValPtr,
                  const bool syncCopy = false) final;
@@ -66,12 +68,13 @@ class Kernel
 
 class Kernel {
    public:
-    using ModuleType = const sycl::kernel_bundle<sycl::bundle_state::executable> *;
+    using ModuleType =
+        const sycl::kernel_bundle<sycl::bundle_state::executable>*;
     using KernelType = sycl::kernel;
-  template<typename T>
+    template<typename T>
     using DevPtrType = sycl::buffer<T>*;
-    //using BaseClass =
-        //common::KernelInterface<ModuleType, KernelType, Enqueuer, DevPtrType<T>>;
+    // using BaseClass =
+    // common::KernelInterface<ModuleType, KernelType, Enqueuer, DevPtrType<T>>;
 
     Kernel() {}
     Kernel(std::string name, ModuleType mod, KernelType ker) {}

@@ -30,13 +30,13 @@
 
 using common::loggerFactory;
 using fmt::format;
-//using oneapi::getActiveDeviceId;
-//using oneapi::getDevice;
-using sycl::kernel_bundle;
-using sycl::bundle_state;
+// using oneapi::getActiveDeviceId;
+// using oneapi::getDevice;
 using oneapi::Kernel;
 using oneapi::Module;
 using spdlog::logger;
+using sycl::bundle_state;
+using sycl::kernel_bundle;
 
 using std::begin;
 using std::end;
@@ -71,8 +71,8 @@ string getProgramBuildLog(const kernel_bundle<bundle_state::executable> &prog) {
 
 namespace oneapi {
 
-//const static string DEFAULT_MACROS_STR(
-    //"\n\
+// const static string DEFAULT_MACROS_STR(
+//"\n\
                                            //#ifdef USE_DOUBLE\n\
                                            //#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
                                            //#endif\n                     \
@@ -82,15 +82,16 @@ namespace oneapi {
                                            //#define half short\n          \
                                            //#endif\n                      \
                                            //#ifndef M_PI\n               \
-                                           //#define M_PI 3.1415926535897932384626433832795028841971693993751058209749445923078164\n \
+                                           //#define
+// M_PI 3.1415926535897932384626433832795028841971693993751058209749445923078164\n
+//\
                                            //#endif\n                     \
                                            //");
 
 /*
 get_kernel_bundle<>() needs sycl::context
-kernel_bundle<bundle_state::executable> buildProgram(const vector<string> &kernelSources,
-                           const vector<string> &compileOpts) {
-    ONEAPI_NOT_SUPPORTED("");
+kernel_bundle<bundle_state::executable> buildProgram(const vector<string>
+&kernelSources, const vector<string> &compileOpts) { ONEAPI_NOT_SUPPORTED("");
     kernel_bundle<bundle_state::executable> bb;
     return bb;
 }

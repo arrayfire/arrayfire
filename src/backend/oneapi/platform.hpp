@@ -62,7 +62,7 @@ size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
 
-//sycl::device::is_cpu,is_gpu,is_accelerator
+// sycl::device::is_cpu,is_gpu,is_accelerator
 sycl::info::device_type getDeviceType();
 
 bool isHostUnifiedMemory(const sycl::device& device);
@@ -114,7 +114,7 @@ graphics::ForgeManager& forgeManager();
 
 GraphicsResourceManager& interopManager();
 
-//afcl::platform getPlatformEnum(cl::Device dev);
+// afcl::platform getPlatformEnum(cl::Device dev);
 
 void setActiveContext(int device);
 

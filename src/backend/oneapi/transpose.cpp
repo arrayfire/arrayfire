@@ -6,9 +6,9 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#include <err_oneapi.hpp>
 #include <kernel/transpose.hpp>
 #include <transpose.hpp>
-#include <err_oneapi.hpp>
 
 #include <Array.hpp>
 #include <common/half.hpp>

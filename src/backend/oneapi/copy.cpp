@@ -9,10 +9,10 @@
 #include <copy.hpp>
 
 #include <Array.hpp>
-#include <kernel/memcopy.hpp>
 #include <common/complex.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/memcopy.hpp>
 #include <math.hpp>
 
 using common::half;
@@ -28,7 +28,7 @@ void copyData(T *data, const Array<T> &A) {
     A.eval();
 
     dim_t offset = 0;
-    const sycl::buffer<T>* buf;
+    const sycl::buffer<T> *buf;
     Array<T> out = A;
 
     if (A.isLinear() ||  // No offsets, No strides
@@ -44,12 +44,15 @@ void copyData(T *data, const Array<T> &A) {
     }
 
     // FIXME: Add checks
-    getQueue().submit([=] (sycl::handler &h) {
-        sycl::range rr(A.elements());
-        sycl::id offset_id(offset);
-        auto offset_acc = const_cast<sycl::buffer<T>*>(buf)->get_access(h, rr, offset_id);
-        h.copy(offset_acc, data);
-    }).wait();
+    getQueue()
+        .submit([=](sycl::handler &h) {
+            sycl::range rr(A.elements());
+            sycl::id offset_id(offset);
+            auto offset_acc = const_cast<sycl::buffer<T> *>(buf)->get_access(
+                h, rr, offset_id);
+            h.copy(offset_acc, data);
+        })
+        .wait();
 }
 
 template<typename T>
@@ -61,17 +64,21 @@ Array<T> copyArray(const Array<T> &A) {
     if (A.isLinear()) {
         // FIXME: Add checks
 
-        const sycl::buffer<T>* A_buf = A.get();
-        sycl::buffer<T>* out_buf = out.get();
+        const sycl::buffer<T> *A_buf = A.get();
+        sycl::buffer<T> *out_buf     = out.get();
 
-        getQueue().submit([=] (sycl::handler &h) {
-            sycl::range rr(A.elements());
-            sycl::id offset_id(offset);
-            auto offset_acc_A  = const_cast<sycl::buffer<T>*>(A_buf)->get_access(h, rr, offset_id);
-            auto acc_out = out_buf->get_access(h);
+        getQueue()
+            .submit([=](sycl::handler &h) {
+                sycl::range rr(A.elements());
+                sycl::id offset_id(offset);
+                auto offset_acc_A =
+                    const_cast<sycl::buffer<T> *>(A_buf)->get_access(h, rr,
+                                                                     offset_id);
+                auto acc_out = out_buf->get_access(h);
 
-            h.copy(offset_acc_A, acc_out);
-        }).wait();
+                h.copy(offset_acc_A, acc_out);
+            })
+            .wait();
     } else {
         kernel::memcopy<T>(out.get(), out.strides().get(), A.get(),
                            A.dims().get(), A.strides().get(), offset,
@@ -98,23 +105,27 @@ struct copyWrapper<T, T> {
     void operator()(Array<T> &out, Array<T> const &in) {
         if (out.isLinear() && in.isLinear() &&
             out.elements() == in.elements()) {
-
             dim_t in_offset  = in.getOffset() * sizeof(T);
             dim_t out_offset = out.getOffset() * sizeof(T);
 
-            const sycl::buffer<T>* in_buf = in.get();
-            sycl::buffer<T>* out_buf = out.get();
+            const sycl::buffer<T> *in_buf = in.get();
+            sycl::buffer<T> *out_buf      = out.get();
 
-            getQueue().submit([=] (sycl::handler &h) {
-                sycl::range rr(in.elements());
-                sycl::id in_offset_id(in_offset);
-                sycl::id out_offset_id(out_offset);
+            getQueue()
+                .submit([=](sycl::handler &h) {
+                    sycl::range rr(in.elements());
+                    sycl::id in_offset_id(in_offset);
+                    sycl::id out_offset_id(out_offset);
 
-                auto offset_acc_in  = const_cast<sycl::buffer<T>*>(in_buf)->get_access(h, rr, in_offset_id);
-                auto offset_acc_out = out_buf->get_access(h, rr, out_offset_id);
+                    auto offset_acc_in =
+                        const_cast<sycl::buffer<T> *>(in_buf)->get_access(
+                            h, rr, in_offset_id);
+                    auto offset_acc_out =
+                        out_buf->get_access(h, rr, out_offset_id);
 
-                h.copy(offset_acc_in, offset_acc_out);
-            }).wait();
+                    h.copy(offset_acc_in, offset_acc_out);
+                })
+                .wait();
         } else {
             kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1,
                                in.dims() == out.dims());
@@ -202,12 +213,15 @@ template<typename T>
 T getScalar(const Array<T> &in) {
     T retVal{};
 
-    getQueue().submit([=] (sycl::handler &h) {
-        sycl::range rr(1);
-        sycl::id offset_id(in.getOffset());
-        auto acc_in  = const_cast<sycl::buffer<T>*>(in.get())->get_access(h, rr, offset_id);
-        h.copy(acc_in, (void*)&retVal);
-    }).wait();
+    getQueue()
+        .submit([=](sycl::handler &h) {
+            sycl::range rr(1);
+            sycl::id offset_id(in.getOffset());
+            auto acc_in = const_cast<sycl::buffer<T> *>(in.get())->get_access(
+                h, rr, offset_id);
+            h.copy(acc_in, (void *)&retVal);
+        })
+        .wait();
 
     return retVal;
 }

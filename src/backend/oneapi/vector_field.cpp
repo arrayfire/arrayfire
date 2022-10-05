@@ -18,8 +18,7 @@ namespace oneapi {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
-                       fg_vector_field vfield) {
-}
+                       fg_vector_field vfield) {}
 
 #define INSTANTIATE(T)                                                     \
     template void copy_vector_field<T>(const Array<T> &, const Array<T> &, \

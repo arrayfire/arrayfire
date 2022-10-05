@@ -60,4 +60,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 #undef INSTANTIATE
 
-}  // namespace opencl
+}  // namespace oneapi

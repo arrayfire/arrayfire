@@ -15,7 +15,6 @@
 #include <memory>
 #include <vector>
 
-
 namespace oneapi {
 class GraphicsResourceManager
     : public common::InteropManager<GraphicsResourceManager, std::byte> {

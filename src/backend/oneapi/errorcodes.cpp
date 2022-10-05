@@ -7,12 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <errorcodes.hpp>
 #include <err_oneapi.hpp>
-
+#include <errorcodes.hpp>
 
 std::string getErrorMessage(int error_code) {
     ONEAPI_NOT_SUPPORTED("");
-    //return boost::compute::opencl_error::to_string(error_code);
+    // return boost::compute::opencl_error::to_string(error_code);
     return "";
 }

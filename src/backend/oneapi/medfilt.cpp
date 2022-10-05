@@ -20,7 +20,6 @@ namespace oneapi {
 template<typename T>
 Array<T> medfilt1(const Array<T> &in, const int w_wid,
                   const af::borderType pad) {
-
     ONEAPI_NOT_SUPPORTED("medfilt1 Not supported");
 
     // ARG_ASSERT(2, (w_wid <= kernel::MAX_MEDFILTER1_LEN));
@@ -38,7 +37,6 @@ Array<T> medfilt1(const Array<T> &in, const int w_wid,
 template<typename T>
 Array<T> medfilt2(const Array<T> &in, const int w_len, const int w_wid,
                   const af::borderType pad) {
-
     ONEAPI_NOT_SUPPORTED("medfilt2 Not supported");
 
     // ARG_ASSERT(2, (w_len % 2 != 0));

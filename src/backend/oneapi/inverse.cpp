@@ -39,7 +39,8 @@ namespace oneapi {
 template<typename T>
 Array<T> inverse(const Array<T> &in) {
     ONEAPI_NOT_SUPPORTED("");
-    AF_ERROR("Linear Algebra is disabled on OneAPI backend", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is disabled on OneAPI backend",
+             AF_ERR_NOT_CONFIGURED);
 }
 
 #define INSTANTIATE(T) template Array<T> inverse<T>(const Array<T> &in);

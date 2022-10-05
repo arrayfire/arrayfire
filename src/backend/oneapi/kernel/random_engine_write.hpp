@@ -12,17 +12,16 @@
 namespace oneapi {
 namespace kernel {
 
-//TODO: !!!! half functions still need to be ported !!!!
-
+// TODO: !!!! half functions still need to be ported !!!!
 
 //// Conversion to half adapted from Random123
 //// #define HALF_FACTOR (1.0f) / (std::numeric_limits<ushort>::max() + (1.0f))
 //// #define HALF_HALF_FACTOR ((0.5f) * HALF_FACTOR)
 ////
 //// NOTE: The following constants for half were calculated using the formulas
-//// above. This is done so that we can avoid unnecessary computations because the
-//// __half datatype is not a constexprable type. This prevents the compiler from
-//// peforming these operations at compile time.
+//// above. This is done so that we can avoid unnecessary computations because
+/// the / __half datatype is not a constexprable type. This prevents the
+/// compiler from / peforming these operations at compile time.
 //#define HALF_FACTOR __ushort_as_half(0x100u)
 //#define HALF_HALF_FACTOR __ushort_as_half(0x80)
 //
@@ -32,16 +31,16 @@ namespace kernel {
 ////#define SIGNED_HALF_HALF_FACTOR ((0.5f) * SIGNED_HALF_FACTOR)
 ////
 //// NOTE: The following constants for half were calculated using the formulas
-//// above. This is done so that we can avoid unnecessary computations because the
-//// __half datatype is not a constexprable type. This prevents the compiler from
-//// peforming these operations at compile time
+//// above. This is done so that we can avoid unnecessary computations because
+/// the / __half datatype is not a constexprable type. This prevents the
+/// compiler from / peforming these operations at compile time
 //#define SIGNED_HALF_FACTOR __ushort_as_half(0x200u)
 //#define SIGNED_HALF_HALF_FACTOR __ushort_as_half(0x100u)
 //
 ///// This is the largest integer representable by fp16. We need to
 ///// make sure that the value converted from ushort is smaller than this
 ///// value to avoid generating infinity
-//constexpr ushort max_int_before_infinity = 65504;
+// constexpr ushort max_int_before_infinity = 65504;
 //
 //// Generates rationals in (0, 1]
 //__device__ static __half oneMinusGetHalf01(uint num) {
@@ -154,25 +153,25 @@ namespace {
 //    }                                               \
 //    HALF_MATH_FUNC(OP, HALF_OP)
 //
-//MATH_FUNC(log, log, logf, hlog)
-//MATH_FUNC(sqrt, sqrt, sqrtf, hsqrt)
-//MATH_FUNC(sin, sin, sinf, hsin)
-//MATH_FUNC(cos, cos, cosf, hcos)
+// MATH_FUNC(log, log, logf, hlog)
+// MATH_FUNC(sqrt, sqrt, sqrtf, hsqrt)
+// MATH_FUNC(sin, sin, sinf, hsin)
+// MATH_FUNC(cos, cos, cosf, hcos)
 //
-//template<typename T>
+// template<typename T>
 //__device__ void sincos(T val, T *sptr, T *cptr);
 //
-//template<>
+// template<>
 //__device__ void sincos(double val, double *sptr, double *cptr) {
 //    ::sincos(val, sptr, cptr);
 //}
 //
-//template<>
+// template<>
 //__device__ void sincos(float val, float *sptr, float *cptr) {
 //    sincosf(val, sptr, cptr);
 //}
 //
-//template<>
+// template<>
 //__device__ void sincos(__half val, __half *sptr, __half *cptr) {
 //#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
 //    *sptr = sin(val);
@@ -192,7 +191,7 @@ void sincospi(T val, T *sptr, T *cptr) {
     *cptr = sycl::cospi(val);
 }
 
-//template<>
+// template<>
 //__device__ void sincospi(__half val, __half *sptr, __half *cptr) {
 //    // CUDA cannot make __half into a constexpr as of CUDA 11 so we are
 //    // converting this offline
@@ -217,14 +216,13 @@ constexpr T neg_two() {
     return -2.0;
 }
 //
-//template<typename T>
-//constexpr __device__ T two_pi() {
+// template<typename T>
+// constexpr __device__ T two_pi() {
 //    return 2.0 * PI_VAL;
 //};
 //
 template<typename Tc>
-static void boxMullerTransform(cfloat *const cOut,
-                               const Tc &r1, const Tc &r2) {
+static void boxMullerTransform(cfloat *const cOut, const Tc &r1, const Tc &r2) {
     /*
      * The log of a real value x where 0 < x < 1 is negative.
      */
@@ -240,8 +238,8 @@ static void boxMullerTransform(cfloat *const cOut,
 }
 
 template<typename Tc>
-static void boxMullerTransform(cdouble *const cOut,
-                               const Tc &r1, const Tc &r2) {
+static void boxMullerTransform(cdouble *const cOut, const Tc &r1,
+                               const Tc &r2) {
     /*
      * The log of a real value x where 0 < x < 1 is negative.
      */
@@ -257,8 +255,8 @@ static void boxMullerTransform(cdouble *const cOut,
 }
 
 template<typename Td, typename Tc>
-static void boxMullerTransform(Td *const out1, Td *const out2,
-                               const Tc &r1, const Tc &r2) {
+static void boxMullerTransform(Td *const out1, Td *const out2, const Tc &r1,
+                               const Tc &r2) {
     /*
      * The log of a real value x where 0 < x < 1 is negative.
      */
@@ -272,7 +270,7 @@ static void boxMullerTransform(Td *const out1, Td *const out2,
     *out1 = static_cast<Td>(r * s);
     *out2 = static_cast<Td>(r * c);
 }
-//template<>
+// template<>
 //__device__ void boxMullerTransform<common::half, __half>(
 //    common::half *const out1, common::half *const out2, const __half &r1,
 //    const __half &r2) {
@@ -286,8 +284,8 @@ static void boxMullerTransform(Td *const out1, Td *const out2,
 
 // Writes without boundary checking
 static void writeOut128Bytes(uchar *out, const uint &index, const uint groupSz,
-                             const uint &r1, const uint &r2,
-                             const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     out[index]                = r1;
     out[index + groupSz]      = r1 >> 8;
     out[index + 2 * groupSz]  = r1 >> 16;
@@ -307,8 +305,8 @@ static void writeOut128Bytes(uchar *out, const uint &index, const uint groupSz,
 }
 
 static void writeOut128Bytes(char *out, const uint &index, const uint groupSz,
-                             const uint &r1, const uint &r2,
-                             const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     out[index]                = (r1)&0x1;
     out[index + groupSz]      = (r1 >> 1) & 0x1;
     out[index + 2 * groupSz]  = (r1 >> 2) & 0x1;
@@ -328,8 +326,8 @@ static void writeOut128Bytes(char *out, const uint &index, const uint groupSz,
 }
 
 static void writeOut128Bytes(short *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     out[index]               = r1;
     out[index + groupSz]     = r1 >> 16;
     out[index + 2 * groupSz] = r2;
@@ -341,14 +339,14 @@ static void writeOut128Bytes(short *out, const uint &index, const uint groupSz,
 }
 
 static void writeOut128Bytes(ushort *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     writeOut128Bytes((short *)(out), index, groupSz, r1, r2, r3, r4);
 }
 
 static void writeOut128Bytes(int *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     out[index]               = r1;
     out[index + groupSz]     = r2;
     out[index + 2 * groupSz] = r3;
@@ -356,14 +354,14 @@ static void writeOut128Bytes(int *out, const uint &index, const uint groupSz,
 }
 
 static void writeOut128Bytes(uint *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     writeOut128Bytes((int *)(out), index, groupSz, r1, r2, r3, r4);
 }
 
 static void writeOut128Bytes(intl *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     intl c1              = r2;
     c1                   = (c1 << 32) | r1;
     intl c2              = r4;
@@ -373,14 +371,14 @@ static void writeOut128Bytes(intl *out, const uint &index, const uint groupSz,
 }
 
 static void writeOut128Bytes(uintl *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     writeOut128Bytes((intl *)(out), index, groupSz, r1, r2, r3, r4);
 }
 
 static void writeOut128Bytes(float *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     out[index]               = 1.f - getFloat01(r1);
     out[index + groupSz]     = 1.f - getFloat01(r2);
     out[index + 2 * groupSz] = 1.f - getFloat01(r3);
@@ -388,131 +386,115 @@ static void writeOut128Bytes(float *out, const uint &index, const uint groupSz,
 }
 
 static void writeOut128Bytes(cfloat *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
-    out[index] = {1.f - getFloat01(r1), 1.f - getFloat01(r2)};
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
+    out[index]           = {1.f - getFloat01(r1), 1.f - getFloat01(r2)};
     out[index + groupSz] = {1.f - getFloat01(r3), 1.f - getFloat01(r4)};
 }
 
 static void writeOut128Bytes(double *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
+                             const uint &r1, const uint &r2, const uint &r3,
+                             const uint &r4) {
     out[index]           = 1.0 - getDouble01(r1, r2);
     out[index + groupSz] = 1.0 - getDouble01(r3, r4);
 }
 
-static void writeOut128Bytes(cdouble *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
+static void writeOut128Bytes(cdouble *out, const uint &index,
+                             const uint groupSz, const uint &r1, const uint &r2,
+                             const uint &r3, const uint &r4) {
     out[index] = {1.0 - getDouble01(r1, r2), 1.0 - getDouble01(r3, r4)};
 }
 
-static void writeOut128Bytes(common::half *out, const uint &index, const uint groupSz,
-                                        const uint &r1, const uint &r2,
-                                        const uint &r3, const uint &r4) {
-   //out[index]               = oneMinusGetHalf01(r1);
-   //out[index + groupSz]     = oneMinusGetHalf01(r1 >> 16);
-   //out[index + 2 * groupSz] = oneMinusGetHalf01(r2);
-   //out[index + 3 * groupSz] = oneMinusGetHalf01(r2 >> 16);
-   //out[index + 4 * groupSz] = oneMinusGetHalf01(r3);
-   //out[index + 5 * groupSz] = oneMinusGetHalf01(r3 >> 16);
-   //out[index + 6 * groupSz] = oneMinusGetHalf01(r4);
-   //out[index + 7 * groupSz] = oneMinusGetHalf01(r4 >> 16);
+static void writeOut128Bytes(common::half *out, const uint &index,
+                             const uint groupSz, const uint &r1, const uint &r2,
+                             const uint &r3, const uint &r4) {
+    // out[index]               = oneMinusGetHalf01(r1);
+    // out[index + groupSz]     = oneMinusGetHalf01(r1 >> 16);
+    // out[index + 2 * groupSz] = oneMinusGetHalf01(r2);
+    // out[index + 3 * groupSz] = oneMinusGetHalf01(r2 >> 16);
+    // out[index + 4 * groupSz] = oneMinusGetHalf01(r3);
+    // out[index + 5 * groupSz] = oneMinusGetHalf01(r3 >> 16);
+    // out[index + 6 * groupSz] = oneMinusGetHalf01(r4);
+    // out[index + 7 * groupSz] = oneMinusGetHalf01(r4 >> 16);
 }
 
 // Normalized writes without boundary checking
 
-static void boxMullerWriteOut128Bytes(float *out, const uint &index, const uint groupSz,
-                                                 const uint &r1, const uint &r2,
-                                                 const uint &r3,
-                                                 const uint &r4) {
+static void boxMullerWriteOut128Bytes(float *out, const uint &index,
+                                      const uint groupSz, const uint &r1,
+                                      const uint &r2, const uint &r3,
+                                      const uint &r4) {
     boxMullerTransform(&out[index], &out[index + groupSz],
                        getFloatNegative11(r1), getFloat01(r2));
-    boxMullerTransform(&out[index + 2 * groupSz],
-                       &out[index + 3 * groupSz],
-                       getFloatNegative11(r3),
+    boxMullerTransform(&out[index + 2 * groupSz], &out[index + 3 * groupSz],
+                       getFloatNegative11(r3), getFloat01(r4));
+}
+
+static void boxMullerWriteOut128Bytes(cfloat *out, const uint &index,
+                                      const uint groupSz, const uint &r1,
+                                      const uint &r2, const uint &r3,
+                                      const uint &r4) {
+    boxMullerTransform(&out[index], getFloatNegative11(r1), getFloat01(r2));
+    boxMullerTransform(&out[index + groupSz], getFloatNegative11(r3),
                        getFloat01(r4));
 }
 
-static void boxMullerWriteOut128Bytes(cfloat *out, const uint &index, const uint groupSz,
-                                                 const uint &r1, const uint &r2,
-                                                 const uint &r3,
-                                                 const uint &r4) {
-    boxMullerTransform(&out[index], getFloatNegative11(r1), getFloat01(r2));
-    boxMullerTransform(&out[index + groupSz], getFloatNegative11(r3), getFloat01(r4));
-}
-
-static void boxMullerWriteOut128Bytes(double *out, const uint &index, const uint groupSz,
-                                                 const uint &r1, const uint &r2,
-                                                 const uint &r3,
-                                                 const uint &r4) {
+static void boxMullerWriteOut128Bytes(double *out, const uint &index,
+                                      const uint groupSz, const uint &r1,
+                                      const uint &r2, const uint &r3,
+                                      const uint &r4) {
     boxMullerTransform(&out[index], &out[index + groupSz],
                        getDoubleNegative11(r1, r2), getDouble01(r3, r4));
 }
 
-static void boxMullerWriteOut128Bytes(cdouble *out,
-                                                 const uint &index, const uint groupSz,
-                                                 const uint &r1, const uint &r2,
-                                                 const uint &r3,
-                                                 const uint &r4) {
-    boxMullerTransform(&out[index], getDoubleNegative11(r1, r2), getDouble01(r3, r4));
+static void boxMullerWriteOut128Bytes(cdouble *out, const uint &index,
+                                      const uint groupSz, const uint &r1,
+                                      const uint &r2, const uint &r3,
+                                      const uint &r4) {
+    boxMullerTransform(&out[index], getDoubleNegative11(r1, r2),
+                       getDouble01(r3, r4));
 }
 
-static void boxMullerWriteOut128Bytes(common::half *out,
-                                                 const uint &index, const uint groupSz,
-                                                 const uint &r1, const uint &r2,
-                                                 const uint &r3,
-                                                 const uint &r4) {
-//   boxMullerTransform(&out[index], &out[index + groupSz],
-//                      getHalfNegative11(r1), getHalf01(r1 >> 16));
-//   boxMullerTransform(&out[index + 2 * groupSz],
-//                      &out[index + 3 * groupSz], getHalfNegative11(r2),
-//                      getHalf01(r2 >> 16));
-//   boxMullerTransform(&out[index + 4 * groupSz],
-//                      &out[index + 5 * groupSz], getHalfNegative11(r3),
-//                      getHalf01(r3 >> 16));
-//   boxMullerTransform(&out[index + 6 * groupSz],
-//                      &out[index + 7 * groupSz], getHalfNegative11(r4),
-//                      getHalf01(r4 >> 16));
+static void boxMullerWriteOut128Bytes(common::half *out, const uint &index,
+                                      const uint groupSz, const uint &r1,
+                                      const uint &r2, const uint &r3,
+                                      const uint &r4) {
+    //   boxMullerTransform(&out[index], &out[index + groupSz],
+    //                      getHalfNegative11(r1), getHalf01(r1 >> 16));
+    //   boxMullerTransform(&out[index + 2 * groupSz],
+    //                      &out[index + 3 * groupSz], getHalfNegative11(r2),
+    //                      getHalf01(r2 >> 16));
+    //   boxMullerTransform(&out[index + 4 * groupSz],
+    //                      &out[index + 5 * groupSz], getHalfNegative11(r3),
+    //                      getHalf01(r3 >> 16));
+    //   boxMullerTransform(&out[index + 6 * groupSz],
+    //                      &out[index + 7 * groupSz], getHalfNegative11(r4),
+    //                      getHalf01(r4 >> 16));
 }
 
 // Writes with boundary checking
 
-static void partialWriteOut128Bytes(uchar *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
+static void partialWriteOut128Bytes(uchar *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
     if (index < elements) { out[index] = r1; }
     if (index + groupSz < elements) { out[index + groupSz] = r1 >> 8; }
-    if (index + 2 * groupSz < elements) {
-        out[index + 2 * groupSz] = r1 >> 16;
-    }
-    if (index + 3 * groupSz < elements) {
-        out[index + 3 * groupSz] = r1 >> 24;
-    }
+    if (index + 2 * groupSz < elements) { out[index + 2 * groupSz] = r1 >> 16; }
+    if (index + 3 * groupSz < elements) { out[index + 3 * groupSz] = r1 >> 24; }
     if (index + 4 * groupSz < elements) { out[index + 4 * groupSz] = r2; }
-    if (index + 5 * groupSz < elements) {
-        out[index + 5 * groupSz] = r2 >> 8;
-    }
-    if (index + 6 * groupSz < elements) {
-        out[index + 6 * groupSz] = r2 >> 16;
-    }
-    if (index + 7 * groupSz < elements) {
-        out[index + 7 * groupSz] = r2 >> 24;
-    }
+    if (index + 5 * groupSz < elements) { out[index + 5 * groupSz] = r2 >> 8; }
+    if (index + 6 * groupSz < elements) { out[index + 6 * groupSz] = r2 >> 16; }
+    if (index + 7 * groupSz < elements) { out[index + 7 * groupSz] = r2 >> 24; }
     if (index + 8 * groupSz < elements) { out[index + 8 * groupSz] = r3; }
-    if (index + 9 * groupSz < elements) {
-        out[index + 9 * groupSz] = r3 >> 8;
-    }
+    if (index + 9 * groupSz < elements) { out[index + 9 * groupSz] = r3 >> 8; }
     if (index + 10 * groupSz < elements) {
         out[index + 10 * groupSz] = r3 >> 16;
     }
     if (index + 11 * groupSz < elements) {
         out[index + 11 * groupSz] = r3 >> 24;
     }
-    if (index + 12 * groupSz < elements) {
-        out[index + 12 * groupSz] = r4;
-    }
+    if (index + 12 * groupSz < elements) { out[index + 12 * groupSz] = r4; }
     if (index + 13 * groupSz < elements) {
         out[index + 13 * groupSz] = r4 >> 8;
     }
@@ -524,23 +506,19 @@ static void partialWriteOut128Bytes(uchar *out, const uint &index, const uint gr
     }
 }
 
-static void partialWriteOut128Bytes(char *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
+static void partialWriteOut128Bytes(char *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
     if (index < elements) { out[index] = (r1)&0x1; }
-    if (index + groupSz < elements) {
-        out[index + groupSz] = (r1 >> 1) & 0x1;
-    }
+    if (index + groupSz < elements) { out[index + groupSz] = (r1 >> 1) & 0x1; }
     if (index + 2 * groupSz < elements) {
         out[index + 2 * groupSz] = (r1 >> 2) & 0x1;
     }
     if (index + 3 * groupSz < elements) {
         out[index + 3 * groupSz] = (r1 >> 3) & 0x1;
     }
-    if (index + 4 * groupSz < elements) {
-        out[index + 4 * groupSz] = (r2)&0x1;
-    }
+    if (index + 4 * groupSz < elements) { out[index + 4 * groupSz] = (r2)&0x1; }
     if (index + 5 * groupSz < elements) {
         out[index + 5 * groupSz] = (r2 >> 1) & 0x1;
     }
@@ -550,9 +528,7 @@ static void partialWriteOut128Bytes(char *out, const uint &index, const uint gro
     if (index + 7 * groupSz < elements) {
         out[index + 7 * groupSz] = (r2 >> 3) & 0x1;
     }
-    if (index + 8 * groupSz < elements) {
-        out[index + 8 * groupSz] = (r3)&0x1;
-    }
+    if (index + 8 * groupSz < elements) { out[index + 8 * groupSz] = (r3)&0x1; }
     if (index + 9 * groupSz < elements) {
         out[index + 9 * groupSz] = (r3 >> 1) & 0x1;
     }
@@ -576,54 +552,50 @@ static void partialWriteOut128Bytes(char *out, const uint &index, const uint gro
     }
 }
 
-static void partialWriteOut128Bytes(short *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
+static void partialWriteOut128Bytes(short *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
     if (index < elements) { out[index] = r1; }
     if (index + groupSz < elements) { out[index + groupSz] = r1 >> 16; }
     if (index + 2 * groupSz < elements) { out[index + 2 * groupSz] = r2; }
-    if (index + 3 * groupSz < elements) {
-        out[index + 3 * groupSz] = r2 >> 16;
-    }
+    if (index + 3 * groupSz < elements) { out[index + 3 * groupSz] = r2 >> 16; }
     if (index + 4 * groupSz < elements) { out[index + 4 * groupSz] = r3; }
-    if (index + 5 * groupSz < elements) {
-        out[index + 5 * groupSz] = r3 >> 16;
-    }
+    if (index + 5 * groupSz < elements) { out[index + 5 * groupSz] = r3 >> 16; }
     if (index + 6 * groupSz < elements) { out[index + 6 * groupSz] = r4; }
-    if (index + 7 * groupSz < elements) {
-        out[index + 7 * groupSz] = r4 >> 16;
-    }
+    if (index + 7 * groupSz < elements) { out[index + 7 * groupSz] = r4 >> 16; }
 }
 
-static void partialWriteOut128Bytes(ushort *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
-    partialWriteOut128Bytes((short *)(out), index, groupSz, r1, r2, r3, r4, elements);
+static void partialWriteOut128Bytes(ushort *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
+    partialWriteOut128Bytes((short *)(out), index, groupSz, r1, r2, r3, r4,
+                            elements);
 }
 
-static void partialWriteOut128Bytes(int *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
+static void partialWriteOut128Bytes(int *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
     if (index < elements) { out[index] = r1; }
     if (index + groupSz < elements) { out[index + groupSz] = r2; }
     if (index + 2 * groupSz < elements) { out[index + 2 * groupSz] = r3; }
     if (index + 3 * groupSz < elements) { out[index + 3 * groupSz] = r4; }
 }
 
-static void partialWriteOut128Bytes(uint *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
-    partialWriteOut128Bytes((int *)(out), index, groupSz, r1, r2, r3, r4, elements);
+static void partialWriteOut128Bytes(uint *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
+    partialWriteOut128Bytes((int *)(out), index, groupSz, r1, r2, r3, r4,
+                            elements);
 }
 
-static void partialWriteOut128Bytes(intl *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
+static void partialWriteOut128Bytes(intl *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
     intl c1 = r2;
     c1      = (c1 << 32) | r1;
     intl c2 = r4;
@@ -632,17 +604,18 @@ static void partialWriteOut128Bytes(intl *out, const uint &index, const uint gro
     if (index + groupSz < elements) { out[index + groupSz] = c2; }
 }
 
-static void partialWriteOut128Bytes(uintl *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
-    partialWriteOut128Bytes((intl *)(out), index, groupSz, r1, r2, r3, r4, elements);
+static void partialWriteOut128Bytes(uintl *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
+    partialWriteOut128Bytes((intl *)(out), index, groupSz, r1, r2, r3, r4,
+                            elements);
 }
 
-static void partialWriteOut128Bytes(float *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
+static void partialWriteOut128Bytes(float *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
     if (index < elements) { out[index] = 1.f - getFloat01(r1); }
     if (index + groupSz < elements) {
         out[index + groupSz] = 1.f - getFloat01(r2);
@@ -655,10 +628,10 @@ static void partialWriteOut128Bytes(float *out, const uint &index, const uint gr
     }
 }
 
-static void partialWriteOut128Bytes(cfloat *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
+static void partialWriteOut128Bytes(cfloat *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
     if (index < elements) {
         out[index] = {1.f - getFloat01(r1), 1.f - getFloat01(r2)};
     }
@@ -667,29 +640,31 @@ static void partialWriteOut128Bytes(cfloat *out, const uint &index, const uint g
     }
 }
 
-static void partialWriteOut128Bytes(double *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
+static void partialWriteOut128Bytes(double *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
     if (index < elements) { out[index] = 1.0 - getDouble01(r1, r2); }
     if (index + groupSz < elements) {
         out[index + groupSz] = 1.0 - getDouble01(r3, r4);
     }
 }
 
-static void partialWriteOut128Bytes(cdouble *out, const uint &index, const uint groupSz,
-                                               const uint &r1, const uint &r2,
-                                               const uint &r3, const uint &r4,
-                                               const uint &elements) {
+static void partialWriteOut128Bytes(cdouble *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
     if (index < elements) {
         out[index] = {1.0 - getDouble01(r1, r2), 1.0 - getDouble01(r3, r4)};
     }
 }
 
 // Normalized writes with boundary checking
-static void partialBoxMullerWriteOut128Bytes(
-    float *out, const uint &index, const uint groupSz, const uint &r1, const uint &r2,
-    const uint &r3, const uint &r4, const uint &elements) {
+static void partialBoxMullerWriteOut128Bytes(float *out, const uint &index,
+                                             const uint groupSz, const uint &r1,
+                                             const uint &r2, const uint &r3,
+                                             const uint &r4,
+                                             const uint &elements) {
     float n1, n2, n3, n4;
     boxMullerTransform(&n1, &n2, getFloatNegative11(r1), getFloat01(r2));
     boxMullerTransform(&n3, &n4, getFloatNegative11(r3), getFloat01(r4));
@@ -699,23 +674,23 @@ static void partialBoxMullerWriteOut128Bytes(
     if (index + 3 * groupSz < elements) { out[index + 3 * groupSz] = n4; }
 }
 
-static void partialBoxMullerWriteOut128Bytes(
-    cfloat *out, const uint &index, const uint groupSz, const uint &r1, const uint &r2,
-    const uint &r3, const uint &r4, const uint &elements) {
+static void partialBoxMullerWriteOut128Bytes(cfloat *out, const uint &index,
+                                             const uint groupSz, const uint &r1,
+                                             const uint &r2, const uint &r3,
+                                             const uint &r4,
+                                             const uint &elements) {
     float n1, n2, n3, n4;
     boxMullerTransform(&n1, &n2, getFloatNegative11(r1), getFloat01(r2));
     boxMullerTransform(&n3, &n4, getFloatNegative11(r3), getFloat01(r4));
-    if (index < elements) {
-        out[index] = {n1, n2};
-    }
-    if (index + groupSz < elements) {
-        out[index + groupSz] = {n3, n4};
-    }
+    if (index < elements) { out[index] = {n1, n2}; }
+    if (index + groupSz < elements) { out[index + groupSz] = {n3, n4}; }
 }
 
-static void partialBoxMullerWriteOut128Bytes(
-    double *out, const uint &index, const uint groupSz, const uint &r1, const uint &r2,
-    const uint &r3, const uint &r4, const uint &elements) {
+static void partialBoxMullerWriteOut128Bytes(double *out, const uint &index,
+                                             const uint groupSz, const uint &r1,
+                                             const uint &r2, const uint &r3,
+                                             const uint &r4,
+                                             const uint &elements) {
     double n1, n2;
     boxMullerTransform(&n1, &n2, getDoubleNegative11(r1, r2),
                        getDouble01(r3, r4));
@@ -723,82 +698,79 @@ static void partialBoxMullerWriteOut128Bytes(
     if (index + groupSz < elements) { out[index + groupSz] = n2; }
 }
 
-static void partialBoxMullerWriteOut128Bytes(
-    cdouble *out, const uint &index, const uint groupSz, const uint &r1, const uint &r2,
-    const uint &r3, const uint &r4, const uint &elements) {
+static void partialBoxMullerWriteOut128Bytes(cdouble *out, const uint &index,
+                                             const uint groupSz, const uint &r1,
+                                             const uint &r2, const uint &r3,
+                                             const uint &r4,
+                                             const uint &elements) {
     double n1, n2;
     boxMullerTransform(&n1, &n2, getDoubleNegative11(r1, r2),
                        getDouble01(r3, r4));
-    if (index < elements) {
-        out[index] = {n1, n2};
-    }
+    if (index < elements) { out[index] = {n1, n2}; }
 }
 
-static void partialWriteOut128Bytes(common::half *out, 
-                                             const uint &index, const uint groupSz,
-                                             const uint &r1, const uint &r2,
-                                             const uint &r3, const uint &r4,
-                                             const uint &elements) {
-//  if (index < elements) { out[index] = oneMinusGetHalf01(r1); }
-//  if (index + groupSz < elements) {
-//      out[index + groupSz] = oneMinusGetHalf01(r1 >> 16);
-//  }
-//  if (index + 2 * groupSz < elements) {
-//      out[index + 2 * groupSz] = oneMinusGetHalf01(r2);
-//  }
-//  if (index + 3 * groupSz < elements) {
-//      out[index + 3 * groupSz] = oneMinusGetHalf01(r2 >> 16);
-//  }
-//  if (index + 4 * groupSz < elements) {
-//      out[index + 4 * groupSz] = oneMinusGetHalf01(r3);
-//  }
-//  if (index + 5 * groupSz < elements) {
-//      out[index + 5 * groupSz] = oneMinusGetHalf01(r3 >> 16);
-//  }
-//  if (index + 6 * groupSz < elements) {
-//      out[index + 6 * groupSz] = oneMinusGetHalf01(r4);
-//  }
-//  if (index + 7 * groupSz < elements) {
-//      out[index + 7 * groupSz] = oneMinusGetHalf01(r4 >> 16);
-//  }
+static void partialWriteOut128Bytes(common::half *out, const uint &index,
+                                    const uint groupSz, const uint &r1,
+                                    const uint &r2, const uint &r3,
+                                    const uint &r4, const uint &elements) {
+    //  if (index < elements) { out[index] = oneMinusGetHalf01(r1); }
+    //  if (index + groupSz < elements) {
+    //      out[index + groupSz] = oneMinusGetHalf01(r1 >> 16);
+    //  }
+    //  if (index + 2 * groupSz < elements) {
+    //      out[index + 2 * groupSz] = oneMinusGetHalf01(r2);
+    //  }
+    //  if (index + 3 * groupSz < elements) {
+    //      out[index + 3 * groupSz] = oneMinusGetHalf01(r2 >> 16);
+    //  }
+    //  if (index + 4 * groupSz < elements) {
+    //      out[index + 4 * groupSz] = oneMinusGetHalf01(r3);
+    //  }
+    //  if (index + 5 * groupSz < elements) {
+    //      out[index + 5 * groupSz] = oneMinusGetHalf01(r3 >> 16);
+    //  }
+    //  if (index + 6 * groupSz < elements) {
+    //      out[index + 6 * groupSz] = oneMinusGetHalf01(r4);
+    //  }
+    //  if (index + 7 * groupSz < elements) {
+    //      out[index + 7 * groupSz] = oneMinusGetHalf01(r4 >> 16);
+    //  }
 }
-
 
 // Normalized writes with boundary checking
 static void partialBoxMullerWriteOut128Bytes(
-    common::half *out, const uint &index, const uint groupSz,
-    const uint &r1, const uint &r2,
-    const uint &r3, const uint &r4, const uint &elements) {
-//    common::half n[8];
-//    boxMullerTransform(n + 0, n + 1, getHalfNegative11(r1),
-//                       getHalf01(r1 >> 16));
-//    boxMullerTransform(n + 2, n + 3, getHalfNegative11(r2),
-//                       getHalf01(r2 >> 16));
-//    boxMullerTransform(n + 4, n + 5, getHalfNegative11(r3),
-//                       getHalf01(r3 >> 16));
-//    boxMullerTransform(n + 6, n + 7, getHalfNegative11(r4),
-//                       getHalf01(r4 >> 16));
-//    if (index < elements) { out[index] = n[0]; }
-//    if (index + groupSz < elements) { out[index + groupSz] = n[1]; }
-//    if (index + 2 * groupSz < elements) {
-//        out[index + 2 * groupSz] = n[2];
-//    }
-//    if (index + 3 * groupSz < elements) {
-//        out[index + 3 * groupSz] = n[3];
-//    }
-//    if (index + 4 * groupSz < elements) {
-//        out[index + 4 * groupSz] = n[4];
-//    }
-//    if (index + 5 * groupSz < elements) {
-//        out[index + 5 * groupSz] = n[5];
-//    }
-//    if (index + 6 * groupSz < elements) {
-//        out[index + 6 * groupSz] = n[6];
-//    }
-//    if (index + 7 * groupSz < elements) {
-//        out[index + 7 * groupSz] = n[7];
-//    }
+    common::half *out, const uint &index, const uint groupSz, const uint &r1,
+    const uint &r2, const uint &r3, const uint &r4, const uint &elements) {
+    //    common::half n[8];
+    //    boxMullerTransform(n + 0, n + 1, getHalfNegative11(r1),
+    //                       getHalf01(r1 >> 16));
+    //    boxMullerTransform(n + 2, n + 3, getHalfNegative11(r2),
+    //                       getHalf01(r2 >> 16));
+    //    boxMullerTransform(n + 4, n + 5, getHalfNegative11(r3),
+    //                       getHalf01(r3 >> 16));
+    //    boxMullerTransform(n + 6, n + 7, getHalfNegative11(r4),
+    //                       getHalf01(r4 >> 16));
+    //    if (index < elements) { out[index] = n[0]; }
+    //    if (index + groupSz < elements) { out[index + groupSz] = n[1]; }
+    //    if (index + 2 * groupSz < elements) {
+    //        out[index + 2 * groupSz] = n[2];
+    //    }
+    //    if (index + 3 * groupSz < elements) {
+    //        out[index + 3 * groupSz] = n[3];
+    //    }
+    //    if (index + 4 * groupSz < elements) {
+    //        out[index + 4 * groupSz] = n[4];
+    //    }
+    //    if (index + 5 * groupSz < elements) {
+    //        out[index + 5 * groupSz] = n[5];
+    //    }
+    //    if (index + 6 * groupSz < elements) {
+    //        out[index + 6 * groupSz] = n[6];
+    //    }
+    //    if (index + 7 * groupSz < elements) {
+    //        out[index + 7 * groupSz] = n[7];
+    //    }
 }
 
-} // namespace kernel
-} // namespace oneapi
+}  // namespace kernel
+}  // namespace oneapi

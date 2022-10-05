@@ -19,7 +19,6 @@ namespace oneapi {
 
 template<typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity) {
-
     ONEAPI_NOT_SUPPORTED("regions Not supported");
 
     const af::dim4 &dims = in.dims();

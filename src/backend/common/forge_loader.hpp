@@ -43,7 +43,6 @@
 /* Other */
 #endif
 
-
 class ForgeModule : public common::DependencyModule {
    public:
     ForgeModule();

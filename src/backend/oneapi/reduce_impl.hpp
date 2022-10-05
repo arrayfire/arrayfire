@@ -24,7 +24,6 @@ Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan,
     ONEAPI_NOT_SUPPORTED("");
     Array<To> out = createEmptyArray<To>(1);
     return out;
-
 }
 
 template<af_op_t op, typename Ti, typename Tk, typename To>

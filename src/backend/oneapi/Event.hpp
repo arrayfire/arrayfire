@@ -17,7 +17,7 @@ class OneAPIEventPolicy {
    public:
     using EventType = sycl::event;
     using QueueType = sycl::queue;
-    //using ErrorType = sycl::exception; //does this make sense
+    // using ErrorType = sycl::exception; //does this make sense
     using ErrorType = int;
 
     static ErrorType createAndMarkEvent(EventType *e) noexcept {
@@ -26,23 +26,23 @@ class OneAPIEventPolicy {
     }
 
     static ErrorType markEvent(EventType *e, QueueType stream) noexcept {
-        //return clEnqueueMarkerWithWaitList(stream, 0, nullptr, e);
-      return 0;
+        // return clEnqueueMarkerWithWaitList(stream, 0, nullptr, e);
+        return 0;
     }
 
     static ErrorType waitForEvent(EventType *e, QueueType stream) noexcept {
-        //return clEnqueueMarkerWithWaitList(stream, 1, e, nullptr);
-      return 0;
+        // return clEnqueueMarkerWithWaitList(stream, 1, e, nullptr);
+        return 0;
     }
 
     static ErrorType syncForEvent(EventType *e) noexcept {
-        //return clWaitForEvents(1, e);
-      return 0;
+        // return clWaitForEvents(1, e);
+        return 0;
     }
 
     static ErrorType destroyEvent(EventType *e) noexcept {
-        //return clReleaseEvent(*e);
-      return 0;
+        // return clReleaseEvent(*e);
+        return 0;
     }
 };
 

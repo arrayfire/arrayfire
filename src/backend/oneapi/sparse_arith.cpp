@@ -8,8 +8,8 @@
  ********************************************************/
 
 // #include <kernel/sparse_arith.hpp>
-#include <sparse.hpp>
 #include <err_oneapi.hpp>
+#include <sparse.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -141,9 +141,9 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     auto outValues = createEmptyArray<T>(dim4(nnzC));
 
     // kernel::ssArithCSR<T, op>(outValues, outColIdx, outRowIdx, M, N, nnzA,
-    //                           lhs.getValues(), lhs.getRowIdx(), lhs.getColIdx(),
-    //                           nnzB, rhs.getValues(), rhs.getRowIdx(),
-    //                           rhs.getColIdx());
+    //                           lhs.getValues(), lhs.getRowIdx(),
+    //                           lhs.getColIdx(), nnzB, rhs.getValues(),
+    //                           rhs.getRowIdx(), rhs.getColIdx());
 
     SparseArray<T> retVal = createArrayDataSparseArray(
         ldims, outValues, outRowIdx, outColIdx, sfmt);

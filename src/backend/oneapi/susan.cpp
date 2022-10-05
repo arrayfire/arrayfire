@@ -36,7 +36,8 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
     ONEAPI_NOT_SUPPORTED("");
     return 0;
 
-    // kernel::susan<T>(resp.get(), in.get(), in.getOffset(), idims[0], idims[1],
+    // kernel::susan<T>(resp.get(), in.get(), in.getOffset(), idims[0],
+    // idims[1],
     //                  diff_thr, geom_thr, edge, radius);
 
     // unsigned corners_found = kernel::nonMaximal<T>(
@@ -72,4 +73,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}  // namespace oneap
+}  // namespace oneapi

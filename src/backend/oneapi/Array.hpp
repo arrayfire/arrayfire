@@ -46,33 +46,33 @@ class Array;
 template<typename T>
 void evalMultiple(std::vector<Array<T> *> arrays);
 
-  template<typename T>
+template<typename T>
 void evalNodes(Param<T> &out, common::Node *node);
 
-  template<typename T>
-  void evalNodes(std::vector<Param<T>> &outputs,
-                 const std::vector<common::Node *> &nodes);
+template<typename T>
+void evalNodes(std::vector<Param<T>> &outputs,
+               const std::vector<common::Node *> &nodes);
 
-  /// Creates a new Array object on the heap and returns a reference to it.
-  template<typename T>
-  Array<T> createNodeArray(const af::dim4 &dims, common::Node_ptr node);
+/// Creates a new Array object on the heap and returns a reference to it.
+template<typename T>
+Array<T> createNodeArray(const af::dim4 &dims, common::Node_ptr node);
 
-  /// Creates a new Array object on the heap and returns a reference to it.
-  template<typename T>
-  Array<T> createValueArray(const af::dim4 &dims, const T &value);
+/// Creates a new Array object on the heap and returns a reference to it.
+template<typename T>
+Array<T> createValueArray(const af::dim4 &dims, const T &value);
 
-  /// Creates a new Array object on the heap and returns a reference to it.
-  template<typename T>
-  Array<T> createHostDataArray(const af::dim4 &dims, const T *const data);
+/// Creates a new Array object on the heap and returns a reference to it.
+template<typename T>
+Array<T> createHostDataArray(const af::dim4 &dims, const T *const data);
 
-  template<typename T>
-  Array<T> createDeviceDataArray(const af::dim4 &dims, void *data);
+template<typename T>
+Array<T> createDeviceDataArray(const af::dim4 &dims, void *data);
 
-  template<typename T>
-  Array<T> createStridedArray(const af::dim4 &dims, const af::dim4 &strides,
-                              dim_t offset, const T *const in_data,
-                              bool is_device) {
-      return Array<T>(dims, strides, offset, in_data, is_device);
+template<typename T>
+Array<T> createStridedArray(const af::dim4 &dims, const af::dim4 &strides,
+                            dim_t offset, const T *const in_data,
+                            bool is_device) {
+    return Array<T>(dims, strides, offset, in_data, is_device);
 }
 
 /// Copies data to an existing Array object from a host pointer
@@ -122,13 +122,13 @@ void *getDevicePtr(const Array<T> &arr);
 
 template<typename T>
 void *getRawPtr(const Array<T> &arr) {
-  //const sycl::buffer<T> *buf = arr.get();
-  //if (!buf) return NULL;
-  //cl_mem mem = (*buf)();
-  //return (void *)mem;
+    // const sycl::buffer<T> *buf = arr.get();
+    // if (!buf) return NULL;
+    // cl_mem mem = (*buf)();
+    // return (void *)mem;
 
-  // TODO:
-  return nullptr;
+    // TODO:
+    return nullptr;
 }
 
 template<typename T>
@@ -159,7 +159,8 @@ class Array {
     explicit Array(const af::dim4 &dims, common::Node_ptr n);
     explicit Array(const af::dim4 &dims, const T *const in_data);
 
-  explicit Array(const af::dim4 &dims, sycl::buffer<T>* const mem, size_t offset, bool copy);
+    explicit Array(const af::dim4 &dims, sycl::buffer<T> *const mem,
+                   size_t offset, bool copy);
 
    public:
     Array(const Array<T> &other) = default;
@@ -267,14 +268,14 @@ class Array {
         return out;
     }
 
-  operator KParam() const {
-      KParam kinfo = {
-          {dims()[0], dims()[1], dims()[2], dims()[3]},
-          {strides()[0], strides()[1], strides()[2], strides()[3]},
-          getOffset()};
+    operator KParam() const {
+        KParam kinfo = {
+            {dims()[0], dims()[1], dims()[2], dims()[3]},
+            {strides()[0], strides()[1], strides()[2], strides()[3]},
+            getOffset()};
 
-      return kinfo;
-  }
+        return kinfo;
+    }
 
     common::Node_ptr getNode() const;
     common::Node_ptr getNode();
@@ -285,16 +286,16 @@ class Array {
         if (!isReady()) eval();
         auto func = [data = data](void *ptr) {
             if (ptr != nullptr) {
-              //cl_int err = getQueue().enqueueUnmapMemObject(*data, ptr);
-              //UNUSED(err);
+                // cl_int err = getQueue().enqueueUnmapMemObject(*data, ptr);
+                // UNUSED(err);
                 ptr = nullptr;
             }
         };
 
-        //T *ptr = (T *)getQueue().enqueueMapBuffer(
-            //*static_cast<const sycl::buffer<T> *>(get()), CL_TRUE, map_flags,
-            //getOffset() * sizeof(T), elements() * sizeof(T), nullptr, nullptr,
-            //nullptr);
+        // T *ptr = (T *)getQueue().enqueueMapBuffer(
+        //*static_cast<const sycl::buffer<T> *>(get()), CL_TRUE, map_flags,
+        // getOffset() * sizeof(T), elements() * sizeof(T), nullptr, nullptr,
+        // nullptr);
 
         return mapped_ptr<T>(nullptr, func);
     }

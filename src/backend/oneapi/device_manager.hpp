@@ -77,7 +77,7 @@ class DeviceManager {
 
     friend int getDeviceCount() noexcept;
 
-    //friend int getDeviceIdFromNativeId(cl_device_id id);
+    // friend int getDeviceIdFromNativeId(cl_device_id id);
 
     friend const sycl::context& getContext();
 
@@ -147,8 +147,8 @@ class DeviceManager {
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
     std::mutex mutex;
 
-  //using BoostProgCache = boost::shared_ptr<boost::compute::program_cache>;
-  //std::vector<BoostProgCache*> mBoostProgCacheVector;
+    // using BoostProgCache = boost::shared_ptr<boost::compute::program_cache>;
+    // std::vector<BoostProgCache*> mBoostProgCacheVector;
 };
 
 }  // namespace oneapi

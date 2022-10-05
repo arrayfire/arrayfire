@@ -16,7 +16,7 @@ namespace oneapi {
 
 template<typename T>
 Param<T> makeParam(sycl::buffer<T> &mem, int off, const int dims[4],
-                const int strides[4]) {
+                   const int strides[4]) {
     Param<T> out;
     out.data        = &mem;
     out.info.offset = off;

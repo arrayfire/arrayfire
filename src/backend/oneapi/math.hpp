@@ -146,7 +146,6 @@ inline common::half operator+(common::half lhs, common::half rhs) noexcept {
 }
 }  // namespace oneapi
 
-
 #if defined(__GNUC__) || defined(__GNUG__)
 /* GCC/G++, Clang/LLVM, Intel ICC */
 #pragma GCC diagnostic pop

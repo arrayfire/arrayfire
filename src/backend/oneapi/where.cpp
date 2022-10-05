@@ -18,11 +18,11 @@ namespace oneapi {
 
 template<typename T>
 Array<uint> where(const Array<T> &in) {
-    //Param<uint> Out;
+    // Param<uint> Out;
     // Param<T> In = in;
     ONEAPI_NOT_SUPPORTED("where Not supported");
     // kernel::where<T>(Out, In);
-    //return createParamArray<uint>(Out, true);
+    // return createParamArray<uint>(Out, true);
     return createEmptyArray<uint>(af::dim4(1));
 }
 
@@ -41,4 +41,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-}  // namespace opencl
+}  // namespace oneapi
