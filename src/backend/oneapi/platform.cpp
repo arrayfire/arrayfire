@@ -7,19 +7,19 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/graphics_common.hpp>
 #include <GraphicsResourceManager.hpp>
 #include <blas.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
+#include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>
 #include <err_oneapi.hpp>
 #include <errorcodes.hpp>
+#include <memory.hpp>
 #include <version.hpp>
 #include <af/version.h>
-#include <memory.hpp>
 
 #ifdef OS_MAC
 #include <OpenGL/CGLCurrent.h>
@@ -36,10 +36,10 @@
 #include <utility>
 #include <vector>
 
-using sycl::queue;
 using sycl::context;
 using sycl::device;
 using sycl::platform;
+using sycl::queue;
 
 using std::begin;
 using std::call_once;
@@ -90,7 +90,7 @@ bool verify_present(const string& pname, const string ref) {
     return iter != end(pname);
 }
 
-//TODO: update to new platforms?
+// TODO: update to new platforms?
 static string platformMap(string& platStr) {
     using strmap_t                = map<string, string>;
     static const strmap_t platMap = {
@@ -141,7 +141,7 @@ string getDeviceInfo() noexcept {
         common::lock_guard_t lock(devMngr.deviceMutex);
         unsigned nDevices = 0;
         for (auto& device : devMngr.mDevices) {
-            //const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
+            // const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
 
             string dstr = device->get_info<sycl::info::device::name>();
             bool show_braces =
@@ -150,21 +150,22 @@ string getDeviceInfo() noexcept {
             string id = (show_braces ? string("[") : "-") +
                         to_string(nDevices) + (show_braces ? string("]") : "-");
 
-            size_t msize = device->get_info<sycl::info::device::global_mem_size>();
+            size_t msize =
+                device->get_info<sycl::info::device::global_mem_size>();
             info << id << " " << getPlatformName(*device) << ": " << ltrim(dstr)
                  << ", " << msize / 1048576 << " MB";
 #ifndef NDEBUG
             info << " -- ";
             string devVersion = device->get_info<sycl::info::device::version>();
-            string driVersion = device->get_info<sycl::info::device::driver_version>();
+            string driVersion =
+                device->get_info<sycl::info::device::driver_version>();
             info << devVersion;
             info << " -- Device driver " << driVersion;
-            info
-                << " -- FP64 Support: "
-                << (device->get_info<sycl::info::device::preferred_vector_width_double>() >
-                            0
-                        ? "True"
-                        : "False");
+            info << " -- FP64 Support: "
+                 << (device->get_info<sycl::info::device::
+                                          preferred_vector_width_double>() > 0
+                         ? "True"
+                         : "False");
             info << " -- Unified Memory ("
                  << (isHostUnifiedMemory(*device) ? "True" : "False") << ")";
 #endif
@@ -182,8 +183,9 @@ string getDeviceInfo() noexcept {
 }
 
 string getPlatformName(const sycl::device& device) {
-    std::string platStr = device.get_platform().get_info<sycl::info::platform::name>();
-    //return platformMap(platStr);
+    std::string platStr =
+        device.get_platform().get_info<sycl::info::platform::name>();
+    // return platformMap(platStr);
     return platStr;
 }
 
@@ -309,7 +311,8 @@ size_t getHostMemorySize() { return common::getHostMemorySize(); }
 
 sycl::info::device_type getDeviceType() {
     const sycl::device& device = getDevice();
-    sycl::info::device_type type = device.get_info<sycl::info::device::device_type>();
+    sycl::info::device_type type =
+        device.get_info<sycl::info::device::device_type>();
     return type;
 }
 
@@ -409,20 +412,20 @@ void addDeviceContext(sycl::device dev, sycl::context ctx, sycl::queue que) {
         auto tDevice  = make_unique<sycl::device>(dev);
         auto tContext = make_unique<sycl::context>(ctx);
         // queue atleast has implicit context and device if created
-        auto tQueue   = make_unique<sycl::queue>(que);
+        auto tQueue = make_unique<sycl::queue>(que);
 
         devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.push_back(false);
-        devMngr.mDeviceTypes.push_back(
-            static_cast<int>(tDevice->get_info<sycl::info::device::device_type>()));
+        devMngr.mDeviceTypes.push_back(static_cast<int>(
+            tDevice->get_info<sycl::info::device::device_type>()));
 
         devMngr.mDevices.push_back(move(tDevice));
         devMngr.mContexts.push_back(move(tContext));
         devMngr.mQueues.push_back(move(tQueue));
         nDevices = static_cast<int>(devMngr.mDevices.size()) - 1;
 
-        //TODO: cache?
+        // TODO: cache?
     }
 
     // Last/newly added device needs memory management
@@ -437,8 +440,7 @@ void setDeviceContext(sycl::device dev, sycl::context ctx) {
 
     const int dCount = static_cast<int>(devMngr.mDevices.size());
     for (int i = 0; i < dCount; ++i) {
-        if (*devMngr.mDevices[i] == dev &&
-            *devMngr.mContexts[i] == ctx) {
+        if (*devMngr.mDevices[i] == dev && *devMngr.mContexts[i] == ctx) {
             setActiveContext(i);
             return;
         }
@@ -459,8 +461,7 @@ void removeDeviceContext(sycl::device dev, sycl::context ctx) {
 
         const int dCount = static_cast<int>(devMngr.mDevices.size());
         for (int i = 0; i < dCount; ++i) {
-            if (*devMngr.mDevices[i] == dev &&
-                *devMngr.mContexts[i] == ctx) {
+            if (*devMngr.mDevices[i] == dev && *devMngr.mContexts[i] == ctx) {
                 deleteIdx = i;
                 break;
             }
@@ -608,7 +609,8 @@ GraphicsResourceManager& interopManager() {
 }  // namespace oneapi
 
 /*
-//TODO: select which external api functions to expose and add to header+implement
+//TODO: select which external api functions to expose and add to
+header+implement
 
 using namespace oneapi;
 

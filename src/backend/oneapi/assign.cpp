@@ -59,7 +59,7 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
             // direct buffer allocation as opposed to mem manager to avoid
             // reference count desprepancies between different backends
             static auto* empty = new sycl::buffer<uint>(sycl::range{1});
-            bPtrs[x] = empty;
+            bPtrs[x]           = empty;
         }
     }
 

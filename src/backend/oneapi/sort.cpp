@@ -19,7 +19,6 @@
 namespace oneapi {
 template<typename T>
 Array<T> sort(const Array<T> &in, const unsigned dim, bool isAscending) {
-
     ONEAPI_NOT_SUPPORTED("sort Not supported");
 
     try {

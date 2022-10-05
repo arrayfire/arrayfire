@@ -7,8 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #include <kernel/triangle.hpp>
-#include <triangle.hpp>
+
 #include <err_oneapi.hpp>
+#include <triangle.hpp>
 
 #include <Array.hpp>
 #include <common/half.hpp>
@@ -52,4 +53,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(half)
 
-}  // namespace opencl
+}  // namespace oneapi

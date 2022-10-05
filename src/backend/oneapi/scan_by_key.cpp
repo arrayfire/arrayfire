@@ -20,7 +20,6 @@ namespace oneapi {
 template<af_op_t op, typename Ti, typename Tk, typename To>
 Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
                bool inclusive_scan) {
-
     ONEAPI_NOT_SUPPORTED("scan Not supported");
 
     Array<To> out = createEmptyArray<To>(in.dims());
@@ -30,9 +29,11 @@ Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
     // Param In  = in;
 
     // if (dim == 0) {
-    //     // kernel::scanFirstByKey<Ti, Tk, To, op>(Out, In, Key, inclusive_scan);
+    //     // kernel::scanFirstByKey<Ti, Tk, To, op>(Out, In, Key,
+    //     inclusive_scan);
     // } else {
-    //     // kernel::scanDimByKey<Ti, Tk, To, op>(Out, In, Key, dim, inclusive_scan);
+    //     // kernel::scanDimByKey<Ti, Tk, To, op>(Out, In, Key, dim,
+    //     inclusive_scan);
     // }
     return out;
 }

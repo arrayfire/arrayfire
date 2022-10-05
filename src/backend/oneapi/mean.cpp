@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <mean.hpp>
 #include <err_oneapi.hpp>
+#include <mean.hpp>
 
 #include <common/half.hpp>
 // #include <kernel/mean.hpp>
@@ -21,7 +21,6 @@ using std::swap;
 namespace oneapi {
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti>& in) {
-
     ONEAPI_NOT_SUPPORTED("mean Not supported");
 
     return To(0);
@@ -30,7 +29,6 @@ To mean(const Array<Ti>& in) {
 
 template<typename T, typename Tw>
 T mean(const Array<T>& in, const Array<Tw>& wts) {
-
     ONEAPI_NOT_SUPPORTED("mean Not supported");
 
     return T(0);
@@ -39,7 +37,6 @@ T mean(const Array<T>& in, const Array<Tw>& wts) {
 
 template<typename Ti, typename Tw, typename To>
 Array<To> mean(const Array<Ti>& in, const int dim) {
-
     ONEAPI_NOT_SUPPORTED("mean Not supported");
 
     dim4 odims    = in.dims();
@@ -51,7 +48,6 @@ Array<To> mean(const Array<Ti>& in, const int dim) {
 
 template<typename T, typename Tw>
 Array<T> mean(const Array<T>& in, const Array<Tw>& wts, const int dim) {
-
     ONEAPI_NOT_SUPPORTED("mean Not supported");
 
     dim4 odims   = in.dims();

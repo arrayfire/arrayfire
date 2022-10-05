@@ -59,13 +59,15 @@ template<typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot,
         const Array<T> &in) {
     ONEAPI_NOT_SUPPORTED("");
-    AF_ERROR("Linear Algebra is disabled on OneAPI backend", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is disabled on OneAPI backend",
+             AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     ONEAPI_NOT_SUPPORTED("");
-    AF_ERROR("Linear Algebra is disabled on OneAPI backend", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is disabled on OneAPI backend",
+             AF_ERR_NOT_CONFIGURED);
 }
 
 bool isLAPACKAvailable() { return false; }

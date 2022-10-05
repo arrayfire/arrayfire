@@ -19,8 +19,7 @@ using af::dim4;
 
 namespace oneapi {
 
-void setFFTPlanCacheSize(size_t numPlans) {
-}
+void setFFTPlanCacheSize(size_t numPlans) {}
 
 /*
 template<typename T>

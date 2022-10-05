@@ -21,7 +21,6 @@ namespace oneapi {
 
 template<typename T>
 Array<T> morph(const Array<T> &in, const Array<T> &mask, bool isDilation) {
-
     ONEAPI_NOT_SUPPORTED("morph Not supported");
 
     // const dim4 mdims = mask.dims();
@@ -39,7 +38,6 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask, bool isDilation) {
 
 template<typename T>
 Array<T> morph3d(const Array<T> &in, const Array<T> &mask, bool isDilation) {
-
     ONEAPI_NOT_SUPPORTED("morph3d Not supported");
 
     // const dim4 mdims = mask.dims();

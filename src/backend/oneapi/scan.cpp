@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <scan.hpp>
 #include <err_oneapi.hpp>
+#include <scan.hpp>
 
 // #include <kernel/scan_dim.hpp>
 // #include <kernel/scan_first.hpp>
@@ -16,7 +16,6 @@
 namespace oneapi {
 template<af_op_t op, typename Ti, typename To>
 Array<To> scan(const Array<Ti>& in, const int dim, bool inclusiveScan) {
-
     ONEAPI_NOT_SUPPORTED("scan Not supported");
 
     Array<To> out = createEmptyArray<To>(in.dims());

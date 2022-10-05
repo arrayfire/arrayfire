@@ -22,15 +22,18 @@ void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
-            // kernel::transform<T>(out, in, tf, inverse, perspective, method, 1);
+            // kernel::transform<T>(out, in, tf, inverse, perspective, method,
+            // 1);
             break;
         case AF_INTERP_BILINEAR:
         case AF_INTERP_BILINEAR_COSINE:
-            // kernel::transform<T>(out, in, tf, inverse, perspective, method, 2);
+            // kernel::transform<T>(out, in, tf, inverse, perspective, method,
+            // 2);
             break;
         case AF_INTERP_BICUBIC:
         case AF_INTERP_BICUBIC_SPLINE:
-            // kernel::transform<T>(out, in, tf, inverse, perspective, method, 3);
+            // kernel::transform<T>(out, in, tf, inverse, perspective, method,
+            // 3);
             break;
         default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
     }

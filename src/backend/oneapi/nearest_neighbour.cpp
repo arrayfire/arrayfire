@@ -24,7 +24,6 @@ template<typename T, typename To, af_match_type dist_type>
 void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
                         const Array<T>& query, const Array<T>& train,
                         const uint dist_dim, const uint n_dist) {
-
     ONEAPI_NOT_SUPPORTED("nearest_neighbour_ Not supported");
 
     uint sample_dim   = (dist_dim == 0) ? 1 : 0;

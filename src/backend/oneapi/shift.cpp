@@ -70,4 +70,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
-}  // namespace opencl
+}  // namespace oneapi

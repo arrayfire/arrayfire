@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 //#include <kernel/tile.hpp>
-#include <tile.hpp>
 #include <err_oneapi.hpp>
+#include <tile.hpp>
 
 #include <Array.hpp>
 #include <common/half.hpp>

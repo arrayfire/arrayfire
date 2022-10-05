@@ -37,7 +37,6 @@ namespace oneapi {
 template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
                  const af_mat_prop options) {
-
     ONEAPI_NOT_SUPPORTED("solveLU Not supported");
 
     if (OpenCLCPUOffload()) { return cpu::solveLU(A, pivot, b, options); }
@@ -62,7 +61,6 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
 
 template<typename T>
 Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
-
     ONEAPI_NOT_SUPPORTED("generalSolve Not supported");
 
     // dim4 aDims = a.dims();
@@ -102,7 +100,6 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
 
 template<typename T>
 Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
-
     ONEAPI_NOT_SUPPORTED("leastSquares Not supported");
 
     int M  = a.dims()[0];

@@ -26,17 +26,21 @@ namespace kernel {
 
 template<typename T>
 class rangeOp {
-public:
+   public:
     rangeOp(sycl::accessor<T> out, KParam oinfo, const int dim,
-               const int blocksPerMatX, const int blocksPerMatY, 
-               sycl::stream debug) :
-        out_(out), oinfo_(oinfo), dim_(dim),
-        blocksPerMatX_(blocksPerMatX), blocksPerMatY_(blocksPerMatY),
-        debug_(debug) {}
+            const int blocksPerMatX, const int blocksPerMatY,
+            sycl::stream debug)
+        : out_(out)
+        , oinfo_(oinfo)
+        , dim_(dim)
+        , blocksPerMatX_(blocksPerMatX)
+        , blocksPerMatY_(blocksPerMatY)
+        , debug_(debug) {}
 
-    void operator() (sycl::nd_item<2> it) const {
-        //printf("[%d,%d]\n", it.get_global_id(0), it.get_global_id(1));
-        //debug_ << "[" << it.get_global_id(0) << "," << it.get_global_id(1) << "]" << sycl::stream_manipulator::endl;
+    void operator()(sycl::nd_item<2> it) const {
+        // printf("[%d,%d]\n", it.get_global_id(0), it.get_global_id(1));
+        // debug_ << "[" << it.get_global_id(0) << "," << it.get_global_id(1) <<
+        // "]" << sycl::stream_manipulator::endl;
 
         const int mul0 = (dim_ == 0);
         const int mul1 = (dim_ == 1);
@@ -44,8 +48,8 @@ public:
         const int mul3 = (dim_ == 3);
 
         sycl::group g = it.get_group();
-        const int oz = g.get_group_id(0) / blocksPerMatX_;
-        const int ow = g.get_group_id(1) / blocksPerMatY_;
+        const int oz  = g.get_group_id(0) / blocksPerMatX_;
+        const int ow  = g.get_group_id(1) / blocksPerMatY_;
 
         const int blockIdx_x = g.get_group_id(0) - oz * blocksPerMatX_;
         const int blockIdx_y = g.get_group_id(1) - ow * blocksPerMatY_;
@@ -53,8 +57,8 @@ public:
         const int xx = it.get_local_id(0) + blockIdx_x * it.get_local_range(0);
         const int yy = it.get_local_id(1) + blockIdx_y * it.get_local_range(1);
 
-        if (xx >= oinfo_.dims[0] || yy >= oinfo_.dims[1] || oz >= oinfo_.dims[2] ||
-            ow >= oinfo_.dims[3])
+        if (xx >= oinfo_.dims[0] || yy >= oinfo_.dims[1] ||
+            oz >= oinfo_.dims[2] || ow >= oinfo_.dims[3])
             return;
 
         const int ozw = ow * oinfo_.strides[3] + oz * oinfo_.strides[2];
@@ -66,7 +70,7 @@ public:
 
         T* optr = out_.get_pointer();
         for (int oy = yy; oy < oinfo_.dims[1]; oy += incy) {
-           T valYZW = valZW + (mul1 * oy);
+            T valYZW = valZW + (mul1 * oy);
             int oyzw = ozw + oy * oinfo_.strides[1];
             for (int ox = xx; ox < oinfo_.dims[0]; ox += incx) {
                 int oidx = oyzw + ox;
@@ -77,14 +81,13 @@ public:
         }
     }
 
-protected:
+   protected:
     sycl::accessor<T> out_;
     KParam oinfo_;
     int dim_;
     int blocksPerMatX_, blocksPerMatY_;
     sycl::stream debug_;
 };
-
 
 template<typename T>
 void range(Param<T> out, const int dim) {
@@ -101,13 +104,14 @@ void range(Param<T> out, const int dim) {
                           local[1] * blocksPerMatY * out.info.dims[3]);
     sycl::nd_range<2> ndrange(global, local);
 
-    getQueue().submit([=] (sycl::handler &h) {
+    getQueue().submit([=](sycl::handler& h) {
         auto out_acc = out.data->get_access(h);
 
         sycl::stream debug_stream(2048, 128, h);
 
-        h.parallel_for(ndrange, rangeOp<T>(out_acc, out.info,
-            dim, blocksPerMatX, blocksPerMatY, debug_stream));
+        h.parallel_for(ndrange,
+                       rangeOp<T>(out_acc, out.info, dim, blocksPerMatX,
+                                  blocksPerMatY, debug_stream));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

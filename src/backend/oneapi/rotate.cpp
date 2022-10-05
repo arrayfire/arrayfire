@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <rotate.hpp>
 #include <err_oneapi.hpp>
+#include <rotate.hpp>
 
 // #include <kernel/rotate.hpp>
 
@@ -16,7 +16,6 @@ namespace oneapi {
 template<typename T>
 Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
                 const af_interp_type method) {
-
     ONEAPI_NOT_SUPPORTED("rotate Not supported");
 
     Array<T> out = createEmptyArray<T>(odims);

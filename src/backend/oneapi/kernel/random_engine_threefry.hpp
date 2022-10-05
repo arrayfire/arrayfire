@@ -64,10 +64,7 @@ static const uint R5 = 29;
 static const uint R6 = 16;
 static const uint R7 = 24;
 
-
-static inline void setSkeinParity(uint *ptr) {
-    *ptr = SKEIN_KS_PARITY32;
-}
+static inline void setSkeinParity(uint* ptr) { *ptr = SKEIN_KS_PARITY32; }
 
 static inline uint rotL(uint x, uint N) {
     return (x << (N & 31)) | (x >> ((32 - N) & 31));
@@ -162,17 +159,22 @@ void threefry(uint k[2], uint c[2], uint X[2]) {
 
 template<typename T>
 class uniformThreefry {
-public:
-    uniformThreefry(sycl::accessor<T> out,
-                    uint hi, uint lo, uint hic, uint loc,
+   public:
+    uniformThreefry(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
                     uint elementsPerBlock, uint elements,
-                    sycl::stream debug_stream) :
-            out_(out), hi_(hi), lo_(lo), hic_(hic), loc_(loc),
-            elementsPerBlock_(elementsPerBlock), elements_(elements), debug_(debug_stream) {}
+                    sycl::stream debug_stream)
+        : out_(out)
+        , hi_(hi)
+        , lo_(lo)
+        , hic_(hic)
+        , loc_(loc)
+        , elementsPerBlock_(elementsPerBlock)
+        , elements_(elements)
+        , debug_(debug_stream) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
-        uint index  = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
+        uint index = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
 
         uint key[2] = {lo_, hi_};
         uint ctr[4] = {loc_, hic_, 0, 0};
@@ -188,14 +190,15 @@ public:
 
         T* optr = out_.get_pointer();
         if (g.get_group_id(0) != (g.get_group_range(0) - 1)) {
-            writeOut128Bytes(optr, index, g.get_local_range(0), o[0], o[1], o[2], o[3]);
+            writeOut128Bytes(optr, index, g.get_local_range(0), o[0], o[1],
+                             o[2], o[3]);
         } else {
-            partialWriteOut128Bytes(optr, index, g.get_local_range(0), 
-                                    o[0], o[1], o[2], o[3], elements_);
+            partialWriteOut128Bytes(optr, index, g.get_local_range(0), o[0],
+                                    o[1], o[2], o[3], elements_);
         }
     }
 
-protected:
+   protected:
     sycl::accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
@@ -204,17 +207,22 @@ protected:
 
 template<typename T>
 class normalThreefry {
-public:
-    normalThreefry(sycl::accessor<T> out,
-                    uint hi, uint lo, uint hic, uint loc,
-                    uint elementsPerBlock, uint elements,
-                    sycl::stream debug_stream) :
-            out_(out), hi_(hi), lo_(lo), hic_(hic), loc_(loc),
-            elementsPerBlock_(elementsPerBlock), elements_(elements), debug_(debug_stream) {}
+   public:
+    normalThreefry(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
+                   uint elementsPerBlock, uint elements,
+                   sycl::stream debug_stream)
+        : out_(out)
+        , hi_(hi)
+        , lo_(lo)
+        , hic_(hic)
+        , loc_(loc)
+        , elementsPerBlock_(elementsPerBlock)
+        , elements_(elements)
+        , debug_(debug_stream) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
-        uint index  = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
+        uint index = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
 
         uint key[2] = {lo_, hi_};
         uint ctr[4] = {loc_, hic_, 0, 0};
@@ -230,14 +238,15 @@ public:
 
         T* optr = out_.get_pointer();
         if (g.get_group_id(0) != (g.get_group_range(0) - 1)) {
-            boxMullerWriteOut128Bytes(optr, index, g.get_local_range(0), o[0], o[1], o[2], o[3]);
+            boxMullerWriteOut128Bytes(optr, index, g.get_local_range(0), o[0],
+                                      o[1], o[2], o[3]);
         } else {
-            partialBoxMullerWriteOut128Bytes(optr, index, g.get_local_range(0), 
+            partialBoxMullerWriteOut128Bytes(optr, index, g.get_local_range(0),
                                              o[0], o[1], o[2], o[3], elements_);
         }
     }
 
-protected:
+   protected:
     sycl::accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;

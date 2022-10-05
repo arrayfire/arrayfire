@@ -21,7 +21,6 @@ namespace oneapi {
 template<typename inType, typename outType>
 Array<outType> reshape(const Array<inType> &in, const dim4 &outDims,
                        outType defaultValue, double scale) {
-
     ONEAPI_NOT_SUPPORTED("reshape Not supported");
 
     Array<outType> out = createEmptyArray<outType>(outDims);

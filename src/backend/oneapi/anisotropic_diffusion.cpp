@@ -9,8 +9,8 @@
 
 #include <Array.hpp>
 #include <anisotropic_diffusion.hpp>
-#include <err_oneapi.hpp>
 #include <copy.hpp>
+#include <err_oneapi.hpp>
 #include <af/dim4.hpp>
 
 namespace oneapi {

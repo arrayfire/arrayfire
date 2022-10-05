@@ -48,7 +48,6 @@ vector<af_index_t> indexForTopK(const int k) {
 template<typename T>
 void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
           const int k, const int dim, const af::topkFunction order) {
-
     ONEAPI_NOT_SUPPORTED("topk Not supported");
 
     // if (getDeviceType() == CL_DEVICE_TYPE_CPU) {
@@ -57,7 +56,8 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
 
     //     // TODO(umar): implement this in the kernel namespace
 
-    //     // The out_dims is of size k along the dimension of the topk operation
+    //     // The out_dims is of size k along the dimension of the topk
+    //     operation
     //     // and the same as the input dimension otherwise.
     //     dim4 out_dims(1);
     //     int ndims = in.dims().ndims();
@@ -84,7 +84,8 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
     //         *ibuf, CL_FALSE, CL_MAP_READ | CL_MAP_WRITE, 0, k * sizeof(uint),
     //         nullptr, &ev_ind));
     //     T* vptr    = static_cast<T*>(getQueue().enqueueMapBuffer(
-    //         *vbuf, CL_FALSE, CL_MAP_WRITE, 0, k * sizeof(T), nullptr, &ev_val));
+    //         *vbuf, CL_FALSE, CL_MAP_WRITE, 0, k * sizeof(T), nullptr,
+    //         &ev_val));
 
     //     vector<uint> idx(in.elements());
 

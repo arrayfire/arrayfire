@@ -26,7 +26,6 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
               const float edge_thr, const float init_sigma,
               const bool double_input, const float img_scale,
               const float feature_ratio, const bool compute_GLOH) {
-
     ONEAPI_NOT_SUPPORTED("sift Not supported");
     return 0;
 

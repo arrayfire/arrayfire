@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <gradient.hpp>
 #include <err_oneapi.hpp>
+#include <gradient.hpp>
 //#include <kernel/gradient.hpp>
 #include <math.hpp>
 #include <stdexcept>

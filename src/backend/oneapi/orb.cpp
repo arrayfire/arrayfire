@@ -25,7 +25,6 @@ unsigned orb(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
              Array<uint> &desc_out, const Array<T> &image, const float fast_thr,
              const unsigned max_feat, const float scl_fctr,
              const unsigned levels, const bool blur_img) {
-
     ONEAPI_NOT_SUPPORTED("orb Not supported");
     return 0;
 

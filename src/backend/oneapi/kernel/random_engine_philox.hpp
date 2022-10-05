@@ -58,7 +58,7 @@ constexpr uint m4x32_1 = 0xCD9E8D57;
 constexpr uint w32_0   = 0x9E3779B9;
 constexpr uint w32_1   = 0xBB67AE85;
 
-static inline void mulhilo(uint a, uint b, uint &hi, uint &lo) {
+static inline void mulhilo(uint a, uint b, uint& hi, uint& lo) {
     hi = sycl::mul_hi(a, b);
     lo = a * b;
 }
@@ -68,8 +68,8 @@ static inline void philoxBump(uint k[2]) {
     k[1] += w32_1;
 }
 
-static inline void philoxRound(const uint m0, const uint m1,
-                               const uint k[2], uint c[4]) {
+static inline void philoxRound(const uint m0, const uint m1, const uint k[2],
+                               uint c[4]) {
     uint hi0, lo0, hi1, lo1;
     mulhilo(m0, c[0], hi0, lo0);
     mulhilo(m1, c[2], hi1, lo1);
@@ -104,19 +104,25 @@ static inline void philox(uint key[2], uint ctr[4]) {
 
 template<typename T>
 class uniformPhilox {
-public:
-    uniformPhilox(sycl::accessor<T> out,
-                  uint hi, uint lo, uint hic, uint loc,
+   public:
+    uniformPhilox(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
                   uint elementsPerBlock, uint elements,
-                  sycl::stream debug_stream) :
-            out_(out), hi_(hi), lo_(lo), hic_(hic), loc_(loc),
-            elementsPerBlock_(elementsPerBlock), elements_(elements), debug_(debug_stream) {}
+                  sycl::stream debug_stream)
+        : out_(out)
+        , hi_(hi)
+        , lo_(lo)
+        , hic_(hic)
+        , loc_(loc)
+        , elementsPerBlock_(elementsPerBlock)
+        , elements_(elements)
+        , debug_(debug_stream) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
 
-        //debug_ << "<" << g.get_group_id(0)  << ":" << it.get_local_id(0) << "/" << g.get_group_range(0) << sycl::stream_manipulator::endl;
-        uint index  = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
+        // debug_ << "<" << g.get_group_id(0)  << ":" << it.get_local_id(0) <<
+        // "/" << g.get_group_range(0) << sycl::stream_manipulator::endl;
+        uint index = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
         uint key[2] = {lo_, hi_};
         uint ctr[4] = {loc_, hic_, 0, 0};
         ctr[0] += index;
@@ -125,15 +131,16 @@ public:
         T* optr = out_.get_pointer();
         if (g.get_group_id(0) != (g.get_group_range(0) - 1)) {
             philox(key, ctr);
-            writeOut128Bytes(optr, index, g.get_local_range(0), ctr[0], ctr[1], ctr[2], ctr[3]);
+            writeOut128Bytes(optr, index, g.get_local_range(0), ctr[0], ctr[1],
+                             ctr[2], ctr[3]);
         } else {
             philox(key, ctr);
-            partialWriteOut128Bytes(optr, index, g.get_local_range(0), ctr[0], ctr[1], ctr[2], ctr[3],
-                                    elements_);
+            partialWriteOut128Bytes(optr, index, g.get_local_range(0), ctr[0],
+                                    ctr[1], ctr[2], ctr[3], elements_);
         }
     }
 
-protected:
+   protected:
     sycl::accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
@@ -142,19 +149,25 @@ protected:
 
 template<typename T>
 class normalPhilox {
-public:
-    normalPhilox(sycl::accessor<T> out,
-                  uint hi, uint lo, uint hic, uint loc,
-                  uint elementsPerBlock, uint elements,
-                  sycl::stream debug_stream) :
-            out_(out), hi_(hi), lo_(lo), hic_(hic), loc_(loc),
-            elementsPerBlock_(elementsPerBlock), elements_(elements), debug_(debug_stream) {}
+   public:
+    normalPhilox(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
+                 uint elementsPerBlock, uint elements,
+                 sycl::stream debug_stream)
+        : out_(out)
+        , hi_(hi)
+        , lo_(lo)
+        , hic_(hic)
+        , loc_(loc)
+        , elementsPerBlock_(elementsPerBlock)
+        , elements_(elements)
+        , debug_(debug_stream) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
-        //debug_ << "<" << g.get_group_id(0)  << ":" << it.get_local_id(0) << "/" << g.get_group_range(0) << sycl::stream_manipulator::endl;
+        // debug_ << "<" << g.get_group_id(0)  << ":" << it.get_local_id(0) <<
+        // "/" << g.get_group_range(0) << sycl::stream_manipulator::endl;
 
-        uint index  = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
+        uint index = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
         uint key[2] = {lo_, hi_};
         uint ctr[4] = {loc_, hic_, 0, 0};
         ctr[0] += index;
@@ -165,14 +178,16 @@ public:
 
         T* optr = out_.get_pointer();
         if (g.get_group_id(0) != (g.get_group_range(0) - 1)) {
-            boxMullerWriteOut128Bytes(optr, index, g.get_local_range(0), ctr[0], ctr[1], ctr[2], ctr[3]);
+            boxMullerWriteOut128Bytes(optr, index, g.get_local_range(0), ctr[0],
+                                      ctr[1], ctr[2], ctr[3]);
         } else {
-            partialBoxMullerWriteOut128Bytes(optr, index, g.get_local_range(0), 
-                                             ctr[0], ctr[1], ctr[2], ctr[3], elements_);
+            partialBoxMullerWriteOut128Bytes(optr, index, g.get_local_range(0),
+                                             ctr[0], ctr[1], ctr[2], ctr[3],
+                                             elements_);
         }
     }
 
-protected:
+   protected:
     sycl::accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;

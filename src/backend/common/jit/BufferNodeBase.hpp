@@ -12,8 +12,8 @@
 #include <common/jit/Node.hpp>
 #include <jit/kernel_generators.hpp>
 
-#include <sstream>
 #include <cstring>
+#include <sstream>
 
 namespace common {
 

@@ -10,8 +10,8 @@
 #include <homography.hpp>
 
 #include <arith.hpp>
-#include <af/dim4.hpp>
 #include <err_oneapi.hpp>
+#include <af/dim4.hpp>
 
 #include <algorithm>
 #include <limits>

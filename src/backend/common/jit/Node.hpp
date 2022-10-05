@@ -71,18 +71,18 @@ using Node_ptr = std::shared_ptr<Node>;
 
 static const char *getFullName(af::dtype type) {
     switch (type) {
-    case f32: return detail::getFullName<float>();
-    case f64: return detail::getFullName<double>();
-    case c32: return detail::getFullName<detail::cfloat>();
-    case c64: return detail::getFullName<detail::cdouble>();
-    case u32: return detail::getFullName<unsigned>();
-    case s32: return detail::getFullName<int>();
-    case u64: return detail::getFullName<unsigned long long>();
-    case s64: return detail::getFullName<long long>();
-    case u16: return detail::getFullName<unsigned short>();
-    case s16: return detail::getFullName<short>();
-    case b8: return  detail::getFullName<char>();
-    case u8: return  detail::getFullName<unsigned char>();
+        case f32: return detail::getFullName<float>();
+        case f64: return detail::getFullName<double>();
+        case c32: return detail::getFullName<detail::cfloat>();
+        case c64: return detail::getFullName<detail::cdouble>();
+        case u32: return detail::getFullName<unsigned>();
+        case s32: return detail::getFullName<int>();
+        case u64: return detail::getFullName<unsigned long long>();
+        case s64: return detail::getFullName<long long>();
+        case u16: return detail::getFullName<unsigned short>();
+        case s16: return detail::getFullName<short>();
+        case b8: return detail::getFullName<char>();
+        case u8: return detail::getFullName<unsigned char>();
         case f16: return "half";
     }
     return "";
@@ -90,18 +90,18 @@ static const char *getFullName(af::dtype type) {
 
 static const char *getShortName(af::dtype type) {
     switch (type) {
-    case f32: return detail::shortname<float>();
-    case f64: return detail::shortname<double>();
-    case c32: return detail::shortname<detail::cfloat>();
-    case c64: return detail::shortname<detail::cdouble>();
-    case u32: return detail::shortname<unsigned>();
-    case s32: return detail::shortname<int>();
-    case u64: return detail::shortname<unsigned long long>();
-    case s64: return detail::shortname<long long>();
-    case u16: return detail::shortname<unsigned short>();
-    case s16: return detail::shortname<short>();
-    case b8: return  detail::shortname<char>();
-    case u8: return  detail::shortname<unsigned char>();
+        case f32: return detail::shortname<float>();
+        case f64: return detail::shortname<double>();
+        case c32: return detail::shortname<detail::cfloat>();
+        case c64: return detail::shortname<detail::cdouble>();
+        case u32: return detail::shortname<unsigned>();
+        case s32: return detail::shortname<int>();
+        case u64: return detail::shortname<unsigned long long>();
+        case s64: return detail::shortname<long long>();
+        case u16: return detail::shortname<unsigned short>();
+        case s16: return detail::shortname<short>();
+        case b8: return detail::shortname<char>();
+        case u8: return detail::shortname<unsigned char>();
         case f16: return "h";
     }
     return "";

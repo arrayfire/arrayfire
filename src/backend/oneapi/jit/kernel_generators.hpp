@@ -35,15 +35,16 @@ inline int setKernelArguments(
     int start_id, bool is_linear,
     std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
     const std::shared_ptr<sycl::buffer<T>>& ptr, const KParam& info) {
-  // TODO(oneapi)
-  ONEAPI_NOT_SUPPORTED("ERROR");
-  //setArg(start_id + 0, static_cast<const void*>(&ptr.get()->operator()()),
-  //sizeof(cl_mem));
+    // TODO(oneapi)
+    ONEAPI_NOT_SUPPORTED("ERROR");
+    // setArg(start_id + 0, static_cast<const void*>(&ptr.get()->operator()()),
+    // sizeof(cl_mem));
     if (is_linear) {
-      //setArg(start_id + 1, static_cast<const void*>(&info.offset),
-      //sizeof(dim_t));
+        // setArg(start_id + 1, static_cast<const void*>(&info.offset),
+        // sizeof(dim_t));
     } else {
-      //setArg(start_id + 1, static_cast<const void*>(&info), sizeof(KParam));
+        // setArg(start_id + 1, static_cast<const void*>(&info),
+        // sizeof(KParam));
     }
     return start_id + 2;
 }
@@ -109,4 +110,4 @@ inline void generateShiftNodeRead(std::stringstream& kerStream, int id,
               << "];\n";
 }
 }  // namespace
-}  // namespace opencl
+}  // namespace oneapi

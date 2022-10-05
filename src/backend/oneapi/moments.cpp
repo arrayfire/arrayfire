@@ -22,7 +22,6 @@ static inline unsigned bitCount(unsigned v) {
 
 template<typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment) {
-
     ONEAPI_NOT_SUPPORTED("moments Not supported");
 
     in.eval();

@@ -9,8 +9,8 @@
 
 #include <Array.hpp>
 #include <bilateral.hpp>
-#include <af/dim4.hpp>
 #include <err_oneapi.hpp>
+#include <af/dim4.hpp>
 
 using af::dim4;
 
@@ -22,7 +22,6 @@ Array<outType> bilateral(const Array<inType> &in, const float &sSigma,
     ONEAPI_NOT_SUPPORTED("");
     Array<outType> out = createEmptyArray<outType>(in.dims());
     return out;
-
 }
 
 #define INSTANTIATE(inT, outT)                                    \

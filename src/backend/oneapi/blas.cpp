@@ -26,9 +26,11 @@ using common::half;
 
 namespace oneapi {
 
-void initBlas() { /*gpu_blas_init();*/ }
+void initBlas() { /*gpu_blas_init();*/
+}
 
-void deInitBlas() { /*gpu_blas_deinit();*/ }
+void deInitBlas() { /*gpu_blas_deinit();*/
+}
 
 template<typename T>
 void gemm_fallback(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs,

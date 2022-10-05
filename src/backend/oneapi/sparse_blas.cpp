@@ -37,7 +37,7 @@ using namespace common;
 template<typename T>
 Array<T> matmul(const common::SparseArray<T>& lhs, const Array<T>& rhsIn,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
-  ONEAPI_NOT_SUPPORTED("sparse matmul Not supported");
+    ONEAPI_NOT_SUPPORTED("sparse matmul Not supported");
 #if defined(WITH_LINEAR_ALGEBRA)
     if (OpenCLCPUOffload(
             false)) {  // Do not force offload gemm on OSX Intel devices

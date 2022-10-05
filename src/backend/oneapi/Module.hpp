@@ -9,14 +9,15 @@
 
 #pragma once
 
-#include <common/ModuleInterface.hpp>
 #include <CL/sycl.hpp>
-
+#include <common/ModuleInterface.hpp>
 
 namespace oneapi {
 
 /// oneapi backend wrapper for cl::Program object
-  class Module : public common::ModuleInterface<sycl::kernel_bundle<sycl::bundle_state::executable>> {
+class Module
+    : public common::ModuleInterface<
+          sycl::kernel_bundle<sycl::bundle_state::executable>> {
    public:
     using ModuleType = sycl::kernel_bundle<sycl::bundle_state::executable>;
     using BaseClass  = common::ModuleInterface<ModuleType>;
@@ -32,8 +33,8 @@ namespace oneapi {
 
     /// Unload the module
     void unload() final {
-      // TODO(oneapi): Unload kernel/program
-      ;
+        // TODO(oneapi): Unload kernel/program
+        ;
     }
 };
 

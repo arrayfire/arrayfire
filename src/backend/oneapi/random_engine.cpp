@@ -8,25 +8,24 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <err_oneapi.hpp>
 #include <common/half.hpp>
+#include <err_oneapi.hpp>
+#include <kernel/random_engine.hpp>
 #include <af/defines.h>
 #include <af/dim4.hpp>
-#include <kernel/random_engine.hpp>
 
 using common::half;
 
 namespace oneapi {
 void initMersenneState(Array<uint> &state, const uintl seed,
                        const Array<uint> &tbl) {
-     kernel::initMersenneState(state, tbl, seed);
+    kernel::initMersenneState(state, tbl, seed);
 }
 
 template<typename T>
 Array<T> uniformDistribution(const af::dim4 &dims,
                              const af_random_engine_type type,
                              const uintl &seed, uintl &counter) {
-
     Array<T> out = createEmptyArray<T>(dims);
     kernel::uniformDistributionCBRNG<T>(out, out.elements(), type, seed,
                                         counter);
@@ -49,9 +48,8 @@ Array<T> uniformDistribution(const af::dim4 &dims, Array<uint> pos,
                              Array<uint> recursion_table,
                              Array<uint> temper_table, Array<uint> state) {
     Array<T> out = createEmptyArray<T>(dims);
-    kernel::uniformDistributionMT<T>(
-        out, out.elements(), state, pos, sh1,
-        sh2, mask, recursion_table, temper_table);
+    kernel::uniformDistributionMT<T>(out, out.elements(), state, pos, sh1, sh2,
+                                     mask, recursion_table, temper_table);
     return out;
 }
 
@@ -61,9 +59,8 @@ Array<T> normalDistribution(const af::dim4 &dims, Array<uint> pos,
                             Array<uint> recursion_table,
                             Array<uint> temper_table, Array<uint> state) {
     Array<T> out = createEmptyArray<T>(dims);
-    kernel::normalDistributionMT<T>(
-        out, out.elements(), state, pos, sh1,
-        sh2, mask, recursion_table, temper_table);
+    kernel::normalDistributionMT<T>(out, out.elements(), state, pos, sh1, sh2,
+                                    mask, recursion_table, temper_table);
     return out;
 }
 

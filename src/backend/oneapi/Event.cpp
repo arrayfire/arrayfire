@@ -9,11 +9,11 @@
 
 #include <Event.hpp>
 
+#include <err_oneapi.hpp>
 #include <events.hpp>
 #include <platform.hpp>
 #include <af/event.h>
 #include <memory>
-#include <err_oneapi.hpp>
 
 #include <memory>
 
@@ -42,18 +42,18 @@ af_event createEvent() {
 
 void markEventOnActiveQueue(af_event eventHandle) {
     ONEAPI_NOT_SUPPORTED("");
-    //Event& event = getEvent(eventHandle);
+    // Event& event = getEvent(eventHandle);
     //// Use the currently-active stream
-    //if (event.mark(getQueue()()) != CL_SUCCESS) {
+    // if (event.mark(getQueue()()) != CL_SUCCESS) {
     //    AF_ERROR("Could not mark event on active queue", AF_ERR_RUNTIME);
     //}
 }
 
 void enqueueWaitOnActiveQueue(af_event eventHandle) {
     ONEAPI_NOT_SUPPORTED("");
-    //Event& event = getEvent(eventHandle);
+    // Event& event = getEvent(eventHandle);
     //// Use the currently-active stream
-    //if (event.enqueueWait(getQueue()()) != CL_SUCCESS) {
+    // if (event.enqueueWait(getQueue()()) != CL_SUCCESS) {
     //    AF_ERROR("Could not enqueue wait on active queue for event",
     //             AF_ERR_RUNTIME);
     //}
@@ -61,8 +61,8 @@ void enqueueWaitOnActiveQueue(af_event eventHandle) {
 
 void block(af_event eventHandle) {
     ONEAPI_NOT_SUPPORTED("");
-    //Event& event = getEvent(eventHandle);
-    //if (event.block() != CL_SUCCESS) {
+    // Event& event = getEvent(eventHandle);
+    // if (event.block() != CL_SUCCESS) {
     //    AF_ERROR("Could not block on active queue for event", AF_ERR_RUNTIME);
     //}
 }
@@ -70,9 +70,9 @@ void block(af_event eventHandle) {
 af_event createAndMarkEvent() {
     ONEAPI_NOT_SUPPORTED("");
     return 0;
-    //af_event handle = createEvent();
-    //markEventOnActiveQueue(handle);
-    //return handle;
+    // af_event handle = createEvent();
+    // markEventOnActiveQueue(handle);
+    // return handle;
 }
 
 }  // namespace oneapi

@@ -10,9 +10,9 @@
 #include <Array.hpp>
 #include <diff.hpp>
 //#include <kernel/diff.hpp>
+#include <err_oneapi.hpp>
 #include <af/dim4.hpp>
 #include <stdexcept>
-#include <err_oneapi.hpp>
 
 namespace oneapi {
 

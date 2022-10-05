@@ -52,44 +52,40 @@ constexpr int BLOCKS     = 32;
 constexpr int STATE_SIZE = (256 * 3);
 constexpr int TABLE_SIZE = 16;
 
-template <typename T, int dimensions>
+template<typename T, int dimensions>
 using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write, sycl::access::target::local>;
-
+    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
+                   sycl::access::target::local>;
 
 // Utils
-static inline void read_table(uint *const sharedTable,
-                              const uint *const table,
+static inline void read_table(uint *const sharedTable, const uint *const table,
                               size_t groupId, size_t localId) {
     const uint *const t = table + (groupId * TABLE_SIZE);
     if (localId < TABLE_SIZE) { sharedTable[localId] = t[localId]; }
 }
 
-static inline void state_read(uint *const state,
-                              const uint *const gState,
-                              size_t groupRange, size_t groupId, size_t localId) {
-    const uint *const g                 = gState + (groupId * N);
+static inline void state_read(uint *const state, const uint *const gState,
+                              size_t groupRange, size_t groupId,
+                              size_t localId) {
+    const uint *const g             = gState + (groupId * N);
     state[STATE_SIZE - N + localId] = g[localId];
     if (localId < N - groupRange) {
-        state[STATE_SIZE - N + groupRange + localId] =
-            g[groupRange + localId];
+        state[STATE_SIZE - N + groupRange + localId] = g[groupRange + localId];
     }
 }
 
-static inline void state_write(uint *const gState,
-                               const uint *const state,
-                               size_t groupRange, size_t groupId, size_t localId) {
+static inline void state_write(uint *const gState, const uint *const state,
+                               size_t groupRange, size_t groupId,
+                               size_t localId) {
     uint *const g = gState + (groupId * N);
-    g[localId] = state[STATE_SIZE - N + localId];
+    g[localId]    = state[STATE_SIZE - N + localId];
     if (localId < N - groupRange) {
-        g[groupRange + localId] =
-            state[STATE_SIZE - N + groupRange + localId];
+        g[groupRange + localId] = state[STATE_SIZE - N + groupRange + localId];
     }
 }
 
-static inline uint recursion(const uint *const recursion_table,
-                             const uint mask, const uint sh1,
-                             const uint sh2, const uint x1,
+static inline uint recursion(const uint *const recursion_table, const uint mask,
+                             const uint sh1, const uint sh2, const uint x1,
                              const uint x2, uint y) {
     uint x = (x1 & mask) ^ x2;
     x ^= x << sh1;
@@ -98,8 +94,8 @@ static inline uint recursion(const uint *const recursion_table,
     return y ^ mat;
 }
 
-static inline uint temper(const uint *const temper_table,
-                          const uint v, uint t) {
+static inline uint temper(const uint *const temper_table, const uint v,
+                          uint t) {
     t ^= t >> 16;
     t ^= t >> 8;
     uint mat = temper_table[t & 0x0f];
@@ -108,17 +104,21 @@ static inline uint temper(const uint *const temper_table,
 
 // Initialization
 class initMersenneKernel {
-public:
-    initMersenneKernel(sycl::accessor<uint> state,
-                       sycl::accessor<uint> tbl,
-                       local_accessor<uint, 1> lstate,
-                       uintl seed, sycl::stream debug_stream) :
-            state_(state), tbl_(tbl), lstate_(lstate), seed_(seed), debug_(debug_stream) {}
+   public:
+    initMersenneKernel(sycl::accessor<uint> state, sycl::accessor<uint> tbl,
+                       local_accessor<uint, 1> lstate, uintl seed,
+                       sycl::stream debug_stream)
+        : state_(state)
+        , tbl_(tbl)
+        , lstate_(lstate)
+        , seed_(seed)
+        , debug_(debug_stream) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
 
-        const uint *ltbl = tbl_.get_pointer() + (TABLE_SIZE * g.get_group_id(0));
+        const uint *ltbl =
+            tbl_.get_pointer() + (TABLE_SIZE * g.get_group_id(0));
         uint hidden_seed = ltbl[4] ^ (ltbl[8] << 16);
         uint tmp         = hidden_seed;
         tmp += tmp >> 16;
@@ -132,15 +132,17 @@ public:
             lstate_[0] = seed_;
             lstate_[1] = hidden_seed;
             for (int i = 1; i < N; ++i) {
-                lstate_[i] ^=
-                    ((uint)(1812433253) * (lstate_[i - 1] ^ (lstate_[i - 1] >> 30)) + i);
+                lstate_[i] ^= ((uint)(1812433253) *
+                                   (lstate_[i - 1] ^ (lstate_[i - 1] >> 30)) +
+                               i);
             }
         }
         it.barrier();
-        state_[N * g.get_group_id(0) + it.get_local_id(0)] = lstate_[it.get_local_id(0)];
+        state_[N * g.get_group_id(0) + it.get_local_id(0)] =
+            lstate_[it.get_local_id(0)];
     }
 
-protected:
+   protected:
     sycl::accessor<uint> state_, tbl_;
     local_accessor<uint, 1> lstate_;
     uintl seed_;
@@ -149,59 +151,68 @@ protected:
 
 void initMersenneState(Param<uint> state, const Param<uint> tbl, uintl seed) {
     sycl::nd_range<1> ndrange({BLOCKS * N}, {N});
-    getQueue().submit([=] (sycl::handler &h) {
-        auto state_acc = state.data->get_access(h);
-        auto tbl_acc = tbl.data->get_access(h);
+    getQueue().submit([=](sycl::handler &h) {
+        auto state_acc  = state.data->get_access(h);
+        auto tbl_acc    = tbl.data->get_access(h);
         auto lstate_acc = local_accessor<uint, 1>(N, h);
 
         sycl::stream debug_stream(2048, 128, h);
-        h.parallel_for(ndrange, 
-            initMersenneKernel(state_acc,
-                               tbl_acc, lstate_acc,
-                               seed, debug_stream));
+        h.parallel_for(ndrange,
+                       initMersenneKernel(state_acc, tbl_acc, lstate_acc, seed,
+                                          debug_stream));
     });
-    //TODO: do we need to sync before using Mersenne generators?
-    //force wait() here?
+    // TODO: do we need to sync before using Mersenne generators?
+    // force wait() here?
     ONEAPI_DEBUG_FINISH(getQueue());
 }
 
-
-
 template<typename T>
 class uniformMersenne {
-public:
+   public:
     uniformMersenne(sycl::accessor<T> out, sycl::accessor<uint> gState,
-                    sycl::accessor<uint> pos_tbl,
-                    sycl::accessor<uint> sh1_tbl,
+                    sycl::accessor<uint> pos_tbl, sycl::accessor<uint> sh1_tbl,
                     sycl::accessor<uint> sh2_tbl, uint mask,
                     sycl::accessor<uint> g_recursion_table,
                     sycl::accessor<uint> g_temper_table,
-                    //local memory caches of global state
+                    // local memory caches of global state
                     local_accessor<uint, 1> state,
                     local_accessor<uint, 1> recursion_table,
-                    local_accessor<uint, 1> temper_table,
-                    uint elementsPerBlock, size_t elements,
-                    sycl::stream debug) :
-            out_(out), gState_(gState),
-            pos_tbl_(pos_tbl), sh1_tbl_(sh1_tbl), sh2_tbl_(sh2_tbl), mask_(mask),
-            g_recursion_table_(g_recursion_table), g_temper_table_(g_temper_table),
-            state_(state), recursion_table_(recursion_table), temper_table_(temper_table),
-            elementsPerBlock_(elementsPerBlock), elements_(elements), debug_(debug) {}
+                    local_accessor<uint, 1> temper_table, uint elementsPerBlock,
+                    size_t elements, sycl::stream debug)
+        : out_(out)
+        , gState_(gState)
+        , pos_tbl_(pos_tbl)
+        , sh1_tbl_(sh1_tbl)
+        , sh2_tbl_(sh2_tbl)
+        , mask_(mask)
+        , g_recursion_table_(g_recursion_table)
+        , g_temper_table_(g_temper_table)
+        , state_(state)
+        , recursion_table_(recursion_table)
+        , temper_table_(temper_table)
+        , elementsPerBlock_(elementsPerBlock)
+        , elements_(elements)
+        , debug_(debug) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
-        uint start                    = g.get_group_id(0) * elementsPerBlock_;
-        uint end                      = start + elementsPerBlock_;
-        end                           = (end > elements_) ? elements_ : end;
-        int elementsPerBlockIteration = (g.get_local_range(0) * 4 * sizeof(uint)) / sizeof(T);
+        uint start    = g.get_group_id(0) * elementsPerBlock_;
+        uint end      = start + elementsPerBlock_;
+        end           = (end > elements_) ? elements_ : end;
+        int elementsPerBlockIteration =
+            (g.get_local_range(0) * 4 * sizeof(uint)) / sizeof(T);
         int iter = divup((end - start), elementsPerBlockIteration);
 
         uint pos = pos_tbl_[it.get_group(0)];
         uint sh1 = sh1_tbl_[it.get_group(0)];
         uint sh2 = sh2_tbl_[it.get_group(0)];
-        state_read(state_.get_pointer(), gState_.get_pointer(), g.get_local_range(0), g.get_group_id(0), it.get_local_id(0));
-        read_table(recursion_table_.get_pointer(), g_recursion_table_.get_pointer(), g.get_group_id(0), it.get_local_id(0));
-        read_table(temper_table_.get_pointer(), g_temper_table_.get_pointer(), g.get_group_id(0), it.get_local_id(0));
+        state_read(state_.get_pointer(), gState_.get_pointer(),
+                   g.get_local_range(0), g.get_group_id(0), it.get_local_id(0));
+        read_table(recursion_table_.get_pointer(),
+                   g_recursion_table_.get_pointer(), g.get_group_id(0),
+                   it.get_local_id(0));
+        read_table(temper_table_.get_pointer(), g_temper_table_.get_pointer(),
+                   g.get_group_id(0), it.get_local_id(0));
         it.barrier();
 
         uint index = start;
@@ -209,36 +220,40 @@ public:
         int offsetX1 = (STATE_SIZE - N + it.get_local_id(0)) % STATE_SIZE;
         int offsetX2 = (STATE_SIZE - N + it.get_local_id(0) + 1) % STATE_SIZE;
         int offsetY  = (STATE_SIZE - N + it.get_local_id(0) + pos) % STATE_SIZE;
-        int offsetT  = (STATE_SIZE - N + it.get_local_id(0) + pos - 1) % STATE_SIZE;
-        int offsetO  = it.get_local_id(0);
+        int offsetT =
+            (STATE_SIZE - N + it.get_local_id(0) + pos - 1) % STATE_SIZE;
+        int offsetO = it.get_local_id(0);
 
         for (int i = 0; i < iter; ++i) {
             for (int ii = 0; ii < 4; ++ii) {
-                uint r = recursion(recursion_table_.get_pointer(), mask_, sh1, sh2, state_[offsetX1],
-                                   state_[offsetX2], state_[offsetY]);
+                uint r = recursion(recursion_table_.get_pointer(), mask_, sh1,
+                                   sh2, state_[offsetX1], state_[offsetX2],
+                                   state_[offsetY]);
                 state_[offsetO] = r;
-                o[ii]          = temper(temper_table_.get_pointer(), r, state_[offsetT]);
-                offsetX1       = (offsetX1 + g.get_local_range(0)) % STATE_SIZE;
-                offsetX2       = (offsetX2 + g.get_local_range(0)) % STATE_SIZE;
-                offsetY        = (offsetY + g.get_local_range(0)) % STATE_SIZE;
-                offsetT        = (offsetT + g.get_local_range(0)) % STATE_SIZE;
-                offsetO        = (offsetO + g.get_local_range(0)) % STATE_SIZE;
+                o[ii] = temper(temper_table_.get_pointer(), r, state_[offsetT]);
+                offsetX1 = (offsetX1 + g.get_local_range(0)) % STATE_SIZE;
+                offsetX2 = (offsetX2 + g.get_local_range(0)) % STATE_SIZE;
+                offsetY  = (offsetY + g.get_local_range(0)) % STATE_SIZE;
+                offsetT  = (offsetT + g.get_local_range(0)) % STATE_SIZE;
+                offsetO  = (offsetO + g.get_local_range(0)) % STATE_SIZE;
                 it.barrier();
             }
             if (i == iter - 1) {
-                partialWriteOut128Bytes(out_.get_pointer(), index + it.get_local_id(0), g.get_local_range(0),
-                                        o[0], o[1], o[2], o[3], elements_);
+                partialWriteOut128Bytes(
+                    out_.get_pointer(), index + it.get_local_id(0),
+                    g.get_local_range(0), o[0], o[1], o[2], o[3], elements_);
             } else {
                 writeOut128Bytes(out_.get_pointer(), index + it.get_local_id(0),
                                  g.get_local_range(0), o[0], o[1], o[2], o[3]);
             }
             index += elementsPerBlockIteration;
         }
-        state_write(gState_.get_pointer(), state_.get_pointer(), 
-                    g.get_local_range(0), g.get_group_id(0), it.get_local_id(0));
+        state_write(gState_.get_pointer(), state_.get_pointer(),
+                    g.get_local_range(0), g.get_group_id(0),
+                    it.get_local_id(0));
     }
 
-protected:
+   protected:
     sycl::accessor<T> out_;
     sycl::accessor<uint> gState_;
     sycl::accessor<uint> pos_tbl_, sh1_tbl_, sh2_tbl_;
@@ -252,39 +267,51 @@ protected:
 
 template<typename T>
 class normalMersenne {
-public:
+   public:
     normalMersenne(sycl::accessor<T> out, sycl::accessor<uint> gState,
-                   sycl::accessor<uint> pos_tbl,
-                   sycl::accessor<uint> sh1_tbl,
+                   sycl::accessor<uint> pos_tbl, sycl::accessor<uint> sh1_tbl,
                    sycl::accessor<uint> sh2_tbl, uint mask,
                    sycl::accessor<uint> g_recursion_table,
                    sycl::accessor<uint> g_temper_table,
-                   //local memory caches of global state
+                   // local memory caches of global state
                    local_accessor<uint, 1> state,
                    local_accessor<uint, 1> recursion_table,
-                   local_accessor<uint, 1> temper_table,
-                   uint elementsPerBlock, size_t elements,
-                   sycl::stream debug) :
-            out_(out), gState_(gState),
-            pos_tbl_(pos_tbl), sh1_tbl_(sh1_tbl), sh2_tbl_(sh2_tbl), mask_(mask),
-            g_recursion_table_(g_recursion_table), g_temper_table_(g_temper_table),
-            state_(state), recursion_table_(recursion_table), temper_table_(temper_table),
-            elementsPerBlock_(elementsPerBlock), elements_(elements), debug_(debug) {}
+                   local_accessor<uint, 1> temper_table, uint elementsPerBlock,
+                   size_t elements, sycl::stream debug)
+        : out_(out)
+        , gState_(gState)
+        , pos_tbl_(pos_tbl)
+        , sh1_tbl_(sh1_tbl)
+        , sh2_tbl_(sh2_tbl)
+        , mask_(mask)
+        , g_recursion_table_(g_recursion_table)
+        , g_temper_table_(g_temper_table)
+        , state_(state)
+        , recursion_table_(recursion_table)
+        , temper_table_(temper_table)
+        , elementsPerBlock_(elementsPerBlock)
+        , elements_(elements)
+        , debug_(debug) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
-        uint start                    = g.get_group_id(0) * elementsPerBlock_;
-        uint end                      = start + elementsPerBlock_;
-        end                           = (end > elements_) ? elements_ : end;
-        int elementsPerBlockIteration = (g.get_local_range(0) * 4 * sizeof(uint)) / sizeof(T);
+        uint start    = g.get_group_id(0) * elementsPerBlock_;
+        uint end      = start + elementsPerBlock_;
+        end           = (end > elements_) ? elements_ : end;
+        int elementsPerBlockIteration =
+            (g.get_local_range(0) * 4 * sizeof(uint)) / sizeof(T);
         int iter = divup((end - start), elementsPerBlockIteration);
 
         uint pos = pos_tbl_[it.get_group(0)];
         uint sh1 = sh1_tbl_[it.get_group(0)];
         uint sh2 = sh2_tbl_[it.get_group(0)];
-        state_read(state_.get_pointer(), gState_.get_pointer(), g.get_local_range(0), g.get_group_id(0), it.get_local_id(0));
-        read_table(recursion_table_.get_pointer(), g_recursion_table_.get_pointer(), g.get_group_id(0), it.get_local_id(0));
-        read_table(temper_table_.get_pointer(), g_temper_table_.get_pointer(), g.get_group_id(0), it.get_local_id(0));
+        state_read(state_.get_pointer(), gState_.get_pointer(),
+                   g.get_local_range(0), g.get_group_id(0), it.get_local_id(0));
+        read_table(recursion_table_.get_pointer(),
+                   g_recursion_table_.get_pointer(), g.get_group_id(0),
+                   it.get_local_id(0));
+        read_table(temper_table_.get_pointer(), g_temper_table_.get_pointer(),
+                   g.get_group_id(0), it.get_local_id(0));
         it.barrier();
 
         uint index = start;
@@ -292,36 +319,41 @@ public:
         int offsetX1 = (STATE_SIZE - N + it.get_local_id(0)) % STATE_SIZE;
         int offsetX2 = (STATE_SIZE - N + it.get_local_id(0) + 1) % STATE_SIZE;
         int offsetY  = (STATE_SIZE - N + it.get_local_id(0) + pos) % STATE_SIZE;
-        int offsetT  = (STATE_SIZE - N + it.get_local_id(0) + pos - 1) % STATE_SIZE;
-        int offsetO  = it.get_local_id(0);
+        int offsetT =
+            (STATE_SIZE - N + it.get_local_id(0) + pos - 1) % STATE_SIZE;
+        int offsetO = it.get_local_id(0);
 
         for (int i = 0; i < iter; ++i) {
             for (int ii = 0; ii < 4; ++ii) {
-                uint r = recursion(recursion_table_.get_pointer(), mask_, sh1, sh2, state_[offsetX1],
-                                   state_[offsetX2], state_[offsetY]);
+                uint r = recursion(recursion_table_.get_pointer(), mask_, sh1,
+                                   sh2, state_[offsetX1], state_[offsetX2],
+                                   state_[offsetY]);
                 state_[offsetO] = r;
-                o[ii]          = temper(temper_table_.get_pointer(), r, state_[offsetT]);
-                offsetX1       = (offsetX1 + g.get_local_range(0)) % STATE_SIZE;
-                offsetX2       = (offsetX2 + g.get_local_range(0)) % STATE_SIZE;
-                offsetY        = (offsetY + g.get_local_range(0)) % STATE_SIZE;
-                offsetT        = (offsetT + g.get_local_range(0)) % STATE_SIZE;
-                offsetO        = (offsetO + g.get_local_range(0)) % STATE_SIZE;
+                o[ii] = temper(temper_table_.get_pointer(), r, state_[offsetT]);
+                offsetX1 = (offsetX1 + g.get_local_range(0)) % STATE_SIZE;
+                offsetX2 = (offsetX2 + g.get_local_range(0)) % STATE_SIZE;
+                offsetY  = (offsetY + g.get_local_range(0)) % STATE_SIZE;
+                offsetT  = (offsetT + g.get_local_range(0)) % STATE_SIZE;
+                offsetO  = (offsetO + g.get_local_range(0)) % STATE_SIZE;
                 it.barrier();
             }
             if (i == iter - 1) {
-                partialBoxMullerWriteOut128Bytes(out_.get_pointer(), index + it.get_local_id(0), 
-                                        g.get_local_range(0), o[0], o[1], o[2], o[3], elements_);
+                partialBoxMullerWriteOut128Bytes(
+                    out_.get_pointer(), index + it.get_local_id(0),
+                    g.get_local_range(0), o[0], o[1], o[2], o[3], elements_);
             } else {
-                boxMullerWriteOut128Bytes(out_.get_pointer(), index + it.get_local_id(0),
-                                          g.get_local_range(0), o[0], o[1], o[2], o[3]);
+                boxMullerWriteOut128Bytes(
+                    out_.get_pointer(), index + it.get_local_id(0),
+                    g.get_local_range(0), o[0], o[1], o[2], o[3]);
             }
             index += elementsPerBlockIteration;
         }
-        state_write(gState_.get_pointer(), state_.get_pointer(), 
-                    g.get_local_range(0), g.get_group_id(0), it.get_local_id(0));
+        state_write(gState_.get_pointer(), state_.get_pointer(),
+                    g.get_local_range(0), g.get_group_id(0),
+                    it.get_local_id(0));
     }
 
-protected:
+   protected:
     sycl::accessor<T> out_;
     sycl::accessor<uint> gState_;
     sycl::accessor<uint> pos_tbl_, sh1_tbl_, sh2_tbl_;

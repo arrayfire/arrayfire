@@ -26,7 +26,7 @@ struct Param {
     Param() : data(nullptr), info{{0, 0, 0, 0}, {0, 0, 0, 0}, 0} {}
 
     // AF_DEPRECATED("Use Array<T>")
-    Param(sycl::buffer<T> *data_, KParam info_) : data(data_), info(info_) {}
+    Param(sycl::buffer<T>* data_, KParam info_) : data(data_), info(info_) {}
 
     ~Param() = default;
 };
