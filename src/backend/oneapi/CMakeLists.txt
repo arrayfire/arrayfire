@@ -207,6 +207,7 @@ target_sources(afoneapi
     kernel/KParam.hpp
     kernel/assign.hpp
     kernel/diagonal.hpp
+    kernel/diff.hpp
     kernel/iota.hpp
     kernel/memcopy.hpp
     kernel/random_engine.hpp
