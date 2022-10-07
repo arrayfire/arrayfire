@@ -313,12 +313,12 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
             return kJITHeuristics::TreeHeight;
         }
     }
+    ONEAPI_NOT_SUPPORTED("JIT NOT SUPPORTED");
 
-    bool isBufferLimit = getMemoryPressure() >= getMemoryPressureThreshold();
-    auto platform      = getActivePlatform();
+    // bool isBufferLimit = getMemoryPressure() >= getMemoryPressureThreshold();
+    // auto platform      = getActivePlatform();
 
     // The Apple platform can have the nvidia card or the AMD card
-    ONEAPI_NOT_SUPPORTED("JIT NOT SUPPORTED");
     // bool isIntel = platform == AFCL_PLATFORM_INTEL;
 
     // /// Intels param_size limit is much smaller than the other platforms
@@ -501,8 +501,6 @@ template<typename T>
 void writeDeviceDataArray(Array<T> &arr, const void *const data,
                           const size_t bytes) {
     if (!arr.isOwner()) { arr = copyArray<T>(arr); }
-
-    buffer<T> &buf = *arr.get();
 
     // clRetainMemObject(
     //    reinterpret_cast<buffer<T> *>(const_cast<void *>(data)));

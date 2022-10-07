@@ -23,18 +23,18 @@ namespace oneapi {
 namespace kernel {
 
 template<typename T>
-T static getConjugate(const T &in) {
+static T getConjugate(const T &in) {
     // For non-complex types return same
     return in;
 }
 
 template<>
-cfloat static getConjugate(const cfloat &in) {
+cfloat getConjugate(const cfloat &in) {
     return std::conj(in);
 }
 
 template<>
-cdouble static getConjugate(const cdouble &in) {
+cdouble getConjugate(const cdouble &in) {
     return std::conj(in);
 }
 
@@ -160,11 +160,11 @@ class transposeInPlaceKernel {
     KParam in_;
     int blocksPerMatX_;
     int blocksPerMatY_;
-    sycl::stream debugStream_;
     bool conjugate_;
     bool IS32MULTIPLE_;
     local_accessor<T, 1> shrdMem_s_;
     local_accessor<T, 1> shrdMem_d_;
+    sycl::stream debugStream_;
 };
 
 template<typename T>

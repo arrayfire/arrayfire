@@ -130,10 +130,10 @@ class transposeKernel {
     KParam in_;
     int blocksPerMatX_;
     int blocksPerMatY_;
-    sycl::stream debugStream_;
     bool conjugate_;
     bool IS32MULTIPLE_;
     local_accessor<T, 1> shrdMem_;
+    sycl::stream debugStream_;
 };
 
 template<typename T>

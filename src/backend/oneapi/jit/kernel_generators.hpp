@@ -18,8 +18,9 @@ namespace oneapi {
 namespace {
 
 /// Creates a string that will be used to declare the parameter of kernel
-void generateParamDeclaration(std::stringstream& kerStream, int id,
-                              bool is_linear, const std::string& m_type_str) {
+inline void generateParamDeclaration(std::stringstream& kerStream, int id,
+                                     bool is_linear,
+                                     const std::string& m_type_str) {
     if (is_linear) {
         kerStream << "__global " << m_type_str << " *in" << id
                   << ", dim_t iInfo" << id << "_offset, \n";
