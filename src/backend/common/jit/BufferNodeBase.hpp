@@ -93,7 +93,7 @@ class BufferNodeBase : public common::Node {
 
     size_t getBytes() const final { return m_bytes; }
 
-    size_t getHash() const noexcept {
+    size_t getHash() const noexcept override {
         size_t out = 0;
         auto ptr   = m_data.get();
         std::memcpy(&out, &ptr, std::max(sizeof(Node *), sizeof(size_t)));
