@@ -121,11 +121,11 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
     ~DefaultMemoryManager() = default;
 
    protected:
-    DefaultMemoryManager()                                  = delete;
-    DefaultMemoryManager(const DefaultMemoryManager &other) = delete;
-    DefaultMemoryManager(DefaultMemoryManager &&other)      = default;
+    DefaultMemoryManager()                                             = delete;
+    DefaultMemoryManager(const DefaultMemoryManager &other)            = delete;
+    DefaultMemoryManager(DefaultMemoryManager &&other)                 = delete;
     DefaultMemoryManager &operator=(const DefaultMemoryManager &other) = delete;
-    DefaultMemoryManager &operator=(DefaultMemoryManager &&other) = default;
+    DefaultMemoryManager &operator=(DefaultMemoryManager &&other)      = delete;
     common::mutex_t memory_mutex;
     // backend-specific
     std::vector<memory_info> memory;
