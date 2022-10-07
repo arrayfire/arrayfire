@@ -107,6 +107,7 @@ if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
 endif(AF_BUILD_UNIFIED)
 
+check_cxx_compiler_flag("-Wtautological-constant-compare" has_tautological_constant_compare_flag)
 
 add_library(arrayfire_test STATIC
   testHelpers.hpp
@@ -120,11 +121,15 @@ target_include_directories(arrayfire_test
     ${ArrayFire_SOURCE_DIR}/extern/half/include
   )
 
+# The tautological-constant-compare warning is always thrown for std::nan
+# and std::info calls. Its unnecessarily verbose.
+target_compile_options(arrayfire_test
+  PRIVATE
+    $<$<BOOL:${has_tautological_constant_compare_flag}>:-Wno-tautological-constant-compare>
+    $<$<CXX_COMPILER_ID:MSVC>: /bigobj
+                               /EHsc>
+  )
 if(WIN32)
-  target_compile_options(arrayfire_test
-    PRIVATE
-      /bigobj
-      /EHsc)
   target_compile_definitions(arrayfire_test
     PRIVATE
       WIN32_LEAN_AND_MEAN
@@ -185,6 +190,15 @@ function(make_test)
         arrayfire_test
       )
 
+    # The tautological-constant-compare warning is always thrown for std::nan
+    # and std::info calls. Its unnecessarily verbose.
+    target_compile_options(${target}
+      PRIVATE
+        $<$<BOOL:${has_tautological_constant_compare_flag}>:-Wno-tautological-constant-compare>
+        $<$<CXX_COMPILER_ID:MSVC>: /bigobj
+                                   /EHsc>
+      )
+
     if(${backend} STREQUAL "unified")
       target_link_libraries(${target}
         PRIVATE
@@ -221,10 +235,6 @@ function(make_test)
         )
     endif()
     if(WIN32)
-      target_compile_options(${target}
-        PRIVATE
-          /bigobj
-          /EHsc)
       target_compile_definitions(${target}
         PRIVATE
           WIN32_LEAN_AND_MEAN

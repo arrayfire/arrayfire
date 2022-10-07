@@ -47,8 +47,8 @@ class assignKernel {
                  sycl::accessor<uint> ptr3, const int nBBS0, const int nBBS1,
                  sycl::stream debug)
         : out_(out)
-        , oInfo_(oInfo)
         , in_(in)
+        , oInfo_(oInfo)
         , iInfo_(iInfo)
         , p_(p)
         , ptr0_(ptr0)

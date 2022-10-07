@@ -17,6 +17,7 @@
 /* Clang/LLVM */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-attributes"
+#pragma clang diagnostic ignored "-Wtautological-constant-compare"
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
 /* Intel ICC/ICPC */
 // Fix the warning code here, if any

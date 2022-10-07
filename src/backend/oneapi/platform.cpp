@@ -91,7 +91,7 @@ bool verify_present(const string& pname, const string ref) {
 }
 
 // TODO: update to new platforms?
-static string platformMap(string& platStr) {
+inline string platformMap(string& platStr) {
     using strmap_t                = map<string, string>;
     static const strmap_t platMap = {
         make_pair("NVIDIA CUDA", "NVIDIA"),
@@ -134,7 +134,6 @@ string getDeviceInfo() noexcept {
     info << "ArrayFire v" << AF_VERSION << " (OpenCL, " << get_system()
          << ", build " << AF_REVISION << ")\n";
 
-    vector<sycl::device*> devices;
     try {
         DeviceManager& devMngr = DeviceManager::getInstance();
 

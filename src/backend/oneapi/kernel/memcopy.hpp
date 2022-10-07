@@ -36,8 +36,8 @@ class memCopy {
             dims_t idims, dims_t istrides, int offset, int groups_0,
             int groups_1, sycl::stream debug)
         : out_(out)
-        , ostrides_(ostrides)
         , in_(in)
+        , ostrides_(ostrides)
         , idims_(idims)
         , istrides_(istrides)
         , offset_(offset)
@@ -46,9 +46,6 @@ class memCopy {
         , debug_(debug) {}
 
     void operator()(sycl::nd_item<2> it) const {
-        // printf("[%d,%d]\n", it.get_global_id(0), it.get_global_id(1));
-        // debug_ << "[" << it.get_global_id(0) << "," << it.get_global_id(1) <<
-        // "]" << sycl::stream_manipulator::endl;
         const int lid0 = it.get_local_id(0);
         const int lid1 = it.get_local_id(1);
 
@@ -112,11 +109,6 @@ void memcopy(sycl::buffer<T> *out, const dim_t *ostrides,
                           groups_1 * idims[3] * local_size[1]);
     sycl::nd_range<2> ndrange(global, local);
 
-    printf("<%d, %d> <%d, %d>\n", ndrange.get_global_range().get(0),
-           ndrange.get_global_range().get(1), ndrange.get_local_range().get(0),
-           ndrange.get_local_range().get(1));
-    printf("<%d, %d> ", ndrange.get_group_range().get(0),
-           ndrange.get_group_range().get(1));
     getQueue().submit([=](sycl::handler &h) {
         auto out_acc = out->get_access(h);
         auto in_acc  = const_cast<sycl::buffer<T> *>(in)->get_access(h);
@@ -137,12 +129,13 @@ static T scale(T value, double factor) {
 
 template<>
 cfloat scale<cfloat>(cfloat value, double factor) {
-    return (cfloat)(value.real() * factor, value.imag() * factor);
+    return cfloat{static_cast<float>(value.real() * factor),
+                  static_cast<float>(value.imag() * factor)};
 }
 
 template<>
 cdouble scale<cdouble>(cdouble value, double factor) {
-    return (cdouble)(value.real() * factor, value.imag() * factor);
+    return cdouble{value.real() * factor, value.imag() * factor};
 }
 
 template<typename inType, typename outType>
@@ -213,8 +206,8 @@ class reshapeCopy {
                 float factor, dims_t trgt, int blk_x, int blk_y,
                 sycl::stream debug)
         : dst_(dst)
-        , oInfo_(oInfo)
         , src_(src)
+        , oInfo_(oInfo)
         , iInfo_(iInfo)
         , default_value_(default_value)
         , factor_(factor)
@@ -293,12 +286,6 @@ void copy(Param<outType> dst, const Param<inType> src, const int ndims,
                           blk_y * dst.info.dims[3] * DIM1);
 
     sycl::nd_range<2> ndrange(global, local);
-    printf("reshape wat?\n");
-    printf("<%d, %d> <%d, %d>\n", ndrange.get_global_range().get(0),
-           ndrange.get_global_range().get(1), ndrange.get_local_range().get(0),
-           ndrange.get_local_range().get(1));
-    printf("<%d, %d> ", ndrange.get_group_range().get(0),
-           ndrange.get_group_range().get(1));
 
     dims_t trgt_dims;
     if (same_dims) {

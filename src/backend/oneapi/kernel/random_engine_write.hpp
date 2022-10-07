@@ -102,8 +102,9 @@ static double getDouble01(uint num1, uint num2) {
     n1 <<= 32;
     uint64_t num = n1 | n2;
     constexpr double factor =
-        ((1.0) / (std::numeric_limits<unsigned long long>::max() +
-                  static_cast<double>(1.0)));
+        ((1.0) /
+         (static_cast<double>(std::numeric_limits<unsigned long long>::max()) +
+          static_cast<double>(1.0)));
     constexpr double half_factor((0.5) * factor);
 
     return sycl::fma(static_cast<double>(num), factor, half_factor);
@@ -111,7 +112,8 @@ static double getDouble01(uint num1, uint num2) {
 
 // Conversion to doubles adapted from Random123
 constexpr double signed_factor =
-    ((1.0l) / (std::numeric_limits<long long>::max() + (1.0l)));
+    ((1.0l) / (static_cast<long double>(std::numeric_limits<long long>::max()) +
+               (1.0l)));
 constexpr double half_factor = ((0.5) * signed_factor);
 
 // Generates rationals in (-1, 1]

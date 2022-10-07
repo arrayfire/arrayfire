@@ -38,52 +38,55 @@ template<typename T>
 Array<T> matmul(const common::SparseArray<T>& lhs, const Array<T>& rhsIn,
                 af_mat_prop optLhs, af_mat_prop optRhs) {
     ONEAPI_NOT_SUPPORTED("sparse matmul Not supported");
-#if defined(WITH_LINEAR_ALGEBRA)
-    if (OpenCLCPUOffload(
-            false)) {  // Do not force offload gemm on OSX Intel devices
-        return cpu::matmul(lhs, rhsIn, optLhs, optRhs);
-    }
-#endif
-
-    int lRowDim = (optLhs == AF_MAT_NONE) ? 0 : 1;
-    // int lColDim = (optLhs == AF_MAT_NONE) ? 1 : 0;
-    static const int rColDim =
-        1;  // Unsupported : (optRhs == AF_MAT_NONE) ? 1 : 0;
-
-    dim4 lDims = lhs.dims();
-    dim4 rDims = rhsIn.dims();
-    int M      = lDims[lRowDim];
-    int N      = rDims[rColDim];
-    // int K = lDims[lColDim];
-
-    const Array<T> rhs =
-        (N != 1 && optLhs == AF_MAT_NONE) ? transpose(rhsIn, false) : rhsIn;
-    Array<T> out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
-
-    static const T alpha = scalar<T>(1.0);
-    static const T beta  = scalar<T>(0.0);
-
-    const Array<T>& values   = lhs.getValues();
-    const Array<int>& rowIdx = lhs.getRowIdx();
-    const Array<int>& colIdx = lhs.getColIdx();
-
-    if (optLhs == AF_MAT_NONE) {
-        // if (N == 1) {
-        //     kernel::csrmv(out, values, rowIdx, colIdx, rhs, alpha, beta);
-        // } else {
-        //     kernel::csrmm_nt(out, values, rowIdx, colIdx, rhs, alpha, beta);
-        // }
-    } else {
-        // // CSR transpose is a CSC matrix
-        // if (N == 1) {
-        //     kernel::cscmv(out, values, rowIdx, colIdx, rhs, alpha, beta,
-        //                   optLhs == AF_MAT_CTRANS);
-        // } else {
-        //     kernel::cscmm_nn(out, values, rowIdx, colIdx, rhs, alpha, beta,
-        //                      optLhs == AF_MAT_CTRANS);
-        // }
-    }
-    return out;
+    //#if defined(WITH_LINEAR_ALGEBRA)
+    //    if (OpenCLCPUOffload(
+    //            false)) {  // Do not force offload gemm on OSX Intel devices
+    //        return cpu::matmul(lhs, rhsIn, optLhs, optRhs);
+    //    }
+    //#endif
+    //
+    //    int lRowDim = (optLhs == AF_MAT_NONE) ? 0 : 1;
+    //    // int lColDim = (optLhs == AF_MAT_NONE) ? 1 : 0;
+    //    static const int rColDim =
+    //        1;  // Unsupported : (optRhs == AF_MAT_NONE) ? 1 : 0;
+    //
+    //    dim4 lDims = lhs.dims();
+    //    dim4 rDims = rhsIn.dims();
+    //    int M      = lDims[lRowDim];
+    //    int N      = rDims[rColDim];
+    //    // int K = lDims[lColDim];
+    //
+    //    const Array<T> rhs =
+    //        (N != 1 && optLhs == AF_MAT_NONE) ? transpose(rhsIn, false) :
+    //        rhsIn;
+    //    Array<T> out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
+    //
+    //    static const T alpha = scalar<T>(1.0);
+    //    static const T beta  = scalar<T>(0.0);
+    //
+    //    const Array<T>& values   = lhs.getValues();
+    //    const Array<int>& rowIdx = lhs.getRowIdx();
+    //    const Array<int>& colIdx = lhs.getColIdx();
+    //
+    //    if (optLhs == AF_MAT_NONE) {
+    //        if (N == 1) {
+    //            kernel::csrmv(out, values, rowIdx, colIdx, rhs, alpha, beta);
+    //        } else {
+    //            kernel::csrmm_nt(out, values, rowIdx, colIdx, rhs, alpha,
+    //            beta);
+    //        }
+    //    } else {
+    //        // CSR transpose is a CSC matrix
+    //        if (N == 1) {
+    //            kernel::cscmv(out, values, rowIdx, colIdx, rhs, alpha, beta,
+    //                          optLhs == AF_MAT_CTRANS);
+    //        } else {
+    //            kernel::cscmm_nn(out, values, rowIdx, colIdx, rhs, alpha,
+    //            beta,
+    //                             optLhs == AF_MAT_CTRANS);
+    //        }
+    //    }
+    //    return out;
 }
 
 #define INSTANTIATE_SPARSE(T)                                            \

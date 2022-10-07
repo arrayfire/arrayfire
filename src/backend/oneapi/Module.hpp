@@ -17,9 +17,9 @@ namespace oneapi {
 /// oneapi backend wrapper for cl::Program object
 class Module
     : public common::ModuleInterface<
-          sycl::kernel_bundle<sycl::bundle_state::executable>> {
+          sycl::kernel_bundle<sycl::bundle_state::executable>*> {
    public:
-    using ModuleType = sycl::kernel_bundle<sycl::bundle_state::executable>;
+    using ModuleType = sycl::kernel_bundle<sycl::bundle_state::executable>*;
     using BaseClass  = common::ModuleInterface<ModuleType>;
 
     /// \brief Create an uninitialized Module
@@ -29,7 +29,7 @@ class Module
     Module(ModuleType mod) : BaseClass(mod) {}
 
     /// \brief Unload module
-    operator bool() const final { return get().empty(); }
+    operator bool() const final { return get()->empty(); }
 
     /// Unload the module
     void unload() final {
