@@ -11,6 +11,7 @@
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
 #include <histogram.hpp>
+#include <kernel/histogram.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
@@ -22,10 +23,12 @@ template<typename T>
 Array<uint> histogram(const Array<T> &in, const unsigned &nbins,
                       const double &minval, const double &maxval,
                       const bool isLinear) {
-    ONEAPI_NOT_SUPPORTED("");
     const dim4 &dims = in.dims();
     dim4 outDims     = dim4(nbins, 1, dims[2], dims[3]);
-    Array<uint> out  = createValueArray<uint>(outDims, uint(0));
+    // Array<uint> out  = createValueArray<uint>(outDims, uint(0));
+    // \TODO revert createEmptyArray to createValueArray once JIT functions
+    Array<uint> out = createEmptyArray<uint>(outDims);
+    kernel::histogram<T>(out, in, nbins, minval, maxval, isLinear);
     return out;
 }
 

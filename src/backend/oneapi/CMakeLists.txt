@@ -207,6 +207,7 @@ target_sources(afoneapi
     kernel/KParam.hpp
     kernel/assign.hpp
     kernel/iota.hpp
+    kernel/histogram.hpp
     kernel/memcopy.hpp
     kernel/random_engine.hpp
     kernel/random_engine_write.hpp
