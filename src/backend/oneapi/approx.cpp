@@ -9,29 +9,28 @@
 
 #include <approx.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/approx.hpp>
 
 namespace oneapi {
 template<typename Ty, typename Tp>
 void approx1(Array<Ty> &yo, const Array<Ty> &yi, const Array<Tp> &xo,
              const int xdim, const Tp &xi_beg, const Tp &xi_step,
              const af_interp_type method, const float offGrid) {
-    ONEAPI_NOT_SUPPORTED("");
-    return;
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
-            // kernel::approx1<Ty, Tp>(yo, yi, xo, xdim, xi_beg, xi_step,
-            // offGrid, method, 1);
+            kernel::approx1<Ty, Tp>(yo, yi, xo, xdim, xi_beg, xi_step, offGrid,
+                                    method, 1);
             break;
         case AF_INTERP_LINEAR:
         case AF_INTERP_LINEAR_COSINE:
-            // kernel::approx1<Ty, Tp>(yo, yi, xo, xdim, xi_beg, xi_step,
-            // offGrid, method, 2);
+            kernel::approx1<Ty, Tp>(yo, yi, xo, xdim, xi_beg, xi_step, offGrid,
+                                    method, 2);
             break;
         case AF_INTERP_CUBIC:
         case AF_INTERP_CUBIC_SPLINE:
-            // kernel::approx1<Ty, Tp>(yo, yi, xo, xdim, xi_beg, xi_step,
-            // offGrid, method, 3);
+            kernel::approx1<Ty, Tp>(yo, yi, xo, xdim, xi_beg, xi_step, offGrid,
+                                    method, 3);
             break;
         default: break;
     }
