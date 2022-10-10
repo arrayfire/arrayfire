@@ -42,27 +42,25 @@ void approx2(Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo,
              const Array<Tp> &yo, const int ydim, const Tp &yi_beg,
              const Tp &yi_step, const af_interp_type method,
              const float offGrid) {
-    ONEAPI_NOT_SUPPORTED("");
-    return;
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
-            // kernel::approx2<Ty, Tp>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
-            // ydim, yi_beg, yi_step, offGrid, method, 1);
+            kernel::approx2<Ty, Tp>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
+                                    ydim, yi_beg, yi_step, offGrid, method, 1);
             break;
         case AF_INTERP_LINEAR:
         case AF_INTERP_BILINEAR:
         case AF_INTERP_LINEAR_COSINE:
         case AF_INTERP_BILINEAR_COSINE:
-            // kernel::approx2<Ty, Tp>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
-            // ydim, yi_beg, yi_step, offGrid, method, 2);
+            kernel::approx2<Ty, Tp>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
+                                    ydim, yi_beg, yi_step, offGrid, method, 2);
             break;
         case AF_INTERP_CUBIC:
         case AF_INTERP_BICUBIC:
         case AF_INTERP_CUBIC_SPLINE:
         case AF_INTERP_BICUBIC_SPLINE:
-            // kernel::approx2<Ty, Tp>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
-            // ydim, yi_beg, yi_step, offGrid, method, 3);
+            kernel::approx2<Ty, Tp>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
+                                    ydim, yi_beg, yi_step, offGrid, method, 3);
             break;
         default: break;
     }
