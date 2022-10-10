@@ -88,9 +88,8 @@ class histogramKernel {
         }
 
         for (int row = start; row < end; row += g.get_local_range(0)) {
-            // \TODO isLinear should be a templated bool
-            const int i0  = isLinear_ ? 0 : row % iInfo_.dims[0];
-            const int i1  = isLinear_ ? 0 : row / iInfo_.dims[0];
+            const int i0  = row % iInfo_.dims[0];
+            const int i1  = row / iInfo_.dims[0];
             const int idx = isLinear_ ? row : i0 + i1 * iInfo_.strides[1];
 
             int bin = (int)(((float)in[idx] - minval_) / dx);
