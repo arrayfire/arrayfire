@@ -209,6 +209,7 @@ target_sources(afoneapi
     kernel/approx1.hpp
     kernel/approx2.hpp
     kernel/assign.hpp
+    kernel/bilateral.hpp
     kernel/diagonal.hpp
     kernel/diff.hpp
     kernel/interp.hpp

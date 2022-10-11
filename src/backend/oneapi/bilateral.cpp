@@ -10,6 +10,7 @@
 #include <Array.hpp>
 #include <bilateral.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/bilateral.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
@@ -19,8 +20,8 @@ namespace oneapi {
 template<typename inType, typename outType>
 Array<outType> bilateral(const Array<inType> &in, const float &sSigma,
                          const float &cSigma) {
-    ONEAPI_NOT_SUPPORTED("");
     Array<outType> out = createEmptyArray<outType>(in.dims());
+    kernel::bilateral<inType, outType>(out, in, sSigma, cSigma);
     return out;
 }
 
