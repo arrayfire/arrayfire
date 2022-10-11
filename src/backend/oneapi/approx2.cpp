@@ -6,37 +6,11 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
 #include <approx.hpp>
 #include <err_oneapi.hpp>
-#include <kernel/approx1.hpp>
 #include <kernel/approx2.hpp>
 
 namespace oneapi {
-template<typename Ty, typename Tp>
-void approx1(Array<Ty> &yo, const Array<Ty> &yi, const Array<Tp> &xo,
-             const int xdim, const Tp &xi_beg, const Tp &xi_step,
-             const af_interp_type method, const float offGrid) {
-    switch (method) {
-        case AF_INTERP_NEAREST:
-        case AF_INTERP_LOWER:
-            kernel::approx1<Ty, Tp>(yo, yi, xo, xdim, xi_beg, xi_step, offGrid,
-                                    method, 1);
-            break;
-        case AF_INTERP_LINEAR:
-        case AF_INTERP_LINEAR_COSINE:
-            kernel::approx1<Ty, Tp>(yo, yi, xo, xdim, xi_beg, xi_step, offGrid,
-                                    method, 2);
-            break;
-        case AF_INTERP_CUBIC:
-        case AF_INTERP_CUBIC_SPLINE:
-            kernel::approx1<Ty, Tp>(yo, yi, xo, xdim, xi_beg, xi_step, offGrid,
-                                    method, 3);
-            break;
-        default: break;
-    }
-}
-
 template<typename Ty, typename Tp>
 void approx2(Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo,
              const int xdim, const Tp &xi_beg, const Tp &xi_step,
@@ -68,10 +42,6 @@ void approx2(Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo,
 }
 
 #define INSTANTIATE(Ty, Tp)                                       \
-    template void approx1<Ty, Tp>(                                \
-        Array<Ty> & yo, const Array<Ty> &yi, const Array<Tp> &xo, \
-        const int xdim, const Tp &xi_beg, const Tp &xi_step,      \
-        const af_interp_type method, const float offGrid);        \
     template void approx2<Ty, Tp>(                                \
         Array<Ty> & zo, const Array<Ty> &zi, const Array<Tp> &xo, \
         const int xdim, const Tp &xi_beg, const Tp &xi_step,      \
