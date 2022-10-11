@@ -22,7 +22,8 @@ add_library(afoneapi
   anisotropic_diffusion.cpp
   anisotropic_diffusion.hpp
   any.cpp
-  approx.cpp
+  approx1.cpp
+  approx2.cpp
   approx.hpp
   arith.hpp
   assign.cpp
@@ -205,7 +206,8 @@ add_library(afoneapi
 target_sources(afoneapi
   PRIVATE
     kernel/KParam.hpp
-    kernel/approx.hpp
+    kernel/approx1.hpp
+    kernel/approx2.hpp
     kernel/assign.hpp
     kernel/diagonal.hpp
     kernel/diff.hpp
