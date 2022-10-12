@@ -38,12 +38,12 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
 
     cl::NDRange local(THREADS_PER_GROUP);
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 6> targs = {
         TemplateTypename<T>(),       TemplateArg(use_alpha),
         TemplateArg(use_beta),       TemplateArg(is_conj),
         TemplateArg(rows_per_group), TemplateArg(local[0]),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 8> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(USE_ALPHA, use_alpha),
         DefineKeyValue(USE_BETA, use_beta),
@@ -51,11 +51,10 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
         DefineKeyValue(THREADS, local[0]),
         DefineKeyValue(ROWS_PER_GROUP, rows_per_group),
         DefineKeyValue(IS_CPLX, (af::iscplx<T>() ? 1 : 0)),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto cscmvBlock =
-        common::getKernel("cscmv_block", {cscmv_cl_src}, targs, options);
+    auto cscmvBlock = common::getKernel("cscmv_block", std::array{cscmv_cl_src},
+                                        targs, options);
 
     int K        = colIdx.info.dims[0] - 1;
     int M        = out.info.dims[0];

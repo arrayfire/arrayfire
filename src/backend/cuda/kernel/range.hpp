@@ -25,8 +25,8 @@ void range(Param<T> out, const int dim) {
     constexpr unsigned RANGE_TILEX = 512;
     constexpr unsigned RANGE_TILEY = 32;
 
-    auto range = common::getKernel("cuda::range", {range_cuh_src},
-                                   {TemplateTypename<T>()});
+    auto range = common::getKernel("cuda::range", std::array{range_cuh_src},
+                                   TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(RANGE_TX, RANGE_TY, 1);
 

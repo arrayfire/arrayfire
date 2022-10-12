@@ -44,12 +44,12 @@ void convSep(Param out, const Param signal, const Param filter,
     const size_t C1_SIZE = (THREADS_Y + 2 * (fLen - 1)) * THREADS_X;
     size_t locSize       = (conv_dim == 0 ? C0_SIZE : C1_SIZE);
 
-    std::vector<TemplateArg> tmpltArgs = {
+    std::array<TemplateArg, 5> tmpltArgs = {
         TemplateTypename<T>(), TemplateTypename<accType>(),
         TemplateArg(conv_dim), TemplateArg(expand),
         TemplateArg(fLen),
     };
-    std::vector<std::string> compileOpts = {
+    std::array<std::string, 11> compileOpts = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(Ti, dtype_traits<T>::getName()),
         DefineKeyValue(To, dtype_traits<accType>::getName()),
@@ -60,12 +60,11 @@ void convSep(Param out, const Param signal, const Param filter,
         DefineKeyFromStr(binOpName<af_mul_t>()),
         DefineKeyValue(IS_CPLX, (IsComplex ? 1 : 0)),
         DefineKeyValue(LOCAL_MEM_SIZE, locSize),
-    };
-    compileOpts.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto conv =
-        common::getKernel("convolve", {ops_cl_src, convolve_separable_cl_src},
-                          tmpltArgs, compileOpts);
+    auto conv = common::getKernel(
+        "convolve", std::array{ops_cl_src, convolve_separable_cl_src},
+        tmpltArgs, compileOpts);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

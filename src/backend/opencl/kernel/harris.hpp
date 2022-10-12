@@ -62,20 +62,22 @@ void conv_helper(Array<T> &ixx, Array<T> &ixy, Array<T> &iyy,
 
 template<typename T>
 std::array<Kernel, 4> getHarrisKernels() {
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 1> targs = {
         TemplateTypename<T>(),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 2> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
     return {
-        common::getKernel("second_order_deriv", {harris_cl_src}, targs,
+        common::getKernel("second_order_deriv", std::array{harris_cl_src},
+                          targs, options),
+        common::getKernel("keep_corners", std::array{harris_cl_src}, targs,
                           options),
-        common::getKernel("keep_corners", {harris_cl_src}, targs, options),
-        common::getKernel("harris_responses", {harris_cl_src}, targs, options),
-        common::getKernel("non_maximal", {harris_cl_src}, targs, options),
+        common::getKernel("harris_responses", std::array{harris_cl_src}, targs,
+                          options),
+        common::getKernel("non_maximal", std::array{harris_cl_src}, targs,
+                          options),
     };
 }
 

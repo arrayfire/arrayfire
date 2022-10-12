@@ -38,11 +38,11 @@ void reduceDimLauncher(Param out, Param in, const int dim, const uint threads_y,
                        const uint groups_all[4], int change_nan,
                        double nanval) {
     ToNumStr<To> toNumStr;
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 5> targs = {
         TemplateTypename<Ti>(), TemplateTypename<To>(), TemplateArg(dim),
         TemplateArg(op),        TemplateArg(threads_y),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 10> options = {
         DefineKeyValue(Ti, dtype_traits<Ti>::getName()),
         DefineKeyValue(To, dtype_traits<To>::getName()),
         DefineKeyValue(T, "To"),
@@ -52,11 +52,11 @@ void reduceDimLauncher(Param out, Param in, const int dim, const uint threads_y,
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
         DefineKeyValue(CPLX, af::iscplx<Ti>()),
-    };
-    options.emplace_back(getTypeBuildDefinition<Ti, To>());
+        getTypeBuildDefinition<Ti, To>()};
 
     auto reduceDim = common::getKernel(
-        "reduce_dim_kernel", {ops_cl_src, reduce_dim_cl_src}, targs, options);
+        "reduce_dim_kernel", std::array{ops_cl_src, reduce_dim_cl_src}, targs,
+        options);
 
     cl::NDRange local(THREADS_X, threads_y);
     cl::NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -115,13 +115,13 @@ void reduceAllLauncher(Param out, Param in, const uint groups_x,
                        const uint groups_y, const uint threads_x,
                        int change_nan, double nanval) {
     ToNumStr<To> toNumStr;
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 4> targs = {
         TemplateTypename<Ti>(),
         TemplateTypename<To>(),
         TemplateArg(op),
         TemplateArg(threads_x),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 9> options = {
         DefineKeyValue(Ti, dtype_traits<Ti>::getName()),
         DefineKeyValue(To, dtype_traits<To>::getName()),
         DefineKeyValue(T, "To"),
@@ -130,11 +130,11 @@ void reduceAllLauncher(Param out, Param in, const uint groups_x,
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
         DefineKeyValue(CPLX, af::iscplx<Ti>()),
-    };
-    options.emplace_back(getTypeBuildDefinition<Ti, To>());
+        getTypeBuildDefinition<Ti, To>()};
 
     auto reduceAll = common::getKernel(
-        "reduce_all_kernel", {ops_cl_src, reduce_all_cl_src}, targs, options);
+        "reduce_all_kernel", std::array{ops_cl_src, reduce_all_cl_src}, targs,
+        options);
 
     cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     cl::NDRange global(groups_x * in.info.dims[2] * local[0],
@@ -163,13 +163,13 @@ void reduceFirstLauncher(Param out, Param in, const uint groups_x,
                          const uint groups_y, const uint threads_x,
                          int change_nan, double nanval) {
     ToNumStr<To> toNumStr;
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 4> targs = {
         TemplateTypename<Ti>(),
         TemplateTypename<To>(),
         TemplateArg(op),
         TemplateArg(threads_x),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 9> options = {
         DefineKeyValue(Ti, dtype_traits<Ti>::getName()),
         DefineKeyValue(To, dtype_traits<To>::getName()),
         DefineKeyValue(T, "To"),
@@ -178,12 +178,11 @@ void reduceFirstLauncher(Param out, Param in, const uint groups_x,
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
         DefineKeyValue(CPLX, af::iscplx<Ti>()),
-    };
-    options.emplace_back(getTypeBuildDefinition<Ti, To>());
+        getTypeBuildDefinition<Ti, To>()};
 
-    auto reduceFirst =
-        common::getKernel("reduce_first_kernel",
-                          {ops_cl_src, reduce_first_cl_src}, targs, options);
+    auto reduceFirst = common::getKernel(
+        "reduce_first_kernel", std::array{ops_cl_src, reduce_first_cl_src},
+        targs, options);
 
     cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     cl::NDRange global(groups_x * in.info.dims[2] * local[0],

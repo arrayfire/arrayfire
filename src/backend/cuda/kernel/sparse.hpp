@@ -23,9 +23,9 @@ void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
                CParam<int> colIdx) {
     constexpr int reps = 4;
 
-    auto coo2Dense =
-        common::getKernel("cuda::coo2Dense", {sparse_cuh_src},
-                          {TemplateTypename<T>()}, {DefineValue(reps)});
+    auto coo2Dense = common::getKernel(
+        "cuda::coo2Dense", std::array{sparse_cuh_src},
+        TemplateArgs(TemplateTypename<T>()), std::array{DefineValue(reps)});
 
     dim3 threads(256, 1, 1);
 

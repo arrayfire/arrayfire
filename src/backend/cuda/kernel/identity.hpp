@@ -20,8 +20,9 @@ namespace kernel {
 
 template<typename T>
 void identity(Param<T> out) {
-    auto identity = common::getKernel("cuda::identity", {identity_cuh_src},
-                                      {TemplateTypename<T>()});
+    auto identity =
+        common::getKernel("cuda::identity", std::array{identity_cuh_src},
+                          TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(32, 8);
     int blocks_x = divup(out.dims[0], threads.x);

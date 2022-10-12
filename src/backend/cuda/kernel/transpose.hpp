@@ -25,11 +25,11 @@ static const int THREADS_Y = 256 / TILE_DIM;
 template<typename T>
 void transpose(Param<T> out, CParam<T> in, const bool conjugate,
                const bool is32multiple) {
-    auto transpose =
-        common::getKernel("cuda::transpose", {transpose_cuh_src},
-                          {TemplateTypename<T>(), TemplateArg(conjugate),
-                           TemplateArg(is32multiple)},
-                          {DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
+    auto transpose = common::getKernel(
+        "cuda::transpose", std::array{transpose_cuh_src},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(conjugate),
+                     TemplateArg(is32multiple)),
+        std::array{DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

@@ -24,9 +24,10 @@ void diff(Param<T> out, CParam<T> in, const int indims, const unsigned dim,
     constexpr unsigned TX = 16;
     constexpr unsigned TY = 16;
 
-    auto diff = common::getKernel(
-        "cuda::diff", {diff_cuh_src},
-        {TemplateTypename<T>(), TemplateArg(dim), TemplateArg(isDiff2)});
+    auto diff =
+        common::getKernel("cuda::diff", std::array{diff_cuh_src},
+                          TemplateArgs(TemplateTypename<T>(), TemplateArg(dim),
+                                       TemplateArg(isDiff2)));
 
     dim3 threads(TX, TY, 1);
 

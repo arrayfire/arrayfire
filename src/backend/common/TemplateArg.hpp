@@ -9,10 +9,15 @@
 
 #pragma once
 
+#include <array>
 #include <string>
 #include <utility>
 
 #include <optypes.hpp>
+#include <traits.hpp>
+
+template<typename T>
+class TemplateTypename;
 
 template<typename T>
 std::string toString(T value);
@@ -25,8 +30,17 @@ struct TemplateArg {
     TemplateArg(std::string str) : _tparam(std::move(str)) {}
 
     template<typename T>
+    constexpr TemplateArg(TemplateTypename<T> arg) noexcept : _tparam(arg) {}
+
+    template<typename T>
     constexpr TemplateArg(T value) noexcept : _tparam(toString(value)) {}
 };
+
+template<typename... Targs>
+std::array<TemplateArg, sizeof...(Targs)> TemplateArgs(Targs &&...args) {
+    return std::array<TemplateArg, sizeof...(Targs)>{
+        std::forward<Targs>(args)...};
+}
 
 #define DefineKey(arg) " -D " #arg
 #define DefineValue(arg) " -D " #arg "=" + toString(arg)

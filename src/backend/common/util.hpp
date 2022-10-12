@@ -12,6 +12,7 @@
 
 #include <af/defines.h>
 
+#include <nonstd/span.hpp>
 #include <iosfwd>
 #include <string>
 #include <vector>
@@ -78,8 +79,8 @@ std::size_t deterministicHash(const std::string& data,
                               const std::size_t prevHash = FNV1A_BASE_OFFSET);
 
 // This concatenates strings in the vector and computes hash
-std::size_t deterministicHash(const std::vector<std::string>& list,
+std::size_t deterministicHash(nonstd::span<const std::string> list,
                               const std::size_t prevHash = FNV1A_BASE_OFFSET);
 
 // This concatenates hashes of multiple sources
-std::size_t deterministicHash(const std::vector<common::Source>& list);
+std::size_t deterministicHash(nonstd::span<const common::Source> list);

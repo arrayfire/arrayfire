@@ -15,6 +15,7 @@
 #include <device_manager.hpp>
 #include <platform.hpp>
 
+#include <nonstd/span.hpp>
 #include <algorithm>
 #include <shared_mutex>
 #include <string>
@@ -24,11 +25,15 @@
 using detail::Kernel;
 using detail::Module;
 
+using nonstd::span;
+using std::array;
 using std::back_inserter;
+using std::shared_lock;
 using std::shared_timed_mutex;
 using std::string;
 using std::to_string;
 using std::transform;
+using std::unique_lock;
 using std::unordered_map;
 using std::vector;
 
@@ -48,17 +53,16 @@ ModuleMap& getCache(const int device) {
 }
 
 Module findModule(const int device, const size_t& key) {
-    std::shared_lock<shared_timed_mutex> readLock(getCacheMutex(device));
+    shared_lock<shared_timed_mutex> readLock(getCacheMutex(device));
     auto& cache = getCache(device);
     auto iter   = cache.find(key);
     if (iter != cache.end()) { return iter->second; }
     return Module{};
 }
 
-Kernel getKernel(const string& kernelName,
-                 const vector<common::Source>& sources,
-                 const vector<TemplateArg>& targs,
-                 const vector<string>& options, const bool sourceIsJIT) {
+Kernel getKernel(const string& kernelName, span<const common::Source> sources,
+                 span<const TemplateArg> targs, span<const string> options,
+                 const bool sourceIsJIT) {
     string tInstance = kernelName;
 
 #if defined(AF_CUDA)
@@ -116,10 +120,10 @@ Kernel getKernel(const string& kernelName,
                 sources_str.push_back({s.ptr, s.length});
             }
             currModule = compileModule(to_string(moduleKeyDisk), sources_str,
-                                       options, {tInstance}, sourceIsJIT);
+                                       options, array{tInstance}, sourceIsJIT);
         }
 
-        std::unique_lock<shared_timed_mutex> writeLock(getCacheMutex(device));
+        unique_lock<shared_timed_mutex> writeLock(getCacheMutex(device));
         auto& cache = getCache(device);
         auto iter   = cache.find(moduleKeyCache);
         if (iter == cache.end()) {

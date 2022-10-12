@@ -61,7 +61,8 @@ static opencl::Kernel getScanFirstKernel(const std::string key,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    return common::getKernel(key, {ops_cl_src, scan_first_by_key_cl_src},
+    return common::getKernel(key,
+                             std::array{ops_cl_src, scan_first_by_key_cl_src},
                              tmpltArgs, compileOpts);
 }
 

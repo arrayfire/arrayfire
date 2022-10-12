@@ -15,6 +15,8 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/gradient_cuh.hpp>
 
+#include <array>
+
 namespace cuda {
 namespace kernel {
 
@@ -23,9 +25,10 @@ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in) {
     constexpr unsigned TX = 32;
     constexpr unsigned TY = 8;
 
-    auto gradient = common::getKernel("cuda::gradient", {gradient_cuh_src},
-                                      {TemplateTypename<T>()},
-                                      {DefineValue(TX), DefineValue(TY)});
+    auto gradient =
+        common::getKernel("cuda::gradient", std::array{gradient_cuh_src},
+                          TemplateArgs(TemplateTypename<T>()),
+                          std::array{DefineValue(TX), DefineValue(TY)});
 
     dim3 threads(TX, TY, 1);
 

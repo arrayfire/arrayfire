@@ -32,9 +32,9 @@ typedef struct {
 template<typename T>
 void rotate(Param<T> out, CParam<T> in, const float theta,
             const af::interpType method, const int order) {
-    auto rotate =
-        common::getKernel("cuda::rotate", {rotate_cuh_src},
-                          {TemplateTypename<T>(), TemplateArg(order)});
+    auto rotate = common::getKernel(
+        "cuda::rotate", std::array{rotate_cuh_src},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(order)));
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;

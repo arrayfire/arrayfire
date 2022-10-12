@@ -45,13 +45,16 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
         CUDA_NOT_SUPPORTED(errMessage);
     }
 
-    auto initSeeds = common::getKernel("cuda::initSeeds", {flood_fill_cuh_src},
-                                       {TemplateTypename<T>()});
+    auto initSeeds =
+        common::getKernel("cuda::initSeeds", std::array{flood_fill_cuh_src},
+                          TemplateArgs(TemplateTypename<T>()));
     auto floodStep = common::getKernel(
-        "cuda::floodStep", {flood_fill_cuh_src}, {TemplateTypename<T>()},
-        {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+        "cuda::floodStep", std::array{flood_fill_cuh_src},
+        TemplateArgs(TemplateTypename<T>()),
+        std::array{DefineValue(THREADS_X), DefineValue(THREADS_Y)});
     auto finalizeOutput = common::getKernel(
-        "cuda::finalizeOutput", {flood_fill_cuh_src}, {TemplateTypename<T>()});
+        "cuda::finalizeOutput", std::array{flood_fill_cuh_src},
+        TemplateArgs(TemplateTypename<T>()));
 
     EnqueueArgs qArgs(dim3(divup(seedsx.elements(), THREADS)), dim3(THREADS),
                       getActiveStream());

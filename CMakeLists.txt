@@ -322,6 +322,7 @@ else()
   set_target_properties(bin2cpp
     PROPERTIES
       CXX_STANDARD 17)
+  target_link_libraries(bin2cpp PRIVATE nonstd::span-lite)
 
   # NOSPDLOG is used to remove the spdlog dependency from bin2cpp
   target_compile_definitions(bin2cpp PRIVATE NOSPDLOG)

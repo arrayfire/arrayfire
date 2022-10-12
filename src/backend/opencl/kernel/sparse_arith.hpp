@@ -50,7 +50,7 @@ auto fetchKernel(const std::string key, const common::Source &additionalSrc,
     constexpr bool IsComplex =
         std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
 
-    std::vector<TemplateArg> tmpltArgs = {
+    std::array<TemplateArg, 2> tmpltArgs = {
         TemplateTypename<T>(),
         TemplateArg(op),
     };
@@ -62,8 +62,9 @@ auto fetchKernel(const std::string key, const common::Source &additionalSrc,
     options.emplace_back(getTypeBuildDefinition<T>());
     options.insert(std::end(options), std::begin(additionalOptions),
                    std::end(additionalOptions));
-    return common::getKernel(key, {sparse_arith_common_cl_src, additionalSrc},
-                             tmpltArgs, options);
+    return common::getKernel(
+        key, std::array{sparse_arith_common_cl_src, additionalSrc}, tmpltArgs,
+        options);
 }
 
 template<typename T, af_op_t op>
@@ -142,8 +143,9 @@ static void csrCalcOutNNZ(Param outRowIdx, unsigned &nnzC, const uint M,
         TemplateTypename<uint>(),
     };
 
-    auto calcNNZ = common::getKernel(
-        "csr_calc_out_nnz", {ssarith_calc_out_nnz_cl_src}, tmpltArgs, {});
+    auto calcNNZ = common::getKernel("csr_calc_out_nnz",
+                                     std::array{ssarith_calc_out_nnz_cl_src},
+                                     tmpltArgs, {});
 
     cl::NDRange local(256, 1);
     cl::NDRange global(divup(M, local[0]) * local[0], 1, 1);
