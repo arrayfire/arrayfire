@@ -28,20 +28,18 @@ void diff(Param out, const Param in, const unsigned indims, const unsigned dim,
     constexpr int TX = 16;
     constexpr int TY = 16;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 3> targs = {
         TemplateTypename<T>(),
         TemplateArg(dim),
         TemplateArg(isDiff2),
     };
-    std::vector<std::string> options = {
-        DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(DIM, dim),
+    std::array<std::string, 4> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()), DefineKeyValue(DIM, dim),
         DefineKeyValue(isDiff2, (isDiff2 ? 1 : 0)),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto diffOp =
-        common::getKernel("diff_kernel", {diff_cl_src}, targs, options);
+    auto diffOp = common::getKernel("diff_kernel", std::array{diff_cl_src},
+                                    targs, options);
 
     cl::NDRange local(TX, TY, 1);
     if (dim == 0 && indims == 1) { local = cl::NDRange(TX * TY, 1, 1); }

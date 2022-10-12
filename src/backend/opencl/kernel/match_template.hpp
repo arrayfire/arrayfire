@@ -28,13 +28,13 @@ void matchTemplate(Param out, const Param srch, const Param tmplt,
     constexpr int THREADS_X = 16;
     constexpr int THREADS_Y = 16;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 4> targs = {
         TemplateTypename<inType>(),
         TemplateTypename<outType>(),
         TemplateArg(mType),
         TemplateArg(needMean),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 14> options = {
         DefineKeyValue(inType, dtype_traits<inType>::getName()),
         DefineKeyValue(outType, dtype_traits<outType>::getName()),
         DefineKeyValue(MATCH_T, static_cast<int>(mType)),
@@ -48,11 +48,10 @@ void matchTemplate(Param out, const Param srch, const Param tmplt,
         DefineKeyValue(AF_NCC, static_cast<int>(AF_NCC)),
         DefineKeyValue(AF_ZNCC, static_cast<int>(AF_ZNCC)),
         DefineKeyValue(AF_SHD, static_cast<int>(AF_SHD)),
-    };
-    options.emplace_back(getTypeBuildDefinition<outType>());
+        getTypeBuildDefinition<outType>()};
 
-    auto matchImgOp = common::getKernel("matchTemplate", {matchTemplate_cl_src},
-                                        targs, options);
+    auto matchImgOp = common::getKernel(
+        "matchTemplate", std::array{matchTemplate_cl_src}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

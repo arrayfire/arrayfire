@@ -27,18 +27,17 @@ void hsv2rgb_convert(Param out, const Param in, bool isHSV2RGB) {
     constexpr int THREADS_X = 16;
     constexpr int THREADS_Y = 16;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(isHSV2RGB),
     };
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
     if (isHSV2RGB) { options.emplace_back(DefineKey(isHSV2RGB)); }
 
-    auto convert =
-        common::getKernel("hsvrgbConvert", {hsv_rgb_cl_src}, targs, options);
+    auto convert = common::getKernel(
+        "hsvrgbConvert", std::array{hsv_rgb_cl_src}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

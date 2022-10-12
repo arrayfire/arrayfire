@@ -27,17 +27,16 @@ namespace kernel {
 
 template<typename T>
 static void diagCreate(Param out, Param in, int num) {
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 1> targs = {
         TemplateTypename<T>(),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 3> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto diagCreate = common::getKernel("diagCreateKernel",
-                                        {diag_create_cl_src}, targs, options);
+    auto diagCreate = common::getKernel(
+        "diagCreateKernel", std::array{diag_create_cl_src}, targs, options);
 
     cl::NDRange local(32, 8);
     int groups_x = divup(out.info.dims[0], local[0]);
@@ -52,17 +51,16 @@ static void diagCreate(Param out, Param in, int num) {
 
 template<typename T>
 static void diagExtract(Param out, Param in, int num) {
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 1> targs = {
         TemplateTypename<T>(),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 3> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto diagExtract = common::getKernel("diagExtractKernel",
-                                         {diag_extract_cl_src}, targs, options);
+    auto diagExtract = common::getKernel(
+        "diagExtractKernel", std::array{diag_extract_cl_src}, targs, options);
 
     cl::NDRange local(256, 1);
     int groups_x = divup(out.info.dims[0], local[0]);

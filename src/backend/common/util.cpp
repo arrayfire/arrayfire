@@ -23,6 +23,7 @@
 #include <common/util.hpp>
 #include <af/defines.h>
 
+#include <nonstd/span.hpp>
 #include <sys/stat.h>
 #include <algorithm>
 #include <cstdio>
@@ -34,6 +35,7 @@
 #include <thread>
 #include <vector>
 
+using nonstd::span;
 using std::accumulate;
 using std::hash;
 using std::ofstream;
@@ -248,13 +250,13 @@ size_t deterministicHash(const string& data, const size_t prevHash) {
     return deterministicHash(data.data(), data.size(), prevHash);
 }
 
-size_t deterministicHash(const vector<string>& list, const size_t prevHash) {
+size_t deterministicHash(span<const string> list, const size_t prevHash) {
     size_t hash = prevHash;
     for (auto s : list) { hash = deterministicHash(s.data(), s.size(), hash); }
     return hash;
 }
 
-size_t deterministicHash(const vector<common::Source>& list) {
+size_t deterministicHash(span<const common::Source> list) {
     // Combine the different source codes, via their hashes
     size_t hash = FNV1A_BASE_OFFSET;
     for (auto s : list) {

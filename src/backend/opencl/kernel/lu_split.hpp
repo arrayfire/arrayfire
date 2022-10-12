@@ -30,20 +30,18 @@ void luSplitLauncher(Param lower, Param upper, const Param in, bool same_dims) {
     constexpr unsigned TILEX = 128;
     constexpr unsigned TILEY = 32;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(same_dims),
     };
-    std::vector<std::string> options = {
-        DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineValue(same_dims),
+    std::array<std::string, 5> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(same_dims),
         DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
         DefineKeyValue(ONE, af::scalar_to_option(scalar<T>(1))),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto luSplit =
-        common::getKernel("luSplit", {lu_split_cl_src}, targs, options);
+    auto luSplit = common::getKernel("luSplit", std::array{lu_split_cl_src},
+                                     targs, options);
 
     cl::NDRange local(TX, TY);
 

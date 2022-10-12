@@ -79,8 +79,9 @@ void rotate(Param out, const Param in, const float theta, af_interp_type method,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
     addInterpEnumOptions(compileOpts);
 
-    auto rotate = common::getKernel(
-        "rotateKernel", {interp_cl_src, rotate_cl_src}, tmpltArgs, compileOpts);
+    auto rotate = common::getKernel("rotateKernel",
+                                    std::array{interp_cl_src, rotate_cl_src},
+                                    tmpltArgs, compileOpts);
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;

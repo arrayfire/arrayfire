@@ -25,9 +25,9 @@ void matchTemplate(Param<outType> out, CParam<inType> srch,
                    CParam<inType> tmplt, const af::matchType mType,
                    bool needMean) {
     auto matchTemplate = common::getKernel(
-        "cuda::matchTemplate", {match_template_cuh_src},
-        {TemplateTypename<inType>(), TemplateTypename<outType>(),
-         TemplateArg(mType), TemplateArg(needMean)});
+        "cuda::matchTemplate", std::array{match_template_cuh_src},
+        TemplateArgs(TemplateTypename<inType>(), TemplateTypename<outType>(),
+                     TemplateArg(mType), TemplateArg(needMean)));
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

@@ -30,14 +30,13 @@ void range(Param out, const int dim) {
     constexpr int RANGE_TILEX = 512;
     constexpr int RANGE_TILEY = 32;
 
-    std::vector<TemplateArg> targs   = {TemplateTypename<T>()};
-    std::vector<std::string> options = {
+    std::array<TemplateArg, 1> targs   = {TemplateTypename<T>()};
+    std::array<std::string, 2> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto rangeOp =
-        common::getKernel("range_kernel", {range_cl_src}, targs, options);
+    auto rangeOp = common::getKernel("range_kernel", std::array{range_cl_src},
+                                     targs, options);
 
     cl::NDRange local(RANGE_TX, RANGE_TY, 1);
 

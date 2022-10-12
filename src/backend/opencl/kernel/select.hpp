@@ -29,18 +29,16 @@ constexpr int REPEAT = 64;
 template<typename T>
 void selectLauncher(Param out, Param cond, Param a, Param b, const int ndims,
                     const bool is_same) {
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(is_same),
     };
-    std::vector<std::string> options = {
-        DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineValue(is_same),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+    std::array<std::string, 3> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(is_same),
+        getTypeBuildDefinition<T>()};
 
-    auto selectOp =
-        common::getKernel("select_kernel", {select_cl_src}, targs, options);
+    auto selectOp = common::getKernel(
+        "select_kernel", std::array{select_cl_src}, targs, options);
 
     int threads[] = {DIMX, DIMY};
 
@@ -74,18 +72,16 @@ void select(Param out, Param cond, Param a, Param b, int ndims) {
 template<typename T>
 void select_scalar(Param out, Param cond, Param a, const T b, const int ndims,
                    const bool flip) {
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(flip),
     };
-    std::vector<std::string> options = {
-        DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineValue(flip),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+    std::array<std::string, 3> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(flip),
+        getTypeBuildDefinition<T>()};
 
-    auto selectOp = common::getKernel("select_scalar_kernel", {select_cl_src},
-                                      targs, options);
+    auto selectOp = common::getKernel(
+        "select_scalar_kernel", std::array{select_cl_src}, targs, options);
 
     int threads[] = {DIMX, DIMY};
 

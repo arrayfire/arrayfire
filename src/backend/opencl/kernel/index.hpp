@@ -31,13 +31,13 @@ typedef struct {
 template<typename T>
 void index(Param out, const Param in, const IndexKernelParam_t& p,
            cl::Buffer* bPtr[4]) {
-    std::vector<std::string> options = {
+    std::array<std::string, 2> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto index    = common::getKernel("indexKernel", {index_cl_src},
-                                      {TemplateTypename<T>()}, options);
+    auto index =
+        common::getKernel("indexKernel", std::array{index_cl_src},
+                          TemplateArgs(TemplateTypename<T>()), options);
     int threads_x = 256;
     int threads_y = 1;
     cl::NDRange local(threads_x, threads_y);

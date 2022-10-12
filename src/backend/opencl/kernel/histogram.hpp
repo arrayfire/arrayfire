@@ -29,7 +29,7 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval,
     constexpr int THREADS_X = 256;
     constexpr int THRD_LOAD = 16;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(isLinear),
     };
@@ -41,8 +41,8 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval,
     options.emplace_back(getTypeBuildDefinition<T>());
     if (isLinear) { options.emplace_back(DefineKey(IS_LINEAR)); }
 
-    auto histogram =
-        common::getKernel("histogram", {histogram_cl_src}, targs, options);
+    auto histogram = common::getKernel(
+        "histogram", std::array{histogram_cl_src}, targs, options);
 
     int nElems  = in.info.dims[0] * in.info.dims[1];
     int blk_x   = divup(nElems, THRD_LOAD * THREADS_X);

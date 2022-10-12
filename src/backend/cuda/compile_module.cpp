@@ -64,6 +64,7 @@
 using namespace cuda;
 
 using detail::Module;
+using nonstd::span;
 using std::accumulate;
 using std::array;
 using std::back_insert_iterator;
@@ -140,9 +141,9 @@ string getKernelCacheFilename(const int device, const string &key) {
 
 namespace common {
 
-Module compileModule(const string &moduleKey, const vector<string> &sources,
-                     const vector<string> &opts,
-                     const vector<string> &kInstances, const bool sourceIsJIT) {
+Module compileModule(const string &moduleKey, span<const string> sources,
+                     span<const string> opts, span<const string> kInstances,
+                     const bool sourceIsJIT) {
     nvrtcProgram prog;
     if (sourceIsJIT) {
         constexpr const char *header_names[] = {

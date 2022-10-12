@@ -34,6 +34,11 @@ template string toString<double>(double);
 template string toString<long double>(long double);
 
 template<>
+string toString(TemplateArg arg) {
+    return arg._tparam;
+}
+
+template<>
 string toString(bool val) {
     return string(val ? "true" : "false");
 }

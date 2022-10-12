@@ -29,20 +29,19 @@ void gradient(Param grad0, Param grad1, const Param in) {
     constexpr int TX = 32;
     constexpr int TY = 8;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 1> targs = {
         TemplateTypename<T>(),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 6> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineValue(TX),
         DefineValue(TY),
         DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
         DefineKeyValue(CPLX, static_cast<int>(af::iscplx<T>())),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto gradOp =
-        common::getKernel("gradient", {gradient_cl_src}, targs, options);
+    auto gradOp = common::getKernel("gradient", std::array{gradient_cl_src},
+                                    targs, options);
 
     cl::NDRange local(TX, TY, 1);
 

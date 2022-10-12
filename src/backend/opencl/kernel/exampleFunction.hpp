@@ -43,25 +43,25 @@ template<typename T>
 void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
     // Compilation options for compiling OpenCL kernel.
     // Go to common/kernel_cache.hpp to find details on this.
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 1> targs = {
         TemplateTypename<T>(),
     };
 
     // Compilation options for compiling OpenCL kernel.
     // Go to common/kernel_cache.hpp to find details on this.
-    std::vector<std::string> options = {
+    std::array<std::string, 2> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-    };
 
-    // The following templated function can take variable
-    // number of template parameters and if one of them is double
-    // precision, it will enable necessary constants, flags, ops
-    // in opencl kernel compilation stage
-    options.emplace_back(getTypeBuildDefinition<T>());
+        // The following templated function can take variable
+        // number of template parameters and if one of them is double
+        // precision, it will enable necessary constants, flags, ops
+        // in opencl kernel compilation stage
+        getTypeBuildDefinition<T>()};
 
     // Fetch the Kernel functor, go to common/kernel_cache.hpp
     // to find details of this function
-    auto exOp = common::getKernel("example", {example_cl_src}, targs, options);
+    auto exOp = common::getKernel("example", std::array{example_cl_src}, targs,
+                                  options);
 
     // configure work group parameters
     cl::NDRange local(THREADS_X, THREADS_Y);

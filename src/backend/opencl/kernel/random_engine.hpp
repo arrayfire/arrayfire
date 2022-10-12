@@ -56,7 +56,7 @@ static Kernel getRandomEngineKernel(const af_random_engine_type type,
         default:
             AF_ERROR("Random Engine Type Not Supported", AF_ERR_NOT_SUPPORTED);
     }
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(kerIdx),
     };
@@ -162,8 +162,9 @@ void initMersenneState(cl::Buffer state, cl::Buffer table, const uintl &seed) {
     cl::NDRange local(THREADS_PER_GROUP, 1);
     cl::NDRange global(local[0] * MAX_BLOCKS, 1);
 
-    auto initOp = common::getKernel("mersenneInitState",
-                                    {random_engine_mersenne_init_cl_src}, {});
+    auto initOp =
+        common::getKernel("mersenneInitState",
+                          std::array{random_engine_mersenne_init_cl_src}, {});
     initOp(cl::EnqueueArgs(getQueue(), global, local), state, table, seed);
     CL_DEBUG_FINISH(getQueue());
 }

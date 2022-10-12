@@ -23,9 +23,6 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
 namespace opencl {
 namespace kernel {
 typedef struct {
@@ -149,7 +146,7 @@ void memcopy(const cl::Buffer& b_out, const dim4& ostrides,
         : th.loop1 ? th.loop3 ? "memCopyLoop13" : "memCopyLoop1"
         : th.loop3 ? "memCopyLoop3"
                    : "memCopy"};  // Conversion to  base vector types.
-    const char* tArg{
+    TemplateArg tArg{
         sizeofNewT == 1   ? "char"
         : sizeofNewT == 2 ? "short"
         : sizeofNewT == 4 ? "float"
@@ -157,8 +154,9 @@ void memcopy(const cl::Buffer& b_out, const dim4& ostrides,
         : sizeofNewT == 16
             ? "float4"
             : "type is larger than 16 bytes, which is unsupported"};
-    auto memCopy{common::getKernel(kernelName, {memcopy_cl_src}, {tArg},
-                                   {DefineKeyValue(T, tArg)})};
+    auto memCopy{common::getKernel(kernelName, std::array{memcopy_cl_src},
+                                   std::array{tArg},
+                                   std::array{DefineKeyValue(T, tArg)})};
     const cl::NDRange local{th.genLocal(memCopy.get())};
     const cl::NDRange global{th.genGlobal(local)};
 
@@ -209,12 +207,12 @@ void copy(const Param out, const Param in, dim_t ondims,
                                 std::is_same<inType, cdouble>::value};
     const char* factorType[]{"float", "double"};
 
-    const std::vector<TemplateArg> targs{
+    const std::array<TemplateArg, 5> targs{
         TemplateTypename<inType>(), TemplateTypename<outType>(),
         TemplateArg(same_dims),     TemplateArg(factorType[factorTypeIdx]),
         TemplateArg(factor != 1.0),
     };
-    const std::vector<std::string> options{
+    const std::array<std::string, 8> options{
         DefineKeyValue(inType, dtype_traits<inType>::getName()),
         DefineKeyValue(outType, dtype_traits<outType>::getName()),
         std::string(" -D inType_") + dtype_traits<inType>::getName(),
@@ -222,7 +220,7 @@ void copy(const Param out, const Param in, dim_t ondims,
         DefineKeyValue(SAME_DIMS, static_cast<int>(same_dims)),
         std::string(" -D factorType=") + factorType[factorTypeIdx],
         std::string((factor != 1.0) ? " -D FACTOR" : " -D NOFACTOR"),
-        {getTypeBuildDefinition<inType, outType>()},
+        getTypeBuildDefinition<inType, outType>(),
     };
 
     threadsMgt<int> th(odims_.dims, ondims_, 1, 1, totalSize, sizeof(outType));
@@ -230,7 +228,7 @@ void copy(const Param out, const Param in, dim_t ondims,
                                   : th.loop3 ? "scaledCopyLoop13"
                                   : th.loop1 ? "scaledCopyLoop1"
                                              : "scaledCopy",
-                                  {copy_cl_src}, targs, options);
+                                  std::array{copy_cl_src}, targs, options);
     const cl::NDRange local{th.genLocal(copy.get())};
     const cl::NDRange global{th.genGlobal(local)};
 

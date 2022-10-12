@@ -17,6 +17,7 @@
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
 #include <kernel_headers/KParam.hpp>
+#include <nonstd/span.hpp>
 #include <platform.hpp>
 #include <traits.hpp>
 
@@ -32,6 +33,7 @@ using cl::Error;
 using cl::Program;
 using common::loggerFactory;
 using fmt::format;
+using nonstd::span;
 using opencl::getActiveDeviceId;
 using opencl::getDevice;
 using opencl::Kernel;
@@ -99,8 +101,8 @@ const static string DEFAULT_MACROS_STR(
                                            #endif\n                     \
                                            ");
 
-Program buildProgram(const vector<string> &kernelSources,
-                     const vector<string> &compileOpts) {
+Program buildProgram(span<const string> kernelSources,
+                     span<const string> compileOpts) {
     Program retVal;
     try {
         static const string defaults =
@@ -151,9 +153,9 @@ string getKernelCacheFilename(const int device, const string &key) {
 
 namespace common {
 
-Module compileModule(const string &moduleKey, const vector<string> &sources,
-                     const vector<string> &options,
-                     const vector<string> &kInstances, const bool isJIT) {
+Module compileModule(const string &moduleKey, span<const string> sources,
+                     span<const string> options, span<const string> kInstances,
+                     const bool isJIT) {
     UNUSED(kInstances);
     UNUSED(isJIT);
 

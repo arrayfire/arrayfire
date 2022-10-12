@@ -46,20 +46,18 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
     constexpr int BLK_X = 64;
     constexpr int BLK_Y = 32;
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(uplo),
     };
-    std::vector<std::string> options = {
-        DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineValue(BLK_X),
+    std::array<std::string, 5> options = {
+        DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(BLK_X),
         DefineValue(BLK_Y),
         DefineKeyValue(IS_CPLX, static_cast<int>(af::iscplx<T>())),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto lasetOp =
-        common::getKernel(laset_name<uplo>(), {laset_cl_src}, targs, options);
+    auto lasetOp = common::getKernel(laset_name<uplo>(),
+                                     std::array{laset_cl_src}, targs, options);
 
     int groups_x = (m - 1) / BLK_X + 1;
     int groups_y = (n - 1) / BLK_Y + 1;

@@ -27,11 +27,9 @@ static const unsigned TY = 16;  // Kernel Launch Config Values
 
 template<typename T>  // CUDA kernel wrapper function
 void exampleFunc(Param<T> c, CParam<T> a, CParam<T> b, const af_someenum_t p) {
-    auto exampleFunc =
-        common::getKernel("cuda::exampleFunc", {exampleFunction_cuh_src},
-                          {
-                              TemplateTypename<T>(),
-                          });
+    auto exampleFunc = common::getKernel("cuda::exampleFunc",
+                                         std::array{exampleFunction_cuh_src},
+                                         TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(TX, TY, 1);  // set your cuda launch config for blocks
 

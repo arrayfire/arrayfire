@@ -25,11 +25,12 @@ static void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                               const uint threads_y, const dim_t blocks_all[4],
                               int dim, bool isFinalPass, bool inclusive_scan) {
     auto scan_dim = common::getKernel(
-        "cuda::scan_dim", {scan_dim_cuh_src},
-        {TemplateTypename<Ti>(), TemplateTypename<To>(), TemplateArg(op),
-         TemplateArg(dim), TemplateArg(isFinalPass), TemplateArg(threads_y),
-         TemplateArg(inclusive_scan)},
-        {DefineValue(THREADS_X)});
+        "cuda::scan_dim", std::array{scan_dim_cuh_src},
+        TemplateArgs(TemplateTypename<Ti>(), TemplateTypename<To>(),
+                     TemplateArg(op), TemplateArg(dim),
+                     TemplateArg(isFinalPass), TemplateArg(threads_y),
+                     TemplateArg(inclusive_scan)),
+        std::array{DefineValue(THREADS_X)});
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -52,9 +53,10 @@ template<typename To, af_op_t op>
 static void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
                                const uint threads_y, const dim_t blocks_all[4],
                                int dim, bool inclusive_scan) {
-    auto scan_dim_bcast = common::getKernel(
-        "cuda::scan_dim_bcast", {scan_dim_cuh_src},
-        {TemplateTypename<To>(), TemplateArg(op), TemplateArg(dim)});
+    auto scan_dim_bcast =
+        common::getKernel("cuda::scan_dim_bcast", std::array{scan_dim_cuh_src},
+                          TemplateArgs(TemplateTypename<To>(), TemplateArg(op),
+                                       TemplateArg(dim)));
 
     dim3 threads(THREADS_X, threads_y);
 

@@ -43,24 +43,24 @@ void csrmv(Param out, const Param &values, const Param &rowIdx,
 
     cl::NDRange local(THREADS_PER_GROUP);
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 5> targs = {
         TemplateTypename<T>(),   TemplateArg(use_alpha), TemplateArg(use_beta),
         TemplateArg(use_greedy), TemplateArg(local[0]),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 7> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(USE_ALPHA, use_alpha),
         DefineKeyValue(USE_BETA, use_beta),
         DefineKeyValue(USE_GREEDY, use_greedy),
         DefineKeyValue(THREADS, local[0]),
         DefineKeyValue(IS_CPLX, (af::iscplx<T>() ? 1 : 0)),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
     auto csrmv =
         (is_csrmv_block
-             ? common::getKernel("csrmv_thread", {csrmv_cl_src}, targs, options)
-             : common::getKernel("csrmv_block", {csrmv_cl_src}, targs,
+             ? common::getKernel("csrmv_thread", std::array{csrmv_cl_src},
+                                 targs, options)
+             : common::getKernel("csrmv_block", std::array{csrmv_cl_src}, targs,
                                  options));
 
     int M = rowIdx.info.dims[0] - 1;

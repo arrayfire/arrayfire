@@ -40,6 +40,7 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
         $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:OpenCL::cl2hpp,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:nonstd::span-lite,INTERFACE_INCLUDE_DIRECTORIES>
         ${ArrayFire_BINARY_DIR}/include
       )
     if(TARGET Forge::forge)
@@ -80,6 +81,7 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
         ${opencl_compile_definitions}
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>
         $<TARGET_PROPERTY:af_spdlog,INTERFACE_COMPILE_DEFINITIONS>
+        $<TARGET_PROPERTY:nonstd::span-lite,INTERFACE_COMPILE_DEFINITIONS>
         TYPE=${SBK_BINARY_OP} AFDLL)
     target_sources(opencl_scan_by_key
       INTERFACE $<TARGET_OBJECTS:opencl_scan_by_key_${SBK_BINARY_OP}>)

@@ -35,22 +35,21 @@ void medfilt1(Param out, const Param in, const unsigned w_wid,
     const int ARR_SIZE = (w_wid - w_wid / 2) + 1;
     size_t loc_size    = (THREADS_X + w_wid - 1) * sizeof(T);
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 2> targs = {
         TemplateTypename<T>(),
         TemplateArg(pad),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 7> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(pad, static_cast<int>(pad)),
         DefineKeyValue(AF_PAD_ZERO, static_cast<int>(AF_PAD_ZERO)),
         DefineKeyValue(AF_PAD_SYM, static_cast<int>(AF_PAD_SYM)),
         DefineValue(ARR_SIZE),
         DefineValue(w_wid),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto medfiltOp =
-        common::getKernel("medfilt1", {medfilt1_cl_src}, targs, options);
+    auto medfiltOp = common::getKernel("medfilt1", std::array{medfilt1_cl_src},
+                                       targs, options);
 
     cl::NDRange local(THREADS_X, 1, 1);
 
@@ -71,13 +70,13 @@ void medfilt2(Param out, const Param in, const af_border_type pad,
     const size_t loc_size =
         (THREADS_X + w_len - 1) * (THREADS_Y + w_wid - 1) * sizeof(T);
 
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 4> targs = {
         TemplateTypename<T>(),
         TemplateArg(pad),
         TemplateArg(w_len),
         TemplateArg(w_wid),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 8> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(pad, static_cast<int>(pad)),
         DefineKeyValue(AF_PAD_ZERO, static_cast<int>(AF_PAD_ZERO)),
@@ -85,11 +84,10 @@ void medfilt2(Param out, const Param in, const af_border_type pad,
         DefineValue(ARR_SIZE),
         DefineValue(w_wid),
         DefineValue(w_len),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto medfiltOp =
-        common::getKernel("medfilt2", {medfilt2_cl_src}, targs, options);
+    auto medfiltOp = common::getKernel("medfilt2", std::array{medfilt2_cl_src},
+                                       targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

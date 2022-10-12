@@ -27,18 +27,17 @@ namespace kernel {
 
 template<typename T>
 static void identity(Param out) {
-    std::vector<TemplateArg> targs = {
+    std::array<TemplateArg, 1> targs = {
         TemplateTypename<T>(),
     };
-    std::vector<std::string> options = {
+    std::array<std::string, 4> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(ONE, af::scalar_to_option(scalar<T>(1))),
         DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        getTypeBuildDefinition<T>()};
 
-    auto identityOp =
-        common::getKernel("identity_kernel", {identity_cl_src}, targs, options);
+    auto identityOp = common::getKernel(
+        "identity_kernel", std::array{identity_cl_src}, targs, options);
 
     cl::NDRange local(32, 8);
     int groups_x = divup(out.info.dims[0], local[0]);

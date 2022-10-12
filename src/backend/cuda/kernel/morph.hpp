@@ -31,11 +31,10 @@ void morph(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
     const int SeLength = (windLen <= 10 ? windLen : 0);
 
     auto morph = common::getKernel(
-        "cuda::morph", {morph_cuh_src},
-        {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(SeLength)},
-        {
-            DefineValue(MAX_MORPH_FILTER_LEN),
-        });
+        "cuda::morph", std::array{morph_cuh_src},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(isDilation),
+                     TemplateArg(SeLength)),
+        std::array{DefineValue(MAX_MORPH_FILTER_LEN)});
 
     morph.copyToReadOnly(morph.getDevPtr("cFilter"),
                          reinterpret_cast<CUdeviceptr>(mask.ptr),
@@ -68,11 +67,10 @@ void morph3d(Param<T> out, CParam<T> in, CParam<T> mask, bool isDilation) {
     }
 
     auto morph3D = common::getKernel(
-        "cuda::morph3D", {morph_cuh_src},
-        {TemplateTypename<T>(), TemplateArg(isDilation), TemplateArg(windLen)},
-        {
-            DefineValue(MAX_MORPH_FILTER_LEN),
-        });
+        "cuda::morph3D", std::array{morph_cuh_src},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(isDilation),
+                     TemplateArg(windLen)),
+        std::array{DefineValue(MAX_MORPH_FILTER_LEN)});
 
     morph3D.copyToReadOnly(
         morph3D.getDevPtr("cFilter"), reinterpret_cast<CUdeviceptr>(mask.ptr),
