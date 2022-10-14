@@ -59,7 +59,7 @@ af_backend ArrayInfo::getBackendId() const {
     // devId >> 8 converts the backend info to 1, 2, 4 which are enums
     // for CPU, CUDA and OpenCL respectively
     // See ArrayInfo.hpp for more
-    unsigned backendId = devId >> 8U;
+    unsigned backendId = devId >> 9U;
     return static_cast<af_backend>(backendId);
 }
 

@@ -23,7 +23,7 @@
 
 namespace unified {
 
-const int NUM_BACKENDS = 3;
+const int NUM_BACKENDS = 4;
 
 #define UNIFIED_ERROR_LOAD_LIB()                                       \
     AF_RETURN_ERROR(                                                   \
