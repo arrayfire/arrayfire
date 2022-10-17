@@ -38,26 +38,18 @@ unsigned ArrayInfo::getDevId() const {
 }
 
 void ArrayInfo::setId(int id) const {
-    // 1 << (backendId + 8) sets the 9th, 10th or 11th bit of devId to 1
-    // for CPU, CUDA and OpenCL respectively
-    // See ArrayInfo.hpp for more
-    unsigned backendId =
-        detail::getBackend() >> 1U;  // Convert enums 1, 2, 4 to ints 0, 1, 2
-    const_cast<ArrayInfo *>(this)->setId(id | 1 << (backendId + 8U));
+    const_cast<ArrayInfo *>(this)->setId(id);
 }
 
 void ArrayInfo::setId(int id) {
-    // 1 << (backendId + 8) sets the 9th, 10th or 11th bit of devId to 1
-    // for CPU, CUDA and OpenCL respectively
-    // See ArrayInfo.hpp for more
-    unsigned backendId =
-        detail::getBackend() >> 1U;  // Convert enums 1, 2, 4 to ints 0, 1, 2
-    devId = id | 1U << (backendId + 8U);
+    /// Shift the backend flag to the end of the devId integer
+    unsigned backendId = detail::getBackend();
+    devId              = id | backendId << 8U;
 }
 
 af_backend ArrayInfo::getBackendId() const {
     // devId >> 8 converts the backend info to 1, 2, 4 which are enums
-    // for CPU, CUDA and OpenCL respectively
+    // for CPU, CUDA, OpenCL, and oneAPI respectively
     // See ArrayInfo.hpp for more
     unsigned backendId = devId >> 8U;
     return static_cast<af_backend>(backendId);
