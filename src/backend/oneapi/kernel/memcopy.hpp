@@ -57,9 +57,6 @@ class memCopy {
         const int id0        = group_id_0 * gg.get_local_range(0) + lid0;
         const int id1        = group_id_1 * gg.get_local_range(1) + lid1;
 
-        debug_ << "[" << id0 << "," << id1 << "," << id2 << "," << id3 << "]"
-               << sycl::stream_manipulator::endl;
-
         T *iptr = in_.get_pointer();
         iptr += offset_;
         // FIXME: Do more work per work group
