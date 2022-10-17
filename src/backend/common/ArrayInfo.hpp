@@ -28,7 +28,8 @@ class ArrayInfo {
     // The devId variable stores information about the deviceId as well as the
     // backend. The 8 LSBs (0-7) are used to store the device ID. The 09th LSB
     // is set to 1 if backend is CPU The 10th LSB is set to 1 if backend is CUDA
-    // The 11th LSB is set to 1 if backend is OpenCL
+    // The 11th LSB is set to 1 if backend is OpenCL The 12th LSB is set to 1
+    // for oneAPI
     // This information can be retrieved directly from an af_array by doing
     //     int* devId = reinterpret_cast<int*>(a); // a is an af_array
     //     af_backend backendID = *devId >> 8;   // Returns 1, 2, 4 for CPU,
