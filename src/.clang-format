@@ -19,7 +19,7 @@ AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: true
 BinPackParameters: true
-BraceWrapping:   
+BraceWrapping:
   AfterClass:      false
   AfterControlStatement: false
   AfterEnum:       false
@@ -41,7 +41,7 @@ BreakInheritanceList: BeforeComma
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeComma
 BreakStringLiterals: true
-ColumnLimit:     80
+ColumnLimit:     100
 CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
@@ -57,7 +57,7 @@ ForEachMacros:
   - Q_FOREACH
   - BOOST_FOREACH
 IncludeBlocks:   Preserve
-IncludeCategories: 
+IncludeCategories:
   - Regex:           '^<af/.*\.h.*>'
     Priority:        2
   - Regex:           '^<.*\.h.*>'
@@ -91,9 +91,9 @@ PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 200
 PointerAlignment: Right
-RawStringFormats: 
+RawStringFormats:
   - Language:        Cpp
-    Delimiters:      
+    Delimiters:
       - cc
       - CC
       - cpp
@@ -105,12 +105,12 @@ RawStringFormats:
     CanonicalDelimiter: ''
     BasedOnStyle:    google
   - Language:        TextProto
-    Delimiters:      
+    Delimiters:
       - pb
       - PB
       - proto
       - PROTO
-    EnclosingFunctions: 
+    EnclosingFunctions:
       - EqualsProto
       - EquivToProto
       - PARSE_PARTIAL_TEXT_PROTO
@@ -141,4 +141,3 @@ SpacesInSquareBrackets: false
 Standard:        Cpp11
 TabWidth:        4
 UseTab:          Never
-
