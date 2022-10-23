@@ -8,33 +8,35 @@
  ********************************************************/
 
 #include <err_oneapi.hpp>
+#include <kernel/rotate.hpp>
 #include <rotate.hpp>
 
-// #include <kernel/rotate.hpp>
-
 namespace oneapi {
+
 template<typename T>
 Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
                 const af_interp_type method) {
-    ONEAPI_NOT_SUPPORTED("rotate Not supported");
+    if (!(method == AF_INTERP_NEAREST || method == AF_INTERP_LOWER))
+        ONEAPI_NOT_SUPPORTED(
+            "rotate: supports only AF_INTERP_NEAREST and AF_INTERP_LOWER");
 
     Array<T> out = createEmptyArray<T>(odims);
 
-    // switch (method) {
-    //     case AF_INTERP_NEAREST:
-    //     case AF_INTERP_LOWER:
-    //         kernel::rotate<T>(out, in, theta, method, 1);
-    //         break;
-    //     case AF_INTERP_BILINEAR:
-    //     case AF_INTERP_BILINEAR_COSINE:
-    //         kernel::rotate<T>(out, in, theta, method, 2);
-    //         break;
-    //     case AF_INTERP_BICUBIC:
-    //     case AF_INTERP_BICUBIC_SPLINE:
-    //         kernel::rotate<T>(out, in, theta, method, 3);
-    //         break;
-    //     default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-    // }
+    switch (method) {
+        case AF_INTERP_NEAREST:
+        case AF_INTERP_LOWER:
+            kernel::rotate<T>(out, in, theta, method, 1);
+            break;
+        // case AF_INTERP_BILINEAR:
+        // case AF_INTERP_BILINEAR_COSINE:
+        //     kernel::rotate<T>(out, in, theta, method, 2);
+        //     break;
+        // case AF_INTERP_BICUBIC:
+        // case AF_INTERP_BICUBIC_SPLINE:
+        //     kernel::rotate<T>(out, in, theta, method, 3);
+        //     break;
+        default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+    }
     return out;
 }
 
