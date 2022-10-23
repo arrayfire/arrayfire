@@ -80,8 +80,8 @@ void rotate(Param<T> out, Param<T> in, float theta, af_interp_type method,
 
     const auto local = sycl::range{TX, TY};
 
-    size_t nimages               = in.info.dims[2];
-    const size_t nbatches        = in.info.dims[3];
+    size_t nimages        = in.info.dims[2];
+    const size_t nbatches = in.info.dims[3];
 
     size_t global_x              = local[0] * divup(out.info.dims[0], local[0]);
     size_t global_y              = local[1] * divup(out.info.dims[1], local[1]);
