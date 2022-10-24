@@ -97,90 +97,70 @@ void rotate(Param<T> out, Param<T> in, float theta, af_interp_type method,
 
     const auto global = sycl::range{global_x, global_y};
 
-    sycl::buffer<float, 2> debugBuffer{sycl::range<2>{global[0], global[1]}};
+    getQueue().submit([&](sycl::handler &h) {
+        auto d_out = out.data->get_access(h);
+        auto d_in  = in.data->get_access(h);
 
-    getQueue()
-        .submit([&](sycl::handler &h) {
-            auto debugBufferAcc = debugBuffer.get_access(h);
-            h.parallel_for(
-                sycl::nd_range{global, local}, [=](sycl::nd_item<2> it) {
-                    debugBufferAcc[it.get_global_id(0)][it.get_global_id(1)] =
-                        0;
-                });
-        })
-        .wait();
+        h.parallel_for(sycl::nd_range{global, local}, [=](sycl::nd_item<2> it) {
+            sycl::group g = it.get_group();
 
-    getQueue()
-        .submit([&](sycl::handler &h) {
-            auto d_out          = out.data->get_access(h);
-            auto d_in           = in.data->get_access(h);
-            auto debugBufferAcc = debugBuffer.get_access(h);
+            // Compute which image set
+            const int setId      = g.get_group_id(0) / blocksXPerImage;
+            const int blockIdx_x = g.get_group_id(0) - setId * blocksXPerImage;
 
-            h.parallel_for(
-                sycl::nd_range{global, local}, [=](sycl::nd_item<2> it) {
-                    sycl::group g = it.get_group();
+            const int batch      = g.get_group_id(1) / blocksYPerImage;
+            const int blockIdx_y = g.get_group_id(1) - batch * blocksYPerImage;
 
-                    // Compute which image set
-                    const int setId = g.get_group_id(0) / blocksXPerImage;
-                    const int blockIdx_x =
-                        g.get_group_id(0) - setId * blocksXPerImage;
+            // Get thread indices
+            const int xido = it.get_global_id(0);
+            const int yido = it.get_global_id(1);
 
-                    const int batch = g.get_group_id(1) / blocksYPerImage;
-                    const int blockIdx_y =
-                        g.get_group_id(1) - batch * blocksYPerImage;
+            const int limages =
+                fmin((int)out.info.dims[2] - setId * nimages, nimages);
 
-                    // Get thread indices
-                    const int xido = it.get_global_id(0);
-                    const int yido = it.get_global_id(1);
+            if (xido >= out.info.dims[0] || yido >= out.info.dims[1]) return;
 
-                    const int limages =
-                        fmin((int)out.info.dims[2] - setId * nimages, nimages);
+            // Compute input index
+            typedef typename itype_t<T>::wtype WT;
+            WT xidi = xido * tmat[0] + yido * tmat[1] + tmat[2];
+            WT yidi = xido * tmat[3] + yido * tmat[4] + tmat[5];
 
-                    if (xido >= out.info.dims[0] || yido >= out.info.dims[1])
-                        return;
+            int outoff = setId * nimages * out.info.strides[2] +
+                         batch * out.info.strides[3];
+            int inoff = setId * nimages * in.info.strides[2] +
+                        batch * in.info.strides[3];
+            const int loco = outoff + (yido * out.info.strides[1] + xido);
 
-                    // Compute input index
-                    typedef typename itype_t<T>::wtype WT;
-                    WT xidi = xido * tmat[0] + yido * tmat[1] + tmat[2];
-                    WT yidi = xido * tmat[3] + yido * tmat[4] + tmat[5];
+            constexpr int xdim = 0, ydim = 1, batch_dim = 2;
+            const bool clamp = order != 1;
+            {
+                int xid =
+                    (method == AF_INTERP_LOWER ? floor(xidi) : round(xidi));
+                int yid =
+                    (method == AF_INTERP_LOWER ? floor(yidi) : round(yidi));
 
-                    int outoff = setId * nimages * out.info.strides[2] +
-                                 batch * out.info.strides[3];
-                    int inoff = setId * nimages * in.info.strides[2] +
-                                batch * in.info.strides[3];
-                    const int loco =
-                        outoff + (yido * out.info.strides[1] + xido);
+                const int x_lim    = in.info.dims[xdim];
+                const int y_lim    = in.info.dims[ydim];
+                const int x_stride = in.info.strides[xdim];
+                const int y_stride = in.info.strides[ydim];
 
-                    constexpr int xdim = 0, ydim = 1, batch_dim = 2;
-                    const bool clamp = order != 1;
-                    {
-                        int xid = (method == AF_INTERP_LOWER ? floor(xidi)
-                                                             : round(xidi));
-                        int yid = (method == AF_INTERP_LOWER ? floor(yidi)
-                                                             : round(yidi));
+                const int idx = inoff + yid * y_stride + xid * x_stride;
 
-                        const int x_lim    = in.info.dims[xdim];
-                        const int y_lim    = in.info.dims[ydim];
-                        const int x_stride = in.info.strides[xdim];
-                        const int y_stride = in.info.strides[ydim];
+                bool condX = xid >= 0 && xid < x_lim;
+                bool condY = yid >= 0 && yid < y_lim;
 
-                        const int idx = inoff + yid * y_stride + xid * x_stride;
+                T zero    = (T)(0);
+                bool cond = condX && condY;
 
-                        bool condX = xid >= 0 && xid < x_lim;
-                        bool condY = yid >= 0 && yid < y_lim;
-
-                        T zero    = (T)(0);
-                        bool cond = condX && condY;
-
-                        for (int n = 0; n < limages; n++) {
-                            int idx_n = idx + n * in.info.strides[batch_dim];
-                            T val     = (clamp || cond) ? d_in[idx_n] : zero;
-                            d_out[loco + n * out.info.strides[batch_dim]] = val;
-                        }
-                    }
-                });
-        })
-        .wait();
+                for (int n = 0; n < limages; n++) {
+                    int idx_n = idx + n * in.info.strides[batch_dim];
+                    T val     = (clamp || cond) ? d_in[idx_n] : zero;
+                    d_out[loco + n * out.info.strides[batch_dim]] = val;
+                }
+            }
+        });
+    });
+    ONEAPI_DEBUG_FINISH(getQueue());
 }
 
 }  // namespace kernel
