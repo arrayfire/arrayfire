@@ -9,7 +9,7 @@
 
 #include <Array.hpp>
 #include <err_oneapi.hpp>
-//#include <kernel/reduce.hpp>
+#include <kernel/reduce.hpp>
 //#include <kernel/reduce_by_key.hpp>
 #include <reduce.hpp>
 #include <af/dim4.hpp>
@@ -17,12 +17,16 @@
 
 using af::dim4;
 using std::swap;
+
 namespace oneapi {
+
 template<af_op_t op, typename Ti, typename To>
 Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan,
                  double nanval) {
-    ONEAPI_NOT_SUPPORTED("");
-    Array<To> out = createEmptyArray<To>(1);
+    dim4 odims    = in.dims();
+    odims[dim]    = 1;
+    Array<To> out = createEmptyArray<To>(odims);
+    kernel::reduce<Ti, To, op>(out, in, dim, change_nan, nanval);
     return out;
 }
 
@@ -35,8 +39,8 @@ void reduce_by_key(Array<Tk> &keys_out, Array<To> &vals_out,
 
 template<af_op_t op, typename Ti, typename To>
 Array<To> reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
-    ONEAPI_NOT_SUPPORTED("");
     Array<To> out = createEmptyArray<To>(1);
+    kernel::reduce_all<Ti, To, op>(out, in, change_nan, nanval);
     return out;
 }
 

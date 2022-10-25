@@ -78,15 +78,17 @@ template<>
 struct Binary<char, af_min_t> {
     static __DH__ char init() { return 1; }
 
-    __DH__ char operator()(char lhs, char rhs) { return min(lhs > 0, rhs > 0); }
+    __DH__ char operator()(char lhs, char rhs) {
+        return detail::min(lhs > 0, rhs > 0);
+    }
 };
 
-#define SPECIALIZE_COMPLEX_MIN(T, Tr)                               \
-    template<>                                                      \
-    struct Binary<T, af_min_t> {                                    \
-        static __DH__ T init() { return scalar<T>(maxval<Tr>()); }  \
-                                                                    \
-        __DH__ T operator()(T lhs, T rhs) { return min(lhs, rhs); } \
+#define SPECIALIZE_COMPLEX_MIN(T, Tr)                                       \
+    template<>                                                              \
+    struct Binary<T, af_min_t> {                                            \
+        static __DH__ T init() { return scalar<T>(maxval<Tr>()); }          \
+                                                                            \
+        __DH__ T operator()(T lhs, T rhs) { return detail::min(lhs, rhs); } \
     };
 
 SPECIALIZE_COMPLEX_MIN(cfloat, float)

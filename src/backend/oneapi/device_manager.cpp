@@ -47,8 +47,8 @@ static inline bool compare_default(const unique_ptr<sycl::device>& ldev,
                                    const unique_ptr<sycl::device>& rdev) {
     // TODO: update sorting criteria
     // select according to something applicable to oneapi backend
-    auto l_mem = ldev->get_info<sycl::info::device::local_mem_size>();
-    auto r_mem = rdev->get_info<sycl::info::device::local_mem_size>();
+    auto l_mem = ldev->get_info<sycl::info::device::global_mem_size>();
+    auto r_mem = rdev->get_info<sycl::info::device::global_mem_size>();
     return l_mem > r_mem;
 }
 
@@ -103,19 +103,22 @@ DeviceManager::DeviceManager()
 
     // Create contexts and queues once the sort is done
     for (int i = 0; i < nDevices; i++) {
-        try {
-            mContexts.push_back(make_unique<sycl::context>(*devices[i]));
-            mQueues.push_back(
-                make_unique<sycl::queue>(*mContexts.back(), *devices[i]));
-            mIsGLSharingOn.push_back(false);
-            // TODO:
-            // mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
-            // mPlatforms.push_back(getPlatformEnum(*devices[i]));
-            mDevices.emplace_back(std::move(devices[i]));
-        } catch (sycl::exception& err) {
-            AF_TRACE("Error creating context for device {} with error {}\n",
-                     devices[i]->get_info<sycl::info::device::name>(),
-                     err.what());
+        if (devices[i]->is_gpu() || devices[i]->is_cpu() ||
+            !devices[i]->is_accelerator()) {
+            try {
+                mContexts.push_back(make_unique<sycl::context>(*devices[i]));
+                mQueues.push_back(
+                    make_unique<sycl::queue>(*mContexts.back(), *devices[i]));
+                mIsGLSharingOn.push_back(false);
+                // TODO:
+                // mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
+                // mPlatforms.push_back(getPlatformEnum(*devices[i]));
+                mDevices.emplace_back(std::move(devices[i]));
+            } catch (sycl::exception& err) {
+                AF_TRACE("Error creating context for device {} with error {}\n",
+                         devices[i]->get_info<sycl::info::device::name>(),
+                         err.what());
+            }
         }
     }
     nDevices = mDevices.size();

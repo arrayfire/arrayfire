@@ -217,6 +217,10 @@ target_sources(afoneapi
     kernel/random_engine_philox.hpp
     kernel/random_engine_threefry.hpp
     kernel/range.hpp
+    kernel/reduce.hpp
+    kernel/reduce_all.hpp
+    kernel/reduce_first.hpp
+    kernel/reduce_dim.hpp
     kernel/transpose.hpp
     kernel/transpose_inplace.hpp
     kernel/triangle.hpp
