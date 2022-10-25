@@ -355,13 +355,11 @@ bool isGLSharingSupported() {
 
 bool isDoubleSupported(unsigned device) {
     DeviceManager& devMngr = DeviceManager::getInstance();
-
-    sycl::device dev;
     {
         common::lock_guard_t lock(devMngr.deviceMutex);
-        dev = *devMngr.mDevices[device];
+        sycl::device& dev = *devMngr.mDevices[device];
+        return dev.has(sycl::aspect::fp64);
     }
-    return dev.has(sycl::aspect::fp64);
 }
 
 bool isHalfSupported(unsigned device) {
