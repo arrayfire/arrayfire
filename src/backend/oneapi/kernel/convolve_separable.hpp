@@ -18,7 +18,6 @@
 #include <string>
 #include <vector>
 
-
 namespace oneapi {
 namespace kernel {
 
@@ -38,70 +37,71 @@ constexpr int CUBE_X    = 8;
 constexpr int CUBE_Y    = 8;
 constexpr int CUBE_Z    = 4;
 
-template <typename aT>
+template<typename aT>
 struct conv_kparam_t {
-  sycl::range<3> global{0, 0, 0};
-  sycl::range<3> local{0, 0, 0};
-  size_t loc_size;
-  int nBBS0;
-  int nBBS1;
-  bool outHasNoOffset;
-  bool inHasNoOffset;
-  bool launchMoreBlocks;
-  int o[3];
-  int s[3];
-  sycl::buffer<aT>* impulse;
+    sycl::range<3> global{0, 0, 0};
+    sycl::range<3> local{0, 0, 0};
+    size_t loc_size;
+    int nBBS0;
+    int nBBS1;
+    bool outHasNoOffset;
+    bool inHasNoOffset;
+    bool launchMoreBlocks;
+    int o[3];
+    int s[3];
+    sycl::buffer<aT> *impulse;
 };
 
-template <typename T>
-T binOp(T lhs, T rhs) { return lhs * rhs; }
+template<typename T>
+T binOp(T lhs, T rhs) {
+    return lhs * rhs;
+}
 
 template<typename aT>
-void prepareKernelArgs(conv_kparam_t<aT>& param, dim_t* oDims, const dim_t* fDims,
-                       const int rank) {
+void prepareKernelArgs(conv_kparam_t<aT> &param, dim_t *oDims,
+                       const dim_t *fDims, const int rank) {
     using sycl::range;
 
     int batchDims[4] = {1, 1, 1, 1};
     for (int i = rank; i < 4; ++i) {
-      batchDims[i] = (param.launchMoreBlocks ? 1 : oDims[i]);
+        batchDims[i] = (param.launchMoreBlocks ? 1 : oDims[i]);
     }
 
     if (rank == 1) {
-      param.local = range<3>{THREADS, 1, 1};
-      param.nBBS0 = divup(oDims[0], THREADS);
-      param.nBBS1 = batchDims[2];
-      param.global = range<3>(
-                              param.nBBS0 * THREADS * batchDims[1],
-                              param.nBBS1 * batchDims[3],
-                              1);
-      param.loc_size = (THREADS + 2 * (fDims[0] - 1));
+        param.local    = range<3>{THREADS, 1, 1};
+        param.nBBS0    = divup(oDims[0], THREADS);
+        param.nBBS1    = batchDims[2];
+        param.global   = range<3>(param.nBBS0 * THREADS * batchDims[1],
+                                param.nBBS1 * batchDims[3], 1);
+        param.loc_size = (THREADS + 2 * (fDims[0] - 1));
     } else if (rank == 2) {
-      param.local = range<3>{THREADS_X, THREADS_Y, 1};
-      param.nBBS0 = divup(oDims[0], THREADS_X);
-      param.nBBS1 = divup(oDims[1], THREADS_Y);
-      param.global = range<3>(
-                              param.nBBS0 * THREADS_X * batchDims[2],
-                              param.nBBS1 * THREADS_Y * batchDims[3],
-                              1);
+        param.local  = range<3>{THREADS_X, THREADS_Y, 1};
+        param.nBBS0  = divup(oDims[0], THREADS_X);
+        param.nBBS1  = divup(oDims[1], THREADS_Y);
+        param.global = range<3>(param.nBBS0 * THREADS_X * batchDims[2],
+                                param.nBBS1 * THREADS_Y * batchDims[3], 1);
     } else if (rank == 3) {
-      param.local    = range<3>{CUBE_X, CUBE_Y, CUBE_Z};
-      param.nBBS0    = divup(oDims[0], CUBE_X);
-      param.nBBS1    = divup(oDims[1], CUBE_Y);
-      int blk_z      = divup(oDims[2], CUBE_Z);
-      param.global = range<3>(param.nBBS0 * CUBE_X * batchDims[3],
-                              param.nBBS1 * CUBE_Y, blk_z * CUBE_Z);
-      param.loc_size = (CUBE_X + 2 * (fDims[0] - 1)) *
-        (CUBE_Y + 2 * (fDims[1] - 1)) *
-        (CUBE_Z + 2 * (fDims[2] - 1));
+        param.local    = range<3>{CUBE_X, CUBE_Y, CUBE_Z};
+        param.nBBS0    = divup(oDims[0], CUBE_X);
+        param.nBBS1    = divup(oDims[1], CUBE_Y);
+        int blk_z      = divup(oDims[2], CUBE_Z);
+        param.global   = range<3>(param.nBBS0 * CUBE_X * batchDims[3],
+                                param.nBBS1 * CUBE_Y, blk_z * CUBE_Z);
+        param.loc_size = (CUBE_X + 2 * (fDims[0] - 1)) *
+                         (CUBE_Y + 2 * (fDims[1] - 1)) *
+                         (CUBE_Z + 2 * (fDims[2] - 1));
     }
 }
 
-template <typename T>
+template<typename T>
 void memcpyBuffer(sycl::buffer<T, 1> &dest, sycl::buffer<T, 1> &src,
                   const size_t n, const size_t srcOffset) {
     getQueue().submit([&](auto &h) {
-        sycl::accessor srcAcc{src, h, sycl::range{n}, sycl::id{srcOffset}, sycl::read_only};
-        sycl::accessor destAcc{dest, h, sycl::range{n}, sycl::id{0}, sycl::write_only, sycl::no_init};
+        sycl::accessor srcAcc{src, h, sycl::range{n}, sycl::id{srcOffset},
+                              sycl::read_only};
+        sycl::accessor destAcc{
+            dest,         h, sycl::range{n}, sycl::id{0}, sycl::write_only,
+            sycl::no_init};
         h.copy(srcAcc, destAcc);
     });
 }
@@ -131,8 +131,9 @@ void convSep(Param<T> out, const Param<T> signal, const Param<aT> filter,
     memcpyBuffer(mBuff, *filter.data, fLen, 0);
 
     getQueue().submit([&](auto &h) {
-        sycl::accessor<aT, 1, sycl::access::mode::read_write, sycl::access::target::local>
-          localMem(locSize, h);
+        sycl::accessor<aT, 1, sycl::access::mode::read_write,
+                       sycl::access::target::local>
+            localMem(locSize, h);
         sycl::accessor outAcc{*out.data, h, sycl::write_only, sycl::no_init};
         sycl::accessor signalAcc{*signal.data, h, sycl::read_only};
         sycl::accessor impulseAcc{mBuff, h, sycl::read_only};
@@ -145,80 +146,92 @@ void convSep(Param<T> out, const Param<T> signal, const Param<aT> filter,
             const int s1      = signal.info.strides[1];
             const int d0      = signal.info.dims[0];
             const int d1      = signal.info.dims[1];
-            const int shrdLen = g.get_local_range(0) + (conv_dim == 0 ? padding : 0);
+            const int shrdLen =
+                g.get_local_range(0) + (conv_dim == 0 ? padding : 0);
 
-            unsigned b2   = g.get_group_id(0) / blk_x;
-            unsigned b3   = g.get_group_id(1) / blk_y;
+            unsigned b2 = g.get_group_id(0) / blk_x;
+            unsigned b3 = g.get_group_id(1) / blk_y;
 
             T *outDataPtr = outAcc.get_pointer();
-            T *dst = outDataPtr + (b2 * out.info.strides[2] + b3 * out.info.strides[3]);
+            T *dst        = outDataPtr +
+                     (b2 * out.info.strides[2] + b3 * out.info.strides[3]);
 
             const T *signalPtr = signalAcc.get_pointer();
-            const T *src = signalPtr +
-              (b2 * signal.info.strides[2] + b3 * signal.info.strides[3]) + signal.info.offset;
+            const T *src =
+                signalPtr +
+                (b2 * signal.info.strides[2] + b3 * signal.info.strides[3]) +
+                signal.info.offset;
 
             int lx = it.get_local_id(0);
             int ly = it.get_local_id(1);
-            int ox = g.get_local_range(0) * (g.get_group_id(0) - b2 * blk_x) + lx;
-            int oy = g.get_local_range(1) * (g.get_group_id(1) - b3 * blk_y) + ly;
+            int ox =
+                g.get_local_range(0) * (g.get_group_id(0) - b2 * blk_x) + lx;
+            int oy =
+                g.get_local_range(1) * (g.get_group_id(1) - b3 * blk_y) + ly;
             int gx = ox;
             int gy = oy;
 
-            // below if-else statement is based on MACRO value passed while kernel
-            // compilation
+            // below if-else statement is based on MACRO value passed while
+            // kernel compilation
             if (conv_dim == 0) {
-              gx += ((expand ? 1 : 0) ? 0 : fLen >> 1);
-              int endX = ((fLen - 1) << 1) + g.get_local_range(0);
+                gx += ((expand ? 1 : 0) ? 0 : fLen >> 1);
+                int endX = ((fLen - 1) << 1) + g.get_local_range(0);
 #pragma unroll
-              for (int lx = it.get_local_id(0), glb_x = gx; lx < endX;
-                   lx += g.get_local_range(0), glb_x += g.get_local_range(0)) {
-                int i = glb_x - radius;
-                int j = gy;
-                bool is_i = i >= 0 && i < d0;
-                bool is_j = j >= 0 && j < d1;
-                localMem[ly * shrdLen + lx] = (is_i && is_j ? src[i * s0 + j * s1] : (T)(0));
-              }
-            }
-            else if (conv_dim == 1) {
-              gy += ((expand ? 1 : 0) ? 0 : fLen >> 1);
-              int endY = ((fLen - 1) << 1) + g.get_local_range(1);
+                for (int lx = it.get_local_id(0), glb_x = gx; lx < endX;
+                     lx += g.get_local_range(0),
+                         glb_x += g.get_local_range(0)) {
+                    int i     = glb_x - radius;
+                    int j     = gy;
+                    bool is_i = i >= 0 && i < d0;
+                    bool is_j = j >= 0 && j < d1;
+                    localMem[ly * shrdLen + lx] =
+                        (is_i && is_j ? src[i * s0 + j * s1] : (T)(0));
+                }
+            } else if (conv_dim == 1) {
+                gy += ((expand ? 1 : 0) ? 0 : fLen >> 1);
+                int endY = ((fLen - 1) << 1) + g.get_local_range(1);
 #pragma unroll
-              for (int ly = it.get_local_id(1), glb_y = gy; ly < endY;
-                   ly += it.get_local_range(1), glb_y += g.get_local_range(1)) {
-                int i = gx;
-                int j = glb_y - radius;
-                bool is_i = i >= 0 && i < d0;
-                bool is_j = j >= 0 && j < d1;
-                localMem[ly * shrdLen + lx] =
-                  (is_i && is_j ? src[i * s0 + j * s1] : (T)(0));
-              }
+                for (int ly = it.get_local_id(1), glb_y = gy; ly < endY;
+                     ly += it.get_local_range(1),
+                         glb_y += g.get_local_range(1)) {
+                    int i     = gx;
+                    int j     = glb_y - radius;
+                    bool is_i = i >= 0 && i < d0;
+                    bool is_j = j >= 0 && j < d1;
+                    localMem[ly * shrdLen + lx] =
+                        (is_i && is_j ? src[i * s0 + j * s1] : (T)(0));
+                }
             }
             it.barrier();
 
             if (ox < out.info.dims[0] && oy < out.info.dims[1]) {
-              // below conditional statement is based on MACRO value passed while kernel compilation
-              int i = (conv_dim == 0 ? lx : ly) + radius;
-              aT accum = (aT)(0);
+                // below conditional statement is based on MACRO value passed
+                // while kernel compilation
+                int i    = (conv_dim == 0 ? lx : ly) + radius;
+                aT accum = (aT)(0);
 #pragma unroll
-              for (int f = 0; f < fLen; ++f) {
-                aT f_val = impulseAcc[f];
+                for (int f = 0; f < fLen; ++f) {
+                    aT f_val = impulseAcc[f];
 
-                // below conditional statement is based on MACRO value passed while kernel compilation
-                int s_idx = (conv_dim == 0 ? (ly * shrdLen + (i - f)) : ((i - f) * shrdLen + lx));
-                T s_val   = localMem[s_idx];
+                    // below conditional statement is based on MACRO value
+                    // passed while kernel compilation
+                    int s_idx = (conv_dim == 0 ? (ly * shrdLen + (i - f))
+                                               : ((i - f) * shrdLen + lx));
+                    T s_val   = localMem[s_idx];
 
-                // binOp will do MUL_OP for convolution operation
-                accum = accum + binOp((aT)s_val, (aT)f_val);
-              }
-              dst[oy * out.info.strides[1] + ox] = (T)accum;
+                    // binOp will do MUL_OP for convolution operation
+                    accum = accum + binOp((aT)s_val, (aT)f_val);
+                }
+                dst[oy * out.info.strides[1] + ox] = (T)accum;
             }
         });
     });
 }
 
-#define INSTANTIATE_SEPARABLE(T, accT)                                             \
-    template void convSep<T, accT>(Param<T>, const Param<T>, const Param<accT> filt, \
-                                   const int, const bool);
+#define INSTANTIATE_SEPARABLE(T, accT)                                \
+    template void convSep<T, accT>(Param<T>, const Param<T>,          \
+                                   const Param<accT> filt, const int, \
+                                   const bool);
 
 INSTANTIATE_SEPARABLE(cdouble, cdouble)
 INSTANTIATE_SEPARABLE(cfloat, cfloat)

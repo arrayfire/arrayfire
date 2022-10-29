@@ -26,7 +26,6 @@
 #include <string>
 #include <vector>
 
-
 using af::dim4;
 
 namespace oneapi {
