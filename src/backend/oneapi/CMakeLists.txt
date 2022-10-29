@@ -207,6 +207,7 @@ target_sources(afoneapi
     kernel/KParam.hpp
     kernel/assign.hpp
     kernel/convolve.hpp
+    kernel/convolve_separable.hpp
     kernel/diagonal.hpp
     kernel/diff.hpp
     kernel/iota.hpp
