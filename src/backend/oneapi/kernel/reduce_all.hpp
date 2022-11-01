@@ -260,27 +260,23 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
         h.single_task([=] { acc[0] = 0; });
     });
 
-    getQueue()
-        .submit([=](sycl::handler &h) {
-            auto out_acc      = out.data->get_access(h);
-            auto retCount_acc = retirementCount.getData()->get_access(h);
-            auto tmp_acc      = tmp.getData()->get_access(h);
-            auto in_acc       = in.data->get_access(h);
+    getQueue().submit([=](sycl::handler &h) {
+        auto out_acc      = out.data->get_access(h);
+        auto retCount_acc = retirementCount.getData()->get_access(h);
+        auto tmp_acc      = tmp.getData()->get_access(h);
+        auto in_acc       = in.data->get_access(h);
 
-            sycl::stream debug_stream(2048 * 256, 128, h);
+        sycl::stream debug_stream(2048 * 256, 128, h);
 
-            auto shrdMem =
-                local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
-            auto amLast = local_accessor<bool, 1>(1, h);
-            h.parallel_for(
-                sycl::nd_range<2>(global, local),
-                reduceAllKernelSMEM<Ti, To, op>(
-                    out_acc, out.info, retCount_acc, tmp_acc, (KParam)tmp,
-                    in_acc, in.info, threads_x, groups_x, groups_y, repeat,
-                    change_nan, scalar<To>(nanval), shrdMem, amLast,
-                    debug_stream));
-        })
-        .wait_and_throw();
+        auto shrdMem = local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
+        auto amLast  = local_accessor<bool, 1>(1, h);
+        h.parallel_for(
+            sycl::nd_range<2>(global, local),
+            reduceAllKernelSMEM<Ti, To, op>(
+                out_acc, out.info, retCount_acc, tmp_acc, (KParam)tmp, in_acc,
+                in.info, threads_x, groups_x, groups_y, repeat, change_nan,
+                scalar<To>(nanval), shrdMem, amLast, debug_stream));
+    });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
 

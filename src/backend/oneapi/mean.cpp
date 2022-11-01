@@ -11,7 +11,7 @@
 #include <mean.hpp>
 
 #include <common/half.hpp>
-// #include <kernel/mean.hpp>
+#include <kernel/mean.hpp>
 #include <af/dim4.hpp>
 
 using af::dim4;
@@ -21,39 +21,29 @@ using std::swap;
 namespace oneapi {
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti>& in) {
-    ONEAPI_NOT_SUPPORTED("mean Not supported");
-
-    return To(0);
-    // return kernel::meanAll<Ti, Tw, To>(in);
+    return kernel::mean_all<Ti, Tw, To>(in);
 }
 
 template<typename T, typename Tw>
 T mean(const Array<T>& in, const Array<Tw>& wts) {
-    ONEAPI_NOT_SUPPORTED("mean Not supported");
-
-    return T(0);
-    // return kernel::meanAllWeighted<T, Tw>(in, wts);
+    return kernel::mean_all_weighted<T, Tw>(in, wts);
 }
 
 template<typename Ti, typename Tw, typename To>
 Array<To> mean(const Array<Ti>& in, const int dim) {
-    ONEAPI_NOT_SUPPORTED("mean Not supported");
-
     dim4 odims    = in.dims();
     odims[dim]    = 1;
     Array<To> out = createEmptyArray<To>(odims);
-    // kernel::mean<Ti, Tw, To>(out, in, dim);
+    kernel::mean<Ti, Tw, To>(out, in, dim);
     return out;
 }
 
 template<typename T, typename Tw>
 Array<T> mean(const Array<T>& in, const Array<Tw>& wts, const int dim) {
-    ONEAPI_NOT_SUPPORTED("mean Not supported");
-
     dim4 odims   = in.dims();
     odims[dim]   = 1;
     Array<T> out = createEmptyArray<T>(odims);
-    // kernel::meanWeighted<T, Tw, T>(out, in, wts, dim);
+    kernel::mean_weighted<T, Tw, T>(out, in, wts, dim);
     return out;
 }
 
