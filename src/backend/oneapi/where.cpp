@@ -9,7 +9,7 @@
 
 #include <Array.hpp>
 #include <err_oneapi.hpp>
-// #include <kernel/where.hpp>
+#include <kernel/where.hpp>
 #include <where.hpp>
 #include <af/dim4.hpp>
 #include <complex>
@@ -18,12 +18,10 @@ namespace oneapi {
 
 template<typename T>
 Array<uint> where(const Array<T> &in) {
-    // Param<uint> Out;
-    // Param<T> In = in;
-    ONEAPI_NOT_SUPPORTED("where Not supported");
-    // kernel::where<T>(Out, In);
-    // return createParamArray<uint>(Out, true);
-    return createEmptyArray<uint>(af::dim4(1));
+    Param<uint> Out;
+    Param<T> In = in;
+    kernel::where<T>(Out, In);
+    return createParamArray<uint>(Out, true);
 }
 
 #define INSTANTIATE(T) template Array<uint> where<T>(const Array<T> &in);
