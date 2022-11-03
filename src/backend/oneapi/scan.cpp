@@ -11,23 +11,21 @@
 #include <scan.hpp>
 
 // #include <kernel/scan_dim.hpp>
-// #include <kernel/scan_first.hpp>
+#include <kernel/scan_first.hpp>
 
 namespace oneapi {
 template<af_op_t op, typename Ti, typename To>
 Array<To> scan(const Array<Ti>& in, const int dim, bool inclusiveScan) {
-    ONEAPI_NOT_SUPPORTED("scan Not supported");
-
     Array<To> out = createEmptyArray<To>(in.dims());
 
-    // Param Out = out;
-    // Param In  = in;
+    Param<To> Out = out;
+    Param<Ti> In  = in;
 
-    // if (dim == 0) {
-    //     kernel::scanFirst<Ti, To, op>(Out, In, inclusiveScan);
-    // } else {
+    if (dim == 0) {
+        kernel::scan_first<Ti, To, op>(Out, In, inclusiveScan);
+    } else {
     //     kernel::scanDim<Ti, To, op>(Out, In, dim, inclusiveScan);
-    // }
+    }
 
     return out;
 }

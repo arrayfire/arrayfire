@@ -222,9 +222,11 @@ target_sources(afoneapi
     kernel/reduce_all.hpp
     kernel/reduce_first.hpp
     kernel/reduce_dim.hpp
+    kernel/scan_first.hpp
     kernel/transpose.hpp
     kernel/transpose_inplace.hpp
     kernel/triangle.hpp
+    kernel/where.hpp
 )
 
 add_library(ArrayFire::afoneapi ALIAS afoneapi)
