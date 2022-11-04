@@ -45,6 +45,12 @@ using local_accessor =
     sycl::accessor<T, dimensions, sycl::access::mode::read_write,
                    sycl::access::target::local>;
 
+template<typename T>
+using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
+
+template<typename T>
+using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
+
 template<typename To, typename Tw>
 void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
     if (((*l_wt) != (Tw)0) || (r_wt != (Tw)0)) {
@@ -60,12 +66,11 @@ void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
 template<typename Ti, typename Tw, typename To, uint dim, uint DIMY>
 class meanDimKernelSMEM {
    public:
-    meanDimKernelSMEM(sycl::accessor<To> out, KParam oInfo,
-                      sycl::accessor<Tw> owt, KParam owInfo,
-                      sycl::accessor<Ti> in, KParam iInfo,
-                      sycl::accessor<Tw> iwt, KParam iwInfo, uint groups_x,
-                      uint groups_y, uint offset_dim,
-                      local_accessor<compute_t<To>, 1> s_val,
+    meanDimKernelSMEM(write_accessor<To> out, KParam oInfo,
+                      write_accessor<Tw> owt, KParam owInfo,
+                      read_accessor<Ti> in, KParam iInfo, read_accessor<Tw> iwt,
+                      KParam iwInfo, uint groups_x, uint groups_y,
+                      uint offset_dim, local_accessor<compute_t<To>, 1> s_val,
                       local_accessor<compute_t<Tw>, 1> s_idx,
                       sycl::stream debug, bool input_weight, bool output_weight)
         : out_(out)
@@ -202,10 +207,10 @@ class meanDimKernelSMEM {
     }
 
    protected:
-    sycl::accessor<To> out_;
-    sycl::accessor<Tw> owt_;
-    sycl::accessor<Ti> in_;
-    sycl::accessor<Tw> iwt_;
+    write_accessor<To> out_;
+    write_accessor<Tw> owt_;
+    read_accessor<Ti> in_;
+    read_accessor<Tw> iwt_;
     KParam oInfo_, owInfo_, iInfo_, iwInfo_;
     const uint groups_x_, groups_y_, offset_dim_;
     local_accessor<compute_t<To>, 1> s_val_;
@@ -224,8 +229,8 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
 
     sycl::buffer<Tw, 1> empty(sycl::range<1>{1});
     getQueue().submit([&](sycl::handler &h) {
-        auto out_acc = out.data->get_access(h);
-        auto in_acc  = in.data->get_access(h);
+        write_accessor<To> out_acc{*out.data, h};
+        read_accessor<Ti> in_acc{*in.data, h};
 
         sycl::stream debug_stream(2048 * 2048, 2048, h);
 
@@ -238,10 +243,8 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
         bool output_weight = ((owt.info.dims[0] * owt.info.dims[1] *
                                owt.info.dims[2] * owt.info.dims[3]) != 0);
 
-        auto owt_acc =
-            (output_weight) ? owt.data->get_access(h) : empty.get_access(h);
-        auto iwt_acc =
-            (input_weight) ? iwt.data->get_access(h) : empty.get_access(h);
+        write_accessor<Tw> owt_acc{(output_weight) ? *owt.data : empty, h};
+        read_accessor<Tw> iwt_acc{(input_weight) ? *iwt.data : empty, h};
 
         switch (threads_y) {
             case 8:
@@ -321,10 +324,10 @@ void mean_dim(Param<To> out, Param<Ti> in, Param<Tw> iwt) {
 template<typename Ti, typename Tw, typename To>
 class meanFirstKernelSMEM {
    public:
-    meanFirstKernelSMEM(sycl::accessor<To> out, KParam oInfo,
-                        sycl::accessor<Tw> owt, KParam owInfo,
-                        sycl::accessor<Ti> in, KParam iInfo,
-                        sycl::accessor<Tw> iwt, KParam iwInfo, const uint DIMX,
+    meanFirstKernelSMEM(write_accessor<To> out, KParam oInfo,
+                        write_accessor<Tw> owt, KParam owInfo,
+                        read_accessor<Ti> in, KParam iInfo,
+                        read_accessor<Tw> iwt, KParam iwInfo, const uint DIMX,
                         const uint groups_x, const uint groups_y,
                         const uint repeat,
                         local_accessor<compute_t<To>, 1> s_val,
@@ -480,10 +483,10 @@ class meanFirstKernelSMEM {
     }
 
    protected:
-    sycl::accessor<To> out_;
-    sycl::accessor<Tw> owt_;
-    sycl::accessor<Ti> in_;
-    sycl::accessor<Tw> iwt_;
+    write_accessor<To> out_;
+    write_accessor<Tw> owt_;
+    read_accessor<Ti> in_;
+    read_accessor<Tw> iwt_;
     KParam oInfo_, owInfo_, iInfo_, iwInfo_;
     const uint DIMX_, groups_x_, groups_y_, repeat_;
     local_accessor<compute_t<To>, 1> s_val_;
@@ -504,8 +507,8 @@ void mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
 
     sycl::buffer<Tw, 1> empty(sycl::range<1>{1});
     getQueue().submit([&](sycl::handler &h) {
-        auto out_acc = out.data->get_access(h);
-        auto in_acc  = in.data->get_access(h);
+        write_accessor<To> out_acc{*out.data, h};
+        read_accessor<Ti> in_acc{*in.data, h};
 
         sycl::stream debug_stream(2048 * 2048, 2048, h);
 
@@ -518,10 +521,8 @@ void mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
         bool output_weight = ((owt.info.dims[0] * owt.info.dims[1] *
                                owt.info.dims[2] * owt.info.dims[3]) != 0);
 
-        auto owt_acc =
-            (output_weight) ? owt.data->get_access(h) : empty.get_access(h);
-        auto iwt_acc =
-            (input_weight) ? iwt.data->get_access(h) : empty.get_access(h);
+        write_accessor<Tw> owt_acc{(output_weight) ? *owt.data : empty, h};
+        read_accessor<Tw> iwt_acc{(input_weight) ? *iwt.data : empty, h};
 
         h.parallel_for(
             sycl::nd_range<2>(global, local),
