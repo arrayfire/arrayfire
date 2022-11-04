@@ -25,12 +25,18 @@ using local_accessor =
     sycl::accessor<T, dimensions, sycl::access::mode::read_write,
                    sycl::access::target::local>;
 
+template<typename T>
+using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
+
+template<typename T>
+using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
+
 template<typename Ti, typename To, af_op_t op, int dim>
 class scanDimKernel {
    public:
-    scanDimKernel(sycl::accessor<To> out_acc, KParam oInfo,
-                  sycl::accessor<To> tmp_acc, KParam tInfo,
-                  sycl::accessor<Ti> in_acc, KParam iInfo, const uint groups_x,
+    scanDimKernel(write_accessor<To> out_acc, KParam oInfo,
+                  write_accessor<To> tmp_acc, KParam tInfo,
+                  read_accessor<Ti> in_acc, KParam iInfo, const uint groups_x,
                   const uint groups_y, const uint blocks_dim, const uint lim,
                   const bool isFinalPass, const uint DIMY,
                   const bool inclusive_scan, local_accessor<To, 1> s_val,
@@ -147,9 +153,9 @@ class scanDimKernel {
     }
 
    protected:
-    sycl::accessor<To> out_acc_;
-    sycl::accessor<To> tmp_acc_;
-    sycl::accessor<Ti> in_acc_;
+    write_accessor<To> out_acc_;
+    write_accessor<To> tmp_acc_;
+    read_accessor<Ti> in_acc_;
     KParam oInfo_, tInfo_, iInfo_;
     const uint groups_x_, groups_y_, blocks_dim_, lim_, DIMY_;
     const bool isFinalPass_, inclusive_scan_;
@@ -161,8 +167,8 @@ class scanDimKernel {
 template<typename To, af_op_t op, int dim>
 class scanDimBcastKernel {
    public:
-    scanDimBcastKernel(sycl::accessor<To> out_acc, KParam oInfo,
-                       sycl::accessor<To> tmp_acc, KParam tInfo,
+    scanDimBcastKernel(write_accessor<To> out_acc, KParam oInfo,
+                       read_accessor<To> tmp_acc, KParam tInfo,
                        const uint groups_x, const uint groups_y,
                        const uint groups_dim, const uint lim,
                        const bool inclusive_scan, sycl::stream debug)
@@ -233,8 +239,8 @@ class scanDimBcastKernel {
     }
 
    protected:
-    sycl::accessor<To> out_acc_;
-    sycl::accessor<To> tmp_acc_;
+    write_accessor<To> out_acc_;
+    read_accessor<To> tmp_acc_;
     KParam oInfo_, tInfo_;
     const uint groups_x_, groups_y_, groups_dim_, lim_;
     const bool inclusive_scan_;
@@ -253,9 +259,9 @@ static void scan_dim_launcher(Param<To> out, Param<To> tmp, Param<Ti> in,
 
     getQueue().submit([&](sycl::handler &h) {
         // TODO: specify access modes in all kernels
-        auto out_acc = out.data->get_access(h);
-        auto tmp_acc = tmp.data->get_access(h);
-        auto in_acc  = in.data->get_access(h);
+        write_accessor<To> out_acc{*out.data, h};
+        write_accessor<To> tmp_acc{*tmp.data, h};
+        read_accessor<Ti> in_acc{*in.data, h};
 
         sycl::stream debug_stream(2048 * 256, 128, h);
 
@@ -284,8 +290,8 @@ static void bcast_dim_launcher(Param<To> out, Param<To> tmp,
     uint lim = divup(out.info.dims[dim], (threads_y * blocks_all[dim]));
 
     getQueue().submit([&](sycl::handler &h) {
-        auto out_acc = out.data->get_access(h);
-        auto tmp_acc = tmp.data->get_access(h);
+        write_accessor<To> out_acc{*out.data, h};
+        read_accessor<To> tmp_acc{*tmp.data, h};
 
         sycl::stream debug_stream(2048 * 256, 128, h);
 

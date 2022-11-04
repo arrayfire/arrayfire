@@ -38,13 +38,19 @@ using global_atomic_ref =
     sycl::atomic_ref<T, sycl::memory_order::relaxed, sycl::memory_scope::system,
                      sycl::access::address_space::global_space>;
 
+template<typename T>
+using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
+
+template<typename T>
+using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
+
 template<typename Ti, typename To, af_op_t op>
 class reduceAllKernelSMEM {
    public:
-    reduceAllKernelSMEM(sycl::accessor<To> out, KParam oInfo,
+    reduceAllKernelSMEM(write_accessor<To> out, KParam oInfo,
                         sycl::accessor<unsigned> retCount,
                         sycl::accessor<To> tmp, KParam tmpInfo,
-                        sycl::accessor<Ti> in, KParam iInfo, uint DIMX,
+                        read_accessor<Ti> in, KParam iInfo, uint DIMX,
                         uint groups_x, uint groups_y, uint repeat,
                         bool change_nan, To nanval,
                         local_accessor<compute_t<To>, 1> s_ptr,
@@ -220,11 +226,11 @@ class reduceAllKernelSMEM {
     }
 
    protected:
-    sycl::accessor<To> out_;
+    write_accessor<To> out_;
     sycl::accessor<unsigned> retCount_;
     sycl::accessor<To> tmp_;
+    read_accessor<Ti> in_;
     KParam oInfo_, tmpInfo_, iInfo_;
-    sycl::accessor<Ti> in_;
     uint DIMX_, repeat_;
     uint groups_x_, groups_y_;
     bool change_nan_;
@@ -261,10 +267,10 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
     });
 
     getQueue().submit([=](sycl::handler &h) {
-        auto out_acc      = out.data->get_access(h);
+        write_accessor<To> out_acc{*out.data, h};
         auto retCount_acc = retirementCount.getData()->get_access(h);
         auto tmp_acc      = tmp.getData()->get_access(h);
-        auto in_acc       = in.data->get_access(h);
+        read_accessor<Ti> in_acc{*in.data, h};
 
         sycl::stream debug_stream(2048 * 256, 128, h);
 

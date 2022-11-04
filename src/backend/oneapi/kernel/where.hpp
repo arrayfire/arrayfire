@@ -24,12 +24,18 @@ namespace oneapi {
 namespace kernel {
 
 template<typename T>
+using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
+
+template<typename T>
+using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
+
+template<typename T>
 class whereKernel {
    public:
-    whereKernel(sycl::accessor<uint> out_acc, KParam oInfo,
-                sycl::accessor<uint> otmp_acc, KParam otInfo,
-                sycl::accessor<uint> rtmp_acc, KParam rtInfo,
-                sycl::accessor<T> in_acc, KParam iInfo, uint groups_x,
+    whereKernel(write_accessor<uint> out_acc, KParam oInfo,
+                read_accessor<uint> otmp_acc, KParam otInfo,
+                read_accessor<uint> rtmp_acc, KParam rtInfo,
+                read_accessor<T> in_acc, KParam iInfo, uint groups_x,
                 uint groups_y, uint lim, sycl::stream debug)
         : out_acc_(out_acc)
         , oInfo_(oInfo)
@@ -87,10 +93,10 @@ class whereKernel {
     }
 
    protected:
-    sycl::accessor<uint> out_acc_;
-    sycl::accessor<uint> otmp_acc_;
-    sycl::accessor<uint> rtmp_acc_;
-    sycl::accessor<T> in_acc_;
+    write_accessor<uint> out_acc_;
+    read_accessor<uint> otmp_acc_;
+    read_accessor<uint> rtmp_acc_;
+    read_accessor<T> in_acc_;
     KParam oInfo_, otInfo_, rtInfo_, iInfo_;
     uint groups_x_, groups_y_, lim_;
     sycl::stream debug_;
@@ -170,10 +176,10 @@ static void where(Param<uint> &out, Param<T> in) {
     uint lim = divup(otmp.info.dims[0], (threads_x * groups_x));
 
     getQueue().submit([&](sycl::handler &h) {
-        auto out_acc  = out.data->get_access(h);
-        auto otmp_acc = otmp.data->get_access(h);
-        auto rtmp_acc = rtmp.data->get_access(h);
-        auto in_acc   = in.data->get_access(h);
+        write_accessor<uint> out_acc{*out.data, h};
+        read_accessor<uint> otmp_acc{*otmp.data, h};
+        read_accessor<uint> rtmp_acc{*rtmp.data, h};
+        read_accessor<T> in_acc{*in.data, h};
 
         sycl::stream debug_stream(2048 * 256, 128, h);
         h.parallel_for(sycl::nd_range<2>(global, local),

@@ -25,16 +25,22 @@ using local_accessor =
     sycl::accessor<T, dimensions, sycl::access::mode::read_write,
                    sycl::access::target::local>;
 
+template<typename T>
+using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
+
+template<typename T>
+using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
+
 template<typename Ti, typename To, af_op_t op>
 class scanFirstKernel {
    public:
-    scanFirstKernel(sycl::accessor<To> out_acc, KParam oInfo,
-                    sycl::accessor<To> tmp_acc, KParam tInfo,
-                    sycl::accessor<Ti> in_acc, KParam iInfo,
-                    const uint groups_x, const uint groups_y, const uint lim,
-                    const bool isFinalPass, const uint DIMX,
-                    const bool inclusive_scan, local_accessor<To, 1> s_val,
-                    local_accessor<To, 1> s_tmp, sycl::stream debug_stream)
+    scanFirstKernel(write_accessor<To> out_acc, KParam oInfo,
+                    write_accessor<To> tmp_acc, KParam tInfo,
+                    read_accessor<Ti> in_acc, KParam iInfo, const uint groups_x,
+                    const uint groups_y, const uint lim, const bool isFinalPass,
+                    const uint DIMX, const bool inclusive_scan,
+                    local_accessor<To, 1> s_val, local_accessor<To, 1> s_tmp,
+                    sycl::stream debug_stream)
         : out_acc_(out_acc)
         , oInfo_(oInfo)
         , tmp_acc_(tmp_acc)
@@ -131,9 +137,9 @@ class scanFirstKernel {
     }
 
    protected:
-    sycl::accessor<To> out_acc_;
-    sycl::accessor<To> tmp_acc_;
-    sycl::accessor<Ti> in_acc_;
+    write_accessor<To> out_acc_;
+    write_accessor<To> tmp_acc_;
+    read_accessor<Ti> in_acc_;
     KParam oInfo_, tInfo_, iInfo_;
     const uint groups_x_, groups_y_, lim_, DIMX_;
     const bool isFinalPass_, inclusive_scan_;
@@ -145,8 +151,8 @@ class scanFirstKernel {
 template<typename To, af_op_t op>
 class scanFirstBcastKernel {
    public:
-    scanFirstBcastKernel(sycl::accessor<To> out_acc, KParam oInfo,
-                         sycl::accessor<To> tmp_acc, KParam tInfo,
+    scanFirstBcastKernel(write_accessor<To> out_acc, KParam oInfo,
+                         read_accessor<To> tmp_acc, KParam tInfo,
                          const uint groups_x, const uint groups_y,
                          const uint lim, const bool inclusive_scan,
                          sycl::stream debug_stream)
@@ -199,8 +205,8 @@ class scanFirstBcastKernel {
     }
 
    protected:
-    sycl::accessor<To> out_acc_;
-    sycl::accessor<To> tmp_acc_;
+    write_accessor<To> out_acc_;
+    read_accessor<To> tmp_acc_;
     KParam oInfo_, tInfo_;
     const uint groups_x_, groups_y_, lim_;
     const bool inclusive_scan_;
@@ -218,9 +224,9 @@ static void scan_first_launcher(Param<To> out, Param<To> tmp, Param<Ti> in,
     uint lim = divup(out.info.dims[0], (threads_x * groups_x));
 
     getQueue().submit([&](sycl::handler &h) {
-        auto out_acc = out.data->get_access(h);
-        auto tmp_acc = tmp.data->get_access(h);
-        auto in_acc  = in.data->get_access(h);
+        write_accessor<To> out_acc{*out.data, h};
+        write_accessor<To> tmp_acc{*tmp.data, h};
+        read_accessor<Ti> in_acc{*in.data, h};
 
         sycl::stream debug_stream(2048 * 256, 128, h);
 
@@ -250,8 +256,8 @@ static void bcast_first_launcher(Param<To> out, Param<To> tmp,
     uint lim = divup(out.info.dims[0], (threads_x * groups_x));
 
     getQueue().submit([&](sycl::handler &h) {
-        auto out_acc = out.data->get_access(h);
-        auto tmp_acc = tmp.data->get_access(h);
+        write_accessor<To> out_acc{*out.data, h};
+        read_accessor<To> tmp_acc{*tmp.data, h};
 
         sycl::stream debug_stream(2048 * 256, 128, h);
 

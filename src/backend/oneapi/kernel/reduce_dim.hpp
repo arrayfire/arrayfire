@@ -33,11 +33,17 @@ using local_accessor =
     sycl::accessor<T, dimensions, sycl::access::mode::read_write,
                    sycl::access::target::local>;
 
+template<typename T>
+using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
+
+template<typename T>
+using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
+
 template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
 class reduceDimKernelSMEM {
    public:
-    reduceDimKernelSMEM(sycl::accessor<To> out, KParam oInfo,
-                        sycl::accessor<Ti> in, KParam iInfo, uint groups_x,
+    reduceDimKernelSMEM(write_accessor<To> out, KParam oInfo,
+                        read_accessor<Ti> in, KParam iInfo, uint groups_x,
                         uint groups_y, uint offset_dim, bool change_nan,
                         To nanval, local_accessor<compute_t<To>, 1> s_val,
                         sycl::stream debug)
@@ -128,9 +134,9 @@ class reduceDimKernelSMEM {
     }
 
    protected:
-    sycl::accessor<To> out_;
+    write_accessor<To> out_;
     KParam oInfo_, iInfo_;
-    sycl::accessor<Ti> in_;
+    read_accessor<Ti> in_;
     uint groups_x_, groups_y_, offset_dim_;
     bool change_nan_;
     To nanval_;
@@ -148,8 +154,8 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
                           blocks_dim[1] * blocks_dim[3] * local[1]);
 
     getQueue().submit([=](sycl::handler &h) {
-        auto out_acc = out.data->get_access(h);
-        auto in_acc  = in.data->get_access(h);
+        write_accessor<To> out_acc{*out.data, h};
+        read_accessor<Ti> in_acc{*in.data, h};
 
         sycl::stream debug_stream(2048 * 256, 128, h);
 
