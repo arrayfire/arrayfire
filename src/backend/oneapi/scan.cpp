@@ -10,7 +10,7 @@
 #include <err_oneapi.hpp>
 #include <scan.hpp>
 
-// #include <kernel/scan_dim.hpp>
+#include <kernel/scan_dim.hpp>
 #include <kernel/scan_first.hpp>
 
 namespace oneapi {
@@ -21,10 +21,11 @@ Array<To> scan(const Array<Ti>& in, const int dim, bool inclusiveScan) {
     Param<To> Out = out;
     Param<Ti> In  = in;
 
-    if (dim == 0) {
-        kernel::scan_first<Ti, To, op>(Out, In, inclusiveScan);
-    } else {
-    //     kernel::scanDim<Ti, To, op>(Out, In, dim, inclusiveScan);
+    switch (dim) {
+        case 0: kernel::scan_first<Ti, To, op>(Out, In, inclusiveScan); break;
+        case 1: kernel::scan_dim<Ti, To, op, 1>(Out, In, inclusiveScan); break;
+        case 2: kernel::scan_dim<Ti, To, op, 2>(Out, In, inclusiveScan); break;
+        case 3: kernel::scan_dim<Ti, To, op, 3>(Out, In, inclusiveScan); break;
     }
 
     return out;

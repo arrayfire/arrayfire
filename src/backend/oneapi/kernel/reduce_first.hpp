@@ -148,7 +148,7 @@ void reduce_first_launcher_default(Param<To> out, Param<Ti> in,
                                    const uint groups_x, const uint groups_y,
                                    const uint threads_x, bool change_nan,
                                    double nanval) {
-    sycl::range<2> local(threads_x, THREADS_PER_BLOCK / threads_x);
+    sycl::range<2> local(threads_x, creduce::THREADS_PER_BLOCK / threads_x);
     sycl::range<2> global(groups_x * in.info.dims[2] * local[0],
                           groups_y * in.info.dims[3] * local[1]);
 
@@ -160,7 +160,8 @@ void reduce_first_launcher_default(Param<To> out, Param<Ti> in,
 
         sycl::stream debug_stream(2048 * 256, 128, h);
 
-        auto shrdMem = local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
+        auto shrdMem =
+            local_accessor<compute_t<To>, 1>(creduce::THREADS_PER_BLOCK, h);
 
         switch (threads_x) {
             case 32:
@@ -200,10 +201,10 @@ template<typename Ti, typename To, af_op_t op>
 void reduce_first_default(Param<To> out, Param<Ti> in, bool change_nan,
                           double nanval) {
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
-    threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
-    uint threads_y = THREADS_PER_BLOCK / threads_x;
+    threads_x      = std::min(threads_x, creduce::THREADS_PER_BLOCK);
+    uint threads_y = creduce::THREADS_PER_BLOCK / threads_x;
 
-    uint blocks_x = divup(in.info.dims[0], threads_x * REPEAT);
+    uint blocks_x = divup(in.info.dims[0], threads_x * creduce::REPEAT);
     uint blocks_y = divup(in.info.dims[1], threads_y);
 
     Param<To> tmp = out;

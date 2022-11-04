@@ -96,12 +96,12 @@ void reduce_all(Param<To> out, Param<Ti> in, bool change_nan, double nanval) {
     }
 
     uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
-    threads_x      = std::min(threads_x, THREADS_PER_BLOCK);
-    uint threads_y = THREADS_PER_BLOCK / threads_x;
+    threads_x      = std::min(threads_x, creduce::THREADS_PER_BLOCK);
+    uint threads_y = creduce::THREADS_PER_BLOCK / threads_x;
 
     // TODO: perf REPEAT, consider removing or runtime eval
     // max problem size < SM resident threads, don't use REPEAT
-    uint blocks_x = divup(in.info.dims[0], threads_x * REPEAT);
+    uint blocks_x = divup(in.info.dims[0], threads_x * creduce::REPEAT);
     uint blocks_y = divup(in.info.dims[1], threads_y);
 
     reduce_all_launcher_default<Ti, To, op>(out, in, blocks_x, blocks_y,
