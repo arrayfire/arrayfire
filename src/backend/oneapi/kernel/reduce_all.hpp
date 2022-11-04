@@ -105,17 +105,17 @@ class reduceAllKernelSMEM {
 
         group_barrier(g);
 
-        if (THREADS_PER_BLOCK == 256) {
+        if (creduce::THREADS_PER_BLOCK == 256) {
             if (lid < 128) s_ptr_[lid] = reduce(s_ptr_[lid], s_ptr_[lid + 128]);
             group_barrier(g);
         }
 
-        if (THREADS_PER_BLOCK >= 128) {
+        if (creduce::THREADS_PER_BLOCK >= 128) {
             if (lid < 64) s_ptr_[lid] = reduce(s_ptr_[lid], s_ptr_[lid + 64]);
             group_barrier(g);
         }
 
-        if (THREADS_PER_BLOCK >= 64) {
+        if (creduce::THREADS_PER_BLOCK >= 64) {
             if (lid < 32) s_ptr_[lid] = reduce(s_ptr_[lid], s_ptr_[lid + 32]);
             group_barrier(g);
         }
@@ -168,26 +168,26 @@ class reduceAllKernelSMEM {
                 while (i < total_blocks) {
                     compute_t<To> in_val = compute_t<To>(tmp_[i]);
                     out_val              = reduce(in_val, out_val);
-                    i += THREADS_PER_BLOCK;
+                    i += creduce::THREADS_PER_BLOCK;
                 }
 
                 s_ptr_[lid] = out_val;
                 group_barrier(g);
 
                 // reduce final block
-                if (THREADS_PER_BLOCK == 256) {
+                if (creduce::THREADS_PER_BLOCK == 256) {
                     if (lid < 128)
                         s_ptr_[lid] = reduce(s_ptr_[lid], s_ptr_[lid + 128]);
                     group_barrier(g);
                 }
 
-                if (THREADS_PER_BLOCK >= 128) {
+                if (creduce::THREADS_PER_BLOCK >= 128) {
                     if (lid < 64)
                         s_ptr_[lid] = reduce(s_ptr_[lid], s_ptr_[lid + 64]);
                     group_barrier(g);
                 }
 
-                if (THREADS_PER_BLOCK >= 64) {
+                if (creduce::THREADS_PER_BLOCK >= 64) {
                     if (lid < 32)
                         s_ptr_[lid] = reduce(s_ptr_[lid], s_ptr_[lid + 32]);
                     group_barrier(g);
@@ -239,7 +239,7 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
                                  const uint groups_x, const uint groups_y,
                                  const uint threads_x, bool change_nan,
                                  double nanval) {
-    sycl::range<2> local(threads_x, THREADS_PER_BLOCK / threads_x);
+    sycl::range<2> local(threads_x, creduce::THREADS_PER_BLOCK / threads_x);
     sycl::range<2> global(groups_x * in.info.dims[2] * local[0],
                           groups_y * in.info.dims[3] * local[1]);
 
@@ -268,8 +268,9 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
 
         sycl::stream debug_stream(2048 * 256, 128, h);
 
-        auto shrdMem = local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
-        auto amLast  = local_accessor<bool, 1>(1, h);
+        auto shrdMem =
+            local_accessor<compute_t<To>, 1>(creduce::THREADS_PER_BLOCK, h);
+        auto amLast = local_accessor<bool, 1>(1, h);
         h.parallel_for(
             sycl::nd_range<2>(global, local),
             reduceAllKernelSMEM<Ti, To, op>(

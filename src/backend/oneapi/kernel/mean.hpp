@@ -16,6 +16,7 @@
 //#include <copy.hpp>?
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/default_config.hpp>
 #include <kernel/reduce_config.hpp>
 #include <math.hpp>
 #include <memory.hpp>
@@ -253,7 +254,7 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
                 break;
             case 4:
                 h.parallel_for(sycl::nd_range<2>(global, local),
-                               meanDimKernelSMEM<Ti, Tw, To, dim, 8>(
+                               meanDimKernelSMEM<Ti, Tw, To, dim, 4>(
                                    out_acc, out.info, owt_acc, owt.info, in_acc,
                                    in.info, iwt_acc, iwt.info, blocks_dim[0],
                                    blocks_dim[1], blocks_dim[dim], s_val, s_idx,
@@ -261,7 +262,7 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
                 break;
             case 2:
                 h.parallel_for(sycl::nd_range<2>(global, local),
-                               meanDimKernelSMEM<Ti, Tw, To, dim, 8>(
+                               meanDimKernelSMEM<Ti, Tw, To, dim, 2>(
                                    out_acc, out.info, owt_acc, owt.info, in_acc,
                                    in.info, iwt_acc, iwt.info, blocks_dim[0],
                                    blocks_dim[1], blocks_dim[dim], s_val, s_idx,
@@ -269,7 +270,7 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
                 break;
             case 1:
                 h.parallel_for(sycl::nd_range<2>(global, local),
-                               meanDimKernelSMEM<Ti, Tw, To, dim, 8>(
+                               meanDimKernelSMEM<Ti, Tw, To, dim, 1>(
                                    out_acc, out.info, owt_acc, owt.info, in_acc,
                                    in.info, iwt_acc, iwt.info, blocks_dim[0],
                                    blocks_dim[1], blocks_dim[dim], s_val, s_idx,

@@ -105,17 +105,20 @@ class reduceDimKernelSMEM {
         compute_t<To> *s_ptr = s_val_.get_pointer() + lid;
 
         if (DIMY == 8) {
-            if (lidy < 4) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 4]);
+            if (lidy < 4)
+                *s_ptr = reduce(*s_ptr, s_ptr[creduce::THREADS_X * 4]);
             it.barrier();
         }
 
         if (DIMY >= 4) {
-            if (lidy < 2) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 2]);
+            if (lidy < 2)
+                *s_ptr = reduce(*s_ptr, s_ptr[creduce::THREADS_X * 2]);
             it.barrier();
         }
 
         if (DIMY >= 2) {
-            if (lidy < 1) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 1]);
+            if (lidy < 1)
+                *s_ptr = reduce(*s_ptr, s_ptr[creduce::THREADS_X * 1]);
             it.barrier();
         }
 
@@ -140,7 +143,7 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
                                  const uint threads_y,
                                  const dim_t blocks_dim[4], bool change_nan,
                                  double nanval) {
-    sycl::range<2> local(THREADS_X, threads_y);
+    sycl::range<2> local(creduce::THREADS_X, threads_y);
     sycl::range<2> global(blocks_dim[0] * blocks_dim[2] * local[0],
                           blocks_dim[1] * blocks_dim[3] * local[1]);
 
@@ -151,7 +154,7 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
         sycl::stream debug_stream(2048 * 256, 128, h);
 
         auto shrdMem =
-            local_accessor<compute_t<To>, 1>(THREADS_X * threads_y, h);
+            local_accessor<compute_t<To>, 1>(creduce::THREADS_X * threads_y, h);
 
         switch (threads_y) {
             case 8:
@@ -194,12 +197,12 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
 template<typename Ti, typename To, af_op_t op, int dim>
 void reduce_dim_default(Param<To> out, Param<Ti> in, bool change_nan,
                         double nanval) {
-    uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
-    uint threads_x = THREADS_X;
+    uint threads_y = std::min(creduce::THREADS_Y, nextpow2(in.info.dims[dim]));
+    uint threads_x = creduce::THREADS_X;
 
     dim_t blocks_dim[] = {divup(in.info.dims[0], threads_x), in.info.dims[1],
                           in.info.dims[2], in.info.dims[3]};
-    blocks_dim[dim]    = divup(in.info.dims[dim], threads_y * REPEAT);
+    blocks_dim[dim]    = divup(in.info.dims[dim], threads_y * creduce::REPEAT);
 
     Param<To> tmp = out;
     bufptr<To> tmp_alloc;
