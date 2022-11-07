@@ -583,7 +583,7 @@ void mean(Param<To> out, Param<Ti> in, int dim) {
 
 template<typename T, typename Tw>
 T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
-    int in_elements =
+    uintl in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
     // FIXME: Use better heuristics to get to the optimum number
     if (in_elements > 4096) {
@@ -621,7 +621,7 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
         Array<Tw> tmpWt = createEmptyArray<Tw>(
             {blocks_x, in.info.dims[1], in.info.dims[2], in.info.dims[3]});
 
-        int tmp_elements = tmpOut.elements();
+        uintl tmp_elements = tmpOut.elements();
 
         mean_first_launcher<T, Tw, T>(tmpOut, tmpWt, in, iwt, blocks_x,
                                       blocks_y, threads_x);
@@ -693,7 +693,7 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
 template<typename Ti, typename Tw, typename To>
 To mean_all(Param<Ti> in) {
     using std::unique_ptr;
-    int in_elements =
+    uintl in_elements =
         in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
     bool is_linear = (in.info.strides[0] == 1);
     for (int k = 1; k < 4; k++) {
@@ -728,7 +728,7 @@ To mean_all(Param<Ti> in) {
         mean_first_launcher<Ti, Tw, To>(tmpOut, tmpCt, in, iwt, blocks_x,
                                         blocks_y, threads_x);
 
-        int tmp_elements = tmpOut.elements();
+        uintl tmp_elements = tmpOut.elements();
         std::vector<To> h_ptr(tmp_elements);
         std::vector<Tw> h_cptr(tmp_elements);
 
