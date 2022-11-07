@@ -42,16 +42,16 @@ class scanFirstKernel {
                     local_accessor<To, 1> s_val, local_accessor<To, 1> s_tmp,
                     sycl::stream debug_stream)
         : out_acc_(out_acc)
-        , oInfo_(oInfo)
         , tmp_acc_(tmp_acc)
-        , tInfo_(tInfo)
         , in_acc_(in_acc)
+        , oInfo_(oInfo)
+        , tInfo_(tInfo)
         , iInfo_(iInfo)
         , groups_x_(groups_x)
         , groups_y_(groups_y)
         , lim_(lim)
-        , isFinalPass_(isFinalPass)
         , DIMX_(DIMX)
+        , isFinalPass_(isFinalPass)
         , inclusive_scan_(inclusive_scan)
         , s_val_(s_val)
         , s_tmp_(s_tmp)
@@ -61,7 +61,6 @@ class scanFirstKernel {
         sycl::group g   = it.get_group();
         const uint lidx = it.get_local_id(0);
         const uint lidy = it.get_local_id(1);
-        const uint lid  = lidy * g.get_local_range(0) + lidx;
 
         const uint zid       = g.get_group_id(0) / groups_x_;
         const uint wid       = g.get_group_id(1) / groups_y_;
@@ -157,8 +156,8 @@ class scanFirstBcastKernel {
                          const uint lim, const bool inclusive_scan,
                          sycl::stream debug_stream)
         : out_acc_(out_acc)
-        , oInfo_(oInfo)
         , tmp_acc_(tmp_acc)
+        , oInfo_(oInfo)
         , tInfo_(tInfo)
         , groups_x_(groups_x)
         , groups_y_(groups_y)
@@ -170,7 +169,6 @@ class scanFirstBcastKernel {
         sycl::group g   = it.get_group();
         const uint lidx = it.get_local_id(0);
         const uint lidy = it.get_local_id(1);
-        const uint lid  = lidy * g.get_local_range(0) + lidx;
 
         const uint zid       = g.get_group_id(0) / groups_x_;
         const uint wid       = g.get_group_id(1) / groups_y_;

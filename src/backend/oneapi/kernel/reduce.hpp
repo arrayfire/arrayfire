@@ -32,20 +32,6 @@ namespace oneapi {
 namespace kernel {
 
 template<typename Ti, typename To, af_op_t op>
-void reduce_cpu_dispatch(Param<To> out, Param<Ti> in, int dim, bool change_nan,
-                         double nanval) {
-    // TODO: use kernels optimized for SIMD-based subgroup sizes
-    reduce_default_dispatch<Ti, To, op>(out, in, dim, change_nan, nanval);
-}
-
-template<typename Ti, typename To, af_op_t op>
-void reduce_gpu_dispatch(Param<To> out, Param<Ti> in, int dim, bool change_nan,
-                         double nanval) {
-    // TODO: use kernels optimized for gpu subgroup sizes
-    reduce_default_dispatch<Ti, To, op>(out, in, dim, change_nan, nanval);
-}
-
-template<typename Ti, typename To, af_op_t op>
 void reduce_default_dispatch(Param<To> out, Param<Ti> in, int dim,
                              bool change_nan, double nanval) {
     switch (dim) {
@@ -62,6 +48,20 @@ void reduce_default_dispatch(Param<To> out, Param<Ti> in, int dim,
             return reduce_dim_default<Ti, To, op, 3>(out, in, change_nan,
                                                      nanval);
     }
+}
+
+template<typename Ti, typename To, af_op_t op>
+void reduce_cpu_dispatch(Param<To> out, Param<Ti> in, int dim, bool change_nan,
+                         double nanval) {
+    // TODO: use kernels optimized for SIMD-based subgroup sizes
+    reduce_default_dispatch<Ti, To, op>(out, in, dim, change_nan, nanval);
+}
+
+template<typename Ti, typename To, af_op_t op>
+void reduce_gpu_dispatch(Param<To> out, Param<Ti> in, int dim, bool change_nan,
+                         double nanval) {
+    // TODO: use kernels optimized for gpu subgroup sizes
+    reduce_default_dispatch<Ti, To, op>(out, in, dim, change_nan, nanval);
 }
 
 template<typename Ti, typename To, af_op_t op>

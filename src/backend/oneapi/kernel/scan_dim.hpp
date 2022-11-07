@@ -42,17 +42,17 @@ class scanDimKernel {
                   const bool inclusive_scan, local_accessor<To, 1> s_val,
                   local_accessor<To, 1> s_tmp, sycl::stream debug)
         : out_acc_(out_acc)
-        , oInfo_(oInfo)
         , tmp_acc_(tmp_acc)
-        , tInfo_(tInfo)
         , in_acc_(in_acc)
+        , oInfo_(oInfo)
+        , tInfo_(tInfo)
         , iInfo_(iInfo)
         , groups_x_(groups_x)
         , groups_y_(groups_y)
         , blocks_dim_(blocks_dim)
         , lim_(lim)
-        , isFinalPass_(isFinalPass)
         , DIMY_(DIMY)
+        , isFinalPass_(isFinalPass)
         , inclusive_scan_(inclusive_scan)
         , s_val_(s_val)
         , s_tmp_(s_tmp)
@@ -71,7 +71,7 @@ class scanDimKernel {
         const uint xid       = groupId_x * g.get_local_range(0) + lidx;
         const uint yid       = groupId_y;
 
-        int ids[4] = {xid, yid, zid, wid};
+        uint ids[4] = {xid, yid, zid, wid};
 
         const Ti *iptr = in_acc_.get_pointer();
         To *optr       = out_acc_.get_pointer();
@@ -173,8 +173,8 @@ class scanDimBcastKernel {
                        const uint groups_dim, const uint lim,
                        const bool inclusive_scan, sycl::stream debug)
         : out_acc_(out_acc)
-        , oInfo_(oInfo)
         , tmp_acc_(tmp_acc)
+        , oInfo_(oInfo)
         , tInfo_(tInfo)
         , groups_x_(groups_x)
         , groups_y_(groups_y)
@@ -195,7 +195,7 @@ class scanDimBcastKernel {
         const uint xid       = groupId_x * g.get_local_range(0) + lidx;
         const uint yid       = groupId_y;
 
-        int ids[4] = {xid, yid, zid, wid};
+        uint ids[4] = {xid, yid, zid, wid};
 
         const To *tptr = tmp_acc_.get_pointer();
         To *optr       = out_acc_.get_pointer();

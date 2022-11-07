@@ -54,7 +54,6 @@ class whereKernel {
         sycl::group g   = it.get_group();
         const uint lidx = it.get_local_id(0);
         const uint lidy = it.get_local_id(1);
-        const uint lid  = lidy * g.get_local_range(0) + lidx;
 
         const uint zid       = g.get_group_id(0) / groups_x_;
         const uint wid       = g.get_group_id(1) / groups_y_;
@@ -126,12 +125,12 @@ static void where(Param<uint> &out, Param<T> in) {
         otmp.info.strides[k] = otmp.info.strides[k - 1] * otmp.info.dims[k - 1];
     }
 
-    int rtmp_elements = rtmp.info.strides[3] * rtmp.info.dims[3];
-    int otmp_elements = otmp.info.strides[3] * otmp.info.dims[3];
-    auto rtmp_alloc   = memAlloc<uint>(rtmp_elements);
-    auto otmp_alloc   = memAlloc<uint>(otmp_elements);
-    rtmp.data         = rtmp_alloc.get();
-    otmp.data         = otmp_alloc.get();
+    uintl rtmp_elements = rtmp.info.strides[3] * rtmp.info.dims[3];
+    uintl otmp_elements = otmp.info.strides[3] * otmp.info.dims[3];
+    auto rtmp_alloc     = memAlloc<uint>(rtmp_elements);
+    auto otmp_alloc     = memAlloc<uint>(otmp_elements);
+    rtmp.data           = rtmp_alloc.get();
+    otmp.data           = otmp_alloc.get();
 
     scan_first_launcher<T, uint, af_notzero_t>(
         otmp, rtmp, in, groups_x, groups_y, threads_x, false, true);
