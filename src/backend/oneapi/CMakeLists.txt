@@ -211,6 +211,7 @@ target_sources(afoneapi
     kernel/assign.hpp
     kernel/diagonal.hpp
     kernel/diff.hpp
+    kernel/interp.hpp
     kernel/iota.hpp
     kernel/histogram.hpp
     kernel/memcopy.hpp

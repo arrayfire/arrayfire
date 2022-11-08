@@ -20,22 +20,22 @@ void approx2(Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo,
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
-            kernel::approx2<Ty, Tp>(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim,
-                                    yi_beg, yi_step, offGrid, method, 1);
+            kernel::approx2<Ty, Tp, 1>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
+                                       ydim, yi_beg, yi_step, offGrid, method);
             break;
         case AF_INTERP_LINEAR:
         case AF_INTERP_BILINEAR:
         case AF_INTERP_LINEAR_COSINE:
         case AF_INTERP_BILINEAR_COSINE:
-            kernel::approx2<Ty, Tp>(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim,
-                                    yi_beg, yi_step, offGrid, method, 2);
+            kernel::approx2<Ty, Tp, 2>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
+                                       ydim, yi_beg, yi_step, offGrid, method);
             break;
         case AF_INTERP_CUBIC:
         case AF_INTERP_BICUBIC:
         case AF_INTERP_CUBIC_SPLINE:
         case AF_INTERP_BICUBIC_SPLINE:
-            kernel::approx2<Ty, Tp>(zo, zi, xo, xdim, xi_beg, xi_step, yo, ydim,
-                                    yi_beg, yi_step, offGrid, method, 3);
+            kernel::approx2<Ty, Tp, 3>(zo, zi, xo, xdim, xi_beg, xi_step, yo,
+                                       ydim, yi_beg, yi_step, offGrid, method);
             break;
         default: break;
     }
