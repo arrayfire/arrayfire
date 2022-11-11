@@ -45,7 +45,7 @@ void unwrap(Param<T> out, const Param<T> in, const dim_t wx, const dim_t wy,
         reps = divup((wx * wy), TY);
     }
 
-    auto local = sycl::range(TX, TY);
+    auto local  = sycl::range(TX, TY);
     auto global = sycl::range(local[0] * BX, local[1] * BY);
 
     getQueue().submit([&](auto &h) {
@@ -66,8 +66,9 @@ void unwrap(Param<T> out, const Param<T> in, const dim_t wx, const dim_t wy,
 
             // Compute the output column index
             const int id = IS_COLUMN
-              ? (g.get_group_id(0) * g.get_local_range(1) + it.get_local_id(1))
-              : it.get_global_id(0);
+                               ? (g.get_group_id(0) * g.get_local_range(1) +
+                                  it.get_local_id(1))
+                               : it.get_global_id(0);
 
             if (id >= (IS_COLUMN ? out.info.dims[1] : out.info.dims[0])) return;
 
@@ -80,42 +81,45 @@ void unwrap(Param<T> out, const Param<T> in, const dim_t wx, const dim_t wy,
 
             // Offset the global pointers to the respective starting indices
             T *d_out = outAcc.get_pointer();
-            T *optr       = d_out + cOut + id * (IS_COLUMN ? out.info.strides[1] : 1);
+            T *optr = d_out + cOut + id * (IS_COLUMN ? out.info.strides[1] : 1);
             T *d_in = inAcc.get_pointer();
             const T *iptr = d_in + cIn + in.info.offset;
 
-            bool cond = (spx >= 0 && spx + (wx * dx) < in.info.dims[0] && spy >= 0 &&
-                         spy + (wy * dy) < in.info.dims[1]);
+            bool cond = (spx >= 0 && spx + (wx * dx) < in.info.dims[0] &&
+                         spy >= 0 && spy + (wy * dy) < in.info.dims[1]);
 
             // Compute output index local to column
-            int outIdx        = IS_COLUMN ? it.get_local_id(0) : it.get_local_id(1);
-            const int oStride = IS_COLUMN ? it.get_local_range(0) : it.get_local_range(1);
+            int outIdx = IS_COLUMN ? it.get_local_id(0) : it.get_local_id(1);
+            const int oStride =
+                IS_COLUMN ? it.get_local_range(0) : it.get_local_range(1);
 
             for (int i = 0; i < reps; i++) {
-              if (outIdx >= (IS_COLUMN ? out.info.dims[0] : out.info.dims[1])) return;
+                if (outIdx >= (IS_COLUMN ? out.info.dims[0] : out.info.dims[1]))
+                    return;
 
-              // Compute input index local to window
-              const int y = outIdx / wx;
-              const int x = outIdx % wx;
+                // Compute input index local to window
+                const int y = outIdx / wx;
+                const int x = outIdx % wx;
 
-              const int xpad = spx + x * dx;
-              const int ypad = spy + y * dy;
+                const int xpad = spx + x * dx;
+                const int ypad = spy + y * dy;
 
-              // Copy
-              T val = (T)0;
-              if (cond || (xpad >= 0 && xpad < in.info.dims[0] && ypad >= 0 &&
-                           ypad < in.info.dims[1])) {
-                const int inIdx = ypad * in.info.strides[1] + xpad * in.info.strides[0];
-                val             = iptr[inIdx];
-              }
+                // Copy
+                T val = (T)0;
+                if (cond || (xpad >= 0 && xpad < in.info.dims[0] && ypad >= 0 &&
+                             ypad < in.info.dims[1])) {
+                    const int inIdx =
+                        ypad * in.info.strides[1] + xpad * in.info.strides[0];
+                    val = iptr[inIdx];
+                }
 
-              if (IS_COLUMN) {
-                optr[outIdx] = val;
-              } else {
-                  optr[outIdx * out.info.strides[1]] = val;
-              }
+                if (IS_COLUMN) {
+                    optr[outIdx] = val;
+                } else {
+                    optr[outIdx * out.info.strides[1]] = val;
+                }
 
-              outIdx += oStride;
+                outIdx += oStride;
             }
         });
     });
