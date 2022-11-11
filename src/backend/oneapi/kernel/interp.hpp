@@ -11,6 +11,7 @@
 #include <math.hpp>
 #include <types.hpp>
 #include <algorithm>
+#include <af/constants.h>
 
 namespace oneapi {
 
