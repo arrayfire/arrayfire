@@ -10,8 +10,8 @@
 #include <Param.hpp>
 #include <math.hpp>
 #include <types.hpp>
-#include <algorithm>
 #include <af/constants.h>
+#include <algorithm>
 
 namespace oneapi {
 
