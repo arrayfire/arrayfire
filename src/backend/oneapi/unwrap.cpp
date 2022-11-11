@@ -10,7 +10,7 @@
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
-// #include <kernel/unwrap.hpp>
+#include <kernel/unwrap.hpp>
 #include <unwrap.hpp>
 #include <stdexcept>
 
@@ -32,9 +32,8 @@ Array<T> unwrap(const Array<T> &in, const dim_t wx, const dim_t wy,
     if (!is_column) { std::swap(odims[0], odims[1]); }
 
     Array<T> outArray = createEmptyArray<T>(odims);
-    ONEAPI_NOT_SUPPORTED("unwrap Not supported");
-    // kernel::unwrap<T>(outArray, in, wx, wy, sx, sy, px, py, dx, dy, nx,
-    //                   is_column);
+    kernel::unwrap<T>(outArray, in, wx, wy, sx, sy, px, py, dx, dy, nx,
+                      is_column);
 
     return outArray;
 }
