@@ -232,6 +232,7 @@ target_sources(afoneapi
     kernel/transpose.hpp
     kernel/transpose_inplace.hpp
     kernel/triangle.hpp
+    kernel/unwrap.hpp
     kernel/where.hpp
     kernel/wrap.hpp
     kernel/wrap_dilated.hpp
