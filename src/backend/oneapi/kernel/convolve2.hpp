@@ -129,7 +129,8 @@ void conv2Helper(const conv_kparam_t<aT> &param, Param<T> out,
     const size_t LOC_SIZE =
         (THREADS_X + 2 * (f0 - 1)) * (THREADS_Y + 2 * (f1 - 1));
 
-    getQueue().submit([&](auto &h) {
+    auto Q = getQueue();
+    Q.submit([&](auto &h) {
         sycl::accessor<aT, 1, sycl::access::mode::read_write,
                        sycl::access::target::local>
             localMem(LOC_SIZE, h);
@@ -143,6 +144,7 @@ void conv2Helper(const conv_kparam_t<aT> &param, Param<T> out,
                 filter.info, param.nBBS0, param.nBBS1, param.o[1], param.o[2],
                 param.s[1], param.s[2], localMem, f0, f1, expand));
     });
+    ONEAPI_DEBUG_FINISH(Q);
 }
 
 template<typename T, typename aT>

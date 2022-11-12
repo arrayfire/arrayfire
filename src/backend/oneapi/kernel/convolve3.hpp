@@ -141,7 +141,8 @@ template<typename T, typename aT>
 void conv3Helper(const conv_kparam_t<aT> &param, Param<T> &out,
                  const Param<T> &signal, const Param<aT> &impulse,
                  const int rank, const bool EXPAND) {
-    getQueue().submit([&](auto &h) {
+    auto Q = getQueue();
+    Q.submit([&](auto &h) {
         sycl::accessor<aT, 1, sycl::access::mode::read_write,
                        sycl::access::target::local>
             localMem(param.loc_size, h);
@@ -155,6 +156,7 @@ void conv3Helper(const conv_kparam_t<aT> &param, Param<T> &out,
                 impulse.info, param.nBBS0, param.nBBS1, param.o[0], param.o[1],
                 param.o[2], param.s[0], param.s[1], param.s[2], EXPAND));
     });
+    ONEAPI_DEBUG_FINISH(Q);
 }
 
 template<typename T, typename aT>
