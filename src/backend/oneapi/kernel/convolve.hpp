@@ -106,7 +106,8 @@ void memcpyBuffer(sycl::buffer<T, 1> &dest, sycl::buffer<T, 1> &src,
 }
 
 template<typename T>
-using local_accessor = sycl::accessor<T, 1, sycl::access::mode::read_write, sycl::access::target::local>;
+using local_accessor = sycl::accessor<T, 1, sycl::access::mode::read_write,
+                                      sycl::access::target::local>;
 template<typename T>
 using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
 template<typename T>
