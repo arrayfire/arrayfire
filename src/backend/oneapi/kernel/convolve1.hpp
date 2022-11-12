@@ -1,80 +1,104 @@
-template <typename T, typename aT>
+template<typename T, typename aT>
 class conv1HelperCreateKernel {
-public:
-  conv1HelperCreateKernel(write_accessor<T> out, KParam oInfo,
-                          read_accessor<T> signal, KParam sInfo,
-                          local_accessor<aT> localMem,
-                          read_accessor<aT> impulse, KParam fInfo, int nBBS0,
-                          int nBBS1, int ostep1, int ostep2, int ostep3, int sstep1,
-                          int sstep2, int sstep3, const bool expand) : out_(out), oInfo_(oInfo), signal_(signal), sInfo_(sInfo), localMem_(localMem), impulse_(impulse), fInfo_(fInfo), nBBS0_(nBBS0), nBBS1_(nBBS1), ostep1_(ostep1), ostep2_(ostep2), ostep3_(ostep3), sstep1_(sstep1), sstep2_(sstep2), sstep3_(sstep3), expand_(expand) {}
-  void operator()(sycl::nd_item<3> it) const {
-      sycl::group g = it.get_group();
+   public:
+    conv1HelperCreateKernel(write_accessor<T> out, KParam oInfo,
+                            read_accessor<T> signal, KParam sInfo,
+                            local_accessor<aT> localMem,
+                            read_accessor<aT> impulse, KParam fInfo, int nBBS0,
+                            int nBBS1, int ostep1, int ostep2, int ostep3,
+                            int sstep1, int sstep2, int sstep3,
+                            const bool expand)
+        : out_(out)
+        , oInfo_(oInfo)
+        , signal_(signal)
+        , sInfo_(sInfo)
+        , localMem_(localMem)
+        , impulse_(impulse)
+        , fInfo_(fInfo)
+        , nBBS0_(nBBS0)
+        , nBBS1_(nBBS1)
+        , ostep1_(ostep1)
+        , ostep2_(ostep2)
+        , ostep3_(ostep3)
+        , sstep1_(sstep1)
+        , sstep2_(sstep2)
+        , sstep3_(sstep3)
+        , expand_(expand) {}
+    void operator()(sycl::nd_item<3> it) const {
+        sycl::group g = it.get_group();
 
-      int fLen          = fInfo_.dims[0];
-      int padding       = fLen - 1;
-      int shrdLen       = g.get_local_range(0) + 2 * padding;
-      const unsigned b1 = g.get_group_id(0) / nBBS0_;
-      const unsigned b0 = g.get_group_id(0) - nBBS0_ * b1;
-      const unsigned b3 = g.get_group_id(1) / nBBS1_;
-      const unsigned b2 = g.get_group_id(1) - nBBS1_ * b3;
+        int fLen          = fInfo_.dims[0];
+        int padding       = fLen - 1;
+        int shrdLen       = g.get_local_range(0) + 2 * padding;
+        const unsigned b1 = g.get_group_id(0) / nBBS0_;
+        const unsigned b0 = g.get_group_id(0) - nBBS0_ * b1;
+        const unsigned b3 = g.get_group_id(1) / nBBS1_;
+        const unsigned b2 = g.get_group_id(1) - nBBS1_ * b3;
 
-      T *dst =
-        out_.get_pointer() +
-        (b1 * oInfo_.strides[1] +     /* activated with batched input signal_ */
-         ostep1_ * oInfo_.strides[1] + /* activated with batched input filter */
-         b2 * oInfo_.strides[2] +     /* activated with batched input signal_ */
-         ostep2_ * oInfo_.strides[2] + /* activated with batched input filter */
-         b3 * oInfo_.strides[3] +     /* activated with batched input signal_ */
-         ostep3_ * oInfo_.strides[3]); /* activated with batched input filter */
+        T *dst =
+            out_.get_pointer() +
+            (b1 * oInfo_.strides[1] + /* activated with batched input signal_ */
+             ostep1_ *
+                 oInfo_.strides[1] +  /* activated with batched input filter */
+             b2 * oInfo_.strides[2] + /* activated with batched input signal_ */
+             ostep2_ *
+                 oInfo_.strides[2] +  /* activated with batched input filter */
+             b3 * oInfo_.strides[3] + /* activated with batched input signal_ */
+             ostep3_ *
+                 oInfo_.strides[3]); /* activated with batched input filter */
 
-      T const *src =
-        signal_.get_pointer() + sInfo_.offset +
-        (b1 * sInfo_.strides[1] +     /* activated with batched input signal_ */
-         sstep1_ * sInfo_.strides[1] + /* activated with batched input filter */
-         b2 * sInfo_.strides[2] +     /* activated with batched input signal_ */
-         sstep2_ * sInfo_.strides[2] + /* activated with batched input filter */
-         b3 * sInfo_.strides[3] +     /* activated with batched input signal_ */
-         sstep3_ * sInfo_.strides[3]); /* activated with batched input filter */
+        T const *src =
+            signal_.get_pointer() + sInfo_.offset +
+            (b1 * sInfo_.strides[1] + /* activated with batched input signal_ */
+             sstep1_ *
+                 sInfo_.strides[1] +  /* activated with batched input filter */
+             b2 * sInfo_.strides[2] + /* activated with batched input signal_ */
+             sstep2_ *
+                 sInfo_.strides[2] +  /* activated with batched input filter */
+             b3 * sInfo_.strides[3] + /* activated with batched input signal_ */
+             sstep3_ *
+                 sInfo_.strides[3]); /* activated with batched input filter */
 
-      int gx = g.get_local_range(0) * b0;
+        int gx = g.get_local_range(0) * b0;
 
-      for (int i = it.get_local_id(0); i < shrdLen; i += g.get_local_range(0)) {
-        int idx     = gx - padding + i;
-        localMem_[i] = (idx >= 0 && idx < sInfo_.dims[0])
-          ? src[idx * sInfo_.strides[0]]
-          : (T)(0);
-      }
-      it.barrier();
-      gx += it.get_local_id(0);
-
-      if (gx >= 0 && gx < oInfo_.dims[0]) {
-        int lx        = it.get_local_id(0) + padding + (expand_ ? 0 : fLen >> 1);
-        aT accum = (aT)(0);
-        for (int f = 0; f < fLen; ++f) {
-          // binOp will do MUL_OP for convolution operation
-          accum = accum + binOp((aT)localMem_[lx - f], (aT)impulse_[f]);
+        for (int i = it.get_local_id(0); i < shrdLen;
+             i += g.get_local_range(0)) {
+            int idx      = gx - padding + i;
+            localMem_[i] = (idx >= 0 && idx < sInfo_.dims[0])
+                               ? src[idx * sInfo_.strides[0]]
+                               : (T)(0);
         }
-        dst[gx] = (T)accum;
-      }
-  }
+        it.barrier();
+        gx += it.get_local_id(0);
 
-private:
-  write_accessor<T> out_;
-  KParam oInfo_;
-  read_accessor<T> signal_;
-  KParam sInfo_;
-  local_accessor<aT> localMem_;
-  read_accessor<aT> impulse_;
-  KParam fInfo_;
-  int nBBS0_;
-  int nBBS1_;
-  int ostep1_;
-  int ostep2_;
-  int ostep3_;
-  int sstep1_;
-  int sstep2_;
-  int sstep3_;
-  const bool expand_;
+        if (gx >= 0 && gx < oInfo_.dims[0]) {
+            int lx   = it.get_local_id(0) + padding + (expand_ ? 0 : fLen >> 1);
+            aT accum = (aT)(0);
+            for (int f = 0; f < fLen; ++f) {
+                // binOp will do MUL_OP for convolution operation
+                accum = accum + binOp((aT)localMem_[lx - f], (aT)impulse_[f]);
+            }
+            dst[gx] = (T)accum;
+        }
+    }
+
+   private:
+    write_accessor<T> out_;
+    KParam oInfo_;
+    read_accessor<T> signal_;
+    KParam sInfo_;
+    local_accessor<aT> localMem_;
+    read_accessor<aT> impulse_;
+    KParam fInfo_;
+    int nBBS0_;
+    int nBBS1_;
+    int ostep1_;
+    int ostep2_;
+    int ostep3_;
+    int sstep1_;
+    int sstep2_;
+    int sstep3_;
+    const bool expand_;
 };
 
 template<typename T, typename aT>
@@ -84,15 +108,18 @@ void conv1Helper(const conv_kparam_t<aT> &param, Param<T> &out,
     getQueue().submit([&](auto &h) {
         sycl::accessor<aT, 1, sycl::access::mode::read_write,
                        sycl::access::target::local>
-          localMem(param.loc_size, h);
+            localMem(param.loc_size, h);
         sycl::accessor outAcc{*out.data, h, sycl::write_only, sycl::no_init};
         sycl::accessor signalAcc{*signal.data, h, sycl::read_only};
         sycl::accessor impulseAcc{*param.impulse, h, sycl::read_only};
-        h.parallel_for(sycl::nd_range{param.global, param.local},
-                       conv1HelperCreateKernel<T, aT>(outAcc, out.info, signalAcc, signal.info, localMem, impulseAcc, filter.info, param.nBBS0, param.nBBS1, param.o[0], param.o[1], param.o[2], param.s[0], param.s[1], param.s[2], expand));
+        h.parallel_for(
+            sycl::nd_range{param.global, param.local},
+            conv1HelperCreateKernel<T, aT>(
+                outAcc, out.info, signalAcc, signal.info, localMem, impulseAcc,
+                filter.info, param.nBBS0, param.nBBS1, param.o[0], param.o[1],
+                param.o[2], param.s[0], param.s[1], param.s[2], expand));
     });
 }
-
 
 template<typename T, typename aT>
 void conv1(conv_kparam_t<aT> &p, Param<T> &out, const Param<T> &sig,

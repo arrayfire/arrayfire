@@ -12,9 +12,6 @@
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
-// #include <memory.hpp>
-// #include <traits.hpp>
-// #include <types.hpp>
 #include <af/defines.h>
 
 #include <string>
