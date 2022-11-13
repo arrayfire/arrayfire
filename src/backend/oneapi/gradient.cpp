@@ -10,14 +10,14 @@
 #include <Array.hpp>
 #include <err_oneapi.hpp>
 #include <gradient.hpp>
-//#include <kernel/gradient.hpp>
+#include <kernel/gradient.hpp>
 #include <math.hpp>
 #include <stdexcept>
 
 namespace oneapi {
 template<typename T>
 void gradient(Array<T> &grad0, Array<T> &grad1, const Array<T> &in) {
-    ONEAPI_NOT_SUPPORTED("");
+    kernel::gradient<T>(grad0, grad1, in);
 }
 
 #define INSTANTIATE(T)                                            \
