@@ -12,7 +12,6 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
-#include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
 #include <traits.hpp>
 #include <af/dim4.hpp>
@@ -40,10 +39,6 @@ class iotaKernel {
         , debug_(debug) {}
 
     void operator()(sycl::nd_item<2> it) const {
-        // printf("[%d,%d]\n", it.get_global_id(0), it.get_global_id(1));
-        // debug_ << "[" << it.get_global_id(0) << "," << it.get_global_id(1) <<
-        // "]" << sycl::stream_manipulator::endl;
-
         sycl::group gg = it.get_group();
         const int oz   = gg.get_group_id(0) / blocksPerMatX_;
         const int ow   = gg.get_group_id(1) / blocksPerMatY_;
@@ -99,19 +94,26 @@ void iota(Param<T> out, const af::dim4& sdims) {
                           local[1] * blocksPerMatY * out.info.dims[3]);
     sycl::nd_range<2> ndrange(global, local);
 
-    getQueue().submit([=](sycl::handler& h) {
-        auto out_acc = out.data->get_access(h);
+    try {
+        getQueue()
+            .submit([=](sycl::handler& h) {
+                auto out_acc = out.data->get_access(h);
 
-        sycl::stream debug_stream(2048, 128, h);
+                sycl::stream debug_stream(2048, 128, h);
 
-        h.parallel_for(
-            ndrange, iotaKernel<T>(
-                         out_acc, out.info, static_cast<int>(sdims[0]),
-                         static_cast<int>(sdims[1]), static_cast<int>(sdims[2]),
-                         static_cast<int>(sdims[3]), blocksPerMatX,
-                         blocksPerMatY, debug_stream));
-    });
-    ONEAPI_DEBUG_FINISH(getQueue());
+                h.parallel_for(
+                    ndrange,
+                    iotaKernel<T>(out_acc, out.info, static_cast<int>(sdims[0]),
+                                  static_cast<int>(sdims[1]),
+                                  static_cast<int>(sdims[2]),
+                                  static_cast<int>(sdims[3]), blocksPerMatX,
+                                  blocksPerMatY, debug_stream));
+            })
+            .wait();
+        ONEAPI_DEBUG_FINISH(getQueue());
+    } catch (sycl::exception& e) {
+        std::cout << e.what() << std::endl;
+    } catch (std::exception& e) { std::cout << e.what() << std::endl; }
 }
 
 }  // namespace kernel

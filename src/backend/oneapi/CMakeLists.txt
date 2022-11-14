@@ -22,7 +22,8 @@ add_library(afoneapi
   anisotropic_diffusion.cpp
   anisotropic_diffusion.hpp
   any.cpp
-  approx.cpp
+  approx1.cpp
+  approx2.cpp
   approx.hpp
   arith.hpp
   assign.cpp
@@ -205,21 +206,33 @@ add_library(afoneapi
 target_sources(afoneapi
   PRIVATE
     kernel/KParam.hpp
+    kernel/approx1.hpp
+    kernel/approx2.hpp
     kernel/assign.hpp
+    kernel/bilateral.hpp
     kernel/diagonal.hpp
     kernel/diff.hpp
+    kernel/interp.hpp
     kernel/iota.hpp
     kernel/histogram.hpp
     kernel/memcopy.hpp
+    kernel/mean.hpp
     kernel/random_engine.hpp
     kernel/random_engine_write.hpp
     kernel/random_engine_mersenne.hpp
     kernel/random_engine_philox.hpp
     kernel/random_engine_threefry.hpp
     kernel/range.hpp
+    kernel/reduce.hpp
+    kernel/reduce_all.hpp
+    kernel/reduce_first.hpp
+    kernel/reduce_dim.hpp
+    kernel/scan_first.hpp
+    kernel/scan_dim.hpp
     kernel/transpose.hpp
     kernel/transpose_inplace.hpp
     kernel/triangle.hpp
+    kernel/where.hpp
 )
 
 add_library(ArrayFire::afoneapi ALIAS afoneapi)
