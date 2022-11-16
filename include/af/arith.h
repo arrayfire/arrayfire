@@ -888,16 +888,16 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for max of two arrays
+       C Interface for clamp
 
-       \param[out] out will contain the values from \p clamped between \p lo and \p hi
+       \param[out] out will contain the values from \p in clamped between \p lo and \p hi
        \param[in] in Input array
        \param[in] lo Value for lower limit
        \param[in] hi Value for upper limit
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup arith_func_max
+       \ingroup arith_func_clamp
     */
     AFAPI af_err af_clamp(af_array *out, const af_array in,
                           const af_array lo, const af_array hi, const bool batch);

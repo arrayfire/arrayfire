@@ -144,7 +144,7 @@ TEST_P(ClampFloatingPoint, Basic) {
     ASSERT_ARRAYS_NEAR(gold_, out, 1e-5);
 }
 
-TEST(ClampTests, FloatArrayArray) {
+TEST(Clamp, FloatArrayArray) {
     array in = randu(num, f32);
     array lo = randu(num, f32) / 10;        // Ensure lo <= 0.1
     array hi = 1.0 - randu(num, f32) / 10;  // Ensure hi >= 0.9
@@ -165,7 +165,7 @@ TEST(ClampTests, FloatArrayArray) {
     }
 }
 
-TEST(ClampTests, FloatArrayScalar) {
+TEST(Clamp, FloatArrayScalar) {
     array in = randu(num, f32);
     array lo = randu(num, f32) / 10;  // Ensure lo <= 0.1
     float hi = 0.9;
@@ -185,7 +185,7 @@ TEST(ClampTests, FloatArrayScalar) {
     }
 }
 
-TEST(ClampTests, FloatScalarArray) {
+TEST(Clamp, FloatScalarArray) {
     array in = randu(num, f32);
     float lo = 0.1;
     array hi = 1.0 - randu(num, f32) / 10;  // Ensure hi >= 0.9
@@ -205,7 +205,7 @@ TEST(ClampTests, FloatScalarArray) {
     }
 }
 
-TEST(ClampTests, FloatScalarScalar) {
+TEST(Clamp, FloatScalarScalar) {
     array in = randu(num, f32);
     float lo = 0.1;
     float hi = 0.9;

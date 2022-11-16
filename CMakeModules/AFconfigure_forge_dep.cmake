@@ -75,7 +75,8 @@ else(AF_BUILD_FORGE)
 
     if(TARGET Forge::forge)
         get_target_property(fg_lib_type Forge::forge TYPE)
-        if(NOT ${fg_lib_type} STREQUAL "STATIC_LIBRARY")
+        if(NOT ${fg_lib_type} STREQUAL "STATIC_LIBRARY" AND
+           AF_INSTALL_STANDALONE)
             install(FILES
                     $<TARGET_FILE:Forge::forge>
                     $<$<PLATFORM_ID:Linux>:$<TARGET_SONAME_FILE:Forge::forge>>
