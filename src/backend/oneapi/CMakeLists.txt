@@ -227,6 +227,7 @@ target_sources(afoneapi
     kernel/reduce_all.hpp
     kernel/reduce_first.hpp
     kernel/reduce_dim.hpp
+    kernel/reorder.hpp
     kernel/scan_first.hpp
     kernel/scan_dim.hpp
     kernel/transpose.hpp

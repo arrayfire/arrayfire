@@ -32,10 +32,11 @@ using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 template<typename T>
 class reorderCreateKernel {
    public:
-    reorderCreateKernel(write_accessor<T> out, read_accessor<T> in,
-                        const KParam op, const KParam ip, const int d0,
-                        const int d1, const int d2, const int d3,
-                        const int blocksPerMatX, const int blocksPerMatY)
+    reorderCreateKernel(
+        write_accessor<T> out, read_accessor<T> in, const KParam op,
+        const KParam ip, const int d0, const int d1, const int d2, const int d3,
+        const int blocksPerMatX, const int blocksPerMatY,
+        sycl::accessor<float, 2, sycl::access::mode::write> debugAcc)
         : out_(out)
         , in_(in)
         , op_(op)
@@ -45,9 +46,12 @@ class reorderCreateKernel {
         , d2_(d2)
         , d3_(d3)
         , blocksPerMatX_(blocksPerMatX)
-        , blocksPerMatY_(blocksPerMatY) {}
+        , blocksPerMatY_(blocksPerMatY)
+        , debugAcc_(debugAcc) {}
     void operator()(sycl::nd_item<2> it) const {
         auto g = it.get_group();
+
+        debugAcc_[it.get_global_id(0)][it.get_global_id(1)] = 0;
 
         const int oz = g.get_group_id(0) / blocksPerMatX_;
         const int ow = g.get_group_id(1) / blocksPerMatY_;
@@ -100,6 +104,7 @@ class reorderCreateKernel {
     const int d3_;
     const int blocksPerMatX_;
     const int blocksPerMatY_;
+    sycl::accessor<float, 2, sycl::access::mode::write> debugAcc_;
 };
 
 #include "/home/gpryor/new-dev/io.hpp"
@@ -107,14 +112,6 @@ class reorderCreateKernel {
 
 template<typename T>
 void reorder(Param<T> out, const Param<T> in, const dim_t* rdims) {
-    OPEN_W("/home/gpryor/new-dev/data/test-00");
-    WRITE(out);
-    WRITE(in);
-    WRITE(rdims[0]);
-    WRITE(rdims[1]);
-    WRITE(rdims[2]);
-    WRITE(rdims[3]);
-
     constexpr int TX    = 32;
     constexpr int TY    = 8;
     constexpr int TILEX = 512;
@@ -124,21 +121,22 @@ void reorder(Param<T> out, const Param<T> in, const dim_t* rdims) {
 
     int blocksPerMatX = divup(out.info.dims[0], TILEX);
     int blocksPerMatY = divup(out.info.dims[1], TILEY);
-
-    auto global = sycl::range{local[0] * blocksPerMatX * out.info.dims[2],
+    auto global       = sycl::range{local[0] * blocksPerMatX * out.info.dims[2],
                               local[1] * blocksPerMatY * out.info.dims[3]};
 
-    auto Q = getQueue();
-    Q.submit([&](sycl::handler& h) {
-         sycl::accessor outAcc{*out.data, h, sycl::write_only, sycl::no_init};
-         sycl::accessor inAcc{*in.data, h, sycl::read_only};
-         h.parallel_for(
-             sycl::nd_range{global, local},
-             reorderCreateKernel(outAcc, inAcc, out.info, in.info, rdims[0],
-                                 rdims[1], rdims[2], rdims[3], blocksPerMatX,
-                                 blocksPerMatY));
-     }).wait();
-    ONEAPI_DEBUG_FINISH(Q);
+    sycl::buffer<float, 2> debugBuffer(sycl::range{global[0], global[1]});
+
+    getQueue().submit([&](sycl::handler& h) {
+        sycl::accessor outAcc{*out.data, h, sycl::write_only, sycl::no_init};
+        sycl::accessor inAcc{*in.data, h, sycl::read_only};
+        sycl::accessor debugAcc{debugBuffer, h, sycl::write_only,
+                                sycl::no_init};
+        h.parallel_for(
+            sycl::nd_range{global, local},
+            reorderCreateKernel<T>(outAcc, inAcc, out.info, in.info, rdims[0],
+                                   rdims[1], rdims[2], rdims[3], blocksPerMatX,
+                                   blocksPerMatY, debugAcc));
+    });
 }
 }  // namespace kernel
 }  // namespace oneapi
