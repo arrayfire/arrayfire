@@ -315,21 +315,21 @@ __device__ static void writeOut128Bytes(char *out, const uint &index,
                                         const uint &r1, const uint &r2,
                                         const uint &r3, const uint &r4) {
     out[index]                   = (r1)&0x1;
-    out[index + blockDim.x]      = (r1 >> 1) & 0x1;
-    out[index + 2 * blockDim.x]  = (r1 >> 2) & 0x1;
-    out[index + 3 * blockDim.x]  = (r1 >> 3) & 0x1;
+    out[index + blockDim.x]      = (r1 >> 8) & 0x1;
+    out[index + 2 * blockDim.x]  = (r1 >> 16) & 0x1;
+    out[index + 3 * blockDim.x]  = (r1 >> 24) & 0x1;
     out[index + 4 * blockDim.x]  = (r2)&0x1;
-    out[index + 5 * blockDim.x]  = (r2 >> 1) & 0x1;
-    out[index + 6 * blockDim.x]  = (r2 >> 2) & 0x1;
-    out[index + 7 * blockDim.x]  = (r2 >> 3) & 0x1;
+    out[index + 5 * blockDim.x]  = (r2 >> 8) & 0x1;
+    out[index + 6 * blockDim.x]  = (r2 >> 16) & 0x1;
+    out[index + 7 * blockDim.x]  = (r2 >> 24) & 0x1;
     out[index + 8 * blockDim.x]  = (r3)&0x1;
-    out[index + 9 * blockDim.x]  = (r3 >> 1) & 0x1;
-    out[index + 10 * blockDim.x] = (r3 >> 2) & 0x1;
-    out[index + 11 * blockDim.x] = (r3 >> 3) & 0x1;
+    out[index + 9 * blockDim.x]  = (r3 >> 8) & 0x1;
+    out[index + 10 * blockDim.x] = (r3 >> 16) & 0x1;
+    out[index + 11 * blockDim.x] = (r3 >> 24) & 0x1;
     out[index + 12 * blockDim.x] = (r4)&0x1;
-    out[index + 13 * blockDim.x] = (r4 >> 1) & 0x1;
-    out[index + 14 * blockDim.x] = (r4 >> 2) & 0x1;
-    out[index + 15 * blockDim.x] = (r4 >> 3) & 0x1;
+    out[index + 13 * blockDim.x] = (r4 >> 8) & 0x1;
+    out[index + 14 * blockDim.x] = (r4 >> 16) & 0x1;
+    out[index + 15 * blockDim.x] = (r4 >> 24) & 0x1;
 }
 
 __device__ static void writeOut128Bytes(short *out, const uint &index,
@@ -540,49 +540,49 @@ __device__ static void partialWriteOut128Bytes(char *out, const uint &index,
                                                const uint &elements) {
     if (index < elements) { out[index] = (r1)&0x1; }
     if (index + blockDim.x < elements) {
-        out[index + blockDim.x] = (r1 >> 1) & 0x1;
+        out[index + blockDim.x] = (r1 >> 8) & 0x1;
     }
     if (index + 2 * blockDim.x < elements) {
-        out[index + 2 * blockDim.x] = (r1 >> 2) & 0x1;
+        out[index + 2 * blockDim.x] = (r1 >> 16) & 0x1;
     }
     if (index + 3 * blockDim.x < elements) {
-        out[index + 3 * blockDim.x] = (r1 >> 3) & 0x1;
+        out[index + 3 * blockDim.x] = (r1 >> 24) & 0x1;
     }
     if (index + 4 * blockDim.x < elements) {
         out[index + 4 * blockDim.x] = (r2)&0x1;
     }
     if (index + 5 * blockDim.x < elements) {
-        out[index + 5 * blockDim.x] = (r2 >> 1) & 0x1;
+        out[index + 5 * blockDim.x] = (r2 >> 8) & 0x1;
     }
     if (index + 6 * blockDim.x < elements) {
-        out[index + 6 * blockDim.x] = (r2 >> 2) & 0x1;
+        out[index + 6 * blockDim.x] = (r2 >> 16) & 0x1;
     }
     if (index + 7 * blockDim.x < elements) {
-        out[index + 7 * blockDim.x] = (r2 >> 3) & 0x1;
+        out[index + 7 * blockDim.x] = (r2 >> 24) & 0x1;
     }
     if (index + 8 * blockDim.x < elements) {
         out[index + 8 * blockDim.x] = (r3)&0x1;
     }
     if (index + 9 * blockDim.x < elements) {
-        out[index + 9 * blockDim.x] = (r3 >> 1) & 0x1;
+        out[index + 9 * blockDim.x] = (r3 >> 8) & 0x1;
     }
     if (index + 10 * blockDim.x < elements) {
-        out[index + 10 * blockDim.x] = (r3 >> 2) & 0x1;
+        out[index + 10 * blockDim.x] = (r3 >> 16) & 0x1;
     }
     if (index + 11 * blockDim.x < elements) {
-        out[index + 11 * blockDim.x] = (r3 >> 3) & 0x1;
+        out[index + 11 * blockDim.x] = (r3 >> 24) & 0x1;
     }
     if (index + 12 * blockDim.x < elements) {
         out[index + 12 * blockDim.x] = (r4)&0x1;
     }
     if (index + 13 * blockDim.x < elements) {
-        out[index + 13 * blockDim.x] = (r4 >> 1) & 0x1;
+        out[index + 13 * blockDim.x] = (r4 >> 8) & 0x1;
     }
     if (index + 14 * blockDim.x < elements) {
-        out[index + 14 * blockDim.x] = (r4 >> 2) & 0x1;
+        out[index + 14 * blockDim.x] = (r4 >> 16) & 0x1;
     }
     if (index + 15 * blockDim.x < elements) {
-        out[index + 15 * blockDim.x] = (r4 >> 3) & 0x1;
+        out[index + 15 * blockDim.x] = (r4 >> 24) & 0x1;
     }
 }
 
