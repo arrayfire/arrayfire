@@ -36,7 +36,7 @@ class Random : public ::testing::Test {
 
 // create a list of types to be tested
 typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, intl,
-                         uintl, unsigned char, af_half>
+                         uintl, unsigned char, char, af_half>
     TestTypes;
 
 // register the type list
