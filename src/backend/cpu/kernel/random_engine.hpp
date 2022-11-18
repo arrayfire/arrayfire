@@ -99,8 +99,8 @@ double getDouble01(uint *val, uint index) {
 
 template<>
 char transform<char>(uint *val, uint index) {
-    char v = val[index >> 2] >> (8 << (index & 3));
-    v      = (v & 0x1) ? 1 : 0;
+    char v = val[index >> 2] >> (index & 3);
+    v = v & 0x1;
     return v;
 }
 
