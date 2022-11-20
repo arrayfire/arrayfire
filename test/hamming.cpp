@@ -153,3 +153,41 @@ TEST(HammingMatcher, CPP) {
     delete[] outIdx;
     delete[] outDist;
 }
+
+TEST(HammingMatcher64bit, CPP) {
+    using af::array;
+    using af::dim4;
+
+    vector<dim4> numDims;
+    vector<vector<unsigned long long>> in;
+    vector<vector<unsigned long long>> tests;
+
+    readTests<unsigned long long, unsigned long long, int>(
+        TEST_DIR "/hamming/hamming_500_5000_dim0_u32.test", numDims, in, tests);
+
+    dim4 qDims = numDims[0];
+    dim4 tDims = numDims[1];
+
+    array query(qDims, &(in[0].front()));
+    array train(tDims, &(in[1].front()));
+
+    array idx, dist;
+    hammingMatcher(idx, dist, query, train, 0, 1);
+
+    vector<unsigned long long> goldIdx  = tests[0];
+    vector<unsigned long long> goldDist = tests[1];
+    size_t nElems                       = goldIdx.size();
+    uint *outIdx                        = new uint[nElems];
+    uint *outDist                       = new uint[nElems];
+
+    idx.host(outIdx);
+    dist.host(outDist);
+
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(goldDist[elIter], outDist[elIter])
+            << "at: " << elIter << endl;
+    }
+
+    delete[] outIdx;
+    delete[] outDist;
+}
