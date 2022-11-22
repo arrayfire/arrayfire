@@ -194,10 +194,10 @@ void copy(Param<outType> dst, CParam<inType> src, dim_t ondims,
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
     auto copy{common::getKernel(
-        th.loop0              ? "cuda::scaledCopyLoop0"
-        : th.loop2 | th.loop3 ? "cuda::scaledCopyLoop123"
-        : th.loop1            ? "cuda::scaledCopyLoop1"
-                              : "cuda::scaledCopy",
+        th.loop0                 ? "cuda::scaledCopyLoop0"
+        : (th.loop2 || th.loop3) ? "cuda::scaledCopyLoop123"
+        : th.loop1               ? "cuda::scaledCopyLoop1"
+                                 : "cuda::scaledCopy",
         std::array{copy_cuh_src},
         TemplateArgs(TemplateTypename<inType>(), TemplateTypename<outType>(),
                      TemplateArg(same_dims), TemplateArg(factor != 1.0)))};

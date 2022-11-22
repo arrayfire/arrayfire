@@ -107,8 +107,6 @@ if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
 endif(AF_BUILD_UNIFIED)
 
-check_cxx_compiler_flag("-Wtautological-constant-compare" has_tautological_constant_compare_flag)
-
 add_library(arrayfire_test STATIC
   testHelpers.hpp
   arrayfire_test.cpp)
@@ -127,9 +125,10 @@ target_compile_options(arrayfire_test
   PUBLIC
     # Intel compilers use fast math by default and ignore special floating point
     # values like NaN and Infs.
-    $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>
+    $<$<COMPILE_LANGUAGE:CXX>:
+      $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>
+      $<$<BOOL:${has_cxx_unqualified_std_cast_call}>:-Wno-unqualified-std-cast-call>>
   PRIVATE
-    $<$<BOOL:${has_tautological_constant_compare_flag}>:-Wno-tautological-constant-compare>
     $<$<CXX_COMPILER_ID:MSVC>: /bigobj
                                /EHsc>
   )
@@ -196,11 +195,8 @@ function(make_test)
         arrayfire_test
       )
 
-    # The tautological-constant-compare warning is always thrown for std::nan
-    # and std::info calls. Its unnecessarily verbose.
     target_compile_options(${target}
       PRIVATE
-        $<$<BOOL:${has_tautological_constant_compare_flag}>:-Wno-tautological-constant-compare>
         $<$<CXX_COMPILER_ID:MSVC>: /bigobj
                                    /EHsc>
       )
@@ -364,14 +360,6 @@ if(CUDA_FOUND)
     set(cuda_test_backends "cuda" "unified")
     if(${backend} IN_LIST cuda_test_backends)
       set(target test_cuda_${backend})
-      if(${CMAKE_VERSION} VERSION_LESS 3.5.2)
-        cuda_include_directories(
-          ${ArrayFire_SOURCE_DIR}/include
-          ${ArrayFire_BINARY_DIR}/include
-          ${ArrayFire_SOURCE_DIR}/extern/half/include
-          ${CMAKE_CURRENT_SOURCE_DIR}
-        )
-      endif()
       add_executable(${target} cuda.cu)
       target_include_directories(${target} PRIVATE
         ${ArrayFire_SOURCE_DIR}/extern/half/include

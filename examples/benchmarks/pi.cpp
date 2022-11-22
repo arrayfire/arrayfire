@@ -35,8 +35,8 @@ static double pi_device() {
 static double pi_host() {
     int count = 0;
     for (int i = 0; i < samples; ++i) {
-        float x = float(rand()) / RAND_MAX;
-        float y = float(rand()) / RAND_MAX;
+        float x = float(rand()) / float(RAND_MAX);
+        float y = float(rand()) / float(RAND_MAX);
         if (sqrt(x * x + y * y) < 1) count++;
     }
     return 4.0 * count / samples;
