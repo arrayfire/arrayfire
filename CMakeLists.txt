@@ -470,7 +470,7 @@ install(DIRECTORY "${ArrayFire_SOURCE_DIR}/LICENSES/"
     DESTINATION LICENSES
     COMPONENT licenses)
 
-foreach(backend CPU CUDA OpenCL Unified)
+foreach(backend CPU CUDA OpenCL oneAPI Unified)
   string(TOUPPER ${backend} upper_backend)
   string(TOLOWER ${backend} lower_backend)
   if(AF_BUILD_${upper_backend})
