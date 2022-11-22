@@ -25,6 +25,13 @@ if(WIN32)
   check_cxx_compiler_flag(/permissive- cxx_compliance)
 endif()
 
+check_cxx_compiler_flag(-ffast-math has_cxx_fast_math)
+check_cxx_compiler_flag("-fp-model fast" has_cxx_fp_model)
+check_cxx_compiler_flag(-fno-errno-math has_cxx_no_errno_math)
+check_cxx_compiler_flag(-fno-trapping-math  has_cxx_no_trapping_math)
+check_cxx_compiler_flag(-fno-signed-zeros  has_cxx_no_signed_zeros)
+check_cxx_compiler_flag(-mno-ieee-fp has_cxx_no_ieee_fp)
+
 function(arrayfire_set_default_cxx_flags target)
   target_compile_options(${target}
     PRIVATE
@@ -51,7 +58,19 @@ function(arrayfire_set_default_cxx_flags target)
               # ignored attribute warnings in the OpenCL
               # headers
               $<$<BOOL:${has_ignored_attributes_flag}>:-Wno-ignored-attributes>
-              $<$<BOOL:${has_all_warnings_flag}>:-Wall>>
+              $<$<BOOL:${has_all_warnings_flag}>:-Wall>
+
+              $<$<BOOL:${AF_WITH_FAST_MATH}>:
+                  $<$<BOOL:${has_cxx_fast_math}>:-ffast-math>
+                  $<$<BOOL:${has_cxx_no_errno_math}>:-fno-errno-math>
+                  $<$<BOOL:${has_cxx_no_trapping_math}>:-fno-trapping-math>
+                  $<$<BOOL:${has_cxx_no_signed_zeros}>:-fno-signed-zeros>
+                  $<$<BOOL:${has_cxx_no_ieee_fp}>:-mno-ieee-fp>
+                  >
+
+              $<$<NOT:$<BOOL:${AF_WITH_FAST_MATH}>>:
+                    $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>>
+                      >
     )
 
   target_compile_definitions(${target}
@@ -65,6 +84,7 @@ function(arrayfire_set_default_cxx_flags target)
 
       $<$<BOOL:${AF_WITH_LOGGING}>:           AF_WITH_LOGGING>
       $<$<BOOL:${AF_CACHE_KERNELS_TO_DISK}>:  AF_CACHE_KERNELS_TO_DISK>
+      $<$<BOOL:${AF_WITH_FAST_MATH}>:         AF_WITH_FAST_MATH>
   )
 endfunction()
 

@@ -124,6 +124,10 @@ target_include_directories(arrayfire_test
 # The tautological-constant-compare warning is always thrown for std::nan
 # and std::info calls. Its unnecessarily verbose.
 target_compile_options(arrayfire_test
+  PUBLIC
+    # Intel compilers use fast math by default and ignore special floating point
+    # values like NaN and Infs.
+    $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>
   PRIVATE
     $<$<BOOL:${has_tautological_constant_compare_flag}>:-Wno-tautological-constant-compare>
     $<$<CXX_COMPILER_ID:MSVC>: /bigobj
@@ -137,6 +141,8 @@ if(WIN32)
 endif()
 
 target_compile_definitions(arrayfire_test
+  PUBLIC
+    $<$<BOOL:${AF_WITH_FAST_MATH}>:AF_WITH_FAST_MATH>
   PRIVATE
     TEST_RESULT_IMAGE_DIR="${CMAKE_BINARY_DIR}/test/"
     USE_MTX)
