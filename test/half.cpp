@@ -87,6 +87,7 @@ TEST(Half, arith) {
 
 TEST(Half, isInf) {
     SUPPORTED_TYPE_CHECK(af_half);
+    SKIP_IF_FAST_MATH_ENABLED();
     half_float::half hinf = std::numeric_limits<half_float::half>::infinity();
 
     vector<half_float::half> input(2, half_float::half(0));
@@ -105,6 +106,7 @@ TEST(Half, isInf) {
 
 TEST(Half, isNan) {
     SUPPORTED_TYPE_CHECK(af_half);
+    SKIP_IF_FAST_MATH_ENABLED();
     half_float::half hnan = std::numeric_limits<half_float::half>::quiet_NaN();
 
     vector<half_float::half> input(2, half_float::half(0));

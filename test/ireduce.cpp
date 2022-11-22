@@ -192,6 +192,7 @@ TEST(IndexedReduce, MaxReduceDimensionHasSingleValue) {
 }
 
 TEST(IndexedReduce, MinNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     float test_data[] = {1.f, NAN, 5.f, 0.1f, NAN, -0.5f, NAN, 0.f};
     int rows          = 4;
     int cols          = 2;
@@ -218,6 +219,7 @@ TEST(IndexedReduce, MinNaN) {
 }
 
 TEST(IndexedReduce, MaxNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     float test_data[] = {1.f, NAN, 5.f, 0.1f, NAN, -0.5f, NAN, 0.f};
     int rows          = 4;
     int cols          = 2;
@@ -244,6 +246,7 @@ TEST(IndexedReduce, MaxNaN) {
 }
 
 TEST(IndexedReduce, MinCplxNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     float real_wnan_data[] = {0.005f, NAN, -6.3f, NAN,      -0.5f,
                               NAN,    NAN, 0.2f,  -1205.4f, 8.9f};
 
@@ -279,6 +282,7 @@ TEST(IndexedReduce, MinCplxNaN) {
 }
 
 TEST(IndexedReduce, MaxCplxNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     float real_wnan_data[] = {0.005f, NAN, -6.3f, NAN,      -0.5f,
                               NAN,    NAN, 0.2f,  -1205.4f, 8.9f};
 

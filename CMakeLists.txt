@@ -92,6 +92,7 @@ option(AF_WITH_STATIC_MKL "Link against static Intel MKL libraries" OFF)
 option(AF_WITH_STATIC_CUDA_NUMERIC_LIBS "Link libafcuda with static numeric libraries(cublas, cufft, etc.)" OFF)
 option(AF_WITH_SPDLOG_HEADER_ONLY "Build ArrayFire with header only version of spdlog" OFF)
 option(AF_WITH_FMT_HEADER_ONLY "Build ArrayFire with header only version of fmt" OFF)
+option(AF_WITH_FAST_MATH "Use lower precision but high performance numeric optimizations" OFF)
 
 if(AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   option(AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS "Prune CUDA static libraries to reduce binary size.(WARNING: May break some libs on older CUDA toolkits for some compute arch)" OFF)

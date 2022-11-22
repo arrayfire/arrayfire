@@ -130,6 +130,7 @@ TYPED_TEST(Select, LeftScalar) {
 }
 
 TEST(Select, NaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     dim4 dims(1000, 1250);
     dtype ty = f32;
 

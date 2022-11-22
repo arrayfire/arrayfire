@@ -93,20 +93,21 @@ void median_test(int nx, int ny = 1, int nz = 1, int nw = 1) {
 
     if (sa.dims(dim) % 2 == 1) {
         mSeq[dim] = mSeq[dim] - 1.0;
+        sa        = sa.as((af_dtype)dtype_traits<To>::af_type);
         verify    = sa(mSeq[0], mSeq[1], mSeq[2], mSeq[3]);
     } else {
         dim_t sdim[4] = {0};
         sdim[dim]     = 1;
         sa            = sa.as((af_dtype)dtype_traits<To>::af_type);
         array sas     = shift(sa, sdim[0], sdim[1], sdim[2], sdim[3]);
-        verify        = ((sa + sas) / 2)(mSeq[0], mSeq[1], mSeq[2], mSeq[3]);
+        verify = ((sa + sas) / To(2))(mSeq[0], mSeq[1], mSeq[2], mSeq[3]);
     }
 
     // Test Part
     array out = median(a, dim);
 
     ASSERT_EQ(out.dims() == verify.dims(), true);
-    ASSERT_NEAR(0, sum<double>(abs(out - verify)), 1e-5);
+    ASSERT_ARRAYS_EQ(verify, out);
 }
 
 #define MEDIAN_FLAT(To, Ti)                                                    \
