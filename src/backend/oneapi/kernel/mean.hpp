@@ -74,21 +74,21 @@ class meanDimKernelSMEM {
                       local_accessor<compute_t<Tw>, 1> s_idx,
                       sycl::stream debug, bool input_weight, bool output_weight)
         : out_(out)
-        , oInfo_(oInfo)
         , owt_(owt)
-        , owInfo_(owInfo)
         , in_(in)
-        , iInfo_(iInfo)
         , iwt_(iwt)
+        , oInfo_(oInfo)
+        , owInfo_(owInfo)
+        , iInfo_(iInfo)
         , iwInfo_(iwInfo)
         , groups_x_(groups_x)
         , groups_y_(groups_y)
         , offset_dim_(offset_dim)
         , s_val_(s_val)
         , s_idx_(s_idx)
-        , debug_(debug)
         , input_weight_(input_weight)
-        , output_weight_(output_weight) {}
+        , output_weight_(output_weight)
+        , debug_(debug) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -335,12 +335,12 @@ class meanFirstKernelSMEM {
                         sycl::stream debug, bool input_weight,
                         bool output_weight)
         : out_(out)
-        , oInfo_(oInfo)
         , owt_(owt)
-        , owInfo_(owInfo)
         , in_(in)
-        , iInfo_(iInfo)
         , iwt_(iwt)
+        , oInfo_(oInfo)
+        , owInfo_(owInfo)
+        , iInfo_(iInfo)
         , iwInfo_(iwInfo)
         , DIMX_(DIMX)
         , groups_x_(groups_x)
@@ -348,9 +348,9 @@ class meanFirstKernelSMEM {
         , repeat_(repeat)
         , s_val_(s_val)
         , s_idx_(s_idx)
-        , debug_(debug)
         , input_weight_(input_weight)
-        , output_weight_(output_weight) {}
+        , output_weight_(output_weight)
+        , debug_(debug) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();

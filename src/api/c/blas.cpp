@@ -254,8 +254,8 @@ af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
                 break;
             }
             case c32: {
-                cfloat alpha = {1.f, 0.f};
-                cfloat beta  = {0.f, 0.f};
+                cfloat alpha{1.f, 0.f};
+                cfloat beta{0.f, 0.f};
 
                 AF_CHECK(af_gemm(&gemm_out, optLhs, optRhs, &alpha, lhs, rhs,
                                  &beta));
@@ -269,8 +269,8 @@ af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
                 break;
             }
             case c64: {
-                cdouble alpha = {1.0, 0.0};
-                cdouble beta  = {0.0, 0.0};
+                cdouble alpha{1.0, 0.0};
+                cdouble beta{0.0, 0.0};
                 AF_CHECK(af_gemm(&gemm_out, optLhs, optRhs, &alpha, lhs, rhs,
                                  &beta));
                 break;

@@ -31,6 +31,8 @@ check_cxx_compiler_flag(-fno-errno-math has_cxx_no_errno_math)
 check_cxx_compiler_flag(-fno-trapping-math  has_cxx_no_trapping_math)
 check_cxx_compiler_flag(-fno-signed-zeros  has_cxx_no_signed_zeros)
 check_cxx_compiler_flag(-mno-ieee-fp has_cxx_no_ieee_fp)
+check_cxx_compiler_flag(-Wno-unqualified-std-cast-call has_cxx_unqualified_std_cast_call)
+check_cxx_compiler_flag(-Werror=reorder-ctor has_cxx_error_reorder_ctor)
 
 function(arrayfire_set_default_cxx_flags target)
   target_compile_options(${target}
@@ -46,6 +48,7 @@ function(arrayfire_set_default_cxx_flags target)
                                           /wd4668
                                           /wd4710
                                           /wd4505
+                                          /we5038
                                           /bigobj
                                           /EHsc
                                           # MSVC incorrectly sets the cplusplus to 199711L even if the compiler supports
@@ -59,6 +62,8 @@ function(arrayfire_set_default_cxx_flags target)
               # headers
               $<$<BOOL:${has_ignored_attributes_flag}>:-Wno-ignored-attributes>
               $<$<BOOL:${has_all_warnings_flag}>:-Wall>
+              $<$<BOOL:${has_cxx_unqualified_std_cast_call}>:-Wno-unqualified-std-cast-call>
+              $<$<BOOL:${has_cxx_error_reorder_ctor}>:-Werror=reorder-ctor>
 
               $<$<BOOL:${AF_WITH_FAST_MATH}>:
                   $<$<BOOL:${has_cxx_fast_math}>:-ffast-math>

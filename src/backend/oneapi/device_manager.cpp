@@ -30,10 +30,12 @@
 #include <string>
 #include <vector>
 
+using common::getEnvVar;
 using std::begin;
 using std::end;
 using std::find;
 using std::make_unique;
+using std::move;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
