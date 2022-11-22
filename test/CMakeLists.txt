@@ -478,6 +478,8 @@ elseif(AF_BUILD_CUDA)
   target_link_libraries(print_info ArrayFire::afcuda)
 elseif(AF_BUILD_CPU)
   target_link_libraries(print_info ArrayFire::afcpu)
+elseif(AF_BUILD_ONEAPI)
+  target_link_libraries(print_info ArrayFire::afoneapi)
 endif()
 
 make_test(SRC jit_test_api.cpp)
