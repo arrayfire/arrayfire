@@ -50,9 +50,10 @@ typedef struct {
 //  - maximum obtained vectorization.
 //  - All the parameters are updated accordingly
 //
-static unsigned vectorizeShape(const unsigned maxVectorWidth, int dims[4],
-                               int istrides[4], int& indims, dim_t& ioffset,
-                               int ostrides[4], dim_t& ooffset) {
+static inline unsigned vectorizeShape(const unsigned maxVectorWidth,
+                                      int dims[4], int istrides[4], int& indims,
+                                      dim_t& ioffset, int ostrides[4],
+                                      dim_t& ooffset) {
     unsigned vectorWidth{1};
     if ((maxVectorWidth != 1) & (istrides[0] == 1) & (ostrides[0] == 1)) {
         // - Only adjacent items can be vectorized into a base vector type
