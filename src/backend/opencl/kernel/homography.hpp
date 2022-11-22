@@ -195,7 +195,7 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
                                      sizeof(unsigned), &inliersH);
 
         bufferFree(totalInliers.data);
-    } else if (htype == AF_HOMOGRAPHY_RANSAC) {
+    } else /* if (htype == AF_HOMOGRAPHY_RANSAC) */ {
         unsigned blockIdx;
         inliersH = kernel::ireduceAll<unsigned, af_max_t>(&blockIdx, inliers);
 

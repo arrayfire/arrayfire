@@ -99,7 +99,6 @@ if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
 endif(AF_BUILD_UNIFIED)
 
-
 add_library(arrayfire_test STATIC
   testHelpers.hpp
   arrayfire_test.cpp)

@@ -16,7 +16,7 @@
 #include <utility>
 
 template<typename T>
-class TemplateTypename;
+struct TemplateTypename;
 
 struct TemplateArg {
     std::string _tparam;

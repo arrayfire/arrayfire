@@ -1118,7 +1118,6 @@ bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance) {
 INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(char);
-INSTANTIATE(unsigned char);
 #undef INSTANTIATE
 
 TestOutputArrayInfo::TestOutputArrayInfo()
@@ -1367,7 +1366,8 @@ af::array cpu_randu(const af::dim4 dims) {
 
     std::vector<BT> out(elements);
     for (size_t i = 0; i < elements; i++) {
-        out[i] = isTypeFloat ? (BT)(rand()) / RAND_MAX : rand() % 100;
+        out[i] = isTypeFloat ? (BT)(rand()) / static_cast<double>(RAND_MAX)
+                             : rand() % 100;
     }
 
     return af::array(dims, (T *)&out[0]);
