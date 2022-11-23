@@ -112,24 +112,24 @@ if(AF_BUILD_FORGE AND NOT Forge_FOUND)
 endif()
 
 target_include_directories(afcommon_interface
+  SYSTEM INTERFACE
+    $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>)
+
+target_include_directories(afcommon_interface
   INTERFACE
     ${ArrayFire_SOURCE_DIR}/src/backend
     ${ArrayFire_BINARY_DIR}/src/backend)
 
-target_include_directories(afcommon_interface
-  SYSTEM INTERFACE
-    $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>
-  )
 if(TARGET Forge::forge)
   target_include_directories(afcommon_interface
     SYSTEM INTERFACE
-    $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>
+      $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>
   )
 else()
   target_include_directories(afcommon_interface
     SYSTEM INTERFACE
-    ${${forge_prefix}_SOURCE_DIR}/include
-    ${${forge_prefix}_BINARY_DIR}/include
+      ${${forge_prefix}_SOURCE_DIR}/include
+      ${${forge_prefix}_BINARY_DIR}/include
   )
 endif()
 
