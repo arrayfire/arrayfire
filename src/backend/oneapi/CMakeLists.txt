@@ -240,13 +240,17 @@ add_library(ArrayFire::afoneapi ALIAS afoneapi)
 arrayfire_set_default_cxx_flags(afoneapi)
 
 target_include_directories(afoneapi
+  SYSTEM PRIVATE
+    ${SYCL_INCLUDE_DIR})
+
+target_include_directories(afoneapi
   PUBLIC
     $<BUILD_INTERFACE:${ArrayFire_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${ArrayFire_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${SYCL_INCLUDE_DIR}
+
   )
 
 target_compile_options(afoneapi

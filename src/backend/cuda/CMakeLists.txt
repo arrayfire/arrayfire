@@ -668,13 +668,16 @@ target_include_directories (afcuda
     $<BUILD_INTERFACE:${ArrayFire_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
-    $<$<BOOL:${AF_WITH_CUDNN}>:${cuDNN_INCLUDE_DIRS}>
-    ${CUDA_INCLUDE_DIRS}
     ${ArrayFire_SOURCE_DIR}/src/api/c
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/kernel
     ${CMAKE_CURRENT_SOURCE_DIR}/jit
-    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR})
+
+target_include_directories (afcuda
+  SYSTEM PRIVATE
+    $<$<BOOL:${AF_WITH_CUDNN}>:${cuDNN_INCLUDE_DIRS}>
+    ${CUDA_INCLUDE_DIRS}
 )
 
 target_link_libraries(afcuda

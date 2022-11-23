@@ -29,19 +29,21 @@ foreach(SBK_TYPE ${SBK_TYPES})
       FOLDER "Generated Targets")
 
   arrayfire_set_default_cxx_flags(cpu_sort_by_key_${SBK_TYPE})
-  # TODO(umar): This should just use the include directories from the
-  # afcpu_static target
+
   target_include_directories(cpu_sort_by_key_${SBK_TYPE}
     PUBLIC
       .
       ../../api/c
       ${ArrayFire_SOURCE_DIR}/include
       ${ArrayFire_BINARY_DIR}/include
-      $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
     PRIVATE
       ../common
       ..
       threads)
+
+  target_include_directories(cpu_sort_by_key_${SBK_TYPE}
+    SYSTEM PRIVATE
+      $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>)
 
   set_target_properties(cpu_sort_by_key_${SBK_TYPE} PROPERTIES POSITION_INDEPENDENT_CODE ON)
   target_sources(cpu_sort_by_key
