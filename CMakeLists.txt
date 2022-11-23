@@ -286,11 +286,6 @@ af_dep_check_and_populate(${assets_prefix}
 )
 set(ASSETS_DIR ${${assets_prefix}_SOURCE_DIR})
 
-configure_file(
-    ${ArrayFire_SOURCE_DIR}/CMakeModules/version.hpp.in
-    ${ArrayFire_BINARY_DIR}/version.hpp
-)
-
 # when crosscompiling use the bin2cpp file from the native bin directory
 if(CMAKE_CROSSCOMPILING)
   set(NATIVE_BIN_DIR "NATIVE_BIN_DIR-NOTFOUND"
