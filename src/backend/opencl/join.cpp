@@ -51,7 +51,7 @@ Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
     //              will be called twice
     if (fdims.dims[jdim] == sdims.dims[jdim]) {
         const size_t L2CacheSize{getL2CacheSize(opencl::getDevice())};
-        if (!(first.isReady() | second.isReady()) ||
+        if (!(first.isReady() || second.isReady()) ||
             (fdims.elements() * sizeof(T) * 2 * 2 < L2CacheSize)) {
             // Both arrays have same size & everything fits into the cache,
             // so thread in 1 JIT kernel, iso individual copies which is

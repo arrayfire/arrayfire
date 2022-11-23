@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-#include <common/util.hpp>
+#include <common/deterministicHash.hpp>
 
 using namespace std;
 using std::cout;
@@ -275,7 +275,7 @@ int main(int argc, const char *const *const argv) {
 
     cout << "#pragma once\n";
     cout << "#include <cstddef>\n";          // defines size_t
-    cout << "#include <common/util.hpp>\n";  // defines common::Source
+    cout << "#include <common/Source.hpp>\n";  // defines common::Source
 
     int ns_cnt = 0;
     int level  = 0;

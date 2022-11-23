@@ -779,6 +779,7 @@ TEST(ReduceByKey, countReduceByKey) {
 }
 
 TEST(ReduceByKey, ReduceByKeyNans) {
+    SKIP_IF_FAST_MATH_ENABLED();
     const static int testSz      = 8;
     const int testKeys[testSz]   = {0, 2, 2, 9, 5, 5, 5, 8};
     const float testVals[testSz] = {0, 7, NAN, 6, 2, 5, 3, 4};
@@ -1072,6 +1073,7 @@ TYPED_TEST(Reduce, Test_Any_Global) {
 }
 
 TEST(MinMax, MinMaxNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     const int num      = 10000;
     array A            = randu(num);
     A(where(A < 0.25)) = NaN;
@@ -1095,6 +1097,7 @@ TEST(MinMax, MinMaxNaN) {
 }
 
 TEST(MinMax, MinCplxNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     float real_wnan_data[] = {0.005f, NAN, -6.3f, NAN,      -0.5f,
                               NAN,    NAN, 0.2f,  -1205.4f, 8.9f};
 
@@ -1122,6 +1125,7 @@ TEST(MinMax, MinCplxNaN) {
 }
 
 TEST(MinMax, MaxCplxNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     // 4th element is unusually large to cover the case where
     //  one part holds the largest value among the array,
     //  and the other part is NaN.
@@ -1158,6 +1162,7 @@ TEST(MinMax, MaxCplxNaN) {
 }
 
 TEST(Count, NaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     const int num = 10000;
     array A       = round(5 * randu(num));
     array B       = A;
@@ -1168,6 +1173,7 @@ TEST(Count, NaN) {
 }
 
 TEST(Sum, NaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     const int num      = 10000;
     array A            = randu(num);
     A(where(A < 0.25)) = NaN;
@@ -1187,6 +1193,7 @@ TEST(Sum, NaN) {
 }
 
 TEST(Product, NaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     const int num = 5;
     array A       = randu(num);
     A(2)          = NaN;
@@ -1206,6 +1213,7 @@ TEST(Product, NaN) {
 }
 
 TEST(AnyAll, NaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     const int num = 10000;
     array A       = (randu(num) > 0.5).as(f32);
     array B       = A;
@@ -2263,6 +2271,7 @@ TYPED_TEST(Reduce, Test_Any_Global_Array) {
 
 
 TEST(Reduce, Test_Sum_Global_Array_nanval) {
+    SKIP_IF_FAST_MATH_ENABLED();
     const int num = 100000;
     array a = af::randn(num, 2, 34, 4);
     a(1, 0, 0, 0) = NAN;

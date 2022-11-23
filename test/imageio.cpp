@@ -289,7 +289,7 @@ TEST(ImageIO, SaveImage16CPP) {
     dim4 dims(16, 24, 3);
 
     array input     = randu(dims, u16);
-    array input_255 = (input / 257).as(u16);
+    array input_255 = floor(input.as(f32) / 257);
 
     std::string testname  = getTestName() + "_" + getBackendName();
     std::string imagename = "saveImage16CPP_" + testname + ".png";
@@ -297,9 +297,9 @@ TEST(ImageIO, SaveImage16CPP) {
     saveImage(imagename.c_str(), input);
 
     array img = loadImage(imagename.c_str(), true);
-    ASSERT_EQ(img.type(), f32);  // loadImage should always return float
 
-    ASSERT_FALSE(anyTrue<bool>(abs(img - input_255)));
+    ASSERT_EQ(img.type(), f32);  // loadImage should always return float
+    ASSERT_IMAGES_NEAR(input_255, img, 0.001);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

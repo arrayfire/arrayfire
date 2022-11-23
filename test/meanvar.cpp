@@ -131,7 +131,7 @@ class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T>> {
             ASSERT_VEC_ARRAY_NEAR(test.variance_, outDim, var, 0.5f);
         } else if (is_same_type<float, outType<T>>::value ||
                    is_same_type<cfloat, outType<T>>::value) {
-            ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 0.001f);
+            ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 0.0016f);
             ASSERT_VEC_ARRAY_NEAR(test.variance_, outDim, var, 0.2f);
         } else {
             ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 0.00001f);
@@ -171,7 +171,7 @@ class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T>> {
             ASSERT_VEC_ARRAY_NEAR(test.variance_, outDim, var, 0.5f);
         } else if (is_same_type<float, outType<T>>::value ||
                    is_same_type<cfloat, outType<T>>::value) {
-            ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 0.001f);
+            ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 0.0016f);
             ASSERT_VEC_ARRAY_NEAR(test.variance_, outDim, var, 0.2f);
         } else {
             ASSERT_VEC_ARRAY_NEAR(test.mean_, outDim, mean, 0.00001f);

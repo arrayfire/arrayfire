@@ -92,6 +92,7 @@ option(AF_WITH_STATIC_MKL "Link against static Intel MKL libraries" OFF)
 option(AF_WITH_STATIC_CUDA_NUMERIC_LIBS "Link libafcuda with static numeric libraries(cublas, cufft, etc.)" OFF)
 option(AF_WITH_SPDLOG_HEADER_ONLY "Build ArrayFire with header only version of spdlog" OFF)
 option(AF_WITH_FMT_HEADER_ONLY "Build ArrayFire with header only version of fmt" OFF)
+option(AF_WITH_FAST_MATH "Use lower precision but high performance numeric optimizations" OFF)
 
 if(AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   option(AF_WITH_PRUNE_STATIC_CUDA_NUMERIC_LIBS "Prune CUDA static libraries to reduce binary size.(WARNING: May break some libs on older CUDA toolkits for some compute arch)" OFF)
@@ -317,15 +318,15 @@ if(CMAKE_CROSSCOMPILING)
                        "directory and build the bin2cpp target.")
   endif()
 else()
-  add_executable(bin2cpp ${ArrayFire_SOURCE_DIR}/CMakeModules/bin2cpp.cpp
-                         ${ArrayFire_SOURCE_DIR}/src/backend/common/util.cpp)
+  add_executable(bin2cpp CMakeModules/bin2cpp.cpp
+                         src/backend/common/deterministicHash.cpp
+                         src/backend/common/deterministicHash.hpp
+                         src/backend/common/Source.hpp)
   set_target_properties(bin2cpp
     PROPERTIES
       CXX_STANDARD 17)
   target_link_libraries(bin2cpp PRIVATE nonstd::span-lite)
 
-  # NOSPDLOG is used to remove the spdlog dependency from bin2cpp
-  target_compile_definitions(bin2cpp PRIVATE NOSPDLOG)
   if(WIN32)
     target_compile_definitions(bin2cpp PRIVATE OS_WIN)
   elseif(APPLE)
@@ -469,7 +470,7 @@ install(DIRECTORY "${ArrayFire_SOURCE_DIR}/LICENSES/"
     DESTINATION LICENSES
     COMPONENT licenses)
 
-foreach(backend CPU CUDA OpenCL Unified)
+foreach(backend CPU CUDA OpenCL oneAPI Unified)
   string(TOUPPER ${backend} upper_backend)
   string(TOLOWER ${backend} lower_backend)
   if(AF_BUILD_${upper_backend})

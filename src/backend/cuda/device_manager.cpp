@@ -46,6 +46,8 @@
 #include <thread>
 #include <utility>
 
+using common::getEnvVar;
+using common::int_version_to_string;
 using std::begin;
 using std::end;
 using std::find;

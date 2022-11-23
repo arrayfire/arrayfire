@@ -14,6 +14,7 @@
 #include <Kernel.hpp>
 #include <Module.hpp>
 #include <backend.hpp>
+#include <common/Source.hpp>
 #include <common/TemplateTypename.hpp>
 #include <common/util.hpp>
 

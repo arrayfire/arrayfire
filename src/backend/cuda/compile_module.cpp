@@ -12,6 +12,7 @@
 
 #include <Module.hpp>
 #include <common/Logger.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/internal_enums.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>

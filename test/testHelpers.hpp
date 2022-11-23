@@ -223,9 +223,18 @@ bool noDoubleTests(af::dtype ty);
 
 bool noHalfTests(af::dtype ty);
 
-#define SUPPORTED_TYPE_CHECK(type)                                        \
-    if (noDoubleTests((af_dtype)af::dtype_traits<type>::af_type)) return; \
-    if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type)) return;
+#define SUPPORTED_TYPE_CHECK(type)                                \
+    if (noDoubleTests((af_dtype)af::dtype_traits<type>::af_type)) \
+        GTEST_SKIP() << "Device doesn't support Doubles";         \
+    if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type))   \
+        GTEST_SKIP() << "Device doesn't support Half";
+
+#ifdef AF_WITH_FAST_MATH
+#define SKIP_IF_FAST_MATH_ENABLED() \
+    GTEST_SKIP() << "ArrayFire compiled with AF_WITH_FAST_MATH"
+#else
+#define SKIP_IF_FAST_MATH_ENABLED()
+#endif
 
 bool noImageIOTests();
 

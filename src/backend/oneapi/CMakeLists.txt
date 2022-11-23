@@ -266,6 +266,19 @@ target_link_libraries(afoneapi
     -fsycl
   )
 
+af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
+
+install(TARGETS afoneapi
+  EXPORT ArrayFireoneAPITargets
+  COMPONENT oneapi
+  PUBLIC_HEADER DESTINATION af
+  RUNTIME DESTINATION ${AF_INSTALL_BIN_DIR}
+  LIBRARY DESTINATION ${AF_INSTALL_LIB_DIR}
+  ARCHIVE DESTINATION ${AF_INSTALL_LIB_DIR}
+  FRAMEWORK DESTINATION framework
+  INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
+)
+
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)

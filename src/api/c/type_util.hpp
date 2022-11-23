@@ -10,8 +10,6 @@
 #pragma once
 #include <af/defines.h>
 
-const char *getName(af_dtype type);
-
 // uchar to number converters
 template<typename T>
 struct ToNum {

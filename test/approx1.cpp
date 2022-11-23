@@ -777,6 +777,9 @@ TEST(Approx1, CPPUniformInvalidStepSize) {
 // specified by the user, ArrayFire will assume a regular grid with a
 // starting index of 0 and a step value of 1.
 TEST(Approx1, CPPInfCheck) {
+#ifdef __INTEL_LLVM_COMPILER
+    SKIP_IF_FAST_MATH_ENABLED();
+#endif
     array sampled(seq(0.0, 5.0, 0.5));
     sampled(0) = af::Inf;
     seq xo(0.0, 2.0, 0.25);
@@ -799,6 +802,9 @@ TEST(Approx1, CPPInfCheck) {
 }
 
 TEST(Approx1, CPPUniformInfCheck) {
+#ifdef __INTEL_LLVM_COMPILER
+    SKIP_IF_FAST_MATH_ENABLED();
+#endif
     array sampled(seq(10.0, 50.0, 10.0));
     sampled(0) = af::Inf;
     seq xo(0.0, 8.0, 2.0);
