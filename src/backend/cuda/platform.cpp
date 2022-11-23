@@ -17,6 +17,7 @@
 #endif
 
 #include <GraphicsResourceManager.hpp>
+#include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
@@ -35,7 +36,6 @@
 #include <memory.hpp>
 #include <spdlog/spdlog.h>
 #include <utility.hpp>
-#include <version.hpp>
 #include <af/cuda.h>
 #include <af/device.h>
 #include <af/version.h>

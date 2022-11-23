@@ -78,7 +78,6 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/unique_handle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.hpp
-    ${ArrayFire_BINARY_DIR}/version.hpp
   )
 
 if(WIN32)
@@ -115,7 +114,7 @@ endif()
 target_include_directories(afcommon_interface
   INTERFACE
     ${ArrayFire_SOURCE_DIR}/src/backend
-    ${ArrayFire_BINARY_DIR})
+    ${ArrayFire_BINARY_DIR}/src/backend)
 
 target_include_directories(afcommon_interface
   SYSTEM INTERFACE
