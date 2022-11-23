@@ -44,7 +44,7 @@ if(OpenCL_FOUND)
   )
 
   target_include_directories(af
-    PRIVATE
+    SYSTEM PRIVATE
       $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>)
 
 endif()
@@ -55,7 +55,7 @@ if(CUDA_FOUND)
       ${CMAKE_CURRENT_SOURCE_DIR}/cuda.cpp)
 
   target_include_directories(af
-    PRIVATE
+    SYSTEM PRIVATE
       ${CUDA_INCLUDE_DIRS})
 endif()
 
@@ -97,7 +97,6 @@ target_include_directories(af
 
 target_include_directories(af
   SYSTEM PRIVATE
-    ${ArrayFire_SOURCE_DIR}/src/api/unified
     $<TARGET_PROPERTY:afcommon_interface,INTERFACE_INCLUDE_DIRECTORIES>
     ${CMAKE_BINARY_DIR}
   )
