@@ -28,8 +28,9 @@ void af_get_last_error(char **str, dim_t *len) {
             return;
         }
 
-        af_alloc_host(reinterpret_cast<void **>(str),
-                      sizeof(char) * (slen + 1));
+        void *in = nullptr;
+        af_alloc_host(&in, sizeof(char) * (slen + 1));
+        memcpy(str, &in, sizeof(void *));
         global_error_string.copy(*str, slen);
 
         (*str)[slen]        = '\0';
@@ -39,7 +40,9 @@ void af_get_last_error(char **str, dim_t *len) {
     } else {
         // If false, the error is coming from active backend.
         typedef void (*af_func)(char **, dim_t *);
-        auto func = reinterpret_cast<af_func>(LOAD_SYMBOL());
+        void *vfn    = LOAD_SYMBOL();
+        af_func func = nullptr;
+        memcpy(&func, vfn, sizeof(void *));
         func(str, len);
     }
 }
