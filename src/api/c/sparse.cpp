@@ -31,7 +31,7 @@ using detail::sparseConvertDenseToStorage;
 const SparseArrayBase &getSparseArrayBase(const af_array in,
                                           bool device_check) {
     const SparseArrayBase *base =
-        static_cast<SparseArrayBase *>(reinterpret_cast<void *>(in));
+        static_cast<SparseArrayBase *>(static_cast<void *>(in));
 
     if (!base->isSparse()) {
         AF_ERROR(
