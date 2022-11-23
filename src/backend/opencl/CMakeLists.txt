@@ -482,8 +482,9 @@ if(LAPACK_FOUND OR BUILD_WITH_MKL)
     endif()
 
     target_include_directories(afopencl
-      PRIVATE
+      SYSTEM PRIVATE
         ${CBLAS_INCLUDE_DIR})
+
     target_link_libraries(afopencl
       PRIVATE
         ${CBLAS_LIBRARIES}

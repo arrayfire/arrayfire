@@ -294,9 +294,11 @@ target_include_directories(afcpu
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${${threads_prefix}_SOURCE_DIR}/include
-    ${CBLAS_INCLUDE_DIR}
-  )
+    ${${threads_prefix}_SOURCE_DIR}/include)
+
+target_include_directories(afcpu
+  SYSTEM PRIVATE
+    ${CBLAS_INCLUDE_DIR})
 
 target_compile_definitions(afcpu
   PRIVATE

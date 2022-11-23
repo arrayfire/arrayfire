@@ -23,45 +23,45 @@ foreach(SBK_TYPE ${SBK_TYPES})
                         ${cl_kernel_targets} OpenCL::cl2hpp Boost::boost)
 
     target_include_directories(opencl_sort_by_key_${SBK_TYPE}
-      PRIVATE
-        .
-        ..
-        magma
-        ../../api/c
-        ../common
-        ../../../include
-        ${span-lite_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_BINARY_DIR})
-
-    target_include_directories(opencl_sort_by_key_${SBK_TYPE}
       SYSTEM PRIVATE
+        ${span-lite_SOURCE_DIR}/include
         $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:OpenCL::cl2hpp,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:af_spdlog,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:af_spdlog,INTERFACE_INCLUDE_DIRECTORIES>)
+
+    target_include_directories(opencl_sort_by_key_${SBK_TYPE}
+      PRIVATE
+        .
+        ..
+        ../../api/c
+        ../common
+        ../../../include
+        magma
         ${ArrayFire_BINARY_DIR}/include
-      )
+        ${CMAKE_CURRENT_BINARY_DIR})
+
     if(TARGET Forge::forge)
       target_include_directories(opencl_sort_by_key_${SBK_TYPE}
         SYSTEM INTERFACE
-        $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>
+          $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>
       )
     else()
       target_include_directories(opencl_sort_by_key_${SBK_TYPE}
         SYSTEM INTERFACE
-        ${${forge_prefix}_SOURCE_DIR}/include
-        ${${forge_prefix}_BINARY_DIR}/include
+          ${${forge_prefix}_SOURCE_DIR}/include
+          ${${forge_prefix}_BINARY_DIR}/include
       )
     endif()
     if(TARGET glad::glad)
       target_include_directories(opencl_sort_by_key_${SBK_TYPE}
         SYSTEM INTERFACE
-        $<TARGET_PROPERTY:glad::glad,INTERFACE_INCLUDE_DIRECTORIES>
+          $<TARGET_PROPERTY:glad::glad,INTERFACE_INCLUDE_DIRECTORIES>
       )
     else()
       target_include_directories(opencl_sort_by_key_${SBK_TYPE}
         SYSTEM INTERFACE
-        $<TARGET_PROPERTY:af_glad,INTERFACE_INCLUDE_DIRECTORIES>
+          $<TARGET_PROPERTY:af_glad,INTERFACE_INCLUDE_DIRECTORIES>
       )
     endif()
 

@@ -245,7 +245,7 @@ else()
   )
   add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
-  target_include_directories(af_spdlog INTERFACE "${${spdlog_prefix}_SOURCE_DIR}/include")
+  target_include_directories(af_spdlog SYSTEM INTERFACE "${${spdlog_prefix}_SOURCE_DIR}/include")
   if(TARGET fmt::fmt)
     set_target_properties(af_spdlog
       PROPERTIES
@@ -278,6 +278,11 @@ if(NOT TARGET nonstd::span-lite)
     REF "ccf2351"
     )
   add_subdirectory(${span-lite_SOURCE_DIR} EXCLUDE_FROM_ALL)
+  get_property(span_include_dir
+    TARGET span-lite
+    PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  set_target_properties(span-lite
+    PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${span_include_dir}")
 endif()
 
 af_dep_check_and_populate(${assets_prefix}

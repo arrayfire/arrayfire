@@ -36,22 +36,25 @@ foreach(SBK_BINARY_OP ${SBK_BINARY_OPS})
         ../common
         ../../../include
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${ArrayFire_BINARY_DIR}/include)
+    target_include_directories(opencl_scan_by_key_${SBK_BINARY_OP}
+      SYSTEM PRIVATE
         $<TARGET_PROPERTY:af_spdlog,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:OpenCL::cl2hpp,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>
-        ${ArrayFire_BINARY_DIR}/include
+        $<TARGET_PROPERTY:nonstd::span-lite,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
       )
     if(TARGET Forge::forge)
       target_include_directories(opencl_scan_by_key_${SBK_BINARY_OP}
         SYSTEM INTERFACE
-        $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>
+          $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>
       )
     else()
       target_include_directories(opencl_scan_by_key_${SBK_BINARY_OP}
         SYSTEM INTERFACE
-        ${${forge_prefix}_SOURCE_DIR}/include
-        ${${forge_prefix}_BINARY_DIR}/include
+          ${${forge_prefix}_SOURCE_DIR}/include
+          ${${forge_prefix}_BINARY_DIR}/include
       )
     endif()
     if(TARGET glad::glad)

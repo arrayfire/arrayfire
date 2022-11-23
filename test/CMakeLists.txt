@@ -107,7 +107,10 @@ target_include_directories(arrayfire_test
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
     ${ArrayFire_SOURCE_DIR}/include
-    ${ArrayFire_BINARY_DIR}/include
+    ${ArrayFire_BINARY_DIR}/include)
+
+target_include_directories(arrayfire_test
+  SYSTEM PRIVATE
     ${ArrayFire_SOURCE_DIR}/extern/half/include
   )
 
@@ -166,9 +169,10 @@ function(make_test)
     add_executable(${target} ${mt_args_SRC})
     target_include_directories(${target}
       PRIVATE
-        ${ArrayFire_SOURCE_DIR}/extern/half/include
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
+      SYSTEM PRIVATE
+        ${ArrayFire_SOURCE_DIR}/extern/half/include
       )
     target_link_libraries(${target}
       PRIVATE
@@ -348,9 +352,11 @@ if(CUDA_FOUND)
       endif()
       cuda_add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
       target_include_directories(${target} PRIVATE
-        ${ArrayFire_SOURCE_DIR}/extern/half/include
         ${CMAKE_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        ${CMAKE_CURRENT_SOURCE_DIR}
+      )
+      target_include_directories(${target} SYSTEM PRIVATE
+        ${ArrayFire_SOURCE_DIR}/extern/half/include)
       if(${backend} STREQUAL "unified")
         target_link_libraries(${target}
           ArrayFire::af)
