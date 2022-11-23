@@ -13,6 +13,7 @@
 
 #include <GraphicsResourceManager.hpp>
 #include <blas.hpp>
+#include <build_version.hpp>
 #include <clfft.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
@@ -22,7 +23,6 @@
 #include <device_manager.hpp>
 #include <err_opencl.hpp>
 #include <errorcodes.hpp>
-#include <version.hpp>
 #include <af/opencl.h>
 #include <af/version.h>
 #include <memory>

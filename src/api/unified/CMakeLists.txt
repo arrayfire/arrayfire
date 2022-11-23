@@ -78,7 +78,6 @@ target_include_directories(af
   PRIVATE
     ${ArrayFire_SOURCE_DIR}/src/api/c
     ${ArrayFire_SOURCE_DIR}/src/api/unified
-    ${ArrayFire_BINARY_DIR}
     $<TARGET_PROPERTY:afcommon_interface,INTERFACE_INCLUDE_DIRECTORIES>
     $<$<BOOL:${OpenCL_FOUND}>: $<TARGET_PROPERTY:OpenCL::OpenCL,INTERFACE_INCLUDE_DIRECTORIES>>
     $<$<BOOL:${CUDA_FOUND}>:  ${CUDA_INCLUDE_DIRS}>

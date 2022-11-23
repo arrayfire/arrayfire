@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <version.hpp>
+#include <build_version.hpp>
 #include <af/util.h>
 
 af_err af_get_version(int *major, int *minor, int *patch) {
