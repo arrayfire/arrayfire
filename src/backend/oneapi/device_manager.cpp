@@ -19,8 +19,8 @@
 #include <err_oneapi.hpp>
 #include <platform.hpp>  //TODO: blas.hpp? y tho, also Array.hpp
 //#include <errorcodes.hpp>
+#include <build_version.hpp>
 #include <memory.hpp>
-#include <version.hpp>
 #include <af/oneapi.h>
 #include <af/version.h>
 

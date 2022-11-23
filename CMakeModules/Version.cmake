@@ -49,6 +49,6 @@ configure_file(
 )
 
 configure_file(
-    ${ArrayFire_SOURCE_DIR}/CMakeModules/version.hpp.in
-    ${ArrayFire_BINARY_DIR}/src/backend/version.hpp
+    ${ArrayFire_SOURCE_DIR}/CMakeModules/build_version.hpp.in
+    ${ArrayFire_BINARY_DIR}/src/backend/build_version.hpp
 )

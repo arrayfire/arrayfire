@@ -9,6 +9,7 @@
 
 #include <GraphicsResourceManager.hpp>
 #include <blas.hpp>
+#include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/graphics_common.hpp>
@@ -18,7 +19,6 @@
 #include <err_oneapi.hpp>
 #include <errorcodes.hpp>
 #include <memory.hpp>
-#include <version.hpp>
 #include <af/version.h>
 
 #ifdef OS_MAC
