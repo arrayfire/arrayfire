@@ -32,6 +32,12 @@
 
 namespace cuda {
 
+#ifdef AF_WITH_FAST_MATH
+constexpr bool fast_math = true;
+#else
+constexpr bool fast_math = false;
+#endif
+
 template<typename T>
 static inline __DH__ T abs(T val) {
     return ::abs(val);
@@ -138,29 +144,22 @@ __DH__ static To scalar(Ti real, Ti imag) {
 }
 
 #ifndef __CUDA_ARCH__
+
 template<typename T>
 inline T maxval() {
-    return std::numeric_limits<T>::max();
+    if constexpr (std::is_floating_point_v<T> && !fast_math) {
+        return std::numeric_limits<T>::infinity();
+    } else {
+        return std::numeric_limits<T>::max();
+    }
 }
 template<typename T>
 inline T minval() {
-    return std::numeric_limits<T>::min();
-}
-template<>
-inline float maxval() {
-    return std::numeric_limits<float>::infinity();
-}
-template<>
-inline double maxval() {
-    return std::numeric_limits<double>::infinity();
-}
-template<>
-inline float minval() {
-    return -std::numeric_limits<float>::infinity();
-}
-template<>
-inline double minval() {
-    return -std::numeric_limits<double>::infinity();
+    if constexpr (std::is_floating_point_v<T> && !fast_math) {
+        return -std::numeric_limits<T>::infinity();
+    } else {
+        return std::numeric_limits<T>::lowest();
+    }
 }
 #else
 template<typename T>
