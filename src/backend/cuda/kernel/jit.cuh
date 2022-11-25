@@ -59,8 +59,13 @@ typedef cuDoubleComplex cdouble;
 #define __rem(lhs, rhs) ((lhs) % (rhs))
 #define __mod(lhs, rhs) ((lhs) % (rhs))
 
+#ifdef AF_WITH_FAST_MATH
+#define __pow(lhs, rhs) \
+    static_cast<double>(pow(static_cast<double>(lhs), static_cast<double>(rhs)));
+#else
 #define __pow(lhs, rhs) \
     __float2int_rn(pow(__int2float_rn((int)lhs), __int2float_rn((int)rhs)))
+#endif
 #define __powll(lhs, rhs) \
     __double2ll_rn(pow(__ll2double_rn(lhs), __ll2double_rn(rhs)))
 #define __powul(lhs, rhs) \

@@ -106,40 +106,27 @@ static To scalar(Ti real, Ti imag) {
     return cval;
 }
 
+#ifdef AF_WITH_FAST_MATH
+constexpr bool fast_math = true;
+#else
+constexpr bool fast_math = false;
+#endif
+
 template<typename T>
 inline T maxval() {
-    return std::numeric_limits<T>::max();
+    if constexpr (std::is_floating_point_v<T> && !fast_math) {
+        return std::numeric_limits<T>::infinity();
+    } else {
+        return std::numeric_limits<T>::max();
+    }
 }
 template<typename T>
 inline T minval() {
-    return std::numeric_limits<T>::min();
-}
-template<>
-inline float maxval() {
-    return std::numeric_limits<float>::infinity();
-}
-template<>
-inline double maxval() {
-    return std::numeric_limits<double>::infinity();
-}
-
-template<>
-inline common::half maxval() {
-    return std::numeric_limits<common::half>::infinity();
-}
-
-template<>
-inline float minval() {
-    return -std::numeric_limits<float>::infinity();
-}
-
-template<>
-inline double minval() {
-    return -std::numeric_limits<double>::infinity();
-}
-template<>
-inline common::half minval() {
-    return -std::numeric_limits<common::half>::infinity();
+    if constexpr (std::is_floating_point_v<T> && !fast_math) {
+        return -std::numeric_limits<T>::infinity();
+    } else {
+        return std::numeric_limits<T>::lowest();
+    }
 }
 
 static inline double real(cdouble in) { return in.s[0]; }

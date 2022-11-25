@@ -126,6 +126,10 @@ Program buildProgram(span<const string> kernelSources,
         ostringstream options;
         for (auto &opt : compileOpts) { options << opt; }
 
+#ifdef AF_WITH_FAST_MATH
+        options << " -cl-fast-relaxed-math -DAF_WITH_FAST_MATH";
+#endif
+
         retVal.build({device}, (cl_std + defaults + options.str()).c_str());
     } catch (Error &err) {
         if (err.err() == CL_BUILD_PROGRAM_FAILURE) {

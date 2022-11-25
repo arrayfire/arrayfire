@@ -2296,6 +2296,7 @@ TEST(Reduce, Test_Sum_Global_Array_nanval) {
 }
 
 TEST(Reduce, nanval_issue_3255) {
+    SKIP_IF_FAST_MATH_ENABLED();
     char *info_str;
     af_array  ikeys, ivals, okeys, ovals;
     dim_t dims[1] = {8};

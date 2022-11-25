@@ -636,6 +636,7 @@ endif()
 
 target_compile_options(afcuda
   PRIVATE
+    $<$<BOOL:${AF_WITH_FAST_MATH}>:$<$<COMPILE_LANGUAGE:CUDA>:-use_fast_math>>
     $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
     $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --diag_suppress=unrecognized_gcc_pragma>
     $<$<COMPILE_LANGUAGE:CUDA>: $<$<CXX_COMPILER_ID:MSVC>:  -Xcompiler=/wd4251
