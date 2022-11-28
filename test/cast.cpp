@@ -95,6 +95,8 @@ void cast_test_complex_real() {
 
 #define COMPLEX_REAL_TESTS(Ti, To)                      \
     TEST(CAST_TEST, Test_Complex_To_Real_##Ti##_##To) { \
+        SUPPORTED_TYPE_CHECK(Ti);                       \
+        SUPPORTED_TYPE_CHECK(To);                       \
         cast_test_complex_real<Ti, To>();               \
     }
 
@@ -106,6 +108,7 @@ COMPLEX_REAL_TESTS(cdouble, double)
 TEST(CAST_TEST, Test_JIT_DuplicateCastNoop) {
     // Does a trivial cast - check JIT kernel trace to ensure a __noop is
     // generated since we don't have a way to test it directly
+    SUPPORTED_TYPE_CHECK(double);
     af_dtype ta = (af_dtype)dtype_traits<float>::af_type;
     af_dtype tb = (af_dtype)dtype_traits<double>::af_type;
     dim4 dims(num, 1, 1, 1);
@@ -129,6 +132,7 @@ TEST(CAST_TEST, Test_JIT_DuplicateCastNoop) {
 
 TEST(Cast, ImplicitCast) {
     using namespace af;
+    SUPPORTED_TYPE_CHECK(double);
     array a = randu(100, 100, f64);
     array b = a.as(f32);
 
@@ -138,6 +142,7 @@ TEST(Cast, ImplicitCast) {
 
 TEST(Cast, ConstantCast) {
     using namespace af;
+    SUPPORTED_TYPE_CHECK(double);
     array a = constant(1, 100, f64);
     array b = a.as(f32);
 
@@ -147,6 +152,7 @@ TEST(Cast, ConstantCast) {
 
 TEST(Cast, OpCast) {
     using namespace af;
+    SUPPORTED_TYPE_CHECK(double);
     array a = constant(1, 100, f64);
     a       = a + a;
     array b = a.as(f32);
@@ -156,6 +162,7 @@ TEST(Cast, OpCast) {
 }
 TEST(Cast, ImplicitCastIndexed) {
     using namespace af;
+    SUPPORTED_TYPE_CHECK(double);
     array a = randu(100, 100, f64);
     array b = a(span, 1).as(f32);
     array c = max(abs(a(span, 1) - b));
@@ -164,6 +171,7 @@ TEST(Cast, ImplicitCastIndexed) {
 
 TEST(Cast, ImplicitCastIndexedNonLinear) {
     using namespace af;
+    SUPPORTED_TYPE_CHECK(double);
     array a = randu(100, 100, f64);
     array b = a(seq(10, 20, 2), 1).as(f32);
     array c = max(abs(a(seq(10, 20, 2), 1) - b));
@@ -172,6 +180,7 @@ TEST(Cast, ImplicitCastIndexedNonLinear) {
 
 TEST(Cast, ImplicitCastIndexedNonLinearArray) {
     using namespace af;
+    SUPPORTED_TYPE_CHECK(double);
     array a   = randu(100, 100, f64);
     array idx = seq(10, 20, 2);
     array b   = a(idx, 1).as(f32);
@@ -181,6 +190,7 @@ TEST(Cast, ImplicitCastIndexedNonLinearArray) {
 
 TEST(Cast, ImplicitCastIndexedAndScoped) {
     using namespace af;
+    SUPPORTED_TYPE_CHECK(double);
     array c;
     {
         array a = randu(100, 100, f64);

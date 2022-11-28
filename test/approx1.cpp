@@ -962,6 +962,7 @@ template<typename T>
 class Approx1V2Simple : public Approx1V2<T> {
    protected:
     void SetUp() {
+        SUPPORTED_TYPE_CHECK(T);
         SimpleTestData data;
         this->setTestData(&data.h_gold.front(), data.gold_dims,
                           &data.h_in.front(), data.in_dims, &data.h_pos.front(),

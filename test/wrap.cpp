@@ -360,6 +360,7 @@ template<typename T>
 class WrapV2Simple : public WrapV2<T> {
    protected:
     void SetUp() {
+        SUPPORTED_TYPE_CHECK(T);
         this->releaseArrays();
         this->in_   = 0;
         this->gold_ = 0;
