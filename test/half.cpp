@@ -63,6 +63,10 @@ INSTANTIATE_TEST_SUITE_P(FromF16, HalfConvert,
 TEST_P(HalfConvert, convert) {
     SUPPORTED_TYPE_CHECK(af_half);
     convert_params params = GetParam();
+    if (noDoubleTests(params.to))
+        GTEST_SKIP() << "Double not supported on this device";
+    if (noDoubleTests(params.from))
+        GTEST_SKIP() << "Double not supported on this device";
 
     array from = af::constant(params.value, 3, 3, params.from);
     array to   = from.as(params.to);

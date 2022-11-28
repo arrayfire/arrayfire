@@ -149,7 +149,7 @@ void topkTest(const int ndims, const dim_t* dims, const unsigned k,
             case f32:
                 EXPECT_FLOAT_EQ(outData[i], hovals[i]) << "at: " << i;
                 break;
-            default: EXPECT_EQ(outData[i], hovals[i]); break;
+            default: EXPECT_EQ(outData[i], hovals[i]) << "at: " << i; break;
         }
         ASSERT_EQ(outIdxs[i], hoidxs[i]) << "at: " << i;
     }

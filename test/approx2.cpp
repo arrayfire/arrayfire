@@ -45,6 +45,7 @@ template<typename T>
 class Approx2 : public ::testing::Test {
    public:
     virtual void SetUp() {
+        SUPPORTED_TYPE_CHECK(T);
         subMat0.push_back(af_make_seq(0, 4, 1));
         subMat0.push_back(af_make_seq(2, 6, 1));
         subMat0.push_back(af_make_seq(0, 2, 1));
@@ -903,6 +904,7 @@ template<typename T>
 class Approx2V2Simple : public Approx2V2<T> {
    protected:
     void SetUp() {
+        SUPPORTED_TYPE_CHECK(T);
         SimpleTestData data;
         this->setTestData(&data.h_gold.front(), data.gold_dims,
                           &data.h_in.front(), data.in_dims,
