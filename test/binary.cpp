@@ -360,20 +360,27 @@ TEST(BinaryTests, ISSUE_1762) {
 }
 
 template<typename T>
-class PowPrecisionTest : public ::testing::TestWithParam<T> {};
+class PowPrecisionTest : public ::testing::TestWithParam<T> {
+    void SetUp() { SUPPORTED_TYPE_CHECK(T); }
+};
 
-#define DEF_TEST(Sx, T)                                      \
-    using PowPrecisionTest##Sx = PowPrecisionTest<T>;        \
-    TEST_P(PowPrecisionTest##Sx, Issue2304) {                \
-        T param     = GetParam();                            \
-        auto dtype  = (af_dtype)dtype_traits<T>::af_type;    \
-        af::array A = af::constant(param, 1, dtype);         \
-        af::array B = af::pow(A, 2);                         \
-        vector<T> hres(1, 0);                                \
-        B.host(&hres[0]);                                    \
-        std::fesetround(FE_TONEAREST);                       \
-        T gold = (T)std::rint(std::pow((double)param, 2.0)); \
-        ASSERT_EQ(hres[0], gold);                            \
+#define DEF_TEST(Sx, T)                                                    \
+    using PowPrecisionTest##Sx = PowPrecisionTest<T>;                      \
+    TEST_P(PowPrecisionTest##Sx, Issue2304) {                              \
+        T param    = GetParam();                                           \
+        auto dtype = (af_dtype)dtype_traits<T>::af_type;                   \
+        if (noDoubleTests(dtype)) {                                        \
+            if (std::abs((double)param) > 10000)                           \
+                GTEST_SKIP()                                               \
+                    << "Skip larger values because double not supported."; \
+        }                                                                  \
+        af::array A = af::constant(param, 1, dtype);                       \
+        af::array B = af::pow(A, 2);                                       \
+        vector<T> hres(1, 0);                                              \
+        B.host(&hres[0]);                                                  \
+        std::fesetround(FE_TONEAREST);                                     \
+        T gold = (T)std::rint(std::pow((double)param, 2.0));               \
+        ASSERT_EQ(hres[0], gold);                                          \
     }
 
 DEF_TEST(ULong, unsigned long long)
@@ -429,15 +436,17 @@ class ResultType : public testing::TestWithParam<result_type_param> {
     af::array lhs;
     af::array rhs;
     af_dtype gold;
-    bool skip;
 
     void SetUp() {
         result_type_param params = GetParam();
         gold                     = params.result_;
-        skip                     = false;
         if (noHalfTests(params.result_) || noHalfTests(params.lhs_) ||
             noHalfTests(params.rhs_)) {
-            skip = true;
+            GTEST_SKIP() << "Half not supported on this device";
+            return;
+        } else if (noDoubleTests(params.result_) ||
+                   noDoubleTests(params.lhs_) || noDoubleTests(params.rhs_)) {
+            GTEST_SKIP() << "Double not supported on this device";
             return;
         }
         lhs = af::array(10, params.lhs_);
@@ -513,19 +522,15 @@ INSTANTIATE_TEST_SUITE_P(
 
 // clang-format off
 TEST_P(ResultType, Addition)       {
-    if (skip) return;
     ASSERT_EQ(gold, (lhs + rhs).type());
 }
 TEST_P(ResultType, Subtraction)    {
-    if (skip) return;
     ASSERT_EQ(gold, (lhs - rhs).type());
 }
 TEST_P(ResultType, Multiplication) {
-    if (skip) return;
     ASSERT_EQ(gold, (lhs * rhs).type());
 }
 TEST_P(ResultType, Division)       {
-    if (skip) return;
     ASSERT_EQ(gold, (lhs / rhs).type());
 }
 // clang-format on

@@ -260,8 +260,16 @@ template<typename T>
     switch (arrDtype) {
         case u8: return imageEq<unsigned char>(aName, bName, a, b, maxAbsDiff);
         case b8: return imageEq<char>(aName, bName, a, b, maxAbsDiff);
+        case s32: return imageEq<int>(aName, bName, a, b, maxAbsDiff);
+        case u32: return imageEq<unsigned int>(aName, bName, a, b, maxAbsDiff);
         case f32: return imageEq<float>(aName, bName, a, b, maxAbsDiff);
         case f64: return imageEq<double>(aName, bName, a, b, maxAbsDiff);
+        case s16: return imageEq<short>(aName, bName, a, b, maxAbsDiff);
+        case u16:
+            return imageEq<unsigned short>(aName, bName, a, b, maxAbsDiff);
+        case u64:
+            return imageEq<unsigned long long>(aName, bName, a, b, maxAbsDiff);
+        case s64: return imageEq<long long>(aName, bName, a, b, maxAbsDiff);
         default: throw(AF_ERR_NOT_SUPPORTED);
     }
     return ::testing::AssertionSuccess();

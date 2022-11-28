@@ -816,6 +816,7 @@ TEST_P(FFT2D, Real32ToComplexInputsPreserved) {
 }
 
 TEST_P(FFT2D, Real64ToComplexInputsPreserved) {
+    SUPPORTED_TYPE_CHECK(double);
     fft_params params = GetParam();
     af::array a       = af::randu(params.input_dims_, f64);
     af::array a_copy  = a.copy();
@@ -834,6 +835,7 @@ TEST_P(FFTC2R, Complex32ToRInputsPreserved) {
 }
 
 TEST_P(FFTC2R, Complex64ToRInputsPreserved) {
+    SUPPORTED_TYPE_CHECK(double);
     fft_params params = GetParam();
     af::array a       = af::randu(params.input_dims_, c64);
     af::array a_copy  = a.copy();
@@ -852,6 +854,7 @@ TEST_P(FFTND, Real32ToComplexInputsPreserved) {
 }
 
 TEST_P(FFTND, Real64ToComplexInputsPreserved) {
+    SUPPORTED_TYPE_CHECK(double);
     fft_params params = GetParam();
     af::array a       = af::randu(params.input_dims_, f64);
     af::array a_copy  = a.copy();
