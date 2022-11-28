@@ -251,7 +251,7 @@ void cannyImageOtsuBatchTest(string pTestFile, const dim_t targetBatchCount) {
             canny(inputIm, AF_CANNY_THRESHOLD_AUTO_OTSU, 0.08, 0.32, 3, false);
         outIm *= 255.0;
 
-        ASSERT_IMAGES_NEAR(outIm.as(u8), goldIm, 1.0e-3);
+        ASSERT_IMAGES_NEAR(goldIm, outIm.as(u8), 1.0e-3);
     }
 }
 
