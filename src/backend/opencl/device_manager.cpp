@@ -49,6 +49,8 @@ using std::begin;
 using std::end;
 using std::find;
 using std::make_unique;
+using std::ostringstream;
+using std::sort;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
@@ -98,13 +100,6 @@ static inline bool compare_default(const unique_ptr<Device>& ldev,
         if (is_l_curr_type && !is_r_curr_type) { return true; }
         if (!is_l_curr_type && is_r_curr_type) { return false; }
     }
-
-    // For GPUs, this ensures discrete > integrated
-    auto is_l_integrated = ldev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-    auto is_r_integrated = rdev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-
-    if (!is_l_integrated && is_r_integrated) { return true; }
-    if (is_l_integrated && !is_r_integrated) { return false; }
 
     // At this point, the devices are of same type.
     // Sort based on emperical evidence of preferred platforms
@@ -263,6 +258,24 @@ DeviceManager::DeviceManager()
             mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
             mPlatforms.push_back(getPlatformEnum(*devices[i]));
             mDevices.emplace_back(std::move(devices[i]));
+
+            auto device_versions =
+                mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
+            sort(begin(device_versions), end(device_versions),
+                 [](const auto& lhs, const auto& rhs) {
+                     return lhs.version < rhs.version;
+                 });
+            cl_name_version max_version = device_versions.back();
+            ostringstream options;
+            options << fmt::format(" -cl-std=CL{}.{}",
+                                   CL_VERSION_MAJOR(max_version.version),
+                                   CL_VERSION_MINOR(max_version.version))
+                    << fmt::format(" -D dim_t={}",
+                                   dtype_traits<dim_t>::getName());
+#ifdef AF_WITH_FAST_MATH
+            options << " -cl-fast-relaxed-math";
+#endif
+            mBaseBuildFlags.push_back(options.str());
         } catch (const cl::Error& err) {
             AF_TRACE("Error creating context for device {} with error {}\n",
                      devices[i]->getInfo<CL_DEVICE_NAME>(), err.what());

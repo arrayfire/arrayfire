@@ -67,6 +67,8 @@ cl::CommandQueue& getQueue();
 
 const cl::Device& getDevice(int id = -1);
 
+const std::string& getActiveDeviceBaseBuildFlags();
+
 size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
@@ -107,10 +109,6 @@ inline unsigned getMaxParallelThreads(const cl::Device& device) {
 }
 
 cl_device_type getDeviceType();
-
-inline bool isHostUnifiedMemory(const cl::Device& device) {
-    return device.getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-}
 
 bool OpenCLCPUOffload(bool forceOffloadOSX = true);
 
