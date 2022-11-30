@@ -174,8 +174,6 @@ string getDeviceInfo() noexcept {
                             0
                         ? "True"
                         : "False");
-            info << " -- Unified Memory ("
-                 << (isHostUnifiedMemory(*device) ? "True" : "False") << ")";
 #endif
             info << endl;
 
@@ -297,6 +295,14 @@ const cl::Device& getDevice(int id) {
     return *(devMngr.mDevices[id]);
 }
 
+const std::string& getActiveDeviceBaseBuildFlags() {
+    device_id_t& devId     = tlocalActiveDeviceId();
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+    return devMngr.mBaseBuildFlags[get<1>(devId)];
+}
+
 size_t getDeviceMemorySize(int device) {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
@@ -321,7 +327,7 @@ cl_device_type getDeviceType() {
 bool OpenCLCPUOffload(bool forceOffloadOSX) {
     static const bool offloadEnv = getEnvVar("AF_OPENCL_CPU_OFFLOAD") != "0";
     bool offload                 = false;
-    if (offloadEnv) { offload = isHostUnifiedMemory(getDevice()); }
+    if (offloadEnv) { offload = getDeviceType() == CL_DEVICE_TYPE_CPU; }
 #if OS_MAC
     // FORCED OFFLOAD FOR LAPACK FUNCTIONS ON OSX UNIFIED MEMORY DEVICES
     //
@@ -331,11 +337,9 @@ bool OpenCLCPUOffload(bool forceOffloadOSX) {
     // variable inconsequential to the returned result.
     //
     // Issue https://github.com/arrayfire/arrayfire/issues/662
-    //
-    // Make sure device has unified memory
-    bool osx_offload = isHostUnifiedMemory(getDevice());
     // Force condition
-    offload = osx_offload && (offload || forceOffloadOSX);
+    bool osx_offload = getDeviceType() == CL_DEVICE_TYPE_CPU;
+    offload          = osx_offload && (offload || forceOffloadOSX);
 #else
     UNUSED(forceOffloadOSX);
 #endif
@@ -474,6 +478,23 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
         devMngr.mContexts.push_back(move(tContext));
         devMngr.mQueues.push_back(move(tQueue));
         nDevices = static_cast<int>(devMngr.mDevices.size()) - 1;
+
+        auto device_versions =
+            devMngr.mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
+        sort(begin(device_versions), end(device_versions),
+             [](const auto& lhs, const auto& rhs) {
+                 return lhs.version < rhs.version;
+             });
+        cl_name_version max_version = device_versions.back();
+        ostringstream options;
+        options << fmt::format(" -cl-std=CL{}.{}",
+                               CL_VERSION_MAJOR(max_version.version),
+                               CL_VERSION_MINOR(max_version.version))
+                << fmt::format(" -D dim_t={}", dtype_traits<dim_t>::getName());
+#ifdef AF_WITH_FAST_MATH
+        options << " -cl-fast-relaxed-math";
+#endif
+        devMngr.mBaseBuildFlags.push_back(options.str());
 
         // cache the boost program_cache object, clean up done on program exit
         // not during removeDeviceContext
