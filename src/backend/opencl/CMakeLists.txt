@@ -18,7 +18,112 @@ generate_product_version(af_opencl_ver_res_file
   FILE_DESCRIPTION "OpenCL Backend Dynamic-link library"
 )
 
-file(GLOB kernel_src kernel/*.cl kernel/KParam.hpp)
+set(kernel_src
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/KParam.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/anisotropic_diffusion.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/approx1.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/approx2.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/assign.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/bilateral.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/convolve_separable.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/coo2dense.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/copy.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/cscmm.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/cscmv.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/csr2coo.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/csr2dense.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/csrmm.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/csrmv.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/dense2csr.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/diag_create.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/diag_extract.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/diff.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/example.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/fast.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/fftconvolve_multiply.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/fftconvolve_pack.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/fftconvolve_reorder.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/flood_fill.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/gradient.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/harris.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/histogram.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/homography.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/hsv_rgb.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/identity.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/iir.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/index.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/interp.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/iops.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/iota.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/ireduce_dim.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/ireduce_first.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/jit.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/laset_band.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/laset.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/laswp.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/lookup.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/lu_split.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/matchTemplate.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/mean_dim.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/mean_first.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/mean_ops.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/meanshift.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/medfilt1.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/medfilt2.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/memcopy.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/moments.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/morph.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/nearest_neighbour.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/nonmax_suppression.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/ops.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/orb.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/pad_array_borders.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/random_engine_mersenne.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/random_engine_mersenne_init.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/random_engine_philox.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/random_engine_threefry.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/random_engine_write.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/range.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_all.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_blocks_by_key_dim.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_blocks_by_key_first.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_by_key_boundary.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_by_key_boundary_dim.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_by_key_compact.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_by_key_compact_dim.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_by_key_needs_reduction.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_dim.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reduce_first.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/regions.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/reorder.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/resize.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/rotate.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim_by_key.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_dim.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first_by_key.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/scan_first.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/select.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sift_nonfree.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sobel.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sparse_arith_common.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sparse_arith_coo.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sparse_arith_csr.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/sp_sp_arith_csr.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/ssarith_calc_out_nnz.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/susan.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/swapdblk.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/tile.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/trace_edge.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transform.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/transpose_inplace.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/triangle.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/unwrap.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/where.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/wrap.cl
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernel/wrap_dilated.cl
+)
 
 set( kernel_headers_dir "kernel_headers")
 
@@ -32,11 +137,10 @@ file_to_string(
     )
 
 set(opencl_compile_definitions
-        CL_TARGET_OPENCL_VERSION=120
-        CL_HPP_TARGET_OPENCL_VERSION=120
-        CL_HPP_MINIMUM_OPENCL_VERSION=120
-        CL_HPP_ENABLE_EXCEPTIONS
-        CL_USE_DEPRECATED_OPENCL_1_2_APIS)
+        CL_TARGET_OPENCL_VERSION=300
+        CL_HPP_TARGET_OPENCL_VERSION=300
+        CL_HPP_MINIMUM_OPENCL_VERSION=300
+        CL_HPP_ENABLE_EXCEPTIONS)
 
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/sort_by_key/CMakeLists.txt)

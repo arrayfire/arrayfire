@@ -108,15 +108,7 @@ Program buildProgram(span<const string> kernelSources,
                      span<const string> compileOpts) {
     Program retVal;
     try {
-        static const string defaults =
-            string(" -D dim_t=") + string(dtype_traits<dim_t>::getName());
-
         auto device = getDevice();
-
-        const string cl_std =
-            string(" -cl-std=CL") +
-            device.getInfo<CL_DEVICE_OPENCL_C_VERSION>().substr(9, 3);
-
         Program::Sources sources;
         sources.emplace_back(DEFAULT_MACROS_STR);
         sources.emplace_back(KParam_hpp, KParam_hpp_len);
@@ -126,12 +118,8 @@ Program buildProgram(span<const string> kernelSources,
 
         ostringstream options;
         for (auto &opt : compileOpts) { options << opt; }
-
-#ifdef AF_WITH_FAST_MATH
-        options << " -cl-fast-relaxed-math -DAF_WITH_FAST_MATH";
-#endif
-
-        retVal.build({device}, (cl_std + defaults + options.str()).c_str());
+        options << getActiveDeviceBaseBuildFlags();
+        retVal.build({device}, (options.str()).c_str());
     } catch (Error &err) {
         if (err.err() == CL_BUILD_PROGRAM_FAILURE) {
             THROW_BUILD_LOG_EXCEPTION(retVal);
