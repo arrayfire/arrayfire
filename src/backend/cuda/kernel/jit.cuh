@@ -65,7 +65,7 @@ typedef cuDoubleComplex cdouble;
         pow(static_cast<double>(lhs), static_cast<double>(rhs)));
 #else
 #define __pow(lhs, rhs) \
-    __float2int_rn(pow(__int2float_rn((int)lhs), __int2float_rn((int)rhs)))
+    __float2int_rn(powf(__int2float_rn((int)lhs), __int2float_rn((int)rhs)))
 #endif
 #define __powll(lhs, rhs) \
     __double2ll_rn(pow(__ll2double_rn(lhs), __ll2double_rn(rhs)))

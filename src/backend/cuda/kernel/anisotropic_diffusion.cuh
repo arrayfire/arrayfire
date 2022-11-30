@@ -19,7 +19,8 @@ __forceinline__ __device__ int index(const int x, const int y, const int dim0,
     return clamp(x, 0, dim0 - 1) * stride0 + clamp(y, 0, dim1 - 1) * stride1;
 }
 
-__device__ float quadratic(const float value) { return 1.0 / (1.0 + value); }
+__device__
+float quadratic(const float value) { return 1.0f / (1.0f + value); }
 
 template<af_flux_function FluxEnum>
 __device__ float gradientUpdate(const float mct, const float C, const float S,
@@ -39,13 +40,13 @@ __device__ float gradientUpdate(const float mct, const float C, const float S,
     db = C - W;
 
     if (FluxEnum == AF_FLUX_EXPONENTIAL) {
-        cx  = expf((df * df + 0.25f * powf(dy + 0.5f * (SE - NE), 2)) * mct);
-        cxd = expf((db * db + 0.25f * powf(dy + 0.5f * (SW - NW), 2)) * mct);
+        cx  = expf((df * df + 0.25f * afpowf(dy + 0.5f * (SE - NE), 2)) * mct);
+        cxd = expf((db * db + 0.25f * afpowf(dy + 0.5f * (SW - NW), 2)) * mct);
     } else {
         cx =
-            quadratic((df * df + 0.25f * powf(dy + 0.5f * (SE - NE), 2)) * mct);
+            quadratic((df * df + 0.25f * afpowf(dy + 0.5f * (SE - NE), 2)) * mct);
         cxd =
-            quadratic((db * db + 0.25f * powf(dy + 0.5f * (SW - NW), 2)) * mct);
+            quadratic((db * db + 0.25f * afpowf(dy + 0.5f * (SW - NW), 2)) * mct);
     }
     delta += (cx * df - cxd * db);
 
@@ -54,13 +55,13 @@ __device__ float gradientUpdate(const float mct, const float C, const float S,
     db = C - N;
 
     if (FluxEnum == AF_FLUX_EXPONENTIAL) {
-        cx  = expf((df * df + 0.25f * powf(dx + 0.5f * (SE - SW), 2)) * mct);
-        cxd = expf((db * db + 0.25f * powf(dx + 0.5f * (NE - NW), 2)) * mct);
+        cx  = expf((df * df + 0.25f * afpowf(dx + 0.5f * (SE - SW), 2)) * mct);
+        cxd = expf((db * db + 0.25f * afpowf(dx + 0.5f * (NE - NW), 2)) * mct);
     } else {
         cx =
-            quadratic((df * df + 0.25f * powf(dx + 0.5f * (SE - SW), 2)) * mct);
+            quadratic((df * df + 0.25f * afpowf(dx + 0.5f * (SE - SW), 2)) * mct);
         cxd =
-            quadratic((db * db + 0.25f * powf(dx + 0.5f * (NE - NW), 2)) * mct);
+            quadratic((db * db + 0.25f * afpowf(dx + 0.5f * (NE - NW), 2)) * mct);
     }
     delta += (cx * df - cxd * db);
 
@@ -87,8 +88,8 @@ __device__ float curvatureUpdate(const float mct, const float C, const float S,
     df0 = df;
     db0 = db;
 
-    gmsqf = (df * df + 0.25f * powf(dy + 0.5f * (SE - NE), 2));
-    gmsqb = (db * db + 0.25f * powf(dy + 0.5f * (SW - NW), 2));
+    gmsqf = (df * df + 0.25f * afpowf(dy + 0.5f * (SE - NE), 2));
+    gmsqb = (db * db + 0.25f * afpowf(dy + 0.5f * (SW - NW), 2));
 
     gmf = sqrtf(1.0e-10 + gmsqf);
     gmb = sqrtf(1.0e-10 + gmsqb);
@@ -102,8 +103,8 @@ __device__ float curvatureUpdate(const float mct, const float C, const float S,
     df = S - C;
     db = C - N;
 
-    gmsqf = (df * df + 0.25f * powf(dx + 0.5f * (SE - SW), 2));
-    gmsqb = (db * db + 0.25f * powf(dx + 0.5f * (NE - NW), 2));
+    gmsqf = (df * df + 0.25f * afpowf(dx + 0.5f * (SE - SW), 2));
+    gmsqb = (db * db + 0.25f * afpowf(dx + 0.5f * (NE - NW), 2));
     gmf   = sqrtf(1.0e-10 + gmsqf);
     gmb   = sqrtf(1.0e-10 + gmsqb);
 
@@ -114,14 +115,14 @@ __device__ float curvatureUpdate(const float mct, const float C, const float S,
 
     if (delta > 0) {
         prop_grad +=
-            (powf(fminf(db0, 0.0f), 2.0f) + powf(fmaxf(df0, 0.0f), 2.0f));
+            (afpowf(fminf(db0, 0.0f), 2.0f) + afpowf(fmaxf(df0, 0.0f), 2.0f));
         prop_grad +=
-            (powf(fminf(db, 0.0f), 2.0f) + powf(fmaxf(df, 0.0f), 2.0f));
+            (afpowf(fminf(db, 0.0f), 2.0f) + afpowf(fmaxf(df, 0.0f), 2.0f));
     } else {
         prop_grad +=
-            (powf(fmaxf(db0, 0.0f), 2.0f) + powf(fminf(df0, 0.0f), 2.0f));
+            (afpowf(fmaxf(db0, 0.0f), 2.0f) + afpowf(fminf(df0, 0.0f), 2.0f));
         prop_grad +=
-            (powf(fmaxf(db, 0.0f), 2.0f) + powf(fminf(df, 0.0f), 2.0f));
+            (afpowf(fmaxf(db, 0.0f), 2.0f) + afpowf(fminf(df, 0.0f), 2.0f));
     }
 
     return sqrtf(prop_grad) * delta;
