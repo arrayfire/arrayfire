@@ -392,6 +392,19 @@ template<typename T>
 constexpr const __DH__ T clamp(const T value, const T lo, const T hi) {
     return clamp(value, lo, hi, [](auto lhs, auto rhs) { return lhs < rhs; });
 }
+
+#ifdef AF_WITH_FAST_MATH
+/// The pow function with fast math is constantly wrong with fast math
+/// so this function converts the operation to double when fast-math
+/// is used
+__device__ inline double afpowf(double x, double y) { return pow(x, y); }
+#else
+/// The pow function with fast math is constantly wrong with fast math
+/// so this function converts the operation to double when fast-math
+/// is used
+__device__ inline float afpowf(float x, float y) { return powf(x, y); }
+#endif
+
 }  // namespace cuda
 }  // namespace arrayfire
 

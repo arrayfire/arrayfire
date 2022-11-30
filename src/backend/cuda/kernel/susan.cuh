@@ -73,7 +73,7 @@ __global__ void susan(T* out, const T* in, const unsigned idim0,
                 if (i * i + j * j < rSqrd) {
                     float c       = m_0;
                     float m       = shrdMem[b * shrdLen + a];
-                    float exp_pow = powf((m - c) / t, 6.0f);
+                    float exp_pow = afpowf((m - c) / t, 6.0f);
                     float cM      = expf(-exp_pow);
                     nM += cM;
                 }
