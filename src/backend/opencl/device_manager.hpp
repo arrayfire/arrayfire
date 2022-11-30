@@ -107,6 +107,8 @@ class DeviceManager {
 
     friend const cl::Device& getDevice(int id);
 
+    friend const std::string& getActiveDeviceBaseBuildFlags();
+
     friend size_t getDeviceMemorySize(int device);
 
     friend bool isGLSharingSupported();
@@ -161,6 +163,7 @@ class DeviceManager {
     std::vector<std::unique_ptr<cl::Context>> mContexts;
     std::vector<std::unique_ptr<cl::CommandQueue>> mQueues;
     std::vector<bool> mIsGLSharingOn;
+    std::vector<std::string> mBaseBuildFlags;
     std::vector<int> mDeviceTypes;
     std::vector<int> mPlatforms;
     unsigned mUserDeviceOffset;
