@@ -90,10 +90,9 @@ void floodFill(Param out, const Param image, const Param seedsx,
         DefineKeyValue(LMEM_WIDTH, (THREADS_X + 2 * RADIUS)),
         DefineKeyValue(LMEM_HEIGHT, (THREADS_Y + 2 * RADIUS)),
         DefineKeyValue(GROUP_SIZE, (THREADS_Y * THREADS_X)),
-        DefineKeyValue(AF_IS_PLATFORM_NVIDIA,
-                       (int)(AFCL_PLATFORM_NVIDIA == getActivePlatform())),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(AF_IS_PLATFORM_NVIDIA, (int)(AFCL_PLATFORM_NVIDIA ==
+                                                    getActivePlatformVendor())),
+        getTypeBuildDefinition<T>()};
 
     auto floodStep =
         common::getKernel("flood_step", {{flood_fill_cl_src}},

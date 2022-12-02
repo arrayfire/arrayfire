@@ -255,15 +255,26 @@ int getActiveDeviceType() {
     return devMngr.mDeviceTypes[get<1>(devId)];
 }
 
-int getActivePlatform() {
+cl::Platform& getActivePlatform() {
     device_id_t& devId = tlocalActiveDeviceId();
 
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     common::lock_guard_t lock(devMngr.deviceMutex);
 
-    return devMngr.mPlatforms[get<1>(devId)];
+    return *devMngr.mPlatforms[get<1>(devId)].first;
 }
+
+afcl::platform getActivePlatformVendor() {
+    device_id_t& devId = tlocalActiveDeviceId();
+
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return devMngr.mPlatforms[get<1>(devId)].second;
+}
+
 const Context& getContext() {
     device_id_t& devId = tlocalActiveDeviceId();
 
@@ -468,11 +479,16 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
         auto tQueue =
             (que == NULL ? make_unique<cl::CommandQueue>(*tContext, *tDevice)
                          : make_unique<cl::CommandQueue>(que, true));
-        devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.push_back(false);
         devMngr.mDeviceTypes.push_back(
             static_cast<int>(tDevice->getInfo<CL_DEVICE_TYPE>()));
+
+        auto device_platform = tDevice->getInfo<CL_DEVICE_PLATFORM>();
+        devMngr.mPlatforms.push_back(
+            std::make_pair<std::unique_ptr<cl::Platform>, afcl_platform>(
+                make_unique<cl::Platform>(device_platform, true),
+                getPlatformEnum(*tDevice)));
 
         devMngr.mDevices.push_back(move(tDevice));
         devMngr.mContexts.push_back(move(tContext));
@@ -485,12 +501,29 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
              [](const auto& lhs, const auto& rhs) {
                  return lhs.version < rhs.version;
              });
-        cl_name_version max_version = device_versions.back();
+
+        auto platform_version =
+            devMngr.mPlatforms.back().first->getInfo<CL_PLATFORM_VERSION>();
         ostringstream options;
-        options << fmt::format(" -cl-std=CL{}.{}",
-                               CL_VERSION_MAJOR(max_version.version),
-                               CL_VERSION_MINOR(max_version.version))
-                << fmt::format(" -D dim_t={}", dtype_traits<dim_t>::getName());
+        if (platform_version.substr(7).c_str()[0] >= '3') {
+            auto device_versions =
+                devMngr.mDevices.back()
+                    ->getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
+            sort(begin(device_versions), end(device_versions),
+                 [](const auto& lhs, const auto& rhs) {
+                     return lhs.version < rhs.version;
+                 });
+            cl_name_version max_version = device_versions.back();
+            options << fmt::format(" -cl-std=CL{}.{}",
+                                   CL_VERSION_MAJOR(max_version.version),
+                                   CL_VERSION_MINOR(max_version.version));
+        } else {
+            auto device_version =
+                devMngr.mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+            options << fmt::format(" -cl-std=CL{}",
+                                   device_version.substr(9, 3));
+        }
+        options << fmt::format(" -D dim_t={}", dtype_traits<dim_t>::getName());
 #ifdef AF_WITH_FAST_MATH
         options << " -cl-fast-relaxed-math";
 #endif
@@ -706,7 +739,7 @@ af_err afcl_get_device_type(afcl_device_type* res) {
 
 af_err afcl_get_platform(afcl_platform* res) {
     try {
-        *res = static_cast<afcl_platform>(getActivePlatform());
+        *res = static_cast<afcl_platform>(getActivePlatformVendor());
     }
     CATCHALL;
     return AF_SUCCESS;

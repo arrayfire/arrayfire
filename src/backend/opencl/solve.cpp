@@ -230,7 +230,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
                               A.strides()[1], 1, (*dT)(),
                               tmp.getOffset() + NB * MN, NB, 0, queue);
 
-        if (getActivePlatform() == AFCL_PLATFORM_NVIDIA) {
+        if (getActivePlatformVendor() == AFCL_PLATFORM_NVIDIA) {
             Array<T> AT    = transpose<T>(A, true);
             Buffer *AT_buf = AT.get();
             OPENCL_BLAS_CHECK(gpu_blas_trsm(
@@ -269,7 +269,7 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
     cl_event event         = 0;
     cl_command_queue queue = getQueue()();
 
-    if (getActivePlatform() == AFCL_PLATFORM_NVIDIA &&
+    if (getActivePlatformVendor() == AFCL_PLATFORM_NVIDIA &&
         (options & AF_MAT_UPPER)) {
         Array<T> AT = transpose<T>(A, true);
 
