@@ -139,7 +139,7 @@ file_to_string(
 set(opencl_compile_definitions
         CL_TARGET_OPENCL_VERSION=300
         CL_HPP_TARGET_OPENCL_VERSION=300
-        CL_HPP_MINIMUM_OPENCL_VERSION=300
+        CL_HPP_MINIMUM_OPENCL_VERSION=110
         CL_HPP_ENABLE_EXCEPTIONS)
 
 include(kernel/scan_by_key/CMakeLists.txt)

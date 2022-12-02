@@ -256,21 +256,33 @@ DeviceManager::DeviceManager()
                 *mContexts.back(), *devices[i], cl::QueueProperties::None));
             mIsGLSharingOn.push_back(false);
             mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
-            mPlatforms.push_back(getPlatformEnum(*devices[i]));
+            mPlatforms.push_back(
+                std::make_pair<std::unique_ptr<cl::Platform>, afcl_platform>(
+                    make_unique<cl::Platform>(device_platform, true),
+                    getPlatformEnum(*devices[i])));
             mDevices.emplace_back(std::move(devices[i]));
 
-            auto device_versions =
-                mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
-            sort(begin(device_versions), end(device_versions),
-                 [](const auto& lhs, const auto& rhs) {
-                     return lhs.version < rhs.version;
-                 });
-            cl_name_version max_version = device_versions.back();
+            auto platform_version =
+                mPlatforms.back().first->getInfo<CL_PLATFORM_VERSION>();
             ostringstream options;
-            options << fmt::format(" -cl-std=CL{}.{}",
-                                   CL_VERSION_MAJOR(max_version.version),
-                                   CL_VERSION_MINOR(max_version.version))
-                    << fmt::format(" -D dim_t={}",
+            if (platform_version.substr(7).c_str()[0] >= '3') {
+                auto device_versions =
+                    mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
+                sort(begin(device_versions), end(device_versions),
+                     [](const auto& lhs, const auto& rhs) {
+                         return lhs.version < rhs.version;
+                     });
+                cl_name_version max_version = device_versions.back();
+                options << fmt::format(" -cl-std=CL{}.{}",
+                                       CL_VERSION_MAJOR(max_version.version),
+                                       CL_VERSION_MINOR(max_version.version));
+            } else {
+                auto device_version =
+                    mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+                options << fmt::format(" -cl-std=CL{}",
+                                       device_version.substr(9, 3));
+            }
+            options << fmt::format(" -D dim_t={}",
                                    dtype_traits<dim_t>::getName());
 #ifdef AF_WITH_FAST_MATH
             options << " -cl-fast-relaxed-math";
