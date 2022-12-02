@@ -14,13 +14,10 @@
 
 template<>
 struct fmt::formatter<af_seq> {
-    // Parses format specifications of the form ['f' | 'e'].
     constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
         return ctx.begin();
     }
 
-    // Formats the point p using the parsed format specification (presentation)
-    // stored in this formatter.
     template<typename FormatContext>
     auto format(const af_seq& p, FormatContext& ctx) -> decltype(ctx.out()) {
         // ctx.out() is an output iterator to write to.
@@ -61,16 +58,13 @@ struct fmt::formatter<arrayfire::common::Version> {
             }
             ++it;
         } while (it != end && *it != '}');
-        return ctx.begin();
+        return it;
     }
 
-    // Formats the point p using the parsed format specification (presentation)
-    // stored in this formatter.
     template<typename FormatContext>
     auto format(const arrayfire::common::Version& ver, FormatContext& ctx)
         -> decltype(ctx.out()) {
-        // ctx.out() is an output iterator to write to.
-        // if (ver.major == -1) return format_to(ctx.out(), "N/A");
+        if (ver.major == -1) return format_to(ctx.out(), "N/A");
         if (ver.minor == -1) show_minor = false;
         if (ver.patch == -1) show_patch = false;
         if (show_major && !show_minor && !show_patch) {

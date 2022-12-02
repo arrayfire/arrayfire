@@ -497,8 +497,8 @@ void DeviceManager::checkCudaVsDriverVersion() {
 
     if (runtime > driver) {
         string msg =
-            "ArrayFire was built with CUDA %s which requires GPU driver "
-            "version %.2f or later. Please download and install the latest "
+            "ArrayFire was built with CUDA {} which requires GPU driver "
+            "version {} or later. Please download and install the latest "
             "drivers from https://www.nvidia.com/drivers for your GPU. "
             "Alternatively, you could rebuild ArrayFire with CUDA Toolkit "
             "version {} to use the current drivers.";
