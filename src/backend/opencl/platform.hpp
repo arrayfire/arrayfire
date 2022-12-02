@@ -147,7 +147,9 @@ bool synchronize_calls();
 
 int getActiveDeviceType();
 
-int getActivePlatform();
+cl::Platform& getActivePlatform();
+
+afcl::platform getActivePlatformVendor();
 
 bool& evalFlag();
 

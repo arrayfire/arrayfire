@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <af/opencl.h>
+
 #include <memory>
 #include <mutex>
 #include <string>
@@ -131,7 +133,9 @@ class DeviceManager {
 
     friend int getActiveDeviceType();
 
-    friend int getActivePlatform();
+    friend cl::Platform& getActivePlatform();
+
+    friend afcl::platform getActivePlatformVendor();
 
    public:
     static const int MAX_DEVICES = 32;
@@ -165,7 +169,8 @@ class DeviceManager {
     std::vector<bool> mIsGLSharingOn;
     std::vector<std::string> mBaseBuildFlags;
     std::vector<int> mDeviceTypes;
-    std::vector<int> mPlatforms;
+    std::vector<std::pair<std::unique_ptr<cl::Platform>, afcl::platform>>
+        mPlatforms;
     unsigned mUserDeviceOffset;
 
     std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;

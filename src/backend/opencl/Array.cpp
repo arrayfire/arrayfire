@@ -308,7 +308,7 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     }
 
     bool isBufferLimit = getMemoryPressure() >= getMemoryPressureThreshold();
-    auto platform      = getActivePlatform();
+    auto platform      = getActivePlatformVendor();
 
     // The Apple platform can have the nvidia card or the AMD card
     bool isIntel = platform == AFCL_PLATFORM_INTEL;
