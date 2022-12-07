@@ -281,9 +281,6 @@ target_include_directories(afoneapi
 target_compile_options(afoneapi
   PRIVATE
     -fsycl
-    #-fsycl-targets=nvptx64-vidia-cuda
-    #-fsycl-force-target=nvptx64-nvidia-cuda-sm_86
-    #-Wno-unknown-cuda-version
     -sycl-std=2020
 )
 
@@ -301,14 +298,14 @@ target_link_libraries(afoneapi
     -fsycl
     -fno-lto
     -fvisibility-inlines-hidden
-    #-fsycl-targets=nvptx64-nvidia-cuda-sm_86
-    #-fsycl-force-target=nvptx64-nvidia-cuda-sm_86
     c_api_interface
     cpp_api_interface
     afcommon_interface
     OpenCL::OpenCL
     OpenCL::cl2hpp
-    #-Wno-unknown-cuda-version
+    -fsycl
+    -fsycl-device-code-split=per_kernel
+    -fsycl-link-huge-device-code
   )
 
 af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
