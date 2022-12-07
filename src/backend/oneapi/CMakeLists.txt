@@ -257,7 +257,9 @@ target_include_directories(afoneapi
   )
 
 target_compile_options(afoneapi
-  PRIVATE -fsycl)
+  PRIVATE
+    -fsycl
+    -fsycl-device-code-split=per_kernel)
 
 target_compile_definitions(afoneapi
   PRIVATE
@@ -270,6 +272,7 @@ target_link_libraries(afoneapi
     cpp_api_interface
     afcommon_interface
     -fsycl
+    -fsycl-device-code-split=per_kernel
   )
 
 af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
