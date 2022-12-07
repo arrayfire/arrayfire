@@ -21,7 +21,6 @@
 namespace oneapi {
 namespace kernel {
 
-
 template<typename T>
 using local_accessor = sycl::accessor<T, 1, sycl::access::mode::read_write,
                                       sycl::access::target::local>;
@@ -30,146 +29,159 @@ using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
 template<typename T>
 using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
+inline int convert_int_rtz(float number) { return ((int)(number)); }
 
-template<typename T, typename AccType>
+template<typename T, typename AccType, const int MAX_CHANNELS>
 class meanshiftCreateKernel {
-public:
-  meanshiftCreateKernel(sycl::accessor<T, 1> d_dst, KParam oInfo,
-                        sycl::accessor<T, 1> d_src, KParam iInfo, int radius,
-                        float cvar, unsigned numIters, int nBBS0, int nBBS1,
-                        const int MAX_CHANNELS) : d_dst_(d_dst), oInfo_(oInfo), d_src_(d_src), iInfo_(iInfo), radius_(radius), cvar_(cvar), numIters_(numIters), nBBS0_(nBBS0), nBBS1_(nBBS1), MAX_CHANNELS_(MAX_CHANNELS) {}
-  void operator()(sycl::nd_item<2> it) const {
-    sycl::group g = it.get_group();
+   public:
+    meanshiftCreateKernel(sycl::accessor<T, 1> d_dst, KParam oInfo,
+                          sycl::accessor<T, 1> d_src, KParam iInfo, int radius,
+                          float cvar, unsigned numIters, int nBBS0, int nBBS1)
+        : d_dst_(d_dst)
+        , oInfo_(oInfo)
+        , d_src_(d_src)
+        , iInfo_(iInfo)
+        , radius_(radius)
+        , cvar_(cvar)
+        , numIters_(numIters)
+        , nBBS0_(nBBS0)
+        , nBBS1_(nBBS1) {}
+    void operator()(sycl::nd_item<2> it) const {
+        sycl::group g = it.get_group();
 
-    unsigned b2 = g.get_group_id(0) / nBBS0_;
-    unsigned b3 = g.get_group_id(1) / nBBS1_;
-    const int gx =
-        g.get_local_range(0) * (g.get_group_id(0) - b2 * nBBS0_) + it.get_local_id(0);
-    const int gy =
-        g.get_local_range(1) * (g.get_group_id(1) - b3 * nBBS1_) + it.get_local_id(1);
+        unsigned b2 = g.get_group_id(0) / nBBS0_;
+        unsigned b3 = g.get_group_id(1) / nBBS1_;
+        const int gx =
+            g.get_local_range(0) * (g.get_group_id(0) - b2 * nBBS0_) +
+            it.get_local_id(0);
+        const int gy =
+            g.get_local_range(1) * (g.get_group_id(1) - b3 * nBBS1_) +
+            it.get_local_id(1);
 
-    if (gx < iInfo_.dims[0] && gy < iInfo_.dims[1]) {
-        sycl::accessor<T, 1> iptr = d_src_ + (b2 * iInfo_.strides[2] +
-                                          b3 * iInfo_.strides[3] + iInfo_.offset);
-        sycl::accessor<T, 1> optr =
-            d_dst_ + (b2 * oInfo_.strides[2] + b3 * oInfo_.strides[3]);
+        if (gx < iInfo_.dims[0] && gy < iInfo_.dims[1]) {
+            const T* iptr =
+                d_src_.get_pointer() + (b2 * iInfo_.strides[2] +
+                                        b3 * iInfo_.strides[3] + iInfo_.offset);
+            T* optr = d_dst_.get_pointer() +
+                      (b2 * oInfo_.strides[2] + b3 * oInfo_.strides[3]);
 
-        int meanPosI = gx;
-        int meanPosJ = gy;
+            int meanPosI = gx;
+            int meanPosJ = gy;
 
-        T currentCenterColors[MAX_CHANNELS_];
-        T tempColors[MAX_CHANNELS_];
+            T currentCenterColors[MAX_CHANNELS];
+            T tempColors[MAX_CHANNELS];
 
-        AccType currentMeanColors[MAX_CHANNELS_];
+            AccType currentMeanColors[MAX_CHANNELS];
 
 #pragma unroll
-        for (int ch = 0; ch < MAX_CHANNELS_; ++ch)
-            currentCenterColors[ch] =
-                iptr[gx * iInfo_.strides[0] + gy * iInfo_.strides[1] +
-                     ch * iInfo_.strides[2]];
+            for (int ch = 0; ch < MAX_CHANNELS; ++ch)
+                currentCenterColors[ch] =
+                    iptr[gx * iInfo_.strides[0] + gy * iInfo_.strides[1] +
+                         ch * iInfo_.strides[2]];
 
-        const int dim0LenLmt = iInfo_.dims[0] - 1;
-        const int dim1LenLmt = iInfo_.dims[1] - 1;
+            const int dim0LenLmt = iInfo_.dims[0] - 1;
+            const int dim1LenLmt = iInfo_.dims[1] - 1;
 
-        // scope of meanshift iteration begin
-        for (uint it = 0; it < numIters_; ++it) {
-            int oldMeanPosJ = meanPosJ;
-            int oldMeanPosI = meanPosI;
-            unsigned count  = 0;
+            // scope of meanshift iterationd begin
+            for (uint it = 0; it < numIters_; ++it) {
+                int oldMeanPosJ = meanPosJ;
+                int oldMeanPosI = meanPosI;
+                unsigned count  = 0;
 
-            int shift_x = 0;
-            int shift_y = 0;
+                int shift_x = 0;
+                int shift_y = 0;
 
-            for (int ch = 0; ch < MAX_CHANNELS_; ++ch) currentMeanColors[ch] = 0;
+                for (int ch = 0; ch < MAX_CHANNELS; ++ch)
+                    currentMeanColors[ch] = 0;
 
-            for (int wj = -radius_; wj <= radius_; ++wj) {
-                int hit_count = 0;
-                int tj        = meanPosJ + wj;
+                for (int wj = -radius_; wj <= radius_; ++wj) {
+                    int hit_count = 0;
+                    int tj        = meanPosJ + wj;
 
-                if (tj < 0 || tj > dim1LenLmt) continue;
+                    if (tj < 0 || tj > dim1LenLmt) continue;
 
-                for (int wi = -radius_; wi <= radius_; ++wi) {
-                    int ti = meanPosI + wi;
+                    for (int wi = -radius_; wi <= radius_; ++wi) {
+                        int ti = meanPosI + wi;
 
-                    if (ti < 0 || ti > dim0LenLmt) continue;
+                        if (ti < 0 || ti > dim0LenLmt) continue;
 
-                    AccType norm = 0;
+                        AccType norm = 0;
 #pragma unroll
-                    for (int ch = 0; ch < MAX_CHANNELS_; ++ch) {
-                        unsigned idx = ti * iInfo_.strides[0] +
-                                       tj * iInfo_.strides[1] +
-                                       ch * iInfo_.strides[2];
-                        tempColors[ch] = iptr[idx];
-                        AccType diff   = (AccType)currentCenterColors[ch] -
-                                       (AccType)tempColors[ch];
-                        norm += (diff * diff);
+                        for (int ch = 0; ch < MAX_CHANNELS; ++ch) {
+                            unsigned idx = ti * iInfo_.strides[0] +
+                                           tj * iInfo_.strides[1] +
+                                           ch * iInfo_.strides[2];
+                            tempColors[ch] = iptr[idx];
+                            AccType diff   = (AccType)currentCenterColors[ch] -
+                                           (AccType)tempColors[ch];
+                            norm += (diff * diff);
+                        }
+
+                        if (norm <= cvar_) {
+#pragma unroll
+                            for (int ch = 0; ch < MAX_CHANNELS; ++ch)
+                                currentMeanColors[ch] +=
+                                    (AccType)tempColors[ch];
+
+                            shift_x += ti;
+                            ++hit_count;
+                        }
                     }
-
-                    if (norm <= cvar_) {
-#pragma unroll
-                        for (int ch = 0; ch < MAX_CHANNELS_; ++ch)
-                            currentMeanColors[ch] += (AccType)tempColors[ch];
-
-                        shift_x += ti;
-                        ++hit_count;
-                    }
+                    count += hit_count;
+                    shift_y += tj * hit_count;
                 }
-                count += hit_count;
-                shift_y += tj * hit_count;
-            }
 
-            if (count == 0) break;
+                if (count == 0) break;
 
-            const AccType fcount = 1 / (AccType)count;
+                const AccType fcount = 1 / (AccType)count;
 
-            meanPosI = convert_int_rtz(shift_x * fcount);
-            meanPosJ = convert_int_rtz(shift_y * fcount);
+                meanPosI = convert_int_rtz(shift_x * fcount);
+                meanPosJ = convert_int_rtz(shift_y * fcount);
 
 #pragma unroll
-            for (int ch = 0; ch < MAX_CHANNELS_; ++ch)
-                currentMeanColors[ch] =
-                    convert_int_rtz(currentMeanColors[ch] * fcount);
+                for (int ch = 0; ch < MAX_CHANNELS; ++ch)
+                    currentMeanColors[ch] =
+                        convert_int_rtz(currentMeanColors[ch] * fcount);
 
-            AccType norm = 0;
+                AccType norm = 0;
 #pragma unroll
-            for (int ch = 0; ch < MAX_CHANNELS_; ++ch) {
-                AccType diff =
-                    (AccType)currentCenterColors[ch] - currentMeanColors[ch];
-                norm += (diff * diff);
-            }
+                for (int ch = 0; ch < MAX_CHANNELS; ++ch) {
+                    AccType diff = (AccType)currentCenterColors[ch] -
+                                   currentMeanColors[ch];
+                    norm += (diff * diff);
+                }
 
-            bool stop =
-                (meanPosJ == oldMeanPosJ && meanPosI == oldMeanPosI) ||
-                ((abs(oldMeanPosJ - meanPosJ) + abs(oldMeanPosI - meanPosI)) +
-                 norm) <= 1;
-
-#pragma unroll
-            for (int ch = 0; ch < MAX_CHANNELS_; ++ch)
-                currentCenterColors[ch] = (T)(currentMeanColors[ch]);
-
-            if (stop) break;
-        }  // scope of meanshift iterations end
+                bool stop =
+                    (meanPosJ == oldMeanPosJ && meanPosI == oldMeanPosI) ||
+                    ((abs(oldMeanPosJ - meanPosJ) +
+                      abs(oldMeanPosI - meanPosI)) +
+                     norm) <= 1;
 
 #pragma unroll
-        for (int ch = 0; ch < MAX_CHANNELS_; ++ch)
-            optr[gx * oInfo_.strides[0] + gy * oInfo_.strides[1] +
-                 ch * oInfo_.strides[2]] = currentCenterColors[ch];
+                for (int ch = 0; ch < MAX_CHANNELS; ++ch)
+                    currentCenterColors[ch] = (T)(currentMeanColors[ch]);
+
+                if (stop) break;
+            }  // scope of meanshift iterations end
+
+#pragma unroll
+            for (int ch = 0; ch < MAX_CHANNELS; ++ch)
+                optr[gx * oInfo_.strides[0] + gy * oInfo_.strides[1] +
+                     ch * oInfo_.strides[2]] = currentCenterColors[ch];
+        }
     }
 
-  }
-private:
-  sycl::accessor<T, 1> d_dst_;
-KParam oInfo_;
-sycl::accessor<T, 1> d_src_;
-KParam iInfo_;
-int radius_;
-float cvar_;
-unsigned numIters_;
-int nBBS0_;
-int nBBS1_;
-  const int MAX_CHANNELS_;
+   private:
+    sycl::accessor<T, 1> d_dst_;
+    KParam oInfo_;
+    sycl::accessor<T, 1> d_src_;
+    KParam iInfo_;
+    int radius_;
+    float cvar_;
+    unsigned numIters_;
+    int nBBS0_;
+    int nBBS1_;
 };
-
 
 template<typename T>
 void meanshift(Param<T> out, const Param<T> in, const float spatialSigma,
@@ -197,12 +209,20 @@ void meanshift(Param<T> out, const Param<T> in, const float spatialSigma,
 
     const float cvar = chromaticSigma * chromaticSigma;
 
-    getQueue().submit([&](auto &h) {
-        sycl::accessor<T, 1> d_dst, d_src;
-        h.parallel_for(
-            sycl::nd_range{global, local},
-            meanshiftCreateKernel(d_dst, out.info, d_src, in.info, radius, cvar,
-                                  numIters, blk_x, blk_y, MAX_CHANNELS));
+    getQueue().submit([&](auto& h) {
+        sycl::accessor<T, 1> d_src{*in.data, h};
+        sycl::accessor<T, 1> d_dst{*out.data, h};
+        if (MAX_CHANNELS == 3) {
+            h.parallel_for(sycl::nd_range{global, local},
+                           meanshiftCreateKernel<T, AccType, 3>(
+                               d_dst, out.info, d_src, in.info, radius, cvar,
+                               numIters, blk_x, blk_y));
+        } else {
+            h.parallel_for(sycl::nd_range{global, local},
+                           meanshiftCreateKernel<T, AccType, 1>(
+                               d_dst, out.info, d_src, in.info, radius, cvar,
+                               numIters, blk_x, blk_y));
+        }
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
