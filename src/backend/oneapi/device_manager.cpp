@@ -105,7 +105,8 @@ DeviceManager::DeviceManager()
 
     // Create contexts and queues once the sort is done
     for (int i = 0; i < nDevices; i++) {
-        if (devices[i]->is_gpu()) { //  || devices[i]->is_cpu() || !devices[i]->is_accelerator()) {
+        if (devices[i]->is_gpu() || devices[i]->is_cpu() ||
+            !devices[i]->is_accelerator()) {
             try {
                 mContexts.push_back(make_unique<sycl::context>(*devices[i]));
                 mQueues.push_back(
