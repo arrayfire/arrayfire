@@ -25,7 +25,9 @@ Array<T> tile(const Array<T> &in, const af::dim4 &tileDims) {
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    kernel::tile<T>(out, in);
+    if constexpr(!(std::is_same_v<T, double> || std::is_same_v<T, cdouble>)) {
+        kernel::tile<T>(out, in);
+    }
 
     return out;
 }
