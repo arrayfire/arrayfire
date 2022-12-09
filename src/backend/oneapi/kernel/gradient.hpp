@@ -15,7 +15,6 @@
 #include <debug_oneapi.hpp>
 #include <kernel/default_config.hpp>
 
-
 namespace oneapi {
 namespace kernel {
 
@@ -82,10 +81,11 @@ class gradientCreateKernel {
                    idy * grad1_.strides[1] + idx;
 
         // Multipliers - 0.5 for interior, 1 for edge cases
-        using Txy = std::conditional<std::is_same<T, std::complex<double>>::value,
-                                  double, float>::type;
-         Txy  xf = 0.5 * (1 + (idx == 0 || idx >= (in_.dims[0] - 1)));
-          Txy yf = 0.5 * (1 + (idy == 0 || idy >= (in_.dims[1] - 1)));
+        using Txy =
+            std::conditional<std::is_same<T, std::complex<double>>::value,
+                             double, float>::type;
+        Txy xf = 0.5 * (1 + (idx == 0 || idx >= (in_.dims[0] - 1)));
+        Txy yf = 0.5 * (1 + (idy == 0 || idy >= (in_.dims[1] - 1)));
 
         // Copy data to scratch space
         T zero = (T)(0);
