@@ -21,9 +21,17 @@ namespace oneapi {
 namespace kernel {
 
 template<typename T>
+using local_accessor = sycl::accessor<T, 1, sycl::access::mode::read_write,
+                                      sycl::access::target::local>;
+template<typename T>
+using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
+template<typename T>
+using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
+
+template<typename T>
 class tileCreateKernel {
    public:
-    tileCreateKernel(sycl::accessor<T, 1> out, sycl::accessor<T, 1> in,
+    tileCreateKernel(write_accessor<T> out, read_accessor<T> in,
                      const KParam op, const KParam ip, const int blocksPerMatX,
                      const int blocksPerMatY)
         : out_(out)
@@ -70,8 +78,8 @@ class tileCreateKernel {
     }
 
    private:
-    sycl::accessor<T, 1> out_;
-    sycl::accessor<T, 1> in_;
+    write_accessor<T> out_;
+    read_accessor<T> in_;
     const KParam op_;
     const KParam ip_;
     const int blocksPerMatX_;
@@ -93,13 +101,13 @@ void tile(Param<T> out, const Param<T> in) {
                                     local[1] * blocksPerMatY * out.info.dims[3]);
 
     getQueue().submit([&](auto &h) {
-        sycl::accessor d_out{*out.data, h};
-        sycl::accessor d_in{*in.data, h};
+        sycl::accessor d_out{*out.data, h, sycl::write_only, sycl::no_init};
+        sycl::accessor d_in{*in.data, h, sycl::read_only};
         h.parallel_for(sycl::nd_range{global, local},
                        tileCreateKernel<T>(d_out, d_in, out.info, in.info,
                                            blocksPerMatX, blocksPerMatY));
-        });
- 
+    });
+
     ONEAPI_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel
