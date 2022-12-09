@@ -20,8 +20,6 @@
 namespace oneapi {
 namespace kernel {
 
-constexpr sycl::specialization_id<bool> compilingAsDouble;
-
 template<typename T>
 class tileCreateKernel {
    public:
