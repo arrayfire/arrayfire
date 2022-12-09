@@ -92,16 +92,14 @@ void tile(Param<T> out, const Param<T> in) {
     auto global       = sycl::range(local[0] * blocksPerMatX * out.info.dims[2],
                                     local[1] * blocksPerMatY * out.info.dims[3]);
 
-    try {
-        getQueue().submit([&](auto &h) {
-            sycl::accessor d_out{*out.data, h};
-            sycl::accessor d_in{*in.data, h};
-            h.parallel_for(sycl::nd_range{global, local},
-                           tileCreateKernel<T>(d_out, d_in, out.info, in.info,
-                                               blocksPerMatX, blocksPerMatY));
+    getQueue().submit([&](auto &h) {
+        sycl::accessor d_out{*out.data, h};
+        sycl::accessor d_in{*in.data, h};
+        h.parallel_for(sycl::nd_range{global, local},
+                       tileCreateKernel<T>(d_out, d_in, out.info, in.info,
+                                           blocksPerMatX, blocksPerMatY));
         });
-    } catch (const sycl::exception &e) { printf("!!! %s\n", e.what()); }
-
+ 
     ONEAPI_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel
