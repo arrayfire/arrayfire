@@ -107,9 +107,6 @@ class reorderCreateKernel {
     sycl::accessor<float, 2, sycl::access::mode::write> debugAcc_;
 };
 
-#include "/home/gpryor/new-dev/io.hpp"
-#include "/home/gpryor/new-dev/msg.hpp"
-
 template<typename T>
 void reorder(Param<T> out, const Param<T> in, const dim_t* rdims) {
     constexpr int TX    = 32;
