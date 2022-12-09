@@ -83,8 +83,6 @@ class gradientCreateKernel {
         int g1dx = idw * grad1_.strides[3] + idz * grad1_.strides[2] +
                    idy * grad1_.strides[1] + idx;
 
-        // local T scratch[(TY_ + 2) * (TX_ + 2)];
-
         // Multipliers - 0.5 for interior, 1 for edge cases
         using Txy = std::conditional<std::is_same<T, std::complex<double>>::value,
                                   double, float>::type;
