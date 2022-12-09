@@ -15,8 +15,6 @@
 #include <debug_oneapi.hpp>
 #include <kernel/default_config.hpp>
 
-#include <string>
-#include <vector>
 
 namespace oneapi {
 namespace kernel {
