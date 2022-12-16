@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 constexpr unsigned SUSAN_THREADS_X = 16;
@@ -95,3 +96,4 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

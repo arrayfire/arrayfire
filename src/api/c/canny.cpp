@@ -36,8 +36,8 @@
 #include <vector>
 
 using af::dim4;
-using common::cast;
-using common::tile;
+using arrayfire::common::cast;
+using arrayfire::common::tile;
 using detail::arithOp;
 using detail::Array;
 using detail::convolve2;
@@ -61,6 +61,7 @@ using std::make_pair;
 using std::pair;
 using std::vector;
 
+namespace {
 Array<float> gradientMagnitude(const Array<float>& gx, const Array<float>& gy,
                                const bool& isf) {
     using detail::abs;
@@ -137,7 +138,8 @@ Array<float> otsuThreshold(const Array<float>& in, const unsigned NUM_BINS,
 
     ireduce<af_max_t, float>(thresh, locs, sigmas, 0);
 
-    return cast<float, uint>(common::tile(locs, dim4(inDims[0], inDims[1])));
+    return cast<float, uint>(
+        arrayfire::common::tile(locs, dim4(inDims[0], inDims[1])));
 }
 
 Array<float> normalize(const Array<float>& supEdges, const float minVal,
@@ -214,6 +216,8 @@ af_array cannyHelper(const Array<T>& in, const float t1,
 
     return getHandle(edgeTrackingByHysteresis(swpair.first, swpair.second));
 }
+
+}  // namespace
 
 af_err af_canny(af_array* out, const af_array in, const af_canny_threshold ct,
                 const float t1, const float t2, const unsigned sw,

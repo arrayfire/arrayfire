@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -80,3 +81,4 @@ void diff2(Param<T> out, CParam<T> in, int const dim) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

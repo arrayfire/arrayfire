@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 
 struct Enqueuer {
@@ -72,3 +73,4 @@ class Kernel
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

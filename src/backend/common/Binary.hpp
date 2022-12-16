@@ -18,6 +18,7 @@
 
 #include "optypes.hpp"
 
+namespace arrayfire {
 namespace common {
 
 using namespace detail;  // NOLINT
@@ -122,3 +123,4 @@ SPECIALIZE_COMPLEX_MAX(cdouble, double)
 #undef SPECIALIZE_COMPLEX_MAX
 
 }  // namespace common
+}  // namespace arrayfire

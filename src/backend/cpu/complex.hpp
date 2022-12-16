@@ -15,6 +15,7 @@
 #include <af/dim4.hpp>
 #include <complex>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename To, typename Ti>
@@ -83,3 +84,4 @@ Array<T> conj(const Array<T> &in) {
     return createNodeArray<T>(in.dims(), move(node));
 }
 }  // namespace cpu
+}  // namespace arrayfire

@@ -11,8 +11,10 @@
 
 // SBK_TYPES:float double int uint intl uintl short ushort char uchar
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 INSTANTIATE1(TYPE)
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

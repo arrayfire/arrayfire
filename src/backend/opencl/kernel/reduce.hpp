@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -50,9 +51,8 @@ void reduceDimLauncher(Param out, Param in, const int dim, const uint threads_y,
         DefineValue(THREADS_X),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
-    };
-    options.emplace_back(getTypeBuildDefinition<Ti, To>());
+        DefineKeyValue(CPLX, iscplx<Ti>()),
+        getTypeBuildDefinition<Ti, To>()};
 
     auto reduceDim = common::getKernel(
         "reduce_dim_kernel", {ops_cl_src, reduce_dim_cl_src}, targs, options);
@@ -128,9 +128,8 @@ void reduceFirstLauncher(Param out, Param in, const uint groups_x,
         DefineValue(THREADS_PER_GROUP),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
-    };
-    options.emplace_back(getTypeBuildDefinition<Ti, To>());
+        DefineKeyValue(CPLX, iscplx<Ti>()),
+        getTypeBuildDefinition<Ti, To>()};
 
     auto reduceFirst =
         common::getKernel("reduce_first_kernel",
@@ -258,5 +257,5 @@ To reduceAll(Param in, int change_nan, double nanval) {
 }
 
 }  // namespace kernel
-
 }  // namespace opencl
+}  // namespace arrayfire

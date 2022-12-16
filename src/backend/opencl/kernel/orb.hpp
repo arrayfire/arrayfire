@@ -44,6 +44,7 @@
 /* Other */
 #endif
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -494,6 +495,7 @@ void orb(unsigned* out_feat, Param& x_out, Param& y_out, Param& score_out,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire
 
 #if defined(__clang__)
 /* Clang/LLVM */

@@ -17,6 +17,7 @@
 #include <string>
 #include <unordered_map>
 
+namespace arrayfire {
 namespace cuda {
 
 /// CUDA backend wrapper for CUmodule
@@ -57,3 +58,4 @@ class Module : public common::ModuleInterface<CUmodule> {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

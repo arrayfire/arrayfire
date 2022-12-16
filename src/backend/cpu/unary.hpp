@@ -14,6 +14,7 @@
 #include <optypes.hpp>
 #include <cmath>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -120,3 +121,4 @@ Array<char> checkOp(const Array<T> &in, dim4 outDim = dim4(-1, -1, -1, -1)) {
 }
 
 }  // namespace cpu
+}  // namespace arrayfire

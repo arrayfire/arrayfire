@@ -24,7 +24,13 @@
 #include <surface.hpp>
 
 using af::dim4;
-using common::modDims;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
+using arrayfire::common::getGLType;
+using arrayfire::common::makeContextCurrent;
+using arrayfire::common::modDims;
+using arrayfire::common::step_round;
 using detail::Array;
 using detail::copy_surface;
 using detail::createEmptyArray;
@@ -33,13 +39,12 @@ using detail::reduce_all;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
-using namespace graphics;
 
 template<typename T>
 fg_chart setup_surface(fg_window window, const af_array xVals,
                        const af_array yVals, const af_array zVals,
                        const af_cell* const props) {
-    ForgeModule& _ = graphics::forgePlugin();
+    ForgeModule& _ = forgePlugin();
     Array<T> xIn   = getArray<T>(xVals);
     Array<T> yIn   = getArray<T>(yVals);
     Array<T> zIn   = getArray<T>(zVals);
@@ -57,13 +62,13 @@ fg_chart setup_surface(fg_window window, const af_array xVals,
         xIn = modDims(xIn, xIn.elements());
         // Now tile along second dimension
         dim4 x_tdims(1, Y_dims[0], 1, 1);
-        xIn = common::tile(xIn, x_tdims);
+        xIn = arrayfire::common::tile(xIn, x_tdims);
 
         // Convert yIn to a row vector
         yIn = modDims(yIn, dim4(1, yIn.elements()));
         // Now tile along first dimension
         dim4 y_tdims(X_dims[0], 1, 1, 1);
-        yIn = common::tile(yIn, y_tdims);
+        yIn = arrayfire::common::tile(yIn, y_tdims);
     }
 
     // Flatten xIn, yIn and zIn into row vectors
@@ -190,7 +195,7 @@ af_err af_draw_surface(const af_window window, const af_array xVals,
         }
         auto gridDims = forgeManager().getWindowGrid(window);
 
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule& _ = forgePlugin();
         if (props->col > -1 && props->row > -1) {
             FG_CHECK(_.fg_draw_chart_to_cell(
                 window, gridDims.first, gridDims.second,

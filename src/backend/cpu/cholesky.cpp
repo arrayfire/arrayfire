@@ -24,6 +24,7 @@
 #include <triangle.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -87,9 +88,11 @@ INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -113,5 +116,6 @@ INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA

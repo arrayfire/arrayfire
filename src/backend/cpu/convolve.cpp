@@ -28,10 +28,11 @@
 #include <af/dim4.hpp>
 
 using af::dim4;
-using common::flip;
-using common::half;
-using common::modDims;
+using arrayfire::common::flip;
+using arrayfire::common::half;
+using arrayfire::common::modDims;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T, typename accT>
@@ -256,3 +257,4 @@ INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace cpu
+}  // namespace arrayfire

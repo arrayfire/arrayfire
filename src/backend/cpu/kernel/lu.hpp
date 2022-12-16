@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -73,3 +74,4 @@ void convertPivot(Param<int> p, Param<int> pivot) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

@@ -17,11 +17,16 @@
 #include <platform.hpp>
 #include <queue.hpp>
 
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
+
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
 void copy_image(const Array<T> &in, fg_image image) {
-    ForgeModule &_ = graphics::forgePlugin();
+    ForgeModule &_ = forgePlugin();
 
     CheckGL("Before CopyArrayToImage");
     const T *d_X = in.get();
@@ -50,3 +55,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace cpu
+}  // namespace arrayfire

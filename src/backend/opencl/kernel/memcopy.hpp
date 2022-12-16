@@ -23,9 +23,7 @@
 #include <string>
 #include <vector>
 
-using std::string;
-using std::vector;
-
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 typedef struct {
@@ -251,3 +249,4 @@ void copy(const Param out, const Param in, dim_t ondims,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

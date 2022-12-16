@@ -14,6 +14,7 @@
 #include <err_cuda.hpp>
 #include <kernel/pad_array_borders.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<T> padArrayBorders(Array<T> const& in, dim4 const& lowerBoundPadding,
@@ -53,3 +54,4 @@ INSTANTIATE_PAD_ARRAY_BORDERS(ushort)
 INSTANTIATE_PAD_ARRAY_BORDERS(short)
 INSTANTIATE_PAD_ARRAY_BORDERS(common::half)
 }  // namespace cuda
+}  // namespace arrayfire

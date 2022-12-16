@@ -14,6 +14,7 @@
 #include <type_traits>
 #include "interp.hpp"
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -140,3 +141,4 @@ void transform(Param<T> output, CParam<T> input, CParam<float> transform,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

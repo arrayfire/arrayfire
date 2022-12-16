@@ -9,6 +9,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace cuda {
 
 // Reference pattern, generated for a patch size of 31x31, as suggested by
@@ -94,3 +95,4 @@ int d_ref_pat[REF_PAT_LENGTH] = {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

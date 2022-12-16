@@ -40,11 +40,11 @@
 #include <string>
 #include <vector>
 
+using arrayfire::common::getEnvVar;
 using cl::CommandQueue;
 using cl::Context;
 using cl::Device;
 using cl::Platform;
-using common::getEnvVar;
 using std::begin;
 using std::end;
 using std::find;
@@ -54,6 +54,7 @@ using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 
 #if defined(OS_MAC)
@@ -197,7 +198,7 @@ DeviceManager::DeviceManager()
         }
 #endif
     }
-    fgMngr = std::make_unique<graphics::ForgeManager>();
+    fgMngr = std::make_unique<arrayfire::common::ForgeManager>();
 
     // This is all we need because the sort takes care of the order of devices
 #ifdef OS_MAC
@@ -543,3 +544,4 @@ void DeviceManager::markDeviceForInterop(const int device,
 }
 
 }  // namespace opencl
+}  // namespace arrayfire

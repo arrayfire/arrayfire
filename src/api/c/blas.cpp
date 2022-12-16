@@ -25,13 +25,16 @@
 #include <af/defines.h>
 #include <af/dim4.hpp>
 
-using common::half;
-using common::SparseArrayBase;
+using arrayfire::getSparseArray;
+using arrayfire::getSparseArrayBase;
+using arrayfire::common::half;
+using arrayfire::common::SparseArrayBase;
 using detail::cdouble;
 using detail::cfloat;
 using detail::gemm;
 using detail::matmul;
 
+namespace {
 template<typename T>
 static inline af_array sparseMatmul(const af_array lhs, const af_array rhs,
                                     af_mat_prop optLhs, af_mat_prop optRhs) {
@@ -53,6 +56,16 @@ static inline af_array dot(const af_array lhs, const af_array rhs,
     return getHandle(
         dot<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
+
+template<typename T>
+static inline T dotAll(af_array out) {
+    T res{};
+    AF_CHECK(af_eval(out));
+    AF_CHECK(af_get_data_ptr((void *)&res, out));
+    return res;
+}
+
+}  // namespace
 
 af_err af_sparse_matmul(af_array *out, const af_array lhs, const af_array rhs,
                         const af_mat_prop optLhs, const af_mat_prop optRhs) {
@@ -325,14 +338,6 @@ af_err af_dot(af_array *out, const af_array lhs, const af_array rhs,
     }
     CATCHALL;
     return AF_SUCCESS;
-}
-
-template<typename T>
-static inline T dotAll(af_array out) {
-    T res{};
-    AF_CHECK(af_eval(out));
-    AF_CHECK(af_get_data_ptr((void *)&res, out));
-    return res;
 }
 
 af_err af_dot_all(double *rval, double *ival, const af_array lhs,

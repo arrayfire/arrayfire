@@ -18,8 +18,9 @@
 #include <cassert>
 
 using af::dim4;
-using common::flip;
-using common::half;
+using arrayfire::getArray;
+using arrayfire::common::flip;
+using arrayfire::common::half;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;

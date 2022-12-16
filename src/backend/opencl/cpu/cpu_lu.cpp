@@ -16,6 +16,7 @@
 
 #include <numeric>
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 
@@ -156,4 +157,5 @@ INSTANTIATE_LU(cdouble)
 
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire
 #endif  // WITH_LINEAR_ALGEBRA

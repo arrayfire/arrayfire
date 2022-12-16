@@ -25,6 +25,7 @@
 
 using std::unique_ptr;
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -116,10 +117,9 @@ void reduce_dim_launcher(Param<To> out, CParam<Ti> in, const uint threads_y,
 
     dim3 blocks(blocks_dim[0] * blocks_dim[2], blocks_dim[1] * blocks_dim[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     switch (threads_y) {
         case 8:
@@ -267,10 +267,9 @@ void reduce_first_launcher(Param<To> out, CParam<Ti> in, const uint blocks_x,
 
     uint repeat = divup(in.dims[0], (blocks_x * threads_x));
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     switch (threads_x) {
         case 32:
@@ -423,3 +422,4 @@ To reduce_all(CParam<Ti> in, bool change_nan, double nanval) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

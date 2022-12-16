@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -55,3 +56,4 @@ void hsv2rgb_convert(Param out, const Param in, bool isHSV2RGB) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

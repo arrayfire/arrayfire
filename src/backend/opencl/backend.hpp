@@ -21,4 +21,4 @@
 
 #include "types.hpp"
 
-namespace detail = opencl;
+namespace detail = arrayfire::opencl;

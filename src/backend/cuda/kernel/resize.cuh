@@ -10,15 +10,15 @@
 #include <Param.hpp>
 #include <interp.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 // nearest-neighbor resampling
 template<typename T>
-__host__ __device__
-void resize_n(Param<T> out, CParam<T> in, const int o_off,
-              const int i_off, const int blockIdx_x,
-              const int blockIdx_y, const float xf,
-              const float yf) {
+__host__ __device__ void resize_n(Param<T> out, CParam<T> in, const int o_off,
+                                  const int i_off, const int blockIdx_x,
+                                  const int blockIdx_y, const float xf,
+                                  const float yf) {
     const int ox = threadIdx.x + blockIdx_x * blockDim.x;
     const int oy = threadIdx.y + blockIdx_y * blockDim.y;
 
@@ -35,11 +35,10 @@ void resize_n(Param<T> out, CParam<T> in, const int o_off,
 
 // bilinear resampling
 template<typename T>
-__host__ __device__
-void resize_b(Param<T> out, CParam<T> in, const int o_off,
-              const int i_off, const int blockIdx_x,
-              const int blockIdx_y, const float xf_,
-              const float yf_) {
+__host__ __device__ void resize_b(Param<T> out, CParam<T> in, const int o_off,
+                                  const int i_off, const int blockIdx_x,
+                                  const int blockIdx_y, const float xf_,
+                                  const float yf_) {
     const int ox = threadIdx.x + blockIdx_x * blockDim.x;
     const int oy = threadIdx.y + blockIdx_y * blockDim.y;
 
@@ -78,11 +77,10 @@ void resize_b(Param<T> out, CParam<T> in, const int o_off,
 
 // lower resampling
 template<typename T>
-__host__ __device__
-void resize_l(Param<T> out, CParam<T> in, const int o_off,
-              const int i_off, const int blockIdx_x,
-              const int blockIdx_y, const float xf,
-              const float yf) {
+__host__ __device__ void resize_l(Param<T> out, CParam<T> in, const int o_off,
+                                  const int i_off, const int blockIdx_x,
+                                  const int blockIdx_y, const float xf,
+                                  const float yf) {
     const int ox = threadIdx.x + blockIdx_x * blockDim.x;
     const int oy = threadIdx.y + blockIdx_y * blockDim.y;
 
@@ -98,9 +96,8 @@ void resize_l(Param<T> out, CParam<T> in, const int o_off,
 }
 
 template<typename T, af::interpType method>
-__global__
-void resize(Param<T> out, CParam<T> in, const int b0,
-            const int b1, const float xf, const float yf) {
+__global__ void resize(Param<T> out, CParam<T> in, const int b0, const int b1,
+                       const float xf, const float yf) {
     const int bIdx = blockIdx.x / b0;
     const int bIdy = blockIdx.y / b1;
     // channel adjustment
@@ -119,4 +116,5 @@ void resize(Param<T> out, CParam<T> in, const int b0,
     }
 }
 
-} // namespace cuda
+}  // namespace cuda
+}  // namespace arrayfire

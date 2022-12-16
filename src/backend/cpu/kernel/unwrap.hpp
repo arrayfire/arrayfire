@@ -12,6 +12,7 @@
 #include <err_cpu.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -80,3 +81,4 @@ void unwrap_dim(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

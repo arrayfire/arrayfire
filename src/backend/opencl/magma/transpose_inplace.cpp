@@ -54,10 +54,10 @@
 #include "kernel/transpose_inplace.hpp"
 #include "magma_data.h"
 
+using arrayfire::opencl::makeParam;
+using arrayfire::opencl::kernel::transpose_inplace;
 using cl::Buffer;
 using cl::CommandQueue;
-using opencl::makeParam;
-using opencl::kernel::transpose_inplace;
 
 template<typename T>
 void magmablas_transpose_inplace(magma_int_t n, cl_mem dA, size_t dA_offset,

@@ -18,6 +18,7 @@ namespace cl {
 class Buffer;
 }
 
+namespace arrayfire {
 namespace opencl {
 class GraphicsResourceManager
     : public common::InteropManager<GraphicsResourceManager, cl::Buffer> {
@@ -33,3 +34,4 @@ class GraphicsResourceManager
     void operator=(GraphicsResourceManager const&);
 };
 }  // namespace opencl
+}  // namespace arrayfire

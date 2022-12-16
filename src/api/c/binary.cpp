@@ -10,6 +10,8 @@
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <common/err_common.hpp>
+#include <common/moddims.hpp>
+#include <common/tile.hpp>
 #include <handle.hpp>
 #include <implicit.hpp>
 #include <optypes.hpp>
@@ -28,7 +30,13 @@
 
 using af::dim4;
 using af::dtype;
-using common::half;
+using arrayfire::castSparse;
+using arrayfire::getSparseArray;
+using arrayfire::getSparseArrayBase;
+using arrayfire::common::half;
+using arrayfire::common::modDims;
+using arrayfire::common::SparseArrayBase;
+using arrayfire::common::tile;
 using detail::arithOp;
 using detail::arithOpD;
 using detail::cdouble;
@@ -144,8 +152,8 @@ template<af_op_t op>
 static af_err af_arith_sparse(af_array *out, const af_array lhs,
                               const af_array rhs) {
     try {
-        const common::SparseArrayBase linfo = getSparseArrayBase(lhs);
-        const common::SparseArrayBase rinfo = getSparseArrayBase(rhs);
+        const SparseArrayBase linfo = getSparseArrayBase(lhs);
+        const SparseArrayBase rinfo = getSparseArrayBase(rhs);
 
         ARG_ASSERT(1, (linfo.getStorage() == rinfo.getStorage()));
         ARG_ASSERT(1, (linfo.dims() == rinfo.dims()));
@@ -172,7 +180,7 @@ static af_err af_arith_sparse_dense(af_array *out, const af_array lhs,
                                     const af_array rhs,
                                     const bool reverse = false) {
     try {
-        const common::SparseArrayBase linfo = getSparseArrayBase(lhs);
+        const SparseArrayBase linfo = getSparseArrayBase(lhs);
         if (linfo.ndims() > 2) {
             AF_ERROR(
                 "Sparse-Dense arithmetic operations cannot be used in batch "

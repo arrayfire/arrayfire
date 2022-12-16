@@ -17,6 +17,7 @@
 
 using af::dim4;
 using std::swap;
+namespace arrayfire {
 namespace opencl {
 template<af_op_t op, typename Ti, typename To>
 Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan,
@@ -41,6 +42,7 @@ To reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
     return kernel::reduceAll<Ti, To, op>(in, change_nan, nanval);
 }
 }  // namespace opencl
+}  // namespace arrayfire
 
 #define INSTANTIATE(Op, Ti, To)                                                \
     template Array<To> reduce<Op, Ti, To>(const Array<Ti> &in, const int dim,  \

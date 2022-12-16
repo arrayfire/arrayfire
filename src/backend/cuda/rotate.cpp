@@ -12,6 +12,7 @@
 #include <kernel/rotate.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -40,3 +41,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace cuda
+}  // namespace arrayfire

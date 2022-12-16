@@ -10,9 +10,11 @@
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
 void copy_vector_field(const Array<T> &points, const Array<T> &directions,
                        fg_vector_field vfield);
-}
+}  // namespace cuda
+}  // namespace arrayfire

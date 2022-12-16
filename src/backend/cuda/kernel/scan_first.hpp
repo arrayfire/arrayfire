@@ -17,6 +17,7 @@
 #include <nvrtc_kernel_headers/scan_first_cuh.hpp>
 #include "config.hpp"
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,7 +27,7 @@ static void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                                 const uint threads_x, bool isFinalPass,
                                 bool inclusive_scan) {
     auto scan_first =
-        common::getKernel("cuda::scan_first", {scan_first_cuh_src},
+        common::getKernel("arrayfire::cuda::scan_first", {scan_first_cuh_src},
                           {TemplateTypename<Ti>(), TemplateTypename<To>(),
                            TemplateArg(op), TemplateArg(isFinalPass),
                            TemplateArg(threads_x), TemplateArg(inclusive_scan)},
@@ -35,10 +36,9 @@ static void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
@@ -52,16 +52,15 @@ static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
                                  const uint blocks_x, const uint blocks_y,
                                  const uint threads_x, bool inclusive_scan) {
     auto scan_first_bcast =
-        common::getKernel("cuda::scan_first_bcast", {scan_first_cuh_src},
+        common::getKernel("arrayfire::cuda::scan_first_bcast", {scan_first_cuh_src},
                           {TemplateTypename<To>(), TemplateArg(op)});
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
@@ -114,3 +113,4 @@ static void scan_first(Param<To> out, CParam<Ti> in, bool inclusive_scan) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

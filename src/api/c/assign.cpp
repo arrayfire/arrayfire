@@ -30,12 +30,13 @@ using std::swap;
 using std::vector;
 
 using af::dim4;
-using common::convert2Canonical;
-using common::createSpanIndex;
-using common::half;
-using common::if_complex;
-using common::if_real;
-using common::modDims;
+using arrayfire::common::convert2Canonical;
+using arrayfire::common::createSpanIndex;
+using arrayfire::common::half;
+using arrayfire::common::if_complex;
+using arrayfire::common::if_real;
+using arrayfire::common::modDims;
+using arrayfire::common::tile;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
@@ -77,9 +78,9 @@ static void assign(Array<Tout>& out, const vector<af_seq> seqs,
 
         // If both out and in are vectors of equal elements,
         // reshape in to out dims
-        Array<Tin> in_ =
-            in.elements() == 1 ? common::tile(in, oDims) : modDims(in, oDims);
-        auto dst = createSubArray<Tout>(out, seqs, false);
+        Array<Tin> in_ = in.elements() == 1 ? arrayfire::common::tile(in, oDims)
+                                            : modDims(in, oDims);
+        auto dst       = createSubArray<Tout>(out, seqs, false);
 
         copyArray<Tin, Tout>(dst, in_);
     } else {

@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -118,3 +119,4 @@ void floodFill(Param out, const Param image, const Param seedsx,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

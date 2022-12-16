@@ -16,11 +16,15 @@
 #include <stdexcept>
 #include <vector>
 
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
+
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
 void copy_image(const Array<T> &in, fg_image image) {
-    ForgeModule &_ = graphics::forgePlugin();
+    ForgeModule &_ = forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin opencl resource copy");
 
@@ -80,3 +84,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace opencl
+}  // namespace arrayfire

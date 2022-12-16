@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/transpose_inplace_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,7 +27,7 @@ template<typename T>
 void transpose_inplace(Param<T> in, const bool conjugate,
                        const bool is32multiple) {
     auto transposeIP =
-        common::getKernel("cuda::transposeIP", {transpose_inplace_cuh_src},
+        common::getKernel("arrayfire::cuda::transposeIP", {transpose_inplace_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(conjugate),
                            TemplateArg(is32multiple)},
                           {DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
@@ -49,3 +50,4 @@ void transpose_inplace(Param<T> in, const bool conjugate,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

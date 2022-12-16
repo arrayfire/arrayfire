@@ -13,6 +13,7 @@
 #include <common/Transform.hpp>
 #include <common/half.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -159,3 +160,4 @@ struct reduce_dim_by_key<op, Ti, Tk, To, 0> {
 };
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

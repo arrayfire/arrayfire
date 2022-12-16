@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -52,3 +53,4 @@ void range(Param out, const int dim) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

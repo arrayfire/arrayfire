@@ -14,6 +14,7 @@
 #include <nvrtc_kernel_headers/match_template_cuh.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -25,7 +26,7 @@ void matchTemplate(Param<outType> out, CParam<inType> srch,
                    CParam<inType> tmplt, const af::matchType mType,
                    bool needMean) {
     auto matchTemplate = common::getKernel(
-        "cuda::matchTemplate", {match_template_cuh_src},
+        "arrayfire::cuda::matchTemplate", {match_template_cuh_src},
         {TemplateTypename<inType>(), TemplateTypename<outType>(),
          TemplateArg(mType), TemplateArg(needMean)});
 
@@ -43,3 +44,4 @@ void matchTemplate(Param<outType> out, CParam<inType> srch,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

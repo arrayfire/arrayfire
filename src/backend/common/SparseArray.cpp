@@ -27,6 +27,7 @@ using detail::getActiveDeviceId;
 using detail::scalar;
 using detail::writeDeviceDataArray;
 
+namespace arrayfire {
 namespace common {
 ////////////////////////////////////////////////////////////////////////////
 // Sparse Array Base Implementations
@@ -260,3 +261,4 @@ INSTANTIATE(cdouble);
 #undef INSTANTIATE
 
 }  // namespace common
+}  // namespace arrayfire

@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -50,9 +51,8 @@ void csrmm_nt(Param out, const Param &values, const Param &rowIdx,
         DefineKeyValue(USE_BETA, use_beta),
         DefineKeyValue(USE_GREEDY, use_greedy),
         DefineValue(THREADS_PER_GROUP),
-        DefineKeyValue(IS_CPLX, (af::iscplx<T>() ? 1 : 0)),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(IS_CPLX, (iscplx<T>() ? 1 : 0)),
+        getTypeBuildDefinition<T>()};
 
     // FIXME: Switch to perf (thread vs block) baesd kernel
     auto csrmm_nt_func =
@@ -77,3 +77,4 @@ void csrmm_nt(Param out, const Param &values, const Param &rowIdx,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

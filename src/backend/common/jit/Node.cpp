@@ -19,6 +19,7 @@
 
 using std::vector;
 
+namespace arrayfire {
 namespace common {
 
 int Node::getNodesMap(Node_map_t &node_map, vector<Node *> &full_nodes,
@@ -76,9 +77,11 @@ auto isScalar(const Node &ptr) -> bool { return ptr.isScalar(); }
 bool Node::isLinear(const dim_t dims[4]) const { return true; }
 
 }  // namespace common
+}  // namespace arrayfire
 
-size_t std::hash<common::Node *>::operator()(
-    common::Node *const node) const noexcept {
-    common::Node *const node_ptr = static_cast<common::Node *const>(node);
+size_t std::hash<arrayfire::common::Node *>::operator()(
+    arrayfire::common::Node *const node) const noexcept {
+    arrayfire::common::Node *const node_ptr =
+        static_cast<arrayfire::common::Node *const>(node);
     return node_ptr->getHash();
 }

@@ -15,6 +15,9 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/lu_split_cuh.hpp>
 
+#include <array>
+
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -29,7 +32,7 @@ void lu_split(Param<T> lower, Param<T> upper, Param<T> in) {
         lower.dims[0] == in.dims[0] && lower.dims[1] == in.dims[1];
 
     auto luSplit =
-        common::getKernel("cuda::luSplit", {lu_split_cuh_src},
+        common::getKernel("arrayfire::cuda::luSplit", {lu_split_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(sameDims)});
 
     dim3 threads(TX, TY, 1);
@@ -46,3 +49,4 @@ void lu_split(Param<T> lower, Param<T> upper, Param<T> in) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

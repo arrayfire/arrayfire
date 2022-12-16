@@ -28,6 +28,7 @@
 /* Other */
 #endif
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -155,19 +156,22 @@ cfloat operator*(cfloat lhs, cfloat rhs);
 cdouble operator*(cdouble lhs, cdouble rhs);
 common::half operator+(common::half lhs, common::half rhs) noexcept;
 }  // namespace opencl
+}  // namespace arrayfire
 
-static inline bool operator==(opencl::cfloat lhs, opencl::cfloat rhs) noexcept {
+static inline bool operator==(arrayfire::opencl::cfloat lhs,
+                              arrayfire::opencl::cfloat rhs) noexcept {
     return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
 }
-static inline bool operator!=(opencl::cfloat lhs, opencl::cfloat rhs) noexcept {
+static inline bool operator!=(arrayfire::opencl::cfloat lhs,
+                              arrayfire::opencl::cfloat rhs) noexcept {
     return !(lhs == rhs);
 }
-static inline bool operator==(opencl::cdouble lhs,
-                              opencl::cdouble rhs) noexcept {
+static inline bool operator==(arrayfire::opencl::cdouble lhs,
+                              arrayfire::opencl::cdouble rhs) noexcept {
     return (lhs.s[0] == rhs.s[0]) && (lhs.s[1] == rhs.s[1]);
 }
-static inline bool operator!=(opencl::cdouble lhs,
-                              opencl::cdouble rhs) noexcept {
+static inline bool operator!=(arrayfire::opencl::cdouble lhs,
+                              arrayfire::opencl::cdouble rhs) noexcept {
     return !(lhs == rhs);
 }
 

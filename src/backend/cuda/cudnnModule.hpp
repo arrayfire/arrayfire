@@ -61,6 +61,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm(
     cudnnConvolutionBwdFilterAlgo_t* algo);
 #endif
 
+namespace arrayfire {
 namespace cuda {
 
 class cudnnModule {
@@ -111,3 +112,4 @@ class cudnnModule {
 cudnnModule& getCudnnPlugin() noexcept;
 
 }  // namespace cuda
+}  // namespace arrayfire

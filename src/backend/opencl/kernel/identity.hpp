@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -32,10 +33,9 @@ static void identity(Param out) {
     };
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(ONE, af::scalar_to_option(scalar<T>(1))),
-        DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(ONE, scalar_to_option(scalar<T>(1))),
+        DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
+        getTypeBuildDefinition<T>()};
 
     auto identityOp =
         common::getKernel("identity_kernel", {identity_cl_src}, targs, options);
@@ -53,3 +53,4 @@ static void identity(Param out) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

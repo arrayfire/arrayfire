@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -119,3 +120,4 @@ void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

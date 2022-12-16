@@ -12,6 +12,7 @@
 #include <common/err_common.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace cuda {
 const char* errorString(cublasStatus_t err) {
     switch (err) {
@@ -32,3 +33,4 @@ const char* errorString(cublasStatus_t err) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

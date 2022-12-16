@@ -59,13 +59,14 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
-using common::getEnvVar;
-using common::int_version_to_string;
-using common::unique_handle;
-using common::memory::MemoryManagerBase;
-using cuda::Allocator;
-using cuda::AllocatorPinned;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::int_version_to_string;
+using arrayfire::common::MemoryManagerBase;
+using arrayfire::common::unique_handle;
+using arrayfire::cuda::Allocator;
+using arrayfire::cuda::AllocatorPinned;
 
+namespace arrayfire {
 namespace cuda {
 
 static string get_system() {
@@ -91,8 +92,7 @@ unique_handle<cublasHandle_t> *cublasManager(const int deviceId) {
         // TODO(pradeep) When multiple streams per device
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
-        CUBLAS_CHECK(
-            cublasSetStream(handles[deviceId], cuda::getStream(deviceId)));
+        CUBLAS_CHECK(cublasSetStream(handles[deviceId], getStream(deviceId)));
     });
 
     return &handles[deviceId];
@@ -121,7 +121,7 @@ unique_handle<cudnnHandle_t> *nnManager(const int deviceId) {
         AF_ERROR(error_msg, AF_ERR_RUNTIME);
     }
     CUDNN_CHECK(getCudnnPlugin().cudnnSetStream(cudnnHandles[deviceId],
-                                                cuda::getStream(deviceId)));
+                                                getStream(deviceId)));
 
     return handle;
 }
@@ -145,14 +145,14 @@ unique_handle<cusolverDnHandle_t> *cusolverManager(const int deviceId) {
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
         CUSOLVER_CHECK(
-            cusolverDnSetStream(handles[deviceId], cuda::getStream(deviceId)));
+            cusolverDnSetStream(handles[deviceId], getStream(deviceId)));
     });
     // TODO(pradeep) prior to this change, stream was being synced in get solver
     // handle because of some cusolver bug. Re-enable that if this change
     // doesn't work and sovler tests fail.
     // https://gist.github.com/shehzan10/414c3d04a40e7c4a03ed3c2e1b9072e7
     // cuSolver Streams patch:
-    // CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(deviceId)));
+    // CUDA_CHECK(cudaStreamSynchronize(getStream(deviceId)));
 
     return &handles[deviceId];
 }
@@ -167,7 +167,7 @@ unique_handle<cusparseHandle_t> *cusparseManager(const int deviceId) {
         // is added to CUDA backend, move the cublasSetStream
         // call outside of call_once scope.
         CUSPARSE_CHECK(
-            cusparseSetStream(handles[deviceId], cuda::getStream(deviceId)));
+            cusparseSetStream(handles[deviceId], getStream(deviceId)));
     });
     return &handles[deviceId];
 }
@@ -478,7 +478,7 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
-graphics::ForgeManager &forgeManager() {
+arrayfire::common::ForgeManager &forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }
 
@@ -496,11 +496,9 @@ GraphicsResourceManager &interopManager() {
     return *(inst.gfxManagers[id].get());
 }
 
-PlanCache &fftManager() {
-    return *(cufftManager(cuda::getActiveDeviceId()).get());
-}
+PlanCache &fftManager() { return *(cufftManager(getActiveDeviceId()).get()); }
 
-BlasHandle blasHandle() { return *cublasManager(cuda::getActiveDeviceId()); }
+BlasHandle blasHandle() { return *cublasManager(getActiveDeviceId()); }
 
 #ifdef WITH_CUDNN
 cudnnHandle_t nnHandle() {
@@ -511,7 +509,7 @@ cudnnHandle_t nnHandle() {
     static cudnnModule keep_me_to_avoid_exceptions_exceptions =
         getCudnnPlugin();
     static unique_handle<cudnnHandle_t> *handle =
-        nnManager(cuda::getActiveDeviceId());
+        nnManager(getActiveDeviceId());
     if (*handle) {
         return *handle;
     } else {
@@ -520,13 +518,9 @@ cudnnHandle_t nnHandle() {
 }
 #endif
 
-SolveHandle solverDnHandle() {
-    return *cusolverManager(cuda::getActiveDeviceId());
-}
+SolveHandle solverDnHandle() { return *cusolverManager(getActiveDeviceId()); }
 
-SparseHandle sparseHandle() {
-    return *cusparseManager(cuda::getActiveDeviceId());
-}
+SparseHandle sparseHandle() { return *cusparseManager(getActiveDeviceId()); }
 
 void sync(int device) {
     int currDevice = getActiveDeviceId();
@@ -546,10 +540,11 @@ bool &evalFlag() {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire
 
 af_err afcu_get_stream(cudaStream_t *stream, int id) {
     try {
-        *stream = cuda::getStream(id);
+        *stream = arrayfire::cuda::getStream(id);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -557,7 +552,7 @@ af_err afcu_get_stream(cudaStream_t *stream, int id) {
 
 af_err afcu_get_native_id(int *nativeid, int id) {
     try {
-        *nativeid = cuda::getDeviceNativeId(id);
+        *nativeid = arrayfire::cuda::getDeviceNativeId(id);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -565,7 +560,8 @@ af_err afcu_get_native_id(int *nativeid, int id) {
 
 af_err afcu_set_native_id(int nativeid) {
     try {
-        cuda::setDevice(cuda::getDeviceIdFromNativeId(nativeid));
+        arrayfire::cuda::setDevice(
+            arrayfire::cuda::getDeviceIdFromNativeId(nativeid));
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -573,7 +569,7 @@ af_err afcu_set_native_id(int nativeid) {
 
 af_err afcu_cublasSetMathMode(cublasMath_t mode) {
     try {
-        CUBLAS_CHECK(cublasSetMathMode(cuda::blasHandle(), mode));
+        CUBLAS_CHECK(cublasSetMathMode(arrayfire::cuda::blasHandle(), mode));
     }
     CATCHALL;
     return AF_SUCCESS;

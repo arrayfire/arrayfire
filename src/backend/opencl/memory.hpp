@@ -20,6 +20,7 @@ namespace cl {
 class Buffer;  // Forward declaration of cl::Buffer from CL/cl2.hpp
 }
 
+namespace arrayfire {
 namespace opencl {
 cl::Buffer *bufferAlloc(const size_t &bytes);
 void bufferFree(cl::Buffer *buf);
@@ -60,7 +61,7 @@ bool jitTreeExceedsMemoryPressure(size_t bytes);
 void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 
-class Allocator final : public common::memory::AllocatorInterface {
+class Allocator final : public common::AllocatorInterface {
    public:
     Allocator();
     ~Allocator() = default;
@@ -71,7 +72,7 @@ class Allocator final : public common::memory::AllocatorInterface {
     void nativeFree(void *ptr) override;
 };
 
-class AllocatorPinned final : public common::memory::AllocatorInterface {
+class AllocatorPinned final : public common::AllocatorInterface {
    public:
     AllocatorPinned();
     ~AllocatorPinned() = default;
@@ -86,3 +87,4 @@ class AllocatorPinned final : public common::memory::AllocatorInterface {
 };
 
 }  // namespace opencl
+}  // namespace arrayfire

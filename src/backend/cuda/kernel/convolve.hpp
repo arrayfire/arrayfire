@@ -20,6 +20,7 @@
 #include <nvrtc_kernel_headers/convolve_separable_cuh.hpp>
 #include <traits.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -63,8 +64,7 @@ void prepareKernelArgs(conv_kparam_t& params, dim_t oDims[], dim_t fDims[],
         batchDims[i] = (params.launchMoreBlocks ? 1 : oDims[i]);
     }
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
     if (baseDim == 1) {
         params.mThreads = dim3(CONV_THREADS, 1);
         params.mBlk_x   = divup(oDims[0], params.mThreads.x);
@@ -101,7 +101,7 @@ template<typename T, typename aT>
 void convolve_1d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     auto convolve1 = common::getKernel(
-        "cuda::convolve1", {convolve1_cuh_src},
+        "arrayfire::cuda::convolve1", {convolve1_cuh_src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
         {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS)});
 
@@ -156,7 +156,7 @@ void conv2Helper(const conv_kparam_t& p, Param<T> out, CParam<T> sig,
     }
 
     auto convolve2 = common::getKernel(
-        "cuda::convolve2", {convolve2_cuh_src},
+        "arrayfire::cuda::convolve2", {convolve2_cuh_src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand),
          TemplateArg(f0), TemplateArg(f1)},
         {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
@@ -201,7 +201,7 @@ template<typename T, typename aT>
 void convolve_3d(conv_kparam_t& p, Param<T> out, CParam<T> sig, CParam<aT> filt,
                  const bool expand) {
     auto convolve3 = common::getKernel(
-        "cuda::convolve3", {convolve3_cuh_src},
+        "arrayfire::cuda::convolve3", {convolve3_cuh_src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(expand)},
         {DefineValue(MAX_CONV1_FILTER_LEN), DefineValue(CONV_THREADS),
          DefineValue(CONV3_CUBE_X), DefineValue(CONV3_CUBE_Y),
@@ -305,7 +305,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
     }
 
     auto convolve2_separable = common::getKernel(
-        "cuda::convolve2_separable", {convolve_separable_cuh_src},
+        "arrayfire::cuda::convolve2_separable", {convolve_separable_cuh_src},
         {TemplateTypename<T>(), TemplateTypename<aT>(), TemplateArg(conv_dim),
          TemplateArg(expand), TemplateArg(fLen)},
         {DefineValue(MAX_SCONV_FILTER_LEN), DefineValue(SCONV_THREADS_X),
@@ -331,3 +331,4 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<aT> filter, int conv_dim,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

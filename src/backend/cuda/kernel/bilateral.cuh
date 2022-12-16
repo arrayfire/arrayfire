@@ -11,28 +11,26 @@
 #include <math.hpp>
 #include <shared.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
-inline __device__
-int lIdx(int x, int y, int stride1, int stride0) {
+inline __device__ int lIdx(int x, int y, int stride1, int stride0) {
     return (y * stride1 + x * stride0);
 }
 
 template<typename inType, typename outType>
-inline __device__
-void load2ShrdMem(outType *shrd, const inType *const in,
-                  int lx, int ly, int shrdStride, int dim0,
-                  int dim1, int gx, int gy, int inStride1,
-                  int inStride0) {
+inline __device__ void load2ShrdMem(outType *shrd, const inType *const in,
+                                    int lx, int ly, int shrdStride, int dim0,
+                                    int dim1, int gx, int gy, int inStride1,
+                                    int inStride0) {
     shrd[ly * shrdStride + lx] = in[lIdx(
         clamp(gx, 0, dim0 - 1), clamp(gy, 0, dim1 - 1), inStride1, inStride0)];
 }
 
 template<typename inType, typename outType>
-__global__
-void bilateral(Param<outType> out, CParam<inType> in,
-               float sigma_space, float sigma_color,
-               int gaussOff, int nBBS0, int nBBS1) {
+__global__ void bilateral(Param<outType> out, CParam<inType> in,
+                          float sigma_space, float sigma_color, int gaussOff,
+                          int nBBS0, int nBBS1) {
     SharedMemory<outType> shared;
     outType *localMem = shared.getPointer();
     outType *gauss2d  = localMem + gaussOff;
@@ -110,4 +108,5 @@ void bilateral(Param<outType> out, CParam<inType> in,
     }
 }
 
-} // namespace cuda
+}  // namespace cuda
+}  // namespace arrayfire

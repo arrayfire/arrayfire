@@ -17,6 +17,7 @@
 
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace common {
 
 /// duplicates the elements of an Array<T> array.
@@ -46,3 +47,4 @@ detail::Array<T> tile(const detail::Array<T> &in, const af::dim4 tileDims) {
 }
 
 }  // namespace common
+}  // namespace arrayfire

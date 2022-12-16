@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/susan_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,7 +27,7 @@ void susan_responses(T* out, const T* in, const unsigned idim0,
                      const unsigned idim1, const int radius, const float t,
                      const float g, const unsigned edge) {
     auto susan = common::getKernel(
-        "cuda::susan", {susan_cuh_src}, {TemplateTypename<T>()},
+        "arrayfire::cuda::susan", {susan_cuh_src}, {TemplateTypename<T>()},
         {DefineValue(BLOCK_X), DefineValue(BLOCK_Y)});
 
     dim3 threads(BLOCK_X, BLOCK_Y);
@@ -45,7 +46,7 @@ template<typename T>
 void nonMaximal(float* x_out, float* y_out, float* resp_out, unsigned* count,
                 const unsigned idim0, const unsigned idim1, const T* resp_in,
                 const unsigned edge, const unsigned max_corners) {
-    auto nonMax = common::getKernel("cuda::nonMax", {susan_cuh_src},
+    auto nonMax = common::getKernel("arrayfire::cuda::nonMax", {susan_cuh_src},
                                     {TemplateTypename<T>()});
 
     dim3 threads(BLOCK_X, BLOCK_Y);
@@ -54,7 +55,7 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out, unsigned* count,
 
     auto d_corners_found = memAlloc<unsigned>(1);
     CUDA_CHECK(cudaMemsetAsync(d_corners_found.get(), 0, sizeof(unsigned),
-                               cuda::getActiveStream()));
+                               getActiveStream()));
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -63,10 +64,10 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out, unsigned* count,
     POST_LAUNCH_CHECK();
 
     CUDA_CHECK(cudaMemcpyAsync(count, d_corners_found.get(), sizeof(unsigned),
-                               cudaMemcpyDeviceToHost,
-                               cuda::getActiveStream()));
+                               cudaMemcpyDeviceToHost, getActiveStream()));
     CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 }
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

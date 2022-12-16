@@ -36,6 +36,7 @@
 
 namespace compute = boost::compute;
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -59,7 +60,7 @@ void reduceBlocksByKeyDim(cl::Buffer *reduced_block_sizes, Param keys_out,
         DefineKeyValue(DIM, dim),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+        DefineKeyValue(CPLX, iscplx<Ti>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
@@ -101,7 +102,7 @@ void reduceBlocksByKey(cl::Buffer *reduced_block_sizes, Param keys_out,
         DefineKeyValue(DIMX, threads_x),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+        DefineKeyValue(CPLX, iscplx<Ti>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
@@ -142,7 +143,7 @@ void finalBoundaryReduce(cl::Buffer *reduced_block_sizes, Param keys_out,
         DefineKeyValue(DIMX, threads_x),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<To>()),
+        DefineKeyValue(CPLX, iscplx<To>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
@@ -180,7 +181,7 @@ void finalBoundaryReduceDim(cl::Buffer *reduced_block_sizes, Param keys_out,
         DefineKeyValue(DIM, dim),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<To>()),
+        DefineKeyValue(CPLX, iscplx<To>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
@@ -216,7 +217,7 @@ void compact(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
         DefineKeyValue(To, dtype_traits<To>::getName()),
         DefineKeyValue(T, "To"),
         DefineKeyValue(DIMX, threads_x),
-        DefineKeyValue(CPLX, af::iscplx<To>()),
+        DefineKeyValue(CPLX, iscplx<To>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
@@ -251,7 +252,7 @@ void compactDim(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
         DefineKeyValue(T, "To"),
         DefineKeyValue(DIMX, threads_x),
         DefineKeyValue(DIM, dim),
-        DefineKeyValue(CPLX, af::iscplx<To>()),
+        DefineKeyValue(CPLX, iscplx<To>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
@@ -570,3 +571,4 @@ void reduceByKey(Array<Tk> &keys_out, Array<To> &vals_out,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

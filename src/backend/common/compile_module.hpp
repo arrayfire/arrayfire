@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace common {
 
 /// \brief Backend specific source compilation implementation
@@ -62,5 +63,6 @@ detail::Module loadModuleFromDisk(const int device,
                                   const bool isJIT);
 
 }  // namespace common
+}  // namespace arrayfire
 
 #endif

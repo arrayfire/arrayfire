@@ -28,7 +28,7 @@ file_to_string(
     EXTENSION "hpp"
     OUTPUT_DIR ${kernel_headers_dir}
     TARGETS cl_kernel_targets
-    NAMESPACE "opencl"
+    NAMESPACE "arrayfire opencl"
     )
 
 set(opencl_compile_definitions

@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/fftconvolve_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -24,10 +25,10 @@ template<typename convT, typename T>
 void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                     CParam<T> sig, CParam<T> filter) {
     auto packData =
-        common::getKernel("cuda::packData", {fftconvolve_cuh_src},
+        common::getKernel("arrayfire::cuda::packData", {fftconvolve_cuh_src},
                           {TemplateTypename<convT>(), TemplateTypename<T>()});
     auto padArray =
-        common::getKernel("cuda::padArray", {fftconvolve_cuh_src},
+        common::getKernel("arrayfire::cuda::padArray", {fftconvolve_cuh_src},
                           {TemplateTypename<convT>(), TemplateTypename<T>()});
 
     dim_t *sd = sig.dims;
@@ -67,9 +68,9 @@ void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
 template<typename T, typename convT>
 void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                            AF_BATCH_KIND kind) {
-    auto cplxMul =
-        common::getKernel("cuda::complexMultiply", {fftconvolve_cuh_src},
-                          {TemplateTypename<convT>(), TemplateArg(kind)});
+    auto cplxMul = common::getKernel(
+        "arrayfire::cuda::complexMultiply", {fftconvolve_cuh_src},
+        {TemplateTypename<convT>(), TemplateArg(kind)});
 
     int sig_packed_elem    = 1;
     int filter_packed_elem = 1;
@@ -100,10 +101,10 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
                          CParam<T> filter, bool expand, int rank) {
     constexpr bool RoundResult = std::is_integral<T>::value;
 
-    auto reorderOut =
-        common::getKernel("cuda::reorderOutput", {fftconvolve_cuh_src},
-                          {TemplateTypename<T>(), TemplateTypename<convT>(),
-                           TemplateArg(expand), TemplateArg(RoundResult)});
+    auto reorderOut = common::getKernel(
+        "arrayfire::cuda::reorderOutput", {fftconvolve_cuh_src},
+        {TemplateTypename<T>(), TemplateTypename<convT>(), TemplateArg(expand),
+         TemplateArg(RoundResult)});
 
     dim_t *sd    = sig.dims;
     int fftScale = 1;
@@ -125,3 +126,4 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

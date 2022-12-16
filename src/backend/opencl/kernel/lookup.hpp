@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -59,3 +60,4 @@ void lookup(Param out, const Param in, const Param indices,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

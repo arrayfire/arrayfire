@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/range_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -25,7 +26,7 @@ void range(Param<T> out, const int dim) {
     constexpr unsigned RANGE_TILEX = 512;
     constexpr unsigned RANGE_TILEY = 32;
 
-    auto range = common::getKernel("cuda::range", {range_cuh_src},
+    auto range = common::getKernel("arrayfire::cuda::range", {range_cuh_src},
                                    {TemplateTypename<T>()});
 
     dim3 threads(RANGE_TX, RANGE_TY, 1);
@@ -34,10 +35,9 @@ void range(Param<T> out, const int dim) {
     int blocksPerMatY = divup(out.dims[1], RANGE_TILEY);
     dim3 blocks(blocksPerMatX * out.dims[2], blocksPerMatY * out.dims[3], 1);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -47,3 +47,4 @@ void range(Param<T> out, const int dim) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

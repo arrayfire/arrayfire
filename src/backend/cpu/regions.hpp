@@ -9,9 +9,11 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity);
 
-}
+}  // namespace cpu
+}  // namespace arrayfire

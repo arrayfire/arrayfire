@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -135,3 +136,4 @@ void conv3(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt,
            const bool expand);
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

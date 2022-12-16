@@ -16,6 +16,7 @@
 #include <af/image.h>
 
 using af::dim4;
+using arrayfire::getArray;
 using detail::cdouble;
 using detail::cfloat;
 

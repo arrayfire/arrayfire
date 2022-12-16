@@ -15,6 +15,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename Ti, typename To>
@@ -42,3 +43,4 @@ INSTANTIATE(short, int)
 INSTANTIATE(ushort, int)
 
 }  // namespace cuda
+}  // namespace arrayfire

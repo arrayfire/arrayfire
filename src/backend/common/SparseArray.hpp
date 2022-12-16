@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <vector>
 
+namespace arrayfire {
 namespace common {
 
 template<typename T>
@@ -248,3 +249,4 @@ class SparseArray {
 };
 
 }  // namespace common
+}  // namespace arrayfire

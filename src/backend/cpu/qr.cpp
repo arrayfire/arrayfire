@@ -22,6 +22,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -108,9 +109,11 @@ Array<T> qr_inplace(Array<T> &in) {
 }
 
 }  // namespace cpu
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -124,9 +127,11 @@ Array<T> qr_inplace(Array<T> &in) {
 }
 
 }  // namespace cpu
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace cpu {
 
 #define INSTANTIATE_QR(T)                                         \
@@ -140,3 +145,4 @@ INSTANTIATE_QR(double)
 INSTANTIATE_QR(cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire

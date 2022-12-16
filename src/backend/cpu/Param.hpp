@@ -12,6 +12,7 @@
 #include <af/defines.h>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 /// \brief Constant parameter object who's memory cannot be modified. Params
@@ -153,3 +154,4 @@ CParam<T> toParam(const Array<T> &val) noexcept {
 }
 
 }  // namespace cpu
+}  // namespace arrayfire

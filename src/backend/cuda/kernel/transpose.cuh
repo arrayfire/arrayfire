@@ -10,6 +10,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, bool conjugate>
@@ -21,8 +22,7 @@ __device__ T doOp(T in) {
 }
 
 template<typename T, bool conjugate, bool is32Multiple>
-__global__ void transpose(Param<T> out, CParam<T> in,
-                          const int blocksPerMatX,
+__global__ void transpose(Param<T> out, CParam<T> in, const int blocksPerMatX,
                           const int blocksPerMatY) {
     __shared__ T shrdMem[TILE_DIM][TILE_DIM + 1];
 
@@ -75,4 +75,5 @@ __global__ void transpose(Param<T> out, CParam<T> in,
     }
 }
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

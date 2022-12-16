@@ -13,12 +13,12 @@
 #include <assign_kernel_param.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
-__global__ void index(Param<T> out, CParam<T> in,
-                      const cuda::IndexKernelParam p, const int nBBS0,
-                      const int nBBS1) {
+__global__ void index(Param<T> out, CParam<T> in, const IndexKernelParam p,
+                      const int nBBS0, const int nBBS1) {
     // retrieve index pointers
     // these can be 0 where af_array index is not used
     const uint* ptr0 = p.ptr[0];
@@ -60,3 +60,4 @@ __global__ void index(Param<T> out, CParam<T> in,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -11,6 +11,7 @@
 
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 Kernel::DevPtrType Kernel::getDevPtr(const char* name) {
@@ -22,22 +23,22 @@ Kernel::DevPtrType Kernel::getDevPtr(const char* name) {
 
 void Kernel::copyToReadOnly(Kernel::DevPtrType dst, Kernel::DevPtrType src,
                             size_t bytes) {
-    CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, cuda::getActiveStream()));
+    CU_CHECK(cuMemcpyDtoDAsync(dst, src, bytes, getActiveStream()));
 }
 
 void Kernel::setFlag(Kernel::DevPtrType dst, int* scalarValPtr,
                      const bool syncCopy) {
-    CU_CHECK(cuMemcpyHtoDAsync(dst, scalarValPtr, sizeof(int),
-                               cuda::getActiveStream()));
-    if (syncCopy) { CU_CHECK(cuStreamSynchronize(cuda::getActiveStream())); }
+    CU_CHECK(
+        cuMemcpyHtoDAsync(dst, scalarValPtr, sizeof(int), getActiveStream()));
+    if (syncCopy) { CU_CHECK(cuStreamSynchronize(getActiveStream())); }
 }
 
 int Kernel::getFlag(Kernel::DevPtrType src) {
     int retVal = 0;
-    CU_CHECK(
-        cuMemcpyDtoHAsync(&retVal, src, sizeof(int), cuda::getActiveStream()));
-    CU_CHECK(cuStreamSynchronize(cuda::getActiveStream()));
+    CU_CHECK(cuMemcpyDtoHAsync(&retVal, src, sizeof(int), getActiveStream()));
+    CU_CHECK(cuStreamSynchronize(getActiveStream()));
     return retVal;
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

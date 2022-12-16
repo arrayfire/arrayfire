@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -272,3 +273,4 @@ void harris(unsigned *corners_out, Param &x_out, Param &y_out, Param &resp_out,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

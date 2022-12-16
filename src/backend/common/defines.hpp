@@ -63,7 +63,9 @@ using LibHandle = void*;
 #define AF_MEM_DEBUG 0
 #endif
 
+namespace arrayfire {
 namespace common {
 using mutex_t      = std::mutex;
 using lock_guard_t = std::lock_guard<mutex_t>;
 }  // namespace common
+}  // namespace arrayfire

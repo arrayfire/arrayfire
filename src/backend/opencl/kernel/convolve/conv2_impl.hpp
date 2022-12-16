@@ -12,6 +12,7 @@
 #include <common/kernel_cache.hpp>
 #include <kernel/convolve/conv_common.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -94,3 +95,4 @@ void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

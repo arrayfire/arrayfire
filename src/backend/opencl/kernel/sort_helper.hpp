@@ -14,6 +14,7 @@
 #include <debug_opencl.hpp>
 #include <type_traits>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -44,3 +45,4 @@ using type_t = typename std::conditional<std::is_same<T, uintl>::value,
                                          cl_ulong, ltype_t<T>>::type;
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

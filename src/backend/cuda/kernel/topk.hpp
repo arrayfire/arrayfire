@@ -22,6 +22,7 @@
 
 using cub::BlockRadixSort;
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 static const int TOPK_THRDS_PER_BLK = 256;
@@ -158,3 +159,4 @@ inline void topk(Param<T> ovals, Param<uint> oidxs, CParam<T> ivals,
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

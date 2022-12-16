@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -32,3 +33,4 @@ void identity(Param<T> out) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

@@ -12,6 +12,7 @@
 #include <common/Transform.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename Tk>
@@ -368,3 +369,4 @@ __global__ void scanbykey_dim_bcast(Param<To> out, CParam<To> tmp,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

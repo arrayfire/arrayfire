@@ -15,6 +15,7 @@
 
 #include <type_traits>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -27,7 +28,7 @@ void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
     typedef typename std::conditional<std::is_same<T, double>::value, double,
                                       float>::type AccType;
     auto meanshift = common::getKernel(
-        "cuda::meanshift", {meanshift_cuh_src},
+        "arrayfire::cuda::meanshift", {meanshift_cuh_src},
         {
             TemplateTypename<AccType>(), TemplateTypename<T>(),
             TemplateArg((IsColor ? 3 : 1))  // channels
@@ -52,3 +53,4 @@ void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

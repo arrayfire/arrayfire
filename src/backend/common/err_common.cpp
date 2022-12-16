@@ -31,9 +31,9 @@ using std::move;
 using std::string;
 using std::stringstream;
 
-using common::getEnvVar;
-using common::getName;
-using common::is_stacktrace_enabled;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::getName;
+using arrayfire::common::is_stacktrace_enabled;
 
 AfError::AfError(const char *const func, const char *const file, const int line,
                  const char *const message, af_err err, stacktrace st)
@@ -222,6 +222,7 @@ const char *af_err_to_string(const af_err err) {
            "case in af_err_to_string.";
 }
 
+namespace arrayfire {
 namespace common {
 
 bool &is_stacktrace_enabled() noexcept {
@@ -230,3 +231,4 @@ bool &is_stacktrace_enabled() noexcept {
 }
 
 }  // namespace common
+}  // namespace arrayfire

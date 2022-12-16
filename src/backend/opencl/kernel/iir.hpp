@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -34,12 +35,10 @@ void iir(Param y, Param c, Param a) {
         TemplateArg(batch_a),
     };
     std::vector<std::string> options = {
-        DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineValue(MAX_A_SIZE),
+        DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(MAX_A_SIZE),
         DefineKeyValue(BATCH_A, batch_a),
-        DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
+        getTypeBuildDefinition<T>()};
 
     auto iir = common::getKernel("iir_kernel", {iir_cl_src}, targs, options);
 
@@ -64,3 +63,4 @@ void iir(Param y, Param c, Param a) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

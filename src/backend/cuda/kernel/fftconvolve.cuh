@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <common/internal_enums.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename To, typename Ti>
@@ -218,3 +219,4 @@ __global__ void reorderOutput(Param<To> out, Param<Ti> in, CParam<To> filter,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

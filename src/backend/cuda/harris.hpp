@@ -12,6 +12,7 @@
 
 using af::features;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, typename convAccT>
@@ -21,4 +22,5 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out,
                 const float sigma, const unsigned filter_len,
                 const float k_thr);
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

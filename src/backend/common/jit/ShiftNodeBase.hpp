@@ -20,6 +20,7 @@
 #include <sstream>
 #include <string>
 
+namespace arrayfire {
 namespace common {
 
 template<typename BufferNode>
@@ -115,3 +116,4 @@ class ShiftNodeBase : public Node {
     }
 };
 }  // namespace common
+}  // namespace arrayfire

@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -281,3 +282,4 @@ void extract_orb(unsigned* desc_out, const unsigned n_feat, float* x_in_out,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

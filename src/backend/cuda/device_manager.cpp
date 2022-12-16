@@ -45,8 +45,8 @@
 #include <thread>
 #include <utility>
 
-using common::getEnvVar;
-using common::int_version_to_string;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::int_version_to_string;
 using std::begin;
 using std::end;
 using std::find;
@@ -56,6 +56,7 @@ using std::pair;
 using std::string;
 using std::stringstream;
 
+namespace arrayfire {
 namespace cuda {
 
 struct cuNVRTCcompute {
@@ -379,7 +380,7 @@ void DeviceManager::setMemoryManager(
     memManager = std::move(newMgr);
     // Set the backend memory manager for this new manager to register native
     // functions correctly.
-    std::unique_ptr<cuda::Allocator> deviceMemoryManager(new cuda::Allocator());
+    std::unique_ptr<cuda::Allocator> deviceMemoryManager(new Allocator());
     memManager->setAllocator(std::move(deviceMemoryManager));
     memManager->initialize();
 }
@@ -406,7 +407,7 @@ void DeviceManager::setMemoryManagerPinned(
     // functions correctly.
     pinnedMemManager = std::move(newMgr);
     std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(
-        new cuda::AllocatorPinned());
+        new AllocatorPinned());
     pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
     pinnedMemManager->initialize();
 }
@@ -546,7 +547,7 @@ DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , cuDevices(0)
     , nDevices(0)
-    , fgMngr(new graphics::ForgeManager()) {
+    , fgMngr(new arrayfire::common::ForgeManager()) {
     try {
         checkCudaVsDriverVersion();
 
@@ -725,3 +726,4 @@ int DeviceManager::setActiveDevice(int device, int nId) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

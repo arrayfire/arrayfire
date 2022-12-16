@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -63,3 +64,4 @@ void index(Param out, const Param in, const IndexKernelParam_t& p,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

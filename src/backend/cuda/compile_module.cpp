@@ -62,8 +62,12 @@
 #include <utility>
 #include <vector>
 
-using namespace cuda;
-
+using arrayfire::common::getCacheDirectory;
+using arrayfire::common::makeTempFilename;
+using arrayfire::common::removeFile;
+using arrayfire::common::renameFile;
+using arrayfire::cuda::getComputeCapability;
+using arrayfire::cuda::getDeviceProp;
 using detail::Module;
 using std::accumulate;
 using std::array;
@@ -126,7 +130,8 @@ constexpr size_t linkLogSize = 2048;
     } while (0)
 
 spdlog::logger *getLogger() {
-    static std::shared_ptr<spdlog::logger> logger(common::loggerFactory("jit"));
+    static std::shared_ptr<spdlog::logger> logger(
+        arrayfire::common::loggerFactory("jit"));
     return logger.get();
 }
 
@@ -139,12 +144,14 @@ string getKernelCacheFilename(const int device, const string &key) {
            to_string(AF_API_VERSION_CURRENT) + ".bin";
 }
 
+namespace arrayfire {
 namespace common {
 
 Module compileModule(const string &moduleKey, const vector<string> &sources,
                      const vector<string> &opts,
                      const vector<string> &kInstances, const bool sourceIsJIT) {
     nvrtcProgram prog;
+    using namespace arrayfire::cuda;
     if (sourceIsJIT) {
         constexpr const char *header_names[] = {
             "utility",
@@ -251,8 +258,8 @@ Module compileModule(const string &moduleKey, const vector<string> &sources,
                                        includeNames));
     }
 
-    int device       = cuda::getActiveDeviceId();
-    auto computeFlag = cuda::getComputeCapability(device);
+    int device       = getActiveDeviceId();
+    auto computeFlag = getComputeCapability(device);
     array<char, 32> arch;
     snprintf(arch.data(), arch.size(), "--gpu-architecture=compute_%d%d",
              computeFlag.first, computeFlag.second);
@@ -477,8 +484,8 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
     return retVal;
 }
 
-Kernel getKernel(const Module &mod, const string &nameExpr,
-                 const bool sourceWasJIT) {
+arrayfire::cuda::Kernel getKernel(const Module &mod, const string &nameExpr,
+                                  const bool sourceWasJIT) {
     std::string name  = (sourceWasJIT ? nameExpr : mod.mangledName(nameExpr));
     CUfunction kernel = nullptr;
     CU_CHECK(cuModuleGetFunction(&kernel, mod.get(), name.c_str()));
@@ -486,3 +493,4 @@ Kernel getKernel(const Module &mod, const string &nameExpr,
 }
 
 }  // namespace common
+}  // namespace arrayfire

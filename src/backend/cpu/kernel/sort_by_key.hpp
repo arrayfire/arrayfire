@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -25,3 +26,4 @@ void sort0ByKey(Param<Tk> okey, Param<Tv> oval, bool isAscending);
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

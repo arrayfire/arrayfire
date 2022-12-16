@@ -12,6 +12,7 @@
 #include <common/Transform.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename Tk>
@@ -118,9 +119,9 @@ __global__ void scanbykey_first_nonfinal(Param<To> out, Param<To> tmp,
 #pragma unroll
         for (int off = 1; off < DIMX; off *= 2) {
             if (tidx >= off) {
-                val = sfptr[start + tidx]
-                          ? val
-                          : binop(val, sptr[(start - off) + tidx]);
+                val  = sfptr[start + tidx]
+                           ? val
+                           : binop(val, sptr[(start - off) + tidx]);
                 flag = sfptr[start + tidx] | sfptr[(start - off) + tidx];
             }
             start               = DIMX - start;
@@ -248,9 +249,9 @@ __global__ void scanbykey_first_final(Param<To> out, CParam<Ti> in,
 #pragma unroll
         for (int off = 1; off < DIMX; off *= 2) {
             if (tidx >= off) {
-                val = sfptr[start + tidx]
-                          ? val
-                          : binop(val, sptr[(start - off) + tidx]);
+                val  = sfptr[start + tidx]
+                           ? val
+                           : binop(val, sptr[(start - off) + tidx]);
                 flag = sfptr[start + tidx] | sfptr[(start - off) + tidx];
             }
             start               = DIMX - start;
@@ -313,3 +314,4 @@ __global__ void scanbykey_first_bcast(Param<To> out, Param<To> tmp,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

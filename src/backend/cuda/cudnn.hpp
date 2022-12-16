@@ -16,15 +16,16 @@
 #include <af/dim4.hpp>
 
 // clang-format off
-DEFINE_HANDLER(cudnnHandle_t, cuda::getCudnnPlugin().cudnnCreate, cuda::getCudnnPlugin().cudnnDestroy);
+DEFINE_HANDLER(cudnnHandle_t, arrayfire::cuda::getCudnnPlugin().cudnnCreate, arrayfire::cuda::getCudnnPlugin().cudnnDestroy);
 
-DEFINE_HANDLER(cudnnTensorDescriptor_t, cuda::getCudnnPlugin().cudnnCreateTensorDescriptor, cuda::getCudnnPlugin().cudnnDestroyTensorDescriptor);
+DEFINE_HANDLER(cudnnTensorDescriptor_t, arrayfire::cuda::getCudnnPlugin().cudnnCreateTensorDescriptor, arrayfire::cuda::getCudnnPlugin().cudnnDestroyTensorDescriptor);
 
-DEFINE_HANDLER(cudnnFilterDescriptor_t, cuda::getCudnnPlugin().cudnnCreateFilterDescriptor, cuda::getCudnnPlugin().cudnnDestroyFilterDescriptor);
+DEFINE_HANDLER(cudnnFilterDescriptor_t, arrayfire::cuda::getCudnnPlugin().cudnnCreateFilterDescriptor, arrayfire::cuda::getCudnnPlugin().cudnnDestroyFilterDescriptor);
 
-DEFINE_HANDLER(cudnnConvolutionDescriptor_t, cuda::getCudnnPlugin().cudnnCreateConvolutionDescriptor, cuda::getCudnnPlugin().cudnnDestroyConvolutionDescriptor);
+DEFINE_HANDLER(cudnnConvolutionDescriptor_t, arrayfire::cuda::getCudnnPlugin().cudnnCreateConvolutionDescriptor, arrayfire::cuda::getCudnnPlugin().cudnnDestroyConvolutionDescriptor);
 // clang-format on
 
+namespace arrayfire {
 namespace cuda {
 
 const char *errorString(cudnnStatus_t err);
@@ -184,3 +185,4 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
     const cudnnFilterDescriptor_t dwDesc, void *dw);
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -15,6 +15,7 @@
 #include <memory.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 namespace kernel {
@@ -188,3 +189,4 @@ void all_distances(Param<To> dist, CParam<T> query, CParam<T> train,
 }  // namespace kernel
 
 }  // namespace cuda
+}  // namespace arrayfire

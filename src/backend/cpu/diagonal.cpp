@@ -19,10 +19,12 @@
 #include <algorithm>
 #include <cstdlib>
 
-using common::half;  // NOLINT(misc-unused-using-decls) bug in clang-tidy
-using std::abs;      // NOLINT(misc-unused-using-decls) bug in clang-tidy
-using std::min;      // NOLINT(misc-unused-using-decls) bug in clang-tidy
+using arrayfire::common::half;  // NOLINT(misc-unused-using-decls) bug in
+                                // clang-tidy
+using std::abs;  // NOLINT(misc-unused-using-decls) bug in clang-tidy
+using std::min;  // NOLINT(misc-unused-using-decls) bug in clang-tidy
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -66,3 +68,4 @@ INSTANTIATE_DIAGONAL(ushort)
 INSTANTIATE_DIAGONAL(half)
 
 }  // namespace cpu
+}  // namespace arrayfire

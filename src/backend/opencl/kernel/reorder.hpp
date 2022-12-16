@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -54,3 +55,4 @@ void reorder(Param out, const Param in, const dim_t* rdims) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

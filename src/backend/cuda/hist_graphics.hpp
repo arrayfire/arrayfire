@@ -12,9 +12,11 @@
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
 void copy_histogram(const Array<T> &data, fg_histogram hist);
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

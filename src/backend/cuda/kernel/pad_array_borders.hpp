@@ -16,6 +16,9 @@
 #include <nvrtc_kernel_headers/pad_array_borders_cuh.hpp>
 #include <af/defines.h>
 
+#include <array>
+
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,7 +29,7 @@ template<typename T>
 void padBorders(Param<T> out, CParam<T> in, dim4 const lBoundPadding,
                 const af::borderType btype) {
     auto padBorders =
-        common::getKernel("cuda::padBorders", {pad_array_borders_cuh_src},
+        common::getKernel("arrayfire::cuda::padBorders", {pad_array_borders_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(btype)});
 
     dim3 threads(kernel::PADB_THREADS_X, kernel::PADB_THREADS_Y);
@@ -46,3 +49,4 @@ void padBorders(Param<T> out, CParam<T> in, dim4 const lBoundPadding,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

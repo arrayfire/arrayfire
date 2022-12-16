@@ -16,6 +16,7 @@
 #include <kernel/config.hpp>
 #include <nvrtc_kernel_headers/unwrap_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -24,7 +25,7 @@ void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
             const int sx, const int sy, const int px, const int py,
             const int dx, const int dy, const int nx, const bool is_column) {
     auto unwrap =
-        common::getKernel("cuda::unwrap", {unwrap_cuh_src},
+        common::getKernel("arrayfire::cuda::unwrap", {unwrap_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(is_column)});
 
     dim3 threads, blocks;
@@ -44,10 +45,9 @@ void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
         reps = divup((wx * wy), threads.y);
     }
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -57,3 +57,4 @@ void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

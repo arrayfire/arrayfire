@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -131,3 +132,4 @@ void approx2(Param zo, const Param zi, const Param xo, const int xdim,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

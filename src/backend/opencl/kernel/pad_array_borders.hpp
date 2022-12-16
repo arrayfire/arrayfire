@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 static const int PADB_THREADS_X = 16;
@@ -64,3 +65,4 @@ void padBorders(Param out, const Param in, dim4 const& lBPadding,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

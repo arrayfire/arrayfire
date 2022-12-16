@@ -15,9 +15,10 @@
 #include <err_opencl.hpp>
 #include <math.hpp>
 
-using common::half;
-using common::is_complex;
+using arrayfire::common::half;
+using arrayfire::common::is_complex;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -209,3 +210,4 @@ INSTANTIATE_GETSCALAR(ushort)
 INSTANTIATE_GETSCALAR(half)
 
 }  // namespace opencl
+}  // namespace arrayfire

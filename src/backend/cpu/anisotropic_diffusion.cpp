@@ -11,6 +11,7 @@
 #include <kernel/anisotropic_diffusion.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
@@ -33,3 +34,4 @@ void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
 INSTANTIATE(double)
 INSTANTIATE(float)
 }  // namespace cpu
+}  // namespace arrayfire

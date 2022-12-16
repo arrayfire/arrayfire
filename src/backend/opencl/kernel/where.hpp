@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -41,7 +42,7 @@ static void get_out_idx(cl::Buffer *out_data, Param &otmp, Param &rtmp,
     vector<string> compileOpts = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(ZERO, toNumStr(scalar<T>(0))),
-        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(CPLX, iscplx<T>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
@@ -132,3 +133,4 @@ static void where(Param &out, Param &in) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

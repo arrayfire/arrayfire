@@ -18,12 +18,13 @@
 
 #include <memory>
 
-using common::half;
-using common::NaryNode;
-using common::Node_ptr;
+using arrayfire::common::half;
+using arrayfire::common::NaryNode;
+using arrayfire::common::Node_ptr;
 using std::make_shared;
 using std::max;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -132,3 +133,4 @@ INSTANTIATE(ushort);
 INSTANTIATE(half);
 
 }  // namespace cuda
+}  // namespace arrayfire
