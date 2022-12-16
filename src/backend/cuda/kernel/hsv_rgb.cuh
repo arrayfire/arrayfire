@@ -9,11 +9,11 @@
 
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, bool isHSV2RGB>
-__global__
-void hsvrgbConverter(Param<T> out, CParam<T> in, int nBBS) {
+__global__ void hsvrgbConverter(Param<T> out, CParam<T> in, int nBBS) {
     // batch offsets
     unsigned batchId = blockIdx.x / nBBS;
     const T* src     = (const T*)in.ptr + (batchId * in.strides[3]);
@@ -81,4 +81,5 @@ void hsvrgbConverter(Param<T> out, CParam<T> in, int nBBS) {
     }
 }
 
-} // namespace cuda
+}  // namespace cuda
+}  // namespace arrayfire

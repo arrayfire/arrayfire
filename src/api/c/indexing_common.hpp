@@ -11,6 +11,7 @@
 
 #include <af/index.h>
 
+namespace arrayfire {
 namespace common {
 /// Creates a af_index_t object that represents a af_span value
 af_index_t createSpanIndex();
@@ -39,3 +40,4 @@ af_index_t createSpanIndex();
 /// s{-1, 2, -1};    will return the sequence af_seq(9,2,-1)
 af_seq convert2Canonical(const af_seq s, const dim_t len);
 }  // namespace common
+}  // namespace arrayfire

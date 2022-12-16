@@ -25,8 +25,8 @@
 #include <cstdio>
 
 using af::dim4;
-using common::cast;
-using common::half;
+using arrayfire::common::cast;
+using arrayfire::common::half;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;
@@ -54,8 +54,10 @@ inline af_array convolve2(const af_array &s, const af_array &c_f,
     const Array<accT> signal    = castArray<accT>(s);
 
     if (colFilter.isScalar() && rowFilter.isScalar()) {
-        Array<accT> colArray = common::tile(colFilter, signal.dims());
-        Array<accT> rowArray = common::tile(rowFilter, signal.dims());
+        Array<accT> colArray =
+            arrayfire::common::tile(colFilter, signal.dims());
+        Array<accT> rowArray =
+            arrayfire::common::tile(rowFilter, signal.dims());
 
         Array<accT> filter =
             arithOp<accT, af_mul_t>(colArray, rowArray, signal.dims());

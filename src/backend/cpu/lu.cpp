@@ -23,6 +23,7 @@
 #include <cassert>
 #include <iostream>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -88,9 +89,11 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
 bool isLAPACKAvailable() { return true; }
 
 }  // namespace cpu
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -107,9 +110,11 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
 bool isLAPACKAvailable() { return false; }
 
 }  // namespace cpu
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace cpu {
 
 #define INSTANTIATE_LU(T)                                        \
@@ -124,3 +129,4 @@ INSTANTIATE_LU(double)
 INSTANTIATE_LU(cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire

@@ -14,6 +14,7 @@
 #include <types.hpp>
 #include <cmath>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename To, typename Ti, af_op_t op>
@@ -151,3 +152,4 @@ NUMERIC_FN(af_atan2_t, atan2)
 NUMERIC_FN(af_hypot_t, hypot)
 
 }  // namespace cpu
+}  // namespace arrayfire

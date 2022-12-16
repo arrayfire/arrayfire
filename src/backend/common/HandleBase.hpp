@@ -9,6 +9,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace common {
 template<typename T, typename H>
 class HandleBase {
@@ -28,6 +29,7 @@ class HandleBase {
     HandleBase& operator=(HandleBase&& h) = default;
 };
 }  // namespace common
+}  // namespace arrayfire
 
 #define CREATE_HANDLE(NAME, TYPE, CREATE_FUNCTION, DESTROY_FUNCTION,  \
                       CHECK_FUNCTION)                                 \

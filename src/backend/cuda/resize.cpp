@@ -13,6 +13,7 @@
 #include <err_cuda.hpp>
 #include <kernel/resize.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
@@ -45,3 +46,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace cuda
+}  // namespace arrayfire

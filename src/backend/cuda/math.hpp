@@ -30,6 +30,7 @@
 #include <cuda_fp16.h>
 #include <math_constants.h>
 
+namespace arrayfire {
 namespace cuda {
 
 #ifdef AF_WITH_FAST_MATH
@@ -393,14 +394,20 @@ template<typename T>
 constexpr const __DH__ T clamp(const T value, const T lo, const T hi) {
     return clamp(value, lo, hi, [](auto lhs, auto rhs) { return lhs < rhs; });
 }
-
 }  // namespace cuda
+}  // namespace arrayfire
 
-__SDH__ bool operator==(cuda::cfloat a, cuda::cfloat b) {
+__SDH__ bool operator==(arrayfire::cuda::cfloat a, arrayfire::cuda::cfloat b) {
     return (a.x == b.x) && (a.y == b.y);
 }
-__SDH__ bool operator!=(cuda::cfloat a, cuda::cfloat b) { return !(a == b); }
-__SDH__ bool operator==(cuda::cdouble a, cuda::cdouble b) {
+__SDH__ bool operator!=(arrayfire::cuda::cfloat a, arrayfire::cuda::cfloat b) {
+    return !(a == b);
+}
+__SDH__ bool operator==(arrayfire::cuda::cdouble a,
+                        arrayfire::cuda::cdouble b) {
     return (a.x == b.x) && (a.y == b.y);
 }
-__SDH__ bool operator!=(cuda::cdouble a, cuda::cdouble b) { return !(a == b); }
+__SDH__ bool operator!=(arrayfire::cuda::cdouble a,
+                        arrayfire::cuda::cdouble b) {
+    return !(a == b);
+}

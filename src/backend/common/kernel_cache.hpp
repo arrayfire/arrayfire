@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace common {
 
 /// \brief Find/Create-Cache a Kernel that fits the given criteria
@@ -48,7 +49,8 @@ namespace common {
 /// Example Usage: transpose
 ///
 /// \code
-/// auto transpose = getKernel("cuda::transpose", std::array{transpase_cuh_src},
+/// auto transpose = getKernel("arrayfire::cuda::transpose",
+/// std::array{transpase_cuh_src},
 ///         {
 ///           TemplateTypename<T>(),
 ///           TemplateArg(conjugate),
@@ -103,5 +105,6 @@ detail::Kernel getKernel(const detail::Module& mod, const std::string& name,
                          const bool sourceWasJIT);
 
 }  // namespace common
+}  // namespace arrayfire
 
 #endif

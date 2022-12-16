@@ -12,6 +12,7 @@
 #include <err_opencl.hpp>
 #include <kernel/flood_fill.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -36,3 +37,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace opencl
+}  // namespace arrayfire

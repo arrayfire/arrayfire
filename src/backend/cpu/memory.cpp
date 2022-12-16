@@ -22,12 +22,13 @@
 #include <utility>
 
 using af::dim4;
-using common::bytesToString;
-using common::half;
+using arrayfire::common::bytesToString;
+using arrayfire::common::half;
 using std::function;
 using std::move;
 using std::unique_ptr;
 
+namespace arrayfire {
 namespace cpu {
 float getMemoryPressure() { return memoryManager().getMemoryPressure(); }
 float getMemoryPressureThreshold() {
@@ -156,3 +157,4 @@ void Allocator::nativeFree(void *ptr) {
     free(ptr);  // NOLINT(hicpp-no-malloc)
 }
 }  // namespace cpu
+}  // namespace arrayfire

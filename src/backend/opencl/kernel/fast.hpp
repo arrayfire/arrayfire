@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -145,3 +146,4 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

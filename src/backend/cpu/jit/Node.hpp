@@ -24,6 +24,7 @@ template<typename T>
 class NodeIterator;
 }
 
+namespace arrayfire {
 namespace cpu {
 
 namespace jit {
@@ -38,7 +39,7 @@ template<typename T>
 class TNode : public common::Node {
    public:
     alignas(16) jit::array<compute_t<T>> m_val;
-    using common::Node::m_children;
+    using arrayfire::common::Node::m_children;
 
    public:
     TNode(T val, const int height,
@@ -53,3 +54,4 @@ class TNode : public common::Node {
 };
 
 }  // namespace cpu
+}  // namespace arrayfire

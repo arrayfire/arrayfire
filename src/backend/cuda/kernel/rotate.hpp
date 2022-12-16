@@ -16,6 +16,7 @@
 #include <nvrtc_kernel_headers/rotate_cuh.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -33,7 +34,7 @@ template<typename T>
 void rotate(Param<T> out, CParam<T> in, const float theta,
             const af::interpType method, const int order) {
     auto rotate = common::getKernel(
-        "cuda::rotate", std::array{rotate_cuh_src},
+        "arrayfire::cuda::rotate", std::array{rotate_cuh_src},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(order)));
 
     const float c = cos(-theta), s = sin(-theta);
@@ -85,3 +86,4 @@ void rotate(Param<T> out, CParam<T> in, const float theta,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

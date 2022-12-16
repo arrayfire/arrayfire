@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -77,3 +78,4 @@ void bilateral(Param out, const Param in, const float s_sigma,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

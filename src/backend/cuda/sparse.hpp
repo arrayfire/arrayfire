@@ -12,6 +12,7 @@
 #include <Array.hpp>
 #include <common/SparseArray.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, af_storage stype>
@@ -25,3 +26,4 @@ common::SparseArray<T> sparseConvertStorageToStorage(
     const common::SparseArray<T> &in);
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -30,6 +30,7 @@ static const int TABLE_SIZE = 16;
 static const int MAX_BLOCKS = 32;
 static const int STATE_SIZE = (256 * 3);
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 static const uint THREADS = 256;
@@ -170,3 +171,4 @@ void initMersenneState(cl::Buffer state, cl::Buffer table, const uintl &seed) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

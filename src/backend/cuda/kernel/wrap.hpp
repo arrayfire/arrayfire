@@ -16,6 +16,7 @@
 #include <kernel/config.hpp>
 #include <nvrtc_kernel_headers/wrap_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -23,7 +24,7 @@ template<typename T>
 void wrap(Param<T> out, CParam<T> in, const int wx, const int wy, const int sx,
           const int sy, const int px, const int py, const bool is_column) {
     auto wrap = common::getKernel(
-        "cuda::wrap", std::array{wrap_cuh_src},
+        "arrayfire::cuda::wrap", std::array{wrap_cuh_src},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(is_column)));
 
     int nx = (out.dims[0] + 2 * px - wx) / sx + 1;
@@ -35,10 +36,9 @@ void wrap(Param<T> out, CParam<T> in, const int wx, const int wy, const int sx,
 
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -52,7 +52,7 @@ void wrap_dilated(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
                   const dim_t py, const dim_t dx, const dim_t dy,
                   const bool is_column) {
     auto wrap = common::getKernel(
-        "cuda::wrap_dilated", std::array{wrap_cuh_src},
+        "arrayfire::cuda::wrap_dilated", std::array{wrap_cuh_src},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(is_column)));
 
     int nx = 1 + (out.dims[0] + 2 * px - (((wx - 1) * dx) + 1)) / sx;
@@ -64,10 +64,9 @@ void wrap_dilated(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
 
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -78,3 +77,4 @@ void wrap_dilated(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

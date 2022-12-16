@@ -16,13 +16,15 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/index_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
 template<typename T>
 void index(Param<T> out, CParam<T> in, const IndexKernelParam& p) {
-    auto index = common::getKernel("cuda::index", std::array{index_cuh_src},
-                                   TemplateArgs(TemplateTypename<T>()));
+    auto index =
+        common::getKernel("arrayfire::cuda::index", std::array{index_cuh_src},
+                          TemplateArgs(TemplateTypename<T>()));
     dim3 threads;
     switch (out.dims[1]) {
         case 1: threads.y = 1; break;
@@ -38,10 +40,9 @@ void index(Param<T> out, CParam<T> in, const IndexKernelParam& p) {
 
     dim3 blocks(blks_x * out.dims[2], blks_y * out.dims[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -51,3 +52,4 @@ void index(Param<T> out, CParam<T> in, const IndexKernelParam& p) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

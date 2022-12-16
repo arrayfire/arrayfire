@@ -9,9 +9,11 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind, const int rank);
-}
+}  // namespace cpu
+}  // namespace arrayfire

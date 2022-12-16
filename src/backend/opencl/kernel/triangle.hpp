@@ -21,12 +21,13 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
 template<typename T>
 void triangle(Param out, const Param in, bool is_upper, bool is_unit_diag) {
-    using af::scalar_to_option;
+    using arrayfire::opencl::scalar_to_option;
     using cl::EnqueueArgs;
     using cl::NDRange;
     using std::string;
@@ -68,3 +69,4 @@ void triangle(Param out, const Param in, bool is_upper, bool is_unit_diag) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

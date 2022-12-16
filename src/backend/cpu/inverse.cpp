@@ -25,6 +25,7 @@
 #include <queue.hpp>
 #include <solve.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -76,9 +77,11 @@ INSTANTIATE(double)
 INSTANTIATE(cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -94,5 +97,6 @@ INSTANTIATE(double)
 INSTANTIATE(cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA

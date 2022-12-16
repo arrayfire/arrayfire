@@ -22,7 +22,7 @@
  * on a af_memory_manager via calls to a MemoryManagerBase
  */
 class MemoryManagerFunctionWrapper final
-    : public common::memory::MemoryManagerBase {
+    : public arrayfire::common::MemoryManagerBase {
     af_memory_manager handle_;
 
    public:

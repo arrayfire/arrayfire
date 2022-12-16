@@ -36,7 +36,7 @@ size_t deterministicHash(span<const string> list, const size_t prevHash) {
     return hash;
 }
 
-size_t deterministicHash(span<const common::Source> list) {
+size_t deterministicHash(span<const arrayfire::common::Source> list) {
     // Combine the different source codes, via their hashes
     size_t hash = FNV1A_BASE_OFFSET;
     for (auto s : list) {

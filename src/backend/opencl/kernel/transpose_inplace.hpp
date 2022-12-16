@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -43,7 +44,7 @@ void transpose_inplace(Param in, cl::CommandQueue& queue, const bool conjugate,
         DefineValue(TILE_DIM),
         DefineValue(THREADS_Y),
         DefineValue(IS32MULTIPLE),
-        DefineKeyValue(DOCONJUGATE, (conjugate && af::iscplx<T>())),
+        DefineKeyValue(DOCONJUGATE, (conjugate && iscplx<T>())),
         DefineKeyValue(T, dtype_traits<T>::getName()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
@@ -69,3 +70,4 @@ void transpose_inplace(Param in, cl::CommandQueue& queue, const bool conjugate,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

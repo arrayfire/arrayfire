@@ -15,24 +15,24 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/identity_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
 template<typename T>
 void identity(Param<T> out) {
-    auto identity =
-        common::getKernel("cuda::identity", std::array{identity_cuh_src},
-                          TemplateArgs(TemplateTypename<T>()));
+    auto identity = common::getKernel("arrayfire::cuda::identity",
+                                      std::array{identity_cuh_src},
+                                      TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(32, 8);
     int blocks_x = divup(out.dims[0], threads.x);
     int blocks_y = divup(out.dims[1], threads.y);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -41,3 +41,4 @@ void identity(Param<T> out) {
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

@@ -14,6 +14,7 @@
 
 #include <type_traits>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -64,3 +65,4 @@ class LookupTable1D {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

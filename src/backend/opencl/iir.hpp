@@ -9,8 +9,10 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
 Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x);
-}
+}  // namespace opencl
+}  // namespace arrayfire

@@ -10,9 +10,11 @@
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
 void copy_image(const Array<T> &in, fg_image image);
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

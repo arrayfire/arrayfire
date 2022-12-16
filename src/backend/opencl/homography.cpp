@@ -19,6 +19,7 @@
 using af::dim4;
 using std::numeric_limits;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -74,3 +75,4 @@ INSTANTIATE(float)
 INSTANTIATE(double)
 
 }  // namespace opencl
+}  // namespace arrayfire

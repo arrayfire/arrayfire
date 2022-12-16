@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <string>
 
+namespace arrayfire {
 namespace cpu {
 
 #ifdef USE_MKL
@@ -462,3 +463,4 @@ INSTANTIATE_SPARSE(cfloat)
 INSTANTIATE_SPARSE(cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire

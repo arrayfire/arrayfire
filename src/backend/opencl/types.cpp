@@ -17,12 +17,13 @@
 #include <sstream>
 #include <string>
 
-using common::half;
-using common::toString;
+using arrayfire::common::half;
+using arrayfire::common::toString;
 
 using std::isinf;
 using std::stringstream;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -101,3 +102,4 @@ INSTANTIATE(half);
 #undef INSTANTIATE
 
 }  // namespace opencl
+}  // namespace arrayfire

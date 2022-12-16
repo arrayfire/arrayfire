@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -118,3 +119,4 @@ static void keep_corners(Param<float> xOut, Param<float> yOut,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

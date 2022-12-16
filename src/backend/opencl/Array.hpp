@@ -34,6 +34,7 @@ template<typename T>
 class SparseArray;
 }
 
+namespace arrayfire {
 namespace opencl {
 typedef std::shared_ptr<cl::Buffer> Buffer_ptr;
 using af::dim4;
@@ -315,3 +316,4 @@ class Array {
 };
 
 }  // namespace opencl
+}  // namespace arrayfire

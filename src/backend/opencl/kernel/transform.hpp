@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -109,3 +110,4 @@ void transform(Param out, const Param in, const Param tf, bool isInverse,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

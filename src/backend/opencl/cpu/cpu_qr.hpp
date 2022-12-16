@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 template<typename T>
@@ -18,3 +19,4 @@ template<typename T>
 Array<T> qr_inplace(Array<T> &in);
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire

@@ -10,6 +10,7 @@
 #pragma once
 #include <common/jit/NaryNode.hpp>
 
+namespace arrayfire {
 namespace common {
 
 class ModdimNode : public NaryNode {
@@ -30,3 +31,4 @@ class ModdimNode : public NaryNode {
     }
 };
 }  // namespace common
+}  // namespace arrayfire

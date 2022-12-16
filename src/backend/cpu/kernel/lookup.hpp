@@ -12,6 +12,7 @@
 #include <utility.hpp>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -60,3 +61,4 @@ void lookup(Param<InT> out, CParam<InT> input, CParam<IndexT> indices,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

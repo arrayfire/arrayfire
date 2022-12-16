@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -87,3 +88,4 @@ void resize(Param out, const Param in, const af_interp_type method) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

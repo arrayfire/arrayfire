@@ -28,7 +28,7 @@ struct TemplateArg {
 
     template<typename T>
     constexpr TemplateArg(T value) noexcept
-        : _tparam(common::toString(value)) {}
+        : _tparam(arrayfire::common::toString(value)) {}
 };
 
 template<typename... Targs>
@@ -38,6 +38,7 @@ std::array<TemplateArg, sizeof...(Targs)> TemplateArgs(Targs &&...args) {
 }
 
 #define DefineKey(arg) " -D " #arg
-#define DefineValue(arg) " -D " #arg "=" + common::toString(arg)
-#define DefineKeyValue(key, arg) " -D " #key "=" + common::toString(arg)
+#define DefineValue(arg) " -D " #arg "=" + arrayfire::common::toString(arg)
+#define DefineKeyValue(key, arg) \
+    " -D " #key "=" + arrayfire::common::toString(arg)
 #define DefineKeyFromStr(arg) " -D " + std::string(arg)

@@ -10,6 +10,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 // Copies(blocking) data from an Array<T> object to a contiguous host side
 // pointer.
@@ -60,3 +61,4 @@ void multiply_inplace(Array<T> &in, double val);
 template<typename T>
 T getScalar(const Array<T> &in);
 }  // namespace cuda
+}  // namespace arrayfire

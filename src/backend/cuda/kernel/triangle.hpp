@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/triangle_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,7 +27,7 @@ void triangle(Param<T> r, CParam<T> in, bool is_upper, bool is_unit_diag) {
     constexpr unsigned TILEY = 32;
 
     auto triangle = common::getKernel(
-        "cuda::triangle", std::array{triangle_cuh_src},
+        "arrayfire::cuda::triangle", std::array{triangle_cuh_src},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(is_upper),
                      TemplateArg(is_unit_diag)));
 
@@ -36,10 +37,9 @@ void triangle(Param<T> r, CParam<T> in, bool is_upper, bool is_unit_diag) {
     int blocksPerMatY = divup(r.dims[1], TILEY);
     dim3 blocks(blocksPerMatX * r.dims[2], blocksPerMatY * r.dims[3], 1);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -49,3 +49,4 @@ void triangle(Param<T> r, CParam<T> in, bool is_upper, bool is_unit_diag) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 
 using namespace common;
@@ -307,7 +308,7 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
         CUDA_CHECK(
             cudaMemcpyAsync(converted.getColIdx().get(), in.getColIdx().get(),
                             in.getColIdx().elements() * sizeof(int),
-                            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+                            cudaMemcpyDeviceToDevice, getActiveStream()));
 
         // cusparse function to expand compressed row into coordinate
         CUSPARSE_CHECK(_.cusparseXcsr2coo(
@@ -374,11 +375,11 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
         CUDA_CHECK(
             cudaMemcpyAsync(converted.getValues().get(), cooT.getValues().get(),
                             cooT.getValues().elements() * sizeof(T),
-                            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+                            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(
             cudaMemcpyAsync(converted.getColIdx().get(), cooT.getColIdx().get(),
                             cooT.getColIdx().elements() * sizeof(int),
-                            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+                            cudaMemcpyDeviceToDevice, getActiveStream()));
 
         // cusparse function to compress row from coordinate
         CUSPARSE_CHECK(_.cusparseXcoo2csr(
@@ -446,3 +447,4 @@ INSTANTIATE_SPARSE(cdouble)
 #undef INSTANTIATE_SPARSE
 
 }  // namespace cuda
+}  // namespace arrayfire

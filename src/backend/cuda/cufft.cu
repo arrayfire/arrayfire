@@ -12,6 +12,7 @@
 #include <memory.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace cuda {
 const char *_cufftGetResultString(cufftResult res) {
     switch (res) {
@@ -94,7 +95,7 @@ SharedPlan findPlan(int rank, int *n, int *inembed, int istride, int idist,
     sprintf(key_str_temp, "%d:%d", (int)type, batch);
     key_string.append(std::string(key_str_temp));
 
-    PlanCache &planner = cuda::fftManager();
+    PlanCache &planner = arrayfire::cuda::fftManager();
     SharedPlan retVal  = planner.find(key_string);
 
     if (retVal) return retVal;
@@ -105,7 +106,7 @@ SharedPlan findPlan(int rank, int *n, int *inembed, int istride, int idist,
 
     // If plan creation fails, clean up the memory we hold on to and try again
     if (res != CUFFT_SUCCESS) {
-        cuda::signalMemoryCleanup();
+        arrayfire::cuda::signalMemoryCleanup();
         CUFFT_CHECK(cufftPlanMany(temp, rank, n, inembed, istride, idist,
                                   onembed, ostride, odist, type, batch));
     }
@@ -120,3 +121,4 @@ SharedPlan findPlan(int rank, int *n, int *inembed, int istride, int idist,
     return retVal;
 }
 }  // namespace cuda
+}  // namespace arrayfire

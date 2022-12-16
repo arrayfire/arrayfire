@@ -17,13 +17,13 @@ template<>
 struct fmt::formatter<af::dtype> : fmt::formatter<char> {
     template<typename FormatContext>
     auto format(const af::dtype& p, FormatContext& ctx) -> decltype(ctx.out()) {
-        format_to(ctx.out(), "{}", getName(p));
+        format_to(ctx.out(), "{}", arrayfire::common::getName(p));
         return ctx.out();
     }
 };
 
 template<>
-struct fmt::formatter<common::Node> {
+struct fmt::formatter<arrayfire::common::Node> {
     // Presentation format: 'p' - pointer, 't' - type.
     // char presentation;
     bool pointer;
@@ -58,7 +58,7 @@ struct fmt::formatter<common::Node> {
     // Formats the point p using the parsed format specification (presentation)
     // stored in this formatter.
     template<typename FormatContext>
-    auto format(const common::Node& node, FormatContext& ctx)
+    auto format(const arrayfire::common::Node& node, FormatContext& ctx)
         -> decltype(ctx.out()) {
         // ctx.out() is an output iterator to write to.
 
@@ -68,15 +68,17 @@ struct fmt::formatter<common::Node> {
             if (isBuffer(node)) {
                 format_to(ctx.out(), "buffer ");
             } else if (isScalar(node)) {
-                format_to(ctx.out(), "scalar ", common::toString(node.getOp()));
+                format_to(ctx.out(), "scalar ",
+                          arrayfire::common::toString(node.getOp()));
             } else {
-                format_to(ctx.out(), "{} ", common::toString(node.getOp()));
+                format_to(ctx.out(), "{} ",
+                          arrayfire::common::toString(node.getOp()));
             }
         }
         if (type) format_to(ctx.out(), "{} ", node.getType());
         if (children) {
             int count;
-            for (count = 0; count < common::Node::kMaxChildren &&
+            for (count = 0; count < arrayfire::common::Node::kMaxChildren &&
                             node.m_children[count].get() != nullptr;
                  count++) {}
             if (count > 0) {

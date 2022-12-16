@@ -11,6 +11,7 @@
 
 #include <kernel/transform.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -54,3 +55,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace opencl
+}  // namespace arrayfire

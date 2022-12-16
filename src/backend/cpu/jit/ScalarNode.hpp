@@ -12,6 +12,7 @@
 #include <vector>
 #include "Node.hpp"
 
+namespace arrayfire {
 namespace cpu {
 
 namespace jit {
@@ -62,5 +63,5 @@ class ScalarNode : public TNode<T> {
     bool isScalar() const final { return true; }
 };
 }  // namespace jit
-
 }  // namespace cpu
+}  // namespace arrayfire

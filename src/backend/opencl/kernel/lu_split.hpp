@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -36,8 +37,8 @@ void luSplitLauncher(Param lower, Param upper, const Param in, bool same_dims) {
     };
     std::array<std::string, 5> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(same_dims),
-        DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
-        DefineKeyValue(ONE, af::scalar_to_option(scalar<T>(1))),
+        DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
+        DefineKeyValue(ONE, scalar_to_option(scalar<T>(1))),
         getTypeBuildDefinition<T>()};
 
     auto luSplit = common::getKernel("luSplit", std::array{lu_split_cl_src},
@@ -64,3 +65,4 @@ void luSplit(Param lower, Param upper, const Param in) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

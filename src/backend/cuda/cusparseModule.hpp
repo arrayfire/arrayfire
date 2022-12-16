@@ -13,9 +13,10 @@
 #include <cuda.h>
 #include <cusparse_v2.h>
 
+namespace arrayfire {
 namespace cuda {
 class cusparseModule {
-    common::DependencyModule module;
+    arrayfire::common::DependencyModule module;
 
    public:
     cusparseModule();
@@ -94,3 +95,4 @@ class cusparseModule {
 cusparseModule& getCusparsePlugin() noexcept;
 
 }  // namespace cuda
+}  // namespace arrayfire

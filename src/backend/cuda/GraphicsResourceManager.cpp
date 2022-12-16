@@ -16,6 +16,7 @@
 #include <err_cuda.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace cuda {
 GraphicsResourceManager::ShrdResVector
 GraphicsResourceManager::registerResources(
@@ -43,3 +44,4 @@ GraphicsResourceManager::registerResources(
     return output;
 }
 }  // namespace cuda
+}  // namespace arrayfire

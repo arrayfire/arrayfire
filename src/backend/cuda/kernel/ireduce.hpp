@@ -20,6 +20,7 @@
 
 #include <memory>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -31,13 +32,12 @@ void ireduce_dim_launcher(Param<T> out, uint *olptr, CParam<T> in,
 
     dim3 blocks(blocks_dim[0] * blocks_dim[2], blocks_dim[1] * blocks_dim[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     auto ireduceDim = common::getKernel(
-        "cuda::ireduceDim", std::array{ireduce_cuh_src},
+        "arrayfire::cuda::ireduceDim", std::array{ireduce_cuh_src},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(op), TemplateArg(dim),
                      TemplateArg(is_first), TemplateArg(threads_y)),
         std::array{DefineValue(THREADS_X)});
@@ -96,16 +96,15 @@ void ireduce_first_launcher(Param<T> out, uint *olptr, CParam<T> in,
                             CParam<uint> rlen) {
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * in.dims[2], blocks_y * in.dims[3]);
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     uint repeat = divup(in.dims[0], (blocks_x * threads_x));
 
     // threads_x can take values 32, 64, 128, 256
     auto ireduceFirst = common::getKernel(
-        "cuda::ireduceFirst", std::array{ireduce_cuh_src},
+        "arrayfire::cuda::ireduceFirst", std::array{ireduce_cuh_src},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(op),
                      TemplateArg(is_first), TemplateArg(threads_x)),
         std::array{DefineValue(THREADS_PER_BLOCK)});
@@ -218,12 +217,11 @@ T ireduce_all(uint *idx, CParam<T> in) {
         uint *h_lptr_raw = h_lptr.get();
 
         CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(T),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
-        CUDA_CHECK(
-            cudaMemcpyAsync(h_lptr_raw, tlptr, tmp_elements * sizeof(uint),
-                            cudaMemcpyDeviceToHost, cuda::getActiveStream()));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
+                                   cudaMemcpyDeviceToHost, getActiveStream()));
+        CUDA_CHECK(cudaMemcpyAsync(h_lptr_raw, tlptr,
+                                   tmp_elements * sizeof(uint),
+                                   cudaMemcpyDeviceToHost, getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
         if (!is_linear) {
             // Converting n-d index into a linear index
@@ -248,9 +246,8 @@ T ireduce_all(uint *idx, CParam<T> in) {
         unique_ptr<T[]> h_ptr(new T[in_elements]);
         T *h_ptr_raw = h_ptr.get();
         CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(T),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
+                                   cudaMemcpyDeviceToHost, getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
 
         MinMaxOp<op, T> Op(h_ptr_raw[0], 0);
         for (int i = 1; i < in_elements; i++) { Op(h_ptr_raw[i], i); }
@@ -262,3 +259,4 @@ T ireduce_all(uint *idx, CParam<T> in) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

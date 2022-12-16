@@ -16,6 +16,7 @@
 #include <types.hpp>
 #include <iomanip>
 
+namespace arrayfire {
 namespace common {
 
 template<typename T>
@@ -94,3 +95,4 @@ class ScalarNode : public common::Node {
 };
 
 }  // namespace common
+}  // namespace arrayfire

@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <types.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -47,3 +48,4 @@ void histogram(Param<uint> out, CParam<T> in, const unsigned nbins,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

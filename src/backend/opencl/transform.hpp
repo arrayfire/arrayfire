@@ -9,9 +9,11 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 void transform(Array<T> &out, const Array<T> &in, const Array<float> &tf,
                const af_interp_type method, const bool inverse,
                const bool perspective);
-}
+}  // namespace opencl
+}  // namespace arrayfire

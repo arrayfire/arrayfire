@@ -20,6 +20,7 @@
 
 #include <algorithm>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -30,7 +31,8 @@ static void scan_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                    const uint blocks_x, const uint blocks_y,
                                    const uint threads_x, bool inclusive_scan) {
     auto scanbykey_first_nonfinal = common::getKernel(
-        "cuda::scanbykey_first_nonfinal", std::array{scan_first_by_key_cuh_src},
+        "arrayfire::cuda::scanbykey_first_nonfinal",
+        std::array{scan_first_by_key_cuh_src},
         TemplateArgs(TemplateTypename<Ti>(), TemplateTypename<Tk>(),
                      TemplateTypename<To>(), TemplateArg(op)),
         std::array{DefineValue(THREADS_PER_BLOCK),
@@ -52,7 +54,8 @@ static void scan_final_launcher(Param<To> out, CParam<Ti> in, CParam<Tk> key,
                                 const uint threads_x, bool calculateFlags,
                                 bool inclusive_scan) {
     auto scanbykey_first_final = common::getKernel(
-        "cuda::scanbykey_first_final", std::array{scan_first_by_key_cuh_src},
+        "arrayfire::cuda::scanbykey_first_final",
+        std::array{scan_first_by_key_cuh_src},
         TemplateArgs(TemplateTypename<Ti>(), TemplateTypename<Tk>(),
                      TemplateTypename<To>(), TemplateArg(op)),
         std::array{DefineValue(THREADS_PER_BLOCK),
@@ -73,7 +76,8 @@ static void bcast_first_launcher(Param<To> out, Param<To> tmp, Param<int> tlid,
                                  const dim_t blocks_x, const dim_t blocks_y,
                                  const uint threads_x) {
     auto scanbykey_first_bcast = common::getKernel(
-        "cuda::scanbykey_first_bcast", std::array{scan_first_by_key_cuh_src},
+        "arrayfire::cuda::scanbykey_first_bcast",
+        std::array{scan_first_by_key_cuh_src},
         TemplateArgs(TemplateTypename<To>(), TemplateArg(op)));
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
@@ -154,3 +158,4 @@ void scan_first_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key,
     INSTANTIATE_SCAN_FIRST_BY_KEY_TYPES(ROp, intl) \
     INSTANTIATE_SCAN_FIRST_BY_KEY_TYPES(ROp, uintl)
 }  // namespace cuda
+}  // namespace arrayfire

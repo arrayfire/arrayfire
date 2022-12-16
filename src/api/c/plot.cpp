@@ -23,6 +23,13 @@
 #include <transpose.hpp>
 
 using af::dim4;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
+using arrayfire::common::getFGMarker;
+using arrayfire::common::getGLType;
+using arrayfire::common::makeContextCurrent;
+using arrayfire::common::step_round;
 using detail::Array;
 using detail::copy_plot;
 using detail::forgeManager;
@@ -30,14 +37,13 @@ using detail::reduce;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
-using namespace graphics;
 
 // Requires in_ to be in either [order, n] or [n, order] format
 template<typename T, int order>
 fg_chart setup_plot(fg_window window, const af_array in_,
                     const af_cell* const props, fg_plot_type ptype,
                     fg_marker_type mtype) {
-    ForgeModule& _ = graphics::forgePlugin();
+    ForgeModule& _ = forgePlugin();
 
     Array<T> in = getArray<T>(in_);
 
@@ -168,7 +174,7 @@ af_err plotWrapper(const af_window window, const af_array in,
 
         auto gridDims = forgeManager().getWindowGrid(window);
 
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule& _ = forgePlugin();
         if (props->col > -1 && props->row > -1) {
             FG_CHECK(_.fg_draw_chart_to_cell(
                 window, gridDims.first, gridDims.second,
@@ -240,7 +246,7 @@ af_err plotWrapper(const af_window window, const af_array X, const af_array Y,
         }
         auto gridDims = forgeManager().getWindowGrid(window);
 
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule& _ = forgePlugin();
         if (props->col > -1 && props->row > -1) {
             FG_CHECK(_.fg_draw_chart_to_cell(
                 window, gridDims.first, gridDims.second,
@@ -307,7 +313,7 @@ af_err plotWrapper(const af_window window, const af_array X, const af_array Y,
         }
         auto gridDims = forgeManager().getWindowGrid(window);
 
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule& _ = forgePlugin();
         if (props->col > -1 && props->row > -1) {
             FG_CHECK(_.fg_draw_chart_to_cell(
                 window, gridDims.first, gridDims.second,

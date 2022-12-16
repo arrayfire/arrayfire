@@ -17,6 +17,7 @@
 
 #include <utility>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -44,5 +45,6 @@ auto denMatDescriptor(const Array<T> &in) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire
 
 #endif

@@ -9,11 +9,12 @@
 
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
-__global__
-void moments(Param<float> out, CParam<T> in, af::momentType moment, const bool pBatch) {
+__global__ void moments(Param<float> out, CParam<T> in, af::momentType moment,
+                        const bool pBatch) {
     const dim_t idw = blockIdx.y / in.dims[2];
     const dim_t idz = blockIdx.y - idw * in.dims[2];
 
@@ -56,4 +57,5 @@ void moments(Param<float> out, CParam<T> in, af::momentType moment, const bool p
         atomicAdd(offset, blk_moment_sum[threadIdx.x]);
 }
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

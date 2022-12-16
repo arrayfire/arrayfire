@@ -33,6 +33,7 @@ using std::round;
 using std::sqrt;
 using std::vector;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -420,3 +421,4 @@ INSTANTIATE(float)
 INSTANTIATE(double)
 
 }  // namespace cpu
+}  // namespace arrayfire

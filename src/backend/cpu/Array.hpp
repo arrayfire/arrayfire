@@ -28,6 +28,7 @@
 #include <memory>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 
 namespace jit {
@@ -291,3 +292,4 @@ class Array {
 };
 
 }  // namespace cpu
+}  // namespace arrayfire

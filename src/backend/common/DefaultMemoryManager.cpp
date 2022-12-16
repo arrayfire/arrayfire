@@ -28,6 +28,7 @@ using std::stoi;
 using std::string;
 using std::vector;
 
+namespace arrayfire {
 namespace common {
 
 DefaultMemoryManager::memory_info &
@@ -374,3 +375,4 @@ void DefaultMemoryManager::setMemStepSize(size_t new_step_size) {
 }
 
 }  // namespace common
+}  // namespace arrayfire

@@ -16,6 +16,7 @@ template<typename T>
 struct dtype_traits;
 }
 
+namespace arrayfire {
 namespace common {
 class half;
 
@@ -69,12 +70,13 @@ constexpr bool isFloating(af::dtype type) {
 
 }  // namespace
 }  // namespace common
+}  // namespace arrayfire
 
 namespace af {
 template<>
-struct dtype_traits<common::half> {
+struct dtype_traits<arrayfire::common::half> {
     enum { af_type = f16, ctype = f16 };
-    typedef common::half base_type;
+    typedef arrayfire::common::half base_type;
     static const char *getName() { return "half"; }
 };
 }  // namespace af

@@ -16,6 +16,7 @@
 #include <nvrtc_kernel_headers/sparse_arith_cuh.hpp>
 #include <optypes.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,10 +27,10 @@ constexpr unsigned THREADS = TX * TY;
 template<typename T, af_op_t op>
 void sparseArithOpCSR(Param<T> out, CParam<T> values, CParam<int> rowIdx,
                       CParam<int> colIdx, CParam<T> rhs, const bool reverse) {
-    auto csrArithDSD =
-        common::getKernel("cuda::csrArithDSD", std::array{sparse_arith_cuh_src},
-                          TemplateArgs(TemplateTypename<T>(), TemplateArg(op)),
-                          std::array{DefineValue(TX), DefineValue(TY)});
+    auto csrArithDSD = common::getKernel(
+        "arrayfire::cuda::csrArithDSD", std::array{sparse_arith_cuh_src},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(op)),
+        std::array{DefineValue(TX), DefineValue(TY)});
 
     // Each Y for threads does one row
     dim3 threads(TX, TY, 1);
@@ -46,10 +47,10 @@ void sparseArithOpCSR(Param<T> out, CParam<T> values, CParam<int> rowIdx,
 template<typename T, af_op_t op>
 void sparseArithOpCOO(Param<T> out, CParam<T> values, CParam<int> rowIdx,
                       CParam<int> colIdx, CParam<T> rhs, const bool reverse) {
-    auto cooArithDSD =
-        common::getKernel("cuda::cooArithDSD", std::array{sparse_arith_cuh_src},
-                          TemplateArgs(TemplateTypename<T>(), TemplateArg(op)),
-                          std::array{DefineValue(THREADS)});
+    auto cooArithDSD = common::getKernel(
+        "arrayfire::cuda::cooArithDSD", std::array{sparse_arith_cuh_src},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(op)),
+        std::array{DefineValue(THREADS)});
 
     // Linear indexing with one elements per thread
     dim3 threads(THREADS, 1, 1);
@@ -66,10 +67,10 @@ void sparseArithOpCOO(Param<T> out, CParam<T> values, CParam<int> rowIdx,
 template<typename T, af_op_t op>
 void sparseArithOpCSR(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                       CParam<T> rhs, const bool reverse) {
-    auto csrArithSSD =
-        common::getKernel("cuda::csrArithSSD", std::array{sparse_arith_cuh_src},
-                          TemplateArgs(TemplateTypename<T>(), TemplateArg(op)),
-                          std::array{DefineValue(TX), DefineValue(TY)});
+    auto csrArithSSD = common::getKernel(
+        "arrayfire::cuda::csrArithSSD", std::array{sparse_arith_cuh_src},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(op)),
+        std::array{DefineValue(TX), DefineValue(TY)});
 
     // Each Y for threads does one row
     dim3 threads(TX, TY, 1);
@@ -86,10 +87,10 @@ void sparseArithOpCSR(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
 template<typename T, af_op_t op>
 void sparseArithOpCOO(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                       CParam<T> rhs, const bool reverse) {
-    auto cooArithSSD =
-        common::getKernel("cuda::cooArithSSD", std::array{sparse_arith_cuh_src},
-                          TemplateArgs(TemplateTypename<T>(), TemplateArg(op)),
-                          std::array{DefineValue(THREADS)});
+    auto cooArithSSD = common::getKernel(
+        "arrayfire::cuda::cooArithSSD", std::array{sparse_arith_cuh_src},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(op)),
+        std::array{DefineValue(THREADS)});
 
     // Linear indexing with one elements per thread
     dim3 threads(THREADS, 1, 1);
@@ -105,3 +106,4 @@ void sparseArithOpCOO(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

@@ -33,6 +33,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -82,3 +83,4 @@ void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

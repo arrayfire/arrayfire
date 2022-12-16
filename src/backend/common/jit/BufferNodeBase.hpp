@@ -15,6 +15,7 @@
 #include <cstring>
 #include <sstream>
 
+namespace arrayfire {
 namespace common {
 
 template<typename DataType, typename ParamType>
@@ -118,3 +119,4 @@ class BufferNodeBase : public common::Node {
 };
 
 }  // namespace common
+}  // namespace arrayfire

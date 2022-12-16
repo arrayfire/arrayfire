@@ -230,7 +230,7 @@ magma_int_t magma_geqrf2_gpu(magma_int_t m, magma_int_t n, cl_mem dA,
     }
     */
 
-    cl_mem buffer = clCreateBuffer(opencl::getContext()(),
+    cl_mem buffer = clCreateBuffer(arrayfire::opencl::getContext()(),
                                    CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR,
                                    sizeof(Ty) * lwork, NULL, NULL);
     work          = (Ty *)clEnqueueMapBuffer(queue[0], buffer, CL_TRUE,

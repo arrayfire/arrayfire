@@ -24,11 +24,11 @@
 #include <vector>
 
 using af::dim4;
-using common::half;
-using common::Node;
-using common::Node_ptr;
-using common::NodeIterator;
-using cuda::jit::BufferNode;
+using arrayfire::common::half;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::NodeIterator;
+using arrayfire::cuda::jit::BufferNode;
 
 using nonstd::span;
 using std::accumulate;
@@ -36,6 +36,7 @@ using std::move;
 using std::shared_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -87,14 +88,14 @@ Array<T>::Array(const af::dim4 &dims, const T *const in_data, bool is_device,
         offsetof(Array<T>, info) == 0,
         "Array<T>::info must be the first member variable of Array<T>");
     if (!is_device) {
-        CUDA_CHECK(
-            cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),
-                            cudaMemcpyHostToDevice, cuda::getActiveStream()));
+        CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data,
+                                   dims.elements() * sizeof(T),
+                                   cudaMemcpyHostToDevice, getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
     } else if (copy_device) {
         CUDA_CHECK(
             cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),
-                            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+                            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
     }
 }
@@ -407,7 +408,7 @@ void writeHostDataArray(Array<T> &arr, const T *const data,
     T *ptr = arr.get();
 
     CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyHostToDevice,
-                               cuda::getActiveStream()));
+                               getActiveStream()));
     CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 }
 
@@ -419,7 +420,7 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
     T *ptr = arr.get();
 
     CUDA_CHECK(cudaMemcpyAsync(ptr, data, bytes, cudaMemcpyDeviceToDevice,
-                               cuda::getActiveStream()));
+                               getActiveStream()));
 }
 
 template<typename T>
@@ -473,3 +474,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 }  // namespace cuda
+}  // namespace arrayfire

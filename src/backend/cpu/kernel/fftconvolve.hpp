@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -251,3 +252,4 @@ void reorder(Param<T> out, Param<convT> packed, CParam<T> filter,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

@@ -10,6 +10,7 @@
 #include <Array.hpp>
 #include <optypes.hpp>
 
+namespace arrayfire {
 namespace cpu {
 template<af_op_t op, typename Ti, typename To>
 Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan = false,
@@ -24,3 +25,4 @@ template<af_op_t op, typename Ti, typename To>
 Array<To> reduce_all(const Array<Ti> &in, bool change_nan = false,
                      double nanval = 0);
 }  // namespace cpu
+}  // namespace arrayfire

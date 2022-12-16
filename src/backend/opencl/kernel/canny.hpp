@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 constexpr int THREADS_X = 16;
@@ -174,3 +175,4 @@ void edgeTrackingHysteresis(Param output, const Param strong,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

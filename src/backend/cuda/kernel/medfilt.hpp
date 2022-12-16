@@ -14,6 +14,7 @@
 #include <nvrtc_kernel_headers/medfilt_cuh.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -27,7 +28,7 @@ void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
               int w_wid) {
     UNUSED(w_wid);
     auto medfilt2 = common::getKernel(
-        "cuda::medfilt2", std::array{medfilt_cuh_src},
+        "arrayfire::cuda::medfilt2", std::array{medfilt_cuh_src},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(pad),
                      TemplateArg(w_len), TemplateArg(w_wid)),
         std::array{DefineValue(THREADS_X), DefineValue(THREADS_Y)});
@@ -46,10 +47,10 @@ void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
 
 template<typename T>
 void medfilt1(Param<T> out, CParam<T> in, const af::borderType pad, int w_wid) {
-    auto medfilt1 =
-        common::getKernel("cuda::medfilt1", std::array{medfilt_cuh_src},
-                          TemplateArgs(TemplateTypename<T>(), TemplateArg(pad),
-                                       TemplateArg(w_wid)));
+    auto medfilt1 = common::getKernel(
+        "arrayfire::cuda::medfilt1", std::array{medfilt_cuh_src},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(pad),
+                     TemplateArg(w_wid)));
 
     const dim3 threads(THREADS_X);
 
@@ -66,3 +67,4 @@ void medfilt1(Param<T> out, CParam<T> in, const af::borderType pad, int w_wid) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

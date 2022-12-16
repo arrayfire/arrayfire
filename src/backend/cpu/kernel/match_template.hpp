@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -140,3 +141,4 @@ void matchTemplate(Param<OutT> out, CParam<InT> sImg, CParam<InT> tImg) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

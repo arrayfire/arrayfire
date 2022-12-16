@@ -14,14 +14,15 @@
 #include <traits.hpp>
 
 using af::dim4;
-using common::Node_ptr;
-using common::ShiftNodeBase;
-using opencl::jit::BufferNode;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::ShiftNodeBase;
+using arrayfire::opencl::jit::BufferNode;
 using std::array;
 using std::make_shared;
 using std::static_pointer_cast;
 using std::string;
 
+namespace arrayfire {
 namespace opencl {
 using ShiftNode = ShiftNodeBase<BufferNode>;
 
@@ -68,3 +69,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace opencl
+}  // namespace arrayfire

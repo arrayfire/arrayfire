@@ -14,6 +14,7 @@
 #include <common/defines.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 Kernel::DevPtrType Kernel::getDevPtr(const char* name) {
@@ -39,3 +40,4 @@ int Kernel::getFlag(Kernel::DevPtrType src) {
 }
 
 }  // namespace opencl
+}  // namespace arrayfire

@@ -20,7 +20,7 @@
 #include <vector>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;

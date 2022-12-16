@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -145,3 +146,4 @@ void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

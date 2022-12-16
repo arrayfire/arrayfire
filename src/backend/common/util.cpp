@@ -61,6 +61,7 @@ using std::to_string;
 using std::uint8_t;
 using std::vector;
 
+namespace arrayfire {
 namespace common {
 // http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
 // trim from start
@@ -521,3 +522,4 @@ string toString(af_homography_type val) {
 }
 
 }  // namespace common
+}  // namespace arrayfire

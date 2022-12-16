@@ -17,6 +17,7 @@
 #include <memory.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 // Wrapper functions
@@ -95,3 +96,4 @@ void sort0ByKey(Param<Tk> okey, Param<Tv> oval, bool isAscending) {
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

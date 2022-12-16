@@ -21,6 +21,7 @@ using std::conditional;
 using std::is_integral;
 using std::is_same;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -117,3 +118,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace cuda
+}  // namespace arrayfire

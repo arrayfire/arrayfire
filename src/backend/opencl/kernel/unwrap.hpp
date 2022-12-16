@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -79,3 +80,4 @@ void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

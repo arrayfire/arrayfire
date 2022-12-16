@@ -21,15 +21,17 @@
 #include <sstream>
 #include <string>
 
-using common::getEnvVar;
-using common::ltrim;
-using common::memory::MemoryManagerBase;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::ltrim;
+using arrayfire::common::MemoryManagerBase;
 using std::endl;
 using std::ostringstream;
 using std::stoi;
 using std::string;
 using std::unique_ptr;
 
+namespace arrayfire {
 namespace cpu {
 
 static string get_system() {
@@ -174,8 +176,7 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
-graphics::ForgeManager& forgeManager() {
-    return *(DeviceManager::getInstance().fgMngr);
-}
+ForgeManager& forgeManager() { return *(DeviceManager::getInstance().fgMngr); }
 
 }  // namespace cpu
+}  // namespace arrayfire

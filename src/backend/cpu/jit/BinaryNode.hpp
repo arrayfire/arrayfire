@@ -17,6 +17,7 @@
 #include <array>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 
 namespace jit {
@@ -92,5 +93,5 @@ class BinaryNode : public TNode<compute_t<To>> {
 };
 
 }  // namespace jit
-
 }  // namespace cpu
+}  // namespace arrayfire

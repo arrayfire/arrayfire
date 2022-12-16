@@ -22,6 +22,7 @@
 namespace spdlog {
 class logger;
 }
+namespace arrayfire {
 namespace common {
 
 using Version = std::tuple<int, int, int>;  // major, minor, patch
@@ -75,6 +76,7 @@ class DependencyModule {
 };
 
 }  // namespace common
+}  // namespace arrayfire
 
 /// Creates a function pointer
 #define MODULE_MEMBER(NAME) decltype(&::NAME) NAME

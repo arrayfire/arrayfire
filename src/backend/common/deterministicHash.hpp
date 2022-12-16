@@ -33,4 +33,5 @@ std::size_t deterministicHash(nonstd::span<const std::string> list,
                               const std::size_t prevHash = FNV1A_BASE_OFFSET);
 
 // This concatenates hashes of multiple sources
-std::size_t deterministicHash(nonstd::span<const common::Source> list);
+std::size_t deterministicHash(
+    nonstd::span<const arrayfire::common::Source> list);

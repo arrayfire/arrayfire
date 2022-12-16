@@ -7,11 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include "reduce_impl.hpp"
 #include <common/half.hpp>
+#include "reduce_impl.hpp"
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cuda {
 // sum
 INSTANTIATE(af_add_t, float, float)
@@ -38,3 +39,4 @@ INSTANTIATE(af_add_t, half, half)
 INSTANTIATE(af_add_t, half, float)
 
 }  // namespace cuda
+}  // namespace arrayfire

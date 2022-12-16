@@ -165,7 +165,7 @@ magma_int_t magma_getrs_gpu(magma_trans_t trans, magma_int_t n,
             : (trans == MagmaTrans ? OPENCL_BLAS_TRANS
                                    : OPENCL_BLAS_CONJ_TRANS);
 
-    bool cond  = opencl::getActivePlatform() == AFCL_PLATFORM_NVIDIA;
+    bool cond  = arrayfire::opencl::getActivePlatform() == AFCL_PLATFORM_NVIDIA;
     cl_mem dAT = 0;
     if (nrhs > 1 && cond) {
         magma_malloc<Ty>(&dAT, n * n);

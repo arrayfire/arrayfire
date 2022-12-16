@@ -15,6 +15,7 @@
 
 #include <cstdio>
 
+namespace arrayfire {
 namespace opencl {
 typedef clfftPlanHandle PlanType;
 typedef std::shared_ptr<PlanType> SharedPlan;
@@ -34,6 +35,7 @@ class PlanCache : public common::FFTPlanCache<PlanCache, PlanType> {
                                size_t batch);
 };
 }  // namespace opencl
+}  // namespace arrayfire
 
 #define CLFFT_CHECK(fn)                                          \
     do {                                                         \

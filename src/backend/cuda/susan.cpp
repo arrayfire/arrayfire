@@ -18,6 +18,7 @@
 
 using af::features;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -78,3 +79,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace cuda
+}  // namespace arrayfire

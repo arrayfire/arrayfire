@@ -9,6 +9,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace common {
 
 /// \brief Maps a type between its data representation and the type used
@@ -33,3 +34,4 @@ struct kernel_type {
     using native = compute;
 };
 }  // namespace common
+}  // namespace arrayfire
