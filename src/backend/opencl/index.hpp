@@ -10,9 +10,11 @@
 #include <Array.hpp>
 #include <af/index.h>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[]);
 
-}
+}  // namespace opencl
+}  // namespace arrayfire

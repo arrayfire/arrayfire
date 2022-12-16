@@ -13,6 +13,7 @@
 #include <kernel/diff.hpp>
 #include <stdexcept>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -60,3 +61,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 
 cusparseOperation_t toCusparseTranspose(af_mat_prop opt) {
@@ -215,3 +216,4 @@ INSTANTIATE_SPARSE(cfloat)
 INSTANTIATE_SPARSE(cdouble)
 
 }  // namespace cuda
+}  // namespace arrayfire

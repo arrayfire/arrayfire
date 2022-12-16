@@ -10,6 +10,7 @@
 #include <Array.hpp>
 #include <optypes.hpp>
 
+namespace arrayfire {
 namespace opencl {
 template<af_op_t op, typename T>
 void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
@@ -22,3 +23,4 @@ void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim,
 template<af_op_t op, typename T>
 T ireduce_all(unsigned *loc, const Array<T> &in);
 }  // namespace opencl
+}  // namespace arrayfire

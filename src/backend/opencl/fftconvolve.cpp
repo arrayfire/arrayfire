@@ -25,6 +25,7 @@ using std::is_integral;
 using std::is_same;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -143,3 +144,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace opencl
+}  // namespace arrayfire

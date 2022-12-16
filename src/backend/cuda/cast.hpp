@@ -17,6 +17,7 @@
 #include <types.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename To, typename Ti>
@@ -84,3 +85,4 @@ struct CastOp<unsigned char, common::half> {
 #undef CAST_CFN
 
 }  // namespace cuda
+}  // namespace arrayfire

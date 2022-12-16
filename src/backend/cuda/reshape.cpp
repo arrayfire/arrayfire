@@ -13,8 +13,9 @@
 #include <common/half.hpp>
 #include <kernel/memcopy.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename inType, typename outType>
@@ -77,3 +78,4 @@ INSTANTIATE_COMPLEX(cfloat)
 INSTANTIATE_COMPLEX(cdouble)
 
 }  // namespace cuda
+}  // namespace arrayfire

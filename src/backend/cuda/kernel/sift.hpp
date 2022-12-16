@@ -35,6 +35,7 @@
 
 #include <cfloat>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -1066,10 +1067,9 @@ std::vector<Array<T>> buildGaussPyr(Param<T> init_img, const unsigned n_octaves,
             const unsigned imel   = tmp_pyr[idx].elements();
             const unsigned offset = imel * l;
 
-            CUDA_CHECK(cudaMemcpyAsync(gauss_pyr[o].get() + offset,
-                                       tmp_pyr[idx].get(), imel * sizeof(T),
-                                       cudaMemcpyDeviceToDevice,
-                                       cuda::getActiveStream()));
+            CUDA_CHECK(cudaMemcpyAsync(
+                gauss_pyr[o].get() + offset, tmp_pyr[idx].get(),
+                imel * sizeof(T), cudaMemcpyDeviceToDevice, getActiveStream()));
         }
     }
     return gauss_pyr;
@@ -1103,9 +1103,9 @@ std::vector<Array<T>> buildDoGPyr(std::vector<Array<T>>& gauss_pyr,
 
 template<typename T>
 void update_permutation(thrust::device_ptr<T>& keys,
-                        cuda::ThrustVector<int>& permutation) {
+                        arrayfire::cuda::ThrustVector<int>& permutation) {
     // temporary storage for keys
-    cuda::ThrustVector<T> temp(permutation.size());
+    arrayfire::cuda::ThrustVector<T> temp(permutation.size());
 
     // permute the keys with the current reordering
     THRUST_SELECT((thrust::gather), permutation.begin(), permutation.end(),
@@ -1118,9 +1118,9 @@ void update_permutation(thrust::device_ptr<T>& keys,
 
 template<typename T>
 void apply_permutation(thrust::device_ptr<T>& keys,
-                       cuda::ThrustVector<int>& permutation) {
+                       arrayfire::cuda::ThrustVector<int>& permutation) {
     // copy keys to temporary vector
-    cuda::ThrustVector<T> temp(keys, keys + permutation.size());
+    arrayfire::cuda::ThrustVector<T> temp(keys, keys + permutation.size());
 
     // permute the keys
     THRUST_SELECT((thrust::gather), permutation.begin(), permutation.end(),
@@ -1175,7 +1175,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, float** d_x, float** d_y,
         const unsigned max_feat = ceil(imel * feature_ratio);
 
         CUDA_CHECK(cudaMemsetAsync(d_count.get(), 0, sizeof(unsigned),
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
 
         uptr<float> d_extrema_x        = memAlloc<float>(max_feat);
         uptr<float> d_extrema_y        = memAlloc<float>(max_feat);
@@ -1200,14 +1200,14 @@ void sift(unsigned* out_feat, unsigned* out_dlen, float** d_x, float** d_y,
         unsigned extrema_feat = 0;
         CUDA_CHECK(cudaMemcpyAsync(&extrema_feat, d_count.get(),
                                    sizeof(unsigned), cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         extrema_feat = min(extrema_feat, max_feat);
 
         if (extrema_feat == 0) { continue; }
 
         CUDA_CHECK(cudaMemsetAsync(d_count.get(), 0, sizeof(unsigned),
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
 
         auto d_interp_x        = memAlloc<float>(extrema_feat);
         auto d_interp_y        = memAlloc<float>(extrema_feat);
@@ -1229,12 +1229,12 @@ void sift(unsigned* out_feat, unsigned* out_dlen, float** d_x, float** d_y,
         unsigned interp_feat = 0;
         CUDA_CHECK(cudaMemcpyAsync(&interp_feat, d_count.get(),
                                    sizeof(unsigned), cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         interp_feat = min(interp_feat, max_feat);
 
         CUDA_CHECK(cudaMemsetAsync(d_count.get(), 0, sizeof(unsigned),
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
 
         if (interp_feat == 0) { continue; }
 
@@ -1249,7 +1249,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, float** d_x, float** d_y,
         thrust::device_ptr<float> interp_size_ptr =
             thrust::device_pointer_cast(d_interp_size.get());
 
-        cuda::ThrustVector<int> permutation(interp_feat);
+        arrayfire::cuda::ThrustVector<int> permutation(interp_feat);
         thrust::sequence(permutation.begin(), permutation.end());
 
         update_permutation<float>(interp_size_ptr, permutation);
@@ -1282,11 +1282,10 @@ void sift(unsigned* out_feat, unsigned* out_dlen, float** d_x, float** d_y,
 
         unsigned nodup_feat = 0;
         CUDA_CHECK(cudaMemcpyAsync(&nodup_feat, d_count.get(), sizeof(unsigned),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
+                                   cudaMemcpyDeviceToHost, getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         CUDA_CHECK(cudaMemsetAsync(d_count.get(), 0, sizeof(unsigned),
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
 
         const unsigned max_oriented_feat = nodup_feat * 3;
 
@@ -1315,7 +1314,7 @@ void sift(unsigned* out_feat, unsigned* out_dlen, float** d_x, float** d_y,
         unsigned oriented_feat = 0;
         CUDA_CHECK(cudaMemcpyAsync(&oriented_feat, d_count.get(),
                                    sizeof(unsigned), cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         oriented_feat = min(oriented_feat, max_oriented_feat);
 
@@ -1377,25 +1376,25 @@ void sift(unsigned* out_feat, unsigned* out_dlen, float** d_x, float** d_y,
 
         CUDA_CHECK(cudaMemcpyAsync(
             *d_x + offset, d_x_pyr[i].get(), feat_pyr[i] * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(
             *d_y + offset, d_y_pyr[i].get(), feat_pyr[i] * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(*d_score + offset, d_response_pyr[i].get(),
                                    feat_pyr[i] * sizeof(float),
                                    cudaMemcpyDeviceToDevice,
-                                   cuda::getActiveStream()));
+                                   getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(
             *d_ori + offset, d_ori_pyr[i].get(), feat_pyr[i] * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(
             *d_size + offset, d_size_pyr[i].get(), feat_pyr[i] * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
 
         CUDA_CHECK(
             cudaMemcpyAsync(*d_desc + (offset * desc_len), d_desc_pyr[i].get(),
                             feat_pyr[i] * desc_len * sizeof(float),
-                            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+                            cudaMemcpyDeviceToDevice, getActiveStream()));
 
         offset += feat_pyr[i];
     }
@@ -1407,3 +1406,4 @@ void sift(unsigned* out_feat, unsigned* out_dlen, float** d_x, float** d_y,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

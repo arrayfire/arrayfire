@@ -10,16 +10,15 @@
 #include <Param.hpp>
 #include <math.hpp>
 
-__constant__ char
-    cFilter[2 * (2 * (MAX_CONV1_FILTER_LEN - 1) + CONV_THREADS) *
-            sizeof(double)];
+__constant__ char cFilter[2 * (2 * (MAX_CONV1_FILTER_LEN - 1) + CONV_THREADS) *
+                          sizeof(double)];
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, typename aT, bool expand, int fLen0, int fLen1>
-__global__
-void convolve2(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1,
-               int o2, int o3, int s2, int s3) {
+__global__ void convolve2(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1,
+                          int o2, int o3, int s2, int s3) {
     const size_t C_SIZE = (CONV2_THREADS_X + 2 * (fLen0 - 1)) *
                           (CONV2_THREADS_Y + 2 * (fLen1 - 1));
     __shared__ T shrdMem[C_SIZE];
@@ -51,8 +50,9 @@ void convolve2(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1,
     int lx = threadIdx.x;
     int ly = threadIdx.y;
     int gx = CONV2_THREADS_X * (blockIdx.x - b0 * nBBS0) + lx;
-    int gy = CONV2_THREADS_Y *
-                 ((blockIdx.y + blockIdx.z * gridDim.y) - b1 * nBBS1) + ly;
+    int gy =
+        CONV2_THREADS_Y * ((blockIdx.y + blockIdx.z * gridDim.y) - b1 * nBBS1) +
+        ly;
 
     if (b1 >= out.dims[3]) return;
 
@@ -97,4 +97,5 @@ void convolve2(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1,
     }
 }
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

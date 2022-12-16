@@ -19,6 +19,7 @@
 using af::features;
 using std::shared_ptr;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -77,3 +78,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace cpu
+}  // namespace arrayfire

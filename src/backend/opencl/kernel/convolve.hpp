@@ -10,6 +10,7 @@
 #pragma once
 #include <kernel/convolve/conv_common.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 namespace kernel {
@@ -57,3 +58,4 @@ void convolve_nd(Param out, const Param signal, const Param filter,
 }  // namespace kernel
 
 }  // namespace opencl
+}  // namespace arrayfire

@@ -11,15 +11,16 @@
 #include <af/dim4.hpp>
 
 #undef _GLIBCXX_USE_INT128
+#include <common/half.hpp>
 #include <err_cuda.hpp>
 #include <kernel/mean.hpp>
 #include <mean.hpp>
 #include <complex>
-#include <common/half.hpp>
 
-using common::half;
 using af::dim4;
+using arrayfire::common::half;
 using std::swap;
+namespace arrayfire {
 namespace cuda {
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti>& in) {
@@ -80,3 +81,4 @@ INSTANTIATE_WGT(cdouble, double);
 INSTANTIATE_WGT(half, float);
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -15,7 +15,10 @@
 
 #include <forge.h>
 
-class ForgeModule : public common::DependencyModule {
+namespace arrayfire {
+namespace common {
+
+class ForgeModule : public DependencyModule {
    public:
     ForgeModule();
 
@@ -89,9 +92,7 @@ class ForgeModule : public common::DependencyModule {
     MODULE_MEMBER(fg_err_to_string);
 };
 
-namespace graphics {
 ForgeModule& forgePlugin();
-}
 
 #define FG_CHECK(fn)                                        \
     do {                                                    \
@@ -100,3 +101,6 @@ ForgeModule& forgePlugin();
             AF_ERROR("forge call failed", AF_ERR_INTERNAL); \
         }                                                   \
     } while (0);
+
+}  // namespace common
+}  // namespace arrayfire

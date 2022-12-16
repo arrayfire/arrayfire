@@ -24,6 +24,7 @@
 #include <magma/magma_helper.h>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename Tr>
@@ -231,9 +232,11 @@ INSTANTIATE(cfloat, float)
 INSTANTIATE(cdouble, double)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T, typename Tr>
@@ -258,5 +261,6 @@ INSTANTIATE(cfloat, float)
 INSTANTIATE(cdouble, double)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA

@@ -16,6 +16,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/flood_fill_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -37,7 +38,7 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
                const T highValue, const af::connectivity nlookup) {
     UNUSED(nlookup);
     if (sharedMemRequiredByFloodFill<T>() >
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).sharedMemPerBlock) {
+        getDeviceProp(getActiveDeviceId()).sharedMemPerBlock) {
         char errMessage[256];
         snprintf(errMessage, sizeof(errMessage),
                  "\nCurrent thread's CUDA device doesn't have sufficient "
@@ -45,14 +46,16 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
         CUDA_NOT_SUPPORTED(errMessage);
     }
 
-    auto initSeeds = common::getKernel("cuda::initSeeds", {flood_fill_cuh_src},
-                                       {TemplateTypename<T>()});
-    auto floodStep = common::getKernel(
-        "cuda::floodStep", {flood_fill_cuh_src}, {TemplateTypename<T>()},
-        {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
-    auto finalizeOutput = common::getKernel(
-        "cuda::finalizeOutput", {flood_fill_cuh_src}, {TemplateTypename<T>()});
-
+    auto initSeeds =
+        common::getKernel("arrayfire::cuda::initSeeds", {flood_fill_cuh_src},
+                          {TemplateTypename<T>()});
+    auto floodStep =
+        common::getKernel("arrayfire::cuda::floodStep", {flood_fill_cuh_src},
+                          {TemplateTypename<T>()},
+                          {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto finalizeOutput =
+        common::getKernel("arrayfire::cuda::finalizeOutput",
+                          {flood_fill_cuh_src}, {TemplateTypename<T>()});
     EnqueueArgs qArgs(dim3(divup(seedsx.elements(), THREADS)), dim3(THREADS),
                       getActiveStream());
     initSeeds(qArgs, out, seedsx, seedsy);
@@ -78,3 +81,4 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

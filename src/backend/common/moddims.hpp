@@ -10,6 +10,7 @@
 #include <Array.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace common {
 
 /// Modifies the shape of the Array<T> object to \p newDims
@@ -39,3 +40,4 @@ template<typename T>
 detail::Array<T> flat(const detail::Array<T> &in);
 
 }  // namespace common
+}  // namespace arrayfire

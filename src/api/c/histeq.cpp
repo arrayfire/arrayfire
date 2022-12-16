@@ -22,8 +22,8 @@
 #include <af/index.h>
 
 using af::dim4;
-using common::cast;
-using common::modDims;
+using arrayfire::common::cast;
+using arrayfire::common::modDims;
 using detail::arithOp;
 using detail::Array;
 using detail::createValueArray;

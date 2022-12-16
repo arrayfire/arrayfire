@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -67,3 +68,4 @@ void meanshift(Param out, const Param in, const float spatialSigma,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

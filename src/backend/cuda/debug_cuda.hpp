@@ -13,6 +13,7 @@
 #include <platform.hpp>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel_logger {
 
@@ -22,6 +23,7 @@ inline auto getLogger() {
 }
 }  // namespace kernel_logger
 }  // namespace cuda
+}  // namespace arrayfire
 
 template<>
 struct fmt::formatter<dim3> : fmt::formatter<std::string> {
@@ -33,16 +35,17 @@ struct fmt::formatter<dim3> : fmt::formatter<std::string> {
     }
 };
 
-#define CUDA_LAUNCH_SMEM(fn, blks, thrds, smem_size, ...)                     \
-    do {                                                                      \
-        {                                                                     \
-            using namespace cuda::kernel_logger;                              \
-            AF_TRACE(                                                         \
-                "Launching {}: Blocks: [{}] Threads: [{}] "                   \
-                "Shared Memory: {}",                                          \
-                #fn, blks, thrds, smem_size);                                 \
-        }                                                                     \
-        fn<<<blks, thrds, smem_size, cuda::getActiveStream()>>>(__VA_ARGS__); \
+#define CUDA_LAUNCH_SMEM(fn, blks, thrds, smem_size, ...)                   \
+    do {                                                                    \
+        {                                                                   \
+            using namespace arrayfire::cuda::kernel_logger;                 \
+            AF_TRACE(                                                       \
+                "Launching {}: Blocks: [{}] Threads: [{}] "                 \
+                "Shared Memory: {}",                                        \
+                #fn, blks, thrds, smem_size);                               \
+        }                                                                   \
+        fn<<<blks, thrds, smem_size, arrayfire::cuda::getActiveStream()>>>( \
+            __VA_ARGS__);                                                   \
     } while (false)
 
 #define CUDA_LAUNCH(fn, blks, thrds, ...) \
@@ -51,18 +54,21 @@ struct fmt::formatter<dim3> : fmt::formatter<std::string> {
 // FIXME: Add a special flag for debug
 #ifndef NDEBUG
 
-#define POST_LAUNCH_CHECK() \
-    do { CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream())); } while (0)
+#define POST_LAUNCH_CHECK()                                                    \
+    do {                                                                       \
+        CUDA_CHECK(cudaStreamSynchronize(arrayfire::cuda::getActiveStream())); \
+    } while (0)
 
 #else
 
-#define POST_LAUNCH_CHECK()                                             \
-    do {                                                                \
-        if (cuda::synchronize_calls()) {                                \
-            CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream())); \
-        } else {                                                        \
-            CUDA_CHECK(cudaPeekAtLastError());                          \
-        }                                                               \
+#define POST_LAUNCH_CHECK()                                                 \
+    do {                                                                    \
+        if (arrayfire::cuda::synchronize_calls()) {                         \
+            CUDA_CHECK(                                                     \
+                cudaStreamSynchronize(arrayfire::cuda::getActiveStream())); \
+        } else {                                                            \
+            CUDA_CHECK(cudaPeekAtLastError());                              \
+        }                                                                   \
     } while (0)
 
 #endif

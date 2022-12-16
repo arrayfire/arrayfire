@@ -11,6 +11,7 @@
 
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -52,3 +53,4 @@ __global__ void tile(Param<T> out, CParam<T> in, const int blocksPerMatX,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, bool is_column>
@@ -79,3 +80,4 @@ __global__ void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

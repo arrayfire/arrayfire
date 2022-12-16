@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -130,3 +131,4 @@ void rotate(Param out, const Param in, const float theta, af_interp_type method,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

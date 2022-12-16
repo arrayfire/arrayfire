@@ -10,6 +10,7 @@
 #pragma once
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti>& in);
@@ -24,3 +25,4 @@ template<typename T, typename Tw>
 Array<T> mean(const Array<T>& in, const Array<Tw>& wts, const int dim);
 
 }  // namespace cuda
+}  // namespace arrayfire

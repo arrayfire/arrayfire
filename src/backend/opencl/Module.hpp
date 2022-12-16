@@ -13,6 +13,7 @@
 
 #include <cl2hpp.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 /// OpenCL backend wrapper for cl::Program object
@@ -35,3 +36,4 @@ class Module : public common::ModuleInterface<cl::Program> {
 };
 
 }  // namespace opencl
+}  // namespace arrayfire

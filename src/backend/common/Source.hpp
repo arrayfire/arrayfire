@@ -8,6 +8,7 @@
  ********************************************************/
 #pragma once
 
+namespace arrayfire {
 namespace common {
 struct Source {
     const char* ptr;           // Pointer to the kernel source
@@ -15,3 +16,4 @@ struct Source {
     const std::size_t hash;    // hash value for the source *ptr;
 };
 }  // namespace common
+}  // namespace arrayfire

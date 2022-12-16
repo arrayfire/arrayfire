@@ -26,16 +26,17 @@
 #include <dlfcn.h>
 #endif
 
-using common::getEnvVar;
-using common::getErrorMessage;
-using common::getFunctionPointer;
-using common::loadLibrary;
-using common::loggerFactory;
-
+using arrayfire::common::getEnvVar;
+using arrayfire::common::getErrorMessage;
+using arrayfire::common::getFunctionPointer;
+using arrayfire::common::loadLibrary;
+using arrayfire::common::loggerFactory;
+using arrayfire::common::unloadLibrary;
 using std::extent;
 using std::function;
 using std::string;
 
+namespace arrayfire {
 namespace unified {
 
 #if defined(OS_WIN)
@@ -218,7 +219,7 @@ AFSymbolManager::AFSymbolManager()
 
 AFSymbolManager::~AFSymbolManager() {
     for (auto& bkndHandle : bkndHandles) {
-        if (bkndHandle) { common::unloadLibrary(bkndHandle); }
+        if (bkndHandle) { unloadLibrary(bkndHandle); }
     }
 }
 
@@ -248,3 +249,4 @@ af_err setBackend(af::Backend bknd) {
 }
 
 }  // namespace unified
+}  // namespace arrayfire

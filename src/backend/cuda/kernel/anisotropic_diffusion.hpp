@@ -16,6 +16,7 @@
 #include <nvrtc_kernel_headers/anisotropic_diffusion_cuh.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -27,7 +28,7 @@ template<typename T>
 void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
                           const af::fluxFunction fftype, bool isMCDE) {
     auto diffUpdate = common::getKernel(
-        "cuda::diffUpdate", {anisotropic_diffusion_cuh_src},
+        "arrayfire::cuda::diffUpdate", {anisotropic_diffusion_cuh_src},
         {TemplateTypename<T>(), TemplateArg(fftype), TemplateArg(isMCDE)},
         {DefineValue(THREADS_X), DefineValue(THREADS_Y),
          DefineValue(YDIM_LOAD)});
@@ -39,9 +40,8 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
 
     dim3 blocks(blkX * inout.dims[2], blkY * inout.dims[3], 1);
 
-    const int maxBlkY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    const int blkZ = divup(blocks.y, maxBlkY);
+    const int maxBlkY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    const int blkZ    = divup(blocks.y, maxBlkY);
 
     if (blkZ > 1) {
         blocks.y = maxBlkY;
@@ -57,3 +57,4 @@ void anisotropicDiffusion(Param<T> inout, const float dt, const float mct,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

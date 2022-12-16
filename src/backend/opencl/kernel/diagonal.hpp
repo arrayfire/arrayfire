@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -32,9 +33,8 @@ static void diagCreate(Param out, Param in, int num) {
     };
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
+        getTypeBuildDefinition<T>()};
 
     auto diagCreate = common::getKernel("diagCreateKernel",
                                         {diag_create_cl_src}, targs, options);
@@ -57,9 +57,8 @@ static void diagExtract(Param out, Param in, int num) {
     };
     std::vector<std::string> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
+        getTypeBuildDefinition<T>()};
 
     auto diagExtract = common::getKernel("diagExtractKernel",
                                          {diag_extract_cl_src}, targs, options);
@@ -77,3 +76,4 @@ static void diagExtract(Param out, Param in, int num) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

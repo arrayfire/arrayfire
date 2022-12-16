@@ -24,6 +24,7 @@ DEFINE_HANDLER(cusparseDnMatDescr_t, cusparseCreateDnMat, cusparseDestroyDnMat);
 #endif
 // clang-format on
 
+namespace arrayfire {
 namespace cuda {
 
 const char* errorString(cusparseStatus_t err);
@@ -34,10 +35,11 @@ const char* errorString(cusparseStatus_t err);
         if (_error != CUSPARSE_STATUS_SUCCESS) {                              \
             char _err_msg[1024];                                              \
             snprintf(_err_msg, sizeof(_err_msg), "CUSPARSE Error (%d): %s\n", \
-                     (int)(_error), cuda::errorString(_error));               \
+                     (int)(_error), arrayfire::cuda::errorString(_error));    \
                                                                               \
             AF_ERROR(_err_msg, AF_ERR_INTERNAL);                              \
         }                                                                     \
     } while (0)
 
 }  // namespace cuda
+}  // namespace arrayfire

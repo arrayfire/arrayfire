@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -53,3 +54,4 @@ void iota(Param out, const af::dim4& sdims) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

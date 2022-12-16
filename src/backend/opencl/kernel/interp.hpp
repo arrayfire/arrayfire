@@ -15,6 +15,7 @@
 #include <array>
 #include <string>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -40,3 +41,4 @@ static void addInterpEnumOptions(std::vector<std::string>& options) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

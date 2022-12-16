@@ -14,6 +14,7 @@
 #include <optypes.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename To, typename Ti>
 Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs,
@@ -87,3 +88,4 @@ Array<T> conj(const Array<T> &in) {
     return createNodeArray<T>(in.dims(), common::Node_ptr(node));
 }
 }  // namespace cuda
+}  // namespace arrayfire

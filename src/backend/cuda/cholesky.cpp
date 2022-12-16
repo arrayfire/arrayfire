@@ -21,6 +21,7 @@
 #include <common/err_common.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 // cusolverStatus_t cusolverDn<>potrf_bufferSize(
@@ -124,3 +125,4 @@ INSTANTIATE_CH(cfloat)
 INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 }  // namespace cuda
+}  // namespace arrayfire

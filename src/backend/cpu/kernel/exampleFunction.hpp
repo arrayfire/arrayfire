@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -47,3 +48,4 @@ void exampleFunction(Param<T> out, CParam<T> a, CParam<T> b,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

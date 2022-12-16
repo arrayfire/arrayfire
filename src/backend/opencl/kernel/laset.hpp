@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -51,12 +52,10 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
         TemplateArg(uplo),
     };
     std::vector<std::string> options = {
-        DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineValue(BLK_X),
+        DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(BLK_X),
         DefineValue(BLK_Y),
-        DefineKeyValue(IS_CPLX, static_cast<int>(af::iscplx<T>())),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(IS_CPLX, static_cast<int>(iscplx<T>())),
+        getTypeBuildDefinition<T>()};
 
     auto lasetOp =
         common::getKernel(laset_name<uplo>(), {laset_cl_src}, targs, options);
@@ -76,3 +75,4 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

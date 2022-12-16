@@ -25,6 +25,7 @@
 using std::array;
 using std::memcpy;
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 // Utils
@@ -70,21 +71,21 @@ static float getFloatNegative11(uint *val, uint index) {
 }
 
 // Generates rationals in [0, 1)
-common::half getHalf01(uint *val, uint index) {
+arrayfire::common::half getHalf01(uint *val, uint index) {
     float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
-    return static_cast<common::half>(
+    return static_cast<arrayfire::common::half>(
         fmaf(v, unsigned_half_factor, unsigned_half_half_factor));
 }
 
 // Generates rationals in (-1, 1]
-static common::half getHalfNegative11(uint *val, uint index) {
+static arrayfire::common::half getHalfNegative11(uint *val, uint index) {
     float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
     // Conversion to half adapted from Random123
     constexpr float factor =
         ((1.0f) / (std::numeric_limits<short>::max() + (1.0f)));
     constexpr float half_factor = ((0.5f) * factor);
 
-    return static_cast<common::half>(fmaf(v, factor, half_factor));
+    return static_cast<arrayfire::common::half>(fmaf(v, factor, half_factor));
 }
 
 // Generates rationals in [0, 1)
@@ -154,9 +155,10 @@ double transform<double>(uint *val, uint index) {
 }
 
 template<>
-common::half transform<common::half>(uint *val, uint index) {
+arrayfire::common::half transform<arrayfire::common::half>(uint *val,
+                                                           uint index) {
     float v = val[index >> 1U] >> (16U * (index & 1U)) & 0x0000ffff;
-    return static_cast<common::half>(
+    return static_cast<arrayfire::common::half>(
         1.f - fmaf(v, unsigned_half_factor, unsigned_half_half_factor));
 }
 
@@ -274,8 +276,8 @@ void boxMullerTransform(uint val[4], float *temp) {
                               getFloat01(val, 3));
 }
 
-void boxMullerTransform(uint val[4], common::half *temp) {
-    using common::half;
+void boxMullerTransform(uint val[4], arrayfire::common::half *temp) {
+    using arrayfire::common::half;
     boxMullerTransform<half>(&temp[0], &temp[1], getHalfNegative11(val, 0),
                              getHalf01(val, 1));
     boxMullerTransform<half>(&temp[2], &temp[3], getHalfNegative11(val, 2),
@@ -416,3 +418,4 @@ void normalDistributionCBRNG(T *out, size_t elements,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

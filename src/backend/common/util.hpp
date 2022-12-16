@@ -15,6 +15,7 @@
 
 #include <string>
 
+namespace arrayfire {
 namespace common {
 /// The environment variable that determines where the runtime kernels
 /// will be stored on the file system
@@ -58,3 +59,4 @@ std::string getOpEnumStr(af_op_t val);
 template<typename T>
 std::string toString(T value);
 }  // namespace common
+}  // namespace arrayfire

@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -117,3 +118,4 @@ void wrap_dilated(Param out, const Param in, const dim_t wx, const dim_t wy,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

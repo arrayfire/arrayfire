@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <vector>
 
+namespace arrayfire {
 namespace common {
 
 constexpr unsigned MAX_BUFFERS = 1000;
@@ -23,7 +24,7 @@ constexpr size_t ONE_GB        = 1 << 30;
 
 using uptr_t = std::unique_ptr<void, std::function<void(void *)>>;
 
-class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
+class DefaultMemoryManager final : public common::MemoryManagerBase {
     size_t mem_step_size;
     unsigned max_buffers;
 
@@ -134,3 +135,4 @@ class DefaultMemoryManager final : public common::memory::MemoryManagerBase {
 };
 
 }  // namespace common
+}  // namespace arrayfire

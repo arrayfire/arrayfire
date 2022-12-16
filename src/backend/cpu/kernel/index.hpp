@@ -12,6 +12,7 @@
 #include <utility.hpp>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -64,3 +65,4 @@ void index(Param<T> out, CParam<T> in, const af::dim4 dDims,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

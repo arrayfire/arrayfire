@@ -18,6 +18,7 @@
 using af::dim4;
 using std::vector;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -124,3 +125,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -66,12 +66,13 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
-using common::getEnvVar;
-using common::ltrim;
-using common::memory::MemoryManagerBase;
-using opencl::Allocator;
-using opencl::AllocatorPinned;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::ltrim;
+using arrayfire::common::MemoryManagerBase;
+using arrayfire::opencl::Allocator;
+using arrayfire::opencl::AllocatorPinned;
 
+namespace arrayfire {
 namespace opencl {
 
 static string get_system() {
@@ -645,7 +646,7 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
-graphics::ForgeManager& forgeManager() {
+arrayfire::common::ForgeManager& forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }
 
@@ -670,8 +671,9 @@ PlanCache& fftManager() {
 }
 
 }  // namespace opencl
+}  // namespace arrayfire
 
-using namespace opencl;
+using namespace arrayfire::opencl;
 
 af_err afcl_get_device_type(afcl_device_type* res) {
     try {

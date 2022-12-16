@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T, typename accT>
@@ -37,3 +38,4 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
                              const Array<T> &convolved_output, af::dim4 stride,
                              af::dim4 padding, af::dim4 dilation);
 }  // namespace opencl
+}  // namespace arrayfire

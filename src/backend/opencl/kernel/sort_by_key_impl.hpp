@@ -36,7 +36,7 @@ AF_DEPRECATED_WARNINGS_ON
 
 namespace compute = boost::compute;
 
-using common::half;
+using arrayfire::common::half;
 
 template<typename Tk, typename Tv, bool isAscending>
 inline boost::compute::function<bool(const std::pair<Tk, Tv>,
@@ -79,6 +79,7 @@ INSTANTIATE_FLIP(cl_ulong, ULONG_MAX)
 
 #undef INSTANTIATE_FLIP
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 static const int copyPairIter = 4;
@@ -253,3 +254,4 @@ void sort0ByKey(Param pKey, Param pVal, bool isAscending) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

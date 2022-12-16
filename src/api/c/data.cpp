@@ -26,7 +26,7 @@
 #include <af/util.h>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createValueArray;
@@ -39,19 +39,6 @@ using detail::uchar;
 using detail::uint;
 using detail::uintl;
 using detail::ushort;
-
-dim4 verifyDims(const unsigned ndims, const dim_t *const dims) {
-    DIM_ASSERT(1, ndims >= 1);
-
-    dim4 d(1, 1, 1, 1);
-
-    for (unsigned i = 0; i < ndims; i++) {
-        d[i] = dims[i];
-        DIM_ASSERT(2, dims[i] >= 1);
-    }
-
-    return d;
-}
 
 // Strong Exception Guarantee
 af_err af_constant(af_array *result, const double value, const unsigned ndims,

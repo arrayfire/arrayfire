@@ -12,6 +12,7 @@
 #include <math.hpp>
 #include <optypes.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -21,3 +22,4 @@ Array<T> createScalarNode(const dim4 &size, const T val) {
 }
 
 }  // namespace opencl
+}  // namespace arrayfire

@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <cmath>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -117,3 +118,4 @@ void rgb2hsv(Param<T> out, CParam<T> in) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

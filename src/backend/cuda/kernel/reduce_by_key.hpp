@@ -27,6 +27,7 @@ using std::unique_ptr;
 
 const static unsigned int FULL_MASK = 0xFFFFFFFF;
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -637,3 +638,4 @@ __global__ static void reduce_blocks_dim_by_key(
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

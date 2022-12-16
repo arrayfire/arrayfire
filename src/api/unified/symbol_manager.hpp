@@ -21,6 +21,7 @@
 #include <string>
 #include <unordered_map>
 
+namespace arrayfire {
 namespace unified {
 
 const int NUM_BACKENDS = 3;
@@ -122,6 +123,7 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
 }
 
 }  // namespace unified
+}  // namespace arrayfire
 
 /// Checks if the active backend and the af_arrays are the same.
 ///
@@ -132,22 +134,28 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
 /// \param[in] Any number of af_arrays or pointer to af_arrays
 #define CHECK_ARRAYS(...)                                                     \
     do {                                                                      \
-        af_backend backendId = unified::getActiveBackend();                   \
-        if (!unified::checkArrays(backendId, __VA_ARGS__))                    \
+        af_backend backendId = arrayfire::unified::getActiveBackend();        \
+        if (!arrayfire::unified::checkArrays(backendId, __VA_ARGS__))         \
             AF_RETURN_ERROR("Input array does not belong to current backend", \
                             AF_ERR_ARR_BKND_MISMATCH);                        \
     } while (0)
 
 #define CALL(FUNCTION, ...)                                                      \
     using af_func                  = std::add_pointer<decltype(FUNCTION)>::type; \
-    thread_local af_backend index_ = unified::getActiveBackend();                \
-    if (unified::getActiveHandle()) {                                            \
-        thread_local af_func func = (af_func)common::getFunctionPointer(         \
-            unified::getActiveHandle(), __func__);                               \
-        if (index_ != unified::getActiveBackend()) {                             \
-            index_ = unified::getActiveBackend();                                \
-            func   = (af_func)common::getFunctionPointer(                        \
-                  unified::getActiveHandle(), __func__);                         \
+    thread_local af_backend index_ = arrayfire::unified::getActiveBackend();     \
+    if (arrayfire::unified::getActiveHandle()) {                                 \
+        thread_local af_func func =                                              \
+            (af_func)arrayfire::common::getFunctionPointer(                      \
+                arrayfire::unified::getActiveHandle(), __func__);                \
+        if (!func) {                                                             \
+            AF_RETURN_ERROR(                                                     \
+                "requested symbol name could not be found in loaded library.",   \
+                AF_ERR_LOAD_LIB);                                                \
+        }                                                                        \
+        if (index_ != arrayfire::unified::getActiveBackend()) {                  \
+            index_ = arrayfire::unified::getActiveBackend();                     \
+            func   = (af_func)arrayfire::common::getFunctionPointer(             \
+                  arrayfire::unified::getActiveHandle(), __func__);              \
         }                                                                        \
         return func(__VA_ARGS__);                                                \
     } else {                                                                     \
@@ -157,5 +165,6 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
 
 #define CALL_NO_PARAMS(FUNCTION) CALL(FUNCTION)
 
-#define LOAD_SYMBOL() \
-    common::getFunctionPointer(unified::getActiveHandle(), __FUNCTION__)
+#define LOAD_SYMBOL()                      \
+    arrayfire::common::getFunctionPointer( \
+        arrayfire::unified::getActiveHandle(), __FUNCTION__)

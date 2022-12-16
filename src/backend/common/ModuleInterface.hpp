@@ -9,6 +9,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace common {
 
 /// Instances of this object are stored in jit kernel cache
@@ -44,3 +45,4 @@ class ModuleInterface {
 };
 
 }  // namespace common
+}  // namespace arrayfire

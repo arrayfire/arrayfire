@@ -13,6 +13,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/canny_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -27,7 +28,8 @@ template<typename T>
 void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
                        CParam<T> dy) {
     auto nonMaxSuppress = common::getKernel(
-        "cuda::nonMaxSuppression", {canny_cuh_src}, {TemplateTypename<T>()},
+        "arrayfire::cuda::nonMaxSuppression", {canny_cuh_src},
+        {TemplateTypename<T>()},
         {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
          DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
@@ -48,15 +50,17 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
 template<typename T>
 void edgeTrackingHysteresis(Param<T> output, CParam<T> strong, CParam<T> weak) {
     auto initEdgeOut = common::getKernel(
-        "cuda::initEdgeOut", {canny_cuh_src}, {TemplateTypename<T>()},
+        "arrayfire::cuda::initEdgeOut", {canny_cuh_src},
+        {TemplateTypename<T>()},
         {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
          DefineValue(THREADS_X), DefineValue(THREADS_Y)});
     auto edgeTrack = common::getKernel(
-        "cuda::edgeTrack", {canny_cuh_src}, {TemplateTypename<T>()},
+        "arrayfire::cuda::edgeTrack", {canny_cuh_src}, {TemplateTypename<T>()},
         {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
          DefineValue(THREADS_X), DefineValue(THREADS_Y)});
     auto suppressLeftOver = common::getKernel(
-        "cuda::suppressLeftOver", {canny_cuh_src}, {TemplateTypename<T>()},
+        "arrayfire::cuda::suppressLeftOver", {canny_cuh_src},
+        {TemplateTypename<T>()},
         {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
          DefineValue(THREADS_X), DefineValue(THREADS_Y)});
 
@@ -88,3 +92,4 @@ void edgeTrackingHysteresis(Param<T> output, CParam<T> strong, CParam<T> weak) {
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

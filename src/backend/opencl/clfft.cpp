@@ -18,6 +18,7 @@
 using std::make_unique;
 using std::string;
 
+namespace arrayfire {
 namespace opencl {
 const char *_clfftGetResultString(clfftStatus st) {
     switch (st) {
@@ -178,3 +179,4 @@ SharedPlan findPlan(clfftLayout iLayout, clfftLayout oLayout, clfftDim rank,
     return retVal;
 }
 }  // namespace opencl
+}  // namespace arrayfire

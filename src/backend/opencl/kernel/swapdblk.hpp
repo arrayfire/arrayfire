@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -81,3 +82,4 @@ void swapdblk(int n, int nb, cl_mem dA, size_t dA_offset, int ldda, int inca,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

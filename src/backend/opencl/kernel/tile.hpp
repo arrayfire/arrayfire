@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -56,3 +57,4 @@ void tile(Param out, const Param in) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

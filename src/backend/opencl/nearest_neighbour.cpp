@@ -18,6 +18,7 @@
 using af::dim4;
 using cl::Device;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T, typename To, af_match_type dist_type>
@@ -84,3 +85,4 @@ INSTANTIATE(uchar, uint)
 INSTANTIATE(uintl, uint)  // For Hamming
 
 }  // namespace opencl
+}  // namespace arrayfire

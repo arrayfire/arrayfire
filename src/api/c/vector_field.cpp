@@ -23,6 +23,12 @@
 #include <vector>
 
 using af::dim4;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
+using arrayfire::common::getGLType;
+using arrayfire::common::makeContextCurrent;
+using arrayfire::common::step_round;
 using detail::Array;
 using detail::copy_vector_field;
 using detail::createEmptyArray;
@@ -34,14 +40,12 @@ using detail::uint;
 using detail::ushort;
 using std::vector;
 
-using namespace graphics;
-
 template<typename T>
 fg_chart setup_vector_field(fg_window window, const vector<af_array>& points,
                             const vector<af_array>& directions,
                             const af_cell* const props,
                             const bool transpose_ = true) {
-    ForgeModule& _ = graphics::forgePlugin();
+    ForgeModule& _ = forgePlugin();
     vector<Array<T>> pnts;
     vector<Array<T>> dirs;
 
@@ -184,7 +188,7 @@ af_err vectorFieldWrapper(const af_window window, const af_array points,
         }
         auto gridDims = forgeManager().getWindowGrid(window);
 
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule& _ = forgePlugin();
         if (props->col > -1 && props->row > -1) {
             FG_CHECK(_.fg_draw_chart_to_cell(
                 window, gridDims.first, gridDims.second,
@@ -291,7 +295,7 @@ af_err vectorFieldWrapper(const af_window window, const af_array xPoints,
         }
         auto gridDims = forgeManager().getWindowGrid(window);
 
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule& _ = forgePlugin();
         if (props->col > -1 && props->row > -1) {
             FG_CHECK(_.fg_draw_chart_to_cell(
                 window, gridDims.first, gridDims.second,
@@ -386,7 +390,7 @@ af_err vectorFieldWrapper(const af_window window, const af_array xPoints,
 
         auto gridDims = forgeManager().getWindowGrid(window);
 
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule& _ = forgePlugin();
         if (props->col > -1 && props->row > -1) {
             FG_CHECK(_.fg_draw_chart_to_cell(
                 window, gridDims.first, gridDims.second,

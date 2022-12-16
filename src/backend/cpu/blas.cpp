@@ -34,12 +34,13 @@
 #include <vector>
 
 using af::dtype_traits;
-using common::cast;
-using common::half;
-using common::is_complex;
+using arrayfire::common::cast;
+using arrayfire::common::half;
+using arrayfire::common::is_complex;
 using std::conditional;
 using std::vector;
 
+namespace arrayfire {
 namespace cpu {
 
 // clang-format off
@@ -392,3 +393,4 @@ INSTANTIATE_DOT(cfloat);
 INSTANTIATE_DOT(cdouble);
 
 }  // namespace cpu
+}  // namespace arrayfire

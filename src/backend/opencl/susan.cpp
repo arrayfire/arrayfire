@@ -17,6 +17,7 @@
 using af::features;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -70,3 +71,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace opencl
+}  // namespace arrayfire

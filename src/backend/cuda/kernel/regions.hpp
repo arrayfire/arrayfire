@@ -34,14 +34,15 @@ __device__ static int continue_flag = 1;
 
 // Wrapper function for texture fetch
 template<typename T>
-static inline __device__ T fetch(const int n, cuda::Param<T> equiv_map,
+static inline __device__ T fetch(const int n,
+                                 arrayfire::cuda::Param<T> equiv_map,
                                  cudaTextureObject_t tex) {
     return tex1Dfetch<T>(tex, n);
 }
 
 template<>
 __device__ inline double fetch<double>(const int n,
-                                       cuda::Param<double> equiv_map,
+                                       arrayfire::cuda::Param<double> equiv_map,
                                        cudaTextureObject_t tex) {
     return equiv_map.ptr[n];
 }
@@ -49,8 +50,8 @@ __device__ inline double fetch<double>(const int n,
 // The initial label kernel distinguishes between valid (nonzero)
 // pixels and "background" (zero) pixels.
 template<typename T, int n_per_thread>
-__global__ static void initial_label(cuda::Param<T> equiv_map,
-                                     cuda::CParam<char> bin) {
+__global__ static void initial_label(arrayfire::cuda::Param<T> equiv_map,
+                                     arrayfire::cuda::CParam<char> bin) {
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
     const int base_y = (blockIdx.y * blockDim.y * n_per_thread) + threadIdx.y;
 
@@ -70,8 +71,9 @@ __global__ static void initial_label(cuda::Param<T> equiv_map,
 }
 
 template<typename T, int n_per_thread>
-__global__ static void final_relabel(cuda::Param<T> equiv_map,
-                                     cuda::CParam<char> bin, const T* d_tmp) {
+__global__ static void final_relabel(arrayfire::cuda::Param<T> equiv_map,
+                                     arrayfire::cuda::CParam<char> bin,
+                                     const T* d_tmp) {
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
     const int base_y = (blockIdx.y * blockDim.y * n_per_thread) + threadIdx.y;
 
@@ -96,8 +98,8 @@ __global__ static void final_relabel(cuda::Param<T> equiv_map,
 // do not choose zero, which indicates invalid.
 template<typename T>
 __device__ __inline__ static T relabel(const T a, const T b) {
-    T aa = (a == 0) ? cuda::maxval<T>() : a;
-    T bb = (b == 0) ? cuda::maxval<T>() : b;
+    T aa = (a == 0) ? arrayfire::cuda::maxval<T>() : a;
+    T bb = (b == 0) ? arrayfire::cuda::maxval<T>() : b;
     return min(aa, bb);
 }
 
@@ -120,7 +122,7 @@ struct warp_count {
 // Number of elements to handle per thread in each dimension
 // int n_per_thread = 2; // 2x2 per thread = 4 total elems per thread
 template<typename T, int block_dim, int n_per_thread, bool full_conn>
-__global__ static void update_equiv(cuda::Param<T> equiv_map,
+__global__ static void update_equiv(arrayfire::cuda::Param<T> equiv_map,
                                     const cudaTextureObject_t tex) {
     // Basic coordinates
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
@@ -346,8 +348,9 @@ struct clamp_to_one : public thrust::unary_function<T, T> {
 };
 
 template<typename T, bool full_conn, int n_per_thread>
-void regions(cuda::Param<T> out, cuda::CParam<char> in,
+void regions(arrayfire::cuda::Param<T> out, arrayfire::cuda::CParam<char> in,
              cudaTextureObject_t tex) {
+    using arrayfire::cuda::getActiveStream;
     const dim3 threads(THREADS_X, THREADS_Y);
 
     const int blk_x = divup(in.dims[0], threads.x * 2);
@@ -363,9 +366,9 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in,
 
     while (h_continue) {
         h_continue = 0;
-        CUDA_CHECK(cudaMemcpyToSymbolAsync(
-            continue_flag, &h_continue, sizeof(int), 0, cudaMemcpyHostToDevice,
-            cuda::getActiveStream()));
+        CUDA_CHECK(
+            cudaMemcpyToSymbolAsync(continue_flag, &h_continue, sizeof(int), 0,
+                                    cudaMemcpyHostToDevice, getActiveStream()));
 
         CUDA_LAUNCH((update_equiv<T, 16, n_per_thread, full_conn>), blocks,
                     threads, out, tex);
@@ -374,8 +377,8 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in,
 
         CUDA_CHECK(cudaMemcpyFromSymbolAsync(
             &h_continue, continue_flag, sizeof(int), 0, cudaMemcpyDeviceToHost,
-            cuda::getActiveStream()));
-        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
+            getActiveStream()));
+        CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
     }
 
     // Now, perform the final relabeling.  This converts the equivalency
@@ -383,10 +386,9 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in,
     // component to being sequentially numbered components starting at
     // 1.
     int size = in.dims[0] * in.dims[1];
-    auto tmp = cuda::memAlloc<T>(size);
+    auto tmp = arrayfire::cuda::memAlloc<T>(size);
     CUDA_CHECK(cudaMemcpyAsync(tmp.get(), out.ptr, size * sizeof(T),
-                               cudaMemcpyDeviceToDevice,
-                               cuda::getActiveStream()));
+                               cudaMemcpyDeviceToDevice, getActiveStream()));
 
     // Wrap raw device ptr
     thrust::device_ptr<T> wrapped_tmp = thrust::device_pointer_cast(tmp.get());
@@ -405,7 +407,7 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in,
     // post-processing of labels is required.
     if (num_bins <= 2) return;
 
-    cuda::ThrustVector<T> labels(num_bins);
+    arrayfire::cuda::ThrustVector<T> labels(num_bins);
 
     // Find the end of each section of values
     thrust::counting_iterator<T> search_begin(0);

@@ -13,6 +13,7 @@
 #include <map>
 #include <set>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -167,3 +168,4 @@ void regions(Param<T> out, CParam<char> in, af_connectivity connectivity) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

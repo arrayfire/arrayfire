@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -214,3 +215,4 @@ void non_maximal(CParam<float> score, CParam<float> x_in, CParam<float> y_in,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

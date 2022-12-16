@@ -14,8 +14,9 @@
 #include <af/dim4.hpp>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -44,3 +45,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 }  // namespace cuda
+}  // namespace arrayfire

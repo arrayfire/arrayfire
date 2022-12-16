@@ -13,8 +13,9 @@
 #include <topk.hpp>
 #include <af/dim4.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 void topk(Array<T>& ovals, Array<uint>& oidxs, const Array<T>& ivals,
@@ -40,3 +41,4 @@ INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
 INSTANTIATE(half)
 }  // namespace cuda
+}  // namespace arrayfire

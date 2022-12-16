@@ -11,6 +11,7 @@
 
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 // memCopy without looping, so dim3 has to be 1.
@@ -223,3 +224,4 @@ __global__ void memCopyLoop123(Param<T> out, CParam<T> in) {
     }
 }
 }  // namespace cuda
+}  // namespace arrayfire

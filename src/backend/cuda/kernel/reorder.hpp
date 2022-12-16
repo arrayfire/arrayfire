@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/reorder_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -25,8 +26,8 @@ void reorder(Param<T> out, CParam<T> in, const dim_t *rdims) {
     constexpr unsigned TILEX = 512;
     constexpr unsigned TILEY = 32;
 
-    auto reorder = common::getKernel("cuda::reorder", {reorder_cuh_src},
-                                     {TemplateTypename<T>()});
+    auto reorder = common::getKernel(
+        "arrayfire::cuda::reorder", {reorder_cuh_src}, {TemplateTypename<T>()});
 
     dim3 threads(TX, TY, 1);
 
@@ -34,10 +35,9 @@ void reorder(Param<T> out, CParam<T> in, const dim_t *rdims) {
     int blocksPerMatY = divup(out.dims[1], TILEY);
     dim3 blocks(blocksPerMatX * out.dims[2], blocksPerMatY * out.dims[3], 1);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -48,3 +48,4 @@ void reorder(Param<T> out, CParam<T> in, const dim_t *rdims) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

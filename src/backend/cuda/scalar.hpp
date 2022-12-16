@@ -13,6 +13,7 @@
 #include <optypes.hpp>
 #include <memory>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -33,3 +34,4 @@ Array<T> createScalarNode(const dim4 &size, const T val) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

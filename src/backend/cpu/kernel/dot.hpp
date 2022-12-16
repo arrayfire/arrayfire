@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <complex>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -49,3 +50,4 @@ void dot(Param<T> output, CParam<T> lhs, CParam<T> rhs, af_mat_prop optLhs,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

@@ -14,6 +14,7 @@
 #include <iterator>
 #include <vector>
 
+namespace arrayfire {
 namespace common {
 
 /// A node iterator that performs a breadth first traversal of the node tree
@@ -25,7 +26,7 @@ class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
 
    private:
     std::vector<pointer> tree;
-    size_t index;
+    size_t index = 0;
 
     /// Copies the children of the \p n Node to the end of the tree vector
     void copy_children_to_end(Node* n) {
@@ -98,3 +99,4 @@ class NodeIterator : public std::iterator<std::input_iterator_tag, Node> {
 };
 
 }  // namespace common
+}  // namespace arrayfire

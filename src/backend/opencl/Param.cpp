@@ -12,6 +12,7 @@
 #include <platform.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace opencl {
 Param::Param() : data(nullptr), info{{0, 0, 0, 0}, {0, 0, 0, 0}, 0} {}
 Param::Param(cl::Buffer *data_, KParam info_) : data(data_), info(info_) {}
@@ -28,3 +29,4 @@ Param makeParam(cl::Buffer &mem, int off, const int dims[4],
     return out;
 }
 }  // namespace opencl
+}  // namespace arrayfire

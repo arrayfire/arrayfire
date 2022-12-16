@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -44,7 +45,7 @@ void ireduceDimLauncher(Param out, cl::Buffer *oidx, Param in, cl::Buffer *iidx,
         DefineValue(THREADS_X),
         DefineKeyValue(init, toNumStr(common::Binary<T, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(CPLX, iscplx<T>()),
         DefineKeyValue(IS_FIRST, is_first),
     };
     options.emplace_back(getTypeBuildDefinition<T>());
@@ -121,7 +122,7 @@ void ireduceFirstLauncher(Param out, cl::Buffer *oidx, Param in,
         DefineValue(THREADS_PER_GROUP),
         DefineKeyValue(init, toNumStr(common::Binary<T, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(CPLX, iscplx<T>()),
         DefineKeyValue(IS_FIRST, is_first),
     };
     options.emplace_back(getTypeBuildDefinition<T>());
@@ -335,3 +336,4 @@ T ireduceAll(uint *loc, Param in) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

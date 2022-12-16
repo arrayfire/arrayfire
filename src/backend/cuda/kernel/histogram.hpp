@@ -13,6 +13,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/histogram_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -24,7 +25,7 @@ template<typename T>
 void histogram(Param<uint> out, CParam<T> in, int nbins, float minval,
                float maxval, bool isLinear) {
     auto histogram =
-        common::getKernel("cuda::histogram", {histogram_cuh_src},
+        common::getKernel("arrayfire::cuda::histogram", {histogram_cuh_src},
                           {TemplateTypename<T>(), TemplateArg(isLinear)},
                           {DefineValue(MAX_BINS), DefineValue(THRD_LOAD)});
 
@@ -45,3 +46,4 @@ void histogram(Param<uint> out, CParam<T> in, int nbins, float minval,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

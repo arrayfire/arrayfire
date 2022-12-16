@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -51,25 +52,24 @@ __device__ T shfl_down_sync(unsigned mask, T var, int delta) {
 }
 // specialization for cfloat
 template<>
-inline __device__ cuda::cfloat shfl_down_sync(unsigned mask, cuda::cfloat var,
-                                              int delta) {
+inline __device__ cfloat shfl_down_sync(unsigned mask, cfloat var, int delta) {
 #if (CUDA_VERSION >= 9000)
-    cuda::cfloat res = {__shfl_down_sync(mask, var.x, delta),
-                        __shfl_down_sync(mask, var.y, delta)};
+    cfloat res = {__shfl_down_sync(mask, var.x, delta),
+                  __shfl_down_sync(mask, var.y, delta)};
 #else
-    cuda::cfloat res  = {__shfl_down(var.x, delta), __shfl_down(var.y, delta)};
+    cfloat res  = {__shfl_down(var.x, delta), __shfl_down(var.y, delta)};
 #endif
     return res;
 }
 // specialization for cdouble
 template<>
-inline __device__ cuda::cdouble shfl_down_sync(unsigned mask, cuda::cdouble var,
-                                               int delta) {
+inline __device__ cdouble shfl_down_sync(unsigned mask, cdouble var,
+                                         int delta) {
 #if (CUDA_VERSION >= 9000)
-    cuda::cdouble res = {__shfl_down_sync(mask, var.x, delta),
-                         __shfl_down_sync(mask, var.y, delta)};
+    cdouble res = {__shfl_down_sync(mask, var.x, delta),
+                   __shfl_down_sync(mask, var.y, delta)};
 #else
-    cuda::cdouble res = {__shfl_down(var.x, delta), __shfl_down(var.y, delta)};
+    cdouble res = {__shfl_down(var.x, delta), __shfl_down(var.y, delta)};
 #endif
     return res;
 }
@@ -85,28 +85,27 @@ __device__ T shfl_up_sync(unsigned mask, T var, int delta) {
 }
 // specialization for cfloat
 template<>
-inline __device__ cuda::cfloat shfl_up_sync(unsigned mask, cuda::cfloat var,
-                                            int delta) {
+inline __device__ cfloat shfl_up_sync(unsigned mask, cfloat var, int delta) {
 #if (CUDA_VERSION >= 9000)
-    cuda::cfloat res = {__shfl_up_sync(mask, var.x, delta),
-                        __shfl_up_sync(mask, var.y, delta)};
+    cfloat res = {__shfl_up_sync(mask, var.x, delta),
+                  __shfl_up_sync(mask, var.y, delta)};
 #else
-    cuda::cfloat res  = {__shfl_up(var.x, delta), __shfl_up(var.y, delta)};
+    cfloat res  = {__shfl_up(var.x, delta), __shfl_up(var.y, delta)};
 #endif
     return res;
 }
 // specialization for cdouble
 template<>
-inline __device__ cuda::cdouble shfl_up_sync(unsigned mask, cuda::cdouble var,
-                                             int delta) {
+inline __device__ cdouble shfl_up_sync(unsigned mask, cdouble var, int delta) {
 #if (CUDA_VERSION >= 9000)
-    cuda::cdouble res = {__shfl_up_sync(mask, var.x, delta),
-                         __shfl_up_sync(mask, var.y, delta)};
+    cdouble res = {__shfl_up_sync(mask, var.x, delta),
+                   __shfl_up_sync(mask, var.y, delta)};
 #else
-    cuda::cdouble res = {__shfl_up(var.x, delta), __shfl_up(var.y, delta)};
+    cdouble res = {__shfl_up(var.x, delta), __shfl_up(var.y, delta)};
 #endif
     return res;
 }
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

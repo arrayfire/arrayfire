@@ -13,6 +13,7 @@
 #include <types.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -77,3 +78,4 @@ class CParam {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

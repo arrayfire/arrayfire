@@ -15,8 +15,8 @@
 namespace spdlog {
 class logger;
 }
+namespace arrayfire {
 namespace common {
-namespace memory {
 
 /**
  * An interface that provides backend-specific memory management functions,
@@ -39,5 +39,5 @@ class AllocatorInterface {
     std::shared_ptr<spdlog::logger> logger;
 };
 
-}  // namespace memory
 }  // namespace common
+}  // namespace arrayfire

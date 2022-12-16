@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -58,3 +59,4 @@ void histogram(Param out, const Param in, int nbins, float minval, float maxval,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

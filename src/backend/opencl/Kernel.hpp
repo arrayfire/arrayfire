@@ -16,6 +16,7 @@
 #include <cl2hpp.hpp>
 #include <string>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel_logger {
 inline auto getLogger() -> spdlog::logger* {
@@ -63,3 +64,4 @@ class Kernel
 };
 
 }  // namespace opencl
+}  // namespace arrayfire

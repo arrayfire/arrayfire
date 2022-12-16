@@ -20,7 +20,8 @@
 #include <af/data.h>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
+using arrayfire::common::tile;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
@@ -33,7 +34,7 @@ using detail::ushort;
 
 template<typename T>
 static inline af_array tile(const af_array in, const af::dim4 &tileDims) {
-    return getHandle(common::tile<T>(getArray<T>(in), tileDims));
+    return getHandle(arrayfire::common::tile<T>(getArray<T>(in), tileDims));
 }
 
 af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims) {

@@ -17,7 +17,10 @@
 template<typename T>
 struct TemplateTypename {
     operator TemplateArg() const noexcept {
-        return {std::string(dtype_traits<T>::getName())};
+        return {std::string(af::dtype_traits<T>::getName())};
+    }
+    operator std::string() const noexcept {
+        return {std::string(af::dtype_traits<T>::getName())};
     }
 };
 

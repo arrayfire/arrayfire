@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -105,3 +106,4 @@ void medfilt2(Param out, const Param in, const af_border_type pad,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

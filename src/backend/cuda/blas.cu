@@ -33,11 +33,12 @@
 #include <string>
 #include <vector>
 
-using common::half;
-using common::kernel_type;
+using arrayfire::common::half;
+using arrayfire::common::kernel_type;
 using std::is_same;
 using std::vector;
 
+namespace arrayfire {
 namespace cuda {
 
 cublasOperation_t toCblasTranspose(af_mat_prop opt) {
@@ -373,3 +374,4 @@ INSTANTIATE_TRSM(double)
 INSTANTIATE_TRSM(cdouble)
 
 }  // namespace cuda
+}  // namespace arrayfire

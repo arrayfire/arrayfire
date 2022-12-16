@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, bool is_column>
@@ -144,3 +145,4 @@ __global__ void wrap_dilated(Param<T> out, CParam<T> in, const int wx,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

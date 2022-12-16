@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -227,3 +228,4 @@ void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

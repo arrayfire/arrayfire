@@ -17,19 +17,24 @@
 #include <reduce.hpp>
 #include <af/graphics.h>
 
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
+using arrayfire::common::getGLType;
+using arrayfire::common::makeContextCurrent;
+using arrayfire::common::step_round;
 using detail::Array;
 using detail::copy_histogram;
 using detail::forgeManager;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
-using graphics::ForgeManager;
 
 template<typename T>
 fg_chart setup_histogram(fg_window const window, const af_array in,
                          const double minval, const double maxval,
                          const af_cell* const props) {
-    ForgeModule& _ = graphics::forgePlugin();
+    ForgeModule& _ = forgePlugin();
 
     const Array<T> histogramInput = getArray<T>(in);
     dim_t nBins                   = histogramInput.elements();
@@ -130,7 +135,7 @@ af_err af_draw_hist(const af_window window, const af_array X,
         }
         auto gridDims = forgeManager().getWindowGrid(window);
 
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule& _ = forgePlugin();
         if (props->col > -1 && props->row > -1) {
             FG_CHECK(_.fg_draw_chart_to_cell(
                 window, gridDims.first, gridDims.second,

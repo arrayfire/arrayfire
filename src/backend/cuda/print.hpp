@@ -12,6 +12,7 @@
 #include <types.hpp>
 #include <ostream>
 
+namespace arrayfire {
 namespace cuda {
 static std::ostream& operator<<(std::ostream& out, const cfloat& var) {
     out << "(" << var.x << "," << var.y << ")";
@@ -23,3 +24,4 @@ static std::ostream& operator<<(std::ostream& out, const cdouble& var) {
     return out;
 }
 }  // namespace cuda
+}  // namespace arrayfire

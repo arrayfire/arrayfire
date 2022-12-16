@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -466,3 +467,4 @@ To meanAll(Param in) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

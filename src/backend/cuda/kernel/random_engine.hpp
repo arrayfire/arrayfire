@@ -21,6 +21,7 @@
 
 #include <limits>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 530
@@ -1101,3 +1102,4 @@ void normalDistributionCBRNG(T *out, size_t elements,
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

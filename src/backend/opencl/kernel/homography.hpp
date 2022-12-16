@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 constexpr int HG_THREADS_X = 16;
@@ -215,3 +216,4 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

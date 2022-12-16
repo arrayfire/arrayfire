@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -32,14 +33,13 @@ void gradient(Param grad0, Param grad1, const Param in) {
     std::vector<TemplateArg> targs = {
         TemplateTypename<T>(),
     };
-    std::vector<std::string> options = {
+    std::vector<std::string> options{
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineValue(TX),
         DefineValue(TY),
-        DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
-        DefineKeyValue(CPLX, static_cast<int>(af::iscplx<T>())),
-    };
-    options.emplace_back(getTypeBuildDefinition<T>());
+        DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
+        DefineKeyValue(CPLX, static_cast<int>(iscplx<T>())),
+        getTypeBuildDefinition<T>()};
 
     auto gradOp =
         common::getKernel("gradient", {gradient_cl_src}, targs, options);
@@ -58,3 +58,4 @@ void gradient(Param grad0, Param grad1, const Param in) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

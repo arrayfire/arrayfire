@@ -32,6 +32,7 @@ using std::transform;
 using std::unordered_map;
 using std::vector;
 
+namespace arrayfire {
 namespace common {
 
 using ModuleMap = unordered_map<size_t, Module>;
@@ -137,5 +138,6 @@ Kernel getKernel(const string& kernelName,
 }
 
 }  // namespace common
+}  // namespace arrayfire
 
 #endif

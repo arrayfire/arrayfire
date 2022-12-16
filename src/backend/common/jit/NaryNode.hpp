@@ -21,6 +21,7 @@
 #include <string>
 #include <utility>
 
+namespace arrayfire {
 namespace common {
 
 class NaryNode : public Node {
@@ -136,3 +137,4 @@ common::Node_ptr createNaryNode(
     return ptr;
 }
 }  // namespace common
+}  // namespace arrayfire

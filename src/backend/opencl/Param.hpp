@@ -12,6 +12,7 @@
 #include <cl2hpp.hpp>
 #include <kernel/KParam.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 struct Param {
@@ -32,3 +33,4 @@ struct Param {
 Param makeParam(cl::Buffer& mem, int off, const int dims[4],
                 const int strides[4]);
 }  // namespace opencl
+}  // namespace arrayfire

@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -93,3 +94,4 @@ void allDistances(Param dist, Param query, Param train, const dim_t dist_dim,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

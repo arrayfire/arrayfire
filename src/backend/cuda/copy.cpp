@@ -16,9 +16,10 @@
 #include <kernel/memcopy.hpp>
 #include <math.hpp>
 
-using common::half;
-using common::is_complex;
+using arrayfire::common::half;
+using arrayfire::common::is_complex;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -26,7 +27,7 @@ void copyData(T *data, const Array<T> &src) {
     if (src.elements() > 0) {
         Array<T> lin = src.isReady() && src.isLinear() ? src : copyArray(src);
         // out is now guaranteed linear
-        auto stream = cuda::getActiveStream();
+        auto stream = getActiveStream();
         CUDA_CHECK(cudaMemcpyAsync(data, lin.get(), lin.elements() * sizeof(T),
                                    cudaMemcpyDeviceToHost, stream));
         CUDA_CHECK(cudaStreamSynchronize(stream));
@@ -76,7 +77,7 @@ struct copyWrapper<T, T> {
                     if (dst.isLinear() && src.isLinear()) {
                         CUDA_CHECK(cudaMemcpyAsync(
                             dst.get(), src.get(), src.elements() * sizeof(T),
-                            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+                            cudaMemcpyDeviceToDevice, getActiveStream()));
                     } else {
                         kernel::memcopy<T>(dst, src, src.ndims());
                     }
@@ -173,9 +174,8 @@ template<typename T>
 T getScalar(const Array<T> &src) {
     T retVal{};
     CUDA_CHECK(cudaMemcpyAsync(&retVal, src.get(), sizeof(T),
-                               cudaMemcpyDeviceToHost,
-                               cuda::getActiveStream()));
-    CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
+                               cudaMemcpyDeviceToHost, getActiveStream()));
+    CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
     return retVal;
 }
 
@@ -196,3 +196,4 @@ INSTANTIATE_GETSCALAR(ushort)
 INSTANTIATE_GETSCALAR(half)
 
 }  // namespace cuda
+}  // namespace arrayfire

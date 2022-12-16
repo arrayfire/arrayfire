@@ -15,6 +15,7 @@ namespace af {
 class dim4;
 }
 
+namespace arrayfire {
 namespace cpu {
 
 void setFFTPlanCacheSize(size_t numPlans);
@@ -28,3 +29,4 @@ Array<Tc> fft_r2c(const Array<Tr> &in, const int rank);
 template<typename Tr, typename Tc>
 Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims, const int rank);
 }  // namespace cpu
+}  // namespace arrayfire
