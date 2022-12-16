@@ -11,13 +11,14 @@
 #include <common/dispatch.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace cuda {
 // OVERALL USAGE (With looping):
 // ...                                                      // OWN CODE
 // threadsMgt<T> th(...);                                   // backend.hpp
 // const dim3 threads{th.genThreads()};                     // backend.hpp
 // const dim3 blocks{th.genBlocks(threads,..)};             // backend.hpp
-// cuda::Kernel KER{GETKERNEL(..., th.loop0, th.loop1, th.loop2,
+// arrayfire::cuda::Kernel KER{GETKERNEL(..., th.loop0, th.loop1, th.loop2,
 //                               th.loop3)};                // OWN CODE
 // KER(threads,blocks,...);                                 // OWN CODE
 // ...                                                      // OWN CODE
@@ -27,8 +28,8 @@ namespace cuda {
 // threadsMgt<T> th(...);                                   // backend.hpp
 // const dim3 threads{th.genThreads()};                     // backend.hpp
 // const dim3 blocks{th.genBlocksFull(threads,...)};        // backend.hpp
-// cuda::Kernel KER{GETKERNEL(...)};                        // OWN CODE
-// KER(threads,blocks,...);                                 // OWN CODE
+// arrayfire::cuda::Kernel KER{GETKERNEL(...)};             // OWN
+// CODE KER(threads,blocks,...);                            // OWN CODE
 // ...                                                      // OWN CODE
 template<typename T>
 class threadsMgt {
@@ -325,3 +326,4 @@ inline dim3 threadsMgt<T>::genBlocks(const dim3& threads,
     return blocks;
 };
 }  // namespace cuda
+}  // namespace arrayfire

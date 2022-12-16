@@ -47,6 +47,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 // Utils
@@ -103,3 +104,4 @@ void philox(uint* const key, uint* const ctr) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

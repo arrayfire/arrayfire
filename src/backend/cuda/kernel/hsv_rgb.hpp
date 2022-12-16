@@ -13,6 +13,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/hsv_rgb_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -22,7 +23,7 @@ static const int THREADS_Y = 16;
 template<typename T>
 void hsv2rgb_convert(Param<T> out, CParam<T> in, bool isHSV2RGB) {
     auto hsvrgbConverter = common::getKernel(
-        "cuda::hsvrgbConverter", std::array{hsv_rgb_cuh_src},
+        "arrayfire::cuda::hsvrgbConverter", std::array{hsv_rgb_cuh_src},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(isHSV2RGB)));
 
     const dim3 threads(THREADS_X, THREADS_Y);
@@ -34,10 +35,9 @@ void hsv2rgb_convert(Param<T> out, CParam<T> in, bool isHSV2RGB) {
     // parameter would be along 4th dimension
     dim3 blocks(blk_x * in.dims[3], blk_y);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
     hsvrgbConverter(qArgs, out, in, blk_x);
@@ -46,3 +46,4 @@ void hsv2rgb_convert(Param<T> out, CParam<T> in, bool isHSV2RGB) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

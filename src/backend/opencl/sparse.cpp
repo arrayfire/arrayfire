@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <string>
 
+namespace arrayfire {
 namespace opencl {
 
 using namespace common;
@@ -217,3 +218,4 @@ INSTANTIATE_SPARSE(cdouble)
 #undef INSTANTIATE_SPARSE
 
 }  // namespace opencl
+}  // namespace arrayfire

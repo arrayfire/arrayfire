@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -103,3 +104,4 @@ INSTANTIATE(intl, float)
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -51,7 +52,7 @@ void reduceDimLauncher(Param out, Param in, const int dim, const uint threads_y,
         DefineValue(THREADS_X),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+        DefineKeyValue(CPLX, iscplx<Ti>()),
         getTypeBuildDefinition<Ti, To>()};
 
     auto reduceDim = common::getKernel(
@@ -129,7 +130,7 @@ void reduceAllLauncher(Param out, Param in, const uint groups_x,
         DefineValue(THREADS_PER_GROUP),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+        DefineKeyValue(CPLX, iscplx<Ti>()),
         getTypeBuildDefinition<Ti, To>()};
 
     auto reduceAll = common::getKernel(
@@ -177,7 +178,7 @@ void reduceFirstLauncher(Param out, Param in, const uint groups_x,
         DefineValue(THREADS_PER_GROUP),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+        DefineKeyValue(CPLX, iscplx<Ti>()),
         getTypeBuildDefinition<Ti, To>()};
 
     auto reduceFirst = common::getKernel(
@@ -271,3 +272,4 @@ void reduceAll(Param out, Param in, int change_nan, double nanval) {
 }  // namespace kernel
 
 }  // namespace opencl
+}  // namespace arrayfire

@@ -15,6 +15,7 @@
 #include <nvrtc_kernel_headers/approx2_cuh.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -28,7 +29,7 @@ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
              const Tp &xi_beg, const Tp &xi_step, const float offGrid,
              const af::interpType method, const int order) {
     auto approx1 = common::getKernel(
-        "cuda::approx1", std::array{approx1_cuh_src},
+        "arrayfire::cuda::approx1", std::array{approx1_cuh_src},
         TemplateArgs(TemplateTypename<Ty>(), TemplateTypename<Tp>(),
                      TemplateArg(xdim), TemplateArg(order)));
 
@@ -38,10 +39,9 @@ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
 
     bool batch = !(xo.dims[1] == 1 && xo.dims[2] == 1 && xo.dims[3] == 1);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -57,7 +57,7 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
              const Tp &yi_beg, const Tp &yi_step, const float offGrid,
              const af::interpType method, const int order) {
     auto approx2 = common::getKernel(
-        "cuda::approx2", std::array{approx2_cuh_src},
+        "arrayfire::cuda::approx2", std::array{approx2_cuh_src},
         TemplateArgs(TemplateTypename<Ty>(), TemplateTypename<Tp>(),
                      TemplateArg(xdim), TemplateArg(ydim), TemplateArg(order)));
 
@@ -68,10 +68,9 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
 
     bool batch = !(xo.dims[2] == 1 && xo.dims[3] == 1);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -83,3 +82,4 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

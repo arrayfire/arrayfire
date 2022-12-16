@@ -17,9 +17,10 @@
 #include <math.hpp>
 #include <traits.hpp>
 
+#include <array>
 #include <string>
-#include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 constexpr uint DIMX  = 32;
@@ -103,3 +104,4 @@ void select_scalar(Param out, Param cond, Param a, const T b, const int ndims,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -15,6 +15,7 @@
 #include <cuda.h>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 
 cusparseModule::cusparseModule()
@@ -133,3 +134,4 @@ cusparseModule& getCusparsePlugin() noexcept {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

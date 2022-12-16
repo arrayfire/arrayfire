@@ -17,6 +17,7 @@
 #include <magma/magma.h>
 #include <triangle.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -58,9 +59,11 @@ INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -84,5 +87,6 @@ INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA

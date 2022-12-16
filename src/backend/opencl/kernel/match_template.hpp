@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -67,3 +68,4 @@ void matchTemplate(Param out, const Param srch, const Param tmplt,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

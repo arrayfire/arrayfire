@@ -12,6 +12,7 @@
 #include <backend.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 
 [[gnu::unused]] static __DH__ dim_t trimIndex(const int &idx,
@@ -30,3 +31,4 @@ namespace cuda {
 int interpOrder(const af_interp_type p) noexcept;
 
 }  // namespace cuda
+}  // namespace arrayfire

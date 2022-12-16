@@ -18,6 +18,7 @@
 
 #include <algorithm>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -31,7 +32,7 @@ template<typename T>
 void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
                const bool perspective, const af::interpType method, int order) {
     auto transform = common::getKernel(
-        "cuda::transform", std::array{transform_cuh_src},
+        "arrayfire::cuda::transform", std::array{transform_cuh_src},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(inverse),
                      TemplateArg(order)));
 
@@ -74,3 +75,4 @@ void transform(Param<T> out, CParam<T> in, CParam<float> tf, const bool inverse,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -69,3 +70,4 @@ void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

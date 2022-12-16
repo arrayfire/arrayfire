@@ -11,6 +11,7 @@
 #include <types.hpp>
 #include <ostream>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -24,3 +25,4 @@ static const uint THREADS_Y         = THREADS_PER_GROUP / THREADS_X;
 static const uint REPEAT            = 32;
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

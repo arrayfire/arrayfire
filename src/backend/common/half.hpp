@@ -50,6 +50,7 @@ using uint16_t = unsigned short;
 
 #endif
 
+namespace arrayfire {
 namespace common {
 
 #if defined(__CUDA_ARCH__)
@@ -807,20 +808,22 @@ static constexpr binary_t binary = binary_t{};
 
 class half;
 
-AF_CONSTEXPR __DH__ static inline bool operator==(common::half lhs,
-                                                  common::half rhs) noexcept;
-AF_CONSTEXPR __DH__ static inline bool operator!=(common::half lhs,
-                                                  common::half rhs) noexcept;
-__DH__ static inline bool operator<(common::half lhs,
-                                    common::half rhs) noexcept;
-__DH__ static inline bool operator<(common::half lhs, float rhs) noexcept;
+AF_CONSTEXPR __DH__ static inline bool operator==(
+    arrayfire::common::half lhs, arrayfire::common::half rhs) noexcept;
+AF_CONSTEXPR __DH__ static inline bool operator!=(
+    arrayfire::common::half lhs, arrayfire::common::half rhs) noexcept;
+__DH__ static inline bool operator<(arrayfire::common::half lhs,
+                                    arrayfire::common::half rhs) noexcept;
+__DH__ static inline bool operator<(arrayfire::common::half lhs,
+                                    float rhs) noexcept;
 AF_CONSTEXPR __DH__ static inline bool isinf(half val) noexcept;
 
 /// Classification implementation.
 /// \param arg value to classify
 /// \retval true if not a number
 /// \retval false else
-AF_CONSTEXPR __DH__ static inline bool isnan(common::half val) noexcept;
+AF_CONSTEXPR __DH__ static inline bool isnan(
+    arrayfire::common::half val) noexcept;
 
 class alignas(2) half {
     native_half_t data_ = native_half_t();
@@ -970,22 +973,26 @@ class alignas(2) half {
 
     friend AF_CONSTEXPR __DH__ bool operator==(half lhs, half rhs) noexcept;
     friend AF_CONSTEXPR __DH__ bool operator!=(half lhs, half rhs) noexcept;
-    friend __DH__ bool operator<(common::half lhs, common::half rhs) noexcept;
-    friend __DH__ bool operator<(common::half lhs, float rhs) noexcept;
+    friend __DH__ bool operator<(arrayfire::common::half lhs,
+                                 arrayfire::common::half rhs) noexcept;
+    friend __DH__ bool operator<(arrayfire::common::half lhs,
+                                 float rhs) noexcept;
     friend AF_CONSTEXPR __DH__ bool isinf(half val) noexcept;
     friend AF_CONSTEXPR __DH__ inline bool isnan(half val) noexcept;
 
-    AF_CONSTEXPR __DH__ common::half operator-() const {
+    AF_CONSTEXPR __DH__ arrayfire::common::half operator-() const {
 #if __CUDA_ARCH__ >= 530
-        return common::half(__hneg(data_));
+        return arrayfire::common::half(__hneg(data_));
 #elif defined(__CUDA_ARCH__)
-        return common::half(-(__half2float(data_)));
+        return arrayfire::common::half(-(__half2float(data_)));
 #else
-        return common::half(internal::binary, data_ ^ 0x8000);
+        return arrayfire::common::half(internal::binary, data_ ^ 0x8000);
 #endif
     }
 
-    AF_CONSTEXPR __DH__ common::half operator+() const { return *this; }
+    AF_CONSTEXPR __DH__ arrayfire::common::half operator+() const {
+        return *this;
+    }
 
     AF_CONSTEXPR static half infinity() {
         half out;
@@ -998,8 +1005,8 @@ class alignas(2) half {
     }
 };
 
-AF_CONSTEXPR __DH__ static inline bool operator==(common::half lhs,
-                                                  common::half rhs) noexcept {
+AF_CONSTEXPR __DH__ static inline bool operator==(
+    arrayfire::common::half lhs, arrayfire::common::half rhs) noexcept {
 #if __CUDA_ARCH__ >= 530
     return __heq(lhs.data_, rhs.data_);
 #elif defined(__CUDA_ARCH__)
@@ -1010,8 +1017,8 @@ AF_CONSTEXPR __DH__ static inline bool operator==(common::half lhs,
 #endif
 }
 
-AF_CONSTEXPR __DH__ static inline bool operator!=(common::half lhs,
-                                                  common::half rhs) noexcept {
+AF_CONSTEXPR __DH__ static inline bool operator!=(
+    arrayfire::common::half lhs, arrayfire::common::half rhs) noexcept {
 #if __CUDA_ARCH__ >= 530
     return __hne(lhs.data_, rhs.data_);
 #else
@@ -1019,8 +1026,8 @@ AF_CONSTEXPR __DH__ static inline bool operator!=(common::half lhs,
 #endif
 }
 
-__DH__ static inline bool operator<(common::half lhs,
-                                    common::half rhs) noexcept {
+__DH__ static inline bool operator<(arrayfire::common::half lhs,
+                                    arrayfire::common::half rhs) noexcept {
 #if __CUDA_ARCH__ >= 530
     return __hlt(lhs.data_, rhs.data_);
 #elif defined(__CUDA_ARCH__)
@@ -1033,7 +1040,8 @@ __DH__ static inline bool operator<(common::half lhs,
 #endif
 }
 
-__DH__ static inline bool operator<(common::half lhs, float rhs) noexcept {
+__DH__ static inline bool operator<(arrayfire::common::half lhs,
+                                    float rhs) noexcept {
 #if defined(__CUDA_ARCH__)
     return __half2float(lhs.data_) < rhs;
 #else
@@ -1054,6 +1062,7 @@ static inline std::string to_string(const half&& val) {
 #endif
 
 }  // namespace common
+}  // namespace arrayfire
 
 #if !defined(__NVCC__) && !defined(__CUDACC_RTC__)
 //#endif
@@ -1063,7 +1072,7 @@ namespace std {
 /// Because of the underlying single-precision implementation of many
 /// operations, it inherits some properties from `std::numeric_limits<float>`.
 template<>
-class numeric_limits<common::half> : public numeric_limits<float> {
+class numeric_limits<arrayfire::common::half> : public numeric_limits<float> {
    public:
     /// Supports signed values.
     static constexpr bool is_signed = true;
@@ -1120,60 +1129,70 @@ class numeric_limits<common::half> : public numeric_limits<float> {
     static constexpr int max_exponent10 = 4;
 
     /// Smallest positive normal value.
-    static AF_CONSTEXPR __DH__ common::half min() noexcept {
-        return common::half(common::internal::binary, 0x0400);
+    static AF_CONSTEXPR __DH__ arrayfire::common::half min() noexcept {
+        return arrayfire::common::half(arrayfire::common::internal::binary,
+                                       0x0400);
     }
 
     /// Smallest finite value.
-    static AF_CONSTEXPR __DH__ common::half lowest() noexcept {
-        return common::half(common::internal::binary, 0xFBFF);
+    static AF_CONSTEXPR __DH__ arrayfire::common::half lowest() noexcept {
+        return arrayfire::common::half(arrayfire::common::internal::binary,
+                                       0xFBFF);
     }
 
     /// Largest finite value.
-    static AF_CONSTEXPR __DH__ common::half max() noexcept {
-        return common::half(common::internal::binary, 0x7BFF);
+    static AF_CONSTEXPR __DH__ arrayfire::common::half max() noexcept {
+        return arrayfire::common::half(arrayfire::common::internal::binary,
+                                       0x7BFF);
     }
 
     /// Difference between one and next representable value.
-    static AF_CONSTEXPR __DH__ common::half epsilon() noexcept {
-        return common::half(common::internal::binary, 0x1400);
+    static AF_CONSTEXPR __DH__ arrayfire::common::half epsilon() noexcept {
+        return arrayfire::common::half(arrayfire::common::internal::binary,
+                                       0x1400);
     }
 
     /// Maximum rounding error.
-    static AF_CONSTEXPR __DH__ common::half round_error() noexcept {
-        return common::half(
-            common::internal::binary,
+    static AF_CONSTEXPR __DH__ arrayfire::common::half round_error() noexcept {
+        return arrayfire::common::half(
+            arrayfire::common::internal::binary,
             (round_style == std::round_to_nearest) ? 0x3800 : 0x3C00);
     }
 
     /// Positive infinity.
-    static AF_CONSTEXPR __DH__ common::half infinity() noexcept {
-        return common::half(common::internal::binary, 0x7C00);
+    static AF_CONSTEXPR __DH__ arrayfire::common::half infinity() noexcept {
+        return arrayfire::common::half(arrayfire::common::internal::binary,
+                                       0x7C00);
     }
 
     /// Quiet NaN.
-    static AF_CONSTEXPR __DH__ common::half quiet_NaN() noexcept {
-        return common::half(common::internal::binary, 0x7FFF);
+    static AF_CONSTEXPR __DH__ arrayfire::common::half quiet_NaN() noexcept {
+        return arrayfire::common::half(arrayfire::common::internal::binary,
+                                       0x7FFF);
     }
 
     /// Signalling NaN.
-    static AF_CONSTEXPR __DH__ common::half signaling_NaN() noexcept {
-        return common::half(common::internal::binary, 0x7DFF);
+    static AF_CONSTEXPR __DH__ arrayfire::common::half
+    signaling_NaN() noexcept {
+        return arrayfire::common::half(arrayfire::common::internal::binary,
+                                       0x7DFF);
     }
 
     /// Smallest positive subnormal value.
-    static AF_CONSTEXPR __DH__ common::half denorm_min() noexcept {
-        return common::half(common::internal::binary, 0x0001);
+    static AF_CONSTEXPR __DH__ arrayfire::common::half denorm_min() noexcept {
+        return arrayfire::common::half(arrayfire::common::internal::binary,
+                                       0x0001);
     }
 };
 
 /// Hash function for half-precision floats.
 /// This is only defined if C++11 `std::hash` is supported and enabled.
 template<>
-struct hash<common::half>  //: unary_function<common::half,size_t>
+struct hash<
+    arrayfire::common::half>  //: unary_function<arrayfire::common::half,size_t>
 {
     /// Type of function argument.
-    typedef common::half argument_type;
+    typedef arrayfire::common::half argument_type;
 
     /// Function return type.
     typedef size_t result_type;
@@ -1191,6 +1210,7 @@ struct hash<common::half>  //: unary_function<common::half,size_t>
 }  // namespace std
 #endif
 
+namespace arrayfire {
 namespace common {
 AF_CONSTEXPR __DH__ static bool isinf(half val) noexcept {
 #if __CUDA_ARCH__ >= 530
@@ -1213,3 +1233,4 @@ AF_CONSTEXPR __DH__ static inline bool isnan(half val) noexcept {
 }
 
 }  // namespace common
+}  // namespace arrayfire

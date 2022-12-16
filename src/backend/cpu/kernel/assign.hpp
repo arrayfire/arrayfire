@@ -19,6 +19,7 @@
 
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -81,3 +82,4 @@ void assign(Param<T> out, af::dim4 dDims, CParam<T> rhs,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

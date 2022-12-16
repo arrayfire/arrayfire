@@ -17,6 +17,7 @@
 #include <memory.hpp>
 #include <cub/block/block_reduce.cuh>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -397,7 +398,7 @@ void fast(unsigned *out_feat, float **x_out, float **y_out, float **score_out,
 
     unsigned *d_total = (unsigned *)(d_score.get() + (indims[0] * indims[1]));
     CUDA_CHECK(
-        cudaMemsetAsync(d_total, 0, sizeof(unsigned), cuda::getActiveStream()));
+        cudaMemsetAsync(d_total, 0, sizeof(unsigned), getActiveStream()));
     auto d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
     auto d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
 
@@ -415,9 +416,8 @@ void fast(unsigned *out_feat, float **x_out, float **y_out, float **score_out,
     // Dimensions of output array
     unsigned total;
     CUDA_CHECK(cudaMemcpyAsync(&total, d_total, sizeof(unsigned),
-                               cudaMemcpyDeviceToHost,
-                               cuda::getActiveStream()));
-    CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
+                               cudaMemcpyDeviceToHost, getActiveStream()));
+    CUDA_CHECK(cudaStreamSynchronize(getActiveStream()));
     total = total < max_feat ? total : max_feat;
 
     if (total > 0) {
@@ -444,3 +444,4 @@ void fast(unsigned *out_feat, float **x_out, float **y_out, float **score_out,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

@@ -13,6 +13,7 @@
 #include <math.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename in_t, typename idx_t>
@@ -68,3 +69,4 @@ __global__ void lookupND(Param<in_t> out, CParam<in_t> in,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

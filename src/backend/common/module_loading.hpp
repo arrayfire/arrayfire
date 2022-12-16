@@ -9,6 +9,7 @@
 
 #include <common/defines.hpp>
 
+namespace arrayfire {
 namespace common {
 
 void* getFunctionPointer(LibHandle handle, const char* symbolName);
@@ -20,3 +21,4 @@ void unloadLibrary(LibHandle handle);
 std::string getErrorMessage();
 
 }  // namespace common
+}  // namespace arrayfire

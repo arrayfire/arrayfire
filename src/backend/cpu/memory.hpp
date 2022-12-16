@@ -14,6 +14,7 @@
 #include <functional>
 #include <memory>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 using uptr = std::unique_ptr<T[], std::function<void(T[])>>;
@@ -52,7 +53,7 @@ bool jitTreeExceedsMemoryPressure(size_t bytes);
 void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 
-class Allocator final : public common::memory::AllocatorInterface {
+class Allocator final : public common::AllocatorInterface {
    public:
     Allocator();
     ~Allocator() = default;
@@ -64,3 +65,4 @@ class Allocator final : public common::memory::AllocatorInterface {
 };
 
 }  // namespace cpu
+}  // namespace arrayfire

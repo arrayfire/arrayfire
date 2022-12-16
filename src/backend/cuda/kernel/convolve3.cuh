@@ -11,21 +11,19 @@
 #include <math.hpp>
 #include <shared.hpp>
 
-__constant__ char
-    cFilter[2 * (2 * (MAX_CONV1_FILTER_LEN - 1) + CONV_THREADS) *
-            sizeof(double)];
+__constant__ char cFilter[2 * (2 * (MAX_CONV1_FILTER_LEN - 1) + CONV_THREADS) *
+                          sizeof(double)];
 
+namespace arrayfire {
 namespace cuda {
 
-__inline__
-int index(int i, int j, int k, int jstride, int kstride) {
+__inline__ int index(int i, int j, int k, int jstride, int kstride) {
     return i + j * jstride + k * kstride;
 }
 
 template<typename T, typename aT, bool expand>
-__global__
-void convolve3(Param<T> out, CParam<T> signal, int fLen0, int fLen1,
-               int fLen2, int nBBS, int o3, int s3) {
+__global__ void convolve3(Param<T> out, CParam<T> signal, int fLen0, int fLen1,
+                          int fLen2, int nBBS, int o3, int s3) {
     SharedMemory<T> shared;
 
     T *shrdMem   = shared.getPointer();
@@ -109,4 +107,5 @@ void convolve3(Param<T> out, CParam<T> signal, int fLen0, int fLen1,
     }
 }
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

@@ -15,6 +15,7 @@
 #include <cpu/cpu_inverse.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -34,9 +35,11 @@ INSTANTIATE(double)
 INSTANTIATE(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -52,5 +55,6 @@ INSTANTIATE(double)
 INSTANTIATE(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #endif

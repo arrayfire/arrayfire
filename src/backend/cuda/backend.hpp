@@ -24,6 +24,8 @@
 #endif
 #endif
 
-namespace cuda {}
+namespace arrayfire {
+namespace cuda {}  // namespace cuda
+}  // namespace arrayfire
 
-namespace detail = cuda;
+namespace detail = arrayfire::cuda;

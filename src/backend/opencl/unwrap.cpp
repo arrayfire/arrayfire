@@ -14,8 +14,9 @@
 #include <unwrap.hpp>
 #include <stdexcept>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -60,3 +61,4 @@ INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace opencl
+}  // namespace arrayfire

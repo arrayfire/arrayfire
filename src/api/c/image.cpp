@@ -27,7 +27,12 @@
 #include <limits>
 
 using af::dim4;
-using common::cast;
+using arrayfire::common::cast;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
+using arrayfire::common::getGLType;
+using arrayfire::common::makeContextCurrent;
 using detail::arithOp;
 using detail::Array;
 using detail::copy_image;
@@ -36,7 +41,6 @@ using detail::forgeManager;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
-using graphics::ForgeManager;
 
 template<typename T>
 Array<T> normalizePerType(const Array<T>& in) {
@@ -101,7 +105,7 @@ af_err af_draw_image(const af_window window, const af_array in,
             default: TYPE_ERROR(1, type);
         }
 
-        ForgeModule& _ = graphics::forgePlugin();
+        ForgeModule& _ = forgePlugin();
         auto gridDims  = forgeManager().getWindowGrid(window);
         FG_CHECK(_.fg_set_window_colormap(window, (fg_color_map)props->cmap));
         if (props->col > -1 && props->row > -1) {

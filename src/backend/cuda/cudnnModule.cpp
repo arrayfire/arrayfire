@@ -18,11 +18,12 @@
 #include <string>
 #include <tuple>
 
-using common::int_version_to_string;
-using common::Version;
+using arrayfire::common::int_version_to_string;
+using arrayfire::common::Version;
 using std::make_tuple;
 using std::string;
 
+namespace arrayfire {
 namespace cuda {
 
 // clang-format off
@@ -165,3 +166,4 @@ cudnnModule& getCudnnPlugin() noexcept {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -15,12 +15,13 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/diagonal_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
 template<typename T>
 void diagCreate(Param<T> out, CParam<T> in, int num) {
-    auto genDiagMat = common::getKernel("cuda::createDiagonalMat",
+    auto genDiagMat = common::getKernel("arrayfire::cuda::createDiagonalMat",
                                         std::array{diagonal_cuh_src},
                                         TemplateArgs(TemplateTypename<T>()));
 
@@ -29,8 +30,7 @@ void diagCreate(Param<T> out, CParam<T> in, int num) {
     int blocks_y = divup(out.dims[1], threads.y);
     dim3 blocks(blocks_x * out.dims[2], blocks_y);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+    const int maxBlocksY    = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
     const int blocksPerMatZ = divup(blocks.y, maxBlocksY);
     if (blocksPerMatZ > 1) {
         blocks.y = maxBlocksY;
@@ -46,19 +46,18 @@ void diagCreate(Param<T> out, CParam<T> in, int num) {
 
 template<typename T>
 void diagExtract(Param<T> out, CParam<T> in, int num) {
-    auto extractDiag =
-        common::getKernel("cuda::extractDiagonal", std::array{diagonal_cuh_src},
-                          TemplateArgs(TemplateTypename<T>()));
+    auto extractDiag = common::getKernel("arrayfire::cuda::extractDiagonal",
+                                         std::array{diagonal_cuh_src},
+                                         TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(256, 1);
     int blocks_x = divup(out.dims[0], threads.x);
     int blocks_z = out.dims[2];
     dim3 blocks(blocks_x, out.dims[3] * blocks_z);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -69,3 +68,4 @@ void diagExtract(Param<T> out, CParam<T> in, int num) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

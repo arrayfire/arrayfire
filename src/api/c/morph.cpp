@@ -24,8 +24,8 @@
 #include <af/image.h>
 
 using af::dim4;
-using common::cast;
-using common::flip;
+using arrayfire::common::cast;
+using arrayfire::common::flip;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;

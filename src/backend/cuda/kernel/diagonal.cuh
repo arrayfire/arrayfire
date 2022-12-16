@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -53,3 +54,4 @@ __global__ void extractDiagonal(Param<T> out, CParam<T> in, int num,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

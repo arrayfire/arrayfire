@@ -19,36 +19,40 @@
 namespace af {
 
 template<>
-struct dtype_traits<opencl::cfloat> {
+struct dtype_traits<arrayfire::opencl::cfloat> {
     enum { af_type = c32 };
     typedef float base_type;
     static const char *getName() { return "float2"; }
 };
 
 template<>
-struct dtype_traits<opencl::cdouble> {
+struct dtype_traits<arrayfire::opencl::cdouble> {
     enum { af_type = c64 };
     typedef double base_type;
     static const char *getName() { return "double2"; }
 };
+}  // namespace af
+
+namespace arrayfire {
+namespace opencl {
 
 template<typename T>
 static bool iscplx() {
     return false;
 }
 template<>
-inline bool iscplx<opencl::cfloat>() {
+inline bool iscplx<cfloat>() {
     return true;
 }
 template<>
-inline bool iscplx<opencl::cdouble>() {
+inline bool iscplx<cdouble>() {
     return true;
 }
 
 template<typename T>
 inline std::string scalar_to_option(const T &val) {
-    using namespace common;
-    using namespace std;
+    using namespace arrayfire::common;
+    using std::to_string;
     return to_string(+val);
 }
 
@@ -65,6 +69,7 @@ inline std::string scalar_to_option<cl_double2>(const cl_double2 &val) {
     ss << val.s[0] << "," << val.s[1];
     return ss.str();
 }
-}  // namespace af
 
 using af::dtype_traits;
+}  // namespace opencl
+}  // namespace arrayfire

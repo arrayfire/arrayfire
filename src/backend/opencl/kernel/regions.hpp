@@ -37,6 +37,7 @@ AF_DEPRECATED_WARNINGS_ON
 
 namespace compute = boost::compute;
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -195,3 +196,4 @@ void regions(Param out, Param in, const bool full_conn,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

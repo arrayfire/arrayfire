@@ -54,10 +54,10 @@
 #include "kernel/transpose.hpp"
 #include "magma_data.h"
 
+using arrayfire::opencl::makeParam;
+using arrayfire::opencl::kernel::transpose;
 using cl::Buffer;
 using cl::CommandQueue;
-using opencl::makeParam;
-using opencl::kernel::transpose;
 
 template<typename T>
 void magmablas_transpose(magma_int_t m, magma_int_t n, cl_mem dA,

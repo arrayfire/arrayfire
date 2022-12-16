@@ -13,6 +13,7 @@
 #include <common/Transform.hpp>
 #include <common/half.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -200,3 +201,4 @@ struct reduce_all {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

@@ -19,11 +19,12 @@
 #include <vector>
 
 using af::dim4;
-using common::half;
-using common::Node;
-using common::Node_ptr;
+using arrayfire::common::half;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -234,3 +235,4 @@ INSTANTIATE(half)
 
 #undef INSTANTIATE
 }  // namespace cuda
+}  // namespace arrayfire

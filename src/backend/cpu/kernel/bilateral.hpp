@@ -13,6 +13,7 @@
 #include <utility.hpp>
 #include <cmath>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -86,3 +87,4 @@ void bilateral(Param<OutT> out, CParam<InT> in, float const s_sigma,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

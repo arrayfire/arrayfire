@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 Array<T> identity(const dim4& dim);
-}
+}  // namespace opencl
+}  // namespace arrayfire

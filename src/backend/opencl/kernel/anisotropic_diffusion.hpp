@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -68,3 +69,4 @@ void anisotropicDiffusion(Param inout, const float dt, const float mct,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

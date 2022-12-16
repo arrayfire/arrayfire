@@ -12,6 +12,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace cuda {
 
 const char *errorString(cudnnStatus_t err) {
@@ -297,3 +298,4 @@ cudnnStatus_t cudnnConvolutionBackwardFilter(
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

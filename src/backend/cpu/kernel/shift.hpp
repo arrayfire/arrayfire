@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <cassert>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -63,3 +64,4 @@ void shift(Param<T> out, CParam<T> in, const af::dim4 sdims) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

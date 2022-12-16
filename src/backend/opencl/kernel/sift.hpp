@@ -38,6 +38,7 @@ AF_DEPRECATED_WARNINGS_ON
 
 namespace compute = boost::compute;
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -729,3 +730,4 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

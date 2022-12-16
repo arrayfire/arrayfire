@@ -13,6 +13,7 @@
 #include <platform.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace opencl {
 // OVERALL USAGE (With looping):
 // ...                                                      // OWN CODE
@@ -326,3 +327,4 @@ inline cl::NDRange threadsMgt<T>::genGlobal(const cl::NDRange& local) const {
     }
 };
 }  // namespace opencl
+}  // namespace arrayfire

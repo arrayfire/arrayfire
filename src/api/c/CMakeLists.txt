@@ -88,6 +88,7 @@ target_sources(c_api_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/gaussian_kernel.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gradient.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/hamming.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/handle.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/handle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/harris.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/hist.cpp

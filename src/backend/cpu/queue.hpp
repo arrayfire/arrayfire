@@ -48,6 +48,7 @@ using event_impl = threads::event;
 
 #endif
 
+namespace arrayfire {
 namespace cpu {
 
 /// Wraps the async_queue class
@@ -108,3 +109,4 @@ class queue_event {
     operator bool() const noexcept { return event_; }
 };
 }  // namespace cpu
+}  // namespace arrayfire

@@ -23,9 +23,11 @@
 #include <cstdio>
 #include <cstring>
 
-using common::half;  // NOLINT(misc-unused-using-decls) bug in clang-tidy
-using common::is_complex;
+using arrayfire::common::half;  // NOLINT(misc-unused-using-decls) bug in
+                                // clang-tidy
+using arrayfire::common::is_complex;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -150,3 +152,4 @@ INSTANTIATE_GETSCALAR(short)
 INSTANTIATE_GETSCALAR(ushort)
 INSTANTIATE_GETSCALAR(half)
 }  // namespace cpu
+}  // namespace arrayfire

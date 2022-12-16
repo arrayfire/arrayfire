@@ -46,6 +46,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 // Utils
@@ -102,3 +103,4 @@ static inline __device__ void philox(uint key[2], uint ctr[4]) {
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

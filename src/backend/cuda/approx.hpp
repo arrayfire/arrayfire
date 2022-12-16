@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename Ty, typename Tp>
 void approx1(Array<Ty> &yo, const Array<Ty> &yi, const Array<Tp> &xo,
@@ -22,3 +23,4 @@ void approx2(Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo,
              const Tp &yi_step, const af_interp_type method,
              const float offGrid);
 }  // namespace cuda
+}  // namespace arrayfire

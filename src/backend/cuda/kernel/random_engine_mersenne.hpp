@@ -42,6 +42,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *******************************************************/
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -128,3 +129,4 @@ void initMersenneState(uint *state, const uint *tbl, uintl seed) {
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

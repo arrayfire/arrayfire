@@ -9,6 +9,7 @@
 #pragma once
 #include <utility>
 
+namespace arrayfire {
 namespace common {
 
 template<typename NativeEventPolicy>
@@ -81,3 +82,4 @@ class EventBase {
 };
 
 }  // namespace common
+}  // namespace arrayfire

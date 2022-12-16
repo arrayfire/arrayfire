@@ -16,6 +16,7 @@
 #include <sstream>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 
 namespace {
@@ -104,3 +105,4 @@ inline void generateShiftNodeRead(std::stringstream& kerStream, int id,
 
 }  // namespace
 }  // namespace cuda
+}  // namespace arrayfire

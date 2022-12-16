@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/tile_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -25,8 +26,9 @@ void tile(Param<T> out, CParam<T> in) {
     constexpr unsigned TILEX = 512;
     constexpr unsigned TILEY = 32;
 
-    auto tile = common::getKernel("cuda::tile", std::array{tile_cuh_src},
-                                  TemplateArgs(TemplateTypename<T>()));
+    auto tile =
+        common::getKernel("arrayfire::cuda::tile", std::array{tile_cuh_src},
+                          TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(TX, TY, 1);
 
@@ -34,10 +36,9 @@ void tile(Param<T> out, CParam<T> in) {
     int blocksPerMatY = divup(out.dims[1], TILEY);
     dim3 blocks(blocksPerMatX * out.dims[2], blocksPerMatY * out.dims[3], 1);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -47,3 +48,4 @@ void tile(Param<T> out, CParam<T> in) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

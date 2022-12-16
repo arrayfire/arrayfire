@@ -11,6 +11,7 @@
 
 #include <common/Binary.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -83,3 +84,4 @@ struct MinMaxOp<af_max_t, T> {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

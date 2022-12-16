@@ -17,8 +17,8 @@
 #include <types.hpp>
 #include "magma_common.h"
 
-using opencl::cdouble;
-using opencl::cfloat;
+using arrayfire::opencl::cdouble;
+using arrayfire::opencl::cfloat;
 
 template<typename T>
 struct gpu_blas_gemm_func;

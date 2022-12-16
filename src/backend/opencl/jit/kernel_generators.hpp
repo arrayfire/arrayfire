@@ -11,6 +11,7 @@
 #include <sstream>
 #include <string>
 
+namespace arrayfire {
 namespace opencl {
 
 namespace {
@@ -106,3 +107,4 @@ inline void generateShiftNodeRead(std::stringstream& kerStream, int id,
 }
 }  // namespace
 }  // namespace opencl
+}  // namespace arrayfire

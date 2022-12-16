@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, bool D>
@@ -58,3 +59,4 @@ __global__ void diff(Param<T> out, CParam<T> in, const unsigned oElem,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -42,8 +42,8 @@ typedef cuDoubleComplex cdouble;
 #define __neq(lhs, rhs) (lhs) != (rhs)
 
 #define __conj(in) (in)
-#define __real(in)(in)
-#define __imag(in)(0)
+#define __real(in) (in)
+#define __imag(in) (0)
 #define __abs(in) abs(in)
 #define __sigmoid(in) (1.0 / (1 + exp(-(in))))
 
@@ -60,8 +60,9 @@ typedef cuDoubleComplex cdouble;
 #define __mod(lhs, rhs) ((lhs) % (rhs))
 
 #ifdef AF_WITH_FAST_MATH
-#define __pow(lhs, rhs) \
-    static_cast<double>(pow(static_cast<double>(lhs), static_cast<double>(rhs)));
+#define __pow(lhs, rhs)  \
+    static_cast<double>( \
+        pow(static_cast<double>(lhs), static_cast<double>(rhs)));
 #else
 #define __pow(lhs, rhs) \
     __float2int_rn(pow(__int2float_rn((int)lhs), __int2float_rn((int)rhs)))
@@ -185,7 +186,7 @@ __device__ cdouble __cdiv(cdouble lhs, cdouble rhs) {
     double rhs_x       = inv_rhs_abs * rhs.x;
     double rhs_y       = inv_rhs_abs * rhs.y;
     cdouble out        = {lhs.x * rhs_x + lhs.y * rhs_y,
-                   lhs.y * rhs_x - lhs.x * rhs_y};
+                          lhs.y * rhs_x - lhs.x * rhs_y};
     out.x *= inv_rhs_abs;
     out.y *= inv_rhs_abs;
     return out;
@@ -200,20 +201,17 @@ __device__ cdouble __cmax(cdouble lhs, cdouble rhs) {
 }
 
 template<typename T>
-static __device__ __inline__
-int iszero(T a) {
-  return a == T(0);
+static __device__ __inline__ int iszero(T a) {
+    return a == T(0);
 }
 
 template<typename T>
-static __device__ __inline__
-int __isinf(const T in) {
+static __device__ __inline__ int __isinf(const T in) {
     return isinf(in);
 }
 
 template<>
-__device__ __inline__
-int __isinf<__half>(const __half in) {
+__device__ __inline__ int __isinf<__half>(const __half in) {
 #if __CUDA_ARCH__ >= 530
     return __hisinf(in);
 #else
@@ -222,14 +220,12 @@ int __isinf<__half>(const __half in) {
 }
 
 template<typename T>
-static __device__ __inline__
-int __isnan(const T in) {
+static __device__ __inline__ int __isnan(const T in) {
     return isnan(in);
 }
 
 template<>
-__device__ __inline__
-int __isnan<__half>(const __half in) {
+__device__ __inline__ int __isnan<__half>(const __half in) {
 #if __CUDA_ARCH__ >= 530
     return __hisnan(in);
 #else

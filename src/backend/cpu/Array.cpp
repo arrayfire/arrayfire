@@ -38,12 +38,12 @@
 #include <utility>
 
 using af::dim4;
-using common::half;
-using common::Node;
-using common::Node_map_t;
-using common::Node_ptr;
-using common::NodeIterator;
-using cpu::jit::BufferNode;
+using arrayfire::common::half;
+using arrayfire::common::Node;
+using arrayfire::common::Node_map_t;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::NodeIterator;
+using arrayfire::cpu::jit::BufferNode;
 
 using nonstd::span;
 using std::accumulate;
@@ -55,6 +55,7 @@ using std::make_shared;
 using std::move;
 using std::vector;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -368,3 +369,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 }  // namespace cpu
+}  // namespace arrayfire

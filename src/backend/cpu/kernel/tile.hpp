@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -48,3 +49,4 @@ void tile(Param<T> out, CParam<T> in) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

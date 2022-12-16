@@ -34,17 +34,17 @@
 #include <string>
 #include <vector>
 
-using common::findModule;
-using common::getEnvVar;
-using common::getFuncName;
-using common::half;
-using common::ModdimNode;
-using common::Node;
-using common::Node_ids;
-using common::Node_map_t;
-using common::Node_ptr;
-using common::NodeIterator;
-using common::saveKernel;
+using arrayfire::common::findModule;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::getFuncName;
+using arrayfire::common::half;
+using arrayfire::common::ModdimNode;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ids;
+using arrayfire::common::Node_map_t;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::NodeIterator;
+using arrayfire::common::saveKernel;
 
 using std::array;
 using std::equal;
@@ -56,6 +56,7 @@ using std::stringstream;
 using std::to_string;
 using std::vector;
 
+namespace arrayfire {
 namespace cuda {
 using jit::BufferNode;
 
@@ -498,7 +499,7 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
     for (auto& out : outputs) { args.push_back(static_cast<void*>(&out)); }
 
     {
-        using namespace cuda::kernel_logger;
+        using namespace arrayfire::cuda::kernel_logger;
         AF_TRACE(
             "Launching : Dims: [{},{},{},{}] Blocks: [{}] "
             "Threads: [{}] threads: {}",
@@ -564,3 +565,4 @@ template void evalNodes<ushort>(vector<Param<ushort>>& out,
 template void evalNodes<half>(vector<Param<half>>& out,
                               const vector<Node*>& node);
 }  // namespace cuda
+}  // namespace arrayfire

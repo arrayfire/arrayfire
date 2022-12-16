@@ -19,11 +19,12 @@
 #include <vector>
 
 using af::dim4;
-using common::half;
-using common::Node;
-using common::Node_ptr;
+using arrayfire::common::half;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 Array<T> join(const int jdim, const Array<T> &first, const Array<T> &second) {
@@ -252,3 +253,4 @@ INSTANTIATE(half)
 
 #undef INSTANTIATE
 }  // namespace opencl
+}  // namespace arrayfire

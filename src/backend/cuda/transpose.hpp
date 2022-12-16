@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -18,3 +19,4 @@ template<typename T>
 void transpose_inplace(Array<T> &in, const bool conjugate);
 
 }  // namespace cuda
+}  // namespace arrayfire

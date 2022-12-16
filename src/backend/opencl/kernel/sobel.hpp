@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename Ti, typename To, unsigned ker_size>
@@ -58,3 +59,4 @@ void sobel(Param dx, Param dy, const Param in) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

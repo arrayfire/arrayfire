@@ -28,11 +28,12 @@
 #include <mutex>
 
 using af::dim4;
-using common::bytesToString;
-using common::half;
+using arrayfire::common::bytesToString;
+using arrayfire::common::half;
 
 using std::move;
 
+namespace arrayfire {
 namespace cuda {
 float getMemoryPressure() { return memoryManager().getMemoryPressure(); }
 float getMemoryPressureThreshold() {
@@ -136,9 +137,9 @@ template void memFree(void *ptr);
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
 void Allocator::shutdown() {
-    for (int n = 0; n < cuda::getDeviceCount(); n++) {
+    for (int n = 0; n < getDeviceCount(); n++) {
         try {
-            cuda::setDevice(n);
+            setDevice(n);
             shutdownMemoryManager();
         } catch (const AfError &err) {
             continue;  // Do not throw any errors while shutting down
@@ -148,9 +149,7 @@ void Allocator::shutdown() {
 
 int Allocator::getActiveDeviceId() { return cuda::getActiveDeviceId(); }
 
-size_t Allocator::getMaxMemorySize(int id) {
-    return cuda::getDeviceMemorySize(id);
-}
+size_t Allocator::getMaxMemorySize(int id) { return getDeviceMemorySize(id); }
 
 void *Allocator::nativeAlloc(const size_t bytes) {
     void *ptr = NULL;
@@ -175,7 +174,7 @@ int AllocatorPinned::getActiveDeviceId() {
 
 size_t AllocatorPinned::getMaxMemorySize(int id) {
     UNUSED(id);
-    return cuda::getHostMemorySize();
+    return getHostMemorySize();
 }
 
 void *AllocatorPinned::nativeAlloc(const size_t bytes) {
@@ -191,3 +190,4 @@ void AllocatorPinned::nativeFree(void *ptr) {
     if (err != cudaErrorCudartUnloading) { CUDA_CHECK(err); }
 }
 }  // namespace cuda
+}  // namespace arrayfire

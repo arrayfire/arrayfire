@@ -20,7 +20,7 @@
 #include <dlfcn.h>
 #endif
 
-using common::Version;
+using arrayfire::common::Version;
 using std::make_tuple;
 using std::string;
 using std::to_string;
@@ -87,6 +87,7 @@ vector<string> libNames(const std::string& name, const string& suffix,
 #error "Unsupported platform"
 #endif
 
+namespace arrayfire {
 namespace common {
 
 DependencyModule::DependencyModule(const char* plugin_file_name,
@@ -168,3 +169,4 @@ spdlog::logger* DependencyModule::getLogger() const noexcept {
 }
 
 }  // namespace common
+}  // namespace arrayfire

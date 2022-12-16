@@ -18,6 +18,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x) {
@@ -57,3 +58,4 @@ INSTANTIATE(double)
 INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 }  // namespace opencl
+}  // namespace arrayfire

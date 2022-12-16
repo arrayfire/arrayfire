@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <interp.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename Ty, typename Tp, int xdim, int order>
@@ -69,3 +70,4 @@ __global__ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

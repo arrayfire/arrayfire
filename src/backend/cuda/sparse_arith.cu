@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <string>
 
+namespace arrayfire {
 namespace cuda {
 
 using namespace common;
@@ -235,11 +236,9 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
         nnzC = *nnzcDevHostPtr;
     } else {
         CUDA_CHECK(cudaMemcpyAsync(&nnzC, csrRowPtrC + M, sizeof(int),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
+                                   cudaMemcpyDeviceToHost, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(&baseC, csrRowPtrC, sizeof(int),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getActiveStream()));
+                                   cudaMemcpyDeviceToHost, getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         nnzC -= baseC;
     }
@@ -295,3 +294,4 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
 }  // namespace cuda
+}  // namespace arrayfire

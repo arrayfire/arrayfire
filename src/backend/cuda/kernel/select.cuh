@@ -11,6 +11,7 @@
 
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 int getOffset(dim_t *dims, dim_t *strides, dim_t *refdims, int ids[4]) {
@@ -99,3 +100,4 @@ __global__ void selectScalar(Param<T> out, CParam<char> cond, CParam<T> a, T b,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

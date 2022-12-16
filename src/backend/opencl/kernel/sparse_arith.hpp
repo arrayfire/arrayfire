@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -171,7 +172,7 @@ void ssArithCSR(Param oVals, Param oColIdx, const Param oRowIdx, const uint M,
 
     auto arithOp = fetchKernel<T, op>(
         "ssarith_csr", sp_sp_arith_csr_cl_src,
-        {DefineKeyValue(IDENTITY_VALUE, af::scalar_to_option(iden_val))});
+        {DefineKeyValue(IDENTITY_VALUE, scalar_to_option(iden_val))});
 
     cl::NDRange local(256, 1);
     cl::NDRange global(divup(M, local[0]) * local[0], 1, 1);
@@ -184,3 +185,4 @@ void ssArithCSR(Param oVals, Param oColIdx, const Param oRowIdx, const uint M,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

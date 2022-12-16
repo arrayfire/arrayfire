@@ -33,15 +33,15 @@
 #include <string>
 #include <vector>
 
-using common::findModule;
-using common::getFuncName;
-using common::ModdimNode;
-using common::Node;
-using common::Node_ids;
-using common::Node_map_t;
-using common::Node_ptr;
-using common::NodeIterator;
-using common::saveKernel;
+using arrayfire::common::findModule;
+using arrayfire::common::getFuncName;
+using arrayfire::common::ModdimNode;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ids;
+using arrayfire::common::Node_map_t;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::NodeIterator;
+using arrayfire::common::saveKernel;
 
 using cl::Kernel;
 using cl::NDRange;
@@ -56,6 +56,7 @@ using std::stringstream;
 using std::to_string;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 using jit::BufferNode;
 
@@ -490,3 +491,4 @@ void evalNodes(Param& out, Node* node) {
 }
 
 }  // namespace opencl
+}  // namespace arrayfire

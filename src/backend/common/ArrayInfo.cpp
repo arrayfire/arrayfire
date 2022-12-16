@@ -87,23 +87,27 @@ bool ArrayInfo::isVector() const {
     return singular_dims == AF_MAX_DIMS - 1 && non_singular_dims == 1;
 }
 
-bool ArrayInfo::isComplex() const { return common::isComplex(type); }
+bool ArrayInfo::isComplex() const { return arrayfire::common::isComplex(type); }
 
-bool ArrayInfo::isReal() const { return common::isReal(type); }
+bool ArrayInfo::isReal() const { return arrayfire::common::isReal(type); }
 
-bool ArrayInfo::isDouble() const { return common::isDouble(type); }
+bool ArrayInfo::isDouble() const { return arrayfire::common::isDouble(type); }
 
-bool ArrayInfo::isSingle() const { return common::isSingle(type); }
+bool ArrayInfo::isSingle() const { return arrayfire::common::isSingle(type); }
 
-bool ArrayInfo::isHalf() const { return common::isHalf(type); }
+bool ArrayInfo::isHalf() const { return arrayfire::common::isHalf(type); }
 
-bool ArrayInfo::isRealFloating() const { return common::isRealFloating(type); }
+bool ArrayInfo::isRealFloating() const {
+    return arrayfire::common::isRealFloating(type);
+}
 
-bool ArrayInfo::isFloating() const { return common::isFloating(type); }
+bool ArrayInfo::isFloating() const {
+    return arrayfire::common::isFloating(type);
+}
 
-bool ArrayInfo::isInteger() const { return common::isInteger(type); }
+bool ArrayInfo::isInteger() const { return arrayfire::common::isInteger(type); }
 
-bool ArrayInfo::isBool() const { return common::isBool(type); }
+bool ArrayInfo::isBool() const { return arrayfire::common::isBool(type); }
 
 bool ArrayInfo::isLinear() const {
     if (ndims() == 1) { return dim_strides[0] == 1; }
@@ -172,6 +176,9 @@ dim4 toStride(const vector<af_seq> &seqs, const af::dim4 &parentDims) {
     return out;
 }
 
+namespace arrayfire {
+namespace common {
+
 const ArrayInfo &getInfo(const af_array arr, bool sparse_check,
                          bool device_check) {
     const ArrayInfo *info = nullptr;
@@ -188,3 +195,6 @@ const ArrayInfo &getInfo(const af_array arr, bool sparse_check,
 
     return *info;
 }
+
+}  // namespace common
+}  // namespace arrayfire

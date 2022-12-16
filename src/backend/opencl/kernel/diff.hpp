@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -58,3 +59,4 @@ void diff(Param out, const Param in, const unsigned indims, const unsigned dim,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

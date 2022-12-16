@@ -13,6 +13,7 @@
 #include <cassert>
 #include <list>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 template<typename T>
@@ -182,3 +183,4 @@ void edgeTrackingHysteresis(Param<T> out, CParam<T> strong, CParam<T> weak) {
 }
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

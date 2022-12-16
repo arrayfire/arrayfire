@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -227,3 +228,4 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -10,6 +10,7 @@
 #pragma once
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -98,3 +99,4 @@ void nearest_neighbour(Param<To> dists, CParam<T> query, CParam<T> train,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

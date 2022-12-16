@@ -17,6 +17,7 @@
 #include <scan.hpp>
 #include <complex>
 
+namespace arrayfire {
 namespace cuda {
 template<af_op_t op, typename Ti, typename To>
 Array<To> scan(const Array<Ti>& in, const int dim, bool inclusive_scan) {
@@ -56,3 +57,4 @@ INSTANTIATE_SCAN_ALL(af_mul_t)
 INSTANTIATE_SCAN_ALL(af_min_t)
 INSTANTIATE_SCAN_ALL(af_max_t)
 }  // namespace cuda
+}  // namespace arrayfire

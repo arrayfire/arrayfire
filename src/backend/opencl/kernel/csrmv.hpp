@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -53,7 +54,7 @@ void csrmv(Param out, const Param &values, const Param &rowIdx,
         DefineKeyValue(USE_BETA, use_beta),
         DefineKeyValue(USE_GREEDY, use_greedy),
         DefineKeyValue(THREADS, local[0]),
-        DefineKeyValue(IS_CPLX, (af::iscplx<T>() ? 1 : 0)),
+        DefineKeyValue(IS_CPLX, (iscplx<T>() ? 1 : 0)),
         getTypeBuildDefinition<T>()};
 
     auto csrmv =
@@ -87,3 +88,4 @@ void csrmv(Param out, const Param &values, const Param &rowIdx,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

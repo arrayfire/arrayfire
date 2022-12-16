@@ -15,6 +15,7 @@
 
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -61,3 +62,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace cpu
+}  // namespace arrayfire

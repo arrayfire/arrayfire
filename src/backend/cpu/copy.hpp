@@ -17,6 +17,7 @@ namespace af {
 class dim4;
 }
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -73,3 +74,4 @@ void multiply_inplace(Array<T> &in, double val);
 template<typename T>
 T getScalar(const Array<T> &in);
 }  // namespace cpu
+}  // namespace arrayfire

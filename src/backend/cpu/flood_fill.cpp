@@ -14,6 +14,7 @@
 
 using af::connectivity;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -38,3 +39,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace cpu
+}  // namespace arrayfire

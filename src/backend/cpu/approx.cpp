@@ -12,6 +12,7 @@
 #include <platform.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename Ty, typename Tp>
@@ -88,3 +89,4 @@ INSTANTIATE(cfloat, float)
 INSTANTIATE(cdouble, double)
 
 }  // namespace cpu
+}  // namespace arrayfire

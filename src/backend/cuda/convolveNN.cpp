@@ -33,16 +33,17 @@
 #include <vector>
 
 using af::dim4;
-using common::flip;
-using common::half;
-using common::make_handle;
-using common::modDims;
+using arrayfire::common::flip;
+using arrayfire::common::half;
+using arrayfire::common::make_handle;
+using arrayfire::common::modDims;
 using std::conditional;
 using std::is_same;
 using std::pair;
 using std::tie;
 using std::vector;
 
+namespace arrayfire {
 namespace cuda {
 
 #ifdef WITH_CUDNN
@@ -536,3 +537,4 @@ INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace cuda
+}  // namespace arrayfire

@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 
+namespace arrayfire {
 namespace cuda {
 class GraphicsResourceManager
     : public common::InteropManager<GraphicsResourceManager,
@@ -31,3 +32,4 @@ class GraphicsResourceManager
     void operator=(GraphicsResourceManager const &);
 };
 }  // namespace cuda
+}  // namespace arrayfire

@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 template<typename T>
@@ -49,3 +50,4 @@ __device__ cdouble atomicAdd<cdouble>(cdouble *ptr, cdouble val) {
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

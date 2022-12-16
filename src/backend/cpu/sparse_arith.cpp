@@ -27,11 +27,12 @@
 #include <string>
 #include <vector>
 
-using common::createArrayDataSparseArray;
-using common::createEmptySparseArray;
-using common::SparseArray;
+using arrayfire::common::createArrayDataSparseArray;
+using arrayfire::common::createEmptySparseArray;
+using arrayfire::common::SparseArray;
 using std::numeric_limits;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -166,3 +167,4 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
 }  // namespace cpu
+}  // namespace arrayfire

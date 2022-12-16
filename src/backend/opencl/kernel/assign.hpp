@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -59,3 +60,4 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

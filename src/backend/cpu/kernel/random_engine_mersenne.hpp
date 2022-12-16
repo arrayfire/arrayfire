@@ -44,6 +44,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -117,3 +118,4 @@ void initMersenneState(uint* const state, const uint* const tbl,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

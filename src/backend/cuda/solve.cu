@@ -23,6 +23,7 @@
 #include <qr.hpp>
 #include <transpose.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 // cublasStatus_t cublas<>getrsBatched( cublasHandle_t handle,
@@ -271,8 +272,10 @@ Array<T> generalSolveBatched(const Array<T> &a, const Array<T> &b) {
         }
     }
 
-    unique_mem_ptr aBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree<char>);
-    unique_mem_ptr bBatched_device_mem(pinnedAlloc<char>(bytes), pinnedFree<char>);
+    unique_mem_ptr aBatched_device_mem(pinnedAlloc<char>(bytes),
+                                       pinnedFree<char>);
+    unique_mem_ptr bBatched_device_mem(pinnedAlloc<char>(bytes),
+                                       pinnedFree<char>);
 
     T **aBatched_device_ptrs = (T **)aBatched_device_mem.get();
     T **bBatched_device_ptrs = (T **)bBatched_device_mem.get();
@@ -477,3 +480,4 @@ INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
 
 }  // namespace cuda
+}  // namespace arrayfire

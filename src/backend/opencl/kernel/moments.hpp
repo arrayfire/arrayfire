@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -53,3 +54,4 @@ void moments(Param out, const Param in, af_moment_type moment) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

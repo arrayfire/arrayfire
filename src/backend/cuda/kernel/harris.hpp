@@ -23,6 +23,7 @@
 
 #include <vector>
 
+namespace arrayfire {
 namespace cuda {
 
 namespace kernel {
@@ -176,9 +177,9 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
     int filter_elem   = filter.strides[3] * filter.dims[3];
     auto filter_alloc = memAlloc<convAccT>(filter_elem);
     filter.ptr        = filter_alloc.get();
-    CUDA_CHECK(cudaMemcpyAsync(
-        filter.ptr, h_filter.data(), filter_elem * sizeof(convAccT),
-        cudaMemcpyHostToDevice, cuda::getActiveStream()));
+    CUDA_CHECK(cudaMemcpyAsync(filter.ptr, h_filter.data(),
+                               filter_elem * sizeof(convAccT),
+                               cudaMemcpyHostToDevice, getActiveStream()));
 
     const unsigned border_len = filter_len / 2 + 1;
 
@@ -238,7 +239,7 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
 
     auto d_corners_found = memAlloc<unsigned>(1);
     CUDA_CHECK(cudaMemsetAsync(d_corners_found.get(), 0, sizeof(unsigned),
-                               cuda::getActiveStream()));
+                               getActiveStream()));
 
     auto d_x_corners    = memAlloc<float>(corner_lim);
     auto d_y_corners    = memAlloc<float>(corner_lim);
@@ -265,7 +266,7 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
     unsigned corners_found = 0;
     CUDA_CHECK(cudaMemcpyAsync(&corners_found, d_corners_found.get(),
                                sizeof(unsigned), cudaMemcpyDeviceToHost,
-                               cuda::getActiveStream()));
+                               getActiveStream()));
     CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
     *corners_out =
@@ -327,13 +328,13 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
 
         CUDA_CHECK(cudaMemcpyAsync(
             *x_out, d_x_corners.get(), *corners_out * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(
             *y_out, d_y_corners.get(), *corners_out * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
         CUDA_CHECK(cudaMemcpyAsync(
             *resp_out, d_resp_corners.get(), *corners_out * sizeof(float),
-            cudaMemcpyDeviceToDevice, cuda::getActiveStream()));
+            cudaMemcpyDeviceToDevice, getActiveStream()));
 
         x_out_alloc.release();
         y_out_alloc.release();
@@ -349,3 +350,4 @@ void harris(unsigned* corners_out, float** x_out, float** y_out,
 }  // namespace kernel
 
 }  // namespace cuda
+}  // namespace arrayfire

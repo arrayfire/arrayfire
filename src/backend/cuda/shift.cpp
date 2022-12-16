@@ -17,16 +17,17 @@
 
 using af::dim4;
 
-using common::Node_ptr;
-using common::ShiftNodeBase;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::ShiftNodeBase;
 
-using cuda::jit::BufferNode;
+using arrayfire::cuda::jit::BufferNode;
 
 using std::array;
 using std::make_shared;
 using std::static_pointer_cast;
 using std::string;
 
+namespace arrayfire {
 namespace cuda {
 template<typename T>
 using ShiftNode = ShiftNodeBase<BufferNode<T>>;
@@ -74,3 +75,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace cuda
+}  // namespace arrayfire

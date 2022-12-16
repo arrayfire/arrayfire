@@ -129,7 +129,7 @@ file_to_string(
     EXTENSION "hpp"
     OUTPUT_DIR "kernel_headers"
     TARGETS jit_kernel_targets
-    NAMESPACE "cuda"
+    NAMESPACE "arrayfire cuda"
     WITH_EXTENSION
     )
 
@@ -222,7 +222,7 @@ file_to_string(
     EXTENSION "hpp"
     OUTPUT_DIR "nvrtc_kernel_headers"
     TARGETS nvrtc_kernel_targets
-    NAMESPACE "cuda"
+    NAMESPACE "arrayfire cuda"
     WITH_EXTENSION
     NULLTERM
     )

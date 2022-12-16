@@ -29,18 +29,18 @@ namespace spdlog {
 class logger;
 }
 
-namespace graphics {
-class ForgeManager;
-}
-
+namespace arrayfire {
 namespace common {
-namespace memory {
+
+class ForgeManager;
+
 class MemoryManagerBase;
-}
 }  // namespace common
+}  // namespace arrayfire
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
+namespace arrayfire {
 namespace opencl {
 
 // Forward declarations
@@ -165,7 +165,7 @@ void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
 
 void resetMemoryManagerPinned();
 
-graphics::ForgeManager& forgeManager();
+arrayfire::common::ForgeManager& forgeManager();
 
 GraphicsResourceManager& interopManager();
 
@@ -176,3 +176,4 @@ afcl::platform getPlatformEnum(cl::Device dev);
 void setActiveContext(int device);
 
 }  // namespace opencl
+}  // namespace arrayfire

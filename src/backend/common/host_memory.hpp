@@ -10,8 +10,10 @@
 #pragma once
 #include <cstddef>
 
+namespace arrayfire {
 namespace common {
 
 size_t getHostMemorySize();
 
-}
+}  // namespace common
+}  // namespace arrayfire

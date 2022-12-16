@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -20,3 +21,4 @@ Array<T> medfilt2(const Array<T> &in, const int w_len, const int w_wid,
                   const af::borderType edge_pad);
 
 }  // namespace cpu
+}  // namespace arrayfire

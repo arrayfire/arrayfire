@@ -21,9 +21,11 @@
 #include <vector>
 
 using af::dim4;
-using common::half;  // NOLINT(misc-unused-using-decls) bug in clang-tidy
+using arrayfire::common::half;  // NOLINT(misc-unused-using-decls) bug in
+                                // clang-tidy
 using std::vector;
 
+namespace arrayfire {
 namespace cpu {
 
 template<typename T>
@@ -77,3 +79,4 @@ INSTANTIATE(short)
 INSTANTIATE(half)
 
 }  // namespace cpu
+}  // namespace arrayfire

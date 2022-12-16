@@ -13,6 +13,7 @@
 #include <math.hpp>
 #include <shared.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 inline __device__ int max_val(const int x, const int y) { return max(x, y); }
@@ -121,3 +122,4 @@ __global__ void nonMax(float* x_out, float* y_out, float* resp_out,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

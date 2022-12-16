@@ -32,10 +32,10 @@ using std::swap;
 using std::vector;
 
 using af::dim4;
-using common::convert2Canonical;
-using common::createSpanIndex;
-using common::flat;
-using common::half;
+using arrayfire::common::convert2Canonical;
+using arrayfire::common::createSpanIndex;
+using arrayfire::common::flat;
+using arrayfire::common::half;
 using detail::cdouble;
 using detail::cfloat;
 using detail::index;
@@ -45,6 +45,7 @@ using detail::uint;
 using detail::uintl;
 using detail::ushort;
 
+namespace arrayfire {
 namespace common {
 af_index_t createSpanIndex() {
     static af_index_t s = [] {
@@ -64,6 +65,7 @@ af_seq convert2Canonical(const af_seq s, const dim_t len) {
     return af_seq{begin, end, s.step};
 }
 }  // namespace common
+}  // namespace arrayfire
 
 template<typename T>
 static af_array indexBySeqs(const af_array& src,

@@ -20,7 +20,7 @@
 #include <cstring>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 using detail::cdouble;
 using detail::cfloat;
 using detail::createStridedArray;
