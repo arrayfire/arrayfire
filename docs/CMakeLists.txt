@@ -39,10 +39,9 @@ configure_file(
     ${DOCS_DIR}/details/examples.dox
 )
 ###########################################################
-
 add_custom_target(docs
     ALL
-    COMMAND ${DOXYGEN_EXECUTABLE} ${AF_DOCS_CONFIG_OUT}
+    COMMAND Doxygen::doxygen ${AF_DOCS_CONFIG_OUT}
     COMMAND cmake -E copy_directory ${ASSETS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/html
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Generating Documentation"
