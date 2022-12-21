@@ -1,0 +1,22 @@
+/*
+Overwrite google search bar .css to better match doxygen-awesome dark theme
+*/
+.cse input.gsc-input,input.gsc-input,.gsc_input-box,.gsc-input-box-focus{
+	border-radius: 4px !important;
+	background-image:none !important;
+	color-scheme: light !important;
+	-webkit-box-sizing: border-box !important;
+	-moz-box-sizing: content-box !important;
+	box-sizing: content-box !important;
+	border: none !important;
+	outline: none !important;
+}
+.gsc-control-cse {
+	padding: 0px !important;
+	border: none !important;
+	outline: none !important;
+	background-color: transparent !important;
+}
+.gsc-clear-button {
+	display:none !important;
+}
