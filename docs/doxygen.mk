@@ -1331,7 +1331,8 @@ HTML_STYLESHEET        =
 # list). For an example see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_STYLESHEET  = ${DOCS_DIR}/doxygen-awesome.css \
+HTML_EXTRA_STYLESHEET  = ${DOCS_DIR}/arrayfire.css \
+                         ${DOCS_DIR}/doxygen-awesome.css \
                          ${DOCS_DIR}/doxygen-awesome-sidebar-only.css
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
