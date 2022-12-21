@@ -32,11 +32,10 @@ using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 template<typename T>
 class reorderCreateKernel {
    public:
-    reorderCreateKernel(
-        write_accessor<T> out, read_accessor<T> in, const KParam op,
-        const KParam ip, const int d0, const int d1, const int d2, const int d3,
-        const int blocksPerMatX, const int blocksPerMatY,
-        sycl::accessor<float, 2, sycl::access::mode::write> debugAcc)
+    reorderCreateKernel(write_accessor<T> out, read_accessor<T> in,
+                        const KParam op, const KParam ip, const int d0,
+                        const int d1, const int d2, const int d3,
+                        const int blocksPerMatX, const int blocksPerMatY)
         : out_(out)
         , in_(in)
         , op_(op)
@@ -46,12 +45,10 @@ class reorderCreateKernel {
         , d2_(d2)
         , d3_(d3)
         , blocksPerMatX_(blocksPerMatX)
-        , blocksPerMatY_(blocksPerMatY)
-        , debugAcc_(debugAcc) {}
+        , blocksPerMatY_(blocksPerMatY) {}
+
     void operator()(sycl::nd_item<2> it) const {
         auto g = it.get_group();
-
-        debugAcc_[it.get_global_id(0)][it.get_global_id(1)] = 0;
 
         const int oz = g.get_group_id(0) / blocksPerMatX_;
         const int ow = g.get_group_id(1) / blocksPerMatY_;
@@ -62,17 +59,16 @@ class reorderCreateKernel {
         const int xx = it.get_local_id(0) + blockIdx_x * g.get_local_range(0);
         const int yy = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
 
-        if (xx >= op_.dims[0] || yy >= op_.dims[1] || oz >= op_.dims[2] ||
-            ow >= op_.dims[3])
-            return;
+        bool valid = (xx < op_.dims[0] && yy < op_.dims[1] &&
+                      oz < op_.dims[2] && ow < op_.dims[3]);
 
         const int incy = blocksPerMatY_ * g.get_local_range(1);
         const int incx = blocksPerMatX_ * g.get_local_range(0);
 
-        const int o_off   = ow * op_.strides[3] + oz * op_.strides[2];
-        const int rdims[] = {d0_, d1_, d2_, d3_};
-        int ods[]         = {xx, yy, oz, ow};
-        int ids[4]        = {0};
+        const int o_off    = ow * op_.strides[3] + oz * op_.strides[2];
+        const int rdims[4] = {d0_, d1_, d2_, d3_};
+        int ods[4]         = {xx, yy, oz, ow};
+        int ids[4]         = {0};
 
         ids[rdims[3]] = ow;
         ids[rdims[2]] = oz;
@@ -88,7 +84,7 @@ class reorderCreateKernel {
                                  ids[2] * ip_.strides[2] +
                                  ids[1] * ip_.strides[1] + ids[0];
 
-                out_[oIdx] = in_[ip_.offset + iIdx];
+                if (valid) { out_[oIdx] = in_[ip_.offset + iIdx]; }
             }
         }
     }
@@ -104,7 +100,6 @@ class reorderCreateKernel {
     const int d3_;
     const int blocksPerMatX_;
     const int blocksPerMatY_;
-    sycl::accessor<float, 2, sycl::access::mode::write> debugAcc_;
 };
 
 template<typename T>
@@ -121,18 +116,14 @@ void reorder(Param<T> out, const Param<T> in, const dim_t* rdims) {
     auto global       = sycl::range{local[0] * blocksPerMatX * out.info.dims[2],
                               local[1] * blocksPerMatY * out.info.dims[3]};
 
-    sycl::buffer<float, 2> debugBuffer(sycl::range{global[0], global[1]});
-
     getQueue().submit([&](sycl::handler& h) {
         sycl::accessor outAcc{*out.data, h, sycl::write_only, sycl::no_init};
         sycl::accessor inAcc{*in.data, h, sycl::read_only};
-        sycl::accessor debugAcc{debugBuffer, h, sycl::write_only,
-                                sycl::no_init};
-        h.parallel_for(
-            sycl::nd_range{global, local},
-            reorderCreateKernel<T>(outAcc, inAcc, out.info, in.info, rdims[0],
-                                   rdims[1], rdims[2], rdims[3], blocksPerMatX,
-                                   blocksPerMatY, debugAcc));
+
+        h.parallel_for(sycl::nd_range{global, local},
+                       reorderCreateKernel<T>(
+                           outAcc, inAcc, out.info, in.info, rdims[0], rdims[1],
+                           rdims[2], rdims[3], blocksPerMatX, blocksPerMatY));
     });
 }
 }  // namespace kernel
