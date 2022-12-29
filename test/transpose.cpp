@@ -263,3 +263,25 @@ TEST(Transpose, GFOR) {
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
 }
+
+TEST(Transpose, SNIPPET_blas_func_transpose) {
+    // clang-format off
+    //! [ex_blas_func_transpose]
+    //!
+    // Create a, a 2x3 array
+    array a = iota(dim4(2, 3));    // a = [0, 2, 4
+                                   //      1, 3, 5]
+
+    // Create b, the transpose of a
+    array b = transpose(a);        // b = [0, 1,
+                                   //      2, 3,
+                                   //      4, 5]
+
+    //! [ex_blas_func_transpose]
+    // clang-format on
+
+    using std::vector;
+    vector<float> gold_b{0, 2, 4, 1, 3, 5};
+
+    ASSERT_VEC_ARRAY_EQ(gold_b, b.dims(), b);
+}

@@ -190,18 +190,13 @@ Bitwise xor operation of two inputs
 Minimum of two inputs.
 
 
+
 \defgroup arith_func_max max
 
 \ingroup numeric_mat
 
 Maximum of two inputs.
 
-
-\defgroup arith_func_clamp clamp
-
-\ingroup numeric_mat
-
-Limits the range of the in array to the values between lo and hi
 
 
 \defgroup arith_func_rem rem
@@ -385,7 +380,18 @@ atanh of input
 
 \ingroup complex_mat
 
-create complex arrays
+Create complex arrays.
+
+Complex arrays are created from any of the following four inputs:
+
+1. a single real array, returning zeros for the imaginary component. See `array b` in the example.
+2. two real arrays, one for the real component and one for the imaginary component. See `array c` in the example.
+3. a single real array for the real component and a single scalar for each imaginary component. See `array d` in the example.
+4. a single scalar for each real component and a single real array for the imaginary component. See `array e` in the example.
+
+__Examples:__
+
+\snippet test/complex.cpp ex_arith_func_complex
 
 
 

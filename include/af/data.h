@@ -144,25 +144,29 @@ namespace af
                          const dim_t d2, const dim_t d3, const dtype ty=f32);
 
     /**
-        \param[in] dims is dim4 for size of all dimensions
-        \param[in] seq_dim is dimesion along which [0, dim[seq_dim] - 1] is generated
-        \param[in] ty is the type of array to generate
+    *  C++ Interface for creating an array with `[0, n-1]` values along the `seq_dim` dimension and tiled across other dimensions of shape `dim4`.
+    *
+        \param[in] dims the `dim4` object describing the shape of the generated array
+        \param[in] seq_dim the dimesion along which `[0, dim[seq_dim] - 1]` is created
+        \param[in] ty the type of the generated array
 
-        \returns an array of integral range specified dimension and type
+        \returns the generated array
 
         \ingroup data_func_range
     */
     AFAPI array range(const dim4 &dims, const int seq_dim = -1, const dtype ty=f32);
 
     /**
-        \param[in] d0 is size of first dimension
-        \param[in] d1 is size of second dimension
-        \param[in] d2 is size of third dimension
-        \param[in] d3 is size of fourth dimension
-        \param[in] seq_dim is dimesion along which [0, dim[seq_dim] - 1] is generated
-        \param[in] ty is the type of array to generate
+    *  C++ Interface for creating an array with `[0, n-1]` values along the `seq_dim` dimension and tiled across other dimensions described by dimension parameters.
+    *
+        \param[in] d0 the size of first dimension
+        \param[in] d1 the size of second dimension
+        \param[in] d2 the size of third dimension
+        \param[in] d3 the size of fourth dimension
+        \param[in] seq_dim the dimesion along which `[0, dim[seq_dim] - 1]` is created
+        \param[in] ty the type of the generated array
 
-        \returns an array of integral range specified dimension and type
+        \returns the generated array
 
         \ingroup data_func_range
     */
@@ -295,18 +299,10 @@ namespace af
     AFAPI array shift(const array& in, const int x, const int y=0, const int z=0, const int w=0);
 
     /**
-        \param[in] in is the input array
-        \param[in] ndims is the number of dimensions
-        \param[in] dims is the array containing the new dimensions
-        \return the modded output
-
-        \ingroup manip_func_moddims
-    */
-    AFAPI array moddims(const array& in, const unsigned ndims, const dim_t * const dims);
-
-    /**
-        \param[in] in is the input array
-        \param[in] dims is the new dimensions
+    * C++ Interface for modifying the dimensions of an input array to the shape specified by a `dim4` object
+    *
+        \param[in] in the input array
+        \param[in] dims the array of new dimension sizes
         \return the modded output
 
         \ingroup manip_func_moddims
@@ -314,16 +310,30 @@ namespace af
     AFAPI array moddims(const array& in, const dim4& dims);
 
     /**
-        \param[in] in is the input array
-        \param[in] d0 specifies the new size of the first dimension
-        \param[in] d1 specifies the new size of the second dimension
-        \param[in] d2 specifies the new size of the third dimension
-        \param[in] d3 specifies the new size of the fourth dimension
-        \return the modded array
+    * C++ Interface for modifying the dimensions of an input array to the shape specified by dimension length parameters
+    *
+        \param[in] in the input array
+        \param[in] d0 the new size of the first dimension
+        \param[in] d1 the new size of the second dimension (optional)
+        \param[in] d2 the new size of the third dimension (optional)
+        \param[in] d3 the new size of the fourth dimension (optional)
+        \return the modded output
 
         \ingroup manip_func_moddims
     */
     AFAPI array moddims(const array& in, const dim_t d0, const dim_t d1=1, const dim_t d2=1, const dim_t d3=1);
+
+    /**
+    * C++ Interface for modifying the dimensions of an input array to the shape specified by an array of `ndims` dimensions
+    *
+        \param[in] in the input array
+        \param[in] ndims the number of dimensions
+        \param[in] dims the array of new dimension sizes
+        \return the modded output
+
+        \ingroup manip_func_moddims
+    */
+    AFAPI array moddims(const array& in, const unsigned ndims, const dim_t* const dims);
 
     /**
         \param[in] in is the input array
@@ -492,11 +502,13 @@ extern "C" {
     AFAPI af_err af_constant_ulong(af_array *arr, const unsigned long long val, const unsigned ndims, const dim_t * const dims);
 
     /**
-        \param[out] out is the generated array
-        \param[in] ndims is size of dimension array \p dims
-        \param[in] dims is the array containing sizes of the dimension
-        \param[in] seq_dim is dimension along which [0, dim[seq_dim] - 1] is generated
-        \param[in] type is the type of array to generate
+    * C Interface for creating an array with `[0, n-1]` values along the `seq_dim` dimension and tiled across other dimensions specified by an array of `ndims` dimensions.
+    *
+        \param[out] out the generated array
+        \param[in] ndims the size of dimension array `dims`
+        \param[in] dims the array containing the dimension sizes
+        \param[in] seq_dim the dimension along which `[0, dim[seq_dim] - 1]` is created
+        \param[in] type the type of the generated array
 
         \ingroup data_func_range
     */
@@ -618,10 +630,12 @@ extern "C" {
     AFAPI af_err af_shift(af_array *out, const af_array in, const int x, const int y, const int z, const int w);
 
     /**
-        \param[out] out is the modded array
-        \param[in] in is the input array
-        \param[in] ndims is the number of dimensions
-        \param[in] dims is the array containing the new dimensions
+    * C Interface for modifying the dimensions of an input array to the shape specified by an array of `ndims` dimensions
+    *
+        \param[out] out the modded output
+        \param[in] in the input array
+        \param[in] ndims the number of dimensions
+        \param[in] dims the array of new dimension sizes
 
         \ingroup manip_func_moddims
     */

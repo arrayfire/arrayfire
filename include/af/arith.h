@@ -259,36 +259,34 @@ namespace af
     AFAPI array atan2  (const double lhs, const array &rhs);
     /// @}
 
-    /// \ingroup trig_func_cplx2
+    /// \ingroup arith_func_cplx
     /// @{
-    /// C++ Interface for creating complex array from two inputs
+    /// C++ Interface for creating a complex array from a single real array.
     ///
-    /// Creates a complex number from two sets of inputs. The left hand side is
-    /// the real part and the right hand side is the imaginary part. This
-    /// function accepts two \ref af::array or one \ref af::array and a scalar
-    /// as nputs.
+    /// \param[in] in a real array
+    /// \return the returned complex array
+    AFAPI array complex(const array& in);
+ 
+    /// C++ Interface for creating a complex array from two real arrays.
     ///
-    /// \param[in] real is real value(s)
-    /// \param[in] imaginary is imaginary value(s)
-    /// \return complex array from inputs
-    /// \ingroup arith_func_cplx
-    AFAPI array complex(const array &real, const array &imaginary);
+    /// \param[in] real_ a real array to be assigned as the real component of the returned complex array
+    /// \param[in] imag_ a real array to be assigned as the imaginary component of the returned complex array
+    /// \return the returned complex array
+    AFAPI array complex(const array &real_, const array &imag_);
 
-    /// \copydoc complex(const array&, const array&)
-    /// \ingroup arith_func_cplx
-    AFAPI array complex(const array &real, const double imaginary);
-
-    /// \copydoc complex(const array&, const array&)
-    /// \ingroup arith_func_cplx
-    AFAPI array complex(const double real, const array &imaginary);
-
-    /// C++ Interface for creating complex array from real array
+    /// C++ Interface for creating a complex array from a single real array for the real component and a single scalar for each imaginary component.
     ///
-    /// \param[in] in is real array
-    /// \return complex array from \p in
+    /// \param[in] real_ a real array to be assigned as the real component of the returned complex array
+    /// \param[in] imag_ a single scalar to be assigned as the imaginary component of each value of the returned complex array
+    /// \return the returned complex array
+    AFAPI array complex(const array &real_, const double imag_);
+
+    /// C++ Interface for creating a complex array from a single scalar for each real component and a single real array for the imaginary component.
     ///
-    /// \ingroup arith_func_cplx
-    AFAPI array complex(const array &in);
+    /// \param[in] real_ a single scalar to be assigned as the real component of each value of the returned complex array
+    /// \param[in] imag_ a real array to be assigned as the imaginary component of the returned complex array
+    /// \return the returned complex array
+    AFAPI array complex(const double real_, const array &imag_);
     /// @}
 
     /// C++ Interface for getting real part from complex array
@@ -888,16 +886,16 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for clamp
+       C Interface for max of two arrays
 
-       \param[out] out will contain the values from \p in clamped between \p lo and \p hi
+       \param[out] out will contain the values from \p clamped between \p lo and \p hi
        \param[in] in Input array
        \param[in] lo Value for lower limit
        \param[in] hi Value for upper limit
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup arith_func_clamp
+       \ingroup arith_func_max
     */
     AFAPI af_err af_clamp(af_array *out, const af_array in,
                           const af_array lo, const af_array hi, const bool batch);
@@ -1103,28 +1101,28 @@ extern "C" {
     AFAPI af_err af_atan2 (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for creating complex array from two input arrays
+       C Interface for creating a complex array from a single real array.
 
-       \param[out] out will contain the complex array generated from inputs
-       \param[in] real is real array
-       \param[in] imaginary is imaginary array
+       \param[out] out the returned complex array
+       \param[in] in a real array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_cplx
+    */
+    AFAPI af_err af_cplx(af_array* out, const af_array in);
+
+    /**
+       C Interface for creating a complex array from two real arrays.
+
+       \param[out] out the returned complex array
+       \param[in] real a real array to be assigned as the real component of the returned complex array
+       \param[in] imag a real array to be assigned as the imaginary component of the returned complex array
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_cplx
     */
-    AFAPI af_err af_cplx2 (af_array *out, const af_array real, const af_array imaginary, const bool batch);
-
-    /**
-       C Interface for creating complex array from real array
-
-       \param[out] out will contain complex array created from real input \p in
-       \param[in] in is real array
-       \return \ref AF_SUCCESS if the execution completes properly
-
-       \ingroup arith_func_cplx
-    */
-    AFAPI af_err af_cplx    (af_array *out, const af_array in);
+    AFAPI af_err af_cplx2 (af_array *out, const af_array real, const af_array imag, const bool batch);
 
     /**
        C Interface for getting real part from complex array
