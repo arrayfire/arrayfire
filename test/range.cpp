@@ -171,3 +171,41 @@ TEST(Range, CPP) {
     // Delete
     delete[] outData;
 }
+
+TEST(Range, SNIPPET_data_func_range) {
+    // clang-format off
+    //! [ex_data_func_range]
+    //!
+    // Generates an array of [0, 4] along first dimension
+    array a = range(dim4(5));          // a = [0,
+                                       //      1,
+                                       //      2,
+                                       //      3,
+                                       //      4]
+
+    // Generates an array of [0, 4] along first dimension, tiled along second dimension
+    array b = range(dim4(5, 2));       // b = [0, 0,
+                                       //      1, 1,
+                                       //      2, 2,
+                                       //      3, 3,
+                                       //      4, 4]
+
+    // Generates an array of [0, 2] along second dimension, tiled along first dimension
+    array c = range(dim4(5, 3), 1);    // c = [0, 1, 2,
+                                       //      0, 1, 2,
+                                       //      0, 1, 2,
+                                       //      0, 1, 2,
+                                       //      0, 1, 2]
+
+    //! [ex_data_func_range]
+    // clang-format on
+
+    using std::vector;
+    vector<float> gold_a{0, 1, 2, 3, 4};
+    vector<float> gold_b{0, 1, 2, 3, 4, 0, 1, 2, 3, 4};
+    vector<float> gold_c{0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2};
+
+    ASSERT_VEC_ARRAY_EQ(gold_a, a.dims(), a);
+    ASSERT_VEC_ARRAY_EQ(gold_b, b.dims(), b);
+    ASSERT_VEC_ARRAY_EQ(gold_c, c.dims(), c);
+}

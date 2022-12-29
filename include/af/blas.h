@@ -181,24 +181,20 @@ namespace af
                     const matProp optRhs = AF_MAT_NONE);
 
     /**
-        \brief Transposes a matrix
+        \brief C++ Interface for transposing a matrix
 
-        \copydetails blas_func_transpose
-
-        \param[in] in Input Matrix
-        \param[in] conjugate If true a congugate transposition is performed
-        \return Transposed matrix
+        \param[in] in an input matrix
+        \param[in] conjugate if true, a conjugate transposition is performed
+        \return the transposed matrix
         \ingroup blas_func_transpose
     */
     AFAPI array transpose(const array &in, const bool conjugate = false);
 
     /**
-        \brief Transposes a matrix in-place
+        \brief C++ Interface for transposing a matrix in-place
 
-        \copydetails blas_func_transpose
-
-        \param[in,out] in is the matrix to be transposed in place
-        \param[in] conjugate If true a congugate transposition is performed
+        \param[in,out] in the matrix to be transposed in-place
+        \param[in] conjugate if true, a conjugate transposition is performed
 
         \ingroup blas_func_transpose
     */
@@ -356,13 +352,11 @@ extern "C" {
 #endif
 
     /**
-        \brief Transposes a matrix
+        \brief C Interface for transposing a matrix
 
-        This funciton will tranpose the matrix in.
-
-        \param[out] out The transposed matrix
-        \param[in] in Input matrix which will be transposed
-        \param[in] conjugate Perform a congugate transposition
+        \param[out] out the transposed matrix
+        \param[in] in an input matrix
+        \param[in] conjugate if true, a conjugate transposition is performed
 
         \return AF_SUCCESS if the process is successful.
         \ingroup blas_func_transpose
@@ -370,12 +364,10 @@ extern "C" {
     AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);
 
     /**
-        \brief Transposes a matrix in-place
-
-        \copydetails blas_func_transpose
+        \brief C Interface for transposing a matrix in-place
 
         \param[in,out] in is the matrix to be transposed in place
-        \param[in] conjugate If true a congugate transposition is performed
+        \param[in] conjugate if true, a conjugate transposition is performed
 
         \ingroup blas_func_transpose
     */
