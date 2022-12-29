@@ -45,30 +45,11 @@ array a = identity(5, 3);
 
 \defgroup data_func_range range
 
-\brief Creates an array with [0, n] values along the seq_dim which is tiled across other dimensions
+\brief Create an array with `[0, n-1]` values along the `seq_dim` dimension and tiled across other dimensions.
 
-\code
-// Generates an array of [0, 4] along first dimension
-array a = range(dim4(5));        // a = [0,
-                                 //      1,
-                                 //      2,
-                                 //      3,
-                                 //      4]
+__Examples:__
 
-// Generates an array of [0, 4] along first dimension, tiled along second dimension
-array b = range(dim4(5, 2));     // a = [0, 0,
-                                 //      1, 1,
-                                 //      2, 2,
-                                 //      3, 3,
-                                 //      4, 4]
-
-// Generates an array of [0, 2] along second dimension, tiled along first dimension
-array c = range(dim4(5, 3), 1);  // c = [0, 1, 2,
-                                 //      0, 1, 2,
-                                 //      0, 1, 2,
-                                 //      0, 1, 2,
-                                 //      0, 1, 2]
-\endcode
+\snippet test/range.cpp ex_data_func_range
 
 \ingroup data_mat
 \ingroup arrayfire_func
@@ -259,9 +240,13 @@ Shifts the values in a circular fashion along the specified dimesion.
 
 \defgroup manip_func_moddims moddims
 
-\brief Modify the input dimensions without changing the data order
+\brief Modify the dimensions of an array without changing the order of its elements.
 
-Simply modifies the metadata. This is a noop.
+This function only modifies array metadata and requires no computation. It is a NOOP.
+
+__Examples:__
+
+\snippet test/moddims.cpp ex_data_func_moddims
 
 \ingroup manip_mat
 \ingroup arrayfire_func
