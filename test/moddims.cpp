@@ -346,3 +346,37 @@ TEST(Moddims, JitMultipleModdimsThenTiled) {
     gold.eval();
     ASSERT_ARRAYS_EQ(gold, c);
 }
+
+TEST(Moddims, SNIPPET_data_func_moddims) {
+    // clang-format off
+    //! [ex_data_func_moddims]
+    //!
+    // Create a, a 2x3 array
+    array a = iota(dim4(2, 3));           // a = [0, 2, 4,
+                                          //      1, 3, 5]
+
+    // Create b by modifying the dimensions of a to the shape described by a dim4 object
+    array b = moddims(a, dim4(3, 2));     // b = [0, 3,
+                                          //      1, 4,
+                                          //      2, 5]
+
+    // Create c by modifying the dimensions of a to the shape described by dimension length parameters
+    array c = moddims(a, 3, 2);           // c = [0, 3,
+                                          //      1, 4,
+                                          //      2, 5]
+
+    // Create d by modifying the dimensions of a to the shape described by an array of ndims dimensions
+    vector<dim_t> x{3, 2};
+    array d = moddims(a, 2, x.data());    // d = [0, 3,
+                                          //      1, 4,
+                                          //      2, 5]
+
+    //! [ex_data_func_moddims]
+    // clang-format on
+
+    vector<float> gold_a{0, 1, 2, 3, 4, 5};
+
+    ASSERT_VEC_ARRAY_EQ(gold_a, dim4(3, 2), b);
+    ASSERT_VEC_ARRAY_EQ(gold_a, dim4(3, 2), c);
+    ASSERT_VEC_ARRAY_EQ(gold_a, dim4(3, 2), d);
+}

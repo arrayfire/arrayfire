@@ -2118,3 +2118,41 @@ TEST(Reduce, nanval_issue_3255) {
     }
     ASSERT_SUCCESS(af_release_array(ikeys));
 }
+
+TEST(Reduce, SNIPPET_algorithm_func_sum) {
+    // clang-format off
+    //! [ex_algorithm_func_sum]
+    //
+    // Create a, a 2x3 array
+    array a = iota(dim4(2, 3));           // a = [0, 2, 4,
+                                          //      1, 3, 5]
+
+    // Create b by summing across the first dimension
+    array b = sum(a);        // sum across the first dimension, same as sum(a, 0)
+
+    // Create c by summing across the second dimension
+    array c = sum(a, 1);     // sum across the second dimension
+
+    // Create d by summing across the third dimension
+    array d = sum(a, 2);     // sum across the third dimension
+
+    // Create e by summing across the fouth dimension
+    array e = sum(a, 3);     // sum acorss the fourth dimension
+
+    // Summing across higher dimensions fails due to stepping out of bounds. For example,
+    // array f = sum(a0, 4)  // fails due to stepping out of bounds
+
+    //! [ex_algorithm_func_sum]
+    // clang-format on
+
+    using std::vector;
+    vector<float> gold_a{0, 1, 2, 3, 4, 5};
+    vector<float> gold_b{1, 5, 9};
+    vector<float> gold_c{6, 9};
+
+    ASSERT_VEC_ARRAY_EQ(gold_a, a.dims(), a);
+    ASSERT_VEC_ARRAY_EQ(gold_b, b.dims(), b);
+    ASSERT_VEC_ARRAY_EQ(gold_c, c.dims(), c);
+    ASSERT_VEC_ARRAY_EQ(gold_a, d.dims(), d);
+    ASSERT_VEC_ARRAY_EQ(gold_a, e.dims(), e);
+}
