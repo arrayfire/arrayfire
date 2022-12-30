@@ -245,16 +245,23 @@ else()
   )
   add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
-  target_include_directories(af_spdlog SYSTEM INTERFACE "${${spdlog_prefix}_SOURCE_DIR}/include")
   if(TARGET fmt::fmt)
     set_target_properties(af_spdlog
       PROPERTIES
         INTERFACE_COMPILE_DEFINITIONS "SPDLOG_FMT_EXTERNAL")
   endif()
+
   if(AF_WITH_SPDLOG_HEADER_ONLY)
     set_target_properties(af_spdlog
       PROPERTIES
-        INTERFACE_COMPILE_DEFINITIONS "$<TARGET_PROPERTY:af_spdlog,INTERFACE_COMPILE_DEFINITIONS>;SPDLOG_HEADER_ONLY")
+        INTERFACE_LINK_LIBRARIES "spdlog_header_only")
+  else()
+    set_target_properties(spdlog
+      PROPERTIES
+        CXX_VISIBILITY_PRESET "default")
+    set_target_properties(af_spdlog
+      PROPERTIES
+        INTERFACE_LINK_LIBRARIES "spdlog")
   endif()
 endif()
 
