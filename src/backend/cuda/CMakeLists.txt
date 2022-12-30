@@ -365,7 +365,7 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   set(CUDA_SEPARABLE_COMPILATION ${pior_val_CUDA_SEPARABLE_COMPILATION})
 else()
   target_link_libraries(af_cuda_static_cuda_library
-    PUBLIC
+    PRIVATE
       ${CUDA_CUBLAS_LIBRARIES}
       ${CUDA_CUFFT_LIBRARIES}
       ${CUDA_cusolver_LIBRARY}
@@ -753,7 +753,7 @@ else()
 
   #NOTE: Only link against the stub library when building
   target_link_libraries(afcuda
-    PUBLIC
+    PRIVATE
       $<BUILD_INTERFACE:${CUDA_CUDA_STUB}>)
 endif()
 
