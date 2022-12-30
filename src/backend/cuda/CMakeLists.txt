@@ -588,7 +588,7 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
 
 else()
   target_link_libraries(afcuda
-    PUBLIC
+    PRIVATE
       ${CUDA_CUBLAS_LIBRARIES}
       ${CUDA_CUFFT_LIBRARIES}
       ${CUDA_cusolver_LIBRARY}
