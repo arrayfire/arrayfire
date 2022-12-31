@@ -20,12 +20,13 @@
 
 using af::dim4;
 
-using common::half;
-using common::NaryNode;
+using arrayfire::common::half;
+using arrayfire::common::NaryNode;
 
 using std::make_shared;
 using std::max;
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
@@ -141,3 +142,4 @@ INSTANTIATE(half);
 
 #undef INSTANTIATE
 }  // namespace oneapi
+}  // namespace arrayfire

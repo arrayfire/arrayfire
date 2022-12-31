@@ -29,16 +29,17 @@
 #include <string>
 #include <vector>
 
-using common::getFuncName;
-using common::Node;
-using common::Node_ids;
-using common::Node_map_t;
+using arrayfire::common::getFuncName;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ids;
+using arrayfire::common::Node_map_t;
 
 using std::string;
 using std::stringstream;
 using std::to_string;
 using std::vector;
 
+namespace arrayfire {
 namespace oneapi {
 
 string getKernelString(const string &funcName, const vector<Node *> &full_nodes,
@@ -69,3 +70,4 @@ void evalNodes(Param &out, Node *node) {
 */
 
 }  // namespace oneapi
+}  // namespace arrayfire

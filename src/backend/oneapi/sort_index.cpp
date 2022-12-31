@@ -18,8 +18,9 @@
 #include <sort_index.hpp>
 #include <stdexcept>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
@@ -77,3 +78,4 @@ INSTANTIATE(uintl)
 INSTANTIATE(half)
 
 }  // namespace oneapi
+}  // namespace arrayfire

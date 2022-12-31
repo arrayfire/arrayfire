@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> setUnique(const Array<T> &in, const bool is_sorted);
@@ -21,3 +22,4 @@ template<typename T>
 Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
                       const bool is_unique);
 }  // namespace oneapi
+}  // namespace arrayfire

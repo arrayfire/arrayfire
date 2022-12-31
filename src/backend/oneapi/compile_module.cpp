@@ -28,12 +28,12 @@
 #include <string>
 #include <vector>
 
-using common::loggerFactory;
+using arrayfire::common::loggerFactory;
+using arrayfire::oneapi::Kernel;
+using arrayfire::oneapi::Module;
 using fmt::format;
-// using oneapi::getActiveDeviceId;
-// using oneapi::getDevice;
-using oneapi::Kernel;
-using oneapi::Module;
+// using arrayfire::oneapi::getActiveDeviceId;
+// using arrayfire::oneapi::getDevice;
 using spdlog::logger;
 using sycl::bundle_state;
 using sycl::kernel_bundle;
@@ -69,6 +69,7 @@ string getProgramBuildLog(const kernel_bundle<bundle_state::executable> &prog) {
 //        AF_ERROR(build_error, AF_ERR_INTERNAL);                      \
 //    } while (0)
 
+namespace arrayfire {
 namespace oneapi {
 
 // const static string DEFAULT_MACROS_STR(
@@ -98,6 +99,7 @@ kernel_bundle<bundle_state::executable> buildProgram(const vector<string>
 */
 
 }  // namespace oneapi
+}  // namespace arrayfire
 
 string getKernelCacheFilename(const int device, const string &key) {
     ONEAPI_NOT_SUPPORTED("");

@@ -13,6 +13,7 @@
 // This file contains the common interface for OneAPI BLAS
 // functions
 
+namespace arrayfire {
 namespace oneapi {
 
 void initBlas();
@@ -39,3 +40,4 @@ template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
              af_mat_prop optRhs);
 }  // namespace oneapi
+}  // namespace arrayfire

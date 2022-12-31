@@ -17,6 +17,7 @@
 using af::features;
 using std::vector;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -74,3 +75,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace oneapi
+}  // namespace arrayfire

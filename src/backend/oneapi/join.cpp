@@ -17,10 +17,11 @@
 #include <vector>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 using std::transform;
 using std::vector;
 
+namespace arrayfire {
 namespace oneapi {
 dim4 calcOffset(const dim4 &dims, int dim) {
     dim4 offset;
@@ -89,3 +90,4 @@ INSTANTIATE(half)
 
 #undef INSTANTIATE
 }  // namespace oneapi
+}  // namespace arrayfire

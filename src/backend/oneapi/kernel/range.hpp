@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -117,9 +118,10 @@ void range(Param<T> out, const int dim) {
 }
 
 template<>
-void range(Param<common::half> out, const int dim) {
-    ONEAPI_NOT_SUPPORTED("TODO: fix common::half support");
+void range(Param<arrayfire::common::half> out, const int dim) {
+    ONEAPI_NOT_SUPPORTED("TODO: fix arrayfire::common::half support");
 }
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

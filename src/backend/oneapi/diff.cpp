@@ -13,6 +13,7 @@
 #include <af/dim4.hpp>
 #include <stdexcept>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -56,3 +57,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(char)
 }  // namespace oneapi
+}  // namespace arrayfire

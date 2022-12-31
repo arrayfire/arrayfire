@@ -23,17 +23,17 @@ static bool iscplx() {
     return false;
 }
 template<>
-inline bool iscplx<oneapi::cfloat>() {
+inline bool iscplx<arrayfire::oneapi::cfloat>() {
     return true;
 }
 template<>
-inline bool iscplx<oneapi::cdouble>() {
+inline bool iscplx<arrayfire::oneapi::cdouble>() {
     return true;
 }
 
 template<typename T>
 inline std::string scalar_to_option(const T &val) {
-    using namespace common;
+    using namespace arrayfire::common;
     using namespace std;
     return to_string(+val);
 }

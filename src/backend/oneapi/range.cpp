@@ -16,8 +16,9 @@
 
 #include <stdexcept>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> range(const dim4& dim, const int seq_dim) {
@@ -52,3 +53,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(half)
 }  // namespace oneapi
+}  // namespace arrayfire

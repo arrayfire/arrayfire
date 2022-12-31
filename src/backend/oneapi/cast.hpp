@@ -18,6 +18,7 @@
 #include <af/dim4.hpp>
 #include <complex>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename To, typename Ti>
@@ -71,3 +72,4 @@ struct CastOp<cdouble, cdouble> {
 #undef CAST_CFN
 
 }  // namespace oneapi
+}  // namespace arrayfire

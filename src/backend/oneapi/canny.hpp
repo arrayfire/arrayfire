@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 Array<float> nonMaximumSuppression(const Array<float>& mag,
                                    const Array<float>& gx,
@@ -17,3 +18,4 @@ Array<float> nonMaximumSuppression(const Array<float>& mag,
 Array<char> edgeTrackingByHysteresis(const Array<char>& strong,
                                      const Array<char>& weak);
 }  // namespace oneapi
+}  // namespace arrayfire

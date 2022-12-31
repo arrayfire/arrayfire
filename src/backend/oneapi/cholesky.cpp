@@ -15,6 +15,7 @@
 #if defined(WITH_LINEAR_ALGEBRA)
 //#include <triangle.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -40,9 +41,11 @@ INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 
 }  // namespace oneapi
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -66,5 +69,6 @@ INSTANTIATE_CH(double)
 INSTANTIATE_CH(cdouble)
 
 }  // namespace oneapi
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA

@@ -20,6 +20,7 @@
 using std::make_unique;
 using std::unique_ptr;
 
+namespace arrayfire {
 namespace oneapi {
 /// \brief Creates a new event and marks it in the queue
 Event makeEvent(sycl::queue& queue) {
@@ -76,3 +77,4 @@ af_event createAndMarkEvent() {
 }
 
 }  // namespace oneapi
+}  // namespace arrayfire

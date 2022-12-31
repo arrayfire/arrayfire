@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<float> moments(const Array<T> &in, const af_moment_type moment);
-}
+}  // namespace oneapi
+}  // namespace arrayfire

@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -160,3 +161,4 @@ void wrap(Param<T> out, const Param<T> in, const dim_t wx, const dim_t wy,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

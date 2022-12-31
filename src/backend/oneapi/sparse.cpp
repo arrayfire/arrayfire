@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <string>
 
+namespace arrayfire {
 namespace oneapi {
 
 using namespace common;
@@ -225,3 +226,4 @@ INSTANTIATE_SPARSE(cdouble)
 #undef INSTANTIATE_SPARSE
 
 }  // namespace oneapi
+}  // namespace arrayfire

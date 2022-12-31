@@ -16,6 +16,7 @@
 using af::dim4;
 using af::features;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T, typename convAccT>
@@ -73,3 +74,4 @@ INSTANTIATE(float, float)
 INSTANTIATE(double, double)
 
 }  // namespace oneapi
+}  // namespace arrayfire

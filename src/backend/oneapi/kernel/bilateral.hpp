@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -215,3 +216,4 @@ void bilateral(Param<outType> out, const Param<inType> in, const float s_sigma,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

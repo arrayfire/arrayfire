@@ -17,6 +17,7 @@
 #include <kernel/default_config.hpp>
 #include <memory.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -353,3 +354,4 @@ static void scan_dim(Param<To> out, Param<Ti> in, bool inclusive_scan) {
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

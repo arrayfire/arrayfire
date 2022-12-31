@@ -13,8 +13,9 @@
 #include <err_oneapi.hpp>
 #include <af/dim4.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> identity(const dim4& dims) {
@@ -41,3 +42,4 @@ INSTANTIATE_IDENTITY(ushort)
 INSTANTIATE_IDENTITY(half)
 
 }  // namespace oneapi
+}  // namespace arrayfire

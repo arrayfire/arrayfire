@@ -9,8 +9,10 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
                 const af_interp_type method);
-}
+}  // namespace oneapi
+}  // namespace arrayfire

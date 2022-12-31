@@ -12,6 +12,7 @@
 #include <optypes.hpp>
 #include <sparse.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 // These two functions cannot be overloaded by return type.
@@ -28,3 +29,4 @@ template<typename T, af_op_t op>
 common::SparseArray<T> arithOp(const common::SparseArray<T> &lhs,
                                const common::SparseArray<T> &rhs);
 }  // namespace oneapi
+}  // namespace arrayfire

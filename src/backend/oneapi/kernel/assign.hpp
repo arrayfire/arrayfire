@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -144,3 +145,4 @@ void assign(Param<T> out, const Param<T> in, const AssignKernelParam_t& p,
 }
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

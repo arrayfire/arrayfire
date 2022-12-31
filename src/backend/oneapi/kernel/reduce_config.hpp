@@ -9,6 +9,7 @@
 
 #pragma once
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -23,3 +24,4 @@ static const uint REPEAT            = 32;
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

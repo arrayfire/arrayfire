@@ -10,9 +10,10 @@
 #include <Array.hpp>
 #include <common/graphics_common.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
 void copy_image(const Array<T> &in, fg_image image);
-
-}
+}  // namespace oneapi
+}  // namespace arrayfire

@@ -25,6 +25,7 @@
 #include <scan.hpp>
 #include <where.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 using namespace common;
@@ -178,3 +179,4 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -20,13 +20,14 @@
 
 #include <utility>
 
-using common::bytesToString;
+using arrayfire::common::bytesToString;
 
 using af::dim4;
 using std::function;
 using std::move;
 using std::unique_ptr;
 
+namespace arrayfire {
 namespace oneapi {
 float getMemoryPressure() { return memoryManager().getMemoryPressure(); }
 float getMemoryPressureThreshold() {
@@ -195,7 +196,7 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
-INSTANTIATE(common::half)
+INSTANTIATE(arrayfire::common::half)
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
@@ -332,3 +333,4 @@ void AllocatorPinned::nativeFree(void *ptr) {
     // }
 }
 }  // namespace oneapi
+}  // namespace arrayfire

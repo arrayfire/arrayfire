@@ -22,7 +22,7 @@
 
 // using cl::Buffer;
 // using cl::Event;
-using common::half;
+using arrayfire::common::half;
 
 using std::iota;
 using std::min;
@@ -30,6 +30,7 @@ using std::partial_sort_copy;
 using std::transform;
 using std::vector;
 
+namespace arrayfire {
 namespace oneapi {
 vector<af_index_t> indexForTopK(const int k) {
     af_index_t idx;
@@ -181,3 +182,4 @@ INSTANTIATE(long long)
 INSTANTIATE(unsigned long long)
 INSTANTIATE(half)
 }  // namespace oneapi
+}  // namespace arrayfire
