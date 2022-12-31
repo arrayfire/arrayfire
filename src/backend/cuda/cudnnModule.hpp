@@ -66,7 +66,6 @@ namespace cuda {
 
 class cudnnModule {
     common::DependencyModule module;
-    int major{}, minor{}, patch{};
 
    public:
     cudnnModule();
@@ -102,9 +101,7 @@ class cudnnModule {
     spdlog::logger* getLogger() const noexcept;
 
     /// Returns the version of the cuDNN loaded at runtime
-    std::tuple<int, int, int> getVersion() const noexcept {
-        return std::make_tuple(major, minor, patch);
-    }
+    common::Version getVersion() const noexcept { return module.getVersion(); }
 
     bool isLoaded() const noexcept { return module.isLoaded(); }
 };
