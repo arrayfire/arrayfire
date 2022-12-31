@@ -238,7 +238,7 @@ cudnnStatus_t cudnnGetConvolutionForwardAlgorithm(
     cudnnConvolutionFwdPreference_t preference, size_t memoryLimitInBytes,
     cudnnConvolutionFwdAlgo_t *algo) {
     auto version = getCudnnPlugin().getVersion();
-    if (std::get<0>(version) < 8) {
+    if (version.major < 8) {
         return getCudnnPlugin().cudnnGetConvolutionForwardAlgorithm(
             handle, xDesc, wDesc, convDesc, yDesc, preference,
             memoryLimitInBytes, algo);
@@ -259,7 +259,7 @@ cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithm(
     cudnnConvolutionBwdFilterPreference_t preference, size_t memoryLimitInBytes,
     cudnnConvolutionBwdFilterAlgo_t *algo) {
     auto version = getCudnnPlugin().getVersion();
-    if (std::get<0>(version) < 8) {
+    if (version.major < 8) {
         return getCudnnPlugin().cudnnGetConvolutionBackwardFilterAlgorithm(
             handle, xDesc, dyDesc, convDesc, dwDesc, preference,
             memoryLimitInBytes, algo);

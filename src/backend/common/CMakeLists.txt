@@ -45,6 +45,7 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TemplateArg.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TemplateTypename.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Version.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas_headers.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cast.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cast.hpp

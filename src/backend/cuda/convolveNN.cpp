@@ -70,7 +70,7 @@ pair<cudnnConvolutionFwdAlgo_t, size_t> getForwardAlgorithm(
     size_t workspace_bytes = 0;
 
     auto version = getCudnnPlugin().getVersion();
-    if (std::get<0>(version) >= 8) {
+    if (version.major >= 8) {
         int maxAlgoCount = 0;
         CUDNN_CHECK(cuda::cudnnGetConvolutionForwardAlgorithmMaxCount(
             cudnn, &maxAlgoCount));
@@ -419,7 +419,7 @@ pair<cudnnConvolutionBwdFilterAlgo_t, size_t> getBackwardFilterAlgorithm(
     size_t workspace_bytes = 0;
 
     auto version = getCudnnPlugin().getVersion();
-    if (std::get<0>(version) >= 8) {
+    if (version.major >= 8) {
         int maxAlgoCount = 0;
         CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(
             cudnn, &maxAlgoCount));

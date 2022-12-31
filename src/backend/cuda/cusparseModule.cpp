@@ -8,15 +8,33 @@
  ********************************************************/
 
 #include <cusparseModule.hpp>
+#include <cusparse.hpp>
 
+#include <common/Version.hpp>
 #include <common/err_common.hpp>
 #include <af/defines.h>
 
 #include <cuda.h>
 #include <string>
 
+using arrayfire::common::Version;
+
 namespace arrayfire {
 namespace cuda {
+
+common::Version getCusparseVersion(const LibHandle& handle) {
+    std::function<cusparseStatus_t(libraryPropertyType, int*)> fptr(
+        reinterpret_cast<cusparseStatus_t (*)(libraryPropertyType, int*)>(
+            common::getFunctionPointer(handle, "cusparseGetProperty")));
+
+    int major, minor, patch;
+    CUSPARSE_CHECK(fptr(MAJOR_VERSION, &major));
+    CUSPARSE_CHECK(fptr(MINOR_VERSION, &minor));
+    CUSPARSE_CHECK(fptr(PATCH_LEVEL, &patch));
+
+    Version out{major, minor, patch};
+    return out;
+}
 
 cusparseModule::cusparseModule()
     :
