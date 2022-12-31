@@ -161,7 +161,7 @@ static void convertCSR(const int M, const int N, const double ratio,
     af::array s  = af::sparse(a, AF_STORAGE_CSR);
     af::array aa = af::dense(s);
 
-    ASSERT_EQ(0, af::max<double>(af::abs(a - aa)));
+    ASSERT_ARRAYS_EQ(a, aa);
 }
 
 // This test essentially verifies that the sparse structures have the correct

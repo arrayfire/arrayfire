@@ -78,34 +78,8 @@ void sparseConvertTester(const int m, const int n, int factor) {
     // Create the dest type from dense - gold
     array dA = sparse(A, dest);
 
-    // Verify nnZ
-    dim_t dNNZ   = sparseGetNNZ(dA);
-    dim_t s2dNNZ = sparseGetNNZ(s2d);
-
-    ASSERT_EQ(dNNZ, s2dNNZ);
-
-    // Verify Types
-    af_storage dType   = sparseGetStorage(dA);
-    af_storage s2dType = sparseGetStorage(s2d);
-
-    ASSERT_EQ(dType, s2dType);
-
-    // Get the individual arrays and verify equality
-    array dValues = sparseGetValues(dA);
-    array dRowIdx = sparseGetRowIdx(dA);
-    array dColIdx = sparseGetColIdx(dA);
-
-    array s2dValues = sparseGetValues(s2d);
-    array s2dRowIdx = sparseGetRowIdx(s2d);
-    array s2dColIdx = sparseGetColIdx(s2d);
-
-    // Verify values
-    ASSERT_EQ(0, max<double>(real(dValues - s2dValues)));
-    ASSERT_EQ(0, max<double>(imag(dValues - s2dValues)));
-
-    // Verify row and col indices
-    ASSERT_EQ(0, max<int>(dRowIdx - s2dRowIdx));
-    ASSERT_EQ(0, max<int>(dColIdx - s2dColIdx));
+    ASSERT_ARRAYS_EQ(dA, s2d);
+    ASSERT_ARRAYS_EQ(A, s2d);
 }
 
 #define CONVERT_TESTS_TYPES(T, STYPE, DTYPE, SUFFIX, M, N, F) \
