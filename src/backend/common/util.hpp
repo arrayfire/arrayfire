@@ -30,8 +30,6 @@ std::string& ltrim(std::string& s);
 void saveKernel(const std::string& funcName, const std::string& jit_ker,
                 const std::string& ext);
 
-std::string int_version_to_string(int version);
-
 std::string& getCacheDirectory();
 
 bool directoryExists(const std::string& path);

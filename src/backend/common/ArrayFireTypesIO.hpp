@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <spdlog/fmt/bundled/ranges.h>
+#include <common/Version.hpp>
 #include <spdlog/fmt/ostr.h>
 #include <af/seq.h>
 
@@ -33,5 +33,56 @@ struct fmt::formatter<af_seq> {
             return format_to(ctx.out(), "({} -> {})", p.begin, p.end);
         }
         return format_to(ctx.out(), "({} -({})-> {})", p.begin, p.step, p.end);
+    }
+};
+
+template<>
+struct fmt::formatter<arrayfire::common::Version> {
+    // show major version
+    bool show_major = false;
+    // show minor version
+    bool show_minor = false;
+    // show patch version
+    bool show_patch = false;
+
+    // Parses format specifications of the form ['M' | 'm' | 'p'].
+    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+        auto it = ctx.begin(), end = ctx.end();
+        if (it == end || *it == '}') {
+            show_major = show_minor = show_patch = true;
+            return it;
+        }
+        do {
+            switch (*it) {
+                case 'M': show_major = true; break;
+                case 'm': show_minor = true; break;
+                case 'p': show_patch = true; break;
+                default: throw format_error("invalid format");
+            }
+            ++it;
+        } while (it != end && *it != '}');
+        return ctx.begin();
+    }
+
+    // Formats the point p using the parsed format specification (presentation)
+    // stored in this formatter.
+    template<typename FormatContext>
+    auto format(const arrayfire::common::Version& ver, FormatContext& ctx)
+        -> decltype(ctx.out()) {
+        // ctx.out() is an output iterator to write to.
+        // if (ver.major == -1) return format_to(ctx.out(), "N/A");
+        if (ver.minor == -1) show_minor = false;
+        if (ver.patch == -1) show_patch = false;
+        if (show_major && !show_minor && !show_patch) {
+            return format_to(ctx.out(), "{}", ver.major);
+        }
+        if (show_major && show_minor && !show_patch) {
+            return format_to(ctx.out(), "{}.{}", ver.major, ver.minor);
+        }
+        if (show_major && show_minor && show_patch) {
+            return format_to(ctx.out(), "{}.{}.{}", ver.major, ver.minor,
+                             ver.patch);
+        }
+        return ctx.out();
     }
 };
