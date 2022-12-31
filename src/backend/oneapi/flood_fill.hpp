@@ -12,10 +12,12 @@
 #include <Array.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> floodFill(const Array<T>& image, const Array<uint>& seedsX,
                    const Array<uint>& seedsY, const T newValue,
                    const T lowValue, const T highValue,
                    const af::connectivity nlookup = AF_CONNECTIVITY_8);
-}  // namespace oneapi
+}
+}  // namespace arrayfire

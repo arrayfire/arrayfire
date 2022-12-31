@@ -17,6 +17,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace oneapi {
 
 void setFFTPlanCacheSize(size_t numPlans) {}
@@ -103,3 +104,4 @@ INSTANTIATE(cdouble)
 INSTANTIATE_REAL(float, cfloat)
 INSTANTIATE_REAL(double, cdouble)
 }  // namespace oneapi
+}  // namespace arrayfire

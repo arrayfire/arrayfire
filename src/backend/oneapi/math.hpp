@@ -28,6 +28,7 @@
 /* Other */
 #endif
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -113,8 +114,8 @@ inline double maxval() {
 }
 
 template<>
-inline common::half maxval() {
-    return std::numeric_limits<common::half>::infinity();
+inline arrayfire::common::half maxval() {
+    return std::numeric_limits<arrayfire::common::half>::infinity();
 }
 
 template<>
@@ -127,8 +128,8 @@ inline double minval() {
     return -std::numeric_limits<double>::infinity();
 }
 template<>
-inline common::half minval() {
-    return -std::numeric_limits<common::half>::infinity();
+inline arrayfire::common::half minval() {
+    return -std::numeric_limits<arrayfire::common::half>::infinity();
 }
 
 template<typename T>
@@ -141,10 +142,13 @@ static inline T imag(T in) {
     return std::imag(in);
 }
 
-inline common::half operator+(common::half lhs, common::half rhs) noexcept {
-    return common::half(static_cast<float>(lhs) + static_cast<float>(rhs));
+inline arrayfire::common::half operator+(arrayfire::common::half lhs,
+                                         arrayfire::common::half rhs) noexcept {
+    return arrayfire::common::half(static_cast<float>(lhs) +
+                                   static_cast<float>(rhs));
 }
 }  // namespace oneapi
+}  // namespace arrayfire
 
 #if defined(__GNUC__) || defined(__GNUG__)
 /* GCC/G++, Clang/LLVM, Intel ICC */

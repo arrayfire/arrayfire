@@ -14,13 +14,14 @@
 #include <traits.hpp>
 
 using af::dim4;
-using common::Node_ptr;
-using common::ShiftNodeBase;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::ShiftNodeBase;
 using std::array;
 using std::make_shared;
 using std::static_pointer_cast;
 using std::string;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -71,3 +72,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace oneapi
+}  // namespace arrayfire

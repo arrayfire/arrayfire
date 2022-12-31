@@ -15,9 +15,10 @@
 #include <af/dim4.hpp>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 using std::swap;
 
+namespace arrayfire {
 namespace oneapi {
 template<typename Ti, typename Tw, typename To>
 To mean(const Array<Ti>& in) {
@@ -78,3 +79,4 @@ INSTANTIATE_WGT(cdouble, double);
 INSTANTIATE_WGT(half, float);
 
 }  // namespace oneapi
+}  // namespace arrayfire

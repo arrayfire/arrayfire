@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -18,3 +19,4 @@ template<typename T>
 Array<T> rgb2hsv(const Array<T>& in);
 
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -24,6 +24,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -64,3 +65,4 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
 }  // namespace oneapi
+}  // namespace arrayfire

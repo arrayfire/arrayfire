@@ -16,8 +16,9 @@
 #include <complex>
 
 using af::dim4;
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<af_op_t op, typename T>
@@ -76,3 +77,4 @@ INSTANTIATE(af_max_t, short)
 INSTANTIATE(af_max_t, ushort)
 INSTANTIATE(af_max_t, half)
 }  // namespace oneapi
+}  // namespace arrayfire

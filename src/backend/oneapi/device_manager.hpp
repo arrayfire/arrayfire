@@ -23,18 +23,16 @@ namespace spdlog {
 class logger;
 }
 
-namespace graphics {
-class ForgeManager;
-}
-
+namespace arrayfire {
 namespace common {
-namespace memory {
+class ForgeManager;
 class MemoryManagerBase;
-}
 }  // namespace common
+}  // namespace arrayfire
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
+namespace arrayfire {
 namespace oneapi {
 
 // opencl namespace forward declarations
@@ -62,7 +60,7 @@ class DeviceManager {
 
     void resetMemoryManagerPinned();
 
-    friend graphics::ForgeManager& forgeManager();
+    friend arrayfire::common::ForgeManager& forgeManager();
 
     friend GraphicsResourceManager& interopManager();
 
@@ -141,7 +139,7 @@ class DeviceManager {
     std::vector<int> mPlatforms;
     unsigned mUserDeviceOffset;
 
-    std::unique_ptr<graphics::ForgeManager> fgMngr;
+    std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;
     std::unique_ptr<MemoryManagerBase> memManager;
     std::unique_ptr<MemoryManagerBase> pinnedMemManager;
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
@@ -152,3 +150,4 @@ class DeviceManager {
 };
 
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -25,6 +25,7 @@
 #include <memory>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 
 /*
@@ -789,3 +790,4 @@ To mean_all(Param<Ti> in) {
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

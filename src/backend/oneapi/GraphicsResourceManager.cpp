@@ -10,6 +10,7 @@
 #include <GraphicsResourceManager.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 GraphicsResourceManager::ShrdResVector
 GraphicsResourceManager::registerResources(
@@ -18,3 +19,4 @@ GraphicsResourceManager::registerResources(
     return output;
 }
 }  // namespace oneapi
+}  // namespace arrayfire

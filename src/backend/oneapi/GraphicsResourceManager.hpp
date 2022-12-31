@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 class GraphicsResourceManager
     : public common::InteropManager<GraphicsResourceManager, std::byte> {
@@ -30,3 +31,4 @@ class GraphicsResourceManager
     void operator=(GraphicsResourceManager const&);
 };
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -12,6 +12,7 @@
 #include <platform.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -28,3 +29,4 @@ Param<T> makeParam(sycl::buffer<T> &mem, int off, const int dims[4],
 }
 
 }  // namespace oneapi
+}  // namespace arrayfire

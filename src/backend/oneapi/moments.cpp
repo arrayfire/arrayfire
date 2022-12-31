@@ -12,6 +12,7 @@
 #include <err_oneapi.hpp>
 // #include <kernel/moments.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 static inline unsigned bitCount(unsigned v) {
@@ -54,3 +55,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace oneapi
+}  // namespace arrayfire

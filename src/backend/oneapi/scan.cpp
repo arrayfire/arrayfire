@@ -13,6 +13,7 @@
 #include <kernel/scan_dim.hpp>
 #include <kernel/scan_first.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<af_op_t op, typename Ti, typename To>
 Array<To> scan(const Array<Ti>& in, const int dim, bool inclusiveScan) {
@@ -54,3 +55,4 @@ INSTANTIATE_SCAN_ALL(af_mul_t)
 INSTANTIATE_SCAN_ALL(af_min_t)
 INSTANTIATE_SCAN_ALL(af_max_t)
 }  // namespace oneapi
+}  // namespace arrayfire

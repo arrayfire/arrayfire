@@ -14,6 +14,7 @@
 #if defined(WITH_LINEAR_ALGEBRA)
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -31,9 +32,11 @@ INSTANTIATE(double)
 INSTANTIATE(cdouble)
 
 }  // namespace oneapi
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -51,5 +54,6 @@ INSTANTIATE(double)
 INSTANTIATE(cdouble)
 
 }  // namespace oneapi
+}  // namespace arrayfire
 
 #endif

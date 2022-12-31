@@ -13,6 +13,7 @@
 
 #include <err_oneapi.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 namespace {
@@ -112,3 +113,4 @@ inline void generateShiftNodeRead(std::stringstream& kerStream, int id,
 }
 }  // namespace
 }  // namespace oneapi
+}  // namespace arrayfire

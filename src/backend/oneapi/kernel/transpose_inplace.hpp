@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -195,3 +196,4 @@ void transpose_inplace(Param<T> in, const bool conjugate,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

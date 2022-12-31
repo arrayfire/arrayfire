@@ -15,9 +15,10 @@
 #include <kernel/memcopy.hpp>
 #include <math.hpp>
 
-using common::half;
-using common::is_complex;
+using arrayfire::common::half;
+using arrayfire::common::is_complex;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -246,3 +247,4 @@ INSTANTIATE_GETSCALAR(ushort)
 INSTANTIATE_GETSCALAR(half)
 
 }  // namespace oneapi
+}  // namespace arrayfire

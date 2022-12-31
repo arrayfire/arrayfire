@@ -12,6 +12,7 @@
 #include <Array.hpp>
 #include <common/SparseArray.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T, af_storage stype>
@@ -25,3 +26,4 @@ common::SparseArray<T> sparseConvertStorageToStorage(
     const common::SparseArray<T> &in);
 
 }  // namespace oneapi
+}  // namespace arrayfire

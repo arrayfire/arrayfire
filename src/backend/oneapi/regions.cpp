@@ -15,6 +15,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -39,3 +40,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace oneapi
+}  // namespace arrayfire

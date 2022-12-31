@@ -12,6 +12,7 @@
 #include <CL/sycl.hpp>
 #include <common/ModuleInterface.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 /// oneapi backend wrapper for cl::Program object
@@ -39,3 +40,4 @@ class Module
 };
 
 }  // namespace oneapi
+}  // namespace arrayfire

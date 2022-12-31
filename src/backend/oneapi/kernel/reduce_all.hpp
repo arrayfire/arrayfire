@@ -25,6 +25,7 @@
 #include <iostream>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -289,3 +290,4 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

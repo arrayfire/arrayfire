@@ -30,7 +30,8 @@
 #include <string>
 #include <vector>
 
-using common::getEnvVar;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::getEnvVar;
 using std::begin;
 using std::end;
 using std::find;
@@ -43,6 +44,7 @@ using std::vector;
 using sycl::device;
 using sycl::platform;
 
+namespace arrayfire {
 namespace oneapi {
 
 static inline bool compare_default(const unique_ptr<sycl::device>& ldev,
@@ -68,7 +70,7 @@ DeviceManager::DeviceManager()
             AF_ERR_RUNTIME);
     }
 
-    fgMngr = std::make_unique<graphics::ForgeManager>();
+    fgMngr = std::make_unique<ForgeManager>();
 
     AF_TRACE("Found {} sycl platforms", platforms.size());
     // Iterate through platforms, get all available devices and store them
@@ -223,3 +225,4 @@ void DeviceManager::markDeviceForInterop(const int device,
 }
 
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -34,3 +35,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace oneapi
+}  // namespace arrayfire

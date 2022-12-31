@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -141,25 +142,28 @@ outType convertType(inType value) {
 }
 
 template<>
-char convertType<compute_t<common::half>, char>(compute_t<common::half> value) {
+char convertType<compute_t<arrayfire::common::half>, char>(
+    compute_t<arrayfire::common::half> value) {
     return (char)((short)value);
 }
 
 template<>
-compute_t<common::half> convertType<char, compute_t<common::half>>(char value) {
-    return compute_t<common::half>(value);
+compute_t<arrayfire::common::half>
+convertType<char, compute_t<arrayfire::common::half>>(char value) {
+    return compute_t<arrayfire::common::half>(value);
 }
 
 template<>
-unsigned char convertType<compute_t<common::half>, unsigned char>(
-    compute_t<common::half> value) {
+unsigned char convertType<compute_t<arrayfire::common::half>, unsigned char>(
+    compute_t<arrayfire::common::half> value) {
     return (unsigned char)((short)value);
 }
 
 template<>
-compute_t<common::half> convertType<unsigned char, compute_t<common::half>>(
+compute_t<arrayfire::common::half>
+convertType<unsigned char, compute_t<arrayfire::common::half>>(
     unsigned char value) {
-    return compute_t<common::half>(value);
+    return compute_t<arrayfire::common::half>(value);
 }
 
 template<>
@@ -193,7 +197,7 @@ OTHER_SPECIALIZATIONS(short)
 OTHER_SPECIALIZATIONS(ushort)
 OTHER_SPECIALIZATIONS(uchar)
 OTHER_SPECIALIZATIONS(char)
-OTHER_SPECIALIZATIONS(common::half)
+OTHER_SPECIALIZATIONS(arrayfire::common::half)
 
 template<typename inType, typename outType, bool SAMEDIMS>
 class reshapeCopy {
@@ -320,3 +324,4 @@ void copy(Param<outType> dst, const Param<inType> src, const int ndims,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

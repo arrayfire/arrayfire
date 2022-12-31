@@ -10,8 +10,9 @@
 #include <common/half.hpp>
 #include "reduce_impl.hpp"
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace oneapi {
 // sum
 INSTANTIATE(af_mul_t, float, float)
@@ -28,3 +29,4 @@ INSTANTIATE(af_mul_t, short, int)
 INSTANTIATE(af_mul_t, ushort, uint)
 INSTANTIATE(af_mul_t, half, float)
 }  // namespace oneapi
+}  // namespace arrayfire

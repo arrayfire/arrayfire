@@ -15,6 +15,7 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> meanshift(const Array<T> &in, const float &spatialSigma,
@@ -46,3 +47,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
 }  // namespace oneapi
+}  // namespace arrayfire

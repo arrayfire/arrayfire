@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -143,3 +144,4 @@ void convolve_nd(Param<T> out, const Param<T> signal, const Param<aT> filter,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

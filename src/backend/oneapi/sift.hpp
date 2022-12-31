@@ -12,6 +12,7 @@
 
 using af::features;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T, typename convAccT>
@@ -23,4 +24,5 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               const float img_scale, const float feature_ratio,
               const bool compute_GLOH);
 
-}
+}  // namespace oneapi
+}  // namespace arrayfire

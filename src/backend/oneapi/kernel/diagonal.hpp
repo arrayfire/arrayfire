@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -161,3 +162,4 @@ static void diagExtract(Param<T> out, Param<T> in, int num) {
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

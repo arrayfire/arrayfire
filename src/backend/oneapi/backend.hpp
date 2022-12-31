@@ -19,4 +19,4 @@
 #define __DH__
 #endif
 
-namespace detail = oneapi;
+namespace detail = arrayfire::oneapi;

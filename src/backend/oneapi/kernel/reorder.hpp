@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -128,3 +129,4 @@ void reorder(Param<T> out, const Param<T> in, const dim_t* rdims) {
 }
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

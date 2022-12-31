@@ -15,6 +15,7 @@
 #include <sort.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 using af::dim4;
 
@@ -158,3 +159,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
 }  // namespace oneapi
+}  // namespace arrayfire

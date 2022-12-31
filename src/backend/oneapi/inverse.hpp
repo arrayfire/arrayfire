@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> inverse(const Array<T> &in);
-}
+}  // namespace oneapi
+}  // namespace arrayfire

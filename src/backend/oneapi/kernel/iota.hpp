@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -118,3 +119,4 @@ void iota(Param<T> out, const af::dim4& sdims) {
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

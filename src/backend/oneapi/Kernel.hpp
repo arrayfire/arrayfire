@@ -16,6 +16,7 @@
 #include <backend.hpp>
 #include <string>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel_logger {
 inline auto getLogger() -> spdlog::logger* {
@@ -91,3 +92,4 @@ class Kernel {
 };
 
 }  // namespace oneapi
+}  // namespace arrayfire

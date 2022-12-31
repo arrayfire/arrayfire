@@ -24,11 +24,12 @@
 #include <vector>
 
 using af::dim4;
-using common::flip;
-using common::half;
-using common::modDims;
+using arrayfire::common::flip;
+using arrayfire::common::half;
+using arrayfire::common::modDims;
 using std::vector;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T, typename accT>
@@ -173,3 +174,4 @@ INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace oneapi
+}  // namespace arrayfire
