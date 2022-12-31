@@ -136,11 +136,6 @@ void saveKernel(const string& funcName, const string& jit_ker,
     fclose(f);
 }
 
-string int_version_to_string(int version) {
-    return to_string(version / 1000) + "." +
-           to_string(static_cast<int>((version % 1000) / 10.));
-}
-
 #if defined(OS_WIN)
 string getTemporaryDirectory() {
     DWORD bufSize = 261;  // limit according to GetTempPath documentation
