@@ -101,6 +101,7 @@ static const int jetsonComputeCapabilities[] = {
 
 // clang-format off
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+    {12000, 9, 0, 0},
     {11080, 9, 0, 0},
     {11070, 8, 7, 0},
     {11060, 8, 6, 0},
@@ -137,6 +138,7 @@ struct ComputeCapabilityToStreamingProcessors {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
+        {12000, 525.60f, 527.41f},
         {11080, 450.80f, 452.39f},
         {11070, 450.80f, 452.39f},
         {11060, 450.80f, 452.39f},
@@ -159,7 +161,7 @@ static const ToolkitDriverVersions
 
 // Vector of minimum supported compute versions for CUDA toolkit (i+1).*
 // where i is the index of the vector
-static const std::array<int, 11> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3}};
+static const std::array<int, 12> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5}};
 
 static ComputeCapabilityToStreamingProcessors gpus[] = {
     {0x10, 8},   {0x11, 8},   {0x12, 8},   {0x13, 8},   {0x20, 32},
