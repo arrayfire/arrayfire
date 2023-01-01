@@ -14,8 +14,11 @@
 #include <common/err_common.hpp>
 #include <complex.hpp>
 #include <copy.hpp>
+#include <cudaDataType.hpp>
 #include <cusparse.hpp>
 #include <cusparseModule.hpp>
+#include <cusparse_descriptor_helpers.hpp>
+#include <handle.hpp>
 #include <kernel/sparse.hpp>
 #include <lookup.hpp>
 #include <math.hpp>
@@ -129,6 +132,9 @@ struct gthr_func_def_t {
             _.cusparse##PREFIX##FUNC);                                      \
     }
 
+/// Newer versions of cusparse use matrix descriptor instead of types encoded in
+/// their names
+#if CUSPARSE_VERSION < 11300
 SPARSE_FUNC_DEF(dense2csr)
 SPARSE_FUNC(dense2csr, float, S)
 SPARSE_FUNC(dense2csr, double, D)
@@ -153,17 +159,18 @@ SPARSE_FUNC(csc2dense, double, D)
 SPARSE_FUNC(csc2dense, cfloat, C)
 SPARSE_FUNC(csc2dense, cdouble, Z)
 
-SPARSE_FUNC_DEF(nnz)
-SPARSE_FUNC(nnz, float, S)
-SPARSE_FUNC(nnz, double, D)
-SPARSE_FUNC(nnz, cfloat, C)
-SPARSE_FUNC(nnz, cdouble, Z)
-
 SPARSE_FUNC_DEF(gthr)
 SPARSE_FUNC(gthr, float, S)
 SPARSE_FUNC(gthr, double, D)
 SPARSE_FUNC(gthr, cfloat, C)
 SPARSE_FUNC(gthr, cdouble, Z)
+#endif
+
+SPARSE_FUNC_DEF(nnz)
+SPARSE_FUNC(nnz, float, S)
+SPARSE_FUNC(nnz, double, D)
+SPARSE_FUNC(nnz, cfloat, C)
+SPARSE_FUNC(nnz, cdouble, Z)
 
 #undef SPARSE_FUNC
 #undef SPARSE_FUNC_DEF
@@ -198,6 +205,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
     const int N = in.dims()[1];
 
     cusparseModule &_ = getCusparsePlugin();
+#if CUSPARSE_VERSION < 11300
     // Create Sparse Matrix Descriptor
     cusparseMatDescr_t descr = 0;
     CUSPARSE_CHECK(_.cusparseCreateMatDescr(&descr));
@@ -232,20 +240,97 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
     }
     Array<T> values = createEmptyArray<T>(dim4(nNZ));
 
-    if (stype == AF_STORAGE_CSR)
+    if (stype == AF_STORAGE_CSR) {
         CUSPARSE_CHECK(dense2csr_func<T>()(
             sparseHandle(), M, N, descr, in.get(), in.strides()[1],
             nnzPerDir.get(), values.get(), rowIdx.get(), colIdx.get()));
-    else
+    } else {
         CUSPARSE_CHECK(dense2csc_func<T>()(
             sparseHandle(), M, N, descr, in.get(), in.strides()[1],
             nnzPerDir.get(), values.get(), rowIdx.get(), colIdx.get()));
-
+    }
     // Destory Sparse Matrix Descriptor
     CUSPARSE_CHECK(_.cusparseDestroyMatDescr(descr));
 
     return createArrayDataSparseArray<T>(in.dims(), values, rowIdx, colIdx,
                                          stype);
+#else
+    auto matA = denMatDescriptor(in);
+    cusparseSpMatDescr_t matB;
+
+    auto d_csr_offsets = createEmptyArray<int>(M + 1);
+
+    if (stype == AF_STORAGE_CSR) {
+        // Create sparse matrix B in CSR format
+        CUSPARSE_CHECK(
+            _.cusparseCreateCsr(&matB, M, N, 0, d_csr_offsets.get(), nullptr,
+                                nullptr, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+                                CUSPARSE_INDEX_BASE_ZERO, getType<T>()));
+    } else {
+        CUSPARSE_CHECK(
+            _.cusparseCreateCsc(&matB, M, N, 0, d_csr_offsets.get(), nullptr,
+                                nullptr, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+                                CUSPARSE_INDEX_BASE_ZERO, getType<T>()));
+    }
+
+    // allocate an external buffer if needed
+    size_t bufferSize;
+    CUSPARSE_CHECK(_.cusparseDenseToSparse_bufferSize(
+        sparseHandle(), matA, matB, CUSPARSE_DENSETOSPARSE_ALG_DEFAULT,
+        &bufferSize));
+
+    auto dBuffer = memAlloc<char>(bufferSize);
+
+    // execute Sparse to Dense conversion
+    CUSPARSE_CHECK(_.cusparseDenseToSparse_analysis(
+        sparseHandle(), matA, matB, CUSPARSE_DENSETOSPARSE_ALG_DEFAULT,
+        dBuffer.get()));
+    // get number of non-zero elements
+    int64_t num_rows_tmp, num_cols_tmp, nnz;
+    CUSPARSE_CHECK(
+        _.cusparseSpMatGetSize(matB, &num_rows_tmp, &num_cols_tmp, &nnz));
+
+    auto d_csr_columns = createEmptyArray<int>(nnz);
+    auto d_csr_values  = createEmptyArray<T>(nnz);
+    // allocate CSR column indices and values
+    // reset offsets, column indices, and values pointers
+    if (stype == AF_STORAGE_CSR) {
+        // Create sparse matrix B in CSR format
+        // reset offsets, column indices, and values pointers
+        CUSPARSE_CHECK(_.cusparseCsrSetPointers(matB, d_csr_offsets.get(),
+                                                d_csr_columns.get(),
+                                                d_csr_values.get()));
+
+    } else {
+        // reset offsets, column indices, and values pointers
+        CUSPARSE_CHECK(_.cusparseCscSetPointers(matB, d_csr_offsets.get(),
+                                                d_csr_columns.get(),
+                                                d_csr_values.get()));
+    }
+    // execute Sparse to Dense conversion
+    CUSPARSE_CHECK(_.cusparseDenseToSparse_convert(
+        sparseHandle(), matA, matB, CUSPARSE_DENSETOSPARSE_ALG_DEFAULT,
+        dBuffer.get()));
+
+    if (stype == AF_STORAGE_CSR) {
+        size_t pBufferSizeInBytes = 0;
+        auto desc                 = make_handle<cusparseMatDescr_t>();
+        CUSPARSE_CHECK(_.cusparseXcsrsort_bufferSizeExt(
+            sparseHandle(), M, N, nnz, d_csr_offsets.get(), d_csr_columns.get(),
+            &pBufferSizeInBytes));
+        auto pBuffer = memAlloc<char>(pBufferSizeInBytes);
+        Array<int> P = createEmptyArray<int>(nnz);
+        CUSPARSE_CHECK(
+            _.cusparseCreateIdentityPermutation(sparseHandle(), nnz, P.get()));
+        CUSPARSE_CHECK(_.cusparseXcsrsort(
+            sparseHandle(), M, N, nnz, desc, (int *)d_csr_offsets.get(),
+            (int *)d_csr_columns.get(), P.get(), pBuffer.get()));
+        d_csr_values = lookup(d_csr_values, P, 0);
+    }
+
+    return createArrayDataSparseArray<T>(in.dims(), d_csr_values, d_csr_offsets,
+                                         d_csr_columns, stype, false);
+#endif
 }
 
 // Partial template specialization of sparseConvertStorageToDense for COO
@@ -266,7 +351,8 @@ Array<T> sparseConvertCOOToDense(const SparseArray<T> &in) {
 template<typename T, af_storage stype>
 Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
     // Create Sparse Matrix Descriptor
-    cusparseModule &_        = getCusparsePlugin();
+    cusparseModule &_ = getCusparsePlugin();
+#if CUSPARSE_VERSION < 11300
     cusparseMatDescr_t descr = 0;
     CUSPARSE_CHECK(_.cusparseCreateMatDescr(&descr));
     _.cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
@@ -277,19 +363,36 @@ Array<T> sparseConvertStorageToDense(const SparseArray<T> &in) {
     Array<T> dense = createValueArray<T>(in.dims(), scalar<T>(0));
     int d_strides1 = dense.strides()[1];
 
-    if (stype == AF_STORAGE_CSR)
+    if (stype == AF_STORAGE_CSR) {
         CUSPARSE_CHECK(
             csr2dense_func<T>()(sparseHandle(), M, N, descr,
                                 in.getValues().get(), in.getRowIdx().get(),
                                 in.getColIdx().get(), dense.get(), d_strides1));
-    else
+    } else {
         CUSPARSE_CHECK(
             csc2dense_func<T>()(sparseHandle(), M, N, descr,
                                 in.getValues().get(), in.getRowIdx().get(),
                                 in.getColIdx().get(), dense.get(), d_strides1));
+    }
 
     // Destory Sparse Matrix Descriptor
     CUSPARSE_CHECK(_.cusparseDestroyMatDescr(descr));
+#else
+    unique_handle<cusparseSpMatDescr_t> inhandle = cusparseDescriptor(in);
+
+    Array<T> dense = createEmptyArray<T>(in.dims());
+    unique_handle<cusparseDnMatDescr_t> outhandle = denMatDescriptor(dense);
+
+    size_t bufferSize = 0;
+    _.cusparseSparseToDense_bufferSize(sparseHandle(), inhandle, outhandle,
+                                       CUSPARSE_SPARSETODENSE_ALG_DEFAULT,
+                                       &bufferSize);
+
+    auto dBuffer = memAlloc<char>(bufferSize);
+    _.cusparseSparseToDense(sparseHandle(), inhandle, outhandle,
+                            CUSPARSE_SPARSETODENSE_ALG_DEFAULT, dBuffer.get());
+
+#endif
 
     return dense;
 }
@@ -321,27 +424,27 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
             sparseHandle(), in.dims()[0], in.dims()[1], nNZ,
             converted.getRowIdx().get(), converted.getColIdx().get(),
             &pBufferSizeInBytes));
-        shared_ptr<char> pBuffer(memAlloc<char>(pBufferSizeInBytes).release(),
-                                 memFree<char>);
+        auto pBuffer = memAlloc<char>(pBufferSizeInBytes);
 
-        shared_ptr<int> P(memAlloc<int>(nNZ).release(), memFree<int>);
+        // shared_ptr<int> P(memAlloc<int>(nNZ).release(), memFree<int>);
+        Array<int> P = createEmptyArray<int>(nNZ);
         CUSPARSE_CHECK(
             _.cusparseCreateIdentityPermutation(sparseHandle(), nNZ, P.get()));
 
-        CUSPARSE_CHECK(_.cusparseXcoosortByColumn(
+        CUSPARSE_CHECK(_.cusparseXcoosortByRow(
             sparseHandle(), in.dims()[0], in.dims()[1], nNZ,
             converted.getRowIdx().get(), converted.getColIdx().get(), P.get(),
-            (void *)pBuffer.get()));
+            pBuffer.get()));
 
-        CUSPARSE_CHECK(gthr_func<T>()(sparseHandle(), nNZ, in.getValues().get(),
-                                      converted.getValues().get(), P.get(),
-                                      CUSPARSE_INDEX_BASE_ZERO));
+        converted.getValues() = lookup<T, int>(in.getValues(), P, 0);
 
     } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
         // The cusparse csr sort function is not behaving correctly.
         // So the work around is to convert the COO into row major and then
         // convert it to CSR
 
+        int M = in.dims()[0];
+        int N = in.dims()[1];
         // Deep copy input into temporary COO Row Major
         SparseArray<T> cooT = createArrayDataSparseArray<T>(
             in.dims(), in.getValues(), in.getRowIdx(), in.getColIdx(),
@@ -351,39 +454,27 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
         {
             size_t pBufferSizeInBytes = 0;
             CUSPARSE_CHECK(_.cusparseXcoosort_bufferSizeExt(
-                sparseHandle(), cooT.dims()[0], cooT.dims()[1], nNZ,
-                cooT.getRowIdx().get(), cooT.getColIdx().get(),
-                &pBufferSizeInBytes));
-            shared_ptr<char> pBuffer(
-                memAlloc<char>(pBufferSizeInBytes).release(), memFree<char>);
+                sparseHandle(), M, N, nNZ, cooT.getRowIdx().get(),
+                cooT.getColIdx().get(), &pBufferSizeInBytes));
+            auto pBuffer = memAlloc<char>(pBufferSizeInBytes);
 
-            shared_ptr<int> P(memAlloc<int>(nNZ).release(), memFree<int>);
+            Array<int> P = createEmptyArray<int>(nNZ);
             CUSPARSE_CHECK(_.cusparseCreateIdentityPermutation(sparseHandle(),
                                                                nNZ, P.get()));
 
             CUSPARSE_CHECK(_.cusparseXcoosortByRow(
-                sparseHandle(), cooT.dims()[0], cooT.dims()[1], nNZ,
-                cooT.getRowIdx().get(), cooT.getColIdx().get(), P.get(),
-                (void *)pBuffer.get()));
+                sparseHandle(), M, N, nNZ, cooT.getRowIdx().get(),
+                cooT.getColIdx().get(), P.get(), pBuffer.get()));
 
-            CUSPARSE_CHECK(gthr_func<T>()(
-                sparseHandle(), nNZ, in.getValues().get(),
-                cooT.getValues().get(), P.get(), CUSPARSE_INDEX_BASE_ZERO));
+            converted.getValues() = lookup<T, int>(in.getValues(), P, 0);
         }
 
         // Copy values and colIdx as is
-        CUDA_CHECK(
-            cudaMemcpyAsync(converted.getValues().get(), cooT.getValues().get(),
-                            cooT.getValues().elements() * sizeof(T),
-                            cudaMemcpyDeviceToDevice, getActiveStream()));
-        CUDA_CHECK(
-            cudaMemcpyAsync(converted.getColIdx().get(), cooT.getColIdx().get(),
-                            cooT.getColIdx().elements() * sizeof(int),
-                            cudaMemcpyDeviceToDevice, getActiveStream()));
+        copyArray<int, int>(converted.getColIdx(), cooT.getColIdx());
 
         // cusparse function to compress row from coordinate
         CUSPARSE_CHECK(_.cusparseXcoo2csr(
-            sparseHandle(), cooT.getRowIdx().get(), nNZ, cooT.dims()[0],
+            sparseHandle(), cooT.getRowIdx().get(), nNZ, M,
             converted.getRowIdx().get(), CUSPARSE_INDEX_BASE_ZERO));
 
         // No need to call CSRSORT

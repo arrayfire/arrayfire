@@ -9,7 +9,6 @@
 
 #pragma once
 #include <common/Version.hpp>
-#include <spdlog/fmt/bundled/ranges.h>
 #include <spdlog/fmt/ostr.h>
 #include <af/seq.h>
 

@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <kernel/sparse_arith.hpp>
 #include <sparse_arith.hpp>
 
 #include <arith.hpp>
@@ -16,11 +17,13 @@
 #include <complex.hpp>
 #include <copy.hpp>
 #include <cusparse.hpp>
-#include <kernel/sparse_arith.hpp>
+#include <cusparse_descriptor_helpers.hpp>
+#include <handle.hpp>
 #include <lookup.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <sparse.hpp>
+#include <sparse_handle.hpp>
 #include <where.hpp>
 
 #include <stdexcept>
@@ -123,10 +126,10 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const Array<T> &rhs,
         return _.cusparse##INFIX##FUNC;          \
     }
 
-#if CUDA_VERSION >= 11000
+#if CUSPARSE_VERSION >= 11000
 
 template<typename T>
-using csrgeam2_buffer_size_def = cusparseStatus_t (*)(
+using csrgeam2_bufferSizeExt_def = cusparseStatus_t (*)(
     cusparseHandle_t, int, int, const T *, const cusparseMatDescr_t, int,
     const T *, const int *, const int *, const T *, const cusparseMatDescr_t,
     int, const T *, const int *, const int *, const cusparseMatDescr_t,
@@ -134,21 +137,21 @@ using csrgeam2_buffer_size_def = cusparseStatus_t (*)(
 
 #define SPARSE_ARITH_OP_BUFFER_SIZE_FUNC_DEF(FUNC) \
     template<typename T>                           \
-    FUNC##_buffer_size_def<T> FUNC##_buffer_size_func();
+    FUNC##_def<T> FUNC##_func();
 
-SPARSE_ARITH_OP_BUFFER_SIZE_FUNC_DEF(csrgeam2);
+SPARSE_ARITH_OP_BUFFER_SIZE_FUNC_DEF(csrgeam2_bufferSizeExt);
 
-#define SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(FUNC, TYPE, INFIX)        \
-    template<>                                                     \
-    FUNC##_buffer_size_def<TYPE> FUNC##_buffer_size_func<TYPE>() { \
-        cusparseModule &_ = getCusparsePlugin();                   \
-        return _.cusparse##INFIX##FUNC##_bufferSizeExt;            \
+#define SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(FUNC, TYPE, INFIX) \
+    template<>                                              \
+    FUNC##_def<TYPE> FUNC##_func<TYPE>() {                  \
+        cusparseModule &_ = getCusparsePlugin();            \
+        return _.cusparse##INFIX##FUNC;                     \
     }
 
-SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(csrgeam2, float, S);
-SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(csrgeam2, double, D);
-SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(csrgeam2, cfloat, C);
-SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(csrgeam2, cdouble, Z);
+SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(csrgeam2_bufferSizeExt, float, S);
+SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(csrgeam2_bufferSizeExt, double, D);
+SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(csrgeam2_bufferSizeExt, cfloat, C);
+SPARSE_ARITH_OP_BUFFER_SIZE_FUNC(csrgeam2_bufferSizeExt, cdouble, Z);
 
 template<typename T>
 using csrgeam2_def = cusparseStatus_t (*)(cusparseHandle_t, int, int, const T *,
@@ -188,11 +191,12 @@ SPARSE_ARITH_OP_FUNC(csrgeam, cdouble, Z);
 
 template<typename T, af_op_t op>
 SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
-    lhs.eval();
-    rhs.eval();
+    cusparseModule &_ = getCusparsePlugin();
+    af::storage sfmt  = lhs.getStorage();
+    auto ldesc        = make_handle<cusparseMatDescr_t>();
+    auto rdesc        = make_handle<cusparseMatDescr_t>();
+    auto odesc        = make_handle<cusparseMatDescr_t>();
 
-    af::storage sfmt      = lhs.getStorage();
-    auto desc             = make_handle<cusparseMatDescr_t>();
     const dim4 ldims      = lhs.dims();
     const int M           = ldims[0];
     const int N           = ldims[1];
@@ -203,59 +207,63 @@ SparseArray<T> arithOp(const SparseArray<T> &lhs, const SparseArray<T> &rhs) {
     const int *csrRowPtrB = rhs.getRowIdx().get();
     const int *csrColPtrB = rhs.getColIdx().get();
 
-    auto outRowIdx = createEmptyArray<int>(dim4(M + 1));
+    int baseC, nnzC = M + 1;
 
-    int *csrRowPtrC = outRowIdx.get();
-    int baseC, nnzC;
-    int *nnzcDevHostPtr = &nnzC;
+    auto nnzDevHostPtr = memAlloc<int>(1);
+    auto outRowIdx     = createValueArray<int>(M + 1, 0);
 
-    T alpha           = scalar<T>(1);
-    T beta            = op == af_sub_t ? scalar<T>(-1) : alpha;
-    cusparseModule &_ = getCusparsePlugin();
+    T alpha = scalar<T>(1);
+    T beta  = op == af_sub_t ? scalar<T>(-1) : scalar<T>(1);
 
-#if CUDA_VERSION >= 11000
+    T *csrValC      = nullptr;
+    int *csrColIndC = nullptr;
+
+#if CUSPARSE_VERSION < 11000
+    CUSPARSE_CHECK(_.cusparseXcsrgeamNnz(
+        sparseHandle(), M, N, ldesc, nnzA, csrRowPtrA, csrColPtrA, rdesc, nnzB,
+        csrRowPtrB, csrColPtrB, odesc, outRowIdx.get(), nnzDevHostPtr.get()));
+#else
     size_t pBufferSize = 0;
 
-    csrgeam2_buffer_size_func<T>()(
-        sparseHandle(), M, N, &alpha, desc, nnzA, lhs.getValues().get(),
-        csrRowPtrA, csrColPtrA, &beta, desc, nnzB, rhs.getValues().get(),
-        csrRowPtrB, csrColPtrB, desc, NULL, csrRowPtrC, NULL, &pBufferSize);
+    CUSPARSE_CHECK(csrgeam2_bufferSizeExt_func<T>()(
+        sparseHandle(), M, N, &alpha, ldesc, nnzA, lhs.getValues().get(),
+        csrRowPtrA, csrColPtrA, &beta, rdesc, nnzB, rhs.getValues().get(),
+        csrRowPtrB, csrColPtrB, odesc, csrValC, outRowIdx.get(), csrColIndC,
+        &pBufferSize));
 
-    auto tmpBuffer = createEmptyArray<char>(dim4(pBufferSize));
-
+    auto tmpBuffer = memAlloc<char>(pBufferSize);
     CUSPARSE_CHECK(_.cusparseXcsrgeam2Nnz(
-        sparseHandle(), M, N, desc, nnzA, csrRowPtrA, csrColPtrA, desc, nnzB,
-        csrRowPtrB, csrColPtrB, desc, csrRowPtrC, nnzcDevHostPtr,
+        sparseHandle(), M, N, ldesc, nnzA, csrRowPtrA, csrColPtrA, rdesc, nnzB,
+        csrRowPtrB, csrColPtrB, odesc, outRowIdx.get(), nnzDevHostPtr.get(),
         tmpBuffer.get()));
-#else
-    CUSPARSE_CHECK(_.cusparseXcsrgeamNnz(
-        sparseHandle(), M, N, desc, nnzA, csrRowPtrA, csrColPtrA, desc, nnzB,
-        csrRowPtrB, csrColPtrB, desc, csrRowPtrC, nnzcDevHostPtr));
 #endif
-    if (NULL != nnzcDevHostPtr) {
-        nnzC = *nnzcDevHostPtr;
-    } else {
-        CUDA_CHECK(cudaMemcpyAsync(&nnzC, csrRowPtrC + M, sizeof(int),
+    if (NULL != nnzDevHostPtr) {
+        CUDA_CHECK(cudaMemcpyAsync(&nnzC, nnzDevHostPtr.get(), sizeof(int),
                                    cudaMemcpyDeviceToHost, getActiveStream()));
-        CUDA_CHECK(cudaMemcpyAsync(&baseC, csrRowPtrC, sizeof(int),
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
+    } else {
+        CUDA_CHECK(cudaMemcpyAsync(&nnzC, outRowIdx.get() + M, sizeof(int),
+                                   cudaMemcpyDeviceToHost, getActiveStream()));
+        CUDA_CHECK(cudaMemcpyAsync(&baseC, outRowIdx.get(), sizeof(int),
                                    cudaMemcpyDeviceToHost, getActiveStream()));
         CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
         nnzC -= baseC;
     }
+    auto outColIdx = createEmptyArray<int>(nnzC);
+    auto outValues = createEmptyArray<T>(nnzC);
 
-    auto outColIdx = createEmptyArray<int>(dim4(nnzC));
-    auto outValues = createEmptyArray<T>(dim4(nnzC));
-#if CUDA_VERSION >= 11000
-    csrgeam2_func<T>()(sparseHandle(), M, N, &alpha, desc, nnzA,
-                       lhs.getValues().get(), csrRowPtrA, csrColPtrA, &beta,
-                       desc, nnzB, rhs.getValues().get(), csrRowPtrB,
-                       csrColPtrB, desc, outValues.get(), csrRowPtrC,
-                       outColIdx.get(), tmpBuffer.get());
+#if CUSPARSE_VERSION < 11000
+    CUSPARSE_CHECK(csrgeam_func<T>()(
+        sparseHandle(), M, N, &alpha, ldesc, nnzA, lhs.getValues().get(),
+        csrRowPtrA, csrColPtrA, &beta, rdesc, nnzB, rhs.getValues().get(),
+        csrRowPtrB, csrColPtrB, odesc, outValues.get(), outRowIdx.get(),
+        outColIdx.get()));
 #else
-    csrgeam_func<T>()(sparseHandle(), M, N, &alpha, desc, nnzA,
-                      lhs.getValues().get(), csrRowPtrA, csrColPtrA, &beta,
-                      desc, nnzB, rhs.getValues().get(), csrRowPtrB, csrColPtrB,
-                      desc, outValues.get(), csrRowPtrC, outColIdx.get());
+    CUSPARSE_CHECK(csrgeam2_func<T>()(
+        sparseHandle(), M, N, &alpha, ldesc, nnzA, lhs.getValues().get(),
+        csrRowPtrA, csrColPtrA, &beta, rdesc, nnzB, rhs.getValues().get(),
+        csrRowPtrB, csrColPtrB, odesc, outValues.get(), outRowIdx.get(),
+        outColIdx.get(), tmpBuffer.get()));
 #endif
     SparseArray<T> retVal = createArrayDataSparseArray(
         ldims, outValues, outRowIdx, outColIdx, sfmt);
