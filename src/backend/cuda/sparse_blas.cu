@@ -35,6 +35,23 @@ cusparseOperation_t toCusparseTranspose(af_mat_prop opt) {
     return out;
 }
 
+#if CUSPARSE_VERSION < 11300
+#define AF_CUSPARSE_SPMV_CSR_ALG1 CUSPARSE_CSRMV_ALG1
+#define AF_CUSPARSE_SPMV_ALG_DEFAULT CUSPARSE_MV_ALG_DEFAULT
+#define AF_CUSPARSE_SPMM_CSR_ALG1 CUSPARSE_CSRMM_ALG1
+#define AF_CUSPARSE_SPMM_CSR_ALG1 CUSPARSE_CSRMM_ALG1
+#elif CUSPARSE_VERSION < 11400
+#define AF_CUSPARSE_SPMV_CSR_ALG1 CUSPARSE_CSRMV_ALG1
+#define AF_CUSPARSE_SPMV_ALG_DEFAULT CUSPARSE_MV_ALG_DEFAULT
+#define AF_CUSPARSE_SPMM_CSR_ALG1 CUSPARSE_SPMM_CSR_ALG1
+#define AF_CUSPARSE_SPMM_CSR_ALG1 CUSPARSE_SPMM_CSR_ALG1
+#else
+#define AF_CUSPARSE_SPMV_CSR_ALG1 CUSPARSE_SPMV_CSR_ALG1
+#define AF_CUSPARSE_SPMV_ALG_DEFAULT CUSPARSE_SPMV_ALG_DEFAULT
+#define AF_CUSPARSE_SPMM_CSR_ALG1 CUSPARSE_SPMM_CSR_ALG1
+#define AF_CUSPARSE_SPMM_CSR_ALG1 CUSPARSE_SPMM_CSR_ALG1
+#endif
+
 #if defined(AF_USE_NEW_CUSPARSE_API)
 
 template<typename T>
@@ -45,7 +62,7 @@ size_t spmvBufferSize(cusparseOperation_t opA, const T *alpha,
     size_t retVal = 0;
     CUSPARSE_CHECK(cusparseSpMV_bufferSize(
         sparseHandle(), opA, alpha, matA, vecX, beta, vecY, getComputeType<T>(),
-        CUSPARSE_CSRMV_ALG1, &retVal));
+        AF_CUSPARSE_SPMV_CSR_ALG1, &retVal));
     return retVal;
 }
 
@@ -55,7 +72,7 @@ void spmv(cusparseOperation_t opA, const T *alpha,
           const T *beta, const cusparseDnVecDescr_t vecY, void *buffer) {
     CUSPARSE_CHECK(cusparseSpMV(sparseHandle(), opA, alpha, matA, vecX, beta,
                                 vecY, getComputeType<T>(),
-                                CUSPARSE_MV_ALG_DEFAULT, buffer));
+                                AF_CUSPARSE_SPMV_ALG_DEFAULT, buffer));
 }
 
 template<typename T>
@@ -66,7 +83,7 @@ size_t spmmBufferSize(cusparseOperation_t opA, cusparseOperation_t opB,
     size_t retVal = 0;
     CUSPARSE_CHECK(cusparseSpMM_bufferSize(
         sparseHandle(), opA, opB, alpha, matA, matB, beta, matC,
-        getComputeType<T>(), CUSPARSE_CSRMM_ALG1, &retVal));
+        getComputeType<T>(), AF_CUSPARSE_SPMM_CSR_ALG1, &retVal));
     return retVal;
 }
 
@@ -76,7 +93,7 @@ void spmm(cusparseOperation_t opA, cusparseOperation_t opB, const T *alpha,
           const T *beta, const cusparseDnMatDescr_t matC, void *buffer) {
     CUSPARSE_CHECK(cusparseSpMM(sparseHandle(), opA, opB, alpha, matA, matB,
                                 beta, matC, getComputeType<T>(),
-                                CUSPARSE_CSRMM_ALG1, buffer));
+                                AF_CUSPARSE_SPMM_CSR_ALG1, buffer));
 }
 
 #else
@@ -152,7 +169,7 @@ Array<T> matmul(const common::SparseArray<T> &lhs, const Array<T> &rhs,
 
 #if defined(AF_USE_NEW_CUSPARSE_API)
 
-    auto spMat = csrMatDescriptor<T>(lhs);
+    auto spMat = cusparseDescriptor<T>(lhs);
 
     if (rDims[rColDim] == 1) {
         auto dnVec = denVecDescriptor<T>(rhs);

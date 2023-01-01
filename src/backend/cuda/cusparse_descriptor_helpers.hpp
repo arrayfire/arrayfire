@@ -13,6 +13,7 @@
 // CUDA Toolkit 10.0 or later
 
 #include <common/unique_handle.hpp>
+#include <cudaDataType.hpp>
 #include <cusparse.hpp>
 
 #include <utility>
@@ -21,8 +22,9 @@ namespace arrayfire {
 namespace cuda {
 
 template<typename T>
-auto csrMatDescriptor(const common::SparseArray<T> &in) {
+auto cusparseDescriptor(const common::SparseArray<T> &in) {
     auto dims = in.dims();
+
     return common::make_handle<cusparseSpMatDescr_t>(
         dims[0], dims[1], in.getNNZ(), (void *)(in.getRowIdx().get()),
         (void *)(in.getColIdx().get()), (void *)(in.getValues().get()),
@@ -38,9 +40,10 @@ auto denVecDescriptor(const Array<T> &in) {
 
 template<typename T>
 auto denMatDescriptor(const Array<T> &in) {
-    auto dims = in.dims();
+    auto dims    = in.dims();
+    auto strides = in.strides();
     return common::make_handle<cusparseDnMatDescr_t>(
-        dims[0], dims[1], dims[0], (void *)(in.get()), getType<T>(),
+        dims[0], dims[1], strides[1], (void *)in.get(), getType<T>(),
         CUSPARSE_ORDER_COL);
 }
 
