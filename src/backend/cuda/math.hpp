@@ -148,14 +148,14 @@ __DH__ static To scalar(Ti real, Ti imag) {
 
 template<typename T>
 inline T maxval() {
-    AF_IF_CONSTEXPR(std::is_floating_point_v<T> && !fast_math) {
+    AF_IF_CONSTEXPR(std::is_floating_point<T>::value && !fast_math) {
         return std::numeric_limits<T>::infinity();
     }
     else { return std::numeric_limits<T>::max(); }
 }
 template<typename T>
 inline T minval() {
-    AF_IF_CONSTEXPR(std::is_floating_point_v<T> && !fast_math) {
+    AF_IF_CONSTEXPR(std::is_floating_point<T>::value && !fast_math) {
         return -std::numeric_limits<T>::infinity();
     }
     else { return std::numeric_limits<T>::lowest(); }

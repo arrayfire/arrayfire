@@ -598,15 +598,29 @@ endif()
 
 
 af_detect_and_set_cuda_architectures(afcuda)
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
-  set_target_properties(afcuda
-    PROPERTIES
-      CUDA_STANDARD 17
-      CUDA_STANDARD_REQUIRED ON)
+
+if(CUDA_VERSION VERSION_LESS 11.0)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    set_target_properties(afcuda
+      PROPERTIES
+        CUDA_STANDARD 14
+        CUDA_STANDARD_REQUIRED ON)
+  else()
+    target_compile_options(afcuda
+      PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:--std=c++14>)
+  endif()
 else()
-  target_compile_options(afcuda
-    PRIVATE
-      $<$<COMPILE_LANGUAGE:CUDA>:--std=c++17>)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    set_target_properties(afcuda
+      PROPERTIES
+        CUDA_STANDARD 17
+        CUDA_STANDARD_REQUIRED ON)
+  else()
+    target_compile_options(afcuda
+      PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:--std=c++17>)
+  endif()
 endif()
 
 target_compile_definitions(afcuda
