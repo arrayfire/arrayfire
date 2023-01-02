@@ -25,10 +25,10 @@ template<typename convT, typename T>
 void packDataHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                     CParam<T> sig, CParam<T> filter) {
     auto packData = common::getKernel(
-        "arrayfire::cuda::packData", std::array{fftconvolve_cuh_src},
+        "arrayfire::cuda::packData", {{fftconvolve_cuh_src}},
         TemplateArgs(TemplateTypename<convT>(), TemplateTypename<T>()));
     auto padArray = common::getKernel(
-        "arrayfire::cuda::padArray", std::array{fftconvolve_cuh_src},
+        "arrayfire::cuda::padArray", {{fftconvolve_cuh_src}},
         TemplateArgs(TemplateTypename<convT>(), TemplateTypename<T>()));
 
     dim_t *sd = sig.dims;
@@ -69,7 +69,7 @@ template<typename T, typename convT>
 void complexMultiplyHelper(Param<convT> sig_packed, Param<convT> filter_packed,
                            AF_BATCH_KIND kind) {
     auto cplxMul = common::getKernel(
-        "arrayfire::cuda::complexMultiply", std::array{fftconvolve_cuh_src},
+        "arrayfire::cuda::complexMultiply", {{fftconvolve_cuh_src}},
         TemplateArgs(TemplateTypename<convT>(), TemplateArg(kind)));
 
     int sig_packed_elem    = 1;
@@ -102,7 +102,7 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, CParam<T> sig,
     constexpr bool RoundResult = std::is_integral<T>::value;
 
     auto reorderOut = common::getKernel(
-        "arrayfire::cuda::reorderOutput", std::array{fftconvolve_cuh_src},
+        "arrayfire::cuda::reorderOutput", {{fftconvolve_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateTypename<convT>(),
                      TemplateArg(expand), TemplateArg(RoundResult)));
 

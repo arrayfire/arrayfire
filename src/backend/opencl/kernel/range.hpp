@@ -36,8 +36,8 @@ void range(Param out, const int dim) {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         getTypeBuildDefinition<T>()};
 
-    auto rangeOp = common::getKernel("range_kernel", std::array{range_cl_src},
-                                     targs, options);
+    auto rangeOp =
+        common::getKernel("range_kernel", {{range_cl_src}}, targs, options);
 
     cl::NDRange local(RANGE_TX, RANGE_TY, 1);
 

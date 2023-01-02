@@ -36,8 +36,8 @@ static void diagCreate(Param out, Param in, int num) {
         DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
         getTypeBuildDefinition<T>()};
 
-    auto diagCreate = common::getKernel(
-        "diagCreateKernel", std::array{diag_create_cl_src}, targs, options);
+    auto diagCreate = common::getKernel("diagCreateKernel",
+                                        {{diag_create_cl_src}}, targs, options);
 
     cl::NDRange local(32, 8);
     int groups_x = divup(out.info.dims[0], local[0]);
@@ -61,7 +61,7 @@ static void diagExtract(Param out, Param in, int num) {
         getTypeBuildDefinition<T>()};
 
     auto diagExtract = common::getKernel(
-        "diagExtractKernel", std::array{diag_extract_cl_src}, targs, options);
+        "diagExtractKernel", {{diag_extract_cl_src}}, targs, options);
 
     cl::NDRange local(256, 1);
     int groups_x = divup(out.info.dims[0], local[0]);

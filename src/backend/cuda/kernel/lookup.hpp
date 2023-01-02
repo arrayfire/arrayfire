@@ -44,9 +44,9 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
         dim3 blocks(blks, 1);
 
         auto lookup1d = common::getKernel(
-            "arrayfire::cuda::lookup1D", std::array{lookup_cuh_src},
+            "arrayfire::cuda::lookup1D", {{lookup_cuh_src}},
             TemplateArgs(TemplateTypename<in_t>(), TemplateTypename<idx_t>()),
-            std::array{DefineValue(THREADS), DefineValue(THRD_LOAD)});
+            {{DefineValue(THREADS), DefineValue(THRD_LOAD)}});
 
         EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -65,7 +65,7 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
         blocks.y = divup(blocks.y, blocks.z);
 
         auto lookupnd = common::getKernel(
-            "arrayfire::cuda::lookupND", std::array{lookup_cuh_src},
+            "arrayfire::cuda::lookupND", {{lookup_cuh_src}},
             TemplateArgs(TemplateTypename<in_t>(), TemplateTypename<idx_t>(),
                          TemplateArg(dim)));
         EnqueueArgs qArgs(blocks, threads, getActiveStream());

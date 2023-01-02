@@ -52,7 +52,7 @@ void matchTemplate(Param out, const Param srch, const Param tmplt,
         getTypeBuildDefinition<outType>()};
 
     auto matchImgOp = common::getKernel(
-        "matchTemplate", std::array{matchTemplate_cl_src}, targs, options);
+        "matchTemplate", {{matchTemplate_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

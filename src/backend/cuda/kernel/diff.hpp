@@ -26,7 +26,7 @@ void diff(Param<T> out, CParam<T> in, const int indims, const unsigned dim,
     constexpr unsigned TY = 16;
 
     auto diff =
-        common::getKernel("arrayfire::cuda::diff", std::array{diff_cuh_src},
+        common::getKernel("arrayfire::cuda::diff", {{diff_cuh_src}},
                           TemplateArgs(TemplateTypename<T>(), TemplateArg(dim),
                                        TemplateArg(isDiff2)));
 

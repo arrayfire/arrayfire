@@ -41,8 +41,8 @@ void luSplitLauncher(Param lower, Param upper, const Param in, bool same_dims) {
         DefineKeyValue(ONE, scalar_to_option(scalar<T>(1))),
         getTypeBuildDefinition<T>()};
 
-    auto luSplit = common::getKernel("luSplit", std::array{lu_split_cl_src},
-                                     targs, options);
+    auto luSplit =
+        common::getKernel("luSplit", {{lu_split_cl_src}}, targs, options);
 
     cl::NDRange local(TX, TY);
 

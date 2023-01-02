@@ -26,10 +26,10 @@ template<typename T>
 void susan_responses(T* out, const T* in, const unsigned idim0,
                      const unsigned idim1, const int radius, const float t,
                      const float g, const unsigned edge) {
-    auto susan = common::getKernel(
-        "arrayfire::cuda::susan", std::array{susan_cuh_src},
-        TemplateArgs(TemplateTypename<T>()),
-        std::array{DefineValue(BLOCK_X), DefineValue(BLOCK_Y)});
+    auto susan =
+        common::getKernel("arrayfire::cuda::susan", {{susan_cuh_src}},
+                          TemplateArgs(TemplateTypename<T>()),
+                          {{DefineValue(BLOCK_X), DefineValue(BLOCK_Y)}});
 
     dim3 threads(BLOCK_X, BLOCK_Y);
     dim3 blocks(divup(idim0 - edge * 2, BLOCK_X),
@@ -48,7 +48,7 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out, unsigned* count,
                 const unsigned idim0, const unsigned idim1, const T* resp_in,
                 const unsigned edge, const unsigned max_corners) {
     auto nonMax =
-        common::getKernel("arrayfire::cuda::nonMax", std::array{susan_cuh_src},
+        common::getKernel("arrayfire::cuda::nonMax", {{susan_cuh_src}},
                           TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(BLOCK_X, BLOCK_Y);

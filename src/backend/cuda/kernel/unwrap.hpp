@@ -25,7 +25,7 @@ void unwrap(Param<T> out, CParam<T> in, const int wx, const int wy,
             const int sx, const int sy, const int px, const int py,
             const int dx, const int dy, const int nx, const bool is_column) {
     auto unwrap = common::getKernel(
-        "arrayfire::cuda::unwrap", std::array{unwrap_cuh_src},
+        "arrayfire::cuda::unwrap", {{unwrap_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(is_column)));
 
     dim3 threads, blocks;

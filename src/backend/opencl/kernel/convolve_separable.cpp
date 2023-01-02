@@ -63,9 +63,9 @@ void convSep(Param out, const Param signal, const Param filter,
         DefineKeyValue(LOCAL_MEM_SIZE, locSize),
         getTypeBuildDefinition<T>()};
 
-    auto conv = common::getKernel(
-        "convolve", std::array{ops_cl_src, convolve_separable_cl_src},
-        tmpltArgs, compileOpts);
+    auto conv =
+        common::getKernel("convolve", {{ops_cl_src, convolve_separable_cl_src}},
+                          tmpltArgs, compileOpts);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

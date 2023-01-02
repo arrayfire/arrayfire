@@ -37,7 +37,7 @@ void index(Param out, const Param in, const IndexKernelParam_t& p,
         getTypeBuildDefinition<T>()};
 
     auto index =
-        common::getKernel("indexKernel", std::array{index_cl_src},
+        common::getKernel("indexKernel", {{index_cl_src}},
                           TemplateArgs(TemplateTypename<T>()), options);
     int threads_x = 256;
     int threads_y = 1;

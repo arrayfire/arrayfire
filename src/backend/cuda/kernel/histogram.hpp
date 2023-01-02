@@ -25,9 +25,9 @@ template<typename T>
 void histogram(Param<uint> out, CParam<T> in, int nbins, float minval,
                float maxval, bool isLinear) {
     auto histogram = common::getKernel(
-        "arrayfire::cuda::histogram", std::array{histogram_cuh_src},
+        "arrayfire::cuda::histogram", {{histogram_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(isLinear)),
-        std::array{DefineValue(MAX_BINS), DefineValue(THRD_LOAD)});
+        {{DefineValue(MAX_BINS), DefineValue(THRD_LOAD)}});
 
     dim3 threads(kernel::THREADS_X, 1);
 

@@ -42,8 +42,7 @@ void laswp(int n, cl_mem in, size_t offset, int ldda, int k1, int k2,
         DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(MAX_PIVOTS),
         getTypeBuildDefinition<T>()};
 
-    auto laswpOp =
-        common::getKernel("laswp", std::array{laswp_cl_src}, targs, options);
+    auto laswpOp = common::getKernel("laswp", {{laswp_cl_src}}, targs, options);
 
     int groups = divup(n, NTHREADS);
     cl::NDRange local(NTHREADS);

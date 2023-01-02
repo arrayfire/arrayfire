@@ -27,7 +27,7 @@ void triangle(Param<T> r, CParam<T> in, bool is_upper, bool is_unit_diag) {
     constexpr unsigned TILEY = 32;
 
     auto triangle = common::getKernel(
-        "arrayfire::cuda::triangle", std::array{triangle_cuh_src},
+        "arrayfire::cuda::triangle", {{triangle_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(is_upper),
                      TemplateArg(is_unit_diag)));
 

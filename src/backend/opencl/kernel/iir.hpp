@@ -40,8 +40,7 @@ void iir(Param y, Param c, Param a) {
         DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
         getTypeBuildDefinition<T>()};
 
-    auto iir =
-        common::getKernel("iir_kernel", std::array{iir_cl_src}, targs, options);
+    auto iir = common::getKernel("iir_kernel", {{iir_cl_src}}, targs, options);
 
     const int groups_y = y.info.dims[1];
     const int groups_x = y.info.dims[2];
