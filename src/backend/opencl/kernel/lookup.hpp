@@ -51,7 +51,7 @@ void lookup(Param out, const Param in, const Param indices,
                        blk_y * out.info.dims[3] * THREADS_Y);
 
     auto arrIdxOp =
-        common::getKernel("lookupND", {lookup_cl_src}, targs, options);
+        common::getKernel("lookupND", {{lookup_cl_src}}, targs, options);
 
     arrIdxOp(cl::EnqueueArgs(getQueue(), global, local), *out.data, out.info,
              *in.data, in.info, *indices.data, indices.info, blk_x, blk_y);

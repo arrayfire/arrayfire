@@ -45,7 +45,7 @@ void meanshift(Param out, const Param in, const float spatialSigma,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto meanshiftOp =
-        common::getKernel("meanshift", {meanshift_cl_src}, targs, options);
+        common::getKernel("meanshift", {{meanshift_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

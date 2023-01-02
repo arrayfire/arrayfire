@@ -28,10 +28,10 @@ template<typename Ty, typename Tp>
 void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
              const Tp &xi_beg, const Tp &xi_step, const float offGrid,
              const af::interpType method, const int order) {
-    auto approx1 =
-        common::getKernel("arrayfire::cuda::approx1", {approx1_cuh_src},
-                          {TemplateTypename<Ty>(), TemplateTypename<Tp>(),
-                           TemplateArg(xdim), TemplateArg(order)});
+    auto approx1 = common::getKernel(
+        "arrayfire::cuda::approx1", {{approx1_cuh_src}},
+        TemplateArgs(TemplateTypename<Ty>(), TemplateTypename<Tp>(),
+                     TemplateArg(xdim), TemplateArg(order)));
 
     dim3 threads(THREADS, 1, 1);
     int blocksPerMat = divup(yo.dims[0], threads.x);
@@ -57,9 +57,9 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
              const Tp &yi_beg, const Tp &yi_step, const float offGrid,
              const af::interpType method, const int order) {
     auto approx2 = common::getKernel(
-        "arrayfire::cuda::approx2", {approx2_cuh_src},
-        {TemplateTypename<Ty>(), TemplateTypename<Tp>(), TemplateArg(xdim),
-         TemplateArg(ydim), TemplateArg(order)});
+        "arrayfire::cuda::approx2", {{approx2_cuh_src}},
+        TemplateArgs(TemplateTypename<Ty>(), TemplateTypename<Tp>(),
+                     TemplateArg(xdim), TemplateArg(ydim), TemplateArg(order)));
 
     dim3 threads(TX, TY, 1);
     int blocksPerMatX = divup(zo.dims[0], threads.x);

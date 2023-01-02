@@ -26,8 +26,9 @@ void reorder(Param<T> out, CParam<T> in, const dim_t *rdims) {
     constexpr unsigned TILEX = 512;
     constexpr unsigned TILEY = 32;
 
-    auto reorder = common::getKernel(
-        "arrayfire::cuda::reorder", {reorder_cuh_src}, {TemplateTypename<T>()});
+    auto reorder =
+        common::getKernel("arrayfire::cuda::reorder", {{reorder_cuh_src}},
+                          TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(TX, TY, 1);
 

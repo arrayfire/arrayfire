@@ -23,9 +23,10 @@ template<typename T, bool batch_a>
 void iir(Param<T> y, CParam<T> c, CParam<T> a) {
     constexpr int MAX_A_SIZE = 1024;
 
-    auto iir = common::getKernel("arrayfire::cuda::iir", {iir_cuh_src},
-                                 {TemplateTypename<T>(), TemplateArg(batch_a)},
-                                 {DefineValue(MAX_A_SIZE)});
+    auto iir = common::getKernel(
+        "arrayfire::cuda::iir", {{iir_cuh_src}},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(batch_a)),
+        {{DefineValue(MAX_A_SIZE)}});
 
     const int blocks_y = y.dims[1];
     const int blocks_x = y.dims[2];

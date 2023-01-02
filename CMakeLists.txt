@@ -290,6 +290,9 @@ if(NOT TARGET nonstd::span-lite)
     PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
   set_target_properties(span-lite
     PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${span_include_dir}")
+  set_target_properties(span-lite
+    PROPERTIES INTERFACE_COMPILE_DEFINITIONS "span_FEATURE_WITH_INITIALIZER_LIST_P2447=1")
+
 endif()
 
 af_dep_check_and_populate(${assets_prefix}

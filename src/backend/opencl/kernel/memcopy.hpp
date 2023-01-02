@@ -156,8 +156,8 @@ void memcopy(const cl::Buffer& b_out, const dim4& ostrides,
         : sizeofNewT == 16
             ? "float4"
             : "type is larger than 16 bytes, which is unsupported"};
-    auto memCopy{common::getKernel(kernelName, {memcopy_cl_src}, {tArg},
-                                   {DefineKeyValue(T, tArg)})};
+    auto memCopy{common::getKernel(kernelName, {{memcopy_cl_src}}, {{tArg}},
+                                   {{DefineKeyValue(T, tArg)}})};
     const cl::NDRange local{th.genLocal(memCopy.get())};
     const cl::NDRange global{th.genGlobal(local)};
 
@@ -229,7 +229,7 @@ void copy(const Param out, const Param in, dim_t ondims,
                                   : th.loop3 ? "scaledCopyLoop13"
                                   : th.loop1 ? "scaledCopyLoop1"
                                              : "scaledCopy",
-                                  {copy_cl_src}, targs, options);
+                                  {{copy_cl_src}}, targs, options);
     const cl::NDRange local{th.genLocal(copy.get())};
     const cl::NDRange global{th.genGlobal(local)};
 

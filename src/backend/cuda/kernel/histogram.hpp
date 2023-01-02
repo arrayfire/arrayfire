@@ -24,10 +24,10 @@ constexpr int THRD_LOAD = 16;
 template<typename T>
 void histogram(Param<uint> out, CParam<T> in, int nbins, float minval,
                float maxval, bool isLinear) {
-    auto histogram =
-        common::getKernel("arrayfire::cuda::histogram", {histogram_cuh_src},
-                          {TemplateTypename<T>(), TemplateArg(isLinear)},
-                          {DefineValue(MAX_BINS), DefineValue(THRD_LOAD)});
+    auto histogram = common::getKernel(
+        "arrayfire::cuda::histogram", {{histogram_cuh_src}},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(isLinear)),
+        {{DefineValue(MAX_BINS), DefineValue(THRD_LOAD)}});
 
     dim3 threads(kernel::THREADS_X, 1);
 

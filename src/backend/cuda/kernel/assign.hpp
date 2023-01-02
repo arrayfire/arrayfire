@@ -23,8 +23,9 @@ void assign(Param<T> out, CParam<T> in, const AssignKernelParam& p) {
     constexpr int THREADS_X = 32;
     constexpr int THREADS_Y = 8;
 
-    auto assignKer = common::getKernel(
-        "arrayfire::cuda::assign", {assign_cuh_src}, {TemplateTypename<T>()});
+    auto assignKer =
+        common::getKernel("arrayfire::cuda::assign", {{assign_cuh_src}},
+                          TemplateArgs(TemplateTypename<T>()));
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

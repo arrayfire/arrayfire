@@ -50,7 +50,7 @@ namespace common {
 ///
 /// \code
 /// auto transpose = getKernel("arrayfire::cuda::transpose",
-/// std::array{transpase_cuh_src},
+/// {{transpase_cuh_src}},
 ///         {
 ///           TemplateTypename<T>(),
 ///           TemplateArg(conjugate),

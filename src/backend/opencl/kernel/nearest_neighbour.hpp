@@ -71,8 +71,8 @@ void allDistances(Param dist, Param query, Param train, const dim_t dist_dim,
         options.emplace_back(DefineKeyValue(DISTOP, "_shd_"));
         options.emplace_back(DefineKey(__SHD__));
     }
-    auto hmOp = common::getKernel("knnAllDistances", {nearest_neighbour_cl_src},
-                                  targs, options);
+    auto hmOp = common::getKernel("knnAllDistances",
+                                  {{nearest_neighbour_cl_src}}, targs, options);
 
     const dim_t sample_dim = (dist_dim == 0) ? 1 : 0;
 

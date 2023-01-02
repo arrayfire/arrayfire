@@ -44,7 +44,7 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto assign =
-        common::getKernel("assignKernel", {assign_cl_src}, targs, options);
+        common::getKernel("assignKernel", {{assign_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

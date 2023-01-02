@@ -40,7 +40,7 @@ void sobel(Param dx, Param dy, const Param in) {
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
     auto sobel =
-        common::getKernel("sobel3x3", {sobel_cl_src}, targs, compileOpts);
+        common::getKernel("sobel3x3", {{sobel_cl_src}}, targs, compileOpts);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

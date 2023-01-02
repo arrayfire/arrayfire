@@ -28,11 +28,10 @@ void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
     typedef typename std::conditional<std::is_same<T, double>::value, double,
                                       float>::type AccType;
     auto meanshift = common::getKernel(
-        "arrayfire::cuda::meanshift", {meanshift_cuh_src},
-        {
-            TemplateTypename<AccType>(), TemplateTypename<T>(),
-            TemplateArg((IsColor ? 3 : 1))  // channels
-        });
+        "arrayfire::cuda::meanshift", {{meanshift_cuh_src}},
+        TemplateArgs(TemplateTypename<AccType>(), TemplateTypename<T>(),
+                     TemplateArg((IsColor ? 3 : 1))  // channels
+                     ));
 
     static dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

@@ -280,7 +280,7 @@ cl::Kernel getKernel(const vector<Node*>& output_nodes,
         if (isHalfSupported(device)) {
             options.emplace_back(DefineKey(USE_HALF));
         }
-        return common::getKernel(funcName, {jit_cl_src, jitKer_cl_src}, {},
+        return common::getKernel(funcName, {{jit_cl_src, jitKer_cl_src}}, {},
                                  options, true)
             .get();
     }

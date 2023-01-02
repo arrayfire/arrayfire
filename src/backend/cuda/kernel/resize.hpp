@@ -24,9 +24,9 @@ static const unsigned TY = 16;
 
 template<typename T>
 void resize(Param<T> out, CParam<T> in, af_interp_type method) {
-    auto resize =
-        common::getKernel("arrayfire::cuda::resize", {resize_cuh_src},
-                          {TemplateTypename<T>(), TemplateArg(method)});
+    auto resize = common::getKernel(
+        "arrayfire::cuda::resize", {{resize_cuh_src}},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(method)));
 
     dim3 threads(TX, TY, 1);
     dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));

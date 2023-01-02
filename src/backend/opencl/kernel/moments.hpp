@@ -40,7 +40,7 @@ void moments(Param out, const Param in, af_moment_type moment) {
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto momentsOp =
-        common::getKernel("moments", {moments_cl_src}, targs, options);
+        common::getKernel("moments", {{moments_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS, 1, 1);
     cl::NDRange global(in.info.dims[1] * local[0],

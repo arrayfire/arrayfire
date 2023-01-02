@@ -30,9 +30,9 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
     bool is_same = true;
     for (int i = 0; i < 4; i++) { is_same &= (a.dims[i] == b.dims[i]); }
 
-    auto select =
-        common::getKernel("arrayfire::cuda::select", {select_cuh_src},
-                          {TemplateTypename<T>(), TemplateArg(is_same)});
+    auto select = common::getKernel(
+        "arrayfire::cuda::select", {{select_cuh_src}},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(is_same)));
 
     dim3 threads(DIMX, DIMY);
 
@@ -59,9 +59,9 @@ void select(Param<T> out, CParam<char> cond, CParam<T> a, CParam<T> b,
 template<typename T>
 void select_scalar(Param<T> out, CParam<char> cond, CParam<T> a, const double b,
                    int ndims, bool flip) {
-    auto selectScalar =
-        common::getKernel("arrayfire::cuda::selectScalar", {select_cuh_src},
-                          {TemplateTypename<T>(), TemplateArg(flip)});
+    auto selectScalar = common::getKernel(
+        "arrayfire::cuda::selectScalar", {{select_cuh_src}},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(flip)));
 
     dim3 threads(DIMX, DIMY);
 

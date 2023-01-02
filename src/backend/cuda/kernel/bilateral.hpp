@@ -24,9 +24,9 @@ template<typename inType, typename outType>
 void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
                float c_sigma) {
     auto bilateral = common::getKernel(
-        "arrayfire::cuda::bilateral", {bilateral_cuh_src},
-        {TemplateTypename<inType>(), TemplateTypename<outType>()},
-        {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+        "arrayfire::cuda::bilateral", {{bilateral_cuh_src}},
+        TemplateArgs(TemplateTypename<inType>(), TemplateTypename<outType>()),
+        {{DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

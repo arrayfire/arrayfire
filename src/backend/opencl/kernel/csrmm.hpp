@@ -56,7 +56,7 @@ void csrmm_nt(Param out, const Param &values, const Param &rowIdx,
 
     // FIXME: Switch to perf (thread vs block) baesd kernel
     auto csrmm_nt_func =
-        common::getKernel("csrmm_nt", {csrmm_cl_src}, targs, options);
+        common::getKernel("csrmm_nt", {{csrmm_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_PER_GROUP, 1);
     int M = rowIdx.info.dims[0] - 1;

@@ -26,10 +26,10 @@ void triangle(Param<T> r, CParam<T> in, bool is_upper, bool is_unit_diag) {
     constexpr unsigned TILEX = 128;
     constexpr unsigned TILEY = 32;
 
-    auto triangle =
-        common::getKernel("arrayfire::cuda::triangle", {triangle_cuh_src},
-                          {TemplateTypename<T>(), TemplateArg(is_upper),
-                           TemplateArg(is_unit_diag)});
+    auto triangle = common::getKernel(
+        "arrayfire::cuda::triangle", {{triangle_cuh_src}},
+        TemplateArgs(TemplateTypename<T>(), TemplateArg(is_upper),
+                     TemplateArg(is_unit_diag)));
 
     dim3 threads(TX, TY, 1);
 

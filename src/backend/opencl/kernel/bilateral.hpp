@@ -45,7 +45,7 @@ void bilateral(Param out, const Param in, const float s_sigma,
     options.emplace_back(getTypeBuildDefinition<inType>());
 
     auto bilateralOp =
-        common::getKernel("bilateral", {bilateral_cl_src}, targs, options);
+        common::getKernel("bilateral", {{bilateral_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

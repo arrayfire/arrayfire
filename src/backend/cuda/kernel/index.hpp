@@ -22,8 +22,8 @@ namespace kernel {
 
 template<typename T>
 void index(Param<T> out, CParam<T> in, const IndexKernelParam& p) {
-    auto index = common::getKernel("arrayfire::cuda::index", {index_cuh_src},
-                                   {TemplateTypename<T>()});
+    auto index = common::getKernel("arrayfire::cuda::index", {{index_cuh_src}},
+                                   TemplateArgs(TemplateTypename<T>()));
     dim3 threads;
     switch (out.dims[1]) {
         case 1: threads.y = 1; break;

@@ -52,7 +52,7 @@ void ireduceDimLauncher(Param out, cl::Buffer *oidx, Param in, cl::Buffer *iidx,
 
     auto ireduceDim =
         common::getKernel("ireduce_dim_kernel",
-                          {iops_cl_src, ireduce_dim_cl_src}, targs, options);
+                          {{iops_cl_src, ireduce_dim_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, threads_y);
     cl::NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -127,9 +127,9 @@ void ireduceFirstLauncher(Param out, cl::Buffer *oidx, Param in,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto ireduceFirst =
-        common::getKernel("ireduce_first_kernel",
-                          {iops_cl_src, ireduce_first_cl_src}, targs, options);
+    auto ireduceFirst = common::getKernel("ireduce_first_kernel",
+                                          {{iops_cl_src, ireduce_first_cl_src}},
+                                          targs, options);
 
     cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     cl::NDRange global(groups_x * in.info.dims[2] * local[0],
