@@ -48,7 +48,7 @@ endif()
 #Set Intel OpenMP as default MKL thread layer
 set(MKL_THREAD_LAYER "Intel OpenMP" CACHE STRING "The thread layer to choose for MKL")
 
-find_package(CUDA 9.0)
+find_package(CUDA 10.2)
 find_package(cuDNN 4.0)
 find_package(OpenCL 1.2)
 find_package(OpenGL)
