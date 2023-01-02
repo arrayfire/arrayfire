@@ -41,7 +41,7 @@ void selectLauncher(Param out, Param cond, Param a, Param b, const int ndims,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto selectOp =
-        common::getKernel("select_kernel", {select_cl_src}, targs, options);
+        common::getKernel("select_kernel", {{select_cl_src}}, targs, options);
 
     int threads[] = {DIMX, DIMY};
 
@@ -85,7 +85,7 @@ void select_scalar(Param out, Param cond, Param a, const double b,
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto selectOp = common::getKernel("select_scalar_kernel", {select_cl_src},
+    auto selectOp = common::getKernel("select_scalar_kernel", {{select_cl_src}},
                                       targs, options);
 
     int threads[] = {DIMX, DIMY};

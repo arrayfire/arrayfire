@@ -28,10 +28,10 @@ template<typename T>
 void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
                        CParam<T> dy) {
     auto nonMaxSuppress = common::getKernel(
-        "arrayfire::cuda::nonMaxSuppression", {canny_cuh_src},
-        {TemplateTypename<T>()},
-        {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
-         DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+        "arrayfire::cuda::nonMaxSuppression", {{canny_cuh_src}},
+        TemplateArgs(TemplateTypename<T>()),
+        {{DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
+          DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
@@ -50,19 +50,20 @@ void nonMaxSuppression(Param<T> output, CParam<T> magnitude, CParam<T> dx,
 template<typename T>
 void edgeTrackingHysteresis(Param<T> output, CParam<T> strong, CParam<T> weak) {
     auto initEdgeOut = common::getKernel(
-        "arrayfire::cuda::initEdgeOut", {canny_cuh_src},
-        {TemplateTypename<T>()},
-        {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
-         DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+        "arrayfire::cuda::initEdgeOut", {{canny_cuh_src}},
+        TemplateArgs(TemplateTypename<T>()),
+        {{DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
+          DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
     auto edgeTrack = common::getKernel(
-        "arrayfire::cuda::edgeTrack", {canny_cuh_src}, {TemplateTypename<T>()},
-        {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
-         DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+        "arrayfire::cuda::edgeTrack", {{canny_cuh_src}},
+        TemplateArgs(TemplateTypename<T>()),
+        {{DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
+          DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
     auto suppressLeftOver = common::getKernel(
-        "arrayfire::cuda::suppressLeftOver", {canny_cuh_src},
-        {TemplateTypename<T>()},
-        {DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
-         DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+        "arrayfire::cuda::suppressLeftOver", {{canny_cuh_src}},
+        TemplateArgs(TemplateTypename<T>()),
+        {{DefineValue(STRONG), DefineValue(WEAK), DefineValue(NOEDGE),
+          DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

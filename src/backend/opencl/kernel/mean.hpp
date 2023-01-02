@@ -131,7 +131,7 @@ void meanDimLauncher(Param out, Param owt, Param in, Param inWeight,
     if (output_weight) { options.emplace_back(DefineKey(OUTPUT_WEIGHT)); }
 
     auto meanOp = common::getKernel(
-        "meanDim", {mean_ops_cl_src, mean_dim_cl_src}, targs, options);
+        "meanDim", {{mean_ops_cl_src, mean_dim_cl_src}}, targs, options);
 
     NDRange local(THREADS_X, threads_y);
     NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -223,7 +223,7 @@ void meanFirstLauncher(Param out, Param owt, Param in, Param inWeight,
     if (output_weight) { options.emplace_back(DefineKey(OUTPUT_WEIGHT)); }
 
     auto meanOp = common::getKernel(
-        "meanFirst", {mean_ops_cl_src, mean_first_cl_src}, targs, options);
+        "meanFirst", {{mean_ops_cl_src, mean_first_cl_src}}, targs, options);
 
     NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     NDRange global(groups_x * in.info.dims[2] * local[0],

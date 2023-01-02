@@ -38,7 +38,7 @@ void range(Param out, const int dim) {
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto rangeOp =
-        common::getKernel("range_kernel", {range_cl_src}, targs, options);
+        common::getKernel("range_kernel", {{range_cl_src}}, targs, options);
 
     cl::NDRange local(RANGE_TX, RANGE_TY, 1);
 

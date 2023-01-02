@@ -26,8 +26,8 @@ void tile(Param<T> out, CParam<T> in) {
     constexpr unsigned TILEX = 512;
     constexpr unsigned TILEY = 32;
 
-    auto tile = common::getKernel("arrayfire::cuda::tile", {tile_cuh_src},
-                                  {TemplateTypename<T>()});
+    auto tile = common::getKernel("arrayfire::cuda::tile", {{tile_cuh_src}},
+                                  TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(TX, TY, 1);
 

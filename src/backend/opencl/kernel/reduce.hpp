@@ -55,7 +55,7 @@ void reduceDimLauncher(Param out, Param in, const int dim, const uint threads_y,
         getTypeBuildDefinition<Ti, To>()};
 
     auto reduceDim = common::getKernel(
-        "reduce_dim_kernel", {ops_cl_src, reduce_dim_cl_src}, targs, options);
+        "reduce_dim_kernel", {{ops_cl_src, reduce_dim_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, threads_y);
     cl::NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -133,7 +133,7 @@ void reduceFirstLauncher(Param out, Param in, const uint groups_x,
 
     auto reduceFirst =
         common::getKernel("reduce_first_kernel",
-                          {ops_cl_src, reduce_first_cl_src}, targs, options);
+                          {{ops_cl_src, reduce_first_cl_src}}, targs, options);
 
     cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     cl::NDRange global(groups_x * in.info.dims[2] * local[0],

@@ -356,19 +356,19 @@ std::array<Kernel, 7> getSiftKernels() {
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::getKernel("sub", {sift_nonfree_cl_src}, targs, compileOpts),
-        common::getKernel("detectExtrema", {sift_nonfree_cl_src}, targs,
+        common::getKernel("sub", {{sift_nonfree_cl_src}}, targs, compileOpts),
+        common::getKernel("detectExtrema", {{sift_nonfree_cl_src}}, targs,
                           compileOpts),
-        common::getKernel("interpolateExtrema", {sift_nonfree_cl_src}, targs,
+        common::getKernel("interpolateExtrema", {{sift_nonfree_cl_src}}, targs,
                           compileOpts),
-        common::getKernel("calcOrientation", {sift_nonfree_cl_src}, targs,
+        common::getKernel("calcOrientation", {{sift_nonfree_cl_src}}, targs,
                           compileOpts),
-        common::getKernel("removeDuplicates", {sift_nonfree_cl_src}, targs,
+        common::getKernel("removeDuplicates", {{sift_nonfree_cl_src}}, targs,
                           compileOpts),
-        common::getKernel("computeDescriptor", {sift_nonfree_cl_src}, targs,
+        common::getKernel("computeDescriptor", {{sift_nonfree_cl_src}}, targs,
                           compileOpts),
-        common::getKernel("computeGLOHDescriptor", {sift_nonfree_cl_src}, targs,
-                          compileOpts),
+        common::getKernel("computeGLOHDescriptor", {{sift_nonfree_cl_src}},
+                          targs, compileOpts),
     };
 }
 

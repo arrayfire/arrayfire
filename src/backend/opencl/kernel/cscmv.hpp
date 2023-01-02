@@ -55,7 +55,7 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
         getTypeBuildDefinition<T>()};
 
     auto cscmvBlock =
-        common::getKernel("cscmv_block", {cscmv_cl_src}, targs, options);
+        common::getKernel("cscmv_block", {{cscmv_cl_src}}, targs, options);
 
     int K        = colIdx.info.dims[0] - 1;
     int M        = out.info.dims[0];

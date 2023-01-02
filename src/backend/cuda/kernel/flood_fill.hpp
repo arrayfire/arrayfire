@@ -47,15 +47,16 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
     }
 
     auto initSeeds =
-        common::getKernel("arrayfire::cuda::initSeeds", {flood_fill_cuh_src},
-                          {TemplateTypename<T>()});
+        common::getKernel("arrayfire::cuda::initSeeds", {{flood_fill_cuh_src}},
+                          TemplateArgs(TemplateTypename<T>()));
     auto floodStep =
-        common::getKernel("arrayfire::cuda::floodStep", {flood_fill_cuh_src},
-                          {TemplateTypename<T>()},
-                          {DefineValue(THREADS_X), DefineValue(THREADS_Y)});
-    auto finalizeOutput =
-        common::getKernel("arrayfire::cuda::finalizeOutput",
-                          {flood_fill_cuh_src}, {TemplateTypename<T>()});
+        common::getKernel("arrayfire::cuda::floodStep", {{flood_fill_cuh_src}},
+                          TemplateArgs(TemplateTypename<T>()),
+                          {{DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
+    auto finalizeOutput = common::getKernel(
+        "arrayfire::cuda::finalizeOutput", {{flood_fill_cuh_src}},
+        TemplateArgs(TemplateTypename<T>()));
+
     EnqueueArgs qArgs(dim3(divup(seedsx.elements(), THREADS)), dim3(THREADS),
                       getActiveStream());
     initSeeds(qArgs, out, seedsx, seedsy);

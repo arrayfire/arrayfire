@@ -321,7 +321,7 @@ static CUfunction getKernel(const vector<Node*>& output_nodes,
         const common::Source jit_src{jitKer.c_str(), jitKer.size(),
                                      deterministicHash(jitKer)};
 
-        return common::getKernel(funcName, {jit_src}, {}, {}, true).get();
+        return common::getKernel(funcName, {{jit_src}}, {}, {}, true).get();
     }
     return common::getKernel(entry, funcName, true).get();
 }

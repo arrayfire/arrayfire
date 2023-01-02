@@ -58,7 +58,7 @@ static opencl::Kernel getScanDimKernel(const std::string key, int dim,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    return common::getKernel(key, {ops_cl_src, scan_dim_cl_src}, tmpltArgs,
+    return common::getKernel(key, {{ops_cl_src, scan_dim_cl_src}}, tmpltArgs,
                              compileOpts);
 }
 

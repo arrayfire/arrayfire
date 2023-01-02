@@ -37,8 +37,8 @@ void iota(Param out, const af::dim4& sdims) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto iota = common::getKernel("iota_kernel", {iota_cl_src},
-                                  {TemplateTypename<T>()}, options);
+    auto iota = common::getKernel("iota_kernel", {{iota_cl_src}},
+                                  TemplateArgs(TemplateTypename<T>()), options);
     cl::NDRange local(IOTA_TX, IOTA_TY, 1);
 
     int blocksPerMatX = divup(out.info.dims[0], TILEX);

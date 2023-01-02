@@ -58,7 +58,7 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
         getTypeBuildDefinition<T>()};
 
     auto lasetOp =
-        common::getKernel(laset_name<uplo>(), {laset_cl_src}, targs, options);
+        common::getKernel(laset_name<uplo>(), {{laset_cl_src}}, targs, options);
 
     int groups_x = (m - 1) / BLK_X + 1;
     int groups_y = (n - 1) / BLK_Y + 1;

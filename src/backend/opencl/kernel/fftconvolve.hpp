@@ -86,9 +86,9 @@ void packDataHelper(Param packed, Param sig, Param filter, const int rank,
     }
     options.emplace_back(getTypeBuildDefinition<T, convT>());
 
-    auto packData = common::getKernel("pack_data", {fftconvolve_pack_cl_src},
+    auto packData = common::getKernel("pack_data", {{fftconvolve_pack_cl_src}},
                                       targs, options);
-    auto padArray = common::getKernel("pad_array", {fftconvolve_pack_cl_src},
+    auto padArray = common::getKernel("pad_array", {{fftconvolve_pack_cl_src}},
                                       targs, options);
 
     Param sig_tmp, filter_tmp;
@@ -150,7 +150,7 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
     options.emplace_back(getTypeBuildDefinition<T, convT>());
 
     auto cplxMul = common::getKernel(
-        "complex_multiply", {fftconvolve_multiply_cl_src}, targs, options);
+        "complex_multiply", {{fftconvolve_multiply_cl_src}}, targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
@@ -198,7 +198,7 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
     options.emplace_back(getTypeBuildDefinition<T, convT>());
 
     auto reorder = common::getKernel(
-        "reorder_output", {fftconvolve_reorder_cl_src}, targs, options);
+        "reorder_output", {{fftconvolve_reorder_cl_src}}, targs, options);
 
     int fftScale = 1;
 

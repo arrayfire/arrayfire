@@ -70,7 +70,7 @@ void resize(Param out, const Param in, const af_interp_type method) {
     }
 
     auto resizeOp =
-        common::getKernel("resize_kernel", {resize_cl_src}, targs, options);
+        common::getKernel("resize_kernel", {{resize_cl_src}}, targs, options);
 
     cl::NDRange local(RESIZE_TX, RESIZE_TY, 1);
 

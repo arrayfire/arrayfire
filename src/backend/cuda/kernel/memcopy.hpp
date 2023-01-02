@@ -128,35 +128,37 @@ void memcopy(Param<T> out, CParam<T> in, dim_t indims) {
     // Conversion to cuda base vector types.
     switch (sizeofNewT) {
         case 1: {
-            auto memCopy{
-                common::getKernel(kernelName, {memcopy_cuh_src}, {"char"})};
+            auto memCopy{common::getKernel(kernelName, {{memcopy_cuh_src}},
+                                           TemplateArgs(TemplateArg("char")))};
             memCopy(qArgs, Param<char>((char *)out.ptr, out.dims, out.strides),
                     CParam<char>((const char *)in.ptr, in.dims, in.strides));
         } break;
         case 2: {
-            auto memCopy{
-                common::getKernel(kernelName, {memcopy_cuh_src}, {"short"})};
+            auto memCopy{common::getKernel(kernelName, {{memcopy_cuh_src}},
+                                           TemplateArgs(TemplateArg("short")))};
             memCopy(qArgs,
                     Param<short>((short *)out.ptr, out.dims, out.strides),
                     CParam<short>((const short *)in.ptr, in.dims, in.strides));
         } break;
         case 4: {
-            auto memCopy{
-                common::getKernel(kernelName, {memcopy_cuh_src}, {"float"})};
+            auto memCopy{common::getKernel(kernelName, {{memcopy_cuh_src}},
+                                           TemplateArgs(TemplateArg("float")))};
             memCopy(qArgs,
                     Param<float>((float *)out.ptr, out.dims, out.strides),
                     CParam<float>((const float *)in.ptr, in.dims, in.strides));
         } break;
         case 8: {
             auto memCopy{
-                common::getKernel(kernelName, {memcopy_cuh_src}, {"float2"})};
+                common::getKernel(kernelName, {{memcopy_cuh_src}},
+                                  TemplateArgs(TemplateArg("float2")))};
             memCopy(
                 qArgs, Param<float2>((float2 *)out.ptr, out.dims, out.strides),
                 CParam<float2>((const float2 *)in.ptr, in.dims, in.strides));
         } break;
         case 16: {
             auto memCopy{
-                common::getKernel(kernelName, {memcopy_cuh_src}, {"float4"})};
+                common::getKernel(kernelName, {{memcopy_cuh_src}},
+                                  TemplateArgs(TemplateArg("float4")))};
             memCopy(
                 qArgs, Param<float4>((float4 *)out.ptr, out.dims, out.strides),
                 CParam<float4>((const float4 *)in.ptr, in.dims, in.strides));
@@ -190,18 +192,14 @@ void copy(Param<outType> dst, CParam<inType> src, dim_t ondims,
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
-    auto copy{common::getKernel(th.loop0 ? "arrayfire::cuda::scaledCopyLoop0"
-                                : th.loop2 | th.loop3
-                                    ? "arrayfire::cuda::scaledCopyLoop123"
-                                : th.loop1 ? "arrayfire::cuda::scaledCopyLoop1"
-                                           : "arrayfire::cuda::scaledCopy",
-                                {copy_cuh_src},
-                                {
-                                    TemplateTypename<inType>(),
-                                    TemplateTypename<outType>(),
-                                    TemplateArg(same_dims),
-                                    TemplateArg(factor != 1.0),
-                                })};
+    auto copy{common::getKernel(
+        th.loop0                 ? "arrayfire::cuda::scaledCopyLoop0"
+        : (th.loop2 || th.loop3) ? "arrayfire::cuda::scaledCopyLoop123"
+        : th.loop1               ? "arrayfire::cuda::scaledCopyLoop1"
+                                 : "arrayfire::cuda::scaledCopy",
+        {{copy_cuh_src}},
+        TemplateArgs(TemplateTypename<inType>(), TemplateTypename<outType>(),
+                     TemplateArg(same_dims), TemplateArg(factor != 1.0)))};
 
     copy(qArgs, dst, src, default_value, factor);
 

@@ -42,7 +42,7 @@ void diff(Param out, const Param in, const unsigned indims, const unsigned dim,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto diffOp =
-        common::getKernel("diff_kernel", {diff_cl_src}, targs, options);
+        common::getKernel("diff_kernel", {{diff_cl_src}}, targs, options);
 
     cl::NDRange local(TX, TY, 1);
     if (dim == 0 && indims == 1) { local = cl::NDRange(TX * TY, 1, 1); }

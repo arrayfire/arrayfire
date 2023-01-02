@@ -50,7 +50,7 @@ void transpose_inplace(Param in, cl::CommandQueue& queue, const bool conjugate,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     auto transpose =
-        common::getKernel("transpose_inplace", {transpose_inplace_cl_src},
+        common::getKernel("transpose_inplace", {{transpose_inplace_cl_src}},
                           tmpltArgs, compileOpts);
 
     NDRange local(THREADS_X, THREADS_Y);

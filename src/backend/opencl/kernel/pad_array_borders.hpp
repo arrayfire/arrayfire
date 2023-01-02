@@ -46,7 +46,7 @@ void padBorders(Param out, const Param in, dim4 const& lBPadding,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto pad = common::getKernel("padBorders", {pad_array_borders_cl_src},
+    auto pad = common::getKernel("padBorders", {{pad_array_borders_cl_src}},
                                  tmpltArgs, compileOpts);
 
     NDRange local(PADB_THREADS_X, PADB_THREADS_Y);
