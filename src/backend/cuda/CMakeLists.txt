@@ -114,11 +114,15 @@ mark_as_advanced(
     CUDA_architecture_build_targets)
 
 if(CUDA_VERSION_MAJOR VERSION_LESS 11)
-  af_dep_check_and_populate(${cub_prefix}
-    URI https://github.com/NVIDIA/cub.git
-    REF 1.10.0
-  )
-  cuda_include_directories(${${cub_prefix}_SOURCE_DIR})
+  find_package(CUB)
+  if(NOT TARGET CUB::CUB)
+    af_dep_check_and_populate(${cub_prefix}
+      URI https://github.com/NVIDIA/cub.git
+      REF 1.10.0
+    )
+    find_package(CUB REQUIRED
+      PATHS ${${cub_prefix}_SOURCE_DIR})
+  endif()
 endif()
 
 file(GLOB jit_src "kernel/jit.cuh")
@@ -596,6 +600,12 @@ else()
   )
 endif()
 
+if(CUDA_VERSION_MAJOR VERSION_LESS 11)
+  target_link_libraries(afcuda
+    PRIVATE
+      CUB::CUB
+  )
+endif()
 
 af_detect_and_set_cuda_architectures(afcuda)
 
