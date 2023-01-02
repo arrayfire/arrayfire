@@ -187,6 +187,11 @@ macro(arrayfire_set_cmake_default_variables)
   #  #else
   #  #define AF_CONSTEXPR
   #  #endif
+  #  #if __cpp_if_constexpr || __cplusplus >= 201606L
+  #  #define AF_IF_CONSTEXPR if constexpr
+  #  #else
+  #  #define AF_IF_CONSTEXPR if
+  #  #endif
   #  ]=])
   #  include(WriteCompilerDetectionHeader)
   #  write_compiler_detection_header(
