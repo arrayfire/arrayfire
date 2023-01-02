@@ -41,8 +41,8 @@ void gradient(Param grad0, Param grad1, const Param in) {
         DefineKeyValue(CPLX, static_cast<int>(iscplx<T>())),
         getTypeBuildDefinition<T>()};
 
-    auto gradOp = common::getKernel("gradient", std::array{gradient_cl_src},
-                                    targs, options);
+    auto gradOp =
+        common::getKernel("gradient", {{gradient_cl_src}}, targs, options);
 
     cl::NDRange local(TX, TY, 1);
 

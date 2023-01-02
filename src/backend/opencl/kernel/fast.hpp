@@ -45,12 +45,12 @@ void fast(const unsigned arc_length, unsigned *out_feat, Param &x_out,
         DefineKeyValue(NONMAX, static_cast<unsigned>(nonmax)),
         getTypeBuildDefinition<T>()};
 
-    auto locate  = common::getKernel("locate_features", std::array{fast_cl_src},
-                                     targs, options);
-    auto nonMax  = common::getKernel("non_max_counts", std::array{fast_cl_src},
-                                     targs, options);
-    auto getFeat = common::getKernel("get_features", std::array{fast_cl_src},
-                                     targs, options);
+    auto locate =
+        common::getKernel("locate_features", {{fast_cl_src}}, targs, options);
+    auto nonMax =
+        common::getKernel("non_max_counts", {{fast_cl_src}}, targs, options);
+    auto getFeat =
+        common::getKernel("get_features", {{fast_cl_src}}, targs, options);
 
     const unsigned max_feat =
         ceil(in.info.dims[0] * in.info.dims[1] * feature_ratio);

@@ -22,7 +22,7 @@ namespace kernel {
 template<typename T>
 void diagCreate(Param<T> out, CParam<T> in, int num) {
     auto genDiagMat = common::getKernel("arrayfire::cuda::createDiagonalMat",
-                                        std::array{diagonal_cuh_src},
+                                        {{diagonal_cuh_src}},
                                         TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(32, 8);
@@ -47,7 +47,7 @@ void diagCreate(Param<T> out, CParam<T> in, int num) {
 template<typename T>
 void diagExtract(Param<T> out, CParam<T> in, int num) {
     auto extractDiag = common::getKernel("arrayfire::cuda::extractDiagonal",
-                                         std::array{diagonal_cuh_src},
+                                         {{diagonal_cuh_src}},
                                          TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(256, 1);

@@ -37,8 +37,8 @@ static void identity(Param out) {
         DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
         getTypeBuildDefinition<T>()};
 
-    auto identityOp = common::getKernel(
-        "identity_kernel", std::array{identity_cl_src}, targs, options);
+    auto identityOp = common::getKernel("identity_kernel", {{identity_cl_src}},
+                                        targs, options);
 
     cl::NDRange local(32, 8);
     int groups_x = divup(out.info.dims[0], local[0]);

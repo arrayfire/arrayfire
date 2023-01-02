@@ -27,9 +27,8 @@ void iota(Param<T> out, const af::dim4 &sdims) {
     constexpr unsigned TILEX   = 512;
     constexpr unsigned TILEY   = 32;
 
-    auto iota =
-        common::getKernel("arrayfire::cuda::iota", std::array{iota_cuh_src},
-                          TemplateArgs(TemplateTypename<T>()));
+    auto iota = common::getKernel("arrayfire::cuda::iota", {{iota_cuh_src}},
+                                  TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(IOTA_TX, IOTA_TY, 1);
 

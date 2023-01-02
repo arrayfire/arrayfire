@@ -29,7 +29,7 @@ void approx1(Param<Ty> yo, CParam<Ty> yi, CParam<Tp> xo, const int xdim,
              const Tp &xi_beg, const Tp &xi_step, const float offGrid,
              const af::interpType method, const int order) {
     auto approx1 = common::getKernel(
-        "arrayfire::cuda::approx1", std::array{approx1_cuh_src},
+        "arrayfire::cuda::approx1", {{approx1_cuh_src}},
         TemplateArgs(TemplateTypename<Ty>(), TemplateTypename<Tp>(),
                      TemplateArg(xdim), TemplateArg(order)));
 
@@ -57,7 +57,7 @@ void approx2(Param<Ty> zo, CParam<Ty> zi, CParam<Tp> xo, const int xdim,
              const Tp &yi_beg, const Tp &yi_step, const float offGrid,
              const af::interpType method, const int order) {
     auto approx2 = common::getKernel(
-        "arrayfire::cuda::approx2", std::array{approx2_cuh_src},
+        "arrayfire::cuda::approx2", {{approx2_cuh_src}},
         TemplateArgs(TemplateTypename<Ty>(), TemplateTypename<Tp>(),
                      TemplateArg(xdim), TemplateArg(ydim), TemplateArg(order)));
 

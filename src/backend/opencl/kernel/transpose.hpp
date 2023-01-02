@@ -49,8 +49,8 @@ void transpose(Param out, const Param in, cl::CommandQueue queue,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto transpose = common::getKernel(
-        "transpose", std::array{transpose_cl_src}, tmpltArgs, compileOpts);
+    auto transpose = common::getKernel("transpose", {{transpose_cl_src}},
+                                       tmpltArgs, compileOpts);
 
     NDRange local(THREADS_X, THREADS_Y);
 

@@ -54,8 +54,8 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
         DefineKeyValue(IS_CPLX, (iscplx<T>() ? 1 : 0)),
         getTypeBuildDefinition<T>()};
 
-    auto cscmvBlock = common::getKernel("cscmv_block", std::array{cscmv_cl_src},
-                                        targs, options);
+    auto cscmvBlock =
+        common::getKernel("cscmv_block", {{cscmv_cl_src}}, targs, options);
 
     int K        = colIdx.info.dims[0] - 1;
     int M        = out.info.dims[0];

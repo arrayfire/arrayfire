@@ -27,10 +27,10 @@ template<typename T>
 void transpose_inplace(Param<T> in, const bool conjugate,
                        const bool is32multiple) {
     auto transposeIP = common::getKernel(
-        "arrayfire::cuda::transposeIP", std::array{transpose_inplace_cuh_src},
+        "arrayfire::cuda::transposeIP", {{transpose_inplace_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(conjugate),
                      TemplateArg(is32multiple)),
-        std::array{DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
+        {{DefineValue(TILE_DIM), DefineValue(THREADS_Y)}});
 
     // dimensions passed to this function should be input dimensions
     // any necessary transformations and dimension related calculations are

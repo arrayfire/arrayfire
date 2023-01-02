@@ -57,7 +57,7 @@ void cscmm_nn(Param out, const Param &values, const Param &colIdx,
         getTypeBuildDefinition<T>()};
 
     auto cscmmNN =
-        common::getKernel("cscmm_nn", std::array{cscmm_cl_src}, targs, options);
+        common::getKernel("cscmm_nn", {{cscmm_cl_src}}, targs, options);
 
     cl::NDRange local(threads, 1);
     int M = out.info.dims[0];

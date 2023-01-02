@@ -27,11 +27,11 @@ template<typename T>
 void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
               int w_wid) {
     UNUSED(w_wid);
-    auto medfilt2 = common::getKernel(
-        "arrayfire::cuda::medfilt2", std::array{medfilt_cuh_src},
-        TemplateArgs(TemplateTypename<T>(), TemplateArg(pad),
-                     TemplateArg(w_len), TemplateArg(w_wid)),
-        std::array{DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto medfilt2 =
+        common::getKernel("arrayfire::cuda::medfilt2", {{medfilt_cuh_src}},
+                          TemplateArgs(TemplateTypename<T>(), TemplateArg(pad),
+                                       TemplateArg(w_len), TemplateArg(w_wid)),
+                          {{DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 
@@ -47,10 +47,10 @@ void medfilt2(Param<T> out, CParam<T> in, const af::borderType pad, int w_len,
 
 template<typename T>
 void medfilt1(Param<T> out, CParam<T> in, const af::borderType pad, int w_wid) {
-    auto medfilt1 = common::getKernel(
-        "arrayfire::cuda::medfilt1", std::array{medfilt_cuh_src},
-        TemplateArgs(TemplateTypename<T>(), TemplateArg(pad),
-                     TemplateArg(w_wid)));
+    auto medfilt1 =
+        common::getKernel("arrayfire::cuda::medfilt1", {{medfilt_cuh_src}},
+                          TemplateArgs(TemplateTypename<T>(), TemplateArg(pad),
+                                       TemplateArg(w_wid)));
 
     const dim3 threads(THREADS_X);
 

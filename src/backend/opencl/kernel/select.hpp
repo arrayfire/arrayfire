@@ -38,8 +38,8 @@ void selectLauncher(Param out, Param cond, Param a, Param b, const int ndims,
         DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(is_same),
         getTypeBuildDefinition<T>()};
 
-    auto selectOp = common::getKernel(
-        "select_kernel", std::array{select_cl_src}, targs, options);
+    auto selectOp =
+        common::getKernel("select_kernel", {{select_cl_src}}, targs, options);
 
     int threads[] = {DIMX, DIMY};
 
@@ -81,8 +81,8 @@ void select_scalar(Param out, Param cond, Param a, const T b, const int ndims,
         DefineKeyValue(T, dtype_traits<T>::getName()), DefineValue(flip),
         getTypeBuildDefinition<T>()};
 
-    auto selectOp = common::getKernel(
-        "select_scalar_kernel", std::array{select_cl_src}, targs, options);
+    auto selectOp = common::getKernel("select_scalar_kernel", {{select_cl_src}},
+                                      targs, options);
 
     int threads[] = {DIMX, DIMY};
 

@@ -29,7 +29,7 @@ void meanshift(Param<T> out, CParam<T> in, const float spatialSigma,
     typedef typename std::conditional<std::is_same<T, double>::value, double,
                                       float>::type AccType;
     auto meanshift = common::getKernel(
-        "arrayfire::cuda::meanshift", std::array{meanshift_cuh_src},
+        "arrayfire::cuda::meanshift", {{meanshift_cuh_src}},
         TemplateArgs(TemplateTypename<AccType>(), TemplateTypename<T>(),
                      TemplateArg((IsColor ? 3 : 1))  // channels
                      ));

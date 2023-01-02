@@ -67,8 +67,8 @@ void resize(Param out, const Param in, const af_interp_type method) {
         default: break;
     }
 
-    auto resizeOp = common::getKernel(
-        "resize_kernel", std::array{resize_cl_src}, targs, options);
+    auto resizeOp =
+        common::getKernel("resize_kernel", {{resize_cl_src}}, targs, options);
 
     cl::NDRange local(RESIZE_TX, RESIZE_TY, 1);
 

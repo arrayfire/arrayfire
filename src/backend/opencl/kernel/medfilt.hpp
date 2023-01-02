@@ -49,8 +49,8 @@ void medfilt1(Param out, const Param in, const unsigned w_wid,
         DefineValue(w_wid),
         getTypeBuildDefinition<T>()};
 
-    auto medfiltOp = common::getKernel("medfilt1", std::array{medfilt1_cl_src},
-                                       targs, options);
+    auto medfiltOp =
+        common::getKernel("medfilt1", {{medfilt1_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, 1, 1);
 
@@ -87,8 +87,8 @@ void medfilt2(Param out, const Param in, const af_border_type pad,
         DefineValue(w_len),
         getTypeBuildDefinition<T>()};
 
-    auto medfiltOp = common::getKernel("medfilt2", std::array{medfilt2_cl_src},
-                                       targs, options);
+    auto medfiltOp =
+        common::getKernel("medfilt2", {{medfilt2_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

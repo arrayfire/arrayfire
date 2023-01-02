@@ -27,11 +27,11 @@ static void scan_first_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                                 const uint threads_x, bool isFinalPass,
                                 bool inclusive_scan) {
     auto scan_first = common::getKernel(
-        "arrayfire::cuda::scan_first", std::array{scan_first_cuh_src},
+        "arrayfire::cuda::scan_first", {{scan_first_cuh_src}},
         TemplateArgs(TemplateTypename<Ti>(), TemplateTypename<To>(),
                      TemplateArg(op), TemplateArg(isFinalPass),
                      TemplateArg(threads_x), TemplateArg(inclusive_scan)),
-        std::array{DefineValue(THREADS_PER_BLOCK)});
+        {{DefineValue(THREADS_PER_BLOCK)}});
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
     dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
@@ -52,7 +52,7 @@ static void bcast_first_launcher(Param<To> out, CParam<To> tmp,
                                  const uint blocks_x, const uint blocks_y,
                                  const uint threads_x, bool inclusive_scan) {
     auto scan_first_bcast = common::getKernel(
-        "arrayfire::cuda::scan_first_bcast", std::array{scan_first_cuh_src},
+        "arrayfire::cuda::scan_first_bcast", {{scan_first_cuh_src}},
         TemplateArgs(TemplateTypename<To>(), TemplateArg(op)));
 
     dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);

@@ -28,9 +28,9 @@ void sobel(Param<To> dx, Param<To> dy, CParam<Ti> in,
     UNUSED(ker_size);
 
     auto sobel3x3 = common::getKernel(
-        "arrayfire::cuda::sobel3x3", std::array{sobel_cuh_src},
+        "arrayfire::cuda::sobel3x3", {{sobel_cuh_src}},
         TemplateArgs(TemplateTypename<Ti>(), TemplateTypename<To>()),
-        std::array{DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+        {{DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
 
     const dim3 threads(THREADS_X, THREADS_Y);
 

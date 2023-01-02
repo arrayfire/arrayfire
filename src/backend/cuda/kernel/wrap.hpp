@@ -24,7 +24,7 @@ template<typename T>
 void wrap(Param<T> out, CParam<T> in, const int wx, const int wy, const int sx,
           const int sy, const int px, const int py, const bool is_column) {
     auto wrap = common::getKernel(
-        "arrayfire::cuda::wrap", std::array{wrap_cuh_src},
+        "arrayfire::cuda::wrap", {{wrap_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(is_column)));
 
     int nx = (out.dims[0] + 2 * px - wx) / sx + 1;
@@ -52,7 +52,7 @@ void wrap_dilated(Param<T> out, CParam<T> in, const dim_t wx, const dim_t wy,
                   const dim_t py, const dim_t dx, const dim_t dy,
                   const bool is_column) {
     auto wrap = common::getKernel(
-        "arrayfire::cuda::wrap_dilated", std::array{wrap_cuh_src},
+        "arrayfire::cuda::wrap_dilated", {{wrap_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(is_column)));
 
     int nx = 1 + (out.dims[0] + 2 * px - (((wx - 1) * dx) + 1)) / sx;

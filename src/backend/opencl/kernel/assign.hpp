@@ -42,8 +42,8 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p,
         DefineKeyValue(T, dtype_traits<T>::getName()),
         getTypeBuildDefinition<T>()};
 
-    auto assign = common::getKernel("assignKernel", std::array{assign_cl_src},
-                                    targs, options);
+    auto assign =
+        common::getKernel("assignKernel", {{assign_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 

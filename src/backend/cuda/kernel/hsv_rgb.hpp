@@ -23,7 +23,7 @@ static const int THREADS_Y = 16;
 template<typename T>
 void hsv2rgb_convert(Param<T> out, CParam<T> in, bool isHSV2RGB) {
     auto hsvrgbConverter = common::getKernel(
-        "arrayfire::cuda::hsvrgbConverter", std::array{hsv_rgb_cuh_src},
+        "arrayfire::cuda::hsvrgbConverter", {{hsv_rgb_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(isHSV2RGB)));
 
     const dim3 threads(THREADS_X, THREADS_Y);

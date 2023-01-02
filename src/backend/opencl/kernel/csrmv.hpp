@@ -58,11 +58,10 @@ void csrmv(Param out, const Param &values, const Param &rowIdx,
         getTypeBuildDefinition<T>()};
 
     auto csrmv =
-        (is_csrmv_block
-             ? common::getKernel("csrmv_thread", std::array{csrmv_cl_src},
-                                 targs, options)
-             : common::getKernel("csrmv_block", std::array{csrmv_cl_src}, targs,
-                                 options));
+        (is_csrmv_block ? common::getKernel("csrmv_thread", {{csrmv_cl_src}},
+                                            targs, options)
+                        : common::getKernel("csrmv_block", {{csrmv_cl_src}},
+                                            targs, options));
 
     int M = rowIdx.info.dims[0] - 1;
 

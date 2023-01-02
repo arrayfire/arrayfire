@@ -24,9 +24,8 @@ namespace kernel {
 
 template<typename T>
 static void where(Param<uint> &out, CParam<T> in) {
-    auto where =
-        common::getKernel("arrayfire::cuda::where", std::array{where_cuh_src},
-                          TemplateArgs(TemplateTypename<T>()));
+    auto where = common::getKernel("arrayfire::cuda::where", {{where_cuh_src}},
+                                   TemplateArgs(TemplateTypename<T>()));
 
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
     threads_x      = std::min(threads_x, THREADS_PER_BLOCK);

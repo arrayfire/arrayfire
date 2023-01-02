@@ -32,7 +32,7 @@ void lu_split(Param<T> lower, Param<T> upper, Param<T> in) {
         lower.dims[0] == in.dims[0] && lower.dims[1] == in.dims[1];
 
     auto luSplit = common::getKernel(
-        "arrayfire::cuda::luSplit", std::array{lu_split_cuh_src},
+        "arrayfire::cuda::luSplit", {{lu_split_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(sameDims)));
 
     dim3 threads(TX, TY, 1);

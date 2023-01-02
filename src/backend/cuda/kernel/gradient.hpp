@@ -26,10 +26,10 @@ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in) {
     constexpr unsigned TX = 32;
     constexpr unsigned TY = 8;
 
-    auto gradient = common::getKernel(
-        "arrayfire::cuda::gradient", std::array{gradient_cuh_src},
-        TemplateArgs(TemplateTypename<T>()),
-        std::array{DefineValue(TX), DefineValue(TY)});
+    auto gradient =
+        common::getKernel("arrayfire::cuda::gradient", {{gradient_cuh_src}},
+                          TemplateArgs(TemplateTypename<T>()),
+                          {{DefineValue(TX), DefineValue(TY)}});
 
     dim3 threads(TX, TY, 1);
 
