@@ -272,6 +272,9 @@ else()
       PROPERTIES
         INTERFACE_LINK_LIBRARIES "spdlog_header_only")
   else()
+    target_compile_options(spdlog
+      PRIVATE
+        $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>)
     set_target_properties(af_spdlog
       PROPERTIES
         INTERFACE_LINK_LIBRARIES "spdlog")
