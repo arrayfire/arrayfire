@@ -120,7 +120,7 @@ static __global__ void kerTopkDim0(Param<T> ovals, Param<uint> oidxs,
 template<typename T>
 void topkDim0(Param<T> ovals, Param<uint> oidxs, CParam<T> ivals, const int k,
               const af::topkFunction order) {
-    const dim3 threads(TOPK_THRDS_PER_BLK, 1);
+    dim3 threads(TOPK_THRDS_PER_BLK, 1);
     const int thrdLoad = TOPK_IDX_THRD_LOAD;
 
     int numBlocksX = divup(ivals.dims[0], threads.x * thrdLoad);
