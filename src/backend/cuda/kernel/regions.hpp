@@ -351,12 +351,12 @@ template<typename T, bool full_conn, int n_per_thread>
 void regions(arrayfire::cuda::Param<T> out, arrayfire::cuda::CParam<char> in,
              cudaTextureObject_t tex) {
     using arrayfire::cuda::getActiveStream;
-    const dim3 threads(THREADS_X, THREADS_Y);
+    dim3 threads(THREADS_X, THREADS_Y);
 
     const int blk_x = divup(in.dims[0], threads.x * 2);
     const int blk_y = divup(in.dims[1], threads.y * 2);
 
-    const dim3 blocks(blk_x, blk_y);
+    dim3 blocks(blk_x, blk_y);
 
     CUDA_LAUNCH((initial_label<T, n_per_thread>), blocks, threads, out, in);
 
