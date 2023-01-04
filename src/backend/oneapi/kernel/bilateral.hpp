@@ -58,7 +58,7 @@ class bilateralKernel {
         , nBBS1_(nBBS1) {}
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g                   = it.get_group();
-        const int radius                = fmax((int)(sigma_space_ * 1.5f), 1);
+        const int radius                = sycl::max((int)(sigma_space_ * 1.5f), 1);
         const int padding               = 2 * radius;
         const int window_size           = padding + 1;
         const int shrdLen               = g.get_local_range(0) + padding;
@@ -141,6 +141,12 @@ class bilateralKernel {
 
     int lIdx(int x, int y, int stride1, int stride0) const {
         return (y * stride1 + x * stride0);
+    }
+
+    template<class T>
+    constexpr const T& clamp0( const T& v, const T& lo, const T& hi) const
+    {
+        return (v < lo) ? lo : (hi < v)? hi : v;
     }
 
     void load2LocalMem(local_accessor<outType, 1> shrd, const inType* in,

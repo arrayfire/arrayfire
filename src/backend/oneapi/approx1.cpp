@@ -6,9 +6,9 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#include <kernel/approx1.hpp>
 #include <approx.hpp>
 #include <err_oneapi.hpp>
-#include <kernel/approx1.hpp>
 
 namespace arrayfire {
 namespace oneapi {

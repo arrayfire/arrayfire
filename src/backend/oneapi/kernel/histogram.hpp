@@ -71,7 +71,7 @@ class histogramKernel {
         int start     = (g.get_group_id(0) - b2 * nBBS_) * THRD_LOAD *
                         g.get_local_range(0) +
                     it.get_local_id(0);
-        int end = fmin((int)(start + THRD_LOAD * g.get_local_range(0)), len_);
+        int end = sycl::min((int)(start + THRD_LOAD * g.get_local_range(0)), len_);
 
         // offset input and output to account for batch ops
         const T *in = d_src_.get_pointer() + b2 * iInfo_.strides[2] +
@@ -96,8 +96,8 @@ class histogramKernel {
             const int idx = isLinear_ ? row : i0 + i1 * iInfo_.strides[1];
 
             int bin = (int)(((float)in[idx] - minval_) / dx);
-            bin     = fmax(bin, 0);
-            bin     = fmin(bin, (int)nbins_ - 1);
+            bin     = sycl::max(bin, 0);
+            bin     = sycl::min(bin, (int)nbins_ - 1);
 
             if (use_global) {
                 global_atomic_ref<uint>(d_dst_[outOffset + bin])++;
