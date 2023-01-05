@@ -57,14 +57,14 @@ class bilateralKernel {
         , nBBS0_(nBBS0)
         , nBBS1_(nBBS1) {}
     void operator()(sycl::nd_item<2> it) const {
-        sycl::group g                   = it.get_group();
-        const int radius                = sycl::max((int)(sigma_space_ * 1.5f), 1);
-        const int padding               = 2 * radius;
-        const int window_size           = padding + 1;
-        const int shrdLen               = g.get_local_range(0) + padding;
-        const float variance_range      = sigma_color_ * sigma_color_;
-        const float variance_space      = sigma_space_ * sigma_space_;
-        const float variance_space_neg2 = -2.0 * variance_space;
+        sycl::group g              = it.get_group();
+        const int radius           = sycl::max((int)(sigma_space_ * 1.5f), 1);
+        const int padding          = 2 * radius;
+        const int window_size      = padding + 1;
+        const int shrdLen          = g.get_local_range(0) + padding;
+        const float variance_range = sigma_color_ * sigma_color_;
+        const float variance_space = sigma_space_ * sigma_space_;
+        const float variance_space_neg2     = -2.0 * variance_space;
         const float inv_variance_range_neg2 = -0.5 / (variance_range);
 
         // gfor batch offsets
@@ -144,9 +144,8 @@ class bilateralKernel {
     }
 
     template<class T>
-    constexpr const T& clamp0( const T& v, const T& lo, const T& hi) const
-    {
-        return (v < lo) ? lo : (hi < v)? hi : v;
+    constexpr const T& clamp0(const T& v, const T& lo, const T& hi) const {
+        return (v < lo) ? lo : (hi < v) ? hi : v;
     }
 
     void load2LocalMem(local_accessor<outType, 1> shrd, const inType* in,

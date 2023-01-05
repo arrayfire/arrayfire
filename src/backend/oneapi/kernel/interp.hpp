@@ -113,7 +113,7 @@ struct Interp1<Ty, Tp, 1> {
         const int x_lim    = iInfo.dims[xdim];
         const int x_stride = iInfo.strides[xdim];
 
-        int xid   = (method == AF_INTERP_LOWER ? sycl::floor(x) : sycl::round(x));
+        int xid = (method == AF_INTERP_LOWER ? sycl::floor(x) : sycl::round(x));
         bool cond = xid >= 0 && xid < x_lim;
         if (clamp) xid = sycl::max((int)0, sycl::min(xid, x_lim));
 

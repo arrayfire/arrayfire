@@ -33,16 +33,16 @@ void sort0Iterative(Param<T> val, bool isAscending) {
             for (int y = 0; y < val.info.dims[1]; y++) {
                 int valOffset = valWZ + y * val.info.strides[1];
 
-                auto buf_begin = oneapi::dpl::begin(*val.data);
-                auto buf_end = oneapi::dpl::end(*val.data);
+                auto buf_begin = oneapi::dpl::begin(*val.data) + valOffset;
+                auto buf_end   = buf_begin + val.info.dims[0];
                 if (isAscending) {
                     std::sort(dpl_policy, buf_begin, buf_end,
-                    [](auto lhs, auto rhs) { return lhs < rhs; });
-                     //std::less<T>()); // mangled name errors in icx for now
+                              [](auto lhs, auto rhs) { return lhs < rhs; });
+                    // std::less<T>()); // mangled name errors in icx for now
                 } else {
                     std::sort(dpl_policy, buf_begin, buf_end,
-                    [](auto lhs, auto rhs) { return lhs > rhs; });
-                     //std::greater<T>()); // mangled name errors in icx for now
+                              [](auto lhs, auto rhs) { return lhs > rhs; });
+                    // std::greater<T>()); // mangled name errors in icx for now
                 }
             }
         }
@@ -77,27 +77,28 @@ void sortBatched(Param<T> pVal, int dim, bool isAscending) {
     // Sort indices
     auto dpl_policy = oneapi::dpl::execution::make_device_policy(getQueue());
 
-    auto val_begin = oneapi::dpl::begin(*pVal.data);
-    auto val_end   = oneapi::dpl::end(*pVal.data);
-    auto key_begin = oneapi::dpl::begin(*pKey.get());
-    auto key_end   = oneapi::dpl::end(*pKey.get());
+    auto val_begin    = oneapi::dpl::begin(*pVal.data);
+    auto val_end      = oneapi::dpl::end(*pVal.data);
+    auto key_begin    = oneapi::dpl::begin(*pKey.get());
+    auto key_end      = oneapi::dpl::end(*pKey.get());
     auto zipped_begin = dpl::make_zip_iterator(key_begin, val_begin);
     auto zipped_end   = dpl::make_zip_iterator(key_end, val_end);
-    printf("bsortv\n");
-    //sort values first
-    if (isAscending) {
-        std::sort(dpl_policy, zipped_begin, zipped_end,
-            [](auto lhs, auto rhs) { return std::get<1>(lhs) < std::get<1>(rhs); });
-    } else {
-        std::sort(dpl_policy, zipped_begin, zipped_end,
-            [](auto lhs, auto rhs) { return std::get<1>(lhs) > std::get<1>(rhs); });
-    }
-    printf("bsortk\n");
-    //sort keys second
-    std::sort(dpl_policy, zipped_begin, zipped_end,
-        [](auto lhs, auto rhs) { return std::get<0>(lhs) < std::get<0>(rhs); });
 
-    printf("dunn\n");
+    // sort values first
+    if (isAscending) {
+        std::sort(dpl_policy, zipped_begin, zipped_end, [](auto lhs, auto rhs) {
+            return std::get<1>(lhs) < std::get<1>(rhs);
+        });
+    } else {
+        std::sort(dpl_policy, zipped_begin, zipped_end, [](auto lhs, auto rhs) {
+            return std::get<1>(lhs) > std::get<1>(rhs);
+        });
+    }
+    // sort according to keys second
+    std::sort(dpl_policy, zipped_begin, zipped_end, [](auto lhs, auto rhs) {
+        return std::get<0>(lhs) < std::get<0>(rhs);
+    });
+
     ONEAPI_DEBUG_FINISH(getQueue());
 }
 
@@ -110,5 +111,6 @@ void sort0(Param<T> val, bool isAscending) {
     else
         sort0Iterative<T>(val, isAscending);
 }
+
 }  // namespace kernel
 }  // namespace oneapi

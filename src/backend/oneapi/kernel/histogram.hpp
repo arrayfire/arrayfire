@@ -71,7 +71,8 @@ class histogramKernel {
         int start     = (g.get_group_id(0) - b2 * nBBS_) * THRD_LOAD *
                         g.get_local_range(0) +
                     it.get_local_id(0);
-        int end = sycl::min((int)(start + THRD_LOAD * g.get_local_range(0)), len_);
+        int end =
+            sycl::min((int)(start + THRD_LOAD * g.get_local_range(0)), len_);
 
         // offset input and output to account for batch ops
         const T *in = d_src_.get_pointer() + b2 * iInfo_.strides[2] +
