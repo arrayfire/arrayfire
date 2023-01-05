@@ -5,7 +5,7 @@ class conv2HelperCreateKernel {
                             read_accessor<T> signal, KParam sInfo,
                             read_accessor<aT> impulse, KParam fInfo, int nBBS0,
                             int nBBS1, int ostep2, int ostep3, int sstep2,
-                            int sstep3, local_accessor<aT> localMem,
+                            int sstep3, sycl::local_accessor<aT> localMem,
                             const int f0, const int f1, const bool expand)
         : out_(out)
         , oInfo_(oInfo)
@@ -111,7 +111,7 @@ class conv2HelperCreateKernel {
     int ostep3_;
     int sstep2_;
     int sstep3_;
-    local_accessor<aT> localMem_;
+    sycl::local_accessor<aT> localMem_;
     const int f0_;
     const int f1_;
     const bool expand_;
