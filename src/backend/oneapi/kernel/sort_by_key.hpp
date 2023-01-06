@@ -68,7 +68,7 @@ void sort0ByKeyIterative(Param<Tk> pKey, Param<Tv> pVal, bool isAscending) {
 template<typename Tk, typename Tv>
 void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim, bool isAscending) {
     af::dim4 inDims;
-    for (int i = 0; i < 4; i++) inDims[i] = pKey.dims[i];
+    for (int i = 0; i < 4; i++) inDims[i] = pKey.info.dims[i];
 
     const dim_t elements = inDims.elements();
 
@@ -84,38 +84,69 @@ void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim, bool isAsce
 
     auto dpl_policy = oneapi::dpl::execution::make_device_policy(getQueue());
 
+    // set up iterators for seq, key, val, and new cKey
     auto seq_begin = oneapi::dpl::begin(*Seq.get());
     auto seq_end   = oneapi::dpl::end(*Seq.get());
-    auto key_begin = oneapi::dpl::begin(*pKey.get());
-    auto key_end   = oneapi::dpl::end(*pKey.get());
+    auto key_begin = oneapi::dpl::begin(*pKey.data);
+    auto key_end   = oneapi::dpl::end(*pKey.data);
     auto val_begin = oneapi::dpl::begin(*pVal.data);
     auto val_end   = oneapi::dpl::end(*pVal.data);
 
-    auto cKey = memAlloc<Tk>(elements);
-    /*TODO: copy seq to cKey?
-    const sycl::buffer<T> *A_buf = A.get();
-    sycl::buffer<T> *out_buf     = out.get();
+    auto cKey    = memAlloc<Tk>(elements);
+    getQueue().submit([&](sycl::handler &h) {
+        h.copy(pKey.data->get_access(), cKey.get()->get_access());
+    });
+    auto ckey_begin = oneapi::dpl::begin(*cKey.get());
+    auto ckey_end   = oneapi::dpl::end(*cKey.get());
 
-    getQueue()
-        .submit([=](sycl::handler &h) {
-            sycl::range rr(A.elements());
-            sycl::id offset_id(offset);
-            auto offset_acc_A =
-                const_cast<sycl::buffer<T> *>(A_buf)->get_access(h, rr,
-                                                                    offset_id);
-            auto acc_out = out_buf->get_access(h);
+    {
+        auto zipped_begin_KV = dpl::make_zip_iterator(key_begin, val_begin);
+        auto zipped_end_KV   = dpl::make_zip_iterator(key_end, val_end);
+        auto zipped_begin_cKS = dpl::make_zip_iterator(ckey_begin, seq_begin);
+        auto zipped_end_cKS   = dpl::make_zip_iterator(ckey_end, seq_end);
+        if (isAscending) {
+            std::sort(dpl_policy, zipped_begin_KV, zipped_end_KV, [](auto lhs, auto rhs) {
+                return std::get<0>(lhs) < std::get<0>(rhs);
+            });
+            std::sort(dpl_policy, zipped_begin_cKS, zipped_end_cKS, [](auto lhs, auto rhs) {
+                return std::get<0>(lhs) < std::get<0>(rhs);
+            });
+        } else {
+            std::sort(dpl_policy, zipped_begin_KV, zipped_end_KV, [](auto lhs, auto rhs) {
+                return std::get<0>(lhs) > std::get<0>(rhs);
+            });
+            std::sort(dpl_policy, zipped_begin_cKS, zipped_end_cKS, [](auto lhs, auto rhs) {
+                return std::get<0>(lhs) > std::get<0>(rhs);
+            });
+        }
+    }
 
-            h.copy(offset_acc_A, acc_out);
-        })
-        .wait();
-    */
+    auto cSeq    = memAlloc<uint>(elements);
+    getQueue().submit([&](sycl::handler &h) {
+        h.copy(Seq.get()->get_access(), cSeq.get()->get_access());
+    });
+    auto cseq_begin = oneapi::dpl::begin(*cSeq.get());
+    auto cseq_end   = oneapi::dpl::end(*cSeq.get());
+
+    {
+        auto zipped_begin_SV  = dpl::make_zip_iterator(seq_begin, val_begin);
+        auto zipped_end_SV    = dpl::make_zip_iterator(seq_end, val_end);
+        auto zipped_begin_cSK = dpl::make_zip_iterator(cseq_begin, key_begin);
+        auto zipped_end_cSK   = dpl::make_zip_iterator(cseq_end, key_end);
+        std::sort(dpl_policy, zipped_begin_SV, zipped_end_SV, [](auto lhs, auto rhs) {
+            return std::get<0>(lhs) < std::get<0>(rhs);
+        });
+        std::sort(dpl_policy, zipped_begin_cSK, zipped_end_cSK, [](auto lhs, auto rhs) {
+            return std::get<0>(lhs) < std::get<0>(rhs);
+        });
+    }
 
 }
 
 template<typename Tk, typename Tv>
 void sort0ByKey(Param<Tk> pKey, Param<Tv> pVal, bool isAscending) {
     int higherDims = pKey.info.dims[1] * pKey.info.dims[2] * pKey.info.dims[3];
-    // Batced sort performs 4x sort by keys
+    // Batched sort performs 4x sort by keys
     // But this is only useful before GPU is saturated
     // The GPU is saturated at around 1000,000 integers
     // Call batched sort only if both conditions are met
