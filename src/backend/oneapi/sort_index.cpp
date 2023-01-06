@@ -11,7 +11,7 @@
 #include <common/half.hpp>
 #include <copy.hpp>
 #include <err_oneapi.hpp>
-// #include <kernel/sort_by_key.hpp>
+#include <kernel/sort_by_key.hpp>
 #include <math.hpp>
 #include <range.hpp>
 #include <reorder.hpp>
@@ -25,21 +25,21 @@ namespace oneapi {
 template<typename T>
 void sort_index(Array<T> &okey, Array<uint> &oval, const Array<T> &in,
                 const uint dim, bool isAscending) {
-    ONEAPI_NOT_SUPPORTED("sort_index Not supported");
-
     try {
         // okey contains values, oval contains indices
         okey = copyArray<T>(in);
         oval = range<uint>(in.dims(), dim);
         oval.eval();
 
-        // switch (dim) {
-        //     case 0: kernel::sort0ByKey<T, uint>(okey, oval, isAscending);
-        //     break; case 1: case 2: case 3:
-        //         kernel::sortByKeyBatched<T, uint>(okey, oval, dim,
-        //         isAscending); break;
-        //     default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
-        // }
+        switch (dim) {
+            case 0: kernel::sort0ByKey<T, uint>(okey, oval, isAscending); break;
+            case 1:
+            case 2:
+            case 3:
+                kernel::sortByKeyBatched<T, uint>(okey, oval, dim,
+                    isAscending); break;
+            default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+        }
 
         if (dim != 0) {
             af::dim4 preorderDims = okey.dims();
@@ -75,7 +75,7 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
-INSTANTIATE(half)
+// INSTANTIATE(half) //TODO
 
 }  // namespace oneapi
 }  // namespace arrayfire
