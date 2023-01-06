@@ -238,6 +238,7 @@ target_sources(afoneapi
     kernel/scan_first.hpp
     kernel/scan_dim.hpp
     kernel/sort.hpp
+    kernel/sort_by_key.hpp
     kernel/transpose.hpp
     kernel/transpose_inplace.hpp
     kernel/triangle.hpp
