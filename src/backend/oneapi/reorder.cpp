@@ -10,7 +10,7 @@
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
-// #include <kernel/reorder.hpp>
+#include <kernel/reorder.hpp>
 #include <reorder.hpp>
 #include <stdexcept>
 
@@ -19,15 +19,13 @@ using common::half;
 namespace oneapi {
 template<typename T>
 Array<T> reorder(const Array<T> &in, const af::dim4 &rdims) {
-    ONEAPI_NOT_SUPPORTED("reorder Not supported");
-
     const af::dim4 &iDims = in.dims();
     af::dim4 oDims(0);
     for (int i = 0; i < 4; i++) { oDims[i] = iDims[rdims[i]]; }
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    // kernel::reorder<T>(out, in, rdims.get());
+    kernel::reorder<T>(out, in, rdims.get());
 
     return out;
 }
