@@ -56,7 +56,7 @@ class queue {
     queue()
         : count(0)
         , sync_calls(__SYNCHRONOUS_ARCH == 1 ||
-                     getEnvVar("AF_SYNCHRONOUS_CALLS") == "1") {}
+                     common::getEnvVar("AF_SYNCHRONOUS_CALLS") == "1") {}
 
     template<typename F, typename... Args>
     void enqueue(const F func, Args &&...args) {

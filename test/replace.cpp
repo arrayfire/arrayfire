@@ -113,6 +113,7 @@ TYPED_TEST(Replace, Simple) { replaceTest<TypeParam>(dim4(1024, 1024)); }
 TYPED_TEST(Replace, Scalar) { replaceScalarTest<TypeParam>(dim4(5, 5)); }
 
 TEST(Replace, NaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     dim4 dims(1000, 1250);
     dtype ty = f32;
 

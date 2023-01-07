@@ -7,11 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <build_version.hpp>
 #include <common/defines.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/jit/Node.hpp>
 #include <common/util.hpp>
 
-#include <version.hpp>
 #include <sstream>
 #include <string>
 #include <vector>

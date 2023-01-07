@@ -9,10 +9,9 @@
 
 #pragma once
 #include <common/jit/Node.hpp>
-#include <common/util.hpp>
 #include <spdlog/fmt/bundled/format.h>
 
-#include <common/TemplateArg.hpp>
+#include <common/util.hpp>
 
 template<>
 struct fmt::formatter<af::dtype> : fmt::formatter<char> {
@@ -69,9 +68,9 @@ struct fmt::formatter<common::Node> {
             if (isBuffer(node)) {
                 format_to(ctx.out(), "buffer ");
             } else if (isScalar(node)) {
-                format_to(ctx.out(), "scalar ", getOpEnumStr(node.getOp()));
+                format_to(ctx.out(), "scalar ", common::toString(node.getOp()));
             } else {
-                format_to(ctx.out(), "{} ", getOpEnumStr(node.getOp()));
+                format_to(ctx.out(), "{} ", common::toString(node.getOp()));
             }
         }
         if (type) format_to(ctx.out(), "{} ", node.getType());

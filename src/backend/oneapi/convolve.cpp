@@ -14,6 +14,7 @@
 #include <common/moddims.hpp>
 #include <convolve.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/convolve.hpp>
 #include <reorder.hpp>
 #include <transpose.hpp>
 #include <unwrap.hpp>
@@ -33,8 +34,56 @@ namespace oneapi {
 template<typename T, typename accT>
 Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
                   AF_BATCH_KIND kind, const int rank, const bool expand) {
-    ONEAPI_NOT_SUPPORTED("");
-    Array<T> out = createEmptyArray<T>(dim4(1));
+    const dim4 &sDims = signal.dims();
+    const dim4 &fDims = filter.dims();
+
+    dim4 oDims(1);
+    if (expand) {
+        for (int d = 0; d < AF_MAX_DIMS; ++d) {
+            if (kind == AF_BATCH_NONE || kind == AF_BATCH_RHS) {
+                oDims[d] = sDims[d] + fDims[d] - 1;
+            } else {
+                oDims[d] = (d < rank ? sDims[d] + fDims[d] - 1 : sDims[d]);
+            }
+        }
+    } else {
+        oDims = sDims;
+        if (kind == AF_BATCH_RHS) {
+            for (int i = rank; i < AF_MAX_DIMS; ++i) { oDims[i] = fDims[i]; }
+        }
+    }
+
+    Array<T> out    = createEmptyArray<T>(oDims);
+    bool callKernel = true;
+
+    dim_t MCFL2 = kernel::MAX_CONV2_FILTER_LEN;
+    dim_t MCFL3 = kernel::MAX_CONV3_FILTER_LEN;
+    switch (rank) {
+        case 1:
+            if (fDims[0] > kernel::MAX_CONV1_FILTER_LEN) { callKernel = false; }
+            break;
+        case 2:
+            if ((fDims[0] * fDims[1]) > (MCFL2 * MCFL2)) { callKernel = false; }
+            break;
+        case 3:
+            if ((fDims[0] * fDims[1] * fDims[2]) > (MCFL3 * MCFL3 * MCFL3)) {
+                callKernel = false;
+            }
+            break;
+        default: AF_ERROR("rank only supports values 1-3.", AF_ERR_UNKNOWN);
+    }
+
+    if (!callKernel) {
+        char errMessage[256];
+        snprintf(errMessage, sizeof(errMessage),
+                 "\nOneAPI N Dimensional Convolution doesn't support "
+                 "%llux%llux%llu kernel\n",
+                 fDims[0], fDims[1], fDims[2]);
+        ONEAPI_NOT_SUPPORTED(errMessage);
+    }
+
+    kernel::convolve_nd<T, accT>(out, signal, filter, kind, rank, expand);
+
     return out;
 }
 
@@ -60,8 +109,9 @@ template<typename T>
 Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
                           const dim4 &stride, const dim4 &padding,
                           const dim4 &dilation) {
-    ONEAPI_NOT_SUPPORTED("");
-    Array<T> out = createEmptyArray<T>(dim4(1));
+    Array<T> out =
+        convolve2_unwrap<T>(signal, filter, stride, padding, dilation);
+
     return out;
 }
 

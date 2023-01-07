@@ -228,17 +228,25 @@ target_sources(afoneapi
     kernel/reduce_all.hpp
     kernel/reduce_first.hpp
     kernel/reduce_dim.hpp
+    kernel/reorder.hpp
     kernel/scan_first.hpp
     kernel/scan_dim.hpp
     kernel/transpose.hpp
     kernel/transpose_inplace.hpp
     kernel/triangle.hpp
+    kernel/unwrap.hpp
     kernel/where.hpp
+    kernel/wrap.hpp
+    kernel/wrap_dilated.hpp
 )
 
 add_library(ArrayFire::afoneapi ALIAS afoneapi)
 
 arrayfire_set_default_cxx_flags(afoneapi)
+
+target_include_directories(afoneapi
+  SYSTEM PRIVATE
+    ${SYCL_INCLUDE_DIR})
 
 target_include_directories(afoneapi
   PUBLIC
@@ -247,7 +255,7 @@ target_include_directories(afoneapi
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${SYCL_INCLUDE_DIR}
+
   )
 
 target_compile_options(afoneapi
@@ -266,10 +274,23 @@ target_link_libraries(afoneapi
     -fsycl
   )
 
+af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
+
+install(TARGETS afoneapi
+  EXPORT ArrayFireoneAPITargets
+  COMPONENT oneapi
+  PUBLIC_HEADER DESTINATION af
+  RUNTIME DESTINATION ${AF_INSTALL_BIN_DIR}
+  LIBRARY DESTINATION ${AF_INSTALL_LIB_DIR}
+  ARCHIVE DESTINATION ${AF_INSTALL_LIB_DIR}
+  FRAMEWORK DESTINATION framework
+  INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
+)
+
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)
 source_group(backend  REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/backend/common/*|${CMAKE_CURRENT_SOURCE_DIR}/*)
 source_group(backend\\kernel  REGULAR_EXPRESSION ${CMAKE_CURRENT_SOURCE_DIR}/kernel/*)
-source_group("generated files" FILES ${ArrayFire_BINARY_DIR}/version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h)
+source_group("generated files" FILES ${ArrayFire_BINARY_DIR}/src/backend/build_version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h)
 source_group("" FILES CMakeLists.txt)

@@ -9,9 +9,58 @@ on:
 name: ci
 
 jobs:
+    clang-format:
+        name: Clang Format Lint
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Respository
+              uses: actions/checkout@master
+
+            - name: Check Sources
+              uses: DoozyX/clang-format-lint-action@v0.14
+              with:
+                source: './src ./test ./examples'
+                extensions: 'h,cpp,hpp'
+                clangFormatVersion: 14
+
+    documentation:
+        name: Documentation
+        runs-on: ubuntu-18.04
+        env:
+          DOXYGEN_VER: 1.8.18
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@master
+
+            - name: Install Doxygen
+              run: |
+                  wget --quiet https://sourceforge.net/projects/doxygen/files/rel-${DOXYGEN_VER}/doxygen-${DOXYGEN_VER}.linux.bin.tar.gz
+                  mkdir doxygen
+                  tar -xf doxygen-${DOXYGEN_VER}.linux.bin.tar.gz -C doxygen --strip 1
+
+            - name: Install Boost
+              run: |
+                  sudo add-apt-repository ppa:mhier/libboost-latest
+                  sudo apt-get -qq update
+                  sudo apt-get install -y libboost1.74-dev
+
+            - name: Configure
+              run: |
+                  mkdir build && cd build && unset VCPKG_ROOT
+                  cmake -DAF_BUILD_CPU:BOOL=OFF -DAF_BUILD_CUDA:BOOL=OFF \
+                        -DAF_BUILD_OPENCL:BOOL=OFF -DAF_BUILD_UNIFIED:BOOL=OFF \
+                        -DAF_BUILD_EXAMPLES:BOOL=OFF -DBUILD_TESTING:BOOL=OFF \
+                        -DDOXYGEN_EXECUTABLE:FILEPATH=${GITHUB_WORKSPACE}/doxygen/bin/doxygen ..
+
+            - name: Build
+              run: |
+                  cd ${GITHUB_WORKSPACE}/build
+                  cmake --build . --target docs
+
     build_cpu:
         name: CPU
         runs-on: ${{ matrix.os }}
+        needs: [clang-format, documentation]
         env:
           NINJA_VER: 1.10.2
           CMAKE_VER: 3.10.2
@@ -20,11 +69,16 @@ jobs:
             matrix:
                 blas_backend: [Atlas, MKL, OpenBLAS]
                 os: [ubuntu-18.04, ubuntu-20.04, macos-latest]
+                compiler: [gcc, clang, icx]
                 exclude:
                     - os: macos-latest
                       blas_backend: Atlas
                     - os: macos-latest
                       blas_backend: MKL
+                    - blas_backend: Atlas
+                      compiler: icx
+                    - blas_backend: OpenBLAS
+                      compiler: icx
         steps:
             - name: Checkout Repository
               uses: actions/checkout@master
@@ -43,6 +97,7 @@ jobs:
               if: matrix.os != 'macos-latest'
               env:
                   OS_NAME: ${{ matrix.os }}
+                  CC: ${{ matrix.compiler }}
               run: |
                   cmake_suffix=$(if [ $OS_NAME == 'macos-latest' ]; then echo "Darwin-x86_64"; else echo "Linux-x86_64"; fi)
                   cmake_url=$(echo "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-${cmake_suffix}.tar.gz")
@@ -54,6 +109,17 @@ jobs:
                   cmake_osx_dir=$(echo "${cmake_install_dir}/CMake.app/Contents/bin")
                   cmake_dir=$(if [ $OS_NAME == 'macos-latest' ]; then echo "${cmake_osx_dir}"; else echo "${cmake_lnx_dir}"; fi)
                   echo "CMAKE_PROGRAM=$(pwd)/${cmake_dir}/cmake" >> $GITHUB_ENV
+                  case "$CC" in
+                    'gcc')
+                        echo "CXX=g++" >> $GITHUB_ENV
+                        ;;
+                    'clang')
+                        echo "CXX=clang++" >> $GITHUB_ENV
+                        ;;
+                    'icx')
+                        echo "CXX=icpx" >> $GITHUB_ENV
+                        ;;
+                  esac
 
             - name: Install Dependencies for Macos
               if: matrix.os == 'macos-latest'
@@ -62,7 +128,7 @@ jobs:
                   echo "CMAKE_PROGRAM=cmake" >> $GITHUB_ENV
 
             - name: Install Common Dependencies for Ubuntu
-              if: matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-18.04'
+              if: matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04'
               run: |
                   sudo add-apt-repository ppa:mhier/libboost-latest
                   sudo apt-get -qq update
@@ -78,12 +144,15 @@ jobs:
 
             - name: Install MKL for Ubuntu
               if: matrix.os != 'macos-latest' && matrix.blas_backend == 'MKL'
+              env:
+                  CC: ${{ matrix.compiler }}
               run: |
                   wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
                   sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
                   sudo sh -c 'echo deb https://apt.repos.intel.com/oneapi all main > /etc/apt/sources.list.d/oneAPI.list'
                   sudo apt-get -qq update
                   sudo apt-get install -y intel-oneapi-mkl-devel
+                  if [ "$CC" == 'icx' ]; then sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp; fi
                   echo "MKLROOT=/opt/intel/oneapi/mkl/latest" >> ${GITHUB_ENV}
 
             - name: Install OpenBLAS for Ubuntu
@@ -94,6 +163,8 @@ jobs:
               env:
                   USE_MKL: ${{ matrix.blas_backend == 'MKL' }}
                   BLAS_BACKEND: ${{ matrix.blas_backend }}
+                  CC: ${{ matrix.compiler }}
+                  OS_NAME: ${{ matrix.os }}
               run: |
                   ref=$(echo ${GITHUB_REF} | awk '/refs\/pull\/[0-9]+\/merge/{print $0}')
                   prnum=$(echo $ref | awk '{split($0, a, "/"); print a[3]}')
@@ -103,6 +174,7 @@ jobs:
                   backend=$(if [ "$USE_MKL" == 1 ]; then echo "Intel-MKL"; else echo "FFTW/LAPACK/BLAS"; fi)
                   buildname="$buildname-cpu-$BLAS_BACKEND"
                   cmake_rpath=$(if [ $OS_NAME == 'macos-latest' ]; then echo "-DCMAKE_INSTALL_RPATH=/opt/arrayfire/lib"; fi)
+                  if [ "$CC" == 'icx' ]; then source /opt/intel/oneapi/setvars.sh intel64; fi
                   mkdir build && cd build && unset VCPKG_ROOT
                   ${CMAKE_PROGRAM} -G Ninja \
                       -DCMAKE_MAKE_PROGRAM:FILEPATH=${GITHUB_WORKSPACE}/ninja \
@@ -115,6 +187,9 @@ jobs:
                   echo "CTEST_DASHBOARD=${dashboard}" >> $GITHUB_ENV
 
             - name: Build and Test
+              env:
+                  CC: ${{ matrix.compiler }}
               run: |
                   cd ${GITHUB_WORKSPACE}/build
+                  if [ "$CC" == 'icx' ]; then source /opt/intel/oneapi/setvars.sh intel64; fi
                   ctest -D Experimental --track ${CTEST_DASHBOARD} -T Test -T Submit -R cpu -j2

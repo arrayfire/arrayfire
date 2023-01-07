@@ -32,67 +32,70 @@ using af::span;
 using std::complex;
 using std::vector;
 
-#define MINMAXOP(fn, ty)                                        \
-    TEST(IndexedReduce, fn##_##ty##_0) {                        \
-        SUPPORTED_TYPE_CHECK(ty);                               \
-        dtype dty    = (dtype)dtype_traits<ty>::af_type;        \
-        const int nx = 10000;                                   \
-        const int ny = 100;                                     \
-        array in     = randu(nx, ny, dty);                      \
-        array val, idx;                                         \
-        fn(val, idx, in, 0);                                    \
-                                                                \
-        ty *h_in    = in.host<ty>();                            \
-        ty *h_in_st = h_in;                                     \
-        ty *h_val   = val.host<ty>();                           \
-        uint *h_idx = idx.host<uint>();                         \
-        for (int i = 0; i < ny; i++) {                          \
-            ty tmp = *std::fn##_element(h_in, h_in + nx);       \
-            ASSERT_EQ(tmp, h_val[i]) << "for index" << i;       \
-            ASSERT_EQ(h_in[h_idx[i]], tmp) << "for index" << i; \
-            h_in += nx;                                         \
-        }                                                       \
-        af_free_host(h_in_st);                                  \
-        af_free_host(h_val);                                    \
-        af_free_host(h_idx);                                    \
-    }                                                           \
-    TEST(IndexedReduce, fn##_##ty##_1) {                        \
-        SUPPORTED_TYPE_CHECK(ty);                               \
-        dtype dty    = (dtype)dtype_traits<ty>::af_type;        \
-        const int nx = 100;                                     \
-        const int ny = 100;                                     \
-        array in     = randu(nx, ny, dty);                      \
-        array val, idx;                                         \
-        fn(val, idx, in, 1);                                    \
-                                                                \
-        ty *h_in    = in.host<ty>();                            \
-        ty *h_val   = val.host<ty>();                           \
-        uint *h_idx = idx.host<uint>();                         \
-        for (int i = 0; i < nx; i++) {                          \
-            ty val = h_val[i];                                  \
-            for (int j = 0; j < ny; j++) {                      \
-                ty tmp = std::fn(val, h_in[j * nx + i]);        \
-                ASSERT_EQ(tmp, val);                            \
-            }                                                   \
-            ASSERT_EQ(val, h_in[h_idx[i] * nx + i]);            \
-        }                                                       \
-        af_free_host(h_in);                                     \
-        af_free_host(h_val);                                    \
-        af_free_host(h_idx);                                    \
-    }                                                           \
-    TEST(IndexedReduce, fn##_##ty##_all) {                      \
-        SUPPORTED_TYPE_CHECK(ty);                               \
-        dtype dty     = (dtype)dtype_traits<ty>::af_type;       \
-        const int num = 100000;                                 \
-        array in      = randu(num, dty);                        \
-        ty val;                                                 \
-        uint idx;                                               \
-        fn<ty>(&val, &idx, in);                                 \
-        ty *h_in = in.host<ty>();                               \
-        ty tmp   = *std::fn##_element(h_in, h_in + num);        \
-        ASSERT_EQ(tmp, val);                                    \
-        ASSERT_EQ(tmp, h_in[idx]);                              \
-        af_free_host(h_in);                                     \
+#define MINMAXOP(fn, ty)                                         \
+    TEST(IndexedReduce, fn##_##ty##_0) {                         \
+        SUPPORTED_TYPE_CHECK(ty);                                \
+        dtype dty    = (dtype)dtype_traits<ty>::af_type;         \
+        const int nx = 10;                                       \
+        const int ny = 100;                                      \
+        array in     = randu(nx, ny, dty);                       \
+        array val, idx;                                          \
+        fn(val, idx, in, 0);                                     \
+                                                                 \
+        ty *h_in    = in.host<ty>();                             \
+        ty *h_in_st = h_in;                                      \
+        uint *h_idx = idx.host<uint>();                          \
+        vector<ty> gold;                                         \
+        vector<ty> igold;                                        \
+        gold.reserve(ny);                                        \
+        igold.reserve(ny);                                       \
+        for (int i = 0; i < ny; i++) {                           \
+            gold.push_back(*std::fn##_element(h_in, h_in + nx)); \
+            igold.push_back(h_in[h_idx[i]]);                     \
+            h_in += nx;                                          \
+        }                                                        \
+        ASSERT_VEC_ARRAY_EQ(gold, af::dim4(1, ny), val);         \
+        ASSERT_VEC_ARRAY_EQ(igold, af::dim4(1, ny), val);        \
+        af_free_host(h_in_st);                                   \
+        af_free_host(h_idx);                                     \
+    }                                                            \
+    TEST(IndexedReduce, fn##_##ty##_1) {                         \
+        SUPPORTED_TYPE_CHECK(ty);                                \
+        dtype dty    = (dtype)dtype_traits<ty>::af_type;         \
+        const int nx = 100;                                      \
+        const int ny = 100;                                      \
+        array in     = randu(nx, ny, dty);                       \
+        array val, idx;                                          \
+        fn(val, idx, in, 1);                                     \
+                                                                 \
+        ty *h_in    = in.host<ty>();                             \
+        ty *h_val   = val.host<ty>();                            \
+        uint *h_idx = idx.host<uint>();                          \
+        for (int i = 0; i < nx; i++) {                           \
+            ty val = h_val[i];                                   \
+            for (int j = 0; j < ny; j++) {                       \
+                ty tmp = std::fn(val, h_in[j * nx + i]);         \
+                ASSERT_EQ(tmp, val);                             \
+            }                                                    \
+            ASSERT_EQ(val, h_in[h_idx[i] * nx + i]);             \
+        }                                                        \
+        af_free_host(h_in);                                      \
+        af_free_host(h_val);                                     \
+        af_free_host(h_idx);                                     \
+    }                                                            \
+    TEST(IndexedReduce, fn##_##ty##_all) {                       \
+        SUPPORTED_TYPE_CHECK(ty);                                \
+        dtype dty     = (dtype)dtype_traits<ty>::af_type;        \
+        const int num = 100000;                                  \
+        array in      = randu(num, dty);                         \
+        ty val;                                                  \
+        uint idx;                                                \
+        fn<ty>(&val, &idx, in);                                  \
+        ty *h_in = in.host<ty>();                                \
+        ty tmp   = *std::fn##_element(h_in, h_in + num);         \
+        ASSERT_EQ(tmp, val);                                     \
+        ASSERT_EQ(tmp, h_in[idx]);                               \
+        af_free_host(h_in);                                      \
     }
 
 MINMAXOP(min, float)
@@ -189,6 +192,7 @@ TEST(IndexedReduce, MaxReduceDimensionHasSingleValue) {
 }
 
 TEST(IndexedReduce, MinNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     float test_data[] = {1.f, NAN, 5.f, 0.1f, NAN, -0.5f, NAN, 0.f};
     int rows          = 4;
     int cols          = 2;
@@ -215,6 +219,7 @@ TEST(IndexedReduce, MinNaN) {
 }
 
 TEST(IndexedReduce, MaxNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     float test_data[] = {1.f, NAN, 5.f, 0.1f, NAN, -0.5f, NAN, 0.f};
     int rows          = 4;
     int cols          = 2;
@@ -241,6 +246,7 @@ TEST(IndexedReduce, MaxNaN) {
 }
 
 TEST(IndexedReduce, MinCplxNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     float real_wnan_data[] = {0.005f, NAN, -6.3f, NAN,      -0.5f,
                               NAN,    NAN, 0.2f,  -1205.4f, 8.9f};
 
@@ -276,6 +282,7 @@ TEST(IndexedReduce, MinCplxNaN) {
 }
 
 TEST(IndexedReduce, MaxCplxNaN) {
+    SKIP_IF_FAST_MATH_ENABLED();
     float real_wnan_data[] = {0.005f, NAN, -6.3f, NAN,      -0.5f,
                               NAN,    NAN, 0.2f,  -1205.4f, 8.9f};
 

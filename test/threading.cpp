@@ -53,7 +53,7 @@ void calc(ArithOp opcode, array op1, array op2, float outValue,
     vector<float> out(res.elements());
     res.host((void*)out.data());
 
-    for (unsigned i = 0; i < out.size(); ++i) ASSERT_EQ(out[i], outValue);
+    for (unsigned i = 0; i < out.size(); ++i) ASSERT_FLOAT_EQ(out[i], outValue);
     af::sync();
 }
 

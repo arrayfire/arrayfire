@@ -310,21 +310,21 @@ static void writeOut128Bytes(char *out, const uint &index, const uint groupSz,
                              const uint &r1, const uint &r2, const uint &r3,
                              const uint &r4) {
     out[index]                = (r1)&0x1;
-    out[index + groupSz]      = (r1 >> 1) & 0x1;
-    out[index + 2 * groupSz]  = (r1 >> 2) & 0x1;
-    out[index + 3 * groupSz]  = (r1 >> 3) & 0x1;
+    out[index + groupSz]      = (r1 >> 8) & 0x1;
+    out[index + 2 * groupSz]  = (r1 >> 16) & 0x1;
+    out[index + 3 * groupSz]  = (r1 >> 24) & 0x1;
     out[index + 4 * groupSz]  = (r2)&0x1;
-    out[index + 5 * groupSz]  = (r2 >> 1) & 0x1;
-    out[index + 6 * groupSz]  = (r2 >> 2) & 0x1;
-    out[index + 7 * groupSz]  = (r2 >> 3) & 0x1;
+    out[index + 5 * groupSz]  = (r2 >> 8) & 0x1;
+    out[index + 6 * groupSz]  = (r2 >> 16) & 0x1;
+    out[index + 7 * groupSz]  = (r2 >> 24) & 0x1;
     out[index + 8 * groupSz]  = (r3)&0x1;
-    out[index + 9 * groupSz]  = (r3 >> 1) & 0x1;
-    out[index + 10 * groupSz] = (r3 >> 2) & 0x1;
-    out[index + 11 * groupSz] = (r3 >> 3) & 0x1;
+    out[index + 9 * groupSz]  = (r3 >> 8) & 0x1;
+    out[index + 10 * groupSz] = (r3 >> 16) & 0x1;
+    out[index + 11 * groupSz] = (r3 >> 24) & 0x1;
     out[index + 12 * groupSz] = (r4)&0x1;
-    out[index + 13 * groupSz] = (r4 >> 1) & 0x1;
-    out[index + 14 * groupSz] = (r4 >> 2) & 0x1;
-    out[index + 15 * groupSz] = (r4 >> 3) & 0x1;
+    out[index + 13 * groupSz] = (r4 >> 8) & 0x1;
+    out[index + 14 * groupSz] = (r4 >> 16) & 0x1;
+    out[index + 15 * groupSz] = (r4 >> 24) & 0x1;
 }
 
 static void writeOut128Bytes(short *out, const uint &index, const uint groupSz,
@@ -513,44 +513,44 @@ static void partialWriteOut128Bytes(char *out, const uint &index,
                                     const uint &r2, const uint &r3,
                                     const uint &r4, const uint &elements) {
     if (index < elements) { out[index] = (r1)&0x1; }
-    if (index + groupSz < elements) { out[index + groupSz] = (r1 >> 1) & 0x1; }
+    if (index + groupSz < elements) { out[index + groupSz] = (r1 >> 8) & 0x1; }
     if (index + 2 * groupSz < elements) {
-        out[index + 2 * groupSz] = (r1 >> 2) & 0x1;
+        out[index + 2 * groupSz] = (r1 >> 16) & 0x1;
     }
     if (index + 3 * groupSz < elements) {
-        out[index + 3 * groupSz] = (r1 >> 3) & 0x1;
+        out[index + 3 * groupSz] = (r1 >> 24) & 0x1;
     }
     if (index + 4 * groupSz < elements) { out[index + 4 * groupSz] = (r2)&0x1; }
     if (index + 5 * groupSz < elements) {
-        out[index + 5 * groupSz] = (r2 >> 1) & 0x1;
+        out[index + 5 * groupSz] = (r2 >> 8) & 0x1;
     }
     if (index + 6 * groupSz < elements) {
-        out[index + 6 * groupSz] = (r2 >> 2) & 0x1;
+        out[index + 6 * groupSz] = (r2 >> 16) & 0x1;
     }
     if (index + 7 * groupSz < elements) {
-        out[index + 7 * groupSz] = (r2 >> 3) & 0x1;
+        out[index + 7 * groupSz] = (r2 >> 24) & 0x1;
     }
     if (index + 8 * groupSz < elements) { out[index + 8 * groupSz] = (r3)&0x1; }
     if (index + 9 * groupSz < elements) {
-        out[index + 9 * groupSz] = (r3 >> 1) & 0x1;
+        out[index + 9 * groupSz] = (r3 >> 8) & 0x1;
     }
     if (index + 10 * groupSz < elements) {
-        out[index + 10 * groupSz] = (r3 >> 2) & 0x1;
+        out[index + 10 * groupSz] = (r3 >> 16) & 0x1;
     }
     if (index + 11 * groupSz < elements) {
-        out[index + 11 * groupSz] = (r3 >> 3) & 0x1;
+        out[index + 11 * groupSz] = (r3 >> 24) & 0x1;
     }
     if (index + 12 * groupSz < elements) {
         out[index + 12 * groupSz] = (r4)&0x1;
     }
     if (index + 13 * groupSz < elements) {
-        out[index + 13 * groupSz] = (r4 >> 1) & 0x1;
+        out[index + 13 * groupSz] = (r4 >> 8) & 0x1;
     }
     if (index + 14 * groupSz < elements) {
-        out[index + 14 * groupSz] = (r4 >> 2) & 0x1;
+        out[index + 14 * groupSz] = (r4 >> 16) & 0x1;
     }
     if (index + 15 * groupSz < elements) {
-        out[index + 15 * groupSz] = (r4 >> 3) & 0x1;
+        out[index + 15 * groupSz] = (r4 >> 24) & 0x1;
     }
 }
 

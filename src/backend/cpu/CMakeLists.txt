@@ -292,9 +292,11 @@ target_include_directories(afcpu
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${${threads_prefix}_SOURCE_DIR}/include
-    ${CBLAS_INCLUDE_DIR}
-  )
+    ${${threads_prefix}_SOURCE_DIR}/include)
+
+target_include_directories(afcpu
+  SYSTEM PRIVATE
+    ${CBLAS_INCLUDE_DIR})
 
 target_compile_definitions(afcpu
   PRIVATE
@@ -356,5 +358,5 @@ source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
 source_group(api\\c   REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/c/*)
 source_group(backend  REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/backend/common/*|${CMAKE_CURRENT_SOURCE_DIR}/*)
 source_group(backend\\kernel  REGULAR_EXPRESSION ${CMAKE_CURRENT_SOURCE_DIR}/kernel/*)
-source_group("generated files" FILES ${ArrayFire_BINARY_DIR}/version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h)
+source_group("generated files" FILES ${ArrayFire_BINARY_DIR}/src/backend/build_version.hpp ${ArrayFire_BINARY_DIR}/include/af/version.h)
 source_group("" FILES CMakeLists.txt)

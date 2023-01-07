@@ -107,8 +107,6 @@ if(AF_BUILD_UNIFIED)
   list(APPEND enabled_backends "unified")
 endif(AF_BUILD_UNIFIED)
 
-check_cxx_compiler_flag("-Wtautological-constant-compare" has_tautological_constant_compare_flag)
-
 add_library(arrayfire_test STATIC
   testHelpers.hpp
   arrayfire_test.cpp)
@@ -117,15 +115,23 @@ target_include_directories(arrayfire_test
   PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
     ${ArrayFire_SOURCE_DIR}/include
-    ${ArrayFire_BINARY_DIR}/include
+    ${ArrayFire_BINARY_DIR}/include)
+
+target_include_directories(arrayfire_test
+  SYSTEM PRIVATE
     ${ArrayFire_SOURCE_DIR}/extern/half/include
   )
 
 # The tautological-constant-compare warning is always thrown for std::nan
 # and std::info calls. Its unnecessarily verbose.
 target_compile_options(arrayfire_test
+  PUBLIC
+    # Intel compilers use fast math by default and ignore special floating point
+    # values like NaN and Infs.
+    $<$<COMPILE_LANGUAGE:CXX>:
+      $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>
+      $<$<BOOL:${has_cxx_unqualified_std_cast_call}>:-Wno-unqualified-std-cast-call>>
   PRIVATE
-    $<$<BOOL:${has_tautological_constant_compare_flag}>:-Wno-tautological-constant-compare>
     $<$<CXX_COMPILER_ID:MSVC>: /bigobj
                                /EHsc>
   )
@@ -137,6 +143,8 @@ if(WIN32)
 endif()
 
 target_compile_definitions(arrayfire_test
+  PUBLIC
+    $<$<BOOL:${AF_WITH_FAST_MATH}>:AF_WITH_FAST_MATH>
   PRIVATE
     TEST_RESULT_IMAGE_DIR="${CMAKE_BINARY_DIR}/test/"
     USE_MTX)
@@ -180,9 +188,10 @@ function(make_test)
     add_executable(${target} ${mt_args_SRC})
     target_include_directories(${target}
       PRIVATE
-        ${ArrayFire_SOURCE_DIR}/extern/half/include
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
+      SYSTEM PRIVATE
+        ${ArrayFire_SOURCE_DIR}/extern/half/include
       )
     target_link_libraries(${target}
       PRIVATE
@@ -190,11 +199,8 @@ function(make_test)
         arrayfire_test
       )
 
-    # The tautological-constant-compare warning is always thrown for std::nan
-    # and std::info calls. Its unnecessarily verbose.
     target_compile_options(${target}
       PRIVATE
-        $<$<BOOL:${has_tautological_constant_compare_flag}>:-Wno-tautological-constant-compare>
         $<$<CXX_COMPILER_ID:MSVC>: /bigobj
                                    /EHsc>
       )
@@ -358,19 +364,13 @@ if(CUDA_FOUND)
     set(cuda_test_backends "cuda" "unified")
     if(${backend} IN_LIST cuda_test_backends)
       set(target test_cuda_${backend})
-      if(${CMAKE_VERSION} VERSION_LESS 3.5.2)
-        cuda_include_directories(
-          ${ArrayFire_SOURCE_DIR}/include
-          ${ArrayFire_BINARY_DIR}/include
-          ${ArrayFire_SOURCE_DIR}/extern/half/include
-          ${CMAKE_CURRENT_SOURCE_DIR}
-        )
-      endif()
       add_executable(${target} cuda.cu)
-      target_include_directories(${target} PRIVATE
-        ${ArrayFire_SOURCE_DIR}/extern/half/include
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR})
+      target_include_directories(${target}
+        PRIVATE
+          ${CMAKE_SOURCE_DIR}
+          ${CMAKE_CURRENT_SOURCE_DIR}
+        SYSTEM PRIVATE
+          ${ArrayFire_SOURCE_DIR}/extern/half/include)
       if(${backend} STREQUAL "unified")
         target_link_libraries(${target}
           ArrayFire::af)
@@ -484,6 +484,8 @@ elseif(AF_BUILD_CUDA)
   target_link_libraries(print_info ArrayFire::afcuda)
 elseif(AF_BUILD_CPU)
   target_link_libraries(print_info ArrayFire::afcpu)
+elseif(AF_BUILD_ONEAPI)
+  target_link_libraries(print_info ArrayFire::afoneapi)
 endif()
 
 make_test(SRC jit_test_api.cpp)

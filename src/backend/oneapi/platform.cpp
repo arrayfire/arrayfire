@@ -9,6 +9,7 @@
 
 #include <GraphicsResourceManager.hpp>
 #include <blas.hpp>
+#include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/graphics_common.hpp>
@@ -18,7 +19,6 @@
 #include <err_oneapi.hpp>
 #include <errorcodes.hpp>
 #include <memory.hpp>
-#include <version.hpp>
 #include <af/version.h>
 
 #ifdef OS_MAC
@@ -59,6 +59,8 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
+using common::getEnvVar;
+using common::ltrim;
 using common::memory::MemoryManagerBase;
 using oneapi::Allocator;
 using oneapi::AllocatorPinned;
@@ -316,7 +318,7 @@ sycl::info::device_type getDeviceType() {
 }
 
 bool isHostUnifiedMemory(const sycl::device& device) {
-    return device.get_info<sycl::info::device::host_unified_memory>();
+    return device.has(sycl::aspect::usm_host_allocations);
 }
 
 bool OneAPICPUOffload(bool forceOffloadOSX) {

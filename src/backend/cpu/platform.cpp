@@ -7,12 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <build_version.hpp>
 #include <common/MemoryManagerBase.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <device_manager.hpp>
 #include <platform.hpp>
-#include <version.hpp>
 #include <af/version.h>
 
 #include <cctype>
@@ -21,6 +21,8 @@
 #include <sstream>
 #include <string>
 
+using common::getEnvVar;
+using common::ltrim;
 using common::memory::MemoryManagerBase;
 using std::endl;
 using std::ostringstream;

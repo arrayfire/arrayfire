@@ -13,6 +13,7 @@
 #include <cl2hpp.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/util.hpp>
 #include <debug_opencl.hpp>
 #include <err_opencl.hpp>
@@ -31,6 +32,7 @@
 
 using cl::Error;
 using cl::Program;
+using common::getEnvVar;
 using common::loggerFactory;
 using fmt::format;
 using nonstd::span;
@@ -123,6 +125,10 @@ Program buildProgram(span<const string> kernelSources,
 
         ostringstream options;
         for (auto &opt : compileOpts) { options << opt; }
+
+#ifdef AF_WITH_FAST_MATH
+        options << " -cl-fast-relaxed-math -DAF_WITH_FAST_MATH";
+#endif
 
         retVal.build({device}, (cl_std + defaults + options.str()).c_str());
     } catch (Error &err) {

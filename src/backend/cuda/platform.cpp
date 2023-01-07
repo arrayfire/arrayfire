@@ -17,6 +17,7 @@
 #endif
 
 #include <GraphicsResourceManager.hpp>
+#include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
@@ -36,7 +37,6 @@
 #include <memory.hpp>
 #include <spdlog/spdlog.h>
 #include <utility.hpp>
-#include <version.hpp>
 #include <af/cuda.h>
 #include <af/device.h>
 #include <af/version.h>
@@ -60,6 +60,8 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
+using common::getEnvVar;
+using common::int_version_to_string;
 using common::unique_handle;
 using common::memory::MemoryManagerBase;
 using cuda::Allocator;
@@ -92,6 +94,12 @@ unique_handle<cublasHandle_t> *cublasManager(const int deviceId) {
         // call outside of call_once scope.
         CUBLAS_CHECK(
             cublasSetStream(handles[deviceId], cuda::getStream(deviceId)));
+#ifdef AF_WITH_FAST_MATH
+        CUBLAS_CHECK(
+            cublasSetMathMode(handles[deviceId], CUBLAS_TF32_TENSOR_OP_MATH));
+        CUBLAS_CHECK(
+            cublasSetAtomicsMode(handles[deviceId], CUBLAS_ATOMICS_ALLOWED));
+#endif
     });
 
     return &handles[deviceId];

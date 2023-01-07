@@ -12,6 +12,7 @@
 #endif
 
 #include <GraphicsResourceManager.hpp>
+#include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/MemoryManagerBase.hpp>
@@ -26,7 +27,6 @@
 #include <memory.hpp>
 #include <platform.hpp>
 #include <spdlog/spdlog.h>
-#include <version.hpp>
 #include <af/cuda.h>
 #include <af/version.h>
 // cuda_gl_interop.h does not include OpenGL headers for ARM
@@ -46,6 +46,8 @@
 #include <thread>
 #include <utility>
 
+using common::getEnvVar;
+using common::int_version_to_string;
 using std::begin;
 using std::end;
 using std::find;

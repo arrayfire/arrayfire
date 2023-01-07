@@ -28,7 +28,10 @@
 #include <string>
 
 using af::dim4;
+using common::getCacheDirectory;
+using common::getEnvVar;
 using common::half;
+using common::JIT_KERNEL_CACHE_DIRECTORY_ENV_NAME;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
@@ -164,8 +167,9 @@ af_err af_info_string(char** str, const bool verbose) {
     UNUSED(verbose);  // TODO(umar): Add something useful
     try {
         std::string infoStr = getDeviceInfo();
-        af_alloc_host(reinterpret_cast<void**>(str),
-                      sizeof(char) * (infoStr.size() + 1));
+        void* halloc_ptr    = nullptr;
+        af_alloc_host(&halloc_ptr, sizeof(char) * (infoStr.size() + 1));
+        memcpy(str, &halloc_ptr, sizeof(void*));
 
         // Need to do a deep copy
         // str.c_str wont cut it

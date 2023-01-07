@@ -11,7 +11,8 @@
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
-// #include <kernel/wrap.hpp>
+#include <kernel/wrap.hpp>
+#include <kernel/wrap_dilated.hpp>
 #include <math.hpp>
 #include <wrap.hpp>
 #include <stdexcept>
@@ -24,8 +25,7 @@ template<typename T>
 void wrap(Array<T> &out, const Array<T> &in, const dim_t wx, const dim_t wy,
           const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
           const bool is_column) {
-    ONEAPI_NOT_SUPPORTED("wrap Not supported");
-    // kernel::wrap<T>(out, in, wx, wy, sx, sy, px, py, is_column);
+    kernel::wrap<T>(out, in, wx, wy, sx, sy, px, py, is_column);
 }
 
 #define INSTANTIATE(T)                                                        \
@@ -57,9 +57,7 @@ Array<T> wrap_dilated(const Array<T> &in, const dim_t ox, const dim_t oy,
     af::dim4 odims(ox, oy, idims[2], idims[3]);
     Array<T> out = createValueArray<T>(odims, scalar<T>(0));
 
-    // kernel::wrap_dilated<T>(out, in, wx, wy, sx, sy, px, py, dx, dy,
-    // is_column);
-    ONEAPI_NOT_SUPPORTED("wrap_dilated Not supported");
+    kernel::wrap_dilated<T>(out, in, wx, wy, sx, sy, px, py, dx, dy, is_column);
     return out;
 }
 

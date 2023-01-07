@@ -11,6 +11,7 @@
 #include <common/err_common.hpp>
 #include <common/traits.hpp>
 #include <algorithm>
+#include <cstring>
 #include <functional>
 #include <numeric>
 
@@ -173,8 +174,8 @@ dim4 toStride(const vector<af_seq> &seqs, const af::dim4 &parentDims) {
 
 const ArrayInfo &getInfo(const af_array arr, bool sparse_check,
                          bool device_check) {
-    const ArrayInfo *info =
-        static_cast<ArrayInfo *>(reinterpret_cast<void *>(arr));
+    const ArrayInfo *info = nullptr;
+    memcpy(&info, &arr, sizeof(af_array));
 
     // Check Sparse -> If false, then both standard Array<T> and SparseArray<T>
     // are accepted Otherwise only regular Array<T> is accepted

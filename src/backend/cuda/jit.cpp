@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <Kernel.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/half.hpp>
 #include <common/jit/ModdimNode.hpp>
 #include <common/jit/Node.hpp>
@@ -34,6 +35,7 @@
 #include <vector>
 
 using common::findModule;
+using common::getEnvVar;
 using common::getFuncName;
 using common::half;
 using common::ModdimNode;
@@ -42,6 +44,7 @@ using common::Node_ids;
 using common::Node_map_t;
 using common::Node_ptr;
 using common::NodeIterator;
+using common::saveKernel;
 
 using std::array;
 using std::equal;
@@ -331,6 +334,7 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
     assert(outputs.size() == output_nodes.size());
     dim_t* outDims{outputs[0].dims};
     dim_t* outStrides{outputs[0].strides};
+#ifndef NDEBUG
     for_each(
         begin(outputs)++, end(outputs),
         [outDims, outStrides](Param<T>& output) {
@@ -338,6 +342,7 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                    equal(output.strides, output.strides + AF_MAX_DIMS,
                          outStrides));
         });
+#endif
 
     dim_t ndims{outDims[3] > 1   ? 4
                 : outDims[2] > 1 ? 3

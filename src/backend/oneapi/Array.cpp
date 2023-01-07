@@ -179,14 +179,16 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
                 const T *const in_data, bool is_device)
     : info(getActiveDeviceId(), dims, offset_, strides,
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(is_device ? (new buffer<T>(*reinterpret_cast<buffer<T> *>(
-                           const_cast<T *>(in_data))))
-                     : (memAlloc<T>(info.elements()).release()),
-           bufferFree<T>)
+    , data()
     , data_dims(dims)
     , node()
     , owner(true) {
-    if (!is_device) {
+    if (is_device) {
+        buffer<T> *ptr;
+        std::memcpy(&ptr, in_data, sizeof(buffer<T> *));
+        data = make_shared<buffer<T>>(*ptr);
+    } else {
+        data = memAlloc<T>(info.elements());
         getQueue()
             .submit(
                 [&](sycl::handler &h) { h.copy(in_data, data->get_access(h)); })

@@ -12,6 +12,7 @@
 
 #include <Module.hpp>
 #include <common/Logger.hpp>
+#include <common/deterministicHash.hpp>
 #include <common/internal_enums.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>
@@ -260,6 +261,10 @@ Module compileModule(const string &moduleKey, span<const string> sources,
         arch.data(),
         "--std=c++14",
         "--device-as-default-execution-space",
+#ifdef AF_WITH_FAST_MATH
+        "--use_fast_math",
+        "-DAF_WITH_FAST_MATH",
+#endif
 #if !(defined(NDEBUG) || defined(__aarch64__) || defined(__LP64__))
         "--device-debug",
         "--generate-line-info"

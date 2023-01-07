@@ -99,14 +99,18 @@ double getDouble01(uint *val, uint index) {
 
 template<>
 char transform<char>(uint *val, uint index) {
-    char v = val[index >> 2] >> (8 << (index & 3));
-    v      = (v & 0x1) ? 1 : 0;
+    char v = 0;
+    memcpy(&v, static_cast<char *>(static_cast<void *>(val)) + index,
+           sizeof(char));
+    v &= 0x1;
     return v;
 }
 
 template<>
 uchar transform<uchar>(uint *val, uint index) {
-    uchar v = val[index >> 2] >> (index << 3);
+    uchar v = 0;
+    memcpy(&v, static_cast<uchar *>(static_cast<void *>(val)) + index,
+           sizeof(uchar));
     return v;
 }
 
@@ -210,7 +214,7 @@ void philoxUniform(T *out, size_t elements, const uintl seed, uintl counter) {
 
                 // Use the same ctr array for each of the 4 locations,
                 // but each of the location gets a different ctr value
-                for (size_t buf_idx = 0; buf_idx < NUM_WRITES; ++buf_idx) {
+                for (uint buf_idx = 0; buf_idx < NUM_WRITES; ++buf_idx) {
                     size_t out_idx = iter + buf_idx * WRITE_STRIDE + i + j;
                     if (out_idx < elements) {
                         out[out_idx] = transform<T>(ctr, buf_idx);

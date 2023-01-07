@@ -40,9 +40,9 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/MemoryManagerBase.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/MersenneTwister.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ModuleInterface.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Source.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SparseArray.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/TemplateArg.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TemplateArg.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/TemplateTypename.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/blas_headers.hpp
@@ -53,6 +53,8 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/complex.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/constants.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/defines.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/deterministicHash.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/deterministicHash.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dim4.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.hpp
@@ -76,7 +78,6 @@ target_sources(afcommon_interface
     ${CMAKE_CURRENT_SOURCE_DIR}/unique_handle.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/util.hpp
-    ${ArrayFire_BINARY_DIR}/version.hpp
   )
 
 if(WIN32)
@@ -111,24 +112,24 @@ if(AF_BUILD_FORGE AND NOT Forge_FOUND)
 endif()
 
 target_include_directories(afcommon_interface
-  INTERFACE
-    ${ArrayFire_SOURCE_DIR}/src/backend
-    ${ArrayFire_BINARY_DIR})
+  SYSTEM INTERFACE
+    $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>)
 
 target_include_directories(afcommon_interface
-  SYSTEM INTERFACE
-    $<$<PLATFORM_ID:Darwin>:${OPENGL_INCLUDE_DIR}>
-  )
+  INTERFACE
+    ${ArrayFire_SOURCE_DIR}/src/backend
+    ${ArrayFire_BINARY_DIR}/src/backend)
+
 if(TARGET Forge::forge)
   target_include_directories(afcommon_interface
     SYSTEM INTERFACE
-    $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>
+      $<TARGET_PROPERTY:Forge::forge,INCLUDE_DIRECTORIES>
   )
 else()
   target_include_directories(afcommon_interface
     SYSTEM INTERFACE
-    ${${forge_prefix}_SOURCE_DIR}/include
-    ${${forge_prefix}_BINARY_DIR}/include
+      ${${forge_prefix}_SOURCE_DIR}/include
+      ${${forge_prefix}_BINARY_DIR}/include
   )
 endif()
 

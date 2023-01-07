@@ -12,14 +12,14 @@
 #include <common/TemplateArg.hpp>
 #include <af/defines.h>
 
+#include <array>
 #include <string>
-#include <vector>
 
 namespace opencl {
 namespace kernel {
 
 static void addInterpEnumOptions(std::vector<std::string>& options) {
-    std::vector<std::string> enOpts = {
+    static std::array<std::string, 10> enOpts = {
         DefineKeyValue(AF_INTERP_NEAREST, static_cast<int>(AF_INTERP_NEAREST)),
         DefineKeyValue(AF_INTERP_LINEAR, static_cast<int>(AF_INTERP_LINEAR)),
         DefineKeyValue(AF_INTERP_BILINEAR,
