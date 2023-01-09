@@ -255,18 +255,20 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
     auto matA = denMatDescriptor(in);
     cusparseSpMatDescr_t matB;
 
-    auto d_csr_offsets = createEmptyArray<int>(M + 1);
+    Array<int> d_offsets = createEmptyArray<int>(0);
 
     if (stype == AF_STORAGE_CSR) {
+        d_offsets = createEmptyArray<int>(M + 1);
         // Create sparse matrix B in CSR format
         CUSPARSE_CHECK(
-            cusparseCreateCsr(&matB, M, N, 0, d_csr_offsets.get(), nullptr,
-                              nullptr, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+            cusparseCreateCsr(&matB, M, N, 0, d_offsets.get(), nullptr, nullptr,
+                              CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
                               CUSPARSE_INDEX_BASE_ZERO, getType<T>()));
     } else {
+        d_offsets = createEmptyArray<int>(N + 1);
         CUSPARSE_CHECK(
-            cusparseCreateCsc(&matB, M, N, 0, d_csr_offsets.get(), nullptr,
-                              nullptr, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
+            cusparseCreateCsc(&matB, M, N, 0, d_offsets.get(), nullptr, nullptr,
+                              CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I,
                               CUSPARSE_INDEX_BASE_ZERO, getType<T>()));
     }
 
@@ -287,22 +289,20 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
     CUSPARSE_CHECK(
         cusparseSpMatGetSize(matB, &num_rows_tmp, &num_cols_tmp, &nnz));
 
-    auto d_csr_columns = createEmptyArray<int>(nnz);
-    auto d_csr_values  = createEmptyArray<T>(nnz);
+    auto d_ind    = createEmptyArray<int>(nnz);
+    auto d_values = createEmptyArray<T>(nnz);
     // allocate CSR column indices and values
     // reset offsets, column indices, and values pointers
     if (stype == AF_STORAGE_CSR) {
         // Create sparse matrix B in CSR format
         // reset offsets, column indices, and values pointers
-        CUSPARSE_CHECK(cusparseCsrSetPointers(matB, d_csr_offsets.get(),
-                                              d_csr_columns.get(),
-                                              d_csr_values.get()));
+        CUSPARSE_CHECK(cusparseCsrSetPointers(matB, d_offsets.get(),
+                                              d_ind.get(), d_values.get()));
 
     } else {
         // reset offsets, column indices, and values pointers
-        CUSPARSE_CHECK(cusparseCscSetPointers(matB, d_csr_offsets.get(),
-                                              d_csr_columns.get(),
-                                              d_csr_values.get()));
+        CUSPARSE_CHECK(cusparseCscSetPointers(matB, d_offsets.get(),
+                                              d_ind.get(), d_values.get()));
     }
     // execute Sparse to Dense conversion
     CUSPARSE_CHECK(cusparseDenseToSparse_convert(
@@ -313,20 +313,22 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in) {
         size_t pBufferSizeInBytes = 0;
         auto desc                 = make_handle<cusparseMatDescr_t>();
         CUSPARSE_CHECK(cusparseXcsrsort_bufferSizeExt(
-            sparseHandle(), M, N, nnz, d_csr_offsets.get(), d_csr_columns.get(),
+            sparseHandle(), M, N, nnz, d_offsets.get(), d_ind.get(),
             &pBufferSizeInBytes));
         auto pBuffer = memAlloc<char>(pBufferSizeInBytes);
         Array<int> P = createEmptyArray<int>(nnz);
         CUSPARSE_CHECK(
             cusparseCreateIdentityPermutation(sparseHandle(), nnz, P.get()));
         CUSPARSE_CHECK(cusparseXcsrsort(
-            sparseHandle(), M, N, nnz, desc, (int *)d_csr_offsets.get(),
-            (int *)d_csr_columns.get(), P.get(), pBuffer.get()));
-        d_csr_values = lookup(d_csr_values, P, 0);
+            sparseHandle(), M, N, nnz, desc, (int *)d_offsets.get(),
+            (int *)d_ind.get(), P.get(), pBuffer.get()));
+        d_values = lookup(d_values, P, 0);
+        return createArrayDataSparseArray<T>(in.dims(), d_values, d_offsets,
+                                             d_ind, stype, false);
+    } else {
+        return createArrayDataSparseArray<T>(in.dims(), d_values, d_ind,
+                                             d_offsets, stype, false);
     }
-
-    return createArrayDataSparseArray<T>(in.dims(), d_csr_values, d_csr_offsets,
-                                         d_csr_columns, stype, false);
 #endif
 }
 

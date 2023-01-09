@@ -25,11 +25,7 @@ template<typename T>
 auto cusparseDescriptor(const common::SparseArray<T> &in) {
     auto dims = in.dims();
 
-    return common::make_handle<cusparseSpMatDescr_t>(
-        dims[0], dims[1], in.getNNZ(), (void *)(in.getRowIdx().get()),
-        (void *)(in.getColIdx().get()), (void *)(in.getValues().get()),
-        CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO,
-        getType<T>());
+    return common::make_handle<cusparseSpMatDescr_t>(in);
 }
 
 template<typename T>
