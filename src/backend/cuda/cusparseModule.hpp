@@ -61,6 +61,7 @@ class cusparseModule {
     MODULE_MEMBER(cusparseXcsrsort);
 #endif
 
+    MODULE_MEMBER(cusparseCreateCoo);
     MODULE_MEMBER(cusparseCreateCsr);
     MODULE_MEMBER(cusparseDestroyDnMat);
     MODULE_MEMBER(cusparseDestroyDnVec);
