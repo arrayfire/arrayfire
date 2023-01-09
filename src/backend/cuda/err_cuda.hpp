@@ -18,6 +18,25 @@
                            boost::stacktrace::stacktrace());                \
     } while (0)
 
+#define CU_CHECK(fn)                                                          \
+    do {                                                                      \
+        CUresult res = fn;                                                    \
+        if (res == CUDA_SUCCESS) break;                                       \
+        char cu_err_msg[1024];                                                \
+        const char* cu_err_name;                                              \
+        const char* cu_err_string;                                            \
+        CUresult nameErr, strErr;                                             \
+        nameErr = cuGetErrorName(res, &cu_err_name);                          \
+        strErr  = cuGetErrorString(res, &cu_err_string);                      \
+        if (nameErr == CUDA_SUCCESS && strErr == CUDA_SUCCESS) {              \
+            snprintf(cu_err_msg, sizeof(cu_err_msg), "CU Error %s(%d): %s\n", \
+                     cu_err_name, (int)(res), cu_err_string);                 \
+            AF_ERROR(cu_err_msg, AF_ERR_INTERNAL);                            \
+        } else {                                                              \
+            AF_ERROR("CU Unknown error.\n", AF_ERR_INTERNAL);                 \
+        }                                                                     \
+    } while (0)
+
 #define CUDA_CHECK(fn)                                               \
     do {                                                             \
         cudaError_t _cuda_error = fn;                                \

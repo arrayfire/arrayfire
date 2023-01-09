@@ -14,7 +14,7 @@
 
 #include <EnqueueArgs.hpp>
 #include <backend.hpp>
-#include <cu_check_macro.hpp>
+#include <err_cuda.hpp>
 #include <cstdlib>
 #include <string>
 
