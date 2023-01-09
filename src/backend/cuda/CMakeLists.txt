@@ -406,7 +406,6 @@ add_library(afcuda
     convolveNN.cpp
     copy.cpp
     copy.hpp
-    cu_check_macro.hpp
     cublas.cpp
     cublas.hpp
 
