@@ -105,6 +105,7 @@ cusparseModule::cusparseModule()
 
     MODULE_FUNCTION_INIT(cusparseCnnz);
     MODULE_FUNCTION_INIT(cusparseCreateCsr);
+    MODULE_FUNCTION_INIT(cusparseCreateCoo);
     MODULE_FUNCTION_INIT(cusparseCreateDnMat);
     MODULE_FUNCTION_INIT(cusparseCreateDnVec);
     MODULE_FUNCTION_INIT(cusparseCreateIdentityPermutation);
