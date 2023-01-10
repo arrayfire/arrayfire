@@ -140,7 +140,6 @@ void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim, bool isAsce
             return std::get<0>(lhs) < std::get<0>(rhs);
         });
     }
-
 }
 
 template<typename Tk, typename Tv>

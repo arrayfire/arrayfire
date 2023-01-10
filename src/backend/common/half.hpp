@@ -915,14 +915,22 @@ static constexpr binary_t binary = binary_t{};
 
 class half;
 
-AF_CONSTEXPR __DH__ static inline bool operator==(
-    arrayfire::common::half lhs, arrayfire::common::half rhs) noexcept;
-AF_CONSTEXPR __DH__ static inline bool operator!=(
-    arrayfire::common::half lhs, arrayfire::common::half rhs) noexcept;
-__DH__ static inline bool operator<(arrayfire::common::half lhs,
-                                    arrayfire::common::half rhs) noexcept;
-__DH__ static inline bool operator<(arrayfire::common::half lhs,
-                                    float rhs) noexcept;
+AF_CONSTEXPR __DH__ static inline bool operator==(common::half lhs,
+                                                  common::half rhs) noexcept;
+AF_CONSTEXPR __DH__ static inline bool operator!=(common::half lhs,
+                                                  common::half rhs) noexcept;
+#ifdef AF_ONEAPI
+SYCL_EXTERNAL inline bool operator<(common::half lhs,
+                                    common::half rhs) noexcept;
+SYCL_EXTERNAL inline bool operator<(common::half lhs, float rhs) noexcept;
+SYCL_EXTERNAL inline bool operator>(common::half lhs,
+                                    common::half rhs) noexcept;
+#else
+__DH__ static inline bool operator<(common::half lhs,
+                                    common::half rhs) noexcept;
+__DH__ static inline bool operator<(common::half lhs, float rhs) noexcept;
+#endif
+
 AF_CONSTEXPR __DH__ static inline bool isinf(half val) noexcept;
 
 /// Classification implementation.
@@ -1048,10 +1056,14 @@ class alignas(2) half {
 
     friend AF_CONSTEXPR __DH__ bool operator==(half lhs, half rhs) noexcept;
     friend AF_CONSTEXPR __DH__ bool operator!=(half lhs, half rhs) noexcept;
-    friend __DH__ bool operator<(arrayfire::common::half lhs,
-                                 arrayfire::common::half rhs) noexcept;
-    friend __DH__ bool operator<(arrayfire::common::half lhs,
-                                 float rhs) noexcept;
+#ifdef AF_ONEAPI
+    friend SYCL_EXTERNAL bool operator<(common::half lhs, common::half rhs) noexcept;
+    friend SYCL_EXTERNAL bool operator<(common::half lhs, float rhs) noexcept;
+    friend SYCL_EXTERNAL bool operator>(common::half lhs, common::half rhs) noexcept;
+#else
+    friend __DH__ bool operator<(common::half lhs, common::half rhs) noexcept;
+    friend __DH__ bool operator<(common::half lhs, float rhs) noexcept;
+#endif
     friend AF_CONSTEXPR __DH__ bool isinf(half val) noexcept;
     friend AF_CONSTEXPR __DH__ inline bool isnan(half val) noexcept;
 
@@ -1107,8 +1119,32 @@ AF_CONSTEXPR __DH__ static inline bool operator!=(
 #endif
 }
 
-__DH__ static inline bool operator<(arrayfire::common::half lhs,
-                                    arrayfire::common::half rhs) noexcept {
+#ifdef AF_ONEAPI
+
+SYCL_EXTERNAL inline bool operator<(common::half lhs,
+                                    common::half rhs) noexcept {
+    int xabs = lhs.data_ & 0x7FFF, yabs = rhs.data_ & 0x7FFF;
+    return xabs <= 0x7C00 && yabs <= 0x7C00 &&
+           (((xabs == lhs.data_) ? xabs : -xabs) <
+            ((yabs == rhs.data_) ? yabs : -yabs));
+}
+
+SYCL_EXTERNAL inline bool operator<(common::half lhs, float rhs) noexcept {
+    return static_cast<float>(lhs) < rhs;
+}
+
+SYCL_EXTERNAL inline bool operator>(common::half lhs,
+                                    common::half rhs) noexcept {
+    int xabs = lhs.data_ & 0x7FFF, yabs = rhs.data_ & 0x7FFF;
+    return xabs <= 0x7C00 && yabs <= 0x7C00 &&
+           (((xabs == lhs.data_) ? xabs : -xabs) >
+            ((yabs == rhs.data_) ? yabs : -yabs));
+}
+
+#else
+
+__DH__ static inline bool operator<(common::half lhs,
+                                    common::half rhs) noexcept {
 #if __CUDA_ARCH__ >= 530
     return __hlt(lhs.data_, rhs.data_);
 #elif defined(__CUDA_ARCH__)
@@ -1133,6 +1169,8 @@ __DH__ static inline bool operator<(arrayfire::common::half lhs,
     return static_cast<float>(lhs) < rhs;
 #endif
 }
+
+#endif
 
 #ifndef __CUDA_ARCH__
 std::ostream& operator<<(std::ostream& os, const half& val);

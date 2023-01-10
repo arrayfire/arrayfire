@@ -14,6 +14,7 @@
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/iterator>
 
+#include <common/half.hpp>
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
