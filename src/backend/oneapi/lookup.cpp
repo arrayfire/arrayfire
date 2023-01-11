@@ -30,7 +30,10 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices,
 
     Array<in_t> out = createEmptyArray<in_t>(oDims);
 
-    kernel::lookup<in_t, idx_t>(out, input, indices, dim);
+    if constexpr ((!(std::is_same_v<in_t, double> || std::is_same_v<in_t, cdouble>)) &&
+                  (!(std::is_same_v<idx_t, double> || std::is_same_v<idx_t, cdouble>))) {
+      kernel::lookup<in_t, idx_t>(out, input, indices, dim);
+    }
 
     return out;
 }

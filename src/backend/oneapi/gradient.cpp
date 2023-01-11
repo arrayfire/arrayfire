@@ -17,7 +17,9 @@
 namespace oneapi {
 template<typename T>
 void gradient(Array<T> &grad0, Array<T> &grad1, const Array<T> &in) {
-    kernel::gradient<T>(grad0, grad1, in);
+    if constexpr (!(std::is_same_v<T, double> || std::is_same_v<T, cdouble>)) {
+        kernel::gradient<T>(grad0, grad1, in);
+    }
 }
 
 #define INSTANTIATE(T)                                            \
