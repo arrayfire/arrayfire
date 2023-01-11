@@ -2012,15 +2012,14 @@ vector<ragged_params *> genRaggedRangeTests() {
           ragged_range_data<unsigned, Tv, To>("ragged_range", 1024 * 1025, 3),
     };
 }
+// clang-format on
 
 vector<ragged_params *> generateAllTypesRagged() {
     vector<ragged_params *> out;
-    vector<vector<ragged_params *> > tmp{
-        genRaggedRangeTests<int, int>(),
-        genRaggedRangeTests<float, float>(),
+    vector<vector<ragged_params *>> tmp{
+        genRaggedRangeTests<int, int>(), genRaggedRangeTests<float, float>(),
         genRaggedRangeTests<double, double>(),
-        genRaggedRangeTests<half_float::half, half_float::half>()
-    };
+        genRaggedRangeTests<half_float::half, half_float::half>()};
 
     for (auto &v : tmp) { copy(begin(v), end(v), back_inserter(out)); }
     return out;
@@ -2032,7 +2031,7 @@ string testNameGeneratorRagged(
     af_dtype lt = info.param->lType_;
     af_dtype vt = info.param->vType_;
     size_t size = info.param->reduceDimLen_;
-    int rdim = info.param->reduceDim_;
+    int rdim    = info.param->reduceDim_;
     std::stringstream s;
     s << info.param->testname_ << "_lenType_" << lt << "_valueType_" << vt
       << "_size_" << size << "_reduceDim_" << rdim;
@@ -2040,8 +2039,8 @@ string testNameGeneratorRagged(
 }
 
 INSTANTIATE_TEST_SUITE_P(RaggedReduceTests, RaggedReduceMaxRangeP,
-                        ::testing::ValuesIn(generateAllTypesRagged()),
-                        testNameGeneratorRagged<RaggedReduceMaxRangeP>);
+                         ::testing::ValuesIn(generateAllTypesRagged()),
+                         testNameGeneratorRagged<RaggedReduceMaxRangeP>);
 
 TEST_P(RaggedReduceMaxRangeP, rangeMaxTest) {
     if (noHalfTests(GetParam()->vType_)) { return; }
@@ -2052,13 +2051,12 @@ TEST_P(RaggedReduceMaxRangeP, rangeMaxTest) {
 
     ASSERT_ARRAYS_EQ(valsReducedGold, ragged_max);
     ASSERT_ARRAYS_EQ(idxsReducedGold, idx);
-
 }
 
 TEST(ReduceByKey, ISSUE_2955) {
-    int N = 256;
-    af::array val = af::randu(N);
-    af::array key = af::range(af::dim4(N), 0, af::dtype::s32);
+    int N                  = 256;
+    af::array val          = af::randu(N);
+    af::array key          = af::range(af::dim4(N), 0, af::dtype::s32);
     key(seq(127, af::end)) = 1;
 
     af::array ok, ov;
@@ -2068,9 +2066,9 @@ TEST(ReduceByKey, ISSUE_2955) {
 }
 
 TEST(ReduceByKey, ISSUE_2955_dim) {
-    int N = 256;
-    af::array val = af::randu(8, N);
-    af::array key = af::range(af::dim4(N), 0, af::dtype::s32);
+    int N                  = 256;
+    af::array val          = af::randu(8, N);
+    af::array key          = af::range(af::dim4(N), 0, af::dtype::s32);
     key(seq(127, af::end)) = 1;
 
     af::array ok, ov;
@@ -2082,7 +2080,7 @@ TEST(ReduceByKey, ISSUE_2955_dim) {
 TEST(ReduceByKey, ISSUE_3062) {
     size_t N = 129;
 
-    af::array ones = af::constant(1, N, u32);
+    af::array ones  = af::constant(1, N, u32);
     af::array zeros = af::constant(0, N, u32);
 
     af::array okeys;
@@ -2095,7 +2093,7 @@ TEST(ReduceByKey, ISSUE_3062) {
     ASSERT_EQ(ovalues.scalar<unsigned>(), 129);
 
     // test reduction on non-zero dimension as well
-    ones = af::constant(1, 2, N, u32);
+    ones  = af::constant(1, 2, N, u32);
     zeros = af::constant(0, N, u32);
 
     af::sumByKey(okeys, ovalues, zeros, ones, 1);
@@ -2109,15 +2107,16 @@ TEST(Reduce, Test_Sum_Global_Array) {
     const int num = 513;
     array a       = af::randn(num, 2, 33, 4);
 
-    float res          = af::sum<float>(a);
-    array full_reduce  = af::sum<af::array>(a);
+    float res         = af::sum<float>(a);
+    array full_reduce = af::sum<af::array>(a);
 
     float *h_a = a.host<float>();
     float gold = 0.f;
 
     for (int i = 0; i < a.elements(); i++) { gold += h_a[i]; }
 
-    float max_error = std::numeric_limits<float>::epsilon() * (float)a.elements();
+    float max_error =
+        std::numeric_limits<float>::epsilon() * (float)a.elements();
     ASSERT_NEAR(gold, res, max_error);
     ASSERT_NEAR(res, full_reduce.scalar<float>(), max_error);
     freeHost(h_a);
@@ -2127,15 +2126,16 @@ TEST(Reduce, Test_Product_Global_Array) {
     const int num = 512;
     array a       = 1 + (0.005 * af::randn(num, 2, 3, 4));
 
-    float res          = af::product<float>(a);
-    array full_reduce  = af::product<af::array>(a);
+    float res         = af::product<float>(a);
+    array full_reduce = af::product<af::array>(a);
 
     float *h_a = a.host<float>();
     float gold = 1.f;
 
     for (int i = 0; i < a.elements(); i++) { gold *= h_a[i]; }
 
-    float max_error = std::numeric_limits<float>::epsilon() * (float)a.elements();
+    float max_error =
+        std::numeric_limits<float>::epsilon() * (float)a.elements();
     ASSERT_NEAR(gold, res, max_error);
     ASSERT_NEAR(res, full_reduce.scalar<float>(), max_error);
     freeHost(h_a);
@@ -2149,7 +2149,7 @@ TEST(Reduce, Test_Count_Global_Array) {
     int res       = count<int>(b);
     array res_arr = count<af::array>(b);
     char *h_b     = b.host<char>();
-    unsigned gold      = 0;
+    unsigned gold = 0;
 
     for (int i = 0; i < a.elements(); i++) { gold += h_b[i]; }
 
@@ -2204,15 +2204,17 @@ TYPED_TEST(Reduce, Test_All_Global_Array) {
         TypeParam res = allTrue<TypeParam>(a);
         array res_arr = allTrue<array>(a);
         typed_assert_eq((TypeParam) true, res, false);
-        typed_assert_eq((TypeParam) true, (TypeParam)res_arr.scalar<char>(), false);
+        typed_assert_eq((TypeParam) true, (TypeParam)res_arr.scalar<char>(),
+                        false);
 
         h_vals[3] = false;
         a         = array(2, num / 2, &h_vals.front());
 
-        res = allTrue<TypeParam>(a);
+        res     = allTrue<TypeParam>(a);
         res_arr = allTrue<array>(a);
         typed_assert_eq((TypeParam) false, res, false);
-        typed_assert_eq((TypeParam) false, (TypeParam)res_arr.scalar<char>(), false);
+        typed_assert_eq((TypeParam) false, (TypeParam)res_arr.scalar<char>(),
+                        false);
     }
 
     // false value location test
@@ -2225,7 +2227,8 @@ TYPED_TEST(Reduce, Test_All_Global_Array) {
         TypeParam res = allTrue<TypeParam>(a);
         array res_arr = allTrue<array>(a);
         typed_assert_eq((TypeParam) false, res, false);
-        typed_assert_eq((TypeParam) false, (TypeParam)res_arr.scalar<char>(), false);
+        typed_assert_eq((TypeParam) false, (TypeParam)res_arr.scalar<char>(),
+                        false);
 
         h_vals[i] = true;
     }
@@ -2243,14 +2246,16 @@ TYPED_TEST(Reduce, Test_Any_Global_Array) {
         TypeParam res = anyTrue<TypeParam>(a);
         array res_arr = anyTrue<array>(a);
         typed_assert_eq((TypeParam) false, res, false);
-        typed_assert_eq((TypeParam) false, (TypeParam)res_arr.scalar<char>(), false);
+        typed_assert_eq((TypeParam) false, (TypeParam)res_arr.scalar<char>(),
+                        false);
 
         h_vals[3] = true;
         a         = array(2, num / 2, &h_vals.front());
 
-        res = anyTrue<TypeParam>(a);
+        res     = anyTrue<TypeParam>(a);
         res_arr = anyTrue<array>(a);
-        typed_assert_eq((TypeParam) true, (TypeParam)res_arr.scalar<char>(), false);
+        typed_assert_eq((TypeParam) true, (TypeParam)res_arr.scalar<char>(),
+                        false);
     }
 
     // true value location test
@@ -2263,25 +2268,25 @@ TYPED_TEST(Reduce, Test_Any_Global_Array) {
         TypeParam res = anyTrue<TypeParam>(a);
         array res_arr = anyTrue<array>(a);
         typed_assert_eq((TypeParam) true, res, false);
-        typed_assert_eq((TypeParam) true, (TypeParam)res_arr.scalar<char>(), false);
+        typed_assert_eq((TypeParam) true, (TypeParam)res_arr.scalar<char>(),
+                        false);
 
         h_vals[i] = false;
     }
 }
 
-
 TEST(Reduce, Test_Sum_Global_Array_nanval) {
     SKIP_IF_FAST_MATH_ENABLED();
     const int num = 100000;
-    array a = af::randn(num, 2, 34, 4);
+    array a       = af::randn(num, 2, 34, 4);
     a(1, 0, 0, 0) = NAN;
     a(0, 1, 0, 0) = NAN;
     a(0, 0, 1, 0) = NAN;
     a(0, 0, 0, 1) = NAN;
 
-    double nanval = 0.2;
-    float res          = af::sum<float>(a, nanval);
-    array full_reduce  = af::sum<af::array>(a, nanval);
+    double nanval     = 0.2;
+    float res         = af::sum<float>(a, nanval);
+    array full_reduce = af::sum<af::array>(a, nanval);
 
     float *h_a = a.host<float>();
     float gold = 0.f;
@@ -2289,7 +2294,8 @@ TEST(Reduce, Test_Sum_Global_Array_nanval) {
     for (int i = 0; i < a.elements(); i++) {
         gold += (isnan(h_a[i])) ? nanval : h_a[i];
     }
-    float max_error = std::numeric_limits<float>::epsilon() * (float)a.elements();
+    float max_error =
+        std::numeric_limits<float>::epsilon() * (float)a.elements();
     ASSERT_NEAR(gold, res, max_error);
     ASSERT_NEAR(res, full_reduce.scalar<float>(), max_error);
     freeHost(h_a);
@@ -2298,16 +2304,16 @@ TEST(Reduce, Test_Sum_Global_Array_nanval) {
 TEST(Reduce, nanval_issue_3255) {
     SKIP_IF_FAST_MATH_ENABLED();
     char *info_str;
-    af_array  ikeys, ivals, okeys, ovals;
+    af_array ikeys, ivals, okeys, ovals;
     dim_t dims[1] = {8};
 
-    int ikeys_src[8] = {0, 0,  1, 1, 1,  2, 2,  0};
+    int ikeys_src[8] = {0, 0, 1, 1, 1, 2, 2, 0};
     af_create_array(&ikeys, ikeys_src, 1, dims, u32);
 
     int i;
-    for (i=0; i<8; i++) {
-        double ivals_src[8] = {1, 2,  3, 4, 5,  6, 7,  8};
-        ivals_src[i] = NAN;
+    for (i = 0; i < 8; i++) {
+        double ivals_src[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+        ivals_src[i]        = NAN;
         af_create_array(&ivals, ivals_src, 1, dims, f64);
 
         af_product_by_key_nan(&okeys, &ovals, ikeys, ivals, 0, 1.0);
