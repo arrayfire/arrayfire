@@ -14,48 +14,70 @@ namespace af
 {
     class array;
 
-    /// \ingroup arith_func_min
-    /// @{
-    /// \brief C++ interface for min of two arrays
+    /// C++ Interface to find the elementwise minimum between two arrays.
     ///
-    /// \param[in] lhs first input
-    /// \param[in] rhs second input
+    /// \param[in] lhs input array
+    /// \param[in] rhs input array
     /// \return minimum of \p lhs and \p rhs
     ///
+    /// \ingroup arith_func_min
     AFAPI array min    (const array &lhs, const array &rhs);
 
-    /// \copydoc min(const array&, const array &)
+    /// C++ Interface to find the elementwise minimum between an array and a scalar value.
+    ///
+    /// \param[in] lhs input array
+    /// \param[in] rhs scalar value
+    /// \return minimum of \p lhs and \p rhs
+    ///
+    /// \ingroup arith_func_min
     AFAPI array min    (const array &lhs, const double rhs);
 
-    /// \copydoc min(const array&, const array &)
-    AFAPI array min    (const double lhs, const array &rhs);
-    /// @}
-
-    /// \ingroup arith_func_max
-    /// @{
-    /// C++ Interface for max of two arrays or an array and a scalar
+    /// C++ Interface to find the elementwise minimum between an array and a scalar value.
     ///
-    /// \param[in] lhs first input
-    /// \param[in] rhs second input
+    /// \param[in] lhs scalar value
+    /// \param[in] rhs input array
+    /// \return minimum of \p lhs and \p rhs
+    ///
+    /// \ingroup arith_func_min
+    AFAPI array min    (const double lhs, const array &rhs);
+
+    /// C++ Interface to find the elementwise maximum between two arrays.
+    ///
+    /// \param[in] lhs input array
+    /// \param[in] rhs input array
     /// \return maximum of \p lhs and \p rhs
+    ///
+    /// \ingroup arith_func_max
     AFAPI array max    (const array &lhs, const array &rhs);
 
-    /// \copydoc max(const array&, const array&)
+    /// C++ Interface to find the elementwise maximum between an array and a scalar value.
+    ///
+    /// \param[in] lhs input array
+    /// \param[in] rhs scalar value
+    /// \return maximum of \p lhs and \p rhs
+    ///
+    /// \ingroup arith_func_max
     AFAPI array max    (const array &lhs, const double rhs);
 
-    /// \copydoc max(const array&, const array&)
+    /// C++ Interface to find the elementwise maximum between an array and a scalar value.
+    ///
+    /// \param[in] lhs input array
+    /// \param[in] rhs scalar value
+    /// \return maximum of \p lhs and \p rhs
+    ///
+    /// \ingroup arith_func_max
     AFAPI array max    (const double lhs, const array &rhs);
-    /// @}
 
 #if AF_API_VERSION >= 34
-    /// \ingroup arith_func_clamp
     /// @{
-    /// C++ Interface for clamping an array between two values
+    /// C++ Interface to clamp an array between an upper and a lower limit.
     ///
-    /// \param[in] in Input array
-    /// \param[in] lo Value for lower limit
-    /// \param[in] hi  Value for upper limit
+    /// \param[in] in input array
+    /// \param[in] lo lower limit; can be an array or a scalar
+    /// \param[in] hi upper limit; can be an array or a scalar
     /// \return array containing values from \p in clamped between \p lo and \p hi
+    /// 
+    /// \ingroup arith_func_clamp
     AFAPI array clamp(const array &in, const array &lo, const array &hi);
 #endif
 
@@ -75,14 +97,14 @@ namespace af
 #endif
     /// @}
 
-    /// \ingroup arith_func_rem
     /// @{
-    /// C++ Interface for remainder when array divides array,
-    /// scalar divides array or array divides scalar
+    /// C++ Interface to find the remainder.
     ///
-    /// \param[in] lhs is numerator
-    /// \param[in] rhs is denominator
-    /// \return remainder when \p rhs divides \p lhs
+    /// \param[in] lhs numerator; can be an array or a scalar
+    /// \param[in] rhs denominator; can be an array or a scalar
+    /// \return remainder of \p lhs divided by \p rhs
+    /// 
+    /// \ingroup arith_func_rem
     AFAPI array rem    (const array &lhs, const array &rhs);
 
     /// \copydoc rem(const array&, const array&)
@@ -92,14 +114,14 @@ namespace af
     AFAPI array rem    (const double lhs, const array &rhs);
     /// @}
 
-    /// \ingroup arith_func_mod
     /// @{
-    /// C++ Interface for modulus when dividend and divisor are arrays
-    /// or one of them is scalar
+    /// C++ Interface to find the modulus.
     ///
-    /// \param[in] lhs is dividend
-    /// \param[in] rhs is divisor
+    /// \param[in] lhs dividend; can be an array or a scalar
+    /// \param[in] rhs divisor; can be an array or a scalar
     /// \return \p lhs modulo \p rhs
+    /// 
+    /// \ingroup arith_func_mod
     AFAPI array mod    (const array &lhs, const array &rhs);
 
     /// \copydoc mod(const array&, const array&)
@@ -109,68 +131,57 @@ namespace af
     AFAPI array mod    (const double lhs, const array &rhs);
     /// @}
 
-    /// C++ Interface for absolute value
+    /// C++ Interface to find the absolute value.
     ///
-    /// \param[in] in is input array
-    /// \return absolute value of \p in
+    /// \param[in] in input array
+    /// \return absolute value
     ///
     /// \ingroup arith_func_abs
     AFAPI array abs    (const array &in);
 
-    /**
-       C++ Interface for arg
-
-       \param[in] in is input array
-       \return phase of \p in
-
-       \ingroup arith_func_arg
-    */
+    /// C++ Interface to find the phase angle (in radians) of a complex array.
+    ///
+    /// \param[in] in input array, typically complex
+    /// \return phase angle (in radians)
+    /// 
+    /// \ingroup arith_func_arg
     AFAPI array arg    (const array &in);
 
-    /**
-       C++ Interface for getting the sign of input
-
-       \param[in] in is input array
-       \return the sign of each element of input
-
-       \note output is 1 for negative numbers and 0 for positive numbers
-
-       \ingroup arith_func_sign
-    */
+    /// C++ Interface to find the sign of elements in an array.
+    ///
+    /// \param[in] in input array
+    /// \return array containing 1's for negative values; 0's otherwise
+    /// 
+    /// \ingroup arith_func_sign
     AFAPI array sign  (const array &in);
 
-    ///C++ Interface for rounding an array of numbers
+    /// C++ Interface to round numbers.
     ///
-    ///\param[in] in is input array
-    ///\return values rounded to nearest integer
+    /// \param[in] in input array
+    /// \return numbers rounded to nearest integer
     ///
-    ///\note The values are rounded to nearest integer
-    ///
-    ///\ingroup arith_func_round
+    /// \ingroup arith_func_round
     AFAPI array round  (const array &in);
 
-    /**
-       C++ Interface for truncating an array of numbers
-
-       \param[in] in is input array
-       \return values truncated to nearest integer not greater than input values
-
-       \ingroup arith_func_trunc
-    */
+    /// C++ Interface to truncate numbers.
+    ///
+    /// \param[in] in input array
+    /// \return nearest integer not greater in magnitude than \p in
+    /// 
+    /// \ingroup arith_func_trunc
     AFAPI array trunc  (const array &in);
 
-
-    /// C++ Interface for flooring an array of numbers
+    /// C++ Interface to floor numbers.
     ///
-    /// \param[in] in is input array
+    /// \param[in] in input array
     /// \return values rounded to nearest integer less than or equal to current value
     ///
     /// \ingroup arith_func_floor
     AFAPI array floor  (const array &in);
 
-    /// C++ Interface for ceiling an array of numbers
+    /// C++ Interface to ceil numbers.
     ///
-    /// \param[in] in is input array
+    /// \param[in] in input array
     /// \return values rounded to nearest integer greater than or equal to current value
     ///
     /// \ingroup arith_func_ceil
@@ -178,14 +189,14 @@ namespace af
 
     /// \ingroup arith_func_hypot
     /// @{
-    /// \brief C++ Interface for getting length of hypotenuse of two inputs
+    /// C++ Interface to find the length of the hypotenuse of two inputs.
     ///
     /// Calculates the hypotenuse of two inputs. The inputs can be both arrays
     /// or an array and a scalar.
     ///
-    /// \param[in] lhs is the length of first side
-    /// \param[in] rhs is the length of second side
-    /// \return the length of the hypotenuse
+    /// \param[in] lhs length of first side
+    /// \param[in] rhs length of second side
+    /// \return length of the hypotenuse
     AFAPI array hypot  (const array &lhs, const array &rhs);
 
     /// \copydoc hypot(const array&, const array&)
@@ -195,61 +206,61 @@ namespace af
     AFAPI array hypot  (const double lhs, const array &rhs);
     /// @}
 
-    /// C++ Interface for sin
+    /// C++ Interface to evaluate the sine function.
     ///
-    /// \param[in] in is input array
-    /// \return sin of input
+    /// \param[in] in input array
+    /// \return sine
     ///
     /// \ingroup arith_func_sin
     AFAPI array sin    (const array &in);
 
-    /// C++ Interface for cos
+    /// C++ Interface to evaluate the cosine function.
     ///
-    /// \param[in] in is input array
-    /// \return cos of input
+    /// \param[in] in input array
+    /// \return cosine
     ///
     /// \ingroup arith_func_cos
     AFAPI array cos    (const array &in);
 
-    /// C++ Interface for tan
+    /// C++ Interface to evaluate the tangent function.
     ///
-    /// \param[in] in is input array
-    /// \return tan of input
+    /// \param[in] in input array
+    /// \return tangent
     ///
     /// \ingroup arith_func_tan
     AFAPI array tan    (const array &in);
 
-    /// C++ Interface for arc sin (sin inverse)
+    /// C++ Interface to evaluate the inverse sine function.
     ///
-    /// \param[in] in is input array
-    /// \return arc sin of input
+    /// \param[in] in input array
+    /// \return inverse sine
     ///
     /// \ingroup arith_func_asin
     AFAPI array asin   (const array &in);
 
-    /// C++ Interface for arc cos (cos inverse)
+    /// C++ Interface to evaluate the inverse cosine function.
     ///
-    /// \param[in] in is input array
-    /// \return arc cos of input
+    /// \param[in] in input array
+    /// \return inverse cosine
     ///
     /// \ingroup arith_func_acos
     AFAPI array acos   (const array &in);
 
-    /// C++ Interface for arc tan (tan inverse)
+    /// C++ Interface to evaluate the inverse tangent function.
     ///
-    /// \param[in] in is input array
-    /// \return arc tan of input
+    /// \param[in] in input array
+    /// \return inverse tangent
     ///
     /// \ingroup arith_func_atan
     AFAPI array atan   (const array &in);
 
     /// \ingroup arith_func_atan
     /// @{
-    /// C++ Interface for arc tan of two arrays
+    /// C++ Interface to evaluate the inverse tangent of two arrays.
     ///
     /// \param[in] lhs value of numerator
     /// \param[in] rhs value of denominator
-    /// \return arc tan of the inputs
+    /// \return inverse tangent of the inputs
     AFAPI array atan2  (const array &lhs, const array &rhs);
 
     /// \copydoc atan2(const array&, const array&)
@@ -259,29 +270,77 @@ namespace af
     AFAPI array atan2  (const double lhs, const array &rhs);
     /// @}
 
+    /// C++ Interface to evaluate the hyperbolic sine function.
+    ///
+    /// \param[in] in input array
+    /// \return hyperbolic sine
+    ///
+    /// \ingroup arith_func_sinh
+    AFAPI array sinh(const array& in);
+
+    /// C++ Interface to evaluate the hyperbolic cosine function.
+    ///
+    /// \param[in] in input array
+    /// \return hyperbolic cosine
+    ///
+    /// \ingroup arith_func_cosh
+    AFAPI array cosh(const array& in);
+
+    /// C++ Interface to evaluate the hyperbolic tangent function.
+    ///
+    /// \param[in] in input array
+    /// \return hyperbolic tangent
+    ///
+    /// \ingroup arith_func_tanh
+    AFAPI array tanh(const array& in);
+
+    /// C++ Interface to evaluate the inverse hyperbolic sine function.
+    ///
+    /// \param[in] in input array
+    /// \return inverse hyperbolic sine
+    ///
+    /// \ingroup arith_func_asinh
+    AFAPI array asinh(const array& in);
+
+    /// C++ Interface to evaluate the inverse hyperbolic cosine function.
+    ///
+    /// \param[in] in input array
+    /// \return inverse hyperbolic cosine
+    ///
+    /// \ingroup arith_func_acosh
+    AFAPI array acosh(const array& in);
+
+    /// C++ Interface to evaluate the inverse hyperbolic tangent function.
+    ///
+    /// \param[in] in input array
+    /// \return inverse hyperbolic tangent
+    ///
+    /// \ingroup arith_func_atanh
+    AFAPI array atanh(const array& in);
+
     /// \ingroup arith_func_cplx
     /// @{
-    /// C++ Interface for creating a complex array from a single real array.
+    /// C++ Interface to create a complex array from a single real array.
     ///
     /// \param[in] in a real array
     /// \return the returned complex array
     AFAPI array complex(const array& in);
  
-    /// C++ Interface for creating a complex array from two real arrays.
+    /// C++ Interface to create a complex array from two real arrays.
     ///
     /// \param[in] real_ a real array to be assigned as the real component of the returned complex array
     /// \param[in] imag_ a real array to be assigned as the imaginary component of the returned complex array
     /// \return the returned complex array
     AFAPI array complex(const array &real_, const array &imag_);
 
-    /// C++ Interface for creating a complex array from a single real array for the real component and a single scalar for each imaginary component.
+    /// C++ Interface to create a complex array from a single real array for the real component and a single scalar for each imaginary component.
     ///
     /// \param[in] real_ a real array to be assigned as the real component of the returned complex array
     /// \param[in] imag_ a single scalar to be assigned as the imaginary component of each value of the returned complex array
     /// \return the returned complex array
     AFAPI array complex(const array &real_, const double imag_);
 
-    /// C++ Interface for creating a complex array from a single scalar for each real component and a single real array for the imaginary component.
+    /// C++ Interface to create a complex array from a single scalar for each real component and a single real array for the imaginary component.
     ///
     /// \param[in] real_ a single scalar to be assigned as the real component of each value of the returned complex array
     /// \param[in] imag_ a real array to be assigned as the imaginary component of the returned complex array
@@ -289,100 +348,52 @@ namespace af
     AFAPI array complex(const double real_, const array &imag_);
     /// @}
 
-    /// C++ Interface for getting real part from complex array
+    /// C++ Interface to find the real part of a complex array.
     ///
-    /// \param[in] in is complex array
-    /// \return the real part of \p in
+    /// \param[in] in input complex array
+    /// \return real part
     ///
     /// \ingroup arith_func_real
     AFAPI array real   (const array &in);
 
-    /// C++ Interface for getting imaginary part from complex array
+    /// C++ Interface to find the imaginary part of a complex array.
     ///
-    /// \param[in] in is complex array
-    /// \return the imaginary part of \p in
+    /// \param[in] in input complex array
+    /// \return imaginary part
     ///
     /// \ingroup arith_func_imag
     AFAPI array imag   (const array &in);
 
-    /// C++ Interface for getting the complex conjugate of input array
+    /// C++ Interface to find the complex conjugate of an input array.
     ///
-    /// \param[in] in is complex array
-    /// \return the complex conjugate of \p in
+    /// \param[in] in input complex array
+    /// \return complex conjugate
     ///
     /// \ingroup arith_func_conjg
     AFAPI array conjg  (const array &in);
 
-    /// C++ Interface for sinh
+    /// C++ Interface to find the nth root.
     ///
-    /// \param[in] in is input array
-    /// \return sinh of input
-    ///
-    /// \ingroup arith_func_sinh
-    AFAPI array sinh    (const array &in);
-
-    /// C++ Interface for cosh
-    ///
-    /// \param[in] in is input array
-    /// \return cosh of input
-    ///
-    /// \ingroup arith_func_cosh
-    AFAPI array cosh    (const array &in);
-
-    /// C++ Interface for tanh
-    ///
-    /// \param[in] in is input array
-    /// \return tanh of input
-    ///
-    /// \ingroup arith_func_tanh
-    AFAPI array tanh    (const array &in);
-
-    /// C++ Interface for sinh inverse
-    ///
-    /// \param[in] in is input array
-    /// \return sinh inverse of input
-    ///
-    /// \ingroup arith_func_asinh
-    AFAPI array asinh   (const array &in);
-
-    /// C++ Interface for cosh inverse
-    ///
-    /// \param[in] in is input array
-    /// \return cosh inverse of input
-    ///
-    /// \ingroup arith_func_acosh
-    AFAPI array acosh   (const array &in);
-
-    /// C++ Interface for tanh inverse
-    ///
-    /// \param[in] in is input array
-    /// \return tanh inverse of input
-    ///
-    /// \ingroup arith_func_atanh
-    AFAPI array atanh   (const array &in);
-
-    /// C++ Interface for nth root
-    ///
-    /// \param[in] lhs is nth root
-    /// \param[in] rhs is value
+    /// \param[in] lhs nth root
+    /// \param[in] rhs value
     /// \return \p lhs th root of \p rhs
     ///
     /// \ingroup arith_func_root
     AFAPI array root    (const array &lhs, const array &rhs);
 
-    /// C++ Interface for nth root
+    /// C++ Interface to find the nth root.
     ///
-    /// \param[in] lhs is nth root
-    /// \param[in] rhs is value
+    /// \param[in] lhs nth root
+    /// \param[in] rhs value
     /// \return \p lhs th root of \p rhs
     ///
     /// \ingroup arith_func_root
     AFAPI array root    (const array &lhs, const double rhs);
 
-    /// C++ Interface for nth root
+    /// C++ Interface to find the nth root.
     ///
-    /// \param[in] lhs is nth root
-    /// \param[in] rhs is value
+    /// \param[in] lhs nth root
+    /// \param[in] rhs value
     /// \return \p lhs th root of \p rhs
     ///
     /// \ingroup arith_func_root
@@ -391,14 +402,13 @@ namespace af
 
     /// \ingroup arith_func_pow
     /// @{
-    /// \brief C++ Interface for power
+    /// C++ Interface to raise a base to a power (or exponent).
     ///
-    /// Computes the value of \p lhs raised to the power of \p rhs. The inputs
-    /// can be two arrays or an array and a scalar.
+    /// Computes the value of \p lhs raised to the power of \p rhs. The inputs can be two arrays or an array and a scalar.
     ///
-    /// \param[in] lhs is base
-    /// \param[in] rhs is exponent
-    /// \return \p lhs raised to power \p rhs
+    /// \param[in] lhs base
+    /// \param[in] rhs exponent
+    /// \return \p lhs raised to the power of \p rhs
     AFAPI array pow    (const array &lhs, const array &rhs);
 
     /// \copydoc pow(const array&, const array&)
@@ -407,161 +417,162 @@ namespace af
     /// \copydoc pow(const array&, const array&)
     AFAPI array pow    (const double lhs, const array &rhs);
 
-    /// C++ Interface for power of 2
+    /// C++ Interface to raise 2 to a power (or exponent).
     ///
-    /// \param[in] in is exponent
-    /// \return 2 raised to power of \p in
+    /// \param[in] in exponent
+    /// \return 2 raised to the power
     ///
     AFAPI array pow2    (const array &in);
     /// @}
 
 #if AF_API_VERSION >= 31
-    /// C++ Interface for calculating sigmoid function of an array
+    /// C++ Interface to evaluate the logistical sigmoid function.
     ///
-    /// \param[in] in is input
-    /// \return the sigmoid of \p in
+    /// \param[in] in input
+    /// \return sigmoid
+    /// 
+    /// \note Computes `1/(1+e^-x)`.
     ///
     /// \ingroup arith_func_sigmoid
     AFAPI array sigmoid (const array &in);
 #endif
 
-    /// C++ Interface for exponential of an array
+    /// C++ Interface to evaluate the exponential.
     ///
-    /// \param[in] in is exponent
-    /// \return the exponential of \p in
+    /// \param[in] in exponent
+    /// \return exponential
     ///
     /// \ingroup arith_func_exp
     AFAPI array exp    (const array &in);
 
-    /// C++ Interface for exponential of an array minus 1
+    /// C++ Interface to evaluate the exponential of an array minus 1, `exp(in) - 1`.
     ///
-    /// \param[in] in is exponent
-    /// \return the exponential of \p in - 1
+    /// \param[in] in exponent
+    /// \return the exponential minus 1
     ///
     /// \note This function is useful when \p in is small
     /// \ingroup arith_func_expm1
     AFAPI array expm1  (const array &in);
 
-    /// C++ Interface for error function value
+    /// C++ Interface to evaluate the error function.
     ///
-    /// \param[in] in is input
-    /// \return the error function value
+    /// \param[in] in input
+    /// \return error function
     ///
     /// \ingroup arith_func_erf
     AFAPI array erf    (const array &in);
 
-    /// C++ Interface for complementary error function value
+    /// C++ Interface to evaluate the complementary error function.
     ///
-    /// \param[in] in is input
-    /// \return the complementary error function value
+    /// \param[in] in input
+    /// \return complementary error function
     ///
     /// \ingroup arith_func_erfc
     AFAPI array erfc   (const array &in);
 
-    /// C++ Interface for natural logarithm
+    /// C++ Interface to evaluate the natural logarithm.
     ///
-    /// \param[in] in is input
-    /// \return the natural logarithm of input
+    /// \param[in] in input
+    /// \return natural logarithm
     ///
     /// \ingroup arith_func_log
     AFAPI array log    (const array &in);
 
-    /// C++ Interface for natural logarithm of 1 + input
+    /// C++ Interface to evaluate the natural logarithm of 1 + input, `ln(1+in)`.
     ///
-    /// \param[in] in is input
-    /// \return the natural logarithm of (1 + input)
+    /// \param[in] in input
+    /// \return natural logarithm of `1 + input`
     ///
     /// \note This function is useful when \p in is small
     /// \ingroup arith_func_log1p
     AFAPI array log1p  (const array &in);
 
-    /// C++ Interface for logarithm base 10
+    /// C++ Interface to evaluate the base 10 logarithm.
     ///
-    /// \param[in] in is input
-    /// \return the logarithm of input in base 10
+    /// \param[in] in input
+    /// \return base 10 logarithm
     ///
     /// \ingroup arith_func_log10
     AFAPI array log10  (const array &in);
 
-    /// C++ Interface for logarithm base 2
+    /// C++ Interface to evaluate the base 2 logarithm.
     ///
-    /// \param[in] in is input
-    /// \return the logarithm of input \p in base 2
+    /// \param[in] in input
+    /// \return base 2 logarithm
     ///
     /// \ingroup explog_func_log2
     AFAPI array log2   (const array &in);
 
-    /// C++ Interface for square root of input
+    /// C++ Interface to find the square root.
     ///
-    /// \param[in] in is input
-    /// \return the square root of input
+    /// \param[in] in input
+    /// \return square root
     ///
     /// \ingroup arith_func_sqrt
     AFAPI array sqrt   (const array &in);
 
 #if AF_API_VERSION >= 37
-    /// C++ Interface for reciprocal square root of input
+    /// C++ Interface to find the reciprocal square root.
     ///
-    /// \param[in] in is input
-    /// \return the reciprocal square root of input
+    /// \param[in] in input
+    /// \return reciprocal square root
     ///
     /// \ingroup arith_func_rsqrt
     AFAPI array rsqrt   (const array &in);
 #endif
 
-    /// C++ Interface for cube root of input
+    /// C++ Interface to find the cube root.
     ///
-    /// \param[in] in is input
-    /// \return the cube root of input
+    /// \param[in] in input
+    /// \return cube root
     ///
     /// \ingroup arith_func_cbrt
     AFAPI array cbrt   (const array &in);
 
+    /// C++ Interface to find the factorial.
     ///
-    /// C++ Interface for factorial of input
-    ///
-    /// \param[in] in is input
-    /// \return the factorial function of input
+    /// \param[in] in input
+    /// \return the factorial function
     ///
     /// \ingroup arith_func_factorial
     AFAPI array factorial (const array &in);
 
-    /// C++ Interface for gamma function of input
+    /// C++ Interface to evaluate the gamma function.
     ///
-    /// \param[in] in is input
-    /// \return the gamma function of input
+    /// \param[in] in input
+    /// \return gamma function
     ///
     /// \ingroup arith_func_tgamma
     AFAPI array tgamma (const array &in);
 
-    /// C++ Interface for logarithm of absolute value of gamma function of input
+    /// C++ Interface to evaluate the logarithm of the absolute value of the gamma function.
     ///
-    /// \param[in] in is input
-    /// \return the logarithm of absolute value of gamma function of input
+    /// \param[in] in input
+    /// \return logarithm of the absolute value of the gamma function
     ///
-    /// \ingroup arith_func_tgamma
+    /// \ingroup arith_func_lgamma
     AFAPI array lgamma (const array &in);
 
-    /// C++ Interface for checking if values are zero
+    /// C++ Interface to check if values are zero.
     ///
-    /// \param[in] in is input
-    /// \return array containing 1's where input is 0, and 0 otherwise.
+    /// \param[in] in input
+    /// \return array containing 1's where input is 0; 0's otherwise
     ///
     /// \ingroup arith_func_iszero
     AFAPI array iszero (const array &in);
 
-    /// C++ Interface for checking if values are Infinities
+    /// C++ Interface to check if values are infinite.
     ///
-    /// \param[in] in is input
-    /// \return array containing 1's where input is Inf or -Inf, and 0 otherwise.
+    /// \param[in] in input
+    /// \return array containing 1's where input is Inf or -Inf; 0's otherwise
     ///
     /// \ingroup arith_func_isinf
     AFAPI array isInf  (const array &in);
 
-    /// C++ Interface for checking if values are NaNs
+    /// C++ Interface to check if values are NaN.
     ///
-    /// \param[in] in is input
-    /// \return array containing 1's where input is NaN, and 0 otherwise.
+    /// \param[in] in input
+    /// \return array containing 1's where input is NaN; 0's otherwise
     ///
     /// \ingroup arith_func_isnan
     AFAPI array isNaN  (const array &in);
@@ -573,9 +584,9 @@ extern "C" {
 #endif
 
     /**
-       C Interface for adding arrays
+       C Interface to add two arrays.
 
-       \param[out] out will contain sum of \p lhs and \p rhs
+       \param[out] out sum of \p lhs and \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -586,9 +597,9 @@ extern "C" {
     AFAPI af_err af_add   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for subtracting an array from another
+       C Interface to subtract one array from another array.
 
-       \param[out] out will contain result of \p lhs - \p rhs
+       \param[out] out subtraction of \p lhs - \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -599,9 +610,9 @@ extern "C" {
     AFAPI af_err af_sub   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for multiplying two arrays
+       C Interface to multiply two arrays.
 
-       \param[out] out will contain the product of \p lhs and  \p rhs
+       \param[out] out product of \p lhs and \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -612,9 +623,9 @@ extern "C" {
     AFAPI af_err af_mul   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for dividing an array by another
+       C Interface to divide one array by another array.
 
-       \param[out] out will contain result of \p lhs / \p rhs.
+       \param[out] out result of \p lhs / \p rhs.
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -625,9 +636,9 @@ extern "C" {
     AFAPI af_err af_div   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for checking if an array is less than another
+       C Interface to check if the elements of one array are less than those of another array.
 
-       \param[out] out will contain result of \p lhs < \p rhs. out is of type b8
+       \param[out] out result of \p lhs < \p rhs; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -638,9 +649,9 @@ extern "C" {
     AFAPI af_err af_lt    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for checking if an array is greater than another
+       C Interface to check if the elements of one array are greater than those of another array.
 
-       \param[out] out will contain result of \p lhs > \p rhs. out is of type b8
+       \param[out] out result of \p lhs > \p rhs; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -651,9 +662,9 @@ extern "C" {
     AFAPI af_err af_gt    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for checking if an array is less or equal to another
+       C Interface to check if the elements of one array are less than or equal to those of another array.
 
-       \param[out] out will contain result of \p lhs <= \p rhs. out is of type b8
+       \param[out] out result of \p lhs <= \p rhs; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -664,9 +675,9 @@ extern "C" {
     AFAPI af_err af_le    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for checking if an array is greater or equal to another
+       C Interface to check if the elements of one array are greater than or equal to those of another array.
 
-       \param[out] out will contain result of \p lhs >= \p rhs. out is of type b8
+       \param[out] out result of \p lhs >= \p rhs; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -677,9 +688,9 @@ extern "C" {
     AFAPI af_err af_ge    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for checking if an array is equal to another
+       C Interface to check if the elements of one array are equal to those of another array.
 
-       \param[out] out will contain result of \p lhs == \p rhs. out is of type b8
+       \param[out] out result of \p lhs == \p rhs; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -690,9 +701,9 @@ extern "C" {
     AFAPI af_err af_eq    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for checking if an array is not equal to another
+       C Interface to check if the elements of one array are not equal to those of another array.
 
-       \param[out] out will contain result of \p lhs != \p rhs. out is of type b8
+       \param[out] out result of \p lhs != \p rhs; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -703,9 +714,9 @@ extern "C" {
     AFAPI af_err af_neq   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for performing logical and on two arrays
+       C Interface to evaluate the logical AND of two arrays.
 
-       \param[out] out will contain result of \p lhs && \p rhs. out is of type b8
+       \param[out] out result of \p lhs && \p rhs; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -716,9 +727,9 @@ extern "C" {
     AFAPI af_err af_and   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for performing logical or on two arrays
+       C Interface the evaluate the logical OR of two arrays.
 
-       \param[out] out will contain result of \p lhs || \p rhs. out is of type b8
+       \param[out] out result of \p lhs || \p rhs; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -729,10 +740,10 @@ extern "C" {
     AFAPI af_err af_or    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for performing logical not on input
+       C Interface to evaluate the logical NOT of an array.
 
-       \param[out] out will contain result of logical not of \p in. out is of type b8
-       \param[in] in is the input
+       \param[out] out result of logical NOT; type is b8
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_not
@@ -741,10 +752,10 @@ extern "C" {
 
 #if AF_API_VERSION >= 38
     /**
-       C Interface for performing bitwise not on input
+       C Interface to evaluate the bitwise NOT of an array.
 
-       \param[out] out will contain result of bitwise not of \p in.
-       \param[in] in is the input
+       \param[out] out result of bitwise NOT
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_bitnot
@@ -753,9 +764,9 @@ extern "C" {
 #endif
 
     /**
-       C Interface for performing bitwise and on two arrays
+       C Interface to evaluate the bitwise AND of two arrays.
 
-       \param[out] out will contain result of \p lhs & \p rhs
+       \param[out] out result of \p lhs & \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -766,9 +777,9 @@ extern "C" {
     AFAPI af_err af_bitand   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for performing bitwise or on two arrays
+       C Interface to evaluate the bitwise OR of two arrays.
 
-       \param[out] out will contain result of \p lhs & \p rhs
+       \param[out] out result of \p lhs | \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -779,9 +790,9 @@ extern "C" {
     AFAPI af_err af_bitor    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for performing bitwise xor on two arrays
+       C Interface to evaluate the bitwise XOR of two arrays.
 
-       \param[out] out will contain result of \p lhs ^ \p rhs
+       \param[out] out result of \p lhs ^ \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -792,9 +803,9 @@ extern "C" {
     AFAPI af_err af_bitxor   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for left shift on integer arrays
+       C Interface to shift the bits of integer arrays left.
 
-       \param[out] out will contain result of the left shift
+       \param[out] out result of the left shift
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -805,9 +816,9 @@ extern "C" {
     AFAPI af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for right shift on integer arrays
+       C Interface to shift the bits of integer arrays right.
 
-       \param[out] out will contain result of the right shift
+       \param[out] out result of the right shift
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -818,7 +829,7 @@ extern "C" {
     AFAPI af_err af_bitshiftr(af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for casting an array from one type to another
+       C Interface to cast an array from one type to another.
 
        This function casts an af_array object from one type to another. If the
        type of the original array is the same as \p type then the same array is
@@ -847,11 +858,11 @@ extern "C" {
        | f16     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
        If you want to avoid this behavior use af_eval after the first cast
        operation. This will ensure that the cast operation is performed on the
-       af_array
+       af_array.
 
-       \param[out] out will contain the values in the specified type
-       \param[in] in is the input
-       \param[in] type is the target data type \ref af_dtype
+       \param[out] out values in the specified type
+       \param[in] in input
+       \param[in] type target data type \ref af_dtype
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_cast
@@ -859,11 +870,11 @@ extern "C" {
     AFAPI af_err af_cast    (af_array *out, const af_array in, const af_dtype type);
 
     /**
-       C Interface for min of two arrays
+       C Interface to find the elementwise minimum between two arrays.
 
-       \param[out] out will contain minimum of \p lhs and \p rhs
-       \param[in] lhs first input
-       \param[in] rhs second input
+       \param[out] out minimum of \p lhs and \p rhs
+       \param[in] lhs input array
+       \param[in] rhs input array
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -872,11 +883,11 @@ extern "C" {
     AFAPI af_err af_minof (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for max of two arrays
+       C Interface to find the elementwise minimum between an array and a scalar value.
 
-       \param[out] out will contain maximum of \p lhs and \p rhs
-       \param[in] lhs first input
-       \param[in] rhs second input
+       \param[out] out maximum of \p lhs and \p rhs
+       \param[in] lhs input array
+       \param[in] rhs input array
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -886,27 +897,27 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for max of two arrays
+       C Interface to clamp an array between an upper and a lower limit.
 
-       \param[out] out will contain the values from \p clamped between \p lo and \p hi
-       \param[in] in Input array
-       \param[in] lo Value for lower limit
-       \param[in] hi Value for upper limit
+       \param[out] out array containing values from \p in clamped between \p lo and \p hi
+       \param[in] in input array
+       \param[in] lo lower limit array
+       \param[in] hi upper limit array
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup arith_func_max
+       \ingroup arith_func_clamp
     */
     AFAPI af_err af_clamp(af_array *out, const af_array in,
                           const af_array lo, const af_array hi, const bool batch);
 #endif
 
     /**
-       C Interface for remainder
+       C Interface to find the remainder.
 
-       \param[out] out will contain the remainder of \p lhs divided by \p rhs
-       \param[in] lhs is numerator
-       \param[in] rhs is denominator
+       \param[out] out remainder of \p lhs divided by \p rhs
+       \param[in] lhs numerator
+       \param[in] rhs denominator
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -915,11 +926,11 @@ extern "C" {
     AFAPI af_err af_rem   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for modulus
+       C Interface to find the modulus.
 
-       \param[out] out will contain the output of \p lhs modulo \p rhs
-       \param[in] lhs is dividend
-       \param[in] rhs is divisor
+       \param[out] out \p lhs modulo \p rhs
+       \param[in] lhs dividend
+       \param[in] rhs divisor
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -928,10 +939,10 @@ extern "C" {
     AFAPI af_err af_mod   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for absolute value
+       C Interface to find the absolute value.
 
-       \param[out] out will contain the absolute value of \p in
-       \param[in] in is input array
+       \param[out] out absolute value
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_abs
@@ -939,10 +950,10 @@ extern "C" {
     AFAPI af_err af_abs     (af_array *out, const af_array in);
 
     /**
-       C Interface for finding the phase
+       C Interface to find the phase angle (in radians) of a complex array.
 
-       \param[out] out will the phase of \p in
-       \param[in] in is input array
+       \param[out] out phase angle (in radians)
+       \param[in] in input array, typically complex
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_arg
@@ -950,36 +961,32 @@ extern "C" {
     AFAPI af_err af_arg     (af_array *out, const af_array in);
 
     /**
-       C Interface for finding the sign of the input
+       C Interface to find the sign of elements in an array.
 
-       \param[out] out will contain the sign of each element of the input arrays
-       \param[in] in is input array
+       \param[out] out array containing 1's for negative values; 0's otherwise
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \note output is 1 for negative numbers and 0 for positive numbers
-
-       \ingroup arith_func_round
+       \ingroup arith_func_sign
     */
     AFAPI af_err af_sign   (af_array *out, const af_array in);
 
     /**
-       C Interface for rounding an array of numbers
+       C Interface to round numbers.
 
-       \param[out] out will contain values rounded to nearest integer
-       \param[in] in is input array
+       \param[out] out values rounded to nearest integer
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
-
-       \note The values are rounded to nearest integer
 
        \ingroup arith_func_round
     */
     AFAPI af_err af_round   (af_array *out, const af_array in);
 
     /**
-       C Interface for truncating an array of numbers
+       C Interface to truncate numbers.
 
-       \param[out] out will contain values truncated to nearest integer not greater than input
-       \param[in] in is input array
+       \param[out] out nearest integer not greater in magnitude than \p in
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_trunc
@@ -987,10 +994,10 @@ extern "C" {
     AFAPI af_err af_trunc   (af_array *out, const af_array in);
 
     /**
-       C Interface for flooring an array of numbers
+       C Interface to floor numbers.
 
-       \param[out] out will contain values rounded to nearest integer less than or equal to in
-       \param[in] in is input array
+       \param[out] out values rounded to nearest integer less than or equal to \p in
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_floor
@@ -998,10 +1005,10 @@ extern "C" {
     AFAPI af_err af_floor   (af_array *out, const af_array in);
 
     /**
-       C Interface for ceiling an array of numbers
+       C Interface to ceil numbers.
 
-       \param[out] out will contain values rounded to nearest integer greater than or equal to in
-       \param[in] in is input array
+       \param[out] out values rounded to nearest integer greater than or equal to \p in
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_ceil
@@ -1009,11 +1016,11 @@ extern "C" {
     AFAPI af_err af_ceil    (af_array *out, const af_array in);
 
     /**
-       C Interface for getting length of hypotenuse of two arrays
+       C Interface to find the length of the hypotenuse of two inputs.
 
-       \param[out] out will contain the length of the hypotenuse
-       \param[in] lhs is the length of first side
-       \param[in] rhs is the length of second side
+       \param[out] out length of the hypotenuse
+       \param[in] lhs length of first side
+       \param[in] rhs length of second side
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -1022,10 +1029,10 @@ extern "C" {
     AFAPI af_err af_hypot (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for sin
+       C Interface to evaluate the sine function.
 
-       \param[out] out will contain sin of input
-       \param[in] in is input array
+       \param[out] out sine
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_sin
@@ -1033,10 +1040,10 @@ extern "C" {
     AFAPI af_err af_sin     (af_array *out, const af_array in);
 
     /**
-       C Interface for cos
+       C Interface to evaluate the cosine function.
 
-       \param[out] out will contain cos of input
-       \param[in] in is input array
+       \param[out] out cosine
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_cos
@@ -1044,10 +1051,10 @@ extern "C" {
     AFAPI af_err af_cos     (af_array *out, const af_array in);
 
     /**
-       C Interface for tan
+       C Interface to evaluate the tangent function.
 
-       \param[out] out will contain tan of input
-       \param[in] in is input array
+       \param[out] out tangent
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_tan
@@ -1055,10 +1062,10 @@ extern "C" {
     AFAPI af_err af_tan     (af_array *out, const af_array in);
 
     /**
-       C Interface for arc sin
+       C Interface to evaluate the inverse sine function.
 
-       \param[out] out will contain arc sin of input
-       \param[in] in is input array
+       \param[out] out inverse sine
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_asin
@@ -1066,10 +1073,10 @@ extern "C" {
     AFAPI af_err af_asin    (af_array *out, const af_array in);
 
     /**
-       C Interface for arc cos
+       C Interface to evaluate the inverse cosine function.
 
-       \param[out] out will contain arc cos of input
-       \param[in] in is input array
+       \param[out] out inverse cos
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_acos
@@ -1077,10 +1084,10 @@ extern "C" {
     AFAPI af_err af_acos    (af_array *out, const af_array in);
 
     /**
-       C Interface for arc tan
+       C Interface to evaluate the inverse tangent function.
 
-       \param[out] out will contain arc tan of input
-       \param[in] in is input array
+       \param[out] out inverse tangent
+       \param[in] in input array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_atan
@@ -1088,11 +1095,11 @@ extern "C" {
     AFAPI af_err af_atan    (af_array *out, const af_array in);
 
     /**
-       C Interface for arc tan of two inputs
+       C Interface to evaluate the inverse tangent of two arrays.
 
-       \param[out] out will arc tan of the inputs
-       \param[in] lhs value of numerator
-       \param[in] rhs value of denominator
+       \param[out] out inverse tangent of two arrays
+       \param[in] lhs numerator
+       \param[in] rhs denominator
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -1101,10 +1108,10 @@ extern "C" {
     AFAPI af_err af_atan2 (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for creating a complex array from a single real array.
+       C Interface to create a complex array from a single real array.
 
-       \param[out] out the returned complex array
-       \param[in] in a real array
+       \param[out] out complex array
+       \param[in] in real array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_cplx
@@ -1112,11 +1119,11 @@ extern "C" {
     AFAPI af_err af_cplx(af_array* out, const af_array in);
 
     /**
-       C Interface for creating a complex array from two real arrays.
+       C Interface to create a complex array from two real arrays.
 
-       \param[out] out the returned complex array
-       \param[in] real a real array to be assigned as the real component of the returned complex array
-       \param[in] imag a real array to be assigned as the imaginary component of the returned complex array
+       \param[out] out complex array
+       \param[in] real real array to be assigned as the real component of the returned complex array
+       \param[in] imag real array to be assigned as the imaginary component of the returned complex array
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -1125,10 +1132,10 @@ extern "C" {
     AFAPI af_err af_cplx2 (af_array *out, const af_array real, const af_array imag, const bool batch);
 
     /**
-       C Interface for getting real part from complex array
+       C Interface to find the real part of a complex array.
 
-       \param[out] out will contain the real part of \p in
-       \param[in] in is complex array
+       \param[out] out real part
+       \param[in] in complex array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_real
@@ -1136,10 +1143,10 @@ extern "C" {
     AFAPI af_err af_real    (af_array *out, const af_array in);
 
     /**
-       C Interface for getting imaginary part from complex array
+       C Interface to find the imaginary part of a complex array.
 
-       \param[out] out will contain the imaginary part of \p in
-       \param[in] in is complex array
+       \param[out] out imaginary part
+       \param[in] in complex array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_imag
@@ -1147,10 +1154,10 @@ extern "C" {
     AFAPI af_err af_imag    (af_array *out, const af_array in);
 
     /**
-       C Interface for getting the complex conjugate of input array
+       C Interface to find the complex conjugate of an input array.
 
-       \param[out] out will contain the complex conjugate of \p in
-       \param[in] in is complex array
+       \param[out] out complex conjugate
+       \param[in] in complex array
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_conjg
@@ -1158,10 +1165,10 @@ extern "C" {
     AFAPI af_err af_conjg   (af_array *out, const af_array in);
 
     /**
-       C Interface for sinh
+       C Interface to evaluate the hyperbolic sine function.
 
-       \param[out] out will contain sinh of input
-       \param[in] in is input array
+       \param[out] out hyperbolic sine
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_sinh
@@ -1169,10 +1176,10 @@ extern "C" {
     AFAPI af_err af_sinh    (af_array *out, const af_array in);
 
     /**
-       C Interface for cosh
+       C Interface to evaluate the hyperbolic cosine function.
 
-       \param[out] out will contain cosh of input
-       \param[in] in is input array
+       \param[out] out hyperbolic cosine
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_cosh
@@ -1180,10 +1187,10 @@ extern "C" {
     AFAPI af_err af_cosh    (af_array *out, const af_array in);
 
     /**
-       C Interface for tanh
+       C Interface to evaluate the hyperbolic tangent function.
 
-       \param[out] out will contain tanh of input
-       \param[in] in is input array
+       \param[out] out hyperbolic tangent
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_tanh
@@ -1191,10 +1198,10 @@ extern "C" {
     AFAPI af_err af_tanh    (af_array *out, const af_array in);
 
     /**
-       C Interface for asinh
+       C Interface to evaluate the inverse hyperbolic sine function.
 
-       \param[out] out will contain inverse sinh of input
-       \param[in] in is input array
+       \param[out] out inverse hyperbolic sine
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_asinh
@@ -1202,10 +1209,10 @@ extern "C" {
     AFAPI af_err af_asinh   (af_array *out, const af_array in);
 
     /**
-       C Interface for acosh
+       C Interface to evaluate the inverse hyperbolic cosine function.
 
-       \param[out] out will contain inverse cosh of input
-       \param[in] in is input array
+       \param[out] out inverse hyperbolic cosine
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_acosh
@@ -1213,10 +1220,10 @@ extern "C" {
     AFAPI af_err af_acosh   (af_array *out, const af_array in);
 
     /**
-       C Interface for atanh
+       C Interface to evaluate the inverse hyperbolic tangent function.
 
-       \param[out] out will contain inverse tanh of input
-       \param[in] in is input array
+       \param[out] out inverse hyperbolic tangent
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_atanh
@@ -1224,11 +1231,11 @@ extern "C" {
     AFAPI af_err af_atanh   (af_array *out, const af_array in);
 
     /**
-       C Interface for root
+       C Interface to find the nth root.
 
-       \param[out] out will contain \p lhs th root of \p rhs
-       \param[in] lhs is nth root
-       \param[in] rhs is value
+       \param[out] out \p lhs th root of \p rhs
+       \param[in] lhs nth root
+       \param[in] rhs value
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -1238,11 +1245,11 @@ extern "C" {
 
 
     /**
-       C Interface for power
+       C Interface to raise a base to a power (or exponent).
 
-       \param[out] out will contain \p lhs raised to power \p rhs
-       \param[in] lhs is base
-       \param[in] rhs is exponent
+       \param[out] out \p lhs raised to the power of \p rhs
+       \param[in] lhs base
+       \param[in] rhs exponent
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -1251,45 +1258,47 @@ extern "C" {
     AFAPI af_err af_pow   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for power of two
+       C Interface to raise 2 to a power (or exponent).
 
-       \param[out] out will contain the values of 2 to the power \p in
-       \param[in] in is exponent
+       \param[out] out 2 raised to the power of \p in
+       \param[in] in exponent
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_pow2
     */
     AFAPI af_err af_pow2     (af_array *out, const af_array in);
 
+#if AF_API_VERSION >= 31
     /**
-       C Interface for exponential of an array
+       C Interface to evaluate the logistical sigmoid function.
 
-       \param[out] out will contain the exponential of \p in
-       \param[in] in is exponent
+       \param[out] out output of the logistic sigmoid function
+       \param[in] in input
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \note Computes `1/(1+e^-x)`.
+
+       \ingroup arith_func_sigmoid
+    */
+    AFAPI af_err af_sigmoid(af_array* out, const af_array in);
+#endif
+
+    /**
+       C Interface to evaluate the exponential.
+
+       \param[out] out e raised to the power of \p in
+       \param[in] in exponent
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_exp
     */
     AFAPI af_err af_exp     (af_array *out, const af_array in);
 
-#if AF_API_VERSION >= 31
     /**
-       C Interface for calculating sigmoid function of an array
+       C Interface to evaluate the exponential of an array minus 1, `exp(in) - 1`.
 
-       \param[out] out will contain the sigmoid of \p in
-       \param[in] in is input
-       \return \ref AF_SUCCESS if the execution completes properly
-
-       \ingroup arith_func_sigmoid
-    */
-    AFAPI af_err af_sigmoid (af_array *out, const af_array in);
-#endif
-
-    /**
-       C Interface for exponential of an array minus 1
-
-       \param[out] out will contain the exponential of \p in - 1
-       \param[in] in is input
+       \param[out] out exponential of `in - 1`
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_expm1
@@ -1297,10 +1306,10 @@ extern "C" {
     AFAPI af_err af_expm1   (af_array *out, const af_array in);
 
     /**
-       C Interface for error function value
+       C Interface to evaluate the error function.
 
-       \param[out] out will contain the error function value of \p in
-       \param[in] in is input
+       \param[out] out error function value
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_erf
@@ -1308,10 +1317,10 @@ extern "C" {
     AFAPI af_err af_erf     (af_array *out, const af_array in);
 
     /**
-       C Interface for complementary error function value
+       C Interface to evaluate the complementary error function.
 
-       \param[out] out will contain the complementary error function value of \p in
-       \param[in] in is input
+       \param[out] out complementary error function
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_erfc
@@ -1319,10 +1328,10 @@ extern "C" {
     AFAPI af_err af_erfc    (af_array *out, const af_array in);
 
     /**
-       C Interface for natural logarithm
+       C Interface to evaluate the natural logarithm.
 
-       \param[out] out will contain the natural logarithm of \p in
-       \param[in] in is input
+       \param[out] out natural logarithm
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_log
@@ -1330,10 +1339,10 @@ extern "C" {
     AFAPI af_err af_log     (af_array *out, const af_array in);
 
     /**
-       C Interface for logarithm of (in + 1)
+       C Interface to evaluate the natural logarithm of 1 + input, `ln(1+in)`.
 
-       \param[out] out will contain the logarithm of of (in + 1)
-       \param[in] in is input
+       \param[out] out logarithm of `in + 1`
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_log1p
@@ -1341,10 +1350,10 @@ extern "C" {
     AFAPI af_err af_log1p   (af_array *out, const af_array in);
 
     /**
-       C Interface for logarithm base 10
+       C Interface to evaluate the base 10 logarithm.
 
-       \param[out] out will contain the base 10 logarithm of \p in
-       \param[in] in is input
+       \param[out] out base 10 logarithm
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_log10
@@ -1352,10 +1361,10 @@ extern "C" {
     AFAPI af_err af_log10   (af_array *out, const af_array in);
 
     /**
-       C Interface for logarithm base 2
+       C Interface to evaluate the base 2 logarithm.
 
-       \param[out] out will contain the base 2 logarithm of \p in
-       \param[in] in is input
+       \param[out] out base 2 logarithm
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup explog_func_log2
@@ -1363,10 +1372,10 @@ extern "C" {
     AFAPI af_err af_log2   (af_array *out, const af_array in);
 
     /**
-       C Interface for square root
+       C Interface to find the square root.
 
-       \param[out] out will contain the square root of \p in
-       \param[in] in is input
+       \param[out] out square root
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_sqrt
@@ -1375,10 +1384,10 @@ extern "C" {
 
 #if AF_API_VERSION >= 37
     /**
-      C Interface for reciprocal  square root
+      C Interface to find the reciprocal square root.
 
-      \param[out] out will contain the reciprocal square root of \p in
-      \param[in] in is input
+      \param[out] out reciprocal square root
+      \param[in] in input
       \return \ref AF_SUCCESS if the execution completes properly
 
       \ingroup arith_func_rsqrt
@@ -1386,10 +1395,10 @@ extern "C" {
     AFAPI af_err af_rsqrt    (af_array *out, const af_array in);
 #endif
     /**
-       C Interface for cube root
+       C Interface to find the cube root.
 
-       \param[out] out will contain the cube root of \p in
-       \param[in] in is input
+       \param[out] out cube root
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_cbrt
@@ -1397,10 +1406,10 @@ extern "C" {
     AFAPI af_err af_cbrt    (af_array *out, const af_array in);
 
     /**
-       C Interface for the factorial
+       C Interface to find the factorial.
 
-       \param[out] out will contain the result of factorial of \p in
-       \param[in] in is input
+       \param[out] out factorial
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_factorial
@@ -1408,10 +1417,10 @@ extern "C" {
     AFAPI af_err af_factorial   (af_array *out, const af_array in);
 
     /**
-       C Interface for the gamma function
+       C Interface to evaluate the gamma function.
 
-       \param[out] out will contain the result of gamma function of \p in
-       \param[in] in is input
+       \param[out] out gamma function
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_tgamma
@@ -1419,10 +1428,10 @@ extern "C" {
     AFAPI af_err af_tgamma   (af_array *out, const af_array in);
 
     /**
-       C Interface for the logarithm of absolute values of gamma function
+       C Interface to evaluate the logarithm of the absolute value of the gamma function.
 
-       \param[out] out will contain the result of logarithm of absolute values of gamma function of \p in
-       \param[in] in is input
+       \param[out] out logarithm of the absolute value of the gamma function
+       \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_lgamma
@@ -1430,10 +1439,10 @@ extern "C" {
     AFAPI af_err af_lgamma   (af_array *out, const af_array in);
 
     /**
-        C Interface for checking if values are zero
+        C Interface to check if values are zero.
 
-        \param[out] out will contain 1's where input is 0, and 0 otherwise.
-        \param[in] in is input
+        \param[out] out array containing 1's where input is 0; 0's otherwise
+        \param[in] in input
         \return \ref AF_SUCCESS if the execution completes properly
 
         \ingroup arith_func_iszero
@@ -1441,10 +1450,10 @@ extern "C" {
     AFAPI af_err af_iszero  (af_array *out, const af_array in);
 
     /**
-        C Interface for checking if values are infinities
+        C Interface to check if values are infinite.
 
-        \param[out] out will contain 1's where input is Inf or -Inf, and 0 otherwise.
-        \param[in] in is input
+        \param[out] out array containing 1's where input is Inf or -Inf; 0's otherwise
+        \param[in] in input
         \return \ref AF_SUCCESS if the execution completes properly
 
         \ingroup arith_func_isinf
@@ -1452,10 +1461,10 @@ extern "C" {
     AFAPI af_err af_isinf   (af_array *out, const af_array in);
 
     /**
-        C Interface for checking if values are NaNs
+        C Interface to check if values are NaN.
 
-        \param[out] out will contain 1's where input is NaN, and 0 otherwise.
-        \param[in] in is input
+        \param[out] out array containing 1's where input is NaN; 0's otherwise
+        \param[in] in input
         \return \ref AF_SUCCESS if the execution completes properly
 
         \ingroup arith_func_isnan
