@@ -15,8 +15,10 @@
 #include <blas.hpp>
 #include <build_version.hpp>
 #include <clfft.hpp>
+#include <common/ArrayFireTypesIO.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
+#include <common/Version.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
@@ -264,30 +266,18 @@ DeviceManager::DeviceManager()
 
             auto platform_version =
                 mPlatforms.back().first->getInfo<CL_PLATFORM_VERSION>();
-            ostringstream options;
-            if (platform_version.substr(7).c_str()[0] >= '3') {
-                auto device_versions =
-                    mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
-                sort(begin(device_versions), end(device_versions),
-                     [](const auto& lhs, const auto& rhs) {
-                         return lhs.version < rhs.version;
-                     });
-                cl_name_version max_version = device_versions.back();
-                options << fmt::format(" -cl-std=CL{}.{}",
-                                       CL_VERSION_MAJOR(max_version.version),
-                                       CL_VERSION_MINOR(max_version.version));
-            } else {
-                auto device_version =
-                    mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_VERSION>();
-                options << fmt::format(" -cl-std=CL{}",
-                                       device_version.substr(9, 3));
-            }
-            options << fmt::format(" -D dim_t={}",
-                                   dtype_traits<dim_t>::getName());
+            string options;
+            common::Version version =
+                getOpenCLCDeviceVersion(*mDevices[i]).back();
 #ifdef AF_WITH_FAST_MATH
-            options << " -cl-fast-relaxed-math";
+            options = fmt::format(
+                " -cl-std=CL{:Mm} -D dim_t={} -cl-fast-relaxed-math", version,
+                dtype_traits<dim_t>::getName());
+#else
+            options = fmt::format(" -cl-std=CL{:Mm} -D dim_t={}", version,
+                                  dtype_traits<dim_t>::getName());
 #endif
-            mBaseBuildFlags.push_back(options.str());
+            mBaseBuildFlags.push_back(options);
         } catch (const cl::Error& err) {
             AF_TRACE("Error creating context for device {} with error {}\n",
                      devices[i]->getInfo<CL_DEVICE_NAME>(), err.what());

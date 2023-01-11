@@ -136,11 +136,19 @@ file_to_string(
     NAMESPACE "arrayfire opencl"
     )
 
-set(opencl_compile_definitions
-        CL_TARGET_OPENCL_VERSION=300
-        CL_HPP_TARGET_OPENCL_VERSION=300
-        CL_HPP_MINIMUM_OPENCL_VERSION=110
-        CL_HPP_ENABLE_EXCEPTIONS)
+if(OpenCL_VERSION_MAJOR LESS 3)
+  set(opencl_compile_definitions
+    CL_TARGET_OPENCL_VERSION=120
+    CL_HPP_TARGET_OPENCL_VERSION=120
+    CL_HPP_MINIMUM_OPENCL_VERSION=120
+    CL_HPP_ENABLE_EXCEPTIONS)
+else()
+  set(opencl_compile_definitions
+    CL_TARGET_OPENCL_VERSION=300
+    CL_HPP_TARGET_OPENCL_VERSION=300
+    CL_HPP_MINIMUM_OPENCL_VERSION=110
+    CL_HPP_ENABLE_EXCEPTIONS)
+endif()
 
 include(kernel/scan_by_key/CMakeLists.txt)
 include(kernel/sort_by_key/CMakeLists.txt)
