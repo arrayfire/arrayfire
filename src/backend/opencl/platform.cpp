@@ -15,8 +15,10 @@
 #include <blas.hpp>
 #include <build_version.hpp>
 #include <clfft.hpp>
+#include <common/ArrayFireTypesIO.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
+#include <common/Version.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <device_manager.hpp>
@@ -69,6 +71,7 @@ using std::vector;
 using arrayfire::common::getEnvVar;
 using arrayfire::common::ltrim;
 using arrayfire::common::MemoryManagerBase;
+using arrayfire::common::Version;
 using arrayfire::opencl::Allocator;
 using arrayfire::opencl::AllocatorPinned;
 
@@ -121,7 +124,7 @@ static string platformMap(string& platStr) {
     }
 }
 
-afcl::platform getPlatformEnum(cl::Device dev) {
+afcl::platform getPlatformEnum(Device dev) {
     string pname = getPlatformName(dev);
     if (verify_present(pname, "AMD"))
         return AFCL_PLATFORM_AMD;
@@ -188,7 +191,7 @@ string getDeviceInfo() noexcept {
     return info.str();
 }
 
-string getPlatformName(const cl::Device& device) {
+string getPlatformName(const Device& device) {
     const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
     string platStr = platform.getInfo<CL_PLATFORM_NAME>();
     return platformMap(platStr);
@@ -295,7 +298,7 @@ CommandQueue& getQueue() {
     return *(devMngr.mQueues[get<1>(devId)]);
 }
 
-const cl::Device& getDevice(int id) {
+const Device& getDevice(int id) {
     device_id_t& devId = tlocalActiveDeviceId();
 
     if (id == -1) { id = get<1>(devId); }
@@ -312,6 +315,40 @@ const std::string& getActiveDeviceBaseBuildFlags() {
 
     common::lock_guard_t lock(devMngr.deviceMutex);
     return devMngr.mBaseBuildFlags[get<1>(devId)];
+}
+
+vector<Version> getOpenCLCDeviceVersion(const Device& device) {
+    Platform device_platform(device.getInfo<CL_DEVICE_PLATFORM>(), false);
+    auto platform_version = device_platform.getInfo<CL_PLATFORM_VERSION>();
+    vector<Version> out;
+
+    /// The ifdef allows us to support BUILDING ArrayFire with older versions of
+    /// OpenCL where as the if condition in the ifdef allows us to support older
+    /// versions of OpenCL at runtime
+#ifdef CL_DEVICE_OPENCL_C_ALL_VERSIONS
+    if (platform_version.substr(7).c_str()[0] >= '3') {
+        vector<cl_name_version> device_versions =
+            device.getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
+        sort(begin(device_versions), end(device_versions),
+             [](const auto& lhs, const auto& rhs) {
+                 return lhs.version < rhs.version;
+             });
+        transform(begin(device_versions), end(device_versions),
+                  std::back_inserter(out), [](const cl_name_version& version) {
+                      return Version(CL_VERSION_MAJOR(version.version),
+                                     CL_VERSION_MINOR(version.version),
+                                     CL_VERSION_PATCH(version.version));
+                  });
+    } else {
+#endif
+        auto device_version = device.getInfo<CL_DEVICE_OPENCL_C_VERSION>();
+        int major           = atoi(device_version.substr(9, 1).c_str());
+        int minor           = atoi(device_version.substr(11, 1).c_str());
+        out.emplace_back(major, minor);
+#ifdef CL_DEVICE_OPENCL_C_ALL_VERSIONS
+    }
+#endif
+    return out;
 }
 
 size_t getDeviceMemorySize(int device) {
@@ -495,39 +532,17 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
         devMngr.mQueues.push_back(move(tQueue));
         nDevices = static_cast<int>(devMngr.mDevices.size()) - 1;
 
-        auto device_versions =
-            devMngr.mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
-        sort(begin(device_versions), end(device_versions),
-             [](const auto& lhs, const auto& rhs) {
-                 return lhs.version < rhs.version;
-             });
-
-        auto platform_version =
-            devMngr.mPlatforms.back().first->getInfo<CL_PLATFORM_VERSION>();
-        ostringstream options;
-        if (platform_version.substr(7).c_str()[0] >= '3') {
-            auto device_versions =
-                devMngr.mDevices.back()
-                    ->getInfo<CL_DEVICE_OPENCL_C_ALL_VERSIONS>();
-            sort(begin(device_versions), end(device_versions),
-                 [](const auto& lhs, const auto& rhs) {
-                     return lhs.version < rhs.version;
-                 });
-            cl_name_version max_version = device_versions.back();
-            options << fmt::format(" -cl-std=CL{}.{}",
-                                   CL_VERSION_MAJOR(max_version.version),
-                                   CL_VERSION_MINOR(max_version.version));
-        } else {
-            auto device_version =
-                devMngr.mDevices.back()->getInfo<CL_DEVICE_OPENCL_C_VERSION>();
-            options << fmt::format(" -cl-std=CL{}",
-                                   device_version.substr(9, 3));
-        }
-        options << fmt::format(" -D dim_t={}", dtype_traits<dim_t>::getName());
+        auto versions = getOpenCLCDeviceVersion(*(devMngr.mDevices.back()));
 #ifdef AF_WITH_FAST_MATH
-        options << " -cl-fast-relaxed-math";
+        std::string options =
+            fmt::format(" -cl-std=CL{:Mm} -D dim_t={} -cl-fast-relaxed-math",
+                        versions.back(), dtype_traits<dim_t>::getName());
+#else
+        std::string options =
+            fmt::format(" -cl-std=CL{:Mm} -D dim_t={}", versions.back(),
+                        dtype_traits<dim_t>::getName());
 #endif
-        devMngr.mBaseBuildFlags.push_back(options.str());
+        devMngr.mBaseBuildFlags.push_back(options);
 
         // cache the boost program_cache object, clean up done on program exit
         // not during removeDeviceContext

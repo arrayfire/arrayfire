@@ -35,6 +35,8 @@ namespace common {
 class ForgeManager;
 
 class MemoryManagerBase;
+
+class Version;
 }  // namespace common
 }  // namespace arrayfire
 
@@ -68,6 +70,10 @@ cl::CommandQueue& getQueue();
 const cl::Device& getDevice(int id = -1);
 
 const std::string& getActiveDeviceBaseBuildFlags();
+
+/// Returns the set of all OpenCL C Versions the device supports. The values
+/// are sorted from oldest to latest.
+std::vector<common::Version> getOpenCLCDeviceVersion(const cl::Device& device);
 
 size_t getDeviceMemorySize(int device);
 
