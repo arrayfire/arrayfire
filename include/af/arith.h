@@ -690,7 +690,7 @@ extern "C" {
     /**
        C Interface to check if the elements of one array are equal to those of another array.
 
-       \param[out] out result of \p lhs == \p rhs; type is b8
+       \param[out] out result of `lhs == rhs`; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -703,7 +703,7 @@ extern "C" {
     /**
        C Interface to check if the elements of one array are not equal to those of another array.
 
-       \param[out] out result of \p lhs != \p rhs; type is b8
+       \param[out] out result of `lhs != rhs`; type is b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -1108,63 +1108,6 @@ extern "C" {
     AFAPI af_err af_atan2 (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface to create a complex array from a single real array.
-
-       \param[out] out complex array
-       \param[in] in real array
-       \return \ref AF_SUCCESS if the execution completes properly
-
-       \ingroup arith_func_cplx
-    */
-    AFAPI af_err af_cplx(af_array* out, const af_array in);
-
-    /**
-       C Interface to create a complex array from two real arrays.
-
-       \param[out] out complex array
-       \param[in] real real array to be assigned as the real component of the returned complex array
-       \param[in] imag real array to be assigned as the imaginary component of the returned complex array
-       \param[in] batch specifies if operations need to be performed in batch mode
-       \return \ref AF_SUCCESS if the execution completes properly
-
-       \ingroup arith_func_cplx
-    */
-    AFAPI af_err af_cplx2 (af_array *out, const af_array real, const af_array imag, const bool batch);
-
-    /**
-       C Interface to find the real part of a complex array.
-
-       \param[out] out real part
-       \param[in] in complex array
-       \return \ref AF_SUCCESS if the execution completes properly
-
-       \ingroup arith_func_real
-    */
-    AFAPI af_err af_real    (af_array *out, const af_array in);
-
-    /**
-       C Interface to find the imaginary part of a complex array.
-
-       \param[out] out imaginary part
-       \param[in] in complex array
-       \return \ref AF_SUCCESS if the execution completes properly
-
-       \ingroup arith_func_imag
-    */
-    AFAPI af_err af_imag    (af_array *out, const af_array in);
-
-    /**
-       C Interface to find the complex conjugate of an input array.
-
-       \param[out] out complex conjugate
-       \param[in] in complex array
-       \return \ref AF_SUCCESS if the execution completes properly
-
-       \ingroup arith_func_conjg
-    */
-    AFAPI af_err af_conjg   (af_array *out, const af_array in);
-
-    /**
        C Interface to evaluate the hyperbolic sine function.
 
        \param[out] out hyperbolic sine
@@ -1229,6 +1172,63 @@ extern "C" {
        \ingroup arith_func_atanh
     */
     AFAPI af_err af_atanh   (af_array *out, const af_array in);
+
+    /**
+       C Interface to create a complex array from a single real array.
+
+       \param[out] out complex array
+       \param[in] in real array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_cplx
+    */
+    AFAPI af_err af_cplx(af_array* out, const af_array in);
+
+    /**
+       C Interface to create a complex array from two real arrays.
+
+       \param[out] out complex array
+       \param[in] real real array to be assigned as the real component of the returned complex array
+       \param[in] imag real array to be assigned as the imaginary component of the returned complex array
+       \param[in] batch specifies if operations need to be performed in batch mode
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_cplx
+    */
+    AFAPI af_err af_cplx2(af_array* out, const af_array real, const af_array imag, const bool batch);
+
+    /**
+       C Interface to find the real part of a complex array.
+
+       \param[out] out real part
+       \param[in] in complex array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_real
+    */
+    AFAPI af_err af_real(af_array* out, const af_array in);
+
+    /**
+       C Interface to find the imaginary part of a complex array.
+
+       \param[out] out imaginary part
+       \param[in] in complex array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_imag
+    */
+    AFAPI af_err af_imag(af_array* out, const af_array in);
+
+    /**
+       C Interface to find the complex conjugate of an input array.
+
+       \param[out] out complex conjugate
+       \param[in] in complex array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_conjg
+    */
+    AFAPI af_err af_conjg(af_array* out, const af_array in);
 
     /**
        C Interface to find the nth root.
