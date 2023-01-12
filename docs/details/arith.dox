@@ -21,136 +21,108 @@
 
 \ingroup arith_mat
 
-Add.
-
 Add two arrays.
-
 
 
 \defgroup arith_func_sub sub
 
 \ingroup arith_mat
 
-Subtract.
-
 Subtract one array from another array.
-
 
 
 \defgroup arith_func_mul mul
 
 \ingroup arith_mat
 
-Multiply.
-
 Multiply two arrays.
-
 
 
 \defgroup arith_func_div div
 
 \ingroup arith_mat
 
-Divide.
-
 Divide one array by another array.
-
 
 
 \defgroup arith_func_lt lt
 
 \ingroup logic_mat
 
-Is less than.
+Less than, an elementwise comparison of two arrays.
 
 Check if the elements of one array are less than those of another array.
-
 
 
 \defgroup arith_func_gt gt
 
 \ingroup logic_mat
 
-Is greater than.
+Greater than comparison, an elementwise comparison of two arrays.
 
 Check if the elements of one array are greater than those of another array.
-
 
 
 \defgroup arith_func_le le
 
 \ingroup logic_mat
 
-Is less than or equal.
+Less than or equal to, an elementwise comparison of two arrays.
 
 Check if the elements of one array are less than or equal to those of another array.
-
 
 
 \defgroup arith_func_ge ge
 
 \ingroup logic_mat
 
-Is greater than or equal.
+Greater than or equal to, an elementwise comparison of two arrays.
 
 Check if the elements of one array are greater than or equal to those of another array.
-
 
 
 \defgroup arith_func_eq eq
 
 \ingroup logic_mat
 
-Is equal.
+\brief Equal to, an elementwise comparison of two arrays.
 
 Check if the elements of one array are equal to those of another array.
-
 
 
 \defgroup arith_func_neq neq
 
 \ingroup logic_mat
 
-Is not equal.
+\brief Not equal to, an elementwise comparison of two arrays.
 
 Check if the elements of one array are not equal to those of another array.
 
 
-
 \defgroup arith_func_and and
-\brief Logical AND
 
 \ingroup logic_mat
 
-Logical AND.
-
 Evaluate the logical AND of two arrays.
+
 
 \defgroup arith_func_or or
 
 \ingroup logic_mat
 
-Logical OR.
-
 Evaluate the logical OR of two arrays.
-
 
 
 \defgroup arith_func_not not
 
 \ingroup logic_mat
 
-Logical NOT.
-
 Evaluate the logical NOT of an array.
-
 
 
 \defgroup arith_func_neg neg
 
 \ingroup numeric_mat
-
-Negative of an array.
 
 Negate an array.
 
@@ -158,8 +130,6 @@ Negate an array.
 \defgroup arith_func_bitnot bitnot
 
 \ingroup logic_mat
-
-Bitwise NOT.
 
 Evaluate the bitwise NOT of an array.
 
@@ -170,8 +140,6 @@ Evaluate the bitwise NOT of an array.
 
 \ingroup logic_mat
 
-Bitwise AND.
-
 Evaluate the bitwise AND of two arrays.
 
 \copydoc arith_int_only
@@ -180,8 +148,6 @@ Evaluate the bitwise AND of two arrays.
 \defgroup arith_func_bitor bitor
 
 \ingroup logic_mat
-
-Bitwise OR.
 
 Evaluate the bitwise OR of two arrays.
 
@@ -192,8 +158,6 @@ Evaluate the bitwise OR of two arrays.
 
 \ingroup logic_mat
 
-Bitwise XOR.
-
 Evaluate the bitwise XOR of two arrays.
 
 \copydoc arith_int_only
@@ -203,8 +167,6 @@ Evaluate the bitwise XOR of two arrays.
 
 \ingroup arith_mat
 
-Left shift on integer arrays.
-
 Shift the bits of integer arrays left.
 
 \copydoc arith_int_only
@@ -213,8 +175,6 @@ Shift the bits of integer arrays left.
 \defgroup arith_func_shiftr bitshiftr
 
 \ingroup arith_mat
-
-Right shift on integer arrays.
 
 Shift the bits of integer arrays right.
 
@@ -232,8 +192,6 @@ Cast an array from one type to another.
 
 \ingroup numeric_mat
 
-Minimum of two inputs.
-
 Find the elementwise minimum between two arrays.
 
 
@@ -241,16 +199,19 @@ Find the elementwise minimum between two arrays.
 
 \ingroup numeric_mat
 
-Maximum of two inputs.
-
 Find the elementwise maximum between two arrays.
+
+
+\defgroup arith_func_clamp clamp
+
+\ingroup numeric_mat
+
+Clamp an array between an upper and a lower limit.
 
 
 \defgroup arith_func_rem rem
 
 \ingroup numeric_mat
-
-Remainder.
 
 Find the remainder of a division.
 
@@ -261,16 +222,12 @@ Find the remainder of a division.
 
 \ingroup numeric_mat
 
-Modulus.
-
 Find the modulus.
 
 \copydoc arith_real_only
 
 
 \defgroup arith_func_abs abs
-
-Absolute value.
 
 Find the absolute value.
 
@@ -282,9 +239,8 @@ __Examples:__
 
 
 \defgroup arith_func_arg arg
-\ingroup numeric_mat
 
-Phase angle.
+\ingroup numeric_mat
 
 Find the phase angle (in radians) of a complex array.
 
@@ -292,8 +248,6 @@ Find the phase angle (in radians) of a complex array.
 \defgroup arith_func_sign sign
 
 \ingroup numeric_mat
-
-Sign.
 
 Find the sign of elements in an array.
 
@@ -304,8 +258,6 @@ Find the sign of elements in an array.
 
 \ingroup numeric_mat
 
-Round.
-
 Round numbers to the nearest integer.
 
 \copydoc arith_real_only
@@ -314,8 +266,6 @@ Round numbers to the nearest integer.
 \defgroup arith_func_trunc trunc
 
 \ingroup numeric_mat
-
-Truncate.
 
 Truncate numbers to nearest integer.
 
@@ -326,8 +276,6 @@ Truncate numbers to nearest integer.
 
 \ingroup numeric_mat
 
-Floor.
-
 Round to the integer less than or equal to the magnitude of the input value.
 
 \copydoc arith_real_only
@@ -336,8 +284,6 @@ Round to the integer less than or equal to the magnitude of the input value.
 \defgroup arith_func_ceil ceil
 
 \ingroup numeric_mat
-
-Ceil.
 
 Round to the integer greater than or equal to the magnitude of the input value.
 
@@ -348,8 +294,6 @@ Round to the integer greater than or equal to the magnitude of the input value.
 
 \ingroup numeric_mat
 
-Hypotenuse.
-
 Find the length of the hypotenuse of two inputs.
 
 \copydoc arith_real_only
@@ -359,8 +303,6 @@ Find the length of the hypotenuse of two inputs.
 
 \ingroup trig_mat
 
-Sine.
-
 Evaluate the sine function.
 
 
@@ -368,16 +310,12 @@ Evaluate the sine function.
 
 \ingroup trig_mat
 
-Cosine.
-
 Evaluate the cosine function.
 
 
-\defgroup arith_func_tan tan/tan2
+\defgroup arith_func_tan tan
 
 \ingroup trig_mat
-
-Tangent.
 
 Evaluate the tangent function.
 
@@ -386,16 +324,12 @@ Evaluate the tangent function.
 
 \ingroup trig_mat
 
-Inverse sine (arc sine).
-
-Evaluate the inverse sine function.
+Evaluate the inverse sine function (arc sine).
 
 
 \defgroup arith_func_acos acos
 
-Inverse cosine (arc cosine).
-
-Evaluate the inverse cosine function.
+Evaluate the inverse cosine function (arc cosine).
 
 The inverse of cosine so that, if `y = cos(x)`, then `x = arccos(y)`.
 
@@ -410,16 +344,12 @@ __Examples:__
 
 \ingroup trig_mat
 
-Inverse tangent (arc tangent).
-
-Evaluate the inverse tangent function.
+Evaluate the inverse tangent function (arc tangent).
 
 
 \defgroup arith_func_sinh sinh
 
 \ingroup hyper_mat
-
-Hyperbolic sine.
 
 Evaluate the hyperbolic sine function.
 
@@ -428,16 +358,12 @@ Evaluate the hyperbolic sine function.
 
 \ingroup hyper_mat
 
-Hyperbolic cosine.
-
 Evaluate the hyperbolic cosine function.
 
 
 \defgroup arith_func_tanh tanh
 
 \ingroup hyper_mat
-
-Hyperbolic tangent.
 
 Evaluate the hyperbolic tangent function.
 
@@ -446,27 +372,21 @@ Evaluate the hyperbolic tangent function.
 
 \ingroup hyper_mat
 
-Inverse hyperbolic sine (area hyperbolic sine).
-
-Evaluate the inverse hyperbolic sine function.
+Evaluate the inverse hyperbolic sine function (area hyperbolic sine).
 
 
 \defgroup arith_func_acosh acosh
 
 \ingroup hyper_mat
 
-Inverse hyperbolic cosine (area hyperbolic cosine).
-
-Evaluate the inverse hyperbolic cosine function.
+Evaluate the inverse hyperbolic cosine function (area hyperbolic cosine).
 
 
 \defgroup arith_func_atanh atanh
 
 \ingroup hyper_mat
 
-Inverse hyperbolic tangent (area hyperbolic tangent).
-
-Evaluate the inverse hyperbolic tangent function.
+Evaluate the inverse hyperbolic tangent function (area hyperbolic tangent).
 
 
 \defgroup arith_func_cplx complex
@@ -505,8 +425,6 @@ Find the imaginary part of a complex array.
 
 \ingroup complex_mat
 
-Complex conjugate.
-
 Find the complex conjugate of an input array.
 
 
@@ -523,43 +441,31 @@ Find the nth root.
 
 Raise a base to a power (or exponent).
 
-If the input array has values beyond what a floating point type can represent, then there is no
-guarantee that the results will be accurate. The exact type mapping from integral types to floating
-point types used to compute power is given below.
 
-| Input Type         | Compute Type   |
-| :------------------| :--------------|
-| unsigned long long | double         |
-| long long          | double         |
-| unsigned int       | double         |
-| int                | double         |
-| unsigned short     | float          |
-| short              | float          |
-| unsigned char      | float          |
+\defgroup arith_func_pow pow2
 
-The output array will be of the same type as input.
+\ingroup explog_mat
+
+Raise 2 to a power (or exponent).
 
 
 \defgroup arith_func_sigmoid sigmoid
 
-Sigmoid function (logistical).
-
 Evaluate the logistical sigmoid function.
-
 
 
 \defgroup arith_func_exp exp
 
 \ingroup explog_mat
 
-Evaluate the exponential.
+Evaluate the exponential function.
 
 
 \defgroup arith_func_expm1 expm1
 
 \ingroup explog_mat
 
-Evaluate the exponential of an array minus 1, `exp(in) - 1`.
+Evaluate the exponential function of an array minus 1, `exp(in) - 1`.
 
 \copydoc arith_real_only
 
@@ -571,7 +477,6 @@ Evaluate the exponential of an array minus 1, `exp(in) - 1`.
 Evaluate the error function.
 
 \copydoc arith_real_only
-
 
 
 \defgroup arith_func_erfc erfc
@@ -685,7 +590,7 @@ Check if values are zero.
 Check if values are infinite.
 
 
-\defgroup arith_func_isnan isNan
+\defgroup arith_func_isnan isnan
 
 \ingroup helper_mat
 
