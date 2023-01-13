@@ -18,6 +18,7 @@
 #include <common/TemplateTypename.hpp>
 #include <common/util.hpp>
 
+#include <nonstd/span.hpp>
 #include <string>
 #include <vector>
 
@@ -73,10 +74,10 @@ namespace common {
 ///            the kernel compilation.
 ///
 detail::Kernel getKernel(const std::string& kernelName,
-                         const std::vector<common::Source>& sources,
-                         const std::vector<TemplateArg>& templateArgs,
-                         const std::vector<std::string>& options = {},
-                         const bool sourceIsJIT                  = false);
+                         const nonstd::span<const common::Source> sources,
+                         const nonstd::span<const TemplateArg> templateArgs,
+                         const nonstd::span<const std::string> options = {},
+                         const bool sourceIsJIT                        = false);
 
 /// \brief Lookup a Module that matches the given key
 ///

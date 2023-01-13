@@ -47,6 +47,7 @@
 
 #include <nvrtc.h>
 
+#include <nonstd/span.hpp>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -69,6 +70,7 @@ using arrayfire::common::renameFile;
 using arrayfire::cuda::getComputeCapability;
 using arrayfire::cuda::getDeviceProp;
 using detail::Module;
+using nonstd::span;
 using std::accumulate;
 using std::array;
 using std::back_insert_iterator;
@@ -147,9 +149,10 @@ string getKernelCacheFilename(const int device, const string &key) {
 namespace arrayfire {
 namespace common {
 
-Module compileModule(const string &moduleKey, const vector<string> &sources,
-                     const vector<string> &opts,
-                     const vector<string> &kInstances, const bool sourceIsJIT) {
+Module compileModule(const string &moduleKey, const span<const string> sources,
+                     const span<const string> opts,
+                     const span<const string> kInstances,
+                     const bool sourceIsJIT) {
     nvrtcProgram prog;
     using namespace arrayfire::cuda;
     if (sourceIsJIT) {

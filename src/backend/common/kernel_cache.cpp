@@ -24,6 +24,7 @@
 using detail::Kernel;
 using detail::Module;
 
+using nonstd::span;
 using std::back_inserter;
 using std::shared_timed_mutex;
 using std::string;
@@ -57,9 +58,9 @@ Module findModule(const int device, const size_t& key) {
 }
 
 Kernel getKernel(const string& kernelName,
-                 const vector<common::Source>& sources,
-                 const vector<TemplateArg>& targs,
-                 const vector<string>& options, const bool sourceIsJIT) {
+                 const span<const common::Source> sources,
+                 const span<const TemplateArg> targs,
+                 const span<const string> options, const bool sourceIsJIT) {
     string tInstance = kernelName;
 
 #if defined(AF_CUDA)
@@ -117,7 +118,7 @@ Kernel getKernel(const string& kernelName,
                 sources_str.push_back({s.ptr, s.length});
             }
             currModule = compileModule(to_string(moduleKeyDisk), sources_str,
-                                       options, {tInstance}, sourceIsJIT);
+                                       options, {{tInstance}}, sourceIsJIT);
         }
 
         std::unique_lock<shared_timed_mutex> writeLock(getCacheMutex(device));

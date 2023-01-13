@@ -14,6 +14,7 @@
 #include <Module.hpp>
 #include <backend.hpp>
 
+#include <nonstd/span.hpp>
 #include <string>
 #include <vector>
 
@@ -44,9 +45,9 @@ namespace common {
 ///
 /// \returns Backend specific binary module that contains associated kernel
 detail::Module compileModule(const std::string& moduleKey,
-                             const std::vector<std::string>& sources,
-                             const std::vector<std::string>& options,
-                             const std::vector<std::string>& kInstances,
+                             const nonstd::span<const std::string> sources,
+                             const nonstd::span<const std::string> options,
+                             const nonstd::span<const std::string> kInstances,
                              const bool isJIT);
 
 /// \brief Load module binary from disk cache
