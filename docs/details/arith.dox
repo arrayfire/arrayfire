@@ -1,52 +1,50 @@
 /*!
 \page arith_real_only arith_real
-
 \note This function supports real inputs only. Complex inputs are not yet supported.
-
 */
 
 /*!
 \page arith_int_only arith_int
-
 \note This function supports integer only.
-
 */
+
 
 
 /**
 \addtogroup arrayfire_func
 @{
 
-\defgroup arith_func_add add
 
+
+\defgroup arith_func_add add
 \ingroup arith_mat
 
 Add two arrays.
 
 
-\defgroup arith_func_sub sub
 
+\defgroup arith_func_sub sub
 \ingroup arith_mat
 
 Subtract one array from another array.
 
 
-\defgroup arith_func_mul mul
 
+\defgroup arith_func_mul mul
 \ingroup arith_mat
 
 Multiply two arrays.
 
 
-\defgroup arith_func_div div
 
+\defgroup arith_func_div div
 \ingroup arith_mat
 
 Divide one array by another array.
 
 
-\defgroup arith_func_lt lt
 
+\defgroup arith_func_lt lt
 \ingroup logic_mat
 
 Less than, an elementwise comparison of two arrays.
@@ -54,8 +52,8 @@ Less than, an elementwise comparison of two arrays.
 Check if the elements of one array are less than those of another array.
 
 
-\defgroup arith_func_gt gt
 
+\defgroup arith_func_gt gt
 \ingroup logic_mat
 
 Greater than comparison, an elementwise comparison of two arrays.
@@ -63,8 +61,8 @@ Greater than comparison, an elementwise comparison of two arrays.
 Check if the elements of one array are greater than those of another array.
 
 
-\defgroup arith_func_le le
 
+\defgroup arith_func_le le
 \ingroup logic_mat
 
 Less than or equal to, an elementwise comparison of two arrays.
@@ -73,7 +71,6 @@ Check if the elements of one array are less than or equal to those of another ar
 
 
 \defgroup arith_func_ge ge
-
 \ingroup logic_mat
 
 Greater than or equal to, an elementwise comparison of two arrays.
@@ -81,8 +78,8 @@ Greater than or equal to, an elementwise comparison of two arrays.
 Check if the elements of one array are greater than or equal to those of another array.
 
 
-\defgroup arith_func_eq eq
 
+\defgroup arith_func_eq eq
 \ingroup logic_mat
 
 \brief Equal to, an elementwise comparison of two arrays.
@@ -90,8 +87,8 @@ Check if the elements of one array are greater than or equal to those of another
 Check if the elements of one array are equal to those of another array.
 
 
-\defgroup arith_func_neq neq
 
+\defgroup arith_func_neq neq
 \ingroup logic_mat
 
 \brief Not equal to, an elementwise comparison of two arrays.
@@ -99,36 +96,36 @@ Check if the elements of one array are equal to those of another array.
 Check if the elements of one array are not equal to those of another array.
 
 
-\defgroup arith_func_and and
 
+\defgroup arith_func_and and
 \ingroup logic_mat
 
 Evaluate the logical AND of two arrays.
 
 
-\defgroup arith_func_or or
 
+\defgroup arith_func_or or
 \ingroup logic_mat
 
 Evaluate the logical OR of two arrays.
 
 
-\defgroup arith_func_not not
 
+\defgroup arith_func_not not
 \ingroup logic_mat
 
 Evaluate the logical NOT of an array.
 
 
-\defgroup arith_func_neg neg
 
+\defgroup arith_func_neg neg
 \ingroup numeric_mat
 
 Negate an array.
 
 
-\defgroup arith_func_bitnot bitnot
 
+\defgroup arith_func_bitnot bitnot
 \ingroup logic_mat
 
 Evaluate the bitwise NOT of an array.
@@ -136,8 +133,8 @@ Evaluate the bitwise NOT of an array.
 \copydoc arith_int_only
 
 
-\defgroup arith_func_bitand bitand
 
+\defgroup arith_func_bitand bitand
 \ingroup logic_mat
 
 Evaluate the bitwise AND of two arrays.
@@ -145,8 +142,8 @@ Evaluate the bitwise AND of two arrays.
 \copydoc arith_int_only
 
 
-\defgroup arith_func_bitor bitor
 
+\defgroup arith_func_bitor bitor
 \ingroup logic_mat
 
 Evaluate the bitwise OR of two arrays.
@@ -154,8 +151,8 @@ Evaluate the bitwise OR of two arrays.
 \copydoc arith_int_only
 
 
-\defgroup arith_func_bitxor bitxor
 
+\defgroup arith_func_bitxor bitxor
 \ingroup logic_mat
 
 Evaluate the bitwise XOR of two arrays.
@@ -163,8 +160,8 @@ Evaluate the bitwise XOR of two arrays.
 \copydoc arith_int_only
 
 
-\defgroup arith_func_shiftl bitshiftl
 
+\defgroup arith_func_shiftl bitshiftl
 \ingroup arith_mat
 
 Shift the bits of integer arrays left.
@@ -172,8 +169,8 @@ Shift the bits of integer arrays left.
 \copydoc arith_int_only
 
 
-\defgroup arith_func_shiftr bitshiftr
 
+\defgroup arith_func_shiftr bitshiftr
 \ingroup arith_mat
 
 Shift the bits of integer arrays right.
@@ -181,36 +178,36 @@ Shift the bits of integer arrays right.
 \copydoc arith_int_only
 
 
-\defgroup arith_func_cast cast
 
+\defgroup arith_func_cast cast
 \ingroup helper_mat
 
 Cast an array from one type to another.
 
 
-\defgroup arith_func_min min
 
+\defgroup arith_func_min min
 \ingroup numeric_mat
 
 Find the elementwise minimum between two arrays.
 
 
-\defgroup arith_func_max max
 
+\defgroup arith_func_max max
 \ingroup numeric_mat
 
 Find the elementwise maximum between two arrays.
 
 
-\defgroup arith_func_clamp clamp
 
+\defgroup arith_func_clamp clamp
 \ingroup numeric_mat
 
 Clamp an array between an upper and a lower limit.
 
 
-\defgroup arith_func_rem rem
 
+\defgroup arith_func_rem rem
 \ingroup numeric_mat
 
 Find the remainder of a division.
@@ -218,8 +215,8 @@ Find the remainder of a division.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_mod mod
 
+\defgroup arith_func_mod mod
 \ingroup numeric_mat
 
 Find the modulus.
@@ -227,7 +224,9 @@ Find the modulus.
 \copydoc arith_real_only
 
 
+
 \defgroup arith_func_abs abs
+\ingroup numeric_mat
 
 Find the absolute value.
 
@@ -235,18 +234,16 @@ __Examples:__
 
 \snippet test/math.cpp ex_arith_func_abs
 
-\ingroup numeric_mat
 
 
 \defgroup arith_func_arg arg
-
 \ingroup numeric_mat
 
 Find the phase angle (in radians) of a complex array.
 
 
-\defgroup arith_func_sign sign
 
+\defgroup arith_func_sign sign
 \ingroup numeric_mat
 
 Find the sign of elements in an array.
@@ -254,8 +251,8 @@ Find the sign of elements in an array.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_round round
 
+\defgroup arith_func_round round
 \ingroup numeric_mat
 
 Round numbers to the nearest integer.
@@ -263,8 +260,8 @@ Round numbers to the nearest integer.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_trunc trunc
 
+\defgroup arith_func_trunc trunc
 \ingroup numeric_mat
 
 Truncate numbers to nearest integer.
@@ -272,8 +269,8 @@ Truncate numbers to nearest integer.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_floor floor
 
+\defgroup arith_func_floor floor
 \ingroup numeric_mat
 
 Round to the integer less than or equal to the magnitude of the input value.
@@ -281,8 +278,8 @@ Round to the integer less than or equal to the magnitude of the input value.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_ceil ceil
 
+\defgroup arith_func_ceil ceil
 \ingroup numeric_mat
 
 Round to the integer greater than or equal to the magnitude of the input value.
@@ -290,8 +287,8 @@ Round to the integer greater than or equal to the magnitude of the input value.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_hypot hypot
 
+\defgroup arith_func_hypot hypot
 \ingroup numeric_mat
 
 Find the length of the hypotenuse of two inputs.
@@ -299,35 +296,37 @@ Find the length of the hypotenuse of two inputs.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_sin sin
 
+\defgroup arith_func_sin sin
 \ingroup trig_mat
 
 Evaluate the sine function.
 
 
-\defgroup arith_func_cos cos
 
+\defgroup arith_func_cos cos
 \ingroup trig_mat
 
 Evaluate the cosine function.
 
 
-\defgroup arith_func_tan tan
 
+\defgroup arith_func_tan tan
 \ingroup trig_mat
 
 Evaluate the tangent function.
 
 
-\defgroup arith_func_asin asin
 
+\defgroup arith_func_asin asin
 \ingroup trig_mat
 
 Evaluate the inverse sine function (arc sine).
 
 
+
 \defgroup arith_func_acos acos
+\ingroup trig_mat
 
 Evaluate the inverse cosine function (arc cosine).
 
@@ -337,60 +336,58 @@ __Examples:__
 
 \snippet test/math.cpp ex_arith_func_acos
 
-\ingroup trig_mat
 
 
 \defgroup arith_func_atan atan/atan2
-
 \ingroup trig_mat
 
 Evaluate the inverse tangent function (arc tangent).
 
 
-\defgroup arith_func_sinh sinh
 
+\defgroup arith_func_sinh sinh
 \ingroup hyper_mat
 
 Evaluate the hyperbolic sine function.
 
 
-\defgroup arith_func_cosh cosh
 
+\defgroup arith_func_cosh cosh
 \ingroup hyper_mat
 
 Evaluate the hyperbolic cosine function.
 
 
-\defgroup arith_func_tanh tanh
 
+\defgroup arith_func_tanh tanh
 \ingroup hyper_mat
 
 Evaluate the hyperbolic tangent function.
 
 
-\defgroup arith_func_asinh asinh
 
+\defgroup arith_func_asinh asinh
 \ingroup hyper_mat
 
 Evaluate the inverse hyperbolic sine function (area hyperbolic sine).
 
 
-\defgroup arith_func_acosh acosh
 
+\defgroup arith_func_acosh acosh
 \ingroup hyper_mat
 
 Evaluate the inverse hyperbolic cosine function (area hyperbolic cosine).
 
 
-\defgroup arith_func_atanh atanh
 
+\defgroup arith_func_atanh atanh
 \ingroup hyper_mat
 
 Evaluate the inverse hyperbolic tangent function (area hyperbolic tangent).
 
 
-\defgroup arith_func_cplx complex
 
+\defgroup arith_func_cplx complex
 \ingroup complex_mat
 
 Create complex arrays.
@@ -407,62 +404,62 @@ __Examples:__
 \snippet test/complex.cpp ex_arith_func_complex
 
 
-\defgroup arith_func_real real
 
+\defgroup arith_func_real real
 \ingroup complex_mat
 
 Find the real part of a complex array.
 
 
-\defgroup arith_func_imag imag
 
+\defgroup arith_func_imag imag
 \ingroup complex_mat
 
 Find the imaginary part of a complex array.
 
 
-\defgroup arith_func_conjg conjg
 
+\defgroup arith_func_conjg conjg
 \ingroup complex_mat
 
 Find the complex conjugate of an input array.
 
 
-\defgroup arith_func_root root
 
+\defgroup arith_func_root root
 \ingroup explog_mat
 
 Find the nth root.
 
 
-\defgroup arith_func_pow pow
 
+\defgroup arith_func_pow pow
 \ingroup explog_mat
 
 Raise a base to a power (or exponent).
 
 
-\defgroup arith_func_pow pow2
 
+\defgroup arith_func_pow pow2
 \ingroup explog_mat
 
 Raise 2 to a power (or exponent).
 
 
-\defgroup arith_func_sigmoid sigmoid
 
+\defgroup arith_func_sigmoid sigmoid
 Evaluate the logistical sigmoid function.
 
 
-\defgroup arith_func_exp exp
 
+\defgroup arith_func_exp exp
 \ingroup explog_mat
 
 Evaluate the exponential function.
 
 
-\defgroup arith_func_expm1 expm1
 
+\defgroup arith_func_expm1 expm1
 \ingroup explog_mat
 
 Evaluate the exponential function of an array minus 1, `exp(in) - 1`.
@@ -470,8 +467,8 @@ Evaluate the exponential function of an array minus 1, `exp(in) - 1`.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_erf erf
 
+\defgroup arith_func_erf erf
 \ingroup explog_mat
 
 Evaluate the error function.
@@ -479,8 +476,8 @@ Evaluate the error function.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_erfc erfc
 
+\defgroup arith_func_erfc erfc
 \ingroup explog_mat
 
 Evaluate the complementary error function.
@@ -488,15 +485,15 @@ Evaluate the complementary error function.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_log log
 
+\defgroup arith_func_log log
 \ingroup explog_mat
 
 Evaluate the natural logarithm.
 
 
-\defgroup arith_func_log1p log1p
 
+\defgroup arith_func_log1p log1p
 \ingroup explog_mat
 
 Evaluate the natural logarithm of 1 + input, `ln(1+in)`.
@@ -504,8 +501,8 @@ Evaluate the natural logarithm of 1 + input, `ln(1+in)`.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_log10 log10
 
+\defgroup arith_func_log10 log10
 \ingroup explog_mat
 
 Evaluate the base 10 logarithm.
@@ -513,8 +510,8 @@ Evaluate the base 10 logarithm.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_log2 log2
 
+\defgroup arith_func_log2 log2
 \ingroup explog_mat
 
 Evaluate the base 2 logarithm.
@@ -522,15 +519,15 @@ Evaluate the base 2 logarithm.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_sqrt sqrt
 
+\defgroup arith_func_sqrt sqrt
 \ingroup explog_mat
 
 Find the square root.
 
 
-\defgroup arith_func_rsqrt rsqrt
 
+\defgroup arith_func_rsqrt rsqrt
 \ingroup explog_mat
 
 Find the reciprocal square root.
@@ -540,8 +537,8 @@ Find the reciprocal square root.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_cbrt cbrt
 
+\defgroup arith_func_cbrt cbrt
 \ingroup explog_mat
 
 Find the cube root.
@@ -549,8 +546,8 @@ Find the cube root.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_factorial factorial
 
+\defgroup arith_func_factorial factorial
 \ingroup explog_mat
 
 Find the factorial.
@@ -558,8 +555,8 @@ Find the factorial.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_tgamma tgamma
 
+\defgroup arith_func_tgamma tgamma
 \ingroup explog_mat
 
 Evaluate the gamma function.
@@ -567,8 +564,8 @@ Evaluate the gamma function.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_lgamma lgamma
 
+\defgroup arith_func_lgamma lgamma
 \ingroup explog_mat
 
 Evaluate the logarithm of the absolute value of the gamma function.
@@ -576,25 +573,26 @@ Evaluate the logarithm of the absolute value of the gamma function.
 \copydoc arith_real_only
 
 
-\defgroup arith_func_iszero iszero
 
+\defgroup arith_func_iszero iszero
 \ingroup helper_mat
 
 Check if values are zero.
 
 
-\defgroup arith_func_isinf isinf
 
+\defgroup arith_func_isinf isinf
 \ingroup helper_mat
 
 Check if values are infinite.
 
 
-\defgroup arith_func_isnan isnan
 
+\defgroup arith_func_isnan isnan
 \ingroup helper_mat
 
 Check if values are NaN.
+
 
 
 @}
