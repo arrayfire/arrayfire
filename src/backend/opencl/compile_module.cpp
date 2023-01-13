@@ -103,8 +103,8 @@ const static string DEFAULT_MACROS_STR(
                                            #endif\n                     \
                                            ");
 
-Program buildProgram(const vector<string> &kernelSources,
-                     const vector<string> &compileOpts) {
+Program buildProgram(const span<const string> kernelSources,
+                     const span<const string> compileOpts) {
     Program retVal;
     try {
         static const string defaults =
@@ -157,9 +157,9 @@ string getKernelCacheFilename(const int device, const string &key) {
 namespace arrayfire {
 namespace common {
 
-Module compileModule(const string &moduleKey, const vector<string> &sources,
-                     const vector<string> &options,
-                     const vector<string> &kInstances, const bool isJIT) {
+Module compileModule(const string &moduleKey, const span<const string> sources,
+                     const span<const string> options,
+                     const span<const string> kInstances, const bool isJIT) {
     UNUSED(kInstances);
     UNUSED(isJIT);
 

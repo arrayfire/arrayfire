@@ -31,6 +31,12 @@ struct TemplateArg {
         : _tparam(arrayfire::common::toString(value)) {}
 };
 
+template<typename... Targs>
+std::array<TemplateArg, sizeof...(Targs)> TemplateArgs(Targs &&...args) {
+    return std::array<TemplateArg, sizeof...(Targs)>{
+        std::forward<Targs>(args)...};
+}
+
 #define DefineKey(arg) " -D " #arg
 #define DefineValue(arg) " -D " #arg "=" + arrayfire::common::toString(arg)
 #define DefineKeyValue(key, arg) \
