@@ -241,7 +241,7 @@ else()
   add_library(af_spdlog INTERFACE)
   af_dep_check_and_populate(${spdlog_prefix}
     URI https://github.com/gabime/spdlog.git
-    REF v1.9.2
+    REF v1.7.0
   )
   add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
@@ -258,6 +258,7 @@ else()
   else()
     set_target_properties(spdlog
       PROPERTIES
+        POSITION_INDEPENDENT_CODE ON
         CXX_VISIBILITY_PRESET "default")
     set_target_properties(af_spdlog
       PROPERTIES
