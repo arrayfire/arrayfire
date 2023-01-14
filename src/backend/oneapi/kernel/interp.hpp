@@ -144,7 +144,7 @@ struct Interp1<Ty, Tp, 2> {
         WT ratio     = off_x;
         if (method == AF_INTERP_LINEAR_COSINE) {
             // Smooth the factional part with cosine
-            ratio = (1 - cos(ratio * af::Pi)) / 2;
+            ratio = (1 - cosf(ratio * af::Pi)) / 2;
         }
 
         Ty zero = scalar<Ty>(0);
@@ -264,8 +264,8 @@ struct Interp2<Ty, Tp, 2> {
         if (method == AF_INTERP_LINEAR_COSINE ||
             method == AF_INTERP_BILINEAR_COSINE) {
             // Smooth the factional part with cosine
-            xratio = (1 - cos(xratio * af::Pi)) / 2;
-            yratio = (1 - cos(yratio * af::Pi)) / 2;
+            xratio = (1 - cosf(xratio * af::Pi)) / 2;
+            yratio = (1 - cosf(yratio * af::Pi)) / 2;
         }
 
         Ty zero = scalar<Ty>(0);

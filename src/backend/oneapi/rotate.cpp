@@ -10,31 +10,38 @@
 #include <err_oneapi.hpp>
 #include <rotate.hpp>
 
-// #include <kernel/rotate.hpp>
+#include <kernel/rotate.hpp>
 
 namespace oneapi {
 template<typename T>
 Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
                 const af_interp_type method) {
-    ONEAPI_NOT_SUPPORTED("rotate Not supported");
-
     Array<T> out = createEmptyArray<T>(odims);
 
-    // switch (method) {
-    //     case AF_INTERP_NEAREST:
-    //     case AF_INTERP_LOWER:
-    //         kernel::rotate<T>(out, in, theta, method, 1);
-    //         break;
-    //     case AF_INTERP_BILINEAR:
-    //     case AF_INTERP_BILINEAR_COSINE:
-    //         kernel::rotate<T>(out, in, theta, method, 2);
-    //         break;
-    //     case AF_INTERP_BICUBIC:
-    //     case AF_INTERP_BICUBIC_SPLINE:
-    //         kernel::rotate<T>(out, in, theta, method, 3);
-    //         break;
-    //     default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
-    // }
+    switch (method) {
+        case AF_INTERP_NEAREST:
+        case AF_INTERP_LOWER:
+            if constexpr (!(std::is_same_v<T, double> ||
+                            std::is_same_v<T, cdouble>)) {
+                kernel::rotate<T>(out, in, theta, method, 1);
+            }
+            break;
+        case AF_INTERP_BILINEAR:
+        case AF_INTERP_BILINEAR_COSINE:
+            if constexpr (!(std::is_same_v<T, double> ||
+                            std::is_same_v<T, cdouble>)) {
+                kernel::rotate<T>(out, in, theta, method, 2);
+            }
+            break;
+        case AF_INTERP_BICUBIC:
+        case AF_INTERP_BICUBIC_SPLINE:
+            if constexpr (!(std::is_same_v<T, double> ||
+                            std::is_same_v<T, cdouble>)) {
+                kernel::rotate<T>(out, in, theta, method, 3);
+            }
+            break;
+        default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+    }
     return out;
 }
 
