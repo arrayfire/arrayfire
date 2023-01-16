@@ -17,19 +17,20 @@
 template<typename T>
 struct TemplateTypename {
     operator TemplateArg() const noexcept {
-        return {std::string(af::dtype_traits<T>::getName())};
+        return TemplateArg{std::string(af::dtype_traits<T>::getName())};
     }
     operator std::string() const noexcept {
-        return {std::string(af::dtype_traits<T>::getName())};
+        return std::string(af::dtype_traits<T>::getName());
     }
 };
 
-#define SPECIALIZE(TYPE, NAME)                      \
-    template<>                                      \
-    struct TemplateTypename<TYPE> {                 \
-        operator TemplateArg() const noexcept {     \
-            return TemplateArg(std::string(#NAME)); \
-        }                                           \
+#define SPECIALIZE(TYPE, NAME)                                               \
+    template<>                                                               \
+    struct TemplateTypename<TYPE> {                                          \
+        operator TemplateArg() const noexcept {                              \
+            return TemplateArg(std::string(#NAME));                          \
+        }                                                                    \
+        operator std::string() const noexcept { return std::string(#NAME); } \
     }
 
 SPECIALIZE(unsigned char, detail::uchar);

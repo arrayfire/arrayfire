@@ -124,8 +124,9 @@ cuda_include_directories(
   ${ArrayFire_SOURCE_DIR}/src/api/c
   ${ArrayFire_SOURCE_DIR}/src/backend
   ${COMMON_INTERFACE_DIRS}
-  $<TARGET_PROPERTY:af_spdlog,INTERFACE_INCLUDE_DIRECTORIES>
-  )
+  ${span-lite_SOURCE_DIR}/include
+  ${${spdlog_prefix}_SOURCE_DIR}/include)
+
 if(CUDA_VERSION_MAJOR VERSION_LESS 11)
   af_dep_check_and_populate(${cub_prefix}
     URI https://github.com/NVIDIA/cub.git
@@ -307,6 +308,7 @@ cuda_add_library(af_cuda_static_cuda_library STATIC
 
     OPTIONS
     ${platform_flags} ${cuda_cxx_flags} ${af_cuda_static_flags}
+    -Dspan_FEATURE_WITH_INITIALIZER_LIST_P2447=1
     -Xcudafe --display_error_number -Xcudafe \"--diag_suppress=1427\" -DAFDLL
 )
 
@@ -323,10 +325,8 @@ if(CUDA_VERSION_MAJOR VERSION_GREATER 10 OR
 endif()
 
 target_link_libraries(af_cuda_static_cuda_library
-  PRIVATE
-    Boost::boost
-    af_spdlog
-    nonstd::span-lite)
+  PUBLIC
+    Boost::boost)
 
 if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
   check_cxx_compiler_flag("-Wl,--start-group -Werror" group_flags)
@@ -673,6 +673,7 @@ cuda_add_library(afcuda
     OPTIONS
     ${platform_flags}
     ${cuda_cxx_flags}
+    -Dspan_FEATURE_WITH_INITIALIZER_LIST_P2447=1
     -Xcudafe --display_error_number
     -Xcudafe \"--diag_suppress=1427\"
   )
