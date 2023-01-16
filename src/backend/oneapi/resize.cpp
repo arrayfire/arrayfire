@@ -9,7 +9,7 @@
 
 #include <Array.hpp>
 #include <err_oneapi.hpp>
-// #include <kernel/resize.hpp>
+#include <kernel/resize.hpp>
 #include <resize.hpp>
 #include <af/dim4.hpp>
 #include <stdexcept>
@@ -22,9 +22,9 @@ Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
     af::dim4 oDims(odim0, odim1, iDims[2], iDims[3]);
     Array<T> out = createEmptyArray<T>(oDims);
 
-    ONEAPI_NOT_SUPPORTED("resize Not supported");
-
-    // kernel::resize<T>(out, in, method);
+    if constexpr (!(std::is_same_v<T, double> || std::is_same_v<T, cdouble>)) {
+        kernel::resize<T>(out, in, method);
+    }
     return out;
 }
 
