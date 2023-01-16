@@ -156,8 +156,9 @@ void memcopy(const cl::Buffer& b_out, const dim4& ostrides,
         : sizeofNewT == 16
             ? "float4"
             : "type is larger than 16 bytes, which is unsupported"};
-    auto memCopy{common::getKernel(kernelName, {{memcopy_cl_src}}, {{tArg}},
-                                   {{DefineKeyValue(T, tArg)}})};
+    auto memCopy =
+        common::getKernel(kernelName, {{memcopy_cl_src}}, TemplateArgs(tArg),
+                          {{DefineKeyValue(T, tArg)}});
     const cl::NDRange local{th.genLocal(memCopy.get())};
     const cl::NDRange global{th.genGlobal(local)};
 

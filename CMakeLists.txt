@@ -231,14 +231,19 @@ if(TARGET fmt::fmt AND AF_WITH_FMT_HEADER_ONLY)
       INTERFACE_COMPILE_DEFINITIONS "FMT_HEADER_ONLY=1")
 endif()
 
+add_library(af_spdlog INTERFACE)
 if(TARGET spdlog::spdlog OR AF_WITH_EXTERNAL_PACKAGES_ONLY)
+
   if(AF_WITH_SPDLOG_HEADER_ONLY)
-    add_library(af_spdlog ALIAS spdlog::spdlog_header_only)
+    set_target_properties(af_spdlog
+      PROPERTIES
+      INTERFACE_LINK_LIBRARIES "spdlog::spdlog_header_only")
   else()
-    add_library(af_spdlog ALIAS spdlog::spdlog)
+    set_target_properties(af_spdlog
+      PROPERTIES
+      INTERFACE_LINK_LIBRARIES "spdlog::spdlog")
   endif()
 else()
-  add_library(af_spdlog INTERFACE)
   af_dep_check_and_populate(${spdlog_prefix}
     URI https://github.com/gabime/spdlog.git
     REF v1.7.0

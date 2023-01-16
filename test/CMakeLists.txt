@@ -22,6 +22,10 @@ elseif(NOT TARGET GTest::gtest)
     URI https://github.com/google/googletest.git
     REF release-1.8.1
   )
+  FetchContent_GetProperties(${gtest_prefix}
+    SOURCE_DIR gtest_src)
+  set(gtest_include_dirs ${gtest_src}/googletest/include;${gtest_src}/googletest)
+
 
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
   # newer cmakes. This sets the default global setting for that policy.
@@ -342,15 +346,16 @@ if(CUDA_FOUND)
     set(cuda_test_backends "cuda" "unified")
     if(${backend} IN_LIST cuda_test_backends)
       set(target test_cuda_${backend})
-      if(${CMAKE_VERSION} VERSION_LESS 3.5.2)
+      if(${CMAKE_VERSION} VERSION_LESS 3.6)
         cuda_include_directories(
           ${ArrayFire_SOURCE_DIR}/include
           ${ArrayFire_BINARY_DIR}/include
+          ${gtest_include_dirs}
           ${ArrayFire_SOURCE_DIR}/extern/half/include
           ${CMAKE_CURRENT_SOURCE_DIR}
         )
       endif()
-      cuda_add_executable(${target} cuda.cu  $<TARGET_OBJECTS:arrayfire_test>)
+      cuda_add_executable(${target} cuda.cu)
       target_include_directories(${target} PRIVATE
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
