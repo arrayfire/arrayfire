@@ -109,7 +109,7 @@ struct Interp1<Ty, Tp, 1> {
         const int x_lim    = iInfo.dims[xdim];
         const int x_stride = iInfo.strides[xdim];
 
-        int xid   = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+        int xid   = (method == AF_INTERP_LOWER ? floorf(x) : roundf(x));
         bool cond = xid >= 0 && xid < x_lim;
         if (clamp) xid = std::max((int)0, std::min(xid, x_lim));
 
@@ -132,7 +132,7 @@ struct Interp1<Ty, Tp, 2> {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
-        const int grid_x = floor(x);    // nearest grid
+        const int grid_x = floorf(x);   // nearest grid
         const WT off_x   = x - grid_x;  // fractional offset
 
         const int x_lim    = iInfo.dims[xdim];
@@ -143,8 +143,8 @@ struct Interp1<Ty, Tp, 2> {
         int offx[2]  = {0, cond[1] ? 1 : 0};
         WT ratio     = off_x;
         if (method == AF_INTERP_LINEAR_COSINE) {
-            // Smooth the factional part with cosine
-            ratio = (1 - cosf(ratio * af::Pi)) / 2;
+          // Smooth the factional part with cosine
+          ratio = (1 - cosf(ratio * 3.14159f)) / 2;
         }
 
         Ty zero = scalar<Ty>(0);
@@ -169,7 +169,7 @@ struct Interp1<Ty, Tp, 3> {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
-        const int grid_x = floor(x);    // nearest grid
+        const int grid_x = floorf(x);   // nearest grid
         const WT off_x   = x - grid_x;  // fractional offset
 
         const int x_lim    = iInfo.dims[xdim];
