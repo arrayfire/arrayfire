@@ -1,6 +1,35 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.8.3
+======
+
+## Improvements
+
+- Add support for CUDA 12 \PR{3352}
+- memcpy performance improvements
+- JIT performance improvements
+- join performance improvements
+- Improve support for Intel and newer Clang compilers
+- CCache support on Windows \PR{3257}
+
+## Fixes
+
+- Fix issue with some locales with OpenCL kernel generation \PR{3294}
+- Internal improvements
+- Fix leak in clfft on exit.
+- Fix some cases where ndims was incorrectly used ot calculate shape \PR{3277}
+- Fix issue when setDevice was not called in new threads \PR{3269}
+- Restrict initializer list to just fundamental types \PR{3264}
+
+## Contributions
+
+Special thanks to our contributors:
+[Carlo Cabrera](https://github.com/carlocab)
+[Guillaume Schmid](https://github.com/GuillaumeSchmid)
+[Willy Born](https://github.com/willyborn)
+[ktdq](https://github.com/ktdq)
+
 v3.8.2
 ======
 
