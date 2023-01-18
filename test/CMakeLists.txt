@@ -230,6 +230,13 @@ function(make_test)
           NOMINMAX)
     endif()
 
+    if(has_cxx_fp_model)
+      target_compile_options(${target}
+        PRIVATE
+          -fp-model precise)
+    endif()
+
+
     # TODO(umar): Create this executable separately
     if(NOT ${backend} STREQUAL "unified" OR ${target} STREQUAL "backend_unified")
       add_test(NAME ${target} COMMAND ${target})

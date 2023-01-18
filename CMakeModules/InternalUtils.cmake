@@ -5,6 +5,8 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
+include(CheckCXXCompilerFlag)
+
 function(dependency_check VAR ERROR_MESSAGE)
   if(NOT ${VAR})
     message(SEND_ERROR ${ERROR_MESSAGE})
@@ -28,6 +30,8 @@ elseif(UNIX)
 endif()
 endfunction()
 
+check_cxx_compiler_flag("-fp-model fast" has_cxx_fp_model)
+
 function(arrayfire_get_cuda_cxx_flags cuda_flags)
   if(MSVC)
     set(flags -Xcompiler /wd4251
@@ -48,6 +52,10 @@ function(arrayfire_get_cuda_cxx_flags cuda_flags)
               -Xcompiler -fPIC
               -Xcompiler ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden
               --expt-relaxed-constexpr)
+  endif()
+
+  if(has_cxx_fp_model)
+    list(APPEND flags -fp-model precise)
   endif()
 
   if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
@@ -82,6 +90,10 @@ function(arrayfire_set_default_cxx_flags target)
     if(has_ignored_attributes_flag)
         target_compile_options(${target}
           PRIVATE -Wno-ignored-attributes)
+    endif()
+
+    if(has_cxx_fp_model)
+      target_compile_options(${target} PRIVATE -fp-model precise)
     endif()
 
     check_cxx_compiler_flag(-Wall has_all_warnings_flag)
