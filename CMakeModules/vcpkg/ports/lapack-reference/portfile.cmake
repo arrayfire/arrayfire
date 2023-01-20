@@ -68,7 +68,7 @@ vcpkg_cmake_configure(
     OPTIONS
         "-DUSE_OPTIMIZED_BLAS=${USE_OPTIMIZED_BLAS}"
         "-DCBLAS=${CBLAS}"
-	"-DLAPACKE=ON"
+        "-DLAPACKE=ON"
         ${FORTRAN_CMAKE}
 )
 
