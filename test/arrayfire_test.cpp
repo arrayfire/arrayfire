@@ -429,10 +429,23 @@ INSTANTIATE(unsigned char, unsigned char, float);
 INSTANTIATE(short, short, float);
 INSTANTIATE(unsigned short, unsigned short, float);
 INSTANTIATE(half_float::half, half_float::half, float);
+INSTANTIATE(half_float::half, half_float::half, double);
 
+INSTANTIATE(af_cdouble, af_cdouble, double);
 INSTANTIATE(double, af_cdouble, float);
 INSTANTIATE(float, af_cfloat, float);
 INSTANTIATE(half_float::half, uint, uint);
+INSTANTIATE(float, float, double);
+INSTANTIATE(int, float, double);
+INSTANTIATE(unsigned int, float, double);
+INSTANTIATE(short, float, double);
+INSTANTIATE(unsigned short, float, double);
+INSTANTIATE(char, float, double);
+INSTANTIATE(unsigned char, float, double);
+INSTANTIATE(long long, double, double);
+INSTANTIATE(unsigned long long, double, double);
+INSTANTIATE(af_cfloat, af_cfloat, double);
+INSTANTIATE(half_float::half, float, double);
 
 #undef INSTANTIATE
 
