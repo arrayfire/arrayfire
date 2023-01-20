@@ -64,18 +64,18 @@ struct fmt::formatter<arrayfire::common::Version> {
     template<typename FormatContext>
     auto format(const arrayfire::common::Version& ver, FormatContext& ctx)
         -> decltype(ctx.out()) {
-        if (ver.major == -1) return format_to(ctx.out(), "N/A");
-        if (ver.minor == -1) show_minor = false;
-        if (ver.patch == -1) show_patch = false;
+        if (ver.major() == -1) return format_to(ctx.out(), "N/A");
+        if (ver.minor() == -1) show_minor = false;
+        if (ver.patch() == -1) show_patch = false;
         if (show_major && !show_minor && !show_patch) {
-            return format_to(ctx.out(), "{}", ver.major);
+            return format_to(ctx.out(), "{}", ver.major());
         }
         if (show_major && show_minor && !show_patch) {
-            return format_to(ctx.out(), "{}.{}", ver.major, ver.minor);
+            return format_to(ctx.out(), "{}.{}", ver.major(), ver.minor());
         }
         if (show_major && show_minor && show_patch) {
-            return format_to(ctx.out(), "{}.{}.{}", ver.major, ver.minor,
-                             ver.patch);
+            return format_to(ctx.out(), "{}.{}.{}", ver.major(), ver.minor(),
+                             ver.patch());
         }
         return ctx.out();
     }
