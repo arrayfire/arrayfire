@@ -27,6 +27,7 @@ using std::string;
 using std::vector;
 
 af_err init_err = af_init();
+
 template<typename T>
 struct elseType {
     typedef typename cond_type<is_same_type<T, uintl>::value ||
@@ -59,8 +60,9 @@ struct meanvar_test {
     vector<outType<T>> variance_;
 
     meanvar_test(string description, af_array in, af_array weights,
-                 af_var_bias bias, int dim, vector<double> &&mean,
-                 vector<double> &&variance)
+                 af_var_bias bias, int dim,
+                 vector<typename varOutType<T>::type> &&mean,
+                 vector<typename varOutType<T>::type> &&variance)
         : test_description_(description)
         , in_(0)
         , weights_(0)
@@ -73,8 +75,21 @@ struct meanvar_test {
         for (auto &v : mean) mean_.push_back((outType<T>)v);
         for (auto &v : variance) variance_.push_back((outType<T>)v);
     }
-    meanvar_test()                                   = default;
-    meanvar_test(meanvar_test<T> &&other)            = default;
+
+    meanvar_test(std::string name)
+        : test_description_(name), in_(0), weights_(0) {}
+
+    meanvar_test(meanvar_test<T> &&other)
+        : test_description_(other.test_description_)
+        , in_(other.in_)
+        , weights_(other.weights_)
+        , bias_(other.bias_)
+        , dim_(other.dim_)
+        , mean_(other.mean_)
+        , variance_(other.variance_) {
+        other.in_      = 0;
+        other.weights_ = 0;
+    }
     meanvar_test &operator=(meanvar_test<T> &&other) = default;
     meanvar_test &operator=(meanvar_test<T> &other)  = delete;
 
@@ -86,7 +101,7 @@ struct meanvar_test {
         , dim_(other.dim_)
         , mean_(other.mean_)
         , variance_(other.variance_) {
-        af_retain_array(&in_, other.in_);
+        if (other.in_) af_retain_array(&in_, other.in_);
         if (other.weights_) { af_retain_array(&weights_, other.weights_); }
     }
 
@@ -109,6 +124,7 @@ class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T>> {
    public:
     void meanvar_test_function(const meanvar_test<T> &test) {
         SUPPORTED_TYPE_CHECK(T);
+        SUPPORTED_TYPE_CHECK(outType<T>);
         af_array mean, var;
 
         // Cast to the expected type
@@ -145,6 +161,7 @@ class MeanVarTyped : public ::testing::TestWithParam<meanvar_test<T>> {
 
     void meanvar_cpp_test_function(const meanvar_test<T> &test) {
         SUPPORTED_TYPE_CHECK(T);
+        SUPPORTED_TYPE_CHECK(outType<T>);
         array mean, var;
 
         // Cast to the expected type
@@ -188,19 +205,28 @@ template<typename T>
 meanvar_test<T> meanvar_test_gen(string name, int in_index, int weight_index,
                                  af_var_bias bias, int dim, int mean_index,
                                  int var_index, test_size size) {
+    if (noDoubleTests((af_dtype)af::dtype_traits<T>::af_type) ||
+        noDoubleTests((
+            af_dtype)af::dtype_traits<typename varOutType<T>::type>::af_type) ||
+        noHalfTests((af_dtype)af::dtype_traits<T>::af_type)) {
+        meanvar_test<T> out(name);
+        return out;
+    }
+
     vector<af_array> inputs;
-    vector<vector<double>> outputs;
+    vector<vector<typename varOutType<T>::type>> outputs;
     if (size == MEANVAR_SMALL) {
         vector<af::dim4> numDims_;
-        vector<vector<double>> in_;
-        vector<vector<double>> tests_;
-        readTests<double, typename varOutType<double>::type, double>(
+        vector<vector<T>> in_;
+        vector<vector<typename varOutType<T>::type>> tests_;
+        readTests<T, typename varOutType<T>::type, double>(
             TEST_DIR "/meanvar/meanvar.data", numDims_, in_, tests_);
 
         inputs.resize(in_.size());
         for (size_t i = 0; i < in_.size(); i++) {
             af_create_array(&inputs[i], &in_[i].front(), numDims_[i].ndims(),
-                            numDims_[i].get(), f64);
+                            numDims_[i].get(),
+                            (af_dtype)af::dtype_traits<T>::af_type);
         }
 
         outputs.resize(tests_.size());
@@ -219,21 +245,26 @@ meanvar_test<T> meanvar_test_gen(string name, int in_index, int weight_index,
             {50, 40, 1, 1}   // 5
         };
 
-        vector<double> large_(full_array_size);
+        vector<T> large_(full_array_size);
         for (size_t i = 0; i < large_.size(); i++) {
-            large_[i] = static_cast<double>(i);
+            large_[i] = static_cast<T>(i);
         }
 
         inputs.resize(dimensions.size());
         for (size_t i = 0; i < dimensions.size(); i++) {
             af_create_array(&inputs[i], &large_.front(), 4,
-                            dimensions[i].data(), f64);
+                            dimensions[i].data(),
+                            (af_dtype)af::dtype_traits<T>::af_type);
         }
 
-        outputs.push_back(vector<double>(1, 999.5));
-        outputs.push_back(vector<double>(1, 333500));
-        outputs.push_back({249.50, 749.50, 1249.50, 1749.50});
-        outputs.push_back(vector<double>(4, 20875));
+        outputs.push_back(
+            vector<typename varOutType<T>::type>(1, outType<T>(999.5)));
+        outputs.push_back(
+            vector<typename varOutType<T>::type>(1, outType<T>(333500)));
+        outputs.push_back({outType<T>(249.50), outType<T>(749.50),
+                           outType<T>(1249.50), outType<T>(1749.50)});
+        outputs.push_back(
+            vector<typename varOutType<T>::type>(4, outType<T>(20875)));
     }
     meanvar_test<T> out(name, inputs[in_index],
                         (weight_index == -1) ? empty : inputs[weight_index],
