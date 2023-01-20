@@ -1091,5 +1091,4 @@ af_err af_delete_image_memory(void *ptr) {
     AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support",
                     AF_ERR_NOT_CONFIGURED);
 }
-}  // namespace arrayfire
 #endif  // WITH_FREEIMAGE
