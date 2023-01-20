@@ -595,11 +595,19 @@ if(LAPACK_FOUND OR BUILD_WITH_MKL)
       SYSTEM PRIVATE
         ${CBLAS_INCLUDE_DIR})
 
+    check_cxx_compiler_flag("-Wl,--start-group -Werror" group_flags)
+    if(group_flags)
+      set(START_GROUP -Wl,--start-group)
+      set(END_GROUP -Wl,--end-group)
+    endif()
     target_link_libraries(afopencl
       PRIVATE
-        ${CBLAS_LIBRARIES}
+        ${START_GROUP}
         ${LAPACK_LIBRARIES}
-        LAPACKE::LAPACKE)
+        LAPACKE::LAPACKE
+        ${CBLAS_LIBRARIES}
+        ${END_GROUP}
+      )
   endif()
 
   target_compile_definitions(afopencl PRIVATE WITH_LINEAR_ALGEBRA)
