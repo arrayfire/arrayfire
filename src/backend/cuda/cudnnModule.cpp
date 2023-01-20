@@ -111,12 +111,13 @@ cudnnModule::cudnnModule()
 
     // Check to see if the version of cuDNN ArrayFire was compiled against
     // is compatible with the version loaded at runtime
-    if (compiled_cudnn_version.major <= 6 &&
+    if (compiled_cudnn_version.major() <= 6 &&
         compiled_cudnn_version < cudnn_version) {
         string error_msg = fmt::format(
             "ArrayFire was compiled with an older version of cuDNN({}.{}) that "
             "does not support the version that was loaded at runtime({}.{}).",
-            CUDNN_MAJOR, CUDNN_MINOR, cudnn_version.major, cudnn_version.minor);
+            CUDNN_MAJOR, CUDNN_MINOR, cudnn_version.major(),
+            cudnn_version.minor());
         AF_ERROR(error_msg, AF_ERR_NOT_SUPPORTED);
     }
 
@@ -152,14 +153,14 @@ cudnnModule::cudnnModule()
     MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardFilterWorkspaceSize);
     MODULE_FUNCTION_INIT(cudnnFindConvolutionForwardAlgorithm);
     MODULE_FUNCTION_INIT(cudnnFindConvolutionBackwardFilterAlgorithm);
-    if (cudnn_version.major < 8) {
+    if (cudnn_version.major() < 8) {
         MODULE_FUNCTION_INIT(cudnnGetConvolutionForwardAlgorithm);
         MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardFilterAlgorithm);
     }
     MODULE_FUNCTION_INIT(cudnnGetConvolutionNdForwardOutputDim);
     MODULE_FUNCTION_INIT(cudnnSetConvolution2dDescriptor);
     MODULE_FUNCTION_INIT(cudnnSetFilter4dDescriptor);
-    if (cudnn_version.major == 4) {
+    if (cudnn_version.major() == 4) {
         MODULE_FUNCTION_INIT(cudnnSetFilter4dDescriptor_v4);
     }
     MODULE_FUNCTION_INIT(cudnnSetStream);

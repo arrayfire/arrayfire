@@ -52,7 +52,7 @@ vector<string> libNames(const std::string& name, const string& suffix,
     UNUSED(suffix);
     const string noVerName = libraryPrefix + name + librarySuffix;
     if (ver != arrayfire::common::NullVersion) {
-        const string infix = "." + to_string(ver.major) + ".";
+        const string infix = "." + to_string(ver.major()) + ".";
         return {libraryPrefix + name + infix + librarySuffix, noVerName};
     } else {
         return {noVerName};
@@ -71,10 +71,11 @@ vector<string> libNames(const std::string& name, const string& suffix,
     UNUSED(suffix);
     const string noVerName = libraryPrefix + name + librarySuffix;
     if (ver != arrayfire::common::NullVersion) {
-        const string soname("." + to_string(ver.major));
+        const string soname("." + to_string(ver.major()));
 
-        const string vsfx = "." + to_string(ver.major) + "." +
-                            to_string(ver.minor) + "." + to_string(ver.patch);
+        const string vsfx = "." + to_string(ver.major()) + "." +
+                            to_string(ver.minor()) + "." +
+                            to_string(ver.patch());
         return {noVerName + vsfx, noVerName + soname, noVerName};
     } else {
         return {noVerName};
