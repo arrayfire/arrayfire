@@ -4,7 +4,7 @@ Using ArrayFire with Microsoft Windows and Visual Studio {#using_on_windows}
 If you have not already done so, please make sure you have installed,
 configured, and tested ArrayFire following the [installation instructions](#installing).
 
-# The big picture
+# The big picture {#big-picture-windows}
 
 The ArrayFire Windows installer creates the following:
 1. **AF_PATH** environment variable to point to the installation location. The

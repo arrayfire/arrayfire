@@ -230,11 +230,6 @@ Find the modulus.
 
 Find the absolute value.
 
-__Examples:__
-
-\snippet test/math.cpp ex_arith_func_abs
-
-
 
 \defgroup arith_func_arg arg
 \ingroup numeric_mat
@@ -331,11 +326,6 @@ Evaluate the inverse sine function (arc sine).
 Evaluate the inverse cosine function (arc cosine).
 
 The inverse of cosine so that, if `y = cos(x)`, then `x = arccos(y)`.
-
-__Examples:__
-
-\snippet test/math.cpp ex_arith_func_acos
-
 
 
 \defgroup arith_func_atan atan/atan2
@@ -440,7 +430,7 @@ Raise a base to a power (or exponent).
 
 
 
-\defgroup arith_func_pow pow2
+\defgroup arith_func_pow2 pow2
 \ingroup explog_mat
 
 Raise 2 to a power (or exponent).

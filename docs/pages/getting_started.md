@@ -18,7 +18,7 @@ achieve high throughput on most parallel architectures.
 
 ArrayFire provides one generic container object, the [array](\ref af::array)
 on which functions and mathematical operations are performed. The `array`
-can represent one of many different [basic data types](\ref af::af_dtype):
+can represent one of many different [basic data types](\ref af_dtype):
 
 * [f32](\ref f32) real single-precision (`float`)
 * [c32](\ref c32) complex single-precision (`cfloat`)
@@ -87,7 +87,7 @@ ArrayFire provides several functions to determine various aspects of arrays.
 This includes functions to print the contents, query the dimensions, and
 determine various other aspects of arrays.
 
-The [af_print](\ref af::af_print) function can be used to print arrays that
+The [af_print](\ref af_print) function can be used to print arrays that
 have already been generated or any expression involving arrays:
 
 \snippet test/getting_started.cpp ex_getting_started_print
