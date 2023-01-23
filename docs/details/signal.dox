@@ -274,7 +274,7 @@ Given below is an example of this batch mode.
 
 
 The batching behavior of convolve2NN functions(\ref af_convolve2_nn() and
-\ref convolve2NN() ) is different from convolve2. The new functions can perform 2D
+\ref af::convolve2NN() ) is different from convolve2. The new functions can perform 2D
 convolution on 3D signals and filters in a way that is more aligned with
 convolutional neural networks.
 

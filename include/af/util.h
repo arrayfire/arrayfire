@@ -184,7 +184,7 @@ extern "C" {
 #if AF_API_VERSION >= 31
     /**
         \param[out] index is the index location of the array in the file
-        \param[in] key is an expression used as tag/key for the array during \ref readArray()
+        \param[in] key is an expression used as tag/key for the array during \ref af::readArray()
         \param[in] arr is the array to be written
         \param[in] filename is the path to the location on disk
         \param[in] append is used to append to an existing file when true and create or
