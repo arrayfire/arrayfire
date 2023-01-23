@@ -855,7 +855,7 @@ is described above, but the effect should be the same.
 \defgroup image_func_wrap wrap
 \ingroup image_mod_mat
 
-Performs the opposite of \ref unwrap().
+Performs the opposite of \ref af::unwrap().
 
 More specifically, wrap takes each column (or row if `is_column` is false) of the
 \f$m \times n\f$ input array and reshapes them into `wx` \f$\times\f$ `wy`
@@ -935,7 +935,7 @@ is visualized above, but the effect should be the same.
 \defgroup image_func_moments moments
 \ingroup moments_mat
 
-The \ref moments() function allows for finding different
+The \ref af::moments() function allows for finding different
 properties of image regions. Currently, ArrayFire calculates all first order moments.
 The moments are defined within the \ref af_moment_type enum.
 
@@ -1059,8 +1059,8 @@ explicitly.
 
 \brief Segment image based on similar pixel characteristics
 
-This filter is similar to \ref regions() (connected components) with additional
-criteria for segmentation. In \ref regions(), all connected (\ref af_connectivity)
+This filter is similar to \ref af::regions() (connected components) with additional
+criteria for segmentation. In \ref af::regions(), all connected (\ref af_connectivity)
 pixels connected are considered to be a single component. In this
 variation of connected components, pixels having similar pixel statistics
 of the neighborhoods around a given set of seed points are grouped together.
