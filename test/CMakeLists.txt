@@ -20,7 +20,7 @@ if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
 elseif(NOT TARGET GTest::gtest)
   af_dep_check_and_populate(${gtest_prefix}
     URI https://github.com/google/googletest.git
-    REF release-1.8.1
+    REF release-1.10.0
   )
   FetchContent_GetProperties(${gtest_prefix}
     SOURCE_DIR gtest_src)
@@ -29,7 +29,6 @@ elseif(NOT TARGET GTest::gtest)
 
   # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
   # newer cmakes. This sets the default global setting for that policy.
-  set(CMAKE_POLICY_DEFAULT_CMP0042 NEW)
   if(WIN32)
     set(gtest_force_shared_crt ON
         CACHE INTERNAL "Required so that the libs Runtime is not set to MT DLL")
@@ -66,9 +65,6 @@ endif()
 if(NOT TARGET mmio)
   add_subdirectory(mmio)
 endif()
-
-# Reset the CXX flags for tests
-set(CMAKE_CXX_STANDARD 11)
 
 # TODO(pradeep) perhaps rename AF_USE_RELATIVE_TEST_DIR to AF_WITH_TEST_DATA_DIR
 #               with empty default value
@@ -195,14 +191,9 @@ function(make_test)
           )
     endif()
 
-    if(${mt_args_CXX11})
-      set_target_properties(${target}
-        PROPERTIES
-          CXX_STANDARD 11)
-    endif(${mt_args_CXX11})
-
     set_target_properties(${target}
       PROPERTIES
+        CXX_STANDARD 11
         FOLDER "Tests"
         OUTPUT_NAME "${src_name}_${backend}")
 
