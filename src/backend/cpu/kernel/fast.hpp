@@ -182,6 +182,10 @@ void non_maximal(CParam<float> score, CParam<float> x_in, CParam<float> y_in,
         unsigned x = static_cast<unsigned>(round(x_in_ptr[k]));
         unsigned y = static_cast<unsigned>(round(y_in_ptr[k]));
 
+        if (y >= score_dims[0] - edge - 1 || y <= edge + 1 ||
+            x >= score_dims[1] - edge - 1 || x <= edge + 1)
+            continue;
+
         float v = score_ptr[y + score_dims[0] * x];
         float max_v;
         max_v = std::max(score_ptr[y - 1 + score_dims[0] * (x - 1)],
@@ -192,10 +196,6 @@ void non_maximal(CParam<float> score, CParam<float> x_in, CParam<float> y_in,
         max_v = std::max(max_v, score_ptr[y + 1 + score_dims[0] * (x - 1)]);
         max_v = std::max(max_v, score_ptr[y + 1 + score_dims[0] * (x)]);
         max_v = std::max(max_v, score_ptr[y + 1 + score_dims[0] * (x + 1)]);
-
-        if (y >= score_dims[1] - edge - 1 || y <= edge + 1 ||
-            x >= score_dims[0] - edge - 1 || x <= edge + 1)
-            continue;
 
         // Stores keypoint to feat_out if it's response is maximum compared to
         // its 8-neighborhood
