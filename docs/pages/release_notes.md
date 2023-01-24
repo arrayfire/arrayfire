@@ -7,10 +7,11 @@ v3.8.3
 ## Improvements
 
 - Add support for CUDA 12 \PR{3352}
-- memcpy performance improvements
-- JIT performance improvements
-- join performance improvements
-- Improve support for Intel and newer Clang compilers
+- Modernize documentation style and content \PR{3351}
+- memcpy performance improvements \PR{3144}
+- JIT performance improvements \PR{3144}
+- join performance improvements \PR{3144}
+- Improve support for Intel and newer Clang compilers \PR{3334}
 - CCache support on Windows \PR{3257}
 
 ## Fixes
