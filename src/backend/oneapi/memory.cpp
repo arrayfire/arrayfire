@@ -59,7 +59,8 @@ template<typename T>
 // unique_ptr<int, function<void(int *)>> memAlloc(
 std::unique_ptr<sycl::buffer<T>, std::function<void(sycl::buffer<T> *)>>
 memAlloc(const size_t &elements) {
-    return unique_ptr<sycl::buffer<T>, function<void(sycl::buffer<T> *)>>(new sycl::buffer<T>(sycl::range(elements)), bufferFree<T>);
+    return unique_ptr<sycl::buffer<T>, function<void(sycl::buffer<T> *)>>(
+        new sycl::buffer<T>(sycl::range(elements)), bufferFree<T>);
 }
 
 void *memAllocUser(const size_t &bytes) {
@@ -145,7 +146,6 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-
     // TODO: make pinnedAlloc aware of array shapes
     dim4 dims(elements);
     void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
@@ -242,17 +242,11 @@ void Allocator::nativeFree(void *ptr) {
     // }
 }
 
-AllocatorPinned::AllocatorPinned() {
-    logger = common::loggerFactory("mem");
-}
+AllocatorPinned::AllocatorPinned() { logger = common::loggerFactory("mem"); }
 
-void AllocatorPinned::shutdown() {
-    shutdownPinnedMemoryManager();
-}
+void AllocatorPinned::shutdown() { shutdownPinnedMemoryManager(); }
 
-int AllocatorPinned::getActiveDeviceId() {
-    oneapi::getActiveDeviceId();
-}
+int AllocatorPinned::getActiveDeviceId() { oneapi::getActiveDeviceId(); }
 
 size_t AllocatorPinned::getMaxMemorySize(int id) {
     return oneapi::getDeviceMemorySize(id);
@@ -261,11 +255,11 @@ size_t AllocatorPinned::getMaxMemorySize(int id) {
 void *AllocatorPinned::nativeAlloc(const size_t bytes) {
     void *ptr = NULL;
     try {
-      ptr = sycl::malloc_host<unsigned char>(bytes, getQueue());
+        ptr = sycl::malloc_host<unsigned char>(bytes, getQueue());
     } catch (...) {
-      auto str = fmt::format("Failed to allocate device memory of size {}",
-                             bytesToString(bytes));
-      AF_ERROR(str, AF_ERR_NO_MEM);
+        auto str = fmt::format("Failed to allocate device memory of size {}",
+                               bytesToString(bytes));
+        AF_ERROR(str, AF_ERR_NO_MEM);
     }
     AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
     return ptr;
@@ -274,9 +268,9 @@ void *AllocatorPinned::nativeAlloc(const size_t bytes) {
 void AllocatorPinned::nativeFree(void *ptr) {
     AF_TRACE("Pinned::nativeFree:          {}", ptr);
     try {
-      sycl::free(ptr, getQueue());
+        sycl::free(ptr, getQueue());
     } catch (...) {
-      AF_ERROR("Failed to release device memory.", AF_ERR_RUNTIME);
+        AF_ERROR("Failed to release device memory.", AF_ERR_RUNTIME);
     }
 }
 }  // namespace oneapi
