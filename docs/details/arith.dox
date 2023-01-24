@@ -19,28 +19,28 @@
 \defgroup arith_func_add add
 \ingroup arith_mat
 
-Add two arrays.
+Elementwise addition
 
 
 
 \defgroup arith_func_sub sub
 \ingroup arith_mat
 
-Subtract one array from another array.
+Elementwise subtraction
 
 
 
 \defgroup arith_func_mul mul
 \ingroup arith_mat
 
-Multiply two arrays.
+Elementwise multiply
 
 
 
 \defgroup arith_func_div div
 \ingroup arith_mat
 
-Divide one array by another array.
+Elementwise division
 
 
 
@@ -189,14 +189,14 @@ Cast an array from one type to another.
 \defgroup arith_func_min min
 \ingroup numeric_mat
 
-Find the elementwise minimum between two arrays.
+Returns the elementwise minimum between two arrays.
 
 
 
 \defgroup arith_func_max max
 \ingroup numeric_mat
 
-Find the elementwise maximum between two arrays.
+Returns the elementwise maximum between two arrays.
 
 
 
@@ -210,7 +210,7 @@ Clamp an array between an upper and a lower limit.
 \defgroup arith_func_rem rem
 \ingroup numeric_mat
 
-Find the remainder of a division.
+Calculate the remainder of a division.
 
 \copydoc arith_real_only
 
@@ -219,7 +219,7 @@ Find the remainder of a division.
 \defgroup arith_func_mod mod
 \ingroup numeric_mat
 
-Find the modulus.
+Calculate the modulus.
 
 \copydoc arith_real_only
 
@@ -228,20 +228,20 @@ Find the modulus.
 \defgroup arith_func_abs abs
 \ingroup numeric_mat
 
-Find the absolute value.
+Calculate the absolute value.
 
 
 \defgroup arith_func_arg arg
 \ingroup numeric_mat
 
-Find the phase angle (in radians) of a complex array.
+Calculate the phase angle (in radians) of a complex array.
 
 
 
 \defgroup arith_func_sign sign
 \ingroup numeric_mat
 
-Find the sign of elements in an array.
+Return the sign of elements in an array.
 
 \copydoc arith_real_only
 
@@ -268,7 +268,7 @@ Truncate numbers to nearest integer.
 \defgroup arith_func_floor floor
 \ingroup numeric_mat
 
-Round to the integer less than or equal to the magnitude of the input value.
+Rounds down to the greatest integer less than or equal to x.
 
 \copydoc arith_real_only
 
@@ -277,7 +277,7 @@ Round to the integer less than or equal to the magnitude of the input value.
 \defgroup arith_func_ceil ceil
 \ingroup numeric_mat
 
-Round to the integer greater than or equal to the magnitude of the input value.
+Rounds up to the least integer greater than or equal to x.
 
 \copydoc arith_real_only
 
@@ -286,7 +286,7 @@ Round to the integer greater than or equal to the magnitude of the input value.
 \defgroup arith_func_hypot hypot
 \ingroup numeric_mat
 
-Find the length of the hypotenuse of two inputs.
+Evaluate the length of the hypotenuse of two inputs.
 
 \copydoc arith_real_only
 
@@ -398,28 +398,28 @@ __Examples:__
 \defgroup arith_func_real real
 \ingroup complex_mat
 
-Find the real part of a complex array.
+Returns the real part of a complex array.
 
 
 
 \defgroup arith_func_imag imag
 \ingroup complex_mat
 
-Find the imaginary part of a complex array.
+Returns the imaginary part of a complex array.
 
 
 
 \defgroup arith_func_conjg conjg
 \ingroup complex_mat
 
-Find the complex conjugate of an input array.
+Evaluate the complex conjugate of an input array.
 
 
 
 \defgroup arith_func_root root
 \ingroup explog_mat
 
-Find the nth root.
+Evaluate the nth root.
 
 
 
@@ -513,14 +513,14 @@ Evaluate the base 2 logarithm.
 \defgroup arith_func_sqrt sqrt
 \ingroup explog_mat
 
-Find the square root.
+Evaluate the square root.
 
 
 
 \defgroup arith_func_rsqrt rsqrt
 \ingroup explog_mat
 
-Find the reciprocal square root.
+Evaluate the reciprocal square root.
 
 \f[ \frac{1}{\sqrt{x}} \f]
 
@@ -531,7 +531,7 @@ Find the reciprocal square root.
 \defgroup arith_func_cbrt cbrt
 \ingroup explog_mat
 
-Find the cube root.
+Evaluate the cube root.
 
 \copydoc arith_real_only
 
@@ -540,7 +540,7 @@ Find the cube root.
 \defgroup arith_func_factorial factorial
 \ingroup explog_mat
 
-Find the factorial.
+Evaluate the factorial.
 
 \copydoc arith_real_only
 
