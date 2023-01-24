@@ -98,7 +98,7 @@ namespace af
     /// @}
 
     /// @{
-    /// C++ Interface to find the remainder.
+    /// C++ Interface to calculate the remainder.
     ///
     /// \param[in] lhs numerator; can be an array or a scalar
     /// \param[in] rhs denominator; can be an array or a scalar
@@ -115,7 +115,7 @@ namespace af
     /// @}
 
     /// @{
-    /// C++ Interface to find the modulus.
+    /// C++ Interface to calculate the modulus.
     ///
     /// \param[in] lhs dividend; can be an array or a scalar
     /// \param[in] rhs divisor; can be an array or a scalar
@@ -131,7 +131,7 @@ namespace af
     AFAPI array mod    (const double lhs, const array &rhs);
     /// @}
 
-    /// C++ Interface to find the absolute value.
+    /// C++ Interface to calculate the absolute value.
     ///
     /// \param[in] in input array
     /// \return absolute value
@@ -139,7 +139,7 @@ namespace af
     /// \ingroup arith_func_abs
     AFAPI array abs    (const array &in);
 
-    /// C++ Interface to find the phase angle (in radians) of a complex array.
+    /// C++ Interface to calculate the phase angle (in radians) of a complex array.
     ///
     /// \param[in] in input array, typically complex
     /// \return phase angle (in radians)
@@ -147,7 +147,7 @@ namespace af
     /// \ingroup arith_func_arg
     AFAPI array arg    (const array &in);
 
-    /// C++ Interface to find the sign of elements in an array.
+    /// C++ Interface to return the sign of elements in an array.
     ///
     /// \param[in] in input array
     /// \return array containing 1's for negative values; 0's otherwise
@@ -189,7 +189,7 @@ namespace af
 
     /// \ingroup arith_func_hypot
     /// @{
-    /// C++ Interface to find the length of the hypotenuse of two inputs.
+    /// C++ Interface to calculate the length of the hypotenuse of two inputs.
     ///
     /// Calculates the hypotenuse of two inputs. The inputs can be both arrays
     /// or an array and a scalar.
@@ -348,7 +348,7 @@ namespace af
     AFAPI array complex(const double real_, const array &imag_);
     /// @}
 
-    /// C++ Interface to find the real part of a complex array.
+    /// C++ Interface to return the real part of a complex array.
     ///
     /// \param[in] in input complex array
     /// \return real part
@@ -356,7 +356,7 @@ namespace af
     /// \ingroup arith_func_real
     AFAPI array real   (const array &in);
 
-    /// C++ Interface to find the imaginary part of a complex array.
+    /// C++ Interface to return the imaginary part of a complex array.
     ///
     /// \param[in] in input complex array
     /// \return imaginary part
@@ -364,7 +364,7 @@ namespace af
     /// \ingroup arith_func_imag
     AFAPI array imag   (const array &in);
 
-    /// C++ Interface to find the complex conjugate of an input array.
+    /// C++ Interface to calculate the complex conjugate of an input array.
     ///
     /// \param[in] in input complex array
     /// \return complex conjugate
@@ -372,50 +372,50 @@ namespace af
     /// \ingroup arith_func_conjg
     AFAPI array conjg  (const array &in);
 
-    /// C++ Interface to find the nth root.
+    /// C++ Interface to evaluate the nth root.
     ///
-    /// \param[in] lhs nth root
-    /// \param[in] rhs value
-    /// \return \p lhs th root of \p rhs
+    /// \param[in] nth_root nth root
+    /// \param[in] value value
+    /// \return \p nth_root th root of \p value
     ///
     /// \ingroup arith_func_root
-    AFAPI array root    (const array &lhs, const array &rhs);
+    AFAPI array root    (const array &nth_root, const array &value);
 
-    /// C++ Interface to find the nth root.
+    /// C++ Interface to evaluate the nth root.
     ///
-    /// \param[in] lhs nth root
-    /// \param[in] rhs value
-    /// \return \p lhs th root of \p rhs
+    /// \param[in] nth_root nth root
+    /// \param[in] value value
+    /// \return \p nth_root th root of \p value
     ///
     /// \ingroup arith_func_root
-    AFAPI array root    (const array &lhs, const double rhs);
+    AFAPI array root    (const array &nth_root, const double value);
 
-    /// C++ Interface to find the nth root.
+    /// C++ Interface to evaluate the nth root.
     ///
-    /// \param[in] lhs nth root
-    /// \param[in] rhs value
-    /// \return \p lhs th root of \p rhs
+    /// \param[in] nth_root nth root
+    /// \param[in] value value
+    /// \return \p nth_root th root of \p value
     ///
     /// \ingroup arith_func_root
-    AFAPI array root    (const double lhs, const array &rhs);
+    AFAPI array root    (const double nth_root, const array &value);
 
 
     /// \ingroup arith_func_pow
     /// @{
     /// C++ Interface to raise a base to a power (or exponent).
     ///
-    /// Computes the value of \p lhs raised to the power of \p rhs. The inputs can be two arrays or an array and a scalar.
+    /// Computes the value of \p base raised to the power of \p exponent. The inputs can be two arrays or an array and a scalar.
     ///
-    /// \param[in] lhs base
-    /// \param[in] rhs exponent
-    /// \return \p lhs raised to the power of \p rhs
-    AFAPI array pow    (const array &lhs, const array &rhs);
+    /// \param[in] base base
+    /// \param[in] exponent exponent
+    /// \return \p base raised to the power of \p exponent
+    AFAPI array pow    (const array &base, const array &exponent);
 
     /// \copydoc pow(const array&, const array&)
-    AFAPI array pow    (const array &lhs, const double rhs);
+    AFAPI array pow    (const array &base, const double exponent);
 
     /// \copydoc pow(const array&, const array&)
-    AFAPI array pow    (const double lhs, const array &rhs);
+    AFAPI array pow    (const double base, const array &exponent);
 
     /// C++ Interface to raise 2 to a power (or exponent).
     ///
@@ -503,7 +503,7 @@ namespace af
     /// \ingroup explog_func_log2
     AFAPI array log2   (const array &in);
 
-    /// C++ Interface to find the square root.
+    /// C++ Interface to evaluate the square root.
     ///
     /// \param[in] in input
     /// \return square root
@@ -512,7 +512,7 @@ namespace af
     AFAPI array sqrt   (const array &in);
 
 #if AF_API_VERSION >= 37
-    /// C++ Interface to find the reciprocal square root.
+    /// C++ Interface to evaluate the reciprocal square root.
     ///
     /// \param[in] in input
     /// \return reciprocal square root
@@ -521,7 +521,7 @@ namespace af
     AFAPI array rsqrt   (const array &in);
 #endif
 
-    /// C++ Interface to find the cube root.
+    /// C++ Interface to evaluate the cube root.
     ///
     /// \param[in] in input
     /// \return cube root
@@ -529,7 +529,7 @@ namespace af
     /// \ingroup arith_func_cbrt
     AFAPI array cbrt   (const array &in);
 
-    /// C++ Interface to find the factorial.
+    /// C++ Interface to calculate the factorial.
     ///
     /// \param[in] in input
     /// \return the factorial function
@@ -553,7 +553,7 @@ namespace af
     /// \ingroup arith_func_lgamma
     AFAPI array lgamma (const array &in);
 
-    /// C++ Interface to check if values are zero.
+    /// C++ Interface to check which values are zero.
     ///
     /// \param[in] in input
     /// \return array containing 1's where input is 0; 0's otherwise
@@ -636,7 +636,7 @@ extern "C" {
     AFAPI af_err af_div   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface to check if the elements of one array are less than those of another array.
+       C Interface to perform a less-than comparison between corresponding elements of two arrays.
 
        \param[out] out result of \p lhs < \p rhs; type is b8
        \param[in] lhs first input
@@ -649,7 +649,7 @@ extern "C" {
     AFAPI af_err af_lt    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface to check if the elements of one array are greater than those of another array.
+       C Interface to perform a greater-than comparison between corresponding elements of two arrays.
 
        \param[out] out result of \p lhs > \p rhs; type is b8
        \param[in] lhs first input
@@ -662,7 +662,7 @@ extern "C" {
     AFAPI af_err af_gt    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface to check if the elements of one array are less than or equal to those of another array.
+       C Interface to perform a less-than-or-equal comparison between corresponding elements of two arrays.
 
        \param[out] out result of \p lhs <= \p rhs; type is b8
        \param[in] lhs first input
@@ -675,7 +675,7 @@ extern "C" {
     AFAPI af_err af_le    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface to check if the elements of one array are greater than or equal to those of another array.
+       C Interface to perform a greater-than-or-equal comparison between corresponding elements of two arrays.
 
        \param[out] out result of \p lhs >= \p rhs; type is b8
        \param[in] lhs first input
@@ -688,7 +688,7 @@ extern "C" {
     AFAPI af_err af_ge    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface to check if the elements of one array are equal to those of another array.
+       C Interface to check if corresponding elements of two arrays are equal
 
        \param[out] out result of `lhs == rhs`; type is b8
        \param[in] lhs first input
@@ -701,7 +701,7 @@ extern "C" {
     AFAPI af_err af_eq    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface to check if the elements of one array are not equal to those of another array.
+       C Interface to check if corresponding elements of two arrays are not equal
 
        \param[out] out result of `lhs != rhs`; type is b8
        \param[in] lhs first input
@@ -806,8 +806,8 @@ extern "C" {
        C Interface to shift the bits of integer arrays left.
 
        \param[out] out result of the left shift
-       \param[in] lhs first input
-       \param[in] rhs second input
+       \param[in] lhs values to shift
+       \param[in] rhs n bits to shift
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -819,8 +819,8 @@ extern "C" {
        C Interface to shift the bits of integer arrays right.
 
        \param[out] out result of the right shift
-       \param[in] lhs first input
-       \param[in] rhs second input
+       \param[in] lhs values to shift
+       \param[in] rhs n bits to shift
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -913,7 +913,7 @@ extern "C" {
 #endif
 
     /**
-       C Interface to find the remainder.
+       C Interface to calculate the remainder.
 
        \param[out] out remainder of \p lhs divided by \p rhs
        \param[in] lhs numerator
@@ -926,7 +926,7 @@ extern "C" {
     AFAPI af_err af_rem   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface to find the modulus.
+       C Interface to calculate the modulus.
 
        \param[out] out \p lhs modulo \p rhs
        \param[in] lhs dividend
@@ -939,7 +939,7 @@ extern "C" {
     AFAPI af_err af_mod   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface to find the absolute value.
+       C Interface to calculate the absolute value.
 
        \param[out] out absolute value
        \param[in] in input array
@@ -950,7 +950,7 @@ extern "C" {
     AFAPI af_err af_abs     (af_array *out, const af_array in);
 
     /**
-       C Interface to find the phase angle (in radians) of a complex array.
+       C Interface to calculate the phase angle (in radians) of a complex array.
 
        \param[out] out phase angle (in radians)
        \param[in] in input array, typically complex
@@ -961,7 +961,7 @@ extern "C" {
     AFAPI af_err af_arg     (af_array *out, const af_array in);
 
     /**
-       C Interface to find the sign of elements in an array.
+       C Interface to calculate the sign of elements in an array.
 
        \param[out] out array containing 1's for negative values; 0's otherwise
        \param[in] in input array
@@ -1016,7 +1016,7 @@ extern "C" {
     AFAPI af_err af_ceil    (af_array *out, const af_array in);
 
     /**
-       C Interface to find the length of the hypotenuse of two inputs.
+       C Interface to calculate the length of the hypotenuse of two inputs.
 
        \param[out] out length of the hypotenuse
        \param[in] lhs length of first side
@@ -1198,7 +1198,7 @@ extern "C" {
     AFAPI af_err af_cplx2(af_array* out, const af_array real, const af_array imag, const bool batch);
 
     /**
-       C Interface to find the real part of a complex array.
+       C Interface to return the real part of a complex array.
 
        \param[out] out real part
        \param[in] in complex array
@@ -1209,7 +1209,7 @@ extern "C" {
     AFAPI af_err af_real(af_array* out, const af_array in);
 
     /**
-       C Interface to find the imaginary part of a complex array.
+       C Interface to return the imaginary part of a complex array.
 
        \param[out] out imaginary part
        \param[in] in complex array
@@ -1220,7 +1220,7 @@ extern "C" {
     AFAPI af_err af_imag(af_array* out, const af_array in);
 
     /**
-       C Interface to find the complex conjugate of an input array.
+       C Interface to evaluate the complex conjugate of an input array.
 
        \param[out] out complex conjugate
        \param[in] in complex array
@@ -1231,7 +1231,7 @@ extern "C" {
     AFAPI af_err af_conjg(af_array* out, const af_array in);
 
     /**
-       C Interface to find the nth root.
+       C Interface to evaluate the nth root.
 
        \param[out] out \p lhs th root of \p rhs
        \param[in] lhs nth root
@@ -1272,11 +1272,11 @@ extern "C" {
     /**
        C Interface to evaluate the logistical sigmoid function.
 
+       Computes `1/(1+e^-x)`.
+
        \param[out] out output of the logistic sigmoid function
        \param[in] in input
        \return \ref AF_SUCCESS if the execution completes properly
-
-       \note Computes `1/(1+e^-x)`.
 
        \ingroup arith_func_sigmoid
     */
@@ -1372,7 +1372,7 @@ extern "C" {
     AFAPI af_err af_log2   (af_array *out, const af_array in);
 
     /**
-       C Interface to find the square root.
+       C Interface to evaluate the square root.
 
        \param[out] out square root
        \param[in] in input
@@ -1384,7 +1384,7 @@ extern "C" {
 
 #if AF_API_VERSION >= 37
     /**
-      C Interface to find the reciprocal square root.
+      C Interface to evaluate the reciprocal square root.
 
       \param[out] out reciprocal square root
       \param[in] in input
@@ -1395,7 +1395,7 @@ extern "C" {
     AFAPI af_err af_rsqrt    (af_array *out, const af_array in);
 #endif
     /**
-       C Interface to find the cube root.
+       C Interface to evaluate the cube root.
 
        \param[out] out cube root
        \param[in] in input
@@ -1406,7 +1406,7 @@ extern "C" {
     AFAPI af_err af_cbrt    (af_array *out, const af_array in);
 
     /**
-       C Interface to find the factorial.
+       C Interface to calculate the factorial.
 
        \param[out] out factorial
        \param[in] in input
