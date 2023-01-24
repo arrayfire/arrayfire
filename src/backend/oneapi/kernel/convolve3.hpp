@@ -170,13 +170,23 @@ void conv3(conv_kparam_t<aT> &p, Param<T> &out, const Param<T> &sig,
         int f3Off = b3 * filt.info.strides[3];
 
         const size_t srcOffset = f3Off + f0Off;
-        memcpyBuffer(impulse, *filt.data, se_size, srcOffset);
+        if constexpr (!(std::is_same_v<T, double> ||
+                        std::is_same_v<T, cdouble> ||
+                        std::is_same_v<aT, double> ||
+                        std::is_same_v<aT, cdouble>)) {
+            memcpyBuffer(impulse, *filt.data, se_size, srcOffset);
+        }
         p.impulse = &impulse;
 
         p.o[2] = (p.outHasNoOffset ? 0 : b3);
         p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
-        conv3Helper<T, aT>(p, out, sig, filt, 3, expand);
+        if constexpr (!(std::is_same_v<T, double> ||
+                        std::is_same_v<T, cdouble> ||
+                        std::is_same_v<aT, double> ||
+                        std::is_same_v<aT, cdouble>)) {
+            conv3Helper<T, aT>(p, out, sig, filt, 3, expand);
+        }
     }
 }
 

@@ -82,7 +82,12 @@ Array<T> convolve(Array<T> const &signal, Array<accT> const &filter,
         ONEAPI_NOT_SUPPORTED(errMessage);
     }
 
-    kernel::convolve_nd<T, accT>(out, signal, filter, kind, rank, expand);
+    if constexpr (!(std::is_same_v<T, double> ||
+                    std::is_same_v<T, cdouble> ||
+                    std::is_same_v<accT, double> ||
+                    std::is_same_v<accT, cdouble>)) {
+      kernel::convolve_nd<T, accT>(out, signal, filter, kind, rank, expand);
+    }
 
     return out;
 }
