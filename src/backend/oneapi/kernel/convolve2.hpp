@@ -161,12 +161,7 @@ void conv2(conv_kparam_t<aT> &p, Param<T> &out, const Param<T> &sig,
             int f2Off = b2 * filt.info.strides[2];
 
             const size_t srcOffset = f2Off + f3Off + f0Off;
-            if constexpr (!(std::is_same_v<T, double> ||
-                            std::is_same_v<T, cdouble> ||
-                            std::is_same_v<aT, double> ||
-                            std::is_same_v<aT, cdouble>)) {
-                memcpyBuffer(impulse, *filt.data, se_size, srcOffset);
-            }
+            memcpyBuffer(impulse, *filt.data, se_size, srcOffset);
             p.impulse = &impulse;
 
             p.o[1] = (p.outHasNoOffset ? 0 : b2);
@@ -174,12 +169,7 @@ void conv2(conv_kparam_t<aT> &p, Param<T> &out, const Param<T> &sig,
             p.s[1] = (p.inHasNoOffset ? 0 : b2);
             p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
-            if constexpr (!(std::is_same_v<T, double> ||
-                            std::is_same_v<T, cdouble> ||
-                            std::is_same_v<aT, double> ||
-                            std::is_same_v<aT, cdouble>)) {
-                conv2Helper<T, aT>(p, out, sig, filt, expand);
-            }
+            conv2Helper<T, aT>(p, out, sig, filt, expand);
         }
     }
 }
