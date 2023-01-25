@@ -19,33 +19,18 @@ void approx1(Array<Ty> &yo, const Array<Ty> &yi, const Array<Tp> &xo,
     switch (method) {
     case AF_INTERP_NEAREST:
     case AF_INTERP_LOWER:
-      if constexpr (!(std::is_same_v<Ty, double> ||
-                      std::is_same_v<Ty, cdouble> ||
-                      std::is_same_v<Tp, double> ||
-                      std::is_same_v<Tp, cdouble>)) {
         kernel::approx1<Ty, Tp, 1>(yo, yi, xo, xdim, xi_beg, xi_step,
                                    offGrid, method);
-      }
       break;
     case AF_INTERP_LINEAR:
     case AF_INTERP_LINEAR_COSINE:
-      if constexpr (!(std::is_same_v<Ty, double> ||
-                      std::is_same_v<Ty, cdouble> ||
-                      std::is_same_v<Tp, double> ||
-                      std::is_same_v<Tp, cdouble>)) {
         kernel::approx1<Ty, Tp, 2>(yo, yi, xo, xdim, xi_beg, xi_step,
                                    offGrid, method);
-      }
       break;
     case AF_INTERP_CUBIC:
     case AF_INTERP_CUBIC_SPLINE:
-      if constexpr (!(std::is_same_v<Ty, double> ||
-                      std::is_same_v<Ty, cdouble> ||
-                      std::is_same_v<Tp, double> ||
-                      std::is_same_v<Tp, cdouble>)) {
         kernel::approx1<Ty, Tp, 3>(yo, yi, xo, xdim, xi_beg, xi_step,
                                    offGrid, method);
-      }
       break;
     default: break;
     }

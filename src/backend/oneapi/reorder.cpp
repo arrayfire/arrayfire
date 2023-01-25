@@ -26,9 +26,7 @@ Array<T> reorder(const Array<T> &in, const af::dim4 &rdims) {
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    if constexpr (!(std::is_same_v<T, double> || std::is_same_v<T, cdouble>)) {
-        kernel::reorder<T>(out, in, rdims.get());
-    }
+    kernel::reorder<T>(out, in, rdims.get());
 
     return out;
 }

@@ -22,24 +22,15 @@ Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
     switch (method) {
         case AF_INTERP_NEAREST:
         case AF_INTERP_LOWER:
-            if constexpr (!(std::is_same_v<T, double> ||
-                            std::is_same_v<T, cdouble>)) {
                 kernel::rotate<T>(out, in, theta, method, 1);
-            }
             break;
         case AF_INTERP_BILINEAR:
         case AF_INTERP_BILINEAR_COSINE:
-            if constexpr (!(std::is_same_v<T, double> ||
-                            std::is_same_v<T, cdouble>)) {
                 kernel::rotate<T>(out, in, theta, method, 2);
-            }
             break;
         case AF_INTERP_BICUBIC:
         case AF_INTERP_BICUBIC_SPLINE:
-            if constexpr (!(std::is_same_v<T, double> ||
-                            std::is_same_v<T, cdouble>)) {
                 kernel::rotate<T>(out, in, theta, method, 3);
-            }
             break;
         default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
     }
