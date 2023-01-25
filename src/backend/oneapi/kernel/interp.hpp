@@ -144,8 +144,8 @@ struct Interp1<Ty, Tp, 2> {
         int offx[2]  = {0, cond[1] ? 1 : 0};
         WT ratio     = off_x;
         if (method == AF_INTERP_LINEAR_COSINE) {
-          // Smooth the factional part with cosine
-          ratio = (1 - cosf(ratio * 3.14159f)) / 2;
+            // Smooth the factional part with cosine
+            ratio = (1 - cosf(ratio * 3.14159f)) / 2;
         }
 
         Ty zero = scalar<Ty>(0);

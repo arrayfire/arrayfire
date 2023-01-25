@@ -75,7 +75,7 @@ class rotateCreateKernel {
         const int yido = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
 
         const int limages =
-          fminf((int)out_.dims[2] - setId * nimages_, nimages_);
+            fminf((int)out_.dims[2] - setId * nimages_, nimages_);
 
         if (xido >= out_.dims[0] || yido >= out_.dims[1]) return;
 
@@ -108,7 +108,7 @@ class rotateCreateKernel {
         // FIXME: Nearest and lower do not do clamping, but other methods do
         // Make it consistent
         const bool doclamp = INTERP_ORDER_ != 1;
-        Interp2<T, InterpPosTy, 1> interp2; // INTERP_ORDER> interp2;
+        Interp2<T, InterpPosTy, 1> interp2;  // INTERP_ORDER> interp2;
         interp2(d_out_, out_, loco, d_in_, in_, inoff, xidi, yidi, 0, 1,
                 method_, limages, doclamp, 2);
     }

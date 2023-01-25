@@ -23,11 +23,14 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template <typename AT, typename BT> BT mul(AT a, BT b) { return a * b; }
-template <typename AT> std::complex<double> mul(AT a, std::complex<double> b) {
+template<typename AT, typename BT>
+BT mul(AT a, BT b) {
+    return a * b;
+}
+template<typename AT>
+std::complex<double> mul(AT a, std::complex<double> b) {
     return std::complex<double>(a * b.real(), a * b.imag());
 }
-
 
 template<typename T>
 using local_accessor = sycl::accessor<T, 1, sycl::access::mode::read_write,
@@ -36,7 +39,6 @@ template<typename T>
 using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
 template<typename T>
 using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
-
 
 template<typename T>
 using wtype_t = typename std::conditional<std::is_same<T, double>::value,
@@ -48,13 +50,13 @@ using vtype_t = typename std::conditional<common::is_complex<T>::value, T,
 
 ////////////////////////////////////////////////////////////////////////////////////
 // nearest-neighbor resampling
-  template<typename T>
-void resize_n_( T* d_out, const KParam out, const T* d_in,
-               const KParam in, const int blockIdx_x, const int blockIdx_y,
-                const float xf, const float yf, sycl::nd_item<2> &it) {
+template<typename T>
+void resize_n_(T* d_out, const KParam out, const T* d_in, const KParam in,
+               const int blockIdx_x, const int blockIdx_y, const float xf,
+               const float yf, sycl::nd_item<2>& it) {
     sycl::group g = it.get_group();
-    int const ox = it.get_local_id(0) + blockIdx_x * g.get_local_range(0);
-    int const oy = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
+    int const ox  = it.get_local_id(0) + blockIdx_x * g.get_local_range(0);
+    int const oy  = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
 
     // int ix = convert_int_rtp(ox * xf);
     // int iy = convert_int_rtp(oy * yf);
@@ -71,10 +73,10 @@ void resize_n_( T* d_out, const KParam out, const T* d_in,
 ////////////////////////////////////////////////////////////////////////////////////
 // bilinear resampling
 template<typename T, typename VT>
-void resize_b_( T* d_out, const KParam out, const T* d_in,
-               const KParam in, const int blockIdx_x, const int blockIdx_y,
-                const float xf_, const float yf_, sycl::nd_item<2> &it) {
-          sycl::group g = it.get_group();
+void resize_b_(T* d_out, const KParam out, const T* d_in, const KParam in,
+               const int blockIdx_x, const int blockIdx_y, const float xf_,
+               const float yf_, sycl::nd_item<2>& it) {
+    sycl::group g = it.get_group();
 
     int const ox = it.get_local_id(0) + blockIdx_x * g.get_local_range(0);
     int const oy = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
@@ -108,19 +110,17 @@ void resize_b_( T* d_out, const KParam out, const T* d_in,
     //   (((a) * (b)) * p4);
 
     d_out[ox + oy * out.strides[1]] =
-      mul(((1.0f - a) * (1.0f - b)), p1) +
-      mul(((a) * (1.0f - b)), p2) +
-      mul(((1.0f - a) * (b)), p3) +
-      mul(((a) * (b)) , p4);
+        mul(((1.0f - a) * (1.0f - b)), p1) + mul(((a) * (1.0f - b)), p2) +
+        mul(((1.0f - a) * (b)), p3) + mul(((a) * (b)), p4);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // lower resampling
 template<typename T>
-void resize_l_( T* d_out, const KParam out, const T* d_in,
-               const KParam in, const int blockIdx_x, const int blockIdx_y,
-                const float xf, const float yf, sycl::nd_item<2> &it) {
-          sycl::group g = it.get_group();
+void resize_l_(T* d_out, const KParam out, const T* d_in, const KParam in,
+               const int blockIdx_x, const int blockIdx_y, const float xf,
+               const float yf, sycl::nd_item<2>& it) {
+    sycl::group g = it.get_group();
 
     int const ox = it.get_local_id(0) + blockIdx_x * g.get_local_range(0);
     int const oy = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
@@ -137,33 +137,49 @@ void resize_l_( T* d_out, const KParam out, const T* d_in,
 
 template<typename T, int method>
 class resizeCreateKernel {
-  public:
-    resizeCreateKernel(write_accessor<T> d_out, const KParam out, read_accessor<T> d_in, const KParam in, const int b0, const int b1, const float xf, const float yf) : d_out_(d_out), out_(out), d_in_(d_in), in_(in), b0_(b0), b1_(b1), xf_(xf), yf_(yf) {}
+   public:
+    resizeCreateKernel(write_accessor<T> d_out, const KParam out,
+                       read_accessor<T> d_in, const KParam in, const int b0,
+                       const int b1, const float xf, const float yf)
+        : d_out_(d_out)
+        , out_(out)
+        , d_in_(d_in)
+        , in_(in)
+        , b0_(b0)
+        , b1_(b1)
+        , xf_(xf)
+        , yf_(yf) {}
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g = it.get_group();
 
         int bIdx = g.get_group_id(0) / b0_;
         int bIdy = g.get_group_id(1) / b1_;
         // batch adjustment
-        int i_off      = bIdy * in_.strides[3] + bIdx * in_.strides[2] + in_.offset;
-        int o_off      = bIdy * out_.strides[3] + bIdx * out_.strides[2];
+        int i_off = bIdy * in_.strides[3] + bIdx * in_.strides[2] + in_.offset;
+        int o_off = bIdy * out_.strides[3] + bIdx * out_.strides[2];
         int blockIdx_x = g.get_group_id(0) - bIdx * b0_;
         int blockIdx_y = g.get_group_id(1) - bIdy * b1_;
 
         switch (method) {
-        case AF_INTERP_NEAREST:
-          resize_n_<T>(d_out_.get_pointer() + o_off, out_, d_in_.get_pointer() + i_off, in_, blockIdx_x, blockIdx_y, xf_, yf_, it);
-            break;
-        case AF_INTERP_BILINEAR:
-          resize_b_<T,vtype_t<T>>(d_out_.get_pointer() + o_off, out_, d_in_.get_pointer() + i_off, in_, blockIdx_x, blockIdx_y, xf_, yf_, it);
-            break;
-        case AF_INTERP_LOWER:
-          resize_l_<T>(d_out_.get_pointer() + o_off, out_, d_in_.get_pointer() + i_off, in_, blockIdx_x, blockIdx_y, xf_, yf_, it);
-            break;
+            case AF_INTERP_NEAREST:
+                resize_n_<T>(d_out_.get_pointer() + o_off, out_,
+                             d_in_.get_pointer() + i_off, in_, blockIdx_x,
+                             blockIdx_y, xf_, yf_, it);
+                break;
+            case AF_INTERP_BILINEAR:
+                resize_b_<T, vtype_t<T>>(d_out_.get_pointer() + o_off, out_,
+                                         d_in_.get_pointer() + i_off, in_,
+                                         blockIdx_x, blockIdx_y, xf_, yf_, it);
+                break;
+            case AF_INTERP_LOWER:
+                resize_l_<T>(d_out_.get_pointer() + o_off, out_,
+                             d_in_.get_pointer() + i_off, in_, blockIdx_x,
+                             blockIdx_y, xf_, yf_, it);
+                break;
         }
     }
 
-  private:
+   private:
     write_accessor<T> d_out_;
     const KParam out_;
     read_accessor<T> d_in_;
@@ -183,8 +199,8 @@ void resize(Param<T> out, const Param<T> in, const af_interp_type method) {
 
     int blocksPerMatX = divup(out.info.dims[0], local[0]);
     int blocksPerMatY = divup(out.info.dims[1], local[1]);
-    auto global = sycl::range(local[0] * blocksPerMatX * in.info.dims[2],
-                       local[1] * blocksPerMatY * in.info.dims[3]);
+    auto global       = sycl::range(local[0] * blocksPerMatX * in.info.dims[2],
+                                    local[1] * blocksPerMatY * in.info.dims[3]);
 
     double xd = (double)in.info.dims[0] / (double)out.info.dims[0];
     double yd = (double)in.info.dims[1] / (double)out.info.dims[1];
