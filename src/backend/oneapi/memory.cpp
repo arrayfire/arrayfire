@@ -48,8 +48,7 @@ void signalMemoryCleanup() { memoryManager().signalMemoryCleanup(); }
 
 void shutdownMemoryManager() { memoryManager().shutdown(); }
 
-void shutdownPinnedMemoryManager() { /*pinnedMemoryManager().shutdown();*/
-}
+void shutdownPinnedMemoryManager() { pinnedMemoryManager().shutdown(); }
 
 void printMemInfo(const char *msg, const int device) {
     memoryManager().printInfo(msg, device);
@@ -62,18 +61,6 @@ std::unique_ptr<sycl::buffer<T>, std::function<void(sycl::buffer<T> *)>>
 memAlloc(const size_t &elements) {
     return unique_ptr<sycl::buffer<T>, function<void(sycl::buffer<T> *)>>(
         new sycl::buffer<T>(sycl::range(elements)), bufferFree<T>);
-    // // TODO: make memAlloc aware of array shapes
-    // if (elements) {
-    //     dim4 dims(elements);
-    //     void *ptr = memoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    //     auto buf  = static_cast<cl_mem>(ptr);
-    //     cl::Buffer *bptr = new cl::Buffer(buf, true);
-    //     return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(bptr,
-    //                                                                 bufferFree);
-    // } else {
-    //     return unique_ptr<cl::Buffer, function<void(cl::Buffer *)>>(nullptr,
-    //                                                                 bufferFree);
-    // }
 }
 
 void *memAllocUser(const size_t &bytes) {
@@ -159,17 +146,15 @@ void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
 
 template<typename T>
 T *pinnedAlloc(const size_t &elements) {
-    ONEAPI_NOT_SUPPORTED("pinnedAlloc Not supported");
-
-    // // TODO: make pinnedAlloc aware of array shapes
-    // dim4 dims(elements);
-    // void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    return static_cast<T *>(nullptr);
+    // TODO: make pinnedAlloc aware of array shapes
+    dim4 dims(elements);
+    void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
+    return static_cast<T *>(ptr);
 }
 
 template<typename T>
 void pinnedFree(T *ptr) {
-    // pinnedMemoryManager().unlock(static_cast<void *>(ptr), false);
+    pinnedMemoryManager().unlock(static_cast<void *>(ptr), false);
 }
 
 // template unique_ptr<int, function<void(int *)>> memAlloc<T>(
@@ -257,80 +242,36 @@ void Allocator::nativeFree(void *ptr) {
     // }
 }
 
-AllocatorPinned::AllocatorPinned() : pinnedMaps(oneapi::getDeviceCount()) {
-    logger = common::loggerFactory("mem");
-}
+AllocatorPinned::AllocatorPinned() { logger = common::loggerFactory("mem"); }
 
-void AllocatorPinned::shutdown() {
-    ONEAPI_NOT_SUPPORTED("AllocatorPinned::shutdown Not supported");
+void AllocatorPinned::shutdown() { shutdownPinnedMemoryManager(); }
 
-    //     for (int n = 0; n < opencl::getDeviceCount(); n++) {
-    //         opencl::setDevice(n);
-    //         shutdownPinnedMemoryManager();
-    //         auto currIterator = pinnedMaps[n].begin();
-    //         auto endIterator  = pinnedMaps[n].end();
-    //         while (currIterator != endIterator) {
-    //             pinnedMaps[n].erase(currIterator++);
-    //         }
-    //     }
-}
-
-int AllocatorPinned::getActiveDeviceId() {
-    ONEAPI_NOT_SUPPORTED("AllocatorPinned::getActiveDeviceId Not supported");
-    return 0;
-
-    // opencl::getActiveDeviceId();
-}
+int AllocatorPinned::getActiveDeviceId() { oneapi::getActiveDeviceId(); }
 
 size_t AllocatorPinned::getMaxMemorySize(int id) {
-    ONEAPI_NOT_SUPPORTED("AllocatorPinned::getMaxMemorySize Not supported");
-    return 0;
-    // return opencl::getDeviceMemorySize(id);
+    return oneapi::getDeviceMemorySize(id);
 }
 
 void *AllocatorPinned::nativeAlloc(const size_t bytes) {
-    ONEAPI_NOT_SUPPORTED("AllocatorPinned::nativeAlloc Not supported");
-    return nullptr;
-    //     void *ptr = NULL;
-
-    //     cl_int err = CL_SUCCESS;
-    //     auto buf   = clCreateBuffer(getContext()(), CL_MEM_ALLOC_HOST_PTR,
-    //     bytes,
-    //                               nullptr, &err);
-    //     if (err != CL_SUCCESS) {
-    //         AF_ERROR("Failed to allocate pinned memory.", AF_ERR_NO_MEM);
-    //     }
-
-    //     ptr = clEnqueueMapBuffer(getQueue()(), buf, CL_TRUE,
-    //                              CL_MAP_READ | CL_MAP_WRITE, 0, bytes, 0,
-    //                              nullptr, nullptr, &err);
-    //     if (err != CL_SUCCESS) {
-    //         AF_ERROR("Failed to map pinned memory", AF_ERR_RUNTIME);
-    //     }
-    //     AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
-    //     pinnedMaps[opencl::getActiveDeviceId()].emplace(ptr, new
-    //     cl::Buffer(buf)); return ptr;
+    void *ptr = NULL;
+    try {
+        ptr = sycl::malloc_host<unsigned char>(bytes, getQueue());
+    } catch (...) {
+        auto str = fmt::format("Failed to allocate device memory of size {}",
+                               bytesToString(bytes));
+        AF_ERROR(str, AF_ERR_NO_MEM);
+    }
+    AF_TRACE("Pinned::nativeAlloc: {:>7} {}", bytesToString(bytes), ptr);
+    return ptr;
 }
 
 void AllocatorPinned::nativeFree(void *ptr) {
-    ONEAPI_NOT_SUPPORTED("AllocatorPinned::nativeFree Not supported");
-
-    // AF_TRACE("Pinned::nativeFree:          {}", ptr);
-    // int n     = opencl::getActiveDeviceId();
-    // auto &map = pinnedMaps[n];
-    // auto iter = map.find(ptr);
-
-    // if (iter != map.end()) {
-    //     cl::Buffer *buf = map[ptr];
-    //     if (cl_int err = getQueue().enqueueUnmapMemObject(*buf, ptr)) {
-    //         getLogger()->warn(
-    //             "Pinned::nativeFree: Error unmapping pinned memory({}:{}). "
-    //             "Ignoring",
-    //             err, getErrorMessage(err));
-    //     }
-    //     delete buf;
-    //     map.erase(iter);
-    // }
+    AF_TRACE("Pinned::nativeFree:          {}", ptr);
+    try {
+        sycl::free(ptr, getQueue());
+    } catch (...) {
+        AF_ERROR("Failed to release device memory.", AF_ERR_RUNTIME);
+    }
 }
 }  // namespace oneapi
 }  // namespace arrayfire
