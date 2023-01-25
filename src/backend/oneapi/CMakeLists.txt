@@ -214,7 +214,6 @@ target_sources(afoneapi
     kernel/diff.hpp
     kernel/interp.hpp
     kernel/iota.hpp
-    kernel/gradient.hpp
     kernel/histogram.hpp
     kernel/memcopy.hpp
     kernel/mean.hpp
