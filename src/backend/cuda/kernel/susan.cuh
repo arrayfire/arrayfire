@@ -44,7 +44,7 @@ __global__ void susan(T* out, const T* in, const unsigned idim0,
     const unsigned gy = blockDim.y * blockIdx.y + ly + edge;
 
     const unsigned nucleusIdx = (ly + radius) * shrdLen + lx + radius;
-    shrdMem[nucleusIdx] = gx < idim0 && gy < idim1 ? in[gy * idim0 + gx] : 0;
+    shrdMem[nucleusIdx] = gx < idim1 && gy < idim0 ? in[gx * idim0 + gy] : 0;
     T m_0               = shrdMem[nucleusIdx];
 
 #pragma unroll
@@ -54,13 +54,13 @@ __global__ void susan(T* out, const T* in, const unsigned idim0,
         for (int a = lx, gx2 = gx; a < shrdLen; a += BLOCK_X, gx2 += BLOCK_X) {
             int i = gx2 - radius;
             shrdMem[b * shrdLen + a] =
-                (i < idim0 && j < idim1 ? in[j * idim0 + i] : m_0);
+                (i < idim1 && j < idim0 ? in[i * idim0 + j] : m_0);
         }
     }
     __syncthreads();
 
-    if (gx < idim0 - edge && gy < idim1 - edge) {
-        unsigned idx = gy * idim0 + gx;
+    if (gx < idim1 - edge && gy < idim0 - edge) {
+        unsigned idx = gx * idim0 + gy;
         float nM     = 0.0f;
 #pragma unroll
         for (int p = 0; p < windLen; ++p) {
@@ -94,19 +94,19 @@ __global__ void nonMax(float* x_out, float* y_out, float* resp_out,
     const unsigned gx = blockDim.x * blockIdx.x + threadIdx.x + r;
     const unsigned gy = blockDim.y * blockIdx.y + threadIdx.y + r;
 
-    if (gx < idim0 - r && gy < idim1 - r) {
-        const T v = resp_in[gy * idim0 + gx];
+    if (gx < idim1 - r && gy < idim0 - r) {
+        const T v = resp_in[gx * idim0 + gy];
 
         // Find maximum neighborhood response
         T max_v;
-        max_v = max_val(resp_in[(gy - 1) * idim0 + gx - 1],
-                        resp_in[gy * idim0 + gx - 1]);
-        max_v = max_val(max_v, resp_in[(gy + 1) * idim0 + gx - 1]);
-        max_v = max_val(max_v, resp_in[(gy - 1) * idim0 + gx]);
-        max_v = max_val(max_v, resp_in[(gy + 1) * idim0 + gx]);
-        max_v = max_val(max_v, resp_in[(gy - 1) * idim0 + gx + 1]);
-        max_v = max_val(max_v, resp_in[(gy)*idim0 + gx + 1]);
-        max_v = max_val(max_v, resp_in[(gy + 1) * idim0 + gx + 1]);
+        max_v = max_val(resp_in[(gx - 1) * idim0 + (gy - 1)],
+                        resp_in[(gx - 1) * idim0 + gy]);
+        max_v = max_val(max_v, resp_in[(gx - 1) * idim0 + (gy + 1)]);
+        max_v = max_val(max_v, resp_in[gx * idim0 + (gy - 1)]);
+        max_v = max_val(max_v, resp_in[gx * idim0 + (gy + 1)]);
+        max_v = max_val(max_v, resp_in[(gx + 1) * idim0 + (gy - 1)]);
+        max_v = max_val(max_v, resp_in[(gx + 1) * idim0 + gy]);
+        max_v = max_val(max_v, resp_in[(gx + 1) * idim0 + (gy + 1)]);
 
         // Stores corner to {x,y,resp}_out if it's response is maximum compared
         // to its 8-neighborhood and greater or equal minimum response
