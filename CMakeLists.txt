@@ -60,7 +60,7 @@ find_package(CBLAS)
 find_package(LAPACKE)
 find_package(Doxygen)
 find_package(MKL)
-find_package(spdlog QUIET ${AF_REQUIRED})
+find_package(spdlog QUIET ${AF_REQUIRED} NO_CMAKE_PACKAGE_REGISTRY)
 find_package(fmt QUIET ${AF_REQUIRED})
 find_package(span-lite QUIET)
 find_package(GTest)
@@ -228,13 +228,12 @@ else()
     URI https://github.com/gabime/spdlog.git
     REF v1.9.2
   )
-  add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
   if(TARGET fmt::fmt)
-    set_target_properties(af_spdlog
-      PROPERTIES
-        INTERFACE_COMPILE_DEFINITIONS "SPDLOG_FMT_EXTERNAL")
+    set(SPDLOG_FMT_EXTERNAL ON)
   endif()
+
+  add_subdirectory(${${spdlog_prefix}_SOURCE_DIR} ${${spdlog_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
 
   if(AF_WITH_SPDLOG_HEADER_ONLY)
     set_target_properties(af_spdlog
