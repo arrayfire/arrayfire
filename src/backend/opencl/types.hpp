@@ -18,6 +18,7 @@
 #include <array>
 #include <string>
 
+namespace arrayfire {
 namespace common {
 /// This is a CPU based half which need to be converted into floats before they
 /// are used
@@ -31,7 +32,9 @@ struct kernel_type<common::half> {
     using compute = float;
 };
 }  // namespace common
+}  // namespace arrayfire
 
+namespace arrayfire {
 namespace opencl {
 using cdouble = cl_double2;
 using cfloat  = cl_float2;
@@ -127,7 +130,7 @@ inline const char *getFullName<cdouble>() {
 
 template<typename... ARGS>
 AF_CONSTEXPR const char *getTypeBuildDefinition() {
-    using common::half;
+    using arrayfire::common::half;
     using std::any_of;
     using std::array;
     using std::begin;
@@ -157,3 +160,4 @@ AF_CONSTEXPR const char *getTypeBuildDefinition() {
 }
 
 }  // namespace opencl
+}  // namespace arrayfire

@@ -17,12 +17,13 @@
 #include <utility>
 #include <vector>
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
 #ifndef AF_CUDA_MEM_DEBUG
 #define AF_CUDA_MEM_DEBUG 0
 #endif
 
+namespace arrayfire {
 namespace cuda {
 
 struct cudaDevice_t {
@@ -66,7 +67,7 @@ class DeviceManager {
 
     void resetMemoryManagerPinned();
 
-    friend graphics::ForgeManager& forgeManager();
+    friend arrayfire::common::ForgeManager& forgeManager();
 
     friend GraphicsResourceManager& interopManager();
 
@@ -122,7 +123,7 @@ class DeviceManager {
     int nDevices;
     cudaStream_t streams[MAX_DEVICES]{};
 
-    std::unique_ptr<graphics::ForgeManager> fgMngr;
+    std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;
 
     std::unique_ptr<MemoryManagerBase> memManager;
 
@@ -134,3 +135,4 @@ class DeviceManager {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

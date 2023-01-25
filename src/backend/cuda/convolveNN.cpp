@@ -33,16 +33,17 @@
 #include <vector>
 
 using af::dim4;
-using common::flip;
-using common::half;
-using common::make_handle;
-using common::modDims;
+using arrayfire::common::flip;
+using arrayfire::common::half;
+using arrayfire::common::make_handle;
+using arrayfire::common::modDims;
 using std::conditional;
 using std::is_same;
 using std::pair;
 using std::tie;
 using std::vector;
 
+namespace arrayfire {
 namespace cuda {
 
 #ifdef WITH_CUDNN
@@ -69,7 +70,7 @@ pair<cudnnConvolutionFwdAlgo_t, size_t> getForwardAlgorithm(
     size_t workspace_bytes = 0;
 
     auto version = getCudnnPlugin().getVersion();
-    if (std::get<0>(version) >= 8) {
+    if (version.major() >= 8) {
         int maxAlgoCount = 0;
         CUDNN_CHECK(cuda::cudnnGetConvolutionForwardAlgorithmMaxCount(
             cudnn, &maxAlgoCount));
@@ -418,7 +419,7 @@ pair<cudnnConvolutionBwdFilterAlgo_t, size_t> getBackwardFilterAlgorithm(
     size_t workspace_bytes = 0;
 
     auto version = getCudnnPlugin().getVersion();
-    if (std::get<0>(version) >= 8) {
+    if (version.major() >= 8) {
         int maxAlgoCount = 0;
         CUDNN_CHECK(cuda::cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(
             cudnn, &maxAlgoCount));
@@ -536,3 +537,4 @@ INSTANTIATE(half)
 #undef INSTANTIATE
 
 }  // namespace cuda
+}  // namespace arrayfire

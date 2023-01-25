@@ -29,18 +29,20 @@ namespace spdlog {
 class logger;
 }
 
-namespace graphics {
-class ForgeManager;
-}
-
+namespace arrayfire {
 namespace common {
-namespace memory {
+
+class ForgeManager;
+
 class MemoryManagerBase;
-}
+
+class Version;
 }  // namespace common
+}  // namespace arrayfire
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
+namespace arrayfire {
 namespace opencl {
 
 // Forward declarations
@@ -66,6 +68,12 @@ const cl::Context& getContext();
 cl::CommandQueue& getQueue();
 
 const cl::Device& getDevice(int id = -1);
+
+const std::string& getActiveDeviceBaseBuildFlags();
+
+/// Returns the set of all OpenCL C Versions the device supports. The values
+/// are sorted from oldest to latest.
+std::vector<common::Version> getOpenCLCDeviceVersion(const cl::Device& device);
 
 size_t getDeviceMemorySize(int device);
 
@@ -108,10 +116,6 @@ inline unsigned getMaxParallelThreads(const cl::Device& device) {
 
 cl_device_type getDeviceType();
 
-inline bool isHostUnifiedMemory(const cl::Device& device) {
-    return device.getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-}
-
 bool OpenCLCPUOffload(bool forceOffloadOSX = true);
 
 bool isGLSharingSupported();
@@ -149,7 +153,9 @@ bool synchronize_calls();
 
 int getActiveDeviceType();
 
-int getActivePlatform();
+cl::Platform& getActivePlatform();
+
+afcl::platform getActivePlatformVendor();
 
 bool& evalFlag();
 
@@ -165,7 +171,7 @@ void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
 
 void resetMemoryManagerPinned();
 
-graphics::ForgeManager& forgeManager();
+arrayfire::common::ForgeManager& forgeManager();
 
 GraphicsResourceManager& interopManager();
 
@@ -176,3 +182,4 @@ afcl::platform getPlatformEnum(cl::Device dev);
 void setActiveContext(int device);
 
 }  // namespace opencl
+}  // namespace arrayfire

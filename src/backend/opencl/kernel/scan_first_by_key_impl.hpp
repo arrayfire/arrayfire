@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -55,14 +56,13 @@ static opencl::Kernel getScanFirstKernel(const std::string key,
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineValue(SHARED_MEM_SIZE),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+        DefineKeyValue(CPLX, iscplx<Ti>()),
         DefineKeyValue(calculateFlags, (calculateFlags ? 1 : 0)),
         DefineKeyValue(INCLUSIVE_SCAN, inclusiveScan),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    return common::getKernel(key,
-                             std::array{ops_cl_src, scan_first_by_key_cl_src},
+    return common::getKernel(key, {{ops_cl_src, scan_first_by_key_cl_src}},
                              tmpltArgs, compileOpts);
 }
 
@@ -206,3 +206,4 @@ void scanFirstByKey(Param &out, const Param &in, const Param &key,
     INSTANTIATE_SCAN_FIRST_BY_KEY_TYPES(ROp, intl) \
     INSTANTIATE_SCAN_FIRST_BY_KEY_TYPES(ROp, uintl)
 }  // namespace opencl
+}  // namespace arrayfire

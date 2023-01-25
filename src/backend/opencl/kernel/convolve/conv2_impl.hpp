@@ -12,6 +12,7 @@
 #include <common/kernel_cache.hpp>
 #include <kernel/convolve/conv_common.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -50,9 +51,8 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto convolve =
-        common::getKernel("convolve", std::array{ops_cl_src, convolve_cl_src},
-                          tmpltArgs, compileOpts);
+    auto convolve = common::getKernel(
+        "convolve", {{ops_cl_src, convolve_cl_src}}, tmpltArgs, compileOpts);
 
     convolve(EnqueueArgs(getQueue(), param.global, param.local), *out.data,
              out.info, *signal.data, signal.info, *param.impulse, filter.info,
@@ -95,3 +95,4 @@ void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -20,6 +20,7 @@
 #include <backend.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -192,3 +193,4 @@ static void where(Param<uint> &out, Param<T> in) {
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

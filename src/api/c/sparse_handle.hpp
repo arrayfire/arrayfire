@@ -20,6 +20,8 @@
 
 #include <common/SparseArray.hpp>
 
+namespace arrayfire {
+
 const common::SparseArrayBase &getSparseArrayBase(const af_array in,
                                                   bool device_check = true);
 
@@ -86,3 +88,7 @@ static af_array copySparseArray(const af_array in) {
     const common::SparseArray<T> &inArray = getSparseArray<T>(in);
     return getHandle<T>(common::copySparseArray<T>(inArray));
 }
+
+}  // namespace arrayfire
+
+using arrayfire::getHandle;

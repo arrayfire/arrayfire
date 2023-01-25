@@ -14,6 +14,7 @@
 #include <nvrtc_kernel_headers/moments_cuh.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -22,7 +23,7 @@ static const int THREADS = 128;
 template<typename T>
 void moments(Param<float> out, CParam<T> in, const af::momentType moment) {
     auto moments =
-        common::getKernel("cuda::moments", std::array{moments_cuh_src},
+        common::getKernel("arrayfire::cuda::moments", {{moments_cuh_src}},
                           TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(THREADS, 1, 1);
@@ -40,3 +41,4 @@ void moments(Param<float> out, CParam<T> in, const af::momentType moment) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

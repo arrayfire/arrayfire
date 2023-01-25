@@ -16,6 +16,7 @@
 #include <iterator>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 
 /// A Param iterator that iterates through a Param object
@@ -137,3 +138,4 @@ ParamIterator<const T> end(CParam<T>& param) {
 }
 
 }  // namespace cpu
+}  // namespace arrayfire

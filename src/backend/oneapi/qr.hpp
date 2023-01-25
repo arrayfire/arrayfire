@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig);
@@ -16,3 +17,4 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig);
 template<typename T>
 Array<T> qr_inplace(Array<T> &in);
 }  // namespace oneapi
+}  // namespace arrayfire

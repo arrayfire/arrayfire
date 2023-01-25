@@ -30,16 +30,16 @@
 #include <string>
 #include <vector>
 
+using arrayfire::common::getEnvVar;
+using arrayfire::common::loggerFactory;
+using arrayfire::opencl::getActiveDeviceId;
+using arrayfire::opencl::getDevice;
+using arrayfire::opencl::Kernel;
+using arrayfire::opencl::Module;
 using cl::Error;
 using cl::Program;
-using common::getEnvVar;
-using common::loggerFactory;
 using fmt::format;
 using nonstd::span;
-using opencl::getActiveDeviceId;
-using opencl::getDevice;
-using opencl::Kernel;
-using opencl::Module;
 using spdlog::logger;
 
 using std::begin;
@@ -86,6 +86,7 @@ string getProgramBuildLog(const Program &prog) {
         AF_ERROR(build_error, AF_ERR_INTERNAL);                      \
     } while (0)
 
+namespace arrayfire {
 namespace opencl {
 
 const static string DEFAULT_MACROS_STR(
@@ -107,15 +108,7 @@ Program buildProgram(span<const string> kernelSources,
                      span<const string> compileOpts) {
     Program retVal;
     try {
-        static const string defaults =
-            string(" -D dim_t=") + string(dtype_traits<dim_t>::getName());
-
         auto device = getDevice();
-
-        const string cl_std =
-            string(" -cl-std=CL") +
-            device.getInfo<CL_DEVICE_OPENCL_C_VERSION>().substr(9, 3);
-
         Program::Sources sources;
         sources.emplace_back(DEFAULT_MACROS_STR);
         sources.emplace_back(KParam_hpp, KParam_hpp_len);
@@ -125,12 +118,8 @@ Program buildProgram(span<const string> kernelSources,
 
         ostringstream options;
         for (auto &opt : compileOpts) { options << opt; }
-
-#ifdef AF_WITH_FAST_MATH
-        options << " -cl-fast-relaxed-math -DAF_WITH_FAST_MATH";
-#endif
-
-        retVal.build({device}, (cl_std + defaults + options.str()).c_str());
+        options << getActiveDeviceBaseBuildFlags();
+        retVal.build({device}, (options.str()).c_str());
     } catch (Error &err) {
         if (err.err() == CL_BUILD_PROGRAM_FAILURE) {
             THROW_BUILD_LOG_EXCEPTION(retVal);
@@ -141,9 +130,10 @@ Program buildProgram(span<const string> kernelSources,
 }
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 string getKernelCacheFilename(const int device, const string &key) {
-    auto &dev = opencl::getDevice(device);
+    auto &dev = arrayfire::opencl::getDevice(device);
 
     unsigned vendorId = dev.getInfo<CL_DEVICE_VENDOR_ID>();
     auto devName      = dev.getInfo<CL_DEVICE_NAME>();
@@ -157,6 +147,7 @@ string getKernelCacheFilename(const int device, const string &key) {
            to_string(AF_API_VERSION_CURRENT) + ".bin";
 }
 
+namespace arrayfire {
 namespace common {
 
 Module compileModule(const string &moduleKey, span<const string> sources,
@@ -166,11 +157,11 @@ Module compileModule(const string &moduleKey, span<const string> sources,
     UNUSED(isJIT);
 
     auto compileBegin = high_resolution_clock::now();
-    auto program      = opencl::buildProgram(sources, options);
+    auto program      = arrayfire::opencl::buildProgram(sources, options);
     auto compileEnd   = high_resolution_clock::now();
 
 #ifdef AF_CACHE_KERNELS_TO_DISK
-    const int device             = opencl::getActiveDeviceId();
+    const int device             = arrayfire::opencl::getActiveDeviceId();
     const string &cacheDirectory = getCacheDirectory();
     if (!cacheDirectory.empty()) {
         const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
@@ -202,15 +193,17 @@ Module compileModule(const string &moduleKey, span<const string> sources,
             // before the current thread.
             if (!renameFile(tempFile, cacheFile)) { removeFile(tempFile); }
         } catch (const cl::Error &e) {
-            AF_TRACE("{{{:<20} : Failed to fetch opencl binary for {}, {}}}",
-                     moduleKey,
-                     opencl::getDevice(device).getInfo<CL_DEVICE_NAME>(),
-                     e.what());
+            AF_TRACE(
+                "{{{:<20} : Failed to fetch opencl binary for {}, {}}}",
+                moduleKey,
+                arrayfire::opencl::getDevice(device).getInfo<CL_DEVICE_NAME>(),
+                e.what());
         } catch (const std::ios_base::failure &e) {
-            AF_TRACE("{{{:<20} : Failed writing binary to {} for {}, {}}}",
-                     moduleKey, cacheFile,
-                     opencl::getDevice(device).getInfo<CL_DEVICE_NAME>(),
-                     e.what());
+            AF_TRACE(
+                "{{{:<20} : Failed writing binary to {} for {}, {}}}",
+                moduleKey, cacheFile,
+                arrayfire::opencl::getDevice(device).getInfo<CL_DEVICE_NAME>(),
+                e.what());
         }
     }
 #endif
@@ -228,7 +221,7 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
     const string &cacheDirectory = getCacheDirectory();
     if (cacheDirectory.empty()) return Module{};
 
-    auto &dev              = opencl::getDevice(device);
+    auto &dev              = arrayfire::opencl::getDevice(device);
     const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
                              getKernelCacheFilename(device, moduleKey);
     Program program;
@@ -255,7 +248,7 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
         if (recomputedHash != clbinHash) {
             AF_ERROR("Binary on disk seems to be corrupted", AF_ERR_LOAD_SYM);
         }
-        program = Program(opencl::getContext(), {dev}, {clbin});
+        program = Program(arrayfire::opencl::getContext(), {dev}, {clbin});
         program.build();
 
         AF_TRACE("{{{:<20} : loaded from {} for {} }}", moduleKey, cacheFile,
@@ -293,3 +286,4 @@ Kernel getKernel(const Module &mod, const string &nameExpr,
 }
 
 }  // namespace common
+}  // namespace arrayfire

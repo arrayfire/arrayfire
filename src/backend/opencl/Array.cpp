@@ -39,11 +39,11 @@ using af::dtype_traits;
 
 using cl::Buffer;
 
-using common::half;
-using common::Node;
-using common::Node_ptr;
-using common::NodeIterator;
-using opencl::jit::BufferNode;
+using arrayfire::common::half;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::NodeIterator;
+using arrayfire::opencl::jit::BufferNode;
 
 using nonstd::span;
 using std::accumulate;
@@ -52,6 +52,7 @@ using std::make_shared;
 using std::shared_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 shared_ptr<BufferNode> bufferNodePtr() {
@@ -307,7 +308,7 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     }
 
     bool isBufferLimit = getMemoryPressure() >= getMemoryPressureThreshold();
-    auto platform      = getActivePlatform();
+    auto platform      = getActivePlatformVendor();
 
     // The Apple platform can have the nvidia card or the AMD card
     bool isIntel = platform == AFCL_PLATFORM_INTEL;
@@ -549,3 +550,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 }  // namespace opencl
+}  // namespace arrayfire

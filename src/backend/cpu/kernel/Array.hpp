@@ -18,6 +18,7 @@
 #include <platform.hpp>
 #include <vector>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -25,7 +26,7 @@ namespace kernel {
 std::vector<std::shared_ptr<common::Node>> cloneNodes(
     const std::vector<common::Node *> &node_index_map,
     const std::vector<common::Node_ids> &ids) {
-    using common::Node;
+    using arrayfire::common::Node;
     // find all moddims in the tree
     std::vector<std::shared_ptr<Node>> node_clones;
     node_clones.reserve(node_index_map.size());
@@ -45,7 +46,7 @@ std::vector<std::shared_ptr<common::Node>> cloneNodes(
 /// new shape
 void propagateModdimsShape(
     std::vector<std::shared_ptr<common::Node>> &node_clones) {
-    using common::NodeIterator;
+    using arrayfire::common::NodeIterator;
     for (auto &node : node_clones) {
         if (node->getOp() == af_moddims_t) {
             common::ModdimNode *mn =
@@ -67,7 +68,7 @@ void propagateModdimsShape(
 /// Removes node_index_map whos operation matchs a unary operation \p op.
 void removeNodeOfOperation(
     std::vector<std::shared_ptr<common::Node>> &node_index_map, af_op_t op) {
-    using common::Node;
+    using arrayfire::common::Node;
 
     for (size_t nid = 0; nid < node_index_map.size(); nid++) {
         auto &node = node_index_map[nid];
@@ -124,10 +125,10 @@ std::vector<TNode<T> *> getClonedOutputNodes(
 template<typename T>
 void evalMultiple(std::vector<Param<T>> arrays,
                   std::vector<common::Node_ptr> output_nodes_) {
-    using common::ModdimNode;
-    using common::Node;
-    using common::Node_map_t;
-    using common::NodeIterator;
+    using arrayfire::common::ModdimNode;
+    using arrayfire::common::Node;
+    using arrayfire::common::Node_map_t;
+    using arrayfire::common::NodeIterator;
 
     af::dim4 odims = arrays[0].dims();
     af::dim4 ostrs = arrays[0].strides();
@@ -205,3 +206,4 @@ void evalMultiple(std::vector<Param<T>> arrays,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

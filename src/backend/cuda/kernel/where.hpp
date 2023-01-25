@@ -18,12 +18,13 @@
 #include "config.hpp"
 #include "scan_first.hpp"
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
 template<typename T>
 static void where(Param<uint> &out, CParam<T> in) {
-    auto where = common::getKernel("cuda::where", std::array{where_cuh_src},
+    auto where = common::getKernel("arrayfire::cuda::where", {{where_cuh_src}},
                                    TemplateArgs(TemplateTypename<T>()));
 
     uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
@@ -72,7 +73,7 @@ static void where(Param<uint> &out, CParam<T> in) {
     uint total;
     CUDA_CHECK(cudaMemcpyAsync(&total, rtmp.ptr + rtmp_elements - 1,
                                sizeof(uint), cudaMemcpyDeviceToHost,
-                               cuda::getActiveStream()));
+                               getActiveStream()));
     CUDA_CHECK(cudaStreamSynchronize(cuda::getActiveStream()));
 
     auto out_alloc = memAlloc<uint>(total);
@@ -90,10 +91,9 @@ static void where(Param<uint> &out, CParam<T> in) {
 
     uint lim = divup(otmp.dims[0], (threads_x * blocks_x));
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
     where(qArgs, out.ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
@@ -104,3 +104,4 @@ static void where(Param<uint> &out, CParam<T> in) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

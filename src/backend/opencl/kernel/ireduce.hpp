@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -44,13 +45,13 @@ void ireduceDimLauncher(Param out, cl::Buffer *oidx, Param in, cl::Buffer *iidx,
         DefineValue(THREADS_X),
         DefineKeyValue(init, toNumStr(common::Binary<T, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(CPLX, iscplx<T>()),
         DefineKeyValue(IS_FIRST, is_first),
         getTypeBuildDefinition<T>()};
 
-    auto ireduceDim = common::getKernel(
-        "ireduce_dim_kernel", std::array{iops_cl_src, ireduce_dim_cl_src},
-        targs, options);
+    auto ireduceDim =
+        common::getKernel("ireduce_dim_kernel",
+                          {{iops_cl_src, ireduce_dim_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, threads_y);
     cl::NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -120,13 +121,13 @@ void ireduceFirstLauncher(Param out, cl::Buffer *oidx, Param in,
         DefineValue(THREADS_PER_GROUP),
         DefineKeyValue(init, toNumStr(common::Binary<T, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(CPLX, iscplx<T>()),
         DefineKeyValue(IS_FIRST, is_first),
         getTypeBuildDefinition<T>()};
 
-    auto ireduceFirst = common::getKernel(
-        "ireduce_first_kernel", std::array{iops_cl_src, ireduce_first_cl_src},
-        targs, options);
+    auto ireduceFirst = common::getKernel("ireduce_first_kernel",
+                                          {{iops_cl_src, ireduce_first_cl_src}},
+                                          targs, options);
 
     cl::NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     cl::NDRange global(groups_x * in.info.dims[2] * local[0],
@@ -333,3 +334,4 @@ T ireduceAll(uint *loc, Param in) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

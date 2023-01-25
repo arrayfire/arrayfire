@@ -23,6 +23,7 @@
 
 #include <string>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -50,11 +51,11 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
         DefineKeyValue(IS_CONJ, is_conj),
         DefineKeyValue(THREADS, local[0]),
         DefineKeyValue(ROWS_PER_GROUP, rows_per_group),
-        DefineKeyValue(IS_CPLX, (af::iscplx<T>() ? 1 : 0)),
+        DefineKeyValue(IS_CPLX, (iscplx<T>() ? 1 : 0)),
         getTypeBuildDefinition<T>()};
 
-    auto cscmvBlock = common::getKernel("cscmv_block", std::array{cscmv_cl_src},
-                                        targs, options);
+    auto cscmvBlock =
+        common::getKernel("cscmv_block", {{cscmv_cl_src}}, targs, options);
 
     int K        = colIdx.info.dims[0] - 1;
     int M        = out.info.dims[0];
@@ -68,3 +69,4 @@ void cscmv(Param out, const Param &values, const Param &colIdx,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

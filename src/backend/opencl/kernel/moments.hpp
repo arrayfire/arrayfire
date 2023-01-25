@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -37,8 +38,8 @@ void moments(Param out, const Param in, af_moment_type moment) {
         DefineKeyValue(MOMENTS_SZ, out.info.dims[0]),
         getTypeBuildDefinition<T>()};
 
-    auto momentsOp = common::getKernel("moments", std::array{moments_cl_src},
-                                       targs, options);
+    auto momentsOp =
+        common::getKernel("moments", {{moments_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS, 1, 1);
     cl::NDRange global(in.info.dims[1] * local[0],
@@ -53,3 +54,4 @@ void moments(Param out, const Param in, af_moment_type moment) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

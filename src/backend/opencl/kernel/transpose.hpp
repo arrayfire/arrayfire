@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -43,13 +44,13 @@ void transpose(Param out, const Param in, cl::CommandQueue queue,
         DefineValue(TILE_DIM),
         DefineValue(THREADS_Y),
         DefineValue(IS32MULTIPLE),
-        DefineKeyValue(DOCONJUGATE, (conjugate && af::iscplx<T>())),
+        DefineKeyValue(DOCONJUGATE, (conjugate && iscplx<T>())),
         DefineKeyValue(T, dtype_traits<T>::getName()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto transpose = common::getKernel(
-        "transpose", std::array{transpose_cl_src}, tmpltArgs, compileOpts);
+    auto transpose = common::getKernel("transpose", {{transpose_cl_src}},
+                                       tmpltArgs, compileOpts);
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -66,3 +67,4 @@ void transpose(Param out, const Param in, cl::CommandQueue queue,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

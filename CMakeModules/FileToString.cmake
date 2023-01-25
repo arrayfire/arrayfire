@@ -45,6 +45,7 @@ function(FILE_TO_STRING)
         endif(RTCS_NULLTERM)
 
         string(REPLACE "." "_" var_name ${var_name})
+        string(REPLACE "\ " "_" namespace_name ${RTCS_NAMESPACE})
 
         set(_output_path "${CMAKE_CURRENT_BINARY_DIR}/${RTCS_OUTPUT_DIR}")
         if(RTCS_WITH_EXTENSION)
@@ -66,9 +67,9 @@ function(FILE_TO_STRING)
 
         list(APPEND _output_files ${_output_file})
     endforeach()
-    add_custom_target(${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target DEPENDS ${_output_files})
-    set_target_properties(${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target PROPERTIES FOLDER "Generated Targets")
+    add_custom_target(${namespace_name}_${RTCS_OUTPUT_DIR}_bin_target DEPENDS ${_output_files})
+    set_target_properties(${namespace_name}_${RTCS_OUTPUT_DIR}_bin_target PROPERTIES FOLDER "Generated Targets")
 
     set("${RTCS_VARNAME}" ${_output_files} PARENT_SCOPE)
-    set("${RTCS_TARGETS}" ${RTCS_NAMESPACE}_${RTCS_OUTPUT_DIR}_bin_target PARENT_SCOPE)
+    set("${RTCS_TARGETS}" ${namespace_name}_${RTCS_OUTPUT_DIR}_bin_target PARENT_SCOPE)
 endfunction(FILE_TO_STRING)

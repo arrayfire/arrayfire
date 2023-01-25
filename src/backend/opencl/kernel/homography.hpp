@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 constexpr int HG_THREADS_X = 16;
@@ -49,16 +50,16 @@ std::array<Kernel, 5> getHomographyKernels(const af_homography_type htype) {
         options.emplace_back(DefineKey(IS_CPU));
     }
     return {
-        common::getKernel("compute_homography", std::array{homography_cl_src},
-                          targs, options),
-        common::getKernel("eval_homography", std::array{homography_cl_src},
-                          targs, options),
-        common::getKernel("compute_median", std::array{homography_cl_src},
-                          targs, options),
-        common::getKernel("find_min_median", std::array{homography_cl_src},
-                          targs, options),
-        common::getKernel("compute_lmeds_inliers",
-                          std::array{homography_cl_src}, targs, options),
+        common::getKernel("compute_homography", {{homography_cl_src}}, targs,
+                          options),
+        common::getKernel("eval_homography", {{homography_cl_src}}, targs,
+                          options),
+        common::getKernel("compute_median", {{homography_cl_src}}, targs,
+                          options),
+        common::getKernel("find_min_median", {{homography_cl_src}}, targs,
+                          options),
+        common::getKernel("compute_lmeds_inliers", {{homography_cl_src}}, targs,
+                          options),
     };
 }
 
@@ -213,3 +214,4 @@ int computeH(Param bestH, Param H, Param err, Param x_src, Param y_src,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

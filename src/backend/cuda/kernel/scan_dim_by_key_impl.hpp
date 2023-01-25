@@ -21,6 +21,7 @@
 
 #include <algorithm>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -32,10 +33,10 @@ static void scan_dim_nonfinal_launcher(Param<To> out, Param<To> tmp,
                                        const dim_t blocks_all[4],
                                        bool inclusive_scan) {
     auto scanbykey_dim_nonfinal = common::getKernel(
-        "cuda::scanbykey_dim_nonfinal", std::array{scan_dim_by_key_cuh_src},
+        "arrayfire::cuda::scanbykey_dim_nonfinal", {{scan_dim_by_key_cuh_src}},
         TemplateArgs(TemplateTypename<Ti>(), TemplateTypename<Tk>(),
                      TemplateTypename<To>(), TemplateArg(op)),
-        std::array{DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
+        {{DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)}});
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -56,10 +57,10 @@ static void scan_dim_final_launcher(Param<To> out, CParam<Ti> in,
                                     const dim_t blocks_all[4],
                                     bool calculateFlags, bool inclusive_scan) {
     auto scanbykey_dim_final = common::getKernel(
-        "cuda::scanbykey_dim_final", std::array{scan_dim_by_key_cuh_src},
+        "arrayfire::cuda::scanbykey_dim_final", {{scan_dim_by_key_cuh_src}},
         TemplateArgs(TemplateTypename<Ti>(), TemplateTypename<Tk>(),
                      TemplateTypename<To>(), TemplateArg(op)),
-        std::array{DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)});
+        {{DefineValue(THREADS_X), DefineKeyValue(DIMY, threads_y)}});
 
     dim3 threads(THREADS_X, threads_y);
 
@@ -78,7 +79,7 @@ static void bcast_dim_launcher(Param<To> out, CParam<To> tmp, Param<int> tlid,
                                const int dim, const uint threads_y,
                                const dim_t blocks_all[4]) {
     auto scanbykey_dim_bcast = common::getKernel(
-        "cuda::scanbykey_dim_bcast", std::array{scan_dim_by_key_cuh_src},
+        "arrayfire::cuda::scanbykey_dim_bcast", {{scan_dim_by_key_cuh_src}},
         TemplateArgs(TemplateTypename<To>(), TemplateArg(op)));
     dim3 threads(THREADS_X, threads_y);
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
@@ -167,3 +168,4 @@ void scan_dim_by_key(Param<To> out, CParam<Ti> in, CParam<Tk> key, int dim,
     INSTANTIATE_SCAN_DIM_BY_KEY_TYPES(ROp, intl) \
     INSTANTIATE_SCAN_DIM_BY_KEY_TYPES(ROp, uintl)
 }  // namespace cuda
+}  // namespace arrayfire

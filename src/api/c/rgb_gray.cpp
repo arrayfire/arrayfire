@@ -23,7 +23,7 @@
 #include <math.hpp>
 
 using af::dim4;
-using common::cast;
+using arrayfire::common::cast;
 using detail::arithOp;
 using detail::Array;
 using detail::createEmptyArray;
@@ -75,7 +75,7 @@ static af_array gray2rgb(const af_array& in, const float r, const float g,
                          const float b) {
     if (r == 1.0 && g == 1.0 && b == 1.0) {
         dim4 tileDims(1, 1, 3, 1);
-        return getHandle(common::tile(getArray<T>(in), tileDims));
+        return getHandle(arrayfire::common::tile(getArray<T>(in), tileDims));
     }
 
     af_array mod_input = 0;

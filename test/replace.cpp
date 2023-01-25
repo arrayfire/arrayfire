@@ -142,7 +142,8 @@ TEST(Replace, ISSUE_1249) {
     array a    = randu(dims);
     array b    = a.copy();
     replace(b, !cond, a - a * 0.9);
-    array c = a - a * cond * 0.9;
+    array c  = (a - a * 0.9);
+    c(!cond) = a(!cond);
 
     int num = (int)dims.elements();
     vector<float> hb(num);
@@ -151,7 +152,9 @@ TEST(Replace, ISSUE_1249) {
     b.host(&hb[0]);
     c.host(&hc[0]);
 
-    for (int i = 0; i < num; i++) { ASSERT_EQ(hc[i], hb[i]) << "at " << i; }
+    for (int i = 0; i < num; i++) {
+        ASSERT_FLOAT_EQ(hc[i], hb[i]) << "at " << i;
+    }
 }
 
 TEST(Replace, 4D) {
@@ -169,7 +172,9 @@ TEST(Replace, 4D) {
     b.host(&hb[0]);
     c.host(&hc[0]);
 
-    for (int i = 0; i < num; i++) { ASSERT_EQ(hc[i], hb[i]) << "at " << i; }
+    for (int i = 0; i < num; i++) {
+        ASSERT_FLOAT_EQ(hc[i], hb[i]) << "at " << i;
+    }
 }
 
 TEST(Replace, ISSUE_1683) {
@@ -187,12 +192,14 @@ TEST(Replace, ISSUE_1683) {
     B.host(hb.data());
 
     // Ensures A is not modified by replace
-    for (int i = 0; i < (int)A.elements(); i++) { ASSERT_EQ(ha1[i], ha2[i]); }
+    for (int i = 0; i < (int)A.elements(); i++) {
+        ASSERT_FLOAT_EQ(ha1[i], ha2[i]);
+    }
 
     // Ensures replace on B works as expected
     for (int i = 0; i < (int)B.elements(); i++) {
         float val = ha1[i * A.dims(0)];
         val       = val < 0.5 ? 0 : val;
-        ASSERT_EQ(val, hb[i]);
+        ASSERT_FLOAT_EQ(val, hb[i]);
     }
 }

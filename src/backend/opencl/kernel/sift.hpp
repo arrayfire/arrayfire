@@ -38,6 +38,7 @@ AF_DEPRECATED_WARNINGS_ON
 
 namespace compute = boost::compute;
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -355,20 +356,19 @@ std::array<Kernel, 7> getSiftKernels() {
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::getKernel("sub", std::array{sift_nonfree_cl_src}, targs,
+        common::getKernel("sub", {{sift_nonfree_cl_src}}, targs, compileOpts),
+        common::getKernel("detectExtrema", {{sift_nonfree_cl_src}}, targs,
                           compileOpts),
-        common::getKernel("detectExtrema", std::array{sift_nonfree_cl_src},
+        common::getKernel("interpolateExtrema", {{sift_nonfree_cl_src}}, targs,
+                          compileOpts),
+        common::getKernel("calcOrientation", {{sift_nonfree_cl_src}}, targs,
+                          compileOpts),
+        common::getKernel("removeDuplicates", {{sift_nonfree_cl_src}}, targs,
+                          compileOpts),
+        common::getKernel("computeDescriptor", {{sift_nonfree_cl_src}}, targs,
+                          compileOpts),
+        common::getKernel("computeGLOHDescriptor", {{sift_nonfree_cl_src}},
                           targs, compileOpts),
-        common::getKernel("interpolateExtrema", std::array{sift_nonfree_cl_src},
-                          targs, compileOpts),
-        common::getKernel("calcOrientation", std::array{sift_nonfree_cl_src},
-                          targs, compileOpts),
-        common::getKernel("removeDuplicates", std::array{sift_nonfree_cl_src},
-                          targs, compileOpts),
-        common::getKernel("computeDescriptor", std::array{sift_nonfree_cl_src},
-                          targs, compileOpts),
-        common::getKernel("computeGLOHDescriptor",
-                          std::array{sift_nonfree_cl_src}, targs, compileOpts),
     };
 }
 
@@ -729,3 +729,4 @@ void sift(unsigned* out_feat, unsigned* out_dlen, Param& x_out, Param& y_out,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

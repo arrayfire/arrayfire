@@ -12,6 +12,7 @@
 
 #include <memory>
 
+namespace arrayfire {
 namespace oneapi {
 namespace jit {
 template<typename T>
@@ -33,3 +34,4 @@ bool BufferNodeBase<DataType, ParamType>::operator==(
 }
 
 }  // namespace common
+}  // namespace arrayfire

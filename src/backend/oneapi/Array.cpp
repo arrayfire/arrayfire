@@ -36,11 +36,11 @@
 using af::dim4;
 using af::dtype_traits;
 
-using common::half;
-using common::Node;
-using common::Node_ptr;
-using common::NodeIterator;
-using oneapi::jit::BufferNode;
+using arrayfire::common::half;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::NodeIterator;
+using arrayfire::oneapi::jit::BufferNode;
 
 using nonstd::span;
 using std::accumulate;
@@ -51,6 +51,7 @@ using std::vector;
 
 using sycl::buffer;
 
+namespace arrayfire {
 namespace oneapi {
 namespace {
 template<typename T>
@@ -77,7 +78,7 @@ void verifyTypeSupport<cdouble>() {
 }
 
 template<>
-void verifyTypeSupport<common::half>() {
+void verifyTypeSupport<arrayfire::common::half>() {
     if (!isHalfSupported(getActiveDeviceId())) {
         AF_ERROR("Half precision not supported", AF_ERR_NO_HALF);
     }
@@ -575,3 +576,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(half)
 
 }  // namespace oneapi
+}  // namespace arrayfire

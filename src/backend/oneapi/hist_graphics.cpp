@@ -12,6 +12,7 @@
 #include <err_oneapi.hpp>
 #include <hist_graphics.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -30,3 +31,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace oneapi
+}  // namespace arrayfire

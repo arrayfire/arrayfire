@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 void gradient(Array<T> &grad0, Array<T> &grad1, const Array<T> &in);
-}
+}  // namespace oneapi
+}  // namespace arrayfire

@@ -16,8 +16,9 @@
 
 #include <stdexcept>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> iota(const dim4 &dims, const dim4 &tile_dims) {
@@ -50,3 +51,4 @@ INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace oneapi
+}  // namespace arrayfire

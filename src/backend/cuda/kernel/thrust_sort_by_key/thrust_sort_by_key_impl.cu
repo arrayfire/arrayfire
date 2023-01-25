@@ -14,6 +14,7 @@
 // SBK_TYPES:float double int uint intl uintl short ushort char uchar
 // SBK_INSTS:0 1
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 // clang-format off
@@ -21,3 +22,4 @@ namespace kernel {
 // clang-format on
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

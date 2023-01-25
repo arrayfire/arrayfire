@@ -47,6 +47,7 @@
 #pragma once
 #include <kernel/random_engine_write.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 // Utils
@@ -196,3 +197,4 @@ class normalPhilox {
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

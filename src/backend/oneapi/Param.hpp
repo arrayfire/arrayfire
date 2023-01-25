@@ -12,6 +12,7 @@
 #include <CL/sycl.hpp>
 #include <kernel/KParam.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -36,3 +37,4 @@ template<typename T>
 Param<T> makeParam(sycl::buffer<T>& mem, int off, const int dims[4],
                    const int strides[4]);
 }  // namespace oneapi
+}  // namespace arrayfire

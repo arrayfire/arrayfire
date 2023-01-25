@@ -13,6 +13,7 @@
 #include <af/constants.h>
 #include <algorithm>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -341,3 +342,4 @@ struct Interp2<Ty, Tp, 3> {
 };
 
 }  // namespace oneapi
+}  // namespace arrayfire

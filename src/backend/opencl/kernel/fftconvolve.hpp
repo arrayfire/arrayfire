@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -84,10 +85,10 @@ void packDataHelper(Param packed, Param sig, Param filter, const int rank,
         options.emplace_back(DefineKeyValue(CONVT, "double"));
     }
 
-    auto packData = common::getKernel(
-        "pack_data", std::array{fftconvolve_pack_cl_src}, targs, options);
-    auto padArray = common::getKernel(
-        "pad_array", std::array{fftconvolve_pack_cl_src}, targs, options);
+    auto packData = common::getKernel("pack_data", {{fftconvolve_pack_cl_src}},
+                                      targs, options);
+    auto padArray = common::getKernel("pad_array", {{fftconvolve_pack_cl_src}},
+                                      targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
@@ -146,9 +147,8 @@ void complexMultiplyHelper(Param packed, Param sig, Param filter,
         options.emplace_back(DefineKeyValue(CONVT, "double"));
     }
 
-    auto cplxMul = common::getKernel("complex_multiply",
-                                     std::array{fftconvolve_multiply_cl_src},
-                                     targs, options);
+    auto cplxMul = common::getKernel(
+        "complex_multiply", {{fftconvolve_multiply_cl_src}}, targs, options);
 
     Param sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
@@ -194,9 +194,8 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
         options.emplace_back(DefineKeyValue(CONVT, "double"));
     }
 
-    auto reorder = common::getKernel("reorder_output",
-                                     std::array{fftconvolve_reorder_cl_src},
-                                     targs, options);
+    auto reorder = common::getKernel(
+        "reorder_output", {{fftconvolve_reorder_cl_src}}, targs, options);
 
     int fftScale = 1;
 
@@ -227,3 +226,4 @@ void reorderOutputHelper(Param out, Param packed, Param sig, Param filter,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

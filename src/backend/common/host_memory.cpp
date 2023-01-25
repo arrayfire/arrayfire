@@ -26,6 +26,7 @@
 #define NOMEMORYSIZE
 #endif
 
+namespace arrayfire {
 namespace common {
 
 #ifdef NOMEMORYSIZE
@@ -109,3 +110,4 @@ size_t getHostMemorySize() {
 
 #endif  // NOMEMORYSIZE
 }  // namespace common
+}  // namespace arrayfire

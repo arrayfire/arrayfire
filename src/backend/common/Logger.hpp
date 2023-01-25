@@ -47,10 +47,12 @@
 /* Other */
 #endif
 
+namespace arrayfire {
 namespace common {
 std::shared_ptr<spdlog::logger> loggerFactory(const std::string& name);
 std::string bytesToString(size_t bytes);
 }  // namespace common
+}  // namespace arrayfire
 
 #ifdef AF_WITH_LOGGING
 #define AF_STR_H(x) #x

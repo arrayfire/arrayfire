@@ -20,6 +20,7 @@
 __constant__ char
     cFilter[MAX_MORPH_FILTER_LEN * MAX_MORPH_FILTER_LEN * sizeof(double)];
 
+namespace arrayfire {
 namespace cuda {
 
 __forceinline__ __device__ int lIdx(int x, int y, int stride1, int stride0) {
@@ -101,7 +102,7 @@ __global__ void morph(Param<T> out, CParam<T> in, int nBBS0, int nBBS1,
 
     const T* d_filt = (const T*)cFilter;
     T acc           = isDilation ? common::Binary<T, af_max_t>::init()
-                       : common::Binary<T, af_min_t>::init();
+                                 : common::Binary<T, af_min_t>::init();
 #pragma unroll
     for (int wj = 0; wj < windLen; ++wj) {
         int joff   = wj * windLen;
@@ -197,7 +198,7 @@ __global__ void morph3D(Param<T> out, CParam<T> in, int nBBS) {
 
     const T* d_filt = (const T*)cFilter;
     T acc           = isDilation ? common::Binary<T, af_max_t>::init()
-                       : common::Binary<T, af_min_t>::init();
+                                 : common::Binary<T, af_min_t>::init();
 #pragma unroll
     for (int wk = 0; wk < windLen; ++wk) {
         int koff   = wk * se_area;
@@ -227,3 +228,4 @@ __global__ void morph3D(Param<T> out, CParam<T> in, int nBBS) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

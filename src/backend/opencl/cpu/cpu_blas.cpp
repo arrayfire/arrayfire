@@ -16,7 +16,7 @@
 #include <math.hpp>
 #include <traits.hpp>
 
-using common::is_complex;
+using arrayfire::common::is_complex;
 
 using std::add_const;
 using std::add_pointer;
@@ -25,6 +25,7 @@ using std::enable_if;
 using std::is_floating_point;
 using std::remove_const;
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 
@@ -246,4 +247,5 @@ INSTANTIATE_GEMM(cdouble)
 
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire
 #endif  // WITH_LINEAR_ALGEBRA

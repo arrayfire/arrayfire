@@ -13,11 +13,15 @@
 #include <err_opencl.hpp>
 #include <hist_graphics.hpp>
 
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
+
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
 void copy_histogram(const Array<T> &data, fg_histogram hist) {
-    ForgeModule &_ = graphics::forgePlugin();
+    ForgeModule &_ = forgePlugin();
     if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = data.get();
@@ -73,3 +77,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace opencl
+}  // namespace arrayfire

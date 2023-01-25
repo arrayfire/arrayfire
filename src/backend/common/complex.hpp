@@ -13,6 +13,7 @@
 
 #include <type_traits>
 
+namespace arrayfire {
 namespace common {
 
 // The value returns true if the type is a complex type. False otherwise
@@ -39,3 +40,4 @@ using if_real =
     typename std::enable_if<is_complex<T>::value == false, TYPE>::type;
 
 }  // namespace common
+}  // namespace arrayfire

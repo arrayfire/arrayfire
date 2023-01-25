@@ -31,29 +31,34 @@ enum class kJITHeuristics {
     MemoryPressure      = 3  /* eval due to memory pressure */
 };
 
+namespace arrayfire {
 namespace common {
 class Node;
-}
+}  // namespace common
+}  // namespace arrayfire
 
 #ifdef AF_CPU
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
 template<typename T>
 void evalMultiple(std::vector<Param<T>> arrays,
                   std::vector<std::shared_ptr<common::Node>> output_nodes_);
-}
+}  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire
 #endif
 
 namespace std {
 template<>
-struct hash<common::Node *> {
+struct hash<arrayfire::common::Node *> {
     /// Calls the getHash function of the Node pointer
-    size_t operator()(common::Node *const n) const noexcept;
+    size_t operator()(arrayfire::common::Node *const n) const noexcept;
 };
 }  // namespace std
 
+namespace arrayfire {
 namespace common {
 class Node;
 struct Node_ids;
@@ -288,8 +293,8 @@ class Node {
 
 #ifdef AF_CPU
     template<typename U>
-    friend void cpu::kernel::evalMultiple(
-        std::vector<cpu::Param<U>> arrays,
+    friend void arrayfire::cpu::kernel::evalMultiple(
+        std::vector<arrayfire::cpu::Param<U>> arrays,
         std::vector<common::Node_ptr> output_nodes_);
 
     virtual void setShape(af::dim4 new_shape) { UNUSED(new_shape); }
@@ -313,3 +318,4 @@ auto isBuffer(const Node &ptr) -> bool;
 auto isScalar(const Node &ptr) -> bool;
 
 }  // namespace common
+}  // namespace arrayfire

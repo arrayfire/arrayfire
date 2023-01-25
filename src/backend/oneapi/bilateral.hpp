@@ -9,8 +9,10 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename inType, typename outType>
 Array<outType> bilateral(const Array<inType> &in, const float &spatialSigma,
                          const float &chromaticSigma);
-}
+}  // namespace oneapi
+}  // namespace arrayfire

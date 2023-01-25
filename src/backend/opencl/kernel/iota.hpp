@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -35,7 +36,7 @@ void iota(Param out, const af::dim4& sdims) {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         getTypeBuildDefinition<T>()};
 
-    auto iota = common::getKernel("iota_kernel", std::array{iota_cl_src},
+    auto iota = common::getKernel("iota_kernel", {{iota_cl_src}},
                                   TemplateArgs(TemplateTypename<T>()), options);
     cl::NDRange local(IOTA_TX, IOTA_TY, 1);
 
@@ -52,3 +53,4 @@ void iota(Param out, const af::dim4& sdims) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

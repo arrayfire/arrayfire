@@ -15,6 +15,7 @@
 #include <queue>
 #include <utility>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -119,3 +120,4 @@ void floodFill(Param<T> out, CParam<T> in, CParam<uint> x, CParam<uint> y,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

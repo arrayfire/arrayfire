@@ -18,6 +18,7 @@
 using af::dim4;
 // nsing cl::Device;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T, typename To, af_match_type dist_type>
@@ -86,3 +87,4 @@ INSTANTIATE(uchar, uint)
 INSTANTIATE(uintl, uint)  // For Hamming
 
 }  // namespace oneapi
+}  // namespace arrayfire

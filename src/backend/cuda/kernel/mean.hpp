@@ -24,6 +24,7 @@
 #include <memory>
 #include <vector>
 
+namespace arrayfire {
 namespace cuda {
 
 __device__ auto operator*(float lhs, __half rhs) -> __half {
@@ -476,16 +477,13 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
         std::vector<T> h_ptr(tmp_elements);
         std::vector<Tw> h_wptr(tmp_elements);
 
-        CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.get(),
-                                   tmp_elements * sizeof(T),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaMemcpyAsync(h_wptr.data(), tmpWt.get(),
-                                   tmp_elements * sizeof(Tw),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(
-            cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(
+            h_ptr.data(), tmpOut.get(), tmp_elements * sizeof(T),
+            cudaMemcpyDeviceToHost, getStream(getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(
+            h_wptr.data(), tmpWt.get(), tmp_elements * sizeof(Tw),
+            cudaMemcpyDeviceToHost, getStream(getActiveDeviceId())));
+        CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId())));
 
         compute_t<T> val     = static_cast<compute_t<T>>(h_ptr[0]);
         compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_wptr[0]);
@@ -500,16 +498,13 @@ T mean_all_weighted(CParam<T> in, CParam<Tw> iwt) {
         std::vector<T> h_ptr(in_elements);
         std::vector<Tw> h_wptr(in_elements);
 
-        CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), in.ptr,
-                                   in_elements * sizeof(T),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaMemcpyAsync(h_wptr.data(), iwt.ptr,
-                                   in_elements * sizeof(Tw),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(
-            cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(
+            h_ptr.data(), in.ptr, in_elements * sizeof(T),
+            cudaMemcpyDeviceToHost, getStream(getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(
+            h_wptr.data(), iwt.ptr, in_elements * sizeof(Tw),
+            cudaMemcpyDeviceToHost, getStream(getActiveDeviceId())));
+        CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId())));
 
         compute_t<T> val     = static_cast<compute_t<T>>(h_ptr[0]);
         compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_wptr[0]);
@@ -561,16 +556,13 @@ To mean_all(CParam<Ti> in) {
         std::vector<To> h_ptr(tmp_elements);
         std::vector<Tw> h_cptr(tmp_elements);
 
-        CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), tmpOut.get(),
-                                   tmp_elements * sizeof(To),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(cudaMemcpyAsync(h_cptr.data(), tmpCt.get(),
-                                   tmp_elements * sizeof(Tw),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(
-            cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(
+            h_ptr.data(), tmpOut.get(), tmp_elements * sizeof(To),
+            cudaMemcpyDeviceToHost, getStream(getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(
+            h_cptr.data(), tmpCt.get(), tmp_elements * sizeof(Tw),
+            cudaMemcpyDeviceToHost, getStream(getActiveDeviceId())));
+        CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId())));
 
         compute_t<To> val    = static_cast<compute_t<To>>(h_ptr[0]);
         compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_cptr[0]);
@@ -584,12 +576,10 @@ To mean_all(CParam<Ti> in) {
     } else {
         std::vector<Ti> h_ptr(in_elements);
 
-        CUDA_CHECK(cudaMemcpyAsync(h_ptr.data(), in.ptr,
-                                   in_elements * sizeof(Ti),
-                                   cudaMemcpyDeviceToHost,
-                                   cuda::getStream(cuda::getActiveDeviceId())));
-        CUDA_CHECK(
-            cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(
+            h_ptr.data(), in.ptr, in_elements * sizeof(Ti),
+            cudaMemcpyDeviceToHost, getStream(getActiveDeviceId())));
+        CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId())));
 
         common::Transform<Ti, compute_t<To>, af_add_t> transform;
         compute_t<Tw> count = static_cast<compute_t<Tw>>(1);
@@ -606,3 +596,4 @@ To mean_all(CParam<Ti> in) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

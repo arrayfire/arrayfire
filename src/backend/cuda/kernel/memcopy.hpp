@@ -20,6 +20,7 @@
 
 #include <algorithm>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -116,33 +117,31 @@ void memcopy(Param<T> out, CParam<T> in, dim_t indims) {
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
     // select the kernel with the necessary loopings
-    const char *kernelName{th.loop0   ? "cuda::memCopyLoop0"
-                           : th.loop2 ? "cuda::memCopyLoop123"
-                           : th.loop1 ? th.loop3 ? "cuda::memCopyLoop13"
-                                                 : "cuda::memCopyLoop1"
-                           : th.loop3 ? "cuda::memCopyLoop3"
-                                      : "cuda::memCopy"};
+    const char *kernelName{th.loop0   ? "arrayfire::cuda::memCopyLoop0"
+                           : th.loop2 ? "arrayfire::cuda::memCopyLoop123"
+                           : th.loop1 ? th.loop3
+                                            ? "arrayfire::cuda::memCopyLoop13"
+                                            : "arrayfire::cuda::memCopyLoop1"
+                           : th.loop3 ? "arrayfire::cuda::memCopyLoop3"
+                                      : "arrayfire::cuda::memCopy"};
 
     // Conversion to cuda base vector types.
     switch (sizeofNewT) {
         case 1: {
-            auto memCopy{common::getKernel(kernelName,
-                                           std::array{memcopy_cuh_src},
+            auto memCopy{common::getKernel(kernelName, {{memcopy_cuh_src}},
                                            TemplateArgs(TemplateArg("char")))};
             memCopy(qArgs, Param<char>((char *)out.ptr, out.dims, out.strides),
                     CParam<char>((const char *)in.ptr, in.dims, in.strides));
         } break;
         case 2: {
-            auto memCopy{common::getKernel(kernelName,
-                                           std::array{memcopy_cuh_src},
+            auto memCopy{common::getKernel(kernelName, {{memcopy_cuh_src}},
                                            TemplateArgs(TemplateArg("short")))};
             memCopy(qArgs,
                     Param<short>((short *)out.ptr, out.dims, out.strides),
                     CParam<short>((const short *)in.ptr, in.dims, in.strides));
         } break;
         case 4: {
-            auto memCopy{common::getKernel(kernelName,
-                                           std::array{memcopy_cuh_src},
+            auto memCopy{common::getKernel(kernelName, {{memcopy_cuh_src}},
                                            TemplateArgs(TemplateArg("float")))};
             memCopy(qArgs,
                     Param<float>((float *)out.ptr, out.dims, out.strides),
@@ -150,7 +149,7 @@ void memcopy(Param<T> out, CParam<T> in, dim_t indims) {
         } break;
         case 8: {
             auto memCopy{
-                common::getKernel(kernelName, std::array{memcopy_cuh_src},
+                common::getKernel(kernelName, {{memcopy_cuh_src}},
                                   TemplateArgs(TemplateArg("float2")))};
             memCopy(
                 qArgs, Param<float2>((float2 *)out.ptr, out.dims, out.strides),
@@ -158,7 +157,7 @@ void memcopy(Param<T> out, CParam<T> in, dim_t indims) {
         } break;
         case 16: {
             auto memCopy{
-                common::getKernel(kernelName, std::array{memcopy_cuh_src},
+                common::getKernel(kernelName, {{memcopy_cuh_src}},
                                   TemplateArgs(TemplateArg("float4")))};
             memCopy(
                 qArgs, Param<float4>((float4 *)out.ptr, out.dims, out.strides),
@@ -194,11 +193,11 @@ void copy(Param<outType> dst, CParam<inType> src, dim_t ondims,
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
     auto copy{common::getKernel(
-        th.loop0                 ? "cuda::scaledCopyLoop0"
-        : (th.loop2 || th.loop3) ? "cuda::scaledCopyLoop123"
-        : th.loop1               ? "cuda::scaledCopyLoop1"
-                                 : "cuda::scaledCopy",
-        std::array{copy_cuh_src},
+        th.loop0                 ? "arrayfire::cuda::scaledCopyLoop0"
+        : (th.loop2 || th.loop3) ? "arrayfire::cuda::scaledCopyLoop123"
+        : th.loop1               ? "arrayfire::cuda::scaledCopyLoop1"
+                                 : "arrayfire::cuda::scaledCopy",
+        {{copy_cuh_src}},
         TemplateArgs(TemplateTypename<inType>(), TemplateTypename<outType>(),
                      TemplateArg(same_dims), TemplateArg(factor != 1.0)))};
 
@@ -208,3 +207,4 @@ void copy(Param<outType> dst, CParam<inType> src, dim_t ondims,
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

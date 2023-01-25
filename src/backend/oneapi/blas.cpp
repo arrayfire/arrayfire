@@ -22,8 +22,9 @@
 #include <complex>
 #include <vector>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace oneapi {
 
 void initBlas() { /*gpu_blas_init();*/
@@ -84,3 +85,4 @@ INSTANTIATE_DOT(cdouble)
 INSTANTIATE_DOT(half)
 
 }  // namespace oneapi
+}  // namespace arrayfire

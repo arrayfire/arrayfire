@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -84,3 +85,4 @@ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in) {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

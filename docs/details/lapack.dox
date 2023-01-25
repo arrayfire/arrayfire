@@ -141,7 +141,7 @@ following code snippet can be used:
 
 \snippet test/svd_dense.cpp ex_svd_reg
 
-When memory is a concern, and \f$A\f$ is dispensable, \ref svdInPlace() can be
+When memory is a concern, and \f$A\f$ is dispensable, \ref af::svdInPlace() can be
 used. However, this in-place version is currently limited to input arrays where
 \f$M \geq N\f$.
 

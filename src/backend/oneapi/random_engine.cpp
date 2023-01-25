@@ -14,8 +14,9 @@
 #include <af/defines.h>
 #include <af/dim4.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace oneapi {
 void initMersenneState(Array<uint> &state, const uintl seed,
                        const Array<uint> &tbl) {
@@ -103,3 +104,4 @@ INSTANTIATE_NORMAL(cfloat)
 INSTANTIATE_NORMAL(half)
 
 }  // namespace oneapi
+}  // namespace arrayfire

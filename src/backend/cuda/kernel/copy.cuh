@@ -14,6 +14,7 @@
 #include <dims_param.hpp>
 #include <types.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -49,15 +50,14 @@ convertType<char, compute_t<common::half>>(char value) {
 }
 
 template<>
-__inline__ __device__ cuda::uchar
-convertType<compute_t<common::half>, cuda::uchar>(
-    compute_t<common::half> value) {
-    return (cuda::uchar)((short)value);
+__inline__ __device__ uchar
+convertType<compute_t<common::half>, uchar>(compute_t<common::half> value) {
+    return (uchar)((short)value);
 }
 
 template<>
 __inline__ __device__ compute_t<common::half>
-convertType<cuda::uchar, compute_t<common::half>>(cuda::uchar value) {
+convertType<uchar, compute_t<common::half>>(uchar value) {
     return compute_t<common::half>(value);
 }
 
@@ -290,3 +290,4 @@ __global__ void scaledCopyLoop123(Param<outType> out, CParam<inType> in,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

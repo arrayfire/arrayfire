@@ -12,6 +12,7 @@
 
 #include <kernel/rotate.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
@@ -63,3 +64,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace oneapi
+}  // namespace arrayfire

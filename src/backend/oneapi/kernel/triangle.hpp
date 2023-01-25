@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -120,3 +121,4 @@ void triangle(Param<T> out, const Param<T> in, bool is_upper,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

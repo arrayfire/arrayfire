@@ -20,6 +20,7 @@
 #include <complex>
 #include <string>
 
+namespace arrayfire {
 namespace common {
 /// This is a CPU based half which need to be converted into floats before they
 /// are used
@@ -33,7 +34,9 @@ struct kernel_type<common::half> {
     using compute = float;
 };
 }  // namespace common
+}  // namespace arrayfire
 
+namespace arrayfire {
 namespace oneapi {
 using cdouble = std::complex<double>;
 using cfloat  = std::complex<float>;
@@ -130,7 +133,7 @@ inline const char *getFullName<cdouble>() {
 #if 0
 template<typename... ARGS>
 AF_CONSTEXPR const char *getTypeBuildDefinition() {
-    using common::half;
+    using arrayfire::common::half;
     using std::any_of;
     using std::array;
     using std::begin;
@@ -161,3 +164,4 @@ AF_CONSTEXPR const char *getTypeBuildDefinition() {
 #endif
 
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T, bool is_upper, bool is_unit_diag>
@@ -59,3 +60,4 @@ __global__ void triangle(Param<T> r, CParam<T> in, const int blocksPerMatX,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

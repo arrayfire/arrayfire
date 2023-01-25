@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -42,7 +43,7 @@ void laset_band(int m, int  n, int k,
     std::array<std::string, 4> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineValue(NB),
-        DefineKeyValue(IS_CPLX, static_cast<int>(af::iscplx<T>())),
+        DefineKeyValue(IS_CPLX, static_cast<int>(iscplx<T>())),
         getTypeBuildDefinition<T>()
     };
 
@@ -68,3 +69,4 @@ void laset_band(int m, int  n, int k,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

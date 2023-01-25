@@ -38,18 +38,16 @@ namespace spdlog {
 class logger;
 }
 
-namespace graphics {
-class ForgeManager;
-}
-
+namespace arrayfire {
 namespace common {
-namespace memory {
+class ForgeManager;
 class MemoryManagerBase;
-}
 }  // namespace common
+}  // namespace arrayfire
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
+namespace arrayfire {
 namespace cuda {
 
 class GraphicsResourceManager;
@@ -132,7 +130,7 @@ void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
 
 void resetMemoryManagerPinned();
 
-graphics::ForgeManager& forgeManager();
+arrayfire::common::ForgeManager& forgeManager();
 
 GraphicsResourceManager& interopManager();
 
@@ -149,3 +147,4 @@ SolveHandle solverDnHandle();
 SparseHandle sparseHandle();
 
 }  // namespace cuda
+}  // namespace arrayfire

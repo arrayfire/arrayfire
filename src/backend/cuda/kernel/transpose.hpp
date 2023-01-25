@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/transpose_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,20 +27,19 @@ template<typename T>
 void transpose(Param<T> out, CParam<T> in, const bool conjugate,
                const bool is32multiple) {
     auto transpose = common::getKernel(
-        "cuda::transpose", std::array{transpose_cuh_src},
+        "arrayfire::cuda::transpose", {{transpose_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(conjugate),
                      TemplateArg(is32multiple)),
-        std::array{DefineValue(TILE_DIM), DefineValue(THREADS_Y)});
+        {{DefineValue(TILE_DIM), DefineValue(THREADS_Y)}});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
     int blk_x = divup(in.dims[0], TILE_DIM);
     int blk_y = divup(in.dims[1], TILE_DIM);
     dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
-    const int maxBlocksY =
-        cuda::getDeviceProp(getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -50,3 +50,4 @@ void transpose(Param<T> out, CParam<T> in, const bool conjugate,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

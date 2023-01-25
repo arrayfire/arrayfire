@@ -16,6 +16,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/flood_fill_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -37,7 +38,7 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
                const T highValue, const af::connectivity nlookup) {
     UNUSED(nlookup);
     if (sharedMemRequiredByFloodFill<T>() >
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).sharedMemPerBlock) {
+        getDeviceProp(getActiveDeviceId()).sharedMemPerBlock) {
         char errMessage[256];
         snprintf(errMessage, sizeof(errMessage),
                  "\nCurrent thread's CUDA device doesn't have sufficient "
@@ -46,14 +47,14 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
     }
 
     auto initSeeds =
-        common::getKernel("cuda::initSeeds", std::array{flood_fill_cuh_src},
+        common::getKernel("arrayfire::cuda::initSeeds", {{flood_fill_cuh_src}},
                           TemplateArgs(TemplateTypename<T>()));
-    auto floodStep = common::getKernel(
-        "cuda::floodStep", std::array{flood_fill_cuh_src},
-        TemplateArgs(TemplateTypename<T>()),
-        std::array{DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+    auto floodStep =
+        common::getKernel("arrayfire::cuda::floodStep", {{flood_fill_cuh_src}},
+                          TemplateArgs(TemplateTypename<T>()),
+                          {{DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
     auto finalizeOutput = common::getKernel(
-        "cuda::finalizeOutput", std::array{flood_fill_cuh_src},
+        "arrayfire::cuda::finalizeOutput", {{flood_fill_cuh_src}},
         TemplateArgs(TemplateTypename<T>()));
 
     EnqueueArgs qArgs(dim3(divup(seedsx.elements(), THREADS)), dim3(THREADS),
@@ -81,3 +82,4 @@ void floodFill(Param<T> out, CParam<T> image, CParam<uint> seedsx,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

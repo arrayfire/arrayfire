@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -165,3 +166,4 @@ void histogram(Param<uint> out, const Param<T> in, int nbins, float minval,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

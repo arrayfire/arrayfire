@@ -24,6 +24,7 @@
 #include <scan.hpp>
 #include <where.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 using namespace common;
@@ -174,3 +175,4 @@ INSTANTIATE(cfloat)
 INSTANTIATE(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire

@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -55,8 +56,7 @@ void morph(Param out, const Param in, const Param mask, bool isDilation) {
     };
     options.emplace_back(getTypeBuildDefinition<T>());
 
-    auto morphOp =
-        common::getKernel("morph", std::array{morph_cl_src}, targs, options);
+    auto morphOp = common::getKernel("morph", {{morph_cl_src}}, targs, options);
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -116,7 +116,7 @@ void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
     options.emplace_back(getTypeBuildDefinition<T>());
 
     auto morphOp =
-        common::getKernel("morph3d", std::array{morph_cl_src}, targs, options);
+        common::getKernel("morph3d", {{morph_cl_src}}, targs, options);
 
     NDRange local(CUBE_X, CUBE_Y, CUBE_Z);
 
@@ -145,3 +145,4 @@ void morph3d(Param out, const Param in, const Param mask, bool isDilation) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

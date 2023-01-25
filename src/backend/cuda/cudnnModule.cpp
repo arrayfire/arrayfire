@@ -7,10 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <cudnnModule.hpp>
+
+#include <common/ArrayFireTypesIO.hpp>
 #include <common/Logger.hpp>
 #include <common/err_common.hpp>
 #include <common/util.hpp>
-#include <cudnnModule.hpp>
 #include <device_manager.hpp>
 #include <utility.hpp>
 
@@ -18,27 +20,28 @@
 #include <string>
 #include <tuple>
 
-using common::int_version_to_string;
-using common::Version;
+using arrayfire::common::fromCudaVersion;
+using arrayfire::common::Version;
 using std::make_tuple;
 using std::string;
 
+namespace arrayfire {
 namespace cuda {
 
 // clang-format off
 // Latest version from each minor releases are enlisted below
 constexpr std::array<common::Version, 11> cudnnVersions = {
-    make_tuple(8, 0,  1),
-    make_tuple(7, 6,  5),
-    make_tuple(7, 5,  1),
-    make_tuple(7, 4,  2),
-    make_tuple(7, 3,  1),
-    make_tuple(7, 2,  1),
-    make_tuple(7, 1,  4),
-    make_tuple(7, 0,  5),
-    make_tuple(6, 0, 21),
-    make_tuple(5, 1, 10),
-    make_tuple(4, 0,  7)
+    Version(8, 0,  1),
+    Version(7, 6,  5),
+    Version(7, 5,  1),
+    Version(7, 4,  2),
+    Version(7, 3,  1),
+    Version(7, 2,  1),
+    Version(7, 1,  4),
+    Version(7, 0,  5),
+    Version(6, 0, 21),
+    Version(5, 1, 10),
+    Version(4, 0,  7)
 };
 // clang-format on
 
@@ -46,22 +49,32 @@ spdlog::logger* cudnnModule::getLogger() const noexcept {
     return module.getLogger();
 }
 
-auto cudnnVersionComponents(size_t version) {
-    size_t major = version / 1000;
-    size_t minor = (version - (major * 1000)) / 100;
-    size_t patch = (version - (major * 1000) - (minor * 100));
-    return make_tuple(major, minor, patch);
+Version cudnnVersionComponents(size_t version) {
+    int major = static_cast<int>(version / 1000);
+    int minor = static_cast<int>((version - (major * 1000)) / 100);
+    int patch = static_cast<int>(version - (major * 1000) - (minor * 100));
+    return {major, minor, patch};
 }
 
-auto cudaRuntimeVersionComponents(size_t version) {
-    auto major = version / 1000;
-    auto minor = (version - (major * 1000)) / 10;
-    return make_tuple(major, minor);
+Version cudaRuntimeVersionComponents(size_t version) {
+    int major = static_cast<int>(version / 1000);
+    int minor = static_cast<int>((version - (major * 1000)) / 10);
+    int patch =
+        static_cast<int>((version - (major * 1000) - (minor * 10)) / 10);
+    return {major, minor, patch};
+}
+
+Version getCudnnVersion(const LibHandle& handle) {
+    std::function<size_t()> fptr(reinterpret_cast<size_t (*)()>(
+        common::getFunctionPointer(handle, "cudnnGetVersion")));
+    size_t v = fptr();
+
+    return cudnnVersionComponents(v);
 }
 
 cudnnModule::cudnnModule()
-    : module({"cudnn"}, {"", "64_7", "64_8", "64_6", "64_5", "64_4"}, {""},
-             cudnnVersions.size(), cudnnVersions.data()) {
+    : module({"cudnn"}, {"", "64_8", "64_7", "64_6", "64_5", "64_4"}, {""},
+             cudnnVersions.size(), cudnnVersions.data(), getCudnnVersion) {
     if (!module.isLoaded()) {
         AF_TRACE(
             "WARNING: Unable to load cuDNN: {}"
@@ -76,39 +89,42 @@ cudnnModule::cudnnModule()
 
     MODULE_FUNCTION_INIT(cudnnGetVersion);
 
-    int rtmajor, rtminor;
-    size_t cudnn_version          = this->cudnnGetVersion();
-    size_t cudnn_rtversion        = 0;
-    std::tie(major, minor, patch) = cudnnVersionComponents(cudnn_version);
+    size_t cudnn_rtversion_val = 0;
 
-    if (cudnn_version >= 6000) {
-        MODULE_FUNCTION_INIT(cudnnGetCudartVersion);
-        cudnn_rtversion = this->cudnnGetCudartVersion();
-    } else {
+    Version cudnn_version = module.getVersion();
+    if (cudnn_version < Version(6)) {
         AF_TRACE(
-            "Warning: This version of cuDNN({}.{}) does not support "
+            "Warning: This version of cuDNN({}) does not support "
             "cudnnGetCudartVersion. No runtime checks performed.",
-            major, minor);
+            cudnn_version);
+    } else {
+        MODULE_FUNCTION_INIT(cudnnGetCudartVersion);
+        cudnn_rtversion_val = this->cudnnGetCudartVersion();
     }
 
-    std::tie(rtmajor, rtminor) = cudaRuntimeVersionComponents(cudnn_rtversion);
+    Version cudnn_rtversion = cudaRuntimeVersionComponents(cudnn_rtversion_val);
 
-    AF_TRACE("cuDNN Version: {}.{}.{} cuDNN CUDA Runtime: {}.{}", major, minor,
-             patch, rtmajor, rtminor);
+    AF_TRACE("cuDNN Version: {} cuDNN CUDA Runtime: {}", cudnn_version,
+             cudnn_rtversion);
+
+    Version compiled_cudnn_version = fromCudaVersion(CUDNN_VERSION);
 
     // Check to see if the version of cuDNN ArrayFire was compiled against
     // is compatible with the version loaded at runtime
-    if (CUDNN_VERSION <= 6000 && cudnn_version > CUDNN_VERSION) {
+    if (compiled_cudnn_version.major() <= 6 &&
+        compiled_cudnn_version < cudnn_version) {
         string error_msg = fmt::format(
             "ArrayFire was compiled with an older version of cuDNN({}.{}) that "
             "does not support the version that was loaded at runtime({}.{}).",
-            CUDNN_MAJOR, CUDNN_MINOR, major, minor);
+            CUDNN_MAJOR, CUDNN_MINOR, cudnn_version.major(),
+            cudnn_version.minor());
         AF_ERROR(error_msg, AF_ERR_NOT_SUPPORTED);
     }
 
-    int afcuda_runtime = 0;
-    cudaRuntimeGetVersion(&afcuda_runtime);
-    if (afcuda_runtime != static_cast<int>(cudnn_rtversion)) {
+    int afcuda_runtime_version = 0;
+    cudaRuntimeGetVersion(&afcuda_runtime_version);
+    Version afcuda_runtime = fromCudaVersion(afcuda_runtime_version);
+    if (afcuda_runtime != cudnn_rtversion) {
         getLogger()->warn(
             "WARNING: ArrayFire CUDA Runtime({}) and cuDNN CUDA "
             "Runtime({}) do not match. For maximum compatibility, make sure "
@@ -116,8 +132,7 @@ cudnnModule::cudnnModule()
             // NOTE: the int version formats from CUDA and cuDNN are different
             // so we are using int_version_to_string for the ArrayFire CUDA
             // runtime
-            int_version_to_string(afcuda_runtime),
-            int_version_to_string(cudnn_rtversion));
+            afcuda_runtime, cudnn_rtversion);
     }
 
     MODULE_FUNCTION_INIT(cudnnConvolutionBackwardData);
@@ -138,14 +153,16 @@ cudnnModule::cudnnModule()
     MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardFilterWorkspaceSize);
     MODULE_FUNCTION_INIT(cudnnFindConvolutionForwardAlgorithm);
     MODULE_FUNCTION_INIT(cudnnFindConvolutionBackwardFilterAlgorithm);
-    if (major < 8) {
+    if (cudnn_version.major() < 8) {
         MODULE_FUNCTION_INIT(cudnnGetConvolutionForwardAlgorithm);
         MODULE_FUNCTION_INIT(cudnnGetConvolutionBackwardFilterAlgorithm);
     }
     MODULE_FUNCTION_INIT(cudnnGetConvolutionNdForwardOutputDim);
     MODULE_FUNCTION_INIT(cudnnSetConvolution2dDescriptor);
     MODULE_FUNCTION_INIT(cudnnSetFilter4dDescriptor);
-    if (major == 4) { MODULE_FUNCTION_INIT(cudnnSetFilter4dDescriptor_v4); }
+    if (cudnn_version.major() == 4) {
+        MODULE_FUNCTION_INIT(cudnnSetFilter4dDescriptor_v4);
+    }
     MODULE_FUNCTION_INIT(cudnnSetStream);
     MODULE_FUNCTION_INIT(cudnnSetTensor4dDescriptor);
 
@@ -165,3 +182,4 @@ cudnnModule& getCudnnPlugin() noexcept {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

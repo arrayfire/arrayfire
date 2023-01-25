@@ -24,8 +24,10 @@
 #include <type_traits>
 
 using af::dim4;
-using common::cast;
-using common::createSpanIndex;
+using arrayfire::common::cast;
+using arrayfire::common::convRange;
+using arrayfire::common::createSpanIndex;
+using arrayfire::common::integralImage;
 using detail::arithOp;
 using detail::Array;
 using detail::createValueArray;
@@ -122,10 +124,10 @@ af_array ccHelper(const Array<T>& img, const Array<uint>& seedx,
     Array<uint> x_     = arithOp<uint, af_add_t>(seedx, radii, seedDims);
     Array<uint> _y     = arithOp<uint, af_sub_t>(seedy, radiip, seedDims);
     Array<uint> y_     = arithOp<uint, af_add_t>(seedy, radii, seedDims);
-    Array<CT> in       = common::convRange<CT, T>(img, CT(1), CT(2));
+    Array<CT> in       = convRange<CT, T>(img, CT(1), CT(2));
     Array<CT> in_2     = arithOp<CT, af_mul_t>(in, in, inDims);
-    Array<CT> I1       = common::integralImage<CT>(in);
-    Array<CT> I2       = common::integralImage<CT>(in_2);
+    Array<CT> I1       = integralImage<CT>(in);
+    Array<CT> I2       = integralImage<CT>(in_2);
     Array<CT> S1       = sum(I1, _x, x_, _y, y_);
     Array<CT> S2       = sum(I2, _x, x_, _y, y_);
     CT totSum          = getScalar<CT>(reduce_all<af_add_t, CT, CT>(S1));

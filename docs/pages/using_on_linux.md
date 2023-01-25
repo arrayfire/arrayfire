@@ -8,7 +8,7 @@ requirements are that you include the ArrayFire header directories and link with
 the ArrayFire library you intend to use i.e. CUDA, OpenCL, CPU, or Unified
 backends.
 
-## The big picture  {#big-picture}
+## The big picture  {#big-picture-linux}
 
 On Linux, we recommend installing ArrayFire to `/opt/arrayfire` directory. The
 installer will populate files in the following sub-directories:
@@ -57,7 +57,7 @@ apt install build-essential cmake cmake-curses-gui
 ## CMake
 
 We recommend that the CMake build system be used to create ArrayFire projects.
-As [discussed above](#big-picture), ArrayFire ships with a series of CMake
+As [discussed above](#big-picture-linux), ArrayFire ships with a series of CMake
 scripts to make finding and using our library easy.
 
 First create a file called `CMakeLists.txt` in your project directory:

@@ -51,8 +51,19 @@ class Clamp : public ::testing::TestWithParam<clamp_params> {
    public:
     void SetUp() {
         clamp_params params = GetParam();
-        if (noDoubleTests(params.in_type_)) return;
-        if (noHalfTests(params.in_type_)) return;
+        SUPPORTED_TYPE_CHECK(double);
+        if (noDoubleTests(params.in_type_))
+            GTEST_SKIP() << "Double not supported on this device";
+        if (noHalfTests(params.in_type_))
+            GTEST_SKIP() << "Half not supported on this device";
+        if (noDoubleTests(params.hi_type_))
+            GTEST_SKIP() << "Double not supported on this device";
+        if (noHalfTests(params.hi_type_))
+            GTEST_SKIP() << "Half not supported on this device";
+        if (noDoubleTests(params.lo_type_))
+            GTEST_SKIP() << "Double not supported on this device";
+        if (noHalfTests(params.lo_type_))
+            GTEST_SKIP() << "Half not supported on this device";
 
         in_ = randu(params.size_, params.in_type_);
         lo_ = randu(params.size_, params.lo_type_) / T(10);
@@ -138,9 +149,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(ClampFloatingPoint, Basic) {
     clamp_params params = GetParam();
-    if (noDoubleTests(params.in_type_)) return;
-    if (noHalfTests(params.in_type_)) return;
-    array out = clamp(in_, lo_, hi_);
+    array out           = clamp(in_, lo_, hi_);
     ASSERT_ARRAYS_NEAR(gold_, out, 1e-5);
 }
 

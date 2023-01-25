@@ -16,6 +16,7 @@
 #include <sort.hpp>
 #include <stdexcept>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> sort(const Array<T> &in, const unsigned dim, bool isAscending) {
@@ -64,3 +65,4 @@ INSTANTIATE(intl)
 INSTANTIATE(uintl)
 
 }  // namespace oneapi
+}  // namespace arrayfire

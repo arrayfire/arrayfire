@@ -35,6 +35,16 @@
 #include <string>
 
 using af::dim4;
+using arrayfire::AFFI_GRAY;
+using arrayfire::AFFI_RGB;
+using arrayfire::AFFI_RGBA;
+using arrayfire::bitmap_ptr;
+using arrayfire::channel_split;
+using arrayfire::FI_CHANNELS;
+using arrayfire::FreeImage_Module;
+using arrayfire::FreeImageErrorHandler;
+using arrayfire::getFreeImagePlugin;
+using arrayfire::make_bitmap_ptr;
 using detail::pinnedAlloc;
 using detail::pinnedFree;
 using detail::uchar;
@@ -42,6 +52,8 @@ using detail::uint;
 using detail::ushort;
 using std::string;
 using std::swap;
+
+namespace arrayfire {
 
 template<typename T, FI_CHANNELS fi_color, FI_CHANNELS fo_color>
 static af_err readImage(af_array* rImage, const uchar* pSrcLine,
@@ -213,11 +225,14 @@ static af_err readImage(af_array* rImage, const uchar* pSrcLine,
     return err;
 }
 
+}  // namespace arrayfire
+
 ////////////////////////////////////////////////////////////////////////////////
 // File IO
 ////////////////////////////////////////////////////////////////////////////////
 // Load image from disk.
 af_err af_load_image(af_array* out, const char* filename, const bool isColor) {
+    using arrayfire::readImage;
     try {
         ARG_ASSERT(1, filename != NULL);
 
@@ -707,6 +722,7 @@ af_err af_save_image(const char* filename, const af_array in_) {
 ////////////////////////////////////////////////////////////////////////////////
 /// Load image from memory.
 af_err af_load_image_memory(af_array* out, const void* ptr) {
+    using arrayfire::readImage;
     try {
         ARG_ASSERT(1, ptr != NULL);
 

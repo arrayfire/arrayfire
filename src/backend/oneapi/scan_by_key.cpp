@@ -16,6 +16,7 @@
 // #include <kernel/scan_dim_by_key.hpp>
 // #include <kernel/scan_first_by_key.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<af_op_t op, typename Ti, typename Tk, typename To>
 Array<To> scan(const Array<Tk>& key, const Array<Ti>& in, const int dim,
@@ -64,3 +65,4 @@ INSTANTIATE_SCAN_BY_KEY_OP(af_mul_t)
 INSTANTIATE_SCAN_BY_KEY_OP(af_min_t)
 INSTANTIATE_SCAN_BY_KEY_OP(af_max_t)
 }  // namespace oneapi
+}  // namespace arrayfire

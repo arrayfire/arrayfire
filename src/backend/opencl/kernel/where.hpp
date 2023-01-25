@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -41,12 +42,12 @@ static void get_out_idx(cl::Buffer *out_data, Param &otmp, Param &rtmp,
     vector<string> compileOpts = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
         DefineKeyValue(ZERO, toNumStr(scalar<T>(0))),
-        DefineKeyValue(CPLX, af::iscplx<T>()),
+        DefineKeyValue(CPLX, iscplx<T>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto getIdx = common::getKernel("get_out_idx", std::array{where_cl_src},
-                                    tmpltArgs, compileOpts);
+    auto getIdx = common::getKernel("get_out_idx", {{where_cl_src}}, tmpltArgs,
+                                    compileOpts);
 
     NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
     NDRange global(local[0] * groups_x * in.info.dims[2],
@@ -132,3 +133,4 @@ static void where(Param &out, Param &in) {
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

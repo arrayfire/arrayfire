@@ -30,6 +30,7 @@
 #include <cpu/cpu_sparse_blas.hpp>
 #endif  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace opencl {
 
 using namespace common;
@@ -96,3 +97,4 @@ INSTANTIATE_SPARSE(cfloat)
 INSTANTIATE_SPARSE(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire

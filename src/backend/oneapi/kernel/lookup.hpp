@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -124,3 +125,4 @@ void lookup(Param<in_t> out, const Param<in_t> in, const Param<idx_t> indices,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -12,6 +12,7 @@
 
 using af::features;
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -20,4 +21,5 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const bool non_max, const float feature_ratio,
               const unsigned edge);
 
-}
+}  // namespace opencl
+}  // namespace arrayfire

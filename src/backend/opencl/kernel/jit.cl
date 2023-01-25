@@ -107,12 +107,19 @@ float2 __cdivf(float2 lhs, float2 rhs) {
 #define __rem(lhs, rhs) ((lhs) % (rhs))
 #define __mod(lhs, rhs) ((lhs) % (rhs))
 
-#define __pow(lhs, rhs) \
+#define __pow(lhs, rhs)                                                 \
     convert_int_rte(pow(convert_float_rte(lhs), convert_float_rte(rhs)))
+#ifdef USE_DOUBLE
 #define __powll(lhs, rhs) \
     convert_long_rte(pow(convert_double_rte(lhs), convert_double_rte(rhs)))
 #define __powul(lhs, rhs) \
     convert_ulong_rte(pow(convert_double_rte(lhs), convert_double_rte(rhs)))
+#else
+#define __powll(lhs, rhs) \
+    convert_long_rte(pow(convert_float_rte(lhs), convert_float_rte(rhs)))
+#define __powul(lhs, rhs) \
+    convert_ulong_rte(pow(convert_float_rte(lhs), convert_float_rte(rhs)))
+#endif
 
 #ifdef USE_DOUBLE
 #define __powui(lhs, rhs) \

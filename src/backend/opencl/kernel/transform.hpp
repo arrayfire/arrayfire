@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -79,9 +80,9 @@ void transform(Param out, const Param in, const Param tf, bool isInverse,
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
     addInterpEnumOptions(compileOpts);
 
-    auto transform = common::getKernel(
-        "transformKernel", std::array{interp_cl_src, transform_cl_src},
-        tmpltArgs, compileOpts);
+    auto transform = common::getKernel("transformKernel",
+                                       {{interp_cl_src, transform_cl_src}},
+                                       tmpltArgs, compileOpts);
 
     const int nImg2 = in.info.dims[2];
     const int nImg3 = in.info.dims[3];
@@ -109,3 +110,4 @@ void transform(Param out, const Param in, const Param tf, bool isInverse,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

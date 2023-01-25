@@ -11,6 +11,7 @@
 #include <backend.hpp>
 #include <ostream>
 
+namespace arrayfire {
 namespace oneapi {
 static std::ostream& operator<<(std::ostream& out, const cfloat& var) {
     out << "(" << std::real(var) << "," << std::imag(var) << ")";
@@ -22,3 +23,4 @@ static std::ostream& operator<<(std::ostream& out, const cdouble& var) {
     return out;
 }
 }  // namespace oneapi
+}  // namespace arrayfire

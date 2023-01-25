@@ -17,6 +17,9 @@
 #include <utility>
 #include <vector>
 
+namespace arrayfire {
+namespace common {
+
 // default to f32(float) type
 template<typename T>
 fg_dtype getGLType();
@@ -25,15 +28,14 @@ fg_dtype getGLType();
 // Returns 1 if an OpenGL error occurred, 0 otherwise.
 GLenum glErrorCheck(const char* msg, const char* file, int line);
 
-#define CheckGL(msg) glErrorCheck(msg, __AF_FILENAME__, __LINE__)
+#define CheckGL(msg) \
+    arrayfire::common::glErrorCheck(msg, __AF_FILENAME__, __LINE__)
 
 fg_marker_type getFGMarker(const af_marker_type af_marker);
 
 void makeContextCurrent(fg_window window);
 
 double step_round(const double in, const bool dir);
-
-namespace graphics {
 
 /// \brief The singleton manager class for Forge resources
 ///
@@ -59,7 +61,7 @@ class ForgeManager {
     ForgeManager& operator=(ForgeManager&&)      = delete;
 
     /// \brief Module used to invoke forge API calls
-    ForgeModule& plugin();
+    common::ForgeModule& plugin();
 
     /// \brief The main window with which all other windows share GL context
     fg_window getMainWindow();
@@ -294,7 +296,7 @@ class ForgeManager {
     using SurfaceMapIterator   = std::map<ChartKey, SurfacePtr>::iterator;
     using VecFieldMapIterator  = std::map<ChartKey, VectorFieldPtr>::iterator;
 
-    std::unique_ptr<ForgeModule> mPlugin;
+    std::unique_ptr<common::ForgeModule> mPlugin;
     std::unique_ptr<Window, Window::Deleter> mMainWindow;
 
     std::map<fg_window, ChartList> mChartMap;
@@ -307,4 +309,5 @@ class ForgeManager {
     std::map<fg_chart, bool> mChartAxesOverrideMap;
 };
 
-}  // namespace graphics
+}  // namespace common
+}  // namespace arrayfire

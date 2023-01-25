@@ -36,6 +36,7 @@
 
 namespace compute = boost::compute;
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -59,14 +60,14 @@ void reduceBlocksByKeyDim(cl::Buffer *reduced_block_sizes, Param keys_out,
         DefineKeyValue(DIM, dim),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+        DefineKeyValue(CPLX, iscplx<Ti>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    auto reduceBlocksByKeyDim = common::getKernel(
-        "reduce_blocks_by_key_dim",
-        std::array{ops_cl_src, reduce_blocks_by_key_dim_cl_src}, tmpltArgs,
-        compileOpts);
+    auto reduceBlocksByKeyDim =
+        common::getKernel("reduce_blocks_by_key_dim",
+                          {{ops_cl_src, reduce_blocks_by_key_dim_cl_src}},
+                          tmpltArgs, compileOpts);
     int numBlocks = divup(n, threads_x);
 
     cl::NDRange local(threads_x);
@@ -102,14 +103,14 @@ void reduceBlocksByKey(cl::Buffer *reduced_block_sizes, Param keys_out,
         DefineKeyValue(DIMX, threads_x),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+        DefineKeyValue(CPLX, iscplx<Ti>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    auto reduceBlocksByKeyFirst = common::getKernel(
-        "reduce_blocks_by_key_first",
-        std::array{ops_cl_src, reduce_blocks_by_key_first_cl_src}, tmpltArgs,
-        compileOpts);
+    auto reduceBlocksByKeyFirst =
+        common::getKernel("reduce_blocks_by_key_first",
+                          {{ops_cl_src, reduce_blocks_by_key_first_cl_src}},
+                          tmpltArgs, compileOpts);
     int numBlocks = divup(n, threads_x);
 
     cl::NDRange local(threads_x);
@@ -143,14 +144,13 @@ void finalBoundaryReduce(cl::Buffer *reduced_block_sizes, Param keys_out,
         DefineKeyValue(DIMX, threads_x),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<To>()),
+        DefineKeyValue(CPLX, iscplx<To>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    auto finalBoundaryReduce =
-        common::getKernel("final_boundary_reduce",
-                          std::array{ops_cl_src, reduce_by_key_boundary_cl_src},
-                          tmpltArgs, compileOpts);
+    auto finalBoundaryReduce = common::getKernel(
+        "final_boundary_reduce", {{ops_cl_src, reduce_by_key_boundary_cl_src}},
+        tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks);
@@ -182,14 +182,14 @@ void finalBoundaryReduceDim(cl::Buffer *reduced_block_sizes, Param keys_out,
         DefineKeyValue(DIM, dim),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<To>()),
+        DefineKeyValue(CPLX, iscplx<To>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
-    auto finalBoundaryReduceDim = common::getKernel(
-        "final_boundary_reduce_dim",
-        std::array{ops_cl_src, reduce_by_key_boundary_dim_cl_src}, tmpltArgs,
-        compileOpts);
+    auto finalBoundaryReduceDim =
+        common::getKernel("final_boundary_reduce_dim",
+                          {{ops_cl_src, reduce_by_key_boundary_dim_cl_src}},
+                          tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks,
@@ -218,13 +218,13 @@ void compact(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
         DefineKeyValue(To, dtype_traits<To>::getName()),
         DefineKeyValue(T, "To"),
         DefineKeyValue(DIMX, threads_x),
-        DefineKeyValue(CPLX, af::iscplx<To>()),
+        DefineKeyValue(CPLX, iscplx<To>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
     auto compact = common::getKernel(
-        "compact", std::array{ops_cl_src, reduce_by_key_compact_cl_src},
-        tmpltArgs, compileOpts);
+        "compact", {{ops_cl_src, reduce_by_key_compact_cl_src}}, tmpltArgs,
+        compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks, vals_out.info.dims[1],
@@ -253,12 +253,12 @@ void compactDim(cl::Buffer *reduced_block_sizes, Param keys_out, Param vals_out,
         DefineKeyValue(T, "To"),
         DefineKeyValue(DIMX, threads_x),
         DefineKeyValue(DIM, dim),
-        DefineKeyValue(CPLX, af::iscplx<To>()),
+        DefineKeyValue(CPLX, iscplx<To>()),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<To>());
 
     auto compactDim = common::getKernel(
-        "compact_dim", std::array{ops_cl_src, reduce_by_key_compact_dim_cl_src},
+        "compact_dim", {{ops_cl_src, reduce_by_key_compact_dim_cl_src}},
         tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
@@ -287,10 +287,10 @@ void testNeedsReduction(cl::Buffer needs_reduction, cl::Buffer needs_boundary,
         DefineKeyValue(DIMX, threads_x),
     };
 
-    auto testIfNeedsReduction = common::getKernel(
-        "test_needs_reduction",
-        std::array{ops_cl_src, reduce_by_key_needs_reduction_cl_src}, tmpltArgs,
-        compileOpts);
+    auto testIfNeedsReduction =
+        common::getKernel("test_needs_reduction",
+                          {{ops_cl_src, reduce_by_key_needs_reduction_cl_src}},
+                          tmpltArgs, compileOpts);
 
     cl::NDRange local(threads_x);
     cl::NDRange global(threads_x * numBlocks);
@@ -572,3 +572,4 @@ void reduceByKey(Array<Tk> &keys_out, Array<To> &vals_out,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

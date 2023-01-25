@@ -32,8 +32,8 @@
 
 using af::dim4;
 using af::dtype_traits;
-using common::cast;
-using common::modDims;
+using arrayfire::common::cast;
+using arrayfire::common::modDims;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;

@@ -18,6 +18,7 @@
 #include <memory.hpp>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 // cusolverStatus_t cusolverDn<>geqrf_bufferSize(
@@ -183,3 +184,4 @@ INSTANTIATE_QR(cfloat)
 INSTANTIATE_QR(double)
 INSTANTIATE_QR(cdouble)
 }  // namespace cuda
+}  // namespace arrayfire

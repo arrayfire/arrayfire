@@ -33,6 +33,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -60,8 +61,8 @@ void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
 
     // Fetch the Kernel functor, go to common/kernel_cache.hpp
     // to find details of this function
-    auto exOp = common::getKernel("example", std::array{example_cl_src}, targs,
-                                  options);
+    auto exOp =
+        common::getKernel("example", {{example_cl_src}}, targs, options);
 
     // configure work group parameters
     cl::NDRange local(THREADS_X, THREADS_Y);
@@ -82,3 +83,4 @@ void exampleFunc(Param c, const Param a, const Param b, const af_someenum_t p) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

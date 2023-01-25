@@ -12,6 +12,7 @@
 #include <kernel/transform.hpp>
 #include <err_oneapi.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -67,3 +68,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -113,9 +114,8 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto convolve =
-        common::getKernel("convolve", std::array{ops_cl_src, convolve_cl_src},
-                          tmpltArgs, compileOpts);
+    auto convolve = common::getKernel(
+        "convolve", {{ops_cl_src, convolve_cl_src}}, tmpltArgs, compileOpts);
 
     convolve(EnqueueArgs(getQueue(), param.global, param.local), *out.data,
              out.info, *signal.data, signal.info, cl::Local(param.loc_size),
@@ -136,3 +136,4 @@ void conv3(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt,
            const bool expand);
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

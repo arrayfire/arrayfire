@@ -210,8 +210,10 @@ af_err set_global_error_string(const std::string& msg,
 static const int MAX_ERR_SIZE = 1024;
 std::string& get_global_error_string() noexcept;
 
+namespace arrayfire {
 namespace common {
 
 bool& is_stacktrace_enabled() noexcept;
 
-}  // namespace common
+}
+}  // namespace arrayfire

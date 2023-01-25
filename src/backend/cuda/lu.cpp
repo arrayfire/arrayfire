@@ -18,6 +18,7 @@
 
 #include <algorithm>
 
+namespace arrayfire {
 namespace cuda {
 
 // cusolverStatus_t CUDENSEAPI cusolverDn<>getrf_bufferSize(
@@ -147,3 +148,4 @@ INSTANTIATE_LU(cfloat)
 INSTANTIATE_LU(double)
 INSTANTIATE_LU(cdouble)
 }  // namespace cuda
+}  // namespace arrayfire

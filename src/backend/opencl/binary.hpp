@@ -10,6 +10,7 @@
 #pragma once
 #include <optypes.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename To, typename Ti, af_op_t op>
@@ -125,3 +126,4 @@ struct BinOp<To, Ti, af_hypot_t> {
 };
 
 }  // namespace opencl
+}  // namespace arrayfire

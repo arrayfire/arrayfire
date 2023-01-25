@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -228,3 +229,4 @@ void meanshift(Param<T> out, const Param<T> in, const float spatialSigma,
 }
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

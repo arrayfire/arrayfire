@@ -12,6 +12,7 @@
 #include <common/Binary.hpp>
 #include <algorithm>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -104,3 +105,4 @@ struct ireduce_dim<op, T, 0> {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

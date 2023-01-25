@@ -7,12 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <device_manager.hpp>
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
 
 #include <GraphicsResourceManager.hpp>
 #include <build_version.hpp>
+#include <common/ArrayFireTypesIO.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/MemoryManagerBase.hpp>
@@ -21,7 +24,6 @@
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
 #include <cublas_v2.h>  // needed for af/cuda.h
-#include <device_manager.hpp>
 #include <driver.h>
 #include <err_cuda.hpp>
 #include <memory.hpp>
@@ -46,8 +48,8 @@
 #include <thread>
 #include <utility>
 
-using common::getEnvVar;
-using common::int_version_to_string;
+using arrayfire::common::fromCudaVersion;
+using arrayfire::common::getEnvVar;
 using std::begin;
 using std::end;
 using std::find;
@@ -57,6 +59,7 @@ using std::pair;
 using std::string;
 using std::stringstream;
 
+namespace arrayfire {
 namespace cuda {
 
 struct cuNVRTCcompute {
@@ -98,6 +101,7 @@ static const int jetsonComputeCapabilities[] = {
 
 // clang-format off
 static const cuNVRTCcompute Toolkit2MaxCompute[] = {
+    {12000, 9, 0, 0},
     {11080, 9, 0, 0},
     {11070, 8, 7, 0},
     {11060, 8, 6, 0},
@@ -134,6 +138,7 @@ struct ComputeCapabilityToStreamingProcessors {
 // clang-format off
 static const ToolkitDriverVersions
     CudaToDriverVersion[] = {
+        {12000, 525.60f, 527.41f},
         {11080, 450.80f, 452.39f},
         {11070, 450.80f, 452.39f},
         {11060, 450.80f, 452.39f},
@@ -156,7 +161,7 @@ static const ToolkitDriverVersions
 
 // Vector of minimum supported compute versions for CUDA toolkit (i+1).*
 // where i is the index of the vector
-static const std::array<int, 11> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3}};
+static const std::array<int, 12> minSV{{1, 1, 1, 1, 1, 1, 2, 2, 3, 3, 3, 5}};
 
 static ComputeCapabilityToStreamingProcessors gpus[] = {
     {0x10, 8},   {0x11, 8},   {0x12, 8},   {0x13, 8},   {0x20, 32},
@@ -201,7 +206,7 @@ bool checkDeviceWithRuntime(int runtime, pair<int, int> compute) {
                 "create an issue or a pull request on the ArrayFire repository "
                 "to update the Toolkit2MaxCompute array with this version of "
                 "the CUDA Runtime. Continuing.",
-                int_version_to_string(runtime));
+                fromCudaVersion(runtime));
         return true;
     }
 
@@ -263,7 +268,7 @@ void checkAndSetDevMaxCompute(pair<int, int> &computeCapability) {
                     "Please create an issue or a pull request on the ArrayFire "
                     "repository to update the Toolkit2MaxCompute array with "
                     "this version of the CUDA Runtime.",
-                    int_version_to_string(rtCudaVer), originalCompute.first,
+                    fromCudaVersion(rtCudaVer), originalCompute.first,
                     originalCompute.second, computeCapability.first,
                     computeCapability.second, computeCapability.first,
                     computeCapability.second);
@@ -380,7 +385,7 @@ void DeviceManager::setMemoryManager(
     memManager = std::move(newMgr);
     // Set the backend memory manager for this new manager to register native
     // functions correctly.
-    std::unique_ptr<cuda::Allocator> deviceMemoryManager(new cuda::Allocator());
+    std::unique_ptr<cuda::Allocator> deviceMemoryManager(new Allocator());
     memManager->setAllocator(std::move(deviceMemoryManager));
     memManager->initialize();
 }
@@ -407,7 +412,7 @@ void DeviceManager::setMemoryManagerPinned(
     // functions correctly.
     pinnedMemManager = std::move(newMgr);
     std::unique_ptr<cuda::AllocatorPinned> deviceMemoryManager(
-        new cuda::AllocatorPinned());
+        new AllocatorPinned());
     pinnedMemManager->setAllocator(std::move(deviceMemoryManager));
     pinnedMemManager->initialize();
 }
@@ -450,14 +455,15 @@ void debugRuntimeCheck(spdlog::logger *logger, int runtime_version,
     // display a message in the trace. Do not throw an error unless this is
     // a debug build
     if (runtime_it == end(CudaToDriverVersion)) {
-        char buf[256];
-        char err_msg[] =
-            "CUDA runtime version(%s) not recognized. Please create an issue "
+        constexpr size_t buf_size = 256;
+        char buf[buf_size];
+        const char *err_msg =
+            "CUDA runtime version({}) not recognized. Please create an issue "
             "or a pull request on the ArrayFire repository to update the "
             "CudaToDriverVersion variable with this version of the CUDA "
             "runtime.\n";
-        snprintf(buf, 256, err_msg,
-                 int_version_to_string(runtime_version).c_str());
+        fmt::format_to_n(buf, buf_size, err_msg,
+                         fromCudaVersion(runtime_version));
         AF_TRACE("{}", buf);
 #ifndef NDEBUG
         AF_ERROR(buf, AF_ERR_RUNTIME);
@@ -470,7 +476,7 @@ void debugRuntimeCheck(spdlog::logger *logger, int runtime_version,
             "array. Please create an issue or a pull request on the ArrayFire "
             "repository to update the CudaToDriverVersion variable with this "
             "version of the CUDA runtime.\n",
-            int_version_to_string(driver_version).c_str());
+            fromCudaVersion(driver_version));
     }
 }
 
@@ -485,17 +491,17 @@ void DeviceManager::checkCudaVsDriverVersion() {
     CUDA_CHECK(cudaRuntimeGetVersion(&runtime));
 
     AF_TRACE("CUDA Driver supports up to CUDA {} ArrayFire CUDA Runtime {}",
-             int_version_to_string(driver), int_version_to_string(runtime));
+             fromCudaVersion(driver), fromCudaVersion(runtime));
 
     debugRuntimeCheck(getLogger(), runtime, driver);
 
     if (runtime > driver) {
         string msg =
-            "ArrayFire was built with CUDA %s which requires GPU driver "
-            "version %.2f or later. Please download and install the latest "
+            "ArrayFire was built with CUDA {} which requires GPU driver "
+            "version {} or later. Please download and install the latest "
             "drivers from https://www.nvidia.com/drivers for your GPU. "
             "Alternatively, you could rebuild ArrayFire with CUDA Toolkit "
-            "version %s to use the current drivers.";
+            "version {} to use the current drivers.";
 
         auto runtime_it =
             find_if(begin(CudaToDriverVersion), end(CudaToDriverVersion),
@@ -503,18 +509,19 @@ void DeviceManager::checkCudaVsDriverVersion() {
                         return runtime == ver.version;
                     });
 
+        constexpr size_t buf_size = 1024;
         // If the runtime version is not part of the CudaToDriverVersion
         // array, display a message in the trace. Do not throw an error
         // unless this is a debug build
         if (runtime_it == end(CudaToDriverVersion)) {
-            char buf[1024];
+            char buf[buf_size];
             char err_msg[] =
                 "CUDA runtime version(%s) not recognized. Please create an "
                 "issue or a pull request on the ArrayFire repository to "
                 "update the CudaToDriverVersion variable with this "
                 "version of the CUDA Toolkit.";
-            snprintf(buf, 1024, err_msg,
-                     int_version_to_string(runtime).c_str());
+            snprintf(buf, buf_size, err_msg,
+                     fmt::format("{}", fromCudaVersion(runtime)).c_str());
             AF_TRACE("{}", buf);
             return;
         }
@@ -526,9 +533,9 @@ void DeviceManager::checkCudaVsDriverVersion() {
             runtime_it->unix_min_version;
 #endif
 
-        char buf[1024];
-        snprintf(buf, 1024, msg.c_str(), int_version_to_string(runtime).c_str(),
-                 minimumDriverVersion, int_version_to_string(driver).c_str());
+        char buf[buf_size];
+        fmt::format_to_n(buf, buf_size, msg, fromCudaVersion(runtime),
+                         minimumDriverVersion, fromCudaVersion(driver));
 
         AF_ERROR(buf, AF_ERR_DRIVER);
     }
@@ -547,7 +554,7 @@ DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , cuDevices(0)
     , nDevices(0)
-    , fgMngr(new graphics::ForgeManager()) {
+    , fgMngr(new arrayfire::common::ForgeManager()) {
     try {
         checkCudaVsDriverVersion();
 
@@ -726,3 +733,4 @@ int DeviceManager::setActiveDevice(int device, int nId) {
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

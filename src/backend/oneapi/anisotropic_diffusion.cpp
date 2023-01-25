@@ -13,6 +13,7 @@
 #include <err_oneapi.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
@@ -29,3 +30,4 @@ void anisotropicDiffusion(Array<T>& inout, const float dt, const float mct,
 INSTANTIATE(double)
 INSTANTIATE(float)
 }  // namespace oneapi
+}  // namespace arrayfire

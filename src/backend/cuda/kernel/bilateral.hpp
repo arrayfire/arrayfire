@@ -13,6 +13,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/bilateral_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -23,9 +24,9 @@ template<typename inType, typename outType>
 void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
                float c_sigma) {
     auto bilateral = common::getKernel(
-        "cuda::bilateral", std::array{bilateral_cuh_src},
+        "arrayfire::cuda::bilateral", {{bilateral_cuh_src}},
         TemplateArgs(TemplateTypename<inType>(), TemplateTypename<outType>()),
-        std::array{DefineValue(THREADS_X), DefineValue(THREADS_Y)});
+        {{DefineValue(THREADS_X), DefineValue(THREADS_Y)}});
 
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
@@ -41,8 +42,7 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
     size_t total_shrd_size =
         sizeof(outType) * (num_shrd_elems + num_gauss_elems);
 
-    size_t MAX_SHRD_SIZE =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).sharedMemPerBlock;
+    size_t MAX_SHRD_SIZE = getDeviceProp(getActiveDeviceId()).sharedMemPerBlock;
     if (total_shrd_size > MAX_SHRD_SIZE) {
         char errMessage[256];
         snprintf(errMessage, sizeof(errMessage),
@@ -60,3 +60,4 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

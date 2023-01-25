@@ -30,6 +30,7 @@ static const int TABLE_SIZE = 16;
 static const int MAX_BLOCKS = 32;
 static const int STATE_SIZE = (256 * 3);
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 static const uint THREADS = 256;
@@ -162,11 +163,11 @@ void initMersenneState(cl::Buffer state, cl::Buffer table, const uintl &seed) {
     cl::NDRange local(THREADS_PER_GROUP, 1);
     cl::NDRange global(local[0] * MAX_BLOCKS, 1);
 
-    auto initOp =
-        common::getKernel("mersenneInitState",
-                          std::array{random_engine_mersenne_init_cl_src}, {});
+    auto initOp = common::getKernel("mersenneInitState",
+                                    {{random_engine_mersenne_init_cl_src}}, {});
     initOp(cl::EnqueueArgs(getQueue(), global, local), state, table, seed);
     CL_DEBUG_FINISH(getQueue());
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

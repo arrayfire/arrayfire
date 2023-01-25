@@ -9,6 +9,7 @@
 
 #include <kernel/convolve/conv_common.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -66,3 +67,4 @@ INSTANTIATE(intl, float)
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

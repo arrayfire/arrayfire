@@ -18,12 +18,16 @@
 #include <image.hpp>
 
 using af::dim4;
+using arrayfire::common::ForgeManager;
+using arrayfire::common::ForgeModule;
+using arrayfire::common::forgePlugin;
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
 void copy_image(const Array<T> &in, fg_image image) {
-    auto stream = cuda::getActiveStream();
+    auto stream = getActiveStream();
     if (DeviceManager::checkGraphicsInteropCapability()) {
         auto res = interopManager().getImageResources(image);
 
@@ -39,7 +43,7 @@ void copy_image(const Array<T> &in, fg_image image) {
         POST_LAUNCH_CHECK();
         CheckGL("After cuda resource copy");
     } else {
-        ForgeModule &_ = graphics::forgePlugin();
+        ForgeModule &_ = common::forgePlugin();
         CheckGL("Begin CUDA fallback-resource copy");
         unsigned data_size = 0, buffer = 0;
         FG_CHECK(_.fg_get_image_size(&data_size, image));
@@ -72,3 +76,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(short)
 
 }  // namespace cuda
+}  // namespace arrayfire

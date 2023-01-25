@@ -18,6 +18,7 @@
 #include <magma/magma.h>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 Array<int> convertPivot(int *ipiv, int in_sz, int out_sz) {
@@ -91,9 +92,11 @@ INSTANTIATE_LU(double)
 INSTANTIATE_LU(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -121,5 +124,6 @@ INSTANTIATE_LU(double)
 INSTANTIATE_LU(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA

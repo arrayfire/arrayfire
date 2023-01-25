@@ -9,6 +9,7 @@
 #pragma once
 #include <CL/sycl.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -273,15 +274,11 @@ static void boxMullerTransform(Td *const out1, Td *const out2, const Tc &r1,
     *out2 = static_cast<Td>(r * c);
 }
 // template<>
-//__device__ void boxMullerTransform<common::half, __half>(
-//    common::half *const out1, common::half *const out2, const __half &r1,
-//    const __half &r2) {
-//    float o1, o2;
-//    float fr1 = __half2float(r1);
-//    float fr2 = __half2float(r2);
-//    boxMullerTransform(&o1, &o2, fr1, fr2);
-//    *out1 = o1;
-//    *out2 = o2;
+//__device__ void boxMullerTransform<arrayfire::common::half, __half>(
+//    arrayfire::common::half *const out1, arrayfire::common::half *const out2,
+//    const __half &r1, const __half &r2) { float o1, o2; float fr1 =
+//    __half2float(r1); float fr2 = __half2float(r2); boxMullerTransform(&o1,
+//    &o2, fr1, fr2); *out1 = o1; *out2 = o2;
 //}
 
 // Writes without boundary checking
@@ -407,7 +404,7 @@ static void writeOut128Bytes(cdouble *out, const uint &index,
     out[index] = {1.0 - getDouble01(r1, r2), 1.0 - getDouble01(r3, r4)};
 }
 
-static void writeOut128Bytes(common::half *out, const uint &index,
+static void writeOut128Bytes(arrayfire::common::half *out, const uint &index,
                              const uint groupSz, const uint &r1, const uint &r2,
                              const uint &r3, const uint &r4) {
     // out[index]               = oneMinusGetHalf01(r1);
@@ -457,10 +454,10 @@ static void boxMullerWriteOut128Bytes(cdouble *out, const uint &index,
                        getDouble01(r3, r4));
 }
 
-static void boxMullerWriteOut128Bytes(common::half *out, const uint &index,
-                                      const uint groupSz, const uint &r1,
-                                      const uint &r2, const uint &r3,
-                                      const uint &r4) {
+static void boxMullerWriteOut128Bytes(arrayfire::common::half *out,
+                                      const uint &index, const uint groupSz,
+                                      const uint &r1, const uint &r2,
+                                      const uint &r3, const uint &r4) {
     //   boxMullerTransform(&out[index], &out[index + groupSz],
     //                      getHalfNegative11(r1), getHalf01(r1 >> 16));
     //   boxMullerTransform(&out[index + 2 * groupSz],
@@ -711,10 +708,11 @@ static void partialBoxMullerWriteOut128Bytes(cdouble *out, const uint &index,
     if (index < elements) { out[index] = {n1, n2}; }
 }
 
-static void partialWriteOut128Bytes(common::half *out, const uint &index,
-                                    const uint groupSz, const uint &r1,
-                                    const uint &r2, const uint &r3,
-                                    const uint &r4, const uint &elements) {
+static void partialWriteOut128Bytes(arrayfire::common::half *out,
+                                    const uint &index, const uint groupSz,
+                                    const uint &r1, const uint &r2,
+                                    const uint &r3, const uint &r4,
+                                    const uint &elements) {
     //  if (index < elements) { out[index] = oneMinusGetHalf01(r1); }
     //  if (index + groupSz < elements) {
     //      out[index + groupSz] = oneMinusGetHalf01(r1 >> 16);
@@ -740,10 +738,13 @@ static void partialWriteOut128Bytes(common::half *out, const uint &index,
 }
 
 // Normalized writes with boundary checking
-static void partialBoxMullerWriteOut128Bytes(
-    common::half *out, const uint &index, const uint groupSz, const uint &r1,
-    const uint &r2, const uint &r3, const uint &r4, const uint &elements) {
-    //    common::half n[8];
+static void partialBoxMullerWriteOut128Bytes(arrayfire::common::half *out,
+                                             const uint &index,
+                                             const uint groupSz, const uint &r1,
+                                             const uint &r2, const uint &r3,
+                                             const uint &r4,
+                                             const uint &elements) {
+    //    arrayfire::common::half n[8];
     //    boxMullerTransform(n + 0, n + 1, getHalfNegative11(r1),
     //                       getHalf01(r1 >> 16));
     //    boxMullerTransform(n + 2, n + 3, getHalfNegative11(r2),
@@ -776,3 +777,4 @@ static void partialBoxMullerWriteOut128Bytes(
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

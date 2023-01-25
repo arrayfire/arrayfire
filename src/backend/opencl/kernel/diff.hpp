@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -38,8 +39,8 @@ void diff(Param out, const Param in, const unsigned indims, const unsigned dim,
         DefineKeyValue(isDiff2, (isDiff2 ? 1 : 0)),
         getTypeBuildDefinition<T>()};
 
-    auto diffOp = common::getKernel("diff_kernel", std::array{diff_cl_src},
-                                    targs, options);
+    auto diffOp =
+        common::getKernel("diff_kernel", {{diff_cl_src}}, targs, options);
 
     cl::NDRange local(TX, TY, 1);
     if (dim == 0 && indims == 1) { local = cl::NDRange(TX * TY, 1, 1); }
@@ -58,3 +59,4 @@ void diff(Param out, const Param in, const unsigned indims, const unsigned dim,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

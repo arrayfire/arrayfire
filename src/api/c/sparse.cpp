@@ -20,13 +20,20 @@
 #include <af/sparse.h>
 
 using af::dim4;
-using common::createEmptySparseArray;
-using common::SparseArray;
-using common::SparseArrayBase;
+using arrayfire::getSparseArray;
+using arrayfire::retainSparseHandle;
+using arrayfire::common::createArrayDataSparseArray;
+using arrayfire::common::createDeviceDataSparseArray;
+using arrayfire::common::createEmptySparseArray;
+using arrayfire::common::createHostDataSparseArray;
+using arrayfire::common::SparseArray;
+using arrayfire::common::SparseArrayBase;
 using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::sparseConvertDenseToStorage;
+
+namespace arrayfire {
 
 const SparseArrayBase &getSparseArrayBase(const af_array in,
                                           bool device_check) {
@@ -54,11 +61,118 @@ template<typename T>
 af_array createSparseArrayFromData(const dim4 &dims, const af_array values,
                                    const af_array rowIdx, const af_array colIdx,
                                    const af::storage stype) {
-    SparseArray<T> sparse = common::createArrayDataSparseArray(
+    SparseArray<T> sparse = createArrayDataSparseArray(
         dims, getArray<T>(values), getArray<int>(rowIdx), getArray<int>(colIdx),
         stype);
     return getHandle(sparse);
 }
+
+template<typename T>
+af_array createSparseArrayFromPtr(const af::dim4 &dims, const dim_t nNZ,
+                                  const T *const values,
+                                  const int *const rowIdx,
+                                  const int *const colIdx,
+                                  const af::storage stype,
+                                  const af::source source) {
+    if (nNZ) {
+        switch (source) {
+            case afHost:
+                return getHandle(createHostDataSparseArray(
+                    dims, nNZ, values, rowIdx, colIdx, stype));
+                break;
+            case afDevice:
+                return getHandle(createDeviceDataSparseArray(
+                    dims, nNZ, const_cast<T *>(values),
+                    const_cast<int *>(rowIdx), const_cast<int *>(colIdx),
+                    stype));
+                break;
+        }
+    }
+
+    return getHandle(createEmptySparseArray<T>(dims, nNZ, stype));
+}
+
+template<typename T>
+af_array createSparseArrayFromDense(const af_array _in,
+                                    const af_storage stype) {
+    const Array<T> in = getArray<T>(_in);
+
+    switch (stype) {
+        case AF_STORAGE_CSR:
+            return getHandle(
+                sparseConvertDenseToStorage<T, AF_STORAGE_CSR>(in));
+        case AF_STORAGE_COO:
+            return getHandle(
+                sparseConvertDenseToStorage<T, AF_STORAGE_COO>(in));
+        case AF_STORAGE_CSC:
+            // return getHandle(sparseConvertDenseToStorage<T,
+            // AF_STORAGE_CSC>(in));
+        default:
+            AF_ERROR("Storage type is out of range/unsupported", AF_ERR_ARG);
+    }
+}
+
+template<typename T>
+af_array sparseConvertStorage(const af_array in_,
+                              const af_storage destStorage) {
+    const SparseArray<T> in = getSparseArray<T>(in_);
+
+    if (destStorage == AF_STORAGE_DENSE) {
+        // Returns a regular af_array, not sparse
+        switch (in.getStorage()) {
+            case AF_STORAGE_CSR:
+                return getHandle(
+                    detail::sparseConvertStorageToDense<T, AF_STORAGE_CSR>(in));
+            case AF_STORAGE_COO:
+                return getHandle(
+                    detail::sparseConvertStorageToDense<T, AF_STORAGE_COO>(in));
+            default:
+                AF_ERROR("Invalid storage type of input array", AF_ERR_ARG);
+        }
+    } else if (destStorage == AF_STORAGE_CSR) {
+        // Returns a sparse af_array
+        switch (in.getStorage()) {
+            case AF_STORAGE_CSR: return retainSparseHandle<T>(in_);
+            case AF_STORAGE_COO:
+                return getHandle(
+                    detail::sparseConvertStorageToStorage<T, AF_STORAGE_CSR,
+                                                          AF_STORAGE_COO>(in));
+            default:
+                AF_ERROR("Invalid storage type of input array", AF_ERR_ARG);
+        }
+    } else if (destStorage == AF_STORAGE_COO) {
+        // Returns a sparse af_array
+        switch (in.getStorage()) {
+            case AF_STORAGE_CSR:
+                return getHandle(
+                    detail::sparseConvertStorageToStorage<T, AF_STORAGE_COO,
+                                                          AF_STORAGE_CSR>(in));
+            case AF_STORAGE_COO: return retainSparseHandle<T>(in_);
+            default:
+                AF_ERROR("Invalid storage type of input array", AF_ERR_ARG);
+        }
+    }
+
+    // Shoud never come here
+    return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Get Functions
+////////////////////////////////////////////////////////////////////////////////
+template<typename T>
+af_array getSparseValues(const af_array in) {
+    return getHandle(getSparseArray<T>(in).getValues());
+}
+
+}  // namespace arrayfire
+
+using arrayfire::createSparseArrayFromData;
+using arrayfire::createSparseArrayFromDense;
+using arrayfire::createSparseArrayFromPtr;
+using arrayfire::getSparseArrayBase;
+using arrayfire::getSparseValues;
+using arrayfire::sparseConvertStorage;
 
 af_err af_create_sparse_array(af_array *out, const dim_t nRows,
                               const dim_t nCols, const af_array values,
@@ -132,31 +246,6 @@ af_err af_create_sparse_array(af_array *out, const dim_t nRows,
     return AF_SUCCESS;
 }
 
-template<typename T>
-af_array createSparseArrayFromPtr(const af::dim4 &dims, const dim_t nNZ,
-                                  const T *const values,
-                                  const int *const rowIdx,
-                                  const int *const colIdx,
-                                  const af::storage stype,
-                                  const af::source source) {
-    if (nNZ) {
-        switch (source) {
-            case afHost:
-                return getHandle(common::createHostDataSparseArray(
-                    dims, nNZ, values, rowIdx, colIdx, stype));
-                break;
-            case afDevice:
-                return getHandle(common::createDeviceDataSparseArray(
-                    dims, nNZ, const_cast<T *>(values),
-                    const_cast<int *>(rowIdx), const_cast<int *>(colIdx),
-                    stype));
-                break;
-        }
-    }
-
-    return getHandle(createEmptySparseArray<T>(dims, nNZ, stype));
-}
-
 af_err af_create_sparse_array_from_ptr(
     af_array *out, const dim_t nRows, const dim_t nCols, const dim_t nNZ,
     const void *const values, const int *const rowIdx, const int *const colIdx,
@@ -211,26 +300,6 @@ af_err af_create_sparse_array_from_ptr(
     return AF_SUCCESS;
 }
 
-template<typename T>
-af_array createSparseArrayFromDense(const af_array _in,
-                                    const af_storage stype) {
-    const Array<T> in = getArray<T>(_in);
-
-    switch (stype) {
-        case AF_STORAGE_CSR:
-            return getHandle(
-                sparseConvertDenseToStorage<T, AF_STORAGE_CSR>(in));
-        case AF_STORAGE_COO:
-            return getHandle(
-                sparseConvertDenseToStorage<T, AF_STORAGE_COO>(in));
-        case AF_STORAGE_CSC:
-            // return getHandle(sparseConvertDenseToStorage<T,
-            // AF_STORAGE_CSC>(in));
-        default:
-            AF_ERROR("Storage type is out of range/unsupported", AF_ERR_ARG);
-    }
-}
-
 af_err af_create_sparse_array_from_dense(af_array *out, const af_array in,
                                          const af_storage stype) {
     try {
@@ -272,51 +341,6 @@ af_err af_create_sparse_array_from_dense(af_array *out, const af_array in,
     CATCHALL;
 
     return AF_SUCCESS;
-}
-
-template<typename T>
-af_array sparseConvertStorage(const af_array in_,
-                              const af_storage destStorage) {
-    const SparseArray<T> in = getSparseArray<T>(in_);
-
-    if (destStorage == AF_STORAGE_DENSE) {
-        // Returns a regular af_array, not sparse
-        switch (in.getStorage()) {
-            case AF_STORAGE_CSR:
-                return getHandle(
-                    detail::sparseConvertStorageToDense<T, AF_STORAGE_CSR>(in));
-            case AF_STORAGE_COO:
-                return getHandle(
-                    detail::sparseConvertStorageToDense<T, AF_STORAGE_COO>(in));
-            default:
-                AF_ERROR("Invalid storage type of input array", AF_ERR_ARG);
-        }
-    } else if (destStorage == AF_STORAGE_CSR) {
-        // Returns a sparse af_array
-        switch (in.getStorage()) {
-            case AF_STORAGE_CSR: return retainSparseHandle<T>(in_);
-            case AF_STORAGE_COO:
-                return getHandle(
-                    detail::sparseConvertStorageToStorage<T, AF_STORAGE_CSR,
-                                                          AF_STORAGE_COO>(in));
-            default:
-                AF_ERROR("Invalid storage type of input array", AF_ERR_ARG);
-        }
-    } else if (destStorage == AF_STORAGE_COO) {
-        // Returns a sparse af_array
-        switch (in.getStorage()) {
-            case AF_STORAGE_CSR:
-                return getHandle(
-                    detail::sparseConvertStorageToStorage<T, AF_STORAGE_COO,
-                                                          AF_STORAGE_CSR>(in));
-            case AF_STORAGE_COO: return retainSparseHandle<T>(in_);
-            default:
-                AF_ERROR("Invalid storage type of input array", AF_ERR_ARG);
-        }
-    }
-
-    // Shoud never come here
-    return NULL;
 }
 
 af_err af_sparse_convert_to(af_array *out, const af_array in,
@@ -396,14 +420,6 @@ af_err af_sparse_to_dense(af_array *out, const af_array in) {
     }
     CATCHALL;
     return AF_SUCCESS;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Get Functions
-////////////////////////////////////////////////////////////////////////////////
-template<typename T>
-af_array getSparseValues(const af_array in) {
-    return getHandle(getSparseArray<T>(in).getValues());
 }
 
 af_err af_sparse_get_info(af_array *values, af_array *rows, af_array *cols,

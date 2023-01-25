@@ -17,6 +17,7 @@
 #include <nvrtc_kernel_headers/scan_dim_cuh.hpp>
 #include "config.hpp"
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -25,21 +26,20 @@ static void scan_dim_launcher(Param<To> out, Param<To> tmp, CParam<Ti> in,
                               const uint threads_y, const dim_t blocks_all[4],
                               int dim, bool isFinalPass, bool inclusive_scan) {
     auto scan_dim = common::getKernel(
-        "cuda::scan_dim", std::array{scan_dim_cuh_src},
+        "arrayfire::cuda::scan_dim", {{scan_dim_cuh_src}},
         TemplateArgs(TemplateTypename<Ti>(), TemplateTypename<To>(),
                      TemplateArg(op), TemplateArg(dim),
                      TemplateArg(isFinalPass), TemplateArg(threads_y),
                      TemplateArg(inclusive_scan)),
-        std::array{DefineValue(THREADS_X)});
+        {{DefineValue(THREADS_X)}});
 
     dim3 threads(THREADS_X, threads_y);
 
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
@@ -53,19 +53,18 @@ template<typename To, af_op_t op>
 static void bcast_dim_launcher(Param<To> out, CParam<To> tmp,
                                const uint threads_y, const dim_t blocks_all[4],
                                int dim, bool inclusive_scan) {
-    auto scan_dim_bcast =
-        common::getKernel("cuda::scan_dim_bcast", std::array{scan_dim_cuh_src},
-                          TemplateArgs(TemplateTypename<To>(), TemplateArg(op),
-                                       TemplateArg(dim)));
+    auto scan_dim_bcast = common::getKernel(
+        "arrayfire::cuda::scan_dim_bcast", {{scan_dim_cuh_src}},
+        TemplateArgs(TemplateTypename<To>(), TemplateArg(op),
+                     TemplateArg(dim)));
 
     dim3 threads(THREADS_X, threads_y);
 
     dim3 blocks(blocks_all[0] * blocks_all[2], blocks_all[1] * blocks_all[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
@@ -124,3 +123,4 @@ static void scan_dim(Param<To> out, CParam<Ti> in, int dim,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

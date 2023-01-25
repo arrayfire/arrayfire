@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 constexpr uint DIMX  = 32;
@@ -248,3 +249,4 @@ void select_scalar(Param<T> out, Param<char> cond, Param<T> a, const T b,
 }
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

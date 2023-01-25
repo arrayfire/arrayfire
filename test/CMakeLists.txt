@@ -22,33 +22,21 @@ elseif(NOT TARGET GTest::gtest)
     URI https://github.com/google/googletest.git
     REF release-1.12.1
   )
-
-  # gtest targets cmake version 2.6 which throws warnings for policy CMP0042 on
-  # newer cmakes. This sets the default global setting for that policy.
-  set(CMAKE_POLICY_DEFAULT_CMP0042 NEW)
   if(WIN32)
     set(gtest_force_shared_crt ON
         CACHE INTERNAL "Required so that the libs Runtime is not set to MT DLL")
     set(BUILD_SHARED_LIBS OFF)
   endif()
 
-  add_definitions(-DGTEST_HAS_SEH=OFF)
   add_subdirectory(${${gtest_prefix}_SOURCE_DIR} ${${gtest_prefix}_BINARY_DIR} EXCLUDE_FROM_ALL)
-  set_target_properties(gtest gtest_main
+  target_compile_definitions(gtest PRIVATE GTEST_HAS_SEH=OFF)
+  set_target_properties(gtest
     PROPERTIES
       FOLDER "ExternalProjectTargets/gtest")
+  target_compile_options(gtest
+    PRIVATE
+      $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>)
   add_library(GTest::gtest ALIAS gtest)
-  if(UNIX)
-    if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND
-      CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10.3.0")
-      target_compile_options(gtest PRIVATE -Wno-maybe-uninitialized)
-      target_compile_options(gtest_main PRIVATE -Wno-maybe-uninitialized)
-    endif()
-  endif()
-  if(WIN32)
-      target_compile_options(gtest PRIVATE -Wno-error=ignored-attributes)
-  endif()
-
   # Hide gtest project variables
   mark_as_advanced(
     BUILD_SHARED_LIBS
@@ -189,7 +177,8 @@ function(make_test)
     target_include_directories(${target}
       PRIVATE
         ${CMAKE_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${target}
       SYSTEM PRIVATE
         ${ArrayFire_SOURCE_DIR}/extern/half/include
       )

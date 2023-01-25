@@ -18,6 +18,7 @@
 #include <sstream>
 #include <string>
 
+namespace arrayfire {
 namespace cpu {
 
 namespace jit {
@@ -179,3 +180,4 @@ class BufferNode : public TNode<T> {
 
 }  // namespace jit
 }  // namespace cpu
+}  // namespace arrayfire

@@ -20,13 +20,14 @@
 
 #include <utility>
 
-using common::bytesToString;
+using arrayfire::common::bytesToString;
 
 using af::dim4;
 using std::function;
 using std::move;
 using std::unique_ptr;
 
+namespace arrayfire {
 namespace opencl {
 float getMemoryPressure() { return memoryManager().getMemoryPressure(); }
 float getMemoryPressureThreshold() {
@@ -272,3 +273,4 @@ void AllocatorPinned::nativeFree(void *ptr) {
     }
 }
 }  // namespace opencl
+}  // namespace arrayfire

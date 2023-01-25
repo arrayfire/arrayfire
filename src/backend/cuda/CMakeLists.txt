@@ -114,11 +114,15 @@ mark_as_advanced(
     CUDA_architecture_build_targets)
 
 if(CUDA_VERSION_MAJOR VERSION_LESS 11)
-  af_dep_check_and_populate(${cub_prefix}
-    URI https://github.com/NVIDIA/cub.git
-    REF 1.10.0
-  )
-  cuda_include_directories(${${cub_prefix}_SOURCE_DIR})
+  find_package(CUB)
+  if(NOT TARGET CUB::CUB)
+    af_dep_check_and_populate(${cub_prefix}
+      URI https://github.com/NVIDIA/cub.git
+      REF 1.10.0
+    )
+    find_package(CUB REQUIRED
+      PATHS ${${cub_prefix}_SOURCE_DIR})
+  endif()
 endif()
 
 file(GLOB jit_src "kernel/jit.cuh")
@@ -129,7 +133,7 @@ file_to_string(
     EXTENSION "hpp"
     OUTPUT_DIR "kernel_headers"
     TARGETS jit_kernel_targets
-    NAMESPACE "cuda"
+    NAMESPACE "arrayfire cuda"
     WITH_EXTENSION
     )
 
@@ -222,7 +226,7 @@ file_to_string(
     EXTENSION "hpp"
     OUTPUT_DIR "nvrtc_kernel_headers"
     TARGETS nvrtc_kernel_targets
-    NAMESPACE "cuda"
+    NAMESPACE "arrayfire cuda"
     WITH_EXTENSION
     NULLTERM
     )
@@ -402,7 +406,6 @@ add_library(afcuda
     convolveNN.cpp
     copy.cpp
     copy.hpp
-    cu_check_macro.hpp
     cublas.cpp
     cublas.hpp
 
@@ -588,7 +591,7 @@ if(UNIX AND AF_WITH_STATIC_CUDA_NUMERIC_LIBS)
 
 else()
   target_link_libraries(afcuda
-    PUBLIC
+    PRIVATE
       ${CUDA_CUBLAS_LIBRARIES}
       ${CUDA_CUFFT_LIBRARIES}
       ${CUDA_cusolver_LIBRARY}
@@ -596,17 +599,37 @@ else()
   )
 endif()
 
+if(CUDA_VERSION_MAJOR VERSION_LESS 11)
+  target_link_libraries(afcuda
+    PRIVATE
+      CUB::CUB
+  )
+endif()
 
 af_detect_and_set_cuda_architectures(afcuda)
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
-  set_target_properties(afcuda
-    PROPERTIES
-      CUDA_STANDARD 17
-      CUDA_STANDARD_REQUIRED ON)
+
+if(CUDA_VERSION VERSION_LESS 11.0)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    set_target_properties(afcuda
+      PROPERTIES
+        CUDA_STANDARD 14
+        CUDA_STANDARD_REQUIRED ON)
+  else()
+    target_compile_options(afcuda
+      PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:--std=c++14>)
+  endif()
 else()
-  target_compile_options(afcuda
-    PRIVATE
-      $<$<COMPILE_LANGUAGE:CUDA>:--std=c++17>)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+    set_target_properties(afcuda
+      PROPERTIES
+        CUDA_STANDARD 17
+        CUDA_STANDARD_REQUIRED ON)
+  else()
+    target_compile_options(afcuda
+      PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:--std=c++17>)
+  endif()
 endif()
 
 target_compile_definitions(afcuda

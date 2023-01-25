@@ -1,588 +1,589 @@
 /*!
 \page arith_real_only arith_real
-
 \note This function supports real inputs only. Complex inputs are not yet supported.
-
 */
 
 /*!
 \page arith_int_only arith_int
-
 \note This function supports integer only.
-
 */
+
 
 
 /**
 \addtogroup arrayfire_func
 @{
 
-\defgroup arith_func_add add
 
+
+\defgroup arith_func_add add
 \ingroup arith_mat
 
-Addition of two inputs.
+Elementwise addition
 
 
 
 \defgroup arith_func_sub sub
-
 \ingroup arith_mat
 
-Subtract one input from another
+Elementwise subtraction
 
 
 
 \defgroup arith_func_mul mul
-
 \ingroup arith_mat
 
-Multiply two inputs element wise
+Elementwise multiply
 
 
 
 \defgroup arith_func_div div
-
 \ingroup arith_mat
 
-Divide one input by another
+Elementwise division
+
+
+
+\defgroup arith_func_lt lt
+\ingroup logic_mat
+
+Less than, an elementwise comparison of two arrays.
+
+Check if the elements of one array are less than those of another array.
+
+
+
+\defgroup arith_func_gt gt
+\ingroup logic_mat
+
+Greater than comparison, an elementwise comparison of two arrays.
+
+Check if the elements of one array are greater than those of another array.
+
+
+
+\defgroup arith_func_le le
+\ingroup logic_mat
+
+Less than or equal to, an elementwise comparison of two arrays.
+
+Check if the elements of one array are less than or equal to those of another array.
+
+
+\defgroup arith_func_ge ge
+\ingroup logic_mat
+
+Greater than or equal to, an elementwise comparison of two arrays.
+
+Check if the elements of one array are greater than or equal to those of another array.
+
+
+
+\defgroup arith_func_eq eq
+\ingroup logic_mat
+
+\brief Equal to, an elementwise comparison of two arrays.
+
+Check if the elements of one array are equal to those of another array.
+
+
+
+\defgroup arith_func_neq neq
+\ingroup logic_mat
+
+\brief Not equal to, an elementwise comparison of two arrays.
+
+Check if the elements of one array are not equal to those of another array.
+
+
+
+\defgroup arith_func_and and
+\ingroup logic_mat
+
+Evaluate the logical AND of two arrays.
+
+
+
+\defgroup arith_func_or or
+\ingroup logic_mat
+
+Evaluate the logical OR of two arrays.
+
+
+
+\defgroup arith_func_not not
+\ingroup logic_mat
+
+Evaluate the logical NOT of an array.
+
+
+
+\defgroup arith_func_neg neg
+\ingroup numeric_mat
+
+Negate an array.
+
+
+
+\defgroup arith_func_bitnot bitnot
+\ingroup logic_mat
+
+Evaluate the bitwise NOT of an array.
+
+\copydoc arith_int_only
+
+
+
+\defgroup arith_func_bitand bitand
+\ingroup logic_mat
+
+Evaluate the bitwise AND of two arrays.
+
+\copydoc arith_int_only
+
+
+
+\defgroup arith_func_bitor bitor
+\ingroup logic_mat
+
+Evaluate the bitwise OR of two arrays.
+
+\copydoc arith_int_only
+
+
+
+\defgroup arith_func_bitxor bitxor
+\ingroup logic_mat
+
+Evaluate the bitwise XOR of two arrays.
+
+\copydoc arith_int_only
 
 
 
 \defgroup arith_func_shiftl bitshiftl
-
 \ingroup arith_mat
 
-Left shift an input
+Shift the bits of integer arrays left.
 
 \copydoc arith_int_only
 
 
 
 \defgroup arith_func_shiftr bitshiftr
-
 \ingroup arith_mat
 
-Right shift an input
+Shift the bits of integer arrays right.
 
 \copydoc arith_int_only
 
 
 
-\defgroup arith_func_lt lt
+\defgroup arith_func_cast cast
+\ingroup helper_mat
 
-\ingroup logic_mat
+Cast an array from one type to another.
 
-Check if input is less than another
-
-
-
-\defgroup arith_func_gt gt
-
-\ingroup logic_mat
-
-Check if input is greater than another
-
-
-
-\defgroup arith_func_le le
-
-\ingroup logic_mat
-
-Check if input is less than or equal to another
-
-
-
-\defgroup arith_func_ge ge
-
-\ingroup logic_mat
-
-Check if input is greater than or equal to another
-
-
-
-\defgroup arith_func_eq eq
-
-\ingroup logic_mat
-
-Check if input two inputs are equal
-
-
-
-\defgroup arith_func_neq neq
-
-\ingroup logic_mat
-
-Check if input two inputs are not equal
-
-
-
-\defgroup arith_func_and and
-\brief Logical AND
-
-\ingroup logic_mat
-
-Logical and of two inputs
-
-\defgroup arith_func_or or
-
-\ingroup logic_mat
-
-Logical or of two inputs
-
-
-
-\defgroup arith_func_not not
-
-\ingroup logic_mat
-
-Logical not of an input
-
-
-
-\defgroup arith_func_neg neg
-
-\ingroup numeric_mat
-
-Negative of an input
-
-
-\defgroup arith_func_bitnot bitnot
-
-\ingroup logic_mat
-
-Bitwise not on the input
-
-\copydoc arith_int_only
-
-
-\defgroup arith_func_bitand bitand
-
-\ingroup logic_mat
-
-Bitwise and operation of two inputs
-
-\copydoc arith_int_only
-
-
-\defgroup arith_func_bitor bitor
-
-\ingroup logic_mat
-
-Bitwise or operation of two inputs
-
-\copydoc arith_int_only
-
-
-\defgroup arith_func_bitxor bitxor
-
-\ingroup logic_mat
-
-Bitwise xor operation of two inputs
-
-\copydoc arith_int_only
 
 
 \defgroup arith_func_min min
-
 \ingroup numeric_mat
 
-Minimum of two inputs.
+Returns the elementwise minimum between two arrays.
+
 
 
 \defgroup arith_func_max max
-
 \ingroup numeric_mat
 
-Maximum of two inputs.
+Returns the elementwise maximum between two arrays.
+
 
 
 \defgroup arith_func_clamp clamp
-
 \ingroup numeric_mat
 
-Limits the range of the in array to the values between lo and hi
+Clamp an array between an upper and a lower limit.
+
 
 
 \defgroup arith_func_rem rem
-
 \ingroup numeric_mat
 
-Remainder operation
+Calculate the remainder of a division.
 
 \copydoc arith_real_only
 
 
-\defgroup arith_func_mod mod
 
+\defgroup arith_func_mod mod
 \ingroup numeric_mat
 
-Compute \f$x - n * y\f$ where n is quotient of \f$x / y\f$
+Calculate the modulus.
 
 \copydoc arith_real_only
 
 
 
 \defgroup arith_func_abs abs
-
-\brief Absolute value
-
 \ingroup numeric_mat
 
-Absolute value
-
+Calculate the absolute value.
 
 
 \defgroup arith_func_arg arg
 \ingroup numeric_mat
 
-\brief Phase of a number in the complex plane
+Calculate the phase angle (in radians) of a complex array.
 
 
 
 \defgroup arith_func_sign sign
-
 \ingroup numeric_mat
 
-Check if input is negative
+Return the sign of elements in an array.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_round round
-
 \ingroup numeric_mat
 
-Round to nearest integer
+Round numbers to the nearest integer.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_trunc trunc
-
 \ingroup numeric_mat
 
-Truncate to nearest integer
+Truncate numbers to nearest integer.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_floor floor
-
 \ingroup numeric_mat
 
-Round to integer less than equal to current value
+Rounds down to the greatest integer less than or equal to x.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_ceil ceil
-
 \ingroup numeric_mat
 
-Round to integer greater than equal to current value
+Rounds up to the least integer greater than or equal to x.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_hypot hypot
-
 \ingroup numeric_mat
 
-Hypotenuse of the two inputs
+Evaluate the length of the hypotenuse of two inputs.
 
 \copydoc arith_real_only
 
 
-\defgroup arith_func_sin sin
 
+\defgroup arith_func_sin sin
 \ingroup trig_mat
 
-sin of input
+Evaluate the sine function.
+
 
 
 \defgroup arith_func_cos cos
-
 \ingroup trig_mat
 
-cos of input
+Evaluate the cosine function.
 
 
 
-\defgroup arith_func_tan tan/tan2
-
+\defgroup arith_func_tan tan
 \ingroup trig_mat
 
-tan of input
+Evaluate the tangent function.
+
 
 
 \defgroup arith_func_asin asin
-
 \ingroup trig_mat
 
-arc sin of input
+Evaluate the inverse sine function (arc sine).
+
 
 
 \defgroup arith_func_acos acos
-\brief Inverse cosine.
-
 \ingroup trig_mat
 
-arc cos of input
+Evaluate the inverse cosine function (arc cosine).
+
+The inverse of cosine so that, if `y = cos(x)`, then `x = arccos(y)`.
 
 
 \defgroup arith_func_atan atan/atan2
-
 \ingroup trig_mat
 
-arc tan of input
+Evaluate the inverse tangent function (arc tangent).
+
 
 
 \defgroup arith_func_sinh sinh
-
 \ingroup hyper_mat
 
-sinh of input
+Evaluate the hyperbolic sine function.
+
 
 
 \defgroup arith_func_cosh cosh
-
 \ingroup hyper_mat
 
-cosh of input
+Evaluate the hyperbolic cosine function.
+
 
 
 \defgroup arith_func_tanh tanh
-
 \ingroup hyper_mat
 
-tanh of input
+Evaluate the hyperbolic tangent function.
+
 
 
 \defgroup arith_func_asinh asinh
-
 \ingroup hyper_mat
 
-asinh of input
+Evaluate the inverse hyperbolic sine function (area hyperbolic sine).
+
 
 
 \defgroup arith_func_acosh acosh
-\brief Inverse hyperbolic cosine
-
 \ingroup hyper_mat
 
-acosh of input
+Evaluate the inverse hyperbolic cosine function (area hyperbolic cosine).
+
 
 
 \defgroup arith_func_atanh atanh
-
 \ingroup hyper_mat
 
-atanh of input
+Evaluate the inverse hyperbolic tangent function (area hyperbolic tangent).
+
 
 
 \defgroup arith_func_cplx complex
-
 \ingroup complex_mat
 
-create complex arrays
+Create complex arrays.
+
+Complex arrays are created from any of the following four inputs:
+
+1. a single real array, returning zeros for the imaginary component. See `array b` in the example.
+2. two real arrays, one for the real component and one for the imaginary component. See `array c` in the example.
+3. a single real array for the real component and a single scalar for each imaginary component. See `array d` in the example.
+4. a single scalar for each real component and a single real array for the imaginary component. See `array e` in the example.
+
+__Examples:__
+
+\snippet test/complex.cpp ex_arith_func_complex
 
 
 
 \defgroup arith_func_real real
-
 \ingroup complex_mat
 
-Get real part of complex arrays
+Returns the real part of a complex array.
 
 
 
 \defgroup arith_func_imag imag
-
 \ingroup complex_mat
 
-Get imaginary part of complex arrays
+Returns the imaginary part of a complex array.
 
 
 
 \defgroup arith_func_conjg conjg
-
 \ingroup complex_mat
 
-Get complex conjugate
-
+Evaluate the complex conjugate of an input array.
 
 
 
 \defgroup arith_func_root root
-
 \ingroup explog_mat
 
-Find root of an input
+Evaluate the nth root.
+
 
 
 \defgroup arith_func_pow pow
-
 \ingroup explog_mat
 
-Raise an array to a power
+Raise a base to a power (or exponent).
 
-If the input array has values beyond what a floating point type can represent, then there is no
-guarantee that the results will be accurate. The exact type mapping from integral types to floating
-point types used to compute power is given below.
 
-| Input Type         | Compute Type   |
-| :------------------| :--------------|
-| unsigned long long | double         |
-| long long          | double         |
-| unsigned int       | double         |
-| int                | double         |
-| unsigned short     | float          |
-| short              | float          |
-| unsigned char      | float          |
 
-The output array will be of the same type as input.
+\defgroup arith_func_pow2 pow2
+\ingroup explog_mat
+
+Raise 2 to a power (or exponent).
+
+
+
+\defgroup arith_func_sigmoid sigmoid
+Evaluate the logistical sigmoid function.
 
 
 
 \defgroup arith_func_exp exp
-
 \ingroup explog_mat
 
-Exponential of input
+Evaluate the exponential function.
+
 
 
 \defgroup arith_func_expm1 expm1
-
 \ingroup explog_mat
 
-Exponential of input - 1
+Evaluate the exponential function of an array minus 1, `exp(in) - 1`.
 
 \copydoc arith_real_only
 
 
-\defgroup arith_func_erf erf
 
+\defgroup arith_func_erf erf
 \ingroup explog_mat
 
-Error function value
+Evaluate the error function.
 
 \copydoc arith_real_only
 
 
 
 \defgroup arith_func_erfc erfc
-
 \ingroup explog_mat
 
-Complementary Error function value
+Evaluate the complementary error function.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_log log
-
 \ingroup explog_mat
 
-Natural logarithm
+Evaluate the natural logarithm.
+
 
 
 \defgroup arith_func_log1p log1p
-
 \ingroup explog_mat
 
-Natural logarithm of (1 + in)
+Evaluate the natural logarithm of 1 + input, `ln(1+in)`.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_log10 log10
-
 \ingroup explog_mat
 
-logarithm base 10
+Evaluate the base 10 logarithm.
 
 \copydoc arith_real_only
 
 
-\defgroup arith_func_sqrt sqrt
 
+\defgroup arith_func_log2 log2
 \ingroup explog_mat
 
-Square root of input arrays
+Evaluate the base 2 logarithm.
+
+\copydoc arith_real_only
+
+
+
+\defgroup arith_func_sqrt sqrt
+\ingroup explog_mat
+
+Evaluate the square root.
+
+
 
 \defgroup arith_func_rsqrt rsqrt
-
 \ingroup explog_mat
 
-The reciprocal or inverse square root of input arrays
+Evaluate the reciprocal square root.
 
 \f[ \frac{1}{\sqrt{x}} \f]
 
 \copydoc arith_real_only
 
-\defgroup arith_func_cbrt cbrt
 
+
+\defgroup arith_func_cbrt cbrt
 \ingroup explog_mat
 
-Cube root of input arrays
+Evaluate the cube root.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_factorial factorial
-
 \ingroup explog_mat
 
-Factorial function
+Evaluate the factorial.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_tgamma tgamma
-
 \ingroup explog_mat
 
-Gamma function
+Evaluate the gamma function.
 
 \copydoc arith_real_only
+
 
 
 \defgroup arith_func_lgamma lgamma
-
 \ingroup explog_mat
 
-Logarithm of absolute values of Gamma function
+Evaluate the logarithm of the absolute value of the gamma function.
 
 \copydoc arith_real_only
 
 
-\defgroup arith_func_iszero iszero
 
+\defgroup arith_func_iszero iszero
 \ingroup helper_mat
 
-Check if values are zero
+Check if values are zero.
+
 
 
 \defgroup arith_func_isinf isinf
-
 \ingroup helper_mat
 
-Check if values are infinite
+Check if values are infinite.
 
 
-\defgroup arith_func_isnan isNan
 
+\defgroup arith_func_isnan isnan
 \ingroup helper_mat
 
-Check if values are Nan
+Check if values are NaN.
 
 
-\defgroup arith_func_cast cast
-
-\ingroup helper_mat
-
-Casting inputs from one type to another
 
 @}
 */

@@ -28,6 +28,7 @@
 using af::dim4;
 using std::vector;
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
@@ -69,6 +70,7 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(ushort)
 INSTANTIATE(short)
-INSTANTIATE(common::half)
+INSTANTIATE(arrayfire::common::half)
 
 }  // namespace cpu
+}  // namespace arrayfire

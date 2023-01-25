@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -46,8 +47,8 @@ void wrap(Param out, const Param in, const dim_t wx, const dim_t wy,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto wrap = common::getKernel("wrap", std::array{wrap_cl_src}, tmpltArgs,
-                                  compileOpts);
+    auto wrap =
+        common::getKernel("wrap", {{wrap_cl_src}}, tmpltArgs, compileOpts);
 
     dim_t nx = (out.info.dims[0] + 2 * px - wx) / sx + 1;
     dim_t ny = (out.info.dims[1] + 2 * py - wy) / sy + 1;
@@ -91,9 +92,8 @@ void wrap_dilated(Param out, const Param in, const dim_t wx, const dim_t wy,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto dilatedWrap =
-        common::getKernel("wrap_dilated", std::array{wrap_dilated_cl_src},
-                          tmpltArgs, compileOpts);
+    auto dilatedWrap = common::getKernel(
+        "wrap_dilated", {{wrap_dilated_cl_src}}, tmpltArgs, compileOpts);
 
     dim_t nx = 1 + (out.info.dims[0] + 2 * px - (((wx - 1) * dx) + 1)) / sx;
     dim_t ny = 1 + (out.info.dims[1] + 2 * py - (((wy - 1) * dy) + 1)) / sy;
@@ -118,3 +118,4 @@ void wrap_dilated(Param out, const Param in, const dim_t wx, const dim_t wy,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

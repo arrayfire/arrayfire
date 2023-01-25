@@ -20,8 +20,7 @@
 #include <af/defines.h>
 #include <af/dim4.hpp>
 
-const ArrayInfo &getInfo(const af_array arr, bool sparse_check = true,
-                         bool device_check = true);
+namespace arrayfire {
 
 af_array retain(const af_array in);
 
@@ -31,10 +30,14 @@ af_array createHandle(const af::dim4 &d, af_dtype dtype);
 
 af_array createHandleFromValue(const af::dim4 &d, double val, af_dtype dtype);
 
+namespace common {
+const ArrayInfo &getInfo(const af_array arr, bool sparse_check = true,
+                         bool device_check = true);
+
 template<typename To>
 detail::Array<To> castArray(const af_array &in);
 
-namespace {
+}  // namespace common
 
 template<typename T>
 const detail::Array<T> &getArray(const af_array &arr) {
@@ -119,4 +122,17 @@ detail::Array<T> &getCopyOnWriteArray(const af_array &arr) {
     return *A;
 }
 
-}  // namespace
+}  // namespace arrayfire
+
+using arrayfire::copyArray;
+using arrayfire::copyData;
+using arrayfire::createHandle;
+using arrayfire::createHandleFromData;
+using arrayfire::createHandleFromValue;
+using arrayfire::getArray;
+using arrayfire::getHandle;
+using arrayfire::releaseHandle;
+using arrayfire::retain;
+using arrayfire::verifyDims;
+using arrayfire::common::castArray;
+using arrayfire::common::getInfo;

@@ -16,6 +16,7 @@
 #include <math.hpp>
 #include <traits.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -216,3 +217,4 @@ void rotate(Param<T> out, const Param<T> in, const float theta,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

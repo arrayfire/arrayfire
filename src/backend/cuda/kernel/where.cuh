@@ -11,12 +11,12 @@
 #include <backend.hpp>
 #include <math.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
-__global__
-void where(uint *optr, CParam<uint> otmp, CParam<uint> rtmp, CParam<T> in,
-           uint blocks_x, uint blocks_y, uint lim) {
+__global__ void where(uint *optr, CParam<uint> otmp, CParam<uint> rtmp,
+                      CParam<T> in, uint blocks_x, uint blocks_y, uint lim) {
     const uint tidx = threadIdx.x;
     const uint tidy = threadIdx.y;
 
@@ -56,4 +56,5 @@ void where(uint *optr, CParam<uint> otmp, CParam<uint> rtmp, CParam<T> in,
     }
 }
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

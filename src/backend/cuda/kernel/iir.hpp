@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/iir_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -23,9 +24,9 @@ void iir(Param<T> y, CParam<T> c, CParam<T> a) {
     constexpr int MAX_A_SIZE = 1024;
 
     auto iir = common::getKernel(
-        "cuda::iir", std::array{iir_cuh_src},
+        "arrayfire::cuda::iir", {{iir_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(batch_a)),
-        std::array{DefineValue(MAX_A_SIZE)});
+        {{DefineValue(MAX_A_SIZE)}});
 
     const int blocks_y = y.dims[1];
     const int blocks_x = y.dims[2];
@@ -43,3 +44,4 @@ void iir(Param<T> y, CParam<T> c, CParam<T> a) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

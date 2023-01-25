@@ -10,6 +10,7 @@
 #pragma once
 
 #include <common/Logger.hpp>
+#include <common/Version.hpp>
 #include <common/defines.hpp>
 #include <common/module_loading.hpp>
 
@@ -22,9 +23,8 @@
 namespace spdlog {
 class logger;
 }
+namespace arrayfire {
 namespace common {
-
-using Version = std::tuple<int, int, int>;  // major, minor, patch
 
 /// Allows you to create classes which dynamically load dependencies at runtime
 ///
@@ -36,6 +36,7 @@ class DependencyModule {
     LibHandle handle;
     std::shared_ptr<spdlog::logger> logger;
     std::vector<void*> functions;
+    Version version;
 
    public:
     /// Loads the library \p plugin_file_name from the \p paths locations
@@ -46,11 +47,12 @@ class DependencyModule {
     DependencyModule(const char* plugin_file_name,
                      const char** paths = nullptr);
 
-    DependencyModule(const std::vector<std::string>& plugin_base_file_name,
-                     const std::vector<std::string>& suffixes,
-                     const std::vector<std::string>& paths,
-                     const size_t verListSize = 0,
-                     const Version* versions  = nullptr);
+    DependencyModule(
+        const std::vector<std::string>& plugin_base_file_name,
+        const std::vector<std::string>& suffixes,
+        const std::vector<std::string>& paths, const size_t verListSize = 0,
+        const Version* versions                                  = nullptr,
+        std::function<Version(const LibHandle&)> versionFunction = {});
 
     ~DependencyModule() noexcept;
 
@@ -67,6 +69,9 @@ class DependencyModule {
     /// Returns true if all of the symbols for the module were loaded
     bool symbolsLoaded() const noexcept;
 
+    /// Returns the version of the module
+    Version getVersion() const noexcept { return version; }
+
     /// Returns the last error message that occurred because of loading the
     /// library
     static std::string getErrorMessage() noexcept;
@@ -75,6 +80,7 @@ class DependencyModule {
 };
 
 }  // namespace common
+}  // namespace arrayfire
 
 /// Creates a function pointer
 #define MODULE_MEMBER(NAME) decltype(&::NAME) NAME

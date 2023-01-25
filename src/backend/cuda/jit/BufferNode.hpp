@@ -11,12 +11,12 @@
 #include <common/jit/BufferNodeBase.hpp>
 #include "../Param.hpp"
 
+namespace arrayfire {
 namespace cuda {
 namespace jit {
 template<typename T>
 using BufferNode = common::BufferNodeBase<std::shared_ptr<T>, Param<T>>;
-}
-
+}  // namespace jit
 }  // namespace cuda
 
 namespace common {
@@ -32,3 +32,5 @@ bool BufferNodeBase<DataType, ParamType>::operator==(
 }
 
 }  // namespace common
+
+}  // namespace arrayfire

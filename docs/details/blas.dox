@@ -50,9 +50,25 @@ and restrictions.
 \ingroup blas_mat
 \ingroup manip_mat
 
-\brief Matrix Transpose
+\brief Transpose a matrix.
 
-Transposes a matrix
+Reverse or permute the dimensions of an array; returns the modified array.
+For an array a with two dimensions, `transpose(a)` gives the matrix transpose.
+For an array with more than two dimensions, the first two dimensions are
+transposed across higher dimensions.
+
+Set `conjugate=true` to perform the complex conjugate transpose of a matrix
+which interchanges the row and column index for each element, reflecting the
+elements across the main diagonal and negating the imaginary part of any
+complex numbers. For example, if `b = transpose(a, true)` and element
+`a(2, 1)` is `(1, 2)`, then element `b(1, 2)` is `(1, -2)`.
+
+In-place versions perform matrix transposition by reordering the input,
+reducing memory footprint.
+
+__Examples:__
+
+\snippet test/transpose.cpp ex_blas_func_transpose
 
 =======================================================================
 

@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -112,3 +113,4 @@ void tile(Param<T> out, const Param<T> in) {
 }
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

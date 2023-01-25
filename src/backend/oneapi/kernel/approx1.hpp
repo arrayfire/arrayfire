@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -163,3 +164,4 @@ void approx1(Param<Ty> yo, const Param<Ty> yi, const Param<Tp> xo,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

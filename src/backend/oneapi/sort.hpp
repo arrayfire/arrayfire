@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> sort(const Array<T> &in, const unsigned dim, bool isAscending);
-}
+}  // namespace oneapi
+}  // namespace arrayfire

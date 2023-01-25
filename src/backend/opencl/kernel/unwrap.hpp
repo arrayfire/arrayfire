@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -46,8 +47,8 @@ void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto unwrap = common::getKernel("unwrap", std::array{unwrap_cl_src},
-                                    tmpltArgs, compileOpts);
+    auto unwrap =
+        common::getKernel("unwrap", {{unwrap_cl_src}}, tmpltArgs, compileOpts);
 
     dim_t TX = 1, TY = 1;
     dim_t BX       = 1;
@@ -79,3 +80,4 @@ void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

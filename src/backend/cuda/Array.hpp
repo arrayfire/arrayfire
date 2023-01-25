@@ -25,7 +25,9 @@
 #include <nonstd/span.hpp>
 #include <vector>
 
+namespace arrayfire {
 namespace cuda {
+
 using af::dim4;
 
 template<typename T>
@@ -287,3 +289,4 @@ class Array {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

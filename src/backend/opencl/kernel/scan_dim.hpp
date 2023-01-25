@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename Ti, typename To, af_op_t op>
@@ -51,14 +52,14 @@ static opencl::Kernel getScanDimKernel(const std::string key, int dim,
         DefineValue(THREADS_X),
         DefineKeyValue(init, toNumStr(common::Binary<To, op>::init())),
         DefineKeyFromStr(binOpName<op>()),
-        DefineKeyValue(CPLX, af::iscplx<Ti>()),
+        DefineKeyValue(CPLX, iscplx<Ti>()),
         DefineKeyValue(IS_FINAL_PASS, (isFinalPass ? 1 : 0)),
         DefineKeyValue(INCLUSIVE_SCAN, inclusiveScan),
     };
     compileOpts.emplace_back(getTypeBuildDefinition<Ti>());
 
-    return common::getKernel(key, std::array{ops_cl_src, scan_dim_cl_src},
-                             tmpltArgs, compileOpts);
+    return common::getKernel(key, {{ops_cl_src, scan_dim_cl_src}}, tmpltArgs,
+                             compileOpts);
 }
 
 template<typename Ti, typename To, af_op_t op>
@@ -156,3 +157,4 @@ static void scanDim(Param out, const Param in, const int dim,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

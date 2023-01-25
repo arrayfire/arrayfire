@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -36,7 +37,7 @@ void index(Param out, const Param in, const IndexKernelParam_t& p,
         getTypeBuildDefinition<T>()};
 
     auto index =
-        common::getKernel("indexKernel", std::array{index_cl_src},
+        common::getKernel("indexKernel", {{index_cl_src}},
                           TemplateArgs(TemplateTypename<T>()), options);
     int threads_x = 256;
     int threads_y = 1;
@@ -63,3 +64,4 @@ void index(Param out, const Param in, const IndexKernelParam_t& p,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

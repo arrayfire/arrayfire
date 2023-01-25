@@ -61,6 +61,7 @@ using std::to_string;
 using std::uint8_t;
 using std::vector;
 
+namespace arrayfire {
 namespace common {
 // http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
 // trim from start
@@ -133,11 +134,6 @@ void saveKernel(const string& funcName, const string& jit_ker,
         fprintf(stderr, "Failed to write kernel to file %s\n", ffp.c_str());
     }
     fclose(f);
-}
-
-string int_version_to_string(int version) {
-    return to_string(version / 1000) + "." +
-           to_string(static_cast<int>((version % 1000) / 10.));
 }
 
 #if defined(OS_WIN)
@@ -521,3 +517,4 @@ string toString(af_homography_type val) {
 }
 
 }  // namespace common
+}  // namespace arrayfire

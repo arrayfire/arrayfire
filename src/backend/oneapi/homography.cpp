@@ -19,6 +19,7 @@
 using af::dim4;
 using std::numeric_limits;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -42,3 +43,4 @@ INSTANTIATE(float)
 INSTANTIATE(double)
 
 }  // namespace oneapi
+}  // namespace arrayfire

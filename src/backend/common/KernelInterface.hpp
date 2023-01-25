@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <string>
 
+namespace arrayfire {
 namespace common {
 
 /// Kernel Interface that should be implemented by each backend
@@ -101,3 +102,4 @@ class KernelInterface {
 };
 
 }  // namespace common
+}  // namespace arrayfire

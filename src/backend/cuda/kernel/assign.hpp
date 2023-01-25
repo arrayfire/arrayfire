@@ -14,6 +14,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/assign_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -23,7 +24,7 @@ void assign(Param<T> out, CParam<T> in, const AssignKernelParam& p) {
     constexpr int THREADS_Y = 8;
 
     auto assignKer =
-        common::getKernel("cuda::assign", std::array{assign_cuh_src},
+        common::getKernel("arrayfire::cuda::assign", {{assign_cuh_src}},
                           TemplateArgs(TemplateTypename<T>()));
 
     const dim3 threads(THREADS_X, THREADS_Y);
@@ -33,10 +34,9 @@ void assign(Param<T> out, CParam<T> in, const AssignKernelParam& p) {
 
     dim3 blocks(blks_x * in.dims[2], blks_y * in.dims[3]);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -47,3 +47,4 @@ void assign(Param<T> out, CParam<T> in, const AssignKernelParam& p) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

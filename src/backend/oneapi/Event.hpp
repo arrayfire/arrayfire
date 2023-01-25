@@ -12,6 +12,7 @@
 #include <common/EventBase.hpp>
 #include <af/event.h>
 
+namespace arrayfire {
 namespace oneapi {
 class OneAPIEventPolicy {
    public:
@@ -62,3 +63,4 @@ void block(af_event eventHandle);
 af_event createAndMarkEvent();
 
 }  // namespace oneapi
+}  // namespace arrayfire

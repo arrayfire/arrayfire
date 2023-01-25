@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace opencl {
 template<typename T>
 Array<T> inverse(const Array<T> &in);
-}
+}  // namespace opencl
+}  // namespace arrayfire

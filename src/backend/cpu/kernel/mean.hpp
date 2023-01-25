@@ -11,6 +11,7 @@
 #include <Array.hpp>
 #include <common/Transform.hpp>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -123,3 +124,4 @@ struct mean_dim<Ti, Tw, To, 0> {
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

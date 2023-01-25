@@ -14,6 +14,7 @@
 #include <af/dim4.hpp>
 #include <stdexcept>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
@@ -46,3 +47,4 @@ INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 }  // namespace oneapi
+}  // namespace arrayfire

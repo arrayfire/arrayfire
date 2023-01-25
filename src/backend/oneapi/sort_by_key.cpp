@@ -16,6 +16,7 @@
 #include <sort_by_key.hpp>
 #include <stdexcept>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename Tk, typename Tv>
 void sort_by_key(Array<Tk> &okey, Array<Tv> &oval, const Array<Tk> &ikey,
@@ -53,3 +54,4 @@ INSTANTIATE1(uchar)
 INSTANTIATE1(intl)
 INSTANTIATE1(uintl)
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -14,6 +14,7 @@
 #include <nvrtc_kernel_headers/resize_cuh.hpp>
 #include <af/defines.h>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -24,7 +25,7 @@ static const unsigned TY = 16;
 template<typename T>
 void resize(Param<T> out, CParam<T> in, af_interp_type method) {
     auto resize = common::getKernel(
-        "cuda::resize", std::array{resize_cuh_src},
+        "arrayfire::cuda::resize", {{resize_cuh_src}},
         TemplateArgs(TemplateTypename<T>(), TemplateArg(method)));
 
     dim3 threads(TX, TY, 1);
@@ -46,3 +47,4 @@ void resize(Param<T> out, CParam<T> in, af_interp_type method) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

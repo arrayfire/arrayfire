@@ -35,6 +35,7 @@ template<typename T>
 class SparseArray;
 }
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -326,3 +327,4 @@ class Array {
 };
 
 }  // namespace oneapi
+}  // namespace arrayfire

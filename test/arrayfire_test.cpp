@@ -40,6 +40,7 @@
 
 using af::af_cdouble;
 using af::af_cfloat;
+using std::vector;
 
 bool operator==(const af_half &lhs, const af_half &rhs) {
     return lhs.data_ == rhs.data_;
@@ -259,8 +260,16 @@ template<typename T>
     switch (arrDtype) {
         case u8: return imageEq<unsigned char>(aName, bName, a, b, maxAbsDiff);
         case b8: return imageEq<char>(aName, bName, a, b, maxAbsDiff);
+        case s32: return imageEq<int>(aName, bName, a, b, maxAbsDiff);
+        case u32: return imageEq<unsigned int>(aName, bName, a, b, maxAbsDiff);
         case f32: return imageEq<float>(aName, bName, a, b, maxAbsDiff);
         case f64: return imageEq<double>(aName, bName, a, b, maxAbsDiff);
+        case s16: return imageEq<short>(aName, bName, a, b, maxAbsDiff);
+        case u16:
+            return imageEq<unsigned short>(aName, bName, a, b, maxAbsDiff);
+        case u64:
+            return imageEq<unsigned long long>(aName, bName, a, b, maxAbsDiff);
+        case s64: return imageEq<long long>(aName, bName, a, b, maxAbsDiff);
         default: throw(AF_ERR_NOT_SUPPORTED);
     }
     return ::testing::AssertionSuccess();
@@ -421,10 +430,23 @@ INSTANTIATE(unsigned char, unsigned char, float);
 INSTANTIATE(short, short, float);
 INSTANTIATE(unsigned short, unsigned short, float);
 INSTANTIATE(half_float::half, half_float::half, float);
+INSTANTIATE(half_float::half, half_float::half, double);
 
+INSTANTIATE(af_cdouble, af_cdouble, double);
 INSTANTIATE(double, af_cdouble, float);
 INSTANTIATE(float, af_cfloat, float);
 INSTANTIATE(half_float::half, uint, uint);
+INSTANTIATE(float, float, double);
+INSTANTIATE(int, float, double);
+INSTANTIATE(unsigned int, float, double);
+INSTANTIATE(short, float, double);
+INSTANTIATE(unsigned short, float, double);
+INSTANTIATE(char, float, double);
+INSTANTIATE(unsigned char, float, double);
+INSTANTIATE(long long, double, double);
+INSTANTIATE(unsigned long long, double, double);
+INSTANTIATE(af_cfloat, af_cfloat, double);
+INSTANTIATE(half_float::half, float, double);
 
 #undef INSTANTIATE
 
@@ -1391,6 +1413,116 @@ INSTANTIATE(unsigned long long);
 #undef INSTANTIATE
 
 template<typename T>
+struct sparseCooValue {
+    int row = 0;
+    int col = 0;
+    T value = 0;
+    sparseCooValue(int r, int c, T v) : row(r), col(c), value(v) {}
+};
+
+template<typename T>
+void swap(sparseCooValue<T> &lhs, sparseCooValue<T> &rhs) {
+    std::swap(lhs.row, rhs.row);
+    std::swap(lhs.col, rhs.col);
+    std::swap(lhs.value, rhs.value);
+}
+
+template<typename T>
+bool operator<(const sparseCooValue<T> &lhs, const sparseCooValue<T> &rhs) {
+    if (lhs.row < rhs.row) {
+        return true;
+    } else if (lhs.row == rhs.row && lhs.col < rhs.col) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+template<typename T>
+std::ostream &operator<<(std::ostream &os, const sparseCooValue<T> &val) {
+    os << "(" << val.row << ", " << val.col << "): " << val.value;
+    return os;
+}
+
+template<typename T>
+bool isZero(const sparseCooValue<T> &val) {
+    return val.value == 0.;
+}
+
+template<typename T>
+vector<sparseCooValue<T>> toCooVector(const af::array &arr) {
+    vector<sparseCooValue<T>> out;
+    if (arr.issparse()) {
+        switch (sparseGetStorage(arr)) {
+            case AF_STORAGE_COO: {
+                dim_t nnz = sparseGetNNZ(arr);
+                vector<int> row(nnz), col(nnz);
+                vector<T> values(nnz);
+                sparseGetValues(arr).host(values.data());
+                sparseGetRowIdx(arr).host(row.data());
+                sparseGetColIdx(arr).host(col.data());
+                out.reserve(nnz);
+                for (int i = 0; i < nnz; i++) {
+                    out.emplace_back(row[i], col[i], values[i]);
+                }
+            } break;
+            case AF_STORAGE_CSR: {
+                dim_t nnz = sparseGetNNZ(arr);
+                vector<int> row(arr.dims(0) + 1), col(nnz);
+                vector<T> values(nnz);
+                sparseGetValues(arr).host(values.data());
+                sparseGetRowIdx(arr).host(row.data());
+                sparseGetColIdx(arr).host(col.data());
+                out.reserve(nnz);
+                for (int i = 0; i < row.size() - 1; i++) {
+                    for (int r = row[i]; r < row[i + 1]; r++) {
+                        out.emplace_back(i, col[r], values[r]);
+                    }
+                }
+            } break;
+            case AF_STORAGE_CSC: {
+                dim_t nnz = sparseGetNNZ(arr);
+                vector<int> row(nnz), col(arr.dims(1) + 1);
+                vector<T> values(nnz);
+                sparseGetValues(arr).host(values.data());
+                sparseGetRowIdx(arr).host(row.data());
+                sparseGetColIdx(arr).host(col.data());
+                out.reserve(nnz);
+                for (int i = 0; i < col.size() - 1; i++) {
+                    for (int c = col[i]; c < col[i + 1]; c++) {
+                        out.emplace_back(row[c], i, values[c]);
+                    }
+                }
+            } break;
+            default: throw std::logic_error("NOT SUPPORTED");
+        }
+    } else {
+        vector<T> values(arr.elements());
+        arr.host(values.data());
+        int M = arr.dims(0), N = arr.dims(1);
+        for (int j = 0; j < N; j++) {
+            for (int i = 0; i < M; i++) {
+                if (std::fpclassify(real(values[j * M + i])) == FP_ZERO) {
+                    out.emplace_back(i, j, values[j * M + i]);
+                }
+            }
+        }
+    }
+
+    // Remove zero elements from result to ensure that only non-zero elements
+    // are compared
+    out.erase(std::remove_if(out.begin(), out.end(), isZero<T>), out.end());
+    std::sort(begin(out), end(out));
+    return out;
+}
+
+template<typename T>
+bool operator==(const sparseCooValue<T> &lhs, sparseCooValue<T> &rhs) {
+    return lhs.row == rhs.row && lhs.col == rhs.col &&
+           cmp(lhs.value, rhs.value);
+}
+
+template<typename T>
 std::string printContext(const std::vector<T> &hGold, std::string goldName,
                          const std::vector<T> &hOut, std::string outName,
                          af::dim4 arrDims, af::dim4 arrStrides, dim_t idx) {
@@ -1496,12 +1628,99 @@ std::string printContext(const std::vector<T> &hGold, std::string goldName,
 }
 
 template<typename T>
+std::string printContext(const std::vector<sparseCooValue<T>> &hGold,
+                         std::string goldName,
+                         const std::vector<sparseCooValue<T>> &hOut,
+                         std::string outName, af::dim4 arrDims,
+                         af::dim4 arrStrides, dim_t idx) {
+    std::ostringstream os;
+
+    af::dim4 coords = unravelIdx(idx, arrDims, arrStrides);
+    dim_t ctxWidth  = 5;
+
+    // Coordinates that span dim0
+    af::dim4 coordsMinBound = coords;
+    coordsMinBound[0]       = 0;
+    af::dim4 coordsMaxBound = coords;
+    coordsMaxBound[0]       = arrDims[0] - 1;
+
+    // dim0 positions that can be displayed
+    dim_t dim0Start = std::max<dim_t>(0LL, idx - ctxWidth);
+    dim_t dim0End   = std::min<dim_t>(idx + ctxWidth + 1LL, hGold.size());
+
+    int setwval = 9;
+    // Linearized indices of values in vectors that can be displayed
+    dim_t vecStartIdx =
+        std::max<dim_t>(ravelIdx(coordsMinBound, arrStrides), idx - ctxWidth);
+    os << "Idx: ";
+    for (int elem = dim0Start; elem < dim0End; elem++) {
+        if (elem == idx) {
+            os << std::setw(setwval - 2) << "[" << elem << "]";
+        } else {
+            os << std::setw(setwval) << elem;
+        }
+    }
+    os << "\nRow: ";
+    for (int elem = dim0Start; elem < dim0End; elem++) {
+        if (elem == idx) {
+            os << std::setw(setwval - 2) << "[" << hGold[elem].row << "]";
+        } else {
+            os << std::setw(setwval) << hGold[elem].row;
+        }
+    }
+    os << "\n     ";
+    for (int elem = dim0Start; elem < dim0End; elem++) {
+        if (elem == idx) {
+            os << std::setw(setwval - 2) << "[" << hOut[elem].row << "]";
+        } else {
+            os << std::setw(setwval) << hOut[elem].row;
+        }
+    }
+    os << "\nCol: ";
+    for (int elem = dim0Start; elem < dim0End; elem++) {
+        if (elem == idx) {
+            os << std::setw(setwval - 2) << "[" << hGold[elem].col << "]";
+        } else {
+            os << std::setw(setwval) << hGold[elem].col;
+        }
+    }
+    os << "\n     ";
+    for (int elem = dim0Start; elem < dim0End; elem++) {
+        if (elem == idx) {
+            os << std::setw(setwval - 2) << "[" << hOut[elem].col << "]";
+        } else {
+            os << std::setw(setwval) << hOut[elem].col;
+        }
+    }
+
+    os << "\nValue: ";
+    for (int elem = dim0Start; elem < dim0End; elem++) {
+        if (elem == idx) {
+            os << std::setw(setwval - 2) << "[" << hGold[elem].value << "]";
+        } else {
+            os << std::setw(setwval) << hGold[elem].value;
+        }
+    }
+    os << "\n       ";
+    for (int elem = dim0Start; elem < dim0End; elem++) {
+        if (elem == idx) {
+            os << std::setw(setwval - 2) << "[" << hOut[elem].value << "]";
+        } else {
+            os << std::setw(setwval) << hOut[elem].value;
+        }
+    }
+
+    return os.str();
+}
+
+template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       const std::vector<T> &a, af::dim4 aDims,
                                       const std::vector<T> &b, af::dim4 bDims,
                                       float maxAbsDiff, IntegerTag) {
     UNUSED(maxAbsDiff);
     typedef typename std::vector<T>::const_iterator iter;
+
     std::pair<iter, iter> mismatches =
         std::mismatch(a.begin(), a.end(), b.begin());
     iter bItr = mismatches.second;
@@ -1525,7 +1744,7 @@ struct absMatch {
     absMatch(float diff) : diff_(diff) {}
 
     template<typename T>
-    bool operator()(T lhs, T rhs) {
+    bool operator()(const T &lhs, const T &rhs) const {
         if (diff_ > 0) {
             using half_float::abs;
             using std::abs;
@@ -1537,25 +1756,26 @@ struct absMatch {
 };
 
 template<>
-bool absMatch::operator()<af::af_cfloat>(af::af_cfloat lhs, af::af_cfloat rhs) {
+bool absMatch::operator()<af::af_cfloat>(const af::af_cfloat &lhs,
+                                         const af::af_cfloat &rhs) const {
     return af::abs(rhs - lhs) <= diff_;
 }
 
 template<>
-bool absMatch::operator()<af::af_cdouble>(af::af_cdouble lhs,
-                                          af::af_cdouble rhs) {
+bool absMatch::operator()<af::af_cdouble>(const af::af_cdouble &lhs,
+                                          const af::af_cdouble &rhs) const {
     return af::abs(rhs - lhs) <= diff_;
 }
 
 template<>
-bool absMatch::operator()<std::complex<float>>(std::complex<float> lhs,
-                                               std::complex<float> rhs) {
+bool absMatch::operator()<std::complex<float>>(
+    const std::complex<float> &lhs, const std::complex<float> &rhs) const {
     return std::abs(rhs - lhs) <= diff_;
 }
 
 template<>
-bool absMatch::operator()<std::complex<double>>(std::complex<double> lhs,
-                                                std::complex<double> rhs) {
+bool absMatch::operator()<std::complex<double>>(
+    const std::complex<double> &lhs, const std::complex<double> &rhs) const {
     return std::abs(rhs - lhs) <= diff_;
 }
 
@@ -1599,6 +1819,53 @@ template<typename T>
 
 template<typename T>
 ::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
+                                      const std::vector<sparseCooValue<T>> &a,
+                                      af::dim4 aDims,
+                                      const std::vector<sparseCooValue<T>> &b,
+                                      af::dim4 bDims, float maxAbsDiff,
+                                      IntegerTag) {
+    return ::testing::AssertionFailure() << "Unsupported sparse type\n";
+}
+template<typename T>
+::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
+                                      const std::vector<sparseCooValue<T>> &a,
+                                      af::dim4 aDims,
+                                      const std::vector<sparseCooValue<T>> &b,
+                                      af::dim4 bDims, float maxAbsDiff,
+                                      FloatTag) {
+    typedef typename std::vector<sparseCooValue<T>>::const_iterator iter;
+    // TODO(mark): Modify equality for float
+
+    const absMatch diff(maxAbsDiff);
+    std::pair<iter, iter> mismatches = std::mismatch(
+        a.begin(), a.end(), b.begin(),
+        [&diff](const sparseCooValue<T> &lhs, const sparseCooValue<T> &rhs) {
+            return lhs.row == rhs.row && lhs.col == rhs.col &&
+                   diff(lhs.value, rhs.value);
+        });
+
+    iter aItr = mismatches.first;
+    iter bItr = mismatches.second;
+
+    if (aItr == a.end()) {
+        return ::testing::AssertionSuccess();
+    } else {
+        dim_t idx       = std::distance(b.begin(), bItr);
+        af::dim4 coords = unravelIdx(idx, bDims, calcStrides(bDims));
+
+        af::dim4 aStrides = calcStrides(aDims);
+
+        ::testing::AssertionResult result =
+            ::testing::AssertionFailure()
+            << "VALUE DIFFERS at " << idx << ":\n"
+            << printContext(a, aName, b, bName, aDims, aStrides, idx);
+
+        return result;
+    }
+}
+
+template<typename T>
+::testing::AssertionResult elemWiseEq(std::string aName, std::string bName,
                                       const af::array &a, const af::array &b,
                                       float maxAbsDiff) {
     typedef typename cond_type<
@@ -1606,13 +1873,21 @@ template<typename T>
         FloatTag, IntegerTag>::type TagType;
     TagType tag;
 
-    std::vector<T> hA(static_cast<size_t>(a.elements()));
-    a.host(hA.data());
+    if (a.issparse() || b.issparse()) {
+        vector<sparseCooValue<T>> hA = toCooVector<T>(a);
+        vector<sparseCooValue<T>> hB = toCooVector<T>(b);
 
-    std::vector<T> hB(static_cast<size_t>(b.elements()));
-    b.host(hB.data());
-    return elemWiseEq<T>(aName, bName, hA, a.dims(), hB, b.dims(), maxAbsDiff,
-                         tag);
+        return elemWiseEq<T>(aName, bName, hA, a.dims(), hB, b.dims(),
+                             maxAbsDiff, tag);
+    } else {
+        std::vector<T> hA(static_cast<size_t>(a.elements()));
+        a.host(hA.data());
+
+        std::vector<T> hB(static_cast<size_t>(b.elements()));
+        b.host(hB.data());
+        return elemWiseEq<T>(aName, bName, hA, a.dims(), hB, b.dims(),
+                             maxAbsDiff, tag);
+    }
 }
 
 template<typename T>

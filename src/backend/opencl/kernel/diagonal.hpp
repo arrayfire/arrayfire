@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -32,11 +33,11 @@ static void diagCreate(Param out, Param in, int num) {
     };
     std::array<std::string, 3> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
+        DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
         getTypeBuildDefinition<T>()};
 
-    auto diagCreate = common::getKernel(
-        "diagCreateKernel", std::array{diag_create_cl_src}, targs, options);
+    auto diagCreate = common::getKernel("diagCreateKernel",
+                                        {{diag_create_cl_src}}, targs, options);
 
     cl::NDRange local(32, 8);
     int groups_x = divup(out.info.dims[0], local[0]);
@@ -56,11 +57,11 @@ static void diagExtract(Param out, Param in, int num) {
     };
     std::array<std::string, 3> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
+        DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
         getTypeBuildDefinition<T>()};
 
     auto diagExtract = common::getKernel(
-        "diagExtractKernel", std::array{diag_extract_cl_src}, targs, options);
+        "diagExtractKernel", {{diag_extract_cl_src}}, targs, options);
 
     cl::NDRange local(256, 1);
     int groups_x = divup(out.info.dims[0], local[0]);
@@ -75,3 +76,4 @@ static void diagExtract(Param out, Param in, int num) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

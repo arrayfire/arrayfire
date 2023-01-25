@@ -15,6 +15,7 @@
 
 #include <string>
 
+namespace arrayfire {
 namespace common {
 /// The environment variable that determines where the runtime kernels
 /// will be stored on the file system
@@ -28,8 +29,6 @@ std::string& ltrim(std::string& s);
 // Dump the kernel sources only if the environment variable is defined
 void saveKernel(const std::string& funcName, const std::string& jit_ker,
                 const std::string& ext);
-
-std::string int_version_to_string(int version);
 
 std::string& getCacheDirectory();
 
@@ -59,3 +58,4 @@ template<typename T>
 std::string toString(T value);
 
 }  // namespace common
+}  // namespace arrayfire

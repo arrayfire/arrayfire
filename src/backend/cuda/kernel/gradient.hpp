@@ -17,6 +17,7 @@
 
 #include <array>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,9 +27,9 @@ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in) {
     constexpr unsigned TY = 8;
 
     auto gradient =
-        common::getKernel("cuda::gradient", std::array{gradient_cuh_src},
+        common::getKernel("arrayfire::cuda::gradient", {{gradient_cuh_src}},
                           TemplateArgs(TemplateTypename<T>()),
-                          std::array{DefineValue(TX), DefineValue(TY)});
+                          {{DefineValue(TX), DefineValue(TY)}});
 
     dim3 threads(TX, TY, 1);
 
@@ -36,10 +37,9 @@ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in) {
     int blocksPerMatY = divup(in.dims[1], TY);
     dim3 blocks(blocksPerMatX * in.dims[2], blocksPerMatY * in.dims[3], 1);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -49,3 +49,4 @@ void gradient(Param<T> grad0, Param<T> grad1, CParam<T> in) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

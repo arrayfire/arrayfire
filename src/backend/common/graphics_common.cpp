@@ -15,9 +15,12 @@
 #include <mutex>
 #include <utility>
 
-using common::getEnvVar;
+using arrayfire::common::getEnvVar;
 using std::make_pair;
 using std::string;
+
+namespace arrayfire {
+namespace common {
 
 /// Dynamically loads forge function pointer at runtime
 #define FG_MODULE_FUNCTION_INIT(NAME) \
@@ -175,7 +178,7 @@ size_t getTypeSize(GLenum type) {
 }
 
 void makeContextCurrent(fg_window window) {
-    FG_CHECK(graphics::forgePlugin().fg_make_window_current(window));
+    FG_CHECK(common::forgePlugin().fg_make_window_current(window));
     CheckGL("End makeContextCurrent");
 }
 
@@ -234,8 +237,6 @@ double step_round(const double in, const bool dir) {
 
     return mag * mult;
 }
-
-namespace graphics {
 
 ForgeModule& forgePlugin() { return detail::forgeManager().plugin(); }
 
@@ -519,4 +520,6 @@ void ForgeManager::setChartAxesOverride(const fg_chart chart, bool flag) {
     }
     mChartAxesOverrideMap[chart] = flag;
 }
-}  // namespace graphics
+
+}  // namespace common
+}  // namespace arrayfire

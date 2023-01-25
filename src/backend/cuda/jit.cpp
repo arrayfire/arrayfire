@@ -34,17 +34,17 @@
 #include <string>
 #include <vector>
 
-using common::findModule;
-using common::getEnvVar;
-using common::getFuncName;
-using common::half;
-using common::ModdimNode;
-using common::Node;
-using common::Node_ids;
-using common::Node_map_t;
-using common::Node_ptr;
-using common::NodeIterator;
-using common::saveKernel;
+using arrayfire::common::findModule;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::getFuncName;
+using arrayfire::common::half;
+using arrayfire::common::ModdimNode;
+using arrayfire::common::Node;
+using arrayfire::common::Node_ids;
+using arrayfire::common::Node_map_t;
+using arrayfire::common::Node_ptr;
+using arrayfire::common::NodeIterator;
+using arrayfire::common::saveKernel;
 
 using std::array;
 using std::equal;
@@ -56,6 +56,7 @@ using std::stringstream;
 using std::to_string;
 using std::vector;
 
+namespace arrayfire {
 namespace cuda {
 using jit::BufferNode;
 
@@ -225,67 +226,79 @@ struct Param {
     thread_local stringstream inOffsetsStream;
     thread_local stringstream opsStream;
     thread_local stringstream outrefStream;
-
-    int oid{0};
-    for (size_t i{0}; i < full_nodes.size(); i++) {
-        const auto& node{full_nodes[i]};
-        const auto& ids_curr{full_ids[i]};
-        // Generate input parameters, only needs current id
-        node->genParams(inParamStream, ids_curr.id, is_linear);
-        // Generate input offsets, only needs current id
-        node->genOffsets(inOffsetsStream, ids_curr.id, is_linear);
-        // Generate the core function body, needs children ids as well
-        node->genFuncs(opsStream, ids_curr);
-        for (auto outIt{begin(output_ids)}, endIt{end(output_ids)};
-             (outIt = find(outIt, endIt, ids_curr.id)) != endIt; ++outIt) {
-            // Generate also output parameters
-            outParamStream << (oid == 0 ? "" : ",\n") << "Param<"
-                           << full_nodes[ids_curr.id]->getTypeStr() << "> out"
-                           << oid;
-            // Generate code to write the output (offset already in ptr)
-            opsStream << "out" << oid << ".ptr[idx] = val" << ids_curr.id
-                      << ";\n";
-            ++oid;
-        }
-    }
-
-    outrefStream << "\n    const Param<"
-                 << full_nodes[output_ids[0]]->getTypeStr()
-                 << "> &outref = out0;";
-
-    // Put various blocks into a single stream
     thread_local stringstream kerStream;
-    kerStream << typedefStr << includeFileStr << "\n\n"
-              << paramTStr << '\n'
-              << kernelVoid << funcName << "(\n"
-              << inParamStream.str() << outParamStream.str() << dimParams << ')'
-              << blockStart << outrefStream.str();
-    if (is_linear) {
-        kerStream << linearInit;
-        if (loop0) kerStream << linearLoop0Start;
-        kerStream << "\n\n" << inOffsetsStream.str() << opsStream.str();
-        if (loop0) kerStream << linearLoop0End;
-        kerStream << linearEnd;
-    } else {
-        if (loop0) {
-            kerStream << stridedLoop0Init << stridedLoop0Start;
-        } else {
-            kerStream << stridedLoopNInit;
-            if (loop3) kerStream << stridedLoop3Init;
-            if (loop2) kerStream << stridedLoop2Init;
-            if (loop1) kerStream << stridedLoop1Init << stridedLoop1Start;
-            if (loop2) kerStream << stridedLoop2Start;
-            if (loop3) kerStream << stridedLoop3Start;
+
+    string ret;
+    try {
+        int oid{0};
+        for (size_t i{0}; i < full_nodes.size(); i++) {
+            const auto& node{full_nodes[i]};
+            const auto& ids_curr{full_ids[i]};
+            // Generate input parameters, only needs current id
+            node->genParams(inParamStream, ids_curr.id, is_linear);
+            // Generate input offsets, only needs current id
+            node->genOffsets(inOffsetsStream, ids_curr.id, is_linear);
+            // Generate the core function body, needs children ids as well
+            node->genFuncs(opsStream, ids_curr);
+            for (auto outIt{begin(output_ids)}, endIt{end(output_ids)};
+                 (outIt = find(outIt, endIt, ids_curr.id)) != endIt; ++outIt) {
+                // Generate also output parameters
+                outParamStream << (oid == 0 ? "" : ",\n") << "Param<"
+                               << full_nodes[ids_curr.id]->getTypeStr()
+                               << "> out" << oid;
+                // Generate code to write the output (offset already in ptr)
+                opsStream << "out" << oid << ".ptr[idx] = val" << ids_curr.id
+                          << ";\n";
+                ++oid;
+            }
         }
-        kerStream << "\n\n" << inOffsetsStream.str() << opsStream.str();
-        if (loop3) kerStream << stridedLoop3End;
-        if (loop2) kerStream << stridedLoop2End;
-        if (loop1) kerStream << stridedLoop1End;
-        if (loop0) kerStream << stridedLoop0End;
-        kerStream << stridedEnd;
+
+        outrefStream << "\n    const Param<"
+                     << full_nodes[output_ids[0]]->getTypeStr()
+                     << "> &outref = out0;";
+
+        // Put various blocks into a single stream
+        kerStream << typedefStr << includeFileStr << "\n\n"
+                  << paramTStr << '\n'
+                  << kernelVoid << funcName << "(\n"
+                  << inParamStream.str() << outParamStream.str() << dimParams
+                  << ')' << blockStart << outrefStream.str();
+        if (is_linear) {
+            kerStream << linearInit;
+            if (loop0) kerStream << linearLoop0Start;
+            kerStream << "\n\n" << inOffsetsStream.str() << opsStream.str();
+            if (loop0) kerStream << linearLoop0End;
+            kerStream << linearEnd;
+        } else {
+            if (loop0) {
+                kerStream << stridedLoop0Init << stridedLoop0Start;
+            } else {
+                kerStream << stridedLoopNInit;
+                if (loop3) kerStream << stridedLoop3Init;
+                if (loop2) kerStream << stridedLoop2Init;
+                if (loop1) kerStream << stridedLoop1Init << stridedLoop1Start;
+                if (loop2) kerStream << stridedLoop2Start;
+                if (loop3) kerStream << stridedLoop3Start;
+            }
+            kerStream << "\n\n" << inOffsetsStream.str() << opsStream.str();
+            if (loop3) kerStream << stridedLoop3End;
+            if (loop2) kerStream << stridedLoop2End;
+            if (loop1) kerStream << stridedLoop1End;
+            if (loop0) kerStream << stridedLoop0End;
+            kerStream << stridedEnd;
+        }
+        kerStream << blockEnd;
+        ret = kerStream.str();
+    } catch (...) {
+        // Prepare for next round
+        inParamStream.str("");
+        outParamStream.str("");
+        inOffsetsStream.str("");
+        opsStream.str("");
+        outrefStream.str("");
+        kerStream.str("");
+        throw;
     }
-    kerStream << blockEnd;
-    const string ret{kerStream.str()};
 
     // Prepare for next round
     inParamStream.str("");
@@ -321,8 +334,7 @@ static CUfunction getKernel(const vector<Node*>& output_nodes,
         const common::Source jit_src{jitKer.c_str(), jitKer.size(),
                                      deterministicHash(jitKer)};
 
-        return common::getKernel(funcName, std::array{jit_src}, {}, {}, true)
-            .get();
+        return common::getKernel(funcName, {{jit_src}}, {}, {}, true).get();
     }
     return common::getKernel(entry, funcName, true).get();
 }
@@ -364,150 +376,165 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
     thread_local vector<Node_ids> full_ids;
     thread_local vector<int> output_ids;
 
-    // Reserve some space to improve performance at smaller
-    // sizes
-    constexpr size_t CAP{1024};
-    if (full_nodes.capacity() < CAP) {
-        nodes.reserve(CAP);
-        output_ids.reserve(10);
-        full_nodes.reserve(CAP);
-        full_ids.reserve(CAP);
-    }
-
-    const af::dtype outputType{output_nodes[0]->getType()};
-    const size_t outputSizeofType{size_of(outputType)};
-    for (Node* node : output_nodes) {
-        assert(node->getType() == outputType);
-        const int id = node->getNodesMap(nodes, full_nodes, full_ids);
-        output_ids.push_back(id);
-    }
-
-    size_t inputSize{0};
-    unsigned nrInputs{0};
-    bool moddimsFound{false};
-    for (const Node* node : full_nodes) {
-        is_linear &= node->isLinear(outDims);
-        moddimsFound |= (node->getOp() == af_moddims_t);
-        if (node->isBuffer()) {
-            ++nrInputs;
-            inputSize += node->getBytes();
-        }
-    }
-    const size_t outputSize{numOutElems * outputSizeofType * nrOutputs};
-    const size_t totalSize{inputSize + outputSize};
-
-    bool emptyColumnsFound{false};
-    if (is_linear) {
-        outDims[0]    = numOutElems;
-        outDims[1]    = 1;
-        outDims[2]    = 1;
-        outDims[3]    = 1;
-        outStrides[0] = 1;
-        outStrides[1] = numOutElems;
-        outStrides[2] = numOutElems;
-        outStrides[3] = numOutElems;
-        ndims         = 1;
-    } else {
-        emptyColumnsFound = ndims > (outDims[0] == 1   ? 1
-                                     : outDims[1] == 1 ? 2
-                                     : outDims[2] == 1 ? 3
-                                                       : 4);
-    }
-
-    // Keep node_clones in scope, so that the nodes remain active for later
-    // referral in case moddims or Column elimination operations have to take
-    // place
-    vector<Node_ptr> node_clones;
-    if (moddimsFound | emptyColumnsFound) {
-        node_clones.reserve(full_nodes.size());
-        for (Node* node : full_nodes) {
-            node_clones.emplace_back(node->clone());
+    try {
+        // Reserve some space to improve performance at smaller
+        // sizes
+        constexpr size_t CAP{1024};
+        if (full_nodes.capacity() < CAP) {
+            nodes.reserve(CAP);
+            output_ids.reserve(10);
+            full_nodes.reserve(CAP);
+            full_ids.reserve(CAP);
         }
 
-        for (const Node_ids& ids : full_ids) {
-            auto& children{node_clones[ids.id]->m_children};
-            for (int i{0}; i < Node::kMaxChildren && children[i] != nullptr;
-                 i++) {
-                children[i] = node_clones[ids.child_ids[i]];
+        const af::dtype outputType{output_nodes[0]->getType()};
+        const size_t outputSizeofType{size_of(outputType)};
+        for (Node* node : output_nodes) {
+            assert(node->getType() == outputType);
+            const int id = node->getNodesMap(nodes, full_nodes, full_ids);
+            output_ids.push_back(id);
+        }
+
+        size_t inputSize{0};
+        unsigned nrInputs{0};
+        bool moddimsFound{false};
+        for (const Node* node : full_nodes) {
+            is_linear &= node->isLinear(outDims);
+            moddimsFound |= (node->getOp() == af_moddims_t);
+            if (node->isBuffer()) {
+                ++nrInputs;
+                inputSize += node->getBytes();
             }
         }
+        const size_t outputSize{numOutElems * outputSizeofType * nrOutputs};
+        const size_t totalSize{inputSize + outputSize};
 
-        if (moddimsFound) {
-            const auto isModdim{[](const Node_ptr& node) {
-                return node->getOp() == af_moddims_t;
-            }};
-            for (auto nodeIt{begin(node_clones)}, endIt{end(node_clones)};
-                 (nodeIt = find_if(nodeIt, endIt, isModdim)) != endIt;
-                 ++nodeIt) {
-                const ModdimNode* mn{static_cast<ModdimNode*>(nodeIt->get())};
+        bool emptyColumnsFound{false};
+        if (is_linear) {
+            outDims[0]    = numOutElems;
+            outDims[1]    = 1;
+            outDims[2]    = 1;
+            outDims[3]    = 1;
+            outStrides[0] = 1;
+            outStrides[1] = numOutElems;
+            outStrides[2] = numOutElems;
+            outStrides[3] = numOutElems;
+            ndims         = 1;
+        } else {
+            emptyColumnsFound = ndims > (outDims[0] == 1   ? 1
+                                         : outDims[1] == 1 ? 2
+                                         : outDims[2] == 1 ? 3
+                                                           : 4);
+        }
 
-                const auto new_strides{calcStrides(mn->m_new_shape)};
-                const auto isBuffer{
-                    [](const Node& ptr) { return ptr.isBuffer(); }};
-                for (NodeIterator<> it{nodeIt->get()}, end{NodeIterator<>()};
-                     (it = find_if(it, end, isBuffer)) != end; ++it) {
-                    BufferNode<T>* buf{static_cast<BufferNode<T>*>(&(*it))};
-                    buf->m_param.dims[0]    = mn->m_new_shape[0];
-                    buf->m_param.dims[1]    = mn->m_new_shape[1];
-                    buf->m_param.dims[2]    = mn->m_new_shape[2];
-                    buf->m_param.dims[3]    = mn->m_new_shape[3];
-                    buf->m_param.strides[0] = new_strides[0];
-                    buf->m_param.strides[1] = new_strides[1];
-                    buf->m_param.strides[2] = new_strides[2];
-                    buf->m_param.strides[3] = new_strides[3];
+        // Keep node_clones in scope, so that the nodes remain active for later
+        // referral in case moddims or Column elimination operations have to
+        // take place
+        vector<Node_ptr> node_clones;
+        if (moddimsFound | emptyColumnsFound) {
+            node_clones.reserve(full_nodes.size());
+            for (Node* node : full_nodes) {
+                node_clones.emplace_back(node->clone());
+            }
+
+            for (const Node_ids& ids : full_ids) {
+                auto& children{node_clones[ids.id]->m_children};
+                for (int i{0}; i < Node::kMaxChildren && children[i] != nullptr;
+                     i++) {
+                    children[i] = node_clones[ids.child_ids[i]];
                 }
             }
-        }
-        if (emptyColumnsFound) {
-            const auto isBuffer{
-                [](const Node_ptr& node) { return node->isBuffer(); }};
-            for (auto nodeIt{begin(node_clones)}, endIt{end(node_clones)};
-                 (nodeIt = find_if(nodeIt, endIt, isBuffer)) != endIt;
-                 ++nodeIt) {
-                BufferNode<T>* buf{static_cast<BufferNode<T>*>(nodeIt->get())};
-                removeEmptyColumns(outDims, ndims, buf->m_param.dims,
-                                   buf->m_param.strides);
+
+            if (moddimsFound) {
+                const auto isModdim{[](const Node_ptr& node) {
+                    return node->getOp() == af_moddims_t;
+                }};
+                for (auto nodeIt{begin(node_clones)}, endIt{end(node_clones)};
+                     (nodeIt = find_if(nodeIt, endIt, isModdim)) != endIt;
+                     ++nodeIt) {
+                    const ModdimNode* mn{
+                        static_cast<ModdimNode*>(nodeIt->get())};
+
+                    const auto new_strides{calcStrides(mn->m_new_shape)};
+                    const auto isBuffer{
+                        [](const Node& ptr) { return ptr.isBuffer(); }};
+                    for (NodeIterator<> it{nodeIt->get()},
+                         end{NodeIterator<>()};
+                         (it = find_if(it, end, isBuffer)) != end; ++it) {
+                        BufferNode<T>* buf{static_cast<BufferNode<T>*>(&(*it))};
+                        buf->m_param.dims[0]    = mn->m_new_shape[0];
+                        buf->m_param.dims[1]    = mn->m_new_shape[1];
+                        buf->m_param.dims[2]    = mn->m_new_shape[2];
+                        buf->m_param.dims[3]    = mn->m_new_shape[3];
+                        buf->m_param.strides[0] = new_strides[0];
+                        buf->m_param.strides[1] = new_strides[1];
+                        buf->m_param.strides[2] = new_strides[2];
+                        buf->m_param.strides[3] = new_strides[3];
+                    }
+                }
             }
-            for_each(++begin(outputs), end(outputs),
-                     [outDims, ndims](Param<T>& output) {
-                         removeEmptyColumns(outDims, ndims, output.dims,
-                                            output.strides);
-                     });
-            ndims = removeEmptyColumns(outDims, ndims, outDims, outStrides);
+            if (emptyColumnsFound) {
+                const auto isBuffer{
+                    [](const Node_ptr& node) { return node->isBuffer(); }};
+                for (auto nodeIt{begin(node_clones)}, endIt{end(node_clones)};
+                     (nodeIt = find_if(nodeIt, endIt, isBuffer)) != endIt;
+                     ++nodeIt) {
+                    BufferNode<T>* buf{
+                        static_cast<BufferNode<T>*>(nodeIt->get())};
+                    removeEmptyColumns(outDims, ndims, buf->m_param.dims,
+                                       buf->m_param.strides);
+                }
+                for_each(++begin(outputs), end(outputs),
+                         [outDims, ndims](Param<T>& output) {
+                             removeEmptyColumns(outDims, ndims, output.dims,
+                                                output.strides);
+                         });
+                ndims = removeEmptyColumns(outDims, ndims, outDims, outStrides);
+            }
+
+            full_nodes.clear();
+            for (Node_ptr& node : node_clones) {
+                full_nodes.push_back(node.get());
+            }
         }
 
+        threadsMgt<dim_t> th(outDims, ndims);
+        const dim3 threads{th.genThreads()};
+        const dim3 blocks{th.genBlocks(threads, nrInputs, nrOutputs, totalSize,
+                                       outputSizeofType)};
+        auto ker = getKernel(output_nodes, output_ids, full_nodes, full_ids,
+                             is_linear, th.loop0, th.loop1, th.loop2, th.loop3);
+
+        vector<void*> args;
+        for (const Node* node : full_nodes) {
+            node->setArgs(0, is_linear,
+                          [&](int /*id*/, const void* ptr, size_t /*size*/) {
+                              args.push_back(const_cast<void*>(ptr));
+                          });
+        }
+
+        for (auto& out : outputs) { args.push_back(static_cast<void*>(&out)); }
+
+        {
+            using namespace arrayfire::cuda::kernel_logger;
+            AF_TRACE(
+                "Launching : Dims: [{},{},{},{}] Blocks: [{}] "
+                "Threads: [{}] threads: {}",
+                outDims[0], outDims[1], outDims[2], outDims[3], blocks, threads,
+                blocks.x * threads.x * blocks.y * threads.y * blocks.z *
+                    threads.z);
+        }
+        CU_CHECK(cuLaunchKernel(ker, blocks.x, blocks.y, blocks.z, threads.x,
+                                threads.y, threads.z, 0, getActiveStream(),
+                                args.data(), NULL));
+    } catch (...) {
+        // Reset the thread local vectors
+        nodes.clear();
+        output_ids.clear();
         full_nodes.clear();
-        for (Node_ptr& node : node_clones) { full_nodes.push_back(node.get()); }
+        full_ids.clear();
+        throw;
     }
-
-    threadsMgt<dim_t> th(outDims, ndims);
-    const dim3 threads{th.genThreads()};
-    const dim3 blocks{th.genBlocks(threads, nrInputs, nrOutputs, totalSize,
-                                   outputSizeofType)};
-    auto ker = getKernel(output_nodes, output_ids, full_nodes, full_ids,
-                         is_linear, th.loop0, th.loop1, th.loop2, th.loop3);
-
-    vector<void*> args;
-    for (const Node* node : full_nodes) {
-        node->setArgs(0, is_linear,
-                      [&](int /*id*/, const void* ptr, size_t /*size*/) {
-                          args.push_back(const_cast<void*>(ptr));
-                      });
-    }
-
-    for (auto& out : outputs) { args.push_back(static_cast<void*>(&out)); }
-
-    {
-        using namespace cuda::kernel_logger;
-        AF_TRACE(
-            "Launching : Dims: [{},{},{},{}] Blocks: [{}] "
-            "Threads: [{}] threads: {}",
-            outDims[0], outDims[1], outDims[2], outDims[3], blocks, threads,
-            blocks.x * threads.x * blocks.y * threads.y * blocks.z * threads.z);
-    }
-    CU_CHECK(cuLaunchKernel(ker, blocks.x, blocks.y, blocks.z, threads.x,
-                            threads.y, threads.z, 0, getActiveStream(),
-                            args.data(), NULL));
 
     // Reset the thread local vectors
     nodes.clear();
@@ -564,3 +591,4 @@ template void evalNodes<ushort>(vector<Param<ushort>>& out,
 template void evalNodes<half>(vector<Param<half>>& out,
                               const vector<Node*>& node);
 }  // namespace cuda
+}  // namespace arrayfire

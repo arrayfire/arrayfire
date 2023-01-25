@@ -25,6 +25,7 @@
 #include <iostream>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -241,3 +242,4 @@ void reduce_first_default(Param<To> out, Param<Ti> in, bool change_nan,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

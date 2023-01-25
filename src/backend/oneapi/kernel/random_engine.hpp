@@ -30,6 +30,7 @@ static const int TABLE_SIZE = 16;
 static const int MAX_BLOCKS = 32;
 static const int STATE_SIZE = (256 * 3);
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -202,3 +203,4 @@ void normalDistributionMT(Param<T> out, const size_t elements,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

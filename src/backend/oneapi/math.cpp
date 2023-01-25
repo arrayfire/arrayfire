@@ -10,6 +10,7 @@
 #include "math.hpp"
 #include <common/half.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 cfloat operator+(cfloat lhs, cfloat rhs) {
     // cfloat res = {{lhs.s[0] + rhs.s[0], lhs.s[1] + rhs.s[1]}};
@@ -51,3 +52,4 @@ cdouble division(cdouble lhs, double rhs) {
     return retVal;
 }
 }  // namespace oneapi
+}  // namespace arrayfire

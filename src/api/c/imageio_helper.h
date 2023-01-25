@@ -21,6 +21,8 @@
 #include <functional>
 #include <memory>
 
+namespace arrayfire {
+
 class FreeImage_Module {
     common::DependencyModule module;
 
@@ -102,3 +104,4 @@ static af_err channel_split(const af_array rgb, const af::dim4 &dims,
 }
 
 #endif
+}

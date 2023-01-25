@@ -13,6 +13,7 @@
 
 #include <math.hpp>
 
+namespace arrayfire {
 namespace opencl {
 namespace cpu {
 
@@ -50,6 +51,7 @@ void triangle(T *o, const T *i, const dim4 odm, const dim4 ost,
 
 }  // namespace cpu
 }  // namespace opencl
+}  // namespace arrayfire
 
 #endif
 #endif  // WITH_LINEAR_ALGEBRA

@@ -17,12 +17,13 @@ using af::dim4;
 // using cl::Memory;
 using std::vector;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
 void copy_surface(const Array<T> &P, fg_surface surface) {
     ONEAPI_NOT_SUPPORTED("copy_surface Not supported");
-    // ForgeModule &_ = graphics::forgePlugin();
+    // ForgeModule &_ = common::forgePlugin();
     // if (isGLSharingSupported()) {
     //     CheckGL("Begin OpenCL resource copy");
     //     const cl::Buffer *d_P = P.get();
@@ -82,3 +83,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace oneapi
+}  // namespace arrayfire

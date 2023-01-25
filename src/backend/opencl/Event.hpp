@@ -12,6 +12,7 @@
 #include <common/EventBase.hpp>
 #include <af/event.h>
 
+namespace arrayfire {
 namespace opencl {
 class OpenCLEventPolicy {
    public:
@@ -57,3 +58,4 @@ void block(af_event eventHandle);
 af_event createAndMarkEvent();
 
 }  // namespace opencl
+}  // namespace arrayfire

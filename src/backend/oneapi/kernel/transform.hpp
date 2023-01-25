@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -284,3 +285,4 @@ void transform(Param<T> out, const Param<T> in, const Param<float> tf, bool isIn
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

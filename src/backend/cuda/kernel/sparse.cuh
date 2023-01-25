@@ -11,6 +11,7 @@
 
 #include <Param.hpp>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
@@ -33,3 +34,4 @@ __global__ void coo2Dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
 }
 
 }  // namespace cuda
+}  // namespace arrayfire

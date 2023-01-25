@@ -18,6 +18,7 @@
 
 using std::make_unique;
 
+namespace arrayfire {
 namespace cpu {
 /// \brief Creates a new event and marks it in the queue
 Event makeEvent(cpu::queue& queue) {
@@ -68,3 +69,4 @@ af_event createAndMarkEvent() {
 }
 
 }  // namespace cpu
+}  // namespace arrayfire

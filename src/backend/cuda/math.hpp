@@ -30,6 +30,7 @@
 #include <cuda_fp16.h>
 #include <math_constants.h>
 
+namespace arrayfire {
 namespace cuda {
 
 #ifdef AF_WITH_FAST_MATH
@@ -147,19 +148,17 @@ __DH__ static To scalar(Ti real, Ti imag) {
 
 template<typename T>
 inline T maxval() {
-    if constexpr (std::is_floating_point_v<T> && !fast_math) {
+    AF_IF_CONSTEXPR(std::is_floating_point<T>::value && !fast_math) {
         return std::numeric_limits<T>::infinity();
-    } else {
-        return std::numeric_limits<T>::max();
     }
+    else { return std::numeric_limits<T>::max(); }
 }
 template<typename T>
 inline T minval() {
-    if constexpr (std::is_floating_point_v<T> && !fast_math) {
+    AF_IF_CONSTEXPR(std::is_floating_point<T>::value && !fast_math) {
         return -std::numeric_limits<T>::infinity();
-    } else {
-        return std::numeric_limits<T>::lowest();
     }
+    else { return std::numeric_limits<T>::lowest(); }
 }
 #else
 template<typename T>
@@ -394,13 +393,32 @@ constexpr const __DH__ T clamp(const T value, const T lo, const T hi) {
     return clamp(value, lo, hi, [](auto lhs, auto rhs) { return lhs < rhs; });
 }
 
-}  // namespace cuda
+#ifdef AF_WITH_FAST_MATH
+/// The pow function with fast math is constantly wrong with fast math
+/// so this function converts the operation to double when fast-math
+/// is used
+__device__ inline double afpowf(double x, double y) { return pow(x, y); }
+#else
+/// The pow function with fast math is constantly wrong with fast math
+/// so this function converts the operation to double when fast-math
+/// is used
+__device__ inline float afpowf(float x, float y) { return powf(x, y); }
+#endif
 
-__SDH__ bool operator==(cuda::cfloat a, cuda::cfloat b) {
+}  // namespace cuda
+}  // namespace arrayfire
+
+__SDH__ bool operator==(arrayfire::cuda::cfloat a, arrayfire::cuda::cfloat b) {
     return (a.x == b.x) && (a.y == b.y);
 }
-__SDH__ bool operator!=(cuda::cfloat a, cuda::cfloat b) { return !(a == b); }
-__SDH__ bool operator==(cuda::cdouble a, cuda::cdouble b) {
+__SDH__ bool operator!=(arrayfire::cuda::cfloat a, arrayfire::cuda::cfloat b) {
+    return !(a == b);
+}
+__SDH__ bool operator==(arrayfire::cuda::cdouble a,
+                        arrayfire::cuda::cdouble b) {
     return (a.x == b.x) && (a.y == b.y);
 }
-__SDH__ bool operator!=(cuda::cdouble a, cuda::cdouble b) { return !(a == b); }
+__SDH__ bool operator!=(arrayfire::cuda::cdouble a,
+                        arrayfire::cuda::cdouble b) {
+    return !(a == b);
+}

@@ -37,6 +37,7 @@ AF_DEPRECATED_WARNINGS_ON
 
 namespace compute = boost::compute;
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -66,12 +67,9 @@ std::array<Kernel, 3> getRegionsKernels(const bool full_conn,
     options.emplace_back(getTypeBuildDefinition<T>());
 
     return {
-        common::getKernel("initial_label", std::array{regions_cl_src}, targs,
-                          options),
-        common::getKernel("final_relabel", std::array{regions_cl_src}, targs,
-                          options),
-        common::getKernel("update_equiv", std::array{regions_cl_src}, targs,
-                          options),
+        common::getKernel("initial_label", {{regions_cl_src}}, targs, options),
+        common::getKernel("final_relabel", {{regions_cl_src}}, targs, options),
+        common::getKernel("update_equiv", {{regions_cl_src}}, targs, options),
     };
 }
 
@@ -195,3 +193,4 @@ void regions(Param out, Param in, const bool full_conn,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

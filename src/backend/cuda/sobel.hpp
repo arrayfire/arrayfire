@@ -10,10 +10,12 @@
 #include <Array.hpp>
 #include <utility>
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename Ti, typename To>
 std::pair<Array<To>, Array<To>> sobelDerivatives(const Array<Ti> &img,
                                                  const unsigned &ker_size);
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

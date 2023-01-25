@@ -15,13 +15,14 @@
 
 using af::dim4;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
 void copy_plot(const Array<T> &P, fg_plot plot) {
     ONEAPI_NOT_SUPPORTED("copy_plot Not supported");
 
-    // ForgeModule &_ = graphics::forgePlugin();
+    // ForgeModule &_ = common::forgePlugin();
     // if (isGLSharingSupported()) {
     //     CheckGL("Begin OpenCL resource copy");
     //     const cl::Buffer *d_P = P.get();
@@ -80,3 +81,4 @@ INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }  // namespace oneapi
+}  // namespace arrayfire

@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/diff_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -25,7 +26,7 @@ void diff(Param<T> out, CParam<T> in, const int indims, const unsigned dim,
     constexpr unsigned TY = 16;
 
     auto diff =
-        common::getKernel("cuda::diff", std::array{diff_cuh_src},
+        common::getKernel("arrayfire::cuda::diff", {{diff_cuh_src}},
                           TemplateArgs(TemplateTypename<T>(), TemplateArg(dim),
                                        TemplateArg(isDiff2)));
 
@@ -39,10 +40,9 @@ void diff(Param<T> out, CParam<T> in, const int indims, const unsigned dim,
 
     const int oElem = out.dims[0] * out.dims[1] * out.dims[2] * out.dims[3];
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -52,3 +52,4 @@ void diff(Param<T> out, CParam<T> in, const int indims, const unsigned dim,
 }
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

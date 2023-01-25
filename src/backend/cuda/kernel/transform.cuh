@@ -13,11 +13,12 @@
 __constant__ float
     c_tmat[3072];  // Allows 512 Affine Transforms and 340 Persp. Transforms
 
+namespace arrayfire {
 namespace cuda {
 
 template<typename T>
-__device__
-void calc_transf_inverse(T *txo, const T *txi, const bool perspective) {
+__device__ void calc_transf_inverse(T *txo, const T *txi,
+                                    const bool perspective) {
     if (perspective) {
         txo[0] = txi[4] * txi[8] - txi[5] * txi[7];
         txo[1] = -(txi[1] * txi[8] - txi[2] * txi[7]);
@@ -56,13 +57,11 @@ void calc_transf_inverse(T *txo, const T *txi, const bool perspective) {
 }
 
 template<typename T, bool inverse, int order>
-__global__
-void transform(Param<T> out, CParam<T> in,
-               const int nImg2, const int nImg3,
-               const int nTfs2, const int nTfs3,
-               const int batchImg2,
-               const int blocksXPerImage, const int blocksYPerImage,
-               const bool perspective, af::interpType method) {
+__global__ void transform(Param<T> out, CParam<T> in, const int nImg2,
+                          const int nImg3, const int nTfs2, const int nTfs3,
+                          const int batchImg2, const int blocksXPerImage,
+                          const int blocksYPerImage, const bool perspective,
+                          af::interpType method) {
     // Image Ids
     const int imgId2 = blockIdx.x / blocksXPerImage;
     const int imgId3 = blockIdx.y / blocksYPerImage;
@@ -171,4 +170,5 @@ void transform(Param<T> out, CParam<T> in,
     interp(out, loco, in, inoff, xidi, yidi, method, limages, clamp);
 }
 
-}
+}  // namespace cuda
+}  // namespace arrayfire

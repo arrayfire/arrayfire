@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -175,3 +176,4 @@ void wrap_dilated(Param<T> out, const Param<T> in, const dim_t wx,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

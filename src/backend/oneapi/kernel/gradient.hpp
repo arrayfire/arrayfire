@@ -15,6 +15,7 @@
 #include <debug_oneapi.hpp>
 #include <kernel/default_config.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -166,3 +167,4 @@ void gradient(Param<T> grad0, Param<T> grad1, const Param<T> in) {
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

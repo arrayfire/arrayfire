@@ -14,6 +14,7 @@
 #include <af/dim4.hpp>
 #include <complex>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -40,3 +41,4 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 
 }  // namespace oneapi
+}  // namespace arrayfire

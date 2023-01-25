@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -62,9 +63,8 @@ auto fetchKernel(const std::string key, const common::Source &additionalSrc,
     options.emplace_back(getTypeBuildDefinition<T>());
     options.insert(std::end(options), std::begin(additionalOptions),
                    std::end(additionalOptions));
-    return common::getKernel(
-        key, std::array{sparse_arith_common_cl_src, additionalSrc}, tmpltArgs,
-        options);
+    return common::getKernel(key, {{sparse_arith_common_cl_src, additionalSrc}},
+                             tmpltArgs, options);
 }
 
 template<typename T, af_op_t op>
@@ -143,9 +143,8 @@ static void csrCalcOutNNZ(Param outRowIdx, unsigned &nnzC, const uint M,
         TemplateTypename<uint>(),
     };
 
-    auto calcNNZ = common::getKernel("csr_calc_out_nnz",
-                                     std::array{ssarith_calc_out_nnz_cl_src},
-                                     tmpltArgs, {});
+    auto calcNNZ = common::getKernel(
+        "csr_calc_out_nnz", {{ssarith_calc_out_nnz_cl_src}}, tmpltArgs, {});
 
     cl::NDRange local(256, 1);
     cl::NDRange global(divup(M, local[0]) * local[0], 1, 1);
@@ -171,7 +170,7 @@ void ssArithCSR(Param oVals, Param oColIdx, const Param oRowIdx, const uint M,
 
     auto arithOp = fetchKernel<T, op>(
         "ssarith_csr", sp_sp_arith_csr_cl_src,
-        {DefineKeyValue(IDENTITY_VALUE, af::scalar_to_option(iden_val))});
+        {DefineKeyValue(IDENTITY_VALUE, scalar_to_option(iden_val))});
 
     cl::NDRange local(256, 1);
     cl::NDRange global(divup(M, local[0]) * local[0], 1, 1);
@@ -184,3 +183,4 @@ void ssArithCSR(Param oVals, Param oColIdx, const Param oRowIdx, const uint M,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

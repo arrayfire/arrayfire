@@ -19,6 +19,7 @@
 
 #include "optypes.hpp"
 
+namespace arrayfire {
 namespace common {
 
 using namespace detail;  // NOLINT
@@ -61,3 +62,4 @@ struct Transform<Ti, To, af_notzero_t> {
 };
 
 }  // namespace common
+}  // namespace arrayfire

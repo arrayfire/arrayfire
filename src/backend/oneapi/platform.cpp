@@ -59,12 +59,13 @@ using std::to_string;
 using std::unique_ptr;
 using std::vector;
 
-using common::getEnvVar;
-using common::ltrim;
-using common::memory::MemoryManagerBase;
-using oneapi::Allocator;
-using oneapi::AllocatorPinned;
+using arrayfire::common::getEnvVar;
+using arrayfire::common::ltrim;
+using arrayfire::common::MemoryManagerBase;
+using arrayfire::oneapi::Allocator;
+using arrayfire::oneapi::AllocatorPinned;
 
+namespace arrayfire {
 namespace oneapi {
 
 static string get_system() {
@@ -587,7 +588,7 @@ void resetMemoryManagerPinned() {
     return DeviceManager::getInstance().resetMemoryManagerPinned();
 }
 
-graphics::ForgeManager& forgeManager() {
+arrayfire::common::ForgeManager& forgeManager() {
     return *(DeviceManager::getInstance().fgMngr);
 }
 
@@ -606,6 +607,7 @@ GraphicsResourceManager& interopManager() {
 }
 
 }  // namespace oneapi
+}  // namespace arrayfire
 
 /*
 //TODO: select which external api functions to expose and add to

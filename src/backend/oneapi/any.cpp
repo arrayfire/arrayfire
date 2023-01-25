@@ -10,8 +10,9 @@
 #include <common/half.hpp>
 #include "reduce_impl.hpp"
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace oneapi {
 // anytrue
 INSTANTIATE(af_or_t, float, char)
@@ -28,3 +29,4 @@ INSTANTIATE(af_or_t, short, char)
 INSTANTIATE(af_or_t, ushort, char)
 INSTANTIATE(af_or_t, half, char)
 }  // namespace oneapi
+}  // namespace arrayfire

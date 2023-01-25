@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
@@ -164,3 +165,4 @@ void transpose(Param<T> out, const Param<T> in, const bool conjugate,
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

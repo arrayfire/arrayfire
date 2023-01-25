@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -42,8 +43,8 @@ void coo2dense(Param out, const Param values, const Param rowIdx,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto coo2dense = common::getKernel(
-        "coo2Dense", std::array{coo2dense_cl_src}, tmpltArgs, compileOpts);
+    auto coo2dense = common::getKernel("coo2Dense", {{coo2dense_cl_src}},
+                                       tmpltArgs, compileOpts);
 
     cl::NDRange local(THREADS_PER_GROUP, 1, 1);
 
@@ -75,8 +76,8 @@ void csr2dense(Param output, const Param values, const Param rowIdx,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csr2dense = common::getKernel(
-        "csr2Dense", std::array{csr2dense_cl_src}, tmpltArgs, compileOpts);
+    auto csr2dense = common::getKernel("csr2Dense", {{csr2dense_cl_src}},
+                                       tmpltArgs, compileOpts);
 
     cl::NDRange local(threads, 1);
     int groups_x = std::min((int)(divup(M, local[0])), MAX_GROUPS);
@@ -101,8 +102,8 @@ void dense2csr(Param values, Param rowIdx, Param colIdx, const Param dense) {
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto dense2Csr = common::getKernel(
-        "dense2Csr", std::array{dense2csr_cl_src}, tmpltArgs, compileOpts);
+    auto dense2Csr = common::getKernel("dense2Csr", {{dense2csr_cl_src}},
+                                       tmpltArgs, compileOpts);
 
     int num_rows = dense.info.dims[0];
     int num_cols = dense.info.dims[1];
@@ -146,7 +147,7 @@ void swapIndex(Param ovalues, Param oindex, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto swapIndex = common::getKernel("swapIndex", std::array{csr2coo_cl_src},
+    auto swapIndex = common::getKernel("swapIndex", {{csr2coo_cl_src}},
                                        tmpltArgs, compileOpts);
 
     cl::NDRange global(ovalues.info.dims[0], 1, 1);
@@ -168,8 +169,8 @@ void csr2coo(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csr2coo = common::getKernel("csr2Coo", std::array{csr2coo_cl_src},
-                                     tmpltArgs, compileOpts);
+    auto csr2coo = common::getKernel("csr2Coo", {{csr2coo_cl_src}}, tmpltArgs,
+                                     compileOpts);
 
     const int MAX_GROUPS = 4096;
     int M                = irowIdx.info.dims[0] - 1;
@@ -208,7 +209,7 @@ void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
     };
     compileOpts.emplace_back(getTypeBuildDefinition<T>());
 
-    auto csrReduce = common::getKernel("csrReduce", std::array{csr2coo_cl_src},
+    auto csrReduce = common::getKernel("csrReduce", {{csr2coo_cl_src}},
                                        tmpltArgs, compileOpts);
 
     // Now we need to sort this into column major
@@ -227,3 +228,4 @@ void coo2csr(Param ovalues, Param orowIdx, Param ocolIdx, const Param ivalues,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

@@ -9,7 +9,10 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> tile(const Array<T> &in, const af::dim4 &tileDims);
-}
+
+}  // namespace oneapi
+}  // namespace arrayfire

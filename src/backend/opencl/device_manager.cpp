@@ -15,8 +15,10 @@
 #include <blas.hpp>
 #include <build_version.hpp>
 #include <clfft.hpp>
+#include <common/ArrayFireTypesIO.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
+#include <common/Version.hpp>
 #include <common/defines.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
@@ -40,20 +42,23 @@
 #include <string>
 #include <vector>
 
+using arrayfire::common::getEnvVar;
 using cl::CommandQueue;
 using cl::Context;
 using cl::Device;
 using cl::Platform;
-using common::getEnvVar;
 using std::begin;
 using std::end;
 using std::find;
 using std::make_unique;
+using std::ostringstream;
+using std::sort;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
+namespace arrayfire {
 namespace opencl {
 
 #if defined(OS_MAC)
@@ -97,13 +102,6 @@ static inline bool compare_default(const unique_ptr<Device>& ldev,
         if (is_l_curr_type && !is_r_curr_type) { return true; }
         if (!is_l_curr_type && is_r_curr_type) { return false; }
     }
-
-    // For GPUs, this ensures discrete > integrated
-    auto is_l_integrated = ldev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-    auto is_r_integrated = rdev->getInfo<CL_DEVICE_HOST_UNIFIED_MEMORY>();
-
-    if (!is_l_integrated && is_r_integrated) { return true; }
-    if (is_l_integrated && !is_r_integrated) { return false; }
 
     // At this point, the devices are of same type.
     // Sort based on emperical evidence of preferred platforms
@@ -197,7 +195,7 @@ DeviceManager::DeviceManager()
         }
 #endif
     }
-    fgMngr = std::make_unique<graphics::ForgeManager>();
+    fgMngr = std::make_unique<arrayfire::common::ForgeManager>();
 
     // This is all we need because the sort takes care of the order of devices
 #ifdef OS_MAC
@@ -260,8 +258,26 @@ DeviceManager::DeviceManager()
                 *mContexts.back(), *devices[i], cl::QueueProperties::None));
             mIsGLSharingOn.push_back(false);
             mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
-            mPlatforms.push_back(getPlatformEnum(*devices[i]));
+            mPlatforms.push_back(
+                std::make_pair<std::unique_ptr<cl::Platform>, afcl_platform>(
+                    make_unique<cl::Platform>(device_platform, true),
+                    getPlatformEnum(*devices[i])));
             mDevices.emplace_back(std::move(devices[i]));
+
+            auto platform_version =
+                mPlatforms.back().first->getInfo<CL_PLATFORM_VERSION>();
+            string options;
+            common::Version version =
+                getOpenCLCDeviceVersion(*mDevices[i]).back();
+#ifdef AF_WITH_FAST_MATH
+            options = fmt::format(
+                " -cl-std=CL{:Mm} -D dim_t={} -cl-fast-relaxed-math", version,
+                dtype_traits<dim_t>::getName());
+#else
+            options = fmt::format(" -cl-std=CL{:Mm} -D dim_t={}", version,
+                                  dtype_traits<dim_t>::getName());
+#endif
+            mBaseBuildFlags.push_back(options);
         } catch (const cl::Error& err) {
             AF_TRACE("Error creating context for device {} with error {}\n",
                      devices[i]->getInfo<CL_DEVICE_NAME>(), err.what());
@@ -543,3 +559,4 @@ void DeviceManager::markDeviceForInterop(const int device,
 }
 
 }  // namespace opencl
+}  // namespace arrayfire

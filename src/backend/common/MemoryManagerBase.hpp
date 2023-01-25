@@ -19,8 +19,8 @@ namespace spdlog {
 class logger;
 }
 
+namespace arrayfire {
 namespace common {
-namespace memory {
 /**
  * A internal base interface for a memory manager which is exposed to AF
  * internals. Externally, both the default AF memory manager implementation and
@@ -89,5 +89,5 @@ class MemoryManagerBase {
     std::unique_ptr<AllocatorInterface> nmi_;
 };
 
-}  // namespace memory
 }  // namespace common
+}  // namespace arrayfire

@@ -10,13 +10,14 @@
 #pragma once
 
 #include <common/ModuleInterface.hpp>
-#include <cu_check_macro.hpp>
+#include <err_cuda.hpp>
 
 #include <cuda.h>
 
 #include <string>
 #include <unordered_map>
 
+namespace arrayfire {
 namespace cuda {
 
 /// CUDA backend wrapper for CUmodule
@@ -57,3 +58,4 @@ class Module : public common::ModuleInterface<CUmodule> {
 };
 
 }  // namespace cuda
+}  // namespace arrayfire

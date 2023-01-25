@@ -18,6 +18,7 @@
 #include <limits>
 #include <numeric>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 static inline T abs(T val) {
@@ -76,8 +77,8 @@ inline double maxval() {
     return std::numeric_limits<double>::infinity();
 }
 template<>
-inline common::half maxval() {
-    return std::numeric_limits<common::half>::infinity();
+inline arrayfire::common::half maxval() {
+    return std::numeric_limits<arrayfire::common::half>::infinity();
 }
 template<>
 inline float minval() {
@@ -88,8 +89,8 @@ inline double minval() {
     return -std::numeric_limits<double>::infinity();
 }
 template<>
-inline common::half minval() {
-    return -std::numeric_limits<common::half>::infinity();
+inline arrayfire::common::half minval() {
+    return -std::numeric_limits<arrayfire::common::half>::infinity();
 }
 
 template<typename T>
@@ -113,3 +114,4 @@ inline double imag(cdouble in) noexcept { return std::imag(in); }
 inline float imag(cfloat in) noexcept { return std::imag(in); }
 
 }  // namespace cpu
+}  // namespace arrayfire

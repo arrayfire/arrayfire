@@ -9,6 +9,7 @@
 #pragma once
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace cpu {
 template<typename T>
 void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
@@ -34,3 +35,4 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
     return out;
 }
 }  // namespace cpu
+}  // namespace arrayfire

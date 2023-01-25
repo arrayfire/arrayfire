@@ -13,6 +13,7 @@
 #include <kernel/approx.hpp>
 #include <utility.hpp>
 
+namespace arrayfire {
 namespace cuda {
 template<typename Ty, typename Tp>
 void approx1(Array<Ty> &yo, const Array<Ty> &yi, const Array<Tp> &xo,
@@ -49,3 +50,4 @@ INSTANTIATE(cfloat, float)
 INSTANTIATE(cdouble, double)
 
 }  // namespace cuda
+}  // namespace arrayfire

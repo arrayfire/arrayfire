@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -42,8 +43,8 @@ void meanshift(Param out, const Param in, const float spatialSigma,
         DefineKeyValue(MAX_CHANNELS, (is_color ? 3 : 1)),
         getTypeBuildDefinition<T>()};
 
-    auto meanshiftOp = common::getKernel(
-        "meanshift", std::array{meanshift_cl_src}, targs, options);
+    auto meanshiftOp =
+        common::getKernel("meanshift", {{meanshift_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 
@@ -66,3 +67,4 @@ void meanshift(Param out, const Param in, const float spatialSigma,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

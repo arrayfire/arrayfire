@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -43,8 +44,8 @@ void bilateral(Param out, const Param in, const float s_sigma,
     if (UseNativeExp) { options.emplace_back(DefineKey(USE_NATIVE_EXP)); }
     options.emplace_back(getTypeBuildDefinition<inType>());
 
-    auto bilateralOp = common::getKernel(
-        "bilateral", std::array{bilateral_cl_src}, targs, options);
+    auto bilateralOp =
+        common::getKernel("bilateral", {{bilateral_cl_src}}, targs, options);
 
     cl::NDRange local(THREADS_X, THREADS_Y);
 
@@ -77,3 +78,4 @@ void bilateral(Param out, const Param in, const float s_sigma,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

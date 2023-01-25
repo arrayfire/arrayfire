@@ -15,6 +15,7 @@
 #include <debug_cuda.hpp>
 #include <nvrtc_kernel_headers/lookup_cuh.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -43,9 +44,9 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
         dim3 blocks(blks, 1);
 
         auto lookup1d = common::getKernel(
-            "cuda::lookup1D", std::array{lookup_cuh_src},
+            "arrayfire::cuda::lookup1D", {{lookup_cuh_src}},
             TemplateArgs(TemplateTypename<in_t>(), TemplateTypename<idx_t>()),
-            std::array{DefineValue(THREADS), DefineValue(THRD_LOAD)});
+            {{DefineValue(THREADS), DefineValue(THRD_LOAD)}});
 
         EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -59,12 +60,12 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
         dim3 blocks(blks_x * out.dims[2], blks_y * out.dims[3]);
 
         const int maxBlocksY =
-            cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
+            getDeviceProp(getActiveDeviceId()).maxGridSize[1];
         blocks.z = divup(blocks.y, maxBlocksY);
         blocks.y = divup(blocks.y, blocks.z);
 
         auto lookupnd = common::getKernel(
-            "cuda::lookupND", std::array{lookup_cuh_src},
+            "arrayfire::cuda::lookupND", {{lookup_cuh_src}},
             TemplateArgs(TemplateTypename<in_t>(), TemplateTypename<idx_t>(),
                          TemplateArg(dim)));
         EnqueueArgs qArgs(blocks, threads, getActiveStream());
@@ -76,3 +77,4 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims,
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

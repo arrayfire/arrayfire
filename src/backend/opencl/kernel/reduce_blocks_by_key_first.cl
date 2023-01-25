@@ -9,7 +9,7 @@
 
 // Starting from OpenCL 2.0, core profile includes work group level
 // inclusive scan operations, hence skip defining custom one
-#if __OPENCL_VERSION__ < 200
+#if !__opencl_c_work_group_collective_functions
 int work_group_scan_inclusive_add(local int *wg_temp, __local int *arr) {
     local int *active_buf;
 
@@ -29,7 +29,7 @@ int work_group_scan_inclusive_add(local int *wg_temp, __local int *arr) {
     int res = active_buf[lid];
     return res;
 }
-#endif  // __OPENCL_VERSION__ < 200
+#endif
 
 kernel void reduce_blocks_by_key_first(
     global int *reduced_block_sizes, __global Tk *oKeys, KParam oKInfo,
@@ -48,7 +48,7 @@ kernel void reduce_blocks_by_key_first(
     local Tk reduced_keys[DIMX];
     local To reduced_vals[DIMX];
     local int unique_ids[DIMX];
-#if __OPENCL_VERSION__ < 200
+#if !__opencl_c_work_group_collective_functions
     local int wg_temp[DIMX];
     local int unique_flags[DIMX];
 #endif
@@ -84,11 +84,11 @@ kernel void reduce_blocks_by_key_first(
     int eq_check    = (lid > 0) ? (k != reduced_keys[lid - 1]) : 0;
     int unique_flag = (eq_check || (lid == 0)) && (gid < n);
 
-#if __OPENCL_VERSION__ < 200
+#if __opencl_c_work_group_collective_functions
+    int unique_id = work_group_scan_inclusive_add(unique_flag);
+#else
     unique_flags[lid] = unique_flag;
     int unique_id     = work_group_scan_inclusive_add(wg_temp, unique_flags);
-#else
-    int unique_id = work_group_scan_inclusive_add(unique_flag);
 #endif
     unique_ids[lid] = unique_id;
 

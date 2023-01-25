@@ -10,6 +10,7 @@
 #include <err_oneapi.hpp>
 #include <kernel/approx2.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename Ty, typename Tp>
 void approx2(Array<Ty> &zo, const Array<Ty> &zi, const Array<Tp> &xo,
@@ -72,3 +73,4 @@ INSTANTIATE(cfloat, float)
 INSTANTIATE(cdouble, double)
 
 }  // namespace oneapi
+}  // namespace arrayfire

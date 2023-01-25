@@ -10,9 +10,11 @@
 #include <Array.hpp>
 #include <af/index.h>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[]);
 
-}
+}  // namespace oneapi
+}  // namespace arrayfire

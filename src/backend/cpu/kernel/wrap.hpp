@@ -14,6 +14,7 @@
 
 #include <algorithm>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 
@@ -144,3 +145,4 @@ void wrap_dim_dilated(Param<T> out, CParam<T> in, const dim_t wx,
 
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

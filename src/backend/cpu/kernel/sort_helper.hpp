@@ -10,6 +10,7 @@
 #include <err_cpu.hpp>
 #include <tuple>
 
+namespace arrayfire {
 namespace cpu {
 namespace kernel {
 template<typename Tk, typename Tv>
@@ -60,3 +61,4 @@ struct KIPCompareK {
 };
 }  // namespace kernel
 }  // namespace cpu
+}  // namespace arrayfire

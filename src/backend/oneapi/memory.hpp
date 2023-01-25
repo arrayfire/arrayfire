@@ -16,6 +16,7 @@
 #include <memory>
 #include <vector>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 sycl::buffer<T> *bufferAlloc(const size_t &bytes);
@@ -65,7 +66,7 @@ bool jitTreeExceedsMemoryPressure(size_t bytes);
 void setMemStepSize(size_t step_bytes);
 size_t getMemStepSize(void);
 
-class Allocator final : public common::memory::AllocatorInterface {
+class Allocator final : public common::AllocatorInterface {
    public:
     Allocator();
     ~Allocator() = default;
@@ -76,7 +77,7 @@ class Allocator final : public common::memory::AllocatorInterface {
     void nativeFree(void *ptr) override;
 };
 
-class AllocatorPinned final : public common::memory::AllocatorInterface {
+class AllocatorPinned final : public common::AllocatorInterface {
    public:
     AllocatorPinned();
     ~AllocatorPinned() = default;
@@ -91,3 +92,4 @@ class AllocatorPinned final : public common::memory::AllocatorInterface {
 };
 
 }  // namespace oneapi
+}  // namespace arrayfire

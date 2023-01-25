@@ -23,6 +23,7 @@
 #include <magma/magma_helper.h>
 #include <platform.hpp>
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -112,9 +113,11 @@ INSTANTIATE_QR(double)
 INSTANTIATE_QR(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace opencl {
 
 template<typename T>
@@ -138,5 +141,6 @@ INSTANTIATE_QR(double)
 INSTANTIATE_QR(cdouble)
 
 }  // namespace opencl
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA

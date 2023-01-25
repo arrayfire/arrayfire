@@ -32,6 +32,7 @@ using cl::Buffer;
 using std::min;
 using std::vector;
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -331,9 +332,11 @@ INSTANTIATE_SOLVE(cfloat)
 INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
 }  // namespace oneapi
+}  // namespace arrayfire
 
 #else  // WITH_LINEAR_ALGEBRA
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -361,5 +364,6 @@ INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
 
 }  // namespace oneapi
+}  // namespace arrayfire
 
 #endif  // WITH_LINEAR_ALGEBRA

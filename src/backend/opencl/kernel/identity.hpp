@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -32,12 +33,12 @@ static void identity(Param out) {
     };
     std::array<std::string, 4> options = {
         DefineKeyValue(T, dtype_traits<T>::getName()),
-        DefineKeyValue(ONE, af::scalar_to_option(scalar<T>(1))),
-        DefineKeyValue(ZERO, af::scalar_to_option(scalar<T>(0))),
+        DefineKeyValue(ONE, scalar_to_option(scalar<T>(1))),
+        DefineKeyValue(ZERO, scalar_to_option(scalar<T>(0))),
         getTypeBuildDefinition<T>()};
 
-    auto identityOp = common::getKernel(
-        "identity_kernel", std::array{identity_cl_src}, targs, options);
+    auto identityOp = common::getKernel("identity_kernel", {{identity_cl_src}},
+                                        targs, options);
 
     cl::NDRange local(32, 8);
     int groups_x = divup(out.info.dims[0], local[0]);
@@ -52,3 +53,4 @@ static void identity(Param out) {
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

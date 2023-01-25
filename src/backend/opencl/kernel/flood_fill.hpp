@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 
@@ -38,7 +39,7 @@ void initSeeds(Param out, const Param seedsx, const Param seedsy) {
         DefineKey(INIT_SEEDS), getTypeBuildDefinition<T>()};
 
     auto initSeeds =
-        common::getKernel("init_seeds", std::array{flood_fill_cl_src},
+        common::getKernel("init_seeds", {{flood_fill_cl_src}},
                           TemplateArgs(TemplateTypename<T>()), options);
     cl::NDRange local(kernel::THREADS, 1, 1);
     cl::NDRange global(divup(seedsx.info.dims[0], local[0]) * local[0], 1, 1);
@@ -56,7 +57,7 @@ void finalizeOutput(Param out, const T newValue) {
         getTypeBuildDefinition<T>()};
 
     auto finalizeOut =
-        common::getKernel("finalize_output", std::array{flood_fill_cl_src},
+        common::getKernel("finalize_output", {{flood_fill_cl_src}},
                           TemplateArgs(TemplateTypename<T>()), options);
     cl::NDRange local(kernel::THREADS_X, kernel::THREADS_Y, 1);
     cl::NDRange global(divup(out.info.dims[0], local[0]) * local[0],
@@ -83,12 +84,12 @@ void floodFill(Param out, const Param image, const Param seedsx,
         DefineKeyValue(LMEM_WIDTH, (THREADS_X + 2 * RADIUS)),
         DefineKeyValue(LMEM_HEIGHT, (THREADS_Y + 2 * RADIUS)),
         DefineKeyValue(GROUP_SIZE, (THREADS_Y * THREADS_X)),
-        DefineKeyValue(AF_IS_PLATFORM_NVIDIA,
-                       (int)(AFCL_PLATFORM_NVIDIA == getActivePlatform())),
+        DefineKeyValue(AF_IS_PLATFORM_NVIDIA, (int)(AFCL_PLATFORM_NVIDIA ==
+                                                    getActivePlatformVendor())),
         getTypeBuildDefinition<T>()};
 
     auto floodStep =
-        common::getKernel("flood_step", std::array{flood_fill_cl_src},
+        common::getKernel("flood_step", {{flood_fill_cl_src}},
                           TemplateArgs(TemplateTypename<T>()), options);
     cl::NDRange local(kernel::THREADS_X, kernel::THREADS_Y, 1);
     cl::NDRange global(divup(out.info.dims[0], local[0]) * local[0],
@@ -114,3 +115,4 @@ void floodFill(Param out, const Param image, const Param seedsx,
 
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

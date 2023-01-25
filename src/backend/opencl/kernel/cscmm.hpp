@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+namespace arrayfire {
 namespace opencl {
 namespace kernel {
 template<typename T>
@@ -52,11 +53,11 @@ void cscmm_nn(Param out, const Param &values, const Param &colIdx,
         DefineKeyValue(THREADS, threads),
         DefineKeyValue(ROWS_PER_GROUP, rows_per_group),
         DefineKeyValue(COLS_PER_GROUP, cols_per_group),
-        DefineKeyValue(IS_CPLX, (af::iscplx<T>() ? 1 : 0)),
+        DefineKeyValue(IS_CPLX, (iscplx<T>() ? 1 : 0)),
         getTypeBuildDefinition<T>()};
 
     auto cscmmNN =
-        common::getKernel("cscmm_nn", std::array{cscmm_cl_src}, targs, options);
+        common::getKernel("cscmm_nn", {{cscmm_cl_src}}, targs, options);
 
     cl::NDRange local(threads, 1);
     int M = out.info.dims[0];
@@ -74,3 +75,4 @@ void cscmm_nn(Param out, const Param &values, const Param &colIdx,
 }
 }  // namespace kernel
 }  // namespace opencl
+}  // namespace arrayfire

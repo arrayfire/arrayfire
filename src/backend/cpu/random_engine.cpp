@@ -12,8 +12,9 @@
 #include <kernel/random_engine.hpp>
 #include <af/dim4.hpp>
 
-using common::half;
+using arrayfire::common::half;
 
+namespace arrayfire {
 namespace cpu {
 void initMersenneState(Array<uint> &state, const uintl seed,
                        const Array<uint> &tbl) {
@@ -164,3 +165,4 @@ COMPLEX_NORMAL_DISTRIBUTION(cdouble, double)  // NOLINT
 COMPLEX_NORMAL_DISTRIBUTION(cfloat, float)    // NOLINT
 
 }  // namespace cpu
+}  // namespace arrayfire

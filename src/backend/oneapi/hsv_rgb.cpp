@@ -11,6 +11,7 @@
 
 #include <err_oneapi.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
@@ -35,3 +36,4 @@ INSTANTIATE(double)
 INSTANTIATE(float)
 
 }  // namespace oneapi
+}  // namespace arrayfire

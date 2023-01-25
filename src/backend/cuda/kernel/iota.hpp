@@ -16,6 +16,7 @@
 #include <nvrtc_kernel_headers/iota_cuh.hpp>
 #include <af/dim4.hpp>
 
+namespace arrayfire {
 namespace cuda {
 namespace kernel {
 
@@ -26,7 +27,7 @@ void iota(Param<T> out, const af::dim4 &sdims) {
     constexpr unsigned TILEX   = 512;
     constexpr unsigned TILEY   = 32;
 
-    auto iota = common::getKernel("cuda::iota", std::array{iota_cuh_src},
+    auto iota = common::getKernel("arrayfire::cuda::iota", {{iota_cuh_src}},
                                   TemplateArgs(TemplateTypename<T>()));
 
     dim3 threads(IOTA_TX, IOTA_TY, 1);
@@ -36,10 +37,9 @@ void iota(Param<T> out, const af::dim4 &sdims) {
 
     dim3 blocks(blocksPerMatX * out.dims[2], blocksPerMatY * out.dims[3], 1);
 
-    const int maxBlocksY =
-        cuda::getDeviceProp(cuda::getActiveDeviceId()).maxGridSize[1];
-    blocks.z = divup(blocks.y, maxBlocksY);
-    blocks.y = divup(blocks.y, blocks.z);
+    const int maxBlocksY = getDeviceProp(getActiveDeviceId()).maxGridSize[1];
+    blocks.z             = divup(blocks.y, maxBlocksY);
+    blocks.y             = divup(blocks.y, blocks.z);
 
     EnqueueArgs qArgs(blocks, threads, getActiveStream());
 
@@ -50,3 +50,4 @@ void iota(Param<T> out, const af::dim4 &sdims) {
 
 }  // namespace kernel
 }  // namespace cuda
+}  // namespace arrayfire

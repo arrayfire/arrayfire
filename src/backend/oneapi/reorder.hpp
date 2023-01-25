@@ -9,7 +9,9 @@
 
 #include <Array.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> reorder(const Array<T> &in, const af::dim4 &rdims);
-}
+}  // namespace oneapi
+}  // namespace arrayfire

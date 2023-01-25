@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <af/opencl.h>
+
 #include <memory>
 #include <mutex>
 #include <string>
@@ -40,18 +42,16 @@ namespace spdlog {
 class logger;
 }
 
-namespace graphics {
-class ForgeManager;
-}
-
+namespace arrayfire {
 namespace common {
-namespace memory {
+class ForgeManager;
 class MemoryManagerBase;
-}
 }  // namespace common
+}  // namespace arrayfire
 
-using common::memory::MemoryManagerBase;
+using arrayfire::common::MemoryManagerBase;
 
+namespace arrayfire {
 namespace opencl {
 
 // opencl namespace forward declarations
@@ -60,27 +60,31 @@ struct kc_entry_t;  // kernel cache entry
 class PlanCache;    // clfft
 
 class DeviceManager {
-    friend MemoryManagerBase& memoryManager();
+    friend arrayfire::common::MemoryManagerBase& memoryManager();
 
-    friend void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+    friend void setMemoryManager(
+        std::unique_ptr<arrayfire::common::MemoryManagerBase> mgr);
 
-    void setMemoryManager(std::unique_ptr<MemoryManagerBase> mgr);
+    void setMemoryManager(
+        std::unique_ptr<arrayfire::common::MemoryManagerBase> mgr);
 
     friend void resetMemoryManager();
 
     void resetMemoryManager();
 
-    friend MemoryManagerBase& pinnedMemoryManager();
+    friend arrayfire::common::MemoryManagerBase& pinnedMemoryManager();
 
-    friend void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+    friend void setMemoryManagerPinned(
+        std::unique_ptr<arrayfire::common::MemoryManagerBase> mgr);
 
-    void setMemoryManagerPinned(std::unique_ptr<MemoryManagerBase> mgr);
+    void setMemoryManagerPinned(
+        std::unique_ptr<arrayfire::common::MemoryManagerBase> mgr);
 
     friend void resetMemoryManagerPinned();
 
     void resetMemoryManagerPinned();
 
-    friend graphics::ForgeManager& forgeManager();
+    friend arrayfire::common::ForgeManager& forgeManager();
 
     friend GraphicsResourceManager& interopManager();
 
@@ -105,6 +109,8 @@ class DeviceManager {
 
     friend const cl::Device& getDevice(int id);
 
+    friend const std::string& getActiveDeviceBaseBuildFlags();
+
     friend size_t getDeviceMemorySize(int device);
 
     friend bool isGLSharingSupported();
@@ -127,7 +133,9 @@ class DeviceManager {
 
     friend int getActiveDeviceType();
 
-    friend int getActivePlatform();
+    friend cl::Platform& getActivePlatform();
+
+    friend afcl::platform getActivePlatformVendor();
 
    public:
     static const int MAX_DEVICES = 32;
@@ -159,11 +167,13 @@ class DeviceManager {
     std::vector<std::unique_ptr<cl::Context>> mContexts;
     std::vector<std::unique_ptr<cl::CommandQueue>> mQueues;
     std::vector<bool> mIsGLSharingOn;
+    std::vector<std::string> mBaseBuildFlags;
     std::vector<int> mDeviceTypes;
-    std::vector<int> mPlatforms;
+    std::vector<std::pair<std::unique_ptr<cl::Platform>, afcl::platform>>
+        mPlatforms;
     unsigned mUserDeviceOffset;
 
-    std::unique_ptr<graphics::ForgeManager> fgMngr;
+    std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;
     std::unique_ptr<MemoryManagerBase> memManager;
     std::unique_ptr<MemoryManagerBase> pinnedMemManager;
     std::unique_ptr<GraphicsResourceManager> gfxManagers[MAX_DEVICES];
@@ -175,3 +185,4 @@ class DeviceManager {
 };
 
 }  // namespace opencl
+}  // namespace arrayfire

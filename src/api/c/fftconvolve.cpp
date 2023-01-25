@@ -26,7 +26,7 @@
 #include <vector>
 
 using af::dim4;
-using common::cast;
+using arrayfire::common::cast;
 using detail::arithOp;
 using detail::Array;
 using detail::cdouble;
@@ -49,10 +49,11 @@ using std::vector;
 template<typename T>
 af_array fftconvolve_fallback(const af_array signal, const af_array filter,
                               const bool expand, const int baseDim) {
-    using convT =
-        typename conditional<is_integral<T>::value || is_same<T, float>::value,
-                             float, double>::type;
-    using cT = typename conditional<is_same<convT, float>::value, cfloat,
+    using convT = typename conditional<is_integral<T>::value ||
+                                           is_same<T, float>::value ||
+                                           is_same<T, cfloat>::value,
+                                       float, double>::type;
+    using cT    = typename conditional<is_same<convT, float>::value, cfloat,
                                     cdouble>::type;
 
     const Array<cT> S = castArray<cT>(signal);
