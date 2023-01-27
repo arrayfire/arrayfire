@@ -72,10 +72,8 @@ class selectKernelCreateKernel {
         const int off = idw * oinfo_.strides[3] + idz * oinfo_.strides[2] +
                         idy * oinfo_.strides[1];
 
-        if (idw >= oinfo_.dims[3] || idz >= oinfo_.dims[2] ||
-            idy >= oinfo_.dims[1]) {
-            return;
-        }
+        const bool valid = (idw < oinfo_.dims[3] && idz < oinfo_.dims[2] &&
+                            idy < oinfo_.dims[1]);
 
         int ids[] = {idx0, idy, idz, idw};
 
@@ -88,6 +86,7 @@ class selectKernelCreateKernel {
         if (is_same_) {
             for (int idx = idx0; idx < oinfo_.dims[0];
                  idx += g.get_local_range(0) * groups_0_) {
+              if (valid)
                 optr_pointer[idx] = (cptr[idx]) ? aptr[idx] : bptr[idx];
             }
         } else {
@@ -96,6 +95,7 @@ class selectKernelCreateKernel {
             bool bsame = binfo_.dims[0] == oinfo_.dims[0];
             for (int idx = idx0; idx < oinfo_.dims[0];
                  idx += g.get_local_range(0) * groups_0_) {
+              if (valid)
                 optr_pointer[idx] =
                     (cptr[csame * idx]) ? aptr[asame * idx] : bptr[bsame * idx];
             }

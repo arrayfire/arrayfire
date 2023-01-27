@@ -56,9 +56,8 @@ class reorderCreateKernel {
         const int xx = it.get_local_id(0) + blockIdx_x * g.get_local_range(0);
         const int yy = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
 
-        if (xx >= op_.dims[0] || yy >= op_.dims[1] || oz >= op_.dims[2] ||
-            ow >= op_.dims[3])
-            return;
+        bool valid = (xx < op_.dims[0] && yy < op_.dims[1] &&
+                      oz < op_.dims[2] && ow < op_.dims[3]);
 
         const int incy = blocksPerMatY_ * g.get_local_range(1);
         const int incx = blocksPerMatX_ * g.get_local_range(0);
@@ -82,7 +81,7 @@ class reorderCreateKernel {
                                  ids[2] * ip_.strides[2] +
                                  ids[1] * ip_.strides[1] + ids[0];
 
-                out_[oIdx] = in_[ip_.offset + iIdx];
+                if (valid) { out_[oIdx] = in_[ip_.offset + iIdx]; }
             }
         }
     }

@@ -50,9 +50,7 @@ class tileCreateKernel {
         const int xx = it.get_local_id(0) + blockIdx_x * g.get_local_range(0);
         const int yy = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
 
-        if (xx >= op_.dims[0] || yy >= op_.dims[1] || oz >= op_.dims[2] ||
-            ow >= op_.dims[3])
-            return;
+        const bool valid = (xx < op_.dims[0] && yy < op_.dims[1] && oz < op_.dims[2] && ow < op_.dims[3]);
 
         const int iz  = oz % ip_.dims[2];
         const int iw  = ow % ip_.dims[3];
@@ -70,7 +68,8 @@ class tileCreateKernel {
                 int iMem = izw + iy * ip_.strides[1] + ix;
                 int oMem = ozw + oy * op_.strides[1] + ox;
 
-                out_[oMem] = in_[ip_.offset + iMem];
+                if (valid)
+                  out_[oMem] = in_[ip_.offset + iMem];
             }
         }
     }
