@@ -72,7 +72,7 @@ class rotateCreateKernel {
         const int yido = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
 
         const int limages =
-            fminf((int)out_.dims[2] - setId * nimages_, nimages_);
+          std::min((int)out_.dims[2] - setId * nimages_, nimages_);
 
         if (xido >= out_.dims[0] || yido >= out_.dims[1]) return;
 

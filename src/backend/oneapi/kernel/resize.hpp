@@ -57,8 +57,8 @@ void resize_n_(T* d_out, const KParam out, const T* d_in, const KParam in,
 
     // int ix = convert_int_rtp(ox * xf);
     // int iy = convert_int_rtp(oy * yf);
-    int ix = round(ox * xf);
-    int iy = round(oy * yf);
+    int ix = sycl::round(ox * xf);
+    int iy = sycl::round(oy * yf);
 
     if (ox >= out.dims[0] || oy >= out.dims[1]) { return; }
     if (ix >= in.dims[0]) { ix = in.dims[0] - 1; }
@@ -81,9 +81,9 @@ void resize_b_(T* d_out, const KParam out, const T* d_in, const KParam in,
     float xf = ox * xf_;
     float yf = oy * yf_;
 
-    int ix = floor(xf);
+    int ix = sycl::floor(xf);
 
-    int iy = floor(yf);
+    int iy = sycl::floor(yf);
 
     if (ox >= out.dims[0] || oy >= out.dims[1]) { return; }
     if (ix >= in.dims[0]) { ix = in.dims[0] - 1; }
