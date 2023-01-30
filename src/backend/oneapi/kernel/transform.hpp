@@ -119,16 +119,14 @@ class transformCreateKernel {
         const int yido = blockIdx_y * g.get_local_range(1) + it.get_local_id(1);
 
         // Image iteration loop count for image batching
-#define MIN(A, B) (((A) < (B)) ? (A) : (B))
-#define MAX(A, B) (((A) > (B)) ? (A) : (B))
         int limages =
-            MIN(MAX((int)(out_.dims[2] - imgId2 * nImg2_), 1), batchImg2_);
+          sycl::min(sycl::max((int)(out_.dims[2] - imgId2 * nImg2_), 1), batchImg2_);
 
         if (xido >= out_.dims[0] || yido >= out_.dims[1]) return;
 
         // Index of transform
-        const int eTfs2 = MAX((nTfs2_ / nImg2_), 1);
-        const int eTfs3 = MAX((nTfs3_ / nImg3_), 1);
+        const int eTfs2 = sycl::max((nTfs2_ / nImg2_), 1);
+        const int eTfs3 = sycl::max((nTfs3_ / nImg3_), 1);
 
         int t_idx3        = -1;  // init
         int t_idx2        = -1;  // init
