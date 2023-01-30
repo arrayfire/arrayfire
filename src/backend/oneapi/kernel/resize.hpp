@@ -12,7 +12,6 @@
 #include <Param.hpp>
 #include <common/complex.hpp>
 #include <common/dispatch.hpp>
-// #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
 #include <traits.hpp>
 
@@ -99,12 +98,6 @@ void resize_b_(T* d_out, const KParam out, const T* d_in, const KParam in,
     const VT p2 = d_in[ix + in.strides[1] * iy2];
     const VT p3 = d_in[ix2 + in.strides[1] * iy];
     const VT p4 = d_in[ix2 + in.strides[1] * iy2];
-
-    // d_out[ox + oy * out.strides[1]] =
-    //   (((1.0f - a) * (1.0f - b)) * p1) +
-    //   (((a) * (1.0f - b)) * p2) +
-    //   (((1.0f - a) * (b)) * p3) +
-    //   (((a) * (b)) * p4);
 
     d_out[ox + oy * out.strides[1]] =
         mul(((1.0f - a) * (1.0f - b)), p1) + mul(((a) * (1.0f - b)), p2) +
