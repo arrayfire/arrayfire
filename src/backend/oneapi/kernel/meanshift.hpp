@@ -32,8 +32,8 @@ inline int convert_int_rtz(float number) { return ((int)(number)); }
 template<typename T, typename AccType, const int MAX_CHANNELS>
 class meanshiftCreateKernel {
    public:
-    meanshiftCreateKernel(sycl::accessor<T, 1> d_dst, KParam oInfo,
-                          sycl::accessor<T, 1> d_src, KParam iInfo, int radius,
+    meanshiftCreateKernel(write_accessor<T> d_dst, KParam oInfo,
+                          read_accessor<T> d_src, KParam iInfo, int radius,
                           float cvar, unsigned numIters, int nBBS0, int nBBS1)
         : d_dst_(d_dst)
         , oInfo_(oInfo)
@@ -170,9 +170,9 @@ class meanshiftCreateKernel {
     }
 
    private:
-    sycl::accessor<T, 1> d_dst_;
+    write_accessor<T> d_dst_;
     KParam oInfo_;
-    sycl::accessor<T, 1> d_src_;
+    read_accessor<T> d_src_;
     KParam iInfo_;
     int radius_;
     float cvar_;
@@ -208,8 +208,8 @@ void meanshift(Param<T> out, const Param<T> in, const float spatialSigma,
     const float cvar = chromaticSigma * chromaticSigma;
 
     getQueue().submit([&](auto& h) {
-        sycl::accessor<T, 1> d_src{*in.data, h};
-        sycl::accessor<T, 1> d_dst{*out.data, h};
+        read_accessor<T> d_src{*in.data, h};
+        write_accessor<T> d_dst{*out.data, h};
         if (MAX_CHANNELS == 3) {
             h.parallel_for(sycl::nd_range{global, local},
                            meanshiftCreateKernel<T, AccType, 3>(

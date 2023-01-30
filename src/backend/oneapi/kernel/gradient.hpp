@@ -150,11 +150,9 @@ void gradient(Param<T> grad0, Param<T> grad1, const Param<T> in) {
                               local[1] * blocksPerMatY * in.info.dims[3]};
 
     getQueue().submit([&](sycl::handler &h) {
-        sycl::accessor grad0Acc{*grad0.data, h, sycl::write_only,
-                                sycl::no_init};
-        sycl::accessor grad1Acc{*grad1.data, h, sycl::write_only,
-                                sycl::no_init};
-        sycl::accessor inAcc{*in.data, h, sycl::read_only};
+        write_accessor<T> grad0Acc{*grad0.data, h};
+        write_accessor<T> grad1Acc{*grad1.data, h};
+        read_accessor<T> inAcc{*in.data, h};
         auto scratch = local_accessor<T>((TY + 2) * (TX + 2), h);
         h.parallel_for(
             sycl::nd_range{global, local},

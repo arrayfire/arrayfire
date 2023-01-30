@@ -114,8 +114,8 @@ void reorder(Param<T> out, const Param<T> in, const dim_t* rdims) {
                                     local[1] * blocksPerMatY * out.info.dims[3]);
 
     getQueue().submit([&](auto& h) {
-        sycl::accessor d_in{*in.data, h, sycl::read_only};
-        sycl::accessor d_out{*out.data, h, sycl::write_only, sycl::no_init};
+        read_accessor<T> d_in{*in.data, h};
+        write_accessor<T> d_out{*out.data, h};
         h.parallel_for(
             sycl::nd_range{global, local},
             reorderCreateKernel<T>(

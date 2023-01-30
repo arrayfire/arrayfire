@@ -198,8 +198,8 @@ void resize(Param<T> out, const Param<T> in, const af_interp_type method) {
     float xf = (float)xd, yf = (float)yd;
 
     getQueue().submit([&](auto& h) {
-        sycl::accessor d_in{*in.data, h, sycl::read_only};
-        sycl::accessor d_out{*out.data, h, sycl::write_only, sycl::no_init};
+        read_accessor<T> d_in{*in.data, h};
+        write_accessor<T> d_out{*out.data, h};
         switch (method) {
             case AF_INTERP_NEAREST:
                 h.parallel_for(sycl::nd_range{global, local},

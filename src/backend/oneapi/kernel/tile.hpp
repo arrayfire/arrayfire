@@ -50,7 +50,8 @@ class tileCreateKernel {
         const int xx = it.get_local_id(0) + blockIdx_x * g.get_local_range(0);
         const int yy = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
 
-        const bool valid = (xx < op_.dims[0] && yy < op_.dims[1] && oz < op_.dims[2] && ow < op_.dims[3]);
+        const bool valid = (xx < op_.dims[0] && yy < op_.dims[1] &&
+                            oz < op_.dims[2] && ow < op_.dims[3]);
 
         const int iz  = oz % ip_.dims[2];
         const int iw  = ow % ip_.dims[3];
@@ -68,8 +69,7 @@ class tileCreateKernel {
                 int iMem = izw + iy * ip_.strides[1] + ix;
                 int oMem = ozw + oy * op_.strides[1] + ox;
 
-                if (valid)
-                  out_[oMem] = in_[ip_.offset + iMem];
+                if (valid) out_[oMem] = in_[ip_.offset + iMem];
             }
         }
     }
@@ -98,8 +98,8 @@ void tile(Param<T> out, const Param<T> in) {
                                     local[1] * blocksPerMatY * out.info.dims[3]);
 
     getQueue().submit([&](auto &h) {
-        sycl::accessor d_out{*out.data, h, sycl::write_only, sycl::no_init};
-        sycl::accessor d_in{*in.data, h, sycl::read_only};
+        write_accessor<T> d_out{*out.data, h};
+        read_accessor<T> d_in{*in.data, h};
         h.parallel_for(sycl::nd_range{global, local},
                        tileCreateKernel<T>(d_out, d_in, out.info, in.info,
                                            blocksPerMatX, blocksPerMatY));

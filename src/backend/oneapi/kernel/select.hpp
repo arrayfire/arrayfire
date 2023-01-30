@@ -21,6 +21,12 @@
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
+
+template<typename T>
+using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
+template<typename T>
+using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
+
 constexpr uint DIMX  = 32;
 constexpr uint DIMY  = 8;
 constexpr int REPEAT = 64;
@@ -37,11 +43,11 @@ int getOffset(const dim_t *dims, const dim_t *strides, const dim_t *refdims,
 template<typename T>
 class selectKernelCreateKernel {
    public:
-    selectKernelCreateKernel(sycl::accessor<T, 1> optr, KParam oinfo,
-                             sycl::accessor<char, 1> cptr_, KParam cinfo,
-                             sycl::accessor<T, 1> aptr_, KParam ainfo,
-                             sycl::accessor<T, 1> bptr_, KParam binfo,
-                             int groups_0, int groups_1, const bool is_same)
+    selectKernelCreateKernel(write_accessor<T> optr, KParam oinfo,
+                             read_accessor<char> cptr_, KParam cinfo,
+                             read_accessor<T> aptr_, KParam ainfo,
+                             read_accessor<T> bptr_, KParam binfo, int groups_0,
+                             int groups_1, const bool is_same)
         : optr_(optr)
         , oinfo_(oinfo)
         , cptr__(cptr_)
@@ -86,8 +92,8 @@ class selectKernelCreateKernel {
         if (is_same_) {
             for (int idx = idx0; idx < oinfo_.dims[0];
                  idx += g.get_local_range(0) * groups_0_) {
-              if (valid)
-                optr_pointer[idx] = (cptr[idx]) ? aptr[idx] : bptr[idx];
+                if (valid)
+                    optr_pointer[idx] = (cptr[idx]) ? aptr[idx] : bptr[idx];
             }
         } else {
             bool csame = cinfo_.dims[0] == oinfo_.dims[0];
@@ -95,21 +101,21 @@ class selectKernelCreateKernel {
             bool bsame = binfo_.dims[0] == oinfo_.dims[0];
             for (int idx = idx0; idx < oinfo_.dims[0];
                  idx += g.get_local_range(0) * groups_0_) {
-              if (valid)
-                optr_pointer[idx] =
-                    (cptr[csame * idx]) ? aptr[asame * idx] : bptr[bsame * idx];
+                if (valid)
+                    optr_pointer[idx] = (cptr[csame * idx]) ? aptr[asame * idx]
+                                                            : bptr[bsame * idx];
             }
         }
     }
 
    private:
-    sycl::accessor<T, 1> optr_;
+    write_accessor<T> optr_;
     KParam oinfo_;
-    sycl::accessor<char, 1> cptr__;
+    read_accessor<char> cptr__;
     KParam cinfo_;
-    sycl::accessor<T, 1> aptr__;
+    read_accessor<T> aptr__;
     KParam ainfo_;
-    sycl::accessor<T, 1> bptr__;
+    read_accessor<T> bptr__;
     KParam binfo_;
     int groups_0_;
     int groups_1_;
@@ -135,10 +141,10 @@ void selectLauncher(Param<T> out, Param<char> cond, Param<T> a, Param<T> b,
                               groups_1 * out.info.dims[3] * local[1]);
 
     getQueue().submit([&](auto &h) {
-        sycl::accessor d_out{*out.data, h};
-        sycl::accessor d_cond{*cond.data, h};
-        sycl::accessor d_a{*a.data, h};
-        sycl::accessor d_b{*b.data, h};
+        write_accessor<T> d_out{*out.data, h};
+        read_accessor<char> d_cond{*cond.data, h};
+        read_accessor<T> d_a{*a.data, h};
+        read_accessor<T> d_b{*b.data, h};
         h.parallel_for(sycl::nd_range{global, local},
                        selectKernelCreateKernel<T>(
                            d_out, out.info, d_cond, cond.info, d_a, a.info, d_b,
@@ -149,9 +155,9 @@ void selectLauncher(Param<T> out, Param<char> cond, Param<T> a, Param<T> b,
 template<typename T>
 class selectScalarCreateKernel {
    public:
-    selectScalarCreateKernel(sycl::accessor<T, 1> optr, KParam oinfo,
-                             sycl::accessor<char, 1> cptr_, KParam cinfo,
-                             sycl::accessor<T, 1> aptr_, KParam ainfo, T b,
+    selectScalarCreateKernel(write_accessor<T> optr, KParam oinfo,
+                             read_accessor<char> cptr_, KParam cinfo,
+                             read_accessor<T> aptr_, KParam ainfo, T b,
                              int groups_0, int groups_1, const bool flip)
         : optr_(optr)
         , oinfo_(oinfo)
@@ -198,11 +204,11 @@ class selectScalarCreateKernel {
     }
 
    private:
-    sycl::accessor<T, 1> optr_;
+    write_accessor<T> optr_;
     KParam oinfo_;
-    sycl::accessor<char, 1> cptr__;
+    read_accessor<char> cptr__;
     KParam cinfo_;
-    sycl::accessor<T, 1> aptr__;
+    read_accessor<T> aptr__;
     KParam ainfo_;
     T b_;
     int groups_0_;
@@ -238,9 +244,9 @@ void select_scalar(Param<T> out, Param<char> cond, Param<T> a, const T b,
                               groups_1 * out.info.dims[3] * local[1]);
 
     getQueue().submit([&](auto &h) {
-        sycl::accessor d_out{*out.data, h};
-        sycl::accessor d_cond{*cond.data, h};
-        sycl::accessor d_a{*a.data, h};
+        write_accessor<T> d_out{*out.data, h};
+        read_accessor<char> d_cond{*cond.data, h};
+        read_accessor<T> d_a{*a.data, h};
         h.parallel_for(
             sycl::nd_range{global, local},
             selectScalarCreateKernel<T>(d_out, out.info, d_cond, cond.info, d_a,

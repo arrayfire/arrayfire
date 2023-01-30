@@ -21,6 +21,11 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
+template<typename T>
+using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
+template<typename T>
+using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
+
 int trimIndex(int idx, const int len) {
     int ret_val = idx;
     if (ret_val < 0) {
@@ -36,9 +41,9 @@ int trimIndex(int idx, const int len) {
 template<typename in_t, typename idx_t>
 class lookupNDCreateKernel {
    public:
-    lookupNDCreateKernel(sycl::accessor<in_t, 1> out, KParam oInfo,
-                         sycl::accessor<in_t, 1> in, KParam iInfo,
-                         sycl::accessor<idx_t, 1> indices, KParam idxInfo,
+    lookupNDCreateKernel(write_accessor<in_t> out, KParam oInfo,
+                         read_accessor<in_t> in, KParam iInfo,
+                         read_accessor<idx_t> indices, KParam idxInfo,
                          int nBBS0, int nBBS1, const int DIM)
         : out_(out)
         , oInfo_(oInfo)
@@ -85,11 +90,11 @@ class lookupNDCreateKernel {
     }
 
    private:
-    sycl::accessor<in_t, 1> out_;
+    write_accessor<in_t> out_;
     KParam oInfo_;
-    sycl::accessor<in_t, 1> in_;
+    read_accessor<in_t> in_;
     KParam iInfo_;
-    sycl::accessor<idx_t, 1> indices_;
+    read_accessor<idx_t> indices_;
     KParam idxInfo_;
     int nBBS0_;
     int nBBS1_;
@@ -111,9 +116,9 @@ void lookup(Param<in_t> out, const Param<in_t> in, const Param<idx_t> indices,
                               blk_y * out.info.dims[3] * THREADS_Y);
 
     getQueue().submit([&](auto &h) {
-        sycl::accessor d_out{*out.data, h};
-        sycl::accessor d_in{*in.data, h};
-        sycl::accessor d_indices{*indices.data, h};
+        write_accessor<in_t> d_out{*out.data, h};
+        read_accessor<in_t> d_in{*in.data, h};
+        read_accessor<idx_t> d_indices{*indices.data, h};
         h.parallel_for(sycl::nd_range{global, local},
                        lookupNDCreateKernel<in_t, idx_t>(
                            d_out, out.info, d_in, in.info, d_indices,

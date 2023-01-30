@@ -119,8 +119,8 @@ class transformCreateKernel {
         const int yido = blockIdx_y * g.get_local_range(1) + it.get_local_id(1);
 
         // Image iteration loop count for image batching
-        int limages =
-          sycl::min(sycl::max((int)(out_.dims[2] - imgId2 * nImg2_), 1), batchImg2_);
+        int limages = sycl::min(
+            sycl::max((int)(out_.dims[2] - imgId2 * nImg2_), 1), batchImg2_);
 
         if (xido >= out_.dims[0] || yido >= out_.dims[1]) return;
 
@@ -286,9 +286,9 @@ void transform(Param<T> out, const Param<T> in, const Param<float> tf,
             isInverse));
 
     getQueue().submit([&](auto &h) {
-        sycl::accessor d_in{*in.data, h, sycl::read_only};
-        sycl::accessor d_tf{*tf.data, h, sycl::read_only};
-        sycl::accessor d_out{*out.data, h, sycl::write_only, sycl::no_init};
+        read_accessor<T> d_in{*in.data, h};
+        read_accessor<float> d_tf{*tf.data, h};
+        write_accessor<T> d_out{*out.data, h};
 
         if (isPerspective == true && order == 1) INVOKE(true, 1);
         if (isPerspective == true && order == 2) INVOKE(true, 2);

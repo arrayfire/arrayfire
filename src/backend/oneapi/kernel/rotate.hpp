@@ -72,7 +72,7 @@ class rotateCreateKernel {
         const int yido = it.get_local_id(1) + blockIdx_y * g.get_local_range(1);
 
         const int limages =
-          std::min((int)out_.dims[2] - setId * nimages_, nimages_);
+            std::min((int)out_.dims[2] - setId * nimages_, nimages_);
 
         if (xido >= out_.dims[0] || yido >= out_.dims[1]) return;
 
@@ -181,8 +181,8 @@ void rotate(Param<T> out, const Param<T> in, const float theta,
     auto global = sycl::range(global_x, global_y);
 
     getQueue().submit([&](auto &h) {
-        sycl::accessor d_in{*in.data, h, sycl::read_only};
-        sycl::accessor d_out{*out.data, h, sycl::write_only, sycl::no_init};
+        read_accessor<T> d_in{*in.data, h};
+        write_accessor<T> d_out{*out.data, h};
         switch (order) {
             case 1:
                 h.parallel_for(
