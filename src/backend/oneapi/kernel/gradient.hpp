@@ -27,16 +27,16 @@ using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
 template<typename T>
 using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
-#define sidx(y, x) scratch_[((y + 1) * (TX_ + 2)) + (x + 1)]
+#define sidx(y, x) scratch_[((y + 1) * (TX + 2)) + (x + 1)]
 
-template<typename T>
+template<typename T, int TX, int TY>
 class gradientCreateKernel {
    public:
     gradientCreateKernel(write_accessor<T> d_grad0, const KParam grad0,
                          write_accessor<T> d_grad1, const KParam grad1,
                          read_accessor<T> d_in, const KParam in,
                          const int blocksPerMatX, const int blocksPerMatY,
-                         const int TX, const int TY, local_accessor<T> scratch)
+                         local_accessor<T> scratch)
         : d_grad0_(d_grad0)
         , grad0_(grad0)
         , d_grad1_(d_grad1)
@@ -45,8 +45,6 @@ class gradientCreateKernel {
         , in_(in)
         , blocksPerMatX_(blocksPerMatX)
         , blocksPerMatY_(blocksPerMatY)
-        , TX_(TX)
-        , TY_(TY)
         , scratch_(scratch) {}
     void operator()(sycl::nd_item<2> it) const {
         auto g = it.get_group();
@@ -69,8 +67,8 @@ class gradientCreateKernel {
         const bool cond = (idx >= in_.dims[0] || idy >= in_.dims[1] ||
                            idz >= in_.dims[2] || idw >= in_.dims[3]);
 
-        int xmax = (TX_ > (in_.dims[0] - xB)) ? (in_.dims[0] - xB) : TX_;
-        int ymax = (TY_ > (in_.dims[1] - yB)) ? (in_.dims[1] - yB) : TY_;
+        int xmax = (TX > (in_.dims[0] - xB)) ? (in_.dims[0] - xB) : TX;
+        int ymax = (TY > (in_.dims[1] - yB)) ? (in_.dims[1] - yB) : TY;
 
         int iIdx = in_.offset + idw * in_.strides[3] + idz * in_.strides[2] +
                    idy * in_.strides[1] + idx;
@@ -132,8 +130,6 @@ class gradientCreateKernel {
     const KParam in_;
     const int blocksPerMatX_;
     const int blocksPerMatY_;
-    const int TX_;
-    const int TY_;
     local_accessor<T> scratch_;
 };
 
@@ -154,11 +150,10 @@ void gradient(Param<T> grad0, Param<T> grad1, const Param<T> in) {
         write_accessor<T> grad1Acc{*grad1.data, h};
         read_accessor<T> inAcc{*in.data, h};
         auto scratch = local_accessor<T>((TY + 2) * (TX + 2), h);
-        h.parallel_for(
-            sycl::nd_range{global, local},
-            gradientCreateKernel<T>(grad0Acc, grad0.info, grad1Acc, grad1.info,
-                                    inAcc, in.info, blocksPerMatX,
-                                    blocksPerMatY, TX, TY, scratch));
+        h.parallel_for(sycl::nd_range{global, local},
+                       gradientCreateKernel<T, TX, TY>(
+                           grad0Acc, grad0.info, grad1Acc, grad1.info, inAcc,
+                           in.info, blocksPerMatX, blocksPerMatY, scratch));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
