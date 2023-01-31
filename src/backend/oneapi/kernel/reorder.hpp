@@ -11,7 +11,6 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
-#include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
 #include <traits.hpp>
 
