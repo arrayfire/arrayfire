@@ -9,7 +9,7 @@
 
 #include <Array.hpp>
 #include <err_oneapi.hpp>
-// #include <kernel/meanshift.hpp>
+#include <kernel/meanshift.hpp>
 #include <meanshift.hpp>
 #include <af/dim4.hpp>
 
@@ -21,13 +21,10 @@ template<typename T>
 Array<T> meanshift(const Array<T> &in, const float &spatialSigma,
                    const float &chromaticSigma, const unsigned &numIterations,
                    const bool &isColor) {
-    ONEAPI_NOT_SUPPORTED("meanshift Not supported");
-
     const dim4 &dims = in.dims();
     Array<T> out     = createEmptyArray<T>(dims);
-    // kernel::meanshift<T>(out, in, spatialSigma, chromaticSigma,
-    // numIterations,
-    //                      isColor);
+    kernel::meanshift<T>(out, in, spatialSigma, chromaticSigma, numIterations,
+                         isColor);
     return out;
 }
 

@@ -6,8 +6,8 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-//#include <kernel/tile.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/tile.hpp>
 #include <tile.hpp>
 
 #include <Array.hpp>
@@ -26,8 +26,7 @@ Array<T> tile(const Array<T> &in, const af::dim4 &tileDims) {
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    ONEAPI_NOT_SUPPORTED("tile Not supported");
-    // kernel::tile<T>(out, in);
+    kernel::tile<T>(out, in);
 
     return out;
 }

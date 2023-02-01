@@ -131,12 +131,10 @@ void conv2Helper(const conv_kparam_t<aT> &param, Param<T> out,
 
     auto Q = getQueue();
     Q.submit([&](auto &h) {
-        sycl::accessor<aT, 1, sycl::access::mode::read_write,
-                       sycl::access::target::local>
-            localMem(LOC_SIZE, h);
-        sycl::accessor outAcc{*out.data, h, sycl::write_only, sycl::no_init};
-        sycl::accessor signalAcc{*signal.data, h, sycl::read_only};
-        sycl::accessor impulseAcc{*param.impulse, h, sycl::read_only};
+        local_accessor<aT> localMem(LOC_SIZE, h);
+        write_accessor<T> outAcc{*out.data, h};
+        read_accessor<T> signalAcc{*signal.data, h};
+        read_accessor<aT> impulseAcc{*param.impulse, h};
         h.parallel_for(
             sycl::nd_range{param.global, param.local},
             conv2HelperCreateKernel<T, aT>(

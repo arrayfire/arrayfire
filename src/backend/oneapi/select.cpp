@@ -13,6 +13,7 @@
 #include <common/half.hpp>
 #include <common/jit/NaryNode.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/select.hpp>
 #include <scalar.hpp>
 
 #include <nonstd/span.hpp>
@@ -31,8 +32,6 @@ namespace oneapi {
 template<typename T>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const Array<T> &b, const dim4 &odims) {
-    ONEAPI_NOT_SUPPORTED("createSelectNode Not supported");
-
     auto cond_node   = cond.getNode();
     auto a_node      = a.getNode();
     auto b_node      = b.getNode();
@@ -61,8 +60,6 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
 template<typename T, bool flip>
 Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
                           const T &b_val, const dim4 &odims) {
-    ONEAPI_NOT_SUPPORTED("createSelectNode Not supported");
-
     auto cond_node   = cond.getNode();
     auto a_node      = a.getNode();
     Array<T> b       = createScalarNode<T>(odims, b_val);
@@ -94,17 +91,13 @@ Array<T> createSelectNode(const Array<char> &cond, const Array<T> &a,
 template<typename T>
 void select(Array<T> &out, const Array<char> &cond, const Array<T> &a,
             const Array<T> &b) {
-    ONEAPI_NOT_SUPPORTED("select Not supported");
-
-    // kernel::select<T>(out, cond, a, b, out.ndims());
+    kernel::select<T>(out, cond, a, b, out.ndims());
 }
 
 template<typename T, bool flip>
 void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a,
                    const T &b) {
-    ONEAPI_NOT_SUPPORTED("select_scalar Not supported");
-
-    // kernel::select_scalar<T>(out, cond, a, b, out.ndims(), flip);
+    kernel::select_scalar<T>(out, cond, a, b, out.ndims(), flip);
 }
 
 #define INSTANTIATE(T)                                                   \

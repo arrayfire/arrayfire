@@ -110,7 +110,7 @@ struct Interp1<Ty, Tp, 1> {
         const int x_lim    = iInfo.dims[xdim];
         const int x_stride = iInfo.strides[xdim];
 
-        int xid   = (method == AF_INTERP_LOWER ? floor(x) : round(x));
+        int xid = (method == AF_INTERP_LOWER ? sycl::floor(x) : sycl::round(x));
         bool cond = xid >= 0 && xid < x_lim;
         if (clamp) xid = std::max((int)0, std::min(xid, x_lim));
 
@@ -133,8 +133,8 @@ struct Interp1<Ty, Tp, 2> {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
-        const int grid_x = floor(x);    // nearest grid
-        const WT off_x   = x - grid_x;  // fractional offset
+        const int grid_x = sycl::floor(x);  // nearest grid
+        const WT off_x   = x - grid_x;      // fractional offset
 
         const int x_lim    = iInfo.dims[xdim];
         const int x_stride = iInfo.strides[xdim];
@@ -145,7 +145,7 @@ struct Interp1<Ty, Tp, 2> {
         WT ratio     = off_x;
         if (method == AF_INTERP_LINEAR_COSINE) {
             // Smooth the factional part with cosine
-            ratio = (1 - cos(ratio * af::Pi)) / 2;
+            ratio = (1 - sycl::cospi(ratio)) / 2;
         }
 
         Ty zero = scalar<Ty>(0);
@@ -170,8 +170,8 @@ struct Interp1<Ty, Tp, 3> {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
-        const int grid_x = floor(x);    // nearest grid
-        const WT off_x   = x - grid_x;  // fractional offset
+        const int grid_x = sycl::floor(x);  // nearest grid
+        const WT off_x   = x - grid_x;      // fractional offset
 
         const int x_lim    = iInfo.dims[xdim];
         const int x_stride = iInfo.strides[xdim];
@@ -206,8 +206,8 @@ struct Interp2<Ty, Tp, 1> {
                     read_accessor<Ty> in, KParam iInfo, int ioff, Tp x, Tp y,
                     int xdim, int ydim, af::interpType method, int batch,
                     bool clamp, int batch_dim = 2) {
-        int xid = (method == AF_INTERP_LOWER ? floor(x) : round(x));
-        int yid = (method == AF_INTERP_LOWER ? floor(y) : round(y));
+        int xid = (method == AF_INTERP_LOWER ? sycl::floor(x) : sycl::round(x));
+        int yid = (method == AF_INTERP_LOWER ? sycl::floor(y) : sycl::round(y));
 
         const int x_lim    = iInfo.dims[xdim];
         const int y_lim    = iInfo.dims[ydim];
@@ -244,10 +244,10 @@ struct Interp2<Ty, Tp, 2> {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
-        const int grid_x = floor(x);
+        const int grid_x = sycl::floor(x);
         const WT off_x   = x - grid_x;
 
-        const int grid_y = floor(y);
+        const int grid_y = sycl::floor(y);
         const WT off_y   = y - grid_y;
 
         const int x_lim    = iInfo.dims[xdim];
@@ -265,8 +265,8 @@ struct Interp2<Ty, Tp, 2> {
         if (method == AF_INTERP_LINEAR_COSINE ||
             method == AF_INTERP_BILINEAR_COSINE) {
             // Smooth the factional part with cosine
-            xratio = (1 - cos(xratio * af::Pi)) / 2;
-            yratio = (1 - cos(yratio * af::Pi)) / 2;
+            xratio = (1 - sycl::cospi(xratio)) / 2;
+            yratio = (1 - sycl::cospi(yratio)) / 2;
         }
 
         Ty zero = scalar<Ty>(0);
@@ -296,10 +296,10 @@ struct Interp2<Ty, Tp, 3> {
         typedef typename itype_t<Tp>::wtype WT;
         typedef typename itype_t<Ty>::vtype VT;
 
-        const int grid_x = floor(x);
+        const int grid_x = sycl::floor(x);
         const WT off_x   = x - grid_x;
 
-        const int grid_y = floor(y);
+        const int grid_y = sycl::floor(y);
         const WT off_y   = y - grid_y;
 
         const int x_lim    = iInfo.dims[xdim];
