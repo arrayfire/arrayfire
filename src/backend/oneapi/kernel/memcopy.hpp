@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2022, ArrayFire
+ * Copyright (c) 2023, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -121,83 +121,10 @@ void memcopy(sycl::buffer<T> *out, const dim_t *ostrides,
 }
 
 template<typename T>
-static T scale(T value, double factor) {
-    return (T)(double(value) * factor);
-}
-
-template<>
-cfloat scale<cfloat>(cfloat value, double factor) {
-    return cfloat{static_cast<float>(value.real() * factor),
-                  static_cast<float>(value.imag() * factor)};
-}
-
-template<>
-cdouble scale<cdouble>(cdouble value, double factor) {
-    return cdouble{value.real() * factor, value.imag() * factor};
-}
+SYCL_EXTERNAL T scale(T value, double factor);
 
 template<typename inType, typename outType>
-outType convertType(inType value) {
-    return static_cast<outType>(value);
-}
-
-template<>
-char convertType<compute_t<arrayfire::common::half>, char>(
-    compute_t<arrayfire::common::half> value) {
-    return (char)((short)value);
-}
-
-template<>
-compute_t<arrayfire::common::half>
-convertType<char, compute_t<arrayfire::common::half>>(char value) {
-    return compute_t<arrayfire::common::half>(value);
-}
-
-template<>
-unsigned char convertType<compute_t<arrayfire::common::half>, unsigned char>(
-    compute_t<arrayfire::common::half> value) {
-    return (unsigned char)((short)value);
-}
-
-template<>
-compute_t<arrayfire::common::half>
-convertType<unsigned char, compute_t<arrayfire::common::half>>(
-    unsigned char value) {
-    return compute_t<arrayfire::common::half>(value);
-}
-
-template<>
-cdouble convertType<cfloat, cdouble>(cfloat value) {
-    return cdouble(value.real(), value.imag());
-}
-
-template<>
-cfloat convertType<cdouble, cfloat>(cdouble value) {
-    return cfloat(value.real(), value.imag());
-}
-
-#define OTHER_SPECIALIZATIONS(IN_T)                      \
-    template<>                                           \
-    cfloat convertType<IN_T, cfloat>(IN_T value) {       \
-        return cfloat(static_cast<float>(value), 0.0f);  \
-    }                                                    \
-                                                         \
-    template<>                                           \
-    cdouble convertType<IN_T, cdouble>(IN_T value) {     \
-        return cdouble(static_cast<double>(value), 0.0); \
-    }
-
-OTHER_SPECIALIZATIONS(float)
-OTHER_SPECIALIZATIONS(double)
-OTHER_SPECIALIZATIONS(int)
-OTHER_SPECIALIZATIONS(uint)
-OTHER_SPECIALIZATIONS(intl)
-OTHER_SPECIALIZATIONS(uintl)
-OTHER_SPECIALIZATIONS(short)
-OTHER_SPECIALIZATIONS(ushort)
-OTHER_SPECIALIZATIONS(uchar)
-OTHER_SPECIALIZATIONS(char)
-OTHER_SPECIALIZATIONS(arrayfire::common::half)
+SYCL_EXTERNAL outType convertType(inType value);
 
 template<typename inType, typename outType, bool SAMEDIMS>
 class reshapeCopy {

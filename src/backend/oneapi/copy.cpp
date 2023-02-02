@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2022, ArrayFire
+ * Copyright (c) 2023, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,12 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #include <copy.hpp>
+#include <kernel/memcopy.hpp>
 
 #include <Array.hpp>
 #include <common/complex.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
-#include <kernel/memcopy.hpp>
 #include <math.hpp>
 
 using arrayfire::common::half;

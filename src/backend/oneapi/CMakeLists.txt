@@ -216,6 +216,7 @@ target_sources(afoneapi
     kernel/iota.hpp
     kernel/histogram.hpp
     kernel/memcopy.hpp
+    kernel/memcopy.cpp
     kernel/mean.hpp
     kernel/random_engine.hpp
     kernel/random_engine_write.hpp
