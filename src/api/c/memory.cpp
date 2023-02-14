@@ -497,8 +497,9 @@ af_err af_memory_manager_get_active_device_id(af_memory_manager handle,
 af_err af_memory_manager_native_alloc(af_memory_manager handle, void **ptr,
                                       size_t size) {
     try {
-        MemoryManager &manager = getMemoryManager(handle);
-        *ptr                   = manager.wrapper->nativeAlloc(size);
+        MemoryManagerBase &manager = detail::memoryManager();
+        dim_t sizes = size;
+        *ptr = manager.nativeAlloc(sizes);
     }
     CATCHALL;
 
@@ -507,8 +508,8 @@ af_err af_memory_manager_native_alloc(af_memory_manager handle, void **ptr,
 
 af_err af_memory_manager_native_free(af_memory_manager handle, void *ptr) {
     try {
-        MemoryManager &manager = getMemoryManager(handle);
-        manager.wrapper->nativeFree(ptr);
+        MemoryManagerBase &manager = detail::memoryManager();
+        manager.nativeFree(ptr);
     }
     CATCHALL;
 

@@ -67,7 +67,7 @@ template<typename T>
 Array<T>::Array(dim4 dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(memAlloc<T>(dims.elements()).release(), memFree<T>)
+    , data(dims.elements() ? memAlloc<T>(dims.elements()).release() : nullptr, memFree<T>)
     , data_dims(dims)
     , node()
     , owner(true) {}

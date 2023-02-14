@@ -530,7 +530,7 @@ AFAPI af_err af_memory_manager_get_active_device_id(af_memory_manager handle,
 /**
    \brief Allocates memory with a native memory function for the active backend
 
-   \param[in] handle the \ref af_memory_manager handle
+   \param[in] handle [IGNORED] Should be zero
    \param[out] ptr the pointer to the allocated buffer (for the CUDA and CPU
    backends). For the OpenCL backend, this is a pointer to a cl_mem, which
    can be cast accordingly
@@ -545,7 +545,7 @@ AFAPI af_err af_memory_manager_native_alloc(af_memory_manager handle,
 /**
     \brief Frees a pointer with a native memory function for the active backend
 
-    \param[in] handle the \ref af_memory_manager handle
+    \param[in] handle [IGNORED] Should be zero
     \param[in] ptr the pointer to free
 
     \returns AF_SUCCESS
