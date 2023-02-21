@@ -62,6 +62,8 @@ sycl::queue* getQueueHandle(int device);
 
 const sycl::device& getDevice(int id = -1);
 
+const std::string& getActiveDeviceBaseBuildFlags();
+
 size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();

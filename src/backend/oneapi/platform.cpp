@@ -304,6 +304,14 @@ const sycl::device& getDevice(int id) {
     return *(devMngr.mDevices[id]);
 }
 
+const std::string& getActiveDeviceBaseBuildFlags() {
+    device_id_t& devId     = tlocalActiveDeviceId();
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+    return devMngr.mBaseOpenCLBuildFlags[get<1>(devId)];
+}
+
 size_t getDeviceMemorySize(int device) {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
