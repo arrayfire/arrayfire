@@ -85,6 +85,8 @@ class DeviceManager {
 
     friend const sycl::device& getDevice(int id);
 
+    friend const std::string& getActiveDeviceBaseBuildFlags();
+
     friend size_t getDeviceMemorySize(int device);
 
     friend bool isGLSharingSupported();
@@ -137,6 +139,7 @@ class DeviceManager {
     std::vector<std::unique_ptr<sycl::context>> mContexts;
     std::vector<std::unique_ptr<sycl::queue>> mQueues;
     std::vector<bool> mIsGLSharingOn;
+    std::vector<std::string> mBaseOpenCLBuildFlags;
     std::vector<int> mDeviceTypes;
     std::vector<int> mPlatforms;
     unsigned mUserDeviceOffset;

@@ -10,6 +10,7 @@
 #include <common/graphics_common.hpp>
 
 #include <GraphicsResourceManager.hpp>
+#include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
@@ -17,10 +18,8 @@
 #include <common/util.hpp>
 #include <device_manager.hpp>
 #include <err_oneapi.hpp>
-#include <platform.hpp>  //TODO: blas.hpp? y tho, also Array.hpp
-//#include <errorcodes.hpp>
-#include <build_version.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 #include <af/oneapi.h>
 #include <af/version.h>
 
@@ -43,6 +42,8 @@ using std::unique_ptr;
 using std::vector;
 using sycl::device;
 using sycl::platform;
+
+using af::dtype_traits;
 
 namespace arrayfire {
 namespace oneapi {
@@ -118,6 +119,22 @@ DeviceManager::DeviceManager()
                 // mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
                 // mPlatforms.push_back(getPlatformEnum(*devices[i]));
                 mDevices.emplace_back(std::move(devices[i]));
+
+                std::string options;
+#ifdef AF_WITH_FAST_MATH
+                options = fmt::format(" -D dim_t=CL3.0 -cl-fast-relaxed-math",
+                                      dtype_traits<dim_t>::getName());
+#else
+                options = fmt::format(" -cl-std=CL3.0 -D dim_t={}",
+                                      dtype_traits<dim_t>::getName());
+#endif
+                mBaseOpenCLBuildFlags.push_back(options);
+                if (mDevices.back()->has(sycl::aspect::fp64)) {
+                    mBaseOpenCLBuildFlags.back() += " -DUSE_DOUBLE";
+                }
+                if (mDevices.back()->has(sycl::aspect::fp16)) {
+                    mBaseOpenCLBuildFlags.back() += " -D USE_HALF";
+                }
             } catch (sycl::exception& err) {
                 AF_TRACE("Error creating context for device {} with error {}\n",
                          devices[i]->get_info<sycl::info::device::name>(),
