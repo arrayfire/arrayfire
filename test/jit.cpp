@@ -89,12 +89,7 @@ TEST(JIT, CPP_JIT_Reset_Binary) {
     array g = d - c;
     g.eval();
 
-    vector<float> hf(f.elements());
-    vector<float> hg(g.elements());
-    f.host(&hf[0]);
-    g.host(&hg[0]);
-
-    for (int i = 0; i < (int)f.elements(); i++) { ASSERT_EQ(hf[i], -hg[i]); }
+    ASSERT_ARRAYS_NEAR(f, -g, 1e-5);
 }
 
 TEST(JIT, CPP_JIT_Reset_Unary) {
@@ -109,12 +104,7 @@ TEST(JIT, CPP_JIT_Reset_Unary) {
     array g = d - c;
     g.eval();
 
-    vector<float> hf(f.elements());
-    vector<float> hg(g.elements());
-    f.host(&hf[0]);
-    g.host(&hg[0]);
-
-    for (int i = 0; i < (int)f.elements(); i++) { ASSERT_EQ(hf[i], -hg[i]); }
+    ASSERT_ARRAYS_EQ(f, -g);
 }
 
 TEST(JIT, CPP_Multi_linear) {
@@ -142,7 +132,7 @@ TEST(JIT, CPP_Multi_linear) {
     ASSERT_VEC_ARRAY_EQ(goldy, dim4(num), y);
 }
 
-TEST(JIT, CPP_strided) {
+TEST(JIT, CPP_gforSet_strided) {
     const int num = 1024;
     gforSet(true);
     array a = randu(num, 1, s32);
@@ -155,23 +145,23 @@ TEST(JIT, CPP_strided) {
 
     vector<int> ha(num);
     vector<int> hb(num);
-    vector<int> hx(num * num);
-    vector<int> hy(num * num);
 
     a.host(&ha[0]);
     b.host(&hb[0]);
-    x.host(&hx[0]);
-    y.host(&hy[0]);
 
+    vector<int> hapb(num * num);
+    vector<int> hamb(num * num);
     for (int j = 0; j < num; j++) {
         for (int i = 0; i < num; i++) {
-            ASSERT_EQ((ha[i] + hb[j]), hx[j * num + i]);
-            ASSERT_EQ((ha[i] - hb[j]), hy[j * num + i]);
+            hapb[j * num + i] = ha[i] + hb[j];
+            hamb[j * num + i] = ha[i] - hb[j];
         }
     }
+    ASSERT_VEC_ARRAY_EQ(hapb, dim4(num, num), x);
+    ASSERT_VEC_ARRAY_EQ(hamb, dim4(num, num), y);
 }
 
-TEST(JIT, CPP_Multi_strided) {
+TEST(JIT, CPP_gforSet_Multi_strided) {
     const int num = 1024;
     gforSet(true);
     array a = randu(num, 1, s32);
@@ -285,14 +275,11 @@ TEST(JIT, NonLinearLargeY) {
 
     a.host(ha.data());
     b.host(hb.data());
-    c.host(hc.data());
 
     for (int j = 0; j < d1; j++) {
-        for (int i = 0; i < d0; i++) {
-            ASSERT_EQ(hc[i + j * d0], ha[i] + hb[j])
-                << " at " << i << " , " << j;
-        }
+        for (int i = 0; i < d0; i++) { hc[i + j * d0] = ha[i] + hb[j]; }
     }
+    ASSERT_VEC_ARRAY_EQ(hc, dim4(d0, d1), c);
 }
 
 TEST(JIT, NonLinearLargeX) {
