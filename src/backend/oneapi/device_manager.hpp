@@ -9,7 +9,10 @@
 
 #pragma once
 
-#include <CL/sycl.hpp>
+#include <sycl/context.hpp>
+#include <sycl/device.hpp>
+#include <sycl/queue.hpp>
+
 #include <memory>
 #include <mutex>
 #include <string>
@@ -100,12 +103,12 @@ class DeviceManager {
 
     friend int setDevice(int device);
 
-    friend void addDeviceContext(sycl::device dev, sycl::context ctx,
-                                 sycl::queue que);
+    friend void addDeviceContext(sycl::device& dev, sycl::context& ctx,
+                                 sycl::queue& que);
 
-    friend void setDeviceContext(sycl::device dev, sycl::context ctx);
+    friend void setDeviceContext(sycl::device& dev, sycl::context& ctx);
 
-    friend void removeDeviceContext(sycl::device dev, sycl::context ctx);
+    friend void removeDeviceContext(sycl::device& dev, sycl::context& ctx);
 
     friend int getActiveDeviceType();
 

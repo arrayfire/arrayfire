@@ -15,6 +15,8 @@
 #include <debug_oneapi.hpp>
 #include <traits.hpp>
 
+#include <sycl/builtins.hpp>
+
 #include <string>
 #include <vector>
 

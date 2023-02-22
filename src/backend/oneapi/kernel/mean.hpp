@@ -13,7 +13,6 @@
 #include <common/Transform.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
-//#include <copy.hpp>?
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
 #include <kernel/default_config.hpp>
@@ -21,7 +20,9 @@
 #include <math.hpp>
 #include <memory.hpp>
 
-#include <iostream>
+#include <sycl/builtins.hpp>
+#include <sycl/group_algorithm.hpp>
+
 #include <memory>
 #include <vector>
 
@@ -72,8 +73,8 @@ class meanDimKernelSMEM {
                       read_accessor<Ti> in, KParam iInfo, read_accessor<Tw> iwt,
                       KParam iwInfo, uint groups_x, uint groups_y,
                       uint offset_dim, local_accessor<compute_t<To>, 1> s_val,
-                      local_accessor<compute_t<Tw>, 1> s_idx,
-                      sycl::stream debug, bool input_weight, bool output_weight)
+                      local_accessor<compute_t<Tw>, 1> s_idx, bool input_weight,
+                      bool output_weight)
         : out_(out)
         , owt_(owt)
         , in_(in)
@@ -88,8 +89,7 @@ class meanDimKernelSMEM {
         , s_val_(s_val)
         , s_idx_(s_idx)
         , input_weight_(input_weight)
-        , output_weight_(output_weight)
-        , debug_(debug) {}
+        , output_weight_(output_weight) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -217,7 +217,6 @@ class meanDimKernelSMEM {
     local_accessor<compute_t<To>, 1> s_val_;
     local_accessor<compute_t<Tw>, 1> s_idx_;
     bool input_weight_, output_weight_;
-    sycl::stream debug_;
 };
 
 template<typename Ti, typename Tw, typename To, int dim>
@@ -232,8 +231,6 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
-
-        sycl::stream debug_stream(2048 * 2048, 2048, h);
 
         auto s_val = local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
         auto s_idx = local_accessor<compute_t<Tw>, 1>(THREADS_PER_BLOCK, h);
@@ -254,7 +251,7 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
                                    out_acc, out.info, owt_acc, owt.info, in_acc,
                                    in.info, iwt_acc, iwt.info, blocks_dim[0],
                                    blocks_dim[1], blocks_dim[dim], s_val, s_idx,
-                                   debug_stream, input_weight, output_weight));
+                                   input_weight, output_weight));
                 break;
             case 4:
                 h.parallel_for(sycl::nd_range<2>(global, local),
@@ -262,7 +259,7 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
                                    out_acc, out.info, owt_acc, owt.info, in_acc,
                                    in.info, iwt_acc, iwt.info, blocks_dim[0],
                                    blocks_dim[1], blocks_dim[dim], s_val, s_idx,
-                                   debug_stream, input_weight, output_weight));
+                                   input_weight, output_weight));
                 break;
             case 2:
                 h.parallel_for(sycl::nd_range<2>(global, local),
@@ -270,7 +267,7 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
                                    out_acc, out.info, owt_acc, owt.info, in_acc,
                                    in.info, iwt_acc, iwt.info, blocks_dim[0],
                                    blocks_dim[1], blocks_dim[dim], s_val, s_idx,
-                                   debug_stream, input_weight, output_weight));
+                                   input_weight, output_weight));
                 break;
             case 1:
                 h.parallel_for(sycl::nd_range<2>(global, local),
@@ -278,7 +275,7 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
                                    out_acc, out.info, owt_acc, owt.info, in_acc,
                                    in.info, iwt_acc, iwt.info, blocks_dim[0],
                                    blocks_dim[1], blocks_dim[dim], s_val, s_idx,
-                                   debug_stream, input_weight, output_weight));
+                                   input_weight, output_weight));
                 break;
         }
     });
@@ -333,8 +330,7 @@ class meanFirstKernelSMEM {
                         const uint repeat,
                         local_accessor<compute_t<To>, 1> s_val,
                         local_accessor<compute_t<Tw>, 1> s_idx,
-                        sycl::stream debug, bool input_weight,
-                        bool output_weight)
+                        bool input_weight, bool output_weight)
         : out_(out)
         , owt_(owt)
         , in_(in)
@@ -350,8 +346,7 @@ class meanFirstKernelSMEM {
         , s_val_(s_val)
         , s_idx_(s_idx)
         , input_weight_(input_weight)
-        , output_weight_(output_weight)
-        , debug_(debug) {}
+        , output_weight_(output_weight) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -387,7 +382,7 @@ class meanFirstKernelSMEM {
         bool cond = (yid < iInfo_.dims[1] && zid < iInfo_.dims[2] &&
                      wid < iInfo_.dims[3]);
 
-        int lim = sycl::min((dim_t)(xid + repeat_ * DIMX_), iInfo_.dims[0]);
+        int lim = min((dim_t)(xid + repeat_ * DIMX_), iInfo_.dims[0]);
 
         common::Transform<Ti, compute_t<To>, af_add_t> transform;
 
@@ -411,7 +406,8 @@ class meanFirstKernelSMEM {
         } else {
             for (int id = xid + DIMX_; cond && id < lim; id += DIMX_) {
                 // Faster version of stable_mean when iwptr is NULL
-                val    = val + (transform(iptr[id]) - val) / (weight + (Tw)1);
+                val = val + (transform(iptr[id]) - compute_t<To>(val)) /
+                                (weight + (Tw)1);
                 weight = weight + (Tw)1;
             }
         }
@@ -493,7 +489,6 @@ class meanFirstKernelSMEM {
     local_accessor<compute_t<To>, 1> s_val_;
     local_accessor<compute_t<Tw>, 1> s_idx_;
     bool input_weight_, output_weight_;
-    sycl::stream debug_;
 };
 
 template<typename Ti, typename Tw, typename To>
@@ -510,8 +505,6 @@ void mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
-
-        sycl::stream debug_stream(2048 * 2048, 2048, h);
 
         auto s_val = local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
         auto s_idx = local_accessor<compute_t<Tw>, 1>(THREADS_PER_BLOCK, h);
@@ -530,7 +523,7 @@ void mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
             meanFirstKernelSMEM<Ti, Tw, To>(
                 out_acc, out.info, owt_acc, owt.info, in_acc, in.info, iwt_acc,
                 iwt.info, threads_x, groups_x, groups_y, repeat, s_val, s_idx,
-                debug_stream, input_weight, output_weight));
+                input_weight, output_weight));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

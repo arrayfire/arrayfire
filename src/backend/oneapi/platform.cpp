@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <platform.hpp>
+
 #include <GraphicsResourceManager.hpp>
 #include <blas.hpp>
 #include <build_version.hpp>
@@ -19,11 +21,14 @@
 #include <err_oneapi.hpp>
 #include <errorcodes.hpp>
 #include <memory.hpp>
+#include <af/oneapi.h>
 #include <af/version.h>
 
 #ifdef OS_MAC
 #include <OpenGL/CGLCurrent.h>
 #endif
+
+#include <sycl/platform.hpp>
 
 #include <cctype>
 #include <cstdlib>
@@ -418,7 +423,7 @@ void sync(int device) {
     setDevice(currDevice);
 }
 
-void addDeviceContext(sycl::device dev, sycl::context ctx, sycl::queue que) {
+void addDeviceContext(sycl::device& dev, sycl::context& ctx, sycl::queue& que) {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     int nDevices = 0;
@@ -448,7 +453,7 @@ void addDeviceContext(sycl::device dev, sycl::context ctx, sycl::queue que) {
     memoryManager().addMemoryManagement(nDevices);
 }
 
-void setDeviceContext(sycl::device dev, sycl::context ctx) {
+void setDeviceContext(sycl::device& dev, sycl::context& ctx) {
     // FIXME: add OpenGL Interop for user provided contexts later
     DeviceManager& devMngr = DeviceManager::getInstance();
 
@@ -464,7 +469,7 @@ void setDeviceContext(sycl::device dev, sycl::context ctx) {
     AF_ERROR("No matching device found", AF_ERR_ARG);
 }
 
-void removeDeviceContext(sycl::device dev, sycl::context ctx) {
+void removeDeviceContext(sycl::device& dev, sycl::context& ctx) {
     if (getDevice() == dev && getContext() == ctx) {
         AF_ERROR("Cannot pop the device currently in use", AF_ERR_ARG);
     }
@@ -517,6 +522,22 @@ void removeDeviceContext(sycl::device dev, sycl::context ctx) {
             devId               = newVals;
         }
     }
+}
+
+unsigned getMemoryBusWidth(const sycl::device& device) {
+    return device.get_info<sycl::info::device::global_mem_cache_line_size>();
+}
+
+size_t getL2CacheSize(const sycl::device& device) {
+    return device.get_info<sycl::info::device::global_mem_cache_line_size>();
+}
+
+unsigned getComputeUnits(const sycl::device& device) {
+    return device.get_info<sycl::info::device::max_compute_units>();
+}
+
+unsigned getMaxParallelThreads(const sycl::device& device) {
+    return getComputeUnits(device) * 2048;
 }
 
 bool synchronize_calls() {

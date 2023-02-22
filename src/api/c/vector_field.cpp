@@ -16,6 +16,7 @@
 #include <common/graphics_common.hpp>
 #include <handle.hpp>
 #include <join.hpp>
+#include <platform.hpp>
 #include <reduce.hpp>
 #include <transpose.hpp>
 #include <vector_field.hpp>

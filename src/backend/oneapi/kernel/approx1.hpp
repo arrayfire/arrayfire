@@ -151,7 +151,6 @@ void approx1(Param<Ty> yo, const Param<Ty> yi, const Param<Tp> xo,
         write_accessor<Ty> yoAcc{*yo.data, h};
         read_accessor<Ty> yiAcc{*yi.data, h};
         read_accessor<Tp> xoAcc{*xo.data, h};
-        sycl::stream debugStream(128, 128, h);
 
         h.parallel_for(sycl::nd_range{global, local},
                        approx1Kernel<Ty, Tp, order>(

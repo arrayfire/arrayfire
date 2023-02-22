@@ -8,8 +8,8 @@
  ********************************************************/
 #pragma once
 
+#include <Param.hpp>
 #include <common/dispatch.hpp>
-#include <common/half.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
 #include <kernel/random_engine_mersenne.hpp>

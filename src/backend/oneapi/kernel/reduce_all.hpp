@@ -19,6 +19,11 @@
 #include <math.hpp>
 #include <memory.hpp>
 
+#include <sycl/atomic_fence.hpp>
+#include <sycl/atomic_ref.hpp>
+#include <sycl/builtins.hpp>
+#include <sycl/group_algorithm.hpp>
+
 #include <algorithm>
 #include <climits>
 #include <complex>
@@ -55,7 +60,7 @@ class reduceAllKernelSMEM {
                         uint groups_x, uint groups_y, uint repeat,
                         bool change_nan, To nanval,
                         local_accessor<compute_t<To>, 1> s_ptr,
-                        local_accessor<bool, 1> amLast, sycl::stream debug)
+                        local_accessor<bool, 1> amLast)
         : out_(out)
         , retCount_(retCount)
         , tmp_(tmp)
@@ -70,8 +75,7 @@ class reduceAllKernelSMEM {
         , change_nan_(change_nan)
         , nanval_(nanval)
         , s_ptr_(s_ptr)
-        , amLast_(amLast)
-        , debug_(debug) {}
+        , amLast_(amLast) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -97,7 +101,7 @@ class reduceAllKernelSMEM {
                     (wid < iInfo_.dims[3]);
 
         dim_t last = (xid + repeat_ * DIMX_);
-        int lim    = sycl::min(last, iInfo_.dims[0]);
+        int lim    = min(last, iInfo_.dims[0]);
 
         compute_t<To> out_val = common::Binary<compute_t<To>, op>::init();
         for (int id = xid; cond && id < lim; id += DIMX_) {
@@ -238,7 +242,6 @@ class reduceAllKernelSMEM {
     To nanval_;
     local_accessor<compute_t<To>, 1> s_ptr_;
     local_accessor<bool, 1> amLast_;
-    sycl::stream debug_;
 };
 
 template<typename Ti, typename To, af_op_t op>
@@ -273,8 +276,6 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
         auto tmp_acc      = tmp.getData()->get_access(h);
         read_accessor<Ti> in_acc{*in.data, h};
 
-        sycl::stream debug_stream(2048 * 256, 128, h);
-
         auto shrdMem =
             local_accessor<compute_t<To>, 1>(creduce::THREADS_PER_BLOCK, h);
         auto amLast = local_accessor<bool, 1>(1, h);
@@ -283,7 +284,7 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
             reduceAllKernelSMEM<Ti, To, op>(
                 out_acc, out.info, retCount_acc, tmp_acc, (KParam)tmp, in_acc,
                 in.info, threads_x, groups_x, groups_y, repeat, change_nan,
-                scalar<To>(nanval), shrdMem, amLast, debug_stream));
+                scalar<To>(nanval), shrdMem, amLast));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

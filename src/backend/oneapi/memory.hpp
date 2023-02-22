@@ -10,6 +10,8 @@
 
 #include <common/AllocatorInterface.hpp>
 
+#include <sycl/buffer.hpp>
+
 #include <cstdlib>
 #include <functional>
 #include <map>

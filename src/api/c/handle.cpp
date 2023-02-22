@@ -136,4 +136,50 @@ dim4 verifyDims(const unsigned ndims, const dim_t *const dims) {
     return d;
 }
 
+template<typename T>
+void releaseHandle(const af_array arr) {
+    auto &Arr      = getArray<T>(arr);
+    int old_device = detail::getActiveDeviceId();
+    int array_id   = Arr.getDevId();
+    if (array_id != old_device) {
+        detail::setDevice(array_id);
+        detail::destroyArray(static_cast<detail::Array<T> *>(arr));
+        detail::setDevice(old_device);
+    } else {
+        detail::destroyArray(static_cast<detail::Array<T> *>(arr));
+    }
+}
+
+template<typename T>
+detail::Array<T> &getCopyOnWriteArray(const af_array &arr) {
+    detail::Array<T> *A = static_cast<detail::Array<T> *>(arr);
+
+    if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
+        AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
+
+    ARG_ASSERT(0, A->isSparse() == false);
+
+    if (A->useCount() > 1) { *A = copyArray(*A); }
+
+    return *A;
+}
+
+#define INSTANTIATE(TYPE)                                  \
+    template void releaseHandle<TYPE>(const af_array arr); \
+    template detail::Array<TYPE> &getCopyOnWriteArray<TYPE>(const af_array &arr)
+
+INSTANTIATE(float);
+INSTANTIATE(double);
+INSTANTIATE(cfloat);
+INSTANTIATE(cdouble);
+INSTANTIATE(int);
+INSTANTIATE(uint);
+INSTANTIATE(intl);
+INSTANTIATE(uintl);
+INSTANTIATE(uchar);
+INSTANTIATE(char);
+INSTANTIATE(short);
+INSTANTIATE(ushort);
+INSTANTIATE(half);
+
 }  // namespace arrayfire

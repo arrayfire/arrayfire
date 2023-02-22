@@ -18,6 +18,9 @@
 #include <types.hpp>
 #include <af/dim4.hpp>
 
+#include <sycl/builtins.hpp>
+#include <sycl/usm.hpp>
+
 #include <utility>
 
 using arrayfire::common::bytesToString;
@@ -151,9 +154,7 @@ T *pinnedAlloc(const size_t &elements) {
     return static_cast<T *>(ptr);
 }
 
-void pinnedFree(void *ptr) {
-    pinnedMemoryManager().unlock(ptr, false);
-}
+void pinnedFree(void *ptr) { pinnedMemoryManager().unlock(ptr, false); }
 
 // template unique_ptr<int, function<void(int *)>> memAlloc<T>(
 #define INSTANTIATE(T)                                               \
@@ -252,7 +253,7 @@ AllocatorPinned::AllocatorPinned() { logger = common::loggerFactory("mem"); }
 
 void AllocatorPinned::shutdown() { shutdownPinnedMemoryManager(); }
 
-int AllocatorPinned::getActiveDeviceId() { oneapi::getActiveDeviceId(); }
+int AllocatorPinned::getActiveDeviceId() { return oneapi::getActiveDeviceId(); }
 
 size_t AllocatorPinned::getMaxMemorySize(int id) {
     return oneapi::getDeviceMemorySize(id);

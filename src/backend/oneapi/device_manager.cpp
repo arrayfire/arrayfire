@@ -7,21 +7,28 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/graphics_common.hpp>
+#include <device_manager.hpp>
 
 #include <GraphicsResourceManager.hpp>
 #include <build_version.hpp>
 #include <common/DefaultMemoryManager.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
+#include <common/graphics_common.hpp>
 #include <common/host_memory.hpp>
 #include <common/util.hpp>
-#include <device_manager.hpp>
 #include <err_oneapi.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
 #include <af/oneapi.h>
 #include <af/version.h>
+
+#include <sycl/context.hpp>
+#include <sycl/device.hpp>
+#include <sycl/exception.hpp>
+#include <sycl/exception_list.hpp>
+#include <sycl/platform.hpp>
+#include <sycl/queue.hpp>
 
 #include <algorithm>
 #include <iterator>

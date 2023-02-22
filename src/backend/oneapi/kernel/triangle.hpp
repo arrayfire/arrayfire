@@ -109,7 +109,6 @@ void triangle(Param<T> out, const Param<T> in, bool is_upper,
     getQueue().submit([&](sycl::handler &h) {
         auto iAcc = in.data->get_access(h);
         auto rAcc = out.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
         h.parallel_for(
             sycl::nd_range{global, local},

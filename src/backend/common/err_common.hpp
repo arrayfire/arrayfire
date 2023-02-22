@@ -17,11 +17,10 @@
 #include <common/defines.hpp>
 #include <af/defines.h>
 
-#include <cassert>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <vector>
+#include <utility>
 
 class AfError : public std::logic_error {
     std::string functionName;

@@ -9,21 +9,10 @@
 
 #pragma once
 
-#include <CL/sycl.hpp>
 #include <af/defines.h>
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#if AF_API_VERSION >= 39
-typedef enum
-{
-    AF_ONEAPI_DEVICE_TYPE_CPU     = (int)sycl::info::device_type::cpu,
-    AF_ONEAPI_DEVICE_TYPE_GPU     = (int)sycl::info::device_type::gpu,
-    AF_ONEAPI_DEVICE_TYPE_ACC     = (int)sycl::info::device_type::accelerator,
-    AF_ONEAPI_DEVICE_TYPE_UNKNOWN = -1
-} af_oneapi_device_type;
 #endif
 
 #if AF_API_VERSION >= 39

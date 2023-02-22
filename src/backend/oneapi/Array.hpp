@@ -9,20 +9,14 @@
 
 #pragma once
 
-#include <CL/sycl.hpp>
-#include <Param.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
-#include <common/MemoryManagerBase.hpp>
-#include <common/jit/Node.hpp>
-//#include <err_opencl.hpp>
-//#include <jit/BufferNode.hpp>
-//#include <memory.hpp>
-#include <platform.hpp>
+#include <kernel/KParam.hpp>
 #include <traits.hpp>
 #include <types.hpp>
+#include <af/dim4.hpp>
 
-//#include <af/dim4.hpp>
+#include <sycl/buffer.hpp>
 
 #include <nonstd/span.hpp>
 #include <algorithm>
@@ -30,13 +24,24 @@
 #include <memory>
 #include <vector>
 
+enum class kJITHeuristics;
+
+namespace arrayfire {
 namespace common {
 template<typename T>
 class SparseArray;
-}
 
-namespace arrayfire {
+class Node;
+
+using Node_ptr = std::shared_ptr<Node>;
+
+}  // namespace common
 namespace oneapi {
+
+template<typename T>
+struct Param;
+template<typename T>
+struct AParam;
 
 template<typename T>
 using Buffer_ptr = std::shared_ptr<sycl::buffer<T>>;

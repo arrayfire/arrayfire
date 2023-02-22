@@ -32,6 +32,48 @@ dim4 calcStrides(const dim4 &parentDim) {
     return out;
 }
 
+ArrayInfo::ArrayInfo(unsigned id, af::dim4 size, dim_t offset_, af::dim4 stride,
+                     af_dtype af_type)
+    : devId(id)
+    , type(af_type)
+    , dim_size(size)
+    , offset(offset_)
+    , dim_strides(stride)
+    , is_sparse(false) {
+    setId(id);
+    static_assert(std::is_move_assignable<ArrayInfo>::value,
+                  "ArrayInfo is not move assignable");
+    static_assert(std::is_move_constructible<ArrayInfo>::value,
+                  "ArrayInfo is not move constructible");
+    static_assert(
+        offsetof(ArrayInfo, devId) == 0,
+        "ArrayInfo::devId must be the first member variable of ArrayInfo. \
+                   devId is used to encode the backend into the integer. \
+                   This is then used in the unified backend to check mismatched arrays.");
+    static_assert(std::is_standard_layout<ArrayInfo>::value,
+                  "ArrayInfo must be a standard layout type");
+}
+
+ArrayInfo::ArrayInfo(unsigned id, af::dim4 size, dim_t offset_, af::dim4 stride,
+                     af_dtype af_type, bool sparse)
+    : devId(id)
+    , type(af_type)
+    , dim_size(size)
+    , offset(offset_)
+    , dim_strides(stride)
+    , is_sparse(sparse) {
+    setId(id);
+    static_assert(
+        offsetof(ArrayInfo, devId) == 0,
+        "ArrayInfo::devId must be the first member variable of ArrayInfo. \
+                   devId is used to encode the backend into the integer. \
+                   This is then used in the unified backend to check mismatched arrays.");
+    static_assert(std::is_nothrow_move_assignable<ArrayInfo>::value,
+                  "ArrayInfo is not nothrow move assignable");
+    static_assert(std::is_nothrow_move_constructible<ArrayInfo>::value,
+                  "ArrayInfo is not nothrow move constructible");
+}
+
 unsigned ArrayInfo::getDevId() const {
     // The actual device ID is only stored in the first 8 bits of devId
     // See ArrayInfo.hpp for more

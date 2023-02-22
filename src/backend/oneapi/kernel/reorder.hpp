@@ -63,7 +63,6 @@ class reorderCreateKernel {
 
         const int o_off   = ow * op_.strides[3] + oz * op_.strides[2];
         const int rdims[] = {d0_, d1_, d2_, d3_};
-        int ods[]         = {xx, yy, oz, ow};
         int ids[4]        = {0};
 
         ids[rdims[3]] = ow;

@@ -28,7 +28,7 @@ class iotaKernel {
    public:
     iotaKernel(sycl::accessor<T> out, KParam oinfo, const int s0, const int s1,
                const int s2, const int s3, const int blocksPerMatX,
-               const int blocksPerMatY, sycl::stream debug)
+               const int blocksPerMatY)
         : out_(out)
         , oinfo_(oinfo)
         , s0_(s0)
@@ -36,8 +36,7 @@ class iotaKernel {
         , s2_(s2)
         , s3_(s3)
         , blocksPerMatX_(blocksPerMatX)
-        , blocksPerMatY_(blocksPerMatY)
-        , debug_(debug) {}
+        , blocksPerMatY_(blocksPerMatY) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group gg = it.get_group();
@@ -77,7 +76,6 @@ class iotaKernel {
     KParam oinfo_;
     int s0_, s1_, s2_, s3_;
     int blocksPerMatX_, blocksPerMatY_;
-    sycl::stream debug_;
 };
 
 template<typename T>
@@ -100,15 +98,13 @@ void iota(Param<T> out, const af::dim4& sdims) {
             .submit([=](sycl::handler& h) {
                 auto out_acc = out.data->get_access(h);
 
-                sycl::stream debug_stream(2048, 128, h);
-
                 h.parallel_for(
                     ndrange,
                     iotaKernel<T>(out_acc, out.info, static_cast<int>(sdims[0]),
                                   static_cast<int>(sdims[1]),
                                   static_cast<int>(sdims[2]),
                                   static_cast<int>(sdims[3]), blocksPerMatX,
-                                  blocksPerMatY, debug_stream));
+                                  blocksPerMatY));
             })
             .wait();
         ONEAPI_DEBUG_FINISH(getQueue());
