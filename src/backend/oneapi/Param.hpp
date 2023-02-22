@@ -9,8 +9,14 @@
 
 #pragma once
 
-#include <CL/sycl.hpp>
 #include <kernel/KParam.hpp>
+#include <types.hpp>
+
+#include <af/dim4.hpp>
+
+#include <sycl/accessor.hpp>
+#include <sycl/buffer.hpp>
+#include <sycl/handler.hpp>
 
 namespace arrayfire {
 namespace oneapi {

@@ -17,6 +17,7 @@
 #include <common/graphics_common.hpp>
 #include <handle.hpp>
 #include <join.hpp>
+#include <platform.hpp>
 #include <plot.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>

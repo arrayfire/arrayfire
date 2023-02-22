@@ -32,6 +32,10 @@
 #endif
 #endif
 
+#ifdef AF_ONEAPI
+#include <sycl/half_type.hpp>
+#endif
+
 #include <backend.hpp>
 
 #ifdef __CUDACC_RTC__
@@ -41,6 +45,7 @@ using uint16_t = unsigned short;
 #define AF_CONSTEXPR constexpr
 #else
 #include <af/compilers.h>
+#include <cmath>
 #include <cstring>
 #include <ostream>
 #include <string>

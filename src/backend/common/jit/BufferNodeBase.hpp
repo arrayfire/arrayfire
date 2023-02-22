@@ -8,11 +8,13 @@
  ********************************************************/
 
 #pragma once
-#include <backend.hpp>
 #include <common/jit/Node.hpp>
 #include <jit/kernel_generators.hpp>
 
+#include <backend.hpp>
+
 #include <cstring>
+#include <memory>
 #include <sstream>
 
 namespace arrayfire {

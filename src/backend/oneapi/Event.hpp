@@ -8,9 +8,12 @@
  ********************************************************/
 #pragma once
 
-#include <CL/sycl.hpp>
 #include <common/EventBase.hpp>
+
 #include <af/event.h>
+
+#include <sycl/event.hpp>
+#include <sycl/queue.hpp>
 
 namespace arrayfire {
 namespace oneapi {

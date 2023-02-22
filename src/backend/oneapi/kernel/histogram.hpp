@@ -15,6 +15,8 @@
 #include <err_oneapi.hpp>
 #include <traits.hpp>
 
+#include <sycl/atomic_ref.hpp>
+
 #include <string>
 #include <vector>
 
@@ -152,7 +154,6 @@ void histogram(Param<uint> out, const Param<T> in, int nbins, float minval,
     getQueue().submit([&](sycl::handler &h) {
         auto inAcc  = in.data->get_access(h);
         auto outAcc = out.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
         auto localMem = local_accessor<uint, 1>(locSize, h);
 

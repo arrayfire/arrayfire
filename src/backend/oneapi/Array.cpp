@@ -9,6 +9,8 @@
 
 #include <Array.hpp>
 
+#include <Param.hpp>
+#include <common/MemoryManagerBase.hpp>
 #include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
 #include <common/jit/ScalarNode.hpp>

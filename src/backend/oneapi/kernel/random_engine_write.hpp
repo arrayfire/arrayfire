@@ -23,8 +23,8 @@ namespace kernel {
 //// above. This is done so that we can avoid unnecessary computations because
 /// the / __half datatype is not a constexprable type. This prevents the
 /// compiler from / peforming these operations at compile time.
-//#define HALF_FACTOR __ushort_as_half(0x100u)
-//#define HALF_HALF_FACTOR __ushort_as_half(0x80)
+// #define HALF_FACTOR __ushort_as_half(0x100u)
+// #define HALF_HALF_FACTOR __ushort_as_half(0x80)
 //
 //// Conversion to half adapted from Random123
 ////#define SIGNED_HALF_FACTOR                                \
@@ -35,8 +35,8 @@ namespace kernel {
 //// above. This is done so that we can avoid unnecessary computations because
 /// the / __half datatype is not a constexprable type. This prevents the
 /// compiler from / peforming these operations at compile time
-//#define SIGNED_HALF_FACTOR __ushort_as_half(0x200u)
-//#define SIGNED_HALF_HALF_FACTOR __ushort_as_half(0x100u)
+// #define SIGNED_HALF_FACTOR __ushort_as_half(0x200u)
+// #define SIGNED_HALF_HALF_FACTOR __ushort_as_half(0x100u)
 //
 ///// This is the largest integer representable by fp16. We need to
 ///// make sure that the value converted from ushort is smaller than this
@@ -47,15 +47,15 @@ namespace kernel {
 //__device__ static __half oneMinusGetHalf01(uint num) {
 //    // convert to ushort before the min operation
 //    ushort v = min(max_int_before_infinity, ushort(num));
-//#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 530
+// #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ < 530
 //    return (1.0f - __half2float(__hfma(__ushort2half_rn(v), HALF_FACTOR,
 //                                       HALF_HALF_FACTOR)));
-//#else
+// #else
 //    __half out = __ushort_as_half(0x3c00u) /*1.0h*/ -
 //                 __hfma(__ushort2half_rn(v), HALF_FACTOR, HALF_HALF_FACTOR);
 //    if (__hisinf(out)) printf("val: %d ushort: %d\n", num, v);
 //    return out;
-//#endif
+// #endif
 //}
 //
 //// Generates rationals in (0, 1]
@@ -128,22 +128,22 @@ static double getDoubleNegative11(uint num1, uint num2) {
 
 namespace {
 //
-//#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
-//#define HALF_MATH_FUNC(OP, HALF_OP)    \
+// #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
+// #define HALF_MATH_FUNC(OP, HALF_OP)    \
 //    template<>                         \
 //    __device__ __half OP(__half val) { \
 //        return ::HALF_OP(val);         \
 //    }
-//#else
-//#define HALF_MATH_FUNC(OP, HALF_OP)     \
+// #else
+// #define HALF_MATH_FUNC(OP, HALF_OP)     \
 //    template<>                          \
 //    __device__ __half OP(__half val) {  \
 //        float fval = __half2float(val); \
 //        return __float2half(OP(fval));  \
 //    }
-//#endif
+// #endif
 //
-//#define MATH_FUNC(OP, DOUBLE_OP, FLOAT_OP, HALF_OP) \
+// #define MATH_FUNC(OP, DOUBLE_OP, FLOAT_OP, HALF_OP) \
 //    template<typename T>                            \
 //    __device__ T OP(T val);                         \
 //    template<>                                      \
@@ -176,16 +176,16 @@ namespace {
 //
 // template<>
 //__device__ void sincos(__half val, __half *sptr, __half *cptr) {
-//#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
+// #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
 //    *sptr = sin(val);
 //    *cptr = cos(val);
-//#else
+// #else
 //    float s, c;
 //    float fval = __half2float(val);
 //    sincos(fval, &s, &c);
 //    *sptr = __float2half(s);
 //    *cptr = __float2half(c);
-//#endif
+// #endif
 //}
 //
 template<typename T>
@@ -198,18 +198,18 @@ void sincospi(T val, T *sptr, T *cptr) {
 //__device__ void sincospi(__half val, __half *sptr, __half *cptr) {
 //    // CUDA cannot make __half into a constexpr as of CUDA 11 so we are
 //    // converting this offline
-//#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
+// #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 530
 //    const __half pi_val = __ushort_as_half(0x4248);  // 0x4248 == 3.14062h
 //    val *= pi_val;
 //    *sptr = sin(val);
 //    *cptr = cos(val);
-//#else
+// #else
 //    float fval = __half2float(val);
 //    float s, c;
 //    sincospi(fval, &s, &c);
 //    *sptr = __float2half(s);
 //    *cptr = __float2half(c);
-//#endif
+// #endif
 //}
 //
 }  // namespace

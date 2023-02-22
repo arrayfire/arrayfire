@@ -111,7 +111,6 @@ void diff(Param<T> out, const Param<T> in, const unsigned indims,
     getQueue().submit([&](sycl::handler &h) {
         auto inAcc  = in.data->get_access(h);
         auto outAcc = out.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
         h.parallel_for(
             sycl::nd_range{global, local},

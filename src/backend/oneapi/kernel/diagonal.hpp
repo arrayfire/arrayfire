@@ -82,7 +82,6 @@ static void diagCreate(Param<T> out, Param<T> in, int num) {
     getQueue().submit([&](sycl::handler &h) {
         auto oData = out.data->get_access(h);
         auto iData = in.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
         h.parallel_for(sycl::nd_range{global, local},
                        diagCreateKernel<T>(oData, out.info, iData, in.info, num,
@@ -151,7 +150,6 @@ static void diagExtract(Param<T> out, Param<T> in, int num) {
     getQueue().submit([&](sycl::handler &h) {
         auto oData = out.data->get_access(h);
         auto iData = in.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
         h.parallel_for(sycl::nd_range{global, local},
                        diagExtractKernel<T>(oData, out.info, iData, in.info,

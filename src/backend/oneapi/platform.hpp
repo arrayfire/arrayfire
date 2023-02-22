@@ -9,8 +9,11 @@
 
 #pragma once
 
-#include <CL/sycl.hpp>
 #include <af/oneapi.h>
+
+#include <sycl/context.hpp>
+#include <sycl/device.hpp>
+#include <sycl/queue.hpp>
 
 #include <memory>
 #include <string>
@@ -68,6 +71,16 @@ size_t getDeviceMemorySize(int device);
 
 size_t getHostMemorySize();
 
+unsigned getMemoryBusWidth(const sycl::device& device);
+
+size_t getL2CacheSize(const sycl::device& device);
+
+unsigned getComputeUnits(const sycl::device& device);
+
+// maximum nr of threads the device really can run in parallel, without
+// scheduling
+unsigned getMaxParallelThreads(const sycl::device& device);
+
 // sycl::device::is_cpu,is_gpu,is_accelerator
 sycl::info::device_type getDeviceType();
 
@@ -88,11 +101,11 @@ std::string getPlatformName(const sycl::device& device);
 
 int setDevice(int device);
 
-void addDeviceContext(sycl::device dev, sycl::context ctx, sycl::queue que);
+void addDeviceContext(sycl::device& dev, sycl::context& ctx, sycl::queue& que);
 
-void setDeviceContext(sycl::device dev, sycl::context ctx);
+void setDeviceContext(sycl::device& dev, sycl::context& ctx);
 
-void removeDeviceContext(sycl::device dev, sycl::context ctx);
+void removeDeviceContext(sycl::device& dev, sycl::context& ctx);
 
 void sync(int device);
 

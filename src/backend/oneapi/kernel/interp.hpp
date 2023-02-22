@@ -11,6 +11,9 @@
 #include <math.hpp>
 #include <types.hpp>
 #include <af/constants.h>
+
+#include <sycl/builtins.hpp>
+
 #include <algorithm>
 
 namespace arrayfire {

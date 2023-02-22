@@ -15,6 +15,8 @@
 #include <err_oneapi.hpp>
 #include <traits.hpp>
 
+#include <sycl/builtins.hpp>
+
 #include <string>
 #include <vector>
 
@@ -200,7 +202,6 @@ void bilateral(Param<outType> out, const Param<inType> in, const float s_sigma,
     getQueue().submit([&](sycl::handler& h) {
         auto inAcc  = in.data->get_access(h);
         auto outAcc = out.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
         auto localMem = local_accessor<outType, 1>(num_shrd_elems, h);
         auto gauss2d  = local_accessor<outType, 1>(num_shrd_elems, h);

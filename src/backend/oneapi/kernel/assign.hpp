@@ -45,8 +45,7 @@ class assignKernel {
     assignKernel(sycl::accessor<T> out, KParam oInfo, sycl::accessor<T> in,
                  KParam iInfo, AssignKernelParam_t p, sycl::accessor<uint> ptr0,
                  sycl::accessor<uint> ptr1, sycl::accessor<uint> ptr2,
-                 sycl::accessor<uint> ptr3, const int nBBS0, const int nBBS1,
-                 sycl::stream debug)
+                 sycl::accessor<uint> ptr3, const int nBBS0, const int nBBS1)
         : out_(out)
         , in_(in)
         , oInfo_(oInfo)
@@ -57,8 +56,7 @@ class assignKernel {
         , ptr2_(ptr2)
         , ptr3_(ptr3)
         , nBBS0_(nBBS0)
-        , nBBS1_(nBBS1)
-        , debug_(debug) {}
+        , nBBS1_(nBBS1) {}
 
     void operator()(sycl::nd_item<2> it) const {
         // retrive booleans that tell us which index to use
@@ -108,7 +106,6 @@ class assignKernel {
     AssignKernelParam_t p_;
     sycl::accessor<uint> ptr0_, ptr1_, ptr2_, ptr3_;
     const int nBBS0_, nBBS1_;
-    sycl::stream debug_;
 };
 
 template<typename T>
@@ -134,12 +131,10 @@ void assign(Param<T> out, const Param<T> in, const AssignKernelParam_t& p,
         auto bptr2 = bPtr[2]->get_access(h);
         auto bptr3 = bPtr[3]->get_access(h);
 
-        sycl::stream debug_stream(2048, 128, h);
-
         h.parallel_for(
             sycl::nd_range<2>(global, local),
             assignKernel<T>(out_acc, out.info, in_acc, in.info, p, bptr0, bptr1,
-                            bptr2, bptr3, blk_x, blk_y, debug_stream));
+                            bptr2, bptr3, blk_x, blk_y));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

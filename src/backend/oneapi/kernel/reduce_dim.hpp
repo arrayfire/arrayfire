@@ -46,8 +46,7 @@ class reduceDimKernelSMEM {
     reduceDimKernelSMEM(write_accessor<To> out, KParam oInfo,
                         read_accessor<Ti> in, KParam iInfo, uint groups_x,
                         uint groups_y, uint offset_dim, bool change_nan,
-                        To nanval, local_accessor<compute_t<To>, 1> s_val,
-                        sycl::stream debug)
+                        To nanval, local_accessor<compute_t<To>, 1> s_val)
         : out_(out)
         , oInfo_(oInfo)
         , iInfo_(iInfo)
@@ -57,8 +56,7 @@ class reduceDimKernelSMEM {
         , offset_dim_(offset_dim)
         , change_nan_(change_nan)
         , nanval_(nanval)
-        , s_val_(s_val)
-        , debug_(debug) {}
+        , s_val_(s_val) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -142,7 +140,6 @@ class reduceDimKernelSMEM {
     bool change_nan_;
     To nanval_;
     local_accessor<compute_t<To>, 1> s_val_;
-    sycl::stream debug_;
 };
 
 template<typename Ti, typename To, af_op_t op, uint dim>
@@ -158,8 +155,6 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
 
-        sycl::stream debug_stream(2048 * 256, 128, h);
-
         auto shrdMem =
             local_accessor<compute_t<To>, 1>(creduce::THREADS_X * threads_y, h);
 
@@ -170,7 +165,7 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
                     reduceDimKernelSMEM<Ti, To, op, dim, 8>(
                         out_acc, out.info, in_acc, in.info, blocks_dim[0],
                         blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem, debug_stream));
+                        scalar<To>(nanval), shrdMem));
                 break;
             case 4:
                 h.parallel_for(
@@ -178,7 +173,7 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
                     reduceDimKernelSMEM<Ti, To, op, dim, 4>(
                         out_acc, out.info, in_acc, in.info, blocks_dim[0],
                         blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem, debug_stream));
+                        scalar<To>(nanval), shrdMem));
                 break;
             case 2:
                 h.parallel_for(
@@ -186,7 +181,7 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
                     reduceDimKernelSMEM<Ti, To, op, dim, 2>(
                         out_acc, out.info, in_acc, in.info, blocks_dim[0],
                         blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem, debug_stream));
+                        scalar<To>(nanval), shrdMem));
                 break;
             case 1:
                 h.parallel_for(
@@ -194,7 +189,7 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
                     reduceDimKernelSMEM<Ti, To, op, dim, 1>(
                         out_acc, out.info, in_acc, in.info, blocks_dim[0],
                         blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem, debug_stream));
+                        scalar<To>(nanval), shrdMem));
                 break;
         }
     });

@@ -9,6 +9,8 @@
 
 #pragma once
 #include <backend.hpp>
+#include <types.hpp>
+
 #include <ostream>
 
 namespace arrayfire {

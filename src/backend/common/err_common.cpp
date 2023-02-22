@@ -40,16 +40,16 @@ AfError::AfError(const char *const func, const char *const file, const int line,
     : logic_error(message)
     , functionName(func)
     , fileName(file)
-    , st_(move(st))
+    , st_(std::move(st))
     , lineNumber(line)
     , error(err) {}
 
 AfError::AfError(string func, string file, const int line,
                  const string &message, af_err err, stacktrace st)
     : logic_error(message)
-    , functionName(move(func))
-    , fileName(move(file))
-    , st_(move(st))
+    , functionName(std::move(func))
+    , fileName(std::move(file))
+    , st_(std::move(st))
     , lineNumber(line)
     , error(err) {}
 
@@ -66,7 +66,7 @@ AfError::~AfError() noexcept = default;
 TypeError::TypeError(const char *const func, const char *const file,
                      const int line, const int index, const af_dtype type,
                      stacktrace st)
-    : AfError(func, file, line, "Invalid data type", AF_ERR_TYPE, move(st))
+    : AfError(func, file, line, "Invalid data type", AF_ERR_TYPE, std::move(st))
     , errTypeName(getName(type))
     , argIndex(index) {}
 
@@ -77,7 +77,7 @@ int TypeError::getArgIndex() const noexcept { return argIndex; }
 ArgumentError::ArgumentError(const char *const func, const char *const file,
                              const int line, const int index,
                              const char *const expectString, stacktrace st)
-    : AfError(func, file, line, "Invalid argument", AF_ERR_ARG, move(st))
+    : AfError(func, file, line, "Invalid argument", AF_ERR_ARG, std::move(st))
     , expected(expectString)
     , argIndex(index) {}
 
@@ -91,7 +91,7 @@ SupportError::SupportError(const char *const func, const char *const file,
                            const int line, const char *const back,
                            stacktrace st)
     : AfError(func, file, line, "Unsupported Error", AF_ERR_NOT_SUPPORTED,
-              move(st))
+              std::move(st))
     , backend(back) {}
 
 const string &SupportError::getBackendName() const noexcept { return backend; }

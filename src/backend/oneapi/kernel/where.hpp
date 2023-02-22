@@ -37,7 +37,7 @@ class whereKernel {
                 read_accessor<uint> otmp_acc, KParam otInfo,
                 read_accessor<uint> rtmp_acc, KParam rtInfo,
                 read_accessor<T> in_acc, KParam iInfo, uint groups_x,
-                uint groups_y, uint lim, sycl::stream debug)
+                uint groups_y, uint lim)
         : out_acc_(out_acc)
         , otmp_acc_(otmp_acc)
         , rtmp_acc_(rtmp_acc)
@@ -48,8 +48,7 @@ class whereKernel {
         , iInfo_(iInfo)
         , groups_x_(groups_x)
         , groups_y_(groups_y)
-        , lim_(lim)
-        , debug_(debug) {}
+        , lim_(lim) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -99,7 +98,6 @@ class whereKernel {
     read_accessor<T> in_acc_;
     KParam oInfo_, otInfo_, rtInfo_, iInfo_;
     uint groups_x_, groups_y_, lim_;
-    sycl::stream debug_;
 };
 
 template<typename T>
@@ -181,11 +179,10 @@ static void where(Param<uint> &out, Param<T> in) {
         read_accessor<uint> rtmp_acc{*rtmp.data, h};
         read_accessor<T> in_acc{*in.data, h};
 
-        sycl::stream debug_stream(2048 * 256, 128, h);
         h.parallel_for(sycl::nd_range<2>(global, local),
                        whereKernel<T>(out_acc, out.info, otmp_acc, otmp.info,
                                       rtmp_acc, rtmp.info, in_acc, in.info,
-                                      groups_x, groups_y, lim, debug_stream));
+                                      groups_x, groups_y, lim));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
     out_alloc.release();
