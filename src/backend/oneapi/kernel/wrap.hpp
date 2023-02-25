@@ -147,10 +147,16 @@ void wrap(Param<T> out, const Param<T> in, const dim_t wx, const dim_t wy,
     auto global = sycl::range{groups_x * local[0] * out.info.dims[2],
                               groups_y * local[1]};
 
+    static auto wrapExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<wrapCreateKernel<T>>()});
+
     auto Q = getQueue();
     Q.submit([&](sycl::handler &h) {
         sycl::accessor outAcc{*out.data, h, sycl::write_only, sycl::no_init};
         sycl::accessor inAcc{*in.data, h, sycl::read_only};
+        h.use_kernel_bundle(wrapExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        wrapCreateKernel<T>(outAcc, out.info, inAcc, in.info, wx,
                                            wy, sx, sy, px, py, nx, ny, groups_x,

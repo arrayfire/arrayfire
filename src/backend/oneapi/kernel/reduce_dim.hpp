@@ -1,4 +1,4 @@
-/*******************************************************
+/*********************************************************
  * Copyright (c) 2022, ArrayFire
  * All rights reserved.
  *
@@ -40,14 +40,15 @@ using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
 template<typename T>
 using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
-template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
+template<typename Ti, typename To, af_op_t op, uint dim>
 class reduceDimKernelSMEM {
    public:
+    static constexpr sycl::specialization_id<uint> dimy;
+
     reduceDimKernelSMEM(write_accessor<To> out, KParam oInfo,
                         read_accessor<Ti> in, KParam iInfo, uint groups_x,
                         uint groups_y, uint offset_dim, bool change_nan,
-                        To nanval, local_accessor<compute_t<To>, 1> s_val,
-                        sycl::stream debug)
+                        To nanval, local_accessor<compute_t<To>, 1> s_val)
         : out_(out)
         , oInfo_(oInfo)
         , iInfo_(iInfo)
@@ -57,10 +58,12 @@ class reduceDimKernelSMEM {
         , offset_dim_(offset_dim)
         , change_nan_(change_nan)
         , nanval_(nanval)
-        , s_val_(s_val)
-        , debug_(debug) {}
+        , s_val_(s_val) {}
 
-    void operator()(sycl::nd_item<2> it) const {
+    void operator()(sycl::nd_item<2> it, sycl::kernel_handler kh) const {
+        uint DIMY = kh.get_specialization_constant<
+            reduceDimKernelSMEM<Ti, To, op, dim>::dimy>();
+
         sycl::group g   = it.get_group();
         const uint lidx = it.get_local_id(0);
         const uint lidy = it.get_local_id(1);
@@ -142,7 +145,6 @@ class reduceDimKernelSMEM {
     bool change_nan_;
     To nanval_;
     local_accessor<compute_t<To>, 1> s_val_;
-    sycl::stream debug_;
 };
 
 template<typename Ti, typename To, af_op_t op, uint dim>
@@ -154,49 +156,27 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
     sycl::range<2> global(blocks_dim[0] * blocks_dim[2] * local[0],
                           blocks_dim[1] * blocks_dim[3] * local[1]);
 
+    static auto reduceInputBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::input>(
+        getContext(),
+        { sycl::get_kernel_id<reduceDimKernelSMEM<Ti, To, op, dim>>() });
+    reduceInputBundle.template set_specialization_constant<reduceDimKernelSMEM<Ti, To, op, dim>::dimy>(threads_y);
+    static auto reduceExeBundle = sycl::build(reduceInputBundle);
+
     getQueue().submit([=](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
 
-        sycl::stream debug_stream(2048 * 256, 128, h);
-
         auto shrdMem =
             local_accessor<compute_t<To>, 1>(creduce::THREADS_X * threads_y, h);
 
-        switch (threads_y) {
-            case 8:
-                h.parallel_for(
-                    sycl::nd_range<2>(global, local),
-                    reduceDimKernelSMEM<Ti, To, op, dim, 8>(
-                        out_acc, out.info, in_acc, in.info, blocks_dim[0],
-                        blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem, debug_stream));
-                break;
-            case 4:
-                h.parallel_for(
-                    sycl::nd_range<2>(global, local),
-                    reduceDimKernelSMEM<Ti, To, op, dim, 4>(
-                        out_acc, out.info, in_acc, in.info, blocks_dim[0],
-                        blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem, debug_stream));
-                break;
-            case 2:
-                h.parallel_for(
-                    sycl::nd_range<2>(global, local),
-                    reduceDimKernelSMEM<Ti, To, op, dim, 2>(
-                        out_acc, out.info, in_acc, in.info, blocks_dim[0],
-                        blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem, debug_stream));
-                break;
-            case 1:
-                h.parallel_for(
-                    sycl::nd_range<2>(global, local),
-                    reduceDimKernelSMEM<Ti, To, op, dim, 1>(
-                        out_acc, out.info, in_acc, in.info, blocks_dim[0],
-                        blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem, debug_stream));
-                break;
-        }
+        h.use_kernel_bundle(reduceExeBundle);
+        h.parallel_for(
+            sycl::nd_range<2>(global, local),
+            reduceDimKernelSMEM<Ti, To, op, dim>(
+                out_acc, out.info, in_acc, in.info, blocks_dim[0],
+                blocks_dim[1], blocks_dim[dim], change_nan,
+                scalar<To>(nanval), shrdMem));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

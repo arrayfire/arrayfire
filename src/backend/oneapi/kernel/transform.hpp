@@ -277,6 +277,17 @@ void transform(Param<T> out, const Param<T> in, const Param<float> tf,
 
     auto global = sycl::range(global_x, global_y, global_z);
 
+    static auto transformExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(),
+        {sycl::get_kernel_id<transformCreateKernel<T, wtype_t<BT>, true,  1>>(),
+         sycl::get_kernel_id<transformCreateKernel<T, wtype_t<BT>, true,  2>>(),
+         sycl::get_kernel_id<transformCreateKernel<T, wtype_t<BT>, true,  3>>(),
+
+         sycl::get_kernel_id<transformCreateKernel<T, wtype_t<BT>, false, 1>>(),
+         sycl::get_kernel_id<transformCreateKernel<T, wtype_t<BT>, false, 2>>(),
+         sycl::get_kernel_id<transformCreateKernel<T, wtype_t<BT>, false, 3>>()});
+
 #define INVOKE(PERSPECTIVE, INTERP_ORDER)                                      \
     h.parallel_for(                                                            \
         sycl::nd_range{global, local},                                         \
@@ -289,6 +300,8 @@ void transform(Param<T> out, const Param<T> in, const Param<float> tf,
         read_accessor<T> d_in{*in.data, h};
         read_accessor<float> d_tf{*tf.data, h};
         write_accessor<T> d_out{*out.data, h};
+
+        h.use_kernel_bundle(transformExeBundle);
 
         if (isPerspective == true && order == 1) INVOKE(true, 1);
         if (isPerspective == true && order == 2) INVOKE(true, 2);

@@ -115,10 +115,15 @@ void lookup(Param<in_t> out, const Param<in_t> in, const Param<idx_t> indices,
     auto global = sycl::range(blk_x * out.info.dims[2] * THREADS_X,
                               blk_y * out.info.dims[3] * THREADS_Y);
 
+    static auto lookupExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<lookupNDCreateKernel<in_t, idx_t>>()} );
+
     getQueue().submit([&](auto &h) {
         write_accessor<in_t> d_out{*out.data, h};
         read_accessor<in_t> d_in{*in.data, h};
         read_accessor<idx_t> d_indices{*indices.data, h};
+        h.use_kernel_bundle(lookupExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        lookupNDCreateKernel<in_t, idx_t>(
                            d_out, out.info, d_in, in.info, d_indices,

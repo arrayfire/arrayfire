@@ -40,14 +40,15 @@ using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
 template<typename T>
 using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
-template<typename Ti, typename To, af_op_t op, uint DIMX>
+template<typename Ti, typename To, af_op_t op>
 class reduceFirstKernelSMEM {
    public:
+    static constexpr sycl::specialization_id<uint> dimx;
+
     reduceFirstKernelSMEM(write_accessor<To> out, KParam oInfo,
                           read_accessor<Ti> in, KParam iInfo, uint groups_x,
                           uint groups_y, uint repeat, bool change_nan,
-                          To nanval, local_accessor<compute_t<To>, 1> s_val,
-                          sycl::stream debug)
+                          To nanval, local_accessor<compute_t<To>, 1> s_val)
         : out_(out)
         , oInfo_(oInfo)
         , iInfo_(iInfo)
@@ -57,10 +58,11 @@ class reduceFirstKernelSMEM {
         , repeat_(repeat)
         , change_nan_(change_nan)
         , nanval_(nanval)
-        , s_val_(s_val)
-        , debug_(debug) {}
+        , s_val_(s_val) {}
 
-    void operator()(sycl::nd_item<2> it) const {
+    void operator()(sycl::nd_item<2> it, sycl::kernel_handler kh) const {
+        uint DIMX = kh.get_specialization_constant<reduceFirstKernelSMEM::dimx>();
+
         sycl::group g   = it.get_group();
         const uint lidx = it.get_local_id(0);
         const uint lidy = it.get_local_id(1);
@@ -68,8 +70,8 @@ class reduceFirstKernelSMEM {
 
         const uint zid       = g.get_group_id(0) / groups_x_;
         const uint wid       = g.get_group_id(1) / groups_y_;
-        const uint groupId_x = g.get_group_id(0) - (groups_x_)*zid;
-        const uint groupId_y = g.get_group_id(1) - (groups_y_)*wid;
+        const uint groupId_x = g.get_group_id(0) - (groups_x_) * zid;
+        const uint groupId_y = g.get_group_id(1) - (groups_y_) * wid;
         const uint xid = groupId_x * g.get_local_range(0) * repeat_ + lidx;
         const uint yid = groupId_y * g.get_local_range(1) + lidy;
 
@@ -147,7 +149,6 @@ class reduceFirstKernelSMEM {
     bool change_nan_;
     To nanval_;
     local_accessor<compute_t<To>, 1> s_val_;
-    sycl::stream debug_;
 };
 
 template<typename Ti, typename To, af_op_t op>
@@ -161,45 +162,26 @@ void reduce_first_launcher_default(Param<To> out, Param<Ti> in,
 
     uint repeat = divup(in.info.dims[0], (groups_x * threads_x));
 
+    static auto reduceInputBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::input>(
+        getContext(),
+        {sycl::get_kernel_id<reduceFirstKernelSMEM<Ti, To, op>>()});
+    reduceInputBundle.template set_specialization_constant<reduceFirstKernelSMEM<Ti, To, op>::dimx>(threads_x);
+    static auto reduceExeBundle = sycl::build(reduceInputBundle);
+
     getQueue().submit([=](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
 
-        sycl::stream debug_stream(2048 * 256, 128, h);
-
         auto shrdMem =
             local_accessor<compute_t<To>, 1>(creduce::THREADS_PER_BLOCK, h);
 
-        switch (threads_x) {
-            case 32:
-                h.parallel_for(sycl::nd_range<2>(global, local),
-                               reduceFirstKernelSMEM<Ti, To, op, 32>(
-                                   out_acc, out.info, in_acc, in.info, groups_x,
-                                   groups_y, repeat, change_nan,
-                                   scalar<To>(nanval), shrdMem, debug_stream));
-                break;
-            case 64:
-                h.parallel_for(sycl::nd_range<2>(global, local),
-                               reduceFirstKernelSMEM<Ti, To, op, 64>(
-                                   out_acc, out.info, in_acc, in.info, groups_x,
-                                   groups_y, repeat, change_nan,
-                                   scalar<To>(nanval), shrdMem, debug_stream));
-                break;
-            case 128:
-                h.parallel_for(sycl::nd_range<2>(global, local),
-                               reduceFirstKernelSMEM<Ti, To, op, 128>(
-                                   out_acc, out.info, in_acc, in.info, groups_x,
-                                   groups_y, repeat, change_nan,
-                                   scalar<To>(nanval), shrdMem, debug_stream));
-                break;
-            case 256:
-                h.parallel_for(sycl::nd_range<2>(global, local),
-                               reduceFirstKernelSMEM<Ti, To, op, 256>(
-                                   out_acc, out.info, in_acc, in.info, groups_x,
-                                   groups_y, repeat, change_nan,
-                                   scalar<To>(nanval), shrdMem, debug_stream));
-                break;
-        }
+        h.use_kernel_bundle(reduceExeBundle);
+        h.parallel_for(sycl::nd_range<2>(global, local),
+                        reduceFirstKernelSMEM<Ti, To, op>(
+                            out_acc, out.info, in_acc, in.info, groups_x,
+                            groups_y, repeat, change_nan,
+                            scalar<To>(nanval), shrdMem));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

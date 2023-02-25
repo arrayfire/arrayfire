@@ -64,16 +64,18 @@ void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
     }
 }
 
-template<typename Ti, typename Tw, typename To, uint dim, uint DIMY>
+template<typename Ti, typename Tw, typename To, uint dim>
 class meanDimKernelSMEM {
    public:
+    static constexpr sycl::specialization_id<uint> dimy;
+
     meanDimKernelSMEM(write_accessor<To> out, KParam oInfo,
                       write_accessor<Tw> owt, KParam owInfo,
                       read_accessor<Ti> in, KParam iInfo, read_accessor<Tw> iwt,
                       KParam iwInfo, uint groups_x, uint groups_y,
                       uint offset_dim, local_accessor<compute_t<To>, 1> s_val,
                       local_accessor<compute_t<Tw>, 1> s_idx,
-                      sycl::stream debug, bool input_weight, bool output_weight)
+                      bool input_weight, bool output_weight)
         : out_(out)
         , owt_(owt)
         , in_(in)
@@ -88,10 +90,12 @@ class meanDimKernelSMEM {
         , s_val_(s_val)
         , s_idx_(s_idx)
         , input_weight_(input_weight)
-        , output_weight_(output_weight)
-        , debug_(debug) {}
+        , output_weight_(output_weight) {}
 
-    void operator()(sycl::nd_item<2> it) const {
+    void operator()(sycl::nd_item<2> it, sycl::kernel_handler kh) const {
+        uint DIMY = kh.get_specialization_constant<
+            meanDimKernelSMEM<Ti, Tw, To, dim>::dimy>();
+
         sycl::group g   = it.get_group();
         const uint lidx = it.get_local_id(0);
         const uint lidy = it.get_local_id(1);
@@ -217,7 +221,6 @@ class meanDimKernelSMEM {
     local_accessor<compute_t<To>, 1> s_val_;
     local_accessor<compute_t<Tw>, 1> s_idx_;
     bool input_weight_, output_weight_;
-    sycl::stream debug_;
 };
 
 template<typename Ti, typename Tw, typename To, int dim>
@@ -229,11 +232,17 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
                           blocks_dim[1] * blocks_dim[3] * local[1]);
 
     sycl::buffer<Tw, 1> empty(sycl::range<1>{1});
+
+    static auto meanInputBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::input>(
+        getContext(),
+        { sycl::get_kernel_id<meanDimKernelSMEM<Ti, Tw, To, dim>>() });
+    meanInputBundle.template set_specialization_constant<meanDimKernelSMEM<Ti, Tw, To, dim>::dimy>(threads_y);
+    static auto meanExeBundle = sycl::build(meanInputBundle);
+
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
-
-        sycl::stream debug_stream(2048 * 2048, 2048, h);
 
         auto s_val = local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
         auto s_idx = local_accessor<compute_t<Tw>, 1>(THREADS_PER_BLOCK, h);
@@ -247,40 +256,13 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
         write_accessor<Tw> owt_acc{(output_weight) ? *owt.data : empty, h};
         read_accessor<Tw> iwt_acc{(input_weight) ? *iwt.data : empty, h};
 
-        switch (threads_y) {
-            case 8:
-                h.parallel_for(sycl::nd_range<2>(global, local),
-                               meanDimKernelSMEM<Ti, Tw, To, dim, 8>(
-                                   out_acc, out.info, owt_acc, owt.info, in_acc,
-                                   in.info, iwt_acc, iwt.info, blocks_dim[0],
-                                   blocks_dim[1], blocks_dim[dim], s_val, s_idx,
-                                   debug_stream, input_weight, output_weight));
-                break;
-            case 4:
-                h.parallel_for(sycl::nd_range<2>(global, local),
-                               meanDimKernelSMEM<Ti, Tw, To, dim, 4>(
-                                   out_acc, out.info, owt_acc, owt.info, in_acc,
-                                   in.info, iwt_acc, iwt.info, blocks_dim[0],
-                                   blocks_dim[1], blocks_dim[dim], s_val, s_idx,
-                                   debug_stream, input_weight, output_weight));
-                break;
-            case 2:
-                h.parallel_for(sycl::nd_range<2>(global, local),
-                               meanDimKernelSMEM<Ti, Tw, To, dim, 2>(
-                                   out_acc, out.info, owt_acc, owt.info, in_acc,
-                                   in.info, iwt_acc, iwt.info, blocks_dim[0],
-                                   blocks_dim[1], blocks_dim[dim], s_val, s_idx,
-                                   debug_stream, input_weight, output_weight));
-                break;
-            case 1:
-                h.parallel_for(sycl::nd_range<2>(global, local),
-                               meanDimKernelSMEM<Ti, Tw, To, dim, 1>(
-                                   out_acc, out.info, owt_acc, owt.info, in_acc,
-                                   in.info, iwt_acc, iwt.info, blocks_dim[0],
-                                   blocks_dim[1], blocks_dim[dim], s_val, s_idx,
-                                   debug_stream, input_weight, output_weight));
-                break;
-        }
+        h.use_kernel_bundle(meanExeBundle);
+        h.parallel_for(sycl::nd_range<2>(global, local),
+                        meanDimKernelSMEM<Ti, Tw, To, dim>(
+                            out_acc, out.info, owt_acc, owt.info, in_acc,
+                            in.info, iwt_acc, iwt.info, blocks_dim[0],
+                            blocks_dim[1], blocks_dim[dim], s_val, s_idx,
+                            input_weight, output_weight));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
@@ -325,16 +307,17 @@ void mean_dim(Param<To> out, Param<Ti> in, Param<Tw> iwt) {
 template<typename Ti, typename Tw, typename To>
 class meanFirstKernelSMEM {
    public:
+    static constexpr sycl::specialization_id<uint> dimx;
+
     meanFirstKernelSMEM(write_accessor<To> out, KParam oInfo,
                         write_accessor<Tw> owt, KParam owInfo,
                         read_accessor<Ti> in, KParam iInfo,
-                        read_accessor<Tw> iwt, KParam iwInfo, const uint DIMX,
+                        read_accessor<Tw> iwt, KParam iwInfo, 
                         const uint groups_x, const uint groups_y,
                         const uint repeat,
                         local_accessor<compute_t<To>, 1> s_val,
                         local_accessor<compute_t<Tw>, 1> s_idx,
-                        sycl::stream debug, bool input_weight,
-                        bool output_weight)
+                        bool input_weight, bool output_weight)
         : out_(out)
         , owt_(owt)
         , in_(in)
@@ -343,21 +326,22 @@ class meanFirstKernelSMEM {
         , owInfo_(owInfo)
         , iInfo_(iInfo)
         , iwInfo_(iwInfo)
-        , DIMX_(DIMX)
         , groups_x_(groups_x)
         , groups_y_(groups_y)
         , repeat_(repeat)
         , s_val_(s_val)
         , s_idx_(s_idx)
         , input_weight_(input_weight)
-        , output_weight_(output_weight)
-        , debug_(debug) {}
+        , output_weight_(output_weight) {}
 
-    void operator()(sycl::nd_item<2> it) const {
+    void operator()(sycl::nd_item<2> it, sycl::kernel_handler kh) const {
+        uint DIMX = kh.get_specialization_constant<
+            meanFirstKernelSMEM<Ti, Tw, To>::dimx>();
+
         sycl::group g   = it.get_group();
         const uint lidx = it.get_local_id(0);
         const uint lidy = it.get_local_id(1);
-        const uint lid  = lidy * DIMX_ + lidx;
+        const uint lid  = lidy * DIMX + lidx;
 
         const uint zid        = g.get_group_id(0) / groups_x_;
         const uint wid        = g.get_group_id(1) / groups_y_;
@@ -387,7 +371,7 @@ class meanFirstKernelSMEM {
         bool cond = (yid < iInfo_.dims[1] && zid < iInfo_.dims[2] &&
                      wid < iInfo_.dims[3]);
 
-        int lim = sycl::min((dim_t)(xid + repeat_ * DIMX_), iInfo_.dims[0]);
+        int lim = sycl::min((dim_t)(xid + repeat_ * DIMX), iInfo_.dims[0]);
 
         common::Transform<Ti, compute_t<To>, af_add_t> transform;
 
@@ -404,12 +388,12 @@ class meanFirstKernelSMEM {
         }
 
         if (input_weight_) {
-            for (int id = xid + DIMX_; cond && id < lim; id += DIMX_) {
+            for (int id = xid + DIMX; cond && id < lim; id += DIMX) {
                 stable_mean(&val, &weight, transform(iptr[id]),
                             compute_t<Tw>(iwptr[id]));
             }
         } else {
-            for (int id = xid + DIMX_; cond && id < lim; id += DIMX_) {
+            for (int id = xid + DIMX; cond && id < lim; id += DIMX) {
                 // Faster version of stable_mean when iwptr is NULL
                 val    = val + (transform(iptr[id]) - val) / (weight + (Tw)1);
                 weight = weight + (Tw)1;
@@ -420,10 +404,10 @@ class meanFirstKernelSMEM {
         s_idx_[lid] = weight;
         group_barrier(g);
 
-        compute_t<To> *s_vptr = s_val_.get_pointer() + lidy * DIMX_;
-        compute_t<Tw> *s_iptr = s_idx_.get_pointer() + lidy * DIMX_;
+        compute_t<To> *s_vptr = s_val_.get_pointer() + lidy * DIMX;
+        compute_t<Tw> *s_iptr = s_idx_.get_pointer() + lidy * DIMX;
 
-        if (DIMX_ == 256) {
+        if (DIMX == 256) {
             if (lidx < 128) {
                 stable_mean(s_vptr + lidx, s_iptr + lidx, s_vptr[lidx + 128],
                             s_iptr[lidx + 128]);
@@ -431,7 +415,7 @@ class meanFirstKernelSMEM {
             group_barrier(g);
         }
 
-        if (DIMX_ >= 128) {
+        if (DIMX >= 128) {
             if (lidx < 64) {
                 stable_mean(s_vptr + lidx, s_iptr + lidx, s_vptr[lidx + 64],
                             s_iptr[lidx + 64]);
@@ -439,7 +423,7 @@ class meanFirstKernelSMEM {
             group_barrier(g);
         }
 
-        if (DIMX_ >= 64) {
+        if (DIMX >= 64) {
             if (lidx < 32) {
                 stable_mean(s_vptr + lidx, s_iptr + lidx, s_vptr[lidx + 32],
                             s_iptr[lidx + 32]);
@@ -489,11 +473,10 @@ class meanFirstKernelSMEM {
     read_accessor<Ti> in_;
     read_accessor<Tw> iwt_;
     KParam oInfo_, owInfo_, iInfo_, iwInfo_;
-    const uint DIMX_, groups_x_, groups_y_, repeat_;
+    const uint groups_x_, groups_y_, repeat_;
     local_accessor<compute_t<To>, 1> s_val_;
     local_accessor<compute_t<Tw>, 1> s_idx_;
     bool input_weight_, output_weight_;
-    sycl::stream debug_;
 };
 
 template<typename Ti, typename Tw, typename To>
@@ -507,11 +490,17 @@ void mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
     uint repeat = divup(in.info.dims[0], (groups_x * threads_x));
 
     sycl::buffer<Tw, 1> empty(sycl::range<1>{1});
+
+    static auto meanInputBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::input>(
+        getContext(),
+        { sycl::get_kernel_id<meanFirstKernelSMEM<Ti, Tw, To>>() });
+    meanInputBundle.template set_specialization_constant<meanFirstKernelSMEM<Ti, Tw, To>::dimx>(threads_x);
+    static auto meanExeBundle = sycl::build(meanInputBundle);
+
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
-
-        sycl::stream debug_stream(2048 * 2048, 2048, h);
 
         auto s_val = local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
         auto s_idx = local_accessor<compute_t<Tw>, 1>(THREADS_PER_BLOCK, h);
@@ -525,12 +514,13 @@ void mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
         write_accessor<Tw> owt_acc{(output_weight) ? *owt.data : empty, h};
         read_accessor<Tw> iwt_acc{(input_weight) ? *iwt.data : empty, h};
 
+        h.use_kernel_bundle(meanExeBundle);
         h.parallel_for(
             sycl::nd_range<2>(global, local),
             meanFirstKernelSMEM<Ti, Tw, To>(
                 out_acc, out.info, owt_acc, owt.info, in_acc, in.info, iwt_acc,
-                iwt.info, threads_x, groups_x, groups_y, repeat, s_val, s_idx,
-                debug_stream, input_weight, output_weight));
+                iwt.info, groups_x, groups_y, repeat, s_val, s_idx,
+                input_weight, output_weight));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

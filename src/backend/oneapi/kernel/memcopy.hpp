@@ -35,7 +35,7 @@ class memCopy {
    public:
     memCopy(sycl::accessor<T> out, dims_t ostrides, sycl::accessor<T> in,
             dims_t idims, dims_t istrides, int offset, int groups_0,
-            int groups_1, sycl::stream debug)
+            int groups_1)
         : out_(out)
         , in_(in)
         , ostrides_(ostrides)
@@ -43,8 +43,7 @@ class memCopy {
         , istrides_(istrides)
         , offset_(offset)
         , groups_0_(groups_0)
-        , groups_1_(groups_1)
-        , debug_(debug) {}
+        , groups_1_(groups_1) {}
 
     void operator()(sycl::nd_item<2> it) const {
         const int lid0 = it.get_local_id(0);
@@ -79,7 +78,6 @@ class memCopy {
     sycl::accessor<T> out_, in_;
     dims_t ostrides_, idims_, istrides_;
     int offset_, groups_0_, groups_1_;
-    sycl::stream debug_;
 };
 
 constexpr uint DIM0 = 32;
@@ -107,15 +105,18 @@ void memcopy(sycl::buffer<T> *out, const dim_t *ostrides,
                           groups_1 * idims[3] * local_size[1]);
     sycl::nd_range<2> ndrange(global, local);
 
+    static auto memCopyExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<memCopy<T>>()} );
+
     getQueue().submit([=](sycl::handler &h) {
         auto out_acc = out->get_access(h);
         auto in_acc  = const_cast<sycl::buffer<T> *>(in)->get_access(h);
 
-        sycl::stream debug_stream(2048, 128, h);
-
+        h.use_kernel_bundle(memCopyExeBundle);
         h.parallel_for(ndrange,
                        memCopy<T>(out_acc, _ostrides, in_acc, _idims, _istrides,
-                                  offset, groups_0, groups_1, debug_stream));
+                                  offset, groups_0, groups_1));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
@@ -204,8 +205,7 @@ class reshapeCopy {
    public:
     reshapeCopy(sycl::accessor<outType> dst, KParam oInfo,
                 sycl::accessor<inType> src, KParam iInfo, outType default_value,
-                float factor, dims_t trgt, int blk_x, int blk_y,
-                sycl::stream debug)
+                float factor, dims_t trgt, int blk_x, int blk_y)
         : dst_(dst)
         , src_(src)
         , oInfo_(oInfo)
@@ -214,8 +214,7 @@ class reshapeCopy {
         , factor_(factor)
         , trgt_(trgt)
         , blk_x_(blk_x)
-        , blk_y_(blk_y)
-        , debug_(debug) {}
+        , blk_y_(blk_y) {}
 
     void operator()(sycl::nd_item<2> it) const {
         const uint lx = it.get_local_id(0);
@@ -265,7 +264,6 @@ class reshapeCopy {
     float factor_;
     dims_t trgt_;
     int blk_x_, blk_y_;
-    sycl::stream debug_;
 };
 
 template<typename inType, typename outType>
@@ -300,23 +298,28 @@ void copy(Param<outType> dst, const Param<inType> src, const int ndims,
         trgt_dims    = {{trgt_i, trgt_j, trgt_k, trgt_l}};
     }
 
+    static auto reshapeCopyExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(),
+        {sycl::get_kernel_id<reshapeCopy<inType, outType, true>>(),
+         sycl::get_kernel_id<reshapeCopy<inType, outType, false>>()});
+
     getQueue().submit([=](sycl::handler &h) {
         auto dst_acc = dst.data->get_access(h);
         auto src_acc =
             const_cast<sycl::buffer<inType> *>(src.data)->get_access(h);
 
-        sycl::stream debug_stream(2048, 128, h);
-
+        h.use_kernel_bundle(reshapeCopyExeBundle);
         if (same_dims) {
             h.parallel_for(ndrange, reshapeCopy<inType, outType, true>(
                                         dst_acc, dst.info, src_acc, src.info,
                                         default_value, (float)factor, trgt_dims,
-                                        blk_x, blk_y, debug_stream));
+                                        blk_x, blk_y));
         } else {
             h.parallel_for(ndrange, reshapeCopy<inType, outType, false>(
                                         dst_acc, dst.info, src_acc, src.info,
                                         default_value, (float)factor, trgt_dims,
-                                        blk_x, blk_y, debug_stream));
+                                        blk_x, blk_y));
         }
     });
     ONEAPI_DEBUG_FINISH(getQueue());

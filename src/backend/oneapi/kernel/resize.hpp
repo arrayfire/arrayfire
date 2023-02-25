@@ -197,9 +197,18 @@ void resize(Param<T> out, const Param<T> in, const af_interp_type method) {
 
     float xf = (float)xd, yf = (float)yd;
 
+    static auto resizeExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(),
+        {sycl::get_kernel_id<resizeCreateKernel<T, AF_INTERP_NEAREST>>(),
+         sycl::get_kernel_id<resizeCreateKernel<T, AF_INTERP_BILINEAR>>(),
+         sycl::get_kernel_id<resizeCreateKernel<T, AF_INTERP_LOWER>>()});
+
     getQueue().submit([&](auto& h) {
-        read_accessor<T> d_in{*in.data, h};
+        read_accessor<T>   d_in{*in.data, h};
         write_accessor<T> d_out{*out.data, h};
+
+        h.use_kernel_bundle(resizeExeBundle);
         switch (method) {
             case AF_INTERP_NEAREST:
                 h.parallel_for(sycl::nd_range{global, local},

@@ -149,13 +149,18 @@ void histogram(Param<uint> out, const Param<T> in, int nbins, float minval,
                            [=](sycl::id<1> idx) { outAcc[idx[0]] = 0; });
         })
         .wait();
+
+    static auto histogramExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<histogramKernel<T>>()} );
+
     getQueue().submit([&](sycl::handler &h) {
         auto inAcc  = in.data->get_access(h);
         auto outAcc = out.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
         auto localMem = local_accessor<uint, 1>(locSize, h);
 
+        h.use_kernel_bundle(histogramExeBundle);
         h.parallel_for(
             sycl::nd_range{global, local},
             histogramKernel<T>(outAcc, out.info, inAcc, in.info, localMem,

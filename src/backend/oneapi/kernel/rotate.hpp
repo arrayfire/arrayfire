@@ -57,6 +57,7 @@ class rotateCreateKernel {
         , blocksYPerImage_(blocksYPerImage)
         , method_(method)
         , INTERP_ORDER_(INTERP_ORDER) {}
+
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g = it.get_group();
 
@@ -180,9 +181,18 @@ void rotate(Param<T> out, const Param<T> in, const float theta,
 
     auto global = sycl::range(global_x, global_y);
 
+    static auto rotateExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<rotateCreateKernel<T, T, wtype_t<BT>, 1>>(),
+             sycl::get_kernel_id<rotateCreateKernel<T, T, wtype_t<BT>, 2>>(),
+             sycl::get_kernel_id<rotateCreateKernel<T, T, wtype_t<BT>, 3>>()});
+
     getQueue().submit([&](auto &h) {
         read_accessor<T> d_in{*in.data, h};
         write_accessor<T> d_out{*out.data, h};
+
+        h.use_kernel_bundle(rotateExeBundle);
         switch (order) {
             case 1:
                 h.parallel_for(

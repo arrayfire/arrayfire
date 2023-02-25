@@ -155,9 +155,15 @@ void unwrap(Param<T> out, const Param<T> in, const dim_t wx, const dim_t wy,
     auto local  = sycl::range(TX, TY);
     auto global = sycl::range(local[0] * BX, local[1] * BY);
 
+    static auto unwrapExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<unwrapCreateKernel<T>>()});
+
     getQueue().submit([&](auto &h) {
         sycl::accessor d_out{*out.data, h, sycl::write_only, sycl::no_init};
         sycl::accessor d_in{*in.data, h, sycl::read_only};
+        h.use_kernel_bundle(unwrapExeBundle);
         h.parallel_for(
             sycl::nd_range{global, local},
             unwrapCreateKernel<T>(d_out, out.info, d_in, in.info, wx, wy, sx,

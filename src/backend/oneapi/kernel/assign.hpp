@@ -125,6 +125,9 @@ void assign(Param<T> out, const Param<T> in, const AssignKernelParam_t& p,
     sycl::range<2> global(blk_x * in.info.dims[2] * THREADS_X,
                           blk_y * in.info.dims[3] * THREADS_Y);
 
+    static auto assignExeBundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<assignKernel<T>>()} );
+
     getQueue().submit([=](sycl::handler& h) {
         auto out_acc = out.data->get_access(h);
         auto in_acc  = in.data->get_access(h);
@@ -136,6 +139,7 @@ void assign(Param<T> out, const Param<T> in, const AssignKernelParam_t& p,
 
         sycl::stream debug_stream(2048, 128, h);
 
+        h.use_kernel_bundle(assignExeBundle);
         h.parallel_for(
             sycl::nd_range<2>(global, local),
             assignKernel<T>(out_acc, out.info, in_acc, in.info, p, bptr0, bptr1,
@@ -143,6 +147,7 @@ void assign(Param<T> out, const Param<T> in, const AssignKernelParam_t& p,
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
+
 }  // namespace kernel
 }  // namespace oneapi
 }  // namespace arrayfire

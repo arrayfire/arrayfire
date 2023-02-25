@@ -108,11 +108,15 @@ void diff(Param<T> out, const Param<T> in, const unsigned indims,
     const int oElem = out.info.dims[0] * out.info.dims[1] * out.info.dims[2] *
                       out.info.dims[3];
 
+    static auto diffExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<diffKernel<T>>()} );
+
     getQueue().submit([&](sycl::handler &h) {
         auto inAcc  = in.data->get_access(h);
         auto outAcc = out.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
+        h.use_kernel_bundle(diffExeBundle);
         h.parallel_for(
             sycl::nd_range{global, local},
             diffKernel<T>(outAcc, inAcc, out.info, in.info, oElem,

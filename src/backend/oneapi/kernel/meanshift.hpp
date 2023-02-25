@@ -44,6 +44,7 @@ class meanshiftCreateKernel {
         , numIters_(numIters)
         , nBBS0_(nBBS0)
         , nBBS1_(nBBS1) {}
+
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g = it.get_group();
 
@@ -207,9 +208,17 @@ void meanshift(Param<T> out, const Param<T> in, const float spatialSigma,
 
     const float cvar = chromaticSigma * chromaticSigma;
 
+    static auto meanshiftExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(),
+        {sycl::get_kernel_id<meanshiftCreateKernel<T, AccType, 3>>(),
+        sycl::get_kernel_id<meanshiftCreateKernel<T, AccType, 1>>()} );
+
     getQueue().submit([&](auto& h) {
         read_accessor<T> d_src{*in.data, h};
         write_accessor<T> d_dst{*out.data, h};
+
+        h.use_kernel_bundle(meanshiftExeBundle);
         if (MAX_CHANNELS == 3) {
             h.parallel_for(sycl::nd_range{global, local},
                            meanshiftCreateKernel<T, AccType, 3>(

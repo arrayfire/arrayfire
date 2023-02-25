@@ -41,7 +41,7 @@ class scanDimKernel {
                   const uint groups_y, const uint blocks_dim, const uint lim,
                   const bool isFinalPass, const uint DIMY,
                   const bool inclusive_scan, local_accessor<To, 1> s_val,
-                  local_accessor<To, 1> s_tmp, sycl::stream debug)
+                  local_accessor<To, 1> s_tmp)
         : out_acc_(out_acc)
         , tmp_acc_(tmp_acc)
         , in_acc_(in_acc)
@@ -56,8 +56,7 @@ class scanDimKernel {
         , isFinalPass_(isFinalPass)
         , inclusive_scan_(inclusive_scan)
         , s_val_(s_val)
-        , s_tmp_(s_tmp)
-        , debug_(debug) {}
+        , s_tmp_(s_tmp) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -162,7 +161,6 @@ class scanDimKernel {
     const bool isFinalPass_, inclusive_scan_;
     local_accessor<To, 1> s_val_;
     local_accessor<To, 1> s_tmp_;
-    sycl::stream debug_;
 };
 
 template<typename To, af_op_t op, int dim>
@@ -172,7 +170,7 @@ class scanDimBcastKernel {
                        read_accessor<To> tmp_acc, KParam tInfo,
                        const uint groups_x, const uint groups_y,
                        const uint groups_dim, const uint lim,
-                       const bool inclusive_scan, sycl::stream debug)
+                       const bool inclusive_scan)
         : out_acc_(out_acc)
         , tmp_acc_(tmp_acc)
         , oInfo_(oInfo)
@@ -181,8 +179,7 @@ class scanDimBcastKernel {
         , groups_y_(groups_y)
         , groups_dim_(groups_dim)
         , lim_(lim)
-        , inclusive_scan_(inclusive_scan)
-        , debug_(debug) {}
+        , inclusive_scan_(inclusive_scan) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -245,7 +242,6 @@ class scanDimBcastKernel {
     KParam oInfo_, tInfo_;
     const uint groups_x_, groups_y_, groups_dim_, lim_;
     const bool inclusive_scan_;
-    sycl::stream debug_;
 };
 
 template<typename Ti, typename To, af_op_t op, int dim>
@@ -258,24 +254,28 @@ static void scan_dim_launcher(Param<To> out, Param<To> tmp, Param<Ti> in,
 
     uint lim = divup(out.info.dims[dim], (threads_y * blocks_all[dim]));
 
+    static auto scanExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<scanDimKernel<Ti, To, op, dim>>()});
+
     getQueue().submit([&](sycl::handler &h) {
         // TODO: specify access modes in all kernels
         write_accessor<To> out_acc{*out.data, h};
         write_accessor<To> tmp_acc{*tmp.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
 
-        sycl::stream debug_stream(2048 * 256, 128, h);
-
         auto s_val =
             local_accessor<compute_t<To>, 1>(THREADS_X * threads_y * 2, h);
         auto s_tmp = local_accessor<compute_t<To>, 1>(THREADS_X, h);
 
+        h.use_kernel_bundle(scanExeBundle);
         h.parallel_for(
             sycl::nd_range<2>(global, local),
             scanDimKernel<Ti, To, op, dim>(
                 out_acc, out.info, tmp_acc, tmp.info, in_acc, in.info,
                 blocks_all[0], blocks_all[1], blocks_all[dim], lim, isFinalPass,
-                threads_y, inclusive_scan, s_val, s_tmp, debug_stream));
+                threads_y, inclusive_scan, s_val, s_tmp));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
@@ -290,17 +290,20 @@ static void bcast_dim_launcher(Param<To> out, Param<To> tmp,
 
     uint lim = divup(out.info.dims[dim], (threads_y * blocks_all[dim]));
 
+    static auto scanExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<scanDimBcastKernel<To, op, dim>>()});
+
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<To> tmp_acc{*tmp.data, h};
 
-        sycl::stream debug_stream(2048 * 256, 128, h);
-
+        h.use_kernel_bundle(scanExeBundle);
         h.parallel_for(sycl::nd_range<2>(global, local),
                        scanDimBcastKernel<To, op, dim>(
                            out_acc, out.info, tmp_acc, tmp.info, blocks_all[0],
-                           blocks_all[1], blocks_all[dim], lim, inclusive_scan,
-                           debug_stream));
+                           blocks_all[1], blocks_all[dim], lim, inclusive_scan));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

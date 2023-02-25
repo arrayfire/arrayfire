@@ -40,8 +40,7 @@ class scanFirstKernel {
                     read_accessor<Ti> in_acc, KParam iInfo, const uint groups_x,
                     const uint groups_y, const uint lim, const bool isFinalPass,
                     const uint DIMX, const bool inclusive_scan,
-                    local_accessor<To, 1> s_val, local_accessor<To, 1> s_tmp,
-                    sycl::stream debug_stream)
+                    local_accessor<To, 1> s_val, local_accessor<To, 1> s_tmp)
         : out_acc_(out_acc)
         , tmp_acc_(tmp_acc)
         , in_acc_(in_acc)
@@ -55,8 +54,7 @@ class scanFirstKernel {
         , isFinalPass_(isFinalPass)
         , inclusive_scan_(inclusive_scan)
         , s_val_(s_val)
-        , s_tmp_(s_tmp)
-        , debug_stream_(debug_stream) {}
+        , s_tmp_(s_tmp) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -122,7 +120,6 @@ class scanFirstKernel {
                 if (cond_yzw && id == (oInfo_.dims[0] - 1)) {
                     optr[0] = init;
                 } else if (cond_yzw && id < (oInfo_.dims[0] - 1)) {
-                    // debug_stream_ << "oe0 ";
                     optr[id + 1] = val;
                 }
             }
@@ -131,7 +128,6 @@ class scanFirstKernel {
         }
 
         if (!isFinalPass_ && isLast && cond_yzw) {
-            // debug_stream_ << "ot ";
             tptr[groupId_x] = val;
         }
     }
@@ -145,7 +141,6 @@ class scanFirstKernel {
     const bool isFinalPass_, inclusive_scan_;
     local_accessor<To, 1> s_val_;
     local_accessor<To, 1> s_tmp_;
-    sycl::stream debug_stream_;
 };
 
 template<typename To, af_op_t op>
@@ -154,8 +149,7 @@ class scanFirstBcastKernel {
     scanFirstBcastKernel(write_accessor<To> out_acc, KParam oInfo,
                          read_accessor<To> tmp_acc, KParam tInfo,
                          const uint groups_x, const uint groups_y,
-                         const uint lim, const bool inclusive_scan,
-                         sycl::stream debug_stream)
+                         const uint lim, const bool inclusive_scan)
         : out_acc_(out_acc)
         , tmp_acc_(tmp_acc)
         , oInfo_(oInfo)
@@ -163,8 +157,7 @@ class scanFirstBcastKernel {
         , groups_x_(groups_x)
         , groups_y_(groups_y)
         , lim_(lim)
-        , inclusive_scan_(inclusive_scan)
-        , debug_stream_(debug_stream) {}
+        , inclusive_scan_(inclusive_scan) {}
 
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g   = it.get_group();
@@ -209,7 +202,6 @@ class scanFirstBcastKernel {
     KParam oInfo_, tInfo_;
     const uint groups_x_, groups_y_, lim_;
     const bool inclusive_scan_;
-    sycl::stream debug_stream_;
 };
 
 template<typename Ti, typename To, af_op_t op>
@@ -222,25 +214,29 @@ static void scan_first_launcher(Param<To> out, Param<To> tmp, Param<Ti> in,
                           groups_y * out.info.dims[3] * local[1]);
     uint lim = divup(out.info.dims[0], (threads_x * groups_x));
 
+    static auto scanExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<scanFirstKernel<Ti, To, op>>()});
+
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         write_accessor<To> tmp_acc{*tmp.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
-
-        sycl::stream debug_stream(2048 * 256, 128, h);
 
         const int DIMY            = THREADS_PER_BLOCK / threads_x;
         const int SHARED_MEM_SIZE = (2 * threads_x + 1) * (DIMY);
         auto s_val = local_accessor<compute_t<To>, 1>(SHARED_MEM_SIZE, h);
         auto s_tmp = local_accessor<compute_t<To>, 1>(DIMY, h);
 
+        h.use_kernel_bundle(scanExeBundle);
         // TODO threads_x as template arg for #pragma unroll?
         h.parallel_for(
             sycl::nd_range<2>(global, local),
             scanFirstKernel<Ti, To, op>(
                 out_acc, out.info, tmp_acc, tmp.info, in_acc, in.info, groups_x,
                 groups_y, lim, isFinalPass, threads_x, inclusive_scan, s_val,
-                s_tmp, debug_stream));
+                s_tmp));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
@@ -254,16 +250,20 @@ static void bcast_first_launcher(Param<To> out, Param<To> tmp,
                           groups_y * out.info.dims[3] * local[1]);
     uint lim = divup(out.info.dims[0], (threads_x * groups_x));
 
+    static auto scanExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<scanFirstBcastKernel<To, op>>()});
+
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<To> tmp_acc{*tmp.data, h};
 
-        sycl::stream debug_stream(2048 * 256, 128, h);
-
+        h.use_kernel_bundle(scanExeBundle);
         h.parallel_for(sycl::nd_range<2>(global, local),
                        scanFirstBcastKernel<To, op>(
                            out_acc, out.info, tmp_acc, tmp.info, groups_x,
-                           groups_y, lim, inclusive_scan, debug_stream));
+                           groups_y, lim, inclusive_scan));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

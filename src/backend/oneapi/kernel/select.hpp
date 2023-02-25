@@ -140,11 +140,17 @@ void selectLauncher(Param<T> out, Param<char> cond, Param<T> a, Param<T> b,
     auto global = sycl::range(groups_0 * out.info.dims[2] * local[0],
                               groups_1 * out.info.dims[3] * local[1]);
 
+    static auto selectExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<selectKernelCreateKernel<T>>()});
+
     getQueue().submit([&](auto &h) {
         write_accessor<T> d_out{*out.data, h};
         read_accessor<char> d_cond{*cond.data, h};
         read_accessor<T> d_a{*a.data, h};
         read_accessor<T> d_b{*b.data, h};
+        h.use_kernel_bundle(selectExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        selectKernelCreateKernel<T>(
                            d_out, out.info, d_cond, cond.info, d_a, a.info, d_b,
@@ -243,10 +249,16 @@ void select_scalar(Param<T> out, Param<char> cond, Param<T> a, const T b,
     auto global = sycl::range(groups_0 * out.info.dims[2] * local[0],
                               groups_1 * out.info.dims[3] * local[1]);
 
+    static auto selectExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<selectScalarCreateKernel<T>>()});
+
     getQueue().submit([&](auto &h) {
         write_accessor<T> d_out{*out.data, h};
         read_accessor<char> d_cond{*cond.data, h};
         read_accessor<T> d_a{*a.data, h};
+        h.use_kernel_bundle(selectExeBundle);
         h.parallel_for(
             sycl::nd_range{global, local},
             selectScalarCreateKernel<T>(d_out, out.info, d_cond, cond.info, d_a,

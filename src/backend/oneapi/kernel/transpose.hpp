@@ -54,7 +54,7 @@ class transposeKernel {
                     const sycl::accessor<T> iData, const KParam in,
                     const int blocksPerMatX, const int blocksPerMatY,
                     const bool conjugate, const bool IS32MULTIPLE,
-                    local_accessor<T, 1> shrdMem, sycl::stream debugStream)
+                    local_accessor<T, 1> shrdMem)
         : oData_(oData)
         , out_(out)
         , iData_(iData)
@@ -63,8 +63,8 @@ class transposeKernel {
         , blocksPerMatY_(blocksPerMatY)
         , conjugate_(conjugate)
         , IS32MULTIPLE_(IS32MULTIPLE)
-        , shrdMem_(shrdMem)
-        , debugStream_(debugStream) {}
+        , shrdMem_(shrdMem) {}
+
     void operator()(sycl::nd_item<2> it) const {
         const int shrdStride = TILE_DIM + 1;
 
@@ -134,7 +134,6 @@ class transposeKernel {
     bool conjugate_;
     bool IS32MULTIPLE_;
     local_accessor<T, 1> shrdMem_;
-    sycl::stream debugStream_;
 };
 
 template<typename T>
@@ -148,17 +147,22 @@ void transpose(Param<T> out, const Param<T> in, const bool conjugate,
     auto global = sycl::range{blk_x * local[0] * in.info.dims[2],
                               blk_y * local[1] * in.info.dims[3]};
 
+    static auto transposeExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<transposeKernel<T>>()});
+
     getQueue().submit([&](sycl::handler &h) {
         auto r = in.data->get_access(h);
         auto q = out.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
         auto shrdMem = local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
 
+        h.use_kernel_bundle(transposeExeBundle);
         h.parallel_for(
             sycl::nd_range{global, local},
             transposeKernel<T>(q, out.info, r, in.info, blk_x, blk_y, conjugate,
-                               IS32MULTIPLE, shrdMem, debugStream));
+                               IS32MULTIPLE, shrdMem));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

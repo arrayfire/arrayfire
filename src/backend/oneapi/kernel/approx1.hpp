@@ -147,12 +147,16 @@ void approx1(Param<Ty> yo, const Param<Ty> yi, const Param<Tp> xo,
     bool batch =
         !(xo.info.dims[1] == 1 && xo.info.dims[2] == 1 && xo.info.dims[3] == 1);
 
+    static auto approx1ExeBundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<approx1Kernel<Ty, Tp, order>>()} );
+
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<Ty> yoAcc{*yo.data, h};
         read_accessor<Ty> yiAcc{*yi.data, h};
         read_accessor<Tp> xoAcc{*xo.data, h};
         sycl::stream debugStream(128, 128, h);
 
+        h.use_kernel_bundle(approx1ExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        approx1Kernel<Ty, Tp, order>(
                            yoAcc, yo.info, yiAcc, yi.info, xoAcc, xo.info,

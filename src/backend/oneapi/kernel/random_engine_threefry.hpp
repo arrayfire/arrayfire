@@ -162,16 +162,14 @@ template<typename T>
 class uniformThreefry {
    public:
     uniformThreefry(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
-                    uint elementsPerBlock, uint elements,
-                    sycl::stream debug_stream)
+                    uint elementsPerBlock, uint elements)
         : out_(out)
         , hi_(hi)
         , lo_(lo)
         , hic_(hic)
         , loc_(loc)
         , elementsPerBlock_(elementsPerBlock)
-        , elements_(elements)
-        , debug_(debug_stream) {}
+        , elements_(elements) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
@@ -203,23 +201,20 @@ class uniformThreefry {
     sycl::accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
-    sycl::stream debug_;
 };
 
 template<typename T>
 class normalThreefry {
    public:
     normalThreefry(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
-                   uint elementsPerBlock, uint elements,
-                   sycl::stream debug_stream)
+                   uint elementsPerBlock, uint elements)
         : out_(out)
         , hi_(hi)
         , lo_(lo)
         , hic_(hic)
         , loc_(loc)
         , elementsPerBlock_(elementsPerBlock)
-        , elements_(elements)
-        , debug_(debug_stream) {}
+        , elements_(elements) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
@@ -251,7 +246,6 @@ class normalThreefry {
     sycl::accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
-    sycl::stream debug_;
 };
 
 }  // namespace kernel

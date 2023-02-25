@@ -174,12 +174,16 @@ void approx2(Param<Ty> zo, const Param<Ty> zi, const Param<Tp> xo,
     // Passing bools to opencl kernels is not allowed
     bool batch = !(xo.info.dims[2] == 1 && xo.info.dims[3] == 1);
 
+    static auto approx2ExeBundle = sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<approx2Kernel<Ty, Tp, order>>()} );
+
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<Ty> zoAcc{*zo.data, h};
         read_accessor<Ty> ziAcc{*zi.data, h};
         read_accessor<Tp> xoAcc{*xo.data, h};
         read_accessor<Tp> yoAcc{*yo.data, h};
 
+        h.use_kernel_bundle(approx2ExeBundle);
         h.parallel_for(
             sycl::nd_range{global, local},
             approx2Kernel<Ty, Tp, order>(

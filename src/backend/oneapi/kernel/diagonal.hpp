@@ -79,11 +79,16 @@ static void diagCreate(Param<T> out, Param<T> in, int num) {
     auto global  = sycl::range{groups_x * local[0] * out.info.dims[2],
                               groups_y * local[1]};
 
+    static auto diagCreateExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<diagCreateKernel<T>>()} );
+
     getQueue().submit([&](sycl::handler &h) {
         auto oData = out.data->get_access(h);
         auto iData = in.data->get_access(h);
         sycl::stream debugStream(128, 128, h);
 
+        h.use_kernel_bundle(diagCreateExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        diagCreateKernel<T>(oData, out.info, iData, in.info, num,
                                            groups_x));
@@ -148,11 +153,16 @@ static void diagExtract(Param<T> out, Param<T> in, int num) {
     auto global  = sycl::range{groups_x * local[0],
                               groups_z * local[1] * out.info.dims[3]};
 
+    static auto diagExtractExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<diagExtractKernel<T>>()} );
+
     getQueue().submit([&](sycl::handler &h) {
         auto oData = out.data->get_access(h);
         auto iData = in.data->get_access(h);
         sycl::stream debugStream(128, 128, h);
 
+        h.use_kernel_bundle(diagExtractExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        diagExtractKernel<T>(oData, out.info, iData, in.info,
                                             num, groups_z));

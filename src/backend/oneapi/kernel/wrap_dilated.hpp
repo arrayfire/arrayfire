@@ -162,10 +162,16 @@ void wrap_dilated(Param<T> out, const Param<T> in, const dim_t wx,
     auto global = sycl::range{local[0] * groups_x * out.info.dims[2],
                               local[1] * groups_y * out.info.dims[3]};
 
+    static auto wrapExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<wrapDilatedCreateKernel<T>>()});
+
     auto Q = getQueue();
     Q.submit([&](sycl::handler &h) {
         sycl::accessor outAcc{*out.data, h, sycl::write_only, sycl::no_init};
         sycl::accessor inAcc{*in.data, h, sycl::read_only};
+        h.use_kernel_bundle(wrapExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        wrapDilatedCreateKernel<T>(
                            outAcc, out.info, inAcc, in.info, wx, wy, sx, sy, px,

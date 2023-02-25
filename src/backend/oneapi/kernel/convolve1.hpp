@@ -106,11 +106,17 @@ void conv1Helper(const conv_kparam_t<aT> &param, Param<T> &out,
                  const Param<T> &signal, const Param<aT> &filter,
                  const int rank, const bool expand) {
     auto Q = getQueue();
+
+    static auto conv1ExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+    getContext(), {sycl::get_kernel_id<conv1HelperCreateKernel<T, aT>>()} );
+
     Q.submit([&](auto &h) {
         local_accessor<aT> localMem(param.loc_size, h);
         write_accessor<T> outAcc{*out.data, h};
         read_accessor<T> signalAcc{*signal.data, h};
         read_accessor<aT> impulseAcc{*param.impulse, h};
+        h.use_kernel_bundle(conv1ExeBundle);
         h.parallel_for(
             sycl::nd_range{param.global, param.local},
             conv1HelperCreateKernel<T, aT>(

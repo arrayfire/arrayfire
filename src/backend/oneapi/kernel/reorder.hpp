@@ -112,9 +112,14 @@ void reorder(Param<T> out, const Param<T> in, const dim_t* rdims) {
     auto global       = sycl::range(local[0] * blocksPerMatX * out.info.dims[2],
                                     local[1] * blocksPerMatY * out.info.dims[3]);
 
+    static auto reorderExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<reorderCreateKernel<T>>()} );
+
     getQueue().submit([&](auto& h) {
         read_accessor<T> d_in{*in.data, h};
         write_accessor<T> d_out{*out.data, h};
+        h.use_kernel_bundle(reorderExeBundle);
         h.parallel_for(
             sycl::nd_range{global, local},
             reorderCreateKernel<T>(

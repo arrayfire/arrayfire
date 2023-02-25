@@ -197,6 +197,11 @@ void bilateral(Param<outType> out, const Param<inType> in, const float s_sigma,
         ONEAPI_NOT_SUPPORTED(errMessage);
     }
 
+    static auto bilateralExeBundle = sycl::get_kernel_bundle<
+        sycl::bundle_state::executable>(
+    getContext(),
+    {sycl::get_kernel_id<bilateralKernel<outType, inType, UseNativeExp>>()} );
+
     getQueue().submit([&](sycl::handler& h) {
         auto inAcc  = in.data->get_access(h);
         auto outAcc = out.data->get_access(h);
@@ -205,6 +210,7 @@ void bilateral(Param<outType> out, const Param<inType> in, const float s_sigma,
         auto localMem = local_accessor<outType, 1>(num_shrd_elems, h);
         auto gauss2d  = local_accessor<outType, 1>(num_shrd_elems, h);
 
+        h.use_kernel_bundle(bilateralExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        bilateralKernel<outType, inType, UseNativeExp>(
                            outAcc, out.info, inAcc, in.info, localMem, gauss2d,

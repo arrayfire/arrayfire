@@ -106,11 +106,16 @@ void triangle(Param<T> out, const Param<T> in, bool is_upper,
     auto global = sycl::range{groups_x * out.info.dims[2] * local[0],
                               groups_y * out.info.dims[3] * local[1]};
 
+    static auto triangleExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<triangleKernel<T>>()});
+
     getQueue().submit([&](sycl::handler &h) {
         auto iAcc = in.data->get_access(h);
         auto rAcc = out.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
+        h.use_kernel_bundle(triangleExeBundle);
         h.parallel_for(
             sycl::nd_range{global, local},
             triangleKernel<T>(rAcc, out.info, iAcc, in.info, groups_x, groups_y,

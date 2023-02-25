@@ -57,8 +57,7 @@ class transposeInPlaceKernel {
                            const int blocksPerMatX, const int blocksPerMatY,
                            const bool conjugate, const bool IS32MULTIPLE,
                            local_accessor<T, 1> shrdMem_s,
-                           local_accessor<T, 1> shrdMem_d,
-                           sycl::stream debugStream)
+                           local_accessor<T, 1> shrdMem_d)
         : iData_(iData)
         , in_(in)
         , blocksPerMatX_(blocksPerMatX)
@@ -66,8 +65,8 @@ class transposeInPlaceKernel {
         , conjugate_(conjugate)
         , IS32MULTIPLE_(IS32MULTIPLE)
         , shrdMem_s_(shrdMem_s)
-        , shrdMem_d_(shrdMem_d)
-        , debugStream_(debugStream) {}
+        , shrdMem_d_(shrdMem_d) {}
+
     void operator()(sycl::nd_item<2> it) const {
         const int shrdStride = TILE_DIM + 1;
 
@@ -165,7 +164,6 @@ class transposeInPlaceKernel {
     bool IS32MULTIPLE_;
     local_accessor<T, 1> shrdMem_s_;
     local_accessor<T, 1> shrdMem_d_;
-    sycl::stream debugStream_;
 };
 
 template<typename T>
@@ -179,17 +177,22 @@ void transpose_inplace(Param<T> in, const bool conjugate,
     auto global = sycl::range{blk_x * local[0] * in.info.dims[2],
                               blk_y * local[1] * in.info.dims[3]};
 
+    static auto transposeExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(),
+            {sycl::get_kernel_id<transposeInPlaceKernel<T>>()});
+
     getQueue().submit([&](sycl::handler &h) {
         auto r = in.data->get_access(h);
-        sycl::stream debugStream(128, 128, h);
 
         auto shrdMem_s = local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
         auto shrdMem_d = local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
 
+        h.use_kernel_bundle(transposeExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        transposeInPlaceKernel<T>(
                            r, in.info, blk_x, blk_y, conjugate, IS32MULTIPLE,
-                           shrdMem_s, shrdMem_d, debugStream));
+                           shrdMem_s, shrdMem_d));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

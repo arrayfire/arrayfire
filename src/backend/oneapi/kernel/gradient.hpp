@@ -145,11 +145,16 @@ void gradient(Param<T> grad0, Param<T> grad1, const Param<T> in) {
     auto global       = sycl::range{local[0] * blocksPerMatX * in.info.dims[2],
                               local[1] * blocksPerMatY * in.info.dims[3]};
 
+    static auto gradientExeBundle =
+    sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+        getContext(), {sycl::get_kernel_id<gradientCreateKernel<T, TX, TY>>()} );
+
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<T> grad0Acc{*grad0.data, h};
         write_accessor<T> grad1Acc{*grad1.data, h};
         read_accessor<T> inAcc{*in.data, h};
         auto scratch = local_accessor<T>((TY + 2) * (TX + 2), h);
+        h.use_kernel_bundle(gradientExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        gradientCreateKernel<T, TX, TY>(
                            grad0Acc, grad0.info, grad1Acc, grad1.info, inAcc,

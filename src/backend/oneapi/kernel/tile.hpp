@@ -97,9 +97,14 @@ void tile(Param<T> out, const Param<T> in) {
     auto global       = sycl::range(local[0] * blocksPerMatX * out.info.dims[2],
                                     local[1] * blocksPerMatY * out.info.dims[3]);
 
+    static auto tileExeBundle =
+        sycl::get_kernel_bundle<sycl::bundle_state::executable>(
+            getContext(), {sycl::get_kernel_id<tileCreateKernel<T>>()});
+
     getQueue().submit([&](auto &h) {
         write_accessor<T> d_out{*out.data, h};
         read_accessor<T> d_in{*in.data, h};
+        h.use_kernel_bundle(tileExeBundle);
         h.parallel_for(sycl::nd_range{global, local},
                        tileCreateKernel<T>(d_out, d_in, out.info, in.info,
                                            blocksPerMatX, blocksPerMatY));
