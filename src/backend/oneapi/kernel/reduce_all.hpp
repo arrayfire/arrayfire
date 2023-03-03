@@ -93,9 +93,9 @@ class reduceAllKernelSMEM {
         common::Binary<compute_t<To>, op> reduce;
         common::Transform<Ti, compute_t<To>, op> transform;
 
-        const data_t<Ti> *const iptr =
-            in_.get_pointer() + wid * iInfo_.strides[3] +
-            zid * iInfo_.strides[2] + yid * iInfo_.strides[1] + iInfo_.offset;
+        auto iptr = in_.get_pointer() + wid * iInfo_.strides[3] +
+                    zid * iInfo_.strides[2] + yid * iInfo_.strides[1] +
+                    iInfo_.offset;
 
         bool cond = (yid < iInfo_.dims[1]) && (zid < iInfo_.dims[2]) &&
                     (wid < iInfo_.dims[3]);

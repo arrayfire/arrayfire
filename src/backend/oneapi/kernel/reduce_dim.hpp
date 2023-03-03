@@ -43,14 +43,14 @@ using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
 class reduceDimKernelSMEM {
    public:
-    reduceDimKernelSMEM(write_accessor<To> out, KParam oInfo,
-                        read_accessor<Ti> in, KParam iInfo, uint groups_x,
+    reduceDimKernelSMEM(Param<To> out, Param<Ti> in, uint groups_x,
                         uint groups_y, uint offset_dim, bool change_nan,
-                        To nanval, local_accessor<compute_t<To>, 1> s_val)
-        : out_(out)
-        , oInfo_(oInfo)
-        , iInfo_(iInfo)
-        , in_(in)
+                        To nanval, local_accessor<compute_t<To>, 1> s_val,
+                        sycl::handler &h)
+        : out_(out.template get_accessor<sycl::access::mode::write>(h))
+        , in_(in.template get_accessor<sycl::access::mode::read>(h))
+        , oInfo_(out.info)
+        , iInfo_(in.info)
         , groups_x_(groups_x)
         , groups_y_(groups_y)
         , offset_dim_(offset_dim)
@@ -72,15 +72,16 @@ class reduceDimKernelSMEM {
         const uint yid       = groupId_y;
 
         uint ids[4] = {xid, yid, zid, wid};
+        using sycl::global_ptr;
 
-        data_t<To> *const optr =
+        global_ptr<data_t<To>> optr =
             out_.get_pointer() + ids[3] * oInfo_.strides[3] +
             ids[2] * oInfo_.strides[2] + ids[1] * oInfo_.strides[1] + ids[0];
 
         const uint groupIdx_dim = ids[dim];
         ids[dim]                = ids[dim] * g.get_local_range(1) + lidy;
 
-        const data_t<Ti> *iptr =
+        global_ptr<data_t<Ti>> iptr =
             in_.get_pointer() + ids[3] * iInfo_.strides[3] +
             ids[2] * iInfo_.strides[2] + ids[1] * iInfo_.strides[1] + ids[0];
 
@@ -91,15 +92,16 @@ class reduceDimKernelSMEM {
                         (ids[2] < iInfo_.dims[2]) && (ids[3] < iInfo_.dims[3]);
 
         common::Binary<compute_t<To>, op> reduce;
-        common::Transform<Ti, compute_t<To>, op> transform;
+        common::Transform<data_t<Ti>, compute_t<To>, op> transform;
 
         compute_t<To> out_val = common::Binary<compute_t<To>, op>::init();
         for (int id = id_dim_in; is_valid && (id < iInfo_.dims[dim]);
              id += offset_dim_ * g.get_local_range(1)) {
             compute_t<To> in_val = transform(*iptr);
-            if (change_nan_)
+            if (change_nan_) {
                 in_val = !IS_NAN(in_val) ? in_val
                                          : static_cast<compute_t<To>>(nanval_);
+            }
             out_val = reduce(in_val, out_val);
             iptr += offset_dim_ * g.get_local_range(1) * istride_dim;
         }
@@ -133,9 +135,9 @@ class reduceDimKernelSMEM {
     }
 
    protected:
-    write_accessor<To> out_;
+    write_accessor<data_t<To>> out_;
+    read_accessor<data_t<Ti>> in_;
     KParam oInfo_, iInfo_;
-    read_accessor<Ti> in_;
     uint groups_x_, groups_y_, offset_dim_;
     bool change_nan_;
     To nanval_;
@@ -152,9 +154,6 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
                           blocks_dim[1] * blocks_dim[3] * local[1]);
 
     getQueue().submit([=](sycl::handler &h) {
-        write_accessor<To> out_acc{*out.data, h};
-        read_accessor<Ti> in_acc{*in.data, h};
-
         auto shrdMem =
             local_accessor<compute_t<To>, 1>(creduce::THREADS_X * threads_y, h);
 
@@ -163,33 +162,29 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
                 h.parallel_for(
                     sycl::nd_range<2>(global, local),
                     reduceDimKernelSMEM<Ti, To, op, dim, 8>(
-                        out_acc, out.info, in_acc, in.info, blocks_dim[0],
-                        blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem));
+                        out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                        change_nan, scalar<To>(nanval), shrdMem, h));
                 break;
             case 4:
                 h.parallel_for(
                     sycl::nd_range<2>(global, local),
                     reduceDimKernelSMEM<Ti, To, op, dim, 4>(
-                        out_acc, out.info, in_acc, in.info, blocks_dim[0],
-                        blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem));
+                        out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                        change_nan, scalar<To>(nanval), shrdMem, h));
                 break;
             case 2:
                 h.parallel_for(
                     sycl::nd_range<2>(global, local),
                     reduceDimKernelSMEM<Ti, To, op, dim, 2>(
-                        out_acc, out.info, in_acc, in.info, blocks_dim[0],
-                        blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem));
+                        out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                        change_nan, scalar<To>(nanval), shrdMem, h));
                 break;
             case 1:
                 h.parallel_for(
                     sycl::nd_range<2>(global, local),
                     reduceDimKernelSMEM<Ti, To, op, dim, 1>(
-                        out_acc, out.info, in_acc, in.info, blocks_dim[0],
-                        blocks_dim[1], blocks_dim[dim], change_nan,
-                        scalar<To>(nanval), shrdMem));
+                        out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                        change_nan, scalar<To>(nanval), shrdMem, h));
                 break;
         }
     });
