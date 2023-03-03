@@ -35,6 +35,12 @@ struct Param {
     // AF_DEPRECATED("Use Array<T>")
     Param(sycl::buffer<T>* data_, KParam info_) : data(data_), info(info_) {}
 
+    template<sycl::access::mode MODE>
+    sycl::accessor<data_t<T>, 1, MODE> get_accessor(sycl::handler& h) const {
+        auto o = data->template reinterpret<data_t<T>>();
+        return sycl::accessor<data_t<T>, 1, MODE>(o, h);
+    }
+
     ~Param() = default;
 };
 

@@ -27,17 +27,18 @@ namespace common {
 /// are used
 template<>
 struct kernel_type<common::half> {
-    using data = common::half;
+    using data = sycl::half;
 
     // These are the types within a kernel
-    using native = float;
+    using native = sycl::half;
 
-    using compute = float;
+    using compute = sycl::half;
 };
 }  // namespace common
 }  // namespace arrayfire
 
 namespace arrayfire {
+
 namespace oneapi {
 using cdouble = std::complex<double>;
 using cfloat  = std::complex<float>;
@@ -60,7 +61,6 @@ struct ToNumStr {
     std::string operator()(CONVERSION_TYPE val);
 };
 
-namespace {
 template<typename T>
 inline const char *shortname(bool caps = false) {
     return caps ? "X" : "x";
@@ -129,7 +129,6 @@ template<>
 inline const char *getFullName<cdouble>() {
     return "double2";
 }
-}  // namespace
 
 #if 0
 template<typename... ARGS>

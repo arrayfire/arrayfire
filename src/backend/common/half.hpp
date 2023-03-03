@@ -60,59 +60,124 @@ namespace common {
 
 #if defined(__CUDA_ARCH__)
 using native_half_t = __half;
+#elif defined(AF_ONEAPI)
+using native_half_t = sycl::half;
 #else
 using native_half_t = uint16_t;
 #endif
 
 #ifdef __CUDACC_RTC__
-template<typename T>
-AF_CONSTEXPR __DH__ native_half_t float2half(T value) {
-    return __float2half(value);
+template<std::float_round_style R = std::round_to_nearest>
+AF_CONSTEXPR __DH__ native_half_t float2half_impl(float value) {
+    return __float2half_rn(value);
 }
 
-AF_CONSTEXPR __DH__ inline float half2float(native_half_t value) noexcept {
+template<std::float_round_style R = std::round_to_nearest>
+AF_CONSTEXPR __DH__ native_half_t float2half_impl(double value) {
+    return __float2half_rn(value);
+}
+
+AF_CONSTEXPR __DH__ inline float half2float_impl(native_half_t value) noexcept {
     return __half2float(value);
 }
 
 template<typename T>
-AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept;
+AF_CONSTEXPR __DH__ native_half_t int2half_impl(T value) noexcept;
 
 template<>
-AF_CONSTEXPR __DH__ native_half_t int2half(int value) noexcept {
+AF_CONSTEXPR __DH__ native_half_t int2half_impl(int value) noexcept {
     return __int2half_rn(value);
 }
 
 template<>
-AF_CONSTEXPR __DH__ native_half_t int2half(unsigned value) noexcept {
+AF_CONSTEXPR __DH__ native_half_t int2half_impl(unsigned value) noexcept {
     return __uint2half_rn(value);
 }
 
 template<>
-AF_CONSTEXPR __DH__ native_half_t int2half(long long value) noexcept {
+AF_CONSTEXPR __DH__ native_half_t int2half_impl(long long value) noexcept {
     return __ll2half_rn(value);
 }
 
 template<>
-AF_CONSTEXPR __DH__ native_half_t int2half(unsigned long long value) noexcept {
+AF_CONSTEXPR __DH__ native_half_t
+int2half_impl(unsigned long long value) noexcept {
     return __ull2half_rn(value);
 }
 
 template<>
-AF_CONSTEXPR __DH__ native_half_t int2half(short value) noexcept {
+AF_CONSTEXPR __DH__ native_half_t int2half_impl(short value) noexcept {
     return __short2half_rn(value);
 }
 template<>
-AF_CONSTEXPR __DH__ native_half_t int2half(unsigned short value) noexcept {
+AF_CONSTEXPR __DH__ native_half_t int2half_impl(unsigned short value) noexcept {
     return __ushort2half_rn(value);
 }
 
 template<>
-AF_CONSTEXPR __DH__ native_half_t int2half(char value) noexcept {
+AF_CONSTEXPR __DH__ native_half_t int2half_impl(char value) noexcept {
     return __ull2half_rn(value);
 }
 template<>
-AF_CONSTEXPR __DH__ native_half_t int2half(unsigned char value) noexcept {
+AF_CONSTEXPR __DH__ native_half_t int2half_impl(unsigned char value) noexcept {
     return __ull2half_rn(value);
+}
+
+#elif defined(AF_ONEAPI)
+
+template<std::float_round_style R = std::round_to_nearest>
+AF_CONSTEXPR native_half_t float2half_impl(float value) {
+    return static_cast<native_half_t>(value);
+}
+
+template<std::float_round_style R = std::round_to_nearest>
+AF_CONSTEXPR native_half_t float2half_impl(double value) {
+    return static_cast<native_half_t>(value);
+}
+
+AF_CONSTEXPR inline float half2float_impl(native_half_t value) noexcept {
+    return static_cast<float>(value);
+}
+
+template<typename T>
+AF_CONSTEXPR native_half_t int2half_impl(T value) noexcept;
+
+template<>
+AF_CONSTEXPR native_half_t int2half_impl(int value) noexcept {
+    return static_cast<native_half_t>(value);
+}
+
+template<>
+AF_CONSTEXPR native_half_t int2half_impl(unsigned value) noexcept {
+    return static_cast<native_half_t>(value);
+}
+
+template<>
+AF_CONSTEXPR native_half_t int2half_impl(long long value) noexcept {
+    return static_cast<native_half_t>(value);
+}
+
+template<>
+AF_CONSTEXPR native_half_t int2half_impl(unsigned long long value) noexcept {
+    return static_cast<native_half_t>(value);
+}
+
+template<>
+AF_CONSTEXPR native_half_t int2half_impl(short value) noexcept {
+    return static_cast<native_half_t>(value);
+}
+template<>
+AF_CONSTEXPR native_half_t int2half_impl(unsigned short value) noexcept {
+    return static_cast<native_half_t>(value);
+}
+
+template<>
+AF_CONSTEXPR native_half_t int2half_impl(char value) noexcept {
+    return static_cast<native_half_t>(value);
+}
+template<>
+AF_CONSTEXPR native_half_t int2half_impl(unsigned char value) noexcept {
+    return static_cast<native_half_t>(value);
 }
 
 #else
@@ -162,22 +227,6 @@ AF_CONSTEXPR __DH__ native_half_t int2half_impl(T value) noexcept {
     return bits;
 }
 
-template<typename T, std::float_round_style R = std::round_to_nearest,
-         typename std::enable_if_t<std::is_integral<T>::value &&
-                                   std::is_signed<T>::value>* = nullptr>
-AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept {
-    uint16_t out = (value < 0) ? int2half_impl<R, true, T>(value)
-                               : int2half_impl<R, false, T>(value);
-    return out;
-}
-
-template<typename T, std::float_round_style R = std::round_to_nearest,
-         typename std::enable_if_t<std::is_integral<T>::value &&
-                                   std::is_unsigned<T>::value>* = nullptr>
-AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept {
-    return int2half_impl<R, false, T>(value);
-}
-
 /// Convert IEEE single-precision to half-precision.
 /// Credit for this goes to [Jeroen van der
 /// Zijp](ftp://ftp.fox-toolkit.org/pub/fasthalffloatconversion.pdf).
@@ -186,7 +235,7 @@ AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept {
 ///
 /// \param value single-precision value
 /// \return binary representation of half-precision value
-template<std::float_round_style R = std::round_indeterminate>
+template<std::float_round_style R = std::round_to_nearest>
 __DH__ native_half_t float2half_impl(float value) noexcept {
     uint32_t bits = 0;  // = *reinterpret_cast<uint32*>(&value);
                         // //violating strict aliasing!
@@ -366,23 +415,7 @@ __DH__ native_half_t float2half_impl(double value) {
     return hbits;
 }
 
-template<typename T, std::float_round_style R = std::round_to_nearest>
-#ifdef __CUDA_ARCH__
-AF_CONSTEXPR
-#endif
-    __DH__ native_half_t
-    float2half(T val) {
-#ifdef __CUDA_ARCH__
-    return __float2half(val);
-#else
-    return float2half_impl<R>(val);
-#endif
-}
-
-__DH__ inline float half2float(native_half_t value) noexcept {
-#ifdef __CUDA_ARCH__
-    return __half2float(value);
-#else
+__DH__ inline float half2float_impl(native_half_t value) noexcept {
     // return _cvtsh_ss(data.data_);
     constexpr uint32_t mantissa_table[2048] = {
         0x00000000, 0x33800000, 0x34000000, 0x34400000, 0x34800000, 0x34A00000,
@@ -749,12 +782,52 @@ __DH__ inline float half2float(native_half_t value) noexcept {
         1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
         1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024};
 
+    uint16_t value_bits = 0;
+    std::memcpy(&value_bits, &value, sizeof(uint16_t));
     uint32_t bits =
-        mantissa_table[offset_table[value >> 10] + (value & 0x3FF)] +
-        exponent_table[value >> 10];
+        mantissa_table[offset_table[value_bits >> 10] + (value_bits & 0x3FF)] +
+        exponent_table[value_bits >> 10];
     float out = 0.0f;
     std::memcpy(&out, &bits, sizeof(float));
     return out;
+}
+
+#endif  // __CUDACC_RTC__
+
+template<typename T, std::float_round_style R = std::round_to_nearest>
+#ifdef __CUDA_ARCH__
+AF_CONSTEXPR
+#endif
+    __DH__ native_half_t
+    float2half(T val) {
+    return float2half_impl<R>(val);
+}
+
+__DH__ inline float half2float(native_half_t value) noexcept {
+    return half2float_impl(value);
+}
+
+template<typename T, std::float_round_style R = std::round_to_nearest,
+         typename std::enable_if_t<std::is_integral<T>::value &&
+                                   std::is_signed<T>::value>* = nullptr>
+AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept {
+#if defined(__CUDACC_RTC__) || defined(AF_ONEAPI)
+    native_half_t out = int2half_impl(value);
+#else
+    uint16_t out = (value < 0) ? int2half_impl<R, true, T>(value)
+                               : int2half_impl<R, false, T>(value);
+#endif
+    return out;
+}
+
+template<typename T, std::float_round_style R = std::round_to_nearest,
+         typename std::enable_if_t<std::is_integral<T>::value &&
+                                   std::is_unsigned<T>::value>* = nullptr>
+AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept {
+#if defined(__CUDACC_RTC__) || defined(AF_ONEAPI)
+    return int2half_impl(value);
+#else
+    return int2half_impl<R, false, T>(value);
 #endif
 }
 
@@ -771,6 +844,24 @@ __DH__ inline float half2float(native_half_t value) noexcept {
 /// \param value The value to convert to integer
 template<std::float_round_style R, bool E, typename T>
 AF_CONSTEXPR T half2int(native_half_t value) {
+#ifdef __CUDA_ARCH__
+    if constexpr (std::is_same_v<T, short> || std::is_same_v<T, char> ||
+                  std::is_same_v<T, unsigned char>) {
+        return __half2short_rn(value);
+    } else if constexpr (std::is_same_v<T, unsigned short>) {
+        return __half2ushort_rn(value);
+    } else if constexpr (std::is_same_v<T, long long>) {
+        return __half2ll_rn(value);
+    } else if constexpr (std::is_same_v<T, unsigned long long>) {
+        return __half2ull_rn(value);
+    } else if constexpr (std::is_same_v<T, int>) {
+        return __half2int_rn(value);
+    } else if constexpr (std::is_same_v<T, unsigned>) {
+        return __half2uint_rn(value);
+    }
+#elif defined(AF_ONEAPI)
+    return static_cast<T>(value);
+#else
     static_assert(std::is_integral<T>::value,
                   "half to int conversion only supports builtin integer types");
     unsigned int e = value & 0x7FFF;
@@ -797,9 +888,8 @@ AF_CONSTEXPR T half2int(native_half_t value) {
     } else
         m <<= e - 25;
     return (value & 0x8000) ? -static_cast<T>(m) : static_cast<T>(m);
+#endif
 }
-
-#endif  // __CUDACC_RTC__
 
 namespace internal {
 /// Tag type for binary construction.
@@ -862,9 +952,6 @@ class alignas(2) half {
 #endif
     }
 
-#if defined(__CUDA_ARCH__)
-    AF_CONSTEXPR
-#endif
     __DH__ explicit half(double value) noexcept
         : data_(float2half<double>(value)) {}
 
@@ -876,23 +963,24 @@ class alignas(2) half {
 
     template<typename T>
     AF_CONSTEXPR __DH__ explicit half(T value) noexcept
-        : data_(int2half<T>(value)) {}
+        : data_(int2half(value)) {}
 
 #if defined(__CUDA_ARCH__)
     AF_CONSTEXPR
 #endif
     __DH__ half& operator=(const double& value) noexcept {
-        data_ = float2half<double>(value);
+        data_ = float2half(value);
         return *this;
     }
 
-#ifdef __CUDA_ARCH__
-    AF_CONSTEXPR __DH__ explicit half(__half value) noexcept : data_(value) {}
+#if defined(__CUDA_ARCH__) || defined(AF_ONEAPI)
+    AF_CONSTEXPR __DH__ explicit half(native_half_t value) noexcept
+        : data_(value) {}
 
-    AF_CONSTEXPR __DH__ half& operator=(__half value) noexcept {
-        // NOTE Assignment to ushort from __half only works with device code.
-        // using memcpy instead
-        data_ = *reinterpret_cast<native_half_t*>(&value);
+    AF_CONSTEXPR __DH__ half& operator=(native_half_t value) noexcept {
+        // NOTE Assignment to ushort from native_half_t only works with device
+        // code. using memcpy instead
+        data_ = value;
         return *this;
     }
 #endif
@@ -907,71 +995,41 @@ class alignas(2) half {
     }
 
     AF_CONSTEXPR __DH__ explicit operator short() const noexcept {
-#ifdef __CUDA_ARCH__
-        return __half2short_rn(data_);
-#else
         return half2int<std::round_indeterminate, true, short>(data_);
-#endif
     }
 
     AF_CONSTEXPR __DH__ explicit operator long long() const noexcept {
-#ifdef __CUDA_ARCH__
-        return __half2ll_rn(data_);
-#else
         return half2int<std::round_indeterminate, true, long long int>(data_);
-#endif
     }
 
     AF_CONSTEXPR __DH__ explicit operator int() const noexcept {
-#ifdef __CUDA_ARCH__
-        return __half2int_rn(data_);
-#else
         return half2int<std::round_indeterminate, true, int>(data_);
-#endif
     }
 
     AF_CONSTEXPR __DH__ explicit operator unsigned() const noexcept {
-#ifdef __CUDA_ARCH__
-        return __half2uint_rn(data_);
-#else
         return half2int<std::round_indeterminate, true, unsigned>(data_);
-#endif
     }
 
     AF_CONSTEXPR __DH__ explicit operator unsigned short() const noexcept {
-#ifdef __CUDA_ARCH__
-        return __half2ushort_rn(data_);
-#else
         return half2int<std::round_indeterminate, true, unsigned>(data_);
-#endif
     }
 
     AF_CONSTEXPR __DH__ explicit operator unsigned long long() const noexcept {
-#ifdef __CUDA_ARCH__
-        return __half2ull_rn(data_);
-#else
         return half2int<std::round_indeterminate, true, unsigned>(data_);
-#endif
     }
 
     AF_CONSTEXPR __DH__ explicit operator char() const noexcept {
-#ifdef __CUDA_ARCH__
-        return __half2short_rn(data_);
-#else
         return half2int<std::round_indeterminate, true, char>(data_);
-#endif
     }
 
     AF_CONSTEXPR __DH__ explicit operator unsigned char() const noexcept {
-#ifdef __CUDA_ARCH__
-        return __half2short_rn(data_);
-#else
         return half2int<std::round_indeterminate, true, unsigned char>(data_);
-#endif
     }
 
-#if defined(__CUDA_ARCH__)
-    AF_CONSTEXPR __DH__ operator __half() const noexcept { return data_; };
+#if defined(__CUDA_ARCH__) || defined(AF_ONEAPI)
+    AF_CONSTEXPR __DH__ operator native_half_t() const noexcept {
+        return data_;
+    };
 #endif
 
     friend AF_CONSTEXPR __DH__ bool operator==(half lhs, half rhs) noexcept;
@@ -988,6 +1046,8 @@ class alignas(2) half {
         return arrayfire::common::half(__hneg(data_));
 #elif defined(__CUDA_ARCH__)
         return arrayfire::common::half(-(__half2float(data_)));
+#elif defined(AF_ONEAPI)
+        return arrayfire::common::half(-data_);
 #else
         return arrayfire::common::half(internal::binary, data_ ^ 0x8000);
 #endif
@@ -1001,6 +1061,8 @@ class alignas(2) half {
         half out;
 #ifdef __CUDA_ARCH__
         out.data_ = __half_raw{0x7C00};
+#elif defined(AF_ONEAPI)
+        out.data_ = std::numeric_limits<sycl::half>::infinity();
 #else
         out.data_ = 0x7C00;
 #endif
@@ -1014,6 +1076,8 @@ AF_CONSTEXPR __DH__ static inline bool operator==(
     return __heq(lhs.data_, rhs.data_);
 #elif defined(__CUDA_ARCH__)
     return __half2float(lhs.data_) == __half2float(rhs.data_);
+#elif defined(AF_ONEAPI)
+    return lhs.data_ == rhs.data_;
 #else
     return (lhs.data_ == rhs.data_ || !((lhs.data_ | rhs.data_) & 0x7FFF)) &&
            !isnan(lhs);
@@ -1035,6 +1099,8 @@ __DH__ static inline bool operator<(arrayfire::common::half lhs,
     return __hlt(lhs.data_, rhs.data_);
 #elif defined(__CUDA_ARCH__)
     return __half2float(lhs.data_) < __half2float(rhs.data_);
+#elif defined(AF_ONEAPI)
+    return lhs.data_ < rhs.data_;
 #else
     int xabs = lhs.data_ & 0x7FFF, yabs = rhs.data_ & 0x7FFF;
     return xabs <= 0x7C00 && yabs <= 0x7C00 &&
@@ -1047,6 +1113,8 @@ __DH__ static inline bool operator<(arrayfire::common::half lhs,
                                     float rhs) noexcept {
 #if defined(__CUDA_ARCH__)
     return __half2float(lhs.data_) < rhs;
+#elif defined(AF_ONEAPI)
+    return lhs.data_ < rhs;
 #else
     return static_cast<float>(lhs) < rhs;
 #endif
@@ -1068,7 +1136,7 @@ static inline std::string to_string(const half&& val) {
 }  // namespace arrayfire
 
 #if !defined(__NVCC__) && !defined(__CUDACC_RTC__)
-//#endif
+// #endif
 /// Extensions to the C++ standard library.
 namespace std {
 /// Numeric limits for half-precision floats.
@@ -1230,6 +1298,8 @@ AF_CONSTEXPR __DH__ static inline bool isnan(half val) noexcept {
     return __hisnan(val.data_);
 #elif defined(__CUDA_ARCH__)
     return ::isnan(__half2float(val));
+#elif defined(AF_ONEAPI)
+    return std::isnan(val.data_);
 #else
     return (val.data_ & 0x7FFF) > 0x7C00;
 #endif
