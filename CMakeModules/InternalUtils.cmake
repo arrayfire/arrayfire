@@ -33,6 +33,8 @@ check_cxx_compiler_flag(-fno-signed-zeros  has_cxx_no_signed_zeros)
 check_cxx_compiler_flag(-mno-ieee-fp has_cxx_no_ieee_fp)
 check_cxx_compiler_flag(-Wno-unqualified-std-cast-call has_cxx_unqualified_std_cast_call)
 check_cxx_compiler_flag(-Werror=reorder-ctor has_cxx_error_reorder_ctor)
+check_cxx_compiler_flag(-Rno-debug-disables-optimization has_cxx_debug-disables-optimization)
+
 
 function(arrayfire_set_default_cxx_flags target)
   target_compile_options(${target}
@@ -75,7 +77,10 @@ function(arrayfire_set_default_cxx_flags target)
 
               $<$<NOT:$<BOOL:${AF_WITH_FAST_MATH}>>:
                     $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>>
-                      >
+
+              $<$<BOOL:${has_cxx_debug-disables-optimization}>:
+                  $<$<CONFIG:Debug>:-Rno-debug-disables-optimization>>
+          >
     )
 
   target_compile_definitions(${target}
