@@ -17,6 +17,7 @@
 #include <cuda_runtime_api.h>
 #include <jit/BufferNode.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <types.hpp>
 #include <af/dim4.hpp>

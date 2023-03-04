@@ -15,6 +15,7 @@
 #include <copy.hpp>
 #include <handle.hpp>
 #include <hist_graphics.hpp>
+#include <platform.hpp>
 #include <reduce.hpp>
 #include <af/graphics.h>
 

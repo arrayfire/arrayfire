@@ -13,6 +13,7 @@
 #include <common/kernel_type.hpp>
 #include <common/traits.hpp>
 #include <af/compilers.h>
+#include <af/traits.hpp>
 
 #include <algorithm>
 #include <array>

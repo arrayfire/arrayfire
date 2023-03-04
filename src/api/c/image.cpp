@@ -21,6 +21,7 @@
 #include <handle.hpp>
 #include <image.hpp>
 #include <join.hpp>
+#include <platform.hpp>
 #include <reorder.hpp>
 #include <tile.hpp>
 

@@ -11,7 +11,6 @@
 #include <backend.hpp>
 #include <common/defines.hpp>
 #include <optypes.hpp>
-#include <platform.hpp>
 #include <types.hpp>
 #include <af/defines.h>
 
@@ -38,6 +37,8 @@ class Node;
 }  // namespace arrayfire
 
 #ifdef AF_CPU
+#include <Param.hpp>
+
 namespace arrayfire {
 namespace cpu {
 namespace kernel {
