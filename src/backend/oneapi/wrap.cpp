@@ -7,15 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <wrap.hpp>
+
+#include <kernel/wrap.hpp>
+#include <kernel/wrap_dilated.hpp>
+
 #include <Array.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
-#include <kernel/wrap.hpp>
-#include <kernel/wrap_dilated.hpp>
 #include <math.hpp>
-#include <wrap.hpp>
-#include <stdexcept>
 
 using arrayfire::common::half;
 

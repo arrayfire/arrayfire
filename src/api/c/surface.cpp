@@ -19,6 +19,7 @@
 #include <copy.hpp>
 #include <handle.hpp>
 #include <join.hpp>
+#include <platform.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>
 #include <surface.hpp>

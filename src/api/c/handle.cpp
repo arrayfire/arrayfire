@@ -10,6 +10,7 @@
 #include <handle.hpp>
 
 #include <backend.hpp>
+#include <platform.hpp>
 #include <sparse_handle.hpp>
 
 #include <af/dim4.hpp>
