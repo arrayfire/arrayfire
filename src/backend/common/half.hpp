@@ -77,7 +77,8 @@ AF_CONSTEXPR __DH__ native_half_t float2half_impl(double value) {
     return __float2half_rn(value);
 }
 
-AF_CONSTEXPR __DH__ inline float half2float_impl(native_half_t value) noexcept {
+AF_CONSTEXPR
+__DH__ inline float half2float_impl(native_half_t value) noexcept {
     return __half2float(value);
 }
 
@@ -135,7 +136,7 @@ AF_CONSTEXPR native_half_t float2half_impl(double value) {
     return static_cast<native_half_t>(value);
 }
 
-AF_CONSTEXPR inline float half2float_impl(native_half_t value) noexcept {
+inline float half2float_impl(native_half_t value) noexcept {
     return static_cast<float>(value);
 }
 
