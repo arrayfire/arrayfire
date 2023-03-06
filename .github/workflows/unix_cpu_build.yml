@@ -25,7 +25,7 @@ jobs:
 
     documentation:
         name: Documentation
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-20.04
         env:
           DOXYGEN_VER: 1.8.18
         steps:
@@ -68,7 +68,7 @@ jobs:
             fail-fast: false
             matrix:
                 blas_backend: [Atlas, MKL, OpenBLAS]
-                os: [ubuntu-18.04, ubuntu-20.04, macos-latest]
+                os: [ubuntu-20.04, macos-latest]
                 compiler: [gcc, clang, icx]
                 exclude:
                     - os: macos-latest
@@ -128,7 +128,7 @@ jobs:
                   echo "CMAKE_PROGRAM=cmake" >> $GITHUB_ENV
 
             - name: Install Common Dependencies for Ubuntu
-              if: matrix.os == 'ubuntu-18.04' || matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04'
+              if: matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04'
               run: |
                   sudo add-apt-repository ppa:mhier/libboost-latest
                   sudo apt-get -qq update
