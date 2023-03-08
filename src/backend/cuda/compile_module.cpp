@@ -266,7 +266,11 @@ Module compileModule(const string &moduleKey, span<const string> sources,
              computeFlag.first, computeFlag.second);
     vector<const char *> compiler_options = {
         arch.data(),
+#if CUDA_VERSION >= 11000
+        "--std=c++17",
+#else
         "--std=c++14",
+#endif
         "--device-as-default-execution-space",
 #ifdef AF_WITH_FAST_MATH
         "--use_fast_math",
