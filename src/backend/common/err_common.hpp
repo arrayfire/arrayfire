@@ -214,5 +214,5 @@ namespace common {
 
 bool& is_stacktrace_enabled() noexcept;
 
-}
+}  // namespace common
 }  // namespace arrayfire
