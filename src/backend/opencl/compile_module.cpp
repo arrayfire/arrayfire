@@ -60,24 +60,6 @@ logger *getLogger() {
     return logger.get();
 }
 
-string getProgramBuildLog(const Program &prog) {
-    string build_error("");
-    try {
-        build_error.reserve(4096);
-        auto devices = prog.getInfo<CL_PROGRAM_DEVICES>();
-        for (auto &device : prog.getInfo<CL_PROGRAM_DEVICES>()) {
-            build_error +=
-                format("OpenCL Device: {}\n\tOptions: {}\n\tLog:\n{}\n",
-                       device.getInfo<CL_DEVICE_NAME>(),
-                       prog.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(device),
-                       prog.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
-        }
-    } catch (const cl::Error &e) {
-        build_error = format("Failed to fetch build log: {}", e.what());
-    }
-    return build_error;
-}
-
 #define THROW_BUILD_LOG_EXCEPTION(PROG)                              \
     do {                                                             \
         string build_error = getProgramBuildLog(PROG);               \
@@ -129,8 +111,23 @@ Program buildProgram(span<const string> kernelSources,
     return retVal;
 }
 
-}  // namespace opencl
-}  // namespace arrayfire
+string getProgramBuildLog(const Program &prog) {
+    string build_error("");
+    try {
+        build_error.reserve(4096);
+        auto devices = prog.getInfo<CL_PROGRAM_DEVICES>();
+        for (auto &device : prog.getInfo<CL_PROGRAM_DEVICES>()) {
+            build_error +=
+                format("OpenCL Device: {}\n\tOptions: {}\n\tLog:\n{}\n",
+                       device.getInfo<CL_DEVICE_NAME>(),
+                       prog.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(device),
+                       prog.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        }
+    } catch (const cl::Error &e) {
+        build_error = format("Failed to fetch build log: {}", e.what());
+    }
+    return build_error;
+}
 
 string getKernelCacheFilename(const int device, const string &key) {
     auto &dev = arrayfire::opencl::getDevice(device);
@@ -146,6 +143,9 @@ string getKernelCacheFilename(const int device, const string &key) {
     return "KER" + key + "_CL_" + infix + "_AF_" +
            to_string(AF_API_VERSION_CURRENT) + ".bin";
 }
+
+}  // namespace opencl
+}  // namespace arrayfire
 
 namespace arrayfire {
 namespace common {
@@ -164,8 +164,9 @@ Module compileModule(const string &moduleKey, span<const string> sources,
     const int device             = arrayfire::opencl::getActiveDeviceId();
     const string &cacheDirectory = getCacheDirectory();
     if (!cacheDirectory.empty()) {
-        const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
-                                 getKernelCacheFilename(device, moduleKey);
+        const string cacheFile =
+            cacheDirectory + AF_PATH_SEPARATOR +
+            opencl::getKernelCacheFilename(device, moduleKey);
         const string tempFile =
             cacheDirectory + AF_PATH_SEPARATOR + makeTempFilename();
         try {
@@ -223,7 +224,7 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
 
     auto &dev              = arrayfire::opencl::getDevice(device);
     const string cacheFile = cacheDirectory + AF_PATH_SEPARATOR +
-                             getKernelCacheFilename(device, moduleKey);
+                             opencl::getKernelCacheFilename(device, moduleKey);
     Program program;
     Module retVal{};
     try {
@@ -273,7 +274,7 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
             "{{{:<20} : Loading OpenCL binary({}) failed for {}; {}, Build "
             "Log: {}}}",
             moduleKey, cacheFile, dev.getInfo<CL_DEVICE_NAME>(), e.what(),
-            getProgramBuildLog(program));
+            opencl::getProgramBuildLog(program));
         removeFile(cacheFile);
     }
     return retVal;
