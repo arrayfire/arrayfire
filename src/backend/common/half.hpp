@@ -39,6 +39,48 @@
 #include <backend.hpp>
 
 #ifdef __CUDACC_RTC__
+
+#if defined(__cpp_if_constexpr) || __cplusplus >= 201606L
+#define AF_IF_CONSTEXPR if constexpr
+#else
+#define AF_IF_CONSTEXPR if
+#endif
+
+namespace std {
+enum float_round_style {
+    round_indeterminate       = -1,
+    round_toward_zero         = 0,
+    round_to_nearest          = 1,
+    round_toward_infinity     = 2,
+    round_toward_neg_infinity = 3
+};
+
+template<bool B, class T = void>
+struct enable_if {};
+
+template<class T>
+struct enable_if<true, T> {
+    typedef T type;
+};
+
+template<bool B, class T = void>
+using enable_if_t = typename enable_if<B, T>::type;
+
+template<class T, class U>
+struct is_same {
+    static constexpr bool value = false;
+};
+
+template<class T>
+struct is_same<T, T> {
+    static constexpr bool value = true;
+};
+
+template<class T, class U>
+constexpr bool is_same_v = is_same<T, U>::value;
+
+}  //  namespace std
+
 using uint16_t = unsigned short;
 // we do not include the af/compilers header in nvrtc compilations so
 // we are defining the AF_CONSTEXPR expression here
@@ -140,44 +182,8 @@ inline float half2float_impl(native_half_t value) noexcept {
     return static_cast<float>(value);
 }
 
-template<typename T>
-AF_CONSTEXPR native_half_t int2half_impl(T value) noexcept;
-
-template<>
-AF_CONSTEXPR native_half_t int2half_impl(int value) noexcept {
-    return static_cast<native_half_t>(value);
-}
-
-template<>
-AF_CONSTEXPR native_half_t int2half_impl(unsigned value) noexcept {
-    return static_cast<native_half_t>(value);
-}
-
-template<>
-AF_CONSTEXPR native_half_t int2half_impl(long long value) noexcept {
-    return static_cast<native_half_t>(value);
-}
-
-template<>
-AF_CONSTEXPR native_half_t int2half_impl(unsigned long long value) noexcept {
-    return static_cast<native_half_t>(value);
-}
-
-template<>
-AF_CONSTEXPR native_half_t int2half_impl(short value) noexcept {
-    return static_cast<native_half_t>(value);
-}
-template<>
-AF_CONSTEXPR native_half_t int2half_impl(unsigned short value) noexcept {
-    return static_cast<native_half_t>(value);
-}
-
-template<>
-AF_CONSTEXPR native_half_t int2half_impl(char value) noexcept {
-    return static_cast<native_half_t>(value);
-}
-template<>
-AF_CONSTEXPR native_half_t int2half_impl(unsigned char value) noexcept {
+template<std::float_round_style R, bool S, typename T>
+AF_CONSTEXPR native_half_t int2half_impl(T value) noexcept {
     return static_cast<native_half_t>(value);
 }
 
@@ -808,24 +814,26 @@ __DH__ inline float half2float(native_half_t value) noexcept {
     return half2float_impl(value);
 }
 
+#ifndef __CUDACC_RTC__
 template<typename T, std::float_round_style R = std::round_to_nearest,
          typename std::enable_if_t<std::is_integral<T>::value &&
                                    std::is_signed<T>::value>* = nullptr>
 AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept {
-#if defined(__CUDACC_RTC__) || defined(AF_ONEAPI)
-    native_half_t out = int2half_impl(value);
-#else
-    uint16_t out = (value < 0) ? int2half_impl<R, true, T>(value)
-                               : int2half_impl<R, false, T>(value);
-#endif
+    native_half_t out = (value < 0) ? int2half_impl<R, true, T>(value)
+                                    : int2half_impl<R, false, T>(value);
     return out;
 }
+#endif
 
-template<typename T, std::float_round_style R = std::round_to_nearest,
+template<typename T, std::float_round_style R = std::round_to_nearest
+#ifndef __CUDACC_RTC__
+         ,
          typename std::enable_if_t<std::is_integral<T>::value &&
-                                   std::is_unsigned<T>::value>* = nullptr>
+                                   std::is_unsigned<T>::value>* = nullptr
+#endif
+         >
 AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept {
-#if defined(__CUDACC_RTC__) || defined(AF_ONEAPI)
+#if defined(__CUDACC_RTC__)
     return int2half_impl(value);
 #else
     return int2half_impl<R, false, T>(value);
@@ -846,18 +854,23 @@ AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept {
 template<std::float_round_style R, bool E, typename T>
 AF_CONSTEXPR T half2int(native_half_t value) {
 #ifdef __CUDA_ARCH__
-    if constexpr (std::is_same_v<T, short> || std::is_same_v<T, char> ||
-                  std::is_same_v<T, unsigned char>) {
+    AF_IF_CONSTEXPR(std::is_same_v<T, short> || std::is_same_v<T, char> ||
+                    std::is_same_v<T, unsigned char>) {
         return __half2short_rn(value);
-    } else if constexpr (std::is_same_v<T, unsigned short>) {
+    }
+    else AF_IF_CONSTEXPR(std::is_same_v<T, unsigned short>) {
         return __half2ushort_rn(value);
-    } else if constexpr (std::is_same_v<T, long long>) {
+    }
+    else AF_IF_CONSTEXPR(std::is_same_v<T, long long>) {
         return __half2ll_rn(value);
-    } else if constexpr (std::is_same_v<T, unsigned long long>) {
+    }
+    else AF_IF_CONSTEXPR(std::is_same_v<T, unsigned long long>) {
         return __half2ull_rn(value);
-    } else if constexpr (std::is_same_v<T, int>) {
+    }
+    else AF_IF_CONSTEXPR(std::is_same_v<T, int>) {
         return __half2int_rn(value);
-    } else if constexpr (std::is_same_v<T, unsigned>) {
+    }
+    else AF_IF_CONSTEXPR(std::is_same_v<T, unsigned>) {
         return __half2uint_rn(value);
     }
 #elif defined(AF_ONEAPI)
