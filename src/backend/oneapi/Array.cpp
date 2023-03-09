@@ -214,9 +214,7 @@ void Array<T>::eval() {
 
     Param<T> res{data.get(), info};
 
-    // TODO: implement
-    ONEAPI_NOT_SUPPORTED("JIT NOT SUPPORTED");
-    // evalNodes(res, getNode().get());
+    evalNodes(res, getNode().get());
     node.reset();
 }
 
@@ -272,9 +270,7 @@ void evalMultiple(vector<Array<T> *> arrays) {
         nodes.push_back(array->getNode().get());
     }
 
-    // TODO: implement
-    ONEAPI_NOT_SUPPORTED("JIT NOT SUPPORTED");
-    // evalNodes(outputs, nodes);
+    evalNodes(outputs, nodes);
 
     for (Array<T> *array : output_arrays) { array->node.reset(); }
 }
@@ -283,10 +279,10 @@ template<typename T>
 Node_ptr Array<T>::getNode() {
     if (node) { return node; }
 
-    KParam kinfo   = *this;
+    AParam<T> info = *this;
     unsigned bytes = this->dims().elements() * sizeof(T);
     auto nn        = bufferNodePtr<T>();
-    nn->setData(kinfo, data, bytes, isLinear());
+    nn->setData(info, data, bytes, isLinear());
 
     return nn;
 }
@@ -318,78 +314,79 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
             return kJITHeuristics::TreeHeight;
         }
     }
-    ONEAPI_NOT_SUPPORTED("JIT NOT SUPPORTED");
 
-    // bool isBufferLimit = getMemoryPressure() >= getMemoryPressureThreshold();
+    // TODO(umar): add memory based checks for JIT kernel generation
+    bool isBufferLimit =
+        false;  // getMemoryPressure() >= getMemoryPressureThreshold();
     // auto platform      = getActivePlatform();
 
     // The Apple platform can have the nvidia card or the AMD card
     // bool isIntel = platform == AFCL_PLATFORM_INTEL;
 
-    // /// Intels param_size limit is much smaller than the other platforms
-    // /// so we need to start checking earlier with smaller trees
-    // int heightCheckLimit =
-    //     isIntel && getDeviceType() == CL_DEVICE_TYPE_GPU ? 3 : 6;
+    /// Intels param_size limit is much smaller than the other platforms
+    /// so we need to start checking earlier with smaller trees
+    int heightCheckLimit = 3;
 
-    // // A lightweight check based on the height of the node. This is
-    // // an inexpensive operation and does not traverse the JIT tree.
-    // bool atHeightLimit =
-    //     std::any_of(std::begin(root_nodes), std::end(root_nodes),
-    //                 [heightCheckLimit](Node *n) {
-    //                     return (n->getHeight() + 1 >= heightCheckLimit);
-    //                 });
+    // A lightweight check based on the height of the node. This is
+    // an inexpensive operation and does not traverse the JIT tree.
+    bool atHeightLimit =
+        std::any_of(std::begin(root_nodes), std::end(root_nodes),
+                    [heightCheckLimit](Node *n) {
+                        return (n->getHeight() + 1 >= heightCheckLimit);
+                    });
 
-    // if (atHeightLimit || isBufferLimit) {
-    //     // This is the base parameter size if the kernel had no
-    //     // arguments
-    //     size_t base_param_size =
-    //         (sizeof(T *) + sizeof(Param<T>)) * root_nodes.size() +
-    //         (3 * sizeof(uint));
+    if (atHeightLimit || isBufferLimit) {
+        // This is the base parameter size if the kernel had no
+        // arguments
+        size_t base_param_size =
+            (sizeof(T *) + sizeof(Param<T>)) * root_nodes.size() +
+            (3 * sizeof(uint));
 
-    //     const cl::Device &device = getDevice();
-    //     size_t max_param_size =
-    //     device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>();
-    //     // typical values:
-    //     //   NVIDIA     = 4096
-    //     //   AMD        = 3520  (AMD A10 iGPU = 1024)
-    //     //   Intel iGPU = 1024
-    //     max_param_size -= base_param_size;
+        const sycl::device &device = getDevice();
+        size_t max_param_size =
+            device.get_info<sycl::info::device::max_parameter_size>();
+        // typical values:
+        //   NVIDIA     = 4096
+        //   AMD        = 3520  (AMD A10 iGPU = 1024)
+        //   Intel iGPU = 1024
+        max_param_size -= base_param_size;
 
-    //     struct tree_info {
-    //         size_t total_buffer_size;
-    //         size_t num_buffers;
-    //         size_t param_scalar_size;
-    //     };
+        struct tree_info {
+            size_t total_buffer_size;
+            size_t num_buffers;
+            size_t param_scalar_size;
+        };
 
-    //     tree_info info{0, 0, 0};
-    //     for (Node *n : root_nodes) {
-    //         NodeIterator<> it(n);
-    //         info = accumulate(
-    //             it, NodeIterator<>(), info, [](tree_info &prev, Node &n) {
-    //                 if (n.isBuffer()) {
-    //                     auto &buf_node = static_cast<BufferNode &>(n);
-    //                     // getBytes returns the size of the data Array.
-    //                     // Sub arrays will be represented by their parent
-    //                     // size.
-    //                     prev.total_buffer_size += buf_node.getBytes();
-    //                     prev.num_buffers++;
-    //                 } else {
-    //                     prev.param_scalar_size += n.getParamBytes();
-    //                 }
-    //                 return prev;
-    //             });
-    //     }
-    //     isBufferLimit = jitTreeExceedsMemoryPressure(info.total_buffer_size);
+        tree_info info{0, 0, 0};
+        for (Node *n : root_nodes) {
+            NodeIterator<> it(n);
+            info = accumulate(
+                it, NodeIterator<>(), info, [](tree_info &prev, Node &n) {
+                    if (n.isBuffer()) {
+                        auto &buf_node = static_cast<BufferNode<T> &>(n);
+                        // getBytes returns the size of the data Array.
+                        // Sub arrays will be represented by their parent
+                        // size.
+                        prev.total_buffer_size += buf_node.getBytes();
+                        prev.num_buffers++;
+                    } else {
+                        prev.param_scalar_size += n.getParamBytes();
+                    }
+                    return prev;
+                });
+        }
+        isBufferLimit = jitTreeExceedsMemoryPressure(info.total_buffer_size);
 
-    //     size_t param_size = (info.num_buffers * (sizeof(Param<T>) + sizeof(T
-    //     *)) +
-    //                          info.param_scalar_size);
+        size_t param_size =
+            (info.num_buffers * (sizeof(Param<T>) + sizeof(T *)) +
+             info.param_scalar_size);
 
-    //     bool isParamLimit = param_size >= max_param_size;
+        bool isParamLimit = param_size >= max_param_size;
 
-    //     if (isParamLimit) { return kJITHeuristics::KernelParameterSize; }
-    //     if (isBufferLimit) { return kJITHeuristics::MemoryPressure; }
-    // }
+        if (isParamLimit) { return kJITHeuristics::KernelParameterSize; }
+        // TODO(umar): check buffer limit for JIT kernel generation
+        // if (isBufferLimit) { return kJITHeuristics::MemoryPressure; }
+    }
     return kJITHeuristics::Pass;
 }
 

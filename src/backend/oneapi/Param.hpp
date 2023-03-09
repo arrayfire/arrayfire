@@ -14,9 +14,16 @@
 
 #include <af/dim4.hpp>
 
+/// The get_pointer function in the accessor class throws a few warnings in the
+/// 2023.0 release of the library. Review this warning in the future
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wsycl-strict"
 #include <sycl/accessor.hpp>
+#pragma clang diagnostic pop
 #include <sycl/buffer.hpp>
 #include <sycl/handler.hpp>
+
+#include <optional>
 
 namespace arrayfire {
 namespace oneapi {
@@ -44,9 +51,85 @@ struct Param {
     ~Param() = default;
 };
 
+template<typename T>
+struct AParam {
+    std::optional<sycl::accessor<T, 1>> data;
+    std::optional<sycl::accessor<T, 1, sycl::access::mode::read_write,
+                                 sycl::access::target::device,
+                                 sycl::access::placeholder::true_t>>
+        ph;
+    af::dim4 dims;
+    af::dim4 strides;
+    dim_t offset;
+    AParam& operator=(const AParam& other) = default;
+    AParam(const AParam& other)            = default;
+    AParam(AParam&& other)                 = default;
+
+    // AF_DEPRECATED("Use Array<T>")
+    AParam() : data(), ph(), dims{0, 0, 0, 0}, strides{0, 0, 0, 0}, offset(0) {}
+
+    AParam(sycl::buffer<T, 1>& data_, const dim_t dims_[4],
+           const dim_t strides_[4], dim_t offset_)
+        : data()
+        , ph(std::make_optional<
+              sycl::accessor<T, 1, sycl::access::mode::read_write,
+                             sycl::access::target::device,
+                             sycl::access::placeholder::true_t>>(data_))
+        , dims(4, dims_)
+        , strides(4, strides_)
+        , offset(offset_) {}
+    // AF_DEPRECATED("Use Array<T>")
+    AParam(sycl::handler& h, sycl::buffer<T, 1>& data_, const dim_t dims_[4],
+           const dim_t strides_[4], dim_t offset_)
+        : data{{data_, h}}
+        , ph(data_)
+        , dims(4, dims_)
+        , strides(4, strides_)
+        , offset(offset_) {}
+
+    template<sycl::access::mode MODE>
+    sycl::accessor<data_t<T>, 1, MODE> get_accessor(sycl::handler& h) const {
+        return *data;
+    }
+
+    void require(sycl::handler& h) {
+        if (!data) { h.require(ph.value()); }
+    }
+
+    operator KParam() const {
+        return KParam{{dims[0], dims[1], dims[2], dims[3]},
+                      {strides[0], strides[1], strides[2], strides[3]},
+                      offset};
+    }
+
+    ~AParam() = default;
+};
+
 // AF_DEPRECATED("Use Array<T>")
 template<typename T>
 Param<T> makeParam(sycl::buffer<T>& mem, int off, const int dims[4],
                    const int strides[4]);
+
+namespace opencl {
+
+template<typename T>
+struct Param {
+    cl_mem data;
+    KParam info;
+    Param& operator=(const Param& other) = default;
+    Param(const Param& other)            = default;
+    Param(Param&& other)                 = default;
+    Param(cl_mem data_, KParam info_) : data(data_), info(info_) {}
+
+    // AF_DEPRECATED("Use Array<T>")
+    Param() : data(nullptr), info{{0, 0, 0, 0}, {0, 0, 0, 0}, 0} {}
+
+    // AF_DEPRECATED("Use Array<T>")
+    Param(sycl::buffer<T>* data_, KParam info_) : data(data_), info(info_) {}
+
+    ~Param() = default;
+};
+}  // namespace opencl
+
 }  // namespace oneapi
 }  // namespace arrayfire

@@ -283,6 +283,11 @@ class Array {
         return out;
     }
 
+    operator AParam<T>() {
+        AParam<T> out(*getData(), dims().get(), strides().get(), getOffset());
+        return out;
+    }
+
     operator KParam() const {
         KParam kinfo = {
             {dims()[0], dims()[1], dims()[2], dims()[3]},

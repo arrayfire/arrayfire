@@ -262,14 +262,8 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
             AF_ERR_RUNTIME);
     }
     Array<To> tmp = createEmptyArray<To>(tmp_elements);
-    // TODO: JIT dependency
-    // Array<unsigned> retirementCount = createValueArray<unsigned>(1, 0);
-    Array<unsigned> retirementCount = createEmptyArray<unsigned>(1);
-    getQueue().submit([=](sycl::handler &h) {
-        auto acc = retirementCount.getData()->get_access(h);
-        h.single_task([=] { acc[0] = 0; });
-    });
 
+    Array<unsigned> retirementCount = createValueArray<unsigned>(1, 0);
     getQueue().submit([=](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         auto retCount_acc = retirementCount.getData()->get_access(h);

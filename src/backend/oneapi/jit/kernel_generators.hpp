@@ -8,10 +8,15 @@
  ********************************************************/
 
 #pragma once
+#include <Param.hpp>
+#include <err_oneapi.hpp>
+
+#include <sycl/buffer.hpp>
+
+#include <functional>
+#include <memory>
 #include <sstream>
 #include <string>
-
-#include <err_oneapi.hpp>
 
 namespace arrayfire {
 namespace oneapi {
@@ -27,7 +32,7 @@ inline void generateParamDeclaration(std::stringstream& kerStream, int id,
                   << ", dim_t iInfo" << id << "_offset, \n";
     } else {
         kerStream << "__global " << m_type_str << " *in" << id
-                  << ", Param iInfo" << id << ", \n";
+                  << ", KParam iInfo" << id << ", \n";
     }
 }
 
@@ -36,18 +41,8 @@ template<typename T>
 inline int setKernelArguments(
     int start_id, bool is_linear,
     std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
-    const std::shared_ptr<sycl::buffer<T>>& ptr, const KParam& info) {
-    // TODO(oneapi)
-    ONEAPI_NOT_SUPPORTED("ERROR");
-    // setArg(start_id + 0, static_cast<const void*>(&ptr.get()->operator()()),
-    // sizeof(cl_mem));
-    if (is_linear) {
-        // setArg(start_id + 1, static_cast<const void*>(&info.offset),
-        // sizeof(dim_t));
-    } else {
-        // setArg(start_id + 1, static_cast<const void*>(&info),
-        // sizeof(KParam));
-    }
+    const std::shared_ptr<sycl::buffer<T>>& ptr, const AParam<T>& info) {
+    setArg(start_id + 0, static_cast<const void*>(&info), sizeof(Param<T>));
     return start_id + 2;
 }
 

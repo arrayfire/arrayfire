@@ -7,6 +7,7 @@
 
 include(InternalUtils)
 include(build_cl2hpp)
+include(FileToString)
 
 add_library(afoneapi
   Array.cpp
@@ -93,6 +94,8 @@ add_library(afoneapi
   ireduce.cpp
   ireduce.hpp
   jit.cpp
+  jit/BufferNode.hpp
+  jit/kernel_generators.hpp
   join.cpp
   join.hpp
   logic.hpp
@@ -239,6 +242,24 @@ target_sources(afoneapi
     kernel/wrap_dilated.hpp
 )
 
+set(kernel_src
+  ${CMAKE_CURRENT_SOURCE_DIR}/../opencl/kernel/KParam.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../opencl/kernel/jit.cl
+)
+
+set( kernel_headers_dir "kernel_headers")
+
+file_to_string(
+  SOURCES ${kernel_src}
+  VARNAME kernel_files
+  EXTENSION "hpp"
+  OUTPUT_DIR ${kernel_headers_dir}
+  TARGETS cl_kernel_targets
+  NAMESPACE "arrayfire oneapi opencl"
+)
+
+add_dependencies(afoneapi ${cl_kernel_targets})
+
 add_library(ArrayFire::afoneapi ALIAS afoneapi)
 
 arrayfire_set_default_cxx_flags(afoneapi)
@@ -254,23 +275,40 @@ target_include_directories(afoneapi
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-
+    ${CMAKE_CURRENT_BINARY_DIR}
   )
 
 target_compile_options(afoneapi
-  PRIVATE -fsycl)
+  PRIVATE
+    -fsycl
+    #-fsycl-targets=nvptx64-vidia-cuda
+    #-fsycl-force-target=nvptx64-nvidia-cuda-sm_86
+    #-Wno-unknown-cuda-version
+    -sycl-std=2020
+)
 
 target_compile_definitions(afoneapi
   PRIVATE
     AF_ONEAPI
+    CL_TARGET_OPENCL_VERSION=300
+    CL_HPP_TARGET_OPENCL_VERSION=300
+    CL_HPP_MINIMUM_OPENCL_VERSION=110
+    CL_HPP_ENABLE_EXCEPTIONS
   )
 
 target_link_libraries(afoneapi
   PRIVATE
+    -fsycl
+    -fno-lto
+    -fvisibility-inlines-hidden
+    #-fsycl-targets=nvptx64-nvidia-cuda-sm_86
+    #-fsycl-force-target=nvptx64-nvidia-cuda-sm_86
     c_api_interface
     cpp_api_interface
     afcommon_interface
-    -fsycl
+    OpenCL::OpenCL
+    OpenCL::cl2hpp
+    #-Wno-unknown-cuda-version
   )
 
 af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
