@@ -44,60 +44,54 @@ af::array randgen(const int num, dtype ty) {
 
 #define MY_ASSERT_NEAR(aa, bb, cc) ASSERT_NEAR(abs(aa), abs(bb), (cc))
 
-#define BINARY_TESTS(Ta, Tb, Tc, func)                                \
-    TEST(BinaryTests, Test_##func##_##Ta##_##Tb) {                    \
-        SUPPORTED_TYPE_CHECK(Ta);                                     \
-        SUPPORTED_TYPE_CHECK(Tb);                                     \
-        SUPPORTED_TYPE_CHECK(Tc);                                     \
-                                                                      \
-        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
-        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
-        af::array a = randgen(num, ta);                               \
-        af::array b = randgen(num, tb);                               \
-        af::array c = func(a, b);                                     \
-        Ta *h_a     = a.host<Ta>();                                   \
-        Tb *h_b     = b.host<Tb>();                                   \
-        Tc *h_c     = c.host<Tc>();                                   \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], func(h_a[i], h_b[i]))                   \
-                << "for values: " << h_a[i] << "," << h_b[i] << endl; \
-        af_free_host(h_a);                                            \
-        af_free_host(h_b);                                            \
-        af_free_host(h_c);                                            \
-    }                                                                 \
-                                                                      \
-    TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_left) {             \
-        SUPPORTED_TYPE_CHECK(Ta);                                     \
-        SUPPORTED_TYPE_CHECK(Tb);                                     \
-                                                                      \
-        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;            \
-        af::array a = randgen(num, ta);                               \
-        Tb h_b      = 3.0;                                            \
-        af::array c = func(a, h_b);                                   \
-        Ta *h_a     = a.host<Ta>();                                   \
-        Ta *h_c     = c.host<Ta>();                                   \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], func(h_a[i], h_b))                      \
-                << "for values: " << h_a[i] << "," << h_b << endl;    \
-        af_free_host(h_a);                                            \
-        af_free_host(h_c);                                            \
-    }                                                                 \
-                                                                      \
-    TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_right) {            \
-        SUPPORTED_TYPE_CHECK(Ta);                                     \
-        SUPPORTED_TYPE_CHECK(Tb);                                     \
-                                                                      \
-        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;            \
-        Ta h_a      = 5.0;                                            \
-        af::array b = randgen(num, tb);                               \
-        af::array c = func(h_a, b);                                   \
-        Tb *h_b     = b.host<Tb>();                                   \
-        Tb *h_c     = c.host<Tb>();                                   \
-        for (int i = 0; i < num; i++)                                 \
-            ASSERT_EQ(h_c[i], func(h_a, h_b[i]))                      \
-                << "for values: " << h_a << "," << h_b[i] << endl;    \
-        af_free_host(h_b);                                            \
-        af_free_host(h_c);                                            \
+#define BINARY_TESTS(Ta, Tb, Tc, func)                                    \
+    TEST(BinaryTests, Test_##func##_##Ta##_##Tb) {                        \
+        SUPPORTED_TYPE_CHECK(Ta);                                         \
+        SUPPORTED_TYPE_CHECK(Tb);                                         \
+        SUPPORTED_TYPE_CHECK(Tc);                                         \
+                                                                          \
+        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;                \
+        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;                \
+        af::array a = randgen(num, ta);                                   \
+        af::array b = randgen(num, tb);                                   \
+        af::array c = func(a, b);                                         \
+        Ta *h_a     = a.host<Ta>();                                       \
+        Tb *h_b     = b.host<Tb>();                                       \
+        vector<Tc> gold(num);                                             \
+        for (int i = 0; i < num; i++) { gold[i] = func(h_a[i], h_b[i]); } \
+        ASSERT_VEC_ARRAY_EQ(gold, dim4(num), c);                          \
+        af_free_host(h_a);                                                \
+        af_free_host(h_b);                                                \
+    }                                                                     \
+                                                                          \
+    TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_left) {                 \
+        SUPPORTED_TYPE_CHECK(Ta);                                         \
+        SUPPORTED_TYPE_CHECK(Tb);                                         \
+                                                                          \
+        af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;                \
+        af::array a = randgen(num, ta);                                   \
+        Tb h_b      = 3.0;                                                \
+        af::array c = func(a, h_b);                                       \
+        Ta *h_a     = a.host<Ta>();                                       \
+        vector<Tc> gold(num);                                             \
+        for (int i = 0; i < num; i++) { gold[i] = func(h_a[i], h_b); }    \
+        ASSERT_VEC_ARRAY_EQ(gold, dim4(num), c);                          \
+        af_free_host(h_a);                                                \
+    }                                                                     \
+                                                                          \
+    TEST(BinaryTests, Test_##func##_##Ta##_##Tb##_right) {                \
+        SUPPORTED_TYPE_CHECK(Ta);                                         \
+        SUPPORTED_TYPE_CHECK(Tb);                                         \
+                                                                          \
+        af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;                \
+        Ta h_a      = 5.0;                                                \
+        af::array b = randgen(num, tb);                                   \
+        af::array c = func(h_a, b);                                       \
+        Tb *h_b     = b.host<Tb>();                                       \
+        vector<Tc> gold(num);                                             \
+        for (int i = 0; i < num; i++) { gold[i] = func(h_a, h_b[i]); }    \
+        ASSERT_VEC_ARRAY_EQ(gold, dim4(num), c);                          \
+        af_free_host(h_b);                                                \
     }
 
 #define BINARY_TESTS_NEAR_GENERAL(Ta, Tb, Tc, Td, Te, func, err)      \
