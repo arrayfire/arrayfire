@@ -26,9 +26,7 @@ Array<uint> histogram(const Array<T> &in, const unsigned &nbins,
                       const bool isLinear) {
     const dim4 &dims = in.dims();
     dim4 outDims     = dim4(nbins, 1, dims[2], dims[3]);
-    // Array<uint> out  = createValueArray<uint>(outDims, uint(0));
-    // \TODO revert createEmptyArray to createValueArray once JIT functions
-    Array<uint> out = createEmptyArray<uint>(outDims);
+    Array<uint> out  = createValueArray<uint>(outDims, uint(0));
     kernel::histogram<T>(out, in, nbins, minval, maxval, isLinear);
     return out;
 }

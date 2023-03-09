@@ -10,11 +10,11 @@
 #ifndef __KPARAM_H
 #define __KPARAM_H
 
-//#ifndef __OPENCL_VERSION__
-// Only define dim_t in host code. dim_t is defined when setting the program
-// options in program.cpp
+// #ifndef __OPENCL_VERSION__
+//  Only define dim_t in host code. dim_t is defined when setting the program
+//  options in program.cpp
 #include <af/defines.h>
-//#endif
+// #endif
 
 // Defines the size and shape of the data in the OpenCL buffer
 typedef struct {

@@ -8,7 +8,9 @@
  ********************************************************/
 
 #pragma once
+#include <Param.hpp>
 #include <common/jit/BufferNodeBase.hpp>
+#include <jit/kernel_generators.hpp>
 
 #include <memory>
 
@@ -17,7 +19,7 @@ namespace oneapi {
 namespace jit {
 template<typename T>
 using BufferNode =
-    common::BufferNodeBase<std::shared_ptr<sycl::buffer<T>>, KParam>;
+    common::BufferNodeBase<std::shared_ptr<sycl::buffer<T>>, AParam<T>>;
 }
 }  // namespace oneapi
 

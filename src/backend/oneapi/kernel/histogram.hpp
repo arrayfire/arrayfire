@@ -142,15 +142,6 @@ void histogram(Param<uint> out, const Param<T> in, int nbins, float minval,
     const size_t global1 = in.info.dims[3];
     auto global          = sycl::range{global0, global1};
 
-    // \TODO drop this first memset once createEmptyArray is reverted back to
-    //       createValueArray in ../histogram.cpp
-    getQueue()
-        .submit([&](sycl::handler &h) {
-            auto outAcc = out.data->get_access(h);
-            h.parallel_for(sycl::range<1>{(size_t)nbins},
-                           [=](sycl::id<1> idx) { outAcc[idx[0]] = 0; });
-        })
-        .wait();
     getQueue().submit([&](sycl::handler &h) {
         auto inAcc  = in.data->get_access(h);
         auto outAcc = out.data->get_access(h);

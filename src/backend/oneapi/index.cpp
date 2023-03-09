@@ -22,7 +22,7 @@ namespace oneapi {
 
 template<typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[]) {
-    ONEAPI_NOT_SUPPORTED("");
+    ONEAPI_NOT_SUPPORTED("Indexing not supported");
     Array<T> out = createEmptyArray<T>(af::dim4(1));
     return out;
 }

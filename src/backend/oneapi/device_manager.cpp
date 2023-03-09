@@ -64,6 +64,16 @@ static inline bool compare_default(const unique_ptr<sycl::device>& ldev,
     return l_mem > r_mem;
 }
 
+auto arrayfire_exception_handler(sycl::exception_list exceptions) {
+    for (std::exception_ptr const& e : exceptions) {
+        try {
+            std::rethrow_exception(e);
+        } catch (sycl::exception const& ex) {
+            AF_ERROR(ex.what(), AF_ERR_INTERNAL);
+        }
+    }
+}
+
 DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , mUserDeviceOffset(0)
@@ -115,12 +125,12 @@ DeviceManager::DeviceManager()
 
     // Create contexts and queues once the sort is done
     for (int i = 0; i < nDevices; i++) {
-        if (devices[i]->is_gpu() || devices[i]->is_cpu() ||
-            !devices[i]->is_accelerator()) {
+        if (devices[i]->is_gpu() || devices[i]->is_cpu()) {
             try {
                 mContexts.push_back(make_unique<sycl::context>(*devices[i]));
                 mQueues.push_back(
-                    make_unique<sycl::queue>(*mContexts.back(), *devices[i]));
+                    make_unique<sycl::queue>(*mContexts.back(), *devices[i],
+                                             arrayfire_exception_handler));
                 mIsGLSharingOn.push_back(false);
                 // TODO:
                 // mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));

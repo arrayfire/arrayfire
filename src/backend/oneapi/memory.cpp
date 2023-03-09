@@ -205,18 +205,10 @@ void Allocator::shutdown() {
     // }
 }
 
-int Allocator::getActiveDeviceId() {
-    ONEAPI_NOT_SUPPORTED("Allocator::getActiveDeviceId Not supported");
-
-    return 0;
-    // return opencl::getActiveDeviceId();
-}
+int Allocator::getActiveDeviceId() { return oneapi::getActiveDeviceId(); }
 
 size_t Allocator::getMaxMemorySize(int id) {
-    ONEAPI_NOT_SUPPORTED("Allocator::getMaxMemorySize Not supported");
-
-    return 0;
-    // return opencl::getDeviceMemorySize(id);
+    return oneapi::getDeviceMemorySize(id);
 }
 
 void *Allocator::nativeAlloc(const size_t bytes) {
