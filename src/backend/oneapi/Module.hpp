@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <sycl/sycl.hpp>
 #include <common/ModuleInterface.hpp>
 
 #include <sycl/kernel_bundle.hpp>

@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <Param.hpp>
 #include <backend.hpp>
 #include <common/ArrayInfo.hpp>
 #include <kernel/KParam.hpp>

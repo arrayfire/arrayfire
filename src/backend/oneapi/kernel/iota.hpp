@@ -71,7 +71,7 @@ class iotaKernel {
         }
     }
 
-   protected:
+  protected:
     sycl::accessor<T> out_;
     KParam oinfo_;
     int s0_, s1_, s2_, s3_;
@@ -95,7 +95,7 @@ void iota(Param<T> out, const af::dim4& sdims) {
 
     try {
         getQueue()
-            .submit([=](sycl::handler& h) {
+            .submit([&](sycl::handler& h) {
                 auto out_acc = out.data->get_access(h);
 
                 h.parallel_for(
