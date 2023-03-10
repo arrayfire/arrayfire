@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <sycl/sycl.hpp>
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>

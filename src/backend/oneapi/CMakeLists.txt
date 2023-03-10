@@ -266,15 +266,20 @@ add_library(ArrayFire::afoneapi ALIAS afoneapi)
 
 arrayfire_set_default_cxx_flags(afoneapi)
 
+find_package(MKL CONFIG REQUIRED)
+message(STATUS "${MKL_IMPORTED_TARGETS}")
+
 target_include_directories(afoneapi
   SYSTEM PRIVATE
-    ${SYCL_INCLUDE_DIR})
+    ${SYCL_INCLUDE_DIR}
+)
 
 target_include_directories(afoneapi
   PUBLIC
     $<BUILD_INTERFACE:${ArrayFire_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${ArrayFire_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:${AF_INSTALL_INC_DIR}>
+    $<TARGET_PROPERTY:MKL::MKL,INTERFACE_INCLUDE_DIRECTORIES>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -284,6 +289,7 @@ target_compile_options(afoneapi
   PRIVATE
     -fsycl
     -sycl-std=2020
+  $<TARGET_PROPERTY:MKL::MKL,INTERFACE_COMPILE_OPTIONS>
 )
 
 target_compile_definitions(afoneapi
