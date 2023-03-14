@@ -46,8 +46,14 @@
         "openblasfftw": {
             "description": "Build with OpenBLAS/FFTW",
             "dependencies": [
-                "fftw3",
-                "openblas",
+                {
+                    "name": "fftw3",
+                    "features": [ "threads" ]
+                },
+                {
+                    "name": "openblas",
+                    "features": [ "threads" ]
+                },
                 "lapack"
             ]
         },
