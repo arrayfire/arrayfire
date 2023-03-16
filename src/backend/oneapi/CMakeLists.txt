@@ -284,6 +284,7 @@ target_compile_options(afoneapi
     #-fsycl-targets=nvptx64-vidia-cuda
     #-fsycl-force-target=nvptx64-nvidia-cuda-sm_86
     #-Wno-unknown-cuda-version
+    -qopenmp -qmkl=parallel
     -sycl-std=2020
 )
 
@@ -309,6 +310,8 @@ target_link_libraries(afoneapi
     OpenCL::OpenCL
     OpenCL::cl2hpp
     #-Wno-unknown-cuda-version
+    -qopenmp
+    -qmkl=parallel
   )
 
 af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})

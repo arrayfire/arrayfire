@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2022, ArrayFire
+ * Copyright (c) 2023, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <CL/sycl.hpp>
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
@@ -131,54 +132,54 @@ cdouble scale<cdouble>(cdouble value, double factor) {
 }
 
 template<typename inType, typename outType>
-outType convertType(inType value) {
+static outType convertType(inType value) {
     return static_cast<outType>(value);
 }
 
 template<>
-char convertType<compute_t<arrayfire::common::half>, char>(
+static char convertType<compute_t<arrayfire::common::half>, char>(
     compute_t<arrayfire::common::half> value) {
     return (char)((short)value);
 }
 
 template<>
-compute_t<arrayfire::common::half>
-convertType<char, compute_t<arrayfire::common::half>>(char value) {
+compute_t<arrayfire::common::half> static convertType<
+    char, compute_t<arrayfire::common::half>>(char value) {
     return compute_t<arrayfire::common::half>(value);
 }
 
 template<>
-unsigned char convertType<compute_t<arrayfire::common::half>, unsigned char>(
+static unsigned char
+convertType<compute_t<arrayfire::common::half>, unsigned char>(
     compute_t<arrayfire::common::half> value) {
     return (unsigned char)((short)value);
 }
 
 template<>
-compute_t<arrayfire::common::half>
-convertType<unsigned char, compute_t<arrayfire::common::half>>(
-    unsigned char value) {
+compute_t<arrayfire::common::half> static convertType<
+    unsigned char, compute_t<arrayfire::common::half>>(unsigned char value) {
     return compute_t<arrayfire::common::half>(value);
 }
 
 template<>
-cdouble convertType<cfloat, cdouble>(cfloat value) {
+static cdouble convertType<cfloat, cdouble>(cfloat value) {
     return cdouble(value.real(), value.imag());
 }
 
 template<>
-cfloat convertType<cdouble, cfloat>(cdouble value) {
+static cfloat convertType<cdouble, cfloat>(cdouble value) {
     return cfloat(value.real(), value.imag());
 }
 
-#define OTHER_SPECIALIZATIONS(IN_T)                      \
-    template<>                                           \
-    cfloat convertType<IN_T, cfloat>(IN_T value) {       \
-        return cfloat(static_cast<float>(value), 0.0f);  \
-    }                                                    \
-                                                         \
-    template<>                                           \
-    cdouble convertType<IN_T, cdouble>(IN_T value) {     \
-        return cdouble(static_cast<double>(value), 0.0); \
+#define OTHER_SPECIALIZATIONS(IN_T)                         \
+    template<>                                              \
+    static cfloat convertType<IN_T, cfloat>(IN_T value) {   \
+        return cfloat(static_cast<float>(value), 0.0f);     \
+    }                                                       \
+                                                            \
+    template<>                                              \
+    static cdouble convertType<IN_T, cdouble>(IN_T value) { \
+        return cdouble(static_cast<double>(value), 0.0);    \
     }
 
 OTHER_SPECIALIZATIONS(float)
