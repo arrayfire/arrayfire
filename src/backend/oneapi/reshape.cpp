@@ -1,6 +1,5 @@
-
 /*******************************************************
- * Copyright (c) 2020, ArrayFire
+ * Copyright (c) 2023, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -12,7 +11,7 @@
 #include <err_oneapi.hpp>
 
 #include <common/half.hpp>
-// #include <kernel/memcopy.hpp>
+#include <kernel/memcopy.hpp>
 
 using arrayfire::common::half;
 
@@ -22,11 +21,11 @@ namespace oneapi {
 template<typename inType, typename outType>
 Array<outType> reshape(const Array<inType> &in, const dim4 &outDims,
                        outType defaultValue, double scale) {
-    ONEAPI_NOT_SUPPORTED("reshape Not supported");
-
     Array<outType> out = createEmptyArray<outType>(outDims);
-    // kernel::copy<inType, outType>(out, in, in.ndims(), defaultValue, scale,
-    //                               in.dims() == outDims);
+    if (out.elements() > 0) {
+        kernel::copy<inType, outType>(out, in, in.ndims(), defaultValue, scale,
+                                      in.dims() == outDims);
+    }
     return out;
 }
 
