@@ -1,6 +1,8 @@
 
 <p align="center"><a href="http://arrayfire.com/"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="800"></a></p>
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bOQY_XRn7JWWGRU6tDb5p2KMSRsYrzUE?usp=sharing)
+
 ArrayFire is a general-purpose tensor library that simplifies the process of
 software development for the parallel architectures found in CPUs, GPUs, and
 other hardware acceleration devices. The library serves users in every technical
