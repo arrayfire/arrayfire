@@ -107,22 +107,18 @@ template<typename T>
 class uniformPhilox {
    public:
     uniformPhilox(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
-                  uint elementsPerBlock, uint elements,
-                  sycl::stream debug_stream)
+                  uint elementsPerBlock, uint elements)
         : out_(out)
         , hi_(hi)
         , lo_(lo)
         , hic_(hic)
         , loc_(loc)
         , elementsPerBlock_(elementsPerBlock)
-        , elements_(elements)
-        , debug_(debug_stream) {}
+        , elements_(elements) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
 
-        // debug_ << "<" << g.get_group_id(0)  << ":" << it.get_local_id(0) <<
-        // "/" << g.get_group_range(0) << sycl::stream_manipulator::endl;
         uint index = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
         uint key[2] = {lo_, hi_};
         uint ctr[4] = {loc_, hic_, 0, 0};
@@ -145,28 +141,23 @@ class uniformPhilox {
     sycl::accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
-    sycl::stream debug_;
 };
 
 template<typename T>
 class normalPhilox {
    public:
     normalPhilox(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
-                 uint elementsPerBlock, uint elements,
-                 sycl::stream debug_stream)
+                 uint elementsPerBlock, uint elements)
         : out_(out)
         , hi_(hi)
         , lo_(lo)
         , hic_(hic)
         , loc_(loc)
         , elementsPerBlock_(elementsPerBlock)
-        , elements_(elements)
-        , debug_(debug_stream) {}
+        , elements_(elements) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
-        // debug_ << "<" << g.get_group_id(0)  << ":" << it.get_local_id(0) <<
-        // "/" << g.get_group_range(0) << sycl::stream_manipulator::endl;
 
         uint index = g.get_group_id(0) * elementsPerBlock_ + it.get_local_id(0);
         uint key[2] = {lo_, hi_};
@@ -192,7 +183,6 @@ class normalPhilox {
     sycl::accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
-    sycl::stream debug_;
 };
 
 }  // namespace kernel

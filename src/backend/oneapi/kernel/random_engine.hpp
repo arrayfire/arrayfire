@@ -58,11 +58,9 @@ void uniformDistributionCBRNG(Param<T> out, const size_t elements,
             getQueue().submit([=](sycl::handler &h) {
                 auto out_acc = out.data->get_access(h);
 
-                sycl::stream debug_stream(2048, 128, h);
-                h.parallel_for(
-                    ndrange,
-                    uniformPhilox<T>(out_acc, hi, lo, hic, loc,
-                                     elementsPerBlock, elements, debug_stream));
+                h.parallel_for(ndrange,
+                               uniformPhilox<T>(out_acc, hi, lo, hic, loc,
+                                                elementsPerBlock, elements));
             });
             ONEAPI_DEBUG_FINISH(getQueue());
             break;
@@ -70,11 +68,9 @@ void uniformDistributionCBRNG(Param<T> out, const size_t elements,
             getQueue().submit([=](sycl::handler &h) {
                 auto out_acc = out.data->get_access(h);
 
-                sycl::stream debug_stream(2048, 128, h);
                 h.parallel_for(ndrange,
                                uniformThreefry<T>(out_acc, hi, lo, hic, loc,
-                                                  elementsPerBlock, elements,
-                                                  debug_stream));
+                                                  elementsPerBlock, elements));
             });
             ONEAPI_DEBUG_FINISH(getQueue());
             break;
@@ -102,22 +98,18 @@ void normalDistributionCBRNG(Param<T> out, const size_t elements,
             getQueue().submit([=](sycl::handler &h) {
                 auto out_acc = out.data->get_access(h);
 
-                sycl::stream debug_stream(2048, 128, h);
-                h.parallel_for(
-                    ndrange,
-                    normalPhilox<T>(out_acc, hi, lo, hic, loc, elementsPerBlock,
-                                    elements, debug_stream));
+                h.parallel_for(ndrange,
+                               normalPhilox<T>(out_acc, hi, lo, hic, loc,
+                                               elementsPerBlock, elements));
             });
             break;
         case AF_RANDOM_ENGINE_THREEFRY_2X32_16:
             getQueue().submit([=](sycl::handler &h) {
                 auto out_acc = out.data->get_access(h);
 
-                sycl::stream debug_stream(2048, 128, h);
                 h.parallel_for(ndrange,
                                normalThreefry<T>(out_acc, hi, lo, hic, loc,
-                                                 elementsPerBlock, elements,
-                                                 debug_stream));
+                                                 elementsPerBlock, elements));
             });
             break;
         default:
@@ -154,12 +146,11 @@ void uniformDistributionMT(Param<T> out, const size_t elements,
         auto lrecursion_acc = local_accessor<uint, 1>(TABLE_SIZE, h);
         auto ltemper_acc    = local_accessor<uint, 1>(TABLE_SIZE, h);
 
-        sycl::stream debug_stream(2048, 128, h);
-        h.parallel_for(ndrange, uniformMersenne<T>(
-                                    out_acc, state_acc, pos_acc, sh1_acc,
-                                    sh2_acc, mask, recursion_acc, temper_acc,
-                                    lstate_acc, lrecursion_acc, ltemper_acc,
-                                    elementsPerBlock, elements, debug_stream));
+        h.parallel_for(
+            ndrange, uniformMersenne<T>(
+                         out_acc, state_acc, pos_acc, sh1_acc, sh2_acc, mask,
+                         recursion_acc, temper_acc, lstate_acc, lrecursion_acc,
+                         ltemper_acc, elementsPerBlock, elements));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
@@ -191,12 +182,11 @@ void normalDistributionMT(Param<T> out, const size_t elements,
         auto lrecursion_acc = local_accessor<uint, 1>(TABLE_SIZE, h);
         auto ltemper_acc    = local_accessor<uint, 1>(TABLE_SIZE, h);
 
-        sycl::stream debug_stream(2048, 128, h);
-        h.parallel_for(ndrange, normalMersenne<T>(
-                                    out_acc, state_acc, pos_acc, sh1_acc,
-                                    sh2_acc, mask, recursion_acc, temper_acc,
-                                    lstate_acc, lrecursion_acc, ltemper_acc,
-                                    elementsPerBlock, elements, debug_stream));
+        h.parallel_for(
+            ndrange, normalMersenne<T>(out_acc, state_acc, pos_acc, sh1_acc,
+                                       sh2_acc, mask, recursion_acc, temper_acc,
+                                       lstate_acc, lrecursion_acc, ltemper_acc,
+                                       elementsPerBlock, elements));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

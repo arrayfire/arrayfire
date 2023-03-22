@@ -10,7 +10,6 @@
 #include <common/compile_module.hpp>  //compileModule & loadModuleFromDisk
 #include <common/kernel_cache.hpp>    //getKernel(Module&, ...)
 
-#include <CL/sycl.hpp>
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/util.hpp>

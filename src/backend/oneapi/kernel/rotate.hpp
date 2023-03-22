@@ -136,9 +136,6 @@ void rotate(Param<T> out, const Param<T> in, const float theta,
 
     // Used for batching images
     constexpr int TI = 4;
-    constexpr bool isComplex =
-        static_cast<af_dtype>(dtype_traits<T>::af_type) == c32 ||
-        static_cast<af_dtype>(dtype_traits<T>::af_type) == c64;
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;

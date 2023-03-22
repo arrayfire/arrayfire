@@ -29,20 +29,14 @@ template<typename T>
 class rangeOp {
    public:
     rangeOp(sycl::accessor<T> out, KParam oinfo, const int dim,
-            const int blocksPerMatX, const int blocksPerMatY,
-            sycl::stream debug)
+            const int blocksPerMatX, const int blocksPerMatY)
         : out_(out)
         , oinfo_(oinfo)
         , dim_(dim)
         , blocksPerMatX_(blocksPerMatX)
-        , blocksPerMatY_(blocksPerMatY)
-        , debug_(debug) {}
+        , blocksPerMatY_(blocksPerMatY) {}
 
     void operator()(sycl::nd_item<2> it) const {
-        // printf("[%d,%d]\n", it.get_global_id(0), it.get_global_id(1));
-        // debug_ << "[" << it.get_global_id(0) << "," << it.get_global_id(1) <<
-        // "]" << sycl::stream_manipulator::endl;
-
         const int mul0 = (dim_ == 0);
         const int mul1 = (dim_ == 1);
         const int mul2 = (dim_ == 2);
@@ -67,15 +61,15 @@ class rangeOp {
         const int incy = blocksPerMatY_ * g.get_local_range(1);
         const int incx = blocksPerMatX_ * g.get_local_range(0);
 
-        T valZW = (mul3 * ow) + (mul2 * oz);
+        compute_t<T> valZW = (mul3 * ow) + (mul2 * oz);
 
         T* optr = out_.get_pointer();
         for (int oy = yy; oy < oinfo_.dims[1]; oy += incy) {
-            T valYZW = valZW + (mul1 * oy);
-            int oyzw = ozw + oy * oinfo_.strides[1];
+            compute_t<T> valYZW = valZW + (mul1 * oy);
+            int oyzw            = ozw + oy * oinfo_.strides[1];
             for (int ox = xx; ox < oinfo_.dims[0]; ox += incx) {
-                int oidx = oyzw + ox;
-                T val    = valYZW + (mul0 * ox);
+                int oidx         = oyzw + ox;
+                compute_t<T> val = valYZW + (mul0 * ox);
 
                 optr[oidx] = val;
             }
@@ -87,7 +81,6 @@ class rangeOp {
     KParam oinfo_;
     int dim_;
     int blocksPerMatX_, blocksPerMatY_;
-    sycl::stream debug_;
 };
 
 template<typename T>
@@ -108,18 +101,10 @@ void range(Param<T> out, const int dim) {
     getQueue().submit([=](sycl::handler& h) {
         auto out_acc = out.data->get_access(h);
 
-        sycl::stream debug_stream(2048, 128, h);
-
-        h.parallel_for(ndrange,
-                       rangeOp<T>(out_acc, out.info, dim, blocksPerMatX,
-                                  blocksPerMatY, debug_stream));
+        h.parallel_for(ndrange, rangeOp<T>(out_acc, out.info, dim,
+                                           blocksPerMatX, blocksPerMatY));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
-}
-
-template<>
-void range(Param<arrayfire::common::half> out, const int dim) {
-    ONEAPI_NOT_SUPPORTED("TODO: fix arrayfire::common::half support");
 }
 
 }  // namespace kernel

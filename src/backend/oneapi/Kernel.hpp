@@ -12,7 +12,6 @@
 #include <common/KernelInterface.hpp>
 #include <common/Logger.hpp>
 
-#include <CL/sycl.hpp>
 #include <backend.hpp>
 #include <string>
 

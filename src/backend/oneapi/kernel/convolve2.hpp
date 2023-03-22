@@ -121,9 +121,6 @@ template<typename T, typename aT>
 void conv2Helper(const conv_kparam_t<aT> &param, Param<T> out,
                  const Param<T> signal, const Param<aT> filter,
                  const bool expand) {
-    constexpr bool IsComplex =
-        std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
-
     const int f0 = filter.info.dims[0];
     const int f1 = filter.info.dims[1];
     const size_t LOC_SIZE =

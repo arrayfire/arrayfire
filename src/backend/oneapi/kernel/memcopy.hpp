@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <CL/sycl.hpp>
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
@@ -116,69 +115,60 @@ void memcopy(sycl::buffer<T> *out, const dim_t *ostrides,
 }
 
 template<typename T>
-static T scale(T value, double factor) {
+inline T scale(T value, double factor) {
     return (T)(double(value) * factor);
 }
 
 template<>
-cfloat scale<cfloat>(cfloat value, double factor) {
+inline cfloat scale<cfloat>(cfloat value, double factor) {
     return cfloat{static_cast<float>(value.real() * factor),
                   static_cast<float>(value.imag() * factor)};
 }
 
 template<>
-cdouble scale<cdouble>(cdouble value, double factor) {
+inline cdouble scale<cdouble>(cdouble value, double factor) {
     return cdouble{value.real() * factor, value.imag() * factor};
 }
 
 template<typename inType, typename outType>
-static outType convertType(inType value) {
+inline outType convertType(inType value) {
     return static_cast<outType>(value);
 }
 
 template<>
-static char convertType<compute_t<arrayfire::common::half>, char>(
+inline char convertType<compute_t<arrayfire::common::half>, char>(
     compute_t<arrayfire::common::half> value) {
     return (char)((short)value);
 }
 
 template<>
-compute_t<arrayfire::common::half> static convertType<
-    char, compute_t<arrayfire::common::half>>(char value) {
+inline compute_t<arrayfire::common::half>
+convertType<char, compute_t<arrayfire::common::half>>(char value) {
     return compute_t<arrayfire::common::half>(value);
 }
 
 template<>
-static unsigned char
-convertType<compute_t<arrayfire::common::half>, unsigned char>(
+unsigned char inline convertType<compute_t<arrayfire::common::half>,
+                                 unsigned char>(
     compute_t<arrayfire::common::half> value) {
     return (unsigned char)((short)value);
 }
 
 template<>
-compute_t<arrayfire::common::half> static convertType<
-    unsigned char, compute_t<arrayfire::common::half>>(unsigned char value) {
+inline compute_t<arrayfire::common::half>
+convertType<unsigned char, compute_t<arrayfire::common::half>>(
+    unsigned char value) {
     return compute_t<arrayfire::common::half>(value);
-}
-
-template<>
-static cdouble convertType<cfloat, cdouble>(cfloat value) {
-    return cdouble(value.real(), value.imag());
-}
-
-template<>
-static cfloat convertType<cdouble, cfloat>(cdouble value) {
-    return cfloat(value.real(), value.imag());
 }
 
 #define OTHER_SPECIALIZATIONS(IN_T)                         \
     template<>                                              \
-    static cfloat convertType<IN_T, cfloat>(IN_T value) {   \
+    inline cfloat convertType<IN_T, cfloat>(IN_T value) {   \
         return cfloat(static_cast<float>(value), 0.0f);     \
     }                                                       \
                                                             \
     template<>                                              \
-    static cdouble convertType<IN_T, cdouble>(IN_T value) { \
+    inline cdouble convertType<IN_T, cdouble>(IN_T value) { \
         return cdouble(static_cast<double>(value), 0.0);    \
     }
 
