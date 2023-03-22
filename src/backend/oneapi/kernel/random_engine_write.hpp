@@ -7,7 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #pragma once
-#include <CL/sycl.hpp>
+
+#include <sycl/builtins.hpp>
 
 namespace arrayfire {
 namespace oneapi {

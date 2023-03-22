@@ -107,13 +107,8 @@ static inline uint temper(const uint *const temper_table, const uint v,
 class initMersenneKernel {
    public:
     initMersenneKernel(sycl::accessor<uint> state, sycl::accessor<uint> tbl,
-                       local_accessor<uint, 1> lstate, uintl seed,
-                       sycl::stream debug_stream)
-        : state_(state)
-        , tbl_(tbl)
-        , lstate_(lstate)
-        , seed_(seed)
-        , debug_(debug_stream) {}
+                       local_accessor<uint, 1> lstate, uintl seed)
+        : state_(state), tbl_(tbl), lstate_(lstate), seed_(seed) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
@@ -147,7 +142,6 @@ class initMersenneKernel {
     sycl::accessor<uint> state_, tbl_;
     local_accessor<uint, 1> lstate_;
     uintl seed_;
-    sycl::stream debug_;
 };
 
 void initMersenneState(Param<uint> state, const Param<uint> tbl, uintl seed) {
@@ -157,10 +151,8 @@ void initMersenneState(Param<uint> state, const Param<uint> tbl, uintl seed) {
         auto tbl_acc    = tbl.data->get_access(h);
         auto lstate_acc = local_accessor<uint, 1>(N, h);
 
-        sycl::stream debug_stream(2048, 128, h);
-        h.parallel_for(ndrange,
-                       initMersenneKernel(state_acc, tbl_acc, lstate_acc, seed,
-                                          debug_stream));
+        h.parallel_for(
+            ndrange, initMersenneKernel(state_acc, tbl_acc, lstate_acc, seed));
     });
     // TODO: do we need to sync before using Mersenne generators?
     // force wait() here?
@@ -179,7 +171,7 @@ class uniformMersenne {
                     local_accessor<uint, 1> state,
                     local_accessor<uint, 1> recursion_table,
                     local_accessor<uint, 1> temper_table, uint elementsPerBlock,
-                    size_t elements, sycl::stream debug)
+                    size_t elements)
         : out_(out)
         , gState_(gState)
         , pos_tbl_(pos_tbl)
@@ -192,8 +184,7 @@ class uniformMersenne {
         , recursion_table_(recursion_table)
         , temper_table_(temper_table)
         , elementsPerBlock_(elementsPerBlock)
-        , elements_(elements)
-        , debug_(debug) {}
+        , elements_(elements) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
@@ -263,7 +254,6 @@ class uniformMersenne {
     local_accessor<uint, 1> state_, recursion_table_, temper_table_;
     uint elementsPerBlock_;
     size_t elements_;
-    sycl::stream debug_;
 };
 
 template<typename T>
@@ -278,7 +268,7 @@ class normalMersenne {
                    local_accessor<uint, 1> state,
                    local_accessor<uint, 1> recursion_table,
                    local_accessor<uint, 1> temper_table, uint elementsPerBlock,
-                   size_t elements, sycl::stream debug)
+                   size_t elements)
         : out_(out)
         , gState_(gState)
         , pos_tbl_(pos_tbl)
@@ -291,8 +281,7 @@ class normalMersenne {
         , recursion_table_(recursion_table)
         , temper_table_(temper_table)
         , elementsPerBlock_(elementsPerBlock)
-        , elements_(elements)
-        , debug_(debug) {}
+        , elements_(elements) {}
 
     void operator()(sycl::nd_item<1> it) const {
         sycl::group g = it.get_group();
@@ -363,7 +352,6 @@ class normalMersenne {
     local_accessor<uint, 1> state_, recursion_table_, temper_table_;
     uint elementsPerBlock_;
     size_t elements_;
-    sycl::stream debug_;
 };
 
 }  // namespace kernel

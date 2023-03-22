@@ -55,18 +55,12 @@ class conv3HelperCreateKernel {
              sstep3_ *
                  sInfo_.strides[3]); /* activated with batched input filter */
 
-        int lx  = it.get_local_id(0);
-        int ly  = it.get_local_id(1);
-        int lz  = it.get_local_id(2);
-        int gx  = g.get_local_range(0) * (g.get_group_id(0) - b2 * nBBS0_) + lx;
-        int gy  = g.get_local_range(1) * g.get_group_id(1) + ly;
-        int gz  = g.get_local_range(2) * g.get_group_id(2) + lz;
-        int lx2 = lx + g.get_local_range(0);
-        int ly2 = ly + g.get_local_range(1);
-        int lz2 = lz + g.get_local_range(2);
-        int gx2 = gx + g.get_local_range(0);
-        int gy2 = gy + g.get_local_range(1);
-        int gz2 = gz + g.get_local_range(2);
+        int lx = it.get_local_id(0);
+        int ly = it.get_local_id(1);
+        int lz = it.get_local_id(2);
+        int gx = g.get_local_range(0) * (g.get_group_id(0) - b2 * nBBS0_) + lx;
+        int gy = g.get_local_range(1) * g.get_group_id(1) + ly;
+        int gz = g.get_local_range(2) * g.get_group_id(2) + lz;
 
         int s0 = sInfo_.strides[0];
         int s1 = sInfo_.strides[1];

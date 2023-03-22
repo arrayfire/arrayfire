@@ -126,7 +126,6 @@ class transformCreateKernel {
 
         // Index of transform
         const int eTfs2 = sycl::max((nTfs2_ / nImg2_), 1);
-        const int eTfs3 = sycl::max((nTfs3_ / nImg3_), 1);
 
         int t_idx3        = -1;  // init
         int t_idx2        = -1;  // init
@@ -243,8 +242,6 @@ template<typename T>
 void transform(Param<T> out, const Param<T> in, const Param<float> tf,
                bool isInverse, bool isPerspective, af_interp_type method,
                int order) {
-    static int counter = 0;
-
     using std::string;
 
     using BT = typename dtype_traits<T>::base_type;
@@ -253,9 +250,6 @@ void transform(Param<T> out, const Param<T> in, const Param<float> tf,
     constexpr int TY = 16;
     // Used for batching images
     constexpr int TI = 4;
-    constexpr bool isComplex =
-        static_cast<af_dtype>(dtype_traits<T>::af_type) == c32 ||
-        static_cast<af_dtype>(dtype_traits<T>::af_type) == c64;
 
     const int nImg2 = in.info.dims[2];
     const int nImg3 = in.info.dims[3];
