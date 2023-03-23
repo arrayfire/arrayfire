@@ -156,6 +156,8 @@ class Array {
     Array(Param<T> &tmp, bool owner);
     Array(const af::dim4 &dims, common::Node_ptr n);
 
+    std::shared_ptr<T> getData() const { return data; }
+
    public:
     Array(const Array<T> &other) = default;
 
@@ -227,7 +229,6 @@ class Array {
     void eval() const;
 
     dim_t getOffset() const { return info.getOffset(); }
-    std::shared_ptr<T> getData() const { return data; }
 
     dim4 getDataDims() const { return data_dims; }
 

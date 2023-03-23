@@ -177,6 +177,8 @@ class Array {
     explicit Array(const af::dim4 &dims, sycl::buffer<T> *const mem,
                    size_t offset, bool copy);
 
+    std::shared_ptr<sycl::buffer<T>> getData() const { return data; }
+
    public:
     Array(const Array<T> &other) = default;
 
@@ -250,14 +252,7 @@ class Array {
         return const_cast<Array<T> *>(this)->device();
     }
 
-    // FIXME: This should do a copy if it is not owner. You do not want to
-    // overwrite parents data
-    sycl::buffer<T> *get() {
-        if (!isReady()) eval();
-        return data.get();
-    }
-
-    const sycl::buffer<T> *get() const {
+    sycl::buffer<T> *get() const {
         if (!isReady()) eval();
         return data.get();
     }
@@ -265,8 +260,6 @@ class Array {
     int useCount() const { return data.use_count(); }
 
     dim_t getOffset() const { return info.getOffset(); }
-
-    std::shared_ptr<sycl::buffer<T>> getData() const { return data; }
 
     dim4 getDataDims() const { return data_dims; }
 

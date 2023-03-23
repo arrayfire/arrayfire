@@ -264,10 +264,10 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
     Array<To> tmp = createEmptyArray<To>(tmp_elements);
 
     Array<unsigned> retirementCount = createValueArray<unsigned>(1, 0);
-    getQueue().submit([=](sycl::handler &h) {
+    getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
-        auto retCount_acc = retirementCount.getData()->get_access(h);
-        auto tmp_acc      = tmp.getData()->get_access(h);
+        auto retCount_acc = retirementCount.get()->get_access(h);
+        auto tmp_acc      = tmp.get()->get_access(h);
         read_accessor<Ti> in_acc{*in.data, h};
 
         auto shrdMem =

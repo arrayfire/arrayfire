@@ -69,9 +69,9 @@ void fft_inplace(Array<T> &in, const int rank, const bool direction) {
 
     desc.commit(getQueue());
     if (direction)
-        ::oneapi::mkl::dft::compute_forward(desc, *(in.getData()));
+        ::oneapi::mkl::dft::compute_forward(desc, *in.get());
     else
-        ::oneapi::mkl::dft::compute_backward(desc, *(in.getData()));
+        ::oneapi::mkl::dft::compute_backward(desc, *in.get());
 }
 
 template<typename Tc, typename Tr>
@@ -117,8 +117,7 @@ Array<Tc> fft_r2c(const Array<Tr> &in, const int rank) {
                    fft_output_strides, rank);
 
     desc.commit(getQueue());
-    ::oneapi::mkl::dft::compute_forward(desc, *(in.getData()),
-                                        *(out.getData()));
+    ::oneapi::mkl::dft::compute_forward(desc, *in.get(), *out.get());
 
     return out;
 }
@@ -165,8 +164,7 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims, const int rank) {
                    fft_output_strides, rank);
 
     desc.commit(getQueue());
-    ::oneapi::mkl::dft::compute_backward(desc, *(in.getData()),
-                                         *(out.getData()));
+    ::oneapi::mkl::dft::compute_backward(desc, *in.get(), *out.get());
     return out;
 }
 
