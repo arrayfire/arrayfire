@@ -144,10 +144,7 @@ af_err af_get_device_ptr(void **data, const af_array arr) {
 
 template<typename T>
 inline void lockArray(const af_array arr) {
-    // Ideally we need to use .get(false), i.e. get ptr without offset
-    // This is however not supported in opencl
-    // Use getData().get() as alternative
-    memLock(getArray<T>(arr).getData().get());
+    memLock(getArray<T>(arr).get());
 }
 
 af_err af_lock_device_ptr(const af_array arr) { return af_lock_array(arr); }
@@ -180,10 +177,8 @@ af_err af_lock_array(const af_array arr) {
 
 template<typename T>
 inline bool checkUserLock(const af_array arr) {
-    // Ideally we need to use .get(false), i.e. get ptr without offset
-    // This is however not supported in opencl
-    // Use getData().get() as alternative
-    return isLocked(static_cast<void *>(getArray<T>(arr).getData().get()));
+    detail::Array<T> &out = const_cast<detail::Array<T> &>(getArray<T>(arr));
+    return isLocked(static_cast<void *>(out.get()));
 }
 
 af_err af_is_locked_array(bool *res, const af_array arr) {
@@ -214,10 +209,7 @@ af_err af_is_locked_array(bool *res, const af_array arr) {
 
 template<typename T>
 inline void unlockArray(const af_array arr) {
-    // Ideally we need to use .get(false), i.e. get ptr without offset
-    // This is however not supported in opencl
-    // Use getData().get() as alternative
-    memUnlock(getArray<T>(arr).getData().get());
+    memUnlock(getArray<T>(arr).get());
 }
 
 af_err af_unlock_device_ptr(const af_array arr) { return af_unlock_array(arr); }

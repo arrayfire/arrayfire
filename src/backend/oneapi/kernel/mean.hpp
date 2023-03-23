@@ -629,13 +629,12 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
 
         auto e1 = getQueue().submit([&](sycl::handler &h) {
             auto acc_in =
-                tmpOut.getData()->get_access(h, sycl::range{tmp_elements});
+                tmpOut.get()->get_access(h, sycl::range{tmp_elements});
             auto acc_out = hBuffer.get_access();
             h.copy(acc_in, acc_out);
         });
         auto e2 = getQueue().submit([&](sycl::handler &h) {
-            auto acc_in =
-                tmpWt.getData()->get_access(h, sycl::range{tmp_elements});
+            auto acc_in = tmpWt.get()->get_access(h, sycl::range{tmp_elements});
             auto acc_out = hwBuffer.get_access();
             h.copy(acc_in, acc_out);
         });
@@ -733,13 +732,12 @@ To mean_all(Param<Ti> in) {
 
         auto e1 = getQueue().submit([&](sycl::handler &h) {
             auto acc_in =
-                tmpOut.getData()->get_access(h, sycl::range{tmp_elements});
+                tmpOut.get()->get_access(h, sycl::range{tmp_elements});
             auto acc_out = hBuffer.get_access();
             h.copy(acc_in, acc_out);
         });
         auto e2 = getQueue().submit([&](sycl::handler &h) {
-            auto acc_in =
-                tmpCt.getData()->get_access(h, sycl::range{tmp_elements});
+            auto acc_in = tmpCt.get()->get_access(h, sycl::range{tmp_elements});
             auto acc_out = hcBuffer.get_access();
             h.copy(acc_in, acc_out);
         });
