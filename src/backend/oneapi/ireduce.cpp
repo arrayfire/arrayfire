@@ -11,6 +11,7 @@
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/ireduce.hpp>
 #include <optypes.hpp>
 #include <af/dim4.hpp>
 #include <complex>
@@ -24,19 +25,19 @@ namespace oneapi {
 template<af_op_t op, typename T>
 void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in,
              const int dim) {
-    ONEAPI_NOT_SUPPORTED("");
+    Array<uint> rlen = createEmptyArray<uint>(af::dim4(0));
+    kernel::ireduce<T, op>(out, loc, in, dim, rlen);
 }
 
 template<af_op_t op, typename T>
 void rreduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim,
              const Array<uint> &rlen) {
-    ONEAPI_NOT_SUPPORTED("");
+    kernel::ireduce<T, op>(out, loc, in, dim, rlen);
 }
 
 template<af_op_t op, typename T>
 T ireduce_all(unsigned *loc, const Array<T> &in) {
-    ONEAPI_NOT_SUPPORTED("");
-    return T(0);
+    return kernel::ireduce_all<T, op>(loc, in);
 }
 
 #define INSTANTIATE(ROp, T)                                           \
