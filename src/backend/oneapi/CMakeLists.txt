@@ -117,6 +117,7 @@ add_library(afoneapi
   memory.cpp
   memory.hpp
   min.cpp
+  minmax_op.hpp
   moments.cpp
   moments.hpp
   morph.cpp
@@ -217,6 +218,7 @@ target_sources(afoneapi
     kernel/diff.hpp
     kernel/interp.hpp
     kernel/iota.hpp
+    kernel/ireduce.hpp
     kernel/histogram.hpp
     kernel/memcopy.hpp
     kernel/mean.hpp
@@ -281,7 +283,7 @@ target_include_directories(afoneapi
 target_compile_options(afoneapi
   PRIVATE
     -fsycl
-    -qopenmp -qmkl=parallel
+    -openmp -Qmkl=parallel
     -sycl-std=2020
 )
 
