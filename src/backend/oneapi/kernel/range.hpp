@@ -52,26 +52,29 @@ class rangeOp {
         const int xx = it.get_local_id(0) + blockIdx_x * it.get_local_range(0);
         const int yy = it.get_local_id(1) + blockIdx_y * it.get_local_range(1);
 
-        if (xx >= oinfo_.dims[0] || yy >= oinfo_.dims[1] ||
-            oz >= oinfo_.dims[2] || ow >= oinfo_.dims[3])
-            return;
+        const size_t odx = oinfo_.dims[0];
+        const size_t ody = oinfo_.dims[1];
+        const size_t odz = oinfo_.dims[2];
+        const size_t odw = oinfo_.dims[3];
 
-        const int ozw = ow * oinfo_.strides[3] + oz * oinfo_.strides[2];
+        if (xx < odx && yy < ody && oz < odz && ow < odw) {
+            const int ozw = ow * oinfo_.strides[3] + oz * oinfo_.strides[2];
 
-        const int incy = blocksPerMatY_ * g.get_local_range(1);
-        const int incx = blocksPerMatX_ * g.get_local_range(0);
+            const int incy = blocksPerMatY_ * g.get_local_range(1);
+            const int incx = blocksPerMatX_ * g.get_local_range(0);
 
-        compute_t<T> valZW = (mul3 * ow) + (mul2 * oz);
+            compute_t<T> valZW = (mul3 * ow) + (mul2 * oz);
 
-        T* optr = out_.get_pointer();
-        for (int oy = yy; oy < oinfo_.dims[1]; oy += incy) {
-            compute_t<T> valYZW = valZW + (mul1 * oy);
-            int oyzw            = ozw + oy * oinfo_.strides[1];
-            for (int ox = xx; ox < oinfo_.dims[0]; ox += incx) {
-                int oidx         = oyzw + ox;
-                compute_t<T> val = valYZW + (mul0 * ox);
+            T* optr = out_.get_pointer();
+            for (int oy = yy; oy < oinfo_.dims[1]; oy += incy) {
+                compute_t<T> valYZW = valZW + (mul1 * oy);
+                int oyzw            = ozw + oy * oinfo_.strides[1];
+                for (int ox = xx; ox < oinfo_.dims[0]; ox += incx) {
+                    int oidx         = oyzw + ox;
+                    compute_t<T> val = valYZW + (mul0 * ox);
 
-                optr[oidx] = val;
+                    optr[oidx] = val;
+                }
             }
         }
     }
