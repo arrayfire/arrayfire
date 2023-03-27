@@ -58,10 +58,8 @@ s16                 | s32
 u16, u8, b8         | u32
 f16                 | f32
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the `dim`
-parameter specifies which dimension to reduce along. An example of
-multi-dimensional reduce-by-key can be seen below:
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_sum_by_key_dim
 
@@ -114,10 +112,8 @@ s16                 | s32
 u16, u8, b8         | u32
 f16                 | f32
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the `dim`
-parameter specifies which dimension to reduce along. An example of
-multi-dimensional reduce-by-key can be seen below:
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_product_by_key_dim
 
@@ -153,10 +149,8 @@ The keys' input type must be integer (s32 or u32).
 
 The output type is the same as input type.
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the `dim`
-parameter specifies which dimension to reduce along. An example of
-multi-dimensional reduce-by-key can be seen below:
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_min_by_key_dim
 
@@ -192,10 +186,8 @@ The keys' input type must be integer (s32 or u32).
 
 The output type is the same as input type.
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the `dim`
-parameter specifies which dimension to reduce along. An example of
-multi-dimensional reduce-by-key can be seen below:
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_max_by_key_dim
 
@@ -234,10 +226,8 @@ The keys' input type must be integer (s32 or u32).
 
 The output type is `b8`.
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the `dim`
-parameter specifies which dimension to reduce along. An example of
-multi-dimensional reduce-by-key can be seen below:
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_alltrue_by_key_dim
 
@@ -276,10 +266,8 @@ The keys' input type must be integer (s32 or u32).
 
 The output type is `b8`.
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the `dim`
-parameter specifies which dimension to reduce along. An example of
-multi-dimensional reduce-by-key can be seen below:
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_anytrue_by_key_dim
 
@@ -317,10 +305,8 @@ The keys' input type must be integer (s32 or u32).
 
 The output type is `u32`.
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the `dim`
-parameter specifies which dimension to reduce along. An example of
-multi-dimensional reduce-by-key can be seen below:
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_count_by_key_dim
 
@@ -423,8 +409,6 @@ Calculate the second order difference in an array over a given dimension.
 \ingroup sort_mat
 
 Sort an array over a given dimension.
-
-Sort an multi dimensional array
 
 
 
