@@ -58,7 +58,7 @@ void testImage(const std::string pTestFile, const size_t numSeeds,
                const int multiplier, const unsigned neighborhood_radius,
                const int iter) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<af::dim4> inDims;
     vector<string> inFiles;

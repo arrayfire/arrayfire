@@ -822,18 +822,6 @@ void cleanSlate() {
     ASSERT_EQ(af::getMemStepSize(), step_bytes);
 }
 
-bool noImageIOTests() {
-    bool ret = !af::isImageIOAvailable();
-    if (ret) printf("Image IO Not Configured. Test will exit\n");
-    return ret;
-}
-
-bool noLAPACKTests() {
-    bool ret = !af::isLAPACKAvailable();
-    if (ret) printf("LAPACK Not Configured. Test will exit\n");
-    return ret;
-}
-
 template<typename inType, typename outType>
 void readTestsFromFile(const std::string &FileName,
                        std::vector<af::dim4> &inputDims,

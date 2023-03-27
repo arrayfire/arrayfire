@@ -141,7 +141,7 @@ void morphTest(const array input, const array mask, const bool isDilation,
 }
 
 TEST(Threading, SetPerThreadActiveDevice) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<bool> isDilationFlags;
     vector<bool> isColorFlags;

@@ -54,7 +54,7 @@ TYPED_TEST(Meanshift, InvalidArgs) {
 template<typename T, bool isColor>
 void meanshiftTest(string pTestFile, const float ss) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
@@ -131,7 +131,7 @@ using af::seq;
 using af::span;
 
 TEST(Meanshift, Color_CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

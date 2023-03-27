@@ -50,7 +50,7 @@ void imageTest(string pTestFile, const float dt, const float K,
             OutType;
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     using af::dim4;
 

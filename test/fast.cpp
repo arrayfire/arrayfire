@@ -69,7 +69,7 @@ TYPED_TEST_SUITE(FixedFAST, FixedTestTypes);
 template<typename T>
 void fastTest(string pTestFile, bool nonmax) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
@@ -180,7 +180,7 @@ using af::features;
 using af::loadImage;
 
 TEST(FloatFAST, CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

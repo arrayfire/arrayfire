@@ -36,7 +36,7 @@ typedef ::testing::Types<float> TestTypes;
 TYPED_TEST_SUITE(ImageIO, TestTypes);
 
 void loadImageTest(string pTestFile, string pImageFile, const bool isColor) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> numDims;
 
@@ -93,7 +93,7 @@ TYPED_TEST(ImageIO, ColorSeq) {
 }
 
 void loadimageArgsTest(string pImageFile, const bool isColor, af_err err) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     af_array imgArray = 0;
 
@@ -122,7 +122,7 @@ using af::saveImageMem;
 using af::span;
 
 TEST(ImageIO, CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> numDims;
 
@@ -150,7 +150,7 @@ TEST(ImageIO, CPP) {
 }
 
 TEST(ImageIO, SavePNGCPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array input(10, 10, 3, f32);
 
@@ -170,7 +170,7 @@ TEST(ImageIO, SavePNGCPP) {
 }
 
 TEST(ImageIO, SaveBMPCPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array input(10, 10, 3, f32);
 
@@ -190,7 +190,7 @@ TEST(ImageIO, SaveBMPCPP) {
 }
 
 TEST(ImageMem, SaveMemPNG) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array img =
         loadImage(string(TEST_DIR "/imageio/color_seq.png").c_str(), true);
@@ -205,7 +205,7 @@ TEST(ImageMem, SaveMemPNG) {
 }
 
 TEST(ImageMem, SaveMemJPG1) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array img =
         loadImage(string(TEST_DIR "/imageio/color_seq.png").c_str(), false);
@@ -222,7 +222,7 @@ TEST(ImageMem, SaveMemJPG1) {
 }
 
 TEST(ImageMem, SaveMemJPG3) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array img =
         loadImage(string(TEST_DIR "/imageio/color_seq.png").c_str(), true);
@@ -239,7 +239,7 @@ TEST(ImageMem, SaveMemJPG3) {
 }
 
 TEST(ImageMem, SaveMemBMP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array img =
         loadImage(string(TEST_DIR "/imageio/color_rand.png").c_str(), true);
@@ -254,7 +254,7 @@ TEST(ImageMem, SaveMemBMP) {
 }
 
 TEST(ImageIO, LoadImage16CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> numDims;
 
@@ -284,7 +284,7 @@ TEST(ImageIO, LoadImage16CPP) {
 }
 
 TEST(ImageIO, SaveImage16CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     dim4 dims(16, 24, 3);
 
@@ -312,7 +312,7 @@ using af::saveImageNative;
 
 template<typename T>
 void loadImageNativeCPPTest(string pTestFile, string pImageFile) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> numDims;
 
@@ -362,7 +362,7 @@ TEST(ImageIONative, LoadImageNative16GrayCPP) {
 
 template<typename T>
 void saveLoadImageNativeCPPTest(dim4 dims) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     array input = randu(dims, (af_dtype)dtype_traits<T>::af_type);
 

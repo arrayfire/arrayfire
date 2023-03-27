@@ -166,7 +166,7 @@ TYPED_TEST(MedianFilter1d, BATCH_SYMMETRIC_PAD_3) {
 template<typename T, bool isColor>
 void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

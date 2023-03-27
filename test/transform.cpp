@@ -97,7 +97,7 @@ template<typename T>
 void transformTest(string pTestFile, string pHomographyFile,
                    const af_interp_type method, const bool invert) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     af_array sceneArray = 0;
     af_array goldArray  = 0;
@@ -304,7 +304,7 @@ class TransformV2 : public Transform<T> {
     }
 
     void setTestData(string pTestFile, string pHomographyFile) {
-        if (noImageIOTests()) return;
+        IMAGEIO_ENABLED_CHECK();
         releaseArrays();
 
         genTestData<T>(&gold, &in, &transform, &odim0, &odim1, pTestFile,
@@ -390,7 +390,7 @@ class TransformV2 : public Transform<T> {
 
     void testSpclOutArray(TestOutputArrayType out_array_type) {
         SUPPORTED_TYPE_CHECK(T);
-        if (noImageIOTests()) return;
+        IMAGEIO_ENABLED_CHECK();
 
         af_array out = 0;
         TestOutputArrayInfo metadata(out_array_type);
@@ -481,7 +481,7 @@ TEST_F(TransformNullArgs, V2NullTransformArray) {
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(Transform, CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

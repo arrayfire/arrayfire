@@ -49,7 +49,7 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     using af::Pi;
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
@@ -220,7 +220,7 @@ using af::features;
 using af::loadImage;
 
 TEST(Homography, CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

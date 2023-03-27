@@ -38,7 +38,7 @@ void invDeconvImageTest(string pTestFile, const float gamma,
             OutType;
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     using af::dim4;
 

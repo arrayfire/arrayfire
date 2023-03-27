@@ -136,7 +136,7 @@ TYPED_TEST(Morph, Erode4x4x4) {
 template<typename T, bool isDilation, bool isColor>
 void morphImageTest(string pTestFile, dim_t seLen) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
@@ -390,7 +390,7 @@ using af::span;
 template<typename T, bool isDilation, bool isColor>
 void cppMorphImageTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
