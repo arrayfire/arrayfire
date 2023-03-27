@@ -401,7 +401,7 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                                       outputs[0].info.dims[2] > 1)};
 
     getQueue()
-        .submit([&](sycl::handler& h) {
+        .submit([=](sycl::handler& h) {
             for (Node* node : full_nodes) {
                 if (node->isBuffer()) {
                     BufferNode<T>* n = static_cast<BufferNode<T>*>(node);

@@ -20,7 +20,7 @@ namespace jit {
 template<typename T>
 using BufferNode =
     common::BufferNodeBase<std::shared_ptr<sycl::buffer<T>>, AParam<T>>;
-}
+}  // namespace jit
 }  // namespace oneapi
 
 namespace common {
