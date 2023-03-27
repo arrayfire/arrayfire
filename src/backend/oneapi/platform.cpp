@@ -320,14 +320,10 @@ const std::string& getActiveDeviceBaseBuildFlags() {
 size_t getDeviceMemorySize(int device) {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    sycl::device dev;
-    {
-        common::lock_guard_t lock(devMngr.deviceMutex);
-        // Assuming devices don't deallocate or are invalidated during execution
-        dev = *devMngr.mDevices[device];
-    }
-    size_t msize = dev.get_info<sycl::info::device::global_mem_size>();
-    return msize;
+    common::lock_guard_t lock(devMngr.deviceMutex);
+    // Assuming devices don't deallocate or are invalidated during execution
+    sycl::device& dev = *devMngr.mDevices[device];
+    return dev.get_info<sycl::info::device::global_mem_size>();
 }
 
 size_t getHostMemorySize() { return common::getHostMemorySize(); }

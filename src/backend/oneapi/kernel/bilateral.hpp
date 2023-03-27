@@ -121,9 +121,7 @@ class bilateralKernel {
             int joff = (ly - radius) * shrdLen + (lx - radius);
             int goff = 0;
 
-#pragma unroll
             for (int wj = 0; wj < window_size; ++wj) {
-#pragma unroll
                 for (int wi = 0; wi < window_size; ++wi) {
                     outType tmp_color = localMem_[joff + wi];
                     const outType c   = center_color - tmp_color;
