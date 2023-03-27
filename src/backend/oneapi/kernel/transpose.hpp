@@ -50,11 +50,12 @@ using local_accessor =
 template<typename T>
 class transposeKernel {
    public:
-    transposeKernel(sycl::accessor<T> oData, const KParam out,
-                    const sycl::accessor<T> iData, const KParam in,
-                    const int blocksPerMatX, const int blocksPerMatY,
-                    const bool conjugate, const bool IS32MULTIPLE,
-                    local_accessor<T, 1> shrdMem)
+    transposeKernel(sycl::accessor<T, 1, sycl::access::mode::write> oData,
+                    const KParam out,
+                    const sycl::accessor<T, 1, sycl::access::mode::read> iData,
+                    const KParam in, const int blocksPerMatX,
+                    const int blocksPerMatY, const bool conjugate,
+                    const bool IS32MULTIPLE, local_accessor<T, 1> shrdMem)
         : oData_(oData)
         , out_(out)
         , iData_(iData)
@@ -124,9 +125,9 @@ class transposeKernel {
     }
 
    private:
-    sycl::accessor<T> oData_;
+    sycl::accessor<T, 1, sycl::access::mode::write> oData_;
     KParam out_;
-    sycl::accessor<T> iData_;
+    sycl::accessor<T, 1, sycl::access::mode::read> iData_;
     KParam in_;
     int blocksPerMatX_;
     int blocksPerMatY_;
@@ -147,8 +148,8 @@ void transpose(Param<T> out, const Param<T> in, const bool conjugate,
                               blk_y * local[1] * in.info.dims[3]};
 
     getQueue().submit([&](sycl::handler &h) {
-        auto r = in.data->get_access(h);
-        auto q = out.data->get_access(h);
+        auto r = in.data->template get_access<sycl::access::mode::read>(h);
+        auto q = out.data->template get_access<sycl::access::mode::write>(h);
 
         auto shrdMem = local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
 
