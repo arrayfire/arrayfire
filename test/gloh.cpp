@@ -137,7 +137,7 @@ TYPED_TEST_SUITE(GLOH, TestTypes);
 template<typename T>
 void glohTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
@@ -261,7 +261,7 @@ GLOH_INIT(man, man);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(GLOH, CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

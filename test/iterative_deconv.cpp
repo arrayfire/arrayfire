@@ -38,7 +38,7 @@ void iterDeconvImageTest(string pTestFile, const unsigned iters, const float rf,
             OutType;
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     using af::dim4;
 

@@ -129,7 +129,7 @@ TYPED_TEST_SUITE(ORB, TestTypes);
 template<typename T>
 void orbTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
@@ -246,7 +246,7 @@ TYPED_TEST(ORB, Lena) { orbTest<TypeParam>(string(TEST_DIR "/orb/lena.test")); }
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(ORB, CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

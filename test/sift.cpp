@@ -138,7 +138,7 @@ template<typename T>
 void siftTest(string pTestFile, unsigned nLayers, float contrastThr,
               float edgeThr, float initSigma, bool doubleInput) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;
@@ -272,7 +272,7 @@ SIFT_INIT(Man_NoDoubleInput, man_nodoubleinput, 3, 0.04f, 10.0f, 1.6f, false);
 ///////////////////////////////////// CPP ////////////////////////////////
 //
 TEST(SIFT, CPP) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

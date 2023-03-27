@@ -227,7 +227,13 @@ bool noHalfTests(af::dtype ty);
     if (noDoubleTests((af_dtype)af::dtype_traits<type>::af_type)) \
         GTEST_SKIP() << "Device doesn't support Doubles";         \
     if (noHalfTests((af_dtype)af::dtype_traits<type>::af_type))   \
-        GTEST_SKIP() << "Device doesn't support Half";
+    GTEST_SKIP() << "Device doesn't support Half"
+
+#define LAPACK_ENABLED_CHECK() \
+    if (!af::isLAPACKAvailable()) GTEST_SKIP() << "LAPACK Not Configured."
+
+#define IMAGEIO_ENABLED_CHECK() \
+    if (!af::isImageIOAvailable()) GTEST_SKIP() << "Image IO Not Configured"
 
 #ifdef AF_WITH_FAST_MATH
 #define SKIP_IF_FAST_MATH_ENABLED() \
@@ -235,10 +241,6 @@ bool noHalfTests(af::dtype ty);
 #else
 #define SKIP_IF_FAST_MATH_ENABLED()
 #endif
-
-bool noImageIOTests();
-
-bool noLAPACKTests();
 
 template<typename TO, typename FROM>
 TO convert_to(FROM in) {

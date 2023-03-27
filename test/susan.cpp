@@ -67,7 +67,7 @@ TYPED_TEST_SUITE(Susan, TestTypes);
 template<typename T>
 void susanTest(string pTestFile, float t, float g) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

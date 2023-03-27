@@ -34,7 +34,7 @@ using std::vector;
 
 ///////////////////////////////// CPP ////////////////////////////////////
 TEST(QRFactorized, CPP) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
     int resultIdx = 0;
 
@@ -90,7 +90,7 @@ template<typename T>
 void qrTester(const int m, const int n, double eps) {
     try {
         SUPPORTED_TYPE_CHECK(T);
-        if (noLAPACKTests()) return;
+        LAPACK_ENABLED_CHECK();
 
 #if 1
         array in = cpu_randu<T>(dim4(m, n));
@@ -181,7 +181,7 @@ TYPED_TEST(QR, RectangularMultipleOfTwoLarge1) {
 }
 
 TEST(QR, InPlaceNullOutput) {
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
     dim4 dims(3, 3);
     af_array in = 0;
     ASSERT_SUCCESS(af_randu(&in, dims.ndims(), dims.get(), f32));

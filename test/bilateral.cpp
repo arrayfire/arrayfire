@@ -25,7 +25,7 @@ using std::vector;
 template<typename T, bool isColor>
 void bilateralTest(string pTestFile) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     vector<dim4> inDims;
     vector<string> inFiles;

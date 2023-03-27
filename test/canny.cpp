@@ -93,7 +93,7 @@ TEST(Canny, DISABLED_Exact) {
 template<typename T>
 void cannyImageOtsuTest(string pTestFile, bool isColor) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     using af::dim4;
 
@@ -220,7 +220,7 @@ TEST(CannyEdgeDetector, Sobel5x5_Invalid) {
 template<typename T>
 void cannyImageOtsuBatchTest(string pTestFile, const dim_t targetBatchCount) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
 
     using af::array;
     using af::canny;

@@ -98,7 +98,7 @@ void momentsTest(string pTestFile) {
 }
 
 void momentsOnImageTest(string pTestFile, string pImageFile, bool isColor) {
-    if (noImageIOTests()) return;
+    IMAGEIO_ENABLED_CHECK();
     vector<dim4> numDims;
 
     vector<vector<float>> in;

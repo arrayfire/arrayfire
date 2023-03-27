@@ -34,7 +34,7 @@ using std::abs;
 template<typename T>
 void inverseTester(const int m, const int n, double eps) {
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 #if 1
     array A = cpu_randu<T>(dim4(m, n));
 #else

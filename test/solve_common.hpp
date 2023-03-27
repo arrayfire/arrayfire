@@ -35,7 +35,7 @@ void solveTester(const int m, const int n, const int k, double eps,
     af::deviceGC();
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
 #if 1
     af::array A  = cpu_randu<T>(af::dim4(m, n));
@@ -65,7 +65,7 @@ void solveLUTester(const int n, const int k, double eps,
     af::deviceGC();
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
 #if 1
     af::array A  = cpu_randu<T>(af::dim4(n, n));
@@ -95,7 +95,7 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps,
     af::deviceGC();
 
     SUPPORTED_TYPE_CHECK(T);
-    if (noLAPACKTests()) return;
+    LAPACK_ENABLED_CHECK();
 
 #if 1
     af::array A  = cpu_randu<T>(af::dim4(n, n));
