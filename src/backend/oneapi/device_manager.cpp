@@ -57,11 +57,26 @@ namespace oneapi {
 
 static inline bool compare_default(const unique_ptr<sycl::device>& ldev,
                                    const unique_ptr<sycl::device>& rdev) {
-    // TODO: update sorting criteria
-    // select according to something applicable to oneapi backend
-    auto l_mem = ldev->get_info<sycl::info::device::global_mem_size>();
-    auto r_mem = rdev->get_info<sycl::info::device::global_mem_size>();
-    return l_mem > r_mem;
+    using sycl::info::device_type;
+
+    auto ldt = ldev->get_info<sycl::info::device::device_type>();
+    auto rdt = rdev->get_info<sycl::info::device::device_type>();
+
+    if (ldt == rdt) {
+        auto l_mem = ldev->get_info<sycl::info::device::global_mem_size>();
+        auto r_mem = rdev->get_info<sycl::info::device::global_mem_size>();
+        return l_mem > r_mem;
+    } else {
+        if (ldt == device_type::gpu)
+            return true;
+        else if (rdt == device_type::gpu)
+            return false;
+        else if (ldt == device_type::cpu)
+            return true;
+        else if (rdt == device_type::cpu)
+            return false;
+    }
+    return false;
 }
 
 auto arrayfire_exception_handler(sycl::exception_list exceptions) {
