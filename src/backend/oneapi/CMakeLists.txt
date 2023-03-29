@@ -283,7 +283,6 @@ target_include_directories(afoneapi
 target_compile_options(afoneapi
   PRIVATE
     -fsycl
-    -openmp -Qmkl=parallel
     -sycl-std=2020
 )
 
@@ -299,7 +298,6 @@ target_compile_definitions(afoneapi
 target_link_libraries(afoneapi
   PRIVATE
     -fsycl
-    -fno-lto
     -fvisibility-inlines-hidden
     c_api_interface
     cpp_api_interface
@@ -309,8 +307,7 @@ target_link_libraries(afoneapi
     -fsycl
     -fsycl-device-code-split=per_kernel
     -fsycl-link-huge-device-code
-    -qopenmp
-    -qmkl=parallel
+    MKL::MKL_DPCPP
   )
 
 af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
