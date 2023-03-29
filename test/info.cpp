@@ -48,6 +48,7 @@ void infoTest() {
         testFunction<float>();
     } else {
         int oldDevice = getDevice();
+        testFunction<float>();
         for (int d = 0; d < nDevices; d++) {
             setDevice(d);
             testFunction<float>();
