@@ -163,13 +163,50 @@ DeviceManager::DeviceManager()
 
     bool default_device_set = false;
     string deviceENV        = getEnvVar("AF_ONEAPI_DEFAULT_DEVICE");
+
     if (!deviceENV.empty()) {
-        // TODO: handle default device from env variable
+        stringstream s(deviceENV);
+        int def_device = -1;
+        s >> def_device;
+        if (def_device >= static_cast<int>(mQueues.size()) ||
+            def_device >= static_cast<int>(DeviceManager::MAX_DEVICES)) {
+            AF_TRACE(
+                "AF_ONEAPI_DEFAULT_DEVICE ({}) \
+                   is out of range, Setting default device to 0",
+                def_device);
+            def_device = 0;
+        } else {
+            setActiveContext(def_device);
+            default_device_set = true;
+        }
     }
 
-    deviceENV = getEnvVar("AF_OPENCL_DEFAULT_DEVICE_TYPE");
+    deviceENV = getEnvVar("AF_ONEAPI_DEFAULT_DEVICE_TYPE");
     if (!default_device_set && !deviceENV.empty()) {
-        // TODO: handle default device by type env variable
+        sycl::info::device_type default_device_type =
+            sycl::info::device_type::gpu;
+        if (deviceENV == "CPU") {
+            default_device_type = sycl::info::device_type::cpu;
+        } else if (deviceENV == "ACC") {
+            default_device_type = sycl::info::device_type::accelerator;
+        }
+
+        bool default_device_set = false;
+        for (int i = 0; i < nDevices; i++) {
+            if (mDevices[i]->get_info<sycl::info::device::device_type>() ==
+                default_device_type) {
+                default_device_set = true;
+                AF_TRACE("Setting to first available {}({})", deviceENV, i);
+                setActiveContext(i);
+                break;
+            }
+        }
+        if (!default_device_set) {
+            AF_TRACE(
+                "AF_ONEAPI_DEFAULT_DEVICE_TYPE={} \
+                   is not available, Using default device as 0",
+                deviceENV);
+        }
     }
 
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
@@ -182,7 +219,7 @@ DeviceManager::DeviceManager()
 
     // TODO: init other needed libraries?
     // blas? program cache?
-    // AF_TRACE("Default device: {}", getActiveDeviceId());
+    AF_TRACE("Default device: {}", getActiveDeviceId());
 }
 
 spdlog::logger* DeviceManager::getLogger() { return logger.get(); }
