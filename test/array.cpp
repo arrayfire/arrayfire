@@ -502,12 +502,12 @@ TEST(DeviceId, Different) {
 
 TEST(Device, empty) {
     array a = array();
-    ASSERT_EQ(a.device<float>() == NULL, 1);
+    ASSERT_EQ(a.device<float>(), nullptr);
 }
 
 TEST(Device, JIT) {
     array a = constant(1, 5, 5);
-    ASSERT_EQ(a.device<float>() != NULL, 1);
+    ASSERT_NE(a.device<float>(), nullptr);
 }
 
 TYPED_TEST(Array, Scalar) {
@@ -520,7 +520,7 @@ TYPED_TEST(Array, Scalar) {
 
     a.host((void *)gold.data());
 
-    EXPECT_EQ(true, gold[0] == a.scalar<TypeParam>());
+    EXPECT_EQ(gold[0], a.scalar<TypeParam>());
 }
 
 TEST(Array, ScalarTypeMismatch) {
