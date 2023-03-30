@@ -214,18 +214,13 @@ template<typename T>
 T getScalar(const Array<T> &in) {
     T retVal{};
 
-    sycl::buffer retBuffer(&retVal, {1},
-                           {sycl::property::buffer::use_host_ptr()});
-
     getQueue()
         .submit([&](sycl::handler &h) {
             auto acc_in =
                 in.get()->template get_access<sycl::access::mode::read>(
                     h, sycl::range{1},
                     sycl::id{static_cast<uintl>(in.getOffset())});
-            auto acc_out =
-                retBuffer.template get_access<sycl::access::mode::write>(h);
-            h.copy(acc_in, acc_out);
+            h.copy(acc_in, &retVal);
         })
         .wait();
 
