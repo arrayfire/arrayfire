@@ -30,8 +30,8 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
     int Ndim     = optRhs == AF_MAT_NONE ? 1 : 0;
     Array<T> res = createEmptyArray<T>(
         dim4(lhs.dims()[Mdim], rhs.dims()[Ndim], lhs.dims()[2], lhs.dims()[3]));
-    static constexpr T alpha = 1.0;
-    static constexpr T beta  = 0.0;
+    static const T alpha = T(1.0);
+    static const T beta  = T(0.0);
     gemm(res, optLhs, optRhs, &alpha, lhs, rhs, &beta);
     return res;
 }
@@ -39,6 +39,5 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
              af_mat_prop optRhs);
-
 }  // namespace oneapi
 }  // namespace arrayfire

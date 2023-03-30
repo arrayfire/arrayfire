@@ -27,7 +27,7 @@
 #include <af/dim4.hpp>
 
 #if defined(WITH_LINEAR_ALGEBRA)
-#include <cpu/cpu_sparse_blas.hpp>
+//#include <cpu/cpu_sparse_blas.hpp>
 #endif  // WITH_LINEAR_ALGEBRA
 
 namespace arrayfire {
