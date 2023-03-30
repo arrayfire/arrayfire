@@ -397,10 +397,6 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
 template<typename T>
 void *getDevicePtr(const Array<T> &arr) {
     const buffer<T> *buf = arr.device();
-    // if (!buf) { return NULL; }
-    // memLock(buf);
-    // cl_mem mem = (*buf)();
-    ONEAPI_NOT_SUPPORTED("pointer to sycl::buffer should be accessor");
     return (void *)buf;
 }
 
