@@ -11,6 +11,10 @@ set(AF_TEST_WITH_MTX_FILES
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
+if(AF_CTEST_SEPARATED)
+  include(GoogleTest)
+endif()
+
 if(AF_TEST_WITH_MTX_FILES)
   include(download_sparse_datasets)
 endif()
@@ -54,6 +58,28 @@ endif()
 if(NOT TARGET mmio)
   add_subdirectory(mmio)
 endif()
+
+
+# Registers test with ctest
+#
+# Parameters
+#  target: The target associated with this test
+#  backend: The backend associated with this test
+#  is_serial: If true the test will be serialized
+function(af_add_test target backend is_serial)
+  if(AF_CTEST_SEPARATED)
+    gtest_discover_tests(${target}
+      TEST_PREFIX $<UPPER_CASE:${backend}>.
+      DISCOVERY_TIMEOUT 40)
+  else()
+    add_test(NAME ${target} COMMAND ${target})
+    if(${is_serial})
+      set_tests_properties(${target}
+        PROPERTIES
+        RUN_SERIAL ON)
+    endif(${is_serial})
+  endif()
+endfunction()
 
 # Reset the CXX flags for tests
 set(CMAKE_CXX_STANDARD 11)
@@ -238,12 +264,7 @@ function(make_test)
 
     # TODO(umar): Create this executable separately
     if(NOT ${backend} STREQUAL "unified" OR ${target} STREQUAL "backend_unified")
-      add_test(NAME ${target} COMMAND ${target})
-	    if(${mt_args_SERIAL})
-        set_tests_properties(${target}
-          PROPERTIES
-            RUN_SERIAL ON)
-	    endif(${mt_args_SERIAL})
+      af_add_test(${target} ${backend} ${mt_args_SERIAL})
     endif()
 
   endforeach()
@@ -387,7 +408,7 @@ if(CUDA_FOUND)
           OUTPUT_NAME "cuda_${backend}")
 
       if(NOT ${backend} STREQUAL "unified")
-        add_test(NAME ${target} COMMAND ${target})
+        af_add_test(${target} ${backend} ON)
       endif()
     endif()
   endforeach()
@@ -457,7 +478,7 @@ foreach(backend ${enabled_backends})
       PRIVATE
       ArrayFire::af${backend})
   endif()
-  add_test(NAME test_${target} COMMAND ${target})
+  af_add_test(${target} ${backend} ON)
 endforeach()
 
 if(AF_TEST_WITH_MTX_FILES)
