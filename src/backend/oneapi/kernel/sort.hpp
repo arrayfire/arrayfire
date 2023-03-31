@@ -14,19 +14,20 @@
 #include <oneapi/dpl/execution>
 #include <oneapi/dpl/iterator>
 
-#include <common/half.hpp>
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_oneapi.hpp>
 #include <iota.hpp>
 #include <traits.hpp>
 
+namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
 template<typename T>
 void sort0Iterative(Param<T> val, bool isAscending) {
-    auto dpl_policy = oneapi::dpl::execution::make_device_policy(getQueue());
+    auto dpl_policy = ::oneapi::dpl::execution::make_device_policy(getQueue());
     for (int w = 0; w < val.info.dims[3]; w++) {
         int valW = w * val.info.strides[3];
         for (int z = 0; z < val.info.dims[2]; z++) {
@@ -34,7 +35,7 @@ void sort0Iterative(Param<T> val, bool isAscending) {
             for (int y = 0; y < val.info.dims[1]; y++) {
                 int valOffset = valWZ + y * val.info.strides[1];
 
-                auto buf_begin = oneapi::dpl::begin(*val.data) + valOffset;
+                auto buf_begin = ::oneapi::dpl::begin(*val.data) + valOffset;
                 auto buf_end   = buf_begin + val.info.dims[0];
                 if (isAscending) {
                     std::sort(dpl_policy, buf_begin, buf_end,
@@ -76,12 +77,12 @@ void sortBatched(Param<T> pVal, int dim, bool isAscending) {
     }
 
     // Sort indices
-    auto dpl_policy = oneapi::dpl::execution::make_device_policy(getQueue());
+    auto dpl_policy = ::oneapi::dpl::execution::make_device_policy(getQueue());
 
-    auto key_begin    = oneapi::dpl::begin(*pKey.get());
-    auto key_end      = oneapi::dpl::end(*pKey.get());
-    auto val_begin    = oneapi::dpl::begin(*pVal.data);
-    auto val_end      = oneapi::dpl::end(*pVal.data);
+    auto key_begin    = ::oneapi::dpl::begin(*pKey.get());
+    auto key_end      = ::oneapi::dpl::end(*pKey.get());
+    auto val_begin    = ::oneapi::dpl::begin(*pVal.data);
+    auto val_end      = ::oneapi::dpl::end(*pVal.data);
     auto zipped_begin = dpl::make_zip_iterator(key_begin, val_begin);
     auto zipped_end   = dpl::make_zip_iterator(key_end, val_end);
 
@@ -115,3 +116,4 @@ void sort0(Param<T> val, bool isAscending) {
 
 }  // namespace kernel
 }  // namespace oneapi
+}  // namespace arrayfire

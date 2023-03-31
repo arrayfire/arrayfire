@@ -137,17 +137,10 @@ void conv3Helper(const conv_kparam_t<aT> &param, Param<T> &out,
                  const int rank, const bool EXPAND) {
     auto Q = getQueue();
     Q.submit([&](auto &h) {
-<<<<<<< HEAD
-        local_accessor<aT> localMem(param.loc_size, h);
+        sycl::local_accessor<aT> localMem(param.loc_size, h);
         write_accessor<T> outAcc{*out.data, h};
         read_accessor<T> signalAcc{*signal.data, h};
         read_accessor<aT> impulseAcc{*param.impulse, h};
-=======
-        sycl::local_accessor<aT> localMem(param.loc_size, h);
-        sycl::accessor outAcc{*out.data, h, sycl::write_only, sycl::no_init};
-        sycl::accessor signalAcc{*signal.data, h, sycl::read_only};
-        sycl::accessor impulseAcc{*param.impulse, h, sycl::read_only};
->>>>>>> 55f839c31 (remove deprecated local_accessor warnings)
         h.parallel_for(
             sycl::nd_range{param.global, param.local},
             conv3HelperCreateKernel<T, aT>(

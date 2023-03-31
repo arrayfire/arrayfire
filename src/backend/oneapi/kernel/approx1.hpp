@@ -8,10 +8,6 @@
  ********************************************************/
 
 #pragma once
-// oneDPL headers should be included before standard headers
-//#include <oneapi/dpl/algorithm>
-//#include <oneapi/dpl/execution>
-//#include <oneapi/dpl/iterator>
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>

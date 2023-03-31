@@ -15,6 +15,7 @@
 #include <debug_oneapi.hpp>
 #include <kernel/default_config.hpp>
 #include <math.hpp>
+#include <sycl/sycl.hpp>
 
 #include <sycl/sycl.hpp>
 

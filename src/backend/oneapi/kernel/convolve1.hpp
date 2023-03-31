@@ -117,7 +117,7 @@ void conv1Helper(const conv_kparam_t<aT> &param, Param<T> &out,
                  const int rank, const bool expand) {
     auto Q = getQueue();
     Q.submit([&](auto &h) {
-        local_accessor<aT> localMem(param.loc_size, h);
+        sycl::local_accessor<aT> localMem(param.loc_size, h);
         write_accessor<T> outAcc{*out.data, h};
         read_accessor<T> signalAcc{*signal.data, h};
         read_accessor<aT> impulseAcc{*param.impulse, h};
