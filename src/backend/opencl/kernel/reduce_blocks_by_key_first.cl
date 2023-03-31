@@ -9,7 +9,12 @@
 
 // Starting from OpenCL 2.0, core profile includes work group level
 // inclusive scan operations, hence skip defining custom one
-#if !__opencl_c_work_group_collective_functions
+#if __OPENCL_C_VERSION__ == 200 || __OPENCL_C_VERSION__ == 210 || \
+    __OPENCL_C_VERSION__ == 220 || __opencl_c_work_group_collective_functions
+#define BUILTIN_WORK_GROUP_COLLECTIVE_FUNCTIONS
+#endif
+
+#ifndef BUILTIN_WORK_GROUP_COLLECTIVE_FUNCTIONS
 int work_group_scan_inclusive_add(local int *wg_temp, __local int *arr) {
     local int *active_buf;
 
@@ -31,11 +36,13 @@ int work_group_scan_inclusive_add(local int *wg_temp, __local int *arr) {
 }
 #endif
 
-kernel void reduce_blocks_by_key_first(
-    global int *reduced_block_sizes, __global Tk *oKeys, KParam oKInfo,
-    global To *oVals, KParam oVInfo, const __global Tk *iKeys, KParam iKInfo,
-    const global Ti *iVals, KParam iVInfo, int change_nan, To nanval, int n,
-    const int nBlocksZ) {
+kernel void reduce_blocks_by_key_first(global int *reduced_block_sizes,
+                                       __global Tk *oKeys, KParam oKInfo,
+                                       global To *oVals, KParam oVInfo,
+                                       const __global Tk *iKeys, KParam iKInfo,
+                                       const global Ti *iVals, KParam iVInfo,
+                                       int change_nan, To nanval, int n,
+                                       const int nBlocksZ) {
     const uint lid = get_local_id(0);
     const uint gid = get_global_id(0);
 
@@ -48,7 +55,7 @@ kernel void reduce_blocks_by_key_first(
     local Tk reduced_keys[DIMX];
     local To reduced_vals[DIMX];
     local int unique_ids[DIMX];
-#if !__opencl_c_work_group_collective_functions
+#ifndef BUILTIN_WORK_GROUP_COLLECTIVE_FUNCTIONS
     local int wg_temp[DIMX];
     local int unique_flags[DIMX];
 #endif
@@ -84,7 +91,7 @@ kernel void reduce_blocks_by_key_first(
     int eq_check    = (lid > 0) ? (k != reduced_keys[lid - 1]) : 0;
     int unique_flag = (eq_check || (lid == 0)) && (gid < n);
 
-#if __opencl_c_work_group_collective_functions
+#ifdef BUILTIN_WORK_GROUP_COLLECTIVE_FUNCTIONS
     int unique_id = work_group_scan_inclusive_add(unique_flag);
 #else
     unique_flags[lid] = unique_flag;
