@@ -45,8 +45,8 @@ if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
   set(AF_REQUIRED REQUIRED)
 endif()
 
-#Set Intel OpenMP as default MKL thread layer
-if(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM" OR CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+if(CXX_COMPILER_NAME STREQUAL "dpcpp" OR CXX_COMPILER_NAME STREQUAL "dpcpp.exe"
+   OR CXX_COMPILER_NAME STREQUAL "icpx" OR CXX_COMPILER_NAME STREQUAL "icx.exe")
   set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
   set(MKL_INTERFACE "ilp64")
   set(MKL_INTERFACE_INTEGER_SIZE 8)
@@ -125,7 +125,14 @@ elseif(MKL_THREAD_LAYER STREQUAL "TBB")
   set(MKL_THREADING "tbb_thread")
 else()
 endif()
-find_package(MKL)
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+  # VCPKG overrides the find_package command and the PATH parameter is currently
+  # broken with the current version of VCPKG so we are setting the MKL_ROOT
+  # directory to the MKLROOT environment variable.
+  set(MKL_ROOT "$ENV{MKLROOT}")
+  find_package(MKL)
+endif()
 
 af_multiple_option(NAME        AF_COMPUTE_LIBRARY
                    DEFAULT     ${default_compute_library}
@@ -218,7 +225,7 @@ if(${AF_BUILD_CPU} OR ${AF_BUILD_OPENCL})
   if("${AF_COMPUTE_LIBRARY}" STREQUAL "Intel-MKL"
       OR "${AF_COMPUTE_LIBRARY}" STREQUAL "MKL")
     af_mkl_batch_check()
-    dependency_check(MKL_FOUND "Please ensure Intel-MKL / oneAPI-oneMKL is installed")
+    dependency_check(MKL_Shared_FOUND "Please ensure Intel-MKL / oneAPI-oneMKL is installed")
     set(BUILD_WITH_MKL ON)
   elseif("${AF_COMPUTE_LIBRARY}" STREQUAL "FFTW/LAPACK/BLAS")
     dependency_check(FFTW_FOUND "FFTW not found")
