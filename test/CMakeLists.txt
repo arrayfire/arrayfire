@@ -76,7 +76,9 @@ function(af_add_test target backend is_serial)
     if(${is_serial})
       set_tests_properties(${target}
         PROPERTIES
-        RUN_SERIAL ON)
+          ENVIRONMENT AF_PRINT_ERRORS=1
+          TIMEOUT 900
+          RUN_SERIAL ON)
     endif(${is_serial})
   endif()
 endfunction()
