@@ -230,7 +230,10 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
     try {
         std::ifstream in(cacheFile, std::ios::binary);
         if (!in.is_open()) {
-            AF_ERROR("Unable to open binary cache file", AF_ERR_INTERNAL);
+            AF_TRACE("{{{:<20} : Unable to open {} for {}}}", moduleKey,
+                     cacheFile, dev.getInfo<CL_DEVICE_NAME>());
+            removeFile(cacheFile);
+            return retVal;
         }
         in.exceptions(std::ios::failbit | std::ios::badbit);
 
@@ -247,7 +250,11 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
         const size_t recomputedHash =
             deterministicHash(clbin.data(), clbinSize);
         if (recomputedHash != clbinHash) {
-            AF_ERROR("Binary on disk seems to be corrupted", AF_ERR_LOAD_SYM);
+            AF_TRACE(
+                "{{{:<20} : Corrupt binary({}) found on disk for {}, removed}}",
+                moduleKey, cacheFile, dev.getInfo<CL_DEVICE_NAME>());
+            removeFile(cacheFile);
+            return retVal;
         }
         program = Program(arrayfire::opencl::getContext(), {dev}, {clbin});
         program.build();
@@ -255,16 +262,6 @@ Module loadModuleFromDisk(const int device, const string &moduleKey,
         AF_TRACE("{{{:<20} : loaded from {} for {} }}", moduleKey, cacheFile,
                  dev.getInfo<CL_DEVICE_NAME>());
         retVal.set(program);
-    } catch (const AfError &e) {
-        if (e.getError() == AF_ERR_LOAD_SYM) {
-            AF_TRACE(
-                "{{{:<20} : Corrupt binary({}) found on disk for {}, removed}}",
-                moduleKey, cacheFile, dev.getInfo<CL_DEVICE_NAME>());
-        } else {
-            AF_TRACE("{{{:<20} : Unable to open {} for {}}}", moduleKey,
-                     cacheFile, dev.getInfo<CL_DEVICE_NAME>());
-        }
-        removeFile(cacheFile);
     } catch (const std::ios_base::failure &e) {
         AF_TRACE("{{{:<20} : IO failure while loading {} for {}; {}}}",
                  moduleKey, cacheFile, dev.getInfo<CL_DEVICE_NAME>(), e.what());
