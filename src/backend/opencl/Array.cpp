@@ -334,11 +334,15 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
             (3 * sizeof(uint));
 
         const cl::Device &device = getDevice();
-        size_t max_param_size = device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>();
         // typical values:
         //   NVIDIA     = 4096
         //   AMD        = 3520  (AMD A10 iGPU = 1024)
         //   Intel iGPU = 1024
+        //
+        // Setting the maximum to 5120 bytes to keep the compile times
+        // resonable. This still results in large kernels but its not excessive.
+        size_t max_param_size =
+            min(5120UL, device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>());
         max_param_size -= base_param_size;
 
         struct tree_info {
