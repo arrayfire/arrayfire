@@ -45,6 +45,7 @@ if(AF_WITH_EXTERNAL_PACKAGES_ONLY)
   set(AF_REQUIRED REQUIRED)
 endif()
 
+get_filename_component(CXX_COMPILER_NAME ${CMAKE_CXX_COMPILER} NAME)
 if(CXX_COMPILER_NAME STREQUAL "dpcpp" OR CXX_COMPILER_NAME STREQUAL "dpcpp.exe"
    OR CXX_COMPILER_NAME STREQUAL "icpx" OR CXX_COMPILER_NAME STREQUAL "icx.exe")
   set(MKL_THREAD_LAYER "TBB" CACHE STRING "The thread layer to choose for MKL")
@@ -130,7 +131,9 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   # VCPKG overrides the find_package command and the PATH parameter is currently
   # broken with the current version of VCPKG so we are setting the MKL_ROOT
   # directory to the MKLROOT environment variable.
-  set(MKL_ROOT "$ENV{MKLROOT}")
+  if(DEFINED ENV{MKLROOT} AND NOT DEFINED MKL_ROOT)
+    set(MKL_ROOT "$ENV{MKLROOT}")
+  endif()
   find_package(MKL)
 endif()
 
