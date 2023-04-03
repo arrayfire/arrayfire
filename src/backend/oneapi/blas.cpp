@@ -11,12 +11,12 @@
 
 #include <Array.hpp>
 #include <arith.hpp>
-#include <common/kernel_type.hpp>
 #include <common/half.hpp>
+#include <common/kernel_type.hpp>
 #include <common/traits.hpp>
 #include <complex.hpp>
-#include <err_oneapi.hpp>
 #include <debug_oneapi.hpp>
+#include <err_oneapi.hpp>
 #include <math.hpp>
 #include <platform.hpp>
 #include <reduce.hpp>
@@ -32,63 +32,57 @@
 using arrayfire::common::half;
 
 // Converts an af_mat_prop options to a transpose type for mkl
-static oneapi::mkl::transpose
-toBlasTranspose(af_mat_prop opt) {
+static oneapi::mkl::transpose toBlasTranspose(af_mat_prop opt) {
     switch (opt) {
-        case   AF_MAT_NONE: return oneapi::mkl::transpose::nontrans;
-        case  AF_MAT_TRANS: return oneapi::mkl::transpose::trans;
+        case AF_MAT_NONE: return oneapi::mkl::transpose::nontrans;
+        case AF_MAT_TRANS: return oneapi::mkl::transpose::trans;
         case AF_MAT_CTRANS: return oneapi::mkl::transpose::conjtrans;
         default: AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
 }
 
 template<typename T>
-static void gemvDispatch(sycl::queue queue,
-                         oneapi::mkl::transpose lOpts,
-                         int M, int N, const T *alpha,
+static void gemvDispatch(sycl::queue queue, oneapi::mkl::transpose lOpts, int M,
+                         int N, const T *alpha,
                          const arrayfire::oneapi::Array<T> &lhs, dim_t lStride,
                          const arrayfire::oneapi::Array<T> &x, dim_t incx,
                          const T *beta, arrayfire::oneapi::Array<T> &out,
                          dim_t oInc) {
     try {
-        using Dt = arrayfire::oneapi::data_t<T>;
+        using Dt                   = arrayfire::oneapi::data_t<T>;
         sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
         sycl::buffer<Dt, 1> xBuf   = x.get()->template reinterpret<Dt, 1>();
         sycl::buffer<Dt, 1> outBuf = out.get()->template reinterpret<Dt, 1>();
-        ::oneapi::mkl::blas::gemv(queue, lOpts, (int64_t)M, (int64_t)N, 
-            (T)*alpha, lhsBuf, (int64_t)lStride, xBuf, (int64_t)incx, 
-            (T)*beta, outBuf, (int64_t)oInc);
-    } catch(sycl::exception const& e) {
-        AF_ERROR(
-            "Synchronous SYCL exception during GEMV invocation: "
-            + std::string(e.what()),
-            AF_ERR_RUNTIME);
+        ::oneapi::mkl::blas::gemv(queue, lOpts, (int64_t)M, (int64_t)N,
+                                  (T)*alpha, lhsBuf, (int64_t)lStride, xBuf,
+                                  (int64_t)incx, (T)*beta, outBuf,
+                                  (int64_t)oInc);
+    } catch (sycl::exception const &e) {
+        AF_ERROR("Synchronous SYCL exception during GEMV invocation: " +
+                     std::string(e.what()),
+                 AF_ERR_RUNTIME);
     }
 }
 
 template<typename T>
-static void gemmDispatch(sycl::queue queue,
-                         oneapi::mkl::transpose lOpts,
-                         oneapi::mkl::transpose rOpts,
-                         int M, int N, int K, const T *alpha,
-                         const arrayfire::oneapi::Array<T> &lhs, dim_t lStride,
-                         const arrayfire::oneapi::Array<T> &rhs, dim_t rStride,
-                         const T *beta, arrayfire::oneapi::Array<T> &out,
-                         dim_t oleading) {
+static void gemmDispatch(sycl::queue queue, oneapi::mkl::transpose lOpts,
+                         oneapi::mkl::transpose rOpts, int M, int N, int K,
+                         const T *alpha, const arrayfire::oneapi::Array<T> &lhs,
+                         dim_t lStride, const arrayfire::oneapi::Array<T> &rhs,
+                         dim_t rStride, const T *beta,
+                         arrayfire::oneapi::Array<T> &out, dim_t oleading) {
     try {
-        using Dt = arrayfire::oneapi::data_t<T>;
+        using Dt                   = arrayfire::oneapi::data_t<T>;
         sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
         sycl::buffer<Dt, 1> rhsBuf = rhs.get()->template reinterpret<Dt, 1>();
         sycl::buffer<Dt, 1> outBuf = out.get()->template reinterpret<Dt, 1>();
-        ::oneapi::mkl::blas::gemm(queue, lOpts, rOpts, M, N, K, 
-            *alpha, lhsBuf, lStride, rhsBuf, rStride, *beta,
-            outBuf, oleading);
-    }
-    catch(sycl::exception const& e) {
-        AF_ERROR(
-            "Synchronous SYCL exception during GEMM invocation: "
-            + std::string(e.what()),
-            AF_ERR_RUNTIME);
+        ::oneapi::mkl::blas::gemm(queue, lOpts, rOpts, M, N, K, *alpha, lhsBuf,
+                                  lStride, rhsBuf, rStride, *beta, outBuf,
+                                  oleading);
+    } catch (sycl::exception const &e) {
+        AF_ERROR("Synchronous SYCL exception during GEMM invocation: " +
+                     std::string(e.what()),
+                 AF_ERR_RUNTIME);
     }
 }
 
@@ -122,19 +116,17 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     const dim4 &rStrides = rhs.strides();
     const dim4 oStrides  = out.strides();
 
-    if (oDims.ndims() <= 2) { // if non-batched
+    if (oDims.ndims() <= 2) {  // if non-batched
         if (rhs.dims()[bColDim] == 1) {
-            dim_t incr =
-                (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
-            gemvDispatch<T>(getQueue(),
-                lOpts, lDims[0], lDims[1], alpha, lhs, lStrides[1],
-                rhs, incr, beta, out, oStrides[0]);
+            dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
+            gemvDispatch<T>(getQueue(), lOpts, lDims[0], lDims[1], alpha, lhs,
+                            lStrides[1], rhs, incr, beta, out, oStrides[0]);
         } else {
-            gemmDispatch<T>(getQueue(), lOpts, rOpts, M, N, K, alpha,
-                                        lhs, lStrides[1], rhs, rStrides[1], beta,
-                                        out, oStrides[1]);
+            gemmDispatch<T>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
+                            lStrides[1], rhs, rStrides[1], beta, out,
+                            oStrides[1]);
         }
-    } else { // if batched
+    } else {  // if batched
         using Dt = arrayfire::oneapi::data_t<T>;
 
         sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
@@ -147,35 +139,20 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
 
         int64_t batchSize = static_cast<int64_t>(oDims[2] * oDims[3]);
 
-        const bool not_l_batched = (oDims[2] != lDims[2] && oDims[3] != lDims[3]);
-        const bool not_r_batched = (oDims[2] != rDims[2] && oDims[3] != rDims[3]);
+        const bool not_l_batched =
+            (oDims[2] != lDims[2] && oDims[3] != lDims[3]);
+        const bool not_r_batched =
+            (oDims[2] != rDims[2] && oDims[3] != rDims[3]);
 
         ::oneapi::mkl::blas::gemm_batch(
-                                getQueue(),
-                                lOpts, rOpts,
-                                M, N, K,
-                                *alpha,
-                                lhsBuf, lda, not_l_batched? 0 : lStrides[2],
-                                rhsBuf, ldb, not_r_batched? 0 : rStrides[2],
-                                *beta,
-                                outBuf, ldc, oStrides[2], batchSize);
-
-//       const bool pure_l_batch = (lDims[2] == 1 && lDims[3] == 1);
-//       const bool pure_r_batch = (rDims[2] == 1 && rDims[3] == 1);
-
-//       ::oneapi::mkl::blas::gemm_batch(
-//                               getQueue(),
-//                               lOpts, rOpts,
-//                               M, N, K,
-//                               *alpha,
-//                               lhsBuf, lda, pure_l_batch? 0 : lStrides[2],
-//                               rhsBuf, ldb, pure_r_batch? 0 : rStrides[2],
-//                               *beta,
-//                               outBuf, ldc, oStrides[2], batchSize);
+            getQueue(), lOpts, rOpts, M, N, K, *alpha, lhsBuf, lda,
+            not_l_batched ? 0 : lStrides[2], rhsBuf, ldb,
+            not_r_batched ? 0 : rStrides[2], *beta, outBuf, ldc, oStrides[2],
+            batchSize);
     }
+
     ONEAPI_DEBUG_FINISH(getQueue());
 }
-
 
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
@@ -186,7 +163,7 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs, af_mat_prop optLhs,
     return reduce<af_add_t, T, T>(temp, 0, false, 0);
 }
 
-#define INSTANTIATE_GEMM(TYPE)                                              \
+#define INSTANTIATE_GEMM(TYPE)                                               \
     template void gemm<TYPE>(Array<TYPE> & out, af_mat_prop optLhs,          \
                              af_mat_prop optRhs, const TYPE *alpha,          \
                              const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
@@ -196,10 +173,11 @@ INSTANTIATE_GEMM(float)
 INSTANTIATE_GEMM(cfloat)
 INSTANTIATE_GEMM(double)
 INSTANTIATE_GEMM(cdouble)
-//INSTANTIATE_GEMM(half)
+// INSTANTIATE_GEMM(half)
 template<>
-void gemm(Array<half> &out, af_mat_prop optLhs, af_mat_prop optRhs, const half *alpha,
-          const Array<half> &lhs, const Array<half> &rhs, const half *beta) {
+void gemm(Array<half> &out, af_mat_prop optLhs, af_mat_prop optRhs,
+          const half *alpha, const Array<half> &lhs, const Array<half> &rhs,
+          const half *beta) {
     ONEAPI_NOT_SUPPORTED("");
 }
 
@@ -216,4 +194,3 @@ INSTANTIATE_DOT(half)
 
 }  // namespace oneapi
 }  // namespace arrayfire
-

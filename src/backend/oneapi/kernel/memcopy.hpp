@@ -9,12 +9,12 @@
 
 #pragma once
 
-#include <sycl/sycl.hpp>
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/traits.hpp>
 #include <debug_oneapi.hpp>
+#include <sycl/sycl.hpp>
 #include <traits.hpp>
 
 #include <algorithm>

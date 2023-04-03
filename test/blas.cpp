@@ -44,8 +44,7 @@ using std::vector;
 template<typename T>
 class MatrixMultiply : public ::testing::Test {};
 
-//typedef ::testing::Types<float, double, cdouble, cfloat> TestTypes;
-typedef ::testing::Types<float> TestTypes;
+typedef ::testing::Types<float, double, cdouble, cfloat> TestTypes;
 TYPED_TEST_SUITE(MatrixMultiply, TestTypes);
 
 template<typename T, bool isBVector>
@@ -79,8 +78,6 @@ void MatMulCheck(string TestFile) {
         btdims[1] = f;
     }
     ASSERT_SUCCESS(af_moddims(&bT, b, btdims.ndims(), btdims.get()));
-    af_print_array(b);
-    af_print_array(aT);
 
     vector<af_array> out(tests.size(), 0);
     if (isBVector) {
@@ -89,11 +86,6 @@ void MatMulCheck(string TestFile) {
         ASSERT_SUCCESS(af_matmul(&out[2], b, a, AF_MAT_TRANS, AF_MAT_NONE));
         ASSERT_SUCCESS(af_matmul(&out[3], bT, aT, AF_MAT_NONE, AF_MAT_TRANS));
         ASSERT_SUCCESS(af_matmul(&out[4], b, aT, AF_MAT_TRANS, AF_MAT_TRANS));
-        //af_print_array(out[0]);
-        //af_print_array(out[1]);
-        //af_print_array(out[2]);
-        //af_print_array(out[3]);
-        //af_print_array(out[4]);
     } else {
         ASSERT_SUCCESS(af_matmul(&out[0], a, b, AF_MAT_NONE, AF_MAT_NONE));
         ASSERT_SUCCESS(af_matmul(&out[1], a, bT, AF_MAT_NONE, AF_MAT_TRANS));
@@ -127,11 +119,6 @@ TYPED_TEST(MatrixMultiply, NonSquare) {
 }
 
 TYPED_TEST(MatrixMultiply, SquareVector) {
-    af::setDevice(0);
-    af::info();
-    af::array a = af::randu(3, 3);
-    a.eval();
-    af_print(a);
     MatMulCheck<TypeParam, true>(TEST_DIR "/blas/SquareVector.test");
 }
 

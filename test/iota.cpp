@@ -102,8 +102,6 @@ using af::array;
 using af::iota;
 
 TEST(Iota, CPP) {
-    af::setDevice(0);
-    af::info();
     dim4 idims(23, 15, 1, 1);
     dim4 tdims(2, 2, 1, 1);
     dim4 fulldims;
