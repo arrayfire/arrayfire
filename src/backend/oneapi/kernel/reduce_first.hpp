@@ -19,6 +19,8 @@
 #include <math.hpp>
 #include <memory.hpp>
 
+#include <sycl/sycl.hpp>
+
 #include <algorithm>
 #include <climits>
 #include <complex>

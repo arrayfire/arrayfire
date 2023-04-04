@@ -17,6 +17,8 @@
 #include <sycl/sycl.hpp>
 #include <traits.hpp>
 
+#include <sycl/sycl.hpp>
+
 #include <algorithm>
 #include <string>
 #include <vector>

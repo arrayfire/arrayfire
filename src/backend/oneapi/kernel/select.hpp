@@ -14,6 +14,8 @@
 #include <common/kernel_cache.hpp>
 #include <math.hpp>
 
+#include <sycl/sycl.hpp>
+
 #include <string>
 #include <vector>
 

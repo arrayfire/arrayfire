@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2023, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -9,10 +9,13 @@
 
 #pragma once
 #include <Param.hpp>
+#include <accessor.hpp>
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
 #include <af/defines.h>
+
+#include <sycl/sycl.hpp>
 
 #include <string>
 #include <vector>

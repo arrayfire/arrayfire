@@ -33,7 +33,7 @@
 #endif
 
 #ifdef AF_ONEAPI
-#include <sycl/half_type.hpp>
+#include <sycl/sycl.hpp>
 #endif
 
 #include <backend.hpp>

@@ -19,7 +19,7 @@
 #include <memory.hpp>
 #include <minmax_op.hpp>
 
-#include <sycl/sycl.hpp>  //TODO: exact headers
+#include <sycl/sycl.hpp>
 
 #include <algorithm>
 #include <climits>

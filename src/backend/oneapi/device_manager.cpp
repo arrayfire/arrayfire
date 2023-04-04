@@ -23,12 +23,7 @@
 #include <af/oneapi.h>
 #include <af/version.h>
 
-#include <sycl/context.hpp>
-#include <sycl/device.hpp>
-#include <sycl/exception.hpp>
-#include <sycl/exception_list.hpp>
-#include <sycl/platform.hpp>
-#include <sycl/queue.hpp>
+#include <sycl/sycl.hpp>
 
 #include <algorithm>
 #include <iterator>

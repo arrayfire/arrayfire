@@ -12,7 +12,7 @@
 #include <types.hpp>
 #include <af/constants.h>
 
-#include <sycl/builtins.hpp>
+#include <sycl/sycl.hpp>
 
 #include <algorithm>
 

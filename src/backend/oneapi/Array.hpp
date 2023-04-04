@@ -17,7 +17,7 @@
 #include <types.hpp>
 #include <af/dim4.hpp>
 
-#include <sycl/buffer.hpp>
+#include <sycl/sycl.hpp>
 
 #include <nonstd/span.hpp>
 #include <algorithm>

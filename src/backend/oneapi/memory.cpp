@@ -18,8 +18,7 @@
 #include <types.hpp>
 #include <af/dim4.hpp>
 
-#include <sycl/builtins.hpp>
-#include <sycl/usm.hpp>
+#include <sycl/sycl.hpp>
 
 #include <utility>
 

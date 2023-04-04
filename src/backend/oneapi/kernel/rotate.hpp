@@ -16,6 +16,8 @@
 #include <math.hpp>
 #include <traits.hpp>
 
+#include <sycl/sycl.hpp>
+
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {

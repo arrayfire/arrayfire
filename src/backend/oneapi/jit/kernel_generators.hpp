@@ -11,7 +11,7 @@
 #include <Param.hpp>
 #include <err_oneapi.hpp>
 
-#include <sycl/buffer.hpp>
+#include <sycl/sycl.hpp>
 
 #include <functional>
 #include <memory>

@@ -134,7 +134,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   if(DEFINED ENV{MKLROOT} AND NOT DEFINED MKL_ROOT)
     set(MKL_ROOT "$ENV{MKLROOT}")
   endif()
-  find_package(MKL)
+  find_package(MKL 2023.1)
 endif()
 
 af_multiple_option(NAME        AF_COMPUTE_LIBRARY

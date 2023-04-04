@@ -16,6 +16,8 @@
 #include <kernel/default_config.hpp>
 #include <math.hpp>
 
+#include <sycl/sycl.hpp>
+
 #include <string>
 #include <vector>
 

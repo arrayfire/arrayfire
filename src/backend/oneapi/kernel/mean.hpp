@@ -20,8 +20,7 @@
 #include <math.hpp>
 #include <memory.hpp>
 
-#include <sycl/builtins.hpp>
-#include <sycl/group_algorithm.hpp>
+#include <sycl/sycl.hpp>
 
 #include <memory>
 #include <vector>
