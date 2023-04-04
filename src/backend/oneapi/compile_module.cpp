@@ -14,10 +14,10 @@
 #include <common/defines.hpp>
 #include <common/util.hpp>
 #include <err_oneapi.hpp>
-#include <sycl/sycl.hpp>
-// #include <kernel_headers/KParam.hpp>
 #include <platform.hpp>
 #include <traits.hpp>
+
+#include <sycl/sycl.hpp>
 
 #include <algorithm>
 #include <cctype>

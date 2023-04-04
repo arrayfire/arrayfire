@@ -24,7 +24,8 @@
 #include <types.hpp>
 
 #include <sycl/sycl.hpp>
-#include "oneapi/mkl/blas.hpp"
+
+#include <oneapi/mkl/blas.hpp>
 
 #include <complex>
 #include <vector>

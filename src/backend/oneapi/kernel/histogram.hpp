@@ -15,7 +15,7 @@
 #include <err_oneapi.hpp>
 #include <traits.hpp>
 
-#include <sycl/atomic_ref.hpp>
+#include <sycl/sycl.hpp>
 
 #include <string>
 #include <vector>

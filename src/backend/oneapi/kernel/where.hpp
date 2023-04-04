@@ -16,6 +16,8 @@
 #include <kernel/scan_first.hpp>
 #include <memory.hpp>
 
+#include <sycl/sycl.hpp>
+
 #include <Param.hpp>
 #include <backend.hpp>
 #include <math.hpp>

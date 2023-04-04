@@ -12,12 +12,12 @@
 #include <Param.hpp>
 #include <common/complex.hpp>
 #include <common/dispatch.hpp>
-// #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
-// #include <kernel/config.hpp>
 #include <kernel/interp.hpp>
 #include <math.hpp>
 #include <traits.hpp>
+
+#include <sycl/sycl.hpp>
 
 #include <string>
 #include <vector>

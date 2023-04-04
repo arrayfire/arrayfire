@@ -19,10 +19,7 @@
 #include <math.hpp>
 #include <memory.hpp>
 
-#include <sycl/atomic_fence.hpp>
-#include <sycl/atomic_ref.hpp>
-#include <sycl/builtins.hpp>
-#include <sycl/group_algorithm.hpp>
+#include <sycl/sycl.hpp>
 
 #include <algorithm>
 #include <climits>

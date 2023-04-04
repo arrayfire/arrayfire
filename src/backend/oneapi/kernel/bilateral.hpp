@@ -15,7 +15,7 @@
 #include <err_oneapi.hpp>
 #include <traits.hpp>
 
-#include <sycl/builtins.hpp>
+#include <sycl/sycl.hpp>
 
 #include <string>
 #include <vector>

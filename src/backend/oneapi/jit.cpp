@@ -29,7 +29,7 @@
 #include <af/dim4.hpp>
 
 #include <sycl/backend.hpp>
-#include <sycl/interop_handle.hpp>
+#include <sycl/sycl.hpp>
 
 #include <array>
 #include <cstdio>

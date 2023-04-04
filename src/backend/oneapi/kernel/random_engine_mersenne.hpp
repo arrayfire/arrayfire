@@ -44,6 +44,8 @@
 #pragma once
 #include <kernel/random_engine_write.hpp>
 
+#include <sycl/sycl.hpp>
+
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {

@@ -9,9 +9,7 @@
 
 #pragma once
 
-#include <sycl/context.hpp>
-#include <sycl/device.hpp>
-#include <sycl/queue.hpp>
+#include <sycl/sycl.hpp>
 
 #include <memory>
 #include <mutex>

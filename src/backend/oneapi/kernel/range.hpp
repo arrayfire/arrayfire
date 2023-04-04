@@ -18,6 +18,8 @@
 #include <traits.hpp>
 #include <af/dim4.hpp>
 
+#include <sycl/sycl.hpp>
+
 #include <string>
 #include <vector>
 

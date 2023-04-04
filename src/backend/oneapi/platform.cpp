@@ -28,7 +28,7 @@
 #include <OpenGL/CGLCurrent.h>
 #endif
 
-#include <sycl/platform.hpp>
+#include <sycl/sycl.hpp>
 
 #include <cctype>
 #include <cstdlib>

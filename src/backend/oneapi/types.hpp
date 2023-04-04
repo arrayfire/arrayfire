@@ -14,7 +14,7 @@
 #include <af/compilers.h>
 #include <af/traits.hpp>
 
-#include <sycl/aliases.hpp>
+#include <sycl/sycl.hpp>
 
 #include <algorithm>
 #include <array>

@@ -15,6 +15,8 @@
 #include <debug_oneapi.hpp>
 #include <kernel/default_config.hpp>
 
+#include <sycl/sycl.hpp>
+
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {

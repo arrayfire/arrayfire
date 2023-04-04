@@ -17,8 +17,7 @@
 #include <kernel/default_config.hpp>
 #include <memory.hpp>
 
-#include <sycl/builtins.hpp>
-#include <sycl/group_algorithm.hpp>
+#include <sycl/sycl.hpp>
 
 namespace arrayfire {
 namespace oneapi {

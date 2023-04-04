@@ -11,17 +11,9 @@
 
 #include <kernel/KParam.hpp>
 #include <types.hpp>
-
 #include <af/dim4.hpp>
 
-/// The get_pointer function in the accessor class throws a few warnings in the
-/// 2023.0 release of the library. Review this warning in the future
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wsycl-strict"
-#include <sycl/accessor.hpp>
-#pragma clang diagnostic pop
-#include <sycl/buffer.hpp>
-#include <sycl/handler.hpp>
+#include <sycl/sycl.hpp>
 
 #include <optional>
 

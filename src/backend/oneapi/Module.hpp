@@ -10,9 +10,8 @@
 #pragma once
 
 #include <common/ModuleInterface.hpp>
-#include <sycl/sycl.hpp>
 
-#include <sycl/kernel_bundle.hpp>
+#include <sycl/sycl.hpp>
 
 namespace arrayfire {
 namespace oneapi {

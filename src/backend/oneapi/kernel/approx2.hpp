@@ -14,9 +14,10 @@
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
 #include <kernel/interp.hpp>
-#include <af/constants.h>
-// #include <kernel/default_config.hpp>
 #include <traits.hpp>
+#include <af/constants.h>
+
+#include <sycl/sycl.hpp>
 
 #include <string>
 #include <vector>
