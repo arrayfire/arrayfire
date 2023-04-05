@@ -12,8 +12,8 @@
 #include <common/KernelInterface.hpp>
 #include <common/Logger.hpp>
 
-#include <sycl/sycl.hpp>
 #include <backend.hpp>
+#include <sycl/sycl.hpp>
 #include <string>
 
 namespace arrayfire {

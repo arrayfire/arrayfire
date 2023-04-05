@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include <sycl/sycl.hpp>
 #include <common/ModuleInterface.hpp>
+#include <sycl/sycl.hpp>
 
 #include <sycl/kernel_bundle.hpp>
 
@@ -20,9 +20,9 @@ namespace oneapi {
 /// oneapi backend wrapper for cl::Program object
 class Module
     : public common::ModuleInterface<
-          sycl::kernel_bundle<sycl::bundle_state::executable>*> {
+          sycl::kernel_bundle<sycl::bundle_state::executable> *> {
    public:
-    using ModuleType = sycl::kernel_bundle<sycl::bundle_state::executable>*;
+    using ModuleType = sycl::kernel_bundle<sycl::bundle_state::executable> *;
     using BaseClass  = common::ModuleInterface<ModuleType>;
 
     /// \brief Create an uninitialized Module

@@ -27,24 +27,24 @@ using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 template<typename T, bool same_dims>
 class luSplitKernel {
-public:
+   public:
     luSplitKernel(write_accessor<T> lower, KParam lInfo,
-                  write_accessor<T> upper, KParam uInfo,
-                  read_accessor<T> in, KParam iInfo,
-                  const int groupsPerMatX, const int groupsPerMatY)
-        : lower_(lower),
-          lInfo_(lInfo),
-          upper_(upper),
-          uInfo_(uInfo),
-          in_(in),
-          iInfo_(iInfo),
-          groupsPerMatX_(groupsPerMatX),
-          groupsPerMatY_(groupsPerMatY) {}
+                  write_accessor<T> upper, KParam uInfo, read_accessor<T> in,
+                  KParam iInfo, const int groupsPerMatX,
+                  const int groupsPerMatY)
+        : lower_(lower)
+        , lInfo_(lInfo)
+        , upper_(upper)
+        , uInfo_(uInfo)
+        , in_(in)
+        , iInfo_(iInfo)
+        , groupsPerMatX_(groupsPerMatX)
+        , groupsPerMatY_(groupsPerMatY) {}
 
     void operator()(sycl::nd_item<2> it) const {
-        sycl::group g   = it.get_group();
-        const int oz = g.get_group_id(0) / groupsPerMatX_;
-        const int ow = g.get_group_id(1) / groupsPerMatY_;
+        sycl::group g = it.get_group();
+        const int oz  = g.get_group_id(0) / groupsPerMatX_;
+        const int ow  = g.get_group_id(1) / groupsPerMatY_;
 
         const int blockIdx_x = g.get_group_id(0) - oz * groupsPerMatX_;
         const int blockIdx_y = g.get_group_id(1) - ow * groupsPerMatY_;
@@ -70,23 +70,27 @@ public:
                 T *Yd_u = d_u + oy * uInfo_.strides[1];
                 for (int ox = xx; ox < iInfo_.dims[0]; ox += incx) {
                     if (ox > oy) {
-                        if (same_dims || oy < lInfo_.dims[1]) Yd_l[ox] = Yd_i[ox];
+                        if (same_dims || oy < lInfo_.dims[1])
+                            Yd_l[ox] = Yd_i[ox];
                         if (!same_dims || ox < uInfo_.dims[0])
                             Yd_u[ox] = scalar<T>(0);
                     } else if (oy > ox) {
                         if (same_dims || oy < lInfo_.dims[1])
                             Yd_l[ox] = scalar<T>(0);
-                        if (!same_dims || ox < uInfo_.dims[0]) Yd_u[ox] = Yd_i[ox];
+                        if (!same_dims || ox < uInfo_.dims[0])
+                            Yd_u[ox] = Yd_i[ox];
                     } else if (ox == oy) {
                         if (same_dims || oy < lInfo_.dims[1])
                             Yd_l[ox] = scalar<T>(1.0);
-                        if (!same_dims || ox < uInfo_.dims[0]) Yd_u[ox] = Yd_i[ox];
+                        if (!same_dims || ox < uInfo_.dims[0])
+                            Yd_u[ox] = Yd_i[ox];
                     }
                 }
             }
         }
     }
-protected:
+
+   protected:
     write_accessor<T> lower_;
     KParam lInfo_;
     write_accessor<T> upper_;
@@ -97,7 +101,6 @@ protected:
     int groupsPerMatY_;
 };
 
-
 template<typename T>
 void lu_split(Param<T> lower, Param<T> upper, Param<T> in) {
     constexpr unsigned TX    = 32;
@@ -105,9 +108,8 @@ void lu_split(Param<T> lower, Param<T> upper, Param<T> in) {
     constexpr unsigned TILEX = 128;
     constexpr unsigned TILEY = 32;
 
-    const bool sameDims =
-        lower.info.dims[0] == in.info.dims[0] &&
-        lower.info.dims[1] == in.info.dims[1];
+    const bool sameDims = lower.info.dims[0] == in.info.dims[0] &&
+                          lower.info.dims[1] == in.info.dims[1];
 
     sycl::range<2> local(TX, TY);
 
@@ -121,21 +123,17 @@ void lu_split(Param<T> lower, Param<T> upper, Param<T> in) {
         write_accessor<T> lData{*lower.data, h};
         write_accessor<T> uData{*upper.data, h};
 
-        if(sameDims) {
+        if (sameDims) {
             h.parallel_for(sycl::nd_range{global, local},
-                    luSplitKernel<T, true>(
-                        lData, lower.info,
-                        uData, upper.info,
-                        iData, in.info,
-                        groupsPerMatX, groupsPerMatY));
-            } else {
-                h.parallel_for(sycl::nd_range{global, local},
-                        luSplitKernel<T, false>(
-                            lData, lower.info,
-                            uData, upper.info,
-                            iData, in.info,
-                            groupsPerMatX, groupsPerMatY));
-            }
+                           luSplitKernel<T, true>(
+                               lData, lower.info, uData, upper.info, iData,
+                               in.info, groupsPerMatX, groupsPerMatY));
+        } else {
+            h.parallel_for(sycl::nd_range{global, local},
+                           luSplitKernel<T, false>(
+                               lData, lower.info, uData, upper.info, iData,
+                               in.info, groupsPerMatX, groupsPerMatY));
+        }
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

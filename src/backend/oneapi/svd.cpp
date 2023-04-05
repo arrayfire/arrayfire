@@ -9,8 +9,8 @@
 
 #include <Array.hpp>
 #include <blas.hpp>
-#include <copy.hpp>
 #include <common/err_common.hpp>
+#include <copy.hpp>
 #include <err_oneapi.hpp>  // error check functions and Macros
 #include <math.hpp>
 #include <memory.hpp>
@@ -18,7 +18,6 @@
 #include <reduce.hpp>
 #include <svd.hpp>  // oneapi backend function header
 #include <transpose.hpp>
-
 
 #if defined(WITH_LINEAR_ALGEBRA)
 #include "oneapi/mkl/lapack.hpp"
@@ -28,9 +27,9 @@ namespace oneapi {
 
 template<typename T, typename Tr>
 void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
-    dim4 iDims    = in.dims();
-    int64_t M     = iDims[0];
-    int64_t N     = iDims[1];
+    dim4 iDims = in.dims();
+    int64_t M  = iDims[0];
+    int64_t N  = iDims[1];
 
     dim4 iStrides = in.strides();
     dim4 uStrides = u.strides();
@@ -39,29 +38,15 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     int64_t LDU   = uStrides[1];
     int64_t LDVt  = vStrides[1];
 
-    try {
-        int64_t scratch_size =
-            ::oneapi::mkl::lapack::gesvd_scratchpad_size<T>(
-                getQueue(),
-                ::oneapi::mkl::jobsvd::vectors,
-                ::oneapi::mkl::jobsvd::vectors,
-                M, N, LDA, LDU, LDVt);
-        Array<T> scratchpad = createEmptyArray<T>(af::dim4(scratch_size));
+    int64_t scratch_size = ::oneapi::mkl::lapack::gesvd_scratchpad_size<T>(
+        getQueue(), ::oneapi::mkl::jobsvd::vectors,
+        ::oneapi::mkl::jobsvd::vectors, M, N, LDA, LDU, LDVt);
+    Array<T> scratchpad = createEmptyArray<T>(af::dim4(scratch_size));
 
-        ::oneapi::mkl::lapack::gesvd(
-                getQueue(),
-                ::oneapi::mkl::jobsvd::vectors,
-                ::oneapi::mkl::jobsvd::vectors,
-                M, N,
-                *in.get(), LDA,
-                *s.get(), *u.get(), LDU,
-                *vt.get(), LDVt,
-                *scratchpad.get(), scratch_size);
-
-    } catch(::oneapi::mkl::lapack::exception const& e) {
-        AF_ERROR("Unexpected exception caught during synchronous\
-                call to LAPACK API", AF_ERR_RUNTIME);
-    }
+    ::oneapi::mkl::lapack::gesvd(
+        getQueue(), ::oneapi::mkl::jobsvd::vectors,
+        ::oneapi::mkl::jobsvd::vectors, M, N, *in.get(), LDA, *s.get(),
+        *u.get(), LDU, *vt.get(), LDVt, *scratchpad.get(), scratch_size);
 }
 
 template<typename T, typename Tr>

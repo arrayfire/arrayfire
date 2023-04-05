@@ -11,8 +11,8 @@
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
-#include <af/dim4.hpp>
 #include <kernel/identity.hpp>
+#include <af/dim4.hpp>
 
 using arrayfire::common::half;
 

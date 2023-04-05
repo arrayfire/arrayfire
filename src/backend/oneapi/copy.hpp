@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Array.hpp>
-//#include <kernel/pad_array_borders.hpp>
+// #include <kernel/pad_array_borders.hpp>
 
 namespace arrayfire {
 namespace oneapi {

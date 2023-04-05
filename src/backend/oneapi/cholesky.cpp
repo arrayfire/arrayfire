@@ -32,20 +32,20 @@ int cholesky_inplace(Array<T> &in, const bool is_upper) {
     ::oneapi::mkl::uplo uplo = ::oneapi::mkl::uplo::lower;
     if (is_upper) { uplo = ::oneapi::mkl::uplo::upper; }
 
-    lwork = ::oneapi::mkl::lapack::potrf_scratchpad_size<T>(
-                getQueue(), uplo, N, LDA);
+    lwork = ::oneapi::mkl::lapack::potrf_scratchpad_size<T>(getQueue(), uplo, N,
+                                                            LDA);
 
     Array<T> workspace = createEmptyArray<T>(af::dim4(lwork));
     Array<int> d_info  = createEmptyArray<int>(af::dim4(1));
 
     try {
-      ::oneapi::mkl::lapack::potrf(
-              getQueue(),
-              uplo, N, *in.get(), LDA,
-              *workspace.get(), lwork);
-    } catch(::oneapi::mkl::lapack::exception const& e) {
-        AF_ERROR("Unexpected exception caught during synchronous\
-                call to LAPACK API", AF_ERR_RUNTIME);
+        ::oneapi::mkl::lapack::potrf(getQueue(), uplo, N, *in.get(), LDA,
+                                     *workspace.get(), lwork);
+    } catch (::oneapi::mkl::lapack::exception const &e) {
+        AF_ERROR(
+            "Unexpected exception caught during synchronous\
+                call to LAPACK API",
+            AF_ERR_RUNTIME);
         return e.info();
     }
 
@@ -82,12 +82,14 @@ namespace oneapi {
 
 template<typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper) {
-    AF_ERROR("Linear Algebra is disabled on OneAPI backend", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is disabled on OneAPI backend",
+             AF_ERR_NOT_CONFIGURED);
 }
 
 template<typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper) {
-    AF_ERROR("Linear Algebra is disabled on OneAPI backend", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is disabled on OneAPI backend",
+             AF_ERR_NOT_CONFIGURED);
 }
 
 #define INSTANTIATE_CH(T)                                                 \

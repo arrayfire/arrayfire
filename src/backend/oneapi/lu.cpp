@@ -13,14 +13,15 @@
 #if defined(WITH_LINEAR_ALGEBRA)
 #include <blas.hpp>
 #include <copy.hpp>
-#include <platform.hpp>
 #include <kernel/lu_split.hpp>
+#include <platform.hpp>
 #include "oneapi/mkl/lapack.hpp"
 
 namespace arrayfire {
 namespace oneapi {
 
-Array<int> convertPivot(sycl::buffer<int64_t> &pivot, int out_sz, bool convert_pivot) {
+Array<int> convertPivot(sycl::buffer<int64_t> &pivot, int out_sz,
+                        bool convert_pivot) {
     dim_t d0 = pivot.get_range()[0];
 
     std::vector<int> d_po(out_sz);
@@ -28,7 +29,7 @@ Array<int> convertPivot(sycl::buffer<int64_t> &pivot, int out_sz, bool convert_p
 
     auto d_pi = pivot.get_host_access();
 
-    if(convert_pivot) {
+    if (convert_pivot) {
         for (int j = 0; j < d0; j++) {
             // 1 indexed in pivot
             std::swap(d_po[j], d_po[d_pi[j] - 1]);
@@ -38,13 +39,10 @@ Array<int> convertPivot(sycl::buffer<int64_t> &pivot, int out_sz, bool convert_p
         return res;
     } else {
         d_po.resize(d0);
-        for (int j = 0; j < d0; j++) {
-            d_po[j] = static_cast<int>(d_pi[j]);
-        }
+        for (int j = 0; j < d0; j++) { d_po[j] = static_cast<int>(d_pi[j]); }
     }
     Array<int> res = createHostDataArray(dim4(d0), &d_po[0]);
     return res;
-
 }
 
 template<typename T>
@@ -75,36 +73,14 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     int64_t MN    = std::min(M, N);
     int64_t LDA   = iStrides[1];
 
-    std::int64_t scratchpad_size;
-    try {
-            scratchpad_size =
-                ::oneapi::mkl::lapack::getrf_scratchpad_size<T>(
-                    getQueue(),
-                    M,
-                    N,
-                    LDA);
-    } catch(::oneapi::mkl::lapack::exception const& e) {
-        AF_ERROR("Unexpected exception caught during synchronous\
-                call to LAPACK API", AF_ERR_RUNTIME);
-    }
+    std::int64_t scratchpad_size =
+        ::oneapi::mkl::lapack::getrf_scratchpad_size<T>(getQueue(), M, N, LDA);
 
     sycl::buffer<int64_t, 1> ipiv{sycl::range<1>(MN)};
     Array<T> scratch = createEmptyArray<T>(af::dim4(scratchpad_size));
 
-    try {
-        ::oneapi::mkl::lapack::getrf(
-                getQueue(),
-                M,
-                N,
-                *in.get(),
-                LDA,
-                ipiv,
-                *scratch.get(),
-                scratchpad_size);
-    } catch(::oneapi::mkl::lapack::exception const& e) {
-        AF_ERROR("Unexpected exception caught during synchronous\
-                call to LAPACK API", AF_ERR_RUNTIME);
-    }
+    ::oneapi::mkl::lapack::getrf(getQueue(), M, N, *in.get(), LDA, ipiv,
+                                 *scratch.get(), scratchpad_size);
 
     Array<int> pivot = convertPivot(ipiv, M, convert_pivot);
     return pivot;

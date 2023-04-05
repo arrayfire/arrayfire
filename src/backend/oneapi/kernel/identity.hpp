@@ -24,16 +24,13 @@ using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 template<typename T>
 class identityKernel {
-public:
-    identityKernel(write_accessor<T> out, KParam oInfo,
-                   const int groups_x, const int groups_y)
-        : out_(out),
-          oInfo_(oInfo),
-          groups_x_(groups_x),
-          groups_y_(groups_y) {}
+   public:
+    identityKernel(write_accessor<T> out, KParam oInfo, const int groups_x,
+                   const int groups_y)
+        : out_(out), oInfo_(oInfo), groups_x_(groups_x), groups_y_(groups_y) {}
 
     void operator()(sycl::nd_item<2> it) const {
-        sycl::group g   = it.get_group();
+        sycl::group g = it.get_group();
 
         size_t idz = g.get_group_id(0) / groups_x_;
         size_t idw = g.get_group_id(1) / groups_y_;
@@ -44,24 +41,27 @@ public:
         size_t idx = it.get_local_id(0) + groupId_x * g.get_local_range(0);
         size_t idy = it.get_local_id(1) + groupId_y * g.get_local_range(1);
 
-        size_t xlim = oInfo_.dims[0]; size_t ylim = oInfo_.dims[1];
-        size_t zlim = oInfo_.dims[2]; size_t wlim = oInfo_.dims[3];
+        size_t xlim = oInfo_.dims[0];
+        size_t ylim = oInfo_.dims[1];
+        size_t zlim = oInfo_.dims[2];
+        size_t wlim = oInfo_.dims[3];
         if (idx < xlim && idy < ylim && idz < zlim && idw < wlim) {
             const T one  = scalar<T>(1);
             const T zero = scalar<T>(0);
 
-            T *ptr = out_.get_pointer() + idz * oInfo_.strides[2] + idw * oInfo_.strides[3];
-            T val  = (idx == idy) ? one : zero;
+            T *ptr = out_.get_pointer() + idz * oInfo_.strides[2] +
+                     idw * oInfo_.strides[3];
+            T val                              = (idx == idy) ? one : zero;
             ptr[idx + idy * oInfo_.strides[1]] = val;
         }
     }
-protected:
+
+   protected:
     write_accessor<T> out_;
     KParam oInfo_;
     int groups_x_;
     int groups_y_;
 };
-
 
 template<typename T>
 void identity(Param<T> out) {
@@ -76,9 +76,7 @@ void identity(Param<T> out) {
         write_accessor<T> oData{*out.data, h};
 
         h.parallel_for(sycl::nd_range{global, local},
-                identityKernel<T>(
-                    oData, out.info,
-                    groups_x, groups_y));
+                       identityKernel<T>(oData, out.info, groups_x, groups_y));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }

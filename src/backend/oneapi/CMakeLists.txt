@@ -268,9 +268,6 @@ add_library(ArrayFire::afoneapi ALIAS afoneapi)
 
 arrayfire_set_default_cxx_flags(afoneapi)
 
-find_package(MKL CONFIG REQUIRED)
-message(STATUS "${MKL_IMPORTED_TARGETS}")
-
 target_include_directories(afoneapi
   SYSTEM PRIVATE
     ${SYCL_INCLUDE_DIR}

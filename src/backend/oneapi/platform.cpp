@@ -172,8 +172,6 @@ string getDeviceInfo() noexcept {
                 device->get_info<sycl::info::device::driver_version>();
             info << devVersion;
             info << " -- Device driver " << driVersion;
-            info << " -- FP64 Support: "
-                 << (device->has(sycl::aspect::fp64) ? "True" : "False");
             info << " -- Unified Memory ("
                  << (isHostUnifiedMemory(*device) ? "True" : "False") << ")";
 #endif
