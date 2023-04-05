@@ -45,11 +45,9 @@ struct Param {
 
 template<typename T>
 struct AParam {
-    std::optional<sycl::accessor<T, 1>> data;
-    std::optional<sycl::accessor<T, 1, sycl::access::mode::read_write,
-                                 sycl::access::target::device,
-                                 sycl::access::placeholder::true_t>>
-        ph;
+    sycl::accessor<T, 1, sycl::access_mode::read_write, sycl::target::device,
+                   sycl::access::placeholder::true_t>
+        data;
     af::dim4 dims;
     af::dim4 strides;
     dim_t offset;
@@ -58,35 +56,30 @@ struct AParam {
     AParam(AParam&& other)                 = default;
 
     // AF_DEPRECATED("Use Array<T>")
-    AParam() : data(), ph(), dims{0, 0, 0, 0}, strides{0, 0, 0, 0}, offset(0) {}
+    AParam() : data(), dims{0, 0, 0, 0}, strides{0, 0, 0, 0}, offset(0) {}
 
     AParam(sycl::buffer<T, 1>& data_, const dim_t dims_[4],
            const dim_t strides_[4], dim_t offset_)
-        : data()
-        , ph(std::make_optional<
-              sycl::accessor<T, 1, sycl::access::mode::read_write,
-                             sycl::access::target::device,
-                             sycl::access::placeholder::true_t>>(data_))
+        : data(data_.get_access())
         , dims(4, dims_)
         , strides(4, strides_)
         , offset(offset_) {}
     // AF_DEPRECATED("Use Array<T>")
     AParam(sycl::handler& h, sycl::buffer<T, 1>& data_, const dim_t dims_[4],
            const dim_t strides_[4], dim_t offset_)
-        : data{{data_, h}}
-        , ph(data_)
+        : data(data_.get_access())
         , dims(4, dims_)
         , strides(4, strides_)
-        , offset(offset_) {}
+        , offset(offset_) {
+        require(h);
+    }
 
     template<sycl::access::mode MODE>
     sycl::accessor<data_t<T>, 1, MODE> get_accessor(sycl::handler& h) const {
         return *data;
     }
 
-    void require(sycl::handler& h) {
-        if (!data) { h.require(ph.value()); }
-    }
+    void require(sycl::handler& h) { h.require(data); }
 
     operator KParam() const {
         return KParam{{dims[0], dims[1], dims[2], dims[3]},
