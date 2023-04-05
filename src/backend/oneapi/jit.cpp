@@ -465,7 +465,7 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                                                 const_cast<void*>(ptr));
                                         vector<cl_mem> mem =
                                             hh.get_native_mem<backend::opencl>(
-                                                info->ph.value());
+                                                info->data);
                                         if (is_linear) {
                                             CL_CHECK(clSetKernelArg(
                                                 kernels[0], id++,
@@ -497,8 +497,8 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                         // Set output parameters
                         vector<cl_mem> mem;
                         for (const auto& output : ap) {
-                            mem = hh.get_native_mem<backend::opencl>(
-                                output.data.value());
+                            mem =
+                                hh.get_native_mem<backend::opencl>(output.data);
                             cl_mem mmm = mem[0];
                             CL_CHECK(clSetKernelArg(kernels[0], nargs++,
                                                     sizeof(cl_mem), &mmm));
