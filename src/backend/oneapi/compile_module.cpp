@@ -14,7 +14,6 @@
 #include <common/defines.hpp>
 #include <common/util.hpp>
 #include <sycl/sycl.hpp>
-// #include <debug_opencl.hpp> TODO: remove?
 #include <err_oneapi.hpp>
 // #include <kernel_headers/KParam.hpp>
 #include <platform.hpp>
