@@ -48,20 +48,13 @@ static void gemvDispatch(sycl::queue queue, oneapi::mkl::transpose lOpts, int M,
                          const arrayfire::oneapi::Array<T> &x, dim_t incx,
                          const T *beta, arrayfire::oneapi::Array<T> &out,
                          dim_t oInc) {
-    try {
-        using Dt                   = arrayfire::oneapi::data_t<T>;
-        sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
-        sycl::buffer<Dt, 1> xBuf   = x.get()->template reinterpret<Dt, 1>();
-        sycl::buffer<Dt, 1> outBuf = out.get()->template reinterpret<Dt, 1>();
-        ::oneapi::mkl::blas::gemv(queue, lOpts, (int64_t)M, (int64_t)N,
-                                  (T)*alpha, lhsBuf, (int64_t)lStride, xBuf,
-                                  (int64_t)incx, (T)*beta, outBuf,
-                                  (int64_t)oInc);
-    } catch (sycl::exception const &e) {
-        AF_ERROR("Synchronous SYCL exception during GEMV invocation: " +
-                     std::string(e.what()),
-                 AF_ERR_RUNTIME);
-    }
+    using Dt                   = arrayfire::oneapi::data_t<T>;
+    sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
+    sycl::buffer<Dt, 1> xBuf   = x.get()->template reinterpret<Dt, 1>();
+    sycl::buffer<Dt, 1> outBuf = out.get()->template reinterpret<Dt, 1>();
+    ::oneapi::mkl::blas::gemv(queue, lOpts, (int64_t)M, (int64_t)N, (T)*alpha,
+                              lhsBuf, (int64_t)lStride, xBuf, (int64_t)incx,
+                              (T)*beta, outBuf, (int64_t)oInc);
 }
 
 template<typename T>
@@ -71,19 +64,13 @@ static void gemmDispatch(sycl::queue queue, oneapi::mkl::transpose lOpts,
                          dim_t lStride, const arrayfire::oneapi::Array<T> &rhs,
                          dim_t rStride, const T *beta,
                          arrayfire::oneapi::Array<T> &out, dim_t oleading) {
-    try {
-        using Dt                   = arrayfire::oneapi::data_t<T>;
-        sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
-        sycl::buffer<Dt, 1> rhsBuf = rhs.get()->template reinterpret<Dt, 1>();
-        sycl::buffer<Dt, 1> outBuf = out.get()->template reinterpret<Dt, 1>();
-        ::oneapi::mkl::blas::gemm(queue, lOpts, rOpts, M, N, K, *alpha, lhsBuf,
-                                  lStride, rhsBuf, rStride, *beta, outBuf,
-                                  oleading);
-    } catch (sycl::exception const &e) {
-        AF_ERROR("Synchronous SYCL exception during GEMM invocation: " +
-                     std::string(e.what()),
-                 AF_ERR_RUNTIME);
-    }
+    using Dt                   = arrayfire::oneapi::data_t<T>;
+    sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
+    sycl::buffer<Dt, 1> rhsBuf = rhs.get()->template reinterpret<Dt, 1>();
+    sycl::buffer<Dt, 1> outBuf = out.get()->template reinterpret<Dt, 1>();
+    ::oneapi::mkl::blas::gemm(queue, lOpts, rOpts, M, N, K, *alpha, lhsBuf,
+                              lStride, rhsBuf, rStride, *beta, outBuf,
+                              oleading);
 }
 
 namespace arrayfire {
