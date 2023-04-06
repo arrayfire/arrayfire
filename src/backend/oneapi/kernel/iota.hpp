@@ -51,24 +51,27 @@ class iotaKernel {
         const int xx = it.get_local_id(0) + blockIdx_x * gg.get_local_range(0);
         const int yy = it.get_local_id(1) + blockIdx_y * gg.get_local_range(1);
 
-        if (xx >= oinfo_.dims[0] || yy >= oinfo_.dims[1] ||
-            oz >= oinfo_.dims[2] || ow >= oinfo_.dims[3])
-            return;
+        size_t odims0 = oinfo_.dims[0];
+        size_t odims1 = oinfo_.dims[1];
+        size_t odims2 = oinfo_.dims[2];
+        size_t odims3 = oinfo_.dims[3];
 
-        const int ozw = ow * oinfo_.strides[3] + oz * oinfo_.strides[2];
+        if (xx < odims0 && yy < odims1 && oz < odims2 && ow < odims3) {
+            const int ozw = ow * oinfo_.strides[3] + oz * oinfo_.strides[2];
 
-        T val = static_cast<T>((ow % s3_) * s2_ * s1_ * s0_);
-        val += static_cast<T>((oz % s2_) * s1_ * s0_);
+            T val = static_cast<T>((ow % s3_) * s2_ * s1_ * s0_);
+            val += static_cast<T>((oz % s2_) * s1_ * s0_);
 
-        const int incy = blocksPerMatY_ * gg.get_local_range(1);
-        const int incx = blocksPerMatX_ * gg.get_local_range(0);
+            const int incy = blocksPerMatY_ * gg.get_local_range(1);
+            const int incx = blocksPerMatX_ * gg.get_local_range(0);
 
-        for (int oy = yy; oy < oinfo_.dims[1]; oy += incy) {
-            T valY   = val + (oy % s1_) * s0_;
-            int oyzw = ozw + oy * oinfo_.strides[1];
-            for (int ox = xx; ox < oinfo_.dims[0]; ox += incx) {
-                int oidx   = oyzw + ox;
-                out_[oidx] = valY + (ox % s0_);
+            for (int oy = yy; oy < odims1; oy += incy) {
+                T valY   = val + (oy % s1_) * s0_;
+                int oyzw = ozw + oy * oinfo_.strides[1];
+                for (int ox = xx; ox < odims0; ox += incx) {
+                    int oidx   = oyzw + ox;
+                    out_[oidx] = valY + (ox % s0_);
+                }
             }
         }
     }
