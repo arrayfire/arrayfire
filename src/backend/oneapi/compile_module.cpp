@@ -13,8 +13,8 @@
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/util.hpp>
-#include <sycl/sycl.hpp>
 #include <err_oneapi.hpp>
+#include <sycl/sycl.hpp>
 // #include <kernel_headers/KParam.hpp>
 #include <platform.hpp>
 #include <traits.hpp>
