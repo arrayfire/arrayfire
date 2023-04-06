@@ -43,15 +43,18 @@ void print(const char *F, const first &FF, ARGS... args) {
 #define SHOW5(val1, val2, val3, val4, val5)                              \
     debugging::print(#val1, val1, #val2, val2, #val3, val3, #val4, val4, \
                      #val5, val5)
+#define SHOW6(val1, val2, val3, val4, val5, val6)                        \
+    debugging::print(#val1, val1, #val2, val2, #val3, val3, #val4, val4, \
+                     #val5, val5, #val6, val6)
 
-#define GET_MACRO(_1, _2, _3, _4, _5, NAME, ...) NAME
+#define GET_MACRO(_1, _2, _3, _4, _5, _6, NAME, ...) NAME
 
-#define SHOW(...)                                                 \
-    do {                                                          \
-        fmt::print(std::cout, "{}:({}): ", __FILE__, __LINE__);   \
-        GET_MACRO(__VA_ARGS__, SHOW5, SHOW4, SHOW3, SHOW2, SHOW1) \
-        (__VA_ARGS__);                                            \
-        fmt::print(std::cout, "\n");                              \
+#define SHOW(...)                                                        \
+    do {                                                                 \
+        fmt::print(std::cout, "{}:({}): ", __FILE__, __LINE__);          \
+        GET_MACRO(__VA_ARGS__, SHOW6, SHOW5, SHOW4, SHOW3, SHOW2, SHOW1) \
+        (__VA_ARGS__);                                                   \
+        fmt::print(std::cout, "\n");                                     \
     } while (0)
 
 #define PRINTVEC(val)                                                        \
