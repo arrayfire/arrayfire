@@ -23,7 +23,10 @@
     ],
     "features": {
         "tests": {
-            "description": "Build with tests"
+            "description": "Build with tests",
+            "dependencies": [
+                "gtest"
+            ]
         },
         "forge": {
             "description": "Build Forge",
