@@ -13,6 +13,7 @@
 #include <common/Logger.hpp>
 
 #include <backend.hpp>
+#include <sycl/sycl.hpp>
 #include <string>
 
 namespace arrayfire {
