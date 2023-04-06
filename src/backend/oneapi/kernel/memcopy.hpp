@@ -69,14 +69,19 @@ class memCopy {
                 id1 * istrides_.dim[1];
 
         int istride0 = istrides_.dim[0];
-        if (id0 < idims_.dim[0] && id1 < idims_.dim[1] && id2 < idims_.dim[2] &&
-            id3 < idims_.dim[3]) {
+        size_t idd0  = idims_.dim[0];
+        size_t idd1  = idims_.dim[1];
+        size_t idd2  = idims_.dim[2];
+        size_t idd3  = idims_.dim[3];
+
+        if (id0 < idd0 && id1 < idd1 && id2 < idd2 && id3 < idd3) {
             optr[id0] = iptr[id0 * istride0];
         }
     }
 
    protected:
-    sycl::accessor<T> out_, in_;
+    sycl::accessor<T> out_;
+    sycl::accessor<T> in_;
     dims_t ostrides_, idims_, istrides_;
     int offset_, groups_0_, groups_1_;
 };
@@ -228,13 +233,22 @@ class reshapeCopy {
         uint istride0 = iInfo_.strides[0];
         uint ostride0 = oInfo_.strides[0];
 
-        if (gy < oInfo_.dims[1] && gz < oInfo_.dims[2] && gw < oInfo_.dims[3]) {
+        size_t odims0 = oInfo_.dims[0];
+        size_t odims1 = oInfo_.dims[1];
+        size_t odims2 = oInfo_.dims[2];
+        size_t odims3 = oInfo_.dims[3];
+
+        size_t tdims0 = trgt_.dim[0];
+        size_t tdims1 = trgt_.dim[1];
+        size_t tdims2 = trgt_.dim[2];
+        size_t tdims3 = trgt_.dim[3];
+
+        if (gy < odims1 && gz < odims2 && gw < odims3) {
             int loop_offset = gg.get_local_range(0) * blk_x_;
-            bool cond =
-                gy < trgt_.dim[1] && gz < trgt_.dim[2] && gw < trgt_.dim[3];
-            for (int rep = gx; rep < oInfo_.dims[0]; rep += loop_offset) {
+            bool cond       = gy < tdims1 && gz < tdims2 && gw < tdims3;
+            for (int rep = gx; rep < odims0; rep += loop_offset) {
                 outType temp = default_value_;
-                if (SAMEDIMS || (rep < trgt_.dim[0] && cond)) {
+                if (SAMEDIMS || (rep < tdims0 && cond)) {
                     temp = convertType<inType, outType>(
                         scale<inType>(in[rep * istride0], factor_));
                 }
