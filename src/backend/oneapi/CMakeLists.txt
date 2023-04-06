@@ -216,10 +216,12 @@ target_sources(afoneapi
     kernel/bilateral.hpp
     kernel/diagonal.hpp
     kernel/diff.hpp
+    kernel/histogram.hpp
+    kernel/identity.hpp
     kernel/interp.hpp
     kernel/iota.hpp
     kernel/ireduce.hpp
-    kernel/histogram.hpp
+    kernel/lu_split.hpp
     kernel/memcopy.hpp
     kernel/mean.hpp
     kernel/random_engine.hpp
@@ -268,7 +270,8 @@ arrayfire_set_default_cxx_flags(afoneapi)
 
 target_include_directories(afoneapi
   SYSTEM PRIVATE
-    ${SYCL_INCLUDE_DIR})
+    ${SYCL_INCLUDE_DIR}
+)
 
 target_include_directories(afoneapi
   PUBLIC
@@ -289,6 +292,7 @@ target_compile_options(afoneapi
 target_compile_definitions(afoneapi
   PRIVATE
     AF_ONEAPI
+    WITH_LINEAR_ALGEBRA
     CL_TARGET_OPENCL_VERSION=300
     CL_HPP_TARGET_OPENCL_VERSION=300
     CL_HPP_MINIMUM_OPENCL_VERSION=110

@@ -11,6 +11,7 @@
 #include <Array.hpp>
 #include <common/half.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/identity.hpp>
 #include <af/dim4.hpp>
 
 using arrayfire::common::half;
@@ -19,8 +20,8 @@ namespace arrayfire {
 namespace oneapi {
 template<typename T>
 Array<T> identity(const dim4& dims) {
-    ONEAPI_NOT_SUPPORTED("");
     Array<T> out = createEmptyArray<T>(dims);
+    kernel::identity<T>(out);
     return out;
 }
 

@@ -13,10 +13,9 @@
 #include <common/Logger.hpp>
 #include <common/defines.hpp>
 #include <common/util.hpp>
-#include <sycl/sycl.hpp>
-//#include <debug_opencl.hpp> TODO: remove?
 #include <err_oneapi.hpp>
-//#include <kernel_headers/KParam.hpp>
+#include <sycl/sycl.hpp>
+// #include <kernel_headers/KParam.hpp>
 #include <platform.hpp>
 #include <traits.hpp>
 
@@ -73,7 +72,7 @@ namespace arrayfire {
 namespace oneapi {
 
 // const static string DEFAULT_MACROS_STR(
-//"\n\
+// "\n\
                                            //#ifdef USE_DOUBLE\n\
                                            //#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
                                            //#endif\n                     \
@@ -85,7 +84,7 @@ namespace oneapi {
                                            //#ifndef M_PI\n               \
                                            //#define
 // M_PI 3.1415926535897932384626433832795028841971693993751058209749445923078164\n
-//\
+// \
                                            //#endif\n                     \
                                            //");
 

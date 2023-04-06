@@ -172,7 +172,6 @@ string getDeviceInfo() noexcept {
                 device->get_info<sycl::info::device::driver_version>();
             info << devVersion;
             info << " -- Device driver " << driVersion;
-
             info << " -- Unified Memory ("
                  << (isHostUnifiedMemory(*device) ? "True" : "False") << ")";
 #endif
