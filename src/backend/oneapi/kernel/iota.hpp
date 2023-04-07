@@ -14,6 +14,7 @@
 #include <common/half.hpp>
 #include <debug_oneapi.hpp>
 #include <traits.hpp>
+#include <types.hpp>
 #include <af/dim4.hpp>
 
 #include <sycl/sycl.hpp>
@@ -59,15 +60,16 @@ class iotaKernel {
         if (xx < odims0 && yy < odims1 && oz < odims2 && ow < odims3) {
             const int ozw = ow * oinfo_.strides[3] + oz * oinfo_.strides[2];
 
-            T val = static_cast<T>((ow % s3_) * s2_ * s1_ * s0_);
-            val += static_cast<T>((oz % s2_) * s1_ * s0_);
+            compute_t<T> val =
+                static_cast<compute_t<T>>((ow % s3_) * s2_ * s1_ * s0_);
+            val += static_cast<compute_t<T>>((oz % s2_) * s1_ * s0_);
 
             const int incy = blocksPerMatY_ * gg.get_local_range(1);
             const int incx = blocksPerMatX_ * gg.get_local_range(0);
 
             for (int oy = yy; oy < odims1; oy += incy) {
-                T valY   = val + (oy % s1_) * s0_;
-                int oyzw = ozw + oy * oinfo_.strides[1];
+                compute_t<T> valY = val + (oy % s1_) * s0_;
+                int oyzw          = ozw + oy * oinfo_.strides[1];
                 for (int ox = xx; ox < odims0; ox += incx) {
                     int oidx   = oyzw + ox;
                     out_[oidx] = valY + (ox % s0_);

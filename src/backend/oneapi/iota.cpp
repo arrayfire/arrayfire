@@ -29,15 +29,6 @@ Array<T> iota(const dim4 &dims, const dim4 &tile_dims) {
     return out;
 }
 
-template<>
-Array<half> iota(const dim4 &dims, const dim4 &tile_dims) {
-    ONEAPI_NOT_SUPPORTED("");
-    // dim4 outdims = dims * tile_dims;
-
-    // Array<half> out = createEmptyArray<half>(outdims);
-    // return out;
-}
-
 #define INSTANTIATE(T) \
     template Array<T> iota<T>(const af::dim4 &dims, const af::dim4 &tile_dims);
 
@@ -50,5 +41,6 @@ INSTANTIATE(uintl)
 INSTANTIATE(uchar)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+INSTANTIATE(half)
 }  // namespace oneapi
 }  // namespace arrayfire
