@@ -73,7 +73,6 @@
 
 include(CheckTypeSize)
 include(FindPackageHandleStandardArgs)
-find_package(OpenMP QUIET)
 
 check_type_size("int" INT_SIZE
   BUILTIN_TYPES_ONLY LANGUAGE C)
