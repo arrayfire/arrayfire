@@ -129,7 +129,12 @@ magma_int_t magma_ungqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
     // ((n+31)/32*32)*nb for dW larfb workspace.
     lddwork = std::min(m, n);
     cl_mem dW;
-    magma_malloc<Ty>(&dW, (((n + 31) / 32) * 32) * nb);
+    if (MAGMA_SUCCESS != magma_malloc<Ty>(&dW, (((n + 31) / 32) * 32) * nb)) {
+        magma_free_cpu(work);
+        magma_free(dV);
+        *info = MAGMA_ERR_DEVICE_ALLOC;
+        return *info;
+    }
 
     cpu_lapack_ungqr_work_func<Ty> cpu_lapack_ungqr;
 
