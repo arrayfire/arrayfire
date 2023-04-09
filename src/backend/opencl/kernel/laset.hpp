@@ -69,7 +69,7 @@ void laset(int m, int n, T offdiag, T diag, cl_mem dA, size_t dA_offset,
     // retain the cl_mem object during cl::Buffer creation
     cl::Buffer dAObj(dA, true);
 
-    cl::CommandQueue q(queue);
+    cl::CommandQueue q(queue, true);
     lasetOp(cl::EnqueueArgs(q, global, local), m, n, offdiag, diag, dAObj,
             dA_offset, ldda);
 }
