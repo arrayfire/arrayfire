@@ -15,6 +15,7 @@
 #include <debug_oneapi.hpp>
 #include <kernel/default_config.hpp>
 #include <math.hpp>
+#include <sycl/sycl.hpp>
 
 #include <sycl/sycl.hpp>
 
@@ -82,8 +83,8 @@ class wrapCreateKernel {
         // / stride Each previous index has the value appear "stride" locations
         // earlier We work our way back from the last index
 
-        const int x_end = fmin(pidx0 / sx_, nx_ - 1);
-        const int y_end = fmin(pidx1 / sy_, ny_ - 1);
+        const int x_end = sycl::min(pidx0 / sx_, nx_ - 1);
+        const int y_end = sycl::min(pidx1 / sy_, ny_ - 1);
 
         const int x_off = pidx0 - sx_ * x_end;
         const int y_off = pidx1 - sy_ * y_end;

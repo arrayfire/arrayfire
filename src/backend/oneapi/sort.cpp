@@ -7,10 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <kernel/sort.hpp>
+
 #include <Array.hpp>
 #include <copy.hpp>
 #include <err_oneapi.hpp>
-// #include <kernel/sort.hpp>
 #include <math.hpp>
 #include <reorder.hpp>
 #include <sort.hpp>
@@ -18,19 +19,18 @@
 
 namespace arrayfire {
 namespace oneapi {
+
 template<typename T>
 Array<T> sort(const Array<T> &in, const unsigned dim, bool isAscending) {
-    ONEAPI_NOT_SUPPORTED("sort Not supported");
-
     try {
         Array<T> out = copyArray<T>(in);
-        // switch (dim) {
-        //     case 0: kernel::sort0<T>(out, isAscending); break;
-        //     case 1: kernel::sortBatched<T>(out, 1, isAscending); break;
-        //     case 2: kernel::sortBatched<T>(out, 2, isAscending); break;
-        //     case 3: kernel::sortBatched<T>(out, 3, isAscending); break;
-        //     default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
-        // }
+        switch (dim) {
+            case 0: kernel::sort0<T>(out, isAscending); break;
+            case 1: kernel::sortBatched<T>(out, 1, isAscending); break;
+            case 2: kernel::sortBatched<T>(out, 2, isAscending); break;
+            case 3: kernel::sortBatched<T>(out, 3, isAscending); break;
+            default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+        }
 
         if (dim != 0) {
             af::dim4 preorderDims = out.dims();

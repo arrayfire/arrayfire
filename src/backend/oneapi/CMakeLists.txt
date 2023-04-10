@@ -237,6 +237,8 @@ target_sources(afoneapi
     kernel/reorder.hpp
     kernel/scan_first.hpp
     kernel/scan_dim.hpp
+    kernel/sort.hpp
+    kernel/sort_by_key.hpp
     kernel/transpose.hpp
     kernel/transpose_inplace.hpp
     kernel/triangle.hpp
@@ -267,6 +269,8 @@ add_dependencies(afoneapi ${cl_kernel_targets})
 add_library(ArrayFire::afoneapi ALIAS afoneapi)
 
 arrayfire_set_default_cxx_flags(afoneapi)
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
 
 target_include_directories(afoneapi
   SYSTEM PRIVATE
@@ -305,6 +309,7 @@ target_link_libraries(afoneapi
     -fvisibility-inlines-hidden
     c_api_interface
     cpp_api_interface
+    oneapi_sort_by_key
     afcommon_interface
     OpenCL::OpenCL
     OpenCL::cl2hpp

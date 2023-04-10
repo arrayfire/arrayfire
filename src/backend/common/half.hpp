@@ -919,10 +919,12 @@ AF_CONSTEXPR __DH__ static inline bool operator==(
     arrayfire::common::half lhs, arrayfire::common::half rhs) noexcept;
 AF_CONSTEXPR __DH__ static inline bool operator!=(
     arrayfire::common::half lhs, arrayfire::common::half rhs) noexcept;
+
 __DH__ static inline bool operator<(arrayfire::common::half lhs,
                                     arrayfire::common::half rhs) noexcept;
 __DH__ static inline bool operator<(arrayfire::common::half lhs,
                                     float rhs) noexcept;
+
 AF_CONSTEXPR __DH__ static inline bool isinf(half val) noexcept;
 
 /// Classification implementation.
@@ -1052,6 +1054,7 @@ class alignas(2) half {
                                  arrayfire::common::half rhs) noexcept;
     friend __DH__ bool operator<(arrayfire::common::half lhs,
                                  float rhs) noexcept;
+
     friend AF_CONSTEXPR __DH__ bool isinf(half val) noexcept;
     friend AF_CONSTEXPR __DH__ inline bool isnan(half val) noexcept;
 

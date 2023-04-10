@@ -16,6 +16,7 @@
 #include <kernel/default_config.hpp>
 #include <math.hpp>
 
+#include <sycl/sycl.hpp>
 #include <string>
 #include <vector>
 
@@ -87,10 +88,10 @@ class wrapDilatedCreateKernel {
         // earlier We work our way back from the last index
 
         const int y_start = (pidx1 < eff_wy) ? 0 : (pidx1 - eff_wy) / sy_ + 1;
-        const int y_end   = fmin(pidx1 / sy_ + 1, ny_);
+        const int y_end   = sycl::min(pidx1 / sy_ + 1, ny_);
 
         const int x_start = (pidx0 < eff_wx) ? 0 : (pidx0 - eff_wx) / sx_ + 1;
-        const int x_end   = fmin(pidx0 / sx_ + 1, nx_);
+        const int x_end   = sycl::min(pidx0 / sx_ + 1, nx_);
 
         T val   = (T)0;
         int idx = 1;

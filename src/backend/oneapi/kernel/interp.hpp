@@ -115,7 +115,7 @@ struct Interp1<Ty, Tp, 1> {
 
         int xid = (method == AF_INTERP_LOWER ? sycl::floor(x) : sycl::round(x));
         bool cond = xid >= 0 && xid < x_lim;
-        if (clamp) xid = std::max((int)0, std::min(xid, x_lim));
+        if (clamp) xid = sycl::max((int)0, sycl::min(xid, x_lim));
 
         const int idx = ioff + xid * x_stride;
 
@@ -218,8 +218,8 @@ struct Interp2<Ty, Tp, 1> {
         const int y_stride = iInfo.strides[ydim];
 
         if (clamp) {
-            xid = std::max(0, std::min(xid, (int)iInfo.dims[xdim]));
-            yid = std::max(0, std::min(yid, (int)iInfo.dims[ydim]));
+            xid = sycl::max(0, sycl::min(xid, (int)iInfo.dims[xdim]));
+            yid = sycl::max(0, sycl::min(yid, (int)iInfo.dims[ydim]));
         }
 
         const int idx = ioff + yid * y_stride + xid * x_stride;
