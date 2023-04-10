@@ -73,6 +73,7 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
+INSTANTIATE(arrayfire::common::half)
 
 }  // namespace oneapi
 }  // namespace arrayfire

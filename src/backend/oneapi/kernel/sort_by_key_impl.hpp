@@ -16,6 +16,7 @@
 
 #include <Param.hpp>
 #include <common/dispatch.hpp>
+#include <common/half.hpp>
 #include <debug_oneapi.hpp>
 #include <iota.hpp>
 #include <math.hpp>
@@ -26,6 +27,8 @@
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
+
+using arrayfire::common::half;
 
 template<typename Tk, typename Tv>
 void sort0ByKeyIterative(Param<Tk> pKey, Param<Tv> pVal, bool isAscending) {

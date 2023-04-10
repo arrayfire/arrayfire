@@ -47,10 +47,9 @@ vector<af_index_t> indexForTopK(const int k) {
 template<typename T>
 void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
           const int k, const int dim, const af::topkFunction order) {
-    ONEAPI_NOT_SUPPORTED("topk Not supported");
     auto values  = createEmptyArray<T>(in.dims());
     auto indices = createEmptyArray<unsigned>(in.dims());
-    // sort_index(values, indices, in, dim, order & AF_TOPK_MIN);
+    sort_index(values, indices, in, dim, order & AF_TOPK_MIN);
     auto indVec = indexForTopK(k);
     vals        = index<T>(values, indVec.data());
     idxs        = index<unsigned>(indices, indVec.data());
