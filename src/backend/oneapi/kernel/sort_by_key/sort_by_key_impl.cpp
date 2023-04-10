@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2023, ArrayFire
+ * Copyright (c) 2014, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -7,23 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
-#include <Param.hpp>
+#include <kernel/sort_by_key_impl.hpp>
+
+// SBK_TYPES:float double int uint intl uintl short ushort char uchar
 
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
-
-template<typename Tk, typename Tv>
-void sort0ByKeyIterative(Param<Tk> pKey, Param<Tv> pVal, bool isAscending);
-
-template<typename Tk, typename Tv>
-void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim,
-                      bool isAscending);
-
-template<typename Tk, typename Tv>
-void sort0ByKey(Param<Tk> pKey, Param<Tv> pVal, bool isAscending);
-
+INSTANTIATE1(TYPE);
 }  // namespace kernel
 }  // namespace oneapi
 }  // namespace arrayfire

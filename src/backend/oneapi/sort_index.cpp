@@ -18,8 +18,6 @@
 #include <sort_index.hpp>
 #include <stdexcept>
 
-using arrayfire::common::half;
-
 namespace arrayfire {
 namespace oneapi {
 template<typename T>
@@ -75,7 +73,6 @@ INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(intl)
 INSTANTIATE(uintl)
-INSTANTIATE(half)
 
 }  // namespace oneapi
 }  // namespace arrayfire

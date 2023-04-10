@@ -270,6 +270,8 @@ add_library(ArrayFire::afoneapi ALIAS afoneapi)
 
 arrayfire_set_default_cxx_flags(afoneapi)
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/CMakeLists.txt")
+
 target_include_directories(afoneapi
   SYSTEM PRIVATE
     ${SYCL_INCLUDE_DIR}
@@ -307,6 +309,7 @@ target_link_libraries(afoneapi
     -fvisibility-inlines-hidden
     c_api_interface
     cpp_api_interface
+    oneapi_sort_by_key
     afcommon_interface
     OpenCL::OpenCL
     OpenCL::cl2hpp
