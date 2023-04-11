@@ -217,6 +217,7 @@ target_sources(afoneapi
     kernel/diagonal.hpp
     kernel/diff.hpp
     kernel/histogram.hpp
+    kernel/iir.hpp
     kernel/identity.hpp
     kernel/interp.hpp
     kernel/iota.hpp
@@ -224,6 +225,7 @@ target_sources(afoneapi
     kernel/lu_split.hpp
     kernel/memcopy.hpp
     kernel/mean.hpp
+    kernel/pad_array_borders.hpp
     kernel/random_engine.hpp
     kernel/random_engine_write.hpp
     kernel/random_engine_mersenne.hpp
