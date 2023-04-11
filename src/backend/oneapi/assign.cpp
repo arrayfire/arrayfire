@@ -25,7 +25,7 @@ namespace oneapi {
 
 template<typename T>
 void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
-    kernel::AssignKernelParam_t p;
+    AssignKernelParam p;
     std::vector<af_seq> seqs(4, af_span);
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
