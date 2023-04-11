@@ -69,28 +69,40 @@ Array<T> copyArray(const Array<T> &A) {
     if (A.elements() == 0) { return out; }
 
     dim_t offset = A.getOffset();
-    if (A.isLinear()) {
-        // FIXME: Add checks
+    if (A.isReady()) {
+        if (A.isLinear()) {
+            // FIXME: Add checks
 
-        const sycl::buffer<T> *A_buf = A.get();
-        sycl::buffer<T> *out_buf     = out.get();
+            sycl::buffer<T> *A_buf   = A.get();
+            sycl::buffer<T> *out_buf = out.get();
 
-        getQueue()
-            .submit([=](sycl::handler &h) {
-                sycl::range rr(A.elements());
-                sycl::id offset_id(offset);
-                auto offset_acc_A =
-                    const_cast<sycl::buffer<T> *>(A_buf)->get_access(h, rr,
-                                                                     offset_id);
-                auto acc_out = out_buf->get_access(h);
+            size_t aelem = A.elements();
+            getQueue()
+                .submit([=](sycl::handler &h) {
+                    range rr(aelem);
+                    id offset_id(offset);
+                    accessor offset_acc_A =
+                        A_buf->template get_access<access_mode::read>(
+                            h, rr, offset_id);
+                    accessor acc_out =
+                        out_buf->template get_access<access_mode::write>(h);
 
-                h.copy(offset_acc_A, acc_out);
-            })
-            .wait();
+                    h.copy(offset_acc_A, acc_out);
+                })
+                .wait();
+        } else {
+            kernel::memcopy<T>(out.get(), out.strides().get(), A.get(),
+                               A.dims().get(), A.strides().get(), offset,
+                               (uint)A.ndims());
+        }
     } else {
-        kernel::memcopy<T>(out.get(), out.strides().get(), A.get(),
-                           A.dims().get(), A.strides().get(), offset,
-                           (uint)A.ndims());
+        Param info = {out.get(),
+                      {{A.dims().dims[0], A.dims().dims[1], A.dims().dims[2],
+                        A.dims().dims[3]},
+                       {out.strides().dims[0], out.strides().dims[1],
+                        out.strides().dims[2], out.strides().dims[3]},
+                       0}};
+        evalNodes(info, A.getNode().get());
     }
     return out;
 }
