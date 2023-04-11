@@ -586,12 +586,13 @@ TYPED_TEST(Indexing, 3D_to_1D) {
 }
 
 TEST(Index, Docs_Util_C_API) {
+    // clang-format off
+    ASSERT_EQ(0, ([]() -> int {
     //![ex_index_util_0]
     af_index_t *indexers = 0;
-    af_err err           = af_create_indexers(
-                  &indexers);  // Memory is allocated on heap by the callee
-    // by default all the indexers span all the elements along the given
-    // dimension
+    af_err err = af_create_indexers(&indexers); // Memory is allocated on heap by the callee
+                                                // by default all the indexers span all the elements along
+                                                // the given dimension
 
     // Create array
     af_array a;
@@ -613,12 +614,11 @@ TEST(Index, Docs_Util_C_API) {
 
     // index with indexers
     af_array out;
-    af_index_gen(&out, a, 2,
-                 indexers);  // number of indexers should be two since
-                             // we have set only second af_index_t
+    err = af_index_gen(&out, a, 2, indexers);  // number of indexers should be two since
+                                               // we have set only second af_index_t
     if (err != AF_SUCCESS) {
         printf("Failed in af_index_gen: %d\n", err);
-        throw;
+        return 1;
     }
     af_print_array(out);
     af_release_array(out);
@@ -630,7 +630,7 @@ TEST(Index, Docs_Util_C_API) {
     err = af_index_gen(&out, a, 2, indexers);
     if (err != AF_SUCCESS) {
         printf("Failed in af_index_gen: %d\n", err);
-        throw;
+        return 1;
     }
     af_print_array(out);
 
@@ -638,7 +638,10 @@ TEST(Index, Docs_Util_C_API) {
     af_release_array(a);
     af_release_array(idx);
     af_release_array(out);
+    return 0;
     //![ex_index_util_0]
+    }()));
+    // clang-format on
 }
 
 //////////////////////////////// CPP ////////////////////////////////
