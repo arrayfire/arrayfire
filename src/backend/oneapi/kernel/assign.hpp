@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/assign_kernel_param.hpp>
 #include <traits.hpp>
 
 #include <sycl/sycl.hpp>
@@ -22,12 +23,6 @@
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
-
-typedef struct {
-    int offs[4];
-    int strds[4];
-    char isSeq[4];
-} AssignKernelParam_t;
 
 static int trimIndex(int idx, const int len) {
     int ret_val = idx;
@@ -45,18 +40,13 @@ template<typename T>
 class assignKernel {
    public:
     assignKernel(sycl::accessor<T> out, KParam oInfo, sycl::accessor<T> in,
-                 KParam iInfo, AssignKernelParam_t p, sycl::accessor<uint> ptr0,
-                 sycl::accessor<uint> ptr1, sycl::accessor<uint> ptr2,
-                 sycl::accessor<uint> ptr3, const int nBBS0, const int nBBS1)
+                 KParam iInfo, AssignKernelParam p, const int nBBS0,
+                 const int nBBS1)
         : out_(out)
         , in_(in)
         , oInfo_(oInfo)
         , iInfo_(iInfo)
         , p_(p)
-        , ptr0_(ptr0)
-        , ptr1_(ptr1)
-        , ptr2_(ptr2)
-        , ptr3_(ptr3)
         , nBBS0_(nBBS0)
         , nBBS1_(nBBS1) {}
 
@@ -84,14 +74,18 @@ class assignKernel {
 
         if (gx < idims0 && gy < idims1 && gz < idims2 && gw < idims3) {
             // calculate pointer offsets for input
-            int i = p_.strds[0] *
-                    trimIndex(s0 ? gx + p_.offs[0] : ptr0_[gx], oInfo_.dims[0]);
-            int j = p_.strds[1] *
-                    trimIndex(s1 ? gy + p_.offs[1] : ptr1_[gy], oInfo_.dims[1]);
-            int k = p_.strds[2] *
-                    trimIndex(s2 ? gz + p_.offs[2] : ptr2_[gz], oInfo_.dims[2]);
-            int l = p_.strds[3] *
-                    trimIndex(s3 ? gw + p_.offs[3] : ptr3_[gw], oInfo_.dims[3]);
+            int i =
+                p_.strds[0] *
+                trimIndex(s0 ? gx + p_.offs[0] : p_.ptr[0][gx], oInfo_.dims[0]);
+            int j =
+                p_.strds[1] *
+                trimIndex(s1 ? gy + p_.offs[1] : p_.ptr[1][gy], oInfo_.dims[1]);
+            int k =
+                p_.strds[2] *
+                trimIndex(s2 ? gz + p_.offs[2] : p_.ptr[2][gz], oInfo_.dims[2]);
+            int l =
+                p_.strds[3] *
+                trimIndex(s3 ? gw + p_.offs[3] : p_.ptr[3][gw], oInfo_.dims[3]);
 
             T* iptr = in_.get_pointer();
             // offset input and output pointers
@@ -110,16 +104,16 @@ class assignKernel {
    protected:
     sycl::accessor<T> out_, in_;
     KParam oInfo_, iInfo_;
-    AssignKernelParam_t p_;
-    sycl::accessor<uint> ptr0_, ptr1_, ptr2_, ptr3_;
+    AssignKernelParam p_;
     const int nBBS0_, nBBS1_;
 };
 
 template<typename T>
-void assign(Param<T> out, const Param<T> in, const AssignKernelParam_t& p,
+void assign(Param<T> out, const Param<T> in, const AssignKernelParam& p,
             sycl::buffer<uint>* bPtr[4]) {
     constexpr int THREADS_X = 32;
     constexpr int THREADS_Y = 8;
+    using sycl::access_mode;
 
     sycl::range<2> local(THREADS_X, THREADS_Y);
 
@@ -130,18 +124,18 @@ void assign(Param<T> out, const Param<T> in, const AssignKernelParam_t& p,
                           blk_y * in.info.dims[3] * THREADS_Y);
 
     getQueue().submit([=](sycl::handler& h) {
+        auto pp      = p;
         auto out_acc = out.data->get_access(h);
         auto in_acc  = in.data->get_access(h);
 
-        auto bptr0 = bPtr[0]->get_access(h);
-        auto bptr1 = bPtr[1]->get_access(h);
-        auto bptr2 = bPtr[2]->get_access(h);
-        auto bptr3 = bPtr[3]->get_access(h);
+        pp.ptr[0] = bPtr[0]->template get_access<access_mode::read>(h);
+        pp.ptr[1] = bPtr[1]->template get_access<access_mode::read>(h);
+        pp.ptr[2] = bPtr[2]->template get_access<access_mode::read>(h);
+        pp.ptr[3] = bPtr[3]->template get_access<access_mode::read>(h);
 
-        h.parallel_for(
-            sycl::nd_range<2>(global, local),
-            assignKernel<T>(out_acc, out.info, in_acc, in.info, p, bptr0, bptr1,
-                            bptr2, bptr3, blk_x, blk_y));
+        h.parallel_for(sycl::nd_range<2>(global, local),
+                       assignKernel<T>(out_acc, out.info, in_acc, in.info, pp,
+                                       blk_x, blk_y));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
