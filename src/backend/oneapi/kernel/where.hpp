@@ -148,19 +148,16 @@ static void where(Param<uint> &out, Param<T> in) {
 
     // Get output size and allocate output
     uint total;
-    sycl::buffer retBuffer(&total, {1},
-                           {sycl::property::buffer::use_host_ptr()});
 
     getQueue()
         .submit([&](sycl::handler &h) {
             auto acc_in  = rtmp.data->get_access(h, sycl::range{1},
                                                  sycl::id{rtmp_elements - 1});
-            auto acc_out = retBuffer.get_access();
-            h.copy(acc_in, acc_out);
+            h.copy(acc_in, &total);
         })
         .wait();
 
-    auto out_alloc = memAlloc<uint>(total);
+    auto out_alloc = memAlloc<uint>(std::max(1U,total));
     out.data       = out_alloc.get();
 
     out.info.dims[0]    = total;
