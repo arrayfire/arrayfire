@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Array.hpp>
-// #include <kernel/pad_array_borders.hpp>
+#include <kernel/pad_array_borders.hpp>
 
 namespace arrayfire {
 namespace oneapi {
@@ -55,7 +55,7 @@ Array<T> padArrayBorders(Array<T> const &in, dim4 const &lowerBoundPadding,
 
     auto ret = createEmptyArray<T>(oDims);
 
-    // kernel::padBorders<T>(ret, in, lowerBoundPadding, btype);
+    kernel::padBorders<T>(ret, in, lowerBoundPadding, btype);
 
     return ret;
 }
