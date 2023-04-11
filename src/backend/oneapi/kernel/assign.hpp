@@ -76,8 +76,14 @@ class assignKernel {
         const int gy =
             g.get_local_range(1) * (g.get_group_id(1) - gw * nBBS1_) +
             it.get_local_id(1);
-        if (gx < iInfo_.dims[0] && gy < iInfo_.dims[1] && gz < iInfo_.dims[2] &&
-            gw < iInfo_.dims[3]) {
+
+        size_t idims0 = iInfo_.dims[0];
+        size_t idims1 = iInfo_.dims[1];
+        size_t idims2 = iInfo_.dims[2];
+        size_t idims3 = iInfo_.dims[3];
+
+        if (gx < idims0 && gy < idims1 && gz < idims2 &&
+            gw < idims3) {
             // calculate pointer offsets for input
             int i = p_.strds[0] *
                     trimIndex(s0 ? gx + p_.offs[0] : ptr0_[gx], oInfo_.dims[0]);
