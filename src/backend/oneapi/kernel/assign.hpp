@@ -82,8 +82,7 @@ class assignKernel {
         size_t idims2 = iInfo_.dims[2];
         size_t idims3 = iInfo_.dims[3];
 
-        if (gx < idims0 && gy < idims1 && gz < idims2 &&
-            gw < idims3) {
+        if (gx < idims0 && gy < idims1 && gz < idims2 && gw < idims3) {
             // calculate pointer offsets for input
             int i = p_.strds[0] *
                     trimIndex(s0 ? gx + p_.offs[0] : ptr0_[gx], oInfo_.dims[0]);
