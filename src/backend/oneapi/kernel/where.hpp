@@ -78,18 +78,21 @@ class whereKernel {
         iptr += wid * iInfo_.strides[3] + zid * iInfo_.strides[2] +
                 yid * iInfo_.strides[1];
 
-        bool cond = (yid < otInfo_.dims[1]) && (zid < otInfo_.dims[2]) &&
-                    (wid < otInfo_.dims[3]);
-        T zero = scalar<T>(0);
+        size_t odims0 = otInfo_.dims[0];
+        size_t odims1 = otInfo_.dims[1];
+        size_t odims2 = otInfo_.dims[2];
+        size_t odims3 = otInfo_.dims[3];
+        bool cond     = (yid < odims1) && (zid < odims2) && (wid < odims3);
+        T zero        = scalar<T>(0);
 
-        if (!cond) return;
+        if (cond) {
+            uint accum = (bid == 0) ? 0 : rtptr[bid - 1];
 
-        uint accum = (bid == 0) ? 0 : rtptr[bid - 1];
-
-        for (uint k = 0, id = xid; k < lim_ && id < otInfo_.dims[0];
-             k++, id += g.get_local_range(0)) {
-            uint idx = otptr[id] + accum;
-            if (iptr[id] != zero) out_acc_[idx - 1] = (off + id);
+            for (uint k = 0, id = xid; k < lim_ && id < odims0;
+                 k++, id += g.get_local_range(0)) {
+                uint idx = otptr[id] + accum;
+                if (iptr[id] != zero) out_acc_[idx - 1] = (off + id);
+            }
         }
     }
 
@@ -151,13 +154,13 @@ static void where(Param<uint> &out, Param<T> in) {
 
     getQueue()
         .submit([&](sycl::handler &h) {
-            auto acc_in  = rtmp.data->get_access(h, sycl::range{1},
-                                                 sycl::id{rtmp_elements - 1});
+            auto acc_in = rtmp.data->get_access(h, sycl::range{1},
+                                                sycl::id{rtmp_elements - 1});
             h.copy(acc_in, &total);
         })
         .wait();
 
-    auto out_alloc = memAlloc<uint>(std::max(1U,total));
+    auto out_alloc = memAlloc<uint>(std::max(1U, total));
     out.data       = out_alloc.get();
 
     out.info.dims[0]    = total;
