@@ -18,6 +18,13 @@
 using arrayfire::common::half;
 using arrayfire::common::is_complex;
 
+using sycl::access_mode;
+using sycl::accessor;
+using sycl::buffer;
+using sycl::id;
+using sycl::range;
+using sycl::target;
+
 namespace arrayfire {
 namespace oneapi {
 
@@ -106,11 +113,11 @@ struct copyWrapper<T, T> {
     void operator()(Array<T> &out, Array<T> const &in) {
         if (out.isLinear() && in.isLinear() &&
             out.elements() == in.elements()) {
-            dim_t in_offset  = in.getOffset() * sizeof(T);
-            dim_t out_offset = out.getOffset() * sizeof(T);
+            dim_t in_offset  = in.getOffset();
+            dim_t out_offset = out.getOffset();
 
-            const sycl::buffer<T> *in_buf = in.get();
-            sycl::buffer<T> *out_buf      = out.get();
+            sycl::buffer<T> *in_buf  = in.get();
+            sycl::buffer<T> *out_buf = out.get();
 
             getQueue()
                 .submit([=](sycl::handler &h) {
@@ -119,10 +126,11 @@ struct copyWrapper<T, T> {
                     sycl::id out_offset_id(out_offset);
 
                     auto offset_acc_in =
-                        const_cast<sycl::buffer<T> *>(in_buf)->get_access(
+                        in_buf->template get_access<access_mode::read>(
                             h, rr, in_offset_id);
                     auto offset_acc_out =
-                        out_buf->get_access(h, rr, out_offset_id);
+                        out_buf->template get_access<access_mode::write>(
+                            h, rr, out_offset_id);
 
                     h.copy(offset_acc_in, offset_acc_out);
                 })
