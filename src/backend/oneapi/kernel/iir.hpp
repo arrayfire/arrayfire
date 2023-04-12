@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
+#include <math.hpp>
 
 #include <sycl/sycl.hpp>
 
@@ -112,10 +113,10 @@ class iirKernel {
 
 template<typename T, bool batch_a>
 void iir(Param<T> y, Param<T> c, Param<T> a) {
-    const int groups_y = y.info.dims[1];
-    const int groups_x = y.info.dims[2];
+    const size_t groups_y = y.info.dims[1];
+    const size_t groups_x = y.info.dims[2];
 
-    int threads = 256;
+    size_t threads = 256;
     while (threads > y.info.dims[0] && threads > 32) threads /= 2;
     sycl::range<2> local = sycl::range{threads, 1};
 
