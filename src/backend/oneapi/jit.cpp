@@ -294,9 +294,7 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
     }
     if (numOutElems == 0) { return; }
 
-    const af::dtype outputType{output_nodes[0]->getType()};
     for (Node* node : output_nodes) {
-        assert(node->getType() == outputType);
         const int id{node->getNodesMap(nodes, full_nodes, full_ids)};
         output_ids.push_back(id);
     }

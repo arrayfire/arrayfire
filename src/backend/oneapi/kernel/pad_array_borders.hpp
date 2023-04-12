@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
+#include <math.hpp>
 #include <af/defines.h>
 
 #include <sycl/sycl.hpp>
