@@ -62,6 +62,22 @@ using sycl::backend;
 namespace arrayfire {
 
 namespace opencl {
+
+const static string DEFAULT_MACROS_STR(R"JIT(
+#ifdef USE_DOUBLE
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+#ifdef USE_HALF
+#pragma OPENCL EXTENSION cl_khr_fp16 : enable
+#else
+#define half short
+#endif
+#ifndef M_PI
+#define
+ M_PI 3.1415926535897932384626433832795028841971693993751058209749445923078164
+#endif
+)JIT");
+
 string getKernelString(const string& funcName, const vector<Node*>& full_nodes,
                        const vector<Node_ids>& full_ids,
                        const vector<int>& output_ids, const bool is_linear,

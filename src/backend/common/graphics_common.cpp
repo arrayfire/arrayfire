@@ -260,7 +260,7 @@ fg_window ForgeManager::getMainWindow() {
             }
             fg_window w = nullptr;
             forgeError  = this->mPlugin->fg_create_window(
-                 &w, WIDTH, HEIGHT, "ArrayFire", NULL, true);
+                &w, WIDTH, HEIGHT, "ArrayFire", NULL, true);
             if (forgeError != FG_ERR_NONE) { return; }
             this->setWindowChartGrid(w, 1, 1);
             this->mPlugin->fg_make_window_current(w);

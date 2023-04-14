@@ -204,8 +204,8 @@ size_t Allocator::getMaxMemorySize(int id) {
 void *Allocator::nativeAlloc(const size_t bytes) {
     cl_int err = CL_SUCCESS;
     auto ptr   = static_cast<void *>(clCreateBuffer(
-          getContext()(), CL_MEM_READ_WRITE,  // NOLINT(hicpp-signed-bitwise)
-          bytes, nullptr, &err));
+        getContext()(), CL_MEM_READ_WRITE,  // NOLINT(hicpp-signed-bitwise)
+        bytes, nullptr, &err));
 
     if (err != CL_SUCCESS) {
         auto str = fmt::format("Failed to allocate device memory of size {}",

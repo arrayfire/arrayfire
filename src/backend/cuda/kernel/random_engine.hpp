@@ -60,9 +60,9 @@ static const int THREADS = 256;
 #define HALF_HALF_FACTOR __ushort_as_half(0x80)
 
 // Conversion to half adapted from Random123
-//#define SIGNED_HALF_FACTOR                                \
+// #define SIGNED_HALF_FACTOR                                \
     //((1.0f) / (std::numeric_limits<short>::max() + (1.0f)))
-//#define SIGNED_HALF_HALF_FACTOR ((0.5f) * SIGNED_HALF_FACTOR)
+// #define SIGNED_HALF_HALF_FACTOR ((0.5f) * SIGNED_HALF_FACTOR)
 //
 // NOTE: The following constants for half were calculated using the formulas
 // above. This is done so that we can avoid unnecessary computations because the
