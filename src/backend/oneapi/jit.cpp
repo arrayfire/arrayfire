@@ -231,7 +231,7 @@ __kernel void )JIT";
     }
 
     thread_local stringstream kerStream;
-    kerStream << kernelVoid << funcName << "(\n"
+    kerStream << DEFAULT_MACROS_STR << kernelVoid << funcName << "(\n"
               << inParamStream.str() << outParamStream.str() << dimParams << ")"
               << blockStart;
     if (is_linear) {
