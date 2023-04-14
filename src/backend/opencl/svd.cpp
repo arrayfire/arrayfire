@@ -137,8 +137,8 @@ void svd(Array<T> &arrU, Array<Tr> &arrS, Array<T> &arrVT, Array<T> &arrA,
 
     if (want_vectors) {
         mappedU  = static_cast<T *>(getQueue().enqueueMapBuffer(
-             *arrU.get(), CL_FALSE, CL_MAP_WRITE, sizeof(T) * arrU.getOffset(),
-             sizeof(T) * arrU.elements()));
+            *arrU.get(), CL_FALSE, CL_MAP_WRITE, sizeof(T) * arrU.getOffset(),
+            sizeof(T) * arrU.elements()));
         mappedVT = static_cast<T *>(getQueue().enqueueMapBuffer(
             *arrVT.get(), CL_TRUE, CL_MAP_WRITE, sizeof(T) * arrVT.getOffset(),
             sizeof(T) * arrVT.elements()));

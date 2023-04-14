@@ -71,23 +71,6 @@ string getProgramBuildLog(const kernel_bundle<bundle_state::executable> &prog) {
 namespace arrayfire {
 namespace oneapi {
 
-// const static string DEFAULT_MACROS_STR(
-// "\n\
-                                           //#ifdef USE_DOUBLE\n\
-                                           //#pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
-                                           //#endif\n                     \
-                                           //#ifdef USE_HALF\n\
-                                           //#pragma OPENCL EXTENSION cl_khr_fp16 : enable\n\
-                                           //#else\n                     \
-                                           //#define half short\n          \
-                                           //#endif\n                      \
-                                           //#ifndef M_PI\n               \
-                                           //#define
-// M_PI 3.1415926535897932384626433832795028841971693993751058209749445923078164\n
-// \
-                                           //#endif\n                     \
-                                           //");
-
 /*
 get_kernel_bundle<>() needs sycl::context
 kernel_bundle<bundle_state::executable> buildProgram(const vector<string>

@@ -260,7 +260,7 @@ Array<T> data_gradient_base(const Array<T> &incoming_gradient,
     Array<T> collapsed_gradient = incoming_gradient;
     collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
     collapsed_gradient          = modDims(
-                 collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+        collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     T alpha        = scalar<T>(1.0);
     T beta         = scalar<T>(0.0);
@@ -390,7 +390,7 @@ Array<T> filter_gradient_base(const Array<T> &incoming_gradient,
     Array<T> collapsed_gradient = incoming_gradient;
     collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
     collapsed_gradient          = modDims(
-                 collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+        collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
     T alpha        = scalar<T>(1.0);
     T beta         = scalar<T>(0.0);

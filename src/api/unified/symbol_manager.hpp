@@ -156,7 +156,7 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg) {
         if (index_ != arrayfire::unified::getActiveBackend()) {                  \
             index_ = arrayfire::unified::getActiveBackend();                     \
             func   = (af_func)arrayfire::common::getFunctionPointer(             \
-                  arrayfire::unified::getActiveHandle(), __func__);              \
+                arrayfire::unified::getActiveHandle(), __func__);              \
         }                                                                        \
         return func(__VA_ARGS__);                                                \
     } else {                                                                     \

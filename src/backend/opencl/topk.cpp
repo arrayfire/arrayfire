@@ -76,13 +76,13 @@ void topk(Array<T>& vals, Array<unsigned>& idxs, const Array<T>& in,
         cl::Event ev_in, ev_val, ev_ind;
 
         T* ptr     = static_cast<T*>(getQueue().enqueueMapBuffer(
-                *in_buf, CL_FALSE, CL_MAP_READ, 0, in.elements() * sizeof(T),
-                nullptr, &ev_in));
+            *in_buf, CL_FALSE, CL_MAP_READ, 0, in.elements() * sizeof(T),
+            nullptr, &ev_in));
         uint* iptr = static_cast<uint*>(getQueue().enqueueMapBuffer(
             *ibuf, CL_FALSE, CL_MAP_READ | CL_MAP_WRITE, 0, k * sizeof(uint),
             nullptr, &ev_ind));
         T* vptr    = static_cast<T*>(getQueue().enqueueMapBuffer(
-               *vbuf, CL_FALSE, CL_MAP_WRITE, 0, k * sizeof(T), nullptr, &ev_val));
+            *vbuf, CL_FALSE, CL_MAP_WRITE, 0, k * sizeof(T), nullptr, &ev_val));
 
         vector<uint> idx(in.elements());
 
