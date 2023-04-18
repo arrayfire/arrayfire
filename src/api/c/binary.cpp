@@ -128,6 +128,9 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs,
 
         if (batchMode || linfo.dims() == rinfo.dims()) {
             dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
+            if (odims.ndims() == 0) {
+                return af_create_handle(out, 0, nullptr, otype);
+            }
 
             switch (otype) {
                 case f32: res = arithOp<float, op>(lhs, rhs, odims); break;
@@ -146,6 +149,9 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs,
                 default: TYPE_ERROR(0, otype);
             }
         } else {
+            if (linfo.ndims() == 0 && rinfo.ndims() == 0) {
+                return af_create_handle(out, 0, nullptr, otype);
+            }
             switch (otype) {
                 case f32: res = arithOpBroadcast<float, op>(lhs, rhs); break;
                 case f64: res = arithOpBroadcast<double, op>(lhs, rhs); break;
@@ -178,8 +184,11 @@ static af_err af_arith_real(af_array *out, const af_array lhs,
         const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
-
         const af_dtype otype = implicit(linfo.getType(), rinfo.getType());
+        if (odims.ndims() == 0) {
+            return af_create_handle(out, 0, nullptr, otype);
+        }
+
         af_array res;
         switch (otype) {
             case f32: res = arithOp<float, op>(lhs, rhs, odims); break;
@@ -462,6 +471,9 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs,
         const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
+        if (odims.ndims() == 0) {
+            return af_create_handle(out, 0, nullptr, type);
+        }
 
         af_array res;
         switch (type) {
@@ -490,6 +502,10 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs,
         const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
+
+        if (odims.ndims() == 0) {
+            return af_create_handle(out, 0, nullptr, type);
+        }
 
         af_array res;
         switch (type) {
@@ -522,6 +538,10 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs,
         const ArrayInfo &rinfo = getInfo(rhs);
 
         dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
+
+        if (odims.ndims() == 0) {
+            return af_create_handle(out, 0, nullptr, type);
+        }
 
         af_array res;
         switch (type) {

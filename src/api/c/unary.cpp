@@ -79,6 +79,7 @@ static af_err af_unary(af_array *out, const af_array in) {
         // Convert all inputs to floats / doubles
         af_dtype type = implicit(in_type, f32);
         if (in_type == f16) { type = f16; }
+        if (in_info.ndims() == 0) { return af_retain_array(out, in); }
 
         switch (type) {
             case f16: res = unaryOp<half, op>(in); break;
@@ -104,6 +105,7 @@ static af_err af_unary_complex(af_array *out, const af_array in) {
         // Convert all inputs to floats / doubles
         af_dtype type = implicit(in_type, f32);
         if (in_type == f16) { type = f16; }
+        if (in_info.ndims() == 0) { return af_retain_array(out, in); }
 
         switch (type) {
             case f32: res = unaryOp<float, op>(in); break;
@@ -562,6 +564,7 @@ af_err af_not(af_array *out, const af_array in) {
     try {
         af_array tmp;
         const ArrayInfo &in_info = getInfo(in);
+        if (in_info.ndims() == 0) { return af_retain_array(out, in); }
 
         AF_CHECK(af_constant(&tmp, 0, in_info.ndims(), in_info.dims().get(),
                              in_info.getType()));
@@ -613,6 +616,7 @@ af_err af_bitnot(af_array *out, const af_array in) {
 af_err af_arg(af_array *out, const af_array in) {
     try {
         const ArrayInfo &in_info = getInfo(in);
+        if (in_info.ndims() == 0) { return af_retain_array(out, in); }
 
         if (!in_info.isComplex()) {
             return af_constant(out, 0, in_info.ndims(), in_info.dims().get(),
@@ -639,6 +643,7 @@ af_err af_pow2(af_array *out, const af_array in) {
     try {
         af_array two;
         const ArrayInfo &in_info = getInfo(in);
+        if (in_info.ndims() == 0) { return af_retain_array(out, in); }
 
         AF_CHECK(af_constant(&two, 2, in_info.ndims(), in_info.dims().get(),
                              in_info.getType()));
@@ -656,6 +661,7 @@ af_err af_factorial(af_array *out, const af_array in) {
     try {
         af_array one;
         const ArrayInfo &in_info = getInfo(in);
+        if (in_info.ndims() == 0) { return af_retain_array(out, in); }
 
         AF_CHECK(af_constant(&one, 1, in_info.ndims(), in_info.dims().get(),
                              in_info.getType()));
@@ -722,6 +728,7 @@ static af_err af_check(af_array *out, const af_array in) {
         // Convert all inputs to floats / doubles / complex
         af_dtype type = implicit(in_type, f32);
         if (in_type == f16) { type = f16; }
+        if (in_info.ndims() == 0) { return af_retain_array(out, in); }
 
         switch (type) {
             case f32: res = checkOp<float, op>(in); break;
