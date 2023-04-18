@@ -105,7 +105,6 @@ class scanFirstKernel {
             group_barrier(g);
 
             int start = 0;
-#pragma unroll
             for (int off = 1; off < DIMX_; off *= 2) {
                 if (lidx >= off) val = binop(val, sptr[(start - off) + lidx]);
                 start              = DIMX_ - start;
