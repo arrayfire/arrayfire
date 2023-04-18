@@ -91,7 +91,7 @@ template<typename T>
 Array<T>::Array(const dim4 &dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(memAlloc<T>(info.elements()).release(), bufferFree<T>)
+    , data(memAlloc<T>(info.elements()).release(), memFree<T>)
     , data_dims(dims)
     , node()
     , owner(true) {}
@@ -112,7 +112,7 @@ template<typename T>
 Array<T>::Array(const dim4 &dims, const T *const in_data)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
-    , data(memAlloc<T>(info.elements()).release(), bufferFree<T>)
+    , data(memAlloc<T>(info.elements()).release(), memFree<T>)
     , data_dims(dims)
     , node()
     , owner(true) {
@@ -138,7 +138,7 @@ Array<T>::Array(const af::dim4 &dims, buffer<T> *const mem, size_t offset,
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(copy ? memAlloc<T>(info.elements()).release() : new buffer<T>(*mem),
-           bufferFree<T>)
+           memFree<T>)
     , data_dims(dims)
     , node()
     , owner(true) {
@@ -171,7 +171,7 @@ Array<T>::Array(Param<T> &tmp, bool owner_)
                 tmp.info.strides[3]),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
     , data(
-          tmp.data, owner_ ? bufferFree<T> : [](buffer<T> * /*unused*/) {})
+          tmp.data, owner_ ? memFree<T> : [](sycl::buffer<T> * /*unused*/) {})
     , data_dims(dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2],
                      tmp.info.dims[3]))
     , node()
@@ -205,7 +205,7 @@ void Array<T>::eval() {
 
     this->setId(getActiveDeviceId());
     data = std::shared_ptr<sycl::buffer<T>>(
-        memAlloc<T>(info.elements()).release(), bufferFree<T>);
+        memAlloc<T>(info.elements()).release(), memFree<T>);
 
     // Do not replace this with cast operator
     KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
@@ -256,7 +256,7 @@ void evalMultiple(vector<Array<T> *> arrays) {
 
         array->setId(getActiveDeviceId());
         array->data = std::shared_ptr<buffer<T>>(
-            memAlloc<T>(info.elements()).release(), bufferFree<T>);
+            memAlloc<T>(info.elements()).release(), memFree<T>);
 
         // Do not replace this with cast operator
         KParam kInfo = {

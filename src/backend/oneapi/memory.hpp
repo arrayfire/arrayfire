@@ -20,11 +20,6 @@
 
 namespace arrayfire {
 namespace oneapi {
-template<typename T>
-sycl::buffer<T> *bufferAlloc(const size_t &bytes);
-
-template<typename T>
-void bufferFree(sycl::buffer<T> *buf);
 
 template<typename T>
 using bufptr =
@@ -37,7 +32,8 @@ void *memAllocUser(const size_t &bytes);
 // Need these as 2 separate function and not a default argument
 // This is because it is used as the deleter in shared pointer
 // which cannot support default arguments
-void memFree(void *ptr);
+template<typename T>
+void memFree(sycl::buffer<T> *ptr);
 void memFreeUser(void *ptr);
 
 template<typename T>
