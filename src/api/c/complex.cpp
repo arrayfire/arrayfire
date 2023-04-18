@@ -47,9 +47,11 @@ af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs,
         }
 
         if (type != f64) { type = f32; }
-
         dim4 odims =
             getOutDims(getInfo(lhs).dims(), getInfo(rhs).dims(), batchMode);
+        if (odims.ndims() == 0) {
+            return af_create_handle(out, 0, nullptr, type);
+        }
 
         af_array res;
         switch (type) {
@@ -72,6 +74,7 @@ af_err af_cplx(af_array *out, const af_array in) {
         if (type == c32 || type == c64) {
             AF_ERROR("Inputs to cplx2 can not be of complex type", AF_ERR_ARG);
         }
+        if (info.ndims() == 0) { return af_retain_array(out, in); }
 
         af_array tmp;
         AF_CHECK(af_constant(&tmp, 0, info.ndims(), info.dims().get(), type));
@@ -98,6 +101,7 @@ af_err af_real(af_array *out, const af_array in) {
         af_dtype type         = info.getType();
 
         if (type != c32 && type != c64) { return af_retain_array(out, in); }
+        if (info.ndims() == 0) { return af_retain_array(out, in); }
 
         af_array res;
         switch (type) {
@@ -125,6 +129,7 @@ af_err af_imag(af_array *out, const af_array in) {
         if (type != c32 && type != c64) {
             return af_constant(out, 0, info.ndims(), info.dims().get(), type);
         }
+        if (info.ndims() == 0) { return af_retain_array(out, in); }
 
         af_array res;
         switch (type) {
@@ -150,6 +155,7 @@ af_err af_conjg(af_array *out, const af_array in) {
         af_dtype type         = info.getType();
 
         if (type != c32 && type != c64) { return af_retain_array(out, in); }
+        if (info.ndims() == 0) { return af_retain_array(out, in); }
 
         af_array res;
         switch (type) {
@@ -178,6 +184,7 @@ af_err af_abs(af_array *out, const af_array in) {
         // Convert all inputs to floats / doubles
         af_dtype type = implicit(in_type, f32);
         if (in_type == f16) { type = f16; }
+        if (in_info.ndims() == 0) { return af_retain_array(out, in); }
 
         switch (type) {
             // clang-format off
