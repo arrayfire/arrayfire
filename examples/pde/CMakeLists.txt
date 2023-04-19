@@ -27,3 +27,8 @@ if(ArrayFire_OpenCL_FOUND)
   add_executable(swe_opencl swe.cpp)
   target_link_libraries(swe_opencl ArrayFire::afopencl)
 endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(swe_oneapi swe.cpp)
+  target_link_libraries(swe_oneapi ArrayFire::afoneapi)
+endif()

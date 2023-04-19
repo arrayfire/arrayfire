@@ -111,3 +111,33 @@ if(ArrayFire_OpenCL_FOUND)
   add_executable(surface_opencl surface.cpp)
   target_link_libraries(surface_opencl ArrayFire::afopencl)
 endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(conway_oneapi conway.cpp)
+  target_link_libraries(conway_oneapi ArrayFire::afoneapi)
+
+  add_executable(conway_pretty_oneapi conway_pretty.cpp)
+  target_link_libraries(conway_pretty_oneapi ArrayFire::afoneapi)
+
+  add_executable(field_oneapi field.cpp)
+  target_link_libraries(field_oneapi ArrayFire::afoneapi)
+
+  add_executable(fractal_oneapi fractal.cpp)
+  target_link_libraries(fractal_oneapi ArrayFire::afoneapi)
+
+  add_executable(gravity_sim_oneapi gravity_sim.cpp gravity_sim_init.h)
+  target_link_libraries(gravity_sim_oneapi ArrayFire::afoneapi)
+
+  add_executable(histogram_oneapi histogram.cpp)
+  target_compile_definitions(histogram_oneapi PRIVATE "ASSETS_DIR=\"${ASSETS_DIR}\"")
+  target_link_libraries(histogram_oneapi ArrayFire::afoneapi)
+
+  add_executable(plot2d_oneapi plot2d.cpp)
+  target_link_libraries(plot2d_oneapi ArrayFire::afoneapi)
+
+  add_executable(plot3_oneapi plot3.cpp)
+  target_link_libraries(plot3_oneapi ArrayFire::afoneapi)
+
+  add_executable(surface_oneapi surface.cpp)
+  target_link_libraries(surface_oneapi ArrayFire::afoneapi)
+endif()

@@ -27,3 +27,8 @@ if(ArrayFire_OpenCL_FOUND)
   add_executable(helloworld_opencl helloworld.cpp)
   target_link_libraries(helloworld_opencl ArrayFire::afopencl)
 endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(helloworld_oneapi helloworld.cpp)
+  target_link_libraries(helloworld_oneapi ArrayFire::afoneapi)
+endif()

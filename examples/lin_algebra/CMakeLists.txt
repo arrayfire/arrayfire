@@ -57,3 +57,17 @@ if(ArrayFire_OpenCL_FOUND)
   add_executable(svd_opencl svd.cpp)
   target_link_libraries(svd_opencl ArrayFire::afopencl)
 endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(cholesky_oneapi cholesky.cpp)
+  target_link_libraries(cholesky_oneapi ArrayFire::afoneapi)
+
+  add_executable(lu_oneapi lu.cpp)
+  target_link_libraries(lu_oneapi ArrayFire::afoneapi)
+
+  add_executable(qr_oneapi qr.cpp)
+  target_link_libraries(qr_oneapi ArrayFire::afoneapi)
+
+  add_executable(svd_oneapi svd.cpp)
+  target_link_libraries(svd_oneapi ArrayFire::afoneapi)
+endif()

@@ -59,3 +59,17 @@ if (ArrayFire_OpenCL_FOUND)
   add_executable(susan_opencl susan.cpp)
   target_link_libraries(susan_opencl ArrayFire::afopencl)
 endif()
+
+if (ArrayFire_oneAPI_FOUND)
+  add_executable(fast_oneapi fast.cpp)
+  target_link_libraries(fast_oneapi ArrayFire::afoneapi)
+
+  add_executable(harris_oneapi harris.cpp)
+  target_link_libraries(harris_oneapi ArrayFire::afoneapi)
+
+  add_executable(matching_oneapi matching.cpp)
+  target_link_libraries(matching_oneapi ArrayFire::afoneapi)
+
+  add_executable(susan_oneapi susan.cpp)
+  target_link_libraries(susan_oneapi ArrayFire::afoneapi)
+endif()
