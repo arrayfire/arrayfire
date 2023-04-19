@@ -57,3 +57,17 @@ if(ArrayFire_OpenCL_FOUND)
   add_executable(vectorize_opencl vectorize.cpp)
   target_link_libraries(vectorize_opencl ArrayFire::afopencl)
 endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(convolve_oneapi convolve.cpp)
+  target_link_libraries(convolve_oneapi ArrayFire::afoneapi)
+
+  add_executable(integer_oneapi integer.cpp)
+  target_link_libraries(integer_oneapi ArrayFire::afoneapi)
+
+  add_executable(rainfall_oneapi rainfall.cpp)
+  target_link_libraries(rainfall_oneapi ArrayFire::afoneapi)
+
+  add_executable(vectorize_oneapi vectorize.cpp)
+  target_link_libraries(vectorize_oneapi ArrayFire::afoneapi)
+endif()

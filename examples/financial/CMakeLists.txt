@@ -47,3 +47,14 @@ if(ArrayFire_OpenCL_FOUND)
   add_executable(heston_model_opencl heston_model.cpp)
   target_link_libraries(heston_model_opencl ArrayFire::afopencl)
 endif()
+
+if(ArrayFire_oneAPI_FOUND)
+  add_executable(monte_carlo_options_oneapi monte_carlo_options.cpp)
+  target_link_libraries(monte_carlo_options_oneapi ArrayFire::afoneapi)
+
+  add_executable(black_scholes_options_oneapi black_scholes_options.cpp input.h)
+  target_link_libraries(black_scholes_options_oneapi ArrayFire::afoneapi)
+
+  add_executable(heston_model_oneapi heston_model.cpp)
+  target_link_libraries(heston_model_oneapi ArrayFire::afoneapi)
+endif()
