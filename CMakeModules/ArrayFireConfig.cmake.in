@@ -20,6 +20,8 @@
 #   Target for the ArrayFire CPU backend.
 # ``ArrayFire::afcuda``
 #   Target for the ArrayFire CUDA backend.
+# ``ArrayFire::afoneapi``
+#   Target for the ArrayFire oneAPI backend.
 # ``ArrayFire::afopencl``
 #   Target for the ArrayFire OpenCL backend.
 #
@@ -60,6 +62,11 @@
 # ``ArrayFire_CUDA_LIBRARIES``
 #   Location of ArrayFire's CUDA library, if found
 #
+# ``ArrayFire_oneAPI_FOUND``
+#   True of the ArrayFire oneAPI library has been found.
+# ``ArrayFire_oneAPI_LIBRARIES``
+#   Location of ArrayFire's oneAPI library, if found
+#
 # ``ArrayFire_OpenCL_FOUND``
 #   True of the ArrayFire OpenCL library has been found.
 # ``ArrayFire_OpenCL_LIBRARIES``
@@ -85,7 +92,7 @@
 
 set_and_check(ArrayFire_INCLUDE_DIRS @PACKAGE_INCLUDE_DIRS@)
 
-foreach(backend Unified CPU OpenCL CUDA)
+foreach(backend Unified CPU oneAPI OpenCL CUDA)
   if(backend STREQUAL "Unified")
     set(lowerbackend "")
   else()
@@ -140,4 +147,4 @@ foreach(_comp ${ArrayFire_FIND_COMPONENTS})
   endif()
 endforeach()
 
-check_required_components(CPU OpenCL CUDA Unified)
+check_required_components(CPU oneAPI OpenCL CUDA Unified)
