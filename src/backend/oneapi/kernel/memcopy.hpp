@@ -34,15 +34,16 @@ typedef struct {
 template<typename T>
 class memCopy {
    public:
-    memCopy(sycl::accessor<T> out, dims_t ostrides, sycl::accessor<T> in,
-            dims_t idims, dims_t istrides, int offset, int groups_0,
-            int groups_1)
+    memCopy(sycl::accessor<T> out, dims_t ostrides, int ooffset,
+            sycl::accessor<T> in, dims_t idims, dims_t istrides, int ioffset,
+            int groups_0, int groups_1)
         : out_(out)
-        , in_(in)
         , ostrides_(ostrides)
+        , ooffset_(ooffset)
+        , in_(in)
         , idims_(idims)
         , istrides_(istrides)
-        , offset_(offset)
+        , ioffset_(ioffset)
         , groups_0_(groups_0)
         , groups_1_(groups_1) {}
 
@@ -59,14 +60,13 @@ class memCopy {
         const int id1        = group_id_1 * gg.get_local_range(1) + lid1;
 
         T *iptr = in_.get_pointer();
-        iptr += offset_;
         // FIXME: Do more work per work group
 
         T *optr = out_.get_pointer();
         optr += id3 * ostrides_.dim[3] + id2 * ostrides_.dim[2] +
-                id1 * ostrides_.dim[1];
+                id1 * ostrides_.dim[1] + ooffset_;
         iptr += id3 * istrides_.dim[3] + id2 * istrides_.dim[2] +
-                id1 * istrides_.dim[1];
+                id1 * istrides_.dim[1] + ioffset_;
 
         int istride0 = istrides_.dim[0];
         size_t idd0  = idims_.dim[0];
@@ -81,9 +81,11 @@ class memCopy {
 
    protected:
     sycl::accessor<T> out_;
+    dims_t ostrides_;
+    int ooffset_;
     sycl::accessor<T> in_;
-    dims_t ostrides_, idims_, istrides_;
-    int offset_, groups_0_, groups_1_;
+    dims_t idims_, istrides_;
+    int ioffset_, groups_0_, groups_1_;
 };
 
 constexpr uint DIM0 = 32;
@@ -92,13 +94,14 @@ constexpr uint DIM1 = 8;
 template<typename T>
 void memcopy(sycl::buffer<T> *out, const dim_t *ostrides,
              const sycl::buffer<T> *in, const dim_t *idims,
-             const dim_t *istrides, int offset, uint ndims) {
+             const dim_t *istrides, dim_t ioffset, uint indims,
+             dim_t ooffset = 0) {
     dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
     dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
     dims_t _idims    = {{idims[0], idims[1], idims[2], idims[3]}};
 
     size_t local_size[2] = {DIM0, DIM1};
-    if (ndims == 1) {
+    if (indims == 1) {
         local_size[0] *= local_size[1];
         local_size[1] = 1;
     }
@@ -116,8 +119,8 @@ void memcopy(sycl::buffer<T> *out, const dim_t *ostrides,
         auto in_acc  = const_cast<sycl::buffer<T> *>(in)->get_access(h);
 
         h.parallel_for(ndrange,
-                       memCopy<T>(out_acc, _ostrides, in_acc, _idims, _istrides,
-                                  offset, groups_0, groups_1));
+                       memCopy<T>(out_acc, _ostrides, ooffset, in_acc, _idims,
+                                  _istrides, ioffset, groups_0, groups_1));
     });
     ONEAPI_DEBUG_FINISH(getQueue());
 }
