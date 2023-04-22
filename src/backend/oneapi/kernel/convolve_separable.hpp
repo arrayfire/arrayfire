@@ -21,7 +21,8 @@ namespace kernel {
 constexpr int MAX_SCONV_FILTER_LEN = 31;
 
 template<typename T, typename accT>
-void convSep(Param<T> out, const Param<T> sig, const Param<accT> filt, const int cDim, const bool expand);
+void convSep(Param<T> out, const Param<T> sig, const Param<accT> filt,
+             const int cDim, const bool expand);
 
 }  // namespace kernel
 }  // namespace oneapi
