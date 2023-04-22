@@ -138,7 +138,7 @@ Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
                               dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
 
     Array<T> res =
-      matmul(unwrapped, collapsedFilter, AF_MAT_TRANS, AF_MAT_NONE);
+        matmul(unwrapped, collapsedFilter, AF_MAT_TRANS, AF_MAT_NONE);
     res = modDims(res, dim4(outputWidth, outputHeight, signal.dims()[3],
                             collapsedFilter.dims()[1]));
     Array<T> out = reorder(res, dim4(0, 1, 3, 2));
@@ -149,15 +149,14 @@ Array<T> convolve2_unwrap(const Array<T> &signal, const Array<T> &filter,
 template<typename T>
 Array<T> convolve2(Array<T> const &signal, Array<T> const &filter,
                    const dim4 stride, const dim4 padding, const dim4 dilation) {
-    if constexpr(!std::is_same<T, half>::value) {
-      Array<T> out =
-        convolve2_unwrap<T>(signal, filter, stride, padding, dilation);
-      return out;
-    }
-    else {
-      ONEAPI_NOT_SUPPORTED("");
-      Array<T> out = createEmptyArray<T>(dim4(1));
-      return out;
+    if constexpr (!std::is_same<T, half>::value) {
+        Array<T> out =
+            convolve2_unwrap<T>(signal, filter, stride, padding, dilation);
+        return out;
+    } else {
+        ONEAPI_NOT_SUPPORTED("");
+        Array<T> out = createEmptyArray<T>(dim4(1));
+        return out;
     }
 }
 
@@ -178,39 +177,38 @@ Array<T> conv2DataGradient(const Array<T> &incoming_gradient,
                            const Array<T> & /*convolved_output*/,
                            af::dim4 stride, af::dim4 padding,
                            af::dim4 dilation) {
-    if constexpr(!std::is_same<T, half>::value) {
-      const dim4 &cDims = incoming_gradient.dims();
-      const dim4 &sDims = original_signal.dims();
-      const dim4 &fDims = original_filter.dims();
+    if constexpr (!std::is_same<T, half>::value) {
+        const dim4 &cDims = incoming_gradient.dims();
+        const dim4 &sDims = original_signal.dims();
+        const dim4 &fDims = original_filter.dims();
 
-      Array<T> collapsed_filter = original_filter;
+        Array<T> collapsed_filter = original_filter;
 
-      collapsed_filter = flip(collapsed_filter, {1, 1, 0, 0});
-      collapsed_filter = modDims(collapsed_filter,
-                                 dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
+        collapsed_filter = flip(collapsed_filter, {1, 1, 0, 0});
+        collapsed_filter = modDims(
+            collapsed_filter, dim4(fDims[0] * fDims[1] * fDims[2], fDims[3]));
 
-      Array<T> collapsed_gradient = incoming_gradient;
-      collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
-      collapsed_gradient          = modDims(
-                                            collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+        Array<T> collapsed_gradient = incoming_gradient;
+        collapsed_gradient = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
+        collapsed_gradient = modDims(
+            collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
-      Array<T> res =
-        matmul(collapsed_gradient, collapsed_filter, AF_MAT_NONE, AF_MAT_TRANS);
-      res = modDims(res, dim4(res.dims()[0] / sDims[3], sDims[3],
-                              fDims[0] * fDims[1], sDims[2]));
-      res = reorder(res, dim4(0, 2, 3, 1));
+        Array<T> res = matmul(collapsed_gradient, collapsed_filter, AF_MAT_NONE,
+                              AF_MAT_TRANS);
+        res          = modDims(res, dim4(res.dims()[0] / sDims[3], sDims[3],
+                                         fDims[0] * fDims[1], sDims[2]));
+        res          = reorder(res, dim4(0, 2, 3, 1));
 
-      const bool retCols = false;
-      res = wrap_dilated(res, sDims[0], sDims[1], fDims[0], fDims[1], stride[0],
-                         stride[1], padding[0], padding[1], dilation[0],
-                         dilation[1], retCols);
+        const bool retCols = false;
+        res = wrap_dilated(res, sDims[0], sDims[1], fDims[0], fDims[1],
+                           stride[0], stride[1], padding[0], padding[1],
+                           dilation[0], dilation[1], retCols);
 
-      return res;
-    }
-    else {
-      ONEAPI_NOT_SUPPORTED("");
-      Array<T> out = createEmptyArray<T>(dim4(1));
-      return out;
+        return res;
+    } else {
+        ONEAPI_NOT_SUPPORTED("");
+        Array<T> out = createEmptyArray<T>(dim4(1));
+        return out;
     }
 }
 
@@ -221,36 +219,35 @@ Array<T> conv2FilterGradient(const Array<T> &incoming_gradient,
                              const Array<T> & /*convolved_output*/,
                              af::dim4 stride, af::dim4 padding,
                              af::dim4 dilation) {
-    if constexpr(!std::is_same<T, half>::value) {
-      const dim4 &cDims = incoming_gradient.dims();
-      const dim4 &fDims = original_filter.dims();
+    if constexpr (!std::is_same<T, half>::value) {
+        const dim4 &cDims = incoming_gradient.dims();
+        const dim4 &fDims = original_filter.dims();
 
-      const bool retCols = false;
-      Array<T> unwrapped =
-        unwrap(original_signal, fDims[0], fDims[1], stride[0], stride[1],
-               padding[0], padding[1], dilation[0], dilation[1], retCols);
+        const bool retCols = false;
+        Array<T> unwrapped =
+            unwrap(original_signal, fDims[0], fDims[1], stride[0], stride[1],
+                   padding[0], padding[1], dilation[0], dilation[1], retCols);
 
-      unwrapped  = reorder(unwrapped, dim4(1, 2, 0, 3));
-      dim4 uDims = unwrapped.dims();
-      unwrapped =
-        modDims(unwrapped, dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
+        unwrapped  = reorder(unwrapped, dim4(1, 2, 0, 3));
+        dim4 uDims = unwrapped.dims();
+        unwrapped =
+            modDims(unwrapped, dim4(uDims[0] * uDims[1], uDims[2] * uDims[3]));
 
-      Array<T> collapsed_gradient = incoming_gradient;
-      collapsed_gradient          = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
-      collapsed_gradient          = modDims(
-                                            collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
+        Array<T> collapsed_gradient = incoming_gradient;
+        collapsed_gradient = reorder(collapsed_gradient, dim4(0, 1, 3, 2));
+        collapsed_gradient = modDims(
+            collapsed_gradient, dim4(cDims[0] * cDims[1] * cDims[3], cDims[2]));
 
-      Array<T> res =
-        matmul(unwrapped, collapsed_gradient, AF_MAT_NONE, AF_MAT_NONE);
-      res = modDims(res, dim4(fDims[0], fDims[1], fDims[2], fDims[3]));
+        Array<T> res =
+            matmul(unwrapped, collapsed_gradient, AF_MAT_NONE, AF_MAT_NONE);
+        res = modDims(res, dim4(fDims[0], fDims[1], fDims[2], fDims[3]));
 
-      auto out = flip(res, {1, 1, 0, 0});
-      return out;
-    }
-    else {
-      ONEAPI_NOT_SUPPORTED("");
-      Array<T> out = createEmptyArray<T>(dim4(1));
-      return out;
+        auto out = flip(res, {1, 1, 0, 0});
+        return out;
+    } else {
+        ONEAPI_NOT_SUPPORTED("");
+        Array<T> out = createEmptyArray<T>(dim4(1));
+        return out;
     }
 }
 

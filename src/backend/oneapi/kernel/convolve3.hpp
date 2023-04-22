@@ -1,3 +1,13 @@
+/*******************************************************
+ * Copyright (c) 2023, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+#pragma once
+
 int index(int i, int j, int k, int jstride, int kstride) {
     return i + j * jstride + k * kstride;
 }
