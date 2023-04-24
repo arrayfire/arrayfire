@@ -214,6 +214,7 @@ target_sources(afoneapi
     kernel/approx2.hpp
     kernel/assign.hpp
     kernel/bilateral.hpp
+    kernel/convolve_separable.cpp
     kernel/diagonal.hpp
     kernel/diff.hpp
     kernel/histogram.hpp
