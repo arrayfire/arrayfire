@@ -37,6 +37,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 using arrayfire::common::getFuncName;
@@ -51,10 +52,14 @@ using arrayfire::oneapi::getActiveDeviceBaseBuildFlags;
 using arrayfire::oneapi::jit::BufferNode;
 
 using std::array;
+using std::begin;
+using std::end;
+using std::find;
 using std::find_if;
 using std::string;
 using std::stringstream;
 using std::to_string;
+using std::unordered_map;
 using std::vector;
 
 using sycl::backend;
@@ -78,10 +83,12 @@ const static string DEFAULT_MACROS_STR(R"JIT(
 #endif
 )JIT");
 
-string getKernelString(const string& funcName, const vector<Node*>& full_nodes,
-                       const vector<Node_ids>& full_ids,
-                       const vector<int>& output_ids, const bool is_linear,
-                       const bool loop0, const bool loop1, const bool loop3) {
+string getKernelString(const string& funcName,
+                       const nonstd::span<Node* const> full_nodes,
+                       nonstd::span<const Node_ids> full_ids,
+                       const nonstd::span<int const> output_ids,
+                       const bool is_linear, const bool loop0, const bool loop1,
+                       const bool loop3) {
     // Common OpenCL code
     // This part of the code does not change with the kernel.
 
@@ -163,7 +170,6 @@ __kernel void )JIT";
     int id1 = get_global_id(1);
     const int id0End = oInfo.dims[0];
     const int id1End = oInfo.dims[1];
-    //printf("id0: %d  id1: %d id0End: %d, id1End: %d\n")
     if ((id0 < id0End) & (id1 < id1End)) {
         const int id2 = get_global_id(2);
 #define id3 0
@@ -279,6 +285,48 @@ __kernel void )JIT";
 //     ONEAPI_NOT_SUPPORTED("");
 //     return common::getKernel("", "", true).get();
 // }
+
+template<typename T>
+cl_kernel getKernel(std::string funcName, cl_context ctx, cl_device_id dev,
+                    cl_command_queue q,
+                    const nonstd::span<Node* const> full_nodes,
+                    nonstd::span<Node_ids const> full_ids,
+                    nonstd::span<int const> output_ids,
+                    nonstd::span<oneapi::AParam<T> const> ap, bool is_linear) {
+    static unordered_map<std::string, cl_kernel> kernel_map;
+
+    vector<cl_kernel> kernels(10);
+    if (kernel_map.find(funcName) == end(kernel_map)) {
+        string jitstr = arrayfire::opencl::getKernelString(
+            funcName, full_nodes, full_ids, output_ids, is_linear, false, false,
+            ap[0].dims[2] > 1);
+
+        cl_int err;
+        vector<const char*> jitsources = {
+            {arrayfire::oneapi::opencl::KParam_hpp,
+             arrayfire::oneapi::opencl::jit_cl, jitstr.c_str()}};
+        vector<size_t> jitsizes = {arrayfire::oneapi::opencl::KParam_hpp_len,
+                                   arrayfire::oneapi::opencl::jit_cl_len,
+                                   jitstr.size()};
+
+        cl_program prog = clCreateProgramWithSource(
+            ctx, jitsources.size(), jitsources.data(), jitsizes.data(), &err);
+
+        std::string options = getActiveDeviceBaseBuildFlags();
+
+        CL_CHECK_BUILD(
+            clBuildProgram(prog, 1, &dev, options.c_str(), nullptr, nullptr));
+
+        cl_uint ret_kernels = 0;
+        CL_CHECK(
+            clCreateKernelsInProgram(prog, 1, kernels.data(), &ret_kernels));
+        kernel_map[funcName] = kernels[0];
+        CL_CHECK(clReleaseProgram(prog));
+    } else {
+        kernels[0] = kernel_map[funcName];
+    }
+    return kernels[0];
+}
 
 }  // namespace opencl
 
@@ -432,10 +480,6 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                          funcName](sycl::interop_handle hh) {
                 switch (hh.get_backend()) {
                     case backend::opencl: {
-                        string jitstr = arrayfire::opencl::getKernelString(
-                            funcName, full_nodes, full_ids, output_ids,
-                            is_linear, false, false, ap[0].dims[2] > 1);
-
                         cl_command_queue q =
                             hh.get_native_queue<backend::opencl>();
                         cl_context ctx =
@@ -443,35 +487,15 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                         cl_device_id dev =
                             hh.get_native_device<backend::opencl>();
 
-                        cl_int err;
-                        vector<const char*> jitsources = {
-                            {arrayfire::oneapi::opencl::KParam_hpp,
-                             arrayfire::oneapi::opencl::jit_cl,
-                             jitstr.c_str()}};
-                        vector<size_t> jitsizes = {
-                            arrayfire::oneapi::opencl::KParam_hpp_len,
-                            arrayfire::oneapi::opencl::jit_cl_len,
-                            jitstr.size()};
-
-                        cl_program prog = clCreateProgramWithSource(
-                            ctx, jitsources.size(), jitsources.data(),
-                            jitsizes.data(), &err);
-
-                        std::string options = getActiveDeviceBaseBuildFlags();
-
-                        CL_CHECK_BUILD(clBuildProgram(
-                            prog, 1, &dev, options.c_str(), nullptr, nullptr));
-
-                        vector<cl_kernel> kernels(10);
-                        cl_uint ret_kernels = 0;
-                        CL_CHECK(clCreateKernelsInProgram(
-                            prog, 1, kernels.data(), &ret_kernels));
+                        cl_kernel kernel = arrayfire::opencl::getKernel<T>(
+                            funcName, ctx, dev, q, full_nodes, full_ids,
+                            output_ids, ap, is_linear);
                         int nargs{0};
                         for (Node* node : full_nodes) {
                             if (node->isBuffer()) {
                                 nargs = node->setArgs(
                                     nargs, is_linear,
-                                    [&kernels, &hh, &is_linear](
+                                    [&kernel, &hh, &is_linear](
                                         int id, const void* ptr,
                                         size_t arg_size) {
                                         AParam<T>* info =
@@ -482,27 +506,27 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                                                 info->data);
                                         if (is_linear) {
                                             CL_CHECK(clSetKernelArg(
-                                                kernels[0], id++,
-                                                sizeof(cl_mem), &mem[0]));
+                                                kernel, id++, sizeof(cl_mem),
+                                                &mem[0]));
                                             CL_CHECK(clSetKernelArg(
-                                                kernels[0], id++, sizeof(dim_t),
+                                                kernel, id++, sizeof(dim_t),
                                                 &info->offset));
                                         } else {
                                             CL_CHECK(clSetKernelArg(
-                                                kernels[0], id++,
-                                                sizeof(cl_mem), &mem[0]));
+                                                kernel, id++, sizeof(cl_mem),
+                                                &mem[0]));
                                             KParam ooo = *info;
                                             CL_CHECK(clSetKernelArg(
-                                                kernels[0], id++,
-                                                sizeof(KParam), &ooo));
+                                                kernel, id++, sizeof(KParam),
+                                                &ooo));
                                         }
                                     });
                             } else {
                                 nargs = node->setArgs(
                                     nargs, is_linear,
-                                    [&kernels](int id, const void* ptr,
-                                               size_t arg_size) {
-                                        CL_CHECK(clSetKernelArg(kernels[0], id,
+                                    [&kernel](int id, const void* ptr,
+                                              size_t arg_size) {
+                                        CL_CHECK(clSetKernelArg(kernel, id,
                                                                 arg_size, ptr));
                                     });
                             }
@@ -514,15 +538,15 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                             mem =
                                 hh.get_native_mem<backend::opencl>(output.data);
                             cl_mem mmm = mem[0];
-                            CL_CHECK(clSetKernelArg(kernels[0], nargs++,
+                            CL_CHECK(clSetKernelArg(kernel, nargs++,
                                                     sizeof(cl_mem), &mmm));
                             int off = output.offset;
-                            CL_CHECK(clSetKernelArg(kernels[0], nargs++,
+                            CL_CHECK(clSetKernelArg(kernel, nargs++,
                                                     sizeof(int), &off));
                         }
                         const KParam ooo = ap[0];
-                        CL_CHECK(clSetKernelArg(kernels[0], nargs++,
-                                                sizeof(KParam), &ooo));
+                        CL_CHECK(clSetKernelArg(kernel, nargs++, sizeof(KParam),
+                                                &ooo));
                         array<size_t, 3> offset{0, 0, 0};
                         array<size_t, 3> global;
                         int ndims = 0;
@@ -537,11 +561,10 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                         }
                         // SHOW(global);
                         CL_CHECK(clEnqueueNDRangeKernel(
-                            q, kernels[0], ndims, offset.data(), global.data(),
+                            q, kernel, ndims, offset.data(), global.data(),
                             nullptr, 0, nullptr, nullptr));
 
-                        CL_CHECK(clReleaseKernel(kernels[0]));
-                        CL_CHECK(clReleaseProgram(prog));
+                        // CL_CHECK(clReleaseKernel(kernel));
                         CL_CHECK(clReleaseDevice(dev));
                         CL_CHECK(clReleaseContext(ctx));
                         CL_CHECK(clReleaseCommandQueue(q));
