@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <traits.hpp>
 
 #include <sycl/sycl.hpp>
@@ -24,15 +25,10 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
 template<typename T>
 class diffKernel {
    public:
-    diffKernel(sycl::accessor<T> outAcc, const sycl::accessor<T> inAcc,
+    diffKernel(write_accessor<T> outAcc, const read_accessor<T> inAcc,
                const KParam op, const KParam ip, const int oElem,
                const int blocksPerMatX, const int blocksPerMatY,
                const bool isDiff2, const unsigned DIM)
@@ -82,8 +78,8 @@ class diffKernel {
     }
 
    private:
-    sycl::accessor<T> outAcc_;
-    const sycl::accessor<T> inAcc_;
+    write_accessor<T> outAcc_;
+    const read_accessor<T> inAcc_;
     const KParam op_;
     const KParam ip_;
     const int oElem_;
@@ -111,8 +107,8 @@ void diff(Param<T> out, const Param<T> in, const unsigned indims,
                       out.info.dims[3];
 
     getQueue().submit([&](sycl::handler &h) {
-        auto inAcc  = in.data->get_access(h);
-        auto outAcc = out.data->get_access(h);
+        read_accessor<T> inAcc   = {*in.data, h};
+        write_accessor<T> outAcc = {*out.data, h};
 
         h.parallel_for(
             sycl::nd_range{global, local},

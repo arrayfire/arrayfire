@@ -13,6 +13,7 @@
 #include <common/complex.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <traits.hpp>
 
 #include <sycl/sycl.hpp>
@@ -32,11 +33,6 @@ template<typename AT>
 std::complex<double> mul(AT a, std::complex<double> b) {
     return std::complex<double>(a * b.real(), a * b.imag());
 }
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 template<typename T>
 using wtype_t = typename std::conditional<std::is_same<T, double>::value,

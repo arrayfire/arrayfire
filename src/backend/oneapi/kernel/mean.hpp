@@ -15,6 +15,7 @@
 #include <common/half.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/default_config.hpp>
 #include <kernel/reduce_config.hpp>
 #include <math.hpp>
@@ -41,17 +42,6 @@ __device__ auto operator/(__half lhs, float rhs) -> __half {
 
 namespace kernel {
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
-
 template<typename To, typename Tw>
 void stable_mean(To *lhs, Tw *l_wt, To rhs, Tw r_wt) {
     if (((*l_wt) != (Tw)0) || (r_wt != (Tw)0)) {
@@ -71,9 +61,10 @@ class meanDimKernelSMEM {
                       write_accessor<Tw> owt, KParam owInfo,
                       read_accessor<Ti> in, KParam iInfo, read_accessor<Tw> iwt,
                       KParam iwInfo, uint groups_x, uint groups_y,
-                      uint offset_dim, local_accessor<compute_t<To>, 1> s_val,
-                      local_accessor<compute_t<Tw>, 1> s_idx, bool input_weight,
-                      bool output_weight)
+                      uint offset_dim,
+                      sycl::local_accessor<compute_t<To>, 1> s_val,
+                      sycl::local_accessor<compute_t<Tw>, 1> s_idx,
+                      bool input_weight, bool output_weight)
         : out_(out)
         , owt_(owt)
         , in_(in)
@@ -213,8 +204,8 @@ class meanDimKernelSMEM {
     read_accessor<Tw> iwt_;
     KParam oInfo_, owInfo_, iInfo_, iwInfo_;
     const uint groups_x_, groups_y_, offset_dim_;
-    local_accessor<compute_t<To>, 1> s_val_;
-    local_accessor<compute_t<Tw>, 1> s_idx_;
+    sycl::local_accessor<compute_t<To>, 1> s_val_;
+    sycl::local_accessor<compute_t<Tw>, 1> s_idx_;
     bool input_weight_, output_weight_;
 };
 
@@ -231,8 +222,10 @@ void mean_dim_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
 
-        auto s_val = local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
-        auto s_idx = local_accessor<compute_t<Tw>, 1>(THREADS_PER_BLOCK, h);
+        auto s_val =
+            sycl::local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
+        auto s_idx =
+            sycl::local_accessor<compute_t<Tw>, 1>(THREADS_PER_BLOCK, h);
 
         bool input_weight = ((iwt.info.dims[0] * iwt.info.dims[1] *
                               iwt.info.dims[2] * iwt.info.dims[3]) != 0);
@@ -327,8 +320,8 @@ class meanFirstKernelSMEM {
                         read_accessor<Tw> iwt, KParam iwInfo, const uint DIMX,
                         const uint groups_x, const uint groups_y,
                         const uint repeat,
-                        local_accessor<compute_t<To>, 1> s_val,
-                        local_accessor<compute_t<Tw>, 1> s_idx,
+                        sycl::local_accessor<compute_t<To>, 1> s_val,
+                        sycl::local_accessor<compute_t<Tw>, 1> s_idx,
                         bool input_weight, bool output_weight)
         : out_(out)
         , owt_(owt)
@@ -485,8 +478,8 @@ class meanFirstKernelSMEM {
     read_accessor<Tw> iwt_;
     KParam oInfo_, owInfo_, iInfo_, iwInfo_;
     const uint DIMX_, groups_x_, groups_y_, repeat_;
-    local_accessor<compute_t<To>, 1> s_val_;
-    local_accessor<compute_t<Tw>, 1> s_idx_;
+    sycl::local_accessor<compute_t<To>, 1> s_val_;
+    sycl::local_accessor<compute_t<Tw>, 1> s_idx_;
     bool input_weight_, output_weight_;
 };
 
@@ -505,8 +498,10 @@ void mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
 
-        auto s_val = local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
-        auto s_idx = local_accessor<compute_t<Tw>, 1>(THREADS_PER_BLOCK, h);
+        auto s_val =
+            sycl::local_accessor<compute_t<To>, 1>(THREADS_PER_BLOCK, h);
+        auto s_idx =
+            sycl::local_accessor<compute_t<Tw>, 1>(THREADS_PER_BLOCK, h);
 
         bool input_weight = ((iwt.info.dims[0] * iwt.info.dims[1] *
                               iwt.info.dims[2] * iwt.info.dims[3]) != 0);
@@ -626,6 +621,7 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
         sycl::buffer hwBuffer(h_wptr.data(), {tmp_elements},
                               {sycl::property::buffer::use_host_ptr()});
 
+        // TODO: fix when addressing other mean errors
         auto e1 = getQueue().submit([&](sycl::handler &h) {
             auto acc_in =
                 tmpOut.get()->get_access(h, sycl::range{tmp_elements});

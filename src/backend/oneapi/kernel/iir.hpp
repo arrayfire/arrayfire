@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2023, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <math.hpp>
 
 #include <sycl/sycl.hpp>
@@ -19,11 +20,6 @@
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 constexpr int MAX_A_SIZE = 1024;
 

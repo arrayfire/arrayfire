@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <traits.hpp>
 
 #include <sycl/sycl.hpp>
@@ -24,16 +25,11 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
 template<typename T>
 class diagCreateKernel {
    public:
-    diagCreateKernel(sycl::accessor<T> oData, KParam oInfo,
-                     sycl::accessor<T> iData, KParam iInfo, int num,
+    diagCreateKernel(write_accessor<T> oData, KParam oInfo,
+                     read_accessor<T> iData, KParam iInfo, int num,
                      int groups_x)
         : oData_(oData)
         , oInfo_(oInfo)
@@ -65,9 +61,9 @@ class diagCreateKernel {
     }
 
    private:
-    sycl::accessor<T> oData_;
+    write_accessor<T> oData_;
     KParam oInfo_;
-    sycl::accessor<T> iData_;
+    read_accessor<T> iData_;
     KParam iInfo_;
     int num_;
     int groups_x_;
@@ -82,8 +78,8 @@ static void diagCreate(Param<T> out, Param<T> in, int num) {
                               groups_y * local[1]};
 
     getQueue().submit([&](sycl::handler &h) {
-        auto oData = out.data->get_access(h);
-        auto iData = in.data->get_access(h);
+        write_accessor<T> oData{*out.data, h};
+        read_accessor<T> iData{*in.data, h};
 
         h.parallel_for(sycl::nd_range{global, local},
                        diagCreateKernel<T>(oData, out.info, iData, in.info, num,
@@ -95,8 +91,8 @@ static void diagCreate(Param<T> out, Param<T> in, int num) {
 template<typename T>
 class diagExtractKernel {
    public:
-    diagExtractKernel(sycl::accessor<T> oData, KParam oInfo,
-                      sycl::accessor<T> iData, KParam iInfo, int num,
+    diagExtractKernel(write_accessor<T> oData, KParam oInfo,
+                      read_accessor<T> iData, KParam iInfo, int num,
                       int groups_z)
         : oData_(oData)
         , oInfo_(oInfo)
@@ -133,9 +129,9 @@ class diagExtractKernel {
     }
 
    private:
-    sycl::accessor<T> oData_;
+    write_accessor<T> oData_;
     KParam oInfo_;
-    sycl::accessor<T> iData_;
+    read_accessor<T> iData_;
     KParam iInfo_;
     int num_;
     int groups_z_;
@@ -150,8 +146,8 @@ static void diagExtract(Param<T> out, Param<T> in, int num) {
                               groups_z * local[1] * out.info.dims[3]};
 
     getQueue().submit([&](sycl::handler &h) {
-        auto oData = out.data->get_access(h);
-        auto iData = in.data->get_access(h);
+        write_accessor<T> oData{*out.data, h};
+        read_accessor<T> iData{*in.data, h};
 
         h.parallel_for(sycl::nd_range{global, local},
                        diagExtractKernel<T>(oData, out.info, iData, in.info,

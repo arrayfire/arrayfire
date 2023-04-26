@@ -15,6 +15,7 @@
 #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <traits.hpp>
 #include <af/dim4.hpp>
 
@@ -30,7 +31,7 @@ namespace kernel {
 template<typename T>
 class rangeOp {
    public:
-    rangeOp(sycl::accessor<T> out, KParam oinfo, const int dim,
+    rangeOp(write_accessor<T> out, KParam oinfo, const int dim,
             const int blocksPerMatX, const int blocksPerMatY)
         : out_(out)
         , oinfo_(oinfo)
@@ -82,7 +83,7 @@ class rangeOp {
     }
 
    protected:
-    sycl::accessor<T> out_;
+    write_accessor<T> out_;
     KParam oinfo_;
     int dim_;
     int blocksPerMatX_, blocksPerMatY_;
@@ -104,7 +105,7 @@ void range(Param<T> out, const int dim) {
     sycl::nd_range<2> ndrange(global, local);
 
     getQueue().submit([=](sycl::handler& h) {
-        auto out_acc = out.data->get_access(h);
+        write_accessor<T> out_acc{*out.data, h};
 
         h.parallel_for(ndrange, rangeOp<T>(out_acc, out.info, dim,
                                            blocksPerMatX, blocksPerMatY));

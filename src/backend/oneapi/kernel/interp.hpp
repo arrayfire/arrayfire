@@ -7,7 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <Param.hpp>
+#include <kernel/accessors.hpp>
 #include <math.hpp>
 #include <types.hpp>
 #include <af/constants.h>
@@ -18,12 +21,6 @@
 
 namespace arrayfire {
 namespace oneapi {
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 template<typename T>
 struct itype_t {

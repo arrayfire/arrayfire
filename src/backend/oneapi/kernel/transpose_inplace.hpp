@@ -47,19 +47,14 @@ constexpr dim_t TILE_DIM  = 16;
 constexpr dim_t THREADS_X = TILE_DIM;
 constexpr dim_t THREADS_Y = 256 / TILE_DIM;
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
 template<typename T>
 class transposeInPlaceKernel {
    public:
     transposeInPlaceKernel(const sycl::accessor<T> iData, const KParam in,
                            const int blocksPerMatX, const int blocksPerMatY,
                            const bool conjugate, const bool IS32MULTIPLE,
-                           local_accessor<T, 1> shrdMem_s,
-                           local_accessor<T, 1> shrdMem_d)
+                           sycl::local_accessor<T, 1> shrdMem_s,
+                           sycl::local_accessor<T, 1> shrdMem_d)
         : iData_(iData)
         , in_(in)
         , blocksPerMatX_(blocksPerMatX)
@@ -163,8 +158,8 @@ class transposeInPlaceKernel {
     int blocksPerMatY_;
     bool conjugate_;
     bool IS32MULTIPLE_;
-    local_accessor<T, 1> shrdMem_s_;
-    local_accessor<T, 1> shrdMem_d_;
+    sycl::local_accessor<T, 1> shrdMem_s_;
+    sycl::local_accessor<T, 1> shrdMem_d_;
 };
 
 template<typename T>
@@ -179,9 +174,11 @@ void transpose_inplace(Param<T> in, const bool conjugate,
                               blk_y * local[1] * in.info.dims[3]};
 
     getQueue().submit([&](sycl::handler &h) {
-        auto r         = in.data->get_access(h);
-        auto shrdMem_s = local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
-        auto shrdMem_d = local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
+        auto r = in.data->get_access(h);
+        auto shrdMem_s =
+            sycl::local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
+        auto shrdMem_d =
+            sycl::local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
 
         h.parallel_for(
             sycl::nd_range{global, local},

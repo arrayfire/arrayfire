@@ -14,6 +14,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/default_config.hpp>
 #include <memory.hpp>
 
@@ -23,17 +24,6 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
-
 template<typename Ti, typename To, af_op_t op, int dim>
 class scanDimKernel {
    public:
@@ -42,8 +32,8 @@ class scanDimKernel {
                   read_accessor<Ti> in_acc, KParam iInfo, const uint groups_x,
                   const uint groups_y, const uint blocks_dim, const uint lim,
                   const bool isFinalPass, const uint DIMY,
-                  const bool inclusive_scan, local_accessor<To, 1> s_val,
-                  local_accessor<To, 1> s_tmp)
+                  const bool inclusive_scan, sycl::local_accessor<To, 1> s_val,
+                  sycl::local_accessor<To, 1> s_tmp)
         : out_acc_(out_acc)
         , tmp_acc_(tmp_acc)
         , in_acc_(in_acc)
@@ -161,8 +151,8 @@ class scanDimKernel {
     KParam oInfo_, tInfo_, iInfo_;
     const uint groups_x_, groups_y_, blocks_dim_, lim_, DIMY_;
     const bool isFinalPass_, inclusive_scan_;
-    local_accessor<To, 1> s_val_;
-    local_accessor<To, 1> s_tmp_;
+    sycl::local_accessor<To, 1> s_val_;
+    sycl::local_accessor<To, 1> s_tmp_;
 };
 
 template<typename To, af_op_t op, int dim>
@@ -262,9 +252,9 @@ static void scan_dim_launcher(Param<To> out, Param<To> tmp, Param<Ti> in,
         write_accessor<To> tmp_acc{*tmp.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
 
-        auto s_val =
-            local_accessor<compute_t<To>, 1>(THREADS_X * threads_y * 2, h);
-        auto s_tmp = local_accessor<compute_t<To>, 1>(THREADS_X, h);
+        auto s_val = sycl::local_accessor<compute_t<To>, 1>(
+            THREADS_X * threads_y * 2, h);
+        auto s_tmp = sycl::local_accessor<compute_t<To>, 1>(THREADS_X, h);
 
         h.parallel_for(
             sycl::nd_range<2>(global, local),

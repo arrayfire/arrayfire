@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/default_config.hpp>
 
 #include <sycl/sycl.hpp>
@@ -20,14 +21,6 @@
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
-
-template<typename T>
-using local_accessor = sycl::accessor<T, 1, sycl::access::mode::read_write,
-                                      sycl::access::target::local>;
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 #define sidx(y, x) scratch_[((y + 1) * (TX + 2)) + (x + 1)]
 
@@ -38,7 +31,7 @@ class gradientCreateKernel {
                          write_accessor<T> d_grad1, const KParam grad1,
                          read_accessor<T> d_in, const KParam in,
                          const int blocksPerMatX, const int blocksPerMatY,
-                         local_accessor<T> scratch)
+                         sycl::local_accessor<T> scratch)
         : d_grad0_(d_grad0)
         , grad0_(grad0)
         , d_grad1_(d_grad1)
@@ -132,7 +125,7 @@ class gradientCreateKernel {
     const KParam in_;
     const int blocksPerMatX_;
     const int blocksPerMatY_;
-    local_accessor<T> scratch_;
+    sycl::local_accessor<T> scratch_;
 };
 
 template<typename T>
@@ -151,7 +144,7 @@ void gradient(Param<T> grad0, Param<T> grad1, const Param<T> in) {
         write_accessor<T> grad0Acc{*grad0.data, h};
         write_accessor<T> grad1Acc{*grad1.data, h};
         read_accessor<T> inAcc{*in.data, h};
-        auto scratch = local_accessor<T>((TY + 2) * (TX + 2), h);
+        auto scratch = sycl::local_accessor<T>((TY + 2) * (TX + 2), h);
         h.parallel_for(sycl::nd_range{global, local},
                        gradientCreateKernel<T, TX, TY>(
                            grad0Acc, grad0.info, grad1Acc, grad1.info, inAcc,

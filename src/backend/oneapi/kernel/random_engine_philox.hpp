@@ -45,6 +45,7 @@
  *********************************************************/
 
 #pragma once
+#include <kernel/accessors.hpp>
 #include <kernel/random_engine_write.hpp>
 
 namespace arrayfire {
@@ -106,7 +107,7 @@ static inline void philox(uint key[2], uint ctr[4]) {
 template<typename T>
 class uniformPhilox {
    public:
-    uniformPhilox(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
+    uniformPhilox(write_accessor<T> out, uint hi, uint lo, uint hic, uint loc,
                   uint elementsPerBlock, uint elements)
         : out_(out)
         , hi_(hi)
@@ -138,7 +139,7 @@ class uniformPhilox {
     }
 
    protected:
-    sycl::accessor<T> out_;
+    write_accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
 };
@@ -146,7 +147,7 @@ class uniformPhilox {
 template<typename T>
 class normalPhilox {
    public:
-    normalPhilox(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
+    normalPhilox(write_accessor<T> out, uint hi, uint lo, uint hic, uint loc,
                  uint elementsPerBlock, uint elements)
         : out_(out)
         , hi_(hi)
@@ -180,7 +181,7 @@ class normalPhilox {
     }
 
    protected:
-    sycl::accessor<T> out_;
+    write_accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
 };

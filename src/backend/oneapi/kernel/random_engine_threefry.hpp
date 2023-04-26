@@ -45,6 +45,7 @@
  *********************************************************/
 
 #pragma once
+#include <kernel/accessors.hpp>
 #include <kernel/random_engine_write.hpp>
 
 namespace arrayfire {
@@ -161,7 +162,7 @@ void threefry(uint k[2], uint c[2], uint X[2]) {
 template<typename T>
 class uniformThreefry {
    public:
-    uniformThreefry(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
+    uniformThreefry(write_accessor<T> out, uint hi, uint lo, uint hic, uint loc,
                     uint elementsPerBlock, uint elements)
         : out_(out)
         , hi_(hi)
@@ -198,7 +199,7 @@ class uniformThreefry {
     }
 
    protected:
-    sycl::accessor<T> out_;
+    write_accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
 };
@@ -206,7 +207,7 @@ class uniformThreefry {
 template<typename T>
 class normalThreefry {
    public:
-    normalThreefry(sycl::accessor<T> out, uint hi, uint lo, uint hic, uint loc,
+    normalThreefry(write_accessor<T> out, uint hi, uint lo, uint hic, uint loc,
                    uint elementsPerBlock, uint elements)
         : out_(out)
         , hi_(hi)
@@ -243,7 +244,7 @@ class normalThreefry {
     }
 
    protected:
-    sycl::accessor<T> out_;
+    write_accessor<T> out_;
     uint hi_, lo_, hic_, loc_;
     uint elementsPerBlock_, elements_;
 };

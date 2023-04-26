@@ -13,9 +13,9 @@
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/default_config.hpp>
 #include <math.hpp>
-#include <sycl/sycl.hpp>
 
 #include <sycl/sycl.hpp>
 
@@ -25,14 +25,6 @@
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
-
-template<typename T>
-using local_accessor = sycl::accessor<T, 1, sycl::access::mode::read_write,
-                                      sycl::access::target::local>;
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 template<typename T>
 class wrapCreateKernel {

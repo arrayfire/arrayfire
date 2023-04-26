@@ -14,6 +14,7 @@
 #include <common/half.hpp>
 #include <common/traits.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <sycl/sycl.hpp>
 #include <traits.hpp>
 
@@ -34,8 +35,8 @@ typedef struct {
 template<typename T>
 class memCopy {
    public:
-    memCopy(sycl::accessor<T> out, dims_t ostrides, int ooffset,
-            sycl::accessor<T> in, dims_t idims, dims_t istrides, int ioffset,
+    memCopy(write_accessor<T> out, dims_t ostrides, int ooffset,
+            read_accessor<T> in, dims_t idims, dims_t istrides, int ioffset,
             int groups_0, int groups_1)
         : out_(out)
         , ostrides_(ostrides)
@@ -80,10 +81,10 @@ class memCopy {
     }
 
    protected:
-    sycl::accessor<T> out_;
+    write_accessor<T> out_;
     dims_t ostrides_;
     int ooffset_;
-    sycl::accessor<T> in_;
+    read_accessor<T> in_;
     dims_t idims_, istrides_;
     int ioffset_, groups_0_, groups_1_;
 };
@@ -115,8 +116,8 @@ void memcopy(sycl::buffer<T> *out, const dim_t *ostrides,
     sycl::nd_range<2> ndrange(global, local);
 
     getQueue().submit([=](sycl::handler &h) {
-        auto out_acc = out->get_access(h);
-        auto in_acc  = const_cast<sycl::buffer<T> *>(in)->get_access(h);
+        write_accessor<T> out_acc{*out, h};
+        read_accessor<T> in_acc{*const_cast<sycl::buffer<T> *>(in), h};
 
         h.parallel_for(ndrange,
                        memCopy<T>(out_acc, _ostrides, ooffset, in_acc, _idims,
@@ -198,8 +199,8 @@ OTHER_SPECIALIZATIONS(arrayfire::common::half)
 template<typename inType, typename outType, bool SAMEDIMS>
 class reshapeCopy {
    public:
-    reshapeCopy(sycl::accessor<outType> dst, KParam oInfo,
-                sycl::accessor<inType> src, KParam iInfo, outType default_value,
+    reshapeCopy(write_accessor<outType> dst, KParam oInfo,
+                read_accessor<inType> src, KParam iInfo, outType default_value,
                 float factor, dims_t trgt, int blk_x, int blk_y)
         : dst_(dst)
         , src_(src)
@@ -261,8 +262,8 @@ class reshapeCopy {
     }
 
    protected:
-    sycl::accessor<outType> dst_;
-    sycl::accessor<inType> src_;
+    write_accessor<outType> dst_;
+    read_accessor<inType> src_;
     KParam oInfo_, iInfo_;
     outType default_value_;
     float factor_;
@@ -303,9 +304,9 @@ void copy(Param<outType> dst, const Param<inType> src, const int ndims,
     }
 
     getQueue().submit([=](sycl::handler &h) {
-        auto dst_acc = dst.data->get_access(h);
-        auto src_acc =
-            const_cast<sycl::buffer<inType> *>(src.data)->get_access(h);
+        write_accessor<outType> dst_acc{*dst.data, h};
+        read_accessor<inType> src_acc{
+            *const_cast<sycl::buffer<inType> *>(src.data), h};
 
         if (same_dims) {
             h.parallel_for(ndrange, reshapeCopy<inType, outType, true>(

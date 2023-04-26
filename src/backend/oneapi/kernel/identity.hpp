@@ -12,15 +12,13 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <math.hpp>
 #include <types.hpp>
 
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 template<typename T>
 class identityKernel {
