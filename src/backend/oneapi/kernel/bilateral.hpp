@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <traits.hpp>
 
 #include <sycl/sycl.hpp>
@@ -23,11 +24,6 @@
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
-
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
 
 template<typename outType, bool USE_NATIVE_EXP>
 auto exp_native_nonnative(float in) {
@@ -40,10 +36,10 @@ auto exp_native_nonnative(float in) {
 template<typename outType, typename inType, bool USE_NATIVE_EXP>
 class bilateralKernel {
    public:
-    bilateralKernel(sycl::accessor<outType> d_dst, KParam oInfo,
-                    sycl::accessor<inType> d_src, KParam iInfo,
-                    local_accessor<outType, 1> localMem,
-                    local_accessor<outType, 1> gauss2d, float sigma_space,
+    bilateralKernel(write_accessor<outType> d_dst, KParam oInfo,
+                    read_accessor<inType> d_src, KParam iInfo,
+                    sycl::local_accessor<outType, 1> localMem,
+                    sycl::local_accessor<outType, 1> gauss2d, float sigma_space,
                     float sigma_color, int gaussOff, int nBBS0, int nBBS1)
         : d_dst_(d_dst)
         , oInfo_(oInfo)
@@ -148,7 +144,7 @@ class bilateralKernel {
         return (v < lo) ? lo : (hi < v) ? hi : v;
     }
 
-    void load2LocalMem(local_accessor<outType, 1> shrd, const inType* in,
+    void load2LocalMem(sycl::local_accessor<outType, 1> shrd, const inType* in,
                        int lx, int ly, int shrdStride, int dim0, int dim1,
                        int gx, int gy, int inStride1, int inStride0) const {
         int gx_ = sycl::clamp(gx, 0, dim0 - 1);
@@ -158,12 +154,12 @@ class bilateralKernel {
     }
 
    private:
-    sycl::accessor<outType> d_dst_;
+    write_accessor<outType> d_dst_;
     KParam oInfo_;
-    sycl::accessor<inType> d_src_;
+    read_accessor<inType> d_src_;
     KParam iInfo_;
-    local_accessor<outType, 1> localMem_;
-    local_accessor<outType, 1> gauss2d_;
+    sycl::local_accessor<outType, 1> localMem_;
+    sycl::local_accessor<outType, 1> gauss2d_;
     float sigma_space_;
     float sigma_color_;
     int gaussOff_;
@@ -203,18 +199,17 @@ void bilateral(Param<outType> out, const Param<inType> in, const float s_sigma,
     }
 
     getQueue().submit([&](sycl::handler& h) {
-        auto inAcc  = in.data->get_access(h);
-        auto outAcc = out.data->get_access(h);
+        read_accessor<inType> inAcc{*in.data, h};
+        write_accessor<outType> outAcc{*out.data, h};
 
-        auto localMem = local_accessor<outType, 1>(num_shrd_elems, h);
-        auto gauss2d  = local_accessor<outType, 1>(num_shrd_elems, h);
+        auto localMem = sycl::local_accessor<outType, 1>(num_shrd_elems, h);
+        auto gauss2d  = sycl::local_accessor<outType, 1>(num_shrd_elems, h);
 
         h.parallel_for(sycl::nd_range{global, local},
                        bilateralKernel<outType, inType, UseNativeExp>(
                            outAcc, out.info, inAcc, in.info, localMem, gauss2d,
                            s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y));
     });
-
     ONEAPI_DEBUG_FINISH(getQueue());
 }
 

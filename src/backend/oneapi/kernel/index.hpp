@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/assign_kernel_param.hpp>
 
 namespace arrayfire {
@@ -20,19 +21,18 @@ namespace kernel {
 
 template<typename T>
 class indexKernel {
-    sycl::accessor<T, 1, sycl::access::mode::write> out;
+    write_accessor<T> out;
     KParam outp;
-    sycl::accessor<T, 1, sycl::access::mode::read> in;
+    read_accessor<T> in;
     KParam inp;
     IndexKernelParam p;
     int nBBS0;
     int nBBS1;
 
    public:
-    indexKernel(sycl::accessor<T, 1, sycl::access::mode::write> out_,
-                KParam outp_,
-                sycl::accessor<T, 1, sycl::access::mode::read> in_, KParam inp_,
-                const IndexKernelParam p_, const int nBBS0_, const int nBBS1_)
+    indexKernel(write_accessor<T> out_, KParam outp_, read_accessor<T> in_,
+                KParam inp_, const IndexKernelParam p_, const int nBBS0_,
+                const int nBBS1_)
         : out(out_)
         , outp(outp_)
         , in(in_)

@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <traits.hpp>
 
 #include <sycl/sycl.hpp>
@@ -24,15 +25,10 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
 template<typename T>
 class triangleKernel {
    public:
-    triangleKernel(sycl::accessor<T> rAcc, KParam rinfo, sycl::accessor<T> iAcc,
+    triangleKernel(write_accessor<T> rAcc, KParam rinfo, read_accessor<T> iAcc,
                    KParam iinfo, const int groups_x, const int groups_y,
                    const bool is_upper, const bool is_unit_diag)
         : rAcc_(rAcc)
@@ -82,9 +78,9 @@ class triangleKernel {
     }
 
    private:
-    sycl::accessor<T> rAcc_;
+    write_accessor<T> rAcc_;
     KParam rinfo_;
-    sycl::accessor<T> iAcc_;
+    read_accessor<T> iAcc_;
     KParam iinfo_;
     const int groups_x_;
     const int groups_y_;
@@ -109,8 +105,8 @@ void triangle(Param<T> out, const Param<T> in, bool is_upper,
                               groups_y * out.info.dims[3] * local[1]};
 
     getQueue().submit([&](sycl::handler &h) {
-        auto iAcc = in.data->get_access(h);
-        auto rAcc = out.data->get_access(h);
+        read_accessor<T> iAcc{*in.data, h};
+        write_accessor<T> rAcc{*out.data, h};
 
         h.parallel_for(
             sycl::nd_range{global, local},

@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <traits.hpp>
 
 #include <sycl/sycl.hpp>
@@ -44,11 +45,6 @@ cdouble getConjugate(const cdouble &in) {
     return std::conj(in);
 }
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
 template<typename T>
 class transposeKernel {
    public:
@@ -57,7 +53,7 @@ class transposeKernel {
                     const sycl::accessor<T, 1, sycl::access::mode::read> iData,
                     const KParam in, const int blocksPerMatX,
                     const int blocksPerMatY, const bool conjugate,
-                    const bool IS32MULTIPLE, local_accessor<T, 1> shrdMem)
+                    const bool IS32MULTIPLE, sycl::local_accessor<T, 1> shrdMem)
         : oData_(oData)
         , out_(out)
         , iData_(iData)
@@ -135,7 +131,7 @@ class transposeKernel {
     int blocksPerMatY_;
     bool conjugate_;
     bool IS32MULTIPLE_;
-    local_accessor<T, 1> shrdMem_;
+    sycl::local_accessor<T, 1> shrdMem_;
 };
 
 template<typename T>
@@ -153,7 +149,7 @@ void transpose(Param<T> out, const Param<T> in, const bool conjugate,
         auto r = in.data->template get_access<sycl::access::mode::read>(h);
         auto q = out.data->template get_access<sycl::access::mode::write>(h);
 
-        auto shrdMem = local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
+        auto shrdMem = sycl::local_accessor<T, 1>(TILE_DIM * (TILE_DIM + 1), h);
 
         h.parallel_for(sycl::nd_range{global, local},
                        transposeKernel<T>(q, out.info, r, in.info, blk_x, blk_y,

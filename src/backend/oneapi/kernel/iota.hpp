@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <traits.hpp>
 #include <types.hpp>
 #include <af/dim4.hpp>
@@ -29,7 +30,7 @@ namespace kernel {
 template<typename T>
 class iotaKernel {
    public:
-    iotaKernel(sycl::accessor<T> out, KParam oinfo, const int s0, const int s1,
+    iotaKernel(write_accessor<T> out, KParam oinfo, const int s0, const int s1,
                const int s2, const int s3, const int blocksPerMatX,
                const int blocksPerMatY)
         : out_(out)
@@ -79,7 +80,7 @@ class iotaKernel {
     }
 
    protected:
-    sycl::accessor<T> out_;
+    write_accessor<T> out_;
     KParam oinfo_;
     int s0_, s1_, s2_, s3_;
     int blocksPerMatX_, blocksPerMatY_;
@@ -100,24 +101,17 @@ void iota(Param<T> out, const af::dim4& sdims) {
                           local[1] * blocksPerMatY * out.info.dims[3]);
     sycl::nd_range<2> ndrange(global, local);
 
-    try {
-        getQueue()
-            .submit([=](sycl::handler& h) {
-                auto out_acc = out.data->get_access(h);
+    getQueue().submit([=](sycl::handler& h) {
+        write_accessor<T> out_acc{*out.data, h};
 
-                h.parallel_for(
-                    ndrange,
-                    iotaKernel<T>(out_acc, out.info, static_cast<int>(sdims[0]),
-                                  static_cast<int>(sdims[1]),
-                                  static_cast<int>(sdims[2]),
-                                  static_cast<int>(sdims[3]), blocksPerMatX,
-                                  blocksPerMatY));
-            })
-            .wait();
-        ONEAPI_DEBUG_FINISH(getQueue());
-    } catch (sycl::exception& e) {
-        std::cout << e.what() << std::endl;
-    } catch (std::exception& e) { std::cout << e.what() << std::endl; }
+        h.parallel_for(ndrange, iotaKernel<T>(out_acc, out.info,
+                                              static_cast<int>(sdims[0]),
+                                              static_cast<int>(sdims[1]),
+                                              static_cast<int>(sdims[2]),
+                                              static_cast<int>(sdims[3]),
+                                              blocksPerMatX, blocksPerMatY));
+    });
+    ONEAPI_DEBUG_FINISH(getQueue());
 }
 
 }  // namespace kernel

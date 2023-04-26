@@ -12,6 +12,7 @@
 #include <common/complex.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/interp.hpp>
 #include <math.hpp>
 #include <traits.hpp>
@@ -21,11 +22,6 @@
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 typedef struct {
     float tmat[6];

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/Binary.hpp>
@@ -15,6 +16,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/reduce_config.hpp>
 #include <math.hpp>
 #include <memory.hpp>
@@ -31,21 +33,10 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
 template<typename T>
 using global_atomic_ref =
     sycl::atomic_ref<T, sycl::memory_order::relaxed, sycl::memory_scope::system,
                      sycl::access::address_space::global_space>;
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 template<typename Ti, typename To, af_op_t op>
 class reduceAllKernelSMEM {
@@ -56,8 +47,8 @@ class reduceAllKernelSMEM {
                         read_accessor<Ti> in, KParam iInfo, uint DIMX,
                         uint groups_x, uint groups_y, uint repeat,
                         bool change_nan, To nanval,
-                        local_accessor<compute_t<To>, 1> s_ptr,
-                        local_accessor<bool, 1> amLast)
+                        sycl::local_accessor<compute_t<To>, 1> s_ptr,
+                        sycl::local_accessor<bool, 1> amLast)
         : out_(out)
         , retCount_(retCount)
         , tmp_(tmp)
@@ -237,8 +228,8 @@ class reduceAllKernelSMEM {
     uint groups_x_, groups_y_;
     bool change_nan_;
     To nanval_;
-    local_accessor<compute_t<To>, 1> s_ptr_;
-    local_accessor<bool, 1> amLast_;
+    sycl::local_accessor<compute_t<To>, 1> s_ptr_;
+    sycl::local_accessor<bool, 1> amLast_;
 };
 
 template<typename Ti, typename To, af_op_t op>
@@ -267,9 +258,9 @@ void reduce_all_launcher_default(Param<To> out, Param<Ti> in,
         auto tmp_acc      = tmp.get()->get_access(h);
         read_accessor<Ti> in_acc{*in.data, h};
 
-        auto shrdMem =
-            local_accessor<compute_t<To>, 1>(creduce::THREADS_PER_BLOCK, h);
-        auto amLast = local_accessor<bool, 1>(1, h);
+        auto shrdMem = sycl::local_accessor<compute_t<To>, 1>(
+            creduce::THREADS_PER_BLOCK, h);
+        auto amLast = sycl::local_accessor<bool, 1>(1, h);
         h.parallel_for(
             sycl::nd_range<2>(global, local),
             reduceAllKernelSMEM<Ti, To, op>(

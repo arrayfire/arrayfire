@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/Binary.hpp>
@@ -15,6 +16,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/reduce_config.hpp>
 #include <math.hpp>
 #include <memory.hpp>
@@ -29,23 +31,12 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
-
 template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
 class reduceDimKernelSMEM {
    public:
     reduceDimKernelSMEM(Param<To> out, Param<Ti> in, uint groups_x,
                         uint groups_y, uint offset_dim, bool change_nan,
-                        To nanval, local_accessor<compute_t<To>, 1> s_val,
+                        To nanval, sycl::local_accessor<compute_t<To>, 1> s_val,
                         sycl::handler &h)
         : out_(out.template get_accessor<sycl::access::mode::write>(h))
         , in_(in.template get_accessor<sycl::access::mode::read>(h))
@@ -141,7 +132,7 @@ class reduceDimKernelSMEM {
     uint groups_x_, groups_y_, offset_dim_;
     bool change_nan_;
     To nanval_;
-    local_accessor<compute_t<To>, 1> s_val_;
+    sycl::local_accessor<compute_t<To>, 1> s_val_;
 };
 
 template<typename Ti, typename To, af_op_t op, uint dim>
@@ -154,8 +145,8 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
                           blocks_dim[1] * blocks_dim[3] * local[1]);
 
     getQueue().submit([=](sycl::handler &h) {
-        auto shrdMem =
-            local_accessor<compute_t<To>, 1>(creduce::THREADS_X * threads_y, h);
+        auto shrdMem = sycl::local_accessor<compute_t<To>, 1>(
+            creduce::THREADS_X * threads_y, h);
 
         switch (threads_y) {
             case 8:

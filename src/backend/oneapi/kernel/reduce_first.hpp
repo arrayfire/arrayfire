@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/Binary.hpp>
@@ -15,6 +16,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/reduce_config.hpp>
 #include <math.hpp>
 #include <memory.hpp>
@@ -31,24 +33,14 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
-
 template<typename Ti, typename To, af_op_t op, uint DIMX>
 class reduceFirstKernelSMEM {
    public:
     reduceFirstKernelSMEM(write_accessor<To> out, KParam oInfo,
                           read_accessor<Ti> in, KParam iInfo, uint groups_x,
                           uint groups_y, uint repeat, bool change_nan,
-                          To nanval, local_accessor<compute_t<To>, 1> s_val)
+                          To nanval,
+                          sycl::local_accessor<compute_t<To>, 1> s_val)
         : out_(out)
         , oInfo_(oInfo)
         , iInfo_(iInfo)
@@ -145,7 +137,7 @@ class reduceFirstKernelSMEM {
     uint groups_x_, groups_y_, repeat_;
     bool change_nan_;
     To nanval_;
-    local_accessor<compute_t<To>, 1> s_val_;
+    sycl::local_accessor<compute_t<To>, 1> s_val_;
 };
 
 template<typename Ti, typename To, af_op_t op>
@@ -163,8 +155,8 @@ void reduce_first_launcher_default(Param<To> out, Param<Ti> in,
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
 
-        auto shrdMem =
-            local_accessor<compute_t<To>, 1>(creduce::THREADS_PER_BLOCK, h);
+        auto shrdMem = sycl::local_accessor<compute_t<To>, 1>(
+            creduce::THREADS_PER_BLOCK, h);
 
         switch (threads_x) {
             case 32:

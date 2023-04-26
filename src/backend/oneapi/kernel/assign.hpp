@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/assign_kernel_param.hpp>
 #include <traits.hpp>
 
@@ -39,7 +40,7 @@ static int trimIndex(int idx, const int len) {
 template<typename T>
 class assignKernel {
    public:
-    assignKernel(sycl::accessor<T> out, KParam oInfo, sycl::accessor<T> in,
+    assignKernel(write_accessor<T> out, KParam oInfo, read_accessor<T> in,
                  KParam iInfo, AssignKernelParam p, const int nBBS0,
                  const int nBBS1)
         : out_(out)
@@ -102,7 +103,8 @@ class assignKernel {
     }
 
    protected:
-    sycl::accessor<T> out_, in_;
+    write_accessor<T> out_;
+    read_accessor<T> in_;
     KParam oInfo_, iInfo_;
     AssignKernelParam p_;
     const int nBBS0_, nBBS1_;
@@ -124,9 +126,9 @@ void assign(Param<T> out, const Param<T> in, const AssignKernelParam& p,
                           blk_y * in.info.dims[3] * THREADS_Y);
 
     getQueue().submit([=](sycl::handler& h) {
-        auto pp      = p;
-        auto out_acc = out.data->get_access(h);
-        auto in_acc  = in.data->get_access(h);
+        auto pp = p;
+        write_accessor<T> out_acc{*out.data, h};
+        read_accessor<T> in_acc{*in.data, h};
 
         pp.ptr[0] = bPtr[0]->template get_access<access_mode::read>(h);
         pp.ptr[1] = bPtr[1]->template get_access<access_mode::read>(h);

@@ -7,11 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <Param.hpp>
 #include <backend.hpp>
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/default_config.hpp>
 #include <kernel/scan_first.hpp>
 #include <memory.hpp>
@@ -25,12 +28,6 @@
 namespace arrayfire {
 namespace oneapi {
 namespace kernel {
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 template<typename T>
 class whereKernel {

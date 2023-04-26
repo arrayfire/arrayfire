@@ -13,6 +13,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/interp.hpp>
 #include <traits.hpp>
 #include <af/constants.h>
@@ -29,17 +30,6 @@ namespace kernel {
 constexpr int TILE_DIM  = 32;
 constexpr int THREADS_X = TILE_DIM;
 constexpr int THREADS_Y = 256 / TILE_DIM;
-
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 template<typename Ty, typename Tp, int order>
 class approx2Kernel {

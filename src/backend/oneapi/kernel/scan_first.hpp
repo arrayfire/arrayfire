@@ -14,6 +14,7 @@
 #include <common/dispatch.hpp>
 #include <debug_oneapi.hpp>
 #include <err_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <kernel/default_config.hpp>
 #include <memory.hpp>
 
@@ -23,17 +24,6 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template<typename T, int dimensions>
-using local_accessor =
-    sycl::accessor<T, dimensions, sycl::access::mode::read_write,
-                   sycl::access::target::local>;
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
-
 template<typename Ti, typename To, af_op_t op>
 class scanFirstKernel {
    public:
@@ -42,7 +32,8 @@ class scanFirstKernel {
                     read_accessor<Ti> in_acc, KParam iInfo, const uint groups_x,
                     const uint groups_y, const uint lim, const bool isFinalPass,
                     const uint DIMX, const bool inclusive_scan,
-                    local_accessor<To, 1> s_val, local_accessor<To, 1> s_tmp)
+                    sycl::local_accessor<To, 1> s_val,
+                    sycl::local_accessor<To, 1> s_tmp)
         : out_acc_(out_acc)
         , tmp_acc_(tmp_acc)
         , in_acc_(in_acc)
@@ -138,8 +129,8 @@ class scanFirstKernel {
     KParam oInfo_, tInfo_, iInfo_;
     const uint groups_x_, groups_y_, lim_, DIMX_;
     const bool isFinalPass_, inclusive_scan_;
-    local_accessor<To, 1> s_val_;
-    local_accessor<To, 1> s_tmp_;
+    sycl::local_accessor<To, 1> s_val_;
+    sycl::local_accessor<To, 1> s_tmp_;
 };
 
 template<typename To, af_op_t op>
@@ -220,8 +211,8 @@ static void scan_first_launcher(Param<To> out, Param<To> tmp, Param<Ti> in,
 
         const int DIMY            = THREADS_PER_BLOCK / threads_x;
         const int SHARED_MEM_SIZE = (2 * threads_x + 1) * (DIMY);
-        auto s_val = local_accessor<compute_t<To>, 1>(SHARED_MEM_SIZE, h);
-        auto s_tmp = local_accessor<compute_t<To>, 1>(DIMY, h);
+        auto s_val = sycl::local_accessor<compute_t<To>, 1>(SHARED_MEM_SIZE, h);
+        auto s_tmp = sycl::local_accessor<compute_t<To>, 1>(DIMY, h);
 
         // TODO threads_x as template arg for #pragma unroll?
         h.parallel_for(sycl::nd_range<2>(global, local),

@@ -9,10 +9,10 @@
 
 #pragma once
 #include <Param.hpp>
-#include <accessor.hpp>
 #include <common/dispatch.hpp>
 #include <common/kernel_cache.hpp>
 #include <debug_oneapi.hpp>
+#include <kernel/accessors.hpp>
 #include <af/defines.h>
 
 #include <sycl/sycl.hpp>
@@ -108,11 +108,6 @@ void memcpyBuffer(sycl::buffer<T, 1> &dest, sycl::buffer<T, 1> &src,
         h.copy(srcAcc, destAcc);
     });
 }
-
-template<typename T>
-using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-template<typename T>
-using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
 
 #include "convolve1.hpp"
 #include "convolve2.hpp"
