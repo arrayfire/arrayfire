@@ -17,7 +17,7 @@ using namespace af;
 // create a small wrapper to benchmark
 static array A;  // populated before each timing
 static void fn() {
-    array B = fft2(A);  // matrix multiply
+    array B = fft2(A);  // 2d fft
     B.eval();           // ensure evaluated
 }
 
