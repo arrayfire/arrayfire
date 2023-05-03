@@ -1,7 +1,7 @@
 
 <p align="left"><a href="http://arrayfire.com/"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="800"></a></p>
 
-[![Open in GitHub Codespaces](https://repo.arrayfire.com/pub/open-arrayfire-in-codespace.svg)](https://codespaces.new/pv-pterab-s/pv-pterab-s-temporary
+[![Open in GitHub Codespaces](https://repo.arrayfire.com/pub/open-arrayfire-in-codespace.svg)](https://codespaces.new/arrayfire/arrayfire
 ) [![Open in Colab](https://repo.arrayfire.com/pub/open-arrayfire-in-colab.svg)](https://colab.research.google.com/drive/1bOQY_XRn7JWWGRU6tDb5p2KMSRsYrzUE?usp=sharing)
 
 ArrayFire is a general-purpose tensor library that simplifies the process of

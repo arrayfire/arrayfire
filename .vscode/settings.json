@@ -1,0 +1,14 @@
+{
+    "window.showNotificationOnLoad": true,
+    "resmongraphical.cpuusage.style": "SquareColor",
+    "code-runner.executorMapByGlob": {
+        "*.cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt -lafoneapi && $dir$fileNameWithoutExt"
+    },
+    "code-runner.saveAllFilesBeforeRun": true,
+    "code-runner.runInTerminal": true,
+    "terminal.integrated.defaultProfile.linux": "/bin/bash",
+    "C_Cpp.debugShortcut": false,
+    "files.associations": {
+        "array": "cpp"
+    }
+}
