@@ -18,8 +18,8 @@ namespace arrayfire {
 namespace oneapi {
 namespace jit {
 template<typename T>
-using BufferNode =
-    common::BufferNodeBase<std::shared_ptr<sycl::buffer<T>>, AParam<T>>;
+using BufferNode = common::BufferNodeBase<std::shared_ptr<sycl::buffer<T>>,
+                                          AParam<T, sycl::access_mode::read>>;
 }  // namespace jit
 }  // namespace oneapi
 

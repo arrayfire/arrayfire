@@ -29,38 +29,22 @@ namespace arrayfire {
 namespace oneapi {
 
 template<typename T>
-void copyData(T *data, const Array<T> &A) {
-    if (A.elements() == 0) { return; }
-
-    // FIXME: Merge this with copyArray
-    A.eval();
-
-    dim_t offset = 0;
-    const sycl::buffer<T> *buf;
-    Array<T> out = A;
-
-    if (A.isLinear() ||  // No offsets, No strides
-        A.ndims() == 1   // Simple offset, no strides.
-    ) {
-        buf    = A.get();
-        offset = A.getOffset();
-    } else {
-        // FIXME: Think about implementing eval
-        out    = copyArray(A);
-        buf    = out.get();
-        offset = 0;
+void copyData(T *data, const Array<T> &src) {
+    if (src.elements() > 0) {
+        Array<T> lin = src.isReady() && src.isLinear() ? src : copyArray(src);
+        size_t elements = lin.elements();
+        Param<T> p      = lin;
+        getQueue()
+            .submit([&](sycl::handler &h) {
+                sycl::range rr(elements);
+                sycl::id offset_id(p.info.offset);
+                auto offset_acc =
+                    p.data->template get_access<sycl::access_mode::read_write>(
+                        h, rr, offset_id);
+                h.copy(offset_acc, data);
+            })
+            .wait();
     }
-
-    // FIXME: Add checks
-    getQueue()
-        .submit([=](sycl::handler &h) {
-            sycl::range rr(A.elements());
-            sycl::id offset_id(offset);
-            auto offset_acc = const_cast<sycl::buffer<T> *>(buf)->get_access(
-                h, rr, offset_id);
-            h.copy(offset_acc, data);
-        })
-        .wait();
 }
 
 template<typename T>
@@ -77,19 +61,17 @@ Array<T> copyArray(const Array<T> &A) {
             sycl::buffer<T> *out_buf = out.get();
 
             size_t aelem = A.elements();
-            getQueue()
-                .submit([=](sycl::handler &h) {
-                    range rr(aelem);
-                    id offset_id(offset);
-                    accessor offset_acc_A =
-                        A_buf->template get_access<access_mode::read>(
-                            h, rr, offset_id);
-                    accessor acc_out =
-                        out_buf->template get_access<access_mode::write>(h);
+            getQueue().submit([=](sycl::handler &h) {
+                range rr(aelem);
+                id offset_id(offset);
+                accessor offset_acc_A =
+                    A_buf->template get_access<access_mode::read>(h, rr,
+                                                                  offset_id);
+                accessor acc_out =
+                    out_buf->template get_access<access_mode::write>(h);
 
-                    h.copy(offset_acc_A, acc_out);
-                })
-                .wait();
+                h.copy(offset_acc_A, acc_out);
+            });
         } else {
             kernel::memcopy<T>(out.get(), out.strides().get(), A.get(),
                                A.dims().get(), A.strides().get(), offset,
