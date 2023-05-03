@@ -8,12 +8,11 @@
  ********************************************************/
 
 #pragma once
+#include <sycl/sycl.hpp>
 
 #include <kernel/KParam.hpp>
 #include <types.hpp>
 #include <af/dim4.hpp>
-
-#include <sycl/sycl.hpp>
 
 #include <optional>
 
@@ -43,9 +42,9 @@ struct Param {
     ~Param() = default;
 };
 
-template<typename T>
+template<typename T, sycl::access_mode AM>
 struct AParam {
-    sycl::accessor<T, 1, sycl::access_mode::read_write, sycl::target::device,
+    sycl::accessor<T, 1, AM, sycl::target::device,
                    sycl::access::placeholder::true_t>
         data;
     af::dim4 dims;
@@ -60,17 +59,11 @@ struct AParam {
 
     AParam(sycl::buffer<T, 1>& data_, const dim_t dims_[4],
            const dim_t strides_[4], dim_t offset_)
-        : data(data_.get_access())
-        , dims(4, dims_)
-        , strides(4, strides_)
-        , offset(offset_) {}
+        : data(data_), dims(4, dims_), strides(4, strides_), offset(offset_) {}
     // AF_DEPRECATED("Use Array<T>")
     AParam(sycl::handler& h, sycl::buffer<T, 1>& data_, const dim_t dims_[4],
            const dim_t strides_[4], dim_t offset_)
-        : data(data_.get_access())
-        , dims(4, dims_)
-        , strides(4, strides_)
-        , offset(offset_) {
+        : data(data_), dims(4, dims_), strides(4, strides_), offset(offset_) {
         require(h);
     }
 

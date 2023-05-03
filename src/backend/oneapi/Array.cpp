@@ -279,7 +279,7 @@ template<typename T>
 Node_ptr Array<T>::getNode() {
     if (node) { return node; }
 
-    AParam<T> info = *this;
+    AParam<T, sycl::access_mode::read> info = *this;
     unsigned bytes = this->dims().elements() * sizeof(T);
     auto nn        = bufferNodePtr<T>();
     nn->setData(info, data, bytes, isLinear());
