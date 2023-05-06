@@ -43,19 +43,26 @@ static oneapi::mkl::transpose toBlasTranspose(af_mat_prop opt) {
 }
 
 template<typename T>
-static void gemvDispatch(sycl::queue queue, oneapi::mkl::transpose lOpts, int M,
-                         int N, const T *alpha,
+static void gemvDispatch(sycl::queue queue,
+                         oneapi::mkl::transpose lOpts,
+                         oneapi::mkl::transpose rOpts,
+                         int M, int N, const T *alpha,
                          const arrayfire::oneapi::Array<T> &lhs, dim_t lStride,
                          const arrayfire::oneapi::Array<T> &x, dim_t incx,
                          const T *beta, arrayfire::oneapi::Array<T> &out,
                          dim_t oInc) {
     using Dt                   = arrayfire::oneapi::data_t<T>;
-    sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
-    sycl::buffer<Dt, 1> xBuf   = x.get()->template reinterpret<Dt, 1>();
-    sycl::buffer<Dt, 1> outBuf = out.get()->template reinterpret<Dt, 1>();
-    ::oneapi::mkl::blas::gemv(queue, lOpts, (int64_t)M, (int64_t)N, (T)*alpha,
-                              lhsBuf, (int64_t)lStride, xBuf, (int64_t)incx,
-                              (T)*beta, outBuf, (int64_t)oInc);
+    const af::dim4 lStrides = lhs.strides();
+    const af::dim4 xStrides = x.strides();
+    const af::dim4 oStrides = out.strides();
+    sycl::buffer<Dt, 1> lhsBuf = lhs.template getBufferWithOffset<Dt>();
+    sycl::buffer<Dt, 1> xBuf   =   x.template getBufferWithOffset<Dt>();
+    sycl::buffer<Dt, 1> outBuf = out.template getBufferWithOffset<Dt>();
+    if constexpr(!std::is_same_v<T, arrayfire::common::half>) {
+        ::oneapi::mkl::blas::gemv(queue, lOpts, (int64_t)M, (int64_t)N, (T)*alpha,
+                                lhsBuf, (int64_t)lStride, xBuf, (int64_t)incx,
+                                (T)*beta, outBuf, (int64_t)oInc);
+    }
 }
 
 template<typename T>
@@ -65,13 +72,21 @@ static void gemmDispatch(sycl::queue queue, oneapi::mkl::transpose lOpts,
                          dim_t lStride, const arrayfire::oneapi::Array<T> &rhs,
                          dim_t rStride, const T *beta,
                          arrayfire::oneapi::Array<T> &out, dim_t oleading) {
-    using Dt                   = arrayfire::oneapi::data_t<T>;
-    sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
-    sycl::buffer<Dt, 1> rhsBuf = rhs.get()->template reinterpret<Dt, 1>();
-    sycl::buffer<Dt, 1> outBuf = out.get()->template reinterpret<Dt, 1>();
+    using Dt                = arrayfire::oneapi::data_t<T>;
+    const af::dim4 lStrides = lhs.strides();
+    const af::dim4 rStrides = rhs.strides();
+    const af::dim4 oStrides = out.strides();
+    sycl::buffer<Dt, 1> lhsBuf = lhs.template getBufferWithOffset<Dt>();
+    sycl::buffer<Dt, 1> rhsBuf = rhs.template getBufferWithOffset<Dt>();
+    sycl::buffer<Dt, 1> outBuf = out.template getBufferWithOffset<Dt>();
+    try {
     ::oneapi::mkl::blas::gemm(queue, lOpts, rOpts, M, N, K, *alpha, lhsBuf,
                               lStride, rhsBuf, rStride, *beta, outBuf,
                               oleading);
+    queue.wait_and_throw();
+    } catch(sycl::exception &e)  {
+        std::cout << e.what() << std::endl;
+    }
 }
 
 namespace arrayfire {
@@ -103,13 +118,21 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     const dim4 &lStrides = lhs.strides();
     const dim4 &rStrides = rhs.strides();
     const dim4 oStrides  = out.strides();
+    try{
 
     if (oDims.ndims() <= 2) {  // if non-batched
         if (rhs.dims()[bColDim] == 1) {
-            dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
-            gemvDispatch<T>(getQueue(), lOpts, lDims[0], lDims[1], alpha, lhs,
-                            lStrides[1], rhs, incr, beta, out, oStrides[0]);
+            if constexpr(!std::is_same_v<T, arrayfire::common::half>) {
+                dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
+                gemvDispatch<T>(getQueue(), lOpts, rOpts, lDims[0], lDims[1], alpha, lhs,
+                                lStrides[1], rhs, incr, beta, out, oStrides[0]);
+            } else {
+                gemmDispatch<T>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
+                                lStrides[1], rhs, rStrides[1], beta, out,
+                                oStrides[1]);
+            }
         } else {
+            printf("%d %d %d, l%d R%d o%d\n",  M, N, K, lStrides[1], rStrides[1], oStrides[1]);
             gemmDispatch<T>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
                             lStrides[1], rhs, rStrides[1], beta, out,
                             oStrides[1]);
@@ -117,9 +140,9 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     } else {  // if batched
         using Dt = arrayfire::oneapi::data_t<T>;
 
-        sycl::buffer<Dt, 1> lhsBuf = lhs.get()->template reinterpret<Dt, 1>();
-        sycl::buffer<Dt, 1> rhsBuf = rhs.get()->template reinterpret<Dt, 1>();
-        sycl::buffer<Dt, 1> outBuf = out.get()->template reinterpret<Dt, 1>();
+        sycl::buffer<Dt, 1> lhsBuf = lhs.template getBufferWithOffset<Dt>();
+        sycl::buffer<Dt, 1> rhsBuf = rhs.template getBufferWithOffset<Dt>();
+        sycl::buffer<Dt, 1> outBuf = out.template getBufferWithOffset<Dt>();
 
         const int64_t lda = lStrides[1];
         const int64_t ldb = rStrides[1];
@@ -127,16 +150,34 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
 
         int64_t batchSize = static_cast<int64_t>(oDims[2] * oDims[3]);
 
+        bool is_l_d2_batched = (oDims[2] == lDims[2]) && lDims[2] != 1;
+        bool is_l_d3_batched = (oDims[3] == lDims[3]) && lDims[3] != 1;
+        bool is_r_d2_batched = (oDims[2] == rDims[2]) && rDims[2] != 1;
+        bool is_r_d3_batched = (oDims[3] == rDims[3]) && rDims[3] != 1;
+
+        std::cout << lStrides << std::endl;
+        std::cout << rStrides << std::endl;
+
         const bool not_l_batched =
             (oDims[2] != lDims[2] && oDims[3] != lDims[3]);
         const bool not_r_batched =
             (oDims[2] != rDims[2] && oDims[3] != rDims[3]);
 
+        //dim_t lstride = !not_l_batched ? 0 : (is_l_d2_batched) ? lStrides[2] : lStrides[3];
+        //dim_t rstride = !not_r_batched ? 0 : (is_r_d2_batched) ? rStrides[2] : rStrides[3];
+        dim_t lstride = (is_l_d2_batched) ? lStrides[2] : is_l_d3_batched ? lStrides[3] : 0;
+        dim_t rstride = (is_r_d2_batched) ? rStrides[2] : is_r_d3_batched ? rStrides[3] : 0;
+
         ::oneapi::mkl::blas::gemm_batch(
             getQueue(), lOpts, rOpts, M, N, K, *alpha, lhsBuf, lda,
-            not_l_batched ? 0 : lStrides[2], rhsBuf, ldb,
-            not_r_batched ? 0 : rStrides[2], *beta, outBuf, ldc, oStrides[2],
+            lstride, rhsBuf, ldb,
+            rstride, *beta, outBuf, ldc, oStrides[2],
             batchSize);
+    }
+
+        getQueue().wait_and_throw();
+    } catch(sycl::exception &e)  {
+        std::cout << e.what() << std::endl;
     }
 
     ONEAPI_DEBUG_FINISH(getQueue());
@@ -161,13 +202,7 @@ INSTANTIATE_GEMM(float)
 INSTANTIATE_GEMM(cfloat)
 INSTANTIATE_GEMM(double)
 INSTANTIATE_GEMM(cdouble)
-// INSTANTIATE_GEMM(half)
-template<>
-void gemm(Array<half> &out, af_mat_prop optLhs, af_mat_prop optRhs,
-          const half *alpha, const Array<half> &lhs, const Array<half> &rhs,
-          const half *beta) {
-    ONEAPI_NOT_SUPPORTED("");
-}
+INSTANTIATE_GEMM(half)
 
 #define INSTANTIATE_DOT(TYPE)                                                  \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs,                     \
