@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 enum class kJITHeuristics;
@@ -256,6 +257,31 @@ class Array {
     sycl::buffer<T> *get() const {
         if (!isReady()) { eval(); }
         return data.get();
+    }
+
+    template<typename outT>
+    sycl::buffer<outT> getBufferWithOffset() const {
+        dim_t sz_remaining = data_dims.elements() - getOffset();
+        printf("dd%d, elements %d offset %d\n",data_dims.elements(), elements(), getOffset());
+        if constexpr(std::is_same_v<outT, T>) {
+            if(getOffset() == 0) {
+                printf("off0--noreint\n");
+                *data.get();
+            }
+            return sycl::buffer<outT, 1>(
+                *data.get(),
+                sycl::id<1>(getOffset()),
+                sycl::range<1>(sz_remaining));
+        } else {
+            if(getOffset() == 0) {
+                printf("off0--reint\n");
+                data.get()->template reinterpret<outT, 1>();
+            }
+            return sycl::buffer<T, 1>(
+                *data.get(),
+                sycl::id<1>(getOffset()),
+                sycl::range<1>(sz_remaining)).template reinterpret<outT, 1>();
+        }
     }
 
     int useCount() const { return data.use_count(); }
