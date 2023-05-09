@@ -384,12 +384,8 @@ bool isDoubleSupported(unsigned device) {
 bool isHalfSupported(unsigned device) {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    sycl::device dev;
-    {
-        common::lock_guard_t lock(devMngr.deviceMutex);
-        dev = *devMngr.mDevices[device];
-    }
-    return dev.has(sycl::aspect::fp16);
+    common::lock_guard_t lock(devMngr.deviceMutex);
+    return devMngr.mDevices[device]->has(sycl::aspect::fp16);
 }
 
 void devprop(char* d_name, char* d_platform, char* d_toolkit, char* d_compute) {
