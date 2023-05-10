@@ -61,7 +61,7 @@ Array<T> copyArray(const Array<T> &A) {
             sycl::buffer<T> *out_buf = out.get();
 
             size_t aelem = A.elements();
-            getQueue().submit([=](sycl::handler &h) {
+            getQueue().submit([&](sycl::handler &h) {
                 range rr(aelem);
                 id offset_id(offset);
                 accessor offset_acc_A =
@@ -114,7 +114,7 @@ struct copyWrapper<T, T> {
             sycl::buffer<T> *out_buf = out.get();
 
             getQueue()
-                .submit([=](sycl::handler &h) {
+                .submit([&](sycl::handler &h) {
                     sycl::range rr(in.elements());
                     sycl::id in_offset_id(in_offset);
                     sycl::id out_offset_id(out_offset);

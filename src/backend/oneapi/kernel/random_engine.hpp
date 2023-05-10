@@ -56,7 +56,7 @@ void uniformDistributionCBRNG(Param<T> out, const size_t elements,
                               sycl::range<1>(threads));
     switch (type) {
         case AF_RANDOM_ENGINE_PHILOX_4X32_10:
-            getQueue().submit([=](sycl::handler &h) {
+            getQueue().submit([&](sycl::handler &h) {
                 write_accessor<T> out_acc{*out.data, h};
 
                 h.parallel_for(ndrange,
@@ -66,7 +66,7 @@ void uniformDistributionCBRNG(Param<T> out, const size_t elements,
             ONEAPI_DEBUG_FINISH(getQueue());
             break;
         case AF_RANDOM_ENGINE_THREEFRY_2X32_16:
-            getQueue().submit([=](sycl::handler &h) {
+            getQueue().submit([&](sycl::handler &h) {
                 write_accessor<T> out_acc{*out.data, h};
 
                 h.parallel_for(ndrange,
@@ -96,7 +96,7 @@ void normalDistributionCBRNG(Param<T> out, const size_t elements,
                               sycl::range<1>(threads));
     switch (type) {
         case AF_RANDOM_ENGINE_PHILOX_4X32_10:
-            getQueue().submit([=](sycl::handler &h) {
+            getQueue().submit([&](sycl::handler &h) {
                 write_accessor<T> out_acc{*out.data, h};
 
                 h.parallel_for(ndrange,
@@ -105,7 +105,7 @@ void normalDistributionCBRNG(Param<T> out, const size_t elements,
             });
             break;
         case AF_RANDOM_ENGINE_THREEFRY_2X32_16:
-            getQueue().submit([=](sycl::handler &h) {
+            getQueue().submit([&](sycl::handler &h) {
                 write_accessor<T> out_acc{*out.data, h};
 
                 h.parallel_for(ndrange,
@@ -134,7 +134,7 @@ void uniformDistributionMT(Param<T> out, const size_t elements,
 
     sycl::nd_range<1> ndrange(sycl::range<1>(blocks * threads),
                               sycl::range<1>(threads));
-    getQueue().submit([=](sycl::handler &h) {
+    getQueue().submit([&](sycl::handler &h) {
         write_accessor<T> out_acc{*out.data, h};
         auto state_acc     = state.data->get_access(h);
         auto pos_acc       = pos.data->get_access(h);
@@ -170,7 +170,7 @@ void normalDistributionMT(Param<T> out, const size_t elements,
 
     sycl::nd_range<1> ndrange(sycl::range<1>(blocks * threads),
                               sycl::range<1>(threads));
-    getQueue().submit([=](sycl::handler &h) {
+    getQueue().submit([&](sycl::handler &h) {
         write_accessor<T> out_acc{*out.data, h};
         auto state_acc     = state.data->get_access(h);
         auto pos_acc       = pos.data->get_access(h);

@@ -104,7 +104,7 @@ void range(Param<T> out, const int dim) {
                           local[1] * blocksPerMatY * out.info.dims[3]);
     sycl::nd_range<2> ndrange(global, local);
 
-    getQueue().submit([=](sycl::handler& h) {
+    getQueue().submit([&](sycl::handler& h) {
         write_accessor<T> out_acc{*out.data, h};
 
         h.parallel_for(ndrange, rangeOp<T>(out_acc, out.info, dim,

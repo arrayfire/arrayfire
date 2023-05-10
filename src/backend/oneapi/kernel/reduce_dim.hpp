@@ -144,7 +144,7 @@ void reduce_dim_launcher_default(Param<To> out, Param<Ti> in,
     sycl::range<2> global(blocks_dim[0] * blocks_dim[2] * local[0],
                           blocks_dim[1] * blocks_dim[3] * local[1]);
 
-    getQueue().submit([=](sycl::handler &h) {
+    getQueue().submit([&](sycl::handler &h) {
         auto shrdMem = sycl::local_accessor<compute_t<To>, 1>(
             creduce::THREADS_X * threads_y, h);
 
