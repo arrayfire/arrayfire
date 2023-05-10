@@ -480,7 +480,7 @@ foreach(backend ${enabled_backends})
       PRIVATE
       ArrayFire::af${backend})
   endif()
-  af_add_test(${target} ${backend} ON)
+  add_test(NAME ${target} COMMAND ${target})
 endforeach()
 
 if(AF_TEST_WITH_MTX_FILES)
