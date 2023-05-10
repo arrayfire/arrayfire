@@ -115,7 +115,7 @@ void memcopy(sycl::buffer<T> *out, const dim_t *ostrides,
                           groups_1 * idims[3] * local_size[1]);
     sycl::nd_range<2> ndrange(global, local);
 
-    getQueue().submit([=](sycl::handler &h) {
+    getQueue().submit([&](sycl::handler &h) {
         write_accessor<T> out_acc{*out, h};
         read_accessor<T> in_acc{*const_cast<sycl::buffer<T> *>(in), h};
 
@@ -303,7 +303,7 @@ void copy(Param<outType> dst, const Param<inType> src, const int ndims,
         trgt_dims    = {{trgt_i, trgt_j, trgt_k, trgt_l}};
     }
 
-    getQueue().submit([=](sycl::handler &h) {
+    getQueue().submit([&](sycl::handler &h) {
         write_accessor<outType> dst_acc{*dst.data, h};
         read_accessor<inType> src_acc{
             *const_cast<sycl::buffer<inType> *>(src.data), h};

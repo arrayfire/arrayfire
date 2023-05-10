@@ -125,7 +125,7 @@ void assign(Param<T> out, const Param<T> in, const AssignKernelParam& p,
     sycl::range<2> global(blk_x * in.info.dims[2] * THREADS_X,
                           blk_y * in.info.dims[3] * THREADS_Y);
 
-    getQueue().submit([=](sycl::handler& h) {
+    getQueue().submit([&](sycl::handler& h) {
         auto pp = p;
         write_accessor<T> out_acc{*out.data, h};
         read_accessor<T> in_acc{*in.data, h};

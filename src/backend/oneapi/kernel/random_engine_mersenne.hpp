@@ -145,7 +145,7 @@ class initMersenneKernel {
 
 void initMersenneState(Param<uint> state, const Param<uint> tbl, uintl seed) {
     sycl::nd_range<1> ndrange({BLOCKS * N}, {N});
-    getQueue().submit([=](sycl::handler &h) {
+    getQueue().submit([&](sycl::handler &h) {
         write_accessor<uint> state_acc{*state.data, h};
         read_accessor<uint> tbl_acc{*tbl.data, h};
         auto lstate_acc = sycl::local_accessor<uint, 1>(N, h);

@@ -133,7 +133,7 @@ void index(Param<T> out, Param<T> in, IndexKernelParam& p,
     blocks[0] *= threads[0];
 
     sycl::nd_range<3> marange(blocks, threads);
-    getQueue().submit([=](sycl::handler& h) {
+    getQueue().submit([&](sycl::handler& h) {
         auto pp = p;
         for (dim_t x = 0; x < 4; ++x) {
             pp.ptr[x] =
