@@ -55,6 +55,7 @@
 #ifndef MAGMA_DATA_H
 #define MAGMA_DATA_H
 
+#include <memory.hpp>
 #include <platform.hpp>
 #include "magma_types.h"
 
@@ -70,18 +71,18 @@ static magma_int_t magma_malloc(magma_ptr* ptrPtr, int num) {
     // malloc and free sometimes don't work for size=0, so allocate some minimal
     // size
     if (size == 0) size = sizeof(T);
-    cl_int err;
-    *ptrPtr = clCreateBuffer(arrayfire::opencl::getContext()(),
-                             CL_MEM_READ_WRITE, size, NULL, &err);
-    if (err != CL_SUCCESS) { return MAGMA_ERR_DEVICE_ALLOC; }
+    cl::Buffer* buf = arrayfire::opencl::bufferAlloc(size);
+    *ptrPtr         = static_cast<magma_ptr>(buf->get());
+    delete (buf);
+
+    if (ptrPtr == nullptr) { return MAGMA_ERR_DEVICE_ALLOC; };
     return MAGMA_SUCCESS;
 }
 
 // --------------------
 // Free GPU memory allocated by magma_malloc.
 static inline magma_int_t magma_free(magma_ptr ptr) {
-    cl_int err = clReleaseMemObject(ptr);
-    if (err != CL_SUCCESS) { return MAGMA_ERR_INVALID_PTR; }
+    arrayfire::opencl::memFree(ptr);
     return MAGMA_SUCCESS;
 }
 
