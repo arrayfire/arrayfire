@@ -1,0 +1,3442 @@
+
+copy.cpp,765
+using arrayfire::common::half;18,508
+using arrayfire::common::is_complex;19,539
+using sycl::access_mode;21,577
+using sycl::accessor;22,602
+using sycl::buffer;23,624
+using sycl::id;24,644
+using sycl::range;25,660
+using sycl::target;26,679
+namespace arrayfire 28,700
+namespace oneapi 29,722
+void copyData(32,763
+Array<T> copyArray(51,1412
+void multiply_inplace(93,2941
+template<typename inType,97,3063
+struct copyWrapper 98,3107
+    void operator()(operator()99,3128
+    void operator()(operator()107,3400
+template<typename inType,139,4577
+void copyArray(140,4621
+#define INSTANTIATE(147,4904
+#define INSTANTIATE_COPY_ARRAY(166,5414
+#define INSTANTIATE_COPY_ARRAY_COMPLEX(206,7681
+T getScalar(216,8137
+#define INSTANTIATE_GETSCALAR(232,8536
+
+reorder.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+surface.hpp,53
+namespace arrayfire 13,393
+namespace oneapi 14,415
+
+nearest_neighbour.hpp,108
+using af::features;13,380
+namespace arrayfire 15,401
+namespace oneapi 16,423
+template<typename T,18,443
+
+diff.cpp,151
+namespace arrayfire 16,446
+namespace oneapi 17,468
+Array<T> diff(20,509
+Array<T> diff1(34,947
+Array<T> diff2(39,1059
+#define INSTANTIATE(43,1149
+
+svd.cpp,366
+namespace arrayfire 25,725
+namespace oneapi 26,747
+template<typename T,28,767
+void svdInPlace(29,801
+template<typename T,52,1656
+void svd(53,1690
+#define INSTANTIATE(58,1841
+namespace arrayfire 74,2401
+namespace oneapi 75,2423
+template<typename T,77,2443
+void svd(78,2477
+template<typename T,83,2659
+void svdInPlace(84,2693
+#define INSTANTIATE(89,2876
+
+rotate.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+sort_index.cpp,106
+namespace arrayfire 21,573
+namespace oneapi 22,595
+void sort_index(24,635
+#define INSTANTIATE(61,1917
+
+topk.cpp,318
+using arrayfire::common::half;23,572
+using std::iota;25,604
+using std::min;26,621
+using std::partial_sort_copy;27,637
+using std::transform;28,667
+using std::vector;29,689
+namespace arrayfire 31,709
+namespace oneapi 32,731
+vector<af_index_t> indexForTopK(33,750
+void topk(48,1100
+#define INSTANTIATE(58,1559
+
+debug_oneapi.hpp,72
+#define ONEAPI_DEBUG_FINISH(16,388
+#define ONEAPI_DEBUG_FINISH(20,446
+
+resize.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+sift.cpp,182
+using af::dim4;16,431
+using af::features;17,447
+namespace arrayfire 19,468
+namespace oneapi 20,490
+template<typename T,22,510
+unsigned sift(23,550
+#define INSTANTIATE(63,2040
+
+hist_graphics.hpp,53
+namespace arrayfire 13,393
+namespace oneapi 14,415
+
+approx.cpp,184
+namespace arrayfire 15,442
+namespace oneapi 16,464
+template<typename Ty,17,483
+void approx1(18,518
+template<typename Ty,41,1422
+void approx2(42,1457
+#define INSTANTIATE(71,2677
+
+anisotropic_diffusion.cpp,115
+namespace arrayfire 16,461
+namespace oneapi 17,483
+void anisotropicDiffusion(19,523
+#define INSTANTIATE(25,743
+
+select.cpp,444
+using af::dim4;22,594
+using arrayfire::common::half;24,611
+using arrayfire::common::NaryNode;25,642
+using std::make_shared;27,678
+using std::max;28,702
+namespace arrayfire 30,719
+namespace oneapi 31,741
+Array<T> createSelectNode(33,781
+template<typename T,60,1849
+Array<T> createSelectNode(61,1881
+void select(92,3097
+template<typename T,97,3257
+void select_scalar(98,3289
+#define INSTANTIATE(103,3469
+#undef INSTANTIATE136,5078
+
+fftconvolve.cpp,303
+using af::dim4;28,745
+using std::ceil;29,761
+using std::conditional;30,778
+using std::is_integral;31,802
+using std::is_same;32,826
+using std::vector;33,846
+namespace arrayfire 35,866
+namespace oneapi 36,888
+dim4 calcPackedSize(39,929
+Array<T> fftconvolve(66,1702
+#define INSTANTIATE(149,4647
+
+scan.hpp,122
+namespace arrayfire 13,378
+namespace oneapi 14,400
+template<af_op_t op,15,419
+template<af_op_t op, typename Ti,15,419
+
+plot.cpp,128
+using af::dim4;16,474
+namespace arrayfire 18,491
+namespace oneapi 19,513
+void copy_plot(22,554
+#define INSTANTIATE(73,2448
+
+shift.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+reshape.cpp,220
+using arrayfire::common::half;16,438
+namespace arrayfire 18,470
+namespace oneapi 19,492
+template<typename inType,21,512
+Array<outType> reshape(22,556
+#define INSTANTIATE(32,943
+#define INSTANTIATE_COMPLEX(72,3305
+
+transpose.cpp,170
+using af::dim4;17,488
+using arrayfire::common::half;18,504
+namespace arrayfire 20,536
+namespace oneapi 21,558
+Array<T> transpose(24,599
+#define INSTANTIATE(36,1019
+
+moments.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+sobel.hpp,110
+namespace arrayfire 13,374
+namespace oneapi 14,396
+template<typename Ti,16,416
+std::pair<std::pair17,451
+
+scan_by_key.cpp,329
+namespace arrayfire 19,528
+namespace oneapi 20,550
+template<af_op_t op,21,569
+template<af_op_t op, typename Ti,21,569
+template<af_op_t op, typename Ti, typename Tk,21,569
+Array<To> scan(22,629
+#define INSTANTIATE_SCAN_BY_KEY(42,1175
+#define INSTANTIATE_SCAN_BY_KEY_ALL(47,1410
+#define INSTANTIATE_SCAN_BY_KEY_OP(57,1918
+
+inverse.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+susan.hpp,80
+using af::features;13,380
+namespace arrayfire 15,401
+namespace oneapi 16,423
+
+topk.hpp,53
+namespace arrayfire 10,333
+namespace oneapi 11,355
+
+rotate.cpp,106
+namespace arrayfire 15,412
+namespace oneapi 16,434
+Array<T> rotate(18,474
+#define INSTANTIATE(40,1204
+
+sort_index.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+svd.hpp,109
+namespace arrayfire 12,355
+namespace oneapi 13,377
+template<typename T,14,396
+template<typename T,17,502
+
+hist_graphics.cpp,109
+namespace arrayfire 15,449
+namespace oneapi 16,471
+void copy_histogram(19,512
+#define INSTANTIATE(23,608
+
+approx.hpp,111
+namespace arrayfire 12,355
+namespace oneapi 13,377
+template<typename Ty,14,396
+template<typename Ty,19,632
+
+resize.cpp,105
+namespace arrayfire 17,476
+namespace oneapi 18,498
+Array<T> resize(20,538
+#define INSTANTIATE(30,859
+
+sift.hpp,108
+using af::features;13,380
+namespace arrayfire 15,401
+namespace oneapi 16,423
+template<typename T,18,443
+
+max.cpp,91
+using arrayfire::common::half;13,388
+namespace arrayfire 15,420
+namespace oneapi 16,442
+
+copy.hpp,154
+namespace arrayfire 14,408
+namespace oneapi 15,430
+template<typename inType,22,575
+template<typename inType,39,1284
+Array<T> padArrayBorders(44,1498
+
+cast.hpp,375
+namespace arrayfire 21,558
+namespace oneapi 22,580
+template<typename To,24,600
+struct CastOp 25,635
+    const char *name(name26,651
+#define CAST_FN(29,693
+#define CAST_CFN(41,1007
+    const char *name(name53,1350
+    const char *name(name58,1449
+    const char *name(name63,1547
+    const char *name(name68,1647
+#undef CAST_FN71,1702
+#undef CAST_CFN72,1717
+
+diff.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+surface.cpp,157
+using af::dim4;16,477
+using std::vector;18,514
+namespace arrayfire 20,534
+namespace oneapi 21,556
+void copy_surface(24,597
+#define INSTANTIATE(74,2517
+
+nearest_neighbour.cpp,267
+using af::dim4;18,512
+namespace arrayfire 21,550
+namespace oneapi 22,572
+template<typename T,24,592
+template<typename T, typename To,24,592
+void nearest_neighbour_(25,651
+template<typename T,50,1576
+void nearest_neighbour(51,1610
+#define INSTANTIATE(71,2470
+
+reorder.cpp,144
+using arrayfire::common::half;17,482
+namespace arrayfire 19,514
+namespace oneapi 20,536
+Array<T> reorder(22,576
+#define INSTANTIATE(34,879
+
+moments.cpp,151
+namespace arrayfire 15,445
+namespace oneapi 16,467
+static inline unsigned bitCount(18,487
+Array<float> moments(25,716
+#define INSTANTIATE(44,1170
+
+susan.cpp,158
+using af::features;17,475
+using std::vector;18,495
+namespace arrayfire 20,515
+namespace oneapi 21,537
+unsigned susan(24,578
+#define INSTANTIATE(62,2146
+
+inverse.cpp,213
+namespace arrayfire 17,463
+namespace oneapi 18,485
+Array<T> inverse(21,526
+#define INSTANTIATE(27,653
+namespace arrayfire 39,889
+namespace oneapi 40,911
+Array<T> inverse(43,952
+#define INSTANTIATE(49,1122
+
+sobel.cpp,219
+using af::dim4;16,456
+namespace arrayfire 18,473
+namespace oneapi 19,495
+template<typename Ti,21,515
+std::pair<std::pair22,550
+std::pair<Array<To>, Array<To>> sobelDerivatives(22,550
+#define INSTANTIATE(36,1006
+
+scan_by_key.hpp,176
+namespace arrayfire 13,378
+namespace oneapi 14,400
+template<af_op_t op,15,419
+template<af_op_t op, typename Ti,15,419
+template<af_op_t op, typename Ti, typename Tk,15,419
+
+plot.hpp,53
+namespace arrayfire 13,393
+namespace oneapi 14,415
+
+scan.cpp,217
+namespace arrayfire 16,445
+namespace oneapi 17,467
+template<af_op_t op,18,486
+template<af_op_t op, typename Ti,18,486
+Array<To> scan(19,533
+#define INSTANTIATE_SCAN(35,1074
+#define INSTANTIATE_SCAN_ALL(38,1192
+
+fftconvolve.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+all.cpp,91
+using arrayfire::common::half;13,388
+namespace arrayfire 15,420
+namespace oneapi 16,442
+
+anisotropic_diffusion.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+select.hpp,109
+namespace arrayfire 13,390
+namespace oneapi 14,412
+template<typename T,19,556
+template<typename T,27,860
+
+transpose.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+approx2.cpp,132
+namespace arrayfire 13,411
+namespace oneapi 14,433
+template<typename Ty,15,452
+void approx2(16,487
+#define INSTANTIATE(45,1716
+
+count.cpp,91
+using arrayfire::common::half;13,388
+namespace arrayfire 15,420
+namespace oneapi 16,442
+
+Module.hpp,157
+namespace arrayfire 16,412
+namespace oneapi 17,434
+class Module20,504
+    Module(31,901
+    operator bool(operator bool34,978
+    void unload(37,1064
+
+shift.cpp,338
+using af::dim4;16,444
+using arrayfire::common::Node_ptr;17,460
+using arrayfire::common::ShiftNodeBase;18,495
+using std::array;19,535
+using std::make_shared;20,553
+using std::static_pointer_cast;21,577
+using std::string;22,609
+namespace arrayfire 24,629
+namespace oneapi 25,651
+Array<T> shift(28,692
+#define INSTANTIATE(59,1753
+
+iir.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+device_manager.hpp,1075
+#define AF_ONEAPI_MEM_DEBUG 20,473
+namespace spdlog 23,511
+namespace arrayfire 27,547
+namespace common 28,569
+using arrayfire::common::MemoryManagerBase;34,683
+namespace arrayfire 36,728
+namespace oneapi 37,750
+class DeviceManager 43,885
+    std::shared_ptr<spdlog::logger> logger;137,3503
+    std::mutex deviceMutex;138,3547
+    std::vector<std::unique_ptr<sycl::device>> mDevices;139,3575
+    std::vector<std::unique_ptr<sycl::context>> mContexts;140,3632
+    std::vector<std::unique_ptr<sycl::queue>> mQueues;141,3691
+    std::vector<bool> mIsGLSharingOn;142,3746
+    std::vector<std::string> mBaseOpenCLBuildFlags;143,3784
+    std::vector<int> mDeviceTypes;144,3836
+    std::vector<int> mPlatforms;145,3871
+    unsigned mUserDeviceOffset;146,3904
+    std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;148,3937
+    std::unique_ptr<MemoryManagerBase> memManager;149,3998
+    std::unique_ptr<MemoryManagerBase> pinnedMemManager;150,4049
+    std::unique_ptr<GraphicsResourceManager> gfxManagers[gfxManagers151,4106
+    std::mutex mutex;152,4177
+
+cholesky.cpp,285
+namespace arrayfire 20,539
+namespace oneapi 21,561
+int cholesky_inplace(24,602
+Array<T> cholesky(56,1623
+#define INSTANTIATE_CH(65,1849
+namespace arrayfire 80,2308
+namespace oneapi 81,2330
+Array<T> cholesky(84,2371
+int cholesky_inplace(90,2565
+#define INSTANTIATE_CH(95,2724
+
+wrap.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+platform.cpp,2748
+using sycl::aspect;44,1032
+using sycl::context;45,1052
+using sycl::device;46,1073
+using sycl::platform;47,1093
+using sycl::queue;48,1115
+using std::begin;50,1135
+using std::call_once;51,1153
+using std::end;52,1175
+using std::endl;53,1191
+using std::find_if;54,1208
+using std::get;55,1228
+using std::make_pair;56,1244
+using std::make_unique;57,1266
+using std::map;58,1290
+using std::move;59,1306
+using std::once_flag;60,1323
+using std::ostringstream;61,1345
+using std::pair;62,1371
+using std::string;63,1388
+using std::to_string;64,1407
+using std::unique_ptr;65,1429
+using std::vector;66,1452
+using arrayfire::common::getEnvVar;68,1472
+using arrayfire::common::ltrim;69,1508
+using arrayfire::common::MemoryManagerBase;70,1540
+using arrayfire::oneapi::Allocator;71,1584
+using arrayfire::oneapi::AllocatorPinned;72,1620
+namespace arrayfire 74,1663
+namespace oneapi 75,1685
+static string get_system(77,1705
+int getBackend(90,1955
+bool verify_present(92,2003
+inline string platformMap(103,2361
+af_oneapi_platform getPlatformEnum(124,3018
+string getDeviceInfo(141,3667
+string getPlatformName(191,5637
+typedef pair<unsigned,unsigned198,5845
+typedef pair<unsigned, unsigned> device_id_t;198,5845
+pair<unsigned, unsigned>& tlocalActiveDeviceId(200,5892
+void setActiveContext(208,6108
+int getDeviceCount(212,6203
+} catch 217,6404
+void init(224,6562
+unsigned getActiveDeviceId(229,6678
+int getActiveDeviceType(252,7348
+int getActivePlatform(262,7590
+const sycl::context& getContext(272,7828
+sycl::queue& getQueue(282,8078
+sycl::queue* getQueueHandle(292,8316
+const sycl::device& getDevice(300,8522
+const std::string& getActiveDeviceBaseBuildFlags(311,8806
+size_t getDeviceMemorySize(319,9084
+size_t getHostMemorySize(328,9432
+sycl::info::device_type getDeviceType(330,9500
+bool isHostUnifiedMemory(337,9703
+bool OneAPICPUOffload(341,9820
+bool isGLSharingSupported(365,10735
+bool isDoubleSupported(375,10981
+bool isHalfSupported(384,11252
+void devprop(395,11526
+int setDevice(399,11640
+void sync(414,12043
+void addDeviceContext(421,12185
+void setDeviceContext(451,13316
+void removeDeviceContext(467,13864
+unsigned getMemoryBusWidth(522,16091
+size_t getL2CacheSize(526,16229
+unsigned getComputeUnits(530,16362
+unsigned getMaxParallelThreads(534,16489
+bool synchronize_calls(538,16596
+int& getMaxJitSize(543,16714
+bool& evalFlag(562,17193
+MemoryManagerBase& memoryManager(567,17267
+MemoryManagerBase& pinnedMemoryManager(587,17978
+void setMemoryManager(607,18731
+void resetMemoryManager(611,18862
+void setMemoryManagerPinned(615,18961
+void resetMemoryManagerPinned(619,19104
+arrayfire::common::ForgeManager& forgeManager(623,19209
+GraphicsResourceManager& interopManager(627,19313
+
+random_engine.cpp,344
+using arrayfire::common::half;17,492
+namespace arrayfire 19,524
+namespace oneapi 20,546
+void initMersenneState(21,565
+Array<T> uniformDistribution(27,748
+Array<T> normalDistribution(37,1137
+Array<T> uniformDistribution(47,1521
+Array<T> normalDistribution(58,2038
+#define INSTANTIATE_UNIFORM(68,2528
+#define INSTANTIATE_NORMAL(77,3052
+
+homography.cpp,161
+using af::dim4;19,471
+using std::numeric_limits;20,487
+namespace arrayfire 22,515
+namespace oneapi 23,537
+int homography(26,578
+#define INSTANTIATE(35,939
+
+range.hpp,53
+namespace arrayfire 13,368
+namespace oneapi 14,390
+
+blas.hpp,77
+namespace arrayfire 16,441
+namespace oneapi 17,463
+Array<T> matmul(27,712
+
+meanshift.cpp,131
+using af::dim4;16,461
+namespace arrayfire 18,478
+namespace oneapi 19,500
+Array<T> meanshift(21,540
+#define INSTANTIATE(31,944
+
+binary.hpp,578
+namespace arrayfire 13,370
+namespace oneapi 14,392
+template<typename To,16,412
+template<typename To, typename Ti,16,412
+#define BINARY_TYPE_1(19,474
+#undef BINARY_TYPE_153,1590
+#define BINARY_TYPE_2(55,1612
+template<typename To,83,2852
+#define POW_BINARY_OP(88,2967
+#undef POW_BINARY_OP101,3349
+    const char *name(name105,3432
+    const char *name(name110,3544
+template<typename To,113,3593
+    const char *name(name115,3663
+template<typename To,118,3709
+    const char *name(name120,3779
+template<typename To,123,3826
+    const char *name(name125,3896
+
+arith.hpp,159
+namespace arrayfire 17,452
+namespace oneapi 18,474
+template<typename T,20,494
+Array<T> arithOp(21,527
+template<typename T,26,697
+Array<T> arithOp(27,730
+
+sparse_blas.cpp,113
+namespace arrayfire 33,823
+namespace oneapi 34,845
+Array<T> matmul(39,911
+#define INSTANTIATE_SPARSE(93,3042
+
+hsv_rgb.cpp,131
+namespace arrayfire 14,384
+namespace oneapi 15,406
+Array<T> hsv2rgb(18,447
+Array<T> rgb2hsv(25,607
+#define INSTANTIATE(31,746
+
+types.hpp,1038
+namespace arrayfire 24,564
+namespace common 25,586
+struct kernel_type<kernel_type29,709
+namespace arrayfire 40,934
+namespace oneapi 42,957
+struct ToNumStr 58,1387
+inline const char *shortname(shortname65,1553
+inline const char *shortname<shortname70,1646
+inline const char *shortname<shortname74,1737
+inline const char *shortname<shortname78,1829
+inline const char *shortname<shortname82,1921
+inline const char *shortname<shortname86,2014
+inline const char *shortname<shortname90,2103
+inline const char *shortname<shortname94,2193
+inline const char *shortname<shortname98,2283
+inline const char *shortname<shortname102,2374
+inline const char *shortname<shortname106,2464
+inline const char *shortname<shortname110,2555
+inline const char *shortname<shortname114,2646
+inline const char *getFullName(getFullName119,2749
+inline const char *getFullName<getFullName124,2841
+inline const char *getFullName<getFullName129,2919
+AF_CONSTEXPR const char *getTypeBuildDefinition(getTypeBuildDefinition135,3021
+
+iota.cpp,141
+using arrayfire::common::half;19,497
+namespace arrayfire 21,529
+namespace oneapi 22,551
+Array<T> iota(24,591
+#define INSTANTIATE(32,786
+
+sort_by_key.hpp,82
+namespace arrayfire 12,355
+namespace oneapi 13,377
+template<typename Tk,14,396
+
+set.cpp,720
+namespace arrayfire 18,496
+namespace oneapi 19,518
+using af::dim4;20,537
+using std::conditional;22,554
+using std::is_same;23,578
+using ltype_t = typename conditional<is_same<T, intl>::value,value25,619
+using ltype_t = typename conditional<is_same<T, intl>::value, cl_long,25,619
+using ltype_t = typename conditional<is_same<T, intl>::value, cl_long, T>::type;type25,619
+    typename conditional<is_same<T, uintl>::value,value29,737
+    typename conditional<is_same<T, uintl>::value, cl_ulong,29,737
+    typename conditional<is_same<T, uintl>::value, cl_ulong, ltype_t<T>>::type;type29,737
+Array<T> setUnique(32,839
+Array<T> setUnion(58,1647
+Array<T> setIntersect(101,3393
+#define INSTANTIATE(144,5168
+
+image.hpp,53
+namespace arrayfire 13,393
+namespace oneapi 14,415
+
+ireduce.cpp,293
+using af::dim4;19,526
+using arrayfire::common::half;20,542
+namespace arrayfire 22,574
+namespace oneapi 23,596
+template<af_op_t op,25,616
+void ireduce(26,649
+template<af_op_t op,32,861
+void rreduce(33,894
+template<af_op_t op,38,1071
+T ireduce_all(39,1104
+#define INSTANTIATE(43,1206
+
+jit.cpp,968
+using arrayfire::common::getFuncName;43,1067
+using arrayfire::common::half;44,1105
+using arrayfire::common::ModdimNode;45,1136
+using arrayfire::common::Node;46,1173
+using arrayfire::common::Node_ids;47,1204
+using arrayfire::common::Node_map_t;48,1239
+using arrayfire::common::Node_ptr;49,1276
+using arrayfire::common::NodeIterator;50,1311
+using arrayfire::oneapi::getActiveDeviceBaseBuildFlags;51,1350
+using arrayfire::oneapi::jit::BufferNode;52,1406
+using std::array;54,1449
+using std::begin;55,1467
+using std::end;56,1485
+using std::find;57,1501
+using std::find_if;58,1518
+using std::string;59,1538
+using std::stringstream;60,1557
+using std::to_string;61,1582
+using std::unordered_map;62,1604
+using std::vector;63,1630
+using sycl::backend;65,1650
+namespace arrayfire 67,1672
+namespace opencl 69,1695
+string getKernelString(86,2042
+cl_kernel getKernel(290,10111
+namespace oneapi 333,11772
+void evalNodes(336,11813
+void evalNodes(578,22850
+
+traits.hpp,315
+namespace af 19,466
+static bool iscplx(22,503
+inline bool iscplx<iscplx26,557
+inline bool iscplx<iscplx30,637
+inline std::string scalar_to_option(35,729
+inline std::string scalar_to_option<scalar_to_option42,887
+inline std::string scalar_to_option<scalar_to_option49,1059
+using af::dtype_traits;56,1241
+
+identity.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+unwrap.cpp,171
+using arrayfire::common::half;17,480
+namespace arrayfire 19,512
+namespace oneapi 20,534
+Array<T> unwrap(23,575
+#define INSTANTIATE(42,1265
+#undef INSTANTIATE61,1871
+
+math.cpp,206
+namespace arrayfire 13,381
+namespace oneapi 14,403
+cfloat operator+(15,422
+cdouble operator+(21,566
+cfloat operator*(27,715
+cdouble operator*(34,915
+cfloat division(41,1119
+cdouble division(48,1278
+
+canny.cpp,164
+using af::dim4;14,402
+namespace arrayfire 16,419
+namespace oneapi 17,441
+Array<float> nonMaximumSuppression(18,460
+Array<char> edgeTrackingByHysteresis(24,673
+
+gradient.cpp,103
+namespace arrayfire 17,477
+namespace oneapi 18,499
+void gradient(20,539
+#define INSTANTIATE(24,655
+
+lookup.cpp,178
+using arrayfire::common::half;18,483
+namespace arrayfire 20,515
+namespace oneapi 21,537
+template<typename in_t,22,556
+Array<in_t> lookup(23,596
+#define INSTANTIATE(39,1011
+
+diagonal.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+harris.cpp,183
+using af::dim4;15,429
+using af::features;16,445
+namespace arrayfire 18,466
+namespace oneapi 19,488
+template<typename T,21,508
+unsigned harris(22,548
+#define INSTANTIATE(31,883
+
+match_template.hpp,86
+namespace arrayfire 13,379
+namespace oneapi 14,401
+template<typename inType,15,420
+
+meanshift.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+blas.cpp,394
+using arrayfire::common::half;33,772
+static oneapi::mkl::transpose toBlasTranspose(36,867
+static void gemvDispatch(46,1245
+static void gemmDispatch(62,2172
+namespace arrayfire 77,3094
+namespace oneapi 78,3116
+void initBlas(80,3136
+void deInitBlas(83,3178
+void gemm(87,3245
+Array<T> dot(146,5600
+#define INSTANTIATE_GEMM(154,5954
+void gemm(166,6456
+#define INSTANTIATE_DOT(172,6664
+
+errorcodes.cpp,36
+std::string getErrorMessage(13,386
+
+range.cpp,143
+using arrayfire::common::half;19,499
+namespace arrayfire 21,531
+namespace oneapi 22,553
+Array<T> range(24,593
+#define INSTANTIATE(42,1052
+
+homography.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+random_engine.hpp,53
+namespace arrayfire 16,416
+namespace oneapi 17,438
+
+cholesky.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+device_manager.cpp,1148
+using arrayfire::common::ForgeManager;34,876
+using arrayfire::common::getEnvVar;35,915
+using std::begin;36,951
+using std::end;37,969
+using std::find;38,985
+using std::make_unique;39,1002
+using std::move;40,1026
+using std::string;41,1043
+using std::stringstream;42,1062
+using std::unique_ptr;43,1087
+using std::vector;44,1110
+using sycl::device;45,1129
+using sycl::platform;46,1149
+using af::dtype_traits;48,1172
+namespace arrayfire 50,1197
+namespace oneapi 51,1219
+static inline bool compare_default(53,1239
+auto arrayfire_exception_handler(77,2065
+DeviceManager::DeviceManager(87,2354
+spdlog::logger* DeviceManager::getLogger(getLogger235,8024
+DeviceManager& DeviceManager::getInstance(getInstance237,8093
+void DeviceManager::setMemoryManager(setMemoryManager242,8219
+void DeviceManager::resetMemoryManager(resetMemoryManager260,9039
+void DeviceManager::setMemoryManagerPinned(setMemoryManagerPinned268,9370
+void DeviceManager::resetMemoryManagerPinned(resetMemoryManagerPinned287,10271
+DeviceManager::~DeviceManager(~DeviceManager295,10614
+void DeviceManager::markDeviceForInterop(markDeviceForInterop303,10845
+
+iir.cpp,126
+using af::dim4;19,514
+namespace arrayfire 21,531
+namespace oneapi 22,553
+Array<T> iir(24,593
+#define INSTANTIATE(51,1299
+
+platform.hpp,182
+namespace spdlog 20,458
+namespace arrayfire 24,494
+namespace common 25,516
+using arrayfire::common::MemoryManagerBase;31,630
+namespace arrayfire 33,675
+namespace oneapi 34,697
+
+wrap.cpp,251
+using arrayfire::common::half;21,543
+namespace arrayfire 23,575
+namespace oneapi 24,597
+void wrap(27,638
+#define INSTANTIATE(33,891
+#undef INSTANTIATE51,1489
+Array<T> wrap_dilated(54,1530
+#define INSTANTIATE(66,2064
+#undef INSTANTIATE75,2513
+
+canny.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+math.hpp,836
+namespace arrayfire 31,718
+namespace oneapi 32,740
+static inline T abs(35,781
+static inline T min(39,859
+static inline T max(43,949
+static inline T division(48,1040
+inline cfloat max<max55,1206
+inline cdouble max<max60,1316
+inline cfloat min<min65,1430
+inline cdouble min<min70,1540
+static T scalar(75,1664
+inline cfloat scalar<scalar80,1729
+inline cdouble scalar<scalar88,1902
+template<typename To,93,1990
+static To scalar(94,2025
+inline T maxval(100,2128
+inline T minval(104,2213
+inline float maxval(108,2288
+inline double maxval(112,2376
+inline arrayfire::common::half maxval(117,2467
+inline float minval(122,2592
+inline double minval(127,2682
+inline arrayfire::common::half minval(131,2773
+static inline T real(136,2909
+static inline T imag(141,2988
+inline arrayfire::common::half operator+(145,3046
+
+kernel/assign.hpp,463
+namespace arrayfire 24,587
+namespace oneapi 25,609
+namespace kernel 26,628
+static int trimIndex(28,648
+class assignKernel 41,980
+    assignKernel(43,1012
+    void operator()(operator()54,1344
+    write_accessor<T> out_;106,3307
+    read_accessor<T> in_;107,3335
+    KParam oInfo_,108,3361
+    KParam oInfo_, iInfo_;108,3361
+    AssignKernelParam p_;109,3388
+    const int nBBS0_,110,3414
+    const int nBBS0_, nBBS1_;110,3414
+void assign(114,3469
+
+kernel/fftconvolve_reorder.hpp,559
+namespace arrayfire 22,549
+namespace oneapi 23,571
+namespace kernel 24,590
+class fftconvolve_reorderCreateKernel 28,632
+  fftconvolve_reorderCreateKernel(30,680
+  void operator()(operator()31,1083
+write_accessor<T> d_out_;109,3553
+KParam oInfo_;110,3579
+read_accessor<T> d_in_;111,3594
+KParam iInfo_;112,3618
+KParam fInfo_;113,3633
+const int half_di0_;114,3648
+const int baseDim_;115,3669
+const int fftScale_;116,3689
+const bool EXPAND_;117,3710
+const bool ROUND_OUT_;118,3730
+template<typename T,122,3758
+void reorderOutputHelper(123,3795
+
+kernel/convolve1.hpp,771
+template<typename T,11,346
+class conv1HelperCreateKernel 12,380
+    conv1HelperCreateKernel(14,423
+    void operator()(operator()37,1293
+    write_accessor<T> out_;96,3835
+    KParam oInfo_;97,3863
+    read_accessor<T> signal_;98,3882
+    KParam sInfo_;99,3912
+    sycl::local_accessor<aT> localMem_;100,3931
+    read_accessor<aT> impulse_;101,3971
+    KParam fInfo_;102,4003
+    int nBBS0_;103,4022
+    int nBBS1_;104,4038
+    int ostep1_;105,4054
+    int ostep2_;106,4071
+    int ostep3_;107,4088
+    int sstep1_;108,4105
+    int sstep2_;109,4122
+    int sstep3_;110,4139
+    const bool expand_;111,4156
+template<typename T,114,4184
+void conv1Helper(115,4218
+template<typename T,134,5070
+void conv1(135,5104
+#define INSTANTIATE_CONV1(166,6300
+
+kernel/diff.hpp,499
+namespace arrayfire 24,570
+namespace oneapi 25,592
+namespace kernel 26,611
+class diffKernel 29,652
+    diffKernel(31,682
+    void operator()(operator()44,1180
+    write_accessor<T> outAcc_;81,2545
+    const read_accessor<T> inAcc_;82,2576
+    const KParam op_;83,2611
+    const KParam ip_;84,2633
+    const int oElem_;85,2655
+    const int blocksPerMatX_;86,2677
+    const int blocksPerMatY_;87,2707
+    const bool isDiff2_;88,2737
+    const unsigned DIM_;89,2762
+void diff(93,2812
+
+kernel/histogram.hpp,956
+namespace arrayfire 24,570
+namespace oneapi 25,592
+namespace kernel 26,611
+#define MAX_BINS 28,631
+#define THREADS_X 29,653
+#define THRD_LOAD 30,675
+    sycl::atomic_ref<T, sycl::memory_order::relaxed,37,820
+                     sycl::memory_scope::work_group,38,873
+    sycl::atomic_ref<T, sycl::memory_order::relaxed,43,1038
+    sycl::atomic_ref<T, sycl::memory_order::relaxed, sycl::memory_scope::system,43,1038
+class histogramKernel 47,1206
+    histogramKernel(49,1241
+    void operator()(operator()65,1832
+    write_accessor<uint> d_dst_;118,3755
+    KParam oInfo_;119,3788
+    read_accessor<T> d_src_;120,3807
+    KParam iInfo_;121,3836
+    sycl::local_accessor<sycl::local_accessor122,3855
+    sycl::local_accessor<uint, 1> localMemAcc_;122,3855
+    int len_;123,3903
+    int nbins_;124,3917
+    float minval_;125,3933
+    float maxval_;126,3952
+    int nBBS_;127,3971
+    bool isLinear_;128,3986
+void histogram(132,4031
+
+kernel/random_engine_write.hpp,2175
+namespace arrayfire 12,371
+namespace oneapi 13,393
+namespace kernel 14,412
+static float getFloat01(77,3236
+static float getFloatNegative11(89,3622
+static double getDouble01(100,3995
+constexpr double signed_factor 115,4472
+constexpr double half_factor 118,4611
+static double getDoubleNegative11(121,4702
+void sincospi(192,6929
+constexpr T neg_two(218,7637
+static void boxMullerTransform(228,7801
+static void boxMullerTransform(244,8353
+template<typename Td,260,8917
+static void boxMullerTransform(261,8952
+static void writeOut128Bytes(285,9910
+static void writeOut128Bytes(306,10761
+static void writeOut128Bytes(327,11731
+static void writeOut128Bytes(340,12242
+static void writeOut128Bytes(346,12520
+static void writeOut128Bytes(355,12865
+static void writeOut128Bytes(361,13139
+static void writeOut128Bytes(372,13557
+static void writeOut128Bytes(378,13833
+static void writeOut128Bytes(387,14252
+static void writeOut128Bytes(394,14606
+static void writeOut128Bytes(401,14922
+static void writeOut128Bytes(407,15204
+static void boxMullerWriteOut128Bytes(422,15957
+static void boxMullerWriteOut128Bytes(432,16493
+static void boxMullerWriteOut128Bytes(441,16953
+static void boxMullerWriteOut128Bytes(449,17359
+static void boxMullerWriteOut128Bytes(457,17743
+static void partialWriteOut128Bytes(476,18753
+static void partialWriteOut128Bytes(508,20343
+static void partialWriteOut128Bytes(554,22136
+static void partialWriteOut128Bytes(568,23010
+static void partialWriteOut128Bytes(576,23412
+static void partialWriteOut128Bytes(586,23960
+static void partialWriteOut128Bytes(594,24358
+static void partialWriteOut128Bytes(606,24855
+static void partialWriteOut128Bytes(614,25255
+static void partialWriteOut128Bytes(630,25913
+static void partialWriteOut128Bytes(642,26422
+static void partialWriteOut128Bytes(652,26881
+static void partialBoxMullerWriteOut128Bytes(662,27324
+static void partialBoxMullerWriteOut128Bytes(676,28129
+static void partialBoxMullerWriteOut128Bytes(688,28797
+static void partialBoxMullerWriteOut128Bytes(700,29405
+static void partialWriteOut128Bytes(711,29953
+static void partialBoxMullerWriteOut128Bytes(741,31249
+
+kernel/reduce_all.hpp,1206
+namespace arrayfire 32,772
+namespace oneapi 33,794
+namespace kernel 34,813
+    sycl::atomic_ref<T, sycl::memory_order::relaxed,38,880
+    sycl::atomic_ref<T, sycl::memory_order::relaxed, sycl::memory_scope::system,38,880
+template<typename Ti,41,1027
+template<typename Ti, typename To,41,1027
+class reduceAllKernelSMEM 42,1074
+    reduceAllKernelSMEM(44,1113
+    void operator()(operator()68,2006
+    write_accessor<To> out_;222,7630
+    sycl::accessor<unsigned> retCount_;223,7659
+    sycl::accessor<To> tmp_;224,7699
+    read_accessor<Ti> in_;225,7728
+    KParam oInfo_,226,7755
+    KParam oInfo_, tmpInfo_,226,7755
+    KParam oInfo_, tmpInfo_, iInfo_;226,7755
+    uint DIMX_,227,7792
+    uint DIMX_, repeat_;227,7792
+    uint groups_x_,228,7817
+    uint groups_x_, groups_y_;228,7817
+    bool change_nan_;229,7848
+    To nanval_;230,7870
+    sycl::local_accessor<sycl::local_accessor231,7886
+    sycl::local_accessor<compute_t<To>, 1> s_ptr_;231,7886
+    sycl::local_accessor<sycl::local_accessor232,7937
+    sycl::local_accessor<bool, 1> amLast_;232,7937
+template<typename Ti,235,7984
+template<typename Ti, typename To,235,7984
+void reduce_all_launcher_default(236,8031
+
+kernel/reduce_first.hpp,972
+namespace arrayfire 32,772
+namespace oneapi 33,794
+namespace kernel 34,813
+template<typename Ti,36,833
+template<typename Ti, typename To,36,833
+template<typename Ti, typename To, af_op_t op,36,833
+class reduceFirstKernelSMEM 37,891
+    reduceFirstKernelSMEM(39,932
+    void operator()(operator()55,1513
+    write_accessor<To> out_;134,4449
+    KParam oInfo_,135,4478
+    KParam oInfo_, iInfo_;135,4478
+    read_accessor<Ti> in_;136,4505
+    uint groups_x_,137,4532
+    uint groups_x_, groups_y_,137,4532
+    uint groups_x_, groups_y_, repeat_;137,4532
+    bool change_nan_;138,4572
+    To nanval_;139,4594
+    sycl::local_accessor<sycl::local_accessor140,4610
+    sycl::local_accessor<compute_t<To>, 1> s_val_;140,4610
+template<typename Ti,143,4665
+template<typename Ti, typename To,143,4665
+void reduce_first_launcher_default(144,4712
+template<typename Ti,195,6974
+template<typename Ti, typename To,195,6974
+void reduce_first_default(196,7021
+
+kernel/fftconvolve_pack.hpp,516
+namespace arrayfire 24,570
+namespace oneapi 25,592
+namespace kernel 26,611
+template<typename inputType,28,631
+class fftconvolve_packCreateKernel 29,681
+    fftconvolve_packCreateKernel(31,729
+    void operator()(operator()40,1115
+    write_accessor<outputType> d_out_;98,2969
+    KParam oInfo_;99,3008
+    read_accessor<inputType> d_in_;100,3027
+    KParam iInfo_;101,3063
+    const int di0_half_;102,3082
+    const int odd_di0_;103,3107
+template<typename convT,109,3231
+void packDataHelper(110,3268
+
+kernel/transform.hpp,1330
+namespace arrayfire 26,624
+namespace oneapi 27,646
+namespace kernel 28,665
+using wtype_t = typename std::conditional<std::is_same<T, double>::value,value31,706
+                                          double,32,780
+                                          double, float>::type;type32,780
+using vtype_t = typename std::conditional<common::is_complex<T>::value, T,35,866
+                                          wtype_t<T>>::type;type36,941
+void calc_transf_inverse(39,1030
+template<typename T,77,2195
+template<typename T, typename InterpPosTy,77,2195
+template<typename T, typename InterpPosTy, bool PERSPECTIVE,77,2195
+class transformCreateKernel 78,2274
+    transformCreateKernel(80,2315
+    void operator()(operator()102,3219
+    write_accessor<T> d_out_;220,7638
+    const KParam out_;221,7668
+    read_accessor<T> d_in_;222,7691
+    const KParam in_;223,7719
+    read_accessor<float> c_tmat_;224,7741
+    const KParam tf_;225,7775
+    const int nImg2_;226,7797
+    const int nImg3_;227,7819
+    const int nTfs2_;228,7841
+    const int nTfs3_;229,7863
+    const int batchImg2_;230,7885
+    const int blocksXPerImage_;231,7911
+    const int blocksYPerImage_;232,7943
+    const af::interpType method_;233,7975
+    const bool INVERSE_;234,8009
+void transform(238,8059
+#define INVOKE(270,9111
+
+kernel/accessors.hpp,57
+using read_accessor 14,392
+using write_accessor 17,484
+
+kernel/approx1.hpp,804
+namespace arrayfire 26,625
+namespace oneapi 27,647
+namespace kernel 28,666
+template<typename Ty,34,795
+template<typename Ty, typename Tp,34,795
+class approx1Kernel 35,841
+    approx1Kernel(37,874
+    void operator()(operator()57,1613
+    write_accessor<Ty> d_yo_;112,3710
+    const KParam yoInfo_;113,3740
+    read_accessor<Ty> d_yi_;114,3766
+    const KParam yiInfo_;115,3795
+    read_accessor<Tp> d_xo_;116,3821
+    const KParam xoInfo_;117,3850
+    const Tp xi_beg_;118,3876
+    const Tp xi_step_reproc_;119,3898
+    const Ty offGrid_;120,3928
+    const int blocksMatX_;121,3951
+    const af_interp_type method_;122,3978
+    const bool batch_;123,4012
+    const int XDIM_;124,4035
+template<typename Ty,127,4060
+template<typename Ty, typename Tp,127,4060
+void approx1(128,4106
+
+kernel/fftconvolve_common.hpp,193
+namespace arrayfire 26,755
+namespace oneapi 27,777
+namespace kernel 28,796
+template<typename T,32,846
+void calcParamSizes(33,883
+using read_accessor 79,2770
+using write_accessor 81,2861
+
+kernel/bilateral.hpp,998
+namespace arrayfire 24,570
+namespace oneapi 25,592
+namespace kernel 26,611
+template<typename outType,28,631
+auto exp_native_nonnative(29,679
+template<typename outType,36,825
+template<typename outType, typename inType,36,825
+class bilateralKernel 37,890
+    bilateralKernel(39,925
+    void operator()(operator()55,1579
+    int lIdx(138,4993
+    constexpr const T& clamp0(143,5127
+    void load2LocalMem(147,5260
+    write_accessor<outType> d_dst_;157,5714
+    KParam oInfo_;158,5750
+    read_accessor<inType> d_src_;159,5769
+    KParam iInfo_;160,5803
+    sycl::local_accessor<sycl::local_accessor161,5822
+    sycl::local_accessor<outType, 1> localMem_;161,5822
+    sycl::local_accessor<sycl::local_accessor162,5870
+    sycl::local_accessor<outType, 1> gauss2d_;162,5870
+    float sigma_space_;163,5917
+    float sigma_color_;164,5941
+    int gaussOff_;165,5965
+    int nBBS0_;166,5984
+    int nBBS1_;167,6000
+template<typename inType,170,6020
+void bilateral(171,6064
+
+kernel/iota.hpp,442
+namespace arrayfire 26,616
+namespace oneapi 27,638
+namespace kernel 28,657
+class iotaKernel 31,698
+    iotaKernel(33,728
+    void operator()(operator()45,1116
+    write_accessor<T> out_;83,2667
+    KParam oinfo_;84,2695
+    int s0_,85,2714
+    int s0_, s1_,85,2714
+    int s0_, s1_, s2_,85,2714
+    int s0_, s1_, s2_, s3_;85,2714
+    int blocksPerMatX_,86,2742
+    int blocksPerMatX_, blocksPerMatY_;86,2742
+void iota(90,2807
+
+kernel/sort_by_key/sort_by_key_impl.cpp,78
+namespace arrayfire 14,449
+namespace oneapi 15,471
+namespace kernel 16,490
+
+kernel/default_config.hpp,78
+namespace arrayfire 12,347
+namespace oneapi 13,369
+namespace kernel 14,388
+
+kernel/scan_dim.hpp,2137
+namespace arrayfire 23,641
+namespace oneapi 24,663
+namespace kernel 25,682
+template<typename Ti,27,702
+template<typename Ti, typename To,27,702
+template<typename Ti, typename To, af_op_t op,27,702
+class scanDimKernel 28,758
+    scanDimKernel(30,791
+    void operator()(operator()53,1680
+    write_accessor<To> out_acc_;148,5235
+    write_accessor<To> tmp_acc_;149,5268
+    read_accessor<Ti> in_acc_;150,5301
+    KParam oInfo_,151,5332
+    KParam oInfo_, tInfo_,151,5332
+    KParam oInfo_, tInfo_, iInfo_;151,5332
+    const uint groups_x_,152,5367
+    const uint groups_x_, groups_y_,152,5367
+    const uint groups_x_, groups_y_, blocks_dim_,152,5367
+    const uint groups_x_, groups_y_, blocks_dim_, lim_,152,5367
+    const uint groups_x_, groups_y_, blocks_dim_, lim_, DIMY_;152,5367
+    const bool isFinalPass_,153,5430
+    const bool isFinalPass_, inclusive_scan_;153,5430
+    sycl::local_accessor<sycl::local_accessor154,5476
+    sycl::local_accessor<To, 1> s_val_;154,5476
+    sycl::local_accessor<sycl::local_accessor155,5516
+    sycl::local_accessor<To, 1> s_tmp_;155,5516
+template<typename To,158,5560
+template<typename To, af_op_t op,158,5560
+class scanDimBcastKernel 159,5603
+    scanDimBcastKernel(161,5641
+    void operator()(operator()176,6211
+    write_accessor<To> out_acc_;232,8407
+    read_accessor<To> tmp_acc_;233,8440
+    KParam oInfo_,234,8472
+    KParam oInfo_, tInfo_;234,8472
+    const uint groups_x_,235,8499
+    const uint groups_x_, groups_y_,235,8499
+    const uint groups_x_, groups_y_, groups_dim_,235,8499
+    const uint groups_x_, groups_y_, groups_dim_, lim_;235,8499
+    const bool inclusive_scan_;236,8555
+template<typename Ti,239,8591
+template<typename Ti, typename To,239,8591
+template<typename Ti, typename To, af_op_t op,239,8591
+static void scan_dim_launcher(240,8647
+template<typename To,269,9931
+template<typename To, af_op_t op,269,9931
+static void bcast_dim_launcher(270,9974
+template<typename Ti,292,10878
+template<typename Ti, typename To,292,10878
+template<typename Ti, typename To, af_op_t op,292,10878
+static void scan_dim(293,10934
+
+kernel/random_engine.hpp,364
+static const int N 29,815
+static const int TABLE_SIZE 30,850
+static const int MAX_BLOCKS 31,884
+static const int STATE_SIZE 32,918
+namespace arrayfire 34,960
+namespace oneapi 35,982
+namespace kernel 36,1001
+void uniformDistributionCBRNG(45,1282
+void normalDistributionCBRNG(85,2955
+void uniformDistributionMT(124,4568
+void normalDistributionMT(160,6338
+
+kernel/KParam.hpp,130
+#define __KPARAM_H11,352
+    dim_t dims[dims21,622
+    dim_t strides[strides22,641
+    dim_t offset;23,663
+} KParam;24,681
+
+kernel/random_engine_threefry.hpp,878
+namespace arrayfire 51,2302
+namespace oneapi 52,2324
+namespace kernel 53,2343
+static inline void setSkeinParity(69,2753
+static inline uint rotL(71,2829
+void threefry(75,2927
+class uniformThreefry 163,4541
+    uniformThreefry(165,4576
+    void operator()(operator()175,4891
+    write_accessor<T> out_;202,5797
+    uint hi_,203,5825
+    uint hi_, lo_,203,5825
+    uint hi_, lo_, hic_,203,5825
+    uint hi_, lo_, hic_, loc_;203,5825
+    uint elementsPerBlock_,204,5856
+    uint elementsPerBlock_, elements_;204,5856
+class normalThreefry 208,5920
+    normalThreefry(210,5954
+    void operator()(operator()220,6267
+    write_accessor<T> out_;247,7209
+    uint hi_,248,7237
+    uint hi_, lo_,248,7237
+    uint hi_, lo_, hic_,248,7237
+    uint hi_, lo_, hic_, loc_;248,7237
+    uint elementsPerBlock_,249,7268
+    uint elementsPerBlock_, elements_;249,7268
+
+kernel/reduce.hpp,592
+namespace arrayfire 32,815
+namespace oneapi 33,837
+namespace kernel 34,856
+template<typename Ti,36,876
+template<typename Ti, typename To,36,876
+void reduce_default_dispatch(37,923
+template<typename Ti,55,1687
+template<typename Ti, typename To,55,1687
+void reduce_cpu_dispatch(56,1734
+template<typename Ti,62,1999
+template<typename Ti, typename To,62,1999
+void reduce_gpu_dispatch(63,2046
+template<typename Ti,69,2304
+template<typename Ti, typename To,69,2304
+void reduce(70,2351
+template<typename Ti,82,2870
+template<typename Ti, typename To,82,2870
+void reduce_all(83,2917
+
+kernel/gradient.hpp,638
+namespace arrayfire 21,558
+namespace oneapi 22,580
+namespace kernel 23,599
+#define sidx(25,619
+template<typename T,27,680
+template<typename T, int TX,27,680
+class gradientCreateKernel 28,717
+    gradientCreateKernel(30,757
+    void operator()(operator()44,1354
+    write_accessor<T> d_grad0_;120,4123
+    const KParam grad0_;121,4155
+    write_accessor<T> d_grad1_;122,4180
+    const KParam grad1_;123,4212
+    read_accessor<T> d_in_;124,4237
+    const KParam in_;125,4265
+    const int blocksPerMatX_;126,4287
+    const int blocksPerMatY_;127,4317
+    sycl::local_accessor<T> scratch_;128,4347
+void gradient(132,4410
+
+kernel/reduce_config.hpp,104
+namespace arrayfire 12,347
+namespace oneapi 13,369
+namespace kernel 14,388
+namespace creduce 16,408
+
+kernel/assign_kernel_param.hpp,249
+namespace arrayfire 16,391
+namespace oneapi 17,413
+    int offs[offs20,450
+    int strds[strds21,467
+    bool isSeq[isSeq22,485
+    std::array<std::array23,504
+        ptr;26,656
+} AssignKernelParam;28,670
+using IndexKernelParam 30,692
+
+kernel/interp.hpp,1735
+namespace arrayfire 22,516
+namespace oneapi 23,538
+struct itype_t 26,579
+    typedef float wtype;27,596
+    typedef float vtype;28,621
+struct itype_t<itype_t32,661
+    typedef double wtype;33,686
+    typedef double vtype;34,712
+struct itype_t<itype_t38,753
+    typedef float wtype;39,778
+    typedef cfloat vtype;40,803
+struct itype_t<itype_t44,844
+    typedef double wtype;45,870
+    typedef cdouble vtype;46,896
+template<typename Ty,49,927
+Ty linearInterpFunc(50,962
+template<typename Ty,54,1058
+Ty bilinearInterpFunc(55,1093
+template<typename Ty,62,1307
+inline static Ty cubicInterpFunc(63,1342
+template<typename Ty,88,2100
+inline static Ty bicubicInterpFunc(89,2135
+template<typename Ty,99,2539
+template<typename Ty, typename Tp,99,2539
+struct Interp1 100,2585
+template<typename Ty,102,2605
+    void operator()(operator()104,2668
+template<typename Ty,127,3529
+    void operator()(operator()129,3592
+        typedef typename itype_t<itype_t133,3849
+        typedef typename itype_t<itype_t134,3897
+template<typename Ty,164,4950
+    void operator()(operator()166,5013
+        typedef typename itype_t<itype_t170,5270
+        typedef typename itype_t<itype_t171,5318
+template<typename Ty,200,6385
+template<typename Ty, typename Tp,200,6385
+struct Interp2 201,6431
+template<typename Ty,203,6451
+    void operator()(operator()205,6514
+template<typename Ty,238,7791
+    void operator()(operator()240,7854
+        typedef typename itype_t<itype_t244,8127
+        typedef typename itype_t<itype_t245,8175
+template<typename Ty,290,9777
+    void operator()(operator()292,9840
+        typedef typename itype_t<itype_t296,10113
+        typedef typename itype_t<itype_t297,10161
+
+kernel/diagonal.hpp,711
+namespace arrayfire 24,570
+namespace oneapi 25,592
+namespace kernel 26,611
+class diagCreateKernel 29,652
+    diagCreateKernel(31,688
+    void operator()(operator()40,1000
+    write_accessor<T> oData_;64,1815
+    KParam oInfo_;65,1845
+    read_accessor<T> iData_;66,1864
+    KParam iInfo_;67,1893
+    int num_;68,1912
+    int groups_x_;69,1926
+static void diagCreate(73,1970
+class diagExtractKernel 92,2700
+    diagExtractKernel(94,2737
+    void operator()(operator()103,3052
+    write_accessor<T> oData_;132,3974
+    KParam oInfo_;133,4004
+    read_accessor<T> iData_;134,4023
+    KParam iInfo_;135,4052
+    int num_;136,4071
+    int groups_z_;137,4085
+static void diagExtract(141,4129
+
+kernel/wrap.hpp,646
+namespace arrayfire 25,615
+namespace oneapi 26,637
+namespace kernel 27,656
+class wrapCreateKernel 30,697
+    wrapCreateKernel(32,733
+    void operator()(operator()52,1409
+    write_accessor<T> optrAcc_;113,3641
+    KParam out_;114,3673
+    read_accessor<T> iptrAcc_;115,3690
+    KParam in_;116,3721
+    const int wx_;117,3737
+    const int wy_;118,3756
+    const int sx_;119,3775
+    const int sy_;120,3794
+    const int px_;121,3813
+    const int py_;122,3832
+    const int nx_;123,3851
+    const int ny_;124,3870
+    int groups_x_;125,3889
+    int groups_y_;126,3908
+    const bool is_column_;127,3927
+void wrap(131,3979
+
+kernel/range.hpp,345
+namespace arrayfire 27,656
+namespace oneapi 28,678
+namespace kernel 29,697
+class rangeOp 32,738
+    rangeOp(34,765
+    void operator()(operator()42,1039
+    write_accessor<T> out_;86,2733
+    KParam oinfo_;87,2761
+    int dim_;88,2780
+    int blocksPerMatX_,89,2794
+    int blocksPerMatX_, blocksPerMatY_;89,2794
+void range(93,2859
+
+kernel/identity.hpp,313
+namespace arrayfire 19,501
+namespace oneapi 20,523
+namespace kernel 21,542
+class identityKernel 24,583
+    identityKernel(26,617
+    void operator()(operator()30,813
+    write_accessor<T> out_;58,1868
+    KParam oInfo_;59,1896
+    int groups_x_;60,1915
+    int groups_y_;61,1934
+void identity(65,1978
+
+kernel/pad_array_borders.hpp,704
+namespace arrayfire 23,548
+namespace oneapi 24,570
+namespace kernel 25,589
+template<typename T,27,609
+class padBordersKernel 28,641
+    padBordersKernel(30,677
+    void operator()(operator()45,1159
+    static int trimIndex(111,3725
+    static int idxByndEdge(123,4080
+    write_accessor<T> out_;143,4761
+    KParam oInfo_;144,4789
+    read_accessor<T> in_;145,4808
+    KParam iInfo_;146,4834
+    const dim_t l0_;147,4853
+    const dim_t l1_;148,4874
+    const dim_t l2_;149,4895
+    const dim_t l3_;150,4916
+    const int groups_x_;151,4937
+    const int groups_y_;152,4962
+static const int PADB_THREADS_X 155,4991
+static const int PADB_THREADS_Y 156,5029
+void padBorders(159,5088
+
+kernel/scan_first.hpp,1738
+namespace arrayfire 23,641
+namespace oneapi 24,663
+namespace kernel 25,682
+template<typename Ti,27,702
+template<typename Ti, typename To,27,702
+class scanFirstKernel 28,749
+    scanFirstKernel(30,784
+    void operator()(operator()52,1630
+    write_accessor<To> out_acc_;126,4352
+    write_accessor<To> tmp_acc_;127,4385
+    read_accessor<Ti> in_acc_;128,4418
+    KParam oInfo_,129,4449
+    KParam oInfo_, tInfo_,129,4449
+    KParam oInfo_, tInfo_, iInfo_;129,4449
+    const uint groups_x_,130,4484
+    const uint groups_x_, groups_y_,130,4484
+    const uint groups_x_, groups_y_, lim_,130,4484
+    const uint groups_x_, groups_y_, lim_, DIMX_;130,4484
+    const bool isFinalPass_,131,4534
+    const bool isFinalPass_, inclusive_scan_;131,4534
+    sycl::local_accessor<sycl::local_accessor132,4580
+    sycl::local_accessor<To, 1> s_val_;132,4580
+    sycl::local_accessor<sycl::local_accessor133,4620
+    sycl::local_accessor<To, 1> s_tmp_;133,4620
+template<typename To,136,4664
+class scanFirstBcastKernel 137,4698
+    scanFirstBcastKernel(139,4738
+    void operator()(operator()152,5236
+    write_accessor<To> out_acc_;190,6727
+    read_accessor<To> tmp_acc_;191,6760
+    KParam oInfo_,192,6792
+    KParam oInfo_, tInfo_;192,6792
+    const uint groups_x_,193,6819
+    const uint groups_x_, groups_y_,193,6819
+    const uint groups_x_, groups_y_, lim_;193,6819
+    const bool inclusive_scan_;194,6862
+template<typename Ti,197,6898
+template<typename Ti, typename To,197,6898
+static void scan_first_launcher(198,6945
+template<typename To,227,8403
+static void bcast_first_launcher(228,8437
+template<typename Ti,248,9358
+template<typename Ti, typename To,248,9358
+static void scan_first(249,9405
+
+kernel/convolve_separable.cpp,716
+namespace arrayfire 18,486
+namespace oneapi 19,508
+namespace kernel 20,527
+template<typename T,27,732
+class convolveSeparableCreateKernel 28,771
+    convolveSeparableCreateKernel(30,820
+    void operator()(operator()47,1524
+    write_accessor<T> out_;129,4935
+    KParam oInfo_;130,4963
+    read_accessor<T> signal_;131,4982
+    KParam sInfo_;132,5012
+    read_accessor<accType> impulse_;133,5031
+    int nBBS0_;134,5068
+    int nBBS1_;135,5084
+    const int FLEN_;136,5100
+    const int CONV_DIM_;137,5121
+    const bool EXPAND_;138,5146
+    sycl::local_accessor<T> localMem_;139,5170
+void memcpyBuffer(143,5234
+template<typename T,155,5703
+void convSep(156,5742
+#define INSTANTIATE(197,7526
+
+kernel/lu_split.hpp,479
+namespace arrayfire 20,498
+namespace oneapi 21,520
+namespace kernel 22,539
+template<typename T,24,559
+class luSplitKernel 25,596
+    luSplitKernel(27,629
+    void operator()(operator()40,1086
+    write_accessor<T> lower_;90,3312
+    KParam lInfo_;91,3342
+    write_accessor<T> upper_;92,3361
+    KParam uInfo_;93,3391
+    read_accessor<T> in_;94,3410
+    KParam iInfo_;95,3436
+    int groupsPerMatX_;96,3455
+    int groupsPerMatY_;97,3479
+void lu_split(101,3528
+
+kernel/transpose_inplace.hpp,845
+namespace arrayfire 24,574
+namespace oneapi 25,596
+namespace kernel 26,615
+static T getConjugate(29,656
+cfloat getConjugate(35,763
+cdouble getConjugate(40,843
+#define doOp(44,914
+constexpr dim_t TILE_DIM 46,970
+constexpr dim_t THREADS_X 47,1002
+constexpr dim_t THREADS_Y 48,1040
+class transposeInPlaceKernel 51,1106
+    transposeInPlaceKernel(53,1148
+    void operator()(operator()66,1763
+    sycl::accessor<T> iData_;155,5136
+    KParam in_;156,5166
+    int blocksPerMatX_;157,5182
+    int blocksPerMatY_;158,5206
+    bool conjugate_;159,5230
+    bool IS32MULTIPLE_;160,5251
+    sycl::local_accessor<sycl::local_accessor161,5275
+    sycl::local_accessor<T, 1> shrdMem_s_;161,5275
+    sycl::local_accessor<sycl::local_accessor162,5318
+    sycl::local_accessor<T, 1> shrdMem_d_;162,5318
+void transpose_inplace(166,5386
+
+kernel/triangle.hpp,462
+namespace arrayfire 24,570
+namespace oneapi 25,592
+namespace kernel 26,611
+class triangleKernel 29,652
+    triangleKernel(31,686
+    void operator()(operator()42,1127
+    write_accessor<T> rAcc_;81,2711
+    KParam rinfo_;82,2740
+    read_accessor<T> iAcc_;83,2759
+    KParam iinfo_;84,2787
+    const int groups_x_;85,2806
+    const int groups_y_;86,2831
+    const bool is_upper_;87,2856
+    const bool is_unit_diag_;88,2882
+void triangle(92,2937
+
+kernel/sort.hpp,200
+#define ONEDPL_USE_PREDEFINED_POLICIES 12,407
+namespace arrayfire 24,694
+namespace oneapi 25,716
+namespace kernel 26,735
+void sort0Iterative(29,776
+void sortBatched(56,1982
+void sort0(108,3704
+
+kernel/where.hpp,644
+namespace arrayfire 28,692
+namespace oneapi 29,714
+namespace kernel 30,733
+class whereKernel 33,774
+    whereKernel(35,805
+    void operator()(operator()52,1396
+    write_accessor<uint> out_acc_;97,3282
+    read_accessor<uint> otmp_acc_;98,3317
+    read_accessor<uint> rtmp_acc_;99,3352
+    read_accessor<T> in_acc_;100,3387
+    KParam oInfo_,101,3417
+    KParam oInfo_, otInfo_,101,3417
+    KParam oInfo_, otInfo_, rtInfo_,101,3417
+    KParam oInfo_, otInfo_, rtInfo_, iInfo_;101,3417
+    uint groups_x_,102,3462
+    uint groups_x_, groups_y_,102,3462
+    uint groups_x_, groups_y_, lim_;102,3462
+static void where(106,3524
+
+kernel/meanshift.hpp,590
+namespace arrayfire 24,579
+namespace oneapi 25,601
+namespace kernel 26,620
+inline int convert_int_rtz(28,640
+template<typename T,30,710
+template<typename T, typename AccType,30,710
+class meanshiftCreateKernel 31,773
+    meanshiftCreateKernel(33,814
+    void operator()(operator()45,1259
+    write_accessor<T> d_dst_;171,5940
+    KParam oInfo_;172,5970
+    read_accessor<T> d_src_;173,5989
+    KParam iInfo_;174,6018
+    int radius_;175,6037
+    float cvar_;176,6054
+    unsigned numIters_;177,6071
+    int nBBS0_;178,6095
+    int nBBS1_;179,6111
+void meanshift(183,6152
+
+kernel/wrap_dilated.hpp,724
+namespace arrayfire 24,614
+namespace oneapi 25,636
+namespace kernel 26,655
+class wrapDilatedCreateKernel 29,696
+    wrapDilatedCreateKernel(31,739
+    void operator()(operator()54,1542
+    write_accessor<T> optrAcc_;124,3978
+    KParam out_;125,4010
+    read_accessor<T> iptrAcc_;126,4027
+    KParam in_;127,4058
+    const int wx_;128,4074
+    const int wy_;129,4093
+    const int sx_;130,4112
+    const int sy_;131,4131
+    const int px_;132,4150
+    const int py_;133,4169
+    const int dx_;134,4188
+    const int dy_;135,4207
+    const int nx_;136,4226
+    const int ny_;137,4245
+    int groups_x_;138,4264
+    int groups_y_;139,4283
+    const bool is_column_;140,4302
+void wrap_dilated(144,4354
+
+kernel/convolve_separable.hpp,106
+namespace arrayfire 14,369
+namespace oneapi 15,391
+namespace kernel 16,410
+template<typename T,23,620
+
+kernel/fftconvolve_multiply.hpp,502
+namespace arrayfire 22,549
+namespace oneapi 23,571
+namespace kernel 24,590
+class fftconvolve_multiplyCreateKernel 27,631
+    fftconvolve_multiplyCreateKernel(29,680
+    void operator()(operator()30,993
+write_accessor<T> d_out_;87,3076
+KParam oInfo_;88,3102
+read_accessor<T> d_in1_;89,3117
+KParam i1Info_;90,3142
+read_accessor<T> d_in2_;91,3158
+KParam i2Info_;92,3183
+const int nelem_;93,3199
+const int kind_;94,3217
+template<typename convT,100,3372
+void complexMultiplyHelper(101,3409
+
+kernel/reduce_dim.hpp,1160
+namespace arrayfire 30,746
+namespace oneapi 31,768
+namespace kernel 32,787
+template<typename Ti,34,807
+template<typename Ti, typename To,34,807
+template<typename Ti, typename To, af_op_t op,34,807
+template<typename Ti, typename To, af_op_t op, uint dim,34,807
+class reduceDimKernelSMEM 35,875
+    reduceDimKernelSMEM(37,914
+    void operator()(operator()52,1554
+    write_accessor<data_t<To>> out_;129,4437
+    read_accessor<data_t<Ti>> in_;130,4474
+    KParam oInfo_,131,4509
+    KParam oInfo_, iInfo_;131,4509
+    uint groups_x_,132,4536
+    uint groups_x_, groups_y_,132,4536
+    uint groups_x_, groups_y_, offset_dim_;132,4536
+    bool change_nan_;133,4580
+    To nanval_;134,4602
+    sycl::local_accessor<sycl::local_accessor135,4618
+    sycl::local_accessor<compute_t<To>, 1> s_val_;135,4618
+template<typename Ti,138,4673
+template<typename Ti, typename To,138,4673
+template<typename Ti, typename To, af_op_t op,138,4673
+void reduce_dim_launcher_default(139,4730
+template<typename Ti,185,6774
+template<typename Ti, typename To,185,6774
+template<typename Ti, typename To, af_op_t op,185,6774
+void reduce_dim_default(186,6830
+
+kernel/convolve3.hpp,793
+int index(11,346
+template<typename T,15,450
+class conv3HelperCreateKernel 16,484
+    conv3HelperCreateKernel(18,527
+    void operator()(operator()41,1397
+    write_accessor<T> out_;126,4989
+    KParam oInfo_;127,5017
+    read_accessor<T> signal_;128,5036
+    KParam sInfo_;129,5066
+    sycl::local_accessor<aT> localMem_;130,5085
+    read_accessor<aT> impulse_;131,5125
+    KParam fInfo_;132,5157
+    int nBBS0_;133,5176
+    int nBBS1_;134,5192
+    int ostep1_;135,5208
+    int ostep2_;136,5225
+    int ostep3_;137,5242
+    int sstep1_;138,5259
+    int sstep2_;139,5276
+    int sstep3_;140,5293
+    const bool EXPAND_;141,5310
+template<typename T,144,5338
+void conv3Helper(145,5372
+template<typename T,164,6226
+void conv3(165,6260
+#define INSTANTIATE_CONV3(185,6953
+
+kernel/index.hpp,404
+namespace arrayfire 18,502
+namespace oneapi 19,524
+namespace kernel 20,543
+class indexKernel 23,584
+    write_accessor<T> out;24,604
+    KParam outp;25,631
+    read_accessor<T> in;26,648
+    KParam inp;27,673
+    IndexKernelParam p;28,689
+    int nBBS0;29,713
+    int nBBS1;30,728
+    indexKernel(33,755
+    int trimIndex(44,1087
+    void operator()(operator()56,1441
+void index(110,3694
+
+kernel/random_engine_mersenne.hpp,2304
+namespace arrayfire 50,2368
+namespace oneapi 51,2390
+namespace kernel 52,2409
+static inline void read_table(60,2571
+static inline void state_read(66,2845
+static inline void state_write(76,3270
+static inline uint recursion(86,3683
+static inline uint temper(96,4040
+class initMersenneKernel 105,4263
+    initMersenneKernel(107,4301
+    void operator()(operator()111,4519
+    write_accessor<uint> state_;140,5471
+    read_accessor<uint> tbl_;141,5504
+    sycl::local_accessor<sycl::local_accessor142,5534
+    sycl::local_accessor<uint, 1> lstate_;142,5534
+    uintl seed_;143,5577
+void initMersenneState(146,5598
+class uniformMersenne 162,6209
+    uniformMersenne(164,6244
+    void operator()(operator()188,7309
+    write_accessor<T> out_;248,10267
+    sycl::accessor<uint> gState_;249,10295
+    sycl::accessor<uint> pos_tbl_,250,10329
+    sycl::accessor<uint> pos_tbl_, sh1_tbl_,250,10329
+    sycl::accessor<uint> pos_tbl_, sh1_tbl_, sh2_tbl_;250,10329
+    uint mask_;251,10384
+    sycl::accessor<uint> g_recursion_table_,252,10400
+    sycl::accessor<uint> g_recursion_table_, g_temper_table_;252,10400
+    sycl::local_accessor<sycl::local_accessor253,10462
+    sycl::local_accessor<uint, 1> state_,253,10462
+    sycl::local_accessor<uint, 1> state_, recursion_table_,253,10462
+    sycl::local_accessor<uint, 1> state_, recursion_table_, temper_table_;253,10462
+    uint elementsPerBlock_;254,10537
+    size_t elements_;255,10565
+class normalMersenne 259,10612
+    normalMersenne(261,10646
+    void operator()(operator()285,11701
+    write_accessor<T> out_;346,14685
+    sycl::accessor<uint> gState_;347,14713
+    sycl::accessor<uint> pos_tbl_,348,14747
+    sycl::accessor<uint> pos_tbl_, sh1_tbl_,348,14747
+    sycl::accessor<uint> pos_tbl_, sh1_tbl_, sh2_tbl_;348,14747
+    uint mask_;349,14802
+    sycl::accessor<uint> g_recursion_table_,350,14818
+    sycl::accessor<uint> g_recursion_table_, g_temper_table_;350,14818
+    sycl::local_accessor<sycl::local_accessor351,14880
+    sycl::local_accessor<uint, 1> state_,351,14880
+    sycl::local_accessor<uint, 1> state_, recursion_table_,351,14880
+    sycl::local_accessor<uint, 1> state_, recursion_table_, temper_table_;351,14880
+    uint elementsPerBlock_;352,14955
+    size_t elements_;353,14983
+
+kernel/lookup.hpp,573
+namespace arrayfire 23,558
+namespace oneapi 24,580
+namespace kernel 25,599
+int trimIndex(27,619
+template<typename in_t,39,923
+class lookupNDCreateKernel 40,963
+    lookupNDCreateKernel(42,1003
+    void operator()(operator()55,1477
+    write_accessor<in_t> out_;91,2869
+    KParam oInfo_;92,2900
+    read_accessor<in_t> in_;93,2919
+    KParam iInfo_;94,2948
+    read_accessor<idx_t> indices_;95,2967
+    KParam idxInfo_;96,3002
+    int nBBS0_;97,3023
+    int nBBS1_;98,3039
+    const int DIM_;99,3055
+template<typename in_t,102,3079
+void lookup(103,3119
+
+kernel/convolve.hpp,588
+namespace arrayfire 23,581
+namespace oneapi 24,603
+namespace kernel 25,622
+struct conv_kparam_t 44,1157
+    sycl::range<3> global{global45,1180
+    sycl::range<3> local{local46,1216
+    size_t loc_size;47,1251
+    int nBBS0;48,1272
+    int nBBS1;49,1287
+    bool outHasNoOffset;50,1302
+    bool inHasNoOffset;51,1327
+    bool launchMoreBlocks;52,1351
+    int o[o53,1378
+    int s[s54,1392
+    sycl::buffer<aT> *impulse;impulse55,1406
+T binOp(59,1462
+void prepareKernelArgs(64,1533
+void memcpyBuffer(100,3095
+template<typename T,116,3640
+void convolve_nd(117,3674
+
+kernel/tile.hpp,403
+namespace arrayfire 23,558
+namespace oneapi 24,580
+namespace kernel 25,599
+class tileCreateKernel 28,640
+    tileCreateKernel(30,676
+    void operator()(operator()39,1024
+    write_accessor<T> out_;76,2462
+    read_accessor<T> in_;77,2490
+    const KParam op_;78,2516
+    const KParam ip_;79,2538
+    const int blocksPerMatX_;80,2560
+    const int blocksPerMatY_;81,2590
+void tile(85,2645
+
+kernel/ireduce.hpp,2552
+namespace arrayfire 33,783
+namespace oneapi 34,805
+namespace kernel 35,824
+template<typename T,37,844
+template<typename T, af_op_t op,37,844
+template<typename T, af_op_t op, uint dim,37,844
+template<typename T, af_op_t op, uint dim, bool is_first,37,844
+class ireduceDimKernelSMEM 38,913
+    ireduceDimKernelSMEM(40,953
+    void operator()(operator()64,1872
+    write_accessor<T> out_;198,7151
+    KParam oInfo_;199,7179
+    write_accessor<uint> oloc_;200,7198
+    KParam olocInfo_;201,7230
+    read_accessor<T> in_;202,7252
+    KParam iInfo_;203,7278
+    read_accessor<uint> iloc_;204,7297
+    KParam ilocInfo_;205,7328
+    uint groups_x_,206,7350
+    uint groups_x_, groups_y_,206,7350
+    uint groups_x_, groups_y_, groups_dim_;206,7350
+    read_accessor<uint> rlen_;207,7394
+    KParam rlenInfo_;208,7425
+    sycl::local_accessor<sycl::local_accessor209,7447
+    sycl::local_accessor<compute_t<T>, 1> s_val_;209,7447
+    sycl::local_accessor<sycl::local_accessor210,7497
+    sycl::local_accessor<uint, 1> s_idx_;210,7497
+template<typename T,213,7543
+template<typename T, af_op_t op,213,7543
+template<typename T, af_op_t op, int dim,213,7543
+void ireduce_dim_launcher(214,7600
+template<typename T,288,10862
+template<typename T, af_op_t op,288,10862
+void ireduce_dim(289,10904
+template<typename T,330,12311
+template<typename T, af_op_t op,330,12311
+template<typename T, af_op_t op, bool is_first,330,12311
+class ireduceFirstKernelSMEM 331,12370
+    ireduceFirstKernelSMEM(333,12412
+    void operator()(operator()357,13335
+    write_accessor<T> out_;495,18108
+    KParam oInfo_;496,18136
+    write_accessor<uint> oloc_;497,18155
+    KParam olocInfo_;498,18187
+    read_accessor<T> in_;499,18209
+    KParam iInfo_;500,18235
+    read_accessor<uint> iloc_;501,18254
+    KParam ilocInfo_;502,18285
+    uint groups_x_,503,18307
+    uint groups_x_, groups_y_,503,18307
+    uint groups_x_, groups_y_, repeat_;503,18307
+    read_accessor<uint> rlen_;504,18347
+    KParam rlenInfo_;505,18378
+    sycl::local_accessor<sycl::local_accessor506,18400
+    sycl::local_accessor<compute_t<T>, 1> s_val_;506,18400
+    sycl::local_accessor<sycl::local_accessor507,18450
+    sycl::local_accessor<uint, 1> s_idx_;507,18450
+template<typename T,510,18496
+template<typename T, af_op_t op,510,18496
+void ireduce_first_launcher(511,18544
+template<typename T,584,21764
+void ireduce_first(585,21797
+template<typename T,620,23105
+void ireduce(621,23138
+template<typename T,631,23533
+T ireduce_all(632,23566
+
+kernel/unwrap.hpp,809
+namespace arrayfire 20,526
+namespace oneapi 21,548
+namespace kernel 22,567
+class unwrapCreateKernel 25,608
+    unwrapCreateKernel(27,646
+    void operator()(operator()49,1417
+    sycl::accessor<sycl::accessor118,3922
+    sycl::accessor<T, 1, sycl::access::mode::write> d_out_;118,3922
+    const KParam out_;119,3982
+    sycl::accessor<sycl::accessor120,4005
+    sycl::accessor<T, 1, sycl::access::mode::read> d_in_;120,4005
+    const KParam in_;121,4063
+    const int wx_;122,4085
+    const int wy_;123,4104
+    const int sx_;124,4123
+    const int sy_;125,4142
+    const int px_;126,4161
+    const int py_;127,4180
+    const int dx_;128,4199
+    const int dy_;129,4218
+    const int nx_;130,4237
+    const int reps_;131,4256
+    const bool IS_COLUMN_;132,4277
+void unwrap(136,4329
+
+kernel/fftconvolve_pad.hpp,425
+namespace arrayfire 22,549
+namespace oneapi 23,571
+namespace kernel 24,590
+template<typename inputType,26,610
+class fftconvolve_padCreateKernel 27,660
+    fftconvolve_padCreateKernel(29,704
+    void operator()(operator()30,891
+write_accessor<outputType> d_out_;82,2348
+KParam oInfo_;83,2383
+read_accessor<inputType> d_in_;84,2398
+KParam iInfo_;85,2430
+template<typename convT,88,2449
+void padDataHelper(89,2486
+
+kernel/mean.hpp,3134
+namespace arrayfire 29,761
+namespace oneapi 30,783
+namespace kernel 43,1053
+template<typename To,45,1073
+void stable_mean(46,1108
+template<typename Ti,57,1408
+template<typename Ti, typename Tw,57,1408
+template<typename Ti, typename Tw, typename To,57,1408
+template<typename Ti, typename Tw, typename To, uint dim,57,1408
+class meanDimKernelSMEM 58,1477
+    meanDimKernelSMEM(60,1514
+    void operator()(operator()84,2421
+    write_accessor<To> out_;201,6680
+    write_accessor<Tw> owt_;202,6709
+    read_accessor<Ti> in_;203,6738
+    read_accessor<Tw> iwt_;204,6765
+    KParam oInfo_,205,6793
+    KParam oInfo_, owInfo_,205,6793
+    KParam oInfo_, owInfo_, iInfo_,205,6793
+    KParam oInfo_, owInfo_, iInfo_, iwInfo_;205,6793
+    const uint groups_x_,206,6838
+    const uint groups_x_, groups_y_,206,6838
+    const uint groups_x_, groups_y_, offset_dim_;206,6838
+    sycl::local_accessor<sycl::local_accessor207,6888
+    sycl::local_accessor<compute_t<To>, 1> s_val_;207,6888
+    sycl::local_accessor<sycl::local_accessor208,6939
+    sycl::local_accessor<compute_t<Tw>, 1> s_idx_;208,6939
+    bool input_weight_,209,6990
+    bool input_weight_, output_weight_;209,6990
+template<typename Ti,212,7034
+template<typename Ti, typename Tw,212,7034
+template<typename Ti, typename Tw, typename To,212,7034
+void mean_dim_launcher(213,7091
+template<typename Ti,277,10303
+template<typename Ti, typename Tw,277,10303
+template<typename Ti, typename Tw, typename To,277,10303
+void mean_dim(278,10360
+template<typename Ti,314,11685
+template<typename Ti, typename Tw,314,11685
+class meanFirstKernelSMEM 315,11733
+    meanFirstKernelSMEM(317,11772
+    void operator()(operator()343,12764
+    write_accessor<To> out_;475,17296
+    write_accessor<Tw> owt_;476,17325
+    read_accessor<Ti> in_;477,17354
+    read_accessor<Tw> iwt_;478,17381
+    KParam oInfo_,479,17409
+    KParam oInfo_, owInfo_,479,17409
+    KParam oInfo_, owInfo_, iInfo_,479,17409
+    KParam oInfo_, owInfo_, iInfo_, iwInfo_;479,17409
+    const uint DIMX_,480,17454
+    const uint DIMX_, groups_x_,480,17454
+    const uint DIMX_, groups_x_, groups_y_,480,17454
+    const uint DIMX_, groups_x_, groups_y_, repeat_;480,17454
+    sycl::local_accessor<sycl::local_accessor481,17507
+    sycl::local_accessor<compute_t<To>, 1> s_val_;481,17507
+    sycl::local_accessor<sycl::local_accessor482,17558
+    sycl::local_accessor<compute_t<Tw>, 1> s_idx_;482,17558
+    bool input_weight_,483,17609
+    bool input_weight_, output_weight_;483,17609
+template<typename Ti,486,17653
+template<typename Ti, typename Tw,486,17653
+void mean_first_launcher(487,17701
+template<typename Ti,525,19361
+template<typename Ti, typename Tw,525,19361
+void mean_first(526,19409
+template<typename Ti,556,20543
+template<typename Ti, typename Tw,556,20543
+void mean_weighted(557,20591
+template<typename Ti,566,20940
+template<typename Ti, typename Tw,566,20940
+void mean(567,20988
+template<typename T,572,21128
+T mean_all_weighted(573,21162
+template<typename Ti,681,25526
+template<typename Ti, typename Tw,681,25526
+To mean_all(682,25574
+
+kernel/transpose.hpp,794
+namespace arrayfire 24,570
+namespace oneapi 25,592
+namespace kernel 26,611
+T getConjugate(33,761
+cfloat getConjugate(39,861
+cdouble getConjugate(44,941
+class transposeKernel 49,1033
+    transposeKernel(51,1068
+    void operator()(operator()66,1738
+    sycl::accessor<sycl::accessor126,3900
+    sycl::accessor<T, 1, sycl::access::mode::write> oData_;126,3900
+    KParam out_;127,3960
+    sycl::accessor<sycl::accessor128,3977
+    sycl::accessor<T, 1, sycl::access::mode::read> iData_;128,3977
+    KParam in_;129,4036
+    int blocksPerMatX_;130,4052
+    int blocksPerMatY_;131,4076
+    bool conjugate_;132,4100
+    bool IS32MULTIPLE_;133,4121
+    sycl::local_accessor<sycl::local_accessor134,4145
+    sycl::local_accessor<T, 1> shrdMem_;134,4145
+void transpose(138,4211
+
+kernel/sort_by_key.hpp,165
+namespace arrayfire 13,368
+namespace oneapi 14,390
+namespace kernel 15,409
+template<typename Tk,17,429
+template<typename Tk,20,541
+template<typename Tk,24,687
+
+kernel/sort_by_key_impl.hpp,357
+namespace arrayfire 27,769
+namespace oneapi 28,791
+namespace kernel 29,810
+using arrayfire::common::half;31,830
+template<typename Tk,33,862
+void sort0ByKeyIterative(34,897
+template<typename Tk,79,2936
+void sortByKeyBatched(80,2971
+template<typename Tk,168,6899
+void sort0ByKey(169,6934
+#define INSTANTIATE(182,7514
+#define INSTANTIATE1(190,8072
+
+kernel/resize.hpp,718
+namespace arrayfire 24,575
+namespace oneapi 25,597
+namespace kernel 26,616
+template<typename AT,28,636
+BT mul(29,671
+std::complex<double> mul(33,734
+using wtype_t 38,876
+using vtype_t 42,1036
+void resize_n_(48,1310
+template<typename T,69,2202
+void resize_b_(70,2236
+void resize_l_(108,3576
+template<typename T,126,4253
+class resizeCreateKernel 127,4286
+    resizeCreateKernel(129,4324
+    void operator()(operator()140,4695
+    write_accessor<T> d_out_;171,6020
+    const KParam out_;172,6050
+    read_accessor<T> d_in_;173,6073
+    const KParam in_;174,6101
+    const int b0_;175,6123
+    const int b1_;176,6142
+    const float xf_;177,6161
+    const float yf_;178,6182
+void resize(182,6228
+
+kernel/rotate.hpp,835
+namespace arrayfire 22,566
+namespace oneapi 23,588
+namespace kernel 24,607
+    float tmat[tmat27,644
+} tmat_t;28,663
+using wtype_t 31,695
+using vtype_t 35,855
+template<typename T,38,992
+template<typename T, typename InterpInTy,38,992
+template<typename T, typename InterpInTy, typename InterpPosTy,38,992
+class rotateCreateKernel 40,1083
+    rotateCreateKernel(42,1121
+    void operator()(operator()58,1761
+    write_accessor<T> d_out_;112,4053
+    const KParam out_;113,4083
+    read_accessor<T> d_in_;114,4106
+    const KParam in_;115,4134
+    const tmat_t t_;116,4156
+    const int nimages_;117,4177
+    const int batches_;118,4201
+    const int blocksXPerImage_;119,4225
+    const int blocksYPerImage_;120,4257
+    af::interpType method_;121,4289
+    const int INTERP_ORDER_;122,4317
+void rotate(126,4371
+
+kernel/reorder.hpp,520
+namespace arrayfire 23,545
+namespace oneapi 24,567
+namespace kernel 25,586
+class reorderCreateKernel 28,627
+    reorderCreateKernel(30,666
+    void operator()(operator()44,1175
+    write_accessor<T> out_;86,2710
+    read_accessor<T> in_;87,2738
+    const KParam op_;88,2764
+    const KParam ip_;89,2786
+    const int d0_;90,2808
+    const int d1_;91,2827
+    const int d2_;92,2846
+    const int d3_;93,2865
+    const int blocksPerMatX_;94,2884
+    const int blocksPerMatY_;95,2914
+void reorder(99,2969
+
+kernel/random_engine_philox.hpp,921
+namespace arrayfire 51,2302
+namespace oneapi 52,2324
+namespace kernel 53,2343
+static inline void mulhilo(63,2633
+static inline void philoxBump(68,2746
+static inline void philoxRound(73,2830
+static inline void philox(84,3142
+class uniformPhilox 108,3876
+    uniformPhilox(110,3909
+    void operator()(operator()120,4220
+    write_accessor<T> out_;142,5048
+    uint hi_,143,5076
+    uint hi_, lo_,143,5076
+    uint hi_, lo_, hic_,143,5076
+    uint hi_, lo_, hic_, loc_;143,5076
+    uint elementsPerBlock_,144,5107
+    uint elementsPerBlock_, elements_;144,5107
+class normalPhilox 148,5171
+    normalPhilox(150,5203
+    void operator()(operator()160,5512
+    write_accessor<T> out_;184,6389
+    uint hi_,185,6417
+    uint hi_, lo_,185,6417
+    uint hi_, lo_, hic_,185,6417
+    uint hi_, lo_, hic_, loc_;185,6417
+    uint elementsPerBlock_,186,6448
+    uint elementsPerBlock_, elements_;186,6448
+
+kernel/iir.hpp,583
+namespace arrayfire 20,506
+namespace oneapi 21,528
+namespace kernel 22,547
+template<typename T,26,601
+class iirKernel 27,636
+    iirKernel(29,665
+    void operator()(operator()44,1139
+    write_accessor<T> y_;98,2927
+    KParam yInfo_;99,2953
+    read_accessor<T> c_;100,2972
+    KParam cInfo_;101,2997
+    read_accessor<T> a_;102,3016
+    KParam aInfo_;103,3041
+    sycl::local_accessor<T> s_z_;104,3060
+    sycl::local_accessor<T> s_a_;105,3094
+    sycl::local_accessor<T> s_y_;106,3128
+    int groups_y_;107,3162
+template<typename T,110,3185
+void iir(111,3220
+
+kernel/approx2.hpp,1006
+namespace arrayfire 26,625
+namespace oneapi 27,647
+namespace kernel 28,666
+template<typename Ty,34,795
+template<typename Ty, typename Tp,34,795
+class approx2Kernel 35,841
+    approx2Kernel(37,874
+    void operator()(operator()65,1914
+    write_accessor<Ty> d_zo_;129,4485
+    const KParam zoInfo_;130,4515
+    read_accessor<Ty> d_zi_;131,4541
+    const KParam ziInfo_;132,4570
+    read_accessor<Tp> d_xo_;133,4596
+    const KParam xoInfo_;134,4625
+    read_accessor<Tp> d_yo_;135,4651
+    const KParam yoInfo_;136,4680
+    const Tp xi_beg_;137,4706
+    const Tp xi_step_reproc_;138,4728
+    const Tp yi_beg_;139,4758
+    const Tp yi_step_reproc_;140,4780
+    const Ty offGrid_;141,4810
+    const int blocksMatX_;142,4833
+    const int blocksMatY_;143,4860
+    const int batch_;144,4887
+    af::interpType method_;145,4909
+    const int XDIM_;146,4937
+    const int YDIM_;147,4958
+template<typename Ty,150,4983
+template<typename Ty, typename Tp,150,4983
+void approx2(151,5029
+
+kernel/memcopy.hpp,1500
+namespace arrayfire 27,647
+namespace oneapi 28,669
+namespace kernel 29,688
+    dim_t dim[dim32,725
+} dims_t;33,743
+class memCopy 36,775
+    memCopy(38,802
+    void operator()(operator()51,1226
+    write_accessor<T> out_;84,2522
+    dims_t ostrides_;85,2550
+    int ooffset_;86,2572
+    read_accessor<T> in_;87,2590
+    dims_t idims_,88,2616
+    dims_t idims_, istrides_;88,2616
+    int ioffset_,89,2646
+    int ioffset_, groups_0_,89,2646
+    int ioffset_, groups_0_, groups_1_;89,2646
+constexpr uint DIM0 92,2690
+constexpr uint DIM1 93,2716
+void memcopy(96,2763
+inline T scale(130,4095
+inline cfloat scale<scale135,4190
+inline cdouble scale<scale141,4386
+template<typename inType,145,4517
+inline outType convertType(146,4561
+inline char convertType<convertType151,4658
+convertType<convertType158,4862
+unsigned char inline convertType<convertType163,4998
+convertType<convertType171,5262
+#define OTHER_SPECIALIZATIONS(176,5410
+template<typename inType,199,6310
+template<typename inType, typename outType,199,6310
+class reshapeCopy 200,6369
+    reshapeCopy(202,6400
+    void operator()(operator()215,6832
+    write_accessor<outType> dst_;265,8799
+    read_accessor<inType> src_;266,8833
+    KParam oInfo_,267,8865
+    KParam oInfo_, iInfo_;267,8865
+    outType default_value_;268,8892
+    float factor_;269,8920
+    dims_t trgt_;270,8939
+    int blk_x_,271,8957
+    int blk_x_, blk_y_;271,8957
+template<typename inType,274,8985
+void copy(275,9029
+
+kernel/convolve2.hpp,779
+template<typename T,11,346
+class conv2HelperCreateKernel 12,380
+    conv2HelperCreateKernel(14,423
+    void operator()(operator()36,1253
+    write_accessor<T> out_;112,4394
+    KParam oInfo_;113,4422
+    read_accessor<T> signal_;114,4441
+    KParam sInfo_;115,4471
+    read_accessor<aT> impulse_;116,4490
+    KParam fInfo_;117,4522
+    int nBBS0_;118,4541
+    int nBBS1_;119,4557
+    int ostep2_;120,4573
+    int ostep3_;121,4590
+    int sstep2_;122,4607
+    int sstep3_;123,4624
+    sycl::local_accessor<aT> localMem_;124,4641
+    const int f0_;125,4681
+    const int f1_;126,4700
+    const bool expand_;127,4719
+template<typename T,130,4747
+void conv2Helper(131,4781
+template<typename T,155,5766
+void conv2(156,5800
+#define INSTANTIATE_CONV2(182,6720
+
+kernel/select.hpp,1084
+namespace arrayfire 23,550
+namespace oneapi 24,572
+namespace kernel 25,591
+int getOffset(31,692
+class selectKernelCreateKernel 41,1028
+    selectKernelCreateKernel(43,1072
+    void operator()(operator()59,1701
+    write_accessor<T> optr_;109,3774
+    KParam oinfo_;110,3803
+    read_accessor<char> cptr__;111,3822
+    KParam cinfo_;112,3854
+    read_accessor<T> aptr__;113,3873
+    KParam ainfo_;114,3902
+    read_accessor<T> bptr__;115,3921
+    KParam binfo_;116,3950
+    int groups_0_;117,3969
+    int groups_1_;118,3988
+    const bool is_same_;119,4007
+void selectLauncher(123,4057
+class selectScalarCreateKernel 153,5133
+    selectScalarCreateKernel(155,5177
+    void operator()(operator()169,5703
+    write_accessor<T> optr_;204,7020
+    KParam oinfo_;205,7049
+    read_accessor<char> cptr__;206,7068
+    KParam cinfo_;207,7100
+    read_accessor<T> aptr__;208,7119
+    KParam ainfo_;209,7148
+    T b_;210,7167
+    int groups_0_;211,7177
+    int groups_1_;212,7196
+    const bool flip_;213,7215
+void select(217,7262
+void select_scalar(226,7543
+
+convolve_separable.cpp,160
+using af::dim4;17,470
+namespace arrayfire 19,487
+namespace oneapi 20,509
+template<typename T,22,529
+Array<T> convolve2(23,565
+#define INSTANTIATE(58,1670
+
+unwrap.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+lookup.hpp,84
+namespace arrayfire 12,355
+namespace oneapi 13,377
+template<typename in_t,14,396
+
+harris.hpp,108
+using af::features;13,380
+namespace arrayfire 15,401
+namespace oneapi 16,423
+template<typename T,18,443
+
+diagonal.cpp,186
+using arrayfire::common::half;18,506
+namespace arrayfire 20,538
+namespace oneapi 21,560
+Array<T> diagCreate(23,600
+Array<T> diagExtract(34,887
+#define INSTANTIATE_DIAGONAL(44,1202
+
+match_template.cpp,152
+namespace arrayfire 14,391
+namespace oneapi 15,413
+template<typename inType,17,433
+Array<outType> match_template(18,477
+#define INSTANTIATE(26,764
+
+Kernel.hpp,170
+namespace arrayfire 19,482
+namespace oneapi 20,504
+namespace kernel_logger 21,523
+struct Enqueuer 30,717
+    void operator()(operator()32,766
+class Kernel 41,1089
+
+gradient.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+hsv_rgb.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+sparse_blas.hpp,53
+namespace arrayfire 14,411
+namespace oneapi 15,433
+
+identity.cpp,154
+using arrayfire::common::half;17,486
+namespace arrayfire 19,518
+namespace oneapi 20,540
+Array<T> identity(22,580
+#define INSTANTIATE_IDENTITY(28,713
+
+logic.hpp,160
+namespace arrayfire 18,510
+namespace oneapi 19,532
+template<typename T,20,551
+Array<char> logicOp(21,584
+template<typename T,26,761
+Array<T> bitOp(27,794
+
+ireduce.hpp,137
+namespace arrayfire 13,378
+namespace oneapi 14,400
+template<af_op_t op,15,419
+template<af_op_t op,19,548
+template<af_op_t op,23,702
+
+image.cpp,105
+namespace arrayfire 18,481
+namespace oneapi 19,503
+void copy_image(22,544
+#define INSTANTIATE(26,631
+
+set.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+iota.hpp,53
+namespace arrayfire 13,368
+namespace oneapi 14,390
+
+sort_by_key.cpp,166
+namespace arrayfire 19,526
+namespace oneapi 20,548
+template<typename Tk,21,567
+void sort_by_key(22,602
+#define INSTANTIATE(55,1644
+#define INSTANTIATE1(60,1918
+
+morph.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+index.hpp,53
+namespace arrayfire 13,377
+namespace oneapi 14,399
+
+exampleFunction.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+where.cpp,107
+namespace arrayfire 17,472
+namespace oneapi 18,494
+Array<uint> where(21,535
+#define INSTANTIATE(28,698
+
+mean.hpp,251
+namespace arrayfire 13,368
+namespace oneapi 14,390
+template<typename Ti,15,409
+template<typename Ti, typename Tw,15,409
+template<typename T,18,488
+template<typename Ti,21,573
+template<typename Ti, typename Tw,21,573
+template<typename T,24,674
+
+print.hpp,133
+namespace arrayfire 16,411
+namespace oneapi 17,433
+static std::ostream& operator<<(18,452
+static std::ostream& operator<<(23,609
+
+solve.cpp,485
+using cl::Buffer;31,775
+using std::min;32,793
+using std::vector;33,809
+namespace arrayfire 35,829
+namespace oneapi 36,851
+Array<T> solveLU(39,892
+Array<T> generalSolve(64,1632
+Array<T> leastSquares(103,2984
+#define UNMQR 118,3375
+Array<T> triangleSolve(263,9161
+Array<T> solve(308,10805
+#define INSTANTIATE_SOLVE(323,11220
+namespace arrayfire 339,11862
+namespace oneapi 340,11884
+Array<T> solveLU(343,11925
+Array<T> solve(349,12152
+#define INSTANTIATE_SOLVE(354,12329
+
+sort.cpp,104
+namespace arrayfire 20,513
+namespace oneapi 21,535
+Array<T> sort(24,576
+#define INSTANTIATE(52,1657
+
+GraphicsResourceManager.cpp,122
+namespace arrayfire 13,397
+namespace oneapi 14,419
+GraphicsResourceManager::registerResources(registerResources16,477
+
+sparse.hpp,182
+namespace arrayfire 15,403
+namespace oneapi 16,425
+template<typename T,18,445
+template<typename T,21,557
+template<typename T,24,669
+template<typename T, af_storage dest,24,669
+
+Param.hpp,1009
+namespace arrayfire 19,467
+namespace oneapi 20,489
+struct Param 23,530
+    sycl::buffer<T>* data;24,545
+    KParam info;25,572
+    Param(31,783
+    Param(34,889
+    sycl::accessor<sycl::accessor37,1006
+    sycl::accessor<data_t<T>, 1, MODE> get_accessor(37,1006
+template<typename T,45,1234
+struct AParam 46,1277
+    sycl::accessor<sycl::accessor47,1293
+        data;49,1398
+    af::dim4 dims;50,1412
+    af::dim4 strides;51,1431
+    dim_t offset;52,1453
+    AParam(58,1671
+    AParam() : data(), dims{0, 0, 0, 0}, strides{strides58,1671
+    AParam() : data(), dims{0, 0, 0, 0}, strides{0, 0, 0, 0}, offset(58,1671
+    AParam(60,1747
+    AParam(64,1975
+    sycl::accessor<sycl::accessor71,2248
+    sycl::accessor<data_t<T>, 1, MODE> get_accessor(71,2248
+    void require(75,2355
+    operator KParam(operator KParam77,2412
+namespace opencl 91,2807
+struct Param 94,2848
+    cl_mem data;95,2863
+    KParam info;96,2880
+    Param(100,3053
+    Param(103,3159
+    Param(106,3265
+
+tile.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+triangle.cpp,191
+using af::dim4;18,487
+using arrayfire::common::half;19,503
+namespace arrayfire 21,535
+namespace oneapi 22,557
+void triangle(25,598
+Array<T> triangle(31,791
+#define INSTANTIATE(38,1015
+
+bilateral.cpp,170
+using af::dim4;16,461
+namespace arrayfire 18,478
+namespace oneapi 19,500
+template<typename inType,21,520
+Array<outType> bilateral(22,564
+#define INSTANTIATE(29,830
+
+fast.cpp,153
+using af::dim4;15,429
+using af::features;16,445
+namespace arrayfire 18,466
+namespace oneapi 19,488
+unsigned fast(22,529
+#define INSTANTIATE(30,833
+
+err_oneapi.hpp,94
+#define ONEAPI_NOT_SUPPORTED(14,381
+#define CL_CHECK(20,710
+#define CL_CHECK_BUILD(32,1507
+
+sparse_arith.cpp,360
+namespace arrayfire 28,692
+namespace oneapi 29,714
+using std::numeric_limits;32,758
+T getInf(35,807
+cfloat getInf(40,887
+cdouble getInf(46,1028
+template<typename T,51,1161
+Array<T> arithOpD(52,1194
+template<typename T,88,2580
+SparseArray<T> arithOp(89,2613
+template<typename T,116,3644
+SparseArray<T> arithOp(117,3677
+#define INSTANTIATE(154,4987
+
+medfilt.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+flood_fill.hpp,53
+namespace arrayfire 15,393
+namespace oneapi 16,415
+
+convolve.hpp,109
+namespace arrayfire 12,355
+namespace oneapi 13,377
+template<typename T,15,397
+template<typename T,19,577
+
+Event.cpp,300
+using std::make_unique;20,487
+using std::unique_ptr;21,511
+namespace arrayfire 23,535
+namespace oneapi 24,557
+Event makeEvent(26,633
+af_event createEvent(31,733
+void markEventOnActiveQueue(44,1099
+void enqueueWaitOnActiveQueue(53,1407
+void block(63,1755
+af_event createAndMarkEvent(71,1999
+
+unary.hpp,242
+namespace arrayfire 17,472
+namespace oneapi 18,494
+#define UNARY_DECL(23,568
+#define UNARY_FN(29,783
+#undef UNARY_FN78,1437
+template<typename T,80,1454
+Array<T> unaryOp(81,1487
+template<typename T,97,2082
+Array<char> checkOp(98,2115
+
+complex.hpp,569
+namespace arrayfire 18,518
+namespace oneapi 19,540
+template<typename To,20,559
+Array<To> cplx(21,594
+template<typename To,26,770
+Array<To> real(27,805
+template<typename To,36,1132
+Array<To> imag(37,1167
+static const char *abs_name(abs_name47,1515
+inline const char *abs_name<abs_name51,1579
+inline const char *abs_name<abs_name55,1654
+template<typename To,59,1719
+Array<To> abs(60,1754
+static const char *conj_name(conj_name70,2105
+inline const char *conj_name<conj_name74,2172
+inline const char *conj_name<conj_name78,2249
+Array<T> conj(83,2337
+
+reduce.hpp,314
+namespace arrayfire 14,391
+namespace oneapi 15,413
+template<af_op_t op,16,432
+template<af_op_t op, typename Ti,16,432
+template<af_op_t op,20,595
+template<af_op_t op, typename Ti,20,595
+template<af_op_t op, typename Ti, typename Tk,20,595
+template<af_op_t op,25,861
+template<af_op_t op, typename Ti,25,861
+
+GraphicsResourceManager.hpp,126
+namespace arrayfire 18,437
+namespace oneapi 19,459
+class GraphicsResourceManager20,478
+    GraphicsResourceManager(25,661
+
+sum.cpp,91
+using arrayfire::common::half;13,388
+namespace arrayfire 15,420
+namespace oneapi 16,442
+
+tile.cpp,141
+using arrayfire::common::half;17,476
+namespace arrayfire 19,508
+namespace oneapi 20,530
+Array<T> tile(22,570
+#define INSTANTIATE(34,828
+
+Param.cpp,80
+namespace arrayfire 15,432
+namespace oneapi 16,454
+Param<T> makeParam(19,495
+
+sparse.cpp,666
+namespace arrayfire 29,706
+namespace oneapi 30,728
+SparseArray<T> sparseConvertDenseToCOO(37,919
+template<typename T,62,1847
+SparseArray<T> sparseConvertDenseToStorage(63,1886
+Array<T> sparseConvertCOOToDense(84,2651
+template<typename T,100,3153
+Array<T> sparseConvertStorageToDense(101,3192
+template<typename T,128,4121
+template<typename T, af_storage dest,128,4121
+SparseArray<T> sparseConvertStorageToStorage(129,4175
+#define INSTANTIATE_TO_STORAGE(179,6050
+#define INSTANTIATE_COO_SPECIAL(190,6617
+#define INSTANTIATE_SPARSE(202,7314
+#undef INSTANTIATE_TO_STORAGE224,8640
+#undef INSTANTIATE_COO_SPECIAL225,8670
+#undef INSTANTIATE_SPARSE226,8701
+
+morph.cpp,154
+using af::dim4;18,502
+namespace arrayfire 20,519
+namespace oneapi 21,541
+Array<T> morph(24,582
+Array<T> morph3d(41,1143
+#define INSTANTIATE(56,1683
+
+compile_module.cpp,835
+using arrayfire::common::loggerFactory;30,790
+using arrayfire::oneapi::Kernel;31,830
+using arrayfire::oneapi::Module;32,863
+using fmt::format;33,896
+using spdlog::logger;36,1001
+using sycl::bundle_state;37,1023
+using sycl::kernel_bundle;38,1049
+using std::begin;40,1077
+using std::end;41,1095
+using std::ofstream;42,1111
+using std::ostringstream;43,1132
+using std::shared_ptr;44,1158
+using std::string;45,1181
+using std::to_string;46,1200
+using std::transform;47,1222
+using std::vector;48,1244
+using std::chrono::duration_cast;49,1263
+using std::chrono::high_resolution_clock;50,1297
+using std::chrono::milliseconds;51,1339
+logger *getLogger(getLogger53,1373
+string getProgramBuildLog(58,1483
+namespace arrayfire 71,2069
+namespace oneapi 72,2091
+string getKernelCacheFilename(86,2428
+namespace common 91,2545
+
+solve.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+sort.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+mean.cpp,476
+using af::dim4;17,458
+using arrayfire::common::half;18,474
+using std::swap;19,505
+namespace arrayfire 21,523
+namespace oneapi 22,545
+template<typename Ti,23,564
+template<typename Ti, typename Tw,23,564
+To mean(24,612
+template<typename T,28,691
+T mean(29,725
+template<typename Ti,33,833
+template<typename Ti, typename Tw,33,833
+Array<To> mean(34,881
+template<typename T,42,1100
+Array<T> mean(43,1134
+#define INSTANTIATE(51,1381
+#define INSTANTIATE_WGT(70,2061
+
+index.cpp,193
+using arrayfire::common::half;20,540
+using arrayfire::oneapi::IndexKernelParam;21,571
+namespace arrayfire 23,615
+namespace oneapi 24,637
+Array<T> index(27,678
+#define INSTANTIATE(65,1860
+
+exampleFunction.cpp,138
+using af::dim4;25,916
+namespace arrayfire 27,933
+namespace oneapi 28,955
+Array<T> exampleFunction(31,996
+#define INSTANTIATE(51,1763
+
+where.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+convolve.cpp,587
+using af::dim4;26,707
+using arrayfire::common::flip;27,723
+using arrayfire::common::half;28,754
+using arrayfire::common::modDims;29,785
+using std::vector;30,819
+namespace arrayfire 32,839
+namespace oneapi 33,861
+template<typename T,35,881
+Array<T> convolve(36,917
+#define INSTANTIATE(91,2713
+#undef INSTANTIATE107,3271
+Array<T> convolve2_unwrap(110,3312
+Array<T> convolve2(150,4754
+#define INSTANTIATE(163,5201
+#undef INSTANTIATE171,5576
+Array<T> conv2DataGradient(174,5617
+Array<T> conv2FilterGradient(216,7421
+#define INSTANTIATE(254,8992
+#undef INSTANTIATE267,9743
+
+flood_fill.cpp,108
+namespace arrayfire 14,387
+namespace oneapi 15,409
+Array<T> floodFill(18,450
+#define INSTANTIATE(27,794
+
+jit/kernel_generators.hpp,310
+namespace arrayfire 21,498
+namespace oneapi 22,520
+inline void generateParamDeclaration(27,627
+inline int setKernelArguments(41,1200
+inline void generateBufferOffsets(51,1609
+inline void generateBufferRead(70,2541
+inline void generateShiftNodeOffsets(76,2775
+inline void generateShiftNodeRead(105,4201
+
+jit/BufferNode.hpp,314
+namespace arrayfire 17,465
+namespace oneapi 18,487
+namespace jit 19,506
+                                          AParam<AParam22,619
+namespace common 26,742
+template<typename DataType,28,762
+bool BufferNodeBase<BufferNodeBase29,810
+bool BufferNodeBase<DataType, ParamType>::operator==(operator==29,810
+
+medfilt.cpp,157
+using af::dim4;16,460
+namespace arrayfire 18,477
+namespace oneapi 19,499
+Array<T> medfilt1(22,540
+Array<T> medfilt2(39,968
+#define INSTANTIATE(51,1367
+
+sparse_arith.hpp,137
+namespace arrayfire 15,434
+namespace oneapi 16,456
+template<typename T,20,576
+template<typename T,24,731
+template<typename T,28,912
+
+product.cpp,91
+using arrayfire::common::half;13,388
+namespace arrayfire 15,420
+namespace oneapi 16,442
+
+Event.hpp,321
+namespace arrayfire 16,427
+namespace oneapi 17,449
+class OneAPIEventPolicy 18,468
+    static ErrorType createAndMarkEvent(25,668
+    static ErrorType markEvent(30,807
+    static ErrorType waitForEvent(35,976
+    static ErrorType syncForEvent(40,1148
+    static ErrorType destroyEvent(45,1273
+using Event 51,1398
+
+triangle.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+fast.hpp,80
+using af::features;13,380
+namespace arrayfire 15,401
+namespace oneapi 16,423
+
+bilateral.hpp,86
+namespace arrayfire 12,355
+namespace oneapi 13,377
+template<typename inType,14,396
+
+scalar.hpp,87
+namespace arrayfire 15,435
+namespace oneapi 16,457
+Array<T> createScalarNode(19,498
+
+reduce_impl.hpp,474
+using af::dim4;18,513
+using std::swap;19,529
+namespace arrayfire 21,547
+namespace oneapi 22,569
+template<af_op_t op,24,589
+template<af_op_t op, typename Ti,24,589
+Array<To> reduce(25,636
+template<af_op_t op,34,928
+template<af_op_t op, typename Ti,34,928
+template<af_op_t op, typename Ti, typename Tk,34,928
+void reduce_by_key(35,988
+template<af_op_t op,41,1215
+template<af_op_t op, typename Ti,41,1215
+Array<To> reduce_all(42,1262
+#define INSTANTIATE(51,1517
+
+fft.cpp,418
+using std::array;21,514
+using af::dim4;23,533
+namespace arrayfire 27,582
+namespace oneapi 28,604
+void setFFTPlanCacheSize(30,624
+inline array<array32,670
+inline array<int, AF_MAX_DIMS> computeDims(32,670
+void fft_inplace(39,908
+template<typename Tc,77,2410
+Array<Tc> fft_r2c(78,2445
+template<typename Tr,125,4314
+Array<Tr> fft_c2r(126,4349
+#define INSTANTIATE(171,6179
+#define INSTANTIATE_REAL(177,6316
+
+transform.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+assign.hpp,53
+namespace arrayfire 13,377
+namespace oneapi 14,399
+
+orb.cpp,181
+using af::dim4;17,478
+using af::features;18,494
+namespace arrayfire 20,515
+namespace oneapi 21,537
+template<typename T,23,557
+unsigned orb(24,597
+#define INSTANTIATE(59,1789
+
+memory.cpp,1526
+using arrayfire::common::bytesToString;25,645
+using af::dim4;27,686
+using std::function;28,702
+using std::move;29,723
+using std::unique_ptr;30,740
+namespace arrayfire 32,764
+namespace oneapi 33,786
+float getMemoryPressure(34,805
+float getMemoryPressureThreshold(35,879
+bool jitTreeExceedsMemoryPressure(39,976
+void setMemStepSize(43,1093
+size_t getMemStepSize(47,1185
+void signalMemoryCleanup(49,1255
+void shutdownMemoryManager(51,1326
+void shutdownPinnedMemoryManager(53,1388
+void printMemInfo(55,1462
+memAlloc(63,1776
+void *memAllocUser(memAllocUser90,3095
+void memFree(97,3262
+void memFreeUser(107,3595
+void memLock(117,3855
+void memUnlock(122,3984
+bool isLocked(126,4096
+void deviceMemoryInfo(130,4198
+T *pinnedAlloc(pinnedAlloc137,4469
+void pinnedFree(144,4702
+#define INSTANTIATE(147,4840
+void *pinnedAlloc<pinnedAlloc170,5601
+Allocator::Allocator(Allocator179,5915
+void Allocator::shutdown(shutdown181,5982
+int Allocator::getActiveDeviceId(getActiveDeviceId183,6013
+size_t Allocator::getMaxMemorySize(getMaxMemorySize185,6089
+void *Allocator::nativeAlloc(nativeAlloc189,6181
+void Allocator::nativeFree(nativeFree196,6413
+AllocatorPinned::AllocatorPinned(AllocatorPinned202,6579
+void AllocatorPinned::shutdown(shutdown204,6658
+int AllocatorPinned::getActiveDeviceId(getActiveDeviceId206,6727
+size_t AllocatorPinned::getMaxMemorySize(getMaxMemorySize208,6809
+void *AllocatorPinned::nativeAlloc(nativeAlloc212,6907
+void AllocatorPinned::nativeFree(nativeFree225,7352
+
+Array.cpp,2021
+using af::dim4;38,889
+using af::dtype_traits;39,905
+using arrayfire::common::half;41,930
+using arrayfire::common::Node;42,961
+using arrayfire::common::Node_ptr;43,992
+using arrayfire::common::NodeIterator;44,1027
+using arrayfire::oneapi::jit::BufferNode;45,1066
+using nonstd::span;47,1109
+using std::accumulate;48,1129
+using std::is_standard_layout;49,1152
+using std::make_shared;50,1183
+using std::shared_ptr;51,1207
+using std::vector;52,1230
+using sycl::buffer;54,1250
+namespace arrayfire 56,1271
+namespace oneapi 57,1293
+shared_ptr<BufferNode<T>> bufferNodePtr(60,1345
+void verifyTypeSupport(66,1511
+void verifyTypeSupport<verifyTypeSupport69,1551
+void verifyTypeSupport<verifyTypeSupport76,1724
+void verifyTypeSupport<verifyTypeSupport83,1898
+Array<T>::Array(Array91,2111
+Array<T>::Array(Array100,2406
+Array<T>::Array(Array112,2777
+Array<T>::Array(Array136,3816
+Array<T>::Array(Array155,4406
+Array<T>::Array(Array165,4759
+    , owner(178,5350
+Array<T>::Array(Array181,5395
+void Array<T>::eval(eval203,6082
+void Array<T>::eval(eval222,6611
+buffer<T> *Array<T>::device(device227,6707
+void evalMultiple(235,6891
+Node_ptr Array<T>::getNode(getNode279,8317
+Node_ptr Array<T>::getNode(getNode291,8620
+kJITHeuristics passesJitHeuristics(310,9420
+        struct tree_info 354,11187
+            size_t total_buffer_size;355,11214
+            size_t num_buffers;356,11252
+            size_t param_scalar_size;357,11284
+void *getDevicePtr(getDevicePtr398,12863
+Array<T> createNodeArray(404,12994
+Array<T> createSubArray(411,13163
+Array<T> createHostDataArray(445,14124
+Array<T> createDeviceDataArray(451,14279
+Array<T> createValueArray(458,14474
+Array<T> createEmptyArray(464,14633
+Array<T> createParamArray(470,14758
+void destroyArray(476,14898
+void writeHostDataArray(481,14969
+void writeDeviceDataArray(498,15572
+void Array<T>::setDataDims(setDataDims513,16132
+size_t Array<T>::getAllocatedBytes(getAllocatedBytes519,16256
+#define INSTANTIATE(527,16524
+
+regions.cpp,129
+using af::dim4;16,460
+namespace arrayfire 18,477
+namespace oneapi 19,499
+Array<T> regions(22,540
+#define INSTANTIATE(31,849
+
+qr.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+vector_field.cpp,135
+using af::dim4;15,448
+namespace arrayfire 17,465
+namespace oneapi 18,487
+void copy_vector_field(21,528
+#define INSTANTIATE(24,654
+
+approx1.cpp,132
+namespace arrayfire 13,411
+namespace oneapi 14,433
+template<typename Ty,15,452
+void approx1(16,487
+#define INSTANTIATE(39,1391
+
+lu.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+histogram.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+join.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+transpose_inplace.cpp,173
+using af::dim4;17,496
+using arrayfire::common::half;18,512
+namespace arrayfire 20,544
+namespace oneapi 21,566
+void transpose_inplace(24,607
+#define INSTANTIATE(33,882
+
+transform.cpp,105
+namespace arrayfire 15,418
+namespace oneapi 16,440
+void transform(19,481
+#define INSTANTIATE(39,1267
+
+any.cpp,91
+using arrayfire::common::half;13,388
+namespace arrayfire 15,420
+namespace oneapi 16,442
+
+fft.hpp,111
+namespace arrayfire 12,355
+namespace oneapi 13,377
+template<typename Tc,20,533
+template<typename Tr,23,625
+
+backend.hpp,119
+#undef __DH__11,347
+#define __DH__ 15,387
+#define __DH__17,428
+namespace arrayfire 20,451
+namespace oneapi 21,473
+
+histogram.cpp,173
+using af::dim4;17,488
+using arrayfire::common::half;18,504
+namespace arrayfire 20,536
+namespace oneapi 21,558
+Array<uint> histogram(24,599
+#define INSTANTIATE(34,1018
+
+lu.cpp,370
+namespace arrayfire 20,540
+namespace oneapi 21,562
+Array<int> convertPivot(23,582
+void lu(49,1338
+Array<int> lu_inplace(68,1863
+bool isLAPACKAvailable(89,2588
+#define INSTANTIATE_LU(91,2631
+namespace arrayfire 107,3139
+namespace oneapi 108,3161
+void lu(111,3202
+Array<int> lu_inplace(118,3415
+bool isLAPACKAvailable(123,3580
+#define INSTANTIATE_LU(125,3624
+
+join.cpp,634
+using af::dim4;22,558
+using arrayfire::common::half;23,574
+using arrayfire::common::Node;24,605
+using arrayfire::common::Node_ptr;25,636
+using std::transform;26,671
+using std::vector;27,693
+namespace arrayfire 29,713
+namespace oneapi 30,735
+dim4 calcOffset(31,754
+Array<T> join(41,1027
+void join(161,6461
+    class eval 162,6536
+        vector<Param<T>> outputs;164,6568
+        vector<Node_ptr> nodePtrs;165,6602
+        vector<Node *> nodes;166,6637
+        vector<const Array<T> *> ins;167,6667
+#define INSTANTIATE(256,10559
+#undef INSTANTIATE274,11002
+#define INSTANTIATE(276,11022
+#undef INSTANTIATE294,11447
+
+min.cpp,91
+using arrayfire::common::half;13,388
+namespace arrayfire 15,420
+namespace oneapi 16,442
+
+qr.cpp,269
+namespace arrayfire 26,672
+namespace oneapi 27,694
+void qr(30,735
+Array<T> qr_inplace(82,2434
+#define INSTANTIATE_QR(105,3113
+namespace arrayfire 120,3537
+namespace oneapi 121,3559
+void qr(124,3600
+Array<T> qr_inplace(129,3770
+#define INSTANTIATE_QR(133,3886
+
+regions.hpp,53
+namespace arrayfire 12,355
+namespace oneapi 13,377
+
+Array.hpp,1296
+namespace arrayfire 30,677
+namespace common 31,699
+namespace oneapi 40,836
+template<typename T,44,891
+using Buffer_ptr 48,971
+using af::dim4;49,1024
+Array<T> createStridedArray(88,2410
+void *getRawPtr(getRawPtr140,4375
+using mapped_ptr 151,4606
+class Array 154,4696
+    ArrayInfo info;155,4710
+    std::shared_ptr<sycl::buffer<T>> data;158,4806
+    af::dim4 data_dims;161,4899
+    common::Node_ptr node;164,4996
+    bool owner;168,5137
+    std::shared_ptr<sycl::buffer<T>> getData(181,5575
+    Array<T> &operator=(operator=188,5751
+    void swap(193,5852
+    void resetInfo(204,6228
+    void resetDims(205,6295
+    void modDims(206,6362
+    void modStrides(207,6431
+    void setId(208,6512
+#define INFO_FUNC(210,6556
+#undef INFO_FUNC220,6852
+#define INFO_IS_FUNC(222,6870
+#undef INFO_IS_FUNC242,7395
+    bool isReady(245,7440
+    bool isOwner(246,7510
+    sycl::buffer<T> *device(device252,7626
+    sycl::buffer<T> *get(get256,7726
+    int useCount(261,7831
+    dim_t getOffset(263,7886
+    dim4 getDataDims(265,7944
+    operator Param<T>(operator Param<T>271,8080
+    operator AParam<T, operator AParam<T,280,8387
+    operator AParam<T, operator AParam<T,286,8620
+    operator KParam(operator KParam292,8856
+    mapped_ptr<T> getMappedPtr(305,9177
+
+memory.hpp,53
+namespace arrayfire 21,507
+namespace oneapi 22,529
+
+orb.hpp,108
+using af::features;13,380
+namespace arrayfire 15,401
+namespace oneapi 16,423
+template<typename T,18,443
+
+assign.cpp,163
+using af::dim4;20,527
+using arrayfire::common::half;21,543
+namespace arrayfire 23,575
+namespace oneapi 24,597
+void assign(27,638
+#define INSTANTIATE(71,2168
+
+vector_field.hpp,53
+namespace arrayfire 13,393
+namespace oneapi 14,415
+
+minmax_op.hpp,504
+namespace arrayfire 14,377
+namespace oneapi 15,399
+static double cabs(18,440
+double cabs<cabs23,511
+double cabs<cabs28,590
+double cabs<cabs33,672
+static bool is_nan(38,766
+bool is_nan<is_nan43,835
+bool is_nan<is_nan48,950
+template<af_op_t op,52,1056
+struct MinMaxOp 53,1089
+    T m_val;54,1107
+    uint m_idx;55,1120
+    MinMaxOp(56,1136
+    void operator()(operator()60,1279
+    T m_val;71,1539
+    uint m_idx;72,1552
+    MinMaxOp(73,1568
+    void operator()(operator()77,1706
+
+errorcodes.hpp,0
