@@ -19,7 +19,9 @@
 #include <af/array.h>
 #include <af/data.h>
 #include <af/defines.h>
+#include <af/device.h>
 #include <af/dim4.hpp>
+#include <map>
 #include <memory>
 
 using af::dim4;
@@ -128,8 +130,20 @@ af_err af_get_default_random_engine(af_random_engine *r) {
     try {
         AF_CHECK(af_init());
 
-        thread_local auto *re = new RandomEngine;
-        *r                    = static_cast<af_random_engine>(re);
+        // RandomEngine contains device buffers which are dependent on
+        // context|stream/device. Since nor context or stream are available at
+        // this level, we will only use the deviceId.
+        thread_local std::map<int /*deviceId*/, RandomEngine *>
+            cachedDefaultRandomEngines;
+        const int dependent = af::getDevice();
+        auto it             = cachedDefaultRandomEngines.find(dependent);
+        if (it == cachedDefaultRandomEngines.end()) {
+            RandomEngine *defaultRandomEngine     = new RandomEngine;
+            cachedDefaultRandomEngines[dependent] = defaultRandomEngine;
+            *r = static_cast<af_random_engine>(defaultRandomEngine);
+        } else {
+            *r = static_cast<af_random_engine>(it->second);
+        }
         return AF_SUCCESS;
     }
     CATCHALL;
