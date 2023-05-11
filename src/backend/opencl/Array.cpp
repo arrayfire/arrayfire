@@ -342,7 +342,8 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
         // Setting the maximum to 5120 bytes to keep the compile times
         // resonable. This still results in large kernels but its not excessive.
         size_t max_param_size =
-            min(5120UL, device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>());
+            min(static_cast<cl::size_type>(5120),
+                device.getInfo<CL_DEVICE_MAX_PARAMETER_SIZE>());
         max_param_size -= base_param_size;
 
         struct tree_info {
