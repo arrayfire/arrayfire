@@ -239,11 +239,17 @@ magma_int_t magma_gebrd_hybrid(magma_int_t m, magma_int_t n, Ty *a,
         return *info;
     }
 
-    if (MAGMA_SUCCESS != magma_malloc<Ty>(&dwork, (m + n) * nb)) {
+    const size_t size = (m + n) * nb;
+    if (MAGMA_SUCCESS != magma_malloc<Ty>(&dwork, size)) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
     size_t dwork_offset = 0;
+    // initialize dwork to 0.0
+    const float dfill = 0.0;
+    cl_int err = clEnqueueFillBuffer(queue, dwork, &dfill, sizeof(dfill), 0,
+                                     size * sizeof(Ty), 0, nullptr, nullptr);
+    check_error(err);
 
     cl_event event = 0;
 
