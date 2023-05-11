@@ -23,6 +23,11 @@ using arrayfire::common::half;
 namespace arrayfire {
 namespace opencl {
 
+static std::mutex mtx;
+static std::map<std::pair<const cl::Context*, const int /* deviceId */>,
+                cl::Buffer*>
+    cachedEmptyBuffers;
+
 template<typename T>
 void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
     kernel::AssignKernelParam_t p;
@@ -49,6 +54,27 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
     cl::Buffer* bPtrs[4];
 
     std::vector<Array<uint>> idxArrs(4, createEmptyArray<uint>(dim4()));
+
+    // Prepare commonBuffer for empty indexes
+    // Buffer is dependent on the context.
+    // To avoid copying between devices, we add also deviceId as a dependency
+    cl::Buffer* emptyBuffer;
+    {
+        std::lock_guard<std::mutex> lck(mtx);
+        const auto dependent = std::make_pair<const cl::Context*, const int>(
+            &getContext(), getActiveDeviceId());
+        auto it = cachedEmptyBuffers.find(dependent);
+        if (it == cachedEmptyBuffers.end()) {
+            emptyBuffer = new cl::Buffer(
+                getContext(),
+                CL_MEM_READ_ONLY,  // NOLINT(hicpp-signed-bitwise)
+                sizeof(uint));
+            cachedEmptyBuffers[dependent] = emptyBuffer;
+        } else {
+            emptyBuffer = it->second;
+        }
+    }
+
     // look through indexs to read af_array indexs
     for (dim_t x = 0; x < 4; ++x) {
         // set index pointers were applicable
@@ -59,10 +85,7 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs) {
             // alloc an 1-element buffer to avoid OpenCL from failing using
             // direct buffer allocation as opposed to mem manager to avoid
             // reference count desprepancies between different backends
-            static auto* empty = new cl::Buffer(
-                getContext(), CL_MEM_READ_ONLY,  // NOLINT(hicpp-signed-bitwise)
-                sizeof(uint));
-            bPtrs[x] = empty;
+            bPtrs[x] = emptyBuffer;
         }
     }
 
