@@ -613,62 +613,55 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
         uintl tmp_elements = tmpOut.elements();
 
         mean_first_launcher<T, Tw, T>(tmpOut, tmpWt, in, iwt, blocks_x,
-                                      blocks_y, threads_x)
+                                      blocks_y, threads_x);
+
+        compute_t<T> val;
+        getQueue()
+            .submit([&](sycl::handler &h) {
+                auto acc_in =
+                    tmpOut.get()
+                        ->template get_access<sycl::access_mode::read,
+                                              sycl::target::host_buffer>(h);
+                auto acc_wt =
+                    tmpWt.get()
+                        ->template get_access<sycl::access_mode::read,
+                                              sycl::target::host_buffer>(h);
+
+                h.host_task([acc_in, acc_wt, tmp_elements, &val] {
+                    val = static_cast<compute_t<T>>(acc_in[0]);
+                    compute_t<Tw> weight =
+                        static_cast<compute_t<Tw>>(acc_wt[0]);
+
+                    for (int i = 1; i < tmp_elements; i++) {
+                        stable_mean(&val, &weight, compute_t<T>(acc_in[i]),
+                                    compute_t<Tw>(acc_wt[i]));
+                    }
+                });
+            })
             .wait();
-
-        std::vector<T> h_ptr(tmp_elements);
-        std::vector<Tw> h_wptr(tmp_elements);
-
-        // TODO: fix when addressing other mean errors
-        auto e1 = getQueue().submit([&](sycl::handler &h) {
-            auto acc_in =
-                tmpOut.get()->template get_access<sycl::access_mode::read>(
-                    h, sycl::range{tmp_elements});
-            h.copy(acc_in, h_ptr.data());
-        });
-        auto e2 = getQueue().submit([&](sycl::handler &h) {
-            auto acc_in =
-                tmpWt.get()->template get_access<sycl::access_mode::read>(
-                    h, sycl::range{tmp_elements});
-            h.copy(acc_in, h_wptr.data());
-        });
-        e1.wait();
-        e2.wait();
-
-        compute_t<T> val     = static_cast<compute_t<T>>(h_ptr[0]);
-        compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_wptr[0]);
-
-        for (int i = 1; i < tmp_elements; i++) {
-            stable_mean(&val, &weight, compute_t<T>(h_ptr[i]),
-                        compute_t<Tw>(h_wptr[i]));
-        }
-
         return static_cast<T>(val);
     } else {
-        std::vector<T> h_ptr(in_elements);
-        std::vector<Tw> h_wptr(in_elements);
+        compute_t<T> val;
+        getQueue()
+            .submit([&](sycl::handler &h) {
+                auto acc_in =
+                    in.data->template get_access<sycl::access_mode::read,
+                                                 sycl::target::host_buffer>(
+                        h, sycl::range{in_elements});
+                auto acc_wt =
+                    iwt.data->template get_access<sycl::access_mode::read>(
+                        h, sycl::range{in_elements});
 
-        auto e1 = getQueue().submit([&](sycl::handler &h) {
-            auto acc_in = in.data->template get_access<sycl::access_mode::read>(
-                h, sycl::range{in_elements});
-            h.copy(acc_in, h_ptr.data());
-        });
-        auto e2 = getQueue().submit([&](sycl::handler &h) {
-            auto acc_in =
-                iwt.data->template get_access<sycl::access_mode::read>(
-                    h, sycl::range{in_elements});
-            h.copy(acc_in, h_wptr.data());
-        });
-        e1.wait();
-        e2.wait();
-
-        compute_t<T> val     = static_cast<compute_t<T>>(h_ptr[0]);
-        compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_wptr[0]);
-        for (int i = 1; i < in_elements; i++) {
-            stable_mean(&val, &weight, compute_t<T>(h_ptr[i]),
-                        compute_t<Tw>(h_wptr[i]));
-        }
-
+                h.host_task([acc_in, acc_wt, in_elements, &val]() {
+                    val                  = acc_in[0];
+                    compute_t<Tw> weight = acc_wt[0];
+                    for (int i = 1; i < in_elements; i++) {
+                        stable_mean(&val, &weight, compute_t<T>(acc_in[i]),
+                                    compute_t<Tw>(acc_wt[i]));
+                    }
+                });
+            })
+            .wait();
         return static_cast<T>(val);
     }
 }
@@ -712,32 +705,30 @@ To mean_all(Param<Ti> in) {
                                         blocks_y, threads_x);
 
         uintl tmp_elements = tmpOut.elements();
-        std::vector<To> h_ptr(tmp_elements);
-        std::vector<Tw> h_cptr(tmp_elements);
 
-        auto e1 = getQueue().submit([&](sycl::handler &h) {
-            auto acc_in =
-                tmpOut.get()->template get_access<sycl::access_mode::read>(
-                    h, sycl::range{tmp_elements});
-            h.copy(acc_in, h_ptr.data());
-        });
-        auto e2 = getQueue().submit([&](sycl::handler &h) {
-            auto acc_in =
-                tmpCt.get()->template get_access<sycl::access_mode::read>(
-                    h, sycl::range{tmp_elements});
-            h.copy(acc_in, h_cptr.data());
-        });
-        e1.wait();
-        e2.wait();
+        compute_t<To> val;
+        getQueue()
+            .submit([&](sycl::handler &h) {
+                auto out =
+                    tmpOut.get()
+                        ->template get_access<sycl::access_mode::read,
+                                              sycl::target::host_buffer>(h);
+                auto ct =
+                    tmpCt.get()
+                        ->template get_access<sycl::access_mode::read,
+                                              sycl::target::host_buffer>(h);
 
-        compute_t<To> val    = static_cast<compute_t<To>>(h_ptr[0]);
-        compute_t<Tw> weight = static_cast<compute_t<Tw>>(h_cptr[0]);
+                h.host_task([out, ct, tmp_elements, &val] {
+                    val                  = static_cast<compute_t<To>>(out[0]);
+                    compute_t<Tw> weight = static_cast<compute_t<Tw>>(ct[0]);
 
-        for (int i = 1; i < tmp_elements; i++) {
-            stable_mean(&val, &weight, compute_t<To>(h_ptr[i]),
-                        compute_t<Tw>(h_cptr[i]));
-        }
-
+                    for (int i = 1; i < tmp_elements; i++) {
+                        stable_mean(&val, &weight, compute_t<To>(out[i]),
+                                    compute_t<Tw>(ct[i]));
+                    }
+                });
+            })
+            .wait();
         return static_cast<To>(val);
     } else {
         compute_t<To> val;
@@ -746,7 +737,7 @@ To mean_all(Param<Ti> in) {
                 auto acc_in =
                     in.data->template get_access<sycl::access_mode::read,
                                                  sycl::target::host_buffer>(h);
-                h.host_task([&]() {
+                h.host_task([acc_in, in_elements, &val]() {
                     common::Transform<Ti, compute_t<To>, af_add_t> transform;
                     compute_t<Tw> count = static_cast<compute_t<Tw>>(1);
 
@@ -758,7 +749,6 @@ To mean_all(Param<Ti> in) {
                 });
             })
             .wait();
-
         return static_cast<To>(val);
     }
 }
