@@ -10,7 +10,9 @@
 #pragma once
 #include <common/Version.hpp>
 #include <spdlog/fmt/ostr.h>
+#include <af/dim4.hpp>
 #include <af/seq.h>
+#include <complex>
 
 template<>
 struct fmt::formatter<af_seq> {
@@ -32,6 +34,15 @@ struct fmt::formatter<af_seq> {
         return format_to(ctx.out(), "({} -({})-> {})", p.begin, p.step, p.end);
     }
 };
+
+#if FMT_VERSION >= 90000
+template<>
+struct fmt::formatter<af::dim4> : ostream_formatter {};
+template<>
+struct fmt::formatter<std::complex<float>> : ostream_formatter {};
+template<>
+struct fmt::formatter<std::complex<double>> : ostream_formatter {};
+#endif
 
 template<>
 struct fmt::formatter<arrayfire::common::Version> {
