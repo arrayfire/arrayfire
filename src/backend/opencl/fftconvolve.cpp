@@ -138,7 +138,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     serializeArrayToFile(getHandle(packed), "/tmp/opencl-packed-02");
     kernel::complexMultiplyHelper<cT, T>(packed, signal, filter, rank, kind);
 
-    serializeArrayToFile(getHandle(packed), "/tmp/opencl-package-03");
+    serializeArrayToFile(getHandle(packed), "/tmp/opencl-packed-03");
 
     // Compute inverse FFT only on complex-multiplied data
     if (kind == AF_BATCH_RHS) {
@@ -175,6 +175,9 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     kernel::reorderOutputHelper<T, cT>(out, packed, signal, filter, rank, kind,
                                        expand);
+
+    serializeArrayToFile(getHandle(out), "/tmp/opencl-out-04");
+
     return out;
 }
 

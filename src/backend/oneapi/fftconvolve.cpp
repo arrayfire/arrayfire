@@ -184,6 +184,8 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
       kernel::reorderOutputHelper<T, cT>(out, packed, signal, filter, rank, kind,
                                          expand);
+      serializeArrayToFile(getHandle(out), "/tmp/oneapi-out-04");
+
       return out;
     }
     else {

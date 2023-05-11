@@ -163,13 +163,14 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, Param<T> sig, Param<
     printf("kind %d vs AF_BATCH_RHS %d", kind, AF_BATCH_RHS);
 
     if (kind == AF_BATCH_RHS) {
-// getQueue().submit([&](auto &h) {
-// sycl::accessor d_filter_tmp{*filter_tmp.data, h, sycl::read_only};
-// sycl::accessor d_out{*out.data, h, sycl::write_only, sycl::no_init};
-// h.parallel_for(
-//   sycl::nd_range{global, local},
-//   fftconvolve_reorderCreateKernel<T>(d_out, out.info, d_filter_tmp, filter_tmp.info, filter.info, sig_half_d0, rank, fftScale));
-// });
+      auto packed_num_elem = (*packed.data).get_range().size();
+      auto filter_tmp_buffer = (*packed.data).template reinterpret<T>(sycl::range<1>{packed_num_elem * 2});
+      getQueue().submit([&](auto &h) {
+          sycl::accessor d_filter_tmp{filter_tmp_buffer, h, sycl::read_only};
+          sycl::accessor d_out{*out.data, h, sycl::write_only, sycl::no_init};
+          h.parallel_for(sycl::nd_range{global, local},
+                         fftconvolve_reorderCreateKernel<T>(d_out, out.info, d_filter_tmp, filter_tmp.info, filter.info, sig_half_d0, rank, fftScale, expand, round_out));
+      });
     } else {
       auto packed_num_elem = (*packed.data).get_range().size();
       auto sig_tmp_buffer = (*packed.data).template reinterpret<T>(sycl::range<1>{packed_num_elem * 2});

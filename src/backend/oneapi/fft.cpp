@@ -50,9 +50,9 @@ void fft_inplace(Array<T> &in, const int rank, const bool direction) {
 
     auto desc = [rank, &idims]() {
         if (rank == 1) return desc_ty(idims[0]);
-        if (rank == 2) return desc_ty({idims[0], idims[1]});
-        if (rank == 3) return desc_ty({idims[0], idims[1], idims[2]});
-        return desc_ty({idims[0], idims[1], idims[2], idims[3]});
+        if (rank == 2) return desc_ty({idims[1], idims[0]});
+        if (rank == 3) return desc_ty({idims[2], idims[1], idims[0]});
+        return desc_ty({idims[3], idims[2], idims[1], idims[0]});
     }();
 
     desc.set_value(::oneapi::mkl::dft::config_param::PLACEMENT, DFTI_INPLACE);
@@ -139,9 +139,9 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims, const int rank) {
 
     auto desc = [rank, &odims]() {
         if (rank == 1) return desc_ty(odims[0]);
-        if (rank == 2) return desc_ty({odims[0], odims[1]});
-        if (rank == 3) return desc_ty({odims[0], odims[1], odims[2]});
-        return desc_ty({odims[0], odims[1], odims[2], odims[3]});
+        if (rank == 2) return desc_ty({odims[1], odims[0]});
+        if (rank == 3) return desc_ty({odims[2], odims[1], odims[0]});
+        return desc_ty({odims[3], odims[2], odims[1], odims[0]});
     }();
 
     desc.set_value(::oneapi::mkl::dft::config_param::PLACEMENT,
