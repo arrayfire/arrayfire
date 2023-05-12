@@ -103,7 +103,6 @@ template<typename T>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                     const bool expand, AF_BATCH_KIND kind, const int rank) {
 
-    if constexpr (std::is_same_v<T, float>) {
       using convT = typename conditional<is_integral<T>::value ||
                                          is_same<T, float>::value ||
                                          is_same<T, cfloat>::value,
@@ -187,12 +186,6 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
       serializeArrayToFile(getHandle(out), "/tmp/oneapi-out-04");
 
       return out;
-    }
-    else {
-      dim4 oDims(1);
-      Array<T> out = createEmptyArray<T>(oDims);
-      return out;
-    }
 }
 
 #define INSTANTIATE(T)                                                 \
