@@ -218,6 +218,11 @@ target_sources(afoneapi
     kernel/convolve_separable.cpp
     kernel/diagonal.hpp
     kernel/diff.hpp
+    kernel/fftconvolve_common.hpp
+    kernel/fftconvolve_multiply.hpp
+    kernel/fftconvolve_pack.hpp
+    kernel/fftconvolve_pad.hpp
+    kernel/fftconvolve_reorder.hpp
     kernel/histogram.hpp
     kernel/iir.hpp
     kernel/identity.hpp
