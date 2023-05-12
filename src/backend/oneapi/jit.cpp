@@ -287,12 +287,12 @@ __kernel void )JIT";
 // }
 
 template<typename T>
-cl_kernel getKernel(std::string funcName, cl_context ctx, cl_device_id dev,
-                    cl_command_queue q,
-                    const nonstd::span<Node* const> full_nodes,
-                    nonstd::span<Node_ids const> full_ids,
-                    nonstd::span<int const> output_ids,
-                    nonstd::span<oneapi::AParam<T> const> ap, bool is_linear) {
+cl_kernel getKernel(
+    std::string funcName, cl_context ctx, cl_device_id dev, cl_command_queue q,
+    const nonstd::span<Node* const> full_nodes,
+    nonstd::span<Node_ids const> full_ids, nonstd::span<int const> output_ids,
+    nonstd::span<oneapi::AParam<T, sycl::access_mode::write> const> ap,
+    bool is_linear) {
     static unordered_map<std::string, cl_kernel> kernel_map;
 
     vector<cl_kernel> kernels(10);
@@ -363,6 +363,10 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
         output_ids.push_back(id);
     }
 
+    node_clones.clear();
+    node_clones.reserve(full_nodes.size());
+    for (Node* node : full_nodes) { node_clones.emplace_back(node->clone()); }
+
     bool moddimsFound{false};
     for (const Node* node : full_nodes) {
         is_linear &= node->isLinear(outDims);
@@ -394,12 +398,6 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
     //  Avoid all cloning/copying when no moddims node is present (high
     //  chance)
     if (moddimsFound || emptyColumnsFound) {
-        node_clones.clear();
-        node_clones.reserve(full_nodes.size());
-        for (Node* node : full_nodes) {
-            node_clones.emplace_back(node->clone());
-        }
-
         for (const Node_ids& ids : full_ids) {
             auto& children{node_clones[ids.id]->m_children};
             for (int i{0}; i < Node::kMaxChildren && children[i] != nullptr;
@@ -452,129 +450,128 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                      });
             ndims = removeEmptyColumns(outDims, ndims, outDims, outStrides);
         }
-
-        full_nodes.clear();
-        for (Node_ptr& node : node_clones) { full_nodes.push_back(node.get()); }
     }
+
+    full_nodes.clear();
+    for (Node_ptr& node : node_clones) { full_nodes.push_back(node.get()); }
 
     const string funcName{getFuncName(output_nodes, full_nodes, full_ids,
                                       is_linear, false, false, false,
                                       outputs[0].info.dims[2] > 1)};
 
-    getQueue()
-        .submit([=](sycl::handler& h) {
-            for (Node* node : full_nodes) {
-                if (node->isBuffer()) {
-                    BufferNode<T>* n = static_cast<BufferNode<T>*>(node);
-                    n->m_param.require(h);
-                }
+    getQueue().submit([&](sycl::handler& h) {
+        for (Node* node : full_nodes) {
+            if (node->isBuffer()) {
+                BufferNode<T>* n = static_cast<BufferNode<T>*>(node);
+                n->m_param.require(h);
             }
-            vector<AParam<T>> ap;
-            transform(begin(outputs), end(outputs), back_inserter(ap),
-                      [&](const Param<T>& p) {
-                          return AParam<T>(h, *p.data, p.info.dims,
-                                           p.info.strides, p.info.offset);
-                      });
+        }
+        vector<AParam<T, sycl::access_mode::write>> ap;
+        transform(begin(outputs), end(outputs), back_inserter(ap),
+                  [&](const Param<T>& p) {
+                      return AParam<T, sycl::access_mode::write>(
+                          h, *p.data, p.info.dims, p.info.strides,
+                          p.info.offset);
+                  });
 
-            h.host_task([ap, full_nodes, output_ids, full_ids, is_linear,
-                         funcName](sycl::interop_handle hh) {
-                switch (hh.get_backend()) {
-                    case backend::opencl: {
-                        cl_command_queue q =
-                            hh.get_native_queue<backend::opencl>();
-                        cl_context ctx =
-                            hh.get_native_context<backend::opencl>();
-                        cl_device_id dev =
-                            hh.get_native_device<backend::opencl>();
+        h.host_task([ap, full_nodes, output_ids, full_ids, is_linear, funcName,
+                     node_clones, nodes, outputs](sycl::interop_handle hh) {
+            switch (hh.get_backend()) {
+                case backend::opencl: {
+                    auto ncc = node_clones;
 
-                        cl_kernel kernel = arrayfire::opencl::getKernel<T>(
-                            funcName, ctx, dev, q, full_nodes, full_ids,
-                            output_ids, ap, is_linear);
-                        int nargs{0};
-                        for (Node* node : full_nodes) {
-                            if (node->isBuffer()) {
-                                nargs = node->setArgs(
-                                    nargs, is_linear,
-                                    [&kernel, &hh, &is_linear](
-                                        int id, const void* ptr,
-                                        size_t arg_size) {
-                                        AParam<T>* info =
-                                            static_cast<AParam<T>*>(
-                                                const_cast<void*>(ptr));
-                                        vector<cl_mem> mem =
-                                            hh.get_native_mem<backend::opencl>(
-                                                info->data);
-                                        if (is_linear) {
-                                            CL_CHECK(clSetKernelArg(
-                                                kernel, id++, sizeof(cl_mem),
-                                                &mem[0]));
-                                            CL_CHECK(clSetKernelArg(
-                                                kernel, id++, sizeof(dim_t),
-                                                &info->offset));
-                                        } else {
-                                            CL_CHECK(clSetKernelArg(
-                                                kernel, id++, sizeof(cl_mem),
-                                                &mem[0]));
-                                            KParam ooo = *info;
-                                            CL_CHECK(clSetKernelArg(
-                                                kernel, id++, sizeof(KParam),
-                                                &ooo));
-                                        }
-                                    });
-                            } else {
-                                nargs = node->setArgs(
-                                    nargs, is_linear,
-                                    [&kernel](int id, const void* ptr,
-                                              size_t arg_size) {
-                                        CL_CHECK(clSetKernelArg(kernel, id,
-                                                                arg_size, ptr));
-                                    });
-                            }
-                        }
+                    cl_command_queue q = hh.get_native_queue<backend::opencl>();
+                    cl_context ctx   = hh.get_native_context<backend::opencl>();
+                    cl_device_id dev = hh.get_native_device<backend::opencl>();
 
-                        // Set output parameters
-                        vector<cl_mem> mem;
-                        for (const auto& output : ap) {
-                            mem =
-                                hh.get_native_mem<backend::opencl>(output.data);
-                            cl_mem mmm = mem[0];
-                            CL_CHECK(clSetKernelArg(kernel, nargs++,
-                                                    sizeof(cl_mem), &mmm));
-                            int off = output.offset;
-                            CL_CHECK(clSetKernelArg(kernel, nargs++,
-                                                    sizeof(int), &off));
-                        }
-                        const KParam ooo = ap[0];
-                        CL_CHECK(clSetKernelArg(kernel, nargs++, sizeof(KParam),
-                                                &ooo));
-                        array<size_t, 3> offset{0, 0, 0};
-                        array<size_t, 3> global;
-                        int ndims = 0;
-                        if (is_linear) {
-                            global = {(size_t)ap[0].dims.elements(), 0, 0};
-                            ndims  = 1;
+                    cl_kernel kernel = arrayfire::opencl::getKernel<T>(
+                        funcName, ctx, dev, q, full_nodes, full_ids, output_ids,
+                        ap, is_linear);
+                    int nargs{0};
+                    for (Node* node : full_nodes) {
+                        if (node->isBuffer()) {
+                            nargs = node->setArgs(
+                                nargs, is_linear,
+                                [&kernel, &hh, &is_linear](
+                                    int id, const void* ptr, size_t arg_size) {
+                                    AParam<T, sycl::access_mode::read>* info =
+                                        static_cast<AParam<
+                                            T, sycl::access_mode::read>*>(
+                                            const_cast<void*>(ptr));
+                                    vector<cl_mem> mem =
+                                        hh.get_native_mem<backend::opencl>(
+                                            info->data);
+                                    if (is_linear) {
+                                        CL_CHECK(clSetKernelArg(kernel, id++,
+                                                                sizeof(cl_mem),
+                                                                &mem[0]));
+                                        CL_CHECK(clSetKernelArg(kernel, id++,
+                                                                sizeof(dim_t),
+                                                                &info->offset));
+                                    } else {
+                                        CL_CHECK(clSetKernelArg(kernel, id++,
+                                                                sizeof(cl_mem),
+                                                                &mem[0]));
+                                        KParam ooo = *info;
+                                        CL_CHECK(clSetKernelArg(kernel, id++,
+                                                                sizeof(KParam),
+                                                                &ooo));
+                                    }
+                                });
                         } else {
-                            global = {(size_t)ap[0].dims[0],
-                                      (size_t)ap[0].dims[1],
-                                      (size_t)ap[0].dims[2]};
-                            ndims  = 3;
+                            nargs = node->setArgs(
+                                nargs, is_linear,
+                                [&kernel](int id, const void* ptr,
+                                          size_t arg_size) {
+                                    CL_CHECK(clSetKernelArg(kernel, id,
+                                                            arg_size, ptr));
+                                });
                         }
-                        // SHOW(global);
-                        CL_CHECK(clEnqueueNDRangeKernel(
-                            q, kernel, ndims, offset.data(), global.data(),
-                            nullptr, 0, nullptr, nullptr));
+                    }
 
-                        // CL_CHECK(clReleaseKernel(kernel));
-                        CL_CHECK(clReleaseDevice(dev));
-                        CL_CHECK(clReleaseContext(ctx));
-                        CL_CHECK(clReleaseCommandQueue(q));
+                    // Set output parameters
+                    vector<cl_mem> mem;
+                    for (const auto& output : ap) {
+                        mem = hh.get_native_mem<backend::opencl>(output.data);
+                        cl_mem mmm = mem[0];
+                        CL_CHECK(clSetKernelArg(kernel, nargs++, sizeof(cl_mem),
+                                                &mmm));
+                        int off = output.offset;
+                        CL_CHECK(
+                            clSetKernelArg(kernel, nargs++, sizeof(int), &off));
+                    }
+                    const KParam ooo = ap[0];
+                    CL_CHECK(
+                        clSetKernelArg(kernel, nargs++, sizeof(KParam), &ooo));
+                    array<size_t, 3> offset{0, 0, 0};
+                    array<size_t, 3> global;
+                    int ndims = 0;
+                    if (is_linear) {
+                        global = {(size_t)ap[0].dims.elements(), 0, 0};
+                        ndims  = 1;
+                    } else {
+                        global = {(size_t)ap[0].dims[0], (size_t)ap[0].dims[1],
+                                  (size_t)ap[0].dims[2]};
+                        ndims  = 3;
+                    }
+                    // SHOW(global);
+                    cl_event kernel_event;
+                    CL_CHECK(clEnqueueNDRangeKernel(
+                        q, kernel, ndims, offset.data(), global.data(), nullptr,
+                        0, nullptr, &kernel_event));
+                    CL_CHECK(clEnqueueBarrierWithWaitList(q, 1, &kernel_event,
+                                                          nullptr));
+                    CL_CHECK(clReleaseEvent(kernel_event));
 
-                    } break;
-                    default: ONEAPI_NOT_SUPPORTED("Backend not supported");
-                }
-            });
-        })
-        .wait();
+                    CL_CHECK(clReleaseDevice(dev));
+                    CL_CHECK(clReleaseContext(ctx));
+                    CL_CHECK(clReleaseCommandQueue(q));
+
+                } break;
+                default: ONEAPI_NOT_SUPPORTED("Backend not supported");
+            }
+        });
+    });
 }
 
 template<typename T>

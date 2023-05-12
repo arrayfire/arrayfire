@@ -41,7 +41,8 @@ template<typename T>
 inline int setKernelArguments(
     int start_id, bool is_linear,
     std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
-    const std::shared_ptr<sycl::buffer<T>>& ptr, const AParam<T>& info) {
+    const std::shared_ptr<sycl::buffer<T>>& ptr,
+    const AParam<T, sycl::access_mode::read>& info) {
     setArg(start_id + 0, static_cast<const void*>(&info), sizeof(Param<T>));
     return start_id + 2;
 }

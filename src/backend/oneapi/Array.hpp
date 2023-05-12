@@ -41,7 +41,7 @@ namespace oneapi {
 
 template<typename T>
 struct Param;
-template<typename T>
+template<typename T, sycl::access_mode AM>
 struct AParam;
 
 template<typename T>
@@ -254,7 +254,7 @@ class Array {
     }
 
     sycl::buffer<T> *get() const {
-        if (!isReady()) eval();
+        if (!isReady()) { eval(); }
         return data.get();
     }
 
@@ -277,8 +277,15 @@ class Array {
         return out;
     }
 
-    operator AParam<T>() {
-        AParam<T> out(*getData(), dims().get(), strides().get(), getOffset());
+    operator AParam<T, sycl::access_mode::write>() {
+        AParam<T, sycl::access_mode::write> out(*getData(), dims().get(),
+                                                strides().get(), getOffset());
+        return out;
+    }
+
+    operator AParam<T, sycl::access_mode::read>() const {
+        AParam<T, sycl::access_mode::read> out(*getData(), dims().get(),
+                                               strides().get(), getOffset());
         return out;
     }
 
