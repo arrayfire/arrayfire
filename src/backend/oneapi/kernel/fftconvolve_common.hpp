@@ -69,11 +69,6 @@ void calcParamSizes(Param<T>& sig_tmp, Param<T>& filter_tmp,
     }
 }
 
-// template<typename T>
-// using read_accessor = sycl::accessor<T, 1, sycl::access::mode::read>;
-// template<typename T>
-// using write_accessor = sycl::accessor<T, 1, sycl::access::mode::write>;
-
 }  // namespace kernel
 }  // namespace oneapi
 }  // namespace arrayfire
