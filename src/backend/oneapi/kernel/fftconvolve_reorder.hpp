@@ -22,14 +22,15 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-template<typename T>
+template<typename T, typename convScalarT>
 class fftconvolve_reorderCreateKernel {
    public:
     fftconvolve_reorderCreateKernel(write_accessor<T> d_out, KParam oInfo,
-                                    read_accessor<T> d_in, KParam iInfo,
-                                    KParam fInfo, const int half_di0,
-                                    const int baseDim, const int fftScale,
-                                    const bool EXPAND, const bool ROUND_OUT)
+                                    read_accessor<convScalarT> d_in,
+                                    KParam iInfo, KParam fInfo,
+                                    const int half_di0, const int baseDim,
+                                    const int fftScale, const bool EXPAND,
+                                    const bool ROUND_OUT)
         : d_out_(d_out)
         , oInfo_(oInfo)
         , d_in_(d_in)
@@ -120,7 +121,7 @@ class fftconvolve_reorderCreateKernel {
    private:
     write_accessor<T> d_out_;
     KParam oInfo_;
-    read_accessor<T> d_in_;
+    read_accessor<convScalarT> d_in_;
     KParam iInfo_;
     KParam fInfo_;
     const int half_di0_;
@@ -152,31 +153,34 @@ void reorderOutputHelper(Param<T> out, Param<convT> packed, Param<T> sig,
     auto local  = sycl::range(THREADS);
     auto global = sycl::range(blocks * THREADS);
 
+    using convScalarT = typename convT::value_type;
+
     if (kind == AF_BATCH_RHS) {
-        auto packed_num_elem = (*packed.data).get_range().size();
-        auto filter_tmp_buffer =
-            (*packed.data)
-                .template reinterpret<T>(sycl::range<1>{packed_num_elem * 2});
+        auto packed_num_elem   = (*packed.data).get_range().size();
+        auto filter_tmp_buffer = (*packed.data)
+                                     .template reinterpret<convScalarT>(
+                                         sycl::range<1>{packed_num_elem * 2});
         getQueue().submit([&](auto &h) {
-            read_accessor<T> d_filter_tmp = {filter_tmp_buffer, h};
-            write_accessor<T> d_out       = {*out.data, h, sycl::write_only};
+            read_accessor<convScalarT> d_filter_tmp = {filter_tmp_buffer, h};
+            write_accessor<T> d_out = {*out.data, h, sycl::write_only};
             h.parallel_for(
                 sycl::nd_range{global, local},
-                fftconvolve_reorderCreateKernel<T>(
+                fftconvolve_reorderCreateKernel<T, convScalarT>(
                     d_out, out.info, d_filter_tmp, filter_tmp.info, filter.info,
                     sig_half_d0, rank, fftScale, expand, round_out));
         });
     } else {
         auto packed_num_elem = (*packed.data).get_range().size();
-        auto sig_tmp_buffer =
-            (*packed.data)
-                .template reinterpret<T>(sycl::range<1>{packed_num_elem * 2});
+        auto sig_tmp_buffer  = (*packed.data)
+                                  .template reinterpret<convScalarT>(
+                                      sycl::range<1>{packed_num_elem * 2});
         getQueue().submit([&](auto &h) {
-            read_accessor<T> d_sig_tmp = {sig_tmp_buffer, h, sycl::read_only};
-            write_accessor<T> d_out    = {*out.data, h};
+            read_accessor<convScalarT> d_sig_tmp = {sig_tmp_buffer, h,
+                                                    sycl::read_only};
+            write_accessor<T> d_out              = {*out.data, h};
             h.parallel_for(
                 sycl::nd_range{global, local},
-                fftconvolve_reorderCreateKernel<T>(
+                fftconvolve_reorderCreateKernel<T, convScalarT>(
                     d_out, out.info, d_sig_tmp, sig_tmp.info, filter.info,
                     sig_half_d0, rank, fftScale, expand, round_out));
         });
