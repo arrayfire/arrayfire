@@ -296,6 +296,7 @@ target_compile_options(afoneapi
     -fsycl
     -fno-sycl-id-queries-fit-in-int
     -sycl-std=2020
+    -fno-sycl-rdc
 )
 
 target_compile_definitions(afoneapi
@@ -321,6 +322,7 @@ target_link_libraries(afoneapi
     -fsycl-device-code-split=per_kernel
     -fsycl-link-huge-device-code
     -fno-sycl-id-queries-fit-in-int
+    -fno-sycl-rdc
     MKL::MKL_DPCPP
   )
 
