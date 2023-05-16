@@ -294,6 +294,7 @@ target_include_directories(afoneapi
 target_compile_options(afoneapi
   PRIVATE
     -fsycl
+    -fno-sycl-id-queries-fit-in-int
     -sycl-std=2020
 )
 
@@ -317,9 +318,9 @@ target_link_libraries(afoneapi
     afcommon_interface
     OpenCL::OpenCL
     OpenCL::cl2hpp
-    -fsycl
     -fsycl-device-code-split=per_kernel
     -fsycl-link-huge-device-code
+    -fno-sycl-id-queries-fit-in-int
     MKL::MKL_DPCPP
   )
 
