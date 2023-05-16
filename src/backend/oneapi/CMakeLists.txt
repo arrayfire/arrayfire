@@ -309,6 +309,9 @@ target_compile_definitions(afoneapi
     CL_HPP_ENABLE_EXCEPTIONS
   )
 
+cmake_host_system_information(RESULT NumberOfThreads
+  QUERY NUMBER_OF_LOGICAL_CORES)
+
 target_link_libraries(afoneapi
   PRIVATE
     -fsycl
@@ -319,10 +322,11 @@ target_link_libraries(afoneapi
     afcommon_interface
     OpenCL::OpenCL
     OpenCL::cl2hpp
-    -fsycl-device-code-split=per_kernel
-    -fsycl-link-huge-device-code
     -fno-sycl-id-queries-fit-in-int
     -fno-sycl-rdc
+    -fsycl-device-code-split=per_kernel
+    -fsycl-link-huge-device-code
+    -fsycl-max-parallel-link-jobs=${NumberOfThreads}
     MKL::MKL_DPCPP
   )
 
