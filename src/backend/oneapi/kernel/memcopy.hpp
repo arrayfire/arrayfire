@@ -28,6 +28,27 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
+template<typename T>
+using factortypes = typename std::conditional<std::is_same_v<T, double> ||
+                                                  std::is_same_v<T, cdouble>,
+                                              double, float>::type;
+
+template<typename T, typename FACTORTYPE = factortypes<T>>
+inline T scale(T value, FACTORTYPE factor) {
+    return (T)(FACTORTYPE(value) * factor);
+}
+
+template<>
+inline cfloat scale<cfloat, float>(cfloat value, float factor) {
+    return cfloat{static_cast<float>(value.real() * factor),
+                  static_cast<float>(value.imag() * factor)};
+}
+
+template<>
+inline cdouble scale<cdouble, double>(cdouble value, double factor) {
+    return cdouble{value.real() * factor, value.imag() * factor};
+}
+
 typedef struct {
     dim_t dim[4];
 } dims_t;
@@ -126,22 +147,6 @@ void memcopy(sycl::buffer<T> *out, const dim_t *ostrides,
     ONEAPI_DEBUG_FINISH(getQueue());
 }
 
-template<typename T>
-inline T scale(T value, double factor) {
-    return (T)(double(value) * factor);
-}
-
-template<>
-inline cfloat scale<cfloat>(cfloat value, double factor) {
-    return cfloat{static_cast<float>(value.real() * factor),
-                  static_cast<float>(value.imag() * factor)};
-}
-
-template<>
-inline cdouble scale<cdouble>(cdouble value, double factor) {
-    return cdouble{value.real() * factor, value.imag() * factor};
-}
-
 template<typename inType, typename outType>
 inline outType convertType(inType value) {
     return static_cast<outType>(value);
@@ -201,7 +206,7 @@ class reshapeCopy {
    public:
     reshapeCopy(write_accessor<outType> dst, KParam oInfo,
                 read_accessor<inType> src, KParam iInfo, outType default_value,
-                float factor, dims_t trgt, int blk_x, int blk_y)
+                factortypes<inType> factor, dims_t trgt, int blk_x, int blk_y)
         : dst_(dst)
         , src_(src)
         , oInfo_(oInfo)
@@ -266,7 +271,7 @@ class reshapeCopy {
     read_accessor<inType> src_;
     KParam oInfo_, iInfo_;
     outType default_value_;
-    float factor_;
+    factortypes<inType> factor_;
     dims_t trgt_;
     int blk_x_, blk_y_;
 };
@@ -309,15 +314,15 @@ void copy(Param<outType> dst, const Param<inType> src, const int ndims,
             *const_cast<sycl::buffer<inType> *>(src.data), h};
 
         if (same_dims) {
-            h.parallel_for(ndrange, reshapeCopy<inType, outType, true>(
-                                        dst_acc, dst.info, src_acc, src.info,
-                                        default_value, (float)factor, trgt_dims,
-                                        blk_x, blk_y));
+            h.parallel_for(ndrange,
+                           reshapeCopy<inType, outType, true>(
+                               dst_acc, dst.info, src_acc, src.info,
+                               default_value, factor, trgt_dims, blk_x, blk_y));
         } else {
-            h.parallel_for(ndrange, reshapeCopy<inType, outType, false>(
-                                        dst_acc, dst.info, src_acc, src.info,
-                                        default_value, (float)factor, trgt_dims,
-                                        blk_x, blk_y));
+            h.parallel_for(ndrange,
+                           reshapeCopy<inType, outType, false>(
+                               dst_acc, dst.info, src_acc, src.info,
+                               default_value, factor, trgt_dims, blk_x, blk_y));
         }
     });
     ONEAPI_DEBUG_FINISH(getQueue());
