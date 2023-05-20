@@ -43,6 +43,36 @@ cfloat max(cfloat lhs, cfloat rhs);
 cdouble max(cdouble lhs, cdouble rhs);
 
 template<typename T>
+static inline auto is_nan(const T &val) -> bool {
+    return false;
+}
+
+template<>
+inline auto is_nan<float>(const float &val) -> bool {
+    return std::isnan(val);
+}
+
+template<>
+inline auto is_nan<double>(const double &val) -> bool {
+    return std::isnan(val);
+}
+
+template<>
+inline auto is_nan<common::half>(const common::half &val) -> bool {
+    return isnan(val);
+}
+
+template<>
+inline auto is_nan<cfloat>(const cfloat &in) -> bool {
+    return std::isnan(real(in)) || std::isnan(imag(in));
+}
+
+template<>
+inline auto is_nan<cdouble>(const cdouble &in) -> bool {
+    return std::isnan(real(in)) || std::isnan(imag(in));
+}
+
+template<typename T>
 static inline T division(T lhs, double rhs) {
     return lhs / rhs;
 }

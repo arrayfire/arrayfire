@@ -88,6 +88,7 @@ using uint16_t = unsigned short;
 #else
 #include <af/compilers.h>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <ostream>
 #include <string>

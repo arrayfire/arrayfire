@@ -20,6 +20,7 @@
 #include <kernel_headers/sparse_arith_csr.hpp>
 #include <kernel_headers/ssarith_calc_out_nnz.hpp>
 #include <math.hpp>
+#include <memory.hpp>
 #include <traits.hpp>
 
 #include <string>

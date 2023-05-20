@@ -261,6 +261,42 @@ __SDH__ float imag(cfloat c) { return cuCimagf(c); }
 __SDH__ double imag(cdouble c) { return cuCimag(c); }
 
 template<typename T>
+static inline __DH__ auto is_nan(const T &val) -> bool {
+    return false;
+}
+
+template<>
+inline __DH__ auto is_nan<float>(const float &val) -> bool {
+    return ::isnan(val);
+}
+
+template<>
+inline __DH__ auto is_nan<double>(const double &val) -> bool {
+    return ::isnan(val);
+}
+
+#ifdef __CUDA_ARCH__
+template<>
+inline __device__ auto is_nan<__half>(const __half &val) -> bool {
+#if __CUDA_ARCH__ >= 530
+    return __hisnan(val);
+#else
+    return ::isnan(__half2float(val));
+#endif
+}
+#endif
+
+template<>
+inline auto is_nan<cfloat>(const cfloat &in) -> bool {
+    return ::isnan(real(in)) || ::isnan(imag(in));
+}
+
+template<>
+inline auto is_nan<cdouble>(const cdouble &in) -> bool {
+    return ::isnan(real(in)) || ::isnan(imag(in));
+}
+
+template<typename T>
 T __SDH__ conj(T x) {
     return x;
 }
