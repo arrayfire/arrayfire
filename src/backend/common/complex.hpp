@@ -6,8 +6,8 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
-#include <Array.hpp>
 #include <backend.hpp>
 #include <types.hpp>
 

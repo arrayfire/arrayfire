@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #include <Array.hpp>
 #include <binary.hpp>
 #include <common/jit/BinaryNode.hpp>

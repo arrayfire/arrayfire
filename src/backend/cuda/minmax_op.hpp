@@ -34,26 +34,12 @@ double cabs<cdouble>(const cdouble &in) {
     return (double)abs(in);
 }
 
-template<typename T>
-static bool is_nan(const T &in) {
-    return in != in;
-}
-
-template<>
-bool is_nan<cfloat>(const cfloat &in) {
-    return in.x != in.x || in.y != in.y;
-}
-
-template<>
-bool is_nan<cdouble>(const cdouble &in) {
-    return in.x != in.x || in.y != in.y;
-}
-
 template<af_op_t op, typename T>
 struct MinMaxOp {
     T m_val;
     uint m_idx;
     MinMaxOp(T val, uint idx) : m_val(val), m_idx(idx) {
+        using arrayfire::cuda::is_nan;
         if (is_nan(val)) { m_val = common::Binary<compute_t<T>, op>::init(); }
     }
 
@@ -71,6 +57,7 @@ struct MinMaxOp<af_max_t, T> {
     T m_val;
     uint m_idx;
     MinMaxOp(T val, uint idx) : m_val(val), m_idx(idx) {
+        using arrayfire::cuda::is_nan;
         if (is_nan(val)) { m_val = common::Binary<T, af_max_t>::init(); }
     }
 

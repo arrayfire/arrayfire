@@ -10,6 +10,7 @@
 #pragma once
 
 #include <common/Binary.hpp>
+#include <math.hpp>
 
 namespace arrayfire {
 namespace oneapi {
@@ -32,21 +33,6 @@ double cabs<cfloat>(const cfloat &in) {
 template<>
 double cabs<cdouble>(const cdouble &in) {
     return (double)abs(in);
-}
-
-template<typename T>
-static bool is_nan(const T &in) {
-    return in != in;
-}
-
-template<>
-bool is_nan<cfloat>(const cfloat &in) {
-    return in.real() != in.real() || in.imag() != in.imag();
-}
-
-template<>
-bool is_nan<cdouble>(const cdouble &in) {
-    return in.real() != in.real() || in.imag() != in.imag();
 }
 
 template<af_op_t op, typename T>

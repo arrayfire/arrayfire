@@ -176,7 +176,7 @@ Module compileModule(const string &moduleKey, span<const string> sources,
             "stdbool.h",       // DUMMY ENTRY TO SATISFY af/defines.h inclusion
             "stdlib.h",        // DUMMY ENTRY TO SATISFY af/defines.h inclusion
             "vector_types.h",  // DUMMY ENTRY TO SATISFY cuComplex_h inclusion
-            "utility",         // DUMMY ENTRY TO SATISFY cuda_fp16.hpp inclusion
+            "utility",         // DUMMY ENTRY TO SATISFY utility inclusion
             "backend.hpp",
             "cuComplex.h",
             "jit.cuh",

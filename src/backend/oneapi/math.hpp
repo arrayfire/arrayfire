@@ -72,6 +72,36 @@ inline cdouble min<cdouble>(cdouble lhs, cdouble rhs) {
 }
 
 template<typename T>
+static inline auto is_nan(const T &val) -> bool {
+    return false;
+}
+
+template<>
+inline auto is_nan<sycl::half>(const sycl::half &val) -> bool {
+    return sycl::isnan(val);
+}
+
+template<>
+inline auto is_nan<float>(const float &val) -> bool {
+    return std::isnan(val);
+}
+
+template<>
+inline auto is_nan<double>(const double &val) -> bool {
+    return std::isnan(val);
+}
+
+template<>
+inline auto is_nan<cfloat>(const cfloat &in) -> bool {
+    return std::isnan(real(in)) || std::isnan(imag(in));
+}
+
+template<>
+inline auto is_nan<cdouble>(const cdouble &in) -> bool {
+    return std::isnan(real(in)) || std::isnan(imag(in));
+}
+
+template<typename T>
 static T scalar(double val) {
     return (T)(val);
 }
@@ -79,8 +109,6 @@ static T scalar(double val) {
 template<>
 inline cfloat scalar<cfloat>(double val) {
     cfloat cval(static_cast<float>(val));
-    // cval.real() = (float)val;
-    // cval.imag() = 0;
     return cval;
 }
 
