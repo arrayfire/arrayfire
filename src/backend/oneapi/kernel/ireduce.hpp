@@ -42,7 +42,8 @@ class ireduceDimKernelSMEM {
                          read_accessor<T> in, KParam iInfo,
                          read_accessor<uint> iloc, KParam ilocInfo,
                          uint groups_x, uint groups_y, uint groups_dim,
-                         read_accessor<uint> rlen, KParam rlenInfo,
+                         bool rlenValid, read_accessor<uint> rlen,
+                         KParam rlenInfo,
                          sycl::local_accessor<compute_t<T>, 1> s_val,
                          sycl::local_accessor<uint, 1> s_idx)
         : out_(out)
@@ -56,6 +57,7 @@ class ireduceDimKernelSMEM {
         , groups_x_(groups_x)
         , groups_y_(groups_y)
         , groups_dim_(groups_dim)
+        , rlenValid_(rlenValid)
         , rlen_(rlen)
         , rlenInfo_(rlenInfo)
         , s_val_(s_val)
@@ -90,8 +92,7 @@ class ireduceDimKernelSMEM {
         const bool rlen_valid =
             (ids[0] < rlenInfo_.dims[0]) && (ids[1] < rlenInfo_.dims[1]) &&
             (ids[2] < rlenInfo_.dims[2]) && (ids[3] < rlenInfo_.dims[3]);
-        const bool rlen_nonnull = (rlenInfo_.dims[0] * rlenInfo_.dims[1] *
-                                   rlenInfo_.dims[2] * rlenInfo_.dims[3]) > 0;
+        const bool rlen_nonnull = rlenValid_;
         uint *const rlenptr =
             (rlen_nonnull && rlen_valid)
                 ? rlen_.get_pointer() + ids[3] * rlenInfo_.strides[3] +
@@ -204,6 +205,7 @@ class ireduceDimKernelSMEM {
     read_accessor<uint> iloc_;
     KParam ilocInfo_;
     uint groups_x_, groups_y_, groups_dim_;
+    bool rlenValid_;
     read_accessor<uint> rlen_;
     KParam rlenInfo_;
     sycl::local_accessor<compute_t<T>, 1> s_val_;
@@ -218,25 +220,25 @@ void ireduce_dim_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
     sycl::range<2> global(groups_dim[0] * groups_dim[2] * local[0],
                           groups_dim[1] * groups_dim[3] * local[1]);
 
-    sycl::buffer<uint, 1> empty{sycl::range<1>(1)};
+    auto iempty = memAlloc<uint>(1);
+    auto rempty = memAlloc<uint>(1);
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<T> out_acc{*out.data, h};
         write_accessor<uint> oloc_acc{*oloc.data, h};
         read_accessor<T> in_acc{*in.data, h};
 
-        read_accessor<uint> iloc_acc{empty, h};
+        read_accessor<uint> iloc_acc{*iempty, h};
         if (iloc.info.dims[0] * iloc.info.dims[1] * iloc.info.dims[2] *
                 iloc.info.dims[3] >
             0) {
             iloc_acc = read_accessor<uint>{*iloc.data, h};
         }
 
-        read_accessor<uint> rlen_acc{empty, h};
-        if (rlen.info.dims[0] * rlen.info.dims[1] * rlen.info.dims[2] *
-                rlen.info.dims[3] >
-            0) {
-            rlen_acc = read_accessor<uint>{*rlen.data, h};
-        }
+        read_accessor<uint> rlen_acc{*rempty, h};
+        bool rlenValid = (rlen.info.dims[0] * rlen.info.dims[1] *
+                              rlen.info.dims[2] * rlen.info.dims[3] >
+                          0);
+        if (rlenValid) { rlen_acc = read_accessor<uint>{*rlen.data, h}; }
 
         auto shrdVal = sycl::local_accessor<compute_t<T>, 1>(
             creduce::THREADS_PER_BLOCK, h);
@@ -250,8 +252,8 @@ void ireduce_dim_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
                     ireduceDimKernelSMEM<T, op, dim, is_first, 8>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_dim[0], groups_dim[1],
-                        groups_dim[dim], rlen_acc, rlen.info, shrdVal,
-                        shrdLoc));
+                        groups_dim[dim], rlenValid, rlen_acc, rlen.info,
+                        shrdVal, shrdLoc));
                 break;
             case 4:
                 h.parallel_for(
@@ -259,8 +261,8 @@ void ireduce_dim_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
                     ireduceDimKernelSMEM<T, op, dim, is_first, 8>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_dim[0], groups_dim[1],
-                        groups_dim[dim], rlen_acc, rlen.info, shrdVal,
-                        shrdLoc));
+                        groups_dim[dim], rlenValid, rlen_acc, rlen.info,
+                        shrdVal, shrdLoc));
                 break;
             case 2:
                 h.parallel_for(
@@ -268,8 +270,8 @@ void ireduce_dim_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
                     ireduceDimKernelSMEM<T, op, dim, is_first, 8>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_dim[0], groups_dim[1],
-                        groups_dim[dim], rlen_acc, rlen.info, shrdVal,
-                        shrdLoc));
+                        groups_dim[dim], rlenValid, rlen_acc, rlen.info,
+                        shrdVal, shrdLoc));
                 break;
             case 1:
                 h.parallel_for(
@@ -277,8 +279,8 @@ void ireduce_dim_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
                     ireduceDimKernelSMEM<T, op, dim, is_first, 8>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_dim[0], groups_dim[1],
-                        groups_dim[dim], rlen_acc, rlen.info, shrdVal,
-                        shrdLoc));
+                        groups_dim[dim], rlenValid, rlen_acc, rlen.info,
+                        shrdVal, shrdLoc));
                 break;
         }
     });
@@ -335,7 +337,8 @@ class ireduceFirstKernelSMEM {
                            read_accessor<T> in, KParam iInfo,
                            read_accessor<uint> iloc, KParam ilocInfo,
                            uint groups_x, uint groups_y, uint repeat,
-                           read_accessor<uint> rlen, KParam rlenInfo,
+                           bool rlenValid, read_accessor<uint> rlen,
+                           KParam rlenInfo,
                            sycl::local_accessor<compute_t<T>, 1> s_val,
                            sycl::local_accessor<uint, 1> s_idx)
         : out_(out)
@@ -349,6 +352,7 @@ class ireduceFirstKernelSMEM {
         , groups_x_(groups_x)
         , groups_y_(groups_y)
         , repeat_(repeat)
+        , rlenValid_(rlenValid)
         , rlen_(rlen)
         , rlenInfo_(rlenInfo)
         , s_val_(s_val)
@@ -372,23 +376,24 @@ class ireduceFirstKernelSMEM {
                         iInfo_.offset;
 
         T *optr = out_.get_pointer() + wid * oInfo_.strides[3] +
-                  zid * oInfo_.strides[2] + yid * oInfo_.strides[1];
+                  zid * oInfo_.strides[2] + yid * oInfo_.strides[1] +
+                  oInfo_.offset;
 
-        const bool rlenvalid = (rlenInfo_.dims[0] * rlenInfo_.dims[1] *
-                                rlenInfo_.dims[2] * rlenInfo_.dims[3]) > 0;
-        uint *const rlenptr =
-            (rlenvalid)
-                ? rlen_.get_pointer() + wid * rlenInfo_.strides[3] +
-                      zid * rlenInfo_.strides[2] + yid * rlenInfo_.strides[1]
-                : nullptr;
+        const uint *rlenptr =
+            (rlenValid_) ? rlen_.get_pointer() + wid * rlenInfo_.strides[3] +
+                               zid * rlenInfo_.strides[2] +
+                               yid * rlenInfo_.strides[1] + rlenInfo_.offset
+                         : nullptr;
 
         uint *ilptr;
         if (!is_first) {
             ilptr = iloc_.get_pointer() + wid * iInfo_.strides[3] +
-                    zid * iInfo_.strides[2] + yid * iInfo_.strides[1];
+                    zid * iInfo_.strides[2] + yid * iInfo_.strides[1] +
+                    iInfo_.offset;
         }
         uint *olptr = oloc_.get_pointer() + wid * oInfo_.strides[3] +
-                      zid * oInfo_.strides[2] + yid * oInfo_.strides[1];
+                      zid * oInfo_.strides[2] + yid * oInfo_.strides[1] +
+                      oInfo_.offset;
 
         size_t ylim   = iInfo_.dims[1];
         size_t zlim   = iInfo_.dims[2];
@@ -404,7 +409,7 @@ class ireduceFirstKernelSMEM {
         compute_t<T> out_val = common::Binary<compute_t<T>, op>::init();
         uint idx             = xid;
 
-        if (xid < lim) {
+        if (xid < lim && is_valid) {
             out_val = static_cast<compute_t<T>>(iptr[xid]);
             if (!is_first) idx = ilptr[xid];
         }
@@ -501,6 +506,7 @@ class ireduceFirstKernelSMEM {
     read_accessor<uint> iloc_;
     KParam ilocInfo_;
     uint groups_x_, groups_y_, repeat_;
+    bool rlenValid_;
     read_accessor<uint> rlen_;
     KParam rlenInfo_;
     sycl::local_accessor<compute_t<T>, 1> s_val_;
@@ -518,25 +524,25 @@ void ireduce_first_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
 
     uint repeat = divup(in.info.dims[0], (groups_x * threads_x));
 
-    sycl::buffer<uint, 1> empty{sycl::range<1>(1)};
+    auto iempty = memAlloc<uint>(1);
+    auto rempty = memAlloc<uint>(1);
     getQueue().submit([&](sycl::handler &h) {
         write_accessor<T> out_acc{*out.data, h};
         write_accessor<uint> oloc_acc{*oloc.data, h};
         read_accessor<T> in_acc{*in.data, h};
 
-        read_accessor<uint> iloc_acc{empty, h};
+        read_accessor<uint> iloc_acc{*iempty, h};
         if (iloc.info.dims[0] * iloc.info.dims[1] * iloc.info.dims[2] *
                 iloc.info.dims[3] >
             0) {
             iloc_acc = read_accessor<uint>{*iloc.data, h};
         }
 
-        read_accessor<uint> rlen_acc{empty, h};
-        if (rlen.info.dims[0] * rlen.info.dims[1] * rlen.info.dims[2] *
-                rlen.info.dims[3] >
-            0) {
-            rlen_acc = read_accessor<uint>{*rlen.data, h};
-        }
+        read_accessor<uint> rlen_acc{*rempty, h};
+        bool rlenValid = (rlen.info.dims[0] * rlen.info.dims[1] *
+                              rlen.info.dims[2] * rlen.info.dims[3] >
+                          0);
+        if (rlenValid) { rlen_acc = read_accessor<uint>{*rlen.data, h}; }
 
         auto shrdVal = sycl::local_accessor<compute_t<T>, 1>(
             creduce::THREADS_PER_BLOCK, h);
@@ -550,7 +556,7 @@ void ireduce_first_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
                     ireduceFirstKernelSMEM<T, op, is_first, 32>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_x, groups_y, repeat,
-                        rlen_acc, rlen.info, shrdVal, shrdLoc));
+                        rlenValid, rlen_acc, rlen.info, shrdVal, shrdLoc));
                 break;
             case 64:
                 h.parallel_for(
@@ -558,7 +564,7 @@ void ireduce_first_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
                     ireduceFirstKernelSMEM<T, op, is_first, 64>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_x, groups_y, repeat,
-                        rlen_acc, rlen.info, shrdVal, shrdLoc));
+                        rlenValid, rlen_acc, rlen.info, shrdVal, shrdLoc));
                 break;
             case 128:
                 h.parallel_for(
@@ -566,7 +572,7 @@ void ireduce_first_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
                     ireduceFirstKernelSMEM<T, op, is_first, 128>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_x, groups_y, repeat,
-                        rlen_acc, rlen.info, shrdVal, shrdLoc));
+                        rlenValid, rlen_acc, rlen.info, shrdVal, shrdLoc));
                 break;
             case 256:
                 h.parallel_for(
@@ -574,7 +580,7 @@ void ireduce_first_launcher(Param<T> out, Param<uint> oloc, Param<T> in,
                     ireduceFirstKernelSMEM<T, op, is_first, 256>(
                         out_acc, out.info, oloc_acc, oloc.info, in_acc, in.info,
                         iloc_acc, iloc.info, groups_x, groups_y, repeat,
-                        rlen_acc, rlen.info, shrdVal, shrdLoc));
+                        rlenValid, rlen_acc, rlen.info, shrdVal, shrdLoc));
                 break;
         }
     });
@@ -669,6 +675,16 @@ T ireduce_all(uint *idx, Param<T> in) {
 
     sycl::host_accessor h_ptr_raw{*tmp.get()};
     sycl::host_accessor h_lptr_raw{*tlptr.get()};
+    if (!is_linear) {
+        // Converting n-d index into a linear index
+        // in is of size   [   dims0, dims1, dims2, dims3]
+        // tidx is of size [blocks_x, dims1, dims2, dims3]
+        // i / blocks_x gives you the batch number "N"
+        // "N * dims0 + i" gives the linear index
+        for (int i = 0; i < tmp_elements; i++) {
+            h_lptr_raw[i] += (i / groups_x) * in.info.dims[0];
+        }
+    }
 
     MinMaxOp<op, T> Op(h_ptr_raw[0], h_lptr_raw[0]);
 
