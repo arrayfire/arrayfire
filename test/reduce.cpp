@@ -408,7 +408,9 @@ class ReduceByKeyP : public ::testing::TestWithParam<reduce_by_key_params *> {
 
     void SetUp() {
         reduce_by_key_params *params = GetParam();
-        if (noHalfTests(params->vType_)) { return; }
+        if (noHalfTests(params->vType_)) {
+            GTEST_SKIP() << "Half not supported on this device";
+        }
 
         keys = ptrToArray(params->iSize, params->iKeys_, params->kType_);
         vals = ptrToArray(params->iSize, params->iVals_, params->vType_);
@@ -551,7 +553,12 @@ INSTANTIATE_TEST_SUITE_P(UniqueKeyTests, ReduceByKeyP,
                          testNameGenerator<ReduceByKeyP>);
 
 TEST_P(ReduceByKeyP, SumDim0) {
-    if (noHalfTests(GetParam()->vType_)) { return; }
+    if (noHalfTests(GetParam()->vType_)) {
+        GTEST_SKIP() << "Half not supported on this device";
+    }
+    if (noHalfTests(GetParam()->kType_)) {
+        GTEST_SKIP() << "Half not supported on this device";
+    }
     array keyRes, valsReduced;
     sumByKey(keyRes, valsReduced, keys, vals, 0, 0);
 
@@ -560,7 +567,12 @@ TEST_P(ReduceByKeyP, SumDim0) {
 }
 
 TEST_P(ReduceByKeyP, SumDim2) {
-    if (noHalfTests(GetParam()->vType_)) { return; }
+    if (noHalfTests(GetParam()->vType_)) {
+        GTEST_SKIP() << "Half not supported on this device";
+    }
+    if (noHalfTests(GetParam()->kType_)) {
+        GTEST_SKIP() << "Half not supported on this device";
+    }
     const int ntile = 2;
     vals            = tile(vals, 1, ntile, 1, 1);
     vals            = reorder(vals, 1, 2, 0, 3);
@@ -1946,7 +1958,9 @@ class RaggedReduceMaxRangeP : public ::testing::TestWithParam<ragged_params *> {
 
     void SetUp() {
         ragged_params *params = GetParam();
-        if (noHalfTests(params->vType_)) { return; }
+        if (noHalfTests(params->vType_)) {
+            GTEST_SKIP() << "Half not supported on this device";
+        }
 
         const size_t rdim_size = params->reduceDimLen_;
         const int dim          = params->reduceDim_;
@@ -2043,8 +2057,9 @@ INSTANTIATE_TEST_SUITE_P(RaggedReduceTests, RaggedReduceMaxRangeP,
                          testNameGeneratorRagged<RaggedReduceMaxRangeP>);
 
 TEST_P(RaggedReduceMaxRangeP, rangeMaxTest) {
-    if (noHalfTests(GetParam()->vType_)) { return; }
-
+    if (noHalfTests(GetParam()->vType_)) {
+        GTEST_SKIP() << "Half not supported on this device";
+    }
     array ragged_max, idx;
     const int dim = GetParam()->reduceDim_;
     max(ragged_max, idx, vals, ragged_lens, dim);
@@ -2308,20 +2323,21 @@ TEST(Reduce, nanval_issue_3255) {
     dim_t dims[1] = {8};
 
     int ikeys_src[8] = {0, 0, 1, 1, 1, 2, 2, 0};
-    af_create_array(&ikeys, ikeys_src, 1, dims, u32);
+    ASSERT_SUCCESS(af_create_array(&ikeys, ikeys_src, 1, dims, u32));
 
     int i;
     for (i = 0; i < 8; i++) {
         double ivals_src[8] = {1, 2, 3, 4, 5, 6, 7, 8};
         ivals_src[i]        = NAN;
-        af_create_array(&ivals, ivals_src, 1, dims, f64);
+        ASSERT_SUCCESS(af_create_array(&ivals, ivals_src, 1, dims, f64));
 
-        af_product_by_key_nan(&okeys, &ovals, ikeys, ivals, 0, 1.0);
+        ASSERT_SUCCESS(
+            af_product_by_key_nan(&okeys, &ovals, ikeys, ivals, 0, 1.0));
         af::array ovals_cpp(ovals);
         ASSERT_FALSE(af::anyTrue<bool>(af::isNaN(ovals_cpp)));
         ASSERT_SUCCESS(af_release_array(okeys));
 
-        af_sum_by_key_nan(&okeys, &ovals, ikeys, ivals, 0, 1.0);
+        ASSERT_SUCCESS(af_sum_by_key_nan(&okeys, &ovals, ikeys, ivals, 0, 1.0));
         ovals_cpp = af::array(ovals);
 
         ASSERT_FALSE(af::anyTrue<bool>(af::isNaN(ovals_cpp)));
