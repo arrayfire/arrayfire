@@ -170,11 +170,6 @@ static inline T imag(T in) {
     return std::imag(in);
 }
 
-inline arrayfire::common::half operator+(arrayfire::common::half lhs,
-                                         arrayfire::common::half rhs) noexcept {
-    return arrayfire::common::half(static_cast<float>(lhs) +
-                                   static_cast<float>(rhs));
-}
 }  // namespace oneapi
 }  // namespace arrayfire
 
