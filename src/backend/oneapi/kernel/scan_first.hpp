@@ -181,7 +181,7 @@ class scanFirstBcastKernel {
         // Shift broadcast one step to the right for exclusive scan (#2366)
         int offset = !inclusive_scan_;
         for (int k = 0, id = xid + offset; k < lim_ && id < oInfo_.dims[0];
-             k++, id += g.get_group_range(0)) {
+             k++, id += g.get_local_range(0)) {
             optr[id] = binop(accum, optr[id]);
         }
     }
