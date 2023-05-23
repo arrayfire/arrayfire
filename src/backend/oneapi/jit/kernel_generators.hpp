@@ -61,8 +61,9 @@ inline void generateBufferOffsets(std::stringstream& kerStream, int id,
                   << info_str << ".strides[3] * id3 + (id2 < " << info_str
                   << ".dims[2]) * " << info_str << ".strides[2] * id2 + (id1 < "
                   << info_str << ".dims[1]) * " << info_str
-                  << ".strides[1] * id1 + (id0 < " << info_str
-                  << ".dims[0]) * id0 + " << info_str << ".offset;\n";
+                  << ".strides[1] * id1 + (id0 < " << info_str << ".dims[0]) * "
+                  << info_str << ".strides[0]  * id0 + " << info_str
+                  << ".offset;\n";
     }
 }
 
