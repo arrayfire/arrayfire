@@ -95,7 +95,8 @@ class transposeKernel {
 
         // offset in_ and out_ based on batch id
         // also add the subBuffer offsets
-        T *iDataPtr = iData_.get_pointer(), *oDataPtr = oData_.get_pointer();
+        const T *iDataPtr = iData_.get_pointer();
+        T *oDataPtr       = oData_.get_pointer();
         iDataPtr += batchId_x * in_.strides[2] + batchId_y * in_.strides[3] +
                     in_.offset;
         oDataPtr += batchId_x * out_.strides[2] + batchId_y * out_.strides[3] +

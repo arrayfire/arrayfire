@@ -66,8 +66,8 @@ class wrapDilatedCreateKernel {
 
         data_t<T> *optr = optrAcc_.get_pointer() + idx2 * out_.strides[2] +
                           idx3 * out_.strides[3];
-        data_t<T> *iptr = iptrAcc_.get_pointer() + idx2 * in_.strides[2] +
-                          idx3 * in_.strides[3] + in_.offset;
+        const data_t<T> *iptr = iptrAcc_.get_pointer() + idx2 * in_.strides[2] +
+                                idx3 * in_.strides[3] + in_.offset;
 
         if (oidx0 >= out_.dims[0] || oidx1 >= out_.dims[1]) return;
 

@@ -68,7 +68,7 @@ class reduceFirstKernelSMEM {
         common::Binary<compute_t<To>, op> reduce;
         common::Transform<Ti, compute_t<To>, op> transform;
 
-        Ti *const iptr = in_.get_pointer() + wid * iInfo_.strides[3] +
+        const Ti *iptr = in_.get_pointer() + wid * iInfo_.strides[3] +
                          zid * iInfo_.strides[2] + yid * iInfo_.strides[1] +
                          iInfo_.offset;
 

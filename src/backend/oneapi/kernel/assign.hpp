@@ -88,7 +88,7 @@ class assignKernel {
                 p_.strds[3] *
                 trimIndex(s3 ? gw + p_.offs[3] : p_.ptr[3][gw], oInfo_.dims[3]);
 
-            T* iptr = in_.get_pointer();
+            const T* iptr = in_.get_pointer();
             // offset input and output pointers
             const T* src =
                 iptr + (gx * iInfo_.strides[0] + gy * iInfo_.strides[1] +

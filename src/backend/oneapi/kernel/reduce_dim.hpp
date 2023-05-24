@@ -65,14 +65,14 @@ class reduceDimKernelSMEM {
         uint ids[4] = {xid, yid, zid, wid};
         using sycl::global_ptr;
 
-        global_ptr<data_t<To>> optr =
-            out_.get_pointer() + ids[3] * oInfo_.strides[3] +
-            ids[2] * oInfo_.strides[2] + ids[1] * oInfo_.strides[1] + ids[0];
+        data_t<To> *optr = out_.get_pointer() + ids[3] * oInfo_.strides[3] +
+                           ids[2] * oInfo_.strides[2] +
+                           ids[1] * oInfo_.strides[1] + ids[0];
 
         const uint groupIdx_dim = ids[dim];
         ids[dim]                = ids[dim] * g.get_local_range(1) + lidy;
 
-        global_ptr<data_t<Ti>> iptr =
+        const data_t<Ti> *iptr =
             in_.get_pointer() + ids[3] * iInfo_.strides[3] +
             ids[2] * iInfo_.strides[2] + ids[1] * iInfo_.strides[1] + ids[0];
 

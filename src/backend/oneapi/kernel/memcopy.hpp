@@ -81,7 +81,7 @@ class memCopy {
         const int id0        = group_id_0 * gg.get_local_range(0) + lid0;
         const int id1        = group_id_1 * gg.get_local_range(1) + lid1;
 
-        T *iptr = in_.get_pointer();
+        const T *iptr = in_.get_pointer();
         // FIXME: Do more work per work group
 
         T *optr = out_.get_pointer();
