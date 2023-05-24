@@ -124,6 +124,7 @@ TYPED_TEST_SUITE(Pinverse, TestTypes);
 // Test Moore-Penrose conditions in the following first 4 tests
 // See https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse#Definition
 TYPED_TEST(Pinverse, AApinvA_A) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
     array in = readTestInput<TypeParam>(
         string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array inpinv = pinverse(in);
@@ -132,6 +133,7 @@ TYPED_TEST(Pinverse, AApinvA_A) {
 }
 
 TYPED_TEST(Pinverse, ApinvAApinv_Apinv) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
     array in = readTestInput<TypeParam>(
         string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array inpinv = pinverse(in);
@@ -140,6 +142,7 @@ TYPED_TEST(Pinverse, ApinvAApinv_Apinv) {
 }
 
 TYPED_TEST(Pinverse, AApinv_IsHermitian) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
     array in = readTestInput<TypeParam>(
         string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array inpinv = pinverse(in);
@@ -149,6 +152,7 @@ TYPED_TEST(Pinverse, AApinv_IsHermitian) {
 }
 
 TYPED_TEST(Pinverse, ApinvA_IsHermitian) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
     array in = readTestInput<TypeParam>(
         string(TEST_DIR "/pinverse/pinverse10x8.test"));
     array inpinv = pinverse(in);
@@ -158,6 +162,7 @@ TYPED_TEST(Pinverse, ApinvA_IsHermitian) {
 }
 
 TYPED_TEST(Pinverse, Large) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
     array in = readTestInput<TypeParam>(
         string(TEST_DIR "/pinverse/pinv_640x480_inputs.test"));
     array inpinv = pinverse(in);
@@ -166,6 +171,7 @@ TYPED_TEST(Pinverse, Large) {
 }
 
 TYPED_TEST(Pinverse, LargeTall) {
+    SUPPORTED_TYPE_CHECK(TypeParam);
     array in = readTestInput<TypeParam>(
                    string(TEST_DIR "/pinverse/pinv_640x480_inputs.test"))
                    .T();
@@ -227,6 +233,7 @@ TEST(Pinverse, SmallSigValExistsFloat) {
 }
 
 TEST(Pinverse, SmallSigValExistsDouble) {
+    SUPPORTED_TYPE_CHECK(double);
     array in =
         readTestInput<double>(string(TEST_DIR "/pinverse/pinverse10x8.test"));
     const dim_t dim0 = in.dims(0);
