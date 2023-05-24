@@ -93,7 +93,6 @@ Array<float> otsuThreshold(const Array<float>& in, const unsigned NUM_BINS,
     seqBegin[0] = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
     seqRest[0]  = af_make_seq(0, static_cast<double>(hDims[0] - 1), 1);
 
-    Array<float> TWOS   = createValueArray<float>(oDims, 2.0f);
     Array<float> UnitP  = createValueArray<float>(oDims, 1.0f);
     Array<float> histf  = cast<float, uint>(hist);
     Array<float> totals = createValueArray<float>(hDims, inDims[0] * inDims[1]);
@@ -126,7 +125,7 @@ Array<float> otsuThreshold(const Array<float>& in, const unsigned NUM_BINS,
         auto muL   = arithOp<float, af_div_t>(_muL, qL, oDims);
         auto muH   = arithOp<float, af_div_t>(_muH, qH, oDims);
         auto diff  = arithOp<float, af_sub_t>(muL, muH, oDims);
-        auto sqrd  = arithOp<float, af_pow_t>(diff, TWOS, oDims);
+        auto sqrd  = arithOp<float, af_mul_t>(diff, diff, oDims);
         auto op2   = createSubArray(qLqH, sliceIndex, false);
         auto sigma = arithOp<float, af_mul_t>(sqrd, op2, oDims);
 
