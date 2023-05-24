@@ -93,7 +93,7 @@ class ireduceDimKernelSMEM {
             (ids[0] < rlenInfo_.dims[0]) && (ids[1] < rlenInfo_.dims[1]) &&
             (ids[2] < rlenInfo_.dims[2]) && (ids[3] < rlenInfo_.dims[3]);
         const bool rlen_nonnull = rlenValid_;
-        uint *const rlenptr =
+        const uint *rlenptr =
             (rlen_nonnull && rlen_valid)
                 ? rlen_.get_pointer() + ids[3] * rlenInfo_.strides[3] +
                       ids[2] * rlenInfo_.strides[2] +
@@ -105,10 +105,10 @@ class ireduceDimKernelSMEM {
         // add thread offset for reduced dim for inputs
         ids[dim] = ids[dim] * g.get_local_range(1) + lidy;
 
-        T *iptr = in_.get_pointer() + ids[3] * iInfo_.strides[3] +
-                  ids[2] * iInfo_.strides[2] + ids[1] * iInfo_.strides[1] +
-                  ids[0] + iInfo_.offset;
-        uint *ilptr;
+        const T *iptr = in_.get_pointer() + ids[3] * iInfo_.strides[3] +
+                        ids[2] * iInfo_.strides[2] +
+                        ids[1] * iInfo_.strides[1] + ids[0] + iInfo_.offset;
+        const uint *ilptr;
         if (!is_first) {
             ilptr = iloc_.get_pointer() + ids[3] * iInfo_.strides[3] +
                     ids[2] * iInfo_.strides[2] + ids[1] * iInfo_.strides[1] +
@@ -371,7 +371,7 @@ class ireduceFirstKernelSMEM {
         const uint xid = groupId_x * g.get_local_range(0) * repeat_ + lidx;
         const uint yid = groupId_y * g.get_local_range(1) + lidy;
 
-        T *const iptr = in_.get_pointer() + wid * iInfo_.strides[3] +
+        const T *iptr = in_.get_pointer() + wid * iInfo_.strides[3] +
                         zid * iInfo_.strides[2] + yid * iInfo_.strides[1] +
                         iInfo_.offset;
 
@@ -385,7 +385,7 @@ class ireduceFirstKernelSMEM {
                                yid * rlenInfo_.strides[1] + rlenInfo_.offset
                          : nullptr;
 
-        uint *ilptr;
+        const uint *ilptr;
         if (!is_first) {
             ilptr = iloc_.get_pointer() + wid * iInfo_.strides[3] +
                     zid * iInfo_.strides[2] + yid * iInfo_.strides[1] +

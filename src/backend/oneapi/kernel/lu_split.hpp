@@ -51,9 +51,9 @@ class luSplitKernel {
         const int incy = groupsPerMatY_ * g.get_local_range(1);
         const int incx = groupsPerMatX_ * g.get_local_range(0);
 
-        T *d_l = lower_.get_pointer();
-        T *d_u = upper_.get_pointer();
-        T *d_i = in_.get_pointer();
+        T *d_l       = lower_.get_pointer();
+        T *d_u       = upper_.get_pointer();
+        const T *d_i = in_.get_pointer();
 
         if (oz < iInfo_.dims[2] && ow < iInfo_.dims[3]) {
             d_i = d_i + oz * iInfo_.strides[2] + ow * iInfo_.strides[3];
@@ -61,9 +61,9 @@ class luSplitKernel {
             d_u = d_u + oz * uInfo_.strides[2] + ow * uInfo_.strides[3];
 
             for (int oy = yy; oy < iInfo_.dims[1]; oy += incy) {
-                T *Yd_i = d_i + oy * iInfo_.strides[1];
-                T *Yd_l = d_l + oy * lInfo_.strides[1];
-                T *Yd_u = d_u + oy * uInfo_.strides[1];
+                const T *Yd_i = d_i + oy * iInfo_.strides[1];
+                T *Yd_l       = d_l + oy * lInfo_.strides[1];
+                T *Yd_u       = d_u + oy * uInfo_.strides[1];
                 for (int ox = xx; ox < iInfo_.dims[0]; ox += incx) {
                     if (ox > oy) {
                         if (same_dims || oy < lInfo_.dims[1])
