@@ -68,9 +68,8 @@ const dim_t GREATEST_PRIME_FACTOR = 7;
 
 template<typename T, typename CT>
 Array<T> complexNorm(const Array<CT>& input) {
-    auto mag  = detail::abs<T, CT>(input);
-    auto TWOS = createValueArray(input.dims(), scalar<T>(2));
-    return arithOp<T, af_pow_t>(mag, TWOS, input.dims());
+    auto mag = detail::abs<T, CT>(input);
+    return arithOp<T, af_mul_t>(mag, mag, input.dims());
 }
 
 std::vector<af_seq> calcPadInfo(dim4& inLPad, dim4& psfLPad, dim4& inUPad,
