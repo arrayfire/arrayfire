@@ -29,17 +29,6 @@
 namespace arrayfire {
 namespace oneapi {
 
-/*
-TODO: port half
-__device__ auto operator*(float lhs, __half rhs) -> __half {
-    return __float2half(lhs * __half2float(rhs));
-}
-
-__device__ auto operator/(__half lhs, float rhs) -> __half {
-    return __float2half(__half2float(lhs) / rhs);
-}
-*/
-
 namespace kernel {
 
 template<typename To, typename Tw>
@@ -101,7 +90,7 @@ class meanDimKernelSMEM {
         To *optr       = out_.get_pointer();
 
         uint ooffset = ids[3] * oInfo_.strides[3] + ids[2] * oInfo_.strides[2] +
-                       ids[1] * oInfo_.strides[1] + ids[0];
+                       ids[1] * oInfo_.strides[1] + ids[0] + oInfo_.offset;
         // There is only one element per block for out
         // There are blockDim.y elements per block for in
         // Hence increment ids[dim] just after offseting out and before
@@ -112,11 +101,11 @@ class meanDimKernelSMEM {
         ids[dim]                = ids[dim] * g.get_local_range(1) + lidy;
 
         uint ioffset = ids[3] * iInfo_.strides[3] + ids[2] * iInfo_.strides[2] +
-                       ids[1] * iInfo_.strides[1] + ids[0];
+                       ids[1] * iInfo_.strides[1] + ids[0] + iInfo_.offset;
         iptr += ioffset;
 
-        const Tw *iwptr;
-        Tw *owptr;
+        const Tw *iwptr = nullptr;
+        Tw *owptr       = nullptr;
 
         if (output_weight_) owptr = owt_.get_pointer() + ooffset;
         if (input_weight_) iwptr = iwt_.get_pointer() + ioffset;
@@ -135,7 +124,7 @@ class meanDimKernelSMEM {
 
         if (is_valid && id_dim_in < iInfo_.dims[dim]) {
             val = transform(*iptr);
-            if (iwptr != NULL) {
+            if (iwptr) {
                 weight = *iwptr;
             } else {
                 weight = (Tw)1;
@@ -143,14 +132,14 @@ class meanDimKernelSMEM {
         }
 
         const uint id_dim_in_start =
-            id_dim_in + offset_dim_ * g.get_local_range(0);
+            id_dim_in + offset_dim_ * g.get_local_range(1);
 
         for (int id = id_dim_in_start; is_valid && (id < iInfo_.dims[dim]);
-             id += offset_dim_ * g.get_local_range(0)) {
-            iptr = iptr + offset_dim_ * g.get_local_range(0) * istride_dim;
+             id += offset_dim_ * g.get_local_range(1)) {
+            iptr = iptr + offset_dim_ * g.get_local_range(1) * istride_dim;
             if (input_weight_) {
                 iwptr =
-                    iwptr + offset_dim_ * g.get_local_range(0) * istride_dim;
+                    iwptr + offset_dim_ * g.get_local_range(1) * istride_dim;
                 stable_mean(&val, &weight, transform(*iptr),
                             compute_t<Tw>(*iwptr));
             } else {
@@ -358,19 +347,21 @@ class meanFirstKernelSMEM {
         To *optr       = out_.get_pointer();
 
         iptr += wid * iInfo_.strides[3] + zid * iInfo_.strides[2] +
-                yid * iInfo_.strides[1];
+                yid * iInfo_.strides[1] + iInfo_.offset;
         optr += wid * oInfo_.strides[3] + zid * oInfo_.strides[2] +
-                yid * oInfo_.strides[1];
+                yid * oInfo_.strides[1] + oInfo_.offset;
 
-        const Tw *iwptr;
-        Tw *owptr;
+        const Tw *iwptr = nullptr;
+        Tw *owptr       = nullptr;
         if (input_weight_)
             iwptr = iwt_.get_pointer() + wid * iwInfo_.strides[3] +
-                    zid * iwInfo_.strides[2] + yid * iwInfo_.strides[1];
+                    zid * iwInfo_.strides[2] + yid * iwInfo_.strides[1] +
+                    iwInfo_.offset;
 
         if (output_weight_)
-            owptr = owt_.get_pointer() + wid * oInfo_.strides[3] +
-                    zid * oInfo_.strides[2] + yid * oInfo_.strides[1];
+            owptr = owt_.get_pointer() + wid * owInfo_.strides[3] +
+                    zid * owInfo_.strides[2] + yid * owInfo_.strides[1] +
+                    owInfo_.offset;
 
         bool cond = (yid < iInfo_.dims[1] && zid < iInfo_.dims[2] &&
                      wid < iInfo_.dims[3]);
@@ -485,9 +476,9 @@ class meanFirstKernelSMEM {
 };
 
 template<typename Ti, typename Tw, typename To>
-sycl::event mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
-                                Param<Tw> iwt, const uint groups_x,
-                                const uint groups_y, const uint threads_x) {
+void mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
+                         Param<Tw> iwt, const uint groups_x,
+                         const uint groups_y, const uint threads_x) {
     sycl::range<2> local(threads_x, THREADS_PER_BLOCK / threads_x);
     sycl::range<2> global(groups_x * in.info.dims[2] * local[0],
                           groups_y * in.info.dims[3] * local[1]);
@@ -496,7 +487,7 @@ sycl::event mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
 
     auto empty  = memAlloc<Tw>(1);
     auto oempty = memAlloc<Tw>(1);
-    return getQueue().submit([&](sycl::handler &h) {
+    getQueue().submit([&](sycl::handler &h) {
         write_accessor<To> out_acc{*out.data, h};
         read_accessor<Ti> in_acc{*in.data, h};
 
@@ -521,6 +512,7 @@ sycl::event mean_first_launcher(Param<To> out, Param<Tw> owt, Param<Ti> in,
                 iwt.info, threads_x, groups_x, groups_y, repeat, s_val, s_idx,
                 input_weight, output_weight));
     });
+    ONEAPI_DEBUG_FINISH(getQueue());
 }
 
 template<typename Ti, typename Tw, typename To>
