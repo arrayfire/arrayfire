@@ -26,6 +26,7 @@
 #include <platform.hpp>
 #elif defined(AF_ONEAPI)
 #include <sycl/sycl.hpp>
+#include <oneapi/mkl/exceptions.hpp>
 #endif
 
 using boost::stacktrace::stacktrace;
@@ -170,6 +171,12 @@ af_err processException() {
                  "oneAPI Error (%d): %s", ex.code().value(), ex.what());
 
         err = set_global_error_string(oneapi_err_msg, AF_ERR_INTERNAL);
+    } catch (const oneapi::mkl::exception &ex) {
+        char oneapi_err_msg[1024];
+        snprintf(oneapi_err_msg, sizeof(oneapi_err_msg),
+                 "MKL Error: %s", ex.what());
+
+        err = set_global_error_string(oneapi_err_msg, AF_ERR_INTERNAL);
 #endif
 #ifdef AF_OPENCL
     } catch (const cl::Error &ex) {
@@ -184,6 +191,7 @@ af_err processException() {
             err = set_global_error_string(opencl_err_msg, AF_ERR_INTERNAL);
         }
 #endif
+    } catch (const std::exception &ex) { err = set_global_error_string(ex.what(), AF_ERR_UNKNOWN);
     } catch (...) { err = set_global_error_string(ss.str(), AF_ERR_UNKNOWN); }
 
     return err;
