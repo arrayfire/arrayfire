@@ -74,19 +74,15 @@ static void gemmDispatch(sycl::queue queue, oneapi::mkl::transpose lOpts,
                          arrayfire::oneapi::Array<T> &out, dim_t oleading) {
     using Dt                = arrayfire::oneapi::data_t<T>;
     const af::dim4 lStrides = lhs.strides();
+
     const af::dim4 rStrides = rhs.strides();
     const af::dim4 oStrides = out.strides();
     sycl::buffer<Dt, 1> lhsBuf = lhs.template getBufferWithOffset<Dt>();
     sycl::buffer<Dt, 1> rhsBuf = rhs.template getBufferWithOffset<Dt>();
     sycl::buffer<Dt, 1> outBuf = out.template getBufferWithOffset<Dt>();
-    try {
     ::oneapi::mkl::blas::gemm(queue, lOpts, rOpts, M, N, K, *alpha, lhsBuf,
-                              lStride, rhsBuf, rStride, *beta, outBuf,
-                              oleading);
-    queue.wait_and_throw();
-    } catch(sycl::exception &e)  {
-        std::cout << e.what() << std::endl;
-    }
+                            lStride, rhsBuf, rStride, *beta, outBuf,
+                            oleading);
 }
 
 namespace arrayfire {
@@ -96,6 +92,10 @@ void initBlas() { /*gpu_blas_init();*/
 }
 
 void deInitBlas() { /*gpu_blas_deinit();*/
+}
+
+bool checkMonotonicDim4(const af::dim4 &dim) {
+    return (dim[0] <= dim[1]) && (dim[1] <= dim[2]) && (dim[2] <= dim[3]);
 }
 
 template<typename T>
@@ -118,7 +118,6 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
     const dim4 &lStrides = lhs.strides();
     const dim4 &rStrides = rhs.strides();
     const dim4 oStrides  = out.strides();
-    try{
 
     if (oDims.ndims() <= 2) {  // if non-batched
         if (rhs.dims()[bColDim] == 1) {
@@ -132,21 +131,12 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
                                 oStrides[1]);
             }
         } else {
-            printf("%d %d %d, l%d R%d o%d\n",  M, N, K, lStrides[1], rStrides[1], oStrides[1]);
             gemmDispatch<T>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
                             lStrides[1], rhs, rStrides[1], beta, out,
                             oStrides[1]);
         }
     } else {  // if batched
         using Dt = arrayfire::oneapi::data_t<T>;
-
-        sycl::buffer<Dt, 1> lhsBuf = lhs.template getBufferWithOffset<Dt>();
-        sycl::buffer<Dt, 1> rhsBuf = rhs.template getBufferWithOffset<Dt>();
-        sycl::buffer<Dt, 1> outBuf = out.template getBufferWithOffset<Dt>();
-
-        const int64_t lda = lStrides[1];
-        const int64_t ldb = rStrides[1];
-        const int64_t ldc = oStrides[1];
 
         int64_t batchSize = static_cast<int64_t>(oDims[2] * oDims[3]);
 
@@ -155,31 +145,55 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         bool is_r_d2_batched = (oDims[2] == rDims[2]) && rDims[2] != 1;
         bool is_r_d3_batched = (oDims[3] == rDims[3]) && rDims[3] != 1;
 
-        std::cout << lStrides << std::endl;
-        std::cout << rStrides << std::endl;
+        bool canBatchMKL = checkMonotonicDim4(oStrides);
+        if(canBatchMKL) {
+            sycl::buffer<Dt, 1> lhsBuf = lhs.template getBufferWithOffset<Dt>();
+            sycl::buffer<Dt, 1> rhsBuf = rhs.template getBufferWithOffset<Dt>();
+            sycl::buffer<Dt, 1> outBuf = out.template getBufferWithOffset<Dt>();
 
-        const bool not_l_batched =
-            (oDims[2] != lDims[2] && oDims[3] != lDims[3]);
-        const bool not_r_batched =
-            (oDims[2] != rDims[2] && oDims[3] != rDims[3]);
+            const int64_t lda = lStrides[1];
+            const int64_t ldb = rStrides[1];
+            const int64_t ldc = oStrides[1];
 
-        //dim_t lstride = !not_l_batched ? 0 : (is_l_d2_batched) ? lStrides[2] : lStrides[3];
-        //dim_t rstride = !not_r_batched ? 0 : (is_r_d2_batched) ? rStrides[2] : rStrides[3];
-        dim_t lstride = (is_l_d2_batched) ? lStrides[2] : is_l_d3_batched ? lStrides[3] : 0;
-        dim_t rstride = (is_r_d2_batched) ? rStrides[2] : is_r_d3_batched ? rStrides[3] : 0;
+            dim_t lstride = (is_l_d2_batched) ? lStrides[2] : is_l_d3_batched ? lStrides[3] : 0;
+            dim_t rstride = (is_r_d2_batched) ? rStrides[2] : is_r_d3_batched ? rStrides[3] : 0;
 
-        ::oneapi::mkl::blas::gemm_batch(
-            getQueue(), lOpts, rOpts, M, N, K, *alpha, lhsBuf, lda,
-            lstride, rhsBuf, ldb,
-            rstride, *beta, outBuf, ldc, oStrides[2],
-            batchSize);
+            ::oneapi::mkl::blas::gemm_batch(
+                getQueue(), lOpts, rOpts, M, N, K, *alpha, lhsBuf, lda,
+                lstride, rhsBuf, ldb,
+                rstride, *beta, outBuf, ldc, oStrides[2],
+                batchSize);
+        } else {
+            std::vector<sycl::buffer<Dt>> lptrs;
+            std::vector<sycl::buffer<Dt>> rptrs;
+            std::vector<sycl::buffer<Dt>> optrs;
+
+            lptrs.reserve(batchSize);
+            rptrs.reserve(batchSize);
+            optrs.reserve(batchSize);
+
+            for (int n = 0; n < batchSize; n++) {
+                ptrdiff_t w = n / oDims[2];
+                ptrdiff_t z = n - w * oDims[2];
+
+                ptrdiff_t loff = z * (is_l_d2_batched * lStrides[2]) +
+                                 w * (is_l_d3_batched * lStrides[3]);
+                ptrdiff_t roff = z * (is_r_d2_batched * rStrides[2]) +
+                                 w * (is_r_d3_batched * rStrides[3]);
+                ptrdiff_t zoff = z * oStrides[2] + w * oStrides[3];
+
+                lptrs.emplace_back(lhs.template getBufferWithOffset<Dt>(loff));
+                rptrs.emplace_back(rhs.template getBufferWithOffset<Dt>(roff));
+                optrs.emplace_back(out.template getBufferWithOffset<Dt>(zoff));
+            }
+
+            for (int n = 0; n < batchSize; n++) {
+                ::oneapi::mkl::blas::gemm(getQueue(), lOpts, rOpts, M, N, K,
+                    *alpha, lptrs[n], lStrides[1], rptrs[n], rStrides[1], *beta,
+                    optrs[n], oStrides[1]);
+            }
+        }
     }
-
-        getQueue().wait_and_throw();
-    } catch(sycl::exception &e)  {
-        std::cout << e.what() << std::endl;
-    }
-
     ONEAPI_DEBUG_FINISH(getQueue());
 }
 
