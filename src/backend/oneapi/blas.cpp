@@ -43,25 +43,24 @@ static oneapi::mkl::transpose toBlasTranspose(af_mat_prop opt) {
 }
 
 template<typename T>
-static void gemvDispatch(sycl::queue queue,
-                         oneapi::mkl::transpose lOpts,
-                         oneapi::mkl::transpose rOpts,
-                         int M, int N, const T *alpha,
-                         const arrayfire::oneapi::Array<T> &lhs, dim_t lStride,
-                         const arrayfire::oneapi::Array<T> &x, dim_t incx,
-                         const T *beta, arrayfire::oneapi::Array<T> &out,
-                         dim_t oInc) {
+static void gemvDispatch(sycl::queue queue, oneapi::mkl::transpose lOpts,
+                         oneapi::mkl::transpose rOpts, int M, int N,
+                         const T *alpha, const arrayfire::oneapi::Array<T> &lhs,
+                         dim_t lStride, const arrayfire::oneapi::Array<T> &x,
+                         dim_t incx, const T *beta,
+                         arrayfire::oneapi::Array<T> &out, dim_t oInc) {
     using Dt                   = arrayfire::oneapi::data_t<T>;
-    const af::dim4 lStrides = lhs.strides();
-    const af::dim4 xStrides = x.strides();
-    const af::dim4 oStrides = out.strides();
+    const af::dim4 lStrides    = lhs.strides();
+    const af::dim4 xStrides    = x.strides();
+    const af::dim4 oStrides    = out.strides();
     sycl::buffer<Dt, 1> lhsBuf = lhs.template getBufferWithOffset<Dt>();
-    sycl::buffer<Dt, 1> xBuf   =   x.template getBufferWithOffset<Dt>();
+    sycl::buffer<Dt, 1> xBuf   = x.template getBufferWithOffset<Dt>();
     sycl::buffer<Dt, 1> outBuf = out.template getBufferWithOffset<Dt>();
-    if constexpr(!std::is_same_v<T, arrayfire::common::half>) {
-        ::oneapi::mkl::blas::gemv(queue, lOpts, (int64_t)M, (int64_t)N, (T)*alpha,
-                                lhsBuf, (int64_t)lStride, xBuf, (int64_t)incx,
-                                (T)*beta, outBuf, (int64_t)oInc);
+    if constexpr (!std::is_same_v<T, arrayfire::common::half>) {
+        ::oneapi::mkl::blas::gemv(queue, lOpts, (int64_t)M, (int64_t)N,
+                                  (T)*alpha, lhsBuf, (int64_t)lStride, xBuf,
+                                  (int64_t)incx, (T)*beta, outBuf,
+                                  (int64_t)oInc);
     }
 }
 
@@ -75,14 +74,14 @@ static void gemmDispatch(sycl::queue queue, oneapi::mkl::transpose lOpts,
     using Dt                = arrayfire::oneapi::data_t<T>;
     const af::dim4 lStrides = lhs.strides();
 
-    const af::dim4 rStrides = rhs.strides();
-    const af::dim4 oStrides = out.strides();
+    const af::dim4 rStrides    = rhs.strides();
+    const af::dim4 oStrides    = out.strides();
     sycl::buffer<Dt, 1> lhsBuf = lhs.template getBufferWithOffset<Dt>();
     sycl::buffer<Dt, 1> rhsBuf = rhs.template getBufferWithOffset<Dt>();
     sycl::buffer<Dt, 1> outBuf = out.template getBufferWithOffset<Dt>();
     ::oneapi::mkl::blas::gemm(queue, lOpts, rOpts, M, N, K, *alpha, lhsBuf,
-                            lStride, rhsBuf, rStride, *beta, outBuf,
-                            oleading);
+                              lStride, rhsBuf, rStride, *beta, outBuf,
+                              oleading);
 }
 
 namespace arrayfire {
@@ -94,7 +93,7 @@ void initBlas() { /*gpu_blas_init();*/
 void deInitBlas() { /*gpu_blas_deinit();*/
 }
 
-bool checkMonotonicDim4(const af::dim4 &dim) {
+bool isStrideMonotonic(const af::dim4 &dim) {
     return (dim[0] <= dim[1]) && (dim[1] <= dim[2]) && (dim[2] <= dim[3]);
 }
 
@@ -121,14 +120,17 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
 
     if (oDims.ndims() <= 2) {  // if non-batched
         if (rhs.dims()[bColDim] == 1) {
-            if constexpr(!std::is_same_v<T, arrayfire::common::half>) {
-                dim_t incr = (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
-                gemvDispatch<T>(getQueue(), lOpts, rOpts, lDims[0], lDims[1], alpha, lhs,
-                                lStrides[1], rhs, incr, beta, out, oStrides[0]);
-            } else {
+            if constexpr (std::is_same_v<T, arrayfire::common::half>) {
+                // currently no half support for gemv, use gemm instead
                 gemmDispatch<T>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
                                 lStrides[1], rhs, rStrides[1], beta, out,
                                 oStrides[1]);
+            } else {
+                dim_t incr =
+                    (optRhs == AF_MAT_NONE) ? rStrides[0] : rStrides[1];
+                gemvDispatch<T>(getQueue(), lOpts, rOpts, lDims[0], lDims[1],
+                                alpha, lhs, lStrides[1], rhs, incr, beta, out,
+                                oStrides[0]);
             }
         } else {
             gemmDispatch<T>(getQueue(), lOpts, rOpts, M, N, K, alpha, lhs,
@@ -145,8 +147,11 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
         bool is_r_d2_batched = (oDims[2] == rDims[2]) && rDims[2] != 1;
         bool is_r_d3_batched = (oDims[3] == rDims[3]) && rDims[3] != 1;
 
-        bool canBatchMKL = checkMonotonicDim4(oStrides);
-        if(canBatchMKL) {
+        // MKL requires stridec >= ldc * n, which may not be true with reordered
+        // outputs if the stride is monotonic, then MKL requirements for
+        // batching can be met
+        bool canBatchMKL = isStrideMonotonic(oStrides);
+        if (canBatchMKL) {
             sycl::buffer<Dt, 1> lhsBuf = lhs.template getBufferWithOffset<Dt>();
             sycl::buffer<Dt, 1> rhsBuf = rhs.template getBufferWithOffset<Dt>();
             sycl::buffer<Dt, 1> outBuf = out.template getBufferWithOffset<Dt>();
@@ -155,14 +160,17 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
             const int64_t ldb = rStrides[1];
             const int64_t ldc = oStrides[1];
 
-            dim_t lstride = (is_l_d2_batched) ? lStrides[2] : is_l_d3_batched ? lStrides[3] : 0;
-            dim_t rstride = (is_r_d2_batched) ? rStrides[2] : is_r_d3_batched ? rStrides[3] : 0;
+            dim_t lstride = (is_l_d2_batched) ? lStrides[2]
+                            : is_l_d3_batched ? lStrides[3]
+                                              : 0;
+            dim_t rstride = (is_r_d2_batched) ? rStrides[2]
+                            : is_r_d3_batched ? rStrides[3]
+                                              : 0;
 
-            ::oneapi::mkl::blas::gemm_batch(
-                getQueue(), lOpts, rOpts, M, N, K, *alpha, lhsBuf, lda,
-                lstride, rhsBuf, ldb,
-                rstride, *beta, outBuf, ldc, oStrides[2],
-                batchSize);
+            ::oneapi::mkl::blas::gemm_batch(getQueue(), lOpts, rOpts, M, N, K,
+                                            *alpha, lhsBuf, lda, lstride,
+                                            rhsBuf, ldb, rstride, *beta, outBuf,
+                                            ldc, oStrides[2], batchSize);
         } else {
             std::vector<sycl::buffer<Dt>> lptrs;
             std::vector<sycl::buffer<Dt>> rptrs;
@@ -189,8 +197,9 @@ void gemm(Array<T> &out, af_mat_prop optLhs, af_mat_prop optRhs, const T *alpha,
 
             for (int n = 0; n < batchSize; n++) {
                 ::oneapi::mkl::blas::gemm(getQueue(), lOpts, rOpts, M, N, K,
-                    *alpha, lptrs[n], lStrides[1], rptrs[n], rStrides[1], *beta,
-                    optrs[n], oStrides[1]);
+                                          *alpha, lptrs[n], lStrides[1],
+                                          rptrs[n], rStrides[1], *beta,
+                                          optrs[n], oStrides[1]);
             }
         }
     }
