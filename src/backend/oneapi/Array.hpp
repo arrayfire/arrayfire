@@ -260,25 +260,18 @@ class Array {
     }
 
     template<typename outT>
-    sycl::buffer<outT> getBufferWithOffset(dim_t offset=-1) const {
-        offset = (offset == -1) ? getOffset() : offset;
+    sycl::buffer<outT> getBufferWithOffset(dim_t offset = -1) const {
+        offset             = (offset == -1) ? getOffset() : offset;
         dim_t sz_remaining = data_dims.elements() - offset;
-        if constexpr(std::is_same_v<outT, T>) {
-            if(offset == 0) {
-                return *get();
-            }
-            return sycl::buffer<outT, 1>(
-                *get(),
-                sycl::id<1>(offset),
-                sycl::range<1>(sz_remaining));
+        if constexpr (std::is_same_v<outT, T>) {
+            if (offset == 0) { return *get(); }
+            return sycl::buffer<outT, 1>(*get(), sycl::id<1>(offset),
+                                         sycl::range<1>(sz_remaining));
         } else {
-            if(offset == 0) {
-                return get()->template reinterpret<outT, 1>();
-            }
-            return sycl::buffer<T, 1>(
-                *get(),
-                sycl::id<1>(offset),
-                sycl::range<1>(sz_remaining)).template reinterpret<outT, 1>();
+            if (offset == 0) { return get()->template reinterpret<outT, 1>(); }
+            return sycl::buffer<T, 1>(*get(), sycl::id<1>(offset),
+                                      sycl::range<1>(sz_remaining))
+                .template reinterpret<outT, 1>();
         }
     }
 
