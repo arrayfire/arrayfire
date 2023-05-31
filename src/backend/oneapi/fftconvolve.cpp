@@ -15,6 +15,12 @@
 #include <fft.hpp>
 #include <af/dim4.hpp>
 
+#include <kernel/fftconvolve_common.hpp>
+#include <kernel/fftconvolve_multiply.hpp>
+#include <kernel/fftconvolve_pack.hpp>
+#include <kernel/fftconvolve_pad.hpp>
+#include <kernel/fftconvolve_reorder.hpp>
+
 #include <cmath>
 #include <type_traits>
 #include <vector>
@@ -59,9 +65,78 @@ dim4 calcPackedSize(Array<T> const& i1, Array<T> const& i2, const dim_t rank) {
 template<typename T>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, AF_BATCH_KIND kind, const int rank) {
-    ONEAPI_NOT_SUPPORTED("");
+    using convT = typename conditional<is_integral<T>::value ||
+                                           is_same<T, float>::value ||
+                                           is_same<T, cfloat>::value,
+                                       float, double>::type;
+    using cT    = typename conditional<is_same<convT, float>::value, cfloat,
+                                    cdouble>::type;
+
+    const dim4& sDims = signal.dims();
+    const dim4& fDims = filter.dims();
+
     dim4 oDims(1);
+    if (expand) {
+        for (int d = 0; d < AF_MAX_DIMS; ++d) {
+            if (kind == AF_BATCH_NONE || kind == AF_BATCH_RHS) {
+                oDims[d] = sDims[d] + fDims[d] - 1;
+            } else {
+                oDims[d] = (d < rank ? sDims[d] + fDims[d] - 1 : sDims[d]);
+            }
+        }
+    } else {
+        oDims = sDims;
+        if (kind == AF_BATCH_RHS) {
+            for (int i = rank; i < AF_MAX_DIMS; ++i) { oDims[i] = fDims[i]; }
+        }
+    }
+
+    const dim4 pDims = calcPackedSize<T>(signal, filter, rank);
+    Array<cT> packed = createEmptyArray<cT>(pDims);
+
+    kernel::packDataHelper<cT, T>(packed, signal, filter, rank, kind);
+    kernel::padDataHelper<cT, T>(packed, signal, filter, rank, kind);
+
+    fft_inplace<cT>(packed, rank, true);
+
+    kernel::complexMultiplyHelper<cT, T>(packed, signal, filter, rank, kind);
+
+    // Compute inverse FFT only on complex-multiplied data
+    if (kind == AF_BATCH_RHS) {
+        vector<af_seq> seqs;
+        for (int k = 0; k < AF_MAX_DIMS; k++) {
+            if (k < rank) {
+                seqs.push_back({0., static_cast<double>(pDims[k] - 1), 1.});
+            } else if (k == rank) {
+                seqs.push_back({1., static_cast<double>(pDims[k] - 1), 1.});
+            } else {
+                seqs.push_back({0., 0., 1.});
+            }
+        }
+
+        Array<cT> subPacked = createSubArray<cT>(packed, seqs);
+        fft_inplace<cT>(subPacked, rank, false);
+    } else {
+        vector<af_seq> seqs;
+        for (int k = 0; k < AF_MAX_DIMS; k++) {
+            if (k < rank) {
+                seqs.push_back({0., static_cast<double>(pDims[k]) - 1, 1.});
+            } else if (k == rank) {
+                seqs.push_back({0., static_cast<double>(pDims[k] - 2), 1.});
+            } else {
+                seqs.push_back({0., 0., 1.});
+            }
+        }
+
+        Array<cT> subPacked = createSubArray<cT>(packed, seqs);
+        fft_inplace<cT>(subPacked, rank, false);
+    }
+
     Array<T> out = createEmptyArray<T>(oDims);
+
+    kernel::reorderOutputHelper<T, cT>(out, packed, signal, filter, rank, kind,
+                                       expand);
+
     return out;
 }
 
