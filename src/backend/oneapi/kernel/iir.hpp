@@ -21,8 +21,6 @@ namespace arrayfire {
 namespace oneapi {
 namespace kernel {
 
-constexpr int MAX_A_SIZE = 1024;
-
 template<typename T, bool batch_a>
 class iirKernel {
    public:
@@ -67,10 +65,9 @@ class iirKernel {
         const int repeat =
             (num_a + g.get_local_range(0) - 1) / g.get_local_range(0);
 
-        for (int ii = 0; ii < MAX_A_SIZE / g.get_local_range(0); ii++) {
-            int id   = ii * g.get_local_range(0) + tx;
-            s_z_[id] = scalar<T>(0);
-            s_a_[id] = (id < num_a) ? d_a[id] : scalar<T>(0);
+        for (int ii = tx; ii < num_a; ii += g.get_local_range(0)) {
+            s_z_[ii] = scalar<T>(0);
+            s_a_[ii] = (ii < num_a) ? d_a[ii] : scalar<T>(0);
         }
         group_barrier(g);
 
@@ -81,14 +78,19 @@ class iirKernel {
             }
             group_barrier(g);
 
-#pragma unroll
             for (int ii = 0; ii < repeat; ii++) {
                 int id = ii * g.get_local_range(0) + tx + 1;
 
-                T z = s_z_[id] - s_a_[id] * s_y_[0];
+                T z;
+
+                if (id < num_a) {
+                    z = s_z_[id] - s_a_[id] * s_y_[0];
+                } else {
+                    z = scalar<T>(0);
+                }
                 group_barrier(g);
 
-                s_z_[id - 1] = z;
+                if ((id - 1) < num_a) { s_z_[id - 1] = z; }
                 group_barrier(g);
             }
         }
@@ -124,8 +126,10 @@ void iir(Param<T> y, Param<T> c, Param<T> a) {
         read_accessor<T> cAcc{*c.data, h};
         read_accessor<T> aAcc{*a.data, h};
 
-        auto s_z = sycl::local_accessor<T>(MAX_A_SIZE, h);
-        auto s_a = sycl::local_accessor<T>(MAX_A_SIZE, h);
+        unsigned num_a = a.info.dims[0];
+
+        auto s_z = sycl::local_accessor<T>(num_a, h);
+        auto s_a = sycl::local_accessor<T>(num_a, h);
         auto s_y = sycl::local_accessor<T>(1, h);
 
         if (batch_a) {
