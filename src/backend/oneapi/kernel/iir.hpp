@@ -132,20 +132,6 @@ void iir(Param<T> y, Param<T> c, Param<T> a) {
         auto s_a = sycl::local_accessor<T>(num_a, h);
         auto s_y = sycl::local_accessor<T>(1, h);
 
-        size_t local_bytes_req = (num_a * 2 + 1) * sizeof(T);
-        if (local_bytes_req >
-            getDevice().get_info<sycl::info::device::local_mem_size>()) {
-            char errMessage[256];
-            snprintf(
-                errMessage, sizeof(errMessage),
-                "\ncurrent OneAPI device does not have sufficient local "
-                "memory,\n"
-                "for iir kernel, %lld(required) > %lld(available)\n",
-                local_bytes_req,
-                getDevice().get_info<sycl::info::device::local_mem_size>());
-            AF_ERROR(errMessage, AF_ERR_RUNTIME);
-        }
-
         if (batch_a) {
             h.parallel_for(sycl::nd_range{global, local},
                            iirKernel<T, true>(yAcc, y.info, cAcc, c.info, aAcc,

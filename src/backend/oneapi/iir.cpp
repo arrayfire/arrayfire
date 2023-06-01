@@ -37,6 +37,19 @@ Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x) {
 
     if (num_a == 1) { return c; }
 
+    size_t local_bytes_req = (num_a * 2 + 1) * sizeof(T);
+    if (local_bytes_req >
+        getDevice().get_info<sycl::info::device::local_mem_size>()) {
+        char errMessage[256];
+        snprintf(errMessage, sizeof(errMessage),
+                 "\ncurrent OneAPI device does not have sufficient local "
+                 "memory,\n"
+                 "for iir kernel, %zu(required) > %zu(available)\n",
+                 local_bytes_req,
+                 getDevice().get_info<sycl::info::device::local_mem_size>());
+        AF_ERROR(errMessage, AF_ERR_RUNTIME);
+    }
+
     dim4 ydims = c.dims();
     Array<T> y = createEmptyArray<T>(ydims);
 
