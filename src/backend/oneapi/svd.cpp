@@ -38,23 +38,31 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     int64_t LDU   = uStrides[1];
     int64_t LDVt  = vStrides[1];
 
-    int64_t scratch_size = ::oneapi::mkl::lapack::gesvd_scratchpad_size<compute_t<T>>(
-        getQueue(), ::oneapi::mkl::jobsvd::vectors,
-        ::oneapi::mkl::jobsvd::vectors, M, N, LDA, LDU, LDVt);
+    // MKL is finicky about exact scratch space size so we'll need to
+    // create sycl::buffer of exact size. if we use memAlloc, this might
+    // require a sub-buffer of a sub-buffer returned by memAlloc which is
+    // currently illegal in sycl
+    int64_t scratch_size =
+        ::oneapi::mkl::lapack::gesvd_scratchpad_size<compute_t<T>>(
+            getQueue(), ::oneapi::mkl::jobsvd::vectors,
+            ::oneapi::mkl::jobsvd::vectors, M, N, LDA, LDU, LDVt);
 
-    auto scratchpadMem  = memAlloc<compute_t<T>>(scratch_size);
-    sycl::buffer<compute_t<T>> scratchpad(*scratchpadMem, 0, scratch_size);
+    sycl::buffer<compute_t<T>> scratchpad(scratch_size);
 
-    sycl::buffer<compute_t<T>> in_buffer = in.template getBufferWithOffset<compute_t<T>>();
+    sycl::buffer<compute_t<T>> in_buffer =
+        in.template getBufferWithOffset<compute_t<T>>();
 
-    sycl::buffer<compute_t<Tr>> sBuf  = s.template getBufferWithOffset<compute_t<Tr>>();
-    sycl::buffer<compute_t<T>> uBuf  = u.template getBufferWithOffset<compute_t<T>>();
-    sycl::buffer<compute_t<T>> vtBuf = vt.template getBufferWithOffset<compute_t<T>>();
+    sycl::buffer<compute_t<Tr>> sBuf =
+        s.template getBufferWithOffset<compute_t<Tr>>();
+    sycl::buffer<compute_t<T>> uBuf =
+        u.template getBufferWithOffset<compute_t<T>>();
+    sycl::buffer<compute_t<T>> vtBuf =
+        vt.template getBufferWithOffset<compute_t<T>>();
 
-    ::oneapi::mkl::lapack::gesvd(
-        getQueue(), ::oneapi::mkl::jobsvd::vectors,
-        ::oneapi::mkl::jobsvd::vectors, M, N, in_buffer, LDA, sBuf,
-        uBuf, LDU, vtBuf, LDVt, scratchpad, scratch_size);
+    ::oneapi::mkl::lapack::gesvd(getQueue(), ::oneapi::mkl::jobsvd::vectors,
+                                 ::oneapi::mkl::jobsvd::vectors, M, N,
+                                 in_buffer, LDA, sBuf, uBuf, LDU, vtBuf, LDVt,
+                                 scratchpad, scratch_size);
 }
 
 template<typename T, typename Tr>
