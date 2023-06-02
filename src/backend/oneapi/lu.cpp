@@ -11,11 +11,12 @@
 #include <lu.hpp>
 
 #if defined(WITH_LINEAR_ALGEBRA)
+#include <oneapi/mkl/lapack.hpp>
 #include <blas.hpp>
 #include <copy.hpp>
 #include <kernel/lu_split.hpp>
+#include <memory.hpp>
 #include <platform.hpp>
-#include "oneapi/mkl/lapack.hpp"
 
 namespace arrayfire {
 namespace oneapi {
@@ -76,11 +77,14 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     std::int64_t scratchpad_size =
         ::oneapi::mkl::lapack::getrf_scratchpad_size<T>(getQueue(), M, N, LDA);
 
-    sycl::buffer<int64_t, 1> ipiv{sycl::range<1>(MN)};
-    Array<T> scratch = createEmptyArray<T>(af::dim4(scratchpad_size));
+    auto ipivMem    = memAlloc<int64_t>(MN);
+    auto scratchMem = memAlloc<compute_t<T>>(scratchpad_size);
+    sycl::buffer<int64_t> ipiv(*ipivMem, 0, MN);
+    sycl::buffer<compute_t<T>> scratchpad(*scratchMem, 0, scratchpad_size);
 
-    ::oneapi::mkl::lapack::getrf(getQueue(), M, N, *in.get(), LDA, ipiv,
-                                 *scratch.get(), scratchpad_size);
+    sycl::buffer<compute_t<T>> in_buffer = in.template getBufferWithOffset<compute_t<T>>();
+    ::oneapi::mkl::lapack::getrf(getQueue(), M, N, in_buffer,  LDA, ipiv,
+                                 scratchpad, scratchpad_size);
 
     Array<int> pivot = convertPivot(ipiv, M, convert_pivot);
     return pivot;
