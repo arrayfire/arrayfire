@@ -125,10 +125,10 @@ Array<T>::Array(const dim4 &dims, const T *const in_data)
     static_assert(
         offsetof(Array<T>, info) == 0,
         "Array<T>::info must be the first member variable of Array<T>");
-    // getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0,
-    // sizeof(T) * info.elements(), in_data);
     getQueue()
-        .submit([&](sycl::handler &h) { h.copy(in_data, data->get_access(h)); })
+        .submit([&](sycl::handler &h) {
+            h.copy(in_data, data->get_access(h, sycl::range(info.elements())));
+        })
         .wait();
 }
 
@@ -145,7 +145,8 @@ Array<T>::Array(const af::dim4 &dims, buffer<T> *const mem, size_t offset,
     if (copy) {
         getQueue()
             .submit([&](sycl::handler &h) {
-                h.copy(mem->get_access(h), data->get_access(h));
+                h.copy(mem->get_access(h, sycl::range(info.elements())),
+                       data->get_access(h));
             })
             .wait();
     }
@@ -193,8 +194,10 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
     } else {
         data = memAlloc<T>(info.elements());
         getQueue()
-            .submit(
-                [&](sycl::handler &h) { h.copy(in_data, data->get_access(h)); })
+            .submit([&](sycl::handler &h) {
+                h.copy(in_data,
+                       data->get_access(h, sycl::range(info.elements())));
+            })
             .wait();
     }
 }
@@ -486,7 +489,7 @@ void writeHostDataArray(Array<T> &arr, const T *const data,
             buffer<T> &buf = *arr.get();
             // auto offset_acc = buf.get_access(h, sycl::range, sycl::id<>)
             // TODO: offset accessor
-            auto offset_acc = buf.get_access(h);
+            auto offset_acc = buf.get_access(h, sycl::range(arr.elements()));
             h.copy(data, offset_acc);
         })
         .wait();
