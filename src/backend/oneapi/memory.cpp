@@ -165,6 +165,7 @@ INSTANTIATE(uintl)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 INSTANTIATE(arrayfire::common::half)
+INSTANTIATE(int64_t)
 
 template<>
 void *pinnedAlloc<void>(const size_t &elements) {
