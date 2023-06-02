@@ -36,12 +36,17 @@ int cholesky_inplace(Array<T> &in, const bool is_upper) {
     lwork = ::oneapi::mkl::lapack::potrf_scratchpad_size<T>(getQueue(), uplo, N,
                                                             LDA);
 
-    auto workspaceMem  = memAlloc<compute_t<T>>(lwork);
-    sycl::buffer<compute_t<T>> in_buffer = in.template getBufferWithOffset<compute_t<T>>();
+    // MKL is finicky about exact scratch space size so we'll need to
+    // create sycl::buffer of exact size. if we use memAlloc, this might
+    // require a sub-buffer of a sub-buffer returned by memAlloc which is
+    // currently illegal in sycl
+    sycl::buffer<compute_t<T>> workspace(lwork);
+    sycl::buffer<compute_t<T>> in_buffer =
+        in.template getBufferWithOffset<compute_t<T>>();
 
     try {
         ::oneapi::mkl::lapack::potrf(getQueue(), uplo, N, in_buffer, LDA,
-                                     *workspaceMem, lwork);
+                                     workspace, lwork);
     } catch (::oneapi::mkl::lapack::exception const &e) {
         AF_ERROR(
             "Unexpected exception caught during synchronous\

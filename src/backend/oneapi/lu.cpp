@@ -11,11 +11,11 @@
 #include <lu.hpp>
 
 #if defined(WITH_LINEAR_ALGEBRA)
-#include <oneapi/mkl/lapack.hpp>
 #include <blas.hpp>
 #include <copy.hpp>
 #include <kernel/lu_split.hpp>
 #include <memory.hpp>
+#include <oneapi/mkl/lapack.hpp>
 #include <platform.hpp>
 
 namespace arrayfire {
@@ -77,13 +77,16 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     std::int64_t scratchpad_size =
         ::oneapi::mkl::lapack::getrf_scratchpad_size<T>(getQueue(), M, N, LDA);
 
-    auto ipivMem    = memAlloc<int64_t>(MN);
-    auto scratchMem = memAlloc<compute_t<T>>(scratchpad_size);
-    sycl::buffer<int64_t> ipiv(*ipivMem, 0, MN);
-    sycl::buffer<compute_t<T>> scratchpad(*scratchMem, 0, scratchpad_size);
+    // MKL is finicky about exact scratch space size so we'll need to
+    // create sycl::buffer of exact size. if we use memAlloc, this might
+    // require a sub-buffer of a sub-buffer returned by memAlloc which is
+    // currently illegal in sycl
+    sycl::buffer<int64_t> ipiv(MN);
+    sycl::buffer<compute_t<T>> scratchpad(scratchpad_size);
 
-    sycl::buffer<compute_t<T>> in_buffer = in.template getBufferWithOffset<compute_t<T>>();
-    ::oneapi::mkl::lapack::getrf(getQueue(), M, N, in_buffer,  LDA, ipiv,
+    sycl::buffer<compute_t<T>> in_buffer =
+        in.template getBufferWithOffset<compute_t<T>>();
+    ::oneapi::mkl::lapack::getrf(getQueue(), M, N, in_buffer, LDA, ipiv,
                                  scratchpad, scratchpad_size);
 
     Array<int> pivot = convertPivot(ipiv, M, convert_pivot);
