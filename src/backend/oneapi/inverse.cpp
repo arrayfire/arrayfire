@@ -19,9 +19,8 @@ namespace oneapi {
 
 template<typename T>
 Array<T> inverse(const Array<T> &in) {
-    ONEAPI_NOT_SUPPORTED("");
     Array<T> I = identity<T>(in.dims());
-    return I;
+    return solve<T>(in, I);
 }
 
 #define INSTANTIATE(T) template Array<T> inverse<T>(const Array<T> &in);
