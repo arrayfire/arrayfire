@@ -108,8 +108,10 @@ void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim,
 
     auto cKey = memAlloc<Tk>(elements);
     getQueue().submit([&](sycl::handler &h) {
-        h.copy(pKey.data->template reinterpret<compute_t<Tk>>().get_access(),
-               cKey.get()->template reinterpret<compute_t<Tk>>().get_access());
+        h.copy(pKey.data->template reinterpret<compute_t<Tk>>().get_access(
+                   h, elements),
+               cKey.get()->template reinterpret<compute_t<Tk>>().get_access(
+                   h, elements));
     });
     auto ckey_begin =
         ::oneapi::dpl::begin(cKey.get()->template reinterpret<compute_t<Tk>>());
@@ -144,7 +146,8 @@ void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim,
 
     auto cSeq = memAlloc<uint>(elements);
     getQueue().submit([&](sycl::handler &h) {
-        h.copy(Seq.get()->get_access(), cSeq.get()->get_access());
+        h.copy(Seq.get()->get_access(h, elements),
+               cSeq.get()->get_access(h, elements));
     });
     auto cseq_begin = ::oneapi::dpl::begin(*cSeq.get());
     auto cseq_end   = ::oneapi::dpl::end(*cSeq.get());
