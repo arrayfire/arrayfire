@@ -30,6 +30,7 @@
 using arrayfire::common::cast;
 using std::min;
 using std::vector;
+using sycl::buffer;
 
 namespace arrayfire {
 namespace oneapi {
@@ -59,32 +60,13 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
         ::oneapi::mkl::lapack::getrs_scratchpad_size<compute_t<T>>(
             getQueue(), opts, N, NRHS, LDA, LDB);
 
-    // TODO: which one?
-    Array<intl> ipiv              = cast<intl, int>(pivot);
-    sycl::buffer<int64_t> ipivBuf = ipiv.get()->reinterpret<int64_t, 1>();
-    sycl::buffer<compute_t<T>> scratchpad(scratchpad_size);
+    Array<intl> ipiv        = cast<intl, int>(pivot);
+    buffer<int64_t> ipivBuf = ipiv.get()->reinterpret<int64_t, 1>();
+    buffer<compute_t<T>> scratchpad(scratchpad_size);
 
-    /*
-    sycl::buffer<int64_t> ipivBuf(pivot.elements());
-    getQueue()
-        .submit([&](sycl::handler &h) {
-            auto ipivIn =
-                pivot.get()->template get_access<sycl::access_mode::read>(h);
-            auto ipivOut =
-                ipivBuf.get_access<sycl::access_mode::write>(h);
-            h.parallel_for(pivot.elements(),
-                    [=](sycl::id<1> i) {
-                        ipivOut[i] = static_cast<int64_t>(ipivIn[i]);
-                    });
-
-        });
-    */
-
-    Array<compute_t<T>> B = copyArray<compute_t<T>>(b);
-    sycl::buffer<compute_t<T>> aBuf =
-        A.template getBufferWithOffset<compute_t<T>>();
-    sycl::buffer<compute_t<T>> bBuf =
-        B.template getBufferWithOffset<compute_t<T>>();
+    Array<compute_t<T>> B     = copyArray<compute_t<T>>(b);
+    buffer<compute_t<T>> aBuf = A.template getBufferWithOffset<compute_t<T>>();
+    buffer<compute_t<T>> bBuf = B.template getBufferWithOffset<compute_t<T>>();
 
     ::oneapi::mkl::lapack::getrs(getQueue(), opts, N, NRHS, aBuf, LDA, ipivBuf,
                                  bBuf, LDB, scratchpad, scratchpad_size);
@@ -102,10 +84,10 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
     int K      = bDims[1];
     int MN     = std::min(M, N);
 
-    int lda     = a.strides()[1];
-    int astride = a.strides()[2];
-
-    sycl::buffer<int64_t> ipiv(MN * batches);
+    int lda      = a.strides()[1];
+    int astride  = a.strides()[2];
+    auto ipivMem = memAlloc<int64_t>(MN * batches);
+    buffer<int64_t> ipiv(*ipivMem, 0, MN * batches);
     int ipivstride = MN;
 
     int ldb     = b.strides()[1];
@@ -113,19 +95,17 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
 
     vector<int> info(batches, 0);
 
-    Array<T> A = copyArray<T>(a);
-    Array<T> B = copyArray<T>(b);
+    Array<T> A = copyArray<T>(a);  // A will be overwritten by L,U
+    Array<T> B = copyArray<T>(b);  // will be overwritten with solution
 
     std::int64_t scratchpad_size =
         ::oneapi::mkl::lapack::getrf_batch_scratchpad_size<compute_t<T>>(
             getQueue(), M, N, lda, astride, ipivstride, batches);
 
-    sycl::buffer<compute_t<T>> scratchpad(scratchpad_size);
+    buffer<compute_t<T>> scratchpad(scratchpad_size);
 
-    sycl::buffer<compute_t<T>> aBuf =
-        A.template getBufferWithOffset<compute_t<T>>();
-    sycl::buffer<compute_t<T>> bBuf =
-        B.template getBufferWithOffset<compute_t<T>>();
+    buffer<compute_t<T>> aBuf = A.template getBufferWithOffset<compute_t<T>>();
+    buffer<compute_t<T>> bBuf = B.template getBufferWithOffset<compute_t<T>>();
     ::oneapi::mkl::lapack::getrf_batch(getQueue(), M, N, aBuf, lda, astride,
                                        ipiv, ipivstride, batches, scratchpad,
                                        scratchpad_size);
@@ -135,8 +115,7 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
             getQueue(), ::oneapi::mkl::transpose::nontrans, N, K, lda, astride,
             ipivstride, ldb, bstride, batches);
 
-    // TODO: reuse? or single large scratchpad?
-    sycl::buffer<compute_t<T>> scratchpad_rs(scratchpad_size);
+    buffer<compute_t<T>> scratchpad_rs(scratchpad_size);
 
     ::oneapi::mkl::lapack::getrs_batch(
         getQueue(), ::oneapi::mkl::transpose::nontrans, N, K, aBuf, lda,
@@ -178,12 +157,12 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
             ::oneapi::mkl::lapack::geqrf_scratchpad_size<compute_t<T>>(
                 getQueue(), A.dims()[0], A.dims()[1], A.strides()[1]);
 
-        sycl::buffer<compute_t<T>> scratchpad(scratchpad_size);
+        buffer<compute_t<T>> scratchpad(scratchpad_size);
         Array<compute_t<T>> t = createEmptyArray<T>(af::dim4(MN, 1, 1, 1));
 
-        sycl::buffer<compute_t<T>> aBuf =
+        buffer<compute_t<T>> aBuf =
             A.template getBufferWithOffset<compute_t<T>>();
-        sycl::buffer<compute_t<T>> tBuf =
+        buffer<compute_t<T>> tBuf =
             t.template getBufferWithOffset<compute_t<T>>();
         // In place Perform in place QR
         ::oneapi::mkl::lapack::geqrf(getQueue(), A.dims()[0], A.dims()[1], aBuf,
@@ -196,7 +175,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
         // Bt = tri_solve(R1, B);
         B.resetDims(dim4(M, K));
 
-        sycl::buffer<compute_t<T>> bBuf =
+        buffer<compute_t<T>> bBuf =
             B.template getBufferWithOffset<compute_t<T>>();
         // TODO: move to helper? trsm<T>(A, B, AF_MAT_CTRANS, true, true,
         // false);
@@ -211,31 +190,28 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
         B.resetDims(dim4(N, K));
 
         // matmul(Q, Bpad)
-        if constexpr (std::is_same_v<compute_t<T>, float> ||
-                      std::is_same_v<compute_t<T>, double>) {
+        if constexpr (is_any_of<compute_t<T>, float, double>()) {
             std::int64_t scratchpad_size =
                 ::oneapi::mkl::lapack::ormqr_scratchpad_size<compute_t<T>>(
                     getQueue(), ::oneapi::mkl::side::left,
                     ::oneapi::mkl::transpose::nontrans, B.dims()[0],
                     B.dims()[1], A.dims()[0], A.strides()[1], B.strides()[1]);
 
-            sycl::buffer<compute_t<T>> scratchpad_ormqr(scratchpad_size);
+            buffer<compute_t<T>> scratchpad_ormqr(scratchpad_size);
             ::oneapi::mkl::lapack::ormqr(
                 getQueue(), ::oneapi::mkl::side::left,
                 ::oneapi::mkl::transpose::nontrans, B.dims()[0], B.dims()[1],
                 A.dims()[0], aBuf, A.strides()[1], tBuf, bBuf, B.strides()[1],
                 scratchpad_ormqr, scratchpad_size);
-        } else if constexpr (std::is_same_v<compute_t<T>,
-                                            std::complex<float>> ||
-                             std::is_same_v<compute_t<T>,
-                                            std::complex<double>>) {
+        } else if constexpr (is_any_of<compute_t<T>, std::complex<float>,
+                                       std::complex<double>>()) {
             std::int64_t scratchpad_size =
                 ::oneapi::mkl::lapack::unmqr_scratchpad_size<compute_t<T>>(
                     getQueue(), ::oneapi::mkl::side::left,
                     ::oneapi::mkl::transpose::nontrans, B.dims()[0],
                     B.dims()[1], A.dims()[0], A.strides()[1], B.strides()[1]);
 
-            sycl::buffer<compute_t<T>> scratchpad_unmqr(scratchpad_size);
+            buffer<compute_t<T>> scratchpad_unmqr(scratchpad_size);
             ::oneapi::mkl::lapack::unmqr(
                 getQueue(), ::oneapi::mkl::side::left,
                 ::oneapi::mkl::transpose::nontrans, B.dims()[0], B.dims()[1],
@@ -260,44 +236,41 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
             ::oneapi::mkl::lapack::geqrf_scratchpad_size<compute_t<T>>(
                 getQueue(), M, N, A.strides()[1]);
 
-        sycl::buffer<compute_t<T>> scratchpad(scratchpad_size);
+        buffer<compute_t<T>> scratchpad(scratchpad_size);
         Array<compute_t<T>> t = createEmptyArray<T>(af::dim4(MN, 1, 1, 1));
 
-        sycl::buffer<compute_t<T>> aBuf =
+        buffer<compute_t<T>> aBuf =
             A.template getBufferWithOffset<compute_t<T>>();
-        sycl::buffer<compute_t<T>> tBuf =
+        buffer<compute_t<T>> tBuf =
             t.template getBufferWithOffset<compute_t<T>>();
         // In place Perform in place QR
         ::oneapi::mkl::lapack::geqrf(getQueue(), M, N, aBuf, A.strides()[1],
                                      tBuf, scratchpad, scratchpad_size);
 
         // matmul(Q1, B)
-        sycl::buffer<compute_t<T>> bBuf =
+        buffer<compute_t<T>> bBuf =
             B.template getBufferWithOffset<compute_t<T>>();
-        if constexpr (std::is_same_v<compute_t<T>, float> ||
-                      std::is_same_v<compute_t<T>, double>) {
+        if constexpr (is_any_of<compute_t<T>, float, double>()) {
             std::int64_t scratchpad_size =
                 ::oneapi::mkl::lapack::ormqr_scratchpad_size<compute_t<T>>(
                     getQueue(), ::oneapi::mkl::side::left,
                     ::oneapi::mkl::transpose::trans, M, K, N, A.strides()[1],
                     b.strides()[1]);
 
-            sycl::buffer<compute_t<T>> scratchpad_ormqr(scratchpad_size);
+            buffer<compute_t<T>> scratchpad_ormqr(scratchpad_size);
             ::oneapi::mkl::lapack::ormqr(
                 getQueue(), ::oneapi::mkl::side::left,
                 ::oneapi::mkl::transpose::trans, M, K, N, aBuf, A.strides()[1],
                 tBuf, bBuf, b.strides()[1], scratchpad_ormqr, scratchpad_size);
-        } else if constexpr (std::is_same_v<compute_t<T>,
-                                            std::complex<float>> ||
-                             std::is_same_v<compute_t<T>,
-                                            std::complex<double>>) {
+        } else if constexpr (is_any_of<compute_t<T>, std::complex<float>,
+                                       std::complex<double>>()) {
             std::int64_t scratchpad_size =
                 ::oneapi::mkl::lapack::unmqr_scratchpad_size<compute_t<T>>(
                     getQueue(), ::oneapi::mkl::side::left,
                     ::oneapi::mkl::transpose::conjtrans, M, K, N,
                     A.strides()[1], b.strides()[1]);
 
-            sycl::buffer<compute_t<T>> scratchpad_unmqr(scratchpad_size);
+            buffer<compute_t<T>> scratchpad_unmqr(scratchpad_size);
             ::oneapi::mkl::lapack::unmqr(getQueue(), ::oneapi::mkl::side::left,
                                          ::oneapi::mkl::transpose::conjtrans, M,
                                          K, N, aBuf, A.strides()[1], tBuf, bBuf,
@@ -333,10 +306,8 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b,
                                        ? ::oneapi::mkl::diag::unit
                                        : ::oneapi::mkl::diag::nonunit;
 
-    sycl::buffer<compute_t<T>> aBuf =
-        A.template getBufferWithOffset<compute_t<T>>();
-    sycl::buffer<compute_t<T>> bBuf =
-        B.template getBufferWithOffset<compute_t<T>>();
+    buffer<compute_t<T>> aBuf = A.template getBufferWithOffset<compute_t<T>>();
+    buffer<compute_t<T>> bBuf = B.template getBufferWithOffset<compute_t<T>>();
 
     ::oneapi::mkl::blas::trsm(getQueue(), ::oneapi::mkl::side::left, uplo,
                               ::oneapi::mkl::transpose::nontrans, unitdiag,
