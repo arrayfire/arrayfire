@@ -24,7 +24,9 @@
 #include <platform.hpp>
 #include <transpose.hpp>
 
+#include <common/traits.hpp>
 #include <algorithm>
+#include <type_traits>
 #include <vector>
 
 using arrayfire::common::cast;
@@ -53,23 +55,20 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot, const Array<T> &b,
     const int64_t LDB  = b.strides()[1];
 
     ::oneapi::mkl::transpose opts = toMKLTranspose(options);
-    // see comments in core lapack functions about MKL scratch space
-    // avoiding memAlloc, since this may require a sub-buffer of a sub-buffer
-    // returned by memAlloc which is currently illegal in sycl
     std::int64_t scratchpad_size =
         ::oneapi::mkl::lapack::getrs_scratchpad_size<compute_t<T>>(
             getQueue(), opts, N, NRHS, LDA, LDB);
 
     Array<intl> ipiv        = cast<intl, int>(pivot);
     buffer<int64_t> ipivBuf = ipiv.get()->reinterpret<int64_t, 1>();
-    buffer<compute_t<T>> scratchpad(scratchpad_size);
+    auto scratchpad         = memAlloc<compute_t<T>>(scratchpad_size);
 
     Array<compute_t<T>> B     = copyArray<compute_t<T>>(b);
     buffer<compute_t<T>> aBuf = A.template getBufferWithOffset<compute_t<T>>();
     buffer<compute_t<T>> bBuf = B.template getBufferWithOffset<compute_t<T>>();
 
     ::oneapi::mkl::lapack::getrs(getQueue(), opts, N, NRHS, aBuf, LDA, ipivBuf,
-                                 bBuf, LDB, scratchpad, scratchpad_size);
+                                 bBuf, LDB, *scratchpad, scratchpad->size());
     return B;
 }
 
@@ -84,10 +83,9 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
     int K      = bDims[1];
     int MN     = std::min(M, N);
 
-    int lda      = a.strides()[1];
-    int astride  = a.strides()[2];
-    auto ipivMem = memAlloc<int64_t>(MN * batches);
-    buffer<int64_t> ipiv(*ipivMem, 0, MN * batches);
+    int lda        = a.strides()[1];
+    int astride    = a.strides()[2];
+    auto ipiv      = memAlloc<int64_t>(MN * batches);
     int ipivstride = MN;
 
     int ldb     = b.strides()[1];
@@ -102,25 +100,25 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b) {
         ::oneapi::mkl::lapack::getrf_batch_scratchpad_size<compute_t<T>>(
             getQueue(), M, N, lda, astride, ipivstride, batches);
 
-    buffer<compute_t<T>> scratchpad(scratchpad_size);
+    auto scratchpad = memAlloc<compute_t<T>>(scratchpad_size);
 
     buffer<compute_t<T>> aBuf = A.template getBufferWithOffset<compute_t<T>>();
     buffer<compute_t<T>> bBuf = B.template getBufferWithOffset<compute_t<T>>();
     ::oneapi::mkl::lapack::getrf_batch(getQueue(), M, N, aBuf, lda, astride,
-                                       ipiv, ipivstride, batches, scratchpad,
-                                       scratchpad_size);
+                                       *ipiv, ipivstride, batches, *scratchpad,
+                                       scratchpad->size());
 
     scratchpad_size =
         ::oneapi::mkl::lapack::getrs_batch_scratchpad_size<compute_t<T>>(
             getQueue(), ::oneapi::mkl::transpose::nontrans, N, K, lda, astride,
             ipivstride, ldb, bstride, batches);
 
-    buffer<compute_t<T>> scratchpad_rs(scratchpad_size);
+    auto scratchpad_rs = memAlloc<compute_t<T>>(scratchpad_size);
 
     ::oneapi::mkl::lapack::getrs_batch(
         getQueue(), ::oneapi::mkl::transpose::nontrans, N, K, aBuf, lda,
-        astride, ipiv, ipivstride, bBuf, ldb, bstride, batches, scratchpad_rs,
-        scratchpad_size);
+        astride, *ipiv, ipivstride, bBuf, ldb, bstride, batches, *scratchpad_rs,
+        scratchpad_rs->size());
 
     return B;
 }
@@ -157,17 +155,15 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
             ::oneapi::mkl::lapack::geqrf_scratchpad_size<compute_t<T>>(
                 getQueue(), A.dims()[0], A.dims()[1], A.strides()[1]);
 
-        buffer<compute_t<T>> scratchpad(scratchpad_size);
-        Array<compute_t<T>> t = createEmptyArray<T>(af::dim4(MN, 1, 1, 1));
+        auto scratchpad = memAlloc<compute_t<T>>(scratchpad_size);
+        auto t          = memAlloc<compute_t<T>>(MN);
 
         buffer<compute_t<T>> aBuf =
             A.template getBufferWithOffset<compute_t<T>>();
-        buffer<compute_t<T>> tBuf =
-            t.template getBufferWithOffset<compute_t<T>>();
         // In place Perform in place QR
         ::oneapi::mkl::lapack::geqrf(getQueue(), A.dims()[0], A.dims()[1], aBuf,
-                                     A.strides()[1], tBuf, scratchpad,
-                                     scratchpad_size);
+                                     A.strides()[1], *t, *scratchpad,
+                                     scratchpad->size());
 
         // R1 = R(seq(M), seq(M));
         A.resetDims(dim4(M, M));
@@ -190,33 +186,33 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
         B.resetDims(dim4(N, K));
 
         // matmul(Q, Bpad)
-        if constexpr (is_any_of<compute_t<T>, float, double>()) {
+        if constexpr (std::is_floating_point<compute_t<T>>()) {
             std::int64_t scratchpad_size =
                 ::oneapi::mkl::lapack::ormqr_scratchpad_size<compute_t<T>>(
                     getQueue(), ::oneapi::mkl::side::left,
                     ::oneapi::mkl::transpose::nontrans, B.dims()[0],
                     B.dims()[1], A.dims()[0], A.strides()[1], B.strides()[1]);
 
-            buffer<compute_t<T>> scratchpad_ormqr(scratchpad_size);
+            auto scratchpad_ormqr = memAlloc<compute_t<T>>(scratchpad_size);
             ::oneapi::mkl::lapack::ormqr(
                 getQueue(), ::oneapi::mkl::side::left,
                 ::oneapi::mkl::transpose::nontrans, B.dims()[0], B.dims()[1],
-                A.dims()[0], aBuf, A.strides()[1], tBuf, bBuf, B.strides()[1],
-                scratchpad_ormqr, scratchpad_size);
-        } else if constexpr (is_any_of<compute_t<T>, std::complex<float>,
-                                       std::complex<double>>()) {
+                A.dims()[0], aBuf, A.strides()[1], *t, bBuf, B.strides()[1],
+                *scratchpad_ormqr, scratchpad_ormqr->size());
+        } else if constexpr (common::isComplex(static_cast<af::dtype>(
+                                 dtype_traits<compute_t<T>>::af_type))) {
             std::int64_t scratchpad_size =
                 ::oneapi::mkl::lapack::unmqr_scratchpad_size<compute_t<T>>(
                     getQueue(), ::oneapi::mkl::side::left,
                     ::oneapi::mkl::transpose::nontrans, B.dims()[0],
                     B.dims()[1], A.dims()[0], A.strides()[1], B.strides()[1]);
 
-            buffer<compute_t<T>> scratchpad_unmqr(scratchpad_size);
+            auto scratchpad_unmqr = memAlloc<compute_t<T>>(scratchpad_size);
             ::oneapi::mkl::lapack::unmqr(
                 getQueue(), ::oneapi::mkl::side::left,
                 ::oneapi::mkl::transpose::nontrans, B.dims()[0], B.dims()[1],
-                A.dims()[0], aBuf, A.strides()[1], tBuf, bBuf, B.strides()[1],
-                scratchpad_unmqr, scratchpad_size);
+                A.dims()[0], aBuf, A.strides()[1], *t, bBuf, B.strides()[1],
+                *scratchpad_unmqr, scratchpad_unmqr->size());
         }
 
     } else if (M > N) {
@@ -236,46 +232,45 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b) {
             ::oneapi::mkl::lapack::geqrf_scratchpad_size<compute_t<T>>(
                 getQueue(), M, N, A.strides()[1]);
 
-        buffer<compute_t<T>> scratchpad(scratchpad_size);
-        Array<compute_t<T>> t = createEmptyArray<T>(af::dim4(MN, 1, 1, 1));
+        auto scratchpad = memAlloc<compute_t<T>>(scratchpad_size);
+        auto t          = memAlloc<compute_t<T>>(MN);
 
         buffer<compute_t<T>> aBuf =
             A.template getBufferWithOffset<compute_t<T>>();
-        buffer<compute_t<T>> tBuf =
-            t.template getBufferWithOffset<compute_t<T>>();
         // In place Perform in place QR
-        ::oneapi::mkl::lapack::geqrf(getQueue(), M, N, aBuf, A.strides()[1],
-                                     tBuf, scratchpad, scratchpad_size);
+        ::oneapi::mkl::lapack::geqrf(getQueue(), M, N, aBuf, A.strides()[1], *t,
+                                     *scratchpad, scratchpad->size());
 
         // matmul(Q1, B)
         buffer<compute_t<T>> bBuf =
             B.template getBufferWithOffset<compute_t<T>>();
-        if constexpr (is_any_of<compute_t<T>, float, double>()) {
+        if constexpr (std::is_floating_point<compute_t<T>>()) {
             std::int64_t scratchpad_size =
                 ::oneapi::mkl::lapack::ormqr_scratchpad_size<compute_t<T>>(
                     getQueue(), ::oneapi::mkl::side::left,
                     ::oneapi::mkl::transpose::trans, M, K, N, A.strides()[1],
                     b.strides()[1]);
 
-            buffer<compute_t<T>> scratchpad_ormqr(scratchpad_size);
-            ::oneapi::mkl::lapack::ormqr(
-                getQueue(), ::oneapi::mkl::side::left,
-                ::oneapi::mkl::transpose::trans, M, K, N, aBuf, A.strides()[1],
-                tBuf, bBuf, b.strides()[1], scratchpad_ormqr, scratchpad_size);
-        } else if constexpr (is_any_of<compute_t<T>, std::complex<float>,
-                                       std::complex<double>>()) {
+            auto scratchpad_ormqr = memAlloc<compute_t<T>>(scratchpad_size);
+            ::oneapi::mkl::lapack::ormqr(getQueue(), ::oneapi::mkl::side::left,
+                                         ::oneapi::mkl::transpose::trans, M, K,
+                                         N, aBuf, A.strides()[1], *t, bBuf,
+                                         b.strides()[1], *scratchpad_ormqr,
+                                         scratchpad_ormqr->size());
+        } else if constexpr (common::isComplex(static_cast<af::dtype>(
+                                 dtype_traits<compute_t<T>>::af_type))) {
             std::int64_t scratchpad_size =
                 ::oneapi::mkl::lapack::unmqr_scratchpad_size<compute_t<T>>(
                     getQueue(), ::oneapi::mkl::side::left,
                     ::oneapi::mkl::transpose::conjtrans, M, K, N,
                     A.strides()[1], b.strides()[1]);
 
-            buffer<compute_t<T>> scratchpad_unmqr(scratchpad_size);
+            auto scratchpad_unmqr = memAlloc<compute_t<T>>(scratchpad_size);
             ::oneapi::mkl::lapack::unmqr(getQueue(), ::oneapi::mkl::side::left,
                                          ::oneapi::mkl::transpose::conjtrans, M,
-                                         K, N, aBuf, A.strides()[1], tBuf, bBuf,
-                                         b.strides()[1], scratchpad_unmqr,
-                                         scratchpad_size);
+                                         K, N, aBuf, A.strides()[1], *t, bBuf,
+                                         b.strides()[1], *scratchpad_unmqr,
+                                         scratchpad_unmqr->size());
         }
 
         // tri_solve(R1, Bt)

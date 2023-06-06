@@ -21,17 +21,15 @@
 namespace arrayfire {
 namespace oneapi {
 
-Array<int> convertPivot(sycl::buffer<int64_t> &pivot, int out_sz,
+Array<int> convertPivot(sycl::buffer<int64_t> &pivot, int in_sz, int out_sz,
                         bool convert_pivot) {
-    dim_t d0 = pivot.get_range()[0];
-
     std::vector<int> d_po(out_sz);
     for (int i = 0; i < out_sz; i++) { d_po[i] = i; }
 
     auto d_pi = pivot.get_host_access();
 
     if (convert_pivot) {
-        for (int j = 0; j < d0; j++) {
+        for (int j = 0; j < in_sz; j++) {
             // 1 indexed in pivot
             std::swap(d_po[j], d_po[d_pi[j] - 1]);
         }
@@ -39,10 +37,10 @@ Array<int> convertPivot(sycl::buffer<int64_t> &pivot, int out_sz,
         Array<int> res = createHostDataArray(dim4(out_sz), &d_po[0]);
         return res;
     } else {
-        d_po.resize(d0);
-        for (int j = 0; j < d0; j++) { d_po[j] = static_cast<int>(d_pi[j]); }
+        d_po.resize(in_sz);
+        for (int j = 0; j < in_sz; j++) { d_po[j] = static_cast<int>(d_pi[j]); }
     }
-    Array<int> res = createHostDataArray(dim4(d0), &d_po[0]);
+    Array<int> res = createHostDataArray(dim4(in_sz), &d_po[0]);
     return res;
 }
 
@@ -77,19 +75,15 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot) {
     std::int64_t scratchpad_size =
         ::oneapi::mkl::lapack::getrf_scratchpad_size<T>(getQueue(), M, N, LDA);
 
-    // MKL is finicky about exact scratch space size so we'll need to
-    // create sycl::buffer of exact size. if we use memAlloc, this might
-    // require a sub-buffer of a sub-buffer returned by memAlloc which is
-    // currently illegal in sycl
-    sycl::buffer<int64_t> ipiv(MN);
-    sycl::buffer<compute_t<T>> scratchpad(scratchpad_size);
+    auto ipiv       = memAlloc<int64_t>(MN);
+    auto scratchpad = memAlloc<compute_t<T>>(scratchpad_size);
 
     sycl::buffer<compute_t<T>> in_buffer =
         in.template getBufferWithOffset<compute_t<T>>();
-    ::oneapi::mkl::lapack::getrf(getQueue(), M, N, in_buffer, LDA, ipiv,
-                                 scratchpad, scratchpad_size);
+    ::oneapi::mkl::lapack::getrf(getQueue(), M, N, in_buffer, LDA, *ipiv,
+                                 *scratchpad, scratchpad->size());
 
-    Array<int> pivot = convertPivot(ipiv, M, convert_pivot);
+    Array<int> pivot = convertPivot(*ipiv, MN, M, convert_pivot);
     return pivot;
 }
 

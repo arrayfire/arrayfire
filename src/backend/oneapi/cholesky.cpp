@@ -17,6 +17,7 @@
 #include <memory.hpp>
 #include <oneapi/mkl/lapack.hpp>
 #include <triangle.hpp>
+#include <algorithm>
 
 namespace arrayfire {
 namespace oneapi {
@@ -33,20 +34,16 @@ int cholesky_inplace(Array<T> &in, const bool is_upper) {
     ::oneapi::mkl::uplo uplo = ::oneapi::mkl::uplo::lower;
     if (is_upper) { uplo = ::oneapi::mkl::uplo::upper; }
 
-    lwork = ::oneapi::mkl::lapack::potrf_scratchpad_size<T>(getQueue(), uplo, N,
-                                                            LDA);
+    lwork = ::oneapi::mkl::lapack::potrf_scratchpad_size<compute_t<T>>(
+        getQueue(), uplo, N, LDA);
 
-    // MKL is finicky about exact scratch space size so we'll need to
-    // create sycl::buffer of exact size. if we use memAlloc, this might
-    // require a sub-buffer of a sub-buffer returned by memAlloc which is
-    // currently illegal in sycl
-    sycl::buffer<compute_t<T>> workspace(lwork);
+    auto workspace = memAlloc<compute_t<T>>(std::max<int64_t>(lwork, 1));
     sycl::buffer<compute_t<T>> in_buffer =
         in.template getBufferWithOffset<compute_t<T>>();
 
     try {
         ::oneapi::mkl::lapack::potrf(getQueue(), uplo, N, in_buffer, LDA,
-                                     workspace, lwork);
+                                     *workspace, workspace->size());
     } catch (::oneapi::mkl::lapack::exception const &e) {
         AF_ERROR(
             "Unexpected exception caught during synchronous\

@@ -38,16 +38,12 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     int64_t LDU   = uStrides[1];
     int64_t LDVt  = vStrides[1];
 
-    // MKL is finicky about exact scratch space size so we'll need to
-    // create sycl::buffer of exact size. if we use memAlloc, this might
-    // require a sub-buffer of a sub-buffer returned by memAlloc which is
-    // currently illegal in sycl
     int64_t scratch_size =
         ::oneapi::mkl::lapack::gesvd_scratchpad_size<compute_t<T>>(
             getQueue(), ::oneapi::mkl::jobsvd::vectors,
             ::oneapi::mkl::jobsvd::vectors, M, N, LDA, LDU, LDVt);
 
-    sycl::buffer<compute_t<T>> scratchpad(scratch_size);
+    auto scratchpad = memAlloc<compute_t<T>>(scratch_size);
 
     sycl::buffer<compute_t<T>> in_buffer =
         in.template getBufferWithOffset<compute_t<T>>();
@@ -62,7 +58,7 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in) {
     ::oneapi::mkl::lapack::gesvd(getQueue(), ::oneapi::mkl::jobsvd::vectors,
                                  ::oneapi::mkl::jobsvd::vectors, M, N,
                                  in_buffer, LDA, sBuf, uBuf, LDU, vtBuf, LDVt,
-                                 scratchpad, scratch_size);
+                                 *scratchpad, scratchpad->size());
 }
 
 template<typename T, typename Tr>
