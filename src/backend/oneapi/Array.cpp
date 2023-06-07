@@ -393,10 +393,6 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     return kJITHeuristics::Pass;
 }
 
-// Doesn't make sense with sycl::buffer
-// TODO: accessors? or return sycl::buffer?
-// TODO: return accessor.get_pointer() for access::target::global_buffer or
-// (host_buffer?)
 template<typename T>
 void *getDevicePtr(const Array<T> &arr) {
     const buffer<T> *buf = arr.device();
@@ -486,15 +482,12 @@ void writeHostDataArray(Array<T> &arr, const T *const data,
     if (!arr.isOwner()) { arr = copyArray<T>(arr); }
     getQueue()
         .submit([&](sycl::handler &h) {
-            buffer<T> &buf = *arr.get();
-            // auto offset_acc = buf.get_access(h, sycl::range, sycl::id<>)
-            // TODO: offset accessor
-            auto offset_acc = buf.get_access(h, sycl::range(arr.elements()));
-            h.copy(data, offset_acc);
+            auto host_acc =
+                arr.get()->template get_access<sycl::access_mode::write>(
+                    h, sycl::range(bytes / sizeof(T)), arr.getOffset());
+            h.copy(data, host_acc);
         })
         .wait();
-    // getQueue().enqueueWriteBuffer(*arr.get(), CL_TRUE, arr.getOffset(),
-    // bytes, data);
 }
 
 template<typename T>
@@ -502,14 +495,15 @@ void writeDeviceDataArray(Array<T> &arr, const void *const data,
                           const size_t bytes) {
     if (!arr.isOwner()) { arr = copyArray<T>(arr); }
 
-    // clRetainMemObject(
-    //    reinterpret_cast<buffer<T> *>(const_cast<void *>(data)));
-    // buffer<T> data_buf =
-    //  buffer<T>(reinterpret_cast<buffer<T>*>(const_cast<void *>(data)));
-
-    ONEAPI_NOT_SUPPORTED("writeDeviceDataArray not supported");
-    // getQueue().enqueueCopyBuffer(data_buf, buf, 0,
-    // static_cast<size_t>(arr.getOffset()), bytes);
+    sycl::buffer<T> *dataptr =
+        static_cast<sycl::buffer<T> *>(const_cast<void *>(data));
+    getQueue().submit([&](sycl::handler &h) {
+        auto src_acc = dataptr->template get_access<sycl::access_mode::read>(
+            h, sycl::range(bytes / sizeof(T)));
+        auto dst_acc = arr.get()->template get_access<sycl::access_mode::write>(
+            h, sycl::range(bytes / sizeof(T)), arr.getOffset());
+        h.copy(src_acc, dst_acc);
+    });
 }
 
 template<typename T>
