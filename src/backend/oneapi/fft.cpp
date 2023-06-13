@@ -92,9 +92,9 @@ Array<Tc> fft_r2c(const Array<Tr> &in, const int rank) {
 
     auto desc = [rank, &idims]() {
         if (rank == 1) return desc_ty(idims[0]);
-        if (rank == 2) return desc_ty({idims[0], idims[1]});
-        if (rank == 3) return desc_ty({idims[0], idims[1], idims[2]});
-        return desc_ty({idims[0], idims[1], idims[2], idims[3]});
+        if (rank == 2) return desc_ty({idims[1], idims[0]});
+        if (rank == 3) return desc_ty({idims[2], idims[1], idims[0]});
+        return desc_ty({idims[3], idims[2], idims[1], idims[0]});
     }();
 
     desc.set_value(::oneapi::mkl::dft::config_param::PLACEMENT,
