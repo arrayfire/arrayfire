@@ -473,7 +473,7 @@ TEST(DeviceId, Same) {
 
 TEST(DeviceId, Different) {
     int ndevices = getDeviceCount();
-    if (ndevices < 2) return;
+    if (ndevices < 2) GTEST_SKIP() << "Skipping mult-GPU test";
     int id0 = getDevice();
     int id1 = (id0 + 1) % ndevices;
 

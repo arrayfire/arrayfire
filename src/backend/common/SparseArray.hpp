@@ -248,5 +248,12 @@ class SparseArray {
     friend void destroySparseArray<T>(SparseArray<T> *sparse);
 };
 
+/// Checks if the Array object can be migrated to the current device and if not,
+/// an error is thrown
+///
+/// \param[in] arr The Array that will be checked.
+template<typename T>
+void checkAndMigrate(const SparseArray<T> &arr);
+
 }  // namespace common
 }  // namespace arrayfire

@@ -135,6 +135,11 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
 }
 
 template<typename T>
+void checkAndMigrate(const Array<T> &arr) {
+    return;
+}
+
+template<typename T>
 void Array<T>::eval() {
     evalMultiple<T>({this});
 }
@@ -353,7 +358,8 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(vector<Array<T> *> arrays);                 \
     template kJITHeuristics passesJitHeuristics<T>(span<Node *> n);           \
-    template void Array<T>::setDataDims(const dim4 &new_dims);
+    template void Array<T>::setDataDims(const dim4 &new_dims);                \
+    template void checkAndMigrate<T>(const Array<T> &arr);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

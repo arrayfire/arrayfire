@@ -34,6 +34,13 @@ using af::dim4;
 template<typename T>
 class Array;
 
+/// Checks if the Array object can be migrated to the current device and if not,
+/// an error is thrown
+///
+/// \param[in] arr The Array that will be checked.
+template<typename T>
+void checkAndMigrate(const Array<T> &arr);
+
 template<typename T>
 void evalNodes(Param<T> out, common::Node *node);
 

@@ -134,8 +134,8 @@ af_err af_gemm(af_array *out, const af_mat_prop optLhs,
                const af_mat_prop optRhs, const void *alpha, const af_array lhs,
                const af_array rhs, const void *beta) {
     try {
-        const ArrayInfo &lhsInfo = getInfo(lhs, false, true);
-        const ArrayInfo &rhsInfo = getInfo(rhs, true, true);
+        const ArrayInfo &lhsInfo = getInfo(lhs, false);
+        const ArrayInfo &rhsInfo = getInfo(rhs, true);
 
         af_dtype lhs_type = lhsInfo.getType();
         af_dtype rhs_type = rhsInfo.getType();
@@ -227,8 +227,8 @@ af_err af_gemm(af_array *out, const af_mat_prop optLhs,
 af_err af_matmul(af_array *out, const af_array lhs, const af_array rhs,
                  const af_mat_prop optLhs, const af_mat_prop optRhs) {
     try {
-        const ArrayInfo &lhsInfo = getInfo(lhs, false, true);
-        const ArrayInfo &rhsInfo = getInfo(rhs, true, true);
+        const ArrayInfo &lhsInfo = getInfo(lhs, false);
+        const ArrayInfo &rhsInfo = getInfo(rhs, true);
 
         if (lhsInfo.isSparse()) {
             return af_sparse_matmul(out, lhs, rhs, optLhs, optRhs);

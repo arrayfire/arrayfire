@@ -29,7 +29,7 @@ using detail::ushort;
 namespace arrayfire {
 
 af_array retain(const af_array in) {
-    const ArrayInfo &info = getInfo(in, false, false);
+    const ArrayInfo &info = getInfo(in, false);
     af_dtype ty           = info.getType();
 
     if (info.isSparse()) {
