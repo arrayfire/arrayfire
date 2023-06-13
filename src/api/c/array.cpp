@@ -20,6 +20,7 @@ using af::dim4;
 using arrayfire::copyData;
 using arrayfire::copySparseArray;
 using arrayfire::getSparseArrayBase;
+using arrayfire::getUseCount;
 using arrayfire::releaseHandle;
 using arrayfire::releaseSparseHandle;
 using arrayfire::retainSparseHandle;
@@ -192,24 +193,24 @@ af_err af_copy_array(af_array *out, const af_array in) {
 // Strong Exception Guarantee
 af_err af_get_data_ref_count(int *use_count, const af_array in) {
     try {
-        const ArrayInfo &info = getInfo(in, false, false);
+        const ArrayInfo &info = getInfo(in, false);
         const af_dtype type   = info.getType();
 
         int res;
         switch (type) {
-            case f32: res = getArray<float>(in).useCount(); break;
-            case c32: res = getArray<cfloat>(in).useCount(); break;
-            case f64: res = getArray<double>(in).useCount(); break;
-            case c64: res = getArray<cdouble>(in).useCount(); break;
-            case b8: res = getArray<char>(in).useCount(); break;
-            case s32: res = getArray<int>(in).useCount(); break;
-            case u32: res = getArray<uint>(in).useCount(); break;
-            case u8: res = getArray<uchar>(in).useCount(); break;
-            case s64: res = getArray<intl>(in).useCount(); break;
-            case u64: res = getArray<uintl>(in).useCount(); break;
-            case s16: res = getArray<short>(in).useCount(); break;
-            case u16: res = getArray<ushort>(in).useCount(); break;
-            case f16: res = getArray<half>(in).useCount(); break;
+            case f32: res = getUseCount<float>(in); break;
+            case c32: res = getUseCount<cfloat>(in); break;
+            case f64: res = getUseCount<double>(in); break;
+            case c64: res = getUseCount<cdouble>(in); break;
+            case b8: res = getUseCount<char>(in); break;
+            case s32: res = getUseCount<int>(in); break;
+            case u32: res = getUseCount<uint>(in); break;
+            case u8: res = getUseCount<uchar>(in); break;
+            case s64: res = getUseCount<intl>(in); break;
+            case u64: res = getUseCount<uintl>(in); break;
+            case s16: res = getUseCount<short>(in); break;
+            case u16: res = getUseCount<ushort>(in); break;
+            case f16: res = getUseCount<half>(in); break;
             default: TYPE_ERROR(1, type);
         }
         std::swap(*use_count, res);
@@ -221,7 +222,7 @@ af_err af_get_data_ref_count(int *use_count, const af_array in) {
 af_err af_release_array(af_array arr) {
     try {
         if (arr == 0) { return AF_SUCCESS; }
-        const ArrayInfo &info = getInfo(arr, false, false);
+        const ArrayInfo &info = getInfo(arr, false);
         af_dtype type         = info.getType();
 
         if (info.isSparse()) {
@@ -335,7 +336,7 @@ af_err af_write_array(af_array arr, const void *data, const size_t bytes,
 af_err af_get_elements(dim_t *elems, const af_array arr) {
     try {
         // Do not check for device mismatch
-        *elems = getInfo(arr, false, false).elements();
+        *elems = getInfo(arr, false).elements();
     }
     CATCHALL
     return AF_SUCCESS;
@@ -344,7 +345,7 @@ af_err af_get_elements(dim_t *elems, const af_array arr) {
 af_err af_get_type(af_dtype *type, const af_array arr) {
     try {
         // Do not check for device mismatch
-        *type = getInfo(arr, false, false).getType();
+        *type = getInfo(arr, false).getType();
     }
     CATCHALL
     return AF_SUCCESS;
@@ -354,7 +355,7 @@ af_err af_get_dims(dim_t *d0, dim_t *d1, dim_t *d2, dim_t *d3,
                    const af_array in) {
     try {
         // Do not check for device mismatch
-        const ArrayInfo &info = getInfo(in, false, false);
+        const ArrayInfo &info = getInfo(in, false);
         *d0                   = info.dims()[0];
         *d1                   = info.dims()[1];
         *d2                   = info.dims()[2];
@@ -367,7 +368,7 @@ af_err af_get_dims(dim_t *d0, dim_t *d1, dim_t *d2, dim_t *d3,
 af_err af_get_numdims(unsigned *nd, const af_array in) {
     try {
         // Do not check for device mismatch
-        const ArrayInfo &info = getInfo(in, false, false);
+        const ArrayInfo &info = getInfo(in, false);
         *nd                   = info.ndims();
     }
     CATCHALL
@@ -375,14 +376,14 @@ af_err af_get_numdims(unsigned *nd, const af_array in) {
 }
 
 #undef INSTANTIATE
-#define INSTANTIATE(fn1, fn2)                                  \
-    af_err fn1(bool *result, const af_array in) {              \
-        try {                                                  \
-            const ArrayInfo &info = getInfo(in, false, false); \
-            *result               = info.fn2();                \
-        }                                                      \
-        CATCHALL                                               \
-        return AF_SUCCESS;                                     \
+#define INSTANTIATE(fn1, fn2)                           \
+    af_err fn1(bool *result, const af_array in) {       \
+        try {                                           \
+            const ArrayInfo &info = getInfo(in, false); \
+            *result               = info.fn2();         \
+        }                                               \
+        CATCHALL                                        \
+        return AF_SUCCESS;                              \
     }
 
 INSTANTIATE(af_is_empty, isEmpty)

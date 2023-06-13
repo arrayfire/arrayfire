@@ -58,6 +58,13 @@ std::shared_ptr<BufferNode<T>> bufferNodePtr() {
 }
 
 template<typename T>
+void checkAndMigrate(const Array<T> &arr) {
+    if (arr.getDevId() != detail::getActiveDeviceId()) {
+        AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
+    }
+}
+
+template<typename T>
 Array<T>::Array(const af::dim4 &dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
@@ -468,7 +475,8 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
         Array<T> & arr, const void *const data, const size_t bytes);          \
     template void evalMultiple<T>(std::vector<Array<T> *> arrays);            \
     template kJITHeuristics passesJitHeuristics<T>(span<Node *> n);           \
-    template void Array<T>::setDataDims(const dim4 &new_dims);
+    template void Array<T>::setDataDims(const dim4 &new_dims);                \
+    template void checkAndMigrate<T>(const Array<T> &arr);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

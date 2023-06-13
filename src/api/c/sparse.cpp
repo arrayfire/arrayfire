@@ -347,7 +347,7 @@ af_err af_sparse_convert_to(af_array *out, const af_array in,
                             const af_storage destStorage) {
     try {
         // Handle dense case
-        const ArrayInfo &info = getInfo(in, false, true);
+        const ArrayInfo &info = getInfo(in, false);
         if (!info.isSparse()) {  // If input is dense
             return af_create_sparse_array_from_dense(out, in, destStorage);
         }

@@ -30,6 +30,7 @@ const common::SparseArray<T> &getSparseArray(const af_array &arr) {
     const common::SparseArray<T> *A =
         static_cast<const common::SparseArray<T> *>(arr);
     ARG_ASSERT(0, A->isSparse() == true);
+    checkAndMigrate(*A);
     return *A;
 }
 
@@ -37,6 +38,7 @@ template<typename T>
 common::SparseArray<T> &getSparseArray(af_array &arr) {
     common::SparseArray<T> *A = static_cast<common::SparseArray<T> *>(arr);
     ARG_ASSERT(0, A->isSparse() == true);
+    checkAndMigrate(*A);
     return *A;
 }
 
@@ -62,7 +64,7 @@ af_array retainSparseHandle(const af_array in) {
 // based on castArray in handle.hpp
 template<typename To>
 common::SparseArray<To> castSparse(const af_array &in) {
-    const ArrayInfo &info = getInfo(in, false, true);
+    const ArrayInfo &info = getInfo(in, false);
     using namespace common;
 
 #define CAST_SPARSE(Ti)                                                          \

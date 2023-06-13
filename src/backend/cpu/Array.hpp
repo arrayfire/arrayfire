@@ -127,6 +127,13 @@ void *getRawPtr(const Array<T> &arr) {
     return (void *)(arr.get(false));
 }
 
+/// Checks if the Array object can be migrated to the current device and if not,
+/// an error is thrown
+///
+/// \param[in] arr The Array that will be checked.
+template<typename T>
+void checkAndMigrate(const Array<T> &arr);
+
 // Array Array Implementation
 template<typename T>
 class Array {

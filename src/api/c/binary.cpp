@@ -279,8 +279,8 @@ af_err af_add(af_array *out, const af_array lhs, const af_array rhs,
               const bool batchMode) {
     try {
         // Check if inputs are sparse
-        const ArrayInfo &linfo = getInfo(lhs, false, true);
-        const ArrayInfo &rinfo = getInfo(rhs, false, true);
+        const ArrayInfo &linfo = getInfo(lhs, false);
+        const ArrayInfo &rinfo = getInfo(rhs, false);
 
         if (linfo.isSparse() && rinfo.isSparse()) {
             return af_arith_sparse<af_add_t>(out, lhs, rhs);
@@ -301,8 +301,8 @@ af_err af_mul(af_array *out, const af_array lhs, const af_array rhs,
               const bool batchMode) {
     try {
         // Check if inputs are sparse
-        const ArrayInfo &linfo = getInfo(lhs, false, true);
-        const ArrayInfo &rinfo = getInfo(rhs, false, true);
+        const ArrayInfo &linfo = getInfo(lhs, false);
+        const ArrayInfo &rinfo = getInfo(rhs, false);
 
         if (linfo.isSparse() && rinfo.isSparse()) {
             // return af_arith_sparse<af_mul_t>(out, lhs, rhs);
@@ -327,8 +327,8 @@ af_err af_sub(af_array *out, const af_array lhs, const af_array rhs,
               const bool batchMode) {
     try {
         // Check if inputs are sparse
-        const ArrayInfo &linfo = getInfo(lhs, false, true);
-        const ArrayInfo &rinfo = getInfo(rhs, false, true);
+        const ArrayInfo &linfo = getInfo(lhs, false);
+        const ArrayInfo &rinfo = getInfo(rhs, false);
 
         if (linfo.isSparse() && rinfo.isSparse()) {
             return af_arith_sparse<af_sub_t>(out, lhs, rhs);
@@ -350,8 +350,8 @@ af_err af_div(af_array *out, const af_array lhs, const af_array rhs,
               const bool batchMode) {
     try {
         // Check if inputs are sparse
-        const ArrayInfo &linfo = getInfo(lhs, false, true);
-        const ArrayInfo &rinfo = getInfo(rhs, false, true);
+        const ArrayInfo &linfo = getInfo(lhs, false);
+        const ArrayInfo &rinfo = getInfo(rhs, false);
 
         if (linfo.isSparse() && rinfo.isSparse()) {
             // return af_arith_sparse<af_div_t>(out, lhs, rhs);

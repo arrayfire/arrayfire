@@ -80,7 +80,7 @@ af_err af_get_available_backends(int* result) {
 af_err af_get_backend_id(af_backend* result, const af_array in) {
     try {
         if (in) {
-            const ArrayInfo& info = getInfo(in, false, false);
+            const ArrayInfo& info = getInfo(in, false);
             *result               = info.getBackendId();
         } else {
             return AF_ERR_ARG;
@@ -93,7 +93,7 @@ af_err af_get_backend_id(af_backend* result, const af_array in) {
 af_err af_get_device_id(int* device, const af_array in) {
     try {
         if (in) {
-            const ArrayInfo& info = getInfo(in, false, false);
+            const ArrayInfo& info = getInfo(in, false);
             *device               = static_cast<int>(info.getDevId());
         } else {
             return AF_ERR_ARG;

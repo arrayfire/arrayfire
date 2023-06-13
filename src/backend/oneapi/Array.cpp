@@ -89,6 +89,13 @@ void verifyTypeSupport<arrayfire::common::half>() {
 }  // namespace
 
 template<typename T>
+void checkAndMigrate(const Array<T> &arr) {
+    if (arr.getDevId() != detail::getActiveDeviceId()) {
+        AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
+    }
+}
+
+template<typename T>
 Array<T>::Array(const dim4 &dims)
     : info(getActiveDeviceId(), dims, 0, calcStrides(dims),
            static_cast<af_dtype>(dtype_traits<T>::af_type))
@@ -564,7 +571,8 @@ size_t Array<T>::getAllocatedBytes() const {
     template kJITHeuristics passesJitHeuristics<T>(span<Node *> node);       \
     template void *getDevicePtr<T>(const Array<T> &arr);                     \
     template void Array<T>::setDataDims(const dim4 &new_dims);               \
-    template size_t Array<T>::getAllocatedBytes() const;
+    template size_t Array<T>::getAllocatedBytes() const;                     \
+    template void checkAndMigrate<T>(const Array<T> &arr);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

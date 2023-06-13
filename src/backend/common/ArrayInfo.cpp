@@ -221,19 +221,13 @@ dim4 toStride(const vector<af_seq> &seqs, const af::dim4 &parentDims) {
 namespace arrayfire {
 namespace common {
 
-const ArrayInfo &getInfo(const af_array arr, bool sparse_check,
-                         bool device_check) {
+const ArrayInfo &getInfo(const af_array arr, bool sparse_check) {
     const ArrayInfo *info = nullptr;
     memcpy(&info, &arr, sizeof(af_array));
 
     // Check Sparse -> If false, then both standard Array<T> and SparseArray<T>
     // are accepted Otherwise only regular Array<T> is accepted
     if (sparse_check) { ARG_ASSERT(0, info->isSparse() == false); }
-
-    if (device_check && info->getDevId() != static_cast<unsigned>(
-                                                detail::getActiveDeviceId())) {
-        AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
-    }
 
     return *info;
 }
