@@ -320,12 +320,15 @@ cl_kernel getKernel(
 
     vector<cl_kernel> kernels(10);
     bool kernel_found;
+    string kernelHash = funcName + devName;
     {
         std::lock_guard<std::mutex> lock(kernel_map_mutex);
-        kernel_found =
-            !(kernel_map.find(funcName + devName) == end(kernel_map));
+        kernel_found = !(kernel_map.find(kernelHash) == end(kernel_map));
     }
-    if (!kernel_found) {
+    if (kernel_found) {
+        std::lock_guard<std::mutex> lock(kernel_map_mutex);
+        kernels[0] = kernel_map[kernelHash];
+    } else {
         string jitstr = arrayfire::opencl::getKernelString(
             funcName, full_nodes, full_ids, output_ids, is_linear, false, false,
             ap[0].dims[2] > 1);
@@ -351,11 +354,8 @@ cl_kernel getKernel(
             clCreateKernelsInProgram(prog, 1, kernels.data(), &ret_kernels));
 
         std::lock_guard<std::mutex> lock(kernel_map_mutex);
-        kernel_map[funcName] = kernels[0];
+        kernel_map[kernelHash] = kernels[0];
         CL_CHECK(clReleaseProgram(prog));
-    } else {
-        std::lock_guard<std::mutex> lock(kernel_map_mutex);
-        kernels[0] = kernel_map[funcName];
     }
     return kernels[0];
 }
