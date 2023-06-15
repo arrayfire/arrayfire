@@ -80,9 +80,9 @@ void sortBatched(Param<T> pVal, int dim, bool isAscending) {
     auto dpl_policy = ::oneapi::dpl::execution::make_device_policy(getQueue());
 
     auto key_begin    = ::oneapi::dpl::begin(*pKey.get());
-    auto key_end      = ::oneapi::dpl::end(*pKey.get());
+    auto key_end      = key_begin + pKey.dims()[0];
     auto val_begin    = ::oneapi::dpl::begin(*pVal.data);
-    auto val_end      = ::oneapi::dpl::end(*pVal.data);
+    auto val_end      = val_begin + pVal.info.dims[0];
     auto zipped_begin = dpl::make_zip_iterator(key_begin, val_begin);
     auto zipped_end   = dpl::make_zip_iterator(key_end, val_end);
 
