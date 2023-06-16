@@ -98,13 +98,13 @@ void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim,
 
     // set up iterators for seq, key, val, and new cKey
     auto seq_begin = ::oneapi::dpl::begin(*Seq.get());
-    auto seq_end   = ::oneapi::dpl::end(*Seq.get());
+    auto seq_end   = seq_begin + elements;
     auto key_begin =
         ::oneapi::dpl::begin(pKey.data->template reinterpret<compute_t<Tk>>());
-    auto key_end =
-        ::oneapi::dpl::end(pKey.data->template reinterpret<compute_t<Tk>>());
+    auto key_end = key_begin + elements;
+
     auto val_begin = ::oneapi::dpl::begin(*pVal.data);
-    auto val_end   = ::oneapi::dpl::end(*pVal.data);
+    auto val_end   = val_begin + elements;
 
     auto cKey = memAlloc<Tk>(elements);
     getQueue().submit([&](sycl::handler &h) {
@@ -115,8 +115,7 @@ void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim,
     });
     auto ckey_begin =
         ::oneapi::dpl::begin(cKey.get()->template reinterpret<compute_t<Tk>>());
-    auto ckey_end =
-        ::oneapi::dpl::end(cKey.get()->template reinterpret<compute_t<Tk>>());
+    auto ckey_end = ckey_begin + elements;
 
     {
         auto zipped_begin_KV  = dpl::make_zip_iterator(key_begin, val_begin);
@@ -150,7 +149,7 @@ void sortByKeyBatched(Param<Tk> pKey, Param<Tv> pVal, const int dim,
                cSeq.get()->get_access(h, elements));
     });
     auto cseq_begin = ::oneapi::dpl::begin(*cSeq.get());
-    auto cseq_end   = ::oneapi::dpl::end(*cSeq.get());
+    auto cseq_end   = cseq_begin + elements;
 
     {
         auto zipped_begin_SV  = dpl::make_zip_iterator(seq_begin, val_begin);

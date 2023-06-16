@@ -34,6 +34,7 @@
 #include <array>
 #include <cstdio>
 #include <functional>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -286,6 +287,11 @@ __kernel void )JIT";
 //     return common::getKernel("", "", true).get();
 // }
 
+static unordered_map<cl_device_id, std::string> device_name_map;
+static std::mutex device_name_map_mutex;
+static unordered_map<std::string, cl_kernel> kernel_map;
+static std::mutex kernel_map_mutex;
+
 template<typename T>
 cl_kernel getKernel(
     std::string funcName, cl_context ctx, cl_device_id dev, cl_command_queue q,
@@ -293,10 +299,36 @@ cl_kernel getKernel(
     nonstd::span<Node_ids const> full_ids, nonstd::span<int const> output_ids,
     nonstd::span<oneapi::AParam<T, sycl::access_mode::write> const> ap,
     bool is_linear) {
-    static unordered_map<std::string, cl_kernel> kernel_map;
+    std::string devName;
+    {
+        std::lock_guard<std::mutex> lock(device_name_map_mutex);
+
+        auto devNameIt = device_name_map.find(dev);
+        if (devNameIt == device_name_map.end()) {
+            size_t devNameSz;
+            CL_CHECK(
+                clGetDeviceInfo(dev, CL_DEVICE_NAME, 0, nullptr, &devNameSz));
+            string newDevName(devNameSz, '\0');
+            CL_CHECK(clGetDeviceInfo(dev, CL_DEVICE_NAME, devNameSz,
+                                     newDevName.data(), nullptr));
+            device_name_map[dev] = newDevName;
+            devName              = newDevName;
+        } else {
+            devName = devNameIt->second;
+        }
+    }
 
     vector<cl_kernel> kernels(10);
-    if (kernel_map.find(funcName) == end(kernel_map)) {
+    bool kernel_found;
+    string kernelHash = funcName + devName;
+    {
+        std::lock_guard<std::mutex> lock(kernel_map_mutex);
+        kernel_found = !(kernel_map.find(kernelHash) == end(kernel_map));
+    }
+    if (kernel_found) {
+        std::lock_guard<std::mutex> lock(kernel_map_mutex);
+        kernels[0] = kernel_map[kernelHash];
+    } else {
         string jitstr = arrayfire::opencl::getKernelString(
             funcName, full_nodes, full_ids, output_ids, is_linear, false, false,
             ap[0].dims[2] > 1);
@@ -320,10 +352,10 @@ cl_kernel getKernel(
         cl_uint ret_kernels = 0;
         CL_CHECK(
             clCreateKernelsInProgram(prog, 1, kernels.data(), &ret_kernels));
-        kernel_map[funcName] = kernels[0];
+
+        std::lock_guard<std::mutex> lock(kernel_map_mutex);
+        kernel_map[kernelHash] = kernels[0];
         CL_CHECK(clReleaseProgram(prog));
-    } else {
-        kernels[0] = kernel_map[funcName];
     }
     return kernels[0];
 }
