@@ -208,6 +208,12 @@ DeviceManager::~DeviceManager() {
     }
 }
 
+bool isDeviceBufferAccessible(int buf_device_id, int execution_id) {
+    DeviceManager &mngr = DeviceManager::getInstance();
+    return buf_device_id == execution_id ||
+           mngr.device_peer_access_map[buf_device_id][execution_id];
+}
+
 int getBackend() { return AF_BACKEND_CUDA; }
 
 string getDeviceInfo(int device) noexcept {

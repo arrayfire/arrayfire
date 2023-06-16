@@ -278,6 +278,16 @@ afcl::platform getActivePlatformVendor() {
     return devMngr.mPlatforms[get<1>(devId)].second;
 }
 
+bool isDeviceBufferAccessible(int buf_device_id, int execution_id) {
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(devMngr.deviceMutex);
+
+    return buf_device_id == execution_id ||
+           *devMngr.mContexts[buf_device_id] ==
+               *devMngr.mContexts[execution_id];
+}
+
 const Context& getContext() {
     device_id_t& devId = tlocalActiveDeviceId();
 
@@ -330,9 +340,9 @@ vector<Version> getOpenCLCDeviceVersion(const Device& device) {
     auto platform_version = device_platform.getInfo<CL_PLATFORM_VERSION>();
     vector<Version> out;
 
-    /// The ifdef allows us to support BUILDING ArrayFire with older versions of
-    /// OpenCL where as the if condition in the ifdef allows us to support older
-    /// versions of OpenCL at runtime
+    /// The ifdef allows us to support BUILDING ArrayFire with older
+    /// versions of OpenCL where as the if condition in the ifdef allows us
+    /// to support older versions of OpenCL at runtime
 #ifdef CL_DEVICE_OPENCL_C_ALL_VERSIONS
     if (platform_version.substr(7).c_str()[0] >= '3') {
         vector<cl_name_version> device_versions =
@@ -519,24 +529,25 @@ void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que) {
     {
         common::lock_guard_t lock(devMngr.deviceMutex);
 
-        auto tDevice  = make_unique<cl::Device>(dev, true);
-        auto tContext = make_unique<cl::Context>(ctx, true);
+        cl::Device tDevice(dev, true);
+        cl::Context tContext(ctx, true);
         auto tQueue =
-            (que == NULL ? make_unique<cl::CommandQueue>(*tContext, *tDevice)
+            (que == NULL ? make_unique<cl::CommandQueue>(tContext, tDevice)
                          : make_unique<cl::CommandQueue>(que, true));
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.push_back(false);
         devMngr.mDeviceTypes.push_back(
-            static_cast<int>(tDevice->getInfo<CL_DEVICE_TYPE>()));
+            static_cast<int>(tDevice.getInfo<CL_DEVICE_TYPE>()));
 
-        auto device_platform = tDevice->getInfo<CL_DEVICE_PLATFORM>();
+        auto device_platform = tDevice.getInfo<CL_DEVICE_PLATFORM>();
         devMngr.mPlatforms.push_back(
             std::make_pair<std::unique_ptr<cl::Platform>, afcl_platform>(
                 make_unique<cl::Platform>(device_platform, true),
-                getPlatformEnum(*tDevice)));
+                getPlatformEnum(tDevice)));
 
-        devMngr.mDevices.push_back(move(tDevice));
-        devMngr.mContexts.push_back(move(tContext));
+        devMngr.mDevices.emplace_back(make_unique<cl::Device>(move(tDevice)));
+        devMngr.mContexts.emplace_back(
+            make_unique<cl::Context>(move(tContext)));
         devMngr.mQueues.push_back(move(tQueue));
         nDevices = static_cast<int>(devMngr.mDevices.size()) - 1;
 
@@ -594,7 +605,8 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx) {
         common::lock_guard_t lock(devMngr.deviceMutex);
 
         const int dCount = static_cast<int>(devMngr.mDevices.size());
-        for (int i = 0; i < dCount; ++i) {
+        for (int i = static_cast<int>(devMngr.mUserDeviceOffset); i < dCount;
+             ++i) {
             if (devMngr.mDevices[i]->operator()() == dev &&
                 devMngr.mContexts[i]->operator()() == ctx) {
                 deleteIdx = i;

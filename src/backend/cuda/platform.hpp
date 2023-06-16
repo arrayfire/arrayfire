@@ -88,6 +88,13 @@ cudaStream_t getStream(int device);
 
 cudaStream_t getActiveStream();
 
+/// Returns true if the buffer on device buf_device_id can be accessed by
+/// kernels on device execution_id
+///
+/// \param[in] buf_device_id The device id of the buffer
+/// \param[in] execution_id The device where the buffer will be accessed.
+bool isDeviceBufferAccessible(int buf_device_id, int execution_id);
+
 /// Return a handle to the stream for the device.
 ///
 /// \param[in] device The device of the returned stream

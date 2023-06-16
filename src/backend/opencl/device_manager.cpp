@@ -171,6 +171,14 @@ static inline bool compare_default(const unique_ptr<Device>& ldev,
     return l_mem > r_mem;
 }
 
+/// Class to compare two devices for sorting in a map
+class deviceLess {
+   public:
+    bool operator()(const cl::Device& lhs, const cl::Device& rhs) const {
+        return lhs() < rhs();
+    }
+};
+
 DeviceManager::DeviceManager()
     : logger(common::loggerFactory("platform"))
     , mUserDeviceOffset(0)
@@ -216,6 +224,7 @@ DeviceManager::DeviceManager()
 
     AF_TRACE("Found {} OpenCL platforms", platforms.size());
 
+    std::map<cl::Device, cl::Context, deviceLess> mDeviceContextMap;
     // Iterate through platforms, get all available devices and store them
     for (auto& platform : platforms) {
         vector<Device> current_devices;
@@ -227,11 +236,15 @@ DeviceManager::DeviceManager()
         }
         AF_TRACE("Found {} devices on platform {}", current_devices.size(),
                  platform.getInfo<CL_PLATFORM_NAME>());
-        for (auto& dev : current_devices) {
-            mDevices.emplace_back(make_unique<Device>(dev));
-            AF_TRACE("Found device {} on platform {}",
-                     dev.getInfo<CL_DEVICE_NAME>(),
-                     platform.getInfo<CL_PLATFORM_NAME>());
+        if (!current_devices.empty()) {
+            cl::Context ctx(current_devices);
+            for (auto& dev : current_devices) {
+                mDeviceContextMap[dev] = ctx;
+                mDevices.emplace_back(make_unique<Device>(dev));
+                AF_TRACE("Found device {} on platform {}",
+                         dev.getInfo<CL_DEVICE_NAME>(),
+                         platform.getInfo<CL_PLATFORM_NAME>());
+            }
         }
     }
 
@@ -250,10 +263,9 @@ DeviceManager::DeviceManager()
     for (int i = 0; i < nDevices; i++) {
         cl_platform_id device_platform =
             devices[i]->getInfo<CL_DEVICE_PLATFORM>();
-        cl_context_properties cps[3] = {
-            CL_CONTEXT_PLATFORM, (cl_context_properties)(device_platform), 0};
         try {
-            mContexts.push_back(make_unique<Context>(*devices[i], cps));
+            mContexts.emplace_back(
+                make_unique<cl::Context>(mDeviceContextMap[*devices[i]]));
             mQueues.push_back(make_unique<CommandQueue>(
                 *mContexts.back(), *devices[i], cl::QueueProperties::None));
             mIsGLSharingOn.push_back(false);

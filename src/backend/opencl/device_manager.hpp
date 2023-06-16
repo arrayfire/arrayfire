@@ -139,6 +139,8 @@ class DeviceManager {
 
     friend afcl::platform getActivePlatformVendor();
 
+    friend bool isDeviceBufferAccessible(int buf_device_id, int execution_id);
+
    public:
     static const int MAX_DEVICES = 32;
 

@@ -613,6 +613,29 @@ DeviceManager::DeviceManager()
 
     sortDevices();
 
+    // Set all default peer access to false
+    for (auto &dev_map : device_peer_access_map)
+        for (auto &dev_access : dev_map) { dev_access = false; }
+
+    // Enable peer 2 peer access to device memory if available
+    for (int i = 0; i < nDevices; i++) {
+        for (int j = 0; j < nDevices; j++) {
+            if (i != j) {
+                int can_access_peer;
+                CUDA_CHECK(cudaDeviceCanAccessPeer(&can_access_peer, i, j));
+                if (can_access_peer) {
+                    CUDA_CHECK(cudaSetDevice(i));
+                    AF_TRACE("Peer access enabled for {}({}) and {}({})", i,
+                             cuDevices[i].prop.name, j, cuDevices[j].prop.name);
+                    CUDA_CHECK(cudaDeviceEnablePeerAccess(j, 0));
+                    device_peer_access_map[i][j] = true;
+                }
+            } else {
+                device_peer_access_map[i][j] = true;
+            }
+        }
+    }
+
     // Initialize all streams to 0.
     // Streams will be created in setActiveDevice()
     for (int i = 0; i < MAX_DEVICES; i++) {

@@ -194,8 +194,13 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
 
 template<typename T>
 void checkAndMigrate(const Array<T> &arr) {
-    if (arr.getDevId() != detail::getActiveDeviceId()) {
-        AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
+    int arr_id = arr.getDevId();
+    int cur_id = detail::getActiveDeviceId();
+    if (!isDeviceBufferAccessible(arr_id, cur_id)) {
+        AF_ERROR(
+            "The array's device context does not match the current device's "
+            "context",
+            AF_ERR_DEVICE);
     }
 }
 
@@ -560,7 +565,7 @@ size_t Array<T>::getAllocatedBytes() const {
     template void *getDevicePtr<T>(const Array<T> &arr);                      \
     template void Array<T>::setDataDims(const dim4 &new_dims);                \
     template size_t Array<T>::getAllocatedBytes() const;                      \
-    template void checkAndMigrate<T>(const Array<T> & arr);
+    template void checkAndMigrate<T>(const Array<T> &arr);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

@@ -11,6 +11,7 @@
 
 #include <platform.hpp>
 
+#include <array>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -95,6 +96,8 @@ class DeviceManager {
 
     friend std::pair<int, int> getComputeCapability(const int device);
 
+    friend bool isDeviceBufferAccessible(int buf_device_id, int execution_id);
+
    private:
     DeviceManager();
 
@@ -116,6 +119,12 @@ class DeviceManager {
     int setActiveDevice(int device, int nId = -1);
 
     std::shared_ptr<spdlog::logger> logger;
+
+    /// A matrix of booleans where true indicates that the corresponding
+    /// corrdinate devices can access each other buffers. False indicates
+    /// buffers need to be copied over to the other device
+    std::array<std::array<bool, MAX_DEVICES>, MAX_DEVICES>
+        device_peer_access_map;
 
     std::vector<cudaDevice_t> cuDevices;
     std::vector<std::pair<int, int>> devJitComputes;

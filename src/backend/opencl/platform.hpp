@@ -187,5 +187,12 @@ afcl::platform getPlatformEnum(cl::Device dev);
 
 void setActiveContext(int device);
 
+/// Returns true if the buffer on device buf_device_id can be accessed by
+/// kernels on device execution_id
+///
+/// \param[in] buf_device_id The device id of the buffer
+/// \param[in] execution_id The device where the buffer will be accessed.
+bool isDeviceBufferAccessible(int buf_device_id, int execution_id);
+
 }  // namespace opencl
 }  // namespace arrayfire
