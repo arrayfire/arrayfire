@@ -491,7 +491,8 @@ TEST(DeviceId, Different) {
 
         af_array c;
         af_err err = af_matmul(&c, a.get(), b.get(), AF_MAT_NONE, AF_MAT_NONE);
-        ASSERT_EQ(err, AF_ERR_DEVICE);
+        af::sync();
+        ASSERT_EQ(err, AF_SUCCESS);
     }
 
     setDevice(id1);
@@ -656,4 +657,22 @@ TEST(Array, InitializerListFixDim4) {
                           3.14f, 3.14f, 3.14f, 3.14f};
     af::array b{dim4(3, 3), data.data()};
     ASSERT_ARRAYS_EQ(constant(3.14, 3, 3), b);
+}
+
+TEST(Array, OtherDevice) {
+    if (af::getDeviceCount() == 1) GTEST_SKIP() << "Single device. Skipping";
+    af::setDevice(0);
+    af::info();
+    af::array a = constant(3, 5, 5);
+    a.eval();
+    af::setDevice(1);
+    af::info();
+    af::array b = constant(2, 5, 5);
+    b.eval();
+
+    af::array c = a + b;
+    af::eval(c);
+    af::sync();
+    af::setDevice(0);
+    ASSERT_ARRAYS_EQ(constant(5, 5, 5), c);
 }

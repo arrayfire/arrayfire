@@ -59,7 +59,9 @@ std::shared_ptr<BufferNode<T>> bufferNodePtr() {
 
 template<typename T>
 void checkAndMigrate(const Array<T> &arr) {
-    if (arr.getDevId() != detail::getActiveDeviceId()) {
+    int arr_id = arr.getDevId();
+    int cur_id = detail::getActiveDeviceId();
+    if (!isDeviceBufferAccessible(arr_id, cur_id)) {
         AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
     }
 }
