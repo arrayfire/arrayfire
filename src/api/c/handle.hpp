@@ -52,7 +52,7 @@ const detail::Array<T> &getArray(const af_array &arr) {
     const detail::Array<T> *A = static_cast<const detail::Array<T> *>(arr);
     if ((af_dtype)af::dtype_traits<T>::af_type != A->getType())
         AF_ERROR("Invalid type for input array.", AF_ERR_INTERNAL);
-    checkAndMigrate(*A);
+    checkAndMigrate(*const_cast<detail::Array<T> *>(A));
     return *A;
 }
 

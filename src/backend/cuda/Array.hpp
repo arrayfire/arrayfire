@@ -39,7 +39,7 @@ class Array;
 ///
 /// \param[in] arr The Array that will be checked.
 template<typename T>
-void checkAndMigrate(const Array<T> &arr);
+void checkAndMigrate(Array<T> &arr);
 
 template<typename T>
 void evalNodes(Param<T> out, common::Node *node);
@@ -305,6 +305,7 @@ class Array {
     friend void destroyArray<T>(Array<T> *arr);
     friend void *getDevicePtr<T>(const Array<T> &arr);
     friend void *getRawPtr<T>(const Array<T> &arr);
+    friend void checkAndMigrate<T>(Array<T> &arr);
 };
 
 }  // namespace cuda
