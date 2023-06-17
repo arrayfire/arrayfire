@@ -50,10 +50,21 @@ void fft_inplace(Array<T> &in, const int rank, const bool direction) {
 
     auto desc = [rank, &idims]() {
         if (rank == 1) return desc_ty(idims[0]);
-        if (rank == 2) return desc_ty({idims[1], idims[0]});
-        if (rank == 3) return desc_ty({idims[2], idims[1], idims[0]});
-        return desc_ty({idims[3], idims[2], idims[1], idims[0]});
+        if (rank == 2) return desc_ty({idims[0], idims[1]});
+        if (rank == 3) return desc_ty({idims[0], idims[1], idims[2]});
+        return desc_ty({idims[0], idims[1], idims[2], idims[3]});
     }();
+
+    if (rank > 1) {
+        std::int64_t fft_input_strides[5];
+        fft_input_strides[0] = in.getOffset();
+        fft_input_strides[1] = istrides[0];
+        fft_input_strides[2] = istrides[1];
+        fft_input_strides[3] = istrides[2];
+        fft_input_strides[4] = istrides[3];
+        desc.set_value(::oneapi::mkl::dft::config_param::INPUT_STRIDES,
+                       fft_input_strides);
+    }
 
     desc.set_value(::oneapi::mkl::dft::config_param::PLACEMENT, DFTI_INPLACE);
 
@@ -96,15 +107,24 @@ Array<Tc> fft_r2c(const Array<Tr> &in, const int rank) {
     // broken, we're forced to shuffle data like this
     auto desc = [rank, &idims]() {
         if (rank == 1) return desc_ty(idims[0]);
-        if (rank == 2) return desc_ty({idims[1], idims[0]});
-        if (rank == 3) return desc_ty({idims[2], idims[1], idims[0]});
-        return desc_ty({idims[3], idims[2], idims[1], idims[0]});
+        if (rank == 2) return desc_ty({idims[0], idims[1]});
+        if (rank == 3) return desc_ty({idims[0], idims[1], idims[2]});
+        return desc_ty({idims[0], idims[1], idims[2], idims[3]});
     }();
     if (rank > 1) {
+        std::int64_t fft_input_strides[5];
+        fft_input_strides[0] = in.getOffset();
+        fft_input_strides[1] = istrides[0];
+        fft_input_strides[2] = istrides[1];
+        fft_input_strides[3] = istrides[2];
+        fft_input_strides[4] = istrides[3];
+        desc.set_value(::oneapi::mkl::dft::config_param::INPUT_STRIDES,
+                       fft_input_strides);
+
         std::int64_t fft_output_strides[5];
-        fft_output_strides[0] = 0;
-        fft_output_strides[1] = ostrides[1];
-        fft_output_strides[2] = ostrides[0];
+        fft_output_strides[0] = out.getOffset();
+        fft_output_strides[1] = ostrides[0];
+        fft_output_strides[2] = ostrides[1];
         fft_output_strides[3] = ostrides[2];
         fft_output_strides[4] = ostrides[3];
         desc.set_value(::oneapi::mkl::dft::config_param::OUTPUT_STRIDES,
@@ -151,26 +171,35 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims, const int rank) {
     // forced to shuffle data like this
     auto desc = [rank, &odims]() {
         if (rank == 1) return desc_ty(odims[0]);
-        if (rank == 2) return desc_ty({odims[1], odims[0]});
-        if (rank == 3) return desc_ty({odims[2], odims[1], odims[0]});
-        return desc_ty({odims[3], odims[2], odims[1], odims[0]});
+        if (rank == 2) return desc_ty({odims[0], odims[1]});
+        if (rank == 3) return desc_ty({odims[0], odims[1], odims[2]});
+        return desc_ty({odims[0], odims[1], odims[2], odims[3]});
     }();
     if (rank > 1) {
         std::int64_t fft_input_strides[5];
-        fft_input_strides[0] = 0;
-        fft_input_strides[1] = istrides[1];
-        fft_input_strides[2] = istrides[0];
+        fft_input_strides[0] = in.getOffset();
+        fft_input_strides[1] = istrides[0];
+        fft_input_strides[2] = istrides[1];
         fft_input_strides[3] = istrides[2];
         fft_input_strides[4] = istrides[3];
         desc.set_value(::oneapi::mkl::dft::config_param::INPUT_STRIDES,
                        fft_input_strides);
+
+        std::int64_t fft_output_strides[5];
+        fft_output_strides[0] = out.getOffset();
+        fft_output_strides[1] = ostrides[0];
+        fft_output_strides[2] = ostrides[1];
+        fft_output_strides[3] = ostrides[2];
+        fft_output_strides[4] = ostrides[3];
+        desc.set_value(::oneapi::mkl::dft::config_param::OUTPUT_STRIDES,
+                       fft_output_strides);
     }
 
     desc.set_value(::oneapi::mkl::dft::config_param::PLACEMENT,
                    DFTI_NOT_INPLACE);
 
     int batch = 1;
-    for (int i = rank; i < 4; i++) { batch *= idims[i]; }
+    for (int i = rank; i < 4; i++) { batch *= odims[i]; }
     desc.set_value(::oneapi::mkl::dft::config_param::NUMBER_OF_TRANSFORMS,
                    (int64_t)batch);
 
