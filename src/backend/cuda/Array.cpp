@@ -58,11 +58,18 @@ std::shared_ptr<BufferNode<T>> bufferNodePtr() {
 }
 
 template<typename T>
-void checkAndMigrate(const Array<T> &arr) {
+void checkAndMigrate(Array<T> &arr) {
     int arr_id = arr.getDevId();
     int cur_id = detail::getActiveDeviceId();
     if (!isDeviceBufferAccessible(arr_id, cur_id)) {
-        AF_ERROR("Input Array not created on current device", AF_ERR_DEVICE);
+        static auto getLogger = [&] { return spdlog::get("platform"); };
+        AF_TRACE("Migrating array from {} to {}.", arr_id, cur_id);
+        auto migrated_data = memAlloc<T>(arr.elements());
+        CUDA_CHECK(
+            cudaMemcpyPeerAsync(migrated_data.get(), getDeviceNativeId(cur_id),
+                                arr.get(), getDeviceNativeId(arr_id),
+                                arr.elements() * sizeof(T), getActiveStream()));
+        arr.data.reset(migrated_data.release(), memFree);
     }
 }
 
@@ -478,7 +485,7 @@ void Array<T>::setDataDims(const dim4 &new_dims) {
     template void evalMultiple<T>(std::vector<Array<T> *> arrays);            \
     template kJITHeuristics passesJitHeuristics<T>(span<Node *> n);           \
     template void Array<T>::setDataDims(const dim4 &new_dims);                \
-    template void checkAndMigrate<T>(const Array<T> &arr);
+    template void checkAndMigrate<T>(Array<T> & arr);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

@@ -173,9 +173,9 @@ void destroySparseArray(SparseArray<T> *sparse) {
 
 template<typename T>
 void checkAndMigrate(const SparseArray<T> &arr) {
-    checkAndMigrate(arr.getColIdx());
-    checkAndMigrate(arr.getRowIdx());
-    checkAndMigrate(arr.getValues());
+    checkAndMigrate(const_cast<Array<int> &>(arr.getColIdx()));
+    checkAndMigrate(const_cast<Array<int> &>(arr.getRowIdx()));
+    checkAndMigrate(const_cast<Array<T> &>(arr.getValues()));
 }
 
 ////////////////////////////////////////////////////////////////////////////

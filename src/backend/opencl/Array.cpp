@@ -193,14 +193,24 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
 }
 
 template<typename T>
-void checkAndMigrate(const Array<T> &arr) {
+void checkAndMigrate(Array<T> &arr) {
     int arr_id = arr.getDevId();
     int cur_id = detail::getActiveDeviceId();
     if (!isDeviceBufferAccessible(arr_id, cur_id)) {
-        AF_ERROR(
-            "The array's device context does not match the current device's "
-            "context",
-            AF_ERR_DEVICE);
+        auto getLogger = [&] { return spdlog::get("platform"); };
+        AF_TRACE("Migrating array from {} to {}.", arr_id, cur_id);
+        auto migrated_data           = memAlloc<T>(arr.elements());
+        void *mapped_migrated_buffer = getQueue().enqueueMapBuffer(
+            *migrated_data, CL_TRUE, CL_MAP_READ, 0, arr.elements());
+        setDevice(arr_id);
+        Buffer &buf = *arr.get();
+        getQueue().enqueueReadBuffer(buf, CL_TRUE, 0, arr.elements(),
+                                     mapped_migrated_buffer);
+        setDevice(cur_id);
+        getQueue().enqueueUnmapMemObject(*migrated_data,
+                                         mapped_migrated_buffer);
+        arr.data.reset(migrated_data.release(), bufferFree);
+        arr.setId(cur_id);
     }
 }
 
@@ -565,7 +575,7 @@ size_t Array<T>::getAllocatedBytes() const {
     template void *getDevicePtr<T>(const Array<T> &arr);                      \
     template void Array<T>::setDataDims(const dim4 &new_dims);                \
     template size_t Array<T>::getAllocatedBytes() const;                      \
-    template void checkAndMigrate<T>(const Array<T> &arr);
+    template void checkAndMigrate<T>(Array<T> & arr);
 
 INSTANTIATE(float)
 INSTANTIATE(double)
