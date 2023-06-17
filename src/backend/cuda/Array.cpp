@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <common/Logger.hpp>
 #include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
 #include <copy.hpp>
@@ -253,8 +254,13 @@ Node_ptr Array<T>::getNode() const {
 template<typename T>
 kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
+    static auto getLogger = [&] { return spdlog::get("jit"); };
     for (Node *n : root_nodes) {
         if (n->getHeight() > static_cast<int>(getMaxJitSize())) {
+            AF_TRACE(
+                "JIT tree evaluated because of tree height exceeds limit: {} > "
+                "{}",
+                n->getHeight(), getMaxJitSize());
             return kJITHeuristics::TreeHeight;
         }
     }
@@ -313,9 +319,14 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
         // should be checking the amount of memory available to guard
         // this eval
         if (param_size >= max_param_size) {
+            AF_TRACE(
+                "JIT tree evaluated because of kernel parameter size: {} >= {}",
+                param_size, max_param_size);
             return kJITHeuristics::KernelParameterSize;
         }
         if (jitTreeExceedsMemoryPressure(info.total_buffer_size)) {
+            AF_TRACE("JIT tree evaluated because of memory pressure: {}",
+                     info.total_buffer_size);
             return kJITHeuristics::MemoryPressure;
         }
     }

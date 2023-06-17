@@ -10,6 +10,7 @@
 #include <Array.hpp>
 
 #include <Param.hpp>
+#include <common/Logger.hpp>
 #include <common/MemoryManagerBase.hpp>
 #include <common/half.hpp>
 #include <common/jit/NodeIterator.hpp>
@@ -312,8 +313,13 @@ Node_ptr Array<T>::getNode() const {
 template<typename T>
 kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
     if (!evalFlag()) { return kJITHeuristics::Pass; }
+    static auto getLogger = [&] { return common::loggerFactory("jit"); };
     for (const Node *n : root_nodes) {
         if (n->getHeight() > static_cast<int>(getMaxJitSize())) {
+            AF_TRACE(
+                "JIT tree evaluated because of tree height exceeds limit: {} > "
+                "{}",
+                n->getHeight(), getMaxJitSize());
             return kJITHeuristics::TreeHeight;
         }
     }
@@ -386,9 +392,17 @@ kJITHeuristics passesJitHeuristics(span<Node *> root_nodes) {
 
         bool isParamLimit = param_size >= max_param_size;
 
-        if (isParamLimit) { return kJITHeuristics::KernelParameterSize; }
-        // TODO(umar): check buffer limit for JIT kernel generation
-        // if (isBufferLimit) { return kJITHeuristics::MemoryPressure; }
+        if (isParamLimit) {
+            AF_TRACE(
+                "JIT tree evaluated because of kernel parameter size: {} >= {}",
+                param_size, max_param_size);
+            return kJITHeuristics::KernelParameterSize;
+        }
+        if (isBufferLimit) {
+            AF_TRACE("JIT tree evaluated because of memory pressure: {}",
+                     info.total_buffer_size);
+            return kJITHeuristics::MemoryPressure;
+        }
     }
     return kJITHeuristics::Pass;
 }
