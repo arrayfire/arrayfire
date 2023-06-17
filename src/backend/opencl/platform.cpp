@@ -306,9 +306,9 @@ cl_command_queue getQueueHandle(int device_id) {
     return (*(devMngr.mQueues[device_id]))();
 }
 
-CommandQueue& getQueue() {
-    device_id_t& devId = tlocalActiveDeviceId();
-
+CommandQueue& getQueue(int device_id) {
+    device_id_t devId     = (device_id = -1) ? tlocalActiveDeviceId()
+      : make_pair<unsigned, unsigned>(device_id, device_id);
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     common::lock_guard_t lock(devMngr.deviceMutex);

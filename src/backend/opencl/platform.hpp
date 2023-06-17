@@ -65,7 +65,7 @@ int& getMaxJitSize();
 
 const cl::Context& getContext();
 
-cl::CommandQueue& getQueue();
+cl::CommandQueue& getQueue(int device_id = -1);
 
 /// Return a cl_command_queue handle to the queue for the device.
 ///
