@@ -105,7 +105,7 @@ class DeviceManager {
 
     friend const cl::Context& getContext();
 
-    friend cl::CommandQueue& getQueue();
+    friend cl::CommandQueue& getQueue(int device_id);
 
     friend cl_command_queue getQueueHandle(int device_id);
 
