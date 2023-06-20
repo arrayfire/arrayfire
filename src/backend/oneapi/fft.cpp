@@ -101,10 +101,6 @@ Array<Tc> fft_r2c(const Array<Tr> &in, const int rank) {
         ::oneapi::mkl::dft::descriptor<precision,
                                        ::oneapi::mkl::dft::domain::REAL>;
 
-    // this section defines reversed dimension decl and output
-    // strides: onemkl is row-major and arrayfire it column
-    // major. since the TRANSPOSE option on the onemkl descriptor is
-    // broken, we're forced to shuffle data like this
     auto desc = [rank, &idims]() {
         if (rank == 1) return desc_ty(idims[0]);
         if (rank == 2) return desc_ty({idims[0], idims[1]});
