@@ -53,8 +53,7 @@ class rotateCreateKernel {
         , batches_(batches)
         , blocksXPerImage_(blocksXPerImage)
         , blocksYPerImage_(blocksYPerImage)
-        , method_(method)
-        , INTERP_ORDER_(INTERP_ORDER) {}
+        , method_(method) {}
     void operator()(sycl::nd_item<2> it) const {
         sycl::group g = it.get_group();
 
@@ -85,7 +84,7 @@ class rotateCreateKernel {
         const int loco = outoff + (yido * out_.strides[1] + xido);
 
         InterpInTy zero = (InterpInTy)0;
-        if (INTERP_ORDER_ > 1) {
+        if constexpr (INTERP_ORDER > 1) {
             // Special conditions to deal with boundaries for bilinear and
             // bicubic
             // FIXME: Ideally this condition should be removed or be present for
@@ -102,8 +101,8 @@ class rotateCreateKernel {
 
         // FIXME: Nearest and lower do not do clamping, but other methods do
         // Make it consistent
-        const bool doclamp = INTERP_ORDER_ != 1;
-        Interp2<T, InterpPosTy, 1> interp2;  // INTERP_ORDER> interp2;
+        constexpr bool doclamp = INTERP_ORDER != 1;
+        Interp2<T, InterpPosTy, INTERP_ORDER> interp2;
         interp2(d_out_, out_, loco, d_in_, in_, inoff, xidi, yidi, 0, 1,
                 method_, limages, doclamp, 2);
     }
@@ -119,7 +118,6 @@ class rotateCreateKernel {
     const int blocksXPerImage_;
     const int blocksYPerImage_;
     af::interpType method_;
-    const int INTERP_ORDER_;
 };
 
 template<typename T>
