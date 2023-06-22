@@ -72,7 +72,7 @@ struct AParam {
         return *data;
     }
 
-    void require(sycl::handler& h) { h.require(data); }
+    void require(sycl::handler& h) const { h.require(data); }
 
     operator KParam() const {
         return KParam{{dims[0], dims[1], dims[2], dims[3]},

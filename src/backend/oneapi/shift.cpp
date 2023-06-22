@@ -23,13 +23,11 @@ using std::string;
 
 namespace arrayfire {
 namespace oneapi {
+template<typename T>
+using ShiftNode = ShiftNodeBase<jit::BufferNode<T>>;
 
 template<typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4]) {
-    ONEAPI_NOT_SUPPORTED("");
-    Array<T> o = createEmptyArray<T>(dim4(1));
-    return o;
-    /*
     // Shift should only be the first node in the JIT tree.
     // Force input to be evaluated so that in is always a buffer.
     in.eval();
@@ -49,11 +47,10 @@ Array<T> shift(const Array<T> &in, const int sdims[4]) {
         assert(shifts[i] >= 0 && shifts[i] <= oDims[i]);
     }
 
-    auto node = make_shared<ShiftNode>(
+    auto node = make_shared<ShiftNode<T>>(
         static_cast<af::dtype>(dtype_traits<T>::af_type),
-        static_pointer_cast<BufferNode>(in.getNode()), shifts);
+        static_pointer_cast<jit::BufferNode<T>>(in.getNode()), shifts);
     return createNodeArray<T>(oDims, common::Node_ptr(node));
-    */
 }
 
 #define INSTANTIATE(T) \

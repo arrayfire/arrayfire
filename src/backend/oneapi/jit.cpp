@@ -494,9 +494,17 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
 
     getQueue().submit([&](sycl::handler& h) {
         for (Node* node : full_nodes) {
-            if (node->isBuffer()) {
-                BufferNode<T>* n = static_cast<BufferNode<T>*>(node);
-                n->m_param.require(h);
+            switch (node->getNodeType()) {
+                case kNodeType::Buffer: {
+                    BufferNode<T>* n = static_cast<BufferNode<T>*>(node);
+                    n->m_param.require(h);
+                } break;
+                case kNodeType::Shift: {
+                    ShiftNodeBase<jit::BufferNode<T>>* sn =
+                        static_cast<ShiftNodeBase<jit::BufferNode<T>>*>(node);
+                    sn->getBufferNode().m_param.require(h);
+                } break;
+                default: break;
             }
         }
         vector<AParam<T, sycl::access_mode::write>> ap;

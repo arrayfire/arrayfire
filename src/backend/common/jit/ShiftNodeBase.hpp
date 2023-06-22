@@ -65,6 +65,8 @@ class ShiftNodeBase : public Node {
         swap(m_shifts, other.m_shifts);
     }
 
+    const BufferNode &getBufferNode() const { return *m_buffer_node; }
+
     bool isLinear(const dim_t dims[4]) const final {
         UNUSED(dims);
         return false;
