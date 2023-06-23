@@ -170,7 +170,11 @@ af_err processException() {
         snprintf(oneapi_err_msg, sizeof(oneapi_err_msg),
                  "oneAPI Error (%d): %s", ex.code().value(), ex.what());
 
-        err = set_global_error_string(oneapi_err_msg, AF_ERR_INTERNAL);
+        if (ex.code() == sycl::errc::memory_allocation) {
+            err = set_global_error_string(oneapi_err_msg, AF_ERR_NO_MEM);
+        } else {
+            err = set_global_error_string(oneapi_err_msg, AF_ERR_INTERNAL);
+        }
     } catch (const oneapi::mkl::exception &ex) {
         char oneapi_err_msg[1024];
         snprintf(oneapi_err_msg, sizeof(oneapi_err_msg), "MKL Error: %s",
