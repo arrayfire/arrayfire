@@ -71,7 +71,7 @@ class rotateCreateKernel {
         const int limages =
             std::min((int)out_.dims[2] - setId * nimages_, nimages_);
 
-        if (xido >= out_.dims[0] || yido >= out_.dims[1]) return;
+        if (xido >= (unsigned)out_.dims[0] || yido >= (unsigned)out_.dims[1]) return;
 
         InterpPosTy xidi = xido * t_.tmat[0] + yido * t_.tmat[1] + t_.tmat[2];
         InterpPosTy yidi = xido * t_.tmat[3] + yido * t_.tmat[4] + t_.tmat[5];
