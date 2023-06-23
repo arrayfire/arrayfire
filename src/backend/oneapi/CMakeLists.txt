@@ -1,9 +1,9 @@
-# Copyright (c) 2022, ArrayFire
-# All rights reserved.
+#Copyright(c) 2022, ArrayFire
+#All rights reserved.
 #
-# This file is distributed under 3-clause BSD license.
-# The complete license agreement can be obtained at:
-# http://arrayfire.com/licenses/BSD-3-Clause
+#This file is distributed under 3 - clause BSD license.
+#The complete license agreement can be obtained at:
+#http:  // arrayfire.com/licenses/BSD-3-Clause
 
 include(InternalUtils)
 include(build_cl2hpp)
@@ -241,6 +241,7 @@ target_sources(afoneapi
     kernel/range.hpp
     kernel/reduce.hpp
     kernel/reduce_all.hpp
+    kernel/reduce_by_key.hpp
     kernel/reduce_first.hpp
     kernel/reduce_dim.hpp
     kernel/reorder.hpp

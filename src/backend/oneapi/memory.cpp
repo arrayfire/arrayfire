@@ -62,7 +62,7 @@ template<typename T>
 std::unique_ptr<sycl::buffer<T>, std::function<void(sycl::buffer<T> *)>>
 memAlloc(const size_t &elements) {
     if (elements) {
-        dim4 dims(elements * sizeof(T));
+        dim4 dims(elements);
 
         // The alloc function returns a pointer to a buffer<std::byte> object.
         // We need to reinterpret that object into buffer<T> while keeping the
@@ -71,7 +71,7 @@ memAlloc(const size_t &elements) {
         // This would delete the buffer<std::byte> object and replace it with
         // the buffer<T> object. We do the reverse in the memFree function
         auto *ptr = static_cast<sycl::buffer<std::byte> *>(
-            memoryManager().alloc(false, 1, dims.get(), 1));
+            memoryManager().alloc(false, 1, dims.get(), sizeof(T)));
         sycl::buffer<T> *optr = static_cast<sycl::buffer<T> *>((void *)ptr);
         size_t bytes          = ptr->byte_size();
 
@@ -104,14 +104,7 @@ void memFree(sycl::buffer<T> *ptr) {
     }
 }
 
-void memFreeUser(void *ptr) {
-    ONEAPI_NOT_SUPPORTED("memFreeUser Not supported");
-
-    // cl::Buffer *buf = static_cast<cl::Buffer *>(ptr);
-    // cl_mem mem      = (*buf)();
-    // delete buf;
-    memoryManager().unlock(ptr, true);
-}
+void memFreeUser(void *ptr) { memoryManager().unlock(ptr, true); }
 
 template<typename T>
 void memLock(const sycl::buffer<T> *ptr) {
@@ -169,17 +162,15 @@ INSTANTIATE(int64_t)
 
 template<>
 void *pinnedAlloc<void>(const size_t &elements) {
-    ONEAPI_NOT_SUPPORTED("pinnedAlloc Not supported");
-
-    // // TODO: make pinnedAlloc aware of array shapes
-    // dim4 dims(elements);
-    // void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), sizeof(T));
-    return static_cast<void *>(nullptr);
+    // TODO: make pinnedAlloc aware of array shapes
+    dim4 dims(elements);
+    void *ptr = pinnedMemoryManager().alloc(false, 1, dims.get(), 1);
+    return ptr;
 }
 
 Allocator::Allocator() { logger = common::loggerFactory("mem"); }
 
-void Allocator::shutdown() {}
+void Allocator::shutdown() { shutdownMemoryManager(); }
 
 int Allocator::getActiveDeviceId() { return oneapi::getActiveDeviceId(); }
 

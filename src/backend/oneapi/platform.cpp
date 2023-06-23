@@ -605,7 +605,7 @@ void setMemoryManager(unique_ptr<MemoryManagerBase> mgr) {
 }
 
 void resetMemoryManager() {
-    return DeviceManager::getInstance().resetMemoryManagerPinned();
+    return DeviceManager::getInstance().resetMemoryManager();
 }
 
 void setMemoryManagerPinned(unique_ptr<MemoryManagerBase> mgr) {

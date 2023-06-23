@@ -115,7 +115,7 @@ Array<Tc> fft_r2c(const Array<Tr> &in, const int rank) {
     }();
     if (rank > 1) {
       std::int64_t fft_output_strides[5];
-      fft_output_strides[0] = 0;
+      fft_output_strides[0] = out.getOffset();
       fft_output_strides[1] = ostrides[1];
       fft_output_strides[2] = ostrides[0];
       fft_output_strides[3] = ostrides[2];
@@ -171,7 +171,7 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims, const int rank) {
     }();
     if (rank > 1) {
       std::int64_t fft_input_strides[5];
-      fft_input_strides[0] = 0;
+      fft_input_strides[0] = out.getOffset();
       fft_input_strides[1] = istrides[1];
       fft_input_strides[2] = istrides[0];
       fft_input_strides[3] = istrides[2];
