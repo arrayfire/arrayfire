@@ -43,9 +43,10 @@ class TNode : public common::Node {
 
    public:
     TNode(T val, const int height,
-          const std::array<common::Node_ptr, kMaxChildren> &&children)
+          const std::array<common::Node_ptr, kMaxChildren> &&children,
+          common::kNodeType node_type)
         : Node(static_cast<af::dtype>(af::dtype_traits<T>::af_type), height,
-               move(children)) {
+               move(children), node_type) {
         using namespace common;
         m_val.fill(static_cast<compute_t<T>>(val));
     }

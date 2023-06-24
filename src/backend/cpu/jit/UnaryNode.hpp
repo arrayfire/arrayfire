@@ -34,7 +34,8 @@ class UnaryNode : public TNode<To> {
 
    public:
     UnaryNode(common::Node_ptr child)
-        : TNode<To>(To(0), child->getHeight() + 1, {{child}}) {}
+        : TNode<To>(To(0), child->getHeight() + 1, {{child}},
+                    common::kNodeType::Nary) {}
 
     std::unique_ptr<common::Node> clone() final {
         return std::make_unique<UnaryNode>(*this);

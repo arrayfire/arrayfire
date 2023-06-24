@@ -20,7 +20,7 @@ namespace jit {
 template<typename T>
 class ScalarNode : public TNode<T> {
    public:
-    ScalarNode(T val) : TNode<T>(val, 0, {}) {}
+    ScalarNode(T val) : TNode<T>(val, 0, {}, common::kNodeType::Scalar) {}
 
     std::unique_ptr<common::Node> clone() final {
         return std::make_unique<ScalarNode>(*this);
@@ -59,8 +59,6 @@ class ScalarNode : public TNode<T> {
         UNUSED(kerStream);
         UNUSED(ids);
     }
-
-    bool isScalar() const final { return true; }
 };
 }  // namespace jit
 }  // namespace cpu

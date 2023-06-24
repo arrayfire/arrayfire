@@ -32,6 +32,15 @@ enum class kJITHeuristics {
 
 namespace arrayfire {
 namespace common {
+
+enum class kNodeType {
+    Generic = 0,
+    Scalar  = 1,
+    Buffer  = 2,
+    Nary    = 3,
+    Shift   = 4,
+};
+
 class Node;
 }  // namespace common
 }  // namespace arrayfire
@@ -122,13 +131,17 @@ class Node {
     std::array<Node_ptr, kMaxChildren> m_children;
     af::dtype m_type;
     int m_height;
+    kNodeType m_node_type = kNodeType::Generic;
 
     template<typename T>
     friend class NodeIterator;
     Node() = default;
     Node(const af::dtype type, const int height,
-         const std::array<Node_ptr, kMaxChildren> children)
-        : m_children(children), m_type(type), m_height(height) {
+         const std::array<Node_ptr, kMaxChildren> children, kNodeType node_type)
+        : m_children(children)
+        , m_type(type)
+        , m_height(height)
+        , m_node_type(node_type) {
         static_assert(std::is_nothrow_move_assignable<Node>::value,
                       "Node is not move assignable");
     }
@@ -249,13 +262,16 @@ class Node {
     virtual size_t getBytes() const { return 0; }
 
     // Returns true if this node is a Buffer
-    virtual bool isBuffer() const { return false; }
+    bool isBuffer() const { return m_node_type == kNodeType::Buffer; }
 
     // Returns true if this node is a Scalar
-    virtual bool isScalar() const { return false; }
+    bool isScalar() const { return m_node_type == kNodeType::Scalar; }
 
     /// Returns true if the buffer is linear
     virtual bool isLinear(const dim_t dims[4]) const;
+
+    /// Returns the node type
+    kNodeType getNodeType() const { return m_node_type; }
 
     /// Returns the type
     af::dtype getType() const { return m_type; }
