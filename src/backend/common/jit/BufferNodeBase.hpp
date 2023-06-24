@@ -71,10 +71,11 @@ class BufferNodeBase : public common::Node {
     }
 
     int setArgs(int start_id, bool is_linear,
-                std::function<void(int id, const void *ptr, size_t arg_size)>
+                std::function<void(int id, const void *ptr, size_t arg_size,
+                                   bool is_buffer)>
                     setArg) const override {
-        return detail::setKernelArguments(start_id, is_linear, setArg, m_data,
-                                          m_param);
+        return detail::setBufferKernelArguments(start_id, is_linear, setArg,
+                                                m_data, m_param);
     }
 
     void genOffsets(std::stringstream &kerStream, int id,

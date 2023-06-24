@@ -238,10 +238,10 @@ class Node {
     ///
     /// \returns the next index that will need to be set in the kernl. This
     ///          is usually start_id + the number of times setArg is called
-    virtual int setArgs(
-        int start_id, bool is_linear,
-        std::function<void(int id, const void *ptr, size_t arg_size)> setArg)
-        const {
+    virtual int setArgs(int start_id, bool is_linear,
+                        std::function<void(int id, const void *ptr,
+                                           size_t arg_size, bool is_buffer)>
+                            setArg) const {
         UNUSED(is_linear);
         UNUSED(setArg);
         return start_id;

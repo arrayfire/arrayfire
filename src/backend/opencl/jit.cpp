@@ -448,10 +448,11 @@ void evalNodes(vector<Param>& outputs, const vector<Node*>& output_nodes) {
 
     int nargs{0};
     for (const Node* node : full_nodes) {
-        nargs = node->setArgs(nargs, is_linear,
-                              [&ker](int id, const void* ptr, size_t arg_size) {
-                                  ker.setArg(id, arg_size, ptr);
-                              });
+        nargs = node->setArgs(
+            nargs, is_linear,
+            [&ker](int id, const void* ptr, size_t arg_size, bool is_buffer) {
+                ker.setArg(id, arg_size, ptr);
+            });
     }
 
     // Set output parameters

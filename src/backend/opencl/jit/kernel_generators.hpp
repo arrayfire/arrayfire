@@ -30,17 +30,19 @@ inline void generateParamDeclaration(std::stringstream& kerStream, int id,
 }
 
 /// Calls the setArg function to set the arguments for a kernel call
-inline int setKernelArguments(
+inline int setBufferKernelArguments(
     int start_id, bool is_linear,
-    std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
+    std::function<void(int id, const void* ptr, size_t arg_size,
+                       bool is_buffer)>& setArg,
     const std::shared_ptr<cl::Buffer>& ptr, const KParam& info) {
     setArg(start_id + 0, static_cast<const void*>(&ptr.get()->operator()()),
-           sizeof(cl_mem));
+           sizeof(cl_mem), true);
     if (is_linear) {
         setArg(start_id + 1, static_cast<const void*>(&info.offset),
-               sizeof(dim_t));
+               sizeof(dim_t), true);
     } else {
-        setArg(start_id + 1, static_cast<const void*>(&info), sizeof(KParam));
+        setArg(start_id + 1, static_cast<const void*>(&info), sizeof(KParam),
+               true);
     }
     return start_id + 2;
 }

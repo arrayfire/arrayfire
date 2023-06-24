@@ -508,7 +508,8 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
         vector<void*> args;
         for (const Node* node : full_nodes) {
             node->setArgs(0, is_linear,
-                          [&](int /*id*/, const void* ptr, size_t /*size*/) {
+                          [&](int /*id*/, const void* ptr, size_t /*size*/,
+                              bool /*is_buffer*/) {
                               args.push_back(const_cast<void*>(ptr));
                           });
         }
