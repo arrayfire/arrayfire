@@ -87,12 +87,14 @@ class ShiftNodeBase : public Node {
     }
 
     int setArgs(int start_id, bool is_linear,
-                std::function<void(int id, const void *ptr, size_t arg_size)>
+                std::function<void(int id, const void *ptr, size_t arg_size,
+                                   bool is_buffer)>
                     setArg) const {
         int curr_id = m_buffer_node->setArgs(start_id, is_linear, setArg);
         for (int i = 0; i < 4; i++) {
             const int &d = m_shifts[i];
-            setArg(curr_id + i, static_cast<const void *>(&d), sizeof(int));
+            setArg(curr_id + i, static_cast<const void *>(&d), sizeof(int),
+                   false);
         }
         return curr_id + 4;
     }

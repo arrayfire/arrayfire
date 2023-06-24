@@ -73,10 +73,11 @@ class ScalarNode : public common::Node {
     }
 
     int setArgs(int start_id, bool is_linear,
-                std::function<void(int id, const void* ptr, size_t arg_size)>
+                std::function<void(int id, const void* ptr, size_t arg_size,
+                                   bool is_buffer)>
                     setArg) const final {
         UNUSED(is_linear);
-        setArg(start_id, static_cast<const void*>(&m_val), sizeof(T));
+        setArg(start_id, static_cast<const void*>(&m_val), sizeof(T), false);
         return start_id + 1;
     }
 

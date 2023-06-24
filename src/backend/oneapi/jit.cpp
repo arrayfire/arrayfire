@@ -426,12 +426,10 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                                                        : 4);
     }
 
-    // for (auto* node : full_nodes) SHOW(*node);
     //  Keep in global scope, so that the nodes remain active for later
     //  referral in case moddims operations or column elimination have to
-    //  take place
-    //  Avoid all cloning/copying when no moddims node is present (high
-    //  chance)
+    //  take place Avoid all cloning/copying when no moddims node is present
+    //  (high chance)
     if (moddimsFound || emptyColumnsFound) {
         for (const Node_ids& ids : full_ids) {
             auto& children{node_clones[ids.id]->m_children};
@@ -524,15 +522,15 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                         ap, is_linear);
                     int nargs{0};
                     for (Node* node : full_nodes) {
-                        if (node->isBuffer()) {
-                            nargs = node->setArgs(
-                                nargs, is_linear,
-                                [&kernel, &hh, &is_linear](
-                                    int id, const void* ptr, size_t arg_size) {
-                                    AParam<T, sycl::access_mode::read>* info =
-                                        static_cast<AParam<
-                                            T, sycl::access_mode::read>*>(
-                                            const_cast<void*>(ptr));
+                        nargs = node->setArgs(
+                            nargs, is_linear,
+                            [&kernel, &hh, &is_linear](int id, const void* ptr,
+                                                       size_t arg_size,
+                                                       bool is_buffer) {
+                                if (is_buffer) {
+                                    auto* info = static_cast<
+                                        AParam<T, sycl::access_mode::read>*>(
+                                        const_cast<void*>(ptr));
                                     vector<cl_mem> mem =
                                         hh.get_native_mem<backend::opencl>(
                                             info->data);
@@ -552,16 +550,12 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                                                                 sizeof(KParam),
                                                                 &ooo));
                                     }
-                                });
-                        } else {
-                            nargs = node->setArgs(
-                                nargs, is_linear,
-                                [&kernel](int id, const void* ptr,
-                                          size_t arg_size) {
+
+                                } else {
                                     CL_CHECK(clSetKernelArg(kernel, id,
                                                             arg_size, ptr));
-                                });
-                        }
+                                }
+                            });
                     }
 
                     // Set output parameters
@@ -589,7 +583,6 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                                   (size_t)ap[0].dims[2]};
                         ndims  = 3;
                     }
-                    // SHOW(global);
                     cl_event kernel_event;
                     CL_CHECK(clEnqueueNDRangeKernel(
                         q, kernel, ndims, offset.data(), global.data(), nullptr,

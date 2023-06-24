@@ -38,12 +38,14 @@ inline void generateParamDeclaration(std::stringstream& kerStream, int id,
 
 /// Calls the setArg function to set the arguments for a kernel call
 template<typename T>
-inline int setKernelArguments(
+inline int setBufferKernelArguments(
     int start_id, bool is_linear,
-    std::function<void(int id, const void* ptr, size_t arg_size)>& setArg,
+    std::function<void(int id, const void* ptr, size_t arg_size,
+                       bool is_buffer)>& setArg,
     const std::shared_ptr<sycl::buffer<T>>& ptr,
     const AParam<T, sycl::access_mode::read>& info) {
-    setArg(start_id + 0, static_cast<const void*>(&info), sizeof(Param<T>));
+    setArg(start_id + 0, static_cast<const void*>(&info),
+           sizeof(AParam<T, sycl::access_mode::read>), true);
     return start_id + 2;
 }
 
