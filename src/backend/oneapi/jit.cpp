@@ -19,6 +19,7 @@
 #include <common/jit/ModdimNode.hpp>
 #include <common/jit/Node.hpp>
 #include <common/jit/NodeIterator.hpp>
+#include <common/jit/ShiftNodeBase.hpp>
 #include <common/util.hpp>
 #include <copy.hpp>
 #include <device_manager.hpp>
@@ -43,12 +44,14 @@
 
 using arrayfire::common::getFuncName;
 using arrayfire::common::half;
+using arrayfire::common::kNodeType;
 using arrayfire::common::ModdimNode;
 using arrayfire::common::Node;
 using arrayfire::common::Node_ids;
 using arrayfire::common::Node_map_t;
 using arrayfire::common::Node_ptr;
 using arrayfire::common::NodeIterator;
+using arrayfire::common::ShiftNodeBase;
 using arrayfire::oneapi::getActiveDeviceBaseBuildFlags;
 using arrayfire::oneapi::jit::BufferNode;
 

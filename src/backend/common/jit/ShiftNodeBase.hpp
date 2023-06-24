@@ -32,7 +32,9 @@ class ShiftNodeBase : public Node {
    public:
     ShiftNodeBase(const af::dtype type, std::shared_ptr<BufferNode> buffer_node,
                   const std::array<int, 4> shifts)
-        : Node(type, 0, {}), m_buffer_node(buffer_node), m_shifts(shifts) {
+        : Node(type, 0, {}, kNodeType::Shift)
+        , m_buffer_node(buffer_node)
+        , m_shifts(shifts) {
         static_assert(std::is_nothrow_move_assignable<ShiftNodeBase>::value,
                       "ShiftNode is not move assignable");
         static_assert(std::is_nothrow_move_constructible<ShiftNodeBase>::value,

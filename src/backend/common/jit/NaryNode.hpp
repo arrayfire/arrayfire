@@ -40,7 +40,8 @@ class NaryNode : public Node {
               type, height,
               std::forward<
                   const std::array<common::Node_ptr, Node::kMaxChildren>>(
-                  children))
+                  children),
+              kNodeType::Nary)
         , m_num_children(num_children)
         , m_op_str(op_str)
         , m_op(op) {

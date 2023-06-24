@@ -35,7 +35,7 @@ class BufferNode : public TNode<T> {
 
    public:
     BufferNode()
-        : TNode<T>(T(0), 0, {})
+        : TNode<T>(T(0), 0, {}, common::kNodeType::Buffer)
         , m_bytes(0)
         , m_strides{0, 0, 0, 0}
         , m_dims{0, 0, 0, 0}
@@ -144,8 +144,6 @@ class BufferNode : public TNode<T> {
                dims[1] == m_dims[1] && dims[2] == m_dims[2] &&
                dims[3] == m_dims[3];
     }
-
-    bool isBuffer() const final { return true; }
 
     size_t getHash() const noexcept final {
         std::hash<const void *> ptr_hash;

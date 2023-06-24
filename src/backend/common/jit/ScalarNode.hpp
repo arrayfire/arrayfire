@@ -26,7 +26,8 @@ class ScalarNode : public common::Node {
 
    public:
     ScalarNode(T val)
-        : Node(static_cast<af::dtype>(af::dtype_traits<T>::af_type), 0, {})
+        : Node(static_cast<af::dtype>(af::dtype_traits<T>::af_type), 0, {},
+               kNodeType::Scalar)
         , m_val(val) {
         static_assert(std::is_nothrow_move_assignable<ScalarNode>::value,
                       "ScalarNode is not move assignable");
@@ -84,9 +85,6 @@ class ScalarNode : public common::Node {
         kerStream << getTypeStr() << " val" << ids.id << " = scalar" << ids.id
                   << ";\n";
     }
-
-    // Returns true if this node is a Buffer
-    virtual bool isScalar() const { return false; }
 
     std::string getNameStr() const final { return detail::shortname<T>(false); }
 

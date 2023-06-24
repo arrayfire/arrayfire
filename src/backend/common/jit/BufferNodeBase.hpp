@@ -30,9 +30,9 @@ class BufferNodeBase : public common::Node {
    public:
     ParamType m_param;
     BufferNodeBase(af::dtype type)
-        : Node(type, 0, {}), m_bytes(0), m_linear_buffer(true) {}
-
-    bool isBuffer() const final { return true; }
+        : Node(type, 0, {}, kNodeType::Buffer)
+        , m_bytes(0)
+        , m_linear_buffer(true) {}
 
     std::unique_ptr<Node> clone() final {
         return std::make_unique<BufferNodeBase>(*this);
