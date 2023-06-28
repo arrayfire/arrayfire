@@ -416,7 +416,7 @@ af::array generate_image(size_t width, size_t height, const Simulation& sim) {
     // Relative Flow speed at each cell
     auto val = af::sqrt(ux * ux + uy * uy) / velocity;
 
-    val = af::select(val == 0 && boundaries, -1, val);
+    val = af::select(val == 0 && boundaries, -1.0, val);
 
     // Scaling and interpolating flow speed to the window size
     if (image_scale > 1.0)
@@ -440,7 +440,7 @@ af::array generate_image(size_t width, size_t height, const Simulation& sim) {
     image2(af::span, af::span, 2) = 0;
 
     image = af::select(af::tile(val, 1, 1, 3) > 0.5, image2, image);
-    image = af::select(af::tile(val, 1, 1, 3) >= 0, image, 0);
+    image = af::select(af::tile(val, 1, 1, 3) >= 0, image, 0.0);
 
     return image;
 }
