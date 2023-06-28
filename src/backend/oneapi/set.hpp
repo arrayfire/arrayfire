@@ -6,6 +6,13 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
+
+// oneDPL headers should be included before standard headers
+#define ONEDPL_USE_PREDEFINED_POLICIES 0
+#include <oneapi/dpl/algorithm>
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/iterator>
 
 #include <Array.hpp>
 
