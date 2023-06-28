@@ -11,94 +11,110 @@
 
 #include <err_oneapi.hpp>
 
-#if defined(WITH_LINEAR_ALGEBRA) && !defined(AF_ONEAPI)
+#if defined(WITH_LINEAR_ALGEBRA)
 
 #include <blas.hpp>
 #include <copy.hpp>
-#include <cpu/cpu_qr.hpp>
 #include <identity.hpp>
-// #include <kernel/triangle.hpp>
-#include <magma/magma.h>
-#include <magma/magma_data.h>
-#include <magma/magma_helper.h>
+#include <kernel/triangle.hpp>
+#include <memory.hpp>
+#include <oneapi/mkl/lapack.hpp>
 #include <platform.hpp>
 
 namespace arrayfire {
 namespace oneapi {
 
+using sycl::buffer;
+
 template<typename T>
-void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig) {
-    if (OpenCLCPUOffload()) { return cpu::qr(q, r, t, orig); }
-
-    const dim4 NullShape(0, 0, 0, 0);
-
-    dim4 iDims = orig.dims();
+void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in) {
+    dim4 iDims = in.dims();
     int M      = iDims[0];
     int N      = iDims[1];
 
-    dim4 endPadding(M - iDims[0], max(M, N) - iDims[1], 0, 0);
-    Array<T> in =
-        (endPadding == NullShape
-             ? copyArray(orig)
-             : padArrayBorders(orig, NullShape, endPadding, AF_PAD_ZERO));
-    in.resetDims(iDims);
+    Array<T> in_copy = copyArray<T>(in);
 
-    int MN = std::min(M, N);
-    int NB = magma_get_geqrf_nb<T>(M);
+    // Get workspace needed for QR
+    std::int64_t scratchpad_size =
+        ::oneapi::mkl::lapack::geqrf_scratchpad_size<compute_t<T>>(
+            getQueue(), iDims[0], iDims[1], in_copy.strides()[1]);
 
-    int NUM      = (2 * MN + ((N + 31) / 32) * 32) * NB;
-    Array<T> tmp = createEmptyArray<T>(dim4(NUM));
+    auto scratchpad = memAlloc<compute_t<T>>(scratchpad_size);
 
-    std::vector<T> h_tau(MN);
+    t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
 
-    int info           = 0;
-    cl::Buffer *in_buf = in.get();
-    cl::Buffer *dT     = tmp.get();
+    buffer<compute_t<T>> iBuf =
+        in_copy.template getBufferWithOffset<compute_t<T>>();
+    buffer<compute_t<T>> tBuf = t.template getBufferWithOffset<compute_t<T>>();
+    ::oneapi::mkl::lapack::geqrf(getQueue(), M, N, iBuf, in_copy.strides()[1],
+                                 tBuf, *scratchpad, scratchpad->size());
+    // SPLIT into q and r
+    dim4 rdims(M, N);
+    r = createEmptyArray<T>(rdims);
 
-    magma_geqrf3_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
-                        &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(),
-                        &info);
+    constexpr bool is_upper     = true;
+    constexpr bool is_unit_diag = false;
+    kernel::triangle<T>(r, in_copy, is_upper, is_unit_diag);
 
-    r = createEmptyArray<T>(in.dims());
-    kernel::triangle<T>(r, in, true, false);
+    int mn = max(M, N);
+    dim4 qdims(M, mn);
+    q = identity<T>(qdims);
 
-    cl::Buffer *r_buf = r.get();
-    magmablas_swapdblk<T>(MN - 1, NB, (*r_buf)(), r.getOffset(), r.strides()[1],
-                          1, (*dT)(), tmp.getOffset() + MN * NB, NB, 0,
-                          getQueue()());
+    buffer<compute_t<T>> qBuf = q.template getBufferWithOffset<compute_t<T>>();
+    if constexpr (std::is_floating_point<compute_t<T>>()) {
+        std::int64_t scratchpad_size =
+            ::oneapi::mkl::lapack::ormqr_scratchpad_size<compute_t<T>>(
+                getQueue(), ::oneapi::mkl::side::left,
+                ::oneapi::mkl::transpose::nontrans, q.dims()[0], q.dims()[1],
+                min(M, N), in_copy.strides()[1], q.strides()[1]);
 
-    q = in;  // No need to copy
+        auto scratchpad_ormqr = memAlloc<compute_t<T>>(scratchpad_size);
+        ::oneapi::mkl::lapack::ormqr(
+            getQueue(), ::oneapi::mkl::side::left,
+            ::oneapi::mkl::transpose::nontrans, q.dims()[0], q.dims()[1],
+            min(M, N), iBuf, in_copy.strides()[1], tBuf, qBuf, q.strides()[1],
+            *scratchpad_ormqr, scratchpad_ormqr->size());
+
+    } else if constexpr (common::isComplex(static_cast<af::dtype>(
+                             dtype_traits<compute_t<T>>::af_type))) {
+        std::int64_t scratchpad_size =
+            ::oneapi::mkl::lapack::unmqr_scratchpad_size<compute_t<T>>(
+                getQueue(), ::oneapi::mkl::side::left,
+                ::oneapi::mkl::transpose::nontrans, q.dims()[0], q.dims()[1],
+                min(M, N), in_copy.strides()[1], q.strides()[1]);
+
+        auto scratchpad_ormqr = memAlloc<compute_t<T>>(scratchpad_size);
+        ::oneapi::mkl::lapack::unmqr(
+            getQueue(), ::oneapi::mkl::side::left,
+            ::oneapi::mkl::transpose::nontrans, q.dims()[0], q.dims()[1],
+            min(M, N), iBuf, in_copy.strides()[1], tBuf, qBuf, q.strides()[1],
+            *scratchpad_ormqr, scratchpad_ormqr->size());
+    }
     q.resetDims(dim4(M, M));
-    cl::Buffer *q_buf = q.get();
-
-    magma_ungqr_gpu<T>(q.dims()[0], q.dims()[1], std::min(M, N), (*q_buf)(),
-                       q.getOffset(), q.strides()[1], &h_tau[0], (*dT)(),
-                       tmp.getOffset(), NB, getQueue()(), &info);
-
-    t = createHostDataArray(dim4(MN), &h_tau[0]);
 }
 
 template<typename T>
 Array<T> qr_inplace(Array<T> &in) {
-    if (OpenCLCPUOffload()) { return cpu::qr_inplace(in); }
+    dim4 iDims    = in.dims();
+    dim4 iStrides = in.strides();
+    int M         = iDims[0];
+    int N         = iDims[1];
 
-    dim4 iDims = in.dims();
-    int M      = iDims[0];
-    int N      = iDims[1];
-    int MN     = std::min(M, N);
+    Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
 
-    getQueue().finish();  // FIXME: Does this need to be here?
-    cl::CommandQueue Queue2(getContext(), getDevice());
-    cl_command_queue queues[] = {getQueue()(), Queue2()};
+    // Get workspace needed for QR
+    std::int64_t scratchpad_size =
+        ::oneapi::mkl::lapack::geqrf_scratchpad_size<compute_t<T>>(
+            getQueue(), iDims[0], iDims[1], iStrides[1]);
 
-    std::vector<T> h_tau(MN);
-    cl::Buffer *in_buf = in.get();
+    auto scratchpad = memAlloc<compute_t<T>>(scratchpad_size);
 
-    int info = 0;
-    magma_geqrf2_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
-                        &h_tau[0], queues, &info);
-
-    Array<T> t = createHostDataArray(dim4(MN), &h_tau[0]);
+    buffer<compute_t<T>> iBuf = in.template getBufferWithOffset<compute_t<T>>();
+    buffer<compute_t<T>> tBuf = t.template getBufferWithOffset<compute_t<T>>();
+    // In place Perform in place QR
+    ::oneapi::mkl::lapack::geqrf(getQueue(), iDims[0], iDims[1], iBuf,
+                                 iStrides[1], tBuf, *scratchpad,
+                                 scratchpad->size());
     return t;
 }
 
