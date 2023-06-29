@@ -171,7 +171,7 @@ Simulation create_simulation(uint32_t grid_width, uint32_t grid_height,
         sim.set_boundaries = af::loadImage(boundaries_filename, false);
     } catch (const af::exception& e) {
         std::cerr << e.what() << std::endl;
-        sim.set_boundaries = af::constant(0, grid_width, grid_height, 3);
+        sim.set_boundaries = af::constant(0, grid_width, grid_height);
     }
 
     auto b_dim = sim.set_boundaries.dims();
@@ -304,7 +304,7 @@ void collide_stream(Simulation& sim) {
     }
 
     // Keep the boundary conditions at the borders the same
-    fplus = af::select(set_boundaries, f, fplus);
+    af::replace(fplus, af::tile(!set_boundaries, af::dim4(1, 1, 9)), f);
 
     // Update the particle distribution
     f = fplus;
@@ -411,15 +411,15 @@ af::array generate_image(size_t width, size_t height, const Simulation& sim) {
     auto velocity          = sim.velocity;
 
     float image_scale =
-        static_cast<float>(width) / static_cast<float>(sim.grid_width);
+        static_cast<float>(width) / static_cast<float>(sim.grid_width - 1);
 
     // Relative Flow speed at each cell
     auto val = af::sqrt(ux * ux + uy * uy) / velocity;
 
-    val = af::select(val == 0 && boundaries, -1.0, val);
+    af::replace(val, val != 0 || !boundaries, -1.0);
 
     // Scaling and interpolating flow speed to the window size
-    if (image_scale > 1.0)
+    if (width != sim.grid_width || height != sim.grid_height)
         val =
             af::approx2(val, af::iota(width, af::dim4(1, height)) / image_scale,
                         af::iota(height, af::dim4(1, width)).T() / image_scale);
@@ -439,8 +439,9 @@ af::array generate_image(size_t width, size_t height, const Simulation& sim) {
     image2(af::span, af::span, 1) = -2 * val + 2;
     image2(af::span, af::span, 2) = 0;
 
-    image = af::select(af::tile(val, 1, 1, 3) > 0.5, image2, image);
-    image = af::select(af::tile(val, 1, 1, 3) >= 0, image, 0.0);
+    auto tile_val = af::tile(val, 1, 1, 3);
+    af::replace(image, tile_val < 0.5, image2);
+    af::replace(image, tile_val >= 0, 0.0);
 
     return image;
 }
@@ -470,22 +471,26 @@ void lattice_boltzmann_cfd_demo() {
     const float velocity = 0.35f;
     const float reynolds = 1e5f;
 
-    const char* ux_image           = ASSETS_DIR "/default_ux.bmp";
-    const char* uy_image           = ASSETS_DIR "/default_uy.bmp";
-    const char* set_boundary_image = ASSETS_DIR "/default_boundary.bmp";
+    const char* ux_image = ASSETS_DIR "/examples/images/default_ux.bmp";
+    const char* uy_image = ASSETS_DIR "/examples/images/default_uy.bmp";
+    const char* set_boundary_image =
+        ASSETS_DIR "/examples/images/default_boundary.bmp";
 
     // Tesla Valve Fluid Simulation - entering from constricted side
     {
-        //           ux_image = ASSETS_DIR "/left_tesla_ux.bmp";
-        //           uy_image = ASSETS_DIR "/left_tesla_uy.bmp";
-        // set_boundary_image = ASSETS_DIR "/left_tesla_boundary.bmp";
+        //           ux_image = ASSETS_DIR "/examples/images/left_tesla_ux.bmp";
+        //           uy_image = ASSETS_DIR "/examples/images/left_tesla_uy.bmp";
+        // set_boundary_image = ASSETS_DIR
+        // "/examples/images/left_tesla_boundary.bmp";
     }
 
     // Tesla Valve Fluid Simulation - entering from transfer side
     {
-        //           ux_image = ASSETS_DIR "/right_tesla_ux.bmp";
-        //           uy_image = ASSETS_DIR "/right_tesla_uy.bmp";
-        // set_boundary_image = ASSETS_DIR "/right_tesla_boundary.bmp";
+        //           ux_image = ASSETS_DIR
+        //           "/examples/images/right_tesla_ux.bmp"; uy_image =
+        //           ASSETS_DIR "/examples/images/right_tesla_uy.bmp";
+        // set_boundary_image = ASSETS_DIR
+        // "/examples/images/right_tesla_boundary.bmp";
     }
 
     // Reads the initial values of fluid quantites and simulation parameters
