@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-// #include <kernel/sparse.hpp>
+#include <kernel/sparse.hpp>
 #include <sparse.hpp>
 
 #include <arith.hpp>
@@ -61,21 +61,34 @@ SparseArray<T> sparseConvertDenseToCOO(const Array<T> &in) {
 
 template<typename T, af_storage stype>
 SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_) {
-    ONEAPI_NOT_SUPPORTED("sparseConvertDenseToStorage Not supported");
-    //     in_.eval();
-    //
-    //     uint nNZ = getScalar<uint>(reduce_all<af_notzero_t, T, uint>(in_));
-    //
-    //     SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ,
-    //     stype); sparse_.eval();
-    //
-    //     Array<T> &values   = sparse_.getValues();
-    //     Array<int> &rowIdx = sparse_.getRowIdx();
-    //     Array<int> &colIdx = sparse_.getColIdx();
+    // ONEAPI_NOT_SUPPORTED("sparseConvertDenseToStorage Not supported");
+    in_.eval();
 
-    // kernel::dense2csr<T>(values, rowIdx, colIdx, in_);
+    printf("FFFUUU %d\n", __LINE__);
+    auto tmp = reduce_all<af_notzero_t, T, uint>(in_);
+    printf("FFFUUU %d\n", __LINE__);
+    uint nNZ = getScalar<uint>(tmp);
 
-    // return sparse_;
+    printf("got ... %d\n", nNZ);
+
+    printf("FFFUUU %d\n", __LINE__);
+    SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, stype);
+    printf("FFFUUU %d\n", __LINE__);
+    sparse_.eval();
+    printf("FFFUUU %d\n", __LINE__);
+
+    printf("FFFUUU %d\n", __LINE__);
+    Array<T> &values = sparse_.getValues();
+    printf("FFFUUU %d\n", __LINE__);
+    Array<int> &rowIdx = sparse_.getRowIdx();
+    printf("FFFUUU %d\n", __LINE__);
+    Array<int> &colIdx = sparse_.getColIdx();
+    printf("FFFUUU %d\n", __LINE__);
+
+    kernel::dense2csr<T>(values, rowIdx, colIdx, in_);
+    printf("FFFUUU %d\n", __LINE__);
+
+    return sparse_;
 }
 
 // Partial template specialization of sparseConvertStorageToDense for COO
