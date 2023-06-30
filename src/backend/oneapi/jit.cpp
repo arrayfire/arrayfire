@@ -14,6 +14,7 @@
 #include <kernel_headers/jit.hpp>
 
 #include <Array.hpp>
+#include <Kernel.hpp>
 #include <common/dispatch.hpp>
 #include <common/half.hpp>
 #include <common/jit/ModdimNode.hpp>
@@ -591,6 +592,19 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
                                   (size_t)ap[0].dims[2]};
                         ndims  = 3;
                     }
+
+                    {
+                        using namespace oneapi::kernel_logger;
+                        AF_TRACE(
+                            "Launching {}: Dims: [{},{},{},{}] Global: "
+                            "[{},{},{}] threads: {}",
+                            funcName, ap[0].dims[0], ap[0].dims[1],
+                            ap[0].dims[2], ap[0].dims[3], global[0], global[1],
+                            global[2],
+                            global[0] * std::max<size_t>(1, global[1]) *
+                                std::max<size_t>(1, global[2]));
+                    }
+
                     cl_event kernel_event;
                     CL_CHECK(clEnqueueNDRangeKernel(
                         q, kernel, ndims, offset.data(), global.data(), nullptr,
