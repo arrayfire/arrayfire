@@ -202,7 +202,7 @@ Module compileModule(const string &moduleKey, span<const string> sources,
             "dims_param.hpp",
             "common/internal_enums.hpp",
             "minmax_op.hpp",
-            "vector_functions.h"
+            "vector_functions.h",
         };
 
         constexpr size_t numHeaders = extent<decltype(includeNames)>::value;
