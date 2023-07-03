@@ -142,6 +142,7 @@ set(nvrtc_src
   ${CUDA_INCLUDE_DIRS}/cuda_fp16.hpp
   ${CUDA_TOOLKIT_ROOT_DIR}/include/cuComplex.h
   ${CUDA_TOOLKIT_ROOT_DIR}/include/math_constants.h
+  ${CUDA_TOOLKIT_ROOT_DIR}/include/vector_functions.h
 
   ${PROJECT_SOURCE_DIR}/src/api/c/optypes.hpp
   ${PROJECT_SOURCE_DIR}/include/af/defines.h
