@@ -239,18 +239,24 @@ af_err af_fft_convolve1(af_array *out, const af_array signal,
 
 af_err af_fft_convolve2(af_array *out, const af_array signal,
                         const af_array filter, const af_conv_mode mode) {
-    if (getInfo(signal).dims().ndims() < 2 &&
-        getInfo(filter).dims().ndims() < 2) {
-        return fft_convolve(out, signal, filter, mode == AF_CONV_EXPAND, 1);
+    try {
+        if (getInfo(signal).dims().ndims() < 2 &&
+            getInfo(filter).dims().ndims() < 2) {
+            return fft_convolve(out, signal, filter, mode == AF_CONV_EXPAND, 1);
+        }
+        return fft_convolve(out, signal, filter, mode == AF_CONV_EXPAND, 2);
     }
-    return fft_convolve(out, signal, filter, mode == AF_CONV_EXPAND, 2);
+    CATCHALL;
 }
 
 af_err af_fft_convolve3(af_array *out, const af_array signal,
                         const af_array filter, const af_conv_mode mode) {
-    if (getInfo(signal).dims().ndims() < 3 &&
-        getInfo(filter).dims().ndims() < 3) {
-        return fft_convolve(out, signal, filter, mode == AF_CONV_EXPAND, 2);
+    try {
+        if (getInfo(signal).dims().ndims() < 3 &&
+            getInfo(filter).dims().ndims() < 3) {
+            return fft_convolve(out, signal, filter, mode == AF_CONV_EXPAND, 2);
+        }
+        return fft_convolve(out, signal, filter, mode == AF_CONV_EXPAND, 3);
     }
-    return fft_convolve(out, signal, filter, mode == AF_CONV_EXPAND, 3);
+    CATCHALL;
 }

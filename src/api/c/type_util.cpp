@@ -38,6 +38,9 @@ size_t size_of(af_dtype type) {
 }
 
 af_err af_get_size_of(size_t *size, af_dtype type) {
-    *size = size_of(type);
-    return AF_SUCCESS;
+    try {
+        *size = size_of(type);
+        return AF_SUCCESS;
+    }
+    CATCHALL;
 }
