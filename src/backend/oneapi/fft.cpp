@@ -7,32 +7,164 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <common/dispatch.hpp>
-
 #include <fft.hpp>
 
+#include <common/dispatch.hpp>
 #include <copy.hpp>
 #include <err_oneapi.hpp>
 #include <math.hpp>
 #include <memory.hpp>
+#include <onefft.hpp>
+#include <platform.hpp>
 #include <af/dim4.hpp>
 
-#include <array>
-using std::array;
+#include <oneapi/mkl/dfti.hpp>
+#include <oneapi/mkl/exceptions.hpp>
+
+#include <cstdint>
+#include <memory>
+
+using std::make_shared;
 
 using af::dim4;
-
-#include <oneapi/mkl/dfti.hpp>
 
 namespace arrayfire {
 namespace oneapi {
 
 void setFFTPlanCacheSize(size_t numPlans) {}
 
-inline array<int, AF_MAX_DIMS> computeDims(const int rank, const dim4 &idims) {
-    array<int, AF_MAX_DIMS> retVal = {};
-    for (int i = 0; i < rank; i++) { retVal[i] = idims[(rank - 1) - i]; }
-    return retVal;
+std::string genPlanHashStr(int rank, ::oneapi::mkl::dft::precision precision,
+                           ::oneapi::mkl::dft::domain domain,
+                           const bool isInPlace, const dim_t *n,
+                           std::int64_t *istrides, int ibatch,
+                           std::int64_t *ostrides, int obatch, int nbatch) {
+    // create the key string
+    char key_str_temp[64];
+    sprintf(key_str_temp, "%d:", rank);
+
+    std::string key_string(key_str_temp);
+
+    if (precision == ::oneapi::mkl::dft::precision::SINGLE) {
+        key_string.append("S:");
+    } else if (precision == ::oneapi::mkl::dft::precision::DOUBLE) {
+        key_string.append("D:");
+    }
+    if (domain == ::oneapi::mkl::dft::domain::REAL) {
+        key_string.append("R:");
+    } else if (domain == ::oneapi::mkl::dft::domain::COMPLEX) {
+        key_string.append("C:");
+    }
+    if (isInPlace) {
+        key_string.append("IIP:");
+    } else {
+        key_string.append("OOP:");
+    }
+
+    for (int r = 0; r < rank; ++r) {
+        sprintf(key_str_temp, "%lld:", n[r]);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    if (istrides != nullptr) {
+        for (int r = 0; r < rank + 1; ++r) {
+            sprintf(key_str_temp, "%ld:", istrides[r]);
+            key_string.append(std::string(key_str_temp));
+        }
+        sprintf(key_str_temp, "%d:", ibatch);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    if (ostrides != nullptr) {
+        for (int r = 0; r < rank + 1; ++r) {
+            sprintf(key_str_temp, "%ld:", ostrides[r]);
+            key_string.append(std::string(key_str_temp));
+        }
+        sprintf(key_str_temp, "%d:", obatch);
+        key_string.append(std::string(key_str_temp));
+    }
+
+    sprintf(key_str_temp, "%d", nbatch);
+    key_string.append(std::string(key_str_temp));
+
+    return key_string;
+}
+
+std::vector<std::int64_t> computeStrides(const int rank, const dim4 istrides,
+                                         const dim_t offset) {
+    if (rank == 2) return {offset, istrides[1], istrides[0]};
+    if (rank == 3) return {offset, istrides[2], istrides[1], istrides[0]};
+    if (rank == 4)
+        return {offset, istrides[3], istrides[2], istrides[1], istrides[0]};
+    return {offset};
+}
+
+template<::oneapi::mkl::dft::precision precision,
+         ::oneapi::mkl::dft::domain domain>
+PlanType findPlan(int rank, const bool isInPlace, const dim_t *idims,
+                  std::int64_t *istrides, int ibatch, std::int64_t *ostrides,
+                  int obatch, int nbatch) {
+    using desc_ty = ::oneapi::mkl::dft::descriptor<precision, domain>;
+
+    std::string key_string =
+        genPlanHashStr(rank, precision, domain, isInPlace, idims, istrides,
+                       ibatch, ostrides, obatch, nbatch);
+
+    PlanCache &planner               = arrayfire::oneapi::fftManager();
+    std::shared_ptr<PlanType> retVal = (planner.find(key_string));
+    if (retVal) { return *retVal; }
+
+    desc_ty *desc = [rank, &idims]() {
+        if (rank == 1) return new desc_ty(static_cast<int64_t>(idims[0]));
+        if (rank == 2) return new desc_ty({idims[1], idims[0]});
+        if (rank == 3) return new desc_ty({idims[2], idims[1], idims[0]});
+        return new desc_ty({idims[3], idims[2], idims[1], idims[0]});
+    }();
+
+    if (rank > 1) {
+        desc->set_value(::oneapi::mkl::dft::config_param::INPUT_STRIDES,
+                        istrides);
+        desc->set_value(::oneapi::mkl::dft::config_param::OUTPUT_STRIDES,
+                        ostrides);
+    }
+
+    if (isInPlace) {
+        desc->set_value(::oneapi::mkl::dft::config_param::PLACEMENT,
+                        DFTI_INPLACE);
+    } else {
+        desc->set_value(::oneapi::mkl::dft::config_param::PLACEMENT,
+                        DFTI_NOT_INPLACE);
+    }
+
+    desc->set_value(::oneapi::mkl::dft::config_param::NUMBER_OF_TRANSFORMS,
+                    (int64_t)nbatch);
+
+    desc->set_value(::oneapi::mkl::dft::config_param::FWD_DISTANCE, ibatch);
+    desc->set_value(::oneapi::mkl::dft::config_param::BWD_DISTANCE, obatch);
+
+    if constexpr (domain == ::oneapi::mkl::dft::domain::COMPLEX) {
+        desc->set_value(::oneapi::mkl::dft::config_param::COMPLEX_STORAGE,
+                        DFTI_COMPLEX_COMPLEX);
+    } else {
+        desc->set_value(
+            ::oneapi::mkl::dft::config_param::CONJUGATE_EVEN_STORAGE,
+            DFTI_COMPLEX_COMPLEX);
+        desc->set_value(::oneapi::mkl::dft::config_param::PACKED_FORMAT,
+                        DFTI_CCE_FORMAT);
+    }
+
+    try {
+        desc->commit(getQueue());
+    } catch (::oneapi::mkl::device_bad_alloc &e) {
+        // If plan creation fails, clean up the memory we hold on to and try
+        // again
+        arrayfire::oneapi::signalMemoryCleanup();
+        desc->commit(getQueue());
+    }
+
+    // push the plan into plan cache
+    std::shared_ptr<void> ptr(desc);
+    planner.push(key_string, make_shared<PlanType>(ptr));
+    return ptr;
 }
 
 template<typename T>
@@ -48,41 +180,23 @@ void fft_inplace(Array<T> &in, const int rank, const bool direction) {
         ::oneapi::mkl::dft::descriptor<precision,
                                        ::oneapi::mkl::dft::domain::COMPLEX>;
 
-    auto desc = [rank, &idims]() {
-        if (rank == 1) return desc_ty(idims[0]);
-        if (rank == 2) return desc_ty({idims[0], idims[1]});
-        if (rank == 3) return desc_ty({idims[0], idims[1], idims[2]});
-        return desc_ty({idims[0], idims[1], idims[2], idims[3]});
-    }();
-
-    if (rank > 1) {
-        std::int64_t fft_input_strides[5];
-        fft_input_strides[0] = in.getOffset();
-        fft_input_strides[1] = istrides[0];
-        fft_input_strides[2] = istrides[1];
-        fft_input_strides[3] = istrides[2];
-        fft_input_strides[4] = istrides[3];
-        desc.set_value(::oneapi::mkl::dft::config_param::INPUT_STRIDES,
-                       fft_input_strides);
-    }
-
-    desc.set_value(::oneapi::mkl::dft::config_param::PLACEMENT, DFTI_INPLACE);
+    std::vector<std::int64_t> fft_input_strides =
+        computeStrides(rank, istrides, in.getOffset());
 
     int batch = 1;
     for (int i = rank; i < 4; i++) { batch *= idims[i]; }
-    desc.set_value(::oneapi::mkl::dft::config_param::NUMBER_OF_TRANSFORMS,
-                   (int64_t)batch);
 
-    desc.set_value(::oneapi::mkl::dft::config_param::BWD_DISTANCE,
-                   istrides[rank]);
-    desc.set_value(::oneapi::mkl::dft::config_param::FWD_DISTANCE,
-                   istrides[rank]);
+    const bool isInPlace = true;
+    PlanType descP = findPlan<precision, ::oneapi::mkl::dft::domain::COMPLEX>(
+        rank, isInPlace, idims.get(), fft_input_strides.data(), istrides[rank],
+        fft_input_strides.data(), istrides[rank], batch);
 
-    desc.commit(getQueue());
+    desc_ty *desc = (desc_ty *)descP.get();
+
     if (direction)
-        ::oneapi::mkl::dft::compute_forward(desc, *in.get());
+        ::oneapi::mkl::dft::compute_forward(*desc, *in.get());
     else
-        ::oneapi::mkl::dft::compute_backward(desc, *in.get());
+        ::oneapi::mkl::dft::compute_backward(*desc, *in.get());
 }
 
 template<typename Tc, typename Tr>
@@ -101,47 +215,22 @@ Array<Tc> fft_r2c(const Array<Tr> &in, const int rank) {
         ::oneapi::mkl::dft::descriptor<precision,
                                        ::oneapi::mkl::dft::domain::REAL>;
 
-    auto desc = [rank, &idims]() {
-        if (rank == 1) return desc_ty(idims[0]);
-        if (rank == 2) return desc_ty({idims[0], idims[1]});
-        if (rank == 3) return desc_ty({idims[0], idims[1], idims[2]});
-        return desc_ty({idims[0], idims[1], idims[2], idims[3]});
-    }();
-    if (rank > 1) {
-        std::int64_t fft_input_strides[5];
-        fft_input_strides[0] = in.getOffset();
-        fft_input_strides[1] = istrides[0];
-        fft_input_strides[2] = istrides[1];
-        fft_input_strides[3] = istrides[2];
-        fft_input_strides[4] = istrides[3];
-        desc.set_value(::oneapi::mkl::dft::config_param::INPUT_STRIDES,
-                       fft_input_strides);
-
-        std::int64_t fft_output_strides[5];
-        fft_output_strides[0] = out.getOffset();
-        fft_output_strides[1] = ostrides[0];
-        fft_output_strides[2] = ostrides[1];
-        fft_output_strides[3] = ostrides[2];
-        fft_output_strides[4] = ostrides[3];
-        desc.set_value(::oneapi::mkl::dft::config_param::OUTPUT_STRIDES,
-                       fft_output_strides);
-    }
-
-    desc.set_value(::oneapi::mkl::dft::config_param::PLACEMENT,
-                   DFTI_NOT_INPLACE);
+    std::vector<std::int64_t> fft_input_strides =
+        computeStrides(rank, istrides, in.getOffset());
+    std::vector<std::int64_t> fft_output_strides =
+        computeStrides(rank, ostrides, out.getOffset());
 
     int batch = 1;
     for (int i = rank; i < 4; i++) { batch *= idims[i]; }
-    desc.set_value(::oneapi::mkl::dft::config_param::NUMBER_OF_TRANSFORMS,
-                   (int64_t)batch);
 
-    desc.set_value(::oneapi::mkl::dft::config_param::BWD_DISTANCE,
-                   ostrides[rank]);
-    desc.set_value(::oneapi::mkl::dft::config_param::FWD_DISTANCE,
-                   istrides[rank]);
+    const bool isInPlace = false;
+    PlanType descP = findPlan<precision, ::oneapi::mkl::dft::domain::REAL>(
+        rank, isInPlace, idims.get(), fft_input_strides.data(), istrides[rank],
+        fft_output_strides.data(), ostrides[rank], batch);
 
-    desc.commit(getQueue());
-    ::oneapi::mkl::dft::compute_forward(desc, *in.get(), *out.get());
+    desc_ty *desc = (desc_ty *)descP.get();
+
+    ::oneapi::mkl::dft::compute_forward(*desc, *in.get(), *out.get());
 
     return out;
 }
@@ -161,47 +250,22 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims, const int rank) {
         ::oneapi::mkl::dft::descriptor<precision,
                                        ::oneapi::mkl::dft::domain::REAL>;
 
-    auto desc = [rank, &odims]() {
-        if (rank == 1) return desc_ty(odims[0]);
-        if (rank == 2) return desc_ty({odims[0], odims[1]});
-        if (rank == 3) return desc_ty({odims[0], odims[1], odims[2]});
-        return desc_ty({odims[0], odims[1], odims[2], odims[3]});
-    }();
-    if (rank > 1) {
-        std::int64_t fft_input_strides[5];
-        fft_input_strides[0] = in.getOffset();
-        fft_input_strides[1] = istrides[0];
-        fft_input_strides[2] = istrides[1];
-        fft_input_strides[3] = istrides[2];
-        fft_input_strides[4] = istrides[3];
-        desc.set_value(::oneapi::mkl::dft::config_param::INPUT_STRIDES,
-                       fft_input_strides);
-
-        std::int64_t fft_output_strides[5];
-        fft_output_strides[0] = out.getOffset();
-        fft_output_strides[1] = ostrides[0];
-        fft_output_strides[2] = ostrides[1];
-        fft_output_strides[3] = ostrides[2];
-        fft_output_strides[4] = ostrides[3];
-        desc.set_value(::oneapi::mkl::dft::config_param::OUTPUT_STRIDES,
-                       fft_output_strides);
-    }
-
-    desc.set_value(::oneapi::mkl::dft::config_param::PLACEMENT,
-                   DFTI_NOT_INPLACE);
+    std::vector<std::int64_t> fft_input_strides =
+        computeStrides(rank, istrides, in.getOffset());
+    std::vector<std::int64_t> fft_output_strides =
+        computeStrides(rank, ostrides, out.getOffset());
 
     int batch = 1;
     for (int i = rank; i < 4; i++) { batch *= odims[i]; }
-    desc.set_value(::oneapi::mkl::dft::config_param::NUMBER_OF_TRANSFORMS,
-                   (int64_t)batch);
 
-    desc.set_value(::oneapi::mkl::dft::config_param::BWD_DISTANCE,
-                   istrides[rank]);
-    desc.set_value(::oneapi::mkl::dft::config_param::FWD_DISTANCE,
-                   ostrides[rank]);
+    const bool isInPlace = false;
+    PlanType descP = findPlan<precision, ::oneapi::mkl::dft::domain::REAL>(
+        rank, isInPlace, odims.get(), fft_input_strides.data(), ostrides[rank],
+        fft_output_strides.data(), istrides[rank], batch);
 
-    desc.commit(getQueue());
-    ::oneapi::mkl::dft::compute_backward(desc, *in.get(), *out.get());
+    desc_ty *desc = (desc_ty *)descP.get();
+
+    ::oneapi::mkl::dft::compute_backward(*desc, *in.get(), *out.get());
     return out;
 }
 

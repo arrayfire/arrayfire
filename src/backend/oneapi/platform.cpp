@@ -21,6 +21,7 @@
 #include <err_oneapi.hpp>
 #include <errorcodes.hpp>
 #include <memory.hpp>
+#include <onefft.hpp>
 #include <af/oneapi.h>
 #include <af/version.h>
 
@@ -633,6 +634,16 @@ GraphicsResourceManager& interopManager() {
 
     return *(inst.gfxManagers[id].get());
 }
+
+unique_ptr<PlanCache>& oneFFTManager(const int deviceId) {
+    thread_local unique_ptr<PlanCache> caches[DeviceManager::MAX_DEVICES];
+    thread_local once_flag initFlags[DeviceManager::MAX_DEVICES];
+    call_once(initFlags[deviceId],
+              [&] { caches[deviceId] = make_unique<PlanCache>(); });
+    return caches[deviceId];
+}
+
+PlanCache& fftManager() { return *oneFFTManager(getActiveDeviceId()); }
 
 }  // namespace oneapi
 }  // namespace arrayfire
