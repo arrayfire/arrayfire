@@ -131,6 +131,8 @@ arrayfire::common::ForgeManager& forgeManager();
 
 GraphicsResourceManager& interopManager();
 
+PlanCache& fftManager();
+
 // afcl::platform getPlatformEnum(cl::Device dev);
 
 void setActiveContext(int device);
