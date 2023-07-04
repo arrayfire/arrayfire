@@ -400,7 +400,7 @@ class reduceBlocksByKeyKernel {
         if (lid == 0) { l_reduced_block_size_[0] = 0; }
 
         // load keys and values to threads
-        Tk k = scalar<Tk>(0);
+        Tk k            = scalar<Tk>(0);
         compute_t<To> v = init_val;
         if (gid < n_) {
             k                 = iKeys_[gid];
@@ -576,7 +576,7 @@ class reduceBlocksByKeyDimKernel {
         it.barrier();
 
         // load keys and values to threads
-        Tk k = scalar<Tk>(0);
+        Tk k            = scalar<Tk>(0);
         compute_t<To> v = init_val;
         if (gid < n_) {
             k                 = iKeys_[gid];

@@ -43,7 +43,7 @@ class fftconvolve_packCreateKernel {
 
         if (t >= tMax) return;
 
-        //const int do0 = oInfo_.dims[0];
+        // const int do0 = oInfo_.dims[0];
         const int do1 = oInfo_.dims[1];
         const int do2 = oInfo_.dims[2];
 
@@ -56,7 +56,7 @@ class fftconvolve_packCreateKernel {
         const int to2 = (t / so2) % do2;
         const int to3 = t / so3;
 
-        //const int di0 = iInfo_.dims[0];
+        // const int di0 = iInfo_.dims[0];
         const int di1 = iInfo_.dims[1];
         const int di2 = iInfo_.dims[2];
 

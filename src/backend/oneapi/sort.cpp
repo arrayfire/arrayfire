@@ -7,6 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+// temporary ignores for DPL internals
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 #include <kernel/sort.hpp>
 
 #include <Array.hpp>
@@ -64,3 +71,8 @@ INSTANTIATE(uintl)
 
 }  // namespace oneapi
 }  // namespace arrayfire
+
+#if defined(__clang__)
+/* Clang/LLVM */
+#pragma clang diagnostic pop
+#endif

@@ -8,6 +8,13 @@
  ********************************************************/
 #pragma once
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+// temporary ignores for DPL internals
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 // oneDPL headers should be included before standard headers
 #define ONEDPL_USE_PREDEFINED_POLICIES 0
 #include <oneapi/dpl/execution>
@@ -614,3 +621,8 @@ Array<To> reduce_all(const Array<Ti> &in, bool change_nan, double nanval) {
         const Array<Ti> &vals, const int dim, bool change_nan, double nanval); \
     template Array<To> reduce_all<Op, Ti, To>(const Array<Ti> &in,             \
                                               bool change_nan, double nanval);
+
+#if defined(__clang__)
+/* Clang/LLVM */
+#pragma clang diagnostic pop
+#endif

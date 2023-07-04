@@ -48,7 +48,7 @@ class fftconvolve_reorderCreateKernel {
 
         if (t >= tMax) return;
 
-        //const int do0 = oInfo_.dims[0];
+        // const int do0 = oInfo_.dims[0];
         const int do1 = oInfo_.dims[1];
         const int do2 = oInfo_.dims[2];
 
