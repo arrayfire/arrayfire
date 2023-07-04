@@ -163,8 +163,6 @@ void convSep(Param<T> out, const Param<T> signal, const Param<accType> filter,
     }
     constexpr int THREADS_X = 16;
     constexpr int THREADS_Y = 16;
-    constexpr bool IsComplex =
-        std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
 
     const int fLen       = filter.info.dims[0] * filter.info.dims[1];
     const size_t C0_SIZE = (THREADS_X + 2 * (fLen - 1)) * THREADS_Y;

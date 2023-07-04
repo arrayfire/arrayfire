@@ -38,8 +38,6 @@ class fftconvolve_multiplyCreateKernel {
         , nelem_(nelem)
         , kind_(kind) {}
     void operator()(sycl::nd_item<1> it) const {
-        sycl::group g = it.get_group();
-
         const int t = it.get_global_id(0);
 
         if (t >= nelem_) return;

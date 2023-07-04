@@ -42,15 +42,13 @@ class fftconvolve_reorderCreateKernel {
         , EXPAND_(EXPAND)
         , ROUND_OUT_(ROUND_OUT) {}
     void operator()(sycl::nd_item<1> it) const {
-        sycl::group g = it.get_group();
-
         const int t = it.get_global_id(0);
 
         const int tMax = oInfo_.strides[3] * oInfo_.dims[3];
 
         if (t >= tMax) return;
 
-        const int do0 = oInfo_.dims[0];
+        //const int do0 = oInfo_.dims[0];
         const int do1 = oInfo_.dims[1];
         const int do2 = oInfo_.dims[2];
 
@@ -60,10 +58,6 @@ class fftconvolve_reorderCreateKernel {
 
         // Treating complex input array as real-only array,
         // thus, multiply dimension 0 and strides by 2
-        const int di0 = iInfo_.dims[0] * 2;
-        const int di1 = iInfo_.dims[1];
-        const int di2 = iInfo_.dims[2];
-
         const int si1 = iInfo_.strides[1] * 2;
         const int si2 = iInfo_.strides[2] * 2;
         const int si3 = iInfo_.strides[3] * 2;

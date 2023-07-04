@@ -29,15 +29,13 @@ class fftconvolve_padCreateKernel {
                                 read_accessor<inputType> d_in, KParam iInfo)
         : d_out_(d_out), oInfo_(oInfo), d_in_(d_in), iInfo_(iInfo) {}
     void operator()(sycl::nd_item<1> it) const {
-        sycl::group g = it.get_group();
-
         const int t = it.get_global_id(0);
 
         const int tMax = oInfo_.strides[3] * oInfo_.dims[3];
 
         if (t >= tMax) return;
 
-        const int do0 = oInfo_.dims[0];
+        //const int do0 = oInfo_.dims[0];
         const int do1 = oInfo_.dims[1];
         const int do2 = oInfo_.dims[2];
 
@@ -92,13 +90,8 @@ void padDataHelper(Param<convT> packed, Param<T> sig, Param<T> filter,
     Param<T> sig_tmp, filter_tmp;
     calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, rank, kind);
 
-    int sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
     int filter_packed_elem =
         filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
-
-    // Number of packed complex elements in dimension 0
-    int sig_half_d0     = divup(sig.info.dims[0], 2);
-    int sig_half_d0_odd = sig.info.dims[0] % 2;
 
     int blocks = divup(filter_packed_elem, THREADS);
 
