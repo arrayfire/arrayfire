@@ -1,3 +1,4 @@
+
 /*******************************************************
  * Copyright (c) 2022, ArrayFire
  * All rights reserved.
@@ -611,13 +612,9 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
         getQueue()
             .submit([&](sycl::handler &h) {
                 auto acc_in =
-                    tmpOut.get()
-                        ->template get_access<sycl::access_mode::read,
-                                              sycl::target::host_buffer>(h);
+                    tmpOut.get()->template get_host_access(h, sycl::read_only);
                 auto acc_wt =
-                    tmpWt.get()
-                        ->template get_access<sycl::access_mode::read,
-                                              sycl::target::host_buffer>(h);
+                    tmpWt.get()->template get_host_access(h, sycl::read_only);
 
                 h.host_task([acc_in, acc_wt, tmp_elements, &val] {
                     val = static_cast<compute_t<T>>(acc_in[0]);
@@ -636,13 +633,10 @@ T mean_all_weighted(Param<T> in, Param<Tw> iwt) {
         compute_t<T> val;
         getQueue()
             .submit([&](sycl::handler &h) {
-                auto acc_in =
-                    in.data->template get_access<sycl::access_mode::read,
-                                                 sycl::target::host_buffer>(
-                        h, sycl::range{in_elements});
-                auto acc_wt =
-                    iwt.data->template get_access<sycl::access_mode::read>(
-                        h, sycl::range{in_elements});
+                auto acc_in = in.data->template get_host_access(
+                    h, sycl::range{in_elements}, sycl::read_only);
+                auto acc_wt = iwt.data->template get_host_access(
+                    h, sycl::range{in_elements}, sycl::read_only);
 
                 h.host_task([acc_in, acc_wt, in_elements, &val]() {
                     val                  = acc_in[0];
@@ -702,13 +696,9 @@ To mean_all(Param<Ti> in) {
         getQueue()
             .submit([&](sycl::handler &h) {
                 auto out =
-                    tmpOut.get()
-                        ->template get_access<sycl::access_mode::read,
-                                              sycl::target::host_buffer>(h);
+                    tmpOut.get()->template get_host_access(h, sycl::read_only);
                 auto ct =
-                    tmpCt.get()
-                        ->template get_access<sycl::access_mode::read,
-                                              sycl::target::host_buffer>(h);
+                    tmpCt.get()->template get_host_access(h, sycl::read_only);
 
                 h.host_task([out, ct, tmp_elements, &val] {
                     val                  = static_cast<compute_t<To>>(out[0]);
@@ -727,8 +717,7 @@ To mean_all(Param<Ti> in) {
         getQueue()
             .submit([&](sycl::handler &h) {
                 auto acc_in =
-                    in.data->template get_access<sycl::access_mode::read,
-                                                 sycl::target::host_buffer>(h);
+                    in.data->template get_host_access(h, sycl::read_only);
                 h.host_task([acc_in, in_elements, &val]() {
                     common::Transform<Ti, compute_t<To>, af_add_t> transform;
                     compute_t<Tw> count = static_cast<compute_t<Tw>>(1);

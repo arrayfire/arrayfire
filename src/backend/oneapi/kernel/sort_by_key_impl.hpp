@@ -8,6 +8,13 @@
  ********************************************************/
 #pragma once
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+// temporary ignores for DPL internals
+#pragma clang diagnostic ignored "-Wunused-variable"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 // oneDPL headers should be included before standard headers
 #define ONEDPL_USE_PREDEFINED_POLICIES 0
 #include <oneapi/dpl/algorithm>
@@ -206,3 +213,8 @@ void sort0ByKey(Param<Tk> pKey, Param<Tv> pVal, bool isAscending) {
 }  // namespace kernel
 }  // namespace oneapi
 }  // namespace arrayfire
+
+#if defined(__clang__)
+/* Clang/LLVM */
+#pragma clang diagnostic pop
+#endif

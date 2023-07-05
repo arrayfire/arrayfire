@@ -76,7 +76,6 @@ class convolveSeparableCreateKernel {
         if (CONV_DIM_ == 0) {
             gx += (EXPAND_ ? 0 : FLEN_ >> 1);
             int endX = ((FLEN_ - 1) << 1) + g.get_local_range(0);
-#pragma unroll
             for (int lx = it.get_local_id(0), glb_x = gx; lx < endX;
                  lx += g.get_local_range(0), glb_x += g.get_local_range(0)) {
                 int i     = glb_x - radius;
@@ -90,7 +89,6 @@ class convolveSeparableCreateKernel {
         } else if (CONV_DIM_ == 1) {
             gy += (EXPAND_ ? 0 : FLEN_ >> 1);
             int endY = ((FLEN_ - 1) << 1) + g.get_local_range(1);
-#pragma unroll
             for (int ly = it.get_local_id(1), glb_y = gy; ly < endY;
                  ly += g.get_local_range(1), glb_y += g.get_local_range(1)) {
                 int i     = gx;
@@ -108,7 +106,6 @@ class convolveSeparableCreateKernel {
             // kernel compilation
             int i         = (CONV_DIM_ == 0 ? lx : ly) + radius;
             accType accum = (accType)(0);
-#pragma unroll
             for (int f = 0; f < FLEN_; ++f) {
                 accType f_val = impulse_[f];
                 // below conditional statement is based on MACRO value passed
@@ -163,8 +160,6 @@ void convSep(Param<T> out, const Param<T> signal, const Param<accType> filter,
     }
     constexpr int THREADS_X = 16;
     constexpr int THREADS_Y = 16;
-    constexpr bool IsComplex =
-        std::is_same<T, cfloat>::value || std::is_same<T, cdouble>::value;
 
     const int fLen       = filter.info.dims[0] * filter.info.dims[1];
     const size_t C0_SIZE = (THREADS_X + 2 * (fLen - 1)) * THREADS_Y;

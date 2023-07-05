@@ -101,10 +101,6 @@ class finalBoundaryReduceDimKernel {
         const uint gid = it.get_global_id(0);
         const uint bid = g.get_group_id(0);
 
-        const int bidy = g.get_group_id(1);
-        const int bidz = g.get_group_id(2) % nGroupsZ_;
-        const int bidw = g.get_group_id(2) / nGroupsZ_;
-
         common::Binary<compute_t<To>, op> binOp;
         if (gid == ((bid + 1) * it.get_local_range(0)) - 1 &&
             bid < g.get_group_range(0) - 1) {
@@ -166,7 +162,7 @@ class testNeedsReductionKernel {
         const uint gid = it.get_global_id(0);
         const uint bid = g.get_group_id(0);
 
-        Tk k;
+        Tk k = scalar<Tk>(0);
         if (gid < n_) { k = iKeys_[gid]; }
 
         l_keys_[lid] = k;
@@ -233,9 +229,6 @@ class compactKernel {
         const int bidz = g.get_group_id(2) % nGroupsZ_;
         const int bidw = g.get_group_id(2) / nGroupsZ_;
 
-        Tk k;
-        To v;
-
         const int bOffset = bidw * oVInfo_.strides[3] +
                             bidz * oVInfo_.strides[2] +
                             bidy * oVInfo_.strides[1];
@@ -247,8 +240,8 @@ class compactKernel {
                 : (reduced_block_sizes_[bid] - reduced_block_sizes_[bid - 1]);
         int writeloc = (bid == 0) ? 0 : reduced_block_sizes_[bid - 1];
 
-        k = iKeys_[gid];
-        v = iVals_[bOffset + gid];
+        Tk k = iKeys_[gid];
+        To v = iVals_[bOffset + gid];
 
         if (lid < nwrite) {
             oKeys_[writeloc + lid]           = k;
@@ -407,8 +400,8 @@ class reduceBlocksByKeyKernel {
         if (lid == 0) { l_reduced_block_size_[0] = 0; }
 
         // load keys and values to threads
-        Tk k;
-        compute_t<To> v;
+        Tk k            = scalar<Tk>(0);
+        compute_t<To> v = init_val;
         if (gid < n_) {
             k                 = iKeys_[gid];
             const int bOffset = bidw * iVInfo_.strides[3] +
@@ -416,8 +409,6 @@ class reduceBlocksByKeyKernel {
                                 bidy * iVInfo_.strides[1];
             v = transform(iVals_[bOffset + gid]);
             if (change_nan_) v = IS_NAN(v) ? nanval_ : v;
-        } else {
-            v = init_val;
         }
 
         l_keys_[lid] = k;
@@ -585,8 +576,8 @@ class reduceBlocksByKeyDimKernel {
         it.barrier();
 
         // load keys and values to threads
-        Tk k;
-        compute_t<To> v;
+        Tk k            = scalar<Tk>(0);
+        compute_t<To> v = init_val;
         if (gid < n_) {
             k                 = iKeys_[gid];
             const int bOffset = bidw * iVInfo_.strides[dims_ordering[3]] +
@@ -594,8 +585,6 @@ class reduceBlocksByKeyDimKernel {
                                 bidy * iVInfo_.strides[dims_ordering[1]];
             v = transform(iVals_[bOffset + gid * iVInfo_.strides[DIM_]]);
             if (change_nan_) v = IS_NAN(v) ? nanval_ : v;
-        } else {
-            v = init_val;
         }
 
         l_keys_[lid] = k;
