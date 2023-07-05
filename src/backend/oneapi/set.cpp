@@ -6,6 +6,11 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+// oneDPL headers should be included before standard headers
+#define ONEDPL_USE_PREDEFINED_POLICIES 0
+#include <oneapi/dpl/algorithm>
+#include <oneapi/dpl/execution>
+#include <oneapi/dpl/iterator>
 
 #include <Array.hpp>
 #include <common/deprecated.hpp>
@@ -30,115 +35,84 @@ using type_t =
 
 template<typename T>
 Array<T> setUnique(const Array<T> &in, const bool is_sorted) {
-    ONEAPI_NOT_SUPPORTED("setUnique Not supported");
-    return createEmptyArray<T>(dim4(1, 1, 1, 1));
+    auto dpl_policy = ::oneapi::dpl::execution::make_device_policy(getQueue());
 
-    // try {
-    //     Array<T> out = copyArray<T>(in);
+    Array<T> out = copyArray<T>(in);
 
-    //     compute::command_queue queue(getQueue()());
+    auto out_begin = ::oneapi::dpl::begin(*out.get());
+    auto out_end   = out_begin + out.elements();
 
-    //     compute::buffer out_data((*out.get())());
+    if (!is_sorted) {
+        std::sort(dpl_policy, out_begin, out_end,
+                  [](auto lhs, auto rhs) { return lhs < rhs; });
+    }
 
-    //     compute::buffer_iterator<type_t<T>> begin(out_data, 0);
-    //     compute::buffer_iterator<type_t<T>> end(out_data, out.elements());
+    out_end = std::unique(dpl_policy, out_begin, out_end);
 
-    //     if (!is_sorted) { compute::sort(begin, end, queue); }
+    out.resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
 
-    //     end = compute::unique(begin, end, queue);
-
-    //     out.resetDims(dim4(std::distance(begin, end), 1, 1, 1));
-
-    //     return out;
-    // } catch (const std::exception &ex) { AF_ERROR(ex.what(),
-    // AF_ERR_INTERNAL); }
+    return out;
 }
 
 template<typename T>
 Array<T> setUnion(const Array<T> &first, const Array<T> &second,
                   const bool is_unique) {
-    ONEAPI_NOT_SUPPORTED("setUnion Not supported");
-    return createEmptyArray<T>(dim4(1, 1, 1, 1));
+    Array<T> unique_first  = first;
+    Array<T> unique_second = second;
 
-    // try {
-    //     Array<T> unique_first  = first;
-    //     Array<T> unique_second = second;
+    if (!is_unique) {
+        unique_first  = setUnique(first, false);
+        unique_second = setUnique(second, false);
+    }
 
-    //     if (!is_unique) {
-    //         unique_first  = setUnique(first, false);
-    //         unique_second = setUnique(second, false);
-    //     }
+    size_t out_size = unique_first.elements() + unique_second.elements();
+    Array<T> out    = createEmptyArray<T>(dim4(out_size, 1, 1, 1));
 
-    //     size_t out_size = unique_first.elements() + unique_second.elements();
-    //     Array<T> out    = createEmptyArray<T>(dim4(out_size, 1, 1, 1));
+    auto dpl_policy = ::oneapi::dpl::execution::make_device_policy(getQueue());
 
-    //     compute::command_queue queue(getQueue()());
+    auto first_begin = ::oneapi::dpl::begin(*unique_first.get());
+    auto first_end   = first_begin + unique_first.elements();
 
-    //     compute::buffer first_data((*unique_first.get())());
-    //     compute::buffer second_data((*unique_second.get())());
-    //     compute::buffer out_data((*out.get())());
+    auto second_begin = ::oneapi::dpl::begin(*unique_second.get());
+    auto second_end   = second_begin + unique_second.elements();
 
-    //     compute::buffer_iterator<type_t<T>> first_begin(first_data, 0);
-    //     compute::buffer_iterator<type_t<T>> first_end(first_data,
-    //                                                   unique_first.elements());
-    //     compute::buffer_iterator<type_t<T>> second_begin(second_data, 0);
-    //     compute::buffer_iterator<type_t<T>> second_end(
-    //         second_data, unique_second.elements());
-    //     compute::buffer_iterator<type_t<T>> out_begin(out_data, 0);
+    auto out_begin = ::oneapi::dpl::begin(*out.get());
 
-    //     compute::buffer_iterator<type_t<T>> out_end = compute::set_union(
-    //         first_begin, first_end, second_begin, second_end, out_begin,
-    //         queue);
-
-    //     out.resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
-    //     return out;
-
-    // } catch (const std::exception &ex) { AF_ERROR(ex.what(),
-    // AF_ERR_INTERNAL); }
+    auto out_end = std::set_union(dpl_policy, first_begin, first_end,
+                                  second_begin, second_end, out_begin);
+    out.resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
+    return out;
 }
 
 template<typename T>
 Array<T> setIntersect(const Array<T> &first, const Array<T> &second,
                       const bool is_unique) {
-    ONEAPI_NOT_SUPPORTED("setIntersect Not supported");
-    return createEmptyArray<T>(dim4(1, 1, 1, 1));
+    Array<T> unique_first  = first;
+    Array<T> unique_second = second;
 
-    // try {
-    //     Array<T> unique_first  = first;
-    //     Array<T> unique_second = second;
+    if (!is_unique) {
+        unique_first  = setUnique(first, false);
+        unique_second = setUnique(second, false);
+    }
 
-    //     if (!is_unique) {
-    //         unique_first  = setUnique(first, false);
-    //         unique_second = setUnique(second, false);
-    //     }
+    size_t out_size =
+        std::max(unique_first.elements(), unique_second.elements());
+    Array<T> out = createEmptyArray<T>(dim4(out_size, 1, 1, 1));
 
-    //     size_t out_size =
-    //         std::max(unique_first.elements(), unique_second.elements());
-    //     Array<T> out = createEmptyArray<T>(dim4(out_size, 1, 1, 1));
+    auto dpl_policy = ::oneapi::dpl::execution::make_device_policy(getQueue());
 
-    //     compute::command_queue queue(getQueue()());
+    auto first_begin = ::oneapi::dpl::begin(*unique_first.get());
+    auto first_end   = first_begin + unique_first.elements();
 
-    //     compute::buffer first_data((*unique_first.get())());
-    //     compute::buffer second_data((*unique_second.get())());
-    //     compute::buffer out_data((*out.get())());
+    auto second_begin = ::oneapi::dpl::begin(*unique_second.get());
+    auto second_end   = second_begin + unique_second.elements();
 
-    //     compute::buffer_iterator<type_t<T>> first_begin(first_data, 0);
-    //     compute::buffer_iterator<type_t<T>> first_end(first_data,
-    //                                                   unique_first.elements());
-    //     compute::buffer_iterator<type_t<T>> second_begin(second_data, 0);
-    //     compute::buffer_iterator<type_t<T>> second_end(
-    //         second_data, unique_second.elements());
-    //     compute::buffer_iterator<type_t<T>> out_begin(out_data, 0);
+    auto out_begin = ::oneapi::dpl::begin(*out.get());
 
-    //     compute::buffer_iterator<type_t<T>> out_end =
-    //     compute::set_intersection(
-    //         first_begin, first_end, second_begin, second_end, out_begin,
-    //         queue);
-
-    //     out.resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
-    //     return out;
-    // } catch (const std::exception &ex) { AF_ERROR(ex.what(),
-    // AF_ERR_INTERNAL); }
+    auto out_end = std::set_intersection(dpl_policy, first_begin, first_end,
+                                         second_begin, second_end, out_begin);
+    out.resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
+    return out;
 }
 
 #define INSTANTIATE(T)                                                        \
