@@ -42,6 +42,22 @@ void coo2dense(Param<T> output, CParam<T> values, CParam<int> rowIdx,
     }
 }
 
+  template <typename T>
+  void printArray(const char *name, const unsigned N, const T *thing) {
+      printf("%s:\n", name);
+      for (int i = 0; i < N; i++)
+        printf("%f, ", thing[i]);
+      printf("\n\n");
+  }
+
+  template <>
+  void printArray(const char *name, const unsigned N, const int *thing) {
+      printf("%s:\n", name);
+      for (int i = 0; i < N; i++)
+        printf("%d, ", thing[i]);
+      printf("\n\n");
+  }
+
 template<typename T>
 void dense2csr(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
                CParam<T> in) {
@@ -64,6 +80,10 @@ void dense2csr(Param<T> values, Param<int> rowIdx, Param<int> colIdx,
         }
     }
     rPtr[dims[0]] = offset;
+
+    printArray("rPtr", values.dims()[0], rPtr);
+    printArray("cPtr", values.dims()[0], cPtr);
+    printArray("vPtr", values.dims()[0], vPtr);
 }
 
 template<typename T>
