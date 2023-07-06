@@ -156,8 +156,8 @@ inline double minval() {
     return -std::numeric_limits<double>::infinity();
 }
 template<>
-inline arrayfire::common::half minval() {
-    return -std::numeric_limits<arrayfire::common::half>::infinity();
+inline sycl::half minval() {
+    return -1 * std::numeric_limits<sycl::half>::infinity();
 }
 
 template<typename T>
