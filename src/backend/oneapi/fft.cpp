@@ -95,7 +95,7 @@ std::vector<std::int64_t> computeStrides(const int rank, const dim4 istrides,
     if (rank == 3) return {offset, istrides[2], istrides[1], istrides[0]};
     if (rank == 4)
         return {offset, istrides[3], istrides[2], istrides[1], istrides[0]};
-    return {offset};
+    return {offset, istrides[0]};
 }
 
 template<::oneapi::mkl::dft::precision precision,
@@ -180,9 +180,14 @@ void fft_inplace(Array<T> &in, const int rank, const bool direction) {
         ::oneapi::mkl::dft::descriptor<precision,
                                        ::oneapi::mkl::dft::domain::COMPLEX>;
 
+    // TODO[STF]: WTF
+    // getOffset() for s0 throwing Invalid Descriptor when targeting gpu
+    // on CPU, results are wrong but does not throw
+    // strides not working? TODO: test standalone oneMKL
+    // perhaps in.getDataDims() needed instead of in.dims()?
     std::vector<std::int64_t> fft_input_strides =
-        computeStrides(rank, istrides, in.getOffset());
-
+        computeStrides(rank, istrides, 0);
+    // computeStrides(rank, istrides, in.getOffset()); //TODO[STF]: WTF,
     int batch = 1;
     for (int i = rank; i < 4; i++) { batch *= idims[i]; }
 
