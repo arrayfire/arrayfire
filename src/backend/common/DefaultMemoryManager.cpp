@@ -140,10 +140,19 @@ float DefaultMemoryManager::getMemoryPressure() {
     }
 }
 
-bool DefaultMemoryManager::jitTreeExceedsMemoryPressure(size_t bytes) {
+bool DefaultMemoryManager::jitTreeExceedsMemoryPressure(
+    size_t jit_tree_buffer_bytes) {
     lock_guard_t lock(this->memory_mutex);
     memory_info &current = this->getCurrentMemoryInfo();
-    return 2 * bytes > current.lock_bytes;
+    if (current.lock_bytes > 0.25f * current.max_bytes) {
+        /// Evaluate JIT if half of all locked buffers are locked by this JIT
+        /// tree
+        return jit_tree_buffer_bytes > current.lock_bytes * 0.5f;
+    } else {
+        /// Evaluate if this JIT Tree accounts for 10% of total memory on the
+        /// device
+        return jit_tree_buffer_bytes > 0.10f * current.max_bytes;
+    }
 }
 
 void *DefaultMemoryManager::alloc(bool user_lock, const unsigned ndims,
