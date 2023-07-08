@@ -28,15 +28,12 @@
 
 #include <handle.hpp>
 
-
 namespace arrayfire {
 namespace oneapi {
 
 using namespace common;
 
-
 #define P(exp) af_print_array_gen(#exp, getHandle(exp), 2)
-
 
 // Partial template specialization of sparseConvertDenseToStorage for COO
 // However, template specialization is not allowed
@@ -75,7 +72,7 @@ SparseArray<T> sparseConvertDenseToStorage(const Array<T> &in_) {
     SparseArray<T> sparse_ = createEmptySparseArray<T>(in_.dims(), nNZ, stype);
     sparse_.eval();
 
-    Array<T> &values = sparse_.getValues();
+    Array<T> &values   = sparse_.getValues();
     Array<int> &rowIdx = sparse_.getRowIdx();
     Array<int> &colIdx = sparse_.getColIdx();
 
@@ -147,25 +144,25 @@ SparseArray<T> sparseConvertStorageToStorage(const SparseArray<T> &in) {
         const Array<int> &irowIdx = in.getRowIdx();
         const Array<int> &icolIdx = in.getColIdx();
 
-        kernel::csr2coo<T>(ovalues, orowIdx, ocolIdx, ivalues, irowIdx,
-                           icolIdx, index);
+        kernel::csr2coo<T>(ovalues, orowIdx, ocolIdx, ivalues, irowIdx, icolIdx,
+                           index);
 
     } else if (src == AF_STORAGE_COO && dest == AF_STORAGE_CSR) {
-        // Array<int> index = range<int>(in.getNNZ(), 0);
-        // index.eval();
+        Array<int> index = range<int>(in.getNNZ(), 0);
+        index.eval();
 
-        // Array<T> &ovalues         = converted.getValues();
-        // Array<int> &orowIdx       = converted.getRowIdx();
-        // Array<int> &ocolIdx       = converted.getColIdx();
-        // const Array<T> &ivalues   = in.getValues();
-        // const Array<int> &irowIdx = in.getRowIdx();
-        // const Array<int> &icolIdx = in.getColIdx();
+        Array<T> &ovalues         = converted.getValues();
+        Array<int> &orowIdx       = converted.getRowIdx();
+        Array<int> &ocolIdx       = converted.getColIdx();
+        const Array<T> &ivalues   = in.getValues();
+        const Array<int> &irowIdx = in.getRowIdx();
+        const Array<int> &icolIdx = in.getColIdx();
 
-        // Array<int> rowCopy = copyArray<int>(irowIdx);
-        // rowCopy.eval();
+        Array<int> rowCopy = copyArray<int>(irowIdx);
+        rowCopy.eval();
 
-        // kernel::coo2csr<T>(ovalues, orowIdx, ocolIdx, ivalues, irowIdx, icolIdx,
-        //                    index, rowCopy, in.dims()[0]);
+        kernel::coo2csr<T>(ovalues, orowIdx, ocolIdx, ivalues, irowIdx, icolIdx,
+                           index, rowCopy, in.dims()[0]);
 
     } else {
         // Should never come here
