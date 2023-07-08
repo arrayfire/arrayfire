@@ -41,10 +41,24 @@ struct Binary<T, af_add_t> {
 };
 
 template<typename T>
+struct Binary<T, af_sub_t> {
+    static __DH__ T init() { return scalar<T>(0); }
+
+    __DH__ T operator()(T lhs, T rhs) { return lhs - rhs; }
+};
+
+template<typename T>
 struct Binary<T, af_mul_t> {
     static __DH__ T init() { return scalar<T>(1); }
 
     __DH__ T operator()(T lhs, T rhs) { return lhs * rhs; }
+};
+
+template<typename T>
+struct Binary<T, af_div_t> {
+    static __DH__ T init() { return scalar<T>(1); }
+
+    __DH__ T operator()(T lhs, T rhs) { return lhs / rhs; }
 };
 
 template<typename T>
