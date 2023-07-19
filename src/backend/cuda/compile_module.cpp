@@ -39,6 +39,7 @@
 #include <nvrtc_kernel_headers/traits_hpp.hpp>
 #include <nvrtc_kernel_headers/types_hpp.hpp>
 #include <nvrtc_kernel_headers/utility_hpp.hpp>
+#include <nvrtc_kernel_headers/vector_types_h.hpp>
 #include <nvrtc_kernel_headers/vector_functions_h.hpp>
 #include <nvrtc_kernel_headers/version_h.hpp>
 #include <optypes.hpp>
