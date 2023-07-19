@@ -159,12 +159,16 @@ Module compileModule(const string &moduleKey, span<const string> sources,
             "utility",
             "cuda_fp16.hpp",
             "cuda_fp16.h",
+            "vector_types.h",
+            "vector_functions.h",
         };
         constexpr size_t numHeaders = extent<decltype(header_names)>::value;
         array<const char *, numHeaders> headers = {
             "",
             cuda_fp16_hpp,
             cuda_fp16_h,
+            vector_types_h,
+            vector_functions_h,
         };
         static_assert(headers.size() == numHeaders,
                       "headers array contains fewer sources than header_names");
