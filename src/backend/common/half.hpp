@@ -855,25 +855,24 @@ AF_CONSTEXPR __DH__ native_half_t int2half(T value) noexcept {
 template<std::float_round_style R, bool E, typename T>
 AF_CONSTEXPR T half2int(native_half_t value) {
 #ifdef __CUDA_ARCH__
-    AF_IF_CONSTEXPR(std::is_same_v<T, short> || std::is_same_v<T, char> ||
-                    std::is_same_v<T, unsigned char>) {
+    AF_IF_CONSTEXPR(std::is_same<T, short>::value ||
+                    std::is_same<T, char>::value ||
+                    std::is_same<T, unsigned char>::value) {
         return __half2short_rn(value);
     }
-    else AF_IF_CONSTEXPR(std::is_same_v<T, unsigned short>) {
+    else AF_IF_CONSTEXPR(std::is_same<T, unsigned short>::value) {
         return __half2ushort_rn(value);
     }
-    else AF_IF_CONSTEXPR(std::is_same_v<T, long long>) {
+    else AF_IF_CONSTEXPR(std::is_same<T, long long>::value) {
         return __half2ll_rn(value);
     }
-    else AF_IF_CONSTEXPR(std::is_same_v<T, unsigned long long>) {
+    else AF_IF_CONSTEXPR(std::is_same<T, unsigned long long>::value) {
         return __half2ull_rn(value);
     }
-    else AF_IF_CONSTEXPR(std::is_same_v<T, int>) {
+    else AF_IF_CONSTEXPR(std::is_same<T, int>::value) {
         return __half2int_rn(value);
     }
-    else AF_IF_CONSTEXPR(std::is_same_v<T, unsigned>) {
-        return __half2uint_rn(value);
-    }
+    else { return __half2uint_rn(value); }
 #elif defined(AF_ONEAPI)
     return static_cast<T>(value);
 #else

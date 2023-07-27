@@ -70,11 +70,8 @@ constexpr bool isFloating(af::dtype type) {
 
 template<typename T, typename U, typename... Args>
 constexpr bool is_any_of() {
-    if constexpr (!sizeof...(Args)) {
-        return std::is_same_v<T, U>;
-    } else {
-        return std::is_same_v<T, U> || is_any_of<T, Args...>();
-    }
+    AF_IF_CONSTEXPR(!sizeof...(Args)) { return std::is_same<T, U>::value; }
+    else { return std::is_same<T, U>::value || is_any_of<T, Args...>(); }
 }
 
 }  // namespace
