@@ -39,8 +39,8 @@
 #include <nvrtc_kernel_headers/traits_hpp.hpp>
 #include <nvrtc_kernel_headers/types_hpp.hpp>
 #include <nvrtc_kernel_headers/utility_hpp.hpp>
-#include <nvrtc_kernel_headers/vector_types_h.hpp>
 #include <nvrtc_kernel_headers/vector_functions_h.hpp>
+#include <nvrtc_kernel_headers/vector_types_h.hpp>
 #include <nvrtc_kernel_headers/version_h.hpp>
 #include <optypes.hpp>
 #include <platform.hpp>
@@ -157,19 +157,12 @@ Module compileModule(const string &moduleKey, span<const string> sources,
     using namespace arrayfire::cuda;
     if (sourceIsJIT) {
         constexpr const char *header_names[] = {
-            "utility",
-            "cuda_fp16.hpp",
-            "cuda_fp16.h",
-            "vector_types.h",
-            "vector_functions.h",
+            "utility",        "cuda_fp16.hpp",      "cuda_fp16.h",
+            "vector_types.h", "vector_functions.h",
         };
         constexpr size_t numHeaders = extent<decltype(header_names)>::value;
         array<const char *, numHeaders> headers = {
-            "",
-            cuda_fp16_hpp,
-            cuda_fp16_h,
-            vector_types_h,
-            vector_functions_h,
+            "", cuda_fp16_hpp, cuda_fp16_h, vector_types_h, vector_functions_h,
         };
         static_assert(headers.size() == numHeaders,
                       "headers array contains fewer sources than header_names");
