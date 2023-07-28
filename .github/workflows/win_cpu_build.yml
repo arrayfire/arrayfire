@@ -13,7 +13,7 @@ jobs:
         name: CPU (fftw, OpenBLAS, windows-latest)
         runs-on: windows-latest
         env:
-          VCPKG_HASH: f14984af3738e69f197bf0e647a8dca12de92996
+          VCPKG_HASH: 9d47b24eacbd1cd94f139457ef6cd35e5d92cc84
           VCPKG_DEFAULT_TRIPLET: x64-windows
         steps:
             - name: Checkout Repository
