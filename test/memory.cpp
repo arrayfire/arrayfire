@@ -917,6 +917,7 @@ TEST_F(MemoryManagerApi, E2ETest4D) {
 }
 
 TEST_F(MemoryManagerApi, E2ETest4DComplexDouble) {
+    SUPPORTED_TYPE_CHECK(double);
     size_t aSize = 8;
 
     af::array a = af::array(aSize, aSize, aSize, aSize, af::dtype::c64);
@@ -932,6 +933,7 @@ TEST_F(MemoryManagerApi, E2ETest4DComplexDouble) {
 }
 
 TEST_F(MemoryManagerApi, E2ETestMultipleAllocations) {
+    SUPPORTED_TYPE_CHECK(double);
     size_t aSize = 8;
 
     af::array a = af::array(aSize, af::dtype::c64);
