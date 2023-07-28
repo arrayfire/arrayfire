@@ -373,7 +373,12 @@ class PowPrecisionTest : public ::testing::TestWithParam<T> {
         vector<T> hres(1, 0);                                              \
         B.host(&hres[0]);                                                  \
         std::fesetround(FE_TONEAREST);                                     \
-        T gold = (T)std::rint(std::pow((double)param, 2.0));               \
+        T gold;                                                            \
+        if (!af::isDoubleAvailable(af::getDevice())) {                     \
+            gold = (T)std::rint(std::pow((float)param, 2.0f));             \
+        } else {                                                           \
+            gold = (T)std::rint(std::pow((double)param, 2.0));             \
+        }                                                                  \
         ASSERT_EQ(hres[0], gold);                                          \
     }
 

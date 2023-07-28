@@ -559,6 +559,9 @@ TEST_P(ReduceByKeyP, SumDim0) {
     if (noHalfTests(GetParam()->kType_)) {
         GTEST_SKIP() << "Half not supported on this device";
     }
+    if (noDoubleTests(GetParam()->vType_)) {
+        GTEST_SKIP() << "Double not supported on this device";
+    }
     array keyRes, valsReduced;
     sumByKey(keyRes, valsReduced, keys, vals, 0, 0);
 
@@ -572,6 +575,9 @@ TEST_P(ReduceByKeyP, SumDim2) {
     }
     if (noHalfTests(GetParam()->kType_)) {
         GTEST_SKIP() << "Half not supported on this device";
+    }
+    if (noDoubleTests(GetParam()->vType_)) {
+        GTEST_SKIP() << "Double not supported on this device";
     }
     const int ntile = 2;
     vals            = tile(vals, 1, ntile, 1, 1);
