@@ -3,81 +3,82 @@
 
 
 # determine the compiler to use for C++ programs
-# NOTE, a generator may set CMAKE_CXX_COMPILER before
+# NOTE, a generator may set CMAKE_SYCL_COMPILER before
 # loading this file to force a compiler.
-# use environment variable CXX first if defined by user, next use
-# the cmake variable CMAKE_GENERATOR_CXX which can be defined by a generator
+# use environment variable SYCL first if defined by user, next use
+# the cmake variable CMAKE_GENERATOR_SYCL which can be defined by a generator
 # as a default compiler
 # If the internal cmake variable _CMAKE_TOOLCHAIN_PREFIX is set, this is used
 # as prefix for the tools (e.g. arm-elf-g++, arm-elf-ar etc.)
 #
 # Sets the following variables:
-#   CMAKE_CXX_COMPILER
-#   CMAKE_COMPILER_IS_GNUCXX
+#   CMAKE_SYCL_COMPILER
+#   CMAKE_COMPILER_IS_GNUSYCL
 #   CMAKE_AR
 #   CMAKE_RANLIB
 #
 # If not already set before, it also sets
 #   _CMAKE_TOOLCHAIN_PREFIX
 
-include(${CMAKE_ROOT}/Modules/CMakeDetermineCompiler.cmake)
+#list(APPEND CMAKE_MODULE_PATH ${CMAKE_ROOT})
+include(CMakeDetermineCompiler)
 
 # Load system-specific compiler preferences for this language.
-include(Platform/${CMAKE_SYSTEM_NAME}-Determine-CXX OPTIONAL)
-include(Platform/${CMAKE_SYSTEM_NAME}-CXX OPTIONAL)
-if(NOT CMAKE_CXX_COMPILER_NAMES)
-  set(CMAKE_CXX_COMPILER_NAMES CC)
+#include(Platform/${CMAKE_SYSTEM_NAME}-Determine-SYCL OPTIONAL)
+#include(Platform/${CMAKE_SYSTEM_NAME}-SYCL OPTIONAL)
+if(NOT CMAKE_SYCL_COMPILER_NAMES)
+  set(CMAKE_SYCL_COMPILER_NAMES icpx)
 endif()
 
 if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 elseif("${CMAKE_GENERATOR}" MATCHES "Green Hills MULTI")
 elseif("${CMAKE_GENERATOR}" MATCHES "Xcode")
-  set(CMAKE_CXX_COMPILER_XCODE_TYPE sourcecode.cpp.cpp)
-  _cmake_find_compiler_path(CXX)
+  set(CMAKE_SYCL_COMPILER_XCODE_TYPE sourcecode.cpp.cpp)
+  _cmake_find_compiler_path(SYCL)
 else()
-  if(NOT CMAKE_CXX_COMPILER)
-    set(CMAKE_CXX_COMPILER_INIT NOTFOUND)
+  if(NOT CMAKE_SYCL_COMPILER)
+    set(CMAKE_SYCL_COMPILER_INIT NOTFOUND)
 
-    # prefer the environment variable CXX
-    if(NOT $ENV{CXX} STREQUAL "")
-      get_filename_component(CMAKE_CXX_COMPILER_INIT $ENV{CXX} PROGRAM PROGRAM_ARGS CMAKE_CXX_FLAGS_ENV_INIT)
-      if(CMAKE_CXX_FLAGS_ENV_INIT)
-        set(CMAKE_CXX_COMPILER_ARG1 "${CMAKE_CXX_FLAGS_ENV_INIT}" CACHE STRING "Arguments to CXX compiler")
+    # prefer the environment variable SYCL
+    if(NOT $ENV{SYCL} STREQUAL "")
+      get_filename_component(CMAKE_SYCL_COMPILER_INIT $ENV{SYCL} PROGRAM PROGRAM_ARGS CMAKE_SYCL_FLAGS_ENV_INIT)
+      if(CMAKE_SYCL_FLAGS_ENV_INIT)
+        set(CMAKE_SYCL_COMPILER_ARG1 "${CMAKE_SYCL_FLAGS_ENV_INIT}" CACHE STRING "Arguments to SYCL compiler")
       endif()
-      if(NOT EXISTS ${CMAKE_CXX_COMPILER_INIT})
-        message(FATAL_ERROR "Could not find compiler set in environment variable CXX:\n$ENV{CXX}.\n${CMAKE_CXX_COMPILER_INIT}")
+      if(NOT EXISTS ${CMAKE_SYCL_COMPILER_INIT})
+        message(FATAL_ERROR "Could not find compiler set in environment variable SYCL:\n$ENV{SYCL}.\n${CMAKE_SYCL_COMPILER_INIT}")
       endif()
     endif()
 
     # next prefer the generator specified compiler
-    if(CMAKE_GENERATOR_CXX)
-      if(NOT CMAKE_CXX_COMPILER_INIT)
-        set(CMAKE_CXX_COMPILER_INIT ${CMAKE_GENERATOR_CXX})
+    if(CMAKE_GENERATOR_SYCL)
+      if(NOT CMAKE_SYCL_COMPILER_INIT)
+        set(CMAKE_SYCL_COMPILER_INIT ${CMAKE_GENERATOR_SYCL})
       endif()
     endif()
 
     # finally list compilers to try
-    if(NOT CMAKE_CXX_COMPILER_INIT)
-      set(CMAKE_CXX_COMPILER_LIST CC ${_CMAKE_TOOLCHAIN_PREFIX}c++ ${_CMAKE_TOOLCHAIN_PREFIX}g++ aCC cl bcc xlC)
+    if(NOT CMAKE_SYCL_COMPILER_INIT)
+      set(CMAKE_SYCL_COMPILER_LIST icpx icx)
       if(NOT CMAKE_HOST_WIN32)
         # FIXME(#24314): Add support for the GNU-like icpx compiler driver
         # on Windows, first introduced by Intel oneAPI 2023.0.
-        list(APPEND CMAKE_CXX_COMPILER_LIST icpx)
+        list(APPEND CMAKE_SYCL_COMPILER_LIST icpx)
       endif()
-      list(APPEND CMAKE_CXX_COMPILER_LIST icx clang++)
     endif()
 
-    _cmake_find_compiler(CXX)
+    _cmake_find_compiler(SYCL)
   else()
-    _cmake_find_compiler_path(CXX)
+    _cmake_find_compiler_path(SYCL)
   endif()
-  mark_as_advanced(CMAKE_CXX_COMPILER)
+  mark_as_advanced(CMAKE_SYCL_COMPILER)
 
   # Each entry in this list is a set of extra flags to try
   # adding to the compile line to see if it helps produce
   # a valid identification file.
-  set(CMAKE_CXX_COMPILER_ID_TEST_FLAGS_FIRST)
-  set(CMAKE_CXX_COMPILER_ID_TEST_FLAGS
+  set(CMAKE_SYCL_COMPILER_ID_TEST_FLAGS_FIRST)
+  set(CMAKE_SYCL_COMPILER_ID_TEST_FLAGS
+    "-fsycl"
     # Try compiling to an object file only.
     "-c"
     # IAR does not detect language automatically
@@ -94,64 +95,65 @@ else()
     )
 endif()
 
-if(CMAKE_CXX_COMPILER_TARGET)
-  set(CMAKE_CXX_COMPILER_ID_TEST_FLAGS_FIRST "-c --target=${CMAKE_CXX_COMPILER_TARGET}")
+if(CMAKE_SYCL_COMPILER_TARGET)
+  set(CMAKE_SYCL_COMPILER_ID_TEST_FLAGS_FIRST "-c --target=${CMAKE_SYCL_COMPILER_TARGET}")
 endif()
 
 # Build a small source file to identify the compiler.
-if(NOT CMAKE_CXX_COMPILER_ID_RUN)
-  set(CMAKE_CXX_COMPILER_ID_RUN 1)
+if(NOT CMAKE_SYCL_COMPILER_ID_RUN)
+  set(CMAKE_SYCL_COMPILER_ID_RUN 1)
 
   # Try to identify the compiler.
-  set(CMAKE_CXX_COMPILER_ID)
-  set(CMAKE_CXX_PLATFORM_ID)
+  set(CMAKE_SYCL_COMPILER_ID)
+  set(CMAKE_SYCL_PLATFORM_ID)
   file(READ ${CMAKE_ROOT}/Modules/CMakePlatformId.h.in
-    CMAKE_CXX_COMPILER_ID_PLATFORM_CONTENT)
+    CMAKE_SYCL_COMPILER_ID_PLATFORM_CONTENT)
 
   # The IAR compiler produces weird output.
   # See https://gitlab.kitware.com/cmake/cmake/-/issues/10176#note_153591
-  list(APPEND CMAKE_CXX_COMPILER_ID_VENDORS IAR)
-  set(CMAKE_CXX_COMPILER_ID_VENDOR_FLAGS_IAR )
-  set(CMAKE_CXX_COMPILER_ID_VENDOR_REGEX_IAR "IAR .+ Compiler")
+  list(APPEND CMAKE_SYCL_COMPILER_ID_VENDORS IAR)
+  set(CMAKE_SYCL_COMPILER_ID_VENDOR_FLAGS_IAR )
+  set(CMAKE_SYCL_COMPILER_ID_VENDOR_REGEX_IAR "IAR .+ Compiler")
 
   # Match the link line from xcodebuild output of the form
   #  Ld ...
   #      ...
-  #      /path/to/cc ...CompilerIdCXX/...
+  #      /path/to/cc ...CompilerIdSYCL/...
   # to extract the compiler front-end for the language.
-  set(CMAKE_CXX_COMPILER_ID_TOOL_MATCH_REGEX "\nLd[^\n]*(\n[ \t]+[^\n]*)*\n[ \t]+([^ \t\r\n]+)[^\r\n]*-o[^\r\n]*CompilerIdCXX/(\\./)?(CompilerIdCXX.(framework|xctest|build/[^ \t\r\n]+)/)?CompilerIdCXX[ \t\n\\\"]")
-  set(CMAKE_CXX_COMPILER_ID_TOOL_MATCH_INDEX 2)
+  set(CMAKE_SYCL_COMPILER_ID_TOOL_MATCH_REGEX "\nLd[^\n]*(\n[ \t]+[^\n]*)*\n[ \t]+([^ \t\r\n]+)[^\r\n]*-o[^\r\n]*CompilerIdSYCL/(\\./)?(CompilerIdSYCL.(framework|xctest|build/[^ \t\r\n]+)/)?CompilerIdSYCL[ \t\n\\\"]")
+  set(CMAKE_SYCL_COMPILER_ID_TOOL_MATCH_INDEX 2)
 
   include(${CMAKE_ROOT}/Modules/CMakeDetermineCompilerId.cmake)
-  CMAKE_DETERMINE_COMPILER_ID(CXX CXXFLAGS CMakeCXXCompilerId.cpp)
+  set(SYCLFLAGS "-fsycl -Werror")
+  CMAKE_DETERMINE_COMPILER_ID(SYCL SYCLFLAGS CMakeSYCLCompilerId.cpp)
 
-  _cmake_find_compiler_sysroot(CXX)
+  _cmake_find_compiler_sysroot(SYCL)
 
   # Set old compiler and platform id variables.
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_COMPILER_IS_GNUCXX 1)
+  if(CMAKE_SYCL_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_COMPILER_IS_GNUSYCL 1)
   endif()
 else()
-  if(NOT DEFINED CMAKE_CXX_COMPILER_FRONTEND_VARIANT)
-    # Some toolchain files set our internal CMAKE_CXX_COMPILER_ID_RUN
-    # variable but are not aware of CMAKE_CXX_COMPILER_FRONTEND_VARIANT.
+  if(NOT DEFINED CMAKE_SYCL_COMPILER_FRONTEND_VARIANT)
+    # Some toolchain files set our internal CMAKE_SYCL_COMPILER_ID_RUN
+    # variable but are not aware of CMAKE_SYCL_COMPILER_FRONTEND_VARIANT.
     # They pre-date our support for the GNU-like variant targeting the
     # MSVC ABI so we do not consider that here.
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang"
-      OR "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xIntelLLVM")
-      if("x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")
-        set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT "MSVC")
+    if(CMAKE_SYCL_COMPILER_ID STREQUAL "Clang"
+      OR "x${CMAKE_SYCL_COMPILER_ID}" STREQUAL "xIntelLLVM")
+      if("x${CMAKE_SYCL_SIMULATE_ID}" STREQUAL "xMSVC")
+        set(CMAKE_SYCL_COMPILER_FRONTEND_VARIANT "MSVC")
       else()
-        set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT "GNU")
+        set(CMAKE_SYCL_COMPILER_FRONTEND_VARIANT "GNU")
       endif()
     else()
-      set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT "")
+      set(CMAKE_SYCL_COMPILER_FRONTEND_VARIANT "")
     endif()
   endif()
 endif()
 
 if (NOT _CMAKE_TOOLCHAIN_LOCATION)
-  get_filename_component(_CMAKE_TOOLCHAIN_LOCATION "${CMAKE_CXX_COMPILER}" PATH)
+  get_filename_component(_CMAKE_TOOLCHAIN_LOCATION "${CMAKE_SYCL_COMPILER}" PATH)
 endif ()
 
 # if we have a g++ cross compiler, they have usually some prefix, like
@@ -165,18 +167,18 @@ endif ()
 
 if (NOT _CMAKE_TOOLCHAIN_PREFIX)
 
-  if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU|Clang|QCC|LCC")
-    get_filename_component(COMPILER_BASENAME "${CMAKE_CXX_COMPILER}" NAME)
+  if("${CMAKE_SYCL_COMPILER_ID}" MATCHES "GNU|Clang|QCC|LCC")
+    get_filename_component(COMPILER_BASENAME "${CMAKE_SYCL_COMPILER}" NAME)
     if (COMPILER_BASENAME MATCHES "^(.+-)?(clang\\+\\+|[gc]\\+\\+|clang-cl)(-[0-9]+(\\.[0-9]+)*)?(-[^.]+)?(\\.exe)?$")
       set(_CMAKE_TOOLCHAIN_PREFIX ${CMAKE_MATCH_1})
       set(_CMAKE_TOOLCHAIN_SUFFIX ${CMAKE_MATCH_3})
       set(_CMAKE_COMPILER_SUFFIX ${CMAKE_MATCH_5})
-    elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-      if(CMAKE_CXX_COMPILER_TARGET)
-        set(_CMAKE_TOOLCHAIN_PREFIX ${CMAKE_CXX_COMPILER_TARGET}-)
+    elseif("${CMAKE_SYCL_COMPILER_ID}" MATCHES "Clang")
+      if(CMAKE_SYCL_COMPILER_TARGET)
+        set(_CMAKE_TOOLCHAIN_PREFIX ${CMAKE_SYCL_COMPILER_TARGET}-)
       endif()
     elseif(COMPILER_BASENAME MATCHES "QCC(\\.exe)?$")
-      if(CMAKE_CXX_COMPILER_TARGET MATCHES "gcc_nto([a-z0-9]+_[0-9]+|[^_le]+)(le)")
+      if(CMAKE_SYCL_COMPILER_TARGET MATCHES "gcc_nto([a-z0-9]+_[0-9]+|[^_le]+)(le)")
         set(_CMAKE_TOOLCHAIN_PREFIX nto${CMAKE_MATCH_1}-)
       endif()
     endif ()
@@ -186,9 +188,9 @@ if (NOT _CMAKE_TOOLCHAIN_PREFIX)
     if ("${_CMAKE_TOOLCHAIN_PREFIX}" MATCHES "(.+-)?llvm-$")
       set(_CMAKE_TOOLCHAIN_PREFIX ${CMAKE_MATCH_1})
     endif ()
-  elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "TI")
+  elseif("${CMAKE_SYCL_COMPILER_ID}" MATCHES "TI")
     # TI compilers are named e.g. cl6x, cl470 or armcl.exe
-    get_filename_component(COMPILER_BASENAME "${CMAKE_CXX_COMPILER}" NAME)
+    get_filename_component(COMPILER_BASENAME "${CMAKE_SYCL_COMPILER}" NAME)
     if (COMPILER_BASENAME MATCHES "^(.+)?cl([^.]+)?(\\.exe)?$")
       set(_CMAKE_TOOLCHAIN_PREFIX "${CMAKE_MATCH_1}")
       set(_CMAKE_TOOLCHAIN_SUFFIX "${CMAKE_MATCH_2}")
@@ -198,40 +200,40 @@ if (NOT _CMAKE_TOOLCHAIN_PREFIX)
 
 endif ()
 
-set(_CMAKE_PROCESSING_LANGUAGE "CXX")
+set(_CMAKE_PROCESSING_LANGUAGE "SYCL")
 include(CMakeFindBinUtils)
-include(Compiler/${CMAKE_CXX_COMPILER_ID}-FindBinUtils OPTIONAL)
+include(Compiler/${CMAKE_SYCL_COMPILER_ID}-FindBinUtils OPTIONAL)
 unset(_CMAKE_PROCESSING_LANGUAGE)
 
-if(CMAKE_CXX_COMPILER_SYSROOT)
-  string(CONCAT _SET_CMAKE_CXX_COMPILER_SYSROOT
-    "set(CMAKE_CXX_COMPILER_SYSROOT \"${CMAKE_CXX_COMPILER_SYSROOT}\")\n"
-    "set(CMAKE_COMPILER_SYSROOT \"${CMAKE_CXX_COMPILER_SYSROOT}\")")
+if(CMAKE_SYCL_COMPILER_SYSROOT)
+  string(CONCAT _SET_CMAKE_SYCL_COMPILER_SYSROOT
+    "set(CMAKE_SYCL_COMPILER_SYSROOT \"${CMAKE_SYCL_COMPILER_SYSROOT}\")\n"
+    "set(CMAKE_COMPILER_SYSROOT \"${CMAKE_SYCL_COMPILER_SYSROOT}\")")
 else()
-  set(_SET_CMAKE_CXX_COMPILER_SYSROOT "")
+  set(_SET_CMAKE_SYCL_COMPILER_SYSROOT "")
 endif()
 
-if(CMAKE_CXX_COMPILER_ARCHITECTURE_ID)
-  set(_SET_CMAKE_CXX_COMPILER_ARCHITECTURE_ID
-    "set(CMAKE_CXX_COMPILER_ARCHITECTURE_ID ${CMAKE_CXX_COMPILER_ARCHITECTURE_ID})")
+if(CMAKE_SYCL_COMPILER_ARCHITECTURE_ID)
+  set(_SET_CMAKE_SYCL_COMPILER_ARCHITECTURE_ID
+    "set(CMAKE_SYCL_COMPILER_ARCHITECTURE_ID ${CMAKE_SYCL_COMPILER_ARCHITECTURE_ID})")
 else()
-  set(_SET_CMAKE_CXX_COMPILER_ARCHITECTURE_ID "")
+  set(_SET_CMAKE_SYCL_COMPILER_ARCHITECTURE_ID "")
 endif()
 
-if(MSVC_CXX_ARCHITECTURE_ID)
-  set(SET_MSVC_CXX_ARCHITECTURE_ID
-    "set(MSVC_CXX_ARCHITECTURE_ID ${MSVC_CXX_ARCHITECTURE_ID})")
+if(MSVC_SYCL_ARCHITECTURE_ID)
+  set(SET_MSVC_SYCL_ARCHITECTURE_ID
+    "set(MSVC_SYCL_ARCHITECTURE_ID ${MSVC_SYCL_ARCHITECTURE_ID})")
 endif()
 
-if(CMAKE_CXX_XCODE_ARCHS)
+if(CMAKE_SYCL_XCODE_ARCHS)
   set(SET_CMAKE_XCODE_ARCHS
-    "set(CMAKE_XCODE_ARCHS \"${CMAKE_CXX_XCODE_ARCHS}\")")
+    "set(CMAKE_XCODE_ARCHS \"${CMAKE_SYCL_XCODE_ARCHS}\")")
 endif()
 
 # configure all variables set in this file
-configure_file(${CMAKE_ROOT}/Modules/CMakeCXXCompiler.cmake.in
-  ${CMAKE_PLATFORM_INFO_DIR}/CMakeCXXCompiler.cmake
+configure_file(${ArrayFire_SOURCE_DIR}/CMakeModules/CMakeSYCLCompiler.cmake.in
+  ${CMAKE_PLATFORM_INFO_DIR}/CMakeSYCLCompiler.cmake
   @ONLY
   )
 
-set(CMAKE_CXX_COMPILER_ENV_VAR "CXX")
+set(CMAKE_SYCL_COMPILER_ENV_VAR "SYCL")

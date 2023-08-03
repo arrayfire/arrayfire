@@ -2,10 +2,10 @@
 # file Copyright.txt or https://cmake.org/licensing for details.
 
 
-if(CMAKE_CXX_COMPILER_FORCED)
+if(CMAKE_SYCL_COMPILER_FORCED)
   # The compiler configuration was forced by the user.
   # Assume the user has configured all compiler information.
-  set(CMAKE_CXX_COMPILER_WORKS TRUE)
+  set(CMAKE_SYCL_COMPILER_WORKS TRUE)
   return()
 endif()
 
@@ -18,16 +18,16 @@ if(_CMAKE_FEATURE_DETECTION_TARGET_TYPE)
 endif()
 
 # Remove any cached result from an older CMake version.
-# We now store this in CMakeCXXCompiler.cmake.
-unset(CMAKE_CXX_COMPILER_WORKS CACHE)
+# We now store this in CMakeSYCLCompiler.cmake.
+unset(CMAKE_SYCL_COMPILER_WORKS CACHE)
 
-# Try to identify the ABI and configure it into CMakeCXXCompiler.cmake
-include(${CMAKE_ROOT}/Modules/CMakeDetermineCompilerABI.cmake)
-CMAKE_DETERMINE_COMPILER_ABI(CXX ${CMAKE_ROOT}/Modules/CMakeCXXCompilerABI.cpp)
-if(CMAKE_CXX_ABI_COMPILED)
+# Try to identify the ABI and configure it into CMakeSYCLCompiler.cmake
+include(CMakeDetermineCompilerABI)
+CMAKE_DETERMINE_COMPILER_ABI(SYCL ${ArrayFire_SOURCE_DIR}/CMakeModules/CMakeSYCLCompilerABI.cpp)
+if(CMAKE_SYCL_ABI_COMPILED)
   # The compiler worked so skip dedicated test below.
-  set(CMAKE_CXX_COMPILER_WORKS TRUE)
-  message(STATUS "Check for working CXX compiler: ${CMAKE_CXX_COMPILER} - skipped")
+  set(CMAKE_SYCL_COMPILER_WORKS TRUE)
+  message(STATUS "Check for working SYCL compiler: ${CMAKE_SYCL_COMPILER} - skipped")
 endif()
 
 # This file is used by EnableLanguage in cmGlobalGenerator to
@@ -35,29 +35,29 @@ endif()
 # and link the most basic of programs.   If not, a fatal error
 # is set and cmake stops processing commands and will not generate
 # any makefiles or projects.
-if(NOT CMAKE_CXX_COMPILER_WORKS)
-  PrintTestCompilerStatus("CXX")
+if(NOT CMAKE_SYCL_COMPILER_WORKS)
+  PrintTestCompilerStatus("SYCL")
   __TestCompiler_setTryCompileTargetType()
-  string(CONCAT __TestCompiler_testCXXCompilerSource
+  file(WRITE ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testSYCLCompiler.cxx
     "#ifndef __cplusplus\n"
-    "# error \"The CMAKE_CXX_COMPILER is set to a C compiler\"\n"
+    "# error \"The CMAKE_SYCL_COMPILER is set to a C compiler\"\n"
     "#endif\n"
     "int main(){return 0;}\n")
   # Clear result from normal variable.
-  unset(CMAKE_CXX_COMPILER_WORKS)
+  unset(CMAKE_SYCL_COMPILER_WORKS)
   # Puts test result in cache variable.
-  try_compile(CMAKE_CXX_COMPILER_WORKS
-    SOURCE_FROM_VAR testCXXCompiler.cxx __TestCompiler_testCXXCompilerSource
-    OUTPUT_VARIABLE __CMAKE_CXX_COMPILER_OUTPUT)
-  unset(__TestCompiler_testCXXCompilerSource)
+  try_compile(CMAKE_SYCL_COMPILER_WORKS ${CMAKE_BINARY_DIR}
+    ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/testSYCLCompiler.cxx
+    OUTPUT_VARIABLE __CMAKE_SYCL_COMPILER_OUTPUT)
+  unset(__TestCompiler_testSYCLCompilerSource)
   # Move result from cache to normal variable.
-  set(CMAKE_CXX_COMPILER_WORKS ${CMAKE_CXX_COMPILER_WORKS})
-  unset(CMAKE_CXX_COMPILER_WORKS CACHE)
+  set(CMAKE_SYCL_COMPILER_WORKS ${CMAKE_SYCL_COMPILER_WORKS})
+  unset(CMAKE_SYCL_COMPILER_WORKS CACHE)
   __TestCompiler_restoreTryCompileTargetType()
-  if(NOT CMAKE_CXX_COMPILER_WORKS)
+  if(NOT CMAKE_SYCL_COMPILER_WORKS)
     PrintTestCompilerResult(CHECK_FAIL "broken")
-    string(REPLACE "\n" "\n  " _output "${__CMAKE_CXX_COMPILER_OUTPUT}")
-    message(FATAL_ERROR "The C++ compiler\n  \"${CMAKE_CXX_COMPILER}\"\n"
+    string(REPLACE "\n" "\n  " _output "${__CMAKE_SYCL_COMPILER_OUTPUT}")
+    message(FATAL_ERROR "The C++ compiler\n  \"${CMAKE_SYCL_COMPILER}\"\n"
       "is not able to compile a simple test program.\nIt fails "
       "with the following output:\n  ${_output}\n\n"
       "CMake will not be able to correctly generate this project.")
@@ -66,24 +66,25 @@ if(NOT CMAKE_CXX_COMPILER_WORKS)
 endif()
 
 # Try to identify the compiler features
-include(${CMAKE_ROOT}/Modules/CMakeDetermineCompileFeatures.cmake)
-CMAKE_DETERMINE_COMPILE_FEATURES(CXX)
+include(CMakeDetermineCompileFeatures)
+CMAKE_DETERMINE_COMPILE_FEATURES(SYCL)
 
+set(CMAKE_TRY_COMPILE_CONFIGURATION "")
 # Re-configure to save learned information.
 configure_file(
-  ${CMAKE_ROOT}/Modules/CMakeCXXCompiler.cmake.in
-  ${CMAKE_PLATFORM_INFO_DIR}/CMakeCXXCompiler.cmake
+  ${ArrayFire_SOURCE_DIR}/CMakeModules/CMakeSYCLCompiler.cmake.in
+  ${CMAKE_PLATFORM_INFO_DIR}/CMakeSYCLCompiler.cmake
   @ONLY
-  )
-include(${CMAKE_PLATFORM_INFO_DIR}/CMakeCXXCompiler.cmake)
+)
+include(${CMAKE_PLATFORM_INFO_DIR}/CMakeSYCLCompiler.cmake)
 
-if(CMAKE_CXX_SIZEOF_DATA_PTR)
-  foreach(f ${CMAKE_CXX_ABI_FILES})
+if(CMAKE_SYCL_SIZEOF_DATA_PTR)
+  foreach(f ${CMAKE_SYCL_ABI_FILES})
     include(${f})
   endforeach()
-  unset(CMAKE_CXX_ABI_FILES)
+  unset(CMAKE_SYCL_ABI_FILES)
 endif()
 
 set(CMAKE_TRY_COMPILE_TARGET_TYPE ${__CMAKE_SAVED_TRY_COMPILE_TARGET_TYPE})
 unset(__CMAKE_SAVED_TRY_COMPILE_TARGET_TYPE)
-unset(__CMAKE_CXX_COMPILER_OUTPUT)
+unset(__CMAKE_SYCL_COMPILER_OUTPUT)

@@ -5,6 +5,10 @@
 #The complete license agreement can be obtained at:
 #http:  // arrayfire.com/licenses/BSD-3-Clause
 
+if(AF_BUILD_ONEAPI)
+    enable_language(SYCL)
+endif()
+
 include(InternalUtils)
 include(build_cl2hpp)
 include(FileToString)
@@ -260,6 +264,26 @@ target_sources(afoneapi
     kernel/wrap_dilated.hpp
 )
 
+function(set_sycl_language)
+  foreach(target ${ARGV})
+    set_target_properties(${target}
+      PROPERTIES
+        LINKER_LANGUAGE SYCL)
+
+    get_target_property(TGT_SOURCES ${target} SOURCES)
+    if(NOT TGT_SOURCES)
+      get_target_property(TGT_SOURCES ${target} INTERFACE_SOURCES)
+    endif()
+
+    foreach(FILE ${TGT_SOURCES})
+      get_filename_component(FILE_EXTENSION ${FILE} EXT)
+      if(FILE_EXTENSION STREQUAL ".cpp")
+        set_source_files_properties(${FILE} PROPERTIES LANGUAGE SYCL)
+      endif()
+    endforeach()
+  endforeach()
+endfunction()
+
 set(kernel_src
   ${CMAKE_CURRENT_SOURCE_DIR}/../opencl/kernel/KParam.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../opencl/kernel/jit.cl
@@ -301,10 +325,11 @@ target_include_directories(afoneapi
 
 target_compile_options(afoneapi
   PRIVATE
-    -fsycl
+  $<$<COMPILE_LANGUAGE:SYCL>:
     -fno-sycl-id-queries-fit-in-int
     -sycl-std=2020
-    -fno-sycl-rdc
+    $<$<PLATFORM_ID:Linux>: -fno-sycl-rdc>
+    >
 )
 
 target_compile_definitions(afoneapi
@@ -322,8 +347,6 @@ cmake_host_system_information(RESULT NumberOfThreads
 
 target_link_libraries(afoneapi
   PRIVATE
-    -fsycl
-    -fvisibility-inlines-hidden
     c_api_interface
     cpp_api_interface
     oneapi_sort_by_key
@@ -331,14 +354,20 @@ target_link_libraries(afoneapi
     OpenCL::OpenCL
     OpenCL::cl2hpp
     -fno-sycl-id-queries-fit-in-int
-    -fno-sycl-rdc
-    -fsycl-device-code-split=per_kernel
-    -fsycl-link-huge-device-code
+    $<$<PLATFORM_ID:Linux>:-fsycl-link-huge-device-code>
+    $<$<PLATFORM_ID:Linux>:-fvisibility-inlines-hidden>
+    $<$<PLATFORM_ID:Linux>:-fno-sycl-rdc>
     -fsycl-max-parallel-link-jobs=${NumberOfThreads}
     MKL::MKL_DPCPP
   )
+  set_sycl_language(afcommon_interface
+    oneapi_sort_by_key
+    c_api_interface
+    cpp_api_interface
+    afoneapi)
 
-af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
+
+#af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
 
 install(TARGETS afoneapi
   EXPORT ArrayFireoneAPITargets

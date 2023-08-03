@@ -7,13 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 #pragma once
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wparentheses"
+#endif
 #include <half.hpp>
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
@@ -49,11 +53,20 @@ std::ostream &operator<<(std::ostream &os, const af_half &val);
     do { (void)(expr); } while (0)
 
 namespace aft {
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
 typedef intl intl;
 typedef uintl uintl;
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 }  // namespace aft
 
 using aft::intl;
@@ -630,4 +643,6 @@ void genTestOutputArray(af_array *out_ptr, double val, const unsigned ndims,
                                          const af_array a, const af_array b,
                                          TestOutputArrayInfo *metadata);
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif

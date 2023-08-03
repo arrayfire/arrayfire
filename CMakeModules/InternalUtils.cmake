@@ -39,6 +39,37 @@ check_cxx_compiler_flag(-Rno-debug-disables-optimization has_cxx_debug-disables-
 function(arrayfire_set_default_cxx_flags target)
   target_compile_options(${target}
     PRIVATE
+
+      $<$<BOOL:${CMAKE_SYCL_COMPILER}>:
+        $<$<COMPILE_LANGUAGE:SYCL>:
+                # OpenCL targets need this flag to avoid
+                # ignored attribute warnings in the OpenCL
+                # headers
+                -Wno-ignored-attributes
+                -Wall
+                -Wno-unqualified-std-cast-call
+                -Werror=reorder-ctor
+                #-fp-model precise
+                $<$<BOOL:${AF_WITH_FAST_MATH}>: -ffast-math -fno-errno-math -fno-trapping-math -fno-signed-zeros -mno-ieee-fp>
+                $<$<NOT:$<BOOL:${AF_WITH_FAST_MATH}>>: $<IF:$<PLATFORM_ID:Windows>,/fp=precise,-fp-model=precise>>
+                $<$<CONFIG:Debug>:-Rno-debug-disables-optimization>
+
+                $<$<PLATFORM_ID:Windows>: /wd4251
+                                          /wd4068
+                                          /wd4275
+                                          /wd4668
+                                          /wd4710
+                                          /wd4505
+                                          /we5038
+                                          /bigobj
+                                          /EHsc
+                                          /nologo
+                                          # MSVC incorrectly sets the cplusplus to 199711L even if the compiler supports
+                                          # c++11 features. This flag sets it to the correct standard supported by the
+                                          # compiler
+                                          $<$<BOOL:${cplusplus_define}>:/Zc:__cplusplus>
+                                          $<$<BOOL:${cxx_compliance}>:/permissive-> >
+            >>
       $<$<COMPILE_LANGUAGE:CXX>:
               # C4068: Warnings about unknown pragmas
               # C4668: Warnings about unknown defintions
@@ -53,6 +84,7 @@ function(arrayfire_set_default_cxx_flags target)
                                           /we5038
                                           /bigobj
                                           /EHsc
+                                          /nologo
                                           # MSVC incorrectly sets the cplusplus to 199711L even if the compiler supports
                                           # c++11 features. This flag sets it to the correct standard supported by the
                                           # compiler
