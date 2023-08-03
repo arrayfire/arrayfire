@@ -104,13 +104,7 @@ DeviceManager::DeviceManager()
     // Iterate through platforms, get all available devices and store them
     for (auto& platform : platforms) {
         vector<sycl::device> current_devices;
-        try {
-            current_devices = platform.get_devices();
-        } catch (sycl::exception& err) {
-            printf("DeviceManager::DeviceManager() exception: %s\n",
-                   err.what());
-            throw;
-        }
+        current_devices = platform.get_devices();
         AF_TRACE("Found {} devices on platform {}", current_devices.size(),
                  platform.get_info<sycl::info::platform::name>());
 

@@ -20,6 +20,10 @@ foreach(SBK_TYPE ${SBK_TYPES})
         "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key_impl.hpp"
     )
+
+  set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/kernel/sort_by_key/sort_by_key_impl.cpp"
+    PROPERTIES
+      LANGUAGE SYCL)
   set_target_properties(oneapi_sort_by_key_${SBK_TYPE}
     PROPERTIES
       COMPILE_DEFINITIONS "TYPE=${SBK_TYPE};AFDLL;$<TARGET_PROPERTY:Boost::boost,INTERFACE_COMPILE_DEFINITIONS>"
@@ -41,12 +45,17 @@ foreach(SBK_TYPE ${SBK_TYPES})
       ..
       )
 
+  target_compile_options(oneapi_sort_by_key_${SBK_TYPE}
+    PRIVATE
+      $<$<COMPILE_LANGUAGE:SYCL>: -fno-sycl-id-queries-fit-in-int
+                                  -sycl-std=2020
+                                  $<$<PLATFORM_ID:Linux>: -fno-sycl-rdc>>)
+
   target_include_directories(oneapi_sort_by_key_${SBK_TYPE}
     SYSTEM PRIVATE
       ${span-lite_SOURCE_DIR}/include
       $<TARGET_PROPERTY:Boost::boost,INTERFACE_INCLUDE_DIRECTORIES>)
 
-  target_compile_options(oneapi_sort_by_key_${SBK_TYPE} PUBLIC -fsycl)
   set_target_properties(oneapi_sort_by_key_${SBK_TYPE} PROPERTIES POSITION_INDEPENDENT_CODE ON)
   target_sources(oneapi_sort_by_key
     INTERFACE $<TARGET_OBJECTS:oneapi_sort_by_key_${SBK_TYPE}>)

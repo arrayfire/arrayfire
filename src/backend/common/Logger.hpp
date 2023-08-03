@@ -22,6 +22,7 @@
 /* Intel ICC/ICPC */
 // Fix the warning code here, if any
 #elif defined(__GNUC__) || defined(__GNUG__)
+#pragma GCC diagnostic push
 /* GNU GCC/G++ */
 #elif defined(_MSC_VER)
 /* Microsoft Visual Studio */

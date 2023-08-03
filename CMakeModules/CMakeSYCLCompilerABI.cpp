@@ -3,7 +3,6 @@
 #endif
 
 #include "CMakeCompilerABI.h"
-#include <sycl/sycl.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -15,17 +14,6 @@ int main(int argc, char* argv[])
   require += info_abi[argc];
 #endif
   static_cast<void>(argv);
-
-  int count = 0;
-  auto platforms = sycl::platform::get_platforms();
-  for(sycl::platform &platform : platforms) {
-    count += platform.get_devices().size();
-  }
-
-  if(count == 0) {
-    std::fprintf(stderr, "No SYCL devices found.\n");
-    return -1;
-  }
 
   return require;
 }
