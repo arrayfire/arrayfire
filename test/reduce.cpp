@@ -411,6 +411,9 @@ class ReduceByKeyP : public ::testing::TestWithParam<reduce_by_key_params *> {
         if (noHalfTests(params->vType_)) {
             GTEST_SKIP() << "Half not supported on this device";
         }
+        if (noDoubleTests(GetParam()->vType_)) {
+            GTEST_SKIP() << "Double not supported on this device";
+        }
 
         keys = ptrToArray(params->iSize, params->iKeys_, params->kType_);
         vals = ptrToArray(params->iSize, params->iVals_, params->vType_);
@@ -1967,6 +1970,9 @@ class RaggedReduceMaxRangeP : public ::testing::TestWithParam<ragged_params *> {
         if (noHalfTests(params->vType_)) {
             GTEST_SKIP() << "Half not supported on this device";
         }
+        if (noDoubleTests(GetParam()->vType_)) {
+            GTEST_SKIP() << "Double not supported on this device";
+        }
 
         const size_t rdim_size = params->reduceDimLen_;
         const int dim          = params->reduceDim_;
@@ -2324,6 +2330,7 @@ TEST(Reduce, Test_Sum_Global_Array_nanval) {
 
 TEST(Reduce, nanval_issue_3255) {
     SKIP_IF_FAST_MATH_ENABLED();
+    SUPPORTED_TYPE_CHECK(double);
     char *info_str;
     af_array ikeys, ivals, okeys, ovals;
     dim_t dims[1] = {8};
