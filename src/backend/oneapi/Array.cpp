@@ -196,8 +196,7 @@ Array<T>::Array(const dim4 &dims, const dim4 &strides, dim_t offset_,
         data = memAlloc<T>(info.elements());
         getQueue()
             .submit([&](sycl::handler &h) {
-                h.copy(in_data,
-                       data->get_access(h, sycl::range(info.elements())));
+                h.copy(in_data, data->get_access(h, sycl::range(info.total())));
             })
             .wait();
     }
