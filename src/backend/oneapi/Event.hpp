@@ -17,33 +17,32 @@ namespace arrayfire {
 namespace oneapi {
 class OneAPIEventPolicy {
    public:
-    using EventType = sycl::event;
+    using EventType = sycl::event *;
     using QueueType = sycl::queue;
-    // using ErrorType = sycl::exception; //does this make sense
     using ErrorType = int;
 
     static ErrorType createAndMarkEvent(EventType *e) noexcept {
-        // Events are created when you mark them
+        *e = new sycl::event;
         return 0;
     }
 
     static ErrorType markEvent(EventType *e, QueueType stream) noexcept {
-        // return clEnqueueMarkerWithWaitList(stream, 0, nullptr, e);
+        **e = stream.ext_oneapi_submit_barrier();
         return 0;
     }
 
     static ErrorType waitForEvent(EventType *e, QueueType stream) noexcept {
-        // return clEnqueueMarkerWithWaitList(stream, 1, e, nullptr);
+        stream.ext_oneapi_submit_barrier({**e});
         return 0;
     }
 
     static ErrorType syncForEvent(EventType *e) noexcept {
-        // return clWaitForEvents(1, e);
+        (*e)->wait();
         return 0;
     }
 
     static ErrorType destroyEvent(EventType *e) noexcept {
-        // return clReleaseEvent(*e);
+        delete *e;
         return 0;
     }
 };
