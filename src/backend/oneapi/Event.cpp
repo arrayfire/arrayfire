@@ -24,56 +24,50 @@ namespace arrayfire {
 namespace oneapi {
 /// \brief Creates a new event and marks it in the queue
 Event makeEvent(sycl::queue& queue) {
-    ONEAPI_NOT_SUPPORTED("makeEvent");
-    return Event();
+    Event e;
+    if (e.create() == 0) { e.mark(queue); }
+    return e;
 }
 
 af_event createEvent() {
-    ONEAPI_NOT_SUPPORTED("");
-    return 0;
-    // auto e = make_unique<Event>();
-    // // Ensure the default CL command queue is initialized
-    // getQueue();
-    // if (e->create() != CL_SUCCESS) {
-    //     AF_ERROR("Could not create event", AF_ERR_RUNTIME);
-    // }
-    // Event& ref = *e.release();
-    // return getHandle(ref);
+    auto e = make_unique<Event>();
+    // Ensure the default CL command queue is initialized
+    getQueue();
+    if (e->create() != 0) {
+        AF_ERROR("Could not create event", AF_ERR_RUNTIME);
+    }
+    Event& ref = *e.release();
+    return getHandle(ref);
 }
 
 void markEventOnActiveQueue(af_event eventHandle) {
-    ONEAPI_NOT_SUPPORTED("");
-    // Event& event = getEvent(eventHandle);
-    //// Use the currently-active stream
-    // if (event.mark(getQueue()()) != CL_SUCCESS) {
-    //    AF_ERROR("Could not mark event on active queue", AF_ERR_RUNTIME);
-    //}
+    Event& event = getEvent(eventHandle);
+    // Use the currently-active stream
+    if (event.mark(getQueue()) != 0) {
+        AF_ERROR("Could not mark event on active queue", AF_ERR_RUNTIME);
+    }
 }
 
 void enqueueWaitOnActiveQueue(af_event eventHandle) {
-    ONEAPI_NOT_SUPPORTED("");
-    // Event& event = getEvent(eventHandle);
-    //// Use the currently-active stream
-    // if (event.enqueueWait(getQueue()()) != CL_SUCCESS) {
-    //    AF_ERROR("Could not enqueue wait on active queue for event",
-    //             AF_ERR_RUNTIME);
-    //}
+    Event& event = getEvent(eventHandle);
+    // Use the currently-active stream
+    if (event.enqueueWait(getQueue()) != 0) {
+        AF_ERROR("Could not enqueue wait on active queue for event",
+                 AF_ERR_RUNTIME);
+    }
 }
 
 void block(af_event eventHandle) {
-    ONEAPI_NOT_SUPPORTED("");
-    // Event& event = getEvent(eventHandle);
-    // if (event.block() != CL_SUCCESS) {
-    //    AF_ERROR("Could not block on active queue for event", AF_ERR_RUNTIME);
-    //}
+    Event& event = getEvent(eventHandle);
+    if (event.block() != 0) {
+        AF_ERROR("Could not block on active queue for event", AF_ERR_RUNTIME);
+    }
 }
 
 af_event createAndMarkEvent() {
-    ONEAPI_NOT_SUPPORTED("");
-    return 0;
-    // af_event handle = createEvent();
-    // markEventOnActiveQueue(handle);
-    // return handle;
+    af_event handle = createEvent();
+    markEventOnActiveQueue(handle);
+    return handle;
 }
 
 }  // namespace oneapi
