@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <af/oneapi.h>
+#include <af/sycl.h>
 
 #include <sycl/sycl.hpp>
 
@@ -99,7 +99,7 @@ std::string getPlatformName(const sycl::device& device);
 
 int setDevice(int device);
 
-void addDeviceContext(sycl::device& dev, sycl::context& ctx, sycl::queue& que);
+void addDeviceContext(sycl::queue& que);
 
 void setDeviceContext(sycl::device& dev, sycl::context& ctx);
 

@@ -76,7 +76,7 @@ class DeviceManager {
 
     friend int getDeviceCount() noexcept;
 
-    // friend int getDeviceIdFromNativeId(cl_device_id id);
+    friend int getDeviceIdFromNativeDevice(sycl::device dev);
 
     friend const sycl::context& getContext();
 
@@ -101,8 +101,7 @@ class DeviceManager {
 
     friend int setDevice(int device);
 
-    friend void addDeviceContext(sycl::device& dev, sycl::context& ctx,
-                                 sycl::queue& que);
+    friend void addDeviceContext(sycl::queue& que);
 
     friend void setDeviceContext(sycl::device& dev, sycl::context& ctx);
 

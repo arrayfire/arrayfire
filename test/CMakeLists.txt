@@ -188,7 +188,7 @@ target_link_libraries(arrayfire_test
 # 'BACKENDS'    Backends to target for this test. If not set then the test will
 #               compiled againat all backends
 function(make_test)
-  set(options CXX11 SERIAL USE_MMIO NO_ARRAYFIRE_TEST)
+  set(options CXX11 CXX17 SERIAL USE_MMIO NO_ARRAYFIRE_TEST)
   set(single_args SRC)
   set(multi_args LIBRARIES DEFINITIONS BACKENDS)
   cmake_parse_arguments(mt_args "${options}" "${single_args}" "${multi_args}" ${ARGN})
@@ -238,6 +238,11 @@ function(make_test)
         PROPERTIES
           CXX_STANDARD 11)
     endif(${mt_args_CXX11})
+    if(${mt_args_CXX17})
+      set_target_properties(${target}
+        PROPERTIES
+          CXX_STANDARD 17)
+    endif(${mt_args_CXX17})
 
     set_target_properties(${target}
       PROPERTIES
@@ -368,6 +373,27 @@ if(OpenCL_FOUND)
             BACKENDS "opencl"
             NO_ARRAYFIRE_TEST
             CXX11)
+endif()
+
+if(AF_BUILD_ONEAPI)
+  make_test(SRC interop_sycl_external_context_snippet.cpp
+            LIBRARIES -fsycl
+            BACKENDS "oneapi"
+            NO_ARRAYFIRE_TEST
+            CXX17)
+target_compile_options(test_interop_sycl_external_context_snippet_oneapi
+  PUBLIC
+    -fsycl
+)
+  make_test(SRC interop_sycl_custom_kernel_snippet.cpp
+            LIBRARIES -fsycl
+            BACKENDS "oneapi"
+            NO_ARRAYFIRE_TEST
+            CXX17)
+target_compile_options(test_interop_sycl_custom_kernel_snippet_oneapi
+  PUBLIC
+    -fsycl
+)
 endif()
 
 if(CUDA_FOUND)

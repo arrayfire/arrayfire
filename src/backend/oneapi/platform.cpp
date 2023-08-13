@@ -22,7 +22,7 @@
 #include <errorcodes.hpp>
 #include <memory.hpp>
 #include <onefft.hpp>
-#include <af/oneapi.h>
+#include <af/sycl.h>
 #include <af/version.h>
 
 #ifdef OS_MAC
@@ -122,21 +122,21 @@ inline string platformMap(string& platStr) {
     }
 }
 
-af_oneapi_platform getPlatformEnum(sycl::device dev) {
+afsycl_platform getPlatformEnum(sycl::device dev) {
     string pname = getPlatformName(dev);
     if (verify_present(pname, "AMD"))
-        return AF_ONEAPI_PLATFORM_AMD;
+        return AF_SYCL_PLATFORM_AMD;
     else if (verify_present(pname, "NVIDIA"))
-        return AF_ONEAPI_PLATFORM_NVIDIA;
+        return AF_SYCL_PLATFORM_NVIDIA;
     else if (verify_present(pname, "INTEL"))
-        return AF_ONEAPI_PLATFORM_INTEL;
+        return AF_SYCL_PLATFORM_INTEL;
     else if (verify_present(pname, "APPLE"))
-        return AF_ONEAPI_PLATFORM_APPLE;
+        return AF_SYCL_PLATFORM_APPLE;
     else if (verify_present(pname, "BEIGNET"))
-        return AF_ONEAPI_PLATFORM_BEIGNET;
+        return AF_SYCL_PLATFORM_BEIGNET;
     else if (verify_present(pname, "POCL"))
-        return AF_ONEAPI_PLATFORM_POCL;
-    return AF_ONEAPI_PLATFORM_UNKNOWN;
+        return AF_SYCL_PLATFORM_POCL;
+    return AF_SYCL_PLATFORM_UNKNOWN;
 }
 
 string getDeviceInfo() noexcept {
@@ -249,6 +249,18 @@ int getDeviceIdFromNativeId(cl_device_id id) {
     return -1;
 }
 */
+
+int getDeviceIdFromNativeDevice(sycl::device dev) {
+    DeviceManager& mngr = DeviceManager::getInstance();
+
+    common::lock_guard_t lock(mngr.deviceMutex);
+
+    int devId = 0;
+    for (devId = 0; devId < mngr.mDevices.size(); ++devId) {
+        if (dev == *mngr.mDevices[devId]) { break; }
+    }
+    return devId;
+}
 
 int getActiveDeviceType() {
     device_id_t& devId = tlocalActiveDeviceId();
@@ -415,11 +427,13 @@ void sync(int device) {
     setDevice(currDevice);
 }
 
-void addDeviceContext(sycl::device& dev, sycl::context& ctx, sycl::queue& que) {
+void addDeviceContext(sycl::queue& que) {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
     int nDevices = 0;
     {
+        sycl::context ctx = que.get_context();
+        sycl::device dev  = que.get_device();
         common::lock_guard_t lock(devMngr.deviceMutex);
 
         auto tDevice  = make_unique<sycl::device>(dev);
@@ -648,72 +662,65 @@ PlanCache& fftManager() { return *oneFFTManager(getActiveDeviceId()); }
 }  // namespace oneapi
 }  // namespace arrayfire
 
-/*
-//TODO: select which external api functions to expose and add to
-header+implement
+using namespace arrayfire::oneapi;
 
-using namespace oneapi;
-
-af_err afcl_get_device_type(afcl_device_type* res) {
+af_err afsycl_get_device_type(afsycl_device_type* res) {
     try {
-        *res = static_cast<afcl_device_type>(getActiveDeviceType());
+        *res = static_cast<afsycl_device_type>(getActiveDeviceType());
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afcl_get_platform(afcl_platform* res) {
+af_err afsycl_get_platform(afsycl_platform* res) {
     try {
-        *res = static_cast<afcl_platform>(getActivePlatform());
+        *res = static_cast<afsycl_platform>(getActivePlatform());
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afcl_get_context(cl_context* ctx, const bool retain) {
+af_err afsycl_get_context(sycl::context* ctx) {
     try {
-        *ctx = getContext()();
-        if (retain) { clRetainContext(*ctx); }
+        *ctx = getContext();
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afcl_get_queue(cl_command_queue* queue, const bool retain) {
+af_err afsycl_get_queue(sycl::queue* queue) {
     try {
-        *queue = getQueue()();
-        if (retain) { clRetainCommandQueue(*queue); }
+        *queue = getQueue();
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afcl_get_device_id(cl_device_id* id) {
+af_err afsycl_get_device(sycl::device* dev) {
     try {
-        *id = getDevice()();
+        *dev = getDevice();
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afcl_set_device_id(cl_device_id id) {
+af_err afsycl_set_device(sycl::device dev) {
     try {
-        setDevice(getDeviceIdFromNativeId(id));
+        setDevice(getDeviceIdFromNativeDevice(dev));
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afcl_add_device_context(cl_device_id dev, cl_context ctx,
-                               cl_command_queue que) {
+af_err afsycl_add_queue(sycl::queue que) {
     try {
-        addDeviceContext(dev, ctx, que);
+        addDeviceContext(que);
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afcl_set_device_context(cl_device_id dev, cl_context ctx) {
+af_err afsycl_set_device_context(sycl::device dev, sycl::context ctx) {
     try {
         setDeviceContext(dev, ctx);
     }
@@ -721,11 +728,10 @@ af_err afcl_set_device_context(cl_device_id dev, cl_context ctx) {
     return AF_SUCCESS;
 }
 
-af_err afcl_delete_device_context(cl_device_id dev, cl_context ctx) {
+af_err afsycl_delete_device_context(sycl::device dev, sycl::context ctx) {
     try {
         removeDeviceContext(dev, ctx);
     }
     CATCHALL;
     return AF_SUCCESS;
 }
-*/
