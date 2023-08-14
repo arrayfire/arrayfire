@@ -63,7 +63,7 @@ jobs:
         needs: [clang-format, documentation]
         env:
           NINJA_VER: 1.10.2
-          CMAKE_VER: 3.10.2
+          CMAKE_VER: 3.16.3
         strategy:
             fail-fast: false
             matrix:
@@ -93,7 +93,7 @@ jobs:
                   chmod +x ninja
                   ${GITHUB_WORKSPACE}/ninja --version
 
-            - name: Download CMake 3.10.2 for Linux
+            - name: Download CMake 3.16.3 for Linux
               if: matrix.os != 'macos-latest'
               env:
                   OS_NAME: ${{ matrix.os }}

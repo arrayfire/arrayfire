@@ -5,7 +5,11 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.10.2)
+if(AF_BUILD_ONEAPI)
+  cmake_minimum_required(VERSION 3.20)
+else()
+  cmake_minimum_required(VERSION 3.16.3)
+endif()
 include(CheckLanguage)
 
 include(CMakeModules/AF_vcpkg_options.cmake)
