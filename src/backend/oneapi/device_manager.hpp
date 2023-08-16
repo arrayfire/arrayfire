@@ -105,11 +105,11 @@ class DeviceManager {
 
     friend void setDeviceContext(sycl::device& dev, sycl::context& ctx);
 
-    friend void removeDeviceContext(sycl::device& dev, sycl::context& ctx);
+    friend void removeDevice(sycl::device& dev);
 
-    friend int getActiveDeviceType();
+    friend sycl::info::device_type getActiveDeviceType();
 
-    friend int getActivePlatform();
+    friend sycl::platform getActivePlatform();
 
    public:
     static const int MAX_DEVICES = 32;
@@ -140,8 +140,8 @@ class DeviceManager {
     std::vector<std::unique_ptr<sycl::queue>> mQueues;
     std::vector<bool> mIsGLSharingOn;
     std::vector<std::string> mBaseOpenCLBuildFlags;
-    std::vector<int> mDeviceTypes;
-    std::vector<int> mPlatforms;
+    std::vector<sycl::info::device_type> mDeviceTypes;
+    std::vector<sycl::platform> mPlatforms;
     unsigned mUserDeviceOffset;
 
     std::unique_ptr<arrayfire::common::ForgeManager> fgMngr;

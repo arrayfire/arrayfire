@@ -122,23 +122,6 @@ inline string platformMap(string& platStr) {
     }
 }
 
-afoneapi_platform getPlatformEnum(sycl::device dev) {
-    string pname = getPlatformName(dev);
-    if (verify_present(pname, "AMD"))
-        return AF_SYCL_PLATFORM_AMD;
-    else if (verify_present(pname, "NVIDIA"))
-        return AF_SYCL_PLATFORM_NVIDIA;
-    else if (verify_present(pname, "INTEL"))
-        return AF_SYCL_PLATFORM_INTEL;
-    else if (verify_present(pname, "APPLE"))
-        return AF_SYCL_PLATFORM_APPLE;
-    else if (verify_present(pname, "BEIGNET"))
-        return AF_SYCL_PLATFORM_BEIGNET;
-    else if (verify_present(pname, "POCL"))
-        return AF_SYCL_PLATFORM_POCL;
-    return AF_SYCL_PLATFORM_UNKNOWN;
-}
-
 string getDeviceInfo() noexcept {
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION << " (oneAPI, " << get_system()
@@ -150,8 +133,6 @@ string getDeviceInfo() noexcept {
         common::lock_guard_t lock(devMngr.deviceMutex);
         unsigned nDevices = 0;
         for (auto& device : devMngr.mDevices) {
-            // const Platform platform(device->getInfo<CL_DEVICE_PLATFORM>());
-
             string dstr = device->get_info<sycl::info::device::name>();
             bool show_braces =
                 (static_cast<unsigned>(getActiveDeviceId()) == nDevices);
@@ -233,36 +214,18 @@ unsigned getActiveDeviceId() {
     return get<1>(tlocalActiveDeviceId());
 }
 
-/*
-int getDeviceIdFromNativeId(cl_device_id id) {
-    DeviceManager& devMngr = DeviceManager::getInstance();
-
-    common::lock_guard_t lock(devMngr.deviceMutex);
-
-    int nDevices = static_cast<int>(devMngr.mDevices.size());
-    int devId    = 0;
-    for (devId = 0; devId < nDevices; ++devId) {
-        //TODO: how to get cl_device_id from sycl::device
-        if (id == devMngr.mDevices[devId]->get()) { return devId; }
-    }
-    // TODO: reasonable if no match??
-    return -1;
-}
-*/
-
 int getDeviceIdFromNativeDevice(sycl::device dev) {
     DeviceManager& mngr = DeviceManager::getInstance();
 
     common::lock_guard_t lock(mngr.deviceMutex);
 
-    int devId = 0;
-    for (devId = 0; devId < mngr.mDevices.size(); ++devId) {
-        if (dev == *mngr.mDevices[devId]) { break; }
+    for (int devId = 0; devId < mngr.mDevices.size(); ++devId) {
+        if (dev == *mngr.mDevices[devId]) { return devId; }
     }
-    return devId;
+    return -1;
 }
 
-int getActiveDeviceType() {
+sycl::info::device_type getActiveDeviceType() {
     device_id_t& devId = tlocalActiveDeviceId();
 
     DeviceManager& devMngr = DeviceManager::getInstance();
@@ -272,7 +235,7 @@ int getActiveDeviceType() {
     return devMngr.mDeviceTypes[get<1>(devId)];
 }
 
-int getActivePlatform() {
+sycl::platform getActivePlatform() {
     device_id_t& devId = tlocalActiveDeviceId();
 
     DeviceManager& devMngr = DeviceManager::getInstance();
@@ -441,11 +404,11 @@ void addDeviceContext(sycl::queue& que) {
         // queue atleast has implicit context and device if created
         auto tQueue = make_unique<sycl::queue>(que);
 
-        devMngr.mPlatforms.push_back(getPlatformEnum(*tDevice));
+        devMngr.mPlatforms.push_back(tDevice->get_platform());
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.push_back(false);
-        devMngr.mDeviceTypes.push_back(static_cast<int>(
-            tDevice->get_info<sycl::info::device::device_type>()));
+        devMngr.mDeviceTypes.push_back(
+            tDevice->get_info<sycl::info::device::device_type>());
 
         devMngr.mDevices.push_back(move(tDevice));
         devMngr.mContexts.push_back(move(tContext));
@@ -475,8 +438,8 @@ void setDeviceContext(sycl::device& dev, sycl::context& ctx) {
     AF_ERROR("No matching device found", AF_ERR_ARG);
 }
 
-void removeDeviceContext(sycl::device& dev, sycl::context& ctx) {
-    if (getDevice() == dev && getContext() == ctx) {
+void removeDevice(sycl::device& dev) {
+    if (getDevice() == dev) {
         AF_ERROR("Cannot pop the device currently in use", AF_ERR_ARG);
     }
 
@@ -488,7 +451,7 @@ void removeDeviceContext(sycl::device& dev, sycl::context& ctx) {
 
         const int dCount = static_cast<int>(devMngr.mDevices.size());
         for (int i = 0; i < dCount; ++i) {
-            if (*devMngr.mDevices[i] == dev && *devMngr.mContexts[i] == ctx) {
+            if (*devMngr.mDevices[i] == dev) {
                 deleteIdx = i;
                 break;
             }
@@ -515,6 +478,7 @@ void removeDeviceContext(sycl::device& dev, sycl::context& ctx) {
         devMngr.mContexts.erase(devMngr.mContexts.begin() + deleteIdx);
         devMngr.mQueues.erase(devMngr.mQueues.begin() + deleteIdx);
         devMngr.mPlatforms.erase(devMngr.mPlatforms.begin() + deleteIdx);
+        devMngr.mDeviceTypes.erase(devMngr.mDeviceTypes.begin() + deleteIdx);
 
         // FIXME: add OpenGL Interop for user provided contexts later
         devMngr.mIsGLSharingOn.erase(devMngr.mIsGLSharingOn.begin() +
@@ -664,73 +628,72 @@ PlanCache& fftManager() { return *oneFFTManager(getActiveDeviceId()); }
 
 using namespace arrayfire::oneapi;
 
-af_err afoneapi_get_device_type(afoneapi_device_type* res) {
+af_err afoneapi_get_device_type(af_sycl_device_type res) {
     try {
-        *res = static_cast<afoneapi_device_type>(getActiveDeviceType());
+        *static_cast<sycl::info::device_type*>(res) = getActiveDeviceType();
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afoneapi_get_platform(afoneapi_platform* res) {
+af_err afoneapi_get_platform(af_sycl_platform res) {
     try {
-        *res = static_cast<afoneapi_platform>(getActivePlatform());
+        *static_cast<sycl::platform*>(res) = getActivePlatform();
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afoneapi_get_context(sycl::context* ctx) {
+af_err afoneapi_get_context(af_sycl_context ctx) {
     try {
-        *ctx = getContext();
+        *static_cast<sycl::context*>(ctx) = getContext();
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afoneapi_get_queue(sycl::queue* queue) {
+af_err afoneapi_get_queue(af_sycl_queue queue) {
     try {
-        *queue = getQueue();
+        *static_cast<sycl::queue*>(queue) = getQueue();
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afoneapi_get_device(sycl::device* dev) {
+af_err afoneapi_get_device(af_sycl_device dev) {
     try {
-        *dev = getDevice();
+        *static_cast<sycl::device*>(dev) = getDevice();
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afoneapi_set_device(sycl::device dev) {
+af_err afoneapi_set_device(af_sycl_device dev) {
     try {
-        setDevice(getDeviceIdFromNativeDevice(dev));
+        int devId =
+            getDeviceIdFromNativeDevice(*static_cast<sycl::device*>(dev));
+        if (devId != -1) {
+            setDevice(devId);
+        } else {
+            sycl::queue que(*static_cast<sycl::device*>(dev));
+            addDeviceContext(que);
+        }
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afoneapi_add_queue(sycl::queue que) {
+af_err afoneapi_add_queue(af_sycl_queue que) {
     try {
-        addDeviceContext(que);
+        addDeviceContext(*static_cast<sycl::queue*>(que));
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afoneapi_set_device_context(sycl::device dev, sycl::context ctx) {
+af_err afoneapi_delete_device(af_sycl_device dev) {
     try {
-        setDeviceContext(dev, ctx);
-    }
-    CATCHALL;
-    return AF_SUCCESS;
-}
-
-af_err afoneapi_delete_device_context(sycl::device dev, sycl::context ctx) {
-    try {
-        removeDeviceContext(dev, ctx);
+        removeDevice(*static_cast<sycl::device*>(dev));
     }
     CATCHALL;
     return AF_SUCCESS;

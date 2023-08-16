@@ -381,19 +381,24 @@ if(AF_BUILD_ONEAPI)
             BACKENDS "oneapi"
             NO_ARRAYFIRE_TEST
             CXX17)
-target_compile_options(test_interop_sycl_external_context_snippet_oneapi
-  PUBLIC
-    -fsycl
-)
+  target_compile_options(test_interop_sycl_external_context_snippet_oneapi
+    PUBLIC
+      -fsycl)
   make_test(SRC interop_sycl_custom_kernel_snippet.cpp
             LIBRARIES -fsycl
             BACKENDS "oneapi"
             NO_ARRAYFIRE_TEST
             CXX17)
-target_compile_options(test_interop_sycl_custom_kernel_snippet_oneapi
-  PUBLIC
-    -fsycl
-)
+  target_compile_options(test_interop_sycl_custom_kernel_snippet_oneapi
+    PUBLIC
+      -fsycl)
+  make_test(SRC interop_sycl.cpp
+            LIBRARIES -fsycl
+            BACKENDS "oneapi"
+            CXX17)
+  target_compile_options(test_interop_sycl_oneapi
+    PUBLIC
+      -fsycl)
 endif()
 
 if(CUDA_FOUND)

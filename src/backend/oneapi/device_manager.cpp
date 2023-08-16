@@ -50,11 +50,6 @@ using af::dtype_traits;
 namespace arrayfire {
 namespace oneapi {
 
-static afoneapi::deviceType getDeviceTypeEnum(const sycl::device& dev) {
-    return static_cast<afoneapi::deviceType>(
-        dev.get_info<sycl::info::device::device_type>());
-}
-
 static inline bool compare_default(const unique_ptr<sycl::device>& ldev,
                                    const unique_ptr<sycl::device>& rdev) {
     using sycl::info::device_type;
@@ -141,9 +136,10 @@ DeviceManager::DeviceManager()
                     make_unique<sycl::queue>(*mContexts.back(), *devices[i],
                                              arrayfire_exception_handler));
                 mIsGLSharingOn.push_back(false);
-                // TODO:
-                // mDeviceTypes.push_back(getDeviceTypeEnum(*devices[i]));
-                // mPlatforms.push_back(getPlatformEnum(*devices[i]));
+
+                mDeviceTypes.push_back(
+                    devices[i]->get_info<sycl::info::device::device_type>());
+                mPlatforms.push_back(devices[i]->get_platform());
                 mDevices.emplace_back(std::move(devices[i]));
 
                 std::string options;

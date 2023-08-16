@@ -13,6 +13,7 @@
 // temporary ignores for DPL internals
 #pragma clang diagnostic ignored "-Wunused-variable"
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #endif
 
 // oneDPL headers should be included before standard headers
