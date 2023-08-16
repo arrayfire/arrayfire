@@ -22,7 +22,7 @@
 #include <errorcodes.hpp>
 #include <memory.hpp>
 #include <onefft.hpp>
-#include <af/sycl.h>
+#include <af/oneapi.h>
 #include <af/version.h>
 
 #ifdef OS_MAC
@@ -122,7 +122,7 @@ inline string platformMap(string& platStr) {
     }
 }
 
-afsycl_platform getPlatformEnum(sycl::device dev) {
+afoneapi_platform getPlatformEnum(sycl::device dev) {
     string pname = getPlatformName(dev);
     if (verify_present(pname, "AMD"))
         return AF_SYCL_PLATFORM_AMD;
@@ -664,23 +664,23 @@ PlanCache& fftManager() { return *oneFFTManager(getActiveDeviceId()); }
 
 using namespace arrayfire::oneapi;
 
-af_err afsycl_get_device_type(afsycl_device_type* res) {
+af_err afoneapi_get_device_type(afoneapi_device_type* res) {
     try {
-        *res = static_cast<afsycl_device_type>(getActiveDeviceType());
+        *res = static_cast<afoneapi_device_type>(getActiveDeviceType());
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afsycl_get_platform(afsycl_platform* res) {
+af_err afoneapi_get_platform(afoneapi_platform* res) {
     try {
-        *res = static_cast<afsycl_platform>(getActivePlatform());
+        *res = static_cast<afoneapi_platform>(getActivePlatform());
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err afsycl_get_context(sycl::context* ctx) {
+af_err afoneapi_get_context(sycl::context* ctx) {
     try {
         *ctx = getContext();
     }
@@ -688,7 +688,7 @@ af_err afsycl_get_context(sycl::context* ctx) {
     return AF_SUCCESS;
 }
 
-af_err afsycl_get_queue(sycl::queue* queue) {
+af_err afoneapi_get_queue(sycl::queue* queue) {
     try {
         *queue = getQueue();
     }
@@ -696,7 +696,7 @@ af_err afsycl_get_queue(sycl::queue* queue) {
     return AF_SUCCESS;
 }
 
-af_err afsycl_get_device(sycl::device* dev) {
+af_err afoneapi_get_device(sycl::device* dev) {
     try {
         *dev = getDevice();
     }
@@ -704,7 +704,7 @@ af_err afsycl_get_device(sycl::device* dev) {
     return AF_SUCCESS;
 }
 
-af_err afsycl_set_device(sycl::device dev) {
+af_err afoneapi_set_device(sycl::device dev) {
     try {
         setDevice(getDeviceIdFromNativeDevice(dev));
     }
@@ -712,7 +712,7 @@ af_err afsycl_set_device(sycl::device dev) {
     return AF_SUCCESS;
 }
 
-af_err afsycl_add_queue(sycl::queue que) {
+af_err afoneapi_add_queue(sycl::queue que) {
     try {
         addDeviceContext(que);
     }
@@ -720,7 +720,7 @@ af_err afsycl_add_queue(sycl::queue que) {
     return AF_SUCCESS;
 }
 
-af_err afsycl_set_device_context(sycl::device dev, sycl::context ctx) {
+af_err afoneapi_set_device_context(sycl::device dev, sycl::context ctx) {
     try {
         setDeviceContext(dev, ctx);
     }
@@ -728,7 +728,7 @@ af_err afsycl_set_device_context(sycl::device dev, sycl::context ctx) {
     return AF_SUCCESS;
 }
 
-af_err afsycl_delete_device_context(sycl::device dev, sycl::context ctx) {
+af_err afoneapi_delete_device_context(sycl::device dev, sycl::context ctx) {
     try {
         removeDeviceContext(dev, ctx);
     }

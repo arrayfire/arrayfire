@@ -20,7 +20,7 @@
 #include <err_oneapi.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
-#include <af/sycl.h>
+#include <af/oneapi.h>
 #include <af/version.h>
 
 #include <sycl/sycl.hpp>
@@ -50,8 +50,8 @@ using af::dtype_traits;
 namespace arrayfire {
 namespace oneapi {
 
-static afsycl::deviceType getDeviceTypeEnum(const sycl::device& dev) {
-    return static_cast<afsycl::deviceType>(
+static afoneapi::deviceType getDeviceTypeEnum(const sycl::device& dev) {
+    return static_cast<afoneapi::deviceType>(
         dev.get_info<sycl::info::device::device_type>());
 }
 

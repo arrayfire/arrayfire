@@ -32,7 +32,7 @@ typedef enum {
   AF_SYCL_DEVICE_TYPE_AUTOMATIC = (1 << 5),
   AF_SYCL_DEVICE_TYPE_ALL = 0xFFFFFFF,
   AF_SYCL_DEVICE_TYPE_UNKNOWN = -1
-} afsycl_device_type;
+} afoneapi_device_type;
 
 typedef enum {
   AF_SYCL_PLATFORM_AMD = 0,
@@ -42,7 +42,7 @@ typedef enum {
   AF_SYCL_PLATFORM_BEIGNET = 4,
   AF_SYCL_PLATFORM_POCL = 5,
   AF_SYCL_PLATFORM_UNKNOWN = -1
-} afsycl_platform;
+} afoneapi_platform;
 
 /**
     \ingroup oneapi_mat
@@ -57,7 +57,7 @@ typedef enum {
   \note Set \p retain to true if this value will be passed to a sycl::context
   constructor
 */
-AFAPI af_err afsycl_get_context(sycl::context *ctx);
+AFAPI af_err afoneapi_get_context(sycl::context *ctx);
 
 /**
   Get a handle to ArrayFire's sycl queue
@@ -65,7 +65,7 @@ AFAPI af_err afsycl_get_context(sycl::context *ctx);
   \param[out] queue the current command queue being used by ArrayFire
   \returns \ref af_err error code
 */
-AFAPI af_err afsycl_get_queue(sycl::queue *queue);
+AFAPI af_err afoneapi_get_queue(sycl::queue *queue);
 
 /**
    Get the native device for ArrayFire's current active device
@@ -73,7 +73,7 @@ AFAPI af_err afsycl_get_queue(sycl::queue *queue);
    \param[out] dev the sycl::device corresponding to the current device
    \returns \ref af_err error code
 */
-AFAPI af_err afsycl_get_device(sycl::device *dev);
+AFAPI af_err afoneapi_get_device(sycl::device *dev);
 
 /**
    Set ArrayFire's active device to \p dev
@@ -81,7 +81,7 @@ AFAPI af_err afsycl_get_device(sycl::device *dev);
    \param[in] dev the device to be set as active device
    \returns \ref af_err error code
 */
-AFAPI af_err afsycl_set_device(sycl::device dev);
+AFAPI af_err afoneapi_set_device(sycl::device dev);
 
 /**
    Push user provided device control constructs into the ArrayFire device
@@ -93,7 +93,7 @@ AFAPI af_err afsycl_set_device(sycl::device dev);
 
    \param[in] que is the user provided sycl queue to be used by ArrayFire
 */
-AFAPI af_err afsycl_add_queue(sycl::queue que);
+AFAPI af_err afoneapi_add_queue(sycl::queue que);
 
 /**
    Set active device using sycl::context and sycl::device
@@ -101,7 +101,7 @@ AFAPI af_err afsycl_add_queue(sycl::queue que);
    \param[in] dev is the sycl device that is to be set as Active device inside
    ArrayFire \param[in] ctx is the sycl context being used by ArrayFire
 */
-AFAPI af_err afsycl_set_device_context(sycl::device dev, sycl::context ctx);
+AFAPI af_err afoneapi_set_device_context(sycl::device dev, sycl::context ctx);
 
 /**
    Remove the user provided device control constructs from the ArrayFire device
@@ -116,17 +116,18 @@ AFAPI af_err afsycl_set_device_context(sycl::device dev, sycl::context ctx);
    \note ArrayFire does not take control of releasing the objects passed to it.
    The user needs to release them appropriately.
 */
-AFAPI af_err afsycl_delete_device_context(sycl::device dev, sycl::context ctx);
+AFAPI af_err afoneapi_delete_device_context(sycl::device dev,
+                                            sycl::context ctx);
 
 /*
  Get the type of the current device
 */
-AFAPI af_err afsycl_get_device_type(afsycl_device_type *res);
+AFAPI af_err afoneapi_get_device_type(afoneapi_device_type *res);
 
 /**
    Get the platform of the current device
 */
-AFAPI af_err afsycl_get_platform(afsycl_platform *res);
+AFAPI af_err afoneapi_get_platform(afoneapi_platform *res);
 #endif
 
 /**
@@ -145,7 +146,7 @@ AFAPI af_err afsycl_get_platform(afsycl_platform *res);
 #include <af/exception.h>
 #include <stdio.h>
 
-namespace afsycl {
+namespace afoneapi {
 
 #if AF_API_VERSION >= 39
 /**
@@ -162,7 +163,7 @@ Get a handle to ArrayFire's sycl context
 */
 static inline sycl::context getContext() {
   sycl::context ctx;
-  af_err err = afsycl_get_context(&ctx);
+  af_err err = afoneapi_get_context(&ctx);
   if (err != AF_SUCCESS)
     throw af::exception("Failed to get sycl context from arrayfire");
   return ctx;
@@ -176,7 +177,7 @@ Get a handle to ArrayFire's sycl command queue
 */
 static inline sycl::queue getQueue() {
   sycl::queue q;
-  af_err err = afsycl_get_queue(&q);
+  af_err err = afoneapi_get_queue(&q);
   if (err != AF_SUCCESS)
     throw af::exception("Failed to get sycl queue from arrayfire");
   return q;
@@ -188,7 +189,7 @@ static inline sycl::queue getQueue() {
 */
 static inline sycl::device getDeviceId() {
   sycl::device dev;
-  af_err err = afsycl_get_device(&dev);
+  af_err err = afoneapi_get_device(&dev);
   if (err != AF_SUCCESS)
     throw af::exception("Failed to get sycl device");
 
@@ -201,7 +202,7 @@ static inline sycl::device getDeviceId() {
   \param[in] dev the sycl device to be set as active device
 */
 static inline void setDeviceId(sycl::device dev) {
-  af_err err = afsycl_set_device(dev);
+  af_err err = afoneapi_set_device(dev);
   if (err != AF_SUCCESS)
     throw af::exception("Failed to set sycl device as active device");
 }
@@ -217,7 +218,7 @@ static inline void setDeviceId(sycl::device dev) {
    \param[in] que is the user provided sycl queue to be used by ArrayFire
 */
 static inline void addQueue(sycl::queue que) {
-  af_err err = afsycl_add_queue(que);
+  af_err err = afoneapi_add_queue(que);
   if (err != AF_SUCCESS)
     throw af::exception(
         "Failed to push user provided queue/device/context to ArrayFire pool");
@@ -230,7 +231,7 @@ static inline void addQueue(sycl::queue que) {
    inside ArrayFire \param[in] ctx is the sycl context being used by ArrayFire
 */
 static inline void setDevice(sycl::device dev, sycl::context ctx) {
-  af_err err = afsycl_set_device_context(dev, ctx);
+  af_err err = afoneapi_set_device_context(dev, ctx);
   if (err != AF_SUCCESS)
     throw af::exception(
         "Failed to set device based on sycl::device & sycl::context");
@@ -250,21 +251,21 @@ static inline void setDevice(sycl::device dev, sycl::context ctx) {
    The user needs to release them appropriately.
 */
 static inline void deleteDevice(sycl::device dev, sycl::context ctx) {
-  af_err err = afsycl_delete_device_context(dev, ctx);
+  af_err err = afoneapi_delete_device_context(dev, ctx);
   if (err != AF_SUCCESS)
     throw af::exception(
         "Failed to remove the requested device from ArrayFire device pool");
 }
 
-typedef afsycl_device_type deviceType;
-typedef afsycl_platform platform;
+typedef afoneapi_device_type deviceType;
+typedef afoneapi_platform platform;
 
 /**
    Get the type of the current device
 */
 static inline deviceType getDeviceType() {
-  afsycl_device_type res = AF_SYCL_DEVICE_TYPE_UNKNOWN;
-  af_err err = afsycl_get_device_type(&res);
+  afoneapi_device_type res = AF_SYCL_DEVICE_TYPE_UNKNOWN;
+  af_err err = afoneapi_get_device_type(&res);
   if (err != AF_SUCCESS)
     throw af::exception("Failed to get sycl device type");
   return res;
@@ -274,8 +275,8 @@ static inline deviceType getDeviceType() {
    Get a vendor enumeration for the current platform
 */
 static inline platform getPlatform() {
-  afsycl_platform res = AF_SYCL_PLATFORM_UNKNOWN;
-  af_err err = afsycl_get_platform(&res);
+  afoneapi_platform res = AF_SYCL_PLATFORM_UNKNOWN;
+  af_err err = afoneapi_get_platform(&res);
   if (err != AF_SUCCESS)
     throw af::exception("Failed to get sycl platform");
   return res;
@@ -329,7 +330,7 @@ Create an af::array object from a sycl buffer
  */
 template <typename T>
 static inline af::array array(dim_t dim0, sycl::buffer<T> buf) {
-  return afsycl::array(af::dim4(dim0), buf);
+  return afoneapi::array(af::dim4(dim0), buf);
 }
 
 /**
@@ -343,7 +344,7 @@ Create an af::array object from a sycl::buffer
  */
 template <typename T>
 static inline af::array array(dim_t dim0, dim_t dim1, sycl::buffer<T> buf) {
-  return afsycl::array(af::dim4(dim0, dim1), buf);
+  return afoneapi::array(af::dim4(dim0, dim1), buf);
 }
 
 /**
@@ -359,7 +360,7 @@ Create an af::array object from a sycl::buffer
 template <typename T>
 static inline af::array array(dim_t dim0, dim_t dim1, dim_t dim2,
                               sycl::buffer<T> buf) {
-  return afsycl::array(af::dim4(dim0, dim1, dim2), buf, type, retain);
+  return afoneapi::array(af::dim4(dim0, dim1, dim2), buf);
 }
 
 /**
@@ -376,7 +377,7 @@ Create an af::array object from a sycl::buffer
 template <typename T>
 static inline af::array array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
                               sycl::buffer<T> buf) {
-  return afsycl::array(af::dim4(dim0, dim1, dim2, dim3), buf);
+  return afoneapi::array(af::dim4(dim0, dim1, dim2, dim3), buf);
 }
 
 /**
@@ -384,6 +385,6 @@ static inline af::array array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
 */
 #endif
 
-} // namespace afsycl
+} // namespace afoneapi
 
 #endif

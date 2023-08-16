@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <af/sycl.h>
+#include <af/oneapi.h>
 
 #include <sycl/sycl.hpp>
 

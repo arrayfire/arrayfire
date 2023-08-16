@@ -9,9 +9,10 @@
 
 // clang-format off
 // ![interop_sycl_custom_kernel_snippet]
+
+// 1. Add arrayfire.h and af/oneapi.h to your application
 #include <arrayfire.h>
-// 1. Add the af/sycl.h include to your project
-#include <af/sycl.h>
+#include <af/oneapi.h>
 
 #include <cassert>
 
@@ -25,7 +26,7 @@ int main() try {
     // ... additional ArrayFire operations here
 
     // 2. Obtain the queue used by ArrayFire
-    static sycl::queue af_queue = afsycl::getQueue();
+    static sycl::queue af_queue = afoneapi::getQueue();
 
     // 3. Obtain sycl::buffer references to af::array objects
     sycl::buffer<float> d_A = *static_cast<sycl::buffer<float> *>(A.device<void>());

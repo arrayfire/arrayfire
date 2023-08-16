@@ -7,16 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+// clang-format off
 // ![interop_sycl_external_context_snippet]
-#include <arrayfire.h>
-// 1. Add the af/sycl.h include to your project
-#include <af/sycl.h>
-
 #include <cassert>
 
-// 1. Add arrayfire.h and af/sycl.h to your application
-#include "af/sycl.h"
-#include "arrayfire.h"
+// 1. Add arrayfire.h and af/oneapi.h to your application
+#include <arrayfire.h>
+#include <af/oneapi.h>
 
 #include <cstdio>
 #include <vector>
@@ -43,7 +40,7 @@ int main() try {
     q.wait();
 
     // 4. Create ArrayFire arrays from sycl::buffer objects
-    af::array af_A = afsycl::array(length, sycl_A);
+    af::array af_A = afoneapi::array(length, sycl_A);
 
     // 5. Perform ArrayFire operations on the Arrays
     af_A = af_A + af::randu(length);
@@ -62,3 +59,4 @@ int main() try {
 catch (sycl::exception &e) {
     std::cout << e.what() << std::endl;
 }
+// clang-format on
