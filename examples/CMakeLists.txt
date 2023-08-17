@@ -5,7 +5,7 @@
 # The complete license agreement can be obtained at:
 # http://arrayfire.com/licenses/BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 cmake_policy(VERSION 3.5)
 project(ArrayFire-Examples
   VERSION 3.7.0
