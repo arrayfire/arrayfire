@@ -379,8 +379,9 @@ if(CUDA_FOUND)
       add_executable(${target} cuda.cu)
       target_include_directories(${target}
         PRIVATE
-          ${CMAKE_SOURCE_DIR}
-          ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR})
+      target_include_directories(${target}
         SYSTEM PRIVATE
           ${ArrayFire_SOURCE_DIR}/extern/half/include)
       if(${backend} STREQUAL "unified")
