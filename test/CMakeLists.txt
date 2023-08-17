@@ -40,7 +40,9 @@ elseif(NOT TARGET GTest::gtest)
   target_compile_options(gtest
     PRIVATE
       $<$<BOOL:${has_cxx_fp_model}>:-fp-model precise>)
-  add_library(GTest::gtest ALIAS gtest)
+  if(NOT TARGET GTest::gtest)
+    add_library(GTest::gtest ALIAS gtest)
+  endif()
   # Hide gtest project variables
   mark_as_advanced(
     BUILD_SHARED_LIBS
