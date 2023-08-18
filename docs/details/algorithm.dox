@@ -1,74 +1,76 @@
 /*!
 \page batch_detail_algo algorithm
-
-This function performs the operation across all batches present in the input simultaneously.
-
+This function runs across all batches in the input simultaneously.
 */
+
 
 
 /**
 \addtogroup arrayfire_func
 @{
-\defgroup reduce_func_sum sum
 
+
+
+\defgroup reduce_func_sum sum
 \ingroup reduce_mat
 
-Find the sum of values in the input
+Sum array elements over a given dimension.
 
-This table defines the return value types for the corresponding input types
+This table defines output types for corresponding input types:
 
 Input Type          | Output Type
 --------------------|---------------------
 f32, f64, c32, c64  | same as input
-s32, u32, s64, u64  | same as input
+s32, s64, u32, u64  | same as input
 s16                 | s32
 u16, u8, b8         | u32
 
 \copydoc batch_detail_algo
 
-\defgroup reduce_func_sum_by_key sumByKey
 
+
+\defgroup reduce_func_sum_by_key sumByKey
 \ingroup reduce_mat
 
-Finds the sum of an input array according to an array of keys.
+Sum array elements over a given dimension, according to an array of keys.
+
 The values corresponding to each group of consecutive equal keys will be summed
-together.  Keys can repeat, however only consecutive key values will be
+together. Keys can repeat; however, only consecutive key values will be
 considered for each reduction. If a key value is repeated somewhere else in the
-keys array it will be considered the start of a new reduction.  There are two
+keys array it will be considered the start of a new reduction. There are two
 outputs: the reduced set of consecutive keys and the corresponding final
-reduced values.  An example demonstrating the reduction behavior can be seen in
-the following snippet.
+set of reduced values.
+
+An example demonstrating the reduction behavior can be seen in the following
+snippet.
 
 \snippet test/reduce.cpp ex_reduce_sum_by_key
 
-The keys input type must be an integer type(s32 or u32).
-This table defines the return types for the corresponding values type
+The keys' input type must be integer (s32 or u32).
+
+This table defines output types for corresponding input types:
 
 Input Type          | Output Type
 --------------------|---------------------
 f32, f64, c32, c64  | same as input
-s32, u32, s64, u64  | same as input
+s32, s64, u32, u64  | same as input
 s16                 | s32
 u16, u8, b8         | u32
 f16                 | f32
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the dim parameter
-specifies which dimension to reduce along.  An example of multi-dimensional
-reduce by key can be seen below:
+The keys array must be 1-dimensional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_sum_by_key_dim
 
 
 
-
 \defgroup reduce_func_product product
-
 \ingroup reduce_mat
 
-Find the product of values in the input
+Multiply array elements over a given dimension.
 
-This table defines the return value types for the corresponding input types
+This table defines output types for corresponding input types:
 
 Input Type          | Output Type
 --------------------|---------------------
@@ -79,23 +81,28 @@ u16, u8, b8         | u32
 
 \copydoc batch_detail_algo
 
-\defgroup reduce_func_product_by_key productByKey
 
+
+\defgroup reduce_func_product_by_key productByKey
 \ingroup reduce_mat
 
-Finds the product of an input array according to an array of keys.
+Multiply array elements over a given dimension, according to an array of keys.
+
 The values corresponding to each group of consecutive equal keys will be
-multiplied together.  Keys can repeat, however only consecutive key values will
+multiplied together. Keys can repeat; however, only consecutive key values will
 be considered for each reduction. If a key value is repeated somewhere else in
-the keys array it will be considered the start of a new reduction.  There are
+the keys array it will be considered the start of a new reduction. There are
 two outputs: the reduced set of consecutive keys and the corresponding final
-reduced values.  An example demonstrating the reduction behavior can be seen in
-the following snippet.
+set of reduced values.
+
+An example demonstrating the reduction behavior can be seen in the following
+snippet.
 
 \snippet test/reduce.cpp ex_reduce_product_by_key
 
-The keys input type must be an integer type(s32 or u32).
-This table defines the return types for the corresponding values type
+The keys' input type must be integer (s32 or u32).
+
+This table defines output types for corresponding input types:
 
 Input Type          | Output Type
 --------------------|---------------------
@@ -105,208 +112,210 @@ s16                 | s32
 u16, u8, b8         | u32
 f16                 | f32
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the dim parameter
-specifies which dimension to reduce along.  An example of multi-dimensional
-reduce by key can be seen below:
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_product_by_key_dim
 
 
 
-
 \defgroup reduce_func_min min
-
 \ingroup reduce_mat
 
-Find the minimum values and their locations
+Return the minimum along a given dimension.
 
 \copydoc batch_detail_algo
 
-\defgroup reduce_func_min_by_key minByKey
 
+
+\defgroup reduce_func_min_by_key minByKey
 \ingroup reduce_mat
 
-Finds the min of an input array according to an array of keys.  The minimum
-will be found of all values corresponding to each group of consecutive equal
-keys.  Keys can repeat, however only consecutive key values will be considered
-for each reduction. If a key value is repeated somewhere else in the keys array
-it will be considered the start of a new reduction.  There are two outputs:
-the reduced set of consecutive keys and the corresponding final reduced
-values.  An example demonstrating the reduction behavior can be seen in the
-following snippet.
+Return the minimum along a given dimension, according to an array of keys.
+
+The minimum is returned from the values corresponding to each group of 
+consecutive equal keys. Keys can repeat; however, only consecutive key values
+will be considered for each reduction. If a key value is repeated somewhere
+else in the keys array it will be considered the start of a new reduction.
+There are two outputs: the reduced set of consecutive keys and the
+corresponding final set of reduced values.
+
+An example demonstrating the reduction behavior can be seen in the following
+snippet.
 
 \snippet test/reduce.cpp ex_reduce_min_by_key
 
-The keys input type must be an integer type(s32 or u32).
-The values return type will be the same as the values input type.
+The keys' input type must be integer (s32 or u32).
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the dim parameter
-specifies which dimension to reduce along.  An example of multi-dimensional
-reduce by key can be seen below:
+The output type is the same as input type.
+
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_min_by_key_dim
 
 
-\defgroup reduce_func_max max
 
+\defgroup reduce_func_max max
 \ingroup reduce_mat
 
-Find the maximum values and their locations
+Return the maximum along a given dimension.
 
 \copydoc batch_detail_algo
 
 
-\defgroup reduce_func_max_by_key maxByKey
 
+\defgroup reduce_func_max_by_key maxByKey
 \ingroup reduce_mat
 
-Finds the max of an input array according to an array of keys.  The maximum
-will be found of all values corresponding to each group of consecutive equal
-keys.  Keys can repeat, however only consecutive key values will be considered
-for each reduction. If a key value is repeated somewhere else in the keys array
-it will be considered the start of a new reduction.  There are two outputs:
-the reduced set of consecutive keys and the corresponding final reduced
-values.  An example demonstrating the reduction behavior can be seen in the
-following snippet.
+Return the maximum along a given dimension, according to an array of keys.
+
+The maximum is returned from the values corresponding to each group of 
+consecutive equal keys. Keys can repeat; however, only consecutive key values
+will be considered for each reduction. If a key value is repeated somewhere
+else in the keys array it will be considered the start of a new reduction.
+There are two outputs: the reduced set of consecutive keys and the
+corresponding final set of reduced values.
+
+An example demonstrating the reduction behavior can be seen in the following
+snippet.
 
 \snippet test/reduce.cpp ex_reduce_max_by_key
 
-The keys input type must be an integer type(s32 or u32).
-The values return type will be the same as the values input type.
+The keys' input type must be integer (s32 or u32).
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the dim parameter
-specifies which dimension to reduce along.  An example of multi-dimensional
-reduce by key can be seen below:
+The output type is the same as input type.
+
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_max_by_key_dim
 
 
 
 \defgroup reduce_func_all_true allTrue
-\brief Test if all values in an array are true
-
 \ingroup reduce_mat
 
-Find if of all of the values in input are true
+Check if all values along a given dimension are true.
 
-Return type is b8 for all input types
+Return type is `b8` for all input types.
 
 \copydoc batch_detail_algo
 
-\defgroup reduce_func_all_true_by_key allTrueByKey
-\brief Calculate if all values that share the same consecutive keys are true
 
+
+\defgroup reduce_func_all_true_by_key allTrueByKey
 \ingroup reduce_mat
 
-Finds if all of the values of an input array are true according to an array of
-keys.  All values corresponding to each group of consecutive equal keys will be
-tested to make sure all are true.  Keys can repeat, however only consecutive
-key values will be considered for each reduction. If a key value is repeated
+Check if all values along a given dimension are true, according to an array of
+keys.
+
+All values corresponding to each group of consecutive equal keys will be tested
+to make sure all are true. Keys can repeat; however, only consecutive key
+values will be considered for each reduction. If a key value is repeated
 somewhere else in the keys array it will be considered the start of a new
-reduction.  There are two outputs: the reduced set of consecutive keys and the
-corresponding final reduced values.  An example demonstrating the reduction
-behavior can be seen in the following snippet.
+reduction. There are two outputs: the reduced set of consecutive keys and the
+corresponding final set of reduced values.
+
+An example demonstrating the reduction behavior can be seen in the following
+snippet.
 
 \snippet test/reduce.cpp ex_reduce_alltrue_by_key
 
-The keys input type must be an integer type(s32 or u32).
-The values return type will be of type b8.
+The keys' input type must be integer (s32 or u32).
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the dim parameter
-specifies which dimension to reduce along.  An example of multi-dimensional
-reduce by key can be seen below:
+The output type is `b8`.
+
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_alltrue_by_key_dim
 
 
 
-
 \defgroup reduce_func_any_true anytrue
-\brief Calculate if any values in an array are true
-
 \ingroup reduce_mat
 
-Find if of any of the values in input are true
+Check if any values along a given dimension are true.
 
-Return type is b8 for all input types
+The output type is `b8`.
 
 \copydoc batch_detail_algo
 
-\defgroup reduce_func_anytrue_by_key anyTrueByKey
-\brief Calculate if any values that share the same consecutive keys are true
 
+
+\defgroup reduce_func_anytrue_by_key anyTrueByKey
 \ingroup reduce_mat
 
-Finds if any of the values of an input array are true according to an array of
-keys.  All values corresponding to each group of consecutive equal keys will be
-tested to make sure any are true.  Keys can repeat, however only consecutive
-key values will be considered for each reduction. If a key value is repeated
+Check if any values along a given dimension are true, according to an array of
+keys.
+
+Values corresponding to each group of consecutive equal keys will be tested to
+check if any are true. Keys can repeat; however, only consecutive key
+values will be considered for each reduction. If a key value is repeated
 somewhere else in the keys array it will be considered the start of a new
-reduction.  There are two outputs: the reduced set of consecutive keys and the
-corresponding final reduced values.  An example demonstrating the reduction
-behavior can be seen in the following snippet.
+reduction. There are two outputs: the reduced set of consecutive keys and the
+corresponding final set of reduced values.
+
+An example demonstrating the reduction behavior can be seen in the following
+snippet.
 
 \snippet test/reduce.cpp ex_reduce_anytrue_by_key
 
-The keys input type must be an integer type(s32 or u32).
-The values return type will be of type u8.
+The keys' input type must be integer (s32 or u32).
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the dim parameter
-specifies which dimension to reduce along.  An example of multi-dimensional
-reduce by key can be seen below:
+The output type is `b8`.
+
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_anytrue_by_key_dim
 
 
-\defgroup reduce_func_count count
 
+\defgroup reduce_func_count count
 \ingroup reduce_mat
 
-Count the number of non-zero elements in the input
+Count non-zero values in an array along a given dimension.
 
-Return type is u32 for all input types
+The output type is `u32`.
 
 \copydoc batch_detail_algo
 
-\defgroup reduce_func_count_by_key countByKey
 
+
+\defgroup reduce_func_count_by_key countByKey
 \ingroup reduce_mat
 
-Counts the non-zero values of an input array according to an array of keys.
+Count non-zero values in an array, according to an array of keys.
+
 All non-zero values corresponding to each group of consecutive equal keys will
-be counted.  Keys can repeat, however only consecutive key values will be
+be counted. Keys can repeat; however, only consecutive key values will be
 considered for each reduction. If a key value is repeated somewhere else in the
-keys array it will be considered the start of a new reduction.  There are two
-outputs: the reduced set of consecutive keys and the corresponding final
-reduced values.  An example demonstrating the reduction behavior can be seen in
-the following snippet.
+keys array it will be considered the start of a new reduction. There are two
+outputs: the reduced set of consecutive keys and the corresponding final set of
+reduced values.
+
+An example demonstrating the reduction behavior can be seen in the following
+snippet.
 
 \snippet test/reduce.cpp ex_reduce_count_by_key
 
-The keys input type must be an integer type(s32 or u32).
-The values return type will be of type u32.
+The keys' input type must be integer (s32 or u32).
 
-The input keys must be a 1-D vector matching the size of the reduced dimension.
-In the case of multiple dimensions in the input values array, the dim parameter
-specifies which dimension to reduce along.  An example of multi-dimensional
-reduce by key can be seen below:
+The output type is `u32`.
+
+The keys array must be 1-dimenstional matching the size of the reduced
+dimension. An example of multi-dimensional reduce-by-key can be seen below:
 
 \snippet test/reduce.cpp ex_reduce_count_by_key_dim
 
 
 
-
 \defgroup scan_func_accum accum
-\brief Cumulative sum (inclusive). Also known as a scan
-
 \ingroup scan_mat
 
-Calculate the cumulative sum (inclusive) along the specified dimension
+Evaluate the cumulative sum (inclusive) along a given dimension.
 
 For a 1D array \f$X\f$, the inclusive cumulative sum calculates \f$x_i =
 \sum_{p=0}^{i}x_p\f$ for every \f$x \in X\f$. Here is a simple example for the
@@ -314,7 +323,7 @@ For a 1D array \f$X\f$, the inclusive cumulative sum calculates \f$x_i =
 
 \snippet test/scan.cpp ex_accum_1D
 
-For 2D arrays (and higher dimensions), you can specify the dimension along which
+For 2D arrays and higher dimensions, you can specify the dimension along which
 the cumulative sum will be calculated. Thus, the formula above will be
 calculated for all array slices along the specified dimension (in the 2D case
 for example, this looks like \f$x_{i,j} = \sum_{p=0}^{j}x_{i,p}\f$ if the second
@@ -325,12 +334,12 @@ required to be specified in the C API):
 \snippet test/scan.cpp ex_accum_2D
 
 The output array type may be different from the input array type. The following
-table defines the corresponding output types for each input type:
+table defines corresponding output types for each input type:
 
 Input Type          | Output Type
 --------------------|---------------------
 f32, f64, c32, c64  | same as input
-s32, u32, s64, u64  | same as input
+s32, s64, u32, u64  | same as input
 s16                 | s32
 u16, u8, b8         | u32
 
@@ -338,150 +347,146 @@ u16, u8, b8         | u32
 
 
 
-\defgroup scan_func_where where
-
-\ingroup scan_mat
-
-Locate the indices of non-zero elements
-
-Return type is u32 for all input types
-
-The locations are provided by flattening the input into a linear array.
-
-
-
 \defgroup scan_func_scan scan
-
 \ingroup scan_mat
 
-Inclusive or exclusive scan of an array
+Scan an array (generalized) over a given dimension.
 
 Perform inclusive or exclusive scan using a given binary operation along a
 given dimension.
 
 Binary operations can be [add](\ref AF_BINARY_ADD), [mul](\ref AF_BINARY_MUL),
-[min](\ref AF_BINARY_MIN), [max](\ref AF_BINARY_MAX) as defined by \ref af_binary_op.
+[min](\ref AF_BINARY_MIN), [max](\ref AF_BINARY_MAX) as defined by \ref
+af_binary_op.
 
 
 
 \defgroup scan_func_scanbykey scanByKey
-
 \ingroup scan_mat
 
-Inclusive or exclusive scan of an array by key
+Scan an array (generalized) over a given dimension, according to an array of
+keys.
 
 Perform inclusive or exclusive scan using a given binary operation along a
 given dimension using a key.
 
 Binary operations can be [add](\ref AF_BINARY_ADD), [mul](\ref AF_BINARY_MUL),
-[min](\ref AF_BINARY_MIN), [max](\ref AF_BINARY_MAX) as defined by \ref af_binary_op.
+[min](\ref AF_BINARY_MIN), [max](\ref AF_BINARY_MAX) as defined by \ref
+af_binary_op.
+
+
+
+\defgroup scan_func_where where
+\ingroup scan_mat
+
+Locate the indices of the non-zero values in an array.
+
+Output type is `u32`.
+
+The locations are provided by flattening the input into a linear array.
 
 
 
 \defgroup calc_func_diff1 diff1
-
 \ingroup calc_mat
 
-First order numerical difference along specified dimension
+Calculate the first order difference in an array over a given dimension.
 
 \copydoc batch_detail_algo
 
 
 
 \defgroup calc_func_diff2 diff2
-
 \ingroup calc_mat
 
-Second order numerical difference along specified dimension
+Calculate the second order difference in an array over a given dimension.
 
 \copydoc batch_detail_algo
 
 
 
 \defgroup sort_func_sort sort
-
 \ingroup sort_mat
 
-Sort input arrays
-
-Sort an multi dimensional array
+Sort an array over a given dimension.
 
 
 
 \defgroup sort_func_sort_index sortIndex
-
 \ingroup sort_mat
 
-Sort input arrays get the sorted indices
+Sort an array over a given dimension and return the original indices.
 
-Sort a multi dimensional array and return sorted indices. Index array is of
-type u32.
+Output type is `u32`.
 
 
 
 \defgroup sort_func_sort_keys sortByKey
-
 \ingroup sort_mat
 
-Sort input arrays based on keys
-
-Sort a multi dimensional array based on keys
+Sort an array over a given dimension, according to an array of keys.
 
 
 
 \defgroup set_func_unique setunique
-
 \ingroup set_mat
 
-Finds unique values from an input set. The input must be a one-dimensional array. Batching is not currently supported.
+Return the unique values in an array.
 
-A simple example of finding the unique values of a set using setUnique() can be seen below:
+The input must be a one-dimensional array. Batching is not currently supported.
+
+An example, unsorted:
 
 \snippet test/set.cpp ex_set_unique_simple
 
 The function can be sped up if it is known that the inputs are sorted.
 
+An example, sorted (ascending):
+
 \snippet test/set.cpp ex_set_unique_sorted
 
 The inputs can be sorted in ascending or descending order.
+
+An example, sorted (descending):
 
 \snippet test/set.cpp ex_set_unique_desc
 
 
 
-
-
-
 \defgroup set_func_union setunion
-
 \ingroup set_mat
 
-Find the union of two sets. The inputs must be one-dimensional arrays. Batching is not currently supported.
+Evaluate the union of two arrays.
 
-A simple example of finding the union of two sets using setUnion() can be seen below:
+The inputs must be one-dimensional arrays. Batching is not currently supported.
+
+An example:
 
 \snippet test/set.cpp ex_set_union_simple
 
-The function can be sped up if it is known that each input is sorted in increasing order and its values are unique.
+The function can be sped up if the input is sorted in increasing order and its
+values are unique.
 
 \snippet test/set.cpp ex_set_union
 
 
 
-
 \defgroup set_func_intersect setintersect
-
 \ingroup set_mat
 
-Find the intersection of two sets. The inputs must be one-dimensional arrays. Batching is not currently supported.
+Evaluate the intersection of two arrays.
 
-A simple example of finding the intersection of two sets using setIntersect() can be seen below:
+The inputs must be one-dimensional arrays. Batching is not currently supported.
+
+An example:
 
 \snippet test/set.cpp ex_set_intersect_simple
 
-The function can be sped up if it is known that each input is sorted in increasing order and its values are unique.
+The function can be sped up if the input is sorted in increasing order and its
+values are unique.
 
 \snippet test/set.cpp ex_set_intersect
+
 
 
 @}

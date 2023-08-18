@@ -4,20 +4,9 @@
 
 \defgroup data_func_constant constant
 
-\brief Create a array from a scalar input value
+Create an array from a scalar input value.
 
-The array created has the same value at all locations
-
-\ingroup data_mat
-\ingroup arrayfire_func
-
-=======================================================================
-
-\defgroup data_func_pad pad
-
-\brief Pad an array
-
-Pad the input array using a constant or values from input along border
+Generate an array with elements set to a specified value.
 
 \ingroup data_mat
 \ingroup arrayfire_func
@@ -26,7 +15,7 @@ Pad the input array using a constant or values from input along border
 
 \defgroup data_func_identity identity
 
-\brief Create an identity array with diagonal values 1
+Generate an identity matrix.
 
 \code
 array a = identity(5, 3);
@@ -45,7 +34,8 @@ array a = identity(5, 3);
 
 \defgroup data_func_range range
 
-\brief Create an array with `[0, n-1]` values along the `seq_dim` dimension and tiled across other dimensions.
+Generate an array with `[0, n-1]` values along the a specified dimension and
+tiled across other dimensions.
 
 __Examples:__
 
@@ -58,7 +48,8 @@ __Examples:__
 
 \defgroup data_func_iota iota
 
-\brief Create an sequence [0, dims.elements() - 1] and modify to specified dimensions dims and then tile it according to tile_dims
+Generate an array with `[0, n-1]` values modified to specified dimensions and
+tiling.
 
 \code
 // Generate [0, 5x3 - 1] in dimensions 5, 3
@@ -87,7 +78,12 @@ array b = iota(dim4(5, 3), dim4(1, 2))
 =======================================================================
 
 \defgroup data_func_diag diag
-\brief Extract diagonal from a matrix when \p extract is set to true. Create a diagonal matrix from input array when \p extract is set to false
+
+Extract the diagonal from an array.
+
+If `extract` is true, an array is extracted containing diagonal of the matrix,
+while a false condition returns a diagonal matrix.
+
 
 \code
 // Extraction
@@ -140,9 +136,10 @@ array b = diag(a, -1, false);
 
 \defgroup manip_func_join join
 
-\brief Join up to 4 arrays along specified dimension.
+Join up to 4 arrays along specified dimension.
 
-Requires that all dimensions except the join dimension must be the same for all arrays.
+Requires that all dimensions except the join dimension must be the same for all
+arrays.
 
 \ingroup manip_mat
 \ingroup arrayfire_func
@@ -151,13 +148,14 @@ Requires that all dimensions except the join dimension must be the same for all 
 
 \defgroup manip_func_tile tile
 
-\brief Repeat the contents of the input array along the specified dimensions
+Generate a tiled array by repeating an array's contents along a specified
+dimension.
 
 Creates copies of the input array and concatenates them with each other, such
 that the output array will have as many copies of the input array as the user
-specifies, along each dimension. In this sense, the output array is essentially
-a set of "tiles", where each copy of the input array (including the original) is
-a "tile" (hence the name of this function).
+specifies along each dimension. In this sense, the output array is a set of
+"tiles" where each copy of the input array, including the original, is
+a "tile".
 
 Given below are some examples. The input array looks like this:
 
@@ -184,7 +182,7 @@ dimension:
 
 \defgroup manip_func_reorder reorder
 
-\brief Reorder an array according to the specified dimensions.
+Reorder an array.
 
 Exchanges data of an array such that the requested change in dimension
 is satisfied. The linear ordering of data within the array is preserved.
@@ -201,7 +199,7 @@ a [2 2 3 1]
     2.0000     4.0000
 
 
-reorder(a, 1, 0, 2) [2 2 3 1]  //equivalent to a transpose
+reorder(a, 1, 0, 2) [2 2 3 1]  // equivalent to a transpose
     1.0000     2.0000
     3.0000     4.0000
 
@@ -229,9 +227,9 @@ reorder(a, 2, 0, 1) [3 2 2 1]
 
 \defgroup manip_func_shift shift
 
-\brief Circular shift slong specified dimensions
+Shift an array.
 
-Shifts the values in a circular fashion along the specified dimesion.
+Circular shift array values along a specified dimesion.
 
 \ingroup manip_mat
 \ingroup arrayfire_func
@@ -240,9 +238,10 @@ Shifts the values in a circular fashion along the specified dimesion.
 
 \defgroup manip_func_moddims moddims
 
-\brief Modify the dimensions of an array without changing the order of its elements.
+Modify the dimensions of an array without changing the order of its elements.
 
-This function only modifies array metadata and requires no computation. It is a NOOP.
+This function only modifies array metadata and requires no computation. It is a
+NOOP.
 
 __Examples:__
 
@@ -255,9 +254,9 @@ __Examples:__
 
 \defgroup manip_func_flat flat
 
-\brief Flatten the input to a single dimension
+Flatten an array.
 
-Simply returns the array as a vector. This is a noop.
+Simply returns the array as a vector. This is a NOOP.
 
 \ingroup manip_mat
 \ingroup arrayfire_func
@@ -266,9 +265,9 @@ Simply returns the array as a vector. This is a noop.
 
 \defgroup manip_func_flip flip
 
-\brief Flip the input along specified dimension
+Flip the input along a specified dimension.
 
-Mirrors the array along the specified dimensions.
+Mirrors the array along the specified dimension.
 
 \ingroup manip_mat
 \ingroup arrayfire_func
@@ -277,7 +276,7 @@ Mirrors the array along the specified dimensions.
 
 \defgroup data_func_lower lower
 
-\brief Create a lower triangular matrix from input array
+Return the lower triangular matrix from an input array.
 
 \ingroup data_mat
 \ingroup arrayfire_func
@@ -286,7 +285,7 @@ Mirrors the array along the specified dimensions.
 
 \defgroup data_func_upper upper
 
-\brief Create a upper triangular matrix from input array
+Return the upper triangular matrix from an input array.
 
 \ingroup data_mat
 \ingroup arrayfire_func
@@ -295,13 +294,12 @@ Mirrors the array along the specified dimensions.
 
 \defgroup data_func_select select
 
-\brief Selects elements from two arrays based on the values of a binary
-       conditional array.
+Select elements based on a conditional array.
 
-Creates a new array that is composed of values either from array \p a or array
-\p b, based on a third conditional array. For all non-zero elements in the
-conditional array, the output array will contain values from \p a. Otherwise the
-output will contain values from \p b.
+Creates a new array that is composed of values either from array `a` or array
+`b`, based on a third conditional array. For all non-zero elements in the
+conditional array, the output array will contain values from `a`. Otherwise the
+output will contain values from `b`.
 
 \snippet test/select.cpp ex_data_select
 
@@ -309,7 +307,7 @@ is equivalent to:
 
 \snippet test/select.cpp ex_data_select_c
 
-The conditional array must be a b8 typed array.
+The conditional array must be a \ref b8 typed array.
 
 The select function can perform batched operations based on the size of each of
 the inputs. The following table describes the input and output sizes for
@@ -330,12 +328,24 @@ supported batched configurations.
 
 \defgroup data_func_replace replace
 
-\brief Replace elements of an array based on a conditional array
+Replace elements of an array with elements of another array.
 
-- Input values are retained when corresponding elements from condition array are true.
-- Input values are replaced when corresponding elements from condition array are false.
+Input values are retained when corresponding elements from the conditional
+array are true. Input values are replaced when corresponding elements from the
+conditional array are false.
 
 \ingroup manip_mat
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup data_func_pad pad
+
+Pad an array.
+
+Pad the input array using a constant or values from input along the border.
+
+\ingroup data_mat
 \ingroup arrayfire_func
 
 =======================================================================

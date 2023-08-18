@@ -11,7 +11,7 @@
 #include <af/defines.h>
 
 ///
-/// \brief Handle for random engine
+/// \brief Handle for a random engine object.
 ///
 /// This handle is used to reference the internal random engine object.
 ///
@@ -24,7 +24,7 @@ namespace af
     class array;
     class dim4;
 #if AF_API_VERSION >= 34
-    /// \brief Random Number Generation Engine Class
+    /// C++ Interface - Random Number Generation Engine Class
     ///
     /// The \ref af::randomEngine class is used to set the type and seed of
     /// random number generation engine based on \ref af::randomEngineType.
@@ -39,79 +39,79 @@ namespace af
 
     public:
       /**
-          This function creates a \ref af::randomEngine object with a
-          \ref af::randomEngineType and a seed.
+          C++ Interface to create a \ref af::randomEngine object with a \ref
+          af::randomEngineType and a seed.
 
           \code
-          // creates random engine of default type with seed = 1
-          randomEngine r(AF_RANDOM_ENGINE_DEFAULT, 1);
-         \endcode
+            // create a random engine of default type with seed = 1
+            randomEngine r(AF_RANDOM_ENGINE_DEFAULT, 1);
+          \endcode
       */
       explicit randomEngine(randomEngineType typeIn = AF_RANDOM_ENGINE_DEFAULT,
                             unsigned long long seedIn = 0);
 
       /**
-          Copy constructor for \ref af::randomEngine.
+          C++ Interface copy constructor for a \ref af::randomEngine.
 
-          \param[in] other The input random engine object
+          \param[in] other input random engine object
       */
       randomEngine(const randomEngine &other);
 
       /**
-          Creates a copy of the random engine object from a \ref
-          af_random_engine handle.
+          C++ Interface to create a copy of the random engine object from a
+          \ref af_random_engine handle.
 
           \param[in] engine The input random engine object
       */
       randomEngine(af_random_engine engine);
 
       /**
-          \brief Destructor for \ref af::randomEngine
+          C++ Interface destructor for a \ref af::randomEngine.
       */
       ~randomEngine();
 
       /**
-          \brief Assigns the internal state of randome engine
+          C++ Interface to assign the internal state of randome engine.
 
-          \param[in] other The object to be assigned to the random engine
+          \param[in] other object to be assigned to the random engine
 
-          \returns the reference to this
+          \return the reference to this
       */
       randomEngine &operator=(const randomEngine &other);
 
       /**
-          \brief Sets the random type of the random engine
+          C++ Interface to set the random type of the random engine.
 
-          \param[in] type The type of the random number generator
+          \param[in] type type of the random number generator
       */
       void setType(const randomEngineType type);
 
       /**
-          \brief Return the random type of the random engine
+          C++ Interface to get the random type of the random engine.
 
-          \returns the \ref af::randomEngineType associated with random engine
+          \return \ref af::randomEngineType associated with random engine
       */
       randomEngineType getType(void);
 
       /**
-          \brief Sets the seed of the random engine
+          C++ Interface to set the seed of the random engine.
 
-          \param[in] seed The initializing seed of the random number generator
+          \param[in] seed initializing seed of the random number generator
       */
       void setSeed(const unsigned long long seed);
 
       /**
-          \brief Returns the seed of the random engine
+          C++ Interface to return the seed of the random engine.
 
-          \returns the seed associated with random engine
+          \return seed associated with random engine
       */
       unsigned long long getSeed(void) const;
 
       /**
-          \brief Returns the af_random_engine handle of this object
+          C++ Interface to return the af_random_engine handle of this object.
 
-          \returns the handle to the af_random_engine associated with this
-                   random engine
+          \return handle to the af_random_engine associated with this random
+                  engine
       */
       af_random_engine get(void) const;
     };
@@ -119,11 +119,13 @@ namespace af
 
 #if AF_API_VERSION >= 34
     /**
-        \param[in] dims The dimensions of the array to be generated
-        \param[in] ty The type of the array
-        \param[in] r The random engine object
+        C++ Interface to create an array of random numbers uniformly
+        distributed.
 
-        \return array of size \p dims
+        \param[in] dims dimensions of the array to be generated
+        \param[in] ty   type of the array
+        \param[in] r    random engine object
+        \return    random number array of size `dims`
 
         \ingroup random_func_randu
     */
@@ -132,11 +134,13 @@ namespace af
 
 #if AF_API_VERSION >= 34
     /**
-        \param[in] dims The dimensions of the array to be generated
-        \param[in] ty The type of the array
-        \param[in] r The random engine object
+        C++ Interface to create an array of random numbers normally
+        distributed.
 
-        \return array of size \p dims
+        \param[in] dims dimensions of the array to be generated
+        \param[in] ty   type of the array
+        \param[in] r    random engine object
+        \return    random number array of size `dims`
 
         \ingroup random_func_randn
     */
@@ -144,31 +148,36 @@ namespace af
 #endif
 
     /**
-        \param[in] dims The dimensions of the array to be generated
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers uniformly
+        distributed.
 
-        \return array of size \p dims
+        \param[in] dims dimensions of the array to be generated
+        \param[in] ty   type of the array
 
         \ingroup random_func_randu
     */
     AFAPI array randu(const dim4 &dims, const dtype ty=f32);
 
     /**
-        \param[in] d0 The size of the first dimension
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers uniformly
+        distributed.
 
-        \return array of size \p d0
+        \param[in] d0 size of the first dimension
+        \param[in] ty type of the array
+        \return    random number array of size `d0`
 
         \ingroup random_func_randu
     */
     AFAPI array randu(const dim_t d0, const dtype ty=f32);
 
     /**
-        \param[in] d0 The size of the first dimension
-        \param[in] d1 The size of the second dimension
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers uniformly
+        distributed.
 
-        \return array of size \p d0 x \p d1
+        \param[in] d0 size of the first dimension
+        \param[in] d1 size of the second dimension
+        \param[in] ty type of the array
+        \return    random number array of size `d0` x `d1`
 
         \ingroup random_func_randu
     */
@@ -176,12 +185,14 @@ namespace af
                       const dim_t d1, const dtype ty=f32);
 
     /**
-        \param[in] d0 The size of the first dimension
-        \param[in] d1 The size of the second dimension
-        \param[in] d2 The size of the third dimension
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers uniformly
+        distributed.
 
-        \return array of size \p d0 x \p d1 x \p d2
+        \param[in] d0 size of the first dimension
+        \param[in] d1 size of the second dimension
+        \param[in] d2 size of the third dimension
+        \param[in] ty type of the array
+        \return    random number array of size `d0` x `d1` x `d2`
 
         \ingroup random_func_randu
     */
@@ -189,13 +200,15 @@ namespace af
                       const dim_t d1, const dim_t d2, const dtype ty=f32);
 
     /**
-        \param[in] d0 The size of the first dimension
-        \param[in] d1 The size of the second dimension
-        \param[in] d2 The size of the third dimension
-        \param[in] d3 The size of the fourth dimension
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers uniformly
+        distributed.
 
-        \return array of size \p d0 x \p d1 x \p d2 x \p d3
+        \param[in] d0 size of the first dimension
+        \param[in] d1 size of the second dimension
+        \param[in] d2 size of the third dimension
+        \param[in] d3 size of the fourth dimension
+        \param[in] ty type of the array
+        \return    random number array of size `d0` x `d1` x `d2` x `d3`
 
         \ingroup random_func_randu
     */
@@ -204,42 +217,50 @@ namespace af
                       const dim_t d3, const dtype ty=f32);
 
     /**
-        \param[in] dims The dimensions of the array to be generated
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers normally
+        distributed.
 
-        \return array of size \p dims
+        \param[in] dims dimensions of the array to be generated
+        \param[in] ty   type of the array
+        \return    random number array of size `dims`
 
         \ingroup random_func_randn
     */
     AFAPI array randn(const dim4 &dims, const dtype ty=f32);
 
     /**
-        \param[in] d0 The size of the first dimension
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers normally
+        distributed.
 
-        \return array of size \p d0
+        \param[in] d0 size of the first dimension
+        \param[in] ty type of the array
+        \return    random number array of size `d0`
 
         \ingroup random_func_randn
     */
     AFAPI array randn(const dim_t d0, const dtype ty=f32);
     /**
-        \param[in] d0 The size of the first dimension
-        \param[in] d1 The size of the second dimension
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers normally
+        distributed.
 
-        \return array of size \p d0 x \p d1
+        \param[in] d0 size of the first dimension
+        \param[in] d1 size of the second dimension
+        \param[in] ty type of the array
+        \return    random number array of size `d0` x `d1`
 
         \ingroup random_func_randn
     */
     AFAPI array randn(const dim_t d0,
                       const dim_t d1, const dtype ty=f32);
     /**
-        \param[in] d0 The size of the first dimension
-        \param[in] d1 The size of the second dimension
-        \param[in] d2 The size of the third dimension
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers normally
+        distributed.
 
-        \return array of size \p d0 x \p d1 x \p d2
+        \param[in] d0 size of the first dimension
+        \param[in] d1 size of the second dimension
+        \param[in] d2 size of the third dimension
+        \param[in] ty type of the array
+        \return    random number array of size `d0` x `d1` x `d2`
 
         \ingroup random_func_randn
     */
@@ -247,13 +268,15 @@ namespace af
                       const dim_t d1, const dim_t d2, const dtype ty=f32);
 
     /**
-        \param[in] d0 The size of the first dimension
-        \param[in] d1 The size of the second dimension
-        \param[in] d2 The size of the third dimension
-        \param[in] d3 The size of the fourth dimension
-        \param[in] ty The type of the array
+        C++ Interface to create an array of random numbers normally
+        distributed.
 
-        \return array of size \p d0 x \p d1 x \p d2 x \p d3
+        \param[in] d0 size of the first dimension
+        \param[in] d1 size of the second dimension
+        \param[in] d2 size of the third dimension
+        \param[in] d3 size of the fourth dimension
+        \param[in] ty type of the array
+        \return    random number array of size `d0` x `d1` x `d2` x `d3`
 
         \ingroup random_func_randn
     */
@@ -263,7 +286,9 @@ namespace af
 
 #if AF_API_VERSION >= 34
     /**
-        \param[in] rtype The type of the random number generator
+        C++ Interface to set the default random engine type.
+
+        \param[in] rtype type of the random number generator
 
         \ingroup random_func_set_default_engine
     */
@@ -272,7 +297,9 @@ namespace af
 
 #if AF_API_VERSION >= 34
     /**
-        \returns the \ref af::randomEngine object for the default random engine
+        C++ Interface to get the default random engine type.
+
+        \return \ref af::randomEngine object for the default random engine
 
         \ingroup random_func_get_default_engine
     */
@@ -280,17 +307,19 @@ namespace af
 #endif
 
     /**
-        \brief Sets the seed of the default random number generator
+        C++ Interface to set the seed of the default random number generator.
 
-        \param[in] seed A 64 bit unsigned integer
+        \param[in] seed 64-bit unsigned integer
+
         \ingroup random_func_set_seed
     */
     AFAPI void setSeed(const unsigned long long seed);
 
     /**
-        \brief Gets the seed of the default random number generator
+        C++ Interface to get the seed of the default random number generator.
 
-        \returns seed A 64 bit unsigned integer
+        \return seed 64-bit unsigned integer
+
         \ingroup random_func_get_seed
     */
     AFAPI unsigned long long getSeed();
@@ -304,13 +333,13 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for creating random engine
+       C Interface to create a random engine.
 
-       \param[out]  engine The pointer to the returned random engine object
-       \param[in]   rtype The type of the random number generator
-       \param[in]   seed The initializing seed of the random number generator
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[out] engine pointer to the returned random engine object
+       \param[in]  rtype  type of the random number generator
+       \param[in]  seed   initializing seed of the random number generator
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_random_engine
     */
@@ -321,12 +350,12 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for retaining random engine
+       C Interface to retain a random engine.
 
-       \param[out]  out The pointer to the returned random engine object
-       \param[in]   engine The random engine object
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[out] out    pointer to the returned random engine object
+       \param[in]  engine random engine object
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_random_engine
     */
@@ -336,12 +365,12 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for changing random engine type
+       C Interface to change random engine type.
 
-       \param[in]   engine The random engine object
-       \param[in]   rtype The type of the random number generator
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[in]  engine random engine object
+       \param[in]  rtype  type of the random number generator
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_random_engine
     */
@@ -351,12 +380,12 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for getting random engine type
+       C Interface to get random engine type.
 
-       \param[out]  rtype The type of the random number generator
-       \param[in]   engine The random engine object
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[out] rtype  type of the random number generator
+       \param[in]  engine random engine object
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_random_engine
     */
@@ -366,18 +395,16 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for creating an array of uniform numbers using a random
-       engine
+       C Interface to create an array of uniform numbers using a random engine.
 
-       \param[out]  out The pointer to the returned object.
-       \param[in]   ndims The number of dimensions read from the \p dims
-                    parameter
-       \param[in]   dims A C pointer with \p ndims elements. Each value
-                    represents the size of that dimension
-       \param[in]   type The type of the \ref af_array object
-       \param[in]   engine The random engine object
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[out] out    pointer to the returned object
+       \param[in]  ndims  number of dimensions
+       \param[in]  dims   C pointer with `ndims` elements; each value
+                          represents the size of that dimension
+       \param[in]  type   type of the \ref af_array object
+       \param[in]  engine random engine object
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_randu
     */
@@ -388,17 +415,16 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for creating an array of normal numbers using a random engine
+       C Interface to create an array of normal numbers using a random engine.
 
-       \param[out]  out The pointer to the returned object.
-       \param[in]   ndims The number of dimensions read from the \p dims
-                    parameter
-       \param[in]   dims A C pointer with \p ndims elements. Each value
-                    represents the size of that dimension
-       \param[in]   type The type of the \ref af_array object
-       \param[in]   engine The random engine object
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[out] out    pointer to the returned object
+       \param[in]  ndims  number of dimensions
+       \param[in]  dims   C pointer with `ndims` elements; each value
+                          represents the size of that dimension
+       \param[in]  type   type of the \ref af_array object
+       \param[in]  engine random engine object
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_randn
     */
@@ -409,12 +435,12 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for setting the seed of a random engine
+       C Interface to set the seed of a random engine.
 
-       \param[out]  engine The pointer to the returned random engine object
-       \param[in]   seed The initializing seed of the random number generator
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[out] engine pointer to the returned random engine object
+       \param[in]  seed   initializing seed of the random number generator
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_random_engine
     */
@@ -424,11 +450,11 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for getting the default random engine
+       C Interface to get the default random engine.
 
-       \param[out]  engine The pointer to returned default random engine object
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[out] engine pointer to the returned default random engine object
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_get_default_engine
     */
@@ -437,11 +463,11 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for setting the type of the default random engine
+       C Interface to set the type of the default random engine.
 
-       \param[in]   rtype The type of the random number generator
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[in]  rtype type of the random number generator
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_set_default_engine
     */
@@ -450,12 +476,12 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for getting the seed of a random engine
+       C Interface to get the seed of a random engine.
 
-       \param[out]  seed The pointer to the returned seed.
-       \param[in]   engine The random engine object
-
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[out] seed   pointer to the returned seed
+       \param[in]  engine random engine object
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_random_engine
     */
@@ -465,10 +491,11 @@ extern "C" {
 
 #if AF_API_VERSION >= 34
     /**
-       C Interface for releasing random engine
+       C Interface to release a random engine.
 
-       \param[in] engine The random engine object
-       \returns \ref AF_SUCCESS if the execution completes properly
+       \param[in] engine random engine object
+       \return    \ref AF_SUCCESS, if function returns successfully, else
+                  an \ref af_err code is given
 
        \ingroup random_func_random_engine
     */
@@ -476,10 +503,12 @@ extern "C" {
 #endif
 
     /**
-        \param[out] out The generated array
-        \param[in] ndims Size of dimension array \p dims
-        \param[in] dims The array containing sizes of the dimension
-        \param[in] type The type of array to generate
+       \param[out] out   generated array
+       \param[in]  ndims number of dimensions
+       \param[in]  dims  array containing sizes of the dimension
+       \param[in]  type  type of array to generate
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_randu
     */
@@ -487,10 +516,12 @@ extern "C" {
                           const dim_t * const dims, const af_dtype type);
 
     /**
-        \param[out] out The generated array
-        \param[in] ndims Size of dimension array \p dims
-        \param[in] dims The array containing sizes of the dimension
-        \param[in] type The type of array to generate
+       \param[out] out   generated array
+       \param[in]  ndims number of dimensions
+       \param[in]  dims  array containing sizes of the dimension
+       \param[in]  type  type of array to generate
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup random_func_randn
     */
@@ -498,14 +529,18 @@ extern "C" {
                           const dim_t * const dims, const af_dtype type);
 
     /**
-        \param[in] seed A 64 bit unsigned integer
+       \param[in] seed a 64-bit unsigned integer
+       \return    \ref AF_SUCCESS, if function returns successfully, else
+                  an \ref af_err code is given
 
         \ingroup random_func_set_seed
     */
     AFAPI af_err af_set_seed(const unsigned long long seed);
 
     /**
-        \param[out] seed A 64 bit unsigned integer
+       \param[out] seed a 64-bit unsigned integer
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
         \ingroup random_func_get_seed
     */

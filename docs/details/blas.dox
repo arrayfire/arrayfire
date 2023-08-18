@@ -1,29 +1,18 @@
 /**
 \addtogroup arrayfire_func
 @{
-\defgroup blas_func_dot dot
-
-\ingroup blas_mat
-
-\brief Calculate the dot product of a vector
-
-Scalar dot product between two vectors.  Also referred to as the inner
-product.
-
-=======================================================================
 
 \defgroup blas_func_matmul matmul
-\ingroup blas_mat
 
-\brief Matrix multiplication using array
+Matrix multiplication.
 
 Performs a matrix multiplication on the two input arrays after performing the
 operations specified in the options. The operations are done while reading the
 data from memory. This results in no additional memory being used for temporary
 buffers.
 
-Batched matrix multiplications are supported. Given below are the supported
-types of batch operations for any given set of two matrices A and B.
+Batched matrix multiplications are supported. The supported types of batch
+operations for any given set of two matrices A and B are given below,
 
 | Size of Input Matrix A     | Size of Input Matrix B     | Output Matrix Size          |
 |:--------------------------:|:--------------------------:|:---------------------------:|
@@ -32,8 +21,8 @@ types of batch operations for any given set of two matrices A and B.
 | \f$ \{ M, K,  1,  1 \} \f$ | \f$ \{ K, N, b2, b3 \} \f$ |  \f$ \{ M, N, b2, b3 \} \f$ |
 | \f$ \{ M, K, b2, b3 \} \f$ | \f$ \{ K, N,  1,  1 \} \f$ |  \f$ \{ M, N, b2, b3 \} \f$ |
 
-where M, K, N are dimensions of the matrix and b2, b3 indicate batch size along the
-respective dimension.
+where `M`, `K`, `N` are dimensions of the matrix and `b2`, `b3` indicate batch
+size along the respective dimension.
 
 For the last two entries in the above table, the 2D matrix is broadcasted to
 match the dimensions of 3D/4D array. This broadcast doesn't involve any additional
@@ -43,14 +32,24 @@ memory allocations either on host or device.
 for Sparse-Dense matrix multiplication. See the notes of the function for usage
 and restrictions.
 
+\ingroup blas_mat
+
+=======================================================================
+
+\defgroup blas_func_dot dot
+
+Compute the dot product.
+
+Scalar dot product between two vectors, also referred to as the inner
+product.
+
+\ingroup blas_mat
 
 =======================================================================
 
 \defgroup blas_func_transpose transpose
-\ingroup blas_mat
-\ingroup manip_mat
 
-\brief Transpose a matrix.
+Transpose a matrix.
 
 Reverse or permute the dimensions of an array; returns the modified array.
 For an array a with two dimensions, `transpose(a)` gives the matrix transpose.
@@ -69,6 +68,9 @@ reducing memory footprint.
 __Examples:__
 
 \snippet test/transpose.cpp ex_blas_func_transpose
+
+\ingroup blas_mat
+\ingroup manip_mat
 
 =======================================================================
 

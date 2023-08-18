@@ -1,4 +1,4 @@
-/*******************************************************
+/********************************************************
  * Copyright (c) 2014, ArrayFire
  * All rights reserved.
  *
@@ -7,15 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-/** \file blas.h
- *
- * Contains BLAS related functions
- *
- * Contains functions for basic BLAS functionallity
- */
-
 #pragma once
-
 #include <af/defines.h>
 
 #ifdef __cplusplus
@@ -23,93 +15,95 @@ namespace af
 {
     class array;
     /**
-        \brief Matrix multiply of two arrays
+       C++ Interface to multiply two matrices.
 
-        \copydetails blas_func_matmul
+       \copydetails blas_func_matmul
 
-        \param[in] lhs The array object on the left hand side
-        \param[in] rhs The array object on the right hand side
-        \param[in] optLhs Transpose left hand side before the function is performed
-        \param[in] optRhs Transpose right hand side before the function is performed
-        \return The result of the matrix multiplication of lhs, rhs
+       `optLhs` and `optRhs` can only be one of \ref AF_MAT_NONE,
+       \ref AF_MAT_TRANS, \ref AF_MAT_CTRANS.
 
-        \note optLhs and optRhs can only be one of \ref AF_MAT_NONE, \ref
-              AF_MAT_TRANS, \ref AF_MAT_CTRANS \note This function is not supported
-              in GFOR
+       This function is not supported in GFOR.
 
-        \note <b> The following applies for Sparse-Dense matrix multiplication.</b>
-        \note This function can be used with one sparse input. The sparse input
-              must always be the \p lhs and the dense matrix must be \p rhs.
-        \note The sparse array can only be of \ref AF_STORAGE_CSR format.
-        \note The returned array is always dense.
-        \note \p optLhs an only be one of \ref AF_MAT_NONE, \ref AF_MAT_TRANS,
-              \ref AF_MAT_CTRANS.
-        \note \p optRhs can only be \ref AF_MAT_NONE.
+       \note <b>The following applies for Sparse-Dense matrix multiplication.</b>
+       \note This function can be used with one sparse input. The sparse input
+             must always be the \p lhs and the dense matrix must be \p rhs.
+       \note The sparse array can only be of \ref AF_STORAGE_CSR format.
+       \note The returned array is always dense.
+       \note \p optLhs an only be one of \ref AF_MAT_NONE, \ref AF_MAT_TRANS,
+             \ref AF_MAT_CTRANS.
+       \note \p optRhs can only be \ref AF_MAT_NONE.
 
-        \ingroup blas_func_matmul
+       \param[in] lhs    input array on the left-hand side
+       \param[in] rhs    input array on the right-hand side
+       \param[in] optLhs transpose the left-hand side prior to multiplication
+       \param[in] optRhs transpose the right-hand side prior to multiplication
+       \return    `lhs` * `rhs`
 
-     */
+       \ingroup blas_func_matmul
+    */
     AFAPI array matmul(const array &lhs, const array &rhs,
                        const matProp optLhs = AF_MAT_NONE,
                        const matProp optRhs = AF_MAT_NONE);
 
     /**
-       \brief Matrix multiply of two arrays
+       C++ Interface to multiply two matrices.
+       The second matrix will be transposed.
 
        \copydetails blas_func_matmul
 
-       \param[in] lhs The array object on the left hand side
-       \param[in] rhs The array object on the right hand side
-       \return The result of the matrix multiplication of \p lhs, transpose(\p rhs)
+       This function is not supported in GFOR.
 
-       \note This function is not supported in GFOR
+       \param[in] lhs input array on the left-hand side
+       \param[in] rhs input array on the right-hand side
+       \return    `lhs` * transpose(`rhs`)
 
        \ingroup blas_func_matmul
     */
     AFAPI array matmulNT(const array &lhs, const array &rhs);
 
     /**
-       \brief Matrix multiply of two arrays
+       C++ Interface to multiply two matrices.
+       The first matrix will be transposed.
 
        \copydetails blas_func_matmul
 
-       \param[in] lhs The array object on the left hand side
-       \param[in] rhs The array object on the right hand side
-       \return The result of the matrix multiplication of transpose(\p lhs), \p rhs
+       This function is not supported in GFOR.
 
-       \note This function is not supported in GFOR
+       \param[in] lhs input array on the left-hand side
+       \param[in] rhs input array on the right-hand side
+       \return    transpose(`lhs`) * `rhs`
 
        \ingroup blas_func_matmul
     */
     AFAPI array matmulTN(const array &lhs, const array &rhs);
 
     /**
-       \brief Matrix multiply of two arrays
+       C++ Interface to multiply two matrices.
+       Both matrices will be transposed.
 
        \copydetails blas_func_matmul
 
-       \param[in] lhs The array object on the left hand side
-       \param[in] rhs The array object on the right hand side
-       \return The result of the matrix multiplication of transpose(\p lhs), transpose(\p rhs)
+       This function is not supported in GFOR.
 
-       \note This function is not supported in GFOR
+       \param[in] lhs input array on the left-hand side
+       \param[in] rhs input array on the right-hand side
+       \return    transpose(`lhs`) * transpose(`rhs`)
 
        \ingroup blas_func_matmul
     */
     AFAPI array matmulTT(const array &lhs, const array &rhs);
 
     /**
-       \brief Chain 2 matrix multiplications
+       C++ Interface to chain multiply three matrices.
 
-       The matrix multiplications are done in a way to reduce temporary memory
+       The matrix multiplications are done in a way to reduce temporary memory.
+
+       This function is not supported in GFOR.
 
        \param[in] a The first array
        \param[in] b The second array
        \param[in] c The third array
-
-       \returns out = a x b x c
-
-       \note This function is not supported in GFOR
+       \return    a x b x c
 
        \ingroup blas_func_matmul
     */
@@ -117,18 +111,17 @@ namespace af
 
 
     /**
-       \brief Chain 3 matrix multiplications
+       C++ Interface to chain multiply three matrices.
 
-       The matrix multiplications are done in a way to reduce temporary memory
+       The matrix multiplications are done in a way to reduce temporary memory.
+
+       This function is not supported in GFOR.
 
        \param[in] a The first array
        \param[in] b The second array
        \param[in] c The third array
        \param[in] d The fourth array
-
-       \returns out = a x b x c x d
-
-       \note This function is not supported in GFOR
+       \returns   a x b x c x d
 
        \ingroup blas_func_matmul
     */
@@ -136,36 +129,34 @@ namespace af
 
 #if AF_API_VERSION >= 35
     /**
-        \brief Dot Product
+        C++ Interface to compute the dot product.
 
-        Scalar dot product between two vectors. Also referred to as the inner
+        Scalar dot product between two vectors, also referred to as the inner
         product.
 
         \code
           // compute scalar dot product
-          array x = randu(100),
-          y = randu(100);
+          array x = randu(100), y = randu(100);
 
           af_print(dot(x, y));
           // OR
           printf("%f\n", dot<float>(x, y));
-
         \endcode
 
-        \tparam T The type of the output
-        \param[in] lhs The array object on the left hand side
-        \param[in] rhs The array object on the right hand side
-        \param[in] optLhs Options for lhs. Currently only \ref AF_MAT_NONE and
-                  AF_MAT_CONJ are supported.
-        \param[in] optRhs Options for rhs. Currently only \ref AF_MAT_NONE and
-        AF_MAT_CONJ are supported \return The result of the dot product of lhs,
-        rhs
+       Parameters `optLhs` and `optRhs` can only be one of \ref AF_MAT_NONE or
+       \ref AF_MAT_CONJ. The conjugate dot product can be computed by setting
+       `optLhs = AF_MAT_CONJ` and `optRhs = AF_MAT_NONE`.
 
-        \note optLhs and optRhs can only be one of \ref AF_MAT_NONE or \ref
-              AF_MAT_CONJ
-        \note optLhs = AF_MAT_CONJ and optRhs = AF_MAT_NONE will run
-              conjugate dot operation.
-        \note This function is not supported in GFOR
+       This function is not supported in GFOR.
+
+        \tparam    T      type of the output
+        \param[in] lhs    input array on the left-hand side
+        \param[in] rhs    input array on the right-hand side
+        \param[in] optLhs `lhs` options, only \ref AF_MAT_NONE and \ref
+                          AF_MAT_CONJ are supported
+        \param[in] optRhs `rhs` options, only \ref AF_MAT_NONE and \ref
+                          AF_MAT_CONJ are supported
+        \return    dot product of `lhs` and `rhs`
 
         \ingroup blas_func_dot
     */
@@ -181,20 +172,21 @@ namespace af
                     const matProp optRhs = AF_MAT_NONE);
 
     /**
-        \brief C++ Interface for transposing a matrix
+        C++ Interface to transpose a matrix.
 
-        \param[in] in an input matrix
-        \param[in] conjugate if true, a conjugate transposition is performed
-        \return the transposed matrix
+        \param[in] in        input array
+        \param[in] conjugate if true, conjugate transposition is performed
+        \return    transpose
+
         \ingroup blas_func_transpose
     */
     AFAPI array transpose(const array &in, const bool conjugate = false);
 
     /**
-        \brief C++ Interface for transposing a matrix in-place
+        C++ Interface to transpose a matrix in-place.
 
-        \param[in,out] in the matrix to be transposed in-place
-        \param[in] conjugate if true, a conjugate transposition is performed
+        \param[in,out] in        input array to be transposed in-place
+        \param[in]     conjugate if true, conjugate transposition is performed
 
         \ingroup blas_func_transpose
     */
@@ -208,11 +200,10 @@ extern "C" {
 
 #if AF_API_VERSION >= 37
     /**
-        \brief BLAS general matrix multiply (GEMM) of two \ref af_array objects
+        C Interface to multiply two matrices.
 
-        \details
-        This provides a general interface to the BLAS level 3 general matrix
-        multiply (GEMM), which is generally defined as:
+        This provides an interface to the BLAS level 3 general matrix multiply
+        (GEMM) of two \ref af_array objects, which is generally defined as:
 
         \f[
         C = \alpha * opA(A)opB(B) + \beta * C
@@ -251,23 +242,15 @@ extern "C" {
 
         \snippet test/blas.cpp ex_af_gemm_overwrite
 
-        \param[in,out] C     Pointer to the output \ref af_array
-
-        \param[in]     opA   Operation to perform on A before the multiplication
-
-        \param[in]     opB   Operation to perform on B before the multiplication
-
-        \param[in]     alpha The alpha value; must be the same type as \p lhs
-                            and \p rhs
-
-        \param[in]     A     Left-hand side operand
-
-        \param[in]     B     Right-hand side operand
-
-        \param[in]     beta  The beta value; must be the same type as \p lhs
-                            and \p rhs
-
-        \return AF_SUCCESS if the operation is successful.
+        \param[in,out] C     `A` * `B` = `C`
+        \param[in]     opA   operation to perform on A before the multiplication
+        \param[in]     opB   operation to perform on B before the multiplication
+        \param[in]     alpha alpha value; must be the same type as `A` and `B`
+        \param[in]     A     input array on the left-hand side
+        \param[in]     B     input array on the right-hand side
+        \param[in]     beta  beta value; must be the same type as `A` and `B`
+        \return        \ref AF_SUCCESS, if function returns successfully, else
+                       an \ref af_err code is given
 
         \ingroup blas_func_matmul
     */
@@ -277,17 +260,9 @@ extern "C" {
 #endif
 
     /**
-        \brief Matrix multiply of two \ref af_array
+        C Interface to multiply two matrices.
 
-        \details Performs a matrix multiplication on two arrays (lhs, rhs).
-
-        \param[out] out Pointer to the output \ref af_array
-        \param[in] lhs A 2D matrix \ref af_array object
-        \param[in] rhs A 2D matrix \ref af_array object
-        \param[in] optLhs Transpose left hand side before the function is performed
-        \param[in] optRhs Transpose right hand side before the function is performed
-
-        \return AF_SUCCESS if the process is successful.
+        Performs matrix multiplication on two arrays.
 
         \note <b> The following applies for Sparse-Dense matrix multiplication.</b>
         \note This function can be used with one sparse input. The sparse input
@@ -298,30 +273,41 @@ extern "C" {
               \ref AF_MAT_CTRANS.
         \note \p optRhs can only be \ref AF_MAT_NONE.
 
+        \param[out] out    `lhs` * `rhs` = `out`
+        \param[in]  lhs    input array on the left-hand side
+        \param[in]  rhs    input array on the right-hand side
+        \param[in]  optLhs transpose `lhs` before the function is performed
+        \param[in]  optRhs transpose `rhs` before the function is performed
+        \return     \ref AF_SUCCESS, if function returns successfully, else
+                    an \ref af_err code is given
+
         \ingroup blas_func_matmul
      */
     AFAPI af_err af_matmul( af_array *out ,
                             const af_array lhs, const af_array rhs,
                             const af_mat_prop optLhs, const af_mat_prop optRhs);
 
-
     /**
-        Scalar dot product between two vectors.  Also referred to as the inner
+        C Interface to compute the dot product.
+
+        Scalar dot product between two vectors, also referred to as the inner
         product.
 
         \code
-        // compute scalar dot product
-        array x = randu(100), y = randu(100);
-        print(dot<float>(x,y));
+          // compute scalar dot product
+          array x = randu(100), y = randu(100);
+          print(dot<float>(x,y));
         \endcode
 
-        \param[out] out The array object with the result of the dot operation
-        \param[in] lhs The array object on the left hand side
-        \param[in] rhs The array object on the right hand side
-        \param[in] optLhs Options for lhs. Currently only \ref AF_MAT_NONE and
-                   AF_MAT_CONJ are supported.
-        \param[in] optRhs Options for rhs. Currently only \ref AF_MAT_NONE and AF_MAT_CONJ are supported
-        \return AF_SUCCESS if the process is successful.
+        \param[out] out    dot product of `lhs` and `rhs`
+        \param[in]  lhs    input array on the left-hand side
+        \param[in]  rhs    input array on the right-hand side
+        \param[in]  optLhs `lhs` options, only \ref AF_MAT_NONE and \ref
+                           AF_MAT_CONJ are supported
+        \param[in]  optRhs `rhs` options, only \ref AF_MAT_NONE and \ref
+                           AF_MAT_CONJ are supported
+        \return     \ref AF_SUCCESS, if function returns successfully, else
+                    an \ref af_err code is given
 
         \ingroup blas_func_dot
     */
@@ -331,18 +317,21 @@ extern "C" {
 
 #if AF_API_VERSION >= 35
     /**
+        C Interface to compute the dot product, scalar result returned on host.
+
         Scalar dot product between two vectors. Also referred to as the inner
         product. Returns the result as a host scalar.
 
-        \param[out] real is the real component of the result of dot operation
-        \param[out] imag is the imaginary component of the result of dot operation
-        \param[in] lhs The array object on the left hand side
-        \param[in] rhs The array object on the right hand side
-        \param[in] optLhs Options for lhs. Currently only \ref AF_MAT_NONE and
-                   AF_MAT_CONJ are supported.
-        \param[in] optRhs Options for rhs. Currently only \ref AF_MAT_NONE and AF_MAT_CONJ are supported
-
-        \return AF_SUCCESS if the process is successful.
+        \param[out] real   real component of the dot product
+        \param[out] imag   imaginary component of the dot product
+        \param[in]  lhs    input array on the left-hand side
+        \param[in]  rhs    input array on the right-hand side
+        \param[in]  optLhs `lhs` options, only \ref AF_MAT_NONE and \ref
+                           AF_MAT_CONJ are supported
+        \param[in]  optRhs `rhs` options, only \ref AF_MAT_NONE and \ref
+                           AF_MAT_CONJ are supported
+        \return     \ref AF_SUCCESS, if function returns successfully, else
+                    an \ref af_err code is given
 
         \ingroup blas_func_dot
     */
@@ -352,22 +341,25 @@ extern "C" {
 #endif
 
     /**
-        \brief C Interface for transposing a matrix
+        C Interface to transpose a matrix.
 
-        \param[out] out the transposed matrix
-        \param[in] in an input matrix
-        \param[in] conjugate if true, a conjugate transposition is performed
+        \param[out] out       transpose
+        \param[in]  in        input array
+        \param[in]  conjugate if true, conjugate transposition is performed
+        \return     \ref AF_SUCCESS, if function returns successfully, else
+                    an \ref af_err code is given
 
-        \return AF_SUCCESS if the process is successful.
         \ingroup blas_func_transpose
     */
     AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);
 
     /**
-        \brief C Interface for transposing a matrix in-place
+        C Interface to transpose a matrix in-place.
 
-        \param[in,out] in is the matrix to be transposed in place
-        \param[in] conjugate if true, a conjugate transposition is performed
+        \param[in,out] in        input array to be transposed in-place
+        \param[in]     conjugate if true, conjugate transposition is performed
+        \return        \ref AF_SUCCESS, if function returns successfully, else
+                       an \ref af_err code is given
 
         \ingroup blas_func_transpose
     */

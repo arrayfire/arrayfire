@@ -1,25 +1,47 @@
 /**
 \addtogroup arrayfire_func
 @{
-\defgroup lapack_factor_func_lu lu
+
+\defgroup lapack_factor_func_svd svd
+
+Perform singular value decomposition.
+
+This function factorizes a matrix \f$A\f$ into two unitary matrices, \f$U\f$
+and \f$V^T\f$, and a diagonal matrix \f$S\f$, such that \f$A = USV^T\f$. If
+\f$A\f$ has \f$M\f$ rows and \f$N\f$ columns (\f$M \times N\f$), then \f$U\f$
+will be \f$M \times M\f$, \f$V\f$ will be \f$N \times N\f$, and \f$S\f$ will be
+\f$M \times N\f$. However, for \f$S\f$, this function only returns the non-zero
+diagonal elements as a sorted (in descending order) 1D array.
+
+To reconstruct the original matrix \f$A\f$ from the individual factors, the
+following code snippet can be used:
+
+\snippet test/svd_dense.cpp ex_svd_reg
+
+When memory is a concern, and \f$A\f$ is dispensable, \ref af::svdInPlace() can
+be used. However, this in-place version is currently limited to input arrays
+where \f$M \geq N\f$.
 
 \ingroup lapack_factor_mat
 
-\brief Perform LU decomposition
+===============================================================================
 
-This function decomposes input matrix **A** into a lower triangle **L**, an upper triangle **U** such that
+\defgroup lapack_factor_func_lu lu
 
-    \f$A = L * U\f$
+Perform LU decomposition.
 
-For stability, a permutation array **P** is also used to modify the formula in the following manner.
+This function decomposes input matrix \f$A\f$ into a lower triangle \f$L\f$, an
+upper triangle \f$U\f$ such that \f$A = L * U\f$.
 
-    \f$A(P, span) = L * U\f$
+For stability, a permutation array \f$P\f$ is also used to modify the formula
+in the following manner, \f$A(P, span) = L * U\f$.
 
-This operation can be performed in ArrayFire using the following code snippet.
+This operation can be performed in ArrayFire, using the following code snippet.
 
 \snippet test/lu_dense.cpp ex_lu_unpacked
 
-The permuted version of the original matrix can be reconstructed using the following snippet.
+The permuted version of the original matrix can be reconstructed, using the
+following snippet.
 
 \snippet test/lu_dense.cpp ex_lu_recon
 
@@ -57,115 +79,98 @@ a_perm [3 3 1 1]
     1.0000     4.0000     7.0000
 \endcode
 
-When memory is a concern, users can perform the LU decomposition in place as shown below.
+When memory is a concern, users can perform the LU decomposition in place as
+shown below.
 
 \snippet test/lu_dense.cpp ex_lu_packed
 
-The lower and upper triangle matrices can be obtained if necessary in the following manner.
+The lower and upper triangle matrices can be obtained if necessary in the
+following manner.
 
 \snippet test/lu_dense.cpp ex_lu_extract
 
-LU decompositions has many applications including <a href="http://en.wikipedia.org/wiki/LU_decomposition#Solving_linear_equations">solving a system of linear equations</a>. Check \ref af::solveLU fore more information.
-
-=======================================================================
-
-\defgroup lapack_factor_func_qr qr
+LU decompositions have many applications including
+<a href="http://en.wikipedia.org/wiki/LU_decomposition#Solving_linear_equations">
+solving a system of linear equations</a>. Check \ref af::solveLU for more
+information.
 
 \ingroup lapack_factor_mat
 
-\brief Perform QR decomposition
+===============================================================================
 
-This function decomposes input matrix **A** into an orthogonal matrix **Q** and an upper triangular matrix **R** such that
+\defgroup lapack_factor_func_qr qr
 
-     \f$A = Q * R\f$
+Perform QR decomposition.
 
-     \f$Q * Q^T = I\f$
-
-Where **I** is an identity matrix. The matrix **Q** is a square matrix of size **max(M, N)** where **M** and **N** are rows and columns of **A** respectively. The matrix **R** is the same size as **A*.
+This function decomposes input matrix \f$A\f$ into an orthogonal matrix \f$Q\f$
+and an upper triangular matrix \f$R\f$ such that, \f$A = Q * R\f$ and
+\f$Q * Q^T = I\f$, where \f$I\f$ is an identity matrix. The matrix \f$Q\f$ is a
+square matrix of size \f$max(M, N)\f$ where \f$M\f$ and \f$N\f$ are rows and
+columns of \f$A\f$ respectively. The matrix \f$R\f$ is the same size as
+\f$A\f$.
 
 This operation can be performed in ArrayFire using the following code snippet.
 
 \snippet test/qr_dense.cpp ex_qr_unpacked
 
-The additional parameter **Tau** can be used to speed up solving over and under determined system of equations.
+The additional parameter `tau` can be used to speed up solving over- and
+under-determined systems of equations.
 
 The original matrix can be reconstructed using the following code snippet.
 
 \snippet test/qr_dense.cpp ex_qr_recon
 
-When memory is a concern, users can perform QR decomposition in place as shown below.
+When memory is a concern, users can perform QR decomposition in place as shown
+below.
 
 \snippet test/qr_dense.cpp ex_qr_packed
 
-=======================================================================
+\ingroup lapack_factor_mat
+
+===============================================================================
 
 \defgroup lapack_factor_func_cholesky cholesky
 
-\ingroup lapack_factor_mat
+Perform Cholesky decomposition.
 
-\brief Perform Cholesky decomposition
+This function decomposes a
+<a href="http://en.wikipedia.org/wiki/Positive-definite_matrix">positive
+definite</a> matrix \f$A\f$ into two triangular matrices such that,
+\f$A = L * U\f$ and \f$L = U^T\f$.
 
-This function decomposes a <a href="http://en.wikipedia.org/wiki/Positive-definite_matrix">positive definite</a> matrix **A** into two triangular matrices such that
-
-     \f$A = L * U\f$
-
-     \f$L = U^T\f$
-
-Only one of **L** and **U** is stored to conserve space when solving linear equations.
+Only one of \f$L\f$ and \f$U\f$ is stored to conserve space when solving linear
+equations.
 
 This operation can be performed in ArrayFire using the following code snippet.
 
 \snippet test/cholesky_dense.cpp ex_chol_reg
 
-When memory is a concern, users can perform Cholesky decomposition in place as shown below.
+When memory is a concern, users can perform Cholesky decomposition in place as
+shown below.
 
 \snippet test/cholesky_dense.cpp ex_chol_inplace
 
-=======================================================================
-
-\defgroup lapack_factor_func_svd svd
-
 \ingroup lapack_factor_mat
 
-\brief Computes the singular value decomposition of a matrix
-
-This function factorizes a matrix \f$A\f$ into two unitary matrices, \f$U\f$ and
-\f$V^T\f$, and a diagonal matrix \f$S\f$, such that \f$A = USV^T\f$. If \f$A\f$
-has \f$M\f$ rows and \f$N\f$ columns (\f$M \times N\f$), then \f$U\f$ will be
-\f$M \times M\f$, \f$V\f$ will be \f$N \times N\f$, and \f$S\f$ will be
-\f$M \times N\f$. However, for \f$S\f$, this function only returns the non-zero
-diagonal elements as a sorted (in descending order) 1D array.
-
-To reconstruct the original matrix \f$A\f$ from the individual factors, the
-following code snippet can be used:
-
-\snippet test/svd_dense.cpp ex_svd_reg
-
-When memory is a concern, and \f$A\f$ is dispensable, \ref af::svdInPlace() can be
-used. However, this in-place version is currently limited to input arrays where
-\f$M \geq N\f$.
-
-=======================================================================
+===============================================================================
 
 \defgroup lapack_solve_func_gen solve
 
-\ingroup lapack_solve_mat
+Solve a system of equations.
 
-\brief Solve a system of equations
-
-This function takes a co-efficient matrix **A** and an output matrix **B**  as inputs to solve the following equation for **X**
-
-     \f$A * X = B\f$
+This function takes a co-efficient matrix \f$A\f$ and an output matrix \f$B\f$
+as inputs to solve the following equation for \f$X\f$, \f$A * X = B\f$.
 
 This operation can be done in ArrayFire using the following code snippet.
 
 \snippet test/solve_common.hpp ex_solve
 
-The results can be verified by reconstructing the output matrix using \ref af::matmul in the following manner.
+The results can be verified by reconstructing the output matrix using \ref
+af::matmul in the following manner,
 
 \snippet test/solve_common.hpp ex_solve_recon
 
-The sample output can be seen below
+The sample output can be seen below.
 
 \code
 A [3 3 1 1]
@@ -189,52 +194,57 @@ B1 [3 1 1 1]
    39.0000
 \endcode
 
-If the coefficient matrix is known to be a triangular matrix, \ref AF_MAT_LOWER or \ref AF_MAT_UPPER can be passed to make solve faster.
+If the coefficient matrix is known to be a triangular matrix, \ref AF_MAT_LOWER
+or \ref AF_MAT_UPPER can be passed to make solve faster.
 
-The sample code snippets for solving a lower triangular matrix can be seen below.
+The sample code snippets for solving a lower triangular matrix can be seen
+below.
 
 \snippet test/solve_common.hpp ex_solve_lower
 
-Similarily, the code snippet for solving an upper triangular matrix can be seen below.
+Similarily, the code snippet for solving an upper triangular matrix can be seen
+below.
 
 \snippet test/solve_common.hpp ex_solve_upper
 
 See also: \ref af::solveLU
 
-=======================================================================
+\ingroup lapack_solve_mat
+
+===============================================================================
 
 \defgroup lapack_solve_lu_func_gen solveLU
 
-\ingroup lapack_solve_mat
+Solve a system of equations.
 
-\brief Solve a system of equations
-
-This function takes a co-efficient matrix **A** and an output matrix **B**  as inputs to solve the following equation for **X**
-
-     \f$A * X = B\f$
+This function takes a co-efficient matrix \f$A\f$ and an output matrix \f$B\f$
+as inputs to solve the following equation for \f$X\f$, \f$A * X = B\f$.
 
 This operation can be done in ArrayFire using the following code snippet.
 
 \snippet test/solve_common.hpp ex_solve_lu
 
-This function along with \ref af::lu split up the task af::solve performs for square matrices.
+This function, along with \ref af::lu, split up the task af::solve performs for
+square matrices.
 
-\note This function is beneficial over \ref af::solve only in long running application where the coefficient matrix **A** stays the same, but the observed variables keep changing.
+This function is beneficial over \ref af::solve only in long running
+application where the coefficient matrix \f$A\f$ stays the same, but the
+observed variables keep changing.
 
+\ingroup lapack_solve_mat
 
-=======================================================================
+===============================================================================
 
 \defgroup lapack_ops_func_inv inverse
 
-\ingroup lapack_ops_mat
+Invert a matrix.
 
-\brief Invert a matrix
-
-This function inverts a square matrix **A**. The code snippet to demonstrate this can be seen below.
+This function inverts a square matrix \f$A\f$. The code snippet to demonstrate
+this can be seen below.
 
 \snippet test/inverse_dense.cpp ex_inverse
 
-The sample output can be seen below
+The sample output can be seen below.
 
 \code
 A [3 3 1 1]
@@ -254,71 +264,74 @@ I [3 3 1 1]
 
 \endcode
 
-=======================================================================
+\ingroup lapack_ops_mat
+
+===============================================================================
 
 \defgroup lapack_ops_func_pinv pinverse
 
-\ingroup lapack_ops_mat
-
-\brief Pseudo-invert a matrix
+Pseudo-invert (Moore-Penrose) a matrix.
 
 This function calculates the Moore-Penrose pseudoinverse of a matrix \f$A\f$,
-using \ref af::svd at its core. If \f$A\f$ is of size \f$M \times N\f$, then its
-pseudoinverse \f$A^+\f$ will be of size \f$N \times M\f$.
+using \ref af::svd at its core. If \f$A\f$ is of size \f$M \times N\f$, then
+its pseudoinverse \f$A^+\f$ will be of size \f$N \times M\f$.
 
 This calculation can be batched if the input array is three or four-dimensional
 \f$(M \times N \times P \times Q\f$, with \f$Q=1\f$ for only three dimensions
-\f$)\f$. Each \f$M \times N\f$ slice along the third dimension will have its own
-pseudoinverse, for a total of \f$P \times Q\f$ pseudoinverses in the output array
-\f$(N \times M \times P \times Q)\f$.
+\f$)\f$. Each \f$M \times N\f$ slice along the third dimension will have its
+own pseudoinverse, for a total of \f$P \times Q\f$ pseudoinverses in the output
+array \f$(N \times M \times P \times Q)\f$.
 
-Here's an example snippet of its usage. In this example, we have a matrix \f$A\f$
-and we compute its pseudoinverse \f$A^+\f$. This condition must hold:
+Below is an example snippet of its usage. In this example, we have a matrix
+\f$A\f$ and compute its pseudoinverse \f$A^+\f$. This condition must hold:
 \f$AA^+A=A\f$, given that the two matrices are pseudoinverses of each other (in
 fact, this is one of the Moore-Penrose conditions):
 
 \snippet test/pinverse.cpp ex_pinverse
 
-==================================================================================
+\ingroup lapack_ops_mat
+
+===============================================================================
 
 \defgroup lapack_ops_func_rank rank
 
+Find the rank of a matrix.
+
+This function uses \ref af::qr to find the rank of the input matrix within the
+given tolerance.
+
 \ingroup lapack_ops_mat
 
-\brief Find the rank of the input matrix.
-
-This function uses \ref af::qr to find the rank of the input matrix within the given tolerance.
-
-=====================================================================================
+===============================================================================
 
 \defgroup lapack_ops_func_det det
 
+Find the determinant of a matrix.
+
+This function requires scratch space equal to the input array.
+
 \ingroup lapack_ops_mat
-
-\brief Find the determinant of the input matrix.
-
-
-\note This function requires scratch space equal to the input array
 
 ===============================================================================
 
 \defgroup lapack_ops_func_norm norm
 
+Find the norm of a matrix
+
+This function can return the norm using various metrics based on the `type`
+parameter.
+
+\ref AF_NORM_MATRIX_2 is currently not supported.
+
 \ingroup lapack_ops_mat
-
-\brief Find the norm of the input matrix
-
-This function can return the norm using various metrics based on the type paramter.
-
-\note \ref AF_NORM_MATRIX_2 is currently not supported.
 
 ===============================================================================
 
 \defgroup lapack_helper_func_available isLAPACKAvailable
 
-\ingroup lapack_helper
+\brief Returns true if ArrayFire is compiled with LAPACK support
 
-\brief Returns true is ArrayFire is compiled with LAPACK support
+\ingroup lapack_helper
 
 ===============================================================================
 

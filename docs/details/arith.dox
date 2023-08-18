@@ -1,6 +1,7 @@
 /*!
 \page arith_real_only arith_real
-\note This function supports real inputs only. Complex inputs are not yet supported.
+\note This function only supports real inputs; complex inputs are not yet
+supported.
 */
 
 /*!
@@ -19,28 +20,28 @@
 \defgroup arith_func_add add
 \ingroup arith_mat
 
-Elementwise addition
+Elementwise addition.
 
 
 
 \defgroup arith_func_sub sub
 \ingroup arith_mat
 
-Elementwise subtraction
+Elementwise subtraction.
 
 
 
 \defgroup arith_func_mul mul
 \ingroup arith_mat
 
-Elementwise multiply
+Elementwise multiply.
 
 
 
 \defgroup arith_func_div div
 \ingroup arith_mat
 
-Elementwise division
+Elementwise division.
 
 
 
@@ -67,7 +68,8 @@ Check if the elements of one array are greater than those of another array.
 
 Less than or equal to, an elementwise comparison of two arrays.
 
-Check if the elements of one array are less than or equal to those of another array.
+Check if the elements of one array are less than or equal to those of another
+array.
 
 
 \defgroup arith_func_ge ge
@@ -75,14 +77,15 @@ Check if the elements of one array are less than or equal to those of another ar
 
 Greater than or equal to, an elementwise comparison of two arrays.
 
-Check if the elements of one array are greater than or equal to those of another array.
+Check if the elements of one array are greater than or equal to those of
+another array.
 
 
 
 \defgroup arith_func_eq eq
 \ingroup logic_mat
 
-\brief Equal to, an elementwise comparison of two arrays.
+Equal to, an elementwise comparison of two arrays.
 
 Check if the elements of one array are equal to those of another array.
 
@@ -91,7 +94,7 @@ Check if the elements of one array are equal to those of another array.
 \defgroup arith_func_neq neq
 \ingroup logic_mat
 
-\brief Not equal to, an elementwise comparison of two arrays.
+Not equal to, an elementwise comparison of two arrays.
 
 Check if the elements of one array are not equal to those of another array.
 
@@ -384,10 +387,14 @@ Create complex arrays.
 
 Complex arrays are created from any of the following four inputs:
 
-1. a single real array, returning zeros for the imaginary component. See `array b` in the example.
-2. two real arrays, one for the real component and one for the imaginary component. See `array c` in the example.
-3. a single real array for the real component and a single scalar for each imaginary component. See `array d` in the example.
-4. a single scalar for each real component and a single real array for the imaginary component. See `array e` in the example.
+1. a single real array, returning zeros for the imaginary component. See
+   `array b` in the example.
+2. two real arrays, one for the real component and one for the imaginary
+   component. See `array c` in the example.
+3. a single real array for the real component and a single scalar for each
+   imaginary component. See `array d` in the example.
+4. a single scalar for each real component and a single real array for the
+   imaginary component. See `array e` in the example.
 
 __Examples:__
 
