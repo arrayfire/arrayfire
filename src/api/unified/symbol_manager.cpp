@@ -193,16 +193,15 @@ AFSymbolManager::AFSymbolManager()
     // In order of priority.
     static const af_backend order[] = {AF_BACKEND_CUDA, AF_BACKEND_ONEAPI,
                                        AF_BACKEND_OPENCL, AF_BACKEND_CPU};
-
-    LibHandle handle    = nullptr;
-    af::Backend backend = AF_BACKEND_DEFAULT;
+    LibHandle handle                = nullptr;
+    af::Backend backend             = AF_BACKEND_DEFAULT;
     // Decremeting loop. The last successful backend loaded will be the most
     // prefered one.
     for (int i = NUM_BACKENDS - 1; i >= 0; i--) {
-        int backend_index          = order[i] >> 1U;  // 2 4 1 -> 1 2 0
-        bkndHandles[backend_index] = openDynLibrary(order[i]);
-        if (bkndHandles[backend_index]) {
-            handle  = bkndHandles[backend_index];
+        int bknd_idx          = backend_index(order[i]);
+        bkndHandles[bknd_idx] = openDynLibrary(order[i]);
+        if (bkndHandles[bknd_idx]) {
+            handle  = bkndHandles[bknd_idx];
             backend = order[i];
             numBackends++;
             backendsAvailable += order[i];
@@ -242,7 +241,7 @@ af_err setBackend(af::Backend bknd) {
             UNIFIED_ERROR_LOAD_LIB();
         }
     }
-    int idx = bknd >> 1U;  // Convert 1, 2, 4 -> 0, 1, 2
+    int idx = backend_index(bknd);
     if (instance.getHandle(idx)) {
         getActiveHandle()  = instance.getHandle(idx);
         getActiveBackend() = bknd;
