@@ -179,7 +179,7 @@ namespace af
     /// \param[in] in      input array
     /// \param[in] num     diagonal index
     /// \param[in] extract if true, returns an array containing diagonal of the
-    ///                    matrix; if false, returns a matrix with `in` as diagonal
+    ///                    matrix; if false, returns a diagonal matrix
     /// \return            diagonal array (or matrix)
     /// 
     /// \ingroup data_func_diag
@@ -507,7 +507,8 @@ extern "C" {
        \param[in]  ndims size of the dimension array
        \param[in]  dims  dimensions of the array to be generated
        \param[in]  type  type
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_constant
     */
@@ -523,7 +524,8 @@ extern "C" {
        \param[in]  ndims size of the dimension array
        \param[in]  dims  dimensions of the array to be generated
        \param[in]  type  type, \ref c32 or \ref c64
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_constant
     */
@@ -539,7 +541,8 @@ extern "C" {
        \param[in]  val   constant value
        \param[in]  ndims size of the dimension array
        \param[in]  dims  dimensions of the array to be generated
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_constant
     */
@@ -554,7 +557,8 @@ extern "C" {
        \param[in]  val   constant value
        \param[in]  ndims size of the dimension array
        \param[in]  dims  dimensions of the array to be generated
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_constant
     */
@@ -568,7 +572,8 @@ extern "C" {
        \param[in]  ndims number of dimensions
        \param[in]  dims  size
        \param[in]  type  type
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_identity
     */
@@ -583,7 +588,8 @@ extern "C" {
        \param[in]  dims    size
        \param[in]  seq_dim dimension along which the range is created
        \param[in]  type    type
-       \return             \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_range
     */
@@ -600,7 +606,8 @@ extern "C" {
        \param[in]  t_ndims number of dimensions of tiled array
        \param[in]  tdims   number of tiled repetitions in each dimension
        \param[in]  type    type
-       \return             \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_iota
     */
@@ -616,7 +623,8 @@ extern "C" {
        \param[out] out diagonal matrix
        \param[in]  in  diagonal array
        \param[in]  num diagonal index
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_diag
     */
@@ -630,7 +638,8 @@ extern "C" {
        \param[out] out `num`-th diagonal array
        \param[in]  in  input array
        \param[in]  num diagonal index
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_diag
     */
@@ -645,7 +654,8 @@ extern "C" {
        \param[in]  dim    dimension along which the join occurs
        \param[in]  first  input array
        \param[in]  second input array
-       \return            \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup manip_func_join
     */
@@ -661,7 +671,8 @@ extern "C" {
        \param[in]  n_arrays number of arrays to join
        \param[in]  inputs   array of af_arrays containing handles to the
                              arrays to be joined
-       \return              \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup manip_func_join
     */
@@ -678,7 +689,8 @@ extern "C" {
        \param[in]  y   number of tiles along the second dimension
        \param[in]  z   number of tiles along the third dimension
        \param[in]  w   number of tiles along the fourth dimension
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup manip_func_tile
     */
@@ -694,7 +706,8 @@ extern "C" {
        \param[in]  y   specifies which dimension should be second
        \param[in]  z   specifies which dimension should be third
        \param[in]  w   specifies which dimension should be fourth
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup manip_func_reorder
     */
@@ -704,13 +717,14 @@ extern "C" {
     /**
        C Interface to shift an array.
 
-       \param[in] out shifted array
-       \param[in] in  input array
-       \param[in] x   specifies the shift along first dimension
-       \param[in] y   specifies the shift along second dimension
-       \param[in] z   specifies the shift along third dimension
-       \param[in] w   specifies the shift along fourth dimension
-       \return        \ref af_err
+       \param[out] out shifted array
+       \param[in]  in  input array
+       \param[in]  x   specifies the shift along first dimension
+       \param[in]  y   specifies the shift along second dimension
+       \param[in]  z   specifies the shift along third dimension
+       \param[in]  w   specifies the shift along fourth dimension
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup manip_func_shift
     */
@@ -724,7 +738,8 @@ extern "C" {
        \param[in]  in    input array
        \param[in]  ndims number of dimensions
        \param[in]  dims  new dimension sizes
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup manip_func_moddims
     */
@@ -735,7 +750,8 @@ extern "C" {
 
        \param[out] out flat array
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup manip_func_flat
     */
@@ -747,7 +763,8 @@ extern "C" {
        \param[out] out flipped array
        \param[in]  in  input array
        \param[in]  dim dimension to flip
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup manip_func_flip
     */
@@ -759,7 +776,8 @@ extern "C" {
        \param[out] out          lower traingle array
        \param[in]  in           input array
        \param[in]  is_unit_diag boolean specifying if diagonal elements are 1's
-       \return                  \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_lower
     */
@@ -771,7 +789,8 @@ extern "C" {
        \param[out] out          upper triangle array
        \param[in]  in           input array
        \param[in]  is_unit_diag boolean specifying if diagonal elements are 1's
-       \return                  \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_upper
     */
@@ -785,7 +804,8 @@ extern "C" {
        \param[in]  cond conditional array
        \param[in]  a    when true, select array element
        \param[in]  b    when false, select array element
-       \return          \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_select
     */
@@ -800,7 +820,8 @@ extern "C" {
        \param[in]  cond conditional array
        \param[in]  a    when true, select array element
        \param[in]  b    when false, select scalar value
-       \return          \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_select
     */
@@ -815,7 +836,8 @@ extern "C" {
        \param[in]  cond conditional array
        \param[in]  a    when true, select scalar value
        \param[in]  b    when false, select array element
-       \return          \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_select
     */
@@ -833,7 +855,8 @@ extern "C" {
        \param[inout]  a    input array
        \param[in]     cond conditional array
        \param[in]     b    replacement array
-       \return             \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_replace
     */
@@ -849,7 +872,8 @@ extern "C" {
        \param[inout] a    input array
        \param[in]    cond conditional array
        \param[in]    b    replacement scalar value
-       \return            \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_replace
     */
@@ -869,7 +893,8 @@ extern "C" {
        \param[in]  end_dims      number of elements to be padded at the end of
                                  each dimension
        \param[in]  pad_fill_type values to fill into the padded region
-       \return                   \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_pad
     */
@@ -889,7 +914,8 @@ extern "C" {
        \param[inout] a    input array
        \param[in]    cond conditional array
        \param[in]    b    replacement scalar value
-       \return            \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_replace
     */
@@ -904,7 +930,8 @@ extern "C" {
        \param[inout] a    input array
        \param[in]    cond conditional array
        \param[in]    b    replacement scalar value
-       \return            \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_replace
     */
@@ -918,7 +945,8 @@ extern "C" {
        \param[in]  cond conditional array
        \param[in]  a    when true, select array element
        \param[in]  b    when false, select scalar value
-       \return          \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_select
     */
@@ -932,7 +960,8 @@ extern "C" {
        \param[in]  cond conditional array
        \param[in]  a    when true, select array element
        \param[in]  b    when false, select scalar value
-       \return          \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_select
     */
@@ -947,7 +976,8 @@ extern "C" {
        \param[in]  cond conditional array
        \param[in]  a    when true, select scalar value
        \param[in]  b    when false, select array element
-       \return          \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_select
     */
@@ -961,7 +991,8 @@ extern "C" {
        \param[in]  cond conditional array
        \param[in]  a    when true, select scalar value
        \param[in]  b    when false, select array element
-       \return          \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup data_func_select
     */

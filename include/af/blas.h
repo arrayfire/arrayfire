@@ -246,7 +246,8 @@ extern "C" {
         \param[in]     A     input array on the left-hand side
         \param[in]     B     input array on the right-hand side
         \param[in]     beta  beta value; must be the same type as `A` and `B`
-        \return        \ref af_err
+        \return        \ref AF_SUCCESS, if function returns successfully, else
+                       an \ref af_err code is given
 
         \ingroup blas_func_matmul
     */
@@ -274,7 +275,8 @@ extern "C" {
         \param[in]  rhs    input array on the right-hand side
         \param[in]  optLhs transpose `lhs` before the function is performed
         \param[in]  optRhs transpose `rhs` before the function is performed
-        \return     \ref af_err
+        \return     \ref AF_SUCCESS, if function returns successfully, else
+                    an \ref af_err code is given
 
         \ingroup blas_func_matmul
      */
@@ -301,7 +303,8 @@ extern "C" {
                            AF_MAT_CONJ are supported
         \param[in]  optRhs `rhs` options, only \ref AF_MAT_NONE and \ref
                            AF_MAT_CONJ are supported
-        \return     \ref af_err
+        \return     \ref AF_SUCCESS, if function returns successfully, else
+                    an \ref af_err code is given
 
         \ingroup blas_func_dot
     */
@@ -324,7 +327,8 @@ extern "C" {
                            AF_MAT_CONJ are supported
         \param[in]  optRhs `rhs` options, only \ref AF_MAT_NONE and \ref
                            AF_MAT_CONJ are supported
-        \return     \ref af_err
+        \return     \ref AF_SUCCESS, if function returns successfully, else
+                    an \ref af_err code is given
 
         \ingroup blas_func_dot
     */
@@ -339,7 +343,8 @@ extern "C" {
         \param[out] out       transpose
         \param[in]  in        input array
         \param[in]  conjugate if true, conjugate transposition is performed
-        \return     \ref af_err
+        \return     \ref AF_SUCCESS, if function returns successfully, else
+                    an \ref af_err code is given
 
         \ingroup blas_func_transpose
     */
@@ -350,6 +355,8 @@ extern "C" {
 
         \param[in,out] in        input array to be transposed in-place
         \param[in]     conjugate if true, conjugate transposition is performed
+        \return        \ref AF_SUCCESS, if function returns successfully, else
+                       an \ref af_err code is given
 
         \ingroup blas_func_transpose
     */

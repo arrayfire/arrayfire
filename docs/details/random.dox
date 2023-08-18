@@ -5,7 +5,7 @@
 
 \brief Random Number Generation Functions
 
-Functions to generate and manage random numbers and random number engines
+Functions to generate and manage random numbers and random number engines.
 
 \ingroup data_mat
 
@@ -16,7 +16,7 @@ Functions to generate and manage random numbers and random number engines
 
 \defgroup random_func_random_engine randomEngine
 
-\brief Functions to create, modify, use, and destroy randomEngine objects
+\brief Functions to create, modify, use, and destroy randomEngine objects.
 
 A \ref af::randomEngine object can be used to generate psuedo random numbers
 using various types of random number generation algorithms defined by \ref
@@ -76,7 +76,7 @@ returned by \ref af_get_default_random_engine.
 
 \defgroup random_func_set_seed setSeed
 
-\brief Set the seed for random number generation
+\brief Set the seed for random number generation.
 
 Sets the seed for the current default random engine.
 
@@ -86,7 +86,7 @@ Sets the seed for the current default random engine.
 
 \defgroup random_func_get_seed getSeed
 
-\brief Returns the seed for random number generation
+\brief Returns the seed for random number generation.
 
 Returns the seed for the current default random engine.
 

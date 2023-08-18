@@ -442,7 +442,7 @@ namespace af
 #if AF_API_VERSION >= 31
     /// C++ Interface to evaluate the logistical sigmoid function.
     ///
-    /// Computes `1/(1+e^-x)`.
+    /// Computes \f$\frac{1}{1+e^{-x}}\f$.
     /// 
     /// \param[in] in input
     /// \return       sigmoid
@@ -610,7 +610,8 @@ extern "C" {
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_add
     */
@@ -623,7 +624,8 @@ extern "C" {
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_sub
     */
@@ -636,7 +638,8 @@ extern "C" {
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_mul
     */
@@ -649,7 +652,8 @@ extern "C" {
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_div
     */
@@ -661,11 +665,12 @@ extern "C" {
 
        Output type is b8.
 
-       \param[out] out   <
+       \param[out] out   1's where `lhs < rhs`, else 0's
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup logic_func_lt
     */
@@ -677,11 +682,12 @@ extern "C" {
 
        Output type is b8.
 
-       \param[out] out   >
+       \param[out] out   1's where `lhs > rhs`, else 0's
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_gt
     */
@@ -693,11 +699,12 @@ extern "C" {
 
        Output type is b8.
 
-       \param[out] out   <=
+       \param[out] out   1's where `lhs <= rhs`, else 0's
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_le
     */
@@ -709,11 +716,12 @@ extern "C" {
 
        Output type is b8.
 
-       \param[out] out   >=
+       \param[out] out   1's where `lhs >= rhs`, else 0's
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_ge
     */
@@ -724,11 +732,12 @@ extern "C" {
 
        Output type is b8.
 
-       \param[out] out   ==
+       \param[out] out   1's where `lhs == rhs`, else 0's
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_eq
     */
@@ -740,11 +749,12 @@ extern "C" {
 
        Output type is b8.
 
-       \param[out] out   !=
+       \param[out] out   1's where `lhs != rhs`, else 0's
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_neq
     */
@@ -755,11 +765,12 @@ extern "C" {
 
        Output type is b8.
 
-       \param[out] out   &&
+       \param[out] out   1's where `lhs && rhs`, else 0's
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_and
     */
@@ -770,11 +781,12 @@ extern "C" {
 
        Output type is b8.
 
-       \param[out] out   ||
+       \param[out] out   1's where `lhs || rhs`, else 0's
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_or
     */
@@ -785,9 +797,10 @@ extern "C" {
 
        Output type is b8.
 
-       \param[out] out !
+       \param[out] out !, logical NOT
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_not
     */
@@ -797,9 +810,10 @@ extern "C" {
     /**
        C Interface to evaluate the bitwise NOT of an array.
 
-       \param[out] out ~
+       \param[out] out ~, bitwise NOT
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_bitnot
     */
@@ -809,11 +823,12 @@ extern "C" {
     /**
        C Interface to evaluate the bitwise AND of two arrays.
 
-       \param[out] out   &
+       \param[out] out   &, bitwise AND
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_bitand
     */
@@ -822,11 +837,12 @@ extern "C" {
     /**
        C Interface to evaluate the bitwise OR of two arrays.
 
-       \param[out] out   |
+       \param[out] out   |, bitwise OR
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_bitor
     */
@@ -835,11 +851,12 @@ extern "C" {
     /**
        C Interface to evaluate the bitwise XOR of two arrays.
 
-       \param[out] out   ^
+       \param[out] out   ^, bitwise XOR
        \param[in]  lhs   first input
        \param[in]  rhs   second input
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_bitxor
     */
@@ -852,7 +869,8 @@ extern "C" {
        \param[in]  lhs   values to shift
        \param[in]  rhs   n bits to shift
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_shiftl
     */
@@ -865,7 +883,8 @@ extern "C" {
        \param[in]  lhs   values to shift
        \param[in]  rhs   n bits to shift
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_shiftr
     */
@@ -908,7 +927,8 @@ extern "C" {
        \param[out] out  values in the specified type
        \param[in]  in   input
        \param[in]  type target data type \ref af_dtype
-       \return          \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_cast
     */
@@ -921,7 +941,8 @@ extern "C" {
        \param[in]  lhs   input array
        \param[in]  rhs   input array
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_min
     */
@@ -935,7 +956,8 @@ extern "C" {
        \param[in]  lhs   input array
        \param[in]  rhs   input array
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_max
     */
@@ -950,7 +972,8 @@ extern "C" {
        \param[in]  lo    lower limit array
        \param[in]  hi    upper limit array
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_clamp
     */
@@ -965,7 +988,8 @@ extern "C" {
        \param[in]  lhs   numerator
        \param[in]  rhs   denominator
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_rem
     */
@@ -978,7 +1002,8 @@ extern "C" {
        \param[in]  lhs   dividend
        \param[in]  rhs   divisor
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_mod
     */
@@ -989,7 +1014,8 @@ extern "C" {
 
        \param[out] out absolute value
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_abs
     */
@@ -1001,7 +1027,8 @@ extern "C" {
 
        \param[out] out phase angle (in radians)
        \param[in]  in  input array, typically complex
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_arg
     */
@@ -1012,7 +1039,8 @@ extern "C" {
 
        \param[out] out array containing 1's for negative values; 0's otherwise
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_sign
     */
@@ -1023,7 +1051,8 @@ extern "C" {
 
        \param[out] out nearest integer
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_round
     */
@@ -1034,7 +1063,8 @@ extern "C" {
 
        \param[out] out nearest integer not greater in magnitude than `in`
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_trunc
     */
@@ -1045,7 +1075,8 @@ extern "C" {
 
        \param[out] out nearest integer less than or equal to `in`
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_floor
     */
@@ -1056,7 +1087,8 @@ extern "C" {
 
        \param[out] out nearest integer greater than or equal to `in`
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_ceil
     */
@@ -1069,7 +1101,8 @@ extern "C" {
        \param[in]  lhs   length of first side
        \param[in]  rhs   length of second side
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_floor
     */
@@ -1080,7 +1113,8 @@ extern "C" {
 
        \param[out] out sine
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_sin
     */
@@ -1091,7 +1125,8 @@ extern "C" {
 
        \param[out] out cosine
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_cos
     */
@@ -1102,7 +1137,8 @@ extern "C" {
 
        \param[out] out tangent
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_tan
     */
@@ -1113,7 +1149,8 @@ extern "C" {
 
        \param[out] out inverse sine
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_asin
     */
@@ -1124,7 +1161,8 @@ extern "C" {
 
        \param[out] out inverse cos
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_acos
     */
@@ -1135,7 +1173,8 @@ extern "C" {
 
        \param[out] out inverse tangent
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_atan
     */
@@ -1148,7 +1187,8 @@ extern "C" {
        \param[in]  lhs   numerator
        \param[in]  rhs   denominator
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_atan
     */
@@ -1159,7 +1199,8 @@ extern "C" {
 
        \param[out] out hyperbolic sine
        \param[in]  in  input
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_sinh
     */
@@ -1170,7 +1211,8 @@ extern "C" {
 
        \param[out] out hyperbolic cosine
        \param[in]  in  input
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_cosh
     */
@@ -1181,7 +1223,8 @@ extern "C" {
 
        \param[out] out hyperbolic tangent
        \param[in]  in  input
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_tanh
     */
@@ -1192,7 +1235,8 @@ extern "C" {
 
        \param[out] out inverse hyperbolic sine
        \param[in]  in  input
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_asinh
     */
@@ -1203,7 +1247,8 @@ extern "C" {
 
        \param[out] out inverse hyperbolic cosine
        \param[in]  in  input
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_acosh
     */
@@ -1214,7 +1259,8 @@ extern "C" {
 
        \param[out] out inverse hyperbolic tangent
        \param[in]  in  input
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_atanh
     */
@@ -1225,7 +1271,8 @@ extern "C" {
 
        \param[out] out complex array
        \param[in]  in  real array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_cplx
     */
@@ -1240,7 +1287,8 @@ extern "C" {
        \param[in]  imag  real array to be assigned as the imaginary component
                          of the returned complex array
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_cplx
     */
@@ -1251,7 +1299,8 @@ extern "C" {
 
        \param[out] out real part
        \param[in]  in  complex array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_real
     */
@@ -1262,7 +1311,8 @@ extern "C" {
 
        \param[out] out imaginary part
        \param[in]  in  complex array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_imag
     */
@@ -1273,7 +1323,8 @@ extern "C" {
 
        \param[out] out complex conjugate
        \param[in]  in  complex array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_conjg
     */
@@ -1286,7 +1337,8 @@ extern "C" {
        \param[in]  lhs   nth root
        \param[in]  rhs   value
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_root
     */
@@ -1300,7 +1352,8 @@ extern "C" {
        \param[in]  lhs   base
        \param[in]  rhs   exponent
        \param[in]  batch batch mode
-       \return           \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_pow
     */
@@ -1311,7 +1364,8 @@ extern "C" {
 
        \param[out] out 2 raised to the power of `in`
        \param[in]  in  exponent
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_pow2
     */
@@ -1321,11 +1375,12 @@ extern "C" {
     /**
        C Interface to evaluate the logistical sigmoid function.
 
-       Computes `1/(1+e^-x)`.
+       Computes \f$\frac{1}{1+e^{-x}}\f$.
 
        \param[out] out output of the logistic sigmoid function
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_sigmoid
     */
@@ -1337,7 +1392,8 @@ extern "C" {
 
        \param[out] out e raised to the power of `in`
        \param[in]  in  exponent
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_exp
     */
@@ -1349,7 +1405,8 @@ extern "C" {
 
        \param[out] out exponential of `in - 1`
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_expm1
     */
@@ -1360,7 +1417,8 @@ extern "C" {
 
        \param[out] out error function value
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_erf
     */
@@ -1371,7 +1429,8 @@ extern "C" {
 
        \param[out] out complementary error function
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_erfc
     */
@@ -1382,7 +1441,8 @@ extern "C" {
 
        \param[out] out natural logarithm
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_log
     */
@@ -1393,7 +1453,8 @@ extern "C" {
 
        \param[out] out logarithm of `in + 1`
        \param[in]  in  input array
-       \return \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_log1p
     */
@@ -1404,7 +1465,8 @@ extern "C" {
 
        \param[out] out base 10 logarithm
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_log10
     */
@@ -1415,7 +1477,8 @@ extern "C" {
 
        \param[out] out base 2 logarithm
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup explog_func_log2
     */
@@ -1426,7 +1489,8 @@ extern "C" {
 
        \param[out] out square root
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_sqrt
     */
@@ -1438,7 +1502,8 @@ extern "C" {
 
       \param[out] out reciprocal square root
       \param[in]  in  input array
-      \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
       \ingroup arith_func_rsqrt
     */
@@ -1449,7 +1514,8 @@ extern "C" {
 
        \param[out] out cube root
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_cbrt
     */
@@ -1460,7 +1526,8 @@ extern "C" {
 
        \param[out] out factorial
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_factorial
     */
@@ -1471,7 +1538,8 @@ extern "C" {
 
        \param[out] out gamma function
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_tgamma
     */
@@ -1483,43 +1551,47 @@ extern "C" {
 
        \param[out] out logarithm of the absolute value of the gamma function
        \param[in]  in  input array
-       \return         \ref af_err
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup arith_func_lgamma
     */
     AFAPI af_err af_lgamma   (af_array *out, const af_array in);
 
     /**
-        C Interface to check if values are zero.
+       C Interface to check if values are zero.
 
-        \param[out] out array containing 1's where input is 0; 0's otherwise
-        \param[in]  in  input array
-        \return         \ref af_err
+       \param[out] out array containing 1's where input is 0; 0's otherwise
+       \param[in]  in  input array
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
-        \ingroup arith_func_iszero
+       \ingroup arith_func_iszero
     */
     AFAPI af_err af_iszero  (af_array *out, const af_array in);
 
     /**
-        C Interface to check if values are infinite.
+       C Interface to check if values are infinite.
 
-        \param[out] out array containing 1's where input is Inf or -Inf; 0's
-                        otherwise
-        \param[in]  in  input array
-        \return         \ref af_err
+       \param[out] out array containing 1's where input is Inf or -Inf; 0's
+                       otherwise
+       \param[in]  in  input array
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
-        \ingroup arith_func_isinf
+       \ingroup arith_func_isinf
     */
     AFAPI af_err af_isinf   (af_array *out, const af_array in);
 
     /**
-        C Interface to check if values are NaN.
+       C Interface to check if values are NaN.
 
-        \param[out] out array containing 1's where input is NaN; 0's otherwise
-        \param[in]  in  input array
-        \return         \ref af_err
+       \param[out] out array containing 1's where input is NaN; 0's otherwise
+       \param[in]  in  input array
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
-        \ingroup arith_func_isnan
+       \ingroup arith_func_isnan
     */
     AFAPI af_err af_isnan   (af_array *out, const af_array in);
 

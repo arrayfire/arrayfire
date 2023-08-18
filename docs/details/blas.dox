@@ -4,7 +4,7 @@
 
 \defgroup blas_func_matmul matmul
 
-Multiply two matrices.
+Matrix multiplication.
 
 Performs a matrix multiplication on the two input arrays after performing the
 operations specified in the options. The operations are done while reading the

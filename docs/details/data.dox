@@ -79,7 +79,11 @@ array b = iota(dim4(5, 3), dim4(1, 2))
 
 \defgroup data_func_diag diag
 
-Extract the diagonal from an array. Optionally, form a diagonal matrix.
+Extract the diagonal from an array.
+
+If `extract` is true, an array is extracted containing diagonal of the matrix,
+while a false condition returns a diagonal matrix.
+
 
 \code
 // Extraction
@@ -144,7 +148,8 @@ arrays.
 
 \defgroup manip_func_tile tile
 
-Generate a tiled array.
+Generate a tiled array by repeating an array's contents along a specified
+dimension.
 
 Creates copies of the input array and concatenates them with each other, such
 that the output array will have as many copies of the input array as the user

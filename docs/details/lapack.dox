@@ -113,7 +113,7 @@ This operation can be performed in ArrayFire using the following code snippet.
 
 \snippet test/qr_dense.cpp ex_qr_unpacked
 
-The additional parameter \f$Tau\f$ can be used to speed up solving over- and 
+The additional parameter `tau` can be used to speed up solving over- and
 under-determined systems of equations.
 
 The original matrix can be reconstructed using the following code snippet.

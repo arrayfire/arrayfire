@@ -1,6 +1,7 @@
 /*!
 \page arith_real_only arith_real
-This function only supports real inputs; complex inputs are not yet supported.
+\note This function only supports real inputs; complex inputs are not yet
+supported.
 */
 
 /*!

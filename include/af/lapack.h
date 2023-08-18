@@ -36,11 +36,11 @@ namespace af
        This function minimizes memory usage if `in` is dispensable. Input array
        `in` is limited to arrays where `dim0` \f$\geq\f$ `dim1`.
 
-       \param[out]    u  U
-       \param[out]    s  diagonal values of sigma (singular values of the input
-                         matrix)
-       \param[out]    vt V^H
-       \param[in,out] in input array; contains random data after the operation                         this operation
+       \param[out]   u  U
+       \param[out]   s  diagonal values of sigma (singular values of the input
+                        matrix)
+       \param[out]   vt V^H
+       \param[inout] in input array; contains random data after the operation                       this operation
 
        \ingroup lapack_factor_func_svd
     */
@@ -312,6 +312,8 @@ extern "C" {
                       matrix)
        \param[out] vt V^H
        \param[in]  in input array
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_factor_func_svd
     */
@@ -325,11 +327,13 @@ extern "C" {
        This function minimizes memory usage if `in` is dispensable. Input array
        `in` is limited to arrays where `dim0` \f$\geq\f$ `dim1`.
 
-       \param[out]    u  U
-       \param[out]    s  diagonal values of sigma (singular values of the input
-                         matrix)
-       \param[out]    vt V^H
-       \param[in,out] in input array; contains random data after the operation                         this operation
+       \param[out]   u  U
+       \param[out]   s  diagonal values of sigma (singular values of the input
+                        matrix)
+       \param[out]   vt V^H
+       \param[inout] in input array; contains random data after the operation                       this operation
+       \return       \ref AF_SUCCESS, if function returns successfully, else
+                     an \ref af_err code is given
 
        \ingroup lapack_factor_func_svd
     */
@@ -344,6 +348,8 @@ extern "C" {
        \param[out] pivot permutation indices mapping the input to the
                          decomposition
        \param[in]  in    input array
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_factor_func_lu
     */
@@ -360,6 +366,8 @@ extern "C" {
                                    decomposition on exit
        \param[in]    is_lapack_piv specifies if the pivot is returned in
                                    original LAPACK-compliant format
+       \return       \ref AF_SUCCESS, if function returns successfully, else
+                     an \ref af_err code is given
 
        \ingroup lapack_factor_func_lu
     */
@@ -375,6 +383,8 @@ extern "C" {
        \param[out] tau additional information needed for solving a
                        least-squares problem using `q` and `r`
        \param[in]  in  input array
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_factor_func_qr
     */
@@ -387,6 +397,8 @@ extern "C" {
 
        \param[out]   tau additional information needed for unpacking the data
        \param[inout] in  input array on entry; packed QR decomposition on exit
+       \return       \ref AF_SUCCESS, if function returns successfully, else
+                     an \ref af_err code is given
 
        \ingroup lapack_factor_func_qr
     */
@@ -406,6 +418,8 @@ extern "C" {
        \param[in]  in       input matrix
        \param[in]  is_upper boolean determining if `out` is upper or lower
                             triangular
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_factor_func_cholesky
     */
@@ -421,6 +435,8 @@ extern "C" {
        \param[inout] in       input matrix on entry; triangular matrix on exit
        \param[in]    is_upper boolean determining if `in` is upper or lower
                               triangular
+       \return       \ref AF_SUCCESS, if function returns successfully, else
+                     an \ref af_err code is given
 
        \ingroup lapack_factor_func_cholesky
     */
@@ -438,6 +454,8 @@ extern "C" {
        \param[in]  a       coefficient matrix
        \param[in]  b       measured values
        \param[in]  options determines various properties of matrix `a`
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_solve_func_gen
     */
@@ -455,6 +473,8 @@ extern "C" {
                            coefficient matrix
        \param[in]  b       measured values
        \param[in]  options determines various properties of matrix `a`
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_solve_lu_func_gen
     */
@@ -469,6 +489,8 @@ extern "C" {
        \param[out] out     inverse matrix
        \param[in]  in      input matrix
        \param[in]  options determines various properties of matrix `in`
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_inv
     */
@@ -493,6 +515,8 @@ extern "C" {
                            SVD
        \param[in]  options must be AF_MAT_NONE (more options might be supported
                            in the future)
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_pinv
     */
@@ -506,6 +530,8 @@ extern "C" {
        \param[out] rank rank
        \param[in]  in   input matrix
        \param[in]  tol  tolerance value
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_rank
     */
@@ -517,6 +543,8 @@ extern "C" {
        \param[out] det_real real part of the determinant
        \param[out] det_imag imaginary part of the determinant
        \param[in]  in       input matrix
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_det
     */
@@ -532,6 +560,8 @@ extern "C" {
                         \ref AF_NORM_MATRIX_L_PQ, else ignored
        \param[in]  q    value of Q when `type` is \ref AF_NORM_MATRIX_L_PQ, else
                         ignored
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given
 
        \ingroup lapack_ops_func_norm
     */
@@ -542,8 +572,9 @@ extern "C" {
        Returns true if ArrayFire is compiled with LAPACK support.
 
        \param[out] out true if LAPACK support is available; false otherwise
-
-       \returns `AF_SUCCESS` if successful; does not depend on the value of out
+       \return     \ref AF_SUCCESS, if function returns successfully, else
+                   an \ref af_err code is given; does not depend on the value
+                   of `out`
 
        \ingroup lapack_helper_func_available
     */
