@@ -935,7 +935,7 @@ extern "C" {
 
        \param[out] out  maximum
        \param[in]  in   input array
-       \param[in]  ndim dimension along which the maximum is found
+       \param[in]  dim dimension along which the maximum is found
        \return     \ref AF_SUCCESS, if function returns successfully, else
                    an \ref af_err code is given
 

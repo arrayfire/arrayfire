@@ -21,7 +21,7 @@ namespace af
 
        `optLhs` and `optRhs` can only be one of \ref AF_MAT_NONE,
        \ref AF_MAT_TRANS, \ref AF_MAT_CTRANS.
-       
+
        This function is not supported in GFOR.
 
        \note <b>The following applies for Sparse-Dense matrix multiplication.</b>
@@ -47,6 +47,7 @@ namespace af
 
     /**
        C++ Interface to multiply two matrices.
+       The second matrix will be transposed.
 
        \copydetails blas_func_matmul
 
@@ -62,6 +63,7 @@ namespace af
 
     /**
        C++ Interface to multiply two matrices.
+       The first matrix will be transposed.
 
        \copydetails blas_func_matmul
 
@@ -77,6 +79,7 @@ namespace af
 
     /**
        C++ Interface to multiply two matrices.
+       Both matrices will be transposed.
 
        \copydetails blas_func_matmul
 
