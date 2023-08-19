@@ -22,6 +22,9 @@ struct Param {
     Param(const Param& other)            = default;
     Param(Param&& other)                 = default;
 
+    dim_t* dims_ptr() { return info.dims; }
+    dim_t* strides_ptr() { return info.strides; }
+
     // AF_DEPRECATED("Use Array<T>")
     Param();
     // AF_DEPRECATED("Use Array<T>")

@@ -35,6 +35,9 @@ class Param {
         return dims[0] * dims[1] * dims[2] * dims[3];
     }
 
+    dim_t *dims_ptr() { return dims; }
+    dim_t *strides_ptr() { return strides; }
+
     Param(const Param<T> &other) noexcept               = default;
     Param(Param<T> &&other) noexcept                    = default;
     Param<T> &operator=(const Param<T> &other) noexcept = default;

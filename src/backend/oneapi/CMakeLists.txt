@@ -99,6 +99,7 @@ add_library(afoneapi
   ireduce.hpp
   jit.cpp
   jit/BufferNode.hpp
+  jit/ShiftNode.hpp
   jit/kernel_generators.hpp
   join.cpp
   join.hpp

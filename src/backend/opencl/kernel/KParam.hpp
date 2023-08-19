@@ -21,6 +21,12 @@ typedef struct {
     dim_t dims[4];
     dim_t strides[4];
     dim_t offset;
+
+#ifndef __OPENCL_VERSION__
+    dim_t *dims_ptr() { return dims; }
+    dim_t *strides_ptr() { return strides; }
+#endif
+
 } KParam;
 
 #endif

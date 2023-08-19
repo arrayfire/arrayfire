@@ -19,6 +19,7 @@
 #include <device_manager.hpp>
 #include <err_opencl.hpp>
 #include <jit/BufferNode.hpp>
+#include <jit/ShiftNode.hpp>
 #include <kernel_headers/jit.hpp>
 #include <threadsMgt.hpp>
 #include <type_util.hpp>
@@ -42,6 +43,7 @@ using arrayfire::common::Node_map_t;
 using arrayfire::common::Node_ptr;
 using arrayfire::common::NodeIterator;
 using arrayfire::common::saveKernel;
+using arrayfire::opencl::jit::ShiftNode;
 
 using cl::Kernel;
 using cl::NDRange;
@@ -418,21 +420,8 @@ void evalNodes(vector<Param>& outputs, const vector<Node*>& output_nodes) {
             }
         }
         if (emptyColumnsFound) {
-            const auto isBuffer{
-                [](const Node_ptr& ptr) { return ptr->isBuffer(); }};
-            for (auto nodeIt{begin(node_clones)}, endIt{end(node_clones)};
-                 (nodeIt = find_if(nodeIt, endIt, isBuffer)) != endIt;
-                 ++nodeIt) {
-                BufferNode* buf{static_cast<BufferNode*>(nodeIt->get())};
-                removeEmptyColumns(outDims, ndims, buf->m_param.dims,
-                                   buf->m_param.strides);
-            }
-            for_each(++begin(outputs), end(outputs),
-                     [outDims, ndims](Param& output) {
-                         removeEmptyColumns(outDims, ndims, output.info.dims,
-                                            output.info.strides);
-                     });
-            ndims = removeEmptyColumns(outDims, ndims, outDims, outStrides);
+            common::removeEmptyDimensions<Param, BufferNode, ShiftNode>(
+                outputs, node_clones);
         }
 
         full_nodes.clear();
