@@ -14,6 +14,7 @@
 #include <types.hpp>
 #include <af/defines.h>
 
+#include <nonstd/span.hpp>
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -330,9 +331,79 @@ std::string getFuncName(const std::vector<Node *> &output_nodes,
                         const bool is_linear, const bool loop0,
                         const bool loop1, const bool loop2, const bool loop3);
 
+/// Returns true if the \p ptr is a Buffer Node
 auto isBuffer(const Node &ptr) -> bool;
 
+/// Returns true if the \p ptr is a Scalar Node
 auto isScalar(const Node &ptr) -> bool;
+
+/// Returns true if \p node is a Buffer or a Shift node
+auto isBufferOrShift(const Node_ptr &node) -> bool;
+
+template<typename T>
+inline void applyShifts(std::array<int, 4> &shifts, nonstd::span<T> dims) {
+    std::array<T, 4> out;
+    for (size_t i = 0; i < shifts.size(); i++) { out[i] = dims[shifts[i]]; }
+    std::copy(begin(out), std::end(out), std::begin(dims));
+}
+
+template<typename ArrayT>
+inline std::array<int, 4> compressArray(ArrayT dims) {
+    std::array<int, 4> shifts{0, 1, 2, 3};
+    bool changed;
+    do {
+        changed = false;
+        for (int i = 0; i < AF_MAX_DIMS - 1; i++) {
+            if (dims[i] == 1 && dims[i + 1] != 1) {
+                std::swap(dims[i], dims[i + 1]);
+                std::swap(shifts[i], shifts[i + 1]);
+                changed = true;
+            }
+        }
+    } while (changed);
+    return shifts;
+}
+
+/// Removes empty columns from output and the other node pointers in \p nodes
+template<typename ParamT, typename BufferNodeT, typename ShiftNodeT>
+void removeEmptyDimensions(nonstd::span<ParamT> outputs,
+                           nonstd::span<Node_ptr> nodes) {
+    dim_t *outDims{outputs[0].dims_ptr()};
+    dim_t *outStrides{outputs[0].strides_ptr()};
+    auto shifts = compressArray(outDims);
+    applyShifts<dim_t>(shifts, {outStrides, AF_MAX_DIMS});
+    for (auto nodeIt{begin(nodes)}, endIt{end(nodes)};
+         (nodeIt = find_if(nodeIt, endIt, isBufferOrShift)) != endIt;
+         ++nodeIt) {
+        switch ((*nodeIt)->getNodeType()) {
+            case kNodeType::Buffer: {
+                BufferNodeT *buf{static_cast<BufferNodeT *>(nodeIt->get())};
+                applyShifts<dim_t>(shifts,
+                                   {buf->m_param.dims_ptr(), AF_MAX_DIMS});
+                applyShifts<dim_t>(shifts,
+                                   {buf->m_param.strides_ptr(), AF_MAX_DIMS});
+            } break;
+            case kNodeType::Shift: {
+                ShiftNodeT &shiftNode{
+                    *static_cast<ShiftNodeT *>(nodeIt->get())};
+                BufferNodeT &buf{shiftNode.getBufferNode()};
+                applyShifts<dim_t>(shifts,
+                                   {buf.m_param.dims_ptr(), AF_MAX_DIMS});
+                applyShifts<dim_t>(shifts,
+                                   {buf.m_param.strides_ptr(), AF_MAX_DIMS});
+
+                auto &node_shifts = shiftNode.getShifts();
+                applyShifts<int>(shifts, node_shifts);
+            } break;
+            default: break;
+        }
+    }
+    std::for_each(
+        std::begin(outputs) + 1, std::end(outputs), [&shifts](ParamT &output) {
+            applyShifts<dim_t>(shifts, {output.dims_ptr(), AF_MAX_DIMS});
+            applyShifts<dim_t>(shifts, {output.strides_ptr(), AF_MAX_DIMS});
+        });
+}
 
 }  // namespace common
 }  // namespace arrayfire

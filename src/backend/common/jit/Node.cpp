@@ -76,6 +76,12 @@ auto isScalar(const Node &ptr) -> bool { return ptr.isScalar(); }
 
 bool Node::isLinear(const dim_t dims[4]) const { return true; }
 
+/// This function returns true if the \p node is a Shift node or a Buffer node
+auto isBufferOrShift(const Node_ptr &node) -> bool {
+    return node->getNodeType() == kNodeType::Buffer ||
+           node->getNodeType() == kNodeType::Shift;
+}
+
 }  // namespace common
 }  // namespace arrayfire
 

@@ -11,6 +11,7 @@
 #include <common/jit/ShiftNodeBase.hpp>
 #include <err_cuda.hpp>
 #include <jit/BufferNode.hpp>
+#include <jit/ShiftNode.hpp>
 #include <shift.hpp>
 
 #include <memory>
@@ -18,9 +19,8 @@
 using af::dim4;
 
 using arrayfire::common::Node_ptr;
-using arrayfire::common::ShiftNodeBase;
-
 using arrayfire::cuda::jit::BufferNode;
+using arrayfire::cuda::jit::ShiftNode;
 
 using std::array;
 using std::make_shared;
@@ -29,8 +29,6 @@ using std::string;
 
 namespace arrayfire {
 namespace cuda {
-template<typename T>
-using ShiftNode = ShiftNodeBase<BufferNode<T>>;
 
 template<typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4]) {

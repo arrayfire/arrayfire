@@ -146,3 +146,12 @@ TEST(Shift, MaxDim) {
     output = abs(input - output);
     ASSERT_EQ(1.f, product<float>(output));
 }
+
+TEST(Shift, RowVector) {
+    const unsigned shift_x = 1;
+    const unsigned shift_y = 1;
+    array input            = iota(dim4(1, 4));
+    array output           = shift(input, shift_x, shift_y);
+    vector<float> gold{3.f, 0.f, 1.f, 2.f};
+    EXPECT_VEC_ARRAY_EQ(gold, dim4(1, 4), output);
+}

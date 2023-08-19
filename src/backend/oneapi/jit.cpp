@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <CL/cl.h>
+#include <jit/ShiftNode.hpp>
 #include <jit/kernel_generators.hpp>
 
 #include <kernel_headers/KParam.hpp>
@@ -55,6 +56,7 @@ using arrayfire::common::NodeIterator;
 using arrayfire::common::ShiftNodeBase;
 using arrayfire::oneapi::getActiveDeviceBaseBuildFlags;
 using arrayfire::oneapi::jit::BufferNode;
+using arrayfire::oneapi::jit::ShiftNode;
 
 using std::array;
 using std::begin;
@@ -468,21 +470,8 @@ void evalNodes(vector<Param<T>>& outputs, const vector<Node*>& output_nodes) {
             }
         }
         if (emptyColumnsFound) {
-            const auto isBuffer{
-                [](const Node_ptr& ptr) { return ptr->isBuffer(); }};
-            for (auto nodeIt{begin(node_clones)}, endIt{end(node_clones)};
-                 (nodeIt = find_if(nodeIt, endIt, isBuffer)) != endIt;
-                 ++nodeIt) {
-                BufferNode<T>* buf{static_cast<BufferNode<T>*>(nodeIt->get())};
-                removeEmptyColumns(outDims, ndims, buf->m_param.dims.get(),
-                                   buf->m_param.strides.get());
-            }
-            for_each(++begin(outputs), end(outputs),
-                     [outDims, ndims](Param<T>& output) {
-                         removeEmptyColumns(outDims, ndims, output.info.dims,
-                                            output.info.strides);
-                     });
-            ndims = removeEmptyColumns(outDims, ndims, outDims, outStrides);
+            common::removeEmptyDimensions<Param<T>, BufferNode<T>,
+                                          ShiftNode<T>>(outputs, node_clones);
         }
     }
 

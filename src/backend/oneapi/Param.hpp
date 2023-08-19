@@ -27,6 +27,9 @@ struct Param {
     Param(const Param& other)            = default;
     Param(Param&& other)                 = default;
 
+    dim_t* dims_ptr() { return info.dims; }
+    dim_t* strides_ptr() { return info.strides; }
+
     // AF_DEPRECATED("Use Array<T>")
     Param() : data(nullptr), info{{0, 0, 0, 0}, {0, 0, 0, 0}, 0} {}
 
@@ -53,6 +56,9 @@ struct AParam {
     AParam& operator=(const AParam& other) = default;
     AParam(const AParam& other)            = default;
     AParam(AParam&& other)                 = default;
+
+    dim_t* dims_ptr() { return dims.get(); }
+    dim_t* strides_ptr() { return strides.get(); }
 
     // AF_DEPRECATED("Use Array<T>")
     AParam() : data(), dims{0, 0, 0, 0}, strides{0, 0, 0, 0}, offset(0) {}

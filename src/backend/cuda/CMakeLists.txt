@@ -553,6 +553,7 @@ add_library(afcuda
     wrap.hpp
 
     jit/BufferNode.hpp
+    jit/ShiftNode.hpp
     jit/kernel_generators.hpp
 
     ${scan_by_key_sources}

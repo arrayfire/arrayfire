@@ -53,6 +53,8 @@ class ShiftNodeBase : public Node {
         return *this;
     }
 
+    std::array<int, 4> &getShifts() { return m_shifts; }
+
     std::unique_ptr<Node> clone() final {
         return std::make_unique<ShiftNodeBase>(*this);
     }
@@ -65,6 +67,7 @@ class ShiftNodeBase : public Node {
         swap(m_shifts, other.m_shifts);
     }
 
+    BufferNode &getBufferNode() { return *m_buffer_node; }
     const BufferNode &getBufferNode() const { return *m_buffer_node; }
 
     bool isLinear(const dim_t dims[4]) const final {
