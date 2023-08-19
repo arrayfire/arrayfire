@@ -33,12 +33,14 @@ using std::swap;
 
 template<typename T>
 static inline af_array reorder(const af_array in, const af::dim4 &rdims0) {
-    Array<T> In = getArray<T>(in);
+    Array<T> In = detail::createEmptyArray<T>(af::dim4(0));
     dim4 rdims  = rdims0;
 
     if (rdims[0] == 1 && rdims[1] == 0) {
-        In = transpose(In, false);
+        In = transpose(getArray<T>(in), false);
         std::swap(rdims[0], rdims[1]);
+    } else {
+        In = getArray<T>(in);
     }
     const dim4 idims    = In.dims();
     const dim4 istrides = In.strides();
@@ -48,8 +50,7 @@ static inline af_array reorder(const af_array in, const af::dim4 &rdims0) {
 
     af_array out;
     if (rdims[0] == 0 && rdims[1] == 1 && rdims[2] == 2 && rdims[3] == 3) {
-        const Array<T> &Out = In;
-        out                 = getHandle(Out);
+        out = getHandle(In);
     } else if (rdims[0] == 0) {
         dim4 odims    = dim4(1, 1, 1, 1);
         dim4 ostrides = dim4(1, 1, 1, 1);
