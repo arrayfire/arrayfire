@@ -370,6 +370,8 @@ target_link_libraries(afoneapi
 
 #af_split_debug_info(afoneapi ${AF_INSTALL_LIB_DIR})
 
+find_package(IntelSYCL QUIET)
+
 install(TARGETS afoneapi
   EXPORT ArrayFireoneAPITargets
   COMPONENT oneapi
@@ -380,6 +382,13 @@ install(TARGETS afoneapi
   FRAMEWORK DESTINATION framework
   INCLUDES DESTINATION ${AF_INSTALL_INC_DIR}
 )
+
+if(AF_INSTALL_STANDALONE)
+  install(TARGETS afoneapi
+    RUNTIME_DEPENDENCIES
+      PRE_EXCLUDE_REGEXES libtbb;libc\\.so;libstdc;libgcc_s;libdl;ld\-linux;libm\.so;libpthread
+      DIRECTORIES $<TARGET_FILE_DIR:MKL::mkl_core>;${IntelSYCL_DIR}/../compiler/lib/intel64;${IntelSYCL_DIR}/../lib)
+endif()
 
 source_group(include REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/include/*)
 source_group(api\\cpp REGULAR_EXPRESSION ${ArrayFire_SOURCE_DIR}/src/api/cpp/*)
