@@ -15,4 +15,5 @@
 * [Timing ArrayFire](\ref timing)
 * [Configuring ArrayFire Environment](\ref configuring_environment)
 * [Debugging ArrayFire Code](\ref debugging)
+* [ArrayFire JIT Code Generation](\ref jit)
 * [GFOR Usage](\ref page_gfor)

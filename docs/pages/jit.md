@@ -42,22 +42,22 @@ This JIT compilation technique has multiple benefits:
 // removed, then the execution of this code would be equivalent to the
 // following function.
 
-static double pi_no_jit(array x, array y, array temp, int samples){
-        temp=x*x;
+static double pi_no_jit(array x, array y, array temp, int samples) {
+        temp = x * x;
         temp.eval();
-        temp+=y*y;
+        temp += y * y;
         temp.eval();
-        temp=sqrt(temp);
+        temp = sqrt(temp);
         temp.eval();
-        temp=temp < 1;
+        temp = temp < 1;
         temp.eval();
         return 4.0 sum(temp)/samples;
 }
 
 static double pi_jit(array x, array y, array temp,int samples){
-        temp = (sqrt(x*x+y*y) < 1);
+        temp = sqrt(x*x + y*y) < 1;
         temp.eval();
-        return 4.0*sum(temp)/samples;
+        return 4.0 * sum(temp) / samples;
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
