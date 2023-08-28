@@ -24,6 +24,7 @@ can represent one of many different [basic data types](\ref af_dtype):
 * [c32](\ref c32) complex single-precision (`cfloat`)
 * [f64](\ref f64) real double-precision (`double`)
 * [c64](\ref c64) complex double-precision (`cdouble`)
+* [f16](\ref f16) real half-precision (`half_float::half`)
 * [b8](\ref b8) 8-bit boolean values (`bool`)
 * [s32](\ref s32) 32-bit signed integer (`int`)
 * [u32](\ref u32) 32-bit unsigned integer (`unsigned`)
@@ -153,11 +154,11 @@ using the `af::` namespace.
 
 # Indexing {#getting_started_indexing}
 
-Like all functions in ArrayFire, indexing is also executed in parallel on
-the OpenCL/CUDA device.
-Because of this, indexing becomes part of a JIT operation and is accomplished
-using parentheses instead of square brackets (i.e. as `A(0)` instead of `A[0]`).
-To index `af::array`s you may use one or a combination of the following functions:
+Like all functions in ArrayFire, indexing is also executed in parallel on the
+OpenCL/CUDA devices. Because of this, indexing becomes part of a JIT operation
+and is accomplished using parentheses instead of square brackets (i.e. as `A(0)`
+instead of `A[0]`). To index `af::array`s you may use one or a combination of
+the following functions:
 
 * integer scalars
 * [seq()](\ref af::seq) representing a linear sequence
@@ -223,7 +224,7 @@ simply include the `arrayfire.h` header file and start coding!
         double result;
         af_sum_all(&result, 0, a);
         printf("sum: %g\n", result);
-        
+
         return 0;
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

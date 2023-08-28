@@ -141,6 +141,7 @@ how to use CMake. To link with a specific backend directly, replace the
 
 * `ArrayFire::afcpu` for CPU backend.
 * `ArrayFire::afcuda` for CUDA backend.
+* `ArrayFire::afoneapi` for oneAPI backend.
 * `ArrayFire::afopencl` for OpenCL backend.
 
 Next we need to instruct CMake to create build instructions and then compile. We

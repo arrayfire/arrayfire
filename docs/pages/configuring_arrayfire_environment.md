@@ -38,6 +38,16 @@ variable are the device identifiers shown when af::info is run.
 AF_CUDA_DEFAULT_DEVICE=1 ./myprogram_cuda
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+AF_ONEAPI_DEFAULT_DEVICE {#af_oneapi_default_device}
+-------------------------------------------------------------------------------
+
+Use this variable to set the default oneAPI device. Valid values for this
+variable are the device identifiers shown when af::info is run.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_ONEAPI_DEFAULT_DEVICE=1 ./myprogram_oneapi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Note: af::setDevice call in the source code will take precedence over this
 variable.
 

@@ -1,6 +1,75 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.9.0
+======
+
+## Improvements
+- Add oneAPI backend \PR{3296}
+- Add support to directly access arrays on other devices \PR{3447}
+- Add broadcast support \PR{2871}
+- Improve OpenCL CPU JIT performance \PR{3257} \PR{3392}
+- Optimize thread/block calculations of several kernels \PR{3144}
+- Add support for fast math compiliation when building ArrayFire \PR{3334 \PR{3337}
+- Optimize performance of fftconvolve when using floats \PR{3338}
+- Add support for CUDA 12.1 and 12.2
+- Better handling of empty arrays \PR{3398}
+- Better handling of memory in linear algebra functions in OpenCL \PR{3423}
+- Better logging with JIT kernels \PR{3468}
+- Optimize memory manager/JIT interactions for small number of buffers \PR{3468}
+- Documentation improvements \PR{3485}
+- Optimize reorder function \PR{3488}
+
+## Fixes
+- Improve Errors when creating OpenCL contexts from devices \PR{3257}
+- Improvements to vcpkg builds \PR{3376 \PR{3476}
+- Fix reduce by key when nan's are present \PR{3261}
+- Fix error in convolve where the ndims parameter was forced to be equal to 2  \PR{3277}
+- Make constructors that accept dim_t to be explicit to avoid invalid conversions  \PR{3259} 
+- Fix error in randu when compiling against clang 14 \PR{3333} 
+- Fix bug in OpenCL linear algebra functions  \PR{3398}
+- Fix bug with thread local variables when device was changed \PR{3420} \PR{3421} 
+- Fix bug in qr related to uninitialized memory \PR{3422} 
+- Fix bug in shift where the array had an empty middle dimension \PR{3488}
+
+
+## Contributions
+
+Special thanks to our contributors:
+[Willy Born](https://github.com/willyborn)
+[Mike Mullen](https://github.com/mfzmullen)
+
+v3.8.3
+======
+
+## Improvements
+
+- Add support for CUDA 12 \PR{3352}
+- Modernize documentation style and content \PR{3351}
+- memcpy performance improvements \PR{3144}
+- JIT performance improvements \PR{3144}
+- join performance improvements \PR{3144}
+- Improve support for Intel and newer Clang compilers \PR{3334}
+- CCache support on Windows \PR{3257}
+
+## Fixes
+
+- Fix issue with some locales with OpenCL kernel generation \PR{3294}
+- Internal improvements
+- Fix leak in clfft on exit.
+- Fix some cases where ndims was incorrectly used ot calculate shape \PR{3277}
+- Fix issue when setDevice was not called in new threads \PR{3269}
+- Restrict initializer list to just fundamental types \PR{3264}
+
+## Contributions
+
+Special thanks to our contributors:
+[Carlo Cabrera](https://github.com/carlocab)
+[Guillaume Schmid](https://github.com/GuillaumeSchmid)
+[Willy Born](https://github.com/willyborn)
+[ktdq](https://github.com/ktdq)
+
+
 v3.8.2
 ======
 
