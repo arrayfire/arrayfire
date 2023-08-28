@@ -279,6 +279,7 @@ else()
   if(AF_WITH_SPDLOG_HEADER_ONLY)
     set_target_properties(af_spdlog
       PROPERTIES
+        INTERFACE_COMPILE_DEFINITIONS "FMT_HEADER_ONLY=1"
         INTERFACE_LINK_LIBRARIES "spdlog_header_only")
   else()
     target_compile_options(spdlog
