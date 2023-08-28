@@ -20,7 +20,7 @@ device vendor’s website.
 ## Windows {#Windows}
 
 Prior to installing ArrayFire on Windows,
-[download](https://www.microsoft.com/en-in/download/details.aspx?id=48145) and
+[download](https://www.microsoft.com/download/details.aspx?id=48145)
 install the Visual Studio 2015 (x64) runtime libraries.
 
 Once the ArrayFire installer has been downloaded, run the installer. If you

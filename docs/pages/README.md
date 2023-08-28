@@ -57,8 +57,7 @@ and 32-bit signed and unsigned integers.
 #### Extending ArrayFire
 
 ArrayFire can be used as a stand-alone application or integrated with existing
-CUDA, oneAPI, or OpenCL code. All ArrayFire `arrays` can be interchanged with
-other CUDA, oneAPI, or OpenCL data structures.
+CUDA, oneAPI, or OpenCL code.
 
 ## Code once, run anywhere!
 
@@ -100,9 +99,8 @@ your application.
 
 ## Simple Example
 
-Here is an example of ArrayFire code. First, [arrays](\ref af::array) are
-created which reside on CUDA, oneAPI, or OpenCL devices. Then
-[ArrayFire functions](modules.htm) are used on those [arrays](\ref af::array).
+Here is an example of ArrayFire code that performs a Monte Carlo estimation of
+PI.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 // sample 40 million points on the GPU

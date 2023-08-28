@@ -7,7 +7,7 @@ Unified Backend {#unifiedbackend}
 
 The Unified backend was introduced in ArrayFire with version 3.2.
 While this is not an independent backend, it allows the user to switch between
-the different ArrayFire backends (CPU, CUDA and OpenCL) at runtime.
+the different ArrayFire backends (CPU, CUDA, oneAPI and OpenCL) at runtime.
 
 # Compiling with Unified
 
@@ -24,7 +24,7 @@ To use with CMake, use the __ArrayFire_Unified_LIBRARIES__ variable.
 # Using the Unified Backend
 
 The Unified backend will try to dynamically load the backend libraries. The
-priority of backends is __CUDA -> OpenCL -> CPU__
+priority of backends is __CUDA -> oneAPI -> OpenCL -> CPU__
 
 The most important aspect to note here is that all the libraries the ArrayFire
 libs depend on need to be in the environment paths
@@ -79,6 +79,15 @@ int main()
     }
 
     try {
+        printf("Trying oneAPI Backend\n");
+        af::setBackend(AF_BACKEND_ONEAPI);
+        testBackend();
+    } catch (af::exception& e) {
+        printf("Caught exception when trying oneAPI backend\n");
+        fprintf(stderr, "%s\n", e.what());
+    }
+
+    try {
         printf("Trying CUDA Backend\n");
         af::setBackend(AF_BACKEND_CUDA);
         testBackend();
@@ -103,39 +112,53 @@ int main()
 This output would be:
 
     Trying CPU Backend
-    ArrayFire v3.2.0 (CPU, 64-bit Linux, build fc7630f)
-    [0] Intel: Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz Max threads(8)
+    ArrayFire v3.9.0 (CPU, 64-bit Linux, build 23ee0650e)
+    [0] AMD: AMD Ryzen Threadripper PRO 3955WX 16-Cores     af::randu(5, 4)
+    [5 4 1 1]
+        0.6010     0.5497     0.1583     0.3636
+        0.0278     0.2864     0.3712     0.4165
+        0.9806     0.3410     0.3543     0.5814
+        0.2126     0.7509     0.6450     0.8962
+        0.0655     0.4105     0.9675     0.3712
+
+    Trying oneAPI Backend
+    ArrayFire v3.9.0 (oneAPI, 64-bit Linux, build 23ee0650e)
+    [0] Intel(R) OpenCL: AMD Ryzen Threadripper PRO 3955WX 16-Cores     , 128650 MB (fp64)
     af::randu(5, 4)
     [5 4 1 1]
-        0.0000     0.2190     0.3835     0.5297
-        0.1315     0.0470     0.5194     0.6711
-        0.7556     0.6789     0.8310     0.0077
-        0.4587     0.6793     0.0346     0.3834
-        0.5328     0.9347     0.0535     0.0668
+        0.6010     0.5497     0.1583     0.3636
+        0.0278     0.2864     0.3712     0.4165
+        0.9806     0.3410     0.3543     0.5814
+        0.2126     0.7509     0.6450     0.8962
+        0.0655     0.4105     0.9675     0.3712
 
     Trying CUDA Backend
-    ArrayFire v3.2.0 (CUDA, 64-bit Linux, build fc7630f)
-    Platform: CUDA Toolkit 7.5, Driver: 355.11
-    [0] Quadro K5000, 4093 MB, CUDA Compute 3.0
+    ArrayFire v3.9.0 (CUDA, 64-bit Linux, build 23ee0650e)
+    Platform: CUDA Runtime 12.2, Driver: 535.104.05
+    [0] NVIDIA RTX A5500, 22721 MB, CUDA Compute 8.6
+    -1- NVIDIA RTX A5500, 22719 MB, CUDA Compute 8.6
     af::randu(5, 4)
     [5 4 1 1]
-        0.7402     0.4464     0.7762     0.2920
-        0.9210     0.6673     0.2948     0.3194
-        0.0390     0.1099     0.7140     0.8109
-        0.9690     0.4702     0.3585     0.1541
-        0.9251     0.5132     0.6814     0.4452
+        0.6010     0.5497     0.1583     0.3636
+        0.0278     0.2864     0.3712     0.4165
+        0.9806     0.3410     0.3543     0.5814
+        0.2126     0.7509     0.6450     0.8962
+        0.0655     0.4105     0.9675     0.3712
 
     Trying OpenCL Backend
-    ArrayFire v3.2.0 (OpenCL, 64-bit Linux, build fc7630f)
-    [0] NVIDIA  : Quadro K5000
-    -1- INTEL   : Intel(R) Core(TM) i7-4770K CPU @ 3.50GHz
+    ArrayFire v3.9.0 (OpenCL, 64-bit Linux, build 23ee0650e)
+    [0] NVIDIA: NVIDIA RTX A5500, 22720 MB
+    -1- NVIDIA: NVIDIA RTX A5500, 22718 MB
+    -2- Intel(R) FPGA Emulation Platform for OpenCL(TM): Intel(R) FPGA Emulation Device, 128650 MB
+    -3- INTEL: AMD Ryzen Threadripper PRO 3955WX 16-Cores     , 128650 MB
     af::randu(5, 4)
     [5 4 1 1]
-        0.4107     0.0081     0.6600     0.1046
-        0.8224     0.3775     0.0764     0.8827
-        0.9518     0.3027     0.0901     0.1647
-        0.1794     0.6456     0.5933     0.8060
-        0.4198     0.5591     0.1098     0.5938
+        0.6010     0.5497     0.1583     0.3636
+        0.0278     0.2864     0.3712     0.4165
+        0.9806     0.3410     0.3543     0.5814
+        0.2126     0.7509     0.6450     0.8962
+        0.0655     0.4105     0.9675     0.3712
+
 
 # Dos and Don'ts
 
