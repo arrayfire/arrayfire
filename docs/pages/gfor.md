@@ -8,18 +8,17 @@ Run many independent loops simultaneously on the GPU or device.
 Introduction {#gfor_intro}
 ============
 
-The gfor-loop construct may be used to simultaneously launch all of
-the iterations of a for-loop on the GPU or device, as long as the
-iterations are independent. While the standard for-loop performs each
-iteration sequentially, ArrayFire's gfor-loop performs each iteration
-at the same time (in parallel). ArrayFire does this by tiling out the
-values of all loop iterations and then performing computation on those
-tiles in one pass.
+The gfor-loop construct may be used to simultaneously launch all of the
+iterations of a for-loop on the GPU or device, as long as the iterations are
+independent. While the standard for-loop performs each iteration sequentially,
+ArrayFire's gfor-loop performs each iteration at the same time (in
+parallel). ArrayFire does this by tiling out the values of all loop iterations
+and then performing computation on those tiles in one pass.
 
-You can think of `gfor` as performing auto-vectorization of your
-code, e.g. you write a gfor-loop that increments every element of a
-vector but behind the scenes ArrayFire rewrites it to operate on
-the entire vector in parallel.
+You can think of `gfor` as performing auto-vectorization of your code,
+e.g. you write a gfor-loop that increments every element of a vector but
+behind the scenes ArrayFire rewrites it to operate on the entire vector in
+parallel.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 for (int i = 0; i < n; ++i)
@@ -29,19 +28,19 @@ gfor (seq i, n)
    A(i) = A(i) + 1;
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Behind the scenes, ArrayFire rewrites your code into this
-equivalent and faster version:
+Behind the scenes, ArrayFire rewrites your code into this equivalent and
+faster version:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 A = A + 1;
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It is best to vectorize computation as much as possible to avoid
-the overhead in both for-loops and gfor-loops.
+It is best to vectorize computation as much as possible to avoid the overhead
+in both for-loops and gfor-loops.
 
-To see another example, you could run an FFT on every 2D slice of a
-volume in a for-loop, or you could "vectorize" and simply do it all
-in one gfor-loop operation:
+To see another example, you could run an FFT on every 2D slice of a volume in
+a for-loop, or you could "vectorize" and simply do it all in one gfor-loop
+operation:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 for (int i = 0; i < N; ++i)
@@ -89,11 +88,11 @@ User Functions called within GFOR {#gfor_user_functions}
 ---------------------------------
 
 If you have defined a function that you want to call within a GFOR loop, then
-that function has to meet all the conditions described in this page in
-order to be able to work as expected.
+that function has to meet all the conditions described in this page in order
+to be able to work as expected.
 
-Consider the (trivial) example below. The function compute() has to satisfy all
-requirements for GFOR Usage, so you cannot use if-else conditions inside
+Consider the (trivial) example below. The function compute() has to satisfy
+all requirements for GFOR Usage, so you cannot use if-else conditions inside
 it.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
@@ -384,7 +383,8 @@ gfor (seq i, n) {
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The problem is that every GFOR tile has a different number of elements, something which GFOR cannot yet handle.
+The problem is that every GFOR tile has a different number of elements,
+something which GFOR cannot yet handle.
 
 Similar to the workaround for conditional statements, it might work to use
 masked arithmetic:
@@ -410,14 +410,13 @@ gfor (seq i, n) {
 Memory considerations {#gfor_memory}
 =====================
 
-Since each computation is done in parallel for all iterator values,
-you need to have enough card memory available to do all iterations
-simultaneously. If the problem exceeds memory, it will trigger "out of
-memory" errors.
+Since each computation is done in parallel for all iterator values, you need
+to have enough card memory available to do all iterations simultaneously. If
+the problem exceeds memory, it will trigger "out of memory" errors.
 
-You can work around the memory limitations of your GPU or device by
-breaking the GFOR loop up into segments; however, you might want to
-consider using a larger memory GPU or device.
+You can work around the memory limitations of your GPU or device by breaking
+the GFOR loop up into segments; however, you might want to consider using a
+larger memory GPU or device.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 // BEFORE
