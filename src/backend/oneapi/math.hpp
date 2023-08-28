@@ -83,22 +83,22 @@ inline auto is_nan<sycl::half>(const sycl::half &val) -> bool {
 
 template<>
 inline auto is_nan<float>(const float &val) -> bool {
-    return std::isnan(val);
+    return sycl::isnan(val);
 }
 
 template<>
 inline auto is_nan<double>(const double &val) -> bool {
-    return std::isnan(val);
+    return sycl::isnan(val);
 }
 
 template<>
 inline auto is_nan<cfloat>(const cfloat &in) -> bool {
-    return std::isnan(real(in)) || std::isnan(imag(in));
+    return sycl::isnan(real(in)) || sycl::isnan(imag(in));
 }
 
 template<>
 inline auto is_nan<cdouble>(const cdouble &in) -> bool {
-    return std::isnan(real(in)) || std::isnan(imag(in));
+    return sycl::isnan(real(in)) || sycl::isnan(imag(in));
 }
 
 template<typename T>
