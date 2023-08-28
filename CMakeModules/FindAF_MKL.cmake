@@ -221,7 +221,7 @@ function(find_mkl_library)
   add_library(MKL::${mkl_args_NAME}_STATIC STATIC IMPORTED)
 
   if(NOT (WIN32 AND mkl_args_DLL_ONLY))
-    list(APPEND CMAKE_FIND_LIBRARY_SUFFIXES ".so.1")
+    list(APPEND CMAKE_FIND_LIBRARY_SUFFIXES ".so.1;.so.2;.so.3;.so.4;.so.12")
     find_library(MKL_${mkl_args_NAME}_LINK_LIBRARY
       NAMES
         ${mkl_args_LIBRARY_NAME}${shared_suffix}
