@@ -15,7 +15,7 @@ installer will populate files in the following sub-directories:
 
     include/arrayfire.h         - Primary ArrayFire include file
     include/af/*.h              - Additional include files
-    lib/libaf*                  - CPU, CUDA, oneAPI and OpenCL libraries (.a, .so)
+    lib/libaf*                  - CPU, CUDA, oneAPI, and OpenCL libraries (.a, .so)
     lib/libforge*               - Visualization library
     lib/libcu*                  - CUDA backend dependencies
     lib/libOpenCL.so            - OpenCL ICD Loader library
@@ -120,7 +120,7 @@ Similarly, you will need to specify the path to the ArrayFire library using
 the `-L` option (e.g. `-L/opt/arrayfire/lib`) followed by the specific
 ArrayFire library you wish to use using the `-l` option (for example
 `-lafcpu`, `-lafopencl`, `-lafoneapi`, `-lafcuda`, or `-laf` for the CPU,
-OpenCL, oneAPI and CUDA, and unified backends, respectively.
+OpenCL, oneAPI, and CUDA, and unified backends, respectively.
 
 Here is a minimal example Makefile which uses ArrayFire's CPU backend:
 

@@ -50,19 +50,19 @@ Studio directly.
 ## Using Visual Studio {#section1part2}
 
 1. Open Visual Studio and create an empty C++ project.
-2. Right click the project and add an existing source file
+2. Right-click the project and add an existing source file
    `examples/helloworld/helloworld.cpp` to this project.
 3. Add `"$(AF_PATH)/include;"` to _Project Properties -> C/C++ -> General ->
    Additional Include Directories_.
 4. Add `"$(AF_PATH)/lib;"` to _Project Properties -> Linker -> General ->
    Additional Library Directories_.
-5. Add `afcpu.lib` or `afcuda.lib` or `afopencl.lib` to _Project Properties ->
-   Linker -> Input -> Additional Dependencies_. based on your preferred
-   backend.
-6. (Optional) You may choose to define `NOMINMAX`, `AF_<CPU/CUDA/OPENCL>`
-   and/or `AF_<DEBUG/RELEASE>` in your projects. This can be added to _Project
-   Properties -> C/C++ -> General -> Preprocessor-> Preprocessory
-   definitions_.
+5. Add `afcpu.lib`, `afcuda.lib`, `afoneapi.lib`, or `afopencl.lib` to
+   _Project Properties -> Linker -> Input -> Additional Dependencies_. based
+   on your preferred backend.
+6. (Optional) You may choose to define `NOMINMAX`,
+   `AF_<CPU/CUDA/ONEAPI/OPENCL>`, or `AF_<DEBUG/RELEASE>` in your
+   projects. This can be added to _Project Properties -> C/C++ -> General ->
+   Preprocessor-> Preprocessory definitions_.
 7. Build and run the project. You will see a console window with the output
    from helloworld program.
 
@@ -111,10 +111,10 @@ Projects](https://github.com/arrayfire/arrayfire-project-templates)
 
 # Using ArrayFire with CMake
 
-ArrayFire ships with a series of CMake scripts to make finding and using our
+ArrayFire ships with a series of CMake scripts to make finding and using the
 library easy.
 
-First create a file called `CMakeLists.txt` in your project directory:
+First, create a file called `CMakeLists.txt` in your project directory:
 
     cd your-project-directory
     touch CMakeLists.txt
@@ -124,27 +124,27 @@ and populate it with the following code:
     find_package(ArrayFire)
     add_executable(<my_executable> [list your source files here])
 
-    # To use Unified backend, do the following.
-    # Unified backend lets you choose the backend at runtime
+    # The Unified backend lets you choose the backend at runtime.
+    # To use the Unified backend, do the following:
     target_link_libraries(<my_executable> ArrayFire::af)
 
-where `<my_executable>` is the name of the executable you wish to create. See
-the [CMake documentation](https://cmake.org/documentation/) for more
-information on how to use CMake. To link with a specific backend directly,
-replace the `ArrayFire::af` with the following for their respective backends.
+, where `<my_executable>` is the name of the executable to create. See the
+[CMake documentation](https://cmake.org/documentation/) for more information
+on how to use CMake. To link with a specific backend directly, replace the
+`ArrayFire::af` with the following for their respective backends.
 
 * `ArrayFire::afcpu` for CPU backend.
 * `ArrayFire::afcuda` for CUDA backend.
 * `ArrayFire::afoneapi` for oneAPI backend.
 * `ArrayFire::afopencl` for OpenCL backend.
 
-Next we need to instruct CMake to create build instructions and then
-compile. We suggest using CMake's out-of-source build functionality to keep
-your build and source files cleanly separated. To do this open the CMake GUI.
+Next, instruct CMake to create build instructions and compile them. We suggest
+using CMake's out-of-source build functionality to keep your build and source
+files cleanly separated. To do this, open the CMake GUI.
 
-* Under source directory, add the path to your project
-* Under build directory, add the path to your project and append /build
-* Click configure and choose a 64 bit Visual Studio generator.
-* If configuration was successful, click generate. This will create a
+* Under "source directory", add the path to your project.
+* Under "build directory", add the path to your project and append /build.
+* Click "configure" and choose a 64-bit Visual Studio generator.
+* If the configuration was successful, click "generate". This will create a
   my-project.sln file under build. Click `Open Project` in CMake-GUI to open
   the solution and compile the ALL_BUILD project.
