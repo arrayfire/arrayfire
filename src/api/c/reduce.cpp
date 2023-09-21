@@ -280,6 +280,7 @@ static af_err reduce_by_key_common(af_array *keys_out, af_array *vals_out,
             case u8:
                 reduce_key<op, uchar, uchar>(keys_out, vals_out, keys, vals,
                                              dim);
+                break;
             case f16:
                 reduce_key<op, half, half>(keys_out, vals_out, keys, vals, dim);
                 break;
