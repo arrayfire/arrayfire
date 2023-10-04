@@ -227,6 +227,7 @@ typedef enum {
 #if AF_API_VERSION >= 37
     , f16    ///< 16-bit floating point value
 #endif
+    , s8     ///< 8-bit signed integral value /// TODO AF_API_VERSION
 } af_dtype;
 
 typedef enum {

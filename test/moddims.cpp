@@ -36,8 +36,8 @@ class Moddims : public ::testing::Test {
 
 // create a list of types to be tested
 // TODO: complex types tests have to be added
-typedef ::testing::Types<float, double, int, unsigned, char, unsigned char,
-                         short, ushort, half_float::half>
+typedef ::testing::Types<float, double, int, unsigned, char, signed char,
+                         unsigned char, short, ushort, half_float::half>
     TestTypes;
 
 // register the type list

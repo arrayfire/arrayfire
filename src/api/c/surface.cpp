@@ -38,6 +38,7 @@ using detail::createEmptyArray;
 using detail::forgeManager;
 using detail::getScalar;
 using detail::reduce_all;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -189,6 +190,9 @@ af_err af_draw_surface(const af_window window, const af_array xVals,
                 break;
             case u16:
                 chart = setup_surface<ushort>(window, xVals, yVals, S, props);
+                break;
+            case s8:
+                chart = setup_surface<schar>(window, xVals, yVals, S, props);
                 break;
             case u8:
                 chart = setup_surface<uchar>(window, xVals, yVals, S, props);

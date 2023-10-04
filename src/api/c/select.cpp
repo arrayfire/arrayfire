@@ -26,6 +26,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createSelectNode;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -76,6 +77,7 @@ af_err af_select(af_array* out, const af_array cond, const af_array a,
             case u64: res = select<uintl>(cond, a, b, odims); break;
             case s16: res = select<short>(cond, a, b, odims); break;
             case u16: res = select<ushort>(cond, a, b, odims); break;
+            case s8: res = select<schar>(cond, a, b, odims); break;
             case u8: res = select<uchar>(cond, a, b, odims); break;
             case b8: res = select<char>(cond, a, b, odims); break;
             case f16: res = select<half>(cond, a, b, odims); break;
@@ -161,6 +163,10 @@ af_err selectScalar(af_array* out, const af_array cond, const af_array e,
                 break;
             case u64:
                 res = select_scalar<uintl, ScalarType, IsScalarTrueOutput>(
+                    cond, e, c, odims);
+                break;
+            case s8:
+                res = select_scalar<schar, ScalarType, IsScalarTrueOutput>(
                     cond, e, c, odims);
                 break;
             case u8:

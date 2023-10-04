@@ -27,6 +27,26 @@ float getFloatNegative11(uint num) {
 
 // Writes without boundary checking
 
+void writeOut128Bytes_schar(global char *out, uint index, uint r1, uint r2,
+                            uint r3, uint r4) {
+    out[index]                = r1;
+    out[index + THREADS]      = r1 >> 8;
+    out[index + 2 * THREADS]  = r1 >> 16;
+    out[index + 3 * THREADS]  = r1 >> 24;
+    out[index + 4 * THREADS]  = r2;
+    out[index + 5 * THREADS]  = r2 >> 8;
+    out[index + 6 * THREADS]  = r2 >> 16;
+    out[index + 7 * THREADS]  = r2 >> 24;
+    out[index + 8 * THREADS]  = r3;
+    out[index + 9 * THREADS]  = r3 >> 8;
+    out[index + 10 * THREADS] = r3 >> 16;
+    out[index + 11 * THREADS] = r3 >> 24;
+    out[index + 12 * THREADS] = r4;
+    out[index + 13 * THREADS] = r4 >> 8;
+    out[index + 14 * THREADS] = r4 >> 16;
+    out[index + 15 * THREADS] = r4 >> 24;
+}
+
 void writeOut128Bytes_uchar(global uchar *out, uint index, uint r1, uint r2,
                             uint r3, uint r4) {
     out[index]                = r1;
@@ -153,6 +173,36 @@ void boxMullerTransform(T *const out1, T *const out2, T r1, T r2) {
 #endif
 
 // Writes with boundary checking
+
+void partialWriteOut128Bytes_schar(global char *out, uint index, uint r1,
+                                   uint r2, uint r3, uint r4, uint elements) {
+    if (index < elements) { out[index] = r1; }
+    if (index + THREADS < elements) { out[index + THREADS] = r1 >> 8; }
+    if (index + 2 * THREADS < elements) { out[index + 2 * THREADS] = r1 >> 16; }
+    if (index + 3 * THREADS < elements) { out[index + 3 * THREADS] = r1 >> 24; }
+    if (index + 4 * THREADS < elements) { out[index + 4 * THREADS] = r2; }
+    if (index + 5 * THREADS < elements) { out[index + 5 * THREADS] = r2 >> 8; }
+    if (index + 6 * THREADS < elements) { out[index + 6 * THREADS] = r2 >> 16; }
+    if (index + 7 * THREADS < elements) { out[index + 7 * THREADS] = r2 >> 24; }
+    if (index + 8 * THREADS < elements) { out[index + 8 * THREADS] = r3; }
+    if (index + 9 * THREADS < elements) { out[index + 9 * THREADS] = r3 >> 8; }
+    if (index + 10 * THREADS < elements) {
+        out[index + 10 * THREADS] = r3 >> 16;
+    }
+    if (index + 11 * THREADS < elements) {
+        out[index + 11 * THREADS] = r3 >> 24;
+    }
+    if (index + 12 * THREADS < elements) { out[index + 12 * THREADS] = r4; }
+    if (index + 13 * THREADS < elements) {
+        out[index + 13 * THREADS] = r4 >> 8;
+    }
+    if (index + 14 * THREADS < elements) {
+        out[index + 14 * THREADS] = r4 >> 16;
+    }
+    if (index + 15 * THREADS < elements) {
+        out[index + 15 * THREADS] = r4 >> 24;
+    }
+}
 
 void partialWriteOut128Bytes_uchar(global uchar *out, uint index, uint r1,
                                    uint r2, uint r3, uint r4, uint elements) {

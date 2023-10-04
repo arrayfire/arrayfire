@@ -59,7 +59,8 @@ class Susan : public ::testing::Test {
     virtual void SetUp() {}
 };
 
-typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort>
+typedef ::testing::Types<float, double, int, uint, char, schar, uchar, short,
+                         ushort>
     TestTypes;
 
 TYPED_TEST_SUITE(Susan, TestTypes);

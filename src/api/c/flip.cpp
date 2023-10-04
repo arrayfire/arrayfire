@@ -25,6 +25,7 @@ using detail::Array;
 using detail::cdouble;
 using detail::cfloat;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uintl;
 using detail::ushort;
@@ -61,6 +62,7 @@ af_err af_flip(af_array *result, const af_array in, const unsigned dim) {
             case u64: out = flip<uintl>(in, dim); break;
             case s16: out = flip<short>(in, dim); break;
             case u16: out = flip<ushort>(in, dim); break;
+            case s8: out = flip<schar>(in, dim); break;
             case u8: out = flip<uchar>(in, dim); break;
             default: TYPE_ERROR(1, in_type);
         }

@@ -44,6 +44,22 @@ inline cudaDataType_t getType<common::half>() {
     return CUDA_R_16F;
 }
 
+template<>
+inline cudaDataType_t getType<uchar>() {
+    return CUDA_R_8I;
+}
+
+template<>
+inline cudaDataType_t getType<schar>() {
+    return CUDA_R_8I;
+}
+
+/* only supports LStride/RStride % 4 == 0 */
+template<>
+inline cudaDataType_t getType<int>() {
+    return CUDA_R_32I;
+}
+
 template<typename T>
 inline cudaDataType_t getComputeType() {
     return getType<T>();

@@ -175,6 +175,16 @@ struct dtype_traits<half> {
     static const char* getName() { return "half"; }
 };
 #endif
+
+template<>
+struct dtype_traits<signed char> {
+    enum {
+        af_type = s8 ,
+        ctype = f32
+    };
+    typedef signed char base_type;
+    static const char* getName() { return "schar"; }
+};
 }
 
 #endif

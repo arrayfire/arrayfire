@@ -40,6 +40,7 @@ namespace opencl {
 using cdouble = cl_double2;
 using cfloat  = cl_float2;
 using intl    = long long;
+using schar   = cl_char;
 using uchar   = cl_uchar;
 using uint    = cl_uint;
 using uintl   = unsigned long long;
@@ -93,6 +94,10 @@ inline const char *shortname<char>(bool caps) {
     return caps ? "J" : "j";
 }
 template<>
+inline const char *shortname<schar>(bool caps) {
+    return caps ? "A" : "a"; // TODO
+}
+template<>
 inline const char *shortname<uchar>(bool caps) {
     return caps ? "V" : "v";
 }
@@ -116,6 +121,11 @@ inline const char *shortname<ushort>(bool caps) {
 template<typename T>
 inline const char *getFullName() {
     return af::dtype_traits<T>::getName();
+}
+
+template<>
+inline const char *getFullName<schar>() {
+    return "char";
 }
 
 template<>

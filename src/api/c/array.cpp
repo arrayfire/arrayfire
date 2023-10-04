@@ -30,6 +30,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createDeviceDataArray;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -47,6 +48,7 @@ af_err af_get_data_ptr(void *data, const af_array arr) {
             case b8:  copyData(static_cast<char*    >(data), arr); break;
             case s32: copyData(static_cast<int*     >(data), arr); break;
             case u32: copyData(static_cast<unsigned*>(data), arr); break;
+            case s8:  copyData(static_cast<schar*   >(data), arr); break;
             case u8:  copyData(static_cast<uchar*   >(data), arr); break;
             case s64: copyData(static_cast<intl*    >(data), arr); break;
             case u64: copyData(static_cast<uintl*   >(data), arr); break;
@@ -95,6 +97,9 @@ af_err af_create_array(af_array *result, const void *const data,
                 break;
             case u32:
                 out = createHandleFromData(d, static_cast<const uint *>(data));
+                break;
+            case s8:
+                out = createHandleFromData(d, static_cast<const schar *>(data));
                 break;
             case u8:
                 out = createHandleFromData(d, static_cast<const uchar *>(data));
@@ -175,6 +180,7 @@ af_err af_copy_array(af_array *out, const af_array in) {
                 case b8: res = copyArray<char>(in); break;
                 case s32: res = copyArray<int>(in); break;
                 case u32: res = copyArray<uint>(in); break;
+                case s8: res = copyArray<schar>(in); break;
                 case u8: res = copyArray<uchar>(in); break;
                 case s64: res = copyArray<intl>(in); break;
                 case u64: res = copyArray<uintl>(in); break;
@@ -205,6 +211,7 @@ af_err af_get_data_ref_count(int *use_count, const af_array in) {
             case b8: res = getUseCount<char>(in); break;
             case s32: res = getUseCount<int>(in); break;
             case u32: res = getUseCount<uint>(in); break;
+            case s8: res = getUseCount<schar>(in); break;
             case u8: res = getUseCount<uchar>(in); break;
             case s64: res = getUseCount<intl>(in); break;
             case u64: res = getUseCount<uintl>(in); break;
@@ -242,6 +249,7 @@ af_err af_release_array(af_array arr) {
                 case b8: releaseHandle<char>(arr); break;
                 case s32: releaseHandle<int>(arr); break;
                 case u32: releaseHandle<uint>(arr); break;
+                case s8: releaseHandle<schar>(arr); break;
                 case u8: releaseHandle<uchar>(arr); break;
                 case s64: releaseHandle<intl>(arr); break;
                 case u64: releaseHandle<uintl>(arr); break;
@@ -307,6 +315,9 @@ af_err af_write_array(af_array arr, const void *data, const size_t bytes,
                 break;
             case u32:
                 write_array(arr, static_cast<const uint *>(data), bytes, src);
+                break;
+            case s8:
+                write_array(arr, static_cast<const schar *>(data), bytes, src);
                 break;
             case u8:
                 write_array(arr, static_cast<const uchar *>(data), bytes, src);
@@ -432,6 +443,9 @@ af_err af_get_scalar(void *output_value, const af_array arr) {
                 break;
             case u32:
                 getScalar<uint>(reinterpret_cast<uint *>(output_value), arr);
+                break;
+            case s8:
+                getScalar<schar>(reinterpret_cast<schar *>(output_value), arr);
                 break;
             case u8:
                 getScalar<uchar>(reinterpret_cast<uchar *>(output_value), arr);

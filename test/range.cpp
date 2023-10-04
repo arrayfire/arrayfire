@@ -46,12 +46,13 @@ class RangeMax : public Range<T> {};
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double, int, unsigned int, intl, uintl,
-                         unsigned char, short, ushort, half_float::half>
+                         signed char, unsigned char, short, ushort,
+                         half_float::half>
     AllTypes;
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double, int, unsigned int, intl, uintl,
-                         unsigned char, short, ushort>
+                         signed char, unsigned char, short, ushort>
     RegularTypes;
 
 // register the type list

@@ -22,6 +22,7 @@ using af::dim4;
 using detail::arithOp;
 using detail::Array;
 using detail::convolve;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -70,6 +71,7 @@ af_err af_dog(af_array* out, const af_array in, const int radius1,
             case u32: output = dog<uint, float>(in, radius1, radius2); break;
             case s16: output = dog<short, float>(in, radius1, radius2); break;
             case u16: output = dog<ushort, float>(in, radius1, radius2); break;
+            case s8: output = dog<schar, float>(in, radius1, radius2); break;
             case u8: output = dog<uchar, float>(in, radius1, radius2); break;
             default: TYPE_ERROR(1, type);
         }

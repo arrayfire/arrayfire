@@ -29,7 +29,7 @@ using std::vector;
 template<typename T>
 class AnisotropicDiffusion : public ::testing::Test {};
 
-typedef ::testing::Types<float, double, int, uint, uchar, short, ushort>
+typedef ::testing::Types<float, double, int, uint, schar, uchar, short, ushort>
     TestTypes;
 
 TYPED_TEST_SUITE(AnisotropicDiffusion, TestTypes);

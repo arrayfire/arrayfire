@@ -40,6 +40,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::index;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -115,6 +116,7 @@ af_err af_index(af_array* result, const af_array in, const unsigned ndims,
             case u16: out = indexBySeqs<ushort>(in, indices_); break;
             case s64: out = indexBySeqs<intl>(in, indices_); break;
             case u64: out = indexBySeqs<uintl>(in, indices_); break;
+            case s8: out = indexBySeqs<schar>(in, indices_); break;
             case u8: out = indexBySeqs<uchar>(in, indices_); break;
             case f16: out = indexBySeqs<half>(in, indices_); break;
             default: TYPE_ERROR(1, type);
@@ -148,6 +150,7 @@ static af_array lookup(const af_array& in, const af_array& idx,
         case u64: return lookup<uintl, idx_t>(in, idx, dim);
         case s16: return lookup<short, idx_t>(in, idx, dim);
         case u16: return lookup<ushort, idx_t>(in, idx, dim);
+        case s8: return lookup<schar, idx_t>(in, idx, dim);
         case u8: return lookup<uchar, idx_t>(in, idx, dim);
         case b8: return lookup<char, idx_t>(in, idx, dim);
         case f16: return lookup<half, idx_t>(in, idx, dim);
@@ -185,6 +188,7 @@ af_err af_lookup(af_array* out, const af_array in, const af_array indices,
             case u16: output = lookup<ushort>(in, indices, dim); break;
             case s64: output = lookup<intl>(in, indices, dim); break;
             case u64: output = lookup<uintl>(in, indices, dim); break;
+            case s8: output = lookup<schar>(in, indices, dim); break;
             case u8: output = lookup<uchar>(in, indices, dim); break;
             case f16: output = lookup<half>(in, indices, dim); break;
             default: TYPE_ERROR(1, idxType);
@@ -289,6 +293,7 @@ af_err af_index_gen(af_array* out, const af_array in, const dim_t ndims,
             case s32: output = genIndex<int>(in, ptr); break;
             case u16: output = genIndex<ushort>(in, ptr); break;
             case s16: output = genIndex<short>(in, ptr); break;
+            case s8: output = genIndex<schar>(in, ptr); break;
             case u8: output = genIndex<uchar>(in, ptr); break;
             case b8: output = genIndex<char>(in, ptr); break;
             case f16: output = genIndex<half>(in, ptr); break;

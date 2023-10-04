@@ -910,21 +910,22 @@ extern "C" {
        be performed by ArrayFire. The following table shows which casts will
        be optimized out. outer -> inner -> outer
 
-       | inner-> | f32 | f64 | c32 | c64 | s32 | u32 | u8 | b8 | s64 | u64 | s16 | u16 | f16 |
-       |---------|-----|-----|-----|-----|-----|-----|----|----|-----|-----|-----|-----|-----|
-       | f32     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-       | f64     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-       | c32     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-       | c64     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
-       | s32     | x   | x   | x   | x   | x   | x   |    |    | x   | x   |     |     | x   |
-       | u32     | x   | x   | x   | x   | x   | x   |    |    | x   | x   |     |     | x   |
-       | u8      | x   | x   | x   | x   | x   | x   | x  | x  | x   | x   | x   | x   | x   |
-       | b8      | x   | x   | x   | x   | x   | x   | x  | x  | x   | x   | x   | x   | x   |
-       | s64     | x   | x   | x   | x   |     |     |    |    | x   | x   |     |     | x   |
-       | u64     | x   | x   | x   | x   |     |     |    |    | x   | x   |     |     | x   |
-       | s16     | x   | x   | x   | x   | x   | x   |    |    | x   | x   | x   | x   | x   |
-       | u16     | x   | x   | x   | x   | x   | x   |    |    | x   | x   | x   | x   | x   |
-       | f16     | x   | x   | x   | x   |     |     |    |    |     |     |     |     | x   |
+       | inner-> | f32 | f64 | c32 | c64 | s32 | u32 | s8 | u8 | b8 | s64 | u64 | s16 | u16 | f16 |
+       |---------|-----|-----|-----|-----|-----|-----|----|----|----|-----|-----|-----|-----|-----|
+       | f32     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+       | f64     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+       | c32     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+       | c64     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
+       | s32     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   |     |     | x   |
+       | u32     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   |     |     | x   |
+       | s8      | x   | x   | x   | x   | x   | x   | x  | x  | x  | x   | x   | x   | x   | x   |
+       | u8      | x   | x   | x   | x   | x   | x   | x  | x  | x  | x   | x   | x   | x   | x   |
+       | b8      | x   | x   | x   | x   | x   | x   | x  | x  | x  | x   | x   | x   | x   | x   |
+       | s64     | x   | x   | x   | x   |     |     |    |    |    | x   | x   |     |     | x   |
+       | u64     | x   | x   | x   | x   |     |     |    |    |    | x   | x   |     |     | x   |
+       | s16     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   | x   | x   | x   |
+       | u16     | x   | x   | x   | x   | x   | x   |    |    |    | x   | x   | x   | x   | x   |
+       | f16     | x   | x   | x   | x   |     |     |    |    |    |     |     |     |     | x   |
 
        If you want to avoid this behavior use, af_eval after the first cast
        operation. This will ensure that the cast operation is performed on the

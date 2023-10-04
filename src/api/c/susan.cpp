@@ -24,6 +24,7 @@ using detail::cfloat;
 using detail::createEmptyArray;
 using detail::createValueArray;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::ushort;
@@ -97,6 +98,10 @@ af_err af_susan(af_features* out, const af_array in, const unsigned radius,
             case u16:
                 *out = susan<ushort>(in, radius, diff_thr, geom_thr,
                                      feature_ratio, edge);
+                break;
+            case s8:
+                *out = susan<schar>(in, radius, diff_thr, geom_thr,
+                                    feature_ratio, edge);
                 break;
             case u8:
                 *out = susan<uchar>(in, radius, diff_thr, geom_thr,

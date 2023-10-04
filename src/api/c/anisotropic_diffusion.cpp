@@ -90,6 +90,7 @@ af_err af_anisotropic_diffusion(af_array* out, const af_array in,
             case u32:
             case s16:
             case u16:
+            case s8:
             case u8:
                 output = diffusion<float>(input, dt, K, iterations, F, eq);
                 break;

@@ -94,6 +94,7 @@ INSTANTIATE(double);
 INSTANTIATE(detail::cfloat);
 INSTANTIATE(detail::cdouble);
 INSTANTIATE(arrayfire::common::half);
+INSTANTIATE(signed char);
 INSTANTIATE(unsigned char);
 INSTANTIATE(char);
 INSTANTIATE(unsigned short);

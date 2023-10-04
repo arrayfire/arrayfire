@@ -40,7 +40,7 @@ template<typename T>
 class ReduceByKey : public ::testing::Test {};
 
 typedef ::testing::Types<float, double, cfloat, cdouble, uint, int, intl, uintl,
-                         uchar, short, ushort>
+                         schar, uchar, short, ushort>
     TestTypes;
 TYPED_TEST_SUITE(Reduce, TestTypes);
 TYPED_TEST_SUITE(ReduceByKey, TestTypes);
@@ -126,6 +126,10 @@ struct promote_type {
 
 // char and uchar are promoted to int for sum and product
 template<>
+struct promote_type<schar, af_sum> {
+    typedef int type;
+};
+template<>
 struct promote_type<uchar, af_sum> {
     typedef uint type;
 };
@@ -140,6 +144,10 @@ struct promote_type<short, af_sum> {
 template<>
 struct promote_type<ushort, af_sum> {
     typedef uint type;
+};
+template<>
+struct promote_type<schar, af_product> {
+    typedef int type;
 };
 template<>
 struct promote_type<uchar, af_product> {
@@ -389,6 +397,7 @@ array ptrToArray(size_t size, void *ptr, af_dtype type) {
         case u16: res = array(size, (unsigned short *)ptr); break;
         case s16: res = array(size, (short *)ptr); break;
         case b8: res = array(size, (char *)ptr); break;
+        case s8: res = array(size, (signed char *)ptr); break;
         case u8: res = array(size, (unsigned char *)ptr); break;
         case f16: res = array(size, (half_float::half *)ptr); break;
     }
@@ -409,6 +418,7 @@ array ptrToArray(af::dim4 size, void *ptr, af_dtype type) {
         case u16: res = array(size, (unsigned short *)ptr); break;
         case s16: res = array(size, (short *)ptr); break;
         case b8: res = array(size, (char *)ptr); break;
+        case s8: res = array(size, (signed char *)ptr); break;
         case u8: res = array(size, (unsigned char *)ptr); break;
         case f16: res = array(size, (half_float::half *)ptr); break;
     }

@@ -25,7 +25,7 @@ template<typename T>
 class IterativeDeconvolution : public ::testing::Test {};
 
 // create a list of types to be tested
-typedef ::testing::Types<float, uchar, short, ushort> TestTypes;
+typedef ::testing::Types<float, schar, uchar, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_SUITE(IterativeDeconvolution, TestTypes);

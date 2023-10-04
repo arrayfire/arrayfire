@@ -26,6 +26,7 @@ using detail::cdouble;
 using detail::cfloat;
 using detail::createEmptyArray;
 using detail::intl;
+using detail::schar;
 using detail::uchar;
 using detail::uint;
 using detail::uintl;
@@ -98,6 +99,7 @@ af_err af_join(af_array *out, const int dim, const af_array first,
             case u64: output = join<uintl>(dim, first, second); break;
             case s16: output = join<short>(dim, first, second); break;
             case u16: output = join<ushort>(dim, first, second); break;
+            case s8: output = join<schar>(dim, first, second); break;
             case u8: output = join<uchar>(dim, first, second); break;
             case f16: output = join<half>(dim, first, second); break;
             default: TYPE_ERROR(1, finfo.getType());
@@ -169,6 +171,7 @@ af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays,
             case u64: output = join_many<uintl>(dim, n_arrays, inputs); break;
             case s16: output = join_many<short>(dim, n_arrays, inputs); break;
             case u16: output = join_many<ushort>(dim, n_arrays, inputs); break;
+            case s8: output = join_many<schar>(dim, n_arrays, inputs); break;
             case u8: output = join_many<uchar>(dim, n_arrays, inputs); break;
             case f16: output = join_many<half>(dim, n_arrays, inputs); break;
             default: TYPE_ERROR(1, assertType);

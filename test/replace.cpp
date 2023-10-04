@@ -35,7 +35,7 @@ template<typename T>
 class Replace : public ::testing::Test {};
 
 typedef ::testing::Types<half_float::half, float, double, cfloat, cdouble, uint,
-                         int, intl, uintl, uchar, char, short, ushort>
+                         int, intl, uintl, schar, uchar, char, short, ushort>
     TestTypes;
 
 TYPED_TEST_SUITE(Replace, TestTypes);

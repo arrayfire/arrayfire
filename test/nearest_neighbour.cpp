@@ -34,8 +34,8 @@ class NearestNeighbour : public ::testing::Test {
 };
 
 // create lists of types to be tested
-typedef ::testing::Types<float, double, int, uint, intl, uintl, uchar, short,
-                         ushort>
+typedef ::testing::Types<float, double, int, uint, intl, uintl, schar, uchar,
+                         short, ushort>
     TestTypes;
 
 template<typename T>
@@ -51,6 +51,11 @@ struct otype_t<short> {
 template<>
 struct otype_t<ushort> {
     typedef uint otype;
+};
+
+template<>
+struct otype_t<schar> {
+    typedef int otype;
 };
 
 template<>
