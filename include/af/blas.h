@@ -242,6 +242,14 @@ extern "C" {
 
         \snippet test/blas.cpp ex_af_gemm_overwrite
 
+        \note <b>s8 Support</b>
+        \note Starting with ArrayFire version v3.10.0, the CUDA backend supports
+        \p A, \p B input arrays of type \ref s8.
+        \note Scalars \p alpha, \p beta must be of type \ref f32.
+        \note Output array \p C will be of type \ref f32.
+        \note <br><b>Requires</b>
+        \note CUDA version >= 10 on devices with compute capability >= 5.0
+
         \param[in,out] C     `A` * `B` = `C`
         \param[in]     opA   operation to perform on A before the multiplication
         \param[in]     opB   operation to perform on B before the multiplication

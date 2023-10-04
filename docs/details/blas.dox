@@ -32,6 +32,10 @@ memory allocations either on host or device.
 for Sparse-Dense matrix multiplication. See the notes of the function for usage
 and restrictions.
 
+\par
+\note Limited support for \ref s8 was added to the CUDA backend in ArrayFire
+v3.10.0. See \ref af_gemm "s8 Support" notes for details.
+
 \ingroup blas_mat
 
 =======================================================================
